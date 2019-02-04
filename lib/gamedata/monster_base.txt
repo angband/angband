@@ -68,6 +68,7 @@ pain:4
 flags:ANIMAL
 desc:Bat
 
+# Quickish monsters usually with some effect beyond melee
 name:bird
 glyph:B
 pain:8
@@ -120,6 +121,10 @@ flags:RAND_50 | BASH_DOOR
 flags:FORCE_SLEEP
 desc:Dragon Fly
 
+# These come in two stages:
+# 1. Motionless creatures which cause bad effects if you stand next to them
+# 2. Moving spellcasters (typically as many spells as eye-stalks) with 
+#    anti-magic melee
 name:eye
 glyph:e
 pain:1
@@ -134,6 +139,7 @@ flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 flags:NONLIVING
 desc:Elemental
 
+# Fast moving, bash doors, hit hard in melee
 name:feline
 glyph:f
 pain:6
@@ -174,6 +180,7 @@ pain:1
 flags:OPEN_DOOR | BASH_DOOR | SPIRIT | CLEAR_WEB
 desc:Hobbit/Elf/Dwarf
 
+# Weird legendary stuff, mostly without spells, sometimes with breath
 name:hybrid
 glyph:H
 pain:1
@@ -288,6 +295,7 @@ flags:NEVER_MOVE
 flags:IM_POIS | HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
 desc:Mold
 
+# Small (mostly) non-moving (mostly) spore-releasing-for-effect creatures
 name:mushroom
 glyph:,
 pain:2
@@ -333,6 +341,7 @@ pain:4
 flags:BASH_DOOR | CLEAR_WEB
 desc:Quadruped
 
+# Non-moving, non-attacking summoners
 name:quylthulg
 glyph:Q
 pain:2

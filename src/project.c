@@ -971,7 +971,7 @@ bool project(struct source origin, int rad, struct loc finish,
 
 			/* Breaths from powerful monsters get power effects as well */
 			if (monster_is_powerful(mon) && (flg & (PROJECT_PLAY)))
-				power = 80;
+				power = MAX(power, 80);
 		}
 		for (i = 0; i < num_grids; i++) {
 			if (project_p(origin, distance_to_grid[i], blast_grid[i],
