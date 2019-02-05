@@ -2359,7 +2359,7 @@ friends:100:5d4:snaga:servant
 desc:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order
 desc: with displays of excessive violence.
 
-name:brown yeek
+name:terrified yeek
 base:yeek
 color:u
 speed:110
@@ -2371,9 +2371,10 @@ sleepiness:10
 depth:8
 rarity:1
 experience:11
-blow:HIT:HURT:1d6
-flags:DROP_40
-desc:It is a strange small humanoid.
+flags:DROP_40 | FRIGHTENED | NEVER_BLOW
+innate-freq:9
+spells:SHRIEK
+desc:It is a strange small humanoid in a constant state of extreme terror.
 
 name:giant salamander
 base:reptile
@@ -2879,7 +2880,7 @@ flags:FORCE_SLEEP
 spell-freq:4
 spells:BLINK | CONF | HEAL | SLOW | TELE_TO
 spells:S_MONSTER
-friends:100:2d5:Brown yeek:servant
+friends:50:2d5:terrified yeek:servant
 friends:100:2d5:Blue yeek:servant
 friends:50:1d3:Master yeek:servant
 desc:He's just like his daddy!  He knows mighty spells, but fortunately he is a
@@ -3591,7 +3592,7 @@ flags:FORCE_SLEEP
 spell-freq:3
 spells:BLIND | BLINK | HEAL | SLOW | TPORT
 spells:S_KIN | S_MONSTER
-friends:100:2d6:Brown yeek:servant
+friends:50:2d6:terrified yeek:servant
 friends:100:2d6:Blue yeek:servant
 friends:100:2d4:Master yeek:servant
 friends:100:1d1:Orfax, Son of Boldor

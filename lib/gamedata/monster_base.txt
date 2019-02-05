@@ -351,6 +351,7 @@ flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Quylthulg
 
+# Mostly early monsters, but later ones are dangerous.  Not fast for depth
 name:reptile
 glyph:R
 pain:5
@@ -456,6 +457,7 @@ flags:COLD_BLOOD | EMPTY_MIND | CLEAR_WEB
 flags:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
 desc:Xorn/Xaren
 
+# Small, weak, comical humanoids
 name:yeek
 glyph:y
 pain:1

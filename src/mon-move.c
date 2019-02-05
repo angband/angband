@@ -200,7 +200,7 @@ static void get_move_find_range(struct monster *mon)
 	int flee_range = z_info->max_sight + z_info->flee_range;
 
 	/* All "afraid" monsters will run away */
-	if (mon->m_timed[MON_TMD_FEAR]) {
+	if (mon->m_timed[MON_TMD_FEAR] || rf_has(mon->race->flags, RF_FRIGHTENED)) {
 		mon->min_range = flee_range;
 	} else if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_BODYGUARD) {
 		/* Bodyguards don't flee */
