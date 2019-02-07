@@ -3711,27 +3711,6 @@ spells:ARROW
 friends:100:1d3:Same
 desc:He has a bow of horn and a quiver full of black-feathered arrows.
 
-name:ochre jelly
-plural:ochre jellies
-base:jelly
-color:U
-speed:120
-hit-points:59
-hearing:12
-armor-class:21
-sleepiness:1
-depth:13
-rarity:3
-experience:40
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:2d6
-blow:TOUCH:ACID:2d6
-flags:COLD_BLOOD
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
-desc:A fast moving highly acidic jelly thing, that is eating away the floor it
-desc: rests on.
-
 ### Dungeon level 14 ###
 
 name:giant flea
@@ -4161,31 +4140,6 @@ flags:EVIL | ANIMAL
 flags:BASH_DOOR | KILL_WALL
 desc:This bizarre creature has glaring eyes and large mandibles capable of
 desc: slicing through rock.
-
-name:gelatinous cube
-base:jelly
-color:G
-speed:110
-hit-points:316
-hearing:12
-armor-class:21
-sleepiness:1
-depth:16
-rarity:4
-experience:80
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-flags:COLD_BLOOD
-flags:DROP_4
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-flags:NO_CONF | NO_SLEEP
-flags-off:HURT_COLD
-desc:It is a strange, vast gelatinous structure that assumes cubic proportions
-desc: as it lines all four walls of the corridors it patrols.  Through its
-desc: transparent jelly structure you can see treasures it has engulfed, and a
-desc: few corpses as well.
 
 name:Ulfast, Son of Ulfang
 base:person
@@ -8178,7 +8132,7 @@ hearing:12
 armor-class:21
 sleepiness:1
 depth:35
-rarity:5
+rarity:3
 experience:180
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -8765,29 +8719,6 @@ spell-freq:7
 spells:BA_FIRE
 spells:BO_PLAS
 desc:It is a towering glowing form of molten hate.
-
-name:black pudding
-base:jelly
-color:D
-speed:110
-hit-points:352
-hearing:12
-armor-class:21
-sleepiness:1
-depth:37
-rarity:5
-experience:50
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-flags:COLD_BLOOD
-flags:DROP_40 | DROP_60 | DROP_1
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-flags:NO_CONF | NO_SLEEP
-friends:100:2d5:Same
-desc:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
 name:killer iridescent beetle
 base:killer beetle

@@ -214,6 +214,7 @@ flags:ANIMAL | WEIRD_MIND | MULTIPLY
 flags:RAND_50 | RAND_25
 desc:Insect
 
+# Mostly non-moving creatures which touch for various effects
 name:jelly
 glyph:j
 pain:2
