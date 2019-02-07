@@ -166,6 +166,7 @@ flags:GIANT | EVIL | SPIRIT
 flags:BASH_DOOR | CLEAR_WEB
 desc:Giant Humanoid
 
+# Mostly slow with lots of hitpoints and armor
 name:golem
 glyph:g
 pain:1
@@ -187,6 +188,8 @@ pain:1
 flags:CLEAR_WEB
 desc:Hybrid
 
+# Quick monsters with strong melee, the higher level ones getting fire and/or
+# poison attacks
 name:hydra
 glyph:M
 pain:4
@@ -196,6 +199,7 @@ flags:BASH_DOOR | CLEAR_WEB
 flags:FORCE_SLEEP | HURT_COLD
 desc:Hydra
 
+# Non-descript early monsters that demonstrate some stuff but are mostly filler
 name:icky thing
 glyph:i
 pain:2

@@ -11678,27 +11678,26 @@ spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 desc:A skeletal hand floating in the air, motionless except for its flexing
 desc: fingers.
 
-name:The Lernaean Hydra
+name:12-headed hydra
 base:hydra
-color:v
+color:P
 speed:120
-hit-points:4500
+hit-points:2500
 light:2
 hearing:20
 armor-class:168
 sleepiness:20
 depth:57
 rarity:2
-experience:20000
+experience:12000
 blow:BITE:POISON:8d6
 blow:BITE:POISON:8d6
-blow:BITE:FIRE:12d6
-blow:BITE:FIRE:12d6
-flags:UNIQUE | SMART | POWERFUL | REGENERATE
-flags:DROP_4
+blow:BITE:FIRE:10d6
+blow:BITE:FIRE:10d6
+flags:SMART | POWERFUL | REGENERATE
+flags:DROP_3
 flags:OPEN_DOOR | KILL_BODY
 flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-flags-off:HURT_COLD
 innate-freq:10
 spell-freq:4
 spells:SCARE
