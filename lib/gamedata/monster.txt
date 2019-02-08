@@ -4801,12 +4801,13 @@ rarity:2
 experience:350
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
-blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
 flags:DROP_3
 flags:OPEN_DOOR | MOVE_BODY
+flags:IM_POIS
 spell-freq:9
 spells:SCARE
-desc:A strange reptilian hybrid with three heads, guarding its hoard.
+desc:A 2-heded hydra with an extra head, it's mouth dripping venom.
 
 name:earth hound
 base:zephyr hound
@@ -5586,13 +5587,14 @@ rarity:2
 experience:450
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
-blow:BITE:HURT:2d6
-blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
 flags:DROP_3
 flags:OPEN_DOOR | MOVE_BODY
+flags:IM_POIS | IM_FIRE
 spell-freq:7
 spells:SCARE
-desc:A strange reptilian hybrid with four heads, guarding its hoard.
+desc:A 3-headed hydra with an extra, smouldering, head.
 
 name:mummified human
 base:zombie
@@ -6380,17 +6382,17 @@ sleepiness:50
 depth:28
 rarity:2
 experience:650
-blow:BITE:POISON:4d4
-blow:BITE:POISON:4d4
-blow:BITE:POISON:4d4
-blow:BITE:POISON:4d4
+blow:BITE:HURT:2d6
+blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
+blow:BITE:ACID:2d6
 flags:DROP_4
 flags:MOVE_BODY
-flags:IM_POIS
+flags:IM_POIS | IM_FIRE | IM_ACID
 spell-freq:5
 spells:SCARE
-spells:BA_POIS
-desc:A strange reptilian hybrid with five heads dripping venom.
+desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
 
 name:black knight
 base:person
@@ -9150,7 +9152,7 @@ friends:50:1d4:Baby green dragon
 friends:50:1d2:Young green dragon
 desc:A large dragon, scales tinted deep green.
 
-name:7-headed hydra
+name:6-headed hydra
 base:hydra
 color:G
 speed:120
@@ -9162,19 +9164,21 @@ sleepiness:35
 depth:39
 rarity:2
 experience:2000
-blow:BITE:POISON:3d9
-blow:BITE:POISON:3d9
-blow:BITE:POISON:3d9
-blow:SPIT:BLIND:1d2
+blow:BITE:HURT:2d6
+blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
+blow:BITE:ACID:2d6
+blow:BITE:BLIND:1d2
 flags:DROP_4
 flags:MOVE_BODY
-flags:IM_POIS
+flags:IM_POIS | IM_FIRE | IM_ACID
 innate-freq:10
 spell-freq:8
 spells:SCARE
-spells:BA_POIS
 spells:BR_POIS
-desc:A strange reptilian hybrid with seven heads dripping venom.
+desc:A 5-headed hydra which seems to have an extra head, if you could just see
+desc: it properly.
 
 name:night mare
 base:quadruped
@@ -9292,7 +9296,7 @@ spells:FORGET
 desc:An unholy creature of darkness, the aura emanating from this evil being
 desc: saps your very soul.
 
-name:9-headed hydra
+name:7-headed hydra
 base:hydra
 color:r
 speed:120
@@ -9304,19 +9308,21 @@ sleepiness:20
 depth:40
 rarity:2
 experience:3000
-blow:BITE:FIRE:3d10
-blow:BITE:FIRE:3d10
-blow:BITE:FIRE:3d10
-blow:BITE:FIRE:3d10
+blow:BITE:HURT:2d6
+blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
+blow:BITE:ACID:2d6
+blow:BITE:BLIND:2d6
+blow:BITE:CONFUSE:2d6
 flags:DROP_4
 flags:OPEN_DOOR | MOVE_BODY
-flags:IM_FIRE
-innate-freq:12
+flags:IM_POIS | IM_FIRE | IM_ACID | NO_CONF
+innate-freq:8
 spell-freq:6
 spells:SCARE
-spells:BO_FIRE
-spells:BR_FIRE
-desc:A strange reptilian hybrid with nine smouldering heads.
+spells:BR_POIS | BR_FIRE
+desc:A 6-headed hydra with an extra head that waves mesmerisingly at you.
 
 name:enchantress
 base:person
@@ -10131,7 +10137,7 @@ desc: powerful of the religious knightly orders, but noted for their
 desc: intolerance.  Thus it is Morgoth's will that is unwittingly done, as the
 desc: forces of good are set against each other.
 
-name:11-headed hydra
+name:8-headed hydra
 base:hydra
 color:R
 speed:120
@@ -10142,20 +10148,22 @@ sleepiness:20
 depth:44
 rarity:2
 experience:6000
-blow:BITE:FIRE:3d12
-blow:BITE:FIRE:3d12
-blow:BITE:FIRE:3d12
-blow:BITE:FIRE:3d12
+blow:BITE:HURT:2d6
+blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
+blow:BITE:ACID:2d6
+blow:BITE:BLIND:2d6
+blow:BITE:CONFUSE:2d6
+blow:BITE:EXP_10:2d6
 flags:DROP_4
 flags:OPEN_DOOR | MOVE_BODY
 flags:IM_FIRE
-innate-freq:16
+innate-freq:7
 spell-freq:5
 spells:SCARE
-spells:BA_FIRE
-spells:BO_FIRE | BO_PLAS
-spells:BR_FIRE
-desc:A strange reptilian hybrid with eleven smouldering heads.
+spells:BR_FIRE | BR_POIS | BR_ACID
+desc:A 7-headed hydra with an extra head which reeks of death.
 
 name:dread
 base:ghost
@@ -11609,7 +11617,7 @@ spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 desc:A skeletal hand floating in the air, motionless except for its flexing
 desc: fingers.
 
-name:12-headed hydra
+name:9-headed hydra
 base:hydra
 color:P
 speed:120
@@ -11621,24 +11629,28 @@ sleepiness:20
 depth:57
 rarity:2
 experience:12000
-blow:BITE:POISON:8d6
-blow:BITE:POISON:8d6
-blow:BITE:FIRE:10d6
-blow:BITE:FIRE:10d6
+blow:BITE:HURT:2d6
+blow:BITE:HURT:2d6
+blow:BITE:POISON:2d6
+blow:BITE:FIRE:2d6
+blow:BITE:ACID:2d6
+blow:BITE:BLIND:2d6
+blow:BITE:CONFUSE:2d6
+blow:BITE:EXP_10:2d6
+blow:BITE:HURT:10d6
 flags:SMART | POWERFUL | REGENERATE
 flags:DROP_3
 flags:OPEN_DOOR | KILL_BODY
-flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-innate-freq:10
+flags:IM_FIRE | IM_POIS | IM_ACID | NO_CONF | NO_SLEEP | NO_HOLD
+innate-freq:6
 spell-freq:4
 spells:SCARE
-spells:BA_FIRE | BA_POIS
-spells:BO_FIRE | BO_PLAS
-spells:BR_FIRE | BR_POIS
+spells:BR_FIRE | BR_POIS | BR_ACID | BR_NETH
 spells:S_HYDRA | S_KIN
-desc:A massive legendary hydra.  It has twelve powerful heads.  Its many eyes
-desc: stare at you as clouds of smoke and poisonous vapour rise from its
-desc: seething form.  And it grows new heads as fast as you chop them off.
+desc:A massive legendary hydra, like an 8-headed hydra, but with a massive
+desc: extra head that opens its mighty jaws at you.  Its many eyes
+desc: stare at you as clouds of vapour rise from its seething form.  And it
+desc: grows new heads as fast as you chop them off.
 
 ### Dungeon level 58 ###
 
