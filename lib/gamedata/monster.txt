@@ -5467,8 +5467,8 @@ base:bat
 color:r
 speed:130
 hit-points:14
-hearing:12
 light:2
+hearing:12
 armor-class:42
 sleepiness:10
 depth:23

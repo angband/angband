@@ -675,7 +675,8 @@ void update_view(struct chunk *c, struct player *p)
 
 	/* Assume we can view the player grid */
 	sqinfo_on(square(c, p->grid).info, SQUARE_VIEW);
-	if (p->state.cur_light > 0 || square_isglow(c, p->grid))
+	if (p->state.cur_light > 0 || square_isglow(c, p->grid) ||
+		player_has(p, PF_UNLIGHT))
 		sqinfo_on(square(c, p->grid).info, SQUARE_SEEN);
 
 	/* Calculate light levels */
