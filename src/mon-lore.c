@@ -1733,7 +1733,7 @@ void write_lore_entries(ang_file *fff)
 					file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
 							  f->number_dice, f->number_side, f->race->name);
 				} else {
-					char *role_name;
+					char *role_name = NULL;
 					if (f->role == MON_GROUP_SERVANT) {
 						role_name = string_make("servant");
 					} else if (f->role == MON_GROUP_BODYGUARD) {
@@ -1758,7 +1758,7 @@ void write_lore_entries(ang_file *fff)
 							  b->percent_chance, b->number_dice,
 							  b->number_side, b->base->name);
 				} else {
-					char *role_name;
+					char *role_name = NULL;
 					if (b->role == MON_GROUP_SERVANT) {
 						role_name = string_make("servant");
 					} else if (b->role == MON_GROUP_BODYGUARD) {
