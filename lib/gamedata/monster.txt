@@ -14197,7 +14197,7 @@ name:Sauron, the Sorcerer
 base:ainu
 color:p
 speed:130
-hit-points:10500
+hit-points:8000
 hearing:100
 armor-class:192
 sleepiness:0
@@ -14214,17 +14214,104 @@ flags:MOVE_BODY
 flags:IM_ELEC | NO_FEAR
 flags:FORCE_DEPTH
 spell-freq:2
-spells:BLIND | BRAIN_SMASH | WOUND | SCARE | TELE_LEVEL | TPORT
-spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
+spell-power:130
+spells:BRAIN_SMASH | WOUND | TELE_LEVEL | TPORT
+spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH
 spells:BO_ICE | BO_MANA | BO_PLAS
-spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH
+spells:SHAPECHANGE
+spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_UNIQUE | S_WRAITH
 friends:100:1d1:Khamûl, the Black Easterling:servant
 friends:100:1d1:The Witch-King of Angmar:servant
+shape:Wolf-Sauron
+shape:Serpent-Sauron
+shape:Vampire-Sauron
 desc:Greatest and most terrible of the servants of Morgoth, creator of the One
 desc: Ring.  A sorcerer of dreadful powers, master of shadows and of phantoms,
 desc: foul in wisdom, cruel in strength, misshaping what he rules, lord of
 desc: werewolves; his dominion is torment.  He has many servants, and rarely
 desc: fights without them.
+
+name:Wolf-Sauron
+base:canine
+color:p
+speed:140
+hearing:100
+armor-class:164
+sleepiness:0
+depth:99
+rarity:0
+blow:BITE:POISON:8d10
+blow:BITE:POISON:8d10
+blow:CLAW:CONFUSE:6d8
+blow:CLAW:PARALYZE:6d8
+flags:UNIQUE | MALE | EVIL | REGENERATE
+flags:FORCE_SLEEP | FORCE_DEPTH
+flags:SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:IM_POIS | IM_ELEC | IM_FIRE | IM_COLD
+flags:NO_CONF | NO_SLEEP | NO_FEAR
+innate-freq:3
+spell-freq:3
+spell-power:105
+spells:BLINK | TPORT | TELE_LEVEL | TELE_SELF_TO
+spells:BLIND | CONF | SCARE | WOUND
+spells:BR_FIRE | BR_NETH | BA_DARK
+spells:S_HOUND | S_DRAGON | S_HI_DEMON | S_HI_UNDEAD
+desc:Sauron's form as the mightiest wolf to walk the world.
+
+name:Serpent-Sauron
+base:snake
+color:p
+speed:130
+hearing:100
+armor-class:164
+sleepiness:0
+depth:99
+rarity:0
+blow:BITE:POISON:7d12
+blow:BITE:POISON:7d12
+blow:CRUSH:HURT:8d12
+blow:SPIT:ACID:4d12
+flags:UNIQUE | MALE | EVIL
+flags:FORCE_SLEEP | FORCE_DEPTH
+flags:SMART | OPEN_DOOR | MOVE_BODY | REGENERATE
+flags:IM_POIS | IM_ACID | IM_ELEC | IM_COLD
+flags:NO_CONF | NO_SLEEP | NO_FEAR
+innate-freq:4
+spell-freq:4
+spell-power:108
+spells:BLINK | TPORT | TELE_LEVEL | TELE_SELF_TO
+spells:BLIND | CONF | SCARE | WOUND
+spells:BRAIN_SMASH | FORGET
+spells:BR_POIS | BR_CHAO | BR_ACID
+spells:S_DRAGON | S_HI_DEMON | S_HI_UNDEAD
+desc:Sauron's form as a serpent: poisonous, biting, spitting, and threatening
+desc: to crush you in its mighty coils.
+
+name:Vampire-Sauron
+base:vampire
+color:p
+speed:130
+hearing:100
+armor-class:164
+sleepiness:0
+depth:99
+rarity:0
+blow:BITE:EXP_80:6d12
+blow:CLAW:TERRIFY:8d12
+blow:HIT:DRAIN_CHARGES:8d12
+blow:HIT:DRAIN_CHARGES:8d12
+flags:UNIQUE | MALE | EVIL
+flags:FORCE_SLEEP | FORCE_DEPTH
+flags:MOVE_BODY | IM_ELEC
+flags:NO_CONF | NO_FEAR
+spell-freq:2
+spell-power:130
+spells:BLINK | TPORT | TELE_LEVEL | BLIND | CONF
+spells:BRAIN_SMASH | FORGET
+spells:BO_ICE | BO_PLAS | BA_POIS | BA_ACID
+spells:BA_NETH | BA_FIRE | STORM | BE_NETH | BA_DARK
+spells:S_DRAGON | S_HI_DEMON | S_HI_UNDEAD
+desc:Sauron's form as a vampire, great as a dark cloud across the moon.
 
 ### Dungeon level 100 ###
 
@@ -14245,7 +14332,7 @@ blow:HIT:LOSE_ALL:10d12
 blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | QUESTOR | MALE | EVIL | SMART | REGENERATE | SPIRIT
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
-flags:KILL_WALL | MOVE_BODY | ATTR_FLICKER
+flags:SMASH_WALL | MOVE_BODY | ATTR_FLICKER
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_DEPTH | FORCE_SLEEP

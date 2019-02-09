@@ -515,14 +515,14 @@ message-invis:Something chants powerfully.
 name:STORM
 hit:100
 effect:BALL:WATER:3
-dice:50+$Dd10
-expr:D:SPELL_POWER:/ 2
+dice:30+$Dd5
+expr:D:SPELL_POWER:/ 3
 effect:BALL:ELEC:3
 dice:20+$Dd5
-expr:D:SPELL_POWER:/ 2
+expr:D:SPELL_POWER:/ 3
 effect:BALL:ICE:3
 dice:20+$Dd5
-expr:D:SPELL_POWER:/ 2
+expr:D:SPELL_POWER:/ 3
 lore:create storms
 lore-color-base:Light Red
 lore-color-resist:Orange
