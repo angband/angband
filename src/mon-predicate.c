@@ -66,7 +66,7 @@ bool monster_is_destroyed(const struct monster *mon)
 bool monster_passes_walls(const struct monster *mon)
 {
 	return flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
-					  FLAG_END);
+					  RF_SMASH_WALL, FLAG_END);
 }
 
 /**

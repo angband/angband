@@ -131,6 +131,7 @@ pain:1
 flags:CLEAR_WEB
 desc:Floating Eye
 
+# Creatures (mostly) embodying a single element, mostly with lowish HP
 name:elemental
 glyph:E
 pain:1
@@ -231,6 +232,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:BASH_DOOR
 desc:Killer Beetle
 
+# Early-game equivalents of things like orcs and trolls
 name:kobold
 glyph:k
 pain:1
@@ -340,6 +342,7 @@ pain:1
 flags:BASH_DOOR | SPIRIT | CLEAR_WEB
 desc:Person/Human
 
+# A grab-bag of four-legged things with no real defining quality
 name:quadruped
 glyph:q
 pain:4

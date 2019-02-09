@@ -772,8 +772,6 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	struct loc decoy = cave_find_decoy(c);
 	struct loc target = loc_is_zero(decoy) ? player->grid : decoy;
 	bool group_ai = rf_has(mon->race->flags, RF_GROUP_AI);
-	bool can_pass_walls = flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL,
-									 RF_KILL_WALL, FLAG_END);
 
 	/* Offset to current position to move toward */
 	struct loc grid;
@@ -806,7 +804,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	}
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (group_ai && !can_pass_walls) {
+	if (group_ai && !monster_passes_walls(mon)) {
 		int i, open = 0;
 
 		/* Count empty grids next to player */
@@ -1040,10 +1038,19 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 	if (monster_is_visible(mon)) {
 		rf_on(lore->flags, RF_PASS_WALL);
 		rf_on(lore->flags, RF_KILL_WALL);
+		rf_on(lore->flags, RF_SMASH_WALL);
 	}
 
 	/* Monster may be able to deal with walls and doors */
 	if (rf_has(mon->race->flags, RF_PASS_WALL)) {
+		return true;
+	} else if (rf_has(mon->race->flags, RF_SMASH_WALL)) {
+		/* Remove the wall and much of what's nearby */
+		square_smash_wall(c, new);
+
+		/* Note changes to viewable region */
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
 		return true;
 	} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 		/* Remove the wall */
@@ -1338,8 +1345,9 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 			/* Now several possibilities */
 			if (rf_has(mon->race->flags, RF_PASS_WALL)) {
 				/* Insubstantial monsters go right through */
-			} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
+			} else if (monster_passes_walls(mon)) {
 				/* If you can destroy a wall, you can destroy a web */
+				square_destroy_trap(c, mon->grid);
 			} else if (rf_has(mon->race->flags, RF_CLEAR_WEB)) {
 				/* Clearing costs a turn (assume there are no other "traps") */
 				square_destroy_trap(c, mon->grid);

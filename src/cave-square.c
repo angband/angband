@@ -1272,6 +1272,33 @@ void square_destroy_wall(struct chunk *c, struct loc grid)
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
+void square_smash_wall(struct chunk *c, struct loc grid)
+{
+	int i;
+	square_set_feat(c, grid, FEAT_FLOOR);
+
+	for (i = 0; i < 8; i++) {
+		/* Extract adjacent location */
+		struct loc adj_grid = loc_sum(grid, ddgrid_ddd[i]);
+
+		/* Check legality */
+		if (!square_in_bounds_fully(c, adj_grid)) continue;
+
+		/* Ignore permanent grids */
+		if (square_isperm(c, adj_grid)) continue;
+
+		/* Give this grid a chance to survive */
+		if ((square_isgranite(c, adj_grid) && one_in_(4)) ||
+			(square_isquartz(c, adj_grid) && one_in_(10)) ||
+			(square_ismagma(c, adj_grid) && one_in_(20))) {
+			continue;
+		}
+
+		/* Remove it */
+		square_set_feat(c, grid, FEAT_FLOOR);
+	}
+}
+
 void square_destroy(struct chunk *c, struct loc grid) {
 	int feat = FEAT_FLOOR;
 	int r = randint0(200);

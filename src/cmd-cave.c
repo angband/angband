@@ -1558,6 +1558,7 @@ void do_cmd_mon_command(struct command *cmd)
 				if (monster_is_visible(mon)) {
 					rf_on(lore->flags, RF_PASS_WALL);
 					rf_on(lore->flags, RF_KILL_WALL);
+					rf_on(lore->flags, RF_SMASH_WALL);
 				}
 
 				/* Monster may be able to deal with walls and doors */
@@ -1566,6 +1567,10 @@ void do_cmd_mon_command(struct command *cmd)
 				} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 					/* Remove the wall */
 					square_destroy_wall(cave, grid);
+					can_move = true;
+				} else if (rf_has(mon->race->flags, RF_SMASH_WALL)) {
+					/* Remove everything */
+					square_smash_wall(cave, grid);
 					can_move = true;
 				} else if (square_iscloseddoor(cave, grid) ||
 						   square_issecretdoor(cave, grid)) {

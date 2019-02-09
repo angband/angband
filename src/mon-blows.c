@@ -972,10 +972,24 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 	/* Take damage */
 	if (monster_damage_target(context, false)) return;
 
-	/* Radius 8 earthquake centered at the monster */
+	/* Earthquake centered at the monster, radius damage-determined */
 	if (context->damage > 23) {
+		int radius = context->damage / 12;
 		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0",
-					  0, 8, 0, 0, 0, NULL);
+					  0, radius, 0, 0, 0, NULL);
+	}
+
+	/* Chance of knockback */
+	if ((context->damage > 100)) {
+		int value = context->damage - 100;
+		if (randint1(value) > 40) {
+			int dist = 1 + value / 40;
+			if (context->p) {
+				thrust_away(context->mon->grid, context->p->grid, dist);
+			} else {
+				thrust_away(context->mon->grid, context->t_mon->grid, dist);
+			}
+		}
 	}
 }
 

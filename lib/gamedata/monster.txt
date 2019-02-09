@@ -8004,7 +8004,7 @@ blow:CRAWL:ACID:2d4
 blow:BITE:HURT:1d10
 blow:BITE:POISON:1d6
 flags:BASH_DOOR
-flags:IM_ACID | MULTIPLY
+flags:IM_ACID
 desc:A huge wormlike shape dripping acid, twisted by evil sorcery into a foul
 desc: monster that breeds on death.
 
