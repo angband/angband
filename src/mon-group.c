@@ -141,29 +141,30 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 			if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_SUMMON) {
 				struct mon_group_list_entry *remove = list_entry;
 
-				if (monster_is_nonliving(mon)) {
-					delete_monster_idx(list_entry->midx);
+				/* Some monsters have a group of summons already */
+				if (mon->group_info[SUMMON_GROUP].index) {
+					mon->group_info[PRIMARY_GROUP].index =
+						mon->group_info[SUMMON_GROUP].index;
+					mon->group_info[SUMMON_GROUP].index = 0;
 				} else {
-					/* Some monsters have a group of summons already */
-					if (mon->group_info[SUMMON_GROUP].index) {
-						mon->group_info[PRIMARY_GROUP].index =
-							mon->group_info[SUMMON_GROUP].index;
-						mon->group_info[SUMMON_GROUP].index = 0;
-					} else {
-						monster_group_start(c, mon, 0);
-					}
-
-					/* Remove from the group */
-					if (previous) {
-						previous->next = list_entry->next;
-					} else {
-						/* No previous means first time through the loop */
-						group->member_list = list_entry->next;
-					}
-					list_entry = list_entry->next;
-					mem_free(remove);
-					continue;
+					monster_group_start(c, mon, 0);
 				}
+
+				/* Remove from the group */
+				if (previous) {
+					previous->next = list_entry->next;
+				} else {
+					/* No previous means first time through the loop */
+					group->member_list = list_entry->next;
+				}
+				list_entry = list_entry->next;
+
+				/* Now remove from the game if non-living */
+				if (monster_is_nonliving(mon)) {
+					delete_monster_idx(remove->midx);
+				}
+				mem_free(remove);
+				continue;
 			}
 
 			/* Record the leader */
