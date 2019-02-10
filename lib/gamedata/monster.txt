@@ -14216,7 +14216,7 @@ flags:FORCE_DEPTH
 spell-freq:2
 spell-power:130
 spells:BRAIN_SMASH | WOUND | TELE_LEVEL | TPORT
-spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH
+spells:BA_DARK | BA_FIRE | BA_NETH
 spells:BO_ICE | BO_MANA | BO_PLAS
 spells:SHAPECHANGE
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_UNIQUE | S_WRAITH
@@ -14308,8 +14308,8 @@ spell-freq:2
 spell-power:130
 spells:BLINK | TPORT | TELE_LEVEL | BLIND | CONF
 spells:BRAIN_SMASH | FORGET
-spells:BO_ICE | BO_PLAS | BA_POIS | BA_ACID
-spells:BA_NETH | BA_FIRE | STORM | BE_NETH | BA_DARK
+spells:BO_ICE | BO_PLAS | BE_NETH
+spells:BA_NETH | STORM | BA_DARK | BA_POIS | BA_ACID
 spells:S_DRAGON | S_HI_DEMON | S_HI_UNDEAD
 desc:Sauron's form as a vampire, great as a dark cloud across the moon.
 
