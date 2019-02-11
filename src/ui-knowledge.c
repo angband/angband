@@ -1119,6 +1119,7 @@ static struct
 	{ L"S",        "Scorpions/Spiders" },
 	{ L"s",        "Skeletons/Drujs" },
 	{ L"J",        "Snakes" },
+	{ L"l",        "Trees/Ents" },
 	{ L"T",        "Trolls" },
 	{ L"V",        "Vampires" },
 	{ L"W",        "Wights/Wraiths" },

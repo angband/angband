@@ -3221,6 +3221,25 @@ drop-base:magic book:5:1:1
 friends:100:4d4:Same
 desc:A mage of short stature.
 
+name:old forest tree
+base:tree
+color:g
+speed:100
+hit-points:800
+hearing:20
+armor-class:50
+sleepiness:20
+depth:11
+rarity:2
+experience:100
+blow:CRUSH:HURT:1d20
+flags:NEVER_MOVE | WEIRD_MIND
+flags:NO_STUN | NO_SLOW
+spell-freq:12
+spells:CONF
+friends:100:2d4:same
+desc:An ancient tree that seems to be watching you.
+
 ### Dungeon level 12 ###
 
 name:black mamba
@@ -4715,6 +4734,30 @@ flags-off:HURT_FIRE
 desc:It is a strange red growth on the dungeon floor; it seems to burn with
 desc: flame.
 
+name:Old Man Willow
+base:tree
+color:s
+speed:110
+hit-points:1000
+hearing:20
+sleepiness:20
+depth:19
+rarity:3
+experience:3000
+blow:TOUCH:PARALYZE:1d14
+blow:TOUCH:PARALYZE:1d14
+blow:CRUSH:HURT:2d12
+flags:NEVER_MOVE
+flags:EMPTY_MIND | UNIQUE | FORCE_SLEEP
+flags:IM_POIS | IM_ACID
+flags:DROP_1 | DROP_GOOD | ONLY_ITEM
+spell-freq:10
+spells:TELE_TO | HOLD
+desc:The ancient grey willow tree, ruler of the Old Forest. He despises
+desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
+desc:  Enormous it looked, its sprawling branches going up like racing arms
+desc: with may long-fingered hands, its knotted and twisted trunk gaping in
+desc: wide fissures that creaked faintly as the boughs moved."
 
 ########## DUNGEON LEVELS 20-29 ##########
 
@@ -5339,6 +5382,8 @@ flags:DROP_2 | ONLY_GOLD
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:IM_POIS
 desc:A fast-moving and deadly draconian animal.  Beware its poisonous sting!
+
+
 
 ### Dungeon level 23 ###
 
@@ -7273,6 +7318,30 @@ spells:SCARE
 spells:BR_FIRE
 desc:It has a form that legends are made of.  Its still-tender scales are a
 desc: deepest red hue.  Heat radiates from its form.
+
+name:huorn
+base:tree
+color:G
+speed:115
+hit-points:1000
+light:-2
+hearing:20
+armor-class:80
+sleepiness:20
+depth:31
+rarity:1
+experience:1200
+blow:CRUSH:HURT:3d6
+blow:CRUSH:HURT:3d6
+blow:CRUSH:HURT:3d6
+blow:CRUSH:HURT:3d6
+flags:DROP_60 | WEIRD_MIND
+flags:MOVE_BODY
+flags:NO_STUN | NO_SLOW | NO_SLEEP
+spell-freq:9
+spells:HASTE | TELE_TO | DARKNESS
+desc:A tree which has become entish, or maybe an ent which has become tree-ish.
+
 
 ### Dungeon level 32 ###
 
@@ -9811,6 +9880,30 @@ spells:BR_FIRE
 friends:100:2d5:Same
 desc:It is a giant wolf that glows with heat.  Flames pour from its nostrils.
 
+name:black-hearted huorn
+base:tree
+color:m
+speed:120
+hit-points:1200
+light:-2
+hearing:20
+armor-class:120
+sleepiness:20
+depth:42
+rarity:1
+experience:2900
+blow:CRUSH:HURT:5d6
+blow:CRUSH:HURT:5d6
+blow:CRUSH:HURT:5d6
+blow:CRUSH:HURT:5d6
+flags:DROP_60 | WEIRD_MIND | EVIL
+flags:BASH_DOOR | KILL_BODY
+flags:NO_STUN | NO_SLOW | NO_SLEEP
+innate-freq:8
+spell-freq:7
+spells:HASTE | TELE_TO | DARKNESS | SCARE | BLIND
+desc:A huorn with a bad heart.
+
 name:The Queen Ant
 base:ant
 color:v
@@ -11129,6 +11222,29 @@ shape:giant
 shape:Huan, Wolfhound of the Valar
 desc:A servant of Oromë, hunter of monsters and fell beasts.
 
+name:hasty ent
+base:tree
+color:t
+speed:120
+hit-points:3000
+hearing:20
+armor-class:120
+sleepiness:20
+depth:52
+rarity:1
+experience:3500
+blow:PUNCH:HURT:10d5
+blow:PUNCH:HURT:10d5
+blow:CRUSH:HURT:3d10
+blow:CRUSH:HURT:3d10
+flags:DROP_2
+flags:MOVE_BODY | KILL_WALL | KILL_ITEM
+flags:NO_STUN | NO_SLOW | NO_SLEEP | IM_ACID
+friends:100:3d4:huorn
+desc:Ents are not altogether on anybody's side, because nobody is altogether on
+desc: their side.  This one seems quite roused, and does not seem to be on
+desc: your side.
+
 name:Itangast the Fire Drake
 base:ancient dragon
 color:R
@@ -11802,7 +11918,7 @@ spell-freq:3
 spells:BO_MANA | BO_WATE
 spells:S_AINU | S_ANIMAL
 spells:SHAPECHANGE
-#shape:ent
+shape:tree
 desc:A servant of Yavanna Kementári, Queen of the Earth, the Giver of Fruits
 desc: and lover of all things that grow.
 
