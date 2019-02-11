@@ -3590,6 +3590,27 @@ experience:45
 blow:BITE:HURT:4d4
 desc:It is a vicious insect with a tough carapace.
 
+name:ochre jelly
+plural:ochre jellies
+base:jelly
+color:U
+speed:120
+hit-points:59
+hearing:12
+armor-class:21
+sleepiness:1
+depth:13
+rarity:3
+experience:40
+blow:TOUCH:ACID:1d10
+blow:TOUCH:ACID:2d6
+blow:TOUCH:ACID:2d6
+flags:COLD_BLOOD
+flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+flags:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
+desc:A fast moving highly acidic jelly thing, that is eating away the floor it
+desc: rests on.
+
 name:Boldor, King of the Yeeks
 base:yeek
 color:P
@@ -4159,6 +4180,31 @@ flags:EVIL | ANIMAL
 flags:BASH_DOOR | KILL_WALL
 desc:This bizarre creature has glaring eyes and large mandibles capable of
 desc: slicing through rock.
+
+name:gelatinous cube
+base:jelly
+color:G
+speed:110
+hit-points:316
+hearing:12
+armor-class:21
+sleepiness:1
+depth:16
+rarity:4
+experience:80
+blow:TOUCH:ACID:1d10
+blow:TOUCH:ACID:1d10
+blow:TOUCH:ACID:1d10
+flags:COLD_BLOOD
+flags:DROP_4
+flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
+flags:NO_CONF | NO_SLEEP
+flags-off:HURT_COLD
+desc:It is a strange, vast gelatinous structure that assumes cubic proportions
+desc: as it lines all four walls of the corridors it patrols.  Through its
+desc: transparent jelly structure you can see treasures it has engulfed, and a
+desc: few corpses as well.
 
 name:Ulfast, Son of Ulfang
 base:person
@@ -8193,28 +8239,6 @@ friends:100:2d7:Same
 desc:Unfettered by the usual constraints of gravity, these unnatural creatures
 desc: are walking on the walls and even the ceiling!  The earth suddenly feels
 desc: rather less solid as you see gravity warp all round the monsters.
-
-name:acidic cytoplasm
-base:jelly
-color:s
-speed:120
-hit-points:352
-hearing:12
-armor-class:21
-sleepiness:1
-depth:35
-rarity:3
-experience:180
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-blow:TOUCH:ACID:1d10
-flags:COLD_BLOOD
-flags:DROP_4
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-flags:NO_CONF | NO_SLEEP
-desc:A disgusting animated blob of destruction.  Flee its gruesome hunger!
 
 name:inertia hound
 base:zephyr hound
