@@ -65,13 +65,6 @@ static void monster_group_split(struct chunk *c, struct monster_group *group,
 		int i;
 		struct monster *mon = &c->monsters[entry->midx];
 
-		/* Non-living summons evaporate */
-		if ((mon->group_info[PRIMARY_GROUP].role == MON_GROUP_SUMMON) &&
-			monster_is_nonliving(mon)) {
-			delete_monster_idx(entry->midx);
-			continue;
-		}
-
 		/* Check all groups to see if they contain a monster of this race */
 		for (i = 0; i < current; i++) {
 			struct monster_group *new_group = c->monster_groups[temp[i]];
@@ -105,7 +98,6 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 {
 	struct mon_group_list_entry *list_entry = group->member_list;
 	int poss_leader = 0;
-	struct mon_group_list_entry *previous = NULL;
 
 	/* Look for another leader */
 	while (list_entry) {
@@ -137,41 +129,11 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 		while (list_entry) {
 			struct monster *mon = cave_monster(c, list_entry->midx);
 
-			/* Summoned living monsters make their own group, others vanish */
-			if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_SUMMON) {
-				struct mon_group_list_entry *remove = list_entry;
-
-				/* Some monsters have a group of summons already */
-				if (mon->group_info[SUMMON_GROUP].index) {
-					mon->group_info[PRIMARY_GROUP].index =
-						mon->group_info[SUMMON_GROUP].index;
-					mon->group_info[SUMMON_GROUP].index = 0;
-				} else {
-					monster_group_start(c, mon, 0);
-				}
-
-				/* Remove from the group */
-				if (previous) {
-					previous->next = list_entry->next;
-				} else {
-					/* No previous means first time through the loop */
-					group->member_list = list_entry->next;
-				}
-				list_entry = list_entry->next;
-
-				/* Now remove from the game if non-living */
-				if (monster_is_nonliving(mon)) {
-					delete_monster_idx(remove->midx);
-				}
-				mem_free(remove);
-				continue;
-			}
-
 			/* Record the leader */
 			if (mon->midx == poss_leader) {
 				mon->group_info[PRIMARY_GROUP].role = MON_GROUP_LEADER;
+				break;
 			}
-			previous = list_entry;
 			list_entry = list_entry->next;
 		}
 	}
