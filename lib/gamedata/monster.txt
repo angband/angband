@@ -887,7 +887,7 @@ flags:DROP_40
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:12
-spells:WOUND | HEAL | SCARE
+spells:HEAL | SCARE
 drop-base:prayer book:5:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
@@ -1485,9 +1485,10 @@ flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 innate-freq:3
-spell-freq:5
-spells:ARROW | MISSILE
-drop-base:magic book:3:1:1
+spell-freq:10
+spells:HASTE
+spells:ARROW
+drop-base:nature book:3:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -1513,7 +1514,7 @@ flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:9
-spells:WOUND | SCARE
+spells:HEAL
 drop-base:prayer book:3:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
@@ -1521,7 +1522,7 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:An adventurer both devoutly religious and skillful in combat.
 
-name:healer
+name:tamer
 base:person
 color:y
 speed:110
@@ -1537,15 +1538,14 @@ blow:HIT:HURT:1d2
 blow:HIT:HURT:1d2
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
-innate-freq:6
-spell-freq:3
-spell-power:10
-spells:ARROW | HEAL_KIN
+spell-freq:8
+spells:HASTE | SLOW | CONF
+drop-base:nature book:5:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
 friends:50:1d2:Same
-desc:A healer of wounds.
+desc:A lover of nature.
 
 name:blue jelly
 plural:blue jellies
@@ -2464,9 +2464,9 @@ innate-freq:12
 spells:ARROW
 desc:A small orc with wide and snuffling nostrils.
 
-name:bandit
+name:ruffian
 base:person
-color:b
+color:s
 speed:110
 hit-points:36
 hearing:20
@@ -2476,14 +2476,13 @@ depth:8
 rarity:2
 experience:26
 blow:HIT:HURT:2d4
-blow:TOUCH:EAT_GOLD
-drop:scroll:Phase Door:45:1:3
+blow:HIT:HURT:2d4
 flags:MALE | EVIL
 flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:8
-spells:SHOT
-desc:He is after your cash!
+spells:SHOT | WHIP
+desc:An uncultured brute with a club, a sling and a whip.
 
 ### Dungeon level 9 ###
 
@@ -3132,9 +3131,35 @@ spells:SHOT
 drop:scroll:Phase Door:70:2:6
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
-friends:50:1d2:Easterling warrior
+friends:50:1d2:warrior
 friends:50:1d2:Same
 desc:He is eyeing your backpack.
+
+name:witch
+base:person
+color:P
+speed:110
+hit-points:41
+hearing:20
+armor-class:48
+sleepiness:5
+depth:10
+rarity:2
+experience:35
+blow:HIT:HURT:1d6
+flags:FEMALE | EVIL
+flags:DROP_1
+flags:OPEN_DOOR | TAKE_ITEM
+innate-freq:5
+spell-freq:8
+spells:WHIP
+spells:WOUND | SCARE | DARKNESS
+drop-base:shadow book:5:1:1
+friends:50:1d2:Illusionist
+friends:50:1d2:Priest
+friends:50:1d2:warrior
+friends:50:1d2:Same
+desc:She is dressed in black and smells of decay.
 
 ### Dungeon level 11 ###
 
@@ -3383,18 +3408,20 @@ rarity:1
 experience:36
 blow:HIT:HURT:2d3
 blow:HIT:HURT:2d3
-flags:MALE | EVIL | SMART
+flags:MALE | SMART
 flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:WOUND | HEAL | SCARE
-spells:S_MONSTER
+spell-power:6
+spells:HEAL | SCARE | HEAL_KIN
+spells:BA_LIGHT
+spells:S_KIN
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Illusionist
-friends:50:1d2:Easterling warrior
+friends:50:1d2:warrior
 friends:50:1d2:Same
 desc:A robed man, dedicated to his god.
 
@@ -3511,7 +3538,7 @@ spell-freq:15
 spells:SCARE | TPORT
 desc:A ghostly apparition that shrieks horribly.
 
-name:Easterling warrior
+name:warrior
 base:person
 color:u
 speed:110
@@ -3699,7 +3726,7 @@ drop-base:magic book:8:1:1
 drop-base:magic book:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Priest
-friends:50:1d2:Easterling warrior
+friends:50:1d2:warrior
 friends:50:1d2:Same
 desc:A deceptive spell caster.
 
@@ -3722,11 +3749,11 @@ flags:DROP_1
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | BLINK | HASTE | HOLD | SLOW
-spells:BO_ELEC | BO_FIRE | SHAPECHANGE
+spells:BLIND | HASTE | HOLD | SLOW | CONF
+spells:BO_POIS | BO_FIRE | SHAPECHANGE
 spells:S_ANIMAL
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
 desc:A priest devoted to Nature.
 
 name:orc archer
@@ -4226,7 +4253,7 @@ blow:HIT:HURT:3d5
 flags:UNIQUE | MALE | EVIL
 flags:DROP_60 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
-friends:60:1d3:Easterling warrior:servant
+friends:60:1d3:warrior:servant
 desc:A short and swarthy Easterling.
 
 name:quasit
@@ -5116,13 +5143,13 @@ flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:4
 spell-freq:5
-spells:ARROW | BLINK | MISSILE
-spells:BO_COLD | BO_ELEC
+spells:ARROW | BLINK | HASTE
+spells:BO_COLD
 spells:S_ANIMAL
-drop-base:magic book:5:1:1
-drop-base:magic book:5:1:1
+drop-base:nature book:5:1:1
+drop-base:nature book:5:1:1
 friends:50:1d1:Easterling champion
-friends:50:1d1:Master rogue
+friends:50:1d1:rogue
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
 friends:50:1d1:Paladin
@@ -5141,17 +5168,17 @@ sleepiness:40
 depth:20
 rarity:1
 experience:55
-blow:HIT:HURT:4d5
-blow:HIT:HURT:4d5
+blow:HIT:HURT:4d6
+blow:HIT:HURT:4d6
 flags:MALE
 flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 spell-freq:4
-spells:BLIND | WOUND | HEAL | SCARE | SLOW
+spells:HEAL | SLOW
 drop-base:prayer book:5:1:1
 drop-base:prayer book:5:1:1
 friends:50:1d1:Easterling champion
-friends:50:1d1:Master rogue
+friends:50:1d1:rogue
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
 friends:50:1d1:Ranger
@@ -5494,7 +5521,7 @@ flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:6
 spells:BOLT
-friends:50:1d1:Master rogue
+friends:50:1d1:rogue
 friends:50:1d1:Ranger
 friends:50:1d1:Mage
 friends:50:1d1:Paladin
@@ -5528,7 +5555,7 @@ desc:A great orc with a huge iron-clad head, agile and strong.  He is notorious
 desc: for starting the War of the Dwarves and Orcs by killing Durin's heir,
 desc: Thrór.
 
-name:master rogue
+name:rogue
 base:person
 color:b
 speed:120
@@ -5747,7 +5774,7 @@ flags:FORCE_SLEEP
 spell-freq:4
 spells:CONF | SLOW
 friends:100:1d1:Angamaitë of Umbar
-desc:A Black Númenorean with a blacker heart.
+desc:A Black Númenórean with a blacker heart.
 
 name:Angamaitë of Umbar
 base:person
@@ -5773,7 +5800,7 @@ flags:FORCE_SLEEP
 spell-freq:4
 spells:CONF | SLOW
 friends:100:1d1:Sangahyando of Umbar
-desc:A Black Númenorean who hates the men of the west.
+desc:A Black Númenórean who hates the men of the west.
 
 name:banshee
 base:ghost
@@ -5912,8 +5939,8 @@ flags:FORCE_SLEEP
 spell-freq:6
 spells:CONF | DARKNESS | HEAL
 spells:S_ANIMAL | S_MONSTER | S_SPIDER
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
 desc:A powerful dark elf, with mighty nature-controlling enchantments.
 
 name:stone troll
@@ -6485,7 +6512,7 @@ spell-freq:5
 spells:SCARE
 desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
 
-name:black knight
+name:blackguard
 base:person
 color:s
 speed:120
@@ -6503,17 +6530,19 @@ flags:MALE | EVIL
 flags:DROP_1
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
+innate-freq:6
 spell-freq:8
 spells:BLIND | WOUND | DARKNESS | SCARE
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
-friends:50:1d1:Master rogue
+spells:BOLT
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
+friends:50:1d1:rogue
 friends:50:1d1:Ranger
 friends:50:1d1:Paladin
 friends:50:1d1:Mage
 friends:50:1d1:Ninja
-desc:He is a figure encased in deep black plate armour; he looks at you
-desc: menacingly.
+desc:A hulking figure encased in deep black plate armour; he looks at you
+desc: menacingly and swings his heavy sword.
 
 name:Uldor the Accursed
 base:person
@@ -6559,7 +6588,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CONF | HASTE | TELE_TO | TPORT
+spells:BLIND | CONF | TPORT | TELE_AWAY
 spells:BO_COLD | BO_ELEC | BO_FIRE
 spells:S_MONSTER
 drop-base:magic book:10:1:1
@@ -7474,7 +7503,7 @@ flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP
 friends:50:1d1:Master thief
 friends:50:1d1:Mage
-friends:50:1d1:Black knight
+friends:50:1d1:blackguard
 desc:A humanoid clothed in black who moves with blinding speed.
 
 name:memory moss
@@ -7640,8 +7669,8 @@ flags:FORCE_SLEEP
 spell-freq:6
 spells:HEAL
 spells:S_ANIMAL | S_SPIDER
-drop-base:prayer book:10:1:1
-drop-base:prayer book:5:1:1
+drop-base:nature book:10:1:1
+drop-base:nature book:5:1:1
 friends-base:50:2d4:spider
 desc:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 desc: summon help from nature and is able to focus his power to ease any pain.
@@ -7976,7 +8005,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:10
 spell-freq:6
 spells:SHOT | BLINK | TRAPS
-friends:50:1d1:Black knight
+friends:50:1d1:blackguard
 friends:50:1d1:Mage
 friends:50:1d1:Ninja
 desc:Cool and confident, fast and lithe; protect your possessions quickly!
@@ -8632,12 +8661,12 @@ flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | WOUND | HASTE | HOLD | SCARE | TELE_TO
+spells:BLIND | WOUND | DARKNESS | HOLD | SCARE
 spells:TPORT
 spells:BO_NETH
 spells:S_UNDEAD
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
 friends-base:80:1d3:skeleton
 desc:A gaunt figure, clothed in black robes.
 
@@ -9024,8 +9053,8 @@ spell-freq:5
 spells:BLIND | WOUND | SCARE
 spells:BO_NETH
 spells:S_MONSTERS
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
 friends:50:1d1:Imp
 desc:It is a humanoid figure dressed in armour of an ancient form.  From beneath
 desc: its helmet, eyes glow a baleful red and seem to pierce you like lances of
@@ -9054,7 +9083,7 @@ flags:FORCE_SLEEP
 spell-freq:2
 spells:HEAL | TRAPS
 spells:BO_COLD | BO_ELEC | BO_FIRE | BO_ICE
-desc:A Black Númenorean who usurped the throne of Gondor, he is treacherous and
+desc:A Black Númenórean who usurped the throne of Gondor, he is treacherous and
 desc: evil.
 
 name:time vortex
@@ -9839,8 +9868,8 @@ spells:ARROW | BLINK | HASTE | MISSILE
 spells:BA_COLD
 spells:BO_ELEC | BO_FIRE
 spells:S_ANIMAL
-drop-base:magic book:8:1:1
-drop-base:magic book:8:1:1
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Sorcerer
 friends:30:1d1:Patriarch
@@ -10977,8 +11006,8 @@ flags:FORCE_SLEEP
 spell-freq:3
 spells:HEAL
 spells:S_ANIMAL
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
 friends-base:50:2d4:spider
 desc:A lord of all that is natural, skilled in the mystic ways.  He is a master
 desc: of martial arts and is at one with nature, able to summon help from the
@@ -11729,8 +11758,8 @@ flags:FORCE_SLEEP
 spell-freq:3
 spells:HEAL | MIND_BLAST
 spells:S_ANIMAL | S_HOUND | S_SPIDER
-drop-base:prayer book:5:1:1
-drop-base:prayer book:15:1:1
+drop-base:nature book:5:1:1
+drop-base:nature book:15:1:1
 friends-base:80:3d5:spider
 desc:He is one of the few true masters of the art, being extremely skillful in
 desc: all forms of unarmed combat and controlling the world's natural creatures

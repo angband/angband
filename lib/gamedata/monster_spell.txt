@@ -498,8 +498,8 @@ message-invis:Something chants powerfully.
 name:BA_LIGHT
 hit:100
 effect:BALL:LIGHT:2
-dice:$B+8d8
-expr:B:SPELL_POWER:* 4
+dice:$Dd8
+expr:D:SPELL_POWER:+ 0
 lore:produce balls of light
 lore-color-base:Orange
 lore-color-resist:Light Green
