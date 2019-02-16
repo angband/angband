@@ -871,7 +871,7 @@ desc:A rather shifty individual.
 
 name:acolyte
 base:person
-color:g
+color:y
 speed:110
 hit-points:18
 light:2
@@ -897,7 +897,7 @@ desc:He is tripping over his priestly robes.
 
 name:apprentice
 base:person
-color:r
+color:B
 speed:110
 hit-points:15
 light:2
@@ -1468,7 +1468,7 @@ desc:It is an armoured lizard with a powerful bite.
 
 name:scout
 base:person
-color:W
+color:g
 speed:110
 hit-points:27
 light:2
@@ -1524,7 +1524,7 @@ desc:An adventurer both devoutly religious and skillful in combat.
 
 name:tamer
 base:person
-color:y
+color:G
 speed:110
 hit-points:20
 light:2
@@ -2312,7 +2312,7 @@ desc:Strong and powerful, for a kobold.
 
 name:Wormtongue, Agent of Saruman
 base:person
-color:B
+color:Z
 speed:110
 hit-points:250
 hearing:20
@@ -3109,32 +3109,6 @@ flags:BASH_DOOR
 desc:A large black cat, stalking you with intent.  It thinks you're its next
 desc: meal.
 
-name:brigand
-base:person
-color:b
-speed:110
-hit-points:41
-hearing:20
-armor-class:48
-sleepiness:5
-depth:10
-rarity:2
-experience:35
-blow:HIT:HURT:2d4
-blow:TOUCH:EAT_ITEM
-flags:MALE | EVIL
-flags:DROP_1
-flags:OPEN_DOOR | TAKE_ITEM
-innate-freq:8
-spell-power:16
-spells:SHOT
-drop:scroll:Phase Door:70:2:6
-friends:50:1d2:Illusionist
-friends:50:1d2:Priest
-friends:50:1d2:warrior
-friends:50:1d2:Same
-desc:He is eyeing your backpack.
-
 name:witch
 base:person
 color:P
@@ -3396,7 +3370,7 @@ desc:A small humanoid that radiates some power.
 
 name:priest
 base:person
-color:g
+color:y
 speed:110
 hit-points:54
 light:2
@@ -3704,7 +3678,7 @@ mimic:gold:mithril
 
 name:illusionist
 base:person
-color:I
+color:B
 speed:120
 hit-points:54
 light:2
@@ -4233,6 +4207,32 @@ desc: as it lines all four walls of the corridors it patrols.  Through its
 desc: transparent jelly structure you can see treasures it has engulfed, and a
 desc: few corpses as well.
 
+name:rogue
+base:person
+color:b
+speed:115
+hit-points:62
+hearing:20
+armor-class:48
+sleepiness:5
+depth:16
+rarity:2
+experience:50
+blow:HIT:HURT:2d4
+blow:HIT:HURT:2d4
+blow:TOUCH:EAT_ITEM
+flags:MALE | EVIL
+flags:DROP_1
+flags:OPEN_DOOR | TAKE_ITEM
+innate-freq:8
+spells:SHOT
+drop:scroll:Phase Door:70:2:6
+friends:50:1d2:Illusionist
+friends:50:1d2:Priest
+friends:50:1d2:warrior
+friends:50:1d2:Same
+desc:He is eyeing your backpack.
+
 name:Ulfast, Son of Ulfang
 base:person
 color:U
@@ -4532,6 +4532,36 @@ friends-base:50:1d5:orc:servant
 friends-base:50:1d5:orc:servant
 desc:An armoured orc with an air of authority.
 
+name:blackguard
+base:person
+color:s
+speed:115
+hit-points:120
+hearing:20
+armor-class:85
+sleepiness:30
+depth:18
+rarity:1
+experience:180
+blow:HIT:HURT:3d5
+blow:HIT:HURT:3d5
+blow:HIT:HURT:3d5
+flags:MALE | EVIL
+flags:DROP_1
+flags:OPEN_DOOR
+flags:FORCE_SLEEP
+innate-freq:6
+spell-freq:12
+spells:DARKNESS | SCARE
+spells:BOLT
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
+friends:50:1d1:rogue
+friends:50:1d1:ranger
+friends:50:1d1:paladin
+desc:A hulking figure encased in deep black plate armour; he looks at you
+desc: menacingly.
+
 name:fire spirit
 base:elemental
 color:r
@@ -4813,6 +4843,7 @@ color:s
 speed:110
 hit-points:1000
 hearing:20
+armor-class:100
 sleepiness:20
 depth:19
 rarity:3
@@ -5126,7 +5157,7 @@ desc:A dark elven figure in armour and radiating evil power.
 
 name:ranger
 base:person
-color:W
+color:g
 speed:110
 hit-points:90
 light:2
@@ -5525,7 +5556,7 @@ friends:50:1d1:rogue
 friends:50:1d1:Ranger
 friends:50:1d1:Mage
 friends:50:1d1:Paladin
-desc:A scarred warrior who moves with confidence.
+desc:A scarred warrior who wields an axe and moves with confidence.
 
 name:Azog, Enemy of the Dwarves
 base:orc
@@ -5555,7 +5586,7 @@ desc:A great orc with a huge iron-clad head, agile and strong.  He is notorious
 desc: for starting the War of the Dwarves and Orcs by killing Durin's heir,
 desc: Thrór.
 
-name:rogue
+name:brigand
 base:person
 color:b
 speed:120
@@ -5569,10 +5600,11 @@ experience:110
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:EAT_GOLD:4d4
+blow:HIT:EAT_ITEM:4d4
 flags:MALE | EVIL
 flags:DROP_2
 flags:OPEN_DOOR | TAKE_ITEM
-innate-freq:6
+innate-freq:4
 spells:SHOT
 friends:50:1d1:Easterling champion
 friends:50:1d1:Ranger
@@ -5872,6 +5904,31 @@ friends:100:2d7:Same
 desc:Little sparks of flame that dance around you, lashing whips and cursing
 desc: horribly.
 
+name:necromancer
+base:person
+color:P
+speed:110
+hit-points:164
+hearing:20
+armor-class:55
+sleepiness:20
+depth:25
+rarity:2
+experience:330
+blow:HIT:HURT:2d4
+blow:HIT:HURT:2d4
+flags:MALE | EVIL | SMART
+flags:DROP_60 | ONLY_ITEM
+flags:OPEN_DOOR
+flags:FORCE_SLEEP
+spell-freq:5
+spells:BLIND | WOUND | DARKNESS | SCARE
+spells:BO_NETH
+spells:S_UNDEAD
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
+friends-base:80:1d3:skeleton
+desc:A gaunt figure, clothed in black robes.
 
 name:hill giant
 base:giant
@@ -6512,7 +6569,7 @@ spell-freq:5
 spells:SCARE
 desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
 
-name:blackguard
+name:black knight
 base:person
 color:s
 speed:120
@@ -6530,19 +6587,17 @@ flags:MALE | EVIL
 flags:DROP_1
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
-innate-freq:6
 spell-freq:8
 spells:BLIND | WOUND | DARKNESS | SCARE
-spells:BOLT
 drop-base:shadow book:8:1:1
 drop-base:shadow book:8:1:1
 friends:50:1d1:rogue
 friends:50:1d1:Ranger
 friends:50:1d1:Paladin
 friends:50:1d1:Mage
-friends:50:1d1:Ninja
+friends:50:1d1:southron assassin
 desc:A hulking figure encased in deep black plate armour; he looks at you
-desc: menacingly and swings his heavy sword.
+desc: menacingly.
 
 name:Uldor the Accursed
 base:person
@@ -6571,7 +6626,7 @@ desc: Battle of Unnumbered Tears in Morgoth's favour.
 
 name:mage
 base:person
-color:r
+color:B
 speed:110
 hit-points:68
 light:2
@@ -7483,9 +7538,9 @@ spell-freq:1
 spells:BLINK | TELE_AWAY
 desc:It is a very unstable, strange pulsing mound of flesh.
 
-name:ninja
+name:southron assassin
 base:person
-color:y
+color:M
 speed:120
 hit-points:85
 hearing:20
@@ -7504,7 +7559,7 @@ flags:NO_CONF | NO_SLEEP
 friends:50:1d1:Master thief
 friends:50:1d1:Mage
 friends:50:1d1:blackguard
-desc:A humanoid clothed in black who moves with blinding speed.
+desc:A man of Harad clothed in black who moves with blinding speed.
 
 name:memory moss
 base:mushroom
@@ -8007,7 +8062,7 @@ spell-freq:6
 spells:SHOT | BLINK | TRAPS
 friends:50:1d1:blackguard
 friends:50:1d1:Mage
-friends:50:1d1:Ninja
+friends:50:1d1:southron assassin
 desc:Cool and confident, fast and lithe; protect your possessions quickly!
 
 name:Ulfang the Black
@@ -8219,29 +8274,6 @@ flags:EVIL | COLD_BLOOD | INVISIBLE
 flags:RAND_50 | OPEN_DOOR | BASH_DOOR
 flags:IM_ELEC
 desc:It is impossible to define its form but its violence is legendary.
-
-name:dagashi
-base:person
-color:y
-speed:120
-hit-points:169
-light:2
-hearing:20
-armor-class:84
-sleepiness:10
-depth:35
-rarity:4
-experience:500
-blow:HIT:POISON:3d4
-blow:HIT:LOSE_STR:3d4
-blow:HIT:LOSE_STR:3d4
-blow:HIT:POISON:3d4
-flags:MALE | EVIL
-flags:DROP_1
-flags:OPEN_DOOR
-flags:NO_CONF | NO_SLEEP
-friends:80:1d4:Ninja
-desc:A human warrior, moving with lightning speed.
 
 name:gravity hound
 base:zephyr hound
@@ -8643,10 +8675,11 @@ spells:BO_FIRE
 spells:S_DEMON
 desc:It is a humanoid form composed of flames and hatred.
 
-name:necromancer
+name:dúnadan of Angmar
+plural:dúnedain of Angmar
 base:person
-color:R
-speed:110
+color:P
+speed:120
 hit-points:246
 hearing:20
 armor-class:75
@@ -8668,7 +8701,8 @@ spells:S_UNDEAD
 drop-base:shadow book:8:1:1
 drop-base:shadow book:8:1:1
 friends-base:80:1d3:skeleton
-desc:A gaunt figure, clothed in black robes.
+desc:A necromancer recruited to the evil realm of Angmar during the decline of
+desc: the North Kingdom.
 
 name:Lorgan, Chief of the Easterlings
 base:person
@@ -9199,6 +9233,31 @@ desc: spined legs.
 
 ### Dungeon level 39 ###
 
+name:southron archer
+base:person
+color:M
+speed:120
+hit-points:209
+hearing:20
+armor-class:114
+sleepiness:10
+depth:39
+rarity:4
+experience:700
+blow:HIT:POISON:3d4
+blow:HIT:LOSE_STR:3d4
+blow:HIT:LOSE_STR:3d4
+blow:HIT:POISON:3d4
+flags:MALE | EVIL
+flags:DROP_1
+flags:OPEN_DOOR
+flags:NO_CONF | NO_SLEEP
+innate-freq:2
+spells:ARROW
+friends:80:1d4:southron assassin
+desc:A man of Harad clad in black and red and carrying a longbow.  His quiver is
+desc: full of red feathered arrows, and carries an insignia of a black serpent.
+
 name:mature white dragon
 base:dragon
 color:w
@@ -9507,7 +9566,6 @@ drop-base:magic book:10:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Patriarch
-friends:30:1d1:Knight templar
 friends:30:1d1:Berserker
 desc:A human figure in robes, he moves with magically improved speed, and his
 desc: hands are ablur with spell casting.
@@ -9620,7 +9678,7 @@ desc: speed and its powers make it a tornado of death and destruction.
 
 name:patriarch
 base:person
-color:G
+color:Y
 speed:120
 hit-points:457
 light:2
@@ -9633,24 +9691,23 @@ experience:1800
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d5
-flags:MALE | EVIL | SMART
+flags:MALE | SMART
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | WOUND | HEAL | HOLD
-spells:S_MONSTER | S_UNDEAD
+spells:BLIND | HEAL | HEAL_KIN | MIND_BLAST
+spells:BA_LIGHT | BA_ELEC
+spells:S_KIN
 drop-base:prayer book:5:1:1
 drop-base:prayer book:10:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Sorcerer
-friends:30:1d1:Knight templar
 friends:30:1d1:Berserker
-desc:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
-desc: rate as his black spiked mace rains down blow after blow on your pitiful
-desc: frame.
+desc:A priest of great power, he is convinced of the righteousness of his
+desc: beliefs.  Stand in his way at your peril.
 
 name:troll chieftain
 base:troll
@@ -9846,7 +9903,7 @@ desc: was not kept.
 
 name:ranger chieftain
 base:person
-color:W
+color:g
 speed:120
 hit-points:880
 hearing:20
@@ -9862,18 +9919,16 @@ flags:MALE | INVISIBLE
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
 flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-innate-freq:3
+innate-freq:2
 spell-freq:5
-spells:ARROW | BLINK | HASTE | MISSILE
+spells:ARROW | BLINK | HASTE | HEAL
 spells:BA_COLD
-spells:BO_ELEC | BO_FIRE
 spells:S_ANIMAL
 drop-base:nature book:8:1:1
 drop-base:nature book:8:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Sorcerer
 friends:30:1d1:Patriarch
-friends:30:1d1:Knight templar
 friends:30:1d1:Berserker
 desc:A chieftain among the Rangers.  His understanding of nature gives him
 desc: powerful elemental spells to use against you, in addition to his skills
@@ -10248,41 +10303,6 @@ desc:Shimmering in rainbow hues, this hound is beautiful and deadly.
 
 ### Dungeon level 44 ###
 
-name:knight Templar
-base:person
-color:w
-speed:120
-hit-points:1056
-hearing:20
-armor-class:72
-sleepiness:10
-depth:44
-rarity:2
-experience:2000
-blow:HIT:HURT:5d5
-blow:HIT:HURT:5d5
-blow:HIT:HURT:5d5
-flags:MALE | SMART
-flags:DROP_2 | ONLY_ITEM
-flags:OPEN_DOOR | TAKE_ITEM
-flags:NO_FEAR | NO_CONF | NO_SLEEP
-spell-freq:4
-spells:BLIND | WOUND | HASTE | HEAL | SCARE
-drop-base:prayer book:10:1:1
-drop-base:prayer book:10:1:1
-friends:30:1d1:Master thief
-friends:30:1d1:Ranger chieftain
-friends:30:1d1:Patriarch
-friends:30:1d1:Sorcerer
-friends:30:1d1:Berserker
-# Knight templars summoning Ainu doesn't make much sense -JG
-desc:It seems that the more devout the person, the more likely they are to cross
-desc: the boundary between piety and sanctimoniousness.  And such is the case
-desc: with the Order of the Knights Templar; they are among the most pious and
-desc: powerful of the religious knightly orders, but noted for their
-desc: intolerance.  Thus it is Morgoth's will that is unwittingly done, as the
-desc: forces of good are set against each other.
-
 name:8-headed hydra
 base:hydra
 color:R
@@ -10513,7 +10533,6 @@ spells:HASTE | SCARE
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Patriarch
-friends:30:1d1:Knight templar
 friends:30:1d1:Sorcerer
 desc:Even the strongest of normal human warriors fears the Berserker - the one
 desc: who can drive himself into such a terrible battle-frenzy that he can
@@ -10567,6 +10586,39 @@ desc:A tangible but ghostly form, made of grey fog.  The air around it feels
 desc: deathly cold.
 
 ### Dungeon level 46 ###
+
+name:lord of Carn Dûm
+plural:lords of Carn Dûm
+base:person
+color:R
+speed:120
+hit-points:557
+hearing:20
+armor-class:90
+sleepiness:20
+depth:46
+rarity:2
+experience:2100
+blow:HIT:HURT:5d4
+blow:HIT:HURT:5d4
+blow:HIT:HURT:3d5
+flags:MALE | EVIL | SMART
+flags:DROP_2 | ONLY_ITEM
+flags:OPEN_DOOR
+flags:NO_CONF | NO_SLEEP | NO_HOLD
+flags:FORCE_SLEEP
+spell-freq:2
+spells:BLIND | WOUND | HEAL | HOLD
+spells:S_MONSTER | S_UNDEAD
+drop-base:shadow book:5:1:1
+drop-base:shadow book:10:1:1
+friends:30:1d1:Master thief
+friends:30:1d1:Ranger chieftain
+friends:30:1d1:Sorcerer
+friends:30:1d1:Berserker
+desc:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
+desc: rate as his black spiked mace rains down blow after blow on your pitiful
+desc: frame.
 
 name:vampire lord
 base:vampire
@@ -11221,7 +11273,7 @@ desc: you sense trouble.
 
 name:Harowen the Black Hand
 base:person
-color:Z
+color:T
 speed:140
 hit-points:2500
 hearing:40
