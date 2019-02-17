@@ -2245,8 +2245,8 @@ spell-freq:15
 spells:DRAIN_MANA | TPORT
 desc:It is almost insubstantial.
 
-name:dark elf
-plural:dark elves
+name:eastern dwarf
+plural:eastern dwarves
 base:humanoid
 color:D
 speed:110
@@ -2261,12 +2261,11 @@ blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:MALE | EVIL
 flags:DROP_60
-flags:HURT_LIGHT
 flags:FORCE_SLEEP
 spell-freq:10
 spells:CONF | DARKNESS
-desc:An elven figure with jet black skin and white hair, his eyes are large and
-desc: twisted with evil.
+desc:A dwarf of one of the eastern kindreds who has fallen under the sway of
+desc: Morgoth.
 
 name:night lizard
 base:reptile
@@ -2833,9 +2832,9 @@ innate-freq:10
 spells:WEAVE
 desc:It is a vast black spider whose bulbous body is bloated with poison.
 
-name:dark elven mage
+name:blacklock mage
 base:humanoid
-color:r
+color:B
 speed:120
 hit-points:39
 hearing:20
@@ -2848,14 +2847,14 @@ blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:MALE | EVIL
 flags:DROP_60 | ONLY_ITEM
-flags:HURT_LIGHT
 flags:FORCE_SLEEP
 spell-freq:5
 spells:BLIND | CONF | DARKNESS | MISSILE
 spells:BA_POIS
 drop-base:magic book:10:1:1
 drop-base:magic book:10:1:1
-desc:A dark elven figure, dressed all in black, hurling spells at you.
+desc:A corrupted dwarf from the east, dressed in black mail, hurling spells
+desc: at you.
 
 name:Orfax, Son of Boldor
 base:yeek
@@ -2885,7 +2884,7 @@ friends:50:1d3:Master yeek:servant
 desc:He's just like his daddy!  He knows mighty spells, but fortunately he is a
 desc: yeek.
 
-name:dark elven warrior
+name:stonefoot warrior
 base:humanoid
 color:u
 speed:110
@@ -2900,8 +2899,7 @@ blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:MALE | EVIL
 flags:DROP_60
-flags:HURT_LIGHT
-desc:A dark elven figure in armour and ready with his sword.
+desc:A dwarf of the east in a coat of iron rings and wielding an axe.
 
 name:clear mushroom patch
 plural:clear mushroom patches
@@ -3196,19 +3194,19 @@ flags:ORC | EMPTY_MIND
 flags:NO_FEAR
 desc:It is a shambling orcish corpse leaving behind a trail of flesh.
 
-name:gnome mage
-base:humanoid
-color:r
+name:drúadan mage
+base:person
+color:B
 speed:110
-hit-points:32
+hit-points:52
 hearing:18
 armor-class:30
 sleepiness:20
 depth:11
 rarity:2
-experience:38
+experience:48
 blow:HIT:HURT:1d5
-flags:MALE | EVIL
+flags:MALE
 flags:DROP_60
 flags:FORCE_SLEEP
 spell-freq:4
@@ -3218,7 +3216,7 @@ spells:S_MONSTER
 drop-base:magic book:5:1:1
 drop-base:magic book:5:1:1
 friends:100:4d4:Same
-desc:A mage of short stature.
+desc:A mage of short stature with stumpy legs and a wispy beard.
 
 name:old forest tree
 base:tree
@@ -3399,9 +3397,9 @@ friends:50:1d2:warrior
 friends:50:1d2:Same
 desc:A robed man, dedicated to his god.
 
-name:dark elven priest
+name:ironfist priest
 base:humanoid
-color:g
+color:P
 speed:120
 hit-points:39
 hearing:20
@@ -3414,14 +3412,12 @@ blow:HIT:HURT:1d9
 blow:HIT:HURT:1d10
 flags:MALE | EVIL | SMART
 flags:DROP_1 | ONLY_ITEM
-flags:HURT_LIGHT
 flags:FORCE_SLEEP
 spell-freq:5
 spells:BLIND | WOUND | CONF | DARKNESS | HEAL
-drop-base:prayer book:8:1:1
-drop-base:prayer book:8:1:1
-desc:A dark elven figure, dressed all in black, chanting curses and waiting to
-desc: deliver your soul to hell.
+drop-base:shadow book:8:1:1
+drop-base:shadow book:8:1:1
+desc:A dwarf of the east, dressed all in black, chanting words of dark sorcery.
 
 name:air spirit
 base:elemental
@@ -5127,7 +5123,7 @@ flags:EVIL
 flags:RAND_25 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:It is a huge wolf with eyes that glow with manly intelligence.
 
-name:dark elven lord
+name:dark dwarven lord
 base:humanoid
 color:s
 speed:120
@@ -5142,18 +5138,18 @@ blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
 flags:MALE | EVIL
 flags:DROP_2 | ONLY_ITEM
-flags:HURT_LIGHT
 flags:FORCE_SLEEP
 spell-freq:5
 spells:BLIND | CONF | DARKNESS | HASTE
 spells:BO_COLD | BO_FIRE
 drop-base:magic book:5:1:1
 drop-base:magic book:5:1:1
-friends:80:1d3:Dark elf:servant
-friends:70:1d2:Dark elven warrior:servant
-friends:50:1d1:Dark elven mage:servant
-friends:50:1d1:Dark elven priest:servant
-desc:A dark elven figure in armour and radiating evil power.
+friends:80:1d3:eastern dwarf:servant
+friends:70:1d2:stonefoot warrior:servant
+friends:50:1d1:blacklock mage:servant
+friends:50:1d1:ironfist priest:servant
+desc:A leader of Morgoth's eastern dwarf recruits, dressed in black chainmail
+desc: and radiating evil power.
 
 name:ranger
 base:person
@@ -5974,31 +5970,6 @@ spells:CONF | SLOW
 spells:BO_ACID
 desc:A stumpy figure carved from stone, with glittering eyes, this sentinel
 desc: strides towards you with deadly intent.
-
-name:dark elven druid
-base:humanoid
-color:G
-speed:120
-hit-points:210
-hearing:15
-armor-class:112
-sleepiness:20
-depth:25
-rarity:3
-experience:500
-blow:HIT:HURT:1d7
-blow:HIT:HURT:1d7
-blow:HIT:HURT:3d8
-flags:MALE | EVIL
-flags:DROP_1 | ONLY_ITEM
-flags:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-flags:FORCE_SLEEP
-spell-freq:6
-spells:CONF | DARKNESS | HEAL
-spells:S_ANIMAL | S_MONSTER | S_SPIDER
-drop-base:nature book:8:1:1
-drop-base:nature book:8:1:1
-desc:A powerful dark elf, with mighty nature-controlling enchantments.
 
 name:stone troll
 base:troll
@@ -6851,6 +6822,33 @@ desc: seems to bite upon him.
 
 ### Dungeon level 29 ###
 
+name:green elf archer
+base:humanoid
+color:g
+speed:120
+hit-points:210
+hearing:15
+armor-class:112
+sleepiness:20
+depth:29
+rarity:3
+experience:500
+blow:HIT:HURT:1d7
+blow:HIT:HURT:1d7
+flags:MALE | SMART
+flags:DROP_1 | ONLY_ITEM
+flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
+flags:FORCE_SLEEP
+innate-freq:3
+spell-freq:12
+spells:CONF | HEAL | BLINK
+spells:ARROW
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
+desc:An elf of the Land of the Seven Rivers, whose woodcraft was such that a
+desc: stranger might pass through their land from end to end and see none of
+desc: them.
+
 name:giant black scorpion
 base:spider
 color:s
@@ -7628,6 +7626,33 @@ desc:It is a fast moving creature of chaos, a gigantic black bat surrounded by
 desc: flickering bright red flames.
 
 ### Dungeon level 33 ###
+
+name:drúadan druid
+base:person
+color:G
+speed:120
+hit-points:240
+hearing:50
+smell:20
+armor-class:112
+sleepiness:20
+depth:29
+rarity:3
+experience:600
+blow:PUNCH:HURT:1d7
+blow:PUNCH:HURT:1d7
+blow:KICK:HURT:3d8
+flags:MALE | SMART
+flags:DROP_1 | ONLY_ITEM
+flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
+flags:FORCE_SLEEP
+spell-freq:3
+spells:HASTE | CONF | DARKNESS | HEAL
+spells:SHAPECHANGE
+spells:S_ANIMAL | S_MONSTER | S_SPIDER
+drop-base:nature book:8:1:1
+drop-base:nature book:8:1:1
+desc:A short, stocky man with an uncanny connection with nature.
 
 name:stone giant
 base:giant
@@ -9816,7 +9841,7 @@ friends:50:1d4:Baby black dragon
 friends:50:1d2:Young black dragon
 desc:A large dragon, with scales of deepest black.
 
-name:dark elven sorcerer
+name:stiffbeard sorcerer
 base:humanoid
 color:R
 speed:130
@@ -9832,7 +9857,7 @@ blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 flags:MALE | EVIL | SMART
 flags:DROP_3 | ONLY_ITEM
-flags:HURT_LIGHT | NO_CONF | NO_SLEEP | NO_HOLD
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLIND | BLINK | WOUND | CONF | DARKNESS | HEAL
@@ -9840,10 +9865,10 @@ spells:TELE_TO
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DEMON | S_MONSTER | S_UNDEAD
-drop-base:magic book:5:1:1
-drop-base:magic book:10:1:1
-desc:A dark elven figure, dressed in deepest black.  Power seems to crackle from
-desc: his slender frame.
+drop-base:magic book:8:1:1
+drop-base:shadow book:8:1:1
+desc:A dwarf with plaited beard and painted face, dressed in deepest black.
+desc:  Power seems to crackle from his stocky frame.
 
 name:master lich
 plural:master liches
@@ -11291,8 +11316,8 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
 flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
-spell-freq:6
-spells:TRAPS
+spell-freq:4
+spells:TELE_TO | TELE_SELF_TO | BLINK | TRAPS | DARKNESS | BLIND | HOLD
 desc:He is a master of disguise, an expert of stealth, a genius at traps, and
 desc: moves with blinding speed.  Check your pockets!
 
@@ -12484,6 +12509,30 @@ spells:S_DEMON
 desc:It is a demon made almost entirely out of bones.  It is humanoid, but with
 desc: a large tail similar to that of a giant scorpion, and emits a foul smell
 desc: of decay and rot.  They are despised even in the hells.
+
+name:Fëanorian raider
+base:humanoid
+color:M
+speed:120
+hit-points:1200
+hearing:20
+armor-class:110
+sleepiness:30
+depth:68
+rarity:2
+experience:11000
+blow:HIT:HURT:7d12
+blow:HIT:HURT:7d12
+blow:HIT:HURT:7d12
+blow:HIT:HURT:7d12
+flags:MALE | FORCE_SLEEP
+flags:ONLY_ITEM | DROP_3
+flags:MOVE_BODY
+flags:NO_FEAR | IM_ACID | IM_ELEC
+innate-freq:3
+spells:BOLT
+desc:A veteran of the battles waged by Fëanor and his sons in pursuit of the
+desc: Silmarils, he attacks you with agility, power and cruelty.
 
 ### Dungeon level 66 ###
 
