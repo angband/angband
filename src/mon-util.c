@@ -44,6 +44,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "trap.h"
 #include "z-set.h"
 
 static const struct monster_flag monster_flag_table[] =
@@ -498,13 +499,30 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 }
 
 /**
+ * Called when the player has just left grid1 for grid2.
+ */
+static void player_leaving(struct loc grid1, struct loc grid2)
+{
+	struct loc decoy = cave_find_decoy(cave);
+
+	/* Decoys get destroyed if player is too far away */
+	if (!loc_is_zero(decoy) &&
+		distance(decoy, grid2) > z_info->max_sight) {
+		square_destroy_decoy(cave, decoy);
+	}
+
+	/* Delayed traps trigger when the player leaves. */
+	hit_trap(grid1, 1);
+}
+
+/**
  * Swap the players/monsters (if any) at two locations.
  */
 void monster_swap(struct loc grid1, struct loc grid2)
 {
 	int m1, m2;
 	struct monster *mon;
-	struct loc decoy = cave_find_decoy(cave);
+	struct loc pgrid = player->grid;
 
 	/* Monsters */
 	m1 = cave->squares[grid1.y][grid1.x].mon;
@@ -532,12 +550,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	} else if (m1 < 0) {
 		/* Player */
 		player->grid = grid2;
-
-		/* Decoys get destroyed if player is too far away */
-		if (!loc_is_zero(decoy) &&
-			distance(decoy, player->grid) > z_info->max_sight) {
-			square_destroy_decoy(cave, decoy);
-		}
+		player_leaving(pgrid, player->grid);
 
 		/* Update the trap detection status */
 		player->upkeep->redraw |= (PR_DTRAP);
@@ -567,12 +580,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	} else if (m2 < 0) {
 		/* Player */
 		player->grid = grid1;
-
-		/* Decoys get destroyed if player is too far away */
-		if (!loc_is_zero(decoy) &&
-			distance(decoy, player->grid) > z_info->max_sight) {
-			square_destroy_decoy(cave, decoy);
-		}
+		player_leaving(pgrid, player->grid);
 
 		/* Update the trap detection status */
 		player->upkeep->redraw |= (PR_DTRAP);

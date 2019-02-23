@@ -18,6 +18,7 @@
 #    - VISIBLE: trap will not be hidden when generated
 #    - FLOOR: * can be set on the floor
 #    - TRAP: * is a trap
+#    - DELAY: activates as the player leaves its square rather than entering
 #
 #    Flags marked '*' must be set for a trap to be generated as part of
 #    normal dungeon generation.
@@ -474,6 +475,15 @@ expr:D:DUNGEON_LEVEL:/ 10 + 1
 effect:EARTHQUAKE:NONE:5
 desc:A trap that causes an earthquake.
 msg:The ground shakes.
+
+name:ancient mechanism:block fall trap
+graphics:^:U
+appear:1:4:0
+visibility:40+d5
+flags:TRAP | FLOOR | ONETIME | DELAY
+effect:GRANITE
+desc:A pressure plate that drops a stone block behind you.
+msg:A section of the ceiling falls in behind you!
 
 # dungeon alter - stone to mud
 # XXX this currently prints loads of annoying messages
