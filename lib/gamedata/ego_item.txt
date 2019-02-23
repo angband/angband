@@ -94,16 +94,12 @@
 
 ### Lanterns/torches
 
-# Not for now -- need to figure out how ID applies
-#N:96:of Shadows
-#X:10:0
-#W:5:4:0:1000:10 (imported from NPP)
-#A:8:10 to 100
-#T:39:0:1
-#item:light:Wooden Torch
-#item:light:Brass Lantern
-#V:STEALTH[d2] | RES_LIGHT[1]
-#L:STEALTH[0]
+#name:of Shadows
+#info:1000:10
+#alloc:8:10 to 100
+#item:light:Lantern
+#values:STEALTH[d2] | RES_LIGHT[1] | LIGHT[-4]
+#min-values:STEALTH[0]
 
 name:of Brightness
 info:2000:10

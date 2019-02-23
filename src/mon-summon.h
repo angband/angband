@@ -48,5 +48,6 @@ int summon_fallback_type(int summon_type);
 int summon_message_type(int summon_type);
 const char *summon_desc(int type);
 int summon_specific(struct loc grid, int lev, int type, bool delay, bool call);
+struct monster_race *select_shape(struct monster *mon, int type);
 
 #endif /* MONSTER_SUMMON_H */

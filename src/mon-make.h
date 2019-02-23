@@ -36,7 +36,7 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 int mon_hp(const struct monster_race *race, aspect hp_aspect);
 bool place_new_monster(struct chunk *c, struct loc grid,
 					   struct monster_race *race, bool sleep, bool group_ok,
-					   byte origin);
+					   struct monster_group_info group_info, byte origin);
 bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth, 
 							bool sleep,	bool group_okay, byte origin);
 bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,

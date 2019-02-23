@@ -36,17 +36,21 @@ bool monster_is_not_invisible(const struct monster *mon);
 bool monster_is_unique(const struct monster *mon);
 bool monster_is_stupid(const struct monster *mon);
 bool monster_is_smart(const struct monster *mon);
+bool monster_is_esp_detectable(const struct monster *mon);
 bool monster_has_spirit(const struct monster *mon);
 bool monster_is_evil(const struct monster *mon);
 bool monster_is_powerful(const struct monster *mon);
 bool monster_has_spells(const struct monster *mon);
+bool monster_breathes(const struct monster *mon);
 bool monster_has_innate_spells(const struct monster *mon);
 bool monster_has_non_innate_spells(const struct monster *mon);
+bool monster_loves_archery(const struct monster *mon);
 
 bool monster_is_in_view(const struct monster *mon);
 bool monster_is_visible(const struct monster *mon);
 bool monster_is_camouflaged(const struct monster *mon);
 bool monster_is_obvious(const struct monster *mon);
 bool monster_is_mimicking(const struct monster *mon);
+bool monster_can_be_scared(const struct monster *mon);
 
 #endif /* !MON_PREDICATE_H */

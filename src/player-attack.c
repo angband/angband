@@ -258,7 +258,7 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 		player_clear_timed(p, TMD_ATT_CONF, true);
 
 		mon_inc_timed(mon, MON_TMD_CONF, (10 + randint0(p->lev) / 10),
-					  MON_TMD_FLG_NOTIFY, false);
+					  MON_TMD_FLG_NOTIFY);
 	}
 }
 
@@ -458,8 +458,8 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	}
 
 	/* Disturb the monster */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
+	monster_wake(mon, false, 100);
+	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* See if the player hit */
 	success = test_hit(chance, mon->race->ac, monster_is_visible(mon));
@@ -642,14 +642,12 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 
 		/* Stunning. */
 		if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
-			mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0,
-						  false);
+			mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0);
 		}
 
 		/* Confusion. */
 		if (bash_quality + p->lev > randint1(300 + mon->race->level * 12)) {
-			mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0,
-						  false);
+			mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0);
 		}
 
 		/* The player will sometimes stumble. */

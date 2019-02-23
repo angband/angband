@@ -38,7 +38,9 @@ typedef enum {
 	SPELL_TAG_NONE,
 	SPELL_TAG_NAME,
 	SPELL_TAG_PRONOUN,
-	SPELL_TAG_TARGET
+	SPELL_TAG_TARGET,
+	SPELL_TAG_TYPE,
+	SPELL_TAG_OF_TYPE
 } spell_tag_t;
 
 static spell_tag_t spell_tag_lookup(const char *tag)
@@ -49,6 +51,10 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_PRONOUN;
 	else if (strncmp(tag, "target", 6) == 0)
 		return SPELL_TAG_TARGET;
+	else if (strncmp(tag, "type", 4) == 0)
+		return SPELL_TAG_TYPE;
+	else if (strncmp(tag, "oftype", 6) == 0)
+		return SPELL_TAG_OF_TYPE;
 	else
 		return SPELL_TAG_NONE;
 }
@@ -69,8 +75,13 @@ static void spell_message(struct monster *mon,
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-	bool strong = mon->race->spell_power >= 60;
+	struct monster_spell_level *level = spell->level;
 	struct monster *t_mon = NULL;
+
+	/* Get the right level of message */
+	while (level->next && mon->race->spell_power >= level->next->power) {
+		level = level->next;
+	}
 
 	/* Get the target monster, if any */
 	if (mon->target.midx > 0) {
@@ -81,19 +92,13 @@ static void spell_message(struct monster *mon,
 	if (!seen) {
 		if (t_mon) {
 			return;
-		} else if (strong && spell->blind_message_strong) {
-			in_cursor = spell->blind_message_strong;
 		} else {
-			in_cursor = spell->blind_message;
+			in_cursor = level->blind_message;
 		}
 	} else if (!hits) {
-		in_cursor = spell->miss_message;
+		in_cursor = level->miss_message;
 	} else {
-		if (strong && spell->message_strong) {
-			in_cursor = spell->message_strong;
-		} else {
-			in_cursor = spell->message;
-		}
+		in_cursor = level->message;
 	}
 
 	next = strchr(in_cursor, '{');
@@ -138,6 +143,27 @@ static void spell_message(struct monster *mon,
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
+					}
+					break;
+				}
+
+				case SPELL_TAG_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					strnfcat(buf, sizeof(buf), &end, type_name);
+					break;
+				}
+
+				case SPELL_TAG_OF_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					if (type_name) {
+						strnfcat(buf, sizeof(buf), &end, " of ");
+						strnfcat(buf, sizeof(buf), &end, type_name);
 					}
 					break;
 				}
@@ -230,10 +256,17 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	spell_message(mon, spell, seen, hits);
 
 	if (hits) {
+		struct monster_spell_level *level = spell->level;
+
+		/* Get the right level of save message */
+		while (level->next && mon->race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+
 		/* Try a saving throw if available */
-		if (spell->save_message && (target_mon <= 0) &&
+		if (level->save_message && (target_mon <= 0) &&
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
-			msg("%s", spell->save_message);
+			msg("%s", level->save_message);
 			spell_check_for_fail_rune(spell);
 		} else {
 			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
@@ -480,8 +513,13 @@ const char *mon_spell_lore_description(int index,
 {
 	if (mon_spell_is_valid(index)) {
 		const struct monster_spell *spell = monster_spell_by_index(index);
-		bool strong = (race->spell_power >= 60) && spell->lore_desc_strong;
-		return strong ? spell->lore_desc_strong : spell->lore_desc;
+
+		/* Get the right level of description */
+		struct monster_spell_level *level = spell->level;
+		while (level->next && race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+		return level->lore_desc;
 	} else {
 		return "";
 	}

@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "monster.h"
@@ -205,7 +206,13 @@ static void wr_monster(const struct monster *mon)
 	struct object *obj = mon->held_obj; 
 	struct object *dummy = object_new();
 
+	wr_u16b(mon->midx);
 	wr_string(mon->race->name);
+	if (mon->original_race) {
+		wr_string(mon->original_race->name);
+	} else {
+		wr_string("none");
+	}
 	wr_byte(mon->grid.y);
 	wr_byte(mon->grid.x);
 	wr_s16b(mon->hp);
@@ -239,6 +246,12 @@ static void wr_monster(const struct monster *mon)
 	}
 	wr_item(dummy);
 	object_delete(&dummy);
+
+	/* Write group info */
+	wr_u16b(mon->group_info[PRIMARY_GROUP].index);
+	wr_byte(mon->group_info[PRIMARY_GROUP].role);
+	wr_u16b(mon->group_info[SUMMON_GROUP].index);
+	wr_byte(mon->group_info[SUMMON_GROUP].role);
 }
 
 /**

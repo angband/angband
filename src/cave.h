@@ -24,6 +24,7 @@
 
 struct player;
 struct monster;
+struct monster_group;
 
 extern const s16b ddd[9];
 extern const s16b ddx[10];
@@ -157,6 +158,7 @@ struct grid_data {
 struct square {
 	byte feat;
 	bitflag *info;
+	int light;
 	s16b mon;
 	struct object *obj;
 	struct trap *trap;
@@ -201,6 +203,9 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+	int num_repro;
+
+	struct monster_group **monster_groups;
 
 	struct connector *join;
 };
@@ -341,6 +346,7 @@ bool square_isempty(struct chunk *c, struct loc grid);
 bool square_isarrivable(struct chunk *c, struct loc grid);
 bool square_canputitem(struct chunk *c, struct loc grid);
 bool square_isdiggable(struct chunk *c, struct loc grid);
+bool square_iswebbable(struct chunk *c, struct loc grid);
 bool square_is_monster_walkable(struct chunk *c, struct loc grid);
 bool square_ispassable(struct chunk *c, struct loc grid);
 bool square_isprojectable(struct chunk *c, struct loc grid);
@@ -354,6 +360,7 @@ bool square_isnoflow(struct chunk *c, struct loc grid);
 bool square_isnoscent(struct chunk *c, struct loc grid);
 bool square_iswarded(struct chunk *c, struct loc grid);
 bool square_isdecoyed(struct chunk *c, struct loc grid);
+bool square_iswebbed(struct chunk *c, struct loc grid);
 bool square_seemslikewall(struct chunk *c, struct loc grid);
 bool square_isinteresting(struct chunk *c, struct loc grid);
 bool square_islockeddoor(struct chunk *c, struct loc grid);
@@ -373,6 +380,7 @@ bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 struct square square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, struct loc grid);
+int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
 struct object *square_object(struct chunk *c, struct loc grid);
 struct trap *square_trap(struct chunk *c, struct loc grid);
@@ -392,6 +400,7 @@ void square_set_obj(struct chunk *c, struct loc grid, struct object *obj);
 void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap);
 void square_add_trap(struct chunk *c, struct loc grid);
 void square_add_glyph(struct chunk *c, struct loc grid, int type);
+void square_add_web(struct chunk *c, struct loc grid);
 void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
@@ -406,6 +415,7 @@ void square_disable_trap(struct chunk *c, struct loc grid);
 void square_destroy_decoy(struct chunk *c, struct loc grid);
 void square_tunnel_wall(struct chunk *c, struct loc grid);
 void square_destroy_wall(struct chunk *c, struct loc grid);
+void square_smash_wall(struct chunk *c, struct loc grid);
 void square_destroy(struct chunk *c, struct loc grid);
 void square_earthquake(struct chunk *c, struct loc grid);
 void square_upgrade_mineral(struct chunk *c, struct loc grid);

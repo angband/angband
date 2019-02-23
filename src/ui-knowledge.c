@@ -1119,6 +1119,7 @@ static struct
 	{ L"S",        "Scorpions/Spiders" },
 	{ L"s",        "Skeletons/Drujs" },
 	{ L"J",        "Snakes" },
+	{ L"l",        "Trees/Ents" },
 	{ L"T",        "Trolls" },
 	{ L"V",        "Vampires" },
 	{ L"W",        "Wights/Wraiths" },
@@ -1167,13 +1168,15 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	big_pad(66, row, a, c);
 
 	/* Display kills */
-	if (rf_has(race->flags, RF_UNIQUE))
+	if (!race->rarity) {
+		put_str(format("%s", "shape"), row, 70);
+	} else if (rf_has(race->flags, RF_UNIQUE)) {
 		put_str(format("%s", (race->max_num == 0)?  " dead" : "alive"),
 				row, 70);
-	else
+	} else {
 		put_str(format("%5d", lore->pkills), row, 70);
+	}
 }
-
 
 static int m_cmp_race(const void *a, const void *b)
 {
@@ -1339,10 +1342,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (j == 0 && !rf_has(race->flags, RF_UNIQUE))
-				continue;
-			else if (j > 0 && !wcschr(pat, race->d_char))
-				continue;
+			if (j == 0 && !rf_has(race->flags, RF_UNIQUE)) continue;
+			if (j > 0 && !wcschr(pat, race->d_char)) continue;
 
 			monsters[m_count] = m_count;
 			default_join[m_count].oid = i;

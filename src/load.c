@@ -22,6 +22,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
@@ -258,11 +259,19 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	size_t j;
 
 	/* Read the monster race */
+	rd_u16b(&tmp16u);
+	mon->midx = tmp16u;
 	rd_string(race_name, sizeof(race_name));
 	mon->race = lookup_monster(race_name);
 	if (!mon->race) {
 		note(format("Monster race %s no longer exists!", race_name));
 		return false;
+	}
+	rd_string(race_name, sizeof(race_name));
+	if (streq(race_name, "none")) {
+		mon->original_race = NULL;
+	} else {
+		mon->original_race = lookup_monster(race_name);
 	}
 
 	/* Read the other information */
@@ -318,6 +327,16 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
 	}
+
+	/* Read group info */
+	rd_u16b(&tmp16u);
+	mon->group_info[PRIMARY_GROUP].index = tmp16u;
+	rd_byte(&tmp8u);
+	mon->group_info[PRIMARY_GROUP].role = tmp8u;
+	rd_u16b(&tmp16u);
+	mon->group_info[SUMMON_GROUP].index = tmp16u;
+	rd_byte(&tmp8u);
+	mon->group_info[SUMMON_GROUP].role = tmp8u;
 
 	return true;
 }

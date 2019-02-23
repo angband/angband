@@ -566,11 +566,11 @@ code:FRAGILE
 power:0
 desc:Can be destroyed if you attempt to remove its curses
 
-name:radius 1 light
+name:intensity 2 light
 type:flag
 subtype:light
 id-type:on wield
-code:LIGHT_1
+code:LIGHT_2
 power:9
 type-mult:sword:0
 type-mult:polearm:0
@@ -589,11 +589,11 @@ type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
 
-name:radius 2 light
+name:intensity 3 light
 type:flag
 subtype:light
 id-type:on wield
-code:LIGHT_2
+code:LIGHT_3
 power:18
 type-mult:sword:0
 type-mult:polearm:0

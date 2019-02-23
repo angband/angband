@@ -35,6 +35,12 @@ mon-gen:ood-chance:25
 # Maximum out-of-depth amount for monster generation
 mon-gen:ood-amount:10
 
+# Maximum number of monsters in a group
+mon-gen:group-max:25
+
+# Maximum distance of a group of monsters from a related group
+mon-gen:group-dist:5
+
 #---------------------------------------------------------------------
 # Monster Gameplay
 #---------------------------------------------------------------------

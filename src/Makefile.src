@@ -110,6 +110,7 @@ ANGFILES = \
 	mon-attack.o \
 	mon-blows.o \
 	mon-desc.o \
+	mon-group.o \
 	mon-init.o \
 	mon-list.o \
 	mon-lore.o \

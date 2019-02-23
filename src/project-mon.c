@@ -879,8 +879,7 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 	context->mon->hp = context->mon->maxhp;
 
 	/* Speed up */
-	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, 
-				  context->id);
+	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY);
 
 	/* Attempt to clone. */
 	if (multiply_monster(cave, context->mon))
@@ -907,9 +906,8 @@ static void project_monster_handler_MON_POLY(project_monster_handler_context_t *
 /* Heal Monster (use "dam" as amount of healing) */
 static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *context)
 {
-	/* Wake up */
-	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-					context->id);
+	/* Wake up, become aware */
+	monster_wake(context->mon, false, 100);
 
 	/* Heal */
 	context->mon->hp += context->dam;
@@ -1043,8 +1041,8 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Wake the monster up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	/* Wake the monster up, don't notice the player */
+	monster_wake(mon, false, 0);
 
 	/* Hurt the monster */
 	mon->hp -= dam;
@@ -1183,13 +1181,15 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Handle polymorph */
 		if (new != old) {
+			struct monster_group_info info = {0, 0 };
+
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
 			add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
-			place_new_monster(cave, grid, new, false, false,
+			place_new_monster(cave, grid, new, false, false, info,
 							  ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, grid);
 		} else {
@@ -1206,8 +1206,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 				mon_inc_timed(mon,
 							  i,
 							  context->mon_timed[i],
-							  context->flag | MON_TMD_FLG_NOTIFY,
-							  context->id);
+							  context->flag | MON_TMD_FLG_NOTIFY);
 				context->obvious = true;
 			}
 		}

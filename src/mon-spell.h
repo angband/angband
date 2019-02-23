@@ -28,19 +28,20 @@
 
 /* Spell type bitflags */
 enum mon_spell_type {
-    RST_NONE       = 0x000,
-    RST_BOLT       = 0x001,
-    RST_BALL       = 0x002,
-    RST_BREATH     = 0x004,
-    RST_DIRECT     = 0x008,    /* Direct (non-projectable) attacks */
-    RST_ANNOY      = 0x010,    /* Irritant spells, usually non-fatal */
-    RST_HASTE      = 0x020,    /* Relative speed advantage */
-    RST_HEAL       = 0x040,
-    RST_HEAL_OTHER = 0x080,
-    RST_TACTIC     = 0x100,    /* Get a better position */
-    RST_ESCAPE     = 0x200,
-    RST_SUMMON     = 0x400,
-    RST_INNATE     = 0x800
+	RST_NONE		= 0x0000,
+	RST_BOLT		= 0x0001,
+	RST_BALL		= 0x0002,	/* Ball spells, but also beams */
+	RST_BREATH		= 0x0004,
+	RST_DIRECT		= 0x0008,	/* Direct (non-projectable) attacks */
+	RST_ANNOY		= 0x0010,	/* Irritant spells, usually non-fatal */
+	RST_HASTE		= 0x0020,	/* Relative speed advantage */
+	RST_HEAL		= 0x0040,
+	RST_HEAL_OTHER	= 0x0080,
+	RST_TACTIC		= 0x0100,	/* Get a better position */
+	RST_ESCAPE		= 0x0200,
+	RST_SUMMON		= 0x0400,
+	RST_INNATE		= 0x0800,
+	RST_ARCHERY		= 0x1000
 };
 
 #define RST_DAMAGE (RST_BOLT | RST_BALL | RST_BREATH | RST_DIRECT)
@@ -63,16 +64,6 @@ enum mon_spell_type {
 #define rsf_union(f1, f2)      flag_union(f1, f2, RSF_SIZE)
 #define rsf_inter(f1, f2)      flag_inter(f1, f2, RSF_SIZE)
 #define rsf_diff(f1, f2)       flag_diff(f1, f2, RSF_SIZE)
-
-/**
- * Breath attacks.
- */
-#define RSF_BREATH_MASK \
-		RSF_BR_ACID, RSF_BR_ELEC, RSF_BR_FIRE, RSF_BR_COLD, \
-		RSF_BR_POIS, RSF_BR_PLAS, RSF_BR_LIGHT, RSF_BR_DARK, \
-		RSF_BR_SOUN, RSF_BR_SHAR, RSF_BR_INER, RSF_BR_GRAV, \
-		RSF_BR_WALL, RSF_BR_NEXU, RSF_BR_NETH, RSF_BR_CHAO, \
-		RSF_BR_DISE, RSF_BR_TIME, RSF_BR_MANA
 
 
 /** Functions **/

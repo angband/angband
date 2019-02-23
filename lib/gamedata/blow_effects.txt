@@ -11,6 +11,7 @@
 # lore-color-immune - color for lore when the effects are resisted strongly
 # effect-type - indicator of what type of property will protect from the effect
 # resist - which precise flag or resist will protect from the effect
+# lash-type - what projection type this translates to in the lash effect
 
 name:NONE
 power:0
@@ -22,6 +23,7 @@ power:40
 eval:0
 desc:attack
 lore-color-base:Light Green
+lash-type:MISSILE
 
 name:POISON
 power:20
@@ -31,6 +33,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:element
 resist:POIS
+lash-type:POIS
 
 name:DISENCHANT
 power:10
@@ -40,6 +43,7 @@ lore-color-base:Light Red
 lore-color-resist:Light Green
 effect-type:element
 resist:DISEN
+lash-type:DISEN
 
 name:DRAIN_CHARGES
 power:10
@@ -48,6 +52,7 @@ desc:drain charges
 lore-color-base:Light Red
 lore-color-resist:Light Green
 effect-type:drain
+lash-type:DISEN
 
 name:EAT_GOLD
 power:0
@@ -56,6 +61,7 @@ desc:steal gold
 lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:theft
+lash-type:MISSILE
 
 name:EAT_ITEM
 power:0
@@ -64,6 +70,7 @@ desc:steal items
 lore-color-base:Light Red
 lore-color-resist:Light Green
 effect-type:theft
+lash-type:MISSILE
 
 name:EAT_FOOD
 power:0
@@ -72,6 +79,7 @@ desc:eat your food
 lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:eat-food
+lash-type:MISSILE
 
 name:EAT_LIGHT
 power:0
@@ -80,6 +88,8 @@ desc:absorb light
 lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:eat-light
+lore-color-base:Light Green
+lash-type:MISSILE
 
 name:ACID
 power:20
@@ -88,6 +98,7 @@ desc:shoot acid
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
+lash-type:ACID
 
 name:ELEC
 power:40
@@ -96,6 +107,7 @@ desc:electrify
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
+lash-type:ELEC
 
 name:FIRE
 power:40
@@ -104,6 +116,7 @@ desc:burn
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
+lash-type:FIRE
 
 name:COLD
 power:40
@@ -112,6 +125,7 @@ desc:freeze
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
+lash-type:ICE
 
 name:BLIND
 power:0
@@ -121,6 +135,7 @@ lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:flag
 resist:PROT_BLIND
+lash-type:DARK
 
 name:CONFUSE
 power:20
@@ -130,6 +145,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:PROT_CONF
+lash-type:CHAOS
 
 name:TERRIFY
 power:0
@@ -139,6 +155,7 @@ lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:flag
 resist:PROT_FEAR
+lash-type:CHAOS
 
 name:PARALYZE
 power:0
@@ -148,6 +165,7 @@ lore-color-base:Light Red
 lore-color-resist:Light Green
 effect-type:flag
 resist:FREE_ACT
+lash-type:INERTIA
 
 name:LOSE_STR
 power:0
@@ -157,6 +175,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:SUST_STR
+lash-type:TIME
 
 name:LOSE_INT
 power:0
@@ -166,6 +185,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:SUST_INT
+lash-type:TIME
 
 name:LOSE_WIS
 power:0
@@ -175,6 +195,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:SUST_WIS
+lash-type:TIME
 
 name:LOSE_DEX
 power:0
@@ -184,6 +205,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:SUST_DEX
+lash-type:TIME
 
 name:LOSE_CON
 power:0
@@ -193,6 +215,7 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 effect-type:flag
 resist:SUST_CON
+lash-type:TIME
 
 name:LOSE_ALL
 power:0
@@ -201,12 +224,14 @@ desc:reduce all stats
 lore-color-base:Light Red
 lore-color-resist:Light Green
 effect-type:all_sustains
+lash-type:TIME
 
 name:SHATTER
 power:60
 eval:300
 desc:shatter
 lore-color-base:Yellow
+lash-type:MISSILE
 
 name:EXP_10
 power:20
@@ -216,6 +241,7 @@ lore-color-base:Orange
 lore-color-resist:Yellow
 effect-type:flag
 resist:HOLD_LIFE
+lash-type:NETHER
 
 name:EXP_20
 power:20
@@ -225,6 +251,7 @@ lore-color-base:Orange
 lore-color-resist:Yellow
 effect-type:flag
 resist:HOLD_LIFE
+lash-type:NETHER
 
 name:EXP_40
 power:20
@@ -234,6 +261,7 @@ lore-color-base:Orange
 lore-color-resist:Yellow
 effect-type:flag
 resist:HOLD_LIFE
+lash-type:NETHER
 
 name:EXP_80
 power:20
@@ -243,6 +271,7 @@ lore-color-base:Orange
 lore-color-resist:Yellow
 effect-type:flag
 resist:HOLD_LIFE
+lash-type:NETHER
 
 name:HALLU
 power:0
@@ -252,3 +281,11 @@ lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:element
 resist:CHAOS
+lash-type:CHAOS
+
+name:BLACK_BREATH
+power:0
+eval:10
+desc:inflict Black Breath
+lore-color-base:Light Red
+lash-type:TIME

@@ -27,6 +27,7 @@
 #include "mon-msg.h"
 #include "mon-predicate.h"
 #include "mon-spell.h"
+#include "mon-summon.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-desc.h"
@@ -271,7 +272,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	bool easy = false;
 
 	/* ESP permitted */
-	bool telepathy_ok = true;
+	bool telepathy_ok = player_of_has(player, OF_TELEPATHY);
 
 	assert(mon != NULL);
 
@@ -304,32 +305,20 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Detected */
 	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
-	/* Check if telepathy works */
-	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, pgrid))
+	/* Check if telepathy works here */
+	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, pgrid)) {
 		telepathy_ok = false;
+	}
 
 	/* Nearby */
 	if (d <= z_info->max_sight) {
 		/* Basic telepathy */
-		if (player_of_has(player, OF_TELEPATHY) && telepathy_ok) {
-			if (rf_has(mon->race->flags, RF_EMPTY_MIND)) {
-				/* Empty mind, no telepathy */
-			} else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
-				/* Weird mind, one in ten individuals are detectable */
-				if ((mon->midx % 10) == 5) {
-					/* Detectable */
-					flag = true;
+		if (telepathy_ok && monster_is_esp_detectable(mon)) {
+			/* Detectable */
+			flag = true;
 
-					/* Check for LOS so that MFLAG_VIEW is set later */
-					if (square_isview(c, mon->grid)) easy = true;
-				}
-			} else {
-				/* Normal mind, allow telepathy */
-				flag = true;
-
-				/* Check for LOS to that MFLAG_VIEW is set later */
-				if (square_isview(c, mon->grid)) easy = true;
-			}
+			/* Check for LOS so that MFLAG_VIEW is set later */
+			if (square_isview(c, mon->grid)) easy = true;
 		}
 
 		/* Normal line of sight and player is not blind */
@@ -348,9 +337,6 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Use illumination */
 			if (square_isseen(c, mon->grid)) {
-				/* Learn it emits light */
-				rf_on(lore->flags, RF_HAS_LIGHT);
-
 				/* Learn about invisibility */
 				rf_on(lore->flags, RF_INVISIBLE);
 
@@ -382,7 +368,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Is the monster is now visible? */
 	if (flag) {
 		/* Learn about the monster's mind */
-		if (player_of_has(player, OF_TELEPATHY)) {
+		if (telepathy_ok) {
 			flags_set(lore->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
 					  RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -555,8 +541,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		/* Update monster */
 		update_mon(mon, cave, true);
 
-		/* Radiate light? */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+		/* Affect light? */
+		if (mon->race->light != 0)
 			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
@@ -585,8 +571,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		/* Update monster */
 		update_mon(mon, cave, true);
 
-		/* Radiate light? */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+		/* Affect light? */
+		if (mon->race->light != 0)
 			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
@@ -609,6 +595,26 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* Redraw */
 	square_light_spot(cave, grid1);
 	square_light_spot(cave, grid2);
+}
+
+/**
+ * Monster wakes up and possibly becomes aware of the player
+ */
+void monster_wake(struct monster *mon, bool notify, int aware_chance)
+{
+	int flag = notify ? MON_TMD_FLG_NOTIFY : MON_TMD_FLG_NOMESSAGE;
+	mon_clear_timed(mon, MON_TMD_SLEEP, flag);
+	if (randint0(100) < aware_chance) {
+		mflag_on(mon->mflag, MFLAG_AWARE);
+	}
+}
+
+/**
+ * Monster can see a grid
+ */
+bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid)
+{
+	return los(c, mon->grid, grid);
 }
 
 /**
@@ -876,8 +882,8 @@ void monster_death(struct monster *mon, bool stats)
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
 
-	/* Radiate light? */
-	if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+	/* Affect light? */
+	if (mon->race->light != 0)
 		player->upkeep->update |= PU_UPDATE_VIEW;
 
 	/* Check if we finished a quest */
@@ -897,6 +903,17 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* Assume normal death sound */
 	int soundfx = MSG_KILL;
 
+	/* Extract monster name */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+
+	/* Shapechanged monsters revert on death */
+	if (mon->original_race) {
+		msg("A change comes over %s", m_name);
+		monster_revert_shape(mon);
+		lore = get_lore(mon->race);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+	}
+
 	/* Play a special sound if the monster was unique */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		if (mon->race->base == lookup_monster_base("Morgoth"))
@@ -904,9 +921,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 		else
 			soundfx = MSG_KILL_UNIQUE;
 	}
-
-	/* Extract monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
 	/* Death message */
 	if (note) {
@@ -1021,13 +1035,13 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
 		/* Cure a little or all fear */
 		if (tmp < current_fear) {
 			/* Reduce fear */
-			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE, false);
+			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE);
 		} else {
 			/* Cure fear */
-			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 			return false;
 		}
-	} else if (!rf_has(mon->race->flags, RF_NO_FEAR)) {
+	} else if (monster_can_be_scared(mon)) {
 		/* Percentage of fully healthy */
 		int percentage = (100L * mon->hp) / mon->maxhp;
 
@@ -1047,10 +1061,70 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
 
 			/* Note fear */
 			mon_inc_timed(mon, MON_TMD_FEAR, time,
-						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
+						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
 			return true;
 		}
 	}
+	return false;
+}
+
+/**
+ * Deal damage to a monster from another monster (or at least not the player).
+ *
+ * This is a helper for melee handlers. It is very similar to mon_take_hit(),
+ * but eliminates the player-oriented stuff of that function.
+ *
+ * \param context is the project_m context.
+ * \param hurt_msg is the message if the monster is hurt (if any).
+ * \return true if the monster died, false if it is still alive.
+ */
+bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
+							enum mon_messages hurt_msg,
+							enum mon_messages die_msg)
+{
+	assert(t_mon);
+
+	/* "Unique" monsters can only be "killed" by the player */
+	if (rf_has(t_mon->race->flags, RF_UNIQUE)) {
+		/* Reduce monster hp to zero, but don't kill it. */
+		if (dam > t_mon->hp) dam = t_mon->hp;
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == t_mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Wake the monster up, doesn't become aware of the player */
+	monster_wake(t_mon, false, 0);
+
+	/* Hurt the monster */
+	t_mon->hp -= dam;
+
+	/* Dead or damaged monster */
+	if (t_mon->hp < 0) {
+		/* Death message */
+		add_monster_message(t_mon, die_msg, false);
+
+		/* Generate treasure, etc */
+		monster_death(t_mon, false);
+
+		/* Delete the monster */
+		delete_monster_idx(t_mon->midx);
+		return true;
+	} else if (!monster_is_mimicking(t_mon)) {
+		/* Give detailed messages if visible */
+		if (hurt_msg != MON_MSG_NONE) {
+			add_monster_message(t_mon, hurt_msg, false);
+		} else if (dam > 0) {
+			message_pain(t_mon, dam);
+		}
+	}
+
+	/* Sometimes a monster gets scared by damage */
+	if (!t_mon->m_timed[MON_TMD_FEAR] && dam > 0) {
+		(void) monster_scared_by_damage(t_mon, dam);
+	}
+
 	return false;
 }
 
@@ -1076,9 +1150,9 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
+	/* Wake it up, make it aware of the player */
+	monster_wake(mon, false, 100);
+	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* Become aware of its presence */
 	if (monster_is_camouflaged(mon))
@@ -1132,7 +1206,8 @@ void monster_take_terrain_damage(struct monster *mon)
 		bool fear = false;
 
 		if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
-			mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
+			mon_take_nonplayer_hit(100 + randint1(100), mon, MON_MSG_CATCH_FIRE,
+								   MON_MSG_DISINTEGRATES);
 		}
 
 		if (fear && monster_is_visible(mon)) {
@@ -1217,8 +1292,8 @@ void steal_monster_item(struct monster *mon, int midx)
 		if (!obj) {
 			msg("You can find nothing to steal from %s.", m_name);
 			if (one_in_(3)) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-								false);
+				/* Monster notices */
+				monster_wake(mon, false, 100);
 			}
 			return;
 		}
@@ -1256,7 +1331,7 @@ void steal_monster_item(struct monster *mon, int midx)
 			}
 
 			/* Monster wakes a little */
-			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY, false);
+			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY);
 		} else if (monster_reaction / 2 < steal_skill) {
 			/* Decent attempt, at least */
 			char o_name[80];
@@ -1269,11 +1344,11 @@ void steal_monster_item(struct monster *mon, int midx)
 							ODESC_PREFIX | ODESC_FULL);
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
-			/* Monster wakes */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+			/* Monster wakes, may notice */
+			monster_wake(mon, true, 50);
 		} else {
 			/* Bungled it */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+			monster_wake(mon, true, 100);
 			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 			msg("%s cries out in anger!", m_name);
 			effect_simple(EF_WAKE, source_monster(mon->midx), "", 0, 0, 0, 0, 0,
@@ -1309,4 +1384,127 @@ void steal_monster_item(struct monster *mon, int midx)
 			(void)monster_carry(cave, thief, obj);
 		}
 	}
+}
+
+
+/**
+ * The shape base for shapechanges
+ */
+struct monster_base *shape_base;
+
+/**
+ * Predicate function for get_mon_num_prep
+ * Check to see if the monster race has the same base as the desired shape
+ */
+static bool monster_base_shape_okay(struct monster_race *race)
+{
+	assert(race);
+
+	/* Check if it matches */
+	if (race->base != shape_base) return false;
+
+	return true;
+}
+
+/**
+ * Monster shapechange
+ */
+bool monster_change_shape(struct monster *mon)
+{
+	struct monster_shape *shape = mon->race->shapes;
+	struct monster_race *race = NULL;
+
+	/* Use the monster's preferred shapes if any */
+	if (shape) {
+		/* Pick one */
+		int choice = randint0(mon->race->num_shapes);
+		while (choice--) {
+			shape = shape->next;
+		}
+
+		/* Race or base? */
+		if (shape->race) {
+			/* Simple */
+			race = shape->race;
+		} else {
+			/* Set the shape base */
+			shape_base = shape->base;
+
+			/* Choose a race of the given base */
+			get_mon_num_prep(monster_base_shape_okay);
+
+			/* Pick a random race */
+			race = get_mon_num(player->depth + 5);
+
+			/* Reset allocation table */
+			get_mon_num_prep(NULL);
+		}
+	} else {
+		/* Choose something the monster can summon */
+		bitflag summon_spells[RSF_SIZE];
+		int i, poss = 0, which, index, summon_type;
+		const struct monster_spell *spell;
+
+		/* Extract the summon spells */
+		create_mon_spell_mask(summon_spells, RST_SUMMON, RST_NONE);
+		rsf_inter(summon_spells, mon->race->spell_flags);
+
+		/* Count possibilities */
+		for (i = rsf_next(summon_spells, FLAG_START); i != FLAG_END;
+			 i = rsf_next(summon_spells, i + 1)) {
+			poss++;
+		}
+
+		/* Pick one */
+		which = randint0(poss);
+		index = rsf_next(summon_spells, FLAG_START);
+		for (i = 0; i < which; i++) {
+			index = rsf_next(summon_spells, index);
+		}
+		spell = monster_spell_by_index(index);
+
+		/* Set the summon type, and the kin_base if necessary */
+		summon_type = spell->effect->subtype;
+		if (summon_type == summon_name_to_idx("KIN")) {
+			kin_base = mon->race->base;
+		}
+
+		/* Choose a race */
+		race = select_shape(mon, summon_type);
+	}
+
+	/* Set the race */
+	if (race) {
+		mon->original_race = mon->race;
+		mon->race = race;
+	}
+
+	/* Emergency teleport if needed */
+	if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+		effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
+					  mon->grid.y, mon->grid.x, NULL);
+	}
+
+	return mon->original_race != NULL;
+}
+
+/**
+ * Monster reverse shapechange
+ */
+bool monster_revert_shape(struct monster *mon)
+{
+	if (mon->original_race) {
+		mon->race = mon->original_race;
+		mon->original_race = NULL;
+
+		/* Emergency teleport if needed */
+		if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+			effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
+						  mon->grid.y, mon->grid.x, NULL);
+		}
+
+		return true;
+	}
+
+	return false;
 }

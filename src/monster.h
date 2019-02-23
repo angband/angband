@@ -164,6 +164,23 @@ struct monster_pain {
 
 
 /**
+ * Monster spell levels
+ */
+struct monster_spell_level {
+	struct monster_spell_level *next;
+
+	int power;				/* Spell power at which this level starts */
+	char *lore_desc;		/* Description of the attack used in lore text */
+	byte lore_attr;			/* Color of the attack used in lore text */
+	byte lore_attr_resist;	/* Color used in lore text when resisted */
+	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
+	char *message;			/* Description of the attack */
+	char *blind_message;	/* Description of the attack if unseen */
+	char *miss_message;		/* Description of a missed attack */
+	char *save_message;		/* Message on passing saving throw, if any */
+};
+
+/**
  * Monster spell types
  */
 struct monster_spell {
@@ -171,20 +188,9 @@ struct monster_spell {
 
 	u16b index;				/* Numerical index (RSF_FOO) */
 	int msgt;				/* Flag for message colouring */
-	char *message;			/* Description of the attack */
-	char *blind_message;	/* Description of the attack if unseen */
-	char *message_strong;   /* Description of the attack (strong version) */
-	char *blind_message_strong;/* Attack description if unseen (strong)*/
-	char *miss_message;		/* Description of a missed attack */
-	char *save_message;		/* Message on passing saving throw, if any */
-	char *lore_desc;		/* Description of the attack used in lore text */
-	char *lore_desc_strong; /* Attack description used in lore text (strong) */
-	byte lore_attr;			/* Color of the attack used in lore text */
-	byte lore_attr_resist;	/* Color used in lore text when resisted */
-	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */
-	random_value power;		/* Relative power of the spell */
+	struct monster_spell_level *level;	/* Spell power dependent details */
 };
 
 
@@ -218,6 +224,14 @@ struct monster_drop {
 	unsigned int max;
 };
 
+enum monster_group_role {
+	MON_GROUP_LEADER,
+	MON_GROUP_SERVANT,
+	MON_GROUP_BODYGUARD,
+	MON_GROUP_MEMBER,
+	MON_GROUP_SUMMON
+};
+
 /**
  * Monster friends (specific monster)
  */
@@ -225,6 +239,7 @@ struct monster_friends {
 	struct monster_friends *next;
 	char *name;
 	struct monster_race *race;
+	enum monster_group_role role;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
@@ -236,9 +251,24 @@ struct monster_friends {
 struct monster_friends_base {
 	struct monster_friends_base *next;
 	struct monster_base *base;
+	enum monster_group_role role;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
+};
+
+/**
+ * Monster group info
+ */
+struct monster_group_info {
+	int index;
+	enum monster_group_role role;
+};
+
+enum monster_group_type {
+	PRIMARY_GROUP,
+	SUMMON_GROUP,
+	GROUP_MAX
 };
 
 /**
@@ -247,6 +277,16 @@ struct monster_friends_base {
 struct monster_mimic {
 	struct monster_mimic *next;
 	struct object_kind *kind;
+};
+
+/**
+ * Different shapes a monster can take
+ */
+struct monster_shape {
+	struct monster_shape *next;
+	char *name;
+	struct monster_race *race;
+	struct monster_base *base;
 };
 
 /**
@@ -283,6 +323,7 @@ struct monster_race {
 	int hearing;			/* Monster sense of hearing (1-100, standard 20) */
 	int smell;				/* Monster sense of smell (0-50, standard 20) */
 	int speed;				/* Speed (normally 110) */
+	int light;				/* Light intensity */
 
 	int mexp;				/* Exp value for kill */
 
@@ -311,6 +352,9 @@ struct monster_race {
     struct monster_friends_base *friends_base;
     
 	struct monster_mimic *mimic_kinds;
+
+	struct monster_shape *shapes;
+	int num_shapes;
 };
 
 
@@ -323,39 +367,41 @@ struct monster_race {
  * of objects (if any) being carried by the monster (see above).
  */
 struct monster {
-	struct monster_race *race;
+	struct monster_race *race;			/* Monster's (current) race */
+	struct monster_race *original_race;	/* Changed monster's original race */
 	int midx;
 
 	struct loc grid;					/* Location on map */
 
-	s16b hp;			/* Current Hit points */
-	s16b maxhp;			/* Max Hit points */
+	s16b hp;							/* Current Hit points */
+	s16b maxhp;							/* Max Hit points */
 
-	s16b m_timed[MON_TMD_MAX]; /* Timed monster status effects */
+	s16b m_timed[MON_TMD_MAX];			/* Timed monster status effects */
 
-	byte mspeed;		/* Monster "speed" */
-	byte energy;		/* Monster "energy" */
+	byte mspeed;						/* Monster "speed" */
+	byte energy;						/* Monster "energy" */
 
-	byte cdis;			/* Current dis from player */
+	byte cdis;							/* Current dis from player */
 
-	bitflag mflag[MFLAG_SIZE];	/* Temporary monster flags */
+	bitflag mflag[MFLAG_SIZE];			/* Temporary monster flags */
 
-	struct object *mimicked_obj; /* Object this monster is mimicking */
-	struct object *held_obj;	/* Object being held (if any) */
+	struct object *mimicked_obj;		/* Object this monster is mimicking */
+	struct object *held_obj;			/* Object being held (if any) */
 
-	byte attr;  		/* attr last used for drawing monster */
+	byte attr;  						/* attr last used for drawing monster */
 
-	struct player_state known_pstate; /* Known player state */
+	struct player_state known_pstate;	/* Known player state */
 
-    struct target target;		/**< Monster target */
+    struct target target;				/* Monster target */
 
-    byte min_range;	/**< What is the closest we want to be?  Not saved */
-    byte best_range;	/**< How close do we want to be? Not saved */
+	struct monster_group_info group_info[GROUP_MAX];/* Monster group details */
+	struct heatmap heatmap;				/* Monster location heatmap */
+
+    byte min_range;						/* What is the closest we want to be? */
+    byte best_range;					/* How close do we want to be? */
 };
 
 /** Variables **/
-
-extern s16b num_repro;
 
 extern struct monster_pain *pain_messages;
 extern struct monster_spell *monster_spells;

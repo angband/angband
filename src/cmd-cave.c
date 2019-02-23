@@ -238,7 +238,7 @@ void do_cmd_open(struct command *cmd)
 	struct object *obj;
 	bool more = false;
 	int err;
-	struct monster *m;
+	struct monster *mon;
 
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
@@ -283,14 +283,14 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Monster */
-	m = square_monster(cave, grid);
-	if (m) {
+	mon = square_monster(cave, grid);
+	if (mon) {
 		/* Mimics surprise the player */
-		if (monster_is_mimicking(m)) {
-			become_aware(m);
+		if (monster_is_mimicking(mon)) {
+			become_aware(mon);
 
-			/* Mimic wakes up */
-			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+			/* Mimic wakes up and becomes aware*/
+			monster_wake(mon, false, 100);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -919,9 +919,8 @@ void move_player(int dir, bool disarm)
 		if (monster_is_mimicking(mon)) {
 			become_aware(mon);
 
-			/* Mimic wakes up */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-
+			/* Mimic wakes up and becomes aware*/
+			monster_wake(mon, false, 100);
 		} else {
 			py_attack(player, grid);
 		}
@@ -1112,6 +1111,19 @@ void do_cmd_walk(struct command *cmd)
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
 
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		if (get_check("You are stuck in a web - do you want to clear it? ")) {
+			/* Clear the web, finish turn */
+			square_destroy_trap(cave, player->grid);
+			player->upkeep->energy_use = z_info->move_energy;
+			return;
+		} else {
+			/* Rethink */
+			return;
+		}
+	}
+
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
 	if (player_confuse_dir(player, &dir, false))
@@ -1140,6 +1152,19 @@ void do_cmd_jump(struct command *cmd)
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
+
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		if (get_check("You are stuck in a web - do you want to clear it? ")) {
+			/* Clear the web, finish turn */
+			square_destroy_trap(cave, player->grid);
+			player->upkeep->energy_use = z_info->move_energy;
+			return;
+		} else {
+			/* Rethink */
+			return;
+		}
+	}
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, false))
@@ -1462,7 +1487,7 @@ void do_cmd_mon_command(struct command *cmd)
 
 			/* Pick a random spell and cast it */
 			rsf_copy(f, mon->race->spell_flags);
-			spell_index = choose_attack_spell(f);
+			spell_index = choose_attack_spell(f, true, true);
 			if (!spell_index) {
 				msg("This monster has no spells!");
 				return;
@@ -1533,6 +1558,7 @@ void do_cmd_mon_command(struct command *cmd)
 				if (monster_is_visible(mon)) {
 					rf_on(lore->flags, RF_PASS_WALL);
 					rf_on(lore->flags, RF_KILL_WALL);
+					rf_on(lore->flags, RF_SMASH_WALL);
 				}
 
 				/* Monster may be able to deal with walls and doors */
@@ -1541,6 +1567,10 @@ void do_cmd_mon_command(struct command *cmd)
 				} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 					/* Remove the wall */
 					square_destroy_wall(cave, grid);
+					can_move = true;
+				} else if (rf_has(mon->race->flags, RF_SMASH_WALL)) {
+					/* Remove everything */
+					square_smash_wall(cave, grid);
 					can_move = true;
 				} else if (square_iscloseddoor(cave, grid) ||
 						   square_issecretdoor(cave, grid)) {

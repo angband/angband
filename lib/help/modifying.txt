@@ -1,6 +1,6 @@
 =================
 Modifying Angband
-================= 
+=================
 
 Angband is not just a great game in its own right, it is really easy to modify.
 Much of the detail of the game is contained in text data files.  These can be
@@ -15,7 +15,7 @@ make changes to the files.  Below is brief description of each of the files.
 
 Those who want to change the game more than is allowed just by varying the
 data files will need the source code.  Below the data file descriptions is a
-brief discussion of where to start on such an endeavour. 
+brief discussion of where to start on such an endeavour.
 
 
 The data files
@@ -23,7 +23,7 @@ The data files
 
 constants.txt
   This file contains game values such as carried item capacity, visual range
-  and dungeon level and town dimensions.  
+  and dungeon level and town dimensions.
 
 object_base.txt
   This file contains the names and common properties of the basic object
@@ -181,7 +181,7 @@ object_property.txt
   but it is possible to change how existing properties work.
 
 object_power.txt
-  This file contains formulas for calculating power of objects (used in 
+  This file contains formulas for calculating power of objects (used in
   determining prices and generating random artifacts).  You should only change
   this file if you understand the way they are used (defined in
   src/obj-power.c).
@@ -191,12 +191,12 @@ player_timed.txt
   confusion) that can apply to the player.  It chiefly contains the messages
   on changes in these effects, and player attributes which prevent the effects.
   To add new timed effects or change the way existing ones operate, you will
-  have to alter src/list-player-timed.h and probably other files, and 
+  have to alter src/list-player-timed.h and probably other files, and
   re-compile the game.
 
 projection.txt
-  This file contains a lot of the defining information about projections - 
-  effects which can be produced at a distance by player or monsters, and 
+  This file contains a lot of the defining information about projections -
+  effects which can be produced at a distance by player or monsters, and
   affecting player, monsters, objects, and/or terrain.  In particular, this
   file defines details of the effects of elemental attacks (such as fire or
   shards) and the effectiveness of corresponding player resistance.  New
@@ -213,6 +213,152 @@ summon.txt
   Adding a new summon type is not yet possible, because the summon spells are
   hard-coded in src/list-mon-spells.h
 
+
+Making Graphical Tilesets
+=========================
+You can make new graphical tilesets for Angband or customize existing ones. In
+this section we'll dive into how tilesets are defined and describe how to set
+one up from scratch. First, we'll enumerate the steps required and then we'll
+break down each step in detail.
+
+1. Create a directory to contain the tileset's files: (ex. lib/tiles/mytileset)
+2. Register the tileset in lib/tiles/list.txt
+3. Create an empty bitmap image large enough to hold your tileset
+4. Store the empty bitmap image in your tileset folder
+5. Author one or more .prf files to inform Angband how to use your tileset
+6. Create a Makefile in your tileset folder
+
+First you need to create a directory to contain your tileset's files. Put the
+directory in lib/tiles and choose a name for the directory that is lower-case
+and generally matches the naming convention of the other tilesets you see
+there. Once the directory has been created, the next step is to decide how big
+the tiles will be in pixels and then create a blank PNG image large enough to
+hold all of the tiles (be sure to enable alpha transparency). As an example,
+Shockbolt's tileset uses 64x64 pixel tiles. It also uses the special alpha
+blending flag so it can use double-height tiles (64x128) for large or tall
+monsters. Its dimensions are 8192x2048 but the tileset is not completely
+full. More tiles can be added without increasing the size of the image as new
+objects are added to future releases of Angband. This should be kept in mind as
+packing your tileset into the smallest possible image size may not be the most
+maintainable solution. Be sure to name the image file after the tile size, for
+example 64x64.png. Use the base size even if you are enabling double-height
+tiles.
+
+The only file you'll need to edit outside of your tileset's directory is
+lib/tiles/list.txt. list.txt contains a registry of which tilesets to load as
+well as some information about the size of the tiles and any special flags to
+set. The format of the file is documented in list.txt's header. Specifically,
+You will be defining the name of the tileset, which directory contains the
+tileset's files, how big the tiles are in pixels (i.e. 64x64), the name of the
+main preference file for the tileset and some additional flags which have to do
+with alpha blending. Not all tilesets need to set extra flags.
+
+Now that the basic setup is complete you need to tell Angband how to interpret
+your tileset image. You need to map each tile in your image to a specific
+element in the game so that Angband knows which tiles to show for which ASCII
+characters. This process can be done incrementally because Angband will
+continue to show the default character symbols in-game for objects that have
+not yet been mapped. This is especially helpful for verifying that your tileset
+has been setup correctly before beginning to map things out in earnest. It also
+means that if new objects are added to the game that you have not mapped into
+your tileset, the game will still be playable with your tileset, albeit the
+displayed ASCII character may appear incongruous with your styling. Mapping
+tiles to game elements is done in text files called preference files which have
+the extension '.prf'.
+
+The first thing to understand about mapping game elements in preference files
+is that everything that can be displayed in the game has a name, or in the case
+of flavors, an ID number. The names for each type of thing can be referenced
+from the data files as mentioned above. The table below is a quick reference
+for where to find names of things and how to form IDs correctly to reference
+them.
+
+============= ================== ================
+Type          Data File          Example
+============= ================== ================
+Terrain       terrain.txt        feat:open floor
+Trap          trap.txt           trap:pit
+Object        object.txt         object:light
+Monster       monster.txt        monster:Kobold
+Spell Effect  monster_spell.txt  GF:METEOR
+Player        <see below>        monster:<player>
+============= ================== ================
+
+Player pictures are referenced differently than other types of objects. They
+use a special query syntax that checks to see what kind class the player is as
+well as the gender in order to determine which picture to show. The query to
+select which tile to show for a female elf ranger would be
+
+  ?:[AND [EQU $CLASS Ranger] [EQU $RACE Elf]  [EQU $GENDER Female] ]
+
+Here, the query is checking to see if the player is a female Half-Elf and would
+use the assignment on the next line of the preference file only if this is
+true.
+
+Some types of objects such as terrain can use different tiles based on their
+state. In the case of terrain, the terrain can have different images for when
+it is lit by a torch, or dark. these are selected by appending another colon
+and a specifier to the name. For example, this would be the name of a torch-lit
+up staircase.
+
+  feat:up staircase:torch
+
+It is possible to specify the same tile be used for all possible states of a
+terrain feature by using an asterisk. This example identifies any unknown
+terrain tile (a tile the player hasn't lit or otherwise seen yet).
+
+  feat:unknown grid:*
+
+Given the full name of an object the last thing to do is to specify which tile
+from the tileset to use. Tile locations are given in a coordinate system using
+pairs of hexadecimal numbers. The coordinates start from 0x80:0x80 and
+increment from there. The pairs translate directly to the top and left most
+pixel of the corresponding tile from the graphics file, so the top left pixel
+of the first tile on the top left of the graphics file would be specified as
+0x80:0x80 (the pixel at x:0 y:0). The next tile immediately to the right of the
+that one would be 0x80:0x81. The tilesheet is sliced into rows and columns
+based on the tile size you specified in list.txt. So given a tile size of 64x64
+pixels, the tile at 0x80:0x81 would be located in the graphics file at pixel
+x:64 y:0. Remember, the coordinates in the preference files are in hexadecimal,
+so the next number after 0x89 would be 0x8A. The next number after 0x8F would
+be 0x90 and so on. To map an object to your tileset you will add one complete
+line to the file per object. This example maps the tile at 0x81:0x81 to the
+terrain feature 'quartz vein' when the quartz vein is lit by torch light.
+
+  feat:closed door:quartz vein:torch:0x81:0x81
+
+Before going any further, it is advisable to map a single object in your
+preference file, then start the game up, select your tileset and make sure you
+see your mapped tile in game. If this worked, then you are ready to design and
+map the rest of your tiles. A quick example would be to map a tile for your
+home in the town to the first tile position in your graphics file.
+
+  feat:Home:\*:0x80:0x80
+
+It's possible to have more than one preference file by using a sort of include
+syntax that causes other preference files referenced from your main preference
+file to also be read. It is also possible to place comments in your preference
+files to help you keep track of where different kinds of objects are
+mapped. Any text on a line after a '#' symbol is ignored. Shockbolt's tiles
+make great use of this and define a well organized set of mappings using three
+files with comments for each logical section of objects to be mapped.
+
+  # This is a comment
+
+
+  %:other-stuff.prf  # Load another preference file
+
+The last step to take is to make sure your tileset will be packaged with
+Angband when it is compiled for distribution and that it can be installed
+alongside the other tilesets. to do this you will need to add a file called
+'Makefile' to your tileset directory. Copy and paste an existing Makefile from
+one of the other tileset directories and update the DATA and PACKAGE lines to
+match the filenames you chose for your tileset.
+
+Once you have a working tileset and functional understanding of how tilesets
+are managed and organized, it would be a good idea to study Shockbolt's tileset
+and follow the examples there in order to produce a high-quality tileset that
+you will be proud to share with others.
 
 Larger changes
 ==============

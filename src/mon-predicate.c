@@ -18,6 +18,8 @@
  */
 
 #include "angband.h"
+#include "cave.h"
+#include "mon-group.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 
@@ -64,7 +66,7 @@ bool monster_is_destroyed(const struct monster *mon)
 bool monster_passes_walls(const struct monster *mon)
 {
 	return flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
-					  FLAG_END);
+					  RF_SMASH_WALL, FLAG_END);
 }
 
 /**
@@ -92,7 +94,7 @@ bool monster_is_unique(const struct monster *mon)
 }
 
 /**
- * Monster is 
+ * Monster is stupid
  */
 bool monster_is_stupid(const struct monster *mon)
 {
@@ -100,11 +102,40 @@ bool monster_is_stupid(const struct monster *mon)
 }
 
 /**
- * Monster is smart
+ * Monster is (or was) smart
  */
 bool monster_is_smart(const struct monster *mon)
 {
+	if (mon->original_race && rf_has(mon->original_race->flags, RF_SMART)) {
+		return true;
+	}
 	return rf_has(mon->race->flags, RF_SMART);
+}
+
+/**
+ * Monster is (or was) detectable by telepathy
+ *
+ * Note that weirdness may result if WEIRD_MIND monsters shapechange
+ */
+bool monster_is_esp_detectable(const struct monster *mon)
+{
+	bitflag flags[RF_SIZE];
+	rf_copy(flags, mon->race->flags);
+	if (mon->original_race) {
+		rf_inter(flags, mon->original_race->flags);
+	}
+	if (rf_has(flags, RF_EMPTY_MIND)) {
+		/* Empty mind, no telepathy */
+		return false;
+	} else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
+		/* Weird mind, one in ten individuals are detectable */
+		if ((mon->midx % 10) != 5) {
+			/* Undetectable */
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**
@@ -140,6 +171,17 @@ bool monster_has_spells(const struct monster *mon)
 }
 
 /**
+ * Monster has damaging breath
+ */
+bool monster_breathes(const struct monster *mon)
+{
+	bitflag breaths[RSF_SIZE];
+	create_mon_spell_mask(breaths, RST_BREATH, RST_NONE);
+	rsf_inter(breaths, mon->race->spell_flags);
+	return rsf_is_empty(breaths) ? false : true;
+}
+
+/**
  * Monster has innate spells
  */
 bool monster_has_innate_spells(const struct monster *mon)
@@ -160,6 +202,18 @@ bool monster_has_non_innate_spells(const struct monster *mon)
 	rsf_copy(mon_spells, mon->race->spell_flags);
 	rsf_diff(mon_spells, innate_spells);
 	return rsf_is_empty(mon_spells) ? false : true;
+}
+
+/**
+ * Monster has frequent and good archery attacks
+ */
+bool monster_loves_archery(const struct monster *mon)
+{
+	bitflag shooting[RSF_SIZE];
+	create_mon_spell_mask(shooting, RST_ARCHERY, RST_NONE);
+	rsf_inter(shooting, mon->race->spell_flags);
+	if (rsf_is_empty(shooting)) return false;
+	return (mon->race->freq_innate < 4) ? true : false;
 }
 
 
@@ -207,4 +261,26 @@ bool monster_is_mimicking(const struct monster *mon)
 	return mflag_has(mon->mflag, MFLAG_CAMOUFLAGE) && mon->mimicked_obj;
 }
 
-
+/**
+ * Monster can be frightened
+ *
+ * Note that differing group roles imply a chance of avoiding fear:
+ * - bodyguards are fearless
+ * - servants have a one in 3 chance
+ * - others have a chance depending on the size of the group
+ */
+bool monster_can_be_scared(const struct monster *mon)
+{
+	if (rf_has(mon->race->flags, RF_NO_FEAR)) return false;
+	switch (mon->group_info[PRIMARY_GROUP].role) {
+		case MON_GROUP_BODYGUARD: return false;
+		case MON_GROUP_SERVANT:	return one_in_(3) ? false : true;
+		default: {
+			int count = monster_primary_group_size(cave, mon) - 1;
+			while (count--) {
+				if (one_in_(20)) return false;
+			}
+		}
+	}
+	return true;
+}

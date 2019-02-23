@@ -631,7 +631,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			if (t_mon) {
 				bool fear = false;
 
-				mon_take_hit(t_mon, dam, &fear, " dies.");
+				mon_take_nonplayer_hit(dam, t_mon, MON_MSG_NONE, MON_MSG_DIE);
 				if (fear && monster_is_visible(t_mon)) {
 					add_monster_message(t_mon, MON_MSG_FLEE_IN_TERROR, true);
 				}
@@ -784,7 +784,7 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 
 	/* Cancel fear */
 	if (mon->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 
@@ -838,7 +838,7 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 
 	/* Cancel fear */
 	if (mon->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 
@@ -946,7 +946,7 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 			}
 		}
 		if (mon_tmd_effect >= 0) {
-			mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0, false);
+			mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0);
 		}
 		return true;
 	}
@@ -987,7 +987,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	if (mon) {
-		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0, false);
+		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0);
 		context->ident = true;
 	}
 
@@ -1047,6 +1047,46 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 	/* Push objects off the grid */
 	if (square_object(cave, player->grid))
 		push_object(player->grid);
+
+	return true;
+}
+
+/**
+ * Create a web.
+ */
+bool effect_handler_WEB(effect_handler_context_t *context)
+{
+	int rad = 1;
+	struct monster *mon = NULL;
+	struct loc grid;
+
+	/* Get the monster creating */
+	if (cave->mon_current > 0) {
+		mon = cave_monster(cave, cave->mon_current);
+	} else {
+		/* Player can't currently create webs */
+		return false;
+	}
+
+	/* Always notice */
+	context->ident = true;
+
+	/* Increase the radius for higher spell power */
+	if (mon->race->spell_power > 40) rad++;
+	if (mon->race->spell_power > 80) rad++;
+
+	/* Check within the radius for clear floor */
+	for (grid.y = mon->grid.y - rad; grid.y <= mon->grid.y + rad; grid.y++) {  
+		for (grid.x = mon->grid.x - rad; grid.x <= mon->grid.x + rad; grid.x++){
+			if (distance(grid, mon->grid) > rad) continue;
+
+			/* Require a floor grid with no existing traps or glyphs */
+			if (!square_iswebbable(cave, grid)) continue;
+
+			/* Create a web */
+			square_add_web(cave, grid);
+		}
+	}
 
 	return true;
 }
@@ -1264,7 +1304,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 
 	/* Target is another monster - disenchant it */
 	if (t_mon) {
-		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0, false);
+		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0);
 		return true;
 	}
 
@@ -1283,7 +1323,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 		return true;
 	}
 
-	/* Drain the given amount if the player has that many, or all of them */
+	/* Drain the given amount if the player has that much, or all of it */
 	if (drain >= player->csp) {
 		drain = player->csp;
 		player->csp = 0;
@@ -2434,12 +2474,12 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 		struct monster *mon = cave_monster(cave, i);
 		if (mon->race) {
 			int radius = z_info->max_sight * 2;
+			int dist = distance(origin, mon->grid);
 
 			/* Skip monsters too far away */
-			if (distance(origin, mon->grid) < radius &&
-					mon->m_timed[MON_TMD_SLEEP]) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-								false);
+			if ((dist < radius) && mon->m_timed[MON_TMD_SLEEP]) {
+				/* Monster wakes, closer means likelier to become aware */
+				monster_wake(mon, false, 100 - 2 * dist);
 				woken = true;
 			}
 		}
@@ -2853,6 +2893,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 /**
  * Teleport player or target monster to a grid near the given location
  * Setting context->y and context->x treats them as y and x coordinates
+ * Setting context->subtype allows monsters to teleport toward the player.
  *
  * This function is slightly obsessive about correctness.
  * This function allows teleporting into vaults (!)
@@ -2877,6 +2918,9 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	if (t_mon) {
 		/* Monster being teleported */
 		start = t_mon->grid;
+	} else if (context->subtype) {
+		/* Monster teleporting to the player */
+		start = mon->grid;
 	} else {
 		/* Targeted decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
@@ -2895,13 +2939,24 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		aim = loc(context->x, context->y);
 	} else if (mon) {
 		/* Spell cast by monster */
-		aim = mon->grid;
+		if (context->subtype) {
+			/* Monster teleporting to player */
+			aim = player->grid;
+			dis = 2;
+		} else {
+			/* Player being teleported to monster */
+			aim = mon->grid;
+		}
 	} else {
 		/* Player choice */
-		get_aim_dir(&dir);
-		if ((dir == DIR_TARGET) && target_okay()) {
+		do
+			get_aim_dir(&dir);
+		while (dir == DIR_TARGET && !target_okay());
+
+		if (dir == DIR_TARGET)
 			target_get(&aim);
-		}
+		else
+			aim = loc_offset(start, ddx[dir], ddy[dir]);
 
 		/* Randomise the landing a bit if it's a vault */
 		if (square_isvault(cave, aim)) dis = 10;
@@ -3419,9 +3474,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Take damage from the quake */
 					damage = (safe_grids ? damroll(4, 8) : (mon->hp + 1));
 
-					/* Monster is certainly awake */
-					mon_clear_timed(mon, MON_TMD_SLEEP,
-							MON_TMD_FLG_NOMESSAGE, false);
+					/* Monster is certainly awake, not thinking about player */
+					monster_wake(mon, false, 0);
 
 					/* If the quake finished the monster off, show message */
 					if (mon->hp < damage && mon->hp >= 0)
@@ -3650,9 +3704,11 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 				conf_level--;
 			}
 
+			/* Powerful monster */
 			if (monster_is_powerful(mon)) {
 				rad++;
 			}
+
 			flg |= PROJECT_PLAY;
 			flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
@@ -3752,8 +3808,9 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		dam = breath_dam(type, mon->hp);
 
-		/* Powerful monsters' breath is now full strength at 5 grids */
+		/* Powerful monster */
 		if (monster_is_powerful(mon)) {
+			/* Breath is now full strength at 5 grids */
 			diameter_of_source *= 3;
 			diameter_of_source /= 2;
 		}
@@ -3904,6 +3961,70 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target */
+	if (project(context->origin, rad, target, dam, type, flg, 0,
+				diameter_of_source, context->obj)) {
+		context->ident = true;
+	}
+
+	return true;
+}
+
+/**
+ * Crack a whip, or spit at the player; actually just a finite length beam
+ * Affect grids, objects, and monsters
+ * context->p1 is length of beam
+ */
+bool effect_handler_LASH(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, false);
+	int rad = context->radius;
+
+	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL | PROJECT_ARC;
+	int type = PROJ_MISSILE;
+
+	struct loc target = loc(-1, -1);
+
+	/* Diameter of source is 10 times radius, so the effect is essentially
+	 * full strength for its entire length. */
+	int diameter_of_source = rad * 10;
+
+	/* No damaging blows */
+	if (!dam) return false;
+
+	/* Monsters only */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *t_mon = monster_target_monster(context);
+
+		flg |= PROJECT_PLAY;
+
+		/* Target player or monster? */
+		if (t_mon) {
+			target = t_mon->grid;
+		} else {
+			struct loc decoy = cave_find_decoy(cave);
+			if (!loc_is_zero(decoy)) {
+				target = decoy;
+			} else {
+				target = player->grid;
+			}
+		}
+
+		/* Paranoia */
+		if (rad > z_info->max_range) rad = z_info->max_range;
+
+		/* Get the type (default is PROJ_MISSILE) */
+		type = mon->race->blow[0].effect->lash_type;
+	} else {
+		return false;
+	}
+
+	/* Check bounds */
+	if (diameter_of_source > 250) {
+		diameter_of_source = 250;
+	}
+
+	/* Lash the target */
 	if (project(context->origin, rad, target, dam, type, flg, 0,
 				diameter_of_source, context->obj)) {
 		context->ident = true;
@@ -4571,8 +4692,8 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Wake up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	/* Wake up, become aware */
+	monster_wake(mon, false, 100);
 
 	/* Explicit saving throw */
 	if (randint1(player->lev) < randint1(mon->race->level)) {
@@ -4586,7 +4707,7 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 	player_set_timed(player, TMD_COMMAND, MAX(amount, 0), false);
 
 	/* Monster is commanded */
-	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0, false);
+	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0);
 
 	return true;
 }
@@ -5000,6 +5121,9 @@ void free_effect(struct effect *source)
 	while (e) {
 		e_next = e->next;
 		dice_free(e->dice);
+		if (e->msg) {
+			string_free(e->msg);
+		}
 		mem_free(e);
 		e = e_next;
 	}
@@ -5077,6 +5201,7 @@ int effect_subtype(int index, const char *type)
 			case EF_BREATH:
 			case EF_ARC:
 			case EF_SHORT_BEAM:
+			case EF_LASH:
 			case EF_SWARM:
 			case EF_STRIKE:
 			case EF_STAR:
@@ -5166,6 +5291,13 @@ int effect_subtype(int index, const char *type)
 				/* Allow teleport away */
 			case EF_TELEPORT: {
 				if (streq(type, "AWAY"))
+					val = 1;
+				break;
+			}
+
+				/* Allow monster teleport toward */
+			case EF_TELEPORT_TO: {
+				if (streq(type, "SELF"))
 					val = 1;
 				break;
 			}

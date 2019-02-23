@@ -467,6 +467,10 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 		z->ood_monster_chance = value;
 	else if (streq(label, "ood-amount"))
 		z->ood_monster_amount = value;
+	else if (streq(label, "group-max"))
+		z->monster_group_max = value;
+	else if (streq(label, "group-dist"))
+		z->monster_group_dist = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -813,12 +817,13 @@ static void cleanup_world(void)
 {
 	struct level *level = world;
 	while (level) {
+		struct level *next = level->next;
 		string_free(level->name);
 		string_free(level->up);
 		string_free(level->down);
-		level = level->next;
+		mem_free(level);
+		level = next;
 	}
-	mem_free(world);
 }
 
 static struct file_parser world_parser = {

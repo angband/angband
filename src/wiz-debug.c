@@ -1592,6 +1592,7 @@ static void do_cmd_wiz_summon(int num)
 static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 {
 	int i;
+	struct monster_group_info info = { 0, 0 };
 
 	/* Paranoia */
 	assert(r);
@@ -1608,7 +1609,7 @@ static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 		if (!square_isempty(cave, grid)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, grid, r, slp, true,
+		if (place_new_monster(cave, grid, r, slp, true, info,
 							  ORIGIN_DROP_WIZARD)) {
 			break;
 		}

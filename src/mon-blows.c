@@ -294,81 +294,6 @@ static int monster_elemental_damage(melee_effect_handler_context_t *context,
 }
 
 /**
- * Deal damage to a monster from another monster.
- *
- * This is a helper for melee handlers. It is very similar to mon_take_hit(),
- * but eliminates the player-oriented stuff of that function.
- *
- * \param context is the project_m context.
- * \param hurt_msg is the message if the monster is hurt (if any).
- * \return true if the monster died, false if it is still alive.
- */
-static bool monster_melee_monster(melee_effect_handler_context_t *context,
-								 enum mon_messages hurt_msg,
-								 enum mon_messages die_msg)
-{
-	int dam = context->damage;
-	struct monster *t_mon = context->t_mon;
-
-	/* "Unique" monsters can only be "killed" by the player */
-	if (rf_has(t_mon->race->flags, RF_UNIQUE)) {
-		/* Reduce monster hp to zero, but don't kill it. */
-		if (dam > t_mon->hp) dam = t_mon->hp;
-	}
-
-	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == t_mon)
-		player->upkeep->redraw |= (PR_HEALTH);
-
-	/* Wake the monster up */
-	mon_clear_timed(t_mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-
-	/* Hurt the monster */
-	t_mon->hp -= dam;
-
-	/* Dead or damaged monster */
-	if (t_mon->hp < 0) {
-		/* Death message */
-		add_monster_message(t_mon, die_msg, false);
-
-		/* Generate treasure, etc */
-		monster_death(t_mon, false);
-
-		/* Delete the monster */
-		delete_monster_idx(t_mon->midx);
-		return true;
-	} else if (!monster_is_mimicking(t_mon)) {
-		/* Give detailed messages if visible */
-		if (hurt_msg != MON_MSG_NONE) {
-			add_monster_message(t_mon, hurt_msg, false);
-		} else if (dam > 0) {
-			message_pain(t_mon, dam);
-		}
-	}
-
-	/* Sometimes a monster gets scared by damage */
-	if (!t_mon->m_timed[MON_TMD_FEAR] &&
-		!rf_has(t_mon->race->flags, RF_NO_FEAR) && dam > 0) {
-		int percentage;
-
-		/* Percentage of fully healthy */
-		percentage = (100L * t_mon->hp) / t_mon->maxhp;
-
-		/* Run (sometimes) if at 10% or less of max hit points,
-		 * or (usually) when hit for half its current hit points */
-		if ((randint1(10) >= percentage) ||
-			((dam >= t_mon->hp) && (randint0(100) < 80))) {
-			int timer = randint1(10) + (((dam >= t_mon->hp) && (percentage > 7))
-										? 20 : ((11 - percentage) * 5));
-			mon_inc_timed(t_mon, MON_TMD_FEAR, timer,
-						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
-		}
-	}
-
-	return false;
-}
-
-/**
  * Deal the actual melee damage from a monster to a target player or monster
  *
  * This function is used in handlers where there is no further processing of
@@ -383,8 +308,8 @@ static bool monster_damage_target(melee_effect_handler_context_t *context,
 		if (context->p->is_dead) return true;
 	} else {
 		bool dead = false;
-		assert(context->t_mon);
-		dead = monster_melee_monster(context, MON_MSG_NONE, MON_MSG_DIE);
+		dead = mon_take_nonplayer_hit(context->damage, context->t_mon,
+									  MON_MSG_NONE,	MON_MSG_DIE);
 		return (dead || no_further_monster_effect);
 	}
 	return false;
@@ -453,8 +378,8 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 		if (context->p) {
 			take_hit(context->p, context->damage, context->ddesc);
 		} else {
-			assert(context->t_mon);
-			(void) monster_melee_monster(context, hurt_msg, die_msg);
+			(void) mon_take_nonplayer_hit(context->damage, context->t_mon,
+										  hurt_msg, die_msg);
 		}
 	}
 
@@ -512,7 +437,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 			}
 		}
 		if (mon_tmd_effect >= 0) {
-			mon_inc_timed(context->t_mon, mon_tmd_effect, amount, 0, false);
+			mon_inc_timed(context->t_mon, mon_tmd_effect, amount, 0);
 			context->obvious = true;
 		}
 	} else if (save && randint0(100) < context->p->state.skills[SKILL_SAVE]) {
@@ -573,8 +498,8 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 		update_smart_learn(context->mon, context->p, OF_HOLD_LIFE, 0, -1);
 		if (context->p->is_dead) return;
 	} else {
-		assert(context->t_mon);
-		(void) monster_melee_monster(context, MON_MSG_NONE, MON_MSG_DIE);
+		(void) mon_take_nonplayer_hit(context->damage, context->t_mon,
+									  MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -1047,10 +972,24 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 	/* Take damage */
 	if (monster_damage_target(context, false)) return;
 
-	/* Radius 8 earthquake centered at the monster */
+	/* Earthquake centered at the monster, radius damage-determined */
 	if (context->damage > 23) {
+		int radius = context->damage / 12;
 		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0",
-					  0, 8, 0, 0, 0, NULL);
+					  0, radius, 0, 0, 0, NULL);
+	}
+
+	/* Chance of knockback */
+	if ((context->damage > 100)) {
+		int value = context->damage - 100;
+		if (randint1(value) > 40) {
+			int dist = 1 + value / 40;
+			if (context->p) {
+				thrust_away(context->mon->grid, context->p->grid, dist);
+			} else {
+				thrust_away(context->mon->grid, context->t_mon->grid, dist);
+			}
+		}
 	}
 }
 
@@ -1107,6 +1046,22 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 }
 
 /**
+ * Melee effect handler: Give the player Black Breath.
+ *
+ * Note that we don't use melee_effect_timed(), as this is unresistable.
+ */
+static void melee_effect_handler_BLACK_BREATH(melee_effect_handler_context_t *context)
+{
+	/* Take damage */
+	if (monster_damage_target(context, true)) return;
+
+	/* Increase Black Breath counter a *small* amount, maybe */
+	if (one_in_(5) && player_inc_timed(context->p, TMD_BLACKBREATH,
+									   context->damage / 10, true, false))
+		context->obvious = true;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Monster blow melee handler selection
  * ------------------------------------------------------------------------ */
@@ -1145,6 +1100,7 @@ melee_effect_handler_f melee_handler_for_blow_effect(const char *name)
 		{ "EXP_40", melee_effect_handler_EXP_40 },
 		{ "EXP_80", melee_effect_handler_EXP_80 },
 		{ "HALLU", melee_effect_handler_HALLU },
+		{ "BLACK_BREATH", melee_effect_handler_BLACK_BREATH },
 		{ NULL, NULL },
 	};
 	const struct effect_handler_s *current = effect_handlers;

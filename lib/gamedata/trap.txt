@@ -76,6 +76,12 @@ appear:0:0:0
 flags:LOCK | INVISIBLE
 desc:A device which makes a closed door harder to open.
 
+name:web:web
+graphics:%:y
+appear:0:0:0
+flags:WEB | VISIBLE
+desc:A tangle of sticky spider webs.
+
 ## Player traps ##
 
 # trap door

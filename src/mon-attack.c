@@ -59,9 +59,9 @@
 /**
  * Check if a monster has a chance of casting a spell this turn
  */
-bool monster_can_cast(struct monster *mon)
+static bool monster_can_cast(struct monster *mon, bool innate)
 {
-	int chance = (mon->race->freq_innate + mon->race->freq_spell) / 2;
+	int chance = innate ? mon->race->freq_innate : mon->race->freq_spell;
 
 	/* Cannot cast spells when nice */
 	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
@@ -110,6 +110,14 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	/* Don't teleport to if the player is already next to us */
 	if (mon->cdis == 1) {
 		rsf_off(f2, RSF_TELE_TO);
+	}
+
+	/* Don't use the lash effect if the player is too far away */
+	if (mon->cdis > 2) {
+		rsf_off(f2, RSF_WHIP);
+	}
+	if (mon->cdis > 3) {
+		rsf_off(f2, RSF_SPIT);
 	}
 
 	/* Update acquired knowledge */
@@ -201,16 +209,19 @@ static bool summon_possible(struct loc grid)
  *
  * This function could be an efficiency bottleneck.
  */
-int choose_attack_spell(bitflag *f)
+int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
 {
 	int num = 0;
 	byte spells[RSF_MAX];
 
 	int i;
 
-	/* Extract all spells: "innate", "normal", "bizarre" */
-	for (i = FLAG_START, num = 0; i < RSF_MAX; i++)
+	/* Extract spells, filtering as necessary */
+	for (i = FLAG_START, num = 0; i < RSF_MAX; i++) {
+		if (!innate && mon_spell_is_innate(i)) continue;
+		if (!non_innate && !mon_spell_is_innate(i)) continue;
 		if (rsf_has(f, i)) spells[num++] = i;
+	}
 
 	/* Paranoia */
 	if (num == 0) return 0;
@@ -272,17 +283,29 @@ static int monster_spell_failrate(struct monster *mon)
  *
  * Note the special "MFLAG_NICE" flag, which prevents a monster from using
  * any spell attacks until the player has had a single chance to move.
+ *
+ * Note the interaction between innate attacks and non-innate attacks (true
+ * spells).  Because the check for spells is done first, actual innate attack
+ * frequencies are affected by the spell frequency.
  */
-bool make_attack_spell(struct monster *mon)
+bool make_ranged_attack(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	int thrown_spell, failrate;
 	bitflag f[RSF_SIZE];
 	char m_name[80];
 	bool seen = (player->timed[TMD_BLIND] == 0) && monster_is_visible(mon);
+	bool innate = false;
 
-	/* Check prerequisites */
-	if (!monster_can_cast(mon)) return false;
+	/* Check for cast this turn, non-innate and then innate */
+	if (!monster_can_cast(mon, false)) {
+		if (!monster_can_cast(mon, true)) {
+			return false;
+		} else {
+			/* We're casting an innate "spell" */
+			innate = true;
+		}
+	}
 
 	/* Extract the racial spell flags */
 	rsf_copy(f, mon->race->spell_flags);
@@ -313,7 +336,7 @@ bool make_attack_spell(struct monster *mon)
 	if (rsf_is_empty(f)) return false;
 
 	/* Choose a spell to cast */
-	thrown_spell = choose_attack_spell(f);
+	thrown_spell = choose_attack_spell(f, innate, !innate);
 
 	/* Abort if no spell was chosen */
 	if (!thrown_spell) return false;
@@ -471,8 +494,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
 		struct loc pgrid = p->grid;
-		bool visible = monster_is_visible(mon) ||
-			rf_has(mon->race->flags, RF_HAS_LIGHT);
+		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
 		bool obvious = false;
 
 		int damage = 0;
@@ -702,8 +724,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
 		struct loc grid = t_mon->grid;
-		bool visible = monster_is_visible(mon) ||
-			rf_has(mon->race->flags, RF_HAS_LIGHT);
+		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
 		bool obvious = false;
 
 		int damage = 0;
@@ -797,7 +818,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 				/* Apply the stun */
 				if (amt)
-					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0, false);
+					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0);
 			}
 
 			string_free(act);

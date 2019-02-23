@@ -595,6 +595,7 @@ bool square_isopen(struct chunk *c, struct loc grid) {
  */
 bool square_isempty(struct chunk *c, struct loc grid) {
 	if (square_isplayertrap(c, grid)) return false;
+	if (square_iswebbed(c, grid)) return false;
 	return square_isopen(c, grid) && !square_object(c, grid);
 }
 
@@ -604,6 +605,7 @@ bool square_isempty(struct chunk *c, struct loc grid) {
 bool square_isarrivable(struct chunk *c, struct loc grid) {
 	if (square(c, grid).mon) return false;
 	if (square_isplayertrap(c, grid)) return false;
+	if (square_iswebbed(c, grid)) return false;
 	if (square_isfloor(c, grid)) return true;
 	if (square_isstairs(c, grid)) return true;
 	// maybe allow open doors or suchlike?
@@ -614,10 +616,8 @@ bool square_isarrivable(struct chunk *c, struct loc grid) {
  * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, struct loc grid) {
-	if (!square_isobjectholding(c, grid))
-		return false;
-	if (square_istrap(c, grid))
-		return false;
+	if (!square_isobjectholding(c, grid)) return false;
+	if (square_istrap(c, grid)) return false;
 	return !square_object(c, grid);
 }
 
@@ -628,6 +628,14 @@ bool square_isdiggable(struct chunk *c, struct loc grid) {
 	return (square_ismineral(c, grid) ||
 			square_issecretdoor(c, grid) || 
 			square_isrubble(c, grid));
+}
+
+/**
+ * True if the square is a floor with no traps.
+ */
+bool square_iswebbable(struct chunk *c, struct loc grid) {
+	if (square_trap(c, grid)) return false;
+	return square_isfloor(c, grid);
 }
 
 /**
@@ -701,27 +709,8 @@ bool square_isfiery(struct chunk *c, struct loc grid) {
  * True if the cave square is lit.
  */
 bool square_islit(struct chunk *c, struct loc grid) {
-	int ny, nx;
 	assert(square_in_bounds(c, grid));
-
-	/* Lit by itself or the player */
-	if (square_isglow(c, grid)) return true;
-	if (player->state.cur_light > 0) return true;
-
-	/* Lit by adjacent monster or terrain */
-	for (ny = grid.y - 1; ny <= grid.y + 1; ny++) {
-		for (nx = grid.x - 1; nx <= grid.x + 1; nx++) {
-			struct loc adj_grid = loc(nx, ny);
-			struct monster *mon = NULL;
-			if (!square_in_bounds(c, adj_grid)) continue;
-			mon = square_monster(c, adj_grid);
-			if (mon && rf_has(mon->race->flags, RF_HAS_LIGHT)) return true;
-			if (square_isbright(c, adj_grid)) return true;
-		}
-	}
-
-	/* Unlit */
-	return false;
+	return square_light(c, grid) > 0 ? true : false;
 }
 
 /**
@@ -758,6 +747,12 @@ bool square_isdecoyed(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *glyph = lookup_trap("decoy");
 	return square_trap_specific(c, grid, glyph->tidx);
+}
+
+bool square_iswebbed(struct chunk *c, struct loc grid)
+{
+	struct trap_kind *web = lookup_trap("web");
+	return square_trap_specific(c, grid, web->tidx);
 }
 
 bool square_seemslikewall(struct chunk *c, struct loc grid)
@@ -935,6 +930,12 @@ struct feature *square_feat(struct chunk *c, struct loc grid)
 {
 	assert(square_in_bounds(c, grid));
 	return &f_info[square(c, grid).feat];
+}
+
+int square_light(struct chunk *c, struct loc grid)
+{
+	assert(square_in_bounds(c, grid));
+	return square(c, grid).light;
 }
 
 /**
@@ -1193,6 +1194,12 @@ void square_add_glyph(struct chunk *c, struct loc grid, int type)
 	place_trap(c, grid, glyph->tidx, 0);
 }
 
+void square_add_web(struct chunk *c, struct loc grid)
+{
+	struct trap_kind *web = lookup_trap("web");
+	place_trap(c, grid, web->tidx, 0);
+}
+
 void square_add_stairs(struct chunk *c, struct loc grid, int depth) {
 	int down = randint0(100) < 50;
 	if (depth == 0)
@@ -1263,6 +1270,33 @@ void square_tunnel_wall(struct chunk *c, struct loc grid)
 void square_destroy_wall(struct chunk *c, struct loc grid)
 {
 	square_set_feat(c, grid, FEAT_FLOOR);
+}
+
+void square_smash_wall(struct chunk *c, struct loc grid)
+{
+	int i;
+	square_set_feat(c, grid, FEAT_FLOOR);
+
+	for (i = 0; i < 8; i++) {
+		/* Extract adjacent location */
+		struct loc adj_grid = loc_sum(grid, ddgrid_ddd[i]);
+
+		/* Check legality */
+		if (!square_in_bounds_fully(c, adj_grid)) continue;
+
+		/* Ignore permanent grids */
+		if (square_isperm(c, adj_grid)) continue;
+
+		/* Give this grid a chance to survive */
+		if ((square_isgranite(c, adj_grid) && one_in_(4)) ||
+			(square_isquartz(c, adj_grid) && one_in_(10)) ||
+			(square_ismagma(c, adj_grid) && one_in_(20))) {
+			continue;
+		}
+
+		/* Remove it */
+		square_set_feat(c, grid, FEAT_FLOOR);
+	}
 }
 
 void square_destroy(struct chunk *c, struct loc grid) {

@@ -32,6 +32,7 @@ struct projection {
 	char *desc;
 	char *player_desc;
 	char *blind_desc;
+	char *lash_desc;
 	int numerator;
 	random_value denominator;
 	int divisor;
@@ -89,7 +90,7 @@ enum
 	PROJECT_SAFE  = 0x0200,
 	PROJECT_ARC   = 0x0400,
 	PROJECT_PLAY  = 0x0800,
-	PROJECT_INFO  = 0x1000
+	PROJECT_INFO  = 0x1000,
 };
 
 /* Display attrs and chars */
@@ -106,7 +107,8 @@ bool project_o(struct source, int r, struct loc grid, int dam, int typ,
 			   const struct object *protected_obj);
 void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
                bool *did_hit, bool *was_obvious);
-bool project_p(struct source, int r, struct loc grid, int dam, int typ);
+bool project_p(struct source, int r, struct loc grid, int dam, int typ,
+			   int power);
 
 int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 				 int flg);

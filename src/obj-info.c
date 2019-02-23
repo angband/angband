@@ -112,7 +112,7 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 		if (list[i])
 			recepticle[count++] = projections[i].name;
 	}
-	
+
 	return count;
 }
 
@@ -143,6 +143,10 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 			}
 			textblock_append(tb, ".\n");
 		}
+	}
+	/* Say if curse removal has been tried */
+	if (of_has(obj->flags, OF_FRAGILE)) {
+		textblock_append(tb, "Attempting to uncurse it may destroy it.\n");
 	}
 
 	return true;
@@ -1160,14 +1164,14 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 /**
  * Gives the known light-sourcey characteristics of the given object.
  *
- * Fills in the radius of the light in `rad`, whether it uses fuel and
+ * Fills in the intensity of the light in `intensity`, whether it uses fuel and
  * how many turns light it can refuel in similar items.
  *
  * Return false if the object is not known to be a light source (which 
  * includes it not actually being a light source).
  */
 static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
-							int *rad, bool *uses_fuel, int *refuel_turns)
+							int *intensity, bool *uses_fuel, int *refuel_turns)
 {
 	bool no_fuel;
 	bool is_light = tval_is_light(obj);
@@ -1175,16 +1179,16 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return false;
 
-	/* Work out radius */
-	if (of_has(obj->flags, OF_LIGHT_1))
-		*rad = 1;
-	else if (of_has(obj->flags, OF_LIGHT_2))
-		*rad = 2;
-	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
+	/* Work out intensity */
+	if (of_has(obj->flags, OF_LIGHT_2))
+		*intensity = 2;
+	else if (of_has(obj->flags, OF_LIGHT_3))
+		*intensity = 3;
+	*intensity += obj->known->modifiers[OBJ_MOD_LIGHT];
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
-	 * bad radius and refueling info. */
-	if (*rad == 0)
+	 * bad intensity and refueling info. */
+	if (*intensity == 0)
 		return false;
 
 	no_fuel = of_has(obj->known->flags, OF_NO_FUEL) ? true : false;
@@ -1210,17 +1214,17 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 static bool describe_light(textblock *tb, const struct object *obj,
 						   oinfo_detail_t mode)
 {
-	int rad = 0;
+	int intensity = 0;
 	bool uses_fuel = false;
 	int refuel_turns = 0;
 	bool terse = mode & OINFO_TERSE ? true : false;
 
-	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
+	if (!obj_known_light(obj, mode, &intensity, &uses_fuel, &refuel_turns))
 		return false;
 
 	if (tval_is_light(obj)) {
-		textblock_append(tb, "Radius ");
-		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
+		textblock_append(tb, "Intensity ");
+		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", intensity));
 		textblock_append(tb, " light.");
 
 		if (!obj->artifact && !uses_fuel)
@@ -1516,6 +1520,15 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						dice_string);
 				break;
 			}
+
+			/* Currently no object generated lashes */
+			case EFINFO_LASH: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						projections[effect->subtype].lash_desc,
+						effect->subtype);
+				break;
+			}
+
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),

@@ -17,7 +17,9 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "datafile.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -363,8 +365,8 @@ static int call_monster(struct loc grid)
 	/* Swap the monster */
 	monster_swap(mon->grid, grid);
 
-	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	/* Wake it up, make it aware */
+	monster_wake(mon, false, 100);
 
 	/* Set it's energy to 0 */
 	mon->energy = 0;
@@ -400,6 +402,7 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	struct loc near;
 	struct monster *mon;
 	struct monster_race *race;
+	struct monster_group_info info = { 0, 0 };
 
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i) {
@@ -445,8 +448,16 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* Handle failure */
 	if (!race) return (0);
 
+	/* Put summons in the group of any summoner */
+	if (cave->mon_current > 0) {
+		struct monster_group *group = summon_group(cave, cave->mon_current);
+		info.index = group->index;
+		info.role = MON_GROUP_SUMMON;
+	}
+
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, near, race, false, false, ORIGIN_DROP_SUMMON)){
+	if (!place_new_monster(cave, near, race, false, false, info,
+						   ORIGIN_DROP_SUMMON)) {
 		return (0);
 	}
 
@@ -458,10 +469,32 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* XXX should this now be hold monster for a turn? */
 	if (delay) {
 		mon->energy = 0;
-		if (mon->race->speed > player->state.speed)
-			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE, false);
+		if (mon->race->speed > player->state.speed) {
+			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE);
+		}
 	}
 
 	return (mon->race->level);
 }
 
+/**
+ * Select a race for a monster shapechange from its possible summons
+ */
+struct monster_race *select_shape(struct monster *mon, int type)
+{
+	struct monster_race *race = NULL;
+
+	/* Save the "summon" type */
+	summon_specific_type = type;
+
+	/* Prepare allocation table */
+	get_mon_num_prep(summon_specific_okay);
+
+	/* Pick a monster */
+	race = get_mon_num(player->depth + 5);
+
+	/* Prepare allocation table */
+	get_mon_num_prep(NULL);
+
+	return race;
+}
