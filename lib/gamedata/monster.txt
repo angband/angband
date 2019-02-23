@@ -4856,7 +4856,7 @@ spells:TELE_TO | HOLD
 desc:The ancient grey willow tree, ruler of the Old Forest. He despises
 desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
 desc:  Enormous it looked, its sprawling branches going up like racing arms
-desc: with may long-fingered hands, its knotted and twisted trunk gaping in
+desc: with many long-fingered hands, its knotted and twisted trunk gaping in
 desc: wide fissures that creaked faintly as the boughs moved."
 
 ########## DUNGEON LEVELS 20-29 ##########
@@ -7496,7 +7496,7 @@ desc: and fangs that drip with acidic poison.  Its eyes are mesmerizing.
 
 name:ogre mage
 base:ogre
-color:r
+color:B
 speed:115
 hit-points:220
 hearing:20
