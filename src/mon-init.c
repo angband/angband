@@ -2064,12 +2064,12 @@ struct file_parser pit_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_lore_name(struct parser *p) {
-	struct monster_race *race = lookup_monster(parser_getsym(p, "index"));
+	struct monster_race *race = lookup_monster(parser_getstr(p, "name"));
 	struct monster_lore *l;
 
-	/* Allow for old lore files which had an index */
+	/* Allow for non-existent monsters */
 	if (!race) {
-		race = lookup_monster(parser_getstr(p, "name"));
+		return PARSE_ERROR_NONE;
 	}
 
 	l = &l_list[race->ridx];
@@ -2083,7 +2083,7 @@ static enum parser_error parse_lore_base(struct parser *p) {
 	struct monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	if (base == NULL)
 		return PARSE_ERROR_INVALID_MONSTER_BASE;
 
@@ -2098,7 +2098,7 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	l->sights = parser_getint(p, "sights");
 	l->deaths = parser_getint(p, "deaths");
 	l->tkills = parser_getint(p, "tkills");
@@ -2118,7 +2118,7 @@ static enum parser_error parse_lore_blow(struct parser *p) {
 	struct random dam = { 0, 0, 0, 0 };
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 
 	/* Read in all the data */
 	method = findmeth(parser_getsym(p, "method"));
@@ -2156,7 +2156,7 @@ static enum parser_error parse_lore_flags(struct parser *p) {
 	char *s;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	if (!parser_hasval(p, "flags"))
 		return PARSE_ERROR_NONE;
 	flags = string_make(parser_getstr(p, "flags"));
@@ -2177,7 +2177,7 @@ static enum parser_error parse_lore_spells(struct parser *p) {
 	int ret = PARSE_ERROR_NONE;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	flags = string_make(parser_getstr(p, "spells"));
 	s = strtok(flags, " |");
 	while (s) {
@@ -2196,7 +2196,7 @@ static enum parser_error parse_lore_drop(struct parser *p) {
 	int tval, sval;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
@@ -2227,7 +2227,7 @@ static enum parser_error parse_lore_drop_base(struct parser *p) {
 	int tval;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
@@ -2250,7 +2250,7 @@ static enum parser_error parse_lore_friends(struct parser *p) {
 	struct random number;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	f = mem_zalloc(sizeof *f);
 	number = parser_getrand(p, "number");
 	f->number_dice = number.dice;
@@ -2281,7 +2281,7 @@ static enum parser_error parse_lore_friends_base(struct parser *p) {
 	struct random number;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	f = mem_zalloc(sizeof *f);
 	number = parser_getrand(p, "number");
 	f->number_dice = number.dice;
@@ -2315,7 +2315,7 @@ static enum parser_error parse_lore_mimic(struct parser *p) {
 	struct object_kind *kind;
 
 	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+		return PARSE_ERROR_NONE;
 	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
@@ -2337,7 +2337,7 @@ struct parser *init_parse_lore(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "name sym index ?str name", parse_lore_name);
+	parser_reg(p, "name str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
 	parser_reg(p, "glyph char glyph", ignored);
