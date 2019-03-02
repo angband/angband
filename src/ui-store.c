@@ -990,7 +990,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 					return false;
 
 				action = true;
-			} else if (event->mouse.y == 4+oid) {
+			} else if ((event->mouse.y >= 4) && (event->mouse.y == 4+oid)) {
 				/* if press is on a list item, so store item context */
 				context_menu_store_item(ctx, oid, event->mouse.x,
 										event->mouse.y);
