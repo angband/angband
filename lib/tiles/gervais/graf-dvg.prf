@@ -745,6 +745,7 @@ monster:Thuringwethil, the Vampire Messenger:0x95:0xBC
 monster:Great Hell Wyrm:0x8C:0xA0
 monster:Draconic quylthulg:0x93:0x84
 monster:Fundin Bluecloak:0x95:0xBD
+monster:Ossë, Herald of Ulmo:0x95:0xBF
 monster:Ancalagon the Black:0x95:0xC0
 monster:Nightwalker:0x94:0x91
 monster:Saruman of Many Colours:0x95:0xC2
@@ -752,6 +753,8 @@ monster:Dreadlord:0x94:0x84
 monster:Tevildo, Prince of Cats:0x95:0xC3
 monster:Jabberwock:0x93:0x99
 monster:Chaos hound:0x90:0xBE
+monster:Great Wyrm of Chaos:0x8C:0xA3
+monster:Great Wyrm of Law:0x8C:0xA4
 monster:Great Wyrm of Annihilation:0x8C:0xA3
 monster:Sky Dragon:0x8C:0xA4
 monster:Great Wyrm of Balance:0x8C:0xA5

@@ -3714,7 +3714,7 @@ rarity:2
 experience:50
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
-flags:MALE | EVIL | SMART
+flags:MALE | SMART
 flags:DROP_1
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
@@ -4880,8 +4880,9 @@ blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:HURT:6d8
 flags:NO_FEAR
-desc:A great bird of prey, with razor sharp beak and talons.  It lives to rip
-desc: and tear.
+desc:A blinding whirlwind of fear and feathers. Its razor sharp beak and talons
+desc: fill its foes with terror as it seeks to rend flesh from bone with
+desc: unbridled ferocity.
 
 name:Mirkwood spider
 base:spider
@@ -6609,7 +6610,7 @@ rarity:1
 experience:150
 blow:HIT:HURT:2d5
 blow:HIT:HURT:2d5
-flags:MALE | EVIL | SMART
+flags:MALE | SMART
 flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
@@ -13113,6 +13114,39 @@ desc:  Feared by foes and friends alike when it flies into one of its berserk
 desc: rages, the Horned Reaper will cut down anything in its path between it
 desc: and you - even the minions it has just summoned.
 
+name:Ossë, Herald of Ulmo
+base:ainu
+color:w
+speed:130
+hit-points:6000
+hearing:40
+armor-class:204
+sleepiness:10
+depth:72
+rarity:3
+experience:30000
+blow:HIT:DISENCHANT:10d5
+blow:HIT:DISENCHANT:10d5
+blow:HIT:HURT:10d10
+blow:HIT:HURT:10d10
+flags:UNIQUE | MALE | SMART
+flags:DROP_4 | DROP_GOOD
+flags:MOVE_BODY
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER
+innate-freq:4
+spell-freq:2
+spells:BLIND | TELE_TO | WHIP
+spells:BA_WATE | STORM
+spells:BO_MANA | BO_WATE
+spells:BR_DISE
+spells:S_AINU
+desc:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
+desc: sea has dragged himself down into Angband to send you to a watery grave.
+desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
+desc: the untamed power of the ocean. Terror grows in your heart with each
+desc: squelching step of his approach.
+
+
 ### Dungeon level 73 ###
 
 name:great hell wyrm
@@ -13338,6 +13372,65 @@ desc: shapes, though the dominant form is that of a huge dog.  You feel very
 desc: uncertain all of a sudden.
 
 ### Dungeon level 75 ###
+
+name:great wyrm of chaos
+plural:great wyrms of chaos
+base:ancient dragon
+color:v
+speed:120
+hit-points:3960
+hearing:40
+armor-class:255
+sleepiness:20
+depth:75
+rarity:2
+experience:29000
+blow:CLAW:HURT:5d12
+blow:CLAW:HURT:5d12
+blow:BITE:HURT:7d14
+blow:BITE:HURT:7d14
+flags:ONLY_ITEM
+flags:BASH_DOOR
+flags:IM_FIRE | IM_DISEN
+flags:ATTR_MULTI
+innate-freq:5
+spell-freq:5
+spells:BLIND | CONF | SCARE
+spells:BR_CHAO | BR_DISE
+spells:S_DRAGON | S_HI_DRAGON
+desc:A massive dragon of changing form.  As you watch, it appears first fair a$
+desc: then foul.  Its body is twisted by chaotic forces as it strives to stay
+desc: real.  Its very existence distorts the universe around it.
+
+name:great wyrm of law
+plural:great wyrms of law
+base:ancient dragon
+color:B
+speed:120
+hit-points:3960
+hearing:40
+armor-class:255
+sleepiness:20
+depth:75
+rarity:2
+experience:29000
+blow:CLAW:HURT:5d12
+blow:CLAW:HURT:5d12
+blow:BITE:HURT:7d14
+blow:BITE:HURT:7d14
+flags:ATTR_FLICKER
+flags:ONLY_ITEM
+flags:BASH_DOOR
+flags:IM_COLD | NO_STUN
+innate-freq:5
+spell-freq:5
+spells:BLIND | CONF | SCARE
+spells:BR_SHAR | BR_SOUN
+spells:S_DRAGON | S_HI_DRAGON
+desc:A massive dragon of powerful intellect.  It seeks to dominate the universe
+desc: and despises all other life.  It sees all who do not obey it as mere
+desc: insects to be crushed underfoot.
+
 
 name:Ungoliant, the Unlight
 base:spider
@@ -13696,7 +13789,7 @@ spell-freq:4
 spells:WOUND | SCARE | BRAIN_SMASH
 spells:BLINK | TELE_SELF_TO
 spells:S_HI_DEMON
-desc:A female embodiment of rage, intent on tearing your mond and body apart.
+desc:A female embodiment of rage, intent on tearing your mind and body apart.
 
 name:great wyrm of annihilation
 plural:great wyrms of annihilation
