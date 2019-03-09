@@ -508,7 +508,8 @@ power:6
 msg:Your {kind} twist{s} space around you.
 effect:TELEPORT
 dice:M60
-desc:teleports you randomly about 60% of the largest distance you could go
+desc:teleports you randomly about 60 per cent of the largest distance you
+desc: could go
 
 name:TELE_LEVEL
 aim:0

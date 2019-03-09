@@ -2931,6 +2931,19 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 		/* Player being teleported */
 		start = player->grid;
+
+		/* Check for a no teleport grid */
+		if (square_isno_teleport(cave, start)) {
+			msg("Teleportation forbidden!");
+			return true;
+		}
+
+		/* Check for a no teleport curse */
+		if (player_of_has(player, OF_NO_TELEPORT)) {
+			equip_learn_flag(player, OF_NO_TELEPORT);
+			msg("Teleportation forbidden!");
+			return true;
+		}
 	}
 
 	/* Where are we going? */
@@ -3022,6 +3035,19 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	/* Targeted decoys get destroyed */
 	if (decoy.y && decoy.x) {
 		square_destroy_decoy(cave, decoy);
+		return true;
+	}
+
+	/* Check for a no teleport grid */
+	if (square_isno_teleport(cave, player->grid)) {
+		msg("Teleportation forbidden!");
+		return true;
+	}
+
+	/* Check for a no teleport curse */
+	if (player_of_has(player, OF_NO_TELEPORT)) {
+		equip_learn_flag(player, OF_NO_TELEPORT);
+		msg("Teleportation forbidden!");
 		return true;
 	}
 

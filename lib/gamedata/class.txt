@@ -681,7 +681,7 @@ title:Prophet
 title:Patriarch
 title:High Priest
 
-magic:1:350:9
+magic:1:350:5
 
 book:prayer book:town:[Spiritual World]:6:divine
 book-graphics:?:y
