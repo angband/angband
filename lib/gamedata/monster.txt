@@ -1429,7 +1429,7 @@ desc:A disembodied eye, crackling with energy.
 
 name:kobold shaman
 base:kobold
-color:r
+color:B
 speed:110
 hit-points:11
 hearing:20
@@ -1634,7 +1634,7 @@ desc:It is about ten feet long.
 
 name:kobold archer
 base:kobold
-color:W
+color:g
 speed:110
 hit-points:24
 hearing:20
@@ -2575,7 +2575,7 @@ desc:A woman's face on the body of a vicious black bird.
 
 name:orc shaman
 base:orc
-color:r
+color:B
 speed:110
 hit-points:41
 hearing:20
@@ -7986,7 +7986,7 @@ flags:DROP_60
 flags:HURT_LIGHT | NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP
 spell-freq:5
-spells:BLINK | WOUND | DARKNESS | MISSILE | SCARE
+spells:BLINK | WOUND | DARKNESS | SCARE
 drop-base:prayer book:5:1:1
 drop-base:prayer book:5:1:1
 desc:A troll who is so bright he knows how to read.
@@ -11343,7 +11343,7 @@ blow:HIT:HURT:4d6
 blow:HIT:HURT:6d5
 flags:MALE
 flags:DROP_2
-innate-freq:3
+innate-freq:5
 spell-freq:5
 spells:ARROW
 spells:SHAPECHANGE

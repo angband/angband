@@ -748,6 +748,7 @@ bool mon_pit_hook(struct monster_race *race)
 {
 	bool match_base = true;
 	bool match_color = true;
+	int innate_freq = dun->pit_type->freq_innate;
 
 	assert(race);
 	assert(dun->pit_type);
@@ -762,6 +763,8 @@ bool mon_pit_hook(struct monster_race *race)
 		return false;
 	} else if (rsf_is_inter(race->spell_flags,
 							dun->pit_type->forbidden_spell_flags)) {
+		return false;
+	} else if (race->freq_innate < innate_freq) {
 		return false;
 	} else if (dun->pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
@@ -811,20 +814,20 @@ void set_pit_type(int depth, int type)
 {
 	int i;
 	int pit_idx = 0;
-	
+
 	/* Hack -- set initial distance large */
 	int pit_dist = 999;
-	
+
 	for (i = 0; i < z_info->pit_max; i++) {
 		int offset, dist;
 		struct pit_profile *pit = &pit_info[i];
-		
+
 		/* Skip empty pits or pits of the wrong room type */
 		if (type && (!pit->name || pit->room_type != type)) continue;
-		
+
 		offset = Rand_normal(pit->ave, 10);
 		dist = ABS(offset - depth);
-		
+
 		if (dist < pit_dist && one_in_(pit->rarity)) {
 			/* This pit is the closest so far */
 			pit_idx = i;

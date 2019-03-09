@@ -76,6 +76,7 @@ struct pit_profile {
     int obj_rarity;           /**< How rare objects are in this pit */
     bitflag flags[RF_SIZE];   /**< Required flags */
     bitflag forbidden_flags[RF_SIZE];         /**< Forbidden flags */
+	int freq_innate;          /**< Minimum innate frequency */
     bitflag spell_flags[RSF_SIZE];            /**< Required spell flags */
     bitflag forbidden_spell_flags[RSF_SIZE];  /**< Forbidden spell flags */
     struct pit_monster_profile *bases;     /**< List of vaild monster bases */
