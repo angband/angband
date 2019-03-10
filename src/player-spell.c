@@ -590,7 +590,11 @@ static void spell_effect_append_value_info(const struct effect *effect,
 		case EF_BALL:
 			/* Append radius */
 			if (effect->radius) {
-				special = format(", rad %d", effect->radius);
+				int rad = effect->radius;
+				if (effect->other) {
+					rad += player->lev / effect->other;
+				}
+				special = format(", rad %d", rad);
 			} else {
 				special = "rad 2";
 			}
