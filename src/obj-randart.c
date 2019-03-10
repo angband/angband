@@ -2532,7 +2532,7 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 	int power = Rand_sample(data->avg_tv_power[tval],
 							data->max_tv_power[tval],
 							data->min_tv_power[tval],
-							25, 30);
+							20, 20);
 
 	/* Choose a name */
 	char *new_name = artifact_gen_name(art, name_sections);
