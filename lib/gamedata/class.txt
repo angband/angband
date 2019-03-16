@@ -215,7 +215,7 @@ effect:TELEPORT
 dice:10
 desc:Teleports you randomly up to 10 squares away.
 
-spell:Electric Arc:2:2:34:16
+spell:Electric Arc:2:2:34:4
 effect:SHORT_BEAM:ELEC:0:1
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
@@ -229,7 +229,7 @@ effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
-spell:Fire Ball:6:5:33:15
+spell:Fire Ball:6:5:33:5
 effect:BALL:FIRE:2
 dice:$B
 expr:B:PLAYER_LEVEL:* 2
@@ -239,7 +239,7 @@ book:magic book:town:[Attacks and Knowledge]:6:arcane
 book-graphics:?:B
 book-properties:400:40:10 to 100
 
-spell:Recharging:5:5:28:10
+spell:Recharging:5:5:28:6
 effect:RECHARGE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -248,7 +248,7 @@ desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-spell:Identify Rune:8:7:25:12
+spell:Identify Rune:8:7:25:8
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -259,7 +259,7 @@ effect:SENSE_OBJECTS
 effect-yx:22:40
 desc:Detects gold and senses objects in the immediate area.
 
-spell:Frost Bolt:13:5:40:24
+spell:Frost Bolt:13:5:40:6
 effect:BOLT_OR_BEAM:COLD
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 3 + 6
@@ -268,14 +268,14 @@ desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
-spell:Reveal Monsters:15:6:40:6
+spell:Reveal Monsters:15:6:40:8
 effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
-spell:Acid Spray:20:5:30:28
+spell:Acid Spray:20:5:30:12
 effect:ARC:ACID:10:60
 dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 2
@@ -303,7 +303,7 @@ expr:B:PLAYER_LEVEL:* 3
 desc:Produces a bolt that teleports away the first monster in its path.
 desc: Distance teleported increases with player level.
 
-spell:Resistance:20:20:65:30
+spell:Resistance:20:20:65:20
 effect:TIMED_INC:OPP_ACID
 dice:20+d20
 effect:TIMED_INC:OPP_ELEC
@@ -332,7 +332,7 @@ effect:TOUCH:MAKE_DOOR
 desc:A door is created on each empty floor space that is directly
 desc: adjacent to you.  These doors are closed, but not locked.
 
-spell:Mana Bolt:25:8:60:100
+spell:Mana Bolt:25:8:60:30
 effect:BOLT_OR_BEAM:MISSILE
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 10
@@ -368,7 +368,7 @@ spell:Dimension Door:35:30:80:40
 effect:TELEPORT_TO
 desc:Teleports you to (or near to) a square of your choice.
 
-spell:Thrust Away:40:12:90:140
+spell:Thrust Away:40:12:90:40
 effect:SHORT_BEAM:FORCE:1:10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 0
@@ -456,23 +456,23 @@ book-graphics:?:G
 book-properties:25:40:1 to 100
 equip:nature book:[Lesser Charms]:1:1
 
-spell:Detect Life:1:1:23:4
+spell:Detect Life:1:1:23:2
 effect:DETECT_LIVING_MONSTERS
 effect-yx:22:40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Fox Form:1:2:20:5
+spell:Fox Form:1:2:20:10
 effect:SHAPECHANGE:fox
 desc:Changes you into the shape of a quick and stealthy fox.
 desc:  While shapechanged you cannot use items.
 
-spell:Satisfy Hunger:2:2:25:5
+spell:Satisfy Hunger:2:2:25:2
 effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
-spell:Stinking Cloud:3:2:27:5
+spell:Stinking Cloud:3:2:27:4
 effect:BALL:POIS:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
@@ -494,30 +494,30 @@ book:nature book:town:[Gifts of Nature]:6:nature
 book-graphics:?:G
 book-properties:400:40:10 to 100
 
-spell:Cure Poison:4:4:30:6
+spell:Cure Poison:4:4:30:4
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Resist Poison:7:6:32:7
+spell:Resist Poison:7:6:32:5
 effect:TIMED_INC:OPP_POIS
 dice:20+d20
 desc:Grants you resistance to poison for 20+1d20 turns.
 
-spell:Turn Stone to Mud:8:3:25:7
+spell:Turn Stone to Mud:8:3:25:5
 effect:LINE:KILL_WALL
 dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
-spell:Sense Surroundings:9:4:35:10
+spell:Sense Surroundings:9:4:35:6
 effect:MAP_AREA
 dice:$Dd$S
 expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
 expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
 desc:Maps the nearby area.
 
-spell:Lightning Strike:12:6:35:20
+spell:Lightning Strike:12:6:35:8
 effect:STRIKE:ELEC:0
 dice:$Dd4
 expr:D:PLAYER_LEVEL:/ 4
@@ -527,7 +527,7 @@ expr:B:PLAYER_LEVEL:+ 5
 desc:Strikes a target from above with a lightning bolt, followed by a clap
 desc: of thunder.
 
-spell:Earth Rising:14:5:40:25
+spell:Earth Rising:14:5:40:12
 effect:SHORT_BEAM:SHARD:4:5
 dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 3 + 2
@@ -538,29 +538,29 @@ book:nature book:dungeon:[Creature Dominion]:5:nature
 book-graphics:?:g
 book-properties:10000:20:30 to 100
 
-spell:Trance:20:10:45:50
+spell:Trance:20:10:45:15
 effect:TOUCH_AWARE:MON_HOLD
 dice:3+d$D
 expr:D:PLAYER_LEVEL:/ 7
 desc:Holds every adjacent, non-resistant monster for a level-dependent
 desc: number of turns; animals are entranced for longer.
 
-spell:Mass Sleep:25:15:50:60
+spell:Mass Sleep:25:15:50:15
 effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Monsters that resist sleep are not affected.
 
-spell:Become Pukel-man:30:20:75:80
+spell:Become Pukel-man:30:20:75:50
 effect:SHAPECHANGE:Pukel-man
 desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
 
-spell:Eagle's Flight:35:20:80:100
+spell:Eagle's Flight:35:20:80:80
 effect:SHAPECHANGE:eagle
 desc:Gives you the form of one of the great eagles of Manwë.
 
-spell:Bear Form:40:20:85:150
+spell:Bear Form:40:20:85:100
 effect:SHAPECHANGE:bear
 desc:Allows you to take the form of a great bear of the mountains, sweeping
 desc: aside your enemies with your mighty paws.
@@ -569,7 +569,7 @@ book:nature book:dungeon:[Natural Vitality]:4:nature
 book-graphics:?:g
 book-properties:30000:15:40 to 100
 
-spell:Tremor:20:20:60:40
+spell:Tremor:20:20:60:16
 effect:EARTHQUAKE:TARGETED:4
 desc:Causes a targeted 4-square radius earthquake.
 desc:  Earthquakes may hurt the player, damage monsters and destroy items
@@ -577,7 +577,7 @@ desc: in some squares in the area of effect.
 desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 
-spell:Haste Self:25:12:65:60
+spell:Haste Self:25:12:65:15
 effect:TIMED_INC:FAST:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
@@ -605,7 +605,7 @@ book:nature book:dungeon:[Wild Forces]:5:nature
 book-graphics:?:g
 book-properties:50000:10:60 to 100
 
-spell:Meteor Swarm:30:14:85:50
+spell:Meteor Swarm:30:14:85:20
 effect:SWARM:METEOR:1
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:/ 2 + 30
@@ -618,20 +618,20 @@ desc: damage to each monster in its area of effect.
 desc:  If this kills the monster that blocked the path to the target
 desc: location, the next meteor may continue to find another target.
 
-spell:Rift:35:20:60:65
+spell:Rift:35:20:60:25
 effect:BEAM:GRAVITY
 dice:40+$Dd7
 expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a gravity beam that hurts each monster in its path
 desc: and has a chance of teleporting it away.
 
-spell:Ice Storm:37:25:75:120
+spell:Ice Storm:37:25:75:24
 effect:PROJECT_LOS:ICE
 dice:3d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Strikes every monster in line of sight with sheets of ice from above.
 
-spell:Volcanic Eruption:40:30:75:130
+spell:Volcanic Eruption:40:30:75:50
 effect:SPHERE:FIRE:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:* 3 / 2
@@ -640,7 +640,7 @@ effect:EARTHQUAKE:NONE:5
 desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
 desc: around the player.
 
-spell:River of Lightning:43:35:75:150
+spell:River of Lightning:43:35:75:100
 effect:ARC:PLASMA:0:20
 dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 10
@@ -727,7 +727,7 @@ effect:TIMED_INC:SINVIS
 dice:24+d24
 desc:Enables you to see invisible monsters for 24+1d24 turns.
 
-spell:Heroism:5:2:30:8
+spell:Heroism:5:2:30:5
 effect:HEAL_HP
 dice:10
 effect:CURE:AFRAID
@@ -743,7 +743,7 @@ book:prayer book:town:[Cleansing Power]:6:divine
 book-graphics:?:y
 book-properties:100:40:5 to 100
 
-spell:Orb of Draining:7:7:40:8
+spell:Orb of Draining:7:7:40:4
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
 expr:B:PLAYER_LEVEL:* 3 / 2
@@ -753,25 +753,25 @@ desc:  Evil monsters take double damage.
 desc:  All cursed items in the area of effect are destroyed.
 desc:  The bigger area of effect is attained at character level 30.
 
-spell:Spear of Light:7:6:30:10
+spell:Spear of Light:7:6:30:5
 effect:LINE:LIGHT_WEAK
 dice:6d8
 desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 
-spell:Dispel Undead:10:14:55:12
+spell:Dispel Undead:10:14:55:6
 effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
-spell:Dispel Evil:12:20:70:15
+spell:Dispel Evil:12:20:70:10
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
-spell:Protection from Evil:14:8:42:17
+spell:Protection from Evil:14:8:42:5
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -779,7 +779,7 @@ desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
-spell:Remove Curse:16:6:38:20
+spell:Remove Curse:16:6:38:8
 effect:REMOVE_CURSE
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 0
@@ -791,7 +791,7 @@ book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
 book-graphics:?:o
 book-properties:10000:20:30 to 100
 
-spell:Portal:10:4:30:10
+spell:Portal:10:4:30:8
 effect:TELEPORT
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 30
@@ -801,7 +801,7 @@ spell:Remembrance:20:30:90:50
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-spell:Word of Recall:25:30:75:70
+spell:Word of Recall:25:30:75:10
 effect:RECALL
 desc:Teleports you from the dungeon to the town or from the town to the
 desc: deepest level you have visited in the dungeon.
@@ -955,25 +955,25 @@ book-graphics:?:P
 book-properties:25:40:1 to 100
 equip:shadow book:[Into the Shadows]:1:1
 
-spell:Nether Bolt:1:1:22:4
+spell:Nether Bolt:1:1:22:2
 effect:BOLT:NETHER
 dice:$Dd4
 expr:D:PLAYER_LEVEL:/ 4 + 3
 desc:Fires a bolt of nether magic.
 
-spell:Sense Invisible:2:4:25:4
+spell:Sense Invisible:2:4:25:3
 effect:TIMED_INC:SINVIS
 dice:24+d24
 desc:Enables you to see invisible monsters for 24+1d24 turns.
 
-spell:Create Darkness:3:3:10:5
+spell:Create Darkness:3:3:10:4
 effect:DARKEN_AREA
 effect:SPOT:DARK_WEAK:1:10
 dice:1
 desc:Darkens all squares in a level-dependent area.  If you are in a room,
 desc: the entire room will be darkened as well.
 
-spell:Bat Form:3:4:20:9
+spell:Bat Form:3:4:20:10
 effect:SHAPECHANGE:bat
 desc:Changes you into the shape of a bat, weak but with excellent senses.
 desc:  While shapechanged you cannot use items.
@@ -993,13 +993,13 @@ book:shadow book:town:[Dark Rituals]:5:shadow
 book-graphics:?:P
 book-properties:400:40:10 to 100
 
-spell:Tap Unlife:7:0:50:8
+spell:Tap Unlife:7:0:50:3
 effect:TAP_UNLIFE
 dice:$Dd4
 expr:D:PLAYER_LEVEL:/ 10 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
-spell:Noxious Fumes:10:4:40:10
+spell:Noxious Fumes:10:4:40:5
 effect:SPHERE:POIS:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
@@ -1009,14 +1009,14 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Produces a cloud of poisonous gas affecting the player and monsters within
 desc: radius 4.
 
-spell:Sleep Evil:12:5:50:14
+spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each evil monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
-spell:Shadow Shift:15:10:50:17
+spell:Shadow Shift:15:10:50:10
 effect:TELEPORT
 dice:30
 effect:DAMAGE
@@ -1025,7 +1025,7 @@ effect-msg:shadow shifting
 desc:Displaces your spirit a short distance, hurting your body as it is
 desc: dragged along.
 
-spell:Vampire Strike:16:5:50:20
+spell:Vampire Strike:16:5:50:10
 effect:JUMP_AND_BITE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1036,33 +1036,33 @@ book:shadow book:town:[Fear and Torment]:5:shadow
 book-graphics:?:P
 book-properties:1600:20:30 to 100
 
-spell:Frighten:17:4:40:30
+spell:Frighten:17:4:40:12
 effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
-spell:Disenchant:20:12:50:40
+spell:Disenchant:20:12:50:15
 effect:BOLT:DISEN
 dice:2d$S
 expr:S:PLAYER_LEVEL:* 2 + 10
 desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
 desc: in casting spells.
 
-spell:Dispel Life:22:20:50:50
+spell:Dispel Life:22:20:50:10
 effect:PROJECT_LOS_AWARE:MON_DRAIN
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each living monster within line of sight.
 
-spell:Dark Spear:25:10:60:60
+spell:Dark Spear:25:10:60:12
 effect:LINE:DARK
 dice:2d$S
 expr:S:PLAYER_LEVEL:* 2
 desc:Fires a beam of darkness.
 
-spell:Warg Form:28:20:60:70
+spell:Warg Form:28:20:60:80
 effect:SHAPECHANGE:warg
 desc:Changes you into the form of a warg, and gives you temporary berserk
 desc: strength, at the cost of some hitpoints.
@@ -1072,12 +1072,12 @@ book:shadow book:dungeon:[Deadly Powers]:6:shadow
 book-graphics:?:p
 book-properties:30000:15:40 to 100
 
-spell:Banish Spirits:25:25:80:250
+spell:Banish Spirits:25:25:80:25
 effect:PROJECT_LOS_AWARE:AWAY_SPIRIT
 dice:100
 desc:Teleports away each monster with a spirit within line of sight.
 
-spell:Annihilate:30:20:75:250
+spell:Annihilate:30:20:75:25
 effect:BOLT:MON_DRAIN
 dice:$B
 expr:B:PLAYER_LEVEL:* 4
@@ -1093,7 +1093,7 @@ desc:  You will also be blinded for 10+1d10 turns, unless you
 desc: have resistance to blindness or dark.
 desc:  This ritual has no effect when used in the town.
 
-spell:Unleash Chaos:38:15:90:120
+spell:Unleash Chaos:38:15:90:100
 effect:RANDOM
 dice:3
 effect:BEAM:CHAOS
@@ -1129,7 +1129,7 @@ book:shadow book:dungeon:[Corruption of Spirit]:5:shadow
 book-graphics:?:p
 book-properties:50000:10:60 to 100
 
-spell:Power Sacrifice:27:0:20:50
+spell:Power Sacrifice:27:0:20:20
 effect:DAMAGE
 dice:50
 effect-msg:self sacrifice
@@ -1141,7 +1141,7 @@ spell:Crush:32:30:60:130
 effect:PROJECT_LOS:MON_CRUSH
 dice:$B
 expr:B:PLAYER_LEVEL:* 4
-desc:Instantly kill any monster in line-of-sight with less than the
+desc:Instantly kill any monster in line-of-sight with less than four times the
 desc: player's level in hitpoints.  Other monsters are unharmed.
 
 spell:Vampire Form:37:20:60:140
@@ -1251,7 +1251,7 @@ effect:TIMED_INC:SINVIS
 dice:24+d24
 desc:Enables you to see invisible monsters for 24+1d24 turns.
 
-spell:Heroism:12:5:30:8
+spell:Heroism:12:5:30:5
 effect:HEAL_HP
 dice:10
 effect:CURE:AFRAID
@@ -1267,7 +1267,7 @@ book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
 book-graphics:?:o
 book-properties:10000:20:30 to 100
 
-spell:Protection from Evil:15:8:42:25
+spell:Protection from Evil:15:8:42:5
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -1275,7 +1275,7 @@ desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
-spell:Remove Curse:20:12:38:30
+spell:Remove Curse:20:12:38:8
 effect:REMOVE_CURSE
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 0
@@ -1283,7 +1283,7 @@ expr:S:PLAYER_LEVEL:+ 0
 desc:Attempts to remove a curse from an item, more effective at higher
 desc: character levels.
 
-spell:Word of Recall:25:30:75:70
+spell:Word of Recall:25:30:75:10
 effect:RECALL
 desc:Teleports you from the dungeon to the town or from the town to the
 desc: deepest level you have visited in the dungeon.
@@ -1379,30 +1379,30 @@ book-graphics:?:B
 book-properties:25:40:1 to 100
 equip:magic book:[Practical Spells]:1:1
 
-spell:Detect Monsters:5:1:50:10
+spell:Detect Monsters:5:1:50:4
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
-spell:Phase Door:7:2:55:12
+spell:Phase Door:7:2:55:4
 effect:TELEPORT
 dice:10
 desc:Teleports you randomly up to 10 squares away.
 
-spell:Object Detection:10:3:60:15
+spell:Object Detection:10:3:60:5
 effect:DETECT_GOLD
 effect-yx:22:40
 effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects all objects in the immediate area.
 
-spell:Detect Stairs:12:3:50:20
+spell:Detect Stairs:12:3:50:5
 effect:DETECT_STAIRS
 effect-yx:44:60
 desc:Detects all stairs in a wide area.
 
-spell:Recharging:20:10:50:30
+spell:Recharging:20:10:50:6
 effect:RECHARGE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1411,7 +1411,7 @@ desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-spell:Reveal Monsters:25:3:40:50
+spell:Reveal Monsters:25:3:40:8
 effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
@@ -1422,25 +1422,25 @@ book:magic book:dungeon:[Book of Trickery]:4:arcane
 book-graphics:?:b
 book-properties:10000:20:30 to 100
 
-spell:Teleport Self:17:6:35:60
+spell:Teleport Self:17:6:35:5
 effect:TELEPORT
 dice:M$M
 expr:M:PLAYER_LEVEL:* 9 / 5
 desc:Teleports you randomly within the current level.
 
-spell:Hit and Run:23:20:40:80
+spell:Hit and Run:23:20:40:20
 effect:TIMED_INC:ATT_RUN
 dice:10
 desc:Prepres you to teleport a short distance after stealing from a monster.
 
-spell:Teleport Other:30:10:30:100
+spell:Teleport Other:30:10:30:50
 effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 desc:Produces a bolt that teleports away the first monster in its path.
 desc: Distance teleported increases with player level.
 
-spell:Teleport Level:35:17:65:120
+spell:Teleport Level:35:17:65:80
 effect:TELEPORT_LEVEL
 desc:Teleports you 1 level up or 1 level down (chosen at random).
 desc:  This spell may have no effect when the forced descent option is set.
@@ -1488,34 +1488,34 @@ book-graphics:?:G
 book-properties:25:40:1 to 100
 equip:nature book:[Survival Skills]:1:1
 
-spell:Satisfy Hunger:3:1:25:5
+spell:Satisfy Hunger:3:1:25:2
 effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
-spell:Detect Life:5:2:23:7
+spell:Detect Life:5:2:23:2
 effect:DETECT_LIVING_MONSTERS
 effect-yx:22:40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Cure Poison:9:4:30:10
+spell:Cure Poison:9:4:30:4
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Resist Poison:12:10:32:12
+spell:Resist Poison:12:10:32:5
 effect:TIMED_INC:OPP_POIS
 dice:20+d20
 desc:Grants you resistance to poison for 20+1d20 turns.
 
-spell:Turn Stone to Mud:15:5:25:17
+spell:Turn Stone to Mud:15:5:25:5
 effect:LINE:KILL_WALL
 dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
-spell:Sense Surroundings:20:8:35:20
+spell:Sense Surroundings:20:8:35:8
 effect:MAP_AREA
 dice:$Dd$S
 expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
@@ -1527,20 +1527,20 @@ book:nature book:dungeon:[Forest Craft]:4:nature
 book-graphics:?:g
 book-properties:30000:15:40 to 100
 
-spell:Cover Tracks:20:10:40:80
+spell:Cover Tracks:20:10:40:40
 effect:TIMED_INC:SCENTLESS:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:* 2
 desc:Prevents you from leaving scent for monsters to track you by for a
 desc: level-dependent duration.
 
-spell:Haste Self:25:12:65:120
+spell:Haste Self:25:12:65:15
 effect:TIMED_INC:FAST:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
-spell:Decoy:30:30:40:150
+spell:Decoy:30:30:40:60
 effect:GLYPH:DECOY
 desc:Leaves a magical decoy that looks and sounds like the player.
 
@@ -1595,7 +1595,7 @@ book-graphics:?:P
 book-properties:25:40:1 to 100
 equip:shadow book:[Dirty Fighting]:1:1
 
-spell:Dark Focus:8:5:5:10
+spell:Dark Focus:8:5:5:8
 effect:TIMED_INC:BLESSED:0:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:/ 5 + 10
@@ -1603,14 +1603,14 @@ expr:S:PLAYER_LEVEL:/ 5 + 10
 desc:Gives you a bonus of +5 to AC and +10 to-hit, for a
 desc: level-dependent number of turns.
 
-spell:Berserk Rage:14:10:10:40
+spell:Berserk Rage:14:10:10:10
 effect:CURE:AFRAID
 effect:TIMED_INC:SHERO:0:5
 dice:25+d25
 desc:Removes fear, and grants you berserk strength (resistance to fear,
 desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
 
-spell:Cry of the Damned:17:5:30:60
+spell:Cry of the Damned:17:5:30:12
 effect:PROJECT_LOS:TURN_LIVING
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1627,12 +1627,12 @@ book:shadow book:dungeon:[Bloodwrath]:4:shadow
 book-graphics:?:p
 book-properties:30000:15:40 to 100
 
-spell:Throw Monster:27:12:50:140
+spell:Throw Monster:27:12:50:30
 effect:SHORT_BEAM:FORCE:1
 dice:200
 desc:Hits an adjacent monster with force, throwing it back.
 
-spell:Thirst for Blood:32:30:40:170
+spell:Thirst for Blood:32:30:40:100
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
 effect:DAMAGE
@@ -1642,12 +1642,12 @@ desc:Gives you a powerful desire to kill, increased every time you satsfy it.
 desc: Gives you extra damage and, at higher levels, extra blows, but comes
 desc: with dangerous side-effects.
 
-spell:Piercing Shot:35:20:40:210
+spell:Piercing Shot:35:20:40:120
 effect:TIMED_INC:POWERSHOT
 dice:3
 desc:Makes your next shot powerful enough to pierce several enemies.
 
-spell:Forceful Blow:38:20:40:250
+spell:Forceful Blow:38:20:40:150
 effect:TIMED_INC:POWERBLOW
 dice:10
 desc:Makes your next blow strong enough to hurl your enemy back, maybe even
