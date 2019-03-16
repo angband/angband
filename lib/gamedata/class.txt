@@ -707,7 +707,7 @@ spell:Minor Healing:1:2:15:4
 effect:HEAL_HP
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:+ 10
-expr:M:PLAYER_LEVEL:* 3 / 4
+expr:M:PLAYER_LEVEL:/ 4
 effect:TIMED_DEC:CUT
 dice:20
 effect:TIMED_DEC:STUN
@@ -995,8 +995,8 @@ book-properties:400:40:10 to 100
 
 spell:Tap Unlife:7:0:50:3
 effect:TAP_UNLIFE
-dice:$Dd4
-expr:D:PLAYER_LEVEL:/ 10 + 2
+dice:$Dd6
+expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
 spell:Noxious Fumes:10:4:40:5
@@ -1238,7 +1238,7 @@ spell:Minor Healing:7:3:15:4
 effect:HEAL_HP
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:+ 10
-expr:M:PLAYER_LEVEL:* 3 / 4
+expr:M:PLAYER_LEVEL:/ 4
 effect:TIMED_DEC:CUT
 dice:20
 effect:TIMED_DEC:STUN

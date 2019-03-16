@@ -4624,7 +4624,7 @@ bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
 	/* Hurt the monster */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 	msg("You draw power from the %s.", m_name);
-	drain = MIN(mon->hp, amount);
+	drain = MIN(mon->hp, amount) / 4;
 	dead = mon_take_hit(mon, amount, &fear, " is destroyed!");
 
 	/* Gain mana */
