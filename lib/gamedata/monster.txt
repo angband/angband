@@ -871,7 +871,7 @@ desc:A rather shifty individual.
 
 name:acolyte
 base:person
-color:y
+color:g
 speed:110
 hit-points:18
 light:2
@@ -897,7 +897,7 @@ desc:He is tripping over his priestly robes.
 
 name:apprentice
 base:person
-color:B
+color:r
 speed:110
 hit-points:15
 light:2
@@ -1468,7 +1468,7 @@ desc:It is an armoured lizard with a powerful bite.
 
 name:scout
 base:person
-color:g
+color:W
 speed:110
 hit-points:27
 light:2
@@ -1524,7 +1524,7 @@ desc:An adventurer both devoutly religious and skillful in combat.
 
 name:tamer
 base:person
-color:G
+color:y
 speed:110
 hit-points:20
 light:2
@@ -2311,7 +2311,7 @@ desc:Strong and powerful, for a kobold.
 
 name:Wormtongue, Agent of Saruman
 base:person
-color:Z
+color:B
 speed:110
 hit-points:250
 hearing:20
@@ -2834,7 +2834,7 @@ desc:It is a vast black spider whose bulbous body is bloated with poison.
 
 name:blacklock mage
 base:humanoid
-color:B
+color:r
 speed:120
 hit-points:39
 hearing:20
@@ -3196,7 +3196,7 @@ desc:It is a shambling orcish corpse leaving behind a trail of flesh.
 
 name:drúadan mage
 base:person
-color:B
+color:r
 speed:110
 hit-points:52
 hearing:18
@@ -3368,7 +3368,7 @@ desc:A small humanoid that radiates some power.
 
 name:priest
 base:person
-color:y
+color:g
 speed:110
 hit-points:54
 light:2
@@ -3674,7 +3674,7 @@ mimic:gold:mithril
 
 name:illusionist
 base:person
-color:B
+color:I
 speed:120
 hit-points:54
 light:2
@@ -3702,7 +3702,7 @@ desc:A deceptive spell caster.
 
 name:druid
 base:person
-color:G
+color:y
 speed:110
 hit-points:78
 light:2
@@ -5154,7 +5154,7 @@ desc: and radiating evil power.
 
 name:ranger
 base:person
-color:g
+color:W
 speed:110
 hit-points:90
 light:2
@@ -6598,7 +6598,7 @@ desc: Battle of Unnumbered Tears in Morgoth's favour.
 
 name:mage
 base:person
-color:B
+color:r
 speed:110
 hit-points:68
 light:2
@@ -6825,7 +6825,7 @@ desc: seems to bite upon him.
 
 name:green elf archer
 base:humanoid
-color:g
+color:W
 speed:120
 hit-points:210
 hearing:15
@@ -7630,7 +7630,7 @@ desc: flickering bright red flames.
 
 name:drúadan druid
 base:person
-color:G
+color:y
 speed:120
 hit-points:240
 hearing:50
@@ -8762,7 +8762,7 @@ desc: control.
 
 name:demonologist
 base:person
-color:i
+color:R
 speed:120
 hit-points:246
 light:2
@@ -9533,7 +9533,7 @@ desc:A 6-headed hydra with an extra head that waves mesmerisingly at you.
 
 name:enchantress
 base:person
-color:i
+color:R
 speed:130
 hit-points:457
 light:2
@@ -9704,7 +9704,7 @@ desc: speed and its powers make it a tornado of death and destruction.
 
 name:patriarch
 base:person
-color:Y
+color:G
 speed:120
 hit-points:457
 light:2
@@ -9929,7 +9929,7 @@ desc: was not kept.
 
 name:ranger chieftain
 base:person
-color:g
+color:W
 speed:120
 hit-points:880
 hearing:20
@@ -10616,7 +10616,7 @@ desc: deathly cold.
 name:lord of Carn Dûm
 plural:lords of Carn Dûm
 base:person
-color:R
+color:i
 speed:120
 hit-points:557
 hearing:20
@@ -11299,7 +11299,7 @@ desc: you sense trouble.
 
 name:Harowen the Black Hand
 base:person
-color:T
+color:Z
 speed:140
 hit-points:2500
 hearing:40
