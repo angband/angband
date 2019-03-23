@@ -109,7 +109,7 @@ name:dragon
 glyph:d
 pain:1
 flags:DRAGON | EVIL | SPIRIT
-flags:FORCE_SLEEP
+flags:FORCE_SLEEP | CLEAR_WEB
 desc:Dragon
 
 # Early, weak breathers which move quickly and erratically
