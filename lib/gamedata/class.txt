@@ -178,10 +178,10 @@ title:Arch-Mage
 
 magic:1:300:5
 
-book:magic book:town:[Path of the Mage]:7:arcane
-book-graphics:?:B
+book:magic book:town:[Magic for Beginners]:7:arcane
+book-graphics:?:R
 book-properties:25:40:1 to 100
-equip:magic book:[Path of the Mage]:1:1
+equip:magic book:[Magic for Beginners]:1:1
 
 spell:Magic Missile:1:1:22:4
 effect:BOLT_OR_BEAM:MISSILE:0:-10
@@ -236,7 +236,7 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 fire ball.
 
 book:magic book:town:[Attacks and Knowledge]:6:arcane
-book-graphics:?:B
+book-graphics:?:R
 book-properties:400:40:10 to 100
 
 spell:Recharging:5:5:28:6
@@ -282,7 +282,7 @@ expr:D:PLAYER_LEVEL:/ 2
 desc:Sprays acid in a 60-degree cone, hitting all monsters up to 10 grids away.
 
 book:magic book:town:[Magical Defences]:6:arcane
-book-graphics:?:B
+book-graphics:?:R
 book-properties:1600:20:30 to 100
 
 spell:Disable Traps, Destroy Doors:5:5:30:6
@@ -324,7 +324,7 @@ dice:25+1d25
 desc:Doubles spellcasting speed for 25 +1d25 turns.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
-book-graphics:?:Z
+book-graphics:?:r
 book-properties:30000:15:40 to 100
 
 spell:Door Creation:13:9:40:12
@@ -375,7 +375,7 @@ expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a short range beam of force.
 
 book:magic book:dungeon:[Wizard's Tome of Power]:5:arcane
-book-graphics:?:Z
+book-graphics:?:r
 book-properties:50000:10:60 to 100
 
 spell:Shock Wave:20:5:40:16
@@ -452,7 +452,7 @@ title:High Mystic
 magic:1:350:5
 
 book:nature book:town:[Lesser Charms]:6:nature
-book-graphics:?:G
+book-graphics:?:y
 book-properties:25:40:1 to 100
 equip:nature book:[Lesser Charms]:1:1
 
@@ -491,7 +491,7 @@ expr:S:PLAYER_LEVEL:- 5
 desc:Slows down a monster; more effective against animals.
 
 book:nature book:town:[Gifts of Nature]:6:nature
-book-graphics:?:G
+book-graphics:?:y
 book-properties:400:40:10 to 100
 
 spell:Cure Poison:4:4:30:4
@@ -535,7 +535,7 @@ desc:Causes shards to explode in a line out of the earth, striking objects and
 desc: monsters. Length of the line increases with player level.
 
 book:nature book:dungeon:[Creature Dominion]:5:nature
-book-graphics:?:g
+book-graphics:?:o
 book-properties:10000:20:30 to 100
 
 spell:Trance:20:10:45:15
@@ -565,8 +565,8 @@ effect:SHAPECHANGE:bear
 desc:Allows you to take the form of a great bear of the mountains, sweeping
 desc: aside your enemies with your mighty paws.
 
-book:nature book:dungeon:[Natural Vitality]:4:nature
-book-graphics:?:g
+book:nature book:dungeon:[Nature Craft]:4:nature
+book-graphics:?:o
 book-properties:30000:15:40 to 100
 
 spell:Tremor:20:20:60:16
@@ -602,7 +602,7 @@ desc:Cures all cuts, poison and stunning and heals 30 hit points on each of
 desc: the next 5+1d3 turns.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
-book-graphics:?:g
+book-graphics:?:o
 book-properties:50000:10:60 to 100
 
 spell:Meteor Swarm:30:14:85:20
@@ -683,10 +683,10 @@ title:High Priest
 
 magic:1:350:5
 
-book:prayer book:town:[Spiritual World]:6:divine
-book-graphics:?:y
+book:prayer book:town:[Beginner's Handbook]:6:divine
+book-graphics:?:G
 book-properties:25:40:1 to 100
-equip:prayer book:[Spiritual World]:1:1
+equip:prayer book:[Beginner's Handbook]:1:1
 
 spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
@@ -739,8 +739,8 @@ desc:Cures 10 points of damage, removes fear and, from character level 20,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:town:[Cleansing Power]:6:divine
-book-graphics:?:y
+book:prayer book:town:[Exorcism and Dispelling]:6:divine
+book-graphics:?:G
 book-properties:100:40:5 to 100
 
 spell:Orb of Draining:7:7:40:4
@@ -788,7 +788,7 @@ desc:Attempts to remove a curse from an item, more effective at higher
 desc: character levels.
 
 book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
-book-graphics:?:o
+book-graphics:?:g
 book-properties:10000:20:30 to 100
 
 spell:Portal:10:4:30:8
@@ -834,8 +834,8 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Battle Blessings]:5:divine
-book-graphics:?:o
+book:prayer book:dungeon:[Holy Infusions]:5:divine
+book-graphics:?:g
 book-properties:30000:15:40 to 100
 
 spell:Enchant Weapon:35:50:80:230
@@ -869,7 +869,7 @@ dice:20+d20
 desc:Temporarily makes your melee attacks powerfully slay demons.
 
 book:prayer book:dungeon:[Wrath of the Valar]:5:divine
-book-graphics:?:o
+book-graphics:?:g
 book-properties:50000:10:60 to 100
 
 spell:Banish Evil:25:25:80:250
@@ -1193,6 +1193,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
+equip:prayer book:[Beginner's Handbook]:1:1
 player-flags:BLESS_WEAPON | SHIELD_BASH
 title:Gallant
 title:Keeper
@@ -1207,10 +1208,7 @@ title:Paladin Lord
 
 magic:1:400:3
 
-book:prayer book:town:[Spiritual World]:6:divine
-book-graphics:?:y
-book-properties:25:40:1 to 100
-equip:prayer book:[Spiritual World]:1:1
+book:prayer book:town:[Beginner's Handbook]:6:divine
 
 spell:Bless:1:2:20:4
 effect:TIMED_INC:BLESSED
@@ -1264,8 +1262,6 @@ desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
 book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
-book-graphics:?:o
-book-properties:10000:20:30 to 100
 
 spell:Protection from Evil:15:8:42:5
 effect:TIMED_INC:PROTEVIL
@@ -1308,9 +1304,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Battle Blessings]:5:divine
-book-graphics:?:o
-book-properties:30000:15:40 to 100
+book:prayer book:dungeon:[Holy Infusions]:5:divine
 
 spell:Smite Evil:25:20:70:40
 effect:TIMED_INC:ATT_EVIL:0:5
@@ -1360,6 +1354,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
+equip:magic book:[Magic for Beginners]:1:1
 player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
@@ -1374,10 +1369,7 @@ title:Master Thief
 
 magic:5:350:2
 
-book:magic book:town:[Practical Spells]:7:arcane
-book-graphics:?:B
-book-properties:25:40:1 to 100
-equip:magic book:[Practical Spells]:1:1
+book:magic book:town:[Magic for Beginners]:7:arcane
 
 spell:Detect Monsters:5:1:50:4
 effect:DETECT_VISIBLE_MONSTERS
@@ -1418,9 +1410,7 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
-book:magic book:dungeon:[Book of Trickery]:4:arcane
-book-graphics:?:b
-book-properties:10000:20:30 to 100
+book:magic book:dungeon:[Arcane Control]:4:arcane
 
 spell:Teleport Self:17:6:35:5
 effect:TELEPORT
@@ -1469,6 +1459,7 @@ equip:sword:Main Gauche:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
+equip:nature book:[Lesser Charms]:1:1
 player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
@@ -1483,10 +1474,7 @@ title:Ranger Lord
 
 magic:3:400:2
 
-book:nature book:town:[Survival Skills]:6:nature
-book-graphics:?:G
-book-properties:25:40:1 to 100
-equip:nature book:[Survival Skills]:1:1
+book:nature book:town:[Lesser Charms]:6:nature
 
 spell:Satisfy Hunger:3:1:25:2
 effect:SET_NOURISH
@@ -1523,9 +1511,7 @@ expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
 desc:Maps the nearby area.
 
 
-book:nature book:dungeon:[Forest Craft]:4:nature
-book-graphics:?:g
-book-properties:30000:15:40 to 100
+book:nature book:dungeon:[Nature Craft]:4:nature
 
 spell:Cover Tracks:20:10:40:40
 effect:TIMED_INC:SCENTLESS:0:5
@@ -1575,6 +1561,7 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Cutlass:1:1
 equip:scroll:Word of Recall:1:1
+equip:shadow book:[Dark Rituals]:1:1
 obj-flags:IMPAIR_HP
 player-flags:CHOOSE_SPELLS | SHIELD_BASH
 title:Rat
@@ -1590,10 +1577,7 @@ title:Tyrant
 
 magic:8:400:2
 
-book:shadow book:town:[Dirty Fighting]:4:shadow
-book-graphics:?:P
-book-properties:25:40:1 to 100
-equip:shadow book:[Dirty Fighting]:1:1
+book:shadow book:town:[Dark Rituals]:4:shadow
 
 spell:Dark Focus:8:5:5:8
 effect:TIMED_INC:BLESSED:0:5
@@ -1623,9 +1607,7 @@ effect:TIMED_INC:ATT_POIS:0:5
 dice:20+d20
 desc:Temporarily makes your melee attacks branded with poison.
 
-book:shadow book:dungeon:[Bloodwrath]:4:shadow
-book-graphics:?:p
-book-properties:30000:15:40 to 100
+book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
 spell:Throw Monster:27:12:50:30
 effect:SHORT_BEAM:FORCE:1
