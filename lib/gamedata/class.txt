@@ -1421,7 +1421,7 @@ desc:Teleports you randomly within the current level.
 spell:Hit and Run:23:20:40:20
 effect:TIMED_INC:ATT_RUN
 dice:10
-desc:Prepres you to teleport a short distance after stealing from a monster.
+desc:Prepares you to teleport a short distance after stealing from a monster.
 
 spell:Teleport Other:30:10:30:50
 effect:BOLT_STATUS:AWAY_ALL

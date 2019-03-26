@@ -905,8 +905,8 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* Destroy decoy */
-	if (decoy.y && decoy.x) {
+	/* Destroy decoy if it's a monster attack */
+	if (cave->mon_current > 0 && decoy.y && decoy.x) {
 		square_destroy_decoy(cave, decoy);
 		return true;
 	}
