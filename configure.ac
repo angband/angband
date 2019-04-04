@@ -252,6 +252,7 @@ if test "$enable_curses" = "yes"; then
 			LIBS="${LIBS} -lncursesw"
 			MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
 		])
+		AC_SEARCH_LIBS([keypad], [tinfow tinfo])
 	fi
 fi
 
