@@ -954,6 +954,7 @@ int rd_misc(void)
 		cleanup_parser(&artifact_parser);
 		activate_randart_file();
 		run_parser(&randart_parser);
+		deactivate_randart_file();
 	}
 
 	/* Property knowledge */
