@@ -2078,15 +2078,13 @@ struct file_parser pit_parser = {
 
 static enum parser_error parse_lore_name(struct parser *p) {
 	struct monster_race *race = lookup_monster(parser_getstr(p, "name"));
-	struct monster_lore *l;
+	struct monster_lore *l = NULL;
 
-	/* Allow for non-existent monsters */
-	if (!race) {
-		return PARSE_ERROR_NONE;
+	/* Only set lore if we have a race, to allow for non-existent monsters */
+	if (race) {
+		l = &l_list[race->ridx];
+		l->ridx = race->ridx;
 	}
-
-	l = &l_list[race->ridx];
-	l->ridx = race->ridx;
 	parser_setpriv(p, l);
 	return PARSE_ERROR_NONE;
 }
