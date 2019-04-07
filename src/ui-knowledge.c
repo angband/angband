@@ -1101,7 +1101,7 @@ static struct
 	{ L"h",        "Hominids (Elves, Dwarves)" },
 	{ L"M",        "Hydras" },
 	{ L"i",        "Icky Things" },
-	{ L"lFI",      "Insects" },
+	{ L"FI",       "Insects" },
 	{ L"j",        "Jellies" },
 	{ L"K",        "Killer Beetles" },
 	{ L"k",        "Kobolds" },

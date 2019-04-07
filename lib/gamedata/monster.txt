@@ -4876,9 +4876,9 @@ sleepiness:10
 depth:20
 rarity:2
 experience:50
-blow:CLAW:HURT:4d10
-blow:CLAW:HURT:4d10
-blow:BITE:HURT:6d8
+blow:CLAW:HURT:2d10
+blow:CLAW:HURT:2d10
+blow:BITE:HURT:3d8
 flags:NO_FEAR
 desc:A blinding whirlwind of fear and feathers. Its razor sharp beak and talons
 desc: fill its foes with terror as it seeks to rend flesh from bone with
@@ -9196,7 +9196,7 @@ hit-points:450
 hearing:20
 armor-class:48
 sleepiness:10
-depth:26
+depth:38
 rarity:1
 experience:355
 blow:HIT:HURT:1d9
@@ -10791,7 +10791,7 @@ flags:OPEN_DOOR
 flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 flags-off:HURT_COLD
-spell-freq:2
+spell-freq:4
 spells:WOUND | HOLD | SCARE
 spells:BA_ACID
 spells:BO_FIRE | BO_PLAS
@@ -11868,14 +11868,14 @@ name:9-headed hydra
 base:hydra
 color:P
 speed:120
-hit-points:2500
+hit-points:1500
 light:2
 hearing:20
 armor-class:168
 sleepiness:20
 depth:57
 rarity:2
-experience:12000
+experience:9000
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:BITE:POISON:2d6
