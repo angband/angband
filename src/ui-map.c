@@ -202,6 +202,13 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	(*tap) = a;
 	(*tcp) = c;
 
+	/* Tunnel vision, just show black *s */
+	if (g->tunnel_vision) {
+		(*ap) = COLOUR_L_DARK;
+		(*cp) = L'*';
+		return;
+	}
+
 	/* There is a trap in this grid, and we are not hallucinating */
 	if (g->trap && (!g->hallucinate)) {
 	    /* Change graphics to indicate visible traps, skip objects if a web */

@@ -284,6 +284,42 @@ struct file_parser player_timed_parser = {
  * ------------------------------------------------------------------------
  * Utilities for more complex or anomolous effects
  * ------------------------------------------------------------------------ */
+
+/**
+ * Given a stunning value, return the radius the player can still see.
+ */
+static int player_stun_to_sight_radius(int stun_level)
+{
+	assert(stun_level >= 0);
+
+	if (stun_level == 0) {
+		return -1;
+	} else if (stun_level < 20) {
+		return 10;
+	} else if (stun_level < 40) {
+		return 4;
+	} else if (stun_level < 50) {
+		return 3;
+	} else if (stun_level < 70) {
+		return 2;
+	} else {
+		return 1;
+	}
+}
+
+/**
+ * Can a player at g1 potentially see a monster at g2?
+ */
+bool within_stun_radius(int stun_level, struct loc g1, struct loc g2)
+{
+	int radius = player_stun_to_sight_radius(stun_level);
+	if (stun_level < 1) {
+		return true;
+	} else {
+		return distance(g1, g2) <= radius;
+	}
+}
+
 /**
  * Undo scrambled stats when effect runs out.
  */

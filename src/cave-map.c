@@ -91,6 +91,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->lighting = LIGHTING_DARK;
 	g->unseen_object = false;
 	g->unseen_money = false;
+	g->tunnel_vision = false;
 
 	/* Use real feature (remove later) */
 	g->f_idx = square(cave, grid).feat;
@@ -101,6 +102,9 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->is_player = (square(cave, grid).mon < 0) ? true : false;
 	g->m_idx = (g->is_player) ? 0 : square(cave, grid).mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
+	if (player->timed[TMD_STUN]) {
+		g->tunnel_vision = !within_stun_radius(player->timed[TMD_STUN], player->grid, grid);
+	}
 
 	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;

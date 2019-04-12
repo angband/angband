@@ -102,6 +102,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 					  bool check);
 bool player_dec_timed(struct player *p, int idx, int v, bool notify);
 bool player_clear_timed(struct player *p, int idx, bool notify);
+bool within_stun_radius(int stun_level, struct loc g1, struct loc g2);
 bool player_set_food(struct player *p, int v);
 
 #endif /* !PLAYER_TIMED_H */

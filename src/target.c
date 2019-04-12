@@ -97,9 +97,12 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
  */
 bool target_able(struct monster *m)
 {
-	return m && m->race && monster_is_obvious(m) &&
+	return m &&
+		m->race &&
+		monster_is_obvious(m) &&
 		projectable(cave, player->grid, m->grid, PROJECT_NONE) &&
-		!player->timed[TMD_IMAGE];
+		!player->timed[TMD_IMAGE] &&
+		within_stun_radius(player->timed[TMD_STUN], player->grid, m->grid);
 }
 
 
@@ -286,6 +289,11 @@ bool target_accept(int y, int x)
 
 	/* Player grids are always interesting */
 	if (square(cave, grid).mon < 0) return true;
+
+	/* Don't show if the player can't see it */
+	if (!within_stun_radius(player->timed[TMD_STUN], player->grid, loc(x, y))) {
+		return false;
+	}
 
 	/* Handle hallucination */
 	if (player->timed[TMD_IMAGE]) return false;

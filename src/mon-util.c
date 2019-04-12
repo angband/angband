@@ -365,6 +365,11 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			easy = flag = false;
 	}
 
+	/* Monsters that are outside stun visibility radius are never visible */
+	if (!within_stun_radius(player->timed[TMD_STUN], player->grid, mon->grid)) {
+		easy = flag = false;
+	}
+
 	/* Is the monster is now visible? */
 	if (flag) {
 		/* Learn about the monster's mind */

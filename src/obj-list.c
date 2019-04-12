@@ -26,6 +26,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "project.h"
+#include "player-timed.h"
 
 /**
  * Allocate a new object list.
@@ -146,6 +147,9 @@ static bool object_list_should_ignore_object(const struct object *obj)
 	if (tval_is_money(base_obj))
 		return true;
 
+	if (!within_stun_radius(player->timed[TMD_STUN], player->grid, obj->grid))
+		return true;
+
 	return false;
 }
 
@@ -183,11 +187,12 @@ void object_list_collect(object_list_t *list)
 		}
 
 		/* Determine which section of the list the object entry is in */
-		los = projectable(cave, pgrid, grid, PROJECT_NONE) ||
-			loc_eq(grid, pgrid);
-		field = (los) ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
+		los = projectable(cave, pgrid, grid, PROJECT_NONE) || loc_eq(grid, pgrid);
+		field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
-		if (object_list_should_ignore_object(obj)) continue;
+		if (object_list_should_ignore_object(obj)) {
+			continue;
+		}
 
 		/* Find or add a list entry. */
 		for (entry_index = 0; entry_index < (int)list->entries_size;
