@@ -12,7 +12,7 @@ TAG = angband-`git describe`
 OUT = $(TAG).tar.gz
 
 manual:
-	echo "To make the manual, please enter docs/ and run `make html` after installing Sphinx.'
+	echo "To make the manual, please enter docs/ and run `make html` after installing Sphinx."
 
 dist:
 	git checkout-index --prefix=$(TAG)/ -a
