@@ -1,6 +1,6 @@
 ==================
 Attacking monsters
-================== 
+==================
 
 Attacking and Being Attacked
 ============================

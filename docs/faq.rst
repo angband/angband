@@ -1,5 +1,6 @@
-The Angband FAQ
-===============
+==========================
+Frequently Asked Questions
+==========================
 
 The best way to get answers to your questions is to post them on the `Angband forum`_.
 

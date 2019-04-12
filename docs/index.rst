@@ -1,5 +1,4 @@
-
-The Angband Manual
+Welcome to Angband
 ==================
 
 Angband is a complex single player dungeon simulation. A player (you!) creates a character, choosing from a variety of races and classes, and then plays that character over a period of days, weeks, even months.
