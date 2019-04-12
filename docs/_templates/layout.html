@@ -1,25 +1,11 @@
 {% extends "!layout.html" %}
 
 {% block header %}
-
-<header id="pageheader" style="
-    display: flex;
-    padding: 0.5rem 0.66rem;
-    align-items: center;
-    margin-top: 1rem;
-    margin-bottom: 1rem
-">
-	<img src="{{ pathto('_static/att.svg', 1) }}" style="height: 4rem;"><h1 style="
-    font-size: 3rem;
-    margin: 0;
-    margin-left: 1rem;
-    color: black;
-">
-		The Angband Manual</h1>
-    <span class="version" style="
-    margin-left: 1rem;
-    font-style: italic;
-    color: #352121;
-">for 4.2+</span>
+<header id="pageheader">
+    <div style="display: flex; align-items: baseline;">
+        <h1>The Angband Manual</h1>
+        <span class="version">v{{ release }}</span>
+    </div>
+    <img src="{{ pathto('_static/att.svg', 1) }}" style="height: 4rem;">
 </header>
 {% endblock %}
