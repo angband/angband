@@ -1,0 +1,67 @@
+body {
+	background-color: rgb(29,42,50);
+}
+
+.body {
+  background-color: rgb(61,80,92);
+  padding: 0.1rem 1rem
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L", "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter", "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow", "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L", Georgia, serif;
+}
+
+.body h1 {
+  font-size: 200%;
+}
+
+code.docutils.literal {
+    background-color: black;
+    padding: 0.3rem;
+    border: 1px solid #8e8080;
+}
+
+h7 {
+  background: linear-gradient(to right, hsla(300, 13%, 42%, 1), rgb(91, 119, 136));
+  padding: 0.3rem 0.3rem 0 0.3rem;
+ }
+
+a, .sphinxsidebar h3 a {
+  color: rgb(230,200,120);
+}
+
+a:visited {
+  color: #b29034;
+}
+
+#pageheader {
+  background: white;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.caption-text {
+  font-weight: bold;
+}
+
+.contents p {
+  margin: 0;
+}
+
+.topic {
+  background-color: inherit;
+}
+
+pre, tt {
+    background-color: black;
+    color: white;
+}
+
+dt {
+  font-weight: bold;
+}
+.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}

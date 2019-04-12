@@ -1,8 +1,6 @@
 MKPATH=../mk/
 include $(MKPATH)buildsys.mk
 
-HELPSRCPATH := ../lib/help/
-
 MAKEINDEX := makeindex
 
 DOC = manual.html manual.pdf
@@ -18,11 +16,11 @@ CLEAN = manual.ind manual.ilg manual.toc manual.tex manual.log manual.aux \
 RSTFILESWITHOUTPATH := $(addsuffix .txt, $(SECTIONS))
 RSTINDEXWITHOUTPATH := $(addsuffix .txt, $(INDEX))
 
-RSTFILES := $(addprefix $(HELPSRCPATH), $(RSTFILESWITHOUTPATH))
-RSTINDEX := $(addprefix $(HELPSRCPATH), $(RSTINDEXWITHOUTPATH))
+RSTFILES := $(RSTFILESWITHOUTPATH)
+RSTINDEX := $(RSTINDEXWITHOUTPATH)
 
-STY := $(addprefix $(HELPSRCPATH), angband.sty)
-CSS := $(addprefix $(HELPSRCPATH), angband.css)
+STY := angband.sty
+CSS := angband.css
 
 ifneq ($(RST2HTML),NOTFOUND)
 manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)

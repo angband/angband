@@ -7,6 +7,7 @@ readable markup language designed for Python.
 
 Conventions
 ===========
+
 ReStructuredText leaves much freedom in the syntax - in our help files we
 try to stick to consistent conventions as in the following.
 
@@ -24,6 +25,9 @@ Markup for sectioning
 
   Subsection title
   ----------------
+
+  Sub-subsection title
+  ********************
 
 Blank and spaces
 ----------------

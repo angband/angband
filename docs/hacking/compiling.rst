@@ -5,39 +5,39 @@ The methods for compiling Angband vary by platform and by build system. If
 you get Angband working on a different platform or build system please let us
 know so we can add to this file.
 
-BUILDING ON Mac OS X
-====================
+.. contents:: Contents
+   :local:
 
-Native builds
--------------
+macOS
+-----
 
-To build the new Cocoa front-end:
+To build the new Cocoa front-end::
 
     cd src
     make -f Makefile.osx
 
 
-BUILDING ON LINUX / *NIX
-========================
+Linux / other UNIX
+------------------
 
 Native builds
--------------
+~~~~~~~~~~~~~
 
 Linux builds using autotools. There are several different front ends that you
 can optionally build (GCU, SDL, X11, and GTK) using arguments to configure
 such as --enable-sdl, --disable-gtk, etc. Each front end has different
 dependencies (e.g. ncurses, SDL libraries, etc).
 
-To build Angband to be run in-place:
+To build Angband to be run in-place::
 
     ./autogen.sh
     ./configure --with-no-install [other options as needed]
     make
 
-To build Angband to be installed in some other location:
+To build Angband to be installed in some other location::
 
     ./autogen.sh
-    ./configure --prefix /path/to [other options as needed ]
+    ./configure --prefix /path/to [other options as needed]
     make
     make install
 
@@ -46,17 +46,17 @@ subdirectories of lib/ in order to install correctly.
 
 
 Cross-building for Windows with Mingw
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Many developers (as well as the auto-builder) build Angband for Windows using
 Mingw on Linux. This requires that the necessary Mingw packages are all
 installed.
 
 This type of build now also uses autotools, so you must configure it to
-cross-compile, e.g.
+cross-compile, e.g.::
 
 	./autogen.sh
-	./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i586-mingw32msvc  
+	./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i586-mingw32msvc
 
 Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
 should be that same command with the '-gcc' removed. Instead of i586 you may
@@ -67,45 +67,44 @@ gory details of how these triplets are arrived at)
 
 TODO: you will probably need to manually disable curses, or the host curses
 installation will be found, and will not be able to link properly. More
-checking of permissible combinations to configure is necessary 
-
+checking of permissible combinations to configure is necessary
 
 Debug build
-----------------------------------------
+~~~~~~~~~~~
 
 **WARNING** this build is intended primarily for debugging purposes. It might have a somewhat slower performance, higher memory requirements and panic saves don't alvays work (in case of a crash there is a higher chance of losing progress).
 
-When debugging crashes it can be very useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband
+When debugging crashes it can be very useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband::
 
     ./configure [options]
     SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
-    
+
 Note that compiling with this tools will require installing additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
 
 There is probably a way to get these tools to work on Windows and Mac OS. If you know how, please add the information to this file.
 
-BUILDING ON WINDOWS
-===================
+Windows
+-------
 
 Using MinGW
------------
+~~~~~~~~~~~
 
 This build now also uses autotools, so should be very similar to the Linux
-build. Open the MinGW shell (MSYS) by running msys.bat then run these commands:
+build. Open the MinGW shell (MSYS) by running msys.bat then run these commands::
 
 	./autogen.sh
 	./configure --enable-win
 	make
-	
+
 The install target almost certainly won't work
 
 Following build, to get the program to run, you need to copy the executable
 from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
-and zlib1.dll) from src/win/dll to the top-level dir 
+and zlib1.dll) from src/win/dll to the top-level dir
 
 
 Using Cygwin (with MinGW)
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use this option if you want to build a native Windows executable that
 can run with or without Cygwin.
@@ -113,7 +112,7 @@ can run with or without Cygwin.
 Use the Cygwin setup.exe to install the mingw-gcc-core package and any
 dependencies suggested by the installer.
 
-Run these commands:
+Run these commands::
 
 	./autogen.sh
 	./configure --enable-win --with-no-install --host=i686-pc-mingw32
@@ -128,34 +127,25 @@ instructions (./autogen.sh; ./configure; make; make install).
 
 
 Using eclipse (Indigo) on Windows (with MinGW)
-----------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For eclipse with EGit, select File | Import..., Git | Projects from Git, Next >
-Clone your/the upstream repo, or Add your existing cloned repo, Next >
-Select "Use the New Projects Wizard", Finish
-In the New Project Wizard, select C/C++ | Makefile Project with Existing Code, Next >
-Give the project a name (Angband),
-	navigate to the repo you cloned in "Existing Code Location",
-	Select "C", but not "C++"
-	Choose "MinGW GCC" Toolchain, Finish
-Once the project is set up, r-click | Properties
-go to C/C++ Build | Toolchain Editor, select "Gnu Make Builder" instead of
-	"CDT Internal Builder"
-go to C/C++ Build, uncheck "Generate Makefiles automatically"  
+* For eclipse with EGit, select File | Import..., Git | Projects from Git, Next >
+* Clone your/the upstream repo, or Add your existing cloned repo, Next >
+* Select "Use the New Projects Wizard", Finish
+* In the New Project Wizard, select C/C++ | Makefile Project with Existing Code, Next >
+* Give the project a name (Angband),
+  * navigate to the repo you cloned in "Existing Code Location",
+  * Select "C", but not "C++"
+  * Choose "MinGW GCC" Toolchain, Finish
+* Once the project is set up, r-click | Properties
+* Go to C/C++ Build | Toolchain Editor, select "Gnu Make Builder" instead of "CDT Internal Builder"
+* go to C/C++ Build, uncheck "Generate Makefiles automatically"
 
-You still need to run ./autogen.sh and ./configure manually, outside eclipse
-(see above)	
-  
+You still need to run ./autogen.sh and ./configure manually, outside eclipse (see above)
 
 Using Visual Studio
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 Blue Baron has detailed instructions for setting this up at:
 
     src/win/angband_visual_studio_step_by_step.txt
-
-
-Using Dev-C++
--------------
-
-TODO
