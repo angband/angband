@@ -47,9 +47,9 @@ When the game starts up, after you have loaded or created a character, some user
 
 After these are complete, the game will try to load (in order):
 
- * ``Race.prf`` - where race is your character's race
- * ``Class.prf`` - where class if your character's class
- * ``Name.prf`` - where name is your character's name
+* ``Race.prf`` - where race is your character's race
+* ``Class.prf`` - where class if your character's class
+* ``Name.prf`` - where name is your character's name
 
 So, you can save some settings - for example, keymaps - to the ``Mage.prf`` file if you only want them to be loaded for mages.
 
