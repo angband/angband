@@ -13,12 +13,12 @@ Ignore settings
       
 Angband allows you to ignore specific items that you don't want to see
 anymore. These items are marked 'ignored' and any similar items are hidden
-from view. The easiest way to ignore an item is with the 'k' (or '^D') 
+from view. The easiest way to ignore an item is with the ``k`` (or '^D') 
 command; the object is dropped and then hidden from view.  When ignoring an
 object, you will be given a choice of ignoring just that object, or all
 objects like it in some way.
 
-The entire ignoring system can also be accessed from the options menu ('=') 
+The entire ignoring system can also be accessed from the options menu (``=``) 
 by choosing "i) Item ignoring setup".  This allows ignore settings for 
 non-wearable items, and quality and ego ignore settings (described below) 
 for wearable items, to be viewed or changed.
@@ -46,10 +46,10 @@ non-artifact
 Using Inscriptions
 ==================
 
-Inscriptions are notes you can mark on objects using the '{' command.  You can
+Inscriptions are notes you can mark on objects using the ``{`` command.  You can
 use this to give the game commands about the object, which are listed below.
 You can also set up the game to automatically inscribe certain items whenever
-you find them, using the object knowledge screens, accessed using '~'.
+you find them, using the object knowledge screens, accessed using ``~``.
 
 Inscribing an item with '!!':
 	This will alert you when the item has finished recharging.
@@ -58,7 +58,7 @@ Inscribing an item with '=g':
 	This marks an item as 'always pick up'.  This is sometimes useful for
 	picking up ammunition after a shootout.
 
-Inscribing an item with '!' followed by a command letter or '*':
+Inscribing an item with ``!`` followed by a command letter or ``*``:
 	This means "ask me before using this item".  '!w' means 'ask me before
 	wielding', '!d' means 'ask me before dropping', and so on.  If you
 	inscribe an item with '!*' then the game will confirm any use of an
@@ -74,7 +74,7 @@ Inscribing an item with '!' followed by a command letter or '*':
 	Some adventurers use this for Scrolls of Word of Recall so they don't
 	accidentally return to the dungeon too soon.
 
-Inscribing an item with '@', followed by a command latter, followed by 0-9:
+Inscribing an item with ``@``, followed by a command latter, followed by 0-9:
 	Normally when you select an item from your inventory you must enter the
 	letter that corresponds to the item. Since the order of your inventory
 	changes as items get added and removed, this can get annoying.  You 
@@ -84,8 +84,8 @@ Inscribing an item with '@', followed by a command latter, followed by 0-9:
 	use the first one.
 
 	For example, if you inscribe a staff of Cure Light Wounds with '@u1',
-	you can refer to it by pressing 1 when 'u'sing it.  You could also
-	inscribe a wand of Wonder with '@a1', and when using 'a', 1 would select
+	you can refer to it by pressing 1 when ``u``sing it.  You could also
+	inscribe a wand of Wonder with '@a1', and when using ``a``, 1 would select
 	that wand.
 
 	Spellcasters should inscribe their books, so that if they lose them they
@@ -98,13 +98,13 @@ Inscribing an item with '@', followed by a command latter, followed by 0-9:
 	you lose your first spellbook and attempt to cast magic missile by
 	using 'm1a', you cannot accidentally select the wrong spellbook.
 
-Inscribing an item with '^', followed by a command letter:
-	When you wear an item inscribed with '^', the game prompts you before 
+Inscribing an item with ``^``, followed by a command letter:
+	When you wear an item inscribed with ``^``, the game prompts you before 
 	doing that action.  You might inscribe '^>' on an item if you want to
 	be reminded to take it off before going down stairs.  If the item is in
 	your backpack then the game won't prompt you.
 
-	Like with '!', you can use '*' for the command letter if you want to
+	Like with ``!``, you can use ``*`` for the command letter if you want to
 	game to prompt you every turn whatever you're doing.  This can get
 	very annoying!
 
@@ -156,7 +156,7 @@ Subwindows
 
 In addition to the main window, you can create additional window displays
 that have other secondary information on them. You can access the subwindow
-menu by using '=' then 'w'. You can select what windows to display. You
+menu by using ``=`` then ``w``. You can select what windows to display. You
 may then need to make the window visible using the "window" pull down menu
 from the menu bar. There are a variety of subwindow choices and you should
 experiment to see which ones are the most useful for you.
@@ -217,10 +217,10 @@ The action must always come first,  <T> means 'keyset Type', which is either
 	C:0:[F1]
 
 Angband uses a few built-in keymaps.  These are for the movement keys (they
-are mapped to ';' plus the number, e.g. '5' -> ';5'), amongst others.  You
+are mapped to ``;`` plus the number, e.g. ``5`` -> ';5'), amongst others.  You
 can see the full list in pref.prf but they shouldn't impact on you in any way.
 
-To avoid triggering a keymap, you can use the backslash ('\\') command.
+To avoid triggering a keymap, you can use the backslash (``\``) command.
 
 User Pref Files (Visuals)
 =========================
@@ -233,9 +233,9 @@ combination appropriate support in 'main-xxx.c', and with the use of the
 be used instead of normal "colored characters" for various things.
 
 When interactively modifying the attr/char values for monsters, objects, or
-terrain features, pressing 'n' or 'N' will change which entry you are
-changing, pressing 'a' or 'A' will rotate through the available attr values,
-and pressing 'c' or 'C' will rotate though the available char values. Note
+terrain features, pressing ``n`` or ``N`` will change which entry you are
+changing, pressing ``a`` or ``A`` will rotate through the available attr values,
+and pressing ``c`` or ``C`` will rotate though the available char values. Note
 that attr/char values with the "high bit" set may induce the display of
 special "graphic" pictures if the "use_graphics" flag is set, and your system
 supports the "use_graphics" flag.

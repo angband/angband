@@ -156,11 +156,11 @@ c. Buffing
 d. Ranged attack to soften up a (single) unique
 
   * ~5 Flasks of Oil to kill dangerous and/or valuable monsters (throw oil
-    for damage with the 'v' throw command)
+    for damage with the ``v`` throw command)
   * ~10-20 Iron shots (or arrows for Rangers) to throw at non-dangerous
     monsters with annoying side effects. (Stat drainers and acid damagers
     that are between you and the stairs down.) extra arrows for a ranger
-    (shoot arrows with the 'f' fire command.) Shots can be reused; oil can't.
+    (shoot arrows with the ``f`` fire command.) Shots can be reused; oil can't.
 
 e. Armor
 

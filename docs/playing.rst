@@ -13,9 +13,9 @@ are mapped to the "underlying commands" by choosing one of the two standard
 
 The original keyset is very similar to the "underlying" command set, with a
 few additions (such as the ability to use the numeric "directions" to
-"walk" or the '5' key to "stay still"). The roguelike keyset provides
+"walk" or the ``5`` key to "stay still"). The roguelike keyset provides
 similar additions, and also allows the use of the
-'h'/'j'/'k'/'l'/'y'/'u'/'b'/'n' keys to "walk" (or, in
+``h``/``j``/``k``/``l``/``y``/``u``/``b``/``n`` keys to "walk" (or, in
 combination with the shift or control keys, to run or alter), which thus
 requires a variety of key mappings to allow access to the underlying
 commands used for walking/running/altering. In particular, the "roguelike"
@@ -24,13 +24,13 @@ keyset includes many more "capital" and "control" keys, as shown below.
 Note that any keys that are not required for access to the underlying
 command set may be used by the user to extend the "keyset" which is being
 used, by defining new "keymaps". To avoid the use of any "keymaps", press
-backslash ('\\') plus the "underlying command" key. You may enter
-"control-keys" as a caret ('^') plus the key (so '^' + 'p' yields
+backslash (``\``) plus the "underlying command" key. You may enter
+"control-keys" as a caret (``^``) plus the key (so ``^`` + ``p`` yields
 '^p').
 
 Some commands allow an optional "repeat count", which allows you to tell
 the game that you wish to do the command multiple times, unless you press a
-key or are otherwise disturbed. To enter a "repeat count", type '0',
+key or are otherwise disturbed. To enter a "repeat count", type ``0``,
 followed by the numerical count, followed by the command. You must type
 'space' before entering certain commands. Skipping the numerical count
 yields a count of 99. An option allows certain commands (open, disarm,
@@ -43,23 +43,23 @@ quantity, a file name, or various other things. Normally you can hit return
 to choose the "default" response, or escape to cancel the command entirely.
 
 Some commands will prompt for a spell or an inventory item. Pressing space
-(or '*') will give you a list of choices. Pressing '-' (minus) selects
+(or ``*``) will give you a list of choices. Pressing ``-`` (minus) selects
 the item on the floor. Pressing a lowercase letter selects the given item.
 Pressing a capital letter selects the given item after verification.
-Pressing a numeric digit '#' selects the first item (if any) whose
-inscription contains '@#' or '@x#', where 'x' is the current
+Pressing a numeric digit ``#`` selects the first item (if any) whose
+inscription contains '@#' or '@x#', where ``x`` is the current
 "underlying command". You may only specify items which are "legal" for the
-command. Whenever an item inscription contains '!*' or '!x' (with 'x'
+command. Whenever an item inscription contains '!*' or '!x' (with ``x``
 as above) you must verify its selection.
 
 Some commands will prompt for a direction. You may enter a "compass"
 direction using any of the "direction keys" shown below. Sometimes, you may
-specify that you wish to use the current "target", by pressing 't' or
-'5', or that you wish to select a new target, by pressing '*' (see
+specify that you wish to use the current "target", by pressing ``t`` or
+``5``, or that you wish to select a new target, by pressing ``*`` (see
 "Target" below).
 
-        Original Keyset Directions 
-                 =  =  =                           
+        Original Keyset Directions
+                 =  =  =
                  7  8  9
                  4     6
                  1  2  3
@@ -79,75 +79,70 @@ using the roguelike keyset), instead of using the "walk" command plus a
 direction. The roguelike keyset allows you to "run" or "alter" by simply
 holding the shift or control modifier key down while pressing a "roguelike"
 direction key, instead of using the "run" or "alter" command plus a
-direction. Both keysets allow the use of the '5' key to "stand still",
+direction. Both keysets allow the use of the ``5`` key to "stand still",
 which is most convenient when using the original keyset.
 
 Original Keyset Command Summary
 ===============================
 
-
 ====== ============================= ====== ============================
-  a    Aim a wand                      A    Activate an object 
-  b    Browse a book                   B    (unused)
-  c    Close a door                    C    Character description
-  d    Drop an item                    D    Disarm a trap or lock a door
-  e    Equipment list                  E    Eat some food
-  f    Fire an item                    F    Fuel your lantern/torch
-  g    Get objects on floor            G    Gain new spells/prayers
-  h    Fire default ammo at target     H    (unused)
-  i    Inventory list                  I    Observe an item
-  j    (unused)                        J    (unused)
-  k    Ignore an item                  K    Toggle ignore
-  l    Look around                     L    Locate player on map
-  m    Cast a spell                    M    Full dungeon map
-  n    Repeat previous command         N    (unused)
-  o    Open a door or chest            O    (unused)
-  p    Cast a spell                    P    (unused)
-  q    Quaff a potion                  Q    End character & quit
-  r    Read a scroll                   R    Rest for a period
-  s    (unused)                        S    (unused)
-  t    Take off equipment              T    Dig a tunnel
-  u    Use a staff                     U    Use an item
-  v    Throw an item                   V    Version info
-  w    Wear/wield equipment            W    Walk into a trap
-  x    (unused)                        X    (unused)
-  y    (unused)                        Y    (unused)
-  z    Zap a rod                       Z    (unused)
-  !    (unused)                        ^A    Debug mode
-  @    (unused)                        ^B    (unused)
-  #    (unused)                        ^C    (special - break)
-  $    (unused)                        ^D    (unused)
-  %    (unused)                        ^E    Toggle inven/equip window
-  ^    (special - control key)         ^F    Repeat level feeling
-  &    (unused)                        ^G    Do autopickup
-  |*|    Target monster or location      ^H    (unused)
-  (    Load screen dump                ^I    (special - tab)
-  )    Dump screen dump                ^J    (special - linefeed)
-  {    Inscribe an object              ^K    (unused)
-  }    Uninscribe an object            ^L    Center map
-  [    Display visible monster list    ^M    (special - return)
-  ]    Display visible object list     ^N    (unused)
-  |-|    (unused)                        ^O    Show previous message
-  _    Enter store                     ^P    Show previous messages
-  |+|    Alter grid                      ^Q    (unused)
-  =    Set options                     ^R    Redraw the screen
-  ;    Walk (with pickup)              ^S    Save and don't quit
-  :    Take notes                      ^T    (unused)
-  '    Target closest monster          ^U    (unused)
-  "    Enter a user pref command       ^V    (unused)
-  ,    Stay still (with pickup)        ^W    (special - wizard mode)
-  <    Go up staircase                 ^X    Save and quit
-  .    Run                             ^Y    (unused)
-  >    Go down staircase               ^Z    (unused)
-  \\   (special - bypass keymap)        ~     Check knowledge
-  \`   (special - escape)               ?     Help
-  /    Identify symbol
-  \|    Quiver list
+``a``  Aim a wand                    ``A``  Activate an object 
+``b``  Browse a book                 ``B``  (unused)
+``c``  Close a door                  ``C``  Character description
+``d``  Drop an item                  ``D``  Disarm a trap or lock a door
+``e``  Equipment list                ``E``  Eat some food
+``f``  Fire an item                  ``F``  Fuel your lantern/torch
+``g``  Get objects on floor          ``G``  Gain new spells/prayers
+``h``  Fire default ammo at target   ``H``  (unused)
+``i``  Inventory list                ``I``  Observe an item
+``j``  (unused)                      ``J``  (unused)
+``k``  Ignore an item                ``K``  Toggle ignore
+``l``  Look around                   ``L``  Locate player on map
+``m``  Cast a spell                  ``M``  Full dungeon map
+``n``  Repeat previous command       ``N``  (unused)
+``o``  Open a door or chest          ``O``  (unused)
+``p``  Cast a spell                  ``P``  (unused)
+``q``  Quaff a potion                ``Q``  End character & quit
+``r``  Read a scroll                 ``R``  Rest for a period
+``s``  (unused)                      ``S``  (unused)
+``t``  Take off equipment            ``T``  Dig a tunnel
+``u``  Use a staff                   ``U``  Use an item
+``v``  Throw an item                 ``V``  Version info
+``w``  Wear/wield equipment          ``W``  Walk into a trap
+``x``  (unused)                      ``X``  (unused)
+``y``  (unused)                      ``Y``  (unused)
+``z``  Zap a rod                     ``Z``  (unused)
+``!``  (unused)                      ``^A`` Debug mode
+``@``  (unused)                      ``^B`` (unused)
+``#``  (unused)                      ``^C`` (special - break)
+``$``  (unused)                      ``^D`` (unused)
+``%``  (unused)                      ``^E`` Toggle inven/equip window
+``^``  (special - control key)       ``^F`` Repeat level feeling
+``&``  (unused)                      ``^G`` Do autopickup
+``\*`` Target monster or location    ``^H`` (unused)
+``(``  Load screen dump              ``^I`` (special - tab)
+``)``  Dump screen dump              ``^J`` (special - linefeed)
+``{``  Inscribe an object            ``^K`` (unused)
+``}``  Uninscribe an object          ``^L`` Center map
+``[``  Display visible monster list  ``^M`` (special - return)
+``]``  Display visible object list   ``^N`` (unused)
+``\-`` (unused)                      ``^O`` Show previous message
+``_``  Enter store                   ``^P`` Show previous messages
+``\+`` Alter grid                    ``^Q`` (unused)
+``=``  Set options                   ``^R`` Redraw the screen
+``;``  Walk (with pickup)            ``^S`` Save and don't quit
+``:``  Take notes                    ``^T`` (unused)
+``'``  Target closest monster        ``^U`` (unused)
+``"``  Enter a user pref command     ``^V`` (unused)
+``,``  Stay still (with pickup)      ``^W`` (special - wizard mode)
+``<``  Go up staircase               ``^X`` Save and quit
+``.``  Run                           ``^Y`` (unused)
+``>``  Go down staircase             ``^Z`` (unused)
+``\``  (special - bypass keymap)     ``~``  Check knowledge
+``\``` (special - escape)            ``?``  Help
+``/``  Identify symbol
+``|``  Quiver list
 ====== ============================= ====== ============================
-
-.. |*| replace:: \*
-.. |-| replace:: \-
-.. |+| replace:: \+
 
 Roguelike Keyset Command Summary
 ================================
@@ -230,26 +225,26 @@ escape death trick". The 'Ctrl-\\' and 'Ctrl-D' and 'Ctrl-S' keys
 should not be intercepted.
  
 It is often possible to specify "control-keys" without actually pressing
-the control key, by typing a caret ('^') followed by the key. This is
+the control key, by typing a caret (``^``) followed by the key. This is
 useful for specifying control-key commands which might be caught by the
 operating system as explained above.
 
-Pressing backslash ('\\') before a command will bypass all keymaps, and
+Pressing backslash (``\``) before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
-unless it is a caret ('^'), in which case the keypress after that will be
+unless it is a caret (``^``), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
 Angband keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
-the sequence '\\' + '.' + '6' will always mean "run east", even if the
-'.' key has been mapped to a different underlying command.
+the sequence ``\`` + ``.`` + ``6`` will always mean "run east", even if the
+``.`` key has been mapped to a different underlying command.
 
-The '0' and '^' and '\\' keys all have special meaning when entered at
+The ``0`` and ``^`` and ``\`` keys all have special meaning when entered at
 the command prompt, and there is no "useful" way to specify any of them as
 an "underlying command", which is okay, since they would have no effect.
 
 For many input requests or queries, the special character 'ESCAPE' will
-abort the command. The '[y/n]' prompts may be answered with 'y' or
-'n', or 'escape'. The '-more-' message prompts may be cleared (after
+abort the command. The '[y/n]' prompts may be answered with ``y`` or
+``n``, or 'escape'. The '-more-' message prompts may be cleared (after
 reading the displayed message) by pressing 'ESCAPE', 'SPACE',
 'RETURN', 'LINEFEED', or by any keypress, if the 'quick_messages'
 option is turned on.
@@ -289,8 +284,8 @@ scrolls that you are carrying that you wish to read.  In such cases, the
 selection is made by typing a letter of the alphabet (or a number if choosing
 from the quiver).  The prompt will indicate the possible letters/numbers,
 and you will also be shown a list of the appropriate items.  Often you will
-be able to press '/' to switch between inventory and equipment, or '|' to
-select the quiver, or '-' to select the floor.  Using the right arrow also
+be able to press ``/`` to switch between inventory and equipment, or ``|`` to
+select the quiver, or ``-`` to select the floor.  Using the right arrow also
 rotates selection between equipment, inventory, quiver, floor and back to
 equipment; the left arrow rotates in the opposite direction.
  

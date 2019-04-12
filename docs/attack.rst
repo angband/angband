@@ -22,7 +22,7 @@ wall is no longer there, and the creature can be targeted normally.
 If you are wielding a weapon, the damage for the weapon is used when you
 hit a creature. Otherwise you get a single punch which does minimal damage.
 
-You may |'w'ield| one weapon for melee combat, and also one missile
+You may ``w``\ield one weapon for melee combat, and also one missile
 launcher (bow, crossbow or sling). You may also wear one amulet (around the
 one and only neck of the character), two rings (on the two "ring" fingers,
 i.e. the third finger of each hand: a magic ring does not function when
@@ -31,8 +31,6 @@ light source, and a full set of armor - body armor, shield, helmet, gloves,
 boots and a cloak. Any or all of these items may provide powers to the
 character in terms of bonuses to-hit, to-damage, to-armor class, or to
 other stats.
-
-.. |'w'ield| replace:: 'w'\ield
 
 Firing a missile (while wielding the appropriate launcher) is the only way
 to get the "full" power out of the missile. You may of course throw an
@@ -47,18 +45,16 @@ receive a damage reduction. This is not true for monsters, whose AC only
 affects the character's difficulty to hit them.
 
 If you wish to see how much damage your weapon will do, you can
-|'I'nspect| it. You will find the number of blows and how much damage you
+``I``\nspect it. You will find the number of blows and how much damage you
 would do per round, including information on whether your weapon damages
 other types of monsters differently.
-
-.. |'I'nspect| replace:: 'I'\nspect
 
 Monster Memories
 ================
 
 There are hundreds of different creatures in the pits of Angband, many of
 which have the same letter symbol and color on the screen. The exact
-species of a creature can be discovered by |'l'ooking| at it. It is also
+species of a creature can be discovered by |``l``ooking| at it. It is also
 very difficult to keep track of the capabilities of various creatures.
 Luckily, Angband automatically keeps track of your experiences with a
 particular creature. This feature is called the monster memory. Your
@@ -68,7 +64,7 @@ you have observed them to multiply or move erratically, or drop treasure,
 etc. Otherwise you would simply have to take notes, which is an unnecessary
 bother.
 
-.. |'l'ooking| replace:: 'l'\ooking
+.. |``l``ooking| replace:: ``l``\ooking
 
 If you have killed enough of a particular creature, or suffered enough
 attacks, recalling the monster memory may also provide you with information
@@ -105,8 +101,8 @@ Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
 part of their description the damage dice which define their capabilities.
 Any damage enchantment is added to the dice roll for that weapon. The dice
-used for a given weapon is displayed as 'XdY'. The number 'X' indicates
-how many dice to roll, and number 'Y' indicates how many sides they have.
+used for a given weapon is displayed as 'XdY'. The number ``X`` indicates
+how many dice to roll, and number ``Y`` indicates how many sides they have.
 A '2d6' weapon will thus give damage from 2 to 12, plus any damage bonus.
 The weight of a weapon is also a consideration. Heavy weapons may hit
 harder, but they are also harder to use. Depending on your strength,
@@ -122,10 +118,10 @@ Missile weapons, such as bows, have their characteristics added to those of
 the missile used, if the proper weapon/missile combination is used, and
 then the launcher multiplier is applied to the total damage, making missile
 weapons very powerful given the proper missiles, especially if they are
-enchanted. Like weapons, |'I'nspecting| ammunition will tell you how much
+enchanted. Like weapons, |``I``nspecting| ammunition will tell you how much
 damage you will do with your current missile launcher.
 
-.. |'I'nspecting| replace:: 'I'\nspecting
+.. |``I``nspecting| replace:: ``I``\nspecting
 
 Finally, some rare weapons have special abilities. These are called ego
 weapons, and are feared by great and meek. An ego weapon must be wielded to
@@ -178,23 +174,23 @@ work on a monster type or they won't; some monsters resist particular effects
 but not all do.
 
 Hold Monster:
-  Paralyses a monster until you hit them
-  Doubles chance of player getting a critical hit
-  Normal duration 3-8 turns
+  Paralyses a monster until you hit them  
+  Doubles chance of player getting a critical hit  
+  Normal duration 3-8 turns  
 
 Stun Monster:
-  Reduces the monster's melee accuracy and damage by 10%
-  1 in 10 chance that the monster will miss the turn
-  Doubles chance of player getting a critical hit
-  Normal duration 5-10 turns
+  Reduces the monster's melee accuracy and damage by 10%  
+  1 in 10 chance that the monster will miss the turn  
+  Doubles chance of player getting a critical hit  
+  Normal duration 5-10 turns  
 
 Confuse Monster:
-  Monster spells fail 50% more often
-  Monster 20% more likely to miss target with spells/ranged attacks
-  Monster ball & bolt spells sometimes go in the wrong direction
-  30% chance of erratic movement
-  Doubles chance of critical hit
-  Normal duration 5-10 turns
+  Monster spells fail 50% more often  
+  Monster 20% more likely to miss target with spells/ranged attacks  
+  Monster ball & bolt spells sometimes go in the wrong direction  
+  30% chance of erratic movement  
+  Doubles chance of critical hit  
+  Normal duration 5-10 turns  
 
 Slow Monster:
   -2 speed

@@ -22,7 +22,7 @@ symbols are used to represent entities in more than one category. The "@"
 symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
-The "slash" command ('/') will identify any character appearing on your
+The "slash" command (``/``) will identify any character appearing on your
 map (see 'commands.txt').
 
 Note that you can use a "user pref file" to change any of these symbols to
@@ -33,76 +33,76 @@ something you are more comfortable with.
 Features that do not block line of sight
 ----------------------------------------
 
-===== =========================  =====  ================================== 
-'.'   A floor space              '1'    Entrance to General Store
-'.'   A trap (hidden)            '2'    Entrance to Armoury
-'^'   A trap (known)             '3'    Entrance to Weapon Smith
-';'   A glyph of warding         '4'    Entrance to Bookseller
-'''   An open door               '5'    Entrance to Alchemy Shop
-'''   A broken door              '6'    Entrance to Magic Shop
-'<'   A staircase up             '7'    Entrance to the Black Market
-'>'   A staircase down           '8'    Entrance to your Home
-'#'   A pool of lava
-===== =========================  =====  ================================== 
+===== =========================    =====  ================================== 
+``.``   A floor space              ``1``    Entrance to General Store
+``.``   A trap (hidden)            ``2``    Entrance to Armoury
+``^``   A trap (known)             ``3``    Entrance to Weapon Smith
+``;``   A glyph of warding         ``4``    Entrance to Bookseller
+``'``   An open door               ``5``    Entrance to Alchemy Shop
+``'``   A broken door              ``6``    Entrance to Magic Shop
+``<``   A staircase up             ``7``    Entrance to the Black Market
+``>``   A staircase down           ``8``    Entrance to your Home
+``#``   A pool of lava
+===== =========================    =====  ================================== 
 
 Features that block line of sight
 ---------------------------------
 
-===== =========================  =====  ==================================
-'#'   A secret door              '#'    A wall
-'+'   A closed door              '%'    A mineral vein
-'+'   A locked door              '*'    A mineral vein with treasure
-':'   A pile of rubble           ':'    A pile of passable rubble
-===== =========================  =====  ==================================
+===== =========================    =====  ==================================
+``#``   A secret door              ``#``    A wall
+``+``   A closed door              ``%``    A mineral vein
+``+``   A locked door              ``*``    A mineral vein with treasure
+``:``   A pile of rubble           ``:``    A pile of passable rubble
+===== =========================    =====  ==================================
 
 Objects
 -------
  
-=====  =============================  =====  =============================
-'!'    A potion (or flask)            '/'    A pole-arm
-'?'    A scroll (or book)             '|'    An edged weapon
-','    A mushroom (or food)           '\\'    A hafted weapon
-'-'    A wand or rod                  '}'    A sling, bow, or x-bow
-'_'    A staff                        '{'    A shot, arrow, or bolt
-'='    A ring                         '('    Soft armour
-'"'    An amulet                      '['    Hard armour
-'$'    Gold or gems                   ']'    Misc. armour
-'~'    Lights, Tools, Chests, etc     ')'    A shield
-'&'    Multiple items
-=====  =============================  =====  =============================
+=====  =============================    =====  =============================
+``!``    A potion (or flask)            ``/``    A pole-arm
+``?``    A scroll (or book)             ``|``    An edged weapon
+``,``    A mushroom (or food)           ``\``    A hafted weapon
+``-``    A wand or rod                  ``}``    A sling, bow, or x-bow
+``_``    A staff                        ``{``    A shot, arrow, or bolt
+``=``    A ring                         ``(``    Soft armour
+``"``    An amulet                      ``[``    Hard armour
+``$``    Gold or gems                   ``]``    Misc. armour
+``~``    Lights, Tools, Chests, etc     ``)``    A shield
+``&``    Multiple items
+=====  =============================    =====  =============================
  
 Monsters
 --------
 
-=====   =================== =====  ==================================== 
-'$'     Creeping Coins      ','    Mushroom Patch
-'a'     Giant Ant           'A'    Ainu
-'b'     Giant Bat           'B'    Bird
-'c'     Giant Centipede     'C'    Canine (Dog)
-'d'     Dragon              'D'    Ancient Dragon
-'e'     Floating Eye        'E'    Elemental
-'f'     Feline (Cat)        'F'    Dragon Fly
-'g'     Golem               'G'    Ghost
-'h'     Humanoids           'H'    Hybrid
-'i'     Icky-Thing          'I'    Insect
-'j'     Jelly               'J'    Snake
-'k'     Kobold              'K'    Killer Beetle
-'l'     Giant Louse         'L'    Lich
-'m'     Mold                'M'    Multi-Headed Hydra
-'n'     Naga                'N'    (unused)
-'o'     Orc                 'O'    Ogre
-'p'     Human "person"      'P'    Giant "person"
-'q'     Quadruped           'Q'    Quylthulg (Pulsing Flesh Mound)
-'r'     Rodent              'R'    Reptile/Amphibian
-'s'     Skeleton            'S'    Spider/Scorpion/Tick
-'t'     Townsperson         'T'    Troll
-'u'     Minor Demon         'U'    Major Demon
-'v'     Vortex              'V'    Vampire
-'w'     Worm or Worm Mass   'W'    Wight/Wraith
-'x'     (unused)            'X'    Xorn/Xaren
-'y'     Yeek                'Y'    Yeti
-'z'     Zombie/Mummy        'Z'    Zephyr Hound
-=====   =================== =====  ====================================
+=====   ===================   =====  ==================================== 
+``$``     Creeping Coins      ``,``    Mushroom Patch
+``a``     Giant Ant           ``A``    Ainu
+``b``     Giant Bat           ``B``    Bird
+``c``     Giant Centipede     ``C``    Canine (Dog)
+``d``     Dragon              ``D``    Ancient Dragon
+``e``     Floating Eye        ``E``    Elemental
+``f``     Feline (Cat)        ``F``    Dragon Fly
+``g``     Golem               ``G``    Ghost
+``h``     Humanoids           ``H``    Hybrid
+``i``     Icky-Thing          ``I``    Insect
+``j``     Jelly               ``J``    Snake
+``k``     Kobold              ``K``    Killer Beetle
+``l``     Giant Louse         ``L``    Lich
+``m``     Mold                ``M``    Multi-Headed Hydra
+``n``     Naga                ``N``    (unused)
+``o``     Orc                 ``O``    Ogre
+``p``     Human "person"      ``P``    Giant "person"
+``q``     Quadruped           ``Q``    Quylthulg (Pulsing Flesh Mound)
+``r``     Rodent              ``R``    Reptile/Amphibian
+``s``     Skeleton            ``S``    Spider/Scorpion/Tick
+``t``     Townsperson         ``T``    Troll
+``u``     Minor Demon         ``U``    Major Demon
+``v``     Vortex              ``V``    Vampire
+``w``     Worm or Worm Mass   ``W``    Wight/Wraith
+``x``     (unused)            ``X``    Xorn/Xaren
+``y``     Yeek                ``Y``    Yeti
+``z``     Zombie/Mummy        ``Z``    Zephyr Hound
+=====   ===================   =====  ====================================
 
 The Town Level
 ==============
@@ -169,43 +169,43 @@ If it is a good object, they will add it to their inventory. If it was a bad
 bargain, they simply throw the item away. You can use this feature to learn
 item flavors.
 
-The General Store ('1')
+The General Store (``1``)
   The General Store sells foods, some clothing, torches, oil, shovels and
   picks. All of these items and some others can be sold back to the general
   store for money. The general store restocks like every store, but the
   inventory types never change.
 
-The Armoury ('2')
+The Armoury (``2``)
   The Armoury is where the town's armour is fashioned. All sorts of
   protective gear may be bought and sold here. The deeper into the dungeon
   you progress the more exotic the equipment you will find stocked in the
   armoury. However, some armour types will never appear here unless you
   sell them.
 
-The Weaponsmith's Shop ('3')
+The Weaponsmith's Shop (``3``)
   The Weaponsmith's Shop is where the town's weapons are fashioned. Hand
   and missile weapons may be purchased and sold here, along with arrows,
   bolts, and shots. As with the armoury, not all weapon types will be
   stocked here, unless they are sold to the shop by the player first.
 
-The Bookseller ('4')
+The Bookseller (``4``)
   The Bookseller holds supplies of the simpler books needed by magic users,
   and will buy the more advanced books which can be found in the dungeon.
 
-The Alchemy shop ('5')
+The Alchemy shop (``5``)
   The Alchemy Shop deals in all types of potions and scrolls.
 
-The Magic User's Shop ('6')
+The Magic User's Shop (``6``)
   The Magic User's Shop deals in all sorts of rings, wands, amulets, and
   staves.
 
-The Black Market ('7')
+The Black Market (``7``)
   The Black Market will sell and buy anything at extortionate prices.
   However it occasionally has **very** good items in it. With the exception
   of artifacts, every item found in the dungeon may appear in the black
   market.
 
-Your Home ('8')
+Your Home (``8``)
   This is your house where you can store objects that you cannot carry on
   your travels, or will need at a later date.
 
@@ -213,8 +213,8 @@ Within The Dungeon
 ==================
 
 Once your character is adequately supplied with food, light, armor, and
-weapons, he is ready to enter the dungeon. Move on top of the '>' symbol
-and use the "Down" command ('>').
+weapons, they is ready to enter the dungeon. Move on top of the ``>`` symbol
+and use the "Down" command (``>``).
 
 Your character will enter a maze of interconnecting staircases and finally
 arrive somewhere on the first level of the dungeon. Each level of the
@@ -241,7 +241,7 @@ out of light!
 A character must wield a torch or lamp in order to supply his own light. A
 torch or lamp burns fuel as it is used, and once it is out of fuel, it
 stops supplying light. You will be warned as the light approaches this
-point. You may use the "Fuel" command ('F') to refuel your lantern (with
+point. You may use the "Fuel" command (``F``) to refuel your lantern (with
 flasks of oil), and it is a good idea to carry extra torches or flasks of 
 oil, as appropriate. There are rumours of objects of exceptional power 
 which glow with their own never-ending light.
@@ -264,13 +264,13 @@ may be able to "stack" several items in the same grid.
 You pick up objects by moving on top of them. You can carry up to 23
 different items in your backpack while wearing and wielding up to 12
 others. Although you are limited to 23 different items, each item may
-actually be a "pile" of up to 40 similar items. If you |'t'ake| off an
+actually be a "pile" of up to 40 similar items. If you |``t``ake| off an
 item, it will go into your backpack if there is room: if there is no room
 in your backpack, it will drop onto the floor, so be careful when swapping
 one wielded weapon or worn piece of armor for another when your pack is
 full.
 
-.. |'t'ake| replace:: 't'\ake
+.. |``t``ake| replace:: ``t``\ake
 
 You are, however, limited in the total amount of weight that you can carry.
 If you exceed this value, you become slower, making it easier for monsters
@@ -388,13 +388,13 @@ Traps
 
 There are many traps located in the dungeon of varying danger. These traps
 are hidden from sight and are triggered only when your character walks over
-them. If you have found a trap you can attempt to |'D'isarm| it, but
+them. If you have found a trap you can attempt to |``D``isarm| it, but
 failure may mean activating it.  Traps can be physical dangers such as pits,
 or magical runes or inscriptions which will cause an effect when triggered.
 Your character may be better at disarming one of these types of traps than
 the other.
 
-.. |'D'isarm| replace:: 'D'\isarm
+.. |``D``isarm| replace:: ``D``\isarm
 
 All characters have a chance to notice traps when they first come into view
 (dependent on searching skill). Some players will also get access to magical
@@ -412,7 +412,7 @@ Staircases, Secret Doors, Passages, and Rooms
 
 Staircases are the manner in which you get deeper or climb out of the
 dungeon. The symbols for the up and down staircases are the same as the
-commands to use them. A '<' represents an up staircase and a '>'
+commands to use them. A ``<`` represents an up staircase and a ``>``
 represents a down staircase. You must move your character over the
 staircase before you can use it.
 
@@ -502,7 +502,7 @@ creature alive, there is really not much point. Unless you wish to listen
 to the rumors of a powerful ring buried somewhere in the dungeon, or a suit
 of dragon scale mail that resists everything...
 
-When you are ready to retire, simply kill your character (using the 'Q' key)
+When you are ready to retire, simply kill your character (using the ``Q`` key)
 to have your character entered into the high score list as a winner. Note
 that until you retire, you can still be killed, so you may want to retire
 before wandering into yet another horde of greater demons.

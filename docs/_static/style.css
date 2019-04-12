@@ -21,6 +21,10 @@ code.docutils.literal {
     border: 1px solid #8e8080;
 }
 
+table p {
+  margin: 0;
+}
+
 h7 {
   background: linear-gradient(to right, hsla(300, 13%, 42%, 1), rgb(91, 119, 136));
   padding: 0.3rem 0.3rem 0 0.3rem;

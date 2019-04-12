@@ -559,7 +559,7 @@ Point-based
 
 Standard roller
   The standard roller simply rolls three six-sided dice for each stat,
-  leaving everything to chance. You can press 'r' to re-roll the dice, or
+  leaving everything to chance. You can press ``r`` to re-roll the dice, or
   simply accept what luck has offered.
 
 Character Name
