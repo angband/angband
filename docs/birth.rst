@@ -64,7 +64,7 @@ based on the character's social class (higher is better) and stats (less
 powerful characters start with more gold). Each character also starts out
 with a few useful items, which may be kept, or sold to a shop-keeper for
 more gold.  However, especially valuable items will never sell for the full
-price, as each shopkeeper has a maximum that he is prepared to pay for any
+price, as each shopkeeper has a maximum that they are prepared to pay for any
 item. The more generous shopkeepers may buy your items for up to 30,000
 gold pieces: but some are really stingy, and will pay no more than 5,000.
 
@@ -77,13 +77,13 @@ X is the intrinsic AC of the armour in question, and Y is the magical bonus
 to armour class provided by that item.
 
 Each character has "hit points", or hp, representing how much damage the
-character can sustain before he dies. How many hit points a character has
+character can sustain before they die. How many hit points a character has
 is determined by race, class, level and constitution, as follows: each race
 has a basic "hit dice" number - for instance, a Dwarf's basic hit die is
 11, while a hobbit's is 7. This is modified by class: for instance, a
 warrior gets a +9 bonus to the hit die, while a mage gets no bonus and a
 priest +2, so a dwarven warrior's total hit die will be (11+9)=20 - meaning
-that he gets between 1 and 20 hit points per level. If he were a priest,
+that they get between 1 and 20 hit points per level. If they were a priest,
 his hit dice would be (11+2)=13, and get between 1 and 13 hit points per
 level. The hobbit mage would get only 1-7 hps per level. (All characters
 get the maximum at first level: thereafter it is a random roll of 1dX where
@@ -255,8 +255,8 @@ hit dice, and what spells (if any) the character can learn.
 Warrior
   A Warrior is a hack-and-slash character, who solves most of his problems
   by cutting them to pieces, but will occasionally fall back on the help of
-  a magical device. His prime stats are strength, constitution, and
-  dexterity, and he will strike more blows with melee weapons than any
+  a magical device. Their prime stats are strength, constitution, and
+  dexterity, and they will strike more blows with melee weapons than any
   other class. A Warrior will be excellent at fighting, shooting and
   throwing, but bad at most other skills. A warrior has bad stealth and
   cannot learn any spells.
@@ -264,17 +264,17 @@ Warrior
 .. _Mage:
 
 Mage
-  A Mage must live by his wits. He cannot hope to simply hack his way
+  A Mage must live by his wits. They cannot hope to simply hack his way
   through the dungeon, and so must therefore use his magic to defeat,
   deceive, confuse, and escape. A mage is not really complete without an
-  assortment of magical devices to use in addition to his spells. He can
+  assortment of magical devices to use in addition to his spells. They can
   master the higher level magical devices far easier than anyone else, and
   has the excellent saving throws to resist effects of spells cast at him.
-  However, he is incredibly weak, getting few hit dice and suffering strong
-  penalties to strength and constitution. Intelligence is his primary stat
-  and at high levels he can cast many spells without a chance of failure.
+  However, they are incredibly weak, getting few hit dice and suffering strong
+  penalties to strength and constitution. Intelligence is their primary stat
+  and at high levels they can cast many spells without a chance of failure.
   There is no rule that says a mage cannot become a good fighter, but spells
-  are his true realm and he will get fewer blows with melee weapons than
+  are their true realm and they will get fewer blows with melee weapons than
   other classes.
 
 .. _Priest:
@@ -300,8 +300,8 @@ Rogue
   capable of fighting his way out of a tight spot. He is the master of
   traps and locks, no device being impossible for him to overcome. A rogue
   has a high stealth allowing him to sneak around many creatures without
-  having to fight, or sneak up and get the first blow. A rogue's perception
-  is higher than any other class, and many times he will notice a trap or
+  having to fight, or sneak up and get the first blow. Rogues' perception
+  is higher than any other class, and many times they will notice a trap or
   secret door before having to search. A rogue is better than warriors or
   paladins with magical devices, but still cannot rely on their performance.
   Rogues can also learn a few spells, but not the powerful offensive spells
@@ -317,7 +317,7 @@ Ranger
   capable of learning all but the most powerful spells. Because a ranger is
   really a dual class character, more experience is required for him to
   advance. A ranger has good stealth, good perception, good searching, a
-  good saving throw, and is good with magical devices. His primary stats
+  good saving throw, and is good with magical devices. Their primary stats
   are strength, intelligence and dexterity.
 
 .. _Paladin:
@@ -329,7 +329,7 @@ Paladin
   powerful prayers. Because a paladin is really a dual class character, it
   requires more experience to advance him. A paladin lacks much in the way
   of abilities. He is poor at stealth, perception, searching, and magical
-  devices. He has a decent saving throw due to his divine alliance. His
+  devices. He has a decent saving throw due to his divine alliance. Their
   primary stats are strength and wisdom.
 
 Stats
@@ -464,7 +464,7 @@ Stat Bonus Tables
 Stats, hit dice, infravision and experience point modifications due to 
 race and class are listed in the following table.  To get the total hit 
 dice and XP modifier, add the "race" and "class" numbers: for instance, 
-a Dwarf Priest has a hit die of 11+2=13 (i.e. he will get 1d13 hit 
+a Dwarf Priest has a hit die of 11+2=13 (i.e. they will get 1d13 hit 
 points per level, adjusted for constitution) and an XP modifier of 
 20+20=40%.
 

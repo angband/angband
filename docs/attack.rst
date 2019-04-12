@@ -265,7 +265,7 @@ character or monster level.
 In the case of fire, cold, lightning, acid and poison, if the monster has
 resistance to a player attack of this kind it will take almost no damage.
 If the player has one or more permanent sources of resistance, they will take
-1/3 of the damage he would normally take: if the player has a temporary
+1/3 of the damage they would normally take: if the player has a temporary
 source of resistance (whether from potion, spell or item activation), this
 will also reduce the damage to 1/3 of its normal level, allowing the
 character to take only 1/9 damage if they have both permanent and temporary
@@ -433,7 +433,7 @@ Ego Melee Weapons:
 (Blessed)
   A blessed blade will increase your wisdom. If you are a priest, wielding
   a non-blessed sword or polearm causes a small penalty while attacking and
-  may infuriate your god, decreasing the chances that he will accept your
+  may infuriate your god, decreasing the chances that she will accept your
   prayers: a blessed blade may be wielded without this penalty. Blessed
   blades also have one extra, random, power.
 

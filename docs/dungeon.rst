@@ -364,7 +364,7 @@ simply kill monsters and discover items in the dungeon to sell, than to
 walk around digging for treasure. But, early on, mineral veins can be a
 wonderful source of easy treasure.
 
-If the character has a scroll, staff, or spell of treasure location, he can
+If the character has a scroll, staff, or spell of treasure location, they can
 immediately locate all strikes of treasure within a vein shown on the
 screen. This makes mining much easier and more profitable.
 
@@ -510,7 +510,7 @@ before wandering into yet another horde of greater demons.
 Upon Death and Dying
 ====================
  
-If your character falls below 0 hit points, he has died and cannot be
+If your character falls below 0 hit points, they have died and cannot be
 restored. A tombstone showing information about your character will be
 displayed. You are also permitted to get a record of your character, and
 all your equipment (identified) either on the screen or in a file.

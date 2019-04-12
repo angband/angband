@@ -85,15 +85,15 @@ A Fighting Chance
 For a melee character, the most important measure of power is how much damage
 they can do in a single turn. Consider the above cl 1 character with 3 blows
 from a Rapier (+7,+9), in a fight vs an out-of-depth Bullroarer, with no
-escapes, no ranged weapons, and no armor. On the face, they have no chance.
-However, if they can get in the first blow he in fact has a 71% chance of
+escapes, no ranged weapons, and no armor. On the face, she has no chance.
+However, if she can get in the first blow, she in fact has a 71% chance of
 killing Bullroarer in a single turn, and a 95% chance of frightening him.
 
 Further, with full buffing (!Hero, ?Blessing ?Berserk Strength), the character
 has an 81% chance of killing him in a single turn. As well as improving the
 to-hit probability from 91% to 95%, this corresponds to a 50% reduction in the
 chance of failure in a dangerous situation. Finally, assuming 'Anar' does win
-this battle, he gets 450 experience, and immediately goes jumps to cl 8.
+this battle, she gets 450 experience, and immediately goes jumps to cl 8.
 
 Missile Damage
 ``````````````
