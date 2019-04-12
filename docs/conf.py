@@ -22,8 +22,12 @@ copyright = "2019, Angband developers past and present"
 author = "Angband developers past and present"
 
 # The full version, including alpha/beta/rc tags
-release = "4.2+"
+import re
 
+version_regex = r"AC_INIT\([a-zA-Z]+, (.+),"
+parsed_lines = [re.findall(version_regex, line) for line in open("../configure.ac")]
+versions = [line[0] for line in parsed_lines if len(line) != 0]
+release = versions[0]
 
 # -- General configuration ---------------------------------------------------
 
