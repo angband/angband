@@ -32,6 +32,7 @@ function cp_unix2dos {
 mkdir -p $DIR
 cd $DIR
 
+mkdir docs
 mkdir lib
 mkdir lib/gamedata
 mkdir lib/customize
@@ -59,13 +60,7 @@ cp ../*.exe .
 cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
-cp_unix2dos ../changes.txt ./Changes.txt
-cp_unix2dos ../thanks.txt ./Thanks.txt
-cp_unix2dos ../copying.txt ./Copying.txt
-cp_unix2dos ../faq.txt ./FAQ.txt
-cp ../doc/manual.pdf ./Manual.pdf
-cp ../doc/manual.html ./Manual.html
-cp ../doc/mr-att.png ./mr-att.png
+cp_unix2dos ../docs/*.rst docs/
 
 cp ../lib/readme.txt lib/
 
