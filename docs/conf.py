@@ -56,7 +56,10 @@ html_theme = "better"
 
 html_title = "<img> The Angband Manual"
 html_short_title = "Home"
-html_sidebars = {"**": ["localtoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": ["localtoc.html", "searchbox.html"],
+    "index": ["globaltoc.html", "searchbox.html"],
+}
 html_theme_options = {
     "cssfiles": ["_static/style.css"],
     "showheader": True,
