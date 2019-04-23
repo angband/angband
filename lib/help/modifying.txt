@@ -180,12 +180,6 @@ object_property.txt
   possible to add new properties to this file and expect to have any effect,
   but it is possible to change how existing properties work.
 
-object_power.txt
-  This file contains formulas for calculating power of objects (used in
-  determining prices and generating random artifacts).  You should only change
-  this file if you understand the way they are used (defined in
-  src/obj-power.c).
-
 player_timed.txt
   This file defines some of the properties of timed effects (such as haste and
   confusion) that can apply to the player.  It chiefly contains the messages

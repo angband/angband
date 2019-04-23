@@ -3433,7 +3433,6 @@ static struct {
 	{ "player classes", &class_parser },
 	{ "artifacts", &artifact_parser },
 	{ "object properties", &object_property_parser },
-	{ "object power calculations", &object_power_parser },
 	{ "blow methods", &meth_parser },
 	{ "blow effects", &eff_parser },
 	{ "monster spells", &mon_spell_parser },
