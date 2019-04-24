@@ -2024,6 +2024,12 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 			mflag_on(mon->mflag, MFLAG_MARK);
 			mflag_on(mon->mflag, MFLAG_SHOW);
 
+			/* Note invisible monsters */
+			if (monster_is_invisible(mon)) {
+				struct monster_lore *lore = get_lore(mon->race);
+				rf_on(lore->flags, RF_INVISIBLE);
+			}
+
 			/* Update monster recall window */
 			if (player->upkeep->monster_race == mon->race)
 				/* Redraw stuff */

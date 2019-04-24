@@ -4951,7 +4951,7 @@ flags:OPEN_DOOR | MOVE_BODY
 flags:IM_POIS
 spell-freq:9
 spells:SCARE
-desc:A 2-heded hydra with an extra head, it's mouth dripping venom.
+desc:A 2-headed hydra with an extra head, its mouth dripping venom.
 
 name:earth hound
 base:zephyr hound
@@ -7637,7 +7637,7 @@ hearing:50
 smell:20
 armor-class:112
 sleepiness:20
-depth:29
+depth:33
 rarity:3
 experience:600
 blow:PUNCH:HURT:1d7
