@@ -307,6 +307,22 @@ void player_fix_scramble(struct player *p)
 }
 
 /**
+ * Return true if the player timed effect matches the given string
+ */
+bool player_timed_grade_eq(struct player *p, int idx, char *match)
+{
+	if (!p->timed[idx]) {
+		struct timed_grade *grade = timed_effects[idx].grade;
+		while (p->timed[idx] > grade->max) {
+			grade = grade->next;
+		}
+		if (streq(grade->name, match)) return true;
+	}
+
+	return false;
+}
+
+/**
  * Set "player->food", notice observable changes
  *
  * The "player->food" variable can get as large as 20000, allowing the
