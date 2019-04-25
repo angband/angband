@@ -635,13 +635,15 @@ static enum parser_error parse_prefs_object(struct parser *p)
 				}
 
 		} else {
+			/* No error at incorrect sval to stop failure due to outdated
+			 * pref files and enable switching between old and new classes */
 			svi = lookup_sval(tvi, sval);
 			if (svi < 0)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
+				return PARSE_ERROR_NONE;
 
 			kind = lookup_kind(tvi, svi);
 			if (!kind)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
+				return PARSE_ERROR_NONE;
 
 			kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
 			kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");

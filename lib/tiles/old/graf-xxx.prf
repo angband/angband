@@ -742,34 +742,69 @@ object:scroll:Trap Creation:0x86:0x80
 
 
 
-##### Basic Books #####
+##### Arcane Books #####
 
-# object:magic book:[Magic for Beginners]:0x8A:0x80
-# object:magic book:[Conjurings and Tricks]:0x8A:0x81
-# object:magic book:[Incantations and Illusions]:0x8A:0x82
-# object:magic book:[Sorcery and Evocations]:0x8A:0x83
-# object:prayer book:[Beginners Handbook]:0x8A:0x89
-# object:prayer book:[Words of Wisdom]:0x8A:0x8A
-# object:prayer book:[Chants and Blessings]:0x8A:0x8B
-# object:prayer book:[Exorcism and Dispelling]:0x8A:0x8C
+# from class.txt
 
+object:magic book:[First Spells]:0x8A:0x80
+object:magic book:[Attacks and Knowledge]:0x8A:0x81
+object:magic book:[Magical Defences]:0x8A:0x83
+object:magic book:[Arcane Control]:0x8A:0x86
+object:magic book:[Wizard's Tome of Power]:0x8A:0x87
 
+# from old_class.txt
 
+object:magic book:[Magic for Beginners]:0x8A:0x80
+object:magic book:[Conjurings and Tricks]:0x8A:0x81
+object:magic book:[Incantations and Illusions]:0x8A:0x82
+object:magic book:[Sorcery and Evocations]:0x8A:0x83
+object:magic book:[Resistances of Scarabtarices]:0x8A:0x84
+object:magic book:[Raal's Tome of Destruction]:0x8A:0x88
+object:magic book:[Mordenkainen's Escapes]:0x8A:0x85
+object:magic book:[Tenser's Transformations]:0x8A:0x87
+object:magic book:[Kelek's Grimoire of Power]:0x8A:0x86
 
-##### Special Books (note resistances) #####
+##### Divine Books #####
 
-# object:magic book:[Resistances of Scarabtarices]:0x8A:0x84
-# object:magic book:[Raal's Tome of Destruction]:0x8A:0x88
-# object:magic book:[Mordenkainen's Escapes]:0x8A:0x85
-# object:magic book:[Tenser's Transformations]:0x8A:0x87
-# object:magic book:[Kelek's Grimoire of Power]:0x8A:0x86
-# object:prayer book:[Ethereal Openings]:0x8A:0x8D
-# object:prayer book:[Godly Insights]:0x8A:0x8E
-# object:prayer book:[Purifications and Healing]:0x8A:0x8F
-# object:prayer book:[Holy Infusions]:0x8A:0x90
-# object:prayer book:[Wrath of God]:0x8A:0x91
+# from class.txt
 
+object:prayer book:[Novice's Handbook]:0x8A:0x89
+object:prayer book:[Cleansing Power]:0x8A:0x8B
+object:prayer book:[Healing and Sanctuary]:0x8A:0x8F
+object:prayer book:[Battle Blessings]:0x8A:0x90
+object:prayer book:[Wrath of the Valar]:0x8A:0x91
 
+# from old_class.txt
+
+object:prayer book:[Beginners Handbook]:0x8A:0x89
+object:prayer book:[Words of Wisdom]:0x8A:0x8A
+object:prayer book:[Chants and Blessings]:0x8A:0x8B
+object:prayer book:[Exorcism and Dispelling]:0x8A:0x8C
+object:prayer book:[Ethereal Openings]:0x8A:0x8D
+object:prayer book:[Godly Insights]:0x8A:0x8E
+object:prayer book:[Purifications and Healing]:0x8A:0x8F
+object:prayer book:[Holy Infusions]:0x8A:0x90
+object:prayer book:[Wrath of God]:0x8A:0x91
+
+##### Nature Books #####
+
+# from class.txt
+
+object:nature book:[Lesser Charms]:0xA3:0x85
+object:nature book:[Gifts of Nature]:0xA3:0x85
+object:nature book:[Creature Dominion]:0xA3:0x81
+object:nature book:[Nature Craft]:0xA3:0x84
+object:nature book:[Wild Forces]:0xA3:0x86
+
+##### Shadow Books #####
+
+# from class.txt
+
+object:shadow book:[Into the Shadows]:0x8A:0x88
+object:shadow book:[Dark Rituals]:0x8A:0x88
+object:shadow book:[Fear and Torment]:0x8A:0x88
+object:shadow book:[Deadly Powers]:0xA3:0x88
+object:shadow book:[Corruption of Spirit]:0xA3:0x89
 
 
 ##### Chests #####

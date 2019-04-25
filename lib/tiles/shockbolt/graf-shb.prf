@@ -453,29 +453,69 @@ object:scroll:Trap Creation:0x87:0xE1
 
 # Graphics are sourced from flavor entries in flvr-shb.prf
 
-##### Basic Books #####
+##### Arcane Books #####
 
-# object:magic book:[Magic for Beginners]:0x86:0x80
-# object:magic book:[Conjurings and Tricks]:0x86:0x81
-# object:magic book:[Incantations and Illusions]:0x86:0x82
-# object:magic book:[Sorcery and Evocations]:0x86:0x83
-# object:prayer book:[Beginners Handbook]:0x86:0x89
-# object:prayer book:[Words of Wisdom]:0x86:0x8A
-# object:prayer book:[Chants and Blessings]:0x86:0x8B
-# object:prayer book:[Exorcism and Dispelling]:0x86:0x8C
+# from class.txt
 
-##### Special Books (note resistances) #####
+object:magic book:[First Spells]:0x8C:0xFB
+object:magic book:[Attacks and Knowledge]:0x8C:0xFC
+object:magic book:[Magical Defences]:0x8C:0xFD
+object:magic book:[Arcane Control]:0x8C:0xFE
+object:magic book:[Wizard's Tome of Power]:0x8C:0xFF
 
-# object:magic book:[Resistances of Scarabtarices]:0x86:0x84
-# object:magic book:[Raal's Tome of Destruction]:0x86:0x85
-# object:magic book:[Mordenkainen's Escapes]:0x86:0x86
-# object:magic book:[Tenser's Transformations]:0x86:0x87
-# object:magic book:[Kelek's Grimoire of Power]:0x86:0x88
-# object:prayer book:[Ethereal Openings]:0x86:0x8D
-# object:prayer book:[Godly Insights]:0x86:0x8E
-# object:prayer book:[Purifications and Healing]:0x86:0x8F
-# object:prayer book:[Holy Infusions]:0x86:0x90
-# object:prayer book:[Wrath of God]:0x86:0x91
+# from old_class.txt
+
+object:magic book:[Magic for Beginners]:0x86:0x80
+object:magic book:[Conjurings and Tricks]:0x86:0x81
+object:magic book:[Incantations and Illusions]:0x86:0x82
+object:magic book:[Sorcery and Evocations]:0x86:0x83
+object:magic book:[Resistances of Scarabtarices]:0x86:0x84
+object:magic book:[Raal's Tome of Destruction]:0x86:0x85
+object:magic book:[Mordenkainen's Escapes]:0x86:0x86
+object:magic book:[Tenser's Transformations]:0x86:0x87
+object:magic book:[Kelek's Grimoire of Power]:0x86:0x88
+
+##### Divine Books #####
+
+# from class.txt
+
+object:prayer book:[Novice's Handbook]:0x8D:0xFB
+object:prayer book:[Cleansing Power]:0x8D:0xFC
+object:prayer book:[Healing and Sanctuary]:0x8D:0xFD
+object:prayer book:[Battle Blessings]:0x8D:0xFE
+object:prayer book:[Wrath of the Valar]:0x8D:0xFF
+
+# from old_class.txt
+
+object:prayer book:[Beginners Handbook]:0x86:0x89
+object:prayer book:[Words of Wisdom]:0x86:0x8A
+object:prayer book:[Chants and Blessings]:0x86:0x8B
+object:prayer book:[Exorcism and Dispelling]:0x86:0x8C
+object:prayer book:[Ethereal Openings]:0x86:0x8D
+object:prayer book:[Godly Insights]:0x86:0x8E
+object:prayer book:[Purifications and Healing]:0x86:0x8F
+object:prayer book:[Holy Infusions]:0x86:0x90
+object:prayer book:[Wrath of God]:0x86:0x91
+
+##### Nature Books #####
+
+# from class.txt
+
+object:nature book:[Lesser Charms]:0x8E:0xFB
+object:nature book:[Gifts of Nature]:0x8E:0xFC
+object:nature book:[Creature Dominion]:0x8E:0xFD
+object:nature book:[Nature Craft]:0x8E:0xFE
+object:nature book:[Wild Forces]:0x8E:0xFF
+
+##### Shadow Books #####
+
+# from class.txt
+
+object:shadow book:[Into the Shadows]:0x8F:0xFB
+object:shadow book:[Dark Rituals]:0x8F:0xFC
+object:shadow book:[Fear and Torment]:0x8F:0xFD
+object:shadow book:[Deadly Powers]:0x8F:0xFE
+object:shadow book:[Corruption of Spirit]:0x8F:0xFF
 
 ##### Chests #####
 
@@ -594,7 +634,7 @@ monster:Giant white centipede:0x91:0xA1
 monster:White icky thing:0x8E:0xCE
 monster:Clear icky thing:0x8E:0xCF
 monster:Giant white mouse:0x8D:0x98
-monster:serpent of the brownlands:0x90:0x92
+monster:serpent of the brownlands:0x9F:0x8B
 monster:Large white snake:0x90:0x93
 monster:Small kobold:0x8D:0x8B
 monster:Kobold:0x8D:0x8C
@@ -621,7 +661,7 @@ monster:Blue yeek:0x8F:0xBA
 monster:Grip, Farmer Maggot's dog:0x8F:0xC9
 monster:Fang, Farmer Maggot's dog:0x8F:0xCB
 monster:Green worm mass:0x91:0x91
-monster:serpent of chaos:0x90:0x94
+monster:serpent of chaos:0x9F:0x8D
 monster:Cave spider:0x8F:0xB8
 monster:Wild cat:0x90:0xB2
 monster:Sméagol:0x8F:0xBC
@@ -642,7 +682,7 @@ monster:Clear worm mass:0x91:0x93
 monster:Radiation eye:0x90:0x87
 monster:Cave lizard:0x93:0x8E
 monster:Scout:0x84:0x84
-monster:tamer:0x84:0x92
+monster:tamer:0x91:0xA4
 monster:Gallant:0x84:0x85
 monster:Blue jelly:0x8F:0x86
 monster:Creeping copper coins:0x8F:0xDE
@@ -669,7 +709,7 @@ monster:Snaga:0x8D:0x93
 monster:Rattlesnake:0x90:0x97
 monster:Cave orc:0x8D:0x94
 monster:Wood spider:0x8F:0xB5
-monster:Nruling:0x8D:0xA4
+monster:Nruling:0x92:0xAA
 monster:Bloodshot eye:0x90:0x85
 monster:Red naga:0x90:0x8F
 monster:Red jelly:0x8F:0x92
@@ -912,16 +952,16 @@ monster:Shade:0x94:0x95
 monster:Spectre:0x94:0x87
 monster:hill troll:0x9D:0xB1
 monster:Fire elemental:0x9F:0xDA
-monster:Maia of Nienna:0x9F:0xD2
-monster:Maia of Mandos:0x9F:0xD2
-monster:Maia of Oromë:0x9F:0xD2
-monster:Maia of Yavanna:0x9F:0xD2
-monster:Maia of Aulë:0x9F:0xD2
-monster:Maia of Ulmo:0x9F:0xD2
-monster:Maia of Manwë:0x9F:0xD2
-monster:Maia of Varda:0x9F:0xD2
+monster:Maia of Nienna:0x95:0x9D
+monster:Maia of Mandos:0x95:0x9C
+monster:Maia of Oromë:0x95:0x9E
+monster:Maia of Yavanna:0x95:0xA6
+monster:Maia of Aulë:0x95:0xA5
+monster:Maia of Ulmo:0x94:0xA6
+monster:Maia of Manwë:0x95:0xA7
+monster:Maia of Varda:0x94:0xA7
 monster:Water elemental:0x9F:0xD9
-monster:great water elemental:0x9F:0xD9
+monster:great water elemental:0x9F:0x8E
 monster:Invisible stalker:0x8F:0xA8
 monster:Master thief:0x84:0x99
 monster:Ulfang the Black:0x95:0x9F
@@ -929,7 +969,7 @@ monster:Lich:0x9D:0xAD
 monster:Master vampire:0x94:0xB3
 monster:Giant black scorpion:0x92:0xCA
 monster:Earth elemental:0x9D:0xAE
-monster:great earth elemental:0x9D:0xAE
+monster:great earth elemental:0x9F:0x88
 monster:Air elemental:0x9D:0xAF
 monster:Hellhound:0x8F:0xD7
 monster:Eog golem:0x9D:0xB0
@@ -959,7 +999,7 @@ monster:Young red dragon:0x8C:0x8D
 monster:Trapper:0x9F:0xF2
 monster:Bodak:0x8D:0xAB
 monster:Ice elemental:0x9D:0xBA
-monster:Necromancer:0x84:0x9B
+monster:Necromancer:0x95:0x94
 monster:Lorgan, Chief of the Easterlings:0x9F:0xDC
 monster:Demonologist:0x84:0x9C
 monster:Mummified troll:0x9D:0xBB
@@ -983,7 +1023,7 @@ monster:Beholder:0x9D:0xC9
 monster:Emperor wight:0x9F:0xF3
 monster:Vargo, Tyrant of Fire:0x9D:0xD6
 monster:Black wraith:0x94:0x93
-monster:Fury:0x8D:0x9E
+monster:fury:0x9F:0x8C
 monster:Nether wraith:0x9D:0xC1
 monster:mountain troll:0x9F:0xDF
 monster:etten:0x9D:0xC0
@@ -999,8 +1039,8 @@ monster:Disenchanter worm mass:0x92:0x96
 monster:Rotting quylthulg:0x93:0x82
 monster:Spirit troll:0x9D:0xCA
 monster:Lesser titan:0x9F:0xEB
-monster:Gilim, the Giant of Eruman:0x9F:0xCD
-monster:Nan, the Giant:0x9F:0xCE
+monster:Gilim, the Giant of Eruman:0x9F:0x90
+monster:Nan, the Giant:0x9F:0x8F
 monster:7-headed hydra:0x9D:0xCB
 monster:Enchantress:0x84:0x9E
 monster:patriarch:0x9F:0xD0
@@ -1034,7 +1074,7 @@ monster:Quaker, Master of Earth:0x9F:0xF4
 monster:Lesser Balrog:0x9F:0xDE
 monster:Ariel, Queen of Air:0x9F:0xF9
 monster:8-headed hydra:0x9D:0xD9
-monster:lord of Carn Dûm:0x9D:0xCF
+monster:lord of Carn Dûm:0x9F:0x89
 monster:Dreadmaster:0x9D:0xDA
 monster:Drolem:0x9D:0xDB
 monster:Scatha the Worm:0x9D:0xDF
@@ -1115,7 +1155,7 @@ monster:Silver mouse:0x8D:0x9C
 monster:Rot jelly:0x8F:0x8D
 monster:Giant tan bat:0x8F:0x87
 monster:Giant silver ant:0x95:0x87
-monster:Abyss spider:0x8F:0xB7
+monster:Abyss spider:0x9F:0x8A
 monster:Disenchanter bat:0x95:0x81
 monster:Shimmering mold:0x8E:0xCB
 monster:Wyvern:0x8C:0xAF
@@ -1130,6 +1170,7 @@ monster:Cave bear:0x93:0xA2
 monster:Grizzly bear:0x9D:0x8B
 monster:Werebear:0x93:0xA1
 monster:Beorn, the Shape-Changer:0x9D:0xA5
+monster:Beorn, the Mountain Bear:0x93:0xA0
 monster:Barbazu:0x9D:0xE5
 monster:Bile Demon:0x9D:0xEF
 monster:Osyluth:0x9F:0xC8
@@ -1146,8 +1187,8 @@ monster:Paladin:0x84:0xA7
 monster:Ranger Chieftain:0x9F:0xEC
 monster:Berserker:0x84:0xAB
 monster:Cyclops:0x9D:0xDE
-monster:Makar, the Warrior:0x9F:0xED
-monster:Meássë, the Bloody:0x9F:0xFE
+monster:Makar, the Warrior:0x9B:0xFC
+monster:Meássë, the Bloody:0x9B:0xFB
 monster:Evil eye:0x90:0x89
 monster:Spectator:0x9D:0xA4
 monster:Gauth:0x9D:0xB9
@@ -1158,12 +1199,12 @@ monster:Eöl, the Dark Elf:0x9F:0xD3
 monster:Maeglin, the Traitor of Gondolin:0x9F:0xC0
 monster:Elder vampire:0x9F:0xF5
 monster:Silent watcher:0x9D:0xB3
-monster:blood falcon:0x8E:0xBB
+monster:blood falcon:0x93:0xA6
 monster:Ghoul:0x94:0xBF
 monster:Ghast:0x94:0xC0
 monster:Greater basilisk:0x9D:0xF6
-monster:Ancient spider:0x90:0xAD
-monster:Spider of Gorgoroth:0x9F:0xD4
+monster:Ancient spider:0x90:0xB0
+monster:Spider of Gorgoroth:0x90:0xAF
 monster:Kobold shaman:0x83:0xD9
 monster:Bat of Gorgoroth:0x9D:0xA3
 monster:Doombat:0x8F:0x89
@@ -1177,7 +1218,24 @@ monster:Shardstorm:0x92:0xAE
 monster:Storm of Unmagic:0x9F:0xEA
 monster:mummified chieftain:0x91:0xB4
 monster:Multi-hued hound:0x90:0xCD
-
+monster:abyss worm mass:0x91:0x99
+monster:old forest tree:0x9F:0x83
+monster:green elf archer:0x95:0x95
+monster:witch:0x95:0x99
+monster:blackguard:0x95:0x9B
+monster:huorn:0x9F:0x84
+monster:hasty ent:0x9F:0x85
+monster:Old Man Willow:0x9F:0x86
+monster:black-hearted huorn:0x9F:0x87
+monster:werewolf of Sauron:0x9F:0x92
+monster:Fëanorian raider:0x9B:0xFA
+monster:Wiruin, the Maelstrom:0x9F:0x91
+monster:Wolf-Sauron:0x9B:0xFD
+monster:Serpent-Sauron:0x9B:0xFE
+monster:Vampire-Sauron:0x9B:0xFF
+monster:red-hatted elf:0x8B:0x8E
+monster:Father Christmas:0x8B:0x8D
+monster:dúnadan of Angmar:0x84:0x9B
 
 
 

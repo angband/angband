@@ -633,33 +633,61 @@ object:scroll:Trap Creation:0x87:0x91
 
 
 
-##### Basic Books #####
+##### Arcane Books #####
 
-# object:magic book:[Magic for Beginners]:0x88:0x90
-# object:magic book:[Conjurings and Tricks]:0x88:0x91
-# object:magic book:[Incantations and Illusions]:0x88:0x92
-# object:magic book:[Sorcery and Evocations]:0x88:0x93
-# object:prayer book:[Beginners Handbook]:0x88:0x80
-# object:prayer book:[Words of Wisdom]:0x88:0x81
-# object:prayer book:[Chants and Blessings]:0x88:0x82
-# object:prayer book:[Exorcism and Dispelling]:0x88:0x83
+object:magic book:[First Spells]:0x88:0x90
+object:magic book:[Attacks and Knowledge]:0x88:0x91
+object:magic book:[Magical Defences]:0x88:0x92
+object:magic book:[Arcane Control]:0x88:0x94
+object:magic book:[Wizard's Tome of Power]:0x88:0x98
 
+# from old_class.txt
 
+object:magic book:[Magic for Beginners]:0x88:0x90
+object:magic book:[Conjurings and Tricks]:0x88:0x91
+object:magic book:[Incantations and Illusions]:0x88:0x92
+object:magic book:[Sorcery and Evocations]:0x88:0x93
+object:magic book:[Resistances of Scarabtarices]:0x88:0x94
+object:magic book:[Raal's Tome of Destruction]:0x88:0x95
+object:magic book:[Mordenkainen's Escapes]:0x88:0x96
+object:magic book:[Tenser's Transformations]:0x88:0x97
+object:magic book:[Kelek's Grimoire of Power]:0x88:0x98
 
+##### Divine Books #####
 
-##### Special Books (note resistances) #####
+object:prayer book:[Novice's Handbook]:0x88:0x80
+object:prayer book:[Cleansing Power]:0x88:0x81
+object:prayer book:[Healing and Sanctuary]:0x88:0x84
+object:prayer book:[Battle Blessings]:0x88:0x86
+object:prayer book:[Wrath of the Valar]:0x88:0x88
 
-# object:magic book:[Resistances of Scarabtarices]:0x88:0x94
-# object:magic book:[Raal's Tome of Destruction]:0x88:0x95
-# object:magic book:[Mordenkainen's Escapes]:0x88:0x96
-# object:magic book:[Tenser's Transformations]:0x88:0x97
-# object:magic book:[Kelek's Grimoire of Power]:0x88:0x98
-# object:prayer book:[Ethereal Openings]:0x88:0x84
-# object:prayer book:[Godly Insights]:0x88:0x85
-# object:prayer book:[Purifications and Healing]:0x88:0x86
-# object:prayer book:[Holy Infusions]:0x88:0x87
-# object:prayer book:[Wrath of God]:0x88:0x88
+# from old_class.txt
 
+object:prayer book:[Beginners Handbook]:0x88:0x80
+object:prayer book:[Words of Wisdom]:0x88:0x81
+object:prayer book:[Chants and Blessings]:0x88:0x82
+object:prayer book:[Exorcism and Dispelling]:0x88:0x83
+object:prayer book:[Ethereal Openings]:0x88:0x84
+object:prayer book:[Godly Insights]:0x88:0x85
+object:prayer book:[Purifications and Healing]:0x88:0x86
+object:prayer book:[Holy Infusions]:0x88:0x87
+object:prayer book:[Wrath of God]:0x88:0x88
+
+##### Nature Books #####
+
+object:nature book:[Lesser Charms]:0x88:0x82
+object:nature book:[Gifts of Nature]:0x88:0x83
+object:nature book:[Creature Dominion]:0x88:0x85
+object:nature book:[Nature Craft]:0x88:0x87
+object:nature book:[Wild Forces]:0x88:0x88
+
+##### Shadow Books #####
+
+object:shadow book:[Into the Shadows]:0x88:0x91
+object:shadow book:[Dark Rituals]:0x88:0x92
+object:shadow book:[Fear and Torment]:0x88:0x93
+object:shadow book:[Deadly Powers]:0x88:0x95
+object:shadow book:[Corruption of Spirit]:0x88:0x98
 
 
 
