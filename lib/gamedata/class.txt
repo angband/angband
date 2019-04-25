@@ -178,10 +178,10 @@ title:Arch-Mage
 
 magic:1:300:5
 
-book:magic book:town:[Magic for Beginners]:7:arcane
+book:magic book:town:[First Spells]:7:arcane
 book-graphics:?:R
 book-properties:25:40:1 to 100
-equip:magic book:[Magic for Beginners]:1:1
+equip:magic book:[First Spells]:1:1
 
 spell:Magic Missile:1:1:22:4
 effect:BOLT_OR_BEAM:MISSILE:0:-10
@@ -683,10 +683,10 @@ title:High Priest
 
 magic:1:350:5
 
-book:prayer book:town:[Beginner's Handbook]:6:divine
+book:prayer book:town:[Novice's Handbook]:6:divine
 book-graphics:?:G
 book-properties:25:40:1 to 100
-equip:prayer book:[Beginner's Handbook]:1:1
+equip:prayer book:[Novice's Handbook]:1:1
 
 spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
@@ -739,7 +739,7 @@ desc:Cures 10 points of damage, removes fear and, from character level 20,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:town:[Exorcism and Dispelling]:6:divine
+book:prayer book:town:[Cleansing Power]:6:divine
 book-graphics:?:G
 book-properties:100:40:5 to 100
 
@@ -834,7 +834,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Holy Infusions]:5:divine
+book:prayer book:dungeon:[Battle Blessings]:5:divine
 book-graphics:?:g
 book-properties:30000:15:40 to 100
 
@@ -1193,7 +1193,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
-equip:prayer book:[Beginner's Handbook]:1:1
+equip:prayer book:[Novice's Handbook]:1:1
 player-flags:BLESS_WEAPON | SHIELD_BASH
 title:Gallant
 title:Keeper
@@ -1208,7 +1208,7 @@ title:Paladin Lord
 
 magic:1:400:3
 
-book:prayer book:town:[Beginner's Handbook]:6:divine
+book:prayer book:town:[Novice's Handbook]:6:divine
 
 spell:Bless:1:2:20:4
 effect:TIMED_INC:BLESSED
@@ -1304,7 +1304,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Holy Infusions]:5:divine
+book:prayer book:dungeon:[Battle Blessings]:5:divine
 
 spell:Smite Evil:25:20:70:40
 effect:TIMED_INC:ATT_EVIL:0:5
@@ -1354,7 +1354,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-equip:magic book:[Magic for Beginners]:1:1
+equip:magic book:[First Spells]:1:1
 player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
@@ -1369,7 +1369,7 @@ title:Master Thief
 
 magic:5:350:2
 
-book:magic book:town:[Magic for Beginners]:7:arcane
+book:magic book:town:[First Spells]:7:arcane
 
 spell:Detect Monsters:5:1:50:4
 effect:DETECT_VISIBLE_MONSTERS
