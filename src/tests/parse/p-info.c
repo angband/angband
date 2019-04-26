@@ -143,27 +143,57 @@ int test_skill_dig0(void *state) {
 	ok;
 }
 
-int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:10:20:80");
+int test_hitdie0(void *state) {
+	enum parser_error r = parser_parse(state, "hitdie:10");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
 	eq(pr->r_mhp, 10);
+	ok;
+}
+
+int test_exp0(void *state) {
+	enum parser_error r = parser_parse(state, "exp:20");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_exp, 20);
+	ok;
+}
+
+int test_infravision0(void *state) {
+	enum parser_error r = parser_parse(state, "infravision:80");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->infra, 80);
 	ok;
 }
 
 int test_history0(void *state) {
-	enum parser_error r = parser_parse(state, "history:0:10:3");
+	enum parser_error r = parser_parse(state, "history:0");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
 	null(pr->history);
+	ok;
+}
+
+int test_age0(void *state) {
+	enum parser_error r = parser_parse(state, "age:10:3");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->b_age, 10);
 	eq(pr->m_age, 3);
 	ok;
@@ -228,8 +258,11 @@ struct test tests[] = {
 	{ "skill_shoot0", test_skill_shoot0 },
 	{ "skill_throw0", test_skill_throw0 },
 	{ "skill_dig0", test_skill_dig0 },
-	{ "info0", test_info0 },
+	{ "hitdie0", test_hitdie0 },
+	{ "exp0", test_exp0 },
+	{ "infravision0", test_infravision0 },
 	{ "history0", test_history0 },
+	{ "age0", test_age0 },
 	{ "height0", test_height0 },
 	{ "weight0", test_weight0 },
 	{ "object_flags0", test_obj_flags0 },

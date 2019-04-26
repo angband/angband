@@ -1,7 +1,7 @@
 # File: p_race.txt
 
 
-# This file is used to initialize the "player race" information for Angband.
+# This file is used to initialize the player race information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
@@ -20,8 +20,11 @@
 # skill-shoot:base
 # skill-throw:base
 # skill-dig:base
-# info:hitdie:expbase:infra
-# history:history:agebase:agemod
+# hitdie:hitdie
+# exp:expbase
+# infravision:infra
+# history:history
+# age:agebase:agemod
 # height:hgt:modhgt
 # weight:wgt:modwgt
 # flags:object flags
@@ -35,15 +38,19 @@
 # and magical disarming, magic devices, saving throws, stealth,
 # to hit (normal), to hit (bows), to hit (throwing), digging.
 
-# 'info' is for gameplay info - max. hitpoints gained per level, experience
-# factor in percent, range of infravision in 10 feet.
+# 'hitdie' is for max. hitpoints gained per level.
 
-# 'history' is for background info - starting point of the player history,
-# base age, random age modifier.
+# 'exp' is for percent of "standard" experience needed to gain a level.
 
-# 'height' is height info - base height, mod height.
+# 'infravision' is for range of infravision in multiples of 10 feet.
 
-# 'weight' is weight info - base weight, mod weight.
+# 'history' is for starting point of the player history (see history.txt).
+
+# 'age' is age info - base age, random age modifier.
+
+# 'height' is height info - base height, random height modifier.
+
+# 'weight' is weight info - base weight, random weight modifier.
 
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
 # races possess innately.
@@ -67,8 +74,11 @@ skill-melee:0
 skill-shoot:0
 skill-throw:0
 skill-dig:0
-info:10:100:0
-history:1:14:6
+hitdie:10
+exp:100
+infravision:0
+history:1
+age:14:6
 height:69:10
 weight:165:35
 
@@ -84,8 +94,11 @@ skill-melee:-1
 skill-shoot:5
 skill-throw:5
 skill-dig:0
-info:10:110:2
-history:4:24:16
+hitdie:10
+exp:120
+infravision:2
+history:4
+age:24:16
 height:64:10
 weight:115:25
 obj-flags:SUST_DEX
@@ -102,8 +115,11 @@ skill-melee:-5
 skill-shoot:15
 skill-throw:15
 skill-dig:0
-info:9:120:3
-history:5:75:75
+hitdie:9
+exp:120
+infravision:3
+history:5
+age:75:75
 height:57:4
 weight:90:10
 obj-flags:SUST_DEX
@@ -121,8 +137,11 @@ skill-melee:-10
 skill-shoot:20
 skill-throw:20
 skill-dig:0
-info:7:110:4
-history:10:21:12
+hitdie:7
+exp:120
+infravision:4
+history:10
+age:21:12
 height:34:4
 weight:55:5
 obj-flags:HOLD_LIFE
@@ -140,8 +159,11 @@ skill-melee:-8
 skill-shoot:12
 skill-throw:12
 skill-dig:0
-info:8:125:4
-history:13:50:40
+hitdie:8
+exp:120
+infravision:4
+history:13
+age:50:40
 height:40:5
 weight:80:5
 obj-flags:FREE_ACT
@@ -159,8 +181,11 @@ skill-melee:15
 skill-shoot:0
 skill-throw:0
 skill-dig:40
-info:11:120:5
-history:16:35:15
+hitdie:11
+exp:120
+infravision:5
+history:16
+age:35:15
 height:47:4
 weight:135:20
 obj-flags:PROT_BLIND
@@ -178,8 +203,11 @@ skill-melee:12
 skill-shoot:-5
 skill-throw:-5
 skill-dig:0
-info:10:110:3
-history:19:11:4
+hitdie:10
+exp:120
+infravision:3
+history:19
+age:11:4
 height:64:2
 weight:135:15
 values:RES_DARK[1]
@@ -196,8 +224,11 @@ skill-melee:20
 skill-shoot:-10
 skill-throw:-10
 skill-dig:0
-info:12:120:3
-history:21:20:10
+hitdie:12
+exp:120
+infravision:3
+history:21
+age:20:10
 height:90:16
 weight:240:60
 obj-flags:SUST_STR | REGEN
@@ -214,8 +245,11 @@ skill-melee:15
 skill-shoot:10
 skill-throw:10
 skill-dig:0
-info:10:180:0
-history:1:50:20
+hitdie:10
+exp:120
+infravision:0
+history:1
+age:50:20
 height:80:6
 weight:190:20
 obj-flags:SUST_CON
@@ -232,8 +266,11 @@ skill-melee:10
 skill-shoot:25
 skill-throw:25
 skill-dig:0
-info:10:200:4
-history:7:100:30
+hitdie:10
+exp:120
+infravision:4
+history:7
+age:100:30
 height:86:15
 weight:190:20
 obj-flags:SEE_INVIS
@@ -251,8 +288,11 @@ skill-melee:-5
 skill-shoot:10
 skill-throw:10
 skill-dig:0
-info:8:115:5
-history:23:15:10
+hitdie:8
+exp:120
+infravision:5
+history:23
+age:15:10
 height:37:4
 weight:65:5
 values:RES_POIS[1]
