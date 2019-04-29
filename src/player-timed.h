@@ -23,16 +23,6 @@
 #include "player.h"
 
 /**
- * Player food values
- */
-#define PY_FOOD_MAX 	17000	/* Food value (Bloated) */
-#define PY_FOOD_FULL	10000	/* Food value (Normal) */
-#define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
-#define PY_FOOD_WEAK	1000	/* Food value (Weak) */
-#define PY_FOOD_FAINT	500		/* Food value (Fainting) */
-#define PY_FOOD_STARVE	100		/* Food value (Starving) */
-
-/**
  * Timed effects
  */
 enum
@@ -58,7 +48,8 @@ struct timed_grade {
 	byte color;
 	int max;
 	char *name;
-	char *msg;
+	char *up_msg;
+	char *down_msg;
 	struct timed_grade *next;
 };
 
@@ -81,6 +72,16 @@ struct timed_effect_data {
 	struct timed_grade *grade;
 };
 
+/**
+ * Player food values
+ */
+extern int PY_FOOD_MAX; 	/* Food value (Bloated) */
+extern int PY_FOOD_FULL;	/* Food value (Normal) */
+extern int PY_FOOD_HUNGRY;	/* Food value (Hungry) */
+extern int PY_FOOD_WEAK;	/* Food value (Weak) */
+extern int PY_FOOD_FAINT;	/* Food value (Fainting) */
+extern int PY_FOOD_STARVE;	/* Food value (Starving) */
+
 extern struct file_parser player_timed_parser;
 extern struct timed_effect_data timed_effects[TMD_MAX];
 
@@ -92,6 +93,5 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 					  bool check);
 bool player_dec_timed(struct player *p, int idx, int v, bool notify);
 bool player_clear_timed(struct player *p, int idx, bool notify);
-bool player_set_food(struct player *p, int v);
 
 #endif /* !PLAYER_TIMED_H */

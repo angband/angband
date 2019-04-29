@@ -308,11 +308,11 @@ void player_regen_hp(struct player *p)
 	old_chp = p->chp;
 
 	/* Default regeneration */
-	if (p->food >= PY_FOOD_WEAK)
+	if (p->timed[TMD_FOOD] >= PY_FOOD_WEAK)
 		percent = PY_REGEN_NORMAL;
-	else if (p->food >= PY_FOOD_FAINT)
+	else if (p->timed[TMD_FOOD] >= PY_FOOD_FAINT)
 		percent = PY_REGEN_WEAK;
-	else if (p->food >= PY_FOOD_STARVE)
+	else if (p->timed[TMD_FOOD] >= PY_FOOD_STARVE)
 		percent = PY_REGEN_FAINT;
 
 	/* Various things speed up regeneration */

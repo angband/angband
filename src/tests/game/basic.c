@@ -68,7 +68,7 @@ int test_newgame(void *state) {
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	/* Should be all set up to save properly now */
 	eq(savefile_save("Test1"), true);
@@ -87,7 +87,7 @@ int test_loadgame(void *state) {
 	eq(player->is_dead, false);
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	ok;
 }

@@ -430,9 +430,6 @@ void player_init(struct player *p)
 		lore->pkills = 0;
 	}
 
-	/* Always start with a well fed player (this is surely in the wrong fn) */
-	p->food = PY_FOOD_FULL - 1;
-
 	p->upkeep = mem_zalloc(sizeof(struct player_upkeep));
 	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) *
 								  sizeof(struct object *));
@@ -1131,6 +1128,9 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Embody */
 	player_embody(player);
+
+	/* Always start with a well fed player */
+	player->timed[TMD_FOOD] = PY_FOOD_FULL - 1;
 
 	/* Give the player some money */
 	get_money();

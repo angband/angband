@@ -648,18 +648,6 @@ struct state_info
 };
 
 /**
- * player->hunger descriptions
- */
-static const struct state_info hunger_data[] =
-{
-	{ PY_FOOD_FAINT, S("Faint"),    COLOUR_RED },
-	{ PY_FOOD_WEAK,  S("Weak"),     COLOUR_ORANGE },
-	{ PY_FOOD_ALERT, S("Hungry"),   COLOUR_YELLOW },
-	{ PY_FOOD_FULL,  S(""),         COLOUR_L_GREEN },
-	{ PY_FOOD_MAX,   S("Full"),     COLOUR_L_GREEN },
-};
-
-/**
  * Print recall status.
  */
 static size_t prt_recall(int row, int col)
@@ -685,28 +673,6 @@ static size_t prt_descent(int row, int col)
 
 	return 0;
 }
-
-
-/**
- * Prints status of hunger
- */
-static size_t prt_hunger(int row, int col)
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(hunger_data); i++) {
-		if (player->food <= hunger_data[i].value) {
-			if (hunger_data[i].str[0]) {
-				c_put_str(hunger_data[i].attr, hunger_data[i].str, row, col);
-				return hunger_data[i].len;
-			} else {
-				return 0;
-			}
-		}
-	}
-	return 0;
-}
-
 
 
 /**
@@ -942,6 +908,7 @@ static size_t prt_tmd(int row, int col)
 			while (player->timed[i] > grade->max) {
 				grade = grade->next;
 			}
+			if (!grade->name) continue;
 			c_put_str(grade->color, grade->name, row, col + len);
 			len += strlen(grade->name) + 1;
 		}
@@ -971,7 +938,7 @@ typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
 { prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state,
-  prt_hunger, prt_study, prt_tmd, prt_dtrap };
+  prt_study, prt_tmd, prt_dtrap };
 
 
 /**

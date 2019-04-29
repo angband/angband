@@ -486,7 +486,6 @@ void wr_player(void)
 	wr_byte(player->unignoring);
 	wr_s16b(player->deep_descent);
 
-	wr_s16b(player->food);
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
 

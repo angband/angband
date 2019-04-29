@@ -9425,7 +9425,7 @@ hit-points:1400
 hearing:40
 armor-class:96
 sleepiness:10
-depth:50
+depth:40
 rarity:3
 experience:6000
 blow:GAZE:EXP_20:2d6
@@ -12519,7 +12519,7 @@ hit-points:1200
 hearing:20
 armor-class:110
 sleepiness:30
-depth:68
+depth:65
 rarity:2
 experience:11000
 blow:HIT:HURT:7d12
@@ -12796,7 +12796,7 @@ hit-points:3344
 hearing:30
 armor-class:150
 sleepiness:15
-depth:66
+depth:69
 rarity:3
 experience:23500
 blow:HIT:HURT:12d12

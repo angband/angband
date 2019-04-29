@@ -654,11 +654,11 @@ void process_world(struct chunk *c)
 		if (i < 1) i = 1;
 
 		/* Digest some food */
-		player_set_food(player, player->food - i);
+		player_dec_timed(player, TMD_FOOD, i, false);
 	}
 
 	/* Getting Faint */
-	if (player->food < PY_FOOD_FAINT) {
+	if (player->timed[TMD_FOOD] < PY_FOOD_FAINT) {
 		/* Faint occasionally */
 		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
 			/* Message */
@@ -672,9 +672,9 @@ void process_world(struct chunk *c)
 	}
 
 	/* Starve to death (slowly) */
-	if (player->food < PY_FOOD_STARVE) {
+	if (player->timed[TMD_FOOD] < PY_FOOD_STARVE) {
 		/* Calculate damage */
-		i = (PY_FOOD_STARVE - player->food) / 10;
+		i = (PY_FOOD_STARVE - player->timed[TMD_FOOD]) / 10;
 
 		/* Take damage */
 		take_hit(player, i, "starvation");

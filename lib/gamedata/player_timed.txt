@@ -69,7 +69,6 @@ desc:fear
 grade:o:10000:Afraid:You are terrified!
 on-end:You feel bolder now.
 on-increase:You are more scared!
-on-decrease:You feel a little less scared.
 msgt:AFRAID
 fail:1:PROT_FEAR
 
@@ -78,7 +77,6 @@ desc:hallucination
 grade:o:10000:Halluc:You feel drugged!
 on-end:You can see clearly again.
 on-increase:You feel more drugged!
-on-decrease:You feel less drugged.
 msgt:DRUGGED
 fail:2:CHAOS
 
@@ -113,12 +111,20 @@ on-end:You are no longer stunned.
 msgt:STUN
 fail:1:PROT_STUN
 
+name:FOOD
+desc:nourishment
+grade:r:100:Starving: :You are starving!!
+grade:r:500:Faint:You are still faint.:You are getting faint from hunger!
+grade:o:1000:Weak:You are still weak.:You are getting weak from hunger!
+grade:y:2000:Hungry:You are still hungry.:You are getting hungry.
+grade:G:10000: :You are no longer hungry.:You are no longer full.
+grade:G:17000:Full:You are full!
+
 name:PROTEVIL
 desc:protection from evil
 grade:G:10000:ProtEvil:You feel safe from evil!
 on-end:You no longer feel safe from evil.
 on-increase:You feel even safer from evil!
-on-decrease:You feel less safe from evil.
 msgt:PROT_EVIL
 
 name:INVULN
@@ -132,7 +138,6 @@ desc:heroism
 grade:G:10000:Hero:You feel like a hero!
 on-end:You no longer feel heroic.
 on-increase:You feel more like a hero!
-on-decrease:You feel less heroic.
 msgt:HERO
 
 name:SHERO
@@ -140,7 +145,6 @@ desc:berserk rage
 grade:G:10000:Berserk:You feel like a killing machine!
 on-end:You no longer feel berserk.
 on-increase:You feel even more berserk!
-on-decrease:You feel less berserk.
 msgt:BERSERK
 
 name:SHIELD
@@ -148,7 +152,6 @@ desc:mystic shield
 grade:G:10000:Shield:A mystic shield forms around your body!
 on-end:Your mystic shield crumbles away.
 on-increase:The mystic shield strengthens.
-on-decrease:The mystic shield weakens.
 msgt:SHIELD
 
 name:BLESSED
@@ -156,7 +159,6 @@ desc:your AC and to-hit bonus
 grade:G:10000:Blssd:You feel righteous!
 on-end:The prayer has expired.
 on-increase:You feel more righteous!
-on-decrease:You feel less righteous.
 msgt:BLESSED
 
 name:SINVIS
@@ -164,7 +166,6 @@ desc:see invisible
 grade:G:10000:SInvis:Your eyes feel very sensitive!
 on-end:Your eyes no longer feel so sensitive.
 on-increase:Your eyes feel more sensitive!
-on-decrease:Your eyes feel less sensitive.
 msgt:SEE_INVIS
 
 name:SINFRA
@@ -172,7 +173,6 @@ desc:enhanced infravision
 grade:G:10000:Infra:Your eyes begin to tingle!
 on-end:Your eyes stop tingling.
 on-increase:Your eyes' tingling intensifies.
-on-decrease:Your eyes tingle less.
 msgt:INFRARED
 
 name:OPP_ACID
@@ -180,7 +180,6 @@ desc:acid resistance
 grade:s:10000:RAcid:You feel resistant to acid!
 on-end:You are no longer resistant to acid.
 on-increase:You feel more resistant to acid!
-on-decrease:You feel less resistant to acid.
 msgt:RES_ACID
 fail:3:ACID
 
@@ -189,7 +188,6 @@ desc:electricity resistance
 grade:b:10000:RElec:You feel resistant to electricity!
 on-end:You are no longer resistant to electricity.
 on-increase:You feel more resistant to electricity!
-on-decrease:You feel less resistant to electricity.
 msgt:RES_ELEC
 fail:3:ELEC
 
@@ -198,7 +196,6 @@ desc:fire resistance
 grade:r:10000:RFire:You feel resistant to fire!
 on-end:You are no longer resistant to fire.
 on-increase:You feel more resistant to fire!
-on-decrease:You feel less resistant to fire.
 msgt:RES_FIRE
 fail:3:FIRE
 
@@ -207,7 +204,6 @@ desc:cold resistance
 grade:w:10000:RCold:You feel resistant to cold!
 on-end:You are no longer resistant to cold.
 on-increase:You feel more resistant to cold!
-on-decrease:You feel less resistant to cold.
 msgt:RES_COLD
 fail:3:COLD
 
@@ -216,7 +212,6 @@ desc:poison resistance
 grade:g:10000:RPois:You feel resistant to poison!
 on-end:You are no longer resistant to poison.
 on-increase:You feel more resistant to poison!
-on-decrease:You feel less resistant to poison.
 msgt:RES_POIS
 
 name:OPP_CONF
@@ -224,7 +219,6 @@ desc:confusion resistance
 grade:v:10000:RConf:You feel resistant to confusion!
 on-end:You are no longer resistant to confusion.
 on-increase:You feel more resistant to confusion!
-on-decrease:You feel less resistant to confusion.
 
 name:AMNESIA
 desc:amnesia
@@ -262,7 +256,6 @@ desc:fearlessness
 grade:G:10000:Bold:You feel bold.
 on-end:You no longer feel bold.
 on-increase:You feel even bolder!
-on-decrease:You feel less bold.
 msgt:BOLD
 
 name:SCRAMBLE
@@ -270,7 +263,6 @@ desc:scrambled
 grade:v:10000:Scrambled:Your body starts to scramble...
 on-end:Your body reasserts its true nature.
 on-increase:You are more scrambled!
-on-decrease:You are less scrambled.
 msgt:SCRAMBLE
 fail:2:NEXUS
 
@@ -279,7 +271,6 @@ desc:safety from traps
 grade:G:10000:TrapSafe:You feel safe from traps.
 on-end:You feel vulnerable to traps again.
 on-increase:You feel even safer from traps!
-on-decrease:You feel less safe from traps.
 
 name:FASTCAST
 desc:mana channelling

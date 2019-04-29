@@ -69,7 +69,7 @@ int test_magic_missile(void *state) {
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	cmdq_push(CMD_STUDY);
 	cmd_set_arg_choice(cmdq_peek(), "spell", 0);

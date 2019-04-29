@@ -854,7 +854,7 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 bool effect_handler_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	player_set_food(player, player->food + amount);
+	player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false, false);
 	context->ident = true;
 	return true;
 }
@@ -1014,7 +1014,7 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	(void) player_set_food(player, MAX(amount, 0));
+	(void) player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
 	context->ident = true;
 	return true;
 }
@@ -4794,7 +4794,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	/* Heal and nourish */
 	effect_simple(EF_HEAL_HP, context->origin, format("%d", drain), 0, 0, 0,
 				  0, 0, NULL);
-	player_set_food(player, player->food + drain);
+	player_inc_timed(player, TMD_FOOD, MAX(drain, 0), false, false);
 
 	/* Handle fear for surviving monsters */
 	if (!dead && monster_is_visible(mon)) {
