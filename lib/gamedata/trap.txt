@@ -372,6 +372,17 @@ dice:25
 desc:A trap that wakes nearby monsters and impels them toward you.
 msg:A high-pitched whistle blares through the dungeon!
 
+# alarm -- siren
+
+name:alarm:siren
+graphics:^:R
+appear:1:1:0
+visibility:60+d10
+flags:TRAP | FLOOR | MAGICAL
+effect:WAKE
+desc:A trap that wakes nearby monsters.
+msg:A horn blast sounds!
+
 # explosion -- mine
 
 name:explosion:mine trap
@@ -573,14 +584,3 @@ effect:TIMED_INC:STUN
 dice:20+1d20
 msg:You feel yourself turning to stone!
 desc:A trap that stuns you and gives you stoneskin.
-
-# alarm -- aggravation
-
-name:alarm:siren
-graphics:^:R
-appear:1:1:0
-visibility:60+d10
-flags:TRAP | FLOOR | MAGICAL
-effect:WAKE
-desc:A trap that wakes nearby monsters.
-msg:A horn blast sounds!
