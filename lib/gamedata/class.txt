@@ -1025,12 +1025,12 @@ effect-msg:shadow shifting
 desc:Displaces your spirit a short distance, hurting your body as it is
 desc: dragged along.
 
-spell:Vampire Strike:16:5:50:10
-effect:JUMP_AND_BITE
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Teleports you to the nearest living monster and drains a level-dependent
-desc: number of hitpoints, healing and nourishing the player.
+spell:Disenchant:16:12:50:15
+effect:BOLT:DISEN
+dice:2d$S
+expr:S:PLAYER_LEVEL:* 2 + 10
+desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
+desc: in casting spells.
 
 book:shadow book:town:[Fear and Torment]:5:shadow
 book-graphics:?:P
@@ -1043,12 +1043,12 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
-spell:Disenchant:20:12:50:15
-effect:BOLT:DISEN
-dice:2d$S
-expr:S:PLAYER_LEVEL:* 2 + 10
-desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
-desc: in casting spells.
+spell:Vampire Strike:20:5:50:10
+effect:JUMP_AND_BITE
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Teleports you to the nearest living monster and drains a level-dependent
+desc: number of hitpoints, healing and nourishing the player.
 
 spell:Dispel Life:22:20:50:10
 effect:PROJECT_LOS_AWARE:MON_DRAIN
