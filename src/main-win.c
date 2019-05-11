@@ -2646,16 +2646,14 @@ static void init_windows(void)
 		my_td = NULL;
 		if (!td->w) quit("Failed to create sub-window");
 
-		if (td->visible) {
-			td->size_hack = true;
-			ShowWindow(td->w, SW_SHOW);
-			td->size_hack = false;
-		}
-
 		term_data_link(td);
 		angband_term[i] = &td->t;
 
 		if (td->visible) {
+			td->size_hack = true;
+			ShowWindow(td->w, SW_SHOW);
+			td->size_hack = false;
+
 			/* Activate the window */
 			SetActiveWindow(td->w);
 
