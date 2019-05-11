@@ -103,6 +103,7 @@ bool chunk_list_remove(char *name)
 			//	newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
 			//		sizeof(struct chunk *);
 			chunk_list_max--;
+			cave_free(chunk_list[chunk_list_max]);
 			chunk_list[chunk_list_max] = NULL;
 			if (newsize)
 				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);

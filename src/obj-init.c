@@ -1247,8 +1247,6 @@ static void cleanup_curse(void)
 		string_free(curses[idx].conflict);
 		mem_free(curses[idx].desc);
 		if (curses[idx].obj) {
-			mem_free(curses[idx].obj->known->effect_msg);
-			mem_free(curses[idx].obj->known);
 			free_effect(curses[idx].obj->effect);
 			mem_free(curses[idx].obj->effect_msg);
 			object_free(curses[idx].obj->known);
