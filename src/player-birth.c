@@ -159,6 +159,7 @@ static void save_roller_data(birther *tosave)
 		tosave->stat[i] = player->stat_birth[i];
 
 	tosave->history = player->history;
+	player->history = NULL;
 	my_strcpy(tosave->name, player->full_name, sizeof(tosave->name));
 }
 
