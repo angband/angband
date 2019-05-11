@@ -599,7 +599,7 @@ static void display_player_sust_info(void)
 				/* Label boost */
 				if (obj->modifiers[stat] < 10)
 						c = I2D(obj->modifiers[stat]);
-			} else if (obj->modifiers[stat] > 0) {
+			} else if (obj->modifiers[stat] < 0) {
 				/* Bad */
 				a = COLOUR_RED;
 
