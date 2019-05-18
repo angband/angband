@@ -942,27 +942,25 @@ void do_cmd_birth_init(struct command *cmd)
 	 * If not, default to whatever the first of the choices is.
 	 */
 	if (player->ht_birth) {
+		/* Handle incrementing name suffix */
+		buf = find_roman_suffix_start(player->full_name);
+		if (buf) {
+			/* Try to increment the roman suffix */
+			int success = int_to_roman(
+				roman_to_int(buf) + 1,
+				buf,
+				sizeof(player->full_name) - (buf - (char *)&player->full_name));
+
+			if (!success) {
+				msg("Sorry, could not deal with suffix");
+			}
+		}
+
 		save_roller_data(&quickstart_prev);
 		quickstart_allowed = true;
 	} else {
 		player_generate(player, player_id2race(0), player_id2class(0), false);
 		quickstart_allowed = false;
-	}
-
-	/* Handle incrementing name suffix */
-	buf = find_roman_suffix_start(player->full_name);
-	if (buf) {
-		/* Try to increment the roman suffix */
-		int success = int_to_roman(
-				roman_to_int(buf) + 1,
-				buf,
-				sizeof(player->full_name) - (buf - (char *)&player->full_name));
-
-		if (success) {
-			save_roller_data(&quickstart_prev);
-		} else {
-			msg("Sorry, could not deal with suffix");
-		}
 	}
 
 	/* We're ready to start the birth process */
