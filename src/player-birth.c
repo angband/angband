@@ -712,36 +712,27 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_lo
  * 3. If there are any points left, spend as much as possible in order 
  *    on DEX and then the non-spell-stat.
  */
-static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STAT_MAX], 
-						   int *points_left_local)
+static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX], 
+						   int *points_left)
 {
 	int step = 0;
 	bool maxed[STAT_MAX] = { 0 };
 	/* Hack - for now, just use stat of first book - NRM */
 	int spell_stat = player->class->magic.total_spells ?
 		player->class->magic.books[0].realm->stat : 0;
-	bool caster = false, warrior = false;
+	bool caster = player->class->max_attacks < 5 ? true : false;
+	bool warrior = player->class->max_attacks > 5 ? true : false;
 
-	/* Determine whether the class is warrior */
-	if (player->class->max_attacks > 5) { 
-		warrior = true;
-	}
-
-	/* Determine whether the class is priest/mage */
-	if (player->class->max_attacks < 5) {
-		caster = true;
-	}
-
-	while (*points_left_local && step >= 0) {
+	while (*points_left && step >= 0) {
 	
 		switch (step) {
 		
 			/* Buy base STR 17 */
 			case 0: {
 			
-				if (!maxed[STAT_STR] && stats_local[STAT_STR] < 17) {
-					if (!buy_stat(STAT_STR, stats_local, points_spent_local, points_left_local,
-								  false))
+				if (!maxed[STAT_STR] && stats[STAT_STR] < 17) {
+					if (!buy_stat(STAT_STR, stats, points_spent,
+								  points_left, false))
 						maxed[STAT_STR] = true;
 				} else {
 					step++;
@@ -759,8 +750,8 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			case 1: {
 				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX]
 					< 18+10) {
-					if (!buy_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
-								  false))
+					if (!buy_stat(STAT_DEX, stats, points_spent,
+								  points_left, false))
 						maxed[STAT_DEX] = true;
 				} else {
 					step++;
@@ -772,9 +763,9 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			/* If we can't get 18/10 dex, sell it back. */
 			case 2: {
 				if (player->state.stat_top[STAT_DEX] < 18+10) {
-					while (stats_local[STAT_DEX] > 10)
-						sell_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
-								  false);
+					while (stats[STAT_DEX] > 10)
+						sell_stat(STAT_DEX, stats, points_spent,
+								  points_left, false);
 					maxed[STAT_DEX] = false;
 				}
 				step++;
@@ -787,24 +778,24 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			 */
 			case 3: 
 			{
-				int points_trigger = *points_left_local / 2;
+				int points_trigger = *points_left / 2;
 				
 				if (warrior) {
-					points_trigger = *points_left_local;
+					points_trigger = *points_left;
 				} else {
 					while (!maxed[spell_stat] &&
-						   (caster || stats_local[spell_stat] < 16) &&
-						   points_spent_local[spell_stat] < points_trigger) {
+						   (caster || stats[spell_stat] < 18) &&
+						   points_spent[spell_stat] < points_trigger) {
 
-						if (!buy_stat(spell_stat, stats_local, points_spent_local,
-									  points_left_local, false)) {
+						if (!buy_stat(spell_stat, stats, points_spent,
+									  points_left, false)) {
 							maxed[spell_stat] = true;
 						}
 
-						if (points_spent_local[spell_stat] > points_trigger) {
+						if (points_spent[spell_stat] > points_trigger) {
 						
-							sell_stat(spell_stat, stats_local, points_spent_local, 
-									  points_left_local, false);
+							sell_stat(spell_stat, stats, points_spent,
+									  points_left, false);
 							maxed[spell_stat] = true;
 						}
 					}
@@ -813,17 +804,17 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				/* Skip CON for casters because DEX is more important early
 				 * and is handled in 4 */
 				while (!maxed[STAT_CON] &&
-					   !(caster) && stats_local[STAT_CON] < 16 &&
-					   points_spent_local[STAT_CON] < points_trigger) {
+					   stats[STAT_CON] < 16 &&
+					   points_spent[STAT_CON] < points_trigger) {
 					   
-					if (!buy_stat(STAT_CON, stats_local, points_spent_local,points_left_local,
-								  false)) {
+					if (!buy_stat(STAT_CON, stats, points_spent,
+								  points_left, false)) {
 						maxed[STAT_CON] = true;
 					}
 
-					if (points_spent_local[STAT_CON] > points_trigger) {
-						sell_stat(STAT_CON, stats_local, points_spent_local, points_left_local,
-								  false);
+					if (points_spent[STAT_CON] > points_trigger) {
+						sell_stat(STAT_CON, stats, points_spent,
+								  points_left, false);
 						maxed[STAT_CON] = true;
 					}
 				}
@@ -852,7 +843,7 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				}
 
 				/* Buy until we can't buy any more. */
-				while (buy_stat(next_stat, stats_local, points_spent_local, points_left_local,
+				while (buy_stat(next_stat, stats, points_spent, points_left,
 								false));
 				maxed[next_stat] = true;
 
@@ -867,11 +858,11 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 		}
 	}
 	/* Tell the UI the new points situation. */
-	event_signal_birthpoints(points_spent_local, *points_left_local);
+	event_signal_birthpoints(points_spent, *points_left);
 
 	/* Recalculate everything that's changed because
 	   the stat has changed, and inform the UI. */
-	recalculate_stats(stats_local, *points_left_local);
+	recalculate_stats(stats, *points_left);
 }
 
 /**

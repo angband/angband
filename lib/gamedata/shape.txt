@@ -63,7 +63,7 @@ name:normal
 name:fox
 combat:-3:-3:3
 obj-flags:FEATHER | FREE_ACT
-values:STR[-3] | STEALTH[5] | BLOWS[1] | MOVES[1]
+values:STR[-3] | STEALTH[5] | BLOWS[2] | MOVES[1]
 blow:bite
 blow:claw
 
@@ -87,7 +87,7 @@ skill-disarm-phys:-5
 skill-disarm-magic:-10
 skill-melee:10
 obj-flags:PROT_FEAR
-values: STR[3] | INT[-2] | CON[2] | INFRA[1] | STEALTH[-3]
+values: STR[3] | INT[-2] | CON[2] | INFRA[1] | STEALTH[-3] | BLOWS[1]
 blow:cuff
 blow:clout
 blow:claw
@@ -119,6 +119,7 @@ blow:scratch
 
 name:warg
 combat:5:5:0
+values:BLOWS[2]
 effect:DAMAGE
 dice:1d$S
 expr:S:PLAYER_LEVEL:+ 0
