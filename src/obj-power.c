@@ -293,10 +293,12 @@ static int extra_shots_power(const struct object *obj, int p)
 		log_obj("INHIBITING - too many extra shots - quitting\n");
 		return p;
 	} else if (obj->modifiers[OBJ_MOD_SHOTS] > 0) {
+		/* Multiply by effective number of shots */
 		int q = obj->modifiers[OBJ_MOD_SHOTS];
-		p = p * (1 + q);
-		log_obj(format("Multiplying power by %d for extra shots, total is %d\n",
-					   1 + q, p));
+		p *= (10 + q);
+		p /= 10;
+		log_obj(format("Adding %d%% power for extra shots, total is %d\n",
+					   10 * q, p));
 	}
 	return p;
 }
