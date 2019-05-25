@@ -612,7 +612,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 		struct object *combine_item = NULL;
 
 		struct object *gear_obj = p->gear;
-		while (combine_item == false && gear_obj) {
+		while ((combine_item == NULL) && (gear_obj != NULL)) {
 			if (!object_is_equipped(p->body, gear_obj) &&
 					object_similar(gear_obj, obj, OSTACK_PACK)) {
 				combine_item = gear_obj;
@@ -629,6 +629,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 			object_absorb(combine_item->known, obj->known);
 			obj->known = NULL;
 			object_absorb(combine_item, obj);
+
+			/* Ensure numbers are aligned (should not be necessary, but safe) */
+			combine_item->known->number = combine_item->number;
 
 			obj = combine_item;
 			combining = true;
@@ -933,12 +936,21 @@ void combine_pack(void)
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
 				object_absorb(obj2, obj1);
+
+				/* Ensure numbers align (should not be necessary, but safer) */
+				obj2->known->number = obj2->number;
+
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
 				/* Setting this to true spams the combine message. */
 				display_message = false;
 				object_absorb_partial(obj2->known, obj1->known);
 				object_absorb_partial(obj2, obj1);
+
+				/* Ensure numbers align (should not be necessary, but safer) */
+				obj2->known->number = obj2->number;
+				obj1->known->number = obj1->number;
+
 				break;
 			}
 		}

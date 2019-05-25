@@ -696,8 +696,12 @@ struct object *object_split(struct object *src, int amt)
 	/* Get a copy of the object */
 	object_copy(dest, src);
 
-	/* Prepare a new known object if necessary */
+	/* Do we need a new known object? */
 	if (src->known) {
+		/* Ensure numbers are aligned (should not be necessary, but safer) */
+		src->known->number = src->number;
+
+		/* Make the new object */
 		dest_known = object_new();
 		object_copy(dest_known, src->known);
 		dest->known = dest_known;
