@@ -573,8 +573,8 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
 	if (d > z_info->max_sight) return;
 
 	/* UNLIGHT players have a special radius of view */
-	if (player_has(p, PF_UNLIGHT) && (p->state.cur_light <= 0)) {
-		close = d < (2 + p->lev / 6);
+	if (player_has(p, PF_UNLIGHT) && (p->state.cur_light <= 1)) {
+		close = d < (2 + p->lev / 6 - p->state.cur_light);
 	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
