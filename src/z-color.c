@@ -69,7 +69,7 @@ color_type color_table[MAX_COLORS] =
 	{'d', "Dark", {0, 0, 0, COLOUR_DARK, COLOUR_L_DARK, COLOUR_DARK,
 				   COLOUR_L_DARK, COLOUR_L_DARK, COLOUR_DARK}},
 
-	{'w', "White", {1, 1, 1, COLOUR_WHITE, COLOUR_YELLOW, COLOUR_SLATE,
+	{'w', "White", {1, 1, 1, COLOUR_WHITE, COLOUR_YELLOW, COLOUR_L_WHITE,
 					COLOUR_L_BLUE, COLOUR_YELLOW, COLOUR_WHITE}},
 
 	{'s', "Slate", {2, 1, 2, COLOUR_SLATE, COLOUR_L_WHITE, COLOUR_L_DARK,
@@ -215,6 +215,37 @@ const char *attr_to_text(byte a)
 		return ("Icky");
 }
 
+/**
+ * Translate text colours.
+ *
+ * This translates a color based on the attribute. We use this to set terrain to
+ * be lighter or darker, make metallic monsters shimmer, highlight text under
+ * the mouse, and reduce the colours on mono colour or 16 colour terms to the
+ * correct colour space.
+ *
+ * TODO: Honour the attribute for the term (full color, mono, 16 color) but
+ * ensure that e.g. the lighter version of yellow becomes white in a 16 color
+ * term, but light yellow in a full colour term.
+ */
+byte get_color(byte a, int attr, int n)
+{
+	/* Accept any graphical attr (high bit set) */
+	if (a & (0x80))
+		return (a);
+
+	/* TODO: Honour the attribute for the term (full color, mono, 16 color) */
+	if (!attr)
+		return (a);
+
+	/* Translate the color N times */
+	while (n > 0) {
+		a = color_table[a].color_translate[attr];
+		n--;
+	}
+
+	/* Return the modified color */
+	return (a);
+}
 
 
 /**

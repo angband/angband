@@ -189,13 +189,13 @@ name:secret door
 graphics:#:w
 priority:10
 mimic:granite wall
-flags:WALL | ROCK | DOOR_ANY | GRANITE
+flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
 desc:A door that appears like a granite wall to untrained eyes.
 
 name:pile of rubble
 graphics:::w
 priority:13
-flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING
+flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
 desc:to normal floor.
@@ -203,7 +203,7 @@ desc:to normal floor.
 name:magma vein
 graphics:%:s
 priority:12
-flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA
+flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
 info:0:2
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
@@ -212,7 +212,7 @@ desc:sight.
 name:quartz vein
 graphics:%:W
 priority:11
-flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ
+flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:3
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
@@ -239,7 +239,7 @@ desc:sight.  It contains visible treasure.
 name:granite wall
 graphics:#:w
 priority:10
-flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
+flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:4
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
@@ -268,7 +268,7 @@ resist-flag:IM_FIRE
 name:pile of passable rubble
 graphics:::u
 priority:13
-flags:ROCK | PASSABLE | INTERESTING
+flags:ROCK | PASSABLE | INTERESTING | TORCH
 info:0:1
 desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
 desc:spells.  May dissolve or be tunnelled to normal floor, and can be walked 

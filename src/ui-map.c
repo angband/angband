@@ -113,29 +113,14 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	/* Remove the high bit so we can add it back again at the end */
 	*a = (*a & 0x7F);
 
-	/* Never play with fg colours for treasure */
-	if (!feat_is_treasure(g->f_idx)) {
-		/* Only apply lighting effects when the attr is white and it's a 
-		 * floor or wall */
-		if ((*a == COLOUR_WHITE) &&
-			(feat_is_floor(g->f_idx) || feat_is_wall(g->f_idx))) {
-			/* If it's a floor tile then we'll tint based on lighting. */
-			if (feat_is_torch(g->f_idx))
-				switch (g->lighting) {
-					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
-					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
-					case LIGHTING_DARK: *a = COLOUR_L_DARK; break;
-					default: break;
-				}
-
-			/* If it's another kind of tile, only tint when unlit. */
-			else if (g->lighting == LIGHTING_DARK ||
-					 g->lighting == LIGHTING_LIT)
-				*a = COLOUR_L_DARK;
-		} else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
-			if (!g->in_view) {
-				*a = COLOUR_L_DARK;
-			}
+	/* Play with fg colours for terrain affected by torchlight */
+	if (feat_is_torch(g->f_idx)) {
+		/* Brighten if torchlit, darken if out of LoS, super dark for UNLIGHT */
+		switch (g->lighting) {
+			case LIGHTING_TORCH: *a = get_color(*a, ATTR_LIGHT, 1); break;
+			case LIGHTING_LIT: *a = get_color(*a, ATTR_DARK, 1); break;
+			case LIGHTING_DARK: *a = get_color(*a, ATTR_DARK, 2); break;
+			default: break;
 		}
 	}
 

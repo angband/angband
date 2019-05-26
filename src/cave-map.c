@@ -88,7 +88,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->first_kind = NULL;
 	g->trap = NULL;
 	g->multiple_objects = false;
-	g->lighting = LIGHTING_DARK;
+	g->lighting = LIGHTING_LIT;
 	g->unseen_object = false;
 	g->unseen_money = false;
 
