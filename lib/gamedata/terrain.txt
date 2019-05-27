@@ -228,7 +228,7 @@ desc:through by immaterial monsters.  It stops any spells, missiles or line of
 desc:sight.  It contains visible treasure.
 
 name:quartz vein with treasure
-graphics:*:o
+graphics:*:y
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 info:0:3
