@@ -193,7 +193,7 @@ flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
 desc:A door that appears like a granite wall to untrained eyes.
 
 name:pile of rubble
-graphics:::w
+graphics:::W
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1
@@ -201,7 +201,7 @@ desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled
 desc:to normal floor.
 
 name:magma vein
-graphics:%:s
+graphics:%:D
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
 info:0:2
@@ -210,7 +210,7 @@ desc:through by immaterial monsters.  It stops any spells, missiles or line of
 desc:sight.
 
 name:quartz vein
-graphics:%:W
+graphics:%:s
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:3
@@ -237,7 +237,7 @@ desc:through by immaterial monsters.  It stops any spells, missiles or line of
 desc:sight.  It contains visible treasure.
 
 name:granite wall
-graphics:#:w
+graphics:#:W
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:4
