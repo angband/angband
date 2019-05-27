@@ -574,7 +574,7 @@ name:SATISFY
 aim:0
 power:7
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:magically renders you well-fed, curing any gastrointestinal problems
 
 name:BLESSING

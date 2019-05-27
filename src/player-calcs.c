@@ -1961,7 +1961,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		assert((0 <= ind) && (ind < STAT_RANGE));
 
-
 		/* Hack for hypothetical blows - NRM */
 		if (!update) {
 			if (i == STAT_STR) {
@@ -1980,16 +1979,46 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Temporary flags */
-	if (p->timed[TMD_STUN] > 50) {
+	if (player_timed_grade_eq(p, TMD_FOOD, "Gorged")) {
+		state->speed -= 10;
+	} else if (player_timed_grade_eq(p, TMD_FOOD, "Hungry")) {
+		int badness = 10 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_HUNGRY;
+		state->to_h -= badness;
+		state->to_d -= badness;
+	} else if (player_timed_grade_eq(p, TMD_FOOD, "Weak")) {
+		int badness = 15 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_WEAK;
+		state->to_h -= badness;
+		state->to_d -= badness;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+	} else if (player_timed_grade_eq(p, TMD_FOOD, "Faint")) {
+		int badness = 20 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_FAINT;
+		state->to_h -= badness;
+		state->to_d -= badness;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		state->skills[SKILL_DISARM_PHYS] =
+			state->skills[SKILL_DISARM_PHYS] * 9 / 10;
+		state->skills[SKILL_DISARM_MAGIC] =
+			state->skills[SKILL_DISARM_MAGIC] * 9 / 10;
+	} else if (player_timed_grade_eq(p, TMD_FOOD, "Starving")) {
+		int badness = 28 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_STARVE;
+		state->to_h -= badness;
+		state->to_d -= badness;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 7 / 10;
+		state->skills[SKILL_DISARM_PHYS] =
+			state->skills[SKILL_DISARM_PHYS] * 8 / 10;
+		state->skills[SKILL_DISARM_MAGIC] =
+			state->skills[SKILL_DISARM_MAGIC] * 8 / 10;
+		state->skills[SKILL_SAVE] = state->skills[SKILL_SAVE] * 9 / 10;
+		state->skills[SKILL_SEARCH] = state->skills[SKILL_SEARCH] * 9 / 10;
+	}
+	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 8 / 10;
-	} else if (p->timed[TMD_STUN]) {
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 9 / 10;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;

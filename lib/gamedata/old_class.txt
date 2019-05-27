@@ -151,7 +151,7 @@ book-properties:400:40:10 to 100
 
 spell:Satisfy Hunger:9:7:45:8
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
@@ -597,7 +597,7 @@ desc:  Uniques and monsters that resist sleep are not affected.
 
 spell:Satisfy Hunger:7:5:38:4
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
@@ -1078,7 +1078,7 @@ book:magic book:town:[Incantations and Illusions]:6:arcane
 
 spell:Satisfy Hunger:25:12:95:1
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
@@ -1428,7 +1428,7 @@ book:magic book:town:[Incantations and Illusions]:9:arcane
 
 spell:Satisfy Hunger:17:17:55:3
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
@@ -1830,7 +1830,7 @@ desc:  Uniques and monsters that resist sleep are not affected.
 
 spell:Satisfy Hunger:13:10:45:3
 effect:SET_NOURISH
-dice:16999
+dice:16000
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 

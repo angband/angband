@@ -117,8 +117,9 @@ grade:r:100:Starving: :You are starving!!
 grade:r:500:Faint:You are still faint.:You are getting faint from hunger!
 grade:o:1000:Weak:You are still weak.:You are getting weak from hunger!
 grade:y:2000:Hungry:You are still hungry.:You are getting hungry.
-grade:G:10000: :You are no longer hungry.:You are no longer full.
-grade:G:17000:Full:You are full!
+grade:G:16000: :You are no longer hungry.:You are no longer full.
+grade:G:17000:Full:You are full!:You still feel full.
+grade:U:17500:Gorged:You have gorged yourself! You feel very uncomfortable...
 
 name:PROTEVIL
 desc:protection from evil

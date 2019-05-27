@@ -354,12 +354,12 @@ void player_fix_scramble(struct player *p)
  */
 bool player_timed_grade_eq(struct player *p, int idx, char *match)
 {
-	if (!p->timed[idx]) {
+	if (p->timed[idx]) {
 		struct timed_grade *grade = timed_effects[idx].grade;
 		while (p->timed[idx] > grade->max) {
 			grade = grade->next;
 		}
-		if (streq(grade->name, match)) return true;
+		if (grade->name && streq(grade->name, match)) return true;
 	}
 
 	return false;

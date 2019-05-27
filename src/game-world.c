@@ -657,8 +657,19 @@ void process_world(struct chunk *c)
 		player_dec_timed(player, TMD_FOOD, i, false);
 	}
 
-	/* Getting Faint */
-	if (player->timed[TMD_FOOD] < PY_FOOD_FAINT) {
+	/* Gorged */
+	if (player_timed_grade_eq(player, TMD_FOOD, "Gorged") && one_in_(5)) {
+		/* Up it comes... */
+		msg("You vomit.");
+		disturb(player, 1);
+
+		/* Lose a random amount */
+		(void) player_dec_timed(player, TMD_FOOD,
+								randint1(player->timed[TMD_FOOD] - 100), false);
+	}
+
+	/* Faint or starving */
+	if (player_timed_grade_eq(player, TMD_FOOD, "Faint")) {
 		/* Faint occasionally */
 		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
 			/* Message */
@@ -669,10 +680,7 @@ void process_world(struct chunk *c)
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
 								   true, false);
 		}
-	}
-
-	/* Starve to death (slowly) */
-	if (player->timed[TMD_FOOD] < PY_FOOD_STARVE) {
+	} else if (player_timed_grade_eq(player, TMD_FOOD, "Starving")) {
 		/* Calculate damage */
 		i = (PY_FOOD_STARVE - player->timed[TMD_FOOD]) / 10;
 
@@ -900,13 +908,15 @@ void process_player(void)
 		}
 
 		/* Paralyzed or Knocked Out player gets no turn */
-		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
+		if (player->timed[TMD_PARALYZED] ||
+			player_timed_grade_eq(player, TMD_STUN, "Knocked Out")) {
 			cmdq_push(CMD_SLEEP);
+		}
 
 		/* Prepare for the next command */
-		if (cmd_get_nrepeats() > 0)
+		if (cmd_get_nrepeats() > 0) {
 			event_signal(EVENT_COMMAND_REPEAT);
-		else {
+		} else {
 			/* Check monster recall */
 			if (player->upkeep->monster_race)
 				player->upkeep->redraw |= (PR_MONSTER);
