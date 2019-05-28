@@ -1113,15 +1113,11 @@ void do_cmd_walk(struct command *cmd)
 
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
-		if (get_check("You are stuck in a web - do you want to clear it? ")) {
-			/* Clear the web, finish turn */
-			square_destroy_trap(cave, player->grid);
-			player->upkeep->energy_use = z_info->move_energy;
-			return;
-		} else {
-			/* Rethink */
-			return;
-		}
+		/* Clear the web, finish turn */
+		msg("You clear the web.");
+		square_destroy_trap(cave, player->grid);
+		player->upkeep->energy_use = z_info->move_energy;
+		return;
 	}
 
 	/* Apply confusion if necessary */
@@ -1155,15 +1151,11 @@ void do_cmd_jump(struct command *cmd)
 
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
-		if (get_check("You are stuck in a web - do you want to clear it? ")) {
-			/* Clear the web, finish turn */
-			square_destroy_trap(cave, player->grid);
-			player->upkeep->energy_use = z_info->move_energy;
-			return;
-		} else {
-			/* Rethink */
-			return;
-		}
+		/* Clear the web, finish turn */
+		msg("You clear the web.");
+		square_destroy_trap(cave, player->grid);
+		player->upkeep->energy_use = z_info->move_energy;
+		return;
 	}
 
 	/* Apply confusion if necessary */
