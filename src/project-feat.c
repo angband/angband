@@ -306,6 +306,11 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		context->obvious = true;
 	}
 
+	/* Removes webs */
+	if (square_iswebbed(cave, context->grid)) {
+		square_destroy_trap(cave, context->grid);
+	}
+
 	/* Can create lava if extremely powerful. */
 	if ((context->dam > randint1(1800) + 600) &&
 		square_isfloor(cave, context->grid)) {
