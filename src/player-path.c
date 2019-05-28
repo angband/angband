@@ -400,24 +400,25 @@ static const byte chome[] =
 /**
  * Hack -- Check for a "known wall" (see below)
  */
-static int see_wall(int dir, int y, int x)
+static bool see_wall(int dir, struct loc grid)
 {
 	/* Get the new location */
-	y += ddy[dir];
-	x += ddx[dir];
+	grid = loc_sum(grid, ddgrid[dir]);
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!square_in_bounds(cave, loc(x, y))) return (false);
+	if (!square_in_bounds(cave, grid)) return false;
+
+	/* Webs are enough like walls */
+	if (square_iswebbed(cave, grid)) return true;
 
 	/* Non-wall grids are not known walls */
-	if (!square_seemslikewall(cave, loc(x, y)))
-		return false;
+	if (!square_seemslikewall(cave, grid)) return false;
 
 	/* Unknown walls are not known walls */
-	if (!square_isknown(cave, loc(x, y))) return (false);
+	if (!square_isknown(cave, grid)) return false;
 
 	/* Default */
-	return (true);
+	return true;
 }
 
 
@@ -437,10 +438,8 @@ static int see_wall(int dir, int y, int x)
  */
 static void run_init(int dir)
 {
-	int py = player->grid.y;
-	int px = player->grid.x;
-
-	int i, row, col;
+	int i;
+	struct loc grid;
 
 	bool deepleft, deepright;
 	bool shortleft, shortright;
@@ -466,26 +465,25 @@ static void run_init(int dir)
 	shortright = shortleft = false;
 
 	/* Find the destination grid */
-	row = py + ddy[dir];
-	col = px + ddx[dir];
+	grid = loc_sum(player->grid, ddgrid[dir]);
 
 	/* Extract cycle index */
 	i = chome[dir];
 
 	/* Check for nearby or distant wall */
-	if (see_wall(cycle[i+1], py, px)) {
+	if (see_wall(cycle[i + 1], player->grid)) {
 		run_break_left = true;
 		shortleft = true;
-	} else if (see_wall(cycle[i+1], row, col)) {
+	} else if (see_wall(cycle[i + 1], grid)) {
 		run_break_left = true;
 		deepleft = true;
 	}
 
 	/* Check for nearby or distant wall */
-	if (see_wall(cycle[i-1], py, px)) {
+	if (see_wall(cycle[i - 1], player->grid)) {
 		run_break_right = true;
 		shortright = true;
-	} else if (see_wall(cycle[i-1], row, col)) {
+	} else if (see_wall(cycle[i - 1], grid)) {
 		run_break_right = true;
 		deepright = true;
 	}
@@ -501,7 +499,7 @@ static void run_init(int dir)
 				run_old_dir = cycle[i - 1];
 			else if (deepright && !deepleft)
 				run_old_dir = cycle[i + 1];
-		} else if (see_wall(cycle[i], row, col)) {
+		} else if (see_wall(cycle[i], player->grid)) {
 			if (shortleft && !shortright)
 				run_old_dir = cycle[i - 2];
 			else if (shortright && !shortleft)
@@ -518,13 +516,10 @@ static void run_init(int dir)
  */
 static bool run_test(void)
 {
-	int py = player->grid.y;
-	int px = player->grid.x;
-
 	int prev_dir;
 	int new_dir;
 
-	int row, col;
+	struct loc grid;
 	int i, max, inv;
 	int option, option2;
 
@@ -549,20 +544,18 @@ static bool run_test(void)
 		new_dir = cycle[chome[prev_dir] + i];
 
 		/* New location */
-		row = py + ddy[new_dir];
-		col = px + ddx[new_dir];
-
+		grid = loc_sum(player->grid, ddgrid[new_dir]);
 
 		/* Visible monsters abort running */
-		if (square(cave, loc(col, row)).mon > 0) {
-			struct monster *mon = square_monster(cave, loc(col, row));
+		if (square(cave, grid).mon > 0) {
+			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_visible(mon)) {
 				return (true);
 			}
 		}
 
 		/* Visible objects abort running */
-		for (obj = square_object(cave, loc(col, row)); obj; obj = obj->next)
+		for (obj = square_object(cave, grid); obj; obj = obj->next)
 			/* Visible object */
 			if (obj->known && !ignore_item_ok(obj)) return (true);
 
@@ -570,8 +563,8 @@ static bool run_test(void)
 		inv = true;
 
 		/* Check memorized grids */
-		if (square_isknown(cave, loc(col, row))) {
-			bool notice = square_isinteresting(cave, loc(col, row));
+		if (square_isknown(cave, grid)) {
+			bool notice = square_isinteresting(cave, grid);
 
 			/* Interesting feature */
 			if (notice) return (true);
@@ -581,7 +574,7 @@ static bool run_test(void)
 		}
 
 		/* Analyze unknown grids and floors */
-		if (inv || square_ispassable(cave, loc(col, row))) {
+		if (inv || square_ispassable(cave, grid)) {
 			/* Looking for open area */
 			if (run_open_area) {
 				/* Nothing */
@@ -622,17 +615,16 @@ static bool run_test(void)
 		new_dir = cycle[chome[prev_dir] + i];
 		
 		/* New location */
-		row = py + ddy[prev_dir] + ddy[new_dir];
-		col = px + ddx[prev_dir] + ddx[new_dir];
+		grid = loc_sum(player->grid,
+					   loc_sum(ddgrid[prev_dir], ddgrid[new_dir]));
 		
 		/* HACK: Ugh. Sometimes we come up with illegal bounds. This will
 		 * treat the symptom but not the disease. */
-		if (row >= cave->height || col >= cave->width) continue;
-		if (row < 0 || col < 0) continue;
+		if (!square_in_bounds(cave, grid)) continue;
 
 		/* Obvious monsters abort running */
-		if (square(cave, loc(col, row)).mon > 0) {
-			struct monster *mon = square_monster(cave, loc(col, row));
+		if (square(cave, grid).mon > 0) {
+			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_obvious(mon))
 				return (true);
 		}
@@ -643,14 +635,10 @@ static bool run_test(void)
 		/* Hack -- look again */
 		for (i = -max; i < 0; i++) {
 			new_dir = cycle[chome[prev_dir] + i];
-
-			row = py + ddy[new_dir];
-			col = px + ddx[new_dir];
+			grid = loc_sum(player->grid, ddgrid[new_dir]);
 
 			/* Unknown grid or non-wall */
-			/* Was: square_ispassable(cave, row, col) */
-			if (!square_isknown(cave, loc(col, row)) ||
-			    (square_ispassable(cave, loc(col, row)))) {
+			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
 				/* Looking to break right */
 				if (run_break_right) {
 					return (true);
@@ -666,14 +654,10 @@ static bool run_test(void)
 		/* Hack -- look again */
 		for (i = max; i > 0; i--) {
 			new_dir = cycle[chome[prev_dir] + i];
-
-			row = py + ddy[new_dir];
-			col = px + ddx[new_dir];
+			grid = loc_sum(player->grid, ddgrid[new_dir]);
 
 			/* Unknown grid or non-wall */
-			/* Was: square_ispassable(cave, row, col) */
-			if (!square_isknown(cave, loc(col, row)) ||
-			    (square_ispassable(cave, loc(col, row)))) {
+			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
 				/* Looking to break left */
 				if (run_break_left) {
 					return (true);
@@ -704,11 +688,9 @@ static bool run_test(void)
 		}
 	}
 
-
 	/* About to hit a known wall, stop */
-	if (see_wall(run_cur_dir, py, px))
+		if (see_wall(run_cur_dir, player->grid))
 		return (true);
-
 
 	/* Failure */
 	return (false);
@@ -753,13 +735,13 @@ void run_step(int dir)
 			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
-			int y = player->grid.y + ddy[pf_result[pf_result_index] - '0'];
-			int x = player->grid.x + ddx[pf_result[pf_result_index] - '0'];
+			struct loc grid = loc_sum(player->grid,
+									  ddgrid[pf_result[pf_result_index] - '0']);
 
 			if (pf_result_index == 0) {
 				/* Known wall */
-				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, loc(x, y))) {
+				if (square_isknown(cave, grid) &&
+					!square_ispassable(cave, grid)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
 					return;
@@ -774,20 +756,20 @@ void run_step(int dir)
 				 * We have to look ahead two, otherwise we don't know which is
 				 * the last direction moved and don't initialise the run
 				 * properly. */
-				y = player->grid.y + ddy[pf_result[pf_result_index] - '0'];
-				x = player->grid.x + ddx[pf_result[pf_result_index] - '0'];
+				grid = loc_sum(player->grid,
+							   ddgrid[pf_result[pf_result_index] - '0']);
 
 				/* Known wall */
-				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, loc(x, y))) {
+				if (square_isknown(cave, grid) &&
+					!square_ispassable(cave, grid)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
 
 				/* Visible monsters abort running */
-				if (square(cave, loc(x, y)).mon > 0) {
-					struct monster *mon = square_monster(cave, loc(x, y));
+				if (square(cave, grid).mon > 0) {
+					struct monster *mon = square_monster(cave, grid);
 
 					/* Visible monster */
 					if (monster_is_visible(mon)) {
@@ -798,7 +780,7 @@ void run_step(int dir)
 				}
 
 				/* Visible objects abort running */
-				for (obj = square_object(cave, loc(x, y)); obj; obj = obj->next)
+				for (obj = square_object(cave, grid); obj; obj = obj->next)
 					/* Visible object */
 					if (obj->known && !ignore_item_ok(obj)) {
 					disturb(player, 0);
@@ -807,12 +789,12 @@ void run_step(int dir)
 				}
 
 				/* Get step after */
-				y = y + ddy[pf_result[pf_result_index - 1] - '0'];
-				x = x + ddx[pf_result[pf_result_index - 1] - '0'];
+				grid = loc_sum(player->grid,
+							   ddgrid[pf_result[pf_result_index - 1] - '0']);
 
 				/* Known wall, so run the direction we were going */
-				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, loc(x, y))) {
+				if (square_isknown(cave, grid) &&
+					!square_ispassable(cave, grid)) {
 					player->upkeep->running_withpathfind = false;
 					run_init(pf_result[pf_result_index] - '0');
 				}
