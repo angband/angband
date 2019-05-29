@@ -1554,12 +1554,26 @@ static enum parser_error parse_object_type(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_object_properties(struct parser *p) {
+static enum parser_error parse_object_level(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
 	k->level = parser_getint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_weight(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
 	k->weight = parser_getint(p, "weight");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_cost(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
 	k->cost = parser_getint(p, "cost");
 	return PARSE_ERROR_NONE;
 }
@@ -1878,7 +1892,9 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "name str name", parse_object_name);
 	parser_reg(p, "type sym tval", parse_object_type);
 	parser_reg(p, "graphics char glyph sym color", parse_object_graphics);
-	parser_reg(p, "properties int level int weight int cost", parse_object_properties);
+	parser_reg(p, "level int level", parse_object_level);
+	parser_reg(p, "weight int weight", parse_object_weight);
+	parser_reg(p, "cost int cost", parse_object_cost);
 	parser_reg(p, "alloc int common str minmax", parse_object_alloc);
 	parser_reg(p, "combat int ac rand hd rand to-h rand to-d rand to-a", parse_object_combat);
 	parser_reg(p, "charges rand charges", parse_object_charges);

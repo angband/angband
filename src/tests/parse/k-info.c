@@ -67,15 +67,35 @@ int test_type0(void *state) {
 	ok;
 }
 
-int test_properties0(void *state) {
-	errr r = parser_parse(state, "properties:10:5:120");
+int test_level0(void *state) {
+	errr r = parser_parse(state, "level:10");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
 	eq(k->level, 10);
+	ok;
+}
+
+int test_weight0(void *state) {
+	errr r = parser_parse(state, "weight:5");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
 	eq(k->weight, 5);
+	ok;
+}
+
+int test_cost0(void *state) {
+	errr r = parser_parse(state, "cost:120");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
 	eq(k->cost, 120);
 	ok;
 }
@@ -200,7 +220,9 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "graphics0", test_graphics0 },
 	{ "graphics1", test_graphics1 },
-	{ "properties0", test_properties0 },
+	{ "level0", test_level0 },
+	{ "weight0", test_weight0 },
+	{ "cost0", test_cost0 },
 	{ "alloc0", test_alloc0 },
 	{ "combat0", test_combat0 },
 	{ "charges0", test_charges0 },
