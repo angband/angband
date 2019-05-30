@@ -13,8 +13,8 @@
 # level: level
 # weight : weight
 # cost : cost
-# combat: base armor class : base damage : plus to-hit : plus to-dam :
-# plus to-armor class
+# attack : base damage : plus to-hit : plus to-dam
+# armor: base armor class : plus to-armor class
 # alloc: commonness : min " to " max
 # charges: charges
 # pile: chance of being generated in a pile : dice for number of items
@@ -70,9 +70,12 @@
 
 # 'cost' is the item's base value.
 
-# 'combat' is for combat information. The items base armor class, its base
-# damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
-# accept randomized values.
+# 'attack' is for combat attack information, the item's base damage and
+# pluses to-hit and to-dam.  The base damage should be a standard dice roll
+# (eg 2d5), and last two numbers can be any randomized values as above.
+
+# 'armor' is for armor information, the item's base armor class and plus to-ac.
+# The latter accepts randomized values.
 
 # 'alloc' is for allocation - frequency and range of levels found. It is used to
 # ensure that certain vital items such as food and recall scrolls
@@ -160,7 +163,8 @@ level:1
 weight:22
 cost:2
 alloc:70:1 to 40
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:BURNS_OUT | LIGHT_2 | EASY_KNOW
 
 name:& Lantern~
@@ -170,7 +174,8 @@ level:3
 weight:50
 cost:35
 alloc:70:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:TAKES_FUEL | EASY_KNOW | LIGHT_3 | IGNORE_FIRE
 
 name:& Flask~ of oil
@@ -180,7 +185,8 @@ level:1
 weight:20
 cost:3
 alloc:50:1 to 100
-combat:0:1d4:0:0:0
+attack:1d4:0:0
+armor:0:0
 pval:7500
 flags:EXPLODE
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
@@ -473,7 +479,8 @@ level:0
 weight:12
 cost:30
 alloc:20:0 to 100
-combat:0:1d4:0:0:0
+attack:1d4:0:0
+armor:0:0
 desc:A short two-edged blade perfect for thrusting.
 
 name:& Main Gauche~
@@ -483,7 +490,8 @@ level:3
 weight:30
 cost:45
 alloc:20:3 to 100
-combat:0:1d5:0:0:0
+attack:1d5:0:0
+armor:0:0
 
 name:& Rapier~
 type:sword
@@ -492,7 +500,8 @@ level:5
 weight:40
 cost:70
 alloc:20:5 to 100
-combat:0:1d6:0:0:0
+attack:1d6:0:0
+armor:0:0
 
 name:& Short Sword~
 type:sword
@@ -501,7 +510,8 @@ level:5
 weight:80
 cost:90
 alloc:20:5 to 100
-combat:0:1d7:0:0:0
+attack:1d7:0:0
+armor:0:0
 
 name:& Cutlass~
 type:sword
@@ -510,7 +520,8 @@ level:5
 weight:110
 cost:120
 alloc:20:5 to 100
-combat:0:1d8:0:0:0
+attack:1d8:0:0
+armor:0:0
 desc:A thicker and slightly longer dagger, the cutlass is a slashing sword.  It
 desc: possesses a slight curve and only one side is sharp.
 
@@ -521,7 +532,8 @@ level:5
 weight:100
 cost:170
 alloc:20:5 to 100
-combat:0:2d4:0:0:0
+attack:2d4:0:0
+armor:0:0
 desc:A wider-bladed cousin of the shamshir, with less of a curve.
 
 name:& Scimitar~
@@ -531,7 +543,8 @@ level:10
 weight:150
 cost:300
 alloc:20:10 to 100
-combat:0:4d2:0:0:0
+attack:4d2:0:0
+armor:0:0
 desc:A long sabre with an extreme curve to the blade.
 
 name:& Long Sword~
@@ -541,7 +554,8 @@ level:10
 weight:130
 cost:300
 alloc:20:10 to 100
-combat:0:2d5:0:0:0
+attack:2d5:0:0
+armor:0:0
 
 name:& Broad Sword~
 type:sword
@@ -550,7 +564,8 @@ level:10
 weight:150
 cost:300
 alloc:20:10 to 100
-combat:0:2d5:0:0:0
+attack:2d5:0:0
+armor:0:0
 
 name:& Bastard Sword~
 type:sword
@@ -559,7 +574,8 @@ level:15
 weight:140
 cost:400
 alloc:20:15 to 100
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 
 name:& Katana~
 type:sword
@@ -568,7 +584,8 @@ level:20
 weight:120
 cost:600
 alloc:20:20 to 100
-combat:0:3d5:0:0:0
+attack:3d5:0:0
+armor:0:0
 
 name:& Zweihander~
 type:sword
@@ -577,7 +594,8 @@ level:30
 weight:200
 cost:700
 alloc:20:30 to 100
-combat:0:3d6:0:0:0
+attack:3d6:0:0
+armor:0:0
 desc:A sword designed for two hands.
 
 name:& Executioner's Sword~
@@ -587,7 +605,8 @@ level:40
 weight:260
 cost:850
 alloc:20:40 to 100
-combat:0:4d5:0:0:0
+attack:4d5:0:0
+armor:0:0
 
 name:& Blade~ of Chaos
 type:sword
@@ -596,7 +615,8 @@ level:70
 weight:180
 cost:4000
 alloc:10:70 to 100
-combat:0:6d5:0:0:0
+attack:6d5:0:0
+armor:0:0
 values:RES_CHAOS[1]
 
 
@@ -610,7 +630,8 @@ level:3
 weight:30
 cost:30
 alloc:20:3 to 100
-combat:0:1d3:0:0:0
+attack:1d3:0:0
+armor:0:0
 
 name:& Ball-and-Chain~
 type:hafted
@@ -619,7 +640,8 @@ level:20
 weight:150
 cost:200
 alloc:20:20 to 100
-combat:0:2d4:0:0:0
+attack:2d4:0:0
+armor:0:0
 
 name:& Morning Star~
 type:hafted
@@ -628,7 +650,8 @@ level:10
 weight:150
 cost:396
 alloc:20:10 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Flail~
 type:hafted
@@ -637,7 +660,8 @@ level:10
 weight:150
 cost:353
 alloc:20:10 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Two-Handed Great Flail~
 type:hafted
@@ -646,7 +670,8 @@ level:45
 weight:280
 cost:590
 alloc:20:45 to 100
-combat:0:3d6:0:0:0
+attack:3d6:0:0
+armor:0:0
 
 
 ### Clubs ###
@@ -658,7 +683,8 @@ level:5
 weight:120
 cost:130
 alloc:20:5 to 100
-combat:0:2d4:0:0:0
+attack:2d4:0:0
+armor:0:0
 
 name:& Lead-Filled Mace~
 type:hafted
@@ -667,7 +693,8 @@ level:15
 weight:180
 cost:502
 alloc:20:15 to 100
-combat:0:4d3:0:0:0
+attack:4d3:0:0
+armor:0:0
 
 name:& Quarterstaff~
 type:hafted
@@ -676,7 +703,8 @@ level:10
 weight:150
 cost:200
 alloc:20:10 to 100
-combat:0:1d9:0:0:0
+attack:1d9:0:0
+armor:0:0
 
 name:& War Hammer~
 type:hafted
@@ -685,7 +713,8 @@ level:5
 weight:120
 cost:225
 alloc:20:5 to 100
-combat:0:3d3:0:0:0
+attack:3d3:0:0
+armor:0:0
 
 name:& Maul~
 type:hafted
@@ -694,7 +723,8 @@ level:5
 weight:200
 cost:130
 alloc:20:5 to 100
-combat:0:4d4:0:0:0
+attack:4d4:0:0
+armor:0:0
 
 name:& Great Hammer~
 type:hafted
@@ -703,7 +733,8 @@ level:5
 weight:180
 cost:500
 alloc:20:20 to 100
-combat:0:8d1:0:0:0
+attack:8d1:0:0
+armor:0:0
 
 name:& Mace~ of Disruption
 type:hafted
@@ -712,7 +743,8 @@ level:80
 weight:400
 cost:4300
 alloc:10:80 to 100
-combat:0:5d8:0:0:0
+attack:5d8:0:0
+armor:0:0
 slay:UNDEAD_3
 
 
@@ -726,7 +758,8 @@ level:5
 weight:50
 cost:36
 alloc:20:5 to 100
-combat:0:1d6:0:0:0
+attack:1d6:0:0
+armor:0:0
 
 name:& Awl-Pike~
 type:polearm
@@ -735,7 +768,8 @@ level:10
 weight:160
 cost:340
 alloc:20:10 to 100
-combat:0:1d8:0:0:0
+attack:1d8:0:0
+armor:0:0
 
 name:& Trident~
 type:polearm
@@ -744,7 +778,8 @@ level:5
 weight:70
 cost:120
 alloc:20:5 to 100
-combat:0:1d10:0:0:0
+attack:1d10:0:0
+armor:0:0
 
 name:& Halberd~
 type:polearm
@@ -753,7 +788,8 @@ level:25
 weight:190
 cost:430
 alloc:20:25 to 100
-combat:0:3d5:0:0:0
+attack:3d5:0:0
+armor:0:0
 
 name:& Pike~
 type:polearm
@@ -762,7 +798,8 @@ level:15
 weight:160
 cost:358
 alloc:20:15 to 100
-combat:0:2d5:0:0:0
+attack:2d5:0:0
+armor:0:0
 
 
 ### Axes ###
@@ -774,7 +811,8 @@ level:15
 weight:180
 cost:408
 alloc:20:15 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Broad Axe~
 type:polearm
@@ -783,7 +821,8 @@ level:15
 weight:160
 cost:304
 alloc:20:15 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Battle Axe~
 type:polearm
@@ -792,7 +831,8 @@ level:15
 weight:170
 cost:334
 alloc:20:15 to 100
-combat:0:2d8:0:0:0
+attack:2d8:0:0
+armor:0:0
 
 name:& Lochaber Axe~
 type:polearm
@@ -801,7 +841,8 @@ level:45
 weight:250
 cost:750
 alloc:20:45 to 100
-combat:0:3d8:0:0:0
+attack:3d8:0:0
+armor:0:0
 
 name:& Great Axe~
 type:polearm
@@ -810,7 +851,8 @@ level:40
 weight:230
 cost:500
 alloc:20:40 to 100
-combat:0:4d4:0:0:0
+attack:4d4:0:0
+armor:0:0
 
 
 ### Other misc polearms ###
@@ -822,7 +864,8 @@ level:45
 weight:250
 cost:800
 alloc:20:45 to 100
-combat:0:5d3:0:0:0
+attack:5d3:0:0
+armor:0:0
 
 name:& Glaive~
 type:polearm
@@ -831,7 +874,8 @@ level:20
 weight:190
 cost:363
 alloc:20:20 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Lance~
 type:polearm
@@ -840,7 +884,8 @@ level:10
 weight:300
 cost:230
 alloc:20:10 to 100
-combat:0:2d8:0:0:0
+attack:2d8:0:0
+armor:0:0
 
 name:& Scythe~ of Slicing
 type:polearm
@@ -849,7 +894,8 @@ level:60
 weight:250
 cost:3500
 alloc:10:60 to 100
-combat:0:8d4:0:0:0
+attack:8d4:0:0
+armor:0:0
 
 name:& Lucerne Hammer~
 type:polearm
@@ -858,7 +904,8 @@ level:10
 weight:120
 cost:376
 alloc:20:10 to 100
-combat:0:2d5:0:0:0
+attack:2d5:0:0
+armor:0:0
 
 
 
@@ -925,7 +972,8 @@ weight:2
 cost:1
 pile:100:7d7
 alloc:30:3 to 100
-combat:0:1d4:0:0:0
+attack:1d4:0:0
+armor:0:0
 desc:It can be shot with a bow.
 
 name:& Seeker Arrow~
@@ -936,7 +984,8 @@ weight:2
 cost:20
 alloc:25:55 to 100
 pile:100:7d7
-combat:0:4d4:0:0:0
+attack:4d4:0:0
+armor:0:0
 desc:It can be shot with a bow.
 
 name:& Mithril Arrow~
@@ -947,7 +996,8 @@ weight:2
 cost:25
 pile:100:7d7
 alloc:20:50 to 100
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 flags:IGNORE_ACID | IGNORE_FIRE
 desc:It can be shot with a bow.
 
@@ -960,7 +1010,8 @@ weight:3
 cost:2
 pile:100:5d7
 alloc:30:3 to 100
-combat:0:1d5:0:0:0
+attack:1d5:0:0
+armor:0:0
 desc:It can be shot with a crossbow.
 
 name:& Seeker Bolt~
@@ -971,7 +1022,8 @@ weight:3
 cost:25
 pile:100:5d7
 alloc:25:65 to 100
-combat:0:4d5:0:0:0
+attack:4d5:0:0
+armor:0:0
 desc:It can be shot with a crossbow.
 
 name:& Mithril Bolt~
@@ -982,7 +1034,8 @@ weight:2
 cost:30
 pile:100:5d7
 alloc:20:60 to 100
-combat:0:3d5:0:0:0
+attack:3d5:0:0
+armor:0:0
 flags:IGNORE_ACID
 desc:It can be shot with a crossbow.
 
@@ -995,7 +1048,8 @@ weight:4
 cost:1
 pile:100:5d7
 alloc:30:0 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 desc:It can be shot with a sling.
 
 name:& Iron Shot~
@@ -1006,7 +1060,8 @@ weight:5
 cost:2
 pile:100:5d7
 alloc:25:3 to 100
-combat:0:1d4:0:0:0
+attack:1d4:0:0
+armor:0:0
 desc:It can be shot with a sling.
 
 name:& Mithril Shot~
@@ -1017,7 +1072,8 @@ weight:4
 cost:20
 pile:100:5d7
 alloc:20:40 to 100
-combat:0:2d4:5:5:0
+attack:2d4:5:5
+armor:0:0
 flags:IGNORE_ACID
 desc:It can be shot with a sling.
 
@@ -1031,7 +1087,8 @@ level:1
 weight:60
 cost:10
 alloc:20:5 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 flags:DIG_1
 
 name:& Pick~
@@ -1041,7 +1098,8 @@ level:30
 weight:180
 cost:300
 alloc:20:30 to 100
-combat:0:1d3:0:0:0
+attack:1d3:0:0
+armor:0:0
 flags:DIG_2
 
 name:& Mattock~
@@ -1051,7 +1109,8 @@ level:50
 weight:250
 cost:700
 alloc:20:50 to 100
-combat:0:1d8:0:0:0
+attack:1d8:0:0
+armor:0:0
 flags:DIG_3
 
 
@@ -1066,7 +1125,8 @@ level:0
 weight:15
 cost:4
 alloc:20:1 to 100
-combat:1:1d1:0:0:0
+attack:1d1:0:0
+armor:1:0
 desc:A set of open-topped footgear with soft calfskin lacings and a sturdy 
 desc:cured leather base.
 
@@ -1077,7 +1137,8 @@ level:3
 weight:20
 cost:7
 alloc:20:3 to 100
-combat:2:1d1:0:0:0
+attack:1d1:0:0
+armor:2:0
 
 name:& Pair~ of Iron Shod Boots
 type:boots
@@ -1086,7 +1147,8 @@ level:5
 weight:35
 cost:12
 alloc:20:5 to 100
-combat:4:1d1:0:0:0
+attack:1d1:0:0
+armor:4:0
 flags:IGNORE_FIRE
 
 name:& Pair~ of Steel Shod Boots
@@ -1096,7 +1158,8 @@ level:20
 weight:60
 cost:50
 alloc:20:20 to 100
-combat:7:1d1:0:0:0
+attack:1d1:0:0
+armor:7:0
 flags:IGNORE_FIRE
 
 name:& Pair~ of Mithril Shod Boots
@@ -1106,7 +1169,8 @@ level:60
 weight:40
 cost:500
 alloc:20:60 to 100
-combat:8:1d1:0:0:0
+attack:1d1:0:0
+armor:8:0
 flags:IGNORE_ACID | IGNORE_FIRE
 
 name:& Pair~ of Ethereal Slippers
@@ -1116,7 +1180,8 @@ level:0
 weight:0
 cost:4
 alloc:10:30 to 100
-combat:0:0d0:0:0:0
+attack:0d0:0:0
+armor:0:0
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
 
 
@@ -1130,7 +1195,8 @@ level:3
 weight:20
 cost:12
 alloc:20:3 to 100
-combat:2:0d0:0:0:0
+attack:0d0:0:0
+armor:2:0
 
 name:& Metal Cap~
 type:helm
@@ -1139,7 +1205,8 @@ level:10
 weight:25
 cost:30
 alloc:20:10 to 100
-combat:3:1d1:0:0:0
+attack:1d1:0:0
+armor:3:0
 
 name:& Iron Helm~
 type:helm
@@ -1148,7 +1215,8 @@ level:20
 weight:50
 cost:75
 alloc:20:20 to 100
-combat:7:1d3:0:0:0
+attack:1d3:0:0
+armor:7:0
 
 name:& Steel Helm~
 type:helm
@@ -1157,7 +1225,8 @@ level:40
 weight:60
 cost:200
 alloc:20:40 to 100
-combat:9:1d3:0:0:0
+attack:1d3:0:0
+armor:9:0
 
 name:& Iron Crown~
 type:crown
@@ -1166,7 +1235,8 @@ level:45
 weight:20
 cost:500
 alloc:20:45 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 
 name:& Golden Crown~
 type:crown
@@ -1175,7 +1245,8 @@ level:45
 weight:30
 cost:1000
 alloc:10:45 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ACID
 
 name:& Jewel Encrusted Crown~
@@ -1185,7 +1256,8 @@ level:50
 weight:40
 cost:2000
 alloc:10:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ACID
 
 
@@ -1198,7 +1270,8 @@ level:1
 weight:20
 cost:4
 alloc:20:1 to 100
-combat:2:0d0:0:0:0
+attack:0d0:0:0
+armor:2:0
 
 name:Soft Leather Armour~
 type:soft armor
@@ -1207,7 +1280,8 @@ level:3
 weight:80
 cost:20
 alloc:20:3 to 100
-combat:8:0d0:0:0:0
+attack:0d0:0:0
+armor:8:0
 
 name:Studded Leather Armour~
 type:soft armor
@@ -1216,7 +1290,8 @@ level:10
 weight:100
 cost:100
 alloc:20:5 to 100
-combat:12:1d1:-1:0:0
+attack:1d1:-1:0
+armor:12:0
 
 name:Hard Leather Armour~
 type:soft armor
@@ -1225,7 +1300,8 @@ level:5
 weight:120
 cost:150
 alloc:20:10 to 100
-combat:16:1d2:-1:0:0
+attack:1d2:-1:0
+armor:16:0
 
 name:Leather Scale Mail~
 type:soft armor
@@ -1234,7 +1310,8 @@ level:15
 weight:140
 cost:370
 alloc:20:15 to 100
-combat:20:1d1:-1:0:0
+attack:1d1:-1:0
+armor:20:0
 
 name:Metal Scale Mail~
 type:hard armor
@@ -1243,7 +1320,8 @@ level:25
 weight:250
 cost:550
 alloc:20:25 to 100
-combat:38:1d4:-2:0:0
+attack:1d4:-2:0
+armor:38:0
 
 name:Chain Mail~
 type:hard armor
@@ -1252,7 +1330,8 @@ level:25
 weight:220
 cost:750
 alloc:20:20 to 100
-combat:32:1d4:-2:0:0
+attack:1d4:-2:0
+armor:32:0
 
 name:Augmented Chain Mail~
 type:hard armor
@@ -1261,7 +1340,8 @@ level:30
 weight:270
 cost:900
 alloc:20:35 to 100
-combat:42:1d4:-2:0:0
+attack:1d4:-2:0
+armor:42:0
 
 name:Bar Chain Mail~
 type:hard armor
@@ -1270,7 +1350,8 @@ level:35
 weight:280
 cost:950
 alloc:20:40 to 100
-combat:45:1d4:-2:0:0
+attack:1d4:-2:0
+armor:45:0
 
 name:Metal Brigandine Armour~
 type:hard armor
@@ -1279,7 +1360,8 @@ level:35
 weight:290
 cost:1100
 alloc:20:45 to 100
-combat:48:1d4:-3:0:0
+attack:1d4:-3:0
+armor:48:0
 
 name:Partial Plate Armour~
 type:hard armor
@@ -1288,7 +1370,8 @@ level:45
 weight:260
 cost:1200
 alloc:20:30 to 100
-combat:40:1d6:-3:0:0
+attack:1d6:-3:0
+armor:40:0
 
 name:Metal Lamellar Armour~
 type:hard armor
@@ -1297,7 +1380,8 @@ level:45
 weight:340
 cost:1250
 alloc:20:50 to 100
-combat:58:1d6:-3:0:0
+attack:1d6:-3:0
+armor:58:0
 
 name:Full Plate Armour~
 type:hard armor
@@ -1306,7 +1390,8 @@ level:45
 weight:360
 cost:1350
 alloc:15:55 to 100
-combat:62:2d4:-3:0:0
+attack:2d4:-3:0
+armor:62:0
 
 name:Ribbed Plate Armour~
 type:hard armor
@@ -1315,7 +1400,8 @@ level:50
 weight:380
 cost:1500
 alloc:15:60 to 100
-combat:66:2d4:-3:0:0
+attack:2d4:-3:0
+armor:66:0
 
 name:Mithril Chain Mail~
 type:hard armor
@@ -1324,7 +1410,8 @@ level:55
 weight:150
 cost:7000
 alloc:10:55 to 100
-combat:28:1d4:-1:0:0
+attack:1d4:-1:0
+armor:28:0
 flags:IGNORE_ACID
 
 name:Mithril Plate Mail~
@@ -1334,7 +1421,8 @@ level:60
 weight:300
 cost:15000
 alloc:10:65 to 100
-combat:60:2d4:-3:0:0
+attack:2d4:-3:0
+armor:60:0
 flags:IGNORE_ACID
 
 name:Adamantite Plate Mail~
@@ -1344,7 +1432,8 @@ level:75
 weight:420
 cost:20000
 alloc:10:75 to 100
-combat:80:2d4:-4:0:0
+attack:2d4:-4:0
+armor:80:0
 flags:IGNORE_ACID
 
 ### Cloaks ###
@@ -1356,7 +1445,8 @@ level:1
 weight:10
 cost:3
 alloc:20:1 to 100
-combat:1:0d0:0:0:0
+attack:0d0:0:0
+armor:1:0
 desc:A traveller's sturdy outer garment.
 
 name:& Fur Cloak~
@@ -1366,7 +1456,8 @@ level:1
 weight:25
 cost:600
 alloc:20:20 to 100
-combat:3:0d0:0:0:0
+attack:0d0:0:0
+armor:3:0
 desc:A heavy cloak made from fur and lined with leather; a luxury.
 
 name:& Elven Cloak~
@@ -1376,7 +1467,8 @@ level:60
 weight:5
 cost:2000
 alloc:8:40 to 100
-combat:6:0d0:0:0:0
+attack:0d0:0:0
+armor:6:0
 values:STEALTH[1] | SPEED[1]
 desc:A mantle made of curious silken material by the Galadrim that wondrously 
 desc:takes on the hues and shapes of its surroundings.
@@ -1388,7 +1480,8 @@ level:50
 weight:0
 cost:4500
 alloc:10:70 to 100
-combat:0:0d0:0:0:10
+attack:0d0:0:0
+armor:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
 desc:This unearthly, completely transparent body mantle folds and drapes in 
 desc:iridescent patterns around you.  It weighs absolutely nothing.
@@ -1403,7 +1496,8 @@ level:0
 weight:10
 cost:5
 alloc:20:1 to 100
-combat:1:0d0:0:0:0
+attack:0d0:0:0
+armor:1:0
 
 name:& Set~ of Gauntlets
 type:gloves
@@ -1412,7 +1506,8 @@ level:0
 weight:25
 cost:45
 alloc:20:10 to 100
-combat:3:1d1:0:0:0
+attack:1d1:0:0
+armor:3:0
 
 name:& Set~ of Mithril Gauntlets
 type:gloves
@@ -1421,7 +1516,8 @@ level:0
 weight:25
 cost:700
 alloc:20:40 to 100
-combat:6:1d1:0:0:0
+attack:1d1:0:0
+armor:6:0
 flags:IGNORE_ACID | IGNORE_FIRE
 
 name:& Set~ of Caestus
@@ -1431,7 +1527,8 @@ level:0
 weight:40
 cost:100
 alloc:10:20 to 100
-combat:5:1d1:0:3:0
+attack:1d1:0:3
+armor:5:0
 desc:An ancient battle glove designed for hand-to-hand fighting.  Its layered
 desc: leather thongs are enhanced for combat by bloody-looking spikes.
 
@@ -1442,7 +1539,8 @@ level:0
 weight:5
 cost:500
 alloc:10:50 to 100
-combat:0:1d1:0:0:2
+attack:1d1:0:0
+armor:0:2
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 flags:SPELLS_OK
 desc:Highly protective gloves designed for an alchemist's elemental magics.
@@ -1473,7 +1571,8 @@ level:1
 weight:30
 cost:20
 alloc:20:1 to 100
-combat:2:1d1:0:0:0
+attack:1d1:0:0
+armor:2:0
 desc:A light circular frame of wood surrounding fine-grained wickerwork.
 
 name:& Small Metal Shield~
@@ -1483,7 +1582,8 @@ level:10
 weight:60
 cost:80
 alloc:20:15 to 100
-combat:5:1d2:0:0:0
+attack:1d2:0:0
+armor:5:0
 
 name:& Leather Shield~
 type:shield
@@ -1492,7 +1592,8 @@ level:15
 weight:90
 cost:200
 alloc:20:10 to 100
-combat:8:1d3:0:0:0
+attack:1d3:0:0
+armor:8:0
 
 name:& Large Metal Shield~
 type:shield
@@ -1501,7 +1602,8 @@ level:30
 weight:120
 cost:500
 alloc:20:30 to 100
-combat:12:1d5:0:0:0
+attack:1d5:0:0
+armor:12:0
 
 name:& Mithril Shield~
 type:shield
@@ -1510,7 +1612,8 @@ level:70
 weight:100
 cost:10000
 alloc:10:70 to 100
-combat:16:1d4:0:0:10
+attack:1d4:0:0
+armor:16:10
 flags:IGNORE_ACID
 
 
@@ -1640,7 +1743,8 @@ level:50
 weight:2
 cost:500
 alloc:20:20 to 100
-combat:0:0d0:0:0:5+d5M10
+attack:0d0:0:0
+armor:0:5+d5M10
 flags:IGNORE_FIRE
 values:RES_FIRE[1]
 power:11
@@ -1657,7 +1761,8 @@ level:50
 weight:2
 cost:500
 alloc:20:20 to 100
-combat:0:0d0:0:0:5+d5M10
+attack:0d0:0:0
+armor:0:5+d5M10
 flags:IGNORE_ACID
 values:RES_ACID[1]
 power:11
@@ -1674,7 +1779,8 @@ level:50
 weight:2
 cost:500
 alloc:20:20 to 100
-combat:0:0d0:0:0:5+d5M10
+attack:0d0:0:0
+armor:0:5+d5M10
 flags:IGNORE_COLD
 values:RES_COLD[1]
 power:11
@@ -1691,7 +1797,8 @@ level:50
 weight:2
 cost:500
 alloc:20:20 to 100
-combat:0:0d0:0:0:5+d5M10
+attack:0d0:0:0
+armor:0:5+d5M10
 flags:IGNORE_ELEC
 values:RES_ELEC[1]
 power:11
@@ -1710,7 +1817,8 @@ level:20
 weight:2
 cost:500
 alloc:30:20 to 100
-combat:0:0d0:0:5+d3M7:0
+attack:0d0:0:5+d3M7
+armor:0:0
 desc:It boosts your to-dam value.
 
 name:Accuracy
@@ -1720,7 +1828,8 @@ level:20
 weight:2
 cost:500
 alloc:30:20 to 100
-combat:0:0d0:10+d6M7:0:0
+attack:0d0:10+d6M7:0
+armor:0:0
 desc:It boosts your to-hit value.
 
 name:Slaying
@@ -1730,7 +1839,8 @@ level:40
 weight:2
 cost:1000
 alloc:20:40 to 100
-combat:0:0d0:d10M10:d5M5:0
+attack:0d0:d10M10:d5M5
+armor:0:0
 desc:It boosts your to-hit and to-dam values.
 
 name:Protection
@@ -1740,7 +1850,8 @@ level:10
 weight:2
 cost:500
 alloc:50:10 to 40
-combat:0:0d0:0:0:5+d5M10
+attack:0d0:0:0
+armor:0:5+d5M10
 desc:It increases your armor class.
 
 
@@ -1764,7 +1875,8 @@ level:0
 weight:2
 cost:200
 alloc:30:10 to 50
-combat:0:0d0:2+d3:2+d3:-8+4d3
+attack:0d0:2+d3:2+d3
+armor:0:-8+4d3
 
 name:Open Wounds
 type:ring
@@ -1799,7 +1911,8 @@ level:30
 weight:2
 cost:100
 alloc:50:10 to 50
-combat:0:0d0:0:-3d5:0
+attack:0d0:0:-3d5
+armor:0:0
 values:DEX[d4] | STEALTH[d4]
 
 name:the Dog
@@ -1932,7 +2045,8 @@ level:70
 weight:3
 cost:30000
 alloc:10:70 to 100
-combat:0:0d0:0:0:d5M5
+attack:0d0:0:0
+armor:0:d5M5
 flags:FREE_ACT | SEE_INVIS | SUST_INT | PROT_BLIND | GOOD
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:SEARCH[1+M3] | INT[1+M3]
@@ -1964,7 +2078,8 @@ level:70
 weight:3
 cost:30000
 alloc:10:70 to 100
-combat:0:0d0:1+M4:1+M4:0
+attack:0d0:1+M4:1+M4
+armor:0:0
 flags:SUST_STR | SUST_CON | FREE_ACT | PROT_FEAR | GOOD
 values:STR[1+M2] | RES_DISEN[1]
 
@@ -2614,7 +2729,8 @@ level:40
 weight:4
 cost:50000
 alloc:20:40 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:20000
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -2723,7 +2839,8 @@ level:40
 weight:4
 cost:1500
 alloc:40:40 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:18
 effect:HEAL_HP
 dice:1200
@@ -2743,7 +2860,8 @@ level:60
 weight:4
 cost:5000
 alloc:20:60 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 msg:You feel life flow through your body!
 power:21
 effect:RESTORE_EXP
@@ -2890,7 +3008,8 @@ level:70
 weight:4
 cost:12000
 alloc:8:70 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:20000
 effect:LIGHT_LEVEL
 dice:1
@@ -3048,7 +3167,8 @@ weight:4
 cost:0
 alloc:10:0 to 10
 pile:70:2d3
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 power:0
 effect:TIMED_INC:PARALYZED
 dice:5+1d5
@@ -3063,7 +3183,8 @@ weight:4
 cost:0
 alloc:10:0 to 10
 pile:70:2d3
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 power:0
 effect:TIMED_INC:BLIND
 dice:75+4d25
@@ -3076,7 +3197,8 @@ weight:4
 cost:0
 alloc:10:0 to 10
 pile:70:2d3
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 power:0
 effect:TIMED_INC:CONFUSED
 dice:10+4d5
@@ -3091,7 +3213,8 @@ weight:4
 cost:0
 alloc:10:0 to 10
 pile:70:2d3
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 power:0
 effect:TIMED_INC:POISONED
 dice:10+2d7
@@ -3104,7 +3227,8 @@ weight:4
 cost:0
 alloc:10:0 to 10
 pile:70:2d3
-combat:0:3d4:0:0:0
+attack:3d4:0:0
+armor:0:0
 power:0
 effect:TIMED_INC:SLOW
 dice:15+1d25
@@ -3172,7 +3296,8 @@ level:3
 weight:10
 cost:200
 alloc:20:3 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d10
 power:3
 effect:BOLT_OR_BEAM:MISSILE
@@ -3185,7 +3310,8 @@ level:15
 weight:10
 cost:600
 alloc:20:15 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:5
 effect:BEAM:ELEC
@@ -3198,7 +3324,8 @@ level:20
 weight:10
 cost:800
 alloc:20:20 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d5
 power:4
 effect:BOLT:COLD
@@ -3211,7 +3338,8 @@ level:30
 weight:10
 cost:1000
 alloc:20:30 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:7
 effect:BOLT_OR_BEAM:FIRE
@@ -3224,7 +3352,8 @@ level:30
 weight:10
 cost:950
 alloc:20:30 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:6
 effect:BOLT_OR_BEAM:ACID
@@ -3240,7 +3369,8 @@ level:5
 weight:10
 cost:400
 alloc:20:5 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:3
 effect:BALL:POIS:3
@@ -3253,7 +3383,8 @@ level:35
 weight:10
 cost:1200
 alloc:20:35 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:4+d8
 flags:IGNORE_ELEC
 power:9
@@ -3267,7 +3398,8 @@ level:40
 weight:10
 cost:1500
 alloc:20:40 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d6
 flags:IGNORE_COLD
 power:10
@@ -3281,7 +3413,8 @@ level:50
 weight:10
 cost:1800
 alloc:20:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d4
 flags:IGNORE_FIRE
 power:11
@@ -3295,7 +3428,8 @@ level:50
 weight:10
 cost:1650
 alloc:20:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d5
 flags:IGNORE_ACID
 power:11
@@ -3312,7 +3446,8 @@ level:5
 weight:10
 cost:500
 alloc:20:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_SLOW
@@ -3325,7 +3460,8 @@ level:5
 weight:10
 cost:500
 alloc:20:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_CONF
@@ -3338,7 +3474,8 @@ level:5
 weight:10
 cost:500
 alloc:20:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_HOLD
@@ -3351,7 +3488,8 @@ level:5
 weight:10
 cost:500
 alloc:20:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_STUN
@@ -3364,7 +3502,8 @@ level:10
 weight:10
 cost:500
 alloc:20:10 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:3+d5
 power:3
 effect:BOLT_AWARE:TURN_ALL
@@ -3380,7 +3519,8 @@ level:3
 weight:10
 cost:200
 alloc:20:3 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d10
 msg:A line of shimmering blue light appears.
 power:6
@@ -3394,7 +3534,8 @@ level:10
 weight:10
 cost:300
 alloc:20:10 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d10
 power:6
 effect:LINE:KILL_WALL
@@ -3407,7 +3548,8 @@ level:20
 weight:10
 cost:400
 alloc:20:20 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:7
 effect:BOLT_AWARE:MON_POLY
@@ -3421,7 +3563,8 @@ level:10
 weight:10
 cost:100
 alloc:20:10 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d8
 power:5
 effect:ALTER:KILL_DOOR
@@ -3433,7 +3576,8 @@ level:15
 weight:10
 cost:0
 alloc:20:15 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:3+d5
 power:0
 effect:BOLT_STATUS:MON_CLONE
@@ -3445,7 +3589,8 @@ level:20
 weight:10
 cost:3500
 alloc:20:20 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:6+d5
 power:11
 effect:BOLT_STATUS:AWAY_ALL
@@ -3459,7 +3604,8 @@ level:20
 weight:10
 cost:700
 alloc:20:20 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:4+d5
 power:7
 effect:ALTER:KILL_TRAP
@@ -3471,7 +3617,8 @@ level:3
 weight:10
 cost:250
 alloc:20:3 to 60
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:8+d15
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:9
@@ -3490,7 +3637,8 @@ level:50
 weight:10
 cost:2400
 alloc:20:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
@@ -3504,7 +3652,8 @@ level:50
 weight:10
 cost:2400
 alloc:20:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
@@ -3518,7 +3667,8 @@ level:60
 weight:10
 cost:2400
 alloc:20:60 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
@@ -3545,7 +3695,8 @@ level:50
 weight:10
 cost:1200
 alloc:50:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:3+d3
 power:11
 effect:BOLT_STATUS_DAM:MON_DRAIN
@@ -3558,7 +3709,8 @@ level:60
 weight:10
 cost:3000
 alloc:20:60 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:1+d2
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
@@ -3575,7 +3727,8 @@ level:3
 weight:10
 cost:0
 alloc:10:3 to 40
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:8+d20
 power:0
 effect:BOLT_STATUS:MON_HEAL
@@ -3588,7 +3741,8 @@ level:3
 weight:10
 cost:0
 alloc:10:3 to 40
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 charges:8+d20
 power:0
 effect:BOLT_STATUS:MON_SPEED
@@ -3608,7 +3762,8 @@ level:10
 weight:50
 cost:0
 alloc:10:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:2d3
 power:0
 effect:SUMMON:ANY
@@ -3621,7 +3776,8 @@ level:10
 weight:50
 cost:0
 alloc:10:10 to 40
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:8+d8
 power:0
 effect:PROJECT_LOS:MON_SPEED
@@ -3634,7 +3790,8 @@ level:5
 weight:50
 cost:0
 alloc:10:5 to 40
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:8+d8
 power:0
 effect:DARKEN_AREA
@@ -3650,7 +3807,8 @@ level:40
 weight:50
 cost:350
 alloc:20:40 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:3+d5
 power:5
 effect:EARTHQUAKE:NONE:10
@@ -3662,7 +3820,8 @@ level:50
 weight:50
 cost:6000
 alloc:20:50 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:1+d3
 power:12
 effect:DESTRUCTION:LIGHT:15
@@ -3676,7 +3835,8 @@ level:10
 weight:50
 cost:800
 alloc:20:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:3+d3
 power:10
 effect:PROJECT_LOS_AWARE:MON_CONF
@@ -3689,7 +3849,8 @@ level:10
 weight:50
 cost:800
 alloc:20:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:4+d4
 power:7
 effect:PROJECT_LOS:MON_SLOW
@@ -3702,7 +3863,8 @@ level:10
 weight:50
 cost:700
 alloc:20:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:6+d5
 power:8
 effect:PROJECT_LOS_AWARE:SLEEP_ALL
@@ -3719,7 +3881,8 @@ level:5
 weight:50
 cost:200
 alloc:30:5 to 100 
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:8+d15
 power:6
 effect:DETECT_INVISIBLE_MONSTERS
@@ -3732,7 +3895,8 @@ level:20
 weight:50
 cost:350
 alloc:30:20 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:8+d15
 power:6
 effect:DETECT_EVIL
@@ -3745,7 +3909,8 @@ level:20
 weight:50
 cost:600
 alloc:40:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:5+d5
 power:10
 effect:MAP_AREA
@@ -3761,7 +3926,8 @@ level:25
 weight:50
 cost:500
 alloc:30:10 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:4+d3
 power:9
 effect:CURE:BLIND
@@ -3777,7 +3943,8 @@ level:5
 weight:50
 cost:350
 alloc:30:5 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:6+d5
 power:3
 effect:HEAL_HP
@@ -3795,7 +3962,8 @@ level:70
 weight:50
 cost:5000
 alloc:10:70 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:1+d2
 power:12
 effect:HEAL_HP
@@ -3817,7 +3985,8 @@ level:50
 weight:50
 cost:1200
 alloc:50:50 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:4+d3
 power:9
 effect:PROJECT_LOS:DISP_EVIL:0:1
@@ -3830,7 +3999,8 @@ level:70
 weight:50
 cost:5000
 alloc:10:70 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:1+d2
 power:20
 effect:BANISH
@@ -3842,7 +4012,8 @@ level:70
 weight:50
 cost:4000
 alloc:20:70 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:1+d3
 power:11
 effect:PROJECT_LOS:DISP_ALL:0:1
@@ -3855,7 +4026,8 @@ level:70
 weight:50
 cost:3500
 alloc:20:70 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:2d2
 power:12
 effect:PROJECT_LOS:DISP_EVIL:0:1
@@ -3886,7 +4058,8 @@ level:5
 weight:50
 cost:250
 alloc:30:5 to 80
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:8+d20
 power:4
 effect:LIGHT_AREA
@@ -3900,7 +4073,8 @@ level:20
 weight:50
 cost:800
 alloc:20:20 to 80
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:6+d5
 power:5
 effect:STAR:LIGHT_WEAK
@@ -3913,7 +4087,8 @@ level:20
 weight:50
 cost:2000
 alloc:50:20 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:5+d4
 power:6
 effect:TELEPORT
@@ -3926,7 +4101,8 @@ level:40
 weight:50
 cost:2000
 alloc:20:40 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:4+d3
 power:10
 effect:TIMED_INC:FAST:0:5
@@ -3939,7 +4115,8 @@ level:40
 weight:50
 cost:500
 alloc:20:40 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:4+d3
 power:8
 effect:REMOVE_CURSE
@@ -3952,7 +4129,8 @@ level:70
 weight:50
 cost:4500
 alloc:10:70 to 100
-combat:0:1d2:0:0:0
+attack:1d2:0:0
+armor:0:0
 charges:2+1d2
 power:20
 effect:RESTORE_STAT:INT
@@ -3985,7 +4163,8 @@ level:30
 weight:15
 cost:3000
 alloc:30:50 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:10
 effect:DETECT_GOLD
@@ -4005,7 +4184,8 @@ level:65
 weight:15
 cost:2000
 alloc:30:35 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:10
 effect:MAP_AREA
 effect-yx:33:55
@@ -4018,7 +4198,8 @@ level:35
 weight:15
 cost:1000
 alloc:20:35 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:8
 effect:PROBE
 time:100
@@ -4033,7 +4214,8 @@ level:30
 weight:15
 cost:3000
 alloc:20:30 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:7
 effect:BOLT_OR_BEAM:FIRE
 dice:12d8
@@ -4046,7 +4228,8 @@ level:25
 weight:15
 cost:2500
 alloc:20:25 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:7
 effect:BOLT:COLD
 dice:12d8
@@ -4059,7 +4242,8 @@ level:20
 weight:15
 cost:2000
 alloc:20:20 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:5
 effect:BEAM:ELEC
 dice:6d6
@@ -4072,7 +4256,8 @@ level:40
 weight:15
 cost:3500
 alloc:20:40 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:7
 effect:BOLT_OR_BEAM:ACID
 dice:12d8
@@ -4088,7 +4273,8 @@ level:75
 weight:15
 cost:5000
 alloc:20:75 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:11
 effect:BALL:FIRE:2
 dice:144
@@ -4101,7 +4287,8 @@ level:60
 weight:15
 cost:4500
 alloc:20:60 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:10
 effect:BALL:COLD:2
 dice:100
@@ -4114,7 +4301,8 @@ level:55
 weight:15
 cost:4000
 alloc:20:55 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:9
 effect:BALL:ELEC:2
@@ -4128,7 +4316,8 @@ level:70
 weight:15
 cost:5500
 alloc:20:70 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:11
 effect:BALL:ACID:2
 dice:120
@@ -4144,7 +4333,8 @@ level:30
 weight:15
 cost:1500
 alloc:20:30 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:3
 effect:BOLT_AWARE:MON_SLOW
 dice:10+1d20
@@ -4157,7 +4347,8 @@ level:30
 weight:15
 cost:1500
 alloc:20:30 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:3
 effect:BOLT_AWARE:MON_HOLD
 dice:3+1d5
@@ -4173,7 +4364,8 @@ level:65
 weight:15
 cost:1000
 alloc:20:10 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:9
 effect:CURE:BLIND
 effect:CURE:CUT
@@ -4189,7 +4381,8 @@ level:80
 weight:15
 cost:20000
 alloc:20:80 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:14
 effect:HEAL_HP
@@ -4205,7 +4398,8 @@ level:80
 weight:15
 cost:25000
 alloc:10:80 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:17
 effect:RESTORE_STAT:STR
@@ -4226,7 +4420,8 @@ level:35
 weight:15
 cost:1200
 alloc:20:35 to 80
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:7
 effect:BOLT_STATUS:MON_POLY
 dice:$B
@@ -4240,7 +4435,8 @@ level:75
 weight:15
 cost:3600
 alloc:20:75 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:11
 effect:BOLT_STATUS_DAM:MON_DRAIN
 dice:150
@@ -4253,7 +4449,8 @@ level:45
 weight:15
 cost:5000
 alloc:20:45 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:11
 effect:BOLT_STATUS:AWAY_ALL
 dice:$B
@@ -4267,7 +4464,8 @@ level:35
 weight:15
 cost:2100
 alloc:10:10 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:7
 effect:ALTER:KILL_TRAP
 time:30
@@ -4279,7 +4477,8 @@ level:10
 weight:15
 cost:500
 alloc:30:5 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 msg:A line of shimmering blue light appears.
 power:6
 effect:LINE:LIGHT_WEAK
@@ -4293,7 +4492,8 @@ level:20
 weight:15
 cost:1000
 alloc:20:10 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 power:4
 effect:LIGHT_AREA
 effect:SPOT:LIGHT_WEAK:2
@@ -4307,7 +4507,8 @@ level:30
 weight:15
 cost:4000
 alloc:10:30 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:15
 effect:RECALL
@@ -4320,7 +4521,8 @@ level:95
 weight:15
 cost:25000
 alloc:10:80 to 100
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:IGNORE_ELEC
 power:10
 effect:TIMED_INC:FAST:0:5
@@ -4339,7 +4541,8 @@ level:5
 weight:250
 cost:20
 alloc:5:5 to 100
-combat:0:2d3:0:0:0
+attack:2d3:0:0
+armor:0:0
 
 name:& Large wooden chest~
 type:chest
@@ -4348,7 +4551,8 @@ level:15
 weight:500
 cost:60
 alloc:5:15 to 100
-combat:0:2d5:0:0:0
+attack:2d5:0:0
+armor:0:0
 
 name:& Small iron chest~
 type:chest
@@ -4357,7 +4561,8 @@ level:25
 weight:300
 cost:100
 alloc:5:25 to 100
-combat:0:2d4:0:0:0
+attack:2d4:0:0
+armor:0:0
 
 name:& Large iron chest~
 type:chest
@@ -4366,7 +4571,8 @@ level:35
 weight:1000
 cost:150
 alloc:5:35 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 name:& Small steel chest~
 type:chest
@@ -4375,7 +4581,8 @@ level:45
 weight:500
 cost:200
 alloc:5:45 to 100
-combat:0:2d4:0:0:0
+attack:2d4:0:0
+armor:0:0
 
 name:& Large steel chest~
 type:chest
@@ -4384,7 +4591,8 @@ level:55
 weight:1000
 cost:250
 alloc:5:55 to 100
-combat:0:2d6:0:0:0
+attack:2d6:0:0
+armor:0:0
 
 
 
@@ -4397,7 +4605,8 @@ level:50
 weight:120
 cost:40000
 alloc:8:35 to 100
-combat:16:2d4:-2:0:10
+attack:2d4:-2:0
+armor:16:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1]
 power:11
@@ -4412,7 +4621,8 @@ level:50
 weight:100
 cost:40000
 alloc:8:25 to 100
-combat:12:2d4:-2:0:10
+attack:2d4:-2:0
+armor:12:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ELEC[1]
 power:18
@@ -4427,7 +4637,8 @@ level:50
 weight:110
 cost:40000
 alloc:8:30 to 100
-combat:14:2d4:-2:0:10
+attack:2d4:-2:0
+armor:14:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_COLD[1]
 power:10
@@ -4442,7 +4653,8 @@ level:50
 weight:160
 cost:40000
 alloc:8:40 to 100
-combat:24:2d4:-2:0:10
+attack:2d4:-2:0
+armor:24:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_FIRE[1]
 power:20
@@ -4457,7 +4669,8 @@ level:60
 weight:140
 cost:60000
 alloc:8:60 to 100
-combat:20:2d4:-2:0:10
+attack:2d4:-2:0
+armor:20:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_POIS[1]
 power:19
@@ -4472,7 +4685,8 @@ level:90
 weight:260
 cost:150000
 alloc:5:75 to 100
-combat:45:2d4:-2:0:10
+attack:2d4:-2:0
+armor:45:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 power:20
@@ -4497,7 +4711,8 @@ level:65
 weight:200
 cost:60000
 alloc:6:75 to 100
-combat:32:2d4:-2:0:10
+attack:2d4:-2:0
+armor:32:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_LIGHT[1] | RES_DARK[1]
 power:21
@@ -4516,7 +4731,8 @@ level:80
 weight:220
 cost:80000
 alloc:6:80 to 100
-combat:36:2d4:-2:0:10
+attack:2d4:-2:0
+armor:36:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SOUND[1] | RES_SHARD[1]
 power:23
@@ -4535,7 +4751,8 @@ level:50
 weight:180
 cost:40000
 alloc:8:70 to 100
-combat:28:2d4:-2:0:10
+attack:2d4:-2:0
+armor:28:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SOUND[1]
 power:19
@@ -4550,7 +4767,8 @@ level:80
 weight:240
 cost:80000
 alloc:5:85 to 100
-combat:40:2d4:-2:0:10
+attack:2d4:-2:0
+armor:40:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_CHAOS[1] | RES_DISEN[1]
 power:23
@@ -4569,7 +4787,8 @@ level:95
 weight:280
 cost:100000
 alloc:3:95 to 100
-combat:50:2d4:-2:0:10
+attack:2d4:-2:0
+armor:50:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SOUND[1] | RES_SHARD[1] | RES_CHAOS[1] | RES_DISEN[1]
 power:24
@@ -4592,7 +4811,8 @@ level:100
 weight:300
 cost:300000
 alloc:1:100 to 100
-combat:60:2d4:-3:0:15
+attack:2d4:-3:0
+armor:60:15
 flags:PROT_CONF
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1] | RES_ELEC[1] | RES_POIS[1]
@@ -4663,7 +4883,8 @@ graphics:\:D
 level:15
 weight:200
 cost:1000
-combat:0:3d9:0:0:0
+attack:3d9:0:0
+armor:0:0
 flags:INSTA_ART | QUEST_ART
 
 name:& Massive Iron Crown~
@@ -4672,7 +4893,8 @@ graphics:]:D
 level:44
 weight:20
 cost:1000
-combat:0:1d1:0:0:0
+attack:1d1:0:0
+armor:0:0
 flags:INSTA_ART | QUEST_ART
 
 

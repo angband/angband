@@ -1593,16 +1593,23 @@ static enum parser_error parse_object_alloc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_object_combat(struct parser *p) {
+static enum parser_error parse_object_attack(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct random hd = parser_getrand(p, "hd");
 	assert(k);
 
-	k->ac = parser_getint(p, "ac");
 	k->dd = hd.dice;
 	k->ds = hd.sides;
 	k->to_h = parser_getrand(p, "to-h");
 	k->to_d = parser_getrand(p, "to-d");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_armor(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->ac = parser_getint(p, "ac");
 	k->to_a = parser_getrand(p, "to-a");
 	return PARSE_ERROR_NONE;
 }
@@ -1896,7 +1903,8 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "weight int weight", parse_object_weight);
 	parser_reg(p, "cost int cost", parse_object_cost);
 	parser_reg(p, "alloc int common str minmax", parse_object_alloc);
-	parser_reg(p, "combat int ac rand hd rand to-h rand to-d rand to-a", parse_object_combat);
+	parser_reg(p, "attack rand hd rand to-h rand to-d", parse_object_attack);
+	parser_reg(p, "armor int ac rand to-a", parse_object_armor);
 	parser_reg(p, "charges rand charges", parse_object_charges);
 	parser_reg(p, "pile int prob rand stack", parse_object_pile);
 	parser_reg(p, "flags str flags", parse_object_flags);
