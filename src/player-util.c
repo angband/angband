@@ -476,6 +476,37 @@ void player_update_light(struct player *p)
 }
 
 /**
+ * Find the player's best digging tool
+ */
+struct object *player_best_digger(struct player *p)
+{
+	struct object *obj, *best = NULL;
+	int best_score = 0;
+
+	for (obj = p->gear; obj; obj = obj->next) {
+		int score = 0;
+		if (!tval_is_melee_weapon(obj)) continue;
+		if (obj->number != 1) continue;
+		if (tval_is_digger(obj)) {
+			if (of_has(obj->flags, OF_DIG_1))
+				score = 1;
+			else if (of_has(obj->flags, OF_DIG_2))
+				score = 2;
+			else if (of_has(obj->flags, OF_DIG_3))
+				score = 3;
+		}
+		score += obj->modifiers[OBJ_MOD_TUNNEL]
+			* p->obj_k->modifiers[OBJ_MOD_TUNNEL];
+		if (score > best_score) {
+			best = obj;
+			best_score = score;
+		}
+	}
+
+	return best;
+}
+
+/**
  * Melee a random adjacent monster
  */
 bool player_attack_random_monster(struct player *p)

@@ -70,6 +70,7 @@ void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
 void player_update_light(struct player *p);
 void player_over_exert(struct player *p, int flag, int chance, int amount);
+struct object *player_best_digger(struct player *p);
 bool player_attack_random_monster(struct player *p);
 int player_check_terrain_damage(struct player *p, struct loc grid);
 void player_take_terrain_damage(struct player *p, struct loc grid);

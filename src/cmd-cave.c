@@ -33,6 +33,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-chest.h"
+#include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
@@ -503,14 +504,31 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	bool okay = false;
 	bool gold = square_hasgoldvein(cave, grid);
 	bool rubble = square_isrubble(cave, grid);
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *current_weapon = slot_object(player, weapon_slot);
+	struct object *best_digger = NULL;
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
 
+	/* Find what we're digging with and our chance of success */
+	best_digger = player_best_digger(player);
+	if (best_digger && best_digger != current_weapon) {
+		player->body.slots[weapon_slot].obj = best_digger;
+		player->upkeep->update |= (PU_BONUS);
+		update_stuff(player);
+	}
 	calc_digging_chances(&player->state, digging_chances);
 
 	/* Do we succeed? */
 	okay = (digging_chances[square_digging(cave, grid) - 1] > randint0(1600));
+
+	/* Swap back */
+	if (best_digger && best_digger != current_weapon) {
+		player->body.slots[weapon_slot].obj = current_weapon;
+		player->upkeep->update |= (PU_BONUS);
+		update_stuff(player);
+	}
 
 	/* Success */
 	if (okay && twall(grid)) {
