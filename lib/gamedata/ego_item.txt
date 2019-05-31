@@ -94,12 +94,12 @@
 
 ### Lanterns/torches
 
-#name:of Shadows
-#info:1000:10
-#alloc:8:10 to 100
-#item:light:Lantern
-#values:STEALTH[d2] | RES_LIGHT[1] | LIGHT[-4]
-#min-values:STEALTH[0]
+name:of Shadows
+info:1000:10
+alloc:8:10 to 100
+item:light:Lantern
+values:STEALTH[d2] | RES_LIGHT[1] | LIGHT[-4]
+min-values:STEALTH[0]
 
 name:of Brightness
 info:2000:10
