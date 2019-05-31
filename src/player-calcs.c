@@ -1527,12 +1527,10 @@ static void calc_hitpoints(struct player *p)
 /**
  * Calculate and set the current light radius.
  *
- * The brightest wielded object counts as the light source; radii do not add
- * up anymore.
- *
- * Note that a cursed light source no longer emits light.
+ * The light radius will be the total of all lights carried; characters with
+ * UNLIGHT will have this modified according to level.
  */
-static void calc_torch(struct player *p, struct player_state *state,
+static void calc_light(struct player *p, struct player_state *state,
 					   bool update)
 {
 	int i;
@@ -1574,9 +1572,10 @@ static void calc_torch(struct player *p, struct player_state *state,
 	    state->cur_light += amt;
 	}
 
-	/* Limit light */
-	state->cur_light = MIN(state->cur_light, 5);
-	state->cur_light = MAX(state->cur_light, 0);
+	/* UNLIGHT players have a special darkness aura */
+	if (player_has(p, PF_UNLIGHT)) {
+		state->cur_light -= (2 + p->lev / 6);
+	}
 }
 
 /**
@@ -1931,7 +1930,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		&extra_moves);
 
 	/* Calculate light */
-	calc_torch(p, state, update);
+	calc_light(p, state, update);
 
 	/* Unlight - needs change if anything but resist is introduced for dark */
 	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
@@ -2459,7 +2458,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_TORCH)) {
 		p->upkeep->update &= ~(PU_TORCH);
-		calc_torch(p, &p->state, true);
+		calc_light(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_HP)) {

@@ -450,7 +450,7 @@ static void mark_wasseen(struct chunk *c)
 static void calc_light(struct chunk *c, struct player *p)
 {
 	int dir, k, x, y;
-	int player_rad = MIN(0, p->state.cur_light - 1);
+	int player_rad = MIN(0, ABS(p->state.cur_light) - 1);
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -480,7 +480,7 @@ static void calc_light(struct chunk *c, struct player *p)
 			if (dist > player_rad) continue;
 
 			/* Add to the light level */
-			c->squares[grid.y][grid.x].light += p->state.cur_light - dist;
+			c->squares[grid.y][grid.x].light += ABS(p->state.cur_light) - dist;
 		}
 	}
 
@@ -567,15 +567,10 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
 	int xc = x, yc = y;
 
 	int d = distance(grid, p->grid);
-	bool close = d < p->state.cur_light;
+	bool close = d < ABS(p->state.cur_light);
 
 	/* Too far away */
 	if (d > z_info->max_sight) return;
-
-	/* UNLIGHT players have a special radius of view */
-	if (player_has(p, PF_UNLIGHT) && (p->state.cur_light <= 1)) {
-		close = d < (2 + p->lev / 6 - p->state.cur_light);
-	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
 	 * the direction of the player is in LOS, we are in LOS. This avoids
@@ -676,7 +671,7 @@ void update_view(struct chunk *c, struct player *p)
 	/* Assume we can view the player grid */
 	sqinfo_on(square(c, p->grid).info, SQUARE_VIEW);
 	if (p->state.cur_light > 0 || square_isglow(c, p->grid) ||
-		player_has(p, PF_UNLIGHT))
+		((p->state.cur_light < 0) && player_has(p, PF_UNLIGHT)))
 		sqinfo_on(square(c, p->grid).info, SQUARE_SEEN);
 
 	/* Calculate light levels */
