@@ -602,6 +602,9 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 	/* No shield, no bash */
 	if (!shield) return false;
 
+	/* Monster is too pathetic, don't bother */
+	if (mon->race->level < p->lev / 2) return false;
+
 	/* Players bash more often when they see a real need: */
 	if (!equipped_item_by_slot_name(p, "weapon")) {
 		/* Unarmed... */
@@ -652,7 +655,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 
 		/* The player will sometimes stumble. */
 		if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
-			*blows += randint1(p->state.num_blows);
+			*blows += randint1(p->state.num_blows / 100);
 			msgt(MSG_GENERIC, "You stumble!");
 		}
 	}
@@ -682,10 +685,13 @@ void py_attack(struct player *p, struct loc grid)
 
 	/* Player attempts a shield bash if they can, and if monster is visible
 	 * and not too pathetic */
-	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon) &&
-		(mon->race->level > p->lev / 2)) {
+	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon)) {
+		/* Monster may die */
 		if (attempt_shield_bash(p, mon, &fear, &blows)) return;
 	}
+
+	/* Deduct any energy lost due to stumbling after shield bash. */
+	p->upkeep->energy_use += blow_energy * blows;
 
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
