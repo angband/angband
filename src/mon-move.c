@@ -615,14 +615,17 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 	struct loc best = loc(0, 0);
 	int best_score = -1;
 
-	/* If the player is not currently near the monster, no reason to flow */
-	if (mon->cdis >= mon->best_range) {
-		return false;
-	}
+	/* Taking damage from terrain makes moving vital */
+	if (monster_taking_terrain_damage(mon)) {
+		/* If the player is not currently near the monster, no reason to flow */
+		if (mon->cdis >= mon->best_range) {
+			return false;
+		}
 
-	/* Monster is too far away to use sound or scent */
-	if (!monster_can_hear(c, mon) && !monster_can_smell(c, mon)) {
-		return false;
+		/* Monster is too far away to use sound or scent */
+		if (!monster_can_hear(c, mon) && !monster_can_smell(c, mon)) {
+			return false;
+		}
 	}
 
 	/* Check nearby grids, diagonals first */
@@ -803,8 +806,19 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		mflag_off(mon->mflag, MFLAG_TRACKING);
 	}
 
+	/* Monster is taking damage from terrain */
+	if (monster_taking_terrain_damage(mon)) {
+		/* Try to find safe place */
+		if (get_move_find_safety(c, mon)) {
+			/* Set a course for the safe place */
+			get_move_flee(c, mon);
+			grid = loc_diff(mon->target.grid, mon->grid);
+			done = true;
+		}
+	}
+
 	/* Normal animal packs try to get the player out of corridors. */
-	if (group_ai && !monster_passes_walls(mon)) {
+	if (!done && group_ai && !monster_passes_walls(mon)) {
 		int i, open = 0;
 
 		/* Count empty grids next to player */
@@ -1506,6 +1520,9 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else if (monster_can_smell(c, mon)) {
 		/* Monster can smell the player */
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+	} else if (monster_taking_terrain_damage(mon)) {
+		/* Monster is taking damage from the terrain */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else {
 		/* Otherwise go passive */

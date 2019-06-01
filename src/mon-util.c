@@ -1217,6 +1217,20 @@ void monster_take_terrain_damage(struct monster *mon)
 }
 
 /**
+ * Terrain is currently damaging monster
+ */
+bool monster_taking_terrain_damage(struct monster *mon)
+{
+	if (square_isdamaging(cave, mon->grid) &&
+		!rf_has(mon->race->flags, square_feat(cave, mon->grid)->resist_flag)) {
+		return true;
+	}
+
+	return false;
+}
+
+
+/**
  * Returns the monster currently commanded, or NULL
  */
 struct monster *get_commanded_monster(void)
