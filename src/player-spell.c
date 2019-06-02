@@ -648,24 +648,6 @@ void get_spell_info(int spell_index, char *p, size_t len)
 	}
 }
 
-static int spell_value_base_lash_damage(void)
-{
-	int i, damage = 0;
-	const struct monster_race *race = ref_race ? ref_race :
-		cave_monster(cave, cave->mon_current)->race;
-
-	/* Scan through all blows for damage */
-	for (i = 0; i < z_info->mon_blows_max; i++) {
-		/* Extract the attack infomation */
-		random_value dice = race->blow[i].dice;
-
-		/* Full damage of first blow, plus half damage of others */
-		damage += randcalc(dice, race->level, RANDOMISE) / (i ? 2 : 1);
-	}
-
-	return damage;
-}
-
 static int spell_value_base_spell_power(void)
 {
 	int power = 0;
@@ -733,7 +715,6 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		const char *name;
 		expression_base_value_f function;
 	} value_bases[] = {
-		{ "LASH_DAMAGE", spell_value_base_lash_damage },
 		{ "SPELL_POWER", spell_value_base_spell_power },
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "DUNGEON_LEVEL", spell_value_base_dungeon_level },

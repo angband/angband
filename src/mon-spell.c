@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "effects.h"
+#include "init.h"
 #include "mon-attack.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -421,9 +422,20 @@ static int nonhp_dam(const struct monster_spell *spell,
 	/* Now add the damage for each effect */
 	while (effect) {
 		random_value rand;
-		/* Slight hack to prevent timed effect increases being counted
-		 * as damage in lore */
-		if (effect->dice && (effect->index != EF_TIMED_INC)) {
+		/* Lash needs special treatment bacause it depends on monster blows */
+		if (effect->index == EF_LASH) {
+			int i;
+
+			/* Scan through all blows for damage */
+			for (i = 0; i < z_info->mon_blows_max; i++) {
+				/* Extract the attack infomation */
+				random_value dice = race->blow[i].dice;
+
+				/* Full damage of first blow, plus half damage of others */
+				dam += randcalc(dice, race->level, dam_aspect) / (i ? 2 : 1);
+			}
+		} else if (effect->dice && (effect->index != EF_TIMED_INC)) {
+			/* Timed effects increases don't count as damage in lore */
 			dice_roll(effect->dice, &rand);
 			dam += randcalc(rand, 0, dam_aspect);
 		}

@@ -4020,13 +4020,11 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 	 * full strength for its entire length. */
 	int diameter_of_source = rad * 10;
 
-	/* No damaging blows */
-	if (!dam) return false;
-
 	/* Monsters only */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
+		int i;
 
 		flg |= PROJECT_PLAY;
 
@@ -4047,6 +4045,19 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 
 		/* Get the type (default is PROJ_MISSILE) */
 		type = mon->race->blow[0].effect->lash_type;
+
+		/* Scan through all blows for damage */
+		for (i = 0; i < z_info->mon_blows_max; i++) {
+			/* Extract the attack infomation */
+			random_value dice = mon->race->blow[i].dice;
+
+			/* Full damage of first blow, plus half damage of others */
+			dam += randcalc(dice, mon->race->level, RANDOMISE) / (i ? 2 : 1);
+			if (!mon->race->blow[i].next) break;
+		}
+
+		/* No damaging blows */
+		if (!dam) return false;
 	} else {
 		return false;
 	}
