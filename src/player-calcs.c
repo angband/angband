@@ -1527,8 +1527,7 @@ static void calc_hitpoints(struct player *p)
 /**
  * Calculate and set the current light radius.
  *
- * The light radius will be the total of all lights carried; characters with
- * UNLIGHT will have this modified according to level.
+ * The light radius will be the total of all lights carried.
  */
 static void calc_light(struct player *p, struct player_state *state,
 					   bool update)
@@ -1570,11 +1569,6 @@ static void calc_light(struct player *p, struct player_state *state,
 
 		/* Alter p->state.cur_light if reasonable */
 	    state->cur_light += amt;
-	}
-
-	/* UNLIGHT players have a special darkness aura */
-	if (player_has(p, PF_UNLIGHT)) {
-		state->cur_light -= (2 + p->lev / 6);
 	}
 }
 

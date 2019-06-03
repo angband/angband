@@ -447,10 +447,10 @@ static void mark_wasseen(struct chunk *c)
 /**
  * Calculate light level for every grid in view - stolen from Sil
  */
-static void calc_light(struct chunk *c, struct player *p)
+static void calc_lighting(struct chunk *c, struct player *p)
 {
 	int dir, k, x, y;
-	int player_rad = MIN(0, ABS(p->state.cur_light) - 1);
+	int light = p->state.cur_light, radius = ABS(light) - 1;
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -471,16 +471,22 @@ static void calc_light(struct chunk *c, struct player *p)
 	}
 
 	/* Light around the player */
-	for (y = -player_rad; y <= player_rad; y++) {
-		for (x = -player_rad; x <= player_rad; x++) {
+	for (y = -radius; y <= radius; y++) {
+		for (x = -radius; x <= radius; x++) {
 			/* Get valid grids within the player's light effect radius */
 			struct loc grid = loc_sum(p->grid, loc(x, y));
 			int dist = distance(p->grid, grid);
 			if (!square_in_bounds(c, grid)) continue;
-			if (dist > player_rad) continue;
+			if (dist > radius) continue;
 
-			/* Add to the light level */
-			c->squares[grid.y][grid.x].light += ABS(p->state.cur_light) - dist;
+			/* Adjust the light level */
+			if (light > 0) {
+				/* Light getting less further away */
+				c->squares[grid.y][grid.x].light += light - dist;
+			} else {
+				/* Light getting greater further away */
+				c->squares[grid.y][grid.x].light += light + dist;
+			}
 		}
 	}
 
@@ -488,26 +494,25 @@ static void calc_light(struct chunk *c, struct player *p)
 	for (k = 1; k < cave_monster_max(c); k++) {
 		/* Check the k'th monster */
 		struct monster *mon = cave_monster(c, k);
-		int light, mon_rad;
 
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
 		/* Get light info for this monster */
 		light = mon->race->light;
-		mon_rad = ABS(light) - 1;
+		radius = ABS(light) - 1;
 
 		/* Skip monsters not affecting light */
-		if (!mon_rad) continue;
+		if (!radius) continue;
 
 		/* Light or darken around the monster */
-		for (y = -mon_rad; y <= mon_rad; y++) {
-			for (x = -mon_rad; x <= mon_rad; x++) {
+		for (y = -radius; y <= radius; y++) {
+			for (x = -radius; x <= radius; x++) {
 				/* Get valid grids within the monster's light effect radius */
 				struct loc grid = loc_sum(mon->grid, loc(x, y));
 				int dist = distance(mon->grid, grid);
 				if (!square_in_bounds(c, grid)) continue;
-				if (dist > mon_rad) continue;
+				if (dist > radius) continue;
 
 				/* Only set it if the player can see it */
 				if (distance(p->grid, grid) > z_info->max_sight) continue;
@@ -567,10 +572,15 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
 	int xc = x, yc = y;
 
 	int d = distance(grid, p->grid);
-	bool close = d < ABS(p->state.cur_light);
+	bool close = d < p->state.cur_light;
 
 	/* Too far away */
 	if (d > z_info->max_sight) return;
+
+	/* UNLIGHT players have a special radius of view */
+	if (player_has(p, PF_UNLIGHT) && (p->state.cur_light <= 1)) {
+		close = d < (2 + p->lev / 6 - p->state.cur_light);
+	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
 	 * the direction of the player is in LOS, we are in LOS. This avoids
@@ -675,7 +685,7 @@ void update_view(struct chunk *c, struct player *p)
 		sqinfo_on(square(c, p->grid).info, SQUARE_SEEN);
 
 	/* Calculate light levels */
-	calc_light(c, p);
+	calc_lighting(c, p);
 
 	/* Squares we have LOS to get marked as in the view, and perhaps seen */
 	for (y = 0; y < c->height; y++)
