@@ -3235,7 +3235,7 @@ dice:15+1d25
 effect:NOURISH
 dice:50
 
-name:Lose Memories
+name:Surprise
 type:potion
 graphics:!:d
 level:10
@@ -3244,7 +3244,15 @@ cost:0
 alloc:10:10 to 15
 pile:25:2
 power:0
-effect:LOSE_EXP
+effect:RANDOM
+dice:5
+effect:TIMED_INC:SCRAMBLE
+dice:20+1d20
+effect:SHAPECHANGE:bat
+effect:DRAIN_STAT:INT
+effect:DRAIN_STAT:WIS
+effect:TIMED_INC:STONESKIN
+dice:20+1d20
 
 name:Salt Water
 type:potion
