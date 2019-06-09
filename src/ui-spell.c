@@ -138,7 +138,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		text_out("\n%s\n", spell_by_index(spell_index)->text);
+		text_out("\n%s\n\n", spell_by_index(spell_index)->text);
 
 		/* XXX */
 		text_out_pad = 0;
