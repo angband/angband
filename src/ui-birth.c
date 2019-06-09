@@ -997,9 +997,11 @@ int edit_text(char *buffer, int buflen) {
 				if (atnull) {
 					/* Make sure we have enough room for a new character */
 					if ((cursor + 1) >= buflen) break;
+					if ((len + 1) >= buflen) break;
 				} else {
 					/* Make sure we have enough room to add a new character */
 					if ((cursor + 1) >= buflen) break;
+					if ((len + 1) >= buflen) break;
 
 					/* Move the rest of the buffer along to make room */
 					memmove(&buffer[cursor + 1], &buffer[cursor], len - cursor);
