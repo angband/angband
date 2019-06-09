@@ -528,13 +528,16 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
 			obj1->origin = obj2->origin;
 			obj1->origin_depth = obj2->origin_depth;
 			obj1->origin_race = obj2->origin_race;
+			break;
 		}
 
 		/* Set as "mixed" */
 		case 2:
 		{
 			obj1->origin = ORIGIN_MIXED;
+			break;
 		}
+		default: break;
 	}
 }
 

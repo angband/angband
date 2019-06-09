@@ -4945,9 +4945,8 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			}
 
 			/* Aim at the target, explode */
-			if (project(source_player(), 3, target, 300, PROJ_MANA, flg, 0, 0,
-						context->obj))
-				return true;
+			return (project(source_player(), 3, target, 300, PROJ_MANA, flg, 0,
+							0, context->obj));
 		}
 
 		case 7:

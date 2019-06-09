@@ -1051,7 +1051,7 @@ static enum birth_stage get_history_command(void)
 		switch (edit_text(history, sizeof(history))) {
 			case -1:
 				next = BIRTH_BACK;
-
+				break;
 			case 0:
 				cmdq_push(CMD_HISTORY_CHOICE);
 				cmd_set_arg_string(cmdq_peek(), "history", history);

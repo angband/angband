@@ -769,6 +769,7 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 					maxed[STAT_DEX] = false;
 				}
 				step++;
+				break;
 			}
 
 			/* 

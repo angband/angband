@@ -1117,6 +1117,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 						y = player->grid.y;
 						x = player->grid.x;
+						break;
 					}
 
 					case 'o':
