@@ -632,11 +632,6 @@ static void hp_colour_change(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------ */
 
 /**
- * Simple macro to initialise structs
- */
-#define S(s)		s, sizeof(s)
-
-/**
  * Struct to describe different timed effects
  */
 struct state_info

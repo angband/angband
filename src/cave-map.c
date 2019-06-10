@@ -119,6 +119,8 @@ void map_info(struct loc grid, struct grid_data *g)
 				if (square_islit(cave, grid)) {
 					if (OPT(player, view_yellow_light)) {
 						g->lighting = LIGHTING_TORCH;
+					} else if (player_has(player, PF_UNLIGHT)) {
+						g->lighting = LIGHTING_DARK;
 					} else {
 						g->lighting = LIGHTING_LOS;
 					}
