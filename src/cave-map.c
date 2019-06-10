@@ -112,6 +112,20 @@ void map_info(struct loc grid, struct grid_data *g)
 			} else if (OPT(player, view_yellow_light)) {
 				g->lighting = LIGHTING_TORCH;
 			}
+		} else if (square_iswall(cave, grid)) {
+			/* Lit walls only show as lit if we are looking from the room
+			 * that's lighting them */
+			if (!square_islitwall(cave, grid)) {
+				if (square_islit(cave, grid)) {
+					if (OPT(player, view_yellow_light)) {
+						g->lighting = LIGHTING_TORCH;
+					} else {
+						g->lighting = LIGHTING_LOS;
+					}
+				} else {
+					g->lighting = LIGHTING_LIT;
+				}
+			}
 		}
 
 		/* Remember seen feature */

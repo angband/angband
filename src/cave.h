@@ -355,6 +355,7 @@ bool square_isstrongwall(struct chunk *c, struct loc grid);
 bool square_isbright(struct chunk *c, struct loc grid);
 bool square_isfiery(struct chunk *c, struct loc grid);
 bool square_islit(struct chunk *c, struct loc grid);
+bool square_islitwall(struct chunk *c, struct loc grid);
 bool square_isdamaging(struct chunk *c, struct loc grid);
 bool square_isnoflow(struct chunk *c, struct loc grid);
 bool square_isnoscent(struct chunk *c, struct loc grid);
