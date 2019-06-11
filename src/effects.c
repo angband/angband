@@ -2968,9 +2968,9 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		}
 	} else {
 		/* Player choice */
-		do
+		do {
 			get_aim_dir(&dir);
-		while (dir == DIR_TARGET && !target_okay());
+		} while (dir == DIR_TARGET && !target_okay());
 
 		if (dir == DIR_TARGET)
 			target_get(&aim);
