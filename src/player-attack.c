@@ -130,6 +130,26 @@ static int melee_damage(struct object *obj, int b, int s)
 }
 
 /**
+ * Determine experimental birth_percent_damage melee damage.
+ *
+ * Factor in damage dice, to-dam and any brand or slay.
+ */
+static int exp_melee_damage(struct player *p, struct object *obj, int b, int s)
+{
+	int dmg = damroll(obj->dd, obj->ds);
+
+	if (s) {
+		dmg *= slays[s].multiplier;
+	} else if (b) {
+		dmg *= brands[b].multiplier;
+	}
+
+	dmg += ((obj->to_d + p->state.to_d) * dmg) / 20;
+
+	return dmg;
+}
+
+/**
  * Determine standard ranged damage.
  *
  * Factor in damage dice, to-dam, multiplier and any brand or slay.
@@ -151,6 +171,35 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 	dam += missile->to_d;
 	if (launcher) {
 		dam += launcher->to_d;
+	}
+	dam *= mult;
+
+	return dam;
+}
+
+/**
+ * Determine experimental birth_percent_damage ranged damage.
+ *
+ * Factor in damage dice, to-dam, multiplier and any brand or slay.
+ */
+static int exp_ranged_damage(struct player *p, struct object *missile,
+							 struct object *launcher, int b, int s, int mult)
+{
+	int dam;
+
+	/* If we have a slay or brand , modify the multiplier appropriately */
+	if (b) {
+		mult += brands[b].multiplier;
+	} else if (s) {
+		mult += slays[s].multiplier;
+	}
+
+	/* Apply damage: multiplier, slays, bonuses */
+	dam = damroll(missile->dd, missile->ds);
+	if (launcher) {
+		dam += ((missile->to_d + launcher->to_d) * dam) / 20;
+	} else {
+		dam += (missile->to_d * dam) / 20;
 	}
 	dam *= mult;
 
@@ -496,7 +545,12 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		improve_attack_modifier(obj, mon, &b, &s, verb, false);
 		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
 
-		dmg = melee_damage(obj, b, s);
+		if (!OPT(p, birth_percent_damage)) {
+			dmg = melee_damage(obj, b, s);
+		} else {
+			dmg = exp_melee_damage(p, obj, b, s);
+		}
+
 		dmg = critical_norm(p, mon, weight, obj->to_h, dmg, &msg_type);
 
 		if (player_of_has(p, OF_IMPACT) && dmg > 50) {
@@ -509,7 +563,9 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	equip_learn_on_melee_attack(p);
 
 	/* Apply the player damage bonuses */
-	dmg += player_damage_bonus(&p->state);
+	if (!OPT(p, birth_percent_damage)) {
+		dmg += player_damage_bonus(&p->state);
+	}
 
 	/* Substitute shape-specific blows for shapechanged players */
 	if (player_is_shapechanged(p)) {
@@ -923,9 +979,13 @@ static struct attack_result make_ranged_shot(struct player *p,
 	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, true);
 	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true);
 
-	result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
-	result.dmg = critical_shot(player, mon, ammo->weight, ammo->to_h, result.dmg,
-							   &result.msg_type);
+	if (!OPT(p, birth_percent_damage)) {
+		result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
+	} else {
+		result.dmg = exp_ranged_damage(p, ammo, bow, b, s, multiplier);
+	}
+	result.dmg = critical_shot(player, mon, ammo->weight, ammo->to_h,
+							   result.dmg, &result.msg_type);
 
 	missile_learn_on_ranged_attack(p, bow);
 
@@ -956,7 +1016,11 @@ static struct attack_result make_ranged_throw(struct player *p,
 
 	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true);
 
-	result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
+	if (!OPT(p, birth_percent_damage)) {
+		result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
+	} else {
+		result.dmg = exp_ranged_damage(p, obj, NULL, b, s, multiplier);
+	}
 	result.dmg = critical_norm(player, mon, obj->weight, obj->to_h, result.dmg,
 							   &result.msg_type);
 

@@ -890,6 +890,178 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 
 /**
+ * Gets information about the average damage/turn that can be inflicted if
+ * the player wields the given weapon.
+ *
+ * Fills in the damage against normal adversaries in `normal_damage`, as well
+ * as the slays on the weapon in slay_list[] and corresponding damages in 
+ * slay_damage[].  These must both be at least SL_MAX long to be safe.
+ * `nonweap_slay` is set to whether other items being worn could add to the
+ * damage done by branding attacks.
+ *
+ * Returns the number of slays populated in slay_list[] and slay_damage[].
+ *
+ * Note that the results are meaningless if called on a fake ego object as
+ * the actual ego may have different properties.
+ */
+static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
+								 int *brand_damage, int *slay_damage,
+								 bool *nonweap_slay)
+{
+	int i;
+	int dice, sides, dam, total_dam, plus = 0;
+	int crit_mult, crit_div, crit_add;
+	int old_blows = 0;
+	bool *total_brands;
+	bool *total_slays;
+	bool has_brands_or_slays = false;
+
+	struct object *bow = equipped_item_by_slot_name(player, "shooting");
+	bool weapon = tval_is_melee_weapon(obj);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	int melee_adj_mult = ammo ? 0 : 1;
+	int multiplier = 1;
+
+	struct player_state state;
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *current_weapon = slot_object(player, weapon_slot);
+
+	/* Pretend we're wielding the object if it's a weapon */
+	if (weapon)
+		player->body.slots[weapon_slot].obj = (struct object *) obj;
+
+	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
+	state.stat_ind[STAT_STR] = 0; //Hack - NRM
+	state.stat_ind[STAT_DEX] = 0; //Hack - NRM
+	calc_bonuses(player, &state, true, false);
+
+	/* Stop pretending */
+	player->body.slots[weapon_slot].obj = current_weapon;
+
+	/* Finish if dice not known */
+	dice = obj->known->dd;
+	sides = obj->known->ds;
+	if (!dice || !sides) return false;
+
+	/* Calculate damage */
+	dam = ((sides + 1) * dice * 5);
+
+	if (weapon)	{
+		dam += ((state.to_d + obj->known->to_d) * dam) / 20;
+		plus += obj->known->to_h;
+
+		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
+							  &crit_div);
+
+		old_blows = state.num_blows;
+	} else { /* Ammo */
+		plus += obj->known->to_h;
+
+		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
+								&crit_add, &crit_div);
+
+		dam += ((obj->known->to_d + bow->known->to_d) * dam) / 20;
+	}
+
+	if (ammo) multiplier = player->state.ammo_mult;
+
+	/* Get the brands */
+	total_brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	copy_brands(&total_brands, obj->known->brands);
+	if (ammo && bow->known)
+		copy_brands(&total_brands, bow->known->brands);
+
+	/* Get the slays */
+	total_slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+	copy_slays(&total_slays, obj->known->slays);
+	if (ammo && bow->known)
+		copy_slays(&total_slays, bow->known->slays);
+
+	/* Melee weapons may get slays and brands from other items */
+	*nonweap_slay = false;
+	if (weapon)	{
+		for (i = 2; i < player->body.count; i++) {
+			struct object *slot_obj = slot_object(player, i);
+			if (!slot_obj)
+				continue;
+
+			if (slot_obj->known->brands || slot_obj->known->slays)
+				*nonweap_slay = true;
+			else
+				continue;
+
+			/* Replace the old lists with new ones */
+			copy_brands(&total_brands, slot_obj->known->brands);
+			copy_slays(&total_slays, slot_obj->known->slays);
+		}
+	}
+
+	/* Get damage for each brand on the objects */
+	for (i = 1; i < z_info->brand_max; i++) {
+		/* Must have the brand */
+		if (total_brands[i])
+			has_brands_or_slays = true;
+		else
+			continue;
+
+		/* Include bonus damage and brand in stated average */
+		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult);
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+
+		if (weapon) {
+			total_dam = (total_dam * old_blows) / 100;
+		} else {
+			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
+
+		brand_damage[i] = total_dam;
+	}
+
+	/* Get damage for each slay on the objects */
+	for (i = 1; i < z_info->slay_max; i++) {
+		/* Must have the slay */
+		if (total_slays[i])
+			has_brands_or_slays = true;
+		else
+			continue;
+
+		/* Include bonus damage and slay in stated average */
+		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult);
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+
+		if (weapon) {
+			total_dam = (total_dam * old_blows) / 100;
+		} else {
+			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
+
+		slay_damage[i] = total_dam;
+	}
+
+	/* Include bonus damage in stated average */
+	total_dam = dam * multiplier;
+	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+
+	/* Normal damage, not considering brands or slays */
+	if (weapon) {
+		total_dam = (total_dam * old_blows) / 100;
+	} else {
+		total_dam *= player->state.num_shots;
+		total_dam /= 10;
+	}
+
+	*normal_damage = total_dam;
+
+	mem_free(total_brands);
+	mem_free(total_slays);
+	return has_brands_or_slays;
+}
+
+
+/**
  * Describe damage.
  */
 static bool describe_damage(textblock *tb, const struct object *obj)
@@ -901,9 +1073,11 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	int *slay_damage = mem_zalloc(z_info->slay_max * sizeof(int));
 
 	/* Collect brands and slays */
-	bool has_brands_or_slays = obj_known_damage(obj, &normal_damage,
-												brand_damage, slay_damage,
-												&nonweap_slay);
+	bool has_brands_or_slays = OPT(player, birth_percent_damage) ?
+		exp_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+							 &nonweap_slay) :
+		obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+						 &nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
