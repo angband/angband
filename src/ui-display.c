@@ -389,7 +389,7 @@ byte monster_health_attr(void)
 		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_UMBER;
 
 		/* Commanded */
-		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_PURPLE;
+		if (mon->m_timed[MON_TMD_COMMAND]) attr = COLOUR_L_PURPLE;
 
 		/* Confused */
 		if (mon->m_timed[MON_TMD_CONF]) attr = COLOUR_UMBER;
