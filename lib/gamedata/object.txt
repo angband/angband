@@ -481,7 +481,8 @@ cost:30
 alloc:20:0 to 100
 attack:1d4:0:0
 armor:0:0
-desc:A short two-edged blade perfect for thrusting.
+flags:THROWING
+desc:A short two-edged blade perfect for thrusting or throwing.
 
 name:& Main Gauche~
 type:sword
@@ -492,6 +493,7 @@ cost:45
 alloc:20:3 to 100
 attack:1d5:0:0
 armor:0:0
+desc:A short thrusting blade with a large guard, primarily used in duels.
 
 name:& Rapier~
 type:sword
@@ -502,6 +504,7 @@ cost:70
 alloc:20:5 to 100
 attack:1d6:0:0
 armor:0:0
+desc:A long, thin thrusting blade, mainly used in duels.
 
 name:& Short Sword~
 type:sword
@@ -512,6 +515,7 @@ cost:90
 alloc:20:5 to 100
 attack:1d7:0:0
 armor:0:0
+desc:A short thrusting sword.
 
 name:& Cutlass~
 type:sword
@@ -556,6 +560,8 @@ cost:300
 alloc:20:10 to 100
 attack:2d5:0:0
 armor:0:0
+desc:A long, straight, two-edged blade, with two hand guards projecting out
+desc: from the hilt to form a perfect cross.
 
 name:& Broad Sword~
 type:sword
@@ -566,6 +572,7 @@ cost:300
 alloc:20:10 to 100
 attack:2d5:0:0
 armor:0:0
+desc:A heavy, single-edged sword with a strong grip.
 
 name:& Bastard Sword~
 type:sword
@@ -576,6 +583,8 @@ cost:400
 alloc:20:15 to 100
 attack:3d4:0:0
 armor:0:0
+desc:Also known as the hand-and-a-half blade.  A larger-than-normal straight-
+desc:sided sword with two cutting edges.
 
 name:& Katana~
 type:sword
@@ -586,6 +595,8 @@ cost:600
 alloc:20:20 to 100
 attack:3d5:0:0
 armor:0:0
+desc:A slightly curved long-handled slashing sword with a single-edged
+desc: blade and a chisel tip.
 
 name:& Zweihander~
 type:sword
@@ -607,6 +618,7 @@ cost:850
 alloc:20:40 to 100
 attack:4d5:0:0
 armor:0:0
+desc:A giant, curved blade designed to cleave the head cleanly from the body.
 
 name:& Blade~ of Chaos
 type:sword
@@ -618,6 +630,8 @@ alloc:10:70 to 100
 attack:6d5:0:0
 armor:0:0
 values:RES_CHAOS[1]
+desc:This inconstant weapon revels in disorder, hacking and slashing your foes
+desc: with bloodthirsty glee.
 
 
 
@@ -632,6 +646,8 @@ cost:30
 alloc:20:3 to 100
 attack:1d3:0:0
 armor:0:0
+desc:A heavy whip, this thick coil is thrown from the shoulder and can
+desc: knock down a large man.
 
 name:& Ball-and-Chain~
 type:hafted
@@ -642,6 +658,7 @@ cost:200
 alloc:20:20 to 100
 attack:2d4:0:0
 armor:0:0
+desc:A weighty iron ball, suspended by a chain from a sturdy oaken handle.
 
 name:& Morning Star~
 type:hafted
@@ -652,6 +669,8 @@ cost:396
 alloc:20:10 to 100
 attack:2d6:0:0
 armor:0:0
+desc:A sturdy wooden pole connected by a chain to a ball of steel, which often
+desc: has projecting spikes.
 
 name:& Flail~
 type:hafted
@@ -662,6 +681,8 @@ cost:353
 alloc:20:10 to 100
 attack:2d6:0:0
 armor:0:0
+desc:Two heavy bars of wood connected by a short link of chain, capable of
+desc: delivering crushing blows.
 
 name:& Two-Handed Great Flail~
 type:hafted
@@ -672,6 +693,8 @@ cost:590
 alloc:20:45 to 100
 attack:3d6:0:0
 armor:0:0
+desc:Two great bars of wood connected by a massive chain, needing two hands
+desc: to properly wield.
 
 
 ### Clubs ###
@@ -685,6 +708,7 @@ cost:130
 alloc:20:5 to 100
 attack:2d4:0:0
 armor:0:0
+desc:A war club with an iron head, usually flanged or spiked.
 
 name:& Lead-Filled Mace~
 type:hafted
@@ -695,6 +719,8 @@ cost:502
 alloc:20:15 to 100
 attack:4d3:0:0
 armor:0:0
+desc:A heavy war club topped with a mass of lead-filled steel, capable of
+desc: landing crushing blows.
 
 name:& Quarterstaff~
 type:hafted
@@ -705,6 +731,20 @@ cost:200
 alloc:20:10 to 100
 attack:1d9:0:0
 armor:0:0
+desc:Six feet of oak which can be wielded in both hands to give a drubbing or
+desc: block one.
+
+name:& Throwing Hammer~
+type:hafted
+graphics:\:D
+level:40
+weight:55
+cost:250
+alloc:10:40 to 100
+attack:2d4:0:0
+armor:0:0
+flags:THROWING
+desc:A short-handled iron hammer that can strike hard when thrown.
 
 name:& War Hammer~
 type:hafted
@@ -715,6 +755,7 @@ cost:225
 alloc:20:5 to 100
 attack:3d3:0:0
 armor:0:0
+desc:A mallet with a tapered head and a long handle.
 
 name:& Maul~
 type:hafted
@@ -725,6 +766,7 @@ cost:130
 alloc:20:5 to 100
 attack:4d4:0:0
 armor:0:0
+desc:A long-handled hammer with a heavy head.
 
 name:& Great Hammer~
 type:hafted
@@ -735,6 +777,7 @@ cost:500
 alloc:20:20 to 100
 attack:8d1:0:0
 armor:0:0
+desc:A mighty hammer with a massive head designed to crush and stun.
 
 name:& Mace~ of Disruption
 type:hafted
@@ -746,6 +789,8 @@ alloc:10:80 to 100
 attack:5d8:0:0
 armor:0:0
 slay:UNDEAD_3
+desc:A giant's weapon, enchanted with shattering power that breaks bones,
+desc: bodies, and spirit.
 
 
 
@@ -760,6 +805,9 @@ cost:36
 alloc:20:5 to 100
 attack:1d6:0:0
 armor:0:0
+flags:THROWING
+desc:The basic polearm, with a double-edged knife mounted on a light shaft.
+desc:  This weapon can be thrown effectively.
 
 name:& Awl-Pike~
 type:polearm
@@ -770,6 +818,9 @@ cost:340
 alloc:20:10 to 100
 attack:1d8:0:0
 armor:0:0
+desc:A more robust version of the basic polearm, with a double-edged knife
+desc: mounted on a sturdy shaft.  It cannot be thrown effectively, but offers
+desc: some protection to the wielder.
 
 name:& Trident~
 type:polearm
@@ -780,6 +831,7 @@ cost:120
 alloc:20:5 to 100
 attack:1d10:0:0
 armor:0:0
+desc:A three-pronged spear, originally for catching fish.
 
 name:& Halberd~
 type:polearm
@@ -790,6 +842,9 @@ cost:430
 alloc:20:25 to 100
 attack:3d5:0:0
 armor:0:0
+desc:The most successful of the polearms, the halberd has a long haft mounted
+desc: with a heavy axe blade and opposing spike, and topped by a thrusting
+desc: spine.
 
 name:& Pike~
 type:polearm
@@ -800,9 +855,24 @@ cost:358
 alloc:20:15 to 100
 attack:2d5:0:0
 armor:0:0
+desc:A fifteen foot spear, requiring two hands to wield, principally used in
+desc: infantry formations.
 
 
 ### Axes ###
+
+name:& Throwing Axe~
+type:polearm
+graphics:/:s
+level:25
+weight:40
+cost:150
+alloc:10:25 to 100
+attack:2d3:0:0
+armor:0:0
+flags:THROWING
+desc:A short-handled hatchet, balanced for throwing.  A classic skirmisher's
+desc: weapon.
 
 name:& Beaked Axe~
 type:polearm
@@ -813,6 +883,7 @@ cost:408
 alloc:20:15 to 100
 attack:2d6:0:0
 armor:0:0
+desc:A narrow axe head opposed by a crow's beak for penetrating armour.
 
 name:& Broad Axe~
 type:polearm
@@ -823,6 +894,7 @@ cost:304
 alloc:20:15 to 100
 attack:2d6:0:0
 armor:0:0
+desc:A simple, single-bladed war axe capable of chopping though limbs or armour.
 
 name:& Battle Axe~
 type:polearm
@@ -833,6 +905,7 @@ cost:334
 alloc:20:15 to 100
 attack:2d8:0:0
 armor:0:0
+desc:A double-bladed axe.  Very popular among Dwarves.
 
 name:& Lochaber Axe~
 type:polearm
@@ -843,6 +916,7 @@ cost:750
 alloc:20:45 to 100
 attack:3d8:0:0
 armor:0:0
+desc:A long shaft with a long narrow blade.
 
 name:& Great Axe~
 type:polearm
@@ -853,6 +927,8 @@ cost:500
 alloc:20:40 to 100
 attack:4d4:0:0
 armor:0:0
+desc:An enormous two-handed battle axe, carried by Dwarven champions, who
+desc: compete to see who can cleave the most orc heads.
 
 
 ### Other misc polearms ###
@@ -866,6 +942,8 @@ cost:800
 alloc:20:45 to 100
 attack:5d3:0:0
 armor:0:0
+desc:The long crescent blade stands out from the handle of this
+desc: polearm, and it is swung with two hands to harvest grain or blood.
 
 name:& Glaive~
 type:polearm
@@ -876,6 +954,8 @@ cost:363
 alloc:20:20 to 100
 attack:2d6:0:0
 armor:0:0
+desc:A reinforced wooden pole eight feet long, topped by a massive knife blade
+desc: that can can be used to thrust or chop.
 
 name:& Lance~
 type:polearm
@@ -886,6 +966,7 @@ cost:230
 alloc:20:10 to 100
 attack:2d8:0:0
 armor:0:0
+desc:A massive, tapered spear used primarily from horseback.
 
 name:& Scythe~ of Slicing
 type:polearm
@@ -896,6 +977,8 @@ cost:3500
 alloc:10:60 to 100
 attack:8d4:0:0
 armor:0:0
+desc:A reaper's weapon, the long blade almost hums in anticipation of
+desc: the blood it will spill.
 
 name:& Lucerne Hammer~
 type:polearm
@@ -906,7 +989,7 @@ cost:376
 alloc:20:10 to 100
 attack:2d5:0:0
 armor:0:0
-
+desc:A long pole with a three- or four-pronged head balnced by a long spike.
 
 
 ##### Bows, Crossbows, Slings #####
@@ -920,6 +1003,8 @@ cost:5
 alloc:20:1 to 100
 flags:SHOOTS_SHOTS
 pval:2
+desc:A loop of leather and cords able to hurl stones or shot with
+desc: tremendous velocity.
 
 name:& Short Bow~
 type:bow
@@ -930,6 +1015,7 @@ cost:50
 alloc:20:3 to 100
 flags:SHOOTS_ARROWS
 pval:2
+desc:The traditional hunter's weapon, this light bow is easily drawn.
 
 name:& Long Bow~
 type:bow
@@ -940,6 +1026,8 @@ cost:120
 alloc:20:10 to 100
 flags:SHOOTS_ARROWS
 pval:3
+desc:As tall as a man, the longbow can drive an arrow through the
+desc: heaviest armour.
 
 name:& Light Crossbow~
 type:bow
@@ -950,6 +1038,8 @@ cost:140
 alloc:20:15 to 100
 flags:SHOOTS_BOLTS
 pval:3
+desc:A mechanical bow made of wood, it is cocked to augment the strength
+desc: of its wielder.
 
 name:& Heavy Crossbow~
 type:bow
@@ -960,6 +1050,8 @@ cost:300
 alloc:20:30 to 100
 flags:SHOOTS_BOLTS
 pval:4
+desc:This arbalest is so powerful it has to be reinforced with metal and
+desc: requires a crank to be cocked.
 
 
 ##### Missiles #####
@@ -1052,6 +1144,7 @@ attack:1d2:0:0
 armor:0:0
 desc:It can be shot with a sling.
 
+
 name:& Iron Shot~
 type:shot
 graphics:{:s
@@ -1074,7 +1167,6 @@ pile:100:5d7
 alloc:20:40 to 100
 attack:2d4:5:5
 armor:0:0
-flags:IGNORE_ACID
 desc:It can be shot with a sling.
 
 
@@ -1090,6 +1182,7 @@ alloc:20:5 to 100
 attack:1d2:0:0
 armor:0:0
 flags:DIG_1
+desc:A compact and sturdy spade.
 
 name:& Pick~
 type:digger
@@ -1101,6 +1194,8 @@ alloc:20:30 to 100
 attack:1d3:0:0
 armor:0:0
 flags:DIG_2
+desc:A heavy mining tool with a long, slightly curved head that tapers
+desc: to chisel points on both ends.
 
 name:& Mattock~
 type:digger
@@ -1112,6 +1207,8 @@ alloc:20:50 to 100
 attack:1d8:0:0
 armor:0:0
 flags:DIG_3
+desc:A digging tool with a broad horizontal blade balanced by a smaller
+desc: vertical blade.  Used as a weapon of war by dwarves.
 
 
 ##### Armor #####
@@ -1139,6 +1236,7 @@ cost:7
 alloc:20:3 to 100
 attack:1d1:0:0
 armor:2:0
+desc:These are calf-high boots of flexible leather, laced from heel to calf.
 
 name:& Pair~ of Iron Shod Boots
 type:boots
@@ -1150,6 +1248,8 @@ alloc:20:5 to 100
 attack:1d1:0:0
 armor:4:0
 flags:IGNORE_FIRE
+desc:A set of sturdy leather boots strengthened with iron that will last
+desc: many weary miles.
 
 name:& Pair~ of Steel Shod Boots
 type:boots
@@ -1161,6 +1261,8 @@ alloc:20:20 to 100
 attack:1d1:0:0
 armor:7:0
 flags:IGNORE_FIRE
+desc:A set of double-lined leather boots, with toes and heels reinforced with
+desc: steel.
 
 name:& Pair~ of Mithril Shod Boots
 type:boots
@@ -1172,6 +1274,8 @@ alloc:20:60 to 100
 attack:1d1:0:0
 armor:8:0
 flags:IGNORE_ACID | IGNORE_FIRE
+desc:The enduring dwarves make the finest footgear known, and they march in it
+desc: for endless miles without wearying.
 
 name:& Pair~ of Ethereal Slippers
 type:boots
@@ -1183,7 +1287,7 @@ alloc:10:30 to 100
 attack:0d0:0:0
 armor:0:0
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
-
+desc:Fine quality elvish slippers, hard-wearing but apparently weightless.
 
 
 ### Headgear ###
@@ -1197,6 +1301,7 @@ cost:12
 alloc:20:3 to 100
 attack:0d0:0:0
 armor:2:0
+desc:A padded skullcap of boiled leather.
 
 name:& Metal Cap~
 type:helm
@@ -1207,6 +1312,7 @@ cost:30
 alloc:20:10 to 100
 attack:1d1:0:0
 armor:3:0
+desc:A pot-helm of steel that protects the skull.
 
 name:& Iron Helm~
 type:helm
@@ -1217,6 +1323,7 @@ cost:75
 alloc:20:20 to 100
 attack:1d3:0:0
 armor:7:0
+desc:A mighty helmet of heavy iron, completely enclosing the head.
 
 name:& Steel Helm~
 type:helm
@@ -1227,6 +1334,8 @@ cost:200
 alloc:20:40 to 100
 attack:1d3:0:0
 armor:9:0
+desc:This great helm covers the head and shoulders with plates of steel and a
+desc: curtain of mail.
 
 name:& Iron Crown~
 type:crown
@@ -1237,6 +1346,8 @@ cost:500
 alloc:20:45 to 100
 attack:1d1:0:0
 armor:0:0
+desc:A plain band of iron, crowned with iron spikes.  It is a tyrant's
+desc: symbol.
 
 name:& Golden Crown~
 type:crown
@@ -1248,6 +1359,8 @@ alloc:10:45 to 100
 attack:1d1:0:0
 armor:0:0
 flags:IGNORE_ACID
+desc:An elegant golden circlet, with slender spines thrusting upward.
+desc:  It looks like it should be resting over the brow of a king.
 
 name:& Jewel Encrusted Crown~
 type:crown
@@ -1259,6 +1372,8 @@ alloc:10:50 to 100
 attack:1d1:0:0
 armor:0:0
 flags:IGNORE_ACID
+desc:An elaboratedly decorated crown of massive gold, studded with a rainbow
+desc: of gems and jewels; worthy of a High King.
 
 
 ### Body armours ###
@@ -1272,6 +1387,7 @@ cost:4
 alloc:20:1 to 100
 attack:0d0:0:0
 armor:2:0
+desc:A practical garment of thick wool or velvet, draping from neck to heels.
 
 name:Soft Leather Armour~
 type:soft armor
@@ -1282,6 +1398,7 @@ cost:20
 alloc:20:3 to 100
 attack:0d0:0:0
 armor:8:0
+desc:A cuirass of pliable leather, with a thicker leather jack.
 
 name:Studded Leather Armour~
 type:soft armor
@@ -1292,6 +1409,7 @@ cost:100
 alloc:20:5 to 100
 attack:1d1:-1:0
 armor:12:0
+desc:A cuirass of pliable leather studded with metal rivets.
 
 name:Hard Leather Armour~
 type:soft armor
@@ -1302,6 +1420,7 @@ cost:150
 alloc:20:10 to 100
 attack:1d2:-1:0
 armor:16:0
+desc:A boiled leather cuirass and shoulder plates.
 
 name:Leather Scale Mail~
 type:soft armor
@@ -1312,6 +1431,8 @@ cost:370
 alloc:20:15 to 100
 attack:1d1:-1:0
 armor:20:0
+desc:A tunic and skirt sewn with thick, overlapping scales of hardened
+desc: leather.
 
 name:Metal Scale Mail~
 type:hard armor
@@ -1322,6 +1443,8 @@ cost:550
 alloc:20:25 to 100
 attack:1d4:-2:0
 armor:38:0
+desc:A heavy shirt of overlapping steel scales backed by leather, with
+desc: matching skirt and sleeves.
 
 name:Chain Mail~
 type:hard armor
@@ -1332,6 +1455,8 @@ cost:750
 alloc:20:20 to 100
 attack:1d4:-2:0
 armor:32:0
+desc:A hauberk, leggings, and sleeves of interlocking steel rings, well padded
+desc: with leather.
 
 name:Augmented Chain Mail~
 type:hard armor
@@ -1342,6 +1467,9 @@ cost:900
 alloc:20:35 to 100
 attack:1d4:-2:0
 armor:42:0
+desc:A hauberk, leggings, and sleeves of interlocking steel rings,
+desc: strategically reinforced at vital locations with a second layer
+desc: of chain, all over a layer of heavy padding.
 
 name:Bar Chain Mail~
 type:hard armor
@@ -1352,6 +1480,9 @@ cost:950
 alloc:20:40 to 100
 attack:1d4:-2:0
 armor:45:0
+desc:A hauberk, leggings, and sleeves of interlocking steel rings,
+desc: reinforced around the shoulders with segmented plates of steel,
+desc: all over a layer of heavy padding.
 
 name:Metal Brigandine Armour~
 type:hard armor
@@ -1362,6 +1493,9 @@ cost:1100
 alloc:20:45 to 100
 attack:1d4:-3:0
 armor:48:0
+desc:A stiff suit of armour composed of small metal plates sewn to an
+desc: inner layer of heavy canvas, and covered with a second layer of
+desc: cloth.
 
 name:Partial Plate Armour~
 type:hard armor
@@ -1372,6 +1506,7 @@ cost:1200
 alloc:20:30 to 100
 attack:1d6:-3:0
 armor:40:0
+desc:A steel corselet and vambraces over a skirt and leggings of chain.
 
 name:Metal Lamellar Armour~
 type:hard armor
@@ -1382,6 +1517,8 @@ cost:1250
 alloc:20:50 to 100
 attack:1d6:-3:0
 armor:58:0
+desc:This unusual armour is a surprisingly light suit of laced and
+desc: overlapping metal plates.
 
 name:Full Plate Armour~
 type:hard armor
@@ -1392,6 +1529,8 @@ cost:1350
 alloc:15:55 to 100
 attack:2d4:-3:0
 armor:62:0
+desc:A full suit of carefully fitted plates, with hinged joints backed
+desc: by chain, and light padding underneath.
 
 name:Ribbed Plate Armour~
 type:hard armor
@@ -1402,6 +1541,8 @@ cost:1500
 alloc:15:60 to 100
 attack:2d4:-3:0
 armor:66:0
+desc:A full suit of finely fitted metal armour consisting of steel plates
+desc: reinforced ridging.
 
 name:Mithril Chain Mail~
 type:hard armor
@@ -1413,6 +1554,7 @@ alloc:10:55 to 100
 attack:1d4:-1:0
 armor:28:0
 flags:IGNORE_ACID
+desc:This wondrous suit of fine-linked chain shimmers as though of pure silver.
 
 name:Mithril Plate Mail~
 type:hard armor
@@ -1424,6 +1566,8 @@ alloc:10:65 to 100
 attack:2d4:-3:0
 armor:60:0
 flags:IGNORE_ACID
+desc:A shimmering suit of true-silver, forged long ago by dwarven smiths of
+desc: legend.  It gleams with purest white as you gaze upon it.
 
 name:Adamantite Plate Mail~
 type:hard armor
@@ -1435,6 +1579,7 @@ alloc:10:75 to 100
 attack:2d4:-4:0
 armor:80:0
 flags:IGNORE_ACID
+desc:An exquisite suit of nearly impenetrable adamantite.
 
 ### Cloaks ###
 
@@ -1498,6 +1643,7 @@ cost:5
 alloc:20:1 to 100
 attack:0d0:0:0
 armor:1:0
+desc:Leather hand protection, with an open palm for gripping weapons.
 
 name:& Set~ of Gauntlets
 type:gloves
@@ -1508,17 +1654,19 @@ cost:45
 alloc:20:10 to 100
 attack:1d1:0:0
 armor:3:0
+desc:A set of gloves that completely covers the hand and wrist in steel plating.
 
 name:& Set~ of Mithril Gauntlets
 type:gloves
 graphics:]:B
 level:0
-weight:25
+weight:15
 cost:700
 alloc:20:40 to 100
 attack:1d1:0:0
 armor:6:0
 flags:IGNORE_ACID | IGNORE_FIRE
+desc:A set of gauntlets wrought of light, shining mithril.
 
 name:& Set~ of Caestus
 type:gloves
@@ -1584,6 +1732,7 @@ cost:80
 alloc:20:15 to 100
 attack:1d2:0:0
 armor:5:0
+desc:A round shield of wood reinforced with metal rims and central disk.
 
 name:& Leather Shield~
 type:shield
@@ -1594,6 +1743,8 @@ cost:200
 alloc:20:10 to 100
 attack:1d3:0:0
 armor:8:0
+desc:A large oval shield made of layered wooden strips with a thick leather
+desc: covering.
 
 name:& Large Metal Shield~
 type:shield
@@ -1604,6 +1755,8 @@ cost:500
 alloc:20:30 to 100
 attack:1d5:0:0
 armor:12:0
+desc:An oval shield of wood covered by leather and rimmed with metal.  A large
+desc: iron shield boss offers excellent hand protection.
 
 name:& Mithril Shield~
 type:shield
@@ -1615,6 +1768,7 @@ alloc:10:70 to 100
 attack:1d4:0:0
 armor:16:10
 flags:IGNORE_ACID
+desc:A shield of purest white, made of mithril.
 
 
 
@@ -4621,6 +4775,7 @@ power:11
 effect:BREATH:ACID:0:20
 dice:120
 time:50
+desc:A suit of utterly black scales, against which no metal or wood can rest.
 
 name:Blue Dragon Scale Mail~
 type:dragon armor
@@ -4637,6 +4792,8 @@ power:18
 effect:BREATH:ELEC:0:20
 dice:150
 time:50
+desc:A suit of scales as blue as sapphires, emitting eerie sparks and coronas
+desc: as you move about in it.
 
 name:White Dragon Scale Mail~
 type:dragon armor
@@ -4653,6 +4810,8 @@ power:10
 effect:BREATH:COLD:0:20
 dice:100
 time:50
+desc:A suit of scales, coldly gleaming in frosty white.  A shiver runs down
+desc: through your spine even as you look at it.
 
 name:Red Dragon Scale Mail~
 type:dragon armor
@@ -4669,6 +4828,8 @@ power:20
 effect:BREATH:FIRE:0:20
 dice:200
 time:50
+desc:A suit of scales, with all the reds of every fire ever lit.  The scar
+desc: tissue from an old burn aches as you put this armour on.
 
 name:Green Dragon Scale Mail~
 type:dragon armor
@@ -4685,6 +4846,8 @@ power:19
 effect:BREATH:POIS:0:20
 dice:150
 time:50
+desc:A suit of scales, glistening in sickly green, out from which falls the
+desc: skeleton of a rat who touched it and died in agony.
 
 name:Multi-Hued Dragon Scale Mail~
 type:dragon armor
@@ -4711,8 +4874,10 @@ dice:250
 effect:BREATH:POIS:0:20
 dice:250
 time:50
+desc:A suit of scales that throbs with angry energies; it takes all your energy
+desc: to master the Elements fighting an endless war trapped inside.
 
-name:Pseudo-Dragon Scale Mail~
+name:Shining Dragon Scale Mail~
 type:dragon armor
 graphics:[:o
 level:65
@@ -4731,6 +4896,8 @@ dice:200
 effect:BREATH:DARK:0:20
 dice:200
 time:50
+desc:A suit of scales shining like a beacon of Light even as it greedily sucks
+desc: the energy away from everything that glows into Dark insatiate.
 
 name:Law Dragon Scale Mail~
 type:dragon armor
@@ -4751,6 +4918,8 @@ dice:230
 effect:BREATH:SHARD:0:20
 dice:230
 time:50
+desc:A suit of scales in stern blue and silver.  You feel the slightest tremor
+desc: as you touch it, like massed trumpets heard and cyclones felt from afar.
 
 name:Gold Dragon Scale Mail~
 type:dragon armor
@@ -4767,6 +4936,9 @@ power:19
 effect:BREATH:SOUND:0:20
 dice:150
 time:50
+desc:A suit of scales in mirror-like gold.  You hear nothing unusual as you
+desc: wear this armour, yet your ears ache as though in the midst of a
+desc: cacophony.
 
 name:Chaos Dragon Scale Mail~
 type:dragon armor
@@ -4787,6 +4959,8 @@ dice:220
 effect:BREATH:DISEN:0:20
 dice:220
 time:50
+desc:A suit of scales.  Every shape, in every color imaginable, riot and
+desc:contend upon its surface as you stare in fascination.
 
 name:Balance Dragon Scale Mail~
 type:dragon armor
@@ -4811,6 +4985,9 @@ dice:250
 effect:BREATH:DISEN:0:20
 dice:250
 time:50
+desc:A suit of scales.  Featureless grey to casual inspection, yet a closer
+desc: look reveals patterns within patterns of iridescence that throb with
+desc: leashed energies bound as though by chains of adamant.
 
 name:Power Dragon Scale Mail~
 type:dragon armor
@@ -4830,6 +5007,9 @@ power:25
 effect:BREATH:MISSILE:0:20
 dice:300
 time:50
+desc:A suit with scales of every color, surrounded in a nimbus of perfectly
+desc: untramelled yet inextricably intermingled and utterly mastered powers
+desc: elemental and ethereal.
 
 
 

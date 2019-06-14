@@ -1099,7 +1099,7 @@ info:12500:10
 alloc:5:40 to 100
 combat:0:0:d10
 min-combat:255:0:0
-item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Shining Dragon Scale Mail
 item:dragon armor:Law Dragon Scale Mail
 item:dragon armor:Gold Dragon Scale Mail
 item:dragon armor:Chaos Dragon Scale Mail
@@ -1110,7 +1110,7 @@ name:of Elvenkind
 info:15000:25
 alloc:3:50 to 127
 combat:0:0:d10
-item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Shining Dragon Scale Mail
 item:dragon armor:Law Dragon Scale Mail
 item:dragon armor:Gold Dragon Scale Mail
 item:dragon armor:Chaos Dragon Scale Mail

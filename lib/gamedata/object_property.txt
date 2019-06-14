@@ -661,6 +661,13 @@ type:flag
 code:TRAP_IMMUNE
 power:5
 
+name:throwing
+type:flag
+subtype:throw
+id-type:on wield
+code:THROWING
+power:4
+
 name:ignore acid
 type:ignore
 code:ACID

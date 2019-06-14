@@ -2916,6 +2916,8 @@ static enum parser_error parse_object_property_subtype(struct parser *p) {
 		prop->subtype = OFT_BAD;
 	} else if (streq(name, "dig")) {
 		prop->subtype = OFT_DIG;
+	} else if (streq(name, "throw")) {
+		prop->subtype = OFT_THROW;
 	} else {
 		return PARSE_ERROR_INVALID_SUBTYPE;
 	}

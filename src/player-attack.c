@@ -154,8 +154,8 @@ static int exp_melee_damage(struct player *p, struct object *obj, int b, int s)
  *
  * Factor in damage dice, to-dam, multiplier and any brand or slay.
  */
-static int ranged_damage(struct object *missile, struct object *launcher, 
-						 int b, int s, int mult)
+static int ranged_damage(struct player *p, struct object *missile,
+						 struct object *launcher, int b, int s, int mult)
 {
 	int dam;
 
@@ -171,6 +171,8 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 	dam += missile->to_d;
 	if (launcher) {
 		dam += launcher->to_d;
+	} else if (of_has(missile->flags, OF_THROWING)) {
+		dam += p->state.to_d;
 	}
 	dam *= mult;
 
@@ -198,6 +200,8 @@ static int exp_ranged_damage(struct player *p, struct object *missile,
 	dam = damroll(missile->dd, missile->ds);
 	if (launcher) {
 		dam += ((missile->to_d + launcher->to_d) * dam) / 20;
+	} else if (of_has(missile->flags, OF_THROWING)) {
+		dam += (p->state.to_d * dam) / 20;
 	} else {
 		dam += (missile->to_d * dam) / 20;
 	}
@@ -980,7 +984,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
+		result.dmg = ranged_damage(p, ammo, bow, b, s, multiplier);
 	} else {
 		result.dmg = exp_ranged_damage(p, ammo, bow, b, s, multiplier);
 	}
@@ -1017,7 +1021,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
+		result.dmg = ranged_damage(p, obj, NULL, b, s, multiplier);
 	} else {
 		result.dmg = exp_ranged_damage(p, obj, NULL, b, s, multiplier);
 	}

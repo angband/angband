@@ -88,6 +88,7 @@ enum object_flag_type {
 	OFT_MELEE,		/* applicable only to melee weapons */
 	OFT_BAD,		/* an undesirable flag */
 	OFT_DIG,		/* applicable only to diggers */
+	OFT_THROW,		/* applicable only to throwables */
 
 	OFT_MAX
 };
