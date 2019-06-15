@@ -2824,15 +2824,18 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 	}
 
 	/* Output level, weight and cost */
-	file_putf(fff, "info:%d:%d:%d\n", art->level, art->weight, art->cost);
+	file_putf(fff, "level:%d\n", art->level);
+	file_putf(fff, "weight:%d\n", art->weight);
+	file_putf(fff, "cost:%d\n", art->cost);
 
 	/* Output allocation info */
 	file_putf(fff, "alloc:%d:%d to %d\n", art->alloc_prob, art->alloc_min,
 			  art->alloc_max);
 
 	/* Output combat power */
-	file_putf(fff, "power:%d:%dd%d:%d:%d:%d\n", art->ac, art->dd, art->ds,
-			  art->to_h, art->to_d, art->to_a);
+	file_putf(fff, "attack:%dd%d:%d:%d\n", art->dd, art->ds, art->to_h,
+			  art->to_d);
+	file_putf(fff, "armor:%d:%d\n", art->ac, art->to_a);
 
 	/* Output flags */
 	write_flags(fff, "flags:", art->flags, OF_SIZE, obj_flags);
