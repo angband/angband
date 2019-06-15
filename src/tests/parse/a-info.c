@@ -95,18 +95,28 @@ int test_alloc2(void *state) {
 	ok;
 }
 
-int test_power0(void *state) {
-	enum parser_error r = parser_parse(state, "power:3:4d5:8:2:1");
+int test_attack0(void *state) {
+	enum parser_error r = parser_parse(state, "attack:4d5:8:2");
+	struct artifact *a;
+
+	eq(r, PARSE_ERROR_NONE);
+	a = parser_priv(state);
+	require(a);
+	eq(a->dd, 4);
+	eq(a->ds, 5);
+	eq(a->to_h, 8);
+	eq(a->to_d, 2);
+	ok;
+}
+
+int test_armor0(void *state) {
+	enum parser_error r = parser_parse(state, "armor:3:1");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->ac, 3);
-	eq(a->dd, 4);
-	eq(a->ds, 5);
-	eq(a->to_h, 8);
-	eq(a->to_d, 2);
 	eq(a->to_a, 1);
 	ok;
 }
@@ -183,7 +193,8 @@ struct test tests[] = {
 	{ "alloc0", test_alloc0 },
 	{ "alloc1", test_alloc1 },
 	{ "alloc2", test_alloc2 },
-	{ "power0", test_power0 },
+	{ "attack0", test_attack0 },
+	{ "armor0", test_armor0 },
 	{ "flags0", test_flags0 },
 	//{ "time0", test_time0 },
 	{ "msg0", test_msg0 },

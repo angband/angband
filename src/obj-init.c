@@ -2500,19 +2500,33 @@ static enum parser_error parse_artifact_graphics(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_artifact_info(struct parser *p) {
+static enum parser_error parse_artifact_level(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->level = parser_getint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_artifact_weight(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	struct object_kind *k = lookup_kind(a->tval, a->sval);
 	assert(a);
 	assert(k);
 
-	a->level = parser_getint(p, "level");
 	a->weight = parser_getint(p, "weight");
 
 	/* Set kind weight for special artifacts */
 	if (k->kidx >= z_info->ordinary_kind_max) {
 		k->weight = a->weight;
 	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_artifact_cost(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
 
 	a->cost = parser_getint(p, "cost");
 	return PARSE_ERROR_NONE;
@@ -2536,16 +2550,23 @@ static enum parser_error parse_artifact_alloc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_artifact_power(struct parser *p) {
+static enum parser_error parse_artifact_attack(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	struct random hd = parser_getrand(p, "hd");
 	assert(a);
 
-	a->ac = parser_getint(p, "ac");
 	a->dd = hd.dice;
 	a->ds = hd.sides;
 	a->to_h = parser_getint(p, "to-h");
 	a->to_d = parser_getint(p, "to-d");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_artifact_armor(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->ac = parser_getint(p, "ac");
 	a->to_a = parser_getint(p, "to-a");
 	return PARSE_ERROR_NONE;
 }
@@ -2716,10 +2737,12 @@ struct parser *init_parse_artifact(void) {
 	parser_reg(p, "name str name", parse_artifact_name);
 	parser_reg(p, "base-object sym tval sym sval", parse_artifact_base_object);
 	parser_reg(p, "graphics char glyph sym color", parse_artifact_graphics);
-	parser_reg(p, "info int level int weight int cost", parse_artifact_info);
+	parser_reg(p, "level int level", parse_artifact_level);
+	parser_reg(p, "weight int weight", parse_artifact_weight);
+	parser_reg(p, "cost int cost", parse_artifact_cost);
 	parser_reg(p, "alloc int common str minmax", parse_artifact_alloc);
-	parser_reg(p, "power int ac rand hd int to-h int to-d int to-a",
-			   parse_artifact_power);
+	parser_reg(p, "attack rand hd int to-h int to-d", parse_artifact_attack);
+	parser_reg(p, "armor int ac int to-a", parse_artifact_armor);
 	parser_reg(p, "flags ?str flags", parse_artifact_flags);
 	parser_reg(p, "act str name", parse_artifact_act);
 	parser_reg(p, "time rand time", parse_artifact_time);

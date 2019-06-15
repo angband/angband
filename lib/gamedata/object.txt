@@ -1758,6 +1758,18 @@ armor:12:0
 desc:An oval shield of wood covered by leather and rimmed with metal.  A large
 desc: iron shield boss offers excellent hand protection.
 
+name:& Knight's Shield~
+type:shield
+graphics:):W
+level:50
+weight:160
+cost:750
+alloc:10:50 to 100
+attack:1d6:0:0
+armor:15:0
+desc:A kite-shaped shield with rounded corners that covers the wearer from
+desc: chest to toe, emblazoned with heraldic symbols.
+
 name:& Mithril Shield~
 type:shield
 graphics:):B
