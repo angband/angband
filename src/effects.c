@@ -581,6 +581,14 @@ static bool item_tester_hook_recharge(const struct object *obj)
 }
 
 /**
+ * Hook to specify a staff
+ */
+static bool item_tester_hook_staff(const struct object *obj)
+{
+	return obj->tval == TV_STAFF;
+}
+
+/**
  * Hook to specify "ammo"
  */
 static bool item_tester_hook_ammo(const struct object *obj)
@@ -4544,6 +4552,57 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 	return (true);
 }
 
+
+/**
+ * Turn a staff into arrows
+ */
+bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
+{
+	int lev;
+	struct object *obj, *staff, *arrows;
+	bool used = false;
+	const char *q, *s;
+	bool good = false, great = false;
+	bool none_left = false;
+
+	/* Get an item */
+	q = "Make arrows from which staff? ";
+	s = "You have no staff to use.";
+	if (!get_item(&obj, q, s, 0, item_tester_hook_staff,
+				  (USE_INVEN | USE_FLOOR))) {
+		return (used);
+	}
+
+	/* Extract the object "level" */
+	lev = obj->kind->level;
+
+	/* Roll for good */
+	if (randint1(lev) > 25) {
+		good = true;
+		/* Roll for great */
+		if (randint1(lev) > 50) {
+			great = true;
+		}
+	}
+
+	/* Destroy the staff */
+	if (object_is_carried(player, obj)) {
+		staff = gear_object_for_use(obj, 1, true, &none_left);
+	} else {
+		staff = floor_object_for_use(obj, 1, true, &none_left);
+	}
+
+	if (staff->known) {
+		object_delete(&staff->known);
+	}
+	object_delete(&staff);
+
+	/* Make some arrows */
+	arrows = make_object(cave, player->lev, good, great, false, NULL, TV_ARROW);
+	drop_near(cave, &arrows, 0, player->grid, true);
+
+	return (used);
+}
 
 /**
  * Draw energy from a magical device
