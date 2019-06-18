@@ -3730,18 +3730,19 @@ effect:BOLT_AWARE:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
-name:Door Destruction
+name:Darkness
 type:wand
 graphics:-:d
-level:10
+level:3
 weight:10
 cost:100
-alloc:20:10 to 60
+alloc:20:3 to 60
 attack:1d1:0:0
 armor:0:0
-charges:6+d8
-power:5
-effect:ALTER:KILL_DOOR
+charges:6+d10
+power:4
+effect:LINE:DARK_WEAK
+dice:6d8
 
 name:Clone Monster
 type:wand
@@ -4251,7 +4252,7 @@ attack:1d2:0:0
 armor:0:0
 charges:6+d5
 power:5
-effect:STAR:LIGHT_WEAK
+effect:STAR:LIGHT
 dice:6d8
 
 name:Teleportation
