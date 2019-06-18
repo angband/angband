@@ -10774,13 +10774,13 @@ name:gorgon
 base:naga
 color:G
 speed:120
-hit-points:1800
+hit-points:1500
 hearing:30
 armor-class:120
 sleepiness:5
 depth:48
 rarity:2
-experience:7000
+experience:6000
 blow:GAZE:EXP_80
 blow:GAZE:PARALYZE
 blow:HIT:HURT:8d6
@@ -11868,14 +11868,14 @@ name:9-headed hydra
 base:hydra
 color:P
 speed:120
-hit-points:1500
+hit-points:1200
 light:2
 hearing:20
 armor-class:168
 sleepiness:20
 depth:57
 rarity:2
-experience:9000
+experience:7000
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:BITE:POISON:2d6
@@ -11889,8 +11889,8 @@ flags:SMART | POWERFUL | REGENERATE
 flags:DROP_3
 flags:OPEN_DOOR | KILL_BODY
 flags:IM_FIRE | IM_POIS | IM_ACID | NO_CONF | NO_SLEEP | NO_HOLD
-innate-freq:6
-spell-freq:4
+innate-freq:4
+spell-freq:9
 spells:SCARE
 spells:BR_FIRE | BR_POIS | BR_ACID | BR_NETH
 spells:S_HYDRA | S_KIN
