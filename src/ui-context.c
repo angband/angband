@@ -1073,7 +1073,7 @@ void textui_process_click(ui_event e)
 			health_track(player->upkeep, m);
 			target_set_monster(m);
 		} else {
-			target_set_location(y,x);
+			target_set_location(y, x);
 		}
 
 		if (e.mouse.mods & KC_MOD_SHIFT) {

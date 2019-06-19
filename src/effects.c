@@ -4118,21 +4118,29 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 
 /**
  * Strike the target with a ball from above
- *
- * Targets absolute coordinates instead of a specific monster, so that
- * the death of the monster doesn't change the target's location.
  */
 bool effect_handler_STRIKE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-
 	struct loc target = player->grid;
-
 	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	struct monster *mon;
 
 	/* Ask for a target; if no direction given, the player is struck  */
 	if ((context->dir == DIR_TARGET) && target_okay()) {
 		target_get(&target);
+	}
+
+	/* Enforce line of sight */
+	if (!los(cave, player->grid, target)) {
+		return false;
+	}
+
+	/* Target absolute coordinates instead of a specific monster, so that
+	 * the death of the monster doesn't change the target's location. */
+	mon = target_get_monster();
+	if (mon) {
+		target_set_location(mon->grid.y, mon->grid.x);
 	}
 
 	/* Aim at the target.  Hurt items on floor. */
