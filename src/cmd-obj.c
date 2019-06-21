@@ -489,6 +489,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
+		target_fix();
 		used = effect_do(effect,
 							source_player(),
 							obj,
@@ -497,6 +498,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 							dir,
 							beam,
 							boost);
+		target_release();
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
@@ -968,6 +970,7 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Cast a spell */
+	target_fix();
 	if (spell_cast(spell_index, dir)) {
 		if (player->timed[TMD_FASTCAST]) {
 			player->upkeep->energy_use = z_info->move_energy / 2;
@@ -975,6 +978,7 @@ void do_cmd_cast(struct command *cmd)
 			player->upkeep->energy_use = z_info->move_energy;
 		}
 	}
+	target_release();
 }
 
 

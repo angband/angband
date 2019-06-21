@@ -35,10 +35,19 @@
 static bool target_set;
 
 /**
+ * Is the target fixed (for the duration of a spell)?
+ */
+static bool target_fixed;
+
+/**
  * Player target
  */
 static struct target target;
 
+/**
+ * Old player target
+ */
+static struct target old_target;
 
 /**
  * Monster health description
@@ -135,7 +144,7 @@ bool target_okay(void)
 
 
 /**
- * Set the target to a monster (or nobody)
+ * Set the target to a monster (or nobody); if target is fixed, don't unset
  */
 bool target_set_monster(struct monster *mon)
 {
@@ -144,6 +153,11 @@ bool target_set_monster(struct monster *mon)
 		target_set = true;
 		target.midx = mon->midx;
 		target.grid = mon->grid;
+		return true;
+	} else if (target_fixed) {
+		/* If a monster has died during a spell, this maintains its grid as
+		 * the target in case further effects of the spell need it */
+		target.midx = 0;
 		return true;
 	}
 
@@ -186,6 +200,32 @@ void target_set_location(int y, int x)
 bool target_is_set(void)
 {
 	return target_set;
+}
+
+/**
+ * Fix the target
+ */
+void target_fix(void)
+{
+	old_target = target;
+	target_fixed = true;
+}
+
+/**
+ * Release the target
+ */
+void target_release(void)
+{
+	target_fixed = false;
+
+	/* If the old target is a now-dead monster, cancel it */
+	if (old_target.midx != 0) {
+		struct monster *mon = cave_monster(cave, old_target.midx);
+		if (!mon->race) {
+			target.grid.y = 0;
+			target.grid.x = 0;
+		}
+	}
 }
 
 /**

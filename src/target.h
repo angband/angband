@@ -47,6 +47,8 @@ bool target_okay(void);
 bool target_set_monster(struct monster *mon);
 void target_set_location(int y, int x);
 bool target_is_set(void);
+void target_fix(void);
+void target_release(void);
 int cmp_distance(const void *a, const void *b);
 s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets);
 bool target_accept(int y, int x);
