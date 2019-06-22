@@ -811,6 +811,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		power,
 		obvious
 	};
+	int res_level = typ < ELEM_MAX ? player->state.el_info[typ].res_level : 0;
 
 	/* Decoy has been hit */
 	if (square_isdecoyed(cave, grid) && dam) {
@@ -871,7 +872,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 					 typ,
 					 dam,
 					 RANDOMISE,
-					 player->state.el_info[typ].res_level,
+					 res_level,
 					 true);
 	if (dam) {
 		take_hit(player, dam, killer);

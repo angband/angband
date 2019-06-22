@@ -815,7 +815,7 @@ bool project(struct source origin, int rad, struct loc finish,
 						if (i == num_path_grids) continue;
 					}
 				}
-				
+
 				/* Accept remaining grids if in LOS */
 				if (los(cave, centre, grid)) {
 					blast_grid[num_grids].y = y;
