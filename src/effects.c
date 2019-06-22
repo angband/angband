@@ -2885,7 +2885,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	/* Pick a spot */
 	pick = randint0(num_spots);
 	while (pick) {
-		spots = spots->next;
+		struct jumps *next = spots->next;
+		mem_free(spots);
+		spots = next;
 		pick--;
 	}
 
@@ -2900,6 +2902,12 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
+
+	while (spots) {
+		struct jumps *next = spots->next;
+		mem_free(spots);
+		spots = next;
+	}
 
 	return true;
 }
