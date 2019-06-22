@@ -4558,7 +4558,6 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 {
 	int lev;
 	struct object *obj, *staff, *arrows;
-	bool used = false;
 	const char *q, *s;
 	bool good = false, great = false;
 	bool none_left = false;
@@ -4568,7 +4567,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	s = "You have no staff to use.";
 	if (!get_item(&obj, q, s, 0, item_tester_hook_staff,
 				  (USE_INVEN | USE_FLOOR))) {
-		return (used);
+		return false;
 	}
 
 	/* Extract the object "level" */
@@ -4599,7 +4598,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	arrows = make_object(cave, player->lev, good, great, false, NULL, TV_ARROW);
 	drop_near(cave, &arrows, 0, player->grid, true);
 
-	return (used);
+	return true;
 }
 
 /**
