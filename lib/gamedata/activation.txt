@@ -551,7 +551,7 @@ aim:0
 power:11
 msg:Your {kind} glow{s} bright yellow...
 effect:RECHARGE
-dice:60
+dice:10
 desc:tries to recharge a wand or staff, destroying the wand or staff on failure
 
 name:BANISHMENT
