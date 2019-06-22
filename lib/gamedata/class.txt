@@ -1099,7 +1099,7 @@ dice:3
 effect:BEAM:CHAOS
 dice:8d$S
 expr:S:PLAYER_LEVEL:+ 0
-effect:ARC:CHAOS:30:10
+effect:ARC:CHAOS:0:10
 dice:8d$S
 expr:S:PLAYER_LEVEL:+ 0
 effect:BALL:CHAOS:3

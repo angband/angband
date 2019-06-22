@@ -767,19 +767,18 @@ bool project(struct source origin, int rad, struct loc finish,
 				if ((flg & (PROJECT_THRU)) || square_ispassable(cave, grid)) {
 					/* If this is a wall grid, ... */
 					if (!square_isprojectable(cave, grid)) {
+						bool can_see_one = false;
 						/* Check neighbors */
-						for (i = 0, k = 0; i < 8; i++) {
-							int yy = y + ddy_ddd[i];
-							int xx = x + ddx_ddd[i];
-
-							if (los(cave, centre, loc(xx, yy))) {
-								k++;
+						for (i = 0; i < 8; i++) {
+							struct loc adj_grid = loc_sum(grid, ddgrid_ddd[i]);
+							if (los(cave, centre, adj_grid)) {
+								can_see_one = true;
 								break;
 							}
 						}
 
 						/* Require at least one adjacent grid in LOS. */
-						if (!k)
+						if (!can_see_one)
 							continue;
 					}
 				} else if (!square_isprojectable(cave, grid))
@@ -791,7 +790,7 @@ bool project(struct source origin, int rad, struct loc finish,
 					continue;
 
 
-				/* Do we need to consider a  restricted angle? */
+				/* Do we need to consider a restricted angle? */
 				if (flg & (PROJECT_ARC)) {
 					/* Use angle comparison to delineate an arc. */
 					int n2y, n2x, tmp, rotate, diff;
@@ -800,37 +799,30 @@ bool project(struct source origin, int rad, struct loc finish,
 					n2y = y - start.y + 20;
 					n2x = x - start.x + 20;
 
-					/* 
-					 * Find the angular difference (/2) between 
-					 * the lines to the end of the arc's center-
-					 * line and to the current grid.
+					/* Find the angular difference (/2) between the lines to
+					 * the end of the arc's center-line and to the current grid.
 					 */
 					rotate = 90 - get_angle_to_grid[n1y][n1x];
 					tmp = ABS(get_angle_to_grid[n2y][n2x] + rotate) % 180;
 					diff = ABS(90 - tmp);
 
-					/* 
-					 * If difference is not greater then that 
-					 * allowed, and the grid is in LOS, accept it.
-					 */
-					if (diff < (degrees_of_arc + 6) / 4) {
-						if (los(cave, centre, grid)) {
-							blast_grid[num_grids].y = y;
-							blast_grid[num_grids].x = x;
-							distance_to_grid[num_grids] = dist_from_centre;
-							sqinfo_on(square(cave, grid).info, SQUARE_PROJECT);
-							num_grids++;
+					/* If difference is greater then that allowed, skip it */
+					if (diff >= (degrees_of_arc + 6) / 4) {
+						/* ...unless it's on the target path */
+						for (i = 0; i < num_path_grids; i++) {
+							if (loc_eq(grid, path_grid[i])) break;
 						}
+						if (i == num_path_grids) continue;
 					}
-				} else {
-					/* Accept all grids in LOS */
-					if (los(cave, centre, loc(x, y))) {
-						blast_grid[num_grids].y = y;
-						blast_grid[num_grids].x = x;
-						distance_to_grid[num_grids] = dist_from_centre;
-						sqinfo_on(square(cave, grid).info, SQUARE_PROJECT);
-						num_grids++;
-					}
+				}
+				
+				/* Accept remaining grids if in LOS */
+				if (los(cave, centre, grid)) {
+					blast_grid[num_grids].y = y;
+					blast_grid[num_grids].x = x;
+					distance_to_grid[num_grids] = dist_from_centre;
+					sqinfo_on(square(cave, grid).info, SQUARE_PROJECT);
+					num_grids++;
 				}
 			}
 		}
