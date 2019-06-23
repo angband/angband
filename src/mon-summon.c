@@ -465,12 +465,13 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	mon = square_monster(cave, near);
 
 	/* If delay, try to let the player act before the summoned monsters,
-	 * including slowing down faster monsters for one turn */
-	/* XXX should this now be hold monster for a turn? */
+	 * including holding faster monsters for the required number of turns */
 	if (delay) {
+		int turns = (mon->race->speed + 9 - player->state.speed) / 10;
 		mon->energy = 0;
-		if (mon->race->speed > player->state.speed) {
-			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE);
+		if (turns) {
+			/* Set timer directly to avoid resistance */
+			mon->m_timed[MON_TMD_HOLD] = turns;
 		}
 	}
 

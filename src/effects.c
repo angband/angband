@@ -2326,7 +2326,8 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 int recharge_failure_chance(const struct object *obj, int strength) {
 	/* Ease of recharge ranges from 9 down to 4 (wands) or 3 (staffs) */
 	int ease_of_recharge = (100 - obj->kind->level) / 10;
-	int raw_chance = strength + ease_of_recharge - 2 * (obj->pval / obj->number);
+	int raw_chance = strength + ease_of_recharge
+		- 2 * (obj->pval / obj->number);
 	return raw_chance > 1 ? raw_chance : 1;
 }
 
@@ -2340,13 +2341,15 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
 	int i, t;
 	int strength = context->value.base;
-	player->upkeep->recharge_pow = strength; // Used to show recharge failure rates
 	struct object *obj;
 	bool used = false;
 	const char *q, *s;
 
 	/* Immediately obvious */
 	context->ident = true;
+
+	/* Used to show recharge failure rates */
+	player->upkeep->recharge_pow = strength;
 
 	/* Get an item */
 	q = "Recharge which item? ";
@@ -2582,7 +2585,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
 			count += summon_specific(player->grid, player->depth + level_boost,
-									 summon_type, true, false);
+									 summon_type, true, one_in_(4));
 			summon_max--;
 		}
 	}
