@@ -1605,7 +1605,6 @@ static errr finish_parse_feat(struct parser *p) {
 			f_info[fidx].next = NULL;
 		mem_free(f);
 	}
-	z_info->f_max += 1;
 
 	/* Set the terrain constants */
 	set_terrain();
