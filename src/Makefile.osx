@@ -127,7 +127,6 @@ LIBFILES = \
   ../lib/gamedata/*.txt \
   ../lib/screens/*.txt \
   ../lib/help/*.txt \
-  ../lib/help/*.hlp \
   ../lib/customize/*.prf \
 
 install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
@@ -149,7 +148,6 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/gamedata/*.txt $(APPRES)/lib/gamedata
 	@cp ../lib/screens/*.txt $(APPRES)/lib/screens
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
-	@cp ../lib/help/*.hlp $(APPRES)/lib/help
 	@cp ../lib/customize/*.prf $(APPRES)/lib/customize
 
 	# 'optionally' install sound and graphics tiles, if present

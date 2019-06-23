@@ -1,39 +1,26 @@
-~~~~~~~~~~~~~~~~~~
-The Angband Manual
-~~~~~~~~~~~~~~~~~~
+This is a short in-game reference to available commands and the symbols
+you might encounter in-game.  For more detailed help, please see:
 
-.. image:: mr-att.png
-   :alt: 
-   :align: center
+   https://angband.readthedocs.io/en/latest/
 
-.. sectnum::
 
-.. contents:: Table of Contents
-   :depth: 1
+Please choose one of the following help files:
 
-.. include:: general.txt
+    (a) Available commands
+    (b) Available symbols
 
-.. include:: birth.txt
 
-.. include:: dungeon.txt
 
-.. include:: attack.txt
 
-.. include:: playing.txt
 
-.. include:: command.txt
 
-.. include:: option.txt
 
-.. include:: customize.txt
+Browser/help commands:
+  #     go to line         %  go to file         ?  go to last file/main menu
+  SPACE advance 1 page     -  back up 1 page     /  search for text
+  RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
+  +     advance 1/2 page   _  back up 1/2 page   !  toggle case sensitivity
 
-.. include:: modifying.txt
+.. menu:: [a] commands.txt
 
-.. include:: debug.txt
-
-.. include:: version.txt
-
-.. include:: copying.txt
-
-.. include:: ../../thanks.txt
-
+.. menu:: [b] symbols.txt
