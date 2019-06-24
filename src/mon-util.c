@@ -1491,6 +1491,7 @@ bool monster_change_shape(struct monster *mon)
 	if (race) {
 		mon->original_race = mon->race;
 		mon->race = race;
+		mon->mspeed = mon->race->speed;
 	}
 
 	/* Emergency teleport if needed */
