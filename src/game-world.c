@@ -657,17 +657,6 @@ void process_world(struct chunk *c)
 		player_dec_timed(player, TMD_FOOD, i, false);
 	}
 
-	/* Gorged */
-	if (player_timed_grade_eq(player, TMD_FOOD, "Gorged") && one_in_(5)) {
-		/* Up it comes... */
-		msg("You vomit.");
-		disturb(player, 1);
-
-		/* Lose a random amount */
-		(void) player_dec_timed(player, TMD_FOOD,
-								randint1(player->timed[TMD_FOOD] - 100), false);
-	}
-
 	/* Faint or starving */
 	if (player_timed_grade_eq(player, TMD_FOOD, "Faint")) {
 		/* Faint occasionally */

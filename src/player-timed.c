@@ -239,7 +239,7 @@ static enum parser_error parse_player_timed_grade(struct parser *p)
 
 	/* Set food constants - hack */
 	if (streq(t->name, "FOOD")) {
-		if (l->name == NULL) {
+		if (streq(l->name, "Fed")) {
 			PY_FOOD_FULL = l->max;
 		} else if (streq(l->name, "Starving")) {
 			PY_FOOD_STARVE = l->max;

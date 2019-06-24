@@ -1972,8 +1972,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Temporary flags */
-	if (player_timed_grade_eq(p, TMD_FOOD, "Gorged")) {
-		state->speed -= 10;
+	if (player_timed_grade_eq(p, TMD_FOOD, "Full")) {
+		int badness = (player->timed[TMD_FOOD] - PY_FOOD_FULL) / 100;
+		state->speed -= badness;
 	} else if (player_timed_grade_eq(p, TMD_FOOD, "Hungry")) {
 		int badness = 10 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_HUNGRY;
 		state->to_h -= badness;
