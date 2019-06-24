@@ -119,6 +119,7 @@ struct angband_constants
 	u16b max_sight;		/* Maximum visual range */
 	u16b max_range;		/* Maximum missile and spell range */
 	u16b start_gold;	/* Amount of gold the player starts with */
+	u16b food_value;	/* Number of turns 1% of food lasts */
 };
 
 struct init_module {

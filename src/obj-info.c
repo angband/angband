@@ -1595,9 +1595,15 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 
-			/* Nourishment is just a flat amount */
 			case EFINFO_CONST: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base/2);
+				break;
+			}
+			case EFINFO_FOOD: {
+				char *fed = effect->subtype ? "leaves you nourished" :
+					"feeds you";
+				strnfmt(desc, sizeof(desc), effect_desc(effect), fed,
+						value.base * z_info->food_value);
 				break;
 			}
 			case EFINFO_CURE: {

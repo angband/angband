@@ -573,8 +573,8 @@ desc:grants you protection from evil for 1d25 plus 3 times your character level 
 name:SATISFY
 aim:0
 power:7
-effect:SET_NOURISH
-dice:16000
+effect:NOURISH:SET_TO
+dice:60
 desc:magically renders you well-fed, curing any gastrointestinal problems
 
 name:BLESSING
@@ -1191,8 +1191,8 @@ desc:causes you to breathe either cold or flames for 80 damage
 name:FOOD_WAYBREAD
 aim:0
 power:4
-effect:NOURISH
-dice:7500
+effect:NOURISH:INC_TO
+dice:75
 effect:CURE:POISONED
 effect:HEAL_HP
 dice:4d8
@@ -1245,9 +1245,8 @@ desc:hastes you for a while, but then makes you slower for a while afterward
 name:SHROOM_PURGING
 aim:0
 power:5
-effect:SET_NOURISH
-dice:$B
-expr:B:FOOD_FAINT:- 1
+effect:NOURISH:SET_TO
+dice:5
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:CURE:POISONED

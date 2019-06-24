@@ -467,8 +467,8 @@ desc:Changes you into the shape of a quick and stealthy fox.
 desc:  While shapechanged you cannot use items.
 
 spell:Satisfy Hunger:2:2:25:2
-effect:SET_NOURISH
-dice:16000
+effect:NOURISH:SET_TO
+dice:60
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
@@ -1477,8 +1477,8 @@ magic:3:400:2
 book:nature book:town:[Lesser Charms]:6:nature
 
 spell:Satisfy Hunger:3:1:25:2
-effect:SET_NOURISH
-dice:16000
+effect:NOURISH:SET_TO
+dice:60
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 

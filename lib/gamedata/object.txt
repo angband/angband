@@ -208,8 +208,8 @@ alloc:40:0 to 50
 pile:100:1d5
 power:0
 msg:That tastes good.
-effect:NOURISH
-dice:6000
+effect:NOURISH:INC_BY
+dice:40
 desc:This nutritious but fairly bland food is familiar to anyone contemplating
 desc: long journeys.
 
@@ -223,8 +223,8 @@ alloc:40:5 to 60
 pile:100:2d3
 power:0
 msg:That tastes good.
-effect:NOURISH
-dice:2500
+effect:NOURISH:INC_BY
+dice:25
 desc:A strange fungal growth, prone to moving if not observed.  Not very tasty
 desc: but quite filling.
 
@@ -238,8 +238,8 @@ alloc:40:30 to 100
 pile:10:1d3
 power:4
 msg:That tastes good.
-effect:NOURISH
-dice:7500
+effect:NOURISH:INC_TO
+dice:75
 effect:CURE:POISONED
 effect:HEAL_HP
 dice:20
@@ -253,8 +253,8 @@ level:0
 weight:2
 cost:1
 power:0
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:10
 effect:CRUNCH
 desc:A filling if tooth-breaking biscuit made mostly of rye.
 
@@ -266,8 +266,8 @@ weight:5
 cost:1
 power:0
 msg:That tastes great!
-effect:NOURISH
-dice:250
+effect:NOURISH:INC_BY
+dice:3
 effect:TIMED_INC:CONFUSED
 dice:-1+1d5
 desc:It raises your spirits.
@@ -280,8 +280,8 @@ weight:10
 cost:2
 power:0
 msg:That tastes great!  A fine vintage.
-effect:NOURISH
-dice:250
+effect:NOURISH:INC_BY
+dice:3
 effect:TIMED_INC:BOLD
 dice:79+1d41
 desc:A fine way to wash down some otherwise unappetising rations.
@@ -300,8 +300,8 @@ power:10
 effect:CURE:BLIND
 effect:TIMED_INC:TELEPATHY
 dice:50+7d7
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 
 name:Fast Recovery
 type:mushroom
@@ -318,8 +318,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:BLIND
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 
 name:Vigor
 type:mushroom
@@ -335,8 +335,8 @@ effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:WIS
 effect:RESTORE_STAT:DEX
 effect:RESTORE_STAT:CON
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 
 name:Clear Mind
 type:mushroom
@@ -354,8 +354,8 @@ effect:CURE:AFRAID
 effect:CURE:IMAGE
 effect:TIMED_INC:OPP_CONF
 dice:50+7d7
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 
 name:Emergency
 type:mushroom
@@ -374,8 +374,8 @@ effect:TIMED_INC:OPP_COLD
 dice:25+5d5
 effect:HEAL_HP
 dice:200
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 
 name:Terror
 type:mushroom
@@ -388,8 +388,8 @@ pile:70:1d4
 power:5
 effect:TIMED_SET:TERROR
 dice:25+5d5
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 desc:It allows you to run for your life.
 
 name:Stoneskin
@@ -403,8 +403,8 @@ pile:70:1d4
 power:5
 effect:TIMED_SET:STONESKIN
 dice:50+7d7
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 desc:Its poison turns your skin to stone, albeit briefly.
 
 name:Turbulence
@@ -428,8 +428,8 @@ alloc:10:10 to 40
 pile:70:1d4
 power:5
 effect:RESTORE_MANA
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 effect:RANDOM
 dice:2
 effect:DRAIN_STAT:STR
@@ -446,8 +446,8 @@ pile:70:1d4
 power:5
 effect:TIMED_INC:SPRINT
 dice:100
-effect:NOURISH
-dice:500
+effect:NOURISH:INC_BY
+dice:5
 desc:It hastes you for a while, but then makes you slower for a while afterward.
 
 name:Purging
@@ -459,9 +459,8 @@ cost:60
 alloc:1:15 to 100
 pile:70:1d4
 power:5
-effect:SET_NOURISH
-dice:$B
-expr:B:FOOD_FAINT:- 1
+effect:NOURISH:SET_TO
+dice:5
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:CURE:POISONED
@@ -2610,8 +2609,8 @@ cost:10
 alloc:60:5 to 100
 pile:100:2d3
 power:7
-effect:SET_NOURISH
-dice:16000
+effect:NOURISH:SET_TO
+dice:60
 
 name:Light
 type:scroll
@@ -2938,8 +2937,8 @@ effect:TIMED_DEC:CUT
 dice:20
 effect:TIMED_DEC:CONFUSED
 dice:20
-effect:NOURISH
-dice:150
+effect:NOURISH:INC_BY
+dice:1
 
 name:Cure Serious Wounds
 type:potion
@@ -2955,8 +2954,8 @@ dice:40
 effect:CURE:BLIND
 effect:CURE:CUT
 effect:CURE:CONFUSED
-effect:NOURISH
-dice:150
+effect:NOURISH:INC_BY
+dice:1
 
 name:Cure Critical Wounds
 type:potion
@@ -2975,8 +2974,8 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-effect:NOURISH
-dice:150
+effect:NOURISH:INC_BY
+dice:1
 
 name:Healing
 type:potion
@@ -2995,8 +2994,8 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-effect:NOURISH
-dice:200
+effect:NOURISH:INC_BY
+dice:2
 
 name:*Healing*
 type:potion
@@ -3016,8 +3015,8 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-effect:NOURISH
-dice:300
+effect:NOURISH:INC_BY
+dice:3
 
 name:Life
 type:potion
@@ -3322,8 +3321,8 @@ cost:2
 alloc:10:1 to 10
 pile:70:2d3
 power:0
-effect:NOURISH
-dice:1000
+effect:NOURISH:INC_BY
+dice:10
 
 name:Sleep
 type:potion
@@ -3338,8 +3337,8 @@ armor:0:0
 power:0
 effect:TIMED_INC:PARALYZED
 dice:5+1d5
-effect:NOURISH
-dice:100
+effect:NOURISH:INC_BY
+dice:1
 
 name:Blindness
 type:potion
@@ -3368,8 +3367,8 @@ armor:0:0
 power:0
 effect:TIMED_INC:CONFUSED
 dice:10+4d5
-effect:NOURISH
-dice:50
+effect:NOURISH:INC_BY
+dice:1
 
 name:Poison
 type:potion
@@ -3398,8 +3397,8 @@ armor:0:0
 power:0
 effect:TIMED_INC:SLOW
 dice:15+1d25
-effect:NOURISH
-dice:50
+effect:NOURISH:INC_BY
+dice:1
 
 name:Surprise
 type:potion
@@ -3430,9 +3429,8 @@ alloc:10:3 to 15
 pile:100:1d2
 msg:The potion makes you vomit!
 power:0
-effect:SET_NOURISH
-dice:$B
-expr:B:FOOD_STARVE:- 1
+effect:NOURISH:SET_TO
+dice:2
 effect:CURE:POISONED
 effect:TIMED_INC_NO_RES:PARALYZED
 dice:4

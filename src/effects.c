@@ -857,12 +857,23 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 }
 
 /**
- * Feed the player.
+ * Feed the player, or set their satiety level.
  */
 bool effect_handler_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false, false);
+	amount *= z_info->food_value;
+	if (context->subtype == 0) {
+		player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false, false);
+	} else if (context->subtype == 1) {
+		player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
+	} else if (context->subtype == 2) {
+		if (player->timed[TMD_FOOD] < amount) {
+			player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
+		}
+	} else {
+		return false;
+	}
 	context->ident = true;
 	return true;
 }
@@ -1012,17 +1023,6 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 	if (context->other)
 		amount = player->timed[context->subtype] / context->other;
 	(void) player_dec_timed(player, context->subtype, MAX(amount, 0), true);
-	context->ident = true;
-	return true;
-}
-
-/**
- * Make the player, um, lose food.  Or gain it.
- */
-bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, false);
-	(void) player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
 	context->ident = true;
 	return true;
 }
@@ -5336,6 +5336,17 @@ int effect_subtype(int index, const char *type)
 			case EF_TIMED_INC_NO_RES:
 			case EF_TIMED_DEC: {
 				val = timed_name_to_idx(type);
+				break;
+			}
+
+				/* Nourishment types */
+			case EF_NOURISH: {
+				if (streq(type, "INC_BY"))
+					val = 0;
+				else if (streq(type, "SET_TO"))
+					val = 1;
+				else if (streq(type, "INC_TO"))
+					val = 2;
 				break;
 			}
 

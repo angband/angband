@@ -677,16 +677,6 @@ static int spell_value_base_max_sight(void)
 	return z_info->max_sight;
 }
 
-static int spell_value_base_food_faint(void)
-{
-	return PY_FOOD_FAINT;
-}
-
-static int spell_value_base_food_starve(void)
-{
-	return PY_FOOD_STARVE;
-}
-
 static int spell_value_base_weapon_damage(void)
 {
 	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
@@ -719,8 +709,6 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "DUNGEON_LEVEL", spell_value_base_dungeon_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },
-		{ "FOOD_FAINT", spell_value_base_food_faint },
-		{ "FOOD_STARVE", spell_value_base_food_starve },
 		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
 		{ "PLAYER_HP", spell_value_base_player_hp },
 		{ "MONSTER_PERCENT_HP_GONE", spell_value_base_monster_percent_hp_gone },
