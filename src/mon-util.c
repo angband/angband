@@ -1491,7 +1491,7 @@ bool monster_change_shape(struct monster *mon)
 	if (race) {
 		mon->original_race = mon->race;
 		mon->race = race;
-		mon->mspeed = mon->race->speed;
+		mon->mspeed += mon->race->speed - mon->original_race->speed;
 	}
 
 	/* Emergency teleport if needed */
@@ -1511,6 +1511,7 @@ bool monster_revert_shape(struct monster *mon)
 	if (mon->original_race) {
 		mon->race = mon->original_race;
 		mon->original_race = NULL;
+		mon->mspeed += mon->original_race->speed - mon->race->speed;
 
 		/* Emergency teleport if needed */
 		if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
