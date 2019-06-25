@@ -303,17 +303,24 @@ void player_regen_hp(struct player *p)
 {
 	s32b new_chp, new_chp_frac;
 	int old_chp, percent = 0;
+	int food_bonus = 0;
 
 	/* Save the old hitpoints */
 	old_chp = p->chp;
 
 	/* Default regeneration */
-	if (p->timed[TMD_FOOD] >= PY_FOOD_WEAK)
+	if (p->timed[TMD_FOOD] >= PY_FOOD_WEAK) {
 		percent = PY_REGEN_NORMAL;
-	else if (p->timed[TMD_FOOD] >= PY_FOOD_FAINT)
+	} else if (p->timed[TMD_FOOD] >= PY_FOOD_FAINT) {
 		percent = PY_REGEN_WEAK;
-	else if (p->timed[TMD_FOOD] >= PY_FOOD_STARVE)
+	} else if (p->timed[TMD_FOOD] >= PY_FOOD_STARVE) {
 		percent = PY_REGEN_FAINT;
+	}
+
+	/* Food bonus - better fed players regenerate up to 30% faster */
+	food_bonus = p->timed[TMD_FOOD] / (z_info->food_value * 25);
+	percent *= 10 + food_bonus;
+	percent /= 10;
 
 	/* Various things speed up regeneration */
 	if (player_of_has(p, OF_REGEN))

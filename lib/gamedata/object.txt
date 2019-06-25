@@ -2610,7 +2610,7 @@ alloc:60:5 to 100
 pile:100:2d3
 power:7
 effect:NOURISH:SET_TO
-dice:60
+dice:50
 
 name:Light
 type:scroll
