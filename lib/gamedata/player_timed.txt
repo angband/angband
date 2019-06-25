@@ -324,9 +324,9 @@ grade:p:10000:AttVamp:Your can drain life from your victims!
 on-end:Your life-draining power passes.
 
 name:HEAL
-desc:turn-by-turn minor healing
-grade:G:10000:Heal:You feel the healing powers of nature!
-on-end:The healing effect fades.
+desc:turn-by-turn healing through increased metabolism
+grade:G:10000:Heal:Your metabolism speeds up!
+on-end:Your metabolism return to normal.
 
 name:COMMAND
 desc:commanding a monster

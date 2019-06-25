@@ -565,7 +565,7 @@ effect:SHAPECHANGE:bear
 desc:Allows you to take the form of a great bear of the mountains, sweeping
 desc: aside your enemies with your mighty paws.
 
-book:nature book:dungeon:[Nature Craft]:4:nature
+book:nature book:dungeon:[Nature Craft]:5:nature
 book-graphics:?:o
 book-properties:30000:15:40 to 100
 
@@ -592,14 +592,18 @@ effect:RESTORE_STAT:CON
 effect:RESTORE_EXP
 desc:Restores all stats and experience points to maximum.
 
-spell:Herbal Healing:40:30:90:100
+spell:Rapid Regeneration:37:30:90:100
+effect:TIMED_INC:HEAL
+dice:5+1d3
+desc:Speed up digestion to increase regeneration of hitpoints for
+desc: the next 5+1d3 turns (or until hungry).
+
+spell:Herbal Curing:40:30:90:100
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
-effect:TIMED_INC:HEAL
-dice:5+1d3
-desc:Cures all cuts, poison and stunning and heals 30 hit points on each of
-desc: the next 5+1d3 turns.
+effect:CURE:BLACKBREATH
+desc:Cures all cuts, poison, stunning and black breath.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
 book-graphics:?:o
@@ -1535,14 +1539,12 @@ spell:Decoy:30:30:40:60
 effect:GLYPH:DECOY
 desc:Leaves a magical decoy that looks and sounds like the player.
 
-spell:Herbal Healing:40:30:90:200
+spell:Herbal Curing:40:30:90:200
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
-effect:TIMED_INC:HEAL
-dice:5+1d3
-desc:Cures all cuts, poison and stunning and heals 30 hit points on each of
-desc: the next 5+1d3 turns.
+effect:CURE:BLACKBREATH
+desc:Cures all cuts, poison, stunning and black breath.
 
 
 ############### BLACKGUARD ###############

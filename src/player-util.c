@@ -327,6 +327,8 @@ void player_regen_hp(struct player *p)
 		percent *= 2;
 	if (player_resting_can_regenerate(p))
 		percent *= 2;
+	if (player->timed[TMD_HEAL])
+		percent *= 10;
 
 	/* Some things slow it down */
 	if (player_of_has(p, OF_IMPAIR_HP))

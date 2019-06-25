@@ -657,6 +657,14 @@ void process_world(struct chunk *c)
 		player_dec_timed(player, TMD_FOOD, i, false);
 	}
 
+	/* Fast metabolism */
+	if (player->timed[TMD_HEAL]) {
+		player_dec_timed(player, TMD_FOOD, 10 * z_info->food_value, false);
+		if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
+			player_set_timed(player, TMD_HEAL, 0, true);
+		}
+	}
+
 	/* Faint or starving */
 	if (player_timed_grade_eq(player, TMD_FOOD, "Faint")) {
 		/* Faint occasionally */
