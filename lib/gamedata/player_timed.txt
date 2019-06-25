@@ -118,7 +118,7 @@ grade:r:1:Starving: :You are starving!!
 grade:r:5:Faint:You are still faint.:You are getting faint from hunger!
 grade:o:10:Weak:You are still weak.:You are getting weak from hunger!
 grade:y:20:Hungry:You are still hungry.:You are getting hungry.
-grade:G:90:Fed:You are no longer hungry.:You are no longer full.
+grade:G:80:Fed:You are no longer hungry.:You are no longer full.
 grade:g:100:Full:You are full!:
 
 name:PROTEVIL

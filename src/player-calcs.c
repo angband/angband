@@ -1971,21 +1971,24 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->stat_ind[i] = ind;
 	}
 
-	/* Temporary flags */
+	/* Effects of food outside the "Fed" range */
 	if (player_timed_grade_eq(p, TMD_FOOD, "Full")) {
-		int badness = (player->timed[TMD_FOOD] - PY_FOOD_FULL) / 100;
-		state->speed -= badness;
+		int badness = ((p->timed[TMD_FOOD] - PY_FOOD_FULL) * 10)
+			/ (PY_FOOD_MAX - PY_FOOD_FULL);
+		if (!p->timed[TMD_ATT_VAMP]) {
+			state->speed -= badness;
+		}
 	} else if (player_timed_grade_eq(p, TMD_FOOD, "Hungry")) {
-		int badness = 10 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_HUNGRY;
+		int badness = 10 - (p->timed[TMD_FOOD] * 10) / PY_FOOD_HUNGRY;
 		state->to_h -= badness;
 		state->to_d -= badness;
 	} else if (player_timed_grade_eq(p, TMD_FOOD, "Weak")) {
-		int badness = 15 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_WEAK;
+		int badness = 15 - (p->timed[TMD_FOOD] * 10) / PY_FOOD_WEAK;
 		state->to_h -= badness;
 		state->to_d -= badness;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	} else if (player_timed_grade_eq(p, TMD_FOOD, "Faint")) {
-		int badness = 20 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_FAINT;
+		int badness = 20 - (p->timed[TMD_FOOD] * 10) / PY_FOOD_FAINT;
 		state->to_h -= badness;
 		state->to_d -= badness;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
@@ -1994,7 +1997,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->skills[SKILL_DISARM_MAGIC] =
 			state->skills[SKILL_DISARM_MAGIC] * 9 / 10;
 	} else if (player_timed_grade_eq(p, TMD_FOOD, "Starving")) {
-		int badness = 28 - (player->timed[TMD_FOOD] * 10) / PY_FOOD_STARVE;
+		int badness = 28 - (p->timed[TMD_FOOD] * 10) / PY_FOOD_STARVE;
 		state->to_h -= badness;
 		state->to_d -= badness;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 7 / 10;
@@ -2005,6 +2008,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->skills[SKILL_SAVE] = state->skills[SKILL_SAVE] * 9 / 10;
 		state->skills[SKILL_SEARCH] = state->skills[SKILL_SEARCH] * 9 / 10;
 	}
+
+	/* Other timed effects */
 	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
