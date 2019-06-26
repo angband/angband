@@ -653,6 +653,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 {
 	struct object *weapon = slot_object(p, slot_by_name(p, "weapon"));
 	struct object *shield = slot_object(p, slot_by_name(p, "arm"));
+	int nblows = p->state.num_blows / 100;
 	int bash_quality, bash_dam;
 
 	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
@@ -669,8 +670,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 	if (!equipped_item_by_slot_name(p, "weapon")) {
 		/* Unarmed... */
 		bash_chance *= 4;
-	} else if (weapon->dd * weapon->ds * (*blows) <
-			   shield->dd * shield->ds * 3) {
+	} else if (weapon->dd * weapon->ds * nblows < shield->dd * shield->ds * 3) {
 		/* ... or armed with a puny weapon */
 		bash_chance *= 2;
 	}

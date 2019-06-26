@@ -548,7 +548,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 			/* Hack - only permanent with high chance (no-mana casting) */
 			bool perm = (randint0(100) < chance / 2) && (chance >= 50);
 			msg("You have damaged your health!");
-			player_stat_dec(player, STAT_CON, perm);
+			player_stat_dec(p, STAT_CON, perm);
 		}
 	}
 
@@ -558,7 +558,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 			msg("You faint from the effort!");
 
 			/* Bypass free action */
-			(void)player_inc_timed(player, TMD_PARALYZED, randint1(amount),
+			(void)player_inc_timed(p, TMD_PARALYZED, randint1(amount),
 								   true, false);
 		}
 	}
@@ -566,7 +566,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	/* Scrambled stats */
 	if (flag & PY_EXERT_SCRAMBLE) {
 		if (randint0(100) < chance) {
-			(void)player_inc_timed(player, TMD_SCRAMBLE, randint1(amount),
+			(void)player_inc_timed(p, TMD_SCRAMBLE, randint1(amount),
 								   true, true);
 		}
 	}
@@ -575,7 +575,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	if (flag & PY_EXERT_CUT) {
 		if (randint0(100) < chance) {
 			msg("Wounds appear on your body!");
-			(void)player_inc_timed(player, TMD_CUT, randint1(amount),
+			(void)player_inc_timed(p, TMD_CUT, randint1(amount),
 								   true, false);
 		}
 	}
@@ -583,7 +583,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	/* Confusion */
 	if (flag & PY_EXERT_CONF) {
 		if (randint0(100) < chance) {
-			(void)player_inc_timed(player, TMD_CONFUSED, randint1(amount),
+			(void)player_inc_timed(p, TMD_CONFUSED, randint1(amount),
 								   true, true);
 		}
 	}
@@ -591,7 +591,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	/* Hallucination */
 	if (flag & PY_EXERT_HALLU) {
 		if (randint0(100) < chance) {
-			(void)player_inc_timed(player, TMD_IMAGE, randint1(amount),
+			(void)player_inc_timed(p, TMD_IMAGE, randint1(amount),
 								   true, true);
 		}
 	}
@@ -600,7 +600,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	if (flag & PY_EXERT_SLOW) {
 		if (randint0(100) < chance) {
 			msg("You feel suddenly lethargic.");
-			(void)player_inc_timed(player, TMD_SLOW, randint1(amount),
+			(void)player_inc_timed(p, TMD_SLOW, randint1(amount),
 								   true, false);
 		}
 	}
