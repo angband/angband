@@ -317,18 +317,16 @@ void player_regen_hp(struct player *p)
 		percent = PY_REGEN_FAINT;
 	}
 
-	/* Food bonus - better fed players regenerate up to 30% faster */
-	food_bonus = p->timed[TMD_FOOD] / (z_info->food_value * 25);
-	percent *= 10 + food_bonus;
-	percent /= 10;
+	/* Food bonus - better fed players regenerate up to 1/3 faster */
+	food_bonus = p->timed[TMD_FOOD] / (z_info->food_value * 10);
+	percent *= 30 + food_bonus;
+	percent /= 30;
 
 	/* Various things speed up regeneration */
 	if (player_of_has(p, OF_REGEN))
 		percent *= 2;
 	if (player_resting_can_regenerate(p))
 		percent *= 2;
-	if (player->timed[TMD_HEAL])
-		percent *= 10;
 
 	/* Some things slow it down */
 	if (player_of_has(p, OF_IMPAIR_HP))
