@@ -659,7 +659,7 @@ void process_world(struct chunk *c)
 
 	/* Fast metabolism */
 	if (player->timed[TMD_HEAL]) {
-		player_dec_timed(player, TMD_FOOD, 10 * z_info->food_value, false);
+		player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
 		if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
 			player_set_timed(player, TMD_HEAL, 0, true);
 		}
