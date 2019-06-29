@@ -1487,6 +1487,18 @@ bool monster_change_shape(struct monster *mon)
 		race = select_shape(mon, summon_type);
 	}
 
+	/* Print a message immediately, update visuals */
+	if (monster_is_obvious(mon)) {
+		char m_name[80];
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
+		msgt(MSG_GENERIC, "%s %s", m_name, "shimmers and changes!");
+		if (player->upkeep->health_who == mon)
+			player->upkeep->redraw |= (PR_HEALTH);
+
+		player->upkeep->redraw |= (PR_MONLIST);
+		square_light_spot(cave, mon->grid);
+	}
+
 	/* Set the race */
 	if (race) {
 		mon->original_race = mon->race;
@@ -1509,6 +1521,16 @@ bool monster_change_shape(struct monster *mon)
 bool monster_revert_shape(struct monster *mon)
 {
 	if (mon->original_race) {
+		if (monster_is_obvious(mon)) {
+			char m_name[80];
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
+			msgt(MSG_GENERIC, "%s %s", m_name, "shimmers and changes!");
+			if (player->upkeep->health_who == mon)
+				player->upkeep->redraw |= (PR_HEALTH);
+
+			player->upkeep->redraw |= (PR_MONLIST);
+			square_light_spot(cave, mon->grid);
+		}
 		mon->mspeed += mon->original_race->speed - mon->race->speed;
 		mon->race = mon->original_race;
 		mon->original_race = NULL;

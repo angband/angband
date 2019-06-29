@@ -195,8 +195,9 @@ static bool mon_set_timed(struct monster *mon,
 				mon->m_timed[effect_type] = old_timer;
 			}
 		} else if (timer == 0) {
-			if (!monster_revert_shape(mon))
+			if (!monster_revert_shape(mon)) {
 				quit ("Monster shapechange reversion failed!");
+			}
 		}
 	}
 
@@ -206,8 +207,6 @@ static bool mon_set_timed(struct monster *mon,
 		!(flag & MON_TMD_FLG_NOMESSAGE) &&
 		(flag & MON_TMD_FLG_NOTIFY)
 		&& monster_is_obvious(mon)) {
-			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
 			add_monster_message(mon, m_note, true);
 	}
 
