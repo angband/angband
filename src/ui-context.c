@@ -806,15 +806,13 @@ int context_menu_object(struct object *obj)
 			return 2;
 
 		case MENU_VALUE_DROP_ALL:
-			/* Drop entire stack with confirmation. */
-			if (get_check(format("Drop %s? ", header))) {
-				if (square_isshop(cave, player->grid))
-					cmdq_push(CMD_STASH);
-				else
-					cmdq_push(CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", obj);
-				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
-			}
+			/* Drop entire stack without confirmation. */
+			if (square_isshop(cave, player->grid))
+				cmdq_push(CMD_STASH);
+			else
+				cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 			return 1;
 
 		case CMD_BROWSE_SPELL:
