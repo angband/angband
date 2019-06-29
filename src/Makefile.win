@@ -7,6 +7,9 @@
 # Try "make CONSOLE=yes" to use PDCurses, as long as you set
 # PDCURSES_INCLUDE_DIR and PDCURSES_LIB.
 #
+# For a better looking Windows console, follow the instructions at
+# https://trac.rephial.org/wiki/Compiling
+#
 # Other options:
 #   OBJ_DIR=x will place .o files into directory 'x'
 #   MINGW=yes will use the mingw compiler
