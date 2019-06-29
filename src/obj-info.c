@@ -1603,7 +1603,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				char *fed = effect->subtype ? "leaves you nourished" :
 					"feeds you";
 				strnfmt(desc, sizeof(desc), effect_desc(effect), fed,
-						value.base * z_info->food_value);
+						value.base * z_info->food_value, value.base);
 				break;
 			}
 			case EFINFO_CURE: {
