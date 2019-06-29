@@ -4391,7 +4391,7 @@ static bool adjust_subwindow_geometry(const struct window *window,
 static void sort_to_top_aux(struct window *window,
 		size_t *next, struct subwindow **subwindows, bool top, bool always_top)
 {
-	assert(*next < N_ELEMENTS(window->subwindows));
+	assert(*next <= N_ELEMENTS(window->subwindows));
 
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		if (window->subwindows[i] == NULL
