@@ -1049,12 +1049,12 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Create a glyph */
-	square_add_glyph(cave, player->grid, context->subtype);
-
 	/* Push objects off the grid */
 	if (square_object(cave, player->grid))
 		push_object(player->grid);
+
+	/* Create a glyph */
+	square_add_glyph(cave, player->grid, context->subtype);
 
 	return true;
 }
