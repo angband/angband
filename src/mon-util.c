@@ -1341,7 +1341,16 @@ void steal_monster_item(struct monster *mon, int midx)
 				object_grab(player, obj);
 				delist_object(cave, obj);
 				delist_object(player->cave, obj->known);
-				inven_carry(player, obj, true, true);
+				/* Drop immediately if ignored to prevent pack overflow */
+				if (ignore_item_ok(obj)) {
+					char o_name[80];
+					object_desc(o_name, sizeof(o_name), obj,
+								ODESC_PREFIX | ODESC_FULL);
+					drop_near(cave, &obj, 0, player->grid, true);
+					msg("You drop %s.", o_name);
+				} else {
+					inven_carry(player, obj, true, true);
+				}
 			}
 
 			/* Monster wakes a little */
