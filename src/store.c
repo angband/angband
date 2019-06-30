@@ -542,8 +542,12 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 	/* Home accepts anything */
 	if (store->sidx == STORE_HOME) return true;
 
-	/* Ignore "worthless" items */
-	if (object_value(obj, 1) <= 0) return false;
+	/* Ignore apparently worthless items, except no-selling {??} items */
+	if (object_value(obj, 1) <= 0 && !(OPT(player, birth_no_selling) &&
+									   tval_has_variable_power(obj) &&
+									   !object_runes_known(obj))) {
+		return false;
+	}
 
 	/* No buy list means we buy anything */
 	if (!store->buy) return true;

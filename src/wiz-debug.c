@@ -1450,7 +1450,7 @@ static void do_cmd_wiz_cure_all(void)
 	(void)player_clear_timed(player, TMD_AMNESIA, true);
 
 	/* No longer hungry */
-	player_set_timed(player, TMD_FOOD, PY_FOOD_MAX - 1, false);
+	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false);
 
 	/* Redraw everything */
 	do_cmd_redraw();
