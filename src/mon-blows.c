@@ -268,7 +268,7 @@ static int monster_elemental_damage(melee_effect_handler_context_t *context,
 		}
 		case PROJ_COLD: {
 			imm_flag = RF_IM_COLD;
-			hurt_flag = RF_HURT_FIRE;
+			hurt_flag = RF_HURT_COLD;
 			*hurt_msg = MON_MSG_BADLY_FROZEN;
 			*die_msg = MON_MSG_FREEZE_SHATTER;
 			break;
@@ -281,13 +281,19 @@ static int monster_elemental_damage(melee_effect_handler_context_t *context,
 	}
 
 	rf_on(lore->flags, imm_flag);
-	rf_on(lore->flags, hurt_flag);
+	if (hurt_flag) {
+		rf_on(lore->flags, hurt_flag);
+	}
 
 	if (rf_has(context->t_mon->race->flags, imm_flag)) {
 		*hurt_msg = MON_MSG_RESIST_A_LOT;
+		*die_msg = MON_MSG_DIE;
 		damage = context->damage / 9;
 	} else if (rf_has(context->t_mon->race->flags, hurt_flag)) {
 		damage = context->damage * 2;
+	} else {
+		*hurt_msg = MON_MSG_NONE;
+		*die_msg = MON_MSG_DIE;
 	}
 
 	return damage;
