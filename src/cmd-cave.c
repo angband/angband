@@ -1479,6 +1479,12 @@ void do_cmd_mon_command(struct command *cmd)
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
 
 	switch (cmd->code) {
+		case CMD_READ_SCROLL: {
+			/* Actually 'r'elease monster */
+			mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
+			player_clear_timed(player, TMD_COMMAND, true);
+			break;
+		}
 		case CMD_CAST: {
 			int dir = DIR_UNKNOWN;
 			struct monster *t_mon = NULL;
@@ -1532,7 +1538,7 @@ void do_cmd_mon_command(struct command *cmd)
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
 			drop_near(cave, &obj, 0, mon->grid, true);
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			if (!ignore_item_ok(obj)) {
 				msg("%s drops %s.", m_name, o_name);
 			}
@@ -1645,7 +1651,7 @@ void do_cmd_mon_command(struct command *cmd)
 			break;
 		}
 		default: {
-			msg("Invalid monster command!");
+			msg("Valid commands: move, stand still, 'd'rop, 'm'agic, or 'r'elease.");
 			return;
 		}
 	}

@@ -330,8 +330,8 @@ on-end:Your metabolism return to normal.
 
 name:COMMAND
 desc:commanding a monster
-grade:P:10000:Cmd:Your consciousness flies outward!
-on-end:Your consciousness returns.
+grade:P:10000:Cmd:You focus on your target.
+on-end:Your resume control of your own body.
 
 name:ATT_RUN
 desc:escape on attack
