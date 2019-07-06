@@ -111,6 +111,7 @@ typedef enum cmd_context {
 	CMD_INIT,
 	CMD_BIRTH,
 	CMD_GAME,
+	CMD_DISTURB,
 	CMD_STORE,
 	CMD_DEATH
 } cmd_context;

@@ -58,10 +58,10 @@ static bool is_valid_pf(int y, int x)
 	struct loc grid = loc(x, y);
 
 	/* Unvisited means allowed */
-	if (!square_isknown(cave, grid)) return (true);
+	if (!square_isknown(cave, grid)) return true;
 
 	/* No damaging terrain */
-	if (!square_isdamaging(cave, grid)) return (true);
+	if (!square_isdamaging(cave, grid)) return true;
 
 	/* Require open space */
 	return (square_ispassable(cave, grid));
@@ -90,7 +90,7 @@ static void fill_terrain_info(void)
 }
 
 #define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) \
-							{ c = d; try_again = (true); }
+							{ c = d; try_again = true; }
 
 bool findpath(int y, int x)
 {
@@ -111,7 +111,7 @@ bool findpath(int y, int x)
 		}
 	} else {
 		bell("Target out of range.");
-		return (false);
+		return false;
 	}
 
 	/* 
@@ -148,7 +148,7 @@ bool findpath(int y, int x)
 	/* Failure */
 	if (terrain[y - oy][x - ox] == MAX_PF_LENGTH) {
 		bell("Target space unreachable.");
-		return (false);
+		return false;
 	}
 
 	/* Success */
@@ -175,7 +175,7 @@ bool findpath(int y, int x)
 
 	pf_result_index--;
 
-	return (true);
+	return true;
 }
 
 /**
@@ -550,14 +550,17 @@ static bool run_test(void)
 		if (square(cave, grid).mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_visible(mon)) {
-				return (true);
+				return true;
 			}
 		}
+
+		/* Visible traps abort running */
+		if (square_isvisibletrap(cave, grid)) return true;
 
 		/* Visible objects abort running */
 		for (obj = square_object(cave, grid); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->known && !ignore_item_ok(obj)) return (true);
+			if (obj->known && !ignore_item_ok(obj)) return true;
 
 		/* Assume unknown */
 		inv = true;
@@ -567,7 +570,7 @@ static bool run_test(void)
 			bool notice = square_isinteresting(cave, grid);
 
 			/* Interesting feature */
-			if (notice) return (true);
+			if (notice) return true;
 
 			/* The grid is "visible" */
 			inv = false;
@@ -583,10 +586,10 @@ static bool run_test(void)
 				option = new_dir;
 			} else if (option2) {
 				/* Three new directions. Stop running. */
-				return (true);
+				return true;
 			} else if (option != cycle[chome[prev_dir] + i - 1]) {
 				/* Two non-adjacent new directions.  Stop running. */
-				return (true);
+				return true;
 			} else if (new_dir & 0x01) {
 				/* Two new (adjacent) directions (case 1) */
 				option2 = new_dir;
@@ -626,7 +629,7 @@ static bool run_test(void)
 		if (square(cave, grid).mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_obvious(mon))
-				return (true);
+				return true;
 		}
 	}
 
@@ -641,12 +644,12 @@ static bool run_test(void)
 			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
 				/* Looking to break right */
 				if (run_break_right) {
-					return (true);
+					return true;
 				}
 			} else { /* Obstacle */
 				/* Looking to break left */
 				if (run_break_left) {
-					return (true);
+					return true;
 				}
 			}
 		}
@@ -660,19 +663,19 @@ static bool run_test(void)
 			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
 				/* Looking to break left */
 				if (run_break_left) {
-					return (true);
+					return true;
 				}
 			} else { /* Obstacle */
 				/* Looking to break right */
 				if (run_break_right) {
-					return (true);
+					return true;
 				}
 			}
 		}
 	} else { /* Not looking for open area */
 		/* No options */
 		if (!option) {
-			return (true);
+			return true;
 		} else if (!option2) { /* One option */
 			/* Primary option */
 			run_cur_dir = option;
@@ -690,10 +693,10 @@ static bool run_test(void)
 
 	/* About to hit a known wall, stop */
 		if (see_wall(run_cur_dir, player->grid))
-		return (true);
+		return true;
 
 	/* Failure */
-	return (false);
+	return false;
 }
 
 

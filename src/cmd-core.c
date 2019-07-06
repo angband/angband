@@ -200,6 +200,9 @@ void process_command(cmd_context ctx, struct command *cmd)
 	int oldrepeats = cmd->nrepeats;
 	int idx = cmd_idx(cmd->code);
 
+	/* Throw away the command if we're disturbing the player */
+	if (ctx == CMD_DISTURB) return;
+
 	/* Hack - command a monster */
 	if (player->timed[TMD_COMMAND]) {
 		idx = (int) N_ELEMENTS(game_cmds) - 1;
