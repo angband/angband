@@ -68,7 +68,6 @@ cp ../lib/gamedata/*.txt lib/gamedata
 cp ../lib/screens/*.txt lib/screens
 
 cp ../lib/help/*.txt lib/help
-cp ../lib/help/*.hlp lib/help
 
 cp ../lib/customize/*.prf lib/customize
 
@@ -86,7 +85,6 @@ cp ../lib/sounds/sound.cfg lib/sounds
 cp ../lib/sounds/*.mp3 lib/sounds
 
 cp ../lib/user/info/*.txt lib/user/info
-cp ../lib/user/info/*.hlp lib/user/info
 
 cd ..
 zip -9 -r $OUT $DIR
