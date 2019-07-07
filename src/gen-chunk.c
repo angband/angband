@@ -86,28 +86,20 @@ void chunk_list_add(struct chunk *c)
  */
 bool chunk_list_remove(char *name)
 {
-	int i, j;
-	int newsize = 0;
+	int i;
 
+	/* Find the match */
 	for (i = 0; i < chunk_list_max; i++) {
-		/* Find the match */
 		if (!strcmp(name, chunk_list[i]->name)) {
-			/* Copy all the succeeding ones back one */
-			for (j = i + 1; j < chunk_list_max; j++)
+			/* Copy all the succeeding chunks back one */
+			int j;
+			for (j = i + 1; j < chunk_list_max; j++) {
 				chunk_list[j - 1] = chunk_list[j];
+			}
 
-			/* Destroy the last one, and shorten the list */
-			/* Don't do this for now - may be unnecessary, as chunk list never
-			 * really gets shorter */
-			//if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
-			//	newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
-			//		sizeof(struct chunk *);
+			/* Shorten the list and return */
 			chunk_list_max--;
-			cave_free(chunk_list[chunk_list_max]);
 			chunk_list[chunk_list_max] = NULL;
-			if (newsize)
-				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
-
 			return true;
 		}
 	}
