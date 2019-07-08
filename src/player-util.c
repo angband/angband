@@ -1230,9 +1230,6 @@ void disturb(struct player *p, int stop_search)
 	/* Cancel repeated commands */
 	cmd_cancel_repeat();
 
-	/* Cancel queued commands */
-	cmdq_execute(CMD_DISTURB);
-
 	/* Cancel Resting */
 	if (player_is_resting(p)) {
 		player_resting_cancel(p, true);
@@ -1242,6 +1239,9 @@ void disturb(struct player *p, int stop_search)
 	/* Cancel running */
 	if (p->upkeep->running) {
 		p->upkeep->running = 0;
+
+		/* Cancel queued commands */
+		cmdq_execute(CMD_DISTURB);
 
 		/* Check for new panel if appropriate */
 		event_signal(EVENT_PLAYERMOVED);
