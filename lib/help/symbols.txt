@@ -69,11 +69,11 @@ d  Dragon                     D  Ancient Dragon
 e  Floating Eye               E  Elemental
 f  Feline (Cat)               F  Dragon Fly
 g  Golem                      G  Ghost
-h  Humanoids                  H  Hybrid
+h  Humanoid                   H  Hybrid
 i  Icky-Thing                 I  Insect
 j  Jelly                      J  Snake
 k  Kobold                     K  Killer Beetle
-l  Giant Louse                L  Lich
+l  Tree/Ent                   L  Lich
 m  Mold                       M  Multi-Headed Hydra
 n  Naga                       N  -
 o  Orc                        O  Ogre
