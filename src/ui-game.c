@@ -173,6 +173,7 @@ struct cmd_info cmd_hidden[] =
 	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL },
 	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL }, /* XXX */
 	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL },
+	{ "Steal from a monster", { 's' }, CMD_STEAL, NULL, NULL },
 	{ "Walk", { ';' }, CMD_WALK, NULL, NULL },
 	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL },
 	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL },

@@ -468,6 +468,10 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
+		if ((square(cave, grid).mon > 0) && player_has(player, PF_STEAL)) {
+			ADD_LABEL("Steal", CMD_STEAL, MN_ROW_VALID);
+		}
+
 		if (square_isdisarmabletrap(c, grid)) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
@@ -561,6 +565,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			break;
 
 		case CMD_ALTER:
+		case CMD_STEAL:
 		case CMD_DISARM:
 		case CMD_JUMP:
 		case CMD_CLOSE:
@@ -612,6 +617,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			break;
 
 		case CMD_ALTER:
+		case CMD_STEAL:
 		case CMD_DISARM:
 		case CMD_JUMP:
 		case CMD_CLOSE:

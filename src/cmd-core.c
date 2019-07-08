@@ -78,6 +78,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_HOLD, "stay still", do_cmd_hold, true, 0 },
 	{ CMD_DISARM, "disarm", do_cmd_disarm, true, 99 },
 	{ CMD_ALTER, "alter", do_cmd_alter, true, 99 },
+	{ CMD_STEAL, "steal", do_cmd_steal, false, 0 },
 	{ CMD_REST, "rest", do_cmd_rest, false, 0 },
 	{ CMD_SLEEP, "sleep", do_cmd_sleep, false, 0 },
 	{ CMD_PATHFIND, "walk", do_cmd_pathfind, false, 0 },

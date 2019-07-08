@@ -879,12 +879,8 @@ void do_cmd_alter_aux(int dir)
 
 	/* Action depends on what's there */
 	if (square(cave, grid).mon > 0) {
-		/* Attack or steal from monsters */
-		if (player_has(player, PF_STEAL)) {
-			steal_monster_item(square_monster(cave, grid), -1);
-		} else {
-			py_attack(player, grid);
-		}
+		/* Attack monster */
+		py_attack(player, grid);
 	} else if (square_isdiggable(cave, grid)) {
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(grid);
@@ -912,6 +908,40 @@ void do_cmd_alter(struct command *cmd)
 		return;
 
 	do_cmd_alter_aux(dir);
+}
+
+void do_cmd_steal_aux(int dir)
+{
+	/* Get location */
+	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
+
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Apply confusion */
+	if (player_confuse_dir(player, &dir, false)) {
+		/* Get location */
+		grid = loc_sum(player->grid, ddgrid[dir]);
+	}
+
+	/* Attack or steal from monsters */
+	if ((square(cave, grid).mon > 0) && player_has(player, PF_STEAL)) {
+			steal_monster_item(square_monster(cave, grid), -1);
+	} else {
+		/* Oops */
+		msg("You spin around.");
+	}
+}
+
+void do_cmd_steal(struct command *cmd)
+{
+	int dir;
+
+	/* Get arguments */
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+		return;
+
+	do_cmd_steal_aux(dir);
 }
 
 /**

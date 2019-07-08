@@ -91,6 +91,7 @@ typedef enum cmd_code {
 	CMD_RUN,
 	CMD_HOLD,
 	CMD_ALTER,
+	CMD_STEAL,
 	CMD_SLEEP,
 
     /* Store commands */	
