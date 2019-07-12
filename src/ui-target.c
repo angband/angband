@@ -466,51 +466,52 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				else if (rf_has(mon->race->flags, RF_MALE)) s1 = "He is ";
 				else s1 = "It is ";
 
-				/* Use a verb */
-				s2 = "carrying ";
+				/* Describe carried objects (wizards only) */
+				if (player->wizard) {
+					/* Use a verb */
+					s2 = "carrying ";
 
-				/* Scan all objects being carried */
-				for (obj = mon->held_obj; obj; obj = obj->next) {
-					char o_name[80];
+					/* Scan all objects being carried */
+					for (obj = mon->held_obj; obj; obj = obj->next) {
+						char o_name[80];
 
-					/* Obtain an object description */
-					object_desc(o_name, sizeof(o_name), obj,
-								ODESC_PREFIX | ODESC_FULL);
+						/* Obtain an object description */
+						object_desc(o_name, sizeof(o_name), obj,
+									ODESC_PREFIX | ODESC_FULL);
 
-					/* Describe the object */
-					if (player->wizard) {
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, o_name, coords, y, x,
 								(int)cave->noise.grids[y][x],
 								(int)cave->scent.grids[y][x]);
+
+						prt(out_val, 0, 0);
+						move_cursor_relative(y, x);
+						press = inkey_m();
+
+						if (press.type == EVT_MOUSE) {
+							/* Stop on right click */
+							if (press.mouse.button == 2)
+								break;
+
+							/* Sometimes stop at "space" key */
+							if (press.mouse.button && !(mode & (TARGET_LOOK)))
+								break;
+						} else {
+							/* Stop on everything but "return"/"space" */
+							if ((press.key.code != KC_ENTER) &&
+								(press.key.code != ' '))
+								break;
+
+							/* Sometimes stop at "space" key */
+							if ((press.key.code == ' ') &&
+								!(mode & (TARGET_LOOK)))
+								break;
+						}
+
+						/* Change the intro */
+						s2 = "also carrying ";
 					}
-
-					prt(out_val, 0, 0);
-					move_cursor_relative(y, x);
-					press = inkey_m();
-
-					if (press.type == EVT_MOUSE) {
-						/* Stop on right click */
-						if (press.mouse.button == 2)
-							break;
-
-						/* Sometimes stop at "space" key */
-						if (press.mouse.button && !(mode & (TARGET_LOOK)))
-							break;
-					} else {
-						/* Stop on everything but "return"/"space" */
-						if ((press.key.code != KC_ENTER) &&
-							(press.key.code != ' '))
-							break;
-
-						/* Sometimes stop at "space" key */
-						if ((press.key.code == ' ') && !(mode & (TARGET_LOOK)))
-							break;
-					}
-
-					/* Change the intro */
-					s2 = "also carrying ";
 				}
 
 				/* Double break */
