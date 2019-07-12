@@ -202,7 +202,7 @@ void process_command(cmd_context ctx, struct command *cmd)
 	int idx = cmd_idx(cmd->code);
 
 	/* Throw away the command if we're disturbing the player */
-	if (ctx == CMD_DISTURB) return;
+	if (ctx == CTX_DISTURB) return;
 
 	/* Hack - command a monster */
 	if (player->timed[TMD_COMMAND]) {
@@ -276,7 +276,7 @@ bool cmdq_pop(cmd_context c)
 errr cmdq_push_repeat(cmd_code c, int nrepeats)
 {
 	struct command cmd = {
-		.context = CMD_INIT,
+		.context = CTX_INIT,
 		.code = CMD_NULL,
 		.nrepeats = 0,
 		.arg = { { 0 } }

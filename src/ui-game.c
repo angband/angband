@@ -322,7 +322,7 @@ void textui_process_command(void)
 
 errr textui_get_cmd(cmd_context context)
 {
-	if (context == CMD_GAME)
+	if (context == CTX_GAME)
 		textui_process_command();
 
 	/* If we've reached here, we haven't got a command. */
@@ -432,7 +432,7 @@ void play_game(bool new_game)
 	 * command queue is empty and a new player command is needed */
 	while (!player->is_dead && player->upkeep->playing) {
 		pre_turn_refresh();
-		cmd_get_hook(CMD_GAME);
+		cmd_get_hook(CTX_GAME);
 		run_game_loop();
 	}
 

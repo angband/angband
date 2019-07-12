@@ -61,7 +61,7 @@ int test_newgame(void *state) {
 	cmd_set_arg_string(cmdq_peek(), "name", "Tester");
 
 	cmdq_push(CMD_ACCEPT_CHARACTER);
-	cmdq_execute(CMD_BIRTH);
+	cmdq_execute(CTX_BIRTH);
 
 	eq(player->is_dead, false);
 	prepare_next_level(&cave, player);
