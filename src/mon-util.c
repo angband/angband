@@ -1287,6 +1287,7 @@ struct object *get_random_monster_object(struct monster *mon)
 void steal_monster_item(struct monster *mon, int midx)
 {
 	struct object *obj = get_random_monster_object(mon);
+	struct monster_lore *lore = get_lore(mon->race);
 	struct monster *thief = NULL;
 	char m_name[80];
 
@@ -1352,6 +1353,9 @@ void steal_monster_item(struct monster *mon, int midx)
 					inven_carry(player, obj, true, true);
 				}
 			}
+
+			/* Track thefts */
+			lore->thefts++;
 
 			/* Monster wakes a little */
 			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY);

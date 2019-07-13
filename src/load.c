@@ -515,6 +515,10 @@ int rd_monster_memory(void)
 		if (rf_has(race->flags, RF_UNIQUE) && tmp16u)
 			race->max_num = 0;
 
+		/* Get the theft count */
+		rd_u16b(&tmp16u);
+		l_list[race->ridx].thefts = tmp16u;
+
 		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));
 	}

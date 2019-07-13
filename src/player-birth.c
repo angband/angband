@@ -423,12 +423,13 @@ void player_init(struct player *p)
 
 	for (i = 1; z_info && i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		struct monster_lore *lore = &l_list[i];
+		struct monster_lore *lore = get_lore(race);
 		race->cur_num = 0;
 		race->max_num = 100;
 		if (rf_has(race->flags, RF_UNIQUE))
 			race->max_num = 1;
 		lore->pkills = 0;
+		lore->thefts = 0;
 	}
 
 	p->upkeep = mem_zalloc(sizeof(struct player_upkeep));

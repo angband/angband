@@ -681,6 +681,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
 static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 {
 	struct monster_drop *drop;
+	struct monster_lore *lore = get_lore(mon->race);
 
 	bool great, good, gold_ok, item_ok;
     bool extra_roll = false;
@@ -700,7 +701,12 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 	/* Determine how much we can drop */
 	number = mon_create_drop_count(mon->race, false);
 
-    /* Give added bonus for unique monters */
+	/* Uniques that have been stolen from get their quantity reduced */
+    if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		number = MAX(0, number - lore->thefts);
+	}
+
+    /* Give added bonus for unique monsters */
     monlevel = mon->race->level;
     if (rf_has(mon->race->flags, RF_UNIQUE)) {
         monlevel = MIN(monlevel + 15, monlevel * 2);
