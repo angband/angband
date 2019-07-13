@@ -425,6 +425,8 @@ static void start_game(bool new_game)
  */
 void play_game(bool new_game)
 {
+	play_again = false;
+
 	/* Load a savefile or birth a character, or both */
 	start_game(new_game);
 
@@ -438,6 +440,9 @@ void play_game(bool new_game)
 
 	/* Close game on death or quitting */
 	close_game();
+
+	if(play_again)
+		play_game(true);
 }
 
 /**
