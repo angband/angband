@@ -4388,20 +4388,24 @@ static bool adjust_subwindow_geometry(const struct window *window,
 	return true;
 }
 
-static void sort_to_top_aux(struct window *window,
-		size_t *next, struct subwindow **subwindows, bool top, bool always_top)
+static void sort_to_top_aux(struct window *window, size_t *next_subwindow,
+		struct subwindow **subwindows, size_t num_subwindows,
+		bool top, bool always_top)
 {
-	assert(*next <= N_ELEMENTS(window->subwindows));
+	if (*next_subwindow == num_subwindows) {
+		return;
+	}
 
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
-		if (window->subwindows[i] == NULL
-				|| window->subwindows[i]->top != top
-				|| window->subwindows[i]->always_top != always_top)
+		if (window->subwindows[i] != NULL
+				&& window->subwindows[i]->top == top
+				&& window->subwindows[i]->always_top == always_top)
 		{
-			continue;
+			subwindows[(*next_subwindow)++] = window->subwindows[i];
 		}
-		subwindows[(*next)++] = window->subwindows[i];
 	}
+
+	assert(*next_subwindow <= num_subwindows);
 }
 
 static void sort_to_top(struct window *window)
@@ -4409,12 +4413,19 @@ static void sort_to_top(struct window *window)
 	struct subwindow *tmp[N_ELEMENTS(window->subwindows)] = {NULL};
 	assert(sizeof(window->subwindows) == sizeof(tmp));
 
-	size_t current = 0;
+	size_t num_subwindows = 0;
+	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
+		if (window->subwindows[i] != NULL) {
+			num_subwindows++;
+		}
+	}
+
 	/* and that's how we sort here :) */
-	sort_to_top_aux(window, &current, tmp, false, false);
-	sort_to_top_aux(window, &current, tmp, true,  false);
-	sort_to_top_aux(window, &current, tmp, false, true);
-	sort_to_top_aux(window, &current, tmp, true,  true);
+	size_t current = 0;
+	sort_to_top_aux(window, &current, tmp, num_subwindows, false, false);
+	sort_to_top_aux(window, &current, tmp, num_subwindows, true,  false);
+	sort_to_top_aux(window, &current, tmp, num_subwindows, false, true);
+	sort_to_top_aux(window, &current, tmp, num_subwindows, true,  true);
 
 	memcpy(window->subwindows, tmp, sizeof(window->subwindows));
 }
