@@ -19,6 +19,8 @@
 #ifndef UI_DEATH_H
 #define UI_DEATH_H
 
+bool play_again;
+
 extern void death_screen(void);
 
 #endif /* !UI_DEATH_H */
