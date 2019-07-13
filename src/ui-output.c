@@ -487,13 +487,15 @@ bool panel_should_modify(term *t, int wy, int wx)
 {
 	int dungeon_hgt = cave->height;
 	int dungeon_wid = cave->width;
+	int screen_hgt = (t == angband_term[0]) ? SCREEN_HGT : t->hgt;
+	int screen_wid = (t == angband_term[0]) ? SCREEN_WID : t->wid;
 
 	/* Verify wy, adjust if needed */
-	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
+	if (wy > dungeon_hgt - screen_hgt) wy = dungeon_hgt - screen_hgt;
 	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (wx > dungeon_wid - SCREEN_WID) wx = dungeon_wid - SCREEN_WID;
+	if (wx > dungeon_wid - screen_wid) wx = dungeon_wid - screen_wid;
 	if (wx < 0) wx = 0;
 
 	/* Needs changes? */
@@ -515,13 +517,15 @@ bool modify_panel(term *t, int wy, int wx)
 {
 	int dungeon_hgt = cave->height;
 	int dungeon_wid = cave->width;
+	int screen_hgt = (t == angband_term[0]) ? SCREEN_HGT : t->hgt;
+	int screen_wid = (t == angband_term[0]) ? SCREEN_WID : t->wid;
 
 	/* Verify wy, adjust if needed */
-	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
+	if (wy > dungeon_hgt - screen_hgt) wy = dungeon_hgt - screen_hgt;
 	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (wx > dungeon_wid - SCREEN_WID) wx = dungeon_wid - SCREEN_WID;
+	if (wx > dungeon_wid - screen_wid) wx = dungeon_wid - screen_wid;
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
@@ -569,8 +573,8 @@ static void verify_panel_int(bool centered)
 		wy = t->offset_y;
 		wx = t->offset_x;
 
-		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
-		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt / tile_height;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid / tile_width;
 
 		panel_wid = screen_wid / 2;
 		panel_hgt = screen_hgt / 2;
@@ -610,8 +614,7 @@ bool change_panel(int dir)
 	int j;
 
 	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 		int screen_hgt, screen_wid;
 		int wx, wy;
 
@@ -623,8 +626,8 @@ bool change_panel(int dir)
 		/* No relevant flags */
 		if ((j > 0) && !(window_flag[j] & PW_MAPS)) continue;
 
-		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
-		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt / tile_height;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid / tile_width;
 
 		/* Shift by half a panel */
 		wy = t->offset_y + ddy[dir] * screen_hgt / 2;

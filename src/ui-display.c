@@ -1004,35 +1004,19 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		if (t == angband_term[0]) {
 			/* Verify location */
 			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
-
-			/* Verify location */
 			if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 			/* Location in window */
-			vy = ky + ROW_MAP;
-			vx = kx + COL_MAP;
-
-			if (tile_width > 1)
-				vx += (tile_width - 1) * kx;
-
-			if (tile_height > 1)
-				vy += (tile_height - 1) * ky;
-
+			vy = tile_height * ky + ROW_MAP;
+			vx = tile_width * kx + COL_MAP;
 		} else {
-			if (tile_width > 1)
-			        kx += (tile_width - 1) * kx;
-
-			if (tile_height > 1)
-			        ky += (tile_height - 1) * ky;
-
-			
 			/* Verify location */
-			if ((ky < 0) || (ky >= t->hgt)) return;
-			if ((kx < 0) || (kx >= t->wid)) return;
+			if ((ky < 0) || (ky >= t->hgt / tile_height)) return;
+			if ((kx < 0) || (kx >= t->wid / tile_width)) return;
 
 			/* Location in window */
-			vy = ky;
-			vx = kx;
+			vy = tile_height * ky;
+			vx = tile_width * kx;
 		}
 
 
@@ -1051,8 +1035,10 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* Refresh the main screen unless the map needs to center */
 	if (player->upkeep->update & (PU_PANEL) && OPT(player, center_player)) {
-		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
-		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
+		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 :
+			t->hgt / (tile_height * 2);
+		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 :
+			t->wid / (tile_width * 2);
 
 		if (panel_should_modify(t, player->grid.y - hgt, player->grid.x - wid))
 			return;
@@ -1610,18 +1596,18 @@ static void update_minimap_subwindow(game_event_type type,
 	if (type == EVENT_END) {
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];
-		
+
 		/* Activate */
 		Term_activate(t);
 
 		/* If whole-map redraw, clear window first. */
-		if (flags->needs_redraw)
+		if (flags->needs_redraw	|| tile_width > 1 || tile_height > 1)
 			Term_clear();
 
 		/* Redraw map */
 		display_map(NULL, NULL);
 		Term_fresh();
-		
+
 		/* Restore */
 		Term_activate(old);
 

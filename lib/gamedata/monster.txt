@@ -3108,6 +3108,7 @@ desc:A large black cat, stalking you with intent.  It thinks you're its next
 desc: meal.
 
 name:witch
+plural:witches
 base:person
 color:P
 speed:110
