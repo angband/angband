@@ -431,12 +431,15 @@ struct button_callbacks {
 };
 
 struct button {
-	/* selected means the user pointed at button and pressed
-	 * mouse button (but not released yet) */
+	/* selected means the user pointed at button and
+	 * pressed mouse button (but not released yet) */
 	bool selected;
-	/* highlighted means the user pointed at button but
-	 * not clicking yet */
+	/* highlighted means the user pointed
+	 * at button but not clicking yet */
 	bool highlighted;
+	/* At least, that was the theory; buttons in "Menu" work a bit differently,
+	 * some are selected when the user points at button, all are highlighted
+	 * regardless of what event happened on them (click or mouse motion)... */
 
 	char *caption;
 
@@ -2542,24 +2545,30 @@ static void unselect_menu_buttons(struct menu_panel *menu_panel)
 	unselect_menu_buttons(menu_panel->next);
 }
 
-static bool handle_menu_button_mousemotion(struct window *window,
-		const SDL_Event *event)
+static bool handle_menu_event(struct window *window, const SDL_Event *event)
 {
-	assert(event->type == SDL_MOUSEMOTION);
+	if (event->type != SDL_MOUSEMOTION
+			&& event->type != SDL_MOUSEBUTTONDOWN
+			&& event->type != SDL_MOUSEBUTTONUP)
+	{
+		return false;
+	}
+
+	int x = event->type == SDL_MOUSEMOTION ? event->motion.x : event->button.x;
+	int y = event->type == SDL_MOUSEMOTION ? event->motion.y : event->button.y;
+
+	struct menu_panel *menu_panel =
+		get_menu_panel_by_xy(window->status_bar.menu_panel, x, y);
+
+	if (menu_panel == NULL) {
+		return false;
+	}
 
 	bool handled = false;
 
-	struct menu_panel *menu_panel = get_menu_panel_by_xy(window->status_bar.menu_panel,
-				event->motion.x, event->motion.y);
-	if (menu_panel == NULL) {
-		return handled;
-	}
-
 	for (size_t i = 0; i < menu_panel->button_bank.number; i++) {
 		struct button *button = &menu_panel->button_bank.buttons[i];
-		if (is_point_in_rect(event->motion.x, event->motion.y,
-					&button->full_rect))
-		{
+		if (is_point_in_rect(x, y, &button->full_rect)) {
 			/* note that the buttons themselves set "selected" */
 			button->highlighted = true;
 
@@ -2574,51 +2583,10 @@ static bool handle_menu_button_mousemotion(struct window *window,
 			button->selected = false;
 		}
 	}
+
 	unselect_menu_buttons(menu_panel->next);
 
 	return handled;
-}
-
-static bool handle_menu_button_click(struct window *window,
-		const SDL_Event *event)
-{
-	assert(event->type == SDL_MOUSEBUTTONDOWN
-			|| event->type == SDL_MOUSEBUTTONUP);
-
-	bool handled = false;
-
-	struct menu_panel *menu_panel = get_menu_panel_by_xy(window->status_bar.menu_panel,
-				event->button.x, event->button.y);
-	if (menu_panel == NULL) {
-		return handled;
-	}
-
-	for (size_t i = 0; i < menu_panel->button_bank.number; i++) {
-		struct button *button = &menu_panel->button_bank.buttons[i];
-		if (is_point_in_rect(event->motion.x, event->motion.y,
-					&button->full_rect))
-		{
-			assert(button->callbacks.on_menu != NULL);
-			button->callbacks.on_menu(window, button, event, menu_panel);
-
-			handled = true;
-		}
-	}
-
-	return handled;
-}
-
-static bool handle_menu_event(struct window *window, const SDL_Event *event)
-{
-	switch (event->type) {
-		case SDL_MOUSEMOTION:
-			return handle_menu_button_mousemotion(window, event);
-		case SDL_MOUSEBUTTONDOWN: /* fallthru */
-		case SDL_MOUSEBUTTONUP:
-			return handle_menu_button_click(window, event);
-		default:
-			return false;
-	}
 }
 
 static bool is_menu_button_mouse_click(const struct button *button,
