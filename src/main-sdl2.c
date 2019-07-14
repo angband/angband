@@ -512,8 +512,6 @@ struct window {
 
 	struct window_config *config;
 
-	/* toggles visibility of cursor */
-	bool cursor;
 	/* does window have mouse focus? */
 	bool focus;
 	/* window has changed and must be redrawn */
@@ -912,10 +910,6 @@ static void render_glyph_mono(const struct window *window,
 static void render_cursor(struct subwindow *subwindow, 
 		int col, int row, bool big)
 {
-	if (!subwindow->window->cursor) {
-		return;
-	}
-	
 	SDL_Color color = g_colors[DEFAULT_SUBWINDOW_CURSOR_COLOR];
 	SDL_Rect rect = {
 		subwindow->inner_rect.x + subwindow->font_width * col,
@@ -1196,13 +1190,6 @@ static void render_button_menu_simple(const struct window *window, struct button
 	}
 
 	render_button_menu(window, button, fg, bg);
-}
-
-static void render_button_menu_cursor(const struct window *window, struct button *button)
-{
-	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_SUBWINDOW);
-
-	render_button_menu_toggle(window, button, window->cursor);
 }
 
 static void render_button_menu_pw(const struct window *window, struct button *button)
@@ -1874,19 +1861,6 @@ static bool click_menu_button(struct button *button,
 	}
 }
 
-static void handle_menu_cursor(struct window *window,
-		struct button *button, const SDL_Event *event,
-		struct menu_panel *menu_panel)
-{
-	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_SUBWINDOW);
-
-	if (!click_menu_button(button, menu_panel, event)) {
-		return;
-	}
-
-	window->cursor = !window->cursor;
-}
-
 static void handle_menu_window(struct window *window,
 		struct button *button, const SDL_Event *event,
 		struct menu_panel *menu_panel)
@@ -2447,10 +2421,6 @@ static void handle_menu_terms(struct window *window,
 		},
 		{
 			"Borders", data, render_button_menu_borders, handle_menu_borders
-		},
-		{
-			subwindow->index == MAIN_SUBWINDOW ? "Cursor" : NULL,
-			data, render_button_menu_cursor, handle_menu_cursor
 		},
 		{
 			"Top", data, render_button_menu_top, handle_menu_top
@@ -4884,8 +4854,6 @@ static void wipe_window(struct window *window, int display)
 	window->status_bar.menu_panel = NULL;
 	window->status_bar.in_menu = false;
 
-	window->cursor = true;
-
 	window->graphics.texture = NULL;
 	window->graphics.id = GRAPHICS_NONE;
 
@@ -4952,7 +4920,6 @@ static void dump_window(const struct window *window, ang_file *config)
 	DUMP_WINDOW("graphics-id", "%d", window->graphics.id);
 	DUMP_WINDOW("tile-scale", "width:%d", tile_width);
 	DUMP_WINDOW("tile-scale", "height:%d", tile_height);
-	DUMP_WINDOW("cursor", "%s", window->cursor ? "true" : "false");
 #undef DUMP_WINDOW
 	file_put(config, "\n");
 
@@ -5873,24 +5840,6 @@ static enum parser_error config_window_tile_scale(struct parser *parser)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error config_window_cursor(struct parser *parser)
-{
-	GET_WINDOW_FROM_INDEX;
-	WINDOW_INIT_OK;
-
-	const char *cursor = parser_getsym(parser, "cursor");
-	
-	if (streq(cursor, "true")) {
-		window->cursor = true;
-	} else if (streq(cursor, "false")) {
-		window->cursor = false;
-	} else {
-		return PARSE_ERROR_INVALID_OPTION;
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error config_subwindow_window(struct parser *parser)
 {
 	GET_SUBWINDOW_FROM_INDEX;
@@ -6031,8 +5980,6 @@ static struct parser *init_parse_config(void)
 			config_window_graphics);
 	parser_reg(parser, "window-tile-scale uint index sym which int scale",
 			config_window_tile_scale);
-	parser_reg(parser, "window-cursor uint index sym cursor",
-			config_window_cursor);
 
 	parser_reg(parser, "subwindow-window uint index uint windex",
 			config_subwindow_window);
