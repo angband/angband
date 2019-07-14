@@ -128,6 +128,8 @@ struct init_module {
 	void (*cleanup)(void);
 };
 
+extern bool play_again;
+
 extern const char *list_element_names[];
 extern const char *list_obj_flag_names[];
 

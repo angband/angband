@@ -34,8 +34,6 @@
 #include "ui-score.h"
 #include "wizard.h"
 
-bool play_again = false;
-
 /**
  * Write formatted string `fmt` on line `y`, centred between points x1 and x2.
  */

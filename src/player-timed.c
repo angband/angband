@@ -288,7 +288,7 @@ static void cleanup_player_timed(void)
 {
 	for (size_t i = 0; i < TMD_MAX; i++) {
 		struct timed_effect_data *effect = &timed_effects[i];
-			struct timed_grade *grade = effect->grade;
+		struct timed_grade *grade = effect->grade;
 
 		while (grade) {
 			struct timed_grade *next = grade->next;
@@ -298,6 +298,7 @@ static void cleanup_player_timed(void)
 			mem_free(grade);
 			grade = next;
 		}
+		effect->grade = NULL;
 
 		string_free(effect->desc);
 

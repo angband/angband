@@ -39,6 +39,7 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-help.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
@@ -441,8 +442,12 @@ void play_game(bool new_game)
 	/* Close game on death or quitting */
 	close_game();
 
-	if(play_again)
+	if (play_again) {
+		cleanup_angband();
+		init_display();
+		init_angband();
 		play_game(true);
+	}
 }
 
 /**
