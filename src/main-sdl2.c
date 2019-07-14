@@ -375,8 +375,6 @@ struct menu_panel {
 	struct menu_panel *next;
 };
 
-typedef bool (*button_click)(struct window *window,
-		struct button *button);
 typedef void (*button_render)(const struct window *window,
 		struct button *button);
 typedef bool (*button_event)(struct window *window,
@@ -426,13 +424,9 @@ struct button_callbacks {
 	/* this function should render the button;
 	 * otherwise, the button will be invisible */
 	button_render on_render;
-	/* optional custom event handler */
+	/* event handler for status bar buttons */
 	button_event on_event;
-	/* if there is no custon handler,
-	 * this function should do something when button is clicked
-	 * otherwise, the button will be useless */
-	button_click on_click;
-	/* for use only with menu; only custom events */
+	/* event handler for buttons in "Menu" */
 	button_menu on_menu;
 };
 
@@ -1645,10 +1639,56 @@ static void signal_size_state(struct window *window)
 	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 }
 
-static bool do_button_movesize(struct window *window,
-		struct button *button)
+static bool ignore_status_bar_button(struct window *window,
+		struct button *button, const SDL_Event *event)
+{
+	(void) window;
+	(void) button;
+	(void) event;
+
+	return false;
+}
+
+static bool click_status_bar_button(struct window *window,
+		struct button *button, const SDL_Event *event)
+{
+	switch (event->type) {
+		case SDL_MOUSEBUTTONDOWN:
+			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)) {
+				button->selected = true;
+				return false;
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)
+					&& button->selected)
+			{
+				button->selected = false;
+				return true;
+			}
+			break;
+		case SDL_MOUSEMOTION:
+			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)) {
+				button->highlighted = true;
+				return false;
+			}
+			break;
+	}
+
+	button->highlighted = false;
+	button->selected = false;
+
+	return false;
+}
+
+static bool handle_button_movesize(struct window *window,
+		struct button *button, const SDL_Event *event)
 {
 	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_INT);
+
+	if (!click_status_bar_button(window, button, event)) {
+		return false;
+	}
 
 	switch (button->data.value.int_value) {
 		case BUTTON_MOVESIZE_MOVING:
@@ -1765,7 +1805,7 @@ static struct menu_panel *make_menu_panel(const struct button *origin,
 		}
 
 		struct button_callbacks callbacks = {
-			elems[i].on_render, NULL, NULL, elems[i].on_menu
+			elems[i].on_render, NULL, elems[i].on_menu
 		};
 		push_button(&menu_panel->button_bank,
 				font,
@@ -2631,40 +2671,6 @@ static bool handle_menu_button(struct window *window,
 	}
 }
 
-static bool do_button(struct window *window,
-		struct button *button, const SDL_Event *event)
-{
-	switch (event->type) {
-		case SDL_MOUSEBUTTONDOWN:
-			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)) {
-				button->selected = true;
-				return true;
-			}
-			break;
-		case SDL_MOUSEBUTTONUP:
-			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)
-					&& button->selected)
-			{
-				assert(button->callbacks.on_click != NULL);
-				button->callbacks.on_click(window, button);
-				button->selected = false;
-				return true;
-			}
-			break;
-		case SDL_MOUSEMOTION:
-			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)) {
-				button->highlighted = true;
-				return true;
-			}
-			break;
-	}
-
-	button->highlighted = false;
-	button->selected = false;
-
-	return false;
-}
-
 static bool is_close_to(int a, int b, unsigned range)
 {
 	if (a > 0 && b > 0) {
@@ -3082,11 +3088,8 @@ static bool handle_status_bar_buttons(struct window *window,
 
 	for (size_t i = 0; i < window->status_bar.button_bank.number; i++) {
 		struct button *button = &window->status_bar.button_bank.buttons[i];
-		if (button->callbacks.on_event != NULL) {
-			handled |= button->callbacks.on_event(window, button, event);
-		} else {
-			handled |= do_button(window, button, event);
-		}
+		assert(button->callbacks.on_event != NULL);
+		handled |= button->callbacks.on_event(window, button, event);
 	}
 
 	return handled;
@@ -4501,10 +4504,14 @@ static void make_button_bank(struct button_bank *bank)
 	bank->number = 0;
 }
 
-static bool do_button_open_subwindow(struct window *window,
-		struct button *button)
+static bool handle_button_open_subwindow(struct window *window,
+		struct button *button, const SDL_Event *event)
 {
 	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_UNSIGNED);
+
+	if (!click_status_bar_button(window, button, event)) {
+		return false;
+	}
 
 	unsigned index = button->data.value.unsigned_value;
 	struct subwindow *subwindow = NULL;
@@ -4528,15 +4535,6 @@ static bool do_button_open_subwindow(struct window *window,
 	}
 
 	redraw_all_windows(false);
-
-	return true;
-}
-
-static bool do_nothing_button(struct window *window,
-		struct button *button)
-{
-	(void) window;
-	(void) button;
 
 	return true;
 }
@@ -4569,25 +4567,24 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 
 	callbacks.on_render = render_menu_button;
 	callbacks.on_event = handle_menu_button;
-	callbacks.on_click = NULL;
 	callbacks.on_menu = NULL;
 
 	data.type = BUTTON_DATA_NONE;
 	PUSH_BUTTON_LEFT_TO_RIGHT("Menu");
 
 	callbacks.on_render = render_button_subwindows;
-	callbacks.on_event = NULL;
 
 	data.type = BUTTON_DATA_UNSIGNED;
 
 	if (status_bar->window->index == MAIN_WINDOW) {
-		callbacks.on_click = do_nothing_button;
+		/* "A" button is not interactive, it's just for display */
+		callbacks.on_event = ignore_status_bar_button;
 		data.value.unsigned_value = MAIN_SUBWINDOW;
 		/* the main term is called Angband in game options */
 		PUSH_BUTTON_LEFT_TO_RIGHT("A");
 	}
 
-	callbacks.on_click = do_button_open_subwindow;
+	callbacks.on_event = handle_button_open_subwindow;
 	for (unsigned i = 1; i < N_ELEMENTS(status_bar->window->subwindows); i++) {
 		data.value.unsigned_value = i;
 		PUSH_BUTTON_LEFT_TO_RIGHT(format("%u", i));
@@ -4607,8 +4604,7 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 	rect.h = status_bar->full_rect.h;
 
 	callbacks.on_render = render_button_movesize;
-	callbacks.on_click = do_button_movesize;
-	callbacks.on_event = NULL;
+	callbacks.on_event = handle_button_movesize;
 	callbacks.on_menu = NULL;
 
 	data.type = BUTTON_DATA_INT;
