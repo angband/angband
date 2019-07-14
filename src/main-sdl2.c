@@ -613,6 +613,7 @@ static bool is_ok_col_row(const struct subwindow *subwindow,
 		const SDL_Rect *rect, int cell_w, int cell_h);
 static void resize_rect(SDL_Rect *rect,
 		int left, int top, int right, int bottom);
+static void crop_rects(SDL_Rect *src, SDL_Rect *dst);
 static bool is_point_in_rect(int x, int y, const SDL_Rect *rect);
 static bool is_close_to(int a, int b, unsigned range);
 static bool is_over_status_bar(const struct status_bar *status_bar, int x, int y);
@@ -871,11 +872,12 @@ static void render_glyph_mono(const struct window *window,
 		return;
 	}
 
-	SDL_Rect dst = {x, y, 0, 0};
+	SDL_Rect dst = {x, y, font->ttf.glyph.w, font->ttf.glyph.h};
 
 	if (IS_CACHED_ASCII_CODEPOINT(codepoint)) {
-		dst.w = font->cache.rects[codepoint].w;
-		dst.h = font->cache.rects[codepoint].h;
+		SDL_Rect src = font->cache.rects[codepoint];
+
+		crop_rects(&src, &dst);
 
 		SDL_SetTextureColorMod(font->cache.texture, fg->r, fg->g, fg->b);
 
@@ -888,17 +890,12 @@ static void render_glyph_mono(const struct window *window,
 			return;
 		}
 
-		SDL_Rect src = {
-			0, 0,
-			MIN(surface->w, font->ttf.glyph.w),
-			MIN(surface->h, font->ttf.glyph.h)
-		};
-
-		dst.w = src.w;
-		dst.h = src.h;
-
 		SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
 		assert(texture != NULL);
+
+		SDL_Rect src = {0, 0, surface->w, surface->h};
+
+		crop_rects(&src, &dst);
 
 		SDL_RenderCopy(window->renderer, texture, &src, &dst);
 
@@ -2688,6 +2685,31 @@ static void resize_rect(SDL_Rect *rect,
 	rect->h += bottom;
 }
 
+static void crop_rects(SDL_Rect *src, SDL_Rect *dst)
+{
+	if (src->w == dst->w) {
+		/* most common case - do nothing */
+	} else if (src->w > dst->w) {
+		/* second most common case - font glyph is too large */
+		src->x += (src->w - dst->w) / 2;
+		src->w = dst->w;
+	} else {
+		/* uncommon case - font glyph is too small */ 
+		dst->x += (dst->w - src->w) / 2;
+		dst->w = src->w;
+	}
+
+	if (src->h == dst->h) {
+		;
+	} else if (src->h > dst->h) {
+		src->y += (src->h - dst->h) / 2;
+		src->h = dst->h;
+	} else  {
+		dst->y += (dst->h - src->h) / 2;
+		dst->h = src->h;
+	}
+}
+
 /* tries to snap to other term in such a way so that their
  * (visible) borders overlap */
 static void try_snap(struct window *window,
@@ -4082,7 +4104,8 @@ static void make_font_cache(const struct window *window, struct font *font)
 	/* restore the alpha; we will render glyphs in white */
 	white.a = 0xFF;
 
-	SDL_Rect dst = {0};
+	const int glyph_w = font->ttf.glyph.w;
+	const int glyph_h = font->ttf.glyph.h;
 
 	for (size_t i = 0; i < ASCII_CACHE_SIZE; i++) {
 		SDL_Surface *surface = TTF_RenderGlyph_Blended(font->ttf.handle,
@@ -4092,25 +4115,20 @@ static void make_font_cache(const struct window *window, struct font *font)
 					font->name, TTF_GetError());
 		}
 
-		SDL_Rect src = {
-			0, 0, 
-			MIN(surface->w, font->ttf.glyph.w),
-			MIN(surface->h, font->ttf.glyph.h)
-		};
-
-		dst.w = src.w;
-		dst.h = src.h;
-
 		SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
 		if (texture == NULL) {
 			quit_fmt("cant create texture for cache in font '%s': %s",
 					font->name, SDL_GetError());
 		}
 
+		SDL_Rect src = {0, 0, surface->w, surface->h};
+		SDL_Rect dst = {glyph_w * i, 0, glyph_w, glyph_h};
+
+		crop_rects(&src, &dst);
+
 		SDL_RenderCopy(window->renderer, texture, &src, &dst);
 
 		font->cache.rects[i] = dst;
-		dst.x += font->ttf.glyph.w;
 
 		SDL_FreeSurface(surface);
 		SDL_DestroyTexture(texture);
