@@ -1130,7 +1130,7 @@ int textui_do_birth(void)
 	bool done = false;
 
 	cmdq_push(CMD_BIRTH_INIT);
-	cmdq_execute(CMD_BIRTH);
+	cmdq_execute(CTX_BIRTH);
 
 	while (!done) {
 
@@ -1269,7 +1269,7 @@ int textui_do_birth(void)
 		current_stage = next;
 
 		/* Execute whatever commands have been sent */
-		cmdq_execute(CMD_BIRTH);
+		cmdq_execute(CTX_BIRTH);
 	}
 
 	return 0;

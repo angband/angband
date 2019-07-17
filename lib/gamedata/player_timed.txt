@@ -367,3 +367,8 @@ name:BLACKBREATH
 desc:black breath
 grade:D:10:BlkBrth:You are overcome by the Black Breath.
 on-end:The Black Shadow lifts.
+
+name:STEALTH
+desc:stealth
+grade:D:10000:Stealth:You feel silent!
+on-end:You feel less stealthy.

@@ -926,7 +926,7 @@ void process_player(void)
 		}
 
 		/* Get a command from the queue if there is one */
-		if (!cmdq_pop(CMD_GAME))
+		if (!cmdq_pop(CTX_GAME))
 			break;
 
 		if (!player->upkeep->playing)

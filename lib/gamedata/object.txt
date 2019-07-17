@@ -466,6 +466,21 @@ effect:RESTORE_STAT:CON
 effect:CURE:POISONED
 desc:It makes you very hungry but otherwise healthy.
 
+name:Shadows
+type:mushroom
+graphics:,:d
+level:0
+weight:1
+cost:300
+alloc:5:50 to 100
+pile:70:1d4
+power:9
+effect:NOURISH:INC_BY
+dice:5
+effect:TIMED_INC:STEALTH
+dice:10+d10
+desc:It makes you very stealthy for a short while.
+
 
 ##### Weapons #####
 

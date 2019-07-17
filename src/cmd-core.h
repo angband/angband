@@ -109,12 +109,12 @@ typedef enum cmd_code {
 } cmd_code;
 
 typedef enum cmd_context {
-	CMD_INIT,
-	CMD_BIRTH,
-	CMD_GAME,
-	CMD_DISTURB,
-	CMD_STORE,
-	CMD_DEATH
+	CTX_INIT,
+	CTX_BIRTH,
+	CTX_GAME,
+	CTX_DISTURB,
+	CTX_STORE,
+	CTX_DEATH
 } cmd_context;
 
 /**

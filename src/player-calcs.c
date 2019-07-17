@@ -2105,6 +2105,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_d += p->timed[TMD_BLOODLUST] / 2;
 		extra_blows += p->timed[TMD_BLOODLUST] / 20;
 	}
+	if (p->timed[TMD_STEALTH]) {
+		state->skills[SKILL_STEALTH] += 10;
+	}
 
 	/* Analyze flags - check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {
