@@ -4266,7 +4266,7 @@ static bool adjust_subwindow_geometry(const struct window *window,
 	}
 
 	/* coordinates of inner rect are relative to that of outer rect
-	 * (really, they are relative to subwindow's texture */
+	 * (really, they are relative to subwindow's texture) */
 	subwindow->inner_rect.x = 0;
 	subwindow->inner_rect.y = 0;
 	subwindow->inner_rect.w = subwindow->full_rect.w;
