@@ -3609,6 +3609,8 @@ void cleanup_angband(void)
 
 	cleanup_game_constants();
 
+	cmdq_flush();
+
 	if (play_again) return;
 
 	/* Free the format() buffer */

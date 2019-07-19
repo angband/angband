@@ -112,7 +112,6 @@ typedef enum cmd_context {
 	CTX_INIT,
 	CTX_BIRTH,
 	CTX_GAME,
-	CTX_DISTURB,
 	CTX_STORE,
 	CTX_DEATH
 } cmd_context;
@@ -248,6 +247,11 @@ errr cmdq_push(cmd_code c);
  * Process all commands presently in the queue.
  */
 void cmdq_execute(cmd_context ctx);
+
+/**
+ * Remove all commands from the queue.
+ */
+void cmdq_flush(void);
 
 /**
  * ------------------------------------------------------------------------

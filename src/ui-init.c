@@ -26,6 +26,7 @@
 #include "angband.h"
 #include "game-input.h"
 #include "game-event.h"
+#include "init.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
@@ -43,38 +44,40 @@ void textui_init(void)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
 
-	/* Initialize graphics info and basic pref data */
-	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
-	(void)process_pref_file("pref.prf", false, false);
+	if (!play_again) {
+		/* Initialize graphics info and basic pref data */
+		event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
+		(void)process_pref_file("pref.prf", false, false);
 
-	/* Sneakily init command list */
-	cmd_init();
+		/* Sneakily init command list */
+		cmd_init();
 
-	/* Initialize knowledge things */
-	textui_knowledge_init();
+		/* Initialize knowledge things */
+		textui_knowledge_init();
 
-	/* Initialize input hooks */
-	textui_input_init();
+		/* Initialize input hooks */
+		textui_input_init();
 
-	/* Initialize visual prefs */
-	textui_prefs_init();
+		/* Initialize visual prefs */
+		textui_prefs_init();
 
-	/* Hack -- Increase "icky" depth */
-	screen_save_depth++;
+		/* Hack -- Increase "icky" depth */
+		screen_save_depth++;
 
-	/* Verify main term */
-	if (!term_screen)
-		quit("Main window does not exist");
+		/* Verify main term */
+		if (!term_screen)
+			quit("Main window does not exist");
 
-	/* Make sure main term is active */
-	Term_activate(term_screen);
+		/* Make sure main term is active */
+		Term_activate(term_screen);
 
-	/* Verify minimum size */
-	if ((Term->hgt < 24) || (Term->wid < 80))
-		plog("Main window is too small - please make it bigger.");
+		/* Verify minimum size */
+		if ((Term->hgt < 24) || (Term->wid < 80))
+			plog("Main window is too small - please make it bigger.");
 
-	/* Hack -- Turn off the cursor */
-	(void)Term_set_cursor(false);
+		/* Hack -- Turn off the cursor */
+		(void)Term_set_cursor(false);
+	}
 
 	/* initialize window options that will be overridden by the savefile */
 	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);

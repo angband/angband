@@ -1140,8 +1140,9 @@ void do_cmd_accept_character(struct command *cmd)
 	player->obj_k->to_h = 1;
 	player->obj_k->to_d = 1;
 
-	/* Initialise the stores */
+	/* Initialise the stores, dungeon */
 	store_reset();
+	chunk_list_max = 0;
 
 	/* Player learns innate runes */
 	player_learn_innate(player);

@@ -446,6 +446,7 @@ void play_game(bool new_game)
 		cleanup_angband();
 		init_display();
 		init_angband();
+		textui_init();
 		play_game(true);
 	}
 }
