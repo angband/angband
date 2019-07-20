@@ -869,7 +869,7 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 		player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
 	} else if (context->subtype == 2) {
 		if (player->timed[TMD_FOOD] < amount) {
-			player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
+			player_set_timed(player, TMD_FOOD, MAX(amount + 1, 0), false);
 		}
 	} else {
 		return false;

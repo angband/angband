@@ -466,11 +466,10 @@ effect:SHAPECHANGE:fox
 desc:Changes you into the shape of a quick and stealthy fox.
 desc:  While shapechanged you cannot use items.
 
-spell:Satisfy Hunger:2:2:25:2
-effect:NOURISH:SET_TO
+spell:Remove Hunger:2:2:25:2
+effect:NOURISH:INC_TO
 dice:50
-desc:Magically renders you well-fed (but not satiated).
-desc:  This will also cure a bloated stomach.
+desc:Magically renders you comfortably fed (but not satiated).
 
 spell:Stinking Cloud:3:2:27:4
 effect:BALL:POIS:2
@@ -1480,11 +1479,10 @@ magic:3:400:2
 
 book:nature book:town:[Lesser Charms]:6:nature
 
-spell:Satisfy Hunger:3:1:25:2
-effect:NOURISH:SET_TO
+spell:Remove Hunger:3:1:25:2
+effect:NOURISH:INC_TO
 dice:50
-desc:Magically renders you well-fed (but not satiated).
-desc:  This will also cure a bloated stomach.
+desc:Magically renders you comfortably fed (but not satiated).
 
 spell:Detect Life:5:2:23:2
 effect:DETECT_LIVING_MONSTERS

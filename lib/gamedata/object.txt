@@ -2615,7 +2615,7 @@ effect:MASS_BANISH
 
 ### Utility ###
 
-name:Satisfy Hunger
+name:Remove Hunger
 type:scroll
 graphics:?:w
 level:5
@@ -2624,7 +2624,7 @@ cost:10
 alloc:60:5 to 100
 pile:100:2d3
 power:7
-effect:NOURISH:SET_TO
+effect:NOURISH:INC_TO
 dice:50
 
 name:Light
