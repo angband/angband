@@ -198,54 +198,6 @@ desc: damage (which occurs even against creatures resistant to fire).
 
 ### Normal Food ###
 
-name:& Ration~ of Food
-type:food
-graphics:,:U
-level:0
-weight:8
-cost:3
-alloc:40:0 to 50
-pile:100:1d5
-power:0
-msg:That tastes good.
-effect:NOURISH:INC_BY
-dice:40
-desc:This nutritious but fairly bland food is familiar to anyone contemplating
-desc: long journeys.
-
-name:& Slime Mold~
-type:food
-graphics:,:g
-level:1
-weight:2
-cost:2
-alloc:40:5 to 60
-pile:100:2d3
-power:0
-msg:That tastes good.
-effect:NOURISH:INC_BY
-dice:25
-desc:A strange fungal growth, prone to moving if not observed.  Not very tasty
-desc: but quite filling.
-
-name:& Piece~ of Elvish Waybread
-type:food
-graphics:,:B
-level:5
-weight:3
-cost:10
-alloc:40:30 to 100
-pile:10:1d3
-power:4
-msg:That tastes good.
-effect:NOURISH:INC_TO
-dice:75
-effect:CURE:POISONED
-effect:HEAL_HP
-dice:20
-desc:Food of the elves is always good; their waybread is no exception.  These
-desc: thin cakes are wrapped in leaves and keep their tastiness for months.
-
 name:& Hard Biscuit~
 type:food
 graphics:,:U
@@ -257,6 +209,140 @@ effect:NOURISH:INC_BY
 dice:10
 effect:CRUNCH
 desc:A filling if tooth-breaking biscuit made mostly of rye.
+
+name:& Apple~
+type:food
+graphics:,:R
+level:0
+weight:4
+cost:3
+alloc:40:0 to 20
+pile:10:1d2
+power:0
+msg:That tastes good.
+effect:NOURISH:INC_BY
+dice:10
+desc:Wrinkled, but sound and sweet.
+
+name:& Handful~ of Dried Fruits
+type:food
+graphics:,:u
+level:0
+weight:3
+cost:3
+alloc:40:0 to 50
+power:0
+msg:That tastes good.
+effect:NOURISH:INC_BY
+dice:15
+desc:Fruit roughly chopped and sun-dried, prepared as marching rations for the
+desc: rangers of Ithilien.
+
+name:& Slime Mold~
+type:food
+graphics:,:g
+level:1
+weight:2
+cost:2
+alloc:40:30 to 100
+pile:100:2d3
+power:0
+msg:That tastes better than nothing.
+effect:NOURISH:INC_BY
+dice:15
+desc:A strange fungal growth, prone to moving if not observed.  Not very tasty
+desc: but quite filling.
+
+name:& Ration~ of Food
+type:food
+graphics:,:U
+level:0
+weight:8
+cost:3
+alloc:40:0 to 50
+pile:100:1d5
+power:0
+msg:That tastes good.
+effect:NOURISH:INC_BY
+dice:30
+desc:This nutritious but fairly bland food, called cram by the Lake-men who
+desc: make it is familiar to anyone contemplating long journeys.  It is
+desc: sustaining, but very uninteresting except as a chewing exercise.
+
+name:& Scrap~ of Flesh
+type:food
+graphics:,:s
+level:0
+weight:5
+cost:0
+alloc:30:50 to 100
+pile:50:1d3
+power:0
+msg:That tastes disgusting.
+effect:RANDOM
+dice:5
+effect:NOURISH:INC_BY
+dice:20
+effect:NOURISH:INC_BY
+dice:20
+effect:NOURISH:INC_BY
+dice:10
+effect:NOURISH:SET_TO
+dice:1d4
+effect:NOURISH:SET_TO
+dice:5+1d4
+desc:A grey-looking piece of dried flesh of you dare not guess what creature.
+desc:  You would have to be desperate to eat this.
+
+
+name:& Slice~ of Meat
+type:food
+graphics:,:W
+level:0
+weight:10
+cost:3
+alloc:30:10 to 50
+pile:50:1d3
+power:0
+msg:That tastes good.
+effect:NOURISH:INC_BY
+dice:40
+desc:A thick slice of pork, salted to keep it from spoiling.  It is very
+desc: filling.
+
+name:& Honey-cake~
+type:food
+graphics:,:y
+level:5
+weight:10
+cost:10
+alloc:30:20 to 70
+pile:40:1d3
+power:1
+msg:Delicious!
+effect:NOURISH:INC_TO
+dice:60
+desc:The Beornings are renowned as the best bakers among men, and their
+desc: honey-cakes are deservedly prized.  Made of wheat flour with nuts and
+desc: honey and twice baked, they will sustain you through a long march.
+
+name:& Piece~ of Elvish Waybread
+type:food
+graphics:,:B
+level:5
+weight:3
+cost:10
+alloc:20:30 to 100
+pile:10:1d3
+power:4
+msg:That tastes great.
+effect:NOURISH:INC_TO
+dice:75
+effect:CURE:POISONED
+effect:HEAL_HP
+dice:20
+desc:Food of the elves is always good; their waybread is no exception.  These
+desc: thin cakes are wrapped in leaves and keep their tastiness for months.
 
 name:& Flask~ of Whisky
 type:food
@@ -285,6 +371,56 @@ dice:3
 effect:TIMED_INC:BOLD
 dice:79+1d41
 desc:A fine way to wash down some otherwise unappetising rations.
+
+name:& Sip~ of Miruvor
+type:food
+graphics:,:w
+level:0
+weight:2
+cost:100
+alloc:20:10 to 50
+power:0
+msg:You feel your heart warm.
+effect:NOURISH:INC_BY
+dice:3
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:CON
+desc:Just a little of this warm and fragrant liquor gives you fresh hope and
+desc: vigour.
+
+name:& Swig~ of Orcish Liquor
+type:food
+graphics:,:m
+level:0
+weight:2
+cost:1
+alloc:20:20 to 100
+pile:10:1d3
+power:0
+msg:It burns your throat.
+effect:NOURISH:INC_BY
+dice:5
+effect:TIMED_SET:STUN
+dice:2+1d3
+effect:TIMED_SET:SLOW
+dice:2+1d3
+desc:This is a dirty brown color; you don't trust it.
+
+name:& Draught~ of the Ents
+type:food
+graphics:,:w
+level:0
+weight:10
+cost:1
+alloc:10:60 to 100
+power:0
+msg:Refreshing!
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:CON
+effect:GAIN_STAT:STR
+effect:GAIN_STAT:CON
+desc:This looks like pure water, but its scent reminds you of the smell of a
+desc: distant wood borne from afar by a cool breeze at night.
 
 ### The shrooms, an interesting collection ###
 
@@ -459,6 +595,7 @@ cost:60
 alloc:1:15 to 100
 pile:70:1d4
 power:5
+msg:Your stomach heaves.
 effect:NOURISH:SET_TO
 dice:5
 effect:RESTORE_STAT:STR
@@ -3442,8 +3579,8 @@ weight:4
 cost:0
 alloc:10:3 to 15
 pile:100:1d2
-msg:The potion makes you vomit!
 power:0
+msg:The potion makes you queasy.
 effect:NOURISH:SET_TO
 dice:2
 effect:CURE:POISONED
