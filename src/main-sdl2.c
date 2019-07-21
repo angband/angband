@@ -2498,15 +2498,27 @@ static void unselect_menu_buttons(struct menu_panel *menu_panel)
 
 static bool handle_menu_event(struct window *window, const SDL_Event *event)
 {
-	if (event->type != SDL_MOUSEMOTION
-			&& event->type != SDL_MOUSEBUTTONDOWN
-			&& event->type != SDL_MOUSEBUTTONUP)
-	{
-		return false;
+	int x = -1;
+	int y = -1;
+
+	switch (event->type) {
+		case SDL_MOUSEMOTION:
+			x = event->motion.x;
+			y = event->motion.y;
+			break;
+
+		case SDL_MOUSEBUTTONUP: /* fallthru */
+		case SDL_MOUSEBUTTONDOWN:
+			x = event->button.x;
+			y = event->button.y;
+			break;
+
+		default:
+			return false;
 	}
 
-	int x = event->type == SDL_MOUSEMOTION ? event->motion.x : event->button.x;
-	int y = event->type == SDL_MOUSEMOTION ? event->motion.y : event->button.y;
+	assert(x >= 0);
+	assert(y >= 0);
 
 	struct menu_panel *menu_panel =
 		get_menu_panel_by_xy(window->status_bar.menu_panel, x, y);
