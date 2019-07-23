@@ -1140,20 +1140,20 @@ void do_cmd_accept_character(struct command *cmd)
 	player->obj_k->to_h = 1;
 	player->obj_k->to_d = 1;
 
-	/* Initialise the stores */
+	/* Initialise the stores, dungeon */
 	store_reset();
+	chunk_list_max = 0;
 
 	/* Player learns innate runes */
 	player_learn_innate(player);
 
-	/* Randomize the artifacts if required */
-	if (OPT(player, birth_randarts)) {
-		/* First restore the standard artifacts */
-		cleanup_parser(&randart_parser);
-		deactivate_randart_file();
-		run_parser(&artifact_parser);
+	/* Restore the standard artifacts (randarts may have been loaded) */
+	cleanup_parser(&randart_parser);
+	deactivate_randart_file();
+	run_parser(&artifact_parser);
 
-		/* Now generate the new randarts */
+	/* Now only randomize the artifacts if required */
+	if (OPT(player, birth_randarts)) {
 		seed_randart = randint0(0x10000000);
 		do_randart(seed_randart, true);
 		deactivate_randart_file();

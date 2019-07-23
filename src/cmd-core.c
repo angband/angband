@@ -201,9 +201,6 @@ void process_command(cmd_context ctx, struct command *cmd)
 	int oldrepeats = cmd->nrepeats;
 	int idx = cmd_idx(cmd->code);
 
-	/* Throw away the command if we're disturbing the player */
-	if (ctx == CTX_DISTURB) return;
-
 	/* Hack - command a monster */
 	if (player->timed[TMD_COMMAND]) {
 		idx = (int) N_ELEMENTS(game_cmds) - 1;
@@ -307,6 +304,14 @@ errr cmdq_push(cmd_code c)
 void cmdq_execute(cmd_context ctx)
 {
 	while (cmdq_pop(ctx)) ;
+}
+
+/**
+ * Remove all commands from the queue.
+ */
+void cmdq_flush(void)
+{
+	cmd_tail = cmd_head;
 }
 
 /**

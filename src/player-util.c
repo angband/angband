@@ -1241,7 +1241,7 @@ void disturb(struct player *p, int stop_search)
 		p->upkeep->running = 0;
 
 		/* Cancel queued commands */
-		cmdq_execute(CTX_DISTURB);
+		cmdq_flush();
 
 		/* Check for new panel if appropriate */
 		event_signal(EVENT_PLAYERMOVED);

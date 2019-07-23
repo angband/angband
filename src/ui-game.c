@@ -39,6 +39,7 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-help.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
@@ -425,6 +426,8 @@ static void start_game(bool new_game)
  */
 void play_game(bool new_game)
 {
+	play_again = false;
+
 	/* Load a savefile or birth a character, or both */
 	start_game(new_game);
 
@@ -438,6 +441,14 @@ void play_game(bool new_game)
 
 	/* Close game on death or quitting */
 	close_game();
+
+	if (play_again) {
+		cleanup_angband();
+		init_display();
+		init_angband();
+		textui_init();
+		play_game(true);
+	}
 }
 
 /**

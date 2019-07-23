@@ -64,6 +64,8 @@
 #include "store.h"
 #include "trap.h"
 
+bool play_again = false;
+
 /**
  * Structure (not array) of game constants
  */
@@ -3594,6 +3596,7 @@ void cleanup_angband(void)
 	for (i = 0; i < chunk_list_max; i++)
 		cave_free(chunk_list[i]);
 	mem_free(chunk_list);
+	chunk_list = NULL;
 
 	/* Free the main cave */
 	if (cave) {
@@ -3605,6 +3608,10 @@ void cleanup_angband(void)
 	object_list_finalize();
 
 	cleanup_game_constants();
+
+	cmdq_flush();
+
+	if (play_again) return;
 
 	/* Free the format() buffer */
 	vformat_kill();
