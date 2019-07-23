@@ -75,11 +75,11 @@ Show walls with shaded backgrounds ``hybrid_walls``
   Walls appear as # and % symbols overlaid on a gray background block.  
   This overrides ``solid_walls]``
 
-Use special colors for torch-lit grids ``view_yellow_light``
+Color: Illuminate torchlight in yellow ``view_yellow_light``
   This option causes special colors to be used for "torch-lit" grids.
   Turning this option off will slightly improve game speed.
 
-Animate multi-coloured monsters and items ``animate_flicker``
+Color: Shimmer multi-colored things ``animate_flicker``
   Certain powerful monsters and items will shimmer in real time, i.e.
   between keypresses.  
 
@@ -89,7 +89,7 @@ Center map continuously ``center_player``
   how one section at a time - the display will "flip" to the next section
   when the player nears the edge.
 
-Show unique monsters in a special colour ``purple_uniques``
+Color: Show unique monsters in purple ``purple_uniques``
   All "unique" monsters will be shown in a light purple colour, which is
   not used for any "normal" monsters - so you can tell at a glance that
   they are unique. If you like the idea but don't like the colour, you can
@@ -99,7 +99,7 @@ Automatically clear -more- prompts ``auto_more``
   The game does not wait for a keypress when it comes to a '-more-'
   prompt, but carries on going.  
 
-Player color indicates low hit points ``hp_changes_color``
+Color: Player color indicates low hit points ``hp_changes_color``
   This option makes the player ``@`` turn various shades of colour from
   white to red, depending on percentage of HP remaining.
 
@@ -121,7 +121,7 @@ Show effective speed as multiplier ``effective_speed``
 Birth options
 =============
 
-Randomize the artifacts (except a very few) ``birth_randarts``
+Generate a new, random artifact set ``birth_randarts``
   A different set of artifacts will be created, in place of the standard
   ones. This is intended primarily for people who have played enough to
   know what most of the standard artifacts do and want some variety. The
@@ -136,7 +136,7 @@ Generate connected stairs ``birth_connect_stairs``
   With this option off, you will never start on a staircase - but other
   staircases up and down elsewhere on the level will still be generated.
 
-Force player descent ``birth_force_descend``
+Force player descent (never make up stairs) ``birth_force_descend``
   Upwards staircases do not work.  All downward staircases, including the
   one in town, transport the character one level below the previous maximum
   depth.  Recalling from the dungeon works and brings the character to the
@@ -152,7 +152,7 @@ Word of Recall has no effect ``birth_no_recall``
   Word of Recall scrolls have no effect.  When combined with the option
   to force player descent, this recreates the previous "ironman" option.
 
-Restrict the creation of artifacts ``birth_no_artifacts``
+Restrict creation of artifacts ``birth_no_artifacts``
   No artifacts will be created. Ever. Just *how* masochistic are you?
 
 Stack objects on the floor ``birth_stacking``
@@ -192,19 +192,24 @@ Monsters learn from their mistakes ``birth_ai_learn``
   use this information to choose the best attacks.  This option makes the
   game very difficult and is not recommended.
 
-Player can recognize all object properties at birth ``birth_know_runes``
+Know all runes on birth ``birth_know_runes``
   For players who don't enjoy the "identify by use" process for wearable
   items.  This option means all object properties are known at the outset, so
   artifacts and ego items will identified on walking over them.
 
-Player can recognize all object flavors at birth ``birth_know_flavors``
+Know all flavors on birth ``birth_know_flavors``
   For players who don't enjoy the "identify by use" process for consumable
   items.  This option means all object flavors are known at the outset.
 
-All dungeon levels are generated only once ``birth_levels_persist``
+Persistent levels (experimental) ``birth_levels_persist``
   Each level is generated for the first time when the player enters it, and 
   from then on when the player returns the level is as they last saw it, 
   includeing monsters, items and traps.
+
+To-damage is a percentage of dice (experimental) ``birth_percent_damage``
+  Instead of bonuses to damage being just added on to damage dealt, each +1
+  adds 5% to the value of the damage dice. This option is currently not
+  very balanced.
 
 Cheating options
 ================

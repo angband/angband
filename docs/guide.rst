@@ -195,7 +195,7 @@ What to ignore
 ``````````````
 
 * Monsters that will damage or destroy gear. (jellies, water hounds, etc)
-* Non-valuable monsters that are likely to use up consumables (baby bronze
+* Non-valuable monsters that are likely to use up consumables (baby gold
   dragons, groups of spell-casters in line-of-sight, etc)
 * Mobs that you can't dominate.
 * Uniques with escorts you can't dominate

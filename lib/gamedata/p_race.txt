@@ -267,7 +267,7 @@ skill-shoot:25
 skill-throw:25
 skill-dig:0
 hitdie:10
-exp:120
+exp:145
 infravision:4
 history:7
 age:100:30

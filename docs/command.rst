@@ -51,7 +51,7 @@ Equipment list (``e``)
   GLOVES (gloves), BOOTS (boots).   You must be wielding/wearing certain
   objects to take advantage of their special powers.
 
-Quiver list ('\|')
+Quiver list (``\|``)
   Missiles that you carry will automatically be put in your quiver.  The
   quiver has 10 slots; it also takes up inventory space, so every 40 
   missiles will reduce your number of inventory slots by 1.
@@ -171,8 +171,9 @@ Tunnel (``T``) or Tunnel ('^T')
   sometimes contain treasure, in which case they will be displayed in a
   different way. Rubble sometimes covers an object but is easy to tunnel
   through, even with your bare hands.  Tunnelling ability increases with 
-  strength and weapon weight. This command may take a count, requires a
-  direction, and takes some energy.
+  strength and weapon weight. If you have a digging tool in your pack, the
+  game will automatically use this to dig. This command may take a count,
+  requires a direction, and takes some energy.
 
 Open a door or chest (``o``)
   To open an object such as a door or chest, you must use this command. If
@@ -209,29 +210,36 @@ Alter (``+``)
   grid" command. This command may take a count, requires a direction, and
   takes some energy.
 
-Spell and Prayer Commands
+Steal (``s``)
+  This command is only available to rogues, and allows them to try and steal
+  from a monster.  Stealing works better when the player is stealthy and
+  faster than the target monster, and best of all when the victim is asleep.
+  A failed theft will wake the monster; if you really bungle the attempt, the
+  monster may shout out in anger.  This command requires a direction and
+  takes some energy.
+
+Spell Commands
 =========================
 
 Browse a book (``b``) or Peruse a book (``P``)
-  Only mages, rogues, and rangers can read magic books, and only priests
-  and paladins can read prayer books. Warriors cannot read any books. When
-  this command is used, all of the spells or prayers contained in the
-  selected book are displayed, along with information such as their level,
-  the amount of mana required to cast them, and whether or not you know the
-  spell or prayer.
+  Each class has books it can read and books it cannot; except for warriors,
+  who cannot read any books. When this command is used, all of the spells
+  contained in the selected book are displayed, along with information such as
+  their level, the amount of mana required to cast them, and whether or not
+  you know the spell.
 
-Gain new spells or prayers (``G``)
-  Use this command to actually learn new spells or prayers. When you are
-  able to learn new spells or prayers, the word "Study" will appear on the
-  status line at the bottom of the screen. If you have a book in your
-  possession, containing spells or prayers which you may learn, then you
-  may choose to study that book. If you are a mage, rogue, or ranger, you
-  may actually choose which spell to study. If you are a priest or paladin,
-  your gods will choose a prayer for you. There are nine books of each
-  type, five of which are normally found only in the dungeon. This command
-  takes some energy.
+Gain new spells (``G``)
+  Use this command to actually learn new spells. When you are able to learn
+  new spells, the word "Study" will appear on the status line at the bottom
+  of the screen. If you have a book in your possession, containing spells
+  which you may learn, then you may choose to study that book. Most classes
+  may actually choose which spell to study, but if you are a priest or paladin,
+  your gods will choose a prayer for you. There are five books of each
+  realm, but hybrid classes - paladins, rogues, rangers and blackguards - can
+  only cast from two or three of these.  Higher level books are normally found
+  only in the dungeon. This command takes some energy.
 
-Cast a spell or pray a prayer (``m`` and ``p`` in both keysets)
+Cast a spell (``m`` and ``p`` in both keysets)
   To cast a spell, you must have previously learned the spell and must have
   in your inventory a book from which the spell can be read. Each spell has
   a chance of failure which starts out fairly large but decreases as you
@@ -248,13 +256,15 @@ Object Manipulation Commands
 ============================
 
 Eat some food (``E``)
-  You must eat regularly to prevent starvation. As you grow hungry, a
-  message will appear at the bottom of the screen saying "Hungry". If you
-  go hungry long enough, you will become weak, then start fainting, and
-  eventually, you may well die of starvation. You may use this command to
-  eat food in your inventory. Note that you can sometimes find food in the
-  dungeon, but it is not always wise to eat strange food. This command
-  takes some energy.
+  You must eat regularly to prevent starvation. There is a hunger meter
+  at the bottom of the screen, which says "Fed" and gives a percentage in
+  most circumstances. If you go hungry long enough, you will become weak,
+  then start fainting, and eventually, you may well die of starvation
+  (accompanied by increasingly alarming messages on your hunger meter).
+  It is also possible to be "Full", which will make you move slowly; more
+  slowly the fuller you get. You may use this command to eat food in your
+  inventory. Note that you can sometimes find food in the dungeon, but it
+  is not always wise to eat strange food. This command takes some energy.
 
 Fuel your lantern/torch (``F``)
   If you are using a lantern and have flasks of oil in your pack, then you
@@ -281,14 +291,13 @@ Inscribe an object (``{``)
   inscription is limited to the particular object (or pile) and is not
   automatically transferred to all similar objects. Under certain
   circumstances, Angband will display "fake" inscriptions on certain
-  objects ('cursed', 'tried', 'empty') when appropriate. These 
-  "fake" inscriptions remain all the time, even if the player chooses 
-  to add a "real" inscription on top of it later.
+  objects ('tried', 'empty') when appropriate. These "fake" inscriptions
+  remain all the time, even if the player chooses to add a "real" inscription
+  on top of it later.
 
-  In addition, Angband will occasionally place a "real" inscription on an
-  object for you, normally as the result of your character getting a
-  "feeling" about the item. All characters will get "feelings" about
-  weapons and armor after carrying them for a while.
+  In addition, Angband will place the inscription '??' on an object for you
+  if the object has a property (or "rune") that you have not learned yet.
+  This inscription will remain until you know all the runes on the object.
 
   An item labeled as '{empty}' was found to be out of charges, and an
   item labeled as '{tried}' is a "flavored" item which the character has
@@ -366,7 +375,8 @@ Throw an item (``v``)
   object from a pile will be thrown at a time. Note that throwing an object
   will often cause it to break, so be careful! If you throw something at a
   creature, your chances of hitting it are determined by your plusses to
-  hit, your ability at throwing, and the object's plusses to hit. Once the
+  hit, your ability at throwing, and the object's plusses to hit. Some
+  weapons are especially designed for throwing.  Once the
   creature is hit, the object may or may not do any damage to it. 
   Note that flasks of oil will do some fire damage to a monster on impact. 
   If you are wielding a missile launcher compatible with the object you are

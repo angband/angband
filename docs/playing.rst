@@ -104,7 +104,7 @@ Original Keyset Command Summary
 ``p``  Cast a spell                  ``P``  (unused)
 ``q``  Quaff a potion                ``Q``  End character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
-``s``  (unused)                      ``S``  (unused)
+``s``  Steal (rogues only)           ``S``  (unused)
 ``t``  Take off equipment            ``T``  Dig a tunnel
 ``u``  Use a staff                   ``U``  Use an item
 ``v``  Throw an item                 ``V``  Version info
@@ -166,7 +166,7 @@ Roguelike Keyset Command Summary
   p    Cast a spell                    P    Browse a book
   q    Quaff a potion                  Q    End character & quit
   r    Read a scroll                   R    Rest for a period
-  s    (unused)                        S    (unused)
+  s    Steal (rogues only)             S    (unused)
   t    Fire an item                    T    Take off equipment
   u    (walk - north east)             U    (run - north east)
   v    Throw an item                   V    Version info

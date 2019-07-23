@@ -2,12 +2,12 @@
 Version Information
 ===================
 
-Angband has been maintained and developed by a succession of volunteers since it was written in the early 1990s. The current maintainer is Nick McConnell.
+Angband has been maintained and developed by a succession of volunteers since
+it was written in the early 1990s. The current maintainer is Nick McConnell.
 
-The current version is 4.1.3. Detailed information about this version and
+The current version is 4.2.0. Detailed information about this version and
 previous versions can be found at http://rephial.org.  Also additional
-information can be found at the angband forums (http://angband.oook.cz)
-or the newsgroup (rec.games.roguelike.angband).
+information can be found at the angband forums (http://angband.oook.cz).
 
 This file was last updated for Angband 3.1.2 and remains here mainly
 for historical purposes.

@@ -83,11 +83,11 @@ Monsters
 ``e``     Floating Eye        ``E``    Elemental
 ``f``     Feline (Cat)        ``F``    Dragon Fly
 ``g``     Golem               ``G``    Ghost
-``h``     Humanoids           ``H``    Hybrid
+``h``     Humanoid            ``H``    Hybrid
 ``i``     Icky-Thing          ``I``    Insect
 ``j``     Jelly               ``J``    Snake
 ``k``     Kobold              ``K``    Killer Beetle
-``l``     Giant Louse         ``L``    Lich
+``l``     Tree/Ent            ``L``    Lich
 ``m``     Mold                ``M``    Multi-Headed Hydra
 ``n``     Naga                ``N``    (unused)
 ``o``     Orc                 ``O``    Ogre
@@ -109,8 +109,9 @@ The Town Level
 
 The town level is where you will begin your adventure. The town consists of
 eight buildings (each with an entrance), some townspeople, and a wall which
-surrounds the town. The first time you are in town it will be daytime, but
-note that the sun rises and falls (rather instantly) as time passes.
+surrounds the town and may contain streams of lava. The first time you are
+in town it will be daytime, but note that the sun rises and falls (rather
+instantly) as time passes.
 
 Townspeople
 ===========
@@ -245,6 +246,11 @@ point. You may use the "Fuel" command (``F``) to refuel your lantern (with
 flasks of oil), and it is a good idea to carry extra torches or flasks of 
 oil, as appropriate. There are rumours of objects of exceptional power 
 which glow with their own never-ending light.
+
+These last two paragraphs apply to most classes, but not to necromancers.
+Necromancers dislike light, and shroud themselves in darkness.  They are
+usually better off not carrying a light, but also do not gain any of the
+bonuses that may come from magical light sources.
 
 Objects Found In The Dungeon
 ============================

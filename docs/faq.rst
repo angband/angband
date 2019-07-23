@@ -62,7 +62,7 @@ Ever-changing and subject to U-turning with public dissent. See http://trac.reph
 How do I suggest an idea/feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Post it on the newsgroup or the forums.  If people think it's a good idea, it will generally get some discussion; if they don't, it won't.  The developers keep an eye on r.g.r.a and the forums, and ideas deemed OK will get filed for future implementation.
+Post it on the forums.  If people think it's a good idea, it will generally get some discussion; if they don't, it won't.  The developers keep an eye on the forums, and ideas deemed OK will get filed for future implementation.
 
 Sometimes a suggestion may not be right for the game, though. Some suggestions would change aspects of Angband that are essential to its nature; Angband has a long history, and so has developed a certain character over the years.  Some suggestions might make a good game, perhaps even a better game than Angband, but would make a game that is not Angband. To some extent, variants exist to address this, but even so they tend to adhere to the core Angband principles.
 
