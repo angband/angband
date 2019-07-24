@@ -1639,7 +1639,7 @@ static bool click_status_bar_button(struct window *window,
 			}
 			break;
 		case SDL_MOUSEMOTION:
-			if (is_point_in_rect(event->button.x, event->button.y, &button->full_rect)) {
+			if (is_point_in_rect(event->motion.x, event->motion.y, &button->full_rect)) {
 				button->highlighted = true;
 				return false;
 			}
