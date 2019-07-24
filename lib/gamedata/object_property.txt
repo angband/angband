@@ -658,8 +658,24 @@ type-mult:boots:0
 
 name:trap immunity
 type:flag
+subtype:misc ability
+id-type:on effect
 code:TRAP_IMMUNE
 power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+msg:Your {name} stops you from setting off the trap.
+desc:Gives immunity to traps
 
 name:throwing
 type:flag
