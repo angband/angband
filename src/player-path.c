@@ -63,6 +63,9 @@ static bool is_valid_pf(int y, int x)
 	/* No damaging terrain */
 	if (square_isdamaging(cave, grid)) return false;
 
+	/* No trapped squares */
+	if (square_isplayertrap(cave, grid)) return false;
+
 	/* Require open space */
 	return (square_ispassable(cave, grid));
 }
