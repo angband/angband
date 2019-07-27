@@ -61,7 +61,7 @@ static bool is_valid_pf(int y, int x)
 	if (!square_isknown(cave, grid)) return true;
 
 	/* No damaging terrain */
-	if (!square_isdamaging(cave, grid)) return true;
+	if (square_isdamaging(cave, grid)) return false;
 
 	/* Require open space */
 	return (square_ispassable(cave, grid));
