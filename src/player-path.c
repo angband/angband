@@ -149,7 +149,7 @@ bool findpath(int y, int x)
 	while (try_again) ;
 
 	/* Failure */
-	if (terrain[y - oy][x - ox] == MAX_PF_LENGTH) {
+	if (terrain[y - oy][x - ox] == -1) {
 		bell("Target space unreachable.");
 		return false;
 	}
