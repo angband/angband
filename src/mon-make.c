@@ -308,9 +308,11 @@ struct monster_race *get_mon_num(int level)
 void delete_monster_idx(int m_idx)
 {
 	struct monster *mon = cave_monster(cave, m_idx);
+	struct loc grid;
 
 	assert(m_idx > 0);
 	assert(square_in_bounds(cave, mon->grid));
+	grid = mon->grid;
 
 	/* Hack -- Reduce the racial counter */
 	mon->race->cur_num--;
@@ -329,7 +331,7 @@ void delete_monster_idx(int m_idx)
 		health_track(player->upkeep, NULL);
 
 	/* Monster is gone from square and group */
-	square_set_mon(cave, mon->grid, 0);
+	square_set_mon(cave, grid, 0);
 	monster_remove_from_groups(cave, mon);
 
 	/* Delete objects */
@@ -363,7 +365,7 @@ void delete_monster_idx(int m_idx)
 	cave->mon_cnt--;
 
 	/* Visual update */
-	square_light_spot(cave, mon->grid);
+	square_light_spot(cave, grid);
 }
 
 
