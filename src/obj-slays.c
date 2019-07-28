@@ -268,7 +268,7 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
  *
  * \param idx is the index of the brand
  */
-static bool player_has_temporary_brand(int idx)
+bool player_has_temporary_brand(int idx)
 {
 	if (player->timed[TMD_ATT_ACID] && streq(brands[idx].code, "ACID_3")) {
 		return true;
@@ -294,7 +294,7 @@ static bool player_has_temporary_brand(int idx)
  *
  * \param idx is the index of the slay
  */
-static bool player_has_temporary_slay(int idx)
+bool player_has_temporary_slay(int idx)
 {
 	if (player->timed[TMD_ATT_EVIL] && streq(slays[idx].code, "EVIL_2")) {
 		return true;

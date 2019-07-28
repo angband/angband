@@ -822,11 +822,13 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get damage for each brand on the objects */
 	for (i = 1; i < z_info->brand_max; i++) {
-		/* Must have the brand */
-		if (total_brands[i])
-			has_brands_or_slays = true;
-		else
+		/* Must have the brand, possibly from a spell */
+		if (player_has_temporary_brand(i)) {
+			*nonweap_slay = true;
+		} else if (!total_brands[i]) {
 			continue;
+		}
+		has_brands_or_slays = true;
 
 		/* Include bonus damage and brand in stated average */
 		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
@@ -846,11 +848,13 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get damage for each slay on the objects */
 	for (i = 1; i < z_info->slay_max; i++) {
-		/* Must have the slay */
-		if (total_slays[i])
-			has_brands_or_slays = true;
-		else
+		/* Must have the slay, possibly from a spell */
+		if (player_has_temporary_slay(i)) {
+			*nonweap_slay = true;
+		} else if (!total_slays[i]) {
 			continue;
+		}
+		has_brands_or_slays = true;
 
 		/* Include bonus damage and slay in stated average */
 		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
