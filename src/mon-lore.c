@@ -1076,7 +1076,9 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 	long exp_integer, exp_fraction;
 	s16b level;
 
+	/* Check legality and that this is a placeable monster */
 	assert(tb && race && lore);
+	if (!race->rarity) return;
 
 	/* Introduction */
 	if (rf_has(known_flags, RF_UNIQUE))
