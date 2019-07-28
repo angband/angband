@@ -330,9 +330,39 @@ struct file_parser player_timed_parser = {
  * Utilities for more complex or anomolous effects
  * ------------------------------------------------------------------------ */
 /**
+ * Swap stats at random to temporarily scramble the player's stats.
+ */
+static void player_scramble_stats(struct player *p)
+{
+	int max1, cur1, max2, cur2, i, j, swap;
+
+	/* Fisher-Yates shuffling algorithm */
+	for (i = STAT_MAX - 1; i > 0; --i) {
+		j = randint0(i);
+
+		max1 = p->stat_max[i];
+		cur1 = p->stat_cur[i];
+		max2 = p->stat_max[j];
+		cur2 = p->stat_cur[j];
+
+		p->stat_max[i] = max2;
+		p->stat_cur[i] = cur2;
+		p->stat_max[j] = max1;
+		p->stat_cur[j] = cur1;
+
+		/* Record what we did */
+		swap = p->stat_map[i];
+		p->stat_map[i] = p->stat_map[j];
+		p->stat_map[j] = swap;
+	}
+
+	return;
+}
+
+/**
  * Undo scrambled stats when effect runs out.
  */
-void player_fix_scramble(struct player *p)
+static void player_fix_scramble(struct player *p)
 {
 	/* Figure out what stats should be */
 	int new_cur[STAT_MAX];
@@ -440,17 +470,21 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		}
 	}
 
+	/* Handle stat swap */
+	if (idx == TMD_SCRAMBLE) {
+		if (p->timed[idx] == 0) {
+			player_scramble_stats(p);
+		} else if (v == 0) {
+			player_fix_scramble(p);
+		}
+	}
+
 	/* Use the value */
 	p->timed[idx] = v;
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0) {
 		player_inc_timed(p, TMD_SLOW, 100, true, false);
-	}
-
-	/* Undo stat swap */
-	if (idx == TMD_SCRAMBLE && v == 0) {
-		player_fix_scramble(p);
 	}
 
 	if (notify) {

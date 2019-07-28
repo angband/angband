@@ -125,38 +125,6 @@ static void project_player_drain_stats(int num)
 	return;
 }
 
-/**
- * Swap stats at random to temporarily scramble the player's stats.
- */
-static void project_player_swap_stats(void)
-{
-	int max1, cur1, max2, cur2, i, j, swap;
-
-	// Fisher-Yates shuffling algorithm.
-	for (i = STAT_MAX - 1; i > 0; --i) {
-		j = randint0(i);
-
-		max1 = player->stat_max[i];
-		cur1 = player->stat_cur[i];
-		max2 = player->stat_max[j];
-		cur2 = player->stat_cur[j];
-
-		player->stat_max[i] = max2;
-		player->stat_cur[i] = cur2;
-		player->stat_max[j] = max1;
-		player->stat_cur[j] = cur1;
-
-		/* Record what we did */
-		swap = player->stat_map[i];
-		player->stat_map[i] = player->stat_map[j];
-		player->stat_map[j] = swap;
-	}
-
-	player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
-
-	return;
-}
-
 typedef struct project_player_handler_context_s {
 	/* Input values */
 	const struct source origin;
@@ -375,7 +343,7 @@ static int project_player_handler_NEXUS(project_player_handler_context_t *contex
 	if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 		msg("You avoid the effect!");
 	} else {
-		project_player_swap_stats();
+		player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
 	}
 
 	if (one_in_(3) && mon) { /* Teleport to */
