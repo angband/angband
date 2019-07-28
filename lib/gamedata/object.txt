@@ -609,7 +609,7 @@ graphics:,:d
 level:0
 weight:1
 cost:300
-alloc:5:50 to 100
+alloc:20:50 to 100
 pile:70:1d4
 power:9
 effect:NOURISH:INC_BY
@@ -2219,7 +2219,7 @@ weight:2
 cost:4000
 alloc:50:15 to 80
 flags:AFRAID | EASY_KNOW
-values:SPEED[4]
+values:SPEED[2]
 
 name:the Mouse
 type:ring
