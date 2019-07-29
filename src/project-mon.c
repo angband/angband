@@ -1200,6 +1200,9 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
 		effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0,
 					  context->grid.y, context->grid.x, NULL);
+
+		/* Wake the monster up, don't notice the player */
+		monster_wake(mon, false, 0);
 	} else {
 		for (int i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0) {
