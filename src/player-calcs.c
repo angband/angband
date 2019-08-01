@@ -1804,10 +1804,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Extract the player flags */
 	player_flags(p, collect_f);
 
-	/* Add player specific pflags */
-	if (!p->msp)
-		pf_on(state->pflags, PF_NO_MANA);
-
 	/* Analyze equipment */
 	for (i = 0; i < p->body.count; i++) {
 		int index = 0;
@@ -2211,6 +2207,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Mana */
 	calc_mana(p, state, update);
+	if (!p->msp) {
+		pf_on(state->pflags, PF_NO_MANA);
+	}
 
 	/* Movement speed */
 	state->num_moves = 1 + extra_moves;;
