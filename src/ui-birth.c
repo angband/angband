@@ -243,6 +243,7 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_FREE_ACT: return "Resists paralysis";
 		case OF_REGEN: return "Regenerates quickly";
 		case OF_SEE_INVIS: return "Sees invisible creatures";
+		case OF_IMPAIR_HP: return "Regenerates slowly";
 
 		default: return "Undocumented flag";
 	}
@@ -404,6 +405,13 @@ static void class_help(int i, void *db, const region *l)
 			}
 		}
 		text_out_e("\nLearns %s magic", buf);
+	}
+
+	for (k = 1; k < OF_MAX; k++) {
+		if (n_flags >= flag_space) break;
+		if (!of_has(c->flags, k)) continue;
+		text_out_e("\n%s", get_flag_desc(k));
+		n_flags++;
 	}
 
 	for (k = 0; k < PF_MAX; k++) {
