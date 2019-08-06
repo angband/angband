@@ -143,9 +143,9 @@ void map_info(struct loc grid, struct grid_data *g)
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
-    /* There is a trap in this square */
-    if (square_trap(cave, grid) && square_isknown(cave, grid)) {
-		struct trap *trap = square(cave, grid).trap;
+	/* There is a known trap in this square */
+	if (square_trap(player->cave, grid) && square_isknown(cave, grid)) {
+		struct trap *trap = square(player->cave, grid).trap;
 
 		/* Scan the square trap list */
 		while (trap) {
@@ -242,10 +242,11 @@ void square_note_spot(struct chunk *c, struct loc grid)
 	/* Make the player know precisely what is on this grid */
 	square_know_pile(c, grid);
 
-	/* Notice traps */
+	/* Notice traps, memorize those we can see */
 	if (square_issecrettrap(c, grid)) {
 		square_reveal_trap(c, grid, false, true);
 	}
+	square_memorize_traps(c, grid);
 
 	if (square_isknown(c, grid))
 		return;

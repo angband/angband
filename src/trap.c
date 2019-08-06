@@ -280,6 +280,7 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 	sqinfo_on(square(c, grid).info, SQUARE_TRAP);
 
 	/* Redraw the grid */
+	square_note_spot(c, grid);
 	square_light_spot(c, grid);
 }
 
@@ -300,7 +301,8 @@ void square_free_trap(struct chunk *c, struct loc grid)
 /**
  * Reveal some of the player traps in a square
  */
-bool square_reveal_trap(struct chunk *c, struct loc grid, bool always, bool domsg)
+bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
+						bool domsg)
 {
     int found_trap = 0;
 	struct trap *trap = square_trap(c, grid);
@@ -354,6 +356,37 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always, bool doms
 
     /* Return true if we found any traps */
     return (found_trap != 0);
+}
+
+/**
+ * Memorize all the visible traps on a square
+ */
+void square_memorize_traps(struct chunk *c, struct loc grid)
+{
+	struct trap *trap = square(c, grid).trap;
+	struct trap *current = NULL;
+	if (c != cave) return;
+
+	/* Clear current knowledge */
+	square_remove_all_traps(player->cave, grid);
+
+	/* Copy all visible traps to the known cave */
+	while (trap) {
+		if (square_isvisibletrap(c, grid)) {
+			struct trap *next;
+			if (current) {
+				next = mem_zalloc(sizeof(*next));
+				current->next = next;
+				current = next;
+			} else {
+				current = mem_zalloc(sizeof(*current));
+				player->cave->squares[grid.y][grid.x].trap = current;
+			}
+			memcpy(current, trap, sizeof(*trap));
+			current->next = NULL;
+		}
+		trap = trap->next;
+	}
 }
 
 /**
@@ -493,10 +526,7 @@ bool square_remove_all_traps(struct chunk *c, struct loc grid)
 }
 
 /**
- * Remove traps.
- *
- * If called with t_idx < 0, will remove all traps in the location given.
- * Otherwise, will remove all traps with the given kind.
+ * Remove all traps with the given index.
  *
  * Return true if traps were removed.
  */
@@ -539,12 +569,7 @@ bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
 }
 
 /**
- * Remove traps.
- *
- * If called with t_idx < 0, will remove all traps in the location given.
- * Otherwise, will remove all traps with the given kind.
- *
- * Return true if no traps now exist in this grid.
+ * Disable a trap for the specified number of turns
  */
 bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 							 int t_idx, int time)

@@ -1390,11 +1390,13 @@ const char *square_apparent_name(struct chunk *c, struct player *p, struct loc g
 	return f_info[f].name;
 }
 
+/* Memorize the terrain */
 void square_memorize(struct chunk *c, struct loc grid) {
 	if (c != cave) return;
 	square_set_known_feat(c, grid, square(c, grid).feat);
 }
 
+/* Forget the terrain */
 void square_forget(struct chunk *c, struct loc grid) {
 	if (c != cave) return;
 	square_set_known_feat(c, grid, FEAT_NONE);
