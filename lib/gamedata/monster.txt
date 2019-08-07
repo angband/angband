@@ -1429,7 +1429,7 @@ desc:A disembodied eye, crackling with energy.
 
 name:kobold shaman
 base:kobold
-color:B
+color:r
 speed:110
 hit-points:11
 hearing:20
@@ -1634,7 +1634,7 @@ desc:It is about ten feet long.
 
 name:kobold archer
 base:kobold
-color:g
+color:W
 speed:110
 hit-points:24
 hearing:20
@@ -2575,7 +2575,7 @@ desc:A woman's face on the body of a vicious black bird.
 
 name:orc shaman
 base:orc
-color:B
+color:r
 speed:110
 hit-points:41
 hearing:20
@@ -6308,7 +6308,7 @@ mimic:gold:adamantite
 
 name:troll scavenger
 base:troll
-color:G
+color:o
 speed:110
 hit-points:137
 hearing:20
@@ -7968,7 +7968,7 @@ desc: your eyes with spectra of colour.
 
 name:troll priest
 base:troll
-color:o
+color:G
 speed:110
 hit-points:340
 hearing:20
