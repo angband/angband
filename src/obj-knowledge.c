@@ -1076,8 +1076,9 @@ void player_know_object(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Set curses */
+	/* Set curses - be very careful to keep knowledge aligned */
 	if (obj->curses) {
+		bool known_cursed = false;
 		for (i = 1; i < z_info->curse_max; i++) {
 			if (p->obj_k->curses[i].power && obj->curses[i].power) {
 				if (!obj->known->curses) {
@@ -1085,8 +1086,18 @@ void player_know_object(struct player *p, struct object *obj)
 													sizeof(struct curse_data));
 				}
 				obj->known->curses[i].power = obj->curses[i].power;
+				known_cursed = true;
+			} else if (obj->known->curses) {
+				obj->known->curses[i].power = 0;
 			}
 		}
+		if (!known_cursed) {
+			mem_free(obj->known->curses);
+			obj->known->curses = NULL;
+		}
+	} else if (obj->known->curses) {
+		mem_free(obj->known->curses);
+		obj->known->curses = NULL;
 	}
 
 	/* Set ego type, jewellery type if known */
