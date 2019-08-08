@@ -422,12 +422,11 @@ commands to use them. A ``<`` represents an up staircase and a ``>``
 represents a down staircase. You must move your character over the
 staircase before you can use it.
 
-Each level has at least one up staircase and at least two down staircases.
-There are no exceptions to this rule. You may have trouble finding some
-well hidden secret doors, or you may have to dig through obstructions to
-get to them, but you can always find the stairs if you look hard enough.
-Stairs, like permanent rock, and shop entrances, cannot be destroyed by any
-means.
+Most levels have at least one up staircase and at least two down staircases.
+You may have trouble finding some well hidden secret doors, or you may have
+to dig through obstructions to get to them, but you can always find the stairs
+if you look hard enough.  Stairs, like permanent rock, and shop entrances,
+cannot be destroyed by any means.
 
 Many secret doors are used within the dungeon to confuse and demoralize
 adventurers foolish enough to enter, although all secret doors can be

@@ -2,16 +2,19 @@
 A quick demonstration
 =====================
 
-Angband is a very complex game, so you may want to try the following quick demonstration. The following instructions are for demonstration purposes only, and so they are intentionally boring.
+Angband is a very complex game, so you may want to try the following quick
+demonstration. The following instructions are for demonstration purposes only,
+and so they are intentionally boring.
 
 For this demo, we will assume that you have never played Angband before,
 that you have not requested any special "sub-windows", that you have not
 requested any special "graphics" modes, that you have a "numeric keypad" on
 your computer, and that you are using the default options, including, in
 particular, the "original" command set. If any of these assumptions are
-incorrect, you will need to keep in mind that this demo may not work. There
-are many ways to view this file while playing, in particular, you should be
-able to view it using the "online help" built into the game.
+incorrect, you will need to keep in mind that this demo may not work; in
+particular note that Windows users will be using graphical tiles by default,
+so unless you turn off graphics map symbols below will be replaced by
+little pictures.  There are many ways to view this file while playing.
 
 Any time you see the '-more-' prompt, read the message and press space.
 This takes precedence over any other instructions. At any other prompt, for
@@ -26,7 +29,7 @@ of choices. For this demo, press ``a`` three times to elect a "human warrior"
 character with the point-based stat allocation system. You will now be
 presented with a description of your character. Look over the
 description briefly, there is a lot of information here, and most of it
-will not make any sense. Press enter three times and your character will be
+will not make any sense. Press enter four times and your character will be
 placed into the "town".
 
 You should now be looking at the basic dungeon interaction screen. To the
@@ -69,8 +72,8 @@ start out with some objects to help them survive (though there is an option
 to start with more money instead). Your character will have some food, a
 potion, some torches, and a scroll. Press ``e`` to see what you are
 wearing. You will find you are wearing armour on your body, wielding a
-broad sword and lighting the way with a torch. You have many other
-equipment slots but they are all currently empty.
+dagger and lighting the way with a torch. You have many other equipment
+slots but they are all currently empty.
 
 Press ``t`` to take something off. Note that the equipment listing is
 reduced to those objects which can actually be taken off. Press ``g`` to
