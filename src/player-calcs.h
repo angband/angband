@@ -73,6 +73,7 @@
 #define PR_MONLIST		0x00400000L /* Display monster list */
 #define PR_ITEMLIST		0x00800000L /* Display item list */
 #define PR_FEELING		0x01000000L /* Display level feeling */
+#define PR_LIGHT		0x02000000L /* Display light level */
 
 /**
  * Display Basic Info

@@ -451,6 +451,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 {
 	int dir, k, x, y;
 	int light = p->state.cur_light, radius = ABS(light) - 1;
+	int old_light = square_light(c, p->grid);
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -527,6 +528,11 @@ static void calc_lighting(struct chunk *c, struct player *p)
 				}
 			}
 		}
+	}
+
+	/* Update light level indicator */
+	if (square_light(c, p->grid) != old_light) {
+		p->upkeep->redraw |= PR_LIGHT;
 	}
 }
 

@@ -88,6 +88,7 @@ static game_event_type statusline_events[] =
 	EVENT_DETECTIONSTATUS,
 	EVENT_STATE,
 	EVENT_FEELING,
+	EVENT_LIGHT,
 };
 
 /**
@@ -847,6 +848,22 @@ static size_t prt_level_feeling(int row, int col)
 }
 
 /**
+ * Prints player grid light level
+ */
+static size_t prt_light(int row, int col)
+{
+	int light = square_light(cave, player->grid);
+
+	if (light > 0) {
+		c_put_str(COLOUR_YELLOW, format("Light %d ", light), row, col);
+	} else {
+		c_put_str(COLOUR_PURPLE, format("Light %d ", light), row, col);
+	}
+
+	return 8 + (ABS(light) > 9 ? 1 : 0) + (light < 0 ? 1 : 0);
+}
+
+/**
  * Prints trap detection status
  */
 static size_t prt_dtrap(int row, int col)
@@ -939,8 +956,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state,
-  prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_light, prt_unignore, prt_recall, prt_descent,
+  prt_state, prt_study, prt_tmd, prt_dtrap };
 
 
 /**
