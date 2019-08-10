@@ -1312,6 +1312,12 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	else
 		my_strcpy(start, format("%s does not resist ", initial_pronoun),
 				  sizeof(start));
+
+	/* Special case for undead */
+	if (rf_has(known_flags, RF_UNDEAD)) {
+		rf_off(current_flags, RF_IM_NETHER);
+	}
+
 	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "or", "");
 	if (!rf_is_empty(current_flags)) {
 		prev = true;
