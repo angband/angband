@@ -99,7 +99,7 @@ exp:120
 infravision:2
 history:4
 age:24:16
-height:64:10
+height:71:8
 weight:115:25
 obj-flags:SUST_DEX
 
@@ -120,7 +120,7 @@ exp:120
 infravision:3
 history:5
 age:75:75
-height:57:4
+height:73:7
 weight:90:10
 obj-flags:SUST_DEX
 values:RES_LIGHT[1]
@@ -271,7 +271,7 @@ exp:145
 infravision:4
 history:7
 age:100:30
-height:86:15
+height:77:6
 weight:190:20
 obj-flags:SEE_INVIS
 values:RES_LIGHT[1]
