@@ -66,6 +66,7 @@
 #include "generate.h"
 #include "init.h"
 #include "math.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "mon-util.h"
@@ -2616,6 +2617,13 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	c->mon_max = mon->midx + 1;
 	c->mon_cnt = 1;
 	update_mon(mon, c, true);
+	player->upkeep->health_who = mon;
+
+	/* Ignore its held objects */
+	mon->held_obj = NULL;
+
+	/* Give it a group */
+	monster_group_start(c, mon, 0);
 
 	return c;
 }

@@ -4905,7 +4905,7 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 
 	/* Need to choose a monster, not just point */
 	if (mon) {
-		struct object *obj;
+		int old_idx = mon->midx;
 
 		/* Monsters with high spell power can resist */
 		if (randint0(mon->race->spell_power) > player->lev) {
@@ -4916,38 +4916,14 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		}
 
 		/* Swap the targeted monster with the first in the monster list */
-		struct monster *first_mon = cave_monster(cave, 1);
-		struct monster *temp_mon = mem_zalloc(sizeof(*temp_mon));
-		memcpy(temp_mon, first_mon, sizeof(*temp_mon));
-		memcpy(first_mon, mon, sizeof(*first_mon));
-		memcpy(mon, temp_mon, sizeof(*mon));
-
-		/* Now tidy up */
-		mon->midx = first_mon->midx;
-		first_mon->midx = 1;
-		square_set_mon(cave, first_mon->grid, 1);
-		square_set_mon(cave, mon->grid, mon->midx);
-
-		/* Repair objects being carried by monsters */
-		for (obj = mon->held_obj; obj; obj = obj->next) {
-			obj->held_m_idx = mon->midx;
+		if (cave_monster(cave, 1)->race) {
+			monster_index_move(old_idx, cave_monster_max(cave));
+			monster_index_move(1, old_idx);
+			monster_index_move(cave_monster_max(cave), 1);
+		} else {
+			monster_index_move(old_idx, 1);
 		}
-		for (obj = first_mon->held_obj; obj; obj = obj->next) {
-			obj->held_m_idx = 1;
-		}
-
-		/* Move mimicked objects */
-		if (mon->mimicked_obj) {
-			mon->mimicked_obj->mimicking_m_idx = mon->midx;
-		}
-		if (first_mon->mimicked_obj) {
-			first_mon->mimicked_obj->mimicking_m_idx = 1;
-		}
-
-		/* Update the target and health bar */
-		target_set_monster(first_mon);
-		player->upkeep->health_who = first_mon;
-		mem_free(temp_mon);
+		target_set_monster(cave_monster(cave, 1));
 	} else {
 		msg("No monster selected!");
 		return false;

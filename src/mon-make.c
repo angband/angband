@@ -384,8 +384,10 @@ void delete_monster(struct loc grid)
 
 /**
  * Move a monster from index i1 to index i2 in the monster list.
+ *
+ * This should only be called when there is an actual monster at i1
  */
-static void compact_monsters_aux(int i1, int i2)
+void monster_index_move(int i1, int i2)
 {
 	struct monster *mon;
 	struct object *obj;
@@ -416,20 +418,20 @@ static void compact_monsters_aux(int i1, int i2)
 	if (mon->mimicked_obj)
 		mon->mimicked_obj->mimicking_m_idx = i2;
 
-	/* Hack -- Update the target */
+	/* Update the target */
 	if (target_get_monster() == mon)
 		target_set_monster(cave_monster(cave, i2));
 
-	/* Hack -- Update the health bar */
+	/* Update the health bar */
 	if (player->upkeep->health_who == mon)
 		player->upkeep->health_who = cave_monster(cave, i2);
 
-	/* Hack -- move monster */
+	/* Move monster */
 	memcpy(cave_monster(cave, i2),
 			cave_monster(cave, i1),
 			sizeof(struct monster));
 
-	/* Hack -- wipe hole */
+	/* Wipe hole */
 	memset(cave_monster(cave, i1), 0, sizeof(struct monster));
 }
 
@@ -511,7 +513,7 @@ void compact_monsters(int num_to_compact)
 		if (mon->race) continue;
 
 		/* Move last monster into open hole */
-		compact_monsters_aux(cave_monster_max(cave) - 1, m_idx);
+		monster_index_move(cave_monster_max(cave) - 1, m_idx);
 
 		/* Compress "cave->mon_max" */
 		cave->mon_max--;
