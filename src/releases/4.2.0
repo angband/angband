@@ -1,0 +1,83 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [macOS][3] (10.9+)
+
+[1]:http://rephial.org/downloads/4.2/angband-4.2.0.tar.gz "Source tarball, 25M"
+[2]:http://rephial.org/downloads/4.2/angband-4.2.0-win.zip "Windows port, 22M zip file"
+[3]:http://rephial.org/downloads/4.2/Angband-4.2.0-osx.dmg "Max OS X port, 23M .dmg file"
+
+Background
+==========
+4.2.0 was slated to make big changes to two important parts of the game: classes, and monsters.  While each of these was big enough to deserve a minor version increase in its own right, doing both together so they could be balanced against each other was preferred.  As with 4.1.0, there was much community discussion about the changes.  Version 4.2.0 was released on Saturday the 17th of August 2019.
+
+Summary of Changes
+==================
+Classes
+-------
+Two new realms of magic have been added, nature and shadow, to the existing divine and arcane realms.
+* Nature realm relies on harnessing the power of the earth, and is opposite to the arcane realm, which uses craft and cunning.
+* Divine realm uses harmony and light, and is opposite to the shadow realm which aligns with darkness, power and sacrifice.
+* Rangers now use nature magic, like the new Druid class
+* Necromancers are the major shadow caster class
+* Blackguards are fighters enhanced by shadow magic
+* Pure casters (mages, priests, druids, necromancers) use five books (down from nine)
+* Hybrid casters (rogues, paladins, rangers, blackguards) use two or three books
+* Classes no longer have different rates of gaining experience
+
+Monsters
+--------
+Each base monster type has had its game niche reconsidered, and there has been a general push to use Tolkien-inspired monsters where appropriate.  Some of the major changes include:
+* Ainur - most of these now align with one of the great Valar, and have corresponding powers
+* Dragons - these have mostly been made stronger and deeper
+* Humanoids - dark elves have been replaced with dwarves, gnomes with Drúedain
+* Hydras - each hydra type is like the previous type with a new head and attack added
+* People - the association of some of these with player classes has been expanded to include the new classes
+* Snakes - some of these are now dangerous
+* Spiders - more dangerous and deeper, with unique abilities
+* Trees/Ents - these are new, tough to kill enemies
+* Wights/Wraiths - wights are all now shallower than wraiths, and the Ringwraiths are much deeper
+
+Game Mechanics
+--------------
+In the course of the class and monster changes, many new mechanics have been introduced, with some of the major ones being:
+* Player and monster shapechanges
+* Variable light and darkness are created by monsters, player gear and player spells, and the player has a meter to measure the light level on their square
+* Mages can drain mana from magic devices
+* Rogues can steal from monsters
+* Temporary brands and slays (Priests, Paladins, Blackguards)
+* Necromancers can see in the dark, and can cast less well in light
+* Healing of hitpoints every turn for a time (Druids)
+* Control of a monster, including making it attack other monsters (Necromancers)
+* Shield bashes (Warriors, Paladins, Blackguards)
+* Decoys which monsters will attack instead of the player (Rangers)
+* Blackguards can go into a state of bloodlust which improves their combat at a price
+* Monsters can whip or spit on the player from nearby
+* Monster groups act more as a group, with leaders and sometimes bodyguards
+* Innate spells (e.g. breaths) and cast spells (e.g. bolts) have separate frequencies
+* Deeper in the dungeon shallow monsters are less likely to appear
+* Monsters can teleport to the player
+* Spiders can weave webs
+* Monsters can have innate darkness around them
+* Traps added that trigger on leaving their square
+* Ringwraiths can inflict the Black Breath
+* Monster spells can have different levels depending on monster spell power
+* The player now has a hunger meter, and food is more important
+* As with classes, all races gain experience at the same rate, except for humans who are faster, and high-elves who are slower
+* The Temple has been replaced with a Bookseller who sells books of all realms
+
+Code Improvements
+-----------------
+There have also been some improvements to the codebase, both visible and invisible to the player.  The main ones are:
+* Addition of an SDL2 front end
+* Change to mostly using a single grid rather than x and y coordinates in much of the code
+* More readability of datafiles
+* Some font improvements
+* Some new tiles
+* A new online (rather than in-game) help system
+* A new experimental (and so far unbalanced) birth option for percentage damage
+* An option to start a new game after dying instead of closing the game and re-opening
+* Many fixes to bugs and memory leaks
+
