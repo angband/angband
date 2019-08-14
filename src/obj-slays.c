@@ -394,14 +394,13 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 					my_strcpy(verb, s->melee_verb, 20);
 				}
 			}
-			/* Learn about the slay */
-			if (obj) {
-			object_learn_slay(player, obj, i);
-			}
-
 			/* Learn about the monster */
 			if (monster_is_visible(mon)) {
 				rf_on(lore->flags, s->race_flag);
+				/* Learn about the slay */
+				if (obj) {
+					object_learn_slay(player, obj, i);
+				}
 			}
 		} else if (player_knows_slay(player, i)) {
 			/* Learn about resistant monsters */
