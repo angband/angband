@@ -22,8 +22,7 @@ time, and more than six different primary developers. Without such files,
 we must rely on simpler methods, such as change logs, source file diffs,
 and word of mouth. Some of this information is summarised in this file.
 
-Please be sure to read the copyright information contained in the file
-'copying.txt'.
+Please be sure to read the 'Copying and licence information'.
 
 Brief Version History
 =====================
