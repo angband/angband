@@ -1795,6 +1795,18 @@ static errr CheckEvent(bool wait)
 			else if (xev->xbutton.button == Button5) z = 5;
 			else z = 0;
 
+			/* Save a byte in ui-term/Term_mousepress for some reason */
+			u32b state = ((XButtonEvent*) xev)->state;
+			if(state & ShiftMask) {
+				z |= (KC_MOD_SHIFT << 4);
+			}
+			if(state & ControlMask) {
+				z |= (KC_MOD_CONTROL << 4);
+			}
+			if(state & Mod1Mask) {
+				z |= (KC_MOD_ALT << 4);
+			}
+
 			/* The co-ordinates are only used in Angband format. */
 			pixel_to_square(&x, &y, x, y);
 			if (press) Term_mousepress(x, y, z);
