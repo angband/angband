@@ -14,7 +14,7 @@ Downloads
 Background
 ==========
 
-Angband 3.0.9b was released on the 19th March 2008 by Andrew Sidwell to fix a few more bugs that had crept into the earlier 3.0.9a bugfix release.  Its changelist is as follows:
+Angband 3.0.9b was released on the 19th March 2008 by Anna Sidwell to fix a few more bugs that had crept into the earlier 3.0.9a bugfix release.  Its changelist is as follows:
 
  - Fix detection of curses libraries using autoconf.
  - Fix broken install using autoconf.
