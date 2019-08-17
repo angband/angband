@@ -10,74 +10,43 @@ body {
 }
 
 h1 { 
-  margin: 0 0 1px 0; /* The line is four px up from the base of the image */
-  padding: 6px 0 0 0; /* Provide a bit of "white"space above the "horns" */
-  text-align: left; 
-  height: 65px; /* Same height as graphic */
+  margin: 0;
+  padding: 1rem 0;
 }
-
-/* Make sure that the 'g' hangs over the to of the navbar */
-h1 img { background: none; position: relative;  z-index: 2; }
 
 img { border: 0; }
 
 header {
-  padding-top: 3px;
-  border-bottom: 2px solid rgb(54, 89, 112);
+  padding-top: 1rem
   background-color: rgb(221, 231, 235);
-  background-image: -webkit-linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 80px);
   background-image: linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 80px);
+  border-bottom: 2px solid rgb(54, 89, 112);
 }
-
 header a { text-decoration: none; }
 header a:hover { text-decoration: underline; }
-
-#nav { 
-  display: block;
-  padding: 0 0 2px 0; /* IE wants padding here as well as on the li elements */
-  margin: -6px 0 0 0;
-  font-size: 110%; 
-  font-family: 'Open Sans', sans-serif;
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
-#nav a {
-  display: block; 
-  position: relative;
-  z-index: 1;
-  float: right;
-  padding: 5px 1em;
-  margin: 0 2px;
+nav { font-size: 1.25rem; font-family: 'Open Sans'; }
+
+nav a {
+  display: inline-block; 
+  padding: 0.5rem 1rem;
+  margin: 0 0.125rem;
+  color: white;
   background-color: rgb(54, 89, 112);
 }
-
-#nav a { color: white; }
-#nav a:hover { text-decoration: none; }
-
-#nav a:hover, #nav a.selected {
+nav a:hover { text-decoration: none; }
+nav a:hover, nav a.selected {
   background-color: rgba(54, 89, 112, 0.8);
 }
 
-#nav a li {
-  display: inline-block;
-  margin-bottom: 0;
-}
-
 @media all and (max-width: 750px) {
-
   header, h1 { text-align: center; }
-  h1 { height: 90px; }
-  #nav {
-    display: inline-block;
-    margin-top: 0;
-  }
-  #nav li {
-    display: inline-block;
-    float: none;
-  }
-
 }
-
-#dummy { clear: both; padding: 0; margin: 0; height: 0; }
 
 #content { padding: 1em 0; margin-top: 0.5em; }
 #content h2 { margin: 0; padding: 0; margin-bottom: 10px; }
