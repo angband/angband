@@ -59,7 +59,7 @@ pageclass = "class='front'"
 <script src="/js/detect.js" async defer></script>
 <script>
 function downloadClick(pathname) {
-	pageTracker._trackPageview(pathname);
+	ga('send', 'pageview', pathname);
 	var resources = document.getElementById("resources");
 	var images = document.getElementById("images");
 	images.parentNode.insertBefore(resources, images);
