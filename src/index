@@ -12,7 +12,6 @@ pageclass = "class='front'"
 
 <p class="other">Also available:
 <a id="osx" href="/downloads/4.2/Angband-4.2.0-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
-<a id="android" href="https://play.google.com/store/apps/details?id=org.angdroid.angband" onclick="downloadClick('/downloads/3.5/android');">Android</a> |
 <a id="source" href="/downloads/4.2/angband-4.2.0.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
 <a href="/release">Read about the changes in this version</a>

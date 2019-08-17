@@ -82,14 +82,12 @@
 
 
 // This section is specific to rephial.org
-// Copyright (c) 2013 Andi Sidwell, also under MIT licence
+// Copyright (c) 2013 Anna Sidwell, also under MIT licence
 (function() {
     var os;
 
     if (window.ui.os == "Mac OS X") {
         os = document.getElementById("osx");
-    } else if (window.ui.os == "Android") {
-        os = document.getElementById("android");
     } else if (window.ui.os == "Linux") {
         os = document.getElementById("source");
     }
