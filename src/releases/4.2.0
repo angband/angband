@@ -17,6 +17,7 @@ markdown = "true"
 ## Classes
 
 Two new realms of magic have been added, nature and shadow, to the existing divine and arcane realms.
+
  * Nature realm relies on harnessing the power of the earth, and is opposite to the arcane realm, which uses craft and cunning.
  * Divine realm uses harmony and light, and is opposite to the shadow realm which aligns with darkness, power and sacrifice.
  * Rangers now use nature magic, like the new Druid class
@@ -29,6 +30,7 @@ Two new realms of magic have been added, nature and shadow, to the existing divi
 ## Monsters
 
 Each base monster type has had its game niche reconsidered, and there has been a general push to use Tolkien-inspired monsters where appropriate.  Some of the major changes include:
+
  * Ainur - most of these now align with one of the great Valar, and have corresponding powers
  * Dragons - these have mostly been made stronger and deeper
  * Humanoids - dark elves have been replaced with dwarves, gnomes with Drúedain
@@ -42,6 +44,7 @@ Each base monster type has had its game niche reconsidered, and there has been a
 ## Game Mechanics
 
 In the course of the class and monster changes, many new mechanics have been introduced, with some of the major ones being:
+
  * Player and monster shapechanges
  * Variable light and darkness are created by monsters, player gear and player spells, and the player has a meter to measure the light level on their square
  * Mages can drain mana from magic devices
@@ -70,6 +73,7 @@ In the course of the class and monster changes, many new mechanics have been int
 ## Code Improvements
 
 There have also been some improvements to the codebase, both visible and invisible to the player.  The main ones are:
+
  * Addition of an SDL2 front end
  * Change to mostly using a single grid rather than x and y coordinates in much of the code
  * More readability of datafiles
