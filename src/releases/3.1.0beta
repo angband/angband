@@ -20,7 +20,6 @@ This release also had the longest list of credits for a single release in the hi
 The changelog provided with the release is below, but it is by no means exhaustive.
 
 
-
 Noticeable up-front UI changes
 ------------------------------
 
@@ -102,6 +101,7 @@ The object list has been reworked quite a bit.  It is a bit more
 varied and has less duplication.  Some items have been removed and
 others added.  The new items have had relatively little testing and
 may be gone again next release.
+
  - The number of items that monsters drop has been reduced drastically.
  - Potions tend to appear in stacks now.
  - The range of food items has been reduced.
@@ -132,6 +132,7 @@ spells, but spells that cure fear have been made harder to fail to
 balance this out.
 
 Birth:
+
  * Make point-based points worth less gold.
  * Minimum starting gold is 200AU.
  * Add an option to start the character with 500AU but no equipment.
@@ -140,6 +141,7 @@ Birth:
  * All characters start with WoR.
 
 Stores:
+
  * Phase Door is now a staple item.
  * Start stocking deeper items as the character descends.
  * Rewrite the rules for shopkeepers
@@ -151,6 +153,7 @@ Stores:
      instead, though.
 
 ID:
+
  * Make ID reveal all powers of an object, and remove *ID*.  (#158)
  * Make pseudo-id not occur whilst resting, but also make pseudo-ID
    lengths shorter (by a little over half) to compensate.
@@ -170,6 +173,7 @@ ID:
    generate a "bad" item.  This is liable to be rethought in the future.
 
 A small selection of other changes:
+
  * Remove autoscum.  (#365) -- really?
  * Add minimum depths for each kind of trap.  As such, only teleport and
    confusion traps occur at dlev1.  This should help some people.
@@ -217,7 +221,7 @@ been modified to no longer return a "const char *", and so all the code
 now only uses "const" when it means "const".  Some macros have been
 removed.
 
-"Elly" rewrote the message and quark packages, previously in util.c,
+Elly rewrote the message and quark packages, previously in util.c,
 and in the process split them out into their own z- files.  The z-msg
 package is now much more understandable but marginally less "efficient",
 and certainly less "optimised".
@@ -260,6 +264,7 @@ using doxygen.  Makefile.std provides an easy mechanism to generate docs
 (try "make docs").
 
 Other assorted changes:
+
  * Remove a whole load of useless or unused configuration options from
    config.h.
  * "make -f Makefile.inc depgen" will output "Makefile.new", which then
@@ -280,11 +285,3 @@ Other assorted changes:
  * Add proper transparency to the PNG files.  (fixes #270; thanks to Rowan Beentje
  * Move to using flags[6] for monster flags rather than individual flagsets.
  * Score code moved to score.c and extensively refactored.
-
-
-
-
-
-
-
-
