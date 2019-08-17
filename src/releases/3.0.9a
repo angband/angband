@@ -16,6 +16,7 @@ Background
 Version 3.0.9 was released on 27th February 2008 by Andrew Sidwell, and its main aim was to defuse a pointless argument on the newsgroup by changing shop UI behaviour.
 
 The change in question was to make buying in stores not be started by "Enter" but instead have it start only using the 'p' or 'g' keys.  Other changes included:
+
  - A bugfix making monsters just as smart as they were in 3.0.8 -- a bug had crept in where they were less effective at seeking the player out.
  - Autoconf support being made to work better
  - inclusion of David Gervais' tiles for the first time with the source archive, since they had [recently][5] become available under the Creative Commons' "ShareALike" licence.
