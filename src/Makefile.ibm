@@ -87,6 +87,7 @@ dist:
 	@echo copying files...
 	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customiz
 	@cp ../lib/gamedata/*.txt $(TMPDIR)/lib/gamedata
+	@cd $(TMPDIR)/lib/gamedata ; for i in *.txt ; do iconv -f UTF-8 -t CP437//TRANSLIT $$i -o $$i.new ; mv $$i.new $$i ; done
 	@mv $(TMPDIR)/lib/gamedata/activation.txt $(TMPDIR)/lib/gamedata/activati.txt
 	@mv $(TMPDIR)/lib/gamedata/blow_effects.txt $(TMPDIR)/lib/gamedata/blow_eff.txt
 	@mv $(TMPDIR)/lib/gamedata/blow_methods.txt $(TMPDIR)/lib/gamedata/blow_met.txt
@@ -103,7 +104,8 @@ dist:
 	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
 	@echo attempting to install sound and graphics
 	@cp ../lib/tiles/old/*.prf $(TMPDIR)/lib/tiles/old
-	@cp ../changes.txt ../readme.txt $(TMPDIR)
+	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
+	@cp ../readme.txt $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	zip -r ../angband.zip $(TMPDIR)
 	rm -rf $(TMPDIR)
