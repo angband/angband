@@ -35,7 +35,9 @@
  * locale junk
  */
 #include "locale.h"
+#ifndef DJGPP
 #include "langinfo.h"
+#endif
 
 /**
  * Some machines have a "main()" function in their "main-xxx.c" file,
@@ -74,6 +76,10 @@ static const struct module modules[] =
 #ifdef USE_STATS
 	{ "stats", help_stats, init_stats },
 #endif /* USE_STATS */
+
+#ifdef USE_IBM
+	{ "ibm", help_ibm, init_ibm },
+#endif /* USE_IBM */
 };
 
 /**
@@ -470,11 +476,13 @@ int main(int argc, char *argv[])
 	if (mstr)
 		ANGBAND_SYS = mstr;
 
+#ifndef DJGPP
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
 		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
 			quit("Angband requires UTF-8 support");
 	}
+#endif /* DJGPP */
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {

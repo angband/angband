@@ -207,7 +207,11 @@ struct parser *init_parse_meth(void) {
 }
 
 static errr run_parse_meth(struct parser *p) {
+#ifdef DJGPP
+	return parse_file_quit_not_found(p, "blow_met");
+#else
 	return parse_file_quit_not_found(p, "blow_methods");
+#endif
 }
 
 static errr finish_parse_meth(struct parser *p) {
@@ -260,7 +264,11 @@ static void cleanup_meth(void)
 }
 
 struct file_parser meth_parser = {
+#ifdef DJGPP
+	"blow_met",
+#else
 	"blow_methods",
+#endif
 	init_parse_meth,
 	run_parse_meth,
 	finish_parse_meth,
@@ -422,7 +430,11 @@ struct parser *init_parse_eff(void) {
 }
 
 static errr run_parse_eff(struct parser *p) {
+#ifdef DJGPP
+	return parse_file_quit_not_found(p, "blow_eff");
+#else
 	return parse_file_quit_not_found(p, "blow_effects");
+#endif
 }
 
 static errr finish_parse_eff(struct parser *p) {
@@ -472,7 +484,11 @@ static void cleanup_eff(void)
 }
 
 struct file_parser eff_parser = {
+#ifdef DJGPP
+	"blow_eff",
+#else
 	"blow_effects",
+#endif
 	init_parse_eff,
 	run_parse_eff,
 	finish_parse_eff,
@@ -907,7 +923,11 @@ struct parser *init_parse_mon_spell(void) {
 }
 
 static errr run_parse_mon_spell(struct parser *p) {
+#ifdef DJGPP
+	return parse_file_quit_not_found(p, "monster2");
+#else
 	return parse_file_quit_not_found(p, "monster_spell");
+#endif
 }
 
 static errr finish_parse_mon_spell(struct parser *p) {
@@ -942,7 +962,11 @@ static void cleanup_mon_spell(void)
 }
 
 struct file_parser mon_spell_parser = {
+#ifdef DJGPP
+	"monster2",
+#else
 	"monster_spell",
+#endif
 	init_parse_mon_spell,
 	run_parse_mon_spell,
 	finish_parse_mon_spell,
@@ -1036,7 +1060,11 @@ static struct parser *init_parse_mon_base(void) {
 }
 
 static errr run_parse_mon_base(struct parser *p) {
+#ifdef DJGPP
+	return parse_file_quit_not_found(p, "monster_");
+#else
 	return parse_file_quit_not_found(p, "monster_base");
+#endif
 }
 
 static errr finish_parse_mon_base(struct parser *p) {
@@ -1060,7 +1088,11 @@ static void cleanup_mon_base(void)
 }
 
 struct file_parser mon_base_parser = {
+#ifdef DJGPP
+	"monster_",
+#else
 	"monster_base",
+#endif
 	init_parse_mon_base,
 	run_parse_mon_base,
 	finish_parse_mon_base,

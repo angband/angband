@@ -20,6 +20,18 @@
 #include "z-util.h"
 #include "z-virt.h"
 
+#ifdef DJGPP
+size_t
+wcslen(const wchar_t *str)
+{
+  const wchar_t *s;
+
+  if (str == 0)
+    return 0;
+  for (s = str; *s; ++s);
+  return s-str;
+}
+#endif /* DJGPP */
 
 /**
  * Here is some information about the routines in this file.
