@@ -333,7 +333,11 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 	/* Paths generally containing configuration data for Angband. */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_GAMEDATA, configpath, "gamedata");
+#ifdef DJGPP
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_CUSTOMIZE, configpath, "customiz");
+#else
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_CUSTOMIZE, configpath, "customize");
+#endif
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_HELP, libpath, "help");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCREENS, libpath, "screens");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_FONTS, libpath, "fonts");
@@ -709,7 +713,11 @@ struct parser *init_parse_constants(void) {
 }
 
 static errr run_parse_constants(struct parser *p) {
+#ifdef DJGPP
 	return parse_file_quit_not_found(p, "constant");
+#else
+	return parse_file_quit_not_found(p, "constants");
+#endif
 }
 
 static errr finish_parse_constants(struct parser *p) {
@@ -724,7 +732,11 @@ static void cleanup_constants(void)
 }
 
 static struct file_parser constants_parser = {
+#ifdef DJGPP
 	"constant",
+#else
+	"constants",
+#endif
 	init_parse_constants,
 	run_parse_constants,
 	finish_parse_constants,

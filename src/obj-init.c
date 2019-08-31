@@ -388,7 +388,7 @@ struct parser *init_parse_projection(void) {
 }
 
 static errr run_parse_projection(struct parser *p) {
-	return parse_file_quit_not_found(p, "projecti");
+	return parse_file_quit_not_found(p, "projection");
 }
 
 static errr finish_parse_projection(struct parser *p) {
@@ -439,7 +439,7 @@ static void cleanup_projection(void)
 }
 
 struct file_parser projection_parser = {
-	"projecti",
+	"projection",
 	init_parse_projection,
 	run_parse_projection,
 	finish_parse_projection,
@@ -589,7 +589,7 @@ struct parser *init_parse_object_base(void) {
 }
 
 static errr run_parse_object_base(struct parser *p) {
-	return parse_file_quit_not_found(p, "object_b");
+	return parse_file_quit_not_found(p, "object_base");
 }
 
 static errr finish_parse_object_base(struct parser *p) {
@@ -625,7 +625,7 @@ static void cleanup_object_base(void)
 }
 
 struct file_parser object_base_parser = {
-	"object_b",
+	"object_base",
 	init_parse_object_base,
 	run_parse_object_base,
 	finish_parse_object_base,
@@ -1490,7 +1490,7 @@ struct parser *init_parse_act(void) {
 }
 
 static errr run_parse_act(struct parser *p) {
-	return parse_file_quit_not_found(p, "activati");
+	return parse_file_quit_not_found(p, "activation");
 }
 
 static errr finish_parse_act(struct parser *p) {
@@ -1537,7 +1537,7 @@ static void cleanup_act(void)
 }
 
 struct file_parser act_parser = {
-	"activati",
+	"activation",
 	init_parse_act,
 	run_parse_act,
 	finish_parse_act,
@@ -3150,7 +3150,7 @@ struct parser *init_parse_object_property(void) {
 }
 
 static errr run_parse_object_property(struct parser *p) {
-	return parse_file_quit_not_found(p, "object_p");
+	return parse_file_quit_not_found(p, "object_property");
 }
 
 static errr finish_parse_object_property(struct parser *p) {
@@ -3198,7 +3198,7 @@ static void cleanup_object_property(void)
 }
 
 struct file_parser object_property_parser = {
-	"object_p",
+	"object_property",
 	init_parse_object_property,
 	run_parse_object_property,
 	finish_parse_object_property,
