@@ -33,7 +33,7 @@ CFLAGS += $(INCLUDES) -DUSE_IBM
 
 # Object definitions
 MAINOBJS = main-ibm.o main.o
-OBJS = $(BASEOBJS) main-ibm.o main-stats.o main.o
+OBJS = $(BASEOBJS) dos-compat.o main-ibm.o main-stats.o main.o
 
 
 
@@ -42,7 +42,7 @@ OBJS = $(BASEOBJS) main-ibm.o main-stats.o main.o
 
 # By default, copy the executable to ../ so that you don't find
 # yourself debugging a stale copy.
-default: install
+default: edit install
 
 # Makefile.inc contains an up-to-date set of object files to compile, so
 # we include it
@@ -66,6 +66,14 @@ $(EXE): $(OBJS)
 install: ../$(EXE)
 
 docs: doc/index.html
+
+edit:
+	@touch langinfo.h
+	@sed -i generate.c -e 's/"dungeon_profile"/"dungeon_"/' -e 's/"room_template"/"room_tem"/'
+	@sed -i init.c -e 's/"constants"/"constant"/' -e 's/"customize"/"customiz"/'
+	@sed -i mon-init.c -e 's/"blow_effects"/"blow_eff"/' -e 's/"blow_methods"/"blow_met"/' -e 's/"monster_base"/"monster_"/' -e 's/"monster_spell"/"monster2"/'
+	@sed -i obj-init.c -e 's/"activation"/"activati"/' -e 's/"object_base"/"object_b"/' -e 's/"object_property"/"object_p"/' -e 's/"projection"/"projecti"/'
+	@sed -i player-timed.c -e 's/"player_timed"/"player_t"/' -e 's/"player timed effects"/"player_t"/'
 
 ../$(EXE): $(EXE)
 	cp $(EXE) ..

@@ -35,9 +35,7 @@
  * locale junk
  */
 #include "locale.h"
-#ifndef DJGPP
 #include "langinfo.h"
-#endif
 
 /**
  * Some machines have a "main()" function in their "main-xxx.c" file,

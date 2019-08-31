@@ -275,11 +275,7 @@ static struct parser *init_parse_player_timed(void)
 
 static errr run_parse_player_timed(struct parser *p)
 {
-#ifdef DJGPP
 	return parse_file_quit_not_found(p, "player_t");
-#else
-	return parse_file_quit_not_found(p, "player_timed");
-#endif
 }
 
 static errr finish_parse_player_timed(struct parser *p)
@@ -321,11 +317,7 @@ static void cleanup_player_timed(void)
 }
 
 struct file_parser player_timed_parser = {
-#ifdef DJGPP
 	"player_t",
-#else
-	"player timed effects",
-#endif
 	init_parse_player_timed,
 	run_parse_player_timed,
 	finish_parse_player_timed,
