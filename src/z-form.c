@@ -15,23 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "dos-compat.h"
 #include "z-form.h"
 #include "z-type.h"
 #include "z-util.h"
 #include "z-virt.h"
 
-#ifdef DJGPP
-size_t
-wcslen(const wchar_t *str)
-{
-  const wchar_t *s;
-
-  if (str == 0)
-    return 0;
-  for (s = str; *s; ++s);
-  return s-str;
-}
-#endif /* DJGPP */
 
 /**
  * Here is some information about the routines in this file.

@@ -199,11 +199,7 @@ static struct parser *init_parse_profile(void) {
 }
 
 static errr run_parse_profile(struct parser *p) {
-#ifdef DJGPP
 	return parse_file_quit_not_found(p, "dungeon_");
-#else
-	return parse_file_quit_not_found(p, "dungeon_profile");
-#endif
 }
 
 static errr finish_parse_profile(struct parser *p) {
@@ -299,11 +295,7 @@ static void cleanup_profile(void)
 }
 
 static struct file_parser profile_parser = {
-#ifdef DJGPP
 	"dungeon_",
-#else
-	"dungeon_profile",
-#endif
 	init_parse_profile,
 	run_parse_profile,
 	finish_parse_profile,
@@ -426,11 +418,7 @@ static struct parser *init_parse_room(void) {
 }
 
 static errr run_parse_room(struct parser *p) {
-#ifdef DJGPP
 	return parse_file_quit_not_found(p, "room_tem");
-#else
-	return parse_file_quit_not_found(p, "room_template");
-#endif
 }
 
 static errr finish_parse_room(struct parser *p) {
@@ -451,11 +439,7 @@ static void cleanup_room(void)
 }
 
 static struct file_parser room_parser = {
-#ifdef DJGPP
 	"room_tem",
-#else
-	"room_template",
-#endif
 	init_parse_room,
 	run_parse_room,
 	finish_parse_room,
