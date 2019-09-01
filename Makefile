@@ -8,7 +8,7 @@ CLEAN = config.status config.log *.dll *.exe
 tests:
 	$(MAKE) -C src tests
 
-TAG = angband-`git describe`
+TAG = faangband-`git describe`
 OUT = $(TAG).tar.gz
 
 manual:

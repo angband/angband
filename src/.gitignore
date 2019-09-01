@@ -2,6 +2,6 @@
 *.o
 autoconf.h
 autoconf.h.in
-angband
+faangband
 config
 *.o.*

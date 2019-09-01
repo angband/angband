@@ -5,12 +5,12 @@ if [ $# -ne 0 ]; then
 	echo ""
 	echo "Use in the root directory of the game, like so:"
 	echo "   scripts/pkg_src"
-	echo "The script will output a tarball angband-[git describe].tar.gz"
+	echo "The script will output a tarball faangband-[git describe].tar.gz"
 
 	exit 1
 fi
   
-TAG=angband-`git describe`
+TAG=faangband-`git describe`
 OUT=$TAG.tar.gz
 
 # Error checking

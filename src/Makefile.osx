@@ -11,7 +11,7 @@ LD = ld
 OPT ?= -O2
 
 # for consistency with older versions, use a lower case bundle ID
-BUNDLE_IDENTIFIER = org.rephial.angband
+BUNDLE_IDENTIFIER = org.rephial.faangband
 
 ARCHS = x86_64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))

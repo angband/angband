@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.2.0, bugs@rephial.org)
+AC_INIT(FAangband, 2.0beta, nckmccnnll@gmail.com)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 BUILDSYS_INIT
 BUILDSYS_TOUCH_DEPS
 
-AC_SUBST(PACKAGE, angband)
+AC_SUBST(PACKAGE, faangband)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
 
@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
-	[  --with-setgid=NAME      install angband as group NAME],
+	[  --with-setgid=NAME      install faangband as group NAME],
 	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
 	[  --with-private-dirs     use private scorefiles/savefiles])
@@ -453,7 +453,7 @@ echo "  var path:                               ${displayedvardatadir}"
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
 elif test "x$with_private_dirs" = "xyes"; then
-	echo "  (with private save and score files in ~/.angband/Angband/)"
+	echo "  (with private save and score files in ~/.angband/FAangband/)"
 fi
 
 echo
