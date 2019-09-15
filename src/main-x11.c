@@ -2195,6 +2195,8 @@ static errr term_data_init(term_data *td, int i)
 
 	XSizeHints *sh;
 
+	XWMHints *wmh;
+
 	ang_file *fff;
 
 	char buf[1024];
@@ -2461,6 +2463,22 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Use the size hints */
 	XSetWMNormalHints(Metadpy->dpy, Infowin->win, sh);
+
+	/* WMHints */
+	wmh = XAllocWMHints();
+
+	if(wmh == NULL) quit("XAllocWMHints failed");
+
+	wmh->flags |= WindowGroupHint;
+
+	if(i == 0) {
+		// root points to itself
+		wmh->window_group = td->win->win;
+	} else {
+		// others point to root
+		wmh->window_group = data[0].win->win;
+	}
+	XSetWMHints(Metadpy->dpy, Infowin->win, wmh);
 
 	/* Map the window */
 	Infowin_map();
