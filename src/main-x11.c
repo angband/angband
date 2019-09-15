@@ -122,11 +122,11 @@
 #define DEFAULT_X11_FONT_0		"10x20"
 #define DEFAULT_X11_FONT_1		"9x15"
 #define DEFAULT_X11_FONT_2		"9x15"
-#define DEFAULT_X11_FONT_3		"5x8"
-#define DEFAULT_X11_FONT_4		"5x8"
-#define DEFAULT_X11_FONT_5		"5x8"
-#define DEFAULT_X11_FONT_6		"5x8"
-#define DEFAULT_X11_FONT_7		"5x8"
+#define DEFAULT_X11_FONT_3		"7x13"
+#define DEFAULT_X11_FONT_4		"7x13"
+#define DEFAULT_X11_FONT_5		"7x13"
+#define DEFAULT_X11_FONT_6		"7x13"
+#define DEFAULT_X11_FONT_7		"7x13"
 
 
 #ifndef IsModifierKey
