@@ -1216,30 +1216,27 @@ errr Term_fresh(void)
 	if (Term->soft_cursor) {
 		/* Cursor was visible */
 		if (!old->cu && old->cv) {
+		        /*
+		         * Fake a change at the old cursor position so that
+		         * position will be redrawn along with any other
+			 * changes.
+			 */
 			int tx = old->cx;
 			int ty = old->cy;
 
-			int *scr_aa = scr->a[ty];
-			wchar_t *scr_cc = scr->c[ty];
-
-			int sa = scr_aa[tx];
-			wchar_t sc = scr_cc[tx];
-
-			int *scr_taa = scr->ta[ty];
-			wchar_t *scr_tcc = scr->tc[ty];
-
-			int sta = scr_taa[tx];
-			wchar_t stc = scr_tcc[tx];
-
-			/* Graphics, character (fallback or intended), or erase */
-			if (Term->always_pict)
-				(void)((*Term->pict_hook)(tx, ty, 1, &sa, &sc, &sta, &stc));
-			else if (Term->higher_pict && (sa & 0x80))
-				(void)((*Term->pict_hook)(tx, ty, 1, &sa, &sc, &sta, &stc));
-			else if (sa || Term->always_text)
-				(void)((*Term->text_hook)(tx, ty, 1, sa, &sc));
-			else
-				(void)((*Term->wipe_hook)(tx, ty, 1));
+			old->c[ty][tx] = ~scr->c[ty][tx];
+			if (y1 > ty) {
+			    y1 = ty;
+			}
+			if (y2 < ty) {
+			    y2 = ty;
+			}
+			if (Term->x1[ty] > tx) {
+			    Term->x1[ty] = tx;
+			}
+			if (Term->x2[ty] < tx) {
+			    Term->x2[ty] = tx;
+			}
 		}
 	} else {
 		/* Cursor will be invisible */
