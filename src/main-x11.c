@@ -587,7 +587,13 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 	if (strcmp(name, "Caps Lock") == 0) return 2;
 	
 	for (int i = 0; (!mask) && (i < XkbNumVirtualMods); i++ ) {
-		char* modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
+		char* modStr;
+
+		/* Avoid BadAtom errors:  skip elements with a null atom. */
+		if (xkb->names->vmods[i] == None) {
+		        continue;
+		}
+		modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
 		if (modStr) {
 			if (!strcmp(name, modStr))
 				XkbVirtualModsToReal( xkb, 1 << i, &mask );
