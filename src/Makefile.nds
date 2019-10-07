@@ -66,21 +66,22 @@ DEPENDS	:=	$(BASEOBJS:.o=$(CURDIR)/.d)
 #------------------------------------------------------------------------------
 # main targets
 #------------------------------------------------------------------------------
- 
+
+# Those files aren't actually nonexistent, but we need to make
+# sure that they are always up-to-date.
+.PHONY:	$(TARGET).arm7.elf $(TARGET).arm9.elf
+
 #------------------------------------------------------------------------------
 $(TARGET).nds	:	$(TARGET).arm7.elf $(TARGET).arm9.elf
 	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf
 
 #------------------------------------------------------------------------------
 $(TARGET).arm7.elf:
-	@[ -d build ] || mkdir build
 	$(MAKE) -f nds/Makefile.arm7 all
 	
 #------------------------------------------------------------------------------
 
 $(TARGET).arm9.elf:
-	@[ -d build ] || mkdir build
-#	sh -c "unset CC; [ -f src/tile.c ] || make -C util ../src/tile.c"
 	$(MAKE) -f nds/Makefile.arm9 all
 
  

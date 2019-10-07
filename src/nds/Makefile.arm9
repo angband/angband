@@ -40,7 +40,7 @@ LIBDIRS	:=	$(LIBNDS) $(DEVKITPRO)/libfat-nds
 #------------------------------------------------------------------------------
  
 export ARM9ELF	:=	$(BUILD)/$(TARGET).arm9.elf
-export DEPSDIR := 
+export DEPSDIR	:=	$(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))

@@ -41,7 +41,7 @@ LIBDIRS	:=	$(LIBNDS)
 #------------------------------------------------------------------------------
  
 export ARM7ELF	:=	$(BUILD)/$(TARGET).arm7.elf
-export DEPSDIR := $(BUILD)
+export DEPSDIR	:=	$(BUILD)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
