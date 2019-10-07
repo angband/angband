@@ -310,7 +310,7 @@ void kbd_set_color_from_code(u16b code, byte color)
 }
 
 void kbd_set_map() {
-  SUB_BG0_CR = BG_TILE_BASE(0) | BG_MAP_BASE(8 + (caps | (shift<<1))) | BG_PRIORITY(0) | BG_16_COLOR;
+  REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8 + (caps | (shift<<1))) | BG_PRIORITY(0) | BG_COLOR_16;
   
 }
 
@@ -1584,21 +1584,21 @@ int main(int argc, char *argv[])
   vramSetBankD(VRAM_D_MAIN_BG_0x06040000);       /* for storage (tileset) */
   vramSetBankE(VRAM_E_LCD);	/* for storage (WIN_TEXT) */
   vramSetBankF(VRAM_F_LCD);	/* for storage (WIN_TEXT) */
-  BG2_CR = BG_BMP16_256x256;
-  BG2_XDX = 1<<8;
-  BG2_XDY = 0;
-  BG2_YDX = 0;
-  BG2_YDY = 1<<8;
-  BG2_CY = 0;
-  BG2_CX = 0;
-  SUB_BG0_CR = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_16_COLOR;
-  SUB_BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(2);
-  SUB_BG2_XDX = 1<<8;
-  SUB_BG2_XDY = 0;
-  SUB_BG2_YDX = 0;
-  SUB_BG2_YDY = 1<<8;
-  SUB_BG2_CY = 0;
-  SUB_BG2_CX = 0;
+  REG_BG2CNT = BG_BMP16_256x256;
+  REG_BG2PA = 1<<8;
+  REG_BG2PB = 0;
+  REG_BG2PC = 0;
+  REG_BG2PD = 1<<8;
+  REG_BG2Y = 0;
+  REG_BG2X = 0;
+  REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_COLOR_16;
+  REG_BG2CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(2);
+  REG_BG2PA_SUB = 1<<8;
+  REG_BG2PB_SUB = 0;
+  REG_BG2PC_SUB = 0;
+  REG_BG2PD_SUB = 1<<8;
+  REG_BG2Y_SUB = 0;
+  REG_BG2X_SUB = 0;
   
   /* Enable the V-blank interrupt */
   REG_IME = 0;
