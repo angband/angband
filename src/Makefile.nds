@@ -89,7 +89,6 @@ $(TARGET).arm7.elf:
 $(TARGET).arm9.elf:
 	@[ -d build ] || mkdir build
 #	sh -c "unset CC; [ -f src/tile.c ] || make -C util ../src/tile.c"
-	@echo hello
 	$(MAKE) -f nds/Makefile.arm9 all
 
  

@@ -128,7 +128,6 @@ $(ARM9BIN)	:	$(ARM9ELF)
  			$(LIBPATHS) $(LIBS) -o $@
 	
 $(BUILD)/%.o	:	$(SOURCES)/%.c
-	@echo hello
 	@echo $(notdir $<)
 	@$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d $(CFLAGS) -c $< -o $@
 	
