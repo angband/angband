@@ -526,7 +526,7 @@ byte kbd_vblank()
 	  }
 	  kbd_togglemod(K_MODIFIER,0);
 	}
-	}*/
+	}
       
       /* if it's a modifier, toggle it */
       if (keycode & K_MODIFIER) kbd_togglemod(keycode,-1);
@@ -939,13 +939,13 @@ void draw_color_char(byte x, byte y, char c, byte clr)
     }
 	byte xx, yy;
 	u16b val;
-	u16b fgc = color_data[clr & 0xF]
-		for (yy = 0; yy < 8; yy++) {
-			for (xx = 0;xx < 3; xx++) {
-				val = (chardata[yy * 3 + xx + tile_offset]);
-				fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
-			}
+	u16b fgc = color_data[clr & 0xF];
+	for (yy = 0; yy < 8; yy++) {
+		for (xx = 0;xx < 3; xx++) {
+			val = (chardata[yy * 3 + xx + tile_offset]);
+			fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
 		}
+	}
 }
 
 /*
@@ -1358,7 +1358,7 @@ void on_irq() {
   if(REG_IF & IRQ_VBLANK) 
     {
       /* Tell the DS we handled the VBLANK interrupt */
-      VBLANK_INTR_WAIT_FLAGS |= IRQ_VBLANK;
+      INTR_WAIT_FLAGS |= IRQ_VBLANK;
       REG_IF |= IRQ_VBLANK;
     } 
   else 
@@ -1576,7 +1576,7 @@ int main(int argc, char *argv[])
   /* Initialize the machine itself  */
   /*START NETHACK STUFF */
   
-  powerON(POWER_ALL_2D | POWER_SWAP_LCDS);
+  powerOn(POWER_ALL_2D | POWER_SWAP_LCDS);
   videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE);
   videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
   vramSetBankA(VRAM_A_MAIN_BG_0x06000000); /* BG2, event buf, fonts */
