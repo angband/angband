@@ -16,7 +16,7 @@ include Makefile.src
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #------------------------------------------------------------------------------
-TARGET		:=	$(NAME)
+TARGET		:=	$(PROGNAME)
 
 #------------------------------------------------------------------------------
 # options for code generation

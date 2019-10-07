@@ -7,6 +7,8 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
+include $(CURDIR)/Makefile.src
+
 #------------------------------------------------------------------------------
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
@@ -15,7 +17,7 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #	IN THIS MODIFIED VERSION, YOU MAY ONLY HAVE ONE SOURCE DIRECTORY!!
 #------------------------------------------------------------------------------
-TARGET		:=	$(NAME)
+TARGET		:=	$(PROGNAME)
 BUILD		:=	$(CURDIR)
 SOURCES		:=	$(CURDIR)/nds
 #INCLUDES	:=	sys/nds/arm7/include

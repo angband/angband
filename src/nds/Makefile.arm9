@@ -7,6 +7,8 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
+include $(CURDIR)/Makefile.src
+
 #------------------------------------------------------------------------------
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
@@ -16,7 +18,7 @@ include $(DEVKITARM)/ds_rules
 #	IN THIS MODIFIED VERSION, YOU MAY ONLY HAVE ONE SOURCE DIRECTORY!!
 #	OTHERSRC is sources that must be linked against but not compiled here
 #------------------------------------------------------------------------------
-TARGET		:=	$(NAME)
+TARGET		:=	$(PROGNAME)
 BUILD		:=	$(CURDIR)
 SOURCES		:=	$(CURDIR)
 DATA		:=
