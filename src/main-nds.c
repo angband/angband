@@ -415,13 +415,17 @@ byte kbd_vblank()
   static u16b last_code;
   /* the keycode of the currently pressed key, is usu. returned */
   u16b keycode;
+  /* current input data */
+  touchPosition touch;
+
+  touchRead(&touch);
   
   /* if screen is being touched... */
   if (keysHeld() & KEY_TOUCH) {
     if (touched < 3) {	/* if counter < 3... */
       touched++;				/* add to counter */
-      xarr[touched-1] = IPC->touchXpx;	/* add this to the array for */
-      yarr[touched-1] = IPC->touchYpx;	/* finding the median */
+      xarr[touched-1] = touch.px;	/* add this to the array for */
+      yarr[touched-1] = touch.py;	/* finding the median */
     }
   } 
   else 
