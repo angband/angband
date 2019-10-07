@@ -91,7 +91,7 @@ CFLAGS	+=	$(INCLUDE) -DARM7
 CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=ds_arm7.specs -g $(ARCH) -mno-fpu -Wl,-Map,$(BUILD)/$(TARGET).arm7.map
+LDFLAGS	=	-specs=ds_arm7.specs -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).arm7.map
 
 .PHONY: all clean
   

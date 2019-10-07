@@ -99,7 +99,7 @@ CFLAGS	:=	-g -Wall -O2\
 CFLAGS	+=	$(INCLUDE) -DARM9 -DNDS
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -mno-fpu -Wl,-Map,$(BUILD)/$(TARGET).arm9.map
+LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).arm9.map
 
 .PHONY: all clean
   
