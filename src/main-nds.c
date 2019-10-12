@@ -1718,4 +1718,7 @@ int main(int argc, char *argv[])
   return (0);
 }
 
+double sqrt(double x) {
+	return f32tofloat(sqrtf32(floattof32(x)));
+}
 
