@@ -6,6 +6,9 @@ configure
 lib/scores/scores.*
 *.out
 *.exe
+*.elf
+*.map
+angband.nds
 lib/save/*
 .project
 .cproject
