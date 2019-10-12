@@ -787,21 +787,6 @@ static errr Term_xtra_nds(int n, int v)
 	return (0);
       }
       
-    case TERM_XTRA_SOUND:
-      {
-	/*
-	 * Make a sound XXX XXX XXX
-	 *
-	 * This action should produce sound number "v", where the
-	 * "name" of that sound is "sound_names[v]".  This method
-	 * is still under construction.
-	 *
-	 * This action is optional, and not very important.
-	 */
-	
-	return (0);
-      }
-      
     case TERM_XTRA_BORED:
       {
 	/*
