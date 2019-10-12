@@ -1442,7 +1442,7 @@ bool nds_load_tile_file(char* name, u16b* dest, u32b len) {
   u16b slen = strlen(name);
   strcpy(ext, name + slen - 3);
   nds_raw_print(name + len - 3);
-  if (strcmpi(ext, "bmp") == 0) 
+  if (strcmp(ext, "bmp") == 0)
     {
       return nds_load_tile_bmp(name, dest, len);
     } 
