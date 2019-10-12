@@ -33,6 +33,7 @@
 /* DS includes */
 #include "nds/ds_errfont.h"
 #include "nds/ds_main.h"
+#include "nds/ds_ipc.h"
 u16* subfont_rgb_bin = (u16*)(0x06018400);
 u16* subfont_bgr_bin = (u16*)(0x0601C400);
 u16* top_font_bin;
@@ -1559,7 +1560,7 @@ void nds_exit(int code) {
     nds_updated = 0xFF;
     do_vblank();	/* wait 1 sec. */
   }
-  IPC->mailData = 0xDEADC0DE;	/* tell arm7 to shut down the DS */
+  fifoSendValue32(IPC_SHUTDOWN, 1);	/* tell arm7 to shut down the DS */
 }
 
 
@@ -1645,10 +1646,10 @@ int main(int argc, char *argv[])
   kbd_init();
   nds_init_buttons();
   
-  IPC->mailData = 0x00424242;	/* to arm7: everything has init'ed */
-  while ((IPC->mailData & 0xFFFFFF00) != 0x42424200); 
-  /*wait for arm7's reply */
-  if (IPC->mailData & 0x00000001) 
+  fifoSendValue32(IPC_NDS_TYPE, 0);	/* to arm7: everything has init'ed */
+  fifoWaitValue32(IPC_NDS_TYPE);	/* wait for response about the NDS type */
+
+  if (fifoGetValue32(IPC_NDS_TYPE) == 1)
     {	/* it's a DS lite */
       swap_font(false);
     } 

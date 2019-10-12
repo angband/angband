@@ -14,11 +14,13 @@
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
 
+#include "ds_ipc.h"
+
 //---------------------------------------------------------------------------------
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
 	u32 temp=0;
-	if (IPC->mailData == 0xDEADC0DE) {
+	if (fifoGetValue32(IPC_SHUTDOWN) == 1) {
 		SerialWaitBusy();
 		REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz | SPI_CONTINUOUS;
 		REG_SPIDATA = 0x80;
@@ -53,7 +55,8 @@ int main(int argc, char ** argv) {
 	// Reset the clock if needed
 	rtcReset();
 
-	while (IPC->mailData != 0x00424242);	// wait for arm9 init
+	// wait until arm9 wants to query the DS type
+	fifoWaitValue32(IPC_NDS_TYPE);
 // check if it is running on DS Lite or not
 	SerialWaitBusy();
 	REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz | SPI_CONTINUOUS;
@@ -65,9 +68,9 @@ int main(int argc, char ** argv) {
 
 // bit 6 set means it's a DS lite
 	if((REG_SPIDATA & BIT(6))) {
-		IPC->mailData = 0x42424201;
+		fifoSendValue32(IPC_NDS_TYPE, 1);
 	} else {
-		IPC->mailData = 0x42424200;
+		fifoSendValue32(IPC_NDS_TYPE, 0);
 	}
 
 	irqInit();
