@@ -502,14 +502,14 @@ byte kbd_vblank()
 	  /* clear hiliting */
 	  kbd_set_color_from_code(keycode,0);
 	  kbd_togglemod(K_MODIFIER,0);
-	  nds_assign_button();
+	  //nds_assign_button();
 	  keycode = last_code = 0;	/* don't let nethack process it */
 	}
 	
 	if (keycode & K_F(0)) {	/* its an f-key */
 	  if (keycode == K_F(5)) {	/* F5: toggle to text mode */
-	    nds_ascii_graphics = ~nds_ascii_graphics;
-	    iflags.use_color = nds_ascii_graphics;
+	    //nds_ascii_graphics = ~nds_ascii_graphics;
+	    //iflags.use_color = nds_ascii_graphics;
 	    /*doredraw(); */
 	    keycode = 'R' & 0x1F;	/* send a redraw command to nethack */
 	    last_code = 0;
@@ -1203,7 +1203,7 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Hack */
-	strcpy(savefile, "/angband/lib/save/PLAYER");
+	//strcpy(savefile, "/angband/lib/save/PLAYER");
 }
 
 void nds_init_fonts() {
