@@ -68,17 +68,9 @@ DEPENDS	:=	$(BASEOBJS:.o=$(CURDIR)/.d)
 #------------------------------------------------------------------------------
  
 #------------------------------------------------------------------------------
-$(TARGET).nds	:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7 -9 $(TARGET).arm9
+$(TARGET).nds	:	$(TARGET).arm7.elf $(TARGET).arm9.elf
+	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf
 
-#------------------------------------------------------------------------------
-$(TARGET).arm7	: $(TARGET).arm7.elf
-	@$(OBJCOPY) -O binary $< $@
-	@echo built ... $(notdir $@)
-
-$(TARGET).arm9	: $(TARGET).arm9.elf
-	@$(OBJCOPY) -O binary $< $@
-	@echo built ... $(notdir $@)
 #------------------------------------------------------------------------------
 $(TARGET).arm7.elf:
 	@[ -d build ] || mkdir build

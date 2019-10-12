@@ -40,7 +40,6 @@ LIBDIRS	:=	$(LIBNDS)
 # additional rules for different file extensions
 #------------------------------------------------------------------------------
  
-export ARM7BIN	:=	$(BUILD)/$(TARGET).arm7
 export ARM7ELF	:=	$(BUILD)/$(TARGET).arm7.elf
 export DEPSDIR := $(BUILD)
 
@@ -108,11 +107,7 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #------------------------------------------------------------------------------
 # main targets
 #------------------------------------------------------------------------------
-all	:	$(ARM7BIN)
-
-$(ARM7BIN)	:	$(ARM7ELF)
-	@$(OBJCOPY) -O binary $< $@
-	@echo built ... $(notdir $@)
+all	:	$(ARM7ELF)
 
 $(ARM7ELF)	:	$(foreach ofile,$(OFILES),$(BUILD)/$(ofile))
 	@echo linking $(notdir $@)

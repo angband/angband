@@ -39,7 +39,6 @@ LIBDIRS	:=	$(LIBNDS) $(DEVKITPRO)/libfat-nds
 # additional rules for different file extensions
 #------------------------------------------------------------------------------
  
-export ARM9BIN	:=	$(BUILD)/$(TARGET).arm9
 export ARM9ELF	:=	$(BUILD)/$(TARGET).arm9.elf
 export DEPSDIR := 
 
@@ -116,12 +115,9 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #------------------------------------------------------------------------------
 # main targets
 #------------------------------------------------------------------------------
-all	:	$(ARM9BIN)
+all	:	$(ARM9ELF)
 
-$(ARM9BIN)	:	$(ARM9ELF)
-	@echo built ... $(notdir $@)
-
- $(ARM9ELF)	:	$(foreach ofile,$(OFILES),$(BUILD)/$(ofile)) $(foreach ofile,$(OTHEROBJ),$(BUILD)/$(ofile))
+$(ARM9ELF)	:	$(foreach ofile,$(OFILES),$(BUILD)/$(ofile)) $(foreach ofile,$(OTHEROBJ),$(BUILD)/$(ofile))
 	@echo linking $(notdir $@)
 	@$(LD)  $(LDFLAGS) $(foreach ofile,$(OFILES),$(BUILD)/$(ofile)) \
  		$(foreach ofile,$(OTHEROBJ),$(BUILD)/$(ofile)) \
