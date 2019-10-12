@@ -27,6 +27,7 @@
 #include "main.h"
 #include "init.h"
 #include "ui-prefs.h"
+#include "ui-term.h"
 #include "savefile.h"
 
 /* DS includes */
@@ -676,7 +677,7 @@ static errr CheckEvents(bool wait)
 
   /* Key */
   else
-    Term_keypress(EVENT_C(e));
+    Term_keypress(EVENT_C(e), 0);
 
   return (0);
 }
@@ -1152,7 +1153,7 @@ static void term_data_link(int i)
   t->pict_hook = Term_pict_nds;
 
   /* Remember where we came from */
-  t->data = (vptr)(td);
+  t->data = (void*)(td);
   
   /* Activate it */
   Term_activate(t);
