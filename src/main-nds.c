@@ -1556,6 +1556,7 @@ void nds_exit(int code) {
  */
 int main(int argc, char *argv[])
 {
+  bool game_start = false;
   bool new_game = false;
   int i;
 
