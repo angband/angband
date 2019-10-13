@@ -22,7 +22,6 @@ H:You can combine equipment of Resist Cold and a potion of the same name.
 H:You can combine equipment of Resist Poison and a potion of the same name.
 H:If you don't know what a monster can do, use a rod of probing on it.
 H:Never underestimate the value of constitution. Hitpoints keep you alive. 
-H:Wield your ammo to your quiver to have it take fewer inventory slots.
 H:Inscribe items with the '{' command.
 H:Inscribe an item with "!s" to get confirmation before selling it.
 H:Inscribe an item with "!d" to get confirmation before dropping it.
@@ -93,5 +92,8 @@ H:Always carry around an escape that you can use while blind and confused.
 H:Staying on a level too long can cause awake random monsters to spawn.
 H:Wands and staves sell for a good price even with 0 charges.
 H:Walking around with lots of heavy weapons is not necessarily a good idea.
-H:Carry around extra copies of spellbooks 1-4 in case one gets burned. 
+H:Carry around extra copies of town spellbooks in case one gets burned.
 H:You don't have to cover every resist all the time - carry swap items.
+H:The better fed you are, the faster you regenerate.
+H:Look at the food bar at the bottom of the screen to see how well fed you are.
+H:The light meter at the bottom of the screen shows your light radius.
