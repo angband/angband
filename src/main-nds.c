@@ -1613,7 +1613,7 @@ int main(int argc, char *argv[])
     {
       nds_fatal_err("\nError initializing FAT drivers.\n");
       nds_fatal_err("Make sure the game is patched with the correct DLDI.\n");
-      nds_fatal_err(" (see http://chishm.drunkencoders.com/DLDI/ for more info).\n"); 
+      nds_fatal_err(" (see https://www.chishm.com/DLDI/ for more info).\n");
       nds_fatal_err("\n\nUnable to access filesystem.\nCannot continue.\n");
       return 1;
     }
