@@ -1095,10 +1095,6 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	enum mon_messages hurt_msg = context->hurt_msg;
 	struct monster *mon = context->mon;
 
-	/* No damage is now going to mean the monster is not hit - and hence
-	 * is not woken or released from holding */
-	if (!dam) return false;
-
 	/* The monster is going to be killed, so display a specific death message.
 	 * If the monster is not visible to the player, use a generic message.
 	 *
@@ -1110,7 +1106,11 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 		add_monster_message(mon, die_msg, false);
 	}
 
-	mon_died = mon_take_hit(mon, dam, &fear, "");
+	/* No damage is now going to mean the monster is not hit - and hence
+	 * is not woken or released from holding */
+	if(dam) {
+		mon_died = mon_take_hit(mon, dam, &fear, "");
+	}
 
 	/* If the monster didn't die, provide additional messages about how it was
 	 * hurt/damaged. If a specific message isn't provided, display a message
