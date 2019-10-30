@@ -169,7 +169,7 @@ byte deadliness_conversion[151] =
  *
  * This function multiplies damage by 100.
  */
-static void apply_deadliness(int *die_average, int deadliness)
+void apply_deadliness(int *die_average, int deadliness)
 {
 	int i;
 
@@ -314,27 +314,30 @@ static int o_critical_melee(const struct player *p,
 		const struct monster *monster, int weight, int plus, u32b *msg_type)
 {
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5 + p->lev * 3;
+	int power = BTH_PLUS_ADJ * (p->state.to_h + plus) + debuff_to_hit +
+		p->state.skills[SKILL_TO_HIT_MELEE];
 	int add_dice = 0;
 
-	if (randint1(5000) > chance) {
-		*msg_type = MSG_HIT;
-	} else if (power < 400) {
-		*msg_type = MSG_HIT_GOOD;
-		add_dice = 1;
-	} else if (power < 700) {
-		*msg_type = MSG_HIT_GREAT;
-		add_dice = 2;
-	} else if (power < 900) {
-		*msg_type = MSG_HIT_SUPERB;
-		add_dice = 3;
-	} else if (power < 1300) {
-		*msg_type = MSG_HIT_HI_GREAT;
-		add_dice = 4;
+	/* Test for critical hit - chance power/(power + 240) */
+	if (randint1(power + 240) <= power) {
+		if (one_in_(40)) {
+			*msg_type = MSG_HIT_HI_SUPERB;
+			add_dice = 5;
+		} else if (one_in_(12)) {
+			*msg_type = MSG_HIT_HI_GREAT;
+			add_dice = 4;
+		} else if (one_in_(3)) {
+			*msg_type = MSG_HIT_SUPERB;
+			add_dice = 3;
+		} else if (one_in_(2)) {
+			*msg_type = MSG_HIT_GREAT;
+			add_dice = 2;
+		} else {
+			*msg_type = MSG_HIT_GOOD;
+			add_dice = 1;
+		}
 	} else {
-		*msg_type = MSG_HIT_HI_SUPERB;
-		add_dice = 5;
+		*msg_type = MSG_HIT;
 	}
 
 	return add_dice;
@@ -370,7 +373,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 		int weight, struct object *obj, int b, int s, u32b *msg_type)
 {
 	int dice = obj->dd;
-	int sides, dmg;
+	int sides, dmg, add = 0;
 	bool extra;
 
 	/* Get the average value of a single damage die. (x10) */
@@ -378,12 +381,12 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 
 	/* Adjust the average for slays and brands. (10x inflation) */
 	if (s) {
-		die_average *= slays[s].multiplier;
+		die_average *= slays[s].o_multiplier;
+		add = slays[s].o_multiplier - 10;
 	} else if (b) {
-		die_average *= brands[b].multiplier;
+		die_average *= brands[b].o_multiplier;
+		add = brands[s].o_multiplier - 10;
 	}
-	/* TO BE FIXED WHEN SLAYS AND BRANDS ARE ADJUSTED */
-	die_average *= 10;
 
 	/* Apply deadliness to average. (100x inflation) */
 	apply_deadliness(&die_average, MIN(obj->to_d + p->state.to_d, 150));
@@ -399,6 +402,9 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 
 	/* Roll out the damage. */
 	dmg = damroll(dice, sides);
+
+	/* Apply any special additions to damage. */
+	dmg += add;
 
 	return dmg;
 }
@@ -457,12 +463,10 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 
 	/* Adjust the average for slays and brands. (10x inflation) */
 	if (b) {
-		die_average *= brands[b].multiplier;
+		die_average *= brands[b].o_multiplier;
 	} else if (s) {
-		die_average *= slays[s].multiplier;
+		die_average *= slays[s].o_multiplier;
 	}
-	/* TO BE FIXED WHEN SLAYS AND BRANDS ARE ADJUSTED */
-	die_average *= 10;
 
 	/* Apply deadliness to average. (100x inflation) */
 	if (launcher) {

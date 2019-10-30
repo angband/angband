@@ -472,16 +472,31 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 		if (k <  700) { *mult += 4; *add += 20; continue; }
 		if (k <  900) { *mult += 6; *add += 30; continue; }
 		if (k < 1300) { *mult += 6; *add += 40; continue; }
-		                *mult += 7; *add += 50;
+		                *mult += 8; *add += 40;
 	}
 
-	/*
-	 * Scale the output down to a more reasonable size, to prevent
-	 * integer overflow downstream.
-	 */
-	*mult = 100 + to_crit*(*mult - 1300)/(50*1300);
-	*add  = *add * to_crit / (500*50);
+	/* Scale the output to a reasonable size to prevent integer overflow. */
+	*mult = 100 + to_crit * (*mult - 1300) / (50 * 1300);
+	*add  = *add * to_crit / (500 * 50);
 	*div  = 100;
+}
+
+/**
+ * Account for criticals in the calculation of melee prowess for O-combat;
+ * crit chance * average number of dice added
+ *
+ * Return value is 100x number of dice
+ */
+static int o_calculate_melee_crits(struct player_state *state, int weight,
+								   int plus)
+{
+	int dice = 0;
+	int chance = BTH_PLUS_ADJ * (state->to_h + plus) +
+		state->skills[SKILL_TO_HIT_MELEE];
+	chance = (100 * chance) / (chance + 240);
+	dice = (537 * chance) / 240;
+
+	return dice;
 }
 
 /**
@@ -504,6 +519,26 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 	*mult = 100 + to_crit * (*mult - 500) / (500 * 50);
 	*add  = *add * to_crit / (500 * 50);
 	*div  = 100;
+}
+
+/**
+ * Missile crits follow the same approach as melee crits.
+ */
+static int o_calculate_missile_crits(struct player_state *state, int weight,
+									 int plus)
+{
+	int k, dice = 0;
+	int to_crit = weight + 4 * (state->to_h + plus) + 2 * player->lev;
+	to_crit = MIN(5000, MAX(0, to_crit));
+
+	for (k = weight; k < weight + 500; k++) {
+		if (k <  500) { dice += 1; continue; }
+		if (k < 1000) { dice += 2; continue; }
+		                dice += 3;
+	}
+
+	dice = (dice * to_crit) / (50 * 500);
+	return dice;
 }
 
 /**
@@ -908,13 +943,13 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
+static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 								 int *brand_damage, int *slay_damage,
 								 bool *nonweap_slay)
 {
 	int i;
-	int dice, sides, dam, total_dam, plus = 0;
-	int crit_mult, crit_div, crit_add;
+	int dice, sides, die_average, total_dam, plus = 0;
+	int deadliness = obj->known->to_d;
 	int old_blows = 0;
 	bool *total_brands;
 	bool *total_slays;
@@ -923,7 +958,6 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
-	int melee_adj_mult = ammo ? 0 : 1;
 	int multiplier = 1;
 
 	struct player_state state;
@@ -944,31 +978,35 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 	player->body.slots[weapon_slot].obj = current_weapon;
 
 	/* Finish if dice not known */
-	dice = obj->known->dd;
+	dice = obj->known->dd * 100;
 	sides = obj->known->ds;
 	if (!dice || !sides) return false;
 
-	/* Calculate damage */
-	dam = ((sides + 1) * dice * 5);
-
+	/* Get the number of additional dice from criticals (x100) */
 	if (weapon)	{
-		dam += ((state.to_d + obj->known->to_d) * dam) / 20;
 		plus += obj->known->to_h;
-
-		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
-							  &crit_div);
-
+		dice += o_calculate_melee_crits(&state, obj->weight, plus);
 		old_blows = state.num_blows;
 	} else { /* Ammo */
 		plus += obj->known->to_h;
-
-		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
-								&crit_add, &crit_div);
-
-		dam += ((obj->known->to_d + bow->known->to_d) * dam) / 20;
+		dice += o_calculate_missile_crits(&player->state, obj->weight, plus);
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
+
+	/* Get the average value of a single damage die. (x10) */
+	die_average = 5 * (sides + 1);
+
+	/* Apply the launcher multiplier. */
+	die_average *= multiplier;
+
+	/* Apply deadliness to average. (100x inflation) */
+	if (ammo) {
+		deadliness = obj->known->to_d + bow->known->to_d + state.to_d;
+	} else {
+		deadliness = obj->known->to_d + state.to_d;
+	}
+	apply_deadliness(&die_average, MIN(deadliness, 150));
 
 	/* Get the brands */
 	total_brands = mem_zalloc(z_info->brand_max * sizeof(bool));
@@ -1001,62 +1039,73 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 		}
 	}
 
-	/* Get damage for each brand on the objects */
+	/* Increase die average for each brand on the objects */
 	for (i = 1; i < z_info->brand_max; i++) {
+		int brand_average, add = brands[i].o_multiplier - 10;
+
 		/* Must have the brand */
 		if (total_brands[i])
 			has_brands_or_slays = true;
 		else
 			continue;
 
-		/* Include bonus damage and brand in stated average */
-		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult);
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		/* Include brand in stated average (x10), deflate (/1000) */
+		brand_average = die_average * brands[i].o_multiplier;
+		brand_average /= 1000;
 
+		/* Damage per hit is now dice * die average, (still x1000) */
+		total_dam = (dice * brand_average);
+
+		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
+			total_dam *= old_blows;
+			total_dam /= 10000;
 		} else {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			total_dam /= 10000;
 		}
 
-		brand_damage[i] = total_dam;
+		brand_damage[i] = total_dam + add;
 	}
 
 	/* Get damage for each slay on the objects */
 	for (i = 1; i < z_info->slay_max; i++) {
+		int slay_average, add = slays[i].o_multiplier - 10;
+
 		/* Must have the slay */
 		if (total_slays[i])
 			has_brands_or_slays = true;
 		else
 			continue;
 
-		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult);
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		/* Include slay in stated average (x10), deflate (/1000) */
+		slay_average = die_average * slays[i].o_multiplier;
+		slay_average /= 1000;
 
+		/* Damage per hit is now dice * die average, (still x1000) */
+		total_dam = (dice * slay_average);
+
+		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
+			total_dam *= old_blows;
+			total_dam /= 10000;
 		} else {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			total_dam /= 10000;
 		}
 
-		slay_damage[i] = total_dam;
+		slay_damage[i] = total_dam + add;
 	}
-
-	/* Include bonus damage in stated average */
-	total_dam = dam * multiplier;
-	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 
 	/* Normal damage, not considering brands or slays */
+	total_dam = (dice * die_average) / 1000;
 	if (weapon) {
-		total_dam = (total_dam * old_blows) / 100;
+		total_dam *= old_blows;
+		total_dam /= 1000;
 	} else {
 		total_dam *= player->state.num_shots;
-		total_dam /= 10;
+		total_dam /= 1000;
 	}
-
 	*normal_damage = total_dam;
 
 	mem_free(total_brands);
@@ -1078,7 +1127,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 
 	/* Collect brands and slays */
 	bool has_brands_or_slays = OPT(player, birth_percent_damage) ?
-		exp_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+		o_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
 							 &nonweap_slay) :
 		obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
 						 &nonweap_slay);
