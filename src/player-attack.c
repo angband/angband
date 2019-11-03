@@ -68,6 +68,7 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 	int perc = obj->kind->base->break_perc;
 
 	if (obj->artifact) return 0;
+	if (of_has(obj->flags, OF_THROWING)) perc = 1;
 	if (!hit_target) return (perc * perc) / 100;
 	return perc;
 }
@@ -457,7 +458,10 @@ static int ranged_damage(struct player *p, struct object *missile,
 	if (launcher) {
 		dmg += launcher->to_d;
 	} else if (of_has(missile->flags, OF_THROWING)) {
-		dmg += p->state.to_d;
+		/* Multiply the damage dice by the throwing weapon multiplier.
+		 * This is not the prettiest equation, but it does at least try to
+		 * keep throwing weapons competitive. */
+		dmg *= 1 + p->lev / 12;
 	}
 	dmg *= mult;
 
@@ -519,7 +523,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 		dice += o_critical_shot(p, mon, missile, NULL, msg_type);
 
 		/* Multiply the number of damage dice by the throwing weapon
-		 * multiplier, if applicable.  This is not the prettiest equation,
+		 * multiplier.  This is not the prettiest equation,
 		 * but it does at least try to keep throwing weapons competitive. */
 		dice *= 2 + p->lev / 12;
 	}
@@ -1238,7 +1242,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 static struct attack_result make_ranged_throw(struct player *p,
 	struct object *obj, struct loc grid)
 {
-	char *hit_verb = mem_alloc(20*sizeof(char));
+	char *hit_verb = mem_alloc(20 * sizeof(char));
 	struct attack_result result = {false, 0, 0, hit_verb};
 	struct monster *mon = square_monster(cave, grid);
 	int chance = chance_of_missile_hit(p, obj, NULL, grid);
@@ -1366,8 +1370,8 @@ void do_cmd_throw(struct command *cmd) {
 		return;
 	}
 
-	ranged_helper(player, obj, dir, range, shots, attack, melee_hit_types,
-				  (int) N_ELEMENTS(melee_hit_types));
+	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
+				  (int) N_ELEMENTS(ranged_hit_types));
 }
 
 /**
