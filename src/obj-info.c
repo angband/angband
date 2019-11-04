@@ -1074,7 +1074,7 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 			total_dam /= 10000;
 		} else if (ammo) {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10000;
+			total_dam /= 1000;
 		} else {
 			total_dam /= 100;
 		}
@@ -1105,7 +1105,7 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 			total_dam /= 10000;
 		} else if (ammo) {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10000;
+			total_dam /= 1000;
 		} else {
 			total_dam /= 100;
 		}
@@ -1120,7 +1120,7 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 		total_dam /= 1000;
 	} else if (ammo) {
 		total_dam *= player->state.num_shots;
-		total_dam /= 1000;
+		total_dam /= 100;
 	} else {
 		total_dam /= 10;
 	}

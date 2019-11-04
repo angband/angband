@@ -283,7 +283,7 @@ static int o_critical_shot(const struct player *p,
 			add_dice = 1;
 		}
 	} else {
-		*msg_type = MSG_HIT;
+		*msg_type = MSG_SHOOT_HIT;
 	}
 
 	return add_dice;
