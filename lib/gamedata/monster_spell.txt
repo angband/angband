@@ -1018,7 +1018,7 @@ effect:SUMMON:HYDRA
 dice:6
 lore:summon hydras
 lore-color-base:Orange
-message-vis:{name} summons hydrae.
+message-vis:{name} summons hydras.
 message-invis:You hear some things appear nearby!
 
 name:S_AINU
