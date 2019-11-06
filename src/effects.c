@@ -3404,7 +3404,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!square_isempty(cave, grid)) continue;
 
 			/* Important -- Skip grids marked for damage */
-			if (map[16 + y - centre.y][16 + x - centre.x]) continue;
+			if (map[16 + grid.y - centre.y][16 + grid.x - centre.x]) continue;
 
 			/* Count "safe" grids, apply the randomizer */
 			if ((++safe_grids > 1) && (randint0(safe_grids) != 0)) continue;
