@@ -3313,7 +3313,7 @@ experience:6
 blow:TOUCH:EXP_10
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR
-flags:HURT_LIGHT | NO_FEAR
+flags:HURT_LIGHT | NO_FEAR | IM_NETHER
 desc:It is a disgusting mass of dark worms, eating each other, the floor, the
 desc: air, you....
 
