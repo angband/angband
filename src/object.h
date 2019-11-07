@@ -70,6 +70,7 @@ struct brand {
 	char *verb;
 	int resist_flag;
 	int multiplier;
+	int o_multiplier;
 	int power;
 	struct brand *next;
 };
@@ -85,6 +86,7 @@ struct slay {
 	char *range_verb;
 	int race_flag;
 	int multiplier;
+	int o_multiplier;
 	int power;
 	struct slay *next;
 };

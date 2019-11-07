@@ -717,14 +717,36 @@ static void apply_magic_weapon(struct object *obj, int level, int power)
 		obj->to_h += m_bonus(10, level);
 		obj->to_d += m_bonus(10, level);
 
-		if (tval_is_melee_weapon(obj) || tval_is_ammo(obj)) {
+		if (tval_is_melee_weapon(obj)) {
 			/* Super-charge the damage dice */
-			while ((obj->dd * obj->ds > 0) &&
-					one_in_(10L * obj->dd * obj->ds))
-				obj->dd++;
-
-			/* But not too high */
-			if (obj->dd > 9) obj->dd = 9;
+			while ((obj->dd * obj->ds > 0) && one_in_(4 * obj->dd * obj->ds)) {
+				/* More dice or sides means more likely to get still more */
+				if (randint0(obj->dd + obj->ds) < obj->dd) {
+					int newdice = randint1(2 + obj->dd/obj->ds);
+					while (((obj->dd + 1) * obj->ds <= 40) && newdice) {
+						if (!one_in_(3)) {
+							obj->dd++;
+						}
+						newdice--;
+					}
+				} else {
+					int newsides = randint1(2 + obj->ds/obj->dd);
+					while ((obj->dd * (obj->ds + 1) <= 40) && newsides) {
+						if (!one_in_(3)) {
+							obj->ds++;
+						}
+						newsides--;
+					}
+				}
+			}
+		} else if (tval_is_ammo(obj)) {
+			/* Up to two chances to enhance damage dice. */
+			if (one_in_(6) == 1) {
+				obj->ds++;
+				if (one_in_(10) == 1) {
+					obj->ds++;
+				}
+			}
 		}
 	}
 }
