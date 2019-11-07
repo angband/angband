@@ -5122,8 +5122,8 @@ dice:220
 effect:BREATH:DISEN:0:20
 dice:220
 time:50
-desc:A suit of scales.  Every shape, in every color imaginable, riot and
-desc:contend upon its surface as you stare in fascination.
+desc:A suit of scales that ripples and twists through every color and shape
+desc:imaginable as you stare in fascination.
 
 name:Balance Dragon Scale Mail~
 type:dragon armor

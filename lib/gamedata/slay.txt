@@ -5,6 +5,7 @@
 # race-flag: monster race flag which this slay affects
 # base: monster base which this flag affects
 # multiplier: slay multiplier applied to damage dice
+# o-multiplier: slay multiplier applied to damage dice (O-combat)
 # power: weighting in object power calculations (100 is neutral)
 # melee-verb: verb used when a susceptible monster is hit in melee
 # range-verb: verb used when a susceptible monster is hit at range
@@ -16,6 +17,7 @@ code:EVIL_2
 name:evil creatures
 race-flag:EVIL
 multiplier:2
+o-multiplier:18
 power:200
 melee-verb:smite
 range-verb:pierces
@@ -24,6 +26,7 @@ code:ANIMAL_2
 name:animals
 race-flag:ANIMAL
 multiplier:2
+o-multiplier:20
 power:115
 melee-verb:smite
 range-verb:pierces
@@ -32,6 +35,7 @@ code:ORC_3
 name:orcs
 race-flag:ORC
 multiplier:3
+o-multiplier:25
 power:101
 melee-verb:smite
 range-verb:pierces
@@ -40,6 +44,7 @@ code:TROLL_3
 name:trolls
 race-flag:TROLL
 multiplier:3
+o-multiplier:25
 power:101
 melee-verb:smite
 range-verb:pierces
@@ -48,6 +53,7 @@ code:GIANT_3
 name:giants
 race-flag:GIANT
 multiplier:3
+o-multiplier:25
 power:102
 melee-verb:smite
 range-verb:pierces
@@ -56,6 +62,7 @@ code:DEMON_3
 name:demons
 race-flag:DEMON
 multiplier:3
+o-multiplier:25
 power:110
 melee-verb:smite
 range-verb:pierces
@@ -64,6 +71,7 @@ code:DRAGON_3
 name:dragons
 race-flag:DRAGON
 multiplier:3
+o-multiplier:25
 power:105
 melee-verb:smite
 range-verb:pierces
@@ -72,6 +80,7 @@ code:UNDEAD_3
 name:undead
 race-flag:UNDEAD
 multiplier:3
+o-multiplier:25
 power:115
 melee-verb:smite
 range-verb:pierces
@@ -80,6 +89,7 @@ code:DEMON_5
 name:demons
 race-flag:DEMON
 multiplier:5
+o-multiplier:35
 power:120
 melee-verb:fiercely smite
 range-verb:deeply pierces
@@ -88,6 +98,7 @@ code:DRAGON_5
 name:dragons
 race-flag:DRAGON
 multiplier:5
+o-multiplier:35
 power:110
 melee-verb:fiercely smite
 range-verb:deeply pierces
@@ -96,6 +107,7 @@ code:UNDEAD_5
 name:undead
 race-flag:UNDEAD
 multiplier:5
+o-multiplier:35
 power:130
 melee-verb:fiercely smite
 range-verb:deeply pierces
