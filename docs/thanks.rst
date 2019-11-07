@@ -2,49 +2,145 @@
 Credits
 =======
 
-If your name should be included in this file and it's not, please email us
-so we can fix it. :)
-
-Version 4.1.x
+Version 4.2.0
 =============
 
 Code contribution:
 
 * Alex Mooney
-* Andi Sidwell (takkaria)
-* AndreyB
+* Anna Sidwell (takkaria)
 * Bardur Arantsson
-* Ben Semmler
-* crayonsmelting
+* bron
+* Dag Arneson (sanedragon)
 * Derakon
-* Erik Osheim (d_m)
+* Elly Fong-Jones (elly)
 * fizzix (Aaron Bader)
-* Flavio Medeiros
-* Graeme Russ
-* Gwilim Owen
-* Jean-François Caron
-* kaypy
-* Kevin J. Fletcher
-* Nomad
-* Pete McIlroy
-* Peter (Hermann Döppes)
-* Peter McIlroy
-* phantom-voltage
+* fruviad
+* John Weismiller (emar)
+* Kusunose Toru
+* Mikolaj Konarski
+* Paul Johnson
 * PowerWyrm
-* rmzelle
-* rowanbeentje
-* Tiara Smith
-* Twisted Pair in my Hair
-* Vic K (t4nk)
-* William Orr
+* Ryan Schmidt
+* Stefan Strogin
+* Vic K
+* wkmanire
+* wobbly
 
-Thanks are due for contributing to discussion which has influenced this
-version to a great many people (too many to list) on
+Thanks are due to many people for, reporting bugs, suggesting changes and
+contributing to discussion which has influenced this version.  The following is
+an (undoubtedly poor) attempt to list you all, please let me know if you think
+you ought to be included:
 
-* the Angband forums (http://angband.oook.cz/forum/)
-* the #angband-dev and #angband IRC channels on freenode.net
-* the roguelikes subreddit (https://www.reddit.com/r/roguelikes/)
-* the #band channel on the roguelikes discord
+* Adam
+* AnonymousHero
+* Antoine
+* Aszazin
+* Atriel
+* bio_hazard
+* bunnies
+* Carg
+* Carnivean
+* cccfire
+* Chud
+* ClaytonAguiar
+* Clearshade
+* clouded
+* Cold_Heart
+* Combatereak
+* Darin
+* debo (cyberdemons pls)
+* desstorm
+* Diego Gonzalez
+* Djbanete
+* dos350
+* Dragget
+* Ed_47569
+* Egavactip
+* emulord
+* EpicMan
+* Estie
+* Estragon
+* Evilpotatoe
+* Flambard
+* fph
+* Gauss
+* Geoff Hill (yes, that one)
+* geoff_tewierik
+* gglibertine
+* Glorfindel
+* Goaticus
+* Grotug
+* gtrudeau88
+* Gwarl
+* half
+* HallucinationMushroom
+* Holy_Rage
+* Hounded
+* Hrrunstar
+* Huqhox
+* Ingwe Ingweron
+* Jeff Greene (nppangband)
+* jevansau
+* jml34
+* Jungle_Boy
+* kandrc
+* kaypy
+* khearn
+* Kinematics
+* luneya
+* Mark
+* MattB
+* misanthropope
+* MITZE
+* Mondkalb
+* Monkey Face
+* Moving Pictures
+* mrfy
+* Muscleguy
+* MWGE
+* Narry
+* Netbrian
+* NightLizard
+* Nomad
+* olivertheorem
+* Once
+* Pahasusi
+* Patashu
+* Pete Mack
+* Philip
+* Pondlife
+* Quirk
+* Raerick
+* Raxmei
+* Rydel
+* Scatha
+* schatz
+* shirish
+* Sideways
+* Sky
+* spara
+* Sparrow the Dunadan
+* Sphara
+* swaggert
+* tangar
+* the Invisible Stalker
+* Therem Harth
+* Thraalbee
+* Tibarius
+* Timo Pietilä
+* TJA
+* TJS
+* topazg
+* Vivit
+* Voovus
+* Vorczar
+* Werbaer
+* Whelk
+* Wiwaxia
+* Youssarian
+* Zikke
+* Zirael
 
 Special thanks to Luke McConnell for many, many conversations on game design
 which influenced design decisions across the breadth and depth of Angband.
@@ -53,7 +149,7 @@ Previous maintainers
 ====================
 
 Angband 3.0.8 - 3.5.1:
-  Andi Sidwell <andi at takkaria.org>
+  Anna Sidwell <anna at takkaria.org>
 
 Angband 2.9.0 - 3.0.6:
   Robert Ruehlmann <rr9 at thangorodrim.net>
@@ -264,6 +360,50 @@ Beta testing and bug reporting/fixing:
  * Egavactip
  * zog
  * troycheek
+
+Version 4.1.x
+=============
+
+Code contribution:
+
+* Alex Mooney
+* Andi Sidwell (takkaria)
+* AndreyB
+* Bardur Arantsson
+* Ben Semmler
+* crayonsmelting
+* Derakon
+* Erik Osheim (d_m)
+* fizzix (Aaron Bader)
+* Flavio Medeiros
+* Graeme Russ
+* Gwilim Owen
+* Jean-François Caron
+* kaypy
+* Kevin J. Fletcher
+* Nomad
+* Pete McIlroy
+* Peter (Hermann Döppes)
+* Peter McIlroy
+* phantom-voltage
+* PowerWyrm
+* rmzelle
+* rowanbeentje
+* Tiara Smith
+* Twisted Pair in my Hair
+* Vic K (t4nk)
+* William Orr
+
+Thanks are due for contributing to discussion which has influenced this
+version to a great many people (too many to list) on
+
+* the Angband forums (http://angband.oook.cz/forum/)
+* the #angband-dev and #angband IRC channels on freenode.net
+* the roguelikes subreddit (https://www.reddit.com/r/roguelikes/)
+* the #band channel on the roguelikes discord
+
+Special thanks to Luke McConnell for many, many conversations on game design
+which influenced design decisions across the breadth and depth of Angband.
 
 .. |copyright| unicode:: 0xA9
 

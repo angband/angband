@@ -1631,8 +1631,9 @@ int calc_blows(struct player *p, const struct object *obj,
 
 	blows = MIN((10000 / blow_energy), (100 * p->class->max_attacks));
 
-	/* Require at least one blow */
-	return MAX(blows + (100 * extra_blows), 100);
+	/* Require at least one blow, two for O-combat */
+	return MAX(blows + (100 * extra_blows),
+			   OPT(p, birth_percent_damage) ? 200 : 100);
 }
 
 
