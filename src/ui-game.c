@@ -518,6 +518,9 @@ void save_game(void)
 	/* Refresh */
 	Term_fresh();
 
+	/* Allow suspend again */
+	signals_handle_tstp();
+
 	/* Save the window prefs */
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "window.prf");
 	if (!prefs_save(path, option_dump, "Dump window settings"))
@@ -531,9 +534,6 @@ void save_game(void)
 		msg("lore save failed!");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	}
-
-	/* Allow suspend again */
-	signals_handle_tstp();
 
 	/* Refresh */
 	Term_fresh();
