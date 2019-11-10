@@ -413,6 +413,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		switch (ch.code) {
 			/* up a line */
 			case ARROW_UP:
+			case 'k':
 			case '8': line--; break;
 
 			/* up a page */
@@ -427,6 +428,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* down a line */
 			case ARROW_DOWN:
 			case '2':
+			case 'j':
 			case KC_ENTER: line++; break;
 
 			/* down a page */
