@@ -242,7 +242,7 @@ book-properties:400:40:10 to 100
 spell:Recharging:5:5:28:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 8 + 6
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -1400,7 +1400,7 @@ desc:Detects all stairs in a wide area.
 spell:Recharging:20:10:50:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 10 + 4
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
