@@ -3388,7 +3388,7 @@ flags:FORCE_SLEEP
 spell-freq:3
 spell-power:6
 spells:HEAL | SCARE | HEAL_KIN
-spells:BA_LIGHT
+spells:BA_LIGHT | BA_HOLY
 spells:S_KIN
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
@@ -9725,7 +9725,7 @@ flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLIND | HEAL | HEAL_KIN | MIND_BLAST
-spells:BA_LIGHT | BA_ELEC
+spells:BA_LIGHT | BA_ELEC | BA_HOLY
 spells:S_KIN
 drop-base:prayer book:5:1:1
 drop-base:prayer book:10:1:1

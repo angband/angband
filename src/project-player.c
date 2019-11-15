@@ -61,8 +61,8 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 	if (resist == 3) /* immune */
 		return 0;
 
-	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == PROJ_ACID && p && minus_ac(p)) || type == PROJ_HOLY_ORB)
+	/* Hack - acid damage is halved by armour */
+	if (type == PROJ_ACID && p && minus_ac(p))
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */

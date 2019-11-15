@@ -28,3 +28,4 @@ PF(UNLIGHT,          "gains stealth in, can see in, and resists the dark",      
 PF(ROCK,             "is made of rock",                                           "Is made of rock")
 PF(STEAL,            "can steal from monsters",                                   "Steals from monsters")
 PF(SHIELD_BASH,      "can bash monsters with a shield in melee",                  "Employs shield-bashes")
+PF(EVIL,             "resist nether but is hurt by holy attacks",                 "Is evil")

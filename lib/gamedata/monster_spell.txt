@@ -474,6 +474,16 @@ lore-color-base:Light Red
 message-vis:{name} invokes a storm of raw magic.
 message-invis:Something screams loudly.
 
+name:BA_HOLY
+hit:100
+effect:BALL:HOLY_ORB:2
+dice:10+1d$S
+expr:S:SPELL_POWER:* 3 / 2
+lore:invoke mana storms
+lore-color-base:Orange
+message-vis:{name} casts an orb of draining.
+message-invis:Something chants.
+
 name:BA_DARK
 hit:100
 effect:BALL:DARK:2
