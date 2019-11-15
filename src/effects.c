@@ -104,14 +104,16 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	int final = 0;
 
 	if (context->value.base > 0 ||
-		(context->value.dice > 0 && context->value.sides > 0))
+		(context->value.dice > 0 && context->value.sides > 0)) {
 		final = context->value.base +
 			damroll(context->value.dice, context->value.sides);
+	}
 
+	/* Remove boosts for now
 	if (use_boost) {
 		final *= (100 + context->boost);
 		final /= 100;
-	}
+		} */
 
 	return final;
 }
