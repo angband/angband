@@ -2013,10 +2013,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_h -= 20;
 		state->to_d -= 20;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	}
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
