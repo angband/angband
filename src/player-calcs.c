@@ -1555,11 +1555,17 @@ static void calc_light(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (of_has(obj->flags, OF_LIGHT_2))
+		if (of_has(obj->flags, OF_LIGHT_2)) {
 			amt = 2;
-		else if (of_has(obj->flags, OF_LIGHT_3))
+		} else if (of_has(obj->flags, OF_LIGHT_3)) {
 			amt = 3;
+		}
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
+
+		/* Adjustment to allow UNLIGHT players to use +1 LIGHT gear */
+		if ((obj->modifiers[OBJ_MOD_LIGHT] > 0) && player_has(p, PF_UNLIGHT)) {
+			amt--;
+		}
 
 		/* Examine actual lights */
 		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
