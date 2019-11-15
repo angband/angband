@@ -1863,6 +1863,7 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Check if the store has space for the items */
 	if (!store_check_num(store, &dummy_item)) {
+		object_wipe(&dummy_item);
 		msg("I have not the room in my store to keep it.");
 		return;
 	}
@@ -1891,6 +1892,11 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Get the "apparent" value */
 	dummy = object_value(&dummy_item, amt);
+	/*
+	 * Do not need the dummy any more so release the memory allocated
+	 * within it.
+	 */
+	object_wipe(&dummy_item);
 
 	/* Know flavor of consumables */
 	object_flavor_aware(obj);
@@ -1953,6 +1959,7 @@ void do_cmd_stash(struct command *cmd)
 
 	struct object *obj, *dropped;
 	bool none_left = false;
+	bool no_room;
 
 	if (cmd_get_arg_item(cmd, "item", &obj))
 		return;
@@ -1975,7 +1982,13 @@ void do_cmd_stash(struct command *cmd)
 	/* Get a copy of the object representing the number being sold */
 	object_copy_amt(&dummy, obj, amt);
 
-	if (!store_check_num(store, &dummy)) {
+	no_room = !store_check_num(store, &dummy);
+	/*
+	 * Do not need the dummy any more so release the memory allocated
+	 * within it.
+	 */
+	object_wipe(&dummy);
+	if (no_room) {
 		msg("Your home is full.");
 		return;
 	}
