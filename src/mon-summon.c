@@ -18,12 +18,10 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "datafile.h"
 #include "mon-group.h"
 #include "mon-make.h"
 #include "mon-summon.h"
 #include "mon-util.h"
-#include "parser.h"
 
 /**
  * The "type" of the current "summon specific"
@@ -44,178 +42,6 @@ struct monster_base *kin_base;
  * The summon array
  */
 struct summon *summons;
-
-static const char *mon_race_flags[] =
-{
-	#define RF(a, b, c) #a,
-	#include "list-mon-race-flags.h"
-	#undef RF
-	NULL
-};
-
-/**
- * ------------------------------------------------------------------------
- * Initialize monster summon types
- * ------------------------------------------------------------------------ */
-
-static enum parser_error parse_summon_name(struct parser *p) {
-	struct summon *h = parser_priv(p);
-	struct summon *s = mem_zalloc(sizeof *s);
-	s->next = h;
-	parser_setpriv(p, s);
-	s->name = string_make(parser_getstr(p, "name"));
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_message_type(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	int msg_index;
-	const char *type;
-	assert(s);
-	type = parser_getsym(p, "type");
-	msg_index = message_lookup_by_name(type);
-
-	if (msg_index < 0)
-		return PARSE_ERROR_INVALID_MESSAGE;
-
-	s->message_type = msg_index;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_unique(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	int unique = 0;
-	assert(s);
-	unique = parser_getint(p, "allowed");
-	if (unique) {
-		s->unique_allowed = true;
-	}
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_base(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	struct monster_base *base;
-	struct monster_base_list *b = mem_zalloc(sizeof(*b));
-	assert(s);
-	base = lookup_monster_base(parser_getsym(p, "base"));
-	if (base == NULL) {
-		mem_free(b);
-		return PARSE_ERROR_INVALID_MONSTER_BASE;
-	}
-	b->base = base;
-	b->next = s->bases;
-	s->bases = b;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_race_flag(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	int flag;
-	assert(s);
-
-	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
-
-	if (flag == FLAG_END) {
-		return PARSE_ERROR_INVALID_FLAG;
-	} else {
-		s->race_flag = flag;
-	}
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_fallback(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	assert(s);
-	s->fallback_name = string_make(parser_getstr(p, "fallback"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_summon_desc(struct parser *p) {
-	struct summon *s = parser_priv(p);
-	assert(s);
-	s->desc = string_make(parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-
-
-struct parser *init_parse_summon(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-
-	parser_reg(p, "name str name", parse_summon_name);
-	parser_reg(p, "msgt sym type", parse_summon_message_type);
-	parser_reg(p, "uniques int allowed", parse_summon_unique);
-	parser_reg(p, "base sym base", parse_summon_base);
-	parser_reg(p, "race-flag sym flag", parse_summon_race_flag);
-	parser_reg(p, "fallback str fallback", parse_summon_fallback);
-	parser_reg(p, "desc str desc", parse_summon_desc);
-	return p;
-}
-
-static errr run_parse_summon(struct parser *p) {
-	return parse_file_quit_not_found(p, "summon");
-}
-
-static errr finish_parse_summon(struct parser *p) {
-	struct summon *summon, *next;
-	int count = 0;
-
-	/* Count the entries */
-	summon_max = 0;
-	summon = parser_priv(p);
-	while (summon) {
-		summon_max++;
-		summon = summon->next;
-	}
-
-	/* Allocate the direct access list and copy the data to it */
-	summons = mem_zalloc((summon_max + 1) * sizeof(*summon));
-	for (summon = parser_priv(p); summon; summon = next, count++) {
-		memcpy(&summons[count], summon, sizeof(*summon));
-		next = summon->next;
-		summons[count].next = NULL;
-
-		mem_free(summon);
-	}
-	summon_max += 1;
-
-	/* Add indices of fallback summons */
-	for (count = 0; count < summon_max; count++) {
-		char *name = summons[count].fallback_name;
-		summons[count].fallback = summon_name_to_idx(name);
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_summon(void)
-{
-	int idx;
-	for (idx = 0; idx < summon_max; idx++) {
-		struct monster_base_list *s = summons[idx].bases;
-		while (s) {
-			struct monster_base_list *next = s->next;
-			mem_free(s);
-			s = next;
-		}
-		string_free(summons[idx].desc);
-		string_free(summons[idx].fallback_name);
-		string_free(summons[idx].name);
-	}
-	mem_free(summons);
-}
-
-struct file_parser summon_parser = {
-	"summon",
-	init_parse_summon,
-	run_parse_summon,
-	finish_parse_summon,
-	cleanup_summon
-};
 
 
 /**
@@ -261,11 +87,66 @@ const char *summon_desc(int type)
 }
 
 /**
+ * Allocate the summons list array and initialize it from the
+ * result of running the summon_parser.
+ */
+void create_summons(struct summon *parsed_summons)
+{
+	struct summon *summon, *next;
+	int count = 0;
+
+	/* Count the entries */
+	summon_max = 0;
+	summon = parsed_summons;
+	while (summon) {
+		summon_max++;
+		summon = summon->next;
+	}
+
+	/* Allocate the direct access list array and copy the data to it */
+	summons = mem_zalloc((summon_max + 1) * sizeof(*summon));
+	for (summon = parsed_summons; summon; summon = next, count++) {
+		memcpy(&summons[count], summon, sizeof(*summon));
+		next = summon->next;
+		summons[count].next = NULL;
+
+		mem_free(summon);
+	}
+	summon_max += 1;
+
+	/* Add indices of fallback summons */
+	for (count = 0; count < summon_max; count++) {
+		char *name = summons[count].fallback_name;
+		summons[count].fallback = summon_name_to_idx(name);
+	}
+}
+
+/**
+ * Free the summons list array. See the summon_parser cleanup.
+ */
+void free_summons(void)
+{
+	int idx;
+	for (idx = 0; idx < summon_max; idx++) {
+		struct monster_base_list *s = summons[idx].bases;
+		while (s) {
+			struct monster_base_list *next = s->next;
+			mem_free(s);
+			s = next;
+		}
+		string_free(summons[idx].desc);
+		string_free(summons[idx].fallback_name);
+		string_free(summons[idx].name);
+	}
+	mem_free(summons);
+}
+
+/**
  * Decide if a monster race is "okay" to summon.
  *
  * Compares the given monster to the monster type specified by
  * summon_specific_type. Returns true if the monster is eligible to
- * be summoned, false otherwise. 
+ * be summoned, false otherwise.
  */
 static bool summon_specific_okay(struct monster_race *race)
 {
@@ -347,7 +228,7 @@ static int call_monster(struct loc grid)
 	/* Now go through a second time and store the indices */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		mon = cave_monster(cave, i);
-		
+
 		/* Save the values of the good monster */
 		if (can_call_monster(grid, mon)){
 			mon_indices[mon_count] = i;

@@ -1,6 +1,6 @@
 /**
- * \file obj-init.c
- * \brief Various game initialization routines
+ * \file init-objects.c
+ * \brief Object initialization routines.
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -21,7 +21,6 @@
  * Several of the arrays for Angband are built from data files in the
  * "lib/gamedata" directory.
  */
-
 
 #include "angband.h"
 #include "buildid.h"
@@ -2239,7 +2238,7 @@ static enum parser_error parse_ego_flags_off(struct parser *p) {
 
 static enum parser_error parse_ego_values(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
-	char *s; 
+	char *s;
 	char *t;
 
 	if (!e)
@@ -2272,7 +2271,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 
 static enum parser_error parse_ego_min_val(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
-	char *s; 
+	char *s;
 	char *t;
 
 	if (!e)
@@ -2658,7 +2657,7 @@ static enum parser_error parse_artifact_msg(struct parser *p) {
 
 static enum parser_error parse_artifact_values(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	char *s; 
+	char *s;
 	char *t;
 	assert(a);
 
