@@ -104,6 +104,8 @@ ANGFILES = \
 	gen-util.o \
 	grafmode.o \
 	guid.o \
+	init-monsters.o \
+	init-objects.o \
 	init.o \
 	load.o \
 	message.o \
@@ -111,7 +113,6 @@ ANGFILES = \
 	mon-blows.o \
 	mon-desc.o \
 	mon-group.o \
-	mon-init.o \
 	mon-list.o \
 	mon-lore.o \
 	mon-make.o \
@@ -128,7 +129,6 @@ ANGFILES = \
 	obj-gear.o \
 	obj-ignore.o \
 	obj-info.o \
-	obj-init.o \
 	obj-knowledge.o \
 	obj-list.o \
 	obj-make.o \
