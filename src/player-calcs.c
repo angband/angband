@@ -1555,11 +1555,17 @@ static void calc_light(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (of_has(obj->flags, OF_LIGHT_2))
+		if (of_has(obj->flags, OF_LIGHT_2)) {
 			amt = 2;
-		else if (of_has(obj->flags, OF_LIGHT_3))
+		} else if (of_has(obj->flags, OF_LIGHT_3)) {
 			amt = 3;
+		}
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
+
+		/* Adjustment to allow UNLIGHT players to use +1 LIGHT gear */
+		if ((obj->modifiers[OBJ_MOD_LIGHT] > 0) && player_has(p, PF_UNLIGHT)) {
+			amt--;
+		}
 
 		/* Examine actual lights */
 		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
@@ -1928,6 +1934,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->el_info[ELEM_DARK].res_level = 1;
 	}
 
+	/* Evil */
+	if (player_has(p, PF_EVIL) && character_dungeon) {
+		state->el_info[ELEM_NETHER].res_level = 1;
+		state->el_info[ELEM_HOLY_ORB].res_level = -1;
+	}
+
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
@@ -2013,10 +2025,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_h -= 20;
 		state->to_d -= 20;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	}
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
