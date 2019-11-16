@@ -1330,9 +1330,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 	/* Load possible graphics modes */
 	init_graphics_modes("graphics.txt");
     
-    /* load sounds */
-    load_sounds();
-    
     /* Prepare the windows */
     init_windows();
 	text_mbcs_hook = Term_mbcs_cocoa;

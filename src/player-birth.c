@@ -158,6 +158,9 @@ static void save_roller_data(birther *tosave)
 	for (i = 0; i < STAT_MAX; i++)
 		tosave->stat[i] = player->stat_birth[i];
 
+	if (tosave->history) {
+		string_free(tosave->history);
+	}
 	tosave->history = player->history;
 	player->history = NULL;
 	my_strcpy(tosave->name, player->full_name, sizeof(tosave->name));
@@ -203,12 +206,19 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	}
 
 	/* Load previous history */
-	player->history = saved->history;
+	if (player->history) {
+		string_free(player->history);
+	}
+	player->history = string_make(saved->history);
 	my_strcpy(player->full_name, saved->name, sizeof(player->full_name));
 
 	/* Save the current data if the caller is interested in it. */
-	if (prev_player)
+	if (prev_player) {
+		if (prev_player->history) {
+			string_free(prev_player->history);
+		}
 		*prev_player = temp;
+	}
 }
 
 
@@ -400,6 +410,12 @@ void player_init(struct player *p)
 		mem_free(p->obj_k->slays);
 		mem_free(p->obj_k->curses);
 		mem_free(p->obj_k);
+	}
+	if (p->history) {
+		string_free(p->history);
+	}
+	if (p->quests) {
+		player_quests_free(p);
 	}
 
 	/* Wipe the player */
@@ -901,8 +917,12 @@ void player_generate(struct player *p, const struct player_race *r,
 	/* Roll for age/height/weight */
 	get_ahw(p);
 
-	if (!old_history)
+	if (!old_history) {
+		if (p->history) {
+			string_free(p->history);
+		}
 		p->history = get_history(p->race->history);
+	}
 }
 
 

@@ -408,7 +408,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 		add = slays[s].o_multiplier - 10;
 	} else if (b) {
 		die_average *= brands[b].o_multiplier;
-		add = brands[s].o_multiplier - 10;
+		add = brands[b].o_multiplier - 10;
 	} else {
 		die_average *= 10;
 	}
@@ -492,7 +492,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 	/* Adjust the average for slays and brands. (10x inflation) */
 	if (b) {
 		die_average *= brands[b].o_multiplier;
-		add = brands[s].o_multiplier - 10;
+		add = brands[b].o_multiplier - 10;
 	} else if (s) {
 		die_average *= slays[s].o_multiplier;
 		add = slays[s].o_multiplier - 10;
