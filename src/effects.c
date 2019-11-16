@@ -104,14 +104,16 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	int final = 0;
 
 	if (context->value.base > 0 ||
-		(context->value.dice > 0 && context->value.sides > 0))
+		(context->value.dice > 0 && context->value.sides > 0)) {
 		final = context->value.base +
 			damroll(context->value.dice, context->value.sides);
+	}
 
+	/* Remove boosts for now
 	if (use_boost) {
 		final *= (100 + context->boost);
 		final /= 100;
-	}
+		} */
 
 	return final;
 }
@@ -2907,6 +2909,11 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	/* Clear any projection marker to prevent double processing */
 	sqinfo_off(square(cave, spots->grid).info, SQUARE_PROJECT);
 
+	/* Clear monster target if it's no longer visible */
+	if (!target_able(target_get_monster())) {
+		target_set_monster(NULL);
+	}
+
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
 
@@ -3404,7 +3411,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!square_isempty(cave, grid)) continue;
 
 			/* Important -- Skip grids marked for damage */
-			if (map[16 + y - centre.y][16 + x - centre.x]) continue;
+			if (map[16 + grid.y - centre.y][16 + grid.x - centre.x]) continue;
 
 			/* Count "safe" grids, apply the randomizer */
 			if ((++safe_grids > 1) && (randint0(safe_grids) != 0)) continue;

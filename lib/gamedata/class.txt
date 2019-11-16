@@ -242,7 +242,7 @@ book-properties:400:40:10 to 100
 spell:Recharging:5:5:28:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 8 + 6
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -316,7 +316,9 @@ desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
 spell:Tap Magical Energy:22:2:30:12
 effect:TAP_DEVICE
-desc:Turns wand or staff energy into mana.
+effect:TIMED_INC:STUN
+dice:1d2
+desc:Turns wand or staff energy into mana; tapping stuns the player briefly.
 
 spell:Mana Channel:25:3:50:20
 effect:TIMED_INC:FASTCAST
@@ -939,7 +941,7 @@ strength-multiplier:3
 equip:food:Ration of Food:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
+player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT | EVIL
 title:Acolyte
 title:Curser
 title:Dark Student
@@ -1400,7 +1402,7 @@ desc:Detects all stairs in a wide area.
 spell:Recharging:20:10:50:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 10 + 4
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.

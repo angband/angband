@@ -1026,6 +1026,8 @@ int edit_text(char *buffer, int buflen) {
 			}
 		}
 
+		mem_free(line_starts);
+		mem_free(line_lengths);
 		textblock_free(tb);
 	}
 

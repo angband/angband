@@ -415,6 +415,8 @@ cost:1
 alloc:10:60 to 100
 power:0
 msg:Refreshing!
+effect:NOURISH:INC_TO
+dice:60
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:STR

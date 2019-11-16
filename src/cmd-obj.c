@@ -358,10 +358,10 @@ void do_cmd_wield(struct command *cmd)
 	else
 		act = "You were wearing";
 
+	inven_wield(obj, slot);
+
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(equip_obj));
-
-	inven_wield(obj, slot);
 }
 
 /**
