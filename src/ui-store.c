@@ -524,7 +524,6 @@ static bool store_sell(struct store_context *ctx)
 	object_copy_amt(temp_obj, obj, amt);
 
 	if (!store_check_num(store, temp_obj)) {
-		object_wipe(temp_obj);
 		if (store->sidx == STORE_HOME)
 			msg("Your home is full.");
 		else
@@ -541,7 +540,6 @@ static bool store_sell(struct store_context *ctx)
 		/* Extract the value of the items */
 		u32b price = price_item(store, temp_obj, true, amt);
 
-		object_wipe(temp_obj);
 		screen_save();
 
 		/* Show price */
@@ -561,7 +559,6 @@ static bool store_sell(struct store_context *ctx)
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	} else { /* Player is at home */
-		object_wipe(temp_obj);
 		cmdq_push(CMD_STASH);
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
