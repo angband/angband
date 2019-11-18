@@ -1689,7 +1689,7 @@ void stats_collect(void)
 
 	/* Close log file */
 	if (!file_close(stats_log)) {
-		msg("Error - can't close stats.log file.");
+		msg("Error - can't close randart.log file.");
 		exit(1);
 	}
 }
