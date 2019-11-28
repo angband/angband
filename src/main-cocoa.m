@@ -346,9 +346,10 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
 
 
 /* The max number of glyphs we support.  Currently this only affects
- * updateGlyphInfo() for the calculation of the tile size (the glyphArray and
- * glyphWidths members of AngbandContext are only used in updateGlyphInfo()).
- * The rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
+ * updateGlyphInfo() for the calculation of the tile size, fontAscender,
+ * fontDescender, ncol_pre, and ncol_post (the glyphArray and glyphWidths
+ * members of AngbandContext are only used in updateGlyphInfo()).  The
+ * rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
  * set.
  */
 #define GLYPH_COUNT 256
