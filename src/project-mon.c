@@ -1108,7 +1108,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 
 	/* No damage is now going to mean the monster is not hit - and hence
 	 * is not woken or released from holding */
-	if(dam) {
+	if (dam) {
 		mon_died = mon_take_hit(mon, dam, &fear, "");
 	}
 
