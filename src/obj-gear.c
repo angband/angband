@@ -804,12 +804,13 @@ void inven_takeoff(struct object *obj)
 	player->body.slots[slot].obj = NULL;
 	player->upkeep->equip_cnt--;
 
-	/* Message */
-	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, I2A(slot));
-
 	player->upkeep->update |= (PU_BONUS | PU_INVEN | PU_UPDATE_VIEW);
 	player->upkeep->notice |= (PN_IGNORE);
 	update_stuff(player);
+
+	/* Message */
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(obj));
+
 	return;
 }
 
