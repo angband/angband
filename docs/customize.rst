@@ -111,7 +111,7 @@ Inscribing an item with ``!`` followed by a command letter or ``*``:
 	Some adventurers use this for Scrolls of Word of Recall so they don't
 	accidentally return to the dungeon too soon.
 
-Inscribing an item with ``@``, followed by a command latter, followed by 0-9:
+Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	Normally when you select an item from your inventory you must enter the
 	letter that corresponds to the item. Since the order of your inventory
 	changes as items get added and removed, this can get annoying.  You
