@@ -121,8 +121,8 @@ Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	use the first one.
 
 	For example, if you inscribe a staff of Cure Light Wounds with '@u1',
-	you can refer to it by pressing 1 when ``u``sing it.  You could also
-	inscribe a wand of Wonder with '@a1', and when using ``a``, 1 would select
+	you can refer to it by pressing 1 when ``u``\sing it.  You could also
+	inscribe a wand of Wonder with '@a1', and when using ``a``\, 1 would select
 	that wand.
 
 	Spellcasters should inscribe their books, so that if they lose them they
