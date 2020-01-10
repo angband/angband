@@ -54,7 +54,6 @@ const char *quark_str(quark_t q)
 
 void quarks_init(void)
 {
-	nr_quarks = 1;
 	alloc_quarks = QUARKS_INIT;
 	quarks = mem_zalloc(alloc_quarks * sizeof(char*));
 }
