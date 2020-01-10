@@ -1856,6 +1856,43 @@ Boolean open_when_ready = FALSE;
  * ------------------------------------------------------------------------ */
 
 /**
+ * Given an Angband color index, returns the index into angband_color_table
+ * to be used as the background color.  The returned index is between -1 and
+ * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0),
+ */
+static int get_background_color_index(int idx)
+{
+    /*
+     * The Cocoa interface has always been using (0,0,0) as the clear color
+     * and not angband_color_table[0].  As of January 2020,  the Window's
+     * interface uses both ((0,0,0) in Term_xtra_win_clear() and
+     * Term_xtra_wipe_win() and win_clr[0], which is set from
+     * angband_color_table[0], in Term_text_win() for the BG_BLACK case.
+     */
+    int ibkg = -1;
+
+    switch (idx / MAX_COLORS) {
+    case BG_BLACK:
+	/* There's nothing to do. */
+	break;
+
+    case BG_SAME:
+	ibkg = idx % MAX_COLORS;
+	break;
+
+    case BG_DARK:
+	ibkg = COLOUR_SHADE;
+	break;
+
+    default:
+	assert(0);
+    }
+
+    return ibkg;
+}
+
+
+/**
  * Sets an Angband color at a given index
  */
 static void set_color_for_index(int idx)
@@ -2585,12 +2622,32 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    /* Save the state since the clipping will be modified. */
 		    CGContextSaveGState(ctx);
 
-		    /* Clear the area that where rendering will be done. */
-		    r = [angbandContext rectInImageForTileAtX:isrend Y:iy];
-		    r.size.width = angbandContext->tileSize.width *
-			(ierend - isrend + 1);
-		    [[NSColor blackColor] set];
-		    NSRectFill(r);
+		    /* Clear the area where rendering will be done. */
+		    k = isrend;
+		    while (k <= ierend) {
+			int k1 = k + 1;
+
+			alast = get_background_color_index(
+			    prc->cell_changes[k].a);
+			while (k1 <= ierend &&
+			       alast == get_background_color_index(
+				   prc->cell_changes[k1].a)) {
+			    ++k1;
+			}
+			if (alast == -1)
+			{
+			    [[NSColor blackColor] set];
+			}
+			else
+		        {
+			    set_color_for_index(alast);
+			}
+			r = [angbandContext rectInImageForTileAtX:k Y:iy];
+			r.size.width = angbandContext->tileSize.width *
+			    (k1 - k);
+			NSRectFill(r);
+			k = k1;
+		    }
 
 		    /*
 		     * Clear the current path so it does not affect clipping.
@@ -2610,6 +2667,7 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    k = isrend;
 		    while (k <= ierend) {
 			NSRect rectToDraw;
+			int anew;
 
 			if (prc->cell_changes[k].change_type
 			    == CELL_CHANGE_WIPE) {
@@ -2618,10 +2676,11 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			    continue;
 			}
 
-			if (set_color || alast != prc->cell_changes[k].a) {
+			anew = prc->cell_changes[k].a % MAX_COLORS;
+			if (set_color || alast != anew) {
 			    set_color = 0;
-			    alast = prc->cell_changes[k].a;
-			    set_color_for_index(alast % MAX_COLORS);
+			    alast = anew;
+			    set_color_for_index(anew);
 			}
 
 			rectToDraw =
