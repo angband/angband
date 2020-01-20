@@ -11421,7 +11421,7 @@ blow:CLAW:HURT:3d4
 blow:BITE:ACID:3d10
 blow:BITE:BLIND:3d10
 flags:SMART | DROP_1
-flags:IM_FIRE IM_ACID | NO_FEAR
+flags:IM_FIRE | IM_ACID | NO_FEAR
 spell-freq:3
 spells:BO_FIRE | BO_ACID
 spells:BR_FIRE | BR_ACID

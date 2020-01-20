@@ -346,9 +346,10 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
 
 
 /* The max number of glyphs we support.  Currently this only affects
- * updateGlyphInfo() for the calculation of the tile size (the glyphArray and
- * glyphWidths members of AngbandContext are only used in updateGlyphInfo()).
- * The rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
+ * updateGlyphInfo() for the calculation of the tile size, fontAscender,
+ * fontDescender, ncol_pre, and ncol_post (the glyphArray and glyphWidths
+ * members of AngbandContext are only used in updateGlyphInfo()).  The
+ * rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
  * set.
  */
 #define GLYPH_COUNT 256
@@ -786,18 +787,27 @@ static int compare_advances(const void *ap, const void *bp)
     }
     
     /*
-     * Record the ascender and descender.  Adjust both by 0.5 pixel to leave
-     * space for antialiasing/subpixel positioning.
+     * Record the ascender and descender.  Some fonts, for instance DIN
+     * Condensed and Rockwell in 10.14, the ascent on '@' exceeds that
+     * reported by [screenFont ascender].  Get the overall bounding box
+     * for the glyphs and use that instead of the ascender and descender
+     * values if the bounding box result extends farther from the baseline.
      */
-    fontAscender = [screenFont ascender] + 0.5;
-    fontDescender = [screenFont descender] - 0.5;
+    CGRect bounds = CTFontGetBoundingRectsForGlyphs((CTFontRef) screenFont, kCTFontHorizontalOrientation, glyphArray, NULL, GLYPH_COUNT);
+    fontAscender = [screenFont ascender];
+    if (fontAscender < bounds.origin.y + bounds.size.height) {
+	fontAscender = bounds.origin.y + bounds.size.height;
+    }
+    fontDescender = [screenFont descender];
+    if (fontDescender > bounds.origin.y) {
+	fontDescender = bounds.origin.y;
+    }
 
     /*
-     * Record the tile size.  Add one to the median advance to leave space
-     * for antialiasing/subpixel positioning.  Round both values up to
-     * have tile boundaries match pixel boundaries.
+     * Record the tile size.  Round both values up to have tile boundaries
+     * match pixel boundaries.
      */
-    tileSize.width = ceil(medianAdvance + 1.);
+    tileSize.width = ceil(medianAdvance);
     tileSize.height = ceil(fontAscender - fontDescender);
 
     /*
@@ -1846,6 +1856,43 @@ Boolean open_when_ready = FALSE;
  * ------------------------------------------------------------------------ */
 
 /**
+ * Given an Angband color index, returns the index into angband_color_table
+ * to be used as the background color.  The returned index is between -1 and
+ * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0),
+ */
+static int get_background_color_index(int idx)
+{
+    /*
+     * The Cocoa interface has always been using (0,0,0) as the clear color
+     * and not angband_color_table[0].  As of January 2020,  the Window's
+     * interface uses both ((0,0,0) in Term_xtra_win_clear() and
+     * Term_xtra_wipe_win() and win_clr[0], which is set from
+     * angband_color_table[0], in Term_text_win() for the BG_BLACK case.
+     */
+    int ibkg = -1;
+
+    switch (idx / MAX_COLORS) {
+    case BG_BLACK:
+	/* There's nothing to do. */
+	break;
+
+    case BG_SAME:
+	ibkg = idx % MAX_COLORS;
+	break;
+
+    case BG_DARK:
+	ibkg = COLOUR_SHADE;
+	break;
+
+    default:
+	assert(0);
+    }
+
+    return ibkg;
+}
+
+
+/**
  * Sets an Angband color at a given index
  */
 static void set_color_for_index(int idx)
@@ -2575,12 +2622,32 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    /* Save the state since the clipping will be modified. */
 		    CGContextSaveGState(ctx);
 
-		    /* Clear the area that where rendering will be done. */
-		    r = [angbandContext rectInImageForTileAtX:isrend Y:iy];
-		    r.size.width = angbandContext->tileSize.width *
-			(ierend - isrend + 1);
-		    [[NSColor blackColor] set];
-		    NSRectFill(r);
+		    /* Clear the area where rendering will be done. */
+		    k = isrend;
+		    while (k <= ierend) {
+			int k1 = k + 1;
+
+			alast = get_background_color_index(
+			    prc->cell_changes[k].a);
+			while (k1 <= ierend &&
+			       alast == get_background_color_index(
+				   prc->cell_changes[k1].a)) {
+			    ++k1;
+			}
+			if (alast == -1)
+			{
+			    [[NSColor blackColor] set];
+			}
+			else
+		        {
+			    set_color_for_index(alast);
+			}
+			r = [angbandContext rectInImageForTileAtX:k Y:iy];
+			r.size.width = angbandContext->tileSize.width *
+			    (k1 - k);
+			NSRectFill(r);
+			k = k1;
+		    }
 
 		    /*
 		     * Clear the current path so it does not affect clipping.
@@ -2600,6 +2667,7 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    k = isrend;
 		    while (k <= ierend) {
 			NSRect rectToDraw;
+			int anew;
 
 			if (prc->cell_changes[k].change_type
 			    == CELL_CHANGE_WIPE) {
@@ -2608,10 +2676,11 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			    continue;
 			}
 
-			if (set_color || alast != prc->cell_changes[k].a) {
+			anew = prc->cell_changes[k].a % MAX_COLORS;
+			if (set_color || alast != anew) {
 			    set_color = 0;
-			    alast = prc->cell_changes[k].a;
-			    set_color_for_index(alast % MAX_COLORS);
+			    alast = anew;
+			    set_color_for_index(anew);
 			}
 
 			rectToDraw =

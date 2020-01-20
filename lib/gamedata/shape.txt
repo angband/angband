@@ -124,6 +124,7 @@ effect:DAMAGE
 dice:1d$S
 expr:S:PLAYER_LEVEL:+ 0
 effect-msg:taking warg form
+effect:CURE:AFRAID
 effect:TIMED_INC:SHERO
 dice:5+1d20
 blow:bite

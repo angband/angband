@@ -3292,33 +3292,21 @@ static bool handle_keydown(const SDL_KeyboardEvent *key)
 	byte mods = translate_key_mods(key->keysym.mod);
 	keycode_t ch = 0;
 
-	if (!(key->keysym.mod & KMOD_NUM)
-			|| (key->keysym.mod & KMOD_NUM
-				&& key->keysym.mod & KMOD_SHIFT))
-	{
-		switch (key->keysym.sym) {
-			/* keypad keys without numlock */
-			case SDLK_KP_0:    ch = '0';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_1:    ch = '1';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_2:    ch = '2';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_3:    ch = '3';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_4:    ch = '4';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_5:    ch = '5';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_6:    ch = '6';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_7:    ch = '7';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_8:    ch = '8';      mods |= KC_MOD_KEYPAD; break;
-			case SDLK_KP_9:    ch = '9';      mods |= KC_MOD_KEYPAD; break;
-		}
-	}
+	/* SDL will give us both keydown and text input events in many cases.
+	 * Between this function and handle_text_input we need to make sure that
+	 * Term_keypress gets called exactly once for a given key press from the
+	 * user.
+	 * This function handles keys that don't produce text, the keypad, and
+	 * keypresses that will produce the same characters as keypad keypresses.
+	 * Others should be handled in handle_text_input.
+	 */
+
+	/* If numlock is set and shift is not pressed, numpad numbers produce
+	 * regular numbers and not keypad numbers */
+	byte keypad_num_mod = ((key->keysym.mod & KMOD_NUM) && !(key->keysym.mod & KMOD_SHIFT))
+			? 0x00 : KC_MOD_KEYPAD;
 
 	switch (key->keysym.sym) {
-		case SDLK_KP_MULTIPLY: ch = '*';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_PERIOD:   ch = '.';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_DIVIDE:   ch = '/';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_EQUALS:   ch = '=';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_MINUS:    ch = '-';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_PLUS:     ch = '+';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_ENTER:    ch = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
 		/* arrow keys */
 		case SDLK_UP:          ch = ARROW_UP;                        break;
 		case SDLK_DOWN:        ch = ARROW_DOWN;                      break;
@@ -3351,58 +3339,102 @@ static bool handle_keydown(const SDL_KeyboardEvent *key)
 		case SDLK_F13:         ch = KC_F13;                          break;
 		case SDLK_F14:         ch = KC_F14;                          break;
 		case SDLK_F15:         ch = KC_F15;                          break;
+
+		/* Keypad */
+		case SDLK_KP_0:        ch = '0';      mods |= keypad_num_mod; break;
+		case SDLK_KP_1:        ch = '1';      mods |= keypad_num_mod; break;
+		case SDLK_KP_2:        ch = '2';      mods |= keypad_num_mod; break;
+		case SDLK_KP_3:        ch = '3';      mods |= keypad_num_mod; break;
+		case SDLK_KP_4:        ch = '4';      mods |= keypad_num_mod; break;
+		case SDLK_KP_5:        ch = '5';      mods |= keypad_num_mod; break;
+		case SDLK_KP_6:        ch = '6';      mods |= keypad_num_mod; break;
+		case SDLK_KP_7:        ch = '7';      mods |= keypad_num_mod; break;
+		case SDLK_KP_8:        ch = '8';      mods |= keypad_num_mod; break;
+		case SDLK_KP_9:        ch = '9';      mods |= keypad_num_mod; break;
+
+		case SDLK_KP_MULTIPLY: ch = '*';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_PERIOD:   ch = '.';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_DIVIDE:   ch = '/';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_EQUALS:   ch = '=';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_MINUS:    ch = '-';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_PLUS:     ch = '+';      mods |= KC_MOD_KEYPAD; break;
+		case SDLK_KP_ENTER:    ch = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
+
+		/* Keys that produce the same character as keypad keys */
+		case SDLK_ASTERISK:    ch = '*';      break;
+		case SDLK_PLUS:        ch = '+';      break;
 	}
-
-	if (mods & KC_MOD_CONTROL) {
-		switch (key->keysym.sym) {
-			case SDLK_0: ch = '0'; break;
-			case SDLK_1: ch = '1'; break;
-			case SDLK_2: ch = '2'; break;
-			case SDLK_3: ch = '3'; break;
-			case SDLK_4: ch = '4'; break;
-			case SDLK_5: ch = '5'; break;
-			case SDLK_6: ch = '6'; break;
-			case SDLK_7: ch = '7'; break;
-			case SDLK_8: ch = '8'; break;
-			case SDLK_9: ch = '9'; break;
-
-			case SDLK_a: ch = 'a'; break;
-			case SDLK_b: ch = 'b'; break;
-			case SDLK_c: ch = 'c'; break;
-			case SDLK_d: ch = 'd'; break;
-			case SDLK_e: ch = 'e'; break;
-			case SDLK_f: ch = 'f'; break;
-			case SDLK_g: ch = 'g'; break;
-			case SDLK_h: ch = 'h'; break;
-			case SDLK_i: ch = 'i'; break;
-			case SDLK_j: ch = 'j'; break;
-			case SDLK_k: ch = 'k'; break;
-			case SDLK_l: ch = 'l'; break;
-			case SDLK_m: ch = 'm'; break;
-			case SDLK_n: ch = 'n'; break;
-			case SDLK_o: ch = 'o'; break;
-			case SDLK_p: ch = 'p'; break;
-			case SDLK_q: ch = 'q'; break;
-			case SDLK_r: ch = 'r'; break;
-			case SDLK_s: ch = 's'; break;
-			case SDLK_t: ch = 't'; break;
-			case SDLK_u: ch = 'u'; break;
-			case SDLK_v: ch = 'v'; break;
-			case SDLK_w: ch = 'w'; break;
-			case SDLK_x: ch = 'x'; break;
-			case SDLK_y: ch = 'y'; break;
-			case SDLK_z: ch = 'z'; break;
+	if((mods & KC_MOD_SHIFT)) {
+		bool match = true;
+		switch(key->keysym.sym) {
+			/* Doesn't match every keyboard layout, unfortunately. */
+			case SDLK_8:           ch = '*';      break;
+			case SDLK_EQUALS:      ch = '+';      break;
+			default: match = false;
+		}
+		if(match) {
+			mods &= ~KC_MOD_SHIFT;
+		}
+	} else {
+		switch(key->keysym.sym) {
+			case SDLK_0:           ch = '0';      break;
+			case SDLK_1:           ch = '1';      break;
+			case SDLK_2:           ch = '2';      break;
+			case SDLK_3:           ch = '3';      break;
+			case SDLK_4:           ch = '4';      break;
+			case SDLK_5:           ch = '5';      break;
+			case SDLK_6:           ch = '6';      break;
+			case SDLK_7:           ch = '7';      break;
+			case SDLK_8:           ch = '8';      break;
+			case SDLK_9:           ch = '9';      break;
+			case SDLK_SLASH:       ch = '/';      break;
+			case SDLK_EQUALS:      ch = '=';      break;
+			case SDLK_PERIOD:      ch = '.';      break;
+			case SDLK_MINUS:       ch = '-';      break;
 		}
 	}
+	/* encode control */
+	if (mods & KC_MOD_CONTROL) {
+		bool match = true;
+		switch (key->keysym.sym) {
+			case SDLK_LEFTBRACKET:  ch = KTRL('[');  break;
+			case SDLK_RIGHTBRACKET: ch = KTRL(']');  break;
+			case SDLK_BACKSLASH:    ch = KTRL('\\'); break;
+			case SDLK_a:            ch = KTRL('A'); break;
+			case SDLK_b:            ch = KTRL('B'); break;
+			case SDLK_c:            ch = KTRL('C'); break;
+			case SDLK_d:            ch = KTRL('D'); break;
+			case SDLK_e:            ch = KTRL('E'); break;
+			case SDLK_f:            ch = KTRL('F'); break;
+			case SDLK_g:            ch = KTRL('G'); break;
+			case SDLK_h:            ch = KTRL('H'); break;
+			case SDLK_i:            ch = KTRL('I'); break;
+			case SDLK_j:            ch = KTRL('J'); break;
+			case SDLK_k:            ch = KTRL('K'); break;
+			case SDLK_l:            ch = KTRL('L'); break;
+			case SDLK_m:            ch = KTRL('M'); break;
+			case SDLK_n:            ch = KTRL('N'); break;
+			case SDLK_o:            ch = KTRL('O'); break;
+			case SDLK_p:            ch = KTRL('P'); break;
+			case SDLK_q:            ch = KTRL('Q'); break;
+			case SDLK_r:            ch = KTRL('R'); break;
+			case SDLK_s:            ch = KTRL('S'); break;
+			case SDLK_t:            ch = KTRL('T'); break;
+			case SDLK_u:            ch = KTRL('U'); break;
+			case SDLK_v:            ch = KTRL('V'); break;
+			case SDLK_w:            ch = KTRL('W'); break;
+			case SDLK_x:            ch = KTRL('X'); break;
+			case SDLK_y:            ch = KTRL('Y'); break;
+			case SDLK_z:            ch = KTRL('Z'); break;
+			default: match = false;
+		}
+		if(match) {
+			mods &= ~KC_MOD_CONTROL;
+		}
+	}
+
 
 	if (ch) {
-		if (mods & KC_MOD_CONTROL && !(mods & KC_MOD_KEYPAD)) {
-			ch = KTRL(ch);
-			if (!MODS_INCLUDE_CONTROL(ch)) {
-				mods &= ~KC_MOD_CONTROL;
-			}
-		}
-
 		Term_keypress(ch, mods);
 		return true;
 	} else {
@@ -3453,29 +3485,30 @@ static keycode_t utf8_to_codepoint(const char *utf8_string)
 static bool handle_text_input(const SDL_TextInputEvent *input)
 {
 	keycode_t ch = utf8_to_codepoint(input->text);
-	if (ch == 0) {
-		return false;
+
+	/* Don't handle any characters that can be produced by the keypad */
+	switch (ch) {
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '/':
+		case '*':
+		case '-':
+		case '+':
+		case '.':
+			return false;
 	}
 
 	byte mods = translate_key_mods(SDL_GetModState());
 
-	if (mods & KC_MOD_SHIFT) {
-		switch (ch) {
-			/* maybe the player pressed key on keypad? */
-			case '0': /* fallthru */
-			case '1': /* fallthru */
-			case '2': /* fallthru */
-			case '3': /* fallthru */
-			case '4': /* fallthru */
-			case '5': /* fallthru */
-			case '6': /* fallthru */
-			case '7': /* fallthru */
-			case '8': /* fallthru */
-			case '9':
-				return false;
-		}
-	}
-
+	/* Shift is already encoded in characters we receive here */
 	if (!MODS_INCLUDE_SHIFT(ch)) {
 		mods &= ~KC_MOD_SHIFT;
 	}
