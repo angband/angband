@@ -1266,7 +1266,7 @@ desc:Cures 10 points of damage, removes fear and, from character level 15,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
+book:prayer book:dungeon:[Healing and Sanctuary]:5:divine
 
 spell:Protection from Evil:15:8:42:5
 effect:TIMED_INC:PROTEVIL
