@@ -1032,7 +1032,7 @@ static int compare_advances(const void *ap, const void *bp)
 
     textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
     CGContextSetTextMatrix(ctx, textMatrix);
-    CGContextShowGlyphsWithAdvances(ctx, &glyph, &CGSizeZero, 1);
+    CGContextShowGlyphsAtPositions(ctx, &glyph, &CGPointZero, 1);
     
     /* Restore the text matrix if we messed with the compression ratio */
     if (compressionRatio != 1.)
