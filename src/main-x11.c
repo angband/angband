@@ -122,11 +122,11 @@
 #define DEFAULT_X11_FONT_0		"10x20"
 #define DEFAULT_X11_FONT_1		"9x15"
 #define DEFAULT_X11_FONT_2		"9x15"
-#define DEFAULT_X11_FONT_3		"5x8"
-#define DEFAULT_X11_FONT_4		"5x8"
-#define DEFAULT_X11_FONT_5		"5x8"
-#define DEFAULT_X11_FONT_6		"5x8"
-#define DEFAULT_X11_FONT_7		"5x8"
+#define DEFAULT_X11_FONT_3		"7x13"
+#define DEFAULT_X11_FONT_4		"7x13"
+#define DEFAULT_X11_FONT_5		"7x13"
+#define DEFAULT_X11_FONT_6		"7x13"
+#define DEFAULT_X11_FONT_7		"7x13"
 
 
 #ifndef IsModifierKey
@@ -1801,6 +1801,18 @@ static errr CheckEvent(bool wait)
 			else if (xev->xbutton.button == Button5) z = 5;
 			else z = 0;
 
+			/* Save a byte in ui-term/Term_mousepress for some reason */
+			u32b state = ((XButtonEvent*) xev)->state;
+			if(state & ShiftMask) {
+				z |= (KC_MOD_SHIFT << 4);
+			}
+			if(state & ControlMask) {
+				z |= (KC_MOD_CONTROL << 4);
+			}
+			if(state & Mod1Mask) {
+				z |= (KC_MOD_ALT << 4);
+			}
+
 			/* The co-ordinates are only used in Angband format. */
 			pixel_to_square(&x, &y, x, y);
 			if (press) Term_mousepress(x, y, z);
@@ -2189,6 +2201,8 @@ static errr term_data_init(term_data *td, int i)
 
 	XSizeHints *sh;
 
+	XWMHints *wmh;
+
 	ang_file *fff;
 
 	char buf[1024];
@@ -2455,6 +2469,22 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Use the size hints */
 	XSetWMNormalHints(Metadpy->dpy, Infowin->win, sh);
+
+	/* WMHints */
+	wmh = XAllocWMHints();
+
+	if(wmh == NULL) quit("XAllocWMHints failed");
+
+	wmh->flags |= WindowGroupHint;
+
+	if(i == 0) {
+		// root points to itself
+		wmh->window_group = td->win->win;
+	} else {
+		// others point to root
+		wmh->window_group = data[0].win->win;
+	}
+	XSetWMHints(Metadpy->dpy, Infowin->win, wmh);
 
 	/* Map the window */
 	Infowin_map();
