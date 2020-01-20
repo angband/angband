@@ -2904,6 +2904,11 @@ static errr Term_wipe_cocoa(int x, int y, int n)
     for (pc = angbandContext->changes->rows[y]->cell_changes + x;
 	 pc != angbandContext->changes->rows[y]->cell_changes + x + n;
 	 ++pc) {
+	/*
+	 * Record the color as the plain blackground so
+	 * get_background_color_index() performs correctly.
+	 */
+	pc->a = BG_BLACK * MAX_COLORS;
 	pc->change_type = CELL_CHANGE_WIPE;
     }
     
