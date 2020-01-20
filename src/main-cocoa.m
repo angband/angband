@@ -56,7 +56,6 @@
 #define kVK_Escape 0x35
 #define kVK_ANSI_KeypadEnter 0x4C
 
-static NSSize const AngbandScaleIdentity = {1.0, 1.0};
 static NSString * const AngbandDirectoryNameLib = @"lib";
 static NSString * const AngbandDirectoryNameBase = @"Angband";
 
