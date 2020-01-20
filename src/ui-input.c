@@ -1442,6 +1442,8 @@ ui_event textui_get_command(int *count)
 			bool keymap_ok = true;
 			switch (ke.key.code) {
 				case '0': {
+					if(ke.key.mods & KC_MOD_KEYPAD) break;
+
 					int c = textui_get_count();
 
 					if (c == -1 || !get_com_ex("Command: ", &ke))

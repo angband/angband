@@ -346,9 +346,10 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
 
 
 /* The max number of glyphs we support.  Currently this only affects
- * updateGlyphInfo() for the calculation of the tile size (the glyphArray and
- * glyphWidths members of AngbandContext are only used in updateGlyphInfo()).
- * The rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
+ * updateGlyphInfo() for the calculation of the tile size, fontAscender,
+ * fontDescender, ncol_pre, and ncol_post (the glyphArray and glyphWidths
+ * members of AngbandContext are only used in updateGlyphInfo()).  The
+ * rendering in drawWChar will work for glyphs not in updateGlyphInfo()'s
  * set.
  */
 #define GLYPH_COUNT 256
@@ -786,18 +787,27 @@ static int compare_advances(const void *ap, const void *bp)
     }
     
     /*
-     * Record the ascender and descender.  Adjust both by 0.5 pixel to leave
-     * space for antialiasing/subpixel positioning.
+     * Record the ascender and descender.  Some fonts, for instance DIN
+     * Condensed and Rockwell in 10.14, the ascent on '@' exceeds that
+     * reported by [screenFont ascender].  Get the overall bounding box
+     * for the glyphs and use that instead of the ascender and descender
+     * values if the bounding box result extends farther from the baseline.
      */
-    fontAscender = [screenFont ascender] + 0.5;
-    fontDescender = [screenFont descender] - 0.5;
+    CGRect bounds = CTFontGetBoundingRectsForGlyphs((CTFontRef) screenFont, kCTFontHorizontalOrientation, glyphArray, NULL, GLYPH_COUNT);
+    fontAscender = [screenFont ascender];
+    if (fontAscender < bounds.origin.y + bounds.size.height) {
+	fontAscender = bounds.origin.y + bounds.size.height;
+    }
+    fontDescender = [screenFont descender];
+    if (fontDescender > bounds.origin.y) {
+	fontDescender = bounds.origin.y;
+    }
 
     /*
-     * Record the tile size.  Add one to the median advance to leave space
-     * for antialiasing/subpixel positioning.  Round both values up to
-     * have tile boundaries match pixel boundaries.
+     * Record the tile size.  Round both values up to have tile boundaries
+     * match pixel boundaries.
      */
-    tileSize.width = ceil(medianAdvance + 1.);
+    tileSize.width = ceil(medianAdvance);
     tileSize.height = ceil(fontAscender - fontDescender);
 
     /*

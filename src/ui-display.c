@@ -753,7 +753,7 @@ static const byte obj_feeling_color[] =
 	COLOUR_L_GREEN, /* "there may not be much interesting here." */
 	COLOUR_L_GREEN, /* "there aren't many treasures here." */
 	COLOUR_L_BLUE, /* "there are only scraps of junk here." */
-	COLOUR_L_BLUE  /* "there are naught but cobwebs here. */
+	COLOUR_L_BLUE  /* "there is naught but cobwebs here. */
 };
 
 static const byte mon_feeling_color[] = 
@@ -799,10 +799,10 @@ static size_t prt_level_feeling(int row, int col)
 	 *   0 -> * "Looks like any other level."
 	 *   1 -> $ "you sense an item of wondrous power!" (special feeling)
 	 *   2 to 10 are feelings from 2 meaning superb feeling to 10
-	 * meaning naught but cowebs.
+	 * meaning naught but cobwebs.
 	 *   It is easier for the player to have poor feelings as a
 	 * low number and superb feelings as a higher one. So for
-	 * display we reverse this numbers and substract 1.
+	 * display we reverse this numbers and subtract 1.
 	 *   Thus (2-10) becomes (1-9 reversed)
 	 *
 	 *   But before that check if the player has explored enough

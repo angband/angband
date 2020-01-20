@@ -12,7 +12,8 @@
 # weight: weight
 # cost: cost
 # alloc: allocation probability : min depth : max depth
-# power: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
+# attack: base damage : plus to-hit : plus to-dam
+# armor: base armor class : plus to-ac
 # flags: flag | flag | etc
 # act: activation
 # time : recharge time
@@ -40,8 +41,10 @@
 # being generated, min depth is the earliest it is normally found, max
 # depth is the deepest it is ever found.
 
-# 'power' is for power information. The items base armor class, its base
-# damage and pluses to-hit, to-dam and to-ac.
+# 'attack' is for combat attack information, the item's base damage and pluses
+# to-hit and to-dam.
+
+# 'armor' is for armor information, the item's base armor class and plus to-ac.
 
 # 'flags' is for object flags as listed in list-object-flags.h. These are
 # fairly self-explanatory. As many flags: lines may be used as are needed to 

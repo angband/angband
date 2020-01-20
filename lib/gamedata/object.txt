@@ -1142,7 +1142,7 @@ cost:376
 alloc:20:10 to 100
 attack:2d5:0:0
 armor:0:0
-desc:A long pole with a three- or four-pronged head balnced by a long spike.
+desc:A long pole with a three- or four-pronged head balanced by a long spike.
 
 
 ##### Bows, Crossbows, Slings #####
