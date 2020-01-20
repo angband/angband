@@ -1407,7 +1407,7 @@ static const char *obj_feeling_text[] =
 	"there may not be much interesting here.",
 	"there aren't many treasures here.",
 	"there are only scraps of junk here.",
-	"there are naught but cobwebs here."
+	"there is naught but cobwebs here."
 };
 
 /**
