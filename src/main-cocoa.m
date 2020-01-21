@@ -1333,6 +1333,9 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     /* Initialize file paths */
     [self prepareFilePathsAndDirectories];
 
+    /* Note the "system" */
+    ANGBAND_SYS = "mac";
+
     /* Load preferences */
     load_prefs();
     
@@ -1353,9 +1356,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     /* Register the sound hook */
     event_add_handler(EVENT_SOUND, play_sound, NULL);
 
-    /* Note the "system" */
-    ANGBAND_SYS = "mac";
-    
     /* Initialize some save file stuff */
     player_egid = getegid();
     
