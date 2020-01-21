@@ -135,7 +135,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@mkdir -p $(APPCONT)
 	@mkdir -p $(APPBIN)
 	@mkdir -p $(APPRES)
-	@mkdir -p $(APPRES)/English.lproj/MainMenu.nib 
+	@mkdir -p $(APPRES)/en.lproj/MainMenu.nib 
 	@mkdir -p $(APPRES)/lib/gamedata
 	@mkdir -p $(APPRES)/lib/screens
 	@mkdir -p $(APPRES)/lib/help
@@ -158,7 +158,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
-	cp cocoa/English.lproj/MainMenu.nib/*ib $(APPRES)/English.lproj/MainMenu.nib
+	cp cocoa/en.lproj/MainMenu.nib/*ib $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
