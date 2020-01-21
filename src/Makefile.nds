@@ -16,7 +16,7 @@ include Makefile.src
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #------------------------------------------------------------------------------
-TARGET		:=	$(NAME)
+TARGET		:=	$(PROGNAME)
 
 #------------------------------------------------------------------------------
 # options for code generation
@@ -66,30 +66,22 @@ DEPENDS	:=	$(BASEOBJS:.o=$(CURDIR)/.d)
 #------------------------------------------------------------------------------
 # main targets
 #------------------------------------------------------------------------------
- 
-#------------------------------------------------------------------------------
-$(TARGET).nds	:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7 -9 $(TARGET).arm9
+
+# Those files aren't actually nonexistent, but we need to make
+# sure that they are always up-to-date.
+.PHONY:	$(TARGET).arm7.elf $(TARGET).arm9.elf
 
 #------------------------------------------------------------------------------
-$(TARGET).arm7	: $(TARGET).arm7.elf
-	@$(OBJCOPY) -O binary $< $@
-	@echo built ... $(notdir $@)
+$(TARGET).nds	:	$(TARGET).arm7.elf $(TARGET).arm9.elf
+	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf
 
-$(TARGET).arm9	: $(TARGET).arm9.elf
-	@$(OBJCOPY) -O binary $< $@
-	@echo built ... $(notdir $@)
 #------------------------------------------------------------------------------
 $(TARGET).arm7.elf:
-	@[ -d build ] || mkdir build
 	$(MAKE) -f nds/Makefile.arm7 all
 	
 #------------------------------------------------------------------------------
 
 $(TARGET).arm9.elf:
-	@[ -d build ] || mkdir build
-#	sh -c "unset CC; [ -f src/tile.c ] || make -C util ../src/tile.c"
-	@echo hello
 	$(MAKE) -f nds/Makefile.arm9 all
 
  
