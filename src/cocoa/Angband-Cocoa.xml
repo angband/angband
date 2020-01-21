@@ -20,12 +20,8 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$VERSION$</string>
-	<key>CFBundleLongVersionString</key>
-	<string>$VERSION$, Copyright $COPYRIGHT$</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © $COPYRIGHT$</string>
-	<key>CFBundleGetInfoString</key>
-	<string>$VERSION$, © $COPYRIGHT$</string>
 	<key>CFBundleSignature</key>
 	<string>A271</string>
 	<key>CFBundleVersion</key>
