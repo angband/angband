@@ -315,6 +315,25 @@ void cmdq_flush(void)
 }
 
 /**
+ * Return true if the previous command used an item from the floor.
+ * Otherwise, return false.
+ */
+bool cmdq_does_previous_use_floor_item(void)
+{
+	int cmd_prev = cmd_head - 1;
+
+	if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
+	if (cmd_queue[cmd_prev].code != CMD_NULL) {
+		struct object *obj;
+
+		if (cmd_get_arg_item(&cmd_queue[cmd_prev], "item", &obj) == CMD_OK) {
+			return (obj->grid.x == 0 && obj->grid.y == 0) ? false : true;
+		}
+	}
+	return false;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Handling of repeated commands
  * ------------------------------------------------------------------------ */

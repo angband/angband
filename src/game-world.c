@@ -1006,6 +1006,11 @@ static void on_leave_level(void) {
 	/* Cancel any command */
 	player_clear_timed(player, TMD_COMMAND, false);
 
+	/* Don't allow command repeat if moved away from item used. */
+	if (cmdq_does_previous_use_floor_item()) {
+		cmd_disable_repeat();
+	}
+
 	/* Any pending processing */
 	notice_stuff(player);
 	update_stuff(player);

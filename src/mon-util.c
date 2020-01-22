@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 #include "effects.h"
 #include "game-world.h"
 #include "init.h"
@@ -560,6 +561,11 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
+
+		/* Don't allow command repeat if moved away from item used. */
+		if (cmdq_does_previous_use_floor_item()) {
+			cmd_disable_repeat();
+		}
 	}
 
 	/* Monster 2 */
@@ -590,6 +596,11 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
+
+		/* Don't allow command repeat if moved away from item used. */
+		if (cmdq_does_previous_use_floor_item()) {
+			cmd_disable_repeat();
+		}
 	}
 
 	/* Redraw */
