@@ -407,6 +407,9 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
      */
     int ncol_pre, ncol_post;
 
+    /* Flags whether or not a fullscreen transition is in progress. */
+    BOOL in_fullscreen_transition;
+
 @private
 
     BOOL _hasSubwindowFlags;
@@ -1151,6 +1154,8 @@ static int compare_advances(const void *ap, const void *bp)
 	self->ncol_pre = 0;
 	self->ncol_post = 0;
 
+	self->in_fullscreen_transition = NO;
+
         /* Make the image. Since we have no views, it'll just be a puny 1x1 image. */
         [self updateImage];
 
@@ -1762,24 +1767,36 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     NSWindow *window = [notification object];
     NSRect contentRect = [window contentRectForFrameRect: [window frame]];
-    [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: !(self->in_fullscreen_transition)];
 }
 
 /*- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
 {
 } */
 
+- (void)windowWillEnterFullScreen: (NSNotification *)notification
+{
+    self->in_fullscreen_transition = YES;
+}
+
 - (void)windowDidEnterFullScreen: (NSNotification *)notification
 {
     NSWindow *window = [notification object];
     NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    self->in_fullscreen_transition = NO;
     [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
+}
+
+- (void)windowWillExitFullScreen: (NSNotification *)notification
+{
+    self->in_fullscreen_transition = YES;
 }
 
 - (void)windowDidExitFullScreen: (NSNotification *)notification
 {
     NSWindow *window = [notification object];
     NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    self->in_fullscreen_transition = NO;
     [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
 }
 
