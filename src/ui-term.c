@@ -1004,6 +1004,12 @@ errr Term_mark(int x, int y)
 	old_taa[x] = 0x80;
 	old_tcc[x] = 0;
 
+	/* Update bounds for modified region. */
+	if (y < Term->y1) Term->y1 = y;
+	if (y > Term->y2) Term->y2 = y;
+	if (x < Term->x1[y]) Term->x1[y] = x;
+	if (x > Term->x2[y]) Term->x2[y] = x;
+
 	return (0);
 }
 
@@ -1252,6 +1258,15 @@ errr Term_fresh(void)
 			Term->x2[h - 1] = w - 2;
 
 
+		/*
+		 * Make the stored y bounds for the modified region empty.
+		 * Do so before drawing so that Term_mark() calls from within
+		 * the drawing hooks will adjust the bounds on the modified
+		 * region for the next update.
+		 */
+		Term->y1 = h;
+		Term->y2 = 0;
+
 		/* Scan the "modified" rows */
 		for (y = y1; y <= y2; ++y) {
 			int x1 = Term->x1[y];
@@ -1259,6 +1274,13 @@ errr Term_fresh(void)
 
 			/* Flush each "modified" row */
 			if (x1 <= x2) {
+				/*
+				 * As above, set the bounds for the modified
+				 * region to be empty before drawing.
+				 */
+				Term->x1[y] = w;
+				Term->x2[y] = 0;
+
 				/* Use "Term_pict()" - always, sometimes or never */
 				if (Term->always_pict)
 					/* Flush the row */
@@ -1270,18 +1292,10 @@ errr Term_fresh(void)
 					/* Flush the row */
 					Term_fresh_row_text(y, x1, x2);
 
-				/* This row is all done */
-				Term->x1[y] = w;
-				Term->x2[y] = 0;
-
 				/* Hack -- Flush that row (if allowed) */
 				if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
 			}
 		}
-
-		/* No rows are invalid */
-		Term->y1 = h;
-		Term->y2 = 0;
 	}
 
 
