@@ -3129,6 +3129,9 @@ static term *term_data_link(int i)
     /* Use a "software" cursor */
     newterm->soft_cursor = TRUE;
     
+    /* Disable the per-row flush notifications since they are not used. */
+    newterm->never_frosh = TRUE;
+
     /* Erase with "white space" */
     newterm->attr_blank = COLOUR_WHITE;
     newterm->char_blank = ' ';
