@@ -254,6 +254,12 @@ void cmdq_execute(cmd_context ctx);
 void cmdq_flush(void);
 
 /**
+ * Return true if the previous command used an item from the floor.
+ * Otherwise, return false.
+ */
+bool cmdq_does_previous_use_floor_item(void);
+
+/**
  * ------------------------------------------------------------------------
  * Command repeat manipulation
  * ------------------------------------------------------------------------ */
