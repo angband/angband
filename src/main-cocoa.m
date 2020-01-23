@@ -605,13 +605,6 @@ static void AngbandUpdateWindowVisibility(void)
 static CGImageRef pict_image;
 
 /**
- * Numbers of rows and columns in a tileset,
- * calculated by the PICT/PNG loading code
- */
-static int pict_cols = 0;
-static int pict_rows = 0;
-
-/**
  * Value used to signal that we using ASCII, not graphical tiles.
  */ 
 #define GRAF_MODE_NONE 0
@@ -2311,19 +2304,6 @@ static errr Term_xtra_cocoa_react(void)
 		 * terms. */
         angbandContext->terminal->higher_pict = !! use_graphics;
         
-        if (pict_image && current_graphics_mode)
-        {
-            /* Compute the row and column count via the image height and width.
-			 */
-            pict_rows = (int)(CGImageGetHeight(pict_image) / current_graphics_mode->cell_height);
-            pict_cols = (int)(CGImageGetWidth(pict_image) / current_graphics_mode->cell_width);
-        }
-        else
-        {
-            pict_rows = 0;
-            pict_cols = 0;
-        }
-        
         /* Reset visuals */
         if (initialized && game_in_progress)
         {
@@ -2507,21 +2487,20 @@ static void query_after_text(
 static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 {
     int graf_width, graf_height, alphablend;
+    int overdraw_row, overdraw_max;
 
     if (angbandContext->changes->has_pict) {
 	graf_width = current_graphics_mode->cell_width;
 	graf_height = current_graphics_mode->cell_height;
-	/*
-	 * Transparency effect. We really want to check
-	 * current_graphics_mode->alphablend, but as of this writing
-	 * that's never set, so we do something lame.
-	 */
-	/* alphablend = current_graphics_mode->alphablend */
-	alphablend = (graf_width > 8 || graf_height > 8);
+	alphablend = current_graphics_mode->alphablend;
+	overdraw_row = current_graphics_mode->overdrawRow;
+	overdraw_max = current_graphics_mode->overdrawMax;
     } else {
 	graf_width = 0;
 	graf_height = 0;
 	alphablend = 0;
+	overdraw_row = 0;
+	overdraw_max = 0;
     }
 
     CGContextRef ctx = [angbandContext lockFocus];
@@ -2566,6 +2545,7 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    NSGraphicsContext *nsContext =
 			[NSGraphicsContext currentContext];
 		    NSCompositingOperation op = nsContext.compositingOperation;
+		    CGFloat adjust = 0.0;
 
 		    jx = ix;
 		    while (jx <= prc->xmax &&
@@ -2575,6 +2555,8 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			    [angbandContext rectInImageForTileAtX:jx Y:iy];
 			NSRect sourceRect, terrainRect;
 
+			destinationRect.size.width *= tile_width;
+			destinationRect.size.height *= tile_height;
 			sourceRect.origin.x = graf_width *
 			    prc->cell_changes[jx].c.c;
 			sourceRect.origin.y = graf_height *
@@ -2587,7 +2569,16 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			    prc->cell_changes[jx].trow;
 			terrainRect.size.width = graf_width;
 			terrainRect.size.height = graf_height;
-			if (alphablend) {
+			if (overdraw_row && (iy > 2) &&
+			    (prc->cell_changes[jx].trow >= overdraw_row) &&
+			    (prc->cell_changes[jx].trow <= overdraw_max)) {
+			    terrainRect.origin.y -= graf_height;
+			    terrainRect.size.height += graf_height;
+			    adjust = destinationRect.size.height;
+			    destinationRect.origin.y -=
+				destinationRect.size.height;
+			    destinationRect.size.height +=
+				destinationRect.size.height;
 			    draw_image_tile(
 				nsContext,
 				ctx,
@@ -2595,6 +2586,50 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 				terrainRect,
 				destinationRect,
 				NSCompositeCopy);
+			    destinationRect =
+				[angbandContext rectInImageForTileAtX:jx Y:iy];
+			    destinationRect.size.width *= tile_width;
+			    destinationRect.size.height *= tile_height;
+			    /*
+			     * These locations will need to be redrawn in the
+			     * next update since they don't necessarily match
+			     * what the core thinks is there.
+			     */
+			    Term_mark(jx, iy - tile_height);
+			    Term_mark(jx, iy);
+			} else if (alphablend) {
+			    draw_image_tile(
+				nsContext,
+				ctx,
+				pict_image,
+				terrainRect,
+				destinationRect,
+				NSCompositeCopy);
+			}
+			if (overdraw_row && (iy > 2) &&
+			    (prc->cell_changes[jx].a >= overdraw_row) &&
+			    (prc->cell_changes[jx].a = overdraw_max)) {
+			    sourceRect.origin.y -= graf_height;
+			    sourceRect.size.height += graf_height;
+			    adjust = destinationRect.size.height;
+			    destinationRect.origin.y -=
+				destinationRect.size.height;
+			    destinationRect.size.height +=
+				destinationRect.size.height;
+			    draw_image_tile(
+				nsContext,
+				ctx,
+				pict_image,
+				sourceRect,
+				destinationRect,
+				NSCompositeSourceOver);
+			    /*
+			     * As above, force these locations to be redrawn
+			     * in the next update.
+			     */
+			    Term_mark(jx, iy - tile_height);
+			    Term_mark(jx, iy);
+			} else if (alphablend) {
 			    draw_image_tile(
 				nsContext,
 				ctx,
@@ -2611,15 +2646,22 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 				destinationRect,
 				NSCompositeCopy);
 			}
-			++jx;
+			jx += tile_width;;
 		    }
 
 		    [nsContext setCompositingOperation:op];
 
+		    /*
+		     * Region marked dirty will be larger than necessary if
+		     * some but not all the tiles are double height.
+		     */
 		    NSRect rect =
 			[angbandContext rectInImageForTileAtX:ix Y:iy];
 		    rect.size.width =
 			angbandContext->tileSize.width * (jx - ix);
+		    rect.size.height *= tile_height;
+		    rect.size.height += adjust;
+		    rect.origin.y -= adjust;
 		    [angbandContext setNeedsDisplayInBaseRect:rect];
 		}
 		ix = jx;
@@ -3005,10 +3047,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	wchar_t tc = *tcp++;
 
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
-	    pc->c.c = ((byte)c & 0x7F) % pict_cols;
-	    pc->a = ((byte)a & 0x7F) % pict_rows;
-	    pc->tcol = ((byte)tc & 0x7F) & pict_cols;
-	    pc->trow = ((byte)ta & 0x7F) & pict_rows;
+	    pc->c.c = (byte)c & 0x7F;
+	    pc->a = (byte)a & 0x7F;
+	    pc->tcol = (byte)tc & 0x7F;
+	    pc->trow = (byte)ta & 0x7F;
 	    pc->change_type = CELL_CHANGE_PICT;
 	    any_change = 1;
 	}
@@ -3237,6 +3279,8 @@ static void load_prefs()
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
                               [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              [NSNumber numberWithInt:1], @"TileWidthMultiplier",
+                              [NSNumber numberWithInt:1], @"TileHeightMultiplier",
                               defaultTerms, AngbandTerminalsDefaultsKey,
                               nil];
     [defs registerDefaults:defaults];
@@ -3245,7 +3289,9 @@ static void load_prefs()
     
     /* Preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
-    
+    tile_width = [defs integerForKey:@"TileWidthMultiplier"];
+    tile_height = [defs integerForKey:@"TileHeightMultiplier"];
+
     /* Use sounds */
     allow_sounds = [defs boolForKey:@"AllowSound"];
     
