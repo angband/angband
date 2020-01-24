@@ -63,6 +63,10 @@ static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
+static NSString * const AngbandTileWidthMultDefaultsKey =
+    @"TileWidthMultiplier";
+static NSString * const AngbandTileHeightMultDefaultsKey =
+    @"TileHeightMultiplier";
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
@@ -3251,6 +3255,8 @@ static void load_prefs()
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
                               [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
+                              [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
                               defaultTerms, AngbandTerminalsDefaultsKey,
                               nil];
     [defs registerDefaults:defaults];
@@ -3259,7 +3265,9 @@ static void load_prefs()
     
     /* Preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
-    
+    tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
+    tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
+
     /* Use sounds */
     allow_sounds = [defs boolForKey:@"AllowSound"];
     
