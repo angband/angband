@@ -3007,8 +3007,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
 	    pc->c.c = ((byte)c & 0x7F) % pict_cols;
 	    pc->a = ((byte)a & 0x7F) % pict_rows;
-	    pc->tcol = ((byte)tc & 0x7F) & pict_cols;
-	    pc->trow = ((byte)ta & 0x7F) & pict_rows;
+	    pc->tcol = ((byte)tc & 0x7F) % pict_cols;
+	    pc->trow = ((byte)ta & 0x7F) % pict_rows;
 	    pc->change_type = CELL_CHANGE_PICT;
 	    any_change = 1;
 	}
