@@ -2595,13 +2595,20 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 				terrainRect,
 				destinationRect,
 				NSCompositeCopy);
-			    draw_image_tile(
-				nsContext,
-				ctx,
-				pict_image,
-				sourceRect,
-				destinationRect,
-				NSCompositeSourceOver);
+			    /*
+			     * Skip drawing the foreground if it is the same
+			     * as the background.
+			     */
+			    if (sourceRect.origin.x != terrainRect.origin.x ||
+				sourceRect.origin.y != terrainRect.origin.y) {
+				draw_image_tile(
+				    nsContext,
+				    ctx,
+				    pict_image,
+				    sourceRect,
+				    destinationRect,
+				    NSCompositeSourceOver);
+			    }
 			} else {
 			    draw_image_tile(
 				nsContext,
