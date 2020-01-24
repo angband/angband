@@ -2492,7 +2492,13 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
     if (angbandContext->changes->has_pict) {
 	graf_width = current_graphics_mode->cell_width;
 	graf_height = current_graphics_mode->cell_height;
-	alphablend = current_graphics_mode->alphablend;
+	/*
+	 * Transparency effect. We really want to check
+	 * current_graphics_mode->alphablend, but as of this writing
+	 * that's  never set, so we do something lame.
+	 */
+	/* alphablend = current_graphics_mode->alphablend */
+	alphablend = (graf_width > 8 || graf_height > 8);
 	overdraw_row = current_graphics_mode->overdrawRow;
 	overdraw_max = current_graphics_mode->overdrawMax;
     } else {
