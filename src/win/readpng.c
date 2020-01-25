@@ -34,6 +34,15 @@
 #endif
 
 /**
+ * Forces libpng to use the version of fread() from the run time library
+ * that this program was compiled with.
+ */
+void ReadFileFunc(png_structp png_ptr, png_bytep data, png_size_t length) {
+	FILE *file = (FILE *)png_get_io_ptr(png_ptr);
+	fread(data, sizeof(png_byte), length, file);
+}
+
+/**
  * Imports a DIB from a PNG file. Once
  * the DIB is loaded, the function also creates a bitmap
  * and palette out of the DIB for a device-dependent form.
@@ -97,16 +106,16 @@ bool ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, b
 	}
 	
 	/* setup error handling for init */
-	png_init_io(png_ptr, fp);
+	png_set_read_fn(png_ptr, fp, ReadFileFunc);
 	png_set_sig_bytes(png_ptr, 8);
-	
+
 	png_read_info(png_ptr, info_ptr);
-	
+
 	width = png_get_image_width(png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-	
+
 	(void) png_set_interlace_handling(png_ptr);
 	if (color_type == PNG_COLOR_TYPE_PALETTE)
 	{
