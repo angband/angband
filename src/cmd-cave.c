@@ -517,6 +517,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	if (best_digger && best_digger != current_weapon) {
 		player->body.slots[weapon_slot].obj = best_digger;
 		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->only_partial = true;
 		update_stuff(player);
 	}
 	calc_digging_chances(&player->state, digging_chances);
@@ -529,6 +530,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		player->body.slots[weapon_slot].obj = current_weapon;
 		player->upkeep->update |= (PU_BONUS);
 		update_stuff(player);
+		player->upkeep->only_partial = false;
 	}
 
 	/* Success */
