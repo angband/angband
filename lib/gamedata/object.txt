@@ -1841,9 +1841,8 @@ weight:5
 cost:500
 alloc:10:50 to 100
 attack:1d1:0:0
-armor:0:2
+armor:0:5+d5
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-flags:SPELLS_OK
 desc:Highly protective gloves designed for an alchemist's elemental magics.
 
 #N:179:& Set~ of Mining Gloves
