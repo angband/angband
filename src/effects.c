@@ -308,6 +308,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 	} else {
 		return false;
 	}
+	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
 	return true;
