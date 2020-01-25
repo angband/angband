@@ -538,48 +538,26 @@ void alloc_stairs(struct chunk *c, int feat, int num)
     for (i = 0; i < num; i++) {
 		struct loc grid;
 		bool done = false;
+		int walls = 3;
 
-		/* Find the best possible place for the stairs */
-		if (cave_find_in_range(c, &grid, loc(1, 1),
-							   loc(c->width - 2, c->height - 2),
-							   square_suits_stairs_well)) {
-			place_stairs(c, grid, feat);
-		} else if (cave_find_in_range(c, &grid, loc(1, 1),
-									  loc(c->width - 2, c->height - 2),
-									  square_suits_stairs_ok)) {
-			place_stairs(c, grid, feat);
-		} else {
-			int walls = 6;
+		/* Place some stairs */
+		for (done = false; !done; ) {
+			int j;
 
-			/* Gradually reduce number of walls if having trouble */
-			while (!done) {
-				int j;
+			/* Try several times, then decrease "walls" */
+			for (j = 0; !done && j <= 100; j++) {
+				find_empty(c, &grid);
 
-				/* Try hard to find a square with the given number of walls */
-				for (j = 0; j < 1000; j++) {
-					int total_walls = 0;
+				if (square_num_walls_adjacent(c, grid) < walls) continue;
 
-					cave_find_in_range(c, &grid, loc(1, 1),
-									   loc(c->width - 2, c->height - 2),
-									   square_isempty);
-					if (square_isvault(c, grid) || square_isno_stairs(c, grid)){
-						continue;
-					}
-					total_walls = square_num_walls_adjacent(c, grid) +
-						square_num_walls_diagonal(c, grid);
-
-					if (total_walls == walls) {
-						place_stairs(c, grid, feat);
-						done = true;
-						break;
-					}
-				}
-
-				/* Require fewer walls */
-				if (walls) walls--;
+				place_stairs(c, grid, feat);
+				done = true;
 			}
+
+			/* Require fewer walls */
+			if (walls) walls--;
 		}
-    }
+	}
 }
 
 
