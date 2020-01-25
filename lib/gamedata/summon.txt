@@ -40,7 +40,9 @@
 # src/effects.c to handle it, and UNIQUE and WRAITH have code in
 # src/mon-summon.c that exclude them from being used for the "call" type of
 # summon (where summoned monsters are chosen from those already on the level
-# rather than newly created). 
+# rather than newly created).
+
+# Note also that the ANY summon should always be the first in this file.
 
 name:ANY
 msgt:SUM_MONSTER
