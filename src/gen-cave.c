@@ -1409,7 +1409,7 @@ void get_lot_bounds(struct loc xroads, struct loc lot,
 		int *west, int *north, int *east, int *south) {
 
 	// 0 is the road. no lots.
-	if(lot.x == 0 || lot.y == 0) {
+	if (lot.x == 0 || lot.y == 0) {
 		*east = 0;
 		*west = 0;
 		*north = 0;
@@ -1417,7 +1417,7 @@ void get_lot_bounds(struct loc xroads, struct loc lot,
 		return;
 	}
 
-	if(lot.x < 0) {
+	if (lot.x < 0) {
 		*west = MAX(2, xroads.x - 1 + (lot.x) * lot_wid);
 		*east = MIN(z_info->town_wid - 3, xroads.x - 2 + (lot.x + 1) * lot_wid);
 	} else {
@@ -1425,7 +1425,7 @@ void get_lot_bounds(struct loc xroads, struct loc lot,
 		*east = MIN(z_info->town_wid - 3, xroads.x + 1 + (lot.x) * lot_wid);
 	}
 
-	if(lot.y < 0) {
+	if (lot.y < 0) {
 		*north = MAX(2, xroads.y + (lot.y) * lot_hgt);
 		*south = MIN(z_info->town_hgt - 3, xroads.y - 1 + (lot.y + 1) * lot_hgt);
 	} else {
@@ -1441,13 +1441,13 @@ bool lot_is_clear(struct chunk *c, struct loc xroads, struct loc lot,
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
 				   &se_corner.x, &se_corner.y);
 
-	if(se_corner.x - nw_corner.x < lot_wid - 1 || se_corner.y - nw_corner.y < lot_hgt - 1) {
+	if (se_corner.x - nw_corner.x < lot_wid - 1 || se_corner.y - nw_corner.y < lot_hgt - 1) {
 		return false;
 	}
 
-	for(probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
-		for(probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
-			if(!square_isfloor(c, probe)) {
+	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
+		for (probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
+			if (!square_isfloor(c, probe)) {
 				return false;
 			}
 		}
@@ -1463,9 +1463,9 @@ bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
 			&se_corner.x, &se_corner.y);
 
-	for(probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
-		for(probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
-			if(feat_is_shop(square(c, probe).feat)) {
+	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
+		for (probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
+			if (feat_is_shop(square(c, probe).feat)) {
 				return true;
 			}
 		}
@@ -1492,9 +1492,9 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e, &lot_s);
 
-	if(lot.x < -1 || lot.x > 1) {
+	if (lot.x < -1 || lot.x > 1) {
 		/* on the east west street */
-		if(lot.y == -1) {
+		if (lot.y == -1) {
 			/* north side of street */
 			door.y = MAX(lot_n + 1, lot_s - randint0(2));
 			build_s = door.y;
@@ -1508,19 +1508,19 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 
 		door.x = rand_range(lot_w + 1, lot_e - 2);
 		build_w = rand_range(MAX(lot_w, door.x - 2), door.x);
-		if(!square_isfloor(c, loc(build_w - 1, door.y))) {
+		if (!square_isfloor(c, loc(build_w - 1, door.y))) {
 			build_w++;
 			door.x = MAX(door.x, build_w);
 		}
 		build_e = rand_range(build_w + 2, MIN(door.x + 2, lot_e));
-		if(build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
+		if (build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
 			build_e--;
 			door.x = MIN(door.x, build_e);
 		}
 
 	} else if (lot.y < -1 || lot.y > 1) {
 		/* on the north - south street */
-		if(lot.x == -1) {
+		if (lot.x == -1) {
 			/* west side of street */
 			door.x = MAX(lot_w + 1, lot_e - randint0(2) - randint0(2));
 			build_e = door.x;
@@ -1534,67 +1534,68 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 
 		door.y = rand_range(lot_n, lot_s - 1);
 		build_n = rand_range(MAX(lot_n, door.y - 2), door.y);
-		if(!square_isfloor(c, loc(door.x, build_n - 1))) {
+		if (!square_isfloor(c, loc(door.x, build_n - 1))) {
 			build_n++;
 			door.y = MAX(door.y, build_n);
 		}
 
 		build_s = rand_range(MAX(build_n + 1, door.y), MIN(lot_s, door.y + 2));
-		if(build_s - build_n > 1 && square_isfloor(c, loc(door.x, build_s + 1))) {
+		if (build_s - build_n > 1 && square_isfloor(c, loc(door.x, build_s + 1))) {
 			build_s--;
 			door.y = MIN(door.y, build_s);
 		}
 
 	} else {
 		/* corner store */
-		if(lot.x < 0) {
+		if (lot.x < 0) {
 			/* west side */
 			door.x = lot_e - 1 - randint0(2);
 			build_e = MIN(lot_e, door.x + randint0(2));
 			build_w = rand_range(MAX(lot_w, door.x - 2), build_e - 2);
-			if(build_e - build_w > 1 && !square_isfloor(c, loc(build_w - 1, door.y))) {
-				build_w++;
-				door.x = MAX(door.x, build_w);
-			}
 		} else {
 			/* east side */
 			door.x = lot_w + 1 + randint0(2);
 			build_w = MAX(lot_w, door.x - randint0(2));
 			build_e = rand_range(build_w + 2, MIN(lot_e, door.x + 2));
-			if(build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
-				build_e--;
-				door.x = MIN(door.x, build_e);
-			}
 		}
 
-		if(lot.y < 0) {
+		if (lot.y < 0) {
 			/* north side */
 			door.y = lot_s - randint0(2);
-			if(build_e == door.x || build_w == door.x) {
+			if (build_e == door.x || build_w == door.x) {
 				build_s = door.y + randint0(2);
 			} else {
 				/* Avoid encapsulating door */
 				build_s = door.y;
 			}
 			build_n = MAX(lot_n, door.y - 2);
-			if(build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_n - 1))) {
+			if (build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_n - 1))) {
 				build_n++;
 				door.y = MAX(build_n, door.y);
 			}
 		} else {
 			/* south side */
 			door.y = lot_n + randint0(2);
-			if(build_e == door.x || build_w == door.x) {
+			if (build_e == door.x || build_w == door.x) {
 				build_n = door.y - randint0(2);
 			} else {
 				/* Avoid encapsulating door */
 				build_n = door.y;
 			}
 			build_s = MIN(lot_s, door.y + 2);
-			if(build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_s + 1))) {
+			if (build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_s + 1))) {
 				build_s--;
 				door.y = MIN(build_s, door.y);
 			}
+		}
+
+		// Avoid placing buildings without space between them
+		if (lot.x < 0 && build_e - build_w > 1 && !square_isfloor(c, loc(build_w - 1, door.y))) {
+			build_w++;
+			door.x = MAX(door.x, build_w);
+		} else if (lot.x > 0 && build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
+			build_e--;
+			door.x = MIN(door.x, build_e);
 		}
 	}
 	build_w = MAX(build_w, lot_w);
@@ -1617,7 +1618,7 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north, &lot_east, &lot_south);
 
-	if(lot_east - lot_west < 1 || lot_south - lot_north < 1) return;
+	if (lot_east - lot_west < 1 || lot_south - lot_north < 1) return;
 
 	/* make a building */
 
@@ -1634,13 +1635,14 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 
 	fill_rectangle(c, north, west, south, east, FEAT_GRANITE, SQUARE_NONE);
 
+	int x, y;
 	/* and then destroy it and spew rubble everywhere */
-	for(int x = lot_west; x <= lot_east; x++) {
-		for(int y = lot_north; y <= lot_south; y++) {
-		    if(x >= west && x <= east && y >= north && y <= south) {
-		    	if(!randint0(4)) {
-		    		square_set_feat(c, loc(x,y), FEAT_RUBBLE);
-		    	}
+	for (x = lot_west; x <= lot_east; x++) {
+		for (y = lot_north; y <= lot_south; y++) {
+			if (x >= west && x <= east && y >= north && y <= south) {
+				if (!randint0(4)) {
+					square_set_feat(c, loc(x,y), FEAT_RUBBLE);
+				}
 			} else if (!randint0(3) &&
 					square_isfloor(c, loc(x,y)) &&
 					/* Avoid placing rubble next to a store */
@@ -1661,7 +1663,7 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int n;
+	int n, x, y;
 	struct loc grid, pgrid, xroads;
 	int num_lava = 3 + randint0(3);
 	int ruins_percent = 80;
@@ -1682,7 +1684,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
 				   SQUARE_NONE);
 
-	while(!success) {
+	while (!success) {
 		/* Initialize to ROCK for build_streamer precondition */
 		for (grid.y = 1; grid.y < c->height - 1; grid.y++)
 			for (grid.x = 1; grid.x < c->width - 1; grid.x++) {
@@ -1711,12 +1713,12 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 							  z_info->town_wid / 6);
 		pgrid.y = 2;
 		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_wid / 4)) pgrid.y++;
-		if(pgrid.y >= z_info->town_wid / 4) continue;
+		if (pgrid.y >= z_info->town_wid / 4) continue;
 
 
 		/* no lava next to stairs */
-		for(int x = pgrid.x - 1; x <= pgrid.x + 1; x++) {
-			for(int y = pgrid.y - 1; y <= pgrid.y + 1; y++) {
+		for (x = pgrid.x - 1; x <= pgrid.x + 1; x++) {
+			for (y = pgrid.y - 1; y <= pgrid.y + 1; y++) {
 				if (square_isfiery(c, loc(x, y))) {
 					square_set_feat(c, loc(x, y), FEAT_GRANITE);
 				}
@@ -1754,7 +1756,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 				found_spot = lot_is_clear(c, xroads, store_lot, lot_wid,
 										  lot_hgt);
 			}
-			if(num_attempts >= max_attempts) break;
+			if (num_attempts >= max_attempts) break;
 
 			max_store_y = MAX(max_store_y, xroads.y + lot_hgt * store_lot.y);
 			min_store_x = MIN(min_store_x, xroads.x + lot_wid * store_lot.x);
@@ -1762,12 +1764,12 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 			build_store(c, n, xroads, store_lot, lot_wid, lot_hgt);
 		}
-		if(num_attempts >= max_attempts) continue;
+		if (num_attempts >= max_attempts) continue;
 
 		/* place ruins */
-		for (int x = lot_min_x; x <= lot_max_x; x++) {
+		for (x = lot_min_x; x <= lot_max_x; x++) {
 			if (x == 0) continue; /* 0 is the street */
-			for (int y = lot_min_y; y <= lot_max_y; y++) {
+			for (y = lot_min_y; y <= lot_max_y; y++) {
 				if (y == 0) continue;
 				if (randint0(100) > ruins_percent) continue;
 				if (!randint0(2) && !lot_has_shop(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
