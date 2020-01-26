@@ -2511,6 +2511,7 @@ static void query_after_text(
 static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 {
     int graf_width, graf_height, alphablend;
+    int overdraw_row, overdraw_max;
 
     if (angbandContext->changes->has_pict) {
 	CGImageAlphaInfo ainfo = CGImageGetAlphaInfo(pict_image);
@@ -2529,10 +2530,14 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 	 */
 	alphablend = (ainfo & (kCGImageAlphaPremultipliedFirst |
 			       kCGImageAlphaPremultipliedLast)) ? 1 : 0;
+	overdraw_row = current_graphics_mode->overdrawRow;
+	overdraw_max = current_graphics_mode->overdrawMax;
     } else {
 	graf_width = 0;
 	graf_height = 0;
 	alphablend = 0;
+	overdraw_row = 0;
+	overdraw_max = 0;
     }
 
     CGContextRef ctx = [angbandContext lockFocus];
@@ -2577,6 +2582,7 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 		    NSGraphicsContext *nsContext =
 			[NSGraphicsContext currentContext];
 		    NSCompositingOperation op = nsContext.compositingOperation;
+		    CGFloat adjust = 0.0;
 
 		    jx = ix;
 		    while (jx <= prc->xmax &&
@@ -2585,7 +2591,10 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			NSRect destinationRect =
 			    [angbandContext rectInImageForTileAtX:jx Y:iy];
 			NSRect sourceRect, terrainRect;
+			int use_double_height;
 
+			destinationRect.size.width *= tile_width;
+			destinationRect.size.height *= tile_height;
 			sourceRect.origin.x = graf_width *
 			    prc->cell_changes[jx].c.c;
 			sourceRect.origin.y = graf_height *
@@ -2598,7 +2607,13 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			    prc->cell_changes[jx].trow;
 			terrainRect.size.width = graf_width;
 			terrainRect.size.height = graf_height;
-			if (alphablend) {
+			use_double_height = overdraw_row && (iy > 2) &&
+			    (prc->cell_changes[jx].trow >= overdraw_row) &&
+			    (prc->cell_changes[jx].trow <= overdraw_max);
+			if (use_double_height) {
+			    CGFloat olddy, oldty;
+
+			    /* Draw bottom half in the current row. */
 			    draw_image_tile(
 				nsContext,
 				ctx,
@@ -2606,20 +2621,40 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 				terrainRect,
 				destinationRect,
 				NSCompositeCopy);
+			    /* Combine upper half with previously drawn row. */
+			    adjust = destinationRect.size.height;
+			    olddy = destinationRect.origin.y;
+			    destinationRect.origin.y -=
+				destinationRect.size.height;
+			    oldty = terrainRect.origin.y;
+			    terrainRect.origin.y -= graf_height;
+			    draw_image_tile(
+				nsContext,
+				ctx,
+				pict_image,
+				terrainRect,
+				destinationRect,
+				NSCompositeSourceOver);
+			    destinationRect.origin.y = olddy;
+			    terrainRect.origin.y = oldty;
 			    /*
-			     * Skip drawing the foreground if it is the same
-			     * as the background.
+			     * These locations will need to be redrawn in the
+			     * next update:  redraw the upper half since it
+			     * does not correspond to what the core thinks is
+			     * there and redraw the lower half because, if it
+			     * remains a double-height tile, that is necessary
+			     * to trigger the drawing of the upper half.
 			     */
-			    if (sourceRect.origin.x != terrainRect.origin.x ||
-				sourceRect.origin.y != terrainRect.origin.y) {
-				draw_image_tile(
-				    nsContext,
-				    ctx,
-				    pict_image,
-				    sourceRect,
-				    destinationRect,
-				    NSCompositeSourceOver);
-			    }
+			    Term_mark(jx, iy - tile_height);
+			    Term_mark(jx, iy);
+			} else if (alphablend) {
+			    draw_image_tile(
+				nsContext,
+				ctx,
+				pict_image,
+				terrainRect,
+				destinationRect,
+				NSCompositeCopy);
 			} else {
 			    draw_image_tile(
 				nsContext,
@@ -2629,15 +2664,64 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 				destinationRect,
 				NSCompositeCopy);
 			}
-			++jx;
+			use_double_height = overdraw_row && (iy > 2) &&
+			    (prc->cell_changes[jx].a >= overdraw_row) &&
+			    (prc->cell_changes[jx].a <= overdraw_max);
+			if (alphablend || use_double_height) {
+			    /*
+			     * Skip drawing the foreground if it is the same
+			     * as the background.
+			     */
+			    if (sourceRect.origin.x != terrainRect.origin.x ||
+				sourceRect.origin.y != terrainRect.origin.y) {
+				if (use_double_height) {
+				    adjust = destinationRect.size.height;
+				    sourceRect.origin.y -= graf_height;
+				    sourceRect.size.height += graf_height;
+				    destinationRect.origin.y -=
+					destinationRect.size.height;
+				    destinationRect.size.height +=
+					destinationRect.size.height;
+				    draw_image_tile(
+					nsContext,
+					ctx,
+					pict_image,
+					sourceRect,
+					destinationRect,
+					NSCompositeSourceOver);
+				    /*
+				     * As above, force these locations to be
+				     * redrawn in the next update.
+				     */
+				    Term_mark(jx, iy - tile_height);
+				    Term_mark(jx, iy);
+				} else if (alphablend) {
+				    draw_image_tile(
+					nsContext,
+					ctx,
+					pict_image,
+					sourceRect,
+					destinationRect,
+					NSCompositeSourceOver);
+				}
+			    }
+			}
+			jx += tile_width;
 		    }
 
 		    [nsContext setCompositingOperation:op];
 
+		    /*
+		     * Region marked dirty will be larger than necessary if
+		     * some but not all the tiles are double height.
+		     */
 		    NSRect rect =
 			[angbandContext rectInImageForTileAtX:ix Y:iy];
 		    rect.size.width =
 			angbandContext->tileSize.width * (jx - ix);
+		    rect.size.height *= tile_height;
+		    rect.size.height += adjust;
+		    rect.origin.y -= adjust;
 		    [angbandContext setNeedsDisplayInBaseRect:rect];
 		}
 		ix = jx;
