@@ -54,6 +54,13 @@
 # define my_mkdir(path, perms) false
 #endif
 
+/* Suppress MSC C4996 error */
+#if defined(_MSC_VER)
+#define open _open
+#define fdopen _fdopen
+#define mkdir _mkdir
+#endif
+
 /**
  * Player info
  */
