@@ -1255,17 +1255,6 @@ bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 	return true;
 }
 
-bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
-{
-	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
-		msg("You feel your memories fade.");
-		player_exp_lose(player, player->exp / 4, false);
-	}
-	context->ident = true;
-	equip_learn_flag(player, OF_HOLD_LIFE);
-	return true;
-}
-
 /**
  * Drain some light from the player's light source, if possible
  */

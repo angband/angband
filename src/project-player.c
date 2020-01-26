@@ -199,7 +199,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("You feel your life force draining away!");
+				msg("The cold withers your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
@@ -247,6 +247,7 @@ static int project_player_handler_LIGHT(project_player_handler_context_t *contex
 
 	/* Confusion for strong unresisted light */
 	if (context->dam > 300) {
+		msg("You are dazzled!");
 		(void)player_inc_timed(player, TMD_CONFUSED,
 							   2 + randint1(context->dam / 100), true, true);
 	}
@@ -270,19 +271,21 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("You feel your life force draining away!");
+				msg("The darkness steals your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
 
 		/* Slowing */
 		if (randint0(context->dam) > 200) {
+			msg("You feel unsure of yourself in the darkness.");
 			(void)player_inc_timed(player, TMD_SLOW, context->dam / 100, true,
 								   false);
 		}
 
 		/* Amnesia */
 		if (randint0(context->dam) > 300) {
+			msg("Darkness penetrates your mind!");
 			(void)player_inc_timed(player, TMD_AMNESIA, context->dam / 100,
 								   true, false);
 		}
@@ -308,6 +311,7 @@ static int project_player_handler_SOUND(project_player_handler_context_t *contex
 
 	/* Confusion for strong unresisted sound */
 	if (context->dam > 300) {
+		msg("The noise disorients you.");
 		(void)player_inc_timed(player, TMD_CONFUSED,
 							   2 + randint1(context->dam / 100), true, true);
 	}
