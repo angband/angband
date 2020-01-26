@@ -2509,15 +2509,22 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
     int graf_width, graf_height, alphablend;
 
     if (angbandContext->changes->has_pict) {
+	CGImageAlphaInfo ainfo = CGImageGetAlphaInfo(pict_image);
+
 	graf_width = current_graphics_mode->cell_width;
 	graf_height = current_graphics_mode->cell_height;
 	/*
-	 * Transparency effect. We really want to check
-	 * current_graphics_mode->alphablend, but as of this writing
-	 * that's never set, so we do something lame.
+	 * As of this writing, a value of zero for
+	 * current_graphics_mode->alphablend can mean either that the tile set
+	 * doesn't have an alpha channel or it does but it only takes on values
+	 * of 0 or 255.  For main-cocoa.m's purposes, the latter is rendered
+	 * using the same procedure as if alphablend was nonzero.  The former
+	 * is handled differently, but alphablend doesn't distinguish it from
+	 * the latter.  So ignore alphablend and directly test whether an
+	 * alpha channel is present.
 	 */
-	/* alphablend = current_graphics_mode->alphablend */
-	alphablend = (graf_width > 8 || graf_height > 8);
+	alphablend = (ainfo & (kCGImageAlphaPremultipliedFirst |
+			       kCGImageAlphaPremultipliedLast)) ? 1 : 0;
     } else {
 	graf_width = 0;
 	graf_height = 0;
