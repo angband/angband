@@ -41,6 +41,7 @@
 #include "project.h"
 #include "savefile.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -864,6 +865,28 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Prints player trap (if any) or terrain
+ */
+static size_t prt_terrain(int row, int col)
+{
+	struct feature *feat = square_feat(cave, player->grid);
+	struct trap *trap = square_trap(cave, player->grid);
+	char buf[30];
+
+	if (trap && !square_isinvis(cave, player->grid)) {
+		my_strcpy(buf, trap->kind->name, strlen(trap->kind->name) + 1);
+		my_strcap(buf);
+		c_put_str(trap->kind->d_attr, format("%s ", buf), row, col);
+	} else {
+		my_strcpy(buf, feat->name, strlen(feat->name) + 1);
+		my_strcap(buf);
+		c_put_str(feat->d_attr, format("%s ", buf), row, col);
+	}
+
+	return strlen(buf) + 1;
+}
+
+/**
  * Prints trap detection status
  */
 static size_t prt_dtrap(int row, int col)
@@ -956,8 +979,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_light, prt_unignore, prt_recall, prt_descent,
-  prt_state, prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_terrain, prt_light, prt_unignore, prt_recall,
+  prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap };
 
 
 /**
