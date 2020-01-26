@@ -849,7 +849,7 @@ int rd_ignore(void)
 
 	for (i = 0; i < file_e_max; i++) {
 		if (i < z_info->e_max) {
-			bitflag flags, itypes[itype_size];
+			bitflag flags, itypes[ITYPE_SIZE];
 			
 			/* Read and extract the everseen flag */
 			rd_byte(&flags);
