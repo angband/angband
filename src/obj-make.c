@@ -353,13 +353,13 @@ void ego_apply_magic(struct object *obj, int level)
 		/* Get a base resist if available, mark it as random */
 		if (random_base_resist(obj, &resist)) {
 			obj->el_info[resist].res_level = 1;
-			obj->el_info[resist].flags |= EL_INFO_RANDOM;
+			obj->el_info[resist].flags |= EL_INFO_RANDOM | EL_INFO_IGNORE;
 		}
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES)) {
 		/* Get a high resist if available, mark it as random */
 		if (random_high_resist(obj, &resist)) {
 			obj->el_info[resist].res_level = 1;
-			obj->el_info[resist].flags |= EL_INFO_RANDOM;
+			obj->el_info[resist].flags |= EL_INFO_RANDOM | EL_INFO_IGNORE;
 		}
 	}
 
