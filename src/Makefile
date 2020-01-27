@@ -12,7 +12,7 @@ ifneq (${VERSION},)
 	CFLAGS += -DBUILD_ID=${VERSION}
 endif
 
-CFLAGS += -I. -std=c99 -O0
+CFLAGS += -I. -fPIC -std=c99 -O0
 
 # gcov intermediate data
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
