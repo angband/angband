@@ -31,7 +31,6 @@ mk/buildsys.mk
 .vs/
 Debug/
 Release/
-# And personal copies of the vcxproj that should not be checked into the root
-/Angband.vcxproj
-/Angband.vcxproj.filters
-/Angband.vcxproj.user
+# And personal copies of the vcxproj files should not be checked into the root
+/*.vcxproj*
+
