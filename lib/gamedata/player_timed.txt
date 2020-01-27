@@ -305,8 +305,8 @@ on-end:The poison disappears from your {kind}.
 
 name:ATT_CONF
 desc:temporary monster confusion
-grade:U:10000:AttConf:Your {kind} begin{s} to glow!
-on-end:The glow fades from your {kind}.
+grade:U:10000:AttConf:Your hands begin to glow!
+on-end:The glow fades from your hands.
 
 name:ATT_EVIL
 desc:temporary slay evil

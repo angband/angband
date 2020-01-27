@@ -865,6 +865,25 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Get the longest relevant terrain or trap name for prt_terrain()
+ */
+int longest_terrain_name(void)
+{
+	size_t i, max = 0;
+	for (i = 0; i < z_info->trap_max; i++) {
+		if (strlen(trap_info[i].name) > max) {
+			max = strlen(trap_info[i].name);
+		}
+	}
+	for (i = 0; i < z_info->f_max; i++) {
+		if (strlen(f_info[i].name) > max) {
+			max = strlen(f_info[i].name);
+		}
+	}
+	return max;
+}
+
+/**
  * Prints player trap (if any) or terrain
  */
 static size_t prt_terrain(int row, int col)
@@ -883,7 +902,7 @@ static size_t prt_terrain(int row, int col)
 		c_put_str(feat->d_attr, format("%s ", buf), row, col);
 	}
 
-	return strlen(buf) + 1;
+	return longest_terrain_name() + 1;
 }
 
 /**
@@ -895,11 +914,11 @@ static size_t prt_dtrap(int row, int col)
 	if (square_isdtrap(cave, player->grid)) {
 		/* The player is on the border */
 		if (square_dtrap_edge(cave, player->grid))
-			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
+			c_put_str(COLOUR_YELLOW, "DTrap ", row, col);
 		else
-			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
+			c_put_str(COLOUR_L_GREEN, "DTrap ", row, col);
 
-		return 5;
+		return 6;
 	}
 
 	return 0;
@@ -979,8 +998,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_terrain, prt_light, prt_unignore, prt_recall,
-  prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_light, prt_unignore, prt_recall,
+  prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap, prt_terrain };
 
 
 /**
