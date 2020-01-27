@@ -1132,9 +1132,6 @@ static int compare_advances(const void *ap, const void *bp)
 
     /* Update our image */
     [self updateImage];
-    
-    /* Get redrawn */
-    [self requestRedraw];
 }
 
 - (id)init
@@ -4064,6 +4061,14 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [(id)angbandContext setSelectionFont:newFont adjustTerminal: YES];
     
     NSEnableScreenUpdates();
+
+    if (mainTerm == 0 && game_in_progress) {
+	/* Mimics the logic in setGraphicsMode(). */
+	do_cmd_redraw();
+	wakeup_event_loop();
+    } else {
+	[(id)angbandContext requestRedraw];
+    }
 }
 
 - (IBAction)openGame:sender
