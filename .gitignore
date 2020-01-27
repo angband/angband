@@ -27,3 +27,10 @@ mk/buildsys.mk
 *~
 .DS_Store
 *.sublime*
+# Added for VS build: ignore 3 trees of VS build stuff
+.vs/
+Debug/
+Release/
+# And personal copies of the vcxproj files should not be checked into the root
+/*.vcxproj*
+
