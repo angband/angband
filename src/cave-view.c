@@ -504,7 +504,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		radius = ABS(light) - 1;
 
 		/* Skip monsters not affecting light */
-		if (!radius) continue;
+		if (!light) continue;
 
 		/* Light or darken around the monster */
 		for (y = -radius; y <= radius; y++) {
