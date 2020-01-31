@@ -1346,12 +1346,14 @@ void do_cmd_throw(struct command *cmd) {
 	int range;
 	struct object *obj;
 
+	player->upkeep->command_wrk = USE_INVEN;
+
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
-			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR | QUIVER_TAGS)
+			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR /*| QUIVER_TAGS*/)
 		!= CMD_OK)
 		return;
 
