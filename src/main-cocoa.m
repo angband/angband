@@ -4383,18 +4383,29 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 /**
  * Delegate method that gets called if we're asked to open a file.
  */
-- (BOOL)application:(NSApplication *)sender openFiles:(NSArray *)filenames
+- (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
     /* Can't open a file once we've started */
-    if (game_in_progress) return NO;
+    if (game_in_progress) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     /* We can only open one file. Use the last one. */
     NSString *file = [filenames lastObject];
-    if (! file) return NO;
+    if (! file) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     /* Put it in savefile */
-    if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile])
-		return NO;
+    if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile]) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     game_in_progress = TRUE;
 
@@ -4402,7 +4413,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	 * screen! */
     wakeup_event_loop();
     
-    return YES;
+    [[NSApplication sharedApplication]
+	replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 @end
