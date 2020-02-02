@@ -1515,15 +1515,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 }
 
 
-static NSMenuItem *superitem(NSMenuItem *self)
-{
-    NSMenu *supermenu = [[self menu] supermenu];
-    int index = [supermenu indexOfItemWithSubmenu:[self menu]];
-    if (index == -1) return nil;
-    else return [supermenu itemAtIndex:index];
-}
-
-
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     int tag = [menuItem tag];
@@ -4153,7 +4144,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     {
         return ! game_in_progress;
     }
-    else if (sel == @selector(setRefreshRate:) && [superitem(menuItem) tag] == 150)
+    else if (sel == @selector(setRefreshRate:) &&
+	     [[menuItem parentItem] tag] == 150)
     {
         NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
         [menuItem setState: ([menuItem tag] == fps)];
