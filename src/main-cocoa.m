@@ -218,6 +218,8 @@ struct PendingChanges
      * to indicate that the cursor is not displayed.
      */
     int xcurs, ycurs;
+    /* Is nonzero if the cursor size is set by tile_width and tile_height. */
+    int bigcurs;
     /* Record whether the changes include any text, picts, or wipes. */
     int has_text, has_pict, has_wipe;
     /*
@@ -255,6 +257,7 @@ static struct PendingChanges* create_pending_changes(int ncol, int nrow)
     pc->nrow = nrow;
     pc->xcurs = -1;
     pc->ycurs = -1;
+    pc->bigcurs = 0;
     pc->has_text = 0;
     pc->has_pict = 0;
     pc->has_wipe = 0;
@@ -290,6 +293,7 @@ static void clear_pending_changes(struct PendingChanges* pc)
 {
     pc->xcurs = -1;
     pc->ycurs = -1;
+    pc->bigcurs = 0;
     pc->has_text = 0;
     pc->has_pict = 0;
     pc->has_wipe = 0;
@@ -338,6 +342,7 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
     pc->nrow = nrow;
     pc->xcurs = -1;
     pc->ycurs = -1;
+    pc->bigcurs = 0;
     pc->has_text = 0;
     pc->has_pict = 0;
     pc->has_wipe = 0;
@@ -2795,6 +2800,10 @@ static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
 			  rectInImageForTileAtX:angbandContext->changes->xcurs
 			  Y:angbandContext->changes->ycurs];
 
+	if (angbandContext->changes->bigcurs) {
+	    rect.size.width *= tile_width;
+	    rect.size.height *= tile_height;
+	}
 	[[NSColor yellowColor] set];
 	NSFrameRectWithWidth(rect, 1);
 	/* Invalidate that rect */
@@ -2946,6 +2955,23 @@ static errr Term_curs_cocoa(int x, int y)
     }
     angbandContext->changes->xcurs = x;
     angbandContext->changes->ycurs = y;
+    angbandContext->changes->bigcurs = 0;
+
+    /* Success */
+    return 0;
+}
+
+static errr Term_bigcurs_cocoa(int x, int y)
+{
+    AngbandContext *angbandContext = Term->data;
+
+    if (angbandContext->changes == 0) {
+	/* Bail out; there was an earlier memory allocation failure. */
+	return 1;
+    }
+    angbandContext->changes->xcurs = x;
+    angbandContext->changes->ycurs = y;
+    angbandContext->changes->bigcurs = 1;
 
     /* Success */
     return 0;
@@ -3213,6 +3239,7 @@ static term *term_data_link(int i)
     newterm->xtra_hook = Term_xtra_cocoa;
     newterm->wipe_hook = Term_wipe_cocoa;
     newterm->curs_hook = Term_curs_cocoa;
+    newterm->bigcurs_hook = Term_bigcurs_cocoa;
     newterm->text_hook = Term_text_cocoa;
     newterm->pict_hook = Term_pict_cocoa;
     
