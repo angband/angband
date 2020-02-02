@@ -2,9 +2,6 @@
  *\file AppDelegate.h
  *\brief Declare the application delegate used by the OS X front end.
  *
- * This is a stub set of declarations to be used to rebuild the .nib
- * file with Xcode.  See AngbandAppDelegate.m for more details.
- *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *
@@ -20,6 +17,7 @@
 #import <Cocoa/Cocoa.h>
 
 @interface AngbandAppDelegate : NSObject <NSApplicationDelegate> {
+    IBOutlet NSMenu *terminalsMenu;
     NSMenu *_commandMenu;
     NSDictionary *_commandMenuTagMap;
 }
@@ -30,7 +28,7 @@
 - (IBAction)openGame:(id)sender;
 - (IBAction)saveGame:(id)sender;
 - (IBAction)setRefreshRate:(NSMenuItem *)sender;
-
+- (IBAction)selectWindow:(id)sender;
 
 @end
 

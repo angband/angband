@@ -47,7 +47,7 @@
 #endif
 
 /* Mac headers */
-#include <Cocoa/Cocoa.h>
+#import "AppDelegate.h"
 //#include <Carbon/Carbon.h> /* For keycodes */
 /* Hack - keycodes to enable compiling in macOS 10.14 */
 #define kVK_Return 0x24
@@ -3976,23 +3976,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
  * ------------------------------------------------------------------------
  * Main program
  * ------------------------------------------------------------------------ */
-
-@interface AngbandAppDelegate : NSObject {
-    IBOutlet NSMenu *terminalsMenu;
-    NSMenu *_commandMenu;
-    NSDictionary *_commandMenuTagMap;
-}
-
-@property (nonatomic, retain) IBOutlet NSMenu *commandMenu;
-@property (nonatomic, retain) NSDictionary *commandMenuTagMap;
-
-- (IBAction)newGame:sender;
-- (IBAction)editFont:sender;
-- (IBAction)openGame:sender;
-
-- (IBAction)selectWindow: (id)sender;
-
-@end
 
 @implementation AngbandAppDelegate
 
