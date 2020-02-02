@@ -690,7 +690,7 @@ static bool initialized = FALSE;
 /* The NSView subclass that draws our Angband image */
 @interface AngbandView : NSView
 {
-    IBOutlet AngbandContext *angbandContext;
+    AngbandContext *angbandContext;
 }
 
 - (void)setAngbandContext:(AngbandContext *)context;
@@ -1433,7 +1433,7 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 }
 
 
-- (IBAction)setGraphicsMode:(NSMenuItem *)sender
+- (void)setGraphicsMode:(NSMenuItem *)sender
 {
     /* We stashed the graphics mode ID in the menu item's tag */
     graf_mode_req = [sender tag];
@@ -4184,7 +4184,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
 }
 
-- (IBAction)selectWindow: (id)sender
+- (void)selectWindow: (id)sender
 {
     NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
     AngbandContext *context = angband_term[subwindowNumber]->data;

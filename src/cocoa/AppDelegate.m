@@ -83,7 +83,7 @@
 - (IBAction)setRefreshRate:(NSMenuItem *)sender {
 }
 
-- (IBAction)selectWindow:(id)sender {
+- (void)selectWindow:(id)sender {
 }
 
 @end
