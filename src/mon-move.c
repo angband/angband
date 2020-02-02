@@ -287,9 +287,14 @@ static bool get_move_bodyguard(struct chunk *c, struct monster *mon)
 {
 	int i;
 	struct monster *leader = monster_group_leader(c, mon);
-	int dist = distance(mon->grid, leader->grid);
+	int dist;
 	struct loc best;
 	bool found = false;
+
+	if (!leader) return false;
+
+	/* Get distance */
+	dist = distance(mon->grid, leader->grid);
 
 	/* If currently adjacent to the leader, we can afford a move */
 	if (dist <= 1) return false;

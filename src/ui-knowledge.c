@@ -1895,6 +1895,7 @@ static int obj2gid(int oid)
 static wchar_t *o_xchar(int oid)
 {
 	struct object_kind *kind = objkind_byid(oid);
+	if (!kind) return 0;
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_char[kind->kidx];
@@ -1905,6 +1906,7 @@ static wchar_t *o_xchar(int oid)
 static byte *o_xattr(int oid)
 {
 	struct object_kind *kind = objkind_byid(oid);
+	if (!kind) return NULL;
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_attr[kind->kidx];
@@ -1922,6 +1924,8 @@ static const char *o_xtra_prompt(int oid)
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
+	if (!kind) return NULL;
+
 	/* Appropriate prompt */
 	if (kind->aware)
 		return kind->note_aware ? with_insc : no_insc;
@@ -1935,6 +1939,7 @@ static const char *o_xtra_prompt(int oid)
 static void o_xtra_act(struct keypress ch, int oid)
 {
 	struct object_kind *k = objkind_byid(oid);
+	if (!k) return;
 
 	/* Toggle ignore */
 	if (ignore_tval(k->tval) && (ch.code == 's' || ch.code == 'S')) {

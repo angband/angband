@@ -1347,6 +1347,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (origin.what == SRC_MONSTER && (flg & PROJECT_SAFE)) {
 		/* Point to monster information of caster */
 		struct monster *caster = cave_monster(cave, origin.which.monster);
+		if (!caster) return;
 
 		/* Skip monsters with the same race */
 		if (caster->race == mon->race)

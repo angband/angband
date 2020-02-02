@@ -397,6 +397,7 @@ void monster_index_move(int i1, int i2)
 
 	/* Old monster */
 	mon = cave_monster(cave, i1);
+	if (!mon) return;
 
 	/* Update the cave */
 	square_set_mon(cave, mon->grid, i2);

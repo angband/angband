@@ -1754,6 +1754,7 @@ void do_cmd_retrieve(struct command *cmd)
 	struct object *obj, *known_obj, *picked_item;
 
 	struct store *store = store_at(cave, player->grid);
+	if (!store) return;
 
 	if (store->sidx != STORE_HOME) {
 		msg("You are not currently at home.");

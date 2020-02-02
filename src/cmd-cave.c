@@ -1502,10 +1502,11 @@ void do_cmd_mon_command(struct command *cmd)
 {
 	int dir;
 	struct monster *mon = get_commanded_monster();
-	struct monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = NULL;
 	char m_name[80];
 
 	assert(mon);
+	lore = get_lore(mon->race);
 
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);

@@ -72,6 +72,8 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 	const char *illegible = NULL;
 	const char *comment = NULL;
 
+	if (!spell) return;
+
 	if (spell->slevel >= 99) {
 		illegible = "(illegible)";
 		attr = COLOUR_L_DARK;

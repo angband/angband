@@ -965,7 +965,7 @@ struct monster *square_monster(struct chunk *c, struct loc grid)
 	if (!square_in_bounds(c, grid)) return NULL;
 	if (square(c, grid).mon > 0) {
 		struct monster *mon = cave_monster(c, square(c, grid).mon);
-		return mon->race ? mon : NULL;
+		return mon && mon->race ? mon : NULL;
 	}
 
 	return NULL;

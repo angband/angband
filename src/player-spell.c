@@ -262,6 +262,10 @@ int spell_collect_from_book(const struct object *obj, int **spells)
 	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
 
+	if (!book) {
+		return n_spells;
+	}
+
 	/* Count the spells */
 	for (i = 0; i < book->num_spells; i++)
 		n_spells++;
@@ -285,6 +289,10 @@ int spell_book_count_spells(const struct object *obj,
 {
 	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
+
+	if (!book) {
+		return n_spells;
+	}
 
 	for (i = 0; i < book->num_spells; i++)
 		if (tester(book->spells[i].sidx))
@@ -324,6 +332,7 @@ bool spell_okay_to_cast(int spell)
 bool spell_okay_to_study(int spell_index)
 {
 	const struct class_spell *spell = spell_by_index(spell_index);
+	if (!spell) return false;
 	return (spell->slevel <= player->lev) &&
 			!(player->spell_flags[spell_index] & PY_SPELL_LEARNED);
 }
@@ -334,6 +343,7 @@ bool spell_okay_to_study(int spell_index)
 bool spell_okay_to_browse(int spell_index)
 {
 	const struct class_spell *spell = spell_by_index(spell_index);
+	if (!spell) return false;
 	return (spell->slevel < 99);
 }
 
@@ -360,15 +370,16 @@ static int min_fail(struct player *p, const struct class_spell *spell)
  */
 s16b spell_chance(int spell_index)
 {
-	int chance, minfail;
+	int chance = 100, minfail;
 
 	const struct class_spell *spell;
 
 	/* Paranoia -- must be literate */
-	if (!player->class->magic.total_spells) return (100);
+	if (!player->class->magic.total_spells) return chance;
 
 	/* Get the spell */
 	spell = spell_by_index(spell_index);
+	if (!spell) return chance;
 
 	/* Extract the base spell failure rate */
 	chance = spell->sfail;
@@ -537,6 +548,7 @@ bool spell_cast(int spell_index, int dir)
 bool spell_needs_aim(int spell_index)
 {
 	const struct class_spell *spell = spell_by_index(spell_index);
+	assert(spell);
 	return effect_aim(spell->effect);
 }
 

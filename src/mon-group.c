@@ -103,6 +103,11 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 	while (list_entry) {
 		struct monster *mon = cave_monster(c, list_entry->midx);
 
+		if (!mon) {
+			list_entry = list_entry->next;
+			continue;
+		}
+
 		/* Monsters of the same race can take over as leader */
 		if ((leader->race == mon->race) && !poss_leader
 			&& (mon->group_info[PRIMARY_GROUP].role != MON_GROUP_SUMMON)) {
@@ -375,6 +380,8 @@ struct monster_group *summon_group(struct chunk *c, int midx)
 {
 	struct monster *mon = cave_monster(c, midx);
 	int index;
+
+	if (!mon) return NULL;
 
 	/* If the monster is leader of its primary group, return that group */
 	if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_LEADER) {

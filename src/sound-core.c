@@ -179,6 +179,8 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 	/* sounds_str is a space separated list of sound names */
 	str = cur_token = string_make(sounds_str);
 
+	if (!cur_token) return;
+
 	search = strchr(cur_token, ' ');
 
 	if (search) {

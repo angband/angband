@@ -384,7 +384,7 @@ struct loc origin_get_loc(struct source origin)
 	switch (origin.what) {
 		case SRC_MONSTER: {
 			struct monster *who = cave_monster(cave, origin.which.monster);
-			return who->grid;
+			return who ? who->grid : loc(-1, -1);
 		}
 
 		case SRC_TRAP: {

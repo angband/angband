@@ -1202,6 +1202,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 void kill_arena_monster(struct monster *mon)
 {
 	struct monster *old_mon = cave_monster(cave, mon->midx);
+	assert(old_mon);
 	update_mon(old_mon, cave, true);
 	old_mon->hp = -1;
 	player_kill_monster(old_mon, " is defeated!");

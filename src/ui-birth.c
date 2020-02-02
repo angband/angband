@@ -894,6 +894,9 @@ void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_
 {
 	size_t lengths_so_far = 0;
 	size_t i;
+
+	if (!line_starts || !line_lengths) return;
+
 	for (i = 0; i < n_lines; i++) {
 		if (cursor >= line_starts[i]) {
 			if (cursor <= (line_starts[i] + line_lengths[i])) {

@@ -894,7 +894,7 @@ void do_cmd_refill(struct command *cmd)
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
 	/* Check what we're wielding. */
-	if (!tval_is_light(light)) {
+	if (!light || !tval_is_light(light)) {
 		msg("You are not wielding a light.");
 		return;
 	} else if (of_has(light->flags, OF_NO_FUEL)) {

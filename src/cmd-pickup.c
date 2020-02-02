@@ -153,6 +153,9 @@ static bool auto_pickup_okay(const struct object *obj)
 	if (OPT(player, pickup_always) || check_for_inscrip(obj, "=g")) return true;
 	if (OPT(player, pickup_inven)) {
 		struct object *gear_obj = find_stack_object_in_inventory(obj);
+		if (!gear_obj) {
+			return false;
+		}
 		if (inven_carry_num(obj, true) && !check_for_inscrip(gear_obj, "!g"))
 			return true;
 	}
