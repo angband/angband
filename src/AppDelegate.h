@@ -27,6 +27,8 @@
 - (IBAction)openGame:(id)sender;
 - (IBAction)saveGame:(id)sender;
 - (IBAction)setRefreshRate:(NSMenuItem *)sender;
+
+- (void)setGraphicsMode:(NSMenuItem *)sender;
 - (void)selectWindow:(id)sender;
 
 @end

@@ -1433,25 +1433,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 }
 
 
-- (void)setGraphicsMode:(NSMenuItem *)sender
-{
-    /* We stashed the graphics mode ID in the menu item's tag */
-    graf_mode_req = [sender tag];
-
-    /* Stash it in UserDefaults */
-    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
-    [[NSUserDefaults angbandDefaults] synchronize];
-    
-    if (game_in_progress)
-    {
-        /* Hack -- Force redraw */
-        do_cmd_redraw();
-        
-        /* Wake up the event loop so it notices the change */
-        wakeup_event_loop();
-    }
-}
-
 - (void)addAngbandView:(AngbandView *)view
 {
     if (! [angbandViews containsObject:view])
@@ -1514,21 +1495,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     }
 }
 
-
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{
-    int tag = [menuItem tag];
-    SEL sel = [menuItem action];
-    if (sel == @selector(setGraphicsMode:))
-    {
-        [menuItem setState: (tag == graf_mode_req)];
-        return YES;
-    }
-    else
-    {
-        return YES;
-    }
-}
 
 - (NSWindow *)makePrimaryWindow
 {
@@ -4174,6 +4140,25 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     frames_per_second = [menuItem tag];
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
+}
+
+- (void)setGraphicsMode:(NSMenuItem *)sender
+{
+    /* We stashed the graphics mode ID in the menu item's tag */
+    graf_mode_req = [sender tag];
+
+    /* Stash it in UserDefaults */
+    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
+    [[NSUserDefaults angbandDefaults] synchronize];
+
+    if (game_in_progress)
+    {
+        /* Hack -- Force redraw */
+        do_cmd_redraw();
+
+        /* Wake up the event loop so it notices the change */
+        wakeup_event_loop();
+    }
 }
 
 - (void)selectWindow: (id)sender
