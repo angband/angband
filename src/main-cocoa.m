@@ -1364,11 +1364,11 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     /* Note the "system" */
     ANGBAND_SYS = "mac";
 
+    /* Load possible graphics modes */
+    init_graphics_modes("graphics.txt");
+
     /* Load preferences */
     load_prefs();
-    
-	/* Load possible graphics modes */
-	init_graphics_modes("graphics.txt");
     
     /* Prepare the windows */
     init_windows();
@@ -3338,8 +3338,14 @@ static void load_prefs()
     
     /* Preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
-    tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
-    tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
+    if (graf_mode_req != GRAF_MODE_NONE &&
+        get_graphics_mode(graf_mode_req)->grafID != GRAPHICS_NONE) {
+        tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
+        tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
+    } else {
+        tile_width = 1;
+        tile_height = 1;
+    }
 
     /* Use sounds */
     allow_sounds = [defs boolForKey:@"AllowSound"];
