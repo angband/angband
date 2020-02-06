@@ -1314,7 +1314,7 @@ void square_smash_wall(struct chunk *c, struct loc grid)
 		}
 
 		/* Remove it */
-		square_set_feat(c, grid, FEAT_FLOOR);
+		square_set_feat(c, adj_grid, FEAT_FLOOR);
 	}
 }
 
