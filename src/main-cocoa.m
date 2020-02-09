@@ -4182,10 +4182,14 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         [menuItem setState: (tag == requestedGraphicsMode)];
         return YES;
     }
-    else if( sel == @selector(sendAngbandCommand:) )
+    else if( sel == @selector(sendAngbandCommand:) ||
+	     sel == @selector(saveGame:) )
     {
-        /* we only want to be able to send commands during an active game */
-        return !!game_in_progress;
+        /*
+         * we only want to be able to send commands during an active game
+         * after the birth screens
+         */
+        return !!game_in_progress && character_generated;
     }
     else return YES;
 }
