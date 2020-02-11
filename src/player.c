@@ -32,7 +32,7 @@
 /**
  * Pointer to the player struct
  */
-struct player *player;
+struct player *player = NULL;
 
 struct player_body *bodies;
 struct player_race *races;
@@ -409,6 +409,8 @@ static void init_player(void) {
  */
 static void cleanup_player(void) {
 	int i;
+
+	if (!player) return;
 
 	/* Free the history */
 	history_clear(player);

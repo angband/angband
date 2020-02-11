@@ -55,7 +55,7 @@ static void history_realloc(struct player_history *h)
  */
 void history_clear(struct player *p)
 {
-	struct player_history *h = &player->hist;
+	struct player_history *h = &p->hist;
 
 	if (h->entries) {
 		mem_free(h->entries);
