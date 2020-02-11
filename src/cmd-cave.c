@@ -928,7 +928,7 @@ void do_cmd_steal_aux(int dir)
 
 	/* Attack or steal from monsters */
 	if ((square(cave, grid).mon > 0) && player_has(player, PF_STEAL)) {
-			steal_monster_item(square_monster(cave, grid), -1);
+		steal_monster_item(square_monster(cave, grid), -1);
 	} else {
 		/* Oops */
 		msg("You spin around.");

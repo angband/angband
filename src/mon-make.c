@@ -218,6 +218,8 @@ struct monster_race *get_mon_num(int level)
 	long total;
 	struct monster_race *race;
 	alloc_entry *table = alloc_race_table;
+	time_t cur_time = time(NULL);
+	struct tm *date = localtime(&cur_time);
 
 	/* Occasionally produce a nastier monster in the dungeon */
 	if (level > 0 && one_in_(z_info->ood_monster_chance))
@@ -227,9 +229,6 @@ struct monster_race *get_mon_num(int level)
 
 	/* Process probabilities */
 	for (i = 0; i < alloc_race_size; i++) {
-		time_t cur_time = time(NULL);
-		struct tm *date = localtime(&cur_time);
-
 		/* Monsters are sorted by depth */
 		if (table[i].level > level) break;
 
