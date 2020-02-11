@@ -352,7 +352,7 @@ void ignore_spells(bitflag *f, int types)
  * \param spells is the set of spells we're pruning
  * \param flags is the set of object flags we're testing
  * \param pflags is the set of player flags we're testing
- * \param el is what we know about the monster's elemental resists
+ * \param el is what we know about the player's elemental resists
  * \param race is the monster type we're operating on
  */
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,

@@ -48,6 +48,10 @@
 #include "trap.h"
 #include "z-set.h"
 
+/**
+ * ------------------------------------------------------------------------
+ * Lore utilities
+ * ------------------------------------------------------------------------ */
 static const struct monster_flag monster_flag_table[] =
 {
 	#define RF(a, b, c) { RF_##a, b, c },
@@ -104,6 +108,10 @@ void create_mon_flag_mask(bitflag *f, ...)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Lookup utilities
+ * ------------------------------------------------------------------------ */
 /**
  * Returns the monster with the given name. If no monster has the exact name
  * given, returns the first monster with the given name as a (case-insensitive)
@@ -170,6 +178,31 @@ bool match_monster_bases(const struct monster_base *base, ...)
 	return ok;
 }
 
+/**
+ * Returns the monster currently commanded, or NULL
+ */
+struct monster *get_commanded_monster(void)
+{
+	int i;
+
+	/* Look for it */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Test for control */
+		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
+	}
+
+	return NULL;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Monster updates
+ * ------------------------------------------------------------------------ */
 /**
  * Analyse the path from player to infravision-seen monster and forget any
  * grids which would have blocked line of sight
@@ -442,9 +475,6 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	}
 }
 
-
-
-
 /**
  * Updates all the (non-dead) monsters via update_mon().
  */
@@ -464,41 +494,9 @@ void update_monsters(bool full)
 
 
 /**
- * Add the given object to the given monster's inventory.
- *
- * Currently always returns true - it is left as a bool rather than
- * void in case a limit on monster inventory size is proposed in future.
- */
-bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
-{
-	struct object *held_obj;
-
-	/* Scan objects already being held for combination */
-	for (held_obj = mon->held_obj; held_obj; held_obj = held_obj->next) {
-		/* Check for combination */
-		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
-			/* Combine the items */
-			object_absorb(held_obj, obj);
-
-			/* Result */
-			return true;
-		}
-	}
-
-	/* Forget location */
-	obj->grid = loc(0, 0);
-
-	/* Link the object to the monster */
-	obj->held_m_idx = mon->midx;
-
-	/* Add the object to the monster's inventory */
-	list_object(c, obj);
-	pile_insert(&mon->held_obj, obj);
-
-	/* Result */
-	return true;
-}
-
+ * ------------------------------------------------------------------------
+ * Monster (and player) actual movement
+ * ------------------------------------------------------------------------ */
 /**
  * Called when the player has just left grid1 for grid2.
  */
@@ -608,6 +606,10 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	square_light_spot(cave, grid2);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Awareness and learning
+ * ------------------------------------------------------------------------ */
 /**
  * Monster wakes up and possibly becomes aware of the player
  */
@@ -736,6 +738,10 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 			= player->state.el_info[element].res_level;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster healing
+ * ------------------------------------------------------------------------ */
 #define MAX_KIN_RADIUS			5
 #define MAX_KIN_DISTANCE		5
 
@@ -826,6 +832,10 @@ struct monster *choose_nearby_injured_kin(struct chunk *c,
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster damage and death utilities
+ * ------------------------------------------------------------------------ */
 /**
  * Handles the "death" of a monster.
  *
@@ -1243,24 +1253,43 @@ bool monster_taking_terrain_damage(struct monster *mon)
 
 
 /**
- * Returns the monster currently commanded, or NULL
+ * ------------------------------------------------------------------------
+ * Monster inventory utilities
+ * ------------------------------------------------------------------------ */
+/**
+ * Add the given object to the given monster's inventory.
+ *
+ * Currently always returns true - it is left as a bool rather than
+ * void in case a limit on monster inventory size is proposed in future.
  */
-struct monster *get_commanded_monster(void)
+bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 {
-	int i;
+	struct object *held_obj;
 
-	/* Look for it */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	/* Scan objects already being held for combination */
+	for (held_obj = mon->held_obj; held_obj; held_obj = held_obj->next) {
+		/* Check for combination */
+		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
+			/* Combine the items */
+			object_absorb(held_obj, obj);
 
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		/* Test for control */
-		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
+			/* Result */
+			return true;
+		}
 	}
 
-	return NULL;
+	/* Forget location */
+	obj->grid = loc(0, 0);
+
+	/* Link the object to the monster */
+	obj->held_m_idx = mon->midx;
+
+	/* Add the object to the monster's inventory */
+	list_object(c, obj);
+	pile_insert(&mon->held_obj, obj);
+
+	/* Result */
+	return true;
 }
 
 /**
@@ -1426,6 +1455,10 @@ void steal_monster_item(struct monster *mon, int midx)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster shapechange utilities
+ * ------------------------------------------------------------------------ */
 /**
  * The shape base for shapechanges
  */
