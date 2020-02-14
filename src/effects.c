@@ -3405,8 +3405,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			/* Get the location */
 			struct loc grid = loc_sum(pgrid, ddgrid_ddd[i]);
 
-			/* Skip non-empty grids */
-			if (!square_isempty(cave, grid)) continue;
+			/* Skip non-empty grids - allow pushing into traps and webs */
+			if (!square_isopen(cave, grid)) continue;
 
 			/* Important -- Skip grids marked for damage */
 			if (map[16 + grid.y - centre.y][16 + grid.x - centre.x]) continue;
