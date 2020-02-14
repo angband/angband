@@ -7476,6 +7476,7 @@ desc:A tree which has become entish, or maybe an ent which has become tree-ish.
 ### Dungeon level 32 ###
 
 name:serpent of the brownlands
+plural:serpents of the brownlands
 base:snake
 color:u
 speed:120
@@ -12315,6 +12316,7 @@ desc:A massive wolf, appearing like a mighty shadow.  Its glowing red eyes
 desc: glare malevolently as it defends its evil master's fortress.
 
 name:spider of Gorgoroth
+plural:spiders of Gorgoroth
 base:spider
 color:P
 speed:120
@@ -13662,6 +13664,7 @@ desc: to taste your blood.
 ### Dungeon level 78 ###
 
 name:serpent of chaos
+plural:serpents of chaos
 base:snake
 color:y
 speed:130
