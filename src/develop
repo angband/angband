@@ -10,7 +10,7 @@ abouttab = "class='selected'"
 <p>Angband has a long history of being developed in an open and community-driven way.  If you want to get involved, we'd suggest:
 
 <ul>
-<li>Report bugs on <a href="http://angband.oook.cz/forum/">the forum</a> or on our <a href="http://trac.rephial.org">our issue tracker</a>
+<li>Report bugs on <a href="http://angband.oook.cz/forum/">the forum</a> or on our <a href="https://github.com/angband/angband/issues">our issue tracker</a>
 <li>If you have any skill as a coder, you might want to get the most up-to-date code from our <a href='http://github.com/angband/angband'>GitHub</a> account, and look at bugs to fix on the tracker
 <li>Drop by our IRC channel: it's #angband-dev on irc.freenode.net.
 </ul>
