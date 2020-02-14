@@ -1126,7 +1126,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval)
 {
-	int base;
+	int base, tries = 3;
 	struct object_kind *kind;
 	struct object *new_obj;
 
@@ -1145,8 +1145,18 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
-	/* Try to choose an object kind */
-	kind = get_obj_num(base, good || great, tval);
+	/* Try to choose an object kind; reject most books the player can't read */
+	while (tries) {
+		kind = get_obj_num(base, good || great, tval);
+		if (kind && tval_is_book_k(kind) && !obj_kind_can_browse(kind)) {
+			if (one_in_(5)) break;
+			kind = NULL;
+			tries--;
+			continue;
+		} else {
+			break;
+		}
+	}
 	if (!kind)
 		return NULL;
 
