@@ -977,16 +977,13 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 	/* Get filename */
 	my_strcpy(buf, suggested_name, sizeof buf);
 	
-	if(!arg_force_name) {
+	if (!arg_force_name) {
 			
 			if (!get_string("File name: ", buf, sizeof buf)) return false;
 
 			/* Make sure it's actually a filename */
 			if (buf[0] == '\0' || buf[0] == ' ') return false;
-	}
-
-	else {
-	
+	} else {
 		int len;
 		time_t ltime;
 		struct tm *today;
@@ -998,8 +995,9 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 		prt("File name: ", 0,0);
 
 		/* Overwrite the ".txt" that was added */
-		len = strlen(buf)-4;
-		strftime(buf+len, sizeof(buf)-len, "-%Y-%m-%d-%H-%M.txt", today);
+		assert(strlen(buf) >= 4);
+		len = strlen(buf) - 4;
+		strftime(buf + len, sizeof(buf) - len, "-%Y-%m-%d-%H-%M.txt", today);
 
 		/* Prompt the user to confirm or cancel the file dump */
 		if (!get_check(format("Confirm writing to %s? ", buf))) return false;

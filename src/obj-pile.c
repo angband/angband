@@ -732,8 +732,8 @@ struct object *object_split(struct object *src, int amt)
 	if (src->note)
 		dest->note = src->note;
 	if (src->known) {
-		dest->known->number = amt;
-		src->known->number -= amt;
+		dest->known->number = dest->number;
+		src->known->number = src->number;
 		dest->known->note = src->known->note;
 	}
 

@@ -164,7 +164,7 @@ static struct menu *spell_menu_new(const struct object *obj,
 {
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
-	size_t width = MIN(Term->wid - 15, 80);
+	size_t width = MAX(0, MIN(Term->wid - 15, 80));
 
 	region loc = { 0 - width, 1, width, -99 };
 

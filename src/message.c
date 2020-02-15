@@ -155,8 +155,10 @@ static message_t *message_get(u16b age)
 {
 	message_t *m = messages->head;
 
-	while (m && age--)
+	while (m && age) {
+		age--;
 		m = m->older;
+	}
 
 	return m;
 }

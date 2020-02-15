@@ -1000,6 +1000,7 @@ void store_delete(struct store *s, struct object *obj, int amt)
 		object_delete(&obj);
 		pile_excise(&s->stock_k, known_obj);
 		object_delete(&known_obj);
+		assert(s->stock_num);
 		s->stock_num--;
 	}
 }

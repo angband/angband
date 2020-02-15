@@ -206,7 +206,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 	size_t dlen = strlen(buf);
 
 	/* Is there room left in the buffer? */
-	if (dlen < bufsize - 1) {
+	if (dlen + 1 < bufsize) {
 		/* Append as much as possible  */
 		return (dlen + my_strcpy(buf + dlen, src, bufsize - dlen));
 	} else {
