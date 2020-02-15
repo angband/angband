@@ -163,7 +163,7 @@ void Rand_init(void)
  */
 u32b Rand_div(u32b m)
 {
-	u32b r, n;
+	u32b n, r = 0;
 
 	/* Division by zero will result if m is larger than 0x10000000 */
 	assert(m <= 0x10000000);

@@ -2745,7 +2745,7 @@ void do_cmd_messages(void)
 			Term_putstr(0, hgt - 3 - j, -1, attr, msg);
 
 			/* Highlight "shower" */
-			if (shower[0]) {
+			if (strlen(shower)) {
 				str = msg;
 
 				/* Display matches */
@@ -2766,7 +2766,7 @@ void do_cmd_messages(void)
 				   i, i + j - 1, n, q), 0, 0);
 
 		/* Display prompt (not very informative) */
-		if (shower[0])
+		if (strlen(shower))
 			prt("[Movement keys to navigate, '-' for next, '=' to find]",
 				hgt - 1, 0);
 		else
@@ -2844,7 +2844,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Find the next item */
-		if (ke.key.code == '-' && shower[0]) {
+		if (ke.key.code == '-' && strlen(shower)) {
 			s16b z;
 
 			/* Scan messages */

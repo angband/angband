@@ -216,15 +216,17 @@ int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
 
 	int i;
 
+	/* Paranoid initialization */
+	for (i = 0; i < RSF_MAX; i++) {
+		spells[i] = 0;
+	}
+
 	/* Extract spells, filtering as necessary */
 	for (i = FLAG_START, num = 0; i < RSF_MAX; i++) {
 		if (!innate && mon_spell_is_innate(i)) continue;
 		if (!non_innate && !mon_spell_is_innate(i)) continue;
 		if (rsf_has(f, i)) spells[num++] = i;
 	}
-
-	/* Paranoia */
-	if (num == 0) return 0;
 
 	/* Pick at random */
 	return (spells[randint0(num)]);

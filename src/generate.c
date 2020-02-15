@@ -1087,14 +1087,14 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 static void sanitize_player_loc(struct chunk *c, struct player *p)
 {
 	/* TODO potential problem: stairs in vaults? */
-	
+
 	/* allow direct transfer if target location is teleportable */
 	if (square_in_bounds_fully(c, p->grid)
 		&& square_isarrivable(c, p->grid)
 		&& !square_isvault(c, p->grid)) {
 		return;
 	}
-	
+
 	/* TODO should use something similar to teleport code, but this will
 	 *  do for now as a quick'n dirty fix
 	 */
@@ -1106,8 +1106,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* a bunch of random locations */
 	while (try) {
 		try = try - 1;
-		tx = randint0(c->width-1) + 1;
-		ty = randint0(c->height-1) + 1;
+		tx = randint0(c->width - 1) + 1;
+		ty = randint0(c->height - 1) + 1;
 		if (square_isempty(c, loc(tx, ty))
 			&& !square_isvault(c, loc(tx, ty))) {
 			p->grid.y = ty;
@@ -1115,10 +1115,10 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			return;
 		}
 	}
-	
+
 	/* whelp, that didnt work */
-	ix = randint0(c->width-1) + 1;
-	iy = randint0(c->height-1) + 1;
+	ix = randint0(c->width - 1) + 1;
+	iy = randint0(c->height - 1) + 1;
 	ty = iy;
 	tx = tx + 1;
 	if (tx >= c->width - 1) {
@@ -1128,7 +1128,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			ty = 1;
 		}
 	}
-	
+
 	while (1) {		//until full loop through dungeon
 		if (square_isempty(c, loc(tx, ty))) {
 			if (!square_isvault(c, loc(tx, ty))) {
@@ -1154,7 +1154,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			}
 		}
 	}
-	
+
 	// fallback vault location (or at least a non-crashy square)
 	p->grid.x = vx;
 	p->grid.y = vy;
