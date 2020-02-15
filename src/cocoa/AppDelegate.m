@@ -17,7 +17,7 @@
  * 3) In the Angband project settings, set "Main Interface" to "MainMenu".
  *    Set the deployment target to what's used in Angband's Makefile.osx.
  *    When this was written, that was 10.9.
- * 4) Copy src/AppDelegate.h and src/cocoa/AppDelegate.m from the Angband
+ * 4) Copy src/cocoa/AppDelegate.h and src/cocoa/AppDelegate.m from the Angband
  *    source files to the directory in the project with main.m.  Copy
  *    src/cocoa/MainMenu.xib to the Base.lproj subdirectory of that directory.
  * 5) If you modify MainMenu.xib after copying it over, you may want to
