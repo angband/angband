@@ -236,7 +236,6 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 		int weight = obj->weight * obj->number;
 		strnfmt(buf, sizeof(buf), "%4d.%1d lb", weight / 10, weight % 10);
 		put_str(buf, row + obj_num, col + ex_offset_ctr);
-		ex_offset_ctr += 9;
 	}
 }
 

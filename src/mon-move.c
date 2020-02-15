@@ -1550,7 +1550,6 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
  */
 static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 {
-	bool woke_up = false;
 	int stealth = player->state.skills[SKILL_STEALTH];
 	int player_noise = 1 << (30 - stealth);
 	int notice = randint0(1024);
@@ -1568,14 +1567,13 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 					 MDESC_CAPITAL | MDESC_IND_HID);
 
 		/* Notify the player if aware */
-		if (monster_is_obvious(mon))
+		if (monster_is_obvious(mon)) {
 			msg("%s wakes up.", m_name);
-
-		woke_up = true;
-
+		}
 	} else if ((notice * notice * notice) <= player_noise) {
 		int sleep_reduction = 1;
 		int local_noise = c->noise.grids[mon->grid.y][mon->grid.x];
+		bool woke_up = false;
 
 		/* Test - wake up faster in hearing distance of the player 
 		 * Note no dependence on stealth for now */

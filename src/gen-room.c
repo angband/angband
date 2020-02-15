@@ -467,22 +467,16 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 									   false);
 
 
-		/* 
-		 * If floor, extend a "corridor" between room centers, to ensure 
-		 * that the rooms are connected together.
-		 */
+		/* If floor, extend a "corridor" between room centers, to ensure 
+		 * that the rooms are connected together. */
 		if (feat_is_floor(feat)) {
 			for (y = (y1 + tmp_ay) / 2; y <= (tmp_by + y2) / 2; y++) {
 				for (x = (x1 + tmp_ax) / 2; x <= (tmp_bx + x2) / 2; x++) {
 					square_set_feat(c, loc(x, y), feat);
 				}
 			}
-		}
-
-		/*
-		 * Otherwise fill any gap between two starbursts.
-		 */
-		else {
+		} else {
+			/* Otherwise fill any gap between two starbursts. */
 			int tmp_cy1, tmp_cx1, tmp_cy2, tmp_cx2;
 
 			if (height > width) {
@@ -495,9 +489,6 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 				tmp_cx1 = x1 + (width - height) / 2;
 				tmp_cy2 = y2;
 				tmp_cx2 = tmp_cx1 + (width - height) / 2;
-
-				tmp_cy1 = y1;
-				tmp_cx1 = x1;
 			}
 
 			/* Make the third room. */
@@ -882,7 +873,6 @@ static bool find_space(struct loc *centre, int height, int width)
 		}
 		if (join) {
 			*centre = join->grid;
-			join = join->next;
 			found = true;
 		}
 

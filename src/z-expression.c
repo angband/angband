@@ -252,8 +252,6 @@ s32b expression_evaluate(expression_t const * const expression)
 static void expression_add_operation(expression_t *expression,
 									 const expression_operation_t operation)
 {
-	size_t count = 0;
-
 	if (expression->operation_count >= expression->operations_size) {
 		expression->operations_size += EXPRESSION_ALLOC_SIZE;
 		expression->operations = mem_realloc(expression->operations, expression->operations_size * sizeof(expression_operation_t));
@@ -261,7 +259,6 @@ static void expression_add_operation(expression_t *expression,
 
 	expression->operations[expression->operation_count] = operation;
 	expression->operation_count++;
-	count++;
 }
 
 /**

@@ -282,9 +282,12 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 	obj = ctx->list[oid];
 
 	/* Describe the object - preserving insriptions in the home */
-	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
-	else desc = ODESC_FULL | ODESC_STORE;
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | desc);
+	if (store->sidx == STORE_HOME) {
+		desc |= ODESC_FULL;
+	} else {
+		desc |= ODESC_FULL | ODESC_STORE;
+	}
+	object_desc(o_name, sizeof(o_name), obj, desc);
 
 	/* Display the object */
 	c_put_str(obj->kind->base->attr, o_name, row, col);

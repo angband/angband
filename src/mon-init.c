@@ -399,9 +399,11 @@ static enum parser_error parse_eff_resist(struct parser *p) {
 
 static enum parser_error parse_eff_lash_type(struct parser *p) {
 	struct blow_effect *eff = parser_priv(p);
+	int type;
 	assert(eff);
 
-	eff->lash_type = proj_name_to_idx(parser_getstr(p, "type"));
+	type = proj_name_to_idx(parser_getstr(p, "type"));
+	eff->lash_type = type >= 0 ? type : PROJ_MISSILE;
 	return PARSE_ERROR_NONE;
 }
 

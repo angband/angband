@@ -1238,7 +1238,7 @@ int rd_stores(void) { return rd_stores_aux(rd_item); }
  */
 static int rd_dungeon_aux(struct chunk **c)
 {
-	struct chunk *c1 = *c;
+	struct chunk *c1;
 	int i, n, y, x;
 
 	u16b height, width;

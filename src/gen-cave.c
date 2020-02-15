@@ -180,9 +180,6 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
     dun->tunn_n = 0;
     dun->wall_n = 0;
 
-    /* Save the starting location */
-	start = grid1;
- 
     /* Start out in the correct direction */
     correct_dir(&offset, grid1, grid2);
 

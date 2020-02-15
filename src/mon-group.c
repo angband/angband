@@ -54,7 +54,7 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 static void monster_group_split(struct chunk *c, struct monster_group *group,
 								struct monster *leader)
 {
-	struct mon_group_list_entry *entry = group->member_list;
+	struct mon_group_list_entry *entry;
 
 	/* Keep a list of groups made for easy checking */
 	int *temp = mem_zalloc(z_info->level_monster_max * sizeof(int));

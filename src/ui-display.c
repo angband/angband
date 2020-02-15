@@ -1779,7 +1779,7 @@ static void update_player_compact_subwindow(game_event_type type,
 	prt_sp(row++, col);
 
 	/* Monster health */
-	prt_health(row++, col);
+	prt_health(row, col);
 
 	Term_fresh();
 	

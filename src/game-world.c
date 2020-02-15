@@ -775,13 +775,10 @@ void process_world(struct chunk *c)
 
 		/* Activate the descent */
 		if (player->deep_descent == 0) {
-			int target_increment;
-			int target_depth = player->max_depth;
-
 			/* Calculate target depth */
-			target_increment = (4 / z_info->stair_skip) + 1;
-			target_depth = dungeon_get_next_level(player->max_depth, target_increment);
-
+			int target_increment = (4 / z_info->stair_skip) + 1;
+			int target_depth = dungeon_get_next_level(player->max_depth,
+													  target_increment);
 			disturb(player, 0);
 
 			/* Determine the level */

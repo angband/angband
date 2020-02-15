@@ -670,15 +670,6 @@ static void display_player_sust_info(void)
 		/* Dump */
 		Term_putch(col, row + stat, a, c);
 	}
-
-	/* Column */
-	col = 26;
-
-	/* Footer */
-	//c_put_str(COLOUR_WHITE, "abcdefghijkl@", row + 5, col);
-
-	/* Equippy */
-	//display_player_equippy(row + 7, col);
 }
 
 

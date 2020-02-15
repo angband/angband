@@ -1365,9 +1365,6 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (monster_handler != NULL)
 		monster_handler(&context);
 
-	dam = context.dam;
-	obvious = context.obvious;
-
 	/* Absolutely no effect */
 	if (context.skipped) return;
 
@@ -1381,8 +1378,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (!mon_died)
 		project_m_apply_side_effects(&context, m_idx);
 
-	/* Update locals again, since the project_m_* functions can change
-	 * some values. */
+	/* Update locals, since the project_m_* functions can change some values. */
 	mon = context.mon;
 	obvious = context.obvious;
 

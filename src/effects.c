@@ -1487,11 +1487,12 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 
 bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 {
-	int i, target_increment, target_depth = player->max_depth;
+	int i;
 
 	/* Calculate target depth */
-	target_increment = (4 / z_info->stair_skip) + 1;
-	target_depth = dungeon_get_next_level(player->max_depth, target_increment);
+	int target_increment = (4 / z_info->stair_skip) + 1;
+	int target_depth = dungeon_get_next_level(player->max_depth,
+											  target_increment);
 	for (i = 5; i > 0; i--) {
 		if (is_quest(target_depth)) break;
 		if (target_depth >= z_info->max_depth - 1) break;
@@ -4042,7 +4043,7 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 	int rad = context->radius;
 
 	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL | PROJECT_ARC;
-	int type = PROJ_MISSILE;
+	int type;
 
 	struct loc target = loc(-1, -1);
 

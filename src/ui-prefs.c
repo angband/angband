@@ -507,7 +507,7 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			}
 		} else {
 			while (*s && (f != ']')) {
-				t = process_pref_file_expr(&s, &f);
+				(void) process_pref_file_expr(&s, &f);
 			}
 		}
 

@@ -530,7 +530,7 @@ static int jewelry_power(const struct object *obj, int p)
  */
 static int modifier_power(const struct object *obj, int p)
 {
-	int i, k = 1, extra_stat_bonus = 0, q;
+	int i, k, extra_stat_bonus = 0, q;
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		/* Get the modifier details */
@@ -751,7 +751,7 @@ static int curse_power(const struct object *obj, int p, int verbose,
 s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 {
 	s32b p = 0, dice_pwr = 0;
-	int mult = 1;
+	int mult;
 
 	/* Set the log file */
 	object_log = log_file;
