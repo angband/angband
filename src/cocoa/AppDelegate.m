@@ -104,4 +104,7 @@
 - (void)recomputeDefaultTileMultipliersIfNecessary {
 }
 
+- (void)beginGame {
+}
+
 @end

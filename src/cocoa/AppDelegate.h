@@ -33,6 +33,7 @@
 - (void)setGraphicsMode:(NSMenuItem *)sender;
 - (void)selectWindow:(id)sender;
 - (void)recomputeDefaultTileMultipliersIfNecessary;
+- (void)beginGame;
 
 @end
 
