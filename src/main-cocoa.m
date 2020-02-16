@@ -63,6 +63,8 @@ static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
+static NSString * const AngbandUseDefaultTileMultDefaultsKey =
+    @"UseDefaultTileMultiplier";
 static NSString * const AngbandTileWidthMultDefaultsKey =
     @"TileWidthMultiplier";
 static NSString * const AngbandTileHeightMultDefaultsKey =
@@ -627,6 +629,12 @@ static int pict_rows = 0;
  * The current mode is stored in current_graphics_mode.
  */
 static int graf_mode_req = 0;
+
+/**
+ * Will be nonzero if tile_width and tile_height have changed since the last
+ * redraw.
+ */
+static int tile_multipliers_changed = 0;
 
 /**
  * Helper function to check the various ways that graphics can be enabled,
@@ -2275,12 +2283,23 @@ static errr Term_xtra_cocoa_react(void)
         }
         
         /* Reset visuals */
-        if (initialized && game_in_progress)
+        if (! tile_multipliers_changed)
         {
             reset_visuals(TRUE);
         }
     }
-    
+
+    if (tile_multipliers_changed)
+    {
+        /* Reset visuals */
+        reset_visuals(TRUE);
+
+        /* Reset the panel */
+        verify_panel();
+
+        tile_multipliers_changed = 0;
+    }
+
     [pool drain];
     
     /* Success */
@@ -3328,6 +3347,7 @@ static void load_prefs()
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
                               [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              [NSNumber numberWithBool:YES], AngbandUseDefaultTileMultDefaultsKey,
                               [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
                               [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
                               defaultTerms, AngbandTerminalsDefaultsKey,
@@ -4043,6 +4063,10 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     
     NSEnableScreenUpdates();
 
+    if (mainTerm == 0) {
+	[self recomputeDefaultTileMultipliersIfNecessary];
+    }
+
     if (mainTerm == 0 && game_in_progress) {
 	/* Mimics the logic in setGraphicsMode(). */
 	do_cmd_redraw();
@@ -4118,6 +4142,37 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     record_current_savefile();
 }
 
+- (void)recomputeDefaultTileMultipliersIfNecessary
+{
+    NSInteger hscl, vscl;
+
+    if (graf_mode_req != GRAF_MODE_NONE &&
+	get_graphics_mode(graf_mode_req)->grafID != GRAPHICS_NONE) {
+	if ([[NSUserDefaults angbandDefaults]
+		boolForKey:AngbandUseDefaultTileMultDefaultsKey]) {
+	    [self computeDefaultTileSetScaling:&hscl vertical:&vscl];
+	    [[NSUserDefaults angbandDefaults]
+		setInteger:hscl forKey:AngbandTileWidthMultDefaultsKey];
+	    [[NSUserDefaults angbandDefaults]
+		setInteger:vscl forKey:AngbandTileHeightMultDefaultsKey];
+	    [[NSUserDefaults angbandDefaults] synchronize];
+	} else {
+	    hscl = [[NSUserDefaults angbandDefaults]
+		       integerForKey:AngbandTileWidthMultDefaultsKey];
+	    vscl = [[NSUserDefaults angbandDefaults]
+		       integerForKey:AngbandTileHeightMultDefaultsKey];
+	}
+    } else {
+	hscl = 1;
+	vscl = 1;
+    }
+    if (tile_width != hscl || tile_height != vscl) {
+	tile_width = hscl;
+	tile_height = vscl;
+	tile_multipliers_changed = 1;
+    }
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL sel = [menuItem action];
@@ -4190,6 +4245,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
     /* Stash it in UserDefaults */
     [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
+    [self recomputeDefaultTileMultipliersIfNecessary];
     [[NSUserDefaults angbandDefaults] synchronize];
 
     if (game_in_progress)
@@ -4208,6 +4264,68 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     AngbandContext *context = angband_term[subwindowNumber]->data;
     [context->primaryWindow makeKeyAndOrderFront: self];
 	[context saveWindowVisibleToDefaults: YES];
+}
+
+/**
+ * Implement the TileSetDefaultScalingComputing protocol.
+ *
+ * Assume that angband_term[0] and angbandDefaults are ready to use.
+ */
+- (void)computeDefaultTileSetScaling:(NSInteger *)pHoriz vertical:(NSInteger *)pVert
+{
+    if (graf_mode_req != GRAF_MODE_NONE) {
+	graphics_mode *new_mode = get_graphics_mode(graf_mode_req);
+
+	if (new_mode->grafID != GRAPHICS_NONE) {
+	    int tilew = new_mode->cell_width;
+	    int tileh = new_mode->cell_height;
+	    AngbandContext *term0_context = angband_term[0]->data;
+	    CGFloat textw = term0_context->tileSize.width;
+	    CGFloat texth = term0_context->tileSize.height;
+	    CGFloat wratio = tilew / textw;
+	    CGFloat hratio = tileh / texth;
+	    CGFloat extratio = (wratio < hratio) ? wratio : hratio;
+
+	    /*
+	     * If a tile is enough smaller in either dimension relative to
+	     * a cell, use a scaled up tile as the point of comparison.
+	     */
+	    if (extratio < 2.0 / 3.0) {
+		CGFloat scl = floor(1.0 / extratio + 0.5);
+
+		wratio *= scl;
+		hratio *= scl;
+	    }
+	    /*
+	     * Cap the scale factors and try to approximately keep the tile's
+	     * aspect ratio if capped.
+	     */
+	    extratio = (wratio > hratio) ? wratio : hratio;
+	    if (extratio > TileSetScalingPanelController.scalingMaximum) {
+		CGFloat scl = TileSetScalingPanelController.scalingMaximum /
+		    extratio;
+
+		wratio *= scl;
+		hratio *= scl;
+	    }
+	    /* Don't try to scale if can't avoid a scale factor of zero. */
+	    extratio = (wratio < hratio) ? wratio : hratio;
+	    if (extratio >= 0.5) {
+		*pHoriz = (NSInteger) floor(wratio + 0.5);
+		*pVert = (NSInteger) floor(hratio + 0.5);
+	    } else {
+		*pHoriz = 1;
+		*pVert = 1;
+	    }
+	    return;
+	}
+    }
+
+    /* Not using a tile set so use what is stored in the defaults. */
+    *pHoriz = [[NSUserDefaults angbandDefaults]
+		  integerForKey:AngbandTileWidthMultDefaultsKey];
+    *pVert = [[NSUserDefaults angbandDefaults]
+		 integerForKey:AngbandTileHeightMultDefaultsKey];
 }
 
 - (void)prepareWindowsMenu

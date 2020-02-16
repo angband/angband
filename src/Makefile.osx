@@ -52,7 +52,7 @@ endif
 
 
 OBJS = $(BASEOBJS)
-OSX_OBJS = main-cocoa.o
+OSX_OBJS = main-cocoa.o cocoa/TileSetScaling.o
 
 
 
@@ -86,7 +86,7 @@ clean:
 # Basic build rules and dependencies
 #
 
-main-cocoa.o : main-cocoa.m
+%.o : %.m
 	@printf "%10s %-20s (objective-c)\n" CC $<
 	@$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c

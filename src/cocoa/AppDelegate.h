@@ -15,8 +15,10 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import "TileSetScaling.h"
 
-@interface AngbandAppDelegate : NSObject <NSApplicationDelegate> {
+@interface AngbandAppDelegate : NSObject <NSApplicationDelegate,
+					      TileSetDefaultScalingComputing> {
     NSMenu *_commandMenu;
     NSDictionary *_commandMenuTagMap;
 }
@@ -30,6 +32,7 @@
 
 - (void)setGraphicsMode:(NSMenuItem *)sender;
 - (void)selectWindow:(id)sender;
+- (void)recomputeDefaultTileMultipliersIfNecessary;
 
 @end
 

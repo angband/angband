@@ -17,10 +17,13 @@
  * 3) In the Angband project settings, set "Main Interface" to "MainMenu".
  *    Set the deployment target to what's used in Angband's Makefile.osx.
  *    When this was written, that was 10.9.
- * 4) Copy src/cocoa/AppDelegate.h and src/cocoa/AppDelegate.m from the Angband
- *    source files to the directory in the project with main.m.  Copy
+ * 4) Copy src/cocoa/AppDelegate.h, src/cocoa/AppDelegate.m,
+ *    src/cocoa/TileSetScaling.h, and src/cocoa/TileSetScaling.m from the
+ *    Angband source files to the directory in the project with main.m.  Copy
  *    src/cocoa/MainMenu.xib to the Base.lproj subdirectory of that directory.
- * 5) If you modify MainMenu.xib after copying it over, you may want to
+ * 5) Within Xcode, add TileSetScaling.h and TileSetScaling.m to the project
+ *    files (use the ones copied to the same directory as main.m).
+ * 6) If you modify MainMenu.xib after copying it over, you may want to
  *    set it so that it can open in older versions of Xcode.  Select it in
  *    Xcode, and select one of the things, like "File's Owner" from it.  In
  *    the file information panel for it, there will be a section labeled
@@ -28,8 +31,8 @@
  *    the options other than "Latest Xcode" will close the file and save it
  *    with the appropriate flags.  Note that reopening that MainMenu.xib in
  *    Xcode will cause the version to revert to the latest Xcode.
- * 6) Use Xcode's Product->Build For->Running menu entry to build the project.
- * 7) The generated .nib file will be
+ * 7) Use Xcode's Product->Build For->Running menu entry to build the project.
+ * 8) The generated .nib file will be
  *    Contents/Resources/Base.lproj/MainMenu.nib in the product directory which
  *    is something like
  *    ~/Library/Developer/Xcode/DerivedData/<product_name>-<some_string>/Build/Products/Debug/<product_name>.app
@@ -68,6 +71,15 @@
 }
 
 
+/**
+ * Implement the TileSetDefaultScalingComputing protocol.
+ */
+- (void)computeDefaultTileSetScaling:(NSInteger *)pHoriz vertical:(NSInteger *)pVert {
+    *pHoriz = 1;
+    *pVert = 1;
+}
+
+
 - (IBAction)newGame:(id)sender {
 }
 
@@ -87,6 +99,9 @@
 }
 
 - (void)selectWindow:(id)sender {
+}
+
+- (void)recomputeDefaultTileMultipliersIfNecessary {
 }
 
 @end
