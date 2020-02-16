@@ -47,7 +47,7 @@
 #endif
 
 /* Mac headers */
-#include <Cocoa/Cocoa.h>
+#import "cocoa/AppDelegate.h"
 //#include <Carbon/Carbon.h> /* For keycodes */
 /* Hack - keycodes to enable compiling in macOS 10.14 */
 #define kVK_Return 0x24
@@ -496,9 +496,6 @@ static int resize_pending_changes(struct PendingChanges* pc, int nrow)
 /* Begins an Angband game. This is the entry point for starting off. */
 + (void)beginGame;
 
-/* Ends an Angband game. */
-+ (void)endGame;
-
 /* Internal method */
 - (AngbandView *)activeView;
 
@@ -690,7 +687,7 @@ static bool initialized = FALSE;
 /* The NSView subclass that draws our Angband image */
 @interface AngbandView : NSView
 {
-    IBOutlet AngbandContext *angbandContext;
+    AngbandContext *angbandContext;
 }
 
 - (void)setAngbandContext:(AngbandContext *)context;
@@ -1423,35 +1420,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     quit(NULL);
 }
 
-+ (void)endGame
-{    
-    /* Hack -- Forget messages */
-    msg_flag = FALSE;
-    
-    player->upkeep->playing = FALSE;
-    quit_when_ready = TRUE;
-}
-
-
-- (IBAction)setGraphicsMode:(NSMenuItem *)sender
-{
-    /* We stashed the graphics mode ID in the menu item's tag */
-    graf_mode_req = [sender tag];
-
-    /* Stash it in UserDefaults */
-    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
-    [[NSUserDefaults angbandDefaults] synchronize];
-    
-    if (game_in_progress)
-    {
-        /* Hack -- Force redraw */
-        do_cmd_redraw();
-        
-        /* Wake up the event loop so it notices the change */
-        wakeup_event_loop();
-    }
-}
-
 - (void)addAngbandView:(AngbandView *)view
 {
     if (! [angbandViews containsObject:view])
@@ -1514,30 +1482,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     }
 }
 
-
-static NSMenuItem *superitem(NSMenuItem *self)
-{
-    NSMenu *supermenu = [[self menu] supermenu];
-    int index = [supermenu indexOfItemWithSubmenu:[self menu]];
-    if (index == -1) return nil;
-    else return [supermenu itemAtIndex:index];
-}
-
-
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{
-    int tag = [menuItem tag];
-    SEL sel = [menuItem action];
-    if (sel == @selector(setGraphicsMode:))
-    {
-        [menuItem setState: (tag == graf_mode_req)];
-        return YES;
-    }
-    else
-    {
-        return YES;
-    }
-}
 
 - (NSWindow *)makePrimaryWindow
 {
@@ -3977,23 +3921,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
  * Main program
  * ------------------------------------------------------------------------ */
 
-@interface AngbandAppDelegate : NSObject {
-    IBOutlet NSMenu *terminalsMenu;
-    NSMenu *_commandMenu;
-    NSDictionary *_commandMenuTagMap;
-}
-
-@property (nonatomic, retain) IBOutlet NSMenu *commandMenu;
-@property (nonatomic, retain) NSDictionary *commandMenuTagMap;
-
-- (IBAction)newGame:sender;
-- (IBAction)editFont:sender;
-- (IBAction)openGame:sender;
-
-- (IBAction)selectWindow: (id)sender;
-
-@end
-
 @implementation AngbandAppDelegate
 
 @synthesize commandMenu=_commandMenu;
@@ -4170,7 +4097,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     {
         return ! game_in_progress;
     }
-    else if (sel == @selector(setRefreshRate:) && [superitem(menuItem) tag] == 150)
+    else if (sel == @selector(setRefreshRate:) &&
+	     [[menuItem parentItem] tag] == 150)
     {
         NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
         [menuItem setState: ([menuItem tag] == fps)];
@@ -4201,7 +4129,26 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
 }
 
-- (IBAction)selectWindow: (id)sender
+- (void)setGraphicsMode:(NSMenuItem *)sender
+{
+    /* We stashed the graphics mode ID in the menu item's tag */
+    graf_mode_req = [sender tag];
+
+    /* Stash it in UserDefaults */
+    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
+    [[NSUserDefaults angbandDefaults] synchronize];
+
+    if (game_in_progress)
+    {
+        /* Hack -- Force redraw */
+        do_cmd_redraw();
+
+        /* Wake up the event loop so it notices the change */
+        wakeup_event_loop();
+    }
+}
+
+- (void)selectWindow: (id)sender
 {
     NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
     AngbandContext *context = angband_term[subwindowNumber]->data;
@@ -4400,18 +4347,29 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 /**
  * Delegate method that gets called if we're asked to open a file.
  */
-- (BOOL)application:(NSApplication *)sender openFiles:(NSArray *)filenames
+- (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
     /* Can't open a file once we've started */
-    if (game_in_progress) return NO;
+    if (game_in_progress) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     /* We can only open one file. Use the last one. */
     NSString *file = [filenames lastObject];
-    if (! file) return NO;
+    if (! file) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     /* Put it in savefile */
-    if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile])
-		return NO;
+    if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile]) {
+	[[NSApplication sharedApplication]
+	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
+	return;
+    }
     
     game_in_progress = TRUE;
 
@@ -4419,7 +4377,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	 * screen! */
     wakeup_event_loop();
     
-    return YES;
+    [[NSApplication sharedApplication]
+	replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 @end
