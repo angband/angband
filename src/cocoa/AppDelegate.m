@@ -56,6 +56,18 @@
 
 #import "AppDelegate.h"
 
+@implementation AngbandSoundCatalog
+
+- (id)init {
+    self = [super init];
+    return self;
+}
+
+- (void)playSound:(int)event {
+}
+
+@end
+
 @implementation AngbandAppDelegate
 
 @synthesize commandMenu=_commandMenu;
@@ -102,6 +114,15 @@
 }
 
 - (void)recomputeDefaultTileMultipliersIfNecessary {
+}
+
+- (void)linkTermData:(int)termIndex {
+}
+
+- (void)initWindows {
+}
+
+- (void)loadPrefs {
 }
 
 - (void)beginGame {

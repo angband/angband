@@ -18,7 +18,7 @@ ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
 	-Wunused-macros
 JUST_C = -std=c99
-OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.9
+OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc -mmacosx-version-min=10.9
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-fno-stack-protector $(ARCHFLAGS)
 LIBS = -framework Cocoa
