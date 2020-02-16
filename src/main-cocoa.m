@@ -2342,16 +2342,22 @@ static void query_before_text(
 	     */
 	    break;
 	} else if (prc->cell_changes[i].change_type == CELL_CHANGE_NONE) {
-	    /* It has not changed so inquire what it is. */
+	    /*
+	     * It has not changed (or using scaled up tiles and it is within
+	     * a changed tile but is not the upper left corner cell for that
+	     * tile) so inquire what it is.
+	     */
 	    int a;
 	    wchar_t c;
 
 	    Term_what(i, iy, &a, &c);
 	    if (use_graphics && (a & 0x80) && (c & 0x80)) {
 		/*
-		 * It is an unchanged location rendered with a tile.  Do not
-		 * want to modify its contents so the clipping and rendering
-		 * region can not be extended.
+		 * It is a location rendered with a tile (because of the
+		 * padding with dummy characters in ui-term.c that will still
+		 * hold for scaled up tiles if this cell is not the upper left
+		 * corner of the tile).  Do not want to modify its contents
+		 * so the clipping and rendering region can not be extended.
 		 */
 		break;
 	    }
@@ -2415,16 +2421,22 @@ static void query_after_text(
 	     */
 	    break;
 	} else if (prc->cell_changes[i].change_type == CELL_CHANGE_NONE) {
-	    /* It has not changed so inquire what it is. */
+	    /*
+	     * It has not changed (or using scaled up tiles and it is within
+	     * a changed tile but is not the upper left corner cell for that
+	     * tile) so inquire what it is.
+	     */
 	    int a;
 	    wchar_t c;
 
 	    Term_what(i, iy, &a, &c);
 	    if (use_graphics && (a & 0x80) && (c & 0x80)) {
 		/*
-		 * It is an unchanged location rendered with a tile.  Do not
-		 * want to modify its contents so the clipping and rendering
-		 * region can not be extended.
+		 * It is a location rendered with a tile (because of the
+		 * padding with dummy characters in ui-term.c that will still
+		 * hold for scaled up tiles if this cell is not the upper left
+		 * corner of the tile).  Do not want to modify its contents so
+		 * the clipping and rendering region can not be extended.
 		 */
 		break;
 	    }
