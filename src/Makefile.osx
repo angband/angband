@@ -158,6 +158,9 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
+	# Handle case of installing over an old version where MainMenu.nib
+	# was a directory.
+	-test -d $(APPRES)/en.lproj/MainMenu.nib && rm -r $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/en.lproj/MainMenu.nib $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/en.lproj/TileSetScaling.nib $(APPRES)/en.lproj/TileSetScaling.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
