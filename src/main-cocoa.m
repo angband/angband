@@ -3018,6 +3018,13 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	/* Bail out; there was an earlier memory allocation failure. */
 	return 1;
     }
+
+    /*
+     * For scaled up tiles (tile_width > 1 or tile_height > 1), it is
+     * sufficient that the bounds for the modified area only encompass the
+     * upper left corner cell for the region affected by the tile and that
+     * only that cell has to have the details of the changes.
+     */
     if (angbandContext->changes->rows[y] == 0) {
 	angbandContext->changes->rows[y] =
 	    create_row_change(angbandContext->cols);
@@ -3036,12 +3043,14 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     if (angbandContext->changes->rows[y]->xmin > x) {
 	angbandContext->changes->rows[y]->xmin = x;
     }
-    if (angbandContext->changes->rows[y]->xmax < x + n - 1) {
-	angbandContext->changes->rows[y]->xmax = x + n - 1;
+    if (angbandContext->changes->rows[y]->xmax < x + tile_width * (n - 1)) {
+	angbandContext->changes->rows[y]->xmax = x + tile_width * (n - 1);
     }
+
     for (pc = angbandContext->changes->rows[y]->cell_changes + x;
-	 pc != angbandContext->changes->rows[y]->cell_changes + x + n;
-	 ++pc) {
+	 pc != angbandContext->changes->rows[y]->cell_changes +
+	     x + n * tile_width;
+	 pc += tile_width) {
 	int a = *ap++;
 	wchar_t c = *cp++;
         int ta = *tap++;
