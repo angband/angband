@@ -4510,6 +4510,23 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
 }
 
+- (IBAction)showTileSetScalingPanel:(id)sender
+{
+    if (self.scalingPanelController == nil) {
+	self.scalingPanelController =
+	    [[TileSetScalingPanelController alloc] initWithWindow:nil];
+
+	self.scalingPanelController.defaultScalingComputer = self;
+	self.scalingPanelController.scalingChangeHandler = self;
+    }
+    self.scalingPanelController.horizontalScaling = tile_width;
+    self.scalingPanelController.verticalScaling = tile_height;
+    self.scalingPanelController.usesDefaultScaling =
+	[[NSUserDefaults angbandDefaults]
+	    boolForKey:AngbandUseDefaultTileMultDefaultsKey];
+    [self.scalingPanelController showWindow:sender];
+}
+
 - (void)setGraphicsMode:(NSMenuItem *)sender
 {
     /* We stashed the graphics mode ID in the menu item's tag */
@@ -4601,6 +4618,33 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 		  integerForKey:AngbandTileWidthMultDefaultsKey];
     *pVert = [[NSUserDefaults angbandDefaults]
 		 integerForKey:AngbandTileHeightMultDefaultsKey];
+}
+
+/**
+ * Implement the TileSetScalingChanging protocol.
+ */
+- (void)changeTileSetScaling:(NSInteger)h vertical:(NSInteger)v isDefault:(BOOL)flag
+{
+    /* Update the defaults. */
+    [[NSUserDefaults angbandDefaults]
+	setBool:flag forKey:AngbandUseDefaultTileMultDefaultsKey];
+    [[NSUserDefaults angbandDefaults]
+	setInteger:h forKey:AngbandTileWidthMultDefaultsKey];
+    [[NSUserDefaults angbandDefaults]
+	setInteger:v forKey:AngbandTileHeightMultDefaultsKey];
+    [[NSUserDefaults angbandDefaults] synchronize];
+    if (graphics_are_enabled()) {
+	if (tile_width != h || tile_height != v) {
+	    tile_width = h;
+	    tile_height = v;
+	    tile_multipliers_changed = 1;
+	    if (game_in_progress) {
+		/* Mimics the logic in setGraphicsMode(). */
+		do_cmd_redraw();
+		wakeup_event_loop();
+	    }
+	}
+    }
 }
 
 - (void)prepareWindowsMenu
