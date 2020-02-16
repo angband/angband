@@ -542,7 +542,7 @@ static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 							   size_t max, size_t end)
 {
-	const char *u[5] = { 0, 0, 0, 0, 0 };
+	const char *u[6] = { 0, 0, 0, 0, 0, 0 };
 	int n = 0;
 
 	/* Get inscription */

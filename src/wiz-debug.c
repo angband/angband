@@ -752,7 +752,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	char buf[80];
 	char title[80];
 
-	int choice[60];
+	int choice[70];
 	int num;
 
 	int i;
@@ -1763,15 +1763,15 @@ static void do_cmd_wiz_features(void)
 		/* Stairs */
 		case 't': feat = featt; length = 2; break;
 		/* Closed doors */
-		case 'c': feat = featc; length = 8; break;
+		case 'c': feat = featc; length = 1; break;
 		/* Doors */
-		case 'd': feat = featd; length = 11; break;
+		case 'd': feat = featd; length = 4; break;
 		/* Secret doors */
 		case 'h': feat = feath; length = 1; break;
 		/* Magma */
-		case 'm': feat = featm; length = 3; break;
+		case 'm': feat = featm; length = 2; break;
 		/* Quartz */
-		case 'q': feat = featq; length = 3; break;
+		case 'q': feat = featq; length = 2; break;
 		/* Granite */
 		case 'g': feat = featg; length = 1; break;
 		/* Permanent wall */
@@ -1780,6 +1780,8 @@ static void do_cmd_wiz_features(void)
 		case 'r': feat = featr; length = 1; break;
 		/* Passable rubble */
 		case 'a': feat = feata; length = 1; break;
+		/* Invalid entry */
+		default: return;
 	}
 
 	/* Scan map */

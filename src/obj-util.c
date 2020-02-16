@@ -479,7 +479,7 @@ void object_short_name(char *buf, size_t max, const char *name)
 	size_t j, k;
 	/* Copy across the name, stripping modifiers & and ~) */
 	size_t len = strlen(name);
-	for (j = 0, k = 0; j < len && k < max; j++) {
+	for (j = 0, k = 0; j < len && k < max - 1; j++) {
 		if (j == 0 && name[0] == '&' && name[1] == ' ')
 			j += 2;
 		if (name[j] == '~')
