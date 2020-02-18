@@ -120,6 +120,7 @@ grade:o:8:Weak:You are still weak.:You are getting weak from hunger!
 grade:y:15:Hungry:You are still hungry.:You are getting hungry.
 grade:G:90:Fed:You are no longer hungry.:You are no longer full.
 grade:g:100:Full:You are full!:
+msgt:HUNGRY
 
 name:PROTEVIL
 desc:protection from evil
