@@ -10,7 +10,7 @@ press '?'.
 
 1. For more information, somewhere to upload your characters and screenshots, and discuss the game, try [Angband Website](http://angband.oook.cz/).
 
-2. If you're compiling the game yourself, read [this page on compiling](http://trac.rephial.org/wiki/Compiling.)
+2. If you're compiling the game yourself, read [this page on compiling](https://angband.readthedocs.io/en/latest/hacking/compiling.html.)
 
 
 Enjoy!
