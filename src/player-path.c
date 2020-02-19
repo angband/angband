@@ -63,8 +63,11 @@ static bool is_valid_pf(int y, int x)
 	/* No damaging terrain */
 	if (square_isdamaging(cave, grid)) return false;
 
-	/* No trapped squares */
-	if (square_isvisibletrap(cave, grid)) return false;
+	/* No trapped squares (unless trapsafe) */
+	if (square_isvisibletrap(cave, grid) &&
+		!player_is_trapsafe(player)) {
+		return false;
+	}
 
 	/* Require open space */
 	return (square_ispassable(cave, grid));
@@ -557,8 +560,11 @@ static bool run_test(void)
 			}
 		}
 
-		/* Visible traps abort running */
-		if (square_isvisibletrap(cave, grid)) return true;
+		/* Visible traps abort running (unless trapsafe) */
+		if (square_isvisibletrap(cave, grid) &&
+			!player_is_trapsafe(player)) {
+			return true;
+		}
 
 		/* Visible objects abort running */
 		for (obj = square_object(cave, grid); obj; obj = obj->next)

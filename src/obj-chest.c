@@ -23,6 +23,7 @@
 #include "mon-lore.h"
 #include "obj-chest.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -395,6 +396,9 @@ bool do_cmd_open_chest(struct loc grid, struct object *obj)
 		/* Apply chest traps, if any and player is not trapsafe */
 		if (!player_is_trapsafe(player)) {
 			chest_trap(obj);
+		} else if ((obj->pval > 0) && player_of_has(player, OF_TRAP_IMMUNE)) {
+			/* Learn trap immunity if there are traps */
+			equip_learn_flag(player, OF_TRAP_IMMUNE);
 		}
 
 		/* Let the Chest drop items */

@@ -961,8 +961,8 @@ void move_player(int dir, bool disarm)
 	int m_idx = square(cave, grid).mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trapsafe = player_is_trapsafe(player);
-	bool alterable = square_isdisarmabletrap(cave, grid) ||
-		square_iscloseddoor(cave, grid);
+	bool trap = square_isdisarmabletrap(cave, grid);
+	bool door = square_iscloseddoor(cave, grid);
 
 	/* Many things can happen on movement */
 	if (m_idx > 0) {
@@ -975,13 +975,12 @@ void move_player(int dir, bool disarm)
 		} else {
 			py_attack(player, grid);
 		}
-	} else if (alterable && disarm && square_isknown(cave, grid)) {
+	} else if (((trap && disarm) || door) && square_isknown(cave, grid)) {
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
 			cmd_set_repeat(99);
 		do_cmd_alter_aux(dir);
-	} else if (player->upkeep->running && square_isdisarmabletrap(cave, grid)
-		&& !trapsafe) {
+	} else if (trap && player->upkeep->running && !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player, 0);
 	} else if (!square_ispassable(cave, grid)) {
@@ -1053,6 +1052,11 @@ void move_player(int dir, bool disarm)
 			old_dtrap && !new_dtrap) {
 			disturb(player, 0);
 			return;
+		}
+
+		/* Trap immune player learns that they are */
+		if (trap && player_of_has(player, OF_TRAP_IMMUNE)) {
+			equip_learn_flag(player, OF_TRAP_IMMUNE);
 		}
 
 		/* Move player */

@@ -38,6 +38,7 @@
 #include "mon-timed.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -1569,6 +1570,7 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 		/* Notify the player if aware */
 		if (monster_is_obvious(mon)) {
 			msg("%s wakes up.", m_name);
+			equip_learn_flag(player, OF_AGGRAVATE);
 		}
 	} else if ((notice * notice * notice) <= player_noise) {
 		int sleep_reduction = 1;
