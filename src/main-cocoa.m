@@ -830,8 +830,12 @@ struct PendingCellChange {
  * defaults */
 - (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults;
 
-/* Change the minimum size for the window associated with the context. */
-- (void)setMinimumWindowSize;
+/*
+ * Change the minimum size for the window associated with the context.
+ * termIdx is the index for the terminal:  pass it so this function can be
+ * used when self->terminal has not yet been set.
+ */
+- (void)setMinimumWindowSize:(int)termIdx;
 
 /* Called from the view to indicate that it is starting or ending live resize */
 - (void)viewWillStartLiveResize:(AngbandView *)view;
@@ -1523,7 +1527,7 @@ static int compare_advances(const void *ap, const void *bp)
 	    [self.primaryWindow
 		 contentRectForFrameRect: [self.primaryWindow frame]];
 
-	[self setMinimumWindowSize];
+	[self setMinimumWindowSize:[self terminalIndex]];
 	NSSize size = self.primaryWindow.contentMinSize;
 	BOOL windowNeedsResizing = NO;
 	if (contentRect.size.width < size.width) {
@@ -1874,11 +1878,11 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     Term_activate( old );
 }
 
-- (void)setMinimumWindowSize
+- (void)setMinimumWindowSize:(int)termIdx
 {
     NSSize minsize;
 
-    if ([self terminalIndex] == 0) {
+    if (termIdx == 0) {
 	minsize.width = 80;
 	minsize.height = 24;
     } else {
@@ -2450,7 +2454,7 @@ static void Term_init_cocoa(term *t)
 	{
 	    [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
 	}
-	[context setMinimumWindowSize];
+	[context setMinimumWindowSize:termIdx];
     
 	/*
 	 * If this is the first term, and we support full screen (Mac OS X Lion
