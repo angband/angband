@@ -625,7 +625,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 	int best_score = -1;
 
 	/* Taking damage from terrain makes moving vital */
-	if (monster_taking_terrain_damage(mon)) {
+	if (!monster_taking_terrain_damage(mon)) {
 		/* If the player is not currently near the monster, no reason to flow */
 		if (mon->cdis >= mon->best_range) {
 			return false;
