@@ -18,7 +18,7 @@ ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
 	-Wunused-macros
 JUST_C = -std=c99
-OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.9
+OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc -mmacosx-version-min=10.9
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-fno-stack-protector $(ARCHFLAGS)
 LIBS = -framework Cocoa
@@ -52,7 +52,7 @@ endif
 
 
 OBJS = $(BASEOBJS)
-OSX_OBJS = main-cocoa.o
+OSX_OBJS = main-cocoa.o cocoa/TileSetScaling.o
 
 
 
@@ -86,7 +86,7 @@ clean:
 # Basic build rules and dependencies
 #
 
-main-cocoa.o : main-cocoa.m
+%.o : %.m
 	@printf "%10s %-20s (objective-c)\n" CC $<
 	@$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c
@@ -158,7 +158,11 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
+	# Handle case of installing over an old version where MainMenu.nib
+	# was a directory.
+	-test -d $(APPRES)/en.lproj/MainMenu.nib && rm -r $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/en.lproj/MainMenu.nib $(APPRES)/en.lproj/MainMenu.nib
+	cp cocoa/en.lproj/TileSetScaling.nib $(APPRES)/en.lproj/TileSetScaling.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \

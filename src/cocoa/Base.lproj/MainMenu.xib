@@ -105,6 +105,12 @@
                                     </connections>
                                 </menu>
                             </menuItem>
+                            <menuItem title="Change Tile Set Scaling..." id="Hei-5G-cgA">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showTileSetScalingPanel:" target="Voe-Tx-rLC" id="GfT-pq-lC6"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
