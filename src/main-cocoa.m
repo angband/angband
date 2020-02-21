@@ -4413,7 +4413,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	textui_init();
 
 	/* Register the sound hook */
-	event_add_handler(EVENT_SOUND, play_sound, NULL);
+	event_add_handler(EVENT_SOUND, play_sound, (__bridge void*) self);
 
 	/* Initialize some save file stuff */
 	player_egid = getegid();
