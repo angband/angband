@@ -4185,6 +4185,11 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    [[NSUserDefaults angbandDefaults]
 		setInteger:vscl forKey:AngbandTileHeightMultDefaultsKey];
 	    [[NSUserDefaults angbandDefaults] synchronize];
+	    if (self.scalingPanelController != nil) {
+		self.scalingPanelController.horizontalScaling = hscl;
+		self.scalingPanelController.verticalScaling = vscl;
+		self.scalingPanelController.usesDefaultScaling = YES;
+	    }
 	} else {
 	    hscl = [[NSUserDefaults angbandDefaults]
 		       integerForKey:AngbandTileWidthMultDefaultsKey];
