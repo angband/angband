@@ -2657,14 +2657,16 @@ static CGImageRef create_angband_image(NSString *path)
 
         /* Draw the source image flipped, since the view is flipped */
         CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, CGImageGetBitsPerComponent(decodedImage), CGImageGetBytesPerRow(decodedImage), CGImageGetColorSpace(decodedImage), contextBitmapInfo);
-        CGContextSetBlendMode(ctx, kCGBlendModeCopy);
-        CGContextTranslateCTM(ctx, 0.0, height);
-        CGContextScaleCTM(ctx, 1.0, -1.0);
-        CGContextDrawImage(ctx, CGRectMake(0, 0, width, height), decodedImage);
-        result = CGBitmapContextCreateImage(ctx);
+        if (ctx) {
+	    CGContextSetBlendMode(ctx, kCGBlendModeCopy);
+	    CGContextTranslateCTM(ctx, 0.0, height);
+	    CGContextScaleCTM(ctx, 1.0, -1.0);
+	    CGContextDrawImage(
+		ctx, CGRectMake(0, 0, width, height), decodedImage);
+	    result = CGBitmapContextCreateImage(ctx);
+	    CFRelease(ctx);
+	}
 
-        /* Done with these things */
-        CFRelease(ctx);
         CGImageRelease(decodedImage);
     }
     return result;
