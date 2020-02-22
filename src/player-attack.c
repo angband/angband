@@ -1351,7 +1351,7 @@ void do_cmd_throw(struct command *cmd) {
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
-			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR | QUIVER_TAGS)
+			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR)
 		!= CMD_OK)
 		return;
 

@@ -21,9 +21,6 @@
 
 extern struct init_module ui_visuals_module;
 
-/** File name (in /lib) containing visuals info. */
-static const char *VISUALS_FILE_NAME = "visuals";
-
 byte visuals_cycler_get_attr_for_frame(const char *group_name,
 									   const char *cycle_name,
 									   size_t const frame);

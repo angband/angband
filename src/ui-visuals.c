@@ -1060,7 +1060,7 @@ static struct parser *visuals_file_parser_init(void)
  */
 static errr visuals_file_parser_run(struct parser *parser)
 {
-	return parse_file_quit_not_found(parser, VISUALS_FILE_NAME);
+	return parse_file_quit_not_found(parser, "visuals");
 }
 
 /**
