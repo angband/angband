@@ -401,6 +401,7 @@ struct player_state {
 
 	int ac;				/**< Base ac */
 	int dam_red;		/**< Damage reduction */
+	int perc_dam_red;	/**< Percentage damage reduction */
 	int to_a;			/**< Bonus to ac */
 	int to_h;			/**< Bonus to hit */
 	int to_d;			/**< Bonus to dam */

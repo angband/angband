@@ -564,118 +564,22 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 }
 
 /**
- * Apply knock back from powerful blows
- */
-static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
-							bool *fear)
-{
-	struct loc grid = mon->grid;
-	struct loc offset = loc_diff(grid, p->grid);
-	int power = (p->state.num_blows - 100) / 100;
-
-	/* Not enough power left */
-	if (!power) return false;
-
-	/* Forced backwards until power runs out */
-	while (power > 0) {
-		/* Move back a square */
-		grid = loc_sum(grid, offset);
-
-		/* React differently depending on the terrain behind the monster */
-		if (square_ispassable(cave, grid)) {
-			/* Monster there - current monster takes all the damage
-			 * Note we could have more fun here by pushing it back... */
-			if (square_monster(cave, grid)) {
-				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
-				break;
-			} else {
-				/* Push back a square */
-				monster_swap(mon->grid, grid);
-				power--;
-			}
-		} else {
-			bool moved = false;
-
-			/* Deal with impassable terrain */
-			if (square_isdoor(cave, grid)) {
-				if (power >= 1) {
-					square_open_door(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_isrubble(cave, grid)) {
-				if (power >= 1) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_ismagma(cave, grid)) {
-				if (power >= 1) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
-					}
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_isquartz(cave, grid)) {
-				if (power >= 2) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
-					}
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg * 2, fear, NULL)) return true;
-					power -= 2;
-					moved = true;
-				}
-			} else if (square_isgranite(cave, grid)) {
-				if (power >= 3) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg * 3, fear, NULL)) return true;
-					power -= 3;
-					moved = true;
-				}
-			}
-			if (!moved) {
-				/* Monster can't move, give it the remaining damage */
-				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
-				break;
-			}
-		}
-	}
-	/* Player needs to stop hitting if the monster has moved */
-	return (ABS(mon->grid.y - p->grid.y) > 1) ||
-		(ABS(mon->grid.x - p->grid.x) > 1);
-}
-
-/**
  * Apply blow after effects
  */
-static bool blow_after_effects(struct loc grid, bool quake)
+static bool blow_after_effects(struct loc grid, int dmg, bool *fear, bool quake)
 {
+	/* Splash damage for crowd fighters */
+	if (player_has(player, PF_CROWD_FIGHT)) {
+		int dir;
+		for (dir = 0; dir < 8; dir++) {
+			struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
+			struct monster *mon = square_monster(cave, adj_grid);
+			if (!square_in_bounds(cave, adj_grid)) continue;
+			if (!mon) continue;
+			mon_take_hit(mon, dmg / 5, fear, NULL);
+		}
+	}
+
 	/* Apply earthquake brand */
 	if (quake) {
 		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, 0, 0,
@@ -691,6 +595,7 @@ static bool blow_after_effects(struct loc grid, bool quake)
 
 /**
  * ------------------------------------------------------------------------
+ * Melee attack
  * ------------------------------------------------------------------------ */
 /* Melee and throwing hit types */
 static const struct hit_types melee_hit_types[] = {
@@ -772,7 +677,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (obj) {
 		int j;
 		int b = 0, s = 0;
-		int weight = obj->weight * (p->timed[TMD_POWERBLOW] ? 2 : 1);
+		int weight = obj->weight;
 
 		my_strcpy(verb, "hit", sizeof(verb));
 
@@ -844,7 +749,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* Pre-damage side effects */
 	blow_side_effects(p, mon);
 
-	/* Damage, check for hp drain, knockback, fear and death */
+	/* Damage, check for hp drain, fear and death */
 	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, dmg, fear, NULL);
 
@@ -858,16 +763,6 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
 						  0, 0, 0, 0, 0, NULL);
-		} else if (p->timed[TMD_POWERBLOW]) {
-			stop = blow_knock_back(p, mon, dmg, fear);
-
-			/* Small chance of side-effects */
-			if (one_in_(50)) {
-				msg("You swing around wildly!");
-				player_over_exert(p, PY_EXERT_CONF, 40, 10);
-			}
-
-			player_clear_timed(p, TMD_POWERBLOW, true);
 		}
 	}
 
@@ -875,7 +770,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		(*fear) = false;
 
 	/* Post-damage effects */
-	if (blow_after_effects(grid, do_quake))
+	if (blow_after_effects(grid, dmg, fear, do_quake))
 		stop = true;
 
 	return stop;
@@ -1008,6 +903,7 @@ void py_attack(struct player *p, struct loc grid)
 
 /**
  * ------------------------------------------------------------------------
+ * Ranged attacks
  * ------------------------------------------------------------------------ */
 /* Shooting hit types */
 static const struct hit_types ranged_hit_types[] = {

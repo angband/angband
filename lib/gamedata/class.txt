@@ -1560,7 +1560,7 @@ skill-melee:60:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
-hitdie:7
+hitdie:10
 max-attacks:5
 min-weight:100
 strength-multiplier:5
@@ -1568,8 +1568,8 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Cutlass:1:1
 equip:scroll:Word of Recall:1:1
-obj-flags:IMPAIR_HP
-player-flags:CHOOSE_SPELLS | SHIELD_BASH
+obj-flags:IMPAIR_HP | AGGRAVATE
+player-flags:CHOOSE_SPELLS | SHIELD_BASH | CROWD_FIGHT
 title:Rat
 title:Bully
 title:Thug
@@ -1581,7 +1581,7 @@ title:Marauder
 title:Destroyer
 title:Tyrant
 
-magic:8:400:2
+magic:8:800:2
 
 book:shadow book:town:[Dark Rituals]:4:shadow
 
@@ -1615,6 +1615,12 @@ desc:Temporarily makes your melee attacks branded with poison.
 
 book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
+spell:Taunt:24:10:40:150
+effect:TIMED_INC:TAUNT
+dice:10+d10
+desc:Makes anything that can move more inclined to run toward you than make a
+desc: ranged attack.
+
 spell:Throw Monster:27:12:50:30
 effect:SHORT_BEAM:FORCE:1
 dice:200
@@ -1634,9 +1640,3 @@ spell:Piercing Shot:35:20:40:120
 effect:TIMED_INC:POWERSHOT
 dice:3
 desc:Makes your next shot powerful enough to pierce several enemies.
-
-spell:Forceful Blow:38:20:40:150
-effect:TIMED_INC:POWERBLOW
-dice:10
-desc:Makes your next blow strong enough to hurl your enemy back, maybe even
-desc: through walls.

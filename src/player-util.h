@@ -106,6 +106,8 @@ bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);
+int player_crowd_damage_reduction(struct player *p);
+int player_crowd_regeneration(struct player *p);
 void disturb(struct player *p, int stop_search);
 void search(struct player *p);
 

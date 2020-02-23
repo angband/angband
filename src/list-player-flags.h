@@ -29,3 +29,4 @@ PF(ROCK,             "is made of rock",                                         
 PF(STEAL,            "can steal from monsters",                                   "Steals from monsters")
 PF(SHIELD_BASH,      "can bash monsters with a shield in melee",                  "Employs shield-bashes")
 PF(EVIL,             "resist nether but is hurt by holy attacks",                 "Is evil")
+PF(CROWD_FIGHT,      "gains advantages from fighting many monsters at once",      "Fights crowds well")

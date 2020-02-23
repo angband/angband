@@ -44,6 +44,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
 #include "trap.h"
@@ -209,6 +210,9 @@ static void get_move_find_range(struct monster *mon)
 	} else {
 		/* Minimum distance - stay at least this far if possible */
 		mon->min_range = 1;
+
+		/* Taunted monsters just want to get in your face */
+		if (player->timed[TMD_TAUNT]) return;
 
 		/* Examine player power (level) */
 		p_lev = player->lev;

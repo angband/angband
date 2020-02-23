@@ -349,10 +349,10 @@ desc:piercing shot
 grade:i:10000:PShot:You prepare to shoot powerfully!
 on-end:Your shooting power returns to normal.
 
-name:POWERBLOW
-desc:powerful blow
-grade:i:10000:PBlow:You feel you can strike with enormous force!
-on-end:Your sense of power dissipates.
+name:TAUNT
+desc:taunting
+grade:i:10000:Taunt:You start aggravating your enemies!
+on-end:You stop aggravating your enemies.
 
 name:BLOODLUST
 desc:desire to kill
