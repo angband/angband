@@ -320,10 +320,10 @@ effect:TIMED_INC:STUN
 dice:1d2
 desc:Turns wand or staff energy into mana; tapping stuns the player briefly.
 
-spell:Mana Channel:25:3:50:20
+spell:Mana Channel:25:10:50:20
 effect:TIMED_INC:FASTCAST
-dice:25+1d25
-desc:Doubles spellcasting speed for 25 +1d25 turns.
+dice:5+1d5
+desc:Doubles spellcasting speed for 5+1d5 turns.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
 book-graphics:?:r
