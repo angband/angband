@@ -487,7 +487,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		}
 
 		/* Boost damage effects if skill > difficulty */
-		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
+		boost = MAX((player->state.skills[SKILL_DEVICE] - level) / 2, 0);
 
 		/* Do effect */
 		target_fix();

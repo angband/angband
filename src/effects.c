@@ -109,11 +109,11 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 			damroll(context->value.dice, context->value.sides);
 	}
 
-	/* Remove boosts for now
+	/* Device boost */
 	if (use_boost) {
 		final *= (100 + context->boost);
 		final /= 100;
-		} */
+	}
 
 	return final;
 }
