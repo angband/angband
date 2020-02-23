@@ -1264,7 +1264,7 @@ int player_crowd_regeneration(struct player *p)
 	int weight = player_crowd_weighting(p);
 
 	/* Make this a factor to regen */
-	return MIN(4, weight / 5);
+	return MAX(1, MIN(4, weight / 5));
 }
 
 
