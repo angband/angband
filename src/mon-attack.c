@@ -76,7 +76,7 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	if (mon->cdis > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->grid, player->grid, PROJECT_NONE))
+	if (!projectable(cave, mon->grid, player->grid, PROJECT_SHORT))
 		return false;
 
 	return true;

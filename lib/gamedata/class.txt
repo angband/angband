@@ -1517,8 +1517,8 @@ desc:Maps the nearby area.
 
 book:nature book:dungeon:[Nature Craft]:5:nature
 
-spell:Cover Tracks:20:10:40:40
-effect:TIMED_INC:SCENTLESS:0:5
+spell:Cover Tracks:20:20:40:40
+effect:TIMED_INC:COVERTRACKS:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:* 2
 desc:Prevents you from leaving scent for monsters to track you by for a

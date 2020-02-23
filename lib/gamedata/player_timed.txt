@@ -339,8 +339,8 @@ desc:escape on attack
 grade:m:10000:HitRun:You tense up ready to escape!
 on-end:You relax again.
 
-name:SCENTLESS
-desc:leave no scent trail
+name:COVERTRACKS
+desc:leave no scent trail, reduce visibility
 grade:T:10000:NoTrack:You begin covering your tracks.
 on-end:You stop covering your tracks.
 

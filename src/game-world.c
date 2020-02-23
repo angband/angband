@@ -381,6 +381,7 @@ static void make_noise(struct player *p)
 	struct loc next = p->grid;
 	int y, x, d;
 	int noise = 0;
+	int noise_increment = p->timed[TMD_COVERTRACKS] ? 4 : 1;
     struct queue *queue = q_new(cave->height * cave->width);
 	struct loc decoy = cave_find_decoy(cave);
 
@@ -399,7 +400,7 @@ static void make_noise(struct player *p)
 	/* Player makes noise */
 	cave->noise.grids[next.y][next.x] = noise;
 	q_push_int(queue, grid_to_i(next, cave->width));
-	noise++;
+	noise += noise_increment;
 
 	/* Propagate noise */
 	while (q_len(queue) > 0) {
@@ -409,7 +410,7 @@ static void make_noise(struct player *p)
 		/* If we've reached the current noise level, put it back and step */
 		if (cave->noise.grids[next.y][next.x] == noise) {
 			q_push_int(queue, grid_to_i(next, cave->width));
-			noise++;
+			noise += noise_increment;
 			continue;
 		}
 
@@ -475,7 +476,7 @@ static void update_scent(void)
 	}
 
 	/* Scentless player */
-	if (player->timed[TMD_SCENTLESS]) return;
+	if (player->timed[TMD_COVERTRACKS]) return;
 
 	/* Lay down new scent around the player */
 	for (y = 0; y < 5; y++) {

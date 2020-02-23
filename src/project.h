@@ -74,6 +74,7 @@ enum
  *   ARC: Projection is a sector of circle radiating from the caster
  *   PLAY: May affect the player
  *   INFO: Use believed map rather than truth for player ui
+ *   SHORT: Use one quarter of max_range
  */
 enum
 {
@@ -91,6 +92,7 @@ enum
 	PROJECT_ARC   = 0x0400,
 	PROJECT_PLAY  = 0x0800,
 	PROJECT_INFO  = 0x1000,
+	PROJECT_SHORT = 0x2000,
 };
 
 /* Display attrs and chars */

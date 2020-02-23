@@ -66,7 +66,7 @@ static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
 	int mx = mon->grid.x;
 
 	/* If player is in LOS, there's no need to go around walls */
-    if (projectable(c, mon->grid, player->grid, PROJECT_NONE))
+    if (projectable(c, mon->grid, player->grid, PROJECT_SHORT))
 		return false;
 
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */

@@ -349,9 +349,15 @@ bool projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg)
 {
 	struct loc grid_g[512];
 	int grid_n = 0;
+	int max_range = z_info->max_range;
+
+	/* Check for shortened projection range */
+	if ((flg & PROJECT_SHORT) && player->timed[TMD_COVERTRACKS]) {
+		max_range /= 4;
+	}
 
 	/* Check the projection path */
-	grid_n = project_path(grid_g, z_info->max_range, grid1, grid2, flg);
+	grid_n = project_path(grid_g, max_range, grid1, grid2, flg);
 
 	/* No grid is ever projectable from itself */
 	if (!grid_n) return false;
