@@ -1224,7 +1224,11 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
  */
 static int player_crowd_weighting(struct player *p)
 {
-	int i, depth = cave->depth, wgt = 0;
+	int i, depth, wgt = 0;
+
+	/* Check we're playing */
+	if (!cave) return 0;
+	depth = cave->depth;
 
 	/* Count the monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
