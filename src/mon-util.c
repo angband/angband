@@ -1182,6 +1182,9 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	/* No damage, we're done */
 	if (dam == 0) return false;
 
+	/* Covering tracks is no longer possible */
+	player->timed[TMD_COVERTRACKS] = 0;
+
 	/* Hurt it */
 	mon->hp -= dam;
 	if (mon->hp < 0) {

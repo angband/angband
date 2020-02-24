@@ -566,7 +566,8 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 /**
  * Apply blow after effects
  */
-static bool blow_after_effects(struct loc grid, int dmg, bool *fear, bool quake)
+static bool blow_after_effects(struct loc grid, int dmg, int splash,
+							   bool *fear, bool quake)
 {
 	/* Splash damage for crowd fighters */
 	if (player_has(player, PF_CROWD_FIGHT)) {
@@ -576,7 +577,7 @@ static bool blow_after_effects(struct loc grid, int dmg, bool *fear, bool quake)
 			struct monster *mon = square_monster(cave, adj_grid);
 			if (!square_in_bounds(cave, adj_grid)) continue;
 			if (!mon) continue;
-			mon_take_hit(mon, dmg / 5, fear, NULL);
+			mon_take_hit(mon, splash, fear, NULL);
 		}
 	}
 
@@ -626,6 +627,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* Information about the attack */
 	int chance = chance_of_melee_hit(p, obj);
 	int drain = 0;
+	int splash = 0;
 	bool do_quake = false;
 	bool success = false;
 
@@ -692,6 +694,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		improve_attack_modifier(obj, mon, &b, &s, verb, false);
 		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
 
+		/* Get the damage */
 		if (!OPT(p, birth_percent_damage)) {
 			dmg = melee_damage(obj, b, s);
 			dmg = critical_melee(p, mon, weight, obj->to_h, dmg, &msg_type);
@@ -699,6 +702,8 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
 		}
 
+		/* Splash damage and earthquakes */
+		splash = (weight * dmg) / 100;
 		if (player_of_has(p, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
 			equip_learn_flag(p, OF_IMPACT);
@@ -770,7 +775,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		(*fear) = false;
 
 	/* Post-damage effects */
-	if (blow_after_effects(grid, dmg, fear, do_quake))
+	if (blow_after_effects(grid, dmg, splash, fear, do_quake))
 		stop = true;
 
 	return stop;
