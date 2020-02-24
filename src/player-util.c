@@ -1252,8 +1252,11 @@ int player_crowd_damage_reduction(struct player *p)
 {
 	int weight = player_crowd_weighting(p);
 
-	/* Let's just try that as a percentage... */
-	return weight;
+	/* Use that as a percentage, up to a point */
+	if (weight > 50) {
+		weight = 50 + ((weight - 50) / 4);
+	}
+	return MIN(weight, 80);
 }
 
 /**
