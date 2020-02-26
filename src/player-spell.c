@@ -561,14 +561,14 @@ static size_t append_random_value_string(char *buffer, size_t size,
 	if (rv->base > 0) {
 		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
 
-		if (rv->dice > 0 || rv->sides > 0) {
+		if (rv->dice > 0 && rv->sides > 0) {
 			offset += strnfmt(buffer + offset, size - offset, "+");
 		}
 	}
 
-	if (rv->dice == 1) {
+	if (rv->dice == 1 && rv->sides > 0) {
 		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
-	} else if (rv->dice > 1) {
+	} else if (rv->dice > 1 && rv->sides > 0) {
 		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice,
 						  rv->sides);
 	}
@@ -657,11 +657,13 @@ static void spell_effect_append_value_info(const struct effect *effect,
 		offset += strnfmt(p + offset, len - offset, ";");
 	}
 
-	offset += strnfmt(p + offset, len - offset, " %s ", type);
-	offset += append_random_value_string(p + offset, len - offset, &rv);
+	if ((rv.base > 0) || (rv.dice > 0 && rv.sides > 0)) {
+		offset += strnfmt(p + offset, len - offset, " %s ", type);
+		offset += append_random_value_string(p + offset, len - offset, &rv);
 
-	if (special != NULL)
-		strnfmt(p + offset, len - offset, "%s", special);
+		if (special != NULL)
+			strnfmt(p + offset, len - offset, "%s", special);
+	}
 }
 
 void get_spell_info(int spell_index, char *p, size_t len)
