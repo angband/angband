@@ -161,18 +161,18 @@ static int project_player_handler_FIRE(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful fire attacks */
 	if (context->power >= 80) {
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			msg("The intense heat saps you.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0, 0,
 						  0, &context->obvious);
 		}
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_BLIND,
 								 randint1(context->dam / 100), true, true)) {
 				msg("Your eyes fill with smoke!");
 			}
 		}
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_POISONED,
 								 randint1(context->dam / 10), true, true)) {
 				msg("You are assailed by poisonous fumes!");
@@ -189,7 +189,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful cold attacks */
 	if (context->power >= 80) {
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			msg("The cold seeps into your bones.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_DEX, 0, 0, 0,
 						  0, &context->obvious);
@@ -217,7 +217,7 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful poison attacks */
 	if (context->power >= 60) {
-		if (randint0(context->dam > 200)) {
+		if (randint0(context->dam) > 200) {
 			if (!player_is_immune(player, ELEM_ACID)) {
 				int dam = context->dam / 5;
 				msg("The venom stings your skin!");
@@ -227,7 +227,7 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 								 true);
 			}
 		}
-		if (randint0(context->dam > 200)) {
+		if (randint0(context->dam) > 200) {
 			msg("The stench sickens you.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_CON, 0, 0, 0,
 						  0, &context->obvious);
