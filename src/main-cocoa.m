@@ -4208,14 +4208,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    [NSURL fileURLWithPath:[NSString stringWithCString:ANGBAND_DIR_SAVE encoding:NSASCIIStringEncoding]
 		   isDirectory:YES];
 
-	/*
-	 * Get what we think the default save file name is.
-	 * Default to the empty string.
-	 */
-	NSString *savefileName =
-	    [[NSUserDefaults angbandDefaults] stringForKey:@"SaveFile"];
-	if (! savefileName) savefileName = @"";
-
 	/* Set up an open panel */
 	NSOpenPanel* panel = [NSOpenPanel openPanel];
 	[panel setCanChooseFiles:YES];
