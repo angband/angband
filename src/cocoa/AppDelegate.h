@@ -17,23 +17,6 @@
 #import <Cocoa/Cocoa.h>
 #import "TileSetScaling.h"
 
-@interface AngbandSoundCatalog : NSObject {
-@private
-    /**
-     * Stores instances of NSSound keyed by path so the same sound can be
-     * used for multiple events.
-     */
-    NSMutableDictionary *soundsByPath;
-    /**
-     * Stores arrays of NSSound keyed by event number.
-     */
-    NSMutableDictionary *soundArraysByEvent;
-}
-
-- (id)init;
-- (void)playSound:(int)event;
-@end
-
 @interface AngbandAppDelegate : NSObject <NSApplicationDelegate,
 					      TileSetDefaultScalingComputing,
 					      TileSetScalingChanging> {
@@ -43,13 +26,6 @@
 @property (strong, nonatomic, retain) IBOutlet NSMenu *commandMenu;
 @property (strong, nonatomic, retain) NSDictionary *commandMenuTagMap;
 @property (strong, nonatomic) TileSetScalingPanelController *scalingPanelController;
-@property NSFont *defaultFont;
-/*
- * Whether or not we allow sounds (only relevant for the screensaver, where
- * the user can't configure it in-game).
- */
-@property BOOL allowSounds;
-@property AngbandSoundCatalog *sounds;
 - (IBAction)newGame:(id)sender;
 - (IBAction)editFont:(id)sender;
 - (IBAction)openGame:(id)sender;
