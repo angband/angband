@@ -110,6 +110,262 @@ static bool new_game = FALSE;
 
 @class AngbandView;
 
+/**
+ * Load sound effects based on sound.cfg within the xtra/sound directory;
+ * bridge to Cocoa to use NSSound for simple loading and playback, avoiding
+ * I/O latency by caching all sounds at the start.  Inherits full sound
+ * format support from Quicktime base/plugins.
+ * pelpel favoured a plist-based parser for the future but .cfg support
+ * improves cross-platform compatibility.
+ */
+@interface AngbandSoundCatalog : NSObject {
+@private
+    /**
+     * Stores instances of NSSound keyed by path so the same sound can be
+     * used for multiple events.
+     */
+    NSMutableDictionary *soundsByPath;
+    /**
+     * Stores arrays of NSSound keyed by event number.
+     */
+    NSMutableDictionary *soundArraysByEvent;
+}
+
+/**
+ * If NO, then playSound effectively becomes a do nothing operation.
+ */
+@property (getter=isEnabled) BOOL enabled;
+
+/**
+ * Set up for lazy initialization in playSound().  Set enabled to NO.
+ */
+- (id)init;
+
+/**
+ * If self.enabled is YES and the given event has one or more sounds
+ * corresponding to it in the catalog, plays one of those sounds, chosen at
+ * random.
+ */
+- (void)playSound:(int)event;
+
+/**
+ * Impose an arbitary limit on number of possible samples per event.
+ * Currently not declaring this as a class property for compatibility with
+ * versions of Xcode prior to 8.
+ */
++ (int)maxSamples;
+
+/**
+ * Return the shared sound catalog instance, creating it if it does not
+ * exist yet.  Currently not declaring this as a class property for
+ * compatibility with versions of Xcode prior to 8.
+ */
++ (AngbandSoundCatalog*)sharedSounds;
+
+/**
+ * Release any resouces associated with shared sounds.
+ */
++ (void)clearSharedSounds;
+
+@end
+
+@implementation AngbandSoundCatalog
+
+- (id)init {
+    if (self = [super init]) {
+	self->soundsByPath = nil;
+	self->soundArraysByEvent = nil;
+	self->_enabled = NO;
+    }
+    return self;
+}
+
+- (void)playSound:(int)event {
+    if (! self.enabled) {
+	return;
+    }
+
+    /* Initialize when the first sound is played. */
+    if (self->soundArraysByEvent == nil) {
+	/* Find and open the config file */
+	char path[2048];
+	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, "sound.cfg");
+	ang_file *fff = file_open(path, MODE_READ, -1);
+
+	/* Handle errors */
+	if (!fff) {
+	    NSLog(@"The sound configuration file could not be opened.");
+	    return;
+	}
+
+	self->soundsByPath = [[NSMutableDictionary alloc] init];
+	self->soundArraysByEvent = [[NSMutableDictionary alloc] init];
+	@autoreleasepool {
+	    /*
+	     * This loop may take a while depending on the count and size of
+	     * samples to load.
+	     */
+
+	    /* Parse the file */
+	    /* Lines are always of the form "name = sample [sample ...]" */
+	    char buffer[2048];
+	    while (file_getl(fff, buffer, sizeof(buffer))) {
+		char *msg_name;
+		char *cfg_sample_list;
+		char *search;
+		char *cur_token;
+		char *next_token;
+		int event;
+
+		/* Skip anything not beginning with an alphabetic character */
+		if (!buffer[0] || !isalpha((unsigned char)buffer[0])) continue;
+
+		/* Split the line into two: message name, and the rest */
+		search = strchr(buffer, ' ');
+		cfg_sample_list = strchr(search + 1, ' ');
+		if (!search) continue;
+		if (!cfg_sample_list) continue;
+
+		/* Set the message name, and terminate at first space */
+		msg_name = buffer;
+		search[0] = '\0';
+
+		/* Make sure this is a valid event name */
+		event = message_lookup_by_sound_name(msg_name);
+		if (event < 0) continue;
+
+		/*
+		 * Advance the sample list pointer so it's at the beginning of
+		 * text.
+		 */
+		cfg_sample_list++;
+		if (!cfg_sample_list[0]) continue;
+
+		/* Terminate the current token */
+		cur_token = cfg_sample_list;
+		search = strchr(cur_token, ' ');
+		if (search) {
+		    search[0] = '\0';
+		    next_token = search + 1;
+		} else {
+		    next_token = NULL;
+		}
+
+		/*
+		 * Now we find all the sample names and add them one by one
+		 */
+		while (cur_token) {
+		    NSMutableArray *soundSamples =
+			[self->soundArraysByEvent
+			     objectForKey:[NSNumber numberWithInteger:event]];
+		    if (soundSamples == nil) {
+			soundSamples = [[NSMutableArray alloc] init];
+			[self->soundArraysByEvent
+			     setObject:soundSamples
+			     forKey:[NSNumber numberWithInteger:event]];
+		    }
+		    int num = (int) soundSamples.count;
+
+		    /* Don't allow too many samples */
+		    if (num >= [AngbandSoundCatalog maxSamples]) break;
+
+		    NSString *token_string =
+			[NSString stringWithUTF8String:cur_token];
+		    NSSound *sound =
+			[self->soundsByPath objectForKey:token_string];
+
+		    if (! sound) {
+			/*
+			 * We have to load the sound. Build the path to the
+			 * sample.
+			 */
+			path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS,
+				   cur_token);
+			if (file_exists(path)) {
+			    /* Load the sound into memory */
+			    sound = [[NSSound alloc]
+					 initWithContentsOfFile:[NSString stringWithUTF8String:path]
+					 byReference:YES];
+			    if (sound) {
+				[self->soundsByPath setObject:sound
+					    forKey:token_string];
+			    }
+			}
+		    }
+
+		    /* Store it if we loaded it */
+		    if (sound) {
+			[soundSamples addObject:sound];
+		    }
+
+		    /* Figure out next token */
+		    cur_token = next_token;
+		    if (next_token) {
+			 /* Try to find a space */
+			 search = strchr(cur_token, ' ');
+
+			 /*
+			  * If we can find one, terminate, and set new "next".
+			  */
+			 if (search) {
+			     search[0] = '\0';
+			     next_token = search + 1;
+			 } else {
+			     /* Otherwise prevent infinite looping */
+			     next_token = NULL;
+			 }
+		    }
+		}
+	    }
+	}
+
+	/* Close the file */
+	file_close(fff);
+    }
+
+    @autoreleasepool {
+	NSMutableArray *samples =
+	    [self->soundArraysByEvent
+		 objectForKey:[NSNumber numberWithInteger:event]];
+
+	if (samples == nil || samples.count == 0) {
+	    return;
+	}
+
+	/* Choose a random event. */
+	int s = randint0((int) samples.count);
+	NSSound *sound = samples[s];
+
+	if ([sound isPlaying])
+	    [sound stop];
+
+	/* Play the sound. */
+	[sound play];
+    }
+}
+
++ (int)maxSamples {
+    return 16;
+}
+
+/**
+ * For sharedSounds and clearSharedSounds.
+ */
+static __strong AngbandSoundCatalog* gSharedSounds = nil;
+
++ (AngbandSoundCatalog*)sharedSounds {
+    if (gSharedSounds == nil) {
+	gSharedSounds = [[AngbandSoundCatalog alloc] init];
+    }
+    return gSharedSounds;;
+}
+
++ (void)clearSharedSounds {
+    gSharedSounds = nil;
+}
+
+@end
+
 /*
  * To handle fonts where an individual glyph's bounding box can extend into
  * neighboring columns, Term_curs_cocoa(), Term_pict_cocoa(),
@@ -842,6 +1098,17 @@ struct PendingCellChange {
 - (void)viewDidEndLiveResize:(AngbandView *)view;
 - (void)saveWindowVisibleToDefaults: (BOOL)windowVisible;
 - (BOOL)windowVisibleUsingDefaults;
+
+/* Class methods */
+/**
+ * Gets the default font for all contexts.  Currently not declaring this as
+ * a class property for compatibility with versions of Xcode prior to 8.
+ */
++ (NSFont*)defaultFont;
+/**
+ * Sets the default font for all contexts.
+ */
++ (void)setDefaultFont:(NSFont*)font;
 
 /* Internal method */
 - (AngbandView *)activeView;
@@ -1677,6 +1944,21 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 }
 
 /**
+ * For defaultFont and setDefaultFont.
+ */
+static __strong NSFont* gDefaultFont = nil;
+
++ (NSFont*)defaultFont
+{
+    return gDefaultFont;
+}
+
++ (void)setDefaultFont:(NSFont*)font
+{
+    gDefaultFont = font;
+}
+
+/**
  * We have this notion of an "active" AngbandView, which is the largest - the
  * idea being that in the screen saver, when the user hits Test in System
  * Preferences, we don't want to keep driving the AngbandView in the
@@ -2082,200 +2364,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
 @end
 
-
-/**
- * Arbitary limit on number of possible samples per event
- */
-#define MAX_SAMPLES            16
-
-@implementation AngbandSoundCatalog
-/**
- * Load sound effects based on sound.cfg within the xtra/sound directory;
- * bridge to Cocoa to use NSSound for simple loading and playback, avoiding
- * I/O latency by caching all sounds at the start.  Inherits full sound
- * format support from Quicktime base/plugins.
- * pelpel favoured a plist-based parser for the future but .cfg support
- * improves cross-platform compatibility.
- */
-- (id)init
-{
-    if (self = [super init]) {
-	self->soundsByPath = [[NSMutableDictionary alloc] init];
-	self->soundArraysByEvent = [[NSMutableDictionary alloc] init];
-
-	/* Find and open the config file */
-	char path[2048];
-	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, "sound.cfg");
-	ang_file *fff = file_open(path, MODE_READ, -1);
-
-	/* Handle errors */
-	if (!fff) {
-	    NSLog(@"The sound configuration file could not be opened.");
-	    return nil;
-	}
-
-	@autoreleasepool {
-	    /*
-	     * This loop may take a while depending on the count and size of
-	     * samples to load.
-	     */
-
-	    /* Parse the file */
-	    /* Lines are always of the form "name = sample [sample ...]" */
-	    char buffer[2048];
-	    while (file_getl(fff, buffer, sizeof(buffer)))
-	    {
-		char *msg_name;
-		char *cfg_sample_list;
-		char *search;
-		char *cur_token;
-		char *next_token;
-		int event;
-
-		/* Skip anything not beginning with an alphabetic character */
-		if (!buffer[0] || !isalpha((unsigned char)buffer[0])) continue;
-
-		/* Split the line into two: message name, and the rest */
-		search = strchr(buffer, ' ');
-		cfg_sample_list = strchr(search + 1, ' ');
-		if (!search) continue;
-		if (!cfg_sample_list) continue;
-
-		/* Set the message name, and terminate at first space */
-		msg_name = buffer;
-		search[0] = '\0';
-
-		/* Make sure this is a valid event name */
-		event = message_lookup_by_sound_name(msg_name);
-		if (event < 0) continue;
-
-		/*
-		 * Advance the sample list pointer so it's at the beginning of
-		 * text.
-		 */
-		cfg_sample_list++;
-		if (!cfg_sample_list[0]) continue;
-
-		/* Terminate the current token */
-		cur_token = cfg_sample_list;
-		search = strchr(cur_token, ' ');
-		if (search)
-		{
-			search[0] = '\0';
-			next_token = search + 1;
-		}
-		else
-		{
-			next_token = NULL;
-		}
-
-		/*
-		 * Now we find all the sample names and add them one by one
-		 */
-		while (cur_token)
-		{
-		    NSMutableArray *soundSamples =
-			[self->soundArraysByEvent
-			     objectForKey:[NSNumber numberWithInteger:event]];
-		    if (soundSamples == nil) {
-			soundSamples = [[NSMutableArray alloc] init];
-			[self->soundArraysByEvent
-			     setObject:soundSamples
-			     forKey:[NSNumber numberWithInteger:event]];
-		    }
-		    int num = (int) soundSamples.count;
-
-		    /* Don't allow too many samples */
-		    if (num >= MAX_SAMPLES) break;
-
-		    NSString *token_string =
-			[NSString stringWithUTF8String:cur_token];
-		    NSSound *sound =
-			[self->soundsByPath objectForKey:token_string];
-
-		    if (! sound)
-		    {
-			/*
-			 * We have to load the sound. Build the path to the
-			 * sample.
-			 */
-			path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS,
-				   cur_token);
-			if (file_exists(path))
-			{
-			    /* Load the sound into memory */
-			    sound = [[NSSound alloc]
-					 initWithContentsOfFile:[NSString stringWithUTF8String:path]
-					 byReference:YES];
-			    if (sound)
-				[self->soundsByPath setObject:sound
-					    forKey:token_string];
-			}
-		    }
-
-		    /* Store it if we loaded it */
-		    if (sound)
-		    {
-			[soundSamples addObject:sound];
-		    }
-
-		    /* Figure out next token */
-		    cur_token = next_token;
-		    if (next_token)
-		    {
-			 /* Try to find a space */
-			 search = strchr(cur_token, ' ');
-
-			 /*
-			  * If we can find one, terminate, and set new "next".
-			  */
-			 if (search)
-			 {
-			     search[0] = '\0';
-			     next_token = search + 1;
-			 }
-			 else
-			 {
-			     /* Otherwise prevent infinite looping */
-			     next_token = NULL;
-			 }
-		    }
-		}
-	    }
-	}
-
-	/* Close the file */
-	file_close(fff);
-    }
-
-    return self;
-}
-
-- (void)playSound:(int)event
-{
-    @autoreleasepool {
-	NSMutableArray *samples =
-	    [self->soundArraysByEvent
-		 objectForKey:[NSNumber numberWithInteger:event]];
-
-	if (samples == nil || samples.count == 0) {
-	    return;
-	}
-
-	/* Choose a random event. */
-	int s = randint0((int) samples.count);
-	NSSound *sound = samples[s];
-
-	if ([sound isPlaying])
-	    [sound stop];
-
-	/* Play the sound. */
-	[sound play];
-    }
-}
-
-@end
-
 /**
  * Delay handling of double-clicked savefiles
  */
@@ -2368,7 +2456,6 @@ static void record_current_savefile(void)
 static void Term_init_cocoa(term *t)
 {
     @autoreleasepool {
-	AngbandAppDelegate *appd = (__bridge AngbandAppDelegate*) t->data;
 	AngbandContext *context = [[AngbandContext alloc] init];
 
 	/* Give the term ownership of the context */
@@ -2399,13 +2486,14 @@ static void Term_init_cocoa(term *t)
 	NSString *fontName =
 	    [[NSUserDefaults angbandDefaults]
 		stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
-	if (! fontName) fontName = [appd.defaultFont fontName];
+	if (! fontName) fontName = [[AngbandContext defaultFont] fontName];
 
 	/*
 	 * Use a smaller default font for the other windows, but only if the
 	 * font hasn't been explicitly set.
 	 */
-	float fontSize = (termIdx > 0) ? 10.0 : [appd.defaultFont pointSize];
+	float fontSize =
+	    (termIdx > 0) ? 10.0 : [[AngbandContext defaultFont] pointSize];
 	NSNumber *fontSizeNumber =
 	    [[NSUserDefaults angbandDefaults]
 		valueForKey: [NSString stringWithFormat: @"FontSize-%d", termIdx]];
@@ -3957,17 +4045,7 @@ static void prepare_paths_and_directories(void)
 static void play_sound(game_event_type unused, game_event_data *data, void *user)
 {
     int event = data->message.type;
-    AngbandAppDelegate* appd = (__bridge AngbandAppDelegate*) user;
-
-    /* Maybe block it */
-    if (! appd.allowSounds) return;
-
-    if (appd.sounds == nil) {
-	appd.sounds = [[AngbandSoundCatalog alloc] init];
-    }
-    if (appd.sounds != nil) {
-	[appd.sounds playSound:event];
-    }
+    [[AngbandSoundCatalog sharedSounds] playSound:event];
 }
 
 /**
@@ -4040,7 +4118,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 - (IBAction)editFont:sender
 {
     NSFontPanel *panel = [NSFontPanel sharedFontPanel];
-    NSFont *termFont = self.defaultFont;
+    NSFont *termFont = [AngbandContext defaultFont];
 
     int i;
     for (i=0; i < ANGBAND_TERM_MAX; i++) {
@@ -4070,13 +4148,13 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Bug #1709: Only change font for angband windows */
     if (mainTerm == ANGBAND_TERM_MAX) return;
 
-    NSFont *oldFont = self.defaultFont;
+    NSFont *oldFont = [AngbandContext defaultFont];
     NSFont *newFont = [sender convertFont:oldFont];
     if (! newFont) return; /*paranoia */
 
     /* Store as the default font if we changed the first term */
     if (mainTerm == 0) {
-        self.defaultFont = newFont;
+	[AngbandContext setDefaultFont:newFont];
     }
 
     /* Record it in the preferences */
@@ -4244,12 +4322,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Initialize the term */
     term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
 
-    /*
-     * Pass along a reference to the application delegate for determining the
-     * font in Term_init_cocoa.
-     */
-    newterm->data = (__bridge void*) self;
-
     /* Use a "software" cursor */
     newterm->soft_cursor = TRUE;
 
@@ -4371,16 +4443,19 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     }
 
     /* Use sounds */
-    self.allowSounds = [defs boolForKey:@"AllowSound"];
+    [AngbandSoundCatalog sharedSounds].enabled =
+	[defs boolForKey:@"AllowSound"];
 
     /* fps */
     frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
 
     /* Font */
-    self.defaultFont = [NSFont fontWithName:[defs valueForKey:@"FontName-0"]
-			       size:[defs floatForKey:@"FontSize-0"]];
-    if (! self.defaultFont)
-	self.defaultFont = [NSFont fontWithName:@"Menlo" size:13.];
+    [AngbandContext
+	setDefaultFont:[NSFont fontWithName:[defs valueForKey:@"FontName-0"]
+			       size:[defs floatForKey:@"FontSize-0"]]];
+    if (! [AngbandContext defaultFont])
+	[AngbandContext
+	    setDefaultFont:[NSFont fontWithName:@"Menlo" size:13.]];
 }
 
 /**
