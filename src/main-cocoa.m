@@ -3854,8 +3854,6 @@ static void hook_plog(const char * str)
     if (str)
     {
 		NSLog( @"%s", str );
-/*        NSString *string = [NSString stringWithCString:str encoding:NSMacOSRomanStringEncoding]; */
-/*        NSRunAlertPanel(@"Danger Will Robinson", @"%@", @"OK", nil, nil, string); */
     }
 }
 
@@ -3882,9 +3880,19 @@ static NSString* get_lib_directory(void)
 
     if( !libExists || !isDirectory )
     {
-        NSLog( @"Angband: can't find %@/ in bundle: isDirectory: %d libExists: %d", AngbandDirectoryNameLib, isDirectory, libExists );
-        NSRunAlertPanel( @"Missing Resources", @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.", @"Quit", nil, nil );
-        exit(0);
+	NSLog( @"Angband: can't find %@/ in bundle: isDirectory: %d libExists: %d", AngbandDirectoryNameLib, isDirectory, libExists );
+
+	NSAlert *alert = [[NSAlert alloc] init];
+	/*
+	 * Note that NSCriticalAlertStyle was deprecated in 10.10.  The
+	 * replacement is NSAlertStyleCritical.
+	 */
+	alert.alertStyle = NSCriticalAlertStyle;
+	alert.messageText = @"MissingResources";
+	alert.informativeText = @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.";
+	[alert addButtonWithTitle:@"Quit"];
+	[alert runModal];
+	exit(0);
     }
 
     return bundleLibPath;
