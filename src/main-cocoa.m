@@ -1868,7 +1868,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
             [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
         }
-        [[NSUserDefaults standardUserDefaults] synchronize];
     }
 
     term *old = Term;
@@ -2351,7 +2350,6 @@ static void record_current_savefile(void)
     {
         NSUserDefaults *angbandDefs = [NSUserDefaults angbandDefaults];
         [angbandDefs setObject:savefileString forKey:@"SaveFile"];
-        [angbandDefs synchronize];        
     }
 }
 
@@ -2717,7 +2715,6 @@ static errr Term_xtra_cocoa_react(void)
 		    }
 		    [[NSUserDefaults angbandDefaults]
 			setInteger:GRAPHICS_NONE forKey:@"GraphicsID"];
-		    [[NSUserDefaults angbandDefaults] synchronize];
 
 		    NSAlert *alert = [[NSAlert alloc] init];
 		    alert.messageText = @"Failed to Load Tile Set";
@@ -4085,8 +4082,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         forKey:[NSString stringWithFormat:@"FontName-%d", mainTerm]];
     [defs setFloat:[newFont pointSize]
         forKey:[NSString stringWithFormat:@"FontSize-%d", mainTerm]];
-    [defs synchronize];
-    
+
     NSDisableScreenUpdates();
 
     /* Update window */
@@ -4197,7 +4193,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 		setInteger:hscl forKey:AngbandTileWidthMultDefaultsKey];
 	    [[NSUserDefaults angbandDefaults]
 		setInteger:vscl forKey:AngbandTileHeightMultDefaultsKey];
-	    [[NSUserDefaults angbandDefaults] synchronize];
 	    if (self.scalingPanelController != nil) {
 		self.scalingPanelController.horizontalScaling = hscl;
 		self.scalingPanelController.verticalScaling = vscl;
@@ -4557,7 +4552,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Stash it in UserDefaults */
     [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
     [self recomputeDefaultTileMultipliersIfNecessary];
-    [[NSUserDefaults angbandDefaults] synchronize];
 
     if (game_in_progress)
     {
@@ -4654,7 +4648,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	setInteger:h forKey:AngbandTileWidthMultDefaultsKey];
     [[NSUserDefaults angbandDefaults]
 	setInteger:v forKey:AngbandTileHeightMultDefaultsKey];
-    [[NSUserDefaults angbandDefaults] synchronize];
     if (graphics_are_enabled()) {
 	if (tile_width != h || tile_height != v) {
 	    tile_width = h;
