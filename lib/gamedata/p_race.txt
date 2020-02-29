@@ -27,7 +27,9 @@
 # age:agebase:agemod
 # height:hgt:modhgt
 # weight:wgt:modwgt
-# flags:object flags
+# obj-flags:object flags
+# play-flags:player flags
+# values:values
 
 # 'name' indicates the beginning of an entry.
 

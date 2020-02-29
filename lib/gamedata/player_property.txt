@@ -1,0 +1,240 @@
+# File: player_property.txt
+# Used in conjunction with list-player-flags.h, list-object-flags.h and
+# list-elements.h
+# Player properties
+#
+# Descriptions and messages can be edited without bad effects.
+# Changing code may have unpredictable results.
+# Changing the name, reordering, or adding whole new entires will severely
+# disrupt the game, and should only be done when the associated list-*.h
+# files (and other code) are also  being changed, and the game recompiled.
+#
+# Fields:
+# type - the type of player property.  Valid types are
+#    player  - special player flag from list-player-flags.h
+#    object  - object flag from list-object-flags.h
+#    element - resistance, immunity or vulnerability to an element
+# code - the effect name used by the game. Element codes are templates, and
+#        one is made for each element
+# desc - the effect description shown in game
+# birth-desc - the description shown on the birth screen
+
+type:player
+code:FAST_SHOT
+desc:Your shooting speed improves with tension bows every 10 levels
+birth-desc:Gains extra shots with bow
+
+type:player
+code:BRAVERY_30
+desc:You become immune to fear at level 30
+birth-desc:Gains immunity to fear
+
+type:player
+code:BLESS_WEAPON
+desc:You get improved melee with blessed or hafted weapons
+birth-desc:Prefers blunt/blessed weapons
+
+type:player
+code:ZERO_FAIL
+desc:You may obtain a perfect success rate with magic
+birth-desc:Advanced spellcasting
+
+type:player
+code:BEAM
+desc:Your bolt spells frequently turn into beams
+birth-desc:Bolts may become beams
+
+type:player
+code:CHOOSE_SPELLS
+desc:you may choose their own spells to study
+birth-desc:Chooses spells
+
+type:player
+code:KNOW_MUSHROOM
+desc:You easily recognize mushrooms
+birth-desc:Identifies mushrooms
+
+type:player
+code:KNOW_ZAPPER
+desc:You easily recognize magic devices
+birth-desc:Identifies magic devices
+
+type:player
+code:SEE_ORE
+desc:You can sense ore in the walls
+birth-desc:Senses ore/minerals
+
+type:player
+code:NO_MANA
+desc:You cannot cast spells
+birth-desc:Cannot cast spells
+
+type:player
+code:CHARM
+desc:You are extra persuasive to monsters
+birth-desc:Charms monsters
+
+type:player
+code:UNLIGHT
+desc:You gain stealth in, can see in, and resist the dark
+birth-desc:Likes the dark
+
+type:player
+code:ROCK
+desc:You are made of rock
+birth-desc:Is made of rock
+
+type:player
+code:STEAL
+desc:You can steal from monsters
+birth-desc:Steals from monsters
+
+type:player
+code:SHIELD_BASH
+desc:You can bash monsters with a shield in melee
+birth-desc:Employs shield-bashes
+
+type:player
+code:EVIL
+desc:You resist nether, but are hurt by holy attacks
+birth-desc:Is evil
+
+type:player
+code:CROWD_FIGHT
+desc:You gains advantage from fighting many monsters at once
+birth-desc:Fights crowds well
+
+type:object
+code:SUST_STR
+desc:Your strength is sustained
+birth-desc:Sustained strength
+
+type:object
+code:SUST_INT
+desc:Your intelligence is sustained
+birth-desc:Sustained intelligence
+
+type:object
+code:SUST_WIS
+desc:Your wisdom is sustained
+birth-desc:Sustained wisdom
+
+type:object
+code:SUST_DEX
+desc:Your dexterity is sustained
+birth-desc:Sustained dexterity
+
+type:object
+code:SUST_CON
+desc:Your constitution is sustained
+birth-desc:Sustained constitution
+
+type:object
+code:PROT_FEAR
+desc:You are immune to fear
+birth-desc:Fear immunity
+
+type:object
+code:PROT_BLIND
+desc:You cannot be blinded
+birth-desc:Blindness immunity
+
+type:object
+code:PROT_CONF
+desc:You cannot be confused
+birth-desc:Confusion immunity
+
+type:object
+code:PROT_STUN
+desc:You cannot be stunned
+birth-desc:Stun immunity
+
+type:object
+code:SLOW_DIGEST
+desc:You have slow metabolism
+birth-desc:Slow digestion
+
+type:object
+code:FEATHER
+desc:You fall lightly
+birth-desc:Feather falling
+
+type:object
+code:REGEN
+desc:You regenerate quickly
+birth-desc:Regeneration
+
+type:object
+code:TELEPATHY
+desc:You have telepathy
+birth-desc:Telepathy
+
+type:object
+code:SEE_INVIS
+desc:You can see invisible things
+birth-desc:See invisible
+
+type:object
+code:FREE_ACT
+desc:You are immune to paralysis
+birth-desc:Free action
+
+type:object
+code:HOLD_LIFE
+desc:Your life force is sustained
+birth-desc:Hold life
+
+type:object
+code:IMPACT
+desc:You sometimes create earthquakes on impact
+birth-desc:Creates earthquakes
+
+type:object
+code:IMPAIR_HP
+desc:Your hitpoint recovery is impaired
+birth-desc:Impaired HP regen
+
+type:object
+code:IMPAIR_MANA
+desc:Your mana recovery is impaired
+birth-desc:Impaired mana regen
+
+type:object
+code:AFRAID
+desc:You are afraid of melee, and bad at shooting and casting spells
+birth-desc:Constant fear
+
+type:object
+code:NO_TELEPORT
+desc:You cannot teleport
+birth-desc:Teleport ban
+
+type:object
+code:AGGRAVATE
+desc:You aggravate creatures nearby
+birth-desc:Aggravataion
+
+type:object
+code:DRAIN_EXP
+desc:Your experience constantly drains away
+birth-desc:Experience drain
+
+type:object
+code:TRAP_IMMUNE
+desc:You are immune to traps
+birth-desc:Trap immunity
+
+type:element
+code:RESIST
+desc:You resist
+birth-desc:resistance
+
+type:element
+code:IMMUNE
+desc:You are immune to
+birth-desc:immunity
+
+type:element
+code:VULN
+desc:You are vulnerable to
+birth-desc:vulnerability
