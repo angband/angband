@@ -22,220 +22,220 @@
 
 type:player
 code:FAST_SHOT
-desc:Your shooting speed improves with tension bows every 10 levels
+desc:Your shooting speed improves with tension bows every 10 levels.
 birth-desc:Gains extra shots with bow
 
 type:player
 code:BRAVERY_30
-desc:You become immune to fear at level 30
+desc:You become immune to fear at level 30.
 birth-desc:Gains immunity to fear
 
 type:player
 code:BLESS_WEAPON
-desc:You get improved melee with blessed or hafted weapons
+desc:You get improved melee with blessed or hafted weapons.
 birth-desc:Prefers blunt/blessed weapons
 
 type:player
 code:ZERO_FAIL
-desc:You may obtain a perfect success rate with magic
+desc:You may obtain a perfect success rate with magic.
 birth-desc:Advanced spellcasting
 
 type:player
 code:BEAM
-desc:Your bolt spells frequently turn into beams
+desc:Your bolt spells frequently turn into beams.
 birth-desc:Bolts may become beams
 
 type:player
 code:CHOOSE_SPELLS
-desc:you may choose their own spells to study
+desc:you may choose their own spells to study.
 birth-desc:Chooses spells
 
 type:player
 code:KNOW_MUSHROOM
-desc:You easily recognize mushrooms
+desc:You easily recognize mushrooms.
 birth-desc:Identifies mushrooms
 
 type:player
 code:KNOW_ZAPPER
-desc:You easily recognize magic devices
+desc:You easily recognize magic devices.
 birth-desc:Identifies magic devices
 
 type:player
 code:SEE_ORE
-desc:You can sense ore in the walls
+desc:You can sense ore in the walls.
 birth-desc:Senses ore/minerals
 
 type:player
 code:NO_MANA
-desc:You cannot cast spells
+desc:You cannot cast spells.
 birth-desc:Cannot cast spells
 
 type:player
 code:CHARM
-desc:You are extra persuasive to monsters
+desc:You are extra persuasive to monsters.
 birth-desc:Charms monsters
 
 type:player
 code:UNLIGHT
-desc:You gain stealth in, can see in, and resist the dark
+desc:You gain stealth in, can see in, and resist the dark.
 birth-desc:Likes the dark
 
 type:player
 code:ROCK
-desc:You are made of rock
+desc:You are made of rock.
 birth-desc:Is made of rock
 
 type:player
 code:STEAL
-desc:You can steal from monsters
+desc:You can steal from monsters.
 birth-desc:Steals from monsters
 
 type:player
 code:SHIELD_BASH
-desc:You can bash monsters with a shield in melee
+desc:You can bash monsters with a shield in melee.
 birth-desc:Employs shield-bashes
 
 type:player
 code:EVIL
-desc:You resist nether, but are hurt by holy attacks
+desc:You resist nether, but are hurt by holy attacks.
 birth-desc:Is evil
 
 type:player
 code:CROWD_FIGHT
-desc:You gains advantage from fighting many monsters at once
+desc:You gains advantage from fighting many monsters at once.
 birth-desc:Fights crowds well
 
 type:object
 code:SUST_STR
-desc:Your strength is sustained
-birth-desc:Sustained strength
+desc:Your strength is sustained.
+birth-desc:Sustains strength
 
 type:object
 code:SUST_INT
-desc:Your intelligence is sustained
-birth-desc:Sustained intelligence
+desc:Your intelligence is sustained.
+birth-desc:Sustains intelligence
 
 type:object
 code:SUST_WIS
-desc:Your wisdom is sustained
-birth-desc:Sustained wisdom
+desc:Your wisdom is sustained.
+birth-desc:Sustains wisdom
 
 type:object
 code:SUST_DEX
-desc:Your dexterity is sustained
-birth-desc:Sustained dexterity
+desc:Your dexterity is sustained.
+birth-desc:Sustains dexterity
 
 type:object
 code:SUST_CON
-desc:Your constitution is sustained
-birth-desc:Sustained constitution
+desc:Your constitution is sustained.
+birth-desc:Sustains constitution
 
 type:object
 code:PROT_FEAR
-desc:You are immune to fear
+desc:You are immune to fear.
 birth-desc:Fear immunity
 
 type:object
 code:PROT_BLIND
-desc:You cannot be blinded
+desc:You cannot be blinded.
 birth-desc:Blindness immunity
 
 type:object
 code:PROT_CONF
-desc:You cannot be confused
+desc:You cannot be confused.
 birth-desc:Confusion immunity
 
 type:object
 code:PROT_STUN
-desc:You cannot be stunned
+desc:You cannot be stunned.
 birth-desc:Stun immunity
 
 type:object
 code:SLOW_DIGEST
-desc:You have slow metabolism
+desc:You have slow metabolism.
 birth-desc:Slow digestion
 
 type:object
 code:FEATHER
-desc:You fall lightly
+desc:You fall lightly.
 birth-desc:Feather falling
 
 type:object
 code:REGEN
-desc:You regenerate quickly
-birth-desc:Regeneration
+desc:You regenerate quickly.
+birth-desc:Regenerates quickly
 
 type:object
 code:TELEPATHY
-desc:You have telepathy
-birth-desc:Telepathy
+desc:You have telepathy.
+birth-desc:Has telepathy
 
 type:object
 code:SEE_INVIS
-desc:You can see invisible things
-birth-desc:See invisible
+desc:You can see invisible things.
+birth-desc:Sees invisible creatures
 
 type:object
 code:FREE_ACT
-desc:You are immune to paralysis
-birth-desc:Free action
+desc:You are immune to paralysis.
+birth-desc:Resists paralysis
 
 type:object
 code:HOLD_LIFE
-desc:Your life force is sustained
-birth-desc:Hold life
+desc:Your life force is sustained.
+birth-desc:Sustains experience
 
 type:object
 code:IMPACT
-desc:You sometimes create earthquakes on impact
+desc:You sometimes create earthquakes on impact.
 birth-desc:Creates earthquakes
 
 type:object
 code:IMPAIR_HP
-desc:Your hitpoint recovery is impaired
-birth-desc:Impaired HP regen
+desc:Your hitpoint recovery is impaired.
+birth-desc:Regenerates slowly
 
 type:object
 code:IMPAIR_MANA
-desc:Your mana recovery is impaired
-birth-desc:Impaired mana regen
+desc:Your mana recovery is impaired.
+birth-desc:Regenerates mana slowly
 
 type:object
 code:AFRAID
-desc:You are afraid of melee, and bad at shooting and casting spells
-birth-desc:Constant fear
+desc:You are afraid of melee, and bad at shooting and casting spells.
+birth-desc:Constantly afraid
 
 type:object
 code:NO_TELEPORT
-desc:You cannot teleport
-birth-desc:Teleport ban
+desc:You cannot teleport.
+birth-desc:Cannot teleport
 
 type:object
 code:AGGRAVATE
-desc:You aggravate creatures nearby
-birth-desc:Aggravataion
+desc:You aggravate creatures nearby.
+birth-desc:Aggravates creatures
 
 type:object
 code:DRAIN_EXP
-desc:Your experience constantly drains away
+desc:Your experience constantly drains away.
 birth-desc:Experience drain
 
 type:object
 code:TRAP_IMMUNE
-desc:You are immune to traps
-birth-desc:Trap immunity
+desc:You are immune to traps.
+birth-desc:Immune to traps
 
 type:element
 desc:You resist
-birth-desc:resistance
+birth-desc:Resists
 value:1
 
 type:element
 desc:You are immune to
-birth-desc:immunity
+birth-desc:Immune to
 value:3
 
 type:element
 desc:You are vulnerable to
-birth-desc:vulnerability
+birth-desc:Vulnerable to
 value:-1

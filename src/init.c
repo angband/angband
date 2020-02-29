@@ -941,9 +941,10 @@ static errr finish_parse_player_prop(struct parser *p) {
 				char *name = projections[i].name;
 				new->index = i;
 				new->type = string_make(ability->type);
-				new->desc = string_make(format("%s %s", ability->desc, name));
-				new->birth_desc = string_make(format("%s %s", name,
-													 ability->birth_desc));
+				new->desc = string_make(format("%s %s.", ability->desc, name));
+				new->birth_desc = string_make(format("%s %s",
+													 ability->birth_desc,
+													 name));
 				new->value = ability->value;
 				if ((i != N_ELEMENTS(list_element_names) - 1) || ability->next){
 					previous = new;
