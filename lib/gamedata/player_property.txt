@@ -18,6 +18,7 @@
 #        one is made for each element
 # desc - the effect description shown in game
 # birth-desc - the description shown on the birth screen
+# value - value for elements; -1 (vulnerability), 1 (resistance) or 3 (immunity)
 
 type:player
 code:FAST_SHOT
@@ -225,16 +226,16 @@ desc:You are immune to traps
 birth-desc:Trap immunity
 
 type:element
-code:RESIST
 desc:You resist
 birth-desc:resistance
+value:1
 
 type:element
-code:IMMUNE
 desc:You are immune to
 birth-desc:immunity
+value:3
 
 type:element
-code:VULN
 desc:You are vulnerable to
 birth-desc:vulnerability
+value:-1

@@ -863,10 +863,23 @@ static enum parser_error parse_player_prop_type(struct parser *p) {
 static enum parser_error parse_player_prop_code(struct parser *p) {
 	const char *code = parser_getstr(p, "code");
 	struct player_ability *ability = parser_priv(p);
+	int index = -1;
+
 	if (!ability)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!ability->type)
+		return PARSE_ERROR_MISSING_PLAY_PROP_TYPE;
 
-	ability->code = string_make(code);
+	if (streq(ability->type, "player")) {
+		index = code_index_in_array(player_info_flags, code);
+	} else if (streq(ability->type, "object")) {
+		index = code_index_in_array(list_obj_flag_names, code);
+	}
+	if (index >= 0) {
+		ability->index = index;
+	} else {
+		return PARSE_ERROR_INVALID_PLAY_PROP_CODE;
+	}
 	return PARSE_ERROR_NONE;
 }
 
@@ -890,6 +903,15 @@ static enum parser_error parse_player_prop_birth_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_player_prop_value(struct parser *p) {
+	struct player_ability *ability = parser_priv(p);
+	if (!ability)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	ability->value = parser_getint(p, "value");
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_player_prop(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -897,6 +919,7 @@ struct parser *init_parse_player_prop(void) {
 	parser_reg(p, "code str code", parse_player_prop_code);
 	parser_reg(p, "desc str desc", parse_player_prop_desc);
 	parser_reg(p, "birth-desc str desc", parse_player_prop_birth_desc);
+	parser_reg(p, "value int value", parse_player_prop_value);
 	return p;
 }
 
@@ -907,23 +930,21 @@ static errr run_parse_player_prop(struct parser *p) {
 static errr finish_parse_player_prop(struct parser *p) {
 	struct player_ability *ability = player_abilities;
 	struct player_ability *new, *previous = NULL;
-	int index = 0;
-	player_abilities = mem_zalloc(sizeof(*player_abilities));
 
 	/* Copy abilities over, making multiple copies for element types */
+	player_abilities = mem_zalloc(sizeof(*player_abilities));
 	new = player_abilities;
 	while (ability) {
 		if (streq(ability->type, "element")) {
 			size_t i;
 			for (i = 0; i < N_ELEMENTS(list_element_names); i++) {
-				const char *code = list_element_names[i];
 				char *name = projections[i].name;
-				new->index = index++;
+				new->index = i;
 				new->type = string_make(ability->type);
-				new->code = string_make(format("%s_%s", code, ability->code));
 				new->desc = string_make(format("%s %s", ability->desc, name));
 				new->birth_desc = string_make(format("%s %s", name,
 													 ability->birth_desc));
+				new->value = ability->value;
 				if ((i != N_ELEMENTS(list_element_names) - 1) || ability->next){
 					previous = new;
 					new = mem_zalloc(sizeof(*new));
@@ -931,16 +952,14 @@ static errr finish_parse_player_prop(struct parser *p) {
 				}
 			}
 			string_free(ability->type);
-			string_free(ability->code);
 			string_free(ability->desc);
 			string_free(ability->birth_desc);
 			previous = ability;
 			ability = ability->next;
 			mem_free(previous);
 		} else {
-			new->index = index++;
 			new->type = ability->type;
-			new->code = ability->code;
+			new->index = ability->index;
 			new->desc = ability->desc;
 			new->birth_desc = ability->birth_desc;
 			if (ability->next) {
@@ -962,7 +981,6 @@ static void cleanup_player_prop(void)
 	struct player_ability *ability = player_abilities;
 	while (ability) {
 		string_free(ability->type);
-		string_free(ability->code);
 		string_free(ability->desc);
 		string_free(ability->birth_desc);
 		ability = ability->next;
@@ -3579,7 +3597,7 @@ static struct {
 	{ "world", &world_parser },
 	{ "projections", &projection_parser },
 	{ "timed effects", &player_timed_parser },
-	{ "player_property", &player_property_parser },
+	{ "player properties", &player_property_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
@@ -3595,7 +3613,7 @@ static struct {
 	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
-	{ "magic_realms", &realm_parser },
+	{ "magic realms", &realm_parser },
 	{ "player classes", &class_parser },
 	{ "artifacts", &artifact_parser },
 	{ "object properties", &object_property_parser },

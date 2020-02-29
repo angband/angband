@@ -334,12 +334,12 @@ struct player_class {
  */
 struct player_ability {
 	struct player_ability *next;
-	u16b index;			/* Ability index */
+	u16b index;			/* PF_*, OF_* or element index */
 	char *type;			/* Ability type */
-	char *code;			/* Ability code */
 	char *desc;			/* Ability description */
 	char *birth_desc;	/* Ability short description */
-	int group;			/* Ability group */
+	int group;			/* Ability group (set locally when viewing) */
+	int value;			/* Resistance value for elements */
 };
 
 /**

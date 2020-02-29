@@ -109,20 +109,6 @@ static bool grab_element_flag(struct element_info *info, const char *flag_name)
 	return false;
 }
 
-static int code_index_in_array(const char *code_name[], const char *code)
-{
-	int i = 0;
-
-	while (code_name[i]) {
-		if (streq(code_name[i], code)) {
-			return i;
-		}
-		i++;
-	}
-
-	return -1;
-}
-
 static enum parser_error write_dummy_object_record(struct artifact *art, const char *name)
 {
 	struct object_kind *temp, *dummy;
