@@ -182,7 +182,6 @@ static int same_colortable[BASIC_COLORS];
 
 /* Screen info: use one big Term 0, or other subwindows? */
 static bool bold_extended = false;
-static bool ascii_walls = false;
 static bool use_default_background = false;
 static int term_count = 1;
 
@@ -329,14 +328,13 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
-const char help_gcu[] = "Text mode, subopts\n              -a     Use ASCII walls\n              -B     Use brighter bold characters\n              -D     Use terminal default background color\n              -nN    Use N terminals (up to 6)";
+const char help_gcu[] = "Text mode, subopts\n              -B     Use brighter bold characters\n              -D     Use terminal default background color\n              -nN    Use N terminals (up to 6)";
 
 /**
  * Usage:
  *
- * angband -mgcu -- [-a] [-B] [-D] [-nN]
+ * angband -mgcu -- [-B] [-D] [-nN]
  *
- *   -a      Use ASCII walls
  *   -B      Use brighter bold characters
  *   -D      Use terminal default background color
  *   -nN     Use N terminals (up to 6)
@@ -709,32 +707,6 @@ static int create_color(int i, int scale) {
  * React to changes
  */
 static errr Term_xtra_gcu_react(void) {
-	if (ascii_walls) {
-		int i;
-		ascii_walls = false;
-		for (i = 0; i < 4; i++) {
-			// magma as %:D
-			feat_x_char[i][FEAT_MAGMA] = 0x23;
-			feat_x_attr[i][FEAT_MAGMA] = 0x01;
-
-			// quartz as %:D
-			feat_x_char[i][FEAT_QUARTZ] = 0x23;
-			feat_x_attr[i][FEAT_QUARTZ] = 0x01;
-
-			// quartz/magma w treasure as *:o
-			feat_x_char[i][FEAT_MAGMA_K] = feat_x_char[i][FEAT_QUARTZ_K] = 0x2A;
-			feat_x_attr[i][FEAT_MAGMA_K] = feat_x_attr[i][FEAT_QUARTZ_K] = 0x03;
-
-			// granite walls as #:D
-			feat_x_char[i][FEAT_GRANITE] = 0x23;
-			feat_x_attr[i][FEAT_GRANITE] = 0x01;
-
-			// permanent walls as #:r
-			feat_x_char[i][FEAT_PERM] = 0x23;
-			feat_x_attr[i][FEAT_PERM] = 0x04;
-		}
-	}
-
 #ifdef A_COLOR
 	if (COLORS == 256 || COLORS == 88) {
 		/* If we have more than 16 colors, find the best matches. These numbers
@@ -1004,8 +976,6 @@ errr init_gcu(int argc, char **argv) {
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-B")) {
 			bold_extended = true;
-		} else if (prefix(argv[i], "-a")) {
-			ascii_walls = true;
 		} else if (prefix(argv[i], "-n")) {
 			term_count = atoi(&argv[i][2]);
 			if (term_count > MAX_TERM_DATA) term_count = MAX_TERM_DATA;
