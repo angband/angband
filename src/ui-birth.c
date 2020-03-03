@@ -281,7 +281,7 @@ static void race_help(int i, void *db, const region *l)
 				   (r->el_info[ability->index].res_level != ability->value)) {
 			continue;
 		}
-		text_out_e("\n%s", ability->birth_desc);
+		text_out_e("\n%s", ability->name);
 		n_flags++;
 	}
 
@@ -372,7 +372,7 @@ static void class_help(int i, void *db, const region *l)
 			continue;
 		}
 
-		text_out_e("\n%s", ability->birth_desc);
+		text_out_e("\n%s", ability->name);
 		n_flags++;
 	}
 

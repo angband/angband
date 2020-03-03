@@ -148,6 +148,7 @@ ANGFILES = \
 	player-class.o \
 	player-history.o \
 	player-path.o \
+	player-properties.o \
 	player-quest.o \
 	player-race.o \
 	player-spell.o \
