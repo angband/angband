@@ -2020,7 +2020,13 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
 - (void)windowWillClose: (NSNotification *)notification
 {
+    /*
+     * If closing only because the application is terminating, don't update
+     * the visible state for when the application is relaunched.
+     */
+    if (! quit_when_ready) {
 	[self saveWindowVisibleToDefaults: NO];
+    }
 }
 
 @end
@@ -4811,6 +4817,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     if (player->upkeep->playing == FALSE || game_is_finished == TRUE)
     {
+        quit_when_ready = true;
         return NSTerminateNow;
     }
     else if (! inkey_flag)
