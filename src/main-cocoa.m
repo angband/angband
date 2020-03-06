@@ -2856,8 +2856,14 @@ static errr Term_xtra_cocoa_react(void)
 	    /* Reset visuals */
 	    reset_visuals(TRUE);
 
-	    /* Reset the panel */
-	    verify_panel();
+	    if (character_dungeon) {
+		/*
+		 * Reset the panel.  Only do so if have a dungeon; otherwise
+		 * can see crashes if changing graphics or the font before
+		 * or during character generation.
+		 */
+		verify_panel();
+	    }
 
 	    tile_multipliers_changed = 0;
 	}
