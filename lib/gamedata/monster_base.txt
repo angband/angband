@@ -4,7 +4,6 @@
 # glyph : default display character
 # pain : pain message index
 # flags : flag | flag | ...
-# spells : spell flag | spell flag | ...
 # desc : description
 #
 # 'name' indicates the beginning of an entry. The template name is used in 
@@ -18,14 +17,12 @@
 #
 # 'flags' indicates the flags that every monster inherits from this template.
 #
-# 'spells' indicates the spell flags that every monster inherits from this
-# template.
-#
 # 'desc' indicates the textual description of this template that is used by
 # the '/' command in-game.
 #
-# Note that some templates have hardcoded references. In particular, changing
-# the name of the following templates will cause certain summon spells to break:
+# Note that some templates have references to other data files. In particular,
+# changing the name of the following templates will cause certain summon spells
+# to break:
 # ancient dragon, ainu, canine, hydra, lich, major demon, spider, vampire, 
 # wraith, zephyr hound.
 # Changing other characteristics of these monsters is fine.
@@ -140,7 +137,6 @@ glyph:P
 pain:1
 flags:GIANT | EVIL
 flags:BASH_DOOR
-spells:BOULDER
 desc:Giant Humanoid
 
 name:golem
@@ -213,7 +209,6 @@ flags:UNDEAD | EVIL | COLD_BLOOD | SMART
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:FORCE_SLEEP
-spells:BRAIN_SMASH
 desc:Lich
 
 name:louse
@@ -249,7 +244,6 @@ flags:COLD_BLOOD | EMPTY_MIND | UNAWARE
 flags:NEVER_MOVE
 flags:NO_FEAR | NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP | ATTR_CLEAR
-spells:BLIND | CAUSE_2 | CONF | SCARE
 desc:Mimic
 
 name:minor demon
@@ -366,7 +360,6 @@ flags:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
 flags:OPEN_DOOR | BASH_DOOR
 flags:HURT_LIGHT | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 flags:FORCE_SLEEP
-spells:HOLD | SCARE
 desc:Vampire
 
 name:vortex

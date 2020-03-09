@@ -125,10 +125,16 @@ feat:open door:*:0x82:0x84
 feat:broken door:*:0x82:0x85
 
 # up staircase
-feat:up staircase:*:0x80:0x96
+feat:up staircase:torch:0x80:0x96
+feat:up staircase:los:0x80:0x96
+feat:up staircase:lit:0x80:0x94
+feat:up staircase:dark:0x80:0x95
 
 # down staircase
-feat:down staircase:*:0x80:0x99
+feat:down staircase:torch:0x80:0x99
+feat:down staircase:los:0x80:0x99
+feat:down staircase:lit:0x80:0x97
+feat:down staircase:dark:0x80:0x98
 
 # General Store
 feat:General Store:*:0x82:0x87
@@ -155,7 +161,10 @@ feat:Black Market:*:0x82:0x8D
 feat:Home:*:0x82:0x8E
 
 # rubble
-feat:pile of rubble:*:0x80:0x9C
+feat:pile of rubble:torch:0x82:0x96
+feat:pile of rubble:los:0x82:0x96
+feat:pile of rubble:lit:0x82:0x94
+feat:pile of rubble:dark:0x82:0x95
 
 # magma vein
 feat:magma vein:torch:0x80:0x8F
@@ -170,10 +179,16 @@ feat:quartz vein:lit:0x80:0x87
 feat:quartz vein:dark:0x80:0x88
 
 # magma vein with treasure
-feat:magma vein with treasure:*:0x80:0x90
+feat:magma vein with treasure:torch:0x80:0x92
+feat:magma vein with treasure:los:0x80:0x92
+feat:magma vein with treasure:lit:0x80:0x90
+feat:magma vein with treasure:dark:0x80:0x91
 
 # quartz vein with treasure
-feat:quartz vein with treasure:*:0x80:0x8A
+feat:quartz vein with treasure:torch:0x80:0x8C
+feat:quartz vein with treasure:los:0x80:0x8C
+feat:quartz vein with treasure:lit:0x80:0x8A
+feat:quartz vein with treasure:dark:0x80:0x8B
 
 # granite wall
 feat:granite wall:torch:0x80:0x86
@@ -191,7 +206,10 @@ feat:permanent wall:dark:0x80:0x94
 feat:lava:*:0xB6:0x9E
 
 # passable rubble
-feat:pile of passable rubble:*:0x80:0x9C
+feat:pile of passable rubble:torch:0x80:0x9C
+feat:pile of passable rubble:los:0x80:0x9C
+feat:pile of passable rubble:lit:0x80:0x9A
+feat:pile of passable rubble:dark:0x80:0x9B
 
 
 

@@ -832,6 +832,11 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 			/* Combine the items */
 			object_absorb(obj, drop);
 
+			/* Note the pile */
+			if (square_isview(c, y, x)) {
+				square_note_spot(c, y, x);
+			}
+
 			/* Don't mention if ignored */
 			if (ignore_item_ok(obj)) {
 				*note = false;

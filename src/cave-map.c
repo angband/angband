@@ -213,7 +213,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 {
 	/* Require "seen" flag and the current level */
 	if (c != cave) return;
-	if (!square_isseen(c, y, x)) return;
+	if (!square_isseen(c, y, x) && !square_isplayer(c, y, x)) return;
 
 	/* Make the player know precisely what is on this grid */
 	square_know_pile(c, y, x);

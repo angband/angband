@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-blows.h"
 #include "mon-init.h"
@@ -565,6 +566,65 @@ static const char *lore_describe_speed(byte speed)
 }
 
 /**
+ * Append the monster speed, in words, to a textblock.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ */
+void lore_adjective_speed(textblock *tb, const struct monster_race *race)
+{
+	/* "at" is separate from the normal speed description in order to use the
+	 * normal text colour */
+	if (race->speed == 110)
+		textblock_append(tb, "at ");
+
+	textblock_append_c(tb, COLOUR_GREEN, lore_describe_speed(race->speed));
+}
+
+/**
+ * Append the monster speed, in multipliers, to a textblock.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ */
+void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
+{
+	// moves at 2.3x normal speed (0.9x your current speed)
+	textblock_append(tb, "at ");
+
+	char buf[5] = "";
+	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
+	byte int_mul = multiplier / 10;
+	byte dec_mul = multiplier % 10;
+
+	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
+	textblock_append_c(tb, COLOUR_L_BLUE, buf);
+
+	textblock_append(tb, " normal speed, which is ");
+
+	if (player->state.speed > race->speed) {
+		char buf[13] = "";
+		multiplier = 10 * extract_energy[player->state.speed] / extract_energy[race->speed];
+		int_mul = multiplier / 10;
+		dec_mul = multiplier % 10;
+		strnfmt(buf, sizeof(buf), "%d.%dx slower ", int_mul, dec_mul);
+		textblock_append_c(tb, COLOUR_L_GREEN, buf);
+	}
+	else if (player->state.speed < race->speed) {
+		char buf[13] = "";
+		multiplier = 100 * extract_energy[race->speed] / extract_energy[player->state.speed];
+		int_mul = multiplier / 100;
+		dec_mul = ((multiplier + 9) / 10) % 10;
+		strnfmt(buf, sizeof(buf), "%d.%dx faster ", int_mul, dec_mul);
+		textblock_append_c(tb, COLOUR_RED, buf);
+	}
+	if (player->state.speed == race->speed)
+		textblock_append(tb, "the same as you");
+	else
+		textblock_append(tb, "than you");
+}
+
+/**
  * Return a value describing the sex of the provided monster race.
  */
 static monster_sex_t lore_monster_sex(const struct monster_race *race)
@@ -910,12 +970,10 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 	/* Speed */
 	textblock_append(tb, " ");
 
-	/* "at" is separate from the normal speed description in order to use the
-	 * normal text colour */
-	if (race->speed == 110)
-		textblock_append(tb, "at ");
-
-	textblock_append_c(tb, COLOUR_GREEN, lore_describe_speed(race->speed));
+	if (OPT(player, effective_speed))
+		lore_multiplier_speed(tb, race);
+	else
+		lore_adjective_speed(tb, race);
 
 	/* The speed description also describes "attack speed" */
 	if (rf_has(known_flags, RF_NEVER_MOVE)) {
@@ -1439,7 +1497,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int i, total_attacks, described_count;
+	int i, known_attacks, total_attacks, described_count, total_centidamage;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -1454,24 +1512,28 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		return;
 	}
 
-	/* Count the number of known attacks */
-	for (total_attacks = 0, i = 0; i < z_info->mon_blows_max; i++) {
+	total_attacks = 0;
+	known_attacks = 0;
+
+	/* Count the number of defined and known attacks */
+	for (i = 0; i < z_info->mon_blows_max; i++) {
 		/* Skip non-attacks */
 		if (!race->blow[i].method) continue;
 
-		/* Count known attacks */
+		total_attacks++;
 		if (lore->blow_known[i])
-			total_attacks++;
+			known_attacks++;
 	}
 
 	/* Describe the lack of knowledge */
-	if (total_attacks == 0) {
-		textblock_append(tb, "Nothing is known about %s attack.  ",
+	if (known_attacks == 0) {
+		textblock_append_c(tb, COLOUR_ORANGE, "Nothing is known about %s attack.  ",
 						 lore_pronoun_possessive(msex, false));
 		return;
 	}
 
 	described_count = 0;
+	total_centidamage = 99; // round up the final result to the next higher point
 
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
@@ -1489,7 +1551,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		if (described_count == 0)
 			textblock_append(tb, "%s can ",
 							 lore_pronoun_nominative(msex, true));
-		else if (described_count < total_attacks - 1)
+		else if (described_count < known_attacks - 1)
 			textblock_append(tb, ", ");
 		else
 			textblock_append(tb, ", and ");
@@ -1504,10 +1566,9 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, " to ");
 			textblock_append_c(tb, blow_color(player, index), effect_str);
 
+			textblock_append(tb, " (");
 			/* Describe damage (if known) */
-			if (dice.base || dice.dice || dice.sides || dice.m_bonus) {
-				textblock_append(tb, " with damage ");
-
+			if (dice.base || (dice.dice && dice.sides) || dice.m_bonus) {
 				if (dice.base)
 					textblock_append_c(tb, COLOUR_L_GREEN, "%d", dice.base);
 
@@ -1516,14 +1577,37 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 
 				if (dice.m_bonus)
 					textblock_append_c(tb, COLOUR_L_GREEN, "M%d", dice.m_bonus);
+
+				textblock_append(tb, ", ");
 			}
 
+			/* Describe hit chances */
+			long chance = 0, chance2 = 0;
+			// These calculations are based on check_hit() and test_hit();
+			// make sure to keep it in sync
+			chance = (race->blow[i].effect->power + (race->level * 3));
+			if (chance < 9) {
+				chance = 9;
+			}
+			chance2 = 12 + (100 - 12 - 5) * (chance - ((player->state.ac + player->state.to_a) * 2 / 3)) / chance;
+			if (chance2 < 12) {
+				chance2 = 12;
+			}
+			textblock_append_c(tb, COLOUR_L_BLUE, "%d", chance2);
+			textblock_append(tb, "%%)");
+
+			total_centidamage += (chance2 * randcalc(dice, 0, AVERAGE));
 		}
 
 		described_count++;
 	}
 
-	textblock_append(tb, ".  ");
+	textblock_append(tb, ", averaging");
+	if (known_attacks < total_attacks) {
+		textblock_append_c(tb, COLOUR_ORANGE, " at least");
+	}
+	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
+	textblock_append(tb, " damage.  ");
 }
 
 /**

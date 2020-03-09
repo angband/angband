@@ -729,9 +729,9 @@ static const char *show_speed(void)
 	int int_mul = multiplier / 10;
 	int dec_mul = multiplier % 10;
 	if (OPT(player, effective_speed))
-		strnfmt(buffer, sizeof(buffer), "x%d.%d (%d)", int_mul, dec_mul, tmp - 110);
+		strnfmt(buffer, sizeof(buffer), "%d.%dx (%d)", int_mul, dec_mul, tmp - 110);
 	else
-		strnfmt(buffer, sizeof(buffer), "%d (x%d.%d)", tmp - 110, int_mul, dec_mul);
+		strnfmt(buffer, sizeof(buffer), "%d (%d.%dx)", tmp - 110, int_mul, dec_mul);
 	return buffer;
 }
 

@@ -116,7 +116,7 @@ git://github.com/angband/angband.git
 
 2d. How do I compile the game?
 
-Please see http://rephial.org/wiki/Compiling for an up-to-date guide to this.
+Please see http://trac.rephial.org/wiki/Compiling for an up-to-date guide to this.
 
 2e. How do I contribute to the game?
 

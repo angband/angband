@@ -998,31 +998,6 @@ static enum parser_error parse_mon_base_flags(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_mon_base_spells(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-	char *flags;
-	char *s;
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "spells"))
-		return PARSE_ERROR_NONE;
-	flags = string_make(parser_getstr(p, "spells"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad s-flag: %s", s);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
-		s = strtok(NULL, " |");
-	}
-
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
-}
-
-
 static enum parser_error parse_mon_base_desc(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 
@@ -1041,7 +1016,6 @@ static struct parser *init_parse_mon_base(void) {
 	parser_reg(p, "glyph char glyph", parse_mon_base_glyph);
 	parser_reg(p, "pain uint pain", parse_mon_base_pain);
 	parser_reg(p, "flags ?str flags", parse_mon_base_flags);
-	parser_reg(p, "spells ?str spells", parse_mon_base_spells);
 	parser_reg(p, "desc str desc", parse_mon_base_desc);
 	return p;
 }

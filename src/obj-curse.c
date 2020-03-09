@@ -320,5 +320,6 @@ bool do_curse_effect(int i, struct object *obj)
 		msgt(MSG_GENERIC, curse->obj->effect_msg);
 	}
 	effect_do(effect, source_object(obj), NULL, &ident, was_aware, dir, 0, 0);
+	curse->obj->known->effect = curse->obj->effect;
 	return !was_aware && ident;
 }

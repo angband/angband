@@ -2545,13 +2545,13 @@ bool build_medium_vault(struct chunk *c, int y0, int x0, int rating)
 bool build_greater_vault(struct chunk *c, int y0, int x0, int rating)
 {
 	int i;
-	int numerator   = 2;
+	int numerator   = 1;
 	int denominator = 3;
 	
 	/* Only try to build a GV as the first room. */
 	if (dun->cent_n > 0) return false;
 
-	/* Level 90+ has a 2/3 chance, level 80-89 has 4/9, ... */
+	/* Level 90+ has a 1/3 chance, level 80-89 has 2/9, ... */
 	for (i = 90; i > c->depth; i -= 10) {
 		numerator *= 2;
 		denominator *= 3;
@@ -2563,8 +2563,9 @@ bool build_greater_vault(struct chunk *c, int y0, int x0, int rating)
 	/* Non-classic profiles need to adjust the probability */
 	if (!streq(dun->profile->name, "classic") && !one_in_(3)) return false;
 
-	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
+	if (!streq(dun->profile->name, "classic") && (one_in_(2))) {
 		return build_vault_type(c, y0, x0, "Greater vault (new)");
+	}
 	return build_vault_type(c, y0, x0, "Greater vault");
 }
 

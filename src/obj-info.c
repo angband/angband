@@ -597,6 +597,8 @@ static int obj_known_blows(const struct object *obj, int max_num,
 
 	/* Calculate the player's hypothetical state */
 	memcpy(&state, &player->state, sizeof(state));
+	state.stat_ind[STAT_STR] = 0; //Hack - NRM
+	state.stat_ind[STAT_DEX] = 0; //Hack - NRM
 	calc_bonuses(player, &state, true, false);
 
 	/* First entry is always the current num of blows. */
@@ -621,12 +623,10 @@ static int obj_known_blows(const struct object *obj, int max_num,
 				return num;
 			}
 
-			state.stat_ind[STAT_STR] += str_plus;
-			state.stat_ind[STAT_DEX] += dex_plus;
+			state.stat_ind[STAT_STR] = str_plus; //Hack - NRM
+			state.stat_ind[STAT_DEX] = dex_plus; //Hack - NRM
 			calc_bonuses(player, &state, true, false);
 			new_blows = state.num_blows;
-			state.stat_ind[STAT_STR] -= str_plus;
-			state.stat_ind[STAT_DEX] -= dex_plus;
 
 			/* Test to make sure that this extra blow is a
 			 * new str/dex combination, not a repeat */
@@ -749,6 +749,8 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Calculate the player's hypothetical state */
 	memcpy(&state, &player->state, sizeof(state));
+	state.stat_ind[STAT_STR] = 0; //Hack - NRM
+	state.stat_ind[STAT_DEX] = 0; //Hack - NRM
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
@@ -989,6 +991,8 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 
 		/* Calculate the player's hypothetical state */
 		memcpy(&state, &player->state, sizeof(state));
+		state.stat_ind[STAT_STR] = 0; //Hack - NRM
+		state.stat_ind[STAT_DEX] = 0; //Hack - NRM
 		calc_bonuses(player, &state, true, false);
 
 		/* Stop pretending */
@@ -1079,6 +1083,8 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 
 	/* Calculate the player's hypothetical state */
 	memcpy(&state, &player->state, sizeof(state));
+	state.stat_ind[STAT_STR] = 0; //Hack - NRM
+	state.stat_ind[STAT_DEX] = 0; //Hack - NRM
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
@@ -1257,10 +1263,10 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 		timeout = obj->time;
 		if (effect_aim(*effect))
 			*aimed = true;;
-	} else if (object_effect(obj) && !tval_is_wearable(obj)) {
+	} else if (object_effect(obj)) {
 		/* Don't know much - be vague */
 		*effect = NULL;
-		if (!obj->artifact && effect_aim(object_effect(obj))) {
+		if (tval_is_wand(obj) || tval_is_rod(obj)) {
 			*aimed = true;
 		}
 		return true;
@@ -1306,14 +1312,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 	/* Effect not known, mouth platitudes */
 	if (!effect && object_effect(obj)) {
-		if (aimed) {
-			textblock_append(tb, "It can be aimed.\n");
-		} else if (tval_is_edible(obj)) {
+		if (tval_is_edible(obj)) {
 			textblock_append(tb, "It can be eaten.\n");
 		} else if (tval_is_potion(obj)) {
 			textblock_append(tb, "It can be drunk.\n");
 		} else if (tval_is_scroll(obj)) {
 			textblock_append(tb, "It can be read.\n");
+		} else if (aimed) {
+			textblock_append(tb, "It can be aimed.\n");
 		} else {
 			textblock_append(tb, "It can be activated.\n");
 		}

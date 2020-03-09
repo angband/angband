@@ -159,7 +159,7 @@ graphics:^:B
 appear:2:3:0
 visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
-effect:SUMMON
+effect:SUMMON:ANY
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
 msg:You are enveloped in a cloud of smoke!

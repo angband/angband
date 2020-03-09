@@ -422,7 +422,7 @@ static void try_door(struct chunk *c, int y, int x)
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
-    else if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
+    else if (randint0(500) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_trap(c, y, x, -1, c->depth);
 }
 
@@ -621,8 +621,8 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
     /* Put some rubble in corridors */
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
+    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -1357,6 +1357,8 @@ struct chunk *cavern_chunk(int depth, int h, int w)
 
 	/* If we couldn't make a big enough cavern then fail */
 	if (tries == MAX_CAVERN_TRIES) {
+		mem_free(colors);
+		mem_free(counts);
 		cave_free(c);
 		return NULL;
 	}
@@ -1420,7 +1422,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-	/* Place some traps in the dungeon */
+	/* Place some traps in the dungeon, */
 	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Determine the character location */
@@ -1855,8 +1857,8 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
     /* Put some rubble in corridors */
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
+    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -2083,8 +2085,8 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
     /* Put some rubble in corridors */
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
+    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -2458,8 +2460,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
     /* Put some rubble in corridors */
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
+    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
     /* Put some objects in rooms */
     alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),

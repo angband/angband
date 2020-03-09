@@ -2368,9 +2368,10 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
 	int summon_max = effect_calculate_value(context, false);
-	int summon_type = context->p1 ? context->p1 : S_ANY;
+	int summon_type = context->p1;
 	int level_boost = context->p2;
 	int message_type = summon_message_type(summon_type);
+	int fallback_type = summon_fallback_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
 	sound(message_type);
@@ -2381,8 +2382,9 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		int rlev = mon->race->level;
 
 		/* Set the kin_base if necessary */
-		if (summon_type == S_KIN)
+		if (summon_type == summon_name_to_idx("KIN")) {
 			kin_base = mon->race->base;
+		}
 
 		/* Continue summoning until we reach the current dungeon level */
 		while ((val < player->depth * rlev) && (attempts < summon_max)) {
@@ -2402,18 +2404,15 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 				count++;
 		}
 
-		/* In the special case that uniques or wraiths were summoned but all
-		 * were dead S_HI_UNDEAD is used instead */
-		if (count == 0 &&
-			(summon_type == S_WRAITH || summon_type == S_UNIQUE)) {
+		/* If the summon failed and there's a fallback type, use that */
+		if ((count == 0) && (fallback_type >= 0)) {
 			attempts = 0;
-			summon_type = S_HI_UNDEAD;
 			while ((val < player->depth * rlev) && (attempts < summon_max)) {
 				int temp;
 
 				/* Get a monster */
 				temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
-						summon_type, false, false);
+						fallback_type, false, false);
 
 				val += temp * temp;
 

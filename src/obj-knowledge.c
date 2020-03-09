@@ -525,7 +525,7 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
- * Checks whether the object is in a store
+ * Checks whether the object is in a store (not the home)
  *
  * \param obj is the object
  */
@@ -537,6 +537,7 @@ bool object_is_in_store(const struct object *obj)
 	/* Check all the store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
+		if (s->sidx == STORE_HOME) continue;
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
 			if (obj1 == obj) return true;
 	}
@@ -937,11 +938,12 @@ void object_see(struct player *p, struct object *obj)
  */
 void object_touch(struct player *p, struct object *obj)
 {
-	player_know_object(p, obj);
-
 	/* Automatically notice artifacts, mark as assessed */
 	obj->known->artifact = obj->artifact;
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+	/* Apply known properties to the object */
+	player_know_object(p, obj);
 
 	/* Log artifacts if found */
 	if (obj->artifact)
@@ -964,6 +966,12 @@ void player_know_object(struct player *p, struct object *obj)
 	if (!obj) return;
 	if (!obj->known) return;
 	if (obj->kind != obj->known->kind) return;
+
+	/* Distant objects just get base properties */
+	if (obj->kind && !(obj->known->notice & OBJ_NOTICE_ASSESSED)) {
+		object_set_base_known(obj);
+		return;
+	}
 
 	/* Get the dice, and the pval for anything but chests */
 	obj->known->dd = obj->dd * p->obj_k->dd;

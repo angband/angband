@@ -466,7 +466,7 @@ static void prt_speed(int row, int col)
 		int multiplier = 10 * extract_energy[i] / extract_energy[110];
 		int int_mul = multiplier / 10;
 		int dec_mul = multiplier % 10;
-		strnfmt(buf, sizeof(buf), "%s (x%d.%d)", type, int_mul, dec_mul);
+		strnfmt(buf, sizeof(buf), "%s (%d.%dx)", type, int_mul, dec_mul);
 	}
 
 	/* Display the speed */

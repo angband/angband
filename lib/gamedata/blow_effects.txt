@@ -3,7 +3,7 @@
 #
 # Fields:
 # name - blow effect name as in monster.txt
-# pow - used for attack quality in check_hit()
+# power - used for attack quality in check_hit()
 # eval - used for power evaluation in eval_blow_effect()
 # desc - description for monster recall
 # lore-color-base - base color for lore
