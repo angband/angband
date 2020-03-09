@@ -4762,7 +4762,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	setInteger:h forKey:AngbandTileWidthMultDefaultsKey];
     [[NSUserDefaults angbandDefaults]
 	setInteger:v forKey:AngbandTileHeightMultDefaultsKey];
-    if (graphics_are_enabled()) {
+    if (graphics_are_enabled() ||
+	(! character_generated && graphics_will_be_enabled())) {
 	if (tile_width != h || tile_height != v) {
 	    tile_width = h;
 	    tile_height = v;
