@@ -2150,7 +2150,6 @@ static __strong NSFont* gDefaultFont = nil;
 
             [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
         }
-        [[NSUserDefaults standardUserDefaults] synchronize];
     }
 
     term *old = Term;
@@ -2439,7 +2438,6 @@ static void record_current_savefile(void)
     {
         NSUserDefaults *angbandDefs = [NSUserDefaults angbandDefaults];
         [angbandDefs setObject:savefileString forKey:@"SaveFile"];
-        [angbandDefs synchronize];        
     }
 }
 
@@ -2805,7 +2803,6 @@ static errr Term_xtra_cocoa_react(void)
 		    }
 		    [[NSUserDefaults angbandDefaults]
 			setInteger:GRAPHICS_NONE forKey:@"GraphicsID"];
-		    [[NSUserDefaults angbandDefaults] synchronize];
 
 		    NSAlert *alert = [[NSAlert alloc] init];
 		    alert.messageText = @"Failed to Load Tile Set";
@@ -3945,8 +3942,6 @@ static void hook_plog(const char * str)
     if (str)
     {
 		NSLog( @"%s", str );
-/*        NSString *string = [NSString stringWithCString:str encoding:NSMacOSRomanStringEncoding]; */
-/*        NSRunAlertPanel(@"Danger Will Robinson", @"%@", @"OK", nil, nil, string); */
     }
 }
 
@@ -3973,9 +3968,19 @@ static NSString* get_lib_directory(void)
 
     if( !libExists || !isDirectory )
     {
-        NSLog( @"Angband: can't find %@/ in bundle: isDirectory: %d libExists: %d", AngbandDirectoryNameLib, isDirectory, libExists );
-        NSRunAlertPanel( @"Missing Resources", @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.", @"Quit", nil, nil );
-        exit(0);
+	NSLog( @"Angband: can't find %@/ in bundle: isDirectory: %d libExists: %d", AngbandDirectoryNameLib, isDirectory, libExists );
+
+	NSAlert *alert = [[NSAlert alloc] init];
+	/*
+	 * Note that NSCriticalAlertStyle was deprecated in 10.10.  The
+	 * replacement is NSAlertStyleCritical.
+	 */
+	alert.alertStyle = NSCriticalAlertStyle;
+	alert.messageText = @"MissingResources";
+	alert.informativeText = @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.";
+	[alert addButtonWithTitle:@"Quit"];
+	[alert runModal];
+	exit(0);
     }
 
     return bundleLibPath;
@@ -4134,6 +4139,12 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [panel orderFront:self];
 }
 
+/**
+ * Implement NSObject's changeFont() method to receive a notification about the
+ * changed font.  Note that, as of 10.14, changeFont() is deprecated in
+ * NSObject - it will be removed at some point and the application delegate
+ * will have to be declared as implementing the NSFontChanging protocol.
+ */
 - (void)changeFont:(id)sender
 {
     int mainTerm;
@@ -4163,8 +4174,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         forKey:[NSString stringWithFormat:@"FontName-%d", mainTerm]];
     [defs setFloat:[newFont pointSize]
         forKey:[NSString stringWithFormat:@"FontSize-%d", mainTerm]];
-    [defs synchronize];
-    
+
     NSDisableScreenUpdates();
 
     /* Update window */
@@ -4275,7 +4285,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 		setInteger:hscl forKey:AngbandTileWidthMultDefaultsKey];
 	    [[NSUserDefaults angbandDefaults]
 		setInteger:vscl forKey:AngbandTileHeightMultDefaultsKey];
-	    [[NSUserDefaults angbandDefaults] synchronize];
 	    if (self.scalingPanelController != nil) {
 		self.scalingPanelController.horizontalScaling = hscl;
 		self.scalingPanelController.verticalScaling = vscl;
@@ -4542,6 +4551,13 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     quit(NULL);
 }
 
+/**
+ * Implement NSObject's validateMenuItem() method to override enabling or
+ * disabling a menu item.  Note that, as of 10.14, validateMenuItem() is
+ * deprecated in NSObject - it will be removed at some point and  the
+ * application delegate will have to be declared as implementing the
+ * NSMenuItemValidation protocol.
+ */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL sel = [menuItem action];
@@ -4632,7 +4648,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Stash it in UserDefaults */
     [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
     [self recomputeDefaultTileMultipliersIfNecessary];
-    [[NSUserDefaults angbandDefaults] synchronize];
 
     if (game_in_progress)
     {
@@ -4729,7 +4744,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	setInteger:h forKey:AngbandTileWidthMultDefaultsKey];
     [[NSUserDefaults angbandDefaults]
 	setInteger:v forKey:AngbandTileHeightMultDefaultsKey];
-    [[NSUserDefaults angbandDefaults] synchronize];
     if (graphics_are_enabled()) {
 	if (tile_width != h || tile_height != v) {
 	    tile_width = h;
