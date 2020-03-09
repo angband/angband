@@ -1,6 +1,6 @@
 /**
- * \file mon-blow-effects.h
- * \brief Functions for managing monster melee effects.
+ * \file mon-blows.h
+ * \brief Functions for managing monster melee.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -17,11 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifndef MON_BLOW_EFFECTS_H
-#define MON_BLOW_EFFECTS_H
+#ifndef MON_BLOWS_H
+#define MON_BLOWS_H
 
 #include "player.h"
 #include "monster.h"
+
+struct blow_message {
+	char *act_msg;
+	struct blow_message *next;
+};
 
 struct blow_method {
 	char *name;
@@ -30,7 +35,8 @@ struct blow_method {
 	bool miss;
 	bool phys;
 	int msgt;
-	char *act_msg;
+	struct blow_message *messages;
+	int num_messages;
 	char *desc;
 	struct blow_method *next;
 };
@@ -48,13 +54,13 @@ struct blow_method *blow_methods;
 typedef struct melee_effect_handler_context_s {
 	struct player * const p;
 	struct monster * const mon;
+	struct monster * const t_mon;
 	const int rlev;
 	const struct blow_method *method;
 	const int ac;
 	const char *ddesc;
 	bool obvious;
 	bool blinked;
-	bool do_break;
 	int damage;
 } melee_effect_handler_context_t;
 
@@ -73,6 +79,7 @@ struct blow_effect {
 	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *effect_type;
 	int resist;
+	int lash_type;
 	struct blow_effect *next;
 };
 
@@ -80,7 +87,7 @@ struct blow_effect *blow_effects;
 
 /* Functions */
 int blow_index(const char *name);
-extern const char *monster_blow_method_action(struct blow_method *method);
+char *monster_blow_method_action(struct blow_method *method, int midx);
 extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 
-#endif /* MON_BLOW_EFFECTS_H */
+#endif /* MON_BLOWS_H */

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "cmds.h"
 #include "game-input.h"
 #include "game-world.h"
 #include "generate.h"
@@ -157,11 +158,15 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Paranoia */
 	if (p->is_dead) return;
 
-	/* Disturb */
-	disturb(p, 1);
-
 	/* Mega-Hack -- Apply "invulnerability" */
 	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
+
+	/* Apply damage reduction */
+	dam -= p->state.dam_red;
+	if (dam <= 0) return;
+
+	/* Disturb */
+	disturb(p, 1);
 
 	/* Hurt the player */
 	p->chp -= dam;
@@ -174,6 +179,9 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		/* Allow cheating */
 		if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
+		} else if (p->timed[TMD_BLOODLUST] > 48) {
+			/* Benefit of extreme bloodlust */
+			msg("Your lust for blood keeps you alive!");
 		} else {
 			/* Hack -- Note death */
 			msgt(MSG_DEATH, "You die.");
@@ -295,17 +303,24 @@ void player_regen_hp(struct player *p)
 {
 	s32b new_chp, new_chp_frac;
 	int old_chp, percent = 0;
+	int food_bonus = 0;
 
 	/* Save the old hitpoints */
 	old_chp = p->chp;
 
 	/* Default regeneration */
-	if (p->food >= PY_FOOD_WEAK)
+	if (p->timed[TMD_FOOD] >= PY_FOOD_WEAK) {
 		percent = PY_REGEN_NORMAL;
-	else if (p->food >= PY_FOOD_FAINT)
+	} else if (p->timed[TMD_FOOD] >= PY_FOOD_FAINT) {
 		percent = PY_REGEN_WEAK;
-	else if (p->food >= PY_FOOD_STARVE)
+	} else if (p->timed[TMD_FOOD] >= PY_FOOD_STARVE) {
 		percent = PY_REGEN_FAINT;
+	}
+
+	/* Food bonus - better fed players regenerate up to 1/3 faster */
+	food_bonus = p->timed[TMD_FOOD] / (z_info->food_value * 10);
+	percent *= 30 + food_bonus;
+	percent /= 30;
 
 	/* Various things speed up regeneration */
 	if (player_of_has(p, OF_REGEN))
@@ -468,13 +483,146 @@ void player_update_light(struct player *p)
 }
 
 /**
+ * Find the player's best digging tool
+ */
+struct object *player_best_digger(struct player *p)
+{
+	struct object *obj, *best = NULL;
+	int best_score = 0;
+
+	for (obj = p->gear; obj; obj = obj->next) {
+		int score = 0;
+		if (!tval_is_melee_weapon(obj)) continue;
+		if (obj->number != 1) continue;
+		if (tval_is_digger(obj)) {
+			if (of_has(obj->flags, OF_DIG_1))
+				score = 1;
+			else if (of_has(obj->flags, OF_DIG_2))
+				score = 2;
+			else if (of_has(obj->flags, OF_DIG_3))
+				score = 3;
+		}
+		score += obj->modifiers[OBJ_MOD_TUNNEL]
+			* p->obj_k->modifiers[OBJ_MOD_TUNNEL];
+		if (score > best_score) {
+			best = obj;
+			best_score = score;
+		}
+	}
+
+	return best;
+}
+
+/**
+ * Melee a random adjacent monster
+ */
+bool player_attack_random_monster(struct player *p)
+{
+	int i, dir = randint0(8);
+
+	/* Confused players get a free pass */
+	if (p->timed[TMD_CONFUSED]) return false;
+
+	/* Look for a monster, attack */
+	for (i = 0; i < 8; i++, dir++) {
+		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
+		if (square_monster(cave, grid)) {
+			p->upkeep->energy_use = z_info->move_energy;
+			move_player(dir % 8, false);
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Have random bad stuff happen to the player from over-exertion
+ *
+ * This function uses the PY_EXERT_* flags
+ */
+void player_over_exert(struct player *p, int flag, int chance, int amount)
+{
+	/* CON damage */
+	if (flag & PY_EXERT_CON) {
+		if (randint0(100) < chance) {
+			/* Hack - only permanent with high chance (no-mana casting) */
+			bool perm = (randint0(100) < chance / 2) && (chance >= 50);
+			msg("You have damaged your health!");
+			player_stat_dec(p, STAT_CON, perm);
+		}
+	}
+
+	/* Fainting */
+	if (flag & PY_EXERT_FAINT) {
+		if (randint0(100) < chance) {
+			msg("You faint from the effort!");
+
+			/* Bypass free action */
+			(void)player_inc_timed(p, TMD_PARALYZED, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* Scrambled stats */
+	if (flag & PY_EXERT_SCRAMBLE) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(p, TMD_SCRAMBLE, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Cut damage */
+	if (flag & PY_EXERT_CUT) {
+		if (randint0(100) < chance) {
+			msg("Wounds appear on your body!");
+			(void)player_inc_timed(p, TMD_CUT, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* Confusion */
+	if (flag & PY_EXERT_CONF) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(p, TMD_CONFUSED, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Hallucination */
+	if (flag & PY_EXERT_HALLU) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(p, TMD_IMAGE, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Slowing */
+	if (flag & PY_EXERT_SLOW) {
+		if (randint0(100) < chance) {
+			msg("You feel suddenly lethargic.");
+			(void)player_inc_timed(p, TMD_SLOW, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* HP */
+	if (flag & PY_EXERT_HP) {
+		if (randint0(100) < chance) {
+			msg("You cry out in sudden pain!");
+			take_hit(p, randint1(amount), "over-exertion");
+		}
+	}
+}
+
+
+/**
  * See how much damage the player will take from damaging terrain
  */
-int player_check_terrain_damage(struct player *p, int y, int x)
+int player_check_terrain_damage(struct player *p, struct loc grid)
 {
 	int dam_taken = 0;
 
-	if (square_isfiery(cave, y, x)) {
+	if (square_isfiery(cave, grid)) {
 		int base_dam = 100 + randint1(100);
 		int res = p->state.el_info[ELEM_FIRE].res_level;
 
@@ -493,20 +641,100 @@ int player_check_terrain_damage(struct player *p, int y, int x)
 /**
  * Terrain damages the player
  */
-void player_take_terrain_damage(struct player *p, int y, int x)
+void player_take_terrain_damage(struct player *p, struct loc grid)
 {
-	int dam_taken = player_check_terrain_damage(p, y, x);
+	int dam_taken = player_check_terrain_damage(p, grid);
 
 	if (!dam_taken) {
 		return;
 	}
 
 	/* Damage the player and inventory */
-	take_hit(player, dam_taken, square_feat(cave, y, x)->die_msg);
-	if (square_isfiery(cave, y, x)) {
-		msg(square_feat(cave, y, x)->hurt_msg);
+	take_hit(player, dam_taken, square_feat(cave, grid)->die_msg);
+	if (square_isfiery(cave, grid)) {
+		msg(square_feat(cave, grid)->hurt_msg);
 		inven_damage(player, PROJ_FIRE, dam_taken);
 	}
+}
+
+/**
+ * Find a player shape from the name
+ */
+struct player_shape *lookup_player_shape(const char *name)
+{
+	struct player_shape *shape = shapes;
+	while (shape) {
+		if (streq(shape->name, name)) {
+			return shape;
+		}
+		shape = shape->next;
+	}
+	msg("Could not find %s shape!", name);
+	return NULL;
+}
+
+/**
+ * Find a player shape index from the shape name
+ */
+int shape_name_to_idx(const char *name)
+{
+	struct player_shape *shape = lookup_player_shape(name);
+	if (shape) {
+		return shape->sidx;
+	} else {
+		return -1;
+	}
+}
+
+/**
+ * Find a player shape from the index
+ */
+struct player_shape *player_shape_by_idx(int index)
+{
+	struct player_shape *shape = shapes;
+	while (shape) {
+		if (shape->sidx == index) {
+			return shape;
+		}
+		shape = shape->next;
+	}
+	msg("Could not find shape %d!", index);
+	return NULL;
+}
+
+/**
+ * Revert to normal shape
+ */
+void player_resume_normal_shape(struct player *p)
+{
+	p->shape = lookup_player_shape("normal");
+	msg("You resume your usual shape.");
+
+	/* Kill vampire attack */
+	(void) player_clear_timed(p, TMD_ATT_VAMP, true);
+
+	/* Update */
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_TITLE | PR_MISC);
+	handle_stuff(player);
+}
+
+/**
+ * Check if the player is shapechanged
+ */
+bool player_is_shapechanged(struct player *p)
+{
+	return streq(p->shape->name, "normal") ? false : true;
+}
+
+/**
+ * Check if the player is immune from traps
+ */
+bool player_is_trapsafe(struct player *p)
+{
+	if (p->timed[TMD_TRAPSAFE]) return true;
+	if (player_of_has(p, OF_TRAP_IMMUNE)) return true;
+	return false;
 }
 
 /**
@@ -518,7 +746,7 @@ void player_take_terrain_damage(struct player *p, int y, int x)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (!p->class->magic.spell_realm) {
+	if (!p->class->magic.total_spells) {
 		if (show_msg) {
 			msg("You cannot pray or produce magics.");
 		}
@@ -556,8 +784,31 @@ bool player_can_study(struct player *p, bool show_msg)
 
 	if (!p->upkeep->new_spells) {
 		if (show_msg) {
-			const char *name = p->class->magic.spell_realm->spell_noun;
-			msg("You cannot learn any new %ss!", name);
+			int count;
+			struct magic_realm *r = class_magic_realms(p->class, &count), *r1;
+			char buf[120];
+
+			my_strcpy(buf, r->spell_noun, sizeof(buf));
+			my_strcat(buf, "s", sizeof(buf));
+			r1 = r->next;
+			mem_free(r);
+			r = r1;
+			if (count > 1) {
+				while (r) {
+					count--;
+					if (count) {
+						my_strcat(buf, ", ", sizeof(buf));
+					} else {
+						my_strcat(buf, " or ", sizeof(buf));
+					}
+					my_strcat(buf, r->spell_noun, sizeof(buf));
+					my_strcat(buf, "s", sizeof(buf));
+					r1 = r->next;
+					mem_free(r);
+					r = r1;
+				}
+			}
+			msg("You cannot learn any new %s!", buf);
 		}
 		return false;
 	}
@@ -710,7 +961,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 	item_num = scan_items(item_list, item_max, USE_INVEN | USE_FLOOR,
 						  obj_can_study);
 	for (i = 0; i < item_num; i++) {
-		const struct class_book *book = object_to_book(item_list[i]);
+		const struct class_book *book = player_object_to_book(p, item_list[i]);
 		if (!book) continue;
 
 		/* Extract spells */
@@ -942,28 +1193,18 @@ bool player_is_immune(struct player *p, int element)
 	return (p->state.el_info[element].res_level == 3);
 }
 
-/*
- * Extract a "direction" which will move one step from the player location
- * towards the given "target" location (or "5" if no motion necessary).
- */
-int coords_to_dir(struct player *p, int y, int x)
-{
-	return (motion_dir(p->py, p->px, y, x));
-}
-
 /**
  * Places the player at the given coordinates in the cave.
  */
-void player_place(struct chunk *c, struct player *p, int y, int x)
+void player_place(struct chunk *c, struct player *p, struct loc grid)
 {
-	assert(!c->squares[y][x].mon);
+	assert(!square_monster(c, grid));
 
 	/* Save player location */
-	p->py = y;
-	p->px = x;
+	p->grid = grid;
 
 	/* Mark cave grid */
-	c->squares[y][x].mon = -1;
+	square_set_mon(c, grid, -1);
 
 	/* Clear stair creation */
 	p->upkeep->create_down_stair = false;
@@ -999,6 +1240,9 @@ void disturb(struct player *p, int stop_search)
 	if (p->upkeep->running) {
 		p->upkeep->running = 0;
 
+		/* Cancel queued commands */
+		cmdq_flush();
+
 		/* Check for new panel if appropriate */
 		event_signal(EVENT_PLAYERMOVED);
 		p->upkeep->update |= PU_TORCH;
@@ -1016,7 +1260,7 @@ void disturb(struct player *p, int stop_search)
  */
 void search(struct player *p)
 {
-	int y, x;
+	struct loc grid;
 
 	/* Various conditions mean no searching */
 	if (p->timed[TMD_BLIND] || no_light() ||
@@ -1024,19 +1268,19 @@ void search(struct player *p)
 		return;
 
 	/* Search the nearby grids, which are always in bounds */
-	for (y = (p->py - 1); y <= (p->py + 1); y++) {
-		for (x = (p->px - 1); x <= (p->px + 1); x++) {
+	for (grid.y = (p->grid.y - 1); grid.y <= (p->grid.y + 1); grid.y++) {
+		for (grid.x = (p->grid.x - 1); grid.x <= (p->grid.x + 1); grid.x++) {
 			struct object *obj;
 
 			/* Secret doors */
-			if (square_issecretdoor(cave, y, x)) {
+			if (square_issecretdoor(cave, grid)) {
 				msg("You have found a secret door.");
-				place_closed_door(cave, y, x);
+				place_closed_door(cave, grid);
 				disturb(p, 0);
 			}
 
 			/* Traps on chests */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
 				if (!obj->known || !is_trapped_chest(obj))
 					continue;
 

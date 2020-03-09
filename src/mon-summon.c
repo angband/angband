@@ -17,7 +17,9 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "datafile.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -300,22 +302,16 @@ static bool summon_specific_okay(struct monster_race *race)
 /**
  * Check to see if you can call the monster
  */
-bool can_call_monster(int y, int x, struct monster *mon)
+static bool can_call_monster(struct loc grid, struct monster *mon)
 {
-	int oy, ox;
-
 	/* Skip dead monsters */
 	if (!mon->race) return (false);
 
 	/* Only consider callable monsters */
 	if (!summon_specific_okay(mon->race)) return (false);
 
-	/* Extract monster location */
-	oy = mon->fy;
-	ox = mon->fx;
-
 	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(cave, y, x, oy, ox)) return (false);
+	if (los(cave, grid, mon->grid)) return (false);
 
 	return (true);
 }
@@ -324,10 +320,9 @@ bool can_call_monster(int y, int x, struct monster *mon)
 /**
  * Calls a monster from the level and moves it to the desired spot
  */
-int call_monster(int y, int x)
+static int call_monster(struct loc grid)
 {
 	int i, mon_count, choice;
-	int oy, ox;
 	int *mon_indices;
 	struct monster *mon;
 
@@ -337,7 +332,7 @@ int call_monster(int y, int x)
 		mon = cave_monster(cave, i);
 
 		/* Figure out how many good monsters there are */
-		if (can_call_monster(y, x, mon)) mon_count++;
+		if (can_call_monster(grid, mon)) mon_count++;
 	}
 
 	/* There were no good monsters on the level */
@@ -354,7 +349,7 @@ int call_monster(int y, int x)
 		mon = cave_monster(cave, i);
 		
 		/* Save the values of the good monster */
-		if (can_call_monster(y, x, mon)){
+		if (can_call_monster(grid, mon)){
 			mon_indices[mon_count] = i;
 			mon_count++;
 		}
@@ -367,15 +362,11 @@ int call_monster(int y, int x)
 	mon = cave_monster(cave, mon_indices[choice]);
 	mem_free(mon_indices);
 
-	/* Extract monster location */
-	oy = mon->fy;
-	ox = mon->fx;
+	/* Swap the monster */
+	monster_swap(mon->grid, grid);
 
-	/* Swap the moster */
-	monster_swap(oy, ox, y, x);
-
-	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	/* Wake it up, make it aware */
+	monster_wake(mon, false, 100);
 
 	/* Set it's energy to 0 */
 	mon->energy = 0;
@@ -405,12 +396,13 @@ int call_monster(int y, int x)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
+int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 {
-	int i, x = 0, y = 0;
-
+	int i;
+	struct loc near;
 	struct monster *mon;
 	struct monster_race *race;
+	struct monster_group_info info = { 0, 0 };
 
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i) {
@@ -418,13 +410,15 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		int d = (i / 15) + 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, y1, x1, d, true);
+		scatter(cave, &near, grid, d, true);
 
 		/* Require "empty" floor grid */
-		if (!square_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, near)) continue;
 
-		/* Hack -- no summon on glyph of warding */
-		if (square_iswarded(cave, y, x)) continue;
+		/* No summon on glyphs */
+		if (square_iswarded(cave, near) || square_isdecoyed(cave, near)) {
+			continue;
+		}
 
 		/* Okay */
 		break;
@@ -439,7 +433,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	/* Use the new calling scheme if requested */
 	if (call && (type != summon_name_to_idx("UNIQUE")) &&
 		(type != summon_name_to_idx("WRAITH"))) {
-		return (call_monster(y, x));
+		return (call_monster(near));
 	}
 
 	/* Prepare allocation table */
@@ -454,22 +448,54 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	/* Handle failure */
 	if (!race) return (0);
 
+	/* Put summons in the group of any summoner */
+	if (cave->mon_current > 0) {
+		struct monster_group *group = summon_group(cave, cave->mon_current);
+		info.index = group->index;
+		info.role = MON_GROUP_SUMMON;
+	}
+
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, y, x, race, false, false, ORIGIN_DROP_SUMMON))
+	if (!place_new_monster(cave, near, race, false, false, info,
+						   ORIGIN_DROP_SUMMON)) {
 		return (0);
+	}
 
 	/* Success, return the level of the monster */
-	mon = square_monster(cave, y, x);
+	mon = square_monster(cave, near);
 
 	/* If delay, try to let the player act before the summoned monsters,
-	 * including slowing down faster monsters for one turn */
-	/* XXX should this now be hold monster for a turn? */
+	 * including holding faster monsters for the required number of turns */
 	if (delay) {
+		int turns = (mon->race->speed + 9 - player->state.speed) / 10;
 		mon->energy = 0;
-		if (mon->race->speed > player->state.speed)
-			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE, false);
+		if (turns) {
+			/* Set timer directly to avoid resistance */
+			mon->m_timed[MON_TMD_HOLD] = turns;
+		}
 	}
 
 	return (mon->race->level);
 }
 
+/**
+ * Select a race for a monster shapechange from its possible summons
+ */
+struct monster_race *select_shape(struct monster *mon, int type)
+{
+	struct monster_race *race = NULL;
+
+	/* Save the "summon" type */
+	summon_specific_type = type;
+
+	/* Prepare allocation table */
+	get_mon_num_prep(summon_specific_okay);
+
+	/* Pick a monster */
+	race = get_mon_num(player->depth + 5);
+
+	/* Prepare allocation table */
+	get_mon_num_prep(NULL);
+
+	return race;
+}

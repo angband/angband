@@ -55,17 +55,17 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-4.1.3 is an official stable release incorporating all the changes
+4.2.0 is an official stable release incorporating all the changes
 and improvements added since the last official stable release (
 .B Angband 
-4.1.2).
+4.1.3).
 .PP
 This version of
 .B Angband
 has been compiled with 
 .I ncurses
 and the 
-.I X Windowing system and SDL
+.I X Windowing system and SDL and SDL2
 front-ends, and hence can be played on a virtual console as well as under 
 .I X.
 In the latter cases, the game can use multiple windows.

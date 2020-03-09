@@ -36,6 +36,7 @@ struct player *player;
 
 struct player_body *bodies;
 struct player_race *races;
+struct player_shape *shapes;
 struct player_class *classes;
 struct magic_realm *realms;
 
@@ -247,11 +248,11 @@ static void adjust_level(struct player *p, bool verbose)
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_STR, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_INT, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_STR, 0, 0, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_INT, 0, 0, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 0, 0, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 0, 0, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 0, 0, 0, 0, NULL);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
@@ -288,10 +289,12 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 {
 	/* Add racial flags */
 	memcpy(f, p->race->flags, sizeof(p->race->flags));
+	of_union(f, p->class->flags);
 
 	/* Some classes become immune to fear at a certain plevel */
-	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30)
+	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30) {
 		of_on(f, OF_PROT_FEAR);
+	}
 }
 
 

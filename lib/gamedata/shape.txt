@@ -1,0 +1,144 @@
+# File: shape.txt
+
+# This file is used to initialize the player shape information for Angband.
+
+# === Understanding shape.txt ===
+
+# Format:
+# name:shape name
+# combat:to-h:to-d:to-a
+# skill-disarm-phys:change
+# skill-disarm-magic:change
+# skill-save:change
+# skill-stealth:change
+# skill-search:change
+# skill-melee:change
+# skill-throw:change
+# skill-dig:change
+# obj-flags:object flags
+# player-flags:player flags
+# values:resistances and modifiers
+# effect:effect:subtype (if needed):radius (if needed):parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# effect-msg:message
+# blow:blow verb
+
+# 'name' is the name of the shape.
+
+# 'combat' is for modifiers to hit, to damage and to armor class.
+
+# 'skill-<skill name>' is for modifications to player skills - physical
+# and magical disarming, saving throws, stealth, searching, to hit (normal), 
+# to hit (throwing), digging.
+
+# 'obj-flags' is for object flags (as in src/list-obj-flags.h) gained
+# from the shapechange.
+
+# 'play-flags' is for player flags (as in src/list-player-flags.h) gained
+# from the shapechange.
+
+# 'values' is for resistances and modifiers gained from the shapechange.
+
+# 'effect' defines any effect which happens on taking the new shape,
+# and optionally parameters for effect subtype, effect radius and
+# an extra parameter for various things
+
+# 'dice' provides a random value to be used by an effect (for damage,
+# healing, etc).  As well as the normal random value fields described above,
+# it can contain expressions like $B, which refer forward to an 'expr' line.
+
+# 'expr' provides an expression for use in effect dice.  It consists of a
+# code letter (eg B) for the expression, a base function to use (for example
+# PLAYER_LEVEL), and a sequence of operations to perform on that base.
+
+# 'effect-msg' provides a message which can be used in whatever way the effect
+# needs, typically to print during the effect, or as a death message.
+
+# 'blow' is for verbs for how the shapechanged character will hit monsters.
+# Frequencies can be adjusted by having more than one line the same.
+
+name:normal
+
+name:fox
+combat:-3:-3:3
+obj-flags:FEATHER | FREE_ACT
+values:STR[-3] | STEALTH[5] | BLOWS[2] | MOVES[1]
+blow:bite
+blow:claw
+
+name:Pukel-man
+combat:0:5:20
+skill-save:20
+obj-flags:SUST_STR | SUST_CON | PROT_STUN | REGEN | HOLD_LIFE
+player-flags:ROCK
+values:STR[4] | CON[4] | STEALTH[-2] | SPEED[-5] | RES_POIS[3] | RES_SHARD[1]
+values:DAM_RED[10]
+effect:CURE:POISONED
+effect:CURE:STUN
+blow:punch
+blow:crush
+blow:thump
+blow:strike
+
+name:bear
+combat:15:15:5
+skill-disarm-phys:-5
+skill-disarm-magic:-10
+skill-melee:10
+obj-flags:PROT_FEAR
+values: STR[3] | INT[-2] | CON[2] | INFRA[1] | STEALTH[-3] | BLOWS[1]
+blow:cuff
+blow:clout
+blow:claw
+blow:hit
+blow:hit
+blow:swipe
+blow:slash
+
+name:eagle
+combat:5:0:10
+obj-flags:SUST_WIS | PROT_BLIND | PROT_CONF | PROT_FEAR | SEE_INVIS | FREE_ACT
+obj-flags:TRAP_IMMUNE
+values:MOVES[3]
+blow:peck
+blow:claw
+blow:claw
+blow:strike
+blow:tear
+
+name:bat
+combat:0:-10:10
+obj-flags:FEATHER | SEE_INVIS | PROT_BLIND
+values:SPEED[3] | STEALTH[3] | INFRA[5]
+effect:DAMAGE
+dice:5
+effect-msg:taking bat form
+blow:bite
+blow:scratch
+
+name:warg
+combat:5:5:0
+values:BLOWS[2]
+effect:DAMAGE
+dice:1d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect-msg:taking warg form
+effect:TIMED_INC:SHERO
+dice:5+1d20
+blow:bite
+blow:bite
+blow:claw
+blow:tear
+
+name:vampire
+combat:3:3:-5
+obj-flags:SEE_INVIS | HOLD_LIFE
+values:LIGHT[-1] | STEALTH[3] | INFRA[3]
+effect:DAMAGE
+dice:$B
+expr:B:PLAYER_HP:/ 4
+effect-msg:taking vampire form
+effect:TIMED_INC:ATT_VAMP
+dice:10+1d20
+blow:bite

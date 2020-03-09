@@ -138,7 +138,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		text_out("\n%s\n", spell_by_index(spell_index)->text);
+		text_out("\n%s\n\n", spell_by_index(spell_index)->text);
 
 		/* XXX */
 		text_out_pad = 0;
@@ -162,8 +162,9 @@ static struct menu *spell_menu_new(const struct object *obj,
 {
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
+	size_t width = MIN(Term->wid - 15, 80);
 
-	region loc = { -60, 1, 60, -99 };
+	region loc = { 0 - width, 1, width, -99 };
 
 	/* collect spells from object */
 	d->n_spells = spell_collect_from_book(obj, &d->spells);
@@ -254,7 +255,7 @@ static void spell_menu_browse(struct menu *m, const char *noun)
 void textui_book_browse(const struct object *obj)
 {
 	struct menu *m;
-	const char *noun = player->class->magic.spell_realm->spell_noun;
+	const char *noun = player_object_to_book(player, obj)->realm->spell_noun;
 
 	m = spell_menu_new(obj, spell_okay_to_browse);
 	if (m) {
@@ -292,8 +293,7 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
 							   const char *error,
 							   bool (*spell_filter)(int spell_index))
 {
-	const char *noun = player->class->magic.spell_realm->spell_noun;
-
+	const char *noun = player_object_to_book(player, book)->realm->spell_noun;
 	struct menu *m;
 
 	track_object(player->upkeep, book);

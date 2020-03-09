@@ -90,6 +90,12 @@ code:SPEED
 power:20
 mult:6
 
+name:damage reduction
+type:mod
+code:DAM_RED
+power:5
+mult:6
+
 name:attack speed
 type:mod
 code:BLOWS
@@ -113,7 +119,7 @@ name:shooting speed
 type:mod
 code:SHOTS
 power:0
-mult:50
+mult:5
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
@@ -136,6 +142,28 @@ type:mod
 code:MIGHT
 power:0
 mult:30
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:movement speed
+type:mod
+code:MOVES
+power:0
+mult:50
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
@@ -538,11 +566,11 @@ code:FRAGILE
 power:0
 desc:Can be destroyed if you attempt to remove its curses
 
-name:radius 1 light
+name:intensity 2 light
 type:flag
 subtype:light
 id-type:on wield
-code:LIGHT_1
+code:LIGHT_2
 power:9
 type-mult:sword:0
 type-mult:polearm:0
@@ -561,11 +589,11 @@ type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
 
-name:radius 2 light
+name:intensity 3 light
 type:flag
 subtype:light
 id-type:on wield
-code:LIGHT_2
+code:LIGHT_3
 power:18
 type-mult:sword:0
 type-mult:polearm:0
@@ -627,6 +655,34 @@ type-mult:helm:0
 type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
+
+name:trap immunity
+type:flag
+subtype:misc ability
+id-type:on effect
+code:TRAP_IMMUNE
+power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+msg:Your {name} stops you from setting off the trap.
+desc:Gives immunity to traps
+
+name:throwing
+type:flag
+subtype:throw
+id-type:on wield
+code:THROWING
+power:4
 
 name:ignore acid
 type:ignore

@@ -632,25 +632,24 @@ static void cleanup_template_parser(void)
  */
 static void place_feeling(struct chunk *c)
 {
-	int y,x,i,j;
+	int i, j;
 	int tries = 500;
 	
 	for (i = 0; i < z_info->feeling_total; i++) {
 		for (j = 0; j < tries; j++) {
 			/* Pick a random dungeon coordinate */
-			y = randint0(c->height);
-			x = randint0(c->width);
+			struct loc grid = loc(randint0(c->width), randint0(c->height));
 
 			/* Check to see if it is not a wall */
-			if (square_iswall(c, y, x))
+			if (square_iswall(c, grid))
 				continue;
 
 			/* Check to see if it is already marked */
-			if (square_isfeel(c, y, x))
+			if (square_isfeel(c, grid))
 				continue;
 
 			/* Set the cave square appropriately */
-			sqinfo_on(c->squares[y][x].info, SQUARE_FEEL);
+			sqinfo_on(square(c, grid).info, SQUARE_FEEL);
 			
 			break;
 		}
@@ -934,6 +933,27 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	int i, tries = 0;
 	struct chunk *chunk = NULL;
 
+	/* Arena levels handled separately */
+	if (p->upkeep->arena_level) {
+		/* Generate level */
+		chunk = arena_gen(p, height, width);
+
+		/* Allocate new known level, light it if requested */
+		p->cave = cave_new(chunk->height, chunk->width);
+		p->cave->depth = chunk->depth;
+		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+									   * sizeof(struct object*));
+		p->cave->obj_max = chunk->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++) {
+			p->cave->objects[i] = NULL;
+		}
+
+		wiz_light(chunk, p, false);
+		chunk->turn = turn;
+
+		return chunk;
+	}
+
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
 		int y, x;
@@ -975,7 +995,8 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			int i2;
 			for (i2 = 1; i2 < z_info->r_max; i2++) {
 				struct monster_race *race = &r_info[i2];
-				int y2, x2;
+				struct monster_group_info info = { 0, 0 };
+				struct loc grid;
 
 				/* The monster must be an unseen quest monster of this depth. */
 				if (race->cur_num > 0) continue;
@@ -983,28 +1004,30 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 				if (race->level != chunk->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(chunk, &y2, &x2);
-				place_new_monster(chunk, y2, x2, race, true, true, ORIGIN_DROP);
+				find_empty(chunk, &grid);
+				place_new_monster(chunk, grid, race, true, true, info,
+								  ORIGIN_DROP);
 			}
 		}
 
 		/* Clear generation flags, add connecting info */
 		for (y = 0; y < chunk->height; y++) {
 			for (x = 0; x < chunk->width; x++) {
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_INNER);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_OUTER);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_SOLID);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_MON_RESTRICT);
+				struct loc grid = loc(x, y);
 
-				if (square_isstairs(chunk, y, x)) {
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_INNER);
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_OUTER);
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_SOLID);
+				sqinfo_off(square(chunk, grid).info, SQUARE_MON_RESTRICT);
+
+				if (square_isstairs(chunk, grid)) {
 					size_t n;
 					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = y;
-					new->grid.x = x;
-					new->feat = square_feat(chunk, y, x)->fidx;
+					new->grid = grid;
+					new->feat = square_feat(chunk, grid)->fidx;
 					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 					for (n = 0; n < SQUARE_SIZE; n++) {
-						new->info[n] = chunk->squares[y][x].info[n];
+						new->info[n] = square(chunk, grid).info[n];
 					}
 					new->next = chunk->join;
 					chunk->join = new;
@@ -1066,9 +1089,9 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* TODO potential problem: stairs in vaults? */
 	
 	/* allow direct transfer if target location is teleportable */
-	if (square_in_bounds_fully(c, p->py, p->px)
-			&& square_isarrivable(c, p->py, p->px)
-			&& !square_isvault(c, p->py, p->px)) {
+	if (square_in_bounds_fully(c, p->grid)
+		&& square_isarrivable(c, p->grid)
+		&& !square_isvault(c, p->grid)) {
 		return;
 	}
 	
@@ -1077,7 +1100,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	 */
 	int tx, ty; // test locations
 	int ix, iy; // initial location
-	int vx=1, vy=1; // fallback vault location
+	int vx = 1, vy = 1; // fallback vault location
 	int try = 1000; // attempts
 
 	/* a bunch of random locations */
@@ -1085,10 +1108,10 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 		try = try - 1;
 		tx = randint0(c->width-1) + 1;
 		ty = randint0(c->height-1) + 1;
-		if (square_isempty(c, ty, tx)
-				&& !square_isvault(c, ty, tx)) {
-			p->py = ty;
-			p->px = tx;
+		if (square_isempty(c, loc(tx, ty))
+			&& !square_isvault(c, loc(tx, ty))) {
+			p->grid.y = ty;
+			p->grid.x = tx;
 			return;
 		}
 	}
@@ -1107,11 +1130,11 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	}
 	
 	while (1) {		//until full loop through dungeon
-		if (square_isempty(c, ty, tx)) {
-			if (!square_isvault(c, ty, tx)) {
+		if (square_isempty(c, loc(tx, ty))) {
+			if (!square_isvault(c, loc(tx, ty))) {
 				// ok location
-				p->py = ty;
-				p->px = tx;
+				p->grid.y = ty;
+				p->grid.x = tx;
 				return;
 			}
 			// vault, but lets remember it just in case
@@ -1133,8 +1156,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	}
 	
 	// fallback vault location (or at least a non-crashy square)
-	p->px=vx;
-	p->py=vy;
+	p->grid.x = vx;
+	p->grid.y = vy;
 }
 
 /**
@@ -1146,18 +1169,26 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 */
 void prepare_next_level(struct chunk **c, struct player *p)
 {
+	bool persist = OPT(p, birth_levels_persist) || p->upkeep->arena_level;
+
 	/* Deal with any existing current level */
 	if (character_dungeon) {
 		assert (p->cave && (*c == cave));
 
-		if (OPT(p, birth_levels_persist)) {
-			/* Tidy up */
-			compact_monsters(0);
-			(*c)->squares[p->py][p->px].mon = 0;
+		if (persist) {
+			/* Arenas don't get stored */
+			if (!(*c)->name || !streq((*c)->name, "arena")) {
+				/* Tidy up */
+				compact_monsters(0);
+				if (!p->upkeep->arena_level) {
+					/* Leave the player marker if going to an arena */
+					square_set_mon(*c, p->grid, 0);
+				}
 
-			/* Save level and known level */
-			cave_store(*c, false, true);
-			cave_store(p->cave, true, true);
+				/* Save level and known level */
+				cave_store(*c, false, true);
+				cave_store(p->cave, true, true);
+			}
 		} else {
 			/* Save the town */
 			if (!((*c)->depth) && !chunk_find_name("Town")) {
@@ -1171,7 +1202,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				/* Deal with artifacts */
 				for (y = 0; y < (*c)->height; y++) {
 					for (x = 0; x < (*c)->width; x++) {
-						struct object *obj = square_object(*c, y, x);
+						struct object *obj = square_object(*c, loc(x, y));
 						while (obj) {
 							if (obj->artifact) {
 								bool found = obj->known && obj->known->artifact;
@@ -1201,13 +1232,14 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	}
 
 	/* Prepare the new level */
-	if (OPT(p, birth_levels_persist)) {
+	if (persist) {
 		char *name = level_by_depth(p->depth)->name;
 		struct chunk *old_level = chunk_find_name(name);
 
 		/* If we found an old level, load the known level and assign */
-		if (old_level) {
+		if (old_level && (old_level != cave)) {
 			int i;
+			bool arena = (*c)->name && streq((*c)->name, "arena");
 			char *known_name = format("%s known", name);
 			struct chunk *old_known = chunk_find_name(known_name);
 			assert(old_known);
@@ -1226,15 +1258,68 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Allow monsters to recover */
 			restore_monsters();
 
-			/* Map boundary changes may not cooperate with level teleports */
-			sanitize_player_loc(*c,p);
+			/* Leaving arenas requires special treatment */
+			if (arena) {
+				int y, x;
+				bool found = false;
 
-			/* Place the player */
-			player_place(*c, p, p->py, p->px);
+				/* Find where the player has to go, place them by hand */
+				for (y = 0; y < (*c)->height; y++) {
+					for (x = 0; x < (*c)->width; x++) {
+						struct loc grid = loc(x, y);
+						if (square(*c, grid).mon == -1) {
+							p->grid = grid;
+							found = true;
+							break;
+						}
+					}
+					if (found) break;
+				}
+
+				/* Failed to find, try near the killed monster */
+				if (!found) {
+					int k;
+					int ty = (*c)->monsters[1].grid.y;
+					int tx = (*c)->monsters[1].grid.x;
+					for (k = 1; k < 10; k++) {
+						for (y = ty - k; y <= ty + k; y++) {
+							for (x = tx - k; x <= tx + k; x++) {
+								struct loc grid = loc(x, y);
+								if (square_in_bounds_fully(*c, grid) &&
+									square_isempty(*c, grid) &&
+									!square_isvault(*c, grid)) {
+									p->grid = grid;
+									found = true;
+									break;
+								}
+							}
+							if (found) break;
+						}
+						if (found) break;
+					}
+				}
+
+				/* Still failed to find, try anywhere */
+				if (!found) {
+					p->grid = (*c)->monsters[1].grid;
+					sanitize_player_loc(*c, p);
+				}
+
+				square_set_mon(*c, p->grid, -1);;
+			} else {
+				/* Map boundary changes may not cooperate with level teleport */
+				sanitize_player_loc(*c, p);
+
+				/* Place the player */
+				player_place(*c, p, p->grid);
+			}
 
 			/* Remove from the list */
 			chunk_list_remove(name);
 			chunk_list_remove(known_name);
+		} else if (p->upkeep->arena_level) {
+			/* We're creating a new arena level */
+			*c = cave_generate(p, 6, 6);
 		} else {
 			/* Check dimensions */
 			struct level *lev;

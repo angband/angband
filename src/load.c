@@ -22,6 +22,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
@@ -106,8 +107,10 @@ static struct object *rd_item(void)
 	rd_u16b(&obj->oidx);
 
 	/* Location */
-	rd_byte(&obj->iy);
-	rd_byte(&obj->ix);
+	rd_byte(&tmp8u);
+	obj->grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	obj->grid.x = tmp8u;
 
 	/* Type/Subtype */
 	rd_string(buf, sizeof(buf));
@@ -256,16 +259,26 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	size_t j;
 
 	/* Read the monster race */
+	rd_u16b(&tmp16u);
+	mon->midx = tmp16u;
 	rd_string(race_name, sizeof(race_name));
 	mon->race = lookup_monster(race_name);
 	if (!mon->race) {
 		note(format("Monster race %s no longer exists!", race_name));
-		return (-1);
+		return false;
+	}
+	rd_string(race_name, sizeof(race_name));
+	if (streq(race_name, "none")) {
+		mon->original_race = NULL;
+	} else {
+		mon->original_race = lookup_monster(race_name);
 	}
 
 	/* Read the other information */
-	rd_byte(&mon->fy);
-	rd_byte(&mon->fx);
+	rd_byte(&tmp8u);
+	mon->grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	mon->grid.x = tmp8u;
 	rd_s16b(&mon->hp);
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mspeed);
@@ -289,7 +302,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	if (tmp16u) {
 		/* Find and set the mimicked object */
-		struct object *square_obj = square_object(c, mon->fy, mon->fx);
+		struct object *square_obj = square_object(c, mon->grid);
 
 		/* Try and find the mimicked object; if we fail, create a new one */
 		while (square_obj) {
@@ -315,6 +328,16 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		c->objects[obj->oidx] = obj;
 	}
 
+	/* Read group info */
+	rd_u16b(&tmp16u);
+	mon->group_info[PRIMARY_GROUP].index = tmp16u;
+	rd_byte(&tmp8u);
+	mon->group_info[PRIMARY_GROUP].role = tmp8u;
+	rd_u16b(&tmp16u);
+	mon->group_info[SUMMON_GROUP].index = tmp16u;
+	rd_byte(&tmp8u);
+	mon->group_info[SUMMON_GROUP].role = tmp8u;
+
 	return true;
 }
 
@@ -324,7 +347,8 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
  */
 static void rd_trap(struct trap *trap)
 {
-    int i;
+	int i;
+	byte tmp8u;
 	char buf[80];
 
 	rd_string(buf, sizeof(buf));
@@ -332,12 +356,14 @@ static void rd_trap(struct trap *trap)
 		trap->kind = lookup_trap(buf);
 		trap->t_idx = trap->kind->tidx;
 	}
-    rd_byte(&trap->fy);
-    rd_byte(&trap->fx);
-    rd_byte(&trap->power);
-    rd_byte(&trap->timeout);
+	rd_byte(&tmp8u);
+	trap->grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	trap->grid.x = tmp8u;
+	rd_byte(&trap->power);
+	rd_byte(&trap->timeout);
 
-    for (i = 0; i < trf_size; i++)
+	for (i = 0; i < trf_size; i++)
 		rd_byte(&trap->flags[i]);
 }
 
@@ -489,6 +515,10 @@ int rd_monster_memory(void)
 		if (rf_has(race->flags, RF_UNIQUE) && tmp16u)
 			race->max_num = 0;
 
+		/* Get the theft count */
+		rd_u16b(&tmp16u);
+		l_list[race->ridx].thefts = tmp16u;
+
 		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));
 	}
@@ -607,6 +637,7 @@ int rd_player(void)
 	byte stat_max = 0;
 	char buf[80];
 	struct player_race *r;
+	struct player_shape *s;
 	struct player_class *c;
 
 	rd_string(player->full_name, sizeof(player->full_name));
@@ -626,6 +657,21 @@ int rd_player(void)
 	/* Verify player race */
 	if (!player->race) {
 		note(format("Invalid player race (%s).", buf));
+		return -1;
+	}
+
+	/* Player shape */
+	rd_string(buf, sizeof(buf));
+	for (s = shapes; s; s = s->next) {
+		if (streq(s->name, buf)) {
+			player->shape = s;
+			break;
+		}
+	}
+
+	/* If no player shape recorded, set to normal and hope for the best */
+	if (!player->shape) {
+		note(format("Invalid player shape (%s).", buf));
 		return -1;
 	}
 
@@ -735,10 +781,8 @@ int rd_player(void)
 	rd_s16b(&player->deep_descent);
 
 	/* Read the flags */
-	rd_s16b(&player->food);
 	rd_s16b(&player->energy);
 	rd_s16b(&player->word_recall);
-	rd_byte(&player->confusing);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);
@@ -913,6 +957,7 @@ int rd_misc(void)
 		cleanup_parser(&artifact_parser);
 		activate_randart_file();
 		run_parser(&randart_parser);
+		deactivate_randart_file();
 	}
 
 	/* Property knowledge */
@@ -1205,6 +1250,9 @@ static int rd_dungeon_aux(struct chunk **c)
 
 	/* Header info */
 	rd_string(name, sizeof(name));
+	if (streq(name, "arena")) {
+		player->upkeep->arena_level = true;
+	}
 	rd_u16b(&height);
 	rd_u16b(&width);
 
@@ -1246,7 +1294,7 @@ static int rd_dungeon_aux(struct chunk **c)
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--) {
 			/* Extract "feat" */
-			square_set_feat(c1, y, x, tmp8u);
+			square_set_feat(c1, loc(x, y), tmp8u);
 
 			/* Advance/Wrap */
 			if (++x >= c1->width) {
@@ -1317,8 +1365,9 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if (square_in_bounds_fully(c, obj->iy, obj->ix))
-			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
+		if (square_in_bounds_fully(c, obj->grid)) {
+			pile_insert_end(&c->squares[obj->grid.y][obj->grid.x].obj, obj);
+		}
 		assert(obj->oidx);
 		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
@@ -1362,7 +1411,7 @@ static int rd_monsters_aux(struct chunk *c)
 		}
 
 		/* Place monster in dungeon */
-		if (place_monster(c, mon->fy, mon->fx, mon, 0) != i) {
+		if (place_monster(c, mon->grid, mon, 0) != i) {
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}
@@ -1373,32 +1422,37 @@ static int rd_monsters_aux(struct chunk *c)
 
 static int rd_traps_aux(struct chunk *c)
 {
-	int y, x;
+	struct loc grid;
 	struct trap *trap;
 
-    /* Only if the player's alive */
-    if (player->is_dead)
+	/* Only if the player's alive */
+	if (player->is_dead)
 		return 0;
 
-    rd_byte(&trf_size);
+	rd_byte(&trf_size);
 
 	/* Read traps until one has no location */
 	while (true) {
 		trap = mem_zalloc(sizeof(*trap));
 		rd_trap(trap);
-		y = trap->fy;
-		x = trap->fx;
-		if ((y == 0) && (x == 0))
+		grid = trap->grid;
+		if (loc_is_zero(grid))
 			break;
 		else {
 			/* Put the trap at the front of the grid trap list */
-			trap->next = c->squares[y][x].trap;
-			c->squares[y][x].trap = trap;
+			trap->next = square_trap(c, grid);
+			square_set_trap(c, grid, trap);
+
+			/* Set decoy if appropriate */
+			if ((trap->kind == lookup_trap("decoy")) &&
+			    (c == cave)) {
+				c->decoy = grid;
+			}
 		}
 	}
 
 	mem_free(trap);
-    return 0;
+	return 0;
 }
 
 int rd_dungeon(void)
@@ -1437,7 +1491,7 @@ int rd_dungeon(void)
 	cave->depth = depth;
 
 	/* Place player in dungeon */
-	player_place(cave, player, py, px);
+	player_place(cave, player, loc(px, py));
 
 	/* The dungeon is ready */
 	character_dungeon = true;

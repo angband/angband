@@ -1101,7 +1101,7 @@ static struct
 	{ L"h",        "Hominids (Elves, Dwarves)" },
 	{ L"M",        "Hydras" },
 	{ L"i",        "Icky Things" },
-	{ L"lFI",      "Insects" },
+	{ L"FI",       "Insects" },
 	{ L"j",        "Jellies" },
 	{ L"K",        "Killer Beetles" },
 	{ L"k",        "Kobolds" },
@@ -1119,6 +1119,7 @@ static struct
 	{ L"S",        "Scorpions/Spiders" },
 	{ L"s",        "Skeletons/Drujs" },
 	{ L"J",        "Snakes" },
+	{ L"l",        "Trees/Ents" },
 	{ L"T",        "Trolls" },
 	{ L"V",        "Vampires" },
 	{ L"W",        "Wights/Wraiths" },
@@ -1167,13 +1168,15 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	big_pad(66, row, a, c);
 
 	/* Display kills */
-	if (rf_has(race->flags, RF_UNIQUE))
+	if (!race->rarity) {
+		put_str(format("%s", "shape"), row, 70);
+	} else if (rf_has(race->flags, RF_UNIQUE)) {
 		put_str(format("%s", (race->max_num == 0)?  " dead" : "alive"),
 				row, 70);
-	else
+	} else {
 		put_str(format("%5d", lore->pkills), row, 70);
+	}
 }
-
 
 static int m_cmp_race(const void *a, const void *b)
 {
@@ -1339,10 +1342,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (j == 0 && !rf_has(race->flags, RF_UNIQUE))
-				continue;
-			else if (j > 0 && !wcschr(pat, race->d_char))
-				continue;
+			if (j == 0 && !rf_has(race->flags, RF_UNIQUE)) continue;
+			if (j > 0 && !wcschr(pat, race->d_char)) continue;
 
 			monsters[m_count] = m_count;
 			default_join[m_count].oid = i;
@@ -1377,6 +1378,9 @@ static const grouper object_text_order[] =
  	{TV_MUSHROOM,		"Mushroom"		},
 	{TV_PRAYER_BOOK,	"Priest Book"	},
 	{TV_MAGIC_BOOK,		"Magic Book"	},
+	{TV_NATURE_BOOK,	"Nature Book"	},
+	{TV_SHADOW_BOOK,	"Shadow Book"	},
+	{TV_OTHER_BOOK,		"Mystery Book"	},
 	{TV_LIGHT,			"Light"			},
 	{TV_FLASK,			"Flask"			},
 	{TV_SWORD,			"Sword"			},
@@ -1438,16 +1442,19 @@ static struct object *find_artifact(struct artifact *artifact)
 	struct object *obj;
 
 	/* Ground objects */
-	for (y = 1; y < cave->height; y++)
-		for (x = 1; x < cave->width; x++)
-			for (obj = square_object(cave, y, x); obj; obj = obj->next)
-				if (obj->artifact == artifact)
-					return obj;
+	for (y = 1; y < cave->height; y++) {
+		for (x = 1; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
+				if (obj->artifact == artifact) return obj;
+			}
+		}
+	}
 
 	/* Player objects */
-	for (obj = player->gear; obj; obj = obj->next)
-		if (obj->artifact == artifact)
-			return obj;
+	for (obj = player->gear; obj; obj = obj->next) {
+		if (obj->artifact == artifact) return obj;
+	}
 
 	/* Monster objects */
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
@@ -1455,8 +1462,7 @@ static struct object *find_artifact(struct artifact *artifact)
 		obj = mon ? mon->held_obj : NULL;
 
 		while (obj) {
-			if (obj->artifact == artifact)
-				return obj;
+			if (obj->artifact == artifact) return obj;
 			obj = obj->next;
 		}
 	}
@@ -1464,9 +1470,9 @@ static struct object *find_artifact(struct artifact *artifact)
 	/* Store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
-		for (obj = s->stock; obj; obj = obj->next)
-			if (obj->artifact == artifact)
-				return obj;
+		for (obj = s->stock; obj; obj = obj->next) {
+			if (obj->artifact == artifact) return obj;
+		}
 	}
 
 	return NULL;
@@ -1860,6 +1866,9 @@ static int o_cmp_tval(const void *a, const void *b)
 		case TV_LIGHT:
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_SHADOW_BOOK:
+		case TV_OTHER_BOOK:
 		case TV_DRAG_ARMOR:
 			/* leave sorted by sval */
 			break;
@@ -2380,7 +2389,7 @@ static int trap_order(int trap)
 {
 	const struct trap_kind *t = &trap_info[trap];
 
-	if (trf_has(t->flags, TRF_RUNE))
+	if (trf_has(t->flags, TRF_GLYPH))
 		return 0;
 	else if (trf_has(t->flags, TRF_LOCK))
 		return 1;
@@ -2552,7 +2561,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
 { 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
 { 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of temple",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of bookseller",    do_cmd_knowledge_store     },
 { 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
 { 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
 { 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
@@ -2594,6 +2603,7 @@ void textui_knowledge_init(void)
 			obj_group_order[i] = -1;
 
 		for (i = 0; 0 != object_text_order[i].tval; i++) {
+			if (kb_info[object_text_order[i].tval].num_svals == 0) continue;
 			if (object_text_order[i].name) gid = i;
 			obj_group_order[object_text_order[i].tval] = gid;
 		}

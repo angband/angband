@@ -202,7 +202,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		}
 
 		/* Mention "offscreen" monsters */
-		if (!panel_contains(mon->fy, mon->fx)) {
+		if (!panel_contains(mon->grid.y, mon->grid.x)) {
 			my_strcat(desc, " (offscreen)", max);
 		}
 	}

@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "monster.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
@@ -68,8 +69,14 @@ const s16b ddx[10] =
 const s16b ddy[10] =
 { 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
 
+
+const struct loc ddgrid[10] =
+{ {0, 0}, {-1, 1}, {0, 1}, {1, 1}, {-1, 0}, {0, 0}, {1, 0}, {-1, -1}, {0, -1},
+  {1, -1} };
+
 /**
- * Global arrays for optimizing "ddx[ddd[i]]" and "ddy[ddd[i]]".
+ * Global arrays for optimizing "ddx[ddd[i]]", "ddy[ddd[i]]" and
+ * "loc(ddx[ddd[i]], ddy[ddd[i]])".
  *
  * This means that each entry in this array corresponds to the direction
  * with the same array index in ddd[].
@@ -79,6 +86,9 @@ const s16b ddx_ddd[9] =
 
 const s16b ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
+
+const struct loc ddgrid_ddd[9] =
+{{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 0}};
 
 /**
  * Hack -- Precompute a bunch of calls to distance().
@@ -244,6 +254,43 @@ const byte side_dirs[20][8] = {
 };
 
 /**
+ * Given a "start" and "finish" location, extract a "direction",
+ * which will move one step from the "start" towards the "finish".
+ *
+ * Note that we use "diagonal" motion whenever possible.
+ *
+ * We return DIR_NONE if no motion is needed.
+ */
+int motion_dir(struct loc start, struct loc finish)
+{
+	/* No movement required */
+	if (loc_eq(start, finish)) return (DIR_NONE);
+
+	/* South or North */
+	if (start.x == finish.x) return ((start.y < finish.y) ? DIR_S : DIR_N);
+
+	/* East or West */
+	if (start.y == finish.y) return ((start.x < finish.x) ? DIR_E : DIR_W);
+
+	/* South-east or South-west */
+	if (start.y < finish.y) return ((start.x < finish.x) ? DIR_SE : DIR_SW);
+
+	/* North-east or North-west */
+	if (start.y > finish.y) return ((start.x < finish.x) ? DIR_NE : DIR_NW);
+
+	/* Paranoia */
+	return (DIR_NONE);
+}
+
+/**
+ * Given a grid and a direction, extract the adjacent grid in that direction
+ */
+struct loc next_grid(struct loc grid, int dir)
+{
+	return loc(grid.x + ddgrid[dir].x, grid.y + ddgrid[dir].y);
+}
+
+/**
  * Find a terrain feature index by name
  */
 int lookup_feat(const char *name)
@@ -320,6 +367,9 @@ struct chunk *cave_new(int height, int width) {
 	c->mon_max = 1;
 	c->mon_current = -1;
 
+	c->monster_groups = mem_zalloc(z_info->level_monster_max *
+								   sizeof(struct monster_group*));
+
 	c->turn = turn;
 	return c;
 }
@@ -341,7 +391,7 @@ void cave_free(struct chunk *c) {
 		for (x = 0; x < c->width; x++) {
 			mem_free(c->squares[y][x].info);
 			if (c->squares[y][x].trap)
-				square_free_trap(c, y, x);
+				square_free_trap(c, loc(x, y));
 			if (c->squares[y][x].obj)
 				object_pile_free(c->squares[y][x].obj);
 		}
@@ -356,6 +406,7 @@ void cave_free(struct chunk *c) {
 	mem_free(c->feat_count);
 	mem_free(c->objects);
 	mem_free(c->monsters);
+	mem_free(c->monster_groups);
 	if (c->name)
 		string_free(c->name);
 	mem_free(c);
@@ -438,16 +489,17 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 		struct object *known_obj = c_k->objects[i];
 		if (obj) {
 			assert(obj->oidx == i);
-			if (obj->iy && obj->ix)
-				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+			if (!loc_is_zero(obj->grid))
+				assert(pile_contains(square_object(c, obj->grid), obj));
 		}
 		if (known_obj) {
 			assert (obj);
 			if (player->upkeep->playing) {
 				assert(known_obj == obj->known);
 			}
-			if (known_obj->iy && known_obj->ix)
-				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			if (!loc_is_zero(known_obj->grid))
+				assert (pile_contains(square_object(c_k, known_obj->grid),
+									  known_obj));
 			assert (known_obj->oidx == i);
 		}
 	}
@@ -464,31 +516,28 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
  *
  * need_los determines whether line of sight is needed
  */
-void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
+void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los)
 {
-	int nx, ny;
 	int tries = 0;
 
 	/* Pick a location, try many times */
 	while (tries < 1000) {
 		/* Pick a new location */
-		ny = rand_spread(y, d);
-		nx = rand_spread(x, d);
+		struct loc new_grid = rand_loc(grid, d, d);
 		tries++;
 
 		/* Ignore annoying locations */
-		if (!square_in_bounds_fully(c, ny, nx)) continue;
+		if (!square_in_bounds_fully(c, new_grid)) continue;
 
 		/* Ignore "excessively distant" locations */
-		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
+		if ((d > 1) && (distance(grid, new_grid) > d)) continue;
 		
 		/* Require "line of sight" if set */
-		if (need_los && !los(c, y, x, ny, nx)) continue;
+		if (need_los && !los(c, grid, new_grid)) continue;
 
 		/* Set the location and return */
-		(*yp) = ny;
-		(*xp) = nx;
+		*place = new_grid;
 		return;
 	}
 }
@@ -519,41 +568,44 @@ int cave_monster_count(struct chunk *c) {
 /**
  * Return the number of doors/traps around (or under) the character.
  */
-int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under)
+int count_feats(struct loc *grid,
+				bool (*test)(struct chunk *c, struct loc grid), bool under)
 {
 	int d;
-	int xx, yy;
+	struct loc grid1;
 	int count = 0; /* Count how many matches */
 
 	/* Check around (and under) the character */
-	for (d = 0; d < 9; d++)
-	{
+	for (d = 0; d < 9; d++) {
 		/* if not searching under player continue */
 		if ((d == 8) && !under) continue;
 
 		/* Extract adjacent (legal) location */
-		yy = player->py + ddy_ddd[d];
-		xx = player->px + ddx_ddd[d];
+		grid1 = loc_sum(player->grid, ddgrid_ddd[d]);
 
 		/* Paranoia */
-		if (!square_in_bounds_fully(cave, yy, xx)) continue;
+		if (!square_in_bounds_fully(cave, grid1)) continue;
 
 		/* Must have knowledge */
-		if (!square_isknown(cave, yy, xx)) continue;
+		if (!square_isknown(cave, grid1)) continue;
 
 		/* Not looking for this feature */
-		if (!((*test)(cave, yy, xx))) continue;
+		if (!((*test)(cave, grid1))) continue;
 
 		/* Count it */
 		++count;
 
 		/* Remember the location of the last door found */
-		if (x && y) {
-			*y = yy;
-			*x = xx;
+		if (grid) {
+			*grid = grid1;
 		}
 	}
 
 	/* All done */
 	return count;
+}
+
+struct loc cave_find_decoy(struct chunk *c)
+{
+	return c->decoy;
 }

@@ -170,8 +170,7 @@ int inven_damage(struct player *p, int type, int cperc)
 typedef struct project_object_handler_context_s {
 	const struct source origin;
 	const int r;
-	const int y;
-	const int x;
+	const struct loc grid;
 	const int dam;
 	const int type;
 	const struct object *obj;
@@ -381,6 +380,10 @@ static void project_object_handler_AWAY_EVIL(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_AWAY_SPIRIT(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_AWAY_ALL(project_object_handler_context_t *context)
 {
 }
@@ -390,6 +393,10 @@ static void project_object_handler_TURN_UNDEAD(project_object_handler_context_t 
 }
 
 static void project_object_handler_TURN_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_TURN_LIVING(project_object_handler_context_t *context)
 {
 }
 
@@ -406,6 +413,18 @@ static void project_object_handler_DISP_EVIL(project_object_handler_context_t *c
 }
 
 static void project_object_handler_DISP_ALL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLEEP_UNDEAD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLEEP_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLEEP_ALL(project_object_handler_context_t *context)
 {
 }
 
@@ -433,10 +452,6 @@ static void project_object_handler_MON_CONF(project_object_handler_context_t *co
 {
 }
 
-static void project_object_handler_MON_SLEEP(project_object_handler_context_t *context)
-{
-}
-
 static void project_object_handler_MON_HOLD(project_object_handler_context_t *context)
 {
 }
@@ -446,6 +461,10 @@ static void project_object_handler_MON_STUN(project_object_handler_context_t *co
 }
 
 static void project_object_handler_MON_DRAIN(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_CRUSH(project_object_handler_context_t *context)
 {
 }
 
@@ -480,10 +499,10 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Hack -- effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
+bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			   const struct object *protected_obj)
 {
-	struct object *obj = square_object(cave, y, x);
+	struct object *obj = square_object(cave, grid);
 	bool obvious = false;
 
 	/* Scan all objects in the grid */
@@ -497,8 +516,7 @@ bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
 		project_object_handler_context_t context = {
 			origin,
 			r,
-			y,
-			x,
+			grid,
 			dam,
 			typ,
 			obj,
@@ -522,7 +540,7 @@ bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
 
 			/* Effect observed */
 			if (obj->known && !ignore_item_ok(obj) &&
-				square_isseen(cave, y, x)) {
+				square_isseen(cave, grid)) {
 				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
@@ -543,13 +561,13 @@ bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
-				square_excise_object(cave, y, x, obj);
+				square_excise_object(cave, grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 
 				/* Redraw */
-				square_note_spot(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_note_spot(cave, grid);
+				square_light_spot(cave, grid);
 			}
 		}
 

@@ -22,8 +22,8 @@
 #include "player-calcs.h"
 #include "project.h"
 
-/* 30 = TMD_MAX */
-static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+/* 31 = TMD_MAX */
+static s16b TEST_DATA test_timed[31] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
 };
 
 static struct object_base TEST_DATA sword_base = {
@@ -98,6 +98,8 @@ static struct object_kind TEST_DATA test_longsword = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 1,
@@ -197,6 +199,8 @@ static struct object_kind TEST_DATA test_torch = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 1, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
@@ -322,6 +326,8 @@ static struct object_kind TEST_DATA test_lantern = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 2, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
@@ -417,6 +423,8 @@ static struct object_kind TEST_DATA test_flask = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,
@@ -486,6 +494,8 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,
@@ -554,6 +564,8 @@ static struct object_kind TEST_DATA test_gold = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,
@@ -633,25 +645,19 @@ static struct player_race TEST_DATA test_race = {
 };
 
 static struct start_item TEST_DATA start_torch = {
-	.kind = &test_torch,
+	.tval = TV_LIGHT,
+	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
 	.min = 3,
 	.max = 5,
 	.next = NULL,
 };
 
 static struct start_item TEST_DATA start_longsword = {
-	.kind = &test_longsword,
+	.tval = TV_SWORD,
+	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
 	.min = 1,
 	.max = 1,
 	.next = &start_torch,
-};
-
-static struct class_book TEST_DATA test_book = {
-	.tval = 10,
-	.sval = 4,
-	.realm = 1,
-	.num_spells = 8,
-	.spells = NULL,
 };
 
 static struct magic_realm TEST_DATA test_realm = {
@@ -661,6 +667,14 @@ static struct magic_realm TEST_DATA test_realm = {
 	.verb = "spell_verb",
 	.spell_noun = "spell_noun",
 	.book_noun = "book_noun",
+};
+
+static struct class_book TEST_DATA test_book = {
+	.tval = 10,
+	.sval = 4,
+	.realm = &test_realm,
+	.num_spells = 8,
+	.spells = NULL,
 };
 
 static struct player_class TEST_DATA test_class = {
@@ -723,7 +737,6 @@ static struct player_class TEST_DATA test_class = {
 	.magic =  {
 		.spell_first = 1,
 		.spell_weight = 300,
-		.spell_realm = &test_realm,
 		.num_books = 1,
 		.books = &test_book,
 		.total_spells = 8,
@@ -734,11 +747,16 @@ static struct monster_base TEST_DATA test_rb_info = {
 	.next = NULL,
 	.name = "townsfolk",
 	.text = "Townsfolk",
-	.flags = "\0\0\0\0\0\0\0\0\0\0",
+	.flags = "\0\0\0\0\0\0\0\0\0\0\0",
 	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
 	.d_char = 116,
 	.pain = NULL,
 	
+};
+
+static struct blow_message TEST_DATA test_blow_message = {
+	.act_msg = "hits {target}",
+	.next = NULL
 };
 
 static struct blow_method TEST_DATA test_blow_method = {
@@ -748,7 +766,8 @@ static struct blow_method TEST_DATA test_blow_method = {
 	.miss = false,
 	.phys = false,
 	.msgt = 34,
-	.act_msg = "hits you",
+	.messages = &test_blow_message,
+	.num_messages = 1,
 	.desc = "hit",
 	.next = NULL
 };
@@ -1002,8 +1021,7 @@ static struct object TEST_DATA test_player_knowledge = {
 	.next = NULL,
 	.known = NULL,
 	.oidx = 0,
-	.iy = 0,
-	.ix = 0,
+	.grid = { 0, 0 },
 	.tval = 0,
 	.sval = 0,
 	.pval = 0,
@@ -1067,8 +1085,7 @@ static struct object TEST_DATA test_player_knowledge = {
 
 
 static struct player TEST_DATA test_player = {
-	.py = 1,
-	.px = 1,
+	.grid = { 1, 1 },
 	.race = &test_race,
 	.class = &test_class,
 	.hitdie = 10,
@@ -1104,7 +1121,6 @@ static struct player TEST_DATA test_player = {
 	.timed = test_timed,
 	.word_recall = 0,
 	.energy = 100,
-	.food = 5000,
 	.player_hp = {
 		  5,  10,  15,  20,  25,  30,  35,  40,  45,  50,
 		 55,  60,  65,  70,  75,  80,  85,  90,  95, 100,

@@ -1,7 +1,7 @@
 /* player/pathfind */
 
 #include "unit-test.h"
-#include "cmd-core.h"
+#include "cave.h"
 #include "player-path.h"
 
 NOSETUP

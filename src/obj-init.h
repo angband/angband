@@ -37,6 +37,5 @@ extern struct file_parser ego_parser;
 extern struct file_parser artifact_parser;
 extern struct file_parser randart_parser;
 extern struct file_parser object_property_parser;
-extern struct file_parser object_power_parser;
 
 #endif /* OBJECT_INIT_H_ */

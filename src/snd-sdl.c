@@ -22,8 +22,15 @@
 #include "init.h"
 #include "sound.h"
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#ifdef USE_SDL
+#  include <SDL/SDL.h>
+#  include <SDL/SDL_mixer.h>
+#endif /* USE_SDL */
+
+#ifdef USE_SDL2
+#  include <SDL.h>
+#  include <SDL_mixer.h>
+#endif /* USE_SDL2 */
 
 /**
  * Struct representing all data about an event sample

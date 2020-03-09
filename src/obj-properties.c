@@ -52,7 +52,7 @@ struct obj_property *lookup_obj_property(int type, int index)
  *
  * N.B. OFT_MAX must be the last item in the ... list
  */
-void create_obj_flag_mask(bitflag *f, bool id, ...)
+void create_obj_flag_mask(bitflag *f, int id, ...)
 {
 	int i, j;
 	va_list args;

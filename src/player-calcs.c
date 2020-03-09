@@ -268,7 +268,7 @@ static const int adj_dex_ta[STAT_RANGE] =
 /**
  * Stat Table (STR) -- bonus to dam
  */
-static const int adj_str_td[STAT_RANGE] =
+const int adj_str_td[STAT_RANGE] =
 {
 	-2	/* 3 */,
 	-2	/* 4 */,
@@ -314,7 +314,7 @@ static const int adj_str_td[STAT_RANGE] =
 /**
  * Stat Table (DEX) -- bonus to hit
  */
-static const int adj_dex_th[STAT_RANGE] =
+const int adj_dex_th[STAT_RANGE] =
 {
 	-3	/* 3 */,
 	-2	/* 4 */,
@@ -1172,13 +1172,24 @@ static void update_inventory(struct player *p)
 }
 
 /**
- * "Percentage" (actually some complicated hack that needs redoing) of
- * player's spells they can learn per level (-> realms - NRM)
+ * Average of the player's spell stats across all the realms they can cast
+ * from, rounded up
+ *
+ * If the player can only cast from a single realm, this is simple the stat
+ * for that realm
  */
-static int level_spells(struct player *p)
+static int average_spell_stat(struct player *p, struct player_state *state)
 {
-	int stat = p->class->magic.spell_realm->stat;
-	return adj_mag_study[p->state.stat_ind[stat]];
+	int i, count, sum = 0;
+	struct magic_realm *realm = class_magic_realms(p->class, &count), *r_next;
+
+	for (i = count; i > 0; i--) {
+		sum += state->stat_ind[realm->stat];
+		r_next = realm->next;
+		mem_free(realm);
+		realm = r_next;
+	}
+	return (sum + count - 1) / count;
 }
 
 /**
@@ -1197,8 +1208,6 @@ static void calc_spells(struct player *p)
 	const struct class_spell *spell;
 
 	s16b old_spells;
-
-	const char *noun = p->class->magic.spell_realm->spell_noun;
 
 	/* Hack -- must be literate */
 	if (!p->class->magic.total_spells) return;
@@ -1219,7 +1228,7 @@ static void calc_spells(struct player *p)
 	if (levels < 0) levels = 0;
 
 	/* Number of 1/100 spells per level (or something - needs clarifying) */
-	percent_spells = level_spells(p);
+	percent_spells = adj_mag_study[average_spell_stat(p, &p->state)];
 
 	/* Extract total allowed spells (rounded up) */
 	num_allowed = (((percent_spells * levels) + 50) / 100);
@@ -1258,7 +1267,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, spell->name);
+			msg("You have forgotten the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1288,7 +1298,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, spell->name);
+			msg("You have forgotten the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1321,7 +1332,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have remembered the %s of %s.", noun, spell->name);
+			msg("You have remembered the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One less can be learned */
 			p->upkeep->new_spells--;
@@ -1354,25 +1366,44 @@ static void calc_spells(struct player *p)
 	/* Spell count changed */
 	if (old_spells != p->upkeep->new_spells) {
 		/* Message if needed */
-		if (p->upkeep->new_spells)
+		if (p->upkeep->new_spells) {
+			int count;
+			struct magic_realm *r = class_magic_realms(p->class, &count), *r1;
+			char buf[120];
+
+			my_strcpy(buf, r->spell_noun, sizeof(buf));
+			if (p->upkeep->new_spells > 1) {
+				my_strcat(buf, "s", sizeof(buf));
+			}
+			r1 = r->next;
+			mem_free(r);
+			r = r1;
+			if (count > 1) {
+				while (r) {
+					count--;
+					if (count) {
+						my_strcat(buf, ", ", sizeof(buf));
+					} else {
+						my_strcat(buf, " or ", sizeof(buf));
+					}
+					my_strcat(buf, r->spell_noun, sizeof(buf));
+					if (p->upkeep->new_spells > 1) {
+						my_strcat(buf, "s", sizeof(buf));
+					}
+					r1 = r->next;
+					mem_free(r);
+					r = r1;
+				}
+			}
 			/* Message */
-			msg("You can learn %d more %s%s.", p->upkeep->new_spells, noun,
-				(p->upkeep->new_spells != 1) ? "s" : "");
+			msg("You can learn %d more %s.", p->upkeep->new_spells, buf);
+		}
 
 		/* Redraw Study Status */
 		p->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 	}
 }
 
-
-/**
- * Get the player's max spell points per effective level
- */
-static int mana_per_level(struct player *p, struct player_state *state)
-{
-	int stat = p->class->magic.spell_realm->stat;
-	return adj_mag_mana[state->stat_ind[stat]];
-}
 
 /**
  * Calculate maximum mana.  You do not need to know any spells.
@@ -1383,10 +1414,9 @@ static int mana_per_level(struct player *p, struct player_state *state)
 static void calc_mana(struct player *p, struct player_state *state, bool update)
 {
 	int i, msp, levels, cur_wgt, max_wgt; 
-	struct object *obj;
 
-	/* Hack -- Must be literate */
-	if (!p->class->magic.spell_realm) {
+	/* Must be literate */
+	if (!p->class->magic.total_spells) {
 		p->msp = 0;
 		p->csp = 0;
 		p->csp_frac = 0;
@@ -1397,30 +1427,10 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	levels = (p->lev - p->class->magic.spell_first) + 1;
 	if (levels > 0) {
 		msp = 1;
-		msp += mana_per_level(p, state) * levels / 100;
+		msp += adj_mag_mana[average_spell_stat(p, state)] * levels / 100;
 	} else {
 		levels = 0;
 		msp = 0;
-	}
-
-	/* Process gloves for those disturbed by them */
-	if (player_has(p, PF_CUMBER_GLOVE)) {
-		/* Assume player is not encumbered by gloves */
-		state->cumber_glove = false;
-
-		/* Get the gloves */
-		obj = equipped_item_by_slot_name(p, "hands");
-
-		/* Normal gloves hurt mage-type spells */
-		if (obj && !of_has(obj->flags, OF_FREE_ACT) && 
-			!kf_has(obj->kind->kind_flags, KF_SPELLS_OK) &&
-			(obj->modifiers[OBJ_MOD_DEX] <= 0)) {
-			/* Encumbered */
-			state->cumber_glove = true;
-
-			/* Reduce mana */
-			msp = (3 * msp) / 4;
-		}
 	}
 
 	/* Assume player not encumbered by armor */
@@ -1517,12 +1527,9 @@ static void calc_hitpoints(struct player *p)
 /**
  * Calculate and set the current light radius.
  *
- * The brightest wielded object counts as the light source; radii do not add
- * up anymore.
- *
- * Note that a cursed light source no longer emits light.
+ * The light radius will be the total of all lights carried.
  */
-static void calc_torch(struct player *p, struct player_state *state,
+static void calc_light(struct player *p, struct player_state *state,
 					   bool update)
 {
 	int i;
@@ -1548,10 +1555,10 @@ static void calc_torch(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (of_has(obj->flags, OF_LIGHT_1))
-			amt = 1;
-		else if (of_has(obj->flags, OF_LIGHT_2))
+		if (of_has(obj->flags, OF_LIGHT_2))
 			amt = 2;
+		else if (of_has(obj->flags, OF_LIGHT_3))
+			amt = 3;
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Examine actual lights */
@@ -1563,10 +1570,6 @@ static void calc_torch(struct player *p, struct player_state *state,
 		/* Alter p->state.cur_light if reasonable */
 	    state->cur_light += amt;
 	}
-
-	/* Limit light */
-	state->cur_light = MIN(state->cur_light, 5);
-	state->cur_light = MAX(state->cur_light, 0);
 }
 
 /**
@@ -1665,6 +1668,74 @@ int weight_remaining(struct player *p)
 
 
 /**
+ * Calculate the effect of a shapechange on player state
+ */
+static void calc_shapechange(struct player_state *state,
+							 struct player_shape *shape,
+							 int *blows, int *shots, int *might, int *moves)
+{
+	int i;
+
+	/* Combat stats */
+	state->to_a += shape->to_a;
+	state->to_h += shape->to_h;
+	state->to_d += shape->to_d;
+
+	/* Skills */
+	for (i = 0; i < SKILL_MAX; i++) {
+		state->skills[i] += shape->skills[i];
+	}
+
+	/* Object flags */
+	of_union(state->flags, shape->flags);
+
+	/* Player flags */
+	pf_union(state->pflags, shape->pflags);
+
+	/* Stats */
+	for (i = 0; i < STAT_MAX; i++) {
+		state->stat_add[i] += shape->modifiers[i];
+	}
+
+	/* Other modifiers */
+	state->skills[SKILL_STEALTH] += shape->modifiers[OBJ_MOD_STEALTH];
+	state->skills[SKILL_SEARCH] += (shape->modifiers[OBJ_MOD_SEARCH] * 5);
+	state->see_infra += shape->modifiers[OBJ_MOD_INFRA];
+	state->skills[SKILL_DIGGING] += (shape->modifiers[OBJ_MOD_TUNNEL] * 20);
+	state->speed += shape->modifiers[OBJ_MOD_SPEED];
+	state->dam_red += shape->modifiers[OBJ_MOD_DAM_RED];
+	*blows += shape->modifiers[OBJ_MOD_BLOWS];
+	*shots += shape->modifiers[OBJ_MOD_SHOTS];
+	*might += shape->modifiers[OBJ_MOD_MIGHT];
+	*moves += shape->modifiers[OBJ_MOD_MOVES];
+
+	/* Resists and vulnerabilities */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (state->el_info[i].res_level == 0) {
+			/* Simple, just apply shape res/vuln */
+			state->el_info[i].res_level = shape->el_info[i].res_level;
+		} else if (state->el_info[i].res_level == -1) {
+			/* Shape resists cancel, immunities trump, vulnerabilities */
+			if (shape->el_info[i].res_level == 1) {
+				state->el_info[i].res_level = 0;
+			} else if (shape->el_info[i].res_level == 3) {
+				state->el_info[i].res_level = 3;
+			}
+		} else if (state->el_info[i].res_level == 1) {
+			/* Shape vulnerabilities cancel, immunities enhance, resists */
+			if (shape->el_info[i].res_level == -1) {
+				state->el_info[i].res_level = 0;
+			} else if (shape->el_info[i].res_level == 3) {
+				state->el_info[i].res_level = 3;
+			}
+		} else if (state->el_info[i].res_level == 3) {
+			/* Immmunity, shape has no effect */
+		}
+	}
+
+}
+
+/**
  * Calculate the players current "state", taking into account
  * not only race/class intrinsics, but also objects being worn
  * and temporary spell effects.
@@ -1693,6 +1764,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	int extra_blows = 0;
 	int extra_shots = 0;
 	int extra_might = 0;
+	int extra_moves = 0;
 	struct object *launcher = equipped_item_by_slot_name(p, "shooting");
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 	bitflag f[OF_SIZE];
@@ -1717,10 +1789,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	for (i = 0; i < ELEM_MAX; i++) {
 		vuln[i] = false;
-		if (p->race->el_info[i].res_level == -1)
+		if (p->race->el_info[i].res_level == -1) {
 			vuln[i] = true;
-		else
+		} else {
 			state->el_info[i].res_level = p->race->el_info[i].res_level;
+		}
 	}
 
 	/* Base pflags */
@@ -1731,18 +1804,15 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Extract the player flags */
 	player_flags(p, collect_f);
 
-	/* Add player specific pflags */
-	if (!p->csp)
-		pf_on(state->pflags, PF_NO_MANA);
-
 	/* Analyze equipment */
 	for (i = 0; i < p->body.count; i++) {
-		int dig = 0;
 		int index = 0;
 		struct object *obj = slot_object(p, i);
 		struct curse_data *curse = obj ? obj->curses : NULL;
 
 		while (obj) {
+			int dig = 0;
+
 			/* Extract the item flags */
 			if (known_only) {
 				object_flags_known(obj, f);
@@ -1782,12 +1852,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->skills[SKILL_DIGGING] += (dig * 20);
 			state->speed += obj->modifiers[OBJ_MOD_SPEED]
 				* p->obj_k->modifiers[OBJ_MOD_SPEED];
+			state->dam_red += obj->modifiers[OBJ_MOD_DAM_RED]
+				* p->obj_k->modifiers[OBJ_MOD_DAM_RED];
 			extra_blows += obj->modifiers[OBJ_MOD_BLOWS]
 				* p->obj_k->modifiers[OBJ_MOD_BLOWS];
 			extra_shots += obj->modifiers[OBJ_MOD_SHOTS]
 				* p->obj_k->modifiers[OBJ_MOD_SHOTS];
 			extra_might += obj->modifiers[OBJ_MOD_MIGHT]
 				* p->obj_k->modifiers[OBJ_MOD_MIGHT];
+			extra_moves += obj->modifiers[OBJ_MOD_MOVES]
+				* p->obj_k->modifiers[OBJ_MOD_MOVES];
 
 			/* Apply element info, noting vulnerabilites for later processing */
 			for (j = 0; j < ELEM_MAX; j++) {
@@ -1835,6 +1909,24 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Apply the collected flags */
 	of_union(state->flags, collect_f);
 
+	/* Now deal with vulnerabilities */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (vuln[i] && (state->el_info[i].res_level < 3))
+			state->el_info[i].res_level--;
+	}
+
+	/* Add shapechange info */
+	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might,
+		&extra_moves);
+
+	/* Calculate light */
+	calc_light(p, state, update);
+
+	/* Unlight - needs change if anything but resist is introduced for dark */
+	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
+		state->el_info[ELEM_DARK].res_level = 1;
+	}
+
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
@@ -1858,7 +1950,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		assert((0 <= ind) && (ind < STAT_RANGE));
 
-
 		/* Hack for hypothetical blows - NRM */
 		if (!update) {
 			if (i == STAT_STR) {
@@ -1876,23 +1967,55 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->stat_ind[i] = ind;
 	}
 
-	/* Now deal with vulnerabilities */
-	for (i = 0; i < ELEM_MAX; i++) {
-		if (vuln[i] && (state->el_info[i].res_level < 3))
-			state->el_info[i].res_level--;
+	/* Effects of food outside the "Fed" range */
+	if (!player_timed_grade_eq(p, TMD_FOOD, "Fed")) {
+		int excess = p->timed[TMD_FOOD] - PY_FOOD_FULL;
+		int lack = PY_FOOD_HUNGRY - p->timed[TMD_FOOD];
+		if ((excess > 0) && !p->timed[TMD_ATT_VAMP]) {
+			/* Scale to units 1/10 of the range and subtract from speed */
+			excess = (excess * 10) / (PY_FOOD_MAX - PY_FOOD_FULL);
+			state->speed -= excess;
+		} else if (lack > 0) {
+			/* Scale to units 1/20 of the range */
+			lack = (lack * 20) / PY_FOOD_HUNGRY;
+
+			/* Apply effects progressively */
+			state->to_h -= lack;
+			state->to_d -= lack;
+			if ((lack > 10) && (lack <= 15)) {
+				state->skills[SKILL_DEVICE] *= 9;
+				state->skills[SKILL_DEVICE] /= 10;
+			} else if ((lack > 15) && (lack <= 18)) {
+				state->skills[SKILL_DEVICE] *= 8;
+				state->skills[SKILL_DEVICE] /= 10;
+				state->skills[SKILL_DISARM_PHYS] *= 9;
+				state->skills[SKILL_DISARM_PHYS] /= 10;
+				state->skills[SKILL_DISARM_MAGIC] *= 9;
+				state->skills[SKILL_DISARM_MAGIC] /= 10;
+			} else if (lack > 18) {
+				state->skills[SKILL_DEVICE] *= 7;
+				state->skills[SKILL_DEVICE] /= 10;
+				state->skills[SKILL_DISARM_PHYS] *= 8;
+				state->skills[SKILL_DISARM_PHYS] /= 10;
+				state->skills[SKILL_DISARM_MAGIC] *= 8;
+				state->skills[SKILL_DISARM_MAGIC] /= 10;
+				state->skills[SKILL_SAVE] *= 9;
+				state->skills[SKILL_SAVE] /= 10;
+				state->skills[SKILL_SEARCH] *=9;
+				state->skills[SKILL_SEARCH] /= 10;
+			}
+		}
 	}
 
-	/* Temporary flags */
-	if (p->timed[TMD_STUN] > 50) {
+	/* Other timed effects */
+	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 8 / 10;
-	} else if (p->timed[TMD_STUN]) {
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 9 / 10;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
@@ -1974,6 +2097,13 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (p->timed[TMD_IMAGE]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
 	}
+	if (p->timed[TMD_BLOODLUST]) {
+		state->to_d += p->timed[TMD_BLOODLUST] / 2;
+		extra_blows += p->timed[TMD_BLOODLUST] / 20;
+	}
+	if (p->timed[TMD_STEALTH]) {
+		state->skills[SKILL_STEALTH] += 10;
+	}
 
 	/* Analyze flags - check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {
@@ -2022,7 +2152,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->heavy_shoot = true;
 		}
 
-		state->num_shots = 1;
+		state->num_shots = 10;
 
 		/* Type of ammo */
 		if (kf_has(launcher->kind->kind_flags, KF_SHOOTS_SHOTS))
@@ -2039,21 +2169,19 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (!state->heavy_shoot) {
 			state->num_shots += extra_shots;
 			state->ammo_mult += extra_might;
-			if (player_has(p, PF_EXTRA_SHOT) &&
-				(state->ammo_tval == TV_ARROW)) {
-				if (p->lev >= 20) state->num_shots++;
-				if (p->lev >= 40) state->num_shots++;
+			if (player_has(p, PF_FAST_SHOT) && (state->ammo_tval == TV_ARROW)) {
+				state->num_shots += p->lev / 3;
 			}
 		}
 
 		/* Require at least one shot */
-		if (state->num_shots < 1) state->num_shots = 1;
+		if (state->num_shots < 10) state->num_shots = 10;
 	}
 
 
 	/* Analyze weapon */
 	state->heavy_wield = false;
-	state->icky_wield = false;
+	state->bless_wield = false;
 	if (weapon) {
 		/* It is hard to hold a heavy weapon */
 		if (hold < weapon->weight / 10) {
@@ -2067,20 +2195,24 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->skills[SKILL_DIGGING] += (weapon->weight / 10);
 		}
 
-		/* Priest weapon penalty for non-blessed edged weapons */
-		if (player_has(p, PF_BLESS_WEAPON) &&
-			!of_has(state->flags, OF_BLESSED) && tval_is_pointy(weapon)) {
-			state->to_h -= 2;
-			state->to_d -= 2;
-			state->icky_wield = true;
+		/* Divine weapon bonus for blessed weapons */
+		if (player_has(p, PF_BLESS_WEAPON) && of_has(state->flags, OF_BLESSED)){
+			state->to_h += 2;
+			state->to_d += 2;
+			state->bless_wield = true;
 		}
 	} else {
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
 
-	/* Call individual functions for other state fields */
-	calc_torch(p, state, update);
+	/* Mana */
 	calc_mana(p, state, update);
+	if (!p->msp) {
+		pf_on(state->pflags, PF_NO_MANA);
+	}
+
+	/* Movement speed */
+	state->num_moves = 1 + extra_moves;;
 
 	return;
 }
@@ -2183,23 +2315,13 @@ static void update_bonuses(struct player *p)
 		}
 
 		/* Take note when "illegal weapon" changes */
-		if (p->state.icky_wield != state.icky_wield) {
+		if (p->state.bless_wield != state.bless_wield) {
 			/* Message */
-			if (state.icky_wield)
-				msg("You do not feel comfortable with your weapon.");
-			else if (equipped_item_by_slot_name(p, "weapon"))
-				msg("You feel comfortable with your weapon.");
-			else
-				msg("You feel more comfortable after removing your weapon.");
-		}
-
-		/* Take note when "glove state" changes */
-		if (p->state.cumber_glove != state.cumber_glove) {
-			/* Message */
-			if (state.cumber_glove)
-				msg("Your covered hands feel unsuitable for spellcasting.");
-			else
-				msg("Your hands feel more suitable for spellcasting.");
+			if (state.bless_wield) {
+				msg("You feel attuned to your weapon.");
+			} else if (equipped_item_by_slot_name(p, "weapon")) {
+				msg("You feel less attuned to your weapon.");
+			}
 		}
 
 		/* Take note when "armor state" changes */
@@ -2340,7 +2462,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_TORCH)) {
 		p->upkeep->update &= ~(PU_TORCH);
-		calc_torch(p, &p->state, true);
+		calc_light(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_HP)) {
@@ -2355,8 +2477,9 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_SPELLS)) {
 		p->upkeep->update &= ~(PU_SPELLS);
-		if (p->class->magic.spell_realm)
+		if (p->class->magic.total_spells > 0) {
 			calc_spells(p);
+		}
 	}
 
 	/* Character is not ready yet, no map updates */
@@ -2420,6 +2543,7 @@ static const struct flag_event_trigger redraw_events[] =
 	{ PR_STUDY,   EVENT_STUDYSTATUS },
 	{ PR_DTRAP,   EVENT_DETECTIONSTATUS },
 	{ PR_FEELING, EVENT_FEELING },
+	{ PR_LIGHT,   EVENT_LIGHT },
 
 	{ PR_INVEN,   EVENT_INVENTORY },
 	{ PR_EQUIP,   EVENT_EQUIPMENT },

@@ -17,6 +17,7 @@
 # mon-base: template name
 # flags-req: flag | flag | ...
 # flags-ban: forbidden flag | ...
+# innate-freq:freq
 # spell-req: spell | spell | ...
 # spell-ban: forbidden spell | ...
 # mon-ban: forbidden monster name
@@ -60,6 +61,9 @@
 # 'spell-req' is for spell flags. Every monster in this nest/pit will have
 # every listed spell flag. 
 # As many 'spell-req' lines as are necessary may be used.
+#
+# 'innate-freq' is for frequency of innate spells.  Every monster in this
+# nest/pit will have this innate frequency or lower.
 #
 # 'flags-ban' is for forbidden flags. No monster in this nest/pit will have
 # any of the listed flags.
@@ -206,25 +210,14 @@ name:Spellcasters
 room:1
 alloc:1:20
 obj-rarity:0
-mon-base:kobold
-mon-base:humanoid
-mon-base:orc
-mon-base:person
 spell-req:MISSILE
-spell-ban:ARROW_1
-spell-ban:ARROW_2
 
 name:Archers
 room:1
-alloc:1:25
+alloc:1:50
 obj-rarity:0
-mon-base:kobold
-mon-base:orc
-mon-base:person
-color:W
-color:D
-spell-ban:BO_NETH
-spell-ban:HASTE
+innate-freq:4
+spell-req:ARROW
 
 name:Naga
 room:1
@@ -245,15 +238,22 @@ alloc:1:25
 obj-rarity:0
 mon-base:person
 color:u
-color:y
-spell-ban:HEAL_KIN
+color:s
+color:M
+spell-ban:DARKNESS | ARROW
 
-name:Dark elves
+name:Dark dwarves
 room:1
-alloc:1:30
+alloc:1:40
 obj-rarity:0
 mon-base:humanoid
-flags-req:HURT_LIGHT
+color:D
+color:B
+color:u
+color:P
+color:s
+color:R
+spell-ban:BRAIN_SMASH
 
 name:Eyes
 room:1
@@ -350,7 +350,6 @@ room:3
 alloc:2:15
 mon-base:ant
 mon-base:centipede
-mon-base:louse
 mon-base:dragon fly
 mon-base:insect
 mon-base:killer beetle

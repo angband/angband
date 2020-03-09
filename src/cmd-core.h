@@ -91,6 +91,7 @@ typedef enum cmd_code {
 	CMD_RUN,
 	CMD_HOLD,
 	CMD_ALTER,
+	CMD_STEAL,
 	CMD_SLEEP,
 
     /* Store commands */	
@@ -103,30 +104,17 @@ typedef enum cmd_code {
 	CMD_SUICIDE,
 
 	CMD_HELP,
-	CMD_REPEAT
+	CMD_REPEAT,
+	CMD_COMMAND_MONSTER
 } cmd_code;
 
 typedef enum cmd_context {
-	CMD_INIT,
-	CMD_BIRTH,
-	CMD_GAME,
-	CMD_STORE,
-	CMD_DEATH
+	CTX_INIT,
+	CTX_BIRTH,
+	CTX_GAME,
+	CTX_STORE,
+	CTX_DEATH
 } cmd_context;
-
-enum {
-	DIR_UNKNOWN = 0,
-	DIR_NW = 7,
-	DIR_N = 8,
-	DIR_NE = 9,
-	DIR_W = 4,
-	DIR_TARGET = 5,
-	DIR_NONE = 5,
-	DIR_E = 6,
-	DIR_SW = 1,
-	DIR_S = 2,
-	DIR_SE = 3,
-};
 
 /**
  * ------------------------------------------------------------------------
@@ -259,6 +247,11 @@ errr cmdq_push(cmd_code c);
  * Process all commands presently in the queue.
  */
 void cmdq_execute(cmd_context ctx);
+
+/**
+ * Remove all commands from the queue.
+ */
+void cmdq_flush(void);
 
 /**
  * ------------------------------------------------------------------------

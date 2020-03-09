@@ -32,6 +32,7 @@ struct projection {
 	char *desc;
 	char *player_desc;
 	char *blind_desc;
+	char *lash_desc;
 	int numerator;
 	random_value denominator;
 	int divisor;
@@ -89,33 +90,36 @@ enum
 	PROJECT_SAFE  = 0x0200,
 	PROJECT_ARC   = 0x0400,
 	PROJECT_PLAY  = 0x0800,
-	PROJECT_INFO  = 0x1000
+	PROJECT_INFO  = 0x1000,
 };
 
 /* Display attrs and chars */
 extern byte proj_to_attr[PROJ_MAX][BOLT_MAX];
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
+void thrust_away(struct loc centre, struct loc target, int grids_away);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 			   int resist, bool actual);
 
-bool project_f(struct source, int r, int y, int x, int dam, int typ);
-bool project_o(struct source, int r, int y, int x, int dam, int typ,
+bool project_f(struct source, int r, struct loc grid, int dam, int typ);
+bool project_o(struct source, int r, struct loc grid, int dam, int typ,
 			   const struct object *protected_obj);
-void project_m(struct source, int r, int y, int x, int dam, int typ, int flg,
+void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
                bool *did_hit, bool *was_obvious);
-bool project_p(struct source, int r, int y, int x, int dam, int typ);
+bool project_p(struct source, int r, struct loc grid, int dam, int typ,
+			   int power);
 
-int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg);
-bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);
+int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
+				 int flg);
+bool projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg);
 int proj_name_to_idx(const char *name);
 const char *proj_idx_to_name(int type);
 
 struct loc origin_get_loc(struct source origin);
 
-bool project(struct source, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source,
+bool project(struct source origin, int rad, struct loc finish, int dam, int typ,
+			 int flg, int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj);
 
 #endif /* !PROJECT_H */

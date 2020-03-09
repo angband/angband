@@ -112,7 +112,7 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 		if (list[i])
 			recepticle[count++] = projections[i].name;
 	}
-	
+
 	return count;
 }
 
@@ -143,6 +143,10 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 			}
 			textblock_append(tb, ".\n");
 		}
+	}
+	/* Say if curse removal has been tried */
+	if (of_has(obj->flags, OF_FRAGILE)) {
+		textblock_append(tb, "Attempting to uncurse it may destroy it.\n");
 	}
 
 	return true;
@@ -818,11 +822,13 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get damage for each brand on the objects */
 	for (i = 1; i < z_info->brand_max; i++) {
-		/* Must have the brand */
-		if (total_brands[i])
-			has_brands_or_slays = true;
-		else
+		/* Must have the brand, possibly from a spell */
+		if (player_has_temporary_brand(i)) {
+			*nonweap_slay = true;
+		} else if (!total_brands[i]) {
 			continue;
+		}
+		has_brands_or_slays = true;
 
 		/* Include bonus damage and brand in stated average */
 		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
@@ -830,10 +836,189 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
-		if (weapon)
+		if (weapon) {
 			total_dam = (total_dam * old_blows) / 100;
-		else
+		} else {
 			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
+
+		brand_damage[i] = total_dam;
+	}
+
+	/* Get damage for each slay on the objects */
+	for (i = 1; i < z_info->slay_max; i++) {
+		/* Must have the slay, possibly from a spell */
+		if (player_has_temporary_slay(i)) {
+			*nonweap_slay = true;
+		} else if (!total_slays[i]) {
+			continue;
+		}
+		has_brands_or_slays = true;
+
+		/* Include bonus damage and slay in stated average */
+		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
+			+ xtra_precrit;
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam += xtra_postcrit;
+
+		if (weapon) {
+			total_dam = (total_dam * old_blows) / 100;
+		} else {
+			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
+
+		slay_damage[i] = total_dam;
+	}
+
+	/* Include bonus damage in stated average */
+	total_dam = dam * multiplier + xtra_precrit;
+	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+	total_dam += xtra_postcrit;
+
+	/* Normal damage, not considering brands or slays */
+	if (weapon) {
+		total_dam = (total_dam * old_blows) / 100;
+	} else {
+		total_dam *= player->state.num_shots;
+		total_dam /= 10;
+	}
+
+	*normal_damage = total_dam;
+
+	mem_free(total_brands);
+	mem_free(total_slays);
+	return has_brands_or_slays;
+}
+
+
+/**
+ * Gets information about the average damage/turn that can be inflicted if
+ * the player wields the given weapon.
+ *
+ * Fills in the damage against normal adversaries in `normal_damage`, as well
+ * as the slays on the weapon in slay_list[] and corresponding damages in 
+ * slay_damage[].  These must both be at least SL_MAX long to be safe.
+ * `nonweap_slay` is set to whether other items being worn could add to the
+ * damage done by branding attacks.
+ *
+ * Returns the number of slays populated in slay_list[] and slay_damage[].
+ *
+ * Note that the results are meaningless if called on a fake ego object as
+ * the actual ego may have different properties.
+ */
+static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
+								 int *brand_damage, int *slay_damage,
+								 bool *nonweap_slay)
+{
+	int i;
+	int dice, sides, dam, total_dam, plus = 0;
+	int crit_mult, crit_div, crit_add;
+	int old_blows = 0;
+	bool *total_brands;
+	bool *total_slays;
+	bool has_brands_or_slays = false;
+
+	struct object *bow = equipped_item_by_slot_name(player, "shooting");
+	bool weapon = tval_is_melee_weapon(obj);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	int melee_adj_mult = ammo ? 0 : 1;
+	int multiplier = 1;
+
+	struct player_state state;
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *current_weapon = slot_object(player, weapon_slot);
+
+	/* Pretend we're wielding the object if it's a weapon */
+	if (weapon)
+		player->body.slots[weapon_slot].obj = (struct object *) obj;
+
+	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
+	state.stat_ind[STAT_STR] = 0; //Hack - NRM
+	state.stat_ind[STAT_DEX] = 0; //Hack - NRM
+	calc_bonuses(player, &state, true, false);
+
+	/* Stop pretending */
+	player->body.slots[weapon_slot].obj = current_weapon;
+
+	/* Finish if dice not known */
+	dice = obj->known->dd;
+	sides = obj->known->ds;
+	if (!dice || !sides) return false;
+
+	/* Calculate damage */
+	dam = ((sides + 1) * dice * 5);
+
+	if (weapon)	{
+		dam += ((state.to_d + obj->known->to_d) * dam) / 20;
+		plus += obj->known->to_h;
+
+		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
+							  &crit_div);
+
+		old_blows = state.num_blows;
+	} else { /* Ammo */
+		plus += obj->known->to_h;
+
+		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
+								&crit_add, &crit_div);
+
+		dam += ((obj->known->to_d + bow->known->to_d) * dam) / 20;
+	}
+
+	if (ammo) multiplier = player->state.ammo_mult;
+
+	/* Get the brands */
+	total_brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	copy_brands(&total_brands, obj->known->brands);
+	if (ammo && bow->known)
+		copy_brands(&total_brands, bow->known->brands);
+
+	/* Get the slays */
+	total_slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+	copy_slays(&total_slays, obj->known->slays);
+	if (ammo && bow->known)
+		copy_slays(&total_slays, bow->known->slays);
+
+	/* Melee weapons may get slays and brands from other items */
+	*nonweap_slay = false;
+	if (weapon)	{
+		for (i = 2; i < player->body.count; i++) {
+			struct object *slot_obj = slot_object(player, i);
+			if (!slot_obj)
+				continue;
+
+			if (slot_obj->known->brands || slot_obj->known->slays)
+				*nonweap_slay = true;
+			else
+				continue;
+
+			/* Replace the old lists with new ones */
+			copy_brands(&total_brands, slot_obj->known->brands);
+			copy_slays(&total_slays, slot_obj->known->slays);
+		}
+	}
+
+	/* Get damage for each brand on the objects */
+	for (i = 1; i < z_info->brand_max; i++) {
+		/* Must have the brand */
+		if (total_brands[i])
+			has_brands_or_slays = true;
+		else
+			continue;
+
+		/* Include bonus damage and brand in stated average */
+		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult);
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+
+		if (weapon) {
+			total_dam = (total_dam * old_blows) / 100;
+		} else {
+			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
 
 		brand_damage[i] = total_dam;
 	}
@@ -847,29 +1032,30 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 			continue;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
-			+ xtra_precrit;
+		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult);
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
-		total_dam += xtra_postcrit;
 
-		if (weapon)
+		if (weapon) {
 			total_dam = (total_dam * old_blows) / 100;
-		else
+		} else {
 			total_dam *= player->state.num_shots;
+			total_dam /= 10;
+		}
 
 		slay_damage[i] = total_dam;
 	}
 
 	/* Include bonus damage in stated average */
-	total_dam = dam * multiplier + xtra_precrit;
+	total_dam = dam * multiplier;
 	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
-	total_dam += xtra_postcrit;
 
 	/* Normal damage, not considering brands or slays */
-	if (weapon)
+	if (weapon) {
 		total_dam = (total_dam * old_blows) / 100;
-	else
+	} else {
 		total_dam *= player->state.num_shots;
+		total_dam /= 10;
+	}
 
 	*normal_damage = total_dam;
 
@@ -891,9 +1077,11 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	int *slay_damage = mem_zalloc(z_info->slay_max * sizeof(int));
 
 	/* Collect brands and slays */
-	bool has_brands_or_slays = obj_known_damage(obj, &normal_damage,
-												brand_damage, slay_damage,
-												&nonweap_slay);
+	bool has_brands_or_slays = OPT(player, birth_percent_damage) ?
+		exp_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+							 &nonweap_slay) :
+		obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+						 &nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
@@ -1154,14 +1342,14 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 /**
  * Gives the known light-sourcey characteristics of the given object.
  *
- * Fills in the radius of the light in `rad`, whether it uses fuel and
+ * Fills in the intensity of the light in `intensity`, whether it uses fuel and
  * how many turns light it can refuel in similar items.
  *
  * Return false if the object is not known to be a light source (which 
  * includes it not actually being a light source).
  */
 static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
-							int *rad, bool *uses_fuel, int *refuel_turns)
+							int *intensity, bool *uses_fuel, int *refuel_turns)
 {
 	bool no_fuel;
 	bool is_light = tval_is_light(obj);
@@ -1169,16 +1357,16 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return false;
 
-	/* Work out radius */
-	if (of_has(obj->flags, OF_LIGHT_1))
-		*rad = 1;
-	else if (of_has(obj->flags, OF_LIGHT_2))
-		*rad = 2;
-	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
+	/* Work out intensity */
+	if (of_has(obj->flags, OF_LIGHT_2))
+		*intensity = 2;
+	else if (of_has(obj->flags, OF_LIGHT_3))
+		*intensity = 3;
+	*intensity += obj->known->modifiers[OBJ_MOD_LIGHT];
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
-	 * bad radius and refueling info. */
-	if (*rad == 0)
+	 * bad intensity and refueling info. */
+	if (*intensity == 0)
 		return false;
 
 	no_fuel = of_has(obj->known->flags, OF_NO_FUEL) ? true : false;
@@ -1204,17 +1392,17 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 static bool describe_light(textblock *tb, const struct object *obj,
 						   oinfo_detail_t mode)
 {
-	int rad = 0;
+	int intensity = 0;
 	bool uses_fuel = false;
 	int refuel_turns = 0;
 	bool terse = mode & OINFO_TERSE ? true : false;
 
-	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
+	if (!obj_known_light(obj, mode, &intensity, &uses_fuel, &refuel_turns))
 		return false;
 
 	if (tval_is_light(obj)) {
-		textblock_append(tb, "Radius ");
-		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
+		textblock_append(tb, "Intensity ");
+		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", intensity));
 		textblock_append(tb, " light.");
 
 		if (!obj->artifact && !uses_fuel)
@@ -1228,6 +1416,20 @@ static bool describe_light(textblock *tb, const struct object *obj,
 		}
 		textblock_append(tb, "\n");
 	}
+
+	return true;
+}
+
+
+/**
+ * Describe readable books.
+ */
+static bool describe_book(textblock *tb, const struct object *obj,
+						   oinfo_detail_t mode)
+{
+	if (!obj_can_browse(obj)) return false;
+
+	textblock_append(tb, "\nYou can read this book.\n");
 
 	return true;
 }
@@ -1397,64 +1599,70 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 
-			/* Nourishment is just a flat amount */
 			case EFINFO_CONST: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base/2);
 				break;
 			}
+			case EFINFO_FOOD: {
+				char *fed = effect->subtype ? "leaves you nourished" :
+					"feeds you";
+				strnfmt(desc, sizeof(desc), effect_desc(effect), fed,
+						value.base * z_info->food_value, value.base);
+				break;
+			}
 			case EFINFO_CURE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->params[0]].desc);
+						timed_effects[effect->subtype].desc);
 				break;
 			}
 			case EFINFO_TIMED: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->params[0]].desc, dice_string);
+						timed_effects[effect->subtype].desc, dice_string);
 				break;
 			}
 			case EFINFO_STAT: {
-				int stat = effect->params[0];
+				int stat = effect->subtype;
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
 						lookup_obj_property(OBJ_PROPERTY_STAT, stat)->name);
 				break;
 			}
 			case EFINFO_SEEN: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
 				break;
 			}
 			case EFINFO_SUMM: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						summon_desc(effect->params[0]));
+						summon_desc(effect->subtype));
 				break;
 			}
 
 			/* Only currently used for the player, but can handle monsters */
 			case EFINFO_TELE: {
-				if (effect->params[0])
+				char *dist = value.m_bonus ?
+					" a level dependent distance" :
+					format(" %d grids", value.base);
+
+				if (effect->subtype) {
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							"a monster", value.base);
-				else
+							"a monster", dist);
+				} else {
 					strnfmt(desc, sizeof(desc), effect_desc(effect), "you",
-							value.base);
+							dist);
+				}
 				break;
 			}
 			case EFINFO_QUAKE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						effect->params[1]);
-				break;
-			}
-			case EFINFO_LIGHT: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
-						effect->params[1]);
+						effect->radius);
 				break;
 			}
 
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].player_desc,
-						effect->params[1], dice_string);
+						projections[effect->subtype].player_desc,
+						effect->radius, dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1466,7 +1674,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				/* Special treatment for several random breaths */
 				if (random_breath) {
 					my_strcat(breaths,
-							  projections[effect->params[0]].player_desc,
+							  projections[effect->subtype].player_desc,
 							  sizeof(breaths));
 					if (random_choices > 3) {
 						my_strcat(breaths, ", ", sizeof(breaths));
@@ -1479,25 +1687,42 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						random_breath = false;
 					}
 					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
-							effect->params[1], dice_string);
+							effect->other, dice_string);
 				} else {
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							projections[effect->params[0]].player_desc,
-							effect->params[1], dice_string);
+							projections[effect->subtype].player_desc,
+							effect->other, dice_string);
 				}
+				break;
+			}
+
+			case EFINFO_SHORT: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect), 
+						projections[effect->subtype].player_desc,
+						effect->radius +
+						effect->other ? effect->other / player->lev : 0,
+						dice_string);
+				break;
+			}
+
+			/* Currently no object generated lashes */
+			case EFINFO_LASH: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						projections[effect->subtype].lash_desc,
+						effect->subtype);
 				break;
 			}
 
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
 				break;
 			}
 			/* Bolts and beams that damage */
 			case EFINFO_BOLTD: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc, dice_string);
+						projections[effect->subtype].desc, dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1505,7 +1730,12 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_TOUCH: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
+				break;
+			}
+			case EFINFO_TAP: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						dice_string);
 				break;
 			}
 			case EFINFO_NONE: {
@@ -1753,6 +1983,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (describe_sustains(tb, flags)) something = true;
 	if (describe_misc_magic(tb, flags)) something = true;
 	if (describe_light(tb, obj, mode)) something = true;
+	if (describe_book(tb, obj, mode)) something = true;
 	if (ego && describe_ego(tb, obj->ego)) something = true;
 	if (something) textblock_append(tb, "\n");
 

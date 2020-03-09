@@ -287,12 +287,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 				continue;
 			}
 
-			/* skip | characters */
-			strskip(buf,'|','\\');
-
-			/* escape backslashes */
-			strescape(buf,'\\');
-
 			/* Count the "real" lines */
 			next++;
 
@@ -407,7 +401,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 		/* Go to a specific file */
 		if (ch.code == '%') {
-			char ftmp[80] = "help.hlp";
+			char ftmp[80] = "index.txt";
 
 			prt("Goto File: ", hgt - 1, 0);
 			if (askfor_aux(ftmp, sizeof(ftmp), NULL)) {
@@ -478,7 +472,7 @@ void do_cmd_help(void)
 	screen_save();
 
 	/* Peruse the main help file */
-	(void)show_file("help.hlp", NULL, 0, 0);
+	(void)show_file("index.txt", NULL, 0, 0);
 
 	/* Load screen */
 	screen_load();

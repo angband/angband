@@ -228,7 +228,7 @@ static void display_player_equippy(int y, int x)
 /**
  * List of resistances and abilities to display
  */
-#define RES_ROWS 9
+#define RES_ROWS 13
 struct player_flag_record
 {
 	const char name[7];	/* Name of resistance/ability */
@@ -239,37 +239,49 @@ struct player_flag_record
 };
 
 static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
-	{ "rAcid",	-1,					-1,				ELEM_ACID,	TMD_OPP_ACID },
-	{ "rElec",	-1,					-1,				ELEM_ELEC,	TMD_OPP_ELEC },
-	{ "rFire",	-1,					-1,				ELEM_FIRE,	TMD_OPP_FIRE },
-	{ "rCold",	-1,					-1,				ELEM_COLD,	TMD_OPP_COLD },
-	{ "rPois",	-1,					-1,				ELEM_POIS,	TMD_OPP_POIS },
-	{ "rLite",	-1,					-1,				ELEM_LIGHT,	-1 },
-	{ "rDark",	-1,					-1,				ELEM_DARK,	-1 },	
+	{ " Acid",	-1,					-1,				ELEM_ACID,	TMD_OPP_ACID },
+	{ " Elec",	-1,					-1,				ELEM_ELEC,	TMD_OPP_ELEC },
+	{ " Fire",	-1,					-1,				ELEM_FIRE,	TMD_OPP_FIRE },
+	{ " Cold",	-1,					-1,				ELEM_COLD,	TMD_OPP_COLD },
+	{ " Pois",	-1,					-1,				ELEM_POIS,	TMD_OPP_POIS },
+	{ "Light",	-1,					-1,				ELEM_LIGHT,	-1 },
+	{ " Dark",	-1,					-1,				ELEM_DARK,	-1 },	
 	{ "Sound",	-1,					-1,				ELEM_SOUND,	-1 },
 	{ "Shard",	-1,					-1,				ELEM_SHARD,	-1 },
-
 	{ "Nexus",	-1,					-1,				ELEM_NEXUS,	-1 },
 	{ "Nethr",	-1,					-1,				ELEM_NETHER,-1 },
 	{ "Chaos",	-1,					-1,				ELEM_CHAOS,	-1 },
 	{ "Disen",	-1,					-1,				ELEM_DISEN,	-1 },
+
 	{ "pFear",	-1,					OF_PROT_FEAR,	-1,			TMD_BOLD },
 	{ "pBlnd",	-1,					OF_PROT_BLIND,	-1,			-1 },
 	{ "pConf",	-1,					OF_PROT_CONF,	-1,			TMD_OPP_CONF },
 	{ "pStun",	-1,					OF_PROT_STUN,	-1,			-1 },
 	{ "HLife",	-1,					OF_HOLD_LIFE,	-1, 		-1 },
-
 	{ "Regen",	-1,					OF_REGEN,		-1, 		-1 },
 	{ "  ESP",	-1,					OF_TELEPATHY,	-1,			TMD_TELEPATHY },
-	{ "Invis",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
+	{ "S.Inv",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
 	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		-1 },
 	{ "Feath",	-1,					OF_FEATHER,		-1,			-1 },
 	{ "S.Dig",	-1,					OF_SLOW_DIGEST,	-1, 		-1 },
+	{ "TrpIm",	-1,					OF_TRAP_IMMUNE, -1,			-1 },
+	{ "Bless",	-1,					OF_BLESSED,		-1, 		-1 },
+
 	{ "ImpHP",	-1,					OF_IMPAIR_HP,	-1, 		-1 },
+	{ "ImpSP",	-1,					OF_IMPAIR_MANA,	-1, 		-1 },
 	{ " Fear",	-1,					OF_AFRAID,		-1,			TMD_AFRAID },
 	{ "Aggrv",	-1,					OF_AGGRAVATE,	-1, 		-1 },
+	{ "NoTel",	-1,					OF_NO_TELEPORT,	-1, 		-1 },
+	{ "DrExp",	-1,					OF_DRAIN_EXP,	-1, 		-1 },
+	{ "Stick",	-1,					OF_STICKY,		-1, 		-1 },
+	{ "Fragl",	-1,					OF_FRAGILE,		-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
 
-	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		-1 },
+	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		TMD_STEALTH },
 	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
 	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
 	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
@@ -278,6 +290,10 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
 	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
+	{ "D.Red",	OBJ_MOD_DAM_RED,	-1,				-1, 		-1 },
+	{ "Moves",	OBJ_MOD_MOVES,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *rec,
@@ -289,6 +305,9 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 	int row = bounds->row;
 	int res_cols = 5 + 2 + player->body.count;
 
+	/* Equippy */
+	display_player_equippy(row++, col + 6);
+
 	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
 	for (i = 0; i < size - 3; i++, row++) {
 		byte name_attr = COLOUR_WHITE;
@@ -298,7 +317,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 		for (j = 0; j <= player->body.count; j++) {
 			bitflag f[OF_SIZE];
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
-			char sym = '.';
+			char sym = strlen(rec[i].name) ? '.' : ' ';
 			bool res = false, imm = false, vul = false, rune = false;
 			bool timed = false;
 			bool known = false;
@@ -380,17 +399,34 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 				/* Set which (if any) symbol and color are used */
 				if (rec[i].mod != -1) {
+					int k;
+
+					/* Shape modifiers */
+					for (k = 0; k < OBJ_MOD_MAX; k++) {
+						res = (player->shape->modifiers[i] > 0);
+						vul = (player->shape->modifiers[i] > 0);
+					}
+
 					/* Messy special cases */
 					if (rec[i].mod == OBJ_MOD_INFRA)
-						res = (player->race->infra > 0);
+						res |= (player->race->infra > 0);
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
-						res = (player->race->r_skills[SKILL_DIGGING] > 0);
+						res |= (player->race->r_skills[SKILL_DIGGING] > 0);
 				} else if (rec[i].flag != -1) {
 					res = of_has(f, rec[i].flag);
+					res |= (of_has(player->shape->flags, rec[i].flag) &&
+							of_has(player->obj_k->flags, rec[i].flag));
 				} else if (rec[i].element != -1) {
-					imm = player->race->el_info[rec[i].element].res_level == 3;
-					res = player->race->el_info[rec[i].element].res_level == 1;
-					vul = player->race->el_info[rec[i].element].res_level == -1;
+					int el = rec[i].element;
+					imm = (player->race->el_info[el].res_level == 3) ||
+						((player->shape->el_info[el].res_level == 3) &&
+						 (player->obj_k->el_info[el].res_level));
+					res = (player->race->el_info[el].res_level == 1) ||
+						((player->shape->el_info[el].res_level == 1) &&
+						 (player->obj_k->el_info[el].res_level));
+					vul = (player->race->el_info[el].res_level == -1) ||
+						((player->shape->el_info[el].res_level == -1) &&
+						 (player->obj_k->el_info[el].res_level));
 				}
 			}
 
@@ -431,12 +467,11 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			name_attr = COLOUR_SLATE;
 		}
 
-		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
+		if (strlen(rec[i].name)) {
+			Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
+		}
 	}
-	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
-
-	/* Equippy */
-	display_player_equippy(row++, col + 6);
+	//Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
 }
 
 static void display_player_flag_info(void)
@@ -444,10 +479,10 @@ static void display_player_flag_info(void)
 	int i;
 	int res_cols = 5 + 2 + player->body.count;
 	region resist_region[] = {
-		{  0 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
-		{  1 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
-		{  2 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
-		{  3 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
+		{  0 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
+		{  1 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
+		{  2 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
+		{  3 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
 	};
 
 	for (i = 0; i < 4; i++)
@@ -552,7 +587,7 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* Header */
-	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row-1, col);
+	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row - 1, col);
 
 	/* Process equipment */
 	for (i = 0; i < player->body.count; ++i) {
@@ -582,7 +617,7 @@ static void display_player_sust_info(void)
 				/* Label boost */
 				if (obj->modifiers[stat] < 10)
 						c = I2D(obj->modifiers[stat]);
-			} else if (obj->modifiers[stat] > 0) {
+			} else if (obj->modifiers[stat] < 0) {
 				/* Bad */
 				a = COLOUR_RED;
 
@@ -605,7 +640,7 @@ static void display_player_sust_info(void)
 				c = '?';
 
 			/* Dump proper character */
-			Term_putch(col, row+stat, a, c);
+			Term_putch(col, row + stat, a, c);
 		}
 
 		/* Advance */
@@ -629,17 +664,17 @@ static void display_player_sust_info(void)
 		}
 
 		/* Dump */
-		Term_putch(col, row+stat, a, c);
+		Term_putch(col, row + stat, a, c);
 	}
 
 	/* Column */
 	col = 26;
 
 	/* Footer */
-	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row+6, col);
+	//c_put_str(COLOUR_WHITE, "abcdefghijkl@", row + 5, col);
 
 	/* Equippy */
-	display_player_equippy(row+7, col);
+	//display_player_equippy(row + 7, col);
 }
 
 
@@ -822,7 +857,8 @@ static struct panel *get_panel_combat(void) {
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);
 	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
-	panel_line(p, COLOUR_L_BLUE, "Shots", "%d/turn", player->state.num_shots);
+	panel_line(p, COLOUR_L_BLUE, "Shots", "%d.%d/turn",
+			   player->state.num_shots / 10, player->state.num_shots % 10);
 
 	return p;
 }
@@ -988,7 +1024,7 @@ void write_character_dump(ang_file *fff)
 	/* Begin dump */
 	file_putf(fff, "  [%s Character Dump]\n\n", buildid);
 
-	/* Display player */
+	/* Display player basics */
 	display_player(0);
 
 	/* Dump part of the screen */
@@ -1013,14 +1049,14 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "%s\n", buf);
 	}
 
-	/* Skip a line */
-	file_putf(fff, "\n");
-
-	/* Display player */
+	/* Display player resistances etc */
 	display_player(1);
 
+	/* Print a header */
+	file_putf(fff, format("%-20s%s\n", "Resistances", "Abilities"));
+
 	/* Dump part of the screen */
-	for (y = 11; y < 20; y++) {
+	for (y = 9; y < 9 + RES_ROWS; y++) {
 		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++) {
@@ -1044,8 +1080,11 @@ void write_character_dump(ang_file *fff)
 	/* Skip a line */
 	file_putf(fff, "\n");
 
+	/* Print a header */
+	file_putf(fff, format("%-20s%s\n", "Hindrances", "Modifiers"));
+
 	/* Dump part of the screen */
-	for (y = 11; y < 20; y++) {
+	for (y = 9; y < 20; y++) {
 		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++) {

@@ -35,6 +35,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "store.h"
 #include "target.h"
 #include "ui-display.h"
@@ -989,7 +990,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 					return false;
 
 				action = true;
-			} else if (event->mouse.y == 4+oid) {
+			} else if ((oid >= 0) && (event->mouse.y == m->active.row + oid)) {
 				/* if press is on a list item, so store item context */
 				context_menu_store_item(ctx, oid, event->mouse.x,
 										event->mouse.y);
@@ -1000,7 +1001,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 				ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
 
 				/* Let the game handle any core commands (equipping, etc) */
-				cmdq_pop(CMD_STORE);
+				cmdq_pop(CTX_STORE);
 
 				/* Notice and handle stuff */
 				notice_stuff(player);
@@ -1076,7 +1077,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 		}
 
 		/* Let the game handle any core commands (equipping, etc) */
-		cmdq_pop(CMD_STORE);
+		cmdq_pop(CTX_STORE);
 
 		if (processed) {
 			event_signal(EVENT_INVENTORY);
@@ -1175,7 +1176,7 @@ static void refresh_stock(game_event_type type, game_event_data *unused, void *u
 void enter_store(game_event_type type, game_event_data *data, void *user)
 {
 	/* Check that we're on a store */
-	if (!square_isshop(cave, player->py, player->px)) {
+	if (!square_isshop(cave, player->grid)) {
 		msg("You see no store here.");
 		return;
 	}
@@ -1189,7 +1190,7 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
  */
 void use_store(game_event_type type, game_event_data *data, void *user)
 {
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 	struct store_context ctx;
 
 	/* Check that we're on a store */

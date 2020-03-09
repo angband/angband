@@ -29,6 +29,8 @@
 #include "player-birth.h"
 #include "player-calcs.h"
 #include "player-spell.h"
+#include "player-timed.h"
+#include "player-util.h"
 #include "store.h"
 #include "target.h"
 
@@ -76,6 +78,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_HOLD, "stay still", do_cmd_hold, true, 0 },
 	{ CMD_DISARM, "disarm", do_cmd_disarm, true, 99 },
 	{ CMD_ALTER, "alter", do_cmd_alter, true, 99 },
+	{ CMD_STEAL, "steal", do_cmd_steal, false, 0 },
 	{ CMD_REST, "rest", do_cmd_rest, false, 0 },
 	{ CMD_SLEEP, "sleep", do_cmd_sleep, false, 0 },
 	{ CMD_PATHFIND, "walk", do_cmd_pathfind, false, 0 },
@@ -107,6 +110,8 @@ static const struct command_info game_cmds[] =
 	{ CMD_SUICIDE, "kill character", do_cmd_suicide, false, 0 },
 	{ CMD_HELP, "help", NULL, false, 0 },
 	{ CMD_REPEAT, "repeat", NULL, false, 0 },
+
+	{ CMD_COMMAND_MONSTER, "make a monster act", do_cmd_mon_command, false, 0 },
 };
 
 const char *cmd_verb(cmd_code cmd)
@@ -196,6 +201,11 @@ void process_command(cmd_context ctx, struct command *cmd)
 	int oldrepeats = cmd->nrepeats;
 	int idx = cmd_idx(cmd->code);
 
+	/* Hack - command a monster */
+	if (player->timed[TMD_COMMAND]) {
+		idx = (int) N_ELEMENTS(game_cmds) - 1;
+	}
+
 	/* Reset so that when selecting items, we look in the default location */
 	player->upkeep->command_wrk = 0;
 
@@ -218,8 +228,13 @@ void process_command(cmd_context ctx, struct command *cmd)
 	cmd->context = ctx;
 
 	/* Actually execute the command function */
-	if (game_cmds[idx].fn)
+	if (game_cmds[idx].fn) {
+		/* Occasional attack instead for bloodlust-affected characters */
+		if (randint0(200) < player->timed[TMD_BLOODLUST]) {
+			if (player_attack_random_monster(player)) return;
+		}
 		game_cmds[idx].fn(cmd);
+	}
 
 	/* If the command hasn't changed nrepeats, count this execution. */
 	if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())
@@ -258,7 +273,7 @@ bool cmdq_pop(cmd_context c)
 errr cmdq_push_repeat(cmd_code c, int nrepeats)
 {
 	struct command cmd = {
-		.context = CMD_INIT,
+		.context = CTX_INIT,
 		.code = CMD_NULL,
 		.nrepeats = 0,
 		.arg = { { 0 } }
@@ -289,6 +304,14 @@ errr cmdq_push(cmd_code c)
 void cmdq_execute(cmd_context ctx)
 {
 	while (cmdq_pop(ctx)) ;
+}
+
+/**
+ * Remove all commands from the queue.
+ */
+void cmdq_flush(void)
+{
+	cmd_tail = cmd_head;
 }
 
 /**
@@ -575,7 +598,7 @@ int cmd_get_direction(struct command *cmd, const char *arg, int *dir,
 {
 	if (cmd_get_arg_direction(cmd, arg, dir) == CMD_OK) {
 		/* Validity check */
-		if (dir != DIR_UNKNOWN)
+		if (*dir != DIR_NONE)
 			return CMD_OK;
 	}
 
@@ -717,6 +740,11 @@ int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 {
 	if (cmd_get_arg_item(cmd, arg, obj) == CMD_OK)
 		return CMD_OK;
+
+	/* Shapechanged players can only access the floor */
+	if (player_is_shapechanged(player)) {
+		mode &= ~(USE_EQUIP | USE_INVEN | USE_QUIVER);
+	}
 
 	if (get_item(obj, prompt, reject, cmd->code, filter, mode)) {
 		cmd_set_arg_item(cmd, arg, *obj);

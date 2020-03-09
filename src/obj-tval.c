@@ -101,11 +101,6 @@ bool tval_is_money_k(const struct object_kind *kind)
 	return kind->tval == TV_GOLD;
 }
 
-bool tval_is_pointy(const struct object *obj)
-{
-	return obj->tval == TV_SWORD || obj->tval == TV_POLEARM;
-}
-
 bool tval_is_digger(const struct object *obj)
 {
 	return obj->tval == TV_DIGGING;
@@ -148,6 +143,17 @@ bool tval_is_ammo(const struct object *obj)
 {
 	switch (obj->tval) {
 		case TV_SHOT:
+		case TV_ARROW:
+		case TV_BOLT:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool tval_is_sharp_missile(const struct object *obj)
+{
+	switch (obj->tval) {
 		case TV_ARROW:
 		case TV_BOLT:
 			return true;
@@ -330,6 +336,9 @@ bool tval_is_book_k(const struct object_kind *kind)
 	switch (kind->tval) {
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_SHADOW_BOOK:
+		case TV_OTHER_BOOK:
 			return true;
 		default:
 			return false;

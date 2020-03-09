@@ -461,7 +461,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 						 bool uniq)
 {
 
-	bool vault = square_isvault(cave, y, x);
+	bool vault = square_isvault(cave, loc(x, y));
 	int number = obj->number;
 	static int lvl;
 	struct artifact *art;
@@ -929,8 +929,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			break;
 		}
 
-		/* prayer books and magic books have the same probability 
-		   only track one of them */
+		/* books have the same probability, only track one realm of them */
 		case TV_MAGIC_BOOK:{
 
 			switch(obj->sval){
@@ -1108,7 +1107,7 @@ void monster_death_stats(int m_idx)
 		obj->held_m_idx = 0;
 
 		/* Get data */
-		get_obj_data(obj, mon->fy, mon->fx, true, uniq);
+		get_obj_data(obj, mon->grid.y, mon->grid.x, true, uniq);
 
 		/* Delete the object */
 		delist_object(cave, obj);
@@ -1403,14 +1402,15 @@ static void scan_for_objects(void)
 
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
+			struct loc grid = loc(x, y);
 			struct object *obj;
 
-			while ((obj = square_object(cave, y, x))) {
+			while ((obj = square_object(cave, grid))) {
 				/* Get data on the object */
 				get_obj_data(obj, y, x, false, false);
 
 				/* Delete the object */
-				square_excise_object(cave, y, x, obj);
+				square_excise_object(cave, grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 			}
@@ -1712,8 +1712,8 @@ void calc_cave_distances(int **cave_dist)
 	int d_new_max;
 
 	/* Get player location */
-	oy = d_y_old[0] = player->py;
-	ox = d_x_old[0] = player->px;
+	oy = d_y_old[0] = player->grid.y;
+	ox = d_x_old[0] = player->grid.x;
 	d_old_max = 1;
 
 	/* Distance from player starts at 0 */
@@ -1742,13 +1742,13 @@ void calc_cave_distances(int **cave_dist)
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 
-				if (!(square_in_bounds_fully(cave, ty, tx))) continue;
+				if (!(square_in_bounds_fully(cave, loc(tx, ty)))) continue;
 
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 
 				/* Is it a wall? */
-				if (square_iswall(cave, ty, tx)) continue;
+				if (square_iswall(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -1914,15 +1914,16 @@ void disconnect_stats(void)
 		/* Cycle through the dungeon */
 		for (y = 1; y < cave->height - 1; y++) {
 			for (x = 1; x < cave->width - 1; x++) {
+				struct loc grid = loc(x, y);
 
 				/* Don't care about walls */
-				if (square_iswall(cave, y, x)) continue;
+				if (square_iswall(cave, grid)) continue;
 
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0) {
 
 					/* Is it a  down stairs? */
-					if (square_isdownstairs(cave, y, x)) {
+					if (square_isdownstairs(cave, grid)) {
 
 						has_dsc_from_stairs = false;
 
@@ -1933,7 +1934,7 @@ void disconnect_stats(void)
 				}
 
 				/* Ignore vaults as they are often disconnected */
-				if (square_isvault(cave, y, x)) continue;
+				if (square_isvault(cave, grid)) continue;
 
 				/* We have a disconnected area */
 				has_dsc = true;

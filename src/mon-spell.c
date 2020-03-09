@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "effects.h"
+#include "init.h"
 #include "mon-attack.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -37,7 +38,10 @@
 typedef enum {
 	SPELL_TAG_NONE,
 	SPELL_TAG_NAME,
-	SPELL_TAG_PRONOUN
+	SPELL_TAG_PRONOUN,
+	SPELL_TAG_TARGET,
+	SPELL_TAG_TYPE,
+	SPELL_TAG_OF_TYPE
 } spell_tag_t;
 
 static spell_tag_t spell_tag_lookup(const char *tag)
@@ -46,6 +50,12 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_NAME;
 	else if (strncmp(tag, "pronoun", 7) == 0)
 		return SPELL_TAG_PRONOUN;
+	else if (strncmp(tag, "target", 6) == 0)
+		return SPELL_TAG_TARGET;
+	else if (strncmp(tag, "type", 4) == 0)
+		return SPELL_TAG_TYPE;
+	else if (strncmp(tag, "oftype", 6) == 0)
+		return SPELL_TAG_OF_TYPE;
 	else
 		return SPELL_TAG_NONE;
 }
@@ -66,23 +76,30 @@ static void spell_message(struct monster *mon,
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-	bool strong = mon->race->spell_power >= 60;
+	struct monster_spell_level *level = spell->level;
+	struct monster *t_mon = NULL;
+
+	/* Get the right level of message */
+	while (level->next && mon->race->spell_power >= level->next->power) {
+		level = level->next;
+	}
+
+	/* Get the target monster, if any */
+	if (mon->target.midx > 0) {
+		t_mon = cave_monster(cave, mon->target.midx);
+	}
 
 	/* Get the message */
 	if (!seen) {
-		if (strong && spell->blind_message_strong) {
-			in_cursor = spell->blind_message_strong;
+		if (t_mon) {
+			return;
 		} else {
-			in_cursor = spell->blind_message;
+			in_cursor = level->blind_message;
 		}
 	} else if (!hits) {
-		in_cursor = spell->miss_message;
+		in_cursor = level->miss_message;
 	} else {
-		if (strong && spell->message_strong) {
-			in_cursor = spell->message_strong;
-		} else {
-			in_cursor = spell->message;
-		}
+		in_cursor = level->message;
 	}
 
 	next = strchr(in_cursor, '{');
@@ -115,6 +132,40 @@ static void spell_message(struct monster *mon,
 					monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
 					strnfcat(buf, sizeof(buf), &end, m_poss);
+					break;
+				}
+
+				case SPELL_TAG_TARGET: {
+					char m_name[80];
+					struct monster *t_mon;
+					if (mon->target.midx > 0) {
+						t_mon = cave_monster(cave, mon->target.midx);
+						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						strnfcat(buf, sizeof(buf), &end, m_name);
+					} else {
+						strnfcat(buf, sizeof(buf), &end, "you");
+					}
+					break;
+				}
+
+				case SPELL_TAG_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					strnfcat(buf, sizeof(buf), &end, type_name);
+					break;
+				}
+
+				case SPELL_TAG_OF_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					if (type_name) {
+						strnfcat(buf, sizeof(buf), &end, " of ");
+						strnfcat(buf, sizeof(buf), &end, type_name);
+					}
 					break;
 				}
 
@@ -158,7 +209,7 @@ static void spell_check_for_fail_rune(const struct monster_spell *spell)
 			equip_learn_element(player, ELEM_NEXUS);
 		} else if (effect->index == EF_TIMED_INC) {
 			/* Timed effects */
-			(void) player_inc_check(player, effect->params[0], false);
+			(void) player_inc_check(player, effect->subtype, false);
 		}
 		effect = effect->next;
 	}
@@ -177,6 +228,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 
 	bool ident = false;
 	bool hits;
+	int target_mon = mon->target.midx;
 
 	/* See if it hits */
 	if (spell->hit == 100) {
@@ -185,9 +237,19 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		hits = false;
 	} else {
 		int rlev = MAX(mon->race->level, 1);
-		int debuff = mon->m_timed[MON_TMD_CONF] ? CONF_HIT_REDUCTION : 0;
-
-		hits = check_hit(player, spell->hit, rlev, debuff);
+		int conf_level = monster_effect_level(mon, MON_TMD_CONF);
+		int accuracy = 100;
+		while (conf_level) {
+			accuracy *= (100 - CONF_HIT_REDUCTION);
+			accuracy /= 100;
+			conf_level--;
+		}
+		if (target_mon > 0) {
+			hits = check_hit_monster(cave_monster(cave, target_mon),
+									 spell->hit, rlev, accuracy);
+		} else {
+			hits = check_hit(player, spell->hit, rlev, accuracy);
+		}
 	}
 
 	/* Tell the player what's going on */
@@ -195,10 +257,17 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	spell_message(mon, spell, seen, hits);
 
 	if (hits) {
+		struct monster_spell_level *level = spell->level;
+
+		/* Get the right level of save message */
+		while (level->next && mon->race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+
 		/* Try a saving throw if available */
-		if (spell->save_message &&
+		if (level->save_message && (target_mon <= 0) &&
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
-			msg("%s", spell->save_message);
+			msg("%s", level->save_message);
 			spell_check_for_fail_rune(spell);
 		} else {
 			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
@@ -235,8 +304,7 @@ static bool monster_spell_is_breath(int index)
 
 static bool mon_spell_has_damage(int index)
 {
-	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? true : false;
+	return (mon_spell_types[index].type & RST_DAMAGE) ? true : false;
 }
 
 bool mon_spell_is_innate(int index)
@@ -306,7 +374,7 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 
 		/* First we test the elemental spells */
 		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
-			int element = effect->params[0];
+			int element = effect->subtype;
 			int learn_chance = el[element].res_level * (smart ? 50 : 25);
 			if (randint0(100) < learn_chance) {
 				rsf_off(spells, info->index);
@@ -317,7 +385,7 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				/* Timed effects */
 				if ((smart || !one_in_(3)) &&
 						effect->index == EF_TIMED_INC &&
-						of_has(flags, timed_effects[effect->params[0]].fail))
+						of_has(flags, timed_effects[effect->subtype].fail))
 					break;
 
 				/* Mana drain */
@@ -354,9 +422,20 @@ static int nonhp_dam(const struct monster_spell *spell,
 	/* Now add the damage for each effect */
 	while (effect) {
 		random_value rand;
-		/* Slight hack to prevent timed effect increases being counted
-		 * as damage in lore */
-		if (effect->dice && (effect->index != EF_TIMED_INC)) {
+		/* Lash needs special treatment bacause it depends on monster blows */
+		if (effect->index == EF_LASH) {
+			int i;
+
+			/* Scan through all blows for damage */
+			for (i = 0; i < z_info->mon_blows_max; i++) {
+				/* Extract the attack infomation */
+				random_value dice = race->blow[i].dice;
+
+				/* Full damage of first blow, plus half damage of others */
+				dam += randcalc(dice, race->level, dam_aspect) / (i ? 2 : 1);
+			}
+		} else if (effect->dice && (effect->index != EF_TIMED_INC)) {
+			/* Timed effects increases don't count as damage in lore */
 			dice_roll(effect->dice, &rand);
 			dam += randcalc(rand, 0, dam_aspect);
 		}
@@ -403,7 +482,7 @@ static int mon_spell_dam(int index, int hp, const struct monster_race *race,
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
 	if (monster_spell_is_breath(index))
-		return breath_dam(spell->effect->params[0], hp);
+		return breath_dam(spell->effect->subtype, hp);
 	else
 		return nonhp_dam(spell, race, dam_aspect);
 }
@@ -446,8 +525,13 @@ const char *mon_spell_lore_description(int index,
 {
 	if (mon_spell_is_valid(index)) {
 		const struct monster_spell *spell = monster_spell_by_index(index);
-		bool strong = (race->spell_power >= 60) && spell->lore_desc_strong;
-		return strong ? spell->lore_desc_strong : spell->lore_desc;
+
+		/* Get the right level of description */
+		struct monster_spell_level *level = spell->level;
+		while (level->next && race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+		return level->lore_desc;
 	} else {
 		return "";
 	}

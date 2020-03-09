@@ -67,8 +67,6 @@ enum
 #define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
 #define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
 
-#define player_has(p, flag)       (pf_has(p->race->pflags, (flag)) || pf_has(p->class->pflags, (flag)))
-
 /**
  * The range of possible indexes into tables based upon stats.
  * Currently things range from 3 to 18/220 = 40.
@@ -202,11 +200,45 @@ struct player_race {
 };
 
 /**
+ * Blow names for shapechanged players
+ */
+struct player_blow {
+	struct player_blow *next;
+	char *name;
+};
+
+/**
+ * Player shapechange shape info
+ */
+struct player_shape {
+	struct player_shape *next;
+	const char *name;
+
+	int sidx;
+
+	int to_a;				/**< Plusses to AC */
+	int to_h;				/**< Plusses to hit */
+	int to_d;				/**< Plusses to damage */
+
+	int skills[SKILL_MAX];  /**< Skills */
+	bitflag flags[OF_SIZE];		/**< Shape (object) flags */
+	bitflag pflags[PF_SIZE];	/**< Shape (player) flags */
+	int modifiers[OBJ_MOD_MAX];	/**< Stat and other modifiers*/
+	struct element_info el_info[ELEM_MAX]; /**< Resists */
+
+	struct effect *effect;	/**< Effect on taking this shape (effects.c) */
+
+	struct player_blow *blows;
+	int num_blows;
+};
+
+/**
  * Items the player starts with.  Used in player_class and specified in
  * class.txt.
  */
 struct start_item {
-	struct object_kind *kind;
+	int tval;	/**< General object type (see TV_ macros) */
+	int sval;	/**< Object sub-type  */
 	int min;	/**< Minimum starting amount */
 	int max;	/**< Maximum starting amount */
 
@@ -234,6 +266,7 @@ struct class_spell {
 	char *text;
 
 	struct effect *effect;	/**< The spell's effect */
+	const struct magic_realm *realm;	/**< The magic realm of this spell */
 
 	int sidx;				/**< The index of this spell for this class */
 	int bidx;				/**< The index into the player's books array */
@@ -247,23 +280,23 @@ struct class_spell {
  * A structure to hold class-dependent information on spell books.
  */
 struct class_book {
-	int tval;					/**< Item type of the book */
-	int sval;					/**< Item sub-type for book (book number) */
-	int realm;					/**< The magic realm of this book */
-	int num_spells;				/**< Number of spells in this book */
-	struct class_spell *spells;	/**< Spells in the book*/
+	int tval;							/**< Item type of the book */
+	int sval;							/**< Item sub-type for book */
+	bool dungeon;						/**< Whether this is a dungeon book */
+	int num_spells;						/**< Number of spells in this book */
+	const struct magic_realm *realm;	/**< The magic realm of this book */
+	struct class_spell *spells;			/**< Spells in the book*/
 };
 
 /**
  * Information about class magic knowledge
  */
 struct class_magic {
-	int spell_first;					/**< Level of first spell */
-	int spell_weight;					/**< Max armour weight to avoid mana penalties */
-	const struct magic_realm *spell_realm;	/**< Primary spellcasting realm */
-	int num_books;						/**< Number of spellbooks */
-	struct class_book *books;			/**< Details of spellbooks */
-	int total_spells;					/**< Number of spells for this class */
+	int spell_first;			/**< Level of first spell */
+	int spell_weight;			/**< Max armor weight to avoid mana penalties */
+	int num_books;				/**< Number of spellbooks */
+	struct class_book *books;	/**< Details of spellbooks */
+	int total_spells;			/**< Number of spells for this class */
 };
 
 /**
@@ -284,6 +317,7 @@ struct player_class {
 	int c_mhp;					/**< Hit-dice adjustment */
 	int c_exp;					/**< Experience factor */
 
+	bitflag flags[OF_SIZE];		/**< (Object) flags */
 	bitflag pflags[PF_SIZE];	/**< (Player) flags */
 
 	int max_attacks;			/**< Maximum possible attacks */
@@ -359,12 +393,14 @@ struct player_state {
 	int speed;			/**< Current speed */
 
 	int num_blows;		/**< Number of blows x100 */
-	int num_shots;		/**< Number of shots */
+	int num_shots;		/**< Number of shots x10 */
+	int num_moves;		/**< Number of movement actions */
 
 	int ammo_mult;		/**< Ammo multiplier */
 	int ammo_tval;		/**< Ammo variety */
 
-	int ac;			/**< Base ac */
+	int ac;				/**< Base ac */
+	int dam_red;		/**< Damage reduction */
 	int to_a;			/**< Bonus to ac */
 	int to_h;			/**< Bonus to hit */
 	int to_d;			/**< Bonus to dam */
@@ -375,15 +411,16 @@ struct player_state {
 
 	bool heavy_wield;	/**< Heavy weapon */
 	bool heavy_shoot;	/**< Heavy shooter */
-	bool icky_wield;	/**< Icky weapon shooter */
+	bool bless_wield;	/**< Blessed (or blunt) weapon */
 
 	bool cumber_armor;	/**< Mana draining armor */
-	bool cumber_glove;	/**< Mana draining gloves */
 
 	bitflag flags[OF_SIZE];					/**< Status flags from race and items */
 	bitflag pflags[PF_SIZE];				/**< Player intrinsic flags */
 	struct element_info el_info[ELEM_MAX];	/**< Resists from race and items */
 };
+
+#define player_has(p, flag)       (pf_has(p->state.pflags, (flag)))
 
 /**
  * Temporary, derived, player-related variables used during play but not saved
@@ -420,7 +457,8 @@ struct player_upkeep {
 
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
-	bool light_level;		/* Create down stair on next level */
+	bool light_level;		/* Level is to be lit on creation */
+	bool arena_level;		/* Current level is an arena */
 
 	int resting;			/* Resting counter */
 
@@ -434,6 +472,7 @@ struct player_upkeep {
 	int inven_cnt;			/* Number of items in inventory */
 	int equip_cnt;			/* Number of items in equipment */
 	int quiver_cnt;			/* Number of items in the quiver */
+	int recharge_pow;		/* Power of recharge effect */
 };
 
 /**
@@ -451,8 +490,7 @@ struct player {
 	const struct player_race *race;
 	const struct player_class *class;
 
-	s16b py;		/* Player location */
-	s16b px;		/* Player location */
+	struct loc grid;/* Player location */
 
 	byte hitdie;	/* Hit dice (sides) */
 	byte expfact;	/* Experience factor */
@@ -497,7 +535,6 @@ struct player {
 
 	s16b food;					/* Current nutrition */
 
-	byte confusing;				/* Glowing hands */
 	byte unignoring;			/* Unignoring */
 
 	byte *spell_flags;			/* Spell flags */
@@ -528,6 +565,7 @@ struct player {
 	struct player_history hist;			/* Player history (see player-history.c) */
 
 	struct player_body body;			/* Equipment slots available */
+	struct player_shape *shape;			/* Current player shape */
 
 	struct object *gear;				/* Real gear */
 	struct object *gear_k;				/* Known gear */
@@ -548,6 +586,7 @@ struct player {
 
 extern struct player_body *bodies;
 extern struct player_race *races;
+extern struct player_shape *shapes;
 extern struct player_class *classes;
 extern struct magic_realm *realms;
 

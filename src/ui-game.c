@@ -39,6 +39,7 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-help.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
@@ -173,6 +174,7 @@ struct cmd_info cmd_hidden[] =
 	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL },
 	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL }, /* XXX */
 	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL },
+	{ "Steal from a monster", { 's' }, CMD_STEAL, NULL, NULL },
 	{ "Walk", { ';' }, CMD_WALK, NULL, NULL },
 	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL },
 	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL },
@@ -321,7 +323,7 @@ void textui_process_command(void)
 
 errr textui_get_cmd(cmd_context context)
 {
-	if (context == CMD_GAME)
+	if (context == CTX_GAME)
 		textui_process_command();
 
 	/* If we've reached here, we haven't got a command. */
@@ -368,11 +370,11 @@ void pre_turn_refresh(void)
 		handle_stuff(player);
 
 		if (OPT(player, show_target) && target_sighted()) {
-			int col, row;
-			target_get(&col, &row);
-			move_cursor_relative(row, col);
+			struct loc target;
+			target_get(&target);
+			move_cursor_relative(target.y, target.x);
 		} else {
-			move_cursor_relative(player->py, player->px);
+			move_cursor_relative(player->grid.y, player->grid.x);
 		}
 
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
@@ -424,6 +426,8 @@ static void start_game(bool new_game)
  */
 void play_game(bool new_game)
 {
+	play_again = false;
+
 	/* Load a savefile or birth a character, or both */
 	start_game(new_game);
 
@@ -431,12 +435,20 @@ void play_game(bool new_game)
 	 * command queue is empty and a new player command is needed */
 	while (!player->is_dead && player->upkeep->playing) {
 		pre_turn_refresh();
-		cmd_get_hook(CMD_GAME);
+		cmd_get_hook(CTX_GAME);
 		run_game_loop();
 	}
 
 	/* Close game on death or quitting */
 	close_game();
+
+	if (play_again) {
+		cleanup_angband();
+		init_display();
+		init_angband();
+		textui_init();
+		play_game(true);
+	}
 }
 
 /**

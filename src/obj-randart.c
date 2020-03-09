@@ -87,6 +87,7 @@ static s16b art_idx_boot[] = {
 	ART_IDX_BOOT_AC,
 	ART_IDX_BOOT_FEATHER,
 	ART_IDX_BOOT_STEALTH,
+	ART_IDX_BOOT_TRAP_IMM,
 	ART_IDX_BOOT_SPEED
 };
 static s16b art_idx_glove[] = {
@@ -151,7 +152,10 @@ static s16b art_idx_gen[] = {
 	ART_IDX_GEN_AC,
 	ART_IDX_GEN_TUNN,
 	ART_IDX_GEN_ACTIV,
-	ART_IDX_GEN_PSTUN
+	ART_IDX_GEN_PSTUN,
+	ART_IDX_GEN_DAM_RED,
+	ART_IDX_GEN_MOVES,
+	ART_IDX_GEN_TRAP_IMM
 };
 static s16b art_idx_high_resist[] =	{
 	ART_IDX_GEN_RPOIS,
@@ -699,6 +703,18 @@ void count_modifiers(const struct artifact *art, struct artifact_set_data *data)
 		(data->art_probs[ART_IDX_GEN_INFRA])++;
 	}
 
+	/* Handle damage reduction bonus - fully generic */
+	if (art->modifiers[OBJ_MOD_DAM_RED] > 0) {
+		file_putf(log_file, "Adding 1 for damage reduction bonus - general.\n");
+		(data->art_probs[ART_IDX_GEN_DAM_RED])++;
+	}
+
+	/* Handle moves bonus - fully generic */
+	if (art->modifiers[OBJ_MOD_MOVES] > 0) {
+		file_putf(log_file, "Adding 1 for moves bonus - general.\n");
+		(data->art_probs[ART_IDX_GEN_MOVES])++;
+	}
+
 	/* Speed - boots handled separately.
 	 * This is something of a special case in that we use the same
 	 * frequency for the supercharged value and the normal value.
@@ -1003,6 +1019,17 @@ void count_abilities(const struct artifact *art, struct artifact_set_data *data)
 		/* Regeneration case - generic. */
 		file_putf(log_file, "Adding 1 for regeneration - general.\n");
 		(data->art_probs[ART_IDX_GEN_REGEN])++;
+	}
+
+	if (of_has(art->flags, OF_TRAP_IMMUNE)) {
+		/* Trap immunity - handle boots separately */
+		if (art->tval == TV_BOOTS) {
+			file_putf(log_file, "Adding 1 for trap immunity on boots.\n");
+			(data->art_probs[ART_IDX_BOOT_TRAP_IMM])++;
+		} else {
+			file_putf(log_file, "Adding 1 for trap immunity - general.\n");
+			(data->art_probs[ART_IDX_GEN_TRAP_IMM])++;
+		}
 	}
 
 
@@ -2311,6 +2338,19 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 			add_flag(art, OF_PROT_STUN);
 			break;
 
+		case ART_IDX_BOOT_TRAP_IMM:
+		case ART_IDX_GEN_TRAP_IMM:
+			add_flag(art, OF_TRAP_IMMUNE);
+			break;
+
+		case ART_IDX_GEN_DAM_RED:
+			add_mod(art, OBJ_MOD_DAM_RED);
+			break;
+
+		case ART_IDX_GEN_MOVES:
+			add_mod(art, OBJ_MOD_MOVES);
+			break;
+
 		case ART_IDX_GEN_ACTIV:
 			if (!art->activation && !kind->activation)
 				add_activation(art, target_power, data->max_power);
@@ -2532,7 +2572,7 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 	int power = Rand_sample(data->avg_tv_power[tval],
 							data->max_tv_power[tval],
 							data->min_tv_power[tval],
-							25, 30);
+							20, 20);
 
 	/* Choose a name */
 	char *new_name = artifact_gen_name(art, name_sections);
@@ -2824,15 +2864,18 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 	}
 
 	/* Output level, weight and cost */
-	file_putf(fff, "info:%d:%d:%d\n", art->level, art->weight, art->cost);
+	file_putf(fff, "level:%d\n", art->level);
+	file_putf(fff, "weight:%d\n", art->weight);
+	file_putf(fff, "cost:%d\n", art->cost);
 
 	/* Output allocation info */
 	file_putf(fff, "alloc:%d:%d to %d\n", art->alloc_prob, art->alloc_min,
 			  art->alloc_max);
 
 	/* Output combat power */
-	file_putf(fff, "power:%d:%dd%d:%d:%d:%d\n", art->ac, art->dd, art->ds,
-			  art->to_h, art->to_d, art->to_a);
+	file_putf(fff, "attack:%dd%d:%d:%d\n", art->dd, art->ds, art->to_h,
+			  art->to_d);
+	file_putf(fff, "armor:%d:%d\n", art->ac, art->to_a);
 
 	/* Output flags */
 	write_flags(fff, "flags:", art->flags, OF_SIZE, obj_flags);

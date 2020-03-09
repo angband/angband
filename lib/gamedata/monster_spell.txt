@@ -2,15 +2,8 @@
 
 # name - spell name
 # msgt - message type
-# lore - Description printed in monster recall after "It can",
-#        e.g. cause critical wounds
-# lore-color-base - base color for lore
 # lore-color-resist - color for lore when the spell is resisted
 # lore-color-immune - color for lore when the spell is resisted strongly
-# message-vis - Message printed when spell is cast by a visible monster,
-#               e.g. {name} points at you, incanting terribly!
-# message-invis - Message printed when spell is cast by an unseen monster,
-#                 e.g. Something utters a terrible incantation!
 # message-save - Message printed when player saves if the spell allows a save.
 #                Note that this message must be present for the player to get a 
 #                save.
@@ -20,6 +13,15 @@
 # effect - effect
 # dice - damage dice of effect, if any
 # expr - expression for dice, if needed
+# power-cutoff - monster spell power at which we move to a new set of lore,
+#                lore-color-base, message-vis and message-invis
+# lore - Description printed in monster recall after "It can",
+#        e.g. cause critical wounds
+# lore-color-base - base color for lore
+# message-vis - Message printed when spell is cast by a visible monster,
+#               e.g. {name} points at you, incanting terribly!
+# message-invis - Message printed when spell is cast by an unseen monster,
+#                 e.g. Something utters a terrible incantation!
 
 # {name} and {pronoun} are markers that will be replaced with the acting
 # monster's name and his/her/its when the message is displayed,
@@ -36,50 +38,101 @@ lore-color-base:Orange
 message-vis:{name} makes a high-pitched shriek.
 message-invis:Something makes a high-pitched shriek.
 
-name:ARROW_1
-hit:40
+name:WHIP
+hit:100
+effect:LASH:MISSILE:2
+lore:lash you if nearby
+lore-color-base:Orange
+message-vis:{name} lashes at you with a whip{oftype}.
+message-invis:You hear a crack.
+
+name:SPIT
+hit:100
+effect:LASH:MISSILE:3
+lore:spit at you from a distance
+lore-color-base:Orange
+message-vis:{name} spits {type} at you.
+message-invis:You hear a soft sound.
+
+name:SHOT
+hit:50
 effect:BOLT:ARROW
-dice:1d6
-lore:fire an arrow
+dice:$Dd5
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fling pebbles
+lore-color-base:Yellow
+message-vis:{name} slings a pebble at {target}.
+message-invis:You hear something fly through the air.
+message-miss:{name} slings a pebble, but misses.
+power-cutoff:25
+lore:sling lead shots
+lore-color-base:Yellow
+message-vis:{name} slings a leaden pellet at {target}.
+message-invis:You hear something whirl through the air.
+message-miss:{name} slings a leaden pellet, but misses.
+power-cutoff:50
+lore:sling seeker shots
+lore-color-base:Yellow
+message-vis:{name} slings a seeker shot at {target}.
+message-invis:You hear something heavy whirl through the air.
+message-miss:{name} slings a seeker shot, but misses.
+
+name:ARROW
+hit:50
+effect:BOLT:ARROW
+dice:$Dd6
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fire small arrows
 lore-color-base:Yellow
 message-vis:{name} fires a small arrow.
 message-invis:You hear a soft twang.
 message-miss:{name} fires a small arrow, but misses.
-
-name:ARROW_2
-hit:40
-effect:BOLT:ARROW
-dice:3d6
+power-cutoff:16
 lore:fire arrows
 lore-color-base:Yellow
 message-vis:{name} fires an arrow.
 message-invis:You hear a twang.
 message-miss:{name} fires an arrow, but misses.
-
-name:ARROW_3
-hit:50
-effect:BOLT:ARROW
-dice:5d6
-lore:fire a missile
+power-cutoff:32
+lore:fire large arrows
 lore-color-base:Yellow
 message-vis:{name} fires a large arrow.
 message-invis:You hear a loud twang.
 message-miss:{name} fires a large arrow, but misses.
-
-name:ARROW_4
-hit:50
-effect:BOLT:ARROW
-dice:7d6
-lore:fire missiles
+power-cutoff:48
+lore:fire seeker arrows
 lore-color-base:Yellow
 message-vis:{name} fires a seeker arrow.
 message-invis:You hear a loud thwang.
 message-miss:{name} fires a seeker arrow, but misses.
 
+name:BOLT
+hit:50
+effect:BOLT:ARROW
+dice:$Dd7
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fire small bolts
+lore-color-base:Yellow
+message-vis:{name} fires a little bolt.
+message-invis:You hear a soft twung.
+message-miss:{name} fires a little bolt, but misses.
+power-cutoff:25
+lore:fire arrows
+lore-color-base:Yellow
+message-vis:{name} fires a crossbow bolt.
+message-invis:You hear a twung.
+message-miss:{name} fires a crossbow bolt, but misses.
+power-cutoff:50
+lore:fire seeker bolts
+lore-color-base:Yellow
+message-vis:{name} fires a seeker bolt.
+message-invis:You hear a loud thwung.
+message-miss:{name} fires a seeker bolt, but misses.
+
 name:BR_ACID
 msgt:BR_ACID
 hit:100
-effect:BREATH:ACID:30
+effect:BREATH:ACID:0:30
 lore:acid
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -90,7 +143,7 @@ message-invis:You hear an acrid roar.
 name:BR_ELEC
 msgt:BR_ELEC
 hit:100
-effect:BREATH:ELEC:30
+effect:BREATH:ELEC:0:30
 lore:lightning
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -101,7 +154,7 @@ message-invis:You hear a crackling roar.
 name:BR_FIRE
 msgt:BR_FIRE
 hit:100
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 message-vis:{name} breathes fire.
 message-invis:You hear a scorching roar.
 lore:fire
@@ -112,7 +165,7 @@ lore-color-immune:Light Green
 name:BR_COLD
 msgt:BR_FROST
 hit:100
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 lore:frost
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -123,7 +176,7 @@ message-invis:You hear a whooshing roar.
 name:BR_POIS
 msgt:BR_GAS
 hit:100
-effect:BREATH:POIS:30
+effect:BREATH:POIS:0:30
 lore:poison
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -133,7 +186,7 @@ message-invis:You hear a sickening roar.
 name:BR_NETH
 msgt:BR_NETHER
 hit:100
-effect:BREATH:NETHER:30
+effect:BREATH:NETHER:0:30
 lore:nether
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -143,7 +196,7 @@ message-invis:You hear an eerie roar.
 name:BR_LIGHT
 msgt:BR_LIGHT
 hit:100
-effect:BREATH:LIGHT:30
+effect:BREATH:LIGHT:0:30
 lore:light
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -153,7 +206,7 @@ message-invis:You hear a humming roar.
 name:BR_DARK
 msgt:BR_DARK
 hit:100
-effect:BREATH:DARK:30
+effect:BREATH:DARK:0:30
 lore:darkness
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -163,7 +216,7 @@ message-invis:You hear a hushing roar.
 name:BR_SOUN
 msgt:BR_SOUND
 hit:100
-effect:BREATH:SOUND:30
+effect:BREATH:SOUND:0:30
 lore:sound
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -174,7 +227,7 @@ message-invis:You hear an echoing roar.
 name:BR_CHAO
 msgt:BR_CHAOS
 hit:100
-effect:BREATH:CHAOS:30
+effect:BREATH:CHAOS:0:30
 lore:chaos
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -184,7 +237,7 @@ message-invis:You hear a cacophonous roar.
 name:BR_DISE
 msgt:BR_DISEN
 hit:100
-effect:BREATH:DISEN:30
+effect:BREATH:DISEN:0:30
 lore:disenchantment
 lore-color-base:Light Red
 lore-color-resist:Light Green
@@ -194,7 +247,7 @@ message-invis:You hear a dissipating roar.
 name:BR_NEXU
 msgt:BR_NEXUS
 hit:100
-effect:BREATH:NEXUS:30
+effect:BREATH:NEXUS:0:30
 lore:nexus
 lore-color-base:Light Red
 lore-color-resist:Yellow
@@ -205,7 +258,7 @@ message-invis:You hear a tearing roar.
 name:BR_TIME
 msgt:BR_TIME
 hit:100
-effect:BREATH:TIME:30
+effect:BREATH:TIME:0:30
 lore:time
 lore-color-base:Light Red
 message-vis:{name} breathes time.
@@ -214,7 +267,7 @@ message-invis:You remember hearing a roar.
 name:BR_INER
 msgt:BR_INERTIA
 hit:100
-effect:BREATH:INERTIA:30
+effect:BREATH:INERTIA:0:30
 lore:inertia
 lore-color-base:Orange
 message-vis:{name} breathes inertia.
@@ -223,7 +276,7 @@ message-invis:You hear a thrumming roar.
 name:BR_GRAV
 msgt:BR_GRAVITY
 hit:100
-effect:BREATH:GRAVITY:30
+effect:BREATH:GRAVITY:0:30
 lore:gravity
 lore-color-base:Light Red
 message-vis:{name} breathes gravity.
@@ -232,7 +285,7 @@ message-invis:You hear a heavy roar.
 name:BR_SHAR
 msgt:BR_SHARDS
 hit:100
-effect:BREATH:SHARD:30
+effect:BREATH:SHARD:0:30
 lore:shards
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -242,7 +295,7 @@ message-invis:You hear a shattering roar.
 name:BR_PLAS
 msgt:BR_PLASMA
 hit:100
-effect:BREATH:PLASMA:30
+effect:BREATH:PLASMA:0:30
 lore:plasma
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -252,7 +305,7 @@ message-invis:You hear a hissing roar.
 name:BR_WALL
 msgt:BR_FORCE
 hit:100
-effect:BREATH:FORCE:30
+effect:BREATH:FORCE:0:30
 lore:force
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -261,7 +314,7 @@ message-invis:You hear a staccato roar.
 
 name:BR_MANA
 hit:100
-effect:BREATH:MANA:30
+effect:BREATH:MANA:0:30
 lore:mana
 lore-color-base:Light Red
 message-vis:{name} breathes raw magic.
@@ -277,6 +330,15 @@ lore-color-base:Yellow
 message-vis:{name} hurls a boulder.
 message-invis:You hear a grunt of exertion.
 message-miss:{name} hurls a boulder, but misses.
+
+name:WEAVE
+msgt:CREATE_TRAP
+hit:100
+effect:WEB
+lore:weave webs
+lore-color-base:Yellow
+message-vis:{name} weaves a web.
+message-invis:You hear soft rustling.
 
 name:BA_ACID
 hit:100
@@ -313,39 +375,83 @@ lore-color-resist:Yellow
 lore-color-immune:Light Green
 message-vis:{name} casts a ball of fire.
 message-invis:Something mumbles.
+power-cutoff:80
+lore:produce firestorms
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
+message-vis:{name} conjures up a firestorm.
+message-invis:Something murmurs deeply.
 
 name:BA_COLD
 hit:100
 effect:BALL:COLD:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 3 / 2
-lore:produce frost balls
+lore:produce balls of cold
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
 message-vis:{name} casts a ball of frost.
 message-invis:Something mumbles.
+power-cutoff:80
+lore:produce blizzards
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
+message-vis:{name} calls up a blizzard.
+message-invis:Something chants coldly.
 
 name:BA_POIS
 hit:100
 effect:BALL:POIS:2
-dice:12d2
+dice:$Dd4
+expr:D:SPELL_POWER:/ 2 + 3
 lore:produce poison balls
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} creates a cloud of poison.
+message-vis:{name} casts a venomous cloud.
 message-invis:Something mumbles.
+power-cutoff:60
+lore:produce storms of poison
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} unleashes a storm of corrosive toxins.
+message-invis:Something murmurs viciously.
+
+name:BA_SHAR
+hit:100
+effect:BALL:SHARD:2
+dice:10+1d$S
+expr:S:SPELL_POWER:* 3 / 2
+lore:produce shardstorms
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} calls up a whirlwind of shards.
+message-invis:Something mumbles.
+power-cutoff:70
+lore:invoke storms of knives
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} invokes a storm of knives!
+message-invis:Something chants powerfully.
 
 name:BA_NETH
 hit:100
 effect:BALL:NETHER:2
 dice:$B+10d10
-expr:B:SPELL_POWER:+ 50
+expr:B:SPELL_POWER:* 4
 lore:produce nether balls
 lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} casts a ball of nether.
-message-invis:Something mumbles.
+message-invis:Something whispers nastily.
+power-cutoff:80
+lore:produce nether storms
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} creates a storm of nether magics.
+message-invis:Something intones with deadly menace.
 
 name:BA_WATE
 hit:100
@@ -372,16 +478,58 @@ name:BA_DARK
 hit:100
 effect:BALL:DARK:2
 dice:$B+10d10
-expr:B:SPELL_POWER:* 5
+expr:B:SPELL_POWER:* 4
 lore:produce balls of darkness
-lore-strong:invoke darkness storms
-lore-color-base:Light Red
+lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} casts a ball of darkness.
 message-invis:Something mumbles loudly.
-message-vis-strong:{name} invokes a storm of darkness.
-message-invis-strong:Something chants powerfully.
+power-cutoff:70
+lore:invoke darkness storms
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} invokes a storm of darkness.
+message-invis:Something chants powerfully.
 
+name:BA_LIGHT
+hit:100
+effect:BALL:LIGHT:2
+dice:10+1d$S
+expr:S:SPELL_POWER:* 3 / 2
+lore:produce balls of light
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} casts a ball of light.
+message-invis:Something mumbles.
+power-cutoff:70
+lore:invoke starbursts
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} invokes a starburst.
+message-invis:Something chants powerfully.
+
+name:STORM
+hit:100
+effect:BALL:WATER:3
+dice:30+$Dd5
+expr:D:SPELL_POWER:/ 3
+effect:BALL:ELEC:3
+dice:20+$Dd5
+expr:D:SPELL_POWER:/ 3
+effect:BALL:ICE:3
+dice:20+$Dd5
+expr:D:SPELL_POWER:/ 3
+lore:create storms
+lore-color-base:Light Red
+lore-color-resist:Orange
+message-vis:{name} creates a little storm.
+message-invis:Something gurgles.
+power-cutoff:80
+lore:create tempests
+lore-color-base:Light Red
+lore-color-resist:Orange
+message-vis:{name} creates a tempest of wind and water.
+message-invis:Something chants fluidly.
 
 name:DRAIN_MANA
 hit:100
@@ -403,7 +551,7 @@ lore:cause mind blasting
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
-message-vis:{name} gazes at you with psionic energy.
+message-vis:{name} gazes at {target} with psionic energy.
 message-invis:Something focuses on your mind.
 message-save:You shake off a pounding headache.
 
@@ -423,53 +571,50 @@ lore:cause brain smashing
 lore-color-base:Light Red
 lore-color-resist:Orange
 lore-color-immune:Light Green
-message-vis:{name} smashes you with psionic energy.
+message-vis:{name} smashes {target} with psionic energy.
 message-invis:Something focuses on your mind.
 message-save:You shake off a splitting migraine.
 
-name:CAUSE_1
+name:WOUND
 hit:100
 effect:DAMAGE
-dice:3d8
+dice:$Dd5
+expr:D:SPELL_POWER:/ 3 * 2
+effect:TIMED_INC:CUT
+dice:$Dd10
+expr:D:SPELL_POWER:/ 5 - 10
 lore:cause light wounds
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} points at you and curses!
+message-vis:{name} points at {target} and curses!
 message-invis:Something curses!
 message-save:Your body tingles briefly.
-
-name:CAUSE_2
-hit:100
-effect:DAMAGE
-dice:8d8
-lore:cause serious wounds
+power-cutoff:16
+lore:cause medium wounds
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} points at you and curses horribly!
+message-vis:{name} points at {target} and curses horribly!
 message-invis:Something curses horribly!
 message-save:Your body pulsates briefly.
-
-name:CAUSE_3
-hit:100
-effect:DAMAGE
-dice:10d15
+power-cutoff:32
+lore:cause serious wounds
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} points at {target} and incants terribly!
+message-invis:Something incants terribly!
+message-save:Your body shakes briefly.
+power-cutoff:50
 lore:cause critical wounds
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} points at you and incants terribly!
-message-invis:Something incants terribly!
-message-save:Your body shakes briefly.
-
-name:CAUSE_4
-hit:100
-effect:DAMAGE
-dice:15d15
-effect:TIMED_INC:CUT
-dice:10d10
+message-vis:{name} points at {target}, screaming words of peril!
+message-invis:Something cries out wrathfully!
+message-save:Your body shudders briefly.
+power-cutoff:80
 lore:cause mortal wounds
 lore-color-base:Light Red
 lore-color-resist:Light Green
-message-vis:{name} points at you and screams the word 'DIE!'
+message-vis:{name} points at {target} and screams the word 'DIE!'
 message-invis:Something screams the word 'DIE!'
 message-save:Your body spasms briefly.
 
@@ -558,7 +703,7 @@ name:BO_MANA
 hit:100
 effect:BOLT:MANA
 dice:50+1d$S
-expr:S:SPELL_POWER:* 7 / 2
+expr:S:SPELL_POWER:* 5 / 2
 lore:produce mana bolts
 lore-color-base:Light Red
 message-vis:{name} casts a bolt of raw magic.
@@ -575,7 +720,7 @@ lore-color-resist:Yellow
 message-vis:{name} casts a bolt of plasma.
 message-invis:Something screams.
 
-name:BO_ICEE
+name:BO_ICE
 hit:100
 effect:BOLT:ICE
 dice:$B+6d6
@@ -595,6 +740,34 @@ lore:produce magic missiles
 lore-color-base:Yellow
 message-vis:{name} fires a magic missile.
 message-invis:Something mumbles.
+
+name:BE_ELEC
+hit:100
+effect:SHORT_BEAM:ELEC:5
+dice:$B+5d5
+expr:B:SPELL_POWER:* 2 + 30
+lore:shoot sparks of lightning
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} shoots a spark of lightning at {target}.
+message-invis:You feel a crackling in the air.
+
+name:BE_NETH
+hit:100
+effect:SHORT_BEAM:NETHER:10
+dice:$B+5d5
+expr:B:SPELL_POWER:* 2 + 30
+lore:hurl lances of nether
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} hurls a lance of nether.
+message-invis:Something murmurs a deadly word.
+power-cutoff:80
+lore:shoot rays of death
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} unleashes a ray of death.
+message-invis:Something intones with deadly menace.
 
 name:SCARE
 msgt:CAST_FEAR
@@ -637,7 +810,7 @@ dice:3+1d4
 lore:slow
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} tries to make you move slowly.
+message-vis:{name} tries to make {target} move slowly.
 message-invis:Something mumbles.
 message-save:You fight off a sense of sluggishness.
 
@@ -648,7 +821,7 @@ dice:3+1d4
 lore:paralyze
 lore-color-base:Light Red
 lore-color-resist:Light Green
-message-vis:{name} tries to make you stop moving.
+message-vis:{name} tries to make {target} stop moving.
 message-invis:Something mumbles.
 message-save:You fight off a sense of torpidity.
 
@@ -706,18 +879,26 @@ hit:100
 effect:TELEPORT_TO
 lore:teleport to
 lore-color-base:Yellow
-message-vis:{name} commands you to come hither.
-message-invis:Something commands you to come hither.
+message-vis:{name} commands {target} to return.
+message-invis:Something commands you to return.
+
+name:TELE_SELF_TO
+msgt:TELEPORT
+hit:100
+effect:TELEPORT_TO:SELF
+lore:teleport toward
+lore-color-base:Yellow
+message-vis:{name} blinks toward {target}.
+message-invis:Something mutters.
 
 name:TELE_AWAY
 msgt:TELEPORT
 hit:100
-effect:TELEPORT
+effect:TELEPORT:AWAY
 dice:100
-param:1
 lore:teleport away
 lore-color-base:Yellow
-message-vis:{name} commands you to go away.
+message-vis:{name} commands {target} to go away.
 message-invis:Something commands you to go away.
 
 name:TELE_LEVEL
@@ -727,18 +908,18 @@ effect:TELEPORT_LEVEL
 lore:teleport level
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} commands you to go far away.
+message-vis:{name} commands {target} to go far away.
 message-invis:Something commands you to go far away.
 message-save:You feel unstable for a second, but it passes.
 
 name:DARKNESS
 hit:100
 effect:DARKEN_AREA
+effect:BALL:DARK_WEAK:3
 dice:10
-param:3
 lore:create darkness
 lore-color-base:Light Green
-message-vis:{name} surrounds you in darkness.
+message-vis:{name} surrounds {target} in darkness.
 message-invis:Something mumbles.
 
 name:TRAPS
@@ -757,9 +938,18 @@ dice:3
 lore:cause amnesia
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} tries to make you forget things.
+message-vis:{name} tries to make {target} forget things.
 message-invis:Something messes with your mind.
 message-save:You retain your presence of mind.
+
+name:SHAPECHANGE
+hit:100
+effect:MON_TIMED_INC:CHANGED
+dice:5+d10
+lore:change shape
+lore-color-base:Orange
+message-vis:{name} intones strange words.
+message-invis:Something mutters.
 
 name:S_KIN
 msgt:SUM_MONSTER

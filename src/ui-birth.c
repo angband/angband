@@ -23,6 +23,7 @@
 #include "game-input.h"
 #include "obj-tval.h"
 #include "player.h"
+#include "player-spell.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -242,6 +243,7 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_FREE_ACT: return "Resists paralysis";
 		case OF_REGEN: return "Regenerates quickly";
 		case OF_SEE_INVIS: return "Sees invisible creatures";
+		case OF_IMPAIR_HP: return "Regenerates slowly";
 
 		default: return "Undocumented flag";
 	}
@@ -379,8 +381,38 @@ static void class_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp,
 			   r->r_exp + c->c_exp, -1);
 
-	if (c->magic.spell_realm)
-		text_out_e("\nLearns %s magic", c->magic.spell_realm->name);
+	if (c->magic.total_spells) {
+		int count;
+		struct magic_realm *realm = class_magic_realms(c, &count), *realm_next;
+		char buf[120];
+
+		my_strcpy(buf, realm->name, sizeof(buf));
+		realm_next = realm->next;
+		mem_free(realm);
+		realm = realm_next;
+		if (count > 1) {
+			while (realm) {
+				count--;
+				if (count) {
+					my_strcat(buf, ", ", sizeof(buf));
+				} else {
+					my_strcat(buf, " and ", sizeof(buf));
+				}
+				my_strcat(buf, realm->name, sizeof(buf));
+				realm_next = realm->next;
+				mem_free(realm);
+				realm = realm_next;
+			}
+		}
+		text_out_e("\nLearns %s magic", buf);
+	}
+
+	for (k = 1; k < OF_MAX; k++) {
+		if (n_flags >= flag_space) break;
+		if (!of_has(c->flags, k)) continue;
+		text_out_e("\n%s", get_flag_desc(k));
+		n_flags++;
+	}
 
 	for (k = 0; k < PF_MAX; k++) {
 		const char *s;
@@ -973,9 +1005,11 @@ int edit_text(char *buffer, int buflen) {
 				if (atnull) {
 					/* Make sure we have enough room for a new character */
 					if ((cursor + 1) >= buflen) break;
+					if ((len + 1) >= buflen) break;
 				} else {
 					/* Make sure we have enough room to add a new character */
 					if ((cursor + 1) >= buflen) break;
+					if ((len + 1) >= buflen) break;
 
 					/* Move the rest of the buffer along to make room */
 					memmove(&buffer[cursor + 1], &buffer[cursor], len - cursor);
@@ -1027,7 +1061,7 @@ static enum birth_stage get_history_command(void)
 		switch (edit_text(history, sizeof(history))) {
 			case -1:
 				next = BIRTH_BACK;
-
+				break;
 			case 0:
 				cmdq_push(CMD_HISTORY_CHOICE);
 				cmd_set_arg_string(cmdq_peek(), "history", history);
@@ -1104,7 +1138,7 @@ int textui_do_birth(void)
 	bool done = false;
 
 	cmdq_push(CMD_BIRTH_INIT);
-	cmdq_execute(CMD_BIRTH);
+	cmdq_execute(CTX_BIRTH);
 
 	while (!done) {
 
@@ -1243,7 +1277,7 @@ int textui_do_birth(void)
 		current_stage = next;
 
 		/* Execute whatever commands have been sent */
-		cmdq_execute(CMD_BIRTH);
+		cmdq_execute(CTX_BIRTH);
 	}
 
 	return 0;

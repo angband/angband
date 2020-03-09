@@ -27,6 +27,12 @@ struct loc {
 };
 
 struct loc loc(int x, int y);
+bool loc_eq(struct loc grid1, struct loc grid2);
+bool loc_is_zero(struct loc grid);
+struct loc loc_sum(struct loc grid1, struct loc grid2);
+struct loc loc_diff(struct loc grid1, struct loc grid2);
+struct loc rand_loc(struct loc grid, int x_spread, int y_spread);
+struct loc loc_offset(struct loc grid, int dx, int dy);
 
 
 /**
@@ -49,8 +55,8 @@ struct point_set {
 
 struct point_set *point_set_new(int initial_size);
 void point_set_dispose(struct point_set *ps);
-void add_to_point_set(struct point_set *ps, int y, int x);
+void add_to_point_set(struct point_set *ps, struct loc grid);
 int point_set_size(struct point_set *ps);
-int point_set_contains(struct point_set *ps, int y, int x);
+int point_set_contains(struct point_set *ps, struct loc grid);
 
 #endif /* !INCLUDED_ZTYPE_H */

@@ -32,6 +32,7 @@
 #include "player.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "project.h"
 #include "store.h"
 
@@ -82,6 +83,7 @@ static void init_rune(void)
 		if (prop->subtype == OFT_NONE) continue;
 		if (prop->subtype == OFT_LIGHT) continue;
 		if (prop->subtype == OFT_DIG) continue;
+		if (prop->subtype == OFT_THROW) continue;
 		count++;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
@@ -177,6 +179,7 @@ static void init_rune(void)
 		if (prop->subtype == OFT_NONE) continue;
 		if (prop->subtype == OFT_LIGHT) continue;
 		if (prop->subtype == OFT_DIG) continue;
+		if (prop->subtype == OFT_THROW) continue;
 
 		rune_list[count++] = (struct rune)
 			{ RUNE_VAR_FLAG, i, 0, prop->name };
@@ -827,13 +830,12 @@ void object_set_base_known(struct object *obj)
 void object_sense(struct player *p, struct object *obj)
 {
 	struct object *known_obj = p->cave->objects[obj->oidx];
-	int y = obj->iy;
-	int x = obj->ix;
 	int none = tval_find_idx("none");
 
 	/* Make new sensed objects where necessary */
 	if (known_obj == NULL) {
 		/* Make and list the new object */
+		struct loc grid = obj->grid;
 		struct object *new_obj = object_new();
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
@@ -850,13 +852,10 @@ void object_sense(struct player *p, struct object *obj)
 		}
 
 		/* Attach it to the current floor pile */
-		new_obj->iy = y;
-		new_obj->ix = x;
-		pile_insert_end(&p->cave->squares[y][x].obj, new_obj);
+		new_obj->grid = grid;
+		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
 	}
 }
-
-
 
 /**
  * Gain knowledge based on seeing an object on the floor
@@ -864,15 +863,14 @@ void object_sense(struct player *p, struct object *obj)
 void object_see(struct player *p, struct object *obj)
 {
 	struct object *known_obj = p->cave->objects[obj->oidx];
-	int y = obj->iy;
-	int x = obj->ix;
+	struct loc grid = obj->grid;
 
 	/* Make new known objects, fully know sensed ones, relocate old ones */
 	if (known_obj == NULL) {
 		/* Make and/or list the new object */
 		struct object *new_obj;
 
-		/* Check whether we need to make a new one or list the old one */
+		/* Check whether we need to make a new one */
 		if (obj->known) {
 			new_obj = obj->known;
 		} else {
@@ -880,56 +878,56 @@ void object_see(struct player *p, struct object *obj)
 			obj->known = new_obj;
 			object_set_base_known(obj);
 		}
+
+		/* If monster held, we're done */
+		if (obj->held_m_idx) return;
+
+		/* List the known object */
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 
 		/* Attach it to the current floor pile */
-		new_obj->iy = y;
-		new_obj->ix = x;
+		new_obj->grid = grid;
 		new_obj->number = obj->number;
-		if (!square_holds_object(p->cave, y, x, new_obj)) {
-			pile_insert_end(&p->cave->squares[y][x].obj, new_obj);
+		if (!square_holds_object(p->cave, grid, new_obj)) {
+			pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
 		}
 	} else if (known_obj->kind != obj->kind) {
-		int iy = known_obj->iy;
-		int ix = known_obj->ix;
+		struct loc old = known_obj->grid;
 
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
 
 		/* Detach from any old pile (possibly the correct one) */
-		if (iy && ix && square_holds_object(p->cave, iy, ix, known_obj)) {
-			square_excise_object(p->cave, iy, ix, known_obj);
+		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
+			square_excise_object(p->cave, old, known_obj);
 		}
 
 		/* Copy over actual details */
 		object_set_base_known(obj);
 
 		/* Attach it to the current floor pile */
-		known_obj->iy = y;
-		known_obj->ix = x;
+		known_obj->grid = grid;
 		known_obj->held_m_idx = 0;
-		if (!square_holds_object(p->cave, y, x, known_obj)) {
-			pile_insert_end(&p->cave->squares[y][x].obj, known_obj);
+		if (!square_holds_object(p->cave, grid, known_obj)) {
+			pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, known_obj);
 		}
-	} else if (!square_holds_object(p->cave, y, x, known_obj)) {
-		int iy = known_obj->iy;
-		int ix = known_obj->ix;
+	} else if (!square_holds_object(p->cave, grid, known_obj)) {
+		struct loc old = known_obj->grid;
 
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
 		known_obj->number = obj->number;
 
 		/* Detach from any old pile */
-		if (iy && ix && square_holds_object(p->cave, iy, ix, known_obj)) {
-			square_excise_object(p->cave, iy, ix, known_obj);
+		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
+			square_excise_object(p->cave, old, known_obj);
 		}
 
 		/* Attach it to the current floor pile */
-		known_obj->iy = y;
-		known_obj->ix = x;
+		known_obj->grid = grid;
 		known_obj->held_m_idx = 0;
-		pile_insert_end(&p->cave->squares[y][x].obj, known_obj);
+		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, known_obj);
 	}
 }
 
@@ -948,6 +946,48 @@ void object_touch(struct player *p, struct object *obj)
 	/* Log artifacts if found */
 	if (obj->artifact)
 		history_find_artifact(p, obj->artifact);
+}
+
+
+/**
+ * Gain knowledge based on grabbing an object from a monster
+ */
+void object_grab(struct player *p, struct object *obj)
+{
+	struct object *known_obj = p->cave->objects[obj->oidx];
+
+	/* Make new known objects, fully know sensed ones, relocate old ones */
+	if (known_obj == NULL) {
+		/* Make and/or list the new object */
+		struct object *new_obj;
+
+		/* Check whether we need to make a new one or list the old one */
+		if (obj->known) {
+			new_obj = obj->known;
+		} else {
+			new_obj = object_new();
+			obj->known = new_obj;
+			object_set_base_known(obj);
+		}
+		p->cave->objects[obj->oidx] = new_obj;
+		new_obj->oidx = obj->oidx;
+	} else {
+		struct loc old = known_obj->grid;
+
+		/* Make sure knowledge is correct */
+		assert(known_obj == obj->known);
+
+		/* Detach from any old (incorrect) floor pile */
+		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
+			square_excise_object(p->cave, old, known_obj);
+		}
+
+		/* Copy over actual details */
+		object_set_base_known(obj);
+	}
+
+	/* Touch the object */
+	object_touch(p, obj);
 }
 
 
@@ -1036,8 +1076,9 @@ void player_know_object(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Set curses */
+	/* Set curses - be very careful to keep knowledge aligned */
 	if (obj->curses) {
+		bool known_cursed = false;
 		for (i = 1; i < z_info->curse_max; i++) {
 			if (p->obj_k->curses[i].power && obj->curses[i].power) {
 				if (!obj->known->curses) {
@@ -1045,8 +1086,18 @@ void player_know_object(struct player *p, struct object *obj)
 													sizeof(struct curse_data));
 				}
 				obj->known->curses[i].power = obj->curses[i].power;
+				known_cursed = true;
+			} else if (obj->known->curses) {
+				obj->known->curses[i].power = 0;
 			}
 		}
+		if (!known_cursed) {
+			mem_free(obj->known->curses);
+			obj->known->curses = NULL;
+		}
+	} else if (obj->known->curses) {
+		mem_free(obj->known->curses);
+		obj->known->curses = NULL;
 	}
 
 	/* Set ego type, jewellery type if known */
@@ -1068,7 +1119,7 @@ void player_know_object(struct player *p, struct object *obj)
 		if (object_is_carried(p, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			msg("You have %s (%c).", o_name, gear_to_label(obj));
-		} else if (cave && square_holds_object(cave, p->py, p->px, obj)) {
+		} else if (cave && square_holds_object(cave, p->grid, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			msg("On the ground: %s.", o_name);
 		}
@@ -1311,7 +1362,7 @@ void player_learn_all_runes(struct player *p)
 
 /**
  * ------------------------------------------------------------------------
- * Functions for learning from the behaviour of indvidual objects
+ * Functions for learning from the behaviour of indvidual objects or shapes
  * ------------------------------------------------------------------------ */
 /**
  * Print a message when an object modifier is identified by use.
@@ -1672,12 +1723,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Special case FA, needed for mages wielding gloves */
-	if (player_has(p, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
-		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
-		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
-		of_on(obvious_mask, OF_FREE_ACT);
-
 	/* Learn about obvious, previously unknown flags */
 	object_flags(obj, f);
 	of_inter(f, obvious_mask);
@@ -1710,6 +1755,37 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (p->obj_k->el_info[i].res_level) {
 			(void) object_curses_find_element(p, obj, i);
+		}
+	}
+}
+
+/**
+ * Learn object properties that become obvious on making a shapechange
+ *
+ * \param p is the player
+ * \param name is the name of the assumed shape
+ */
+void shape_learn_on_assume(struct player *p, const char *name)
+{
+	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
+	int i, flag;
+	struct player_shape *shape = lookup_player_shape(name);
+
+	/* Get the shape's obvious flags */
+	create_obj_flag_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
+	of_copy(f, shape->flags);
+	of_inter(f, obvious_mask);
+
+	/* Learn flags */
+	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+		 flag = of_next(f, flag + 1)) {
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+	}
+
+	/* Learn all modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (shape->modifiers[i]) {
+			player_learn_rune(p, rune_index(RUNE_VAR_MOD, i), true);
 		}
 	}
 }
@@ -1816,7 +1892,7 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
  * ------------------------------------------------------------------------
  * Functions for learning about equipment properties
  * These functions are for gaining object knowledge from the behaviour of
- * the player's equipment
+ * the player's equipment or shape
  * ------------------------------------------------------------------------ */
 /**
  * Learn things which happen on defending.
@@ -1839,6 +1915,13 @@ void equip_learn_on_defend(struct player *p)
 			}
 			object_curses_find_to_a(p, obj);
 			if (p->obj_k->to_a) return;
+		}
+	}
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		if (shape->to_a != 0) {
+			int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_A);
+			player_learn_rune(p, index, true);
 		}
 	}
 }
@@ -1869,8 +1952,13 @@ void equip_learn_on_ranged_attack(struct player *p)
 			if (p->obj_k->to_h) return;
 		}
 	}
-
-	return;
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		if (shape->to_h != 0) {
+			int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
+			player_learn_rune(p, index, true);
+		}
+	}
 }
 
 
@@ -1905,8 +1993,17 @@ void equip_learn_on_melee_attack(struct player *p)
 			if (p->obj_k->to_h && p->obj_k->to_d) return;
 		}
 	}
-
-	return;
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		if (shape->to_h != 0) {
+			int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
+			player_learn_rune(p, index, true);
+		}
+		if (shape->to_d != 0) {
+			int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
+			player_learn_rune(p, index, true);
+		}
+	}
 }
 
 
@@ -1948,6 +2045,13 @@ void equip_learn_flag(struct player *p, int flag)
 
 		/* Flag may be on a curse */
 		object_curses_find_flags(p, obj, f);
+	}
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		if (of_has(shape->flags, flag) && !of_has(p->obj_k->flags, flag)) {
+			msg("You understand your %s shape better.", p->shape->name);
+			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+		}
 	}
 }
 
@@ -1991,6 +2095,14 @@ void equip_learn_element(struct player *p, int element)
 		/* Element may be on a curse */
 		object_curses_find_element(p, obj, element);
 	}
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		if (shape->el_info[element].res_level &&
+			!p->obj_k->el_info[element].res_level) {
+			msg("You understand your %s shape better.", p->shape->name);
+			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
+		}
+	}
 }
 
 /**
@@ -2002,6 +2114,7 @@ void equip_learn_after_time(struct player *p)
 {
 	int i, flag;
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
+	bool messaged = false;
 
 	/* Get the timed flags */
 	create_obj_flag_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
@@ -2041,6 +2154,19 @@ void equip_learn_after_time(struct player *p)
 			/* Objects not fully known yet get marked as having had a chance
 			 * to display all the timed flags */
 			of_union(obj->known->flags, timed_mask);
+		}
+	}
+	if (p->shape) {
+		struct player_shape *shape = lookup_player_shape(p->shape->name);
+		for (flag = of_next(timed_mask, FLAG_START); flag != FLAG_END;
+			 flag = of_next(timed_mask, flag + 1)) {
+			if (of_has(shape->flags, flag) && !of_has(p->obj_k->flags, flag)) {
+				if (!messaged) {
+					msg("You understand your %s shape better.", p->shape->name);
+					messaged = true;
+				}
+				player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+			}
 		}
 	}
 }
@@ -2127,15 +2253,16 @@ void object_flavor_aware(struct object *obj)
 		for (x = 1; x < cave->width; x++) {
 			bool light = false;
 			const struct object *floor_obj;
+			struct loc grid = loc(x, y);
 
-			for (floor_obj = square_object(cave, y, x); floor_obj;
+			for (floor_obj = square_object(cave, grid); floor_obj;
 				 floor_obj = floor_obj->next)
 				if (floor_obj->kind == obj->kind) {
 					light = true;
 					break;
 				}
 
-			if (light) square_light_spot(cave, y, x);
+			if (light) square_light_spot(cave, grid);
 		}
 	}
 }

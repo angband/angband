@@ -168,12 +168,12 @@ void unlock_chest(struct object *obj)
  * Determine if a grid contains a chest matching the query type, and
  * return a pointer to the first such chest
  */
-struct object *chest_check(int y, int x, enum chest_query check_type)
+struct object *chest_check(struct loc grid, enum chest_query check_type)
 {
 	struct object *obj;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(cave, grid); obj; obj = obj->next) {
 		/* Ignore if requested */
 		if (ignore_item_ok(obj)) continue;
 
@@ -203,7 +203,7 @@ struct object *chest_check(int y, int x, enum chest_query check_type)
  * Return the number of grids holding a chests around (or under) the character.
  * If requested, count only trapped chests.
  */
-int count_chests(int *y, int *x, enum chest_query check_type)
+int count_chests(struct loc *grid, enum chest_query check_type)
 {
 	int d, count;
 
@@ -213,18 +213,16 @@ int count_chests(int *y, int *x, enum chest_query check_type)
 	/* Check around (and under) the character */
 	for (d = 0; d < 9; d++) {
 		/* Extract adjacent (legal) location */
-		int yy = player->py + ddy_ddd[d];
-		int xx = player->px + ddx_ddd[d];
+		struct loc grid1 = loc_sum(player->grid, ddgrid_ddd[d]);
 
 		/* No (visible) chest is there */
-		if (!chest_check(yy, xx, check_type)) continue;
+		if (!chest_check(grid1, check_type)) continue;
 
 		/* Count it */
 		++count;
 
 		/* Remember the location of the last chest found */
-		*y = yy;
-		*x = xx;
+		*grid = grid1;
 	}
 
 	/* All done */
@@ -244,7 +242,7 @@ int count_chests(int *y, int *x, enum chest_query check_type)
  *
  * Judgment of size and construction of chests is currently made from the name.
  */
-static void chest_death(int y, int x, struct object *chest)
+static void chest_death(struct loc grid, struct object *chest)
 {
 	int number, level;
 	bool large = strstr(chest->kind->name, "Large") ? true : false;;
@@ -278,7 +276,7 @@ static void chest_death(int y, int x, struct object *chest)
 
 		treasure->origin = ORIGIN_CHEST;
 		treasure->origin_depth = chest->origin_depth;
-		drop_near(cave, &treasure, 0, y, x, true);
+		drop_near(cave, &treasure, 0, grid, true);
 		number--;
 	}
 
@@ -294,7 +292,7 @@ static void chest_death(int y, int x, struct object *chest)
  * Exploding chest destroys contents (and traps).
  * Note that the chest itself is never destroyed.
  */
-static void chest_trap(int y, int x, struct object *obj)
+static void chest_trap(struct object *obj)
 {
 	int trap;
 
@@ -308,32 +306,32 @@ static void chest_trap(int y, int x, struct object *obj)
 	if (trap & (CHEST_LOSE_STR)) {
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_STR, 0, 0, NULL);
+		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_STR, 0, 0, 0, 0, NULL);
 	}
 
 	/* Lose constitution */
 	if (trap & (CHEST_LOSE_CON)) {
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_CON, 0, 0, NULL);
+		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_CON, 0, 0, 0, 0, NULL);
 	}
 
 	/* Poison */
 	if (trap & (CHEST_POISON)) {
 		msg("A puff of green gas surrounds you!");
-		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_POISONED, 0, 0, NULL);
+		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_POISONED, 0, 0, 0, 0, NULL);
 	}
 
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE)) {
 		msg("A puff of yellow gas surrounds you!");
-		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_PARALYZED, 0, 0, NULL);
+		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_PARALYZED, 0, 0, 0, 0, NULL);
 	}
 
 	/* Summon monsters */
 	if (trap & (CHEST_SUMMON)) {
 		msg("You are enveloped in a cloud of smoke!");
-		effect_simple(EF_SUMMON, source_object(obj), "2+1d3", 0, 0, 0, NULL);
+		effect_simple(EF_SUMMON, source_object(obj), "2+1d3", 0, 0, 0, 0, 0, NULL);
 	}
 
 	/* Explode */
@@ -353,7 +351,7 @@ static void chest_trap(int y, int x, struct object *obj)
  *
  * Returns true if repeated commands may continue
  */
-bool do_cmd_open_chest(int y, int x, struct object *obj)
+bool do_cmd_open_chest(struct loc grid, struct object *obj)
 {
 	int i, j;
 
@@ -395,12 +393,12 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 	/* Allowed to open */
 	if (flag) {
 		/* Apply chest traps, if any and player is not trapsafe */
-		if (!player->timed[TMD_TRAPSAFE]) {
-			chest_trap(y, x, obj);
+		if (!player_is_trapsafe(player)) {
+			chest_trap(obj);
 		}
 
 		/* Let the Chest drop items */
-		chest_death(y, x, obj);
+		chest_death(grid, obj);
 
 		/* Ignore chest if autoignore calls for it */
 		player->upkeep->notice |= PN_IGNORE;
@@ -413,7 +411,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		obj->known->notice |= OBJ_NOTICE_IGNORE;
 
 	/* Redraw chest, to be on the safe side (it may have been ignored) */
-	square_light_spot(cave, y, x);
+	square_light_spot(cave, grid);
 
 	/* Result */
 	return (more);
@@ -427,7 +425,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
  *
  * Returns true if repeated commands may continue
  */
-bool do_cmd_disarm_chest(int y, int x, struct object *obj)
+bool do_cmd_disarm_chest(struct object *obj)
 {
 	int i, j;
 
@@ -468,7 +466,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	} else {
 		/* Failure -- Set off the trap */
 		msg("You set off a trap!");
-		chest_trap(y, x, obj);
+		chest_trap(obj);
 	}
 
 	/* Result */

@@ -98,7 +98,7 @@ bool slot_type_is(int slot, int type)
 struct object *slot_object(struct player *p, int slot)
 {
 	/* Ensure a valid body */
-	if (p->body.slots) {
+	if (p->body.slots && p->body.slots[slot].obj) {
 		return p->body.slots[slot].obj;
 	}
 
@@ -612,7 +612,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 		struct object *combine_item = NULL;
 
 		struct object *gear_obj = p->gear;
-		while (combine_item == false && gear_obj) {
+		while ((combine_item == NULL) && (gear_obj != NULL)) {
 			if (!object_is_equipped(p->body, gear_obj) &&
 					object_similar(gear_obj, obj, OSTACK_PACK)) {
 				combine_item = gear_obj;
@@ -630,6 +630,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 			obj->known = NULL;
 			object_absorb(combine_item, obj);
 
+			/* Ensure numbers are aligned (should not be necessary, but safe) */
+			combine_item->known->number = combine_item->number;
+
 			obj = combine_item;
 			combining = true;
 		}
@@ -645,8 +648,8 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		/* Remove cave object details */
 		obj->held_m_idx = 0;
-		obj->iy = obj->ix = 0;
-		obj->known->iy = obj->known->ix = 0;
+		obj->grid = loc(0, 0);
+		obj->known->grid = loc(0, 0);
 
 		/* Update the inventory */
 		p->upkeep->total_weight += (obj->number * obj->weight);
@@ -820,8 +823,6 @@ void inven_takeoff(struct object *obj)
  */
 void inven_drop(struct object *obj, int amt)
 {
-	int py = player->py;
-	int px = player->px;
 	struct object *dropped;
 	bool none_left = false;
 	bool quiver = false;
@@ -880,7 +881,7 @@ void inven_drop(struct object *obj, int amt)
 	}
 
 	/* Drop it near the player */
-	drop_near(cave, &dropped, 0, py, px, false);
+	drop_near(cave, &dropped, 0, player->grid, false);
 
 	/* Sound for quiver objects */
 	if (quiver)
@@ -935,12 +936,21 @@ void combine_pack(void)
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
 				object_absorb(obj2, obj1);
+
+				/* Ensure numbers align (should not be necessary, but safer) */
+				obj2->known->number = obj2->number;
+
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
 				/* Setting this to true spams the combine message. */
 				display_message = false;
 				object_absorb_partial(obj2->known, obj1->known);
 				object_absorb_partial(obj2, obj1);
+
+				/* Ensure numbers align (should not be necessary, but safer) */
+				obj2->known->number = obj2->number;
+				obj1->known->number = obj1->number;
+
 				break;
 			}
 		}
@@ -1020,7 +1030,7 @@ void pack_overflow(struct object *obj)
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
-	drop_near(cave, &obj, 0, player->py, player->px, false);
+	drop_near(cave, &obj, 0, player->grid, false);
 
 	/* Describe */
 	if (artifact)

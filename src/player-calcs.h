@@ -73,6 +73,7 @@
 #define PR_MONLIST		0x00400000L /* Display monster list */
 #define PR_ITEMLIST		0x00800000L /* Display item list */
 #define PR_FEELING		0x01000000L /* Display level feeling */
+#define PR_LIGHT		0x02000000L /* Display light level */
 
 /**
  * Display Basic Info
@@ -95,6 +96,8 @@
 	(PR_MONSTER | PR_OBJECT | PR_MONLIST | PR_ITEMLIST)
 
 
+extern const int adj_dex_th[STAT_RANGE];
+extern const int adj_str_td[STAT_RANGE];
 extern const int adj_str_blow[STAT_RANGE];
 extern const int adj_dex_safe[STAT_RANGE];
 extern const int adj_con_fix[STAT_RANGE];

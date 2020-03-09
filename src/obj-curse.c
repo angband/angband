@@ -157,7 +157,7 @@ bool append_object_curse(struct object *obj, int pick, int power)
 
 	/* Reject curses with effects foiled by an existing object property */
 	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
-		int idx = c->obj->effect->params[0];
+		int idx = c->obj->effect->subtype;
 		struct timed_effect_data *status;
 		assert(idx < TMD_MAX);
 		status = &timed_effects[idx];
@@ -229,7 +229,7 @@ bool artifact_curse_conflicts(struct artifact *art, int pick)
 
 	/* Reject curses with effects foiled by an existing artifact property */
 	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
-		int idx = c->obj->effect->params[0];
+		int idx = c->obj->effect->subtype;
 		struct timed_effect_data *status;
 		assert(idx < TMD_MAX);
 		status = &timed_effects[idx];

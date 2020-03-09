@@ -88,6 +88,7 @@ static game_event_type statusline_events[] =
 	EVENT_DETECTIONSTATUS,
 	EVENT_STATE,
 	EVENT_FEELING,
+	EVENT_LIGHT,
 };
 
 /**
@@ -169,19 +170,25 @@ static void prt_stat(int stat, int row, int col)
 
 
 /**
- * Prints "title", including "wizard" or "winner" as needed.
+ * Prints title, including wizard, winner or shape as needed.
  */
 static void prt_title(int row, int col)
 {
 	const char *p;
 
 	/* Wizard, winner or neither */
-	if (player->wizard)
+	if (player->wizard) {
 		p = "[=-WIZARD-=]";
-	else if (player->total_winner || (player->lev > PY_MAX_LEVEL))
+	} else if (player->total_winner || (player->lev > PY_MAX_LEVEL)) {
 		p = "***WINNER***";
-	else
+	} else if (player_is_shapechanged(player)) {
+		char buf[20];
+		my_strcpy(buf, player->shape->name, sizeof(buf));
+		my_strcap(buf);
+		p = buf;
+	} else {
 		p = player->class->title[(player->lev - 1) / 5];
+	}
 
 	prt_field(p, row, col);
 }
@@ -379,6 +386,12 @@ byte monster_health_attr(void)
 		/* Afraid */
 		if (mon->m_timed[MON_TMD_FEAR]) attr = COLOUR_VIOLET;
 
+		/* Disenchanted */
+		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_UMBER;
+
+		/* Commanded */
+		if (mon->m_timed[MON_TMD_COMMAND]) attr = COLOUR_L_PURPLE;
+
 		/* Confused */
 		if (mon->m_timed[MON_TMD_CONF]) attr = COLOUR_UMBER;
 
@@ -502,8 +515,20 @@ static void prt_dex(int row, int col) { prt_stat(STAT_DEX, row, col); }
 static void prt_wis(int row, int col) { prt_stat(STAT_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(STAT_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(STAT_CON, row, col); }
-static void prt_race(int row, int col) { prt_field(player->race->name, row, col); }
-static void prt_class(int row, int col) { prt_field(player->class->name, row, col); }
+static void prt_race(int row, int col) {
+	if (player_is_shapechanged(player)) {
+		prt_field("", row, col);
+	} else {
+		prt_field(player->race->name, row, col);
+	}
+}
+static void prt_class(int row, int col) {
+	if (player_is_shapechanged(player)) {
+		prt_field("", row, col);
+	} else {
+		prt_field(player->class->name, row, col);
+	}
+}
 
 
 /**
@@ -597,7 +622,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data,
 							 void *user)
 {
 	if ((OPT(player, hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
-		square_light_spot(cave, player->py, player->px);
+		square_light_spot(cave, player->grid);
 }
 
 
@@ -606,11 +631,6 @@ static void hp_colour_change(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------
  * Status line display functions
  * ------------------------------------------------------------------------ */
-
-/**
- * Simple macro to initialise structs
- */
-#define S(s)		s, sizeof(s)
 
 /**
  * Struct to describe different timed effects
@@ -622,99 +642,6 @@ struct state_info
 	size_t len;
 	byte attr;
 };
-
-/**
- * TMD_CUT descriptions
- */
-static const struct state_info cut_data[] =
-{
-	{ 1000, S("Mortal wound"), COLOUR_L_RED },
-	{  200, S("Deep gash"),    COLOUR_RED },
-	{  100, S("Severe cut"),   COLOUR_RED },
-	{   50, S("Nasty cut"),    COLOUR_ORANGE },
-	{   25, S("Bad cut"),      COLOUR_ORANGE },
-	{   10, S("Light cut"),    COLOUR_YELLOW },
-	{    0, S("Graze"),        COLOUR_YELLOW },
-};
-
-/**
- * TMD_STUN descriptions
- */
-static const struct state_info stun_data[] =
-{
-	{   100, S("Knocked out"), COLOUR_RED },
-	{    50, S("Heavy stun"),  COLOUR_ORANGE },
-	{     0, S("Stun"),        COLOUR_ORANGE },
-};
-
-/**
- * player->hunger descriptions
- */
-static const struct state_info hunger_data[] =
-{
-	{ PY_FOOD_FAINT, S("Faint"),    COLOUR_RED },
-	{ PY_FOOD_WEAK,  S("Weak"),     COLOUR_ORANGE },
-	{ PY_FOOD_ALERT, S("Hungry"),   COLOUR_YELLOW },
-	{ PY_FOOD_FULL,  S(""),         COLOUR_L_GREEN },
-	{ PY_FOOD_MAX,   S("Full"),     COLOUR_L_GREEN },
-};
-
-/**
- * For the various TMD_* effects
- */
-static const struct state_info effects[] =
-{
-	{ TMD_BLIND,     S("Blind"),      COLOUR_ORANGE },
-	{ TMD_PARALYZED, S("Paralyzed!"), COLOUR_RED },
-	{ TMD_CONFUSED,  S("Confused"),   COLOUR_ORANGE },
-	{ TMD_AFRAID,    S("Afraid"),     COLOUR_ORANGE },
-	{ TMD_TERROR,    S("Terror"),     COLOUR_RED },
-	{ TMD_IMAGE,     S("Halluc"),     COLOUR_ORANGE },
-	{ TMD_POISONED,  S("Poisoned"),   COLOUR_ORANGE },
-	{ TMD_PROTEVIL,  S("ProtEvil"),   COLOUR_L_GREEN },
-	{ TMD_SPRINT,    S("Sprint"),     COLOUR_L_GREEN },
-	{ TMD_TRAPSAFE,  S("TrapSafe"),   COLOUR_L_GREEN },
-	{ TMD_TELEPATHY, S("ESP"),        COLOUR_L_BLUE },
-	{ TMD_INVULN,    S("Invuln"),     COLOUR_L_GREEN },
-	{ TMD_HERO,      S("Hero"),       COLOUR_L_GREEN },
-	{ TMD_SHERO,     S("Berserk"),    COLOUR_L_GREEN },
-	{ TMD_BOLD,      S("Bold"),       COLOUR_L_GREEN },
-	{ TMD_STONESKIN, S("Stone"),      COLOUR_L_GREEN },
-	{ TMD_SHIELD,    S("Shield"),     COLOUR_L_GREEN },
-	{ TMD_BLESSED,   S("Blssd"),      COLOUR_L_GREEN },
-	{ TMD_SINVIS,    S("SInvis"),     COLOUR_L_GREEN },
-	{ TMD_SINFRA,    S("Infra"),      COLOUR_L_GREEN },
-	{ TMD_OPP_ACID,  S("RAcid"),      COLOUR_SLATE },
-	{ TMD_OPP_ELEC,  S("RElec"),      COLOUR_BLUE },
-	{ TMD_OPP_FIRE,  S("RFire"),      COLOUR_RED },
-	{ TMD_OPP_COLD,  S("RCold"),      COLOUR_WHITE },
-	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
-	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
-	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
-	{ TMD_SCRAMBLE,   S("Scrambled"),   COLOUR_VIOLET },
-};
-
-#define PRINT_STATE(sym, data, index, row, col) \
-{ \
-	size_t i; \
-	\
-	for (i = 0; i < N_ELEMENTS(data); i++) \
-	{ \
-		if (index sym data[i].value) \
-		{ \
-			if (data[i].str[0]) \
-			{ \
-				c_put_str(data[i].attr, data[i].str, row, col); \
-				return data[i].len; \
-			} \
-			else \
-			{ \
-				return 0; \
-			} \
-		} \
-	} \
-}
-
 
 /**
  * Print recall status.
@@ -742,37 +669,6 @@ static size_t prt_descent(int row, int col)
 
 	return 0;
 }
-
-
-/**
- * Print cut indicator.
- */
-static size_t prt_cut(int row, int col)
-{
-	PRINT_STATE(>, cut_data, player->timed[TMD_CUT], row, col);
-	return 0;
-}
-
-
-/**
- * Print stun indicator.
- */
-static size_t prt_stun(int row, int col)
-{
-	PRINT_STATE(>, stun_data, player->timed[TMD_STUN], row, col);
-	return 0;
-}
-
-
-/**
- * Prints status of hunger
- */
-static size_t prt_hunger(int row, int col)
-{
-	PRINT_STATE(<=, hunger_data, player->food, row, col);
-	return 0;
-}
-
 
 
 /**
@@ -952,14 +848,30 @@ static size_t prt_level_feeling(int row, int col)
 }
 
 /**
+ * Prints player grid light level
+ */
+static size_t prt_light(int row, int col)
+{
+	int light = square_light(cave, player->grid);
+
+	if (light > 0) {
+		c_put_str(COLOUR_YELLOW, format("Light %d ", light), row, col);
+	} else {
+		c_put_str(COLOUR_PURPLE, format("Light %d ", light), row, col);
+	}
+
+	return 8 + (ABS(light) > 9 ? 1 : 0) + (light < 0 ? 1 : 0);
+}
+
+/**
  * Prints trap detection status
  */
 static size_t prt_dtrap(int row, int col)
 {
 	/* The player is in a trap-detected grid */
-	if (square_isdtrap(cave, player->py, player->px)) {
+	if (square_isdtrap(cave, player->grid)) {
 		/* The player is on the border */
-		if (square_dtrap_edge(cave, player->py, player->px))
+		if (square_dtrap_edge(cave, player->grid))
 			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
@@ -1002,11 +914,24 @@ static size_t prt_tmd(int row, int col)
 {
 	size_t i, len = 0;
 
-	for (i = 0; i < N_ELEMENTS(effects); i++)
-		if (player->timed[effects[i].value]) {
-			c_put_str(effects[i].attr, effects[i].str, row, col + len);
-			len += effects[i].len;
+	for (i = 0; i < TMD_MAX; i++) {
+		if (player->timed[i]) {
+			struct timed_grade *grade = timed_effects[i].grade;
+			while (player->timed[i] > grade->max) {
+				grade = grade->next;
+			}
+			if (!grade->name) continue;
+			c_put_str(grade->color, grade->name, row, col + len);
+			len += strlen(grade->name) + 1;
+
+			/* Food meter */
+			if (i == TMD_FOOD) {
+				char *meter = format("%d %%", player->timed[i] / 100);
+				c_put_str(grade->color, meter, row, col + len);
+				len += strlen(meter) + 1;
+			}
 		}
+	}
 
 	return len;
 }
@@ -1031,8 +956,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state, prt_cut, 
-  prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_light, prt_unignore, prt_recall, prt_descent,
+  prt_state, prt_study, prt_tmd, prt_dtrap };
 
 
 /**
@@ -1096,40 +1021,24 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		if (t == angband_term[0]) {
 			/* Verify location */
 			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
-
-			/* Verify location */
 			if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 			/* Location in window */
-			vy = ky + ROW_MAP;
-			vx = kx + COL_MAP;
-
-			if (tile_width > 1)
-				vx += (tile_width - 1) * kx;
-
-			if (tile_height > 1)
-				vy += (tile_height - 1) * ky;
-
+			vy = tile_height * ky + ROW_MAP;
+			vx = tile_width * kx + COL_MAP;
 		} else {
-			if (tile_width > 1)
-			        kx += (tile_width - 1) * kx;
-
-			if (tile_height > 1)
-			        ky += (tile_height - 1) * ky;
-
-			
 			/* Verify location */
-			if ((ky < 0) || (ky >= t->hgt)) return;
-			if ((kx < 0) || (kx >= t->wid)) return;
+			if ((ky < 0) || (ky >= t->hgt / tile_height)) return;
+			if ((kx < 0) || (kx >= t->wid / tile_width)) return;
 
 			/* Location in window */
-			vy = ky;
-			vx = kx;
+			vy = tile_height * ky;
+			vx = tile_width * kx;
 		}
 
 
 		/* Redraw the grid spot */
-		map_info(data->point.y, data->point.x, &g);
+		map_info(data->point, &g);
 		grid_data_as_text(&g, &a, &c, &ta, &tc);
 		Term_queue_char(t, vx, vy, a, c, ta, tc);
 #ifdef MAP_DEBUG
@@ -1143,10 +1052,12 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* Refresh the main screen unless the map needs to center */
 	if (player->upkeep->update & (PU_PANEL) && OPT(player, center_player)) {
-		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
-		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
+		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 :
+			t->hgt / (tile_height * 2);
+		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 :
+			t->wid / (tile_width * 2);
 
-		if (panel_should_modify(t, player->py - hgt, player->px - wid))
+		if (panel_should_modify(t, player->grid.y - hgt, player->grid.x - wid))
 			return;
 	}
 
@@ -1702,18 +1613,18 @@ static void update_minimap_subwindow(game_event_type type,
 	if (type == EVENT_END) {
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];
-		
+
 		/* Activate */
 		Term_activate(t);
 
 		/* If whole-map redraw, clear window first. */
-		if (flags->needs_redraw)
+		if (flags->needs_redraw	|| tile_width > 1 || tile_height > 1)
 			Term_clear();
 
 		/* Redraw map */
 		display_map(NULL, NULL);
 		Term_fresh();
-		
+
 		/* Restore */
 		Term_activate(old);
 
@@ -2181,9 +2092,9 @@ static void refresh(game_event_type type, game_event_data *data, void *user)
 {
 	/* Place cursor on player/target */
 	if (OPT(player, show_target) && target_sighted()) {
-		int col, row;
-		target_get(&col, &row);
-		move_cursor_relative(row, col);
+		struct loc target;
+		target_get(&target);
+		move_cursor_relative(target.y, target.x);
 	}
 
 	Term_fresh();

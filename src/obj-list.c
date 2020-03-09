@@ -155,8 +155,7 @@ static bool object_list_should_ignore_object(const struct object *obj)
 void object_list_collect(object_list_t *list)
 {
 	int i;
-	int py = player->py;
-	int px = player->px;
+	struct loc pgrid = player->grid;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -170,22 +169,22 @@ void object_list_collect(object_list_t *list)
 		int entry_index;
 		int current_distance;
 		int entry_distance;
-		int y, x, field;
+		struct loc grid;
+		int field;
 		bool los = false;
 		struct object *obj = player->cave->objects[i];
 
 		/* Skip unfilled entries, unknown objects and monster-held objects */
 		if (!obj) continue;
-		if ((obj->iy == 0) && (obj->ix == 0)) {
+		if (loc_is_zero(obj->grid)) {
 			continue;
 		} else {
-			y = obj->iy;
-			x = obj->ix;
+			grid = obj->grid;
 		}
 
 		/* Determine which section of the list the object entry is in */
-		los = projectable(cave, py, px, y, x, PROJECT_NONE) ||
-			((y == py) && (x == px));
+		los = projectable(cave, pgrid, grid, PROJECT_NONE) ||
+			loc_eq(grid, pgrid);
 		field = (los) ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
 		if (object_list_should_ignore_object(obj)) continue;
@@ -201,8 +200,8 @@ void object_list_collect(object_list_t *list)
 				list->entries[entry_index].object = obj;
 				for (j = 0; j < OBJECT_LIST_SECTION_MAX; j++)
 					list->entries[entry_index].count[j] = 0;
-				list->entries[entry_index].dy = y - player->py;
-				list->entries[entry_index].dx = x - player->px;
+				list->entries[entry_index].dy = grid.y - pgrid.y;
+				list->entries[entry_index].dx = grid.x - pgrid.x;
 				entry = &list->entries[entry_index];
 				break;
 			}
@@ -219,13 +218,13 @@ void object_list_collect(object_list_t *list)
 
 		/* Store the distance to the object in the stack that is
 		 * closest to the player. */
-		current_distance = (y - player->py) * (y - player->py) +
-			(x - player->px) * (x - player->px);
+		current_distance = (grid.y - pgrid.y) * (grid.y - pgrid.y) +
+			(grid.x - pgrid.x) * (grid.x - pgrid.x);
 		entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
 
 		if (current_distance < entry_distance) {
-			entry->dy = y - player->py;
-			entry->dx = x - player->px;
+			entry->dy = grid.y - pgrid.y;
+			entry->dx = grid.x - pgrid.x;
 		}
 	}
 
@@ -371,19 +370,16 @@ void object_list_format_name(const object_list_entry_t *entry,
 	bool los = false;
 	int field;
 	byte old_number;
-	int py = player->py;
-	int px = player->px;
+	struct loc pgrid = player->grid;
 	struct object *base_obj;
-	int iy;
-	int ix;
+	struct loc grid;
 	bool object_is_recognized_artifact;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return;
 
 	base_obj = cave->objects[entry->object->oidx];
-	iy = entry->object->iy;
-	ix = entry->object->ix;
+	grid = entry->object->grid;
 	object_is_recognized_artifact = object_is_known_artifact(base_obj);
 
 	/* Hack - these don't have a prefix when there is only one, so just pad
@@ -413,8 +409,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
-	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 
-		((iy == py) && (ix == px));
+	los = projectable(cave, pgrid, grid, PROJECT_NONE) || loc_eq(grid, pgrid);
 	field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
 	/*

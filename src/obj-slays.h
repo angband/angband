@@ -31,6 +31,8 @@ bool append_random_brand(bool **current, struct brand **brand);
 bool append_random_slay(bool **current, struct slay **slay);
 int brand_count(bool *brands);
 int slay_count(bool *slays);
+bool player_has_temporary_brand(int idx);
+bool player_has_temporary_slay(int idx);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
 							 int *brand_used, int *slay_used, char *verb,
 							 bool range);

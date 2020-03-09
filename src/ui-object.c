@@ -175,10 +175,17 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	}
 
 	/* Item kind determines the color of the output */
-	if (obj)
+	if (obj) {
 		attr = obj->kind->base->attr;
-	else
+
+		/* Unreadable books are a special case */
+		if (tval_is_book_k(obj->kind) &&
+			(player_object_to_book(player, obj) == NULL)) {
+			attr = COLOUR_SLATE;
+		}
+	} else {
 		attr = COLOUR_SLATE;
+	}
 
 	/* Object name */
 	c_put_str(attr, items[obj_num].o_name, row + obj_num,
@@ -192,7 +199,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 
 	/* Price */
 	if (mode & OLIST_PRICE) {
-		struct store *store = store_at(cave, player->py, player->px);
+		struct store *store = store_at(cave, player->grid);
 		if (store) {
 			int price = price_item(store, obj, true, obj->number);
 
@@ -207,6 +214,17 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 		int fail = (9 + get_use_device_chance(obj)) / 10;
 		if (object_effect_is_known(obj))
 			strnfmt(buf, sizeof(buf), "%4d%% fail", fail);
+		else
+			my_strcpy(buf, "    ? fail", sizeof(buf));
+		put_str(buf, row + obj_num, col + ex_offset_ctr);
+		ex_offset_ctr += 10;
+	}
+
+	/* Failure chances for recharging an item; see effect_handler_RECHARGE */
+	if (mode & OLIST_RECHARGE) {
+		int fail = 1000 / recharge_failure_chance(obj, player->upkeep->recharge_pow);
+		if (object_effect_is_known(obj))
+			strnfmt(buf, sizeof(buf), "%2d.%1d%% fail", fail / 10, fail % 10);
 		else
 			my_strcpy(buf, "    ? fail", sizeof(buf));
 		put_str(buf, row + obj_num, col + ex_offset_ctr);
@@ -1204,6 +1222,9 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	if (mode & SHOW_QUIVER)
 		olist_mode |= OLIST_QUIVER;
 
+	if (mode & SHOW_RECHARGE)
+		olist_mode |= OLIST_RECHARGE;
+
 	/* Paranoia XXX XXX XXX */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
@@ -1389,7 +1410,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			newmenu = false;
 
 			/* Get an item choice */
-			*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
+			*choice = item_menu(cmd, MAX(pmt ? strlen(pmt) : 0, 15), mode);
 
 			/* Fix the screen */
 			screen_load();

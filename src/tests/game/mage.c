@@ -62,14 +62,14 @@ int test_magic_missile(void *state) {
 	cmd_set_arg_string(cmdq_peek(), "name", "Tyrion");
 
 	cmdq_push(CMD_ACCEPT_CHARACTER);
-	cmdq_execute(CMD_BIRTH);
+	cmdq_execute(CTX_BIRTH);
 
 	eq(player->is_dead, false);
 	prepare_next_level(&cave, player);
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	cmdq_push(CMD_STUDY);
 	cmd_set_arg_choice(cmdq_peek(), "spell", 0);

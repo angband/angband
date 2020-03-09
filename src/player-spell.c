@@ -31,6 +31,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "target.h"
 
 /**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
@@ -151,17 +152,86 @@ void player_spells_free(struct player *p)
 }
 
 /**
+ * Make a list of the spell realms the player's class has books from
+ */
+struct magic_realm *class_magic_realms(const struct player_class *c, int *count)
+{
+	int i;
+	struct magic_realm *r = mem_zalloc(sizeof(struct magic_realm));
+
+	*count = 0;
+
+	if (!c->magic.total_spells) {
+		mem_free(r);
+		return NULL;
+	}
+
+	for (i = 0; i < c->magic.num_books; i++) {
+		struct magic_realm *r_test = r;
+		struct class_book *book = &c->magic.books[i];
+		bool found = false;
+
+		/* Test for first realm */
+		if (r->name == NULL) {
+			memcpy(r, book->realm, sizeof(struct magic_realm));
+			r->next = NULL;
+			(*count)++;
+			continue;
+		}
+
+		/* Test for already recorded */
+		while (r_test) {
+			if (streq(r_test->name, book->realm->name)) {
+				found = true;
+			}
+			r_test = r_test->next;
+		}
+		if (found) continue;
+
+		/* Add it */
+		r_test = mem_zalloc(sizeof(struct magic_realm));
+		r_test->next = r;
+		r = r_test;
+		(*count)++;
+	}
+
+	return r;
+}
+
+
+/**
+ * Get the spellbook structure from any object which is a book
+ */
+const struct class_book *object_kind_to_book(const struct object_kind *kind)
+{
+	struct player_class *class = classes;
+	while (class) {
+		int i;
+
+		for (i = 0; i < class->magic.num_books; i++)
+		if ((kind->tval == class->magic.books[i].tval) &&
+			(kind->sval == class->magic.books[i].sval)) {
+			return &class->magic.books[i];
+		}
+		class = class->next;
+	}
+
+	return NULL;
+}
+
+/**
  * Get the spellbook structure from an object which is a book the player can
  * cast from
  */
-const struct class_book *object_to_book(const struct object *obj)
+const struct class_book *player_object_to_book(struct player *p,
+											   const struct object *obj)
 {
 	int i;
 
-	for (i = 0; i < player->class->magic.num_books; i++)
-		if ((obj->tval == player->class->magic.books[i].tval) &&
-			(obj->sval == player->class->magic.books[i].sval))
-			return &player->class->magic.books[i];
+	for (i = 0; i < p->class->magic.num_books; i++)
+		if ((obj->tval == p->class->magic.books[i].tval) &&
+			(obj->sval == p->class->magic.books[i].sval))
+			return &p->class->magic.books[i];
 
 	return NULL;
 }
@@ -189,7 +259,7 @@ const struct class_spell *spell_by_index(int index)
  */
 int spell_collect_from_book(const struct object *obj, int **spells)
 {
-	const struct class_book *book = object_to_book(obj);
+	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
 
 	/* Count the spells */
@@ -213,7 +283,7 @@ int spell_collect_from_book(const struct object *obj, int **spells)
 int spell_book_count_spells(const struct object *obj,
 		bool (*tester)(int spell))
 {
-	const struct class_book *book = object_to_book(obj);
+	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
 
 	for (i = 0; i < book->num_spells; i++)
@@ -269,22 +339,20 @@ bool spell_okay_to_browse(int spell_index)
 
 /**
  * Spell failure adjustment by casting stat level
- * (or whatever realm whatever - NRM)
  */
-int fail_adjust(struct player *p)
+static int fail_adjust(struct player *p, const struct class_spell *spell)
 {
-	int stat = player->class->magic.spell_realm->stat;
-	return adj_mag_stat[player->state.stat_ind[stat]];
+	int stat = spell->realm->stat;
+	return adj_mag_stat[p->state.stat_ind[stat]];
 }
 
 /**
- * Spell minimum failure casting stat level
- * (or whatever realm whatever - NRM)
+ * Spell minimum failure by casting stat level
  */
-int min_fail(struct player *p)
+static int min_fail(struct player *p, const struct class_spell *spell)
 {
-	int stat = player->class->magic.spell_realm->stat;
-	return adj_mag_fail[player->state.stat_ind[stat]];
+	int stat = spell->realm->stat;
+	return adj_mag_fail[p->state.stat_ind[stat]];
 }
 
 /**
@@ -297,7 +365,7 @@ s16b spell_chance(int spell_index)
 	const struct class_spell *spell;
 
 	/* Paranoia -- must be literate */
-	if (!player->class->magic.spell_realm) return (100);
+	if (!player->class->magic.total_spells) return (100);
 
 	/* Get the spell */
 	spell = spell_by_index(spell_index);
@@ -308,23 +376,25 @@ s16b spell_chance(int spell_index)
 	/* Reduce failure rate by "effective" level adjustment */
 	chance -= 3 * (player->lev - spell->slevel);
 
-	/* Reduce failure rate by realm adjustment */
-	chance -= fail_adjust(player);
+	/* Reduce failure rate by casting stat level adjustment */
+	chance -= fail_adjust(player, spell);
 
 	/* Not enough mana to cast */
 	if (spell->smana > player->csp)
 		chance += 5 * (spell->smana - player->csp);
 
-	/* Extract the minimum failure rate due to realm */
-	minfail = min_fail(player);
+	/* Get the minimum failure rate for the casting stat level */
+	minfail = min_fail(player, spell);
 
-	/* Non mage/priest characters never get better than 5 percent */
-	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5)
+	/* Non zero-fail characters never get better than 5 percent */
+	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5) {
 		minfail = 5;
+	}
 
-	/* Priest prayer penalty for "edged" weapons (before minfail) */
-	if (player->state.icky_wield)
+	/* Necromancers are punished by being on lit squares */
+	if (player_has(player, PF_UNLIGHT) && square_islit(cave, player->grid)) {
 		chance += 25;
+	}
 
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
@@ -336,14 +406,21 @@ s16b spell_chance(int spell_index)
 	if (chance > 50) chance = 50;
 
 	/* Stunning makes spells harder (after minfail) */
-	if (player->timed[TMD_STUN] > 50) chance += 25;
-	else if (player->timed[TMD_STUN]) chance += 15;
+	if (player->timed[TMD_STUN] > 50) {
+		chance += 25;
+	} else if (player->timed[TMD_STUN]) {
+		chance += 15;
+	}
 
-	/* Amnesia doubles failure change */
-	if (player->timed[TMD_AMNESIA]) chance = 50 + chance / 2;
+	/* Amnesia doubles failure chance */
+	if (player->timed[TMD_AMNESIA]) {
+		chance = 50 + chance / 2;
+	}
 
 	/* Always a 5 percent chance of working */
-	if (chance > 95) chance = 95;
+	if (chance > 95) {
+		chance = 95;
+	}
 
 	/* Return the chance */
 	return (chance);
@@ -356,7 +433,7 @@ s16b spell_chance(int spell_index)
 void spell_learn(int spell_index)
 {
 	int i;
-	const char *noun = player->class->magic.spell_realm->spell_noun;
+	const struct class_spell *spell = spell_by_index(spell_index);
 
 	/* Learn the spell */
 	player->spell_flags[spell_index] |= PY_SPELL_LEARNED;
@@ -369,16 +446,16 @@ void spell_learn(int spell_index)
 	player->spell_order[i] = spell_index;
 
 	/* Mention the result */
-	msgt(MSG_STUDY, "You have learned the %s of %s.", noun,
-		 spell_by_index(spell_index)->name);
+	msgt(MSG_STUDY, "You have learned the %s of %s.", spell->realm->spell_noun,
+		 spell->name);
 
 	/* One less spell available */
 	player->upkeep->new_spells--;
 
 	/* Message if needed */
 	if (player->upkeep->new_spells)
-		msg("You can learn %d more %s%s.", player->upkeep->new_spells, noun, 
-			PLURAL(player->upkeep->new_spells));
+		msg("You can learn %d more %s%s.", player->upkeep->new_spells,
+			spell->realm->spell_noun, PLURAL(player->upkeep->new_spells));
 
 	/* Redraw Study Status */
 	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
@@ -438,30 +515,15 @@ bool spell_cast(int spell_index, int dir)
 		/* Use some mana */
 		player->csp -= spell->smana;
 	} else {
-		/* Over-exert the player */
 		int oops = spell->smana - player->csp;
 
 		/* No mana left */
 		player->csp = 0;
 		player->csp_frac = 0;
 
-		/* Message */
-		msg("You faint from the effort!");
-
-		/* Bypass free action */
-		(void)player_inc_timed(player, TMD_PARALYZED, randint1(5 * oops + 1),
-							   true, false);
-
-		/* Damage CON (possibly permanently) */
-		if (randint0(100) < 50) {
-			bool perm = (randint0(100) < 25);
-
-			/* Message */
-			msg("You have damaged your health!");
-
-			/* Reduce constitution */
-			player_stat_dec(player, STAT_CON, perm);
-		}
+		/* Over-exert the player */
+		player_over_exert(player, PY_EXERT_FAINT, 100, 5 * oops + 1);
+		player_over_exert(player, PY_EXERT_CON, 50, 0);
 	}
 
 	/* Redraw mana */
@@ -486,49 +548,88 @@ static size_t append_random_value_string(char *buffer, size_t size,
 	if (rv->base > 0) {
 		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
 
-		if (rv->dice > 0 || rv->sides > 0)
+		if (rv->dice > 0 || rv->sides > 0) {
 			offset += strnfmt(buffer + offset, size - offset, "+");
+		}
 	}
 
 	if (rv->dice == 1) {
 		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
-	}
-	else if (rv->dice > 1) {
-		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
+	} else if (rv->dice > 1) {
+		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice,
+						  rv->sides);
 	}
 
 	return offset;
 }
 
-static void spell_append_value_info(int spell_index, char *p, size_t len)
+static void spell_effect_append_value_info(const struct effect *effect,
+										   char *p, size_t len)
 {
-	const struct class_spell *spell = spell_by_index(spell_index);
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
-	size_t offset = 0;
+	size_t offset = strlen(p);
 
-	type = effect_info(spell->effect);
+	type = effect_info(effect);
 
-	if (spell->effect->dice != NULL)
-		dice_roll(spell->effect->dice, &rv);
+	if (effect->dice != NULL)
+		dice_roll(effect->dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
-	switch (spell->effect->index) {
+	switch (effect->index) {
 		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
 			break;
+		case EF_TELEPORT:
+			/* m_bonus means it's a weird random thing */
+			if (rv.m_bonus) special = "random";
+			break;
+		case EF_SPHERE:
+		case EF_BALL:
+			/* Append radius */
+			if (effect->radius) {
+				int rad = effect->radius;
+				if (effect->other) {
+					rad += player->lev / effect->other;
+				}
+				special = format(", rad %d", rad);
+			} else {
+				special = "rad 2";
+			}
+			break;
+		case EF_STRIKE:
+			/* Append radius */
+			if (effect->radius) {
+				special = format(", rad %d", effect->radius);
+			}
+			break;
+		case EF_SHORT_BEAM: {
+			/* Append length of beam */
+			int len = effect->radius;
+			if (effect->other) {
+				len += player->lev / effect->other;
+			}
+			special = format(", len %d", len);
+			break;
+		}
 		case EF_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
+			break;
+		default:
 			break;
 	}
 
 	if (type == NULL)
 		return;
 
-	offset += strnfmt(p, len, " %s ", type);
+	if (offset) {
+		offset += strnfmt(p + offset, len - offset, ";");
+	}
+
+	offset += strnfmt(p + offset, len - offset, " %s ", type);
 	offset += append_random_value_string(p + offset, len - offset, &rv);
 
 	if (special != NULL)
@@ -537,10 +638,14 @@ static void spell_append_value_info(int spell_index, char *p, size_t len)
 
 void get_spell_info(int spell_index, char *p, size_t len)
 {
-	/* Blank 'p' first */
+	struct effect *effect = spell_by_index(spell_index)->effect;
+
 	p[0] = '\0';
 
-	spell_append_value_info(spell_index, p, len);
+	while (effect) {
+		spell_effect_append_value_info(effect, p, len);
+		effect = effect->next;
+	}
 }
 
 static int spell_value_base_spell_power(void)
@@ -572,16 +677,6 @@ static int spell_value_base_max_sight(void)
 	return z_info->max_sight;
 }
 
-static int spell_value_base_food_faint(void)
-{
-	return PY_FOOD_FAINT;
-}
-
-static int spell_value_base_food_starve(void)
-{
-	return PY_FOOD_STARVE;
-}
-
 static int spell_value_base_weapon_damage(void)
 {
 	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
@@ -589,6 +684,19 @@ static int spell_value_base_weapon_damage(void)
 		return 0;
 	}
 	return (damroll(obj->dd, obj->ds) + obj->to_d);
+}
+
+static int spell_value_base_player_hp(void)
+{
+	return player->chp;
+}
+
+static int spell_value_base_monster_percent_hp_gone(void)
+{
+	/* Get the targeted monster, fail horribly if none */
+	struct monster *mon = target_get_monster();
+
+	return mon ? (((mon->maxhp - mon->hp) * 100) / mon->maxhp) : 0;
 }
 
 expression_base_value_f spell_value_base_by_name(const char *name)
@@ -601,9 +709,9 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "DUNGEON_LEVEL", spell_value_base_dungeon_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },
-		{ "FOOD_FAINT", spell_value_base_food_faint },
-		{ "FOOD_STARVE", spell_value_base_food_starve },
 		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
+		{ "PLAYER_HP", spell_value_base_player_hp },
+		{ "MONSTER_PERCENT_HP_GONE", spell_value_base_monster_percent_hp_gone },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;

@@ -271,10 +271,10 @@ int context_menu_player(int mx, int my)
 	}
 
 	/* if player is on stairs add option to use them */
-	if (square_isupstairs(cave, player->py, player->px)) {
+	if (square_isupstairs(cave, player->grid)) {
 		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	else if (square_isdownstairs(cave, player->py, player->px)) {
+	else if (square_isdownstairs(cave, player->grid)) {
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
 	}
 
@@ -290,7 +290,7 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add_label(m, "Inventory", 'i', MENU_VALUE_INVENTORY, labels);
 
 	/* if object under player add pickup option */
-	obj = square_object(cave, player->py, player->px);
+	obj = square_object(cave, player->grid);
 	if (obj && !ignore_item_ok(obj)) {
 			menu_row_validity_t valid;
 
@@ -389,7 +389,7 @@ int context_menu_player(int mx, int my)
 			break;
 
 		case MENU_VALUE_LOOK:
-			if (target_set_interactive(TARGET_LOOK, player->px, player->py))
+			if (target_set_interactive(TARGET_LOOK, player->grid.x, player->grid.y))
 				msg("Target Selected.");
 			break;
 
@@ -425,7 +425,8 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	bool allowed = true;
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
-	struct object *square_obj = square_object(c, y, x);
+	struct loc grid = loc(x, y);
+	struct object *square_obj = square_object(c, grid);
 
 	m = menu_dynamic_new();
 	if (!m)
@@ -439,7 +440,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
 	menu_dynamic_add_label(m, "Look At", cmdkey, MENU_VALUE_LOOK, labels);
 
-	if (c->squares[y][x].mon)
+	if (square(c, grid).mon)
 		/* '/' is used for recall in both keymaps. */
 		menu_dynamic_add_label(m, "Recall Info", '/', MENU_VALUE_RECALL,
 							   labels);
@@ -450,8 +451,8 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 
 	if (adjacent) {
-		struct object *obj = chest_check(y, x, CHEST_ANY);
-		ADD_LABEL((c->squares[y][x].mon) ? "Attack" : "Alter", CMD_ALTER,
+		struct object *obj = chest_check(grid, CHEST_ANY);
+		ADD_LABEL((square(c, grid).mon) ? "Attack" : "Alter", CMD_ALTER,
 				  MN_ROW_VALID);
 
 		if (obj && !ignore_item_ok(obj)) {
@@ -467,19 +468,23 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
-		if (square_isdisarmabletrap(c, y, x)) {
+		if ((square(cave, grid).mon > 0) && player_has(player, PF_STEAL)) {
+			ADD_LABEL("Steal", CMD_STEAL, MN_ROW_VALID);
+		}
+
+		if (square_isdisarmabletrap(c, grid)) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}
 
-		if (square_isopendoor(c, y, x)) {
+		if (square_isopendoor(c, grid)) {
 			ADD_LABEL("Close", CMD_CLOSE, MN_ROW_VALID);
 		}
-		else if (square_iscloseddoor(c, y, x)) {
+		else if (square_iscloseddoor(c, grid)) {
 			ADD_LABEL("Open", CMD_OPEN, MN_ROW_VALID);
 			ADD_LABEL("Lock", CMD_DISARM, MN_ROW_VALID);
 		}
-		else if (square_isdiggable(c, y, x)) {
+		else if (square_isdiggable(c, grid)) {
 			ADD_LABEL("Tunnel", CMD_TUNNEL, MN_ROW_VALID);
 		}
 
@@ -508,9 +513,9 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
-	} else if (c->squares[y][x].mon) {
+	} else if (square(c, grid).mon) {
 		char m_name[80];
-		struct monster *mon = square_monster(c, y, x);
+		struct monster *mon = square_monster(c, grid);
 
 		/* Get the monster name ("a kobold") */
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
@@ -528,10 +533,10 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				   o_name), 0, 0);
 	} else {
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, player, y, x);
+		const char *name = square_apparent_name(c, player, grid);
 
 		/* Hack -- special introduction for store doors */
-		if (square_isshop(cave, y, x)) {
+		if (square_isshop(cave, grid)) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
 			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
@@ -560,6 +565,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			break;
 
 		case CMD_ALTER:
+		case CMD_STEAL:
 		case CMD_DISARM:
 		case CMD_JUMP:
 		case CMD_CLOSE:
@@ -597,7 +603,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		case MENU_VALUE_RECALL: {
 			/* Recall monster Info */
-			struct monster *mon = square_monster(c, y, x);
+			struct monster *mon = square_monster(c, grid);
 			if (mon) {
 				struct monster_lore *lore = get_lore(mon->race);
 				lore_show_interactive(mon->race, lore);
@@ -611,6 +617,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			break;
 
 		case CMD_ALTER:
+		case CMD_STEAL:
 		case CMD_DISARM:
 		case CMD_JUMP:
 		case CMD_CLOSE:
@@ -620,7 +627,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		case CMD_RUN:
 			cmdq_push(selected);
 			cmd_set_arg_direction(cmdq_peek(), "direction",
-								  coords_to_dir(player, y, x));
+								  motion_dir(player->grid, loc(x, y)));
 			break;
 
 		case CMD_CAST:
@@ -720,7 +727,7 @@ int context_menu_object(struct object *obj)
 	}
 
 	if (object_is_carried(player, obj)) {
-		if (!square_isshop(cave, player->py, player->px)) {
+		if (!square_isshop(cave, player->grid)) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -729,7 +736,7 @@ int context_menu_object(struct object *obj)
 				menu_dynamic_add_label(m, "Drop All", cmdkey,
 									   MENU_VALUE_DROP_ALL, labels);
 			}
-		} else if (square_shopnum(cave, player->py, player->px) == STORE_HOME) {
+		} else if (square_shopnum(cave, player->grid) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -805,15 +812,13 @@ int context_menu_object(struct object *obj)
 			return 2;
 
 		case MENU_VALUE_DROP_ALL:
-			/* Drop entire stack with confirmation. */
-			if (get_check(format("Drop %s? ", header))) {
-				if (square_isshop(cave, player->py, player->px))
-					cmdq_push(CMD_STASH);
-				else
-					cmdq_push(CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", obj);
-				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
-			}
+			/* Drop entire stack without confirmation. */
+			if (square_isshop(cave, player->grid))
+				cmdq_push(CMD_STASH);
+			else
+				cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 			return 1;
 
 		case CMD_BROWSE_SPELL:
@@ -873,9 +878,9 @@ int context_menu_object(struct object *obj)
 
 		/* If we're in a store, change the "drop" command to "stash". */
 		if (selected == CMD_DROP &&
-			square_isshop(cave, player->py, player->px)) {
+			square_isshop(cave, player->grid)) {
 			struct command *gc = cmdq_peek();
-			if (square_shopnum(cave, player->py, player->px) == STORE_HOME)
+			if (square_shopnum(cave, player->grid) == STORE_HOME)
 				gc->code = CMD_STASH;
 			else
 				gc->code = CMD_SELL;
@@ -991,10 +996,10 @@ void textui_process_click(ui_event e)
 	x = KEY_GRID_X(e);
 
 	/* Check for a valid location */
-	if (!square_in_bounds_fully(cave, y, x)) return;
+	if (!square_in_bounds_fully(cave, loc(x, y))) return;
 
 	/* XXX show context menu here */
-	if ((player->py == y) && (player->px == x)) {
+	if (loc_eq(player->grid, loc(x, y))) {
 		if (e.mouse.mods & KC_MOD_SHIFT) {
 			/* shift-click - cast magic */
 			if (e.mouse.button == 1) {
@@ -1006,9 +1011,9 @@ void textui_process_click(ui_event e)
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				if (square_isupstairs(cave, player->py, player->px))
+				if (square_isupstairs(cave, player->grid))
 					cmdq_push(CMD_GO_UP);
-				else if (square_isdownstairs(cave, player->py, player->px))
+				else if (square_isdownstairs(cave, player->grid))
 					cmdq_push(CMD_GO_DOWN);
 			} else if (e.mouse.button == 2) {
 				cmdq_push(CMD_USE);
@@ -1021,7 +1026,7 @@ void textui_process_click(ui_event e)
 			}
 		} else {
 			if (e.mouse.button == 1) {
-				if (square_object(cave, y, x)) {
+				if (square_object(cave, loc(x, y))) {
 					cmdq_push(CMD_PICKUP);
 				} else {
 					cmdq_push(CMD_HOLD);
@@ -1039,12 +1044,12 @@ void textui_process_click(ui_event e)
 				/* shift-click - run */
 				cmdq_push(CMD_RUN);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(player, y, x));
+									  motion_dir(player->grid, loc(x, y)));
 			} else if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
 				cmdq_push(CMD_ALTER);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(player, y,x));
+									  motion_dir(player->grid, loc(x, y)));
 			} else if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
 				if (target_set_interactive(TARGET_LOOK, x, y)) {
@@ -1053,11 +1058,11 @@ void textui_process_click(ui_event e)
 			} else {
 				/* Pathfind does not work well on trap detection borders,
 				 * so if the click is next to the player, force a walk step */
-				if ((y-player->py >= -1) && (y-player->py <= 1)
-					&& (x-player->px >= -1) && (x-player->px <= 1)) {
+				if ((y - player->grid.y >= -1) && (y - player->grid.y <= 1)	&&
+					(x - player->grid.x >= -1) && (x - player->grid.x <= 1)) {
 					cmdq_push(CMD_WALK);
 					cmd_set_arg_direction(cmdq_peek(), "direction",
-										  coords_to_dir(player, y, x));
+										  motion_dir(player->grid, loc(x, y)));
 				} else {
 					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), "point", y, x);
@@ -1065,14 +1070,14 @@ void textui_process_click(ui_event e)
 			}
 		}
 	} else if (e.mouse.button == 2) {
-		struct monster *m = square_monster(cave, y, x);
+		struct monster *m = square_monster(cave, loc(x, y));
 		if (m && target_able(m)) {
 			/* Set up target information */
 			monster_race_track(player->upkeep, m->race);
 			health_track(player->upkeep, m);
 			target_set_monster(m);
 		} else {
-			target_set_location(y,x);
+			target_set_location(y, x);
 		}
 
 		if (e.mouse.mods & KC_MOD_SHIFT) {
@@ -1089,8 +1094,8 @@ void textui_process_click(ui_event e)
 			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
 		} else {
 			/* see if the click was adjacent to the player */
-			if ((y-player->py >= -1) && (y-player->py <= 1)
-				&& (x-player->px >= -1) && (x-player->px <= 1)) {
+			if ((y - player->grid.y >= -1) && (y - player->grid.y <= 1)	&&
+				(x - player->grid.x >= -1) && (x - player->grid.x <= 1)) {
 				context_menu_cave(cave,y,x,1,e.mouse.x, e.mouse.y);
 			} else {
 				context_menu_cave(cave,y,x,0,e.mouse.x, e.mouse.y);

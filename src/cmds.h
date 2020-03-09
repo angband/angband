@@ -30,8 +30,8 @@ void do_cmd_open(struct command *cmd);
 void do_cmd_close(struct command *cmd);
 void do_cmd_tunnel(struct command *cmd);
 void do_cmd_disarm(struct command *cmd);
-void do_cmd_alter_aux(int dir);
 void do_cmd_alter(struct command *cmd);
+void do_cmd_steal(struct command *cmd);
 void move_player(int dir, bool disarm);
 void do_cmd_walk(struct command *cmd);
 void do_cmd_jump(struct command *cmd);
@@ -42,6 +42,7 @@ void do_cmd_rest(struct command *cmd);
 void do_cmd_sleep(struct command *cmd);
 void display_feeling(bool obj_only);
 void do_cmd_feeling(void);
+void do_cmd_mon_command(struct command *cmd);
 
 /* cmd-misc.c */
 void do_cmd_wizard(void);

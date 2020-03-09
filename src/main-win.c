@@ -98,7 +98,7 @@
 # define HELP_GENERAL "angband.chm"
 # define HELP_SPOILERS "angband.chm"
 #else /* HTML_HELP */
-# define HELP_GENERAL "angband.hlp"
+# define HELP_GENERAL "index.txt"
 # define HELP_SPOILERS "spoilers.hlp"
 #endif /* HTML_HELP */
 
@@ -2426,7 +2426,7 @@ static void windows_map_aux(void)
 		for (y = min_y; y < max_y; y++) {
 			struct grid_data g;
 
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Ignore non-graphics */
@@ -2436,7 +2436,7 @@ static void windows_map_aux(void)
 	}
 
 	/* Highlight the player */
-	Term_curs_win(player->px - min_x, player->py - min_y);
+	Term_curs_win(player->grid.x - min_x, player->grid.y - min_y);
 }
 
 
@@ -2646,16 +2646,14 @@ static void init_windows(void)
 		my_td = NULL;
 		if (!td->w) quit("Failed to create sub-window");
 
-		if (td->visible) {
-			td->size_hack = true;
-			ShowWindow(td->w, SW_SHOW);
-			td->size_hack = false;
-		}
-
 		term_data_link(td);
 		angband_term[i] = &td->t;
 
 		if (td->visible) {
+			td->size_hack = true;
+			ShowWindow(td->w, SW_SHOW);
+			td->size_hack = false;
+
 			/* Activate the window */
 			SetActiveWindow(td->w);
 

@@ -85,17 +85,21 @@ static void hallucinatory_object(int *a, wchar_t *c)
  *
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
+ * Return true if it's a web
  */
-static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
+static bool get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
 							  wchar_t *w)
 {
     /* Trap is visible */
     if (trf_has(g->trap->flags, TRF_VISIBLE) ||
-		trf_has(g->trap->flags, TRF_RUNE)) {
+		trf_has(g->trap->flags, TRF_GLYPH) ||
+		trf_has(g->trap->flags, TRF_WEB)) {
 		/* Get the graphics */
 		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
 		*w = trap_x_char[g->lighting][g->trap->kind->tidx];
     }
+
+	return trf_has(g->trap->flags, TRF_WEB);
 }
 
 /**
@@ -109,29 +113,14 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	/* Remove the high bit so we can add it back again at the end */
 	*a = (*a & 0x7F);
 
-	/* Never play with fg colours for treasure */
-	if (!feat_is_treasure(g->f_idx)) {
-		/* Only apply lighting effects when the attr is white and it's a 
-		 * floor or wall */
-		if ((*a == COLOUR_WHITE) &&
-			(feat_is_floor(g->f_idx) || feat_is_wall(g->f_idx))) {
-			/* If it's a floor tile then we'll tint based on lighting. */
-			if (feat_is_torch(g->f_idx))
-				switch (g->lighting) {
-					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
-					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
-					case LIGHTING_DARK: *a = COLOUR_L_DARK; break;
-					default: break;
-				}
-
-			/* If it's another kind of tile, only tint when unlit. */
-			else if (g->lighting == LIGHTING_DARK ||
-					 g->lighting == LIGHTING_LIT)
-				*a = COLOUR_L_DARK;
-		} else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
-			if (!g->in_view) {
-				*a = COLOUR_L_DARK;
-			}
+	/* Play with fg colours for terrain affected by torchlight */
+	if (feat_is_torch(g->f_idx)) {
+		/* Brighten if torchlit, darken if out of LoS, super dark for UNLIGHT */
+		switch (g->lighting) {
+			case LIGHTING_TORCH: *a = get_color(*a, ATTR_LIGHT, 1); break;
+			case LIGHTING_LIT: *a = get_color(*a, ATTR_DARK, 1); break;
+			case LIGHTING_DARK: *a = get_color(*a, ATTR_DARK, 2); break;
+			default: break;
 		}
 	}
 
@@ -188,6 +177,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
+	bool skip_objects = false;
 
 	/* Get the colour for ASCII */
 	if (use_graphics == GRAPHICS_NONE)
@@ -198,35 +188,38 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	(*tcp) = c;
 
 	/* There is a trap in this grid, and we are not hallucinating */
-	if (g->trap && (!g->hallucinate))
-	    /* Change graphics to indicate a trap (if visible) */
-	    get_trap_graphics(cave, g, &a, &c);
+	if (g->trap && (!g->hallucinate)) {
+	    /* Change graphics to indicate visible traps, skip objects if a web */
+	    skip_objects = get_trap_graphics(cave, g, &a, &c);
+	}
 
-	/* If there's an object, deal with that. */
-	if (g->unseen_money) {
-	
-		/* $$$ gets an orange star*/
-		a = object_kind_attr(unknown_gold_kind);
-		c = object_kind_char(unknown_gold_kind);
-		
-	} else if (g->unseen_object) {	
-	
-		/* Everything else gets a red star */    
-		a = object_kind_attr(unknown_item_kind);
-		c = object_kind_char(unknown_item_kind);
-		
-	} else if (g->first_kind) {
-		if (g->hallucinate) {
-			/* Just pick a random object to display. */
-			hallucinatory_object(&a, &c);
-		} else if (g->multiple_objects) {
-			/* Get the "pile" feature instead */
-			a = object_kind_attr(pile_kind);
-			c = object_kind_char(pile_kind);
-		} else {
-			/* Normal attr and char */
-			a = object_kind_attr(g->first_kind);
-			c = object_kind_char(g->first_kind);
+	if (!skip_objects) {
+		/* If there's an object, deal with that. */
+		if (g->unseen_money) {
+
+			/* $$$ gets an orange star*/
+			a = object_kind_attr(unknown_gold_kind);
+			c = object_kind_char(unknown_gold_kind);
+
+		} else if (g->unseen_object) {
+
+			/* Everything else gets a red star */
+			a = object_kind_attr(unknown_item_kind);
+			c = object_kind_char(unknown_item_kind);
+
+		} else if (g->first_kind) {
+			if (g->hallucinate) {
+				/* Just pick a random object to display. */
+				hallucinatory_object(&a, &c);
+			} else if (g->multiple_objects) {
+				/* Get the "pile" feature instead */
+				a = object_kind_attr(pile_kind);
+				c = object_kind_char(pile_kind);
+			} else {
+				/* Normal attr and char */
+				a = object_kind_attr(g->first_kind);
+				c = object_kind_char(g->first_kind);
+			}
 		}
 	}
 
@@ -555,15 +548,15 @@ static void prt_map_aux(void)
 		tx = t->offset_x + (t->wid / tile_width);
 
 		/* Dump the map */
-		for (y = t->offset_y, vy = 0; y < ty; vy++, y++) {
+		for (y = t->offset_y, vy = 0; y < ty; vy += tile_height, y++) {
 			if (vy + tile_height - 1 >= t->hgt) continue;
-			for (x = t->offset_x, vx = 0; x < tx; vx++, x++) {
+			for (x = t->offset_x, vx = 0; x < tx; vx += tile_width, x++) {
 				/* Check bounds */
-				if (!square_in_bounds(cave, y, x)) continue;
+				if (!square_in_bounds(cave, loc(x, y))) continue;
 				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
-				map_info(y, x, &g);
+				map_info(loc(x, y), &g);
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
@@ -601,13 +594,13 @@ void prt_map(void)
 	tx = Term->offset_x + SCREEN_WID;
 
 	/* Dump the map */
-	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy+=tile_height, y++)
-		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx+=tile_width, x++) {
+	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy += tile_height, y++)
+		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx += tile_width, x++) {
 			/* Check bounds */
-			if (!square_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, loc(x, y))) continue;
 
 			/* Determine what is there */
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Hack -- Queue it */
@@ -635,9 +628,6 @@ void prt_map(void)
  */
 void display_map(int *cy, int *cx)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int map_hgt, map_wid;
 	int row, col;
 
@@ -693,7 +683,7 @@ void display_map(int *cy, int *cx)
 				row = row - (row % tile_height);
 
 			/* Get the attr/char at that map location */
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Get the priority of that attr/char */
@@ -721,8 +711,8 @@ void display_map(int *cy, int *cx)
 	/*** Display the player ***/
 
 	/* Player location */
-	row = (py * map_hgt / cave->height);
-	col = (px * map_wid / cave->width);
+	row = (player->grid.y * map_hgt / cave->height);
+	col = (player->grid.x * map_wid / cave->width);
 
 	if (tile_width > 1)
 		col = col - (col % tile_width);

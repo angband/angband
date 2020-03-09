@@ -1,0 +1,127 @@
+/*
+ * Wide-area style
+ */
+
+/* Overall background */
+body {
+  background-color: rgb(29, 42, 50);
+}
+
+/* Nice heading fonts */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L",
+    "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter",
+    "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow",
+    "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L",
+    Georgia, serif;
+}
+
+/* Link colours */
+a,
+.sphinxsidebar h3 a {
+  color: rgb(230, 200, 120);
+}
+
+a:visited {
+  color: #b29034;
+}
+
+/* Use white-on-black like Angband does */
+pre,
+tt {
+  background-color: black;
+  color: white;
+}
+
+dt {
+  font-weight: bold;
+}
+
+ul.simple p,
+ol.simple p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/*
+ * Main page heading
+ */
+header#pageheader {
+  background: #e3ba4a;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  padding: 0.5rem 0.66rem;
+  justify-content: space-between;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+#pageheader h1 {
+  font-size: 3rem;
+  margin: 0;
+  color: black;
+}
+
+#pageheader .version {
+  margin-left: 1rem;
+  font-style: italic;
+  color: #443a1f;
+}
+
+/*
+ * Content area
+ */
+.body {
+  background-color: rgb(61, 80, 92);
+  padding: 0.1rem 1rem;
+}
+
+.body h1 {
+  font-size: 200%;
+}
+
+/* Inline monospaced text */
+code.docutils.literal {
+  background-color: black;
+  padding: 0.3rem;
+  border: 1px solid #8e8080;
+}
+
+/* Remove huge padding on tables */
+table p {
+  margin: 0;
+}
+
+/* Weird-but-kind-of-nice styling?  Maybe use for h3? */
+h7 {
+  background: linear-gradient(
+    to right,
+    hsla(300, 13%, 42%, 1),
+    rgb(91, 119, 136)
+  );
+  padding: 0.3rem 0.3rem 0 0.3rem;
+}
+
+/*
+ * Contents boxes
+ */
+
+/* For inline contents boxes */
+.caption-text {
+  font-weight: bold;
+}
+
+/* Remove huge margins and ugly colour on contents boxes */
+.contents p {
+  margin: 0;
+}
+
+.topic {
+  background-color: inherit;
+}

@@ -44,9 +44,9 @@ byte chest_trap_type(const struct object *obj);
 bool is_trapped_chest(const struct object *obj);
 bool is_locked_chest(const struct object *obj);
 void unlock_chest(struct object *obj);
-struct object *chest_check(int y, int x, enum chest_query check_type);
-int count_chests(int *y, int *x, enum chest_query check_type);
-bool do_cmd_open_chest(int y, int x, struct object *obj);
-bool do_cmd_disarm_chest(int y, int x, struct object *obj);
+struct object *chest_check(struct loc grid, enum chest_query check_type);
+int count_chests(struct loc *grid, enum chest_query check_type);
+bool do_cmd_open_chest(struct loc grid, struct object *obj);
+bool do_cmd_disarm_chest(struct object *obj);
 
 #endif /* OBJECT_CHEST_H */

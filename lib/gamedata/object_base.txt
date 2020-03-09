@@ -175,12 +175,22 @@ break:100
 flags:EASY_KNOW
 
 name:magic book:Magic Book~
-graphics:light red
+graphics:deep light blue
 # max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 
 name:prayer book:Prayer Book~
+graphics:light yellow
+# max-stack:5
+flags:HATES_FIRE | EASY_KNOW
+
+name:nature book:Nature Book~
 graphics:light green
+# max-stack:5
+flags:HATES_FIRE | EASY_KNOW
+
+name:shadow book:Shadow Book~
+graphics:light purple
 # max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 

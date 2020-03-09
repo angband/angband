@@ -43,6 +43,7 @@
 #include "player-spell.h"
 #include "player-util.h"
 #include "randname.h"
+#include "trap.h"
 #include "z-queue.h"
 
 /* #define LIST_DEBUG */
@@ -326,8 +327,7 @@ void object_delete(struct object **obj_address)
 	if (cave && player && player->cave && obj->oidx &&
 		(obj == cave->objects[obj->oidx]) &&
 		player->cave->objects[obj->oidx]) {
-		obj->iy = 0;
-		obj->ix = 0;
+		obj->grid = loc(0, 0);
 		obj->held_m_idx = 0;
 		obj->mimicking_m_idx = 0;
 
@@ -528,13 +528,16 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
 			obj1->origin = obj2->origin;
 			obj1->origin_depth = obj2->origin_depth;
 			obj1->origin_race = obj2->origin_race;
+			break;
 		}
 
 		/* Set as "mixed" */
 		case 2:
 		{
 			obj1->origin = ORIGIN_MIXED;
+			break;
 		}
+		default: break;
 	}
 }
 
@@ -696,8 +699,12 @@ struct object *object_split(struct object *src, int amt)
 	/* Get a copy of the object */
 	object_copy(dest, src);
 
-	/* Prepare a new known object if necessary */
+	/* Do we need a new known object? */
 	if (src->known) {
+		/* Ensure numbers are aligned (should not be necessary, but safer) */
+		src->known->number = src->number;
+
+		/* Make the new object */
 		dest_known = object_new();
 		object_copy(dest_known, src->known);
 		dest->known = dest_known;
@@ -750,10 +757,9 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(player->cave, usable->iy, usable->ix,
-							 usable->known);
+		square_excise_object(player->cave, usable->grid, usable->known);
 		delist_object(player->cave, usable->known);
-		square_excise_object(cave, usable->iy, usable->ix, usable);
+		square_excise_object(cave, usable->grid, usable);
 		delist_object(cave, usable);
 		*none_left = true;
 
@@ -766,10 +772,8 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	}
 
 	/* Object no longer has a location */
-	usable->known->iy = 0;
-	usable->known->ix = 0;
-	usable->iy = 0;
-	usable->ix = 0;
+	usable->known->grid = loc(0, 0);
+	usable->grid = loc(0, 0);
 
 	/* Housekeeping */
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
@@ -798,11 +802,11 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 /**
  * Find and return the oldest object on the given grid marked as "ignore".
  */
-static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
+static struct object *floor_get_oldest_ignored(struct chunk *c, struct loc grid)
 {
 	struct object *obj, *ignore = NULL;
 
-	for (obj = square_object(c, y, x); obj; obj = obj->next)
+	for (obj = square_object(c, grid); obj; obj = obj->next)
 		if (ignore_item_ok(obj))
 			ignore = obj;
 
@@ -816,25 +820,26 @@ static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
  *
  * Optionally put the object at the top or bottom of the pile
  */
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
+bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
+				 bool *note)
 {
 	int n = 0;
-	struct object *obj, *ignore = floor_get_oldest_ignored(c, y, x);
+	struct object *obj, *ignore = floor_get_oldest_ignored(c, grid);
 
 	/* Fail if the square can't hold objects */
-	if (!square_isobjectholding(c, y, x))
+	if (!square_isobjectholding(c, grid))
 		return false;
 
 	/* Scan objects in that grid for combination */
-	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+	for (obj = square_object(c, grid); obj; obj = obj->next) {
 		/* Check for combination */
 		if (object_similar(obj, drop, OSTACK_FLOOR)) {
 			/* Combine the items */
 			object_absorb(obj, drop);
 
 			/* Note the pile */
-			if (square_isview(c, y, x)) {
-				square_note_spot(c, y, x);
+			if (square_isview(c, grid)) {
+				square_note_spot(c, grid);
 			}
 
 			/* Don't mention if ignored */
@@ -854,7 +859,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	if (n >= z_info->floor_size || (!OPT(player, birth_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
-			square_excise_object(c, y, x, ignore);
+			square_excise_object(c, grid, ignore);
 			delist_object(c, ignore);
 			object_delete(&ignore);
 		} else {
@@ -863,21 +868,20 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	}
 
 	/* Location */
-	drop->iy = y;
-	drop->ix = x;
+	drop->grid = grid;
 
 	/* Forget monster */
 	drop->held_m_idx = 0;
 
 	/* Link to the first object in the pile */
-	pile_insert(&c->squares[y][x].obj, drop);
+	pile_insert(&c->squares[grid.y][grid.x].obj, drop);
 
 	/* Record in the level list */
 	list_object(c, drop);
 
 	/* Redraw */
-	square_note_spot(c, y, x);
-	square_light_spot(c, y, x);
+	square_note_spot(c, grid);
+	square_light_spot(c, grid);
 
 	/* Don't mention if ignored */
 	if (ignore_item_ok(drop)) {
@@ -903,8 +907,8 @@ static void floor_carry_fail(struct object *drop, bool broke)
 			: VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
-		if (known->iy && known->ix)
-			square_excise_object(player->cave, known->iy, known->ix, known);
+		if (!loc_is_zero(known->grid))
+			square_excise_object(player->cave, known->grid, known);
 		delist_object(player->cave, known);
 		object_delete(&known);
 	}
@@ -921,11 +925,11 @@ static void floor_carry_fail(struct object *drop, bool broke)
  *
  * If no appropriate grid is found, the given grid is unchanged
  */
-static void drop_find_grid(struct object *drop, int *y, int *x)
+static void drop_find_grid(struct object *drop, struct loc *grid)
 {
 	int best_score = -1;
-	int best_y = *y;
-	int best_x = *x;
+	struct loc start = *grid;
+	struct loc best = start;
 	int i, dy, dx;
 	struct object *obj;
 
@@ -934,23 +938,21 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 		for (dx = -3; dx <= 3; dx++) {
 			bool combine = false;
 			int dist = (dy * dy) + (dx * dx);
-			int ty = *y + dy;
-			int tx = *x + dx;
+			struct loc try = loc_sum(start, loc(dx, dy));
 			int num_shown = 0;
 			int num_ignored = 0;
 			int score;
 
 			/* Lots of reasons to say no */
 			if ((dist > 10) ||
-				!square_in_bounds_fully(cave, ty, tx) ||
-				!los(cave, *y, *x, ty, tx) ||
-				!square_isfloor(cave, ty, tx) ||
-				square_isplayertrap(cave, ty, tx) ||
-				square_iswarded(cave, ty, tx))
+				!square_in_bounds_fully(cave, try) ||
+				!los(cave, start, try) ||
+				!square_isfloor(cave, try) ||
+				square_istrap(cave, try))
 				continue;
 
 			/* Analyse the grid for carrying the new object */
-			for (obj = square_object(cave, ty, tx); obj; obj = obj->next) {
+			for (obj = square_object(cave, try); obj; obj = obj->next){
 				/* Check for possible combination */
 				if (object_similar(obj, drop, OSTACK_FLOOR))
 					combine = true;
@@ -967,7 +969,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			/* Disallow if the stack size is too big */
 			if ((!OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(cave, ty, tx)))
+				 !floor_get_oldest_ignored(cave, try)))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
@@ -977,15 +979,13 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				continue;
 
 			best_score = score;
-			best_y = ty;
-			best_x = tx;
+			best = try;
 		}
 	}
 
 	/* Return if we have a score, otherwise fail or try harder for artifacts */
 	if (best_score >= 0) {
-		*y = best_y;
-		*x = best_x;
+		*grid = best;
 		return;
 	} else if (!drop->artifact) {
 		return;
@@ -993,16 +993,13 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 	for (i = 0; i < 2000; i++) {
 		/* Start bouncing from grid to grid, stopping if we find an empty one */
 		if (i < 1000) {
-			best_y = rand_spread(best_y, 1);
-			best_x = rand_spread(best_x, 1);
+			best = rand_loc(best, 1, 1);
 		} else {
 			/* Now go to purely random locations */
-			best_y = randint0(cave->height);
-			best_x = randint0(cave->width);
+			best = loc(randint0(cave->width), randint0(cave->height));
 		}
-		if (square_canputitem(cave, best_y, best_x)) {
-			*y = best_y;
-			*x = best_x;
+		if (square_canputitem(cave, best)) {
+			*grid = best;
 			return;
 		}
 	}
@@ -1023,12 +1020,11 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
  * The calling function needs to deal with the consequences of the dropped
  * object being destroyed or absorbed into an existing pile.
  */
-void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
-			   int x, bool verbose)
+void drop_near(struct chunk *c, struct object **dropped, int chance,
+			   struct loc grid, bool verbose)
 {
 	char o_name[80];
-	int best_y = y;
-	int best_x = x;
+	struct loc best = grid;
 	bool dont_ignore = verbose && !ignore_item_ok(*dropped);
 
 	/* Only called in the current level */
@@ -1044,10 +1040,10 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(*dropped, &best_y, &best_x);
-	if (floor_carry(c, best_y, best_x, *dropped, &dont_ignore)) {
+	drop_find_grid(*dropped, &best);
+	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
-		if (dont_ignore && (c->squares[best_y][best_x].mon < 0)) {
+		if (dont_ignore && (square(c, best).mon < 0)) {
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {
@@ -1062,16 +1058,13 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
  * the previous square with a type that does not allow for objects. Drop the
  * objects. Last, put the square back to its original type.
  */
-void push_object(int y, int x)
+void push_object(struct loc grid)
 {
 	/* Save the original terrain feature */
-	struct feature *feat_old = square_feat(cave, y, x);
-
-	struct object *obj = square_object(cave, y, x);
-
+	struct feature *feat_old = square_feat(cave, grid);
+	struct object *obj = square_object(cave, grid);
 	struct queue *queue = q_new(z_info->floor_size);
-
-	bool glyph = square_iswarded(cave, y, x);
+	struct trap *trap = square_trap(cave, grid);
 
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
@@ -1081,19 +1074,18 @@ void push_object(int y, int x)
 		/* Orphan the object */
 		obj->next = NULL;
 		obj->prev = NULL;
-		obj->iy = 0;
-		obj->ix = 0;
+		obj->grid = loc(0, 0);
 
 		/* Next object */
 		obj = next;
 	}
 
 	/* Disassociate the objects from the square */
-	cave->squares[y][x].obj = NULL;
+	square_set_obj(cave, grid, NULL);
 
 	/* Set feature to an open door */
-	square_force_floor(cave, y, x);
-	square_add_door(cave, y, x, false);
+	square_force_floor(cave, grid);
+	square_add_door(cave, grid, false);
 
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0) {
@@ -1101,13 +1093,14 @@ void push_object(int y, int x)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, &obj, 0, y, x, false);
+		drop_near(cave, &obj, 0, grid, false);
 	}
 
-	/* Reset cave feature and rune if needed */
-	square_set_feat(cave, y, x, feat_old->fidx);
-	if (glyph)
-		square_add_ward(cave, y, x);
+	/* Reset cave feature, remove trap if needed */
+	square_set_feat(cave, grid, feat_old->fidx);
+	if (trap && !square_istrappable(cave, grid)) {
+		square_destroy_trap(cave, grid);
+	}
 
 	q_free(queue);
 }
@@ -1139,15 +1132,13 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 			   item_tester tester)
 {
 	struct object *obj;
-	int py = player->py;
-	int px = player->px;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, py, px)) return 0;
+	if (!square_in_bounds(cave, player->grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, py, px); obj; obj = obj->next) {
+	for (obj = square_object(cave, player->grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1176,16 +1167,16 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
  *
  * Return the number of objects acquired.
  */
-int scan_distant_floor(struct object **items, int max_size, int y, int x)
+int scan_distant_floor(struct object **items, int max_size, struct loc grid)
 {
 	struct object *obj;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(player->cave, y, x)) return 0;
+	if (!square_in_bounds(player->cave, grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1271,7 +1262,7 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 bool item_is_available(struct object *obj)
 {
 	if (object_is_carried(player, obj)) return true;
-	if (cave && square_holds_object(cave, player->py, player->px, obj))
+	if (cave && square_holds_object(cave, player->grid, obj))
 		return true;
 	return false;
 }

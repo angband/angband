@@ -46,7 +46,7 @@ static int take1(struct player *p, struct monster *m, struct blow_method *blow,
 	m->race->blow[0].method = blow;
 	p->chp = p->mhp;
 	old = p->chp;
-	testfn_make_attack_normal(m, p);
+	make_attack_normal(m, p);
 	new = p->chp;
 	p->chp = p->mhp;
 	return old - new;
@@ -59,9 +59,9 @@ static int test_blows(void *state) {
 
 	p->upkeep = &test_player_upkeep;
 
-	mflag_on(m->race->flags, RF_NEVER_BLOW);
+	rf_on(m->race->flags, RF_NEVER_BLOW);
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);
-	mflag_off(m->race->flags, RF_NEVER_BLOW);
+	rf_off(m->race->flags, RF_NEVER_BLOW);
 	eq(delta, 0);
 
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);

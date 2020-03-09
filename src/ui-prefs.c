@@ -331,18 +331,15 @@ void option_dump(ang_file *fff)
 			/* Require a real flag */
 			if (!window_flag_desc[j]) continue;
 
-			/* Comment */
-			file_putf(fff, "# Window '%s', Flag '%s'\n",
-				angband_term_name[i], window_flag_desc[j]);
-
-			/* Dump the flag */
-			if (window_flag[i] & (1L << j))
+			/* Only dump the flag if true */
+			if (window_flag[i] & (1L << j)) {
+				file_putf(fff, "# Window '%s', Flag '%s'\n",
+						  angband_term_name[i], window_flag_desc[j]);
 				file_putf(fff, "window:%d:%d:1\n", i, j);
-			else
-				file_putf(fff, "window:%d:%d:0\n", i, j);
 
-			/* Skip a line */
-			file_putf(fff, "\n");
+				/* Skip a line */
+				file_putf(fff, "\n");
+			}
 		}
 	}
 }
@@ -635,13 +632,15 @@ static enum parser_error parse_prefs_object(struct parser *p)
 				}
 
 		} else {
+			/* No error at incorrect sval to stop failure due to outdated
+			 * pref files and enable switching between old and new classes */
 			svi = lookup_sval(tvi, sval);
 			if (svi < 0)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
+				return PARSE_ERROR_NONE;
 
 			kind = lookup_kind(tvi, svi);
 			if (!kind)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
+				return PARSE_ERROR_NONE;
 
 			kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
 			kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");

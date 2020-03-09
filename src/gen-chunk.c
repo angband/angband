@@ -37,7 +37,7 @@ struct chunk **chunk_list;     /**< list of pointers to saved chunks */
 u16b chunk_list_max = 0;      /**< current max actual chunk index */
 
 /**
- * Write a the terrain info of a chunk to memory and return a pointer to it
+ * Write the terrain info of a chunk to memory and return a pointer to it
  *
  * \param c chunk being written
  * \return the memory location of the chunk
@@ -52,8 +52,8 @@ struct chunk *chunk_write(struct chunk *c)
 	for (y = 0; y < new->height; y++) {
 		for (x = 0; x < new->width; x++) {
 			/* Terrain */
-			new->squares[y][x].feat = c->squares[y][x].feat;
-			sqinfo_copy(new->squares[y][x].info, c->squares[y][x].info);
+			new->squares[y][x].feat = square(c, loc(x, y)).feat;
+			sqinfo_copy(square(new, loc(x, y)).info, square(c, loc(x, y)).info);
 		}
 	}
 
@@ -86,27 +86,20 @@ void chunk_list_add(struct chunk *c)
  */
 bool chunk_list_remove(char *name)
 {
-	int i, j;
-	int newsize = 0;
+	int i;
 
+	/* Find the match */
 	for (i = 0; i < chunk_list_max; i++) {
-		/* Find the match */
 		if (!strcmp(name, chunk_list[i]->name)) {
-			/* Copy all the succeeding ones back one */
-			for (j = i + 1; j < chunk_list_max; j++)
+			/* Copy all the succeeding chunks back one */
+			int j;
+			for (j = i + 1; j < chunk_list_max; j++) {
 				chunk_list[j - 1] = chunk_list[j];
+			}
 
-			/* Destroy the last one, and shorten the list */
-			/* Don't do this for now - may be unnecessary, as chunk list never
-			 * really gets shorter */
-			//if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
-			//	newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
-			//		sizeof(struct chunk *);
+			/* Shorten the list and return */
 			chunk_list_max--;
 			chunk_list[chunk_list_max] = NULL;
-			if (newsize)
-				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
-
 			return true;
 		}
 	}
@@ -207,7 +200,7 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
 bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect)
 {
-	int i;
+	int i, max_group_id = 0;
 	int y, x;
 	int h = source->height, w = source->width;
 
@@ -229,26 +222,25 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			symmetry_transform(&dest_y, &dest_x, y0, x0, h, w, rotate, reflect);
 
 			/* Terrain */
-			dest->squares[dest_y][dest_x].feat = source->squares[y][x].feat;
-			sqinfo_copy(dest->squares[dest_y][dest_x].info,
-						source->squares[y][x].info);
+			dest->squares[dest_y][dest_x].feat = square(source, loc(x, y)).feat;
+			sqinfo_copy(square(dest, loc(dest_x, dest_y)).info,
+						square(source, loc(x, y)).info);
 
 			/* Dungeon objects */
-			if (square_object(source, y, x)) {
+			if (square_object(source, loc(x, y))) {
 				struct object *obj;
-				dest->squares[dest_y][dest_x].obj = square_object(source, y, x);
+				dest->squares[dest_y][dest_x].obj = square_object(source, loc(x, y));
 
-				for (obj = square_object(source, y, x); obj; obj = obj->next) {
+				for (obj = square_object(source, loc(x, y)); obj; obj = obj->next) {
 					/* Adjust position */
-					obj->iy = dest_y;
-					obj->ix = dest_x;
+					obj->grid = loc(dest_x, dest_y);
 				}
 				source->squares[y][x].obj = NULL;
 			}
 
 			/* Monsters */
-			if (source->squares[y][x].mon > 0) {
-				struct monster *source_mon = square_monster(source, y, x);
+			if (square(source, loc(x, y)).mon > 0) {
+				struct monster *source_mon = square_monster(source, loc(x, y));
 				struct monster *dest_mon = NULL;
 				int idx;
 
@@ -270,8 +262,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 				/* Adjust stuff */
 				dest_mon->midx = idx;
-				dest_mon->fy = dest_y;
-				dest_mon->fx = dest_x;
+				dest_mon->grid = loc(dest_x, dest_y);
 
 				/* Held objects */
 				if (source_mon->held_obj)
@@ -279,30 +270,26 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			}
 
 			/* Traps */
-			if (source->squares[y][x].trap) {
-				struct trap *trap = source->squares[y][x].trap;
+			if (square(source, loc(x, y)).trap) {
+				struct trap *trap = square(source, loc(x, y)).trap;
 				dest->squares[dest_y][dest_x].trap = trap;
 
 				/* Traverse the trap list */
 				while (trap) {
 					/* Adjust location */
-					trap->fy = dest_y;
-					trap->fx = dest_x;
+					trap->grid = loc(dest_x, dest_y);
 					trap = trap->next;
 				}
 				source->squares[y][x].trap = NULL;
 			}
 
 			/* Player */
-			if (source->squares[y][x].mon == -1) 
+			if (square(source, loc(x, y)).mon == -1) 
 				dest->squares[dest_y][dest_x].mon = -1;
 		}
 	}
 
-	/* Miscellany */
-	for (i = 0; i < z_info->f_max + 1; i++)
-		dest->feat_count[i] += source->feat_count[i];
-
+	/* Copy object list */
 	dest->objects = mem_realloc(dest->objects,
 								(dest->obj_max + source->obj_max + 2)
 								* sizeof(struct object*));
@@ -312,6 +299,18 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
 	}
 	dest->obj_max += source->obj_max + 1;
+
+	/* Copy monster group list */
+	for (i = 0; i < z_info->level_monster_max; i++) {
+		if (dest->monster_groups[i]) max_group_id = i;
+	}
+	for (i = 0; i < z_info->level_monster_max - max_group_id; i++) {
+		dest->monster_groups[i + max_group_id] = source->monster_groups[i];
+	}
+
+	/* Miscellany */
+	for (i = 0; i < z_info->f_max + 1; i++)
+		dest->feat_count[i] += source->feat_count[i];
 
 	dest->obj_rating += source->obj_rating;
 	dest->mon_rating += source->mon_rating;
@@ -334,10 +333,11 @@ void chunk_validate_objects(struct chunk *c) {
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			for (obj = square_object(c, y, x); obj; obj = obj->next)
+			struct loc grid = loc(x, y);
+			for (obj = square_object(c, grid); obj; obj = obj->next)
 				assert(obj->tval != 0);
-			if (c->squares[y][x].mon > 0) {
-				struct monster *mon = square_monster(c, y, x);
+			if (square(c, grid).mon > 0) {
+				struct monster *mon = square_monster(c, grid);
 				if (mon->held_obj)
 					for (obj = mon->held_obj; obj; obj = obj->next)
 						assert(obj->tval != 0);

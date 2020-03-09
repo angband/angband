@@ -26,7 +26,7 @@
  */
 struct angband_constants
 {
-	/* Array bounds, set on parsing edit files */
+	/* Array bounds etc, set on parsing edit files */
 	u16b f_max;			/**< Maximum number of terrain features */
 	u16b trap_max;		/**< Maximum number of trap kinds */
 	u16b k_max;			/**< Maximum number of object base kinds */
@@ -50,7 +50,7 @@ struct angband_constants
 	u16b calculation_max;	/**< Maximum number of object power calculations */
 	u16b property_max;	/**< Maximum number of object properties */
 	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
-	u16b summon_max;	/**< Maximum number of summon types */
+	u16b shape_max;		/**< Maximum number of player shapes */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
@@ -63,6 +63,8 @@ struct angband_constants
 	u16b repro_monster_max;		/**< Maximum breeders on a level */
 	u16b ood_monster_chance;	/**< Chance of OoD monster is 1 in this */
 	u16b ood_monster_amount;	/**< Max number of levels OoD */
+	u16b monster_group_max;		/**< Maximum size of a group */
+	u16b monster_group_dist;	/**< Max dist of a group from a related group */
 
 	/* Monster gameplay constants, read from constants.txt */
 	u16b glyph_hardness;		/**< How hard for a monster to break a glyph */
@@ -117,6 +119,7 @@ struct angband_constants
 	u16b max_sight;		/* Maximum visual range */
 	u16b max_range;		/* Maximum missile and spell range */
 	u16b start_gold;	/* Amount of gold the player starts with */
+	u16b food_value;	/* Number of turns 1% of food lasts */
 };
 
 struct init_module {
@@ -124,6 +127,8 @@ struct init_module {
 	void (*init)(void);
 	void (*cleanup)(void);
 };
+
+extern bool play_again;
 
 extern const char *list_element_names[];
 extern const char *list_obj_flag_names[];

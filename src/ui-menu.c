@@ -758,6 +758,7 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 	/* Stop on first unhandled event */
 	while (!(in.type & notify)) {
 		ui_event out = EVENT_EMPTY;
+		int cursor = menu->cursor;
 
 		menu_refresh(menu, popup);
 		in = inkey_ex();
@@ -791,7 +792,10 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 				menu->row_funcs->resize(menu);
 		}
 
-		/* XXX should redraw menu here if cursor has moved */
+		/* Redraw menu here if cursor has moved */
+		if (cursor != menu->cursor) {
+			menu_refresh(menu, popup);
+		}
 
 		/* If we've selected an item, then send that event out */
 		if (out.type == EVT_SELECT && !no_act && menu_handle_action(menu, &out))

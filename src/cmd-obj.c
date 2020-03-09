@@ -115,101 +115,22 @@ static int beam_chance(int tval)
 }
 
 
-typedef enum {
-	ART_TAG_NONE,
-	ART_TAG_NAME,
-	ART_TAG_KIND,
-	ART_TAG_VERB,
-	ART_TAG_VERB_IS
-} art_tag_t;
-
-static art_tag_t art_tag_lookup(const char *tag)
-{
-	if (strncmp(tag, "name", 4) == 0)
-		return ART_TAG_NAME;
-	else if (strncmp(tag, "kind", 4) == 0)
-		return ART_TAG_KIND;
-	else if (strncmp(tag, "s", 1) == 0)
-		return ART_TAG_VERB;
-	else if (strncmp(tag, "is", 2) == 0)
-		return ART_TAG_VERB_IS;
-	else
-		return ART_TAG_NONE;
-}
-
 /**
  * Print an artifact activation message.
- *
- * In order to support randarts, with scrambled names, we re-write
- * the message to replace instances of {name} with the artifact name
- * and instances of {kind} with the type of object.
- *
- * This code deals with plural and singular forms of verbs correctly
- * when encountering {s}, though in fact both names and kinds are
- * always singular in the current code (gloves are "Set of" and boots
- * are "Pair of")
  */
 static void activation_message(struct object *obj)
 {
-	char buf[1024] = "\0";
-	const char *next;
-	const char *s;
-	const char *tag;
-	const char *in_cursor;
-	size_t end = 0;
+	const char *message;
 
-	/* See if we have a message */
+	/* See if we have a message, then print it */
 	if (!obj->activation) return;
 	if (!obj->activation->message) return;
-	if (obj->artifact && obj->artifact->alt_msg)
-		in_cursor = obj->artifact->alt_msg;
-	else
-		in_cursor = obj->activation->message;
-
-	next = strchr(in_cursor, '{');
-	while (next) {
-		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
-
-		s = next + 1;
-		while (*s && isalpha((unsigned char) *s)) s++;
-
-		/* Valid tag */
-		if (*s == '}') {
-			/* Start the tag after the { */
-			tag = next + 1;
-			in_cursor = s + 1;
-
-			switch(art_tag_lookup(tag)) {
-			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, obj, ODESC_PREFIX | ODESC_BASE); 
-				break;
-			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, obj->kind, true);
-				end += strlen(&buf[end]);
-				break;
-			case ART_TAG_VERB:
-				if (obj->number == 1) {
-					strnfcat(buf, 1024, &end, "s");
-				}
-				break;
-			case ART_TAG_VERB_IS:
-				if (obj->number > 1)
-					strnfcat(buf, 1024, &end, "are");
-				else
-					strnfcat(buf, 1024, &end, "is");
-			default:
-				break;
-			}
-		} else
-			/* An invalid tag, skip it */
-			in_cursor = next + 1;
-
-		next = strchr(in_cursor, '{');
+	if (obj->artifact && obj->artifact->alt_msg) {
+		message = obj->artifact->alt_msg;
+	} else {
+		message = obj->activation->message;
 	}
-	strnfcat(buf, 1024, &end, in_cursor);
-
-	msg("%s", buf);
+	print_custom_message(obj, message, MSG_GENERIC);
 }
 
 
@@ -226,6 +147,15 @@ static void activation_message(struct object *obj)
 void do_cmd_uninscribe(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -252,6 +182,15 @@ void do_cmd_inscribe(struct command *cmd)
 
 	char prompt[1024];
 	char o_name[80];
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -282,6 +221,8 @@ void do_cmd_inscribe(struct command *cmd)
  */
 void do_cmd_autoinscribe(struct command *cmd)
 {
+	if (player_is_shapechanged(player)) return;
+
 	autoinscribe_ground();
 	autoinscribe_pack();
 
@@ -301,6 +242,15 @@ void do_cmd_autoinscribe(struct command *cmd)
 void do_cmd_takeoff(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -330,6 +280,15 @@ void do_cmd_wield(struct command *cmd)
 
 	int slot;
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -413,6 +372,15 @@ void do_cmd_drop(struct command *cmd)
 	int amt;
 	struct object *obj;
 
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Drop which item?",
@@ -458,7 +426,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
-	int px = player->px, py = player->py;
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -522,6 +489,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
+		target_fix();
 		used = effect_do(effect,
 							source_player(),
 							obj,
@@ -530,6 +498,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 							dir,
 							beam,
 							boost);
+		target_release();
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
@@ -593,10 +562,10 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/* Hack to make Glyph of Warding work properly */
-	if (square_trap_specific(cave, py, px, rune->tidx)) {
+	if (square_trap_specific(cave, player->grid, rune->tidx)) {
 		/* Push objects off the grid */
-		if (square_object(cave, py, px))
-			push_object(py, px);
+		if (square_object(cave, player->grid))
+			push_object(player->grid);
 	}
 }
 
@@ -607,6 +576,15 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 void do_cmd_read_scroll(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Check player can use scroll */
 	if (!player_can_read(player, true))
@@ -628,6 +606,15 @@ void do_cmd_read_scroll(struct command *cmd)
 void do_cmd_use_staff(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -651,6 +638,15 @@ void do_cmd_aim_wand(struct command *cmd)
 {
 	struct object *obj;
 
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Aim which wand? ",
@@ -673,6 +669,15 @@ void do_cmd_zap_rod(struct command *cmd)
 {
 	struct object *obj;
 
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Zap which rod? ",
@@ -694,6 +699,15 @@ void do_cmd_zap_rod(struct command *cmd)
 void do_cmd_activate(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -734,6 +748,15 @@ void do_cmd_quaff_potion(struct command *cmd)
 {
 	struct object *obj;
 
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Quaff which potion? ",
@@ -750,6 +773,15 @@ void do_cmd_quaff_potion(struct command *cmd)
 void do_cmd_use(struct command *cmd)
 {
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -807,7 +839,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, &used, 0, player->py, player->px, false);
+				drop_near(cave, &used, 0, player->grid, false);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;
@@ -843,6 +875,15 @@ void do_cmd_refill(struct command *cmd)
 {
 	struct object *light = equipped_item_by_slot_name(player, "light");
 	struct object *obj;
+
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -882,10 +923,14 @@ void do_cmd_refill(struct command *cmd)
 void do_cmd_cast(struct command *cmd)
 {
 	int spell_index, dir = 0;
-
-	const char *verb = player->class->magic.spell_realm->verb;
-	const char *noun = player->class->magic.spell_realm->spell_noun;
 	const struct class_spell *spell;
+
+	if (player_is_shapechanged(player)) {
+		if (get_check("Change back to your original form? " )) {
+			player_resume_normal_shape(player);
+		}
+		return;
+	}
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast(player, true))
@@ -911,6 +956,9 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Verify "dangerous" spells */
 	if (spell->smana > player->csp) {
+		const char *verb = spell->realm->verb;
+		const char *noun = spell->realm->spell_noun;
+
 		/* Warning */
 		msg("You do not have enough mana to %s this %s.", verb, noun);
 
@@ -922,8 +970,15 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Cast a spell */
-	if (spell_cast(spell_index, dir))
-		player->upkeep->energy_use = z_info->move_energy;
+	target_fix();
+	if (spell_cast(spell_index, dir)) {
+		if (player->timed[TMD_FASTCAST]) {
+			player->upkeep->energy_use = z_info->move_energy / 2;
+		} else {
+			player->upkeep->energy_use = z_info->move_energy;
+		}
+	}
+	target_release();
 }
 
 
@@ -960,8 +1015,6 @@ void do_cmd_study_book(struct command *cmd)
 	struct class_spell *spell;
 	int i, k = 0;
 
-	const char *p = player->class->magic.spell_realm->spell_noun;
-
 	if (cmd_get_item(cmd, "item", &book_obj,
 			/* Prompt */ "Study which book? ",
 			/* Error  */ "You cannot learn any new spells from the books you have.",
@@ -969,7 +1022,7 @@ void do_cmd_study_book(struct command *cmd)
 			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
 		return;
 
-	book = object_to_book(book_obj);
+	book = player_object_to_book(player, book_obj);
 	track_object(player->upkeep, book_obj);
 	handle_stuff(player);
 
@@ -986,9 +1039,9 @@ void do_cmd_study_book(struct command *cmd)
 		spell_index = spell->sidx;
 	}
 
-	if (spell_index < 0)
-		msg("You cannot learn any %ss in that book.", p);
-	else {
+	if (spell_index < 0) {
+		msg("You cannot learn any %ss in that book.", book->realm->spell_noun);
+	} else {
 		spell_learn(spell_index);
 		player->upkeep->energy_use = z_info->move_energy;
 	}
@@ -1001,6 +1054,15 @@ void do_cmd_study_book(struct command *cmd)
  */
 void do_cmd_study(struct command *cmd)
 {
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	if (player_has(player, PF_CHOOSE_SPELLS))
 		do_cmd_study_spell(cmd);
 	else

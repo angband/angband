@@ -16,7 +16,7 @@ executable, and also provide a user-readable spoiler file of sorts.
 
 These files are modifiable.  It is recommended that if you do modify any of
 these files, you put the modified version in your user directory (lib\user
-on Windows, ~/Documents/Angband on OSX, ~/.angband/Angband on Linux/Unix),
+on Windows, ~/Documents/Angband on macOS, ~/.angband/Angband on Linux/Unix),
 where it will be read preferentially.  Look at the help file
 lib/help/modify.txt for more details.
 
@@ -118,15 +118,8 @@ must be present (or creatable) for the game to run correctly.
 
 On some multiuser systems there is a separate systemwide score file.
 
-=== Directory "lib/user/info" ===
 
-The "lib/user/info" is used to search for any "online help" file that cannot
-be found in the "lib/help" directory.
+=== Directory "lib/user/scores" ===
 
-Some people use this directory for "online spoiler files", many of which are
-available on the internet, or creatable via the debug commands. Simply put 
-whichever spoilers you want in this directory, then edit the user.hlp file to
-add your files as menu items.  There is a dummy file as an example.
-
-Note that the default "help.hlp" file allows the "k" key to access user.hlp.
+This directory is used to save spoilers to.
 

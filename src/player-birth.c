@@ -159,6 +159,7 @@ static void save_roller_data(birther *tosave)
 		tosave->stat[i] = player->stat_birth[i];
 
 	tosave->history = player->history;
+	player->history = NULL;
 	my_strcpy(tosave->name, player->full_name, sizeof(tosave->name));
 }
 
@@ -422,16 +423,14 @@ void player_init(struct player *p)
 
 	for (i = 1; z_info && i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		struct monster_lore *lore = &l_list[i];
+		struct monster_lore *lore = get_lore(race);
 		race->cur_num = 0;
 		race->max_num = 100;
 		if (rf_has(race->flags, RF_UNIQUE))
 			race->max_num = 1;
 		lore->pkills = 0;
+		lore->thefts = 0;
 	}
-
-	/* Always start with a well fed player (this is surely in the wrong fn) */
-	p->food = PY_FOOD_FULL - 1;
 
 	p->upkeep = mem_zalloc(sizeof(struct player_upkeep));
 	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) *
@@ -456,6 +455,9 @@ void player_init(struct player *p)
 	/* Default to the first race/class in the edit file */
 	p->race = races;
 	p->class = classes;
+
+	/* Player starts unshapechanged */
+	p->shape = lookup_player_shape("normal");
 }
 
 /**
@@ -531,15 +533,18 @@ static void player_outfit(struct player *p)
 		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
 		if (prop->subtype == OFT_LIGHT) of_on(p->obj_k->flags, i);
 		if (prop->subtype == OFT_DIG) of_on(p->obj_k->flags, i);
+		if (prop->subtype == OFT_THROW) of_on(p->obj_k->flags, i);
 	}
 
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		int num = rand_range(si->min, si->max);
+		struct object_kind *kind = lookup_kind(si->tval, si->sval);
+		assert(kind);
 
 		/* Without start_kit, only start with 1 food and 1 light */
 		if (!OPT(p, birth_start_kit)) {
-			if (!tval_is_food_k(si->kind) && !tval_is_light_k(si->kind))
+			if (!tval_is_food_k(kind) && !tval_is_light_k(kind))
 				continue;
 
 			num = 1;
@@ -547,7 +552,7 @@ static void player_outfit(struct player *p)
 
 		/* Prepare a new item */
 		obj = object_new();
-		object_prep(obj, si->kind, 0, MINIMISE);
+		object_prep(obj, kind, 0, MINIMISE);
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
 
@@ -564,7 +569,7 @@ static void player_outfit(struct player *p)
 
 		/* Carry the item */
 		inven_carry(p, obj, true, false);
-		si->kind->everseen = true;
+		kind->everseen = true;
 	}
 
 	/* Sanity check */
@@ -709,35 +714,27 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_lo
  * 3. If there are any points left, spend as much as possible in order 
  *    on DEX and then the non-spell-stat.
  */
-static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STAT_MAX], 
-						   int *points_left_local)
+static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX], 
+						   int *points_left)
 {
 	int step = 0;
-	int maxed[STAT_MAX] = { 0 };
-	int spell_stat = player->class->magic.spell_realm ? 
-		player->class->magic.spell_realm->stat : 0;
-	bool caster = false, warrior = false;
+	bool maxed[STAT_MAX] = { 0 };
+	/* Hack - for now, just use stat of first book - NRM */
+	int spell_stat = player->class->magic.total_spells ?
+		player->class->magic.books[0].realm->stat : 0;
+	bool caster = player->class->max_attacks < 5 ? true : false;
+	bool warrior = player->class->max_attacks > 5 ? true : false;
 
-	/* Determine whether the class is warrior */
-	if (player->class->max_attacks > 5) { 
-		warrior = true;
-	}
-
-	/* Determine whether the class is priest/mage */
-	if (player->class->max_attacks < 5) {
-		caster = true;
-	}
-
-	while (*points_left_local && step >= 0) {
+	while (*points_left && step >= 0) {
 	
 		switch (step) {
 		
 			/* Buy base STR 17 */
 			case 0: {
 			
-				if (!maxed[STAT_STR] && stats_local[STAT_STR] < 17) {
-					if (!buy_stat(STAT_STR, stats_local, points_spent_local, points_left_local,
-								  false))
+				if (!maxed[STAT_STR] && stats[STAT_STR] < 17) {
+					if (!buy_stat(STAT_STR, stats, points_spent,
+								  points_left, false))
 						maxed[STAT_STR] = true;
 				} else {
 					step++;
@@ -755,8 +752,8 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			case 1: {
 				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX]
 					< 18+10) {
-					if (!buy_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
-								  false))
+					if (!buy_stat(STAT_DEX, stats, points_spent,
+								  points_left, false))
 						maxed[STAT_DEX] = true;
 				} else {
 					step++;
@@ -768,12 +765,13 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			/* If we can't get 18/10 dex, sell it back. */
 			case 2: {
 				if (player->state.stat_top[STAT_DEX] < 18+10) {
-					while (stats_local[STAT_DEX] > 10)
-						sell_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
-								  false);
+					while (stats[STAT_DEX] > 10)
+						sell_stat(STAT_DEX, stats, points_spent,
+								  points_left, false);
 					maxed[STAT_DEX] = false;
 				}
 				step++;
+				break;
 			}
 
 			/* 
@@ -783,24 +781,24 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 			 */
 			case 3: 
 			{
-				int points_trigger = *points_left_local / 2;
+				int points_trigger = *points_left / 2;
 				
 				if (warrior) {
-					points_trigger = *points_left_local;
+					points_trigger = *points_left;
 				} else {
 					while (!maxed[spell_stat] &&
-						   (caster || stats_local[spell_stat] < 16) &&
-						   points_spent_local[spell_stat] < points_trigger) {
+						   (caster || stats[spell_stat] < 18) &&
+						   points_spent[spell_stat] < points_trigger) {
 
-						if (!buy_stat(spell_stat, stats_local, points_spent_local,
-									  points_left_local, false)) {
+						if (!buy_stat(spell_stat, stats, points_spent,
+									  points_left, false)) {
 							maxed[spell_stat] = true;
 						}
 
-						if (points_spent_local[spell_stat] > points_trigger) {
+						if (points_spent[spell_stat] > points_trigger) {
 						
-							sell_stat(spell_stat, stats_local, points_spent_local, 
-									  points_left_local, false);
+							sell_stat(spell_stat, stats, points_spent,
+									  points_left, false);
 							maxed[spell_stat] = true;
 						}
 					}
@@ -809,17 +807,17 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				/* Skip CON for casters because DEX is more important early
 				 * and is handled in 4 */
 				while (!maxed[STAT_CON] &&
-					   !(caster) && stats_local[STAT_CON] < 16 &&
-					   points_spent_local[STAT_CON] < points_trigger) {
+					   stats[STAT_CON] < 16 &&
+					   points_spent[STAT_CON] < points_trigger) {
 					   
-					if (!buy_stat(STAT_CON, stats_local, points_spent_local,points_left_local,
-								  false)) {
+					if (!buy_stat(STAT_CON, stats, points_spent,
+								  points_left, false)) {
 						maxed[STAT_CON] = true;
 					}
 
-					if (points_spent_local[STAT_CON] > points_trigger) {
-						sell_stat(STAT_CON, stats_local, points_spent_local, points_left_local,
-								  false);
+					if (points_spent[STAT_CON] > points_trigger) {
+						sell_stat(STAT_CON, stats, points_spent,
+								  points_left, false);
 						maxed[STAT_CON] = true;
 					}
 				}
@@ -848,7 +846,7 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				}
 
 				/* Buy until we can't buy any more. */
-				while (buy_stat(next_stat, stats_local, points_spent_local, points_left_local,
+				while (buy_stat(next_stat, stats, points_spent, points_left,
 								false));
 				maxed[next_stat] = true;
 
@@ -863,11 +861,11 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 		}
 	}
 	/* Tell the UI the new points situation. */
-	event_signal_birthpoints(points_spent_local, *points_left_local);
+	event_signal_birthpoints(points_spent, *points_left);
 
 	/* Recalculate everything that's changed because
 	   the stat has changed, and inform the UI. */
-	recalculate_stats(stats_local, *points_left_local);
+	recalculate_stats(stats, *points_left);
 }
 
 /**
@@ -938,27 +936,25 @@ void do_cmd_birth_init(struct command *cmd)
 	 * If not, default to whatever the first of the choices is.
 	 */
 	if (player->ht_birth) {
+		/* Handle incrementing name suffix */
+		buf = find_roman_suffix_start(player->full_name);
+		if (buf) {
+			/* Try to increment the roman suffix */
+			int success = int_to_roman(
+				roman_to_int(buf) + 1,
+				buf,
+				sizeof(player->full_name) - (buf - (char *)&player->full_name));
+
+			if (!success) {
+				msg("Sorry, could not deal with suffix");
+			}
+		}
+
 		save_roller_data(&quickstart_prev);
 		quickstart_allowed = true;
 	} else {
 		player_generate(player, player_id2race(0), player_id2class(0), false);
 		quickstart_allowed = false;
-	}
-
-	/* Handle incrementing name suffix */
-	buf = find_roman_suffix_start(player->full_name);
-	if (buf) {
-		/* Try to increment the roman suffix */
-		int success = int_to_roman(
-				roman_to_int(buf) + 1,
-				buf,
-				sizeof(player->full_name) - (buf - (char *)&player->full_name));
-
-		if (success) {
-			save_roller_data(&quickstart_prev);
-		} else {
-			msg("Sorry, could not deal with suffix");
-		}
 	}
 
 	/* We're ready to start the birth process */
@@ -1126,6 +1122,9 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Embody */
 	player_embody(player);
 
+	/* Always start with a well fed player */
+	player->timed[TMD_FOOD] = PY_FOOD_FULL - 1;
+
 	/* Give the player some money */
 	get_money();
 
@@ -1141,22 +1140,23 @@ void do_cmd_accept_character(struct command *cmd)
 	player->obj_k->to_h = 1;
 	player->obj_k->to_d = 1;
 
-	/* Initialise the stores */
+	/* Initialise the stores, dungeon */
 	store_reset();
+	chunk_list_max = 0;
 
 	/* Player learns innate runes */
 	player_learn_innate(player);
 
-	/* Randomize the artifacts if required */
-	if (OPT(player, birth_randarts)) {
-		/* First restore the standard artifacts */
-		cleanup_parser(&randart_parser);
-		deactivate_randart_file();
-		run_parser(&artifact_parser);
+	/* Restore the standard artifacts (randarts may have been loaded) */
+	cleanup_parser(&randart_parser);
+	deactivate_randart_file();
+	run_parser(&artifact_parser);
 
-		/* Now generate the new randarts */
+	/* Now only randomize the artifacts if required */
+	if (OPT(player, birth_randarts)) {
 		seed_randart = randint0(0x10000000);
 		do_randart(seed_randart, true);
+		deactivate_randart_file();
 	}
 
 	/* Seed for flavors */

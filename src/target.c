@@ -21,7 +21,6 @@
 #include "cmd-core.h"
 #include "game-input.h"
 #include "mon-desc.h"
-#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -36,47 +35,19 @@
 static bool target_set;
 
 /**
- * Current monster being tracked, or 0
+ * Is the target fixed (for the duration of a spell)?
  */
-static struct monster *target_who;
+static bool target_fixed;
 
 /**
- * Target location
+ * Player target
  */
-static int target_x, target_y;
-
+static struct target target;
 
 /**
- * Given a "source" and "target" location, extract a "direction",
- * which will move one step from the "source" towards the "target".
- *
- * Note that we use "diagonal" motion whenever possible.
- *
- * We return "5" if no motion is needed.
- *
- * XXX Change params to use two struct loc.
+ * Old player target
  */
-int motion_dir(int y1, int x1, int y2, int x2)
-{
-	/* No movement required */
-	if ((y1 == y2) && (x1 == x2)) return (DIR_NONE);
-
-	/* South or North */
-	if (x1 == x2) return ((y1 < y2) ? 2 : 8);
-
-	/* East or West */
-	if (y1 == y2) return ((x1 < x2) ? 6 : 4);
-
-	/* South-east or South-west */
-	if (y1 < y2) return ((x1 < x2) ? 3 : 1);
-
-	/* North-east or North-west */
-	if (y1 > y2) return ((x1 < x2) ? 9 : 7);
-
-	/* Paranoia */
-	return (5);
-}
-
+static struct target old_target;
 
 /**
  * Monster health description
@@ -112,6 +83,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	/* Effect status */
 	if (mon->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
 	if (mon->m_timed[MON_TMD_HOLD]) my_strcat(buf, ", held", max);
+	if (mon->m_timed[MON_TMD_DISEN]) my_strcat(buf, ", disenchanted", max);
 	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
 	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
 	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
@@ -135,7 +107,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 bool target_able(struct monster *m)
 {
 	return m && m->race && monster_is_obvious(m) &&
-		projectable(cave, player->py, player->px, m->fy, m->fx, PROJECT_NONE) &&
+		projectable(cave, player->grid, m->grid, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
 
@@ -152,16 +124,16 @@ bool target_okay(void)
 	if (!target_set) return false;
 
 	/* Check "monster" targets */
-	if (target_who) {
-		if (target_able(target_who)) {
+	if (target.midx > 0) {
+		struct monster *mon = cave_monster(cave, target.midx);
+		if (target_able(mon)) {
 			/* Get the monster location */
-			target_y = target_who->fy;
-			target_x = target_who->fx;
+			target.grid = mon->grid;
 
 			/* Good target */
 			return true;
 		}
-	} else if (target_x && target_y) {
+	} else if (target.grid.x && target.grid.y) {
 		/* Allow a direction without a monster */
 		return true;
 	}
@@ -172,24 +144,28 @@ bool target_okay(void)
 
 
 /**
- * Set the target to a monster (or nobody)
+ * Set the target to a monster (or nobody); if target is fixed, don't unset
  */
 bool target_set_monster(struct monster *mon)
 {
 	/* Acceptable target */
 	if (mon && target_able(mon)) {
 		target_set = true;
-		target_who = mon;
-		target_y = mon->fy;
-		target_x = mon->fx;
+		target.midx = mon->midx;
+		target.grid = mon->grid;
+		return true;
+	} else if (target_fixed) {
+		/* If a monster has died during a spell, this maintains its grid as
+		 * the target in case further effects of the spell need it */
+		target.midx = 0;
 		return true;
 	}
 
 	/* Reset target info */
 	target_set = false;
-	target_who = NULL;
-	target_y = 0;
-	target_x = 0;
+	target.midx = 0;
+	target.grid.y = 0;
+	target.grid.x = 0;
 
 	return false;
 }
@@ -200,21 +176,22 @@ bool target_set_monster(struct monster *mon)
  */
 void target_set_location(int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Legal target */
-	if (square_in_bounds_fully(cave, y, x)) {
+	if (square_in_bounds_fully(cave, grid)) {
 		/* Save target info */
 		target_set = true;
-		target_who = NULL;
-		target_y = y;
-		target_x = x;
+		target.midx = 0;
+		target.grid = grid;
 		return;
 	}
 
 	/* Reset target info */
 	target_set = false;
-	target_who = 0;
-	target_y = 0;
-	target_x = 0;
+	target.midx = 0;
+	target.grid.y = 0;
+	target.grid.x = 0;
 }
 
 /**
@@ -226,6 +203,32 @@ bool target_is_set(void)
 }
 
 /**
+ * Fix the target
+ */
+void target_fix(void)
+{
+	old_target = target;
+	target_fixed = true;
+}
+
+/**
+ * Release the target
+ */
+void target_release(void)
+{
+	target_fixed = false;
+
+	/* If the old target is a now-dead monster, cancel it */
+	if (old_target.midx != 0) {
+		struct monster *mon = cave_monster(cave, old_target.midx);
+		if (!mon->race) {
+			target.grid.y = 0;
+			target.grid.x = 0;
+		}
+	}
+}
+
+/**
  * Sorting hook -- comp function -- by "distance to player"
  *
  * We use "u" and "v" to point to arrays of "x" and "y" positions,
@@ -233,8 +236,8 @@ bool target_is_set(void)
  */
 int cmp_distance(const void *a, const void *b)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	const struct loc *pa = a;
 	const struct loc *pb = b;
@@ -318,27 +321,28 @@ s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
  */
 bool target_accept(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Player grids are always interesting */
-	if (cave->squares[y][x].mon < 0) return true;
+	if (square(cave, grid).mon < 0) return true;
 
 	/* Handle hallucination */
 	if (player->timed[TMD_IMAGE]) return false;
 
 	/* Obvious monsters */
-	if (cave->squares[y][x].mon > 0) {
-		struct monster *mon = square_monster(cave, y, x);
+	if (square(cave, grid).mon > 0) {
+		struct monster *mon = square_monster(cave, grid);
 		if (monster_is_obvious(mon)) {
 			return true;
 		}
 	}
 
 	/* Traps */
-	if (square_isvisibletrap(cave, y, x)) return true;
+	if (square_isvisibletrap(cave, grid)) return true;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
 		/* Memorized object */
 		if ((obj->kind == unknown_item_kind) || !ignore_known_item_ok(obj)) {
 			return true;
@@ -346,7 +350,7 @@ bool target_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x)) {
+	if (square_isknown(cave, grid) && square_isinteresting(cave, grid)) {
 		return true;
 	}
 
@@ -363,8 +367,8 @@ void coords_desc(char *buf, int size, int y, int x)
 	const char *east_or_west;
 	const char *north_or_south;
 
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	if (y > py)
 		north_or_south = "S";
@@ -377,19 +381,16 @@ void coords_desc(char *buf, int size, int y, int x)
 		east_or_west = "E";
 
 	strnfmt(buf, size, "%d %s, %d %s",
-		ABS(y-py), north_or_south, ABS(x-px), east_or_west);
+		ABS(y - py), north_or_south, ABS(x-px), east_or_west);
 }
 
 /**
  * Obtains the location the player currently targets.
  */
-void target_get(int *x, int *y)
+void target_get(struct loc *grid)
 {
-	assert(x);
-	assert(y);
-
-	*x = target_x;
-	*y = target_y;
+	assert(grid);
+	*grid = target.grid;
 }
 
 
@@ -398,7 +399,7 @@ void target_get(int *x, int *y)
  */
 struct monster *target_get_monster(void)
 {
-	return target_who;
+	return cave_monster(cave, target.midx);
 }
 
 
@@ -408,11 +409,11 @@ struct monster *target_get_monster(void)
 bool target_sighted(void)
 {
 	return target_okay() &&
-			panel_contains(target_y, target_x) &&
+			panel_contains(target.grid.y, target.grid.x) &&
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
-		((!target_who && square_isseen(cave, target_y, target_x)) ||
-		 (target_who && monster_is_visible(target_who)));
+		((!target.midx && square_isseen(cave, target.grid)) ||
+		 (target.midx && monster_is_visible(cave_monster(cave, target.midx))));
 }
 
 
@@ -421,7 +422,7 @@ bool target_sighted(void)
 /**
  * Return a target set of target_able monsters.
  */
-struct point_set *target_get_monsters(int mode)
+struct point_set *target_get_monsters(int mode, monster_predicate pred)
 {
 	int y, x;
 	int min_y, min_x, max_y, max_x;
@@ -433,23 +434,30 @@ struct point_set *target_get_monsters(int mode)
 	/* Scan for targets */
 	for (y = min_y; y < max_y; y++) {
 		for (x = min_x; x < max_x; x++) {
+			struct loc grid = loc(x, y);
+
 			/* Check bounds */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Require "interesting" contents */
 			if (!target_accept(y, x)) continue;
 
 			/* Special mode */
 			if (mode & (TARGET_KILL)) {
+				struct monster *mon = square_monster(cave, grid);
+
 				/* Must contain a monster */
-				if (!(cave->squares[y][x].mon > 0)) continue;
+				if (mon == NULL) continue;
 
 				/* Must be a targettable monster */
-			 	if (!target_able(square_monster(cave, y, x))) continue;
+				if (!target_able(mon)) continue;
+
+				/* Must be the right sort of monster */
+				if (pred && !pred(mon)) continue;
 			}
 
 			/* Save the location */
-			add_to_point_set(targets, y, x);
+			add_to_point_set(targets, grid);
 		}
 	}
 
@@ -462,18 +470,17 @@ struct point_set *target_get_monsters(int mode)
 /**
  * Set target to closest monster.
  */
-bool target_set_closest(int mode)
+bool target_set_closest(int mode, monster_predicate pred)
 {
-	int y, x;
 	struct monster *mon;
 	char m_name[80];
 	struct point_set *targets;
 
 	/* Cancel old target */
-	target_set_monster(0);
+	target_set_monster(NULL);
 
 	/* Get ready to do targetting */
-	targets = target_get_monsters(mode);
+	targets = target_get_monsters(mode, pred);
 
 	/* If nothing was prepared, then return */
 	if (point_set_size(targets) < 1) {
@@ -483,9 +490,7 @@ bool target_set_closest(int mode)
 	}
 
 	/* Find the first monster in the queue */
-	y = targets->pts[0].y;
-	x = targets->pts[0].x;
-	mon = square_monster(cave, y, x);
+	mon = square_monster(cave, targets->pts[0]);
 	
 	/* Target the monster, if possible */
 	if (!target_able(mon)) {

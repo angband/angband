@@ -160,27 +160,46 @@ int test_skill_dig0(void *state) {
 	ok;
 }
 
-int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:4:30");
+int test_hitdie0(void *state) {
+	enum parser_error r = parser_parse(state, "hitdie:4");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
 	eq(c->c_mhp, 4);
-	eq(c->c_exp, 30);
 	ok;
 }
 
-int test_attack0(void *state) {
-	enum parser_error r = parser_parse(state, "attack:5:35:4");
+int test_max_attacks0(void *state) {
+	enum parser_error r = parser_parse(state, "max-attacks:5");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
 	eq(c->max_attacks, 5);
+	ok;
+}
+
+int test_min_weight0(void *state) {
+	enum parser_error r = parser_parse(state, "min-weight:35");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
 	eq(c->min_weight, 35);
+	ok;
+}
+
+int test_strength_multiplier0(void *state) {
+	enum parser_error r = parser_parse(state, "strength-multiplier:4");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
 	eq(c->att_multiply, 4);
 	ok;
 }
@@ -207,20 +226,32 @@ int test_equip0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	ptreq(c->start_items[0].kind, lookup_kind(TV_MAGIC_BOOK, 2));
+	eq(c->start_items[0].tval, TV_MAGIC_BOOK)
+	eq(c->start_items[0].sval, 2);
 	eq(c->start_items[0].min, 2);
 	eq(c->start_items[0].max, 5);
 	ok;
 }
 
 int test_flags0(void *state) {
-	enum parser_error r = parser_parse(state, "flags:CUMBER_GLOVE | CHOOSE_SPELLS");
+	enum parser_error r = parser_parse(state, "player-flags:BLESS_WEAPON | CHOOSE_SPELLS");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
 	require(c->pflags);
+	ok;
+}
+
+int test_flags1(void *state) {
+	enum parser_error r = parser_parse(state, "obj-flags:SEE_INVIS | IMPAIR_HP");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	require(c->flags);
 	ok;
 }
 
@@ -249,11 +280,14 @@ struct test tests[] = {
 	{ "skill_shoot0", test_skill_shoot0 },
 	{ "skill_throw0", test_skill_throw0 },
 	{ "skill_dig0", test_skill_dig0 },
-	{ "info0", test_info0 },
-	{ "attack0", test_attack0 },
+	{ "hitdie0", test_hitdie0 },
+	{ "max_attacks0", test_max_attacks0 },
+	{ "min_weight0", test_min_weight0 },
+	{ "strength_multiplier0", test_strength_multiplier0 },
 	{ "title0", test_title0 },
 	/* { "equip0", test_equip0 }, */
 	{ "flags0", test_flags0 },
+	{ "flags1", test_flags1 },
 	//{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };

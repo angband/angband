@@ -1156,7 +1156,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 /**
  * Scatter some objects near the player
  */
-void acquirement(int y1, int x1, int level, int num, bool great)
+void acquirement(struct loc grid, int level, int num, bool great)
 {
 	struct object *nice_obj;
 
@@ -1170,7 +1170,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, &nice_obj, 0, y1, x1, true);
+		drop_near(cave, &nice_obj, 0, grid, true);
 	}
 }
 
@@ -1226,8 +1226,9 @@ struct object *make_gold(int lev, char *coin_type)
 	object_prep(new_gold, money_kind(coin_type, value), lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
-	if (OPT(player, birth_no_selling) && player->depth)
-		value *= MIN(5, player->depth);
+	if (OPT(player, birth_no_selling) && player->depth)	{
+		value *= 5;
+	}
 
 	/* Cap gold at max short (or alternatively make pvals s32b) */
 	if (value >= SHRT_MAX) {

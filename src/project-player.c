@@ -125,109 +125,176 @@ static void project_player_drain_stats(int num)
 	return;
 }
 
-/**
- * Swap stats at random to temporarily scramble the player's stats.
- */
-static void project_player_swap_stats(void)
-{
-	int max1, cur1, max2, cur2, i, j, swap;
-
-	// Fisher-Yates shuffling algorithm.
-	for (i = STAT_MAX - 1; i > 0; --i) {
-		j = randint0(i);
-
-		max1 = player->stat_max[i];
-		cur1 = player->stat_cur[i];
-		max2 = player->stat_max[j];
-		cur2 = player->stat_cur[j];
-
-		player->stat_max[i] = max2;
-		player->stat_cur[i] = cur2;
-		player->stat_max[j] = max1;
-		player->stat_cur[j] = cur1;
-
-		/* Record what we did */
-		swap = player->stat_map[i];
-		player->stat_map[i] = player->stat_map[j];
-		player->stat_map[j] = swap;
-	}
-
-	player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
-
-	return;
-}
-
 typedef struct project_player_handler_context_s {
 	/* Input values */
 	const struct source origin;
 	const int r;
-	const int y;
-	const int x;
+	const struct loc grid;
 	const int dam;
 	const int type;
+	const int power;
 
 	/* Return values */
 	bool obvious;
 } project_player_handler_context_t;
 
-typedef void (*project_player_handler_f)(project_player_handler_context_t *);
+typedef int (*project_player_handler_f)(project_player_handler_context_t *);
 
-static void project_player_handler_ACID(project_player_handler_context_t *context)
+static int project_player_handler_ACID(project_player_handler_context_t *context)
 {
-	if (player_is_immune(player, ELEM_ACID)) return;
+	if (player_is_immune(player, ELEM_ACID)) return 0;
 	inven_damage(player, PROJ_ACID, MIN(context->dam * 5, 300));
+	return 0;
 }
 
-static void project_player_handler_ELEC(project_player_handler_context_t *context)
+static int project_player_handler_ELEC(project_player_handler_context_t *context)
 {
-	if (player_is_immune(player, ELEM_ELEC)) return;
+	if (player_is_immune(player, ELEM_ELEC)) return 0;
 	inven_damage(player, PROJ_ELEC, MIN(context->dam * 5, 300));
+	return 0;
 }
 
-static void project_player_handler_FIRE(project_player_handler_context_t *context)
+static int project_player_handler_FIRE(project_player_handler_context_t *context)
 {
-	if (player_is_immune(player, ELEM_FIRE)) return;
+	if (player_is_immune(player, ELEM_FIRE)) return 0;
 	inven_damage(player, PROJ_FIRE, MIN(context->dam * 5, 300));
+
+	/* Occasional side-effects for powerful fire attacks */
+	if (context->power >= 80) {
+		if (randint0(context->dam > 500)) {
+			msg("The intense heat saps you.");
+			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0, 0,
+						  0, &context->obvious);
+		}
+		if (randint0(context->dam > 500)) {
+			if (player_inc_timed(player, TMD_BLIND,
+								 randint1(context->dam / 100), true, true)) {
+				msg("Your eyes fill with smoke!");
+			}
+		}
+		if (randint0(context->dam > 500)) {
+			if (player_inc_timed(player, TMD_POISONED,
+								 randint1(context->dam / 10), true, true)) {
+				msg("You are assailed by poisonous fumes!");
+			}
+		}
+	}
+	return 0;
 }
 
-static void project_player_handler_COLD(project_player_handler_context_t *context)
+static int project_player_handler_COLD(project_player_handler_context_t *context)
 {
-	if (player_is_immune(player, ELEM_COLD)) return;
+	if (player_is_immune(player, ELEM_COLD)) return 0;
 	inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
+
+	/* Occasional side-effects for powerful cold attacks */
+	if (context->power >= 80) {
+		if (randint0(context->dam > 500)) {
+			msg("The cold seeps into your bones.");
+			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_DEX, 0, 0, 0,
+						  0, &context->obvious);
+		}
+		if (randint0(context->dam) > 500) {
+			if (player_of_has(player, OF_HOLD_LIFE)) {
+				equip_learn_flag(player, OF_HOLD_LIFE);
+			} else {
+				int drain = context->dam;
+				msg("You feel your life force draining away!");
+				player_exp_lose(player, drain, false);
+			}
+		}
+	}
+	return 0;
 }
 
-static void project_player_handler_POIS(project_player_handler_context_t *context)
+static int project_player_handler_POIS(project_player_handler_context_t *context)
 {
+	int xtra = 0;
+
 	if (!player_inc_timed(player, TMD_POISONED, 10 + randint1(context->dam),
 						  true, true))
 		msg("You resist the effect!");
+
+	/* Occasional side-effects for powerful poison attacks */
+	if (context->power >= 60) {
+		if (randint0(context->dam > 200)) {
+			if (!player_is_immune(player, ELEM_ACID)) {
+				int dam = context->dam / 5;
+				msg("The venom stings your skin!");
+				inven_damage(player, PROJ_ACID, dam);
+				xtra += adjust_dam(player, PROJ_ACID, dam, RANDOMISE,
+								 player->state.el_info[PROJ_ACID].res_level,
+								 true);
+			}
+		}
+		if (randint0(context->dam > 200)) {
+			msg("The stench sickens you.");
+			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_CON, 0, 0, 0,
+						  0, &context->obvious);
+		}
+	}
+	return xtra;
 }
 
-static void project_player_handler_LIGHT(project_player_handler_context_t *context)
+static int project_player_handler_LIGHT(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_LIGHT)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
+
+	/* Confusion for strong unresisted light */
+	if (context->dam > 300) {
+		(void)player_inc_timed(player, TMD_CONFUSED,
+							   2 + randint1(context->dam / 100), true, true);
+	}
+	return 0;
 }
 
-static void project_player_handler_DARK(project_player_handler_context_t *context)
+static int project_player_handler_DARK(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_DARK)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
+
+	/* Unresisted dark from powerful monsters is bad news */
+	if (context->power >= 70) {
+		/* Life draining */
+		if (randint0(context->dam) > 100) {
+			if (player_of_has(player, OF_HOLD_LIFE)) {
+				equip_learn_flag(player, OF_HOLD_LIFE);
+			} else {
+				int drain = context->dam;
+				msg("You feel your life force draining away!");
+				player_exp_lose(player, drain, false);
+			}
+		}
+
+		/* Slowing */
+		if (randint0(context->dam) > 200) {
+			(void)player_inc_timed(player, TMD_SLOW, context->dam / 100, true,
+								   false);
+		}
+
+		/* Amnesia */
+		if (randint0(context->dam) > 300) {
+			(void)player_inc_timed(player, TMD_AMNESIA, context->dam / 100,
+								   true, false);
+		}
+	}
+	return 0;
 }
 
-static void project_player_handler_SOUND(project_player_handler_context_t *context)
+static int project_player_handler_SOUND(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_SOUND)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	/* Stun */
@@ -238,21 +305,29 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
+
+	/* Confusion for strong unresisted sound */
+	if (context->dam > 300) {
+		(void)player_inc_timed(player, TMD_CONFUSED,
+							   2 + randint1(context->dam / 100), true, true);
+	}
+	return 0;
 }
 
-static void project_player_handler_SHARD(project_player_handler_context_t *context)
+static int project_player_handler_SHARD(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_SHARD)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	/* Cuts */
 	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), true,
 						   false);
+	return 0;
 }
 
-static void project_player_handler_NEXUS(project_player_handler_context_t *context)
+static int project_player_handler_NEXUS(project_player_handler_context_t *context)
 {
 	struct monster *mon = NULL;
 	if (context->origin.what == SRC_MONSTER) {
@@ -261,31 +336,34 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 
 	if (player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	/* Stat swap */
 	if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 		msg("You avoid the effect!");
 	} else {
-		project_player_swap_stats();
+		player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
 	}
 
 	if (one_in_(3) && mon) { /* Teleport to */
-		effect_simple(EF_TELEPORT_TO, context->origin, "0", mon->fy, mon->fx, 0, NULL);
+		effect_simple(EF_TELEPORT_TO, context->origin, "0", 0, 0, 0,
+					  mon->grid.y, mon->grid.x, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
-			return;
+			return 0;
 		}
-		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, 0, 0,
+					  NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
-		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, miles, 1, 0, 0, 0, 0, NULL);
 	}
+	return 0;
 }
 
-static void project_player_handler_NETHER(project_player_handler_context_t *context)
+static int project_player_handler_NETHER(project_player_handler_context_t *context)
 {
 	int drain = 200 + (player->exp / 100) * z_info->life_drain_percent;
 
@@ -293,19 +371,36 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
 		equip_learn_flag(player, OF_HOLD_LIFE);
-		return;
+		return 0;
 	}
 
 	/* Life draining */
 	msg("You feel your life force draining away!");
 	player_exp_lose(player, drain, false);
+
+	/* Powerful nether attacks have further side-effects */
+	if (context->power >= 80) {
+		/* Mana loss */
+		if ((randint0(context->dam) > 100) && player->msp) {
+			msg("Your mind is dulled.");
+			player->csp -= MIN(player->csp, context->dam / 10);
+			player->upkeep->redraw |= PR_MANA;
+		}
+
+		/* Loss of energy */
+		if (randint0(context->dam) > 200) {
+			msg("Your energy is sapped!");
+			player->energy = 0;
+		}
+	}
+	return 0;
 }
 
-static void project_player_handler_CHAOS(project_player_handler_context_t *context)
+static int project_player_handler_CHAOS(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_CHAOS)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	/* Hallucination */
@@ -322,29 +417,32 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 	} else {
 		equip_learn_flag(player, OF_HOLD_LIFE);
 	}
+	return 0;
 }
 
-static void project_player_handler_DISEN(project_player_handler_context_t *context)
+static int project_player_handler_DISEN(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_DISEN)) {
 		msg("You resist the effect!");
-		return;
+		return 0;
 	}
 
 	/* Disenchant gear */
-	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, NULL);
+	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, 0, 0, NULL);
+	return 0;
 }
 
-static void project_player_handler_WATER(project_player_handler_context_t *context)
+static int project_player_handler_WATER(project_player_handler_context_t *context)
 {
 	/* Confusion */
 	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), true, true);
 
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(40), true, true);
+	return 0;
 }
 
-static void project_player_handler_ICE(project_player_handler_context_t *context)
+static int project_player_handler_ICE(project_player_handler_context_t *context)
 {
 	if (!player_is_immune(player, ELEM_COLD))
 		inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
@@ -357,16 +455,17 @@ static void project_player_handler_ICE(project_player_handler_context_t *context
 
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(15), true, true);
+	return 0;
 }
 
-static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
+static int project_player_handler_GRAVITY(project_player_handler_context_t *context)
 {
 	msg("Gravity warps around you.");
 
 	/* Blink */
 	if (randint1(127) > player->lev) {
 		const char *five = "5";
-		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, five, 1, 0, 0, 0, 0, NULL);
 	}
 
 	/* Slow */
@@ -380,27 +479,35 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
+	return 0;
 }
 
-static void project_player_handler_INERTIA(project_player_handler_context_t *context)
+static int project_player_handler_INERTIA(project_player_handler_context_t *context)
 {
 	/* Slow */
 	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, false);
+	return 0;
 }
 
-static void project_player_handler_FORCE(project_player_handler_context_t *context)
+static int project_player_handler_FORCE(project_player_handler_context_t *context)
 {
-	char grids_away[5];
+	struct loc centre = origin_get_loc(context->origin);
+
+	/* Player gets pushed in a random direction if on the trap */
+	if (context->origin.what == SRC_TRAP &&	loc_eq(player->grid, centre)) {
+		int d = randint0(8);
+		centre = loc_sum(centre, ddgrid_ddd[d]);
+	}
 
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true);
 
 	/* Thrust player away. */
-	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
+	thrust_away(centre, context->grid, 3 + context->dam / 20);
+	return 0;
 }
 
-static void project_player_handler_TIME(project_player_handler_context_t *context)
+static int project_player_handler_TIME(project_player_handler_context_t *context)
 {
 	if (one_in_(2)) {
 		/* Life draining */
@@ -418,9 +525,10 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 		for (i = 0; i < STAT_MAX; i++)
 			player_stat_dec(player, i, false);
 	}
+	return 0;
 }
 
-static void project_player_handler_PLASMA(project_player_handler_context_t *context)
+static int project_player_handler_PLASMA(project_player_handler_context_t *context)
 {
 	/* Stun */
 	if (!player_of_has(player, OF_PROT_STUN)) {
@@ -430,136 +538,195 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
+	return 0;
 }
 
-static void project_player_handler_METEOR(project_player_handler_context_t *context)
+static int project_player_handler_METEOR(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MISSILE(project_player_handler_context_t *context)
+static int project_player_handler_MISSILE(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MANA(project_player_handler_context_t *context)
+static int project_player_handler_MANA(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_HOLY_ORB(project_player_handler_context_t *context)
+static int project_player_handler_HOLY_ORB(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_ARROW(project_player_handler_context_t *context)
+static int project_player_handler_ARROW(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_LIGHT_WEAK(project_player_handler_context_t *context)
+static int project_player_handler_LIGHT_WEAK(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_DARK_WEAK(project_player_handler_context_t *context)
+static int project_player_handler_DARK_WEAK(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_DARK)) {
-		msg("You resist the effect!");
-		return;
+		if (!player_has(player, PF_UNLIGHT)) {
+			msg("You resist the effect!");
+		}
+		return 0;
 	}
 
 	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
+	return 0;
 }
 
-static void project_player_handler_KILL_WALL(project_player_handler_context_t *context)
+static int project_player_handler_KILL_WALL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_KILL_DOOR(project_player_handler_context_t *context)
+static int project_player_handler_KILL_DOOR(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_KILL_TRAP(project_player_handler_context_t *context)
+static int project_player_handler_KILL_TRAP(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MAKE_DOOR(project_player_handler_context_t *context)
+static int project_player_handler_MAKE_DOOR(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MAKE_TRAP(project_player_handler_context_t *context)
+static int project_player_handler_MAKE_TRAP(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_AWAY_UNDEAD(project_player_handler_context_t *context)
+static int project_player_handler_AWAY_UNDEAD(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_AWAY_EVIL(project_player_handler_context_t *context)
+static int project_player_handler_AWAY_EVIL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_AWAY_ALL(project_player_handler_context_t *context)
+static int project_player_handler_AWAY_SPIRIT(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_TURN_UNDEAD(project_player_handler_context_t *context)
+static int project_player_handler_AWAY_ALL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_TURN_EVIL(project_player_handler_context_t *context)
+static int project_player_handler_TURN_UNDEAD(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_TURN_ALL(project_player_handler_context_t *context)
+static int project_player_handler_TURN_EVIL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_DISP_UNDEAD(project_player_handler_context_t *context)
+static int project_player_handler_TURN_LIVING(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_DISP_EVIL(project_player_handler_context_t *context)
+static int project_player_handler_TURN_ALL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_DISP_ALL(project_player_handler_context_t *context)
+static int project_player_handler_DISP_UNDEAD(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_CLONE(project_player_handler_context_t *context)
+static int project_player_handler_DISP_EVIL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_POLY(project_player_handler_context_t *context)
+static int project_player_handler_DISP_ALL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_HEAL(project_player_handler_context_t *context)
+static int project_player_handler_SLEEP_UNDEAD(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_SPEED(project_player_handler_context_t *context)
+static int project_player_handler_SLEEP_EVIL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_SLOW(project_player_handler_context_t *context)
+static int project_player_handler_SLEEP_ALL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_CONF(project_player_handler_context_t *context)
+static int project_player_handler_MON_CLONE(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_SLEEP(project_player_handler_context_t *context)
+static int project_player_handler_MON_POLY(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_HOLD(project_player_handler_context_t *context)
+static int project_player_handler_MON_HEAL(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_STUN(project_player_handler_context_t *context)
+static int project_player_handler_MON_SPEED(project_player_handler_context_t *context)
 {
+	return 0;
 }
 
-static void project_player_handler_MON_DRAIN(project_player_handler_context_t *context)
+static int project_player_handler_MON_SLOW(project_player_handler_context_t *context)
 {
+	return 0;
+}
+
+static int project_player_handler_MON_CONF(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_HOLD(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_STUN(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_DRAIN(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_CRUSH(project_player_handler_context_t *context)
+{
+	return 0;
 }
 
 static const project_player_handler_f player_handlers[] = {
@@ -592,7 +759,8 @@ static const project_player_handler_f player_handlers[] = {
  *
  * We assume the player is aware of some effect, and always return "true".
  */
-bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
+bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
+			   int power)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
@@ -605,15 +773,21 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 	project_player_handler_context_t context = {
 		origin,
 		r,
-		y,
-		x,
+		grid,
 		dam,
 		typ,
-		obvious,
+		power,
+		obvious
 	};
+	int res_level = typ < ELEM_MAX ? player->state.el_info[typ].res_level : 0;
+
+	/* Decoy has been hit */
+	if (square_isdecoyed(cave, grid) && dam) {
+		square_destroy_decoy(cave, grid);
+	}
 
 	/* No player here */
-	if (!square_isplayer(cave, y, x)) {
+	if (!square_isplayer(cave, grid)) {
 		return false;
 	}
 
@@ -663,18 +837,19 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(player,
-						typ,
-						dam,
-						RANDOMISE,
-					 player->state.el_info[typ].res_level,
+					 typ,
+					 dam,
+					 RANDOMISE,
+					 res_level,
 					 true);
 	if (dam) {
 		take_hit(player, dam, killer);
 	}
 
-	/* Handle side effects */
+	/* Handle side effects, possibly including extra damage */
 	if (player_handler != NULL && player->is_dead == false) {
-		player_handler(&context);
+		int xtra = player_handler(&context);
+		if (xtra) take_hit(player, xtra, killer);
 	}
 
 	/* Disturb */

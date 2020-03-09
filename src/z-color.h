@@ -95,6 +95,7 @@ extern color_type color_table[MAX_COLORS];
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);
 extern const char *attr_to_text(byte a);
+extern byte get_color(byte a, int attr, int n);
 
 extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];

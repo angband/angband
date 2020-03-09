@@ -59,6 +59,10 @@ static const struct module modules[] =
 	{ "sdl", help_sdl, init_sdl },
 #endif /* USE_SDL */
 
+#ifdef USE_SDL2
+	{ "sdl2", help_sdl2, init_sdl2 },
+#endif /* USE_SDL2 */
+
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
 #endif /* USE_GCU */
@@ -198,6 +202,7 @@ static void change_path(const char *info)
 			/* the directory may not exist and may need to be created. */
 			path_build(dirpath, sizeof(dirpath), dir, "");
 			if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+			string_free(info_copy);
 			return;
 		}
 	}

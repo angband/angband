@@ -141,7 +141,7 @@ static int message_flags(const struct monster *mon)
 {
 	int flags = 0;
 
-	if (!panel_contains(mon->fy, mon->fx)) {
+	if (!panel_contains(mon->grid.y, mon->grid.x)) {
 		flags |= MON_MSG_FLAG_OFFSCREEN;
 	}
 

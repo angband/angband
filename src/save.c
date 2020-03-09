@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "monster.h"
@@ -77,8 +78,8 @@ static void wr_item(const struct object *obj)
 	wr_u16b(obj->oidx);
 
 	/* Location */
-	wr_byte(obj->iy);
-	wr_byte(obj->ix);
+	wr_byte(obj->grid.y);
+	wr_byte(obj->grid.x);
 
 	/* Names of object base and object */
 	wr_string(tval_find_name(obj->tval));
@@ -205,9 +206,15 @@ static void wr_monster(const struct monster *mon)
 	struct object *obj = mon->held_obj; 
 	struct object *dummy = object_new();
 
+	wr_u16b(mon->midx);
 	wr_string(mon->race->name);
-	wr_byte(mon->fy);
-	wr_byte(mon->fx);
+	if (mon->original_race) {
+		wr_string(mon->original_race->name);
+	} else {
+		wr_string("none");
+	}
+	wr_byte(mon->grid.y);
+	wr_byte(mon->grid.x);
 	wr_s16b(mon->hp);
 	wr_s16b(mon->maxhp);
 	wr_byte(mon->mspeed);
@@ -239,6 +246,12 @@ static void wr_monster(const struct monster *mon)
 	}
 	wr_item(dummy);
 	object_delete(&dummy);
+
+	/* Write group info */
+	wr_u16b(mon->group_info[PRIMARY_GROUP].index);
+	wr_byte(mon->group_info[PRIMARY_GROUP].role);
+	wr_u16b(mon->group_info[SUMMON_GROUP].index);
+	wr_byte(mon->group_info[SUMMON_GROUP].role);
 }
 
 /**
@@ -246,19 +259,19 @@ static void wr_monster(const struct monster *mon)
  */
 static void wr_trap(struct trap *trap)
 {
-    size_t i;
+	size_t i;
 
 	if (trap->t_idx) {
 		wr_string(trap_info[trap->t_idx].desc);
 	} else {
 		wr_string("");
 	}
-    wr_byte(trap->fy);
-    wr_byte(trap->fx);
-    wr_byte(trap->power);
-    wr_byte(trap->timeout);
+	wr_byte(trap->grid.y);
+	wr_byte(trap->grid.x);
+	wr_byte(trap->power);
+	wr_byte(trap->timeout);
 
-    for (i = 0; i < TRF_SIZE; i++)
+	for (i = 0; i < TRF_SIZE; i++)
 		wr_byte(trap->flags[i]);
 }
 
@@ -348,9 +361,10 @@ void wr_monster_memory(void)
 		struct monster_lore *lore = &l_list[r_idx];
 
 		/* Names and kill counts */
-		if (!race->name || !lore->pkills) continue;
+		if (!race->name || !(lore->pkills || lore->thefts)) continue;
 		wr_string(race->name);
 		wr_u16b(lore->pkills);
+		wr_u16b(lore->thefts);
 	}
 	wr_string("No more monsters");
 }
@@ -410,6 +424,7 @@ void wr_player(void)
 
 	/* Race/Class/Gender/Spells */
 	wr_string(player->race->name);
+	wr_string(player->shape->name);
 	wr_string(player->class->name);
 	wr_byte(player->opts.name_suffix);
 
@@ -472,10 +487,8 @@ void wr_player(void)
 	wr_byte(player->unignoring);
 	wr_s16b(player->deep_descent);
 
-	wr_s16b(player->food);
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
-	wr_byte(player->confusing);
 
 	/* Find the number of timed effects */
 	wr_byte(TMD_MAX);
@@ -773,7 +786,7 @@ static void wr_dungeon_aux(struct chunk *c)
 		for (y = 0; y < c->height; y++) {
 			for (x = 0; x < c->width; x++) {
 				/* Extract the important c->squares[y][x].info flags */
-				tmp8u = c->squares[y][x].info[i];
+				tmp8u = square(c, loc(x, y)).info[i];
 
 				/* If the run is broken, or too full, flush it */
 				if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
@@ -801,7 +814,7 @@ static void wr_dungeon_aux(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			/* Extract a byte */
-			tmp8u = c->squares[y][x].feat;
+			tmp8u = square(c, loc(x, y)).feat;
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
@@ -860,7 +873,7 @@ static void wr_objects_aux(struct chunk *c)
 	wr_u16b(c->obj_max);
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			struct object *obj = c->squares[y][x].obj;
+			struct object *obj = square(c, loc(x, y)).obj;
 			while (obj) {
 				wr_item(obj);
 				obj = obj->next;
@@ -873,7 +886,7 @@ static void wr_objects_aux(struct chunk *c)
 	for (i = 1; i < c->obj_max; i++) {
 		struct object *obj = c->objects[i];
 		if (!obj) continue;
-		if (square_in_bounds_fully(c, obj->iy, obj->ix)) continue;
+		if (square_in_bounds_fully(c, obj->grid)) continue;
 		if (obj->held_m_idx) continue;
 		if (obj->mimicking_m_idx) continue;
 		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;
@@ -920,7 +933,7 @@ static void wr_traps_aux(struct chunk *c)
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			struct trap *trap = c->squares[y][x].trap;
+			struct trap *trap = square(c, loc(x, y)).trap;
 			while (trap) {
 				wr_trap(trap);
 				trap = trap->next;
@@ -939,8 +952,8 @@ void wr_dungeon(void)
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
 	wr_u16b(daycount);
-	wr_u16b(player->py);
-	wr_u16b(player->px);
+	wr_u16b(player->grid.y);
+	wr_u16b(player->grid.x);
 	wr_byte(SQUARE_SIZE);
 
 	if (player->is_dead)

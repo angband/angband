@@ -332,12 +332,12 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		s3 = "";
 
 		/* Bail if looking at a forbidden grid */
-		if (!square_in_bounds(cave, y, x)) {
+		if (!square_in_bounds(cave, loc(x, y))) {
 			break;
 		}
 
 		/* The player */
-		if (cave->squares[y][x].mon < 0) {
+		if (square(cave, loc(x, y)).mon < 0) {
 			/* Description */
 			s1 = "You are ";
 
@@ -373,8 +373,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* Actual monsters */
-		if (cave->squares[y][x].mon > 0) {
-			struct monster *mon = square_monster(cave, y, x);
+		if (square(cave, loc(x, y)).mon > 0) {
+			struct monster *mon = square_monster(cave, loc(x, y));
 			const struct monster_lore *lore = get_lore(mon->race);
 
 			/* Visible */
@@ -409,7 +409,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 						/* Describe the monster */
 						look_mon_desc(buf, sizeof(buf),
-									  cave->squares[y][x].mon);
+									  square(cave, loc(x, y)).mon);
 
 						/* Describe, and prompt for recall */
 						if (player->wizard) {
@@ -466,51 +466,52 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				else if (rf_has(mon->race->flags, RF_MALE)) s1 = "He is ";
 				else s1 = "It is ";
 
-				/* Use a verb */
-				s2 = "carrying ";
+				/* Describe carried objects (wizards only) */
+				if (player->wizard) {
+					/* Use a verb */
+					s2 = "carrying ";
 
-				/* Scan all objects being carried */
-				for (obj = mon->held_obj; obj; obj = obj->next) {
-					char o_name[80];
+					/* Scan all objects being carried */
+					for (obj = mon->held_obj; obj; obj = obj->next) {
+						char o_name[80];
 
-					/* Obtain an object description */
-					object_desc(o_name, sizeof(o_name), obj,
-								ODESC_PREFIX | ODESC_FULL);
+						/* Obtain an object description */
+						object_desc(o_name, sizeof(o_name), obj,
+									ODESC_PREFIX | ODESC_FULL);
 
-					/* Describe the object */
-					if (player->wizard) {
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, o_name, coords, y, x,
 								(int)cave->noise.grids[y][x],
 								(int)cave->scent.grids[y][x]);
+
+						prt(out_val, 0, 0);
+						move_cursor_relative(y, x);
+						press = inkey_m();
+
+						if (press.type == EVT_MOUSE) {
+							/* Stop on right click */
+							if (press.mouse.button == 2)
+								break;
+
+							/* Sometimes stop at "space" key */
+							if (press.mouse.button && !(mode & (TARGET_LOOK)))
+								break;
+						} else {
+							/* Stop on everything but "return"/"space" */
+							if ((press.key.code != KC_ENTER) &&
+								(press.key.code != ' '))
+								break;
+
+							/* Sometimes stop at "space" key */
+							if ((press.key.code == ' ') &&
+								!(mode & (TARGET_LOOK)))
+								break;
+						}
+
+						/* Change the intro */
+						s2 = "also carrying ";
 					}
-
-					prt(out_val, 0, 0);
-					move_cursor_relative(y, x);
-					press = inkey_m();
-
-					if (press.type == EVT_MOUSE) {
-						/* Stop on right click */
-						if (press.mouse.button == 2)
-							break;
-
-						/* Sometimes stop at "space" key */
-						if (press.mouse.button && !(mode & (TARGET_LOOK)))
-							break;
-					} else {
-						/* Stop on everything but "return"/"space" */
-						if ((press.key.code != KC_ENTER) &&
-							(press.key.code != ' '))
-							break;
-
-						/* Sometimes stop at "space" key */
-						if ((press.key.code == ' ') && !(mode & (TARGET_LOOK)))
-							break;
-					}
-
-					/* Change the intro */
-					s2 = "also carrying ";
 				}
 
 				/* Double break */
@@ -522,8 +523,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* A trap */
-		if (square_isvisibletrap(cave, y, x)) {
-			struct trap *trap = cave->squares[y][x].trap;
+		if (square_isvisibletrap(cave, loc(x, y))) {
+			struct trap *trap = square(cave, loc(x, y)).trap;
 
 			/* Not boring */
 			boring = false;
@@ -531,7 +532,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Interact */
 			while (1) {
 				/* Change the intro */
-				if (cave->squares[y][x].mon < 0) {
+				if (square(cave, loc(x, y)).mon < 0) {
 					s1 = "You are ";
 					s2 = "on ";
 				} else {
@@ -573,14 +574,13 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 	
 		/* Double break */
-		if (square_isvisibletrap(cave, y, x))
+		if (square_isvisibletrap(cave, loc(x, y)))
 			break;
 	
 		/* Scan all sensed objects in the grid */
-		floor_num = scan_distant_floor(floor_list, floor_max, y, x);
+		floor_num = scan_distant_floor(floor_list, floor_max, loc(x, y));
 		if ((floor_num > 0) &&
-		    (!(player->timed[TMD_BLIND]) ||
-			 (y == player->py && x == player->px))) {
+		    (!(player->timed[TMD_BLIND]) || loc_eq(loc(x, y), player->grid))) {
 			/* Not boring */
 			boring = false;
 
@@ -678,20 +678,20 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Double break */
 		if (obj) break;
 
-		name = square_apparent_name(cave, player, y, x);
+		name = square_apparent_name(cave, player, loc(x, y));
 
 		/* Terrain feature if needed */
-		if (boring || square_isinteresting(cave, y, x)) {
+		if (boring || square_isinteresting(cave, loc(x, y))) {
 			/* Hack -- handle unknown grids */
 
 			/* Pick a prefix */
-			if (*s2 && square_isdoor(cave, y, x)) s2 = "in ";
+			if (*s2 && square_isdoor(cave, loc(x, y))) s2 = "in ";
 
 			/* Pick proper indefinite article */
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if (square_isshop(cave, y, x))
+			if (square_isshop(cave, loc(x, y)))
 				s3 = "the entrance to the ";
 
 			/* Display a message */
@@ -755,18 +755,18 @@ void textui_target(void)
  */
 void textui_target_closest(void)
 {
-	if (target_set_closest(TARGET_KILL)) {
+	if (target_set_closest(TARGET_KILL, NULL)) {
 		bool visibility;
-		int x, y;
+		struct loc target;
 
-		target_get(&x, &y);
+		target_get(&target);
 
 		/* Visual cue */
 		Term_fresh();
 		Term_get_cursor(&visibility);
 		(void)Term_set_cursor(true);
-		move_cursor_relative(y, x);
-		Term_redraw_section(x, y, x, y);
+		move_cursor_relative(target.y, target.x);
+		Term_redraw_section(target.y, target.x, target.y, target.x);
 
 		/* TODO: what's an appropriate amount of time to spend highlighting */
 		Term_xtra(TERM_XTRA_DELAY, 150);
@@ -810,10 +810,9 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		byte colour;
 
 		/* Find the co-ordinates on the level. */
-		int y = path_g[i].y;
-		int x = path_g[i].x;
-		struct monster *mon = square_monster(cave, y, x);
-		struct object *obj = square_object(player->cave, y, x);
+		struct loc grid = path_g[i];
+		struct monster *mon = square_monster(cave, grid);
+		struct object *obj = square_object(player->cave, grid);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -824,15 +823,15 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		 * If some of it has been drawn, finish now as there are no
 		 * more visible squares to draw.
 		 */
-		 if (panel_contains(y,x)) on_screen = true;
+		 if (panel_contains(grid.y, grid.x)) on_screen = true;
 		 else if (on_screen) break;
 		 else continue;
 
 	 	/* Find the position on-screen */
-		move_cursor_relative(y,x);
+		move_cursor_relative(grid.y, grid.x);
 
 		/* This square is being overwritten, so save the original. */
-		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
+		Term_what(Term->scr->cx, Term->scr->cy, a + i, c + i);
 
 		/* Choose a colour. */
 		if (pastknown) {
@@ -850,12 +849,12 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if (!square_isprojectable(cave, y, x) &&
-				  (square_isknown(cave, y, x) || square_isseen(cave, y, x)))
+		else if (!square_isprojectable(cave, grid) &&
+				 (square_isknown(cave, grid) || square_isseen(cave, grid)))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x)) {
+		else if (!square_isknown(cave, grid) && !square_isseen(cave, grid)) {
 			/* Unknown squares are grey. */
 			pastknown = true;
 			colour = COLOUR_L_DARK;
@@ -940,8 +939,8 @@ static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
  */
 bool target_set_interactive(int mode, int x, int y)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	int path_n;
 	struct loc path_g[256];
@@ -962,9 +961,9 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
-	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, y, x)) {
-		x = player->px;
-		y = player->py;
+	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, loc(x, y))) {
+		x = player->grid.x;
+		y = player->grid.y;
 	} else {
 		flag = false;
 	}
@@ -983,7 +982,7 @@ bool target_set_interactive(int mode, int x, int y)
 	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the target set */
-	targets = target_get_monsters(mode);
+	targets = target_get_monsters(mode, NULL);
 
 	/* Start near the player */
 	m = 0;
@@ -1002,14 +1001,15 @@ bool target_set_interactive(int mode, int x, int y)
 		
 			/* Update help */
 			if (help) {
-				bool good_target = target_able(square_monster(cave, y, x));
+				bool good_target =
+					target_able(square_monster(cave, targets->pts[m]));
 				target_display_help(good_target,
 									!(flag && point_set_size(targets)));
 			}
 
 			/* Find the path. */
-			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
-								  PROJECT_THRU | PROJECT_INFO);
+			path_n = project_path(path_g, z_info->max_range, loc(px, py),
+								  loc(x, y), PROJECT_THRU | PROJECT_INFO);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))
@@ -1038,7 +1038,7 @@ bool target_set_interactive(int mode, int x, int y)
 					x = KEY_GRID_X(press);
 					if (press.mouse.mods & KC_MOD_CONTROL) {
 						/* same as keyboard target selection command below */
-						struct monster *m_local = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, loc(x, y));
 
 						if (target_able(m_local)) {
 							/* Set up target information */
@@ -1061,8 +1061,8 @@ bool target_set_interactive(int mode, int x, int y)
 				} else {
 					y = KEY_GRID_Y(press);
 					x = KEY_GRID_X(press);
-					if (square_monster(cave, y, x) ||
-						square_object(cave, y, x)) {
+					if (square_monster(cave, loc(x, y)) ||
+						square_object(cave, loc(x, y))) {
 							/* reset the flag, to make sure we stay in this
 							 * mode if something is actually there */
 						flag = false;
@@ -1116,8 +1116,10 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Handle stuff */
 						handle_stuff(player);
 
-						y = player->py;
-						x = player->px;
+						y = player->grid.y;
+						x = player->grid.x;
+						flag = false;
+						break;
 					}
 
 					case 'o':
@@ -1136,7 +1138,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case '0':
 					case '.':
 					{
-						struct monster *m_local = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, loc(x, y));
 
 						if (target_able(m_local)) {
 							health_track(player->upkeep, m_local);
@@ -1199,7 +1201,7 @@ bool target_set_interactive(int mode, int x, int y)
 					if (change_panel(d)) {
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_get_monsters(mode);
+						targets = target_get_monsters(mode, NULL);
 
 						/* Find a new monster */
 						i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
@@ -1208,7 +1210,7 @@ bool target_set_interactive(int mode, int x, int y)
 						if ((i < 0) && modify_panel(Term, old_wy, old_wx)) {
 							/* Recalculate interesting grids */
 							point_set_dispose(targets);
-							targets = target_get_monsters(mode);
+							targets = target_get_monsters(mode, NULL);
 						}
 
 						/* Handle stuff */
@@ -1222,14 +1224,14 @@ bool target_set_interactive(int mode, int x, int y)
 		} else {
 			/* Update help */
 			if (help) {
-				bool good_target = target_able(square_monster(cave, y, x));
+				bool good_target = target_able(square_monster(cave, loc(x, y)));
 				target_display_help(good_target,
 									!(flag && point_set_size(targets)));
 			}
 
 			/* Find the path. */
-			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
-								  PROJECT_THRU | PROJECT_INFO);
+			path_n = project_path(path_g, z_info->max_range, loc(px, py),
+								  loc(x, y), PROJECT_THRU | PROJECT_INFO);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))
@@ -1311,11 +1313,11 @@ bool target_set_interactive(int mode, int x, int y)
 
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_get_monsters(mode);
+						targets = target_get_monsters(mode, NULL);
 					}
 
-					if (square_monster(cave, y, x) ||
-						square_object(cave, y, x)) {
+					if (square_monster(cave, loc(x, y)) ||
+						square_object(cave, loc(x, y))) {
 						/* scan the interesting list and see if there in
 						 * anything here */
 						for (i = 0; i < point_set_size(targets); i++) {
@@ -1356,8 +1358,8 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Handle stuff */
 						handle_stuff(player);
 
-						y = player->py;
-						x = player->px;
+						y = player->grid.y;
+						x = player->grid.x;
 					}
 
 					case 'o':
@@ -1374,8 +1376,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 						/* Pick a nearby monster */
 						for (i = 0; i < point_set_size(targets); i++) {
-							t = distance(y, x, targets->pts[i].y,
-										 targets->pts[i].x);
+							t = distance(loc(x, y), targets->pts[i]);
 
 							/* Pick closest */
 							if (t < bd) {
@@ -1458,7 +1459,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					/* Recalculate interesting grids */
 					point_set_dispose(targets);
-					targets = target_get_monsters(mode);
+					targets = target_get_monsters(mode, NULL);
 				}
 			}
 		}

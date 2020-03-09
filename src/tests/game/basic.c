@@ -61,14 +61,14 @@ int test_newgame(void *state) {
 	cmd_set_arg_string(cmdq_peek(), "name", "Tester");
 
 	cmdq_push(CMD_ACCEPT_CHARACTER);
-	cmdq_execute(CMD_BIRTH);
+	cmdq_execute(CTX_BIRTH);
 
 	eq(player->is_dead, false);
 	prepare_next_level(&cave, player);
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	/* Should be all set up to save properly now */
 	eq(savefile_save("Test1"), true);
@@ -87,7 +87,7 @@ int test_loadgame(void *state) {
 	eq(player->is_dead, false);
 	notnull(cave);
 	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
+	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	ok;
 }
@@ -135,11 +135,11 @@ int test_drop_pickup(void *state) {
 		cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
 		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
 		run_game_loop();
-		eq(square_object(cave, player->py, player->px)->number, 1);
+		eq(square_object(cave, player->grid)->number, 1);
 		cmdq_push(CMD_AUTOPICKUP);
 		run_game_loop();
 	}
-	null(square_object(cave, player->py, player->px));
+	null(square_object(cave, player->grid));
 
 	ok;
 }
@@ -159,15 +159,15 @@ int test_drop_eat(void *state) {
 	cmd_set_arg_number(cmdq_peek(), "quantity",
 					   player->upkeep->inven[0]->number);
 	run_game_loop();
-	eq(square_object(cave, player->py, player->px)->number, num);
+	eq(square_object(cave, player->grid)->number, num);
 	cmdq_push(CMD_EAT);
 	cmd_set_arg_item(cmdq_peek(), "item",
-					 square_object(cave, player->py, player->px));
+					 square_object(cave, player->grid));
 	run_game_loop();
 	if (num > 1) {
-		eq(square_object(cave, player->py, player->px)->number, num - 1);
+		eq(square_object(cave, player->grid)->number, num - 1);
 	} else {
-		null(square_object(cave, player->py, player->px));
+		null(square_object(cave, player->grid));
 	}
 
 	ok;

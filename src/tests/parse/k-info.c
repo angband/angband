@@ -67,15 +67,35 @@ int test_type0(void *state) {
 	ok;
 }
 
-int test_properties0(void *state) {
-	errr r = parser_parse(state, "properties:10:5:120");
+int test_level0(void *state) {
+	errr r = parser_parse(state, "level:10");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
 	eq(k->level, 10);
+	ok;
+}
+
+int test_weight0(void *state) {
+	errr r = parser_parse(state, "weight:5");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
 	eq(k->weight, 5);
+	ok;
+}
+
+int test_cost0(void *state) {
+	errr r = parser_parse(state, "cost:120");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
 	eq(k->cost, 120);
 	ok;
 }
@@ -93,20 +113,30 @@ int test_alloc0(void *state) {
 	ok;
 }
 
-int test_combat0(void *state) {
-	errr r = parser_parse(state, "combat:3:4d8:1d4:2d5:7d6");
+int test_attack0(void *state) {
+	errr r = parser_parse(state, "attack:4d8:1d4:2d5");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->ac, 3);
 	eq(k->dd, 4);
 	eq(k->ds, 8);
 	eq(k->to_h.dice, 1);
 	eq(k->to_h.sides, 4);
 	eq(k->to_d.dice, 2);
 	eq(k->to_d.sides, 5);
+	ok;
+}
+
+int test_armor0(void *state) {
+	errr r = parser_parse(state, "armor:3:7d6");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
+	eq(k->ac, 3);
 	eq(k->to_a.dice, 7);
 	eq(k->to_a.sides, 6);
 	ok;
@@ -200,9 +230,12 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "graphics0", test_graphics0 },
 	{ "graphics1", test_graphics1 },
-	{ "properties0", test_properties0 },
+	{ "level0", test_level0 },
+	{ "weight0", test_weight0 },
+	{ "cost0", test_cost0 },
 	{ "alloc0", test_alloc0 },
-	{ "combat0", test_combat0 },
+	{ "attack0", test_attack0 },
+	{ "armor0", test_armor0 },
 	{ "charges0", test_charges0 },
 	{ "pile0", test_pile0 },
 	{ "flags0", test_flags0 },

@@ -1,0 +1,11 @@
+{% extends "!layout.html" %}
+
+{% block header %}
+<header id="pageheader">
+    <div style="display: flex; align-items: baseline;">
+        <h1>The Angband Manual</h1>
+        <span class="version">v{{ release }}</span>
+    </div>
+    <img src="{{ pathto('_static/att.svg', 1) }}" style="height: 4rem;">
+</header>
+{% endblock %}

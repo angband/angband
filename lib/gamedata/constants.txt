@@ -35,6 +35,12 @@ mon-gen:ood-chance:25
 # Maximum out-of-depth amount for monster generation
 mon-gen:ood-amount:10
 
+# Maximum number of monsters in a group
+mon-gen:group-max:25
+
+# Maximum distance of a group of monsters from a related group
+mon-gen:group-dist:5
+
 #---------------------------------------------------------------------
 # Monster Gameplay
 #---------------------------------------------------------------------
@@ -190,3 +196,6 @@ player:max-range:20
 
 # Amount of gold (or value of equipment) the player starts with
 player:start-gold:600
+
+# Number of turns that 1% of player food capacity feeds them for
+player:food-value:100

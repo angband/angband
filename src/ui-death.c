@@ -331,6 +331,14 @@ static void death_spoilers(const char *title, int row)
 	do_cmd_spoilers();
 }
 
+/***
+ * Menu command: start a new game
+ */
+static void death_new_game(const char *title, int row)
+{
+    play_again = get_check("Start a new game? ");
+}
+
 /**
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
@@ -344,6 +352,7 @@ static menu_action death_actions[] =
 	{ 0, 'x', "Examine items", death_examine   },
 	{ 0, 'h', "History",       death_history   },
 	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'n', "New Game",      death_new_game  },
 	{ 0, 'q', "Quit",          NULL            },
 };
 
@@ -379,12 +388,13 @@ void death_screen(void)
 
 	menu_layout(death_menu, &area);
 
-	while (!done)
+	while (!done && !play_again)
 	{
 		ui_event e = menu_select(death_menu, EVT_KBRD, false);
 		if (e.type == EVT_KBRD)
 		{
 			if (e.key.code == KTRL('X')) break;
+			if (e.key.code == KTRL('N')) play_again = true;
 		}
 		else if (e.type == EVT_SELECT)
 		{

@@ -38,6 +38,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-spell.h"
 #include "store.h"
 #include "target.h"
 #include "debug.h"
@@ -73,10 +74,10 @@ static const char *obj_flags[] = {
 /**
  * Return the store instance at the given location
  */
-struct store *store_at(struct chunk *c, int y, int x)
+struct store *store_at(struct chunk *c, struct loc grid)
 {
-	if (square_isshop(c, y, x))
-		return &stores[square_shopnum(cave, y, x)];
+	if (square_isshop(c, grid))
+		return &stores[square_shopnum(cave, grid)];
 
 	return NULL;
 }
@@ -194,22 +195,50 @@ static enum parser_error parse_normal(struct parser *p) {
 static enum parser_error parse_always(struct parser *p) {
 	struct store *s = parser_priv(p);
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
-	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	struct object_kind *kind = NULL;
 
-	struct object_kind *kind = lookup_kind(tval, sval);
-	if (!kind)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	/* Mostly svals are given, but special handling is needed for books */
+	if (parser_hasval(p, "sval")) {
+		int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+		kind = lookup_kind(tval, sval);
+		if (!kind) {
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+		}
 
-	/* Expand if necessary */
-	if (!s->always_num) {
-		s->always_size = 8;
-		s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
-	} else if (s->always_num >= s->always_size) {
-		s->always_size += 8; 
-		s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+		/* Expand if necessary */
+		if (!s->always_num) {
+			s->always_size = 8;
+			s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
+		} else if (s->always_num >= s->always_size) {
+			s->always_size += 8;
+			s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+		}
+
+		s->always_table[s->always_num++] = kind;
+	} else {
+		/* Books */
+		struct object_base *book_base = &kb_info[tval];
+		int i;
+
+		/* Run across all the books for this type, add the town books */
+		for (i = 1; i <= book_base->num_svals; i++) {
+			const struct class_book *book = NULL;
+			kind = lookup_kind(tval, i);
+			book = object_kind_to_book(kind);
+			if (!book->dungeon) {
+				/* Expand if necessary */
+				if (!s->always_num) {
+					s->always_size = 8;
+					s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
+				} else if (s->always_num >= s->always_size) {
+					s->always_size += 8;
+					s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+				}
+
+				s->always_table[s->always_num++] = kind;
+			}
+		}
 	}
-
-	s->always_table[s->always_num++] = kind;
 
 	return PARSE_ERROR_NONE;
 }
@@ -277,7 +306,7 @@ struct parser *init_parse_stores(void) {
 	parser_reg(p, "slots uint min uint max", parse_slots);
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
-	parser_reg(p, "always sym tval sym sval", parse_always);
+	parser_reg(p, "always sym tval ?sym sval", parse_always);
 	parser_reg(p, "buy str base", parse_buy);
 	parser_reg(p, "buy-flag sym flag str base", parse_buy_flag);
 	return p;
@@ -513,8 +542,12 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 	/* Home accepts anything */
 	if (store->sidx == STORE_HOME) return true;
 
-	/* Ignore "worthless" items */
-	if (object_value(obj, 1) <= 0) return false;
+	/* Ignore apparently worthless items, except no-selling {??} items */
+	if (object_value(obj, 1) <= 0 && !(OPT(player, birth_no_selling) &&
+									   tval_has_variable_power(obj) &&
+									   !object_runes_known(obj))) {
+		return false;
+	}
 
 	/* No buy list means we buy anything */
 	if (!store->buy) return true;
@@ -691,6 +724,9 @@ static void mass_produce(struct object *obj)
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_SHADOW_BOOK:
+		case TV_OTHER_BOOK:
 		{
 			if (cost <= 50L) size += mass_roll(2, 3);
 			if (cost <= 500L) size += mass_roll(1, 3);
@@ -944,7 +980,6 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
-	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	pile_insert(&store->stock, obj);
 	pile_insert(&store->stock_k, known_obj);
 	store->stock_num++;
@@ -1176,6 +1211,7 @@ static bool store_create_random(struct store *store)
 		obj->known = known_obj;
 
 		/* Know everything the player knows, no origin yet */
+		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 		object_set_base_known(obj);
 		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 		player_know_object(player, obj);
@@ -1231,6 +1267,7 @@ static struct object *store_create_item(struct store *store,
 
 	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	object_set_base_known(obj);
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	player_know_object(player, obj);
@@ -1301,6 +1338,14 @@ static void store_maint(struct store *s)
 		if (!restock_attempts)
 			quit_fmt("Unable to (de-)stock store %d. Please report this bug",
 					 s->sidx + 1);
+	} else {
+		/* For the Bookseller, occasionally sell a book */
+		if (s->always_num && s->stock_num) {
+			int sales = randint1(s->stock_num);
+			while (sales--) {
+				store_delete_random(s);
+			}
+		}
 	}
 
 	/* Ensure staples are created */
@@ -1581,7 +1626,7 @@ void do_cmd_buy(struct command *cmd)
 	char o_name[80];
 	int price;
 
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 
 	if (!store) {
 		msg("You cannot purchase items when not in a store.");
@@ -1708,7 +1753,7 @@ void do_cmd_retrieve(struct command *cmd)
 
 	struct object *obj, *known_obj, *picked_item;
 
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 
 	if (store->sidx != STORE_HOME) {
 		msg("You are not currently at home.");
@@ -1766,7 +1811,7 @@ void do_cmd_retrieve(struct command *cmd)
  */
 bool store_will_buy_tester(const struct object *obj)
 {
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 	if (!store) return false;
 
 	return store_will_buy(store, obj);
@@ -1779,7 +1824,7 @@ void do_cmd_sell(struct command *cmd)
 {
 	int amt;
 	struct object dummy_item;
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 	int price, dummy, value;
 	char o_name[120];
 	char label;
@@ -1902,8 +1947,9 @@ void do_cmd_stash(struct command *cmd)
 {
 	int amt;
 	struct object dummy;
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 	char o_name[120];
+	char label;
 
 	struct object *obj, *dropped;
 	bool none_left = false;
@@ -1934,6 +1980,9 @@ void do_cmd_stash(struct command *cmd)
 		return;
 	}
 
+	/* Get where the object is now */
+	label = gear_to_label(obj);
+
 	/* Now get the real item */
 	dropped = gear_object_for_use(obj, amt, false, &none_left);
 
@@ -1941,7 +1990,7 @@ void do_cmd_stash(struct command *cmd)
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, gear_to_label(obj));
+	msg("You drop %s (%c).", o_name, label);
 
 	/* Handle stuff */
 	handle_stuff(player);

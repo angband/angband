@@ -125,7 +125,7 @@ dist:
 	@echo copying files...
 	@cp ../lib/gamedata/*.txt $(TMPDIR)/lib/gamedata
 	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
-	@cp ../lib/help/*.txt ../lib/help/*.hlp $(TMPDIR)/lib/help
+	@cp ../lib/help/*.txt $(TMPDIR)/lib/help
 	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customize
 	@cp ../lib/fonts/*.txt $(TMPDIR)/lib/fonts
 	@echo attempting to install sound and graphics

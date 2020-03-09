@@ -38,7 +38,7 @@ bool kind_is_good(const struct object_kind *kind);
 struct object_kind *get_obj_num(int level, bool good, int tval);
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval);
-void acquirement(int y1, int x1, int level, int num, bool great);
+void acquirement(struct loc grid, int level, int num, bool great);
 struct object_kind *money_kind(const char *name, int value);
 struct object *make_gold(int lev, char *coin_type);
 
