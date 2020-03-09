@@ -1229,11 +1229,6 @@ static int pict_cols = 0;
 static int pict_rows = 0;
 
 /**
- * Value used to signal that we using ASCII, not graphical tiles.
- */ 
-#define GRAF_MODE_NONE 0
-
-/**
  * Requested graphics mode (as a grafID).
  * The current mode is stored in current_graphics_mode.
  */
@@ -1252,6 +1247,19 @@ static int tile_multipliers_changed = 0;
 static BOOL graphics_are_enabled(void)
 {
     return current_graphics_mode && current_graphics_mode->grafID != GRAPHICS_NONE;
+}
+
+/**
+ * Like graphics_are_enabled(), but test the requested graphics mode.
+ */
+static BOOL graphics_will_be_enabled(void)
+{
+    if (graf_mode_req == GRAPHICS_NONE) {
+	return NO;
+    }
+
+    graphics_mode *new_mode = get_graphics_mode(graf_mode_req);
+    return new_mode && new_mode->grafID != GRAPHICS_NONE;
 }
 
 /**
@@ -1341,8 +1349,7 @@ static bool initialized = FALSE;
 - (BOOL)useLiveResizeOptimization
 {
     /* If we have graphics turned off, text rendering is fast enough that we
-	 * don't need to use a live resize optimization. Note here we are depending
-	 * on current_graphics_mode being NULL when in text mode. */
+	 * don't need to use a live resize optimization. */
     return self->inLiveResize && graphics_are_enabled();
 }
 
@@ -2779,11 +2786,11 @@ static errr Term_xtra_cocoa_react(void)
 
 	/* Handle graphics */
 	int expected_graf_mode = (current_graphics_mode) ?
-	    current_graphics_mode->grafID : GRAF_MODE_NONE;
+	    current_graphics_mode->grafID : GRAPHICS_NONE;
 	if (graf_mode_req != expected_graf_mode)
 	{
 	    graphics_mode *new_mode;
-	    if (graf_mode_req != GRAF_MODE_NONE) {
+	    if (graf_mode_req != GRAPHICS_NONE) {
 		new_mode = get_graphics_mode(graf_mode_req);
 	    } else {
 		new_mode = NULL;
@@ -3558,8 +3565,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
                             const wchar_t *cp, const int *tap,
                             const wchar_t *tcp)
 {
-    /* Paranoia: Bail if we don't have a current graphics mode */
-    if (! current_graphics_mode) return -1;
+    /* Paranoia: Bail if graphics aren't enabled */
+    if (! graphics_are_enabled()) return -1;
 
     AngbandContext* angbandContext = (__bridge AngbandContext*) (Term->data);
 
@@ -4296,8 +4303,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     NSInteger hscl, vscl;
 
-    if (graf_mode_req != GRAF_MODE_NONE &&
-	get_graphics_mode(graf_mode_req)->grafID != GRAPHICS_NONE) {
+    if (graphics_will_be_enabled()) {
 	if ([[NSUserDefaults angbandDefaults]
 		boolForKey:AngbandUseDefaultTileMultDefaultsKey]) {
 	    [self computeDefaultTileSetScaling:&hscl vertical:&vscl];
@@ -4462,8 +4468,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
     /* Preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
-    if (graf_mode_req != GRAF_MODE_NONE &&
-        get_graphics_mode(graf_mode_req)->grafID != GRAPHICS_NONE) {
+    if (graphics_will_be_enabled()) {
         tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
         tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
     } else {
@@ -4689,7 +4694,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
  */
 - (void)computeDefaultTileSetScaling:(NSInteger *)pHoriz vertical:(NSInteger *)pVert
 {
-    if (graf_mode_req != GRAF_MODE_NONE) {
+    if (graf_mode_req != GRAPHICS_NONE) {
 	graphics_mode *new_mode = get_graphics_mode(graf_mode_req);
 
 	if (new_mode->grafID != GRAPHICS_NONE) {
