@@ -1261,6 +1261,7 @@ static Boolean game_in_progress = FALSE;
 
 
 #pragma mark Prototypes
+static BOOL redraw_for_tiles_or_term0_font(void);
 static void wakeup_event_loop(void);
 static void hook_plog(const char *str);
 static NSString* get_lib_directory(void);
@@ -3613,6 +3614,25 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 }
 
 /**
+ * Handle redrawing for a change to the tile set, tile scaling, or main window
+ * font.  Returns YES if the redrawing was initiated.  Otherwise returns NO.
+ */
+static BOOL redraw_for_tiles_or_term0_font(void)
+{
+    /*
+     * do_cmd_redraw() will always clear, but only provides something
+     * to replace the erased content if a character has been generated.
+     * Therefore, only call it if a character has been generated.
+     */
+    if (character_generated) {
+	do_cmd_redraw();
+	wakeup_event_loop();
+	return YES;
+    }
+    return NO;
+}
+
+/**
  * Post a nonsense event so that our event loop wakes up
  */
 static void wakeup_event_loop(void)
@@ -4200,11 +4220,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	[self recomputeDefaultTileMultipliersIfNecessary];
     }
 
-    if (mainTerm == 0 && game_in_progress) {
-	/* Mimics the logic in setGraphicsMode(). */
-	do_cmd_redraw();
-	wakeup_event_loop();
-    } else {
+    if (mainTerm != 0 || ! redraw_for_tiles_or_term0_font()) {
 	[(id)angbandContext requestRedraw];
     }
 }
@@ -4653,14 +4669,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
     [self recomputeDefaultTileMultipliersIfNecessary];
 
-    if (game_in_progress)
-    {
-        /* Hack -- Force redraw */
-        do_cmd_redraw();
-
-        /* Wake up the event loop so it notices the change */
-        wakeup_event_loop();
-    }
+    redraw_for_tiles_or_term0_font();
 }
 
 - (void)selectWindow: (id)sender
@@ -4753,11 +4762,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    tile_width = h;
 	    tile_height = v;
 	    tile_multipliers_changed = 1;
-	    if (game_in_progress) {
-		/* Mimics the logic in setGraphicsMode(). */
-		do_cmd_redraw();
-		wakeup_event_loop();
-	    }
+	    redraw_for_tiles_or_term0_font();
 	}
     }
 }
