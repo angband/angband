@@ -1019,7 +1019,7 @@ effect:PROJECT_LOS:SLEEP_EVIL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each evil monster within line of sight.
-desc:  Uniques and monsters that resist confusion are not affected.
+desc:  Monsters that resist confusion are not affected.
 
 spell:Shadow Shift:15:10:50:10
 effect:TELEPORT
@@ -1046,7 +1046,7 @@ effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare a single monster for a level-dependent duration.
-desc:  Uniques and monsters that resist fear are not affected.
+desc:  Monsters that resist fear are not affected.
 
 spell:Vampire Strike:20:5:50:10
 effect:JUMP_AND_BITE
@@ -1605,7 +1605,7 @@ effect:PROJECT_LOS:TURN_LIVING
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare every living monster in line of sight for a
-desc: level-dependent duration.  Uniques and monsters that resist fear are not
+desc: level-dependent duration.  Monsters that resist fear are not
 desc: affected.
 
 spell:Poison Brand:20:30:40:90

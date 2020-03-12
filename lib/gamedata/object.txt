@@ -411,7 +411,7 @@ type:food
 graphics:,:w
 level:0
 weight:10
-cost:1
+cost:2000
 alloc:10:60 to 100
 power:0
 msg:Refreshing!
