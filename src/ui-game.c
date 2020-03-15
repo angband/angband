@@ -29,6 +29,7 @@
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-path.h"
+#include "player-properties.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "target.h"
@@ -133,6 +134,7 @@ struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL },
 	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq },
+	{ "View abilities", { 'S' }, CMD_NULL, do_cmd_abilities, NULL },
 	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq },
 	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL },

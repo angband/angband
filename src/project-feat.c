@@ -225,6 +225,9 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 
 		/* Disable the trap */
 		square_disable_trap(cave, grid);
+
+		/* Visibility change */
+		player->upkeep->update |= (PU_UPDATE_VIEW);
 	} else if (square_islockeddoor(cave, grid)) {
 		/* Unlock the door */
 		square_unlock_door(cave, grid);

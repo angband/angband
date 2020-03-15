@@ -27,6 +27,10 @@
 #include "player-util.h"
 #include "trap.h"
 
+/**
+ * ------------------------------------------------------------------------
+ * General trap routines
+ * ------------------------------------------------------------------------ */
 struct trap_kind *trap_info;
 
 /**
@@ -145,6 +149,96 @@ static bool square_verify_trap(struct chunk *c, struct loc grid, int vis)
     return false;
 }
 
+/**
+ * Free memory for all traps on a grid
+ */
+void square_free_trap(struct chunk *c, struct loc grid)
+{
+	struct trap *next, *trap = square_trap(c, grid);
+
+	while (trap) {
+		next = trap->next;
+		mem_free(trap);
+		trap = next;
+	}
+}
+
+/**
+ * Remove all traps from a grid.
+ *
+ * Return true if traps were removed.
+ */
+bool square_remove_all_traps(struct chunk *c, struct loc grid)
+{
+	struct trap *trap = square(c, grid).trap;
+	bool were_there_traps = trap == NULL ? false : true;
+
+	assert(square_in_bounds(c, grid));
+	while (trap) {
+		struct trap *next_trap = trap->next;
+		mem_free(trap);
+		trap = next_trap;
+	}
+
+	square_set_trap(c, grid, NULL);
+
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, grid)) {
+		square_light_spot(c, grid);
+	}
+
+	(void)square_verify_trap(c, grid, 0);
+
+	return were_there_traps;
+}
+
+/**
+ * Remove all traps with the given index.
+ *
+ * Return true if traps were removed.
+ */
+bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
+{
+	bool removed = false;
+
+	/* Look at the traps in this grid */
+	struct trap *prev_trap = NULL;
+	struct trap *trap = square(c, grid).trap;
+
+	assert(square_in_bounds(c, grid));
+	while (trap) {
+		struct trap *next_trap = trap->next;
+
+		if (t_idx_remove == trap->t_idx) {
+			mem_free(trap);
+			removed = true;
+
+			if (prev_trap) {
+				prev_trap->next = next_trap;
+			} else {
+				square_set_trap(c, grid, next_trap);
+			}
+
+			break;
+		}
+
+		prev_trap = trap;
+		trap = next_trap;
+	}
+
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, grid))
+		square_light_spot(c, grid);
+
+	(void)square_verify_trap(c, grid, 0);
+
+	return removed;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Player traps
+ * ------------------------------------------------------------------------ */
 /**
  * Determine if a cave grid is allowed to have player traps in it.
  */
@@ -285,20 +379,6 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 }
 
 /**
- * Free memory for all traps on a grid
- */
-void square_free_trap(struct chunk *c, struct loc grid)
-{
-	struct trap *next, *trap = square_trap(c, grid);
-
-	while (trap) {
-		next = trap->next;
-		mem_free(trap);
-		trap = next;
-	}
-}
-
-/**
  * Reveal some of the player traps in a square
  */
 bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
@@ -327,9 +407,9 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
 
 		/* Trap is invisible */
 		if (!trf_has(trap->flags, TRF_VISIBLE)) {
-			/* See the trap */
+			/* See the trap (actually, see all the traps) */
 			trf_on(trap->flags, TRF_VISIBLE);
-			square_memorize(c, grid);
+			square_memorize_traps(c, grid);
 
 			/* We found a trap */
 			found_trap++;
@@ -510,78 +590,6 @@ extern void hit_trap(struct loc grid, int delayed)
 }
 
 /**
- * Remove all traps from a grid.
- *
- * Return true if traps were removed.
- */
-bool square_remove_all_traps(struct chunk *c, struct loc grid)
-{
-	struct trap *trap = square(c, grid).trap;
-	bool were_there_traps = trap == NULL ? false : true;
-
-	assert(square_in_bounds(c, grid));
-	while (trap) {
-		struct trap *next_trap = trap->next;
-		mem_free(trap);
-		trap = next_trap;
-	}
-
-	square_set_trap(c, grid, NULL);
-
-	/* Refresh grids that the character can see */
-	if (square_isseen(c, grid)) {
-		square_light_spot(c, grid);
-	}
-
-	(void)square_verify_trap(c, grid, 0);
-
-	return were_there_traps;
-}
-
-/**
- * Remove all traps with the given index.
- *
- * Return true if traps were removed.
- */
-bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
-{
-	bool removed = false;
-
-	/* Look at the traps in this grid */
-	struct trap *prev_trap = NULL;
-	struct trap *trap = square(c, grid).trap;
-
-	assert(square_in_bounds(c, grid));
-	while (trap) {
-		struct trap *next_trap = trap->next;
-
-		if (t_idx_remove == trap->t_idx) {
-			mem_free(trap);
-			removed = true;
-
-			if (prev_trap) {
-				prev_trap->next = next_trap;
-			} else {
-				square_set_trap(c, grid, next_trap);
-			}
-
-			break;
-		}
-
-		prev_trap = trap;
-		trap = next_trap;
-	}
-
-	/* Refresh grids that the character can see */
-	if (square_isseen(c, grid))
-		square_light_spot(c, grid);
-
-	(void)square_verify_trap(c, grid, 0);
-
-	return removed;
-}
-
-/**
  * Disable a trap for the specified number of turns
  */
 bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
@@ -656,6 +664,10 @@ int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx)
 	return 0;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Door locks
+ * ------------------------------------------------------------------------ */
 /**
  * Lock a closed door to a given power
  */

@@ -124,10 +124,12 @@ static void grid_get_attr(struct grid_data *g, int *a)
 		}
 	}
 
-	/* Hybrid or block walls -- for GCU, then for everyone else */
+	/* Add the attr inversion back for GCU */
 	if (a0) {
 		*a = a0 | *a;
-	} else if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
+	}
+	/* Hybrid or block walls */
+	if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
 		if (OPT(player, hybrid_walls))
 			*a = *a + (MAX_COLORS * BG_DARK);
 		else if (OPT(player, solid_walls))
@@ -473,7 +475,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
+			Term_big_queue_char(t, kx, ky, a, c, 0, 0);
 	}
 }
 

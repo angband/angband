@@ -231,55 +231,13 @@ static void skill_help(const int r_skills[], const int c_skills[], int mhp, int 
 		text_out_e("\n");
 }
 
-static const char *get_flag_desc(bitflag flag)
-{
-	switch (flag)
-	{
-		case OF_SUST_STR: return "Sustains strength";
-		case OF_SUST_DEX: return "Sustains dexterity";
-		case OF_SUST_CON: return "Sustains constitution";
-		case OF_PROT_BLIND: return "Resists blindness";
-		case OF_HOLD_LIFE: return "Sustains experience";
-		case OF_FREE_ACT: return "Resists paralysis";
-		case OF_REGEN: return "Regenerates quickly";
-		case OF_SEE_INVIS: return "Sees invisible creatures";
-		case OF_IMPAIR_HP: return "Regenerates slowly";
-
-		default: return "Undocumented flag";
-	}
-}
-
-static const char *get_resist_desc(int element)
-{
-	switch (element)
-	{
-		case ELEM_POIS: return "Resists poison";
-		case ELEM_LIGHT: return "Resists light damage";
-		case ELEM_DARK: return "Resists darkness damage";
-
-		default: return "Undocumented element";
-	}
-}
-
-static const char *get_pflag_desc(bitflag flag)
-{
-	switch (flag)
-	{
-		#define PF(a,b,c) case PF_##a: return c;
-		#include "list-player-flags.h"
-		#undef PF
-	default:
-		abort(); /* compilation consistency problem */
-	}
-}
-
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
-	size_t k;
 	struct player_race *r = player_id2race(i);
 	int len = (STAT_MAX + 1) / 2;
 
+	struct player_ability *ability;
 	int n_flags = 0;
 	int flag_space = 3;
 
@@ -311,28 +269,23 @@ static void race_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, NULL, r->r_mhp, r->r_exp, r->infra);
 	text_out_e("\n");
 
-	for (k = 1; k < OF_MAX; k++) {
+	for (ability = player_abilities; ability; ability = ability->next) {
 		if (n_flags >= flag_space) break;
-		if (!of_has(r->flags, k)) continue;
-		text_out_e("\n%s", get_flag_desc(k));
+		if (streq(ability->type, "object") &&
+			!of_has(r->flags, ability->index)) {
+			continue;
+		} else if (streq(ability->type, "player") &&
+				   !pf_has(r->pflags, ability->index)) {
+			continue;
+		} else if (streq(ability->type, "element") &&
+				   (r->el_info[ability->index].res_level != ability->value)) {
+			continue;
+		}
+		text_out_e("\n%s", ability->name);
 		n_flags++;
 	}
 
-	for (k = 0; k < ELEM_MAX; k++) {
-		if (n_flags >= flag_space) break;
-		if (r->el_info[k].res_level != 1) continue;
-		text_out_e("\n%s", get_resist_desc(k));
-		n_flags++;
-	}
-
-	for (k = 0; k < PF_MAX; k++) {
-		if (n_flags >= flag_space) break;
-		if (!pf_has(r->pflags, k)) continue;
-		text_out_e("\n%s", get_pflag_desc(k));
-		n_flags++;
-	}
-
-	while(n_flags < flag_space) {
+	while (n_flags < flag_space) {
 		text_out_e("\n");
 		n_flags++;
 	}
@@ -344,11 +297,11 @@ static void race_help(int i, void *db, const region *l)
 static void class_help(int i, void *db, const region *l)
 {
 	int j;
-	size_t k;
 	struct player_class *c = player_id2class(i);
 	const struct player_race *r = player->race;
 	int len = (STAT_MAX + 1) / 2;
 
+	struct player_ability *ability;
 	int n_flags = 0;
 	int flag_space = 5;
 
@@ -407,24 +360,23 @@ static void class_help(int i, void *db, const region *l)
 		text_out_e("\nLearns %s magic", buf);
 	}
 
-	for (k = 1; k < OF_MAX; k++) {
+	for (ability = player_abilities; ability; ability = ability->next) {
 		if (n_flags >= flag_space) break;
-		if (!of_has(c->flags, k)) continue;
-		text_out_e("\n%s", get_flag_desc(k));
+		if (streq(ability->type, "object") &&
+			!of_has(c->flags, ability->index)) {
+			continue;
+		} else if (streq(ability->type, "player") &&
+				   !pf_has(c->pflags, ability->index)) {
+			continue;
+		} else if (streq(ability->type, "element")) {
+			continue;
+		}
+
+		text_out_e("\n%s", ability->name);
 		n_flags++;
 	}
 
-	for (k = 0; k < PF_MAX; k++) {
-		const char *s;
-		if (n_flags >= flag_space) break;
-		if (!pf_has(c->pflags, k)) continue;
-		s = get_pflag_desc(k);
-		if (!s) continue;
-		text_out_e("\n%s", s);
-		n_flags++;
-	}
-
-	while(n_flags < flag_space) {
+	while (n_flags < flag_space) {
 		text_out_e("\n");
 		n_flags++;
 	}

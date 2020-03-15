@@ -127,6 +127,20 @@ int lookup_flag(const char **flag_table, const char *flag_name) {
 	return i;
 }
 
+int code_index_in_array(const char *code_name[], const char *code)
+{
+	int i = 0;
+
+	while (code_name[i]) {
+		if (streq(code_name[i], code)) {
+			return i;
+		}
+		i++;
+	}
+
+	return -1;
+}
+
 /**
  * Gets a name and argument for a value expression of the form NAME[arg]
  * \param name_and_value is the expression

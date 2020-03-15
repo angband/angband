@@ -161,7 +161,7 @@ static const char *mon_race_flags[] =
 
 static const char *player_info_flags[] =
 {
-	#define PF(a, b, c) #a,
+	#define PF(a) #a,
 	#include "list-player-flags.h"
 	#undef PF
 	NULL
@@ -839,6 +839,160 @@ static struct file_parser world_parser = {
 	cleanup_world
 };
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize player properties
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_player_prop_type(struct parser *p) {
+	const char *type = parser_getstr(p, "type");
+	struct player_ability *h = parser_priv(p);
+	struct player_ability *ability = mem_zalloc(sizeof *ability);
+
+	if (h) {
+		h->next = ability;
+	} else {
+		player_abilities = ability;
+	}
+	parser_setpriv(p, ability);
+	ability->type = string_make(type);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_prop_code(struct parser *p) {
+	const char *code = parser_getstr(p, "code");
+	struct player_ability *ability = parser_priv(p);
+	int index = -1;
+
+	if (!ability)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!ability->type)
+		return PARSE_ERROR_MISSING_PLAY_PROP_TYPE;
+
+	if (streq(ability->type, "player")) {
+		index = code_index_in_array(player_info_flags, code);
+	} else if (streq(ability->type, "object")) {
+		index = code_index_in_array(list_obj_flag_names, code);
+	}
+	if (index >= 0) {
+		ability->index = index;
+	} else {
+		return PARSE_ERROR_INVALID_PLAY_PROP_CODE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_prop_desc(struct parser *p) {
+	const char *desc = parser_getstr(p, "desc");
+	struct player_ability *ability = parser_priv(p);
+	if (!ability)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	ability->desc = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_prop_name(struct parser *p) {
+	const char *desc = parser_getstr(p, "desc");
+	struct player_ability *ability = parser_priv(p);
+	if (!ability)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	ability->name = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_prop_value(struct parser *p) {
+	struct player_ability *ability = parser_priv(p);
+	if (!ability)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	ability->value = parser_getint(p, "value");
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_player_prop(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "type str type", parse_player_prop_type);
+	parser_reg(p, "code str code", parse_player_prop_code);
+	parser_reg(p, "desc str desc", parse_player_prop_desc);
+	parser_reg(p, "name str desc", parse_player_prop_name);
+	parser_reg(p, "value int value", parse_player_prop_value);
+	return p;
+}
+
+static errr run_parse_player_prop(struct parser *p) {
+	return parse_file_quit_not_found(p, "player_property");
+}
+
+static errr finish_parse_player_prop(struct parser *p) {
+	struct player_ability *ability = player_abilities;
+	struct player_ability *new, *previous = NULL;
+
+	/* Copy abilities over, making multiple copies for element types */
+	player_abilities = mem_zalloc(sizeof(*player_abilities));
+	new = player_abilities;
+	while (ability) {
+		if (streq(ability->type, "element")) {
+			size_t i;
+			for (i = 0; i < N_ELEMENTS(list_element_names); i++) {
+				char *name = projections[i].name;
+				new->index = i;
+				new->type = string_make(ability->type);
+				new->desc = string_make(format("%s %s.", ability->desc, name));
+				my_strcap(name);
+				new->name = string_make(format("%s %s", name, ability->name));
+				new->value = ability->value;
+				if ((i != N_ELEMENTS(list_element_names) - 1) || ability->next){
+					previous = new;
+					new = mem_zalloc(sizeof(*new));
+					previous->next = new;
+				}
+			}
+			string_free(ability->type);
+			string_free(ability->desc);
+			string_free(ability->name);
+			previous = ability;
+			ability = ability->next;
+			mem_free(previous);
+		} else {
+			new->type = ability->type;
+			new->index = ability->index;
+			new->desc = ability->desc;
+			new->name = ability->name;
+			if (ability->next) {
+				previous = new;
+				new = mem_zalloc(sizeof(*new));
+				previous->next = new;
+			}
+			previous = ability;
+			ability = ability->next;
+			mem_free(previous);
+		}
+	}
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_player_prop(void)
+{
+	struct player_ability *ability = player_abilities;
+	while (ability) {
+		string_free(ability->type);
+		string_free(ability->desc);
+		string_free(ability->name);
+		ability = ability->next;
+	}
+}
+
+static struct file_parser player_property_parser = {
+	"player_property",
+	init_parse_player_prop,
+	run_parse_player_prop,
+	finish_parse_player_prop,
+	cleanup_player_prop
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -3442,6 +3596,7 @@ static struct {
 	{ "world", &world_parser },
 	{ "projections", &projection_parser },
 	{ "timed effects", &player_timed_parser },
+	{ "player properties", &player_property_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
@@ -3457,7 +3612,7 @@ static struct {
 	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
-	{ "magic_realms", &realm_parser },
+	{ "magic realms", &realm_parser },
 	{ "player classes", &class_parser },
 	{ "artifacts", &artifact_parser },
 	{ "object properties", &object_property_parser },

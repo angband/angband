@@ -42,7 +42,7 @@ enum {
  */
 enum
 {
-	#define PF(a,b,c) PF_##a,
+	#define PF(a) PF_##a,
 	#include "list-player-flags.h"
 	#undef PF
 	PF_MAX
@@ -330,6 +330,19 @@ struct player_class {
 };
 
 /**
+ * Info for player abilities
+ */
+struct player_ability {
+	struct player_ability *next;
+	u16b index;			/* PF_*, OF_* or element index */
+	char *type;			/* Ability type */
+	char *name;			/* Ability name */
+	char *desc;			/* Ability description */
+	int group;			/* Ability group (set locally when viewing) */
+	int value;			/* Resistance value for elements */
+};
+
+/**
  * Histories are a graph of charts; each chart contains a set of individual
  * entries for that chart, and each entry contains a text description and a
  * successor chart to move history generation to.
@@ -540,7 +553,6 @@ struct player {
 
 	byte *spell_flags;			/* Spell flags */
 	byte *spell_order;			/* Spell order */
-	byte searching;		/* Currently searching */
 
 	char full_name[PLAYER_NAME_LEN];	/* Full name */
 	char died_from[80];					/* Cause of death */
@@ -589,6 +601,7 @@ extern struct player_body *bodies;
 extern struct player_race *races;
 extern struct player_shape *shapes;
 extern struct player_class *classes;
+extern struct player_ability *player_abilities;
 extern struct magic_realm *realms;
 
 extern const s32b player_exp[PY_MAX_LEVEL];
