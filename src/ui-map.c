@@ -475,7 +475,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
+			Term_big_queue_char(t, kx, ky, a, c, 0, 0);
 	}
 }
 
