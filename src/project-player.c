@@ -22,6 +22,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-predicate.h"
+#include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -809,6 +810,9 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 
 			/* Get the monster's real name */
 			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+
+			/* Monster sees what is going on */
+			update_smart_learn(mon, player, 0, 0, typ);
 
 			break;
 		}

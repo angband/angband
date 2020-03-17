@@ -133,7 +133,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		bool know_something = false;
 
 		/* Occasionally forget player status */
-		if (one_in_(100)) {
+		if (one_in_(20)) {
 			of_wipe(mon->known_pstate.flags);
 			pf_wipe(mon->known_pstate.pflags);
 			for (i = 0; i < ELEM_MAX; i++)

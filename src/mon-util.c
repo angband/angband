@@ -725,7 +725,7 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 
 	/* Learn the pflag */
 	if (pflag) {
-		if (pf_has(player->state.pflags, pflag)) {
+		if (pf_has(p->state.pflags, pflag)) {
 			of_on(mon->known_pstate.pflags, pflag);
 		} else {
 			of_off(mon->known_pstate.pflags, pflag);
@@ -735,7 +735,7 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 	/* Learn the element */
 	if (element_ok)
 		mon->known_pstate.el_info[element].res_level
-			= player->state.el_info[element].res_level;
+			= p->state.el_info[element].res_level;
 }
 
 /**
