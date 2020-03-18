@@ -72,13 +72,6 @@ static NSString * const AngbandTileHeightMultDefaultsKey =
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
-/* We can blit to a large layer or image and then scale it down during live
- * resize, which makes resizing much faster, at the cost of some image quality
- * during resizing */
-#ifndef USE_LIVE_RESIZE_CACHE
-# define USE_LIVE_RESIZE_CACHE 1
-#endif
-
 /* Application defined event numbers */
 enum
 {
@@ -366,46 +359,140 @@ static __strong AngbandSoundCatalog* gSharedSounds = nil;
 
 @end
 
-/*
- * To handle fonts where an individual glyph's bounding box can extend into
- * neighboring columns, Term_curs_cocoa(), Term_pict_cocoa(),
- * Term_text_cocoa(), and Term_wipe_cocoa() merely record what needs to be
- * done with the actual drawing happening in response to the notification to
- * flush all rows, the TERM_XTRA_FRESH case in Term_xtra_cocoa().  Can not use
- * the TERM_XTRA_FROSH notification (the per-row flush), since with a software
- * cursor, there are calls to Term_pict_cocoa(), Term_text_cocoa(), or
- * Term_wipe_cocoa() to take care of the old cursor position which are not
- * followed by a row flush.
+/**
+ * Each location in the terminal either stores a character, a tile,
+ * padding for a big tile, or padding for a big character (for example a
+ * kanji that takes two columns).  These structures represent that.  Note
+ * that tiles do not overlap with each other (excepting the double-height
+ * tiles, i.e. from the Shockbolt set; that's handled as a special case).
+ * Characters can overlap horizontally:  that is for handling fonts that
+ * aren't fixed width.
  */
-enum PendingCellChangeType {
-    CELL_CHANGE_NONE = 0,
-    CELL_CHANGE_WIPE,
-    CELL_CHANGE_TEXT,
-    CELL_CHANGE_TILE
-};
-struct PendingTextChange {
+struct TerminalCellChar {
     wchar_t glyph;
-    int color;
+    int attr;
 };
-struct PendingTileChange {
+struct TerminalCellTile {
+    /*
+     * These are the coordinates, within the tile set, for the foreground
+     * tile and background tile.
+     */
     char fgdCol, fgdRow, bckCol, bckRow;
 };
-struct PendingCellChange {
-    union { struct PendingTextChange txc; struct PendingTileChange tic; } v;
-    enum PendingCellChangeType changeType;
+struct TerminalCellPadding {
+       /*
+	* If the cell at (x, y) is padding, the cell at (x - hoff, y - voff)
+	* has the attributes affecting the padded region.
+	*/
+    unsigned char hoff, voff;
+};
+struct TerminalCell {
+    union {
+	struct TerminalCellChar ch;
+	struct TerminalCellTile ti;
+	struct TerminalCellPadding pd;
+    } v;
+    /*
+     * Used for big characters or tiles which are hscl x vscl cells.
+     * The upper left corner of the big tile or character is marked as
+     * TERM_CELL_TILE or TERM_CELL_CHAR.  The remainder are marked as
+     * TERM_CELL_TILE_PADDING or TERM_CELL_CHAR_PADDING and have hscl and
+     * vscl set to matcn what's in the upper left corner.  Big tiles are
+     * tiles scaled up to occupy more space.  Big characters, on the other
+     * hand, are characters that naturally take up more space than standard
+     * for the font with the assumption that vscl will be one for any big
+     * character and hscl will hold the number of columns it occupies (likely
+     * just 2, i.e. for Japanese kanji).
+     */
+    unsigned char hscl;
+    unsigned char vscl;
+    /*
+     * Hold the offsets, as fractions of the tile size expressed as the
+     * rational numbers hoff_n / hoff_d and voff_n / voff_d, within the tile
+     * or character.  For something that is not a big tile or character, these
+     * will be 0, 0, 1, and 1.  For a big tile or character, these will be
+     * set when the tile or character is changed to be 0, 0, hscl, and vscl
+     * for the upper left corner and i, j, hscl, vscl for the padding element
+     * at (i, j) relative to the upper left corner.  For a big tile or
+     * character that is partially overwritten, these are not modified in the
+     * parts that are not overwritten while hscl, vscl, and, for padding,
+     * v.pd.hoff and v.pd.voff are.
+     */
+    unsigned char hoff_n;
+    unsigned char voff_n;
+    unsigned char hoff_d;
+    unsigned char voff_d;
+    /*
+     * Is either TERM_CELL_CHAR, TERM_CELL_CHAR_PADDING, TERM_CELL_TILE, or
+     * TERM_CELL_TILE_PADDING.
+     */
+    unsigned char form;
+};
+#define TERM_CELL_CHAR (0x1)
+#define TERM_CELL_CHAR_PADDING (0x2)
+#define TERM_CELL_TILE (0x4)
+#define TERM_CELL_TILE_PADDING (0x8)
+
+struct TerminalCellBlock {
+    int ulcol, ulrow, w, h;
 };
 
-@interface PendingTermChanges : NSObject {
-@private
-    int *colBounds;
-    struct PendingCellChange **changesByRow;
+struct TerminalCellLocation {
+    int col, row;
+};
+
+typedef int (*TerminalCellPredicate)(const struct TerminalCell*);
+
+static int isTileTop(const struct TerminalCell *c)
+{
+    return (c->form == TERM_CELL_TILE ||
+	    (c->form == TERM_CELL_TILE_PADDING && c->v.pd.voff == 0)) ? 1 : 0;
+}
+
+static int isPartiallyOverwrittenBigChar(const struct TerminalCell *c)
+{
+    if ((c->form & (TERM_CELL_CHAR | TERM_CELL_CHAR_PADDING)) != 0) {
+	/*
+	 * When the tile is set in Term_pict_cocoa, hoff_d is the same as hscl
+	 * and voff_d is the same as vscl.  hoff_d and voff_d aren't modified
+	 * after that, but hscl and vscl are in response to partial overwrites.
+	 * If they're diffent, an overwrite has occurred.
+	 */
+	return ((c->hoff_d > 1 || c->voff_d > 1) &&
+		(c->hoff_d != c->hscl || c->voff_d != c->vscl)) ? 1 : 0;
+    }
+    return 0;
+}
+
+static int isCharNoPartial(const struct TerminalCell *c)
+{
+    return ((c->form & (TERM_CELL_CHAR | TERM_CELL_CHAR_PADDING)) != 0 &&
+	    ! isPartiallyOverwrittenBigChar(c)) ? 1 : 0;
+}
+
+static int get_background_color_index(int idx);
+/*
+ * Implicitly assume that the cells considered have already been constrained
+ * to be a character or character padding that is in the topmost row of the
+ * padded area.
+ */
+static int hasSameBackground(const struct TerminalCell* c)
+{
+    if (c->form == TERM_CELL_CHAR) {
+	return get_background_color_index(c->v.ch.attr);
+    }
+    return get_background_color_index((c - c->v.pd.hoff)->v.ch.attr);
 }
 
 /**
- * Returns YES if nCol and nRow are a feasible size for the pending changes.
- * Otherwise, returns NO.
+ * Since the drawing is decoupled from Angband's calls to the text_hook,
+ * pict_hook, wipe_hook, curs_hook, and bigcurs_hook callbacks of a terminal,
+ * maintain a version of the Terminal contents.
  */
-+ (BOOL)isValidSize:(int)nCol rows:(int)nRow;
+@interface TerminalContents : NSObject {
+@private
+    struct TerminalCell *cells;
+}
 
 /**
  * Initialize with zero columns and zero rows.
@@ -413,143 +500,150 @@ struct PendingCellChange {
 - (id)init;
 
 /**
- * Initialize with nCol columns and nRow rows.  No changes will be marked.
+ * Initialize with nCol columns and nRow rows.  All elements will be set to
+ * blanks.
  */
-- (id)initWithColumnsRows:(int)nCol rows:(int)nRow NS_DESIGNATED_INITIALIZER;
+- (id)initWithColumns:(int)nCol rows:(int)nRow NS_DESIGNATED_INITIALIZER;
 
 /**
- * Clears all marked changes.
+ * Resize to be nCol by nRow.  Current contents still within the new bounds
+ * are preserved.  Added areas are filled with blanks.
  */
-- (void)clear;
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow;
 
 /**
- * Changes the bounds over which changes are recorded.  Has the side effect
- * of clearing any marked changes.  Will throw an exception if nCol or nRow
- * is negative.
+ * Get the contents of a given cell.
  */
-- (void)resize:(int)nCol rows:(int)nRow;
+- (const struct TerminalCell*)getCellAtColumn:(int)icol row:(int)irow;
 
 /**
- * Mark the cell, (iCol, iRow), as having changed text.
+ * Scans the row, irow, starting at the column, icol0, and stopping before the
+ * column, icol1.  Returns the column index for the first cell that's within
+ * the given type mask, tm.  If all of the cells in that range are not within
+ * the given type mask, returns icol1.
  */
-- (void)markTextChange:(int)iCol row:(int)iRow glyph:(wchar_t)g color:(int)c;
+- (int)scanForTypeMaskInRow:(int)irow mask:(unsigned int)tm col0:(int)icol0
+		       col1:(int)icol1;
 
 /**
- * Mark the cells, (iCol, iRow) to (iCol + nCol - 1, iRow), as having changed
- * text with the same color.
+ * Scans the w x h block whose upper left corner is at (icol, irow).  The
+ * scan starts at (icol + pcurs->col, irow + pcurs->row) and proceeds from
+ * left to right and top to bottom.  At exit, pcurs will have the location
+ * (relative to icol, irow) of the first cell encountered that's within the
+ * given type mask, tm.  If no such cell was found, pcurs->col will be w
+ * and pcurs->row will be h.
  */
-- (void)markTextChanges:(int)iCol row:(int)iRow n:(int)nCol
-		 glyphs:(const wchar_t*)g color:(int)c;
+- (void)scanForTypeMaskInBlockAtColumn:(int)icol row:(int)irow width:(int)w
+				height:(int)h mask:(unsigned int)tm
+				cursor:(struct TerminalCellLocation*)pcurs;
 
 /**
- * Mark the cell, (iCol, iRow), as having a changed tile.
+ * Scans the row, irow, starting at the column, icol0, and stopping before the
+ * column, icol1.  Returns the column index for the first cell that
+ * func(cell_address) != rval.  If all of the cells in the range satisfy the
+ * predicate, returns icol1.
  */
-- (void)markTileChange:(int)iCol row:(int)iRow
-	 foregroundCol:(char)fc foregroundRow:(char)fr
-	 backgroundCol:(char)bc backgroundRow:(char)br;
+- (int)scanForPredicateInRow:(int)irow
+		   predicate:(TerminalCellPredicate)func
+		     desired:(int)rval
+			col0:(int)icol0
+			col1:(int)icol1;
 
 /**
- * Mark the cells from (iCol, iRow) to (iCol + nCol - 1, iRow) as wiped.
+ * Change the contents to have the given string of n characters appear with
+ * the leftmost character at (icol, irow).
  */
-- (void)markWipeRange:(int)iCol row:(int)iRow n:(int)nCol;
+- (void)setUniformAttributeTextRunAtColumn:(int)icol
+				       row:(int)irow
+					 n:(int)n
+				    glyphs:(const wchar_t*)g
+				 attribute:(int)a;
 
 /**
- * Mark the location of the cursor.  The cursor will be the standard size:
- * one cell.
+ * Change the contents to have a tile scaled to w x h appear with its upper
+ * left corner at (icol, irow).
  */
-- (void)markCursor:(int)iCol row:(int)iRow;
+- (void)setTileAtColumn:(int)icol
+		    row:(int)irow
+       foregroundColumn:(char)fgdCol
+	  foregroundRow:(char)fgdRow
+       backgroundColumn:(char)bckCol
+	  backgroundRow:(char)bckRow
+	      tileWidth:(int)w
+	     tileHeight:(int)h;
 
 /**
- * Mark the location of the cursor.  The cursor will be w cells wide and
- * h cells tall and the given location is the position of the upper left
- * corner.
+ * Wipe the w x h block whose upper left corner is at (icol, irow).
  */
-- (void)markBigCursor:(int)iCol row:(int)iRow
-	    cellsWide:(int)w cellsHigh:(int)h;
+- (void)wipeBlockAtColumn:(int)icol row:(int)irow width:(int)w height:(int)h;
 
 /**
- * Return the zero-based index of the first column changed for the given
- * zero-based row index.  If there are no changes in the row, the returned
- * value will be the number of columns.
+ * Wipe all the contents.
  */
-- (int)getFirstChangedColumnInRow:(int)iRow;
+- (void)wipe;
 
 /**
- * Return the zero-based index of the last column changed for the given
- * zero-based row index.  If there are no changes in the row, the returned
- * value will be -1.
+ * Wipe any tiles.
  */
-- (int)getLastChangedColumnInRow:(int)iRow;
+- (void)wipeTiles;
 
 /**
- * Return the type of change at the given cell, (iCol, iRow).
+ * Thie is a helper function for wipeBlockAtColumn.
  */
-- (enum PendingCellChangeType)getCellChangeType:(int)iCol row:(int)iRow;
+- (void)wipeBlockAuxAtColumn:(int)icol row:(int)irow width:(int)w
+		      height:(int)h;
 
 /**
- * Return the nature of a text change at the given cell, (iCol, iRow).
- * Will throw an exception if [obj getCellChangeType:iCol row:iRow] is
- * neither CELL_CHANGE_TEXT nor CELL_CHANGE_WIPE.
+ * This is a helper function for checkForBigStuffOverwriteAtColumn.
  */
-- (struct PendingTextChange)getCellTextChange:(int)iCol row:(int)iRow;
+- (void) splitBlockAtColumn:(int)icol row:(int)irow n:(int)nsub
+		     blocks:(const struct TerminalCellBlock*)b;
 
 /**
- * Return the nature of a tile change at the given cell, (iCol, iRow).
- * Will throw an exception if [obj getCellChangeType:iCol row:iRow] is
- * different than CELL_CHANGE_TILE.
+ * This is a helper function for setUniformAttributeTextRunAtColumn,
+ * setTileAtColumn, and wipeBlockAtColumn.  If a modification could partially
+ * overwrite a big character or tile, make adjustments so what's left can
+ * be handled appropriately in rendering.
  */
-- (struct PendingTileChange)getCellTileChange:(int)iCol row:(int)iRow;
+- (void)checkForBigStuffOverwriteAtColumn:(int)icol row:(int)irow
+				    width:(int)w height:(int)h;
 
 /**
- * Is the number of columns for recording changes.
+ * Position the upper left corner of the cursor at (icol, irow) and have it
+ * encompass w x h cells.
+ */
+- (void)setCursorAtColumn:(int)icol row:(int)irow width:(int)w height:(int)h;
+
+/**
+ * Remove the cursor.  cursorColumn and cursorRow will be -1 until
+ * setCursorAtColumn is called.
+ */
+- (void)removeCursor;
+
+/**
+ * Verify that everying is consistent.
+ */
+- (void)assertInvariants;
+
+/**
+ * Is the number of columns.
  */
 @property (readonly) int columnCount;
 
 /**
- * Is the number of rows for recording changes.
+ * Is the number of rows.
  */
 @property (readonly) int rowCount;
 
 /**
- * Will be YES if there are any pending changes to locations rendered as text.
- * Otherwise, it will be NO.
- */
-@property (readonly) BOOL hasTextChanges;
-
-/**
- * Will be YES if there are any pending changes to locations rendered as tiles.
- * Otherwise, it will be NO.
- */
-@property (readonly) BOOL hasTileChanges;
-
-/**
- * Will be YES if there are any pending wipes.  Otherwise, it will be NO.
- */
-@property (readonly) BOOL hasWipeChanges;
-
-/**
- * Is the zero-based index of the first row with changes.  Will be equal to
- * the number of rows if there are no changes.
- */
-@property (readonly) int firstChangedRow;
-
-/**
- * Is the zero-based index of the last row with changes.  Will be equal to
- * -1 if there are no changes.
- */
-@property (readonly) int lastChangedRow;
-
-/**
- * Is the zero-based index for the column with the upper left corner of the
- * cursor.  It will be -1 if the cursor position has not been set since the
- * changes were cleared.
+ * Is the column index for the upper left corner of the cursor.  It will be -1
+ * if the cursor is disabled.
  */
 @property (readonly) int cursorColumn;
 
 /**
- * Is the zero-based index for the row with the upper left corner of the
- * cursor.  It will be -1 if the cursor position has not been set since the
- * changes were cleared.
+ * Is the row index for the upper left corner of the cursor.  It will be -1
+ * if the cursor is disabled.
  */
 @property (readonly) int cursorRow;
 
@@ -564,87 +658,824 @@ struct PendingCellChange {
 @property (readonly) int cursorHeight;
 
 /**
- * This is a helper for the mark* messages.
+ * Return the character to be used for blanks.
  */
-- (void)setupForChange:(int)iCol row:(int)iRow n:(int)nCol;
++ (wchar_t)getBlankChar;
 
 /**
- * Throw an exception if the given range of column indices is invalid
- * (including non-positive values for nCol).
+ * Return the attribute to be used for blanks.
  */
-- (void)checkColumnIndices:(int)iCol n:(int)nCol;
-
-/**
- * Throw an exception if the given row index is invalid.
- */
-- (void)checkRowIndex:(int)iRow;
++ (int)getBlankAttribute;
 
 @end
 
-@implementation PendingTermChanges
-
-+ (BOOL)isValidSize:(int)nCol rows:(int)nRow
-{
-    if (nCol < 0 ||
-	(size_t) nCol > SIZE_MAX / sizeof(struct PendingCellChange) ||
-	nRow < 0 ||
-	(size_t) nRow > SIZE_MAX / sizeof(struct PendingCellChange*) ||
-	(size_t) nRow > SIZE_MAX / (2 * sizeof(int))) {
-	return NO;
-    }
-    return YES;
-}
+@implementation TerminalContents
 
 - (id)init
 {
-    return [self initWithColumnsRows:0 rows:0];
+    return [self initWithColumns:0 rows:0];
 }
 
-- (id)initWithColumnsRows:(int)nCol rows:(int)nRow
+- (id)initWithColumns:(int)nCol rows:(int)nRow
 {
     if (self = [super init]) {
-	if (! [PendingTermChanges isValidSize:nCol rows:nRow]) {
-	    return nil;
-	}
-	self->colBounds = malloc((size_t) 2 * sizeof(int) * nRow);
-	if (self->colBounds == 0 && nRow > 0) {
-	    return nil;
-	}
-	self->changesByRow = calloc(nRow, sizeof(struct PendingCellChange*));
-	if (self->changesByRow == 0 && nRow > 0) {
-	    free(self->colBounds);
-	    return nil;
- 	}
-	for (int i = 0; i < nRow + nRow; i += 2) {
-	    self->colBounds[i] = nCol;
-	    self->colBounds[i + 1] = -1;
-	}
+	self->cells = malloc(nCol * nRow * sizeof(struct TerminalCell));
 	self->_columnCount = nCol;
 	self->_rowCount = nRow;
-	self->_hasTextChanges = NO;
-	self->_hasTileChanges = NO;
-	self->_hasWipeChanges = NO;
-	self->_firstChangedRow = nRow;
-	self->_lastChangedRow = -1;
 	self->_cursorColumn = -1;
 	self->_cursorRow = -1;
 	self->_cursorWidth = 1;
 	self->_cursorHeight = 1;
+	[self wipe];
     }
     return self;
 }
 
 - (void)dealloc
 {
-    if (self->changesByRow != 0) {
-	for (int i = 0; i < self.rowCount; ++i) {
-	    if (self->changesByRow[i] != 0) {
-		free(self->changesByRow[i]);
-		self->changesByRow[i] = 0;
+    if (self->cells != 0) {
+	free(self->cells);
+	self->cells = 0;
+    }
+}
+
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow
+{
+    /*
+     * Potential issue: big tiles or characters can become clipped by the
+     * resize.  That will only matter if drawing occurs before the contents
+     * are updated by Angband.  Even then, unless the drawing mode is used
+     * where AppKit doesn't clip to the window bounds, the only artifact will
+     * be clipping when drawn which is acceptable and doesn't require
+     * additional logic to either filter out the clipped big stuff here or
+     * to just clear it when drawing.
+     */
+    struct TerminalCell *newCells =
+	malloc(nCol * nRow * sizeof(struct TerminalCell));
+    struct TerminalCell *cellsOutCursor = newCells;
+    const struct TerminalCell *cellsInCursor = self->cells;
+    int nColCommon = (nCol < self.columnCount) ? nCol : self.columnCount;
+    int nRowCommon = (nRow < self.rowCount) ? nRow : self.rowCount;
+    wchar_t blank = [TerminalContents getBlankChar];
+    int blank_attr = [TerminalContents getBlankAttribute];
+    int i;
+
+    for (i = 0; i < nRowCommon; ++i) {
+	(void) memcpy(
+	    cellsOutCursor,
+	    cellsInCursor,
+	    nColCommon * sizeof(struct TerminalCell));
+	cellsInCursor += self.columnCount;
+	for (int j = nColCommon; j < nCol; ++j) {
+	    cellsOutCursor[j].v.ch.glyph = blank;
+	    cellsOutCursor[j].v.ch.attr = blank_attr;
+	    cellsOutCursor[j].hscl = 1;
+	    cellsOutCursor[j].vscl = 1;
+	    cellsOutCursor[j].hoff_n = 0;
+	    cellsOutCursor[j].voff_n = 0;
+	    cellsOutCursor[j].hoff_d = 1;
+	    cellsOutCursor[j].voff_d = 1;
+	    cellsOutCursor[j].form = TERM_CELL_CHAR;
+	}
+	cellsOutCursor += nCol;
+    }
+    while (cellsOutCursor != newCells + nCol * nRow) {
+	cellsOutCursor->v.ch.glyph = blank;
+	cellsOutCursor->v.ch.attr = blank_attr;
+	cellsOutCursor->hscl = 1;
+	cellsOutCursor->vscl = 1;
+	cellsOutCursor->hoff_n = 0;
+	cellsOutCursor->voff_n = 0;
+	cellsOutCursor->hoff_d = 1;
+	cellsOutCursor->voff_d = 1;
+	cellsOutCursor->form = TERM_CELL_CHAR;
+	++cellsOutCursor;
+    }
+
+    free(self->cells);
+    self->cells = newCells;
+    self->_columnCount = nCol;
+    self->_rowCount = nRow;
+    if (self->_cursorColumn >= nCol || self->_cursorRow >= nRow) {
+	self->_cursorColumn = -1;
+	self->_cursorRow = -1;
+    } else {
+	if (self->_cursorColumn + self->_cursorWidth > nCol) {
+	    self->_cursorWidth = nCol - self->_cursorColumn;
+	}
+	if (self->_cursorRow + self->_cursorHeight > nRow) {
+	    self->_cursorHeight = nRow - self->_cursorRow;
+	}
+    }
+}
+
+- (const struct TerminalCell*)getCellAtColumn:(int)icol row:(int)irow
+{
+    return self->cells + icol + irow * self.columnCount;
+}
+
+- (int)scanForTypeMaskInRow:(int)irow mask:(unsigned int)tm col0:(int)icol0
+		       col1:(int)icol1
+{
+    int i = icol0;
+    const struct TerminalCell *cellsRow =
+	self->cells + irow * self.columnCount;
+
+    while (1) {
+	if (i >= icol1) {
+	    return icol1;
+	}
+	if ((cellsRow[i].form & tm) != 0) {
+	    return i;
+	}
+	++i;
+    }
+}
+
+- (void)scanForTypeMaskInBlockAtColumn:(int)icol row:(int)irow width:(int)w
+				height:(int)h mask:(unsigned int)tm
+				cursor:(struct TerminalCellLocation*)pcurs
+{
+    const struct TerminalCell *cellsRow =
+	self->cells + (irow + pcurs->row) * self.columnCount;
+    while (1) {
+	if (pcurs->col == w) {
+	    if (pcurs->row >= h - 1) {
+		pcurs->row = h;
+		return;
+	    }
+	    ++pcurs->row;
+	    pcurs->col = 0;
+	    cellsRow += self.columnCount;
+	}
+
+	if ((cellsRow[icol + pcurs->col].form & tm) != 0) {
+	    return;
+	}
+
+	++pcurs->col;
+    }
+}
+
+- (int)scanForPredicateInRow:(int)irow
+		   predicate:(TerminalCellPredicate)func
+		     desired:(int)rval
+			col0:(int)icol0
+			col1:(int)icol1
+{
+    int i = icol0;
+    const struct TerminalCell *cellsRow =
+	self->cells + irow * self.columnCount;
+
+    while (1) {
+	if (i >= icol1) {
+	    return icol1;
+	}
+	if (func(cellsRow + i) != rval) {
+	    return i;
+	}
+	++i;
+    }
+}
+
+- (void)setUniformAttributeTextRunAtColumn:(int)icol
+				       row:(int)irow
+					 n:(int)n
+				    glyphs:(const wchar_t*)g
+				 attribute:(int)a
+{
+    [self checkForBigStuffOverwriteAtColumn:icol row:irow width:n height:1];
+
+    struct TerminalCell *cellsRow = self->cells + irow * self.columnCount;
+    for (int i = icol; i < icol + n; ++i) {
+	cellsRow[i].v.ch.glyph = *g++;
+	cellsRow[i].v.ch.attr = a;
+	cellsRow[i].hscl = 1;
+	cellsRow[i].vscl = 1;
+	cellsRow[i].hoff_n = 0;
+	cellsRow[i].voff_n = 0;
+	cellsRow[i].hoff_d = 1;
+	cellsRow[i].voff_d = 1;
+	cellsRow[i].form = TERM_CELL_CHAR;
+    }
+}
+
+- (void)setTileAtColumn:(int)icol
+		    row:(int)irow
+       foregroundColumn:(char)fgdCol
+	  foregroundRow:(char)fgdRow
+       backgroundColumn:(char)bckCol
+	  backgroundRow:(char)bckRow
+	      tileWidth:(int)w
+	     tileHeight:(int)h
+{
+    [self checkForBigStuffOverwriteAtColumn:icol row:irow width:w height:h];
+
+    struct TerminalCell *cellsRow = self->cells + irow * self.columnCount;
+
+    cellsRow[icol].v.ti.fgdCol = fgdCol;
+    cellsRow[icol].v.ti.fgdRow = fgdRow;
+    cellsRow[icol].v.ti.bckCol = bckCol;
+    cellsRow[icol].v.ti.bckRow = bckRow;
+    cellsRow[icol].hscl = w;
+    cellsRow[icol].vscl = h;
+    cellsRow[icol].hoff_n = 0;
+    cellsRow[icol].voff_n = 0;
+    cellsRow[icol].hoff_d = w;
+    cellsRow[icol].voff_d = h;
+    cellsRow[icol].form = TERM_CELL_TILE;
+
+    int ic;
+    for (ic = icol + 1; ic < icol + w; ++ic) {
+	cellsRow[ic].v.pd.hoff = ic - icol;
+	cellsRow[ic].v.pd.voff = 0;
+	cellsRow[ic].hscl = w;
+	cellsRow[ic].vscl = h;
+	cellsRow[ic].hoff_n = ic - icol;
+	cellsRow[ic].voff_n = 0;
+	cellsRow[ic].hoff_d = w;
+	cellsRow[ic].voff_d = h;
+	cellsRow[ic].form = TERM_CELL_TILE_PADDING;
+    }
+    cellsRow += self.columnCount;
+    for (int ir = irow + 1; ir < irow + h; ++ir) {
+	for (ic = icol; ic < icol + w; ++ic) {
+	    cellsRow[ic].v.pd.hoff = ic - icol;
+	    cellsRow[ic].v.pd.voff = ir - irow;
+	    cellsRow[ic].hscl = w;
+	    cellsRow[ic].vscl = h;
+	    cellsRow[ic].hoff_n = ic - icol;
+	    cellsRow[ic].voff_n = ir - irow;
+	    cellsRow[ic].hoff_d = w;
+	    cellsRow[ic].voff_d = h;
+	    cellsRow[ic].form = TERM_CELL_TILE_PADDING;
+	}
+	cellsRow += self.columnCount;
+    }
+}
+
+- (void)wipeBlockAtColumn:(int)icol row:(int)irow width:(int)w height:(int)h
+{
+    [self checkForBigStuffOverwriteAtColumn:icol row:irow width:w height:h];
+    [self wipeBlockAuxAtColumn:icol row:irow width:w height:h];
+}
+
+- (void)wipe
+{
+    wchar_t blank = [TerminalContents getBlankChar];
+    int blank_attr = [TerminalContents getBlankAttribute];
+    struct TerminalCell *cellCursor = self->cells +
+	self.columnCount * self.rowCount;
+
+    while (cellCursor != self->cells) {
+	--cellCursor;
+	cellCursor->v.ch.glyph = blank;
+	cellCursor->v.ch.attr = blank_attr;
+	cellCursor->hscl = 1;
+	cellCursor->vscl = 1;
+	cellCursor->hoff_n = 0;
+	cellCursor->voff_n = 0;
+	cellCursor->hoff_d = 1;
+	cellCursor->voff_d = 1;
+	cellCursor->form = TERM_CELL_CHAR;
+    }
+}
+
+- (void)wipeTiles
+{
+    wchar_t blank = [TerminalContents getBlankChar];
+    int blank_attr = [TerminalContents getBlankAttribute];
+    struct TerminalCell *cellCursor = self->cells +
+	self.columnCount * self.rowCount;
+
+    while (cellCursor != self->cells) {
+	--cellCursor;
+	if ((cellCursor->form &
+	     (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+	    cellCursor->v.ch.glyph = blank;
+	    cellCursor->v.ch.attr = blank_attr;
+	    cellCursor->hscl = 1;
+	    cellCursor->vscl = 1;
+	    cellCursor->hoff_n = 0;
+	    cellCursor->voff_n = 0;
+	    cellCursor->hoff_d = 1;
+	    cellCursor->voff_d = 1;
+	    cellCursor->form = TERM_CELL_CHAR;
+	}
+    }
+}
+
+- (void)wipeBlockAuxAtColumn:(int)icol row:(int)irow width:(int)w
+		      height:(int)h
+{
+    struct TerminalCell *cellsRow = self->cells + irow * self.columnCount;
+    wchar_t blank = [TerminalContents getBlankChar];
+    int blank_attr = [TerminalContents getBlankAttribute];
+
+    for (int ir = irow; ir < irow + h; ++ir) {
+	for (int ic = icol; ic < icol + w; ++ic) {
+	    cellsRow[ic].v.ch.glyph = blank;
+	    cellsRow[ic].v.ch.attr = blank_attr;
+	    cellsRow[ic].hscl = 1;
+	    cellsRow[ic].vscl = 1;
+	    cellsRow[ic].hoff_n = 0;
+	    cellsRow[ic].voff_n = 0;
+	    cellsRow[ic].hoff_d = 1;
+	    cellsRow[ic].voff_d = 1;
+	    cellsRow[ic].form = TERM_CELL_CHAR;
+	}
+	cellsRow += self.columnCount;
+    }
+}
+
+- (void) splitBlockAtColumn:(int)icol row:(int)irow n:(int)nsub
+		     blocks:(const struct TerminalCellBlock*)b
+{
+    const struct TerminalCell *pulold = [self getCellAtColumn:icol row:irow];
+
+    for (int isub = 0; isub < nsub; ++isub) {
+	struct TerminalCell* cellsRow =
+	    self->cells + b[isub].ulrow * self.columnCount;
+
+	/*
+	 * Copy the data from the upper left corner of the big block to
+	 * the upper left corner of the piece.
+	 */
+	if (b[isub].ulcol != icol || b[isub].ulrow != irow) {
+	    if (pulold->form == TERM_CELL_CHAR) {
+		cellsRow[b[isub].ulcol].v.ch = pulold->v.ch;
+		cellsRow[b[isub].ulcol].form = TERM_CELL_CHAR;
+	    } else {
+		cellsRow[b[isub].ulcol].v.ti = pulold->v.ti;
+		cellsRow[b[isub].ulcol].form = TERM_CELL_TILE;
 	    }
 	}
-	free(self->changesByRow);
-	self->changesByRow = 0;
+	cellsRow[b[isub].ulcol].hscl = b[isub].w;
+	cellsRow[b[isub].ulcol].vscl = b[isub].h;
+
+	/*
+	 * Point the padding elements in the piece to the new upper left
+	 * corner.
+	 */
+	int ic;
+	for (ic = b[isub].ulcol + 1; ic < b[isub].ulcol + b[isub].w; ++ic) {
+	    cellsRow[ic].v.pd.hoff = ic - b[isub].ulcol;
+	    cellsRow[ic].v.pd.voff = 0;
+	    cellsRow[ic].hscl = b[isub].w;
+	    cellsRow[ic].vscl = b[isub].h;
+	}
+	cellsRow += self.columnCount;
+	for (int ir = b[isub].ulrow + 1;
+	     ir < b[isub].ulrow + b[isub].h;
+	     ++ir) {
+	    for (ic = b[isub].ulcol; ic < b[isub].ulcol + b[isub].w; ++ic) {
+		cellsRow[ic].v.pd.hoff = ic - b[isub].ulcol;
+		cellsRow[ic].v.pd.voff = ir - b[isub].ulrow;
+		cellsRow[ic].hscl = b[isub].w;
+		cellsRow[ic].vscl = b[isub].h;
+	    }
+	    cellsRow += self.columnCount;
+	}
+    }
+}
+
+- (void)checkForBigStuffOverwriteAtColumn:(int)icol row:(int)irow
+				    width:(int)w height:(int)h
+{
+    int ire = irow + h, ice = icol + w;
+
+    for (int ir = irow; ir < ire; ++ir) {
+	for (int ic = icol; ic < ice; ++ic) {
+	    const struct TerminalCell *pcell =
+		[self getCellAtColumn:ic row:ir];
+
+	    if ((pcell->form & (TERM_CELL_CHAR | TERM_CELL_TILE)) != 0 &&
+		(pcell->hscl > 1 || pcell->vscl > 1)) {
+		/*
+		 * Lost chunk including upper left corner.  Split into at most
+		 * two new blocks.
+		 */
+		/*
+		 * Tolerate blocks that were clipped by a resize at some point.
+		 */
+		int wb = (ic + pcell->hscl <= self.columnCount) ?
+		    pcell->hscl : self.columnCount - ic;
+		int hb = (ir + pcell->vscl <= self.rowCount) ?
+		    pcell->vscl : self.rowCount - ir;
+		struct TerminalCellBlock blocks[2];
+		int nsub = 0, ww, hw;
+
+		if (ice < ic + wb) {
+		    /* Have something to the right not overwritten. */
+		    blocks[nsub].ulcol = ice;
+		    blocks[nsub].ulrow = ir;
+		    blocks[nsub].w = ic + wb - ice;
+		    blocks[nsub].h = (ire < ir + hb) ? ire - ir : hb;
+		    ++nsub;
+		    ww = ice - ic;
+		} else {
+		    ww = wb;
+		}
+		if (ire < ir + hb) {
+		    /* Have something below not overwritten. */
+		    blocks[nsub].ulcol = ic;
+		    blocks[nsub].ulrow = ire;
+		    blocks[nsub].w = wb;
+		    blocks[nsub].h = ir + hb - ire;
+		    ++nsub;
+		    hw = ire - ir;
+		} else {
+		    hw = hb;
+		}
+		if (nsub > 0) {
+		    [self splitBlockAtColumn:ic row:ir n:nsub blocks:blocks];
+		}
+		/*
+		 * Wipe the part of the block that's destined to be overwritten
+		 * so it doesn't receive further consideration in this loop.
+		 * For efficiency, would like to have the loop skip over it or
+		 * fill it with the desired content, but this is easier to
+		 * implement.
+		 */
+		[self wipeBlockAuxAtColumn:ic row:ir width:ww height:hw];
+	    } else if ((pcell->form & (TERM_CELL_CHAR_PADDING |
+				       TERM_CELL_TILE_PADDING)) != 0) {
+		/*
+		 * Lost a chunk that doesn't cover the upper left corner.  In
+		 * general will split into up to four new blocks (one above,
+		 * one to the left, one to the right, and one below).
+		 */
+		int pcol = ic - pcell->v.pd.hoff;
+		int prow = ir - pcell->v.pd.voff;
+		const struct TerminalCell *pcell2 =
+		    [self getCellAtColumn:pcol row:prow];
+
+		/*
+		 * Tolerate blocks that were clipped by a resize at some point.
+		 */
+		int wb = (pcol + pcell2->hscl <= self.columnCount) ?
+		    pcell2->hscl : self.columnCount - pcol;
+		int hb = (prow + pcell2->vscl <= self.rowCount) ?
+		    pcell2->vscl : self.rowCount - prow;
+		struct TerminalCellBlock blocks[4];
+		int nsub = 0, ww, hw;
+
+		if (prow < ir) {
+		    /* Have something above not overwritten. */
+		    blocks[nsub].ulcol = pcol;
+		    blocks[nsub].ulrow = prow;
+		    blocks[nsub].w = wb;
+		    blocks[nsub].h = ir - prow;
+		    ++nsub;
+		}
+		if (pcol < ic) {
+		    /* Have something to the left not overwritten. */
+		    blocks[nsub].ulcol = pcol;
+		    blocks[nsub].ulrow = ir;
+		    blocks[nsub].w = ic - pcol;
+		    blocks[nsub].h =
+			(ire < prow + hb) ? ire - ir : prow + hb - ir;
+		    ++nsub;
+		}
+		if (ice < pcol + wb) {
+		    /* Have something to the right not overwritten. */
+		    blocks[nsub].ulcol = ice;
+		    blocks[nsub].ulrow = ir;
+		    blocks[nsub].w = pcol + wb - ice;
+		    blocks[nsub].h =
+			(ire < prow + hb) ? ire - ir : prow + hb - ir;
+		    ++nsub;
+		    ww = ice - ic;
+		} else {
+		    ww = pcol + wb - ic;
+		}
+		if (ire < prow + hb) {
+		    /* Have something below not overwritten. */
+		    blocks[nsub].ulcol = pcol;
+		    blocks[nsub].ulrow = ire;
+		    blocks[nsub].w = wb;
+		    blocks[nsub].h = prow + hb - ire;
+		    ++nsub;
+		    hw = ire - ir;
+		} else {
+		    hw = prow + hb - ir;
+		}
+
+		[self splitBlockAtColumn:pcol row:prow n:nsub blocks:blocks];
+		/* Same rationale for wiping as above. */
+		[self wipeBlockAuxAtColumn:ic row:ir width:ww height:hw];
+	    }
+	}
+    }
+}
+
+- (void)setCursorAtColumn:(int)icol row:(int)irow width:(int)w height:(int)h
+{
+    self->_cursorColumn = icol;
+    self->_cursorRow = irow;
+    self->_cursorWidth = w;
+    self->_cursorHeight = h;
+}
+
+- (void)removeCursor
+{
+    self->_cursorColumn = -1;
+    self->_cursorHeight = -1;
+    self->_cursorWidth = 1;
+    self->_cursorHeight = 1;
+}
+
+- (void)assertInvariants
+{
+    const struct TerminalCell *cellsRow = self->cells;
+
+    /*
+     * The comments with the definition for TerminalCell define the
+     * relationships of hoff_n, voff_n, hoff_d, voff_d, hscl, and vscl
+     * asserted here.
+     */
+    for (int ir = 0; ir < self.rowCount; ++ir) {
+	for (int ic = 0; ic < self.columnCount; ++ic) {
+	    switch (cellsRow[ic].form) {
+	    case TERM_CELL_CHAR:
+		assert(cellsRow[ic].hscl > 0 && cellsRow[ic].vscl > 0);
+		assert(cellsRow[ic].hoff_n < cellsRow[ic].hoff_d &&
+		       cellsRow[ic].voff_n < cellsRow[ic].voff_d);
+		if (cellsRow[ic].hscl == cellsRow[ic].hoff_d) {
+		    assert(cellsRow[ic].hoff_n == 0);
+		}
+		if (cellsRow[ic].vscl == cellsRow[ic].voff_d) {
+		    assert(cellsRow[ic].voff_n == 0);
+		}
+		/*
+		 * Verify that the padding elements have the correct tag
+		 * and point back to this cell.
+		 */
+		if (cellsRow[ic].hscl > 1 || cellsRow[ic].vscl > 1) {
+		    const struct TerminalCell *cellsRow2 = cellsRow;
+
+		    for (int ir2 = ir; ir2 < ir + cellsRow[ic].vscl; ++ir2) {
+			for (int ic2 = ic;
+			     ic2 < ic + cellsRow[ic].hscl;
+			     ++ic2) {
+			    if (ir2 == ir && ic2 == ic) {
+				continue;
+			    }
+			    assert(cellsRow2[ic2].form ==
+				   TERM_CELL_CHAR_PADDING);
+			    assert(ic2 - cellsRow2[ic2].v.pd.hoff == ic &&
+				   ir2 - cellsRow2[ic2].v.pd.voff == ir);
+			}
+			cellsRow2 += self.columnCount;
+		    }
+		}
+		break;
+
+	    case TERM_CELL_TILE:
+		assert(cellsRow[ic].hscl > 0 && cellsRow[ic].vscl > 0);
+		assert(cellsRow[ic].hoff_n < cellsRow[ic].hoff_d &&
+		       cellsRow[ic].voff_n < cellsRow[ic].voff_d);
+		if (cellsRow[ic].hscl == cellsRow[ic].hoff_d) {
+		    assert(cellsRow[ic].hoff_n == 0);
+		}
+		if (cellsRow[ic].vscl == cellsRow[ic].voff_d) {
+		    assert(cellsRow[ic].voff_n == 0);
+		}
+		/*
+		 * Verify that the padding elements have the correct tag
+		 * and point back to this cell.
+		 */
+		if (cellsRow[ic].hscl > 1 || cellsRow[ic].vscl > 1) {
+		    const struct TerminalCell *cellsRow2 = cellsRow;
+
+		    for (int ir2 = ir; ir2 < ir + cellsRow[ic].vscl; ++ir2) {
+			for (int ic2 = ic;
+			     ic2 < ic + cellsRow[ic].hscl;
+			     ++ic2) {
+			    if (ir2 == ir && ic2 == ic) {
+				continue;
+			    }
+			    assert(cellsRow2[ic2].form ==
+				   TERM_CELL_TILE_PADDING);
+			    assert(ic2 - cellsRow2[ic2].v.pd.hoff == ic &&
+				   ir2 - cellsRow2[ic2].v.pd.voff == ir);
+			}
+			cellsRow2 += self.columnCount;
+		    }
+		}
+		break;
+
+	    case TERM_CELL_CHAR_PADDING:
+		assert(cellsRow[ic].hscl > 0 && cellsRow[ic].vscl > 0);
+		assert(cellsRow[ic].hoff_n < cellsRow[ic].hoff_d &&
+		       cellsRow[ic].voff_n < cellsRow[ic].voff_d);
+		assert(cellsRow[ic].hoff_n > 0 || cellsRow[ic].voff_n > 0);
+		if (cellsRow[ic].hscl == cellsRow[ic].hoff_d) {
+		    assert(cellsRow[ic].hoff_n == cellsRow[ic].v.pd.hoff);
+		}
+		if (cellsRow[ic].vscl == cellsRow[ic].voff_d) {
+		    assert(cellsRow[ic].voff_n == cellsRow[ic].v.pd.voff);
+		}
+		assert(ic >= cellsRow[ic].v.pd.hoff &&
+		       ir >= cellsRow[ic].v.pd.voff);
+		/*
+		 * Verify that it's padding for something that can point
+		 * back to it.
+		 */
+		{
+		    const struct TerminalCell *parent =
+			[self getCellAtColumn:(ic - cellsRow[ic].v.pd.hoff)
+			      row:(ir - cellsRow[ic].v.pd.voff)];
+
+		    assert(parent->form == TERM_CELL_CHAR);
+		    assert(parent->hscl > cellsRow[ic].v.pd.hoff &&
+			   parent->vscl > cellsRow[ic].v.pd.voff);
+		    assert(parent->hscl == cellsRow[ic].hscl &&
+			   parent->vscl == cellsRow[ic].vscl);
+		    assert(parent->hoff_d == cellsRow[ic].hoff_d &&
+			   parent->voff_d == cellsRow[ic].voff_d);
+		}
+		break;
+
+	    case TERM_CELL_TILE_PADDING:
+		assert(cellsRow[ic].hscl > 0 && cellsRow[ic].vscl > 0);
+		assert(cellsRow[ic].hoff_n < cellsRow[ic].hoff_d &&
+		       cellsRow[ic].voff_n < cellsRow[ic].voff_d);
+		assert(cellsRow[ic].hoff_n > 0 || cellsRow[ic].voff_n > 0);
+		if (cellsRow[ic].hscl == cellsRow[ic].hoff_d) {
+		    assert(cellsRow[ic].hoff_n == cellsRow[ic].v.pd.hoff);
+		}
+		if (cellsRow[ic].vscl == cellsRow[ic].voff_d) {
+		    assert(cellsRow[ic].voff_n == cellsRow[ic].v.pd.voff);
+		}
+		assert(ic >= cellsRow[ic].v.pd.hoff &&
+		       ir >= cellsRow[ic].v.pd.voff);
+		/*
+		 * Verify that it's padding for something that can point
+		 * back to it.
+		 */
+		{
+		    const struct TerminalCell *parent =
+			[self getCellAtColumn:(ic - cellsRow[ic].v.pd.hoff)
+			      row:(ir - cellsRow[ic].v.pd.voff)];
+
+		    assert(parent->form == TERM_CELL_TILE);
+		    assert(parent->hscl > cellsRow[ic].v.pd.hoff &&
+			   parent->vscl > cellsRow[ic].v.pd.voff);
+		    assert(parent->hscl == cellsRow[ic].hscl &&
+			   parent->vscl == cellsRow[ic].vscl);
+		    assert(parent->hoff_d == cellsRow[ic].hoff_d &&
+			   parent->voff_d == cellsRow[ic].voff_d);
+		}
+		break;
+
+	    default:
+		assert(0);
+	    }
+	}
+	cellsRow += self.columnCount;
+    }
+}
+
++ (wchar_t)getBlankChar
+{
+    return L' ';
+}
+
++ (int)getBlankAttribute
+{
+    return 0;
+}
+
+@end
+
+/**
+ * TerminalChanges is used to track changes made via the text_hook, pict_hook,
+ * wipe_hook, curs_hook, and bigcurs_hook callbacks on the terminal since the
+ * last call to xtra_hook for TERM_XTRA_FRESH.  The locations marked as changed
+ * can then be used to make bounding rectangles for the regions that need to
+ * be redisplayed.
+ */
+@interface TerminalChanges : NSObject {
+    int* colBounds;
+    /*
+     * Outside of firstChangedRow, lastChangedRow and what's in colBounds, the
+     * contents of this are handled lazily.
+     */
+    BOOL* marks;
+}
+
+/**
+ * Initialize with zero columns and zero rows.
+ */
+- (id)init;
+
+/**
+ * Initialize with nCol columns and nRow rows.  No changes will be marked.
+ */
+- (id)initWithColumns:(int)nCol rows:(int)nRow NS_DESIGNATED_INITIALIZER;
+
+/**
+ * Resize to be nCol by nRow.  Current contents still within the new bounds
+ * are preserved.  Added areas are marked as unchanged.
+ */
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow;
+
+/**
+ * Clears all marked changes.
+ */
+- (void)clear;
+
+- (BOOL)isChangedAtColumn:(int)icol row:(int)irow;
+
+/**
+ * Scans the row, irow, starting at the column, icol0, and stopping before the
+ * column, icol1.  Returns the column index for the first cell that is
+ * changed.  The returned index will be equal to icol1 if all of the cells in
+ * the range are unchanged.
+ */
+- (int)scanForChangedInRow:(int)irow col0:(int)icol0 col1:(int)icol1;
+
+/**
+ * Scans the row, irow, starting at the column, icol0, and stopping before the
+ * column, icol1.  returns the column index for the first cell that has not
+ * changed.  The returned index will be equal to icol1 if all of the cells in
+ * the range have changed.
+ */
+- (int)scanForUnchangedInRow:(int)irow col0:(int)icol0 col1:(int)icol1;
+
+- (void)markChangedAtColumn:(int)icol row:(int)irow;
+
+- (void)markChangedRangeAtColumn:(int)icol row:(int)irow width:(int)w;
+
+/**
+ * Marks the block as changed who's upper left hand corner is at (icol, irow).
+ */
+- (void)markChangedBlockAtColumn:(int)icol
+			     row:(int)irow
+			   width:(int)w
+			  height:(int)h;
+
+/**
+ * Returns the index of the first changed column in the given row.  That index
+ * will be equal to the number of columns if there are no changes in the row.
+ */
+- (int)getFirstChangedColumnInRow:(int)irow;
+
+/**
+ * Returns the index of the last changed column in the given row.  That index
+ * will be equal to -1 if there are no changes in the row.
+ */
+- (int)getLastChangedColumnInRow:(int)irow;
+
+/**
+ * Is the number of columns.
+ */
+@property (readonly) int columnCount;
+
+/**
+ * Is the number of rows.
+ */
+@property (readonly) int rowCount;
+
+/**
+ * Is the index of the first row with changes.  Will be equal to the number
+ * of rows if there are no changes.
+ */
+@property (readonly) int firstChangedRow;
+
+/**
+ * Is the index of the last row with changes.  Will be equal to -1 if there
+ * are no changes.
+ */
+@property (readonly) int lastChangedRow;
+
+@end
+
+@implementation TerminalChanges
+
+- (id)init
+{
+    return [self initWithColumns:0 rows:0];
+}
+
+- (id)initWithColumns:(int)nCol rows:(int)nRow
+{
+    if (self = [super init]) {
+	self->colBounds = malloc(2 * nRow * sizeof(int));
+	self->marks = malloc(nCol * nRow * sizeof(BOOL));
+	self->_columnCount = nCol;
+	self->_rowCount = nRow;
+	[self clear];
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    if (self->marks != 0) {
+	free(self->marks);
+	self->marks = 0;
     }
     if (self->colBounds != 0) {
 	free(self->colBounds);
@@ -652,307 +1483,300 @@ struct PendingCellChange {
     }
 }
 
-- (void)clear
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow
 {
-    for (int i = 0; i < self.rowCount; ++i) {
-	self->colBounds[i + i] = self.columnCount;
-	self->colBounds[i + i + 1] = -1;
-	if (self->changesByRow[i] != 0) {
-	    free(self->changesByRow[i]);
-	    self->changesByRow[i] = 0;
+    int* newColBounds = malloc(2 * nRow * sizeof(int));
+    BOOL* newMarks = malloc(nCol * nRow * sizeof(BOOL));
+    int nRowCommon = (nRow < self.rowCount) ? nRow : self.rowCount;
+
+    if (self.firstChangedRow <= self.lastChangedRow &&
+	self.firstChangedRow < nRowCommon) {
+	BOOL* marksOutCursor = newMarks + self.firstChangedRow * nCol;
+	const BOOL* marksInCursor =
+	    self->marks + self.firstChangedRow * self.columnCount;
+	int nColCommon = (nCol < self.columnCount) ? nCol : self.columnCount;
+
+	if (self.lastChangedRow >= nRowCommon) {
+	    self->_lastChangedRow = nRowCommon - 1;
 	}
-    }
-    self->_hasTextChanges = NO;
-    self->_hasTileChanges = NO;
-    self->_hasWipeChanges = NO;
-    self->_firstChangedRow = self.rowCount;
-    self->_lastChangedRow = -1;
-    self->_cursorColumn = -1;
-    self->_cursorRow = -1;
-    self->_cursorWidth = 1;
-    self->_cursorHeight = 1;
-}
-
-- (void)resize:(int)nCol rows:(int)nRow
-{
-    if (! [PendingTermChanges isValidSize:nCol rows:nRow]) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"PendingTermChangesRowsColumns"
-			       reason:@"resize called with number of columns or rows that is negative or too large"
-			       userInfo:nil];
-	@throw exc;
-    }
-
-    int *cb = malloc((size_t) 2 * sizeof(int) * nRow);
-    struct PendingCellChange** cbr =
-	calloc(nRow, sizeof(struct PendingCellChange*));
-    int i;
-
-    if ((cb == 0 || cbr == 0) && nRow > 0) {
-	if (cbr != 0) {
-	    free(cbr);
-	}
-	if (cb != 0) {
-	    free(cb);
-	}
-
-	NSException *exc = [NSException
-			       exceptionWithName:@"OutOfMemory"
-			       reason:@"resize called for PendingTermChanges"
-			       userInfo:nil];
-	@throw exc;
-    }
-
-    for (i = 0; i < nRow; ++i) {
-	cb[i + i] = nCol;
-	cb[i + i + 1] = -1;
-    }
-    if (self->changesByRow != 0) {
-	for (i = 0; i < self.rowCount; ++i) {
-	    if (self->changesByRow[i] != 0) {
-		free(self->changesByRow[i]);
-		self->changesByRow[i] = 0;
+	for (int i = self.firstChangedRow; i <= self.lastChangedRow; ++i) {
+	    if (self->colBounds[i + i] < nColCommon) {
+		newColBounds[i + i] = self->colBounds[i + i];
+		newColBounds[i + i + 1] =
+		    (self->colBounds[i + i + 1] < nColCommon) ?
+		    self->colBounds[i + i + 1] : nColCommon - 1;
+		(void) memcpy(
+		    marksOutCursor + self->colBounds[i + i],
+		    marksInCursor + self->colBounds[i + i],
+		    (newColBounds[i + i + 1] - newColBounds[i + i] + 1) *
+		        sizeof(BOOL));
+		marksInCursor += self.columnCount;
+		marksOutCursor += nCol;
+	    } else {
+		self->colBounds[i + i] = nCol;
+		self->colBounds[i + i + 1] = -1;
 	    }
 	}
-	free(self->changesByRow);
-    }
-    if (self->colBounds != 0) {
-	free(self->colBounds);
+    } else {
+	self->_firstChangedRow = nRow;
+	self->_lastChangedRow = -1;
     }
 
-    self->colBounds = cb;
-    self->changesByRow = cbr;
+    free(self->colBounds);
+    self->colBounds = newColBounds;
+    free(self->marks);
+    self->marks = newMarks;
     self->_columnCount = nCol;
     self->_rowCount = nRow;
-    self->_hasTextChanges = NO;
-    self->_hasTileChanges = NO;
-    self->_hasWipeChanges = NO;
+}
+
+- (void)clear
+{
     self->_firstChangedRow = self.rowCount;
     self->_lastChangedRow = -1;
-    self->_cursorColumn = -1;
-    self->_cursorRow = -1;
-    self->_cursorWidth = 1;
-    self->_cursorHeight = 1;
 }
 
-- (void)markTextChange:(int)iCol row:(int)iRow glyph:(wchar_t)g color:(int)c
+- (BOOL)isChangedAtColumn:(int)icol row:(int)irow
 {
-    [self setupForChange:iCol row:iRow n:1];
-    struct PendingCellChange *pcc = self->changesByRow[iRow] + iCol;
-    pcc->v.txc.glyph = g;
-    pcc->v.txc.color = c;
-    pcc->changeType = CELL_CHANGE_TEXT;
-    self->_hasTextChanges = YES;
-}
-
-- (void)markTextChanges:(int)iCol row:(int)iRow n:(int)nCol
-		 glyphs:(const wchar_t*)g color:(int)c
-{
-    [self setupForChange:iCol row:iRow n:nCol];
-    struct PendingCellChange *pcc = self->changesByRow[iRow] + iCol;
-    for (int i = 0; i < nCol; ++i) {
-	pcc[i].v.txc.glyph = g[i];
-	pcc[i].v.txc.color = c;
-	pcc[i].changeType = CELL_CHANGE_TEXT;
+    if (irow < self.firstChangedRow || irow > self.lastChangedRow) {
+	return NO;
     }
-    self->_hasTextChanges = YES;
-}
-
-- (void)markTileChange:(int)iCol row:(int)iRow
-	 foregroundCol:(char)fc foregroundRow:(char)fr
-	 backgroundCol:(char)bc backgroundRow:(char)br
-{
-    [self setupForChange:iCol row:iRow n:1];
-    struct PendingCellChange *pcc = self->changesByRow[iRow] + iCol;
-    pcc->v.tic.fgdCol = fc;
-    pcc->v.tic.fgdRow = fr;
-    pcc->v.tic.bckCol = bc;
-    pcc->v.tic.bckRow = br;
-    pcc->changeType = CELL_CHANGE_TILE;
-    self->_hasTileChanges = YES;
-}
-
-- (void)markWipeRange:(int)iCol row:(int)iRow n:(int)nCol
-{
-    [self setupForChange:iCol row:iRow n:nCol];
-    struct PendingCellChange *pcc = self->changesByRow[iRow] + iCol;
-    for (int i = 0; i < nCol; ++i) {
-	pcc[i].v.txc.glyph = 0;
-	/* This is the plain background color. */
-	pcc[i].v.txc.color = BG_BLACK * MAX_COLORS;
-	pcc[i].changeType = CELL_CHANGE_WIPE;
+    if (icol < self->colBounds[irow + irow] ||
+	icol > self->colBounds[irow + irow + 1]) {
+	return NO;
     }
-    self->_hasWipeChanges = YES;
+    return self->marks[icol + irow * self.columnCount];
 }
 
-- (void)markCursor:(int)iCol row:(int)iRow
+- (int)scanForChangedInRow:(int)irow col0:(int)icol0 col1:(int)icol1
 {
-    /* Allow negative indices to indicate an invalid cursor. */
-    [self checkColumnIndices:((iCol >= 0) ? iCol : 0) n:1];
-    [self checkRowIndex:((iRow >= 0) ? iRow : 0)];
-    self->_cursorColumn = iCol;
-    self->_cursorRow = iRow;
-    self->_cursorWidth = 1;
-    self->_cursorHeight = 1;
-}
-
-- (void)markBigCursor:(int)iCol row:(int)iRow
-	    cellsWide:(int)w cellsHigh:(int)h
-{
-    /* Allow negative indices to indicate an invalid cursor. */
-    [self checkColumnIndices:((iCol >= 0) ? iCol : 0) n:1];
-    [self checkRowIndex:((iRow >= 0) ? iRow : 0)];
-    if (w < 1 || h < 1) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidCursorDimensions"
-			       reason:@"markBigCursor called for PendingTermChanges"
-			       userInfo:nil];
-	@throw exc;
+    if (irow < self.firstChangedRow || irow > self.lastChangedRow ||
+	icol0 > self->colBounds[irow + irow + 1]) {
+	return icol1;
     }
-    self->_cursorColumn = iCol;
-    self->_cursorRow = iRow;
-    self->_cursorWidth = w;
-    self->_cursorHeight = h;
-}
 
-- (void)setupForChange:(int)iCol row:(int)iRow n:(int)nCol
-{
-    [self checkColumnIndices:iCol n:nCol];
-    [self checkRowIndex:iRow];
-    if (self->changesByRow[iRow] == 0) {
-	self->changesByRow[iRow] =
-	    malloc(self.columnCount * sizeof(struct PendingCellChange));
-	if (self->changesByRow[iRow] == 0 && self.columnCount > 0) {
-	    NSException *exc = [NSException
-				   exceptionWithName:@"OutOfMemory"
-				   reason:@"setupForChange called for PendingTermChanges"
-				   userInfo:nil];
-	    @throw exc;
+    int i = (icol0 > self->colBounds[irow + irow]) ?
+	icol0 : self->colBounds[irow + irow];
+    int i1 = (icol1 <= self->colBounds[irow + irow + 1]) ?
+	icol1 : self->colBounds[irow + irow + 1] + 1;
+    const BOOL* marksCursor = self->marks + irow * self.columnCount;
+    while (1) {
+	if (i >= i1) {
+	    return icol1;
 	}
-	struct PendingCellChange* pcc = self->changesByRow[iRow];
-	for (int i = 0; i < self.columnCount; ++i) {
-	    pcc[i].changeType = CELL_CHANGE_NONE;
+	if (marksCursor[i]) {
+	    return i;
+	}
+	++i;
+    }
+}
+
+- (int)scanForUnchangedInRow:(int)irow col0:(int)icol0 col1:(int)icol1
+{
+    if (irow < self.firstChangedRow || irow > self.lastChangedRow ||
+	icol0 < self->colBounds[irow + irow] ||
+	icol0 > self->colBounds[irow + irow + 1]) {
+	return icol0;
+    }
+
+    int i = icol0;
+    int i1 = (icol1 <= self->colBounds[irow + irow + 1]) ?
+	icol1 : self->colBounds[irow + irow + 1] + 1;
+    const BOOL* marksCursor = self->marks + irow * self.columnCount;
+    while (1) {
+	if (i >= i1 || ! marksCursor[i]) {
+	    return i;
+	}
+	++i;
+    }
+}
+
+- (void)markChangedAtColumn:(int)icol row:(int)irow
+{
+    [self markChangedBlockAtColumn:icol row:irow width:1 height:1];
+}
+
+- (void)markChangedRangeAtColumn:(int)icol row:(int)irow width:(int)w
+{
+    [self markChangedBlockAtColumn:icol row:irow width:w height:1];
+}
+
+- (void)markChangedBlockAtColumn:(int)icol
+			     row:(int)irow
+			   width:(int)w
+			  height:(int)h
+{
+    if (irow + h <= self.firstChangedRow) {
+	/* All prior marked regions are on rows after the requested block. */
+	if (self.firstChangedRow > self.lastChangedRow) {
+	    self->_lastChangedRow = irow + h - 1;
+	} else {
+	    for (int i = irow + h; i < self.firstChangedRow; ++i) {
+		self->colBounds[i + i] = self.columnCount;
+		self->colBounds[i + i + 1] = -1;
+	    }
+	}
+	self->_firstChangedRow = irow;
+
+	BOOL* marksCursor = self->marks + irow * self.columnCount;
+	for (int i = irow; i < irow + h; ++i) {
+	    self->colBounds[i + i] = icol;
+	    self->colBounds[i + i + 1] = icol + w - 1;
+	    for (int j = icol; j < icol + w; ++j) {
+		marksCursor[j] = YES;
+	    }
+	    marksCursor += self.columnCount;
+	}
+    } else if (irow > self.lastChangedRow) {
+	/* All prior marked regions are on rows before the requested block. */
+	int i;
+
+	for (i = self.lastChangedRow + 1; i < irow; ++i) {
+	    self->colBounds[i + i] = self.columnCount;
+	    self->colBounds[i + i + 1] = -1;
+	}
+	self->_lastChangedRow = irow + h - 1;
+
+	BOOL* marksCursor = self->marks + irow * self.columnCount;
+	for (i = irow; i < irow + h; ++i) {
+	    self->colBounds[i + i] = icol;
+	    self->colBounds[i + i + 1] = icol + w - 1;
+	    for (int j = icol; j < icol + w; ++j) {
+		marksCursor[j] = YES;
+	    }
+	    marksCursor += self.columnCount;
+	}
+    } else {
+	/*
+	 * There's overlap between the rows of the requested block and prior
+	 * marked regions.
+	 */
+	BOOL* marksCursor = self->marks + irow * self.columnCount;
+	int irow0, h0;
+
+	if (irow < self.firstChangedRow) {
+	    /* Handle any leading rows where there's no overlap. */
+	    for (int i = irow; i < self.firstChangedRow; ++i) {
+		self->colBounds[i + i] = icol;
+		self->colBounds[i + i + 1] = icol + w - 1;
+		for (int j = icol; j < icol + w; ++j) {
+		    marksCursor[j] = YES;
+		}
+		marksCursor += self.columnCount;
+	    }
+	    irow0 = self.firstChangedRow;
+	    h0 = irow + h - self.firstChangedRow;
+	    self->_firstChangedRow = irow;
+	} else {
+	    irow0 = irow;
+	    h0 = h;
+	}
+
+	/* Handle potentially overlapping rows */
+	if (irow0 + h0 > self.lastChangedRow + 1) {
+	    h0 = self.lastChangedRow + 1 - irow0;
+	    self->_lastChangedRow = irow + h - 1;
+	}
+
+	int i;
+	for (i = irow0; i < irow0 + h0; ++i) {
+	    if (icol + w <= self->colBounds[i + i]) {
+		int j;
+
+		for (j = icol; j < icol + w; ++j) {
+		    marksCursor[j] = YES;
+		}
+		if (self->colBounds[i + i] > self->colBounds[i + i + 1]) {
+		    self->colBounds[i + i + 1] = icol + w - 1;
+		} else {
+		    for (j = icol + w; j < self->colBounds[i + i]; ++j) {
+			marksCursor[j] = NO;
+		    }
+		}
+		self->colBounds[i + i] = icol;
+	    } else if (icol > self->colBounds[i + i + 1]) {
+		int j;
+
+		for (j = self->colBounds[i + i + 1] + 1; j < icol; ++j) {
+		    marksCursor[j] = NO;
+		}
+		for (j = icol; j < icol + w; ++j) {
+		    marksCursor[j] = YES;
+		}
+		self->colBounds[i + i + 1] = icol + w - 1;
+	    } else {
+		if (icol < self->colBounds[i + i]) {
+		    self->colBounds[i + i] = icol;
+		}
+		if (icol + w > self->colBounds[i + i + 1]) {
+		    self->colBounds[i + i + 1] = icol + w - 1;
+		}
+		for (int j = icol; j < icol + w; ++j) {
+		    marksCursor[j] = YES;
+		}
+	    }
+	    marksCursor += self.columnCount;
+	}
+
+	/* Handle any trailing rows where there's no overlap. */
+	for (i = irow0 + h0; i < irow + h; ++i) {
+	    self->colBounds[i + i] = icol;
+	    self->colBounds[i + i + 1] = icol + w - 1;
+	    for (int j = icol; j < icol + w; ++j) {
+		marksCursor[j] = YES;
+	    }
+	    marksCursor += self.columnCount;
 	}
     }
-    if (self.firstChangedRow > iRow) {
-	self->_firstChangedRow = iRow;
-    }
-    if (self.lastChangedRow < iRow) {
-	self->_lastChangedRow = iRow;
-    }
-    if ([self getFirstChangedColumnInRow:iRow] > iCol) {
-	self->colBounds[iRow + iRow] = iCol;
-    }
-    if ([self getLastChangedColumnInRow:iRow] < iCol + nCol - 1) {
-	self->colBounds[iRow + iRow + 1] = iCol + nCol - 1;
-    }
 }
 
-- (int)getFirstChangedColumnInRow:(int)iRow
+- (int)getFirstChangedColumnInRow:(int)irow
 {
-    [self checkRowIndex:iRow];
-    return self->colBounds[iRow + iRow];
+    if (irow < self.firstChangedRow || irow > self.lastChangedRow) {
+	return self.columnCount;
+    }
+    return self->colBounds[irow + irow];
 }
 
-- (int)getLastChangedColumnInRow:(int)iRow
+- (int)getLastChangedColumnInRow:(int)irow
 {
-    [self checkRowIndex:iRow];
-    return self->colBounds[iRow + iRow + 1];
-}
-
-- (enum PendingCellChangeType)getCellChangeType:(int)iCol row:(int)iRow
-{
-    [self checkColumnIndices:iCol n:1];
-    [self checkRowIndex:iRow];
-    if (iRow < self.firstChangedRow || iRow > self.lastChangedRow) {
-	return CELL_CHANGE_NONE;
+    if (irow < self.firstChangedRow || irow > self.lastChangedRow) {
+	return -1;
     }
-    if (iCol < [self getFirstChangedColumnInRow:iRow] ||
-	iCol > [self getLastChangedColumnInRow:iRow]) {
-	return CELL_CHANGE_NONE;
-    }
-    return self->changesByRow[iRow][iCol].changeType;
-}
-
-- (struct PendingTextChange)getCellTextChange:(int)iCol row:(int)iRow
-{
-    [self checkColumnIndices:iCol n:1];
-    [self checkRowIndex:iRow];
-    if (iRow < self.firstChangedRow || iRow > self.lastChangedRow ||
-	iCol < [self getFirstChangedColumnInRow:iRow] ||
-	iCol > [self getLastChangedColumnInRow:iRow] ||
-	(self->changesByRow[iRow][iCol].changeType != CELL_CHANGE_TEXT &&
-	 self->changesByRow[iRow][iCol].changeType != CELL_CHANGE_WIPE)) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"NotTextChange"
-			       reason:@"getCellTextChange called for PendingTermChanges"
-			       userInfo:nil];
-	@throw exc;
-    }
-    return self->changesByRow[iRow][iCol].v.txc;
-}
-
-- (struct PendingTileChange)getCellTileChange:(int)iCol row:(int)iRow
-{
-    [self checkColumnIndices:iCol n:1];
-    [self checkRowIndex:iRow];
-    if (iRow < self.firstChangedRow || iRow > self.lastChangedRow ||
-	iCol < [self getFirstChangedColumnInRow:iRow] ||
-	iCol > [self getLastChangedColumnInRow:iRow] ||
-	self->changesByRow[iRow][iCol].changeType != CELL_CHANGE_TILE) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"NotTileChange"
-			       reason:@"getCellTileChange called for PendingTermChanges"
-			       userInfo:nil];
-	@throw exc;
-    }
-    return self->changesByRow[iRow][iCol].v.tic;
-}
-
-- (void)checkColumnIndices:(int)iCol n:(int)nCol
-{
-    if (iCol < 0) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidColumnIndex"
-			       reason:@"negative column index"
-			       userInfo:nil];
-	@throw exc;
-    }
-    if (iCol >= self.columnCount || iCol + nCol > self.columnCount) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidColumnIndex"
-			       reason:@"column index exceeds number of columns"
-			       userInfo:nil];
-	@throw exc;
-    }
-    if (nCol <= 0) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidColumnIndex"
-			       reason:@"empty column range"
-			       userInfo:nil];
-	@throw exc;
-    }
-}
-
-- (void)checkRowIndex:(int)iRow
-{
-    if (iRow < 0) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidRowIndex"
-			       reason:@"negative row index"
-			       userInfo:nil];
-	@throw exc;
-    }
-    if (iRow >= self.rowCount) {
-	NSException *exc = [NSException
-			       exceptionWithName:@"InvalidRowIndex"
-			       reason:@"row index exceeds number of rows"
-			       userInfo:nil];
-	@throw exc;
-    }
+    return self->colBounds[irow + irow + 1];
 }
 
 @end
+
+
+/**
+ * Draws one tile as a helper function for AngbandContext's drawRect.
+ */
+static void draw_image_tile(
+    NSGraphicsContext* nsContext,
+    CGContextRef cgContext,
+    CGImageRef image,
+    NSRect srcRect,
+    NSRect dstRect,
+    NSCompositingOperation op)
+{
+    /* Flip the source rect since the source image is flipped */
+    CGAffineTransform flip = CGAffineTransformIdentity;
+    flip = CGAffineTransformTranslate(flip, 0.0, CGImageGetHeight(image));
+    flip = CGAffineTransformScale(flip, 1.0, -1.0);
+    CGRect flippedSourceRect =
+	CGRectApplyAffineTransform(NSRectToCGRect(srcRect), flip);
+
+    /*
+     * When we use high-quality resampling to draw a tile, pixels from outside
+     * the tile may bleed in, causing graphics artifacts. Work around that.
+     */
+    CGImageRef subimage =
+	CGImageCreateWithImageInRect(image, flippedSourceRect);
+    [nsContext setCompositingOperation:op];
+    CGContextDrawImage(cgContext, NSRectToCGRect(dstRect), subimage);
+    CGImageRelease(subimage);
+}
 
 
 /* The max number of glyphs we support.  Currently this only affects
@@ -965,8 +1789,7 @@ struct PendingCellChange {
 #define GLYPH_COUNT 256
 
 /* An AngbandContext represents a logical Term (i.e. what Angband thinks is
- * a window). This typically maps to one NSView, but may map to more than one
- * NSView (e.g. the Test and real screen saver view). */
+ * a window). */
 @interface AngbandContext : NSObject <NSWindowDelegate>
 {
 @public
@@ -978,28 +1801,19 @@ struct PendingCellChange {
     /* Is the last time we drew, so we can throttle drawing. */
     CFAbsoluteTime lastRefreshTime;
 
-    /*
-     * Whether we are currently in live resize, which affects how big we
-     * render our image.
-     */
-    int inLiveResize;
-
     /* Flags whether or not a fullscreen transition is in progress. */
     BOOL inFullscreenTransition;
+
+    /* Our view */
+    AngbandView *angbandView;
 }
 
 /* Column and row counts, by default 80 x 24 */
-@property int cols;
-@property int rows;
+@property (readonly) int cols;
+@property (readonly) int rows;
 
 /* The size of the border between the window edge and the contents */
 @property (readonly) NSSize borderSize;
-
-/* Our array of views */
-@property NSMutableArray *angbandViews;
-
-/* The buffered image */
-@property CGLayerRef angbandLayer;
 
 /* The font of this context */
 @property NSFont *angbandViewFont;
@@ -1021,11 +1835,26 @@ struct PendingCellChange {
 /* If this context owns a window, here it is. */
 @property NSWindow *primaryWindow;
 
-/* Is the record of changes to the contents for the next update. */
-@property PendingTermChanges *changes;
+/* Holds our version of the contents of the terminal. */
+@property TerminalContents *contents;
+
+/*
+ * Marks which locations have been changed by the text_hook, pict_hook,
+ * wipe_hook, curs_hook, and bigcurs_hhok callbacks on the terminal since
+ * the last call to xtra_hook with TERM_XTRA_FRESH.
+ */
+@property TerminalChanges *changes;
 
 @property (nonatomic, assign) BOOL hasSubwindowFlags;
 @property (nonatomic, assign) BOOL windowVisibilityChecked;
+
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow;
+
+/**
+ * Based on what has been marked as changed, inform AppKit of the bounding
+ * rectangles for the changed areas.
+ */
+- (void)computeInvalidRects;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -1035,34 +1864,19 @@ struct PendingCellChange {
 /* Called when the context is going down. */
 - (void)dispose;
 
-/* Returns the size of the image. */
-- (NSSize)imageSize;
-
-/* Return the rect for a tile at given coordinates. */
-- (NSRect)rectInImageForTileAtX:(int)x Y:(int)y;
+/*
+ * Return the rect in view coordinates for the block of cells whose upper
+ * left corner is (x,y).
+ */
+- (NSRect)viewRectForCellBlockAtX:(int)x y:(int)y width:(int)w height:(int)h;
 
 /* Draw the given wide character into the given tile rect. */
-- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile context:(CGContextRef)ctx;
-
-/* Locks focus on the Angband image, and scales the CTM appropriately. */
-- (CGContextRef)lockFocus;
-
-/* Locks focus on the Angband image but does NOT scale the CTM. Appropriate
- * for drawing hairlines. */
-- (CGContextRef)lockFocusUnscaled;
-
-/* Unlocks focus. */
-- (void)unlockFocus;
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile screenFont:(NSFont*)font
+	  context:(CGContextRef)ctx;
 
 /* Returns the primary window for this angband context, creating it if
  * necessary */
 - (NSWindow *)makePrimaryWindow;
-
-/* Called to add a new Angband view */
-- (void)addAngbandView:(AngbandView *)view;
-
-/* Make the context aware that one of its views changed size */
-- (void)angbandViewDidScale:(AngbandView *)view;
 
 /* Handle becoming the main window */
 - (void)windowDidBecomeMain:(NSNotification *)notification;
@@ -1076,8 +1890,8 @@ struct PendingCellChange {
 /* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
 
-/* Invalidate part of the image, with the rect expressed in base coordinates */
-- (void)setNeedsDisplayInBaseRect:(NSRect)rect;
+/* Invalidate part of the image, with the rect expressed in view coordinates */
+- (void)setNeedsDisplayInRect:(NSRect)rect;
 
 /* Display (flush) our Angband views */
 - (void)displayIfNeeded;
@@ -1093,9 +1907,6 @@ struct PendingCellChange {
  */
 - (void)constrainWindowSize:(int)termIdx;
 
-/* Called from the view to indicate that it is starting or ending live resize */
-- (void)viewWillStartLiveResize:(AngbandView *)view;
-- (void)viewDidEndLiveResize:(AngbandView *)view;
 - (void)saveWindowVisibleToDefaults: (BOOL)windowVisible;
 - (BOOL)windowVisibleUsingDefaults;
 
@@ -1109,9 +1920,6 @@ struct PendingCellChange {
  * Sets the default font for all contexts.
  */
 + (void)setDefaultFont:(NSFont*)font;
-
-/* Internal method */
-- (AngbandView *)activeView;
 
 @end
 
@@ -1283,6 +2091,7 @@ static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
 static BOOL send_event(NSEvent *event);
+static void set_color_for_index(int idx);
 static void record_current_savefile(void);
 
 /**
@@ -1317,13 +2126,13 @@ static bool initialized = FALSE;
 @end
 
 /* The NSView subclass that draws our Angband image */
-@interface AngbandView : NSView
-{
-    AngbandContext *angbandContext;
+@interface AngbandView : NSView {
+@private
+    NSBitmapImageRep *cacheForResize;
+    NSRect cacheBounds;
 }
 
-- (void)setAngbandContext:(AngbandContext *)context;
-- (AngbandContext *)angbandContext;
+@property (nonatomic, weak) AngbandContext *angbandContext;
 
 @end
 
@@ -1345,13 +2154,6 @@ static bool initialized = FALSE;
 
 @synthesize hasSubwindowFlags=_hasSubwindowFlags;
 @synthesize windowVisibilityChecked=_windowVisibilityChecked;
-
-- (BOOL)useLiveResizeOptimization
-{
-    /* If we have graphics turned off, text rendering is fast enough that we
-	 * don't need to use a live resize optimization. */
-    return self->inLiveResize && graphics_are_enabled();
-}
 
 - (NSSize)baseSize
 {
@@ -1549,61 +2351,6 @@ static int compare_advances(const void *ap, const void *bp)
     free(glyphArray);
 }
 
-- (void)updateImage
-{
-    NSSize size = NSMakeSize(1, 1);
-    
-    AngbandView *activeView = [self activeView];
-    if (activeView)
-    {
-        /* If we are in live resize, draw as big as the screen, so we can scale
-		 * nicely to any size. If we are not in live resize, then use the
-		 * bounds of the active view. */
-        NSScreen *screen;
-        if ([self useLiveResizeOptimization] && (screen = [[activeView window] screen]) != NULL)
-        {
-            size = [screen frame].size;
-        }
-        else
-        {
-            size = [activeView bounds].size;
-        }
-    }
-
-    CGLayerRelease(self.angbandLayer);
-    
-    /* Use the highest monitor scale factor on the system to work out what
-     * scale to draw at - not the recommended method, but works where we
-     * can't easily get the monitor the current draw is occurring on. */
-    float angbandLayerScale = 1.0;
-    if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
-        for (NSScreen *screen in [NSScreen screens]) {
-            angbandLayerScale = fmax(angbandLayerScale, [screen backingScaleFactor]);
-        }
-    }
-
-    /* Make a bitmap context as an example for our layer */
-    CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
-    CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* bytesPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
-    CGColorSpaceRelease(cs);
-
-    /* Create the layer at the appropriate size */
-    size.width = fmax(1, ceil(size.width * angbandLayerScale));
-    size.height = fmax(1, ceil(size.height * angbandLayerScale));
-    self.angbandLayer =
-	CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
-
-    CFRelease(exampleCtx);
-
-    /* Set the new context of the layer to draw at the correct scale */
-    CGContextRef ctx = CGLayerGetContext(self.angbandLayer);
-    CGContextScaleCTM(ctx, angbandLayerScale, angbandLayerScale);
-
-    [self lockFocus];
-    [[NSColor blackColor] set];
-    NSRectFill((NSRect){NSZeroPoint, [self baseSize]});
-    [self unlockFocus];
-}
 
 - (void)requestRedraw
 {
@@ -1629,38 +2376,6 @@ static int compare_advances(const void *ap, const void *bp)
     self->terminal = t;
 }
 
-- (void)viewWillStartLiveResize:(AngbandView *)view
-{
-#if USE_LIVE_RESIZE_CACHE
-    if (self->inLiveResize < INT_MAX) self->inLiveResize++;
-    else [NSException raise:NSInternalInconsistencyException format:@"inLiveResize overflow"];
-    
-    if (self->inLiveResize == 1 && graphics_are_enabled())
-    {
-        [self updateImage];
-        
-        [self setNeedsDisplay:YES]; /* We'll need to redisplay everything anyways, so avoid creating all those little redisplay rects */
-        [self requestRedraw];
-    }
-#endif
-}
-
-- (void)viewDidEndLiveResize:(AngbandView *)view
-{
-#if USE_LIVE_RESIZE_CACHE
-    if (self->inLiveResize > 0) self->inLiveResize--;
-    else [NSException raise:NSInternalInconsistencyException format:@"inLiveResize underflow"];
-    
-    if (self->inLiveResize == 0 && graphics_are_enabled())
-    {
-        [self updateImage];
-        
-        [self setNeedsDisplay:YES]; /* We'll need to redisplay everything anyways, so avoid creating all those little redisplay rects */
-        [self requestRedraw];
-    }
-#endif
-}
-
 /**
  * If we're trying to limit ourselves to a certain number of frames per second,
  * then compute how long it's been since we last drew, and then wait until the
@@ -1681,21 +2396,24 @@ static int compare_advances(const void *ap, const void *bp)
     self->lastRefreshTime = CFAbsoluteTimeGetCurrent();
 }
 
-- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile context:(CGContextRef)ctx
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile screenFont:(NSFont*)font
+	  context:(CGContextRef)ctx
 {
     CGFloat tileOffsetY = self.fontAscender;
     CGFloat tileOffsetX = 0.0;
-    NSFont *screenFont = [self.angbandViewFont screenFont];
     UniChar unicharString[2] = {(UniChar)wchar, 0};
 
     /* Get glyph and advance */
     CGGlyph thisGlyphArray[1] = { 0 };
     CGSize advances[1] = { { 0, 0 } };
-    CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, thisGlyphArray, 1);
+    CTFontGetGlyphsForCharacters(
+	(CTFontRef)font, unicharString, thisGlyphArray, 1);
     CGGlyph glyph = thisGlyphArray[0];
-    CTFontGetAdvancesForGlyphs((CTFontRef)screenFont, kCTFontHorizontalOrientation, thisGlyphArray, advances, 1);
+    CTFontGetAdvancesForGlyphs(
+	(CTFontRef)font, kCTFontHorizontalOrientation, thisGlyphArray,
+	advances, 1);
     CGSize advance = advances[0];
-    
+
     /* If our font is not monospaced, our tile width is deliberately not big
 	 * enough for every character. In that event, if our glyph is too wide, we
 	 * need to compress it horizontally. Compute the compression ratio.
@@ -1714,7 +2432,6 @@ static int compare_advances(const void *ap, const void *bp)
         tileOffsetX = 0;
     }
 
-    
     /* Now draw it */
     CGAffineTransform textMatrix = CGContextGetTextMatrix(ctx);
     CGFloat savedA = textMatrix.a;
@@ -1729,61 +2446,24 @@ static int compare_advances(const void *ap, const void *bp)
         textMatrix.a *= compressionRatio;
     }
 
-    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
     CGContextSetTextMatrix(ctx, textMatrix);
     CGContextShowGlyphsAtPositions(ctx, &glyph, &CGPointZero, 1);
-    
+
     /* Restore the text matrix if we messed with the compression ratio */
     if (compressionRatio != 1.)
     {
         textMatrix.a = savedA;
-        CGContextSetTextMatrix(ctx, textMatrix);
     }
 
-    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
     CGContextSetTextMatrix(ctx, textMatrix);
 }
 
-/* Lock and unlock focus on our image or layer, setting up the CTM
- * appropriately. */
-- (CGContextRef)lockFocusUnscaled
+- (NSRect)viewRectForCellBlockAtX:(int)x y:(int)y width:(int)w height:(int)h
 {
-    /* Create an NSGraphicsContext representing this CGLayer */
-    CGContextRef ctx = CGLayerGetContext(self.angbandLayer);
-    NSGraphicsContext *context = [NSGraphicsContext graphicsContextWithGraphicsPort:ctx flipped:NO];
-    [NSGraphicsContext saveGraphicsState];
-    [NSGraphicsContext setCurrentContext:context];
-    CGContextSaveGState(ctx);
-    return ctx;
-}
-
-- (void)unlockFocus
-{
-    /* Restore the graphics state */
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextRestoreGState(ctx);
-    [NSGraphicsContext restoreGraphicsState];
-}
-
-- (NSSize)imageSize
-{
-    /* Return the size of our layer */
-    CGSize result = CGLayerGetSize(self.angbandLayer);
-    return NSMakeSize(result.width, result.height);
-}
-
-- (CGContextRef)lockFocus
-{
-    return [self lockFocusUnscaled];
-}
-
-
-- (NSRect)rectInImageForTileAtX:(int)x Y:(int)y
-{
-    int flippedY = y;
-    return NSMakeRect(x * self.tileSize.width + self.borderSize.width,
-		      flippedY * self.tileSize.height + self.borderSize.height,
-		      self.tileSize.width, self.tileSize.height);
+    return NSMakeRect(
+	x * self.tileSize.width + self.borderSize.width,
+	y * self.tileSize.height + self.borderSize.height,
+	w * self.tileSize.width, h * self.tileSize.height);
 }
 
 - (void)setSelectionFont:(NSFont*)font adjustTerminal: (BOOL)adjustTerminal
@@ -1820,9 +2500,6 @@ static int compare_advances(const void *ap, const void *bp)
 	}
         [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
     }
-
-    /* Update our image */
-    [self updateImage];
 }
 
 - (id)init
@@ -1836,21 +2513,17 @@ static int compare_advances(const void *ap, const void *bp)
         /* Default border size */
         self->_borderSize = NSMakeSize(2, 2);
 
-        /* Allocate our array of views */
-        self->_angbandViews = [[NSMutableArray alloc] init];
-
 	self->_nColPre = 0;
 	self->_nColPost = 0;
 
+	self->_contents =
+	    [[TerminalContents alloc] initWithColumns:self->_cols
+				      rows:self->_rows];
 	self->_changes =
-	    [[PendingTermChanges alloc] initWithColumnsRows:self->_cols
-					rows:self->_rows];
+	    [[TerminalChanges alloc] initWithColumns:self->_cols
+				     rows:self->_rows];
 	self->lastRefreshTime = CFAbsoluteTimeGetCurrent();
-	self->inLiveResize = 0;
 	self->inFullscreenTransition = NO;
-
-        /* Make the image. Since we have no views, it'll just be a puny 1x1 image. */
-        [self updateImage];
 
         self->_windowVisibilityChecked = NO;
     }
@@ -1865,13 +2538,9 @@ static int compare_advances(const void *ap, const void *bp)
 {
     self->terminal = NULL;
 
-    /* Disassociate ourselves from our angbandViews */
-    [self.angbandViews makeObjectsPerformSelector:@selector(setAngbandContext:) withObject:nil];
-    self.angbandViews = nil;
-
-    /* Destroy the layer/image */
-    CGLayerRelease(self.angbandLayer);
-    self.angbandLayer = NULL;
+    /* Disassociate ourselves from our view. */
+    [self->angbandView setAngbandContext:nil];
+    self->angbandView = nil;
 
     /* Font */
     self.angbandViewFont = nil;
@@ -1881,7 +2550,8 @@ static int compare_advances(const void *ap, const void *bp)
     [self.primaryWindow close];
     self.primaryWindow = nil;
 
-    /* Pending changes */
+    /* Contents and pending changes */
+    self.contents = nil;
     self.changes = nil;
 }
 
@@ -1889,6 +2559,14 @@ static int compare_advances(const void *ap, const void *bp)
 - (void)dealloc
 {
     [self dispose];
+}
+
+- (void)resizeWithColumns:(int)nCol rows:(int)nRow
+{
+    [self.contents resizeWithColumns:nCol rows:nRow];
+    [self.changes resizeWithColumns:nCol rows:nRow];
+    self->_cols = nCol;
+    self->_rows = nRow;
 }
 
 /* From the Linux mbstowcs(3) man page:
@@ -1940,17 +2618,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     return count;
 }
 
-- (void)addAngbandView:(AngbandView *)view
-{
-    if (! [self.angbandViews containsObject:view])
-    {
-        [self.angbandViews addObject:view];
-        [self updateImage];
-        [self setNeedsDisplay:YES]; /* We'll need to redisplay everything anyways, so avoid creating all those little redisplay rects */
-        [self requestRedraw];
-    }
-}
-
 /**
  * For defaultFont and setDefaultFont.
  */
@@ -1965,58 +2632,6 @@ static __strong NSFont* gDefaultFont = nil;
 {
     gDefaultFont = font;
 }
-
-/**
- * We have this notion of an "active" AngbandView, which is the largest - the
- * idea being that in the screen saver, when the user hits Test in System
- * Preferences, we don't want to keep driving the AngbandView in the
- * background.  Our active AngbandView is the widest - that's a hack all right.
- * Mercifully when we're just playing the game there's only one view.
- */
-- (AngbandView *)activeView
-{
-    if ([self.angbandViews count] == 1)
-        return [self.angbandViews objectAtIndex:0];
-
-    AngbandView *result = nil;
-    float maxWidth = 0;
-    for (AngbandView *angbandView in self.angbandViews)
-    {
-        float width = [angbandView frame].size.width;
-        if (width > maxWidth)
-        {
-            maxWidth = width;
-            result = angbandView;
-        }
-    }
-    return result;
-}
-
-- (void)angbandViewDidScale:(AngbandView *)view
-{
-    /* If we're live-resizing with graphics, we're using the live resize
-	 * optimization, so don't update the image. Otherwise do it. */
-    if (! (self->inLiveResize && graphics_are_enabled()) && view == [self activeView])
-    {
-        [self updateImage];
-        
-        [self setNeedsDisplay:YES]; /*we'll need to redisplay everything anyways, so avoid creating all those little redisplay rects */
-        [self requestRedraw];
-    }
-}
-
-
-- (void)removeAngbandView:(AngbandView *)view
-{
-    if ([self.angbandViews containsObject:view])
-    {
-        [self.angbandViews removeObject:view];
-        [self updateImage];
-        [self setNeedsDisplay:YES]; /* We'll need to redisplay everything anyways, so avoid creating all those little redisplay rects */
-        if ([self.angbandViews count]) [self requestRedraw];
-    }
-}
-
 
 - (NSWindow *)makePrimaryWindow
 {
@@ -2042,24 +2657,608 @@ static __strong NSFont* gDefaultFont = nil;
         [self.primaryWindow setExcludedFromWindowsMenu: YES]; /* we're using custom window menu handling */
 
         /* Make the view */
-        AngbandView *angbandView = [[AngbandView alloc] initWithFrame:contentRect];
+        self->angbandView = [[AngbandView alloc] initWithFrame:contentRect];
         [angbandView setAngbandContext:self];
-        [self.angbandViews addObject:angbandView];
+        [angbandView setNeedsDisplay:YES];
         [self.primaryWindow setContentView:angbandView];
 
         /* We are its delegate */
         [self.primaryWindow setDelegate:self];
-
-        /* Update our image, since this is probably the first angband view
-		 * we've gotten. */
-        [self updateImage];
     }
     return self.primaryWindow;
 }
 
 
+- (void)computeInvalidRects
+{
+    for (int irow = self.changes.firstChangedRow;
+	 irow <= self.changes.lastChangedRow;
+	 ++irow) {
+	int icol = [self.changes scanForChangedInRow:irow
+			col0:0 col1:self.cols];
+
+	while (icol < self.cols) {
+	    /* Find the end of the changed region. */
+	    int jcol =
+		[self.changes scanForUnchangedInRow:irow col0:(icol + 1)
+		     col1:self.cols];
+
+	    /*
+	     * If the last column is a character, extend the region drawn
+	     * because characters can exceed the horizontal bounds of the cell
+	     * and those parts will need to be cleared.  Don't extend into a
+	     * tile because the clipping is set while drawing to never
+	     * extend text into a tile.  For a big character that's been
+	     * partially overwritten, allow what comes after the point
+	     * where the overwrite occurred to influence the stuff before
+	     * but not vice versa.  If extending the region reaches another
+	     * changed block, find the end of that block and repeat the
+	     * process.
+	     */
+	    /*
+	     * A value of zero means checking for a character immediately
+	     * prior to the column, isrch.  A value of one means checking for
+	     * something past the end that could either influence the changed
+	     * region (within nColPre of it and no intervening tile) or be
+	     * influenced by it (within nColPost of it and no intervening
+	     * tile or partially overwritten big character).  A value of two
+	     * means checking for something past the end which is both changed
+	     * and could affect the part of the unchanged region that has to
+	     * be redrawn because it is affected by the prior changed region
+	     * Values of three and four are like one and two, respectively,
+	     * but indicate that a partially overwritten big character was
+	     * found.
+	     */
+	    int stage = 0;
+	    int isrch = jcol;
+	    int irng0 = jcol;
+	    int irng1 = jcol;
+	    while (1) {
+		if (stage == 0) {
+		    const struct TerminalCell *pcell =
+			[self.contents getCellAtColumn:(isrch - 1) row:irow];
+		    if ((pcell->form &
+			 (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+			break;
+		    } else {
+			irng0 = isrch + self.nColPre;
+			if (irng0 > self.cols) {
+			    irng0 = self.cols;
+			}
+			irng1 = isrch + self.nColPost;
+			if (irng1 > self.cols) {
+			    irng1 = self.cols;
+			}
+			if (isrch < irng0 || isrch < irng1) {
+			    stage = isPartiallyOverwrittenBigChar(pcell) ?
+				3 : 1;
+			} else {
+			    break;
+			}
+		    }
+		}
+
+		if (stage == 1) {
+		    const struct TerminalCell *pcell =
+			[self.contents getCellAtColumn:isrch row:irow];
+
+		    if ((pcell->form &
+			 (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+			/*
+			 * Check if still in the region that could be
+			 * influenced by the changed region.  If so,
+			 * everything up to the tile will be redrawn anyways
+			 * so combine the regions if the tile has changed
+			 * as well.  Otherwise, terminate the search since
+			 * the tile doesn't allow influence to propagate
+			 * through it and don't want to affect what's in the
+			 * tile.
+			 */
+			if (isrch < irng1) {
+			    if ([self.changes isChangedAtColumn:isrch
+				     row:irow]) {
+				jcol = [self.changes scanForUnchangedInRow:irow
+					    col0:(isrch + 1) col1:self.cols];
+				if (jcol < self.cols) {
+				    stage = 0;
+				    isrch = jcol;
+				    continue;
+				}
+			    }
+			}
+			break;
+		    } else {
+			/*
+			 * With a changed character, combine the regions (if
+			 * still in the region affected by the changed region
+			 * am going to redraw everything up to this new region
+			 * anyway; if only in the region that can affect the
+			 * changed region, this changed text could influence
+			 * the current changed region).
+			 */
+			if ([self.changes isChangedAtColumn:isrch row:irow]) {
+			    jcol = [self.changes scanForUnchangedInRow:irow
+					col0:(isrch + 1) col1:self.cols];
+			    if (jcol < self.cols) {
+				stage = 0;
+				isrch = jcol;
+				continue;
+			    }
+			    break;
+			}
+
+			if (isrch < irng1) {
+			    /*
+			     * Can be affected by the changed region so
+			     * has to be redrawn.
+			     */
+			    ++jcol;
+			}
+			++isrch;
+			if (isrch >= irng1) {
+			    irng0 = jcol + self.nColPre;
+			    if (irng0 > self.cols) {
+				irng0 = self.cols;
+			    }
+			    if (isrch >= irng0) {
+				break;
+			    }
+			    stage = isPartiallyOverwrittenBigChar(pcell) ?
+				4 : 2;
+			} else if (isPartiallyOverwrittenBigChar(pcell)) {
+			    stage = 3;
+			}
+		    }
+		}
+
+		if (stage == 2) {
+		    /*
+		     * Looking for a later changed region that could influence
+		     * the region that has to be redrawn.  The region that has
+		     * to be redrawn ends just before jcol.
+		     */
+		    const struct TerminalCell *pcell =
+			[self.contents getCellAtColumn:isrch row:irow];
+
+		    if ((pcell->form &
+			 (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+			/* Can not spread influence through a tile. */
+			break;
+		    }
+		    if ([self.changes isChangedAtColumn:isrch row:irow]) {
+			/*
+			 * Found one.  Combine with the one ending just before
+			 * jcol.
+			 */
+			jcol = [self.changes scanForUnchangedInRow:irow
+				    col0:(isrch + 1) col1:self.cols];
+			if (jcol < self.cols) {
+			    stage = 0;
+			    isrch = jcol;
+			    continue;
+			}
+			break;
+		    }
+
+		    ++isrch;
+		    if (isrch >= irng0) {
+			break;
+		    }
+		    if (isPartiallyOverwrittenBigChar(pcell)) {
+			stage = 4;
+		    }
+		}
+
+		if (stage == 3) {
+		    const struct TerminalCell *pcell =
+			[self.contents getCellAtColumn:isrch row:irow];
+
+		    /*
+		     * Have encountered a partially overwritten big character
+		     * but still may be in the region that could be influenced
+		     * by the changed region.  That influence can not extend
+		     * past the past the padding for the partially overwritten
+		     * character.
+		     */
+		    if ((pcell->form & (TERM_CELL_CHAR | TERM_CELL_TILE |
+					TERM_CELL_TILE_PADDING)) != 0) {
+			if (isrch < irng1) {
+			    /*
+			     * Still can be affected by the changed region
+			     * so everything up to isrch will be redrawn
+			     * anyways.  If this location has changed,
+			     * merge the changed regions.
+			     */
+			    if ([self.changes isChangedAtColumn:isrch
+				     row:irow]) {
+				jcol = [self.changes scanForUnchangedInRow:irow
+					    col0:(isrch + 1) col1:self.cols];
+				if (jcol < self.cols) {
+				    stage = 0;
+				    isrch = jcol;
+				    continue;
+				}
+				break;
+			    }
+			}
+			if ((pcell->form &
+			     (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+			    /*
+			     * It's a tile.  That blocks influence in either
+			     * direction.
+			     */
+			    break;
+			}
+
+			/*
+			 * The partially overwritten big character was
+			 * overwritten by a character.  Check to see if it
+			 * can either influence the unchanged region that
+			 * has to redrawn or the changed region prior to
+			 * that.
+			 */
+			if (isrch >= irng0) {
+			    break;
+			}
+			stage = 4;
+		    } else {
+			if (isrch < irng1) {
+			    /*
+			     * Can be affected by the changed region so has to
+			     * be redrawn.
+			     */
+			    ++jcol;
+			}
+			++isrch;
+			if (isrch >= irng1) {
+			    irng0 = jcol + self.nColPre;
+			    if (irng0 > self.cols) {
+				irng0 = self.cols;
+			    }
+			    if (isrch >= irng0) {
+				break;
+			    }
+			    stage = 4;
+			}
+		    }
+		}
+
+		if (stage == 4) {
+		    /*
+		     * Have already encountered a partially overwritten big
+		     * character.  Looking for a later changed region that
+		     * could influence the region that has to be redrawn
+		     * The region that has to be redrawn ends just before jcol.
+		     */
+		    const struct TerminalCell *pcell =
+			[self.contents getCellAtColumn:isrch row:irow];
+
+		    if ((pcell->form &
+			 (TERM_CELL_TILE | TERM_CELL_TILE_PADDING)) != 0) {
+			/* Can not spread influence through a tile. */
+			break;
+		    }
+		    if (pcell->form == TERM_CELL_CHAR) {
+			if ([self.changes isChangedAtColumn:isrch row:irow]) {
+			    /*
+			     * Found a changed region.  Combine with the one
+			     * ending just before jcol.
+			     */
+			    jcol = [self.changes scanForUnchangedInRow:irow
+					col0:(isrch + 1) col1:self.cols];
+			    if (jcol < self.cols) {
+				stage = 0;
+				isrch = jcol;
+				continue;
+			    }
+			    break;
+			}
+		    }
+		    ++isrch;
+		    if (isrch >= irng0) {
+			break;
+		    }
+		}
+	    }
+
+	    /*
+	     * Check to see if there's characters before the changed region
+	     * that would have to be redrawn because it's influenced by the
+	     * changed region.  Do not have to check for merging with a prior
+	     * region because of the screening already done.
+	     */
+	    if (self.nColPre > 0 &&
+		([self.contents getCellAtColumn:icol row:irow]->form &
+		 (TERM_CELL_CHAR | TERM_CELL_CHAR_PADDING)) != 0) {
+		int irng = icol - self.nColPre;
+
+		if (irng < 0) {
+		    irng = 0;
+		}
+		while (icol > irng &&
+		       ([self.contents getCellAtColumn:(icol - 1)
+			     row:irow]->form &
+			(TERM_CELL_CHAR | TERM_CELL_CHAR_PADDING)) != 0) {
+		    --icol;
+		}
+	    }
+
+	    NSRect r = [self viewRectForCellBlockAtX:icol y:irow
+			     width:(jcol - icol) height:1];
+	    [self setNeedsDisplayInRect:r];
+
+	    icol = [self.changes scanForChangedInRow:irow col0:jcol
+			col1:self.cols];
+	}
+    }
+}
+
 
 #pragma mark View/Window Passthrough
+
+/*
+ * This is a qsort-compatible compare function for NSRect, to get them in
+ * ascending order by y origin.
+ */
+static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
+{
+    const NSRect *arp = ap;
+    const NSRect *brp = bp;
+    return (arp->origin.y > brp->origin.y) - (arp->origin.y < brp->origin.y);
+}
+
+/**
+ * This is a helper function for drawRect.
+ */
+- (void)renderTileRunInRow:(int)irow col0:(int)icol0 col1:(int)icol1
+		     nsctx:(NSGraphicsContext*)nsctx ctx:(CGContextRef)ctx
+		 grafWidth:(int)graf_width grafHeight:(int)graf_height
+	       overdrawRow:(int)overdraw_row overdrawMax:(int)overdraw_max
+{
+    /* Save the compositing mode since it is modified below. */
+    NSCompositingOperation op = nsctx.compositingOperation;
+
+    while (icol0 < icol1) {
+	const struct TerminalCell *pcell =
+	    [self.contents getCellAtColumn:icol0 row:irow];
+	NSRect destinationRect =
+	    [self viewRectForCellBlockAtX:icol0 y:irow
+		  width:pcell->hscl height:pcell->vscl];
+	NSRect fgdRect = NSMakeRect(
+	    graf_width * (pcell->v.ti.fgdCol +
+			  pcell->hoff_n / (1.0 * pcell->hoff_d)),
+	    graf_height * (pcell->v.ti.fgdRow +
+			   pcell->voff_n / (1.0 * pcell->voff_d)),
+	    graf_width * pcell->hscl / (1.0 * pcell->hoff_d),
+	    graf_height * pcell->vscl / (1.0 * pcell->voff_d));
+	NSRect bckRect = NSMakeRect(
+	    graf_width * (pcell->v.ti.bckCol +
+			  pcell->hoff_n / (1.0 * pcell->hoff_d)),
+	    graf_height * (pcell->v.ti.bckRow +
+			   pcell->voff_n / (1.0 * pcell->voff_d)),
+	    graf_width * pcell->hscl / (1.0 * pcell->hoff_d),
+	    graf_height * pcell->vscl / (1.0 * pcell->voff_d));
+	int dbl_height_bck = overdraw_row && (irow > 2) &&
+	    (pcell->v.ti.bckRow >= overdraw_row &&
+	     pcell->v.ti.bckRow <= overdraw_max);
+	int dbl_height_fgd = overdraw_row && (irow > 2) &&
+	    (pcell->v.ti.fgdRow >= overdraw_row) &&
+	    (pcell->v.ti.fgdRow <= overdraw_max);
+	int aligned_row = 0, aligned_col = 0;
+	int is_first_piece = 0, simple_upper = 0;
+
+	/* Initialize stuff for handling a double-height tile. */
+	if (dbl_height_bck || dbl_height_fgd) {
+	    if (self->terminal == angband_term[0]) {
+		aligned_col = ((icol0 - COL_MAP) / pcell->hoff_d) *
+		    pcell->hoff_d + COL_MAP;
+	    } else {
+		aligned_col = (icol0 / pcell->hoff_d) * pcell->hoff_d;
+	    }
+	    aligned_row = ((irow - ROW_MAP) / pcell->voff_d) *
+		pcell->voff_d + ROW_MAP;
+
+	    /*
+	     * If the lower half has been broken into multiple pieces, only
+	     * do the work of rendering whatever is necessary for the upper
+	     * half when drawing the first piece (the one closest to the
+	     * upper left corner).
+	     */
+	    struct TerminalCellLocation curs = { 0, 0 };
+
+	    [self.contents scanForTypeMaskInBlockAtColumn:aligned_col
+		 row:aligned_row width:pcell->hoff_d height:pcell->voff_d
+		 mask:TERM_CELL_TILE cursor:&curs];
+	    if (curs.col + aligned_col == icol0 &&
+		curs.row + aligned_row == irow) {
+		is_first_piece = 1;
+
+		/*
+		 * Hack:  lookup the previous row to determine how much of the
+		 * tile there is shown to apply it the upper half of the
+		 * double-height tile.  That will do the right thing if there
+		 * is a menu displayed in that row but isn't right if there's
+		 * an object/creature/feature there that doesn't have a
+		 * mapping to the tile set and is rendered with a character.
+		 */
+		curs.col = 0;
+		curs.row = 0;
+		[self.contents scanForTypeMaskInBlockAtColumn:aligned_col
+		     row:(aligned_row - pcell->voff_d) width:pcell->hoff_d
+		     height:pcell->voff_d mask:TERM_CELL_TILE cursor:&curs];
+		if (curs.col == 0 && curs.row == 0) {
+		    const struct TerminalCell *pcell2 =
+			[self.contents
+			     getCellAtColumn:(aligned_col + curs.col)
+			     row:(aligned_row + curs.row - pcell->voff_d)];
+
+		    if (pcell2->hscl == pcell2->hoff_d &&
+			pcell2->vscl == pcell2->voff_d) {
+			/*
+			 * The tile in the previous row hasn't been clipped
+			 * or partially overwritten.  Use a streamlined
+			 * rendering procedure.
+			 */
+			simple_upper = 1;
+		    }
+		}
+	    }
+	}
+
+	/*
+	 * Draw the background.  For a double-height tile, this is only the
+	 * the lower half.
+	 */
+	draw_image_tile(
+	    nsctx, ctx, pict_image, bckRect, destinationRect, NSCompositeCopy);
+	if (dbl_height_bck && is_first_piece) {
+	    /* Combine upper half with previously drawn row. */
+	    if (simple_upper) {
+		const struct TerminalCell *pcell2 =
+		    [self.contents getCellAtColumn:aligned_col
+			 row:(aligned_row - pcell->voff_d)];
+		NSRect drect2 =
+		    [self viewRectForCellBlockAtX:aligned_col
+			  y:(aligned_row - pcell->voff_d)
+			  width:pcell2->hscl height:pcell2->vscl];
+		NSRect brect2 = NSMakeRect(
+		    graf_width * pcell->v.ti.bckCol,
+		    graf_height * (pcell->v.ti.bckRow - 1),
+		    graf_width, graf_height);
+
+		draw_image_tile(nsctx, ctx, pict_image, brect2, drect2,
+				NSCompositeSourceOver);
+	    } else {
+		struct TerminalCellLocation curs = { 0, 0 };
+
+		[self.contents scanForTypeMaskInBlockAtColumn:aligned_col
+		     row:(aligned_row - pcell->voff_d) width:pcell->hoff_d
+		     height:pcell->voff_d mask:TERM_CELL_TILE
+		     cursor:&curs];
+		while (curs.col < pcell->hoff_d &&
+		       curs.row < pcell->voff_d) {
+		    const struct TerminalCell *pcell2 =
+			[self.contents getCellAtColumn:(aligned_col + curs.col)
+			     row:(aligned_row + curs.row - pcell->voff_d)];
+		    NSRect drect2 =
+			[self viewRectForCellBlockAtX:(aligned_col + curs.col)
+			      y:(aligned_row + curs.row - pcell->voff_d)
+			      width:pcell2->hscl height:pcell2->vscl];
+		    /*
+		     * Column and row in the tile set are from the
+		     * double-height tile at *pcell, but the offsets within
+		     * that and size are from what's visible for *pcell2.
+		     */
+		    NSRect brect2 = NSMakeRect(
+			graf_width * (pcell->v.ti.bckCol +
+				      pcell2->hoff_n / (1.0 * pcell2->hoff_d)),
+			graf_height * (pcell->v.ti.bckRow - 1 +
+				       pcell2->voff_n /
+				       (1.0 * pcell2->voff_d)),
+			graf_width * pcell2->hscl / (1.0 * pcell2->hoff_d),
+			graf_height * pcell2->vscl / (1.0 * pcell2->voff_d));
+
+		    draw_image_tile(nsctx, ctx, pict_image, brect2, drect2,
+				    NSCompositeSourceOver);
+		    curs.col += pcell2->hscl;
+		    [self.contents
+			 scanForTypeMaskInBlockAtColumn:aligned_col
+			 row:(aligned_row - pcell->voff_d)
+			 width:pcell->hoff_d height:pcell->voff_d
+			 mask:TERM_CELL_TILE cursor:&curs];
+		}
+	    }
+	}
+
+	/* Skip drawing the foreground if it is the same as the background. */
+	if (fgdRect.origin.x != bckRect.origin.x ||
+	    fgdRect.origin.y != bckRect.origin.y) {
+	    if (is_first_piece && dbl_height_fgd) {
+		if (simple_upper) {
+		    if (pcell->hoff_n == 0 && pcell->voff_n == 0 &&
+			pcell->hscl == pcell->hoff_d) {
+			/*
+			 * Render upper and lower parts as one since they
+			 * are contiguous.
+			 */
+			fgdRect.origin.y -= graf_height;
+			fgdRect.size.height += graf_height;
+			destinationRect.origin.y -=
+			    destinationRect.size.height;
+			destinationRect.size.height +=
+			    destinationRect.size.height;
+		    } else {
+			/* Not contiguous.  Render the upper half. */
+			NSRect drect2 =
+			    [self viewRectForCellBlockAtX:aligned_col
+				  y:(aligned_row - pcell->voff_d)
+				  width:pcell->hoff_d height:pcell->voff_d];
+			NSRect frect2 = NSMakeRect(
+			    graf_width * pcell->v.ti.fgdCol,
+			    graf_height * (pcell->v.ti.fgdRow - 1),
+			    graf_width, graf_height);
+
+			draw_image_tile(
+			    nsctx, ctx, pict_image, frect2, drect2,
+			    NSCompositeSourceOver);
+		    }
+		} else {
+		    /* Render the upper half pieces. */
+		    struct TerminalCellLocation curs = { 0, 0 };
+
+		    while (1) {
+			[self.contents
+			     scanForTypeMaskInBlockAtColumn:aligned_col
+			     row:(aligned_row - pcell->voff_d)
+			     width:pcell->hoff_d height:pcell->voff_d
+			     mask:TERM_CELL_TILE cursor:&curs];
+
+			if (curs.col >= pcell->hoff_d ||
+			    curs.row >= pcell->voff_d) {
+			    break;
+			}
+
+			const struct TerminalCell *pcell2 =
+			    [self.contents
+				 getCellAtColumn:(aligned_col + curs.col)
+				 row:(aligned_row + curs.row - pcell->voff_d)];
+			NSRect drect2 =
+			    [self viewRectForCellBlockAtX:(aligned_col + curs.col)
+				  y:(aligned_row + curs.row - pcell->voff_d)
+				  width:pcell2->hscl height:pcell2->vscl];
+			NSRect frect2 = NSMakeRect(
+			    graf_width * (pcell->v.ti.fgdCol +
+					  pcell2->hoff_n /
+					  (1.0 * pcell2->hoff_d)),
+			    graf_height * (pcell->v.ti.fgdRow - 1 +
+					   pcell2->voff_n /
+					   (1.0 * pcell2->voff_d)),
+			    graf_width * pcell2->hscl / (1.0 * pcell2->hoff_d),
+			    graf_height * pcell2->vscl /
+			        (1.0 * pcell2->voff_d));
+
+			draw_image_tile(nsctx, ctx, pict_image, frect2, drect2,
+					NSCompositeSourceOver);
+			curs.col += pcell2->hscl;
+		    }
+		}
+	    }
+	    /*
+	     * Render the foreground (if a double height tile and the bottom
+	     * part is contiguous with the upper part this also render the
+	     * upper part.
+	     */
+	    draw_image_tile(
+		nsctx, ctx, pict_image, fgdRect, destinationRect,
+		NSCompositeSourceOver);
+	}
+	icol0 = [self.contents scanForTypeMaskInRow:irow mask:TERM_CELL_TILE
+		     col0:(icol0+pcell->hscl) col1:icol1];
+    }
+
+    /* Restore the compositing mode. */
+    nsctx.compositingOperation = op;
+}
 
 /**
  * This is what our views call to get us to draw to the window
@@ -2068,47 +3267,463 @@ static __strong NSFont* gDefaultFont = nil;
 {
     /* Take this opportunity to throttle so we don't flush faster than desired.
 	 */
-    BOOL viewInLiveResize = [view inLiveResize];
-    if (! viewInLiveResize) [self throttle];
+    [self throttle];
 
-    /* With a GLayer, use CGContextDrawLayerInRect */
-    CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
-    NSRect bounds = [view bounds];
-    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationLow);
-    CGContextSetBlendMode(context, kCGBlendModeCopy);
-    CGContextDrawLayerInRect(context, *(CGRect *)&bounds, self.angbandLayer);
-    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
+    CGFloat bottomY =
+	self.borderSize.height + self.tileSize.height * self.rows;
+    CGFloat rightX =
+	self.borderSize.width + self.tileSize.width * self.cols;
+
+    const NSRect *invalidRects;
+    NSInteger invalidCount;
+    [view getRectsBeingDrawn:&invalidRects count:&invalidCount];
+
+    /*
+     * If the non-border areas need rendering, set some things up so they can
+     * be reused for each invalid rectangle.
+     */
+    NSGraphicsContext *nsctx = nil;
+    CGContextRef ctx = 0;
+    NSFont* screenFont = nil;
+    term *old = 0;
+    int graf_width = 0, graf_height = 0;
+    int overdraw_row = 0, overdraw_max = 0;
+    wchar_t blank = 0;
+    if (rect.origin.x < rightX &&
+	rect.origin.x + rect.size.width > self.borderSize.width &&
+	rect.origin.y < bottomY &&
+	rect.origin.y + rect.size.height > self.borderSize.height) {
+	old = Term;
+	Term_activate(self->terminal);
+	nsctx = [NSGraphicsContext currentContext];
+	ctx = [nsctx graphicsPort];
+	screenFont = [self.angbandViewFont screenFont];
+	[screenFont set];
+	blank = [TerminalContents getBlankChar];
+	if (use_graphics) {
+	    graf_width = current_graphics_mode->cell_width;
+	    graf_height = current_graphics_mode->cell_height;
+	    overdraw_row = current_graphics_mode->overdrawRow;
+	    overdraw_max = current_graphics_mode->overdrawMax;
+	}
+    }
+
+    /*
+     * With double height tiles, need to have rendered prior rows (i.e.
+     * smaller y) before the current one.  Since the invalid rectanges are
+     * processed in order, ensure that by sorting the invalid rectangles in
+     * increasing order of y origin (AppKit guarantees the invalid rectanges
+     * are non-overlapping).
+     */
+    NSRect* sortedRects = 0;
+    const NSRect* workingRects;
+    if (overdraw_row && invalidCount > 1) {
+	sortedRects = malloc(invalidCount * sizeof(NSRect));
+	if (sortedRects == 0) {
+	    if (old != 0) {
+		Term_activate(old);
+	    }
+	    NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+					    reason:@"sorted rects in drawRect"
+					    userInfo:nil];
+	    @throw exc;
+	}
+	(void) memcpy(
+	    sortedRects, invalidRects, invalidCount * sizeof(NSRect));
+	qsort(sortedRects, invalidCount, sizeof(NSRect),
+	      compare_nsrect_yorigin_greater);
+	workingRects = sortedRects;
+    } else {
+	workingRects = invalidRects;
+    }
+
+    /*
+     * Use -2 for unknown.  Use -1 for Cocoa's blackColor.  All others are the
+     * Angband color index.
+     */
+    int alast = -2;
+    int redrawCursor = 0;
+
+    for (NSInteger irect = 0; irect < invalidCount; ++irect) {
+	NSRect modRect, clearRect;
+	CGFloat edge;
+	int iRowFirst, iRowLast;
+	int iColFirst, iColLast;
+
+	/* Handle the top border. */
+	if (workingRects[irect].origin.y < self.borderSize.height) {
+	    edge =
+		workingRects[irect].origin.y + workingRects[irect].size.height;
+	    if (edge <= self.borderSize.height) {
+		if (alast != -1) {
+		    [[NSColor blackColor] set];
+		    alast = -1;
+		}
+		NSRectFill(workingRects[irect]);
+		continue;
+	    }
+	    clearRect = workingRects[irect];
+	    clearRect.size.height =
+		self.borderSize.height - workingRects[irect].origin.y;
+	    if (alast != -1) {
+		[[NSColor blackColor] set];
+		alast = -1;
+	    }
+	    NSRectFill(clearRect);
+	    modRect.origin.x = workingRects[irect].origin.x;
+	    modRect.origin.y = self.borderSize.height;
+	    modRect.size.width = workingRects[irect].size.width;
+	    modRect.size.height = edge - self.borderSize.height;
+	} else {
+	    modRect = workingRects[irect];
+	}
+
+	/* Handle the left border. */
+	if (modRect.origin.x < self.borderSize.width) {
+	    edge = modRect.origin.x + modRect.size.width;
+	    if (edge <= self.borderSize.width) {
+		if (alast != -1) {
+		    alast = -1;
+		    [[NSColor blackColor] set];
+		}
+		NSRectFill(modRect);
+		continue;
+	    }
+	    clearRect = modRect;
+	    clearRect.size.width = self.borderSize.width - clearRect.origin.x;
+	    if (alast != -1) {
+		alast = -1;
+		[[NSColor blackColor] set];
+	    }
+	    NSRectFill(clearRect);
+	    modRect.origin.x = self.borderSize.width;
+	    modRect.size.width = edge - self.borderSize.width;
+	}
+
+	iRowFirst = floor((modRect.origin.y - self.borderSize.height) /
+			  self.tileSize.height);
+	iColFirst = floor((modRect.origin.x - self.borderSize.width) /
+			  self.tileSize.width);
+	edge = modRect.origin.y + modRect.size.height;
+	if (edge <= bottomY) {
+	    iRowLast =
+		ceil((edge - self.borderSize.height) / self.tileSize.height);
+	} else {
+	    iRowLast = self.rows;
+	}
+	edge = modRect.origin.x + modRect.size.width;
+	if (edge <= rightX) {
+	    iColLast =
+		ceil((edge - self.borderSize.width) / self.tileSize.width);
+	} else {
+	    iColLast = self.cols;
+	}
+
+	if (self.contents.cursorColumn != -1 &&
+	    self.contents.cursorRow != -1 &&
+	    self.contents.cursorColumn + self.contents.cursorWidth - 1 >=
+	    iColFirst &&
+	    self.contents.cursorColumn < iColLast &&
+	    self.contents.cursorRow + self.contents.cursorHeight - 1 >=
+	    iRowFirst &&
+	    self.contents.cursorRow < iRowLast) {
+	    redrawCursor = 1;
+	}
+
+	for (int irow = iRowFirst; irow < iRowLast; ++irow) {
+	    int icol =
+		[self.contents scanForTypeMaskInRow:irow
+		     mask:(TERM_CELL_CHAR | TERM_CELL_TILE)
+		     col0:iColFirst col1:iColLast];
+
+	    while (1) {
+		if (icol >= iColLast) {
+		    break;
+		}
+
+		if ([self.contents getCellAtColumn:icol row:irow]->form ==
+		    TERM_CELL_TILE) {
+		    /*
+		     * It is a tile.  Identify how far the run of tiles goes.
+		     */
+		    int jcol = [self.contents scanForPredicateInRow:irow
+				    predicate:isTileTop desired:1
+				    col0:(icol + 1) col1:iColLast];
+
+		    [self renderTileRunInRow:irow col0:icol col1:jcol
+			  nsctx:nsctx ctx:ctx
+			  grafWidth:graf_width grafHeight:graf_height
+			  overdrawRow:overdraw_row overdrawMax:overdraw_max];
+		    icol = jcol;
+		} else {
+		    /*
+		     * It is a character.  Identify how far the run of
+		     * characters goes.
+		     */
+		    int jcol = [self.contents scanForPredicateInRow:irow
+				    predicate:isCharNoPartial desired:1
+				    col0:(icol + 1) col1:iColLast];
+		    int jcol2;
+
+		    if (jcol < iColLast &&
+			isPartiallyOverwrittenBigChar(
+			    [self.contents getCellAtColumn:jcol row:irow])) {
+			jcol2 = [self.contents scanForTypeMaskInRow:irow
+				     mask:~TERM_CELL_CHAR_PADDING
+				     col0:(jcol + 1) col1:iColLast];
+		    } else {
+			jcol2 = jcol;
+		    }
+
+		    /*
+		     * Set up clipping rectangle for text.  Save the
+		     * graphics context so the clipping rectangle can be
+		     * forgotten.  Use CGContextBeginPath to clear the current
+		     * path so it does not affect clipping.  Do not call
+		     * CGContextSetTextDrawingMode() to include clipping since
+		     * that does not appear to necessary on 10.14 and is
+		     * actually detrimental:  when displaying more than one
+		     * character, only the first is visible.
+		     */
+		    CGContextSaveGState(ctx);
+		    CGContextBeginPath(ctx);
+		    NSRect r = [self viewRectForCellBlockAtX:icol y:irow
+				     width:(jcol2 - icol) height:1];
+		    CGContextClipToRect(ctx, r);
+
+		    /*
+		     * See if the region to be rendered needs to be expanded:
+		     * adjacent text that could influence what's in the clipped
+		     * region.
+		     */
+		    int isrch = icol;
+		    int irng = icol - self.nColPost;
+		    if (irng < 1) {
+			irng = 1;
+		    }
+
+		    while (1) {
+			if (isrch <= irng) {
+			    break;
+			}
+
+			const struct TerminalCell *pcell2 =
+			    [self.contents getCellAtColumn:(isrch - 1)
+				 row:irow];
+			if (pcell2->form == TERM_CELL_CHAR) {
+			    --isrch;
+			    if (pcell2->v.ch.glyph != blank) {
+				icol = isrch;
+			    }
+			} else if (pcell2->form == TERM_CELL_CHAR_PADDING) {
+			    /*
+			     * Only extend the rendering if this is padding
+			     * for a character that hasn't been partially
+			     * overwritten.
+			     */
+			    if (! isPartiallyOverwrittenBigChar(pcell2)) {
+				if (isrch - pcell2->v.pd.hoff >= 0) {
+				    const struct TerminalCell* pcell3 =
+					[self.contents
+					     getCellAtColumn:(isrch - pcell2->v.pd.hoff)
+					     row:irow];
+
+				    if (pcell3->v.ch.glyph != blank) {
+					icol = isrch - pcell2->v.pd.hoff;
+					isrch = icol - 1;
+				    } else {
+					isrch = isrch - pcell2->v.pd.hoff - 1;
+				    }
+				} else {
+				    /* Should not happen, corrupt offset. */
+				    --isrch;
+				}
+			    } else {
+				break;
+			    }
+			} else {
+			    /*
+			     * Tiles or tile padding block anything before
+			     * them from rendering after them.
+			     */
+			    break;
+			}
+		    }
+
+		    isrch = jcol2;
+		    irng = jcol2 + self.nColPre;
+		    if (irng > self.cols) {
+			irng = self.cols;
+		    }
+		    while (1) {
+			if (isrch >= irng) {
+			    break;
+			}
+
+			const struct TerminalCell *pcell2 =
+			    [self.contents getCellAtColumn:isrch row:irow];
+			if (pcell2->form == TERM_CELL_CHAR) {
+			    if (pcell2->v.ch.glyph != blank) {
+				jcol2 = isrch;
+			    }
+			    ++isrch;
+			} else if (pcell2->form == TERM_CELL_CHAR_PADDING) {
+			    ++isrch;
+			} else {
+			    break;
+			}
+		    }
+
+		    /* Render text. */
+		    while (icol < jcol) {
+			/*
+			 * Identify runs with the same background.  Then clear.
+			 */
+			int kcol = icol;
+			while (1) {
+			    if (kcol >= jcol) {
+				break;
+			    }
+			    int a = get_background_color_index(
+				[self.contents getCellAtColumn:kcol
+				     row:irow]->v.ch.attr);
+			    int mcol = [self.contents
+					    scanForPredicateInRow:irow
+					    predicate:hasSameBackground
+					    desired:a
+					    col0:(kcol + 1)
+					    col1:jcol];
+
+			    if (a != alast) {
+				if (a == -1) {
+				    [[NSColor blackColor] set];
+				} else {
+				    set_color_for_index(a);
+				}
+				alast = a;
+			    }
+			    r = [self viewRectForCellBlockAtX:kcol y:irow
+				      width:(mcol - kcol) height:1];
+			    NSRectFill(r);
+
+			    while (icol < mcol) {
+				const struct TerminalCell *pcell =
+				    [self.contents getCellAtColumn:icol
+					 row:irow];
+
+				/*
+				 * For blanks, clearing was all that was
+				 * necessary.  Don't redraw them.
+				 */
+				if (pcell->v.ch.glyph != blank) {
+				    int a = pcell->v.ch.attr % MAX_COLORS;
+
+				    if (alast != a) {
+					alast = a;
+					set_color_for_index(a);
+				    }
+				    r = [self viewRectForCellBlockAtX:icol
+					      y:irow width:pcell->hscl
+					      height:1];
+				    [self drawWChar:pcell->v.ch.glyph inRect:r
+					  screenFont:screenFont context:ctx];
+				}
+				icol += pcell->hscl;
+			    }
+
+			    kcol = mcol;
+			}
+		    }
+
+		    /*
+		     * Forget the clipping rectangle.  As a side effect, lose
+		     * the color.
+		     */
+		    CGContextRestoreGState(ctx);
+		    alast = -2;
+		}
+		icol =
+		    [self.contents scanForTypeMaskInRow:irow
+			 mask:(TERM_CELL_CHAR | TERM_CELL_TILE)
+			 col0:icol col1:iColLast];
+	    }
+	}
+
+	/* Handle the right border. */
+	edge = modRect.origin.x + modRect.size.width;
+	if (edge > rightX) {
+	    if (modRect.origin.x >= rightX) {
+		if (alast != -1) {
+		    alast = -1;
+		    [[NSColor blackColor] set];
+		}
+		NSRectFill(modRect);
+		continue;
+	    }
+	    clearRect = modRect;
+	    clearRect.origin.x = rightX;
+	    clearRect.size.width = edge - rightX;
+	    if (alast != -1) {
+		alast = -1;
+		[[NSColor blackColor] set];
+	    }
+	    NSRectFill(clearRect);
+	    modRect.size.width = edge - modRect.origin.x;
+	}
+
+	/* Handle the bottom border. */
+	edge = modRect.origin.y + modRect.size.height;
+	if (edge > bottomY) {
+	    if (modRect.origin.y < bottomY) {
+		modRect.origin.y = bottomY;
+		modRect.size.height = edge - bottomY;
+	    }
+	    if (alast != -1) {
+		alast = -1;
+		[[NSColor blackColor] set];
+	    }
+	    NSRectFill(modRect);
+	}
+    }
+
+    if (redrawCursor) {
+	NSRect r = [self viewRectForCellBlockAtX:self.contents.cursorColumn
+			 y:self.contents.cursorRow
+			 width:self.contents.cursorWidth
+			 height:self.contents.cursorHeight];
+	[[NSColor yellowColor] set];
+	NSFrameRectWithWidth(r, 1);
+    }
+
+    free(sortedRects);
+    if (old != 0) {
+	Term_activate(old);
+    }
 }
 
 - (BOOL)isOrderedIn
 {
-    return [[[self.angbandViews lastObject] window] isVisible];
+    return [[self->angbandView window] isVisible];
 }
 
 - (BOOL)isMainWindow
 {
-    return [[[self.angbandViews lastObject] window] isMainWindow];
+    return [[self->angbandView window] isMainWindow];
 }
 
 - (void)setNeedsDisplay:(BOOL)val
 {
-    for (NSView *angbandView in self.angbandViews)
-    {
-        [angbandView setNeedsDisplay:val];
-    }
+    [self->angbandView setNeedsDisplay:val];
 }
 
-- (void)setNeedsDisplayInBaseRect:(NSRect)rect
+- (void)setNeedsDisplayInRect:(NSRect)rect
 {
-    for (NSView *angbandView in self.angbandViews)
-    {
-        [angbandView setNeedsDisplayInRect: rect];
-    }
+    [self->angbandView setNeedsDisplayInRect:rect];
 }
 
 - (void)displayIfNeeded
 {
-    [[self activeView] displayIfNeeded];
+    [self->angbandView displayIfNeeded];
 }
 
 - (int)terminalIndex
@@ -2136,9 +3751,7 @@ static __strong NSFont* gDefaultFont = nil;
 	self.tileSize.width);
 
     if (newRows < 1 || newColumns < 1) return;
-    self->_cols = newColumns;
-    self->_rows = newRows;
-    [self.changes resize:self.cols rows:self.rows];
+    [self resizeWithColumns:newColumns rows:newRows];
 
     if( saveToDefaults )
     {
@@ -2336,44 +3949,129 @@ static __strong NSFont* gDefaultFont = nil;
 
 - (void)drawRect:(NSRect)rect
 {
-    if (! angbandContext)
-    {
+    if ([self inLiveResize]) {
+	/*
+	 * Always anchor the cached area to the upper left corner of the view.
+	 * Any parts on the right or bottom that can't be drawn from the cached
+	 * area are simply cleared.  Will fill them with appropriate content
+	 * when resizing is done.
+	 */
+	const NSRect *rects;
+	NSInteger count;
+
+	[self getRectsBeingDrawn:&rects count:&count];
+	if (count > 0) {
+	    NSRect viewRect = [self visibleRect];
+
+	    [[NSColor blackColor] set];
+	    while (count-- > 0) {
+		CGFloat drawTop = rects[count].origin.y - viewRect.origin.y;
+		CGFloat drawBottom = drawTop + rects[count].size.height;
+		CGFloat drawLeft = rects[count].origin.x - viewRect.origin.x;
+		CGFloat drawRight = drawLeft + rects[count].size.width;
+		/*
+		 * modRect and clrRect, like rects[count], are in the view
+		 * coordinates with y flipped.  cacheRect is in the bitmap
+		 * coordinates and y is not flipped.
+		 */
+		NSRect modRect, clrRect, cacheRect;
+
+		/*
+		 * Clip by bottom edge of cached area.  Clear what's below
+		 * that.
+		 */
+		if (drawTop >= self->cacheBounds.size.height) {
+		    NSRectFill(rects[count]);
+		    continue;
+		}
+		modRect.origin.x = rects[count].origin.x;
+		modRect.origin.y = rects[count].origin.y;
+		modRect.size.width = rects[count].size.width;
+		cacheRect.origin.y = drawTop;
+		if (drawBottom > self->cacheBounds.size.height) {
+		    CGFloat excess =
+			drawBottom - self->cacheBounds.size.height;
+
+		    modRect.size.height = rects[count].size.height - excess;
+		    cacheRect.origin.y = 0;
+		    clrRect.origin.x = modRect.origin.x;
+		    clrRect.origin.y = modRect.origin.y + modRect.size.height;
+		    clrRect.size.width = modRect.size.width;
+		    clrRect.size.height = excess;
+		    NSRectFill(clrRect);
+		} else {
+		    modRect.size.height = rects[count].size.height;
+		    cacheRect.origin.y = self->cacheBounds.size.height -
+			rects[count].size.height;
+		}
+		cacheRect.size.height = modRect.size.height;
+
+		/*
+		 * Clip by right edge of cached area.  Clear what's to the
+		 * right of that and copy the remainder from the cache.
+		 */
+		if (drawLeft >= self->cacheBounds.size.width) {
+		    NSRectFill(modRect);
+		    continue;
+		}
+		cacheRect.origin.x = drawLeft;
+		if (drawRight > self->cacheBounds.size.width) {
+		    CGFloat excess = drawRight - self->cacheBounds.size.width;
+
+		    modRect.size.width -= excess;
+		    cacheRect.size.width =
+			self->cacheBounds.size.width - drawLeft;
+		    clrRect.origin.x = modRect.origin.x + modRect.size.width;
+		    clrRect.origin.y = modRect.origin.y;
+		    clrRect.size.width = excess;
+		    clrRect.size.height = modRect.size.height;
+		    NSRectFill(clrRect);
+		} else {
+		    cacheRect.size.width = drawRight - drawLeft;
+		}
+		[self->cacheForResize drawInRect:modRect fromRect:cacheRect
+		     operation:NSCompositeCopy fraction:1.0
+		     respectFlipped:YES hints:nil];
+	    }
+	}
+    } else if (! self.angbandContext) {
         /* Draw bright orange, 'cause this ain't right */
         [[NSColor orangeColor] set];
         NSRectFill([self bounds]);
-    }
-    else
-    {
+    } else {
         /* Tell the Angband context to draw into us */
-        [angbandContext drawRect:rect inView:self];
+        [self.angbandContext drawRect:rect inView:self];
     }
 }
 
-- (void)setAngbandContext:(AngbandContext *)context
-{
-    angbandContext = context;
-}
-
-- (AngbandContext *)angbandContext
-{
-    return angbandContext;
-}
-
-- (void)setFrameSize:(NSSize)size
-{
-    BOOL changed = ! NSEqualSizes(size, [self frame].size);
-    [super setFrameSize:size];
-    if (changed) [angbandContext angbandViewDidScale:self];
-}
-
+/**
+ * Override NSView's method to set up a cache that's used in drawRect to
+ * handle drawing during a resize.
+ */
 - (void)viewWillStartLiveResize
 {
-    [angbandContext viewWillStartLiveResize:self];
+    [super viewWillStartLiveResize];
+    self->cacheBounds = [self visibleRect];
+    self->cacheForResize =
+	[self bitmapImageRepForCachingDisplayInRect:self->cacheBounds];
+    if (self->cacheForResize != nil) {
+	[self cacheDisplayInRect:self->cacheBounds
+	      toBitmapImageRep:self->cacheForResize];
+    } else {
+	self->cacheBounds.size.width = 0.;
+	self->cacheBounds.size.height = 0.;
+    }
 }
 
+/**
+ * Override NSView's method to release the cache set up in
+ * viewWillStartLiveResize.
+ */
 - (void)viewDidEndLiveResize
 {
-    [angbandContext viewDidEndLiveResize:self];
+    [super viewDidEndLiveResize];
+    self->cacheForResize = nil;
+    [self setNeedsDisplay:YES];
 }
 
 @end
@@ -2539,9 +4237,7 @@ static void Term_init_cocoa(term *t)
 	    if (defaultColumns > 0) columns = defaultColumns;
 	}
 
-	context.cols = columns;
-	context.rows = rows;
-	[context.changes resize:columns rows:rows];
+	[context resizeWithColumns:columns rows:rows];
 
 	/* Get the window */
 	NSWindow *window = [context makePrimaryWindow];
@@ -2782,9 +4478,6 @@ static errr Term_xtra_cocoa_react(void)
     if (!initialized || !game_in_progress) return (-1);
 
     @autoreleasepool {
-	AngbandContext *angbandContext =
-	    (__bridge AngbandContext*) (Term->data);
-
 	/* Handle graphics */
 	int expected_graf_mode = (current_graphics_mode) ?
 	    current_graphics_mode->grafID : GRAPHICS_NONE;
@@ -2826,15 +4519,34 @@ static errr Term_xtra_cocoa_react(void)
 		}
 	    }
 
+	    if (graphics_are_enabled()) {
+		/*
+		 * The contents stored in the AngbandContext may have
+		 * references to the old tile set.  Out of an abundance
+		 * of caution, clear those references in case there's an
+		 * attempt to redraw the contents before the core has the
+		 * chance to update it via the text_hook, pict_hook, and
+		 * wipe_hook.
+		 */
+		for (int iterm = 0; iterm < ANGBAND_TERM_MAX; ++iterm) {
+		    AngbandContext* aContext =
+			(__bridge AngbandContext*) (angband_term[iterm]->data);
+
+		    [aContext.contents wipeTiles];
+		}
+	    }
+
 	    /* Record what we did */
 	    use_graphics = new_mode ? new_mode->grafID : 0;
 	    current_graphics_mode = new_mode;
 
-	    /*
-	     * Enable or disable higher picts. Note: this should be done for
-	     * all terms.
-	     */
-	    angbandContext->terminal->higher_pict = !! use_graphics;
+	    /* Enable or disable higher picts.  */
+	    for (int iterm = 0; iterm < ANGBAND_TERM_MAX; ++iterm) {
+		AngbandContext* aContext =
+		    (__bridge AngbandContext*) (angband_term[iterm]->data);
+
+		aContext->terminal->higher_pict = !! use_graphics;
+	    }
 
 	    if (pict_image && current_graphics_mode)
 	    {
@@ -2880,547 +4592,6 @@ static errr Term_xtra_cocoa_react(void)
 
     /* Success */
     return (0);
-}
-
-
-/**
- * Draws one tile as a helper function for Term_xtra_cocoa_fresh().
- */
-static void draw_image_tile(
-    NSGraphicsContext* nsContext,
-    CGContextRef cgContext,
-    CGImageRef image,
-    NSRect srcRect,
-    NSRect dstRect,
-    NSCompositingOperation op)
-{
-    /* Flip the source rect since the source image is flipped */
-    CGAffineTransform flip = CGAffineTransformIdentity;
-    flip = CGAffineTransformTranslate(flip, 0.0, CGImageGetHeight(image));
-    flip = CGAffineTransformScale(flip, 1.0, -1.0);
-    CGRect flippedSourceRect =
-	CGRectApplyAffineTransform(NSRectToCGRect(srcRect), flip);
-
-    /*
-     * When we use high-quality resampling to draw a tile, pixels from outside
-     * the tile may bleed in, causing graphics artifacts. Work around that.
-     */
-    CGImageRef subimage =
-	CGImageCreateWithImageInRect(image, flippedSourceRect);
-    [nsContext setCompositingOperation:op];
-    CGContextDrawImage(cgContext, NSRectToCGRect(dstRect), subimage);
-    CGImageRelease(subimage);
-}
-
-
-/**
- * This is a helper function for Term_xtra_cocoa_fresh():  look before a block
- * of text on a row to see if the bounds for rendering and clipping need to be
- * extended.
- */
-static void query_before_text(
-    PendingTermChanges *tc, int iy, int npre, int* pclip, int* prend)
-{
-    int start = *prend;
-    int i = start - 1;
-
-    while (1) {
-	if (i < 0 || i < start - npre) {
-	    break;
-	}
-	enum PendingCellChangeType ctype = [tc getCellChangeType:i row:iy];
-
-	if (ctype == CELL_CHANGE_TILE) {
-	    /*
-	     * The cell has been rendered with a tile.  Do not want to modify
-	     * its contents so the clipping and rendering region can not be
-	     * extended.
-	     */
-	    break;
-	} else if (ctype == CELL_CHANGE_NONE) {
-	    /*
-	     * It has not changed (or using scaled up tiles and it is within
-	     * a changed tile but is not the upper left corner cell for that
-	     * tile) so inquire what it is.
-	     */
-	    int a;
-	    wchar_t c;
-
-	    Term_what(i, iy, &a, &c);
-	    if (use_graphics && (a & 0x80) && (c & 0x80)) {
-		/*
-		 * It is a location rendered with a tile (because of the
-		 * padding with dummy characters in ui-term.c that will still
-		 * hold for scaled up tiles if this cell is not the upper left
-		 * corner of the tile).  Do not want to modify its contents
-		 * so the clipping and rendering region can not be extended.
-		 */
-		break;
-	    }
-	    /*
-	     * It is unchanged text.  A character from the changed region
-	     * may have extended into it so render it to clear that.
-	     */
-	    [tc markTextChange:i row:iy glyph:c color:a];
-	    *pclip = i;
-	    *prend = i;
-	    --i;
-	} else {
-	    /*
-	     * The cell has been wiped or had changed text rendered.  Do
-	     * not need to render.  Can extend the clipping rectangle into it.
-	     */
-	    *pclip = i;
-	    --i;
-	}
-    }
-}
-
-
-/**
- * This is a helper function for Term_xtra_cocoa_fresh():  look after a block
- * of text on a row to see if the bounds for rendering and clipping need to be
- * extended.
- */
-static void query_after_text(
-    PendingTermChanges *tc, int iy, int npost, int* pclip, int* prend)
-{
-    int end = *prend;
-    int i = end + 1;
-    int ncol = tc.columnCount;
-
-    while (1) {
-	if (i >= ncol) {
-	    break;
-	}
-
-	enum PendingCellChangeType ctype = [tc getCellChangeType:i row:iy];
-
-	/*
-	 * Be willing to consolidate this block with the one after it.  This
-	 * logic should be sufficient to avoid redraws of the region between
-	 * changed blocks of text if angbandContext.nColPre is zero or one.
-	 * For larger values of nColPre, would need to do something more to
-	 * avoid extra redraws.
-	 */
-	if (i > end + npost && ctype != CELL_CHANGE_TEXT &&
-	    ctype != CELL_CHANGE_WIPE) {
-	    break;
-	}
-
-	if (ctype == CELL_CHANGE_TILE) {
-	    /*
-	     * The cell has been rendered with a tile.  Do not want to modify
-	     * its contents so the clipping and rendering region can not be
-	     * extended.
-	     */
-	    break;
-	} else if (ctype == CELL_CHANGE_NONE) {
-	    /*
-	     * It has not changed (or using scaled up tiles and it is within
-	     * a changed tile but is not the upper left corner cell for that
-	     * tile) so inquire what it is.
-	     */
-	    int a;
-	    wchar_t c;
-
-	    Term_what(i, iy, &a, &c);
-	    if (use_graphics && (a & 0x80) && (c & 0x80)) {
-		/*
-		 * It is a location rendered with a tile (because of the
-		 * padding with dummy characters in ui-term.c that will still
-		 * hold for scaled up tiles if this cell is not the upper left
-		 * corner of the tile).  Do not want to modify its contents so
-		 * the clipping and rendering region can not be extended.
-		 */
-		break;
-	    }
-	    /*
-	     * It is unchanged text.  A character from the changed region
-	     * may have extended into it so render it to clear that.
-	     */
-	    [tc markTextChange:i row:iy glyph:c color:a];
-	    *pclip = i;
-	    *prend = i;
-	    ++i;
-	} else {
-	    /*
-	     * Have come to another region of changed text or another region
-	     * to wipe.  Combine the regions to minimize redraws.
-	     */
-	    *pclip = i;
-	    *prend = i;
-	    end = i;
-	    ++i;
-	}
-    }
-}
-
-
-/**
- * Draw the pending changes saved in angbandContext->changes.
- */
-static void Term_xtra_cocoa_fresh(AngbandContext* angbandContext)
-{
-    int graf_width, graf_height, alphablend;
-    int overdraw_row, overdraw_max;
-
-    if (angbandContext.changes.hasTileChanges) {
-	CGImageAlphaInfo ainfo = CGImageGetAlphaInfo(pict_image);
-
-	graf_width = current_graphics_mode->cell_width;
-	graf_height = current_graphics_mode->cell_height;
-	/*
-	 * As of this writing, a value of zero for
-	 * current_graphics_mode->alphablend can mean either that the tile set
-	 * doesn't have an alpha channel or it does but it only takes on values
-	 * of 0 or 255.  For main-cocoa.m's purposes, the latter is rendered
-	 * using the same procedure as if alphablend was nonzero.  The former
-	 * is handled differently, but alphablend doesn't distinguish it from
-	 * the latter.  So ignore alphablend and directly test whether an
-	 * alpha channel is present.
-	 */
-	alphablend = (ainfo & (kCGImageAlphaPremultipliedFirst |
-			       kCGImageAlphaPremultipliedLast)) ? 1 : 0;
-	overdraw_row = current_graphics_mode->overdrawRow;
-	overdraw_max = current_graphics_mode->overdrawMax;
-    } else {
-	graf_width = 0;
-	graf_height = 0;
-	alphablend = 0;
-	overdraw_row = 0;
-	overdraw_max = 0;
-    }
-
-    CGContextRef ctx = [angbandContext lockFocus];
-
-    if (angbandContext.changes.hasTextChanges ||
-	angbandContext.changes.hasWipeChanges) {
-	NSFont *selectionFont = [angbandContext.angbandViewFont screenFont];
-	[selectionFont set];
-    }
-
-    for (int iy = angbandContext.changes.firstChangedRow;
-	 iy <= angbandContext.changes.lastChangedRow;
-	 ++iy) {
-	/* Skip untouched rows. */
-	if ([angbandContext.changes getFirstChangedColumnInRow:iy] >
-	    [angbandContext.changes getLastChangedColumnInRow:iy]) {
-	    continue;
-	}
-	int ix = [angbandContext.changes getFirstChangedColumnInRow:iy];
-	int ixmax = [angbandContext.changes getLastChangedColumnInRow:iy];
-
-	while (1) {
-	    int jx;
-
-	    if (ix > ixmax) {
-		break;
-	    }
-
-	    switch ([angbandContext.changes getCellChangeType:ix row:iy]) {
-	    case CELL_CHANGE_NONE:
-		++ix;
-		break;
-
-	    case CELL_CHANGE_TILE:
-		{
-		    /*
-		     * Because changes are made to the compositing mode, save
-		     * the incoming value.
-		     */
-		    NSGraphicsContext *nsContext =
-			[NSGraphicsContext currentContext];
-		    NSCompositingOperation op = nsContext.compositingOperation;
-		    CGFloat adjust = 0.0;
-
-		    jx = ix;
-		    while (jx <= ixmax &&
-			   [angbandContext.changes getCellChangeType:jx row:iy]
-			   == CELL_CHANGE_TILE) {
-			NSRect destinationRect =
-			    [angbandContext rectInImageForTileAtX:jx Y:iy];
-			struct PendingTileChange tileIndices =
-			    [angbandContext.changes
-					   getCellTileChange:jx row:iy];
-			NSRect sourceRect, terrainRect;
-			int use_double_height;
-
-			destinationRect.size.width *= tile_width;
-			destinationRect.size.height *= tile_height;
-			sourceRect.origin.x = graf_width * tileIndices.fgdCol;
-			sourceRect.origin.y = graf_height * tileIndices.fgdRow;
-			sourceRect.size.width = graf_width;
-			sourceRect.size.height = graf_height;
-			terrainRect.origin.x = graf_width * tileIndices.bckCol;
-			terrainRect.origin.y = graf_height *
-			    tileIndices.bckRow;
-			terrainRect.size.width = graf_width;
-			terrainRect.size.height = graf_height;
-			use_double_height = overdraw_row && (iy > 2) &&
-			    (tileIndices.bckRow >= overdraw_row) &&
-			    (tileIndices.bckRow <= overdraw_max);
-			if (use_double_height) {
-			    CGFloat olddy, oldty;
-
-			    /* Draw bottom half in the current row. */
-			    draw_image_tile(
-				nsContext,
-				ctx,
-				pict_image,
-				terrainRect,
-				destinationRect,
-				NSCompositeCopy);
-			    /* Combine upper half with previously drawn row. */
-			    adjust = destinationRect.size.height;
-			    olddy = destinationRect.origin.y;
-			    destinationRect.origin.y -=
-				destinationRect.size.height;
-			    oldty = terrainRect.origin.y;
-			    terrainRect.origin.y -= graf_height;
-			    draw_image_tile(
-				nsContext,
-				ctx,
-				pict_image,
-				terrainRect,
-				destinationRect,
-				NSCompositeSourceOver);
-			    destinationRect.origin.y = olddy;
-			    terrainRect.origin.y = oldty;
-			    /*
-			     * These locations will need to be redrawn in the
-			     * next update:  redraw the upper half since it
-			     * does not correspond to what the core thinks is
-			     * there and redraw the lower half because, if it
-			     * remains a double-height tile, that is necessary
-			     * to trigger the drawing of the upper half.
-			     */
-			    Term_mark(jx, iy - tile_height);
-			    Term_mark(jx, iy);
-			} else if (alphablend) {
-			    draw_image_tile(
-				nsContext,
-				ctx,
-				pict_image,
-				terrainRect,
-				destinationRect,
-				NSCompositeCopy);
-			} else {
-			    draw_image_tile(
-				nsContext,
-				ctx,
-				pict_image,
-				sourceRect,
-				destinationRect,
-				NSCompositeCopy);
-			}
-			use_double_height = overdraw_row && (iy > 2) &&
-			    (tileIndices.fgdRow >= overdraw_row) &&
-			    (tileIndices.fgdRow <= overdraw_max);
-			if (alphablend || use_double_height) {
-			    /*
-			     * Skip drawing the foreground if it is the same
-			     * as the background.
-			     */
-			    if (sourceRect.origin.x != terrainRect.origin.x ||
-				sourceRect.origin.y != terrainRect.origin.y) {
-				if (use_double_height) {
-				    adjust = destinationRect.size.height;
-				    sourceRect.origin.y -= graf_height;
-				    sourceRect.size.height += graf_height;
-				    destinationRect.origin.y -=
-					destinationRect.size.height;
-				    destinationRect.size.height +=
-					destinationRect.size.height;
-				    draw_image_tile(
-					nsContext,
-					ctx,
-					pict_image,
-					sourceRect,
-					destinationRect,
-					NSCompositeSourceOver);
-				    /*
-				     * As above, force these locations to be
-				     * redrawn in the next update.
-				     */
-				    Term_mark(jx, iy - tile_height);
-				    Term_mark(jx, iy);
-				} else if (alphablend) {
-				    draw_image_tile(
-					nsContext,
-					ctx,
-					pict_image,
-					sourceRect,
-					destinationRect,
-					NSCompositeSourceOver);
-				}
-			    }
-			}
-			jx += tile_width;
-		    }
-
-		    [nsContext setCompositingOperation:op];
-
-		    /*
-		     * Region marked dirty will be larger than necessary if
-		     * some but not all the tiles are double height.
-		     */
-		    NSRect rect =
-			[angbandContext rectInImageForTileAtX:ix Y:iy];
-		    rect.size.width =
-			angbandContext.tileSize.width * (jx - ix);
-		    rect.size.height *= tile_height;
-		    rect.size.height += adjust;
-		    rect.origin.y -= adjust;
-		    [angbandContext setNeedsDisplayInBaseRect:rect];
-		}
-		ix = jx;
-		break;
-
-	    case CELL_CHANGE_WIPE:
-	    case CELL_CHANGE_TEXT:
-		/*
-		 * For a wiped region, treat it as if it had text (the only
-		 * loss if it was not is some extra work rendering
-		 * neighboring unchanged text).
-		 */
-		jx = ix + 1;
-		while (1) {
-		    if (jx >= angbandContext.cols) {
-			break;
-		    }
-		    enum PendingCellChangeType ctype =
-			[angbandContext.changes getCellChangeType:jx row:iy];
-		    if (ctype != CELL_CHANGE_TEXT &&
-			ctype != CELL_CHANGE_WIPE) {
-			break;
-		    }
-		    ++jx;
-		}
-		{
-		    int isclip = ix;
-		    int ieclip = jx - 1;
-		    int isrend = ix;
-		    int ierend = jx - 1;
-		    int set_color = 1;
-		    int alast = 0;
-		    NSRect r;
-		    int k;
-
-		    query_before_text(
-			angbandContext.changes,
-			iy,
-			angbandContext.nColPre,
-			&isclip,
-			&isrend);
-		    query_after_text(
-			angbandContext.changes,
-			iy,
-			angbandContext.nColPost,
-			&ieclip,
-			&ierend
-		    );
-		    ix = ierend + 1;
-
-		    /* Save the state since the clipping will be modified. */
-		    CGContextSaveGState(ctx);
-
-		    /* Clear the area where rendering will be done. */
-		    k = isrend;
-		    while (k <= ierend) {
-			int k1 = k + 1;
-
-			alast = get_background_color_index(
-			    [angbandContext.changes getCellTextChange:k row:iy].color);
-			while (k1 <= ierend &&
-			       alast == get_background_color_index(
-				   [angbandContext.changes getCellTextChange:k1 row:iy].color)) {
-			    ++k1;
-			}
-			if (alast == -1)
-			{
-			    [[NSColor blackColor] set];
-			}
-			else
-		        {
-			    set_color_for_index(alast);
-			}
-			r = [angbandContext rectInImageForTileAtX:k Y:iy];
-			r.size.width = angbandContext.tileSize.width *
-			    (k1 - k);
-			NSRectFill(r);
-			k = k1;
-		    }
-
-		    /*
-		     * Clear the current path so it does not affect clipping.
-		     * Then set the clipping rectangle.  Using
-		     * CGContextSetTextDrawingMode() to include clipping does
-		     * not appear to be necessary on 10.14 and is actually
-		     * detrimental:  when displaying more than one character,
-		     * only the first is visible.
-		     */
-		    CGContextBeginPath(ctx);
-		    r = [angbandContext rectInImageForTileAtX:isclip Y:iy];
-		    r.size.width = angbandContext.tileSize.width *
-			(ieclip - isclip + 1);
-		    CGContextClipToRect(ctx, r);
-
-		    /* Render. */
-		    k = isrend;
-		    while (k <= ierend) {
-			if ([angbandContext.changes getCellChangeType:k row:iy]
-			    == CELL_CHANGE_WIPE) {
-			    /* Skip over since no rendering is necessary. */
-			    ++k;
-			    continue;
-			}
-
-			struct PendingTextChange textChange =
-			    [angbandContext.changes getCellTextChange:k
-					   row:iy];
-			int anew = textChange.color % MAX_COLORS;
-			if (set_color || alast != anew) {
-			    set_color = 0;
-			    alast = anew;
-			    set_color_for_index(anew);
-			}
-
-			NSRect rectToDraw =
-			    [angbandContext rectInImageForTileAtX:k Y:iy];
-			[angbandContext drawWChar:textChange.glyph
-					inRect:rectToDraw context:ctx];
-			++k;
-		    }
-
-		    /*
-		     * Inform the context that the area in the clipping
-		     * rectangle needs to be redisplayed.
-		     */
-		    [angbandContext setNeedsDisplayInBaseRect:r];
-
-		    CGContextRestoreGState(ctx);
-		}
-		break;
-	    }
-	}
-    }
-
-    if (angbandContext.changes.cursorColumn >= 0 &&
-	angbandContext.changes.cursorRow >= 0) {
-	NSRect rect = [angbandContext
-			  rectInImageForTileAtX:angbandContext.changes.cursorColumn
-			  Y:angbandContext.changes.cursorRow];
-
-	rect.size.width *= angbandContext.changes.cursorWidth;
-	rect.size.height *= angbandContext.changes.cursorHeight;
-	[[NSColor yellowColor] set];
-	NSFrameRectWithWidth(rect, 1);
-	/* Invalidate that rect */
-	[angbandContext setNeedsDisplayInBaseRect:rect];
-    }
-
-    [angbandContext unlockFocus];
 }
 
 
@@ -3475,16 +4646,9 @@ static errr Term_xtra_cocoa(int n, int v)
 
 	    /* Clear the screen */
         case TERM_XTRA_CLEAR:
-	    {
-		[angbandContext lockFocus];
-		[[NSColor blackColor] set];
-		NSRect imageRect = {NSZeroPoint, [angbandContext imageSize]};
-		NSRectFillUsingOperation(imageRect, NSCompositeCopy);
-		[angbandContext unlockFocus];
-		[angbandContext setNeedsDisplay:YES];
-		/* Success */
-		break;
-	    }
+	    [angbandContext.contents wipe];
+	    [angbandContext setNeedsDisplay:YES];
+	    break;
 
 	    /* React to changes */
         case TERM_XTRA_REACT:
@@ -3512,8 +4676,21 @@ static errr Term_xtra_cocoa(int n, int v)
 
 	    /* Draw the pending changes. */
         case TERM_XTRA_FRESH:
-	    Term_xtra_cocoa_fresh(angbandContext);
-	    [angbandContext.changes clear];
+	    {
+		/*
+		 * Check the cursor visibility since the core will tell us
+		 * explicitly to draw it, but tells us implicitly to forget it
+		 * by simply telling us to redraw a location.
+		 */
+		bool isVisible = 0;
+
+		Term_get_cursor(&isVisible);
+		if (! isVisible) {
+		    [angbandContext.contents removeCursor];
+		}
+		[angbandContext computeInvalidRects];
+		[angbandContext.changes clear];
+	    }
             break;
 
         default:
@@ -3530,7 +4707,14 @@ static errr Term_curs_cocoa(int x, int y)
 {
     AngbandContext *angbandContext = (__bridge AngbandContext*) (Term->data);
 
-    [angbandContext.changes markCursor:x row:y];
+    [angbandContext.contents setCursorAtColumn:x row:y width:1 height:1];
+    /*
+     * Unfortunately, this (and the same logic in Term_bigcurs_cocoa) will
+     * also trigger what's under the cursor to be redrawn as well, even if
+     * it has not changed.  In the current drawing implementation, that
+     * inefficiency seems unavoidable.
+     */
+    [angbandContext.changes markChangedAtColumn:x row:y];
 
     /* Success */
     return 0;
@@ -3540,8 +4724,10 @@ static errr Term_bigcurs_cocoa(int x, int y)
 {
     AngbandContext *angbandContext = (__bridge AngbandContext*) (Term->data);
 
-    [angbandContext.changes markBigCursor:x row:y cellsWide:tile_width
-		   cellsHigh:tile_height];
+    [angbandContext.contents setCursorAtColumn:x row:y width:tile_width
+		   height:tile_height];
+    [angbandContext.changes markChangedBlockAtColumn:x row:y width:tile_width
+		   height:tile_height];
 
     /* Success */
     return 0;
@@ -3556,8 +4742,9 @@ static errr Term_wipe_cocoa(int x, int y, int n)
 {
     AngbandContext *angbandContext = (__bridge AngbandContext*) (Term->data);
 
-    [angbandContext.changes markWipeRange:x row:y n:n];
-    
+    [angbandContext.contents wipeBlockAtColumn:x row:y width:n height:1];
+    [angbandContext.changes markChangedRangeAtColumn:x row:y width:n];
+
     /* Success */
     return 0;
 }
@@ -3572,11 +4759,34 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     AngbandContext* angbandContext = (__bridge AngbandContext*) (Term->data);
 
     /*
-     * For scaled up tiles (tile_width > 1 or tile_height > 1), it is
-     * sufficient that the bounds for the modified area only encompass the
-     * upper left corner cell for the region affected by the tile and that
-     * only that cell has to have the details of the changes.
+     * At least with 4.2.0 Angband, there's cases where Term_pict is called
+     * for the overhead view subwindow and y + tile_width is greater than the
+     * number of rows.  Protect both dimensions.
      */
+    if (y + tile_height > angbandContext.rows) {
+	return -1;
+    }
+    if (x + n * tile_width >= angbandContext.cols) {
+	n = (angbandContext.cols - x) / tile_width;
+	if (n < 1) {
+	    return -1;
+	}
+    }
+
+    int overdraw_row, overdraw_max, alphablend;
+    if (use_graphics) {
+	CGImageAlphaInfo ainfo = CGImageGetAlphaInfo(pict_image);
+
+	overdraw_row = current_graphics_mode->overdrawRow;
+	overdraw_max = current_graphics_mode->overdrawMax;
+	alphablend = (ainfo & (kCGImageAlphaPremultipliedFirst |
+			       kCGImageAlphaPremultipliedLast)) ? 1 : 0;
+    } else {
+	overdraw_row = 0;
+	overdraw_max = 0;
+	alphablend = 0;
+    }
+
     for (int i = x; i < x + n * tile_width; i += tile_width) {
 	int a = *ap++;
 	wchar_t c = *cp++;
@@ -3584,14 +4794,52 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	wchar_t tc = *tcp++;
 
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
-	    [angbandContext.changes markTileChange:i row:y
-			   foregroundCol:((byte)c & 0x7F) % pict_cols
-			   foregroundRow:((byte)a & 0x7F) % pict_rows
-			   backgroundCol:((byte)tc & 0x7F) % pict_cols
-			   backgroundRow:((byte)ta & 0x7F) % pict_rows];
+	    char fgdRow = ((byte)a & 0x7F) % pict_rows;
+	    char fgdCol = ((byte)c & 0x7F) % pict_cols;
+	    char bckRow, bckCol;
+
+	    if (alphablend) {
+		bckRow = ((byte)ta & 0x7F) % pict_rows;
+		bckCol = ((byte)tc & 0x7F) % pict_cols;
+	    } else {
+		/*
+		 * Not blending so make the background the same as the
+		 * the foreground.
+		 */
+		bckRow = fgdRow;
+		bckCol = fgdCol;
+	    }
+	    [angbandContext.contents setTileAtColumn:i row:y
+			   foregroundColumn:fgdCol
+			   foregroundRow:fgdRow
+			   backgroundColumn:bckCol
+			   backgroundRow:bckRow
+			   tileWidth:tile_width
+			   tileHeight:tile_height];
+	    if (overdraw_row && y > 2 &&
+		((bckRow >= overdraw_row && bckRow <= overdraw_max) ||
+		 (fgdRow >= overdraw_row && fgdRow <= overdraw_max))) {
+		[angbandContext.changes markChangedBlockAtColumn:i
+			       row:(y - tile_height) width:tile_width
+			       height:(tile_height + tile_height)];
+		/*
+		 * Either the foreground or the background is a double-height
+		 * tile.  Need to tell the core to redraw the upper half in
+		 * the next update since what's displayed there no longer
+		 * corresponds to what the core thinks is there.  Also tell
+		 * the core to redraw the lower half in the next update
+		 * because, if it remains a double-height tile, that is
+		 * necessary to trigger the drawing of the upper half.
+		 */
+		Term_mark(i, y - tile_height);
+		Term_mark(i, y);
+	    } else {
+		[angbandContext.changes markChangedBlockAtColumn:i row:y
+			       width:tile_width height:tile_height];
+	    }
 	}
     }
-    
+
     /* Success */
     return (0);
 }
@@ -3605,17 +4853,9 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 {
     AngbandContext* angbandContext = (__bridge AngbandContext*) (Term->data);
 
-    /*
-     * At least with Angband 4.2 there are changes to past the bounds of the
-     * terminal.  Ignore them.
-     */
-    if (x + n > angbandContext.cols) {
-	n = angbandContext.cols - x;
-	if (n <= 0) {
-	    return 1;
-	}
-    }
-    [angbandContext.changes markTextChanges:x row:y n:n glyphs:cp color:a];
+    [angbandContext.contents setUniformAttributeTextRunAtColumn:x
+		   row:y n:n glyphs:cp attribute:a];
+    [angbandContext.changes markChangedRangeAtColumn:x row:y width:n];
 
     /* Success */
     return 0;
