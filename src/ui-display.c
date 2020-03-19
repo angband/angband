@@ -866,6 +866,23 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Prints the movement speed of a character.
+ */
+static size_t prt_moves(int row, int col)
+{
+	int i = player->state.num_moves;
+
+	/* 1 move is normal and requires no display */
+	if (i > 1) {
+		/* Display the number of moves */
+		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i - 1), row, col);
+	}
+
+	/* Shouldn't be double digits, but be paranoid */
+	return (i > 1) ? 9 + (i - 1)  / 10 : 0;
+}
+
+/**
  * Get the longest relevant terrain or trap name for prt_terrain()
  */
 int longest_terrain_name(void)
@@ -999,7 +1016,7 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_light, prt_unignore, prt_recall,
+{ prt_level_feeling, prt_light, prt_moves, prt_unignore, prt_recall,
   prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap, prt_terrain };
 
 

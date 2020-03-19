@@ -37,6 +37,7 @@
 #include "object.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "store.h"
 #include "target.h"
 #include "trap.h"
@@ -2899,7 +2900,9 @@ void do_cmd_inven(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while ((ret = context_menu_object(obj)) == 2);
+				}
 			}
 		} else {
 			/* Load screen */
@@ -2942,7 +2945,9 @@ void do_cmd_equip(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while ((ret = context_menu_object(obj)) == 2);
+				}
 
 				/* Stay in "equipment" mode */
 				player->upkeep->command_wrk = (USE_EQUIP);
@@ -2988,7 +2993,9 @@ void do_cmd_quiver(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while  ((ret = context_menu_object(obj)) == 2);
+				}
 
 				/* Stay in "quiver" mode */
 				player->upkeep->command_wrk = (USE_QUIVER);

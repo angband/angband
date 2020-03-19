@@ -74,6 +74,11 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 		chance /= 2;
 	}
 
+	/* Monsters at their preferred range are more likely to cast */
+	if (mon->cdis == mon->best_range) {
+		chance *= 2;
+	}
+
 	/* Only do spells occasionally */
 	if (randint0(100) >= chance) return false;
 
@@ -133,7 +138,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		bool know_something = false;
 
 		/* Occasionally forget player status */
-		if (one_in_(100)) {
+		if (one_in_(20)) {
 			of_wipe(mon->known_pstate.flags);
 			pf_wipe(mon->known_pstate.pflags);
 			for (i = 0; i < ELEM_MAX; i++)
