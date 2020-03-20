@@ -4988,10 +4988,12 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		/* Coordinates run from (0,0) to (cols-1, rows-1). */
 		BOOL mouseInMapSection = (x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2);
 
-		/* If we are displaying a menu, allow clicks anywhere; if we are
-		 * displaying the main game interface, only allow clicks in the map
-		 * section */
-		if (!displayingMapInterface || (displayingMapInterface && mouseInMapSection))
+		/* If we are displaying a menu, allow clicks anywhere within
+		 * the terminal bounds; if we are displaying the main game
+		 * interface, only allow clicks in the map section */
+		if ((!displayingMapInterface && x >= 0 && x < cols &&
+		     y >= 0 && y < rows) ||
+		     (displayingMapInterface && mouseInMapSection))
 		{
 			/* [event buttonNumber] will return 0 for left click,
 			 * 1 for right click, but this is safer */
