@@ -4542,10 +4542,9 @@ static errr Term_xtra_cocoa_react(void)
 
 	    /* Enable or disable higher picts.  */
 	    for (int iterm = 0; iterm < ANGBAND_TERM_MAX; ++iterm) {
-		AngbandContext* aContext =
-		    (__bridge AngbandContext*) (angband_term[iterm]->data);
-
-		aContext->terminal->higher_pict = !! use_graphics;
+		if (angband_term[iterm]) {
+		    angband_term[iterm]->higher_pict = !! use_graphics;
+		}
 	    }
 
 	    if (pict_image && current_graphics_mode)
