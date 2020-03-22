@@ -2455,7 +2455,7 @@ static void make_bad(struct artifact *art, int level)
 		of_on(art->flags, OF_NO_TELEPORT);
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if ((art->modifiers[i] > 0) && one_in_(2)) {
+		if ((art->modifiers[i] > 0) && one_in_(2) && (i != OBJ_MOD_MIGHT)) {
 			art->modifiers[i] = -art->modifiers[i];
 		}
 	}

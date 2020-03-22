@@ -536,7 +536,7 @@ bool player_attack_random_monster(struct player *p)
 		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
 		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
-			move_player(dir % 8, false);
+			move_player(ddd[dir % 8], false);
 			return true;
 		}
 	}
@@ -999,12 +999,14 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 			/* Random direction */
 			dir = ddd[randint0(8)];
 
-	if (*dp != dir) {
-		if (too)
-			msg("You are too confused.");
-		else
-			msg("You are confused.");
+	/* Running attempts always fail */
+	if (too) {
+		msg("You are too confused.");
+		return true;
+	}
 
+	if (*dp != dir) {
+		msg("You are confused.");
 		*dp = dir;
 		return true;
 	}

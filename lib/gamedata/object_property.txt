@@ -10,7 +10,9 @@
 # power: the value given to the property in object power calculations
 # mult: relative value of properties, used in power calculations
 # type-mult: extra multiplier used in power for particular properties on
-#            particular types of object.  Assumed 1 if not mentioned
+#            particular types of object.  Assumed 1 if not mentioned; setting
+#            explicitly to 0 will stop the property appearing on this type
+#            of random artifact.
 # adjective: adjective describing the property as a player attribute, currently
 #            only used by stats
 # neg-adjective: adjective describing the opposite of the property as a player
