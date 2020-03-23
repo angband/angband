@@ -423,7 +423,7 @@ s16b spell_chance(int spell_index)
 		chance += 15;
 	}
 
-	/* Amnesia doubles failure chance */
+	/* Amnesia makes spells very difficult */
 	if (player->timed[TMD_AMNESIA]) {
 		chance = 50 + chance / 2;
 	}
@@ -503,6 +503,11 @@ bool spell_cast(int spell_index, int dir)
 					   beam, 0)) {
 			mem_free(ident);
 			return false;
+		}
+
+		/* Reward COMBAT_REGEN with small HP recovery */
+		if (player_has(player, PF_COMBAT_REGEN)) {
+			convert_mana_to_hp(player, spell->smana << 16);
 		}
 
 		/* A spell was cast */

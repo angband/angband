@@ -282,6 +282,12 @@ effect:RESTORE_STAT:CON
 effect:RESTORE_EXP
 desc:restores all your stats and your experience points
 
+name:TMD_FREE_ACT
+aim:0
+power:4
+effect:TIMED_INC:FREE_ACT
+dice:10+1d10
+desc:grants temporary free action for 1d10+10 turns
 
 name:TMD_INFRA
 aim:0

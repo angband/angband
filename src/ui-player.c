@@ -261,7 +261,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Regen",	-1,					OF_REGEN,		-1, 		-1 },
 	{ "  ESP",	-1,					OF_TELEPATHY,	-1,			TMD_TELEPATHY },
 	{ "S.Inv",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
-	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		-1 },
+	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		TMD_FREE_ACT },
 	{ "Feath",	-1,					OF_FEATHER,		-1,			-1 },
 	{ "S.Dig",	-1,					OF_SLOW_DIGEST,	-1, 		-1 },
 	{ "TrpIm",	-1,					OF_TRAP_IMMUNE, -1,			-1 },

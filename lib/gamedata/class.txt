@@ -1553,23 +1553,26 @@ stats:2:0:-3:0:2
 skill-disarm-phys:20:15
 skill-disarm-magic:20:10
 skill-device:24:10
-skill-save:25:11
-skill-stealth:-1:-1
-skill-search:10:12
-skill-melee:60:40
-skill-shoot:50:30
-skill-throw:50:30
+skill-save:18:10
+skill-stealth:0:0
+skill-search:8:10
+skill-melee:65:40
+skill-shoot:35:15
+skill-throw:40:30
 skill-dig:0:0
-hitdie:10
+hitdie:8
 max-attacks:5
 min-weight:100
 strength-multiplier:5
+equip:shadow book:[Into the Shadows]:1:1
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Cutlass:1:1
+equip:sword:Tulwar:1:1
+equip:shield:Leather Shield:1:1
 equip:scroll:Word of Recall:1:1
+equip:potion:Cure Light Wounds:1:1
 obj-flags:IMPAIR_HP
-player-flags:CHOOSE_SPELLS | SHIELD_BASH | CROWD_FIGHT
+player-flags:CHOOSE_SPELLS | SHIELD_BASH | COMBAT_REGEN
 title:Rat
 title:Bully
 title:Thug
@@ -1581,62 +1584,116 @@ title:Marauder
 title:Destroyer
 title:Tyrant
 
-magic:8:800:2
+magic:1:600:3
 
-book:shadow book:town:[Dark Rituals]:4:shadow
+book:shadow book:town:[Into the Shadows]:6:shadow
 
-spell:Dark Focus:8:5:5:8
-effect:TIMED_INC:BLESSED:0:5
-dice:$B+d$S
-expr:B:PLAYER_LEVEL:/ 5 + 10
-expr:S:PLAYER_LEVEL:/ 5 + 10
-desc:Gives you a bonus of +5 to AC and +10 to-hit, for a
-desc: level-dependent number of turns.
+spell:Seek Battle:1:1:15:2
+effect:DETECT_LIVING_MONSTERS
+effect-yx:22:40
+desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Berserk Rage:14:10:10:10
+spell:Berserk Strength:3:2:20:4
 effect:CURE:AFRAID
 effect:TIMED_INC:SHERO:0:5
-dice:25+d25
-desc:Removes fear, and grants you berserk strength (resistance to fear,
-desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:+ 5
+expr:S:PLAYER_LEVEL:+ 5
+desc:Removes fear and grants you berserk strength (resistance to fear,
+desc: +75 melee skill, -10 to AC, and prevents healing
+desc: over time) for a level-dependent duration.
 
-spell:Cry of the Damned:17:5:30:12
-effect:PROJECT_LOS:TURN_LIVING
+spell:Leap into Battle:5:4:25:6
+effect:MOVE_ATTACK
+dice:$B
+expr:B:PLAYER_LEVEL:+ 10 / 15
+desc:You may run up to 4 spaces towards targeted enemy, then perform a
+desc: level-dependent number of melee blows. The number of blows starts at 1
+desc: and goes up every 15 levels (2 blows at 20, etc.). If you moved, the
+desc: number of blows is reduced by 25% for each space, then rounded.
+
+spell:Shatter Stone:7:3:20:8
+effect:SHORT_BEAM:KILL_WALL:1
+dice:20+1d30
+desc:Destroys a section of wall or rubble, unless it is a permanent wall.
+desc: Deals 20+1d30 damage to monsters vulnerable to rock remover.
+
+spell:Whirlwind Attack:10:5:30:10
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 5 / 15
+desc:Deals a melee blow to each adjacent enemy. You gain an additional blow
+desc: at levels 25 and 40.
+
+spell:Grim Purpose:13:8:30:12
+effect:TIMED_INC:OPP_CONF
+dice:12+d12
+effect:TIMED_INC:FREE_ACT
+dice:12+d12
+desc:Your mind becomes too focused to be slowed, paralyzed or confused
+desc: for 12+d12 turns.
+
+book:shadow book:town:[Fear and Torment]:5:shadow
+
+spell:Maim Foe:15:6:35:14
+effect:MELEE_BLOWS
+dice:$S
+expr:S:PLAYER_LEVEL:/ 15
+effect:SHORT_BEAM:MON_STUN:1
+dice:5+1d5
+desc:Attempts a level-dependent number of melee blows against an adjacent enemy.
+desc: Stuns that enemy for 5+1d5 turns. You get 1 blow for every 15 levels.
+
+spell:Howl of the Damned:18:8:30:16
+effect:PROJECT_LOS:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare every living monster in line of sight for a
-desc: level-dependent duration.  Monsters that resist fear are not
-desc: affected.
+desc:Attempts to scare every monster in line of sight for a player level and
+desc: monster depth duration. Monsters that resist fear are not affected.
 
-spell:Poison Brand:20:30:40:90
+spell:Relentless Taunting:24:10:35:20
+effect:TIMED_INC:TAUNT
+dice:10+d10
+desc:Makes any monster that can move more inclined to run toward you, and less
+desc: likely to use a ranged attack (including spells and innate abilities).
+
+spell:Venom:28:20:40:30
 effect:TIMED_INC:ATT_POIS:0:5
 dice:20+d20
-desc:Temporarily makes your melee attacks branded with poison.
+desc:Coats all your melee weapons with poison for 20+d20 turns.
+
+spell:Werewolf Form:33:25:45:80
+effect:SHAPECHANGE:werewolf
+desc:With a blood-curdling cry you change into a half-man half-wolf!
+desc: In this form you move, attack, and heal faster.
 
 book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
-spell:Taunt:24:10:40:150
-effect:TIMED_INC:TAUNT
-dice:10+d10
-desc:Makes anything that can move more inclined to run toward you than make a
-desc: ranged attack.
-
-spell:Throw Monster:27:12:50:30
-effect:SHORT_BEAM:FORCE:1
-dice:200
-desc:Hits an adjacent monster with force, throwing it back.
-
-spell:Thirst for Blood:32:30:40:100
+spell:Bloodlust:30:30:40:100
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
-effect:DAMAGE
-dice:50
-effect-msg:blood sacrifice
-desc:Gives you a powerful desire to kill, increased every time you satsfy it.
-desc: Gives you extra damage and, at higher levels, extra blows, but comes
+desc:Gives you a powerful desire to kill, increased every time you satisfy it.
+desc: Gives you extra melee damage and extra blows, but comes
 desc: with dangerous side-effects.
 
-spell:Piercing Shot:35:20:40:120
-effect:TIMED_INC:POWERSHOT
-dice:3
-desc:Makes your next shot powerful enough to pierce several enemies.
+spell:Unholy Reprieve:34:45:60:120
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
+effect:DAMAGE
+dice:66
+desc:Restores STR, INT, CON, and experience at the cost of 66 HP.
+
+spell:Forceful Blow:38:16:50:150
+effect:MELEE_BLOWS
+dice:1
+effect:SHORT_BEAM:FORCE:1
+dice:2d$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Attempts 1 melee blow and hits the target with force, knocking it back
+desc: with a chance to stun it.
+
+spell:Quake:44:39:55:175
+effect:EARTHQUAKE:NONE:13
+desc:Causes a radius 13 earthquake centered around the player.

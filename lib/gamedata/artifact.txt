@@ -437,8 +437,9 @@ values:RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
 brand:POIS_3
 slay:EVIL_2
 slay:DEMON_3
-desc:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any
-desc: other blade he forged.
+desc:This black blade was forged of meteoric iron by Eöl the Dark Elf. It is
+desc: imbued with the malice of its maker; as dangerous to its wielder as it is
+desc: deadly to his foes.
 
 name:'Elvagil'
 base-object:sword:Long Sword

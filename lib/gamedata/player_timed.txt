@@ -106,7 +106,7 @@ fail:4:ROCK
 name:STUN
 desc:stunning
 grade:o:50:Stun:You have been stunned.
-grade:o:100:Heavy Stun:You have been heavily stunned.
+grade:o:150:Heavy Stun:You have been heavily stunned.
 grade:r:10000:Knocked Out:You have been knocked out.
 on-end:You are no longer stunned.
 msgt:STUN
@@ -175,7 +175,7 @@ name:SINFRA
 desc:enhanced infravision
 grade:G:10000:Infra:Your eyes begin to tingle!
 on-end:Your eyes stop tingling.
-on-increase:Your eyes' tingling intensifies.
+on-increase:The tingling in your eyes intensifies.
 msgt:INFRARED
 
 name:OPP_ACID
@@ -357,11 +357,11 @@ on-end:You stop aggravating your enemies.
 
 name:BLOODLUST
 desc:desire to kill
-grade:y:9:Bloodlust:A red mist descends over your eyes!
-grade:I:19:Bloodlust:Your thirst for blood increases!
-grade:o:29:Bloodlust:Your thirst for blood increases!
-grade:r:39:Bloodlust:Your thirst for blood increases!
-grade:R:48:Bloodlust:Your thirst for blood increases!
+grade:y:10:Bloodlust:A red mist descends over your eyes!
+grade:I:18:Bloodlust:Your thirst for blood increases!
+grade:o:26:Bloodlust:Your thirst for blood increases!
+grade:r:34:Bloodlust:Your thirst for blood increases!
+grade:R:45:Bloodlust:Your thirst for blood increases!
 grade:P:50:Bloodlust:Your thirst for blood is insatiable!
 on-end:The mist clears.
 
@@ -374,3 +374,9 @@ name:STEALTH
 desc:stealth
 grade:D:10000:Stealth:You feel silent!
 on-end:You feel less stealthy.
+
+name:FREE_ACT
+desc:free action
+grade:G:10000:FrAct:Your limbs fill with energy!
+on-end:Your limbs return to normal.
+on-increase:Your limbs feel more energetic!

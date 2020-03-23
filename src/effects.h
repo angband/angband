@@ -21,6 +21,9 @@
 
 #include "source.h"
 #include "object.h"
+#include "player-attack.h"
+#include "cmds.h"
+
 
 /* Types of effect */
 typedef enum

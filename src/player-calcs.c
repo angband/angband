@@ -1947,6 +1947,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->el_info[ELEM_HOLY_ORB].res_level = -1;
 	}
 
+	/* Combat Regeneration */
+	if (player_has(p, PF_COMBAT_REGEN) && character_dungeon) {
+		of_on(state->flags, OF_IMPAIR_HP);
+	}
+
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
@@ -2068,7 +2073,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_SHERO]) {
 		of_on(state->flags, OF_PROT_FEAR);
-		state->to_h += 24;
+		state->skills[SKILL_TO_HIT_MELEE] += 75;
 		state->to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
@@ -2086,6 +2091,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_SINVIS]) {
 		of_on(state->flags, OF_SEE_INVIS);
+	}
+	if (p->timed[TMD_FREE_ACT]) {
+		of_on(state->flags, OF_FREE_ACT);
 	}
 	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
 		of_on(state->flags, OF_AFRAID);
@@ -2228,6 +2236,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->bless_wield = true;
 		}
 	} else {
+		/* Unarmed */
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
 

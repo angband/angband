@@ -3379,8 +3379,10 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No effect in town */
 	if (!player->depth) {
+		msg("The ground shakes! The ceiling caves in!");
+	} else {
+		/* No effect in town */
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -3395,7 +3397,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Paranoia -- Enforce maximum range */
-	if (r > 12) r = 12;
+	if (r > 15) r = 15;
 
 	/* Initialize a map of the maximal blast area */
 	for (y = 0; y < 32; y++)
@@ -3465,7 +3467,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		{
 			case 1:
 			{
-				msg("The cave ceiling collapses!");
+				msg("The cave ceiling collapses on you!");
 				break;
 			}
 			case 2:
@@ -4899,6 +4901,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	}
 	target_get(&victim);
 	mon = target_get_monster();
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 
 	/* Look next to the monster */
 	for (d = first_d; d < first_d + 8; d++) {
@@ -4910,7 +4913,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 
 	/* Needed to be adjacent */
 	if (d == first_d + 8) {
-		msg("The monster is shielded!");
+		msg("Not enough room next to %s!", m_name);
 		return false;
 	}
 
@@ -4921,9 +4924,13 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	monster_swap(player->grid, grid);
 
 	/* Now bite it */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
-	msg("You bite the %s.", m_name);
 	drain = MIN(mon->hp, amount);
+	if (drain == 0) return true;
+	if (OPT(player, show_damage)) {
+		msg("You bite the %s. (%d)", m_name, drain);
+	} else {
+		msg("You bite the %s.", m_name);
+	}
 	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
 
 	/* Heal and nourish */
@@ -4943,6 +4950,74 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 }
 
 /**
+ * Move up to 4 spaces then do melee blows.
+ * Could vary the length of the move without much work.
+ */
+bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+	int moves = 4;
+	int d, i;
+	struct loc target;
+	struct loc next_grid, grid_diff;
+	bool fear;
+
+	/* Ask for a target */
+	if ((context->dir == DIR_TARGET) && target_okay()) {
+		target_get(&target);
+	}
+
+	/* Should only target known/visible? */
+	if (square_monster(cave, target) == NULL) {
+		msg("This spell must target a monster.");
+		return false;
+	}
+
+	while (distance(player->grid, target) > 1 && moves > 0) {
+		grid_diff = loc_diff(target, player->grid);
+
+		/* Choice of direction simplified by prioritizing diagonals */
+		if (grid_diff.x == 0) {
+			d = (grid_diff.y < 0) ? 0 : 4; /* up : down */
+		} else if (grid_diff.y == 0) {
+			d = (grid_diff.x < 0) ? 6 : 2; /* left : right */
+		} else if (grid_diff.x < 0) {
+			d = (grid_diff.y < 0) ? 7 : 5; /* up-left : down-left */
+		} else {/* grid_diff.x > 0 */
+			d = (grid_diff.y < 0) ? 1 : 3; /* up-right : down-right */
+		}
+
+		/* We'll give up to 3 choices: d, d + 1, d - 1 */
+		for (i = 0; i < 3; i++) {
+			if (i == 2) {
+				d -= 4;
+			}
+			d = (d + i) % 8;
+			next_grid = loc_sum(player->grid, clockwise_grid[d]);
+			if (square_ispassable(cave, next_grid)) {
+				break;
+			} else if (i == 2) {
+				msg("The way is barred.");
+				return moves != 4;
+			}
+		}
+
+		move_player(clockwise_ddd[d], false);
+		moves--;
+	}
+
+	/* Reduce blows based on distance traveled, round to nearest blow */
+	blows = (blows * moves + 2) / 4;
+
+	/* Should return some energy if monster dies early */
+	while (blows-- > 0) {
+		if (py_attack_real(player, target, &fear)) break;
+	}
+
+	return true;
+}
+
+ /**
  * Enter single combat with an enemy
  */
 bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
@@ -4987,6 +5062,64 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 	dungeon_change_level(player, player->depth);
 	return true;
 }
+
+
+bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+	bool fear;
+	int taim;
+	struct loc target = loc(-1, -1);
+	struct loc grid = player->grid;
+
+	/* players only for now */
+	if (context->origin.what != SRC_PLAYER)
+		return false;
+
+	/* Ask for a target if no direction given */
+	if (context->dir == DIR_TARGET && target_okay()) {
+		target_get(&target);
+	} else {
+		target = loc_sum(player->grid, ddgrid[context->dir]);
+	}
+
+	if (!target_okay()) {return false;}
+
+	taim = distance(grid, target);
+	if (taim > 1) {
+		msgt(MSG_GENERIC, "Target too far away (%d).", taim);
+		return false;
+	}
+
+	while (blows-- > 0) {
+		if (py_attack_real(player, target, &fear)) return true;
+	}
+	return true;
+}
+
+bool effect_handler_SWEEP(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+	bool fear;
+	int i;
+	struct loc target;
+
+	/* Players only for now */
+	if (context->origin.what != SRC_PLAYER)	return false;
+
+	/* Doing these like >1 blows means spinning around multiple times. */
+	while (blows-- > 0) {
+		for (i = 0; i < 8; i++) {
+			target = loc_sum(player->grid, clockwise_grid[i]);
+			if (square_monster(cave, target) != NULL)
+				py_attack_real(player, target, &fear);
+		}
+	}
+
+	/* Should return some energy if all enemies killed and blows remain? */
+	return true;
+}
+
 
 
 /**

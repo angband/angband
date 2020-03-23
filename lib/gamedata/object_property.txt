@@ -504,7 +504,7 @@ type:flag
 subtype:bad
 id-type:timed
 code:IMPAIR_HP
-power:-9
+power:-8
 msg:You feel your {name} is slowing your recovery.
 desc:Impairs hitpoint recovery
 
@@ -513,7 +513,7 @@ type:flag
 subtype:bad
 id-type:timed
 code:IMPAIR_MANA
-power:-9
+power:-8
 msg:You feel your {name} is slowing your mana recovery.
 desc:Impairs mana recovery
 
@@ -565,7 +565,7 @@ type:flag
 subtype:bad
 id-type:on wield
 code:FRAGILE
-power:0
+power:-1
 desc:Can be destroyed if you attempt to remove its curses
 
 name:intensity 2 light

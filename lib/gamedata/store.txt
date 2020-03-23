@@ -180,6 +180,7 @@ turnover:9
 normal:ring:Searching
 normal:ring:Feather Falling
 normal:ring:Protection
+normal:ring:Open Wounds
 normal:amulet:Slow Digestion
 normal:amulet:Resist Acid
 normal:wand:Light

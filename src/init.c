@@ -884,12 +884,11 @@ static enum parser_error parse_player_prop_code(struct parser *p) {
 }
 
 static enum parser_error parse_player_prop_desc(struct parser *p) {
-	const char *desc = parser_getstr(p, "desc");
 	struct player_ability *ability = parser_priv(p);
 	if (!ability)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	ability->desc = string_make(desc);
+	ability->desc = string_append(ability->desc, parser_getstr(p, "desc"));
 	return PARSE_ERROR_NONE;
 }
 

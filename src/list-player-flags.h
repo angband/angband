@@ -3,15 +3,13 @@
  * \brief player race and class flags
  *
  * Adjusting these flags does not break savefiles. Flags below start from 1
- * on line 16, so a flag's sequence number is its line number minus 15.
+ * on line 14, so a flag's sequence number is its line number minus 13.
  *
  * Fields:
  * symbol - the flag name
- * descr - description of the flag effect
- * birth-descr - description of the flag for use in the birth menus
+ * additional details in player_property.txt
  */
 
-/* symbol            descr                                                        birth-descr */
 PF(NONE)
 PF(FAST_SHOT)
 PF(BRAVERY_30)
@@ -30,3 +28,4 @@ PF(STEAL)
 PF(SHIELD_BASH)
 PF(EVIL)
 PF(CROWD_FIGHT)
+PF(COMBAT_REGEN)
