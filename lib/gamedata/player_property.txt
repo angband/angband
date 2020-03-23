@@ -27,7 +27,7 @@ code:ROCK
 name:Rock
 desc:You are made of rock.
 
-## Racial player flags
+## Racial player flags (these cannot be obtained any other way)
 
 type:player
 code:KNOW_MUSHROOM
@@ -44,7 +44,7 @@ code:SEE_ORE
 name:Miner
 desc:You can sense ore in the walls.
 
-## Racial player flags
+## Class player flags
 
 type:player
 code:FAST_SHOT
@@ -110,6 +110,13 @@ type:player
 code:CROWD_FIGHT
 name:Crowd Fighter
 desc:You gains advantage from fighting many monsters at once.
+
+type:player
+code:RAGE_FUEL
+name:Rage Fuel
+desc:You love combat and hate complacency
+
+ ## Other player flags
 
 type:object
 code:SUST_STR

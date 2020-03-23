@@ -490,6 +490,11 @@ bool spell_cast(int spell_index, int dir)
 	/* Get the spell */
 	const struct class_spell *spell = spell_by_index(spell_index);
 
+	/* reward rageaholics with small HP recovery */
+	if (player_has(player, PF_RAGE_FUEL)) {
+		bg_mana_to_hp(player, spell->smana);
+	}
+
 	/* Spell failure chance */
 	chance = spell_chance(spell_index);
 
@@ -503,11 +508,6 @@ bool spell_cast(int spell_index, int dir)
 					   beam, 0)) {
 			mem_free(ident);
 			return false;
-		}
-
-		/* reward rageaholics with small HP recovery */
-		if (player_of_has(player, OF_RAGE_FUEL) && (player->msp > 0)) {
-			bg_mana_to_hp(player, spell->smana);
 		}
 
 		/* A spell was cast */

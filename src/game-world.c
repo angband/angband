@@ -607,10 +607,10 @@ void process_world(struct chunk *c)
 		take_hit(player, i, "a fatal wound");
 	}
 
-	/* Side effects of diminishing bloodlust */
-	if (player->timed[TMD_BLOODLUST]) {
+	/* Side effects of diminishing bloodlust DAVIDTODO does <10 make sense?*/
+	if (player->timed[TMD_BLOODLUST]> 0 && player->timed[TMD_BLOODLUST] < 10) {
 		player_over_exert(player, PY_EXERT_HP | PY_EXERT_CUT | PY_EXERT_SLOW,
-						  MAX(0, 10 - player->timed[TMD_BLOODLUST]),
+						  10 - player->timed[TMD_BLOODLUST],
 						  player->chp / 10);
 	}
 
@@ -693,8 +693,8 @@ void process_world(struct chunk *c)
 	if (player->chp < player->mhp)
 		player_regen_hp(player);
 
-		/* Regenerate or lose mana */
-		player_regen_mana(player);
+	/* Regenerate or lose mana */
+	player_regen_mana(player);
 
 	/* Timeout various things */
 	decrease_timeouts();

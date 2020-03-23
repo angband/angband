@@ -29,7 +29,7 @@
 # 'combat' is for modifiers to hit, to damage and to armor class.
 
 # 'skill-<skill name>' is for modifications to player skills - physical
-# and magical disarming, saving throws, stealth, searching, to hit (normal), 
+# and magical disarming, saving throws, stealth, searching, to hit (normal),
 # to hit (throwing), digging.
 
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) gained
@@ -143,3 +143,18 @@ effect-msg:taking vampire form
 effect:TIMED_INC:ATT_VAMP
 dice:10+1d20
 blow:bite
+
+name:werewolf
+combat:5:5:0
+values:BLOWS[1] | MOVES[1]
+effect-msg:taking werewolf form
+effect:PROJECT_LOS:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:CURE:AFRAID
+effect:TIMED_INC:SHERO
+dice:5+1d20
+blow:bite
+blow:bite
+blow:claw
+blow:tear

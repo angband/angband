@@ -374,6 +374,13 @@ effect:TIMED_INC:OPP_POIS
 dice:10+1d10
 desc:grants temporary resistance to poison for 1d10+10 turns
 
+name:TMD_FREE_ACT
+aim:0
+power:4
+effect:TIMED_INC:FREE_ACT
+dice:10+1d10
+desc:grants temporary free action for 1d10+10 turns
+
 name:RESIST_ALL
 aim:0
 power:10

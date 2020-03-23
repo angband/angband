@@ -7,11 +7,10 @@
  *
  * Fields:
  * symbol - the flag name
- * descr - description of the flag effect
- * birth-descr - description of the flag for use in the birth menus
+ * additional details moved to player_property.txt
  */
 
-/* symbol            descr                                                        birth-descr */
+
 PF(NONE)
 PF(FAST_SHOT)
 PF(BRAVERY_30)
@@ -30,3 +29,4 @@ PF(STEAL)
 PF(SHIELD_BASH)
 PF(EVIL)
 PF(CROWD_FIGHT)
+PF(RAGE_FUEL)

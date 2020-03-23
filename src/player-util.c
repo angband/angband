@@ -151,6 +151,7 @@ void dungeon_change_level(struct player *p, int dlev)
  */
 void take_hit(struct player *p, int dam, const char *kb_str)
 {
+	msgt(MSG_GENERIC, "take_hit %d %s", dam, kb_str);
 	int old_chp = p->chp;
 
 	int warning = (p->mhp * p->opts.hitpoint_warn / 10);
@@ -177,14 +178,12 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Reward rageaholics with SPs for their lost HPs
 	 * Unenviable task of separating what should and should not cause rage
 	 * If we eliminate the most exploitable cases it should be fine. */
-
- if (player_of_has(p, OF_RAGE_FUEL)  && strcmp(kb_str, "poison")
-	 && strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
-	 /*lose X% of HP get X% of SP*/
-	 s32b sp_gain = (s32b)(dam / p->mhp * (p->msp << 16));
-	 sp_gain += PY_REGEN_MNBASE;
-	 player_adjust_mana_precise(p, sp_gain);
- }
+	if (player_has(p, PF_RAGE_FUEL)  && strcmp(kb_str, "poison")
+		&& strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
+		/*lose X% of HP get X% of SP*/
+		s32b sp_gain = (s32b)((p->msp << 16) * dam / p->mhp);
+		player_adjust_mana_precise(p, sp_gain);
+	}
 
 	/* Display the hitpoints */
 	p->upkeep->redraw |= (PR_HP);
@@ -317,7 +316,7 @@ s16b modify_stat_value(int value, int amount)
 void player_regen_hp(struct player *p)
 {
 	s32b hp_gain;
-	int percent = 0;/*max 32k = 50% of mhp; more accurately "pertwobytes"*/
+	int percent = 0;/* max 32k = 50% of mhp; more accurately "pertwobytes" */
 	int fed_pct, old_chp = p->chp;
 
 	/* Default regeneration */
@@ -338,34 +337,24 @@ void player_regen_hp(struct player *p)
 		return;
 
 	/* Food bonus - better fed players regenerate up to 1/3 faster */
-	msgt(MSG_GENERIC, "pertwobytes before food check %d", percent);
 	fed_pct = p->timed[TMD_FOOD] / z_info->food_value;
-	percent = percent * (100 + fed_pct / 3);
-	msgt(MSG_GENERIC, "pertwobytes after food check %d", percent);
+	percent *= 100 + fed_pct / 3;
+	percent /= 100;
 
 	/* Various things speed up regeneration */
 	if (player_of_has(p, OF_REGEN))
 		percent *= 2;
 	if (player_resting_can_regenerate(p))
 		percent *= 2;
+	/*if (player_has(p, PF_RAGE_FUEL) && (p->csp > 0 ||  p->csp_frac > 0))
+		percent *= 4; this was an experiment to remove MP degen healing */
 
 	/* Some things slow it down */
 	if (player_of_has(p, OF_IMPAIR_HP))
 		percent /= 2;
 
-	/* Crowd fighters get a bonus */
-	if (player_has(p, PF_CROWD_FIGHT)) {
-		percent *= player_crowd_regeneration(p);
-	} else {
-		/* Various things interfere with physical healing */
-		if (p->timed[TMD_PARALYZED]) percent = 0;
-		if (p->timed[TMD_POISONED]) percent = 0;
-		if (p->timed[TMD_STUN]) percent = 0;
-		if (p->timed[TMD_CUT]) percent = 0;
-	}
-
 	/* Extract the new hitpoints */
-	hp_gain = ((s32b)p->mhp) * percent + PY_REGEN_HPBASE;
+	hp_gain = (s32b)(p->mhp * percent) + PY_REGEN_HPBASE;
 	player_adjust_hp_precise(p, hp_gain);
 
 	/* Notice changes */
@@ -394,20 +383,21 @@ void player_regen_mana(struct player *p)
 		percent *= 2;
 
 	/* Some things slow it down */
-	if (player_of_has(p, OF_RAGE_FUEL)) {
+	if (player_has(p, PF_RAGE_FUEL)) {
 		percent /= -2;
 	} else if (player_of_has(p, OF_IMPAIR_MANA)) {
 		percent /= 2;
 	}
 
 	/* Regenerate mana */
-	sp_gain = ((long)p->msp) * percent;
+	sp_gain = (s32b)(p->msp * percent);
 	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
 	/* Rageaholics heal as the rage melts away */
-	if (sp_gain < 0  && player_of_has(p, OF_RAGE_FUEL)) {
-		player_adjust_hp_precise(p, -sp_gain);
+	if (sp_gain < 0  && player_has(p, PF_RAGE_FUEL)) {
+		/*bg_mana_to_hp(p, -sp_gain);*/
+		msgt(MSG_GENERIC, "Wanted to bg_mana_to_hp(%d)", -sp_gain);
 	}
 
 	/* Notice changes */
@@ -421,15 +411,17 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 {
 	/*int new_chp, new_chp_frac;*/
 	s32b new_chp;
-	int old_chp = p->chp;
+	int num, old_chp = p->chp;
 
 	/*load it all into 4 byte format*/
 	new_chp = (s32b)((p->chp<<16) + p->chp_frac) + hp_gain;
 
 	/* Check for overflow */
 /*	{new_chp = LONG_MIN;} DAVIDTODO*/
-	if      ((new_chp < 0 ) && (old_chp > 0 ) && (hp_gain > 0)) {new_chp = 2147483647;}
-	else if ((new_chp > 0 ) && (old_chp < 0 ) && (hp_gain < 0)) {new_chp = -2147483648;}
+	if      ((new_chp < 0 ) && (old_chp > 0 ) && (hp_gain > 0))
+		new_chp = 2147483647;
+	else if ((new_chp > 0 ) && (old_chp < 0 ) && (hp_gain < 0))
+		new_chp = -2147483648;
 
 	/*break it back down*/
 	p->chp = (s16b)(new_chp >> 16);   /* div 65536 */
@@ -443,19 +435,20 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 		p->chp_frac = 0;
 	}
 
-	if (old_chp != p->chp) {
-		p->upkeep->redraw |= (PR_HP);
-		int num = p->chp - old_chp;
+	num = p->chp - old_chp;
+	if (num == 0)
+		return;
+	p->upkeep->redraw |= (PR_HP);
 
-		/*from effects.c Should these be judged as a % of mhp?*/
-		if (num < 5) {/*msgt(MSG_GENERIC, "Gained %d partial HP", hp_gain);*/}
-		else if (num < 15)
-			msg("You feel better.");
-		else if (num < 35)
-			msg("You feel much better.");
-		else
-			msg("You feel very good.");
-	}
+	/*from effects.c Should these be judged as a % of mhp?*/
+	if (num < 5) {msgt(MSG_GENERIC, "Gained %d%% of a HP", hp_gain/655);}
+	else if (num < 15)
+		msg("You feel better.");
+	else if (num < 35)
+		msg("You feel much better.");
+	else
+		msg("You feel very good.");
+
 }
 
 /* Accept a 4 byte signed int, divide it by 65k, and add
@@ -463,7 +456,7 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
  */
 s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 {
-	if (sp_gain == 0) {return 0;}
+	if (sp_gain == 0) return 0;
 	s32b old_csp_long, new_csp_long;
 	int old_csp_short = p->csp;
 
@@ -473,9 +466,9 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 
 	/* Check for overflow */
 
-	/*new_csp = LONG_MAX LONG_MIN;} DAVIDTODO LONG_MAX produces warning*/
+	/*new_csp = LONG_MAX LONG_MIN;} DAVIDTODO produces warning*/
 	if      ((new_csp_long < 0 ) && (old_csp_long > 0) && (sp_gain > 0)) {
-		new_csp_long = LONG_MAX;
+		new_csp_long = 2147483647;
 		sp_gain = 0;
 	}
 	else if ((new_csp_long > 0 ) && (old_csp_long < 0) && (sp_gain < 0)) {
@@ -507,22 +500,27 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 		new_csp_long = (s32b)((p->csp << 16) + p->csp_frac);
 		sp_gain = new_csp_long - old_csp_long;
 	}
-	/*if (sp_gain > 65536*2) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp-old_csp);}
-	else                   {msgt(MSG_GENERIC, "Gained %d partial SP", sp_gain);}*/
+
+	if (sp_gain == 0) {}
+	else if (sp_gain > 2 << 17) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp - old_csp_short);}
+	else                   {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);}
 	return sp_gain;
 }
 
 void bg_mana_to_hp(struct player *p, s32b sp) {
-	s32b hp_gain;/*DAVIDTODO overly precise?*/
+	if (sp <= 0 || p->msp == 0) return;
+
+	s32b hp_gain;
+
 	/*total HP from max*/
 	hp_gain = (s32b)((p->mhp - p->chp) << 16);
 	hp_gain -= (s32b)p->chp_frac;
 
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
-	hp_gain /= (s32b)(2 * p->msp / sp);
-	hp_gain += PY_REGEN_HPBASE;
+	/* Gain stays low at msp<10 because 1 of 2 sources are generous at msp<20 */
+	hp_gain /= (s32b)(2 * MAX(p->msp, 10) / sp);
 
-	player_adjust_hp_precise(player, hp_gain);
+	player_adjust_hp_precise(p, hp_gain);
 }
 
 /**
@@ -646,6 +644,8 @@ bool player_attack_random_monster(struct player *p)
  */
 void player_over_exert(struct player *p, int flag, int chance, int amount)
 {
+	if (chance <= 0) return;
+
 	/* CON damage */
 	if (flag & PY_EXERT_CON) {
 		if (randint0(100) < chance) {
@@ -1229,7 +1229,8 @@ void player_resting_complete_special(struct player *p)
 	if (!player_resting_is_special(p->upkeep->resting))
 		return;
 	if (p->upkeep->resting == REST_COMPLETE) {
-		if ((p->chp == p->mhp) && (p->csp == p->msp) &&
+		if ((p->chp == p->mhp) &&
+			(p->csp == p->msp || player_has(p, PF_RAGE_FUEL)) &&
 			!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
 			!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
 			!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&

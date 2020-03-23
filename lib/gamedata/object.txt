@@ -2204,7 +2204,7 @@ weight:2
 cost:700
 alloc:20:10 to 50
 flags:IMPAIR_HP | EASY_KNOW
-power:6
+power:12
 effect:HEAL_HP
 dice:40
 effect:CURE:BLIND

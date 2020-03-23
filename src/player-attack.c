@@ -856,8 +856,10 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 
 	/* The player will sometimes stumble. */
 	if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
-		*blows += randint1(p->state.num_blows / 100);
-		msgt(MSG_GENERIC, "You stumble!");
+		energy_lost = randint1(z_info->move_energy / 2) + z_info->move_energy / 4;
+		/* Lose 26-75% of a turn due to stumbling after shield bash. */
+		p->upkeep->energy_use += energy_lost;
+		msgt(MSG_GENERIC, "You stumble! (%d%%)", energy_lost);/*DAVIDTODO*/
 	}
 
 	return false;
@@ -868,13 +870,13 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
  *
  * We get blows until energy drops below that required for another blow, or
  * until the target monster dies. Each blow is handled by py_attack_real().
- * We don't allow @ to spend more than 100 energy in one go, to avoid slower
- * monsters getting double moves.
+ * We don't allow @ to spend more than 1 turn's worth of energy,
+ * to avoid slower monsters getting double moves.
  */
 void py_attack(struct player *p, struct loc grid)
 {
 	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	bool fear = false;
+	bool stop = false, fear = false;
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
@@ -883,9 +885,9 @@ void py_attack(struct player *p, struct loc grid)
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;
 
-	/*Reward rageaholics with 5% of max SPs*/
-	if (player_of_has(p, OF_RAGE_FUEL)) {
-		s32b sp_gain = (s32b)(p->msp << 16) / 20  + PY_REGEN_MNBASE;
+	/* Reward rageaholics with 5% of max SPs, min 1 point */
+	if (player_has(p, PF_RAGE_FUEL)) {
+		s32b sp_gain = (s32b)(MAX(p->msp,20) << 16) / 20;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
@@ -899,11 +901,10 @@ void py_attack(struct player *p, struct loc grid)
 	/* Attack until energy runs out, energy expended approaches
 	 * z_info->move_energy or enemy dies. We limit energy use
 	 * to avoid giving monsters a possible double move. */
-	 while (p->energy - p->upkeep->energy_use >= blow_energy) {
-		bool stop = py_attack_real(player, grid, &fear);
+	while (MIN(p->energy, z_info->move_energy) - p->upkeep->energy_use
+		>= blow_energy && !stop) {
+		stop = py_attack_real(p, grid, &fear);
 		p->upkeep->energy_use += blow_energy;
-		if (p->upkeep->energy_use + blow_energy > z_info->move_energy ||
-			stop) break;
 	}
 
 	/* Hack - delay fear messages */

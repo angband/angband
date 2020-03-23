@@ -1,6 +1,6 @@
 /**
  * \file player-calcs.c
- * \brief Player status calculation, signalling ui events based on 
+ * \brief Player status calculation, signalling ui events based on
  *	status changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -1413,7 +1413,7 @@ static void calc_spells(struct player *p)
  */
 static void calc_mana(struct player *p, struct player_state *state, bool update)
 {
-	int i, msp, levels, cur_wgt, max_wgt; 
+	int i, msp, levels, cur_wgt, max_wgt;
 
 	/* Must be literate */
 	if (!p->class->magic.total_spells) {
@@ -2080,6 +2080,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (p->timed[TMD_SINVIS]) {
 		of_on(state->flags, OF_SEE_INVIS);
 	}
+	if (p->timed[TMD_FREE_ACT]) {
+		of_on(state->flags, OF_FREE_ACT);
+	}
 	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
 		of_on(state->flags, OF_AFRAID);
 	}
@@ -2304,7 +2307,7 @@ static void update_bonuses(struct player *p)
 		p->upkeep->redraw |= (PR_SPEED);
 
 	/* Redraw armor (if needed) */
-	if ((known_state.ac != p->known_state.ac) || 
+	if ((known_state.ac != p->known_state.ac) ||
 		(known_state.to_a != p->known_state.to_a))
 		p->upkeep->redraw |= (PR_ARMOR);
 
@@ -2335,7 +2338,7 @@ static void update_bonuses(struct player *p)
 			else if (equipped_item_by_slot_name(p, "weapon"))
 				msg("You have no trouble wielding your weapon.");
 			else
-				msg("You feel relieved to put down your heavy weapon.");	
+				msg("You feel relieved to put down your heavy weapon.");
 		}
 
 		/* Take note when "illegal weapon" changes */
@@ -2593,7 +2596,7 @@ void redraw_stuff(struct player *p)
 	if (!character_generated) return;
 
 	/* Map is not shown, subwindow updates only */
-	if (!map_is_visible()) 
+	if (!map_is_visible())
 		redraw &= PR_SUBWINDOW;
 
 	/* Hack - rarely update while resting or running, makes it over quicker */
@@ -2636,4 +2639,3 @@ void handle_stuff(struct player *p)
 	if (p->upkeep->update) update_stuff(p);
 	if (p->upkeep->redraw) redraw_stuff(p);
 }
-
