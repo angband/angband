@@ -53,19 +53,19 @@ int dungeon_get_next_level(int dlev, int added)
 
 	/* Get target level */
 	target_level = dlev + added * z_info->stair_skip;
-	
+
 	/* Don't allow levels below max */
 	if (target_level > z_info->max_depth - 1)
 		target_level = z_info->max_depth - 1;
 
 	/* Don't allow levels above the town */
 	if (target_level < 0) target_level = 0;
-	
+
 	/* Check intermediate levels for quests */
 	for (i = dlev; i <= target_level; i++) {
 		if (is_quest(i)) return i;
 	}
-	
+
 	return target_level;
 }
 
@@ -174,6 +174,18 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Hurt the player */
 	p->chp -= dam;
 
+	/* Reward rageaholics with SPs for their lost HPs
+	 * Unenviable task of separating what should and should not cause rage
+	 * If we eliminate the most exploitable cases it should be fine. */
+
+ if (player_of_has(p, OF_RAGE_FUEL)  && strcmp(kb_str, "poison")
+	 && strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
+	 /*lose X% of HP get X% of SP*/
+	 s32b sp_gain = (s32b)(dam / p->mhp * (p->msp << 16));
+	 sp_gain += PY_REGEN_MNBASE;
+	 player_adjust_mana_precise(p, sp_gain);
+ }
+
 	/* Display the hitpoints */
 	p->upkeep->redraw |= (PR_HP);
 
@@ -182,7 +194,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		/* Allow cheating */
 		if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
-		} else if (p->timed[TMD_BLOODLUST] > 48) {
+		} else if (p->chp + p->timed[TMD_BLOODLUST] >= 0) {
 			/* Benefit of extreme bloodlust */
 			msg("Your lust for blood keeps you alive!");
 		} else {
@@ -300,16 +312,13 @@ s16b modify_stat_value(int value, int amount)
 }
 
 /**
- * Regenerate hit points
+* Regenerate one turn's worth of hit points DAVIDTODO:is it one turn tho?
  */
 void player_regen_hp(struct player *p)
 {
-	s32b new_chp, new_chp_frac;
-	int old_chp, percent = 0;
-	int food_bonus = 0;
-
-	/* Save the old hitpoints */
-	old_chp = p->chp;
+	s32b hp_gain;
+	int percent = 0;/*max 32k = 50% of mhp; more accurately "pertwobytes"*/
+	int fed_pct, old_chp = p->chp;
 
 	/* Default regeneration */
 	if (p->timed[TMD_FOOD] >= PY_FOOD_WEAK) {
@@ -318,12 +327,21 @@ void player_regen_hp(struct player *p)
 		percent = PY_REGEN_WEAK;
 	} else if (p->timed[TMD_FOOD] >= PY_FOOD_STARVE) {
 		percent = PY_REGEN_FAINT;
-	}
+	} /* starving stays at 0 */
+
+	if (player_has(p, PF_CROWD_FIGHT)) {
+		percent *= player_crowd_regeneration(p);
+	/* Various things interfere with physical healing */
+	} else if (p->timed[TMD_BLOODLUST] || p->timed[TMD_CUT]
+	        || p->timed[TMD_PARALYZED] || p->timed[TMD_POISONED]
+	        || p->timed[TMD_SHERO]     || p->timed[TMD_STUN])
+		return;
 
 	/* Food bonus - better fed players regenerate up to 1/3 faster */
-	food_bonus = p->timed[TMD_FOOD] / (z_info->food_value * 10);
-	percent *= 30 + food_bonus;
-	percent /= 30;
+	msgt(MSG_GENERIC, "pertwobytes before food check %d", percent);
+	fed_pct = p->timed[TMD_FOOD] / z_info->food_value;
+	percent = percent * (100 + fed_pct / 3);
+	msgt(MSG_GENERIC, "pertwobytes after food check %d", percent);
 
 	/* Various things speed up regeneration */
 	if (player_of_has(p, OF_REGEN))
@@ -347,29 +365,11 @@ void player_regen_hp(struct player *p)
 	}
 
 	/* Extract the new hitpoints */
-	new_chp = ((long)p->mhp) * percent + PY_REGEN_HPBASE;
-	p->chp += (s16b)(new_chp >> 16);   /* div 65536 */
-
-	/* Check for overflow */
-	if ((p->chp < 0) && (old_chp > 0))
-		p->chp = SHRT_MAX;
-	new_chp_frac = (new_chp & 0xFFFF) + p->chp_frac;	/* mod 65536 */
-	if (new_chp_frac >= 0x10000L) {
-		p->chp_frac = (u16b)(new_chp_frac - 0x10000L);
-		p->chp++;
-	} else {
-		p->chp_frac = (u16b)new_chp_frac;
-	}
-
-	/* Fully healed */
-	if (p->chp >= p->mhp) {
-		p->chp = p->mhp;
-		p->chp_frac = 0;
-	}
+	hp_gain = ((s32b)p->mhp) * percent + PY_REGEN_HPBASE;
+	player_adjust_hp_precise(p, hp_gain);
 
 	/* Notice changes */
 	if (old_chp != p->chp) {
-		p->upkeep->redraw |= (PR_HP);
 		equip_learn_flag(p, OF_REGEN);
 		equip_learn_flag(p, OF_IMPAIR_HP);
 	}
@@ -377,15 +377,12 @@ void player_regen_hp(struct player *p)
 
 
 /**
- * Regenerate mana points
+ * Regenerate one turn 's worth of mana DAVIDTODO
  */
 void player_regen_mana(struct player *p)
 {
-	s32b new_mana, new_mana_frac;
-	int old_csp, percent;
-
-	/* Save the old spell points */
-	old_csp = p->csp;
+	s32b sp_gain;
+	int percent, old_csp = p->csp;
 
 	/* Default regeneration */
 	percent = PY_REGEN_NORMAL;
@@ -397,37 +394,135 @@ void player_regen_mana(struct player *p)
 		percent *= 2;
 
 	/* Some things slow it down */
-	if (player_of_has(p, OF_IMPAIR_MANA))
+	if (player_of_has(p, OF_RAGE_FUEL)) {
+		percent /= -2;
+	} else if (player_of_has(p, OF_IMPAIR_MANA)) {
 		percent /= 2;
+	}
 
 	/* Regenerate mana */
-	new_mana = ((long)p->msp) * percent + PY_REGEN_MNBASE;
-	p->csp += (s16b)(new_mana >> 16);	/* div 65536 */
+	sp_gain = ((long)p->msp) * percent;
+	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
+	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
-	/* check for overflow */
-	if ((p->csp < 0) && (old_csp > 0)) {
-		p->csp = SHRT_MAX;
-	}
-	new_mana_frac = (new_mana & 0xFFFF) + p->csp_frac;	/* mod 65536 */
-	if (new_mana_frac >= 0x10000L) {
-		p->csp_frac = (u16b)(new_mana_frac - 0x10000L);
-		p->csp++;
-	} else {
-		p->csp_frac = (u16b)new_mana_frac;
-	}
-
-	/* Must set frac to zero even if equal */
-	if (p->csp >= p->msp) {
-		p->csp = p->msp;
-		p->csp_frac = 0;
+	/* Rageaholics heal as the rage melts away */
+	if (sp_gain < 0  && player_of_has(p, OF_RAGE_FUEL)) {
+		player_adjust_hp_precise(p, -sp_gain);
 	}
 
 	/* Notice changes */
 	if (old_csp != p->csp) {
-		p->upkeep->redraw |= (PR_MANA);
 		equip_learn_flag(p, OF_REGEN);
 		equip_learn_flag(p, OF_IMPAIR_MANA);
 	}
+}
+
+void player_adjust_hp_precise(struct player *p, s32b hp_gain)
+{
+	/*int new_chp, new_chp_frac;*/
+	s32b new_chp;
+	int old_chp = p->chp;
+
+	/*load it all into 4 byte format*/
+	new_chp = (s32b)((p->chp<<16) + p->chp_frac) + hp_gain;
+
+	/* Check for overflow */
+/*	{new_chp = LONG_MIN;} DAVIDTODO*/
+	if      ((new_chp < 0 ) && (old_chp > 0 ) && (hp_gain > 0)) {new_chp = 2147483647;}
+	else if ((new_chp > 0 ) && (old_chp < 0 ) && (hp_gain < 0)) {new_chp = -2147483648;}
+
+	/*break it back down*/
+	p->chp = (s16b)(new_chp >> 16);   /* div 65536 */
+	p->chp_frac = (u16b)(new_chp & 0xFFFF);	/* mod 65536 */
+	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative new_chp
+	will give -1 for chp and very high chp_frac.*/
+
+	/* Fully healed */
+	if (p->chp >= p->mhp) {
+		p->chp = p->mhp;
+		p->chp_frac = 0;
+	}
+
+	if (old_chp != p->chp) {
+		p->upkeep->redraw |= (PR_HP);
+		int num = p->chp - old_chp;
+
+		/*from effects.c Should these be judged as a % of mhp?*/
+		if (num < 5) {/*msgt(MSG_GENERIC, "Gained %d partial HP", hp_gain);*/}
+		else if (num < 15)
+			msg("You feel better.");
+		else if (num < 35)
+			msg("You feel much better.");
+		else
+			msg("You feel very good.");
+	}
+}
+
+/* Accept a 4 byte signed int, divide it by 65k, and add
+ * to current spell points. p->csp and csp_frac are 2 bytes each.
+ */
+s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
+{
+	if (sp_gain == 0) {return 0;}
+	s32b old_csp_long, new_csp_long;
+	int old_csp_short = p->csp;
+
+	/*load it all into 4 byte format*/
+	old_csp_long = (s32b)((p->csp << 16) + p->csp_frac);
+	new_csp_long = old_csp_long + sp_gain;
+
+	/* Check for overflow */
+
+	/*new_csp = LONG_MAX LONG_MIN;} DAVIDTODO LONG_MAX produces warning*/
+	if      ((new_csp_long < 0 ) && (old_csp_long > 0) && (sp_gain > 0)) {
+		new_csp_long = LONG_MAX;
+		sp_gain = 0;
+	}
+	else if ((new_csp_long > 0 ) && (old_csp_long < 0) && (sp_gain < 0)) {
+		new_csp_long = -2147483648;
+		sp_gain = 0;
+	}
+
+	/*break it back down*/
+	p->csp = (s16b)(new_csp_long >> 16);   /* div 65536 */
+	p->csp_frac = (u16b)(new_csp_long & 0xFFFF);	/* mod 65536 */
+
+	/* Max/min SP */
+	if (p->csp >= p->msp) {
+		p->csp = p->msp;
+		p->csp_frac = 0;
+		sp_gain = 0;
+	} else if (p->csp < 0) {
+		p->csp = 0;
+		p->csp_frac = 0;
+		sp_gain = 0;
+	}
+
+	/* Notice changes */
+	if (old_csp_short != p->csp) {
+		p->upkeep->redraw |= (PR_MANA);
+	}
+
+	if (sp_gain == 0) {/* recalc */
+		new_csp_long = (s32b)((p->csp << 16) + p->csp_frac);
+		sp_gain = new_csp_long - old_csp_long;
+	}
+	/*if (sp_gain > 65536*2) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp-old_csp);}
+	else                   {msgt(MSG_GENERIC, "Gained %d partial SP", sp_gain);}*/
+	return sp_gain;
+}
+
+void bg_mana_to_hp(struct player *p, s32b sp) {
+	s32b hp_gain;/*DAVIDTODO overly precise?*/
+	/*total HP from max*/
+	hp_gain = (s32b)((p->mhp - p->chp) << 16);
+	hp_gain -= (s32b)p->chp_frac;
+
+	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
+	hp_gain /= (s32b)(2 * p->msp / sp);
+	hp_gain += PY_REGEN_HPBASE;
+
+	player_adjust_hp_precise(player, hp_gain);
 }
 
 /**
@@ -536,7 +631,8 @@ bool player_attack_random_monster(struct player *p)
 		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
 		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
-			move_player(dir % 8, false);
+			msg("You lash out at a nearby foe!");
+			move_player(ddd[dir % 8], false);
 			return true;
 		}
 	}
@@ -1130,26 +1226,26 @@ void player_resting_step_turn(struct player *p)
 void player_resting_complete_special(struct player *p)
 {
 	/* Complete resting */
-	if (player_resting_is_special(p->upkeep->resting)) {
-		if (p->upkeep->resting == REST_ALL_POINTS) {
-			if ((p->chp == p->mhp) && (p->csp == p->msp))
-				/* Stop resting */
-				disturb(p, 0);
-		} else if (p->upkeep->resting == REST_COMPLETE) {
-			if ((p->chp == p->mhp) && (p->csp == p->msp) &&
-				!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
-				!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
-				!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&
-				!p->timed[TMD_CUT] && !p->timed[TMD_SLOW] &&
-				!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE] &&
-				!p->word_recall && !p->deep_descent)
-				/* Stop resting */
-				disturb(p, 0);
-		} else if (p->upkeep->resting == REST_SOME_POINTS) {
-			if ((p->chp == p->mhp) || (p->csp == p->msp))
-				/* Stop resting */
-				disturb(p, 0);
-		}
+	if (!player_resting_is_special(p->upkeep->resting))
+		return;
+	if (p->upkeep->resting == REST_COMPLETE) {
+		if ((p->chp == p->mhp) && (p->csp == p->msp) &&
+			!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
+			!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
+			!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&
+			!p->timed[TMD_CUT] && !p->timed[TMD_SLOW] &&
+			!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE] &&
+			!p->word_recall && !p->deep_descent)
+			/* Stop resting */
+			disturb(p, 0);
+	} else if (p->upkeep->resting == REST_ALL_POINTS) {
+		if ((p->chp == p->mhp) && (p->csp == p->msp))
+		/* Stop resting */
+		disturb(p, 0);
+	} else if (p->upkeep->resting == REST_SOME_POINTS) {
+		if ((p->chp == p->mhp) || (p->csp == p->msp))
+			/* Stop resting */
+			disturb(p, 0);
 	}
 }
 
@@ -1279,7 +1375,7 @@ int player_crowd_regeneration(struct player *p)
  * The second arg is currently unused, but could induce output flush.
  *
  * All disturbance cancels repeated commands, resting, and running.
- * 
+ *
  * XXX-AS: Make callers either pass in a command
  * or call cmd_cancel_repeat inside the function calling this
  */

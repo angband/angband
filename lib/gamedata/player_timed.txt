@@ -105,7 +105,7 @@ fail:4:ROCK
 name:STUN
 desc:stunning
 grade:o:50:Stun:You have been stunned.
-grade:o:100:Heavy Stun:You have been heavily stunned.
+grade:o:150:Heavy Stun:You have been heavily stunned.
 grade:r:10000:Knocked Out:You have been knocked out.
 on-end:You are no longer stunned.
 msgt:STUN
@@ -174,7 +174,7 @@ name:SINFRA
 desc:enhanced infravision
 grade:G:10000:Infra:Your eyes begin to tingle!
 on-end:Your eyes stop tingling.
-on-increase:Your eyes' tingling intensifies.
+on-increase:The tingling in your eyes intensifies.
 msgt:INFRARED
 
 name:OPP_ACID

@@ -1,15 +1,15 @@
 # File: object.txt
 #
 # This file is used to initialize the "object kind" information for Angband.
-# Modifying this file when you don't know what you're doing may be harmful 
-# to you or your character's health.  It could possibly be considered cheating 
+# Modifying this file when you don't know what you're doing may be harmful
+# to you or your character's health.  It could possibly be considered cheating
 # under some circumstances, too. :)
 
 # === Understanding object.txt ===
 
 # name: & object name~
 # graphics: symbol : color
-# type: tval 
+# type: tval
 # level: level
 # weight : weight
 # cost : cost
@@ -100,7 +100,7 @@
 # flags, values are separated by '|' and as many values: lines as needed
 # can be used.
 
-# 'power' is used in calculating the power of the object for pricing and 
+# 'power' is used in calculating the power of the object for pricing and
 # generating random artifacts.  It reflects the power of the effect of the
 # object; other properties are taken into account separately in power
 # calculation.
@@ -1377,7 +1377,7 @@ cost:4
 alloc:20:1 to 100
 attack:1d1:0:0
 armor:1:0
-desc:A set of open-topped footgear with soft calfskin lacings and a sturdy 
+desc:A set of open-topped footgear with soft calfskin lacings and a sturdy
 desc:cured leather base.
 
 name:& Pair~ of Leather Boots
@@ -1439,7 +1439,7 @@ cost:4
 alloc:10:30 to 100
 attack:0d0:0:0
 armor:0:0
-flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 desc:Fine quality elvish slippers, hard-wearing but apparently weightless.
 
 
@@ -1768,7 +1768,7 @@ alloc:8:40 to 100
 attack:0d0:0:0
 armor:6:0
 values:STEALTH[1] | SPEED[1]
-desc:A mantle made of curious silken material by the Galadrim that wondrously 
+desc:A mantle made of curious silken material by the Galadrim that wondrously
 desc:takes on the hues and shapes of its surroundings.
 
 name:& Ethereal Cloak~
@@ -1780,8 +1780,8 @@ cost:4500
 alloc:10:70 to 100
 attack:0d0:0:0
 armor:0:10
-flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
-desc:This unearthly, completely transparent body mantle folds and drapes in 
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+desc:This unearthly, completely transparent body mantle folds and drapes in
 desc:iridescent patterns around you.  It weighs absolutely nothing.
 
 
@@ -1848,7 +1848,7 @@ desc:Highly protective gloves designed for an alchemist's elemental magics.
 #N:179:& Set~ of Mining Gloves
 #G:]:U
 #I:gloves
-#W:0:0:5:500 
+#W:0:0:5:500
 #A:10:50 to 100
 #P:0:1d1:0:0:2
 #V:TUNNEL[1d3]
@@ -1948,7 +1948,7 @@ level:30
 weight:2
 cost:500
 alloc:50:30 to 100
-flags:SUST_STR | 
+flags:SUST_STR |
 values:STR[1+M5]
 
 name:Intelligence
@@ -1958,7 +1958,7 @@ level:30
 weight:2
 cost:500
 alloc:50:30 to 100
-flags:SUST_INT | 
+flags:SUST_INT |
 values:INT[1+M5]
 
 name:Dexterity
@@ -1968,7 +1968,7 @@ level:30
 weight:2
 cost:500
 alloc:50:30 to 100
-flags:SUST_DEX | 
+flags:SUST_DEX |
 values:DEX[1+M5]
 
 name:Constitution
@@ -1978,7 +1978,7 @@ level:30
 weight:2
 cost:500
 alloc:50:30 to 100
-flags:SUST_CON | 
+flags:SUST_CON |
 values:CON[1+M5]
 
 name:Speed
@@ -2307,7 +2307,7 @@ level:30
 weight:3
 cost:500
 alloc:50:20 to 90
-flags:SUST_WIS | 
+flags:SUST_WIS |
 values:WIS[1+M5]
 
 ### Resistances ###
@@ -2353,7 +2353,7 @@ weight:3
 cost:20000
 alloc:10:60 to 100
 flags:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON |
-flags:HOLD_LIFE | SLOW_DIGEST | EASY_KNOW | 
+flags:HOLD_LIFE | SLOW_DIGEST | EASY_KNOW |
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 name:the Magi
@@ -2377,7 +2377,7 @@ weight:3
 cost:25000
 alloc:10:60 to 100
 flags:TELEPATHY
-flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD |
 
 name:Devotion
 type:amulet
@@ -3382,7 +3382,7 @@ weight:4
 cost:100
 alloc:40:3 to 100
 pile:25:2
-power:9
+power:8
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
@@ -4206,7 +4206,7 @@ graphics:_:d
 level:5
 weight:50
 cost:200
-alloc:30:5 to 100 
+alloc:30:5 to 100
 attack:1d2:0:0
 armor:0:0
 charges:8+d15
@@ -5251,4 +5251,3 @@ flags:INSTA_ART | QUEST_ART
 
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
-

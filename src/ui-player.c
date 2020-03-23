@@ -245,7 +245,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ " Cold",	-1,					-1,				ELEM_COLD,	TMD_OPP_COLD },
 	{ " Pois",	-1,					-1,				ELEM_POIS,	TMD_OPP_POIS },
 	{ "Light",	-1,					-1,				ELEM_LIGHT,	-1 },
-	{ " Dark",	-1,					-1,				ELEM_DARK,	-1 },	
+	{ " Dark",	-1,					-1,				ELEM_DARK,	-1 },
 	{ "Sound",	-1,					-1,				ELEM_SOUND,	-1 },
 	{ "Shard",	-1,					-1,				ELEM_SHARD,	-1 },
 	{ "Nexus",	-1,					-1,				ELEM_NEXUS,	-1 },
@@ -261,7 +261,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Regen",	-1,					OF_REGEN,		-1, 		-1 },
 	{ "  ESP",	-1,					OF_TELEPATHY,	-1,			TMD_TELEPATHY },
 	{ "S.Inv",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
-	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		-1 },
+	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		TMD_FREE_ACT },
 	{ "Feath",	-1,					OF_FEATHER,		-1,			-1 },
 	{ "S.Dig",	-1,					OF_SLOW_DIGEST,	-1, 		-1 },
 	{ "TrpIm",	-1,					OF_TRAP_IMMUNE, -1,			-1 },
@@ -292,12 +292,13 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
 	{ "D.Red",	OBJ_MOD_DAM_RED,	-1,				-1, 		-1 },
 	{ "Moves",	OBJ_MOD_MOVES,		-1,				-1, 		-1 },
+/*	{ " Rage",	-1,		-1,				-1, 		-1 }, DAVIDTODO I don't think we want */
 	{ "",	-1,		-1,				-1, 		-1 },
 	{ "",	-1,		-1,				-1, 		-1 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *rec,
-									size_t size, const region *bounds) 
+									size_t size, const region *bounds)
 {
 	size_t i;
 	int j;
@@ -639,7 +640,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && obj && 
+			if ((c == '.') && obj &&
 				!object_flag_is_known(obj, sustain_flag(stat)))
 				c = '?';
 
@@ -1292,7 +1293,7 @@ void do_cmd_change_name(void)
 					}
 					break;
 				}
-				
+
 				case 'h':
 				case ARROW_LEFT:
 				case ' ':
@@ -1306,13 +1307,13 @@ void do_cmd_change_name(void)
 			}
 		} else if (ke.type == EVT_MOUSE) {
 			if (ke.mouse.button == 1) {
-				/* Flip through the screens */			
+				/* Flip through the screens */
 				mode = (mode + 1) % INFO_SCREENS;
 			} else if (ke.mouse.button == 2) {
 				/* exit the screen */
 				more = false;
 			} else {
-				/* Flip backwards through the screens */			
+				/* Flip backwards through the screens */
 				mode = (mode - 1) % INFO_SCREENS;
 			}
 		}

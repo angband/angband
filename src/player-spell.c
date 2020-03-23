@@ -505,6 +505,11 @@ bool spell_cast(int spell_index, int dir)
 			return false;
 		}
 
+		/* reward rageaholics with small HP recovery */
+		if (player_of_has(player, OF_RAGE_FUEL) && (player->msp > 0)) {
+			bg_mana_to_hp(player, spell->smana);
+		}
+
 		/* A spell was cast */
 		sound(MSG_SPELL);
 
@@ -591,6 +596,9 @@ static void spell_effect_append_value_info(const struct effect *effect,
 
 	/* Handle some special cases where we want to append some additional info */
 	switch (effect->index) {
+		/*DAVIDTODO
+		case MELEE_BLOWS:
+		  special = "**";*/
 		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);

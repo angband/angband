@@ -60,7 +60,7 @@ struct level *world;
  * energy per turn, but then speed becomes very "expensive",
  * and you must get all the way to "Fast (+50)" to reach the
  * point of getting 45 energy per turn.  After that point,
- * furthur increases in speed are more or less pointless,
+ * further increases in speed are more or less pointless,
  * except to balance out heavy inventory.
  *
  * Note that currently the fastest monster is "Fast (+30)".
@@ -124,7 +124,7 @@ struct level *level_by_depth(int depth)
  */
 bool is_daytime(void)
 {
-	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
+	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2))
 		return true;
 
 	return false;
@@ -259,7 +259,7 @@ void play_ambient_sound(void)
 	if (player->depth == 0) {
 		if (is_daytime())
 			sound(MSG_AMBIENT_DAY);
-		else 
+		else
 			sound(MSG_AMBIENT_NITE);
 	} else if (player->depth <= 20) {
 		sound(MSG_AMBIENT_DNG1);
@@ -693,8 +693,7 @@ void process_world(struct chunk *c)
 	if (player->chp < player->mhp)
 		player_regen_hp(player);
 
-	/* Regenerate mana if needed */
-	if (player->csp < player->msp)
+		/* Regenerate or lose mana */
 		player_regen_mana(player);
 
 	/* Timeout various things */
@@ -1045,7 +1044,7 @@ void run_game_loop(void)
 	while (player->energy >= z_info->move_energy) {
 		/* Do any necessary animations */
 		event_signal(EVENT_ANIMATE);
-		
+
 		/* Process monster with even more energy first */
 		process_monsters(cave, player->energy + 1);
 		if (player->is_dead || !player->upkeep->playing ||
@@ -1062,14 +1061,14 @@ void run_game_loop(void)
 		}
 	}
 
-	/* Now that the player's turn is fully complete, we run the main loop 
+	/* Now that the player's turn is fully complete, we run the main loop
 	 * until player input is needed again */
 	while (true) {
 		notice_stuff(player);
 		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
 
-		/* Process the rest of the world, give the player energy and 
+		/* Process the rest of the world, give the player energy and
 		 * increment the turn counter unless we need to stop playing or
 		 * generate a new level */
 		if (player->is_dead || !player->upkeep->playing)

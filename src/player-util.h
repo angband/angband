@@ -23,11 +23,11 @@
 #include "player.h"
 
 /* Player regeneration constants */
-#define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
-#define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
-#define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
-#define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
-#define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
+#define PY_REGEN_NORMAL 197   /* Regen factor*2^16 for SP, HP when fed 0.3% */
+#define PY_REGEN_WEAK    98   /* Regen factor*2^16 for HP when weak 0.15% */
+#define PY_REGEN_FAINT   33   /* Regen factor*2^16 for HP when fainting 0.05% */
+#define PY_REGEN_HPBASE 1442  /* Min amount HP regen*2^16 0.022 HP */
+#define PY_REGEN_MNBASE  524  /* Min amount SP regen*2^16 0.008 SP */
 
 /* Player over-exertion */
 enum {
@@ -45,9 +45,9 @@ enum {
 /**
  * Special values for the number of turns to rest, these need to be
  * negative numbers, as postive numbers are taken to be a turncount,
- * and zero means "not resting". 
+ * and zero means "not resting".
  */
-enum 
+enum
 {
 	REST_COMPLETE = -2,
 	REST_ALL_POINTS = -1,
@@ -68,6 +68,9 @@ void death_knowledge(struct player *p);
 s16b modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
+void player_adjust_hp_precise(struct player *p, s32b hp_gain);
+s32b player_adjust_mana_precise(struct player *p, s32b sp_gain);
+void bg_mana_to_hp(struct player *p, s32b sp);
 void player_update_light(struct player *p);
 void player_over_exert(struct player *p, int flag, int chance, int amount);
 struct object *player_best_digger(struct player *p);
