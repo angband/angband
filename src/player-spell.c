@@ -492,7 +492,7 @@ bool spell_cast(int spell_index, int dir)
 
 	/* reward rageaholics with small HP recovery */
 	if (player_has(player, PF_RAGE_FUEL)) {
-		bg_mana_to_hp(player, spell->smana);
+		bg_mana_to_hp(player, spell->smana << 16);
 	}
 
 	/* Spell failure chance */

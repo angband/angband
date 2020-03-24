@@ -151,7 +151,6 @@ void dungeon_change_level(struct player *p, int dlev)
  */
 void take_hit(struct player *p, int dam, const char *kb_str)
 {
-	msgt(MSG_GENERIC, "take_hit %d %s", dam, kb_str);
 	int old_chp = p->chp;
 
 	int warning = (p->mhp * p->opts.hitpoint_warn / 10);
@@ -396,8 +395,8 @@ void player_regen_mana(struct player *p)
 
 	/* Rageaholics heal as the rage melts away */
 	if (sp_gain < 0  && player_has(p, PF_RAGE_FUEL)) {
-		/*bg_mana_to_hp(p, -sp_gain);*/
-		msgt(MSG_GENERIC, "Wanted to bg_mana_to_hp(%d)", -sp_gain);
+		bg_mana_to_hp(p, -sp_gain);
+		/*msgt(MSG_GENERIC, "Wanted to bg_mana_to_hp(%d)", -sp_gain);*/
 	}
 
 	/* Notice changes */
@@ -503,23 +502,32 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 
 	if (sp_gain == 0) {}
 	else if (sp_gain > 2 << 17) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp - old_csp_short);}
-	else                   {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);}
+	else                        {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);}
 	return sp_gain;
 }
 
 void bg_mana_to_hp(struct player *p, s32b sp) {
+	msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp);
 	if (sp <= 0 || p->msp == 0) return;
 
-	s32b hp_gain;
+	s32b hp_gain, sp_ratio;
 
 	/*total HP from max*/
 	hp_gain = (s32b)((p->mhp - p->chp) << 16);
 	hp_gain -= (s32b)p->chp_frac;
+	msgt(MSG_GENERIC, "HP missing %d", hp_gain);
 
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
 	/* Gain stays low at msp<10 because 1 of 2 sources are generous at msp<20 */
-	hp_gain /= (s32b)(2 * MAX(p->msp, 10) / sp);
+	/* sp_ratio is max sp to spent sp, doubled. */
+	sp_ratio = (s32b)(MAX(10, p->msp) << 16) * 2 / sp;
+	msgt(MSG_GENERIC, "sp_ratio %d", sp_ratio);
 
+	/* don't crash if somehow sp spent > 2 * max sp */
+	if (sp_ratio == 0) {sp_ratio = 1;}
+	hp_gain /= sp_ratio;
+
+	msgt(MSG_GENERIC, "Final gain %d", hp_gain);
 	player_adjust_hp_precise(p, hp_gain);
 }
 

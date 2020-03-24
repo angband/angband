@@ -1610,13 +1610,23 @@ magic:1:800:3
 book:shadow book:town:[Into the Shadows]:6:shadow
 equip:shadow book:[Into the Shadows]:1:1
 
+#Sure, not all living monsters have fear, but it's good enough for now.
+#Everyone else gets detect much earlier, but the book themes are really
+#nice with this here.
+#Compare Ranger's spell:Detect Life:5:2:23:2
+#Compare Druid's  spell:Detect Life:1:1:23:2
+spell:Seek Battle:1:1:10:2
+effect:DETECT_LIVING_MONSTERS
+effect-yx:22:40
+desc:Detects all living monsters in the immediate area, for one turn only.
+desc: TODO(Detects fearable monsters, living or dead)
+
 #Based loosely on Paladin's spell:Bless:1:2:20:4 PL+10+1d(PL+10) duration
 #?Holy Chant costs 40 for 12+d24 bless. !Bers costs 100 for 30 HP and 25+d25
 #old Ranger spell:Berserker:23:30:80:35 included 30 HP heal
 #old Rogue  spell:Berserker:28:20:60:60 included 30 HP heal
 #recent BG  spell:Berserk Rage:14:10:10:10 all above dur 25+1d25
-#Need 13 INT to cast at L1
-spell:Berserk Rage:1:2:15:4
+spell:Berserk Rage:3:2:12:4
 effect:CURE:AFRAID
 effect:TIMED_INC:SHERO:0:5
 dice:$B+d$S
@@ -1634,9 +1644,11 @@ desc: over time) for a level-dependent duration (av. 8+1.5*level turns).
 #effect:CHARGE:4
 #desc:You may run up to 4 spaces towards targeted enemy, then perform a
 #desc: level-dependent number of melee blows. The number of blows starts at 1
-#desc: and goes up every 10 levels (max 5 at 43). If you moved, the number of
+#desc: and goes up every 15 levels (max 4 at 50). If you moved, the number of
 #desc: blows is reduced by 25% for each space, then rounded.
-
+spell:Vampire Strike TEMP:5:4:14:6
+effect:JUMP_AND_BITE
+dice:$B
 expr:B:WEAPON_DAMAGE:+ 0
 desc:Teleports you to the nearest living monster and leeches hitpoints equal
 desc: to your weapon damage, healing and nourishing the player.
@@ -1651,7 +1663,7 @@ desc: 4 spaces and then performs a melee attack.
 #Need 13 INT to cast twice at L5.
 #Based on Ranger's  spell:Turn Stone to Mud:15:5:25:5
 #Compare to Druid's spell:Turn Stone to Mud:8:3:25:5
-spell:Shatter Stone:5:3:20:5
+spell:Shatter Stone:7:3:16:8
 #effect:SHORT_BEAM:KILL_WALL:1
 effect:LINE:KILL_WALL
 dice:20+1d30
@@ -1661,20 +1673,7 @@ desc:Destroys an TODO(adjacent) section of wall or rubble,
 desc: unless it is a permanent wall. Deals TODO(one melee blow
 desc: plus) 20+1d30 damage to monsters vulnerable to rock remover.
 
-#Let's give early crowd-fighting and bonus to heavy weapons, shall we?
-#We don't want this to be better than a melee attack vs one foe.
-spell:Whirlwind Attack:8:6:25:5
-effect:SPHERE:DARK:1
-dice:$Sd$B
-expr:B:WEAPON_DAMAGE:* 8
-expr:S:PLAYER_LEVEL:+ 12 / 20
-desc:Deals dark damage equal to weapon damage *2 to all adjacent enemies.
-desc:Increases to *4 at level 28 and *6 at level 48. TODO(replace with blows)
-#desc:Deals a level-dependent number of melee blows to each adjacent enemy.
-#desc: At level 8-27, 1 blow. At level 28-47, 2 blows. At level 48+, 3 blows.
-#desc: Sub weapon damage *2 for an actual blow for now. Increases at 28, 48.
-
-spell:Soothe Savagery:10:5:10:5
+spell:Soothe Savagery:10:5:18:10
 effect:CURE:SHERO
 effect:CURE:BLOODLUST
 effect:HEAL_HP
@@ -1691,7 +1690,7 @@ desc: briefly ill-suited to do battle. TODO(uses all your SPs at once)
 #rConf is hard to get. FrAct is easy, but crucial.
 #Cost adj for objects: rPois 28, rConf 24, FrAct 8 m2,
 #Compare Ranger's spell:Resist Poison:12:10:32:5
-spell:Grim Purpose:12:9:32:5
+spell:Grim Purpose:15:9:22:14
 effect:TIMED_INC:OPP_CONF
 dice:12+d12
 effect:TIMED_INC:FREE_ACT
@@ -1702,21 +1701,11 @@ desc: for 12+d12 turns.
 #All these spells are related to fear and torment. Duh!
 book:shadow book:town:[Fear and Torment]:5:shadow
 
-#Based on Ranger's spell:Detect Life:5:2:23:2
-#Sure, not all living monsters have fear, but it's good enough for now.
-#Everyone else gets detect much earlier, but the book themes are really
-#nice with this here.
-spell:Smell Fear:14:2:23:5
-effect:DETECT_LIVING_MONSTERS
-effect-yx:22:40
-desc:Detects all living monsters in the immediate area, for one turn only.
-desc: TODO(Detects fearable monsters, living or dead)
-
 #No other spells stun except Shock Wave (chance), so that's a fun addition.
 #Stun very useful for melee. Wand effect dice is 5+1d5, but unsure of meaning.
 #Very few monsters resist stun (94) vs 325 for rConf, 169 for IM_FIRE, etc.
 #All 71 undead have NO_STUN. 44 nonliving are stunnable, though (3 bases).
-spell:Inflict Pain:16:5:35:8
+spell:Inflict Pain:13:5:20:12
 #effect:MELEE_BLOWS:1
 effect:SHORT_BEAM:DARK:1
 dice:$B
@@ -1734,7 +1723,7 @@ desc: turns. TODO(replace weap dam with 1 melee blow, stun beam with ATT_STUN)
 #46 nonliving also have NO_FEAR.
 #compare Necro's spell:Frighten:17:4:40:12 (1 target; dur:PL)
 #4.2.0 spell:Cry of the Damned:17:5:30:12 dur:PL
-spell:Howl of the Damned:20:8:40:12
+spell:Howl of the Damned:18:8:24:16
 effect:PROJECT_LOS:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1748,13 +1737,13 @@ desc: turns). Monsters that resist fear are not affected.
 #compare Paladin's spell:Demon Bane:30:40:80:150 dur 20+d20, 5x slay
 #this is a x3 brand. I think you need 15 or 16 INT to cast this at CL24
 #4.2.0Poison Brand:20:30:40:90
-spell:Poison Brand:24:30:40:90
+spell:Venom:24:20:26:18
 effect:TIMED_INC:ATT_POIS:0:5
 dice:20+d20
 desc:Coats all your melee weapons with poison for 20+d20 turns.
 
 #Orig:Taunt:24:10:40:150 but in dungeon book
-spell:Taunt:28:10:40:150
+spell:Provoke:28:10:28:20
 effect:TIMED_INC:TAUNT
 dice:10+d10
 desc:Makes anything that can move more inclined to run toward you than make a
@@ -1762,21 +1751,34 @@ desc: ranged attack. Duration 10+d10 turns.
 #Pretty sure this is going to have to be PROJECT_LOS like Howl to avoid
 #conflicting with Fear.
 
+#I'm thinking of the humanoid version
+#of werewolf. This would be the least spellcasty class to shapechange.
+#If we want heavy weapons, giving BGs an extra blow or two would
+#definitely move them in that direction. Werewolf seems only slightly
+#shapeshifty, thematically, and is a classic rage monster. Also goes well
+#with Howl of the Damned.
+#compare Necro spell:Warg Form:28:20:60:80
+spell:Werewolf Form:33:25:32:24
+effect:SHAPECHANGE:werewolf
+desc:With a blood-curdling cry you change into a half-man half-wolf!
+desc: In this form you move and attack faster.
+
 book:shadow book:dungeon:[Deadly Powers]:5:shadow
 
-#4.2.0Throw Monster:27:12:50:30
-#project_monster_handler_FORCE says 3 + dam/20 spaces for all monsters.
-#TODO:Consider varying that per monster, maybe by max hp?
-#Changed this from 200 to level-dependent. It's the same at CL40.
-spell:Throw Monster:26:12:50:30
-effect:SHORT_BEAM:FORCE:1
-dice:2d$B
-expr:B:PLAYER_LEVEL:* 5
-desc:Hits an adjacent monster with force, throwing it back (av level*5 damage)
-#TODO(change to a buff and a blow)
+#We don't want this to be better than a melee attack vs one foe.
+spell:Whirlwind Attack:26:6:30:22
+effect:SPHERE:DARK:1
+dice:$Sd$B
+expr:B:WEAPON_DAMAGE:* 8
+expr:S:PLAYER_LEVEL:- 16 / 10
+desc:Deals dark damage equal to weapon damage *2 to all adjacent enemies.
+desc:Increases to *4 at level 36 and *6 at level 46. TODO(replace with blows)
+#desc:Deals a level-dependent number of melee blows to each adjacent enemy.
+#desc: At level 8-27, 1 blow. At level 28-47, 2 blows. At level 48+, 3 blows.
+#desc: Sub weapon damage *2 for an actual blow for now. Increases at 28, 48.
 
 #This is so quirky and flavorful I don't want to mess with it much
-spell:Thirst for Blood:32:30:40:100
+spell:Thirst for Blood:30:30:32:24
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
 #effect:DAMAGE
@@ -1786,30 +1788,39 @@ desc:Gives you a powerful desire to kill, increased every time you satisfy it.
 desc: Gives you extra damage and, at higher levels, extra blows, but comes
 desc: with dangerous side-effects.
 
-#This is based on Necro's Warg Form. I'm thinking of the humanoid version
-#of werewolf. This would be the least spellcasty class to shapechange.
-#If we want heavy weapons, giving BGs an extra blow or two would
-#definitely move them in that direction. Werewolf seems only slightly
-#shapeshifty, thematically, and is a classic rage monster. Also goes well
-#with Howl of the Damned.
-spell:Werewolf Form:36:20:60:80
-effect:SHAPECHANGE:werewolf
-desc:With a blood-curdling cry you change into a half-man half-wolf!
-desc: In this form you move and attack faster.
-
-#Point is to make meleeing monsters less of a hassle. 115 monsters with a
-#melee attack that drains charges, xp, stats, enchantment. 42 have attacks
-#that are not cured by the below.
+#Point of this spell is to make meleeing monsters less of a hassle.
+#115 monsters with a melee attack that drains charges, xp, stats, enchantment.
+#42 have attacks that are not cured by this spell.
 #Cost adj for objects: sSTR 9, sINT & sWIS 4, sDEX 7, sCON 8, hLife 5 m2
 #Compare Ranger's spell:Herbal Curing:40:20:90:100 cut,pois,stun,blbrth
 #Compare Druid's spell:Revitalize:35:70:90:90 all stats & xp.
-spell:Unholy Reprieve:40:50:90:100
+spell:Unholy Reprieve:34:40:34:26
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:CON
 effect:RESTORE_EXP
-effect:DAMAGE
 desc:Restores STR, INT, CON, and experience
+
+#project_monster_handler_FORCE says 3 + dam/20 spaces for all monsters.
+#TODO:Consider varying that per monster, maybe by max hp?
+#Changed this from 200 to level-dependent. It's the same at CL40.
+#4.2.0Throw Monster:27:12:50:30
+spell:Forceful Blow:40:12:36:28
+effect:SHORT_BEAM:FORCE:1
+dice:2d$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Hits an adjacent monster with force, throwing it back (av level*5 damage)
+#TODO(change to a buff and a blow)
+
+#Druid spell:Volcanic Eruption:40:30:75:50
+spell:EXPERIMENTAL Volcano:44:30:75:50
+effect:SPHERE:FIRE:5
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:* 3 / 2
+expr:S:PLAYER_LEVEL:* 3
+effect:EARTHQUAKE:NONE:5
+desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
+desc: around the player.
 
 #Other promising thoughts:
 # - Spell that does weapon damage times x blows. Would allow effective use of
