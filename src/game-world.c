@@ -290,6 +290,13 @@ static void decrease_timeouts(void)
 
 		/* Special cases */
 		switch (i) {
+            case TMD_FOOD:
+            {
+                /* Handled separately */
+                decr = 0;
+                break;
+            }
+
 			case TMD_CUT:
 			{
 				/* Check for truly "mortal" wound */
