@@ -741,7 +741,7 @@ static void visuals_parse_context_free(struct visuals_parse_context *context)
 	}
 
 	if (context->group_names != NULL) {
-		for (i = 0; i > context->max_groups; i++) {
+		for (i = 0; i < context->max_groups; i++) {
 			string_free(context->group_names[i])	;
 		}
 
