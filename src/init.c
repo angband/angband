@@ -979,10 +979,12 @@ static void cleanup_player_prop(void)
 {
 	struct player_ability *ability = player_abilities;
 	while (ability) {
-		string_free(ability->type);
-		string_free(ability->desc);
-		string_free(ability->name);
+		struct player_ability *totrash = ability;
 		ability = ability->next;
+		string_free(totrash->type);
+		string_free(totrash->desc);
+		string_free(totrash->name);
+		mem_free(totrash);
 	}
 }
 
