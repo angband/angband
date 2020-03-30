@@ -108,6 +108,7 @@ static void wiz_proj_demo(void)
 	clear_from(0);
 	menu_select(m, 0, false);
 	screen_load();
+	mem_free(m);
 }
 
 
@@ -812,6 +813,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	ret = menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 
 	return (ret.type == EVT_ESCAPE);
 }
@@ -870,6 +872,7 @@ static void wiz_create_item(bool art)
 	menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 	
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
