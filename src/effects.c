@@ -677,6 +677,12 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			break;
 		}
 
+		case SRC_CHEST_TRAP: {
+			struct chest_trap *trap = context->origin.which.chest_trap;
+			strnfmt(killer, sizeof(killer), "%s", trap->msg_death);
+			break;
+		}
+
 		case SRC_PLAYER: {
 			if (context->msg) {
 				my_strcpy(killer, context->msg, sizeof(killer));

@@ -42,6 +42,7 @@
 #include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-chest.h"
 #include "obj-ignore.h"
 #include "obj-init.h"
 #include "obj-list.h"
@@ -3623,6 +3624,7 @@ static struct {
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },
+	{ "chest_traps", &chest_trap_parser },
 	{ "quests", &quests_parser },
 	{ "flavours", &flavor_parser },
 	{ "hints", &hints_parser },
