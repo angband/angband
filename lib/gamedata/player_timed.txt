@@ -222,6 +222,12 @@ grade:v:10000:RConf:You feel resistant to confusion!
 on-end:You are no longer resistant to confusion.
 on-increase:You feel more resistant to confusion!
 
+name:FREE_ACT
+desc:free action
+grade:G:10000:FrAct:Your limbs fill with energy!
+on-end:The energy drains from your limbs.
+on-increase:Your limbs feel more energetic!
+
 name:AMNESIA
 desc:amnesia
 grade:o:10000:Amnesiac:You feel your memories fade.

@@ -176,11 +176,12 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 	/* Reward rageaholics with SPs for their lost HPs
 	 * Unenviable task of separating what should and should not cause rage
-	 * If we eliminate the most exploitable cases it should be fine. */
-	if (player_has(p, PF_RAGE_FUEL)  && strcmp(kb_str, "poison")
+	 * If we eliminate the most exploitable cases it should be fine.
+	 * All traps currently give SPs, which could be exploitable  */
+	if (player_has(p, PF_COMBAT_REGEN)  && strcmp(kb_str, "poison")
 		&& strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
 		/*lose X% of HP get X% of SP*/
-		s32b sp_gain = (s32b)((p->msp << 16) * dam / p->mhp);
+		s32b sp_gain = (s32b)((MAX(p->msp, 10) << 16) * dam / p->mhp);
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
@@ -345,11 +346,9 @@ void player_regen_hp(struct player *p)
 		percent *= 2;
 	if (player_resting_can_regenerate(p))
 		percent *= 2;
-	/*if (player_has(p, PF_RAGE_FUEL) && (p->csp > 0 ||  p->csp_frac > 0))
-		percent *= 4; this was an experiment to remove MP degen healing */
 
 	/* Some things slow it down */
-	if (player_of_has(p, OF_IMPAIR_HP))
+	if (player_of_has(p, OF_IMPAIR_HP) || player_has(p, PF_COMBAT_REGEN))
 		percent /= 2;
 
 	/* Extract the new hitpoints */
@@ -365,7 +364,7 @@ void player_regen_hp(struct player *p)
 
 
 /**
- * Regenerate one turn 's worth of mana DAVIDTODO
+ * Regenerate one turn's worth of mana
  */
 void player_regen_mana(struct player *p)
 {
@@ -375,14 +374,16 @@ void player_regen_mana(struct player *p)
 	/* Default regeneration */
 	percent = PY_REGEN_NORMAL;
 
-	/* Various things speed up regeneration */
-	if (player_of_has(p, OF_REGEN))
+	/* Various things speed up regeneration, but don't punish BGs */
+	if (player_of_has(p, OF_REGEN)
+		&& !(player_has(p, PF_COMBAT_REGEN) && p->chp == p->mhp))
 		percent *= 2;
-	if (player_resting_can_regenerate(p))
+	if (player_resting_can_regenerate(p)
+		&& !(player_has(p, PF_COMBAT_REGEN) && p->chp == p->mhp))
 		percent *= 2;
 
 	/* Some things slow it down */
-	if (player_has(p, PF_RAGE_FUEL)) {
+	if (player_has(p, PF_COMBAT_REGEN)) {
 		percent /= -2;
 	} else if (player_of_has(p, OF_IMPAIR_MANA)) {
 		percent /= 2;
@@ -393,10 +394,9 @@ void player_regen_mana(struct player *p)
 	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
-	/* Rageaholics heal as the rage melts away */
-	if (sp_gain < 0  && player_has(p, PF_RAGE_FUEL)) {
-		bg_mana_to_hp(p, -sp_gain);
-		/*msgt(MSG_GENERIC, "Wanted to bg_mana_to_hp(%d)", -sp_gain);*/
+	/* Rageaholics regen as the rage melts away, double bonus over casting */
+	if (sp_gain < 0  && player_has(p, PF_COMBAT_REGEN)) {
+		bg_mana_to_hp(p, -sp_gain << 2);
 	}
 
 	/* Notice changes */
@@ -435,18 +435,19 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 	}
 
 	num = p->chp - old_chp;
-	if (num == 0)
-		return;
-	p->upkeep->redraw |= (PR_HP);
 
 	/*from effects.c Should these be judged as a % of mhp?*/
-	if (num < 5) {msgt(MSG_GENERIC, "Gained %d%% of a HP", hp_gain/655);}
+	if (num < 5) {/*msgt(MSG_GENERIC, "Gained %d%% of a HP", hp_gain/655);*/}
 	else if (num < 15)
 		msg("You feel better.");
 	else if (num < 35)
 		msg("You feel much better.");
 	else
 		msg("You feel very good.");
+
+	if (num == 0)
+		return;
+	p->upkeep->redraw |= (PR_HP);
 
 }
 
@@ -500,34 +501,33 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 		sp_gain = new_csp_long - old_csp_long;
 	}
 
-	if (sp_gain == 0) {}
+/*	if (sp_gain == 0) {}
 	else if (sp_gain > 2 << 17) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp - old_csp_short);}
-	else                        {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);}
+	else                        {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);} */
 	return sp_gain;
 }
 
-void bg_mana_to_hp(struct player *p, s32b sp) {
-	msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp);
-	if (sp <= 0 || p->msp == 0) return;
+void bg_mana_to_hp(struct player *p, s32b sp_long) {
+	/* msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp_long); */
+	if (sp_long <= 0 || p->msp == 0 || p->mhp == p->chp) return;
 
 	s32b hp_gain, sp_ratio;
 
 	/*total HP from max*/
 	hp_gain = (s32b)((p->mhp - p->chp) << 16);
 	hp_gain -= (s32b)p->chp_frac;
-	msgt(MSG_GENERIC, "HP missing %d", hp_gain);
 
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
-	/* Gain stays low at msp<10 because 1 of 2 sources are generous at msp<20 */
-	/* sp_ratio is max sp to spent sp, doubled. */
-	sp_ratio = (s32b)(MAX(10, p->msp) << 16) * 2 / sp;
-	msgt(MSG_GENERIC, "sp_ratio %d", sp_ratio);
+	/* Gain stays low at msp<10 because MP gains are generous at msp<10 */
+	/* sp_ratio is max sp to spent sp, doubled to suit target rate. */
+	sp_ratio = (s32b)(MAX(10, p->msp) << 16) * 2 / sp_long;
+	/* msgt(MSG_GENERIC, "sp_ratio %d", sp_ratio); */
 
-	/* don't crash if somehow sp spent > 2 * max sp */
-	if (sp_ratio == 0) {sp_ratio = 1;}
+	/* don't crash if somehow sp spent > 2 * max sp, enforce max 50% damage */
+	if (sp_ratio < 2) {sp_ratio = 2;}
 	hp_gain /= sp_ratio;
 
-	msgt(MSG_GENERIC, "Final gain %d", hp_gain);
+	/* msgt(MSG_GENERIC, "Final gain %d", hp_gain); */
 	player_adjust_hp_precise(p, hp_gain);
 }
 
@@ -1238,7 +1238,7 @@ void player_resting_complete_special(struct player *p)
 		return;
 	if (p->upkeep->resting == REST_COMPLETE) {
 		if ((p->chp == p->mhp) &&
-			(p->csp == p->msp || player_has(p, PF_RAGE_FUEL)) &&
+			(p->csp == p->msp || player_has(p, PF_COMBAT_REGEN)) &&
 			!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
 			!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
 			!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&

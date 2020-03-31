@@ -612,7 +612,7 @@ static const struct hit_types melee_hit_types[] = {
 /**
  * Attack the monster at the given location with a single blow.
  */
-static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
+bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 {
 	size_t i;
 
@@ -811,7 +811,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 		bash_chance *= 2;
 	}
 
-	/* Try to get in a shield bash. */
+	/*Roll to hit. */
 	if (bash_chance <= randint0(200 + mon->race->level))
 		return false;
 
@@ -856,10 +856,13 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 
 	/* The player will sometimes stumble. */
 	if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
-		energy_lost = randint1(z_info->move_energy / 2) + z_info->move_energy / 4;
+		energy_lost = randint1(50) + 25;
 		/* Lose 26-75% of a turn due to stumbling after shield bash. */
-		p->upkeep->energy_use += energy_lost;
-		msgt(MSG_GENERIC, "You stumble! (%d%%)", energy_lost);/*DAVIDTODO*/
+		if (OPT(p, show_damage))
+			msgt(MSG_GENERIC, "You stumble! (%d%% of a turn lost)", energy_lost);
+		else
+			msgt(MSG_GENERIC, "You stumble!");
+		p->upkeep->energy_use += energy_lost * z_info->move_energy / 100;
 	}
 
 	return false;
@@ -885,9 +888,9 @@ void py_attack(struct player *p, struct loc grid)
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;
 
-	/* Reward rageaholics with 5% of max SPs, min 1 point */
-	if (player_has(p, PF_RAGE_FUEL)) {
-		s32b sp_gain = (s32b)(MAX(p->msp,20) << 16) / 20;
+	/* Reward rageaholics with 5% of max SPs, min 1/2 point */
+	if (player_has(p, PF_COMBAT_REGEN)) {
+		s32b sp_gain = (s32b)(MAX(p->msp,10) << 16) / 20;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 

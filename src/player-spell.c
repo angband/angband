@@ -423,7 +423,7 @@ s16b spell_chance(int spell_index)
 		chance += 15;
 	}
 
-	/* Amnesia doubles failure chance */
+	/* Amnesia makes spells very difficult */
 	if (player->timed[TMD_AMNESIA]) {
 		chance = 50 + chance / 2;
 	}
@@ -490,11 +490,6 @@ bool spell_cast(int spell_index, int dir)
 	/* Get the spell */
 	const struct class_spell *spell = spell_by_index(spell_index);
 
-	/* reward rageaholics with small HP recovery */
-	if (player_has(player, PF_RAGE_FUEL)) {
-		bg_mana_to_hp(player, spell->smana << 16);
-	}
-
 	/* Spell failure chance */
 	chance = spell_chance(spell_index);
 
@@ -508,6 +503,11 @@ bool spell_cast(int spell_index, int dir)
 					   beam, 0)) {
 			mem_free(ident);
 			return false;
+		}
+
+		/* reward rageaholics with small HP recovery */
+		if (player_has(player, PF_COMBAT_REGEN)) {
+			bg_mana_to_hp(player, spell->smana << 16);
 		}
 
 		/* A spell was cast */

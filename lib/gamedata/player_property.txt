@@ -112,9 +112,9 @@ name:Crowd Fighter
 desc:You gains advantage from fighting many monsters at once.
 
 type:player
-code:RAGE_FUEL
-name:Rage Fuel
-desc:You love combat and hate complacency
+code:COMBAT_REGEN
+name:Combat Regeneration
+desc:Battle fuels your spirit, but complacency dims it
 
  ## Other player flags
 

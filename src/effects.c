@@ -4858,16 +4858,17 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	}
 	target_get(&victim);
 	mon = target_get_monster();
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 
 	/* Look next to the monster */
 	for (d = first_d; d < first_d + 8; d++) {
 		grid = loc_sum(victim, ddgrid_ddd[d % 8]);
-		if (square_isempty(cave, grid)) break;
+		if (square_isopen(cave, grid) && square_isview(cave, grid)) break;
 	}
 
 	/* Needed to be adjacent */
 	if (d == first_d + 8) {
-		msg("The monster is shielded!");
+		msg("Not enough room next to %s!", m_name);
 		return false;
 	}
 
@@ -4878,9 +4879,14 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	monster_swap(player->grid, grid);
 
 	/* Now bite it */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
-	msg("You bite the %s.", m_name);
 	drain = MIN(mon->hp, amount);
+	if (drain == 0) return true;
+
+	if (OPT(player, show_damage)) {
+		msg("You bite the %s. (%d)", m_name, drain);
+	} else {
+		msg("You bite the %s.", m_name);
+	}
 	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
 
 	/* Heal and nourish */
@@ -4944,6 +4950,47 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 	dungeon_change_level(player, player->depth);
 	return true;
 }
+
+bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+/*	int type = context->subtype;
+	bool addons = (context->origin.what == SRC_PLAYER) && (context->other > 0);
+	int rad = context->radius + (addons ? player->lev / context->other : 0);
+*/
+	bool fear;
+	int taim;
+	struct loc target = loc(-1, -1);
+	struct loc grid = player->grid;
+
+
+/*	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL; */
+
+/* players only for now */
+	if (context->origin.what != SRC_PLAYER)
+		return false;
+
+	/* Ask for a target if no direction given */
+	if (context->dir == DIR_TARGET && target_okay()) {
+		target_get(&target);
+	} else {
+		target = loc_sum(player->grid, ddgrid[context->dir]);
+	}
+
+	if (!target_okay()) {return false;}
+
+	taim = distance(grid, target);
+	if (taim > 1) {
+		msgt(MSG_GENERIC, "Target too far away (%d).", taim);
+		return false;
+	}
+
+	while (blows-- > 0) {
+		if(py_attack_real(player, target, &fear)) {return true;}
+	}
+	return true;
+}
+
 
 
 /**
