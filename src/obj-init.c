@@ -173,7 +173,14 @@ static void write_curse_kinds(void)
 		struct curse *curse = &curses[i];
 		curse->obj->kind = curse_object_kind;
 		curse->obj->sval = sval;
-		curse->obj->known = object_new();
+		/*
+		 * Tolerate an already allocated known version:  restarting
+		 * without exiting and redoing the artifacts in
+		 * do_cmd_accept_character().
+		 */
+		if (! curse->obj->known) {
+			curse->obj->known = object_new();
+		}
 		curse->obj->known->kind = curse_object_kind;
 		curses[i].obj->known->sval = sval;
 	}

@@ -976,8 +976,10 @@ bool project(struct source origin, int rad, struct loc finish,
 			if (project_p(origin, distance_to_grid[i], blast_grid[i],
 						  dam_at_dist[distance_to_grid[i]], typ, power)) {
 				notice = true;
-				if (player->is_dead)
+				if (player->is_dead) {
+					free(dam_at_dist);
 					return notice;
+				}
 				break;
 			}
 		}

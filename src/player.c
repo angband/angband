@@ -385,6 +385,47 @@ void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_s
 
 
 /**
+ * Release resources allocated for fields in the player structure.
+ */
+void player_cleanup_members(struct player *p)
+{
+	/* Free the history */
+	history_clear(player);
+
+	/* Free the things that are always initialised */
+	object_free(player->obj_k);
+	mem_free(player->timed);
+	mem_free(player->upkeep->quiver);
+	mem_free(player->upkeep->inven);
+	mem_free(player->upkeep);
+	player->upkeep = NULL;
+
+	/* Free the things that are only sometimes initialised */
+	if (player->quests) {
+		player_quests_free(player);
+	}
+	if (player->spell_flags) {
+		player_spells_free(player);
+	}
+	if (player->gear) {
+		object_pile_free(player->gear);
+		object_pile_free(player->gear_k);
+	}
+	if (player->body.slots) {
+		for (int i = 0; i < player->body.count; i++)
+			string_free(player->body.slots[i].name);
+		mem_free(player->body.slots);
+	}
+	string_free(player->body.name);
+	string_free(player->history);
+	if (player->cave) {
+		cave_free(player->cave);
+		player->cave = NULL;
+	}
+}
+
+
+/**
  * Initialise player struct
  */
 static void init_player(void) {
@@ -409,43 +450,9 @@ static void init_player(void) {
  * Free player struct
  */
 static void cleanup_player(void) {
-	int i;
-
 	if (!player) return;
 
-	/* Free the history */
-	history_clear(player);
-
-	/* Free the things that are always initialised */
-	object_free(player->obj_k);
-	mem_free(player->timed);
-	mem_free(player->upkeep->quiver);
-	mem_free(player->upkeep->inven);
-	mem_free(player->upkeep);
-	player->upkeep = NULL;
-
-	/* Free the things that are only sometimes initialised */
-	if (player->quests) {
-		player_quests_free(player);
-	}
-	if (player->spell_flags) {
-		player_spells_free(player);
-	}
-	if (player->gear) {
-		object_pile_free(player->gear);
-		object_pile_free(player->gear_k);
-	}
-	if (player->body.slots) {
-		for (i = 0; i < player->body.count; i++)
-			string_free(player->body.slots[i].name);
-		mem_free(player->body.slots);
-	}
-	string_free(player->body.name);
-	string_free(player->history);
-	if (player->cave) {
-		cave_free(player->cave);
-		player->cave = NULL;
-	}
+	player_cleanup_members(player);
 
 	/* Free the basic player struct */
 	mem_free(player);

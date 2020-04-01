@@ -1634,6 +1634,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu_select(menu, 0, false);
 
 	/* Free memory */
+	mem_free(menu);
 	mem_free(choices);
 
 	/* Load screen */
