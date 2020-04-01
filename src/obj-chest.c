@@ -565,8 +565,10 @@ static void chest_trap(struct object *obj)
 			if (trap->msg) {
 				msg(trap->msg);
 			}
-			effect_do(trap->effect, source_chest_trap(trap), obj, &ident, false,
-					  0, 0, 0);
+			if (trap->effect) {
+				effect_do(trap->effect, source_chest_trap(trap), obj, &ident,
+						  false, 0, 0, 0);
+			}
 		}
 	}
 }
