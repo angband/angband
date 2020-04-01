@@ -390,37 +390,41 @@ void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_s
 void player_cleanup_members(struct player *p)
 {
 	/* Free the history */
-	history_clear(player);
+	history_clear(p);
 
 	/* Free the things that are always initialised */
-	object_free(player->obj_k);
-	mem_free(player->timed);
-	mem_free(player->upkeep->quiver);
-	mem_free(player->upkeep->inven);
-	mem_free(player->upkeep);
-	player->upkeep = NULL;
+	if (p->obj_k) {
+		object_free(p->obj_k);
+	}
+	mem_free(p->timed);
+	if (p->upkeep) {
+		mem_free(p->upkeep->quiver);
+		mem_free(p->upkeep->inven);
+		mem_free(p->upkeep);
+		p->upkeep = NULL;
+	}
 
 	/* Free the things that are only sometimes initialised */
-	if (player->quests) {
-		player_quests_free(player);
+	if (p->quests) {
+		player_quests_free(p);
 	}
-	if (player->spell_flags) {
-		player_spells_free(player);
+	if (p->spell_flags) {
+		player_spells_free(p);
 	}
-	if (player->gear) {
-		object_pile_free(player->gear);
-		object_pile_free(player->gear_k);
+	if (p->gear) {
+		object_pile_free(p->gear);
+		object_pile_free(p->gear_k);
 	}
-	if (player->body.slots) {
-		for (int i = 0; i < player->body.count; i++)
-			string_free(player->body.slots[i].name);
-		mem_free(player->body.slots);
+	if (p->body.slots) {
+		for (int i = 0; i < p->body.count; i++)
+			string_free(p->body.slots[i].name);
+		mem_free(p->body.slots);
 	}
-	string_free(player->body.name);
-	string_free(player->history);
-	if (player->cave) {
-		cave_free(player->cave);
-		player->cave = NULL;
+	string_free(p->body.name);
+	string_free(p->history);
+	if (p->cave) {
+		cave_free(p->cave);
+		p->cave = NULL;
 	}
 }
 
