@@ -394,7 +394,7 @@ void player_regen_mana(struct player *p)
 	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
-	/* Rageaholics regen as the rage melts away, double bonus over casting */
+	/* Rageaholics regen as the rage melts away, at double the rate vs casting */
 	if (sp_gain < 0  && player_has(p, PF_COMBAT_REGEN)) {
 		bg_mana_to_hp(p, -sp_gain << 2);
 	}
@@ -501,7 +501,7 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 		sp_gain = new_csp_long - old_csp_long;
 	}
 
-/*	if (sp_gain == 0) {}
+/*DAVIDTODO	if (sp_gain == 0) {}
 	else if (sp_gain > 2 << 17) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp - old_csp_short);}
 	else                        {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);} */
 	return sp_gain;

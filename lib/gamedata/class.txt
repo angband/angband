@@ -1583,7 +1583,8 @@ player-flags:COMBAT_REGEN | SHIELD_BASH
 #round of melee blows (min 0.5 SP) and 1% of SP per 1% HP lost.
 #HP recovery when MP spent 1% of damage for 2% of max MP
 #This amounts to a 25% rebate on damage, if on average you're at 50% HP
-#There's a 50% bonus if not spent but degenerated, if you can wait that long!
+#There's a 2x bonus if not spent but degenerated, if you can wait that long!
+#This is a 50% rebate, and is probably too much.
 #FCPB sp gain for Rage Mage sp = dam*(mhp*3/2 - chp)/mhp [min 1]
 #ranges from 1.5x at near death to 0.5x at full health. BG way less.
 #FCPB sp loss per turn csp/8 + lev/10 + 1 very fast in practice
@@ -1754,7 +1755,7 @@ desc: turns). Monsters that resist fear are not affected.
 #256 of 623 have IM_POIS. 133 from 13 base types, 123 individual or both.
 #compare Paladin's spell:Smite Evil:25:20:70:40 dur 20+d20, 2x slay
 #compare Paladin's spell:Demon Bane:30:40:80:150 dur 20+d20, 5x slay
-#this is a x3 brand.
+#this is a x3 brand. 20 SP is pretty high. Need foresight to start w/20 SP.
 #4.2.0Poison Brand:20:30:40:90
 spell:Venom:24:20:40:30
 effect:TIMED_INC:ATT_POIS:0:5
@@ -1762,6 +1763,9 @@ dice:20+d20
 desc:Coats all your melee weapons with poison for 20+d20 turns.
 
 #Orig:Taunt:24:10:40:150 but in dungeon book
+#decreases likelihood of casting when fleeing as well.
+#When taunted mon->min_range is set, but best_range remains unchanged.
+#When feared & taunted min_range=flee_range. When only taunted min_range=1.
 spell:Provoke:28:10:35:20
 effect:TIMED_INC:TAUNT
 dice:10+d10
