@@ -1098,19 +1098,23 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 {
 	int dir = *dp;
 
-	if (p->timed[TMD_CONFUSED])
-		if ((dir == 5) || (randint0(100) < 75))
+	if (p->timed[TMD_CONFUSED]) {
+		if ((dir == 5) || (randint0(100) < 75)) {
 			/* Random direction */
 			dir = ddd[randint0(8)];
+		}
+
+	/* Running attempts always fail */
+	if (too) {
+		msg("You are too confused.");
+		return true;
+	}
 
 	if (*dp != dir) {
-		if (too)
-			msg("You are too confused.");
-		else
-			msg("You are confused.");
-
+		msg("You are confused.");
 		*dp = dir;
 		return true;
+	}
 	}
 
 	return false;
