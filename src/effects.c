@@ -98,6 +98,13 @@ static const char *desc_stat(int stat, bool positive)
 	return prop->neg_adj;
 }
 
+/* Can mult these by 45 deg or 1.5 o'clock e.g. [6] -> 270 deg or 9 o'clock */
+const s16b clockwise_ddd[9] =
+{ 8, 9, 6, 3, 2, 1, 4, 7, 5 };
+
+const struct loc clockwise_grid[9] =
+{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, 0}};
+
 
 int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
@@ -610,6 +617,7 @@ static bool item_tester_hook_bolt(const struct object *obj)
 {
 	return obj->tval == TV_BOLT;
 }
+
 
 /**
  * ------------------------------------------------------------------------
@@ -4906,6 +4914,71 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 }
 
 /**
+ * Move up to 4 spaces then do melee blows.
+ * Could vary the length of the move without much work.
+ */
+bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+	int moves = 4;
+	int d, i;
+	struct loc target;
+	struct loc next_grid, grid_diff;
+	bool fear;
+
+	/* Ask for a target */
+	if ((context->dir == DIR_TARGET) && target_okay()) {
+		target_get(&target);
+	}
+
+/* DAVIDTODO should only target known/visible? */
+	if (square_monster(cave, target) == NULL) {
+		msg("This spell must target a monster.");
+		return false;
+	}
+
+	while (distance(player->grid, target) > 1 && moves > 0) {
+		grid_diff = loc_diff(target, player->grid);
+
+		/* Choice of direction simplified by prioritizing diagnals */
+		if (grid_diff.x == 0)
+			d = (grid_diff.y < 0) ? 0 : 4; /* up : down */
+		else if (grid_diff.y == 0)
+			d = (grid_diff.x < 0) ? 6 : 2; /* left : right */
+		else if (grid_diff.x < 0)
+			d = (grid_diff.y < 0) ? 7 : 5; /* up-left : down-left */
+		else /* grid_diff.x > 0 */
+			d = (grid_diff.y < 0) ? 1 : 3; /* up-right : down-right */
+
+		/* we'll give up to 3 choices: d, d+1, d-1 */
+		for (i=0; i<3; i++) {
+			if (i==2) d -= 4;
+			d = (d + i) % 8;
+			next_grid = loc_sum(player->grid, clockwise_grid[d]);
+			if (square_ispassable(cave, next_grid))
+				break;
+			else if (i == 2) {
+				msg("The way is barred.");
+				return moves != 4;
+			}
+		}
+
+		move_player(clockwise_ddd[d], false);
+		moves--;
+	}
+
+	/* reduce blows based on distance traveled, round to nearest blow */
+	blows = (blows * moves + 2) / 4;
+
+	/* DAVIDTODO should return some energy if monster dies early */
+	while (blows-- > 0) {
+		if(py_attack_real(player, target, &fear)) {break;}
+	}
+
+	return true;
+}
+
+/**
  * Enter single combat with an enemy
  */
 bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
@@ -4954,17 +5027,10 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 {
 	int blows = effect_calculate_value(context, false);
-/*	int type = context->subtype;
-	bool addons = (context->origin.what == SRC_PLAYER) && (context->other > 0);
-	int rad = context->radius + (addons ? player->lev / context->other : 0);
-*/
 	bool fear;
 	int taim;
 	struct loc target = loc(-1, -1);
 	struct loc grid = player->grid;
-
-
-/*	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL; */
 
 /* players only for now */
 	if (context->origin.what != SRC_PLAYER)
@@ -4988,6 +5054,32 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 	while (blows-- > 0) {
 		if(py_attack_real(player, target, &fear)) {return true;}
 	}
+	return true;
+}
+
+bool effect_handler_SWEEP(effect_handler_context_t *context)
+{
+	int blows = effect_calculate_value(context, false);
+	/* msgt(MSG_GENERIC, "Blows %d", blows); */
+	bool fear;
+	int i;
+	struct loc target;
+
+/* players only for now */
+	if (context->origin.what != SRC_PLAYER)
+		return false;
+
+	/* doing these like >1 blows means spinning around multiple times. */
+	while (blows-- > 0) {
+		for (i=0; i<8; i++) {
+			target = loc_sum(player->grid, clockwise_grid[i]);
+			/* msgt(MSG_GENERIC, "Looking at (%d,%d)", target.x, target.y); */
+			if (square_monster(cave, target) != NULL)
+				py_attack_real(player, target, &fear);
+		}
+		/* msgt(MSG_GENERIC, "Blows %d", blows); */
+	}
+	/* DAVIDTODO return some energy if all enemies killed and blows remain?? */
 	return true;
 }
 

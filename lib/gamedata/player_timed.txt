@@ -225,7 +225,7 @@ on-increase:You feel more resistant to confusion!
 name:FREE_ACT
 desc:free action
 grade:G:10000:FrAct:Your limbs fill with energy!
-on-end:The energy drains from your limbs.
+on-end:Your limbs return to normal.
 on-increase:Your limbs feel more energetic!
 
 name:AMNESIA

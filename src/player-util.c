@@ -174,7 +174,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Hurt the player */
 	p->chp -= dam;
 
-	/* Reward rageaholics with SPs for their lost HPs
+	/* Reward BGs with SPs for their lost HPs
 	 * Unenviable task of separating what should and should not cause rage
 	 * If we eliminate the most exploitable cases it should be fine.
 	 * All traps currently give SPs, which could be exploitable  */
@@ -190,12 +190,17 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 	/* Dead player */
 	if (p->chp < 0) {
-		/* Allow cheating */
-		if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
+		/* From hell's heart I stab at thee */
+		if (p->chp + p->timed[TMD_BLOODLUST] + p->lev >= 0) {
+			if (turn % 10)
+				msg("Your lust for blood keeps you alive!");
+			else {
+				msg("So great was his prowess and skill in warfare, the Elves said: ");
+				msg("'The Mormegil cannot be slain, save by mischance.'");
+			}
+			/* Allow cheating */
+		} else if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
-		} else if (p->chp + p->timed[TMD_BLOODLUST] >= 0) {
-			/* Benefit of extreme bloodlust */
-			msg("Your lust for blood keeps you alive!");
 		} else {
 			/* Hack -- Note death */
 			msgt(MSG_DEATH, "You die.");
@@ -311,12 +316,12 @@ s16b modify_stat_value(int value, int amount)
 }
 
 /**
-* Regenerate one turn's worth of hit points DAVIDTODO:is it one turn tho?
+* Regenerate one turn's worth of hit points
  */
 void player_regen_hp(struct player *p)
 {
 	s32b hp_gain;
-	int percent = 0;/* max 32k = 50% of mhp; more accurately "pertwobytes" */
+	int percent = 0;/* max 32k -> 50% of mhp; more accurately "pertwobytes" */
 	int fed_pct, old_chp = p->chp;
 
 	/* Default regeneration */
@@ -394,7 +399,7 @@ void player_regen_mana(struct player *p)
 	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
-	/* Rageaholics regen as the rage melts away, at double the rate vs casting */
+	/* SP degen heals BGs at double efficiency vs casting */
 	if (sp_gain < 0  && player_has(p, PF_COMBAT_REGEN)) {
 		bg_mana_to_hp(p, -sp_gain << 2);
 	}
@@ -435,18 +440,9 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 	}
 
 	num = p->chp - old_chp;
-
-	/*from effects.c Should these be judged as a % of mhp?*/
-	if (num < 5) {/*msgt(MSG_GENERIC, "Gained %d%% of a HP", hp_gain/655);*/}
-	else if (num < 15)
-		msg("You feel better.");
-	else if (num < 35)
-		msg("You feel much better.");
-	else
-		msg("You feel very good.");
-
 	if (num == 0)
 		return;
+
 	p->upkeep->redraw |= (PR_HP);
 
 }
@@ -508,7 +504,7 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 }
 
 void bg_mana_to_hp(struct player *p, s32b sp_long) {
-	/* msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp_long); */
+	/* msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp_long); DAVIDTODO */
 	if (sp_long <= 0 || p->msp == 0 || p->mhp == p->chp) return;
 
 	s32b hp_gain, sp_ratio;
@@ -520,14 +516,13 @@ void bg_mana_to_hp(struct player *p, s32b sp_long) {
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
 	/* Gain stays low at msp<10 because MP gains are generous at msp<10 */
 	/* sp_ratio is max sp to spent sp, doubled to suit target rate. */
-	sp_ratio = (s32b)(MAX(10, p->msp) << 16) * 2 / sp_long;
+	sp_ratio = (MAX(10, (s32b)p->msp) << 16) * 2 / sp_long;
 	/* msgt(MSG_GENERIC, "sp_ratio %d", sp_ratio); */
 
-	/* don't crash if somehow sp spent > 2 * max sp, enforce max 50% damage */
-	if (sp_ratio < 2) {sp_ratio = 2;}
+	/* limit max healing to 25% of dam; ergo spending > 50% msp is inefficient */
+	if (sp_ratio < 4) {sp_ratio = 4;}
 	hp_gain /= sp_ratio;
 
-	/* msgt(MSG_GENERIC, "Final gain %d", hp_gain); */
 	player_adjust_hp_precise(p, hp_gain);
 }
 
@@ -1253,8 +1248,8 @@ void player_resting_complete_special(struct player *p)
 			disturb(p, 0);
 	} else if (p->upkeep->resting == REST_ALL_POINTS) {
 		if ((p->chp == p->mhp) && (p->csp == p->msp))
-		/* Stop resting */
-		disturb(p, 0);
+			/* Stop resting */
+			disturb(p, 0);
 	} else if (p->upkeep->resting == REST_SOME_POINTS) {
 		if ((p->chp == p->mhp) || (p->csp == p->msp))
 			/* Stop resting */

@@ -114,7 +114,13 @@ desc:You gains advantage from fighting many monsters at once.
 type:player
 code:COMBAT_REGEN
 name:Combat Regeneration
-desc:Battle fuels your spirit, but complacency dims it
+desc:Battle fuels your spirit, but complacency dims it.
+#desc:Battle fuels your spirit, but complacency dims it. This class *loses* SP at
+#desc: half the rate others gain it, and gains HP at only half the normal rate.
+#desc: But it gains SP when damaged by a monster, or when attacking in
+#desc: melee. And this class regains small amounts of HP every time it casts a
+#desc: spell, and unspent SP regenerate HP at double efficiency. These more
+#desc: damaged the character is, the bigger these HP gains will be.
 
  ## Other player flags
 

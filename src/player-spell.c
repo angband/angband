@@ -505,7 +505,7 @@ bool spell_cast(int spell_index, int dir)
 			return false;
 		}
 
-		/* reward rageaholics with small HP recovery */
+		/* Reward BGs with small HP recovery */
 		if (player_has(player, PF_COMBAT_REGEN)) {
 			bg_mana_to_hp(player, spell->smana << 16);
 		}

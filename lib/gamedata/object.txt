@@ -2199,12 +2199,12 @@ armor:0:-8+4d3
 name:Open Wounds
 type:ring
 graphics:=:d
-level:0
+level:10
 weight:2
 cost:700
 alloc:20:10 to 50
 flags:IMPAIR_HP | EASY_KNOW
-power:12
+power:26
 effect:HEAL_HP
 dice:40
 effect:CURE:BLIND

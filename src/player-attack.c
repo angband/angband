@@ -879,7 +879,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 void py_attack(struct player *p, struct loc grid)
 {
 	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	bool stop = false, fear = false;
+	bool slain = false, fear = false;
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
@@ -888,9 +888,9 @@ void py_attack(struct player *p, struct loc grid)
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;
 
-	/* Reward rageaholics with 5% of max SPs, min 1/2 point */
+	/* Reward BGs with 5% of max SPs, min 1/2 point */
 	if (player_has(p, PF_COMBAT_REGEN)) {
-		s32b sp_gain = (s32b)(MAX(p->msp,10) << 16) / 20;
+		s32b sp_gain = (s32b)(MAX(p->msp, 10) << 16) / 20;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
@@ -901,12 +901,12 @@ void py_attack(struct player *p, struct loc grid)
 		if (attempt_shield_bash(p, mon, &fear)) return;
 	}
 
-	/* Attack until energy runs out, energy expended approaches
-	 * z_info->move_energy or enemy dies. We limit energy use
+	/* Attack until the next attack would exceed energy available or a full turn
+	 * or until the enemy dies. We limit energy use
 	 * to avoid giving monsters a possible double move. */
 	while (MIN(p->energy, z_info->move_energy) - p->upkeep->energy_use
-		>= blow_energy && !stop) {
-		stop = py_attack_real(p, grid, &fear);
+		>= blow_energy && !slain) {
+		slain = py_attack_real(p, grid, &fear);
 		p->upkeep->energy_use += blow_energy;
 	}
 
