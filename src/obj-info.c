@@ -2106,6 +2106,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	struct object_kind *kind = NULL;
 	struct object obj = OBJECT_NULL, known_obj = OBJECT_NULL;
 	size_t i;
+	textblock *result;
 
 	for (i = 0; i < z_info->k_max; i++) {
 		kind = &k_info[i];
@@ -2124,7 +2125,10 @@ textblock *object_info_ego(struct ego_item *ego)
 	object_copy(&known_obj, &obj);
 	obj.known = &known_obj;
 
-	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
+	result = object_info_out(&obj, OINFO_NONE | OINFO_EGO);
+	object_wipe(&known_obj);
+	object_wipe(&obj);
+	return result;
 }
 
 
