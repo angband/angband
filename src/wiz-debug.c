@@ -985,7 +985,9 @@ static void wiz_reroll_item(struct object *obj)
 	/* Get new copy, hack off slays and brands */
 	new = mem_zalloc(sizeof(*new));
 	object_copy(new, obj);
+	mem_free(new->slays);
 	new->slays = NULL;
+	mem_free(new->brands);
 	new->brands = NULL;
 
 	/* Main loop. Ask for magification and artifactification */
@@ -1056,6 +1058,7 @@ static void wiz_reroll_item(struct object *obj)
 	}
 
 	/* Free the copy */
+	object_wipe(new);
 	mem_free(new);
 }
 
