@@ -214,7 +214,7 @@ Within The Dungeon
 ==================
 
 Once your character is adequately supplied with food, light, armor, and
-weapons, they is ready to enter the dungeon. Move on top of the ``>`` symbol
+weapons, they are ready to enter the dungeon. Move on top of the ``>`` symbol
 and use the "Down" command (``>``).
 
 Your character will enter a maze of interconnecting staircases and finally
@@ -448,15 +448,19 @@ upon entering a dungeon giving you a general feel of how dangerous that
 level is.
 
 The possible messages are :
-1 - "This seems a quiet, peaceful place" 
-2 - "This seems a tame, sheltered place", 
-3 - "This place seems reasonably safe",   
-4 - "This place does not seem too risky", 
-5 - "You feel nervous about this place",  
-6 - "You feel anxious about this place",  
-7 - "This place seems terribly dangerous",
-8 - "This place seems murderous",
-9 - "Omens of death haunt this place",
+
+===   ========================================= 
+ 1    "This seems a quiet, peaceful place"
+ 2    "This seems a tame, sheltered place"
+ 3    "This place seems reasonably safe"  
+ 4    "This place does not seem too risky"
+ 5    "You feel nervous about this place"
+ 6    "You feel anxious about this place"
+ 7    "This place seems terribly dangerous"
+ 8    "This place seems murderous"
+ 9    "Omens of death haunt this place"
+===   ========================================= 
+
 This feeling depends only on the monsters present in the dungeon when you
 first enter it. It will not get reduced to safer feeling as you kill 
 monsters neither will it increase if new ones are summoned.
@@ -469,16 +473,20 @@ get a feeling about how good are the objects lying on the floor of the
 dungeon.
 
 The possible messages are :
-1 - "there is naught but cobwebs here."
-2 - "there are only scraps of junk here.",
-3 - "there aren't many treasures here.",  
-4 - "there may not be much interesting here.",
-5 - "there may be something worthwhile here.",
-6 - "there are good treasures here.",
-7 - "there are very good treasures here.",
-8 - "there are excellent treasures here.",
-9 - "there are superb treasures here.",   
-$ - "you sense an item of wondrous power!",
+
+===   ========================================= 
+ 1    "there is naught but cobwebs here."
+ 2    "there are only scraps of junk here."
+ 3    "there aren't many treasures here." 
+ 4    "there may not be much interesting here."
+ 5    "there may be something worthwhile here."
+ 6    "there are good treasures here."
+ 7    "there are very good treasures here."
+ 8    "there are excellent treasures here."
+ 9    "there are superb treasures here." 
+ $    "you sense an item of wondrous power!"
+===   ========================================= 
+
 The last message indicates an artifact is present and is only possible
 if the preserve option is disabled.
 

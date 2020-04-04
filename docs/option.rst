@@ -73,7 +73,7 @@ Show walls as solid blocks ``solid_walls``
 
 Show walls with shaded backgrounds ``hybrid_walls``
   Walls appear as # and % symbols overlaid on a gray background block.  
-  This overrides ``solid_walls]``
+  This overrides ``solid_walls``
 
 Color: Illuminate torchlight in yellow ``view_yellow_light``
   This option causes special colors to be used for "torch-lit" grids.
@@ -86,7 +86,7 @@ Color: Shimmer multi-colored things ``animate_flicker``
 Center map continuously ``center_player``
   The map always centres on the player with this option on. With it off, it
   is divided into 25 sections, with coordinates (0,0) to (4,4), and will
-  how one section at a time - the display will "flip" to the next section
+  show one section at a time - the display will "flip" to the next section
   when the player nears the edge.
 
 Color: Show unique monsters in purple ``purple_uniques``
@@ -266,7 +266,7 @@ Display overhead view
   Display an overhead view of the entire dungeon level.
 
 Display monster recall
-  Display a description of the most monster which has been most recently
+  Display a description of the monster which has been most recently
   attacked, targeted, or examined in some way.
 
 Display object recall
@@ -278,7 +278,8 @@ Display monster list
   Display a list of monsters you know about and their distance from you.
 
 Display status
-  ???
+  Display the current status of the player, with permanent or temporary boosts,
+  resistances and status ailments (also available on the main window).
 
 Display item list
   Display a list of items you know about and their distance from you.

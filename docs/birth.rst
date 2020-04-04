@@ -318,7 +318,7 @@ Necromancer
 Paladin
   A Paladin is a warrior/priest. Paladins are very good fighters, second
   only to the warrior class, but not very good at missile weapons. They
-  receive prayers at a slower pace then the priest, but can use all but the
+  receive prayers at a slower pace than the priest, but can use all but the
   most powerful prayers. A paladin lacks much in the way of abilities.
   Paladins have poor stealth, perception, searching, and magical device use.
   They have a decent saving throw due to their divine alliance. Their
@@ -442,7 +442,7 @@ Fighting
   Normally a character gets a single blow from any weapon, but with
   high enough dexterity and strength may receive more blows with
   lighter weapons. Strength and dexterity both modify the ability to hit an
-  opponent. This kill increases with the level of the character. Inspecting
+  opponent. This skill increases with the level of the character. Inspecting
   a weapon will show you how quickly you can attack with it.
  
 Shooting Ability
@@ -466,7 +466,7 @@ Stealth
   stealth can usually surprise their opponents, gaining the first blow.
   Also, creatures may fail to notice a stealthy character entirely,
   allowing a player to avoid certain fights. This skill is based upon race 
-  and class, but can me magically enhanced.
+  and class, but can be magically enhanced.
  
 Disarming
   Disarming is the ability to remove traps safely, and also includes
@@ -493,10 +493,9 @@ Stat Bonus Tables
 
 Stats, hit dice, infravision and experience point modifications due to 
 race and class are listed in the following table.  To get the total hit 
-dice and XP modifier, add the "race" and "class" numbers: for instance, 
-a Dwarf Priest has a hit die of 11+2=13 (i.e. they will get 1d13 hit 
-points per level, adjusted for constitution) and an XP modifier of 
-20+20=40%.
+dice, add the "race" and "class" numbers: for instance, a Dwarf Priest
+has a hit die of 11+2=13 (i.e. they will get 1d13 hit points per level,
+adjusted for constitution).
 
 ================ ===  ===  ===  ===  ===  =========  ========  ====== 
       Race       STR  INT  WIS  DEX  CON  HD (base)  XP/level  Infra
@@ -513,6 +512,7 @@ points per level, adjusted for constitution) and an XP modifier of
       High-Elf    +1   +3   -1   +3   +1      10        145%   40'
       Kobold      -1   -1    0   +2   +2       8        120%   50'
 ================ ===  ===  ===  ===  ===  =========  ========  ======
+
 
 ================ ===  ===  ===  ===  ===  ==========
       Class      STR  INT  WIS  DEX  CON  HD (bonus)
@@ -546,6 +546,7 @@ Ability Tables
   High-Elf      4        4       20      20       2      10      10      25
   Kobold       10       10        5       0       3      10      -5      10
 ============ =======  =======  ======  =====  =======  ======  ======  =====
+
 
 ==========   ======= ======= ======= ======= ======= =======  ======= =======
  Class       DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows 

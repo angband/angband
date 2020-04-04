@@ -9,7 +9,7 @@ probably die rather quickly, but the following will make much more sense to you
 if you have just a little actual gameplay experience.
 
 This guide was written for Angband 3.5.0, and is now a little out of date
-(particularly the sections on identifying and collecting items).  It is still
+(although the worst of the obsolete stuff has been cleaned out).  It is still
 a handy source of hints and advice; just don't take it as an authority.
 
 The basics
@@ -174,10 +174,9 @@ The first trip
 ``````````````
 
 It's quite possible to get to 500' (dl 10) or deeper in the first trip into the
-dungeon. Plan to return when either you have enough stuff that your character
-will be significantly more powerful after reselling it, or if you run out of
-either escapes (?Phase door), protection from side-effects (curing potions), or
-damage (arrows if you are a ranger, flasks of oil if you are otherwise weak.)
+dungeon. Plan to return when you run out of either escapes (?Phase door),
+protection from side-effects (curing potions), or damage (arrows if you are a
+ranger, flasks of oil if you are otherwise weak.)
 
 Since you don't have much, don't spend it on less valuable monsters.
 
@@ -296,29 +295,25 @@ Common fallacy: you find an incredibly powerful Staff of Mighty BOOM! (3
 charges), or a single Potion of become Chuck Norris, and then you keep
 carrying it around and never actually use it. It could be a life insurance,
 but you might still reconsider your strategy: maybe you've become too careful
-lately (Angband rewards deliberate risk-taking, after all). Or maybe you
-should just sell the thing and invest the money into something you do use.
+lately (Angband rewards deliberate risk-taking, after all).
 
 Identifying your items
 ``````````````````````
 
-Most items found will initially be unidentified. Characters able to pray or
-cast spells will later develop the ability to identify items. Starting out, a
-stack of Scrolls of Identify or a Staff of Identify will allow these items to
-be identified. In the early stages of the game these are expensive, so it may
-be more cost effective to sell the items in the town until you can afford to
-regularly purchase scrolls or staves. Weapons and armour can be identified by
-being worn and used in combat, and most can be removed if found to be of poor
-quality.
+Many items found, especially early in the game, will unidentified or partially
+identified. Weapons and armour can be identified by being worn and used in
+combat, and can be removed if found to be of poor quality. Some characters
+learn to cast spells to identify the runes on wearable items that define their
+properties. 
 
 Staves, rods and wands can often be identified by being used against monsters,
 but be aware that some of these magical items can have negative effects. Only
 use this approach when facing easily defeated monsters. Consuming unidentified
-potions and mushrooms is very risky, so it's best to either identify them
-yourself or sell them in the town. Ammunition can normally be identified by
-being thrown or fired at a monster, and typically the worst thing that can
-happen is that the attack does little damage to the monster. As with staves,
-wands and rods, do this when facing a monster than can be easily defeated.
+potions and mushrooms can be risky, so the risk-averse player may prefer to
+sell them in the town. Ammunition can normally be identified by being thrown
+or fired at a monster, and typically the worst thing that can happen is that
+the attack does little damage to the monster. As with staves, wands and rods,
+do this when facing a monster than can be easily defeated.
 
 Scrolls can normally be identified by being read, but some scrolls have
 negative effects. Your character may have a very short life if they read a
@@ -326,9 +321,8 @@ scroll that summons a horde of undead monsters. If using this approach, it's a
 good idea to position your character on top of some stairs so you can quickly
 escape if a mysterious scroll leaves your character surrounded by monsters.
 
-With weapons and armour, your character may in time be able to roughly gauge
-the value of an item by keeping it in their bag while they explore the
-dungeons.
+With weapons and armour, your character will in time learn their inscribed
+runes.
 
 The dungeon is dark
 ```````````````````
@@ -420,7 +414,7 @@ objects -- but still, the dungeon level is the most important factor. What was
 Regarding Artifacts
 ```````````````````
 
-For every single item, there is a 1 in 1000 chance that it will be an
+For every single wearable item, there is a small chance that it will be an
 artifact. This might seem slim, but considering the number of monsters you
 will slay, it soon adds up. If you work through a large room full of orcs,
 there's about a one-in-ten chance that you'll discover at least one artifact
@@ -445,8 +439,8 @@ paying diligent attention.
 
 While playing, always make sure to check for the basics -- particularly
 monsters, stairs, and traps. Don't loose a character, asserting that you can
-kill a "C" easily only to discover that a "Jackal" is a far cry from a
-"Hellhound".
+kill a "C" easily only to discover that a "wild dog" is a far cry from a
+"hellhound".
 
 Similarly, if you just got some nice artifacts / other equipment or achieved a
 significant accomplishment -- save your game and take a break. You don't have
@@ -503,21 +497,16 @@ Item Collecting
 Its easy to stockpile, but you'll run out of space VERY quickly. Further, what
 was useful may not be useful now and what's useful now may not be useful
 later. It can be easy to try to grab everything in sight and then return to
-town when your inventory is full to liquidate everything; however, when you
-reach this point, try continuing to dive, even with a full inventory.
+town when your inventory is full; however, when youreach this point, try
+continuing to dive, even with a full inventory.
 
-Inventory full of standard items and found a {magical} one? Toss a standard
-one and pick it up. Got a lot of {magical} and found an {ego} item? Toss a
-{magical} one. As your character progresses and you continue to dive you will
-find better classes of items. If you can differentiate even by pseudo-ID,
-don't be afraid to toss the less valuable stuff to make room, so you can
-continue diving.
+As your character progresses and you continue to dive you will find better
+classes of items. Don't be afraid to toss the less valuable stuff to make room,
+so you can continue diving.
 
 This is particularly important while diving. If you let a full inventory be a
 limiting factor, you won't be able to get nearly as deep as if you are willing
-to discard items along the way -- even if they would have fetched a decent
-price. Remember, {magic} is usually worth still more than standard, and {ego}
-is usually worth more than {magic}...
+to discard items along the way.
 
 Take a Break
 ````````````
