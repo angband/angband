@@ -338,8 +338,12 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 		lore->sleep_known = true;
 
 	/* Spellcasting frequency */
-	if ((lore->cast_innate + lore->cast_spell > 100) || lore->all_known)
+	if (lore->cast_innate > 50 || lore->all_known) {
+		lore->innate_freq_known = true;
+	}
+	if (lore->cast_spell > 50 || lore->all_known) {
 		lore->spell_freq_known = true;
+	}
 
 	/* Flags for probing and cheating */
 	if (lore->all_known) {
@@ -1419,10 +1423,9 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
+	bool innate = false;
 	bool breath = false;
-	bool magic = false;
 	const char *initial_pronoun;
 	bool know_hp;
 	bitflag current_flags[RSF_SIZE], test_flags[RSF_SIZE];
@@ -1443,32 +1446,53 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	rsf_diff(current_flags, test_flags);
 	if (!rsf_is_empty(current_flags)) {
 		textblock_append(tb, "%s may ", initial_pronoun);
-		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", ".  ");
+		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
+		innate = true;
 	}
 
 	/* Collect breaths */
 	create_mon_spell_mask(current_flags, RST_BREATH, RST_NONE);
 	rsf_inter(current_flags, lore->spell_flags);
 	if (!rsf_is_empty(current_flags)) {
-		textblock_append(tb, "%s may ", initial_pronoun);
+		if (innate) {
+			textblock_append(tb, ", and may ");
+		} else {
+			textblock_append(tb, "%s may ", initial_pronoun);
+		}
 		textblock_append_c(tb, COLOUR_L_RED, "breathe ");
 		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
 		breath = true;
 	}
 
+	/* End the sentence about innate spells and breaths */
+	if (innate || breath) {
+		if (lore->innate_freq_known) {
+			/* Describe the spell frequency */
+			textblock_append(tb, "; ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / race->freq_innate);
+		} else if (lore->cast_innate) {
+			/* Guess at the frequency */
+			int approx_frequency = ((race->freq_innate + 9) / 10) * 10;
+			textblock_append(tb, "; about ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / approx_frequency);
+		}
+
+		textblock_append(tb, ".  ");
+	}
 
 	/* Collect spell information */
 	rsf_copy(current_flags, lore->spell_flags);
 	create_mon_spell_mask(test_flags, RST_BREATH, RST_INNATE, RST_NONE);
 	rsf_diff(current_flags, test_flags);
 	if (!rsf_is_empty(current_flags)) {
-		magic = true;
-
 		/* Intro */
-		if (breath)
-			textblock_append(tb, ", and may ");
-		else
-			textblock_append(tb, "%s may ", initial_pronoun);
+		textblock_append(tb, "%s may ", initial_pronoun);
 
 		/* Verb Phrase */
 		textblock_append_c(tb, COLOUR_L_RED, "cast spells");
@@ -1480,26 +1504,23 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 		/* List */
 		textblock_append(tb, " which ");
 		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
-	}
 
-	/* End the sentence about innate/other spells */
-	if (breath || magic) {
-		/* Calculate total casting and average frequency */
-		average_frequency = (race->freq_innate + race->freq_spell) / 2;
-
+		/* End the sentence about innate/other spells */
 		if (lore->spell_freq_known) {
 			/* Describe the spell frequency */
 			textblock_append(tb, "; ");
 			textblock_append_c(tb, COLOUR_L_GREEN, "1");
 			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", 100 / average_frequency);
-		} else if (lore->cast_innate || lore->cast_spell) {
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / race->freq_spell);
+		} else if (lore->cast_spell) {
 			/* Guess at the frequency */
-			average_frequency = ((average_frequency + 9) / 10) * 10;
+			int approx_frequency = ((race->freq_spell + 9) / 10) * 10;
 			textblock_append(tb, "; about ");
 			textblock_append_c(tb, COLOUR_L_GREEN, "1");
 			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", 100 / average_frequency);
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / approx_frequency);
 		}
 
 		textblock_append(tb, ".  ");

@@ -88,7 +88,6 @@ desc:absorb light
 lore-color-base:Yellow
 lore-color-resist:Light Green
 effect-type:eat-light
-lore-color-base:Light Green
 lash-type:MISSILE
 
 name:ACID
@@ -231,7 +230,7 @@ power:60
 eval:300
 desc:shatter
 lore-color-base:Yellow
-lash-type:MISSILE
+lash-type:SHARDS
 
 name:EXP_10
 power:20

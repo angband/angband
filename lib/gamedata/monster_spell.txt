@@ -483,7 +483,7 @@ hit:100
 effect:BALL:HOLY_ORB:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 3 / 2
-lore:invoke mana storms
+lore:cast orbs of draining
 lore-color-base:Orange
 message-vis:{name} casts an orb of draining.
 message-invis:Something chants.

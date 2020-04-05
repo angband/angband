@@ -283,14 +283,14 @@ static void get_move_find_range(struct monster *mon)
 		mon->best_range += 3;
 	}
 
-	if (mon->race->freq_spell > 24) {
-		/* Breathers like point blank range */
+	/* Breathers like point blank range */
+	if (mon->race->freq_innate > 24) {
 		if (monster_breathes(mon) && (mon->hp > mon->maxhp / 2)) {
-			mon->best_range = MAX(6, mon->best_range);
-		} else {
-			/* Other spell casters will sit back and cast */
-			mon->best_range += 3;
+			mon->best_range = MAX(1, mon->best_range);
 		}
+	} else if (mon->race->freq_spell > 24) {
+		/* Other spell casters will sit back and cast */
+		mon->best_range += 3;
 	}
 }
 
