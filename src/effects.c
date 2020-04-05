@@ -4868,7 +4868,9 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	/* Look next to the monster */
 	for (d = first_d; d < first_d + 8; d++) {
 		grid = loc_sum(victim, ddgrid_ddd[d % 8]);
-		if (square_isempty(cave, grid)) break;
+		if (square_isplayertrap(cave, grid)) continue;
+		if (square_iswebbed(cave, grid)) continue;
+		if (square_isopen(cave, grid)) break;
 	}
 
 	/* Needed to be adjacent */

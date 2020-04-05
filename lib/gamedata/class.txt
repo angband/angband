@@ -1004,15 +1004,15 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
-spell:Noxious Fumes:10:4:40:5
-effect:SPHERE:POIS:4
+spell:Miasma:10:4:40:5
+effect:SPHERE:CHAOS:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
-effect:TIMED_INC:POISONED
+effect:TIMED_INC:IMAGE
 dice:$B
 expr:B:PLAYER_LEVEL:* 2
-desc:Produces a cloud of poisonous gas affecting the player and monsters within
-desc: radius 4.
+desc:Produces a cloud of hallucinogenic gas affecting the player and monsters
+desc: within radius 4.
 
 spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
