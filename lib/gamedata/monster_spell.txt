@@ -23,9 +23,13 @@
 # message-invis - Message printed when spell is cast by an unseen monster,
 #                 e.g. Something utters a terrible incantation!
 
-# {name} and {pronoun} are markers that will be replaced with the acting
-# monster's name and his/her/its when the message is displayed,
-# e.g. {name} concentrates on {pronoun} body.
+# Text in braces {} will be replaced with the appropriate word when the message
+# is displayed :
+# - {name} is the acting monster's name
+# - {pronoun} is his/her/its
+# - {type} is the projection type being used
+# - {oftype} is like {type}, but with "of" added - e.g. "a whip of fire"
+# - {target} is the target of the spell - player or (rarely) another monster
 
 name:SHRIEK
 msgt:SHRIEK

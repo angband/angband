@@ -1,13 +1,14 @@
 # File: player_timed.txt
+
 # Used in conjunction with list-player-timed.h
 # Timed player properties
-#
+
 # Descriptions, messages and message types can be edited without bad effects.
-# Changing code or fail may have unpredictable results.
+# Changing fail may have unpredictable results.
 # Changing the name, reordering, or adding whole new entires will severely
 # disrupt the game, and should only be done when list-player-timed.h
 # (and other code) is also  being changed, and the game recompiled.
-#
+
 # Fields:
 # name - the effect name
 # desc - the effect description

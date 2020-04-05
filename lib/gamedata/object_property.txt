@@ -1,4 +1,4 @@
-# object_property.txt
+# File: object_property.txt
 
 # name: the property name
 # type: the type of object property.  Each property needs one, and it must 

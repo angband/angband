@@ -1,14 +1,16 @@
 # File: player_property.txt
+
 # Used in conjunction with list-player-flags.h, list-object-flags.h and
 # list-elements.h
 # Player properties
-#
-# Descriptions and messages can be edited without bad effects.
-# Changing code may have unpredictable results.
-# Changing the name, reordering, or adding whole new entires will severely
-# disrupt the game, and should only be done when the associated list-*.h
-# files (and other code) are also  being changed, and the game recompiled.
-#
+
+# Descriptions and names can be edited without bad effects.
+# Changing the code, or type will severely disrupt the game, and should only
+# be done when the associated list-*.h files (and other code) are also
+# being changed, and the game recompiled.
+# Adding new entries will have no effect without further datafile and code
+# changes
+
 # Fields:
 # type - the type of player property.  Valid types are
 #    player  - special player flag from list-player-flags.h

@@ -1,19 +1,16 @@
-# Effects for random artifacts and traps
+# File: activation.txt
+
+# This file is used to initialize effects for random artifacts and traps
+
+# === Understanding activation.txt ===
 
 # name: effect name code
-
 # aim: 1 if the effect requires aiming, 0 if not
-
 # power: relative power of the effect for object power calculation
-
 # effect: the effect name, followed by extra effect parameters if any.
-
 # dice: dice for the random value used by the effect
-
 # expr: details of expressions used in dice
-
 # msg: activation message
-
 # desc: activation description
 
 name:CURE_POISON

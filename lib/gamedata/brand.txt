@@ -1,4 +1,4 @@
-# brand.txt
+# File: brand.txt
 
 # code: code for brand to use in object data files
 # name: name of element of the brand
