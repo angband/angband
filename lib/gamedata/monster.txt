@@ -6787,7 +6787,7 @@ blow:PUNCH:HURT:2d8
 blow:PUNCH:HURT:2d8
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
-flags:UNIQUE | MALE | SMART | SPIRIT
+flags:UNIQUE | MALE | SMART
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:FORCE_SLEEP
 spell-freq:2
@@ -12123,7 +12123,7 @@ blow:ENGULF:FIRE:5d5
 blow:ENGULF:ACID:5d5
 blow:ENGULF:COLD:5d5
 flags:RAND_25
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_NEXUS | IM_NETHER
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | IM_NETHER
 flags:IM_PLASMA | NO_SLOW | NO_STUN
 flags:ATTR_MULTI
 innate-freq:4
@@ -12838,7 +12838,7 @@ blow:BITE:ACID:10d10
 blow:BITE:ACID:10d10
 flags:SMART | ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR
 flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT
 flags:HURT_LIGHT| NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:IM_FIRE | IM_COLD | IM_POIS | IM_NETHER
@@ -13136,10 +13136,10 @@ blow:HIT:DISENCHANT:10d5
 blow:HIT:DISENCHANT:10d5
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
-flags:UNIQUE | MALE | SMART
+flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD
 flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER
+flags:IM_ACID | IM_ELEC | IM_WATER
 innate-freq:4
 spell-freq:2
 spells:BLIND | TELE_TO | WHIP
@@ -13574,7 +13574,6 @@ flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD
 flags:KILL_WALL | KILL_BODY
 flags:IM_ACID | IM_ELEC
-flags:FORCE_SLEEP
 desc:A battle-hungry spirit from amongst the Ainur, who built a grim hall in
 desc: the early days of Arda to host endless battles.  When not at home, he
 desc: and his sister Meássë hunt and seek out the turmoils caused by Morgoth.
@@ -14349,9 +14348,8 @@ blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 flags:UNIQUE | FEMALE
 flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY | TAKE_ITEM
+flags:MOVE_BODY
 flags:IM_ACID | IM_ELEC | NO_STUN
-flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:5
 spells:HEAL | HEAL_KIN
@@ -14677,10 +14675,10 @@ blow:BITE:EXP_80:6d12
 blow:CLAW:TERRIFY:8d12
 blow:HIT:DRAIN_CHARGES:8d12
 blow:HIT:DRAIN_CHARGES:8d12
-flags:UNIQUE | MALE | EVIL
-flags:FORCE_SLEEP | FORCE_DEPTH
+flags:UNIQUE | MALE
+flags:FORCE_DEPTH
 flags:MOVE_BODY | IM_ELEC
-flags:NO_CONF | NO_FEAR
+flags:NO_FEAR
 spell-freq:2
 spell-power:130
 spells:BLINK | TPORT | TELE_LEVEL | BLIND | CONF
