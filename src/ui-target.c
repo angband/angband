@@ -318,9 +318,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	/* Repeat forever */
 	while (1) {
-		/* Paranoia */
+		/* Make the default event to focus on the player */
 		press.type = EVT_KBRD;
-		press.key.code = ' ';
+		press.key.code = 'p';
 		press.key.mods = 0;
 
 		/* Assume boring */
