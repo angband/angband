@@ -1014,6 +1014,30 @@ void square_excise_pile(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * Excise an object from a floor pile and delete it while doing the other
+ * necessary bookkeeping.  Normally, this is only called for the chunk
+ * representing the true nature of the environment and not the one
+ * representing the player's view of it.  If do_note is true, call
+ * square_note_spot().  If do_light is true, call square_light_spot().
+ * Unless calling this on the player's view, those both would be true
+ * except as an optimization/simplification when the caller would call
+ * square_note_spot()/square_light_spot() anyways or knows that those aren't
+ * necessary.
+ */
+void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, bool do_note, bool do_light)
+{
+	square_excise_object(c, grid, obj);
+	delist_object(c, obj);
+	object_delete(&obj);
+	if (do_note) {
+		square_note_spot(c, grid);
+	}
+	if (do_light) {
+		square_light_spot(c, grid);
+	}
+}
+
+/**
  * Sense the existence of objects on a grid in the current level
  */
 void square_sense_pile(struct chunk *c, struct loc grid)
