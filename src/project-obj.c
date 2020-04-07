@@ -561,13 +561,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
-				square_excise_object(cave, grid, obj);
-				delist_object(cave, obj);
-				object_delete(&obj);
-
-				/* Redraw */
-				square_note_spot(cave, grid);
-				square_light_spot(cave, grid);
+				square_delete_object(cave, grid, obj, true, true);
 			}
 		}
 

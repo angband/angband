@@ -358,9 +358,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
-		square_excise_object(cave, mon->grid, mon->mimicked_obj);
-		delist_object(cave, mon->mimicked_obj);
-		object_delete(&mon->mimicked_obj);
+		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, false);
 	}
 
 	/* Wipe the Monster */

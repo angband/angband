@@ -1319,11 +1319,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
-			square_excise_object(c, new, obj);
-			delist_object(c, obj);
-			object_delete(&obj);
-			square_note_spot(c, new);
-			square_light_spot(c, new);
+			square_delete_object(c, new, obj, true, true);
 		}
 
 		/* Next object */

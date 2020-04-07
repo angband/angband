@@ -82,13 +82,9 @@ static void player_pickup_gold(struct player *p)
 
 		/* Delete the gold */
 		if (obj->known) {
-			square_excise_object(p->cave, p->grid, obj->known);
-			delist_object(p->cave, obj->known);
-			object_delete(&obj->known);
+			square_delete_object(p->cave, p->grid, obj->known, false, false);
 		}
-		square_excise_object(cave, p->grid, obj);
-		delist_object(cave, obj);
-		object_delete(&obj);
+		square_delete_object(cave, p->grid, obj, false, false);
 		obj = next;
 	}
 
