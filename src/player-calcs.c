@@ -947,6 +947,17 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
 	}
 
+	/* Usable ammo is before other ammo */
+	if (tval_is_ammo(orig) && tval_is_ammo(new)) {
+		/* First favour usable ammo */
+		if ((player->state.ammo_tval == orig->tval) &&
+			(player->state.ammo_tval != new->tval))
+			return false;
+		if ((player->state.ammo_tval != orig->tval) &&
+			(player->state.ammo_tval == new->tval))
+			return true;
+	}
+
 	/* Objects sort by decreasing type */
 	if (orig->tval > new->tval) return false;
 	if (orig->tval < new->tval) return true;
@@ -975,18 +986,14 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value(orig, 1) <
-			object_value(new, 1))
+		if (object_value(orig, 1) < object_value(new, 1))
 			return false;
-		if (object_value(orig, 1) >
-			object_value(new, 1))
+		if (object_value(orig, 1) >	object_value(new, 1))
 			return true;
 	} else {
-		if (object_value(orig, 1) >
-			object_value(new, 1))
+		if (object_value(orig, 1) >	object_value(new, 1))
 			return false;
-		if (object_value(orig, 1) <
-			object_value(new, 1))
+		if (object_value(orig, 1) <	object_value(new, 1))
 			return true;
 	}
 

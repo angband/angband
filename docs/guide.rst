@@ -300,11 +300,11 @@ lately (Angband rewards deliberate risk-taking, after all).
 Identifying your items
 ``````````````````````
 
-Many items found, especially early in the game, will unidentified or partially
-identified. Weapons and armour can be identified by being worn and used in
-combat, and can be removed if found to be of poor quality. Some characters
-learn to cast spells to identify the runes on wearable items that define their
-properties. 
+Many items found, especially early in the game, will be unidentified or
+partially identified. Weapons and armour can be identified by being worn and
+used in combat, and can be removed if found to be of poor quality. Some
+characters learn to cast spells to identify the runes on wearable items that
+define their properties. 
 
 Staves, rods and wands can often be identified by being used against monsters,
 but be aware that some of these magical items can have negative effects. Only
@@ -497,7 +497,7 @@ Item Collecting
 Its easy to stockpile, but you'll run out of space VERY quickly. Further, what
 was useful may not be useful now and what's useful now may not be useful
 later. It can be easy to try to grab everything in sight and then return to
-town when your inventory is full; however, when youreach this point, try
+town when your inventory is full; however, when you reach this point, try
 continuing to dive, even with a full inventory.
 
 As your character progresses and you continue to dive you will find better
