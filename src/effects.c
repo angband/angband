@@ -1875,6 +1875,10 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 
 				/* Detect */
 				gold_buried = true;
+			} else if (square_hasgoldvein(player->cave, grid)) {
+				/* Something removed previously seen or
+				 * detected buried gold.  Notice the change. */
+				square_forget(cave, grid);
 			}
 		}
 	}
