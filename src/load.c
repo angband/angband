@@ -51,6 +51,13 @@
 #include "trap.h"
 
 /**
+ * Setting this to 1 and recompiling gives a chance to recover a savefile 
+ * where the object list has become corrupted.  Don't forget to reset to 0
+ * and recompile again as soon as the savefile is viable again.
+ */
+#define OBJ_RECOVER 0
+
+/**
  * Dungeon constants
  */
 static byte square_size = 0;
@@ -1364,8 +1371,11 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		struct object *obj = (*rd_item_version)();
 		if (!obj)
 			break;
-
+#if OBJ_RECOVER
+		if (square_in_bounds_fully(c, obj->grid) && c == cave) {
+#else
 		if (square_in_bounds_fully(c, obj->grid)) {
+#endif
 			pile_insert_end(&c->squares[obj->grid.y][obj->grid.x].obj, obj);
 		}
 		assert(obj->oidx);
@@ -1535,11 +1545,23 @@ int rd_monsters(void)
 	if (rd_monsters_aux(player->cave))
 		return -1;
 
+#if OBJ_RECOVER
+	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
+	player->cave->obj_max = cave->obj_max;
+	for (i = 0; i <= cave->obj_max; i++) {
+		struct object *obj = cave->objects[i], *known_obj;
+		if (!obj) continue;
+		known_obj = object_new();
+		obj->known = known_obj;
+		object_copy(known_obj, obj);
+		player->cave->objects[i] = known_obj;
+	}
+#else
 	/* Associate known objects */
 	for (i = 0; i < player->cave->obj_max; i++)
 		if (cave->objects[i] && player->cave->objects[i])
 			cave->objects[i]->known = player->cave->objects[i];
-
+#endif
 	return 0;
 }
 
@@ -1617,6 +1639,18 @@ int rd_chunks(void)
 
 		chunk_list_add(c);
 	}
+
+#if OBJ_RECOVER
+	for (j = 0; j < chunk_max; j++) {
+		if (j == 0 && streq(chunk_list[j].name, "Town")) continue;
+		chunk_list[j] = 0;
+	}
+	if (streq(chunk_list[0].name, "Town")) {
+		chunk_list_max = 1;
+	} else {
+		chunk_list_max = 0;
+	}
+#endif
 
 	return 0;
 }
