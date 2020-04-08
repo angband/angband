@@ -7,7 +7,7 @@
  *
  * Fields:
  * symbol - the flag name
- * additional details moved to player_property.txt
+ * additional details in player_property.txt
  */
 
 

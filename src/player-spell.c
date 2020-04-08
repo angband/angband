@@ -596,9 +596,6 @@ static void spell_effect_append_value_info(const struct effect *effect,
 
 	/* Handle some special cases where we want to append some additional info */
 	switch (effect->index) {
-		/*DAVIDTODO
-		case MELEE_BLOWS:
-		  special = "**";*/
 		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);

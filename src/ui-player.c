@@ -292,7 +292,6 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
 	{ "D.Red",	OBJ_MOD_DAM_RED,	-1,				-1, 		-1 },
 	{ "Moves",	OBJ_MOD_MOVES,		-1,				-1, 		-1 },
-/*	{ " Rage",	-1,		-1,				-1, 		-1 }, DAVIDTODO I don't think we want */
 	{ "",	-1,		-1,				-1, 		-1 },
 	{ "",	-1,		-1,				-1, 		-1 },
 };

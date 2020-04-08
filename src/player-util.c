@@ -177,7 +177,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Reward BGs with SPs for their lost HPs
 	 * Unenviable task of separating what should and should not cause rage
 	 * If we eliminate the most exploitable cases it should be fine.
-	 * All traps currently give SPs, which could be exploitable  */
+	 * All traps and lava currently give SPs, which could be exploited  */
 	if (player_has(p, PF_COMBAT_REGEN)  && strcmp(kb_str, "poison")
 		&& strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
 		/*lose X% of HP get X% of SP*/
@@ -499,9 +499,6 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 		sp_gain = new_csp_long - old_csp_long;
 	}
 
-/*DAVIDTODO	if (sp_gain == 0) {}
-	else if (sp_gain > 2 << 17) {msgt(MSG_GENERIC, "Gained %d SPs", p->csp - old_csp_short);}
-	else                        {msgt(MSG_GENERIC, "Gained %d%% of a SP", sp_gain / 655);} */
 	return sp_gain;
 }
 
@@ -518,11 +515,12 @@ void bg_mana_to_hp(struct player *p, s32b sp_long) {
 	/* Gain stays low at msp<10 because MP gains are generous at msp<10 */
 	/* sp_ratio is max sp to spent sp, doubled to suit target rate. */
 	sp_ratio = (MAX(10, (s32b)p->msp) << 16) * 2 / sp_long;
-	/* msgt(MSG_GENERIC, "sp_ratio %d", sp_ratio); */
 
 	/* limit max healing to 25% of dam; ergo spending > 50% msp is inefficient */
 	if (sp_ratio < 4) {sp_ratio = 4;}
 	hp_gain /= sp_ratio;
+
+	/* DAVIDTODO Flavorful comments on large gains would be fun and informative */
 
 	player_adjust_hp_precise(p, hp_gain);
 }
@@ -633,10 +631,7 @@ bool player_attack_random_monster(struct player *p)
 		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
 		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
-<<<<<<< HEAD
-			msg("You lash out at a nearby foe!");
-=======
->>>>>>> fa43caaa0a376d6938036f23cef8a11708bdf7d1
+			msg("You angrily lash out at a nearby foe!");
 			move_player(ddd[dir % 8], false);
 			return true;
 		}
@@ -659,7 +654,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 			/* Hack - only permanent with high chance (no-mana casting) */
 			bool perm = (randint0(100) < chance / 2) && (chance >= 50);
 			if (randint0(2))
-				msg("You feel strange...");
+				msg("You feel something give way!");
 			else
 				msg("You have damaged your health!");
 

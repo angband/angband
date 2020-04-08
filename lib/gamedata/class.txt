@@ -1157,7 +1157,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Allows you to assume the form of a vampire at the cost of half your
 desc: current hitpoints, then teleports you to the nearest living monster
 desc: and leeches a level-dependent number of hitpoints, healing and
-desc: nourishing desc: you.  When first transformed you will temporarily be able
+desc: nourishing you.  When first transformed you will temporarily be able
 desc: to leech hitpoints from living monsters with your bite attack.
 
 spell:Curse:40:50:60:180
@@ -1584,7 +1584,6 @@ player-flags:COMBAT_REGEN | SHIELD_BASH
 #HP recovery when MP spent 1% of damage for 2% of max MP
 #This amounts to a 25% rebate on damage, if on average you're at 50% HP
 #There's a 2x bonus if not spent but degenerated, if you can wait that long!
-#This is a 50% rebate, and is probably too much.
 #FCPB sp gain for Rage Mage sp = dam*(mhp*3/2 - chp)/mhp [min 1]
 #ranges from 1.5x at near death to 0.5x at full health. BG way less.
 #FCPB sp loss per turn csp/8 + lev/10 + 1 very fast in practice
@@ -1753,12 +1752,12 @@ spell:Relentless Taunting:24:10:35:20
 effect:TIMED_INC:TAUNT
 dice:10+d10
 desc:Makes any monster that can move more inclined to run toward you, and less
-desc: likely to use a ranged attack, including spells and innate abilities.
+desc: likely to use a ranged attack(including spells and innate abilities).
 
 #256 of 623 have IM_POIS. 133 from 13 base types, 123 individual or both.
 #compare Paladin's spell:Smite Evil:25:20:70:40 dur 20+d20, 2x slay
 #compare Paladin's spell:Demon Bane:30:40:80:150 dur 20+d20, 5x slay
-#this is a x3 brand. 20 SP is pretty high. Need foresight to start w/20 SP.
+#this is a 3x brand. Need foresight to start a fight w/20 SP.
 #4.2.0Poison Brand:20:30:40:90
 spell:Venom:28:20:40:30
 effect:TIMED_INC:ATT_POIS:0:5
@@ -1776,7 +1775,7 @@ desc:Coats all your melee weapons with poison for 20+d20 turns.
 spell:Werewolf Form:33:25:45:80
 effect:SHAPECHANGE:werewolf
 desc:With a blood-curdling cry you change into a half-man half-wolf!
-desc: In this form you move, attack and heal faster.
+desc: In this form you move, attack, and heal faster.
 
 #tried to make these all deadly powers. Reprieve is questionably so.
 book:shadow book:dungeon:[Deadly Powers]:5:shadow
@@ -1822,7 +1821,7 @@ desc: with a chance to stun it.
 
 #Idea is to give some privacy for a fight with bosses and others, but not
 #as strong as Single Combat.
-#Good candidate for a buff/blow since we already have Earthquake equipment.
+#Good candidate for a buff/blow since we already have Earthquake diggers.
 #Paladin spell:Single Combat:40:50:30:300
 #Druid spell:Volcanic Eruption:40:30:75:50 (radius 5; multiple effects)
 #old Mage spell:Earthquake:20:18:60:20 (radius 10)

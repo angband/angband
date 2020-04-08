@@ -685,12 +685,6 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			break;
 		}
 
-		case SRC_CHEST_TRAP: {
-			struct chest_trap *trap = context->origin.which.chest_trap;
-			strnfmt(killer, sizeof(killer), "%s", trap->msg_death);
-			break;
-		}
-
 		case SRC_PLAYER: {
 			if (context->msg) {
 				my_strcpy(killer, context->msg, sizeof(killer));
@@ -5069,7 +5063,6 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 bool effect_handler_SWEEP(effect_handler_context_t *context)
 {
 	int blows = effect_calculate_value(context, false);
-	/* msgt(MSG_GENERIC, "Blows %d", blows); */
 	bool fear;
 	int i;
 	struct loc target;
@@ -5082,11 +5075,9 @@ bool effect_handler_SWEEP(effect_handler_context_t *context)
 	while (blows-- > 0) {
 		for (i=0; i<8; i++) {
 			target = loc_sum(player->grid, clockwise_grid[i]);
-			/* msgt(MSG_GENERIC, "Looking at (%d,%d)", target.x, target.y); */
 			if (square_monster(cave, target) != NULL)
 				py_attack_real(player, target, &fear);
 		}
-		/* msgt(MSG_GENERIC, "Blows %d", blows); */
 	}
 	/* DAVIDTODO return some energy if all enemies killed and blows remain?? */
 	return true;

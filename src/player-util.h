@@ -23,9 +23,9 @@
 #include "player.h"
 
 /* Player regeneration constants */
-#define PY_REGEN_NORMAL 197   /* Regen factor*2^16 for SP, HP when fed 0.3% */
-#define PY_REGEN_WEAK    98   /* Regen factor*2^16 for HP when weak 0.15% */
-#define PY_REGEN_FAINT   33   /* Regen factor*2^16 for HP when fainting 0.05% */
+#define PY_REGEN_NORMAL  197   /* Regen factor*2^16 for SP, HP when fed 0.3% */
+#define PY_REGEN_WEAK     98   /* Regen factor*2^16 for HP when weak 0.15% */
+#define PY_REGEN_FAINT    33   /* Regen factor*2^16 for HP when faint 0.05% */
 #define PY_REGEN_HPBASE 1442  /* Min amount HP regen*2^16 0.022 HP */
 #define PY_REGEN_MNBASE  524  /* Min amount SP regen*2^16 0.008 SP */
 
