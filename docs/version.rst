@@ -329,8 +329,8 @@ A Posting from the Original Author
   contained many neat enhancements, features, you name it. It had water,
   streams, lakes, pools, with water monsters. It had 'mysterious orbs'
   which could be carried like torches for light but also gave off magical
-  aura's (like protection from fire, or aggrivate monster...). It had new
-  weapons and treasures... I left it with the tudent assistants at OU to be
+  aura's (like protection from fire, or aggravate monster...). It had new
+  weapons and treasures... I left it with the student assistants at OU to be
   finished, but I guess it soon died on the vine. As far as I know, that
   source was lost...
 

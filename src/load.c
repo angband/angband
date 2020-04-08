@@ -481,7 +481,7 @@ int rd_messages(void)
  */
 int rd_monster_memory(void)
 {
-	u16b tmp16u;
+	u16b nkill, ntheft;
 	char buf[128];
 	int i;
 
@@ -506,18 +506,18 @@ int rd_monster_memory(void)
 	while (!streq(buf, "No more monsters")) {
 		struct monster_race *race = lookup_monster(buf);
 
-		/* Get the kill count, skip if monster invalid */
-		rd_u16b(&tmp16u);
+		/* Get the kill and theft counts, skip if monster invalid */
+		rd_u16b(&nkill);
+		rd_u16b(&ntheft);
 		if (!race) continue;
 
 		/* Store the kill count, ensure dead uniques stay dead */
-		l_list[race->ridx].pkills = tmp16u;
-		if (rf_has(race->flags, RF_UNIQUE) && tmp16u)
+		l_list[race->ridx].pkills = nkill;
+		if (rf_has(race->flags, RF_UNIQUE) && nkill)
 			race->max_num = 0;
 
-		/* Get the theft count */
-		rd_u16b(&tmp16u);
-		l_list[race->ridx].thefts = tmp16u;
+		/* Store the theft count */
+		l_list[race->ridx].thefts = ntheft;
 
 		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));

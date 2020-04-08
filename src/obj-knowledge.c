@@ -1456,6 +1456,7 @@ void object_curses_find_to_a(struct player *p, struct object *obj)
 				index = rune_index(RUNE_VAR_CURSE, i);
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
+					curses[i].obj->known->to_a = curses[i].obj->to_a;
 				}
 			}
 		}
@@ -1479,6 +1480,7 @@ void object_curses_find_to_h(struct player *p, struct object *obj)
 				index = rune_index(RUNE_VAR_CURSE, i);
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
+					curses[i].obj->known->to_h = curses[i].obj->to_h;
 				}
 			}
 		}
@@ -1502,6 +1504,7 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
 				index = rune_index(RUNE_VAR_CURSE, i);
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
+					curses[i].obj->known->to_d = curses[i].obj->to_d;
 				}
 			}
 		}
@@ -1551,6 +1554,7 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
 				index = rune_index(RUNE_VAR_CURSE, i);
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
+					of_on(curses[i].obj->known->flags, flag);
 				}
 			}
 		}
@@ -1590,6 +1594,7 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
 					/* Learn the curse */
 					if (index >= 0) {
 						player_learn_rune(p, index, true);
+						curses[i].obj->modifiers[j] = 1;
 					}
 				}
 			}
@@ -1633,6 +1638,8 @@ bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 				/* Learn the curse */
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
+					curses[i].obj->known->el_info[elem].res_level
+						= curses[i].obj->el_info[elem].res_level;
 				}
 				new = true;
 			}

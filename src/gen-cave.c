@@ -1478,7 +1478,8 @@ bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
  * \param xroads is the location of the town crossroads
  * \param lot the location of this store in the town layout
  */
-static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lot, int lot_wid, int lot_hgt)
+static void build_store(struct chunk *c, int n, struct loc xroads,
+						struct loc lot, int lot_wid, int lot_hgt)
 {
 	int feat;
 	struct loc door;
@@ -1487,7 +1488,8 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 
     int build_w, build_n, build_e, build_s;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e, &lot_s);
+	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e,
+				   &lot_s);
 
 	if (lot.x < -1 || lot.x > 1) {
 		/* on the east west street */
@@ -1510,7 +1512,8 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 			door.x = MAX(door.x, build_w);
 		}
 		build_e = rand_range(build_w + 2, MIN(door.x + 2, lot_e));
-		if (build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
+		if (build_e - build_w > 1
+			&& !square_isfloor(c, loc(build_e + 1, door.y))) {
 			build_e--;
 			door.x = MIN(door.x, build_e);
 		}
@@ -1537,7 +1540,8 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 		}
 
 		build_s = rand_range(MAX(build_n + 1, door.y), MIN(lot_s, door.y + 2));
-		if (build_s - build_n > 1 && square_isfloor(c, loc(door.x, build_s + 1))) {
+		if (build_s - build_n > 1 &&
+			!square_isfloor(c, loc(door.x, build_s + 1))) {
 			build_s--;
 			door.y = MIN(door.y, build_s);
 		}
@@ -1566,7 +1570,8 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 				build_s = door.y;
 			}
 			build_n = MAX(lot_n, door.y - 2);
-			if (build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_n - 1))) {
+			if (build_s - build_n > 1 &&
+				!square_isfloor(c, loc(door.x, build_n - 1))) {
 				build_n++;
 				door.y = MAX(build_n, door.y);
 			}
@@ -1580,17 +1585,20 @@ static void build_store(struct chunk *c, int n, struct loc xroads, struct loc lo
 				build_n = door.y;
 			}
 			build_s = MIN(lot_s, door.y + 2);
-			if (build_s - build_n > 1 && !square_isfloor(c, loc(door.x, build_s + 1))) {
+			if (build_s - build_n > 1 &&
+				!square_isfloor(c, loc(door.x, build_s + 1))) {
 				build_s--;
 				door.y = MIN(build_s, door.y);
 			}
 		}
 
 		// Avoid placing buildings without space between them
-		if (lot.x < 0 && build_e - build_w > 1 && !square_isfloor(c, loc(build_w - 1, door.y))) {
+		if (lot.x < 0 && build_e - build_w > 1 &&
+			!square_isfloor(c, loc(build_w - 1, door.y))) {
 			build_w++;
 			door.x = MAX(door.x, build_w);
-		} else if (lot.x > 0 && build_e - build_w > 1 && !square_isfloor(c, loc(build_e + 1, door.y))) {
+		} else if (lot.x > 0 && build_e - build_w > 1 &&
+				   !square_isfloor(c, loc(build_e + 1, door.y))) {
 			build_e--;
 			door.x = MIN(door.x, build_e);
 		}
@@ -1613,7 +1621,8 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 	int lot_west, lot_north, lot_east, lot_south;
 	int wid, hgt;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north, &lot_east, &lot_south);
+	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north,
+				   &lot_east, &lot_south);
 
 	if (lot_east - lot_west < 1 || lot_south - lot_north < 1) return;
 
@@ -1641,12 +1650,16 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 					square_set_feat(c, loc(x,y), FEAT_RUBBLE);
 				}
 			} else if (!randint0(3) &&
-					square_isfloor(c, loc(x,y)) &&
-					/* Avoid placing rubble next to a store */
-					(x > lot_west || x == 2 || !square_isperm(c, loc(x-1, y))) &&
-					(x < lot_east || x == z_info->town_wid-2 || !square_isperm(c, loc(x+1, y))) &&
-					(y > lot_north || y == 2 || !square_isperm(c, loc(x, y-1))) &&
-					(y < lot_south || y == z_info-> town_hgt-2 || !square_isperm(c, loc(x, y+1)))) {
+					   square_isfloor(c, loc(x,y)) &&
+					   /* Avoid placing rubble next to a store */
+					   (x > lot_west || x == 2 ||
+						!square_isperm(c, loc(x-1, y))) &&
+					   (x < lot_east || x == z_info->town_wid-2 ||
+						!square_isperm(c, loc(x+1, y))) &&
+					   (y > lot_north || y == 2 ||
+						!square_isperm(c, loc(x, y-1))) &&
+					   (y < lot_south || y == z_info-> town_hgt-2 ||
+						!square_isperm(c, loc(x, y+1)))) {
 				square_set_feat(c, loc(x,y), FEAT_PASS_RUBBLE);
 			}
 		}
@@ -1709,7 +1722,9 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		pgrid.x = rand_spread(z_info->town_wid / 2,
 							  z_info->town_wid / 6);
 		pgrid.y = 2;
-		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_wid / 4)) pgrid.y++;
+		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_wid / 4)) {
+			pgrid.y++;
+		}
 		if (pgrid.y >= z_info->town_wid / 4) continue;
 
 
@@ -1769,7 +1784,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 			for (y = lot_min_y; y <= lot_max_y; y++) {
 				if (y == 0) continue;
 				if (randint0(100) > ruins_percent) continue;
-				if (!randint0(2) && !lot_has_shop(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
+				if (one_in_(2) &&
+					!lot_has_shop(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
 					build_ruin(c, xroads, loc(x, y), lot_wid, lot_hgt);
 				}
 			}

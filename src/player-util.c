@@ -633,7 +633,10 @@ bool player_attack_random_monster(struct player *p)
 		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
 		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
+<<<<<<< HEAD
 			msg("You lash out at a nearby foe!");
+=======
+>>>>>>> fa43caaa0a376d6938036f23cef8a11708bdf7d1
 			move_player(ddd[dir % 8], false);
 			return true;
 		}

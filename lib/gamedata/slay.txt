@@ -1,4 +1,4 @@
-# slay.txt
+# File: slay.txt
 
 # code: code for slay to use in object data files
 # name: name of slain creatures for use in object descriptions

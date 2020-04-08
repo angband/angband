@@ -1,4 +1,4 @@
-# curse.txt
+# File: curse.txt
 
 # name: effect name
 # type: valid object base

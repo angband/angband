@@ -42,6 +42,7 @@
 #include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-chest.h"
 #include "obj-ignore.h"
 #include "obj-init.h"
 #include "obj-list.h"
@@ -979,10 +980,12 @@ static void cleanup_player_prop(void)
 {
 	struct player_ability *ability = player_abilities;
 	while (ability) {
-		string_free(ability->type);
-		string_free(ability->desc);
-		string_free(ability->name);
+		struct player_ability *totrash = ability;
 		ability = ability->next;
+		string_free(totrash->type);
+		string_free(totrash->desc);
+		string_free(totrash->name);
+		mem_free(totrash);
 	}
 }
 
@@ -3623,6 +3626,7 @@ static struct {
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },
+	{ "chest_traps", &chest_trap_parser },
 	{ "quests", &quests_parser },
 	{ "flavours", &flavor_parser },
 	{ "hints", &hints_parser },

@@ -318,9 +318,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	/* Repeat forever */
 	while (1) {
-		/* Paranoia */
+		/* Make the default event to focus on the player */
 		press.type = EVT_KBRD;
-		press.key.code = ' ';
+		press.key.code = 'p';
 		press.key.mods = 0;
 
 		/* Assume boring */
@@ -1048,6 +1048,16 @@ bool target_set_interactive(int mode, int x, int y)
 							done = true;
 						} else {
 							bell("Illegal target!");
+							/*
+							 * So there's something
+							 * to work with in the
+							 * next pass through
+							 * the loop.
+							 */
+							if (! square_in_bounds(cave, loc(x, y))) {
+							    x = player->grid.x;
+							    y = player->grid.y;
+							}
 						}
 					} else if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
@@ -1078,6 +1088,10 @@ bool target_set_interactive(int mode, int x, int y)
 						}
 					} else {
 						flag = false;
+						if (! square_in_bounds(cave, loc(x, y))) {
+						    x = player->grid.x;
+						    y = player->grid.y;
+						}
 					}
 				}
 			} else

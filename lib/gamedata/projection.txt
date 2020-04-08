@@ -1,4 +1,57 @@
-# element.txt
+# projection.txt
+
+# === Understanding projection.txt ===
+
+# Format:
+# code: code
+# name: name
+# type: element / environs / monster
+# desc: description
+# player-desc: player description
+# blind-desc: blind description
+# lash-desc: lash description
+# numerator: damage multiplier
+# denominator: damage divisor
+# divisor: HP divisor
+# damage-cap: max damage
+# msgt: message type
+# obvious: 0/1
+# color: color
+
+# 'code' is the computer code for this projection used by the game
+
+# 'name' is the human readable name for this projection
+
+# 'type' can be 'element' for an elemental attack type, 'environs' for
+# something that affects terrain or dungeon features, or 'monster' for
+# direct effects on monsters
+
+# 'desc' is the descriptive name for the projection, usually used in object
+# descriptions
+
+# 'player-desc' is similar to desc
+
+# 'blind-desc' is how the projection is described to the player when they
+# cannot see the monster using it
+
+# 'lash-desc' is the description for the "lash" effect used for spitting or
+# whipping monsters
+
+# 'numerator' and 'denominator' define the fraction of damage allowed through
+# player resistance to an element
+
+# 'divisor' is used to divide the attacking creature's hitpoints by to determine
+# breath damage
+
+# 'damage-cap' is the maximum breath damage, regardless of monster hitpoints,
+# before resistance is applied
+
+# 'msgt' is the message type code used by the message system
+
+# 'obvious' is set to 1 if the nature of the projection effect is obvious to the
+# player, 0 otherwise
+
+# 'color' is the colour of the projection
 
 code:ACID
 name:acid

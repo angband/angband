@@ -62,7 +62,7 @@ The Z Layer
 ===========
 
 The lowest-level code in Angband is the "Z" layer, which provides
-platform-indepdent abstractions and generic data structures. Currently, the Z
+platform-independent abstractions and generic data structures. Currently, the Z
 layer provides:
 
 =================   ========================================
@@ -151,20 +151,13 @@ begins.
 ``main.c`` and ``main-*.c``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 main.c's ``main()`` is the entry point for Angband execution except on Windows,
-where main-win.c's ``WinMain()`` is used, and on Nintendo DS, where a special ``main()``
-in main-nds.c is used. The ``main()`` function is responsible for dropping
-permissions if Angband is running setuid, parsing command line arguments, then
-finding a frontend to use and initializing it. Once ``main()`` finds a frontend, it
-sets up signal handlers, sets up the display, then calls ``play_game()``.
-
-dungeon.c - ``play_game``
-~~~~~~~~~~~~~~~~~~~~~~~~~
-This function is responsible for driving the remaining
-initialization. It first calls `init.c - init_angband`_, which loads all
-the `gamedata files`_ and initializes other static data used by the
-game. It then configures subwindows, loads a saved game if there is a valid save
-(see `savefiles`_), sets up the RNG, loads pref files (see `prefs.c - process_pref_file`_),
-and enters the game main loop (see `dungeon.c - the game main loop`_).
+where main-win.c's ``WinMain()`` is used, and on Nintendo DS, where a special
+``main()`` in main-nds.c is used. The ``main()`` function is responsible for
+dropping permissions if Angband is running setuid, parsing command line
+arguments, then finding a frontend to use and initializing it. Once ``main()``
+finds a frontend, it sets up signal handlers, sets up the display, and calls
+`init.c - init_angband`_, which loads all the `gamedata files`_ and initializes
+other static data used by the game.
 
 init.c - ``init_angband``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,40 +165,42 @@ The init_angband() function in init.c is responsible for loading and setting up
 static data needed by the game engine. Inside init.c, there is a list of 'init
 modules' that have startup-time static data they need to initialize, these are
 registered in an array of module pointers in init.c, and init_angband() calls
-their initialization hooks before doing any other work. The init_angband()
-function then loads the top-level pref file (see `pref files`_), initializes the
-command queue (see `the command queue`_), then waits for the UI to enqueue either QUIT,
-NEWGAME, or LOADFILE. This function returns true if the player wants to roll a
-new character, and false if they want to load an existing character.
+their initialization hooks before doing any other work.  Finally it sets up the
+RNG.
 
-prefs.c - ``process_pref_file``
+ui-init.c - ``textui_init``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+The textui_init() function then loads the top-level pref file (see
+`pref files`_), initializes the command queue (see `the command queue`_),
+and configures subwindows.
+
+ui-prefs.c - ``process_pref_file``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The process_pref_file() function in prefs.c is responsible for loading user pref
-files, which can live at multiple paths. User preference files override default
-preference files. See `pref files`_ for more details.
+The process_pref_file() function in ui-prefs.c is responsible for loading user
+pref files, which can live at multiple paths. User preference files override
+default preference files. See `pref files`_ for more details.
+
+ui-game.c - ``play_game``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+This function calls start_game() to load a saved game if there is a valid save
+(see `savefiles`_) or birth a new character if not.  It then asks for a command
+from the player, and then runs the game main loop (see
+`game-world.c - the game main loop`_), over and over until the character dies
+or the player quits
 
 Gameplay
 --------
-Once the simulation is set up, the game main loop in `dungeon.c - play_game`_ is responsible for stepping the simulation.
+Once the simulation is set up, the game main loop in `game-world.c - play_game`_
+is responsible for stepping the simulation.
 
-dungeon.c - the game main loop
+game-world.c - the game main loop
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The main loop of the game is inside play_game(), commented as ``/* Process */``,
-in typical understated Angband style. This loop runs once per time that either
-the level is regenerated, the player dies, or the player quits the game. Each
-iteration through, the this loop runs the level main loop to completion for an
-individual level.
-
-dungeon.c - the level main loop
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The main loop for the level is implemented in dungeon() in dungeon.c. The
-dungeon() function is called when the player enters a level, and returns only
-when the player exits the level, either by changing levels, dying, or quitting.
-This function is responsible for tracking the player's max level/depth,
-autosaving at level entry, and running the main simulation loop. Each iteration
-of the main simulation loop is one "turn" in Angband parlance, or one step of
-the simulator. During each turn:
+The main loop of the game, run_game_loop() is repeatedly called inside
+play_game(). This loop runs once per time
+that either the level is regenerated, the player dies, or the player quits the
+game. Each iteration through, the this loop runs the level main loop to
+completion for an individual level. Each iteration of the main loop is one
+"turn" in Angband parlance, or one step of the simulator. During each turn:
 
 * All monsters with more energy than the player act
 * The player acts
@@ -214,17 +209,17 @@ the simulator. During each turn:
 * The world acts
 * End-of-turn housekeeping is done
 
-mon-melee2.c - process_monsters()
+mon-move.c - process_monsters()
 *********************************
 
 In Angband, creatures act in order of "energy", which roughly determines how
 many actions they can take per step through the simulation. The
-process_monsters() function in mon-melee2.c is responsible for walking through
+process_monsters() function in mon-move.c is responsible for walking through
 the list of all monsters in the current chunk (see `the chunk`_) and having each
 monster act by calling process_monster(), which implements the highest level AI
 for monsters.
 
-dungeon.c - process_player()
+game-world.c - process_player()
 ****************************
 
 The process_player() function allows the player to act repeatedly until they do
@@ -255,7 +250,7 @@ keeping the UI in sync with the simulated character's state:
 These functions are called during every game loop, after the player and all
 monsters have acted.
 
-dungeon.c - process_world()
+game-world.c - process_world()
 ***************************
 
 The process_world() function only runs every 10 turns. It is responsible for the

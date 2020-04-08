@@ -119,16 +119,16 @@ Original Keyset Command Summary
 ``%``  (unused)                      ``^E`` Toggle inven/equip window
 ``^``  (special - control key)       ``^F`` Repeat level feeling
 ``&``  (unused)                      ``^G`` Do autopickup
-``\*`` Target monster or location    ``^H`` (unused)
+``*`` Target monster or location     ``^H`` (unused)
 ``(``  Load screen dump              ``^I`` (special - tab)
 ``)``  Dump screen dump              ``^J`` (special - linefeed)
 ``{``  Inscribe an object            ``^K`` (unused)
 ``}``  Uninscribe an object          ``^L`` Center map
 ``[``  Display visible monster list  ``^M`` (special - return)
 ``]``  Display visible object list   ``^N`` (unused)
-``\-`` (unused)                      ``^O`` Show previous message
+``-`` (unused)                       ``^O`` Show previous message
 ``_``  Enter store                   ``^P`` Show previous messages
-``\+`` Alter grid                    ``^Q`` (unused)
+``+`` Alter grid                     ``^Q`` (unused)
 ``=``  Set options                   ``^R`` Redraw the screen
 ``;``  Walk (with pickup)            ``^S`` Save and don't quit
 ``:``  Take notes                    ``^T`` (unused)
@@ -139,7 +139,7 @@ Original Keyset Command Summary
 ``.``  Run                           ``^Y`` (unused)
 ``>``  Go down staircase             ``^Z`` (unused)
 ``\``  (special - bypass keymap)     ``~``  Check knowledge
-``\``` (special - escape)            ``?``  Help
+`` ` `` (special - escape)           ``?``  Help
 ``/``  Identify symbol
 ``|``  Quiver list
 ====== ============================= ====== ============================
@@ -294,5 +294,3 @@ letter. If lower case is used, the selection takes place immediately. If
 upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
 selection is thus safer, but requires an extra key stroke.
-
-For more information on selecting object, see the file 'customize.txt'.

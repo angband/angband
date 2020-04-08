@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "obj-chest.h"
 #include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -947,15 +948,8 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 				obj->modifiers[OBJ_MOD_SPEED]++;
 		}
 	} else if (tval_is_chest(obj)) {
-		/* Hack -- skip ruined chests */
-		if (obj->kind->level > 0) {
-			/* Hack -- pick a "difficulty" */
-			obj->pval = randint1(obj->kind->level);
-
-			/* Never exceed "difficulty" of 55 to 59 */
-			if (obj->pval > 55)
-				obj->pval = (s16b)(55 + randint0(5));
-		}
+		/* Get a random, level-dependent set of chest traps */
+		obj->pval = pick_chest_traps(obj);
 	}
 
 	/* Apply minima from ego items if necessary */

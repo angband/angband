@@ -1,6 +1,7 @@
-#
+# File: store.txt
+
 # Syntax for this file:
-#
+
 # store: store number : store name
 # owner: max purse : name			- as many or few as you like >1
 # turnover: turnover				- how many items the store turns over
@@ -9,7 +10,7 @@
 # always: type name : ?item name	- for things to always stock
 # buy: type name					- base types the store will buy
 # buy-flag: flag : type name		- types to buy if the flag is present
-#
+
 
 # General store
 store:1:General Store

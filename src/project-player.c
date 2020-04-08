@@ -832,6 +832,15 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 			break;
 		}
 
+		case SRC_CHEST_TRAP: {
+			struct chest_trap *trap = origin.which.chest_trap;
+
+			/* Get the trap name */
+			strnfmt(killer, sizeof(killer), "%s", trap->msg_death);
+
+			break;
+		}
+
 		case SRC_NONE: {
 			/* Assume the caller has set the killer variable */
 			break;

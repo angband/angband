@@ -51,7 +51,7 @@ Equipment list (``e``)
   GLOVES (gloves), BOOTS (boots).   You must be wielding/wearing certain
   objects to take advantage of their special powers.
 
-Quiver list (``\|``)
+Quiver list (``|``)
   Missiles that you carry will automatically be put in your quiver.  The
   quiver has 10 slots; it also takes up inventory space, so every 40 
   missiles will reduce your number of inventory slots by 1.
@@ -179,10 +179,9 @@ Open a door or chest (``o``)
   To open an object such as a door or chest, you must use this command. If
   the object is locked, you will attempt to pick the lock based on your
   disarming ability. If you open a trapped chest without disarming the
-  traps first, the trap will be set off. Some doors will be jammed shut and
-  may have to be forced open. Opening will automatically attempt to pick
-  any lock doors. You may need several tries to open a door or chest. This
-  command may take a count, requires a direction, and takes some energy.
+  traps first, the trap will be set off. Opening will automatically attempt
+  to pick any door locks. You may need several tries to open a door or chest.
+  This command may take a count, requires a direction, and takes some energy.
 
 Close a door (``c``)
   Non-intelligent and some other creatures cannot open doors, so shutting
@@ -194,11 +193,11 @@ Close a door (``c``)
 Disarm a trap or chest, or lock a door (``D``)
   You can attempt to disarm traps on the floor or on chests. If you fail,
   there is a chance that you will blunder and set it off. You can only
-  disarm a trap after you have found it (usually with the Search command).
-  The command can also be used to lock a closed door. This will create a
-  hindrance for monsters. Even if many monsters will be able to pick the
-  lock or bash the door down, it will often take them some time. This
-  command may take a count, requires a direction, and takes some energy.
+  disarm a trap after you have found it. The command can also be used to
+  lock a closed door, which will create a hindrance for monsters. Even if
+  many monsters will be able to pick the lock or bash the door down, it
+  will often take them some time. This command may take a count, requires
+  a direction, and takes some energy.
 
 Alter (``+``)
   This special command allows the use of a single keypress to select any of
@@ -303,7 +302,7 @@ Inscribe an object (``{``)
   item labeled as '{tried}' is a "flavored" item which the character has
   used, but whose effects are unknown. Certain inscriptions have a meaning
   to the game, see '@#', '@x#', '!*', and '!x', in the section on
-  inventory object election.
+  inventory object selection.
 
 Uninscribe an object (``}``)
   This command removes the inscription on an object. This command will have
@@ -356,11 +355,11 @@ Throwing and Missile Weapons
 ============================
 
 Fire an item (``f``) or Fire an item (``t``)
-  This command will fire a will allow you to fire a missile from either
-  your quiver or your inventory provided it is the appropriate ammunition
-  for the current missile weapon you have equipped. You may not fire an
-  item without a missile weapon equipped. Fired ammunition has a chance of
-  breaking. This command takes some energy.
+  This command will allow you to fire a missile from either your quiver or
+  your inventory provided it is the appropriate ammunition for the current
+  missile weapon you have equipped. You may not fire an item without a
+  missile weapon equipped. Fired ammunition has a chance of breaking.
+  This command takes some energy.
 
 Fire default ammo at nearest (``h``) or ('TAB')
   If you have a missile weapon equipped and the appropriate ammunition in
@@ -485,7 +484,7 @@ Game Status Commands
 ====================
 
 Character Description (``C``)
-  Brings up a full description of your character, including your kill
+  Brings up a full description of your character, including your skill
   levels, your current and potential stats, and various other information.
   From this screen, you can change your name or use the file character
   description command to save your character status to a file. That command

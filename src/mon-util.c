@@ -1007,11 +1007,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 		history_add(player, buf, HIST_SLAY_UNIQUE);
 	}
 
-	/* Remove any command status */
-	if (mon->m_timed[MON_TMD_COMMAND]) {
-		(void) player_clear_timed(player, TMD_COMMAND, true);
-	}
-
 	/* Gain experience */
 	player_exp_gain(player, new_exp);
 

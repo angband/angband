@@ -623,6 +623,7 @@ byte player_hp_attr(struct player *p);
 byte player_sp_attr(struct player *p);
 bool player_restore_mana(struct player *p, int amt);
 void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix);
+void player_cleanup_members(struct player *p);
 
 /* player-race.c */
 struct player_race *player_id2race(guid id);

@@ -27,6 +27,7 @@
 #include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -108,6 +109,7 @@ static void wiz_proj_demo(void)
 	clear_from(0);
 	menu_select(m, 0, false);
 	screen_load();
+	mem_free(m);
 }
 
 
@@ -812,6 +814,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	ret = menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 
 	return (ret.type == EVT_ESCAPE);
 }
@@ -870,6 +873,7 @@ static void wiz_create_item(bool art)
 	menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 	
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
@@ -982,7 +986,9 @@ static void wiz_reroll_item(struct object *obj)
 	/* Get new copy, hack off slays and brands */
 	new = mem_zalloc(sizeof(*new));
 	object_copy(new, obj);
+	mem_free(new->slays);
 	new->slays = NULL;
+	mem_free(new->brands);
 	new->brands = NULL;
 
 	/* Main loop. Ask for magification and artifactification */
@@ -1053,6 +1059,7 @@ static void wiz_reroll_item(struct object *obj)
 	}
 
 	/* Free the copy */
+	object_wipe(new);
 	mem_free(new);
 }
 
@@ -1264,7 +1271,50 @@ static void wiz_quantity_item(struct object *obj, bool carried)
  */
 static void wiz_tweak_curse(struct object *obj)
 {
-	// DO SOMETHING - NRM
+	const char *p;
+	char tmp_val[80];
+	int val, pval;
+
+	/* Get curse name */
+	p = "Enter curse name or index: ";
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (! get_string(p, tmp_val, sizeof(tmp_val))) return;
+
+	/* Accept index or name */
+	val = get_idx_from_name(tmp_val);
+	if (! val) {
+		val = lookup_curse(tmp_val);
+	}
+	if (val <= 0 || val >= z_info->curse_max) {
+		return;
+	}
+
+	/* Get power */
+	p = "Enter curse power (0 removes): ";
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (! get_string(p, tmp_val, 30)) return;
+	pval = get_idx_from_name(tmp_val);
+	if (pval < 0) {
+		return;
+	}
+
+	/* Apply */
+	if (pval) {
+		append_object_curse(obj, val, pval);
+	} else if (obj->curses) {
+		obj->curses[val].power = 0;
+
+		/* Duplicates logic from non-public check_object_curses(). */
+		int i;
+
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (obj->curses[i].power) {
+				return;
+			}
+		}
+		mem_free(obj->curses);
+		obj->curses = NULL;
+	}
 }
 
 
