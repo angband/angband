@@ -1889,6 +1889,35 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 }
 
 /**
+ * This is a helper for effect_handler_SENSE_OBJECTS and
+ * effect_handler_DETECT_OBJECTS to remove remembered objects at locations
+ * sensed or detected as empty.
+ */
+static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, struct loc grid)
+{
+	struct object *obj = square_object(knownc, grid);
+
+	while (obj) {
+		struct object *next = obj->next;
+		struct object *original = c->objects[obj->oidx];
+
+		assert(original);
+		square_excise_object(knownc, grid, obj);
+		obj->grid = loc(0, 0);
+
+		/* Delete objects which no longer exist anywhere */
+		if (obj->notice & OBJ_NOTICE_IMAGINED) {
+			delist_object(knownc, obj);
+			object_delete(&obj);
+			original->known = NULL;
+			delist_object(c, original);
+			object_delete(&original);
+		}
+		obj = next;
+	}
+}
+
+/**
  * Sense objects around the player.  The height to sense above and below the
  * player is context->y, the width either side of the player context->x
  */
@@ -1916,8 +1945,11 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			struct loc grid = loc(x, y);
 			struct object *obj = square_object(cave, grid);
 
-			/* Skip empty grids */
-			if (!obj) continue;
+			if (!obj) {
+				/* If empty, remove any remembered objects. */
+				forget_remembered_objects(cave, player->cave, grid);
+				continue;
+			}
 
 			/* Notice an object is detected */
 			objects = true;
@@ -1967,8 +1999,11 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			struct loc grid = loc(x, y);
 			struct object *obj = square_object(cave, grid);
 
-			/* Skip empty grids */
-			if (!obj) continue;
+			if (!obj) {
+				/* If empty, remove any remembered objects. */
+				forget_remembered_objects(cave, player->cave, grid);
+				continue;
+			}
 
 			/* Notice an object is detected */
 			if (!ignore_item_ok(obj)) {
