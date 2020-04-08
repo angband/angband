@@ -68,7 +68,9 @@
 
 # 'weight' is in tenth-pounds.
 
-# 'cost' is the item's base value.
+# 'cost' is the item's base value. This may be ignored in favor of a
+# calculation based on the object's listed power and the power of its
+# properties (see object_property.txt)
 
 # 'attack' is for combat attack information, the item's base damage and
 # pluses to-hit and to-dam.  The base damage should be a standard dice roll
@@ -2201,10 +2203,10 @@ type:ring
 graphics:=:d
 level:10
 weight:2
-cost:700
+cost:546
 alloc:20:10 to 50
 flags:IMPAIR_HP | EASY_KNOW
-power:26
+power:25
 effect:HEAL_HP
 dice:40
 effect:CURE:BLIND
@@ -3379,7 +3381,7 @@ type:potion
 graphics:!:d
 level:3
 weight:4
-cost:100
+cost:80
 alloc:40:3 to 100
 pile:25:2
 power:8

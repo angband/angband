@@ -1548,9 +1548,9 @@ desc:Cures all cuts, poison, stunning and black breath.
 
 
 ############### BLACKGUARD ###############
-#This version of the Blackguard is a melee-focused rage monster. Some examples
-#from Tolkien could include Morgoth, Tulkas, Feanor, Turin, Boromir, and
-#Uruk-hai such as Ugluk.
+#This version of the Blackguard loves the sound and fury of close combat. Some
+#examples from Tolkien could include Morgoth, Tulkas, Feanor, Turin, Boromir,
+#and Uruk-hai such as Ugluk.
 name:Blackguard
 stats:2:0:-3:0:2
 skill-disarm-phys:20:15
@@ -1608,11 +1608,10 @@ title:Tyrant
 
 magic:1:600:3
 
-#All these spells are physical or rage based.
+#All these spells are physical or berserky.
 book:shadow book:town:[Into the Shadows]:6:shadow
 equip:shadow book:[Into the Shadows]:1:1
 
-#Sure, not all living monsters have fear, but it's good enough for now.
 #Called this "Smell Fear" and put in Fear and Torment, but really needed
 #a 1 mana spell in the first book. "Pick Your Battles" might be a more accurate
 #name, but that doesn't sound as cool.
@@ -1629,6 +1628,7 @@ desc:Detects all living monsters in the immediate area, for one turn only.
 #old Ranger spell:Berserker:23:30:80:35 included 30 HP heal
 #old Rogue  spell:Berserker:28:20:60:60 included 30 HP heal
 #recent BG  spell:Berserk Rage:14:10:10:10 all above dur 25+1d25
+#Changed SHERO to only give plus to melee.
 spell:Berserk Strength:3:2:20:4
 #spell:Laugh of Tulkas:3:2:20:4
 effect:CURE:AFRAID
@@ -1637,7 +1637,7 @@ dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 5
 expr:S:PLAYER_LEVEL:+ 5
 desc:Removes fear and grants you berserk strength (resistance to fear,
-desc: a bonus of +24 to-hit, a penalty of -10 to AC, and prevents healing
+desc: +75 melee skill, -10 to AC, and prevents healing
 desc: over time) for a level-dependent duration.
 #(av. 8+1.5*level turns) <- seems unnecessary. the duration is given.
 
@@ -1654,32 +1654,31 @@ desc: level-dependent number of melee blows. The number of blows starts at 1
 desc: and goes up every 15 levels (2 blows at 20, etc.). If you moved, the
 desc: number of blows is reduced by 25% for each space, then rounded.
 
-#Gives a utility spell and a reason to bully
-#monsters to get SPs to get gold veins and make shortcuts. Not the intention,
-#but since we're giving this power we'll add a nice boost vs rock monsters.
+#Can bully monsters to get SPs to loot gold veins and make shortcuts. Gives
+#access to vaults. Not the intention, but since we're giving this power we'll
+#include the typical damage vs rock monsters.
 #4 vulnerable monsters with 1-2 rarity from depth 15-19, 3 uniques at L30,
 #15 monsters total.
 #Tried adding melee blows but it just didn't make sense. Got Tulkas for that.
+#I really want this to be range 1 only, but haven't programmed it yet.
 #Based on Ranger's  spell:Turn Stone to Mud:15:5:25:5
 #Compare to Druid's spell:Turn Stone to Mud:8:3:25:5
 spell:Shatter Stone:7:3:20:8
 #project_touch?
 effect:LINE:KILL_WALL
 dice:20+1d30
-#desc:Destroys an TODO(adjacent) section of wall or rubble,
-desc:Destroys a section of wall or rubble,
-desc: unless it is a permanent wall. Deals 20+1d30 damage to monsters
-desc: vulnerable to rock remover.
+desc:Destroys a section of wall or rubble, unless it is a permanent wall.
+desc: Deals 20+1d30 damage to monsters vulnerable to rock remover.
 
+#One of the triumvirate of level-dependent blows spells. I feel a good player
+#doesn't get surrounded all that much, so the goal is to make this useful vs
+#just 2 adjacent enemies.
 spell:Whirlwind Attack:10:5:30:10
-#effect:SPHERE:DARK:1
-#dice:$Sd$B
-#expr:B:WEAPON_DAMAGE:* 8
 effect:SWEEP
 dice:$S
 expr:S:PLAYER_LEVEL:+ 5 / 15
-desc:Deals a level-dependent number of melee blows to each adjacent enemy.
-desc:You gain 1 blow at levels 25 and 40.
+desc:Deals a melee blow to each adjacent enemy. You gain an additional blow
+desc: at levels 25 and 40.
 
 #This spell has two big challenges: 1) It relies on monster memory & alertness.
 #If you don't know that a monster can paralyze or confuse then it might be too
@@ -1689,13 +1688,14 @@ desc:You gain 1 blow at levels 25 and 40.
 #Homunculi at DL15 are first mobile to cause melee paralysis.
 #There are a lot more poisonous monsters (74 melee, 43 ranged, 98 total).
 #Notably Air Hounds and 3-headed Hydra are depth 20.
-#Want this to be high enough level that you're relieved when you get it
+#Want this to be high enough level that you're relieved when you get it, but
+#low enough to avoid death at the hands of the above.
 #rConf is hard to get. FrAct is easy, but crucial.
 #Cost adj for objects: rPois 28, rConf 24, FrAct 8 m2,
 #27 monsters can paralyze and 30 confuse at melee, 37 can cast slow.
 #Compare Druid's spell:Resist Poison:7:6:32:5 duration 20+d20
 #Compare Ranger's spell:Resist Poison:12:10:32:5 duration 20+d20
-spell:Grim Purpose:15:9:35:14
+spell:Grim Purpose:13:8:30:12
 effect:TIMED_INC:OPP_CONF
 dice:12+d12
 effect:TIMED_INC:FREE_ACT
@@ -1707,20 +1707,21 @@ desc: for 12+d12 turns.
 book:shadow book:town:[Fear and Torment]:5:shadow
 
 #No other spells stun except Shock Wave (chance), so that's a fun addition.
-#Stun very useful for melee. Wand effect dice is 5+1d5, but unsure of meaning.
+#Stun very useful for melee. Wand effect dice is 5+1d5.
 #Very few monsters resist stun (94) vs 325 for rConf, 169 for IM_FIRE, etc.
 #All 71 undead have NO_STUN. 44 nonliving are stunnable, though (3 bases).
-#CL13 chosen somewhat for thematic reasons. Can reduce diff with ATT_STUN
-#I think this does not have to scale with level because stun doesn't
+#Diff might be too high, but can reduce when switch to ATT_STUN
+#I think this spell does not have to scale with level because stun doesn't
 #wear off faster on higher level monsters, so it's always an effective debuff.
-#spell:Inflict Pain:13:6:30:12
-spell:Maim Foe:13:6:30:12
+#spell:Inflict Pain:15:6:35:14
+spell:Maim Foe:15:6:35:14
 effect:MELEE_BLOWS
-dice:1
+dice:$S
+expr:S:PLAYER_LEVEL:/ 15
 effect:SHORT_BEAM:MON_STUN:1
 dice:5+1d5
-desc:Deals 1 melee blow to an adjacent enemy. Stuns that enemy for 5+1d5
-desc: turns.
+desc:Attempts a level-dependent number of melee blows against an adjacent enemy.
+desc: Stuns that enemy for 5+1d5 turns. You get 1 blow for every 15 levels.
 #TODO(replace stun beam with ATT_STUN)
 
 #Unlike many AoEs this does not lose effectiveness with distance from epicenter
@@ -1738,29 +1739,31 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare every monster in line of sight for a
 desc: player level and monster depth duration (av. 2*level/(2+RD(depth/10))
 desc: turns). Monsters that resist fear are not affected.
-#PL40 and mon depth 80s gives about 8 monster turns.
+#PL40 and mon depth 80s gives about 8 monster turns. Seems fair.
+
+#Orig:Taunt:24:10:40:150 but in dungeon book
+#decreases likelihood of casting when the monster is fleeing as well.
+#Shouldn't need to increase with level since monsters have no resistance.
+#When taunted mon->min_range is set, but best_range remains unchanged.
+#When feared & taunted min_range=flee_range. When only taunted min_range=1.
+#Not sure what all that range stuff means in play.
+#I think this may work on stationary monsters as well, despite description.
+#alt names "Provoke" or "Taunt"
+spell:Relentless Taunting:24:10:35:20
+effect:TIMED_INC:TAUNT
+dice:10+d10
+desc:Makes any monster that can move more inclined to run toward you, and less
+desc: likely to use a ranged attack, including spells and innate abilities.
 
 #256 of 623 have IM_POIS. 133 from 13 base types, 123 individual or both.
 #compare Paladin's spell:Smite Evil:25:20:70:40 dur 20+d20, 2x slay
 #compare Paladin's spell:Demon Bane:30:40:80:150 dur 20+d20, 5x slay
 #this is a x3 brand. 20 SP is pretty high. Need foresight to start w/20 SP.
 #4.2.0Poison Brand:20:30:40:90
-spell:Venom:24:20:40:30
+spell:Venom:28:20:40:30
 effect:TIMED_INC:ATT_POIS:0:5
 dice:20+d20
 desc:Coats all your melee weapons with poison for 20+d20 turns.
-
-#Orig:Taunt:24:10:40:150 but in dungeon book
-#decreases likelihood of casting when fleeing as well.
-#Shouldn't need to increase with level since monsters have no resistance.
-#When taunted mon->min_range is set, but best_range remains unchanged.
-#When feared & taunted min_range=flee_range. When only taunted min_range=1.
-#spell:Provoke:28:10:35:20
-spell:Relentless Taunting:28:10:35:20
-effect:TIMED_INC:TAUNT
-dice:10+d10
-desc:Makes anything that can move more inclined to run toward you than make a
-desc: ranged attack. Duration 10+d10 turns.
 
 #I'm thinking of the humanoid version
 #of werewolf. This would be the least spellcasty class to shapechange.
@@ -1773,8 +1776,9 @@ desc: ranged attack. Duration 10+d10 turns.
 spell:Werewolf Form:33:25:45:80
 effect:SHAPECHANGE:werewolf
 desc:With a blood-curdling cry you change into a half-man half-wolf!
-desc: In this form you move and attack faster.
+desc: In this form you move, attack and heal faster.
 
+#tried to make these all deadly powers. Reprieve is questionably so.
 book:shadow book:dungeon:[Deadly Powers]:5:shadow
 
 #This is so quirky and flavorful I don't want to mess with it much
@@ -1783,12 +1787,13 @@ spell:Bloodlust:30:30:40:100
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
 desc:Gives you a powerful desire to kill, increased every time you satisfy it.
-desc: Gives you extra damage and, at higher levels, extra blows, but comes
+desc: Gives you extra melee damage and extra blows, but comes
 desc: with dangerous side-effects.
 
 #Point of this spell is to make meleeing monsters less of a hassle.
 #115 monsters with a melee attack that drains charges, xp, stats, enchantment.
 #42 have attacks that are not cured by this spell.
+#HP cost is mainly to keep this from being used to restore HP in a pinch.
 #Cost adj for objects: sSTR 9, sINT & sWIS 4, sDEX 7, sCON 8, hLife 5 m2
 #Compare Ranger's spell:Herbal Curing:40:20:90:100 cut,pois,stun,blbrth
 #Compare Druid's spell:Revitalize:35:70:90:90 all stats & xp.
@@ -1797,43 +1802,40 @@ effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:CON
 effect:RESTORE_EXP
-desc:Restores STR, INT, CON, and experience
+effect:DAMAGE
+dice:66
+desc:Restores STR, INT, CON, and experience at the cost of 66 HP.
 
 #project_monster_handler_FORCE says 3 + dam/20 spaces for all monsters.
 #TODO:Consider varying that per monster, maybe by max hp?
-#Changed this from 200 to level-dependent. It's the same at CL40.
+#Changed this from 200 to level-dependent. It's the same force at CL50.
 #4.2.0Throw Monster:27:12:50:30
-spell:Forceful Blow:40:16:50:150
+spell:Forceful Blow:38:16:50:150
 effect:MELEE_BLOWS
 dice:1
 effect:SHORT_BEAM:FORCE:1
 dice:2d$B
 expr:B:PLAYER_LEVEL:* 4
-desc:Attempts a melee blow and hits the target with force, throwing it back
+desc:Attempts 1 melee blow and hits the target with force, knocking it back
 desc: with a chance to stun it.
 #TODO(change to ATT_FORCE)
 
-#Maybe the rubble effect would be better
 #Idea is to give some privacy for a fight with bosses and others, but not
 #as strong as Single Combat.
-#This spell has not been carefully tested or balanced. Good candidate for
-#a buff/blow since we already have Earthquakes equipment.
+#Good candidate for a buff/blow since we already have Earthquake equipment.
 #Paladin spell:Single Combat:40:50:30:300
-#Druid spell:Volcanic Eruption:40:30:75:50
-spell:Quake:44:18:55:175
-effect:EARTHQUAKE:NONE:6
-desc:Causes a radius 6 earthquake centered around the player.
+#Druid spell:Volcanic Eruption:40:30:75:50 (radius 5; multiple effects)
+#old Mage spell:Earthquake:20:18:60:20 (radius 10)
+#old Priest spell:Earthquake:11:9:55:5 (radius 10)
+#old Ranger spell:Earthquake:30:28:60:16 (radius 10)
+#old Paladin spell:Earthquake:21:17:50:3 (radius 10)
+spell:Quake:44:39:55:175
+effect:EARTHQUAKE:NONE:13
+desc:Causes a radius 13 earthquake centered around the player.
 
 #Other promising thoughts:
-# - Class flags down to two, so we can put in crowd fighting, aggravate
-#     or something entirely new.
-# - Aura that damages enemies when they hit you in melee or from anywhere
-#     or just from being adjacent to you.
 # - Buff that gives +1 melee blow, esp if werewolf taken away
 # - Two-handed wielding
-# - When a spell relies on a blow connecting, could:
-#   - Leave an ATT_CONF style buff in place
-#   - Lower spell fail rates a lot to compensate for contact fail
-# - Deep descent spell?
+# - Change 3-4 spells to low spell fail rate, but depend upon a melee hit
 # - Summon monster?
 # - IMPAIR_MP hinder MP gains and degen for BG? Currently does nothing.

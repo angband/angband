@@ -146,6 +146,7 @@ blow:bite
 
 name:werewolf
 combat:5:5:0
+obj-flags:REGEN
 values:BLOWS[1] | MOVES[1]
 effect-msg:taking werewolf form
 effect:PROJECT_LOS:TURN_ALL
@@ -156,5 +157,5 @@ effect:TIMED_INC:SHERO
 dice:5+1d20
 blow:bite
 blow:bite
-blow:claw
+blow:slash
 blow:tear

@@ -181,7 +181,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	if (player_has(p, PF_COMBAT_REGEN)  && strcmp(kb_str, "poison")
 		&& strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
 		/*lose X% of HP get X% of SP*/
-		s32b sp_gain = (s32b)((MAX(p->msp, 10) << 16) * dam / p->mhp);
+		s32b sp_gain = (MAX((s32b)p->msp, 10) << 16) / (s32b)p->mhp * dam;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
@@ -191,8 +191,10 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Dead player */
 	if (p->chp < 0) {
 		/* From hell's heart I stab at thee */
-		if (p->chp + p->timed[TMD_BLOODLUST] + p->lev >= 0) {
-			if (turn % 10)
+		if (p->timed[TMD_BLOODLUST]
+			&& (p->chp + p->timed[TMD_BLOODLUST] + p->lev >= 0)) {
+			/* DAVIDTODO if a player quits the game and comes back, he dies. */
+			if (randint0(10))
 				msg("Your lust for blood keeps you alive!");
 			else {
 				msg("So great was his prowess and skill in warfare, the Elves said: ");
@@ -504,7 +506,6 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 }
 
 void bg_mana_to_hp(struct player *p, s32b sp_long) {
-	/* msgt(MSG_GENERIC, "bg_mana_to_hp %d", sp_long); DAVIDTODO */
 	if (sp_long <= 0 || p->msp == 0 || p->mhp == p->chp) return;
 
 	s32b hp_gain, sp_ratio;
@@ -654,7 +655,11 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 		if (randint0(100) < chance) {
 			/* Hack - only permanent with high chance (no-mana casting) */
 			bool perm = (randint0(100) < chance / 2) && (chance >= 50);
-			msg("You have damaged your health!");
+			if (randint0(2))
+				msg("You feel strange...");
+			else
+				msg("You have damaged your health!");
+
 			player_stat_dec(p, STAT_CON, perm);
 		}
 	}
@@ -673,6 +678,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	/* Scrambled stats */
 	if (flag & PY_EXERT_SCRAMBLE) {
 		if (randint0(100) < chance) {
+			msg("You feel strange...");
 			(void)player_inc_timed(p, TMD_SCRAMBLE, randint1(amount),
 								   true, true);
 		}

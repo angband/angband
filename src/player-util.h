@@ -29,6 +29,9 @@
 #define PY_REGEN_HPBASE 1442  /* Min amount HP regen*2^16 0.022 HP */
 #define PY_REGEN_MNBASE  524  /* Min amount SP regen*2^16 0.008 SP */
 
+/* COMBAT_REGEN: % of msp that must be spent to heal 1% of damage
+#define PY_CR_RATIO 2 not in use yet because it made code comments confusing. */
+
 /* Player over-exertion */
 enum {
 	PY_EXERT_NONE = 0x00,

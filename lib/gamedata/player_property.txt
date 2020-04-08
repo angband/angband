@@ -115,7 +115,7 @@ type:player
 code:COMBAT_REGEN
 name:Combat Regeneration
 #desc:Battle fuels your spirit, but complacency dims it.
-desc:Battle fuels your spirit, but complacency dims it. This class *loses* SP at half the rate others gain it, and gains HP at only half the normal rate. But it gains SP when damaged by a monster, or when attacking in melee. And this class regains small amounts of HP every time it casts a spell, and unspent SP regenerate HP at double efficiency. These more damaged the character is, the bigger these HP gains will be.
+desc:You draw power from the thrill of combat. This power is represented by Spell Points (SP). You gain SP in combat when damaged by a monster or when you attack in melee. When not in combat you *lose* SP at half the rate others gain it, and you gain hitpoints (HP) at only half the normal rate. When you spend SP by casting a spell you regain some HP, and unspent SP replenish your health even more efficiently. The more damaged the character is, the bigger these HP gains will be.
 
  ## Other player flags
 

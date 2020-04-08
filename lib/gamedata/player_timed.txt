@@ -362,11 +362,11 @@ on-end:You stop aggravating your enemies.
 
 name:BLOODLUST
 desc:desire to kill
-grade:y:9:Bloodlust:A red mist descends over your eyes!
-grade:I:19:Bloodlust:Your thirst for blood increases!
-grade:o:29:Bloodlust:Your thirst for blood increases!
-grade:r:39:Bloodlust:Your thirst for blood increases!
-grade:R:48:Bloodlust:Your thirst for blood increases!
+grade:y:10:Bloodlust:A red mist descends over your eyes!
+grade:I:18:Bloodlust:Your thirst for blood increases!
+grade:o:26:Bloodlust:Your thirst for blood increases!
+grade:r:34:Bloodlust:Your thirst for blood increases!
+grade:R:42:Bloodlust:Your thirst for blood increases!
 grade:P:50:Bloodlust:Your thirst for blood is insatiable!
 on-end:The mist clears.
 

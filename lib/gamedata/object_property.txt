@@ -1,8 +1,8 @@
 # object_property.txt
 
 # name: the property name
-# type: the type of object property.  Each property needs one, and it must 
-#       appear before the code in this file 
+# type: the type of object property.  Each property needs one, and it must
+#       appear before the code in this file
 # subtype: subtype of object property, currently only used by flags
 # id-type: how a property is identified, currently only used by flags
 # code: a code for the object property, which is used to associate it with its
@@ -502,7 +502,7 @@ type:flag
 subtype:bad
 id-type:timed
 code:IMPAIR_HP
-power:-9
+power:-8
 msg:You feel your {name} is slowing your recovery.
 desc:Impairs hitpoint recovery
 
@@ -511,7 +511,7 @@ type:flag
 subtype:bad
 id-type:timed
 code:IMPAIR_MANA
-power:-9
+power:-8
 msg:You feel your {name} is slowing your mana recovery.
 desc:Impairs mana recovery
 
@@ -563,7 +563,7 @@ type:flag
 subtype:bad
 id-type:on wield
 code:FRAGILE
-power:0
+power:-1
 desc:Can be destroyed if you attempt to remove its curses
 
 name:intensity 2 light
@@ -808,4 +808,3 @@ name:cold immunity
 type:immunity
 code:COLD
 power:43
-

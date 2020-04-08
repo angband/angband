@@ -3346,8 +3346,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No effect in town */
-	if (!player->depth) {
+	if (player->depth) {
+		msg("The ground shakes! The ceiling caves in!");
+	}
+	else {
+		/* No effect in town */
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -3362,7 +3365,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Paranoia -- Enforce maximum range */
-	if (r > 12) r = 12;
+	if (r > 15) r = 15;
 
 	/* Initialize a map of the maximal blast area */
 	for (y = 0; y < 32; y++)
@@ -3432,7 +3435,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		{
 			case 1:
 			{
-				msg("The cave ceiling collapses!");
+				msg("The cave ceiling collapses on you!");
 				break;
 			}
 			case 2:

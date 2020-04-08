@@ -826,6 +826,8 @@ static struct panel *get_panel_combat(void) {
 	panel_line(p, COLOUR_L_BLUE, "Armor", "[%d,%+d]",
 			player->known_state.ac, player->known_state.to_a);
 
+	/* multiplying bth by 10 and then dividing it by 10 seems pointless
+	 * but I'm too scared to change it -David */
 	/* Melee */
 	obj = equipped_item_by_slot_name(player, "weapon");
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;

@@ -668,7 +668,6 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 		/* Small chance of bloodlust side-effects */
 		if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
-			msg("You feel strange...");
 			player_over_exert(p, PY_EXERT_SCRAMBLE, 20, 20);
 		}
 
@@ -760,7 +759,6 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 	/* Small chance of bloodlust side-effects */
 	if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
-		msg("You feel something give way!");
 		player_over_exert(p, PY_EXERT_CON, 20, 0);
 	}
 
