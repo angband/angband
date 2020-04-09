@@ -1087,12 +1087,24 @@ void push_object(struct loc grid)
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
 		struct object *next = obj->next;
-		q_push_ptr(queue, obj);
+		/* In case the object is known, make a copy to work with
+		 * and try to delete the original which will orphan it to
+		 * serve as a placeholder for the known version. */
+		struct object *newobj = object_new();
 
-		/* Orphan the object */
-		obj->next = NULL;
-		obj->prev = NULL;
-		obj->grid = loc(0, 0);
+		object_copy(newobj, obj);
+		newobj->oidx = 0;
+		newobj->grid = loc(0, 0);
+		if (newobj->known) {
+			newobj->known = object_new();
+			object_copy(newobj->known, obj->known);
+			newobj->known->oidx = 0;
+			newobj->known->grid = loc(0, 0);
+		}
+		q_push_ptr(queue, newobj);
+
+		delist_object(cave, obj);
+		object_delete(&obj);
 
 		/* Next object */
 		obj = next;
