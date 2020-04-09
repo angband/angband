@@ -887,6 +887,16 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	/* Record in the level list */
 	list_object(c, drop);
 
+	/* If there's a known version, put it in the player's view of the
+	 * cave but at an unknown location.  square_note_spot() will move
+	 * it to the correct place if seen. */
+	if (drop->known) {
+		drop->known->oidx = drop->oidx;
+		drop->known->held_m_idx = 0;
+		drop->known->grid = loc(0, 0);
+		player->cave->objects[drop->oidx] = drop->known;
+	}
+
 	/* Redraw */
 	square_note_spot(c, grid);
 	square_light_spot(c, grid);
