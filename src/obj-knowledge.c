@@ -830,19 +830,27 @@ void object_set_base_known(struct object *obj)
 void object_sense(struct player *p, struct object *obj)
 {
 	struct object *known_obj = p->cave->objects[obj->oidx];
+	struct loc grid = obj->grid;
 	int none = tval_find_idx("none");
 
-	/* Make new sensed objects where necessary */
-	if (known_obj == NULL) {
-		/* Make and list the new object */
-		struct loc grid = obj->grid;
-		struct object *new_obj = object_new();
-		p->cave->objects[obj->oidx] = new_obj;
-		new_obj->oidx = obj->oidx;
-		obj->known = new_obj;
-		new_obj->number = 1;
+	/* Make new sensed objects where necessary or move them */
+	if (known_obj == NULL ||
+	    !square_holds_object(p->cave, grid, known_obj)) {
+		struct object *new_obj;
 
-		/* Give it a fake kind */
+		/* Check whether we need to make a new one */
+		if (obj->known) {
+			assert(known_obj == obj->known);
+			new_obj = obj->known;
+		} else {
+			new_obj = object_new();
+			obj->known = new_obj;
+			p->cave->objects[obj->oidx] = new_obj;
+			new_obj->oidx = obj->oidx;
+		}
+
+		/* Give it a fake kind and number. */
+		new_obj->number = 1;
 		if (tval_is_money(obj)) {
 			new_obj->kind = unknown_gold_kind;
 			new_obj->sval = lookup_sval(none, "<unknown treasure>");
