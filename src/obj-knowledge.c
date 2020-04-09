@@ -949,17 +949,13 @@ void object_grab(struct player *p, struct object *obj)
 
 	/* Make new known objects, fully know sensed ones, relocate old ones */
 	if (known_obj == NULL) {
-		/* Make and/or list the new object */
+		/* Make a new one */
 		struct object *new_obj;
 
-		/* Check whether we need to make a new one or list the old one */
-		if (obj->known) {
-			new_obj = obj->known;
-		} else {
-			new_obj = object_new();
-			obj->known = new_obj;
-			object_set_base_known(obj);
-		}
+		assert(! obj->known);
+		new_obj = object_new();
+		obj->known = new_obj;
+		object_set_base_known(obj);
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 	} else {
@@ -968,7 +964,10 @@ void object_grab(struct player *p, struct object *obj)
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
 
-		/* Detach from any old (incorrect) floor pile */
+		/* Detach from any old (incorrect) floor pile
+		 * This will be dead code once compatibility with old savefiles
+		 * isn't needed.  It (and the declaration of old above) can be
+		 * removed in 4.3.0. */
 		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
 			square_excise_object(p->cave, old, known_obj);
 		}
