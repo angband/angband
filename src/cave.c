@@ -385,13 +385,20 @@ struct chunk *cave_new(int height, int width) {
  * Free a chunk
  */
 void cave_free(struct chunk *c) {
-	int y, x;
+	int y, x, i;
 
 	while (c->join) {
 		struct connector *current = c->join;
 		mem_free(current->info);
 		c->join = current->next;
 		mem_free(current);
+	}
+
+	/* Look for orphaned objects and delete them. */
+	for (i = 1; i < c->obj_max; i++) {
+		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
+			object_delete(&c->objects[i]);
+		}
 	}
 
 	for (y = 0; y < c->height; y++) {
