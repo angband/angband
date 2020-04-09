@@ -875,67 +875,50 @@ void object_see(struct player *p, struct object *obj)
 
 	/* Make new known objects, fully know sensed ones, relocate old ones */
 	if (known_obj == NULL) {
-		/* Make and/or list the new object */
+		/* Make a new one */
 		struct object *new_obj;
 
-		/* Check whether we need to make a new one */
-		if (obj->known) {
-			new_obj = obj->known;
-		} else {
-			new_obj = object_new();
-			obj->known = new_obj;
-			object_set_base_known(obj);
-		}
-
-		/* If monster held, we're done */
-		if (obj->held_m_idx) return;
+		assert(! obj->known);
+		new_obj = object_new();
+		obj->known = new_obj;
+		object_set_base_known(obj);
 
 		/* List the known object */
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 
+		/* If monster held, we're done */
+		if (obj->held_m_idx) return;
+
 		/* Attach it to the current floor pile */
 		new_obj->grid = grid;
-		new_obj->number = obj->number;
-		if (!square_holds_object(p->cave, grid, new_obj)) {
-			pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
-		}
-	} else if (known_obj->kind != obj->kind) {
+		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
+	} else {
 		struct loc old = known_obj->grid;
 
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
 
-		/* Detach from any old pile (possibly the correct one) */
-		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
-			square_excise_object(p->cave, old, known_obj);
+		if (known_obj->kind != obj->kind) {
+			/* Copy over actual details */
+			object_set_base_known(obj);
+		} else {
+			known_obj->number = obj->number;
 		}
 
-		/* Copy over actual details */
-		object_set_base_known(obj);
+		/* If monster held, we're done */
+		if (obj->held_m_idx) return;
 
-		/* Attach it to the current floor pile */
-		known_obj->grid = grid;
-		known_obj->held_m_idx = 0;
-		if (!square_holds_object(p->cave, grid, known_obj)) {
+		/* Attach it to the current floor pile if necessary */
+		if (! square_holds_object(p->cave, grid, known_obj)) {
+			/* Detach from any old pile */
+			if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
+				square_excise_object(p->cave, old, known_obj);
+			}
+
+			known_obj->grid = grid;
 			pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, known_obj);
 		}
-	} else if (!square_holds_object(p->cave, grid, known_obj)) {
-		struct loc old = known_obj->grid;
-
-		/* Make sure knowledge is correct */
-		assert(known_obj == obj->known);
-		known_obj->number = obj->number;
-
-		/* Detach from any old pile */
-		if (!loc_is_zero(old) && square_holds_object(p->cave, old, known_obj)) {
-			square_excise_object(p->cave, old, known_obj);
-		}
-
-		/* Attach it to the current floor pile */
-		known_obj->grid = grid;
-		known_obj->held_m_idx = 0;
-		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, known_obj);
 	}
 }
 
