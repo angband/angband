@@ -1304,15 +1304,36 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
 		} else if (rf_has(mon->race->flags, RF_TAKE_ITEM)) {
-			/* Describe observable situations */
-			if (square_isseen(c, new) && !ignore_item_ok(obj))
-				msg("%s picks up %s.", m_name, o_name);
+			/*
+			 * Make a copy so the original can remain as a
+			 * placeholder if the player remembers seeing the
+			 * object.
+			 */
+			struct object *taken = object_new();
 
-			/* Carry the object */
-			square_excise_object(c, new, obj);
-			monster_carry(c, mon, obj);
-			square_note_spot(c, new);
-			square_light_spot(c, new);
+			object_copy(taken, obj);
+			taken->oidx = 0;
+			if (obj->known) {
+				taken->known = object_new();
+				object_copy(taken->known, obj->known);
+				taken->known->oidx = 0;
+				taken->known->grid = loc(0, 0);
+			}
+
+			/* Try to carry the copy */
+			if (monster_carry(c, mon, taken)) {
+				/* Describe observable situations */
+				if (square_isseen(c, new) && !ignore_item_ok(obj))
+					msg("%s picks up %s.", m_name, o_name);
+
+				/* Delete the object */
+				square_delete_object(c, new, obj, true, true);
+			} else {
+				if (taken->known) {
+					object_delete(&taken->known);
+				}
+				object_delete(&taken);
+			}
 		} else {
 			/* Describe observable situations */
 			if (square_isseen(c, new) && !ignore_item_ok(obj))
