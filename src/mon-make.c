@@ -350,7 +350,19 @@ void delete_monster_idx(int m_idx)
 		if (obj->artifact && !(obj->known && obj->known->artifact))
 			obj->artifact->created = false;
 
-		/* Delete the object */
+		/* Delete the object.  Since it's in the cave's list do
+		 * some additional bookkeeping. */
+		if (obj->known) {
+			/* It's not in a floor pile so remove it completely.
+			 * Once compatibility with old savefiles isn't needed
+			 * can skip the test and simply delist and delete
+			 * since any obj->known from a monster's inventory
+			 * will not be in a floor pile. */
+			if (loc_is_zero(obj->known->grid)) {
+				delist_object(player->cave, obj->known);
+				object_delete(&obj->known);
+			}
+		}
 		delist_object(cave, obj);
 		object_delete(&obj);
 		obj = next;
@@ -553,6 +565,16 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 			while (obj) {
 				if (obj->artifact && !(obj->known && obj->known->artifact))
 					obj->artifact->created = false;
+				/*
+				 * Also, remove from the cave's object list.
+				 * That way, the scan for orphaned objects
+				 * in cave_free() doesn't attempt to
+				 * access freed memory or free memory
+				 * twice.
+				 */
+				if (obj->oidx) {
+					c->objects[obj->oidx] = NULL;
+				}
 				obj = obj->next;
 			}
 			object_pile_free(held_obj);
