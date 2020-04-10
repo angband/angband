@@ -644,16 +644,21 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * For our purposes a tunnel is a horizontal or vertical path, not an
  * intersection. Thus, we want the squares on either side to walls in one
  * case (e.g. up/down) and open in the other case (e.g. left/right). We don't
- * want a square that represents an intersection point.
+ * want a square that represents an intersection point.  Treat doors the same
+ * as open floors in the tests since doors may replace a floor but not a wall.
  *
  * The high-level idea is that these are squares which can't be avoided (by
  * walking diagonally around them).
  */
 static bool lab_is_tunnel(struct chunk *c, struct loc grid) {
-	bool west = square_isopen(c, next_grid(grid, DIR_W));
-    bool east = square_isopen(c, next_grid(grid, DIR_E));
-    bool north = square_isopen(c, next_grid(grid, DIR_N));
-    bool south = square_isopen(c, next_grid(grid, DIR_S));
+    bool west = square_ispassable(c, next_grid(grid, DIR_W)) ||
+	square_iscloseddoor(c, next_grid(grid, DIR_W));
+    bool east = square_ispassable(c, next_grid(grid, DIR_E)) ||
+	square_iscloseddoor(c, next_grid(grid, DIR_E));
+    bool north = square_ispassable(c, next_grid(grid, DIR_N)) ||
+	square_iscloseddoor(c, next_grid(grid, DIR_N));
+    bool south = square_ispassable(c, next_grid(grid, DIR_S)) ||
+	square_iscloseddoor(c, next_grid(grid, DIR_S));
 
     return north == south && west == east && north != west;
 }
