@@ -1554,7 +1554,7 @@ skill-disarm-phys:20:15
 skill-disarm-magic:20:10
 skill-device:24:10
 skill-save:18:10
-skill-stealth:0:0
+skill-stealth:-1:-1
 skill-search:8:10
 skill-melee:65:40
 skill-shoot:35:15
@@ -1615,8 +1615,8 @@ desc: number of blows is reduced by 25% for each space, then rounded.
 spell:Shatter Stone:7:3:20:8
 effect:SHORT_BEAM:KILL_WALL:1
 dice:20+1d30
-desc:Destroys a section of wall or rubble, unless it is a permanent wall.
-desc: Deals 20+1d30 damage to monsters vulnerable to rock remover.
+desc:Destroys an adjacent section of wall or rubble, unless it is a permanent
+desc: wall.  Deals 20+1d30 damage to monsters vulnerable to rock remover.
 
 spell:Whirlwind Attack:10:5:30:10
 effect:SWEEP
@@ -1648,8 +1648,9 @@ spell:Howl of the Damned:18:8:30:16
 effect:PROJECT_LOS:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare every monster in line of sight for a player level and
-desc: monster depth duration. Monsters that resist fear are not affected.
+desc:Attempts to scare every monster in line of sight for a duration dependent
+desc: on player level and monster depth.  Monsters that resist fear are not
+desc: affected.
 
 spell:Relentless Taunting:24:10:35:20
 effect:TIMED_INC:TAUNT

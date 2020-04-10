@@ -674,7 +674,8 @@ bool project(struct source origin, int rad, struct loc finish,
 				int nx = path_grid[i].x;
 
 				/* Hack -- Balls explode before reaching walls. */
-				if (!square_ispassable(cave, path_grid[i]) && (rad > 0))
+				if (!square_ispassable(cave, path_grid[i]) && (rad > 0) &&
+					!(flg & (PROJECT_BEAM)))
 					break;
 
 				/* Advance */

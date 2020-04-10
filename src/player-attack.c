@@ -849,8 +849,8 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 		energy_lost = randint1(50) + 25;
 		/* Lose 26-75% of a turn due to stumbling after shield bash. */
 		msgt(MSG_GENERIC, "You stumble!");
+		p->upkeep->energy_use += energy_lost * z_info->move_energy / 100;
 	}
-	p->upkeep->energy_use += energy_lost * z_info->move_energy / 100;
 
 	return false;
 }
