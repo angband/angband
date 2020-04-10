@@ -301,6 +301,29 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 }
 
 
+static void screenshot_term_query(int wid, int hgt, int x, int y, int *a, wchar_t *c)
+{
+	if (y < ROW_MAP || y == hgt - 1 || x < COL_MAP) {
+		/* Record everything outside the map. */
+		(void) Term_what(x, y, a, c);
+	} else {
+		/*
+		 * In the map, skip over the padding for scaled up tiles.  As
+		 * necessary, pad trailing columns and rows with blanks.
+		 */
+		int srcx = (x - COL_MAP) * tile_width + COL_MAP;
+		int srcy = (y - ROW_MAP) * tile_height + ROW_MAP;
+
+		if (srcx < wid && srcy < hgt - 1) {
+			(void) Term_what(srcx, srcy, a, c);
+		} else {
+			*a = Term->attr_blank;
+			*c = Term->char_blank;
+		}
+	}
+}
+
+
 /**
  * Take an html screenshot
  */
@@ -351,7 +374,7 @@ void html_screenshot(const char *path, int mode)
 	for (y = 0; y < hgt; y++) {
 		for (x = 0; x < wid; x++) {
 			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
+			screenshot_term_query(wid, hgt, x, y, &a, &c);
 
 			/* Set the foreground and background */
 			fg_colour = a % MAX_COLORS;
