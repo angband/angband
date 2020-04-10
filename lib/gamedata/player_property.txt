@@ -109,11 +109,6 @@ name:Evil
 desc:You resist nether, but are hurt by holy attacks.
 
 type:player
-code:CROWD_FIGHT
-name:Crowd Fighter
-desc:You gains advantage from fighting many monsters at once.
-
-type:player
 code:COMBAT_REGEN
 name:Combat Regeneration
 desc:You draw power from the thrill of combat. This power is represented by

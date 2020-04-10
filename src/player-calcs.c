@@ -2249,11 +2249,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Movement speed */
 	state->num_moves = 1 + extra_moves;
 
-	/* Damage reduction for blackguards */
-	if (player_has(p, PF_CROWD_FIGHT)) {
-		state->perc_dam_red = player_crowd_damage_reduction(p);
-	}
-
 	return;
 }
 

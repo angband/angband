@@ -569,18 +569,6 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 static bool blow_after_effects(struct loc grid, int dmg, int splash,
 							   bool *fear, bool quake)
 {
-	/* Splash damage for crowd fighters */
-	if (player_has(player, PF_CROWD_FIGHT)) {
-		int dir;
-		for (dir = 0; dir < 8; dir++) {
-			struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
-			struct monster *mon = square_monster(cave, adj_grid);
-			if (!square_in_bounds(cave, adj_grid)) continue;
-			if (!mon) continue;
-			mon_take_hit(mon, splash, fear, NULL);
-		}
-	}
-
 	/* Apply earthquake brand */
 	if (quake) {
 		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, 0, 0,
