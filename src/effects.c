@@ -4958,7 +4958,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	int blows = effect_calculate_value(context, false);
 	int moves = 4;
 	int d, i;
-	struct loc target;
+	struct loc target = player->grid;
 	struct loc next_grid, grid_diff;
 	bool fear;
 
