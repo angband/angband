@@ -1721,11 +1721,11 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		/* Stairs along north wall */
 		pgrid.x = rand_spread(z_info->town_wid / 2,
 							  z_info->town_wid / 6);
-		pgrid.y = 2;
-		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_wid / 4)) {
+		pgrid.y = 1;
+		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_hgt / 4)) {
 			pgrid.y++;
 		}
-		if (pgrid.y >= z_info->town_wid / 4) continue;
+		if (pgrid.y >= z_info->town_hgt / 4) continue;
 
 
 		/* no lava next to stairs */
