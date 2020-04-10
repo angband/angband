@@ -36,7 +36,7 @@ Original Keyset Command Summary
   ^    (special - control key)         ^F   Repeat level feeling
   &    -                               ^G   Do autopickup
   *    Target monster or location      ^H   -
-  (    Load screen dump                ^I   (special - tab)
+  (    -                               ^I   (special - tab)
   )    Dump screen dump                ^J   (special - linefeed)
   {    Inscribe an object              ^K   -
   }    Uninscribe an object            ^L   Center map
@@ -97,7 +97,7 @@ Roguelike Keyset Command Summary
   ^    (special - control key)         ^F   Repeat level feeling
   &    -                               ^G   Do autopickup
   *    Target monster or location      ^H   (alter - west)
-  (    Load screen dump                ^I   (special - tab)
+  (    -                               ^I   (special - tab)
   )    Dump screen dump                ^J   alter - south)
   {    Inscribe an object              ^K   (alter - north)
   }    Uninscribe an object            ^L   (alter - east)
