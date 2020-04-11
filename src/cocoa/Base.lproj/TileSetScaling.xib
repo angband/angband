@@ -9,10 +9,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TileSetScalingPanelController">
             <connections>
-                <outlet property="_defaultScalingToggle" destination="dio-vm-KZS" id="Bt4-04-Y9A"/>
-                <outlet property="_horizontalScalingField" destination="8jn-gu-jjI" id="ODI-WL-mZv"/>
-                <outlet property="_horizontalScalingStepper" destination="4QZ-MO-lA4" id="avi-yy-0xe"/>
-                <outlet property="_verticalScalingStepper" destination="5dY-5i-UBq" id="qrc-ix-eHg"/>
                 <outlet property="defaultScalingToggle" destination="dio-vm-KZS" id="whW-V0-3Cn"/>
                 <outlet property="horizontalScalingField" destination="8jn-gu-jjI" id="sDt-Bq-Ype"/>
                 <outlet property="horizontalScalingStepper" destination="4QZ-MO-lA4" id="QxZ-To-XQx"/>
@@ -61,13 +57,10 @@
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
-                                <connections>
-                                    <action selector="respondToHorizontalScaleEdit:" target="-2" id="tic-hj-ZHi"/>
-                                </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4QZ-MO-lA4">
                                 <rect key="frame" x="205" y="-2" width="19" height="27"/>
-                                <stepperCell key="cell" continuous="YES" alignment="left" maxValue="100" id="J2r-zI-TCK"/>
+                                <stepperCell key="cell" continuous="YES" alignment="left" minValue="-1" maxValue="1" id="J2r-zI-TCK"/>
                                 <connections>
                                     <action selector="respondToHorizontalScaleStep:" target="-2" id="OSK-t4-v5i"/>
                                 </connections>
@@ -115,13 +108,10 @@
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
-                                <connections>
-                                    <action selector="respondToVerticalScaleEdit:" target="-2" id="y21-Zr-acx"/>
-                                </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5dY-5i-UBq">
                                 <rect key="frame" x="205" y="-2" width="19" height="27"/>
-                                <stepperCell key="cell" continuous="YES" alignment="left" maxValue="100" id="neE-X4-cNd"/>
+                                <stepperCell key="cell" continuous="YES" alignment="left" minValue="-1" maxValue="1" id="neE-X4-cNd"/>
                                 <connections>
                                     <action selector="respondToVerticalScaleStep:" target="-2" id="FAz-c3-yil"/>
                                 </connections>
