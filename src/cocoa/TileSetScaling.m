@@ -28,7 +28,8 @@
  * Is an internal helper function to invoke the delegate that computes the
  * default scaling.
  */
-- (void)computeDefaultScaling
+- (void)computeDefaultScalingHorizontal:(NSInteger *)pHor
+			       vertical:(NSInteger *)pVer
 {
     NSInteger newh, newv;
 
@@ -50,14 +51,8 @@
 	    @throw exc;
 	}
     }
-    self->_horizontalScaling = newh;
-    self->_verticalScaling = newv;
-    if (self.windowLoaded) {
-	[self.horizontalScalingField setIntegerValue:newh];
-	[self.horizontalScalingStepper setIntegerValue:newh];
-	[self.verticalScalingField setIntegerValue:newv];
-	[self.verticalScalingStepper setIntegerValue:newv];
-    }
+    *pHor = newh;
+    *pVer = newv;
 }
 
 /**
@@ -66,9 +61,9 @@
  *
  * Assumes that the window has been loaded.
  */
-- (void)updateEditableStates
+- (void)updateEditableStates:(BOOL)usesDefault
 {
-    if (self.usesDefaultScaling) {
+    if (usesDefault) {
 	self.horizontalScalingField.enabled = NO;
 	self.horizontalScalingStepper.enabled = NO;
 	self.verticalScalingField.enabled = NO;
@@ -98,39 +93,40 @@
     self.window.becomesKeyOnlyIfNeeded = YES;
     [self.window center];
     self.defaultScalingToggle.toolTip = @"turn off to edit scaling";
-    [self.horizontalScalingField.formatter
-	 setMinimum:[NSNumber numberWithInt:1]];
-    [self.horizontalScalingField.formatter
-	 setMaximum:[NSNumber numberWithLong:TileSetScalingPanelController.scalingMaximum]];
+    self.horizontalScalingField.delegate = self;
     [self.horizontalScalingField.formatter setAllowsFloats:NO];
     [self.horizontalScalingField.formatter setPartialStringValidationEnabled:YES];
     self.horizontalScalingField.toolTip =
 	[NSString stringWithFormat:@"integer between 1 and %ld",
 		  (long) TileSetScalingPanelController.scalingMaximum];
-    self.horizontalScalingStepper.minValue = 1;
-    self.horizontalScalingStepper.maxValue =
-	TileSetScalingPanelController.scalingMaximum;
-    self.horizontalScalingStepper.increment = 1;
-    [self.verticalScalingField.formatter
-	 setMinimum:[NSNumber numberWithInt:1]];
-    [self.verticalScalingField.formatter
-	 setMaximum:[NSNumber numberWithLong:TileSetScalingPanelController.scalingMaximum]];
     [self.verticalScalingField.formatter setAllowsFloats:NO];
+    self.verticalScalingField.delegate = self;
     [self.verticalScalingField.formatter setPartialStringValidationEnabled:YES];
     self.verticalScalingField.toolTip =
 	[NSString stringWithFormat:@"integer between 1 and %ld",
 		  (long) TileSetScalingPanelController.scalingMaximum];
-    self.verticalScalingStepper.minValue = 1;
-    self.verticalScalingStepper.maxValue =
-	TileSetScalingPanelController.scalingMaximum;
-    self.verticalScalingStepper.increment = 1;
     self.defaultScalingToggle.state =
 	(self.usesDefaultScaling) ? NSOnState : NSOffState;
     [self.horizontalScalingField setIntegerValue:self.horizontalScaling];
-    [self.horizontalScalingStepper setIntegerValue:self.horizontalScaling];
     [self.verticalScalingField setIntegerValue:self.verticalScaling];
-    [self.verticalScalingStepper setIntegerValue:self.verticalScaling];
-    [self updateEditableStates];
+    [self updateEditableStates:self.usesDefaultScaling];
+}
+
+/**
+ * Implement the control: textShouldEndEditing: method of the
+ * NSTextFieldDelegate (via NSControlTextEditingDelegate) protocol to coerce
+ * the value of one of the text field to the accepted range when the insertion
+ * point leaves the field.
+ */
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
+{
+    if (control.integerValue < 1) {
+	control.integerValue = 1;
+    } else if (control.integerValue >
+	       TileSetScalingPanelController.scalingMaximum) {
+	control.integerValue = TileSetScalingPanelController.scalingMaximum;
+    }
+    return YES;
 }
 
 + (NSInteger)scalingMaximum {
@@ -142,36 +138,83 @@
 }
 
 - (IBAction)respondToDefaultScalingToggle:(id)sender {
-    self.usesDefaultScaling = self.defaultScalingToggle.state == NSOnState;
-}
+    if (self.defaultScalingToggle.state == NSOnState) {
+	NSInteger newh, newv;
 
-- (IBAction)respondToHorizontalScaleEdit:(id)sender {
-    self->_horizontalScaling = self.horizontalScalingField.integerValue;
-    [self.horizontalScalingStepper setIntegerValue:self.horizontalScaling];
+	[self computeDefaultScalingHorizontal:&newh vertical:&newv];
+	[self.horizontalScalingField setIntegerValue:newh];
+	[self.verticalScalingField setIntegerValue:newv];
+	[self updateEditableStates:YES];
+    } else {
+	[self updateEditableStates:NO];
+    }
 }
 
 - (IBAction)respondToHorizontalScaleStep:(id)sender {
-    self->_horizontalScaling = self.horizontalScalingStepper.integerValue;
-    [self.horizontalScalingField setIntegerValue:self.horizontalScaling];
-}
+    NSInteger change = self.horizontalScalingStepper.integerValue;
+    NSInteger result = self.horizontalScalingField.integerValue + change;
 
-- (IBAction)respondToVerticalScaleEdit:(id)sender {
-    self->_verticalScaling = self.verticalScalingField.integerValue;
-    [self.verticalScalingStepper setIntegerValue:self.verticalScaling];
+    [self.horizontalScalingStepper setIntegerValue:0];
+
+    if (result < 1) {
+	result = 1;
+    } else if (result > TileSetScalingPanelController.scalingMaximum) {
+	result = TileSetScalingPanelController.scalingMaximum;
+    }
+    self->_horizontalScaling = result;
+    [self.horizontalScalingField setIntegerValue:result];
 }
 
 - (IBAction)respondToVerticalScaleStep:(id)sender {
-    self->_verticalScaling = self.verticalScalingStepper.integerValue;
-    [self.verticalScalingField setIntegerValue:self.verticalScaling];
+    NSInteger change = self.verticalScalingStepper.integerValue;
+    NSInteger result = self.verticalScalingField.integerValue + change;
+
+    [self.verticalScalingStepper setIntegerValue:0];
+
+    if (result < 1) {
+	result = 1;
+    } else if (result > TileSetScalingPanelController.scalingMaximum) {
+	result = TileSetScalingPanelController.scalingMaximum;
+    }
+    self->_verticalScaling = result;
+    [self.verticalScalingField setIntegerValue:result];
 }
 
 - (IBAction)respondToApply:(id)sender {
+    self->_usesDefaultScaling = self.defaultScalingToggle.state == NSOnState;
+
+    /*
+     * Coerce the value since editing and clicking directly on a dialog button
+     * doesn't invoke the textShouldEndEditing method.
+     */
+    self->_horizontalScaling = self.horizontalScalingField.integerValue;
+    if (self.horizontalScaling < 1) {
+	self->_horizontalScaling = 1;
+	self.horizontalScalingField.integerValue = self.horizontalScaling;
+    } else if (self.horizontalScaling >
+	       TileSetScalingPanelController.scalingMaximum) {
+	self->_horizontalScaling =
+	    TileSetScalingPanelController.scalingMaximum;
+	self.horizontalScalingField.integerValue = self.horizontalScaling;
+    }
+
+    self->_verticalScaling = self.verticalScalingField.integerValue;
+    if (self.verticalScaling < 1) {
+	self->_verticalScaling = 1;
+	self.verticalScalingField.integerValue = self.verticalScaling;
+    } else if (self.verticalScaling >
+	       TileSetScalingPanelController.scalingMaximum) {
+	self->_verticalScaling = TileSetScalingPanelController.scalingMaximum;
+	self.verticalScalingField.integerValue = self.verticalScaling;
+    }
+
     if (self.scalingChangeHandler != nil) {
 	[self.scalingChangeHandler
 	     changeTileSetScaling:self.horizontalScaling
 	     vertical:self.verticalScaling
 	     isDefault:self.usesDefaultScaling];
     }
+
     NSDictionary *extraInfo =
 	[NSDictionary dictionaryWithObjectsAndKeys:
 			  [NSNumber numberWithLong:self.horizontalScaling],
@@ -208,7 +251,6 @@
     self->_horizontalScaling = value;
     if (self.windowLoaded) {
 	[self.horizontalScalingField setIntegerValue:value];
-	[self.horizontalScalingStepper setIntegerValue:value];
     }
     self.usesDefaultScaling = NO;
 }
@@ -225,7 +267,6 @@
     self->_verticalScaling = value;
     if (self.windowLoaded) {
 	[self.verticalScalingField setIntegerValue:value];
-	[self.verticalScalingStepper setIntegerValue:value];
     }
     self.usesDefaultScaling = NO;
 }
@@ -233,18 +274,34 @@
 - (void)setUsesDefaultScaling:(BOOL)value {
     self->_usesDefaultScaling = value;
     if (self.usesDefaultScaling) {
-	[self computeDefaultScaling];
+	NSInteger newh, newv;
+
+	[self computeDefaultScalingHorizontal:&newh vertical:&newv];
+	self->_horizontalScaling = newh;
+	self->_verticalScaling = newv;
+	if (self.windowLoaded) {
+	    [self.horizontalScalingField setIntegerValue:newh];
+	    [self.verticalScalingField setIntegerValue:newv];
+	}
     }
     if (self.windowLoaded) {
 	self.defaultScalingToggle.state = (value) ? NSOnState : NSOffState;
-	[self updateEditableStates];
+	[self updateEditableStates:value];
     }
 }
 
 - (void)setDefaultScalingComputer:(id<TileSetDefaultScalingComputing>)delegate {
     self->_defaultScalingComputer = delegate;
     if (self.usesDefaultScaling) {
-	[self computeDefaultScaling];
+	NSInteger newh, newv;
+
+	[self computeDefaultScalingHorizontal:&newh vertical:&newv];
+	self->_horizontalScaling = newh;
+	self->_verticalScaling = newv;
+	if (self.windowLoaded) {
+	    [self.horizontalScalingField setIntegerValue:newh];
+	    [self.verticalScalingField setIntegerValue:newv];
+	}
     }
 }
 

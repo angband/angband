@@ -34,7 +34,7 @@
 /**
  * Declare a NSWindowController subclass to load the panel from the nib file.
  */
-@interface TileSetScalingPanelController : NSWindowController
+@interface TileSetScalingPanelController : NSWindowController <NSTextFieldDelegate>
 
 /**
  * Is the maximum allowed scale factor for either the horizontal or vertical
