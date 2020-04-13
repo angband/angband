@@ -356,6 +356,44 @@ unsigned check_for_inscrip(const struct object *obj, const char *inscrip)
 	return i;
 }
 
+/**
+ * Looks if "inscrip" immediately followed by a decimal integer without a
+ * leading sign character is present on the given object.  Returns the number
+ * of times such an inscription occurs and, if that value is at least one,
+ * sets *ival to the value of the integer that followed the first such
+ * inscription.
+ */
+unsigned check_for_inscrip_with_int(const struct object *obj, const char *inscrip, int* ival)
+{
+	unsigned i = 0;
+	size_t inlen = strlen(inscrip);
+	const char *s;
+
+	if (!obj->note) return 0;
+
+	s = quark_str(obj->note);
+
+	/* Needing this implies there are bad instances of obj->note around,
+	 * but I haven't been able to track down their origins - NRM */
+	if (!s) return 0;
+
+	do {
+		s = strstr(s, inscrip);
+		if (!s) break;
+		if (isdigit(s[inlen])) {
+			if (i == 0) {
+				long inarg = strtol(s + inlen, 0, 10);
+
+				*ival = (inarg < INT_MAX) ? (int) inarg : INT_MAX;
+			}
+			i++;
+		}
+		s++;
+	} while (s);
+
+	return i;
+}
+
 /*** Object kind lookup functions ***/
 
 /**
