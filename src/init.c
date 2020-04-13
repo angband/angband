@@ -936,7 +936,7 @@ static errr finish_parse_player_prop(struct parser *p) {
 	while (ability) {
 		if (streq(ability->type, "element")) {
 			size_t i;
-			for (i = 0; i < N_ELEMENTS(list_element_names); i++) {
+			for (i = 0; i < N_ELEMENTS(list_element_names) - 1; i++) {
 				char *name = projections[i].name;
 				new->index = i;
 				new->type = string_make(ability->type);
@@ -944,7 +944,7 @@ static errr finish_parse_player_prop(struct parser *p) {
 				my_strcap(name);
 				new->name = string_make(format("%s %s", name, ability->name));
 				new->value = ability->value;
-				if ((i != N_ELEMENTS(list_element_names) - 1) || ability->next){
+				if ((i != N_ELEMENTS(list_element_names) - 2) || ability->next){
 					previous = new;
 					new = mem_zalloc(sizeof(*new));
 					previous->next = new;
