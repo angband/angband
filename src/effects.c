@@ -4974,6 +4974,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	}
 
 	while (distance(player->grid, target) > 1 && moves > 0) {
+		int choice[] = { 0, 1, -1 };
 		grid_diff = loc_diff(target, player->grid);
 
 		/* Choice of direction simplified by prioritizing diagonals */
@@ -4989,12 +4990,10 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 		/* We'll give up to 3 choices: d, d + 1, d - 1 */
 		for (i = 0; i < 3; i++) {
-			if (i == 2) {
-				d -= 4;
-			}
-			d = (d + i) % 8;
-			next_grid = loc_sum(player->grid, clockwise_grid[d]);
+			int d_test = (d + choice[i]) % 8;
+			next_grid = loc_sum(player->grid, clockwise_grid[d_test]);
 			if (square_ispassable(cave, next_grid)) {
+				d = d_test;
 				break;
 			} else if (i == 2) {
 				msg("The way is barred.");

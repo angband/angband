@@ -475,7 +475,6 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 		}
 	}
-	//Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
 }
 
 static void display_player_flag_info(void)
