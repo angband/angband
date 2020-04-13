@@ -4990,7 +4990,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 		/* We'll give up to 3 choices: d, d + 1, d - 1 */
 		for (i = 0; i < 3; i++) {
-			int d_test = (d + choice[i]) % 8;
+			int d_test = (d + choice[i] + 8) % 8;
 			next_grid = loc_sum(player->grid, clockwise_grid[d_test]);
 			if (square_ispassable(cave, next_grid)) {
 				d = d_test;
