@@ -569,6 +569,10 @@ static void chest_trap(struct object *obj)
 				effect_do(trap->effect, source_chest_trap(trap), obj, &ident,
 						  false, 0, 0, 0);
 			}
+			if (trap->destroy) {
+				obj->pval = 0;
+				break;
+			}
 		}
 	}
 }
