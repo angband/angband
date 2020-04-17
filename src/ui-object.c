@@ -594,7 +594,9 @@ static int i1, i2;
 static int e1, e2;
 static int q1, q2;
 static int f1, f2;
+static int throwing_num;
 static struct object **floor_list;
+static struct object **throwing_list;
 static olist_detail_t olist_mode = 0;
 static int item_mode;
 static cmd_code item_cmd;
@@ -823,6 +825,33 @@ static void menu_header(void)
 			my_strcat(out_val, " / for Inven,", sizeof(out_val));
 		else if (use_equip)
 			my_strcat(out_val, " / for Equip,", sizeof(out_val));
+
+		/* Indicate legality of the "floor" */
+		if (allow_floor)
+			my_strcat(out_val, " - for floor,", sizeof(out_val));
+	}
+
+	/* Viewing throwing */
+	else if (player->upkeep->command_wrk == SHOW_THROWING) {
+		/* Begin the header */
+		strnfmt(out_val, sizeof(out_val), "Throwing items:");
+
+		/* List choices */
+		if (throwing_num) {
+			/* Build the header */
+			strnfmt(tmp_val, sizeof(tmp_val),  " a-%c,", I2A(throwing_num - 1));
+
+			/* Append */
+			my_strcat(out_val, tmp_val, sizeof(out_val));
+		}
+
+		/* Indicate legality of inventory */
+		if (use_inven)
+			my_strcat(out_val, " / for Inven,", sizeof(out_val));
+
+		/* Indicate legality of quiver */
+		if (use_quiver)
+			my_strcat(out_val, " | for Quiver,", sizeof(out_val));
 
 		/* Indicate legality of the "floor" */
 		if (allow_floor)
@@ -1134,6 +1163,16 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
 				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 			}
+		} else if (player->upkeep->command_wrk == SHOW_THROWING) {
+			if (left) {
+				if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+			} else {
+				if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+			}
 		}
 
 		newmenu = true;
@@ -1187,6 +1226,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
 	bool use_floor = ((mode & USE_FLOOR) ? true : false);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? true : false);
+	bool show_throwing = ((mode & SHOW_THROWING) ? true : false);
 
 	bool allow_inven = false;
 	bool allow_equip = false;
@@ -1198,7 +1238,11 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	int floor_max = z_info->floor_size;
 	int floor_num;
 
+	int throwing_max = z_info->pack_size + z_info->quiver_size +
+		z_info->floor_size;
+
 	floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
+	throwing_list = mem_zalloc(throwing_max * sizeof(*floor_list));
 	olist_mode = 0;
 	item_mode = mode;
 	item_cmd = cmd;
@@ -1307,10 +1351,19 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	else if (item_mode & USE_FLOOR)
 		item_mode -= USE_FLOOR;
 
+	/* Scan all throwing objects in reach */
+	throwing_num = scan_items(throwing_list, throwing_max,
+							  USE_INVEN | USE_QUIVER | USE_FLOOR,
+							  obj_is_throwing);
+
 	/* Require at least one legal choice */
 	if (allow_inven || allow_equip || allow_quiver || allow_floor) {
-		/* Start where requested if possible */
-		if ((player->upkeep->command_wrk == USE_EQUIP) && allow_equip)
+		/* Use throwing menu if at all possible */
+		if (show_throwing && throwing_num) {
+			player->upkeep->command_wrk = SHOW_THROWING;
+
+			/* Start where requested if possible */
+		} else if ((player->upkeep->command_wrk == USE_EQUIP) && allow_equip)
 			player->upkeep->command_wrk = USE_EQUIP;
 		else if ((player->upkeep->command_wrk == USE_INVEN) && allow_inven)
 			player->upkeep->command_wrk = USE_INVEN;
@@ -1397,6 +1450,9 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 				build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
 			else if (player->upkeep->command_wrk == USE_FLOOR)
 				build_obj_list(f2, floor_list, tester_m, olist_mode);
+			else if (player->upkeep->command_wrk == SHOW_THROWING)
+				build_obj_list(throwing_num, throwing_list, tester_m,
+							   olist_mode);
 
 			/* Show the prompt */
 			menu_header();

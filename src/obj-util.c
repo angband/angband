@@ -581,8 +581,7 @@ bool obj_is_activatable(const struct object *obj)
  */
 bool obj_can_activate(const struct object *obj)
 {
-	if (obj_is_activatable(obj))
-	{
+	if (obj_is_activatable(obj)) {
 		/* Check the recharge */
 		if (!obj->timeout) return true;
 	}
@@ -639,7 +638,7 @@ bool obj_can_cast_from(const struct object *obj)
 bool obj_can_study(const struct object *obj)
 {
 	return obj_can_browse(obj) &&
-			spell_book_count_spells(obj, spell_okay_to_study) > 0;
+		spell_book_count_spells(obj, spell_okay_to_study) > 0;
 }
 
 
@@ -659,6 +658,14 @@ bool obj_can_wear(const struct object *obj)
 bool obj_can_fire(const struct object *obj)
 {
 	return obj->tval == player->state.ammo_tval;
+}
+
+/**
+ * Determine if an object is designed for throwing
+ */
+bool obj_is_throwing(const struct object *obj)
+{
+	return of_has(obj->flags, OF_THROWING);
 }
 
 /* Can has inscrip pls */

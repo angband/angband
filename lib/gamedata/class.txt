@@ -1010,7 +1010,7 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 3
 effect:TIMED_INC:IMAGE
 dice:$B
-expr:B:PLAYER_LEVEL:* 2
+expr:B:PLAYER_LEVEL:/ 4
 desc:Produces a cloud of hallucinogenic gas affecting the player and monsters
 desc: within radius 4.
 

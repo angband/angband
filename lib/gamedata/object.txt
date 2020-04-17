@@ -188,7 +188,7 @@ alloc:50:1 to 100
 attack:1d4:0:0
 armor:0:0
 pval:7500
-flags:EXPLODE
+flags:EXPLODE | THROWING
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
 desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
@@ -1295,7 +1295,8 @@ pile:100:5d7
 alloc:30:0 to 100
 attack:1d2:0:0
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 
 name:& Iron Shot~
@@ -1308,7 +1309,8 @@ pile:100:5d7
 alloc:25:3 to 100
 attack:1d4:0:0
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 name:& Mithril Shot~
 type:shot
@@ -1320,7 +1322,8 @@ pile:100:5d7
 alloc:20:40 to 100
 attack:2d4:5:5
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 
 ##### Digging Tools #####

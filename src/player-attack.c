@@ -68,7 +68,9 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 	int perc = obj->kind->base->break_perc;
 
 	if (obj->artifact) return 0;
-	if (of_has(obj->flags, OF_THROWING)) perc = 1;
+	if (of_has(obj->flags, OF_THROWING) && !of_has(obj->flags, OF_EXPLODE)) {
+		perc = 1;
+	}
 	if (!hit_target) return (perc * perc) / 100;
 	return perc;
 }
@@ -1258,7 +1260,7 @@ void do_cmd_throw(struct command *cmd) {
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
-			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR)
+			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR | SHOW_THROWING)
 		!= CMD_OK)
 		return;
 
