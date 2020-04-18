@@ -105,6 +105,10 @@ static int path_dist(struct loc grid)
  */
 static void set_path_dist(struct loc grid, int dist)
 {
+	assert(grid.y >= top_left.y);
+	assert(grid.x >= top_left.x);
+	assert(grid.y < bottom_right.y);
+	assert(grid.x < bottom_right.x);
 	path_distance[grid.y - top_left.y][grid.x - top_left.x] = dist;
 }
 
@@ -167,10 +171,10 @@ static bool set_up_path_distances(struct loc grid)
 			/* Enforce length and area bounds */
 			if ((path_dist(next) <= cur_distance) ||
 				(path_dist(next) > MAX_PF_LENGTH) ||
-				(next.y <= top_left.y) ||
-				(next.y >= bottom_right.y - 1) ||
-				(next.x <= top_left.x) ||
-				(next.x >= bottom_right.x - 1)) {
+				(next.y < top_left.y) ||
+				(next.y >= bottom_right.y) ||
+				(next.x < top_left.x) ||
+				(next.x >= bottom_right.x)) {
 				continue;
 			}
 
@@ -226,6 +230,7 @@ bool find_path(struct loc grid)
 
 	/* Reduce to the actual number of steps */
 	path_step_idx--;
+	assert(path_step_idx >= 0);
 
 	return true;
 }
@@ -512,18 +517,22 @@ static void run_init(int dir)
 
 	/* Check for nearby or distant wall */
 	if (see_wall(cycle[i + 1], player->grid)) {
+		/* Wall diagonally left of player's current grid */
 		run_break_left = true;
 		shortleft = true;
 	} else if (see_wall(cycle[i + 1], grid)) {
+		/* Wall diagonally left of the grid the player is stepping to */
 		run_break_left = true;
 		deepleft = true;
 	}
 
 	/* Check for nearby or distant wall */
 	if (see_wall(cycle[i - 1], player->grid)) {
+		/* Wall diagonally right of player's current grid */
 		run_break_right = true;
 		shortright = true;
 	} else if (see_wall(cycle[i - 1], grid)) {
+		/* Wall diagonally right of the grid the player is stepping to */
 		run_break_right = true;
 		deepright = true;
 	}
@@ -533,7 +542,7 @@ static void run_init(int dir)
 		/* Not looking for open area */
 		run_open_area = false;
 
-		/* Angled or blunt corridor entry */
+		/* Check angled or blunt corridor entry for diagonal directions */
 		if (dir & 0x01) {
 			if (deepleft && !deepright)
 				run_old_dir = cycle[i - 1];
@@ -563,7 +572,6 @@ static bool run_test(void)
 	int i, max, inv;
 	int option, option2;
 
-
 	/* No options yet */
 	option = 0;
 	option2 = 0;
@@ -571,10 +579,8 @@ static bool run_test(void)
 	/* Where we came from */
 	prev_dir = run_old_dir;
 
-
-	/* Range of newly adjacent grids */
+	/* Range of newly adjacent grids - 5 for diagonals, 3 for cardinals */
 	max = (prev_dir & 0x01) + 1;
-
 
 	/* Look at every newly adjacent square. */
 	for (i = -max; i <= max; i++) {
@@ -835,8 +841,7 @@ void run_step(int dir)
 				}
 
 				/* Get step after */
-				grid = loc_sum(player->grid,
-							   ddgrid[path_step_dir[path_step_idx - 1]]);
+				grid = loc_sum(grid, ddgrid[path_step_dir[path_step_idx - 1]]);
 
 				/* Known wall, so run the direction we were going */
 				if (square_isknown(cave, grid) &&
