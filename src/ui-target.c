@@ -1054,7 +1054,7 @@ bool target_set_interactive(int mode, int x, int y)
 							 * next pass through
 							 * the loop.
 							 */
-							if (! square_in_bounds(cave, loc(x, y))) {
+							if (!square_in_bounds(cave, loc(x, y))) {
 							    x = player->grid.x;
 							    y = player->grid.y;
 							}
@@ -1062,7 +1062,7 @@ bool target_set_interactive(int mode, int x, int y)
 					} else if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 					} else {
 						/* cancel look mode */
@@ -1167,7 +1167,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case 'g':
 					{
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 						break;
 					}
@@ -1284,7 +1284,7 @@ bool target_set_interactive(int mode, int x, int y)
 					} else if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 					} else {
 						/* cancel look mode */
@@ -1418,7 +1418,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case 'g':
 					{
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 						break;
 					}

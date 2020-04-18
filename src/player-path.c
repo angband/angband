@@ -44,19 +44,27 @@
  */
 #define MAX_PF_LENGTH 500
 
+/**
+ * Bounds of the search rectangle
+ */
+static struct loc top_left, bottom_right;
 
-static int terrain[MAX_PF_RADIUS][MAX_PF_RADIUS];
-static char pf_result[MAX_PF_LENGTH];
-static int pf_result_index;
+/**
+ * Array of distances from the player
+ */
+static int path_distance[MAX_PF_RADIUS][MAX_PF_RADIUS];
 
-static int ox, oy, ex, ey;
-static int dir_search[8] = {2,4,6,8,1,3,7,9};
+/**
+ * Pathfinding results
+ */
+static int path_step_dir[MAX_PF_LENGTH];
+static int path_step_idx;
 
-
-static bool is_valid_pf(int y, int x)
+/**
+ * Determine whether a grid is OK for the pathfinder to check
+ */
+static bool is_valid_pf(struct loc grid)
 {
-	struct loc grid = loc(x, y);
-
 	/* Unvisited means allowed */
 	if (!square_isknown(cave, grid)) return true;
 
@@ -64,8 +72,7 @@ static bool is_valid_pf(int y, int x)
 	if (square_isdamaging(cave, grid)) return false;
 
 	/* No trapped squares (unless trapsafe) */
-	if (square_isvisibletrap(cave, grid) &&
-		!player_is_trapsafe(player)) {
+	if (square_isvisibletrap(cave, grid) &&	!player_is_trapsafe(player)) {
 		return false;
 	}
 
@@ -73,113 +80,152 @@ static bool is_valid_pf(int y, int x)
 	return (square_ispassable(cave, grid));
 }
 
-static void fill_terrain_info(void)
+/**
+ * Get pathfinding region
+ */
+static void get_pathfind_region(void)
 {
-	int i, j;
+	top_left.x = MAX(player->grid.x - MAX_PF_RADIUS / 2, 0);
+	top_left.y = MAX(player->grid.y - MAX_PF_RADIUS / 2, 0);
 
-	ox = MAX(player->grid.x - MAX_PF_RADIUS / 2, 0);
-	oy = MAX(player->grid.y - MAX_PF_RADIUS / 2, 0);
-
-	ex = MIN(player->grid.x + MAX_PF_RADIUS / 2 - 1, cave->width);
-	ey = MIN(player->grid.y + MAX_PF_RADIUS / 2 - 1, cave->height);
-
-	for (i = 0; i < MAX_PF_RADIUS; i++)
-		for (j = 0; j < MAX_PF_RADIUS; j++)
-			terrain[i][j] = -1;
-
-	for (j = oy; j < ey; j++)
-		for (i = ox; i < ex; i++)
-			if (is_valid_pf(j, i))
-				terrain[j - oy][i - ox] = MAX_PF_LENGTH;
-
-	terrain[player->grid.y - oy][player->grid.x - ox] = 1;
+	bottom_right.x = MIN(player->grid.x + MAX_PF_RADIUS / 2 - 1, cave->width);
+	bottom_right.y = MIN(player->grid.y + MAX_PF_RADIUS / 2 - 1, cave->height);
 }
 
-#define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) \
-							{ c = d; try_again = true; }
-
-bool findpath(int y, int x)
+/**
+ * Get the path distance info for a grid
+ */
+static int path_dist(struct loc grid)
 {
-	int i, j, k;
-	int dir = 10;
-	bool try_again;
-	int cur_distance;
-	struct loc grid = loc(x, y);
+	return path_distance[grid.y - top_left.y][grid.x - top_left.x];
+}
 
-	fill_terrain_info();
+/**
+ * Get the path distance info for a grid
+ */
+static void set_path_dist(struct loc grid, int dist)
+{
+	path_distance[grid.y - top_left.y][grid.x - top_left.x] = dist;
+}
 
-	terrain[player->grid.y - oy][player->grid.x - ox] = 1;
+/**
+ * Initialize terrain information
+ */
+static void path_dist_info_init(void)
+{
+	struct loc grid;
 
-	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
+	/* Set distance of all grids in the region to -1 */
+	for (grid.y = 0; grid.y < MAX_PF_RADIUS; grid.y++)
+		for (grid.x = 0; grid.x < MAX_PF_RADIUS; grid.x++)
+			path_distance[grid.y][grid.x] = -1;
+
+	/* Set distance of valid grids to MAX_PF_LENGTH */
+	for (grid.y = top_left.y; grid.y < bottom_right.y; grid.y++)
+		for (grid.x = top_left.x; grid.x < bottom_right.x; grid.x++)
+			if (is_valid_pf(grid))
+				set_path_dist(grid, MAX_PF_LENGTH);
+
+	/* Set distance of the player's grid to 0 */
+	set_path_dist(player->grid, 0);
+}
+
+/**
+ * Try to find a path from the player's grid
+ * \param grid the target grid
+ */
+static bool set_up_path_distances(struct loc grid)
+{
+	int i;
+	struct point_set *reached = point_set_new(MAX_PF_RADIUS * MAX_PF_RADIUS);
+
+	/* Initialize the pathfinding region */
+	get_pathfind_region();
+	path_dist_info_init();
+
+	/* Check bounds */
+	if ((grid.x >= top_left.x) && (grid.x < bottom_right.x) &&
+		(grid.y >= top_left.y) && (grid.y < bottom_right.y)) {
 		if ((square(cave, grid).mon > 0) &&
 			monster_is_visible(square_monster(cave, grid))) {
-			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
+			set_path_dist(grid, MAX_PF_LENGTH);
 		}
 	} else {
 		bell("Target out of range.");
 		return false;
 	}
 
-	/* 
-	 * And now starts the very naive and very 
-	 * inefficient pathfinding algorithm
-	 */
-	do {
-		try_again = false;
+	/* Add the player's grid to the set of marked grids */
+	add_to_point_set(reached, player->grid);
 
-		for (j = oy + 1; j < ey - 1; j++) {
-			for (i = ox + 1; i < ex - 1; i++) {
-				cur_distance = terrain[j - oy][i - ox] + 1;
+	/* Add the neighbours of any marked grid in the area */
+	for (i = 0; i < reached->n; i++) {
+		int k, cur_distance = path_dist(reached->pts[i]) + 1;
+		for (k = 0; k < 8; k++) {
+			struct loc next = loc_sum(reached->pts[i], ddgrid_ddd[k]);
 
-				if ((cur_distance > 0) && (cur_distance < MAX_PF_LENGTH)) {
-					for (dir = 1; dir < 10; dir++) {
-						int next_y, next_x;
-						if (dir == 5)
-							dir++;
-						next_y = j - oy + ddy[dir];
-						next_x = i - ox + ddx[dir];
-
-						MARK_DISTANCE(terrain[next_y][next_x], cur_distance);
-					}
-				}
+			/* Enforce length and area bounds */
+			if ((path_dist(next) <= cur_distance) ||
+				(path_dist(next) > MAX_PF_LENGTH) ||
+				(next.y <= top_left.y) ||
+				(next.y >= bottom_right.y - 1) ||
+				(next.x <= top_left.x) ||
+				(next.x >= bottom_right.x - 1)) {
+				continue;
 			}
+
+			/* Add the grid */
+			set_path_dist(next, cur_distance);
+			add_to_point_set(reached, next);
 		}
-
-		if (terrain[y - oy][x - ox] < MAX_PF_LENGTH)
-			try_again = false;
-
 	}
-	while (try_again) ;
 
-	/* Failure */
-	if (terrain[y - oy][x - ox] == -1 || terrain[y - oy][x - ox] == MAX_PF_LENGTH) {
+	/* Grid distances have been recorded, so we can get rid of the point set */
+	point_set_dispose(reached);
+
+	/* Failure to find a path */
+	if (path_dist(grid) == -1 || path_dist(grid) == MAX_PF_LENGTH) {
 		bell("Target space unreachable.");
 		return false;
 	}
 
-	/* Success */
-	i = x;
-	j = y;
+	/* Found a path */
+	return true;
+}
 
-	pf_result_index = 0;
+/**
+ * Fill the array of path step directions
+ * \param grid the target grid
+ */
+bool find_path(struct loc grid)
+{
+	struct loc new = grid;
 
-	while ((i != player->grid.x) || (j != player->grid.y)) {
-		cur_distance = terrain[j - oy][i - ox] - 1;
+	/* Attempt to find a path */
+	if (!set_up_path_distances(grid)) return false;
+
+	/* Now travel along the path, backwards */
+	path_step_idx = 0;
+	while (!loc_eq(new, player->grid)) {
+		int k, next_distance = path_dist(new) - 1;
+
+		/* Find the next step */
 		for (k = 0; k < 8; k++) {
-			dir = dir_search[k];
-			if (terrain[j - oy + ddy[dir]][i - ox + ddx[dir]] == cur_distance)
+			struct loc next = loc_sum(new, ddgrid_ddd[k]);
+			if (path_dist(next) == next_distance)
 				break;
 		}
 
-		/* Should never happen */
-		assert ((dir != 10) && (dir != 5));
+		/* Check we haven't exceeded path length */
+		if (path_step_idx >= MAX_PF_LENGTH) return false;
 
-		pf_result[pf_result_index++] = '0' + (char)(10 - dir);
-		i += ddx[dir];
-		j += ddy[dir];
+		/* Record the opposite of the backward direction */
+		path_step_dir[path_step_idx++] = 10 - ddd[k];
+		new = loc_sum(new, ddgrid_ddd[k]);
 	}
 
-	pf_result_index--;
+	/* Reduce to the actual number of steps */
+	path_step_idx--;
 
 	return true;
 }
@@ -200,33 +246,21 @@ int pathfind_direction_to(struct loc from, struct loc to)
 		return DIR_NONE;
 
 	if (dx >= 0 && dy >= 0) {
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_SE;
-		else if (adx > ady)
-			return DIR_E;
-		else
-			return DIR_S;
+		if (adx < ady * 2 && ady < adx * 2)	return DIR_SE;
+		else if (adx > ady) return DIR_E;
+		else return DIR_S;
 	} else if (dx > 0 && dy < 0) {
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NE;
-		else if (adx > ady)
-			return DIR_E;
-		else
-			return DIR_N;
+		if (adx < ady * 2 && ady < adx * 2)	return DIR_NE;
+		else if (adx > ady)	return DIR_E;
+		else return DIR_N;
 	} else if (dx < 0 && dy > 0) {
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_SW;
-		else if (adx > ady)
-			return DIR_W;
-		else
-			return DIR_S;
+		if (adx < ady * 2 && ady < adx * 2)	return DIR_SW;
+		else if (adx > ady)	return DIR_W;
+		else return DIR_S;
 	} else if (dx <= 0 && dy <= 0) {
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NW;
-		else if (adx > ady)
-			return DIR_W;
-		else
-			return DIR_N;
+		if (adx < ady * 2 && ady < adx * 2)	return DIR_NW;
+		else if (adx > ady)	return DIR_W;
+		else return DIR_N;
 	}
 
 	assert(0);
@@ -741,16 +775,16 @@ void run_step(int dir)
 				disturb(player, 0);
 				return;
 			}
-		} else if (pf_result_index < 0) {
+		} else if (path_step_idx < 0) {
 			/* Pathfinding, and the path is finished */
 			disturb(player, 0);
 			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
 			struct loc grid = loc_sum(player->grid,
-									  ddgrid[pf_result[pf_result_index] - '0']);
+									  ddgrid[path_step_dir[path_step_idx]]);
 
-			if (pf_result_index == 0) {
+			if (path_step_idx == 0) {
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
@@ -758,7 +792,7 @@ void run_step(int dir)
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
-			} else if (pf_result_index > 0) {
+			} else if (path_step_idx > 0) {
 				struct object *obj;
 
 				/* If the player has computed a path that is going to end up
@@ -769,7 +803,7 @@ void run_step(int dir)
 				 * the last direction moved and don't initialise the run
 				 * properly. */
 				grid = loc_sum(player->grid,
-							   ddgrid[pf_result[pf_result_index] - '0']);
+							   ddgrid[path_step_dir[path_step_idx]]);
 
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
@@ -802,18 +836,18 @@ void run_step(int dir)
 
 				/* Get step after */
 				grid = loc_sum(player->grid,
-							   ddgrid[pf_result[pf_result_index - 1] - '0']);
+							   ddgrid[path_step_dir[path_step_idx - 1]]);
 
 				/* Known wall, so run the direction we were going */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
 					player->upkeep->running_withpathfind = false;
-					run_init(pf_result[pf_result_index] - '0');
+					run_init(path_step_dir[path_step_idx]);
 				}
 			}
 
 			/* Now actually run the step if we're still going */
-			run_cur_dir = pf_result[pf_result_index--] - '0';
+			run_cur_dir = path_step_dir[path_step_idx--];
 		}
 	}
 

@@ -691,31 +691,26 @@ int cmd_get_target(struct command *cmd, const char *arg, int *target)
  * Points (presently unused)
  * ------------------------------------------------------------------------ */
 
-/*
- * XXX Use struct loc instead
- */
-
 /**
- * Set argument 'n' to point x,y
+ * Set argument 'n' to point grid
  */
-void cmd_set_arg_point(struct command *cmd, const char *arg, int x, int y)
+void cmd_set_arg_point(struct command *cmd, const char *arg, struct loc grid)
 {
 	union cmd_arg_data data;
-	data.point = loc(x, y);
+	data.point = grid;
 	cmd_set_arg(cmd, arg, arg_POINT, data);
 }
 
 /**
  * Retrieve argument 'n' if it's a point
  */
-int cmd_get_arg_point(struct command *cmd, const char *arg, int *x, int *y)
+int cmd_get_arg_point(struct command *cmd, const char *arg, struct loc *grid)
 {
 	union cmd_arg_data data;
 	int err;
 
 	if ((err = cmd_get_arg(cmd, arg, arg_POINT, &data)) == CMD_OK) {
-		*x = data.point.x;
-		*y = data.point.y;
+		*grid = data.point;
 	}
 
 	return err;

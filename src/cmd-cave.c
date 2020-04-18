@@ -1273,15 +1273,15 @@ void do_cmd_run(struct command *cmd)
  */
 void do_cmd_pathfind(struct command *cmd)
 {
-	int x, y;
+	struct loc grid;
 
 	/* XXX-AS Add better arg checking */
-	cmd_get_arg_point(cmd, "point", &x, &y);
+	cmd_get_arg_point(cmd, "point", &grid);
 
 	if (player->timed[TMD_CONFUSED])
 		return;
 
-	if (findpath(x, y)) {
+	if (find_path(grid)) {
 		player->upkeep->running = 1000;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);

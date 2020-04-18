@@ -300,7 +300,7 @@ void cmd_set_arg_choice(struct command *cmd, const char *arg, int choice);
 void cmd_set_arg_string(struct command *cmd, const char *arg, const char *str);
 void cmd_set_arg_direction(struct command *cmd, const char *arg, int dir);
 void cmd_set_arg_target(struct command *cmd, const char *arg, int target);
-void cmd_set_arg_point(struct command *cmd, const char *arg, int x, int y);
+void cmd_set_arg_point(struct command *cmd, const char *arg, struct loc grid);
 void cmd_set_arg_item(struct command *cmd, const char *arg, struct object *obj);
 void cmd_set_arg_number(struct command *cmd, const char *arg, int amt);
 
@@ -312,7 +312,7 @@ int cmd_get_arg_choice(struct command *cmd, const char *arg, int *choice);
 int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str);
 int cmd_get_arg_direction(struct command *cmd, const char *arg, int *dir);
 int cmd_get_arg_target(struct command *cmd, const char *arg, int *target);
-int cmd_get_arg_point(struct command *cmd, const char *arg, int *x, int *y);
+int cmd_get_arg_point(struct command *cmd, const char *arg, struct loc *grid);
 int cmd_get_arg_item(struct command *cmd, const char *arg, struct object **obj);
 int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
 
