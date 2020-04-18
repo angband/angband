@@ -3231,7 +3231,7 @@ static void lookup_symbol(char sym, char *buf, size_t max)
  */
 void do_cmd_query_symbol(void)
 {
-	int i, n;
+	int idx, num;
 	char buf[128];
 
 	char sym;
@@ -3270,9 +3270,9 @@ void do_cmd_query_symbol(void)
 	who = mem_zalloc(z_info->r_max * sizeof(u16b));
 
 	/* Collect matching monsters */
-	for (n = 0, i = 1; i < z_info->r_max - 1; i++) {
-		struct monster_race *race = &r_info[i];
-		struct monster_lore *lore = &l_list[i];
+	for (num = 0, idx = 1; idx < z_info->r_max - 1; idx++) {
+		struct monster_race *race = &r_info[idx];
+		struct monster_lore *lore = &l_list[idx];
 
 		/* Nothing to recall */
 		if (!lore->all_known && !lore->sights)
@@ -3285,14 +3285,13 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(race->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || char_matches_key(race->d_char, sym)) who[n++] = i;
+		if (all || char_matches_key(race->d_char, sym)) who[num++] = idx;
 	}
 
-	/* Nothing to recall */
-	if (!n) {
-		/* XXX XXX Free the "who" array */
+	/* No monsters to recall */
+	if (!num) {
+		/* Free the "who" array */
 		mem_free(who);
-
 		return;
 	}
 
@@ -3308,35 +3307,32 @@ void do_cmd_query_symbol(void)
 	/* Interpret the response */
 	if (query.code == 'k') {
 		/* Sort by kills (and level) */
-		sort(who, n, sizeof(*who), cmp_pkill);
+		sort(who, num, sizeof(*who), cmp_pkill);
 	} else if (query.code == 'y' || query.code == 'p') {
 		/* Sort by level; accept 'p' as legacy */
-		sort(who, n, sizeof(*who), cmp_level);
+		sort(who, num, sizeof(*who), cmp_level);
 	} else {
 		/* Any unsupported response is "nope, no history please" */
-	
-		/* XXX XXX Free the "who" array */
 		mem_free(who);
-
 		return;
 	}
 
-	/* Start at the end */
-	i = n - 1;
+	/* Start at the end, as the array is sorted lowest to highest */
+	idx = num - 1;
 
 	/* Scan the monster memory */
 	while (1) {
 		textblock *tb;
 
 		/* Extract a race */
-		int r_idx = who[i];
+		int r_idx = who[idx];
 		struct monster_race *race = &r_info[r_idx];
 		struct monster_lore *lore = &l_list[r_idx];
 
-		/* Hack -- Auto-recall */
+		/* Auto-recall */
 		monster_race_track(player->upkeep, race);
 
-		/* Hack -- Handle stuff */
+		/* Do any necessary updates or redraws */
 		handle_stuff(player);
 
 		tb = textblock_new();
@@ -3365,13 +3361,21 @@ void do_cmd_query_symbol(void)
 		/* Stop scanning */
 		if (query.code == ESCAPE) break;
 
-		/* Move to "prev" or "next" monster */
+		/* Move to previous or next monster */
 		if (query.code == '-') {
-			if (++i == n)
-				i = 0;
+			/* Previous is a step forward in the array */
+			idx++;
+			/* Wrap if we're at the end of the array */
+			if (idx == num) {
+				idx = 0;
+			}
 		} else {
-			if (i-- == 0)
-				i = n - 1;
+			/* Next is a step back in the array */
+			idx--;
+			/* Wrap if we're at the start of the array */
+			if (idx < 0) {
+				idx = num - 1;
+			}
 		}
 	}
 
