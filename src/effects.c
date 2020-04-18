@@ -3379,7 +3379,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	if (!player->depth) {
+	if (player->depth) {
 		msg("The ground shakes! The ceiling caves in!");
 	} else {
 		/* No effect in town */

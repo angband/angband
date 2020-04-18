@@ -95,5 +95,5 @@ H:Walking around with lots of heavy weapons is not necessarily a good idea.
 H:Carry around extra copies of town spellbooks in case one gets burned.
 H:You don't have to cover every resist all the time - carry swap items.
 H:The better fed you are, the faster you regenerate.
-H:Look at the food bar at the bottom of the screen to see how well fed you are.
+H:The food indicator at the bottom of the screen shows how well fed you are.
 H:The light meter at the bottom of the screen shows your light radius.
