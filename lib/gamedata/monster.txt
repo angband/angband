@@ -6891,7 +6891,7 @@ desc:It is a massive worm form, many feet in length.  Its vast maw drips acid
 desc: and poison.
 
 name:catoblepas
-plural:catoblepae
+plural:catoblepones
 base:quadruped
 color:g
 speed:110
@@ -12102,6 +12102,7 @@ flags:COLD_BLOOD | POWERFUL
 flags:PASS_WALL | KILL_BODY | KILL_ITEM
 flags:HURT_ROCK | IM_ELEC
 innate-freq:6
+spell-freq:6
 spells:BOULDER | BR_SHAR | BA_SHAR
 desc:Appearing as a giant of stone, this mighty elemental seems to draw its
 desc: power from the very fabric of the dungeon.

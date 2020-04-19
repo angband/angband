@@ -101,7 +101,7 @@ static int path_dist(struct loc grid)
 }
 
 /**
- * Get the path distance info for a grid
+ * Set the path distance info for a grid
  */
 static void set_path_dist(struct loc grid, int dist)
 {
