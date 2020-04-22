@@ -1491,6 +1491,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Clean up */
 	player->upkeep->command_wrk = 0;
+	mem_free(throwing_list);
 	mem_free(floor_list);
 
 	/* Result */
