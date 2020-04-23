@@ -508,6 +508,8 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	int weapon_slot = slot_by_name(player, "weapon");
 	struct object *current_weapon = slot_object(player, weapon_slot);
 	struct object *best_digger = NULL;
+	struct player_state local_state;
+	struct player_state *used_state = &player->state;
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
@@ -516,11 +518,11 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	best_digger = player_best_digger(player);
 	if (best_digger && best_digger != current_weapon) {
 		player->body.slots[weapon_slot].obj = best_digger;
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->only_partial = true;
-		update_stuff(player);
+		memcpy(&local_state, &player->state, sizeof(local_state));
+		calc_bonuses(player, &local_state, false, true);
+		used_state = &local_state;
 	}
-	calc_digging_chances(&player->state, digging_chances);
+	calc_digging_chances(used_state, digging_chances);
 
 	/* Do we succeed? */
 	okay = (digging_chances[square_digging(cave, grid) - 1] > randint0(1600));
@@ -528,9 +530,6 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	/* Swap back */
 	if (best_digger && best_digger != current_weapon) {
 		player->body.slots[weapon_slot].obj = current_weapon;
-		player->upkeep->update |= (PU_BONUS);
-		update_stuff(player);
-		player->upkeep->only_partial = false;
 	}
 
 	/* Success */
