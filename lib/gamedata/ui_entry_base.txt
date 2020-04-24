@@ -1,0 +1,36 @@
+# File: ui_entry_base.txt
+
+# Provide templates for ui_entry.txt.
+# Fields are the same as in ui_entry.txt but stuff configured here does not
+# appear directly in the user interface - has to have something in ui_entry.txt
+# that pulls it in as a template.
+
+name:good_flag_ui_compact_0
+renderer:char_screen1_flag_renderer
+combine:LOGICAL_OR
+category:CHAR_SCREEN1
+category:abilities
+flags:TIMED_AS_AUX
+desc:Template for one of the positive flags shown on the second character
+desc: screen.  Each occupies a row and has the label colored by the combination
+desc: of the flags across several sources.
+
+name:other_flag_ui_compact_0
+renderer:char_screen1_flag_renderer
+combine:LOGICAL_OR
+category:CHAR_SCREEN1
+category:hindrances
+flags:TIMED_AS_AUX
+desc:Template for one of the other flags shown on the second character
+desc: screen.  Each occupies a row and has the label colored by the combination
+desc: of the flags across several sources.
+
+name:numeric_as_sign_ui_0
+renderer:char_screen1_numeric_as_sign_renderer
+combine:ADD
+category:CHAR_SCREEN1
+category:modifiers
+flags:TIMED_AS_AUX
+desc:Template for one of the auxiliary statistics shown on the second
+desc: character screen.  Each occupies a row and has the label colored by
+desc: combination of the flags across several sources.

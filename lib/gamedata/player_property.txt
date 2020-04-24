@@ -18,6 +18,17 @@
 #    element - resistance, immunity or vulnerability to an element
 # code - the property name used by the game. Element codes are templates, and
 #        one is made for each element
+# bindui - Binds the property to a user interface element in ui_entry.txt.
+#          When binding an element property, the name will be parameterized
+#          with the element name.  Takes two parameters.  The first is an
+#          integer, which if nonzero, says the value is passed to the user
+#          interface element as an auxiliary one (used on some to indicate a
+#          sustain, for instance).  The second is the value to pass.  That can
+#          be an integer or "special" where the latter indicates that the
+#          value passed will be determined internally.  bindui currently only
+#          affects parts of the second character screen.  It can appear
+#          multiple times for the same entry to bind it to multiple user
+#          interface elements.
 # name - the name of the property
 # desc - the description of the property
 # value - value for elements; -1 (vulnerability), 1 (resistance) or 3 (immunity)
@@ -50,11 +61,13 @@ desc:You can sense ore in the walls.
 
 type:player
 code:FAST_SHOT
+bindui:shots_ui_compact_0:0:special
 name:Extra Shots
 desc:Your shooting speed improves with tension bows every 10 levels.
 
 type:player
 code:BRAVERY_30
+bindui:pfear_ui_compact_0:0:special
 name:Relentless [30]
 desc:You become immune to fear at level 30.
 
@@ -90,6 +103,7 @@ desc:You are extra persuasive to monsters.
 
 type:player
 code:UNLIGHT
+bindui:resist_ui_compact_0<DARK>:0:1
 name:Unlight
 desc:You gain stealth in, can see in, and resist the dark.
 
@@ -105,11 +119,13 @@ desc:You can bash monsters with a shield in melee.
 
 type:player
 code:EVIL
+bindui:resist_ui_compact_0<NETHER>:0:1
 name:Evil
 desc:You resist nether, but are hurt by holy attacks.
 
 type:player
 code:COMBAT_REGEN
+bindui:imphp_ui_compact_0:0:1
 name:Combat Regeneration
 desc:You draw power from the thrill of combat. This power is represented by
 desc: Spell Points (SP). You gain SP in combat when damaged by a monster or
@@ -124,81 +140,97 @@ desc: the character is, the bigger these HP gains will be.
 
 type:object
 code:SUST_STR
+bindui:stat_mod_ui_compact_0<STR>:1:1
 name:Sustain Strength
 desc:Your strength is sustained.
 
 type:object
 code:SUST_INT
+bindui:stat_mod_ui_compact_0<INT>:1:1
 name:Sustain Intelligence
 desc:Your intelligence is sustained.
 
 type:object
 code:SUST_WIS
+bindui:stat_mod_ui_compact_0<WIS>:1:1
 name:Sustain Wisdom
 desc:Your wisdom is sustained.
 
 type:object
 code:SUST_DEX
+bindui:stat_mod_ui_compact_0<DEX>:1:1
 name:Sustain Dexterity
 desc:Your dexterity is sustained.
 
 type:object
 code:SUST_CON
+bindui:stat_mod_ui_compact_0<CON>:1:1
 name:Sustain Constitution
 desc:Your constitution is sustained.
 
 type:object
 code:PROT_FEAR
+bindui:pfear_ui_compact_0:0:1
 name:Fear Immunity
 desc:You are immune to fear.
 
 type:object
 code:PROT_BLIND
+bindui:pblind_ui_compact_0:0:1
 name:Blindness Immunity
 desc:You cannot be blinded.
 
 type:object
 code:PROT_CONF
+bindui:pconf_ui_compact_0:0:1
 name:Confusion Immunity
 desc:You cannot be confused.
 
 type:object
 code:PROT_STUN
+bindui:pstun_ui_compact_0:0:1
 name:Stun Immunity
 desc:You cannot be stunned.
 
 type:object
 code:SLOW_DIGEST
+bindui:slow_digestion_ui_compact_0:0:1
 name:Slow Digestion
 desc:You have slow metabolism.
 
 type:object
 code:FEATHER
+bindui:feather_falling_ui_compact_0:0:1
 name:Feather Falling
 desc:You fall lightly.
 
 type:object
 code:REGEN
+bindui:regen_ui_compact_0:0:1
 name:Regeneration
 desc:You regenerate quickly.
 
 type:object
 code:TELEPATHY
+bindui:esp_ui_compact_0:0:1
 name:Telepathy
 desc:You have telepathy.
 
 type:object
 code:SEE_INVIS
+bindui:see_invis_ui_compact_0:0:1
 name:See Invisible
 desc:You can see invisible creatures.
 
 type:object
 code:FREE_ACT
+bindui:free_action_ui_compact_0:0:1
 name:Free Action
 desc:You are immune to paralysis.
 
 type:object
 code:HOLD_LIFE
+bindui:holdlife_ui_compact_0:0:1
 name:Hold Life
 desc:Your life force is sustained.
 
@@ -209,52 +241,62 @@ desc:You sometimes create earthquakes on impact.
 
 type:object
 code:IMPAIR_HP
+bindui:imphp_ui_compact_0:0:1
 name:Slow Regeneration
 desc:Your hitpoint recovery is impaired.
 
 type:object
 code:IMPAIR_MANA
+bindui:impsp_ui_compact_0:0:1
 name:Slow Mana Regeneration
 desc:Your mana recovery is impaired.
 
 type:object
 code:AFRAID
+bindui:fear_ui_compact_0:0:1
 name:Constant Fear
 desc:You are afraid of melee, and bad at shooting and casting spells.
 
 type:object
 code:NO_TELEPORT
+bindui: noteleport_ui_compact_0:0:1
 name:Teleport Ban
 desc:You cannot teleport.
 
 type:object
 code:AGGRAVATE
+bindui:aggravate_ui_compact_0:0:1
 name:Aggravate
 desc:You aggravate creatures nearby.
 
 type:object
 code:DRAIN_EXP
+bindui:drainxp_ui_compact_0:0:1
 name:Experience Drain
 desc:Your experience constantly drains away.
 
 type:object
 code:TRAP_IMMUNE
+bindui:trap_immunity_ui_compact_0:0:1
 name:Trap Immune
 desc:You are immune to traps.
 
 ## Element flags
 
 type:element
+bindui:resist_ui_compact_0:0:1
 name:Resistance
 desc:You resist
 value:1
 
 type:element
+bindui:resist_ui_compact_0:0:3
 name:Immunity
 desc:You are immune to
 value:3
 
 type:element
+bindui:resist_ui_compact_0:0:-1
 name:Vulnerability
 desc:You are vulnerable to
 value:-1

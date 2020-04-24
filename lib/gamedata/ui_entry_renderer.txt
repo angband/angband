@@ -1,0 +1,188 @@
+# File: ui_entry_renderer.txt
+
+# Configure how a quantity is rendered in the user interface.  Currently only
+# used for the parts of the second character screen.
+
+# The name is used to link the renderer with a user interface element in
+# ui_entry.txt so changes here would have to be mirrored there to keep the
+# link.
+# code binds the renderer to a specific backend in the executable.  It must
+# be one of the values listed in list-ui-entry-renderers.h.
+# colors and labelcolors configure the palette of colors used for either the
+# value or the label.  How indices into the palette are used depends on the
+# backend the renderer is bound to.  Changes to colors and labelcolors can
+# affect usability.  Both are optional; if not set, default values from the
+# backend are used.
+# symbols defines the palette of symbols the renderer uses if it converts
+# values to symbols (some of the rendering functions won't use the symbols
+# field).  How indices into the palette are used depends on the backend the
+# renderer is bound to.  Changes to symbols can affect usability.  It is
+# optional.  If not set, defaults values from the backend are used.
+# ndigit is the number of digits to display for a numeric value.  That is
+# only used by some renders and does not need to be set.  If set it must be a
+# positive integer.  If not set, the default value from the backend will be
+# used.
+# sign configures whether a sign indicator is shown with numeric values.  That
+# is only used by some renderers and does not need to be set.  If set, it
+# must be one of the following:  NO_SIGN, ALWAYS_SIGN, or NEGATIVE_SIGN.
+# NO_SIGN specifies that no sign indicator will be shown.  ALWAYS_SIGN
+# specifies that a sign indicator will always be shown (+ will be used for
+# zeros).  NEGATIVE_SIGN specifies that a sign indicator will only be shown
+# for negative values.  If not set, the default value from the backend will be
+# used.
+# units configures whether a label is shown immediately after numeric values.
+# This is only used by some renderers and does not need to be set.  By default,
+# numeric values will not be labeled with units.
+
+# COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX renders one or more resistance
+# values with the label colored by the combined resistance.  The auxiliary
+# values are treated as timed resistances.  One of nine symbols (unknown,
+# not present, none, resist, vulnerable, immune, timed resist, timed
+# vulnerability, timed immunity) are used for each resistance value.  The
+# symbols for the timed effects are only used if the permanent effect is known
+# and is none.  Each of those symbols has a corresponding color (from the
+# first 9 colors) and alternate color (from the second 9 colors).  The
+# alternate color is used for every other resist.  A palette of 8 colors is
+# used for the label.  They are:
+# unknown rune
+# no permanent resistance or immunity and no timed effects
+# at least one permanent resistance and no permanent immunity
+# at least one permanent immunity
+# at least one permanent vulnerability and no permanent resistance or immunity
+# no permanent effects or timed immunity and at least one timed resistance
+# no permanent effects, timed resistance, or timed immunity and at least one
+#     timed vulnerability
+# no permanent effects and at last one timed immunity
+
+# COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX renders one or more boolean flags
+# with the label colored by the combined (logical or) value.  The auxiliary
+# values are treated as timed effects.  One of five symbols (unknown, not
+# present, off, on, timed on) is used for each flag.  The symbol for the
+# timed effect is only used if the permanant effect is known and is off.  Each
+# of three symbols has a corresponding color (from the first five colors) and
+# alternate color (from the second five colors).  The alternate color is used
+# for every other flag.  A palette of four colors is used for the label.  They
+# are unknown rune, no flags are known to be on and there is no timed effect,
+# at least one flag is on, and no flags are known to be on but there is at
+# least one timed effect.
+
+# NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX renders one or more integer
+# modifiers with the label colored by the combined (by addition) value.  The
+# auxiliary values are treated as timed effects.  One of seven symbols
+# (unknown, not present, zero, positive, negative, timed positive, timed
+# negative) is used for each modifier.  The symbols for the timed effects are
+# only used if the permanent effect is known and is zero.  Each of the symbols
+# has a corresponding color (from the first seven colors) and alternate color
+# (from the second seven colors).  The alternate color is used for every other
+# modifier.  A palette of six colors is used for the label.  They are:
+# unknown rune
+# the sum of the known effects is zero and the sum of the timed effects is zero
+# the sum of the known effects is positive
+# the sum of the known effects is negative
+# the sum of the known effects is zero; the sum of the timed effects is
+#     positive
+# the sum of the known effects is zero; the sum of the timed effects is
+#     negative
+
+# NUMERIC_RENDERER_WITH_COMBINED_AUX renders one or more integer values
+# as decimal integers with the label colored by the combined value.  The
+# auxiliary values are treated as timed effects.  One of seven colors (unknown,
+# not present, zero, positive, negative, timed positive, timed negative) or an
+# alternate set of seven colors for those same conditions is used for each
+# modifer.  The alternate colors are used for every other value.  The colors
+# for the timed effects are only used if the permanent effect is known and is
+# zero.  There are seven symbols that may be used.  The first symbol is used
+# in place of digits when the value is unknown.  The second symbol is used in
+# place of digts when the value is not present.  The third symbol is used when
+# both the value and the auxiliary value are zero.  If it is '0', then it may
+# be shown with a sign, depending on the the setting for the sign indicator
+# described below.  The fourth symbol is used in place of digits when the
+# known permanent effect is positive and the value is too large to display with
+# the given number of digits.  The fifth symbol is used in place of digits when
+# the known permanent effect is negative and the value is too large to display
+# with the given number of digits.  The sixth symbol is used in place of digits
+# when the known permanent effect is zero and the timed effect is positive but
+# too large to display with the given number of digits.  The seventh symbol is
+# used in place of digits when the known permanent effect is zero and the
+# timed effect is negative but too large to display with the given number of
+# digits.  A palette of six colors is used for the label.  They are:
+# unknown rune
+# the sum of the known effects is zero and the sum of the timed effects is zero
+# the sum of the known effects is positive
+# the sum of the known effects is negative
+# the sum of the known effects is zero; the sum of the timed effects is
+#     positive
+# the sum of the known effects is zero; the sum of the timed effects is
+#     negative
+#
+# The number of digits is used to configure the number of digits shown for
+# each value.  The default value for the number of digits is one.  The sign
+# display is used to configure whether the digits are shown with a sign
+# indicator.  By default, a sign indicator will not be shown.  By default, a
+# sign indicator will not be shown.  The units label configures whether that
+# label is shown after each numeric value.  By default, no such label is shown.
+
+# NUMERIC_RENDERER_WITH_BOOL_AUX renders one or more integer values
+# as decimal integers with the label colored by the combined value.  The
+# auxiliary values are treated as booleans (one use would be for sustains).
+# One of eight colors (unknown, not present, zero with the auxilary flag off,
+# zero with the auxiliary flag on, positive with the auxiliary flag off,
+# positive with the auxiliary flag on, negative with the auxiliary flag off,
+# negative with the auxiliary flag on) or an alternate set of eight colors for
+# those same conditions is used for each modifier.  The alternate colors are
+# used for every other value.  There are six symbols that may be used.  The
+# first symbol is used in place of digits when the value is unknown.  The
+# second symbol is used in place of digits when the value is not present.  The
+# third symbol is used when the value is zero and the auxiliary flag is off.
+# If it is '0', then it may be shown with a sign, depending on the the setting
+# for the sign indicator described below.  The fourth symbol is used when the
+# value is zero and auxiliary flag is on.  If it is '0', then it may be shown
+# with a sign, depending on the the setting for the sign indicator described
+# below.  The fifth symbol is used in place of digits when the value is
+# positive and too large to display with the given number of digits.  The
+# sixth symbol is used in place of digits when the value is negative and too
+# large to display with the given number of digits.  A palette of seven colors
+# is used for the label.  They are:
+# unknown rune
+# the sum of the known values is zero and none of the auxiliary flags are on
+# the sum of the known values is zero and at least one auxiliary flag is on
+# the sum of the known values is positive and none of the auxiliary flags is on
+# the sum of the known values is positive and at least one auxiliary flag is on
+# the sum of the known values is negative and none of the auxiliary flags is on
+# the sum of the known values is positive and at least one auxiliary flag is on
+#
+# The number of digits is used to configure the number of digits shown for
+# each value.  The default value for the number of digits is one.  The sign
+# display is used to configure whether the digits are shown with a sign
+# indicator.  By default, a sign indicator will not be shown.  The units label
+# configures whether that label is shown after each numeric value.  By default,
+# no such label is shown.
+
+name:char_screen1_resist_renderer
+code:COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX
+colors:wwwwwwGwGWWWWWWGWG
+labelcolors:swBrgwww
+symbols:?..+-*!.!
+
+name:char_screen1_flag_renderer
+code:COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX
+colors:wwwwGWWWWG
+labelcolors:swBw
+symbols:?..+!
+
+name:char_screen1_numeric_as_sign_renderer
+code:NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX
+colors:wwwwwGwWWWWWGW
+labelcolors:swBrww
+symbols:?..+-!=
+
+# Currently, labelcolors has no impact on what's shown in the character screen
+# and what uses this internally expects ndigit to be one, sign to be NO_SIGN,
+# and nothing to be set for units.
+name:char_screen1_stat_mod_renderer
+code:NUMERIC_RENDERER_WITH_BOOL_AUX
+colors:sdsgGgrRwdsgGgrR
+labelcolors:wwwwwww
+symbols:? .s*=
+ndigit:1
+sign:NO_SIGN

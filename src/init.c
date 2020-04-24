@@ -64,6 +64,8 @@
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
+#include "ui-entry.h"
+#include "ui-entry-init.h"
 #include "ui-visuals.h"
 
 bool play_again = false;
@@ -845,38 +847,57 @@ static struct file_parser world_parser = {
  * ------------------------------------------------------------------------
  * Initialize player properties
  * ------------------------------------------------------------------------ */
+/*
+ * Keep track of UI entries to be bound to an ability while parsing.  Bind them
+ * at the end of parsing and don't pass them along to the stored player_ability
+ * structures.
+ */
+struct player_bound_ui {
+	char *name;
+	struct player_bound_ui *next;
+	int value;
+	bool isaux;
+	bool isspecial;
+};
+struct embryo_player_ability {
+	struct player_ability ability;
+	struct player_bound_ui *boundui;
+	struct embryo_player_ability *next;
+};
+static struct embryo_player_ability  *embryo_player_abilities = NULL;
+
 static enum parser_error parse_player_prop_type(struct parser *p) {
 	const char *type = parser_getstr(p, "type");
-	struct player_ability *h = parser_priv(p);
-	struct player_ability *ability = mem_zalloc(sizeof *ability);
+	struct embryo_player_ability *h = parser_priv(p);
+	struct embryo_player_ability *embryo = mem_zalloc(sizeof *embryo);
 
 	if (h) {
-		h->next = ability;
+		h->next = embryo;
 	} else {
-		player_abilities = ability;
+		embryo_player_abilities = embryo;
 	}
-	parser_setpriv(p, ability);
-	ability->type = string_make(type);
+	parser_setpriv(p, embryo);
+	embryo->ability.type = string_make(type);
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_player_prop_code(struct parser *p) {
 	const char *code = parser_getstr(p, "code");
-	struct player_ability *ability = parser_priv(p);
+	struct embryo_player_ability *embryo = parser_priv(p);
 	int index = -1;
 
-	if (!ability)
+	if (!embryo)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!ability->type)
+	if (!embryo->ability.type)
 		return PARSE_ERROR_MISSING_PLAY_PROP_TYPE;
 
-	if (streq(ability->type, "player")) {
+	if (streq(embryo->ability.type, "player")) {
 		index = code_index_in_array(player_info_flags, code);
-	} else if (streq(ability->type, "object")) {
+	} else if (streq(embryo->ability.type, "object")) {
 		index = code_index_in_array(list_obj_flag_names, code);
 	}
 	if (index >= 0) {
-		ability->index = index;
+		embryo->ability.index = index;
 	} else {
 		return PARSE_ERROR_INVALID_PLAY_PROP_CODE;
 	}
@@ -884,30 +905,68 @@ static enum parser_error parse_player_prop_code(struct parser *p) {
 }
 
 static enum parser_error parse_player_prop_desc(struct parser *p) {
-	struct player_ability *ability = parser_priv(p);
-	if (!ability)
+	struct embryo_player_ability *embryo = parser_priv(p);
+	if (!embryo)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	ability->desc = string_append(ability->desc, parser_getstr(p, "desc"));
+	embryo->ability.desc = string_append(embryo->ability.desc, parser_getstr(p, "desc"));
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_player_prop_name(struct parser *p) {
 	const char *desc = parser_getstr(p, "desc");
-	struct player_ability *ability = parser_priv(p);
-	if (!ability)
+	struct embryo_player_ability *embryo = parser_priv(p);
+	if (!embryo)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	ability->name = string_make(desc);
+	embryo->ability.name = string_make(desc);
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_player_prop_value(struct parser *p) {
-	struct player_ability *ability = parser_priv(p);
-	if (!ability)
+	struct embryo_player_ability *embryo = parser_priv(p);
+	if (!embryo)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	ability->value = parser_getint(p, "value");
+	embryo->ability.value = parser_getint(p, "value");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_prop_bindui(struct parser *p) {
+	const char *name = parser_getsym(p, "ui");
+	const char *value = parser_getsym(p, "uival");
+	bool isaux = (parser_getint(p, "aux") != 0);
+	struct embryo_player_ability *embryo = parser_priv(p);
+	struct player_bound_ui *boundui;
+	if (!embryo)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	boundui = mem_alloc(sizeof(*boundui));
+	boundui->name = string_make(name);
+	if (streq(value, "special")) {
+		boundui->value = 0;
+		boundui->isspecial = true;
+	} else {
+		long v;
+		char* end;
+
+		v = strtol(value, &end, 10);
+		if (! *value || *end) {
+			string_free(boundui->name);
+			mem_free(boundui);
+			return PARSE_ERROR_NOT_NUMBER;
+		}
+		if (v < INT_MIN || v > INT_MAX) {
+			string_free(boundui->name);
+			mem_free(boundui);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+		boundui->value = (int) v;
+		boundui->isspecial = false;
+	}
+	boundui->isaux = isaux;
+	boundui->next = embryo->boundui;
+	embryo->boundui = boundui;
 	return PARSE_ERROR_NONE;
 }
 
@@ -919,6 +978,7 @@ struct parser *init_parse_player_prop(void) {
 	parser_reg(p, "desc str desc", parse_player_prop_desc);
 	parser_reg(p, "name str desc", parse_player_prop_name);
 	parser_reg(p, "value int value", parse_player_prop_value);
+	parser_reg(p, "bindui sym ui int aux sym uival", parse_player_prop_bindui);
 	return p;
 }
 
@@ -927,49 +987,69 @@ static errr run_parse_player_prop(struct parser *p) {
 }
 
 static errr finish_parse_player_prop(struct parser *p) {
-	struct player_ability *ability = player_abilities;
+	struct embryo_player_ability *embryo = embryo_player_abilities;
+	struct embryo_player_ability *target;
+	struct player_bound_ui *boundui_cursor;
 	struct player_ability *new, *previous = NULL;
 
+	embryo_player_abilities = NULL;
 	/* Copy abilities over, making multiple copies for element types */
 	player_abilities = mem_zalloc(sizeof(*player_abilities));
 	new = player_abilities;
-	while (ability) {
-		if (streq(ability->type, "element")) {
+	while (embryo) {
+		if (streq(embryo->ability.type, "element")) {
 			size_t i;
 			for (i = 0; i < N_ELEMENTS(list_element_names) - 1; i++) {
 				char *name = projections[i].name;
 				new->index = i;
-				new->type = string_make(ability->type);
-				new->desc = string_make(format("%s %s.", ability->desc, name));
+				new->type = string_make(embryo->ability.type);
+				new->desc = string_make(format("%s %s.", embryo->ability.desc, name));
 				my_strcap(name);
-				new->name = string_make(format("%s %s", name, ability->name));
-				new->value = ability->value;
-				if ((i != N_ELEMENTS(list_element_names) - 2) || ability->next){
+				new->name = string_make(format("%s %s", name, embryo->ability.name));
+				new->value = embryo->ability.value;
+				boundui_cursor = embryo->boundui;
+				while (boundui_cursor) {
+					name = string_make(format("%s<%s>", boundui_cursor->name, list_element_names[i]));
+					(void) bind_player_ability_to_ui_entry_by_name(name, new, boundui_cursor->value, !boundui_cursor->isspecial, boundui_cursor->isaux);
+					string_free(name);
+					boundui_cursor = boundui_cursor->next;
+				}
+				if ((i != N_ELEMENTS(list_element_names) - 2) || embryo->next){
 					previous = new;
 					new = mem_zalloc(sizeof(*new));
 					previous->next = new;
 				}
 			}
-			string_free(ability->type);
-			string_free(ability->desc);
-			string_free(ability->name);
-			previous = ability;
-			ability = ability->next;
-			mem_free(previous);
+			string_free(embryo->ability.type);
+			string_free(embryo->ability.desc);
+			string_free(embryo->ability.name);
+			while (embryo->boundui) {
+				boundui_cursor = embryo->boundui;
+				embryo->boundui = embryo->boundui->next;
+				string_free(boundui_cursor->name);
+				mem_free(boundui_cursor);
+			}
 		} else {
-			new->type = ability->type;
-			new->index = ability->index;
-			new->desc = ability->desc;
-			new->name = ability->name;
-			if (ability->next) {
+			new->type = embryo->ability.type;
+			new->index = embryo->ability.index;
+			new->desc = embryo->ability.desc;
+			new->name = embryo->ability.name;
+			while (embryo->boundui) {
+				boundui_cursor = embryo->boundui;
+				embryo->boundui = embryo->boundui->next;
+				(void) bind_player_ability_to_ui_entry_by_name(boundui_cursor->name, new, boundui_cursor->value, !boundui_cursor->isspecial, boundui_cursor->isaux);
+				string_free(boundui_cursor->name);
+				mem_free(boundui_cursor);
+			}
+			if (embryo->next) {
 				previous = new;
 				new = mem_zalloc(sizeof(*new));
 				previous->next = new;
 			}
-			previous = ability;
-			ability = ability->next;
-			mem_free(previous);
 		}
+		target = embryo;
+		embryo = embryo->next;
+		mem_free(target);
 	}
 	parser_destroy(p);
 	return 0;
@@ -3597,6 +3677,8 @@ static struct {
 } pl[] = {
 	{ "world", &world_parser },
 	{ "projections", &projection_parser },
+	{ "ui renderers", &ui_entry_renderer_parser },
+	{ "ui entries", &ui_entry_parser },
 	{ "timed effects", &player_timed_parser },
 	{ "player properties", &player_property_parser },
 	{ "features", &feat_parser },
@@ -3682,6 +3764,7 @@ extern struct init_module player_module;
 extern struct init_module store_module;
 extern struct init_module messages_module;
 extern struct init_module options_module;
+extern struct init_module ui_player_module;
 
 static struct init_module *modules[] = {
 	&z_quark_module,
@@ -3696,6 +3779,7 @@ static struct init_module *modules[] = {
 	&mon_make_module,
 	&store_module,
 	&options_module,
+	&ui_player_module,
 	NULL
 };
 
