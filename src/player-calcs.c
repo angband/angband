@@ -2033,6 +2033,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Other timed effects */
+	player_flags_timed(p, state->flags);
+
 	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
@@ -2063,16 +2065,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_a += 40;
 		state->speed -= 5;
 	}
-	if (p->timed[TMD_BOLD]) {
-		of_on(state->flags, OF_PROT_FEAR);
-	}
 	if (p->timed[TMD_HERO]) {
-		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
 	}
 	if (p->timed[TMD_SHERO]) {
-		of_on(state->flags, OF_PROT_FEAR);
 		state->skills[SKILL_TO_HIT_MELEE] += 75;
 		state->to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
@@ -2085,18 +2082,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_SINFRA]) {
 		state->see_infra += 5;
-	}
-	if (p->timed[TMD_TELEPATHY]) {
-		of_on(state->flags, OF_TELEPATHY);
-	}
-	if (p->timed[TMD_SINVIS]) {
-		of_on(state->flags, OF_SEE_INVIS);
-	}
-	if (p->timed[TMD_FREE_ACT]) {
-		of_on(state->flags, OF_FREE_ACT);
-	}
-	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
-		of_on(state->flags, OF_AFRAID);
 	}
 	if (p->timed[TMD_TERROR]) {
 		state->speed += 10;
@@ -2115,9 +2100,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_OPP_POIS] && (state->el_info[ELEM_POIS].res_level < 2)) {
 			state->el_info[ELEM_POIS].res_level++;
-	}
-	if (p->timed[TMD_OPP_CONF]) {
-		of_on(state->flags, OF_PROT_CONF);
 	}
 	if (p->timed[TMD_CONFUSED]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 75 / 100;
