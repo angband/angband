@@ -2145,6 +2145,7 @@ static enum parser_error parse_entry_label(struct parser *p)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	name = parser_getstr(p, "label");
+	mem_free(embryo->entry->label);
 	embryo->entry->label = mem_alloc((MAX_ENTRY_LABEL + 1) *
 		sizeof(*embryo->entry->label));
 	nw = text_mbstowcs(embryo->entry->label, name, MAX_ENTRY_LABEL);
