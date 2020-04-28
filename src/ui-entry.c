@@ -1888,10 +1888,9 @@ static int hatch_embryo(struct embryonic_ui_entry *embryo)
 		n = (*name_parameters[embryo->param_index].count_func)();
 		for (i = 0; i < n - 1; ++i) {
 			struct ui_entry *entry = mem_alloc(sizeof(*entry));
-
+			const char *name = (*name_parameters[embryo->param_index].ith_name_func)(i);
 			entry->name = string_make(
-				format("%s<%s>", embryo->entry->name,
-				(*name_parameters[embryo->param_index].ith_name_func)(i)));
+				format("%s<%s>", embryo->entry->name, name));
 			if (embryo->psource_index != 0) {
 				entry->default_priority =
 					(*priority_schemes[embryo->psource_index].priority)(i);
@@ -1913,8 +1912,18 @@ static int hatch_embryo(struct embryonic_ui_entry *embryo)
 					embryo->entry->label, sz);
 				entry->nlabel = embryo->entry->nlabel;
 			} else {
-				entry->label = NULL;
-				entry->nlabel = 0;
+				size_t nw;
+
+				entry->label = mem_alloc(
+					(MAX_ENTRY_LABEL + 1) *
+					sizeof(*entry->label));
+				nw = text_mbstowcs(entry->label, name,
+					MAX_ENTRY_LABEL);
+				/* Ensure null termination. */
+				if (nw != (size_t)-1 &&
+					text_mbstowcs(entry->label + nw, "", 1) != (size_t)-1) {
+					entry->nlabel = nw;
+				}
 			}
 			copy_shortened_labels(entry, embryo->entry);
 			entry->renderer_index = embryo->entry->renderer_index;
@@ -1935,12 +1944,26 @@ static int hatch_embryo(struct embryonic_ui_entry *embryo)
 			/* Not parameterized */
 			embryo->entry->param_index = -1;
 		} else {
-			char *newname = string_make(
-				format("%s<%s>", embryo->entry->name,
-				(*name_parameters[embryo->param_index].ith_name_func)(n - 1)));
+			const char *name = (*name_parameters[embryo->param_index].ith_name_func)(n - 1);
+			char *entnm = string_make(
+				format("%s<%s>", embryo->entry->name, name));
 
 			string_free(embryo->entry->name);
-			embryo->entry->name = newname;
+			embryo->entry->name = entnm;
+			if (embryo->entry->nlabel == 0) {
+				size_t nw;
+
+				embryo->entry->label = mem_alloc(
+					(MAX_ENTRY_LABEL + 1) *
+					sizeof(*embryo->entry->label));
+				nw = text_mbstowcs(embryo->entry->label, name,
+					MAX_ENTRY_LABEL);
+				/* Ensure null termination. */
+				if (nw != (size_t)-1 &&
+					text_mbstowcs(embryo->entry->label + nw, "", 1) != (size_t)-1) {
+					embryo->entry->nlabel = nw;
+				}
+			}
 			embryo->entry->param_index = n - 1;
 			if (embryo->psource_index != 0) {
 				embryo->entry->default_priority =

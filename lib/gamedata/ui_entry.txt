@@ -15,11 +15,12 @@
 # element in list-elements.h) and "stat" (which will generate one entry for
 # each stat in list-stats.h).  The name of each entry will be the name
 # set followed by the name of the element or stat (for instance <ACID> or
-# <STR>).  The entries created from a generic one can be specialized later to
-# override fields.  Note that when a parameter is set, the undecorated name is
-# not entered into the list of user interface elements and can not be
-# successfully referenced from bindui in other files or template fields in
-# this one.
+# <STR>).  The label, if not set, of each entry will be the name of the
+# element or stat (for instance ACID or STR).  The entries created from a
+# generic one can be specialized later to override fields.  Note that when a
+# parameter is set, the undecorated name is not entered into the list of user
+# interface elements and can not be successfully referenced from bindui in
+# other files or template fields in this one.
 # The template field specifies that entry with that name be used as the
 # default values for the fields in this entry.  The template field is optional.
 # The renderer must be one of those set in ui_entry_renderer.txt.
