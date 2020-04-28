@@ -23,14 +23,14 @@ struct object;
 struct player;
 
 struct ui_entry;
-typedef bool (*ui_entry_predicate)(const struct ui_entry* entry, void* closure);
+typedef bool (*ui_entry_predicate)(const struct ui_entry *entry, void *closure);
 struct ui_entry_iterator;
 struct cached_object_data;
 struct cached_player_data;
 
-int bind_object_property_to_ui_entry_by_name(const char* name, int type,
+int bind_object_property_to_ui_entry_by_name(const char *name, int type,
 	int index, int value, bool have_value, bool isaux);
-int bind_player_ability_to_ui_entry_by_name(const char* name,
+int bind_player_ability_to_ui_entry_by_name(const char *name,
 	struct player_ability *ability, int value, bool have_value,
 	bool isaux);
 

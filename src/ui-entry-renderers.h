@@ -61,8 +61,8 @@ void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
 	const struct ui_entry_details *details);
 /* Handling for user-configurable parts */
 int ui_entry_renderer_customize(int ind, const char *colors,
-	const char *label_colors, const char* symbols);
-char* ui_entry_renderer_get_colors(int ind);
-char* ui_entry_renderer_get_label_colors(int ind);
-char* ui_entry_renderer_get_symbols(int ind);
+	const char *label_colors, const char *symbols);
+char *ui_entry_renderer_get_colors(int ind);
+char *ui_entry_renderer_get_label_colors(int ind);
+char *ui_entry_renderer_get_symbols(int ind);
 #endif /* INCLUDED_UI_ENTRY_RENDERERS_H */

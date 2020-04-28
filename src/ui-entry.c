@@ -35,7 +35,7 @@
 #define MAX_ENTRY_LABEL (80)
 
 struct ui_entry_iterator {
-	struct ui_entry** entries;
+	struct ui_entry **entries;
 	int n, i;
 };
 
@@ -49,7 +49,7 @@ struct cached_player_data {
 };
 
 struct category_reference {
-	const char* name;
+	const char *name;
 	int priority;
         bool priority_set;
 };
@@ -135,7 +135,7 @@ enum {
 	ENTRY_FLAG_TEMPLATE_ONLY = (1 << 20)
 };
 struct entry_flag {
-	const char* name;
+	const char *name;
 	int value;
 };
 static struct entry_flag entry_flags[] = {
@@ -154,7 +154,7 @@ struct ui_entry {
 	struct bound_object_property *obj_props;
 	struct bound_player_ability *p_abilities;
 	wchar_t *label;
-	wchar_t* shortened_labels[MAX_SHORTENED];
+	wchar_t *shortened_labels[MAX_SHORTENED];
 	wchar_t shortened_buffer[MAX_SHORTENED + (MAX_SHORTENED * (MAX_SHORTENED + 1)) / 2];
 	int nshortened[MAX_SHORTENED];
 	int nlabel;
@@ -200,7 +200,7 @@ static struct ui_entry_name_parameter name_parameters[] = {
 };
 
 struct ui_entry_priority_scheme {
-	const char* name;
+	const char *name;
 	int (*priority)(int i);
 };
 
@@ -215,7 +215,7 @@ static struct ui_entry_priority_scheme priority_schemes[] = {
 };
 
 struct embryonic_category_reference {
-	const char* name;
+	const char *name;
 	int psource_index;
 	int priority;
 	bool priority_set;
@@ -245,7 +245,7 @@ static struct ui_entry **entries = NULL;
  * returns a nonzero value.  Otherwise returns zero after binding the property.
  * Currently, this is only used for some parts of the second character screen.
  */
-int bind_object_property_to_ui_entry_by_name(const char* name, int type,
+int bind_object_property_to_ui_entry_by_name(const char *name, int type,
 	int index, int value, bool have_value, bool isaux)
 {
 	int ind;
@@ -288,7 +288,7 @@ int bind_object_property_to_ui_entry_by_name(const char* name, int type,
  * returns zero after binding the ability.  Currently, this is only used for
  * some parts of the second character screen.
  */
-int bind_player_ability_to_ui_entry_by_name(const char* name,
+int bind_player_ability_to_ui_entry_by_name(const char *name,
 	struct player_ability *ability, int value, bool have_value, bool isaux)
 {
 	int ind;
@@ -397,7 +397,7 @@ void get_ui_entry_label(const struct ui_entry *entry, int length,
 }
 
 
-static const char* category_for_cmp_desc_prio = NULL;
+static const char *category_for_cmp_desc_prio = NULL;
 static int cmp_desc_prio(const void *left, const void *right)
 {
 	const struct ui_entry *eleft =
@@ -609,7 +609,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	struct cached_object_data **cache, int *val, int *auxval)
 {
 	struct combining_algorithm_state cst = { 0, 0, 0 };
-	const struct combining_algorithm* combiner;
+	const struct combining_algorithm *combiner;
 	const struct curse_data *curse;
 	struct cached_object_data *cache2;
 	bool first, all_unknown, all_aux_unknown, any_aux, all_aux;
@@ -815,7 +815,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 	int *auxval)
 {
 	struct combining_algorithm_state cst = { 0, 0, 0 };
-	const struct combining_algorithm* combiner;
+	const struct combining_algorithm *combiner;
 	bool first;
 	int i;
 
@@ -1362,7 +1362,7 @@ static int search_embryo_categories(const struct embryonic_ui_entry *embryo,
  * nonzero value if found and set *ind to its index.  Otherwise, return zero
  * and set *ind to where it should be inserted.
  */
-static int search_categories(const char* name, int *ind)
+static int search_categories(const char *name, int *ind)
 {
 	int ilow = 0, ihigh = n_category;
 
@@ -1644,7 +1644,7 @@ static void resist_0_combine_init(int v, int a,
 	 * Use the accum values in st for the most positive.  Allocate working
 	 * space to store the most negative.
 	 */
-	int* work = mem_alloc(2 * sizeof(*work));
+	int *work = mem_alloc(2 * sizeof(*work));
 
 	st->v = work;
 	if (v > 0) {
@@ -1997,7 +1997,7 @@ static int hatch_last_embryo(struct parser *p)
 
 static enum parser_error parse_entry_name(struct parser *p)
 {
-	const char* name = parser_getstr(p, "name");
+	const char *name = parser_getstr(p, "name");
 	struct embryonic_ui_entry *embryo = parser_priv(p);
 	int ind;
 
@@ -2262,7 +2262,7 @@ static enum parser_error parse_entry_priority(struct parser *p)
 	i = 1;
 	while (1) {
 		if (i >= n) {
-			char* end;
+			char *end;
 			long v;
 
 			v = strtol(name, &end, 10);

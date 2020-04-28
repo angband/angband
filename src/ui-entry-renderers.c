@@ -41,7 +41,7 @@ typedef void (*renderer_func)(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info);
+	const struct renderer_info *info);
 typedef int (*valuewidth_func)(const struct renderer_info *info);
 
 static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
@@ -55,7 +55,7 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info);
+	const struct renderer_info *info);
 static int valuewidth_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info);
 static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
@@ -65,7 +65,7 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info
+	const struct renderer_info *info
 );
 static int valuewidth_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info);
@@ -76,7 +76,7 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info);
+	const struct renderer_info *info);
 static int valuewidth_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info);
 static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
@@ -86,7 +86,7 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info);
+	const struct renderer_info *info);
 static int valuewidth_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info);
 static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
@@ -96,7 +96,7 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	const int *auxvals,
 	int n,
 	const struct ui_entry_details *details,
-	const struct renderer_info* info);
+	const struct renderer_info *info);
 static int valuewidth_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	const struct renderer_info *info);
 
@@ -237,7 +237,7 @@ int ui_entry_renderer_query_value_width(int ind)
  */
 void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
 	const int *vals, const int *auxvals, int n,
-	const struct ui_entry_details* details)
+	const struct ui_entry_details *details)
 {
 	if (ind <= 0 || ind > renderer_count || !renderers[ind - 1].backend) {
 		return;
@@ -255,7 +255,7 @@ void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
  * of the values to change.
  */
 int ui_entry_renderer_customize(int ind, const char *colors,
-	const char *label_colors, const char* symbols)
+	const char *label_colors, const char *symbols)
 {
 	size_t length;
 
@@ -300,7 +300,7 @@ int ui_entry_renderer_customize(int ind, const char *colors,
  * setting for the palette of colors.  That string should be released with
  * string_free().  Otherwise, returns NULL.
  */
-char* ui_entry_renderer_get_colors(int ind)
+char *ui_entry_renderer_get_colors(int ind)
 {
 	if (ind < 1 || ind > renderer_count) {
 		return NULL;
@@ -315,7 +315,7 @@ char* ui_entry_renderer_get_colors(int ind)
  * setting for the palette of label colors.  That string should be released
  * with string_free().  Otherwise, returns NULL.
  */
-char* ui_entry_renderer_get_label_colors(int ind)
+char *ui_entry_renderer_get_label_colors(int ind)
 {
 	if (ind < 1 || ind > renderer_count) {
 		return NULL;
@@ -330,7 +330,7 @@ char* ui_entry_renderer_get_label_colors(int ind)
  * setting for the palette of symbols.  That string should be released
  * with string_free().  Otherwise, returns NULL.
  */
-char* ui_entry_renderer_get_symbols(int ind)
+char *ui_entry_renderer_get_symbols(int ind)
 {
 	if (ind < 1 || ind > renderer_count) {
 		return NULL;
@@ -410,8 +410,8 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const int *vals,
 	const int *auxvals,
 	int n,
-	const struct ui_entry_details* details,
-	const struct renderer_info* info)
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
 {
 	bool immune = false;
 	bool resist = false;
@@ -519,8 +519,8 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	const int *vals,
 	const int *auxvals,
 	int n,
-	const struct ui_entry_details* details,
-	const struct renderer_info* info)
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
 {
 	bool any_on = false;
 	bool any_timed_on = false;
@@ -596,8 +596,8 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	const int *vals,
 	const int *auxvals,
 	int n,
-	const struct ui_entry_details* details,
-	const struct renderer_info* info)
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
 {
 	long sum = 0;
 	long sum_timed = 0;
@@ -705,8 +705,8 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	const int *vals,
 	const int *auxvals,
 	int n,
-	const struct ui_entry_details* details,
-	const struct renderer_info* info)
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
 {
 	long sum = 0;
 	long sum_timed = 0;
@@ -873,8 +873,8 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	const int *vals,
 	const int *auxvals,
 	int n,
-	const struct ui_entry_details* details,
-	const struct renderer_info* info)
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
 {
 	long sum = 0;
 	int aux_combined = 0;
