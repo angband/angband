@@ -183,6 +183,8 @@ static void write_curse_kinds(void)
 		}
 		curse->obj->known->kind = curse_object_kind;
 		curses[i].obj->known->sval = sval;
+		/* Mark it as touched so it can be fully known. */
+		curse->obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	}
 }
 
