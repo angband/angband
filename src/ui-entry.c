@@ -1904,7 +1904,7 @@ static int hatch_embryo(struct embryonic_ui_entry *embryo)
 			entry->obj_props = NULL;
 			entry->p_abilities = NULL;
 			if (embryo->entry->nlabel > 0) {
-				size_t sz = embryo->entry->nlabel *
+				size_t sz = (embryo->entry->nlabel + 1) *
 					sizeof(*entry->label);
 
 				entry->label = mem_alloc(sz);
