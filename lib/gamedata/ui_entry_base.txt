@@ -9,6 +9,7 @@ name:good_flag_ui_compact_0
 renderer:char_screen1_flag_renderer
 combine:LOGICAL_OR
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 category:abilities
 flags:TIMED_AS_AUX
 desc:Template for one of the positive flags shown on the second character
@@ -19,6 +20,7 @@ name:other_flag_ui_compact_0
 renderer:char_screen1_flag_renderer
 combine:LOGICAL_OR
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 category:hindrances
 flags:TIMED_AS_AUX
 desc:Template for one of the other flags shown on the second character
@@ -29,6 +31,7 @@ name:numeric_as_sign_ui_0
 renderer:char_screen1_numeric_as_sign_renderer
 combine:ADD
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 category:modifiers
 flags:TIMED_AS_AUX
 desc:Template for one of the auxiliary statistics shown on the second

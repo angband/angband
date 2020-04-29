@@ -39,7 +39,8 @@
 # The category and priority fields can be set multiple times.  The
 # categories are used to select if an entry appears in a screen.   If you want
 # an entry to be included in the second character screen, one of the categories
-# given must be CHAR_SCREEN1.
+# given must be CHAR_SCREEN1.  If you want an entry to be included in the
+# equipment comparison screen, one of the categories must be EQUIPCMP_SCREEN.
 # The value given for a priority must be a decimal integer or, for a generic
 # entry, of the special values "index" or "negative_index".  Otherwise, the
 # priority will be ignored.  The priority hints at what element to display
@@ -62,6 +63,7 @@ combine:ADD
 priority:negative_index
 category:stat_modifiers
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 desc:Generic UI entry for compact display of modifier and sustain information
 desc: for one of the core statistics.  Given that this is linked to other
 desc: entries that are hardcoded, the priority should be negative_index and
@@ -87,56 +89,69 @@ desc: particular screens.
 name:resist_ui_compact_0<ACID>
 label:Acid
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<ELEC>
 label:Elec
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<FIRE>
 label:Fire
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<COLD>
 label:Cold
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<POIS>
 label:Poison
 label5:Pois
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<LIGHT>
 label:Light
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<DARK>
 label:Dark
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<SOUND>
 label:Sound
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<SHARD>
 label:Shard
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<NEXUS>
 label:Nexus
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<NETHER>
 label:Nether
 label5:Nethr
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<CHAOS>
 label:Chaos
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<DISEN>
 label:Disenchant
 category:CHAR_SCREEN1
+category:EQUIPCMP_SCREEN
 
 # The following use good_flag_ui_compact_0 from ui_entry_base.txt.
 

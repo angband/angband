@@ -176,6 +176,7 @@ ANGFILES = \
 	ui-display.o \
 	ui-entry.o \
 	ui-entry-renderers.o \
+	ui-equip-cmp.o \
 	ui-event.o \
 	ui-game.o \
 	ui-help.o \

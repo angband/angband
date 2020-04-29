@@ -42,6 +42,7 @@
 #include "target.h"
 #include "trap.h"
 #include "ui-context.h"
+#include "ui-equip-cmp.h"
 #include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-mon-list.h"
@@ -2549,6 +2550,11 @@ static void do_cmd_knowledge_history(const char *name, int row)
 	history_display();
 }
 
+static void do_cmd_knowledge_equip_cmp(const char* name, int row)
+{
+	equip_cmp_display();
+}
+
 
 /**
  * Definition of the "player knowledge" menu.
@@ -2572,6 +2578,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
+{ 0, 0, "Display equipable comparison",    do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
@@ -2622,7 +2629,7 @@ void textui_knowledge_init(void)
 void textui_browse_knowledge(void)
 {
 	int i, rune_max = max_runes();
-	region knowledge_region = { 0, 0, -1, 19 };
+	region knowledge_region = { 0, 0, -1, 2 + (int)N_ELEMENTS(knowledge_actions) };
 
 	/* Runes */
 	knowledge_actions[1].flags = MN_ACT_GRAYED;
