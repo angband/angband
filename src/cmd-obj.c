@@ -854,8 +854,13 @@ void do_cmd_use(struct command *cmd)
 	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);
 	else if (tval_is_scroll(obj))		do_cmd_read_scroll(cmd);
 	else if (obj_can_refill(obj))		do_cmd_refill(cmd);
-	else if (obj_is_activatable(obj))	do_cmd_activate(cmd);
-	else
+	else if (obj_is_activatable(obj)) {
+		if (object_is_equipped(player->body, obj)) {
+			do_cmd_activate(cmd);
+		} else {
+			msg("Equip the item to use it.");
+		}
+	} else
 		msg("The item cannot be used at the moment");
 }
 
