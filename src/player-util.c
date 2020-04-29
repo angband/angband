@@ -589,9 +589,10 @@ void player_update_light(struct player *p)
 }
 
 /**
- * Find the player's best digging tool
+ * Find the player's best digging tool.  If forbid_stack is true, ignores
+ * stacks of more than one item.
  */
-struct object *player_best_digger(struct player *p)
+struct object *player_best_digger(struct player *p, bool forbid_stack)
 {
 	struct object *obj, *best = NULL;
 	int best_score = 0;
@@ -599,7 +600,7 @@ struct object *player_best_digger(struct player *p)
 	for (obj = p->gear; obj; obj = obj->next) {
 		int score = 0;
 		if (!tval_is_melee_weapon(obj)) continue;
-		if (obj->number != 1) continue;
+		if (obj->number < 1 || (forbid_stack && obj->number > 1)) continue;
 		if (tval_is_digger(obj)) {
 			if (of_has(obj->flags, OF_DIG_1))
 				score = 1;
