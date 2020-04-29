@@ -316,7 +316,7 @@ int get_monster_brand_multiplier(const struct monster *mon, const struct brand *
 	int mult;
 
 	mult = (is_o_combat) ? b->o_multiplier : b->multiplier;
-	if (rf_has(mon->race->flags, b->vuln_flag)) {
+	if (b->vuln_flag && rf_has(mon->race->flags, b->vuln_flag)) {
 		/*
 		 * If especially vulnerable, apply a factor of two to the
 		 * extra damage from the brand.
@@ -393,13 +393,17 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			/* Learn about the monster */
 			if (monster_is_visible(mon)) {
 				rf_on(lore->flags, b->resist_flag);
-				rf_on(lore->flags, b->vuln_flag);
+				if (b->vuln_flag) {
+					rf_on(lore->flags, b->vuln_flag);
+				}
 			}
 		} else if (player_knows_brand(player, i)) {
 			/* Learn about resistant and vulnerable monsters */
 			if (monster_is_visible(mon)) {
 				rf_on(lore->flags, b->resist_flag);
-				rf_on(lore->flags, b->vuln_flag);
+				if (b->vuln_flag) {
+					rf_on(lore->flags, b->vuln_flag);
+				}
 			}
 		}
 	}
