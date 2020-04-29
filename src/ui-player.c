@@ -873,6 +873,10 @@ void display_player_xtra_info(void)
  */
 void display_player(int mode)
 {
+	if (!have_valid_char_sheet_config()) {
+		configure_char_sheet();
+	}
+
 	/* Erase screen */
 	clear_from(0);
 
@@ -916,10 +920,6 @@ void write_character_dump(ang_file *fff)
 
 	char buf[1024];
 	char *p;
-
-	if (! have_valid_char_sheet_config()) {
-		configure_char_sheet();
-	}
 
 	/* Begin dump */
 	file_putf(fff, "  [%s Character Dump]\n\n", buildid);
@@ -1158,10 +1158,6 @@ void do_cmd_change_name(void)
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
-
-	if (! have_valid_char_sheet_config()) {
-		configure_char_sheet();
-	}
 
 	/* Save screen */
 	screen_save();
