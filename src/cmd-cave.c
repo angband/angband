@@ -510,13 +510,17 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	struct object *best_digger = NULL;
 	struct player_state local_state;
 	struct player_state *used_state = &player->state;
+	int oldn = 1;
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
 
 	/* Find what we're digging with and our chance of success */
-	best_digger = player_best_digger(player);
+	best_digger = player_best_digger(player, false);
 	if (best_digger && best_digger != current_weapon) {
+		/* Use only one without the overhead of gear_obj_for_use(). */
+		oldn = best_digger->number;
+		best_digger->number = 1;
 		player->body.slots[weapon_slot].obj = best_digger;
 		memcpy(&local_state, &player->state, sizeof(local_state));
 		calc_bonuses(player, &local_state, false, true);
@@ -529,6 +533,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 
 	/* Swap back */
 	if (best_digger && best_digger != current_weapon) {
+		best_digger->number = oldn;
 		player->body.slots[weapon_slot].obj = current_weapon;
 	}
 
