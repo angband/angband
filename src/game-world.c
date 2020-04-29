@@ -652,14 +652,14 @@ void process_world(struct chunk *c)
 		/* Basic digestion rate based on speed */
 		i = turn_energy(player->state.speed);
 
-		/* Regeneration takes more food */
-		if (player_of_has(player, OF_REGEN)) i += 15;
-
 		/* Adjust for food value */
 		i = (i * 100) / z_info->food_value;
 
+		/* Regeneration takes more food */
+		if (player_of_has(player, OF_REGEN)) i *= 2;
+
 		/* Slow digestion takes less food */
-		if (player_of_has(player, OF_SLOW_DIGEST)) i /= 5;
+		if (player_of_has(player, OF_SLOW_DIGEST)) i /= 2;
 
 		/* Minimal digestion */
 		if (i < 1) i = 1;
