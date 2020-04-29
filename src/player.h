@@ -619,6 +619,7 @@ bool player_stat_dec(struct player *p, int stat, bool permanent);
 void player_exp_gain(struct player *p, s32b amount);
 void player_exp_lose(struct player *p, s32b amount, bool permanent);
 void player_flags(struct player *p, bitflag f[OF_SIZE]);
+void player_flags_timed(struct player *p, bitflag f[OF_SIZE]);
 byte player_hp_attr(struct player *p);
 byte player_sp_attr(struct player *p);
 bool player_restore_mana(struct player *p, int amt);

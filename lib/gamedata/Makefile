@@ -8,5 +8,6 @@ CONFIG = activation.txt artifact.txt body.txt blow_methods.txt \
  object_base.txt object_property.txt p_race.txt pain.txt pit.txt \
  player_property.txt player_timed.txt projection.txt quest.txt realm.txt \
  room_template.txt shape.txt slay.txt store.txt summon.txt terrain.txt \
- trap.txt vault.txt visuals.txt world.txt
+ trap.txt ui_entry.txt ui_entry_base.txt ui_entry_renderer.txt vault.txt \
+ visuals.txt world.txt
 PACKAGE = gamedata

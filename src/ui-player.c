@@ -31,6 +31,8 @@
 #include "player-util.h"
 #include "store.h"
 #include "ui-display.h"
+#include "ui-entry.h"
+#include "ui-entry-renderers.h"
 #include "ui-history.h"
 #include "ui-input.h"
 #include "ui-menu.h"
@@ -115,6 +117,150 @@ static void panel_space(struct panel *p) {
 	assert(p);
 	assert(p->len != p->max);
 	p->len++;
+}
+
+
+/**
+ * Cache the layout of the character sheet, currently only for the resistance
+ * panel, since it is no longer hardwired.
+ */
+struct char_sheet_resist {
+	struct ui_entry* entry;
+	wchar_t label[6];
+};
+struct char_sheet_config {
+	struct ui_entry** stat_mod_entries;
+	region res_regions[4];
+	struct char_sheet_resist *resists_by_region[4];
+	int n_resist_by_region[4];
+	int n_stat_mod_entries;
+	int res_cols;
+	int res_rows;
+	int res_nlabel;
+};
+static struct char_sheet_config *cached_config = NULL;
+static void display_resistance_panel(int ipart, struct char_sheet_config* config);
+
+
+static bool have_valid_char_sheet_config(void)
+{
+	if (!cached_config) {
+		return false;
+	}
+	if (cached_config->res_cols !=
+		cached_config->res_nlabel + 1 + player->body.count) {
+		return false;
+	}
+	return true;
+}
+
+
+static void release_char_sheet_config(void)
+{
+	int i;
+
+	if (!cached_config) {
+		return;
+	}
+	for (i = 0; i < 4; ++i) {
+		mem_free(cached_config->resists_by_region[i]);
+	}
+	mem_free(cached_config->stat_mod_entries);
+	mem_free(cached_config);
+	cached_config = 0;
+}
+
+
+static bool check_for_two_categories(const struct ui_entry* entry,
+	void *closure)
+{
+	char **categories = closure;
+
+	return ui_entry_has_category(entry, categories[0]) &&
+		ui_entry_has_category(entry, categories[1]);
+}
+
+
+static void configure_char_sheet(void)
+{
+	char* region_categories[] = {
+		"resistances",
+		"abilities",
+		"hindrances",
+		"modifiers"
+	};
+	char* test_categories[2];
+	struct ui_entry_iterator* ui_iter;
+	int i, n;
+
+	release_char_sheet_config();
+
+	cached_config = mem_alloc(sizeof(*cached_config));
+
+	test_categories[0] = "CHAR_SCREEN1";
+	test_categories[1] = "stat_modifiers";
+	ui_iter = initialize_ui_entry_iterator(check_for_two_categories,
+		test_categories, test_categories[1]);
+	n = count_ui_entry_iterator(ui_iter);
+	/*
+	 * Linked to hardcoded stats display with STAT_MAX entries so only use
+	 * that many.
+	 */
+	if (n > STAT_MAX) {
+	    n = STAT_MAX;
+	}
+	cached_config->n_stat_mod_entries = n;
+	cached_config->stat_mod_entries = mem_alloc(n *
+		sizeof(*cached_config->stat_mod_entries));
+	for (i = 0; i < n; ++i) {
+		cached_config->stat_mod_entries[i] =
+			advance_ui_entry_iterator(ui_iter);
+	}
+	release_ui_entry_iterator(ui_iter);
+
+	cached_config->res_nlabel = 6;
+	cached_config->res_cols =
+		cached_config->res_nlabel + 1 + player->body.count;
+	cached_config->res_rows = 0;
+	for (i = 0; i < 4; ++i) {
+		int j;
+
+		cached_config->res_regions[i].col =
+			i * (cached_config->res_cols + 1);
+		cached_config->res_regions[i].row = 2 + STAT_MAX;
+		cached_config->res_regions[i].width = cached_config->res_cols;
+
+		test_categories[1] = region_categories[i];
+		ui_iter = initialize_ui_entry_iterator(check_for_two_categories, test_categories, region_categories[i]);
+		n = count_ui_entry_iterator(ui_iter);
+		/*
+		 * Fit in 24 row display; leave at least one row blank before
+		 * prompt on last row.
+		 */
+		if (n + 2 + cached_config->res_regions[i].row > 22) {
+		    n = 20 - cached_config->res_regions[i].row;
+		}
+		cached_config->n_resist_by_region[i] = n;
+		cached_config->resists_by_region[i] = mem_alloc(n * sizeof(*cached_config->resists_by_region[i]));
+		for (j = 0; j < n; ++j) {
+			struct ui_entry *entry = advance_ui_entry_iterator(ui_iter);
+
+			cached_config->resists_by_region[i][j].entry = entry;
+			get_ui_entry_label(entry, cached_config->res_nlabel, true, cached_config->resists_by_region[i][j].label);
+			(void) text_mbstowcs(cached_config->resists_by_region[i][j].label + 5, ":", 1);
+		}
+		release_ui_entry_iterator(ui_iter);
+
+		if (cached_config->res_rows <
+			cached_config->n_resist_by_region[i]) {
+			cached_config->res_rows =
+				cached_config->n_resist_by_region[i];
+		}
+	}
+	for (i = 0; i < 4; ++i) {
+		cached_config->res_regions[i].page_rows =
+			cached_config->res_rows + 2;
+	}
 }
 
 
@@ -225,273 +371,69 @@ static void display_player_equippy(int y, int x)
 	}
 }
 
-/**
- * List of resistances and abilities to display
- */
-#define RES_ROWS 13
-struct player_flag_record
+
+static void display_resistance_panel(int ipart, struct char_sheet_config *config)
 {
-	const char name[7];	/* Name of resistance/ability */
-	int mod;			/* Modifier */
-	int flag;			/* Flag bit */
-	int element;		/* Element */
-	int tmd_flag;		/* corresponding timed flag */
-};
-
-static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
-	{ " Acid",	-1,					-1,				ELEM_ACID,	TMD_OPP_ACID },
-	{ " Elec",	-1,					-1,				ELEM_ELEC,	TMD_OPP_ELEC },
-	{ " Fire",	-1,					-1,				ELEM_FIRE,	TMD_OPP_FIRE },
-	{ " Cold",	-1,					-1,				ELEM_COLD,	TMD_OPP_COLD },
-	{ " Pois",	-1,					-1,				ELEM_POIS,	TMD_OPP_POIS },
-	{ "Light",	-1,					-1,				ELEM_LIGHT,	-1 },
-	{ " Dark",	-1,					-1,				ELEM_DARK,	-1 },	
-	{ "Sound",	-1,					-1,				ELEM_SOUND,	-1 },
-	{ "Shard",	-1,					-1,				ELEM_SHARD,	-1 },
-	{ "Nexus",	-1,					-1,				ELEM_NEXUS,	-1 },
-	{ "Nethr",	-1,					-1,				ELEM_NETHER,-1 },
-	{ "Chaos",	-1,					-1,				ELEM_CHAOS,	-1 },
-	{ "Disen",	-1,					-1,				ELEM_DISEN,	-1 },
-
-	{ "pFear",	-1,					OF_PROT_FEAR,	-1,			TMD_BOLD },
-	{ "pBlnd",	-1,					OF_PROT_BLIND,	-1,			-1 },
-	{ "pConf",	-1,					OF_PROT_CONF,	-1,			TMD_OPP_CONF },
-	{ "pStun",	-1,					OF_PROT_STUN,	-1,			-1 },
-	{ "HLife",	-1,					OF_HOLD_LIFE,	-1, 		-1 },
-	{ "Regen",	-1,					OF_REGEN,		-1, 		-1 },
-	{ "  ESP",	-1,					OF_TELEPATHY,	-1,			TMD_TELEPATHY },
-	{ "S.Inv",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
-	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		TMD_FREE_ACT },
-	{ "Feath",	-1,					OF_FEATHER,		-1,			-1 },
-	{ "S.Dig",	-1,					OF_SLOW_DIGEST,	-1, 		-1 },
-	{ "TrpIm",	-1,					OF_TRAP_IMMUNE, -1,			-1 },
-	{ "Bless",	-1,					OF_BLESSED,		-1, 		-1 },
-
-	{ "ImpHP",	-1,					OF_IMPAIR_HP,	-1, 		-1 },
-	{ "ImpSP",	-1,					OF_IMPAIR_MANA,	-1, 		-1 },
-	{ " Fear",	-1,					OF_AFRAID,		-1,			TMD_AFRAID },
-	{ "Aggrv",	-1,					OF_AGGRAVATE,	-1, 		-1 },
-	{ "NoTel",	-1,					OF_NO_TELEPORT,	-1, 		-1 },
-	{ "DrExp",	-1,					OF_DRAIN_EXP,	-1, 		-1 },
-	{ "Stick",	-1,					OF_STICKY,		-1, 		-1 },
-	{ "Fragl",	-1,					OF_FRAGILE,		-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-
-	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		TMD_STEALTH },
-	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
-	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
-	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
-	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			TMD_FAST },
-	{ "Blows",	OBJ_MOD_BLOWS,		-1,				-1, 		-1 },
-	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
-	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
-	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
-	{ "D.Red",	OBJ_MOD_DAM_RED,	-1,				-1, 		-1 },
-	{ "Moves",	OBJ_MOD_MOVES,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
-};
-
-static void display_resistance_panel(const struct player_flag_record *rec,
-									size_t size, const region *bounds) 
-{
-	size_t i;
+	int *vals = mem_alloc((player->body.count + 1) * sizeof(*vals));
+	int *auxs = mem_alloc((player->body.count + 1) * sizeof(*auxs));
+	struct object **equipment =
+		mem_alloc(player->body.count * sizeof(*equipment));
+	struct cached_object_data **ocaches =
+		mem_zalloc(player->body.count * sizeof(*ocaches));
+	struct cached_player_data *pcache = NULL;
+	struct ui_entry_details render_details;
+	int i;
 	int j;
-	int col = bounds->col;
-	int row = bounds->row;
-	int res_cols = 5 + 2 + player->body.count;
+	int col = config->res_regions[ipart].col;
+	int row = config->res_regions[ipart].row;
+
+	for (i = 0; i < player->body.count; i++) {
+		equipment[i] = slot_object(player, i);
+	}
 
 	/* Equippy */
-	display_player_equippy(row++, col + 6);
+	display_player_equippy(row++, col + config->res_nlabel);
 
-	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
-	for (i = 0; i < size - 3; i++, row++) {
-		byte name_attr = COLOUR_WHITE;
-		Term_gotoxy(col + 6, row);
+	Term_putstr(col, row++, config->res_cols, COLOUR_WHITE, "      abcdefghijkl@");
+	render_details.label_position.x = col;
+	render_details.value_position.x = col + config->res_nlabel;
+	render_details.position_step = loc(1, 0);
+	render_details.vertical_label = false;
+	render_details.alternate_color_first = false;
+	for (i = 0; i < config->n_resist_by_region[ipart]; i++, row++) {
+		const struct ui_entry *entry = config->resists_by_region[ipart][i].entry;
 
-		/* Repeated extraction of flags is inefficient but more natural */
-		for (j = 0; j <= player->body.count; j++) {
-			bitflag f[OF_SIZE];
-			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
-			char sym = strlen(rec[i].name) ? '.' : ' ';
-			bool res = false, imm = false, vul = false, rune = false;
-			bool timed = false;
-			bool known = false;
-
-			/* Object or player info? */
-			if (j < player->body.count) {
-				int index = 0;
-				struct object *obj = slot_object(player, j);
-				struct curse_data *curse = obj ? obj->curses : NULL;
-
-				while (obj) {
-					/* Wipe flagset */
-					of_wipe(f);
-
-					/* Get known properties */
-					object_flags_known(obj, f);
-					if (rec[i].element != -1) {
-						known = object_element_is_known(obj, rec[i].element);
-					} else if (rec[i].flag != -1) {
-						known = object_flag_is_known(obj, rec[i].flag);
-					} else {
-						known = true;
-					}
-
-					/* Get resistance, immunity and vulnerability info */
-					if (rec[i].mod != -1) {
-						if (obj->modifiers[rec[i].mod] != 0) {
-							res = true;
-						}
-						rune = (player->obj_k->modifiers[rec[i].mod] == 1);
-					} else if (rec[i].flag != -1) {
-						if (of_has(f, rec[i].flag)) {
-							res = true;
-						}
-						rune = of_has(player->obj_k->flags, rec[i].flag);
-					} else if (rec[i].element != -1) {
-						if (known) {
-							if (obj->el_info[rec[i].element].res_level == 3) {
-								imm = true;
-							}
-							if (obj->el_info[rec[i].element].res_level == 1) {
-								res = true;
-							}
-							if (obj->el_info[rec[i].element].res_level == -1) {
-								vul = true;
-							}
-						}
-						rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
-					}
-
-					/* Move to any unprocessed curse object */
-					if (curse) {
-						index++;
-						obj = NULL;
-						while (index < z_info->curse_max) {
-							if (curse[index].power) {
-								obj = curses[index].obj;
-								break;
-							} else {
-								index++;
-							}
-						}
-					} else {
-						obj = NULL;
-					}
-				}
-			} else {
-				player_flags(player, f);
-				known = true;
-
-				/* Timed flags only in the player column */
-				if (rec[i].tmd_flag >= 0) {
-	 				timed = player->timed[rec[i].tmd_flag] ? true : false;
-					/* There has to be one special case... */
-					if ((rec[i].tmd_flag == TMD_AFRAID) &&
-						(player->timed[TMD_TERROR]))
-						timed = true;
-					/* ..and a couple more... */
-					if ((rec[i].tmd_flag == TMD_BOLD) &&
-						(player->timed[TMD_HERO] || player->timed[TMD_SHERO]))
-						timed = true;
-				}
-
-				/* Set which (if any) symbol and color are used */
-				if (rec[i].mod != -1) {
-					int k;
-
-					/* Shape modifiers */
-					for (k = 0; k < OBJ_MOD_MAX; k++) {
-						res = (player->shape->modifiers[i] > 0);
-						vul = (player->shape->modifiers[i] > 0);
-					}
-
-					/* Messy special cases */
-					if (rec[i].mod == OBJ_MOD_INFRA)
-						res |= (player->race->infra > 0);
-					if (rec[i].mod == OBJ_MOD_TUNNEL)
-						res |= (player->race->r_skills[SKILL_DIGGING] > 0);
-				} else if (rec[i].flag != -1) {
-					res = of_has(f, rec[i].flag);
-					res |= (of_has(player->shape->flags, rec[i].flag) &&
-							of_has(player->obj_k->flags, rec[i].flag));
-				} else if (rec[i].element != -1) {
-					int el = rec[i].element;
-					imm = (player->race->el_info[el].res_level == 3) ||
-						((player->shape->el_info[el].res_level == 3) &&
-						 (player->obj_k->el_info[el].res_level));
-					res = (player->race->el_info[el].res_level == 1) ||
-						((player->shape->el_info[el].res_level == 1) &&
-						 (player->obj_k->el_info[el].res_level));
-					vul = (player->race->el_info[el].res_level == -1) ||
-						((player->shape->el_info[el].res_level == -1) &&
-						 (player->obj_k->el_info[el].res_level));
-				}
-			}
-
-			/* Colour the name appropriately */
-			if (imm) {
-				name_attr = COLOUR_GREEN;
-			} else if (res && (name_attr != COLOUR_GREEN)) {
-				name_attr = COLOUR_L_BLUE;
-			} else if (vul && (name_attr != COLOUR_GREEN)) {
-				name_attr = COLOUR_RED;
-			}
-
-			/* Set the symbols and print them */
-			if (vul) {
-				sym = '-';
-			} else if (imm) {
-				sym = '*';
-			} else if (res) {
-				sym = '+';
-			} else if (timed) {
-				sym = '!';
-				attr = COLOUR_L_GREEN;
-			} else if ((j < player->body.count) && slot_object(player, j) &&
-					   !known && !rune) {
-				sym = '?';
-			}
-
-			Term_addch(attr, sym);
+		for (j = 0; j < player->body.count; j++) {
+			compute_ui_entry_values_for_object(entry, equipment[j], player, ocaches + j, vals + j, auxs + j);
 		}
+		compute_ui_entry_values_for_player(entry, player, &pcache, vals + player->body.count, auxs + player->body.count);
 
-		/* Check if the rune is known */
-		if (((rec[i].mod >= 0) &&
-			 (player->obj_k->modifiers[rec[i].mod] == 0))
-			|| ((rec[i].flag >= 0) &&
-				!of_has(player->obj_k->flags, rec[i].flag))
-			|| ((rec[i].element >= 0) &&
-				(player->obj_k->el_info[rec[i].element].res_level == 0))) {
-			name_attr = COLOUR_SLATE;
-		}
+		render_details.label_position.y = row;
+		render_details.value_position.y = row;
+		render_details.known_rune = is_ui_entry_for_known_rune(entry, player);
+		ui_entry_renderer_apply(get_ui_entry_renderer_index(entry), config->resists_by_region[ipart][i].label, config->res_nlabel, vals, auxs, player->body.count + 1, &render_details);
+	}
 
-		if (strlen(rec[i].name)) {
-			Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
+	if (pcache) {
+		release_cached_player_data(pcache);
+	}
+	for (i = 0; i < player->body.count; ++i) {
+		if (ocaches[i]) {
+			release_cached_object_data(ocaches[i]);
 		}
 	}
+	mem_free(ocaches);
+	mem_free(equipment);
+	mem_free(auxs);
+	mem_free(vals);
 }
 
 static void display_player_flag_info(void)
 {
 	int i;
-	int res_cols = 5 + 2 + player->body.count;
-	region resist_region[] = {
-		{  0 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
-		{  1 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
-		{  2 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
-		{  3 * (res_cols + 1), 7, res_cols, RES_ROWS + 2 },
-	};
 
 	for (i = 0; i < 4; i++)
-
-		display_resistance_panel(player_flag_table + (i * RES_ROWS),
-								 RES_ROWS + 3, &resist_region[i]);
+		display_resistance_panel(i, cached_config);
 }
 
 
@@ -564,24 +506,27 @@ void display_player_stat_info(void)
 /**
  * Special display, part 2c
  *
- * How to print out the modifications and sustains.
- * Positive mods with no sustain will be light green.
- * Positive mods with a sustain will be dark green.
- * Sustains (with no modification) will be a dark green 's'.
- * Negative mods (from a curse) will be red.
- * Huge mods (>9), like from MICoMorgoth, will be a '*'
- * No mod, no sustain, will be a slate '.'
+ * Display stat modifiers from equipment and sustains.  Colors and symbols
+ * are configured from ui_entry.txt and ui_entry_renderers.txt.  Other
+ * configuration that's possible there (extra characters for each number
+ * for instance) aren't well handled here - the assumption is just one digit
+ * for each equipment slot.
  */
-static void display_player_sust_info(void)
+static void display_player_sust_info(struct char_sheet_config *config)
 {
-	int i, row, col, stat;
+	int *vals = mem_alloc((player->body.count + 1) * sizeof(*vals));
+	int *auxs = mem_alloc((player->body.count + 1) * sizeof(*auxs));
+	struct object **equipment =
+		mem_alloc(player->body.count * sizeof(*equipment));
+	struct cached_object_data **ocaches =
+		mem_zalloc(player->body.count * sizeof(*ocaches));
+	struct cached_player_data *pcache = NULL;
+	struct ui_entry_details render_details;
+	int i, row, col;
 
-	struct object *obj;
-	bitflag f[OF_SIZE];
-
-	byte a;
-	char c;
-
+	for (i = 0; i < player->body.count; i++) {
+		equipment[i] = slot_object(player, i);
+	}
 
 	/* Row */
 	row = 2;
@@ -592,83 +537,40 @@ static void display_player_sust_info(void)
 	/* Header */
 	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row - 1, col);
 
-	/* Process equipment */
+	render_details.label_position.x = col + player->body.count + 5;
+	render_details.value_position.x = col;
+	render_details.position_step = loc(1, 0);
+	render_details.vertical_label = false;
+	render_details.alternate_color_first = false;
+	render_details.known_rune = true;
+	for (i = 0; i < config->n_stat_mod_entries; i++) {
+		const struct ui_entry *entry = config->stat_mod_entries[i];
+		int j;
+
+		for (j = 0; j < player->body.count; j++) {
+			compute_ui_entry_values_for_object(entry, equipment[j], player, ocaches + j, vals + j, auxs + j);
+		}
+		compute_ui_entry_values_for_player(entry, player, &pcache, vals + player->body.count, auxs + player->body.count);
+		/* Just use the sustain information for the player column. */
+		vals[player->body.count] = 0;
+
+		render_details.label_position.y = row + i;
+		render_details.value_position.y = row + i;
+		ui_entry_renderer_apply(get_ui_entry_renderer_index(entry), NULL, 0, vals, auxs, player->body.count + 1, &render_details);
+	}
+
+	if (pcache) {
+		release_cached_player_data(pcache);
+	}
 	for (i = 0; i < player->body.count; ++i) {
-		/* Get the object */
-		obj = slot_object(player, i);
-
-		if (!obj) {
-			col++;
-			continue;
+		if (ocaches[i]) {
+			release_cached_object_data(ocaches[i]);
 		}
-
-		/* Get the "known" flags */
-		object_flags_known(obj, f);
-
-		/* Initialize color based on sign of modifier. */
-		for (stat = OBJ_MOD_MIN_STAT; stat < OBJ_MOD_MIN_STAT + STAT_MAX;
-			 stat++) {
-			/* Default */
-			a = COLOUR_SLATE;
-			c = '.';
-
-			/* Boosted or reduced */
-			if (obj->modifiers[stat] > 0) {
-				/* Good */
-				a = COLOUR_L_GREEN;
-
-				/* Label boost */
-				if (obj->modifiers[stat] < 10)
-						c = I2D(obj->modifiers[stat]);
-			} else if (obj->modifiers[stat] < 0) {
-				/* Bad */
-				a = COLOUR_RED;
-
-				/* Label boost */
-				if (obj->modifiers[stat] > -10)
-					c = I2D(-(obj->modifiers[stat]));
-			}
-
-			/* Sustain */
-			if (of_has(f, sustain_flag(stat))) {
-				/* Dark green */
-				a = COLOUR_GREEN;
-
-				/* Convert '.' to 's' */
-				if (c == '.') c = 's';
-			}
-
-			if ((c == '.') && obj && 
-				!object_flag_is_known(obj, sustain_flag(stat)))
-				c = '?';
-
-			/* Dump proper character */
-			Term_putch(col, row + stat, a, c);
-		}
-
-		/* Advance */
-		col++;
 	}
-
-	/* Player flags */
-	player_flags(player, f);
-
-	/* Check stats */
-	for (stat = 0; stat < STAT_MAX; ++stat) {
-		/* Default */
-		a = COLOUR_SLATE;
-		c = '.';
-
-		/* Sustain */
-		if (of_has(f, sustain_flag(stat))) {
-			/* Dark green "s" */
-			a = COLOUR_GREEN;
-			c = 's';
-		}
-
-		/* Dump */
-		Term_putch(col, row + stat, a, c);
-	}
+	mem_free(ocaches);
+	mem_free(equipment);
+	mem_free(auxs);
+	mem_free(vals);
 }
 
 
@@ -986,7 +888,7 @@ void display_player(int mode)
 		panel_free(p);
 
 		/* Stat/Sustain flags */
-		display_player_sust_info();
+		display_player_sust_info(cached_config);
 
 		/* Other flags */
 		display_player_flag_info();
@@ -1002,7 +904,7 @@ void display_player(int mode)
  */
 void write_character_dump(ang_file *fff)
 {
-	int i, x, y;
+	int i, x, y, ylim;
 
 	int a;
 	wchar_t c;
@@ -1014,6 +916,10 @@ void write_character_dump(ang_file *fff)
 
 	char buf[1024];
 	char *p;
+
+	if (! have_valid_char_sheet_config()) {
+		configure_char_sheet();
+	}
 
 	/* Begin dump */
 	file_putf(fff, "  [%s Character Dump]\n\n", buildid);
@@ -1050,10 +956,15 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, format("%-20s%s\n", "Resistances", "Abilities"));
 
 	/* Dump part of the screen */
-	for (y = 9; y < 9 + RES_ROWS; y++) {
+	ylim = ((cached_config->n_resist_by_region[0] >
+		cached_config->n_resist_by_region[1]) ?
+		cached_config->n_resist_by_region[0] :
+		cached_config->n_resist_by_region[1]) +
+		cached_config->res_regions[0].row + 2;
+	for (y = cached_config->res_regions[0].row + 2; y < ylim; y++) {
 		p = buf;
 		/* Dump each row */
-		for (x = 0; x < 39; x++) {
+		for (x = 0; x < 2 * cached_config->res_cols + 1; x++) {
 			/* Get the attr/char */
 			(void)(Term_what(x, y, &a, &c));
 
@@ -1078,12 +989,17 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, format("%-20s%s\n", "Hindrances", "Modifiers"));
 
 	/* Dump part of the screen */
-	for (y = 9; y < 20; y++) {
+	ylim = ((cached_config->n_resist_by_region[2] >
+		cached_config->n_resist_by_region[3]) ?
+		cached_config->n_resist_by_region[2] :
+		cached_config->n_resist_by_region[3]) +
+		cached_config->res_regions[0].row + 2;
+	for (y = cached_config->res_regions[0].row + 2; y < ylim; y++) {
 		p = buf;
 		/* Dump each row */
-		for (x = 0; x < 39; x++) {
+		for (x = 0; x < 2 * cached_config->res_cols + 1; x++) {
 			/* Get the attr/char */
-			(void)(Term_what(x + 40, y, &a, &c));
+			(void)(Term_what(x + 2 * cached_config->res_cols + 2, y, &a, &c));
 
 			/* Dump it */
 			p += wctomb(p, c);
@@ -1243,6 +1159,10 @@ void do_cmd_change_name(void)
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
 
+	if (! have_valid_char_sheet_config()) {
+		configure_char_sheet();
+	}
+
 	/* Save screen */
 	screen_save();
 
@@ -1323,3 +1243,22 @@ void do_cmd_change_name(void)
 	/* Load screen */
 	screen_load();
 }
+
+
+static void init_ui_player(void)
+{
+	/* Nothing to do; lazy initialization. */
+}
+
+
+static void cleanup_ui_player(void)
+{
+	release_char_sheet_config();
+}
+
+
+struct init_module ui_player_module = {
+	.name = "ui-player",
+	.init = init_ui_player,
+	.cleanup = cleanup_ui_player
+};

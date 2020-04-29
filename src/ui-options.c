@@ -1044,6 +1044,13 @@ static void do_dump_autoinsc(const char *title, int row) {
 }
 
 /**
+ * Write character screen customizations to a file.
+ */
+static void do_dump_charscreen_opt(const char *title, int row) {
+	dump_pref_file(dump_ui_entry_renderers, "Dump char screen options", 20);
+}
+
+/**
  * Load a pref file.
  */
 static void options_load_pref_file(const char *n, int row)
@@ -1816,6 +1823,7 @@ static menu_action option_actions[] =
 	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
+	{ 0, 'u', "Save char screen options to pref file", do_dump_charscreen_opt },
 	{ 0, 0, NULL, NULL },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },

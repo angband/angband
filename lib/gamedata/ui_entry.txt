@@ -1,0 +1,349 @@
+# File: ui_entry.txt
+
+# Configure user interface elements to combine one or more object or player
+# properties and display them.  Currently only used for parts of the second
+# character screen.
+
+# Descriptions can be edited without bad effects.
+# The name is used to link the element from bindui fields in
+# player_property.txt and object_property.txt and the template fields in this
+# file.  Changing it will mean having to adjust those files to keep things
+# linked.
+# The parameter field, if set, means that this is a generic entry that will
+# be repeated for each known value of the parameter.  The only currently
+# understood parameters are "element" (which will generate one entry for each
+# element in list-elements.h) and "stat" (which will generate one entry for
+# each stat in list-stats.h).  The name of each entry will be the name
+# set followed by the name of the element or stat (for instance <ACID> or
+# <STR>).  The label, if not set, of each entry will be the name of the
+# element or stat (for instance ACID or STR).  The entries created from a
+# generic one can be specialized later to override fields.  Note that when a
+# parameter is set, the undecorated name is not entered into the list of user
+# interface elements and can not be successfully referenced from bindui in
+# other files or template fields in this one.
+# The template field specifies that entry with that name be used as the
+# default values for the fields in this entry.  The template field is optional.
+# The renderer must be one of those set in ui_entry_renderer.txt.
+# The label defines a label to be shown for the element.  Changing its value
+# can impact usability.  Optionally, shortened versions with
+# label followed by the number of characters as the field name can be
+# provided to override the default of using the first n characters of label
+# when an abbreviated version is needed.  The second character screen currently
+# uses 5 character labels so only label or label5 are relevant.
+# combine controls how the values of the properties linked to the element are
+# combined before display.  Possible values are limited by the code and must
+# be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or
+# SMALLEST.  RESIST_0 will use the largest positive value, if any are
+# positive.  If none are positive, it will use the most negative value.
+# Otherwise it will use zero.
+# The category and priority fields can be set multiple times.  The
+# categories are used to select if an entry appears in a screen.   If you want
+# an entry to be included in the second character screen, one of the categories
+# given must be CHAR_SCREEN1.
+# The value given for a priority must be a decimal integer or, for a generic
+# entry, of the special values "index" or "negative_index".  Otherwise, the
+# priority will be ignored.  The priority hints at what element to display
+# first (higher priority means shown first) and which elements to omit or
+# move to a different page if space is tight (lower priority means
+# omitted/moved first).  If a priority is set before any category, that is
+# used as the default priority for all categories.  Otherwise, the priority
+# is applied to the last category set.
+# The flags field is optional and sets one or more flags, separated by spaces
+# or |, to modify the interface element's behavior.  Only one flag is
+# currently used, TIMED_AS_AUX, which will map timed effects for the properties
+# bound to the element to the auxiliary values passed to the renderer.  When
+# that flag is used, any properties bound to the element as auxiliary values
+# will be ignored.
+
+name:stat_mod_ui_compact_0
+parameter:stat
+renderer:char_screen1_stat_mod_renderer
+combine:ADD
+priority:negative_index
+category:stat_modifiers
+category:CHAR_SCREEN1
+desc:Generic UI entry for compact display of modifier and sustain information
+desc: for one of the core statistics.  Given that this is linked to other
+desc: entries that are hardcoded, the priority should be negative_index and
+desc: this should be the only thing with stat_modifiers and CHAR_SCREEN1 as
+desc: categories.
+
+name:resist_ui_compact_0
+parameter:element
+renderer:char_screen1_resist_renderer
+combine:RESIST_0
+priority:negative_index
+category:resistances
+flags:TIMED_AS_AUX
+desc:Generic UI entry for compact display of a resistance flag with the
+desc: label colored by the combined resistance across several sources.
+desc:  It is used for rows in the second character screen's display of
+desc: resistances.  Specializations below set the label and categories for
+desc: particular screens.
+
+# Specializations for resist_ui_compact_0 to give labels and link to second
+# character screen.  There's no specializations for WATER, ICE, GRAVITY,
+# INERTIA, FORCE, or TIME since they are not shown on that panel.
+name:resist_ui_compact_0<ACID>
+label:Acid
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<ELEC>
+label:Elec
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<FIRE>
+label:Fire
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<COLD>
+label:Cold
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<POIS>
+label:Poison
+label5:Pois
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<LIGHT>
+label:Light
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<DARK>
+label:Dark
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<SOUND>
+label:Sound
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<SHARD>
+label:Shard
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<NEXUS>
+label:Nexus
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<NETHER>
+label:Nether
+label5:Nethr
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<CHAOS>
+label:Chaos
+category:CHAR_SCREEN1
+
+name:resist_ui_compact_0<DISEN>
+label:Disenchant
+category:CHAR_SCREEN1
+
+# The following use good_flag_ui_compact_0 from ui_entry_base.txt.
+
+name:pfear_ui_compact_0
+template:good_flag_ui_compact_0
+label:Fear resistance
+label5:pFear
+label2:pF
+priority:0
+
+name:pblind_ui_compact_0
+template:good_flag_ui_compact_0
+label:Blindess resistance
+label5:pBlnd
+label2:pB
+priority:-1
+
+name:pconf_ui_compact_0
+template:good_flag_ui_compact_0
+label:Confusion resistance
+label5:pConf
+label2:pC
+priority:-2
+
+name:pstun_ui_compact_0
+template:good_flag_ui_compact_0
+label:Stun resistance
+label5:pStun
+label2:pS
+priority:-3
+
+name:holdlife_ui_compact_0
+template:good_flag_ui_compact_0
+label:Hold life
+label5:HLife
+label2:HL
+priority:-4
+
+name:regen_ui_compact_0
+template:good_flag_ui_compact_0
+label:Regeneration
+priority:-5
+
+name:esp_ui_compact_0
+template:good_flag_ui_compact_0
+label:ESP
+priority:-6
+
+name:see_invis_ui_compact_0
+template:good_flag_ui_compact_0
+label:See invisible
+label5:S.Inv
+label2:SI
+priority:-7
+
+name:free_action_ui_compact_0
+template:good_flag_ui_compact_0
+label:Free action
+label5:FrAct
+label2:FA
+priority:-8
+
+name:feather_falling_ui_compact_0
+template:good_flag_ui_compact_0
+label:Feather falling
+label5:Feath
+label2:Ft
+priority:-9
+
+name:slow_digestion_ui_compact_0
+template:good_flag_ui_compact_0
+label:Slow digestion
+label5:S.Dig
+label2:SD
+priority:-10
+
+name:trap_immunity_ui_compact_0
+template:good_flag_ui_compact_0
+label:Trap immunity
+label5:TrpIm
+label2:TI
+priority:-11
+
+name:bless_ui_compact_0
+template:good_flag_ui_compact_0
+label:Bless
+priority:-12
+
+# The following use other_flag_ui_compact_0 from ui_entry_base.txt.
+
+name:imphp_ui_compact_0
+template:other_flag_ui_compact_0
+label:Impaired HP recovery
+label5:ImpHP
+label2:IH
+priority:0
+
+name:impsp_ui_compact_0
+template:other_flag_ui_compact_0
+label:Impaired mana recovery
+label5:ImpSP
+label2:IS
+priority:-1
+
+name:fear_ui_compact_0
+template:other_flag_ui_compact_0
+label:Fear
+priority:-2
+
+name:aggravate_ui_compact_0
+template:other_flag_ui_compact_0
+label:Aggravate
+label5:Aggrv
+priority:-3
+
+name:noteleport_ui_compact_0
+template:other_flag_ui_compact_0
+label:No teleportation
+label5:NoTel
+label2:NT
+priority:-4
+
+name:drainxp_ui_compact_0
+template:other_flag_ui_compact_0
+label:Drain experience
+label5:DrExp
+label2:DE
+priority:-5
+
+name:sticky_ui_compact_0
+template:other_flag_ui_compact_0
+label:Sticky curse
+label5:Stick
+priority:-6
+
+name:fragile_ui_compact_0
+template:other_flag_ui_compact_0
+label:Fragile
+label5:Fragl
+priority:-7
+
+# The following use numeric_as_sign_ui_0 from ui_entry_base.txt.
+
+name:stealth_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Stealth
+label5:Stea.
+priority:0
+
+name:search_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Search
+label5:Sear.
+priority:-1
+
+name:infravision_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Infravision
+priority:-2
+
+name:tunneling_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Tunneling
+label5:Tunn.
+priority:-3
+
+name:speed_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Speed
+priority:-4
+
+name:blows_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Attack speed
+label5:Blows
+label2:Bl
+priority:-5
+
+name:shots_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Shooting speed
+label5:Shots
+label2:Sh
+priority:-6
+
+name:shooting_power_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Shooting power
+label5:Might
+label2:Mi
+priority:-7
+
+name:light_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Light
+priority:-8
+
+name:damage_reduction_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Damage reduction
+label5:D.Red
+label2:DR
+priority:-9
+
+name:movement_speed_ui_compact_0
+template:numeric_as_sign_ui_0
+label:Movement speed
+label5:Moves
+label2:MS
+priority:-10
