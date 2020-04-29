@@ -3765,6 +3765,7 @@ extern struct init_module store_module;
 extern struct init_module messages_module;
 extern struct init_module options_module;
 extern struct init_module ui_player_module;
+extern struct init_module ui_equip_cmp_module;
 
 static struct init_module *modules[] = {
 	&z_quark_module,
@@ -3780,6 +3781,7 @@ static struct init_module *modules[] = {
 	&store_module,
 	&options_module,
 	&ui_player_module,
+	&ui_equip_cmp_module,
 	NULL
 };
 
