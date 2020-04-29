@@ -7,7 +7,7 @@
 # power: weighting in object power calculations (100 is neutral)
 # verb: verb used when a susceptible monster is hit
 # resist-flag: monster race flag for resist to the brand element
-
+# vuln-flag: monster race flag for special vulnerability to the brand element
 # This file encodes the brands that can appear on object.
 
 code:ACID_3
