@@ -404,6 +404,31 @@ static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 }
 
 
+/**
+ * Result is  0 (no resistance)), 1 (resistance), 2 (vulnerable), 3 (immune),
+ * 4 (unknown), 5 (not present).
+ */
+static int convert_vanilla_res_level(int i)
+{
+	int result;
+
+	if (i == UI_ENTRY_UNKNOWN_VALUE) {
+		result = 4;
+	} else if (i == UI_ENTRY_VALUE_NOT_PRESENT) {
+		result = 5;
+	} else if (i >= 3) {
+		result = 3;
+	} else if (i >= 1) {
+		result = 1;
+	} else if (i <= -1) {
+		result = 2;
+	} else {
+		result = 0;
+	}
+	return result;
+}
+
+
 static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const wchar_t *label,
 	int nlabel,
@@ -413,6 +438,25 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
+	/*
+	 * Fastest varying is no timed effect, timed resistance,
+	 * timed vulnerability, timed immunity, unknown timed effect,
+	 * no value for timed effect
+	 */
+	const int combined_effect_tbl[6][6] = {
+		/* No permanent effect */
+		{ 2, 6,  9, 11, 2, 2 },
+		/* Permanent resistance */
+		{ 3, 7, 10, 12, 3, 3 },
+		/* Permanent vulnerability */
+		{ 4, 8,  4, 13, 4, 4 },
+		/* Permanent immunity */
+		{ 5, 5,  5,  5, 5, 5 },
+		/* Unknown permanent effect */
+		{ 0, 0,  0,  0, 0, 0 },
+		/* No value for permanent effect */
+		{ 1, 1,  1,  1, 1, 1 }
+	};
 	bool immune = false;
 	bool resist = false;
 	bool vulnerable = false;
@@ -420,74 +464,98 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	bool timed_resist = false;
 	bool timed_vulnerable = false;
 	struct loc p = details->value_position;
-	int color_offset = (details->alternate_color_first) ? 9 : 0;
+	int color_offset = (details->alternate_color_first) ? 14 : 0;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 9 && info->nlabcolors >= 8 && info->nsym >= 9);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 13 &&
+		info->nsym >= 14);
 
 	for (i = 0; i < n; ++i) {
-		int palette_index = 2;
+		int untimed_effect = convert_vanilla_res_level(vals[i]);
+		int timed_effect = convert_vanilla_res_level(auxvals[i]);
+		int palette_index;
 
-		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE) {
-			palette_index = 0;
-		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			palette_index = 1;
-		} else if (vals[i] >= 3) {
-			immune = true;
-			palette_index = 5;
-		} else if (vals[i] >= 1) {
-			resist = true;
-			palette_index = 3;
-		} else if (vals[i] < 0) {
-			vulnerable = true;
-			palette_index = 4;
-		}
-		if (auxvals[i] >= 3 && auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_immune = true;
-			if (vals[i] == 0) {
-				palette_index = 8;
-			}
-		} else if (auxvals[i] >= 1 &&
-			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_resist = true;
-			if (vals[i] == 0) {
-				palette_index = 6;
-			}
-		} else if (auxvals[i] < 0 &&
-			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_vulnerable = true;
-			if (vals[i] == 0) {
-				palette_index = 7;
-			}
-		}
+		assert(untimed_effect >= 0 && untimed_effect < 6 &&
+			timed_effect >= 0 && timed_effect < 6);
+		palette_index =
+			combined_effect_tbl[untimed_effect][timed_effect];
 		Term_putch(p.x, p.y,
 			info->colors[palette_index + color_offset],
 			info->symbols[palette_index]);
 		p = loc_sum(p, details->position_step);
-		color_offset ^= 9;
+		color_offset ^= 14;
+
+		switch (untimed_effect) {
+		case 1:
+			resist = true;
+			break;
+
+		case 2:
+			vulnerable = true;
+			break;
+
+		case 3:
+			immune = true;
+			break;
+
+		default:
+			/* Nothing to do. */
+			break;
+		}
+
+		switch (timed_effect) {
+		case 1:
+			timed_resist = true;
+			break;
+
+		case 2:
+			timed_vulnerable = true;
+			break;
+
+		case 3:
+			timed_immune = true;
+			break;
+
+		default:
+			/* Nothing to do. */
+			break;
+		}
 	}
 
 	if (nlabel > 0) {
-		int palette_index = 1;
+		int palette_index;
 
 		if (! details->known_rune) {
 			palette_index = 0;
 		} else if (immune) {
 			palette_index = 4;
-		} else if (resist) {
-			palette_index = 2;
-		} else if (vulnerable) {
-			palette_index = 3;
+		} else if (resist && !vulnerable) {
+			if (timed_immune) {
+				palette_index = 11;
+			} else if (timed_resist && !timed_vulnerable) {
+				palette_index = 6;
+			} else if (timed_vulnerable && !timed_resist) {
+				palette_index = 9;
+			} else {
+				palette_index = 2;
+			}
+		} else if (vulnerable && !resist) {
+			if (timed_immune) {
+				palette_index = 12;
+			} else if (timed_resist && !timed_vulnerable) {
+				palette_index = 7;
+			} else {
+				palette_index = 3;
+			}
 		} else if (timed_immune) {
-			palette_index = 7;
-		} else if (timed_resist) {
+			palette_index = 10;
+		} else if (timed_resist && !timed_vulnerable) {
 			palette_index = 5;
-		} else if (timed_vulnerable) {
-			palette_index = 6;
+		} else if (timed_vulnerable && !timed_resist) {
+			palette_index = 8;
+		} else {
+			palette_index = 1;
 		}
 		if (details->vertical_label) {
 			p = details->label_position;
