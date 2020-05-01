@@ -723,19 +723,17 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 
 		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE || (vals[i] == 0 &&
 			auxvals[i] == UI_ENTRY_UNKNOWN_VALUE)) {
-			int j;
-
 			palette_index = 0;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[0];
-			}
+			format_int(0, false, info->symbols[0],
+				info->symbols[0], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			int j;
-
 			palette_index = 1;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[1];
-			}
+			format_int(0, false, info->symbols[1],
+				info->symbols[1], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] > 0) {
 			if (sum < LONG_MAX - vals[i]) {
 				sum += vals[i];
@@ -891,19 +889,17 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 
 		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE || (vals[i] == 0 &&
 			auxvals[i] == UI_ENTRY_UNKNOWN_VALUE)) {
-			int j;
-
 			palette_index = 0;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[0];
-			}
+			format_int(0, false, info->symbols[0],
+				info->symbols[0], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			int j;
-
 			palette_index = 1;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[1];
-			}
+			format_int(0, false, info->symbols[1],
+				info->symbols[1], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] > 0) {
 			if (sum < LONG_MAX - vals[i]) {
 				sum += vals[i];

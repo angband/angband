@@ -92,10 +92,10 @@
 # modifer.  The alternate colors are used for every other value.  The colors
 # for the timed effects are only used if the permanent effect is known and is
 # zero.  There are seven symbols that may be used.  The first symbol is used
-# in place of digits when the value is unknown.  The second symbol is used in
-# place of digts when the value is not present.  The third symbol is used when
-# both the value and the auxiliary value are zero.  If it is '0', then it may
-# be shown with a sign, depending on the the setting for the sign indicator
+# when the value is unknown.  The second symbol is used in when the value is
+# not present.  The third symbol is used when both the value and the auxiliary
+# value are zero.  For the first three symbols, if the symbol is '0', it may
+# be shown with a sign depending on the setting for the sign indicator
 # described below.  The fourth symbol is used in place of digits when the
 # known permanent effect is positive and the value is too large to display with
 # the given number of digits.  The fifth symbol is used in place of digits when
@@ -131,18 +131,16 @@
 # negative with the auxiliary flag on) or an alternate set of eight colors for
 # those same conditions is used for each modifier.  The alternate colors are
 # used for every other value.  There are six symbols that may be used.  The
-# first symbol is used in place of digits when the value is unknown.  The
-# second symbol is used in place of digits when the value is not present.  The
-# third symbol is used when the value is zero and the auxiliary flag is off.
-# If it is '0', then it may be shown with a sign, depending on the the setting
-# for the sign indicator described below.  The fourth symbol is used when the
-# value is zero and auxiliary flag is on.  If it is '0', then it may be shown
-# with a sign, depending on the the setting for the sign indicator described
-# below.  The fifth symbol is used in place of digits when the value is
-# positive and too large to display with the given number of digits.  The
-# sixth symbol is used in place of digits when the value is negative and too
-# large to display with the given number of digits.  A palette of seven colors
-# is used for the label.  They are:
+# first symbol is used when the value is unknown.  The second symbol is used
+# when the value is not present.  The third symbol is used when the value is
+# zero and the auxiliary flag is off.  The fourth symbol is used when the value
+# is zero and auxiliary flag is on.  For the first four symbols, if the symbol
+# is '0', then it may be shown with a sign, depending on the the setting for
+# the sign indicator described below.  The fifth symbol is used in place of
+# digits when the value is positive and too large to display with the given
+# number of digits.  The sixth symbol is used in place of digits when the
+# value is negative and too large to display with the given number of digits.
+# A palette of seven colors is used for the label.  They are:
 # unknown rune
 # the sum of the known values is zero and none of the auxiliary flags are on
 # the sum of the known values is zero and at least one auxiliary flag is on
