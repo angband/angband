@@ -649,7 +649,6 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 			} else {
 				sum_timed = LONG_MIN;
 			}
-			sum_timed += auxvals[i];
 			if (vals[i] == 0) {
 				palette_index = 6;
 			}
