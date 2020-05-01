@@ -181,7 +181,7 @@ symbols:?..+-!=
 # and nothing to be set for units.
 name:char_screen1_stat_mod_renderer
 code:NUMERIC_RENDERER_WITH_BOOL_AUX
-colors:sdsgGgrRwdsgGgrR
+colors:sdsgGgrRsdsgGgrR
 labelcolors:wwwwwww
 symbols:? .s*=
 ndigit:1
