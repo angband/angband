@@ -1089,7 +1089,7 @@ static void augment_symbols(const char *symbols, wchar_t **s, int *n)
 {
 	wchar_t defsym[MAX_PALETTE];
 	size_t nd = text_mbstowcs(defsym, symbols, MAX_PALETTE);
-	
+
 	if (nd == (size_t)-1) {
 		quit("Invalid encoding for default symbols");
 	}
