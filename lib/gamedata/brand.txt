@@ -7,7 +7,7 @@
 # power: weighting in object power calculations (100 is neutral)
 # verb: verb used when a susceptible monster is hit
 # resist-flag: monster race flag for resist to the brand element
-
+# vuln-flag: monster race flag for special vulnerability to the brand element
 # This file encodes the brands that can appear on object.
 
 code:ACID_3
@@ -33,6 +33,7 @@ multiplier:3
 o-multiplier:25
 power:113
 resist-flag:IM_FIRE
+vuln-flag:HURT_FIRE
 
 code:COLD_3
 name:cold
@@ -41,6 +42,7 @@ multiplier:3
 o-multiplier:25
 power:119
 resist-flag:IM_COLD
+vuln-flag:HURT_COLD
 
 code:POIS_3
 name:poison
@@ -73,6 +75,7 @@ multiplier:2
 o-multiplier:15
 power:107
 resist-flag:IM_FIRE
+vuln-flag:HURT_FIRE
 
 code:COLD_2
 name:cold
@@ -81,6 +84,7 @@ multiplier:2
 o-multiplier:15
 power:109
 resist-flag:IM_COLD
+vuln-flag:HURT_COLD
 
 code:POIS_2
 name:poison

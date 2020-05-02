@@ -85,6 +85,7 @@ struct brand {
 	char *name;
 	char *verb;
 	int resist_flag;
+	int vuln_flag;
 	int multiplier;
 	int o_multiplier;
 	int power;

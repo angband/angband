@@ -33,6 +33,7 @@ int brand_count(bool *brands);
 int slay_count(bool *slays);
 bool player_has_temporary_brand(int idx);
 bool player_has_temporary_slay(int idx);
+int get_monster_brand_multiplier(const struct monster *mon, const struct brand *b);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
 							 int *brand_used, int *slay_used, char *verb,
 							 bool range);
