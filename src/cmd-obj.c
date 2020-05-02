@@ -427,6 +427,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
+	char label = gear_to_label(obj);
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -499,10 +500,10 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		 */
 		if (use == USE_SINGLE) {
 			if (object_is_carried(player, obj)) {
-				work_obj = gear_object_for_use(obj, 1, true, &none_left);
+				work_obj = gear_object_for_use(obj, 1, false, &none_left);
 				from_floor = false;
 			} else {
-				work_obj = floor_object_for_use(obj, 1, true, &none_left);
+				work_obj = floor_object_for_use(obj, 1, false, &none_left);
 				from_floor = true;
 			}
 		} else  {
@@ -574,9 +575,24 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 		/* Increase knowledge */
 		if (use == USE_SINGLE) {
+			char name[80];
 			/* Single use items are automatically learned */
 			if (!was_aware) {
 				object_learn_on_use(player, work_obj);
+			}
+			/* Get a description */
+			if (used && none_left) {
+				obj->number--;
+			}
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+			if (from_floor) {
+				/* Print a message */
+				msg("You see %s.", name);
+			} else {
+				msg("You have %s (%c).", name, label);
+			}
+			if (used && none_left) {
+				obj->number++;
 			}
 		} else {
 			/* Wearables may need update, other things become known or tried */
