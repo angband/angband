@@ -52,7 +52,7 @@ struct cached_player_data {
 struct category_reference {
 	const char *name;
 	int priority;
-        bool priority_set;
+	bool priority_set;
 };
 
 struct bound_object_property {
@@ -1771,7 +1771,7 @@ static enum parser_error parse_entry_name(struct parser *p)
 	} else {
 		embryo = mem_alloc(sizeof(*embryo));
 	}
-	
+
 	parser_setpriv(p, embryo);
 	ind = ui_entry_lookup(name);
 	if (ind > 0) {
