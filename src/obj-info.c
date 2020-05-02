@@ -777,7 +777,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj) && !throw;
-	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow) && !throw;
 	int melee_adj_mult = ammo ? 0 : 1;
 	int multiplier = 1;
 
@@ -968,7 +968,7 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj) && !throw;
-	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow) && !throw;
 	int multiplier = 1;
 
 	struct player_state state;
@@ -1272,13 +1272,14 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	bool weapon = tval_is_melee_weapon(obj);
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 	bool throwing_weapon = weapon && of_has(obj->flags, OF_THROWING);
+	bool rock = tval_is_ammo(obj) && of_has(obj->flags, OF_THROWING);
 
 	int range, break_chance;
 	bool thrown_effect, heavy;
 
 	obj_known_misc_combat(obj, &thrown_effect, &range, &break_chance, &heavy);
 
-	if (!weapon && !ammo) {
+	if (!weapon && !ammo && !rock) {
 		if (thrown_effect) {
 			textblock_append(tb, "It can be thrown at creatures with damaging effect.\n");
 			return true;
@@ -1293,14 +1294,16 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 
 	describe_blows(tb, obj);
 
-	if (!weapon) { /* Ammo */
-		textblock_append(tb, "Hits targets up to ");
+	if (ammo) {
+		textblock_append(tb, "When fired, hits targets up to ");
 		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", range));
 		textblock_append(tb, " feet away.\n");
 	}
 
-	describe_damage(tb, obj, false);
-	if (throwing_weapon) {
+	if (weapon || ammo) {
+		describe_damage(tb, obj, false);
+	}
+	if (throwing_weapon || rock) {
 		describe_damage(tb, obj, true);
 	}
 
