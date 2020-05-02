@@ -34,6 +34,7 @@ normal:food:Slime Mold
 normal:food:Flask of Whisky
 normal:food:Hard Biscuit
 normal:mushroom:Stoneskin
+normal:mushroom:Purging
 buy:light
 buy:food
 buy:mushroom
