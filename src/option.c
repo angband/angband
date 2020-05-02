@@ -91,17 +91,18 @@ bool option_set(const char *name, int val)
 }
 
 /**
- * Set score options from cheat options
+ * Clear cheat options
  */
 void options_init_cheat(void)
 {
 	int i;
 
 	for (i = 0; i < OPT_MAX; i++) {
-		if (option_is_cheat(i))
-			player->opts.opt[i + 1] = player->opts.opt[i];
+		if (option_is_cheat(i)) {
+			player->opts.opt[i] = false;
+			player->opts.opt[i + 1] = false;
+		}
 	}
-
 }
 
 /**
