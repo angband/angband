@@ -355,6 +355,11 @@ static void Term_init_gcu(term *t) {
 	/* Count init's, handle first */
 	if (active++ != 0) return;
 
+	#if defined(USE_NCURSES) && defined(KEY_MOUSE)
+	/* Turn on the mouse. */
+	mousemask(ALL_MOUSE_EVENTS, NULL);
+	#endif
+
 	/* Erase the window */
 	wclear(td->win);
 
@@ -583,6 +588,25 @@ static errr Term_xtra_gcu_event(int v) {
 		cbreak();
 		do_gcu_resize();
 		if (i == ERR) return (1);
+	}
+	#endif
+
+	#if defined(USE_NCURSES) && defined(KEY_MOUSE)
+	if (i == KEY_MOUSE) {
+		MEVENT m;
+		if (getmouse(&m) != OK) return (0);
+
+		int b = 0;
+		if (m.bstate & BUTTON1_CLICKED) b = 1;
+		else if (m.bstate & BUTTON2_CLICKED) b = 2;
+		else if (m.bstate & BUTTON3_CLICKED) b = 3;
+		else if (m.bstate & BUTTON4_CLICKED) b = 4;
+		if (m.bstate & BUTTON_SHIFT) b |= (KC_MOD_SHIFT << 4);
+		if (m.bstate & BUTTON_CTRL) b |= (KC_MOD_CONTROL << 4);
+		if (m.bstate & BUTTON_ALT) b |= (KC_MOD_ALT << 4);
+
+		if (b != 0) Term_mousepress(m.x, m.y, b);
+		return (0);
 	}
 	#endif
 
