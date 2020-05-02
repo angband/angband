@@ -44,6 +44,7 @@ struct ui_entry *advance_ui_entry_iterator(struct ui_entry_iterator *i);
 bool ui_entry_has_category(const struct ui_entry *entry, const char *name);
 void get_ui_entry_label(const struct ui_entry *entry, int length,
 	bool pad_left, wchar_t *label);
+int get_ui_entry_combiner_index(const struct ui_entry *entry);
 int get_ui_entry_renderer_index(const struct ui_entry *entry);
 bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
 	const struct player *p);

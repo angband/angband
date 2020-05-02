@@ -16,6 +16,7 @@
 #ifndef INCLUDED_UI_ENTRY_RENDERERS_H
 #define INCLUDED_UI_ENTRY_RENDERERS_H
 
+#include "ui-entry-combiner.h"
 #include "z-type.h"
 
 struct ui_entry_details {
@@ -25,6 +26,8 @@ struct ui_entry_details {
 	struct loc value_position;
 	/* This is the step size to use between values. */
 	struct loc position_step;
+	/* This is the location for the combined value, if shown. */
+	struct loc combined_position;
 	/* If true the characters of the label will be spaced vertically. */
 	bool vertical_label;
 	/*
@@ -37,25 +40,17 @@ struct ui_entry_details {
 	 * player.
 	 */
 	bool known_rune;
+	/* If true, the combined value will be shown. */
+	bool show_combined;
 };
-
-/*
- * This is the value to use in vals or aux_vals array when the real value is
- * unknown to the player.
- */
-#define UI_ENTRY_UNKNOWN_VALUE (INT_MAX)
-
-/*
- * This is the value to use in vals or aux_vals array when the value is to
- * be treated as not present.
- */
-#define UI_ENTRY_VALUE_NOT_PRESENT (INT_MAX - 1)
 
 int ui_entry_renderer_get_min_index(void);
 int ui_entry_renderer_get_index_limit(void);
 const char *ui_entry_renderer_get_name(int ind);
 int ui_entry_renderer_lookup(const char *name);
 int ui_entry_renderer_query_value_width(int ind);
+int ui_entry_renderer_query_combined_width(int ind);
+int ui_entry_renderer_query_combiner(int ind);
 void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
 	const int *vals, const int *auxvals, int n,
 	const struct ui_entry_details *details);

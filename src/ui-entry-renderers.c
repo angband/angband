@@ -46,6 +46,8 @@ typedef int (*valuewidth_func)(const struct renderer_info *info);
 
 static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 	bool nonneg, bool use_sign, int nbuf, wchar_t *buf);
+static void show_combined_generic(const struct renderer_info *info,
+	const struct ui_entry_details *details, int vcombined, int acombined);
 
 /* Implemented backends. */
 static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
@@ -103,6 +105,7 @@ static int valuewidth_NUMERIC_RENDERER_WITH_BOOL_AUX(
 struct backend_info {
 	renderer_func func;
 	valuewidth_func vw_func;
+	const char *default_combiner_name;
 	const char *default_colors;
 	const char *default_labelcolors;
 	const char *default_symbols;
@@ -121,7 +124,7 @@ static const struct backend_info backends[] =
 {
 	#define F(x) renderer_##x
 	#define FWIDTH(x) valuewidth_##x
-	#define UI_ENTRY_RENDERER(x, c, lc, s, n, sg) { F(x), FWIDTH(x), c, lc, s, n, UI_ENTRY_##sg},
+	#define UI_ENTRY_RENDERER(x, co, c, lc, s, n, sg) { F(x), FWIDTH(x), co, c, lc, s, n, UI_ENTRY_##sg},
 	#include "list-ui-entry-renderers.h"
 	#undef UI_ENTRY_RENDERER
 	#undef F
@@ -129,7 +132,7 @@ static const struct backend_info backends[] =
 };
 
 static const char *backend_names[] = {
-	#define UI_ENTRY_RENDERER(x, c, lc, s, n, sg) #x,
+	#define UI_ENTRY_RENDERER(x, co, c, lc, s, n, sg) #x,
 	#include "list-ui-entry-renderers.h"
 	#undef UI_ENTRY_RENDERER
 	NULL
@@ -140,11 +143,14 @@ static void convert_chars_to_attrs(const char *colors, int n, int *attr);
 
 struct renderer_info {
 	char *name;
+	char *comb_rend_nm;
 	int *colors;
 	int *label_colors;
 	wchar_t *symbols;
 	wchar_t *units_label;
 	const struct backend_info *backend;
+	int combined_renderer_index;
+	int combiner_index;
 	int ncolors;
 	int nlabcolors;
 	int nsym;
@@ -227,13 +233,48 @@ int ui_entry_renderer_query_value_width(int ind)
 
 
 /**
- * Use a renderer to draw a set of values and their label.  ind is the
- * index for the renderer; use ui_entry_renderer_lookup to get it.
- * label and nlabel specify the label to draw.  If nlabel is 0, no label will
- * drawn.  vals, auxvals, and n set the values to draw.  vals and auxvals
- * each refer to n values.  details controls certain aspects of the rendering
- * including positions.  The comments for it in ui-entry-renderers.h describe
- * it in more detail.
+ * Query a renderer for the number of characters used to draw the combined
+ * value.  ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.  Will return -1 if the renderer is not valid or has not been
+ * attached to another renderer to show the combined value.
+ */
+int ui_entry_renderer_query_combined_width(int ind)
+{
+	const struct renderer_info *combined_renderer;
+
+	if (ind <= 0 || ind > renderer_count ||
+		renderers[ind - 1].combined_renderer_index <= 0 ||
+		renderers[ind - 1].combined_renderer_index > renderer_count) {
+		return -1;
+	}
+	combined_renderer =
+		&renderers[renderers[ind - 1].combined_renderer_index - 1];
+	return (combined_renderer->backend) ?
+		(*combined_renderer->backend->vw_func)(combined_renderer) : -1;
+}
+
+
+/**
+ * Returns the combiner index, suitable as the first argument to
+ * ui_entry_combiner_get_funcs(), for the given user interface renderer.
+ * Returns zero if the renderer is not valid or has an invalid combiner.
+ */
+int ui_entry_renderer_query_combiner(int ind)
+{
+	return (ind > 0 && ind <= renderer_count) ?
+		renderers[ind - 1].combiner_index : 0;
+}
+
+
+/**
+ * Use a renderer to draw a set of values and, optionally, their label and
+ * combined value.  ind is the index for the renderer; use
+ * ui_entry_renderer_lookup to get it.  label and nlabel specify the label to
+ * draw.  If nlabel is 0, no label will be drawn.  vals, auxvals, and n set
+ * the values to draw.  vals and auxvals each refer to n values.  details
+ * controls certain aspects of the rendering including positions and the
+ * handling of the combined value.  The comments for it in
+ * ui-entry-renderers.h describe it in more detail.
  */
 void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
 	const int *vals, const int *auxvals, int n,
@@ -404,6 +445,49 @@ static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 }
 
 
+static void show_combined_generic(const struct renderer_info *info,
+	const struct ui_entry_details *details, int vcombined, int acombined)
+{
+	struct ui_entry_details combined_details;
+
+	combined_details.label_position = loc(0, 0);
+	combined_details.value_position = details->combined_position;
+	combined_details.position_step = loc(0, 0);
+	combined_details.combined_position = loc(0, 0);
+	combined_details.vertical_label = false;
+	combined_details.alternate_color_first = false;
+	combined_details.known_rune = details->known_rune;
+	combined_details.show_combined = false;
+	ui_entry_renderer_apply(info->combined_renderer_index, NULL,
+		0, &vcombined, &acombined, 1, &combined_details);
+}
+
+
+/**
+ * Result is  0 (no resistance)), 1 (resistance), 2 (vulnerable), 3 (immune),
+ * 4 (unknown), 5 (not present).
+ */
+static int convert_vanilla_res_level(int i)
+{
+	int result;
+
+	if (i == UI_ENTRY_UNKNOWN_VALUE) {
+		result = 4;
+	} else if (i == UI_ENTRY_VALUE_NOT_PRESENT) {
+		result = 5;
+	} else if (i >= 3) {
+		result = 3;
+	} else if (i >= 1) {
+		result = 1;
+	} else if (i <= -1) {
+		result = 2;
+	} else {
+		result = 0;
+	}
+	return result;
+}
+
+
 static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const wchar_t *label,
 	int nlabel,
@@ -413,82 +497,89 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
-	bool immune = false;
-	bool resist = false;
-	bool vulnerable = false;
-	bool timed_immune = false;
-	bool timed_resist = false;
-	bool timed_vulnerable = false;
+	/*
+	 * Fastest varying is no timed effect, timed resistance,
+	 * timed vulnerability, timed immunity, unknown timed effect,
+	 * no value for timed effect
+	 */
+	const int combined_effect_tbl[6][6] = {
+		/* No permanent effect */
+		{ 2, 6,  9, 11, 2, 2 },
+		/* Permanent resistance */
+		{ 3, 7, 10, 12, 3, 3 },
+		/* Permanent vulnerability */
+		{ 4, 8,  4, 13, 4, 4 },
+		/* Permanent immunity */
+		{ 5, 5,  5,  5, 5, 5 },
+		/* Unknown permanent effect */
+		{ 0, 0,  0,  0, 0, 0 },
+		/* No value for permanent effect */
+		{ 1, 1,  1,  1, 1, 1 }
+	};
 	struct loc p = details->value_position;
-	int color_offset = (details->alternate_color_first) ? 9 : 0;
+	int color_offset = (details->alternate_color_first) ? 14 : 0;
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 9 && info->nlabcolors >= 8 && info->nsym >= 9);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 13 &&
+		info->nsym >= 14);
 
 	for (i = 0; i < n; ++i) {
-		int palette_index = 2;
+		int untimed_effect = convert_vanilla_res_level(vals[i]);
+		int timed_effect = convert_vanilla_res_level(auxvals[i]);
+		int palette_index;
 
-		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE) {
-			palette_index = 0;
-		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			palette_index = 1;
-		} else if (vals[i] >= 3) {
-			immune = true;
-			palette_index = 5;
-		} else if (vals[i] >= 1) {
-			resist = true;
-			palette_index = 3;
-		} else if (vals[i] < 0) {
-			vulnerable = true;
-			palette_index = 4;
-		}
-		if (auxvals[i] >= 3 && auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_immune = true;
-			if (vals[i] == 0) {
-				palette_index = 8;
-			}
-		} else if (auxvals[i] >= 1 &&
-			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_resist = true;
-			if (vals[i] == 0) {
-				palette_index = 6;
-			}
-		} else if (auxvals[i] < 0 &&
-			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
-			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			timed_vulnerable = true;
-			if (vals[i] == 0) {
-				palette_index = 7;
-			}
-		}
+		assert(untimed_effect >= 0 && untimed_effect < 6 &&
+			timed_effect >= 0 && timed_effect < 6);
+		palette_index =
+			combined_effect_tbl[untimed_effect][timed_effect];
 		Term_putch(p.x, p.y,
 			info->colors[palette_index + color_offset],
 			info->symbols[palette_index]);
 		p = loc_sum(p, details->position_step);
-		color_offset ^= 9;
+		color_offset ^= 14;
 	}
 
-	if (nlabel > 0) {
-		int palette_index = 1;
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
 
-		if (! details->known_rune) {
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
+	if (nlabel > 0) {
+		const int combined_label_tbl[6][6] = {
+			/* No permanent effect */
+			{ 1, 5, 8, 10, 1, 1 },
+			/* Permanent resistance */
+			{ 2, 6, 9, 11, 2, 2 },
+			/* Permanent vulnerability */
+			{ 3, 7, 3, 12, 3, 3 },
+			/* Permanent immunity */
+			{ 4, 4, 4,  4, 4, 4 },
+			/* Unknown permanent effect */
+			{ 1, 5, 8, 10, 1, 1 },
+			/* No value for permanent effect */
+			{ 1, 5, 8, 10, 1, 1 }
+		};
+		int palette_index;
+
+		if (details->known_rune) {
+			int untimed_effect = convert_vanilla_res_level(vc);
+			int timed_effect = convert_vanilla_res_level(ac);
+
+			assert(untimed_effect >= 0 && untimed_effect < 6 &&
+				timed_effect >= 0 && timed_effect < 6);
+			palette_index =
+				combined_label_tbl[untimed_effect][timed_effect];
+		} else {
 			palette_index = 0;
-		} else if (immune) {
-			palette_index = 4;
-		} else if (resist) {
-			palette_index = 2;
-		} else if (vulnerable) {
-			palette_index = 3;
-		} else if (timed_immune) {
-			palette_index = 7;
-		} else if (timed_resist) {
-			palette_index = 5;
-		} else if (timed_vulnerable) {
-			palette_index = 6;
 		}
+
 		if (details->vertical_label) {
 			p = details->label_position;
 			for (i = 0; i < nlabel; ++i) {
@@ -502,6 +593,10 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
 	}
 }
 
@@ -522,10 +617,10 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
-	bool any_on = false;
-	bool any_timed_on = false;
 	struct loc p = details->value_position;
 	int color_offset = (details->alternate_color_first) ? 5 : 0;
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
@@ -539,12 +634,10 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
 			palette_index = 1;
 		} else if (vals[i]) {
-			any_on = true;
 			palette_index = 3;
 		}
 		if (auxvals[i] && auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			any_timed_on = true;
 			if (vals[i] == 0) {
 				palette_index = 4;
 			}
@@ -556,14 +649,25 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 		color_offset ^= 5;
 	}
 
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
+
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
 	if (nlabel > 0) {
 		int palette_index = 1;
 
 		if (! details->known_rune) {
 			palette_index = 0;
-		} else if (any_on) {
+		} else if (vc && vc != UI_ENTRY_UNKNOWN_VALUE &&
+			vc != UI_ENTRY_VALUE_NOT_PRESENT) {
 			palette_index = 2;
-		} else if (any_timed_on) {
+		} else if (ac && ac != UI_ENTRY_UNKNOWN_VALUE &&
+			ac != UI_ENTRY_VALUE_NOT_PRESENT) {
 			palette_index = 3;
 		}
 		if (details->vertical_label) {
@@ -579,6 +683,10 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
 	}
 }
 
@@ -599,10 +707,10 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
-	long sum = 0;
-	long sum_timed = 0;
 	struct loc p = details->value_position;
 	int color_offset = (details->alternate_color_first) ? 7 : 0;
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
@@ -617,39 +725,18 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
 			palette_index = 1;
 		} else if (vals[i] > 0) {
-			if (sum < LONG_MAX - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MAX;
-			}
 			palette_index = 3;
 		} else if (vals[i] < 0) {
-			if (sum > LONG_MIN - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MIN;
-			}
 			palette_index = 4;
 		}
 		if (auxvals[i] > 0 && auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			if (sum_timed < LONG_MAX - auxvals[i]) {
-				sum_timed += auxvals[i];
-			} else {
-				sum_timed = LONG_MAX;
-			}
 			if (vals[i] == 0) {
 				palette_index = 5;
 			}
 		} else if (auxvals[i] < 0 &&
 			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			if (sum_timed > LONG_MIN - auxvals[i]) {
-				sum_timed += auxvals[i];
-			} else {
-				sum_timed = LONG_MIN;
-			}
-			sum_timed += auxvals[i];
 			if (vals[i] == 0) {
 				palette_index = 6;
 			}
@@ -661,19 +748,34 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 		color_offset ^= 7;
 	}
 
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
+
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
 	if (nlabel > 0) {
-		int palette_index = 1;
+		int palette_index;
 
 		if (! details->known_rune) {
 			palette_index = 0;
-		} else if (sum > 0) {
+		} else if (vc == UI_ENTRY_UNKNOWN_VALUE ||
+			vc == UI_ENTRY_VALUE_NOT_PRESENT || vc == 0) {
+			if (ac == UI_ENTRY_UNKNOWN_VALUE ||
+				ac == UI_ENTRY_VALUE_NOT_PRESENT || ac == 0) {
+				palette_index = 1;
+			} else if (ac > 0) {
+				palette_index = 4;
+			} else {
+				palette_index = 5;
+			}
+		} else if (vc > 0) {
 			palette_index = 2;
-		} else if (sum < 0) {
+		} else  {
 			palette_index = 3;
-		} else if (sum_timed > 0) {
-			palette_index = 4;
-		} else if (sum_timed < 0) {
-			palette_index = 5;
 		}
 		if (details->vertical_label) {
 			p = details->label_position;
@@ -688,6 +790,10 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
 	}
 }
 
@@ -708,12 +814,12 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
-	long sum = 0;
-	long sum_timed = 0;
 	struct loc p = details->value_position;
 	int color_offset = (details->alternate_color_first) ? 7 : 0;
 	int nbuf = info->ndigit + ((info->sign == UI_ENTRY_NO_SIGN) ? 0 : 1);
 	wchar_t *buffer = mem_alloc(nbuf * sizeof(*buffer));
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
@@ -724,25 +830,18 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 
 		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE || (vals[i] == 0 &&
 			auxvals[i] == UI_ENTRY_UNKNOWN_VALUE)) {
-			int j;
-
 			palette_index = 0;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[0];
-			}
+			format_int(0, false, info->symbols[0],
+				info->symbols[0], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			int j;
-
 			palette_index = 1;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[1];
-			}
+			format_int(0, false, info->symbols[1],
+				info->symbols[1], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] > 0) {
-			if (sum < LONG_MAX - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MAX;
-			}
 			palette_index = 3;
 			format_int(vals[i], false, info->symbols[2],
 				info->symbols[3], true,
@@ -752,11 +851,6 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 			int v;
 			bool o;
 
-			if (sum > LONG_MIN - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MIN;
-			}
 			palette_index = 4;
 			if (vals[i] == INT_MIN) {
 				v = -(INT_MIN + 1);
@@ -771,11 +865,6 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 		}
 		if (auxvals[i] > 0 && auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			if (sum_timed < LONG_MAX - auxvals[i]) {
-				sum_timed += auxvals[i];
-			} else {
-				sum_timed = LONG_MAX;
-			}
 			if (vals[i] == 0) {
 				palette_index = 5;
 				format_int(auxvals[i], false, info->symbols[2],
@@ -786,11 +875,6 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 		} else if (auxvals[i] < 0 &&
 			auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 			auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-			if (sum_timed > LONG_MIN - auxvals[i]) {
-				sum_timed += auxvals[i];
-			} else {
-				sum_timed = LONG_MIN;
-			}
 			if (vals[i] == 0) {
 				int v;
 				bool o;
@@ -828,19 +912,34 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 
 	mem_free(buffer);
 
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
+
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
 	if (nlabel > 0) {
-		int palette_index = 1;
+		int palette_index;
 
 		if (! details->known_rune) {
 			palette_index = 0;
-		} else if (sum > 0) {
+		} else if (vc == 0 || vc == UI_ENTRY_UNKNOWN_VALUE ||
+			vc == UI_ENTRY_VALUE_NOT_PRESENT) {
+			if (ac == 0 || ac == UI_ENTRY_UNKNOWN_VALUE ||
+				ac == UI_ENTRY_VALUE_NOT_PRESENT) {
+				palette_index = 1;
+			} else if (ac > 0) {
+				palette_index = 4;
+			} else {
+				palette_index = 5;
+			}
+		} else if (vc > 0) {
 			palette_index = 2;
-		} else if (sum < 0) {
+		} else {
 			palette_index = 3;
-		} else if (sum_timed > 0) {
-			palette_index = 4;
-		} else if (sum_timed < 0) {
-			palette_index = 5;
 		}
 		if (details->vertical_label) {
 			p = details->label_position;
@@ -855,6 +954,10 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
 	}
 }
 
@@ -876,12 +979,12 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	const struct ui_entry_details *details,
 	const struct renderer_info *info)
 {
-	long sum = 0;
-	int aux_combined = 0;
 	struct loc p = details->value_position;
 	int color_offset = (details->alternate_color_first) ? 8 : 0;
 	int nbuf = info->ndigit + ((info->sign == UI_ENTRY_NO_SIGN) ? 0 : 1);
 	wchar_t *buffer = mem_alloc(nbuf * sizeof(*buffer));
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
@@ -892,29 +995,21 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 
 		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE || (vals[i] == 0 &&
 			auxvals[i] == UI_ENTRY_UNKNOWN_VALUE)) {
-			int j;
-
 			palette_index = 0;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[0];
-			}
+			format_int(0, false, info->symbols[0],
+				info->symbols[0], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
-			int j;
-
 			palette_index = 1;
-			for (j = 0; j < nbuf; ++j) {
-				buffer[j] = info->symbols[1];
-			}
+			format_int(0, false, info->symbols[1],
+				info->symbols[1], true,
+				info->sign == UI_ENTRY_ALWAYS_SIGN, nbuf,
+				buffer);
 		} else if (vals[i] > 0) {
-			if (sum < LONG_MAX - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MAX;
-			}
 			if (auxvals[i] != 0 &&
 				auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 				auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-				aux_combined = 1;
 				palette_index = 5;
 			} else {
 				palette_index = 4;
@@ -927,15 +1022,9 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 			int v;
 			bool o;
 
-			if (sum > LONG_MIN - vals[i]) {
-				sum += vals[i];
-			} else {
-				sum = LONG_MIN;
-			}
 			if (auxvals[i] != 0 &&
 				auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 				auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-				aux_combined = 1;
 				palette_index = 7;
 			} else {
 				palette_index = 6;
@@ -956,7 +1045,6 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 			if (auxvals[i] != 0 &&
 				auxvals[i] != UI_ENTRY_UNKNOWN_VALUE &&
 				auxvals[i] != UI_ENTRY_VALUE_NOT_PRESENT) {
-				aux_combined = 1;
 				palette_index = 3;
 				zerosym = 3;
 			} else {
@@ -981,17 +1069,29 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 
 	mem_free(buffer);
 
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
+
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
 	if (nlabel > 0) {
-		int palette_index = 1;
+		bool acbool = ac && ac != UI_ENTRY_UNKNOWN_VALUE &&
+			ac != UI_ENTRY_VALUE_NOT_PRESENT;
+		int palette_index;
 
 		if (! details->known_rune) {
 			palette_index = 0;
-		} else if (sum > 0) {
-			palette_index = (aux_combined) ? 2 : 1;
-		} else if (sum < 0) {
-			palette_index = (aux_combined) ? 4 : 3;
+		} else if (vc == 0 || vc == UI_ENTRY_UNKNOWN_VALUE ||
+			vc == UI_ENTRY_VALUE_NOT_PRESENT) {
+			palette_index = (acbool) ? 6 : 5;
+		} else if (vc > 0) {
+			palette_index = (acbool) ? 2 : 1;
 		} else {
-			palette_index = (aux_combined) ? 6 : 5;
+			palette_index = (acbool) ? 4 : 3;
 		}
 		if (details->vertical_label) {
 			p = details->label_position;
@@ -1006,6 +1106,10 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
 	}
 }
 
@@ -1094,7 +1198,7 @@ static void augment_symbols(const char *symbols, wchar_t **s, int *n)
 {
 	wchar_t defsym[MAX_PALETTE];
 	size_t nd = text_mbstowcs(defsym, symbols, MAX_PALETTE);
-	
+
 	if (nd == (size_t)-1) {
 		quit("Invalid encoding for default symbols");
 	}
@@ -1136,11 +1240,14 @@ static enum parser_error parse_renderer_name(struct parser *p)
 		renderer = renderers + renderer_count;
 		++renderer_count;
 		renderer->name = string_make(name);
+		renderer->comb_rend_nm = NULL;
 		renderer->colors = NULL;
 		renderer->label_colors = NULL;
 		renderer->symbols = NULL;
 		renderer->units_label = NULL;
 		renderer->backend = NULL;
+		renderer->combined_renderer_index = 0;
+		renderer->combiner_index = 0;
 		renderer->ncolors = 0;
 		renderer->nlabcolors = 0;
 		renderer->nsym = 0;
@@ -1171,6 +1278,21 @@ static enum parser_error parse_renderer_code(struct parser *p)
 	}
 	renderer->backend = backends + ind - 1;
 	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_renderer_combine(struct parser *p)
+{
+	struct renderer_info *renderer = parser_priv(p);
+	const char *name;
+
+	if (!renderer) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	name = parser_getstr(p, "combine");
+	renderer->combiner_index = ui_entry_combiner_lookup(name);
+	return (renderer->combiner_index) ?
+		PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
 
@@ -1237,6 +1359,21 @@ static enum parser_error parse_renderer_symbols(struct parser *p)
 		return PARSE_ERROR_INVALID_VALUE;
 	}
 	renderer->nsym = n;
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_renderer_combined_renderer(struct parser *p)
+{
+	struct renderer_info *renderer = parser_priv(p);
+	const char *name;
+
+	if (!renderer) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	name = parser_getstr(p, "name");
+	string_free(renderer->comb_rend_nm);
+	renderer->comb_rend_nm = string_make(name);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1314,12 +1451,15 @@ static struct parser *init_parse_ui_entry_renderer(void)
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_renderer_name);
 	parser_reg(p, "code str code", parse_renderer_code);
+	parser_reg(p, "combine str combine", parse_renderer_combine);
 	parser_reg(p, "colors str colors", parse_renderer_colors);
 	parser_reg(p, "labelcolors str colors", parse_renderer_labelcolors);
 	parser_reg(p, "symbols str symbols", parse_renderer_symbols);
 	parser_reg(p, "ndigit int ndigit", parse_renderer_ndigit);
 	parser_reg(p, "sign str sign", parse_renderer_sign);
 	parser_reg(p, "units str units", parse_renderer_units);
+	parser_reg(p, "combined-renderer str name",
+		parse_renderer_combined_renderer);
 	return p;
 }
 
@@ -1335,8 +1475,23 @@ static errr finish_parse_ui_entry_renderer(struct parser *p)
 	int i;
 
 	for (i = 0; i < renderer_count; ++i) {
+		/* Get the combined value renderer. */
+		if (renderers[i].comb_rend_nm) {
+			renderers[i].combined_renderer_index =
+				ui_entry_renderer_lookup(renderers[i].comb_rend_nm);
+			string_free(renderers[i].comb_rend_nm);
+			renderers[i].comb_rend_nm = NULL;
+		}
+
 		if (!renderers[i].backend) {
 			continue;
+		}
+
+		/* Use the default combiner if nothing was set. */
+		if (!renderers[i].combiner_index) {
+			renderers[i].combiner_index = ui_entry_combiner_lookup(
+				renderers[i].backend->default_combiner_name);
+			assert(renderers[i].combiner_index != 0);
 		}
 
 		/*
@@ -1372,6 +1527,7 @@ static void cleanup_parse_ui_entry_renderer(void)
 		mem_free(renderers[i].symbols);
 		mem_free(renderers[i].label_colors);
 		mem_free(renderers[i].colors);
+		string_free(renderers[i].comb_rend_nm);
 		string_free(renderers[i].name);
 	}
 	mem_free(renderers);

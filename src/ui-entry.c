@@ -23,6 +23,7 @@
 #include "player.h"
 #include "player-timed.h"
 #include "ui-entry.h"
+#include "ui-entry-combiner.h"
 #include "ui-entry-init.h"
 #include "ui-entry-renderers.h"
 #include "z-util.h"
@@ -51,7 +52,7 @@ struct cached_player_data {
 struct category_reference {
 	const char *name;
 	int priority;
-        bool priority_set;
+	bool priority_set;
 };
 
 struct bound_object_property {
@@ -67,65 +68,6 @@ struct bound_player_ability {
 	int value;
 	bool have_value;
 	bool isaux;
-};
-
-
-struct combining_algorithm_state {
-	void *v;
-	int accum;
-	int accum_aux;
-};
-
-struct combining_algorithm {
-	const char *name;
-	void (*init_func)(int v, int a, struct combining_algorithm_state *st);
-	void (*accum_func)(int v, int a, struct combining_algorithm_state *st);
-	void (*finish_func)(struct combining_algorithm_state *st);
-};
-
-static void simple_combine_init(int v, int a,
-	struct combining_algorithm_state *st);
-static void dummy_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void dummy_combine_finish(struct combining_algorithm_state *st);
-static void add_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void bitwise_or_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void largest_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void last_combine_accum(int v, int a, 
-	struct combining_algorithm_state *st);
-static void logical_combine_init(int v, int a,
-	struct combining_algorithm_state *st);
-static void logical_or_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void resist_0_combine_init(int v, int a,
-	struct combining_algorithm_state *st);
-static void resist_0_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-static void resist_0_combine_finish(struct combining_algorithm_state *st);
-static void smallest_combine_accum(int v, int a,
-	struct combining_algorithm_state *st);
-
-/* Sorted alphabetically by name to facilitate lookup. */
-static struct combining_algorithm combiners[] = {
-	{ "ADD", simple_combine_init, add_combine_accum,
-		dummy_combine_finish },
-	{ "BITWISE_OR", simple_combine_init, bitwise_or_combine_accum,
-		dummy_combine_finish },
-	{ "FIRST", simple_combine_init, dummy_combine_accum,
-		dummy_combine_finish },
-	{ "LARGEST", simple_combine_init, largest_combine_accum,
-		dummy_combine_finish },
-	{ "LAST", simple_combine_init, last_combine_accum,
-		dummy_combine_finish },
-	{ "LOGICAL_OR", logical_combine_init, logical_or_combine_accum,
-		dummy_combine_finish },
-	{ "RESIST_0", resist_0_combine_init, resist_0_combine_accum,
-		resist_0_combine_finish },
-	{ "SMALLEST", simple_combine_init, smallest_combine_accum,
-		dummy_combine_finish }
 };
 
 
@@ -523,6 +465,16 @@ struct ui_entry *advance_ui_entry_iterator(struct ui_entry_iterator *i)
 
 
 /**
+ * Returns the combiner index, suitable as the first argument to
+ * ui_entry_combiner_get_funcs(), for the given user interface element.
+ */
+int get_ui_entry_combiner_index(const struct ui_entry *entry)
+{
+	return entry->combiner_index;
+}
+
+
+/**
  * Returns the renderer index, suitable as the first argument to
  * ui_entry_renderer_apply(), for the given user interface element.
  */
@@ -608,8 +560,8 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	const struct object *obj, const struct player *p,
 	struct cached_object_data **cache, int *val, int *auxval)
 {
-	struct combining_algorithm_state cst = { 0, 0, 0 };
-	const struct combining_algorithm *combiner;
+	struct ui_entry_combiner_state cst = { 0, 0, 0 };
+	struct ui_entry_combiner_funcs combiner;
 	const struct curse_data *curse;
 	struct cached_object_data *cache2;
 	bool first, all_unknown, all_aux_unknown, any_aux, all_aux;
@@ -630,7 +582,9 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	all_aux_unknown = true;
 	any_aux = false;
 	all_aux = true;
-	combiner = combiners + entry->combiner_index - 1;
+	if (ui_entry_combiner_get_funcs(entry->combiner_index, &combiner)) {
+		assert(0);
+	}
 	cache2 = *cache;
 	curse = obj->curses;
 	curse_ind = 0;
@@ -670,10 +624,10 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 						all_unknown = false;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 				}
 				break;
@@ -696,10 +650,10 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 						all_unknown = false;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 				}
 				break;
@@ -723,10 +677,10 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 						all_unknown = false;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 				}
 				break;
@@ -751,10 +705,10 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 						all_unknown = false;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 				}
 				break;
@@ -795,7 +749,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 		*val = (all_aux) ? 0 : UI_ENTRY_UNKNOWN_VALUE;
 		*auxval = (any_aux) ? UI_ENTRY_UNKNOWN_VALUE : 0;
 	} else {
-		(*combiner->finish_func)(&cst);
+		(*combiner.finish_func)(&cst);
 		if (all_unknown) {
 			*val = (all_aux) ? 0 : UI_ENTRY_UNKNOWN_VALUE;
 		} else {
@@ -814,8 +768,8 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 	struct player *p, struct cached_player_data **cache, int *val,
 	int *auxval)
 {
-	struct combining_algorithm_state cst = { 0, 0, 0 };
-	const struct combining_algorithm *combiner;
+	struct ui_entry_combiner_state cst = { 0, 0, 0 };
+	struct ui_entry_combiner_funcs combiner;
 	bool first;
 	int i;
 
@@ -834,7 +788,9 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 		}
 	}
 	first = true;
-	combiner = combiners + entry->combiner_index - 1;
+	if (ui_entry_combiner_get_funcs(entry->combiner_index, &combiner)) {
+		assert(0);
+	}
 	for (i = 0; i < entry->n_p_ability; ++i) {
 		int ind = entry->p_abilities[i].ability->index;
 
@@ -857,10 +813,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 					a = t;
 				}
 				if (first) {
-					(*combiner->init_func)(v, a, &cst);
+					(*combiner.init_func)(v, a, &cst);
 					first = false;
 				} else {
-					(*combiner->accum_func)(v, a, &cst);
+					(*combiner.accum_func)(v, a, &cst);
 				}
 			} else {
 				int v, a;
@@ -890,10 +846,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 						a = t;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 					break;
 
@@ -914,10 +870,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 						a = t;
 					}
 					if (first) {
-						(*combiner->init_func)(v, a, &cst);
+						(*combiner.init_func)(v, a, &cst);
 						first = false;
 					} else {
-						(*combiner->accum_func)(v, a, &cst);
+						(*combiner.accum_func)(v, a, &cst);
 					}
 					break;
 				}
@@ -939,10 +895,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 				a = t;
 			}
 			if (first) {
-				(*combiner->init_func)(v, a, &cst);
+				(*combiner.init_func)(v, a, &cst);
 				first = false;
 			} else {
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 
 			v = of_has(p->shape->flags, ind) ? 1 : 0;
@@ -954,7 +910,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 					v = a;
 					a = t;
 				}
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 		} else if (streq(entry->p_abilities[i].ability->type,
 			"element")) {
@@ -973,10 +929,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 				a = t;
 			}
 			if (first) {
-				(*combiner->init_func)(v, a, &cst);
+				(*combiner.init_func)(v, a, &cst);
 				first = false;
 			} else {
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 			v = p->shape->el_info[ind].res_level;
 			a = 0;
@@ -987,7 +943,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 					v = a;
 					a = t;
 				}
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 		}
 	}
@@ -1021,10 +977,10 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 				a = t;
 			}
 			if (first) {
-				(*combiner->init_func)(v, a, &cst);
+				(*combiner.init_func)(v, a, &cst);
 				first = false;
 			} else {
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 			/*
 			 * Racial information doesn't store modifiers but does
@@ -1043,7 +999,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 					v = a;
 					a = t;
 				}
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 			/*
 			 * Uggh, the player race handles infravision
@@ -1058,7 +1014,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 					v = a;
 					a = t;
 				}
-				(*combiner->accum_func)(v, a, &cst);
+				(*combiner.accum_func)(v, a, &cst);
 			}
 			break;
 		}
@@ -1067,7 +1023,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 		*val = 0;
 		*auxval = 0;
 	} else {
-		(*combiner->finish_func)(&cst);
+		(*combiner.finish_func)(&cst);
 		*val = cst.accum;
 		*auxval = cst.accum_aux;
 	}
@@ -1509,209 +1465,6 @@ static void insert_embryo_category(struct embryonic_ui_entry *embryo,
 }
 
 
-/*
- * Implement combining several modifiers or flags into one value for display.
- */
-static int lookup_combiner(const char *name)
-{
-	/* Sorted alphabetically so use a binary search. */
-	int ilow = 0, ihigh = N_ELEMENTS(combiners);
-
-	while (1) {
-		int imid, cmp;
-
-		if (ilow == ihigh) {
-			return 0;
-		}
-		imid = (ilow + ihigh) / 2;
-		cmp = strcmp(combiners[imid].name, name);
-		if (cmp == 0) {
-			return imid + 1;
-		}
-		if (cmp < 0) {
-			ilow = imid + 1;
-		} else {
-			ihigh = imid;
-		}
-	}
-}
-
-
-static void simple_combine_init(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	st->v = 0;
-	st->accum = v;
-	st->accum_aux = a;
-}
-
-
-static void dummy_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	/* Do nothing. */
-}
-
-
-static void dummy_combine_finish(struct combining_algorithm_state *st)
-{
-	/* Do nothing. */
-}
-
-
-static void add_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	/* Just in case, guard against overflow or underflow */
-	if (v > 0) {
-		if (st->accum <= INT_MAX - v) {
-			st->accum += v;
-		} else {
-			st->accum = INT_MAX;
-		}
-	} else if (v < 0) {
-		if (st->accum >= INT_MIN - v) {
-			st->accum += v;
-		} else {
-			st->accum = INT_MIN;
-		}
-	}
-	if (a > 0) {
-		if (st->accum_aux <= INT_MAX - a) {
-			st->accum_aux += a;
-		} else {
-			st->accum_aux = INT_MAX;
-		}
-	} else if (a < 0) {
-		if (st->accum_aux >= INT_MIN - a) {
-			st->accum_aux += a;
-		} else {
-			st->accum_aux = INT_MIN;
-		}
-	}
-}
-
-
-static void bitwise_or_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	st->accum |= v;
-	st->accum_aux |= a;
-}
-
-
-static void largest_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	if (st->accum < v) {
-		st->accum = v;
-	}
-	if (st->accum_aux < a) {
-		st->accum_aux = a;
-	}
-}
-
-
-static void last_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	st->accum = v;
-	st->accum_aux = a;
-}
-
-
-static void logical_combine_init(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	st->v = 0;
-	st->accum = (v != 0);
-	st->accum_aux = (a != 0);
-}
-
-
-static void logical_or_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	st->accum = st->accum || (v != 0);
-	st->accum_aux = st->accum_aux || (a != 0);
-}
-
-
-static void resist_0_combine_init(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	/*
-	 * Use the accum values in st for the most positive.  Allocate working
-	 * space to store the most negative.
-	 */
-	int *work = mem_alloc(2 * sizeof(*work));
-
-	st->v = work;
-	if (v > 0) {
-		st->accum = v;
-		work[0] = 0;
-	} else {
-		st->accum = 0;
-		work[0] = v;
-	}
-	if (a > 0) {
-		st->accum_aux = a;
-		work[1] = 0;
-	} else {
-		st->accum_aux = 0;
-		work[1] = a;
-	}
-}
-
-
-static void resist_0_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	int *work = st->v;
-
-	if (v > 0) {
-		if (st->accum < v) {
-			st->accum = v;
-		}
-	} else if (work[0] > v) {
-		work[0] = v;
-	}
-	if (a > 0) {
-		if (st->accum_aux < a) {
-			st->accum_aux = a;
-		}
-	} else if (work[1] > a) {
-		work[1] = a;
-	}
-}
-
-
-static void resist_0_combine_finish(struct combining_algorithm_state *st)
-{
-	int *work = st->v;
-
-	if (! st->accum) {
-		st->accum = work[0];
-	}
-	if (! st->accum_aux) {
-		st->accum_aux = work[1];
-	}
-	mem_free(work);
-	st->v = 0;
-}
-
-
-static void smallest_combine_accum(int v, int a,
-	struct combining_algorithm_state *st)
-{
-	if (st->accum > v) {
-		st->accum = v;
-	}
-	if (st->accum_aux > a) {
-		st->accum_aux = a;
-	}
-}
-
 /* These are for handling unparameterized entry names. */
 static int get_dummy_param_count(void)
 {
@@ -2018,7 +1771,7 @@ static enum parser_error parse_entry_name(struct parser *p)
 	} else {
 		embryo = mem_alloc(sizeof(*embryo));
 	}
-	
+
 	parser_setpriv(p, embryo);
 	ind = ui_entry_lookup(name);
 	if (ind > 0) {
@@ -2152,7 +1905,7 @@ static enum parser_error parse_entry_combine(struct parser *p)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	name = parser_getstr(p, "combine");
-	embryo->entry->combiner_index = lookup_combiner(name);
+	embryo->entry->combiner_index = ui_entry_combiner_lookup(name);
 	return (embryo->entry->combiner_index) ?
 		PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }

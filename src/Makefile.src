@@ -175,6 +175,7 @@ ANGFILES = \
 	ui-death.o \
 	ui-display.o \
 	ui-entry.o \
+	ui-entry-combiner.o \
 	ui-entry-renderers.o \
 	ui-equip-cmp.o \
 	ui-event.o \

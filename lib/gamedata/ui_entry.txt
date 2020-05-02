@@ -33,9 +33,12 @@
 # combine controls how the values of the properties linked to the element are
 # combined before display.  Possible values are limited by the code and must
 # be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or
-# SMALLEST.  RESIST_0 will use the largest positive value, if any are
-# positive.  If none are positive, it will use the most negative value.
-# Otherwise it will use zero.
+# SMALLEST.  RESIST_0 uses Vanilla's resist logic:  an immunity trumps all
+# other settings, a positive number of resistances with a positive number of
+# vulnerabilities will be no resistance, a positive number of resistances with
+# no vulnerablities equals resistance, a positive number of vulnerabilities
+# with no resistances equal vulnerable.  All the combiners treat the auxiliary
+# values (usually for timed effects) separately.
 # The category and priority fields can be set multiple times.  The
 # categories are used to select if an entry appears in a screen.   If you want
 # an entry to be included in the second character screen, one of the categories
