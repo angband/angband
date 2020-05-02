@@ -398,8 +398,10 @@ static void display_resistance_panel(int ipart, struct char_sheet_config *config
 	render_details.label_position.x = col;
 	render_details.value_position.x = col + config->res_nlabel;
 	render_details.position_step = loc(1, 0);
+	render_details.combined_position = loc(0, 0);
 	render_details.vertical_label = false;
 	render_details.alternate_color_first = false;
+	render_details.show_combined = false;
 	for (i = 0; i < config->n_resist_by_region[ipart]; i++, row++) {
 		const struct ui_entry *entry = config->resists_by_region[ipart][i].entry;
 
@@ -540,9 +542,11 @@ static void display_player_sust_info(struct char_sheet_config *config)
 	render_details.label_position.x = col + player->body.count + 5;
 	render_details.value_position.x = col;
 	render_details.position_step = loc(1, 0);
+	render_details.combined_position = loc(0, 0);
 	render_details.vertical_label = false;
 	render_details.alternate_color_first = false;
 	render_details.known_rune = true;
+	render_details.show_combined = false;
 	for (i = 0; i < config->n_stat_mod_entries; i++) {
 		const struct ui_entry *entry = config->stat_mod_entries[i];
 		int j;
