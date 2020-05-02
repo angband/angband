@@ -205,7 +205,8 @@ bool find_path(struct loc grid)
 {
 	struct loc new = grid;
 
-	/* Attempt to find a path */
+	/* Attempt to find a path if necessary */
+	if (loc_eq(new, player->grid)) return false;
 	if (!set_up_path_distances(grid)) return false;
 
 	/* Now travel along the path, backwards */
