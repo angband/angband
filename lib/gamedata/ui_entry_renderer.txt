@@ -109,7 +109,7 @@
 # conditions is used for each modifer.  The alternate colors are used for every
 # other value.  The colors for the timed effects are only used if the permanent
 # effect is known and is zero.  There are seven symbols that may be used.  The
-# first symbol is used when the value is unknown.  The second symbol is used in
+# first symbol is used when the value is unknown.  The second symbol is used
 # when the value is not present.  The third symbol is used when both the value
 # and the auxiliary value are zero.  For the first three symbols, if the
 # symbol is '0', it may be shown with a sign depending on the setting for the
@@ -136,9 +136,9 @@
 # The number of digits is used to configure the number of digits shown for
 # each value.  The default value for the number of digits is one.  The sign
 # display is used to configure whether the digits are shown with a sign
-# indicator.  By default, a sign indicator will not be shown.  By default, a
-# sign indicator will not be shown.  The units label configures whether that
-# label is shown after each numeric value.  By default, no such label is shown.
+# indicator.  By default, a sign indicator will not be shown.  The units label
+# configures whether that label is shown after each numeric value.  By
+# default, no such label is shown.
 
 # NUMERIC_RENDERER_WITH_BOOL_AUX renders one or more integer values
 # as decimal integers with the label colored by the combined value.  The
