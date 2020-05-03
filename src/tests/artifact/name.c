@@ -15,7 +15,7 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-int teardown_tests(void **state) {
+int teardown_tests(void *state) {
 	mem_free(k_info);
 	mem_free(z_info);
 	return 0;

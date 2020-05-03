@@ -21,7 +21,7 @@ int setup_tests(void **state) {
     return 0;
 }
 
-int teardown_tests(void **state) {
+int teardown_tests(void *state) {
 	quarks_free();
 	mem_free(z_info);
 	return 0;

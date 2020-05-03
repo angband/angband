@@ -38,7 +38,7 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-int teardown_tests(void **state) {
+int teardown_tests(void *state) {
 	file_delete("Test1");
 	cleanup_angband();
 	return 0;
