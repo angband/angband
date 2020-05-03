@@ -30,7 +30,9 @@
 # provided to override the default of using the next longest abbreviated label
 # that's available or the first n characters of label when an abbreviated
 # version is needed.  The second character screen currently uses 5 character
-# labels so only label or label5 are relevant.
+# labels and the equipment comparison uses 2 (or 3 though only for filter
+# selection) character labels, so only label, label5, label3, and label2 are
+# relevant.
 # combine controls how the values of the properties linked to the element are
 # combined before display.  Possible values are limited by the code and must
 # be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or
