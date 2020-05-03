@@ -163,6 +163,22 @@ void textblock_append_utf8(textblock *tb, const char *utf8_string)
 }
 
 /**
+ * Append one textblock to another.
+ *
+ * \param tb is the textblock we are appending to.
+ * \param tba is the textblock to append.
+ */
+void textblock_append_textblock(textblock *tb, const textblock *tba)
+{
+	textblock_resize_if_needed(tb, tba->strlen);
+	(void) memcpy(tb->text + tb->strlen, tba->text,
+		tba->strlen * sizeof(*tb->text));
+	(void) memcpy(tb->attrs + tb->strlen, tba->attrs, tba->strlen);
+	tb->strlen += tba->strlen;
+}
+
+
+/**
  * Add text to a text block, formatted.
  */
 void textblock_append(textblock *tb, const char *fmt, ...)
