@@ -1032,11 +1032,11 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 					s->stores != EQUIPABLE_YES_STORE)) {
 					s->easy_filt.v[s->easy_filt.nv].c =
 						EQUIP_EXPR_SELECTOR;
-					s->easy_filt.v[s->easy_filt.nv].s.ex.propind =
-						s->propcats[j].off + k;
 					++s->easy_filt.nv;
 				}
 				ind = s->easy_filt.nv - 1;
+				s->easy_filt.v[ind].s.ex.propind =
+					s->propcats[j].off + k;
 				switch (j) {
 				case 0:
 					/* Resistance */
