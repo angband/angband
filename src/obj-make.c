@@ -32,12 +32,31 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 
-/** Arrays holding an index of objects to generate for a given level */
-static u32b *obj_total;
-static byte *obj_alloc;
+/**
+ * Stores cumulative probability distribution for objects at each level.  The
+ * value at ilv * (z_info->k_max + 1) + itm is the probablity, out of
+ * obj_alloc[ilv * (z_info->k_max + 1) + z_info->k_max], that an item whose
+ * index is less than itm occurs at level, ilv.
+ */
+static u32b *obj_alloc;
 
-static u32b *obj_total_great;
-static byte *obj_alloc_great;
+/**
+ * Has the same layout and interpretation as obj_alloc, but only items that
+ * are good or better contribute to the cumulative probability distribution.
+ */
+static u32b *obj_alloc_great;
+
+/**
+ * Store the total allocation value for each tval by level.  The value at
+ * ilv * TV_MAX + tval is the total for tval at the level, ilv.
+ */
+static u32b *obj_total_tval;
+
+/**
+ * Same layout and interpretation as obj_total_tval, but only items that are
+ * good or better contribute.
+ */
+static u32b *obj_total_tval_great;
 
 static s16b alloc_ego_size = 0;
 static alloc_entry *alloc_ego_table;
@@ -57,35 +76,43 @@ static void alloc_init_objects(void) {
 	int item, lev;
 	int k_max = z_info->k_max;
 
-	/* Allocate and wipe */
-	obj_alloc = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
-	obj_alloc_great = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
-	obj_total = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(u32b));
-	obj_total_great = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(u32b));
+	/* Allocate */
+	obj_alloc = mem_alloc((z_info->max_obj_depth + 1) * (k_max + 1) * sizeof(*obj_alloc));
+	obj_alloc_great = mem_alloc((z_info->max_obj_depth + 1) * (k_max + 1) * sizeof(*obj_alloc_great));
+	obj_total_tval = mem_zalloc((z_info->max_obj_depth + 1) * TV_MAX * sizeof(*obj_total_tval));
+	obj_total_tval_great = mem_zalloc((z_info->max_obj_depth + 1) * TV_MAX * sizeof(*obj_total_tval));
 
-	/* Init allocation data */
+	/* The cumulative chance starts at zero for each level. */
+	for (lev = 0; lev <= z_info->max_obj_depth; lev++) {
+		obj_alloc[lev * (k_max + 1)] = 0;
+		obj_alloc_great[lev * (k_max + 1)] = 0;
+	}
+
+	/* Fill the cumulative probability tables */
 	for (item = 0; item < k_max; item++) {
 		const struct object_kind *kind = &k_info[item];
 
 		int min = kind->alloc_min;
 		int max = kind->alloc_max;
 
-		/* If an item doesn't have a rarity, move on */
-		if (!kind->alloc_prob) continue;
-
 		/* Go through all the dungeon levels */
 		for (lev = 0; lev <= z_info->max_obj_depth; lev++) {
 			int rarity = kind->alloc_prob;
 
-			/* Save the probability in the standard table */
+			/* Add to the cumulative prob. in the standard table */
 			if ((lev < min) || (lev > max)) rarity = 0;
-			obj_total[lev] += rarity;
-			obj_alloc[(lev * k_max) + item] = rarity;
+			assert(rarity >= 0 && obj_alloc[(lev * (k_max + 1)) + item] <= (u32b)-1 - rarity);
+			obj_alloc[(lev * (k_max + 1)) + item + 1] =
+				obj_alloc[(lev * (k_max + 1)) + item] + rarity;
 
-			/* Save the probability in the "great" table if relevant */
+			obj_total_tval[lev * TV_MAX + kind->tval] += rarity;
+
+			/* Add to the cumulative prob. in the "great" table */
 			if (!kind_is_good(kind)) rarity = 0;
-			obj_total_great[lev] += rarity;
-			obj_alloc_great[(lev * k_max) + item] = rarity;
+			obj_alloc_great[(lev * (k_max + 1)) + item + 1] =
+				obj_alloc_great[(lev * (k_max + 1)) + item] + rarity;
+
+			obj_total_tval_great[lev * TV_MAX + kind->tval] += rarity;
 		}
 	}
 }
@@ -189,8 +216,8 @@ static void cleanup_obj_make(void) {
 	}
 	mem_free(money_type);
 	mem_free(alloc_ego_table);
-	mem_free(obj_total_great);
-	mem_free(obj_total);
+	mem_free(obj_total_tval_great);
+	mem_free(obj_total_tval);
 	mem_free(obj_alloc_great);
 	mem_free(obj_alloc);
 }
@@ -277,6 +304,33 @@ static int random_high_resist(struct object *obj, int *resist)
 	}
 
 	return false;
+}
+
+
+/**
+ * Return the index, i, into the cumulative probability table, tbl, such that
+ * tbl[i] <= p < tbl[i + 1].  p must be less than tbl[n - 1] and tbl[0] must be
+ * zero.
+ */
+static int binary_search_probtable(const u32b *tbl, int n, u32b p)
+{
+	int ilow = 0, ihigh = n;
+
+	assert(tbl[0] == 0 && tbl[n - 1] > p);
+	while (1) {
+		int imid;
+
+		if (ilow == ihigh - 1) {
+			assert(tbl[ilow] <= p && tbl[ihigh] > p);
+			return ilow;
+		}
+		imid = (ilow + ihigh) / 2;
+		if (tbl[imid] <= p) {
+			ilow = imid;
+		} else {
+			ihigh = imid;
+		}
+	}
 }
 
 
@@ -1023,31 +1077,40 @@ bool kind_is_good(const struct object_kind *kind)
  */
 static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 {
-	/* This is the base index into obj_alloc for this dlev */
-	size_t ind, item;
-	u32b value;
-	int total = 0;
-	byte *objects = good ? obj_alloc_great : obj_alloc;
+	const u32b *objects;
+	u32b total, value;
+	int item;
 
-	/* Pick an object */
-	ind = level * z_info->k_max;
-
-	/* Get new total */
-	for (item = 0; item < z_info->k_max; item++)
-		if (objkind_byid(item)->tval == tval)
-			total += objects[ind + item];
+	assert(level >= 0 && level <= z_info->max_obj_depth);
+	assert(tval >= 0 && tval < TV_MAX);
+	if (good) {
+		objects = obj_alloc_great + level * (z_info->k_max + 1);
+		total = obj_total_tval_great[level * TV_MAX + tval];
+	} else {
+		objects = obj_alloc + level * (z_info->k_max + 1);
+		total = obj_total_tval[level * TV_MAX + tval];
+	}
 
 	/* No appropriate items of that tval */
 	if (!total) return NULL;
-	
-	value = randint0(total);
-	
-	for (item = 0; item < z_info->k_max; item++)
-		if (objkind_byid(item)->tval == tval) {
-			if (value < objects[ind + item]) break;
 
-			value -= objects[ind + item];
+	/* Pick an object */
+	value = randint0(total);
+
+	/*
+	 * Find it.  Having a loop to calculate the cumulative probability
+	 * here with only the tval and applying a binary search was slower
+	 * for a test of getting a TV_SWORD from 4.2's available objects.
+	 * So continue to use the O(N) search.
+	 */
+	for (item = 0; item < z_info->k_max; item++) {
+		if (objkind_byid(item)->tval == tval) {
+			u32b prob = objects[item + 1] - objects[item];
+
+			if (value < prob) break;
+			value -= prob;
 		}
+	}
 
 	/* Return the item index */
 	return objkind_byid(item);
@@ -1060,9 +1123,9 @@ static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
  */
 struct object_kind *get_obj_num(int level, bool good, int tval)
 {
-	/* This is the base index into obj_alloc for this dlev */
-	size_t ind, item;
+	const u32b *objects;
 	u32b value;
+	int item;
 
 	/* Occasional level boost */
 	if ((level > 0) && one_in_(z_info->great_obj))
@@ -1073,31 +1136,20 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 	level = MIN(level, z_info->max_obj_depth);
 	level = MAX(level, 0);
 
-	/* Pick an object */
-	ind = level * z_info->k_max;
-	
 	if (tval)
 		return get_obj_num_by_kind(level, good, tval);
-	
-	if (!good) {
-		value = randint0(obj_total[level]);
-		for (item = 0; item < z_info->k_max; item++) {
-			/* Found it */
-			if (value < obj_alloc[ind + item]) break;
 
-			/* Decrement */
-			value -= obj_alloc[ind + item];
-		}
-	} else {
-		value = randint0(obj_total_great[level]);
-		for (item = 0; item < z_info->k_max; item++) {
-			/* Found it */
-			if (value < obj_alloc_great[ind + item]) break;
+	objects = (good ? obj_alloc_great : obj_alloc) +
+		level * (z_info->k_max + 1);
 
-			/* Decrement */
-			value -= obj_alloc_great[ind + item];
-		}
+	/* Pick an object. */
+	if (! objects[z_info->k_max]) {
+		return NULL;
 	}
+	value = randint0(objects[z_info->k_max]);
+
+	/* Find it with a binary search. */
+	item = binary_search_probtable(objects, z_info->k_max + 1, value);
 
 	/* Return the item index */
 	return objkind_byid(item);
