@@ -946,8 +946,7 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 
 	/*
 	 * Try different combinations of capitalization to match the
-	 * entered string to one of the column labels (do not test for
-	 * a match to column, "Lo",  used for the location of the item).
+	 * entered string to one of the column labels.
 	 */
 	itry = 0;
 	while (1) {
