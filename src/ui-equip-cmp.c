@@ -1139,12 +1139,12 @@ static void display_object_comparison(const struct equipable_summary *s)
 
 		assert(s->isel1 >= 0 && s->isel1 < s->nitems);
 		textblock_append(tb1, "%s\n", hbuf);
-		textblock_append(tb1, "%ls", textblock_text(tb0));
+		textblock_append_textblock(tb1, tb0);
 		object_desc(hbuf, sizeof(hbuf), s->items[s->isel1].obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 		textblock_append(tb1, "\n%s\n", hbuf);
 		tb2 = object_info(s->items[s->isel1].obj, OINFO_NONE);
-		textblock_append(tb1, "%ls", textblock_text(tb2));
+		textblock_append_textblock(tb1, tb2);
 		textblock_free(tb2);
 
 		textui_textblock_show(tb1, local_area, "Object comparison");
