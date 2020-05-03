@@ -39,7 +39,7 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-int teardown_tests(void **state) {
+int teardown_tests(void *state) {
 	file_delete("Test1");
 	wipe_mon_list(cave, player);
 	cleanup_angband();
