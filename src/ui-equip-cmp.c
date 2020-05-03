@@ -921,10 +921,11 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 {
 	static const char *no_matching_attribute_msg =
 		"Did not find attribute with that name; filter unchanged";
-	char c[3] = "";
+	char c[4] = "";
 	int itry;
+	bool threec;
 
-	if (! get_string("Enter two character code and return or return to clear ", c,
+	if (! get_string("Enter 2 or 3 (for stat) character code and return or return to clear ", c,
 		N_ELEMENTS(c))) {
 		return EQUIP_CMP_MENU_NEW_PAGE;
 	}
@@ -949,11 +950,12 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 	 * entered string to one of the column labels.
 	 */
 	itry = 0;
+	threec = false;
 	while (1) {
-		char ctry[3];
-		wchar_t wc[3];
+		char ctry[4];
+		wchar_t wc[4];
 
-		if (itry >= 4) {
+		if (itry >= 4 || (threec && itry >= 3)) {
 			s->dlg_trans_msg = no_matching_attribute_msg;
 			break;
 		}
@@ -962,7 +964,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = toupper(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = tolower(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = tolower(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -972,7 +980,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = toupper(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = toupper(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = toupper(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -982,7 +996,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = tolower(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = tolower(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = tolower(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -1006,7 +1026,18 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			while (search) {
 				if (j < (int)N_ELEMENTS(s->propcats)) {
 					if (k < s->propcats[j].n) {
-						if (wc[0] == s->propcats[j].labels[k][0] &&
+						if (threec) {
+							wchar_t wce[4];
+
+							get_ui_entry_label(s->propcats[j].entries[k], 4, false, wce);
+							if (wc[0] == wce[0] &&
+							    wc[1] == wce[1] &&
+							    wc[2] == wce[2]) {
+								search = false;
+							} else {
+								++k;
+							}
+						} else if (wc[0] == s->propcats[j].labels[k][0] &&
 							wc[1] == s->propcats[j].labels[k][1]) {
 							search = false;
 						} else {
