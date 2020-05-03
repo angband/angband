@@ -27,9 +27,10 @@
 # The label defines a label to be shown for the element.  Changing its value
 # can impact usability.  Optionally, shortened versions with
 # label followed by the number of characters as the field name can be
-# provided to override the default of using the first n characters of label
-# when an abbreviated version is needed.  The second character screen currently
-# uses 5 character labels so only label or label5 are relevant.
+# provided to override the default of using the next longest abbreviated label
+# that's available or the first n characters of label when an abbreviated
+# version is needed.  The second character screen currently uses 5 character
+# labels so only label or label5 are relevant.
 # combine controls how the values of the properties linked to the element are
 # combined before display.  Possible values are limited by the code and must
 # be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or

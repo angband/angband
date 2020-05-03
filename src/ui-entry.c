@@ -1610,12 +1610,33 @@ static void fill_out_shortened(struct ui_entry *entry)
 	int i;
 
 	for (i = 0; i < MAX_SHORTENED; ++i) {
+		int j;
+		int n;
+		const wchar_t *src;
+
 		if (entry->nshortened[i] != 0) {
 			continue;
 		}
-		entry->nshortened[i] = (entry->nlabel < i + 1) ?
-			entry->nlabel : i + 1;
-		(void) memcpy(entry->shortened_labels[i], entry->label,
+		/*
+		 * Is there a longer abbreviated label already set?  Use it
+		 * as the basis for this one.  Otherwise, use the full label.
+		 */
+		j = i + 1;
+		while (1) {
+			if (j >= MAX_SHORTENED) {
+				n = entry->nlabel;
+				src = entry->label;
+				break;
+			}
+			if (entry->nshortened[j] != 0) {
+				n = entry->nshortened[j];
+				src = entry->shortened_labels[j];
+				break;
+			}
+			++j;
+		}
+		entry->nshortened[i] = (n < i + 1) ? n : i + 1;
+		(void) memcpy(entry->shortened_labels[i], src,
 			(entry->nshortened[i] + 1) *
 			sizeof(*entry->shortened_labels[i]));
 	}
