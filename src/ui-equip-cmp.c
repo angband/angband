@@ -2379,8 +2379,10 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	rdetails.value_position.x = rdetails.label_position.x;
 	rdetails.value_position.y = s->irow_combined_equip;
 	rdetails.position_step = loc(1, 0);
+	rdetails.combined_position = loc(0, 0);
 	rdetails.vertical_label = true;
 	rdetails.alternate_color_first = false;
+	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, '@');
 	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
 		int j;
