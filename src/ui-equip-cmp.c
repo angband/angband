@@ -2223,6 +2223,7 @@ static int initialize_summary(struct player *p,
 	if (count > (*s)->nalloc) {
 		mem_free((*s)->sorted_indices);
 		cleanup_summary_items(*s);
+		mem_free((*s)->items);
 		(*s)->items = mem_zalloc(count * sizeof(*(*s)->items));
 		(*s)->sorted_indices =
 			mem_alloc((count + 1) * sizeof(*(*s)->sorted_indices));
