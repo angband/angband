@@ -1161,36 +1161,134 @@ static bool describe_damage(textblock *tb, const struct object *obj, bool throw)
 	}
 
 	if (has_brands_or_slays) {
-		/* Output damage for creatures effected by the brands */
-		for (i = 0; i < z_info->brand_max; i++) {
-			if (brand_damage[i] <= 0) {
-				continue;
-			} else if (brand_damage[i] % 10) {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   brand_damage[i] / 10, brand_damage[i] % 10);
-			} else {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-								   brand_damage[i] / 10);
-			}
-			textblock_append(tb, " vs. creatures not resistant to %s, ",
-							 brands[i].name);
-		}
+		/*
+		 * Sort by decreasing damage so entries with the same damage
+		 * can be printed together.
+		 */
+		int *sortind = mem_alloc(
+			(z_info->brand_max + z_info->slay_max) *
+			sizeof(*sortind));
+		int nsort = 0;
+		const char *lastnm;
+		int lastdam, groupn;
+		bool last_is_brand;
 
-		/* Output damage for creatures effected by the slays */
+		/*
+		 * Assemble the indices.  Do the slays first so, if tied
+		 * for damage, they'll appear first.  That's easier to read.
+		 */
 		for (i = 0; i < z_info->slay_max; i++) {
-			if (slay_damage[i] <= 0) {
-				continue;
-			} else if (slay_damage[i] % 10) {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   slay_damage[i] / 10, slay_damage[i] % 10);
-			} else {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-								   slay_damage[i] / 10);
+			if (slay_damage[i] > 0) {
+				sortind[nsort] = i + z_info->brand_max;
+				++nsort;
 			}
-			textblock_append(tb, " vs. %s, ", slays[i].name);
+		}
+		for (i = 0; i < z_info->brand_max; i++) {
+			if (brand_damage[i] > 0) {
+				sortind[nsort] = i;
+				++nsort;
+			}
+		}
+		/* Sort.  Since the number is small, insertion sort is fine. */
+		for (i = 0; i < nsort - 1; i++) {
+			int maxdam = (sortind[i] < z_info->brand_max) ?
+				brand_damage[sortind[i]] :
+				slay_damage[sortind[i] - z_info->brand_max];
+			int maxind = i;
+			int j;
+
+			for (j = i + 1; j < nsort; j++) {
+				int dam = (sortind[j] < z_info->brand_max) ?
+					brand_damage[sortind[j]] :
+					slay_damage[sortind[j] -
+						z_info->brand_max];
+
+				if (maxdam < dam) {
+					maxdam = dam;
+					maxind = j;
+				}
+			}
+			if (maxind != i) {
+				int tmp = sortind[maxind];
+
+				sortind[maxind] = sortind[i];
+				sortind[i] = tmp;
+			}
 		}
 
-		textblock_append(tb, "and ");
+		/* Output. */
+		lastdam = 0;
+		groupn = 0;
+		lastnm = NULL;
+		last_is_brand = false;
+		for (i = 0; i < nsort; i++) {
+			const char *tgt;
+			int dam;
+			bool is_brand;
+
+			if (sortind[i] < z_info->brand_max) {
+				is_brand = true;
+				tgt = brands[sortind[i]].name;
+				dam = brand_damage[sortind[i]];
+			} else {
+				is_brand = false;
+				tgt = slays[sortind[i] -
+					z_info->brand_max].name;
+				dam = slay_damage[sortind[i] -
+					z_info->brand_max];
+			}
+
+			if (groupn > 0) {
+				if (dam != lastdam) {
+					if (groupn > 2) {
+						textblock_append(tb, ", and");
+					} else if (groupn == 2) {
+						textblock_append(tb, " and");
+					}
+				} else if (groupn > 1) {
+					textblock_append(tb, ",");
+				}
+				if (last_is_brand) {
+					textblock_append(tb,
+						" creatures not resistant to");
+				}
+				textblock_append(tb, " %s", lastnm);
+			}
+			if (dam != lastdam) {
+				if (i != 0) {
+					textblock_append(tb, ", ");
+				}
+				if (dam % 10) {
+					textblock_append_c(tb, COLOUR_L_GREEN,
+						"%d.%d vs", dam / 10, dam % 10);
+				} else {
+					textblock_append_c(tb, COLOUR_L_GREEN,
+						"%d vs", dam / 10);
+				}
+				groupn = 1;
+				lastdam = dam;
+			} else {
+				assert(groupn > 0);
+				++groupn;
+			}
+			lastnm = tgt;
+			last_is_brand = is_brand;
+		}
+		if (groupn > 0) {
+			if (groupn > 2) {
+				textblock_append(tb, ", and");
+			} else if (groupn == 2) {
+				textblock_append(tb, " and");
+			}
+			if (last_is_brand) {
+				textblock_append(tb,
+					" creatures not resistant to");
+			}
+			textblock_append(tb, " %s", lastnm);
+		}
+
+		textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		mem_free(sortind);
 	}
 
 	if (normal_damage <= 0)
