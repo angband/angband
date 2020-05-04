@@ -535,7 +535,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 							was_aware,
 							dir,
 							beam,
-							boost);
+							boost,
+							cmd);
 		target_release();
 
 		if (!used) {
@@ -1047,7 +1048,7 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Cast a spell */
 	target_fix();
-	if (spell_cast(spell_index, dir)) {
+	if (spell_cast(spell_index, dir, cmd)) {
 		if (player->timed[TMD_FASTCAST]) {
 			player->upkeep->energy_use = (z_info->move_energy * 3) / 4;
 		} else {

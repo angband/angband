@@ -70,6 +70,7 @@ typedef struct effect_handler_context_s {
 	const int subtype, radius, other, y, x;
 	const char *msg;
 	bool ident;
+	struct command *cmd;
 } effect_handler_context_t;
 
 typedef bool (*effect_handler_f)(effect_handler_context_t *);
@@ -468,7 +469,7 @@ bool enchant(struct object *obj, int n, int eflag)
  * both to_hit and to_dam with the same flag.  This
  * may not be the most desirable behavior (ACB).
  */
-bool enchant_spell(int num_hit, int num_dam, int num_ac)
+bool enchant_spell(int num_hit, int num_dam, int num_ac, struct command *cmd)
 {
 	bool okay = false;
 
@@ -477,13 +478,19 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	char o_name[80];
 
 	const char *q, *s;
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
+	item_tester filter = num_ac ?
+		item_tester_hook_armour : item_tester_hook_weapon;
 
 	/* Get an item */
 	q = "Enchant which item? ";
 	s = "You have nothing to enchant.";
-	if (!get_item(&obj, q, s, 0, 
-		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
-		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+	if (cmd) {
+		if (cmd_get_item(cmd, "tgtitem", &obj, q, s, filter,
+				itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, filter, itemmode))
 		return false;
 
 	/* Description */
@@ -1389,18 +1396,22 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
  */
 bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
+	const char *prompt = "Uncurse which item? ";
+	const char *rejmsg = "You have no curses to remove.";
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
 	int strength = effect_calculate_value(context, false);
 	struct object *obj = NULL;
 	char dice_string[20];
 
 	context->ident = true;
 
-	if (!get_item(&obj,
-				  "Uncurse which item? ",
-				  "You have no curses to remove.",
-				  0,
-				  item_tester_uncursable,
-				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, prompt,
+				rejmsg, item_tester_uncursable, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, prompt, rejmsg, 0, item_tester_uncursable,
+			itemmode))
 		return false;
 
 	/* Get the possible dice strings */
@@ -2196,23 +2207,28 @@ bool effect_handler_DETECT_SOUL(effect_handler_context_t *context)
  */
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
-    struct object *obj;
-    const char *q, *s;
-    bool used = false;
+	struct object *obj;
+	const char *q, *s;
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
+	bool used = false;
 
-    context->ident = true;
+	context->ident = true;
 
-    /* Get an item */
-    q = "Identify which item? ";
-    s = "You have nothing to identify.";
-    if (!get_item(&obj, q, s, 0, item_tester_unknown,
-                  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-        return used;
+	/* Get an item */
+	q = "Identify which item? ";
+	s = "You have nothing to identify.";
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_unknown, itemmode)) {
+			return used;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_unknown, itemmode))
+		return used;
 
-    /* Identify the object */
-    object_learn_unknown_rune(player, obj);
+	/* Identify the object */
+	object_learn_unknown_rune(player, obj);
 
-    return true;
+	return true;
 }
 
 
@@ -2343,19 +2359,19 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	context->ident = true;
 
 	if ((context->subtype & ENCH_TOBOTH) == ENCH_TOBOTH) {
-		if (enchant_spell(value, value, 0))
+		if (enchant_spell(value, value, 0, context->cmd))
 			used = true;
 	}
 	else if (context->subtype & ENCH_TOHIT) {
-		if (enchant_spell(value, 0, 0))
+		if (enchant_spell(value, 0, 0, context->cmd))
 			used = true;
 	}
 	else if (context->subtype & ENCH_TODAM) {
-		if (enchant_spell(0, value, 0))
+		if (enchant_spell(0, value, 0, context->cmd))
 			used = true;
 	}
 	if (context->subtype & ENCH_TOAC) {
-		if (enchant_spell(0, 0, value))
+		if (enchant_spell(0, 0, value, context->cmd))
 			used = true;
 	}
 
@@ -2383,6 +2399,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
 	int i, t;
 	int strength = context->value.base;
+	int itemmode = (USE_INVEN | USE_FLOOR | SHOW_RECHARGE);
 	struct object *obj;
 	bool used = false;
 	const char *q, *s;
@@ -2396,8 +2413,13 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
-	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
-				  (USE_INVEN | USE_FLOOR | SHOW_RECHARGE))) {
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_hook_recharge, itemmode)) {
+			return used;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
+				  itemmode)) {
 		return (used);
 	}
 
@@ -4577,6 +4599,7 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
+	int itemmode = (USE_INVEN | USE_QUIVER | USE_FLOOR);
 	bool used = false;
 
 	/* Select the brand */
@@ -4587,7 +4610,12 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
-	if (!get_item(&obj, q, s, 0, item_tester_hook_ammo, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_hook_ammo, itemmode)) {
+			return used;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_hook_ammo, itemmode))
 		return used;
 
 	/* Brand the ammo */
@@ -4604,6 +4632,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
+	int itemmode = (USE_INVEN | USE_QUIVER | USE_FLOOR);
 	bool used = false;
 
 	context->ident = true;
@@ -4611,7 +4640,12 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
-	if (!get_item(&obj, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_hook_bolt, itemmode)) {
+			return used;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_hook_bolt, itemmode))
 		return used;
 
 	/* Brand the bolts */
@@ -4630,14 +4664,20 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	int lev;
 	struct object *obj, *staff, *arrows;
 	const char *q, *s;
+	int itemmode = (USE_INVEN | USE_FLOOR);
 	bool good = false, great = false;
 	bool none_left = false;
 
 	/* Get an item */
 	q = "Make arrows from which staff? ";
 	s = "You have no staff to use.";
-	if (!get_item(&obj, q, s, 0, item_tester_hook_staff,
-				  (USE_INVEN | USE_FLOOR))) {
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_hook_staff, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_hook_staff,
+				  itemmode)) {
 		return false;
 	}
 
@@ -4681,14 +4721,20 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 	int energy = 0;
 	struct object *obj;
 	bool used = false;
+	int itemmode = (USE_INVEN | USE_FLOOR);
 	const char *q, *s;
 	char *item = "";
 
 	/* Get an item */
 	q = "Drain charges from which item? ";
 	s = "You have nothing to drain charges from.";
-	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
-				  (USE_INVEN | USE_FLOOR))) {
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_hook_recharge, itemmode)) {
+			return used;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
+				  itemmode)) {
 		return (used);
 	}
 
@@ -4804,7 +4850,7 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 	/* Do effect */
 	if (shape->effect) {
 		(void) effect_do(shape->effect, source_player(), NULL, &ident, true,
-						 0, 0, 0);
+						 0, 0, 0, NULL);
 	}
 
 	/* Update */
@@ -5343,7 +5389,8 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			value,
 			subtype, radius, other, y, x,
 			NULL,
-			context->ident
+			context->ident,
+			context->cmd
 		};
 
 		return handler(&new_context);
@@ -5620,6 +5667,11 @@ int effect_subtype(int index, const char *type)
  * \param beam   is the base chance out of 100 that a BOLT_OR_BEAM effect will beam
  * \param boost  is the extent to which skill surpasses difficulty, used as % boost. It
  *               ranges from 0 to 138.
+ * \param cmd    If the effect is invoked as part of a command, this is the
+ *               the command structure - used primarily so repeating the
+ *               command can use the same information without prompting the
+ *               player again.  Use NULL for this if not invoked as part of
+ *               a command.
  */
 bool effect_do(struct effect *effect,
 		struct source origin,
@@ -5628,7 +5680,8 @@ bool effect_do(struct effect *effect,
 		bool aware,
 		int dir,
 		int beam,
-		int boost)
+		int boost,
+		struct command *cmd)
 {
 	bool completed = false;
 	effect_handler_f handler;
@@ -5679,6 +5732,7 @@ bool effect_do(struct effect *effect,
 				effect->x,
 				effect->msg,
 				*ident,
+				cmd
 			};
 
 			completed = handler(&context) || completed;
@@ -5736,6 +5790,6 @@ void effect_simple(int index,
 		ident = &dummy_ident;
 	}
 
-	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0);
+	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0, NULL);
 	dice_free(effect.dice);
 }
