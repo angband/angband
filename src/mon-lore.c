@@ -604,36 +604,39 @@ void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 	// moves at 2.3x normal speed (0.9x your current speed)
 	textblock_append(tb, "at ");
 
-	char buf[5] = "";
+	char buf[8] = "";
 	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
 	byte int_mul = multiplier / 10;
 	byte dec_mul = multiplier % 10;
+	byte attr = COLOUR_ORANGE;
 
 	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
 	textblock_append_c(tb, COLOUR_L_BLUE, buf);
 
 	textblock_append(tb, " normal speed, which is ");
+	multiplier = 100 * extract_energy[race->speed]
+		/ extract_energy[player->state.speed];
+	int_mul = multiplier / 100;
+	dec_mul = multiplier % 100;
+	if (!dec_mul) {
+		strnfmt(buf, sizeof(buf), "%dx", int_mul);
+	} else if (!(dec_mul % 10)) {
+		strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul / 10);
+	} else {
+		strnfmt(buf, sizeof(buf), "%d.%02dx", int_mul, dec_mul);
+	}
 
 	if (player->state.speed > race->speed) {
-		char buf[13] = "";
-		multiplier = 10 * extract_energy[player->state.speed] / extract_energy[race->speed];
-		int_mul = multiplier / 10;
-		dec_mul = multiplier % 10;
-		strnfmt(buf, sizeof(buf), "%d.%dx slower ", int_mul, dec_mul);
-		textblock_append_c(tb, COLOUR_L_GREEN, buf);
+		attr = COLOUR_L_GREEN;
+	} else if (player->state.speed < race->speed) {
+		attr = COLOUR_RED;
 	}
-	else if (player->state.speed < race->speed) {
-		char buf[13] = "";
-		multiplier = 100 * extract_energy[race->speed] / extract_energy[player->state.speed];
-		int_mul = multiplier / 100;
-		dec_mul = ((multiplier + 9) / 10) % 10;
-		strnfmt(buf, sizeof(buf), "%d.%dx faster ", int_mul, dec_mul);
-		textblock_append_c(tb, COLOUR_RED, buf);
-	}
-	if (player->state.speed == race->speed)
+	if (player->state.speed == race->speed) {
 		textblock_append(tb, "the same as you");
-	else
-		textblock_append(tb, "than you");
+	} else {
+		textblock_append_c(tb, attr, buf);
+		textblock_append(tb, " your speed");
+	}
 }
 
 /**
@@ -1654,7 +1657,8 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		textblock_append_c(tb, COLOUR_ORANGE, " at least");
 	}
 	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
-	textblock_append(tb, " damage.  ");
+	textblock_append(tb, " damage on each of %s turns.  ",
+					 lore_pronoun_possessive(msex, false));
 }
 
 /**
