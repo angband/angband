@@ -313,7 +313,8 @@ int message_lookup_by_sound_name(const char *name)
 	};
 	size_t i;
 
-	for (i = 0; i < N_ELEMENTS(sound_names); i++) {
+	/* Exclude MSG_MAX since it has NULL for the sound's name. */
+	for (i = 0; i < N_ELEMENTS(sound_names) - 1; i++) {
 		if (my_stricmp(name, sound_names[i]) == 0)
 			return (int)i;
 	}
