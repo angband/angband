@@ -4662,7 +4662,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 
 	/* Make some arrows */
 	arrows = make_object(cave, player->lev, good, great, false, NULL, TV_ARROW);
-	drop_near(cave, &arrows, 0, player->grid, true);
+	drop_near(cave, &arrows, 0, player->grid, true, true);
 
 	return true;
 }

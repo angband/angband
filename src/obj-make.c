@@ -1196,7 +1196,7 @@ void acquirement(struct loc grid, int level, int num, bool great)
 		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, &nice_obj, 0, grid, true);
+		drop_near(cave, &nice_obj, 0, grid, true, false);
 	}
 }
 

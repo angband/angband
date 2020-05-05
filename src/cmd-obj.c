@@ -550,7 +550,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					object_copy(dropped->known, work_obj->known);
 				}
 				if (from_floor) {
-					drop_near(cave, &dropped, 0, player->grid, true);
+					drop_near(cave, &dropped, 0, player->grid, true, true);
 				} else {
 					inven_carry(player, dropped, true, true);
 				}
@@ -915,7 +915,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, &used, 0, player->grid, false);
+				drop_near(cave, &used, 0, player->grid, false, true);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;
