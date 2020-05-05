@@ -231,21 +231,25 @@ void message_color_define(u16b type, byte color)
 		messages->colors = mem_zalloc(sizeof(msgcolor_t));
 		messages->colors->type = type;
 		messages->colors->color = color;
+		return;
 	}
 
 	mc = messages->colors;
-	while (mc->next)
+	while (1)
 	{
 		if (mc->type == type)
 		{
 			mc->color = color;
+			break;
+		}
+		if (! mc->next) {
+			mc->next = mem_zalloc(sizeof(msgcolor_t));
+			mc->next->type = type;
+			mc->next->color = color;
+			break;
 		}
 		mc = mc->next;
 	}
-
-	mc->next = mem_zalloc(sizeof(msgcolor_t));
-	mc->next->type = type;
-	mc->next->color = color;
 }
 
 /**
