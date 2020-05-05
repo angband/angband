@@ -537,7 +537,7 @@ static void chest_death(struct loc grid, struct object *chest)
 
 		treasure->origin = ORIGIN_CHEST;
 		treasure->origin_depth = chest->origin_depth;
-		drop_near(cave, &treasure, 0, grid, true);
+		drop_near(cave, &treasure, 0, grid, true, false);
 		number--;
 	}
 

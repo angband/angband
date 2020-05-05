@@ -907,7 +907,7 @@ void monster_death(struct monster *mon, bool stats)
 		if (!visible && !stats)
 			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, &obj, 0, mon->grid, true);
+		drop_near(cave, &obj, 0, mon->grid, true, false);
 		obj = next;
 	}
 
@@ -1408,7 +1408,7 @@ void steal_monster_item(struct monster *mon, int midx)
 					char o_name[80];
 					object_desc(o_name, sizeof(o_name), obj,
 								ODESC_PREFIX | ODESC_FULL);
-					drop_near(cave, &obj, 0, player->grid, true);
+					drop_near(cave, &obj, 0, player->grid, true, true);
 					msg("You drop %s.", o_name);
 				} else {
 					inven_carry(player, obj, true, true);

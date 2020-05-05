@@ -941,9 +941,12 @@ static void floor_carry_fail(struct object *drop, bool broke)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  *
+ * If prefer_pile is true, does not apply a penalty for putting different types
+ * items in the same grid.
+ *
  * If no appropriate grid is found, the given grid is unchanged
  */
-static void drop_find_grid(struct object *drop, struct loc *grid)
+static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *grid)
 {
 	int best_score = -1;
 	struct loc start = *grid;
@@ -991,7 +994,8 @@ static void drop_find_grid(struct object *drop, struct loc *grid)
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
-			score = 1000 - (dist + num_shown * 5);
+			score = 1000 -
+				(dist + (prefer_pile ? 0 : num_shown * 5));
 
 			if ((score < best_score) || ((score == best_score) && one_in_(2)))
 				continue;
@@ -1035,11 +1039,14 @@ static void drop_find_grid(struct object *drop, struct loc *grid)
  * This function will produce a description of a drop event under the player
  * when "verbose" is true.
  *
+ * If "prefer_pile" is true, the penalty for putting different types of items
+ * in the same square is not applied.
+ *
  * The calling function needs to deal with the consequences of the dropped
  * object being destroyed or absorbed into an existing pile.
  */
 void drop_near(struct chunk *c, struct object **dropped, int chance,
-			   struct loc grid, bool verbose)
+			   struct loc grid, bool verbose, bool prefer_pile)
 {
 	char o_name[80];
 	struct loc best = grid;
@@ -1058,7 +1065,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(*dropped, &best);
+	drop_find_grid(*dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
 		if (dont_ignore && (square(c, best).mon < 0)) {
@@ -1123,7 +1130,7 @@ void push_object(struct loc grid)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, &obj, 0, grid, false);
+		drop_near(cave, &obj, 0, grid, false, false);
 	}
 
 	/* Reset cave feature, remove trap if needed */

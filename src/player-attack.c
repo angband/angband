@@ -1099,7 +1099,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	}
 
 	/* Drop (or break) near that location */
-	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true);
+	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true, false);
 }
 
 
