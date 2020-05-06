@@ -98,7 +98,7 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 		va_list args;
 		size_t len;
 
-		VA_COPY(args, vp);
+		va_copy(args, vp);
 		len = vstrnfmt(temp_space, temp_len, fmt, args);
 		va_end(args);
 		if (len < temp_len - 1) {

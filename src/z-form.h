@@ -31,15 +31,6 @@
  * This file makes use of both "z-util.c" and "z-virt.c"
  */
 
-/* MSVC doesn't have va_copy (which is C99) or an alternative, so we'll just
- * copy the SRC pointer. In other cases we'll use va_copy() as we should. */
-#ifdef _MSC_VER
-#define VA_COPY(DST, SRC) (DST) = (SRC)
-#else
-#define VA_COPY(DST, SRC) va_copy(DST, SRC)
-#endif
-
-
 /**** Available Functions ****/
 
 /**
