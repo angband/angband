@@ -605,16 +605,9 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			if (rv.m_bonus) special = "random";
 			break;
 		case EF_SPHERE:
-			/* Halve damage */
-			rv.base /= 2;
-			rv.sides /= 2;
-
 			/* Append radius */
 			if (effect->radius) {
 				int rad = effect->radius;
-				if (effect->other) {
-					rad += player->lev / effect->other;
-				}
 				special = format(", rad %d", rad);
 			} else {
 				special = ", rad 2";

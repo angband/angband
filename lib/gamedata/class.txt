@@ -637,7 +637,7 @@ expr:S:PLAYER_LEVEL:* 3
 desc:Strikes every monster in line of sight with sheets of ice from above.
 
 spell:Volcanic Eruption:40:30:75:50
-effect:SPHERE:FIRE:5
+effect:SPHERE:FIRE:5:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:* 3 / 2
 expr:S:PLAYER_LEVEL:* 3
@@ -1005,7 +1005,7 @@ expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
 spell:Miasma:10:4:40:5
-effect:SPHERE:CHAOS:4
+effect:SPHERE:CHAOS:4:3
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 effect:TIMED_INC:IMAGE

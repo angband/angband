@@ -3762,7 +3762,8 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 }
 
 /**
- * Project from the player's grid, act as a ball
+ * Project from the player's grid, act as a ball, with full intensity out as
+ * far as the given diameter
  * Affect grids, objects, and monsters
  */
 bool effect_handler_SPHERE(effect_handler_context_t *context)
@@ -3770,11 +3771,13 @@ bool effect_handler_SPHERE(effect_handler_context_t *context)
 	struct loc pgrid = player->grid;
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 0;
+	int diameter_of_source = context->other ? context->other : 0;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, pgrid, dam, context->subtype, flg, 0, 0, NULL))
+	if (project(context->origin, rad, pgrid, dam, context->subtype, flg, 0,
+				diameter_of_source, NULL))
 		context->ident = true;
 
 	return true;
