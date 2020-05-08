@@ -576,10 +576,6 @@ bool object_is_ignored(const struct object *obj)
 	if (!obj->known)
 		return false;
 
-	/* Objects with an unknown rune shouldn't be ignored */
-	if (tval_has_variable_power(obj) && !object_runes_known(obj))
-		return false;
-
 	/* Do ignore individual objects that marked ignore */
 	if (obj->known->notice & OBJ_NOTICE_IGNORE)
 		return true;
