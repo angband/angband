@@ -1173,7 +1173,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval)
 {
 	int base, tries = 3;
-	struct object_kind *kind;
+	struct object_kind *kind = NULL;
 	struct object *new_obj;
 
 	/* Try to make a special artifact */

@@ -424,9 +424,9 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 	/* Check for overflow */
 	/*     {new_chp = LONG_MIN;} DAVIDTODO*/
 	if ((new_chp < 0) && (old_chp > 0) && (hp_gain > 0)) {
-		new_chp = 2147483647;
+		new_chp = INT32_MAX;
 	} else if ((new_chp > 0) && (old_chp < 0) && (hp_gain < 0)) {
-		new_chp = -2147483648;
+		new_chp = INT32_MIN;
 	}
 
 	/* Break it back down*/
@@ -468,10 +468,10 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 
 	/* new_csp = LONG_MAX LONG_MIN;} DAVIDTODO produces warning*/
 	if ((new_csp_long < 0) && (old_csp_long > 0) && (sp_gain > 0)) {
-		new_csp_long = 2147483647;
+		new_csp_long = INT32_MAX;
 		sp_gain = 0;
 	} else if ((new_csp_long > 0) && (old_csp_long < 0) && (sp_gain < 0)) {
-		new_csp_long = -2147483648;
+		new_csp_long = INT32_MIN;
 		sp_gain = 0;
 	}
 
