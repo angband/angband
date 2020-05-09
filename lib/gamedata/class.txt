@@ -1005,12 +1005,12 @@ expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
 spell:Miasma:10:4:40:5
-effect:SPHERE:CHAOS:4:3
+effect:SPOT:CHAOS:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
-effect:TIMED_INC:IMAGE
-dice:$B
-expr:B:PLAYER_LEVEL:/ 4
+#effect:TIMED_INC:IMAGE
+#dice:$B
+#expr:B:PLAYER_LEVEL:/ 4
 desc:Produces a cloud of hallucinogenic gas affecting the player and monsters
 desc: within radius 4.
 

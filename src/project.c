@@ -848,7 +848,7 @@ bool project(struct source origin, int rad, struct loc finish,
 			/* If a particular diameter for the source of the explosion's
 			 * energy is given, it is full strength to that diameter and
 			 * then reduces */
-			dam_temp = (diameter_of_source * dam) / ((i + 1) * 10);
+			dam_temp = (diameter_of_source * dam) / (i + 1);
 			if (dam_temp > (u32b) dam) {
 				dam_temp = dam;
 			}
@@ -970,12 +970,13 @@ bool project(struct source origin, int rad, struct loc finish,
 			power = mon->race->spell_power;
 
 			/* Breaths from powerful monsters get power effects as well */
-			if (monster_is_powerful(mon) && (flg & (PROJECT_PLAY)))
+			if (monster_is_powerful(mon))
 				power = MAX(power, 80);
 		}
 		for (i = 0; i < num_grids; i++) {
 			if (project_p(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ, power)) {
+						  dam_at_dist[distance_to_grid[i]], typ, power,
+						  flg & PROJECT_SELF)) {
 				notice = true;
 				if (player->is_dead) {
 					free(dam_at_dist);
