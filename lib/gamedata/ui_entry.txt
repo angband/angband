@@ -27,9 +27,12 @@
 # The label defines a label to be shown for the element.  Changing its value
 # can impact usability.  Optionally, shortened versions with
 # label followed by the number of characters as the field name can be
-# provided to override the default of using the first n characters of label
-# when an abbreviated version is needed.  The second character screen currently
-# uses 5 character labels so only label or label5 are relevant.
+# provided to override the default of using the next longest abbreviated label
+# that's available or the first n characters of label when an abbreviated
+# version is needed.  The second character screen currently uses 5 character
+# labels and the equipment comparison uses 2 (or 3 though only for filter
+# selection) character labels, so only label, label5, label3, and label2 are
+# relevant.
 # combine controls how the values of the properties linked to the element are
 # combined before display.  Possible values are limited by the code and must
 # be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or
@@ -137,6 +140,7 @@ category:EQUIPCMP_SCREEN
 
 name:resist_ui_compact_0<NEXUS>
 label:Nexus
+label2:Nx
 category:CHAR_SCREEN1
 category:EQUIPCMP_SCREEN
 
@@ -162,35 +166,30 @@ name:pfear_ui_compact_0
 template:good_flag_ui_compact_0
 label:Fear resistance
 label5:pFear
-label2:pF
 priority:0
 
 name:pblind_ui_compact_0
 template:good_flag_ui_compact_0
 label:Blindess resistance
 label5:pBlnd
-label2:pB
 priority:-1
 
 name:pconf_ui_compact_0
 template:good_flag_ui_compact_0
 label:Confusion resistance
 label5:pConf
-label2:pC
 priority:-2
 
 name:pstun_ui_compact_0
 template:good_flag_ui_compact_0
 label:Stun resistance
 label5:pStun
-label2:pS
 priority:-3
 
 name:holdlife_ui_compact_0
 template:good_flag_ui_compact_0
 label:Hold life
 label5:HLife
-label2:HL
 priority:-4
 
 name:regen_ui_compact_0
@@ -288,6 +287,7 @@ name:sticky_ui_compact_0
 template:other_flag_ui_compact_0
 label:Sticky curse
 label5:Stick
+label2:Sy
 priority:-6
 
 name:fragile_ui_compact_0
@@ -330,26 +330,24 @@ name:blows_ui_compact_0
 template:numeric_as_sign_ui_0
 label:Attack speed
 label5:Blows
-label2:Bl
 priority:-5
 
 name:shots_ui_compact_0
 template:numeric_as_sign_ui_0
 label:Shooting speed
 label5:Shots
-label2:Sh
 priority:-6
 
 name:shooting_power_ui_compact_0
 template:numeric_as_sign_ui_0
 label:Shooting power
 label5:Might
-label2:Mi
 priority:-7
 
 name:light_ui_compact_0
 template:numeric_as_sign_ui_0
 label:Light
+label2:Lt
 priority:-8
 
 name:damage_reduction_ui_compact_0

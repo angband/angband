@@ -921,10 +921,11 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 {
 	static const char *no_matching_attribute_msg =
 		"Did not find attribute with that name; filter unchanged";
-	char c[3] = "";
+	char c[4] = "";
 	int itry;
+	bool threec;
 
-	if (! get_string("Enter two character code and return or return to clear ", c,
+	if (! get_string("Enter 2 or 3 (for stat) character code and return or return to clear ", c,
 		N_ELEMENTS(c))) {
 		return EQUIP_CMP_MENU_NEW_PAGE;
 	}
@@ -946,15 +947,15 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 
 	/*
 	 * Try different combinations of capitalization to match the
-	 * entered string to one of the column labels (do not test for
-	 * a match to column, "Lo",  used for the location of the item).
+	 * entered string to one of the column labels.
 	 */
 	itry = 0;
+	threec = false;
 	while (1) {
-		char ctry[3];
-		wchar_t wc[3];
+		char ctry[4];
+		wchar_t wc[4];
 
-		if (itry >= 4) {
+		if (itry >= 4 || (threec && itry >= 3)) {
 			s->dlg_trans_msg = no_matching_attribute_msg;
 			break;
 		}
@@ -963,7 +964,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = toupper(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = tolower(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = tolower(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -973,7 +980,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = toupper(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = toupper(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = toupper(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -983,7 +996,13 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			ctry[0] = tolower(c[0]);
 			if (c[1] != '\0') {
 				ctry[1] = tolower(c[1]);
-				ctry[2] = '\0';
+				if (c[2] != '\0') {
+					ctry[2] = tolower(c[2]);
+					ctry[3] = '\0';
+					threec = true;
+				} else {
+					ctry[2] = '\0';
+				}
 			} else {
 				ctry[1] = '\0';
 			}
@@ -1007,7 +1026,18 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 			while (search) {
 				if (j < (int)N_ELEMENTS(s->propcats)) {
 					if (k < s->propcats[j].n) {
-						if (wc[0] == s->propcats[j].labels[k][0] &&
+						if (threec) {
+							wchar_t wce[4];
+
+							get_ui_entry_label(s->propcats[j].entries[k], 4, false, wce);
+							if (wc[0] == wce[0] &&
+							    wc[1] == wce[1] &&
+							    wc[2] == wce[2]) {
+								search = false;
+							} else {
+								++k;
+							}
+						} else if (wc[0] == s->propcats[j].labels[k][0] &&
 							wc[1] == s->propcats[j].labels[k][1]) {
 							search = false;
 						} else {
@@ -1032,11 +1062,11 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 					s->stores != EQUIPABLE_YES_STORE)) {
 					s->easy_filt.v[s->easy_filt.nv].c =
 						EQUIP_EXPR_SELECTOR;
-					s->easy_filt.v[s->easy_filt.nv].s.ex.propind =
-						s->propcats[j].off + k;
 					++s->easy_filt.nv;
 				}
 				ind = s->easy_filt.nv - 1;
+				s->easy_filt.v[ind].s.ex.propind =
+					s->propcats[j].off + k;
 				switch (j) {
 				case 0:
 					/* Resistance */
@@ -1890,6 +1920,8 @@ static void compute_player_and_equipment_values(struct player *p,
 	struct equipable_summary *s)
 {
 	struct cached_player_data *pcache;
+	struct ui_entry_combiner_state *cstates;
+	struct ui_entry_combiner_funcs cfuncs;
 	int i;
 
 	if (! s->p_and_eq_vals) {
@@ -1902,25 +1934,29 @@ static void compute_player_and_equipment_values(struct player *p,
 	}
 
 	pcache = NULL;
+	cstates = mem_alloc(s->nprop * sizeof(*cstates));
 	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
 		int j;
 
 		for (j = 0; j < s->propcats[i].n; ++j) {
+			const struct ui_entry *entry =
+				s->propcats[i].entries[j];
+			int rendind = get_ui_entry_renderer_index(entry);
+			int combind =
+				ui_entry_renderer_query_combiner(rendind);
+			int v, a;
+
+			assert(combind > 0);
+			(void) ui_entry_combiner_get_funcs(combind, &cfuncs);
 			compute_ui_entry_values_for_player(
-				s->propcats[i].entries[j], p, &pcache,
-				s->p_and_eq_vals + j + s->propcats[i].off,
-				s->p_and_eq_auxvals + j + s->propcats[i].off);
+				entry, p, &pcache, &v, &a);
+			(*cfuncs.init_func)(v, a,
+				cstates + j + s->propcats[i].off);
 		}
 	}
 	release_cached_player_data(pcache);
 
-	/*
-	 * Combine with the values from the equipment.  Should use the
-	 * same combining procedures as used internally in ui-entry.c, but
-	 * those aren't exposed, so choose how to combine based on the
-	 * category (resistances, abilities (i.e. boolean flags), hindrances
-	 * (more boolean flags), and modifiers).
-	 */
+	/* Combine with the values from the equipment. */
 	for (i = 0; i < p->body.count; ++i) {
 		const struct object *obj = slot_object(p, i);
 		struct cached_object_data *cache = NULL;
@@ -1933,81 +1969,47 @@ static void compute_player_and_equipment_values(struct player *p,
 			int k;
 
 			for (k = 0; k < s->propcats[j].n; ++k) {
-				int ind = k + s->propcats[j].off;
+				const struct ui_entry *entry =
+					s->propcats[j].entries[k];
+				int rendind = get_ui_entry_renderer_index(entry);
+				int combind = ui_entry_renderer_query_combiner(rendind);
 				int v, a;
 
+				assert(combind > 0);
+				(void) ui_entry_combiner_get_funcs(
+					combind, &cfuncs);
 				compute_ui_entry_values_for_object(
 					s->propcats[j].entries[k], obj, p,
 					&cache, &v, &a);
-				if (j == 0) {
-					/* For a resistance, use the larger. */
-					if (v == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_vals[ind] == 0 ||
-							s->p_and_eq_vals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_vals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (v != UI_ENTRY_VALUE_NOT_PRESENT) {
-						if (s->p_and_eq_vals[ind] < v) {
-							s->p_and_eq_vals[ind] = v;
-						}
-					}
-					if (a == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_auxvals[ind] == 0 ||
-							s->p_and_eq_auxvals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_auxvals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (a != UI_ENTRY_VALUE_NOT_PRESENT) {
-						if (s->p_and_eq_auxvals[ind] < a) {
-							s->p_and_eq_auxvals[ind] = a;
-						}
-					}
-				} else if (j < 3) {
-					/*
-					 * For a boolean flag, use logical or.
-					 */
-					if (v == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_vals[ind] == 0 ||
-							s->p_and_eq_vals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_vals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (v != UI_ENTRY_VALUE_NOT_PRESENT) {
-						if (v) {
-					 		s->p_and_eq_vals[ind] = 1;
-						}
-					}
-					if (a == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_auxvals[ind] == 0 ||
-							s->p_and_eq_auxvals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_auxvals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (a != UI_ENTRY_VALUE_NOT_PRESENT) {
-						if (a) {
-					 		s->p_and_eq_auxvals[ind] = 1;
-						}
-					}
-				} else {
-					/* For modifiers, add. */
-					if (v == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_vals[ind] == 0 ||
-							s->p_and_eq_vals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_vals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (v != UI_ENTRY_UNKNOWN_VALUE) {
-						s->p_and_eq_vals[ind] += v;
-					}
-					if (a == UI_ENTRY_UNKNOWN_VALUE) {
-						if (s->p_and_eq_auxvals[ind] == 0 ||
-							s->p_and_eq_auxvals[ind] == UI_ENTRY_VALUE_NOT_PRESENT) {
-							s->p_and_eq_auxvals[ind] = UI_ENTRY_UNKNOWN_VALUE;
-						}
-					} else if (a != UI_ENTRY_UNKNOWN_VALUE) {
-						s->p_and_eq_auxvals[ind] += a;
-					}
-				}
+				(*cfuncs.accum_func)(v, a,
+					cstates + k + s->propcats[j].off);
 			}
 		}
 		release_cached_object_data(cache);
 	}
+
+	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
+		int j;
+
+		for (j = 0; j < s->propcats[i].n; ++j) {
+			const struct ui_entry *entry =
+				s->propcats[i].entries[j];
+			int rendind = get_ui_entry_renderer_index(entry);
+			int combind =
+				ui_entry_renderer_query_combiner(rendind);
+
+			assert(combind > 0);
+			(void) ui_entry_combiner_get_funcs(combind, &cfuncs);
+			(*cfuncs.finish_func)(
+				cstates + j + s->propcats[i].off);
+			s->p_and_eq_vals[j + s->propcats[i].off] =
+				cstates[j + s->propcats[i].off].accum;
+			s->p_and_eq_auxvals[j + s->propcats[i].off] =
+				cstates[j + s->propcats[i].off].accum_aux;
+		}
+	}
+
+	mem_free(cstates);
 }
 
 
@@ -2221,6 +2223,7 @@ static int initialize_summary(struct player *p,
 	if (count > (*s)->nalloc) {
 		mem_free((*s)->sorted_indices);
 		cleanup_summary_items(*s);
+		mem_free((*s)->items);
 		(*s)->items = mem_zalloc(count * sizeof(*(*s)->items));
 		(*s)->sorted_indices =
 			mem_alloc((count + 1) * sizeof(*(*s)->sorted_indices));
@@ -2379,8 +2382,10 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	rdetails.value_position.x = rdetails.label_position.x;
 	rdetails.value_position.y = s->irow_combined_equip;
 	rdetails.position_step = loc(1, 0);
+	rdetails.combined_position = loc(0, 0);
 	rdetails.vertical_label = true;
 	rdetails.alternate_color_first = false;
+	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, '@');
 	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
 		int j;
