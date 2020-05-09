@@ -1589,9 +1589,10 @@ magic:1:600:3
 book:shadow book:town:[Into the Shadows]:6:shadow
 
 spell:Seek Battle:1:1:15:2
-effect:DETECT_LIVING_MONSTERS
+effect:DETECT_FEARFUL_MONSTERS
 effect-yx:22:40
-desc:Detects all living monsters in the immediate area, for one turn only.
+desc:Detects all monsters susceptible to fear in the immediate area,
+desc: for one turn only.
 
 spell:Berserk Strength:3:2:20:4
 effect:CURE:AFRAID

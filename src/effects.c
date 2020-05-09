@@ -2136,7 +2136,8 @@ bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 {
-	bool monsters = detect_monsters(context->y, context->x, monster_is_not_invisible);
+	bool monsters = detect_monsters(context->y, context->x,
+									monster_is_not_invisible);
 
 	if (monsters)
 		msg("You sense the presence of monsters!");
@@ -2155,12 +2156,31 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 {
-	bool monsters = detect_monsters(context->y, context->x, monster_is_invisible);
+	bool monsters = detect_monsters(context->y, context->x,
+									monster_is_invisible);
 
 	if (monsters)
 		msg("You sense the presence of invisible creatures!");
 	else if (context->aware)
 		msg("You sense no invisible creatures.");
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect monsters susceptible to fear around the player.  The height to detect
+ * above and below the player is context->value.dice, the width either side of
+ * the player context->value.sides.
+ */
+bool effect_handler_DETECT_FEARFUL_MONSTERS(effect_handler_context_t *context)
+{
+	bool monsters = detect_monsters(context->y, context->x, monster_is_fearful);
+
+	if (monsters)
+		msg("You sense the presence of fearful creatures!");
+	else if (context->aware)
+		msg("You sense no fearful creatures.");
 
 	context->ident = true;
 	return true;
