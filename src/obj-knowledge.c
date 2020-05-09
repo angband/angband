@@ -1758,7 +1758,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 void shape_learn_on_assume(struct player *p, const char *name)
 {
 	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
-	int i, flag;
+	int flag, element;
 	struct player_shape *shape = lookup_player_shape(name);
 
 	/* Get the shape's obvious flags */
@@ -1769,13 +1769,14 @@ void shape_learn_on_assume(struct player *p, const char *name)
 	/* Learn flags */
 	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
 		 flag = of_next(f, flag + 1)) {
-		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+		equip_learn_flag(p, flag);
 	}
 
-	/* Learn all modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (shape->modifiers[i]) {
-			player_learn_rune(p, rune_index(RUNE_VAR_MOD, i), true);
+	/* Learn elements */
+	for (element = 0; element < ELEM_MAX; element++) {
+		if (shape->el_info[element].res_level &&
+			!p->obj_k->el_info[element].res_level) {
+			equip_learn_element(p, element);
 		}
 	}
 }
@@ -2036,13 +2037,6 @@ void equip_learn_flag(struct player *p, int flag)
 		/* Flag may be on a curse */
 		object_curses_find_flags(p, obj, f);
 	}
-	if (p->shape) {
-		struct player_shape *shape = lookup_player_shape(p->shape->name);
-		if (of_has(shape->flags, flag) && !of_has(p->obj_k->flags, flag)) {
-			msg("You understand your %s shape better.", p->shape->name);
-			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
-		}
-	}
 }
 
 /**
@@ -2085,14 +2079,6 @@ void equip_learn_element(struct player *p, int element)
 		/* Element may be on a curse */
 		object_curses_find_element(p, obj, element);
 	}
-	if (p->shape) {
-		struct player_shape *shape = lookup_player_shape(p->shape->name);
-		if (shape->el_info[element].res_level &&
-			!p->obj_k->el_info[element].res_level) {
-			msg("You understand your %s shape better.", p->shape->name);
-			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
-		}
-	}
 }
 
 /**
@@ -2104,7 +2090,6 @@ void equip_learn_after_time(struct player *p)
 {
 	int i, flag;
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
-	bool messaged = false;
 
 	/* Get the timed flags */
 	create_obj_flag_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
@@ -2144,19 +2129,6 @@ void equip_learn_after_time(struct player *p)
 			/* Objects not fully known yet get marked as having had a chance
 			 * to display all the timed flags */
 			of_union(obj->known->flags, timed_mask);
-		}
-	}
-	if (p->shape) {
-		struct player_shape *shape = lookup_player_shape(p->shape->name);
-		for (flag = of_next(timed_mask, FLAG_START); flag != FLAG_END;
-			 flag = of_next(timed_mask, flag + 1)) {
-			if (of_has(shape->flags, flag) && !of_has(p->obj_k->flags, flag)) {
-				if (!messaged) {
-					msg("You understand your %s shape better.", p->shape->name);
-					messaged = true;
-				}
-				player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
-			}
 		}
 	}
 }
