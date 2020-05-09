@@ -752,7 +752,7 @@ int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 				 const char *prompt, const char *reject, item_tester filter,
 				 int mode)
 {
-	if (cmd_get_arg_item(cmd, arg, obj) == CMD_OK)
+	if ((cmd_get_arg_item(cmd, arg, obj) == CMD_OK) && (!filter|| filter(*obj)))
 		return CMD_OK;
 
 	/* Shapechanged players can only access the floor */

@@ -153,7 +153,7 @@ static void compute_obj_num_expected(int level, bool good, int tval,
 	double *ex, int *nnonzero)
 {
 	double pboost = 1.0 / z_info->great_obj;
-	int i, total;
+	int i;
 
 	for (i = 0; i < z_info->k_max; ++i) {
 		ex[i] = 0.0;
@@ -191,8 +191,6 @@ static void compute_obj_num_expected(int level, bool good, int tval,
 		if (!total) continue;
 
 		for (j = 0; j < z_info->k_max; ++j) {
-			int rarity = k_info[j].alloc_prob;
-
 			if (good && !kf_has(k_info[j].kind_flags, KF_GOOD)) continue;
 			if (tval != 0 && k_info[j].tval != tval) continue;
 			if (k_info[j].alloc_min > boosted_level ||
