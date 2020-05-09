@@ -472,7 +472,7 @@ type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
 bindui:bless_ui_compact_0:0
-desc:Blessed by the gods
+desc:Blessed by the gods (combat bonuses for holy casters)
 
 name:burns out
 type:flag

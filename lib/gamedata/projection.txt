@@ -407,6 +407,7 @@ color:White
 code:LIGHT_WEAK
 type:environs
 desc:light
+player-desc:weak light
 blind-desc:something
 obvious:1
 color:ORANGE

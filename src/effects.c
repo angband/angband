@@ -3745,7 +3745,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 bool effect_handler_SPOT(effect_handler_context_t *context)
 {
 	struct loc pgrid = player->grid;
-	int dam = effect_calculate_value(context, true);
+	int dam = effect_calculate_value(context, false);
 	int rad = context->radius ? context->radius : 0;
 
 	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL | PROJECT_SELF;
@@ -3771,7 +3771,7 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 bool effect_handler_SPHERE(effect_handler_context_t *context)
 {
 	struct loc pgrid = player->grid;
-	int dam = effect_calculate_value(context, true);
+	int dam = effect_calculate_value(context, false);
 	int rad = context->radius ? context->radius : 0;
 	int diameter_of_source = context->other ? context->other : 0;
 

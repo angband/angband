@@ -1665,6 +1665,10 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Check all the possible types of description format */
 			switch (base_descs[effect->index].efinfo_flag) {
 				/* Healing sometimes has a minimum percentage */
+			case EFINFO_HURT: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string);
+				break;
+			}
 			case EFINFO_HEAL: {
 				char min_string[50];
 				if (value.m_bonus)
@@ -1744,6 +1748,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
+				break;
+			}
+
+			case EFINFO_SPOT: {
+				int i_radius = effect->other ? effect->other : effect->radius;
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						projections[effect->subtype].player_desc,
+						effect->radius, i_radius, dice_string);
 				break;
 			}
 
