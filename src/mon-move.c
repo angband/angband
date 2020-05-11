@@ -539,9 +539,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 				continue;
 
 			/* Ignore damaging terrain if they can't handle it */
-			if (square_isdamaging(c, grid) &&
-				!rf_has(mon->race->flags, square_feat(c, grid)->resist_flag))
-				continue;
+			if (monster_hates_grid(c, mon, grid)) continue;
 
 			/* Check for absence of shot (more or less) */
 			if (!square_isview(c, grid)) {
@@ -826,10 +824,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		struct monster *tracker = group_monster_tracking(c, mon);
 		if (tracker && los(c, mon->grid, tracker->grid)) { /* Need los? */
 			grid = loc_diff(tracker->grid, mon->grid);
-		} //else {
-			/* Head blindly straight for the "player" if no better idea */
-			//grid = loc_diff(target, mon->grid);
-		//}
+		}
 
 		/* No longer tracking */
 		mflag_off(mon->mflag, MFLAG_TRACKING);
