@@ -877,8 +877,10 @@ void monster_death(struct monster *mon, bool stats)
 	bool visible = monster_is_visible(mon) || monster_is_unique(mon);
 
 	/* Delete any mimicked objects */
-	if (mon->mimicked_obj)
-		object_delete(&mon->mimicked_obj);
+	if (mon->mimicked_obj) {
+		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, true);
+		mon->mimicked_obj = NULL;
+	}
 
 	/* Drop objects being carried */
 	while (obj) {
