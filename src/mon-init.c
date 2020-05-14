@@ -2421,6 +2421,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "friends-base uint chance rand number sym name ?sym role", parse_lore_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_lore_mimic);
 	parser_reg(p, "shape str name", ignored);
+	parser_reg(p, "color-cycle sym group sym cycle", ignored);
 	return p;
 }
 
