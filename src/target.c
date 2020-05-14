@@ -223,7 +223,7 @@ void target_release(void)
 	/* If the old target is a now-dead monster, cancel it */
 	if (old_target.midx != 0) {
 		struct monster *mon = cave_monster(cave, old_target.midx);
-		if (!mon || !mon->race) {
+		if (!mon || !mon->race || !monster_is_in_view(mon)) {
 			target.grid.y = 0;
 			target.grid.x = 0;
 		}
