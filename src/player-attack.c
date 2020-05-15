@@ -68,7 +68,9 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 	int perc = obj->kind->base->break_perc;
 
 	if (obj->artifact) return 0;
-	if (of_has(obj->flags, OF_THROWING) && !of_has(obj->flags, OF_EXPLODE)) {
+	if (of_has(obj->flags, OF_THROWING) &&
+		!of_has(obj->flags, OF_EXPLODE) &&
+		!tval_is_ammo(obj)) {
 		perc = 1;
 	}
 	if (!hit_target) return (perc * perc) / 100;
@@ -339,7 +341,7 @@ static int o_critical_melee(const struct player *p,
 							const struct object *obj, u32b *msg_type)
 {
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = chance_of_melee_hit(p, obj) + debuff_to_hit;
+	int power = (chance_of_melee_hit(p, obj) + debuff_to_hit) / 3;
 	int add_dice = 0;
 
 	/* Test for critical hit - chance power / (power + 240) */
@@ -463,10 +465,10 @@ static int ranged_damage(struct player *p, const struct monster *mon,
 	if (launcher) {
 		dmg += launcher->to_d;
 	} else if (of_has(missile->flags, OF_THROWING)) {
-		/* Multiply the damage dice by the throwing weapon multiplier.
+		/* Adjust damage for throwing weapons.
 		 * This is not the prettiest equation, but it does at least try to
 		 * keep throwing weapons competitive. */
-		dmg *= 1 + p->lev / 12;
+		dmg *= 2 + missile->weight / 12;
 	}
 	dmg *= mult;
 
@@ -532,7 +534,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 		/* Multiply the number of damage dice by the throwing weapon
 		 * multiplier.  This is not the prettiest equation,
 		 * but it does at least try to keep throwing weapons competitive. */
-		dice *= 2 + p->lev / 12;
+		dice *= 2 + missile->weight / 12;
 	}
 
 	/* Roll out the damage. */
