@@ -195,3 +195,4 @@ graphics:light purple
 flags:HATES_FIRE | EASY_KNOW
 
 name:gold
+graphics:light yellow
