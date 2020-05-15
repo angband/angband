@@ -113,7 +113,7 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 	/* Get extent of addition in wide chars */
 	new_length = text_mbstowcs(NULL, temp_space, 0);
 	assert(new_length >= 0); /* If this fails, the string was badly formed */
-	textblock_resize_if_needed(tb, new_length);
+	textblock_resize_if_needed(tb, new_length + 1);
 
 	/* Convert to wide chars, into the text block buffer */
 	text_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
