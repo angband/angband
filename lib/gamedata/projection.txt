@@ -16,6 +16,7 @@
 # damage-cap: max damage
 # msgt: message type
 # obvious: 0/1
+# wake: 0/1
 # color: color
 
 # 'code' is the computer code for this projection used by the game
@@ -51,6 +52,9 @@
 # 'obvious' is set to 1 if the nature of the projection effect is obvious to the
 # player, 0 otherwise
 
+# 'wake' is set to 1 if the projection effect will automatically wake monsters,
+# 0 otherwise
+
 # 'color' is the colour of the projection
 
 code:ACID
@@ -66,6 +70,7 @@ divisor:3
 damage-cap:1600
 msgt:BR_ACID
 obvious:1
+wake:1
 color:Slate
 
 code:ELEC
@@ -81,6 +86,7 @@ divisor:3
 damage-cap:1600
 msgt:BR_ELEC
 obvious:1
+wake:1
 color:Blue
 
 code:FIRE
@@ -96,6 +102,7 @@ divisor:3
 damage-cap:1600
 msgt:BR_FIRE
 obvious:1
+wake:1
 color:Red
 
 code:COLD
@@ -111,6 +118,7 @@ divisor:3
 damage-cap:1600
 msgt:BR_FROST
 obvious:1
+wake:1
 color:White
 
 code:POIS
@@ -126,6 +134,7 @@ divisor:3
 damage-cap:800
 msgt:BR_GAS
 obvious:1
+wake:1
 color:Green
 
 code:LIGHT
@@ -141,6 +150,7 @@ divisor:6
 damage-cap:500
 msgt:BR_LIGHT
 obvious:1
+wake:1
 color:Orange
 
 code:DARK
@@ -156,6 +166,7 @@ divisor:6
 damage-cap:500
 msgt:BR_DARK
 obvious:1
+wake:1
 color:Light Dark
 
 code:SOUND
@@ -171,6 +182,7 @@ divisor:6
 damage-cap:500
 msgt:BR_SOUND
 obvious:1
+wake:1
 color:Yellow
 
 code:SHARD
@@ -186,6 +198,7 @@ divisor:6
 damage-cap:500
 msgt:BR_SHARDS
 obvious:1
+wake:1
 color:Umber
 
 code:NEXUS
@@ -201,6 +214,7 @@ divisor:6
 damage-cap:400
 msgt:BR_NEXUS
 obvious:1
+wake:1
 color:Light Red
 
 code:NETHER
@@ -216,6 +230,7 @@ divisor:6
 damage-cap:600
 msgt:BR_NETHER
 obvious:1
+wake:1
 color:Light Green
 
 code:CHAOS
@@ -231,6 +246,7 @@ divisor:6
 damage-cap:600
 msgt:BR_CHAOS
 obvious:1
+wake:1
 color:Violet
 
 code:DISEN
@@ -246,6 +262,7 @@ divisor:6
 damage-cap:500
 msgt:BR_DISEN
 obvious:1
+wake:1
 color:Violet
 
 code:WATER
@@ -259,6 +276,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:Slate
 
 code:ICE
@@ -274,6 +292,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:White
 
 code:GRAVITY
@@ -287,6 +306,7 @@ divisor:3
 damage-cap:200
 msgt:BR_GRAVITY
 obvious:1
+wake:1
 color:Light Slate
 
 code:INERTIA
@@ -300,6 +320,7 @@ divisor:6
 damage-cap:200
 msgt:BR_INERTIA
 obvious:1
+wake:1
 color:Light Slate
 
 code:FORCE
@@ -313,6 +334,7 @@ divisor:6
 damage-cap:200
 msgt:BR_FORCE
 obvious:1
+wake:1
 color:Umber
 
 code:TIME
@@ -326,6 +348,7 @@ divisor:3
 damage-cap:150
 msgt:BR_TIME
 obvious:1
+wake:1
 color:Light Blue
 
 code:PLASMA
@@ -339,6 +362,7 @@ divisor:6
 damage-cap:150
 msgt:BR_PLASMA
 obvious:1
+wake:1
 color:Red
 
 code:METEOR
@@ -352,6 +376,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:Red
 
 code:MISSILE
@@ -364,6 +389,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:Violet
 
 code:MANA
@@ -377,6 +403,7 @@ divisor:3
 damage-cap:1600
 msgt:BR_ELEMENTS
 obvious:1
+wake:1
 color:Light dark
 
 code:HOLY_ORB
@@ -390,6 +417,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:Light Dark
 
 code:ARROW
@@ -402,6 +430,7 @@ divisor:6
 damage-cap:0
 msgt:GENERIC
 obvious:1
+wake:1
 color:White
 
 code:LIGHT_WEAK
@@ -481,6 +510,7 @@ type:monster
 desc:teleports monsters away
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:TURN_UNDEAD
@@ -509,6 +539,7 @@ type:monster
 desc:causes monsters to flee
 blind-desc:something
 obvious:0
+wake:1
 color:White
 
 code:DISP_UNDEAD
@@ -530,6 +561,7 @@ type:monster
 desc:damages all monsters
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:SLEEP_UNDEAD
@@ -572,6 +604,7 @@ type:monster
 desc:heals monsters
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:MON_SPEED
@@ -579,6 +612,7 @@ type:monster
 desc:hastes monsters
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:MON_SLOW
@@ -586,6 +620,7 @@ type:monster
 desc:attempts to slow monsters
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:MON_CONF
@@ -614,6 +649,7 @@ type:monster
 desc:damages living monsters
 blind-desc:something
 obvious:1
+wake:1
 color:White
 
 code:MON_CRUSH

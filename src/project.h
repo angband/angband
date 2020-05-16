@@ -39,6 +39,7 @@ struct projection {
 	int damage_cap;
 	int msgt;
 	bool obvious;
+	bool wake;
 	int color;
 	struct projection *next;
 };
