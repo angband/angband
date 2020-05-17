@@ -177,6 +177,15 @@ static enum parser_error parse_profile_room(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_profile_min_level(struct parser *p) {
+    struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->min_level = parser_getint(p, "min");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_profile_cutoff(struct parser *p) {
     struct cave_profile *c = parser_priv(p);
 
@@ -194,6 +203,7 @@ static struct parser *init_parse_profile(void) {
 	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_profile_tunnel);
 	parser_reg(p, "streamer int den int rng int mag int mc int qua int qc", parse_profile_streamer);
 	parser_reg(p, "room sym name int rating int height int width int level int pit int rarity int cutoff", parse_profile_room);
+	parser_reg(p, "min-level int min", parse_profile_min_level);
 	parser_reg(p, "cutoff int cutoff", parse_profile_cutoff);
 	return p;
 }
@@ -802,11 +812,20 @@ const struct cave_profile *choose_profile(struct player *p)
 			   (moria_cutoff >= -1)) {
 		profile = find_cave_profile("moria");
 	} else {
-		int pick = randint0(200);
-		size_t i;
-		for (i = 0; i < z_info->profile_max; i++) {
-			profile = &cave_profiles[i];
-			if (profile->cutoff >= pick) break;
+		int tries = 100;
+		while (tries) {
+			size_t i;
+			int pick = randint0(200);
+			for (i = 0; i < z_info->profile_max; i++) {
+				profile = &cave_profiles[i];
+				if (p->depth < profile->min_level) continue;
+				if (profile->cutoff >= pick) break;
+			}
+			if (profile) break;
+			tries--;
+		}
+		if (!profile) {
+			profile = find_cave_profile("classic");
 		}
 	}
 
