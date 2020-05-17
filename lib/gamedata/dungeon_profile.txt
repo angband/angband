@@ -58,6 +58,7 @@ params:1:0:200:0
 cutoff:-1
 
 ## Labyrinth - these have cutoff -1, but still appear after other checks
+## To completely turn them off, set cutoff to a more negative value (eg -2)
 name:labyrinth
 params:1:0:200:0
 cutoff:-1
@@ -131,6 +132,7 @@ room:simple room:0:11:33:1:0:0:100
 room:staircase room:0:1:1:1:0:99:0
 
 ## Moria - these have cutoff -1, but still appear after other checks
+## To completely turn them off, set cutoff to a more negative value (eg -2)
 name:moria
 params:1:50:250:2
 tunnel:10:30:15:25:30
