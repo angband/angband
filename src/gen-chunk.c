@@ -263,8 +263,13 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				dest_mon->grid = loc(dest_x, dest_y);
 
 				/* Held objects */
-				if (source_mon->held_obj)
+				if (source_mon->held_obj) {
+					struct object *obj;
 					dest_mon->held_obj = source_mon->held_obj;
+					for (obj = source_mon->held_obj; obj; obj = obj->next) {
+						obj->held_m_idx = dest_mon->midx;
+					}
+				}
 			}
 
 			/* Traps */
@@ -295,8 +300,10 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 		dest->objects[dest->obj_max + i] = source->objects[i];
 		if (dest->objects[dest->obj_max + i] != NULL)
 			dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
+		source->objects[i] = NULL;
 	}
 	dest->obj_max += source->obj_max + 1;
+	source->obj_max = 1;
 
 	/* Copy monster group list */
 	for (i = 0; i < z_info->level_monster_max; i++) {
