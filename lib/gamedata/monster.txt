@@ -292,6 +292,7 @@ blow:MOAN
 flags:UNIQUE | MALE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:NO_CONF | NO_SLEEP
+drop-base:mushroom:100:1:2
 desc:He's lost his dogs.  He's had his mushrooms stolen.  He's not a happy
 desc: hobbit!
 
