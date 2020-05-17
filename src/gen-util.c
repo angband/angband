@@ -551,6 +551,7 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 				if (square_num_walls_adjacent(c, grid) < walls) continue;
 
 				place_stairs(c, grid, feat);
+				assert(square_isstairs(c, grid));
 				done = true;
 			}
 
