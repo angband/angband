@@ -416,7 +416,7 @@ static int project_player_handler_CHAOS(project_player_handler_context_t *contex
 
 	/* Life draining */
 	if (!player_of_has(player, OF_HOLD_LIFE)) {
-		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
+		int drain = ((player->exp * 3)/ (100 * 2)) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
 	} else {
