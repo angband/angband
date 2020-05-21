@@ -29,6 +29,7 @@ type:ring
 effect:TELEPORT
 dice:40
 time:d100
+msg:Space warps around you.
 desc:randomly makes you teleport
 conflict:anti-teleportation
 conflict-flags:NO_TELEPORT
