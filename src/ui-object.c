@@ -1373,7 +1373,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			player->upkeep->command_wrk = USE_FLOOR;
 
 		/* If we are obviously using the quiver then start on quiver */
-		else if (quiver_tags && allow_quiver)
+		else if (quiver_tags && allow_quiver && (cmd != CMD_USE))
 			player->upkeep->command_wrk = USE_QUIVER;
 
 		/* Otherwise choose whatever is allowed */
