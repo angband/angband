@@ -3151,7 +3151,7 @@ effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
 effect:NOURISH:INC_BY
-dice:2
+dice:1
 
 name:*Healing*
 type:potion
@@ -3171,8 +3171,6 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-effect:NOURISH:INC_BY
-dice:3
 
 name:Life
 type:potion
