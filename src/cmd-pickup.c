@@ -424,7 +424,7 @@ int do_autopickup(struct player *p)
 			int auto_num;
 
 			/* Hack -- disturb */
-			disturb(p, 0);
+			disturb(p);
 
 			/* Automatically pick up items into the backpack */
 			auto_num = auto_pickup_okay(obj);

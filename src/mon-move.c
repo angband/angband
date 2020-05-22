@@ -1150,7 +1150,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 				square_smash_door(c, new);
 
 				msg("You hear a door burst open!");
-				disturb(player, 0);
+				disturb(player);
 
 				/* Fall into doorway */
 				return true;
@@ -1524,7 +1524,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		/* Possible disturb */
 		if (monster_is_visible(mon) && monster_is_in_view(mon) && 
 			OPT(player, disturb_near))
-			disturb(player, 0);		
+			disturb(player);		
 	}
 
 	/* Hack -- get "bold" if out of options */

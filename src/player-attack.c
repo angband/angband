@@ -880,7 +880,7 @@ void py_attack(struct player *p, struct loc grid)
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
-	disturb(p, 0);
+	disturb(p);
 
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;

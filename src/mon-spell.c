@@ -253,7 +253,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	}
 
 	/* Tell the player what's going on */
-	disturb(player, 1);
+	disturb(player);
 	spell_message(mon, spell, seen, hits);
 
 	if (hits) {

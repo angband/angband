@@ -24,6 +24,7 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-timed.h"
+#include "player-util.h"
 
 struct curse *curses;
 
@@ -321,5 +322,6 @@ bool do_curse_effect(int i, struct object *obj)
 	}
 	effect_do(effect, source_object(obj), NULL, &ident, was_aware, dir, 0, 0, NULL);
 	curse->obj->known->effect = curse->obj->effect;
+	disturb(player);
 	return !was_aware && ident;
 }

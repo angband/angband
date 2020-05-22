@@ -268,7 +268,7 @@ void do_cmd_open(struct command *cmd)
 	/* Check for door */
 	if (!obj && !do_cmd_open_test(grid)) {
 		/* Cancel repeat */
-		disturb(player, 0);
+		disturb(player);
 		return;
 	}
 
@@ -309,7 +309,7 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Cancel repeat unless we may continue */
-	if (!more) disturb(player, 0);
+	if (!more) disturb(player);
 }
 
 
@@ -403,7 +403,7 @@ void do_cmd_close(struct command *cmd)
 	/* Verify legality */
 	if (!do_cmd_close_test(grid)) {
 		/* Cancel repeat */
-		disturb(player, 0);
+		disturb(player);
 		return;
 	}
 
@@ -425,7 +425,7 @@ void do_cmd_close(struct command *cmd)
 		more = do_cmd_close_aux(grid);
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(player, 0);
+	if (!more) disturb(player);
 }
 
 
@@ -599,7 +599,7 @@ void do_cmd_tunnel(struct command *cmd)
 	/* Oops */
 	if (!do_cmd_tunnel_test(grid)) {
 		/* Cancel repeat */
-		disturb(player, 0);
+		disturb(player);
 		return;
 	}
 
@@ -622,7 +622,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(player, 0);
+	if (!more) disturb(player);
 }
 
 /**
@@ -819,7 +819,7 @@ void do_cmd_disarm(struct command *cmd)
 	/* Verify legality */
 	if (!obj && !do_cmd_disarm_test(grid)) {
 		/* Cancel repeat */
-		disturb(player, 0);
+		disturb(player);
 		return;
 	}
 
@@ -852,7 +852,7 @@ void do_cmd_disarm(struct command *cmd)
 		more = do_cmd_disarm_aux(grid);
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(player, 0);
+	if (!more) disturb(player);
 }
 
 /**
@@ -902,7 +902,7 @@ void do_cmd_alter_aux(int dir)
 	}
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(player, 0);
+	if (!more) disturb(player);
 }
 
 void do_cmd_alter(struct command *cmd)
@@ -986,9 +986,9 @@ void move_player(int dir, bool disarm)
 		do_cmd_alter_aux(dir);
 	} else if (trap && player->upkeep->running && !trapsafe) {
 		/* Stop running before known traps */
-		disturb(player, 0);
+		disturb(player);
 	} else if (!square_ispassable(cave, grid)) {
-		disturb(player, 0);
+		disturb(player);
 
 		/* Notice unknown obstacles, mention known obstacles */
 		if (!square_isknown(cave, grid)) {
@@ -1054,7 +1054,7 @@ void move_player(int dir, bool disarm)
 		/* Disturb player if the player is about to leave the area */
 		if (player->upkeep->running && !player->upkeep->running_firststep &&
 			old_dtrap && !new_dtrap) {
-			disturb(player, 0);
+			disturb(player);
 			return;
 		}
 
@@ -1072,7 +1072,7 @@ void move_player(int dir, bool disarm)
 				msg("There is a scream and the door slams shut!");
 				return;
 			}
-			disturb(player, 0);
+			disturb(player);
 			event_signal(EVENT_ENTER_STORE);
 			event_remove_handler_type(EVENT_ENTER_STORE);
 			event_signal(EVENT_USE_STORE);
@@ -1086,10 +1086,10 @@ void move_player(int dir, bool disarm)
 
 		/* Discover invisible traps, set off visible ones */
 		if (square_issecrettrap(cave, grid)) {
-			disturb(player, 0);
+			disturb(player);
 			hit_trap(grid, 0);
 		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
-			disturb(player, 0);
+			disturb(player);
 			hit_trap(grid, 0);
 		}
 
@@ -1146,7 +1146,7 @@ static bool do_cmd_walk_test(struct loc grid)
 		}
 
 		/* Cancel repeat */
-		disturb(player, 0);
+		disturb(player);
 
 		/* Nope */
 		return (false);
@@ -1326,7 +1326,7 @@ void do_cmd_hold(struct command *cmd)
 			msg("There is a scream and the door slams shut!");
 			return;
 		}
-		disturb(player, 0);
+		disturb(player);
 		event_signal(EVENT_ENTER_STORE);
 		event_remove_handler_type(EVENT_ENTER_STORE);
 		event_signal(EVENT_USE_STORE);
@@ -1473,7 +1473,7 @@ void display_feeling(bool obj_only)
 
 	/* Display only the object feeling when it's first discovered. */
 	if (obj_only) {
-		disturb(player, 0);
+		disturb(player);
 		msg("You feel that %s", obj_feeling_text[obj_feeling]);
 		return;
 	}

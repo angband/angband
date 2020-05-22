@@ -779,12 +779,12 @@ void run_step(int dir)
 			/* Update regular running */
 			if (run_test()) {
 				/* Disturb */
-				disturb(player, 0);
+				disturb(player);
 				return;
 			}
 		} else if (path_step_idx < 0) {
 			/* Pathfinding, and the path is finished */
-			disturb(player, 0);
+			disturb(player);
 			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
@@ -795,7 +795,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
-					disturb(player, 0);
+					disturb(player);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
@@ -815,7 +815,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
-					disturb(player, 0);
+					disturb(player);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
@@ -826,7 +826,7 @@ void run_step(int dir)
 
 					/* Visible monster */
 					if (monster_is_visible(mon)) {
-						disturb(player, 0);
+						disturb(player);
 						player->upkeep->running_withpathfind = false;
 						return;
 					}
@@ -836,7 +836,7 @@ void run_step(int dir)
 				for (obj = square_object(cave, grid); obj; obj = obj->next)
 					/* Visible object */
 					if (obj->known && !ignore_item_ok(obj)) {
-					disturb(player, 0);
+					disturb(player);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}

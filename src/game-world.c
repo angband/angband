@@ -177,7 +177,7 @@ static void recharged_notice(const struct object *obj, bool all)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 	/* Disturb the player */
-	disturb(player, 0);
+	disturb(player);
 
 	/* Notify the player */
 	if (obj->number > 1) {
@@ -682,7 +682,7 @@ void process_world(struct chunk *c)
 		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
 			/* Message */
 			msg("You faint from the lack of food.");
-			disturb(player, 1);
+			disturb(player);
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
@@ -761,7 +761,7 @@ void process_world(struct chunk *c)
 		/* Activate the recall */
 		if (!player->word_recall) {
 			/* Disturbing! */
-			disturb(player, 0);
+			disturb(player);
 
 			/* Determine the level */
 			if (player->depth) {
@@ -786,7 +786,7 @@ void process_world(struct chunk *c)
 			int target_increment = (4 / z_info->stair_skip) + 1;
 			int target_depth = dungeon_get_next_level(player->max_depth,
 													  target_increment);
-			disturb(player, 0);
+			disturb(player);
 
 			/* Determine the level */
 			if (target_depth > player->depth) {
@@ -963,7 +963,7 @@ void on_new_level(void)
 	}
 
 	/* Disturb */
-	disturb(player, 1);
+	disturb(player);
 
 	/* Track maximum player level */
 	if (player->max_lev < player->lev)

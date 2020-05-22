@@ -454,7 +454,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Disturb on appearance */
 			if (OPT(player, disturb_near))
-				disturb(player, 1);
+				disturb(player);
 
 			/* Re-draw monster window */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -467,7 +467,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Disturb on disappearance */
 			if (OPT(player, disturb_near) && !monster_is_mimicking(mon))
-				disturb(player, 1);
+				disturb(player);
 
 			/* Re-draw monster list window */
 			player->upkeep->redraw |= PR_MONLIST;

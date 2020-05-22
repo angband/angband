@@ -506,7 +506,7 @@ extern void hit_trap(struct loc grid, int delayed)
 			continue;
 
 		/* Disturb the player */
-		disturb(player, 0);
+		disturb(player);
 
 		/* Trap immune player learns the rune */
 		if (player_of_has(player, OF_TRAP_IMMUNE)) {

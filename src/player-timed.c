@@ -489,7 +489,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	if (notify) {
 		/* Disturb */
-		disturb(p, 0);
+		disturb(p);
 
 		/* Update the visuals, as appropriate. */
 		p->upkeep->update |= effect->flag_update;

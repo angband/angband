@@ -169,7 +169,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	if (dam <= 0) return;
 
 	/* Disturb */
-	disturb(p, 1);
+	disturb(p);
 
 	/* Hurt the player */
 	p->chp -= dam;
@@ -564,7 +564,7 @@ void player_update_light(struct player *p)
 				if (obj->timeout == 0) obj->timeout++;
 			} else if (obj->timeout == 0) {
 				/* The light is now out */
-				disturb(p, 0);
+				disturb(p);
 				msg("Your light has gone out!");
 
 				/* If it's a torch, now is the time to delete it */
@@ -578,7 +578,7 @@ void player_update_light(struct player *p)
 				}
 			} else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
 				/* The light is getting dim */
-				disturb(p, 0);
+				disturb(p);
 				msg("Your light is growing faint.");
 			}
 		}
@@ -1241,7 +1241,7 @@ void player_resting_complete_special(struct player *p)
 	if (p->upkeep->resting == REST_ALL_POINTS) {
 		if ((p->chp == p->mhp) && (p->csp == p->msp))
 			/* Stop resting */
-			disturb(p, 0);
+			disturb(p);
 	} else if (p->upkeep->resting == REST_COMPLETE) {
 		if ((p->chp == p->mhp) &&
 			(p->csp == p->msp || player_has(p, PF_COMBAT_REGEN)) &&
@@ -1252,11 +1252,11 @@ void player_resting_complete_special(struct player *p)
 			!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE] &&
 			!p->word_recall && !p->deep_descent)
 			/* Stop resting */
-			disturb(p, 0);
+			disturb(p);
 	} else if (p->upkeep->resting == REST_SOME_POINTS) {
 		if ((p->chp == p->mhp) || (p->csp == p->msp))
 			/* Stop resting */
-			disturb(p, 0);
+			disturb(p);
 	}
 }
 
@@ -1338,7 +1338,7 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
  * XXX-AS: Make callers either pass in a command
  * or call cmd_cancel_repeat inside the function calling this
  */
-void disturb(struct player *p, int stop_search)
+void disturb(struct player *p)
 {
 	/* Cancel repeated commands */
 	cmd_cancel_repeat();
@@ -1389,7 +1389,7 @@ void search(struct player *p)
 			if (square_issecretdoor(cave, grid)) {
 				msg("You have found a secret door.");
 				place_closed_door(cave, grid);
-				disturb(p, 0);
+				disturb(p);
 			}
 
 			/* Traps on chests */
@@ -1400,7 +1400,7 @@ void search(struct player *p)
 				if (obj->known->pval != obj->pval) {
 					msg("You have discovered a trap on the chest!");
 					obj->known->pval = obj->pval;
-					disturb(p, 0);
+					disturb(p);
 				}
 			}
 		}

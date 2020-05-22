@@ -877,7 +877,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	}
 
 	/* Disturb */
-	disturb(player, 1);
+	disturb(player);
 
 	/* Return "Anything seen?" */
 	return context.obvious;
