@@ -29,8 +29,6 @@ enum chest_query {
 	CHEST_TRAPPED
 };
 
-struct chest_trap *chest_traps;
-struct chest *chests;
 extern struct file_parser chest_trap_parser;
 
 char *chest_trap_name(const struct object *obj);
