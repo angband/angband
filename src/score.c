@@ -72,6 +72,14 @@ size_t highscore_where(const struct high_score *entry,
 	for (i = 0; i < sz; i++) {
 		long entry_pts = strtoul(entry->pts, NULL, 0);
 		long score_pts = strtoul(scores[i].pts, NULL, 0);
+		bool entry_winner = streq(entry->how, "Ripe Old Age");
+		bool score_winner = streq(scores[i].how, "Ripe Old Age");
+
+		if (entry_winner && !score_winner)
+			return i;
+
+		if (!entry_winner && score_winner)
+			continue;
 
 		if (entry_pts >= score_pts)
 			return i;
@@ -84,6 +92,9 @@ size_t highscore_where(const struct high_score *entry,
 	return sz - 1;
 }
 
+/**
+ * Place an entry into a high score array
+ */
 size_t highscore_add(const struct high_score *entry, struct high_score scores[],
 					 size_t sz)
 {
@@ -109,7 +120,6 @@ static size_t highscore_count(const struct high_score scores[], size_t sz)
 
 /**
  * Actually place an entry into the high score file
- * Return the location (0 is best) or -1 on "failure"
  */
 static void highscore_write(const struct high_score scores[], size_t sz)
 {
