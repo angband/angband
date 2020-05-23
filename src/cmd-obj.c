@@ -579,7 +579,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			char name[80];
 			/* Single use items are automatically learned */
 			if (!was_aware) {
-				object_learn_on_use(player, work_obj);
+				object_learn_on_use(player, obj);
 			}
 			/* Get a description */
 			if (used && none_left) {
