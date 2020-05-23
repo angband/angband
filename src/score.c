@@ -34,14 +34,14 @@ static long total_points(void)
 /**
  * Read in a highscore file.
  */
-size_t highscore_read(high_score scores[], size_t sz)
+size_t highscore_read(struct high_score scores[], size_t sz)
 {
 	char fname[1024];
 	ang_file *scorefile;
 	size_t i;
 
 	/* Wipe current scores */
-	memset(scores, 0, sz * sizeof(high_score));
+	memset(scores, 0, sz * sizeof(struct high_score));
 
 	path_build(fname, sizeof(fname), ANGBAND_DIR_SCORES, "scores.raw");
 	scorefile = file_open(fname, MODE_READ, FTYPE_TEXT);
@@ -49,7 +49,8 @@ size_t highscore_read(high_score scores[], size_t sz)
 	if (!scorefile) return true;
 
 	for (i = 0; i < sz; i++)
-		if (file_read(scorefile, (char *)&scores[i], sizeof(high_score)) <= 0)
+		if (file_read(scorefile, (char *)&scores[i],
+					  sizeof(struct high_score)) <= 0)
 			break;
 
 	file_close(scorefile);
@@ -62,8 +63,8 @@ size_t highscore_read(high_score scores[], size_t sz)
  * Just determine where a new score *would* be placed
  * Return the location (0 is best) or -1 on failure
  */
-size_t highscore_where(const high_score *entry, const high_score scores[],
-					   size_t sz)
+size_t highscore_where(const struct high_score *entry,
+					   const struct high_score scores[], size_t sz)
 {
 	size_t i;
 
@@ -83,18 +84,19 @@ size_t highscore_where(const high_score *entry, const high_score scores[],
 	return sz - 1;
 }
 
-size_t highscore_add(const high_score *entry, high_score scores[], size_t sz)
+size_t highscore_add(const struct high_score *entry, struct high_score scores[],
+					 size_t sz)
 {
 	size_t slot = highscore_where(entry, scores, sz);
 
 	memmove(&scores[slot + 1], &scores[slot],
-			sizeof(high_score) * (sz - 1 - slot));
-	memcpy(&scores[slot], entry, sizeof(high_score));
+			sizeof(struct high_score) * (sz - 1 - slot));
+	memcpy(&scores[slot], entry, sizeof(struct high_score));
 
 	return slot;
 }
 
-static size_t highscore_count(const high_score scores[], size_t sz)
+static size_t highscore_count(const struct high_score scores[], size_t sz)
 {
 	size_t i;
 	for (i = 0; i < sz; i++)
@@ -109,7 +111,7 @@ static size_t highscore_count(const high_score scores[], size_t sz)
  * Actually place an entry into the high score file
  * Return the location (0 is best) or -1 on "failure"
  */
-static void highscore_write(const high_score scores[], size_t sz)
+static void highscore_write(const struct high_score scores[], size_t sz)
 {
 	size_t n;
 
@@ -161,7 +163,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 		return;
 	}
 
-	file_write(scorefile, (const char *)scores, sizeof(high_score)*n);
+	file_write(scorefile, (const char *)scores, sizeof(struct high_score)*n);
 	file_close(scorefile);
 
 	/* Now move things around */
@@ -185,9 +187,10 @@ static void highscore_write(const high_score scores[], size_t sz)
 
 
 
-void build_score(high_score *entry, const char *died_from, time_t *death_time)
+void build_score(struct high_score *entry, const char *died_from,
+				 time_t *death_time)
 {
-	memset(entry, 0, sizeof(high_score));
+	memset(entry, 0, sizeof(struct high_score));
 
 	/* Save the version */
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
@@ -261,8 +264,8 @@ void enter_score(time_t *death_time)
 		msg("Score not registered due to quitting.");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	} else {
-		high_score entry;
-		high_score scores[MAX_HISCORES];
+		struct high_score entry;
+		struct high_score scores[MAX_HISCORES];
 
 		build_score(&entry, player->died_from, death_time);
 
