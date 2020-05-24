@@ -1468,7 +1468,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	}
 
 	/* End the sentence about innate spells and breaths */
-	if (innate || breath) {
+	if ((innate || breath) && race->freq_innate) {
 		if (lore->innate_freq_known) {
 			/* Describe the spell frequency */
 			textblock_append(tb, "; ");
@@ -1478,7 +1478,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 							   100 / race->freq_innate);
 		} else if (lore->cast_innate) {
 			/* Guess at the frequency */
-			int approx_frequency = ((race->freq_innate + 9) / 10) * 10;
+			int approx_frequency = MAX(((race->freq_innate + 9) / 10) * 10, 1);
 			textblock_append(tb, "; about ");
 			textblock_append_c(tb, COLOUR_L_GREEN, "1");
 			textblock_append(tb, " time in ");
@@ -1509,21 +1509,24 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
 
 		/* End the sentence about innate/other spells */
-		if (lore->spell_freq_known) {
-			/* Describe the spell frequency */
-			textblock_append(tb, "; ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "1");
-			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-							   100 / race->freq_spell);
-		} else if (lore->cast_spell) {
-			/* Guess at the frequency */
-			int approx_frequency = ((race->freq_spell + 9) / 10) * 10;
-			textblock_append(tb, "; about ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "1");
-			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-							   100 / approx_frequency);
+		if (race->freq_spell) {
+			if (lore->spell_freq_known) {
+				/* Describe the spell frequency */
+				textblock_append(tb, "; ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "1");
+				textblock_append(tb, " time in ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+								   100 / race->freq_spell);
+			} else if (lore->cast_spell) {
+				/* Guess at the frequency */
+				int approx_frequency = MAX(((race->freq_spell + 9) / 10) * 10,
+										   1);
+				textblock_append(tb, "; about ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "1");
+				textblock_append(tb, " time in ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+								   100 / approx_frequency);
+			}
 		}
 
 		textblock_append(tb, ".  ");
