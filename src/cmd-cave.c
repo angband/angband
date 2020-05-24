@@ -870,6 +870,7 @@ void do_cmd_alter_aux(int dir)
 {
 	struct loc grid;
 	bool more = false;
+	struct object *obj_chest;
 
 	/* Get location */
 	grid = loc_sum(player->grid, ddgrid[dir]);
@@ -882,6 +883,9 @@ void do_cmd_alter_aux(int dir)
 		/* Get location */
 		grid = loc_sum(player->grid, ddgrid[dir]);
 	}
+
+	/* Check for chest */
+	obj_chest = chest_check(grid, CHEST_OPENABLE);
 
 	/* Action depends on what's there */
 	if (square(cave, grid).mon > 0) {
@@ -896,6 +900,12 @@ void do_cmd_alter_aux(int dir)
 	} else if (square_isdisarmabletrap(cave, grid)) {
 		/* Disarm traps */
 		more = do_cmd_disarm_aux(grid);
+	} else if (obj_chest) {
+        	/* Open chest */
+        	more = do_cmd_open_chest(grid, obj_chest);
+	} else if (square_isopendoor(cave, grid)) {
+		/* Close door */
+        	more = do_cmd_close_aux(grid);
 	} else {
 		/* Oops */
 		msg("You spin around.");
