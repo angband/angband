@@ -200,11 +200,17 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 			if (!(flg & (PROJECT_THRU)))
 				if (loc_eq(loc(x, y), grid2)) break;
 
-			/* Stop at non-initial wall grids, except where that would
-			 * leak info during targetting */
-			if (!(flg & (PROJECT_INFO))) {
-				if ((n > 0) && !square_isprojectable(cave, loc(x, y))) break;
-			} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) break;
+			/* Don't stop if making paths through rock for generation */
+			if (!(flg & (PROJECT_ROCK))) {
+				/* Stop at non-initial wall grids, except where that would
+				 * leak info during targetting */
+				if (!(flg & (PROJECT_INFO))) {
+					if ((n > 0) && !square_isprojectable(cave, loc(x, y)))
+						break;
+				} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) {
+					break;
+				}
+			}
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {
@@ -259,11 +265,17 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 			if (!(flg & (PROJECT_THRU)))
 				if (loc_eq(loc(x, y), grid2)) break;
 
-			/* Stop at non-initial wall grids, except where that would
-			 * leak info during targetting */
-			if (!(flg & (PROJECT_INFO))) {			
-				if ((n > 0) && !square_isprojectable(cave, loc(x, y))) break;
-			} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) break;
+			/* Don't stop if making paths through rock for generation */
+			if (!(flg & (PROJECT_ROCK))) {
+				/* Stop at non-initial wall grids, except where that would
+				 * leak info during targetting */
+				if (!(flg & (PROJECT_INFO))) {
+					if ((n > 0) && !square_isprojectable(cave, loc(x, y)))
+						break;
+				} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) {
+					break;
+				}
+			}
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {
@@ -312,11 +324,17 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 			if (!(flg & (PROJECT_THRU)))
 				if (loc_eq(loc(x, y), grid2)) break;
 
-			/* Stop at non-initial wall grids, except where that would
-			 * leak info during targetting */
-			if (!(flg & (PROJECT_INFO))) {
-				if ((n > 0) && !square_isprojectable(cave, loc(x, y))) break;
-			} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) break;
+			/* Don't stop if making paths through rock for generation */
+			if (!(flg & (PROJECT_ROCK))) {
+				/* Stop at non-initial wall grids, except where that would
+				 * leak info during targetting */
+				if (!(flg & (PROJECT_INFO))) {
+					if ((n > 0) && !square_isprojectable(cave, loc(x, y)))
+						break;
+				} else if ((n > 0) && square_isbelievedwall(cave, loc(x, y))) {
+					break;
+				}
+			}
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {

@@ -62,25 +62,25 @@
  */
 static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
 {
-	int y, x;
-	int my = mon->grid.y;
-	int mx = mon->grid.x;
+	struct loc gp[512];
+	int path_grids, j;
 
 	/* If player is in LOS, there's no need to go around walls */
-    if (projectable(c, mon->grid, player->grid, PROJECT_SHORT))
-		return false;
+    if (projectable(c, mon->grid, player->grid, PROJECT_SHORT)) return false;
 
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
     if (randint0(99) < 5) return true;
 
-	/* Search the nearby grids, which are always in bounds */
-	for (y = (my - 2); y <= (my + 2); y++) {
-		for (x = (mx - 2); x <= (mx + 2); x++) {
-			struct loc grid = loc(x, y);
-           if (!square_in_bounds_fully(c, grid)) continue;
-            if (square_isperm(c, grid)) return true;
-		}
+	/* Find the shortest path */
+	path_grids = project_path(gp, z_info->max_sight, mon->grid, player->grid,
+							  PROJECT_ROCK);
+
+	/* See if we can "see" the player without hitting permanent wall */
+	for (j = 0; j < path_grids; j++) {
+		if (square_isperm(c, gp[j])) return true;
+		if (square_isplayer(c, gp[j])) return false;
 	}
+
 	return false;
 }
 
