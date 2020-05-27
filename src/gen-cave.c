@@ -2847,9 +2847,6 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_PERM, SQUARE_NONE);
 
-	/* Connect */
-	ensure_connectedness(c);
-
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < gauntlet_hgt; y++) {
 		square_set_feat(c, loc(line1 - 1, y + (y_size - gauntlet_hgt) / 2),
@@ -2857,6 +2854,9 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		square_set_feat(c, loc(line2, y + (y_size - gauntlet_hgt) / 2),
 						FEAT_FLOOR);
 	}
+
+	/* Connect */
+	ensure_connectedness(c);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);

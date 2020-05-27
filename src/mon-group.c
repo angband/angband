@@ -155,7 +155,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 	struct monster_group *group;
 	struct mon_group_list_entry *list_entry;
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < GROUP_MAX; i++) {
 		group =	c->monster_groups[mon->group_info[i].index];
 
 		/* Most monsters won't have a second group */
@@ -187,7 +187,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 		}
 
 		/* We have to look further down the member list */
-		while (list_entry) {
+		while (list_entry->next) {
 			if (list_entry->next->midx == mon->midx) {
 				struct mon_group_list_entry *remove = list_entry->next;
 				list_entry->next = list_entry->next->next;

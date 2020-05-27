@@ -28,6 +28,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "obj-util.h"
 #include "trap.h"
@@ -154,39 +155,43 @@ struct chunk *chunk_find_adjacent(struct player *p, bool above)
 /**
  * Transform y, x coordinates by rotation, reflection and translation
  * Stolen from PosChengband
- * \param y the coordinates being transformed
- * \param x the coordinates being transformed
- * \param y0 how much the coordinates are being translated
- * \param x0 how much the coordinates are being translated
+ * \param grid the grid being transformed
+ * \param y0 how much the grid is being translated vertically
+ * \param x0 how much the grid is being translated horizontally
  * \param height height of the chunk
  * \param width width of the chunk
  * \param rotate how much to rotate, in multiples of 90 degrees clockwise
  * \param reflect whether to reflect horizontally
  */
-void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
+void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 						int rotate, bool reflect)
 {
 	int i;
 
 	/* Rotate (in multiples of 90 degrees clockwise) */
     for (i = 0; i < rotate % 4; i++) {
-        int temp = *x;
-        *x = height - 1 - (*y);
-        *y = temp;
+        int temp = grid->x;
+        grid->x = height - 1 - (grid->y);
+        grid->y = temp;
     }
 
 	/* Reflect (horizontally) */
 	if (reflect)
-		*x = width - 1 - *x;
+		grid->x = width - 1 - grid->x;
 
 	/* Translate */
-	*y += y0;
-	*x += x0;
+	grid->y += y0;
+	grid->x += x0;
 }
 
 /**
- * Write a chunk, transformed, to a given offset in another chunk.  Note that
- * objects are copied from the old chunk and not retained there
+ * Write a chunk, transformed, to a given offset in another chunk.
+ *
+ * This function assumes that it is being called at level generation, when
+ * there has been no interaction between the player and the level, monsters
+ * have not been activated, all monsters are in only one group, and objects
+ * are in their original positions.
+ *
  * \param dest the chunk where the copy is going
  * \param source the chunk being copied
  * \param y0 transformation parameters  - see symmetry_transform()
@@ -199,8 +204,9 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect)
 {
 	int i, max_group_id = 0;
-	int y, x;
+	struct loc grid;
 	int h = source->height, w = source->width;
+	int mon_skip = dest->mon_max - 1;
 
 	/* Check bounds */
 	if (rotate % 1) {
@@ -211,86 +217,114 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			return false;
 	}
 
-	/* Write the location stuff */
-	for (y = 0; y < h; y++) {
-		for (x = 0; x < w; x++) {
+	/* Write the location stuff (terrain, objects, traps) */
+	for (grid.y = 0; grid.y < h; grid.y++) {
+		for (grid.x = 0; grid.x < w; grid.x++) {
 			/* Work out where we're going */
-			int dest_y = y;
-			int dest_x = x;
-			symmetry_transform(&dest_y, &dest_x, y0, x0, h, w, rotate, reflect);
+			struct loc dest_grid = grid;
+			symmetry_transform(&dest_grid, y0, x0, h, w, rotate, reflect);
 
 			/* Terrain */
-			dest->squares[dest_y][dest_x].feat = square(source, loc(x, y)).feat;
-			sqinfo_copy(square(dest, loc(dest_x, dest_y)).info,
-						square(source, loc(x, y)).info);
+			dest->squares[dest_grid.y][dest_grid.x].feat =
+				square(source, grid).feat;
+			sqinfo_copy(square(dest, dest_grid).info,
+						square(source, grid).info);
 
 			/* Dungeon objects */
-			if (square_object(source, loc(x, y))) {
+			if (square_object(source, grid)) {
 				struct object *obj;
-				dest->squares[dest_y][dest_x].obj = square_object(source, loc(x, y));
+				dest->squares[dest_grid.y][dest_grid.x].obj =
+					square_object(source, grid);
 
-				for (obj = square_object(source, loc(x, y)); obj; obj = obj->next) {
+				for (obj = square_object(source, grid); obj; obj = obj->next) {
 					/* Adjust position */
-					obj->grid = loc(dest_x, dest_y);
+					obj->grid = dest_grid;
 				}
-				source->squares[y][x].obj = NULL;
-			}
-
-			/* Monsters */
-			if (square(source, loc(x, y)).mon > 0) {
-				struct monster *source_mon = square_monster(source, loc(x, y));
-				struct monster *dest_mon = NULL;
-				int idx;
-
-				/* Valid monster */
-				if (!source_mon->race)
-					continue;
-
-				/* Make a monster */
-				idx = mon_pop(dest);
-
-				/* Hope this never happens */
-				if (!idx)
-					break;
-
-				/* Copy over */
-				dest_mon = cave_monster(dest, idx);
-				dest->squares[dest_y][dest_x].mon = idx;
-				memcpy(dest_mon, source_mon, sizeof(*source_mon));
-
-				/* Adjust stuff */
-				dest_mon->midx = idx;
-				dest_mon->grid = loc(dest_x, dest_y);
-
-				/* Held objects */
-				if (source_mon->held_obj) {
-					struct object *obj;
-					dest_mon->held_obj = source_mon->held_obj;
-					for (obj = source_mon->held_obj; obj; obj = obj->next) {
-						obj->held_m_idx = dest_mon->midx;
-					}
-				}
+				source->squares[grid.y][grid.x].obj = NULL;
 			}
 
 			/* Traps */
-			if (square(source, loc(x, y)).trap) {
-				struct trap *trap = square(source, loc(x, y)).trap;
-				dest->squares[dest_y][dest_x].trap = trap;
+			if (square(source, grid).trap) {
+				struct trap *trap = square(source, grid).trap;
+				dest->squares[dest_grid.y][dest_grid.x].trap = trap;
 
 				/* Traverse the trap list */
 				while (trap) {
 					/* Adjust location */
-					trap->grid = loc(dest_x, dest_y);
+					trap->grid = dest_grid;
 					trap = trap->next;
 				}
-				source->squares[y][x].trap = NULL;
+				source->squares[grid.y][grid.x].trap = NULL;
 			}
 
 			/* Player */
-			if (square(source, loc(x, y)).mon == -1) 
-				dest->squares[dest_y][dest_x].mon = -1;
+			if (square(source, grid).mon == -1) 
+				dest->squares[dest_grid.y][dest_grid.x].mon = -1;
 		}
 	}
+
+	/* Monsters */
+	dest->mon_max += source->mon_max;
+	dest->mon_cnt += source->mon_cnt;
+	dest->num_repro += source->num_repro;
+	for (i = 1; i < source->mon_max; i++) {
+		struct monster *source_mon = &source->monsters[i];
+		struct monster *dest_mon = &dest->monsters[mon_skip + i];
+
+		/* Valid monster */
+		if (!source_mon->race) continue;
+
+		/* Copy */
+		memcpy(dest_mon, source_mon, sizeof(struct monster));
+
+		/* Adjust monster index */
+		dest_mon->midx += mon_skip;
+
+		/* Move grid */
+		symmetry_transform(&dest_mon->grid, y0, x0, h, w, rotate, reflect);
+		dest->squares[dest_mon->grid.y][dest_mon->grid.x].mon = dest_mon->midx;
+
+		/* Held or mimicked objects */
+		if (source_mon->held_obj) {
+			struct object *obj;
+			dest_mon->held_obj = source_mon->held_obj;
+			for (obj = source_mon->held_obj; obj; obj = obj->next) {
+				obj->held_m_idx = dest_mon->midx;
+			}
+		}
+		if (source_mon->mimicked_obj) {
+			dest_mon->mimicked_obj = source_mon->mimicked_obj;
+		}
+	}
+
+	/* Find max monster group id */
+	for (i = 1; i < z_info->level_monster_max; i++) {
+		if (dest->monster_groups[i]) max_group_id = i;
+	}
+
+	/* Copy monster groups */
+	for (i = 1; i < z_info->level_monster_max - max_group_id; i++) {
+		struct monster_group *group = source->monster_groups[i];
+		struct mon_group_list_entry *entry;
+
+		/* Copy monster group list */
+		dest->monster_groups[i + max_group_id] = source->monster_groups[i];
+
+		/* Adjust monster group indices */
+		if (!group) continue;
+		entry = group->member_list;
+		group->index += max_group_id;
+		group->leader += mon_skip;
+		while (entry) {
+			int idx = entry->midx;
+			struct monster *mon = &dest->monsters[mon_skip + idx];
+			entry->midx = mon->midx;
+			assert(entry->midx == mon_skip + idx);
+			mon->group_info[0].index += max_group_id;
+			entry = entry->next;
+		}
+	}
+	monster_groups_verify(dest);
 
 	/* Copy object list */
 	dest->objects = mem_realloc(dest->objects,
@@ -304,14 +338,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	}
 	dest->obj_max += source->obj_max + 1;
 	source->obj_max = 1;
-
-	/* Copy monster group list */
-	for (i = 0; i < z_info->level_monster_max; i++) {
-		if (dest->monster_groups[i]) max_group_id = i;
-	}
-	for (i = 0; i < z_info->level_monster_max - max_group_id; i++) {
-		dest->monster_groups[i + max_group_id] = source->monster_groups[i];
-	}
+	object_lists_check_integrity(dest, NULL);
 
 	/* Miscellany */
 	for (i = 0; i < z_info->f_max + 1; i++)
