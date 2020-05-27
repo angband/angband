@@ -1,8 +1,8 @@
-# File: graf-shb.prf
+# File: graf-shb-dark.prf
 
 #
 # This file defines special attr/char mappings for use in "graphics" mode
-# with Shockbolt's 64x64 tiles.
+# with Shockbolt's 64x64 tiles, with dark-coloured background.
 #
 # Converted by Mogami from the dg32-assign of AngbandTK
 # Additional work by Ivan Jekic (the.edge@Net.yu)
@@ -20,31 +20,31 @@
 feat:unknown grid:*:0x80:0x80
 
 # open floor
-feat:open floor:torch:0x97:0x80
-feat:open floor:los:0x97:0x80
-feat:open floor:lit:0x97:0x81
-feat:open floor:dark:0x97:0x82
+feat:open floor:torch:0x9A:0xC8
+feat:open floor:los:0x9A:0xC8
+feat:open floor:lit:0x9A:0xC9
+feat:open floor:dark:0x9A:0xCA
 
 # closed door
-feat:closed door:*:0x96:0x83
+feat:closed door:*:0x98:0xF1
 
 # open door
-feat:open door:*:0x96:0x84
+feat:open door:*:0x98:0xF2
 
 # broken door
-feat:broken door:*:0x96:0x85
+feat:broken door:*:0x98:0xF3
 
 # up staircase
-feat:up staircase:torch:0x98:0x80
-feat:up staircase:los:0x98:0x80
-feat:up staircase:lit:0x98:0x81
-feat:up staircase:dark:0x98:0x82
+feat:up staircase:torch:0x9A:0xEE
+feat:up staircase:los:0x9A:0xEE
+feat:up staircase:lit:0x9A:0xEF
+feat:up staircase:dark:0x9A:0xF0
 
 # down staircase
-feat:down staircase:torch:0x98:0x83
-feat:down staircase:los:0x98:0x83
-feat:down staircase:lit:0x98:0x84
-feat:down staircase:dark:0x98:0x85
+feat:down staircase:torch:0x9A:0xF1
+feat:down staircase:los:0x9A:0xF1
+feat:down staircase:lit:0x9A:0xF2
+feat:down staircase:dark:0x9A:0xF3
 
 # General Store
 feat:General Store:*:0x99:0x83
@@ -97,15 +97,15 @@ feat:quartz vein with treasure:los:0x96:0xBC
 feat:quartz vein with treasure:lit:0x96:0xBD
 feat:quartz vein with treasure:dark:0x96:0xBE
 # granite wall
-feat:granite wall:torch:0x96:0x80
-feat:granite wall:los:0x96:0x80
-feat:granite wall:lit:0x96:0x81
-feat:granite wall:dark:0x96:0x82
+feat:granite wall:torch:0x9B:0xCB
+feat:granite wall:los:0x9B:0xCB
+feat:granite wall:lit:0x9B:0xCC
+feat:granite wall:dark:0x9B:0xCD
 # permanent wall
-feat:permanent wall:torch:0x99:0x80
-feat:permanent wall:los:0x99:0x80
-feat:permanent wall:lit:0x99:0x81
-feat:permanent wall:dark:0x99:0x82
+feat:permanent wall:torch:0x9B:0xC8
+feat:permanent wall:los:0x9B:0xC8
+feat:permanent wall:lit:0x9B:0xC9
+feat:permanent wall:dark:0x9B:0xCA
 # lava
 feat:lava:torch:0x97:0xD4
 feat:lava:los:0x97:0xD4

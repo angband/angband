@@ -55,8 +55,14 @@ size:16:16:8x16.png
 pref:graf-nmd.prf
 extra:0:0:0
 
-name:5:Shockbolt's tiles
+name:5:Shockbolt Dark
 directory:shockbolt
 size:64:64:64x64.png
-pref:graf-shb.prf
+pref:graf-shb-dark.prf
+extra:1:29:31
+
+name:6:Shockbolt Light
+directory:shockbolt
+size:64:64:64x64.png
+pref:graf-shb-light.prf
 extra:1:29:31
