@@ -247,8 +247,8 @@ struct monster_race *get_mon_num(int level)
 			!(date->tm_mon == 11 && date->tm_mday >= 24 && date->tm_mday <= 26))
 			continue;
 
-		/* Only one copy of a a unique must be around at the same time */
-		if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
+		/* Only one copy of a unique must be around at the same time */
+		if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 			continue;
 
 		/* Some monsters never appear out of depth */
@@ -1054,7 +1054,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;
 
 	/* "unique" monsters must be "unique" */
-	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
+	if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 		return false;
 
 	/* Depth monsters may NOT be created out of depth */
@@ -1244,8 +1244,8 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 	bool is_unique = rf_has(friends_race->flags, RF_UNIQUE);
 
 	/* Make sure the unique hasn't been killed already */
-	if (is_unique) {
-		total = friends_race->cur_num < friends_race->max_num ? 1 : 0;
+	if (is_unique && (friends_race->cur_num >= friends_race->max_num)) {
+		return false;
 	}
 
 	/* More than 4 levels OoD, no groups allowed */

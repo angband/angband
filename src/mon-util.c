@@ -949,7 +949,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 
 	/* Shapechanged monsters revert on death */
 	if (mon->original_race) {
-		msg("A change comes over %s", m_name);
 		monster_revert_shape(mon);
 		lore = get_lore(mon->race);
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
