@@ -35,14 +35,17 @@
  * locale junk
  */
 #include "locale.h"
+
+#if !defined(WINDOWS)
 #include "langinfo.h"
+#endif
 
 /**
  * Some machines have a "main()" function in their "main-xxx.c" file,
  * all the others use this file for their "main()" function.
  */
 
-#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL)
+#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL) 
 
 #include "main.h"
 
@@ -469,12 +472,13 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
-
+#if !defined(WINDOWS)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
 		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
 			quit("Angband requires UTF-8 support");
 	}
+#endif
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {

@@ -102,7 +102,6 @@ Following build, to get the program to run, you need to copy the executable
 from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
 and zlib1.dll) from src/win/dll to the top-level dir
 
-
 Using Cygwin (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -125,6 +124,24 @@ If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build
 instructions (./autogen.sh; ./configure; make; make install).
 
+Using MSYS2 (with MinGW64) to build with ncurse 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install the dependencies by::
+
+	pacman -S make mingw-w64-x86_64-toolchain mingw-w64-x86_64-ncurses
+
+Then run the following to compile with ncurse::
+
+	cd src
+	make -f Makefile.msys2
+
+To start Angband, either double click the angband.exe at the source root, 
+or run the following in the msys2 shell::
+
+	start bash
+	export TERM=
+	./angband.exe
 
 Using eclipse (Indigo) on Windows (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
