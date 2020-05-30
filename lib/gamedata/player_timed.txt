@@ -216,6 +216,7 @@ grade:g:10000:RPois:You feel resistant to poison!
 on-end:You are no longer resistant to poison.
 on-increase:You feel more resistant to poison!
 msgt:RES_POIS
+fail:3:POIS
 
 name:OPP_CONF
 desc:confusion resistance
