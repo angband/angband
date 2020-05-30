@@ -81,7 +81,7 @@
 
 #define uint unsigned int
 
-#if (defined(WINDOWS) && !defined(USE_SDL))
+#if (defined(WINDOWS) && !defined(USE_SDL)) && !defined(USE_SDL2)
 
 #include "sound.h"
 #include "snd-win.h"

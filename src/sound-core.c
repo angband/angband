@@ -24,7 +24,7 @@
 #include "snd-sdl.h"
 #endif
 
-#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && !defined(USE_SDL))
+#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && !defined(USE_SDL) && !defined(USE_SDL2))
 #include "snd-win.h"
 #endif
 
@@ -58,7 +58,7 @@ static const struct sound_module sound_modules[] =
 #ifdef SOUND_SDL
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
 #endif /* SOUND_SDL */
-#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && !defined(USE_SDL))
+#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && !defined(USE_SDL) && !defined(USE_SDL2)) 
 	{ "win", "Windows sound module", init_sound_win },
 #endif
 
