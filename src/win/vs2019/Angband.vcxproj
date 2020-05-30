@@ -232,6 +232,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\player-class.c" />
     <ClCompile Include="src\player-history.c" />
     <ClCompile Include="src\player-path.c" />
+    <ClCompile Include="src\player-properties.c" />
     <ClCompile Include="src\player-quest.c" />
     <ClCompile Include="src\player-race.c" />
     <ClCompile Include="src\player-spell.c" />
@@ -258,6 +259,10 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-curse.c" />
     <ClCompile Include="src\ui-death.c" />
     <ClCompile Include="src\ui-display.c" />
+    <ClCompile Include="src\ui-entry-combiner.c" />
+    <ClCompile Include="src\ui-entry-renderers.c" />
+    <ClCompile Include="src\ui-entry.c" />
+    <ClCompile Include="src\ui-equip-cmp.c" />
     <ClCompile Include="src\ui-event.c" />
     <ClCompile Include="src\ui-game.c" />
     <ClCompile Include="src\ui-help.c" />
@@ -282,6 +287,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-store.c" />
     <ClCompile Include="src\ui-target.c" />
     <ClCompile Include="src\ui-term.c" />
+    <ClCompile Include="src\ui-visuals.c" />
     <ClCompile Include="src\win\readdib.c" />
     <ClCompile Include="src\win\readpng.c" />
     <ClCompile Include="src\win\scrnshot.c" />
@@ -394,6 +400,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\player-calcs.h" />
     <ClInclude Include="src\player-history.h" />
     <ClInclude Include="src\player-path.h" />
+    <ClInclude Include="src\player-properties.h" />
     <ClInclude Include="src\player-quest.h" />
     <ClInclude Include="src\player-spell.h" />
     <ClInclude Include="src\player-timed.h" />
@@ -416,6 +423,11 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-curse.h" />
     <ClInclude Include="src\ui-death.h" />
     <ClInclude Include="src\ui-display.h" />
+    <ClInclude Include="src\ui-entry-combiner.h" />
+    <ClInclude Include="src\ui-entry-init.h" />
+    <ClInclude Include="src\ui-entry-renderers.h" />
+    <ClInclude Include="src\ui-entry.h" />
+    <ClInclude Include="src\ui-equip-cmp.h" />
     <ClInclude Include="src\ui-event.h" />
     <ClInclude Include="src\ui-game.h" />
     <ClInclude Include="src\ui-help.h" />
