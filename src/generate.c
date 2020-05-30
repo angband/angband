@@ -1376,6 +1376,10 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	/* Know the town */
 	if (!(p->depth)) {
 		cave_known(p);
+		if (persist) {
+			cave_illuminate(*c, is_daytime());
+		}
+
 	}
 
 	/* The dungeon is ready */
