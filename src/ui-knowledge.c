@@ -1475,6 +1475,34 @@ static struct object *find_artifact(struct artifact *artifact)
 		}
 	}
 
+	/* Stored chunk objects */
+	for (i = 0; i < chunk_list_max; i++) {
+		struct chunk *c = chunk_list[i];
+		int j;
+		if (strstr(c->name, "known")) continue;
+
+		/* Ground objects */
+		for (y = 1; y < c->height; y++) {
+			for (x = 1; x < c->width; x++) {
+				struct loc grid = loc(x, y);
+				for (obj = square_object(c, grid); obj; obj = obj->next) {
+					if (obj->artifact == artifact) return obj;
+				}
+			}
+		}
+
+		/* Monster objects */
+		for (j = cave_monster_max(c) - 1; j >= 1; j--) {
+			struct monster *mon = cave_monster(c, j);
+			obj = mon ? mon->held_obj : NULL;
+
+			while (obj) {
+				if (obj->artifact == artifact) return obj;
+				obj = obj->next;
+			}
+		}
+	}	
+
 	return NULL;
 }
 
