@@ -45,7 +45,7 @@
  * all the others use this file for their "main()" function.
  */
 
-#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL) 
+#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL) || defined(USE_SDL2)
 
 #include "main.h"
 

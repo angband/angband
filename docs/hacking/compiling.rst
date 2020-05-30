@@ -124,24 +124,40 @@ If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build
 instructions (./autogen.sh; ./configure; make; make install).
 
-Using MSYS2 (with MinGW64) to build with ncurse 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using MSYS2 (with MinGW64) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install the dependencies by::
 
 	pacman -S make mingw-w64-x86_64-toolchain mingw-w64-x86_64-ncurses
+
+Additional dependencies for SDL2 client::
+
+	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx \
+		  mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf
 
 Then run the following to compile with ncurse::
 
 	cd src
 	make -f Makefile.msys2
 
-To start Angband, either double click the angband.exe at the source root, 
-or run the following in the msys2 shell::
+For SDL2, do::
+
+	cd src
+	make -f Makefile.msys2.sdl2
+
+Go to the root of the source directory and start angband by::
+
+	./angband.exe -uPLAYER
+
+The ncurse client may not be able to start properly from msys2 shell, try::
 
 	start bash
+
+and run::
+
 	export TERM=
-	./angband.exe
+	./angband.exe -uPLAYER
 
 Using eclipse (Indigo) on Windows (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
