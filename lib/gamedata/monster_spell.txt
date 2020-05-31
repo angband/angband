@@ -121,7 +121,7 @@ message-vis:{name} fires a little bolt.
 message-invis:You hear a soft twung.
 message-miss:{name} fires a little bolt, but misses.
 power-cutoff:25
-lore:fire arrows
+lore:fire bolts
 lore-color-base:Yellow
 message-vis:{name} fires a crossbow bolt.
 message-invis:You hear a twung.
