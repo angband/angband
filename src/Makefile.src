@@ -6,8 +6,8 @@
 #
 
 NAME = Angband
-VERSION = 4.2.0
-COPYRIGHT = (c) 1995-2019 Angband contributors
+VERSION = 4.2.1
+COPYRIGHT = (c) 1995-2020 Angband contributors
 PROGNAME = angband
 
 HEADERS = \

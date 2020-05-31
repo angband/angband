@@ -1,6 +1,26 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.1
+=============
+
+This version is maybe best described as consolidating the big changes made in
+version 4.2.0. Again, there are too many individual changes to list, so this
+is a summary.
+
+ - percentage combat is refined to become an actually playable option
+ - improvements to throwing
+ - update to town generation
+ - a major update to the new blackguard class
+ - several tweaks to the other new classes
+ - many improvements to the MacOS front-end particularly, but also others
+ - improvements to tiles
+ - addition of fancy color-cycling of monsters
+ - configurability of character sheet
+ - inclusion of some new, rare level types
+ - experimental Windows curses and SDL2 console ports added
+ - many small bugs fixed and quality-of-life improvements made
+
 Angband 4.2.0
 =============
 
