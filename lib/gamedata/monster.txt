@@ -471,6 +471,7 @@ flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:He doesn't take to strangers kindly.
 
 name:red-hatted elf
+plural:red-hatted elves
 base:humanoid
 color:r
 speed:110
@@ -2067,6 +2068,7 @@ desc: pervades the air.
 ### Dungeon level 7 ###
 
 name:crow of Durthang
+plural:crows of Durthang
 base:bird
 color:D
 speed:120
