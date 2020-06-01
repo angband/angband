@@ -13695,7 +13695,7 @@ spells:BLINK | TELE_TO
 spells:BR_CHAO
 desc:Writhing coil upon coil, this mighty spawn of chaos constantly
 desc: disintegrates and reforms before your dazzled eyes.  It seeks to
-desc: obiterate you utterly; beware!
+desc: obliterate you utterly; beware!
 
 name:Adunaphel the Quiet
 base:wraith
