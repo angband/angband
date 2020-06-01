@@ -1643,8 +1643,8 @@ dice:$S
 expr:S:PLAYER_LEVEL:/ 15
 effect:SHORT_BEAM:MON_STUN:1
 dice:5+1d5
-desc:Attempts a level-dependent number of melee blows against an adjacent enemy.
-desc: Stuns that enemy for 5+1d5 turns. You get 1 blow for every 15 levels.
+desc:Stuns an adjacent enemy for 5+1d5 turns. Attempts a level-dependent number
+desc: of melee blows against that enemy. You get 1 blow for every 15 levels.
 
 spell:Howl of the Damned:18:8:30:16
 effect:PROJECT_LOS:TURN_ALL
@@ -1654,25 +1654,25 @@ desc:Attempts to scare every monster in line of sight for a duration dependent
 desc: on player level and monster depth.  Monsters that resist fear are not
 desc: affected.
 
-spell:Relentless Taunting:24:10:35:20
+spell:Relentless Taunting:24:10:32:20
 effect:TIMED_INC:TAUNT
-dice:10+d10
+dice:12+d12
 desc:Makes any monster that can move more inclined to run toward you, and less
 desc: likely to use a ranged attack (including spells and innate abilities).
 
-spell:Venom:28:20:40:30
+spell:Venom:28:18:35:30
 effect:TIMED_INC:ATT_POIS:0:5
-dice:20+d20
-desc:Coats all your melee weapons with poison for 20+d20 turns.
+dice:18+d18
+desc:Coats all your melee weapons with poison for 18+d18 turns.
 
-spell:Werewolf Form:33:25:45:80
+spell:Werewolf Form:33:30:45:100
 effect:SHAPECHANGE:werewolf
 desc:With a blood-curdling cry you change into a half-man half-wolf!
 desc: In this form you move, attack, and heal faster.
 
 book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
-spell:Bloodlust:30:30:40:100
+spell:Bloodlust:30:25:37:80
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
 desc:Gives you a powerful desire to kill, increased every time you satisfy it.
