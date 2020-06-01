@@ -7,12 +7,12 @@ pageclass = "class='front'"
 </section>
 
 <section id="downloads">
-<p><a id="download" href="/downloads/4.2/angband-4.2.0-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
-<span class="sub">version 4.2.0, <span id="os">Windows</span></span></a>
+<p><a id="download" href="/downloads/4.2/angband-4.2.1-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
+<span class="sub">version 4.2.1, <span id="os">Windows</span></span></a>
 
 <p class="other">Also available:
-<a id="osx" href="/downloads/4.2/Angband-4.2.0-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
-<a id="source" href="/downloads/4.2/angband-4.2.0.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
+<a id="osx" href="/downloads/4.2/Angband-4.2.1-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
+<a id="source" href="/downloads/4.2/angband-4.2.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
 <a href="/release">Read about the changes in this version</a>
 </section>
@@ -47,8 +47,11 @@ pageclass = "class='front'"
 <dt><a href="http://angband.oook.cz/forum/">Angband forums</a>
 <dd>Angband and its variants have an active community.  Ask here for advice, share tips, and talk about the game.
 
+<dt><a href="https://angband.live/">angband.live</a>
+<dd>This live webserver has Angband and a selection of popular variants available to play in a web browser.  Play, spectate on other games, or chat live with other players.
+
 <dt><a href="/help">User manual & strategy guide</a>
-<dd>You might want to read some hints and tips.  This is included with the game too - just type <tt>?</tt> to access it.
+<dd>You might want to read some hints and tips.  The latest documentation is also available <a href="https://angband.readthedocs.io/en/latest/index.html">here</a>, and some brief help notes are included with the game too - just type <tt>?</tt> to access them.
 
 <dt><a href="http://angband.oook.cz/ladder.php">Angband ladder</a>
 <dd>Upload your character sheet to the ladder for rankings and advice - and check out other adventurers too!
