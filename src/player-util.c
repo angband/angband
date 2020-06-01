@@ -53,19 +53,19 @@ int dungeon_get_next_level(int dlev, int added)
 
 	/* Get target level */
 	target_level = dlev + added * z_info->stair_skip;
-	
+
 	/* Don't allow levels below max */
 	if (target_level > z_info->max_depth - 1)
 		target_level = z_info->max_depth - 1;
 
 	/* Don't allow levels above the town */
 	if (target_level < 0) target_level = 0;
-	
+
 	/* Check intermediate levels for quests */
 	for (i = dlev; i <= target_level; i++) {
 		if (is_quest(i)) return i;
 	}
-	
+
 	return target_level;
 }
 
@@ -380,8 +380,8 @@ void player_regen_mana(struct player *p)
 	/* Default regeneration */
 	percent = PY_REGEN_NORMAL;
 
-	/* Various things speed up regeneration, but don't punish BGs */
-	if (!(player_has(p, PF_COMBAT_REGEN) && p->chp == p->mhp)) {
+	/* Various things speed up regeneration, but should't punish healthy BGs */
+	if (!(player_has(p, PF_COMBAT_REGEN) && p->chp  > p->mhp / 2)) {
 		if (player_of_has(p, OF_REGEN))
 			percent *= 2;
 		if (player_resting_can_regenerate(p))
@@ -397,7 +397,8 @@ void player_regen_mana(struct player *p)
 
 	/* Regenerate mana */
 	sp_gain = (s32b)(p->msp * percent);
-	sp_gain += (percent < 0) ? -PY_REGEN_MNBASE : PY_REGEN_MNBASE;
+	if (percent >= 0)
+		sp_gain += PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
 	/* SP degen heals BGs at double efficiency vs casting */
@@ -1334,7 +1335,7 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
  * The second arg is currently unused, but could induce output flush.
  *
  * All disturbance cancels repeated commands, resting, and running.
- * 
+ *
  * XXX-AS: Make callers either pass in a command
  * or call cmd_cancel_repeat inside the function calling this
  */
