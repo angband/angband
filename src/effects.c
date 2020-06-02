@@ -5033,14 +5033,18 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	struct loc target = player->grid;
 	struct loc next_grid, grid_diff;
 	bool fear;
+	struct monster *mon;
 
 	/* Ask for a target */
-	if ((context->dir == DIR_TARGET) && target_okay()) {
+	if (context->dir == DIR_TARGET) {
 		target_get(&target);
 	}
-
+	else {
+		target = loc_sum(player->grid, ddgrid[context->dir]);
+	}
 	/* Should only target known/visible? */
-	if (square_monster(cave, target) == NULL) {
+	mon = square_monster(cave, target);
+	if (mon == NULL || !monster_is_obvious(mon)) {
 		msg("This spell must target a monster.");
 		return false;
 	}
