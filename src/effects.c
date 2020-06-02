@@ -5042,7 +5042,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	else {
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
-	/* Should only target known/visible? */
+
 	mon = square_monster(cave, target);
 	if (mon == NULL || !monster_is_obvious(mon)) {
 		msg("This spell must target a monster.");
