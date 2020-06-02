@@ -380,7 +380,7 @@ void player_regen_mana(struct player *p)
 	/* Default regeneration */
 	percent = PY_REGEN_NORMAL;
 
-	/* Various things speed up regeneration, but should't punish healthy BGs */
+	/* Various things speed up regeneration, but shouldn't punish healthy BGs */
 	if (!(player_has(p, PF_COMBAT_REGEN) && p->chp  > p->mhp / 2)) {
 		if (player_of_has(p, OF_REGEN))
 			percent *= 2;
