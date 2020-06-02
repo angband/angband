@@ -1104,7 +1104,7 @@ bool effect_handler_WEB(effect_handler_context_t *context)
 	if (mon->race->spell_power > 80) rad++;
 
 	/* Check within the radius for clear floor */
-	for (grid.y = mon->grid.y - rad; grid.y <= mon->grid.y + rad; grid.y++) {  
+	for (grid.y = mon->grid.y - rad; grid.y <= mon->grid.y + rad; grid.y++) {
 		for (grid.x = mon->grid.x - rad; grid.x <= mon->grid.x + rad; grid.x++){
 			if (distance(grid, mon->grid) > rad) continue;
 
@@ -1248,7 +1248,7 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 		/* Recalculate max. hitpoints */
 		update_stuff(player);
 	}
-	
+
 	/* Did something */
 	context->ident = true;
 
@@ -1439,7 +1439,7 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
 	int target_depth;
-	context->ident = true;	
+	context->ident = true;
 
 	/* No recall */
 	if (OPT(player, birth_no_recall) && !player->total_winner) {
@@ -1640,7 +1640,7 @@ bool effect_handler_READ_MINDS(effect_handler_context_t *context)
 		/* Detect all appropriate monsters */
 		if (mflag_has(mon->mflag, MFLAG_MARK)) {
 			/* Map around it */
-			effect_simple(EF_MAP_AREA, source_monster(i), "0", 0, 0, 0, 
+			effect_simple(EF_MAP_AREA, source_monster(i), "0", 0, 0, 0,
 						  dist_y, dist_x, NULL);
 			found = true;
 		}
@@ -2178,9 +2178,9 @@ bool effect_handler_DETECT_FEARFUL_MONSTERS(effect_handler_context_t *context)
 	bool monsters = detect_monsters(context->y, context->x, monster_is_fearful);
 
 	if (monsters)
-		msg("You sense the presence of fearful creatures!");
+		msg("These monsters could provide good sport.");
 	else if (context->aware)
-		msg("You sense no fearful creatures.");
+		msg("You smell no fear in the air.");
 
 	context->ident = true;
 	return true;
@@ -2878,7 +2878,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		start = player->grid;
 
 		/* Check for a no teleport grid */
-		if (square_isno_teleport(cave, start) && 
+		if (square_isno_teleport(cave, start) &&
 			((dis > 10) || (dis == 0))) {
 			msg("Teleportation forbidden!");
 			return true;
@@ -3346,7 +3346,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, grid);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(player, birth_lose_arts) && 
+						if (!OPT(player, birth_lose_arts) &&
 							!(obj->known && obj->known->artifact))
 							obj->artifact->created = false;
 						else
@@ -4014,7 +4014,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  * quickly.
  *
  * Affect grids, objects, and monsters
- * context->subtype is element, context->radius radius, 
+ * context->subtype is element, context->radius radius,
  * context->other degrees of arc (minimum 20)
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
@@ -5033,14 +5033,18 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	struct loc target = player->grid;
 	struct loc next_grid, grid_diff;
 	bool fear;
+	struct monster *mon;
 
 	/* Ask for a target */
-	if ((context->dir == DIR_TARGET) && target_okay()) {
+	if (context->dir == DIR_TARGET) {
 		target_get(&target);
 	}
+	else {
+		target = loc_sum(player->grid, ddgrid[context->dir]);
+	}
 
-	/* Should only target known/visible? */
-	if (square_monster(cave, target) == NULL) {
+	mon = square_monster(cave, target);
+	if (mon == NULL || !monster_is_obvious(mon)) {
 		msg("This spell must target a monster.");
 		return false;
 	}
@@ -5761,7 +5765,7 @@ bool effect_do(struct effect *effect,
 		}
 
 		/* Get the next effect, if there is one */
-		if (leftover) 
+		if (leftover)
 			/* Skip the remaining non-chosen effects */
 			while (leftover--)
 				effect = effect->next;

@@ -113,6 +113,6 @@ EFFECT(JUMP_AND_BITE,				false,	NULL,		0,		EFINFO_NONE,	"jumps the player to the
 EFFECT(MOVE_ATTACK,					true,	"blows",	0,		EFINFO_NONE,	"moves the player up to 4 spaces and executes up to %d melee blows")
 EFFECT(SINGLE_COMBAT,				true,	NULL,		0,		EFINFO_NONE,	"engages a monster in single combat")
 EFFECT(MELEE_BLOWS,					true,	"blows",	0,		EFINFO_NONE,	"strikes %d blows against an adjacent monster")
-EFFECT(SWEEP,						true,	"blows",	1,		EFINFO_NONE,	"strikes %d blows against all adjacent monsters")
+EFFECT(SWEEP,						false,	"blows",	1,		EFINFO_NONE,	"strikes %d blows against all adjacent monsters")
 EFFECT(BIZARRE,						true,	NULL,		0,		EFINFO_NONE,	"does bizarre things")
 EFFECT(WONDER,						true,	NULL,		0,		EFINFO_NONE,	"creates random and unpredictable effects")
