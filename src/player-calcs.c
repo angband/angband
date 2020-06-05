@@ -1881,7 +1881,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			for (j = 0; j < ELEM_MAX; j++) {
 				if (!known_only || obj->known->el_info[j].res_level) {
 					if (obj->el_info[j].res_level == -1)
-						vuln[i] = true;
+						vuln[j] = true;
 
 					/* OK because res_level hasn't included vulnerability yet */
 					if (obj->el_info[j].res_level > state->el_info[j].res_level)
