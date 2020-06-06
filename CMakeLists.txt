@@ -5,9 +5,9 @@ IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     MESSAGE(FATAL_ERROR "Not support to CMake in Windows")
 ENDIF()
 
-OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend" OFF)
+OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend" ON)
 OPTION(SUPPORT_SDL2_FRONTEND "Support to SDL2 Frontend." OFF)
-OPTION(SUPPORT_X11_FRONTEND "SUpport to X11 Frontend" ON)
+OPTION(SUPPORT_X11_FRONTEND "SUpport to X11 Frontend" OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support to Sound System with SDL2." OFF)
 
 ADD_EXECUTABLE(Angband
@@ -38,7 +38,7 @@ ADD_EXECUTABLE(Angband
         src/init.c
         src/load.c
 #        src/main-cocoa.m
-#        src/main-gcu.c
+        $<$<BOOL:SUPPORT_NCURSES_FRONTEND>:src/main-gcu.c>
 #        src/main-nds.c
 #        src/main-sdl.c
 #        src/main-sdl2.c
@@ -189,7 +189,8 @@ ELSEIF(SUPPORT_NCURSES_FRONTEND)
 
     IF (CURSES_FOUND)
 
-        TARGET_LINK_LIBRARIES(Angband PRIVATE ${CURSES_LIBRARIES})
+        TARGET_LINK_LIBRARIES(Angband PRIVATE ${CURSES_LIBRARIES} ncursesw)
+        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_GCU)
         TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_NCURSES)
         MESSAGE(STATUS "Support to NCurses Frontend - Ready")
 
