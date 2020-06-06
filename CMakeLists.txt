@@ -183,9 +183,25 @@ IF (SUPPORT_X11_FRONTEND)
 
     ENDIF()
 
+ELSEIF(SUPPORT_NCURSES_FRONTEND)
+
+    FIND_PACKAGE(Curses)
+
+    IF (CURSES_FOUND)
+
+        TARGET_LINK_LIBRARIES(Angband PRIVATE ${CURSES_LIBRARIES})
+        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_NCURSES)
+        MESSAGE(STATUS "Support to NCurses Frontend - Ready")
+
+    ELSE()
+
+        MESSAGE(FATAL_ERROR "Support to NCurses Frontend - Fail")
+
+    ENDIF()
+
 ENDIF()
 
-TARGET_LINK_LIBRARIES(Angband PRIVATE ncurses m)
+TARGET_LINK_LIBRARIES(Angband PRIVATE m)
 
 MESSAGE(STATUS "Moving files needed")
 
