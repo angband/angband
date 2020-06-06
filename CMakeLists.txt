@@ -8,7 +8,7 @@ ENDIF()
 OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend" OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support to SDL2 Frontend." ON)
 OPTION(SUPPORT_X11_FRONTEND "SUpport to X11 Frontend" OFF)
-OPTION(SUPPORT_SDL2_SOUND "Support to Sound System with SDL2." OFF)
+OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL2." ON)
 
 ADD_EXECUTABLE(Angband
         src/buildid.c
@@ -105,7 +105,7 @@ ADD_EXECUTABLE(Angband
         src/save.c
         src/savefile.c
         src/score.c
-#        src/snd-sdl.c
+        $<$<BOOL:SUPPORT_SDL_SOUND>:src/snd-sdl.c>
         src/sound-core.c
         src/source.c
         src/store.c
@@ -220,6 +220,22 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
     ELSE()
 
         MESSAGE(FATAL_ERROR "Support to SDL Frontend - Fail")
+
+    ENDIF()
+
+    FIND_PACKAGE(SDL_mixer)
+
+    IF(SDL_MIXER_FOUND)
+
+        TARGET_LINK_LIBRARIES(Angband PRIVATE ${SDL_MIXER_LIBRARIES})
+        TARGET_INCLUDE_DIRECTORIES(Angband PRIVATE ${SDL_MIXER_INCLUDE_DIRS})
+        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D SOUND_SDL)
+
+        MESSAGE(STATUS "Support to Sound with SDL Mixer - Ready")
+
+    ELSE()
+
+        MESSAGE(FATAL_ERROR "Support to Sound with SDL Mixer - Fail")
 
     ENDIF()
 
