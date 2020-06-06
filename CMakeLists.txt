@@ -177,6 +177,10 @@ IF (SUPPORT_X11_FRONTEND)
         TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_X11)
         MESSAGE(STATUS "Support to X11 Frontend - Ready")
 
+    ELSE()
+
+        MESSAGE(FATAL_ERROR "Support to X11 Frontend - Fail")
+
     ENDIF()
 
 ENDIF()
