@@ -45,7 +45,7 @@ ADD_EXECUTABLE(Angband
 #        src/main-stats.c
 #        src/main-test.c
 #        src/main-win.c
-        src/main-x11.c
+        $<$<BOOL:SUPPORT_X11_FRONTEND>:src/main-x11.c>
 #        src/main-xxx.c
         src/main.c
         src/message.c
