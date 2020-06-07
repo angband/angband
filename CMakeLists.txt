@@ -5,10 +5,10 @@ IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     MESSAGE(FATAL_ERROR "Not support to CMake in Windows")
 ENDIF()
 
-OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend" OFF)
-OPTION(SUPPORT_SDL_FRONTEND "Support to SDL2 Frontend." ON)
-OPTION(SUPPORT_X11_FRONTEND "SUpport to X11 Frontend" OFF)
-OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL2." ON)
+OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend." OFF)
+OPTION(SUPPORT_SDL_FRONTEND "Support to SDL Frontend." OFF)
+OPTION(SUPPORT_X11_FRONTEND "Support to X11 Frontend." ON)
+OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL." OFF)
 
 ADD_EXECUTABLE(Angband
         src/buildid.c
@@ -105,7 +105,9 @@ ADD_EXECUTABLE(Angband
         src/save.c
         src/savefile.c
         src/score.c
-        $<$<BOOL:SUPPORT_SDL_SOUND>:src/snd-sdl.c>
+
+        $<$<BOOL:SUPPORT_SDL_FRONTEND>:src/snd-sdl.c>
+
         src/sound-core.c
         src/source.c
         src/store.c
@@ -199,6 +201,8 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
         MESSAGE(FATAL_ERROR "Support to SDL Frontend - Fail")
 
     ENDIF()
+
+ELSEIF(SUPPORT_SDL_SOUND)
 
     FIND_PACKAGE(SDL_mixer)
 
