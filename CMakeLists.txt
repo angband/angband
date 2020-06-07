@@ -186,21 +186,8 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
 
 ELSEIF(SUPPORT_SDL_SOUND)
 
-    FIND_PACKAGE(SDL_mixer)
-
-    IF(SDL_MIXER_FOUND)
-
-        TARGET_LINK_LIBRARIES(Angband PRIVATE ${SDL_MIXER_LIBRARIES})
-        TARGET_INCLUDE_DIRECTORIES(Angband PRIVATE ${SDL_MIXER_INCLUDE_DIRS})
-        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D SOUND_SDL)
-
-        MESSAGE(STATUS "Support to Sound with SDL Mixer - Ready")
-
-    ELSE()
-
-        MESSAGE(FATAL_ERROR "Support to Sound with SDL Mixer - Fail")
-
-    ENDIF()
+    INCLUDE(src/cmake/macros/SDL_Sound.cmake)
+    CONFIGURE_SDL_SOUND(Angband)
 
 ENDIF()
 
