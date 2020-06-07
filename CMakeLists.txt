@@ -174,20 +174,8 @@ IF (SUPPORT_X11_FRONTEND)
 
 ELSEIF(SUPPORT_NCURSES_FRONTEND)
 
-    FIND_PACKAGE(Curses)
-
-    IF (CURSES_FOUND)
-
-        TARGET_LINK_LIBRARIES(Angband PRIVATE ${CURSES_LIBRARIES} ncursesw)
-        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_GCU)
-        TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D USE_NCURSES)
-        MESSAGE(STATUS "Support to NCurses Frontend - Ready")
-
-    ELSE()
-
-        MESSAGE(FATAL_ERROR "Support to NCurses Frontend - Fail")
-
-    ENDIF()
+    INCLUDE(src/cmake/macros/CURSES_Frontend.cmake)
+    CONFIGURE_CURSES_FRONTEND(Angband)
 
 ELSEIF(SUPPORT_SDL_FRONTEND)
 
