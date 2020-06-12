@@ -191,9 +191,18 @@ ELSEIF(SUPPORT_SDL_SOUND)
 
 ENDIF()
 
-# For Linux Systems the compilation without the libm library
-# throw undefined references to mathematical functions, this requirement
-# is only present in Linux Systems
+#[[
+For Linux Systems the compilation without the libm library
+throw undefined references to mathematical functions, this requirement
+is only present in Linux Systems.
+
+Wikipedia say: Under Linux and BSD, the mathematical functions
+(as declared in <math.h>) are bundled separately in the mathematical
+library libm. Therefore, if any of those functions are used, the linker
+must be given the directive -lm.
+
+Ref: https://en.wikipedia.org/wiki/C_mathematical_functions#libm
+]]
 TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
 
 MESSAGE(STATUS "Moving files needed")
