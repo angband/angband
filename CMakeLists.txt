@@ -191,7 +191,10 @@ ELSEIF(SUPPORT_SDL_SOUND)
 
 ENDIF()
 
-TARGET_LINK_LIBRARIES(Angband PRIVATE m)
+# For Linux Systems the compilation without the libm library
+# throw undefined references to mathematical functions, this requirement
+# is only present in Linux Systems
+TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
 
 MESSAGE(STATUS "Moving files needed")
 
