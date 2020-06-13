@@ -737,7 +737,7 @@ void process_world(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid).trap;
+			struct trap *trap = square(c, grid)->trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;

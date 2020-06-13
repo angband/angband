@@ -337,7 +337,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* The player */
-		if (square(cave, loc(x, y)).mon < 0) {
+		if (square(cave, loc(x, y))->mon < 0) {
 			/* Description */
 			s1 = "You are ";
 
@@ -373,7 +373,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* Actual monsters */
-		if (square(cave, loc(x, y)).mon > 0) {
+		if (square(cave, loc(x, y))->mon > 0) {
 			struct monster *mon = square_monster(cave, loc(x, y));
 			const struct monster_lore *lore = get_lore(mon->race);
 
@@ -409,7 +409,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 						/* Describe the monster */
 						look_mon_desc(buf, sizeof(buf),
-									  square(cave, loc(x, y)).mon);
+									  square(cave, loc(x, y))->mon);
 
 						/* Describe, and prompt for recall */
 						if (player->wizard) {
@@ -524,7 +524,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 		/* A trap */
 		if (square_isvisibletrap(cave, loc(x, y))) {
-			struct trap *trap = square(cave, loc(x, y)).trap;
+			struct trap *trap = square(cave, loc(x, y))->trap;
 
 			/* Not boring */
 			boring = false;
@@ -532,7 +532,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Interact */
 			while (1) {
 				/* Change the intro */
-				if (square(cave, loc(x, y)).mon < 0) {
+				if (square(cave, loc(x, y))->mon < 0) {
 					s1 = "You are ";
 					s2 = "on ";
 				} else {

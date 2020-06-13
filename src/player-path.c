@@ -150,7 +150,7 @@ static bool set_up_path_distances(struct loc grid)
 	/* Check bounds */
 	if ((grid.x >= top_left.x) && (grid.x < bottom_right.x) &&
 		(grid.y >= top_left.y) && (grid.y < bottom_right.y)) {
-		if ((square(cave, grid).mon > 0) &&
+		if ((square(cave, grid)->mon > 0) &&
 			monster_is_visible(square_monster(cave, grid))) {
 			set_path_dist(grid, MAX_PF_LENGTH);
 		}
@@ -594,7 +594,7 @@ static bool run_test(void)
 		grid = loc_sum(player->grid, ddgrid[new_dir]);
 
 		/* Visible monsters abort running */
-		if (square(cave, grid).mon > 0) {
+		if (square(cave, grid)->mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_visible(mon)) {
 				return true;
@@ -676,7 +676,7 @@ static bool run_test(void)
 		if (!square_in_bounds(cave, grid)) continue;
 
 		/* Obvious monsters abort running */
-		if (square(cave, grid).mon > 0) {
+		if (square(cave, grid)->mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
 			if (monster_is_obvious(mon))
 				return true;
@@ -821,7 +821,7 @@ void run_step(int dir)
 				}
 
 				/* Visible monsters abort running */
-				if (square(cave, grid).mon > 0) {
+				if (square(cave, grid)->mon > 0) {
 					struct monster *mon = square_monster(cave, grid);
 
 					/* Visible monster */
