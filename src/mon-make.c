@@ -392,8 +392,8 @@ void delete_monster(struct loc grid)
 	assert(square_in_bounds(cave, grid));
 
 	/* Delete the monster (if any) */
-	if (square(cave, grid).mon > 0)
-		delete_monster_idx(square(cave, grid).mon);
+	if (square(cave, grid)->mon > 0)
+		delete_monster_idx(square(cave, grid)->mon);
 }
 
 

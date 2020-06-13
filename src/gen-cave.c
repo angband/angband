@@ -86,8 +86,8 @@
 static bool square_is_granite_with_flag(struct chunk *c, struct loc grid,
 										int flag)
 {
-	if (square(c, grid).feat != FEAT_GRANITE) return false;
-	if (!sqinfo_has(square(c, grid).info, flag)) return false;
+	if (square(c, grid)->feat != FEAT_GRANITE) return false;
+	if (!sqinfo_has(square(c, grid)->info, flag)) return false;
 
 	return true;
 }
@@ -723,7 +723,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			struct loc diag = next_grid(grid, DIR_SE);
 			sets[k_local] = k_local;
 			square_set_feat(c, diag, FEAT_FLOOR);
-			if (lit) sqinfo_on(square(c, diag).info, SQUARE_GLOW);
+			if (lit) sqinfo_on(square(c, diag)->info, SQUARE_GLOW);
 		}
     }
 
@@ -754,7 +754,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			int sb = sets[b];
 			square_set_feat(c, next_grid(grid, DIR_SE), FEAT_FLOOR);
 			if (lit) {
-				sqinfo_on(square(c, next_grid(grid, DIR_SE)).info, SQUARE_GLOW);
+				sqinfo_on(square(c, next_grid(grid, DIR_SE))->info, SQUARE_GLOW);
 			}
 			for (k = 0; k < n; k++) {
 				if (sets[k] == sb) sets[k] = sa;
@@ -937,7 +937,7 @@ static void mutate_cavern(struct chunk *c) {
 			else if (count < 4)
 				temp[grid_to_i(grid, w)] = FEAT_FLOOR;
 			else
-				temp[grid_to_i(grid, w)] = square(c, grid).feat;
+				temp[grid_to_i(grid, w)] = square(c, grid)->feat;
 		}
     }
 
@@ -1467,7 +1467,7 @@ bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 
 	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
 		for (probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
-			if (feat_is_shop(square(c, probe).feat)) {
+			if (feat_is_shop(square(c, probe)->feat)) {
 				return true;
 			}
 		}
@@ -1719,7 +1719,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		for (grid.y = 1; grid.y < c->height - 1; grid.y++) {
 			for (grid.x = 1; grid.x < c->width - 1; grid.x++) {
 				if (square_isfloor(c, grid))
-					sqinfo_off(square(c, grid).info, SQUARE_ROOM);
+					sqinfo_off(square(c, grid)->info, SQUARE_ROOM);
 			}
 		}
 

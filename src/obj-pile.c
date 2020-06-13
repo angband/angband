@@ -1068,7 +1068,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	drop_find_grid(*dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
-		if (dont_ignore && (square(c, best).mon < 0)) {
+		if (dont_ignore && (square(c, best)->mon < 0)) {
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {

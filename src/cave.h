@@ -381,7 +381,7 @@ bool square_suits_stairs_well(struct chunk *c, struct loc grid);
 bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 
-struct square square(struct chunk *c, struct loc grid);
+const struct square *square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, struct loc grid);
 int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
