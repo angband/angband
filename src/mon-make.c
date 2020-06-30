@@ -582,7 +582,8 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		}
 
 		/* Reduce the racial counter */
-		mon->race->cur_num--;
+           if (mon->original_race) mon->original_race->cur_num--;
+		else mon->race->cur_num--;
 
 		/* Monster is gone from square */
 		square_set_mon(c, mon->grid, 0);
