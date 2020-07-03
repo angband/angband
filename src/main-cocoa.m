@@ -5605,6 +5605,12 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Disable the per-row flush notifications since they are not used. */
     newterm->never_frosh = TRUE;
 
+    /*
+     * Differentiate between BS/^h, Tab/^i, ... so ^h and ^j work under the
+     * roguelike command set.
+     */
+    newterm->complex_input = TRUE;
+
     /* Prepare the init/nuke hooks */
     newterm->init_hook = Term_init_cocoa;
     newterm->nuke_hook = Term_nuke_cocoa;
