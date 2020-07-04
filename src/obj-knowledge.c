@@ -1101,6 +1101,13 @@ void player_know_object(struct player *p, struct object *obj)
 		object_flavor_aware(obj);
 	}
 
+	/* Ensure effect is known as if object_set_base_known() had been called. */
+	if ((obj->kind->aware && obj->kind->flavor) ||
+		(!tval_is_wearable(obj) && !obj->kind->flavor) ||
+		(tval_is_wearable(obj) && obj->kind->effect && obj->kind->aware)) {
+		obj->known->effect = obj->effect;
+	}
+
 	/* Report on new stuff */
 	if (!seen) {
 		char o_name[80];
