@@ -169,13 +169,13 @@ their initialization hooks before doing any other work.  Finally it sets up the
 RNG.
 
 ui-init.c - ``textui_init``
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The textui_init() function then loads the top-level pref file (see
 `pref files`_), initializes the command queue (see `the command queue`_),
 and configures subwindows.
 
 ui-prefs.c - ``process_pref_file``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The process_pref_file() function in ui-prefs.c is responsible for loading user
 pref files, which can live at multiple paths. User preference files override
 default preference files. See `pref files`_ for more details.
@@ -190,11 +190,11 @@ or the player quits
 
 Gameplay
 --------
-Once the simulation is set up, the game main loop in `game-world.c - play_game`_
+Once the simulation is set up, the game main loop in `ui-game.c - play_game`_
 is responsible for stepping the simulation.
 
 game-world.c - the game main loop
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The main loop of the game, run_game_loop() is repeatedly called inside
 play_game(). Each iteration of the main loop is one "turn" in Angband parlance,
 or one step of the simulator. During each turn:
@@ -217,7 +217,7 @@ monster act by calling process_monster(), which implements the highest level AI
 for monsters.
 
 game-world.c - process_player()
-****************************
+*******************************
 
 The process_player() function allows the player to act repeatedly until they do
 something that uses energy. Commands like looking around or inscribing items do
@@ -248,7 +248,7 @@ These functions are called during every game loop, after the player and all
 monsters have acted.
 
 game-world.c - process_world()
-***************************
+******************************
 
 The process_world() function only runs every 10 turns. It is responsible for the
 day/night transition in town, restocking the stores, generating new creatures

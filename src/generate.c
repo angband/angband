@@ -659,7 +659,7 @@ static void place_feeling(struct chunk *c)
 				continue;
 
 			/* Set the cave square appropriately */
-			sqinfo_on(square(c, grid).info, SQUARE_FEEL);
+			sqinfo_on(square(c, grid)->info, SQUARE_FEEL);
 			
 			break;
 		}
@@ -1037,10 +1037,10 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			for (x = 0; x < chunk->width; x++) {
 				struct loc grid = loc(x, y);
 
-				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_INNER);
-				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_OUTER);
-				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_SOLID);
-				sqinfo_off(square(chunk, grid).info, SQUARE_MON_RESTRICT);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_INNER);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_OUTER);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_SOLID);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_MON_RESTRICT);
 
 				if (square_isstairs(chunk, grid)) {
 					size_t n;
@@ -1049,7 +1049,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 					new->feat = square_feat(chunk, grid)->fidx;
 					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 					for (n = 0; n < SQUARE_SIZE; n++) {
-						new->info[n] = square(chunk, grid).info[n];
+						new->info[n] = square(chunk, grid)->info[n];
 					}
 					new->next = chunk->join;
 					chunk->join = new;
@@ -1289,7 +1289,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				for (y = 0; y < (*c)->height; y++) {
 					for (x = 0; x < (*c)->width; x++) {
 						struct loc grid = loc(x, y);
-						if (square(*c, grid).mon == -1) {
+						if (square(*c, grid)->mon == -1) {
 							p->grid = grid;
 							found = true;
 							break;

@@ -435,7 +435,7 @@ static void make_noise(struct player *p)
 			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
 
 			/* Skip the player grid */
-			if (loc_eq(player->grid, grid)) continue;
+			if (loc_eq(p->grid, grid)) continue;
 
 			/* Save the noise */
 			cave->noise.grids[grid.y][grid.x] = noise;
@@ -706,9 +706,11 @@ void process_world(struct chunk *c)
 	/* Process light */
 	player_update_light(player);
 
-	/* Update noise and scent */
-	make_noise(player);
-	update_scent();
+	/* Update noise and scent (not if resting) */
+	if (!player_is_resting(player)) {
+		make_noise(player);
+		update_scent();
+	}
 
 
 	/*** Process Inventory ***/
@@ -735,7 +737,7 @@ void process_world(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid).trap;
+			struct trap *trap = square(c, grid)->trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;

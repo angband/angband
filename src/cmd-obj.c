@@ -469,6 +469,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (can_use) {
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
+		int number = 0;
 		bool ident = false, used;
 		struct object *work_obj;
 
@@ -506,6 +507,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				work_obj = floor_object_for_use(obj, 1, false, &none_left);
 				from_floor = true;
 			}
+			/* Record number for messages after use */
+			number = (none_left) ? 0 : obj->number;
 		} else  {
 			if (use == USE_CHARGE) {
 				charges = obj->pval;
@@ -577,23 +580,21 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Increase knowledge */
 		if (use == USE_SINGLE) {
 			char name[80];
+			int old_num = work_obj->number;
+
 			/* Single use items are automatically learned */
 			if (!was_aware) {
-				object_learn_on_use(player, obj);
+				object_learn_on_use(player, work_obj);
 			}
 			/* Get a description */
-			if (used && none_left) {
-				obj->number--;
-			}
-			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+			work_obj->number = number;
+			object_desc(name, sizeof(name), work_obj, ODESC_PREFIX | ODESC_FULL);
+			work_obj->number = old_num;
 			if (from_floor) {
 				/* Print a message */
 				msg("You see %s.", name);
 			} else {
 				msg("You have %s (%c).", name, label);
-			}
-			if (used && none_left) {
-				obj->number++;
 			}
 		} else {
 			/* Wearables may need update, other things become known or tried */

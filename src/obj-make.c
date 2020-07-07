@@ -1177,7 +1177,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	struct object *new_obj;
 
 	/* Try to make a special artifact */
-	if (one_in_(good ? 10 : 1000)) {
+	if (one_in_(good ? 10 : 1000) && !tval) {
 		new_obj = make_artifact_special(lev);
 		if (new_obj) {
 			if (value) *value = object_value_real(new_obj, 1);

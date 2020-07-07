@@ -2117,6 +2117,8 @@ static enum parser_error parse_ego_item(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 	poss = mem_zalloc(sizeof(struct poss_item));
 	poss->kidx = lookup_kind(tval, sval)->kidx;

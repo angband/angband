@@ -416,7 +416,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 
 	/* Lower bound */
-	v = MAX(v, 0);
+	v = MAX(v, (idx == TMD_FOOD) ? 1 : 0);
 
 	/* No change */
 	if (p->timed[idx] == v) {
