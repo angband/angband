@@ -595,7 +595,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 	case 'r':
 		/* Reverse the order of display; keep in the same page. */
 		if (s->npage > 0) {
-			s->ifirst += s->npage * s->indinc - 1;
+			s->ifirst += (s->npage - 1) * s->indinc;
 		}
 		s->indinc *= -1;
 		result = EQUIP_CMP_MENU_NEW_PAGE;
