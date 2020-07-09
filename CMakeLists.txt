@@ -10,6 +10,12 @@ OPTION(SUPPORT_SDL_FRONTEND "Support to SDL Frontend." OFF)
 OPTION(SUPPORT_X11_FRONTEND "Support to X11 Frontend." ON)
 OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL." OFF)
 
+# For default, X11 is the frontend, if the user want specific
+# a new frontend is needed set to false (OFF) the frontend X11
+IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND)
+    SET(SUPPORT_X11_FRONTEND OFF)
+ENDIF()
+
 ADD_EXECUTABLE(Angband
         src/buildid.c
         src/cave-map.c

@@ -44,6 +44,30 @@ To build Angband to be installed in some other location::
 On some BSDs, you may need to copy install-sh into lib/ and various
 subdirectories of lib/ in order to install correctly.
 
+Compilation with CMake
+~~~~~~~~~~~~~~~~~~~~~~
+
+The compilation process with CMake requires a version greater than 3,
+by default the compilation process uses the X11 front end unless
+that the contrary is indicated. The optional front ends are: SDL and NCurses.
+
+To build Angband (X11 Frontend) to be run::
+
+    mkdir build && cd build
+    cmake ..
+    make
+
+To build Angband with the frontend SDL::
+
+    mkdir build && cd build
+    cmake  -DSUPPORT_SDL_FRONTEND=ON ..
+    make
+
+To build Angband with the frontend NCurses::
+
+    mkdir build && cd build
+    cmake  -DSUPPORT_NCURSES_FRONTEND=ON ..
+    make
 
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
