@@ -337,7 +337,7 @@ if test "$enable_sdl2_mixer" = "yes"; then
 			SDL2_LIBS=`sdl2-config --libs`
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_mixer"
 		fi
-		MAINFILES="${MAINFILES} \$(SNDSDL2FILES)"
+		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
 	fi
 fi
 

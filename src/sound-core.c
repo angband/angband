@@ -20,7 +20,7 @@
 #include "sound.h"
 #include "main.h"
 #include "ui-prefs.h"
-#ifdef SOUND_SDL
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
 #include "snd-sdl.h"
 #endif
 
@@ -55,7 +55,7 @@ static struct msg_snd_data message_sounds[MSG_MAX];
  */
 static const struct sound_module sound_modules[] =
 {
-#ifdef SOUND_SDL
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
 #endif /* SOUND_SDL */
 #if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && !defined(USE_SDL) && !defined(USE_SDL2)) 
