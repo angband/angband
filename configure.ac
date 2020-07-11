@@ -324,6 +324,9 @@ fi
 
 dnl SDL2 mixer checking
 if test "$enable_sdl2_mixer" = "yes"; then
+	if test "$enable_sdl_mixer" = "yes"; then
+		AC_MSG_ERROR(both --enable-sdl-mixer and --enable-sdl2-mixer set, 1)
+	fi
 	AC_CHECK_LIB(SDL2_mixer, Mix_OpenAudio, found_sdl2_mixer=yes, found_sdl2_mixer=no)
 
 	if test "$found_sdl2_mixer" = "yes"; then
