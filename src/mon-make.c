@@ -838,7 +838,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		if (monster_carry(c, mon, obj)) {
 			any = true;
 		} else {
-			obj->artifact->created = false;
+			if (obj->artifact) {
+				obj->artifact->created = false;
+			}
 			object_wipe(obj);
 			mem_free(obj);
 		}
