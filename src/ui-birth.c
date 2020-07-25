@@ -101,7 +101,7 @@ bool arg_force_name;
 static enum birth_stage textui_birth_quickstart(void)
 //phantom name change changes
 {
-	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name or history]";
+	const char *prompt = "['Y': use as is; 'N': redo; 'C': change name/history; '=': set birth options]";
 
 	enum birth_stage next = BIRTH_QUICKSTART;
 
@@ -120,6 +120,8 @@ static enum birth_stage textui_birth_quickstart(void)
 			quit(NULL);
 		} else if ( !arg_force_name && (ke.code == 'C' || ke.code == 'c')) {
 			next = BIRTH_NAME_CHOICE;
+		} else if (ke.code == '=') {
+			do_cmd_options_birth();
 		} else if (ke.code == 'Y' || ke.code == 'y') {
 			cmdq_push(CMD_ACCEPT_CHARACTER);
 			next = BIRTH_COMPLETE;
