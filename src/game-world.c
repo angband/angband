@@ -996,6 +996,9 @@ void on_new_level(void)
 	if (player->depth)
 		display_feeling(false);
 
+	/* Check the surroundings */
+	search(player);
+
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
 	if (player->energy < z_info->move_energy)
