@@ -649,6 +649,7 @@ name:of Backbiting
 info:0:0
 alloc:0:10 to 80
 combat:-26+d25:-26+d25:0
+min-combat:255:255:0
 type:shot
 type:arrow
 type:bolt
