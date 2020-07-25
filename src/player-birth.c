@@ -871,6 +871,8 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 void player_generate(struct player *p, const struct player_race *r,
 					 const struct player_class *c, bool old_history)
 {
+	int i;
+
 	if (!c)
 		c = p->class;
 	if (!r)
@@ -888,11 +890,20 @@ void player_generate(struct player *p, const struct player_race *r,
 	/* Hitdice */
 	p->hitdie = p->race->r_mhp + p->class->c_mhp;
 
-	/* Initial hitpoints */
-	p->mhp = p->hitdie;
-
 	/* Pre-calculate level 1 hitdice */
 	p->player_hp[0] = p->hitdie;
+
+	/*
+	 * Fill in overestimates of hitpoints for additional levels.  Do not
+	 * do the actual rolls so the player can not reset the birth screen
+	 * to get a desirable set of initial rolls.
+	 */
+	for (i = 1; i < p->lev; i++) {
+		p->player_hp[i] = p->player_hp[i - 1] + p->hitdie;
+	}
+
+	/* Initial hitpoints */
+	p->mhp = p->player_hp[p->lev - 1];
 
 	/* Roll for age/height/weight */
 	get_ahw(p);
