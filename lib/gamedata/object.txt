@@ -36,7 +36,13 @@
 # optional, and the number of dice is optional and assumed to be 1
 # when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
 # range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
-# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.  Randomized
+# expressions which begin with "-" are currently handled differently in the
+# "values" line than they are elsewhere.  In the "values" line, the leading
+# "-" sets the sign on the base value (i.e. 10 in the example).  On other lines,
+# a leading "-" in the randomized expression means multiply the random result
+# from what follows by negative one.  As a result, something like "-d4" will
+# not work as you want when used for a "values" line.  Use "-5+1d4" instead.
 
 # 'name' indicates the beginning of an entry. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
