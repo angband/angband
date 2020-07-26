@@ -1872,7 +1872,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 					}
 					random_choices--;
 
-					if (!effect->next) {
+					if ((!effect->next) || (effect->next->index != EF_BREATH)) {
 						random_breath = false;
 					}
 					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
@@ -1882,6 +1882,9 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 							projections[effect->subtype].player_desc,
 							effect->other, dice_string);
 				}
+				if (boost && (effect->index != EF_BREATH))
+					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
+							  sizeof(desc));
 				break;
 			}
 
