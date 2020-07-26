@@ -1872,7 +1872,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 					}
 					random_choices--;
 
-					if ((!effect->next) || (effect->next->index != EF_BREATH)) {
+					if (!effect->next) {
 						random_breath = false;
 					}
 					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
