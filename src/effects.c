@@ -4019,7 +4019,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, false);
+	int dam = effect_calculate_value(context, true);
 	int type = context->subtype;
 	int rad = context->radius;
 
