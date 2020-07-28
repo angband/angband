@@ -1638,13 +1638,12 @@ desc: for 12+d12 turns.
 book:shadow book:town:[Fear and Torment]:5:shadow
 
 spell:Maim Foe:15:6:35:14
-effect:MELEE_BLOWS
+effect:MELEE_BLOWS:MON_STUN:3
 dice:$S
 expr:S:PLAYER_LEVEL:/ 15
-effect:SHORT_BEAM:MON_STUN:1
-dice:5+1d5
-desc:Stuns an adjacent enemy for 5+1d5 turns. Attempts a level-dependent number
-desc: of melee blows against that enemy. You get 1 blow for every 15 levels.
+desc:Attempts a level-dependent number of melee blows against the targeted
+desc: monster.  You get 1 blow for every 15 levels.  Each blow that hits stuns
+desc: the enemy for 3 turns.
 
 spell:Howl of the Damned:18:8:30:16
 effect:PROJECT_LOS:TURN_ALL
@@ -1689,11 +1688,8 @@ dice:66
 desc:Restores STR, INT, CON, and experience at the cost of 66 HP.
 
 spell:Forceful Blow:38:16:50:150
-effect:MELEE_BLOWS
+effect:MELEE_BLOWS:FORCE:200
 dice:1
-effect:SHORT_BEAM:FORCE:1
-dice:2d$B
-expr:B:PLAYER_LEVEL:* 4
 desc:Attempts 1 melee blow and hits the target with force, knocking it back
 desc: with a chance to stun it.
 

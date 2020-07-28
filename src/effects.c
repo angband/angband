@@ -5038,8 +5038,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	/* Ask for a target */
 	if (context->dir == DIR_TARGET) {
 		target_get(&target);
-	}
-	else {
+	} else {
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
@@ -5051,6 +5050,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 	while (distance(player->grid, target) > 1 && moves > 0) {
 		int choice[] = { 0, 1, -1 };
+		bool attack = false;
 		grid_diff = loc_diff(target, player->grid);
 
 		/* Choice of direction simplified by prioritizing diagonals */
@@ -5070,6 +5070,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 			next_grid = loc_sum(player->grid, clockwise_grid[d_test]);
 			if (square_ispassable(cave, next_grid)) {
 				d = d_test;
+				if (square_monster(cave, next_grid)) attack = true;
 				break;
 			} else if (i == 2) {
 				msg("The way is barred.");
@@ -5079,6 +5080,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 		move_player(clockwise_ddd[d], false);
 		moves--;
+		if (attack) return false;
 	}
 
 	/* Reduce blows based on distance traveled, round to nearest blow */
@@ -5142,10 +5144,12 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 {
 	int blows = effect_calculate_value(context, false);
+	int dam = context->radius;
 	bool fear;
 	int taim;
 	struct loc target = loc(-1, -1);
 	struct loc grid = player->grid;
+	struct monster *mon = NULL;
 
 	/* players only for now */
 	if (context->origin.what != SRC_PLAYER)
@@ -5161,13 +5165,26 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 	if (!target_okay()) {return false;}
 
 	taim = distance(grid, target);
+	mon = square_monster(cave, target);
 	if (taim > 1) {
 		msgt(MSG_GENERIC, "Target too far away (%d).", taim);
+		return false;
+	} else if (!mon) {
+		msg("You must attack a monster.");
 		return false;
 	}
 
 	while (blows-- > 0) {
+		/* Lame test for hitting the monster */
+		int hp = mon->hp;
 		if (py_attack_real(player, target, &fear)) return true;
+		if (mon->hp == hp) continue;
+
+		/* Apply side-effects */
+		if (project(context->origin, 0, target, dam, context->subtype,
+					PROJECT_KILL, 0, 0, context->obj)) {
+			context->ident = true;
+		}
 	}
 	return true;
 }
@@ -5565,6 +5582,7 @@ int effect_subtype(int index, const char *type)
 			case EF_BOLT_STATUS:
 			case EF_BOLT_STATUS_DAM:
 			case EF_BOLT_AWARE:
+			case EF_MELEE_BLOWS:
 			case EF_TOUCH:
 			case EF_TOUCH_AWARE: {
 				val = proj_name_to_idx(type);
