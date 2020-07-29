@@ -584,7 +584,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
 				/* Hack -- like cave_unlight(), forget "boring" grids */
 				if (square_isfloor(c, grid))
-					square_forget(cave, grid);
+					square_forget(c, grid);
 			}
 		}
 	}
