@@ -15,12 +15,13 @@ BUNDLE_IDENTIFIER = org.rephial.angband
 
 ARCHS = x86_64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
+OSXVERSFLAGS = -mmacosx-version-min=10.9
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
 	-Wunused-macros
 JUST_C = -std=c99
-OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc -mmacosx-version-min=10.9
+OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc $(OSXVERSFLAGS)
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
-	-fno-stack-protector $(ARCHFLAGS)
+	-fno-stack-protector $(OSXVERSFLAGS) $(ARCHFLAGS)
 LIBS = -framework Cocoa
 # Fix for bug #1663: Set the deployment target via environment variable
 # for the final link command. See http://grauonline.de/wordpress/?p=71
