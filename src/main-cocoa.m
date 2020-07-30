@@ -4246,7 +4246,7 @@ static void Term_init_cocoa(term *t)
 	/* Set its title and, for auxiliary terms, tentative size */
 	if (termIdx == 0)
 	{
-	    [window setTitle:@"Angband"];
+	    [window setTitle:@VERSION_NAME];
 	}
 	else
 	{
@@ -6032,7 +6032,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	NSMenu *windowsMenu = [[NSApplication sharedApplication] windowsMenu];
 	[windowsMenu addItem: [NSMenuItem separatorItem]];
 
-	NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @"Angband" action: @selector(selectWindow:) keyEquivalent: @"0"];
+	NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @VERSION_NAME action: @selector(selectWindow:) keyEquivalent: @"0"];
 	[angbandItem setTarget: self];
 	[angbandItem setTag: AngbandWindowMenuItemTagBase];
 	[windowsMenu addItem: angbandItem];
