@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cmds.h"
 #include "game-world.h"
 #include "grafmode.h"
@@ -57,7 +58,7 @@
 #define kVK_ANSI_KeypadEnter 0x4C
 
 static NSString * const AngbandDirectoryNameLib = @"lib";
-static NSString * const AngbandDirectoryNameBase = @"Angband";
+static NSString * const AngbandDirectoryNameBase = @VERSION_NAME;
 
 static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
