@@ -2366,9 +2366,6 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
 	redraw_stuff(player);
 
-	/* React to changes */
-	Term_xtra(TERM_XTRA_REACT, 0);
-
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */
 	event_add_handler_set(player_events, N_ELEMENTS(player_events),
