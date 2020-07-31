@@ -77,6 +77,9 @@ void textui_init(void)
 
 		/* Hack -- Turn off the cursor */
 		(void)Term_set_cursor(false);
+
+		/* Update terminals for preference changes. */
+		(void) Term_xtra(TERM_XTRA_REACT, 0);
 	}
 
 	/* initialize window options that will be overridden by the savefile */
