@@ -163,6 +163,7 @@ ANGFILES = \
 	score.o \
 	save.o \
 	savefile.o \
+	save-charoutput.o \
 	sound-core.o \
 	source.o \
 	store.o \

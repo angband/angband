@@ -20,6 +20,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "savefile.h"
+#include "save-charoutput.h"
 
 /**
  * The savefile code.
@@ -376,6 +377,9 @@ bool savefile_save(const char *path)
 	int count = 0;
 	char new_savefile[1024];
 	char old_savefile[1024];
+
+	/* Generate a CharOutput.txt, mainly for angband.live, when saving. */
+	(void) save_charoutput();
 
 	/* New savefile */
 	strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,
