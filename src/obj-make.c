@@ -1212,7 +1212,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
 
 	/* Generate multiple items */
-	if (kind->gen_mult_prob >= randint1(100))
+	if (! new_obj->artifact && kind->gen_mult_prob >= randint1(100))
 		new_obj->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
 	if (new_obj->number > new_obj->kind->base->max_stack)
