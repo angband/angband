@@ -1054,6 +1054,11 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
+	/* Always allow an attack upon the player or decoy. */
+	if (square_isplayer(c, new) || square_isdecoyed(c, new)) {
+		return true;
+	}
+
 	/* Dangerous terrain in the way */
 	if (monster_hates_grid(c, mon, new)) {
 		return false;
