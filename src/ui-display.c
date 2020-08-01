@@ -2342,9 +2342,10 @@ static void ui_enter_init(game_event_type type, game_event_data *data,
 static void ui_leave_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
-	/* Reset visuals, then load prefs */
+	/* Reset visuals, then load prefs, and react to changes */
 	reset_visuals(true);
 	process_character_pref_files();
+	Term_xtra(TERM_XTRA_REACT, 0);
 
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
