@@ -1781,6 +1781,15 @@ static enum parser_error parse_feat_die_msg(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_feat_confused_msg(struct parser *p) {
+	struct feature *f = parser_priv(p);
+	assert(f);
+
+	f->confused_msg =
+		string_append(f->confused_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_feat_resist_flag(struct parser *p) {
 	int flag;
     struct feature *f = parser_priv(p);
@@ -1811,6 +1820,7 @@ struct parser *init_parse_feat(void) {
     parser_reg(p, "run-msg str text", parse_feat_run_msg);
     parser_reg(p, "hurt-msg str text", parse_feat_hurt_msg);
     parser_reg(p, "die-msg str text", parse_feat_die_msg);
+	parser_reg(p, "confused-msg str text", parse_feat_confused_msg);
 	parser_reg(p, "resist-flag sym flag", parse_feat_resist_flag);
 	return p;
 }
