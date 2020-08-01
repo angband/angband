@@ -35,6 +35,7 @@
 # run-msg: warning message - running
 # hurt-msg: damage message
 # die-msg: death message
+# confused-msg: message for confused monster move into non-passable terrain
 # resist-flag: monster race flag for resist
 
 # 'name' indicates the beginning of an entry. The serial number must
@@ -73,6 +74,9 @@
 
 # 'die-msg' is the description if damaging terrain kills the player
 
+# 'confused-msg' is the description of an attempt for a monster to move into
+# non-passable terrain due to confusion
+
 # 'resist-flag' is the race flag a monster must have to be able to enter
 # damaging terrain
 
@@ -93,6 +97,7 @@ graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
 info:0:5
+confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your 
 desc:disarming skill makes all the difference to your ability to handle locks, 
 desc:but you can also take a pickaxe to them, or blast them open 
@@ -192,6 +197,7 @@ graphics:#:w
 priority:10
 mimic:granite wall
 flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
+confused-msg:bashes into a wall
 desc:A door that appears like a granite wall to untrained eyes.
 
 name:pile of rubble
@@ -199,6 +205,7 @@ graphics:::W
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1
+confused-msg:bumps into some rocks
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
 desc:to normal floor.
 
@@ -207,6 +214,7 @@ graphics:%:D
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
 info:0:2
+confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
@@ -216,6 +224,7 @@ graphics:%:s
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:3
+confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
@@ -225,6 +234,7 @@ graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
 info:0:2
+confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
@@ -234,6 +244,7 @@ graphics:*:y
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 info:0:3
+confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
@@ -243,6 +254,7 @@ graphics:#:W
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:4
+confused-msg:bashes into a wall
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight. 
@@ -251,6 +263,7 @@ name:permanent wall
 graphics:#:z
 priority:10
 flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
+confused-msg:bashes into a wall
 desc:You can dig through most walls but these are impenetrable.  The dungeon is 
 desc:surrounded by these kinds of walls and some special rooms are made of them.
 

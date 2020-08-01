@@ -128,6 +128,7 @@ struct feature {
 	char *run_msg;	/**< Message on running into feature */
 	char *hurt_msg;	/**< Message on being hurt by feature */
 	char *die_msg;	/**< Message on dying to feature */
+	char *confused_msg; /**< Message on confused monster move into feature */
 	int resist_flag;/**< Monster resist flag for entering feature */
 };
 
