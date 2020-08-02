@@ -312,9 +312,9 @@ static bool find_start(struct chunk *c, struct loc *grid)
 			for (j = 0; j < 10000; j++) {
 				int total_walls = 0;
 
-				cave_find_in_range(c, grid, loc(1, 1),
+				if (!cave_find_in_range(c, grid, loc(1, 1),
 								   loc(c->width - 2, c->height - 2),
-								   square_isempty);
+								   square_isempty)) continue;
 				if (square_isvault(c, *grid) || square_isno_stairs(c, *grid)) {
 					continue;
 				}
@@ -546,7 +546,7 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 
 			/* Try several times, then decrease "walls" */
 			for (j = 0; !done && j <= 100; j++) {
-				find_empty(c, &grid);
+				if (!find_empty(c, &grid)) continue;
 
 				if (square_num_walls_adjacent(c, grid) < walls) continue;
 
@@ -604,7 +604,7 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
     while (tries < 2000) {
 		tries++;
 
-		find_empty(c, &grid);
+		if (!find_empty(c, &grid)) continue;
 
 		/* If we are ok with a corridor and we're in one, we're done */
 		if (set & SET_CORR && !square_isroom(c, grid)) break;
@@ -646,7 +646,7 @@ void vault_objects(struct chunk *c, struct loc grid, int depth, int num)
 			struct loc near;
 
 			/* Pick a random location */
-			find_nearby_grid(c, &near, grid, 2, 3);
+			if (!find_nearby_grid(c, &near, grid, 2, 3)) assert(0);
 
 			/* Require "clean" floor space */
 			if (!square_canputitem(c, near)) continue;
@@ -677,7 +677,7 @@ static void vault_trap_aux(struct chunk *c, struct loc grid, int yd, int xd)
     /* Find a nearby empty grid and place a trap */
     for (tries = 0; tries <= 5; tries++) {
 		struct loc near;
-		find_nearby_grid(c, &near, grid, yd, xd);
+		if (!find_nearby_grid(c, &near, grid, yd, xd)) assert(0);
 		if (!square_isempty(c, near)) continue;
 
 		square_add_trap(c, near);
