@@ -501,7 +501,7 @@ static bool twall(struct loc grid)
 static bool do_cmd_tunnel_aux(struct loc grid)
 {
 	bool more = false;
-	int digging_chances[DIGGING_MAX];
+	int digging_chances[DIGGING_MAX], chance;
 	bool okay = false;
 	bool gold = square_hasgoldvein(cave, grid);
 	bool rubble = square_isrubble(cave, grid);
@@ -529,7 +529,8 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	calc_digging_chances(used_state, digging_chances);
 
 	/* Do we succeed? */
-	okay = (digging_chances[square_digging(cave, grid) - 1] > randint0(1600));
+	chance = digging_chances[square_digging(cave, grid) - 1];
+	okay = (chance > randint0(1600));
 
 	/* Swap back */
 	if (best_digger && best_digger != current_weapon) {
@@ -562,7 +563,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		} else {
 			msg("You have finished the tunnel.");
 		}
-	} else {
+	} else if (chance > 0) {
 		/* Failure, continue digging */
 		if (rubble)
 			msg("You dig in the rubble.");
@@ -570,6 +571,14 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You tunnel into the %s.",
 				square_apparent_name(cave, player, grid));
 		more = true;
+	} else {
+		/* Don't automatically repeat if there's no hope. */
+		if (rubble) {
+			msg("You dig in the rubble with little effect.");
+		} else {
+			msg("You chip away futilely at the %s.",
+				square_apparent_name(cave, player, grid));
+		}
 	}
 
 	/* Result */
