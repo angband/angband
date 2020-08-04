@@ -154,7 +154,7 @@ graphics:*:r
 
 name:<unknown treasure>
 type:none
-graphics:*:o
+graphics:*:w
 
 name:<curse object>
 type:none
