@@ -3945,12 +3945,27 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
+		int conf_level, accuracy = 100;
+
 		flg |= PROJECT_PLAY;
 
-		/* Target player or monster? */
-		if (t_mon) {
+		conf_level = monster_effect_level(mon, MON_TMD_CONF);
+		while (conf_level) {
+			accuracy *= (100 - CONF_RANDOM_CHANCE);
+			accuracy /= 100;
+			conf_level--;
+		}
+
+		if (randint1(100) > accuracy) {
+			/* Confused direction. */
+			int dir = randint1(9);
+
+			target = loc_sum(mon->grid, ddgrid[dir]);
+		} else if (t_mon) {
+			/* Target monster. */
 			target = t_mon->grid;
 		} else {
+			/* Target player. */
 			struct loc decoy = cave_find_decoy(cave);
 			if (!loc_is_zero(decoy)) {
 				target = decoy;
