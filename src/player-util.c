@@ -596,7 +596,8 @@ void player_update_light(struct player *p)
 struct object *player_best_digger(struct player *p, bool forbid_stack)
 {
 	struct object *obj, *best = NULL;
-	int best_score = 0;
+	/* Prefer any melee weapon over unarmed digging, i.e. best == NULL. */
+	int best_score = -1;
 
 	for (obj = p->gear; obj; obj = obj->next) {
 		int score = 0;
