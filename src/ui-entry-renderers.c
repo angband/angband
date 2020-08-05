@@ -523,7 +523,7 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 14 && info->nlabcolors >= 13 &&
+	assert(info->ncolors >= 28 && info->nlabcolors >= 13 &&
 		info->nsym >= 14);
 
 	for (i = 0; i < n; ++i) {
@@ -624,7 +624,7 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 5 && info->nlabcolors >= 4 && info->nsym >= 5);
+	assert(info->ncolors >= 10 && info->nlabcolors >= 4 && info->nsym >= 5);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index = 2;
@@ -714,7 +714,7 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 7 && info->nlabcolors >= 6 && info->nsym >= 7);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 6 && info->nsym >= 7);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index = 2;
@@ -823,7 +823,7 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 7 && info->nlabcolors >= 6 && info->nsym >= 7);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 6 && info->nsym >= 7);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index;
@@ -983,7 +983,7 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 8 && info->nlabcolors >= 7 && info->nsym >= 6);
+	assert(info->ncolors >= 16 && info->nlabcolors >= 7 && info->nsym >= 6);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index;
