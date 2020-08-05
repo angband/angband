@@ -11,9 +11,9 @@
 # combiner controls how multiple values are combined when displaying the
 # combined value or choosing how to color the label.  Possible values are
 # limited by the code and must be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR,
-# LARGEST, LAST, RESIST_0, or SMALLEST.  Those are the same (and have have
-# the same meanings) as those described in ui_entry.txt.  If not set, the
-# default combiner for the backend is used.
+# LOGICAL_OR_WITH_CANCEL, LARGEST, LAST, RESIST_0, or SMALLEST.  Those are the
+# same (and have have the same meanings) as those described in ui_entry.txt.
+# If not set, the default combiner for the backend is used.
 # colors and labelcolors configure the palette of colors used for either the
 # value or the label.  How indices into the palette are used depends on the
 # backend the renderer is bound to.  Changes to colors and labelcolors can
@@ -81,6 +81,23 @@
 # four colors is used for the label.  They are unknown rune, no flags are
 # known to be on and there is no timed effect, at least one flag is on, and no
 # flags are known to be on but there is at least one timed effect.
+
+# COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX renders one or more
+# flags (off (0), on (positive), or cancel (negative)) with the label colored
+# by the combined value.  The auxiliary values are treated as timed effects.
+# The default combiner is LOGICAL_OR_WITH_CANCEL.  One of eleven symbols
+# (unknown, not present, off, on, cancel, timed on + off, timed on + on, timed
+# on + cancel, timed cancel + off, timed cancel + on, timed cancel + cancel) is
+# used for each flag.  Each of the symbols has a corresponding color (from the
+# first eleven colors) and alternate color (from the second eleven colors).
+# The alternate color is used for every other flag.  A palette of seven colors
+# is used for the label.  They are unknown rune, the combined effect is off with
+# at least one permanent cancel, the combined effect is off with at least one
+# timed cancel and no permanent on flags, the combined effect is off with at
+# least one permanent on flag and one timed cancel, the combined effect is off
+# and doesn't fall in one of the earlier categories, the combined effect is on
+# with at least one permanent on flag, and the combined effect is on with no
+# permanent on flags.
 
 # NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX renders one or more integer
 # modifiers with the label colored by the combined (by addition) value.  The
@@ -186,6 +203,12 @@ code:COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX
 colors:wwwwGWWWWG
 labelcolors:swBw
 symbols:?..+!
+
+name:char_screen1_flag_with_cancel_renderer
+code:COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX
+colors:wwwwwGwwGGwWWWWWGWWGGW
+labelcolors:swwwwBw
+symbols:?..+-!+-=.-
 
 name:char_screen1_numeric_as_sign_renderer
 code:NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX
