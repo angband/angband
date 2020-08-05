@@ -259,7 +259,7 @@ desc:You are afraid of melee, and bad at shooting and casting spells.
 
 type:object
 code:NO_TELEPORT
-bindui: noteleport_ui_compact_0:0:1
+bindui:noteleport_ui_compact_0:0:1
 name:Teleport Ban
 desc:You cannot teleport.
 
