@@ -35,11 +35,15 @@
 # relevant.
 # combine controls how the values of the properties linked to the element are
 # combined before display.  Possible values are limited by the code and must
-# be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LARGEST, LAST, RESIST_0, or
-# SMALLEST.  RESIST_0 uses Vanilla's resist logic:  an immunity trumps all
-# other settings, a positive number of resistances with a positive number of
-# vulnerabilities will be no resistance, a positive number of resistances with
-# no vulnerablities equals resistance, a positive number of vulnerabilities
+# be one of ADD, BITWISE_OR, FIRST, LOGICAL_OR, LOGICAL_OR_WITH_CANCEL,
+# LARGEST, LAST, RESIST_0, or SMALLEST.  LOGICAL_OR_WITH_CANCEL works with
+# values in three states (zero, positive, or negative) and the result is
+# zero if all the inputs were zero, one if none of the inputs was negative and
+# at least one was positive, or negative one if at least one of the inputs was
+# negative.  RESIST_0 uses Vanilla's resist logic:  an immunity trumps
+# all  other settings, a positive number of resistances with a positive number
+# of vulnerabilities will be no resistance, a positive number of resistances
+# with no vulnerablities equals resistance, a positive number of vulnerabilities
 # with no resistances equal vulnerable.  All the combiners treat the auxiliary
 # values (usually for timed effects) separately.
 # The category and priority fields can be set multiple times.  The
