@@ -632,8 +632,8 @@ static void resist_0_vec(int n, const int *vals, const int *auxs,
 {
 	int i, neg;
 
-	*accum = UI_ENTRY_UNKNOWN_VALUE;
-	neg = UI_ENTRY_UNKNOWN_VALUE;
+	*accum = UI_ENTRY_VALUE_NOT_PRESENT;
+	neg = UI_ENTRY_VALUE_NOT_PRESENT;
 	for (i = 0; i < n; ++i) {
 		resist_0_combine_accum_help(vals[i], accum, &neg);
 	}
@@ -646,8 +646,8 @@ static void resist_0_vec(int n, const int *vals, const int *auxs,
 		}
 	}
 
-	*accum_aux = UI_ENTRY_UNKNOWN_VALUE;
-	neg = UI_ENTRY_UNKNOWN_VALUE;
+	*accum_aux = UI_ENTRY_VALUE_NOT_PRESENT;
+	neg = UI_ENTRY_VALUE_NOT_PRESENT;
 	for (i = 0; i < n; ++i) {
 		resist_0_combine_accum_help(auxs[i], accum_aux, &neg);
 	}
