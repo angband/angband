@@ -684,15 +684,11 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		if (boring || square_isinteresting(cave, loc(x, y))) {
 			/* Hack -- handle unknown grids */
 
-			/* Pick a prefix */
-			if (*s2 && square_isdoor(cave, loc(x, y))) s2 = "in ";
+			/* Pick a preposition if needed */
+			if (*s2) s2 = square_apparent_look_in_preposition(cave, player, loc(x, y));
 
-			/* Pick proper indefinite article */
-			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
-
-			/* Hack -- special introduction for store doors */
-			if (square_isshop(cave, loc(x, y)))
-				s3 = "the entrance to the ";
+			/* Pick prefix for the name */
+			s3 = square_apparent_look_prefix(cave, player, loc(x, y));
 
 			/* Display a message */
 			if (player->wizard) {
