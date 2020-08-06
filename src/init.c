@@ -1790,6 +1790,24 @@ static enum parser_error parse_feat_confused_msg(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_feat_look_prefix(struct parser *p) {
+	struct feature *f = parser_priv(p);
+	assert(f);
+
+	f->look_prefix =
+		string_append(f->look_prefix, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_feat_look_in_preposition(struct parser *p) {
+	struct feature *f = parser_priv(p);
+	assert(f);
+
+	f->look_in_preposition =
+		string_append(f->look_in_preposition, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_feat_resist_flag(struct parser *p) {
 	int flag;
     struct feature *f = parser_priv(p);
@@ -1821,6 +1839,8 @@ struct parser *init_parse_feat(void) {
     parser_reg(p, "hurt-msg str text", parse_feat_hurt_msg);
     parser_reg(p, "die-msg str text", parse_feat_die_msg);
 	parser_reg(p, "confused-msg str text", parse_feat_confused_msg);
+	parser_reg(p, "look-prefix str text", parse_feat_look_prefix);
+	parser_reg(p, "look-in-preposition str text", parse_feat_look_in_preposition);
 	parser_reg(p, "resist-flag sym flag", parse_feat_resist_flag);
 	return p;
 }
@@ -1848,6 +1868,15 @@ static errr finish_parse_feat(struct parser *p) {
 		assert(fidx >= 0);
 
 		memcpy(&f_info[fidx], f, sizeof(*f));
+		/* Add trailing space for ease of use with targeting code. */
+		if (f_info[fidx].look_prefix) {
+			f_info[fidx].look_prefix =
+				string_append(f_info[fidx].look_prefix, " ");
+		}
+		if (f_info[fidx].look_in_preposition) {
+			f_info[fidx].look_in_preposition =
+				string_append(f_info[fidx].look_in_preposition, " ");
+		}
 		f_info[fidx].fidx = fidx;
 		n = f->next;
 		if (fidx < z_info->f_max - 1)

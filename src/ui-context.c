@@ -534,13 +534,9 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	} else {
 		/* Feature (apply mimic) */
 		const char *name = square_apparent_name(c, player, grid);
+		const char *prefix = square_apparent_look_prefix(c, player, grid);
 
-		/* Hack -- special introduction for store doors */
-		if (square_isshop(cave, grid)) {
-			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
-		} else {
-			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
-		}
+		prt(format("(Enter to select command, ESC to cancel) You see %s%s:", prefix, name), 0, 0);
 	}
 
 	selected = menu_dynamic_select(m);
