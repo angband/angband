@@ -2809,7 +2809,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 					MDESC_IND_HID | MDESC_CAPITAL);
 
 			/* Describe the monster */
-			msg("%s has %d hit points.", m_name, mon->hp);
+			msg("%s has %d hit point%s.", m_name, mon->hp, (mon->hp == 1) ? "" : "s");
 
 			/* Learn all of the non-spell, non-treasure flags */
 			lore_do_probe(mon);
