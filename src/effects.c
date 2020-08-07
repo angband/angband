@@ -5014,9 +5014,9 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	drain = MIN(mon->hp, amount);
 	if (drain == 0) return true;
 	if (OPT(player, show_damage)) {
-		msg("You bite the %s. (%d)", m_name, drain);
+		msg("You bite %s. (%d)", m_name, drain);
 	} else {
-		msg("You bite the %s.", m_name);
+		msg("You bite %s.", m_name);
 	}
 	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
 
