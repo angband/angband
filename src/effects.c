@@ -557,6 +557,8 @@ void brand_object(struct object *obj, const char *name)
 			if (ok) break;
 		}
 
+		assert(ok);
+
 		/* Make it an ego item */
 		obj->ego = &e_info[i];
 		ego_apply_magic(obj, 0);
