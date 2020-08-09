@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "effects.h"
 #include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
@@ -38,6 +39,7 @@
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-util.h"
+#include "project.h"
 #include "store.h"
 #include "target.h"
 #include "trap.h"
@@ -2557,11 +2559,609 @@ static void do_cmd_knowledge_traps(const char *name, int row)
 
 /**
  * ------------------------------------------------------------------------
+ * SHAPECHANGE
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Counts the number of interesting shapechanges and returns it.
+ */
+static int count_interesting_shapes(void)
+{
+	int count = 0;
+	struct player_shape *s;
+
+	for (s = shapes; s; s = s->next) {
+		if (! streq(s->name, "normal")) {
+			++count;
+		}
+	}
+
+	return count;
+}
+
+
+/**
+ * Is a comparison function for an array of struct player_shape* which is
+ * compatible with sort() and puts the elements in ascending alphabetical
+ * order by name.
+ */
+static int compare_shape_names(const void *left, const void *right)
+{
+	const struct player_shape * const *sleft = left;
+	const struct player_shape * const *sright = right;
+
+	return my_stricmp((*sleft)->name, (*sright)->name);
+}
+
+
+static void shape_lore_helper_append_to_list(const char* item,
+	const char ***list, int* p_nmax, int *p_n)
+{
+	if (*p_n >= *p_nmax) {
+		if (*p_nmax == 0) {
+			*p_nmax = 4;
+		} else {
+			assert(*p_nmax > 0);
+			*p_nmax *= 2;
+		}
+		*list = mem_realloc(*list, *p_nmax * sizeof(**list));
+	}
+	(*list)[*p_n] = string_make(item);
+	++*p_n;
+}
+
+
+static const char *skill_index_to_name(int i)
+{
+	const char *name;
+
+	switch (i) {
+	case SKILL_DISARM_PHYS:
+		name = "physical disarming";
+		break;
+
+	case SKILL_DISARM_MAGIC:
+		name = "magical disarming";
+		break;
+
+	case SKILL_DEVICE:
+		name = "magic devices";
+		break;
+
+	case SKILL_SAVE:
+		name = "saving throws";
+		break;
+
+	case SKILL_SEARCH:
+		name = "searching";
+		break;
+
+	case SKILL_TO_HIT_MELEE:
+		name = "melee to hit";
+		break;
+
+	case SKILL_TO_HIT_BOW:
+		name = "shooting to hit";
+		break;
+
+	case SKILL_TO_HIT_THROW:
+		name = "throwing to hit";
+		break;
+
+	case SKILL_DIGGING:
+		name = "digging";
+		break;
+
+	default:
+		name = "unknown skill";
+		break;
+	}
+
+	return name;
+}
+
+
+static void shape_lore_append_list(textblock *tb,
+	const char * const *list, int n)
+{
+	int i;
+
+	if (n > 0) {
+		textblock_append(tb, " %s", list[0]);
+	}
+	for (i = 1; i < n; ++i) {
+		if (i < n - 1) {
+			textblock_append(tb, ",");
+		} else {
+			textblock_append(tb, "%s and", (n > 2) ? "," : "");
+		}
+		textblock_append(tb, " %s", list[i]);
+	}
+}
+
+
+static void shape_lore_append_basic_combat(textblock *tb,
+	const struct player_shape *s)
+{
+	char toa_msg[24];
+	char toh_msg[24];
+	char tod_msg[24];
+	const char* msgs[3];
+	int n = 0;
+
+	if (s->to_a != 0) {
+		strnfmt(toa_msg, sizeof(toa_msg), "%+d to AC", s->to_a);
+		msgs[n] = toa_msg;
+		++n;
+	}
+	if (s->to_h != 0) {
+		strnfmt(toh_msg, sizeof(toh_msg), "%+d to hit", s->to_h);
+		msgs[n] = toh_msg;
+		++n;
+	}
+	if (s->to_d != 0) {
+		strnfmt(tod_msg, sizeof(tod_msg), "%+d to damage", s->to_d);
+		msgs[n] = tod_msg;
+		++n;
+	}
+	if (n > 0) {
+		textblock_append(tb, "Adds");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+	}
+}
+
+
+static void shape_lore_append_skills(textblock *tb,
+	const struct player_shape *s)
+{
+	const char **msgs = NULL;
+	int nmax = 0, n = 0;
+	int i;
+
+	for (i = 0; i < SKILL_MAX; ++i) {
+		if (s->skills[i] != 0) {
+			shape_lore_helper_append_to_list(
+				format("%+d to %s", s->skills[i],
+					skill_index_to_name(i)),
+				&msgs, &nmax, &n);
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "Adds");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+		for (i = 0; i < n; ++i) {
+			string_free((char*) msgs[i]);
+		}
+	}
+
+	mem_free(msgs);
+}
+
+
+static void shape_lore_append_non_stat_modifiers(textblock *tb,
+	const struct player_shape *s)
+{
+	const char **msgs = NULL;
+	int nmax = 0, n = 0;
+	int i;
+
+	for (i = STAT_MAX; i < OBJ_MOD_MAX; ++i) {
+		if (s->modifiers[i] != 0) {
+			shape_lore_helper_append_to_list(
+				format("%+d to %s",
+					s->modifiers[i],
+					lookup_obj_property(OBJ_PROPERTY_MOD, i)->name),
+				&msgs, &nmax, &n);
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "Adds");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+		for (i = 0; i < n; ++i) {
+			string_free((char*) msgs[i]);
+		}
+	}
+
+	mem_free(msgs);
+}
+
+
+static void shape_lore_append_stat_modifiers(textblock *tb,
+	const struct player_shape *s)
+{
+	const char **msgs = NULL;
+	int nmax = 0, n = 0;
+	int i;
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		if (s->modifiers[i] != 0) {
+			shape_lore_helper_append_to_list(
+				format("%+d to %s",
+					s->modifiers[i],
+					lookup_obj_property(OBJ_PROPERTY_MOD, i)->name),
+				&msgs, &nmax, &n);
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "Adds");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+		for (i = 0; i < n; ++i) {
+			string_free((char*) msgs[i]);
+		}
+	}
+
+	mem_free(msgs);
+}
+
+
+static void shape_lore_append_resistances(textblock *tb,
+	const struct player_shape *s)
+{
+	const char* vul[ELEM_MAX];
+	const char* res[ELEM_MAX];
+	const char* imm[ELEM_MAX];
+	int nvul = 0, nres = 0, nimm = 0;
+	int i;
+
+	for (i = 0; i < ELEM_MAX; ++i) {
+		if (s->el_info[i].res_level < 0) {
+			vul[nvul] = projections[i].name;
+			++nvul;
+		} else if (s->el_info[i].res_level >= 3) {
+			imm[nimm] = projections[i].name;
+			++nimm;
+		} else if (s->el_info[i].res_level != 0) {
+			res[nres] = projections[i].name;
+			++nres;
+		}
+	}
+
+	if (nvul != 0) {
+		textblock_append(tb, "Makes you vulnerable to");
+		shape_lore_append_list(tb, vul, nvul);
+		textblock_append(tb, ".\n");
+	}
+
+	if (nres != 0) {
+		textblock_append(tb, "Makes you resistant to");
+		shape_lore_append_list(tb, res, nres);
+		textblock_append(tb, ".\n");
+	}
+
+	if (nimm != 0) {
+		textblock_append(tb, "Makes you immune to");
+		shape_lore_append_list(tb, imm, nimm);
+		textblock_append(tb, ".\n");
+	}
+}
+
+
+static void shape_lore_append_protection_flags(textblock *tb,
+	const struct player_shape *s)
+{
+	const char **msgs = NULL;
+	int nmax = 0, n = 0;
+	int i;
+
+	for (i = 1; i < OF_MAX; ++i) {
+		struct obj_property *prop =
+			lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+
+		if (prop->subtype == OFT_PROT &&
+			of_has(s->flags, prop->index)) {
+			shape_lore_helper_append_to_list(
+				prop->desc, &msgs, &nmax, &n);
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "Provides projection from");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+		for (i = 0; i < n; ++i) {
+			string_free((char*) msgs[i]);
+		}
+	}
+
+	mem_free(msgs);
+}
+
+
+static void shape_lore_append_sustains(textblock *tb,
+	const struct player_shape *s)
+{
+	const char **msgs = NULL;
+	int nmax = 0, n = 0;
+	int i;
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		struct obj_property *prop =
+			lookup_obj_property(OBJ_PROPERTY_STAT, i);
+
+		if (of_has(s->flags, sustain_flag(prop->index))) {
+			shape_lore_helper_append_to_list(
+				prop->name, &msgs, &nmax, &n);
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "Sustains");
+		shape_lore_append_list(tb, msgs, n);
+		textblock_append(tb, ".\n");
+		for (i = 0; i < n; ++i) {
+			string_free((char*) msgs[i]);
+		}
+	}
+
+	mem_free(msgs);
+}
+
+
+static void shape_lore_append_misc_flags(textblock *tb,
+	const struct player_shape *s)
+{
+	int n = 0;
+	int i;
+	struct player_ability *ability;
+
+	for (i = 1; i < OF_MAX; ++i) {
+		struct obj_property *prop =
+			lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+
+		if ((prop->subtype == OFT_MISC || prop->subtype == OFT_MELEE ||
+			prop->subtype == OFT_BAD) &&
+			of_has(s->flags, prop->index)) {
+			textblock_append(tb, "%s%s.", (n > 0) ? "  " : "",
+				prop->desc);
+			++n;
+		}
+	}
+
+	for (ability = player_abilities; ability; ability = ability->next) {
+		if (streq(ability->type, "player") &&
+			pf_has(s->pflags, ability->index)) {
+			textblock_append(tb, "%s%s", (n > 0) ? "  " : "",
+				ability->desc);
+			++n;
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "\n");
+	}
+}
+
+
+static void shape_lore_append_triggering_spells(textblock *tb,
+	const struct player_shape *s)
+{
+	int n = 0;
+	struct player_class *c;
+
+	for (c = classes; c; c = c->next) {
+		int ibook;
+
+		for (ibook = 0; ibook < c->magic.num_books; ++ibook) {
+			const struct class_book *book = c->magic.books + ibook;
+			const struct object_kind *kind =
+				lookup_kind(book->tval, book->sval);
+			int ispell;
+
+			if (!kind || !kind->name) {
+				continue;
+			}
+			for (ispell = 0; ispell < book->num_spells; ++ispell) {
+				const struct class_spell *spell =
+					book->spells + ispell;
+				const struct effect *effect;
+
+				for (effect = spell->effect;
+					effect;
+					effect = effect->next) {
+					if (effect->index == EF_SHAPECHANGE &&
+						effect->subtype == s->sidx) {
+						if (n == 0) {
+							textblock_append(tb, "\n");
+						}
+						textblock_append(tb,
+							"The %s spell, %s, from %s triggers the shapechange.",
+							c->name,
+							spell->name,
+							kind->name
+						);
+						++n;
+					}
+				}
+			}
+		}
+	}
+
+	if (n > 0) {
+		textblock_append(tb, "\n");
+	}
+}
+
+
+/**
+ * Display information about a shape change.
+ */
+static void shape_lore(const struct player_shape *s)
+{
+	textblock *tb = textblock_new();
+
+	textblock_append(tb, "%s", s->name);
+	textblock_append(tb, "\nLike all shapes, the equipment at the time of "
+		"the shapechange sets the base attributes, including damage "
+		"per blow, number of blows, and resistances.\n");
+	shape_lore_append_basic_combat(tb, s);
+	shape_lore_append_skills(tb, s);
+	shape_lore_append_non_stat_modifiers(tb, s);
+	shape_lore_append_stat_modifiers(tb, s);
+	shape_lore_append_resistances(tb, s);
+	shape_lore_append_protection_flags(tb, s);
+	shape_lore_append_sustains(tb, s);
+	shape_lore_append_misc_flags(tb, s);
+	shape_lore_append_triggering_spells(tb, s);
+
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+}
+
+
+static void do_cmd_knowledge_shapechange(const char *name, int row)
+{
+	region header_region = { 0, 0, -1, 5 };
+	region list_region = { 0, 6, -1, -2 };
+	int count = count_interesting_shapes();
+	struct menu* m;
+	struct player_shape **sarray;
+	const char **narray;
+	int omode;
+	int h, mark, mark_old;
+	bool displaying, redraw;
+	struct player_shape *s;
+	int i;
+
+	if (!count) {
+		return;
+	}
+
+	m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
+
+	/* Set up an easily indexable list of the interesting shapes. */
+	sarray = mem_alloc(count * sizeof(*sarray));
+	for (s = shapes, i = 0; s; s = s->next) {
+		if (streq(s->name, "normal")) {
+			continue;
+		}
+		sarray[i] = s;
+		++i;
+	}
+
+	/*
+	 * Sort them alphabetically by name and set up an array with just the
+	 * names.
+	 */
+	sort(sarray, count, sizeof(sarray[0]), compare_shape_names);
+	narray = mem_alloc(count * sizeof(*narray));
+	for (i = 0; i < count; ++i) {
+		narray[i] = sarray[i]->name;
+	}
+
+	menu_setpriv(m, count, narray);
+	menu_layout(m, &list_region);
+	m->flags |= MN_DBL_TAP;
+
+	screen_save();
+	clear_from(0);
+
+	/* Disable the roguelike commands for the duration */
+	omode = OPT(player, rogue_like_commands);
+	OPT(player, rogue_like_commands) = false;
+
+	h = 0;
+	mark = 0;
+	mark_old = -1;
+	displaying = true;
+	redraw = true;
+	while (displaying) {
+		bool recall = false;
+		int wnew, hnew;
+		ui_event ke0 = EVENT_EMPTY;
+		ui_event ke;
+
+		Term_get_size(&wnew, &hnew);
+		if (h != hnew) {
+			h = hnew;
+			redraw = true;
+		}
+
+		if (redraw) {
+			region_erase(&header_region);
+			prt("Knowledge - shapes", 2, 0);
+			prt("Name", 4, 0);
+			for (i = 0; i < MIN(80, wnew); i++) {
+				Term_putch(i, 5, COLOUR_WHITE, '=');
+			}
+			prt("<dir>, 'r' to recall, ESC", h - 2, 0);
+			redraw = false;
+		}
+
+		if (mark_old != mark) {
+			mark_old = mark;
+			m->cursor = mark;
+		}
+
+		menu_refresh(m, false);
+
+		handle_stuff(player);
+
+		ke = inkey_ex();
+		if (ke.type == EVT_MOUSE) {
+			menu_handle_mouse(m, &ke, &ke0);
+		} else if (ke.type == EVT_KBRD) {
+			menu_handle_keypress(m, &ke, &ke0);
+		}
+		if (ke0.type != EVT_NONE) {
+			ke = ke0;
+		}
+
+		switch (ke.type) {
+			case EVT_KBRD:
+				if (ke.key.code == 'r' || ke.key.code == 'R') {
+					recall = true;
+				}
+				break;
+
+			case EVT_ESCAPE:
+				displaying = false;
+				break;
+
+			case EVT_SELECT:
+				if (mark == m->cursor) {
+					recall = true;
+				}
+				break;
+
+			case EVT_MOVE:
+				mark = m->cursor;
+				break;
+
+			default:
+				break;
+		}
+
+		if (recall) {
+			assert(mark >= 0 && mark < count);
+			shape_lore(sarray[mark]);
+		}
+	}
+
+	/* Restore roguelike option */
+	OPT(player, rogue_like_commands) = omode;
+
+	screen_load();
+
+	mem_free(narray);
+	mem_free(sarray);
+	menu_free(m);
+}
+
+
+/**
+ * ------------------------------------------------------------------------
  * Main knowledge menus
  * ------------------------------------------------------------------------ */
 
 /* The first row of the knowledge_actions menu which does store knowledge */
-#define STORE_KNOWLEDGE_ROW 7
+#define STORE_KNOWLEDGE_ROW 8
 
 static void do_cmd_knowledge_store(const char *name, int row)
 {
@@ -2596,6 +3196,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
+{ 0, 0, "Display shapechange effects",     do_cmd_knowledge_shapechange },
 { 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
 { 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
 { 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
@@ -2688,6 +3289,10 @@ void textui_browse_knowledge(void)
 		knowledge_actions[4].flags = 0;
 	else
 		knowledge_actions[4].flags = MN_ACT_GRAYED;
+
+	/* Shapechanges */
+	knowledge_actions[7].flags = (count_interesting_shapes() > 0) ?
+		0 : MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
