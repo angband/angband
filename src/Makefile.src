@@ -93,6 +93,7 @@ ANGFILES = \
 	datafile.o \
 	debug.o \
 	effects.o \
+	effects-info.o \
 	game-event.o \
 	game-input.o \
 	game-world.o \

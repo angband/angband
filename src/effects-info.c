@@ -1,0 +1,510 @@
+/**
+ * \file effects-info.c
+ * \brief Implement interfaces for displaying information about effects
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
+#include "effects-info.h"
+#include "effects.h"
+#include "init.h"
+#include "message.h"
+#include "mon-summon.h"
+#include "obj-info.h"
+#include "player-timed.h"
+#include "project.h"
+#include "z-color.h"
+#include "z-form.h"
+#include "z-util.h"
+
+
+static struct {
+        int index;
+        int args;
+        int efinfo_flag;
+        const char *desc;
+} base_descs[] = {
+        { EF_NONE, 0, EFINFO_NONE, "" },
+        #define EFFECT(x, a, b, c, d, e) { EF_##x, c, d, e },
+        #include "list-effects.h"
+        #undef EFFECT
+};
+
+
+/**
+ * Get the possible dice strings.
+ */
+static void format_dice_string(const random_value *v, size_t len,
+	char* dice_string)
+{
+	if (v->dice && v->base) {
+		strnfmt(dice_string, len, "%d+%dd%d", v->base, v->dice,
+			v->sides);
+	} else if (v->dice) {
+		strnfmt(dice_string, len, "%dd%d", v->dice, v->sides);
+	} else {
+		strnfmt(dice_string, len, "%d", v->base);
+	}
+}
+
+
+static void copy_to_textblock_with_coloring(textblock *tb, const char *s)
+{
+	while (*s) {
+		if (isdigit((unsigned char) *s)) {
+			textblock_append_c(tb, COLOUR_L_GREEN, "%c", *s);
+		} else {
+			textblock_append(tb, "%c", *s);
+		}
+		++s;
+	}
+}
+
+
+/**
+ * Creates a description of the random effect which chooses from the next count
+ * effects in the linked list starting with e.  The description is prefaced
+ * with the contents of *prefix if prefix is not NULL.  dev_skill_boost is the
+ * percent increase in damage to report for the device skill.  Sets *nexte to
+ * point to the element in the linked list or NULL that is immediately after
+ * the count effects.  Returns a non-NULL value if there was at least one
+ * effect that could be described.  Otherwise, returns NULL.
+ */
+static textblock *create_random_effect_description(const struct effect *e,
+	int count, const char *prefix, int dev_skill_boost,
+	const struct effect **nexte)
+{
+	/*
+	 * Do one pass through the effects to determine if they are of all the
+	 * the same basic type.  That is used to condense the description in
+	 * the case where all are breaths.  Ignore random nested effects since
+	 * they will do nothing when the outer random effect is processed with
+	 * effect_do().
+	 */
+	textblock *res = NULL;
+	const struct effect *efirst;
+	const dice_t *first_dice;
+	int first_ind, first_other;
+	random_value first_rv = { 0, 0, 0, 0 };
+	bool same_ind, same_other, same_dice;
+	int irand, jrand;
+	int nvalid;
+
+	/* Find the first effect that's valid and not random. */
+	irand = 0;
+	while (1) {
+		if (!e || irand >= count) {
+			/*
+			 * There's no valid or non-random effects; do nothing.
+			 */
+			*nexte = e;
+			return false;
+		}
+		if (effect_desc(e) && e->index != EF_RANDOM) {
+			break;
+		}
+		e = e->next;
+		++irand;
+	}
+
+	efirst = e;
+	first_ind = e->index;
+	first_other = e->other;
+	first_dice = e->dice;
+	if (e->dice) {
+		dice_random_value(e->dice, &first_rv);
+	}
+
+	nvalid = 1;
+	same_ind = true;
+	same_other = true;
+	same_dice = true;
+	for (e = efirst->next, jrand = irand + 1;
+		e && jrand < count;
+		e = e->next, ++jrand) {
+		if (!effect_desc(e) || e->index == EF_RANDOM) {
+			continue;
+		}
+		++nvalid;
+		if (e->index != first_ind) {
+			same_ind = false;
+		}
+		if (e->other != first_other) {
+			same_other = false;
+		}
+		if (e->dice) {
+			if (first_dice) {
+				random_value this_rv;
+
+				dice_random_value(e->dice, &this_rv);
+				if (this_rv.base != first_rv.base ||
+					this_rv.dice != first_rv.dice ||
+					this_rv.sides != first_rv.sides ||
+					this_rv.m_bonus != first_rv.m_bonus) {
+					same_dice = false;
+				}
+			} else {
+				same_dice = false;
+			}
+		} else if (first_dice) {
+			same_dice = false;
+		}
+	}
+	*nexte = e;
+
+	if (same_ind && base_descs[first_ind].efinfo_flag == EFINFO_BREATH &&
+		same_dice && same_other) {
+		/* Concatenate the list of possible elements. */
+		char breaths[120], dice_string[20], desc[200];
+		int ivalid;
+
+		strnfmt(breaths, sizeof(breaths), "%s",
+			projections[efirst->subtype].player_desc);
+		ivalid = 1;
+		for (e = efirst->next, jrand = irand + 1;
+			e && jrand < count;
+			e = e->next, ++jrand) {
+			if (!effect_desc(e) || e->index == EF_RANDOM) {
+				continue;
+			}
+			if (ivalid == nvalid - 1) {
+				my_strcat(breaths,
+					(nvalid > 2) ? ", or " : " or ",
+					sizeof(breaths));
+			} else {
+				my_strcat(breaths, ", ", sizeof(breaths));
+			}
+			my_strcat(breaths, projections[e->subtype].player_desc,
+				sizeof(breaths));
+			++ivalid;
+		}
+
+		/* Then use that in the effect description. */
+		format_dice_string(&first_rv, sizeof(dice_string), dice_string);
+		strnfmt(desc, sizeof(desc), effect_desc(efirst), breaths,
+			efirst->other, dice_string);
+
+		res = textblock_new();
+		if (prefix) {
+			textblock_append(res, "%s", prefix);
+		}
+		textblock_append(res, "randomly ");
+		copy_to_textblock_with_coloring(res, desc);
+	} else {
+		/* Concatenate the effect descriptions. */
+		textblock *tb;
+		int ivalid;
+		
+		tb = effect_describe(efirst, "randomly ", dev_skill_boost,
+			true);
+		if (tb) {
+			ivalid = 1;
+			if (prefix) {
+				res = textblock_new();
+				textblock_append(res, "%s", prefix);
+				textblock_append_textblock(res, tb);
+				textblock_free(tb);
+			} else {
+				res = tb;
+			}
+		} else {
+			ivalid = 0;
+			--nvalid;
+		}
+		for (e = efirst->next, jrand = irand + 1;
+			e && jrand < count;
+			e = e->next, ++jrand) {
+			if (!effect_desc(e) || e->index == EF_RANDOM) {
+				continue;
+			}
+			tb = effect_describe(e,
+				(ivalid == 0) ? "randomly " : NULL,
+				dev_skill_boost, true);
+			if (!tb) {
+				--nvalid;
+				continue;
+			}
+			if (prefix && ! res) {
+				assert(ivalid == 0);
+				res = textblock_new();
+				textblock_append(res, "%s", prefix);
+			}
+			if (res) {
+				if (ivalid > 0) {
+					textblock_append(res,
+						(ivalid == nvalid - 1) ?
+						" or " : ", ");
+				}
+				textblock_append_textblock(res, tb);
+				textblock_free(tb);
+			} else {
+				res = tb;
+			}
+			++ivalid;
+		}
+	}
+
+	return res;
+}
+
+
+/**
+ * Creates a new textblock which has a description of the effect in *e (and
+ * any linked to it because e->index == EF_RANDOM) if only_first is true or
+ * has a description of *e and all the subsequent effects if only_first is
+ * false.  If none of the effects has a description, will return NULL.  If
+ * there is at least one effect with a description and prefix is not NULL,
+ * the string pointed to by prefix will be added to the textblock before
+ * the descriptions.  dev_skill_boost is the percent increase from the device
+ * skill to show in the descriptions.
+ */
+textblock *effect_describe(const struct effect *e, const char *prefix,
+	int dev_skill_boost, bool only_first)
+{
+	textblock *tb = NULL;
+	int nadded = 0;
+	char desc[200];
+
+	while (e) {
+		const char* edesc = effect_desc(e);
+		int roll = 0;
+		random_value value = { 0, 0, 0, 0 };
+		bool boosted = false;
+		char dice_string[20];
+
+		if (e->dice != NULL) {
+			roll = dice_roll(e->dice, &value);
+		}
+
+		/* Deal with special random effect. */
+		if (e->index == EF_RANDOM) {
+			const struct effect *nexte;
+			textblock *tbe = create_random_effect_description(
+				e->next, roll, (nadded == 0) ? prefix : NULL,
+				dev_skill_boost, &nexte);
+
+			e = (only_first) ? NULL : nexte;
+			if (tbe) {
+				if (tb) {
+					textblock_append(tb,
+						e ? ", " : " and ");
+					textblock_append_textblock(tb, tbe);
+					textblock_free(tbe);
+				} else {
+					tb = tbe;
+				}
+				++nadded;
+			}
+			continue;
+		}
+
+		if (!edesc) {
+			e = (only_first) ? NULL : e->next;
+			continue;
+		}
+
+		format_dice_string(&value, sizeof(dice_string), dice_string);
+
+		/* Check all the possible types of description format. */
+		switch (base_descs[e->index].efinfo_flag) {
+		case EFINFO_HURT:
+			strnfmt(desc, sizeof(desc), edesc, dice_string);
+			break;
+
+		case EFINFO_HEAL:
+			/* Healing sometimes has a minimum percentage. */
+			{
+				char min_string[50];
+
+				if (value.m_bonus) {
+					strnfmt(min_string, sizeof(min_string),
+						" (or %d%%, whichever is greater)",
+						value.m_bonus);
+				} else {
+					strnfmt(min_string, sizeof(min_string),
+						"");
+				}
+				strnfmt(desc, sizeof(desc), edesc, dice_string,
+					min_string);
+			}
+			break;
+
+		case EFINFO_CONST:
+			strnfmt(desc, sizeof(desc), edesc, value.base / 2);
+			break;
+
+		case EFINFO_FOOD:
+			{
+				const char *fed = e->subtype ?
+					"leaves you nourished" : "feeds you";
+
+				strnfmt(desc, sizeof(desc), edesc, fed,
+					value.base * z_info->food_value,
+					value.base);
+			}
+			break;
+
+		case EFINFO_CURE:
+			strnfmt(desc, sizeof(desc), edesc,
+				timed_effects[e->subtype].desc);
+			break;
+
+		case EFINFO_TIMED:
+			strnfmt(desc, sizeof(desc), edesc,
+				timed_effects[e->subtype].desc,
+				dice_string);
+			break;
+
+		case EFINFO_STAT:
+			{
+				int stat = e->subtype;
+
+				strnfmt(desc, sizeof(desc), edesc,
+					lookup_obj_property(OBJ_PROPERTY_STAT, stat)->name);
+			}
+			break;
+
+		case EFINFO_SEEN:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].desc);
+			break;
+
+		case EFINFO_SUMM:
+			strnfmt(desc, sizeof(desc), edesc,
+				summon_desc(e->subtype));
+			break;
+
+		case EFINFO_TELE:
+			/*
+			 * Only currently used for the player, but can handle
+			 * monsters.
+			 */
+			{
+				char dist[32];
+
+				if (value.m_bonus) {
+					strnfmt(dist, sizeof(dist),
+						"a level-dependent distance");
+				} else {
+					strnfmt(dist, sizeof(dist),
+						"%d grids", value.base);
+				}
+				strnfmt(desc, sizeof(desc), edesc,
+					(e->subtype) ? "a monster" : "you",
+					dist);
+			}
+			break;
+
+		case EFINFO_QUAKE:
+			strnfmt(desc, sizeof(desc), edesc, e->radius);
+			break;
+
+		case EFINFO_BALL:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].player_desc,
+				e->radius, dice_string);
+			boosted = (dev_skill_boost != 0);
+			break;
+
+		case EFINFO_SPOT:
+			{
+				int i_radius = e->other ? e->other : e->radius;
+
+				strnfmt(desc, sizeof(desc), edesc,
+					projections[e->subtype].player_desc,
+					e->radius, i_radius, dice_string);
+			}
+			break;
+
+		case EFINFO_BREATH:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].player_desc, e->other,
+				dice_string);
+			boosted = (dev_skill_boost != 0 &&
+				e->index != EF_BREATH);
+			break;
+
+		case EFINFO_SHORT:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].player_desc,
+				e->radius +
+					(e->other ? e->other / player->lev : 0),
+				dice_string);
+			break;
+
+		case EFINFO_LASH:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].lash_desc, e->subtype);
+			break;
+
+		case EFINFO_BOLT:
+			/* Bolt that inflict status */
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].desc);
+			break;
+
+		case EFINFO_BOLTD:
+			/* Bolts and beams that damage */
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].desc, dice_string);
+			boosted = (dev_skill_boost != 0);
+			break;
+
+		case EFINFO_TOUCH:
+			strnfmt(desc, sizeof(desc), edesc,
+				projections[e->subtype].desc);
+			break;
+
+		case EFINFO_TAP:
+			strnfmt(desc, sizeof(desc), edesc, dice_string);
+			break;
+
+		case EFINFO_NONE:
+			strnfmt(desc, sizeof(desc), edesc);
+			break;
+
+		default:
+			strnfmt(desc, sizeof(desc), "");
+			msg("Bad effect description passed to effect_info().  Please report this bug.");
+			break;
+		}
+
+		if (boosted) {
+			my_strcat(desc,
+				format(", which your device skill increases by %d per cent",
+					 dev_skill_boost),
+				sizeof(desc));
+		}
+
+		e = (only_first) ? NULL : e->next;
+
+		if (desc[0] != '\0') {
+			if (tb) {
+				if (e) {
+					textblock_append(tb, ", ");
+				} else {
+					textblock_append(tb, " and ");
+				}
+			} else {
+				tb = textblock_new();
+				if (prefix) {
+					textblock_append(tb, "%s", prefix);
+				}
+			}
+			copy_to_textblock_with_coloring(tb, desc);
+
+			++nadded;
+		}
+	}
+
+	return tb;
+}

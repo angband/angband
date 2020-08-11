@@ -20,10 +20,10 @@
 #include "angband.h"
 #include "cmds.h"
 #include "effects.h"
+#include "effects-info.h"
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
-#include "mon-summon.h"
 #include "mon-util.h"
 #include "obj-curse.h"
 #include "obj-gear.h"
@@ -36,7 +36,6 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
-#include "player-timed.h"
 #include "project.h"
 #include "z-textblock.h"
 
@@ -62,18 +61,6 @@ static const struct origin_type {
 	#define ORIGIN(a, b, c) { ORIGIN_##a, b, c },
 	#include "list-origins.h"
 	#undef ORIGIN
-};
-
-static struct {
-	int index;
-	int args;
-	int efinfo_flag;
-	const char *desc;
-} base_descs[] = {
-	{ EF_NONE, 0, EFINFO_NONE, "" },
-	#define EFFECT(x, a, b, c, d, e) { EF_##x, c, d, e },
-	#include "list-effects.h"
-	#undef EFFECT
 };
 
 
@@ -1674,7 +1661,6 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 static bool describe_effect(textblock *tb, const struct object *obj,
 		bool only_artifacts, bool subjective)
 {
-	char desc[200];
 	struct effect *effect = NULL;
 	bool aimed = false;
 	int min_time, max_time, failure_chance;
@@ -1711,265 +1697,29 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		textblock_append(tb, "When activated, it ");
 		textblock_append(tb, obj->activation->desc);
 	} else {
-		int random_choices = 0;
-		bool random_breath = (effect && (effect->index == EF_RANDOM) &&
-							  effect->next &&
-							  (effect->next->index == EF_BREATH));
-		char breaths[120];
-
-		my_strcpy(breaths, "", sizeof(breaths));
-
-		/* Get descriptions for all the effects */
-		effect = object_effect(obj);
-		if (!effect_desc(effect)) return false;
+		int level = obj->artifact ?
+			obj->artifact->level : obj->kind->level;
+		int boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
+		const char *prefix;
+		textblock *tbe;
 
 		if (aimed)
-			textblock_append(tb, "When aimed, it ");
+			prefix = "When aimed, it ";
 		else if (tval_is_edible(obj))
-			textblock_append(tb, "When eaten, it ");
+			prefix = "When eaten, it ";
 		else if (tval_is_potion(obj))
-			textblock_append(tb, "When quaffed, it ");
+			prefix = "When quaffed, it ";
 		else if (tval_is_scroll(obj))
-			textblock_append(tb, "When read, it ");
+			prefix = "When read, it ";
 		else
-			textblock_append(tb, "When activated, it ");
+			prefix = "When activated, it ";
 
-		/* Print a colourised description */
-		while (effect) {
-			char *next_char = desc;
-			int roll = 0;
-			random_value value = { 0, 0, 0, 0 };
-			char dice_string[20];
-
-			int level = obj->artifact ? obj->artifact->level : obj->kind->level;
-			int boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
-
-			if (effect->dice != NULL)
-				roll = dice_roll(effect->dice, &value);
-
-			/* Deal with special random effect */
-			if (effect->index == EF_RANDOM)
-				random_choices = roll + 1;
-
-			/* Get the possible dice strings */
-			if (value.dice && value.base)
-				strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
-						value.base, value.dice, value.sides);
-			else if (value.dice)
-				strnfmt(dice_string, sizeof(dice_string), "%dd%d",
-						value.dice, value.sides);
-			else
-				strnfmt(dice_string, sizeof(dice_string), "%d", value.base);
-
-			/* Check all the possible types of description format */
-			switch (base_descs[effect->index].efinfo_flag) {
-				/* Healing sometimes has a minimum percentage */
-			case EFINFO_HURT: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string);
-				break;
-			}
-			case EFINFO_HEAL: {
-				char min_string[50];
-				if (value.m_bonus)
-					strnfmt(min_string, sizeof(min_string),
-							" (or %d%%, whichever is greater)", value.m_bonus);
-				else
-					strnfmt(min_string, sizeof(min_string), "");
-				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
-						min_string);
-				break;
-			}
-
-			case EFINFO_CONST: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base/2);
-				break;
-			}
-			case EFINFO_FOOD: {
-				char *fed = effect->subtype ? "leaves you nourished" :
-					"feeds you";
-				strnfmt(desc, sizeof(desc), effect_desc(effect), fed,
-						value.base * z_info->food_value, value.base);
-				break;
-			}
-			case EFINFO_CURE: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->subtype].desc);
-				break;
-			}
-			case EFINFO_TIMED: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->subtype].desc, dice_string);
-				break;
-			}
-			case EFINFO_STAT: {
-				int stat = effect->subtype;
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						lookup_obj_property(OBJ_PROPERTY_STAT, stat)->name);
-				break;
-			}
-			case EFINFO_SEEN: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].desc);
-				break;
-			}
-			case EFINFO_SUMM: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						summon_desc(effect->subtype));
-				break;
-			}
-
-			/* Only currently used for the player, but can handle monsters */
-			case EFINFO_TELE: {
-				char *dist = value.m_bonus ?
-					" a level dependent distance" :
-					format(" %d grids", value.base);
-
-				if (effect->subtype) {
-					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							"a monster", dist);
-				} else {
-					strnfmt(desc, sizeof(desc), effect_desc(effect), "you",
-							dist);
-				}
-				break;
-			}
-			case EFINFO_QUAKE: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						effect->radius);
-				break;
-			}
-
-			/* Object generated balls are elemental */
-			case EFINFO_BALL: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].player_desc,
-						effect->radius, dice_string);
-				if (boost)
-					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
-							  sizeof(desc));
-				break;
-			}
-
-			case EFINFO_SPOT: {
-				int i_radius = effect->other ? effect->other : effect->radius;
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].player_desc,
-						effect->radius, i_radius, dice_string);
-				break;
-			}
-
-			/* Object generated breaths are elemental */
-			case EFINFO_BREATH: {
-				/* Special treatment for several random breaths */
-				if (random_breath) {
-					my_strcat(breaths,
-							  projections[effect->subtype].player_desc,
-							  sizeof(breaths));
-					if (random_choices > 3) {
-						my_strcat(breaths, ", ", sizeof(breaths));
-					} else if (random_choices == 3) {
-						my_strcat(breaths, " or ", sizeof(breaths));
-					}
-					random_choices--;
-
-					if ((!effect->next) || (effect->next->index != EF_BREATH)) {
-						random_breath = false;
-					}
-					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
-							effect->other, dice_string);
-				} else {
-					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							projections[effect->subtype].player_desc,
-							effect->other, dice_string);
-				}
-				if (boost && (effect->index != EF_BREATH))
-					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
-							  sizeof(desc));
-				break;
-			}
-
-			case EFINFO_SHORT: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), 
-						projections[effect->subtype].player_desc,
-						effect->radius +
-						effect->other ? effect->other / player->lev : 0,
-						dice_string);
-				break;
-			}
-
-			/* Currently no object generated lashes */
-			case EFINFO_LASH: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].lash_desc,
-						effect->subtype);
-				break;
-			}
-
-			/* Bolts that inflict status */
-			case EFINFO_BOLT: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].desc);
-				break;
-			}
-			/* Bolts and beams that damage */
-			case EFINFO_BOLTD: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].desc, dice_string);
-				if (boost)
-					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
-							  sizeof(desc));
-				break;
-			}
-			case EFINFO_TOUCH: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->subtype].desc);
-				break;
-			}
-			case EFINFO_TAP: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						dice_string);
-				break;
-			}
-			case EFINFO_NONE: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect));
-				break;
-			}
-			default: {
-				msg("Bad effect description passed to describe_effect(). Please report this bug.");
-				return false;
-			}
-			}
-
-			do {
-				if (random_breath && effect->index != EF_RANDOM) break;
-				if (isdigit((unsigned char) *next_char))
-					textblock_append_c(tb, COLOUR_L_GREEN, "%c", *next_char);
-				else
-					textblock_append(tb, "%c", *next_char);
-			} while (*next_char++);
-
-			/* Random choices need special treatment - note that this code
-			 * assumes that RANDOM and the random choices will be the last
-			 * effect in the object/activation description */
-			if (random_breath) {
-				/* Handled in effect description */
-				;
-			} else if (random_choices >= 1) {
-				if (effect->index == EF_RANDOM)
-					;
-				else if (random_choices > 2)
-					textblock_append(tb, ", ");
-				else if (random_choices == 2)
-					textblock_append(tb, " or ");
-				random_choices--;
-			} else if (effect->next) {
-				if (effect->next->next && (effect->next->index != EF_RANDOM))
-					textblock_append(tb, ", ");
-				else
-					textblock_append(tb, " and ");
-			}
-			effect = effect->next;
+		tbe = effect_describe(effect, prefix, boost, false);
+		if (! tbe) {
+			return false;
 		}
+		textblock_append_textblock(tb, tbe);
+		textblock_free(tbe);
 	}
 
 	textblock_append(tb, ".\n");
