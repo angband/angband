@@ -192,6 +192,12 @@ static textblock *create_random_effect_description(const struct effect *e,
 		format_dice_string(&first_rv, sizeof(dice_string), dice_string);
 		strnfmt(desc, sizeof(desc), effect_desc(efirst), breaths,
 			efirst->other, dice_string);
+		if (dev_skill_boost != 0 && efirst->index != EF_BREATH) {
+			my_strcat(desc,
+				format(", which your device skill increases by %d per cent",
+					dev_skill_boost),
+				sizeof(desc));
+		}
 
 		res = textblock_new();
 		if (prefix) {
