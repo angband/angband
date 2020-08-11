@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
+#include "effects-info.h"
 #include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
@@ -2935,6 +2936,20 @@ static void shape_lore_append_misc_flags(textblock *tb,
 }
 
 
+static void shape_lore_append_change_effects(textblock *tb,
+	const struct player_shape *s)
+{
+	textblock *tbe = effect_describe(s->effect, "Changing into the shape ",
+		0, false);
+
+	if (tbe) {
+		textblock_append_textblock(tb, tbe);
+		textblock_free(tbe);
+		textblock_append(tb, ".\n");
+	}
+}
+
+
 static void shape_lore_append_triggering_spells(textblock *tb,
 	const struct player_shape *s)
 {
@@ -3004,6 +3019,7 @@ static void shape_lore(const struct player_shape *s)
 	shape_lore_append_protection_flags(tb, s);
 	shape_lore_append_sustains(tb, s);
 	shape_lore_append_misc_flags(tb, s);
+	shape_lore_append_change_effects(tb, s);
 	shape_lore_append_triggering_spells(tb, s);
 
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
