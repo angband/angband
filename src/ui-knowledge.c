@@ -2670,12 +2670,8 @@ static void shape_lore_append_list(textblock *tb,
 		textblock_append(tb, " %s", list[0]);
 	}
 	for (i = 1; i < n; ++i) {
-		if (i < n - 1) {
-			textblock_append(tb, ",");
-		} else {
-			textblock_append(tb, "%s and", (n > 2) ? "," : "");
-		}
-		textblock_append(tb, " %s", list[i]);
+		textblock_append(tb, "%s %s", (i < n - 1) ? "," : " and",
+			list[i]);
 	}
 }
 
@@ -2999,7 +2995,7 @@ static void shape_lore(const struct player_shape *s)
 	textblock_append(tb, "%s", s->name);
 	textblock_append(tb, "\nLike all shapes, the equipment at the time of "
 		"the shapechange sets the base attributes, including damage "
-		"per blow, number of blows, and resistances.\n");
+		"per blow, number of blows and resistances.\n");
 	shape_lore_append_basic_combat(tb, s);
 	shape_lore_append_skills(tb, s);
 	shape_lore_append_non_stat_modifiers(tb, s);
