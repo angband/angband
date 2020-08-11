@@ -75,7 +75,7 @@
 # values are treated as timed effects.  The default combiner is LOGICAL_OR.
 # One of five symbols (unknown, not present, off, on, timed on) is used for
 # each flag.  The symbol for the timed effect is only used if the permanant
-# effect is known and is off.  Each of three symbols has a corresponding color
+# effect is known and is off.  Each of five symbols has a corresponding color
 # (from the first five colors) and alternate color (from the second five
 # colors).  The alternate color is used for every other flag.  A palette of
 # four colors is used for the label.  They are unknown rune, no flags are
