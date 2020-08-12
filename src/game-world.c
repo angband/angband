@@ -1133,7 +1133,9 @@ void run_game_loop(void)
 			/* Kill arena monster */
 			if (arena) {
 				player->upkeep->arena_level = false;
-				kill_arena_monster(player->upkeep->health_who);
+				if (player->upkeep->health_who) {
+					kill_arena_monster(player->upkeep->health_who);
+				}
 			}
 		}
 

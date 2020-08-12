@@ -977,6 +977,9 @@ static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 	/* Too many breeders on the level already */
 	if (c->num_repro >= z_info->repro_monster_max) return false;
 
+	/* No breeding in single combat */
+	if (player->upkeep->arena_level) return false;  
+
 	/* Count the adjacent monsters */
 	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++)
 		for (x = mon->grid.x - 1; x <= mon->grid.x + 1; x++)

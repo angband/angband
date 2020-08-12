@@ -1455,6 +1455,12 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 		return true;
 	}
 
+	/* No recall from single combat */
+	if (player->upkeep->arena_level) {
+		msg("Nothing happens.");
+		return true;
+	}
+
 	/* Warn the player if they're descending to an unrecallable level */
 	target_depth = dungeon_get_next_level(player->max_depth, 1);
 	if (OPT(player, birth_force_descend) && !(player->depth) &&
@@ -3303,8 +3309,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No effect in town */
-	if (!player->depth) {
+	/* No effect in town or arena */
+	if ((!player->depth) || (player->upkeep->arena_level)) {
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -3423,10 +3429,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	if (player->depth) {
+	if ((player->depth) && ((!player->upkeep->arena_level)
+							|| (context->origin.what == SRC_MONSTER))) {
 		msg("The ground shakes! The ceiling caves in!");
 	} else {
-		/* No effect in town */
+		/* No effect in town or arena */
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -5138,7 +5145,10 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		}
 
 		/* Swap the targeted monster with the first in the monster list */
-		if (cave_monster(cave, 1)->race) {
+		if (old_idx == 1) {
+			/* Do nothing */
+			;
+		} else if (cave_monster(cave, 1)->race) {
 			monster_index_move(old_idx, cave_monster_max(cave));
 			monster_index_move(1, old_idx);
 			monster_index_move(cave_monster_max(cave), 1);

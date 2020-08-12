@@ -1278,6 +1278,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		/* Deal with arena monsters */
 		if (player->upkeep->arena_level) {
 			player->upkeep->generate_level = true;
+			player->upkeep->health_who = mon;
 			(*fear) = false;
 			return true;
 		}
