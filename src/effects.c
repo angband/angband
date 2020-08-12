@@ -297,6 +297,10 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			take_hit(player, damroll(5, 5), "Failed uncursing");
 			if (object_is_carried(player, obj)) {
 				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				if (destroyed->artifact) {
+					/* Artifacts are marked as lost */
+					history_lose_artifact(player, destroyed->artifact);
+				}
 				object_delete(&destroyed->known);
 				object_delete(&destroyed);
 			} else {
