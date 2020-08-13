@@ -574,7 +574,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
  * We *prefer* to create the special artifacts in order, but this is
  * normally outweighed by the "rarity" rolls for those artifacts.
  */
-static struct object *make_artifact_special(int level)
+static struct object *make_artifact_special(int level, int tval)
 {
 	int i;
 	struct object *new_obj;
@@ -597,6 +597,9 @@ static struct object *make_artifact_special(int level)
 
 		/* Make sure the kind was found */
 		if (!kind) continue;
+
+		/* Make sure it's the right tval (if given) */
+		if (tval && (tval != art->tval)) continue;
 
 		/* Skip non-special artifacts */
 		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
@@ -1177,8 +1180,8 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	struct object *new_obj;
 
 	/* Try to make a special artifact */
-	if (one_in_(good ? 10 : 1000) && !tval) {
-		new_obj = make_artifact_special(lev);
+	if (one_in_(good ? 10 : 1000)) {
+		new_obj = make_artifact_special(lev, tval);
 		if (new_obj) {
 			if (value) *value = object_value_real(new_obj, 1);
 			return new_obj;
