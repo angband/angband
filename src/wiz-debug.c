@@ -2505,6 +2505,18 @@ void get_debug_command(void)
 			break;
 		}
 
+		case '>':
+		{
+			/* Perform push_object() on a selected grid. */
+			if (target_set_interactive(TARGET_KILL, -1, -1)) {
+				struct loc grid = loc(0, 0);
+
+				target_get(&grid);
+				push_object(grid);
+			}
+			break;
+		}
+
 		/* Oops */
 		default:
 		{
