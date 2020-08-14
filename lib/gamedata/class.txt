@@ -768,13 +768,13 @@ desc: light-sensitive monster in its path.
 spell:Dispel Undead:10:14:55:6
 effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
-expr:S:PLAYER_LEVEL:* 3
+expr:S:PLAYER_LEVEL:* 5
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
 spell:Dispel Evil:12:20:70:10
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
-expr:S:PLAYER_LEVEL:* 3
+expr:S:PLAYER_LEVEL:* 5
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
 spell:Protection from Evil:14:8:42:5
