@@ -1699,7 +1699,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	} else {
 		int level = obj->artifact ?
 			obj->artifact->level : obj->kind->level;
-		int boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
+		int boost = MAX((player->state.skills[SKILL_DEVICE] - level) / 2, 0);
 		const char *prefix;
 		textblock *tbe;
 
