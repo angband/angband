@@ -886,14 +886,20 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 	amount *= z_info->food_value;
 	if (context->subtype == 0) {
+		/* Increase food level by amount */
 		player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false, false);
 	} else if (context->subtype == 1) {
+		/* Decrease food level by amount */
+		player_dec_timed(player, TMD_FOOD, MAX(amount, 0), false);
+	} else if (context->subtype == 2) {
+		/* Set food level to amount, vomiting if necessary */
 		bool message = player->timed[TMD_FOOD] > amount;
 		if (message) {
 			msg("You vomit!");
 		}
 		player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
-	} else if (context->subtype == 2) {
+	} else if (context->subtype == 3) {
+		/* Increase food level to amount if needed */
 		if (player->timed[TMD_FOOD] < amount) {
 			player_set_timed(player, TMD_FOOD, MAX(amount + 1, 0), false);
 		}
@@ -5634,10 +5640,12 @@ int effect_subtype(int index, const char *type)
 			case EF_NOURISH: {
 				if (streq(type, "INC_BY"))
 					val = 0;
-				else if (streq(type, "SET_TO"))
+				else if (streq(type, "DEC_BY"))
 					val = 1;
-				else if (streq(type, "INC_TO"))
+				else if (streq(type, "SET_TO"))
 					val = 2;
+				else if (streq(type, "INC_TO"))
+					val = 3;
 				break;
 			}
 
