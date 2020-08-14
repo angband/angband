@@ -4873,7 +4873,7 @@ graphics:~:s
 level:5
 weight:250
 cost:20
-alloc:5:5 to 100
+alloc:15:5 to 100
 attack:2d3:0:0
 armor:0:0
 
@@ -4883,7 +4883,7 @@ graphics:~:s
 level:15
 weight:500
 cost:60
-alloc:5:15 to 100
+alloc:10:15 to 100
 attack:2d5:0:0
 armor:0:0
 
@@ -4893,7 +4893,7 @@ graphics:~:s
 level:25
 weight:300
 cost:100
-alloc:5:25 to 100
+alloc:15:25 to 100
 attack:2d4:0:0
 armor:0:0
 
@@ -4903,7 +4903,7 @@ graphics:~:s
 level:35
 weight:1000
 cost:150
-alloc:5:35 to 100
+alloc:10:35 to 100
 attack:2d6:0:0
 armor:0:0
 
@@ -4913,7 +4913,7 @@ graphics:~:s
 level:45
 weight:500
 cost:200
-alloc:5:45 to 100
+alloc:15:45 to 100
 attack:2d4:0:0
 armor:0:0
 
@@ -4923,7 +4923,7 @@ graphics:~:s
 level:55
 weight:1000
 cost:250
-alloc:5:55 to 100
+alloc:10:55 to 100
 attack:2d6:0:0
 armor:0:0
 
