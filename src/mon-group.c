@@ -457,7 +457,11 @@ struct monster *group_monster_tracking(struct chunk *c,
 
 	while (entry) {
 		struct monster *tracker = cave_monster(c, entry->midx);
-		if (mflag_has(tracker->mflag, MFLAG_TRACKING)) return tracker;
+		if (tracker != mon &&
+				mflag_has(tracker->mflag, MFLAG_TRACKING) &&
+				mflag_has(tracker->mflag, MFLAG_ACTIVE)) {
+			return tracker;
+		}
 		entry = entry->next;
 	}
 
