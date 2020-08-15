@@ -459,8 +459,15 @@ bool player_knows_curse(struct player *p, int index)
  *
  * \param p is the player
  * \param ego is the ego item type
+ * \param obj may be NULL to test whether the player knows the ego in general;
+ *     if obj is not NULL, the test is for whether the ego is know for that
+ *     specific object (allows for the ego to be known for the object in the
+ *     case where an ego has range of at least two values, including zero, for
+ *     a modifier, the player doesn't know that modifier,  and the object has
+ *     zero for that modifier)
  */
-bool player_knows_ego(struct player *p, struct ego_item *ego)
+bool player_knows_ego(struct player *p, struct ego_item *ego,
+	const struct object *obj)
 {
 	int i;
 
@@ -470,10 +477,25 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 	if (!of_is_subset(p->obj_k->flags, ego->flags)) return false;
 
 	/* All modifiers known */
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (randcalc(ego->modifiers[i], MAX_RAND_DEPTH, MAXIMISE) &&
-			!p->obj_k->modifiers[i])
-			return false;
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		int modmax =
+			randcalc(ego->modifiers[i], MAX_RAND_DEPTH, MAXIMISE);
+		int modmin =
+			randcalc(ego->modifiers[i], MAX_RAND_DEPTH, MINIMISE);
+
+		if ((modmax > 0 || modmin < 0) && !p->obj_k->modifiers[i]) {
+			/*
+			 * If testing a specific object, can possibly know if
+			 * the range includes zero (i.e. product of bounds is
+			 * not positive) and the object has zero for that
+			 * modifier.
+			 */
+			if (!obj || modmax * modmin > 0 ||
+					obj->modifiers[i] != 0) {
+				return false;
+			}
+		}
+	}
 
 	/* All elements known */
 	for (i = 0; i < ELEM_MAX; i++)
@@ -1091,7 +1113,7 @@ void player_know_object(struct player *p, struct object *obj)
 	}
 
 	/* Set ego type, jewellery type if known */
-	if (player_knows_ego(p, obj->ego)) {
+	if (player_knows_ego(p, obj->ego, obj)) {
 		seen = obj->ego->everseen;
 		obj->known->ego = obj->ego;
 	}
