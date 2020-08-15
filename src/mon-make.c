@@ -851,7 +851,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 
 /**
- * Creates the onbject a mimic is imitating.
+ * Creates the object a mimic is imitating.
  */
 void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 {
