@@ -351,7 +351,8 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 		case EFINFO_FOOD:
 			{
 				const char *fed = e->subtype ?
-					"leaves you nourished" : "feeds you";
+					(e->subtype == 1 ? "uses enough food value" : 
+					 "leaves you nourished") : "feeds you";
 
 				strnfmt(desc, sizeof(desc), edesc, fed,
 					value.base * z_info->food_value,
