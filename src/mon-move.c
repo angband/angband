@@ -827,10 +827,25 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		struct monster *tracker = group_monster_tracking(c, mon);
 		if (tracker && los(c, mon->grid, tracker->grid)) { /* Need los? */
 			grid = loc_diff(tracker->grid, mon->grid);
+			/* No longer tracking */
+			mflag_off(mon->mflag, MFLAG_TRACKING);
+		} else if (mflag_has(mon->mflag, MFLAG_TRACKING)) {
+			/* Keep heading to the most recent goal. */
+			grid = loc_diff(mon->target.grid, mon->grid);
+			if (loc_is_zero(grid)) {
+				/* Head blindly for the "player"; see below. */
+				grid = loc_diff(target, mon->grid);
+				mflag_off(mon->mflag, MFLAG_TRACKING);
+			}
+		} else {
+			/*
+			 * Head blindly straight for the "player" if there's
+			 * no better idea.  This was the else clause for
+			 * get_move_advance() failing in 4.1.3.
+			 */
+			grid = loc_diff(target, mon->grid);
+			mflag_off(mon->mflag, MFLAG_TRACKING);
 		}
-
-		/* No longer tracking */
-		mflag_off(mon->mflag, MFLAG_TRACKING);
 	}
 
 	/* Monster is taking damage from terrain */
