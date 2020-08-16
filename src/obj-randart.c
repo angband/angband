@@ -1718,7 +1718,7 @@ static bool add_mod(struct artifact *art, int mod)
 
 	/* Blows, might, shots need special treatment */
 	bool powerful = ((mod == OBJ_MOD_BLOWS) || (mod == OBJ_MOD_MIGHT) ||
-					 (mod == OBJ_MOD_SHOTS));
+					 (mod == OBJ_MOD_SHOTS) || (mod == OBJ_MOD_MOVES));
 	bool success = false;
 
 	/* This code aims to favour a few larger bonuses over many small ones */
@@ -2711,10 +2711,12 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 	art->alloc_min = MIN(100, ((ap + 100) * 100 / data->max_power));
 
 	/* Have a chance to be less rare or deep, more likely the less power */
-	if (one_in_(500 / power)) {
+	if (one_in_(5 + (power / 20))) {
 		art->alloc_prob += randint1(20);
-	} else if (one_in_(500 / power)) {
+		if (art->alloc_prob > 99) art->alloc_prob = 99;
+	} else if (one_in_(5 + (power / 20))) {
 		art->alloc_min /= 2;
+		if (art->alloc_min < 1) art->alloc_min = 1;
 	}
 
 	/* Sanity check */

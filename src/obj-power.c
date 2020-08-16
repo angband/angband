@@ -195,7 +195,7 @@ static int damage_dice_power(const struct object *obj)
 
 	/* Add damage from dice for any wieldable weapon or ammo */
 	if (tval_is_melee_weapon(obj) || tval_is_ammo(obj)) {
-		dice = (obj->dd * (obj->ds + 1) * DAMAGE_POWER / 4);
+		dice = ((obj->dd * (obj->ds + 1) * DAMAGE_POWER) / 4);
 		log_obj(format("Add %d power for damage dice, ", dice));
 	} else if (wield_slot(obj) != slot_by_name(player, "shooting")) {
 		/* Add power boost for nonweapons with combat flags */
@@ -383,7 +383,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		log_obj(format("\nbest power is : %d\n", best_power));
 	}
 
-	q = (dice_pwr * (best_power - 100)) / 100;
+	q = (dice_pwr * dice_pwr * (best_power - 100)) / 2500;
 	p += q;
 	log_obj(format("Add %d for slay power, total is %d\n", q, p));
 
