@@ -120,6 +120,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	/* Don't teleport to if the player is already next to us */
 	if (mon->cdis == 1) {
 		rsf_off(f2, RSF_TELE_TO);
+		rsf_off(f2, RSF_TELE_SELF_TO);
 	}
 
 	/* Don't use the lash effect if the player is too far away */
