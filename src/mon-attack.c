@@ -121,6 +121,30 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	if (!projectable(cave, mon->grid, tgrid, PROJECT_SHORT))
 		return false;
 
+	/* If the target isn't the player, only cast if the player can witness */
+	if ((tgrid.x != player->grid.x || tgrid.y != player->grid.y) &&
+		!square_isview(cave, mon->grid) &&
+		!square_isview(cave, tgrid)) {
+		struct loc *path = mem_alloc(z_info->max_range * sizeof(*path));
+		int npath, ipath;
+
+		npath = project_path(path, z_info->max_range, mon->grid, tgrid,
+			PROJECT_SHORT);
+		ipath = 0;
+		while (1) {
+			if (ipath >= npath) {
+				/* No point on path visible.  Don't cast. */
+				mem_free(path);
+				return false;
+			}
+			if (square_isview(cave, path[ipath])) {
+				break;
+			}
+			++ipath;
+		}
+		mem_free(path);
+	}
+
 	return true;
 }
 
