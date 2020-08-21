@@ -140,7 +140,7 @@ static ang_file *object_log;
  */
 void log_obj(char *message)
 {
-	file_putf(object_log, message);
+	file_putf(object_log, "%s", message);
 }
 
 /**
