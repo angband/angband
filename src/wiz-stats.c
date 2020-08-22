@@ -24,6 +24,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-init.h"
 #include "obj-pile.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
@@ -1531,6 +1532,11 @@ static void clearing_stats(void)
 			/* Get seed */
 			int seed_randart = randint0(0x10000000);
 
+			/* Restore the standard artifacts */
+			cleanup_parser(&randart_parser);
+			deactivate_randart_file();
+			run_parser(&artifact_parser);
+
 			/* regen randarts */
 			do_randart(seed_randart, false);
 		}
@@ -1551,6 +1557,18 @@ static void clearing_stats(void)
 		}
 
 		msg("Iteration %d complete",iter);
+	}
+
+	/* Restore original artifacts */
+	if (regen) {
+		cleanup_parser(&randart_parser);
+		if (OPT(player, birth_randarts)) {
+			activate_randart_file();
+			run_parser(&randart_parser);
+			deactivate_randart_file();
+		} else {
+			run_parser(&artifact_parser);
+		}
 	}
 
 	/* Print to file */
