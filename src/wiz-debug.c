@@ -1163,6 +1163,9 @@ static void wiz_statistics(struct object *obj, int level)
 			/* Allow multiple artifacts, because breaking the game is OK here */
 			if (obj->artifact) obj->artifact->created = false;
 
+			/* Check for failures to generate an object */
+			if (!test_obj) continue;
+
 			/* Test for the same tval and sval. */
 			if ((obj->tval) != (test_obj->tval)) continue;
 			if ((obj->sval) != (test_obj->sval)) continue;
