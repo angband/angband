@@ -1167,8 +1167,11 @@ static void wiz_statistics(struct object *obj, int level)
 			if (!test_obj) continue;
 
 			/* Test for the same tval and sval. */
-			if ((obj->tval) != (test_obj->tval)) continue;
-			if ((obj->sval) != (test_obj->sval)) continue;
+			if (obj->tval != test_obj->tval ||
+					obj->sval != test_obj->sval) {
+				object_delete(&test_obj);
+				continue;
+			}
 
 			/* Check modifiers */
 			ismatch = true;
