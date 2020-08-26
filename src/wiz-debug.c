@@ -1140,14 +1140,14 @@ static void wiz_statistics(struct object *obj, int level)
 		for (i = 0; i <= TEST_ROLL; i++) {
 			/* Output every few rolls */
 			if ((i < 100) || (i % 100 == 0)) {
-				struct keypress kp;
+				ui_event e;
 
 				/* Do not wait */
 				inkey_scan = SCAN_INSTANT;
 
 				/* Allow interupt */
-				kp = inkey();
-				if (kp.type != EVT_NONE) {
+				e = inkey_ex();
+				if (e.type != EVT_NONE) {
 					event_signal(EVENT_INPUT_FLUSH);
 					break;
 				}
