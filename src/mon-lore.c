@@ -372,6 +372,8 @@ void cheat_monster_lore(const struct monster_race *race, struct monster_lore *lo
  */
 void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lore)
 {
+	struct monster_blow *blows;
+	bool *blow_known;
 	struct monster_drop *d;
 	struct monster_friends *f;
 	struct monster_friends_base *fb;
@@ -404,7 +406,17 @@ void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lor
 		mem_free(mk);
 		mk = mkn;
 	}
+	/*
+	 * Keep the blows and blow_known pointers - other code assumes they
+	 * are not NULL.  Wipe the pointed to memory.
+	 */
+	blows = lore->blows;
+	memset(blows, 0, z_info->mon_blows_max * sizeof(*blows));
+	blow_known = lore->blow_known;
+	memset(blow_known, 0, z_info->mon_blows_max * sizeof(*blow_known));
 	memset(lore, 0, sizeof(*lore));
+	lore->blows = blows;
+	lore->blow_known = blow_known;
 }
 
 /**
