@@ -16,6 +16,29 @@ To build the new Cocoa front-end::
     cd src
     make -f Makefile.osx
 
+Debug build
+~~~~~~~~~~~
+
+This will generate a debugging build like that described in the Linux section::
+
+    cd src
+    make -f Makefile.osx clean
+    make -f Makefile.osx OPT="-g -O1 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address"
+
+The clean step is there to clean out object files that were compiled with the
+default options.  The "-g" adds debugging symbols.
+"-O1 -fno-omit-frame-pointer" dials back the optimization to get call stack
+traces that are easier to interpret.  For even clearer call stack traces, you
+could add "-fno-optimize-sibling-calls" to the options or omit optimization
+entirely by replacing "-O1 -fno-omit-frame-pointer" with "-O0".
+"-fsanitize=address -fsanitize=undefined" enables the AddressSanitizer and
+UndefinedBehaviorSanitizer tools.
+
+To run the generated executable under Xcode's command-line debugger, lldb, do
+this if you are already in the src directory from the compilation step::
+
+    cd ../Angband.app/Contents/MacOS
+    lldb ./angband
 
 Linux / other UNIX
 ------------------
@@ -105,7 +128,7 @@ When debugging crashes it can be very useful to get more information about *what
 
 Note that compiling with this tools will require installing additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
 
-There is probably a way to get these tools to work on Windows and Mac OS. If you know how, please add the information to this file.
+There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
 
 Windows
 -------
