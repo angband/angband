@@ -133,6 +133,12 @@ Collect stats ``f`` or ``S``
   Requests number of runs, and whether diving or clearing levels, and
   outputs the results into the file 'stats.log' in the user directory.
 
+Collect disconnection stats ``D``
+  Generates several levels to collect statistics about how often all
+  down staircases are inaccessible to the player and about how often
+  a level has non-vault areas that are inaccessible to the player.  The
+  results are written to the message window.
+
 Nick hack ``_``
   Maps out the reachable grids (by the sound and scent algorithm) in
   successive distances from the player grid.
