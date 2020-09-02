@@ -142,11 +142,11 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			next = loc_sum(grid, ddgrid_ddd[d % 8]);
 
 			/* There's someone there, try to switch places. */
-			if (square(cave, next).mon != 0) {
+			if (square(cave, next)->mon != 0) {
 				/* A monster is trying to pass. */
-				if (square(cave, grid).mon > 0) {
+				if (square(cave, grid)->mon > 0) {
 					struct monster *mon = square_monster(cave, grid);
-					if (square(cave, next).mon > 0) {
+					if (square(cave, next)->mon > 0) {
 						struct monster *mon1 = square_monster(cave, next);
 
 						/* Monsters cannot pass by stronger monsters. */
@@ -160,8 +160,8 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				}
 
 				/* The player is trying to pass. */
-				if (square(cave, grid).mon < 0) {
-					if (square(cave, next).mon > 0) {
+				if (square(cave, grid)->mon < 0) {
+					if (square(cave, next)->mon > 0) {
 						struct monster *mon1 = square_monster(cave, next);
 
 						/* Players cannot pass by stronger monsters. */
@@ -191,7 +191,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* If there are walls everywhere, stop here. */
 				else if (d == (8 + first_d - 1)) {
 					/* Message for player. */
-					if (square(cave, grid).mon < 0)
+					if (square(cave, grid)->mon < 0)
 						msg("You come to rest next to a wall.");
 					i = grids_away;
 				}
@@ -210,16 +210,16 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 
 	/* Some special messages or effects for player or monster. */
 	if (square_isfiery(cave, grid)) {
-		if (square(cave, grid).mon < 0) {
+		if (square(cave, grid)->mon < 0) {
 			msg("You are thrown into molten lava!");
-		} else if (square(cave, grid).mon > 0) {
+		} else if (square(cave, grid)->mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
 			monster_take_terrain_damage(mon);
 		}
 	}
 
 	/* Clear the projection mark. */
-	sqinfo_off(square(cave, grid).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, grid)->info, SQUARE_PROJECT);
 }
 
 /**
@@ -396,6 +396,7 @@ static void project_monster_teleport_away(project_monster_handler_context_t *con
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->teleport_distance = context->dam;
 		context->hurt_msg = MON_MSG_DISAPPEAR;
+		monster_wake(context->mon, false, 100);
 	} else {
 		context->skipped = true;
 	}
@@ -420,6 +421,7 @@ static void project_monster_scare(project_monster_handler_context_t *context, in
 
 	if (rf_has(context->mon->race->flags, flag)) {
         context->mon_timed[MON_TMD_FEAR] = adjust_radius(context, context->dam);
+		monster_wake(context->mon, false, 100);
 	} else {
 		context->skipped = true;
 	}
@@ -906,9 +908,6 @@ static void project_monster_handler_MON_POLY(project_monster_handler_context_t *
 /* Heal Monster (use "dam" as amount of healing) */
 static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *context)
 {
-	/* Wake up, become aware */
-	monster_wake(context->mon, false, 100);
-
 	/* Heal */
 	context->mon->hp += context->dam;
 
@@ -1095,10 +1094,6 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	enum mon_messages hurt_msg = context->hurt_msg;
 	struct monster *mon = context->mon;
 
-	/* No damage is now going to mean the monster is not hit - and hence
-	 * is not woken or released from holding */
-	if (!dam) return false;
-
 	/* The monster is going to be killed, so display a specific death message.
 	 * If the monster is not visible to the player, use a generic message.
 	 *
@@ -1110,7 +1105,11 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 		add_monster_message(mon, die_msg, false);
 	}
 
-	mon_died = mon_take_hit(mon, dam, &fear, "");
+	/* No damage is now going to mean the monster is not hit - and hence
+	 * is not woken or released from holding */
+	if (dam) {
+		mon_died = mon_take_hit(mon, dam, &fear, "");
+	}
 
 	/* If the monster didn't die, provide additional messages about how it was
 	 * hurt/damaged. If a specific message isn't provided, display a message
@@ -1295,7 +1294,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	bool charm = (origin.what == SRC_PLAYER) ?
 		player_has(player, PF_CHARM) : false;
 
-	int m_idx = square(cave, grid).mon;
+	int m_idx = square(cave, grid)->mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {
@@ -1347,6 +1346,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (origin.what == SRC_MONSTER && (flg & PROJECT_SAFE)) {
 		/* Point to monster information of caster */
 		struct monster *caster = cave_monster(cave, origin.which.monster);
+		if (!caster) return;
 
 		/* Skip monsters with the same race */
 		if (caster->race == mon->race)
@@ -1364,8 +1364,9 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (monster_handler != NULL)
 		monster_handler(&context);
 
-	dam = context.dam;
-	obvious = context.obvious;
+	/* Wake monster if required */
+	if (projections[typ].wake)
+		monster_wake(mon, false, 100);
 
 	/* Absolutely no effect */
 	if (context.skipped) return;
@@ -1380,8 +1381,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (!mon_died)
 		project_m_apply_side_effects(&context, m_idx);
 
-	/* Update locals again, since the project_m_* functions can change
-	 * some values. */
+	/* Update locals, since the project_m_* functions can change some values. */
 	mon = context.mon;
 	obvious = context.obvious;
 

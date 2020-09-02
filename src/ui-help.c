@@ -47,7 +47,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 {
 	int i, k, n;
 
-	struct keypress ch;
+	struct keypress ch = KEYPRESS_NULL;
 
 	/* Number of "real" lines passed by */
 	int next = 0;
@@ -306,7 +306,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			Term_putstr(0, i+2, -1, COLOUR_WHITE, buf);
 
 			/* Highlight "shower" */
-			if (shower[0]) {
+			if (strlen(shower)) {
 				const char *str = lc_buf;
 
 				/* Display matches */
@@ -413,6 +413,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		switch (ch.code) {
 			/* up a line */
 			case ARROW_UP:
+			case 'k':
 			case '8': line--; break;
 
 			/* up a page */
@@ -427,6 +428,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* down a line */
 			case ARROW_DOWN:
 			case '2':
+			case 'j':
 			case KC_ENTER: line++; break;
 
 			/* down a page */

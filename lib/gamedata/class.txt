@@ -242,7 +242,7 @@ book-properties:400:40:10 to 100
 spell:Recharging:5:5:28:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 8 + 6
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -316,12 +316,14 @@ desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
 spell:Tap Magical Energy:22:2:30:12
 effect:TAP_DEVICE
-desc:Turns wand or staff energy into mana.
+effect:TIMED_INC:STUN
+dice:1d2
+desc:Turns wand or staff energy into mana; tapping stuns the player briefly.
 
-spell:Mana Channel:25:3:50:20
+spell:Mana Channel:25:10:50:20
 effect:TIMED_INC:FASTCAST
-dice:25+1d25
-desc:Doubles spellcasting speed for 25 +1d25 turns.
+dice:5+1d5
+desc:Doubles spellcasting speed for 5+1d5 turns.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
 book-graphics:?:r
@@ -524,7 +526,8 @@ effect:STRIKE:SOUND:3
 dice:$B
 expr:B:PLAYER_LEVEL:+ 5
 desc:Strikes a target from above with a lightning bolt, followed by a clap
-desc: of thunder.
+desc: of thunder.  Target grid must be targetable and known to the player;
+desc: no target grid will mean the player grid is hit.
 
 spell:Earth Rising:14:5:40:12
 effect:SHORT_BEAM:SHARD:4:5
@@ -635,7 +638,7 @@ expr:S:PLAYER_LEVEL:* 3
 desc:Strikes every monster in line of sight with sheets of ice from above.
 
 spell:Volcanic Eruption:40:30:75:50
-effect:SPHERE:FIRE:5
+effect:SPHERE:FIRE:5:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:* 3 / 2
 expr:S:PLAYER_LEVEL:* 3
@@ -765,13 +768,13 @@ desc: light-sensitive monster in its path.
 spell:Dispel Undead:10:14:55:6
 effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
-expr:S:PLAYER_LEVEL:* 3
+expr:S:PLAYER_LEVEL:* 5
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
 spell:Dispel Evil:12:20:70:10
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
-expr:S:PLAYER_LEVEL:* 3
+expr:S:PLAYER_LEVEL:* 5
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
 spell:Protection from Evil:14:8:42:5
@@ -939,7 +942,7 @@ strength-multiplier:3
 equip:food:Ration of Food:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
+player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT | EVIL
 title:Acolyte
 title:Curser
 title:Dark Student
@@ -1002,22 +1005,22 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
-spell:Noxious Fumes:10:4:40:5
-effect:SPHERE:POIS:4
+spell:Miasma:10:4:40:5
+effect:SPOT:CHAOS:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
-effect:TIMED_INC:POISONED
-dice:$B
-expr:B:PLAYER_LEVEL:* 2
-desc:Produces a cloud of poisonous gas affecting the player and monsters within
-desc: radius 4.
+#effect:TIMED_INC:IMAGE
+#dice:$B
+#expr:B:PLAYER_LEVEL:/ 4
+desc:Produces a cloud of hallucinogenic gas affecting the player and monsters
+desc: within radius 4.
 
 spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each evil monster within line of sight.
-desc:  Uniques and monsters that resist confusion are not affected.
+desc:  Monsters that resist confusion are not affected.
 
 spell:Shadow Shift:15:10:50:10
 effect:TELEPORT
@@ -1044,7 +1047,7 @@ effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare a single monster for a level-dependent duration.
-desc:  Uniques and monsters that resist fear are not affected.
+desc:  Monsters that resist fear are not affected.
 
 spell:Vampire Strike:20:5:50:10
 effect:JUMP_AND_BITE
@@ -1264,7 +1267,7 @@ desc:Cures 10 points of damage, removes fear and, from character level 15,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
+book:prayer book:dungeon:[Healing and Sanctuary]:5:divine
 
 spell:Protection from Evil:15:8:42:5
 effect:TIMED_INC:PROTEVIL
@@ -1400,7 +1403,7 @@ desc:Detects all stairs in a wide area.
 spell:Recharging:20:10:50:6
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:/ 10 + 4
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -1515,8 +1518,8 @@ desc:Maps the nearby area.
 
 book:nature book:dungeon:[Nature Craft]:5:nature
 
-spell:Cover Tracks:20:10:40:40
-effect:TIMED_INC:SCENTLESS:0:5
+spell:Cover Tracks:20:20:40:40
+effect:TIMED_INC:COVERTRACKS:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:* 2
 desc:Prevents you from leaving scent for monsters to track you by for a
@@ -1551,23 +1554,26 @@ stats:2:0:-3:0:2
 skill-disarm-phys:20:15
 skill-disarm-magic:20:10
 skill-device:24:10
-skill-save:25:11
-skill-stealth:0:0
-skill-search:10:12
-skill-melee:60:40
-skill-shoot:50:30
-skill-throw:50:30
+skill-save:18:10
+skill-stealth:-1:-1
+skill-search:8:10
+skill-melee:65:40
+skill-shoot:35:15
+skill-throw:40:30
 skill-dig:0:0
-hitdie:7
+hitdie:8
 max-attacks:5
 min-weight:100
 strength-multiplier:5
+equip:shadow book:[Into the Shadows]:1:1
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Cutlass:1:1
+equip:sword:Tulwar:1:1
+equip:shield:Leather Shield:1:1
 equip:scroll:Word of Recall:1:1
+equip:potion:Cure Light Wounds:1:1
 obj-flags:IMPAIR_HP
-player-flags:CHOOSE_SPELLS | SHIELD_BASH
+player-flags:CHOOSE_SPELLS | SHIELD_BASH | COMBAT_REGEN
 title:Rat
 title:Bully
 title:Thug
@@ -1579,62 +1585,114 @@ title:Marauder
 title:Destroyer
 title:Tyrant
 
-magic:8:400:2
+magic:1:600:3
 
-book:shadow book:town:[Dark Rituals]:4:shadow
+book:shadow book:town:[Into the Shadows]:6:shadow
 
-spell:Dark Focus:8:5:5:8
-effect:TIMED_INC:BLESSED:0:5
-dice:$B+d$S
-expr:B:PLAYER_LEVEL:/ 5 + 10
-expr:S:PLAYER_LEVEL:/ 5 + 10
-desc:Gives you a bonus of +5 to AC and +10 to-hit, for a
-desc: level-dependent number of turns.
+spell:Seek Battle:1:1:15:2
+effect:DETECT_FEARFUL_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters susceptible to fear in the immediate area,
+desc: for one turn only.
 
-spell:Berserk Rage:14:10:10:10
+spell:Berserk Strength:3:2:20:4
 effect:CURE:AFRAID
 effect:TIMED_INC:SHERO:0:5
-dice:25+d25
-desc:Removes fear, and grants you berserk strength (resistance to fear,
-desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:+ 5
+expr:S:PLAYER_LEVEL:+ 5
+desc:Removes fear and grants you berserk strength (resistance to fear,
+desc: +75 melee skill, -10 to AC, and prevents healing
+desc: over time) for a level-dependent duration.
 
-spell:Cry of the Damned:17:5:30:12
-effect:PROJECT_LOS:TURN_LIVING
+spell:Leap into Battle:5:4:25:6
+effect:MOVE_ATTACK
+dice:$B
+expr:B:PLAYER_LEVEL:+ 10 / 15
+desc:You may run up to 4 spaces towards targeted enemy, then perform a
+desc: level-dependent number of melee blows. The number of blows starts at 1
+desc: and goes up every 15 levels (2 blows at 20, etc.). If you moved, the
+desc: number of blows is reduced by 25% for each space, then rounded.
+
+spell:Shatter Stone:7:3:20:8
+effect:SHORT_BEAM:KILL_WALL:1
+dice:20+1d30
+desc:Destroys an adjacent section of wall or rubble, unless it is a permanent
+desc: wall.  Deals 20+1d30 damage to monsters vulnerable to rock remover.
+
+spell:Whirlwind Attack:10:5:30:10
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 5 / 15
+desc:Deals a melee blow to each adjacent enemy. You gain an additional blow
+desc: at levels 25 and 40.
+
+spell:Grim Purpose:13:8:30:12
+effect:TIMED_INC:OPP_CONF
+dice:12+d12
+effect:TIMED_INC:FREE_ACT
+dice:12+d12
+desc:Your mind becomes too focused to be slowed, paralyzed or confused
+desc: for 12+d12 turns.
+
+book:shadow book:town:[Fear and Torment]:5:shadow
+
+spell:Maim Foe:15:6:35:14
+effect:MELEE_BLOWS:MON_STUN:3
+dice:$S
+expr:S:PLAYER_LEVEL:/ 15
+desc:Attempts a level-dependent number of melee blows against the targeted
+desc: monster.  You get 1 blow for every 15 levels.  Each blow that hits stuns
+desc: the enemy for 3 turns.
+
+spell:Howl of the Damned:18:8:30:16
+effect:PROJECT_LOS:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare every living monster in line of sight for a
-desc: level-dependent duration.  Uniques and monsters that resist fear are not
+desc:Attempts to scare every monster in line of sight for a duration dependent
+desc: on player level and monster depth.  Monsters that resist fear are not
 desc: affected.
 
-spell:Poison Brand:20:30:40:90
+spell:Relentless Taunting:24:10:32:20
+effect:TIMED_INC:TAUNT
+dice:12+d12
+desc:Makes any monster that can move more inclined to run toward you, and less
+desc: likely to use a ranged attack (including spells and innate abilities).
+
+spell:Venom:28:18:35:30
 effect:TIMED_INC:ATT_POIS:0:5
-dice:20+d20
-desc:Temporarily makes your melee attacks branded with poison.
+dice:18+d18
+desc:Coats all your melee weapons with poison for 18+d18 turns.
+
+spell:Werewolf Form:33:30:45:100
+effect:SHAPECHANGE:werewolf
+desc:With a blood-curdling cry you change into a half-man half-wolf!
+desc: In this form you move, attack, and heal faster.
 
 book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
-spell:Throw Monster:27:12:50:30
-effect:SHORT_BEAM:FORCE:1
-dice:200
-desc:Hits an adjacent monster with force, throwing it back.
-
-spell:Thirst for Blood:32:30:40:100
+spell:Bloodlust:30:25:37:80
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
-effect:DAMAGE
-dice:50
-effect-msg:blood sacrifice
-desc:Gives you a powerful desire to kill, increased every time you satsfy it.
-desc: Gives you extra damage and, at higher levels, extra blows, but comes
+desc:Gives you a powerful desire to kill, increased every time you satisfy it.
+desc: Gives you extra melee damage and extra blows, but comes
 desc: with dangerous side-effects.
 
-spell:Piercing Shot:35:20:40:120
-effect:TIMED_INC:POWERSHOT
-dice:3
-desc:Makes your next shot powerful enough to pierce several enemies.
+spell:Unholy Reprieve:34:45:60:120
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
+effect:DAMAGE
+dice:66
+desc:Restores STR, INT, CON, and experience at the cost of 66 HP.
 
-spell:Forceful Blow:38:20:40:150
-effect:TIMED_INC:POWERBLOW
-dice:10
-desc:Makes your next blow strong enough to hurl your enemy back, maybe even
-desc: through walls.
+spell:Forceful Blow:38:16:50:150
+effect:MELEE_BLOWS:FORCE:200
+dice:1
+desc:Attempts 1 melee blow and hits the target with force, knocking it back
+desc: with a chance to stun it.
+
+spell:Quake:44:39:55:175
+effect:EARTHQUAKE:NONE:13
+desc:Causes a radius 13 earthquake centered around the player.

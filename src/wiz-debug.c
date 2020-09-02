@@ -27,6 +27,7 @@
 #include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -108,6 +109,7 @@ static void wiz_proj_demo(void)
 	clear_from(0);
 	menu_select(m, 0, false);
 	screen_load();
+	mem_free(m);
 }
 
 
@@ -601,7 +603,7 @@ static void wiz_create_item_drop_object(struct object *obj)
 	obj->origin_depth = player->depth;
 
 	/* Drop the object from heaven */
-	drop_near(cave, &obj, 0, player->grid, true);
+	drop_near(cave, &obj, 0, player->grid, true, true);
 }
 
 /**
@@ -752,7 +754,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	char buf[80];
 	char title[80];
 
-	int choice[60];
+	int choice[70];
 	int num;
 
 	int i;
@@ -812,6 +814,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	ret = menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 
 	return (ret.type == EVT_ESCAPE);
 }
@@ -870,6 +873,7 @@ static void wiz_create_item(bool art)
 	menu_select(menu, 0, false);
 
 	screen_load();
+	mem_free(menu);
 	
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
@@ -910,11 +914,18 @@ static void wiz_tweak_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
 		object_prep(obj, obj->kind, player->depth, RANDOMISE);
 		obj->ego = e;
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 		ego_apply_magic(obj, player->depth);
 	}
 	wiz_display_item(obj, true);
@@ -938,12 +949,19 @@ static void wiz_tweak_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
 		obj->ego = NULL;
 		object_prep(obj, obj->kind, obj->artifact->alloc_min, RANDOMISE);
 		obj->artifact = a;
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 		copy_artifact_data(obj, obj->artifact);
 	}
 	wiz_display_item(obj, true);
@@ -982,7 +1000,9 @@ static void wiz_reroll_item(struct object *obj)
 	/* Get new copy, hack off slays and brands */
 	new = mem_zalloc(sizeof(*new));
 	object_copy(new, obj);
+	mem_free(new->slays);
 	new->slays = NULL;
+	mem_free(new->brands);
 	new->brands = NULL;
 
 	/* Main loop. Ask for magification and artifactification */
@@ -1024,6 +1044,9 @@ static void wiz_reroll_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known_obj = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
 
 		/* Free slays and brands on the old object by hand */
 		mem_free(obj->slays);
@@ -1038,6 +1061,9 @@ static void wiz_reroll_item(struct object *obj)
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known_obj;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
@@ -1053,6 +1079,7 @@ static void wiz_reroll_item(struct object *obj)
 	}
 
 	/* Free the copy */
+	object_wipe(new);
 	mem_free(new);
 }
 
@@ -1133,14 +1160,14 @@ static void wiz_statistics(struct object *obj, int level)
 		for (i = 0; i <= TEST_ROLL; i++) {
 			/* Output every few rolls */
 			if ((i < 100) || (i % 100 == 0)) {
-				struct keypress kp;
+				ui_event e;
 
 				/* Do not wait */
 				inkey_scan = SCAN_INSTANT;
 
 				/* Allow interupt */
-				kp = inkey();
-				if (kp.type != EVT_NONE) {
+				e = inkey_ex();
+				if (e.type != EVT_NONE) {
 					event_signal(EVENT_INPUT_FLUSH);
 					break;
 				}
@@ -1156,9 +1183,15 @@ static void wiz_statistics(struct object *obj, int level)
 			/* Allow multiple artifacts, because breaking the game is OK here */
 			if (obj->artifact) obj->artifact->created = false;
 
+			/* Check for failures to generate an object */
+			if (!test_obj) continue;
+
 			/* Test for the same tval and sval. */
-			if ((obj->tval) != (test_obj->tval)) continue;
-			if ((obj->sval) != (test_obj->sval)) continue;
+			if (obj->tval != test_obj->tval ||
+					obj->sval != test_obj->sval) {
+				object_delete(&test_obj);
+				continue;
+			}
 
 			/* Check modifiers */
 			ismatch = true;
@@ -1264,7 +1297,50 @@ static void wiz_quantity_item(struct object *obj, bool carried)
  */
 static void wiz_tweak_curse(struct object *obj)
 {
-	// DO SOMETHING - NRM
+	const char *p;
+	char tmp_val[80];
+	int val, pval;
+
+	/* Get curse name */
+	p = "Enter curse name or index: ";
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (! get_string(p, tmp_val, sizeof(tmp_val))) return;
+
+	/* Accept index or name */
+	val = get_idx_from_name(tmp_val);
+	if (! val) {
+		val = lookup_curse(tmp_val);
+	}
+	if (val <= 0 || val >= z_info->curse_max) {
+		return;
+	}
+
+	/* Get power */
+	p = "Enter curse power (0 removes): ";
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (! get_string(p, tmp_val, 30)) return;
+	pval = get_idx_from_name(tmp_val);
+	if (pval < 0) {
+		return;
+	}
+
+	/* Apply */
+	if (pval) {
+		append_object_curse(obj, val, pval);
+	} else if (obj->curses) {
+		obj->curses[val].power = 0;
+
+		/* Duplicates logic from non-public check_object_curses(). */
+		int i;
+
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (obj->curses[i].power) {
+				return;
+			}
+		}
+		mem_free(obj->curses);
+		obj->curses = NULL;
+	}
 }
 
 
@@ -1686,7 +1762,7 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Given flag, show only those grids */
-			if (flag && !sqinfo_has(square(cave, grid).info, flag)) continue;
+			if (flag && !sqinfo_has(square(cave, grid)->info, flag)) continue;
 
 			/* Given no flag, show known grids */
 			if (!flag && (!square_isknown(cave, grid))) continue;
@@ -1763,15 +1839,15 @@ static void do_cmd_wiz_features(void)
 		/* Stairs */
 		case 't': feat = featt; length = 2; break;
 		/* Closed doors */
-		case 'c': feat = featc; length = 8; break;
+		case 'c': feat = featc; length = 1; break;
 		/* Doors */
-		case 'd': feat = featd; length = 11; break;
+		case 'd': feat = featd; length = 4; break;
 		/* Secret doors */
 		case 'h': feat = feath; length = 1; break;
 		/* Magma */
-		case 'm': feat = featm; length = 3; break;
+		case 'm': feat = featm; length = 2; break;
 		/* Quartz */
-		case 'q': feat = featq; length = 3; break;
+		case 'q': feat = featq; length = 2; break;
 		/* Granite */
 		case 'g': feat = featg; length = 1; break;
 		/* Permanent wall */
@@ -1780,6 +1856,8 @@ static void do_cmd_wiz_features(void)
 		case 'r': feat = featr; length = 1; break;
 		/* Passable rubble */
 		case 'a': feat = feata; length = 1; break;
+		/* Invalid entry */
+		default: return;
 	}
 
 	/* Scan map */
@@ -1794,7 +1872,7 @@ static void do_cmd_wiz_features(void)
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (square(cave, grid).feat == feat[i]) show = true;
+				if (square(cave, grid)->feat == feat[i]) show = true;
 
 			/* Color */
 			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
@@ -1856,7 +1934,7 @@ static void wiz_test_kind(int tval)
 		obj->known = known_obj;
 
 		/* Drop the object from heaven */
-		drop_near(cave, &obj, 0, player->grid, true);
+		drop_near(cave, &obj, 0, player->grid, true, true);
 	}
 
 	msg("Done.");
@@ -2450,6 +2528,18 @@ void get_debug_command(void)
 		case '_':
 		{
 			do_cmd_wiz_hack_nick();
+			break;
+		}
+
+		case '>':
+		{
+			/* Perform push_object() on a selected grid. */
+			if (target_set_interactive(TARGET_KILL, -1, -1)) {
+				struct loc grid = loc(0, 0);
+
+				target_get(&grid);
+				push_object(grid);
+			}
 			break;
 		}
 

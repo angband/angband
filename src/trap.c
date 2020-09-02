@@ -27,6 +27,10 @@
 #include "player-util.h"
 #include "trap.h"
 
+/**
+ * ------------------------------------------------------------------------
+ * General trap routines
+ * ------------------------------------------------------------------------ */
 struct trap_kind *trap_info;
 
 /**
@@ -135,7 +139,7 @@ static bool square_verify_trap(struct chunk *c, struct loc grid, int vis)
     /* No traps in this location. */
     if (!trap_exists) {
 		/* No traps */
-		sqinfo_off(square(c, grid).info, SQUARE_TRAP);
+		sqinfo_off(square(c, grid)->info, SQUARE_TRAP);
 
 		/* Take note */
 		square_note_spot(c, grid);
@@ -145,6 +149,96 @@ static bool square_verify_trap(struct chunk *c, struct loc grid, int vis)
     return false;
 }
 
+/**
+ * Free memory for all traps on a grid
+ */
+void square_free_trap(struct chunk *c, struct loc grid)
+{
+	struct trap *next, *trap = square_trap(c, grid);
+
+	while (trap) {
+		next = trap->next;
+		mem_free(trap);
+		trap = next;
+	}
+}
+
+/**
+ * Remove all traps from a grid.
+ *
+ * Return true if traps were removed.
+ */
+bool square_remove_all_traps(struct chunk *c, struct loc grid)
+{
+	struct trap *trap = square(c, grid)->trap;
+	bool were_there_traps = trap == NULL ? false : true;
+
+	assert(square_in_bounds(c, grid));
+	while (trap) {
+		struct trap *next_trap = trap->next;
+		mem_free(trap);
+		trap = next_trap;
+	}
+
+	square_set_trap(c, grid, NULL);
+
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, grid)) {
+		square_light_spot(c, grid);
+	}
+
+	(void)square_verify_trap(c, grid, 0);
+
+	return were_there_traps;
+}
+
+/**
+ * Remove all traps with the given index.
+ *
+ * Return true if traps were removed.
+ */
+bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
+{
+	bool removed = false;
+
+	/* Look at the traps in this grid */
+	struct trap *prev_trap = NULL;
+	struct trap *trap = square(c, grid)->trap;
+
+	assert(square_in_bounds(c, grid));
+	while (trap) {
+		struct trap *next_trap = trap->next;
+
+		if (t_idx_remove == trap->t_idx) {
+			mem_free(trap);
+			removed = true;
+
+			if (prev_trap) {
+				prev_trap->next = next_trap;
+			} else {
+				square_set_trap(c, grid, next_trap);
+			}
+
+			break;
+		}
+
+		prev_trap = trap;
+		trap = next_trap;
+	}
+
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, grid))
+		square_light_spot(c, grid);
+
+	(void)square_verify_trap(c, grid, 0);
+
+	return removed;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Player traps
+ * ------------------------------------------------------------------------ */
 /**
  * Determine if a cave grid is allowed to have player traps in it.
  */
@@ -258,7 +352,7 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, grid)) return;
 
-		t_idx = pick_trap(c, square(c, grid).feat, trap_level);
+		t_idx = pick_trap(c, square(c, grid)->feat, trap_level);
     }
 
     /* Failure */
@@ -277,25 +371,11 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
 	/* Toggle on the trap marker */
-	sqinfo_on(square(c, grid).info, SQUARE_TRAP);
+	sqinfo_on(square(c, grid)->info, SQUARE_TRAP);
 
 	/* Redraw the grid */
 	square_note_spot(c, grid);
 	square_light_spot(c, grid);
-}
-
-/**
- * Free memory for all traps on a grid
- */
-void square_free_trap(struct chunk *c, struct loc grid)
-{
-	struct trap *next, *trap = square_trap(c, grid);
-
-	while (trap) {
-		next = trap->next;
-		mem_free(trap);
-		trap = next;
-	}
 }
 
 /**
@@ -327,9 +407,9 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
 
 		/* Trap is invisible */
 		if (!trf_has(trap->flags, TRF_VISIBLE)) {
-			/* See the trap */
+			/* See the trap (actually, see all the traps) */
 			trf_on(trap->flags, TRF_VISIBLE);
-			square_memorize(c, grid);
+			square_memorize_traps(c, grid);
 
 			/* We found a trap */
 			found_trap++;
@@ -363,7 +443,7 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
  */
 void square_memorize_traps(struct chunk *c, struct loc grid)
 {
-	struct trap *trap = square(c, grid).trap;
+	struct trap *trap = square(c, grid)->trap;
 	struct trap *current = NULL;
 	if (c != cave) return;
 
@@ -426,7 +506,13 @@ extern void hit_trap(struct loc grid, int delayed)
 			continue;
 
 		/* Disturb the player */
-		disturb(player, 0);
+		disturb(player);
+
+		/* Trap immune player learns the rune */
+		if (player_of_has(player, OF_TRAP_IMMUNE)) {
+			equip_learn_flag(player, OF_TRAP_IMMUNE);
+			break;
+		}
 
 		/* Give a message */
 		if (trap->kind->msg)
@@ -458,14 +544,21 @@ extern void hit_trap(struct loc grid, int delayed)
 			if (trap->kind->msg_bad)
 				msg(trap->kind->msg_bad);
 			effect = trap->kind->effect;
-			effect_do(effect, source_trap(trap), NULL, &ident, false, 0, 0, 0);
+			effect_do(effect, source_trap(trap), NULL, &ident, false, 0, 0, 0, NULL);
+
+			/* Trap may have gone */
+			if (!square_trap(cave, grid)) break;
 
 			/* Do any extra effects */
 			if (trap->kind->effect_xtra && one_in_(2)) {
 				if (trap->kind->msg_xtra)
 					msg(trap->kind->msg_xtra);
 				effect = trap->kind->effect_xtra;
-				effect_do(effect, source_trap(trap), NULL, &ident, false, 0, 0, 0);
+				effect_do(effect, source_trap(trap), NULL, &ident, false,
+						  0, 0, 0, NULL);
+
+				/* Trap may have gone */
+				if (!square_trap(cave, grid)) break;
 			}
 		}
 
@@ -497,78 +590,6 @@ extern void hit_trap(struct loc grid, int delayed)
 }
 
 /**
- * Remove all traps from a grid.
- *
- * Return true if traps were removed.
- */
-bool square_remove_all_traps(struct chunk *c, struct loc grid)
-{
-	struct trap *trap = square(c, grid).trap;
-	bool were_there_traps = trap == NULL ? false : true;
-
-	assert(square_in_bounds(c, grid));
-	while (trap) {
-		struct trap *next_trap = trap->next;
-		mem_free(trap);
-		trap = next_trap;
-	}
-
-	square_set_trap(c, grid, NULL);
-
-	/* Refresh grids that the character can see */
-	if (square_isseen(c, grid)) {
-		square_light_spot(c, grid);
-	}
-
-	(void)square_verify_trap(c, grid, 0);
-
-	return were_there_traps;
-}
-
-/**
- * Remove all traps with the given index.
- *
- * Return true if traps were removed.
- */
-bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
-{
-	bool removed = false;
-
-	/* Look at the traps in this grid */
-	struct trap *prev_trap = NULL;
-	struct trap *trap = square(c, grid).trap;
-
-	assert(square_in_bounds(c, grid));
-	while (trap) {
-		struct trap *next_trap = trap->next;
-
-		if (t_idx_remove == trap->t_idx) {
-			mem_free(trap);
-			removed = true;
-
-			if (prev_trap) {
-				prev_trap->next = next_trap;
-			} else {
-				square_set_trap(c, grid, next_trap);
-			}
-
-			break;
-		}
-
-		prev_trap = trap;
-		trap = next_trap;
-	}
-
-	/* Refresh grids that the character can see */
-	if (square_isseen(c, grid))
-		square_light_spot(c, grid);
-
-	(void)square_verify_trap(c, grid, 0);
-
-	return removed;
-}
-
-/**
  * Disable a trap for the specified number of turns
  */
 bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
@@ -581,7 +602,7 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 	assert(square_in_bounds(c, grid));
 
 	/* Look at the traps in this grid */
-	current_trap = square(c, grid).trap;
+	current_trap = square(c, grid)->trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;
@@ -620,7 +641,7 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
  */
 int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx)
 {
-	struct trap *current_trap = square(c, grid).trap;
+	struct trap *current_trap = square(c, grid)->trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;
@@ -643,6 +664,10 @@ int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx)
 	return 0;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Door locks
+ * ------------------------------------------------------------------------ */
 /**
  * Lock a closed door to a given power
  */

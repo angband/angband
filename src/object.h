@@ -62,6 +62,22 @@ struct effect {
 };
 
 /**
+ * Chests
+ */
+struct chest_trap {
+	struct chest_trap *next;
+	char *name;
+	char *code;
+	int level;
+	struct effect *effect;
+	int pval;
+	bool destroy;
+	bool magic;
+	char *msg;
+	char *msg_death;
+};
+
+/**
  * Brand type
  */
 struct brand {
@@ -69,7 +85,9 @@ struct brand {
 	char *name;
 	char *verb;
 	int resist_flag;
+	int vuln_flag;
 	int multiplier;
+	int o_multiplier;
 	int power;
 	struct brand *next;
 };
@@ -85,6 +103,7 @@ struct slay {
 	char *range_verb;
 	int race_flag;
 	int multiplier;
+	int o_multiplier;
 	int power;
 	struct slay *next;
 };

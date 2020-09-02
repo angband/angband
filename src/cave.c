@@ -90,6 +90,13 @@ const s16b ddy_ddd[9] =
 const struct loc ddgrid_ddd[9] =
 {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 0}};
 
+/* Can mult these by 45 deg or 1.5 o'clock e.g. [6] -> 270 deg or 9 o'clock */
+const s16b clockwise_ddd[9] =
+{ 8, 9, 6, 3, 2, 1, 4, 7, 5 };
+
+const struct loc clockwise_grid[9] =
+{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, 0}};
+
 /**
  * Hack -- Precompute a bunch of calls to distance().
  *
@@ -378,13 +385,20 @@ struct chunk *cave_new(int height, int width) {
  * Free a chunk
  */
 void cave_free(struct chunk *c) {
-	int y, x;
+	int y, x, i;
 
 	while (c->join) {
 		struct connector *current = c->join;
 		mem_free(current->info);
 		c->join = current->next;
 		mem_free(current);
+	}
+
+	/* Look for orphaned objects and delete them. */
+	for (i = 1; i < c->obj_max; i++) {
+		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
+			object_delete(&c->objects[i]);
+		}
 	}
 
 	for (y = 0; y < c->height; y++) {
@@ -477,30 +491,43 @@ void delist_object(struct chunk *c, struct object *obj)
 }
 
 /**
- * Check that a pair of object lists are consistent and relate to locations of
+ * Check consistency of an object list or a pair of object lists
+ *
+ * If one list, check the listed objects relate to locations of
  * objects correctly
  */
 void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 {
 	int i;
-	assert(c->obj_max == c_k->obj_max);
-	for (i = 0; i < c->obj_max; i++) {
-		struct object *obj = c->objects[i];
-		struct object *known_obj = c_k->objects[i];
-		if (obj) {
-			assert(obj->oidx == i);
-			if (!loc_is_zero(obj->grid))
-				assert(pile_contains(square_object(c, obj->grid), obj));
-		}
-		if (known_obj) {
-			assert (obj);
-			if (player->upkeep->playing) {
-				assert(known_obj == obj->known);
+	if (c_k) {
+		assert(c->obj_max == c_k->obj_max);
+		for (i = 0; i < c->obj_max; i++) {
+			struct object *obj = c->objects[i];
+			struct object *known_obj = c_k->objects[i];
+			if (obj) {
+				assert(obj->oidx == i);
+				if (!loc_is_zero(obj->grid))
+					assert(pile_contains(square_object(c, obj->grid), obj));
 			}
-			if (!loc_is_zero(known_obj->grid))
-				assert (pile_contains(square_object(c_k, known_obj->grid),
-									  known_obj));
-			assert (known_obj->oidx == i);
+			if (known_obj) {
+				assert (obj);
+				if (player->upkeep->playing) {
+					assert(known_obj == obj->known);
+				}
+				if (!loc_is_zero(known_obj->grid))
+					assert (pile_contains(square_object(c_k, known_obj->grid),
+										  known_obj));
+				assert (known_obj->oidx == i);
+			}
+		}
+	} else {
+		for (i = 0; i < c->obj_max; i++) {
+			struct object *obj = c->objects[i];
+			if (obj) {
+				assert(obj->oidx == i);
+				if (!loc_is_zero(obj->grid))
+					assert(pile_contains(square_object(c, obj->grid), obj));
+			}
 		}
 	}
 }

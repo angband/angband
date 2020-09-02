@@ -64,6 +64,7 @@ typedef struct monster_lore
 	bool drop_known;
 	bool sleep_known;
 	bool spell_freq_known;
+	bool innate_freq_known;
 } monster_lore;
 
 /**

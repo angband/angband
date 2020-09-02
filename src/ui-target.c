@@ -318,9 +318,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	/* Repeat forever */
 	while (1) {
-		/* Paranoia */
+		/* Make the default event to focus on the player */
 		press.type = EVT_KBRD;
-		press.key.code = ' ';
+		press.key.code = 'p';
 		press.key.mods = 0;
 
 		/* Assume boring */
@@ -337,7 +337,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* The player */
-		if (square(cave, loc(x, y)).mon < 0) {
+		if (square(cave, loc(x, y))->mon < 0) {
 			/* Description */
 			s1 = "You are ";
 
@@ -373,7 +373,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* Actual monsters */
-		if (square(cave, loc(x, y)).mon > 0) {
+		if (square(cave, loc(x, y))->mon > 0) {
 			struct monster *mon = square_monster(cave, loc(x, y));
 			const struct monster_lore *lore = get_lore(mon->race);
 
@@ -409,7 +409,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 						/* Describe the monster */
 						look_mon_desc(buf, sizeof(buf),
-									  square(cave, loc(x, y)).mon);
+									  square(cave, loc(x, y))->mon);
 
 						/* Describe, and prompt for recall */
 						if (player->wizard) {
@@ -524,7 +524,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 		/* A trap */
 		if (square_isvisibletrap(cave, loc(x, y))) {
-			struct trap *trap = square(cave, loc(x, y)).trap;
+			struct trap *trap = square(cave, loc(x, y))->trap;
 
 			/* Not boring */
 			boring = false;
@@ -532,7 +532,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Interact */
 			while (1) {
 				/* Change the intro */
-				if (square(cave, loc(x, y)).mon < 0) {
+				if (square(cave, loc(x, y))->mon < 0) {
 					s1 = "You are ";
 					s2 = "on ";
 				} else {
@@ -684,15 +684,11 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		if (boring || square_isinteresting(cave, loc(x, y))) {
 			/* Hack -- handle unknown grids */
 
-			/* Pick a prefix */
-			if (*s2 && square_isdoor(cave, loc(x, y))) s2 = "in ";
+			/* Pick a preposition if needed */
+			if (*s2) s2 = square_apparent_look_in_preposition(cave, player, loc(x, y));
 
-			/* Pick proper indefinite article */
-			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
-
-			/* Hack -- special introduction for store doors */
-			if (square_isshop(cave, loc(x, y)))
-				s3 = "the entrance to the ";
+			/* Pick prefix for the name */
+			s3 = square_apparent_look_prefix(cave, player, loc(x, y));
 
 			/* Display a message */
 			if (player->wizard) {
@@ -1048,11 +1044,21 @@ bool target_set_interactive(int mode, int x, int y)
 							done = true;
 						} else {
 							bell("Illegal target!");
+							/*
+							 * So there's something
+							 * to work with in the
+							 * next pass through
+							 * the loop.
+							 */
+							if (!square_in_bounds(cave, loc(x, y))) {
+							    x = player->grid.x;
+							    y = player->grid.y;
+							}
 						}
 					} else if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 					} else {
 						/* cancel look mode */
@@ -1078,6 +1084,10 @@ bool target_set_interactive(int mode, int x, int y)
 						}
 					} else {
 						flag = false;
+						if (! square_in_bounds(cave, loc(x, y))) {
+						    x = player->grid.x;
+						    y = player->grid.y;
+						}
 					}
 				}
 			} else
@@ -1153,7 +1163,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case 'g':
 					{
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 						break;
 					}
@@ -1270,7 +1280,7 @@ bool target_set_interactive(int mode, int x, int y)
 					} else if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 					} else {
 						/* cancel look mode */
@@ -1404,7 +1414,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case 'g':
 					{
 						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", y, x);
+						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 						done = true;
 						break;
 					}

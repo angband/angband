@@ -63,7 +63,7 @@ name:normal
 name:fox
 combat:-3:-3:3
 obj-flags:FEATHER | FREE_ACT
-values:STR[-3] | STEALTH[5] | BLOWS[2] | MOVES[1]
+values:STR[-3] | STEALTH[5] | BLOWS[1] | MOVES[1]
 blow:bite
 blow:claw
 
@@ -124,6 +124,7 @@ effect:DAMAGE
 dice:1d$S
 expr:S:PLAYER_LEVEL:+ 0
 effect-msg:taking warg form
+effect:CURE:AFRAID
 effect:TIMED_INC:SHERO
 dice:5+1d20
 blow:bite
@@ -142,3 +143,19 @@ effect-msg:taking vampire form
 effect:TIMED_INC:ATT_VAMP
 dice:10+1d20
 blow:bite
+
+name:werewolf
+combat:5:5:0
+obj-flags:REGEN
+values:BLOWS[1] | MOVES[1]
+effect-msg:taking werewolf form
+effect:PROJECT_LOS:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:CURE:AFRAID
+effect:TIMED_INC:SHERO
+dice:5+1d20
+blow:bite
+blow:bite
+blow:slash
+blow:tear

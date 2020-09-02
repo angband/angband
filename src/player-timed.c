@@ -42,9 +42,9 @@ int PY_FOOD_STARVE;
  * ------------------------------------------------------------------------ */
 
 const char *list_player_flag_names[] = {
-	#define PF(a, b, c) #a,
+	#define PF(a) #a,
 	#include "list-player-flags.h"
-	#undef ELEM
+	#undef PF
 	NULL
 };
 
@@ -405,6 +405,23 @@ bool player_timed_grade_eq(struct player *p, int idx, char *match)
 	return false;
 }
 
+static bool player_of_has_prot_conf(struct player *p)
+{
+    bitflag collect_f[OF_SIZE], f[OF_SIZE];
+    int i;
+
+    player_flags(p, collect_f);
+
+    for (i = 0; i < p->body.count; i++) {
+        struct object *obj = slot_object(p, i);
+
+        if (!obj) continue;
+        object_flags(obj, f);
+        of_union(collect_f, f);
+    }
+
+    return of_has(collect_f, OF_PROT_CONF);
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -424,7 +441,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 
 	/* Lower bound */
-	v = MAX(v, 0);
+	v = MAX(v, (idx == TMD_FOOD) ? 1 : 0);
 
 	/* No change */
 	if (p->timed[idx] == v) {
@@ -453,7 +470,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		notify = false;
 	} else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD)) {
 		notify = false;
-	} else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF)) {
+	} else if (idx == TMD_OPP_CONF && player_of_has_prot_conf(p)) {
 		notify = false;
 	}
 
@@ -497,7 +514,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	if (notify) {
 		/* Disturb */
-		disturb(p, 0);
+		disturb(p);
 
 		/* Update the visuals, as appropriate. */
 		p->upkeep->update |= effect->flag_update;

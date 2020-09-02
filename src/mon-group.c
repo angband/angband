@@ -54,7 +54,7 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 static void monster_group_split(struct chunk *c, struct monster_group *group,
 								struct monster *leader)
 {
-	struct mon_group_list_entry *entry = group->member_list;
+	struct mon_group_list_entry *entry;
 
 	/* Keep a list of groups made for easy checking */
 	int *temp = mem_zalloc(z_info->level_monster_max * sizeof(int));
@@ -103,6 +103,11 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 	while (list_entry) {
 		struct monster *mon = cave_monster(c, list_entry->midx);
 
+		if (!mon) {
+			list_entry = list_entry->next;
+			continue;
+		}
+
 		/* Monsters of the same race can take over as leader */
 		if ((leader->race == mon->race) && !poss_leader
 			&& (mon->group_info[PRIMARY_GROUP].role != MON_GROUP_SUMMON)) {
@@ -150,7 +155,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 	struct monster_group *group;
 	struct mon_group_list_entry *list_entry;
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < GROUP_MAX; i++) {
 		group =	c->monster_groups[mon->group_info[i].index];
 
 		/* Most monsters won't have a second group */
@@ -182,7 +187,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 		}
 
 		/* We have to look further down the member list */
-		while (list_entry) {
+		while (list_entry->next) {
 			if (list_entry->next->midx == mon->midx) {
 				struct mon_group_list_entry *remove = list_entry->next;
 				list_entry->next = list_entry->next->next;
@@ -376,6 +381,8 @@ struct monster_group *summon_group(struct chunk *c, int midx)
 	struct monster *mon = cave_monster(c, midx);
 	int index;
 
+	if (!mon) return NULL;
+
 	/* If the monster is leader of its primary group, return that group */
 	if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_LEADER) {
 		index = mon->group_info[PRIMARY_GROUP].index;
@@ -450,7 +457,11 @@ struct monster *group_monster_tracking(struct chunk *c,
 
 	while (entry) {
 		struct monster *tracker = cave_monster(c, entry->midx);
-		if (mflag_has(tracker->mflag, MFLAG_TRACKING)) return tracker;
+		if (tracker != mon &&
+				mflag_has(tracker->mflag, MFLAG_TRACKING) &&
+				mflag_has(tracker->mflag, MFLAG_ACTIVE)) {
+			return tracker;
+		}
 		entry = entry->next;
 	}
 

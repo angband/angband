@@ -95,7 +95,7 @@ int flag_count(const bitflag *flags, const size_t size)
 	int count = 0;
 
 	for (i = 0; i < size; i++) {
-		for (j = 0; j < FLAG_WIDTH; j++) {
+		for (j = 1; j <= FLAG_WIDTH; j++) {
 			if (flags[i] & FLAG_BINARY(j)) {
 				count++;
 			}

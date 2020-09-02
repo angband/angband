@@ -14,7 +14,7 @@ int verbose = 0;
 extern const char *suite_name;
 extern struct test tests[];
 extern int setup_tests(void **data);
-extern int teardown_tests(void **data);
+extern int teardown_tests(void *data);
 
 int main(int argc, char *argv[]) {
 	void *state;

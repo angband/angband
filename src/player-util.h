@@ -68,9 +68,12 @@ void death_knowledge(struct player *p);
 s16b modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
+void player_adjust_hp_precise(struct player *p, s32b hp_gain);
+s32b player_adjust_mana_precise(struct player *p, s32b sp_gain);
+void convert_mana_to_hp(struct player *p, s32b sp);
 void player_update_light(struct player *p);
 void player_over_exert(struct player *p, int flag, int chance, int amount);
-struct object *player_best_digger(struct player *p);
+struct object *player_best_digger(struct player *p, bool forbid_stack);
 bool player_attack_random_monster(struct player *p);
 int player_check_terrain_damage(struct player *p, struct loc grid);
 void player_take_terrain_damage(struct player *p, struct loc grid);
@@ -106,7 +109,7 @@ bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);
-void disturb(struct player *p, int stop_search);
+void disturb(struct player *p);
 void search(struct player *p);
 
 #endif /* !PLAYER_UTIL_H */

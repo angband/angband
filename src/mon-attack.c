@@ -57,11 +57,43 @@
  */
 
 /**
+ * Given the monster, *mon, and cave *c, set *dist to the distance to the
+ * monster's target and *grid to the target's location.  Accounts for a player
+ * decoy, if present.  Either dist or grid may be NULL if that value is not
+ * needed.
+ */
+static void monster_get_target_dist_grid(struct monster *mon, struct chunk *c,
+	int *dist, struct loc *grid)
+{
+	struct loc decoy = cave_find_decoy(c);
+
+	if (loc_is_zero(decoy)) {
+		if (dist) {
+			*dist = mon->cdis;
+		}
+		if (grid) {
+			*grid = player->grid;
+		}
+	} else {
+		if (dist) {
+			*dist = distance(mon->grid, decoy);
+		}
+		if (grid) {
+			*grid = decoy;
+		}
+	}
+}
+
+/**
  * Check if a monster has a chance of casting a spell this turn
  */
 static bool monster_can_cast(struct monster *mon, bool innate)
 {
 	int chance = innate ? mon->race->freq_innate : mon->race->freq_spell;
+	int tdist;
+	struct loc tgrid;
+
+	monster_get_target_dist_grid(mon, cave, &tdist, &tgrid);
 
 	/* Cannot cast spells when nice */
 	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
@@ -69,15 +101,49 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	/* Not allowed to cast spells */
 	if (!chance) return false;
 
+	/* Taunted monsters are likely just to attack */
+	if (player->timed[TMD_TAUNT]) {
+		chance /= 2;
+	}
+
+	/* Monsters at their preferred range are more likely to cast */
+	if (tdist == mon->best_range) {
+		chance *= 2;
+	}
+
 	/* Only do spells occasionally */
 	if (randint0(100) >= chance) return false;
 
 	/* Check range */
-	if (mon->cdis > z_info->max_range) return false;
+	if (tdist > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->grid, player->grid, PROJECT_NONE))
+	if (!projectable(cave, mon->grid, tgrid, PROJECT_SHORT))
 		return false;
+
+	/* If the target isn't the player, only cast if the player can witness */
+	if ((tgrid.x != player->grid.x || tgrid.y != player->grid.y) &&
+		!square_isview(cave, mon->grid) &&
+		!square_isview(cave, tgrid)) {
+		struct loc *path = mem_alloc(z_info->max_range * sizeof(*path));
+		int npath, ipath;
+
+		npath = project_path(path, z_info->max_range, mon->grid, tgrid,
+			PROJECT_SHORT);
+		ipath = 0;
+		while (1) {
+			if (ipath >= npath) {
+				/* No point on path visible.  Don't cast. */
+				mem_free(path);
+				return false;
+			}
+			if (square_isview(cave, path[ipath])) {
+				break;
+			}
+			++ipath;
+		}
+		mem_free(path);
+	}
 
 	return true;
 }
@@ -88,6 +154,9 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 {
 	bitflag f2[RSF_SIZE];
+	int tdist;
+
+	monster_get_target_dist_grid(mon, cave, &tdist, NULL);
 
 	/* Take working copy of spell flags */
 	rsf_copy(f2, f);
@@ -108,15 +177,16 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	}
 
 	/* Don't teleport to if the player is already next to us */
-	if (mon->cdis == 1) {
+	if (tdist == 1) {
 		rsf_off(f2, RSF_TELE_TO);
+		rsf_off(f2, RSF_TELE_SELF_TO);
 	}
 
 	/* Don't use the lash effect if the player is too far away */
-	if (mon->cdis > 2) {
+	if (tdist > 2) {
 		rsf_off(f2, RSF_WHIP);
 	}
-	if (mon->cdis > 3) {
+	if (tdist > 3) {
 		rsf_off(f2, RSF_SPIT);
 	}
 
@@ -128,7 +198,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		bool know_something = false;
 
 		/* Occasionally forget player status */
-		if (one_in_(100)) {
+		if (one_in_(20)) {
 			of_wipe(mon->known_pstate.flags);
 			pf_wipe(mon->known_pstate.pflags);
 			for (i = 0; i < ELEM_MAX; i++)
@@ -216,15 +286,17 @@ int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
 
 	int i;
 
+	/* Paranoid initialization */
+	for (i = 0; i < RSF_MAX; i++) {
+		spells[i] = 0;
+	}
+
 	/* Extract spells, filtering as necessary */
 	for (i = FLAG_START, num = 0; i < RSF_MAX; i++) {
 		if (!innate && mon_spell_is_innate(i)) continue;
 		if (!non_innate && !mon_spell_is_innate(i)) continue;
 		if (rsf_has(f, i)) spells[num++] = i;
 	}
-
-	/* Paranoia */
-	if (num == 0) return 0;
 
 	/* Pick at random */
 	return (spells[randint0(num)]);
@@ -317,12 +389,15 @@ bool make_ranged_attack(struct monster *mon)
 
 	/* Non-stupid monsters do some filtering */
 	if (!monster_is_stupid(mon)) {
+		struct loc tgrid;
+
 		/* Remove the "ineffective" spells */
 		remove_bad_spells(mon, f);
 
 		/* Check for a clean bolt shot */
+		monster_get_target_dist_grid(mon, cave, NULL, &tgrid);
 		if (test_spells(f, RST_BOLT) &&
-			!projectable(cave, mon->grid, player->grid, PROJECT_STOP)) {
+			!projectable(cave, mon->grid, tgrid, PROJECT_STOP)) {
 			ignore_spells(f, RST_BOLT);
 		}
 
@@ -356,7 +431,7 @@ bool make_ranged_attack(struct monster *mon)
 	}
 
 	/* Cast the spell. */
-	disturb(player, 1);
+	disturb(player);
 	do_mon_spell(thrown_spell, mon, seen);
 
 	/* Remember what the monster did */
@@ -522,7 +597,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
-			disturb(p, 1);
+			disturb(p);
 
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
@@ -663,7 +738,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Visible monster missed player, so notify if appropriate. */
 			if (monster_is_visible(mon) &&	method->miss) {
 				/* Disturbing */
-				disturb(p, 1);
+				disturb(p);
 				msg("%s misses you.", m_name);
 			}
 		}

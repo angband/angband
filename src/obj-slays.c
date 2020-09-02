@@ -307,6 +307,31 @@ bool player_has_temporary_slay(int idx)
 }
 
 /**
+ * Return the multiplicative factor for a brand hitting a given monster.
+ * Account for any elemental vulnerabilities but not for resistances.
+ */
+int get_monster_brand_multiplier(const struct monster *mon, const struct brand *b)
+{
+	bool is_o_combat = OPT(player, birth_percent_damage);
+	int mult;
+
+	mult = (is_o_combat) ? b->o_multiplier : b->multiplier;
+	if (b->vuln_flag && rf_has(mon->race->flags, b->vuln_flag)) {
+		/*
+		 * If especially vulnerable, apply a factor of two to the
+		 * extra damage from the brand.
+		 */
+		if (is_o_combat) {
+			mult = 2 * (mult - 10) + 10;
+		} else {
+			mult *= 2;
+		}
+	}
+
+	return mult;
+}
+
+/**
  * Extract the multiplier from a given object hitting a given monster.
  *
  * \param obj is the object being used to attack
@@ -327,10 +352,14 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 	/* Set the current best multiplier */
 	if (*brand_used) {
 		struct brand *b = &brands[*brand_used];
-		best_mult = MAX(best_mult, b->multiplier);
+		best_mult = MAX(best_mult, get_monster_brand_multiplier(mon, b));
 	} else if (*slay_used) {
 		struct slay *s = &slays[*slay_used];
-		best_mult = MAX(best_mult, s->multiplier);
+		if (!OPT(player, birth_percent_damage)) {
+			best_mult = MAX(best_mult, s->multiplier);
+		} else {
+			best_mult = MAX(best_mult, s->o_multiplier);
+		}
 	}
 
 	/* Brands */
@@ -346,9 +375,11 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
  
 		/* Is the monster is vulnerable? */
 		if (!rf_has(mon->race->flags, b->resist_flag)) {
+			int mult = get_monster_brand_multiplier(mon, b);
+
 			/* Record the best multiplier */
-			if (best_mult < b->multiplier) {
-				best_mult = b->multiplier;
+			if (best_mult < mult) {
+				best_mult = mult;
 				*brand_used = i;
 				my_strcpy(verb, b->verb, 20);
 				if (range)
@@ -362,11 +393,18 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			/* Learn about the monster */
 			if (monster_is_visible(mon)) {
 				rf_on(lore->flags, b->resist_flag);
+				if (b->vuln_flag) {
+					rf_on(lore->flags, b->vuln_flag);
+				}
 			}
 		} else if (player_knows_brand(player, i)) {
-			/* Learn about resistant monsters */
-			if (monster_is_visible(mon))
+			/* Learn about resistant and vulnerable monsters */
+			if (monster_is_visible(mon)) {
 				rf_on(lore->flags, b->resist_flag);
+				if (b->vuln_flag) {
+					rf_on(lore->flags, b->vuln_flag);
+				}
+			}
 		}
 	}
 
@@ -383,9 +421,12 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
  
 		/* Is the monster is vulnerable? */
 		if (react_to_specific_slay(s, mon)) {
+			int mult = OPT(player, birth_percent_damage) ?
+				s->o_multiplier : s->multiplier;
+
 			/* Record the best multiplier */
-			if (best_mult < s->multiplier) {
-				best_mult = s->multiplier;
+			if (best_mult < mult) {
+				best_mult = mult;
 				*brand_used = 0;
 				*slay_used = i;
 				if (range) {

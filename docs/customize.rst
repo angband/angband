@@ -93,7 +93,14 @@ Inscribing an item with '!!':
 
 Inscribing an item with '=g':
 	This marks an item as 'always pick up'.  This is sometimes useful for
-	picking up ammunition after a shootout.
+	picking up ammunition after a shootout.  If there is a number
+	immediately after the 'g', then the amount picked up automatically
+	will be limited.  If you have inscribed a spellbook with '=g4' and have
+	four or more copies in your pack, you will not automatially pick up
+	any more copies when you have the 'pickup if in inventory' option
+	enabled.  If you have three copies in your pack with that inscription
+	and happen to find a pile of two copies, you'll automatically pick up
+	one so there is four in the pack.
 
 Inscribing an item with ``!`` followed by a command letter or ``*``:
 	This means "ask me before using this item".  '!w' means 'ask me before
@@ -111,7 +118,7 @@ Inscribing an item with ``!`` followed by a command letter or ``*``:
 	Some adventurers use this for Scrolls of Word of Recall so they don't
 	accidentally return to the dungeon too soon.
 
-Inscribing an item with ``@``, followed by a command latter, followed by 0-9:
+Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	Normally when you select an item from your inventory you must enter the
 	letter that corresponds to the item. Since the order of your inventory
 	changes as items get added and removed, this can get annoying.  You
@@ -121,8 +128,8 @@ Inscribing an item with ``@``, followed by a command latter, followed by 0-9:
 	use the first one.
 
 	For example, if you inscribe a staff of Cure Light Wounds with '@u1',
-	you can refer to it by pressing 1 when ``u``sing it.  You could also
-	inscribe a wand of Wonder with '@a1', and when using ``a``, 1 would select
+	you can refer to it by pressing 1 when ``u``\sing it.  You could also
+	inscribe a wand of Wonder with '@a1', and when using ``a``\, 1 would select
 	that wand.
 
 	Spellcasters should inscribe their books, so that if they lose them they

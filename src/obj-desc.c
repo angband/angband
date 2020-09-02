@@ -34,7 +34,7 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
 	size_t end = 0;
 
 	if (kb->name && kb->name[0]) 
-		end = obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
+		(void) obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
 }
 
 
@@ -54,7 +54,7 @@ void object_kind_name(char *buf, size_t max, const struct object_kind *kind,
 
 	/* Use proper name (Healing, or whatever) */
 	else
-		obj_desc_name_format(buf, max, 0, kind->name, NULL, false);
+		(void) obj_desc_name_format(buf, max, 0, kind->name, NULL, false);
 }
 
 
@@ -355,51 +355,8 @@ static size_t obj_desc_chest(const struct object *obj, char *buf, size_t max,
 	/* The chest is unopened, but we know nothing about its trap/lock */
 	if (obj->pval && !obj->known->pval) return end;
 
-	/* May be empty, disarmed or trapped */
-	if (!obj->pval) {
-		strnfcat(buf, max, &end, " (empty)");
-	} else if (!is_locked_chest(obj)) {
-		if (chest_trap_type(obj) != 0)
-			strnfcat(buf, max, &end, " (disarmed)");
-		else
-			strnfcat(buf, max, &end, " (unlocked)");
-	} else {
-		/* Describe the traps */
-		switch (chest_trap_type(obj))
-		{
-			case 0:
-				strnfcat(buf, max, &end, " (Locked)");
-				break;
-
-			case CHEST_LOSE_STR:
-				strnfcat(buf, max, &end, " (Poison Needle)");
-				break;
-
-			case CHEST_LOSE_CON:
-				strnfcat(buf, max, &end, " (Poison Needle)");
-				break;
-
-			case CHEST_POISON:
-				strnfcat(buf, max, &end, " (Gas Trap)");
-				break;
-
-			case CHEST_PARALYZE:
-				strnfcat(buf, max, &end, " (Gas Trap)");
-				break;
-
-			case CHEST_EXPLODE:
-				strnfcat(buf, max, &end, " (Explosion Device)");
-				break;
-
-			case CHEST_SUMMON:
-				strnfcat(buf, max, &end, " (Summoning Runes)");
-				break;
-
-			default:
-				strnfcat(buf, max, &end, " (Multiple Traps)");
-				break;
-		}
-	}
+	/* Describe the traps */
+	strnfcat(buf, max, &end, format(" (%s)", chest_trap_name(obj)));
 
 	return end;
 }
@@ -542,7 +499,7 @@ static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 							   size_t max, size_t end)
 {
-	const char *u[5] = { 0, 0, 0, 0, 0 };
+	const char *u[6] = { 0, 0, 0, 0, 0, 0 };
 	int n = 0;
 
 	/* Get inscription */

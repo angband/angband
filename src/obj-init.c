@@ -43,6 +43,7 @@
 #include "option.h"
 #include "player-spell.h"
 #include "project.h"
+#include "ui-entry.h"
 
 static const char *mon_race_flags[] =
 {
@@ -109,20 +110,6 @@ static bool grab_element_flag(struct element_info *info, const char *flag_name)
 	return false;
 }
 
-static int code_index_in_array(const char *code_name[], const char *code)
-{
-	int i = 0;
-
-	while (code_name[i]) {
-		if (streq(code_name[i], code)) {
-			return i;
-		}
-		i++;
-	}
-
-	return -1;
-}
-
 static enum parser_error write_dummy_object_record(struct artifact *art, const char *name)
 {
 	struct object_kind *temp, *dummy;
@@ -187,9 +174,18 @@ static void write_curse_kinds(void)
 		struct curse *curse = &curses[i];
 		curse->obj->kind = curse_object_kind;
 		curse->obj->sval = sval;
-		curse->obj->known = object_new();
+		/*
+		 * Tolerate an already allocated known version:  restarting
+		 * without exiting and redoing the artifacts in
+		 * do_cmd_accept_character().
+		 */
+		if (! curse->obj->known) {
+			curse->obj->known = object_new();
+		}
 		curse->obj->known->kind = curse_object_kind;
 		curses[i].obj->known->sval = sval;
+		/* Mark it as touched so it can be fully known. */
+		curse->obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	}
 }
 
@@ -346,6 +342,16 @@ static enum parser_error parse_projection_obvious(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_projection_wake(struct parser *p) {
+	int wake = parser_getuint(p, "answer");
+	struct projection *projection = parser_priv(p);
+	if (!projection)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	projection->wake = (wake == 1) ? true : false;;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_projection_color(struct parser *p) {
 	struct projection *projection = parser_priv(p);
 	const char *color;
@@ -376,6 +382,7 @@ struct parser *init_parse_projection(void) {
 	parser_reg(p, "damage-cap uint cap", parse_projection_damage_cap);
 	parser_reg(p, "msgt sym type", parse_projection_message_type);
 	parser_reg(p, "obvious uint answer", parse_projection_obvious);
+	parser_reg(p, "wake uint answer", parse_projection_wake);
 	parser_reg(p, "color sym color", parse_projection_color);
 	return p;
 }
@@ -712,6 +719,15 @@ static enum parser_error parse_slay_multiplier(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_slay_o_multiplier(struct parser *p) {
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->o_multiplier = parser_getuint(p, "multiplier");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_slay_power(struct parser *p) {
 	struct slay *slay = parser_priv(p);
 	if (!slay)
@@ -749,6 +765,7 @@ struct parser *init_parse_slay(void) {
 	parser_reg(p, "race-flag sym flag", parse_slay_race_flag);
 	parser_reg(p, "base sym base", parse_slay_base);
 	parser_reg(p, "multiplier uint multiplier", parse_slay_multiplier);
+	parser_reg(p, "o-multiplier uint multiplier", parse_slay_o_multiplier);
 	parser_reg(p, "power uint power", parse_slay_power);
 	parser_reg(p, "melee-verb str verb", parse_slay_melee_verb);
 	parser_reg(p, "range-verb str verb", parse_slay_range_verb);
@@ -853,6 +870,15 @@ static enum parser_error parse_brand_multiplier(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_brand_o_multiplier(struct parser *p) {
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	brand->o_multiplier = parser_getuint(p, "multiplier");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_brand_power(struct parser *p) {
 	struct brand *brand = parser_priv(p);
 	if (!brand)
@@ -879,6 +905,23 @@ static enum parser_error parse_brand_resist_flag(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_brand_vuln_flag(struct parser *p) {
+	int flag;
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
+
+	if (flag == FLAG_END) {
+		return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		brand->vuln_flag = flag;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_brand(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -886,8 +929,10 @@ struct parser *init_parse_brand(void) {
 	parser_reg(p, "name str name", parse_brand_name);
 	parser_reg(p, "verb str verb", parse_brand_verb);
 	parser_reg(p, "multiplier uint multiplier", parse_brand_multiplier);
+	parser_reg(p, "o-multiplier uint multiplier", parse_brand_o_multiplier);
 	parser_reg(p, "power uint power", parse_brand_power);
 	parser_reg(p, "resist-flag sym flag", parse_brand_resist_flag);
+	parser_reg(p, "vuln-flag sym flag", parse_brand_vuln_flag);
 	return p;
 }
 
@@ -2096,6 +2141,8 @@ static enum parser_error parse_ego_item(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 	poss = mem_zalloc(sizeof(struct poss_item));
 	poss->kidx = lookup_kind(tval, sval)->kidx;
@@ -3092,6 +3139,23 @@ static enum parser_error parse_object_property_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_property_bindui(struct parser* p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *uiname = parser_getsym(p, "ui");
+	bool isaux = (parser_getint(p, "aux") != 0);
+	bool have_val = parser_hasval(p, "uival");
+	int val = (have_val) ? parser_getint(p, "uival") : 0;
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (prop->type == OBJ_PROPERTY_NONE) {
+		return PARSE_ERROR_INVALID_PROPERTY;
+	}
+	(void) bind_object_property_to_ui_entry_by_name(uiname, prop->type,
+		prop->index, val, have_val, isaux);
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_object_property(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -3107,6 +3171,7 @@ struct parser *init_parse_object_property(void) {
 	parser_reg(p, "neg-adjective str neg_adj", parse_object_property_neg_adj);
 	parser_reg(p, "msg str msg", parse_object_property_msg);
 	parser_reg(p, "desc str desc", parse_object_property_desc);
+	parser_reg(p, "bindui sym ui int aux ?int uival", parse_object_property_bindui);
 	return p;
 }
 

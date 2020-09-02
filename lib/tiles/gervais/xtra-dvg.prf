@@ -34,6 +34,29 @@ monster:<player>:0x83:0xcf
 ?:[AND [EQU $CLASS Warrior] [EQU $RACE Kobold] ]
 monster:<player>:0x83:0xd7
 
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Human] ]
+monster:<player>:0x83:0x87
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Half-Elf] ]
+monster:<player>:0x83:0x8f
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Elf] ]
+monster:<player>:0x83:0x97
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Hobbit] ]
+monster:<player>:0x83:0x9f
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Gnome] ]
+monster:<player>:0x83:0xc7
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Dwarf] ]
+monster:<player>:0x83:0xaf
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Half-Orc] ]
+monster:<player>:0x83:0xb7
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Half-Troll] ]
+monster:<player>:0x83:0xbf
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Dunadan] ]
+monster:<player>:0x83:0xa7
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE High-Elf] ]
+monster:<player>:0x83:0xcf
+?:[AND [EQU $CLASS Blackguard] [EQU $RACE Kobold] ]
+monster:<player>:0x83:0xd7
+
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Human] ]
 monster:<player>:0x83:0x81
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Half-Elf] ]
@@ -57,6 +80,29 @@ monster:<player>:0x83:0xc8
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Kobold] ]
 monster:<player>:0x83:0xd1
 
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Human] ]
+monster:<player>:0x83:0x81
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Half-Elf] ]
+monster:<player>:0x83:0x88
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Elf] ]
+monster:<player>:0x83:0x91
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Hobbit] ]
+monster:<player>:0x83:0x98
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Gnome] ]
+monster:<player>:0x83:0xc1
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Dwarf] ]
+monster:<player>:0x83:0xa8
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Half-Orc] ]
+monster:<player>:0x83:0xb1
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Half-Troll] ]
+monster:<player>:0x83:0xb8
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Dunadan] ]
+monster:<player>:0x83:0xa1
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE High-Elf] ]
+monster:<player>:0x83:0xc8
+?:[AND [EQU $CLASS Necromancer] [EQU $RACE Kobold] ]
+monster:<player>:0x83:0xd1
+
 ?:[AND [EQU $CLASS Priest] [EQU $RACE Human] ]
 monster:<player>:0x83:0x84
 ?:[AND [EQU $CLASS Priest] [EQU $RACE Half-Elf] ]
@@ -78,6 +124,29 @@ monster:<player>:0x83:0xa4
 ?:[AND [EQU $CLASS Priest] [EQU $RACE High-Elf] ]
 monster:<player>:0x83:0xcc
 ?:[AND [EQU $CLASS Priest] [EQU $RACE Kobold] ]
+monster:<player>:0x83:0xd4
+
+?:[AND [EQU $CLASS Druid] [EQU $RACE Human] ]
+monster:<player>:0x83:0x84
+?:[AND [EQU $CLASS Druid] [EQU $RACE Half-Elf] ]
+monster:<player>:0x83:0x8c
+?:[AND [EQU $CLASS Druid] [EQU $RACE Elf] ]
+monster:<player>:0x83:0x94
+?:[AND [EQU $CLASS Druid] [EQU $RACE Hobbit] ]
+monster:<player>:0x83:0x9c
+?:[AND [EQU $CLASS Druid] [EQU $RACE Gnome] ]
+monster:<player>:0x83:0xc4
+?:[AND [EQU $CLASS Druid] [EQU $RACE Dwarf] ]
+monster:<player>:0x83:0xac
+?:[AND [EQU $CLASS Druid] [EQU $RACE Half-Orc] ]
+monster:<player>:0x83:0xb4
+?:[AND [EQU $CLASS Druid] [EQU $RACE Half-Troll] ]
+monster:<player>:0x83:0xbc
+?:[AND [EQU $CLASS Druid] [EQU $RACE Dunadan] ]
+monster:<player>:0x83:0xa4
+?:[AND [EQU $CLASS Druid] [EQU $RACE High-Elf] ]
+monster:<player>:0x83:0xcc
+?:[AND [EQU $CLASS Druid] [EQU $RACE Kobold] ]
 monster:<player>:0x83:0xd4
 
 ?:[AND [EQU $CLASS Rogue] [EQU $RACE Human] ]

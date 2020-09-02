@@ -1,0 +1,81 @@
+# File: chest_trap.txt
+
+# This file contains chest trap definitions
+
+### Understanding chest_trap.txt ###
+
+# name: name
+# code: code to indicate the trap's presence (see chest.txt)
+# level: minimum object level of chest for this trap to appear on
+#    The maximum for this should be less than the maximum value for the
+#    level of a chest in object.txt (currently 55).
+# effect: trap effect : ? subtype : ? radius : ? extra parameter
+# dice: dice string for effect
+# expr: dice expression for effect
+# destroy: 1 if the chest is destroyed
+# magic: 1 if the trap is magical (as opposed to physical)
+# msg: activation message
+#    This is shown to the user when the trap is triggered.
+# msg-death: death message
+#    This is shown to the user if the trap kills the character.
+
+# The traps in this file should follow these rules:
+#  1. The first entry should be the "no trap";
+#  2. Traps should appear in ascending order of level;
+#  3. There should be no more than 14 traps total.
+
+# Current disarming difficulty calculations depend on there being six types
+# of trap; if there are more than six, those calculations will need to change.
+
+name:locked
+code:NO_TRAP
+level:1
+
+name:gas trap
+code:POISON
+level:1
+effect:TIMED_INC:POISONED
+dice:10+d20
+msg:A puff of green gas surrounds you!
+
+name:poison needle
+code:LOSE_STR
+level:2
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:STR
+msg:A small needle has pricked you!
+msg-death:a poison needle
+
+name:poison needle
+code:LOSE_CON
+level:3
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:CON
+msg:A small needle has pricked you!
+msg-death:a poison needle
+
+name:summoning runes
+code:SUMMON
+level:15
+effect:SUMMON:ANY
+dice:2+1d3
+magic:1
+msg:You are enveloped in a cloud of smoke!
+
+name:gas trap
+code:PARALYZE
+level:19
+effect:TIMED_INC:PARALYZED
+dice:10+d20
+msg:A puff of yellow gas surrounds you!
+
+name:explosion device
+code:EXPLODE
+level:25
+effect:DAMAGE
+dice:5d8
+destroy:1
+msg:There is a sudden explosion! Everything inside the chest is destroyed!
+msg-death:an exploding chest

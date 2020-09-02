@@ -54,6 +54,7 @@ monster_list_t *monster_list_shared_instance(void);
 void monster_list_reset(monster_list_t *list);
 void monster_list_collect(monster_list_t *list);
 int monster_list_standard_compare(const void *a, const void *b);
+int monster_list_compare_exp(const void *a, const void *b);
 void monster_list_sort(monster_list_t *list,
 					   int (*compare)(const void *, const void *));
 byte monster_list_entry_line_color(const monster_list_entry_t *entry);

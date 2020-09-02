@@ -33,13 +33,13 @@ static enum parser_error parse_graf_name(struct parser *p) {
 	}
 	mode->pNext = list;
 	mode->grafID = parser_getuint(p, "index");
-	strncpy(mode->menuname, parser_getstr(p, "menuname"), 32);
+	my_strcpy(mode->menuname, parser_getstr(p, "menuname"), 32);
 
 	mode->alphablend = 0;
 	mode->overdrawRow = 0;
 	mode->overdrawMax = 0;
-	strncpy(mode->file, "", 32);
-	strncpy(mode->pref, "none", 32);
+	my_strcpy(mode->file, "", 32);
+	my_strcpy(mode->pref, "none", 32);
 	
 	parser_setpriv(p, mode);
 	return PARSE_ERROR_NONE;
@@ -65,7 +65,7 @@ static enum parser_error parse_graf_size(struct parser *p) {
 	}
 	mode->cell_width = parser_getuint(p, "wid");
 	mode->cell_height = parser_getuint(p, "hgt");
-	strncpy(mode->file, parser_getstr(p, "filename"), 32);
+	my_strcpy(mode->file, parser_getstr(p, "filename"), 32);
 	return PARSE_ERROR_NONE;
 }
 
@@ -74,7 +74,7 @@ static enum parser_error parse_graf_pref(struct parser *p) {
 	if (!mode) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
-	strncpy(mode->pref, parser_getstr(p, "prefname"), 32);
+	my_strcpy(mode->pref, parser_getstr(p, "prefname"), 32);
 	return PARSE_ERROR_NONE;
 }
 
@@ -140,10 +140,10 @@ static errr finish_parse_grafmode(struct parser *p) {
 	graphics_modes[count].alphablend = 0;
 	graphics_modes[count].overdrawRow = 0;
 	graphics_modes[count].overdrawMax = 0;
-	strncpy(graphics_modes[count].pref, "none", 8);
-	strncpy(graphics_modes[count].path, "", 32);
-	strncpy(graphics_modes[count].file, "", 32);
-	strncpy(graphics_modes[count].menuname, "None", 32);
+	my_strcpy(graphics_modes[count].pref, "none", 8);
+	my_strcpy(graphics_modes[count].path, "", 32);
+	my_strcpy(graphics_modes[count].file, "", 32);
+	my_strcpy(graphics_modes[count].menuname, "None", 32);
 
 	graphics_mode_high_id = max;
 

@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 #include "effects.h"
 #include "game-world.h"
 #include "init.h"
@@ -47,6 +48,10 @@
 #include "trap.h"
 #include "z-set.h"
 
+/**
+ * ------------------------------------------------------------------------
+ * Lore utilities
+ * ------------------------------------------------------------------------ */
 static const struct monster_flag monster_flag_table[] =
 {
 	#define RF(a, b, c) { RF_##a, b, c },
@@ -103,6 +108,10 @@ void create_mon_flag_mask(bitflag *f, ...)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Lookup utilities
+ * ------------------------------------------------------------------------ */
 /**
  * Returns the monster with the given name. If no monster has the exact name
  * given, returns the first monster with the given name as a (case-insensitive)
@@ -170,6 +179,31 @@ bool match_monster_bases(const struct monster_base *base, ...)
 }
 
 /**
+ * Returns the monster currently commanded, or NULL
+ */
+struct monster *get_commanded_monster(void)
+{
+	int i;
+
+	/* Look for it */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Test for control */
+		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
+	}
+
+	return NULL;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Monster updates
+ * ------------------------------------------------------------------------ */
+/**
  * Analyse the path from player to infravision-seen monster and forget any
  * grids which would have blocked line of sight
  */
@@ -190,7 +224,7 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	for (i = 0; i < path_n - 1; ++i) {
 		/* Forget grids which would block los */
 		if (square_iswall(player->cave, path_g[i])) {
-			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
+			sqinfo_off(square(c, path_g[i])->info, SQUARE_SEEN);
 			square_forget(c, path_g[i]);
 			square_light_spot(c, path_g[i]);
 		}
@@ -420,7 +454,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Disturb on appearance */
 			if (OPT(player, disturb_near))
-				disturb(player, 1);
+				disturb(player);
 
 			/* Re-draw monster window */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -433,16 +467,13 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Disturb on disappearance */
 			if (OPT(player, disturb_near) && !monster_is_mimicking(mon))
-				disturb(player, 1);
+				disturb(player);
 
 			/* Re-draw monster list window */
 			player->upkeep->redraw |= PR_MONLIST;
 		}
 	}
 }
-
-
-
 
 /**
  * Updates all the (non-dead) monsters via update_mon().
@@ -463,41 +494,9 @@ void update_monsters(bool full)
 
 
 /**
- * Add the given object to the given monster's inventory.
- *
- * Currently always returns true - it is left as a bool rather than
- * void in case a limit on monster inventory size is proposed in future.
- */
-bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
-{
-	struct object *held_obj;
-
-	/* Scan objects already being held for combination */
-	for (held_obj = mon->held_obj; held_obj; held_obj = held_obj->next) {
-		/* Check for combination */
-		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
-			/* Combine the items */
-			object_absorb(held_obj, obj);
-
-			/* Result */
-			return true;
-		}
-	}
-
-	/* Forget location */
-	obj->grid = loc(0, 0);
-
-	/* Link the object to the monster */
-	obj->held_m_idx = mon->midx;
-
-	/* Add the object to the monster's inventory */
-	list_object(c, obj);
-	pile_insert(&mon->held_obj, obj);
-
-	/* Result */
-	return true;
-}
-
+ * ------------------------------------------------------------------------
+ * Monster (and player) actual movement
+ * ------------------------------------------------------------------------ */
 /**
  * Called when the player has just left grid1 for grid2.
  */
@@ -513,6 +512,51 @@ static void player_leaving(struct loc grid1, struct loc grid2)
 
 	/* Delayed traps trigger when the player leaves. */
 	hit_trap(grid1, 1);
+}
+
+/**
+ * Is a helper function to move a mimicked object when the mimic (not known
+ * to the player) is moved.  Assumes that the caller will be calling
+ * square_light_spot() for the source grid.
+ */
+static void move_mimicked_object(struct chunk *c, struct monster *mon,
+	struct loc src, struct loc dest)
+{
+	struct object *mimicked = mon->mimicked_obj;
+	/*
+	 * Move a copy so, if necessary, the original can remain as a
+	 * placeholder for the known version of the object in the player's
+	 * view of the cave.
+	 */
+	struct object *moved = object_new();
+	bool dummy = true;
+
+	assert(mimicked);
+	object_copy(moved, mimicked);
+	moved->oidx = 0;
+	mimicked->mimicking_m_idx = 0;
+	if (mimicked->known) {
+		moved->known = object_new();
+		object_copy(moved->known, mimicked->known);
+		moved->known->oidx = 0;
+		moved->known->grid = loc(0,0);
+	}
+	if (floor_carry(c, dest, moved, &dummy)) {
+		mon->mimicked_obj = moved;
+	} else {
+		/* Could not move the object so cancel mimicry. */
+		moved->mimicking_m_idx = 0;
+		mon->mimicked_obj = NULL;
+		/* Give object to monster if appropriate; otherwise, delete. */
+		if (! rf_has(mon->race->flags, RF_MIMIC_INV) ||
+			! monster_carry(c, mon, moved)) {
+			if (moved->known) {
+				object_delete(&moved->known);
+			}
+			object_delete(&moved);
+		}
+	}
+	square_delete_object(c, src, mimicked, true, false);
 }
 
 /**
@@ -536,9 +580,23 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	if (m1 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m1);
-		mon->grid = grid2;
 
 		/* Update monster */
+		if (monster_is_mimicking(mon)) {
+			/*
+			 * Become aware if the player can see the mimic before
+			 * or after the swap.
+			 */
+			if (monster_is_in_view(mon) ||
+				(m2 >= 0 && los(cave, pgrid, grid2)) ||
+				(m2 < 0 && los(cave, grid1, grid2))) {
+				become_aware(mon);
+			} else {
+				move_mimicked_object(cave, mon, grid1, grid2);
+				player->upkeep->redraw |= (PR_ITEMLIST);
+			}
+		}
+		mon->grid = grid2;
 		update_mon(mon, cave, true);
 
 		/* Affect light? */
@@ -560,15 +618,34 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
+
+		/* Don't allow command repeat if moved away from item used. */
+		if (cmdq_does_previous_use_floor_item()) {
+			cmd_disable_repeat();
+		}
 	}
 
 	/* Monster 2 */
 	if (m2 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m2);
-		mon->grid = grid1;
 
 		/* Update monster */
+		if (monster_is_mimicking(mon)) {
+			/*
+			 * Become aware if the player can see the mimic before
+			 * or after the swap.
+			 */
+			if (monster_is_in_view(mon) ||
+				(m1 >= 0 && los(cave, pgrid, grid1)) ||
+				(m1 < 0 && los(cave, grid2, grid1))) {
+				become_aware(mon);
+			} else {
+				move_mimicked_object(cave, mon, grid2, grid1);
+				player->upkeep->redraw |= (PR_ITEMLIST);
+			}
+		}
+		mon->grid = grid1;
 		update_mon(mon, cave, true);
 
 		/* Affect light? */
@@ -590,6 +667,11 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
+
+		/* Don't allow command repeat if moved away from item used. */
+		if (cmdq_does_previous_use_floor_item()) {
+			cmd_disable_repeat();
+		}
 	}
 
 	/* Redraw */
@@ -597,6 +679,10 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	square_light_spot(cave, grid2);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Awareness and learning
+ * ------------------------------------------------------------------------ */
 /**
  * Monster wakes up and possibly becomes aware of the player
  */
@@ -648,16 +734,34 @@ void become_aware(struct monster *mon)
 			obj->mimicking_m_idx = 0;
 			mon->mimicked_obj = NULL;
 
-			square_excise_object(cave, obj->grid, obj);
-
-			/* Give the object to the monster if appropriate */
+			/*
+			 * Give a copy of the object to the monster if
+			 * appropriate.
+			 */
 			if (rf_has(mon->race->flags, RF_MIMIC_INV)) {
-				monster_carry(cave, mon, obj);
-			} else {
-				/* Otherwise delete the mimicked object */
-				delist_object(cave, obj);
-				object_delete(&obj);
+				struct object* given = object_new();
+
+				object_copy(given, obj);
+				given->oidx = 0;
+				if (obj->known) {
+					given->known = object_new();
+					object_copy(given->known, obj->known);
+					given->known->oidx = 0;
+					given->known->grid = loc(0, 0);
+				}
+				if (! monster_carry(cave, mon, given)) {
+					if (given->known) {
+						object_delete(&given->known);
+					}
+					object_delete(&given);
+				}
 			}
+
+			/*
+			 * Delete the mimicked object; noting and lighting
+			 * done below outside of the if block.
+			 */
+			square_delete_object(cave, obj->grid, obj, false, false);
 		}
 
 		/* Update monster and item lists */
@@ -712,7 +816,7 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 
 	/* Learn the pflag */
 	if (pflag) {
-		if (pf_has(player->state.pflags, pflag)) {
+		if (pf_has(p->state.pflags, pflag)) {
 			of_on(mon->known_pstate.pflags, pflag);
 		} else {
 			of_off(mon->known_pstate.pflags, pflag);
@@ -722,9 +826,13 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 	/* Learn the element */
 	if (element_ok)
 		mon->known_pstate.el_info[element].res_level
-			= player->state.el_info[element].res_level;
+			= p->state.el_info[element].res_level;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster healing
+ * ------------------------------------------------------------------------ */
 #define MAX_KIN_RADIUS			5
 #define MAX_KIN_DISTANCE		5
 
@@ -816,6 +924,10 @@ struct monster *choose_nearby_injured_kin(struct chunk *c,
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Monster damage and death utilities
+ * ------------------------------------------------------------------------ */
+/**
  * Handles the "death" of a monster.
  *
  * Disperses treasures carried by the monster centered at the monster location.
@@ -838,8 +950,10 @@ void monster_death(struct monster *mon, bool stats)
 	bool visible = monster_is_visible(mon) || monster_is_unique(mon);
 
 	/* Delete any mimicked objects */
-	if (mon->mimicked_obj)
-		object_delete(&mon->mimicked_obj);
+	if (mon->mimicked_obj) {
+		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, true);
+		mon->mimicked_obj = NULL;
+	}
 
 	/* Drop objects being carried */
 	while (obj) {
@@ -868,7 +982,7 @@ void monster_death(struct monster *mon, bool stats)
 		if (!visible && !stats)
 			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, &obj, 0, mon->grid, true);
+		drop_near(cave, &obj, 0, mon->grid, true, false);
 		obj = next;
 	}
 
@@ -908,7 +1022,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 
 	/* Shapechanged monsters revert on death */
 	if (mon->original_race) {
-		msg("A change comes over %s", m_name);
 		monster_revert_shape(mon);
 		lore = get_lore(mon->race);
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
@@ -984,11 +1097,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 		/* Log the slaying of a unique */
 		strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
 		history_add(player, buf, HIST_SLAY_UNIQUE);
-	}
-
-	/* Remove any command status */
-	if (mon->m_timed[MON_TMD_COMMAND]) {
-		(void) player_clear_timed(player, TMD_COMMAND, true);
 	}
 
 	/* Gain experience */
@@ -1161,12 +1269,16 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	/* No damage, we're done */
 	if (dam == 0) return false;
 
+	/* Covering tracks is no longer possible */
+	player->timed[TMD_COVERTRACKS] = 0;
+
 	/* Hurt it */
 	mon->hp -= dam;
 	if (mon->hp < 0) {
 		/* Deal with arena monsters */
 		if (player->upkeep->arena_level) {
 			player->upkeep->generate_level = true;
+			player->upkeep->health_who = mon;
 			(*fear) = false;
 			return true;
 		}
@@ -1191,6 +1303,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 void kill_arena_monster(struct monster *mon)
 {
 	struct monster *old_mon = cave_monster(cave, mon->midx);
+	assert(old_mon);
 	update_mon(old_mon, cave, true);
 	old_mon->hp = -1;
 	player_kill_monster(old_mon, " is defeated!");
@@ -1231,24 +1344,47 @@ bool monster_taking_terrain_damage(struct monster *mon)
 
 
 /**
- * Returns the monster currently commanded, or NULL
+ * ------------------------------------------------------------------------
+ * Monster inventory utilities
+ * ------------------------------------------------------------------------ */
+/**
+ * Add the given object to the given monster's inventory.
+ *
+ * Currently always returns true - it is left as a bool rather than
+ * void in case a limit on monster inventory size is proposed in future.
  */
-struct monster *get_commanded_monster(void)
+bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 {
-	int i;
+	struct object *held_obj;
 
-	/* Look for it */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	/* Scan objects already being held for combination */
+	for (held_obj = mon->held_obj; held_obj; held_obj = held_obj->next) {
+		/* Check for combination */
+		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
+			/* Combine the items */
+			object_absorb(held_obj, obj);
 
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		/* Test for control */
-		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
+			/* Result */
+			return true;
+		}
 	}
 
-	return NULL;
+	/* Forget location */
+	obj->grid = loc(0, 0);
+
+	/* Link the object to the monster */
+	obj->held_m_idx = mon->midx;
+
+	/* Add the object to the monster's inventory */
+	list_object(c, obj);
+	if (obj->known) {
+		obj->known->oidx = obj->oidx;
+		player->cave->objects[obj->oidx] = obj->known;
+	}
+	pile_insert(&mon->held_obj, obj);
+
+	/* Result */
+	return true;
 }
 
 /**
@@ -1340,14 +1476,14 @@ void steal_monster_item(struct monster *mon, int midx)
 				object_delete(&obj);
 			} else {
 				object_grab(player, obj);
-				delist_object(cave, obj);
 				delist_object(player->cave, obj->known);
+				delist_object(cave, obj);
 				/* Drop immediately if ignored to prevent pack overflow */
 				if (ignore_item_ok(obj)) {
 					char o_name[80];
 					object_desc(o_name, sizeof(o_name), obj,
 								ODESC_PREFIX | ODESC_FULL);
-					drop_near(cave, &obj, 0, player->grid, true);
+					drop_near(cave, &obj, 0, player->grid, true, true);
 					msg("You drop %s.", o_name);
 				} else {
 					inven_carry(player, obj, true, true);
@@ -1414,6 +1550,10 @@ void steal_monster_item(struct monster *mon, int midx)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster shapechange utilities
+ * ------------------------------------------------------------------------ */
 /**
  * The shape base for shapechanges
  */

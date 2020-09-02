@@ -49,7 +49,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 	const struct loc grid = context->grid;
 
 	/* Turn on the light */
-	sqinfo_on(square(cave, grid).info, SQUARE_GLOW);
+	sqinfo_on(square(cave, grid)->info, SQUARE_GLOW);
 
 	/* Grid is in line of sight */
 	if (square_isview(cave, grid)) {
@@ -70,7 +70,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 
 	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid)) {
 		/* Turn off the light */
-		sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
+		sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
 	}
 
 	/* Grid is in line of sight */
@@ -225,6 +225,9 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 
 		/* Disable the trap */
 		square_disable_trap(cave, grid);
+
+		/* Visibility change */
+		player->upkeep->update |= (PU_UPDATE_VIEW);
 	} else if (square_islockeddoor(cave, grid)) {
 		/* Unlock the door */
 		square_unlock_door(cave, grid);

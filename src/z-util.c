@@ -206,7 +206,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 	size_t dlen = strlen(buf);
 
 	/* Is there room left in the buffer? */
-	if (dlen < bufsize - 1) {
+	if (dlen + 1 < bufsize) {
 		/* Append as much as possible  */
 		return (dlen + my_strcpy(buf + dlen, src, bufsize - dlen));
 	} else {
@@ -346,13 +346,10 @@ void strescape(char *s, const char c) {
  * returns true if string only contains spaces
  */
 bool contains_only_spaces(const char* s){
-	char spaces[]=" \t";
-	while(*s){
-		if(strchr(spaces,*s)!=NULL)
-			return false;
-		s++;
-	}
-	return true;
+	const char spaces[]=" \t";
+	size_t nsp = strspn(s, spaces);
+
+	return s[nsp] == '\0';
 }
 
 /**

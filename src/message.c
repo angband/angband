@@ -117,7 +117,8 @@ void message_add(const char *str, u16b type)
 
 	if (messages->head &&
 	    messages->head->type == type &&
-	    !strcmp(messages->head->str, str)) {
+	    !strcmp(messages->head->str, str) &&
+	    messages->head->count != (u16b)-1) {
 		messages->head->count++;
 		return;
 	}
@@ -155,8 +156,10 @@ static message_t *message_get(u16b age)
 {
 	message_t *m = messages->head;
 
-	while (m && age--)
+	while (m && age) {
+		age--;
 		m = m->older;
+	}
 
 	return m;
 }
@@ -229,21 +232,25 @@ void message_color_define(u16b type, byte color)
 		messages->colors = mem_zalloc(sizeof(msgcolor_t));
 		messages->colors->type = type;
 		messages->colors->color = color;
+		return;
 	}
 
 	mc = messages->colors;
-	while (mc->next)
+	while (1)
 	{
 		if (mc->type == type)
 		{
 			mc->color = color;
+			break;
+		}
+		if (! mc->next) {
+			mc->next = mem_zalloc(sizeof(msgcolor_t));
+			mc->next->type = type;
+			mc->next->color = color;
+			break;
 		}
 		mc = mc->next;
 	}
-
-	mc->next = mem_zalloc(sizeof(msgcolor_t));
-	mc->next->type = type;
-	mc->next->color = color;
 }
 
 /**
@@ -311,7 +318,8 @@ int message_lookup_by_sound_name(const char *name)
 	};
 	size_t i;
 
-	for (i = 0; i < N_ELEMENTS(sound_names); i++) {
+	/* Exclude MSG_MAX since it has NULL for the sound's name. */
+	for (i = 0; i < N_ELEMENTS(sound_names) - 1; i++) {
 		if (my_stricmp(name, sound_names[i]) == 0)
 			return (int)i;
 	}

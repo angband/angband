@@ -161,7 +161,7 @@ static errr run_parse_summon(struct parser *p) {
 
 static errr finish_parse_summon(struct parser *p) {
 	struct summon *summon, *next;
-	int count = 0;
+	int index;
 
 	/* Count the entries */
 	summon_max = 0;
@@ -173,19 +173,20 @@ static errr finish_parse_summon(struct parser *p) {
 
 	/* Allocate the direct access list and copy the data to it */
 	summons = mem_zalloc((summon_max + 1) * sizeof(*summon));
-	for (summon = parser_priv(p); summon; summon = next, count++) {
-		memcpy(&summons[count], summon, sizeof(*summon));
+	index = summon_max - 1;
+	for (summon = parser_priv(p); summon; summon = next, index--) {
+		memcpy(&summons[index], summon, sizeof(*summon));
 		next = summon->next;
-		summons[count].next = NULL;
+		summons[index].next = NULL;
 
 		mem_free(summon);
 	}
 	summon_max += 1;
 
 	/* Add indices of fallback summons */
-	for (count = 0; count < summon_max; count++) {
-		char *name = summons[count].fallback_name;
-		summons[count].fallback = summon_name_to_idx(name);
+	for (index = 0; index < summon_max; index++) {
+		char *name = summons[index].fallback_name;
+		summons[index].fallback = summon_name_to_idx(name);
 	}
 
 	parser_destroy(p);

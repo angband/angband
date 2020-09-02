@@ -33,6 +33,8 @@ extern const struct loc ddgrid[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
 extern const struct loc ddgrid_ddd[9];
+extern const s16b clockwise_ddd[9];
+extern const struct loc clockwise_grid[9];
 extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
 extern const byte side_dirs[20][8];
@@ -126,6 +128,9 @@ struct feature {
 	char *run_msg;	/**< Message on running into feature */
 	char *hurt_msg;	/**< Message on being hurt by feature */
 	char *die_msg;	/**< Message on dying to feature */
+	char *confused_msg; /**< Message on confused monster move into feature */
+	char *look_prefix; /**< Prefix for name in look result */
+	char *look_in_preposition; /**< Preposition in look result when on the terrain */
 	int resist_flag;/**< Monster resist flag for entering feature */
 };
 
@@ -379,7 +384,7 @@ bool square_suits_stairs_well(struct chunk *c, struct loc grid);
 bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 
-struct square square(struct chunk *c, struct loc grid);
+const struct square *square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, struct loc grid);
 int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
@@ -388,6 +393,7 @@ struct trap *square_trap(struct chunk *c, struct loc grid);
 bool square_holds_object(struct chunk *c, struct loc grid, struct object *obj);
 void square_excise_object(struct chunk *c, struct loc grid, struct object *obj);
 void square_excise_pile(struct chunk *c, struct loc grid);
+void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, bool do_note, bool do_light);
 void square_sense_pile(struct chunk *c, struct loc grid);
 void square_know_pile(struct chunk *c, struct loc grid);
 int square_num_walls_adjacent(struct chunk *c, struct loc grid);
@@ -427,6 +433,8 @@ void square_force_floor(struct chunk *c, struct loc grid);
 int square_shopnum(struct chunk *c, struct loc grid);
 int square_digging(struct chunk *c, struct loc grid);
 const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid);
+const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid);
+const char *square_apparent_look_in_preposition(struct chunk *c, struct player *p, struct loc grid);
 
 void square_memorize(struct chunk *c, struct loc grid);
 void square_forget(struct chunk *c, struct loc grid);

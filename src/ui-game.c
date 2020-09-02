@@ -25,10 +25,12 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-path.h"
+#include "player-properties.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "target.h"
@@ -133,6 +135,7 @@ struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL },
 	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq },
+	{ "View abilities", { 'S' }, CMD_NULL, do_cmd_abilities, NULL },
 	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq },
 	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL },
@@ -353,7 +356,7 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 		if (e.type != EVT_NONE) {
 			/* Flush and disturb */
 			event_signal(EVENT_INPUT_FLUSH);
-			disturb(player, 0);
+			disturb(player);
 			msg("Cancelled.");
 		}
 	}
@@ -404,6 +407,12 @@ static void start_game(bool new_game)
 	if (player->is_dead || new_game) {
 		character_generated = false;
 		textui_do_birth();
+	} else {
+		/*
+		 * Bring the stock curse objects up-to-date with what the
+		 * player knows.
+		 */
+		update_player_object_knowledge(player);
 	}
 
 	/* Tell the UI we've started. */
@@ -489,7 +498,7 @@ void save_game(void)
 	char path[1024];
 
 	/* Disturb the player */
-	disturb(player, 1);
+	disturb(player);
 
 	/* Clear messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
@@ -518,6 +527,9 @@ void save_game(void)
 	/* Refresh */
 	Term_fresh();
 
+	/* Allow suspend again */
+	signals_handle_tstp();
+
 	/* Save the window prefs */
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "window.prf");
 	if (!prefs_save(path, option_dump, "Dump window settings"))
@@ -531,9 +543,6 @@ void save_game(void)
 		msg("lore save failed!");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	}
-
-	/* Allow suspend again */
-	signals_handle_tstp();
 
 	/* Refresh */
 	Term_fresh();
@@ -597,7 +606,7 @@ void close_game(void)
 			prt("Press Return (or Escape).", 0, 40);
 			ch = inkey();
 			if (ch.code != ESCAPE)
-				predict_score();
+				predict_score(false);
 		}
 	}
 

@@ -51,6 +51,13 @@
 #include "trap.h"
 
 /**
+ * Setting this to 1 and recompiling gives a chance to recover a savefile 
+ * where the object list has become corrupted.  Don't forget to reset to 0
+ * and recompile again as soon as the savefile is viable again.
+ */
+#define OBJ_RECOVER 0
+
+/**
  * Dungeon constants
  */
 static byte square_size = 0;
@@ -481,7 +488,7 @@ int rd_messages(void)
  */
 int rd_monster_memory(void)
 {
-	u16b tmp16u;
+	u16b nkill, ntheft;
 	char buf[128];
 	int i;
 
@@ -506,18 +513,18 @@ int rd_monster_memory(void)
 	while (!streq(buf, "No more monsters")) {
 		struct monster_race *race = lookup_monster(buf);
 
-		/* Get the kill count, skip if monster invalid */
-		rd_u16b(&tmp16u);
+		/* Get the kill and theft counts, skip if monster invalid */
+		rd_u16b(&nkill);
+		rd_u16b(&ntheft);
 		if (!race) continue;
 
 		/* Store the kill count, ensure dead uniques stay dead */
-		l_list[race->ridx].pkills = tmp16u;
-		if (rf_has(race->flags, RF_UNIQUE) && tmp16u)
+		l_list[race->ridx].pkills = nkill;
+		if (rf_has(race->flags, RF_UNIQUE) && nkill)
 			race->max_num = 0;
 
-		/* Get the theft count */
-		rd_u16b(&tmp16u);
-		l_list[race->ridx].thefts = tmp16u;
+		/* Store the theft count */
+		l_list[race->ridx].thefts = ntheft;
 
 		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));
@@ -849,7 +856,7 @@ int rd_ignore(void)
 
 	for (i = 0; i < file_e_max; i++) {
 		if (i < z_info->e_max) {
-			bitflag flags, itypes[itype_size];
+			bitflag flags, itypes[ITYPE_SIZE];
 			
 			/* Read and extract the everseen flag */
 			rd_byte(&flags);
@@ -1238,7 +1245,7 @@ int rd_stores(void) { return rd_stores_aux(rd_item); }
  */
 static int rd_dungeon_aux(struct chunk **c)
 {
-	struct chunk *c1 = *c;
+	struct chunk *c1;
 	int i, n, y, x;
 
 	u16b height, width;
@@ -1364,8 +1371,11 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		struct object *obj = (*rd_item_version)();
 		if (!obj)
 			break;
-
+#if OBJ_RECOVER
+		if (square_in_bounds_fully(c, obj->grid) && c == cave) {
+#else
 		if (square_in_bounds_fully(c, obj->grid)) {
+#endif
 			pile_insert_end(&c->squares[obj->grid.y][obj->grid.x].obj, obj);
 		}
 		assert(obj->oidx);
@@ -1535,11 +1545,23 @@ int rd_monsters(void)
 	if (rd_monsters_aux(player->cave))
 		return -1;
 
+#if OBJ_RECOVER
+	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
+	player->cave->obj_max = cave->obj_max;
+	for (i = 0; i <= cave->obj_max; i++) {
+		struct object *obj = cave->objects[i], *known_obj;
+		if (!obj) continue;
+		known_obj = object_new();
+		obj->known = known_obj;
+		object_copy(known_obj, obj);
+		player->cave->objects[i] = known_obj;
+	}
+#else
 	/* Associate known objects */
 	for (i = 0; i < player->cave->obj_max; i++)
 		if (cave->objects[i] && player->cave->objects[i])
 			cave->objects[i]->known = player->cave->objects[i];
-
+#endif
 	return 0;
 }
 
@@ -1617,6 +1639,18 @@ int rd_chunks(void)
 
 		chunk_list_add(c);
 	}
+
+#if OBJ_RECOVER
+	for (j = 0; j < chunk_max; j++) {
+		if (j == 0 && streq(chunk_list[j].name, "Town")) continue;
+		chunk_list[j] = 0;
+	}
+	if (streq(chunk_list[0].name, "Town")) {
+		chunk_list_max = 1;
+	} else {
+		chunk_list_max = 0;
+	}
+#endif
 
 	return 0;
 }

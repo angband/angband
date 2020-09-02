@@ -56,7 +56,8 @@ void rune_set_note(size_t i, const char *inscription);
 bool player_knows_brand(struct player *p, int i);
 bool player_knows_slay(struct player *p, int i);
 bool player_knows_curse(struct player *p, int i);
-bool player_knows_ego(struct player *p, struct ego_item *ego);
+bool player_knows_ego(struct player *p, struct ego_item *ego,
+	const struct object *obj);
 bool object_effect_is_known(const struct object *obj);
 bool object_is_known_artifact(const struct object *obj);
 bool object_is_in_store(const struct object *obj);

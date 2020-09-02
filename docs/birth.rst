@@ -318,7 +318,7 @@ Necromancer
 Paladin
   A Paladin is a warrior/priest. Paladins are very good fighters, second
   only to the warrior class, but not very good at missile weapons. They
-  receive prayers at a slower pace then the priest, but can use all but the
+  receive prayers at a slower pace than the priest, but can use all but the
   most powerful prayers. A paladin lacks much in the way of abilities.
   Paladins have poor stealth, perception, searching, and magical device use.
   They have a decent saving throw due to their divine alliance. Their
@@ -442,7 +442,7 @@ Fighting
   Normally a character gets a single blow from any weapon, but with
   high enough dexterity and strength may receive more blows with
   lighter weapons. Strength and dexterity both modify the ability to hit an
-  opponent. This kill increases with the level of the character. Inspecting
+  opponent. This skill increases with the level of the character. Inspecting
   a weapon will show you how quickly you can attack with it.
  
 Shooting Ability
@@ -466,7 +466,7 @@ Stealth
   stealth can usually surprise their opponents, gaining the first blow.
   Also, creatures may fail to notice a stealthy character entirely,
   allowing a player to avoid certain fights. This skill is based upon race 
-  and class, but can me magically enhanced.
+  and class, but can be magically enhanced.
  
 Disarming
   Disarming is the ability to remove traps safely, and also includes
@@ -493,10 +493,9 @@ Stat Bonus Tables
 
 Stats, hit dice, infravision and experience point modifications due to 
 race and class are listed in the following table.  To get the total hit 
-dice and XP modifier, add the "race" and "class" numbers: for instance, 
-a Dwarf Priest has a hit die of 11+2=13 (i.e. they will get 1d13 hit 
-points per level, adjusted for constitution) and an XP modifier of 
-20+20=40%.
+dice, add the "race" and "class" numbers: for instance, a Dwarf Priest
+has a hit die of 11+2=13 (i.e. they will get 1d13 hit points per level,
+adjusted for constitution).
 
 ================ ===  ===  ===  ===  ===  =========  ========  ====== 
       Race       STR  INT  WIS  DEX  CON  HD (base)  XP/level  Infra
@@ -514,19 +513,20 @@ points per level, adjusted for constitution) and an XP modifier of
       Kobold      -1   -1    0   +2   +2       8        120%   50'
 ================ ===  ===  ===  ===  ===  =========  ========  ======
 
-================ ===  ===  ===  ===  ===  ==========
-      Class      STR  INT  WIS  DEX  CON  HD (bonus)
-================ ===  ===  ===  ===  ===  ==========
-      Warrior     +3   -2   -2   +2   +2       9    
-      Mage        -3   +3   +0   +0   -2       0    
-      Druid       -2   +0   +3   -2   +0       2    
-      Priest      -1   -3   +3   -1   +1       2    
-      Necromancer -3   +3   +0   +0   -2       2    
-      Paladin     +1   -3   +1   -1   +2       6    
-      Rogue       +0   +1   -3   +3   -1       4    
-      Ranger      +0   +0   +2   +1   -1       5    
-      Blackguard  +2   +0   -3   +0   +2       7    
-================ ===  ===  ===  ===  ===  ==========
+
+================= ===  ===  ===  ===  ===  ==========
+      Class       STR  INT  WIS  DEX  CON  HD (bonus)
+================= ===  ===  ===  ===  ===  ==========
+      Warrior      +3   -2   -2   +2   +2       9
+      Mage         -3   +3   +0   +0   -2       0
+      Druid        -2   +0   +3   -2   +0       2
+      Priest       -1   -3   +3   -1   +1       2
+      Necromancer  -3   +3   +0   +0   -2       2
+      Paladin      +1   -3   +1   -1   +2       6
+      Rogue        +0   +1   -3   +3   -1       4
+      Ranger       +0   +0   +2   +1   -1       5
+      Blackguard   +2   +0   -3   +0   +2       7
+================= ===  ===  ===  ===  ===  ==========
  
 Ability Tables
 ==============
@@ -547,19 +547,20 @@ Ability Tables
   Kobold       10       10        5       0       3      10      -5      10
 ============ =======  =======  ======  =====  =======  ======  ======  =====
 
-==========   ======= ======= ======= ======= ======= =======  ======= =======
- Class       DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows 
-==========   ======= ======= ======= ======= ======= =======  ======= =======
- Warrior     25(+15) 20(+10) 18(+7)  18(+10)  0(+0)  10(+12)  70(+45) 55(+45)
- Mage        30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+15) 20(+15)
- Druid       30(+10) 30(+10) 24(+10) 30(+10)  3(+0)  12(+12)  45(+20) 40(+30)
- Priest      25(+12) 25(+12) 30(+10) 32(+12)  2(+0)  10(+14)  45(+20) 35(+20)
- Necromancer 30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+25) 20(+15)
- Paladin     20(+15) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  65(+40) 50(+30)
- Rogue       45(+20) 45(+20) 32(+10) 28(+10)  3(+1)  20(+16)  35(+45) 66(+30)
- Ranger      40(+15) 30(+10) 28(+10) 32(+10)  3(+0)  15(+15)  60(+40) 72(+45)
- Blackguard  20(+15) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  60(+40) 50(+30)
-==========   ======= ======= ======= ======= ======= =======  ======= =======
+
+============   ======= ======= ======= ======= ======= =======  ======= =======
+ Class         DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows
+============   ======= ======= ======= ======= ======= =======  ======= =======
+ Warrior       25(+15) 20(+10) 18(+7)  18(+10)  0(+0)  10(+12)  70(+45) 55(+45)
+ Mage          30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+15) 20(+15)
+ Druid         30(+10) 30(+10) 24(+10) 30(+10)  3(+0)  12(+12)  45(+20) 40(+30)
+ Priest        25(+12) 25(+12) 30(+10) 32(+12)  2(+0)  10(+14)  45(+20) 35(+20)
+ Necromancer   30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+25) 20(+15)
+ Paladin       20(+15) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  65(+40) 50(+30)
+ Rogue         45(+20) 45(+20) 32(+10) 28(+10)  3(+1)  20(+16)  35(+45) 66(+30)
+ Ranger        40(+15) 30(+10) 28(+10) 32(+10)  3(+0)  15(+15)  60(+40) 72(+45)
+ Blackguard    20(+15) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  60(+40) 50(+30)
+============   ======= ======= ======= ======= ======= =======  ======= =======
 
 For character classes, there are two figures: the first figure is the base
 level of the skill, while the second figure (in parentheses) is the bonus

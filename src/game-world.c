@@ -177,7 +177,7 @@ static void recharged_notice(const struct object *obj, bool all)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 	/* Disturb the player */
-	disturb(player, 0);
+	disturb(player);
 
 	/* Notify the player */
 	if (obj->number > 1) {
@@ -290,6 +290,13 @@ static void decrease_timeouts(void)
 
 		/* Special cases */
 		switch (i) {
+            case TMD_FOOD:
+            {
+                /* Handled separately */
+                decr = 0;
+                break;
+            }
+
 			case TMD_CUT:
 			{
 				/* Check for truly "mortal" wound */
@@ -381,6 +388,7 @@ static void make_noise(struct player *p)
 	struct loc next = p->grid;
 	int y, x, d;
 	int noise = 0;
+	int noise_increment = p->timed[TMD_COVERTRACKS] ? 4 : 1;
     struct queue *queue = q_new(cave->height * cave->width);
 	struct loc decoy = cave_find_decoy(cave);
 
@@ -399,7 +407,7 @@ static void make_noise(struct player *p)
 	/* Player makes noise */
 	cave->noise.grids[next.y][next.x] = noise;
 	q_push_int(queue, grid_to_i(next, cave->width));
-	noise++;
+	noise += noise_increment;
 
 	/* Propagate noise */
 	while (q_len(queue) > 0) {
@@ -409,7 +417,7 @@ static void make_noise(struct player *p)
 		/* If we've reached the current noise level, put it back and step */
 		if (cave->noise.grids[next.y][next.x] == noise) {
 			q_push_int(queue, grid_to_i(next, cave->width));
-			noise++;
+			noise += noise_increment;
 			continue;
 		}
 
@@ -427,7 +435,7 @@ static void make_noise(struct player *p)
 			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
 
 			/* Skip the player grid */
-			if (loc_eq(player->grid, grid)) continue;
+			if (loc_eq(p->grid, grid)) continue;
 
 			/* Save the noise */
 			cave->noise.grids[grid.y][grid.x] = noise;
@@ -475,7 +483,7 @@ static void update_scent(void)
 	}
 
 	/* Scentless player */
-	if (player->timed[TMD_SCENTLESS]) return;
+	if (player->timed[TMD_COVERTRACKS]) return;
 
 	/* Lay down new scent around the player */
 	for (y = 0; y < 5; y++) {
@@ -544,23 +552,20 @@ void process_world(struct chunk *c)
 	if (!(turn % ((10L * z_info->day_length) / 4)))
 		play_ambient_sound();
 
-	/*** Handle stores and sunshine ***/
-
+	/* Handle stores and sunshine */
 	if (!player->depth) {
 		/* Daybreak/Nighfall in town */
 		if (!(turn % ((10L * z_info->day_length) / 2))) {
-			bool dawn;
-
 			/* Check for dawn */
-			dawn = (!(turn % (10L * z_info->day_length)));
+			bool dawn = (!(turn % (10L * z_info->day_length)));
 
-			/* Day breaks */
-			if (dawn)
+			if (dawn) {
+				/* Day breaks */
 				msg("The sun has risen.");
-
-			/* Night falls */
-			else
+			} else {
+				/* Night falls */
 				msg("The sun has fallen.");
+			}
 
 			/* Illuminate */
 			cave_illuminate(c, dawn);
@@ -644,14 +649,14 @@ void process_world(struct chunk *c)
 		/* Basic digestion rate based on speed */
 		i = turn_energy(player->state.speed);
 
-		/* Regeneration takes more food */
-		if (player_of_has(player, OF_REGEN)) i += 15;
-
 		/* Adjust for food value */
 		i = (i * 100) / z_info->food_value;
 
+		/* Regeneration takes more food */
+		if (player_of_has(player, OF_REGEN)) i *= 2;
+
 		/* Slow digestion takes less food */
-		if (player_of_has(player, OF_SLOW_DIGEST)) i /= 5;
+		if (player_of_has(player, OF_SLOW_DIGEST)) i /= 2;
 
 		/* Minimal digestion */
 		if (i < 1) i = 1;
@@ -674,7 +679,7 @@ void process_world(struct chunk *c)
 		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
 			/* Message */
 			msg("You faint from the lack of food.");
-			disturb(player, 1);
+			disturb(player);
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
@@ -692,9 +697,8 @@ void process_world(struct chunk *c)
 	if (player->chp < player->mhp)
 		player_regen_hp(player);
 
-	/* Regenerate mana if needed */
-	if (player->csp < player->msp)
-		player_regen_mana(player);
+	/* Regenerate or lose mana */
+	player_regen_mana(player);
 
 	/* Timeout various things */
 	decrease_timeouts();
@@ -702,9 +706,11 @@ void process_world(struct chunk *c)
 	/* Process light */
 	player_update_light(player);
 
-	/* Update noise and scent */
-	make_noise(player);
-	update_scent();
+	/* Update noise and scent (not if resting) */
+	if (!player_is_resting(player)) {
+		make_noise(player);
+		update_scent();
+	}
 
 
 	/*** Process Inventory ***/
@@ -731,7 +737,7 @@ void process_world(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid).trap;
+			struct trap *trap = square(c, grid)->trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;
@@ -754,7 +760,7 @@ void process_world(struct chunk *c)
 		/* Activate the recall */
 		if (!player->word_recall) {
 			/* Disturbing! */
-			disturb(player, 0);
+			disturb(player);
 
 			/* Determine the level */
 			if (player->depth) {
@@ -775,14 +781,11 @@ void process_world(struct chunk *c)
 
 		/* Activate the descent */
 		if (player->deep_descent == 0) {
-			int target_increment;
-			int target_depth = player->max_depth;
-
 			/* Calculate target depth */
-			target_increment = (4 / z_info->stair_skip) + 1;
-			target_depth = dungeon_get_next_level(player->max_depth, target_increment);
-
-			disturb(player, 0);
+			int target_increment = (4 / z_info->stair_skip) + 1;
+			int target_depth = dungeon_get_next_level(player->max_depth,
+													  target_increment);
+			disturb(player);
 
 			/* Determine the level */
 			if (target_depth > player->depth) {
@@ -959,7 +962,7 @@ void on_new_level(void)
 	}
 
 	/* Disturb */
-	disturb(player, 1);
+	disturb(player);
 
 	/* Track maximum player level */
 	if (player->max_lev < player->lev)
@@ -993,6 +996,9 @@ void on_new_level(void)
 	if (player->depth)
 		display_feeling(false);
 
+	/* Check the surroundings */
+	search(player);
+
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
 	if (player->energy < z_info->move_energy)
@@ -1005,6 +1011,11 @@ void on_new_level(void)
 static void on_leave_level(void) {
 	/* Cancel any command */
 	player_clear_timed(player, TMD_COMMAND, false);
+
+	/* Don't allow command repeat if moved away from item used. */
+	if (cmdq_does_previous_use_floor_item()) {
+		cmd_disable_repeat();
+	}
 
 	/* Any pending processing */
 	notice_stuff(player);
@@ -1122,7 +1133,9 @@ void run_game_loop(void)
 			/* Kill arena monster */
 			if (arena) {
 				player->upkeep->arena_level = false;
-				kill_arena_monster(player->upkeep->health_who);
+				if (player->upkeep->health_who) {
+					kill_arena_monster(player->upkeep->health_who);
+				}
 			}
 		}
 

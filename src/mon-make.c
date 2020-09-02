@@ -32,6 +32,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "target.h"
 
 /**
@@ -218,6 +219,8 @@ struct monster_race *get_mon_num(int level)
 	long total;
 	struct monster_race *race;
 	alloc_entry *table = alloc_race_table;
+	time_t cur_time = time(NULL);
+	struct tm *date = localtime(&cur_time);
 
 	/* Occasionally produce a nastier monster in the dungeon */
 	if (level > 0 && one_in_(z_info->ood_monster_chance))
@@ -227,9 +230,6 @@ struct monster_race *get_mon_num(int level)
 
 	/* Process probabilities */
 	for (i = 0; i < alloc_race_size; i++) {
-		time_t cur_time = time(NULL);
-		struct tm *date = localtime(&cur_time);
-
 		/* Monsters are sorted by depth */
 		if (table[i].level > level) break;
 
@@ -247,8 +247,8 @@ struct monster_race *get_mon_num(int level)
 			!(date->tm_mon == 11 && date->tm_mday >= 24 && date->tm_mday <= 26))
 			continue;
 
-		/* Only one copy of a a unique must be around at the same time */
-		if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
+		/* Only one copy of a unique must be around at the same time */
+		if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 			continue;
 
 		/* Some monsters never appear out of depth */
@@ -315,7 +315,8 @@ void delete_monster_idx(int m_idx)
 	grid = mon->grid;
 
 	/* Hack -- Reduce the racial counter */
-	mon->race->cur_num--;
+     if (mon->original_race) mon->original_race->cur_num--;
+     else mon->race->cur_num--;
 
 	/* Count the number of "reproducers" */
 	if (rf_has(mon->race->flags, RF_MULTIPLY)) {
@@ -329,6 +330,11 @@ void delete_monster_idx(int m_idx)
 	/* Hack -- remove tracked monster */
 	if (player->upkeep->health_who == mon)
 		health_track(player->upkeep, NULL);
+
+	/* Hack -- remove any command status */
+	if (mon->m_timed[MON_TMD_COMMAND]) {
+		(void) player_clear_timed(player, TMD_COMMAND, true);
+	}
 
 	/* Monster is gone from square and group */
 	square_set_mon(cave, grid, 0);
@@ -345,7 +351,19 @@ void delete_monster_idx(int m_idx)
 		if (obj->artifact && !(obj->known && obj->known->artifact))
 			obj->artifact->created = false;
 
-		/* Delete the object */
+		/* Delete the object.  Since it's in the cave's list do
+		 * some additional bookkeeping. */
+		if (obj->known) {
+			/* It's not in a floor pile so remove it completely.
+			 * Once compatibility with old savefiles isn't needed
+			 * can skip the test and simply delist and delete
+			 * since any obj->known from a monster's inventory
+			 * will not be in a floor pile. */
+			if (loc_is_zero(obj->known->grid)) {
+				delist_object(player->cave, obj->known);
+				object_delete(&obj->known);
+			}
+		}
 		delist_object(cave, obj);
 		object_delete(&obj);
 		obj = next;
@@ -353,9 +371,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
-		square_excise_object(cave, mon->grid, mon->mimicked_obj);
-		delist_object(cave, mon->mimicked_obj);
-		object_delete(&mon->mimicked_obj);
+		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, false);
 	}
 
 	/* Wipe the Monster */
@@ -377,8 +393,8 @@ void delete_monster(struct loc grid)
 	assert(square_in_bounds(cave, grid));
 
 	/* Delete the monster (if any) */
-	if (square(cave, grid).mon > 0)
-		delete_monster_idx(square(cave, grid).mon);
+	if (square(cave, grid)->mon > 0)
+		delete_monster_idx(square(cave, grid)->mon);
 }
 
 
@@ -397,6 +413,7 @@ void monster_index_move(int i1, int i2)
 
 	/* Old monster */
 	mon = cave_monster(cave, i1);
+	if (!mon) return;
 
 	/* Update the cave */
 	square_set_mon(cave, mon->grid, i2);
@@ -549,13 +566,24 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 			while (obj) {
 				if (obj->artifact && !(obj->known && obj->known->artifact))
 					obj->artifact->created = false;
+				/*
+				 * Also, remove from the cave's object list.
+				 * That way, the scan for orphaned objects
+				 * in cave_free() doesn't attempt to
+				 * access freed memory or free memory
+				 * twice.
+				 */
+				if (obj->oidx) {
+					c->objects[obj->oidx] = NULL;
+				}
 				obj = obj->next;
 			}
 			object_pile_free(held_obj);
 		}
 
 		/* Reduce the racial counter */
-		mon->race->cur_num--;
+           if (mon->original_race) mon->original_race->cur_num--;
+		else mon->race->cur_num--;
 
 		/* Monster is gone from square */
 		square_set_mon(c, mon->grid, 0);
@@ -810,7 +838,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		if (monster_carry(c, mon, obj)) {
 			any = true;
 		} else {
-			obj->artifact->created = false;
+			if (obj->artifact) {
+				obj->artifact->created = false;
+			}
 			object_wipe(obj);
 			mem_free(obj);
 		}
@@ -965,7 +995,8 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) c->num_repro++;
 
 	/* Count racial occurrences */
-	new_mon->race->cur_num++;
+     if (new_mon->original_race) new_mon->original_race->cur_num++; 
+     else new_mon->race->cur_num++;
 
 	/* Create the monster's drop, if any */
 	if (origin)
@@ -1028,7 +1059,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;
 
 	/* "unique" monsters must be "unique" */
-	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
+	if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 		return false;
 
 	/* Depth monsters may NOT be created out of depth */
@@ -1218,8 +1249,8 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 	bool is_unique = rf_has(friends_race->flags, RF_UNIQUE);
 
 	/* Make sure the unique hasn't been killed already */
-	if (is_unique) {
-		total = friends_race->cur_num < friends_race->max_num ? 1 : 0;
+	if (is_unique && (friends_race->cur_num >= friends_race->max_num)) {
+		return false;
 	}
 
 	/* More than 4 levels OoD, no groups allowed */

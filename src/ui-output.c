@@ -153,13 +153,15 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 /**
  * Show a textblock interactively
  */
-void textui_textblock_show(textblock *tb, region orig_area, const char *header)
+struct keypress textui_textblock_show(textblock *tb, region orig_area, const char *header)
 {
 	/* xxx on resize this should be recalculated */
 	region area = region_calculate(orig_area);
 
 	size_t *line_starts = NULL, *line_lengths = NULL;
 	size_t n_lines;
+
+	struct keypress ch = KEYPRESS_NULL;
 
 	n_lines = textblock_calculate_lines(tb,
 			&line_starts, &line_lengths, area.width);
@@ -183,8 +185,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 				area.row + area.page_rows + 1, area.col);
 
 		/* Pager mode */
-		while (1) {
-			struct keypress ch;
+		while (1) {			
 
 			display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
 					line_lengths, n_lines, area, start_line);
@@ -192,7 +193,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 			ch = inkey();
 			if (ch.code == ARROW_UP)
 				start_line--;
-			else if (ch.code == ESCAPE || ch.code == 'q')
+			else if (ch.code == ESCAPE || ch.code == 'q' || ch.code == 'x')
 				break;
 			else if (ch.code == ']' || ch.code == '[')
 				/* Special case to deal with monster and object lists -
@@ -215,7 +216,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 		c_prt(COLOUR_WHITE, "", area.row + n_lines, area.col);
 		c_prt(COLOUR_L_BLUE, "(Press any key to continue.)",
 				area.row + n_lines + 1, area.col);
-		inkey();
+		ch = inkey();
 	}
 
 	mem_free(line_starts);
@@ -223,7 +224,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 	screen_load();
 
-	return;
+	return (ch);
 }
 
 

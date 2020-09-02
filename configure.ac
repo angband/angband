@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.2.0, bugs@rephial.org)
+AC_INIT(Angband, 4.2.1, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -324,6 +324,9 @@ fi
 
 dnl SDL2 mixer checking
 if test "$enable_sdl2_mixer" = "yes"; then
+	if test "$enable_sdl_mixer" = "yes"; then
+		AC_MSG_ERROR(both --enable-sdl-mixer and --enable-sdl2-mixer set, 1)
+	fi
 	AC_CHECK_LIB(SDL2_mixer, Mix_OpenAudio, found_sdl2_mixer=yes, found_sdl2_mixer=no)
 
 	if test "$found_sdl2_mixer" = "yes"; then
@@ -337,7 +340,7 @@ if test "$enable_sdl2_mixer" = "yes"; then
 			SDL2_LIBS=`sdl2-config --libs`
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_mixer"
 		fi
-		MAINFILES="${MAINFILES} \$(SNDSDL2FILES)"
+		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
 	fi
 fi
 

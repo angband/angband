@@ -282,9 +282,12 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 	obj = ctx->list[oid];
 
 	/* Describe the object - preserving insriptions in the home */
-	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
-	else desc = ODESC_FULL | ODESC_STORE;
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | desc);
+	if (store->sidx == STORE_HOME) {
+		desc |= ODESC_FULL;
+	} else {
+		desc |= ODESC_FULL | ODESC_STORE;
+	}
+	object_desc(o_name, sizeof(o_name), obj, desc);
 
 	/* Display the object */
 	c_put_str(obj->kind->base->attr, o_name, row, col);
@@ -524,6 +527,7 @@ static bool store_sell(struct store_context *ctx)
 	object_copy_amt(temp_obj, obj, amt);
 
 	if (!store_check_num(store, temp_obj)) {
+		object_wipe(temp_obj);
 		if (store->sidx == STORE_HOME)
 			msg("Your home is full.");
 		else
@@ -540,6 +544,7 @@ static bool store_sell(struct store_context *ctx)
 		/* Extract the value of the items */
 		u32b price = price_item(store, temp_obj, true, amt);
 
+		object_wipe(temp_obj);
 		screen_save();
 
 		/* Show price */
@@ -559,6 +564,7 @@ static bool store_sell(struct store_context *ctx)
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	} else { /* Player is at home */
+		object_wipe(temp_obj);
 		cmdq_push(CMD_STASH);
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);

@@ -338,8 +338,12 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 		lore->sleep_known = true;
 
 	/* Spellcasting frequency */
-	if ((lore->cast_innate + lore->cast_spell > 100) || lore->all_known)
+	if (lore->cast_innate > 50 || lore->all_known) {
+		lore->innate_freq_known = true;
+	}
+	if (lore->cast_spell > 50 || lore->all_known) {
 		lore->spell_freq_known = true;
+	}
 
 	/* Flags for probing and cheating */
 	if (lore->all_known) {
@@ -368,14 +372,51 @@ void cheat_monster_lore(const struct monster_race *race, struct monster_lore *lo
  */
 void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lore)
 {
+	struct monster_blow *blows;
+	bool *blow_known;
+	struct monster_drop *d;
+	struct monster_friends *f;
+	struct monster_friends_base *fb;
+	struct monster_mimic *mk;
+
 	assert(race);
 	assert(lore);
 
-	mem_free(lore->drops);
-	mem_free(lore->friends);
-	mem_free(lore->friends_base);
-	mem_free(lore->mimic_kinds);
+	d = lore->drops;
+	while (d) {
+		struct monster_drop *dn = d->next;
+		mem_free(d);
+		d = dn;
+	}
+	f = lore->friends;
+	while (f) {
+		struct monster_friends *fn = f->next;
+		mem_free(f);
+		f = fn;
+	}
+	fb = lore->friends_base;
+	while (fb) {
+		struct monster_friends_base *fbn = fb->next;
+		mem_free(fb);
+		fb = fbn;
+	}
+	mk = lore->mimic_kinds;
+	while (mk) {
+		struct monster_mimic *mkn = mk->next;
+		mem_free(mk);
+		mk = mkn;
+	}
+	/*
+	 * Keep the blows and blow_known pointers - other code assumes they
+	 * are not NULL.  Wipe the pointed to memory.
+	 */
+	blows = lore->blows;
+	memset(blows, 0, z_info->mon_blows_max * sizeof(*blows));
+	blow_known = lore->blow_known;
+	memset(blow_known, 0, z_info->mon_blows_max * sizeof(*blow_known));
 	memset(lore, 0, sizeof(*lore));
+	lore->blows = blows;
+	lore->blow_known = blow_known;
 }
 
 /**
@@ -600,36 +641,39 @@ void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 	// moves at 2.3x normal speed (0.9x your current speed)
 	textblock_append(tb, "at ");
 
-	char buf[5] = "";
+	char buf[8] = "";
 	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
 	byte int_mul = multiplier / 10;
 	byte dec_mul = multiplier % 10;
+	byte attr = COLOUR_ORANGE;
 
 	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
 	textblock_append_c(tb, COLOUR_L_BLUE, buf);
 
 	textblock_append(tb, " normal speed, which is ");
+	multiplier = 100 * extract_energy[race->speed]
+		/ extract_energy[player->state.speed];
+	int_mul = multiplier / 100;
+	dec_mul = multiplier % 100;
+	if (!dec_mul) {
+		strnfmt(buf, sizeof(buf), "%dx", int_mul);
+	} else if (!(dec_mul % 10)) {
+		strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul / 10);
+	} else {
+		strnfmt(buf, sizeof(buf), "%d.%02dx", int_mul, dec_mul);
+	}
 
 	if (player->state.speed > race->speed) {
-		char buf[13] = "";
-		multiplier = 10 * extract_energy[player->state.speed] / extract_energy[race->speed];
-		int_mul = multiplier / 10;
-		dec_mul = multiplier % 10;
-		strnfmt(buf, sizeof(buf), "%d.%dx slower ", int_mul, dec_mul);
-		textblock_append_c(tb, COLOUR_L_GREEN, buf);
+		attr = COLOUR_L_GREEN;
+	} else if (player->state.speed < race->speed) {
+		attr = COLOUR_RED;
 	}
-	else if (player->state.speed < race->speed) {
-		char buf[13] = "";
-		multiplier = 100 * extract_energy[race->speed] / extract_energy[player->state.speed];
-		int_mul = multiplier / 100;
-		dec_mul = ((multiplier + 9) / 10) % 10;
-		strnfmt(buf, sizeof(buf), "%d.%dx faster ", int_mul, dec_mul);
-		textblock_append_c(tb, COLOUR_RED, buf);
-	}
-	if (player->state.speed == race->speed)
+	if (player->state.speed == race->speed) {
 		textblock_append(tb, "the same as you");
-	else
-		textblock_append(tb, "than you");
+	} else {
+		textblock_append_c(tb, attr, buf);
+		textblock_append(tb, " your speed");
+	}
 }
 
 /**
@@ -1036,7 +1080,7 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 		textblock_append(tb, ".  ");
 
 		/* Player's base chance to hit */
-		chance = py_attack_hit_chance(player, weapon);
+		chance = chance_of_melee_hit(player, weapon);
 
 		/* The following calculations are based on test_hit();
 		 * make sure to keep it in sync */
@@ -1419,10 +1463,9 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
+	bool innate = false;
 	bool breath = false;
-	bool magic = false;
 	const char *initial_pronoun;
 	bool know_hp;
 	bitflag current_flags[RSF_SIZE], test_flags[RSF_SIZE];
@@ -1443,32 +1486,53 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	rsf_diff(current_flags, test_flags);
 	if (!rsf_is_empty(current_flags)) {
 		textblock_append(tb, "%s may ", initial_pronoun);
-		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", ".  ");
+		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
+		innate = true;
 	}
 
 	/* Collect breaths */
 	create_mon_spell_mask(current_flags, RST_BREATH, RST_NONE);
 	rsf_inter(current_flags, lore->spell_flags);
 	if (!rsf_is_empty(current_flags)) {
-		textblock_append(tb, "%s may ", initial_pronoun);
+		if (innate) {
+			textblock_append(tb, ", and may ");
+		} else {
+			textblock_append(tb, "%s may ", initial_pronoun);
+		}
 		textblock_append_c(tb, COLOUR_L_RED, "breathe ");
 		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
 		breath = true;
 	}
 
+	/* End the sentence about innate spells and breaths */
+	if ((innate || breath) && race->freq_innate) {
+		if (lore->innate_freq_known) {
+			/* Describe the spell frequency */
+			textblock_append(tb, "; ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / race->freq_innate);
+		} else if (lore->cast_innate) {
+			/* Guess at the frequency */
+			int approx_frequency = MAX(((race->freq_innate + 9) / 10) * 10, 1);
+			textblock_append(tb, "; about ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+							   100 / approx_frequency);
+		}
+
+		textblock_append(tb, ".  ");
+	}
 
 	/* Collect spell information */
 	rsf_copy(current_flags, lore->spell_flags);
 	create_mon_spell_mask(test_flags, RST_BREATH, RST_INNATE, RST_NONE);
 	rsf_diff(current_flags, test_flags);
 	if (!rsf_is_empty(current_flags)) {
-		magic = true;
-
 		/* Intro */
-		if (breath)
-			textblock_append(tb, ", and may ");
-		else
-			textblock_append(tb, "%s may ", initial_pronoun);
+		textblock_append(tb, "%s may ", initial_pronoun);
 
 		/* Verb Phrase */
 		textblock_append_c(tb, COLOUR_L_RED, "cast spells");
@@ -1480,26 +1544,26 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 		/* List */
 		textblock_append(tb, " which ");
 		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
-	}
 
-	/* End the sentence about innate/other spells */
-	if (breath || magic) {
-		/* Calculate total casting and average frequency */
-		average_frequency = (race->freq_innate + race->freq_spell) / 2;
-
-		if (lore->spell_freq_known) {
-			/* Describe the spell frequency */
-			textblock_append(tb, "; ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "1");
-			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", 100 / average_frequency);
-		} else if (lore->cast_innate || lore->cast_spell) {
-			/* Guess at the frequency */
-			average_frequency = ((average_frequency + 9) / 10) * 10;
-			textblock_append(tb, "; about ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "1");
-			textblock_append(tb, " time in ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", 100 / average_frequency);
+		/* End the sentence about innate/other spells */
+		if (race->freq_spell) {
+			if (lore->spell_freq_known) {
+				/* Describe the spell frequency */
+				textblock_append(tb, "; ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "1");
+				textblock_append(tb, " time in ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+								   100 / race->freq_spell);
+			} else if (lore->cast_spell) {
+				/* Guess at the frequency */
+				int approx_frequency = MAX(((race->freq_spell + 9) / 10) * 10,
+										   1);
+				textblock_append(tb, "; about ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "1");
+				textblock_append(tb, " time in ");
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+								   100 / approx_frequency);
+			}
 		}
 
 		textblock_append(tb, ".  ");
@@ -1633,7 +1697,8 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		textblock_append_c(tb, COLOUR_ORANGE, " at least");
 	}
 	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
-	textblock_append(tb, " damage.  ");
+	textblock_append(tb, " damage on each of %s turns.  ",
+					 lore_pronoun_possessive(msex, false));
 }
 
 /**

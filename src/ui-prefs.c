@@ -32,6 +32,7 @@
 #include "player.h"
 #include "trap.h"
 #include "ui-display.h"
+#include "ui-entry-renderers.h"
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
@@ -109,6 +110,7 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	/* Open new file */
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
 	if (!new_file) {
+		file_close(cur_file);
 		msg("Failed to create file %s", new_fname);
 		return;
 	}
@@ -323,6 +325,36 @@ void dump_colors(ang_file *fff)
 
 
 /**
+ * Dump the customizable attributes for renderers used in the character
+ * screen.
+ */
+void dump_ui_entry_renderers(ang_file *fff)
+{
+	int n = ui_entry_renderer_get_index_limit(), i;
+
+	file_putf(fff, "# Renderers for parts of the character screen.\n");
+	file_putf(fff, "# Format entry-renderer:name:colors:label_colors:symbols\n");
+	file_putf(fff, "# Use * for colors or label_colors to leave those unchanged\n");
+	file_putf(fff, "# Leave off symbols and the colon before it to leave those unchanged\n");
+	file_putf(fff, "# Look at lib/gamedata/ui_entry_renderers.txt for more information\n");
+	file_putf(fff, "# about how colors, label_colors, and symbols are used\n");
+
+	for (i = ui_entry_renderer_get_min_index(); i < n; i++) {
+		char* colors = ui_entry_renderer_get_colors(i);
+		char* labcolors = ui_entry_renderer_get_label_colors(i);
+		char* symbols = ui_entry_renderer_get_symbols(i);
+
+		file_putf(fff, "entry-renderer:%s:%s:%s:%s\n",
+			ui_entry_renderer_get_name(i), colors, labcolors,
+			symbols);
+		string_free(symbols);
+		string_free(labcolors);
+		string_free(colors);
+	}
+}
+
+
+/**
  * Write all current options to a user preference file.
  */
 void option_dump(ang_file *fff)
@@ -516,7 +548,7 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			}
 		} else {
 			while (*s && (f != ']')) {
-				t = process_pref_file_expr(&s, &f);
+				(void) process_pref_file_expr(&s, &f);
 			}
 		}
 
@@ -1042,6 +1074,45 @@ static enum parser_error parse_prefs_window(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_prefs_entry_renderer(struct parser *p)
+{
+	const char* name = parser_getsym(p, "name");
+	const char* colors;
+	const char* label_colors;
+	const char* symbols;
+	int index;
+
+	index = ui_entry_renderer_lookup(name);
+	if (index == 0) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	if (parser_hasval(p, "colors")) {
+		colors = parser_getsym(p, "colors");
+		if (streq(colors, "*")) {
+			colors = NULL;
+		}
+	} else {
+		colors = NULL;
+	}
+	if (parser_hasval(p, "labelcolors")) {
+		label_colors = parser_getsym(p, "labelcolors");
+		if (streq(label_colors, "*")) {
+			label_colors = NULL;
+		}
+	} else {
+		label_colors = NULL;
+	}
+	if (parser_hasval(p, "symbols")) {
+		symbols = parser_getsym(p, "symbols");
+	} else {
+		symbols = NULL;
+	}
+	if (ui_entry_renderer_customize(index, colors, label_colors, symbols)) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
 enum parser_error parse_prefs_dummy(struct parser *p)
 {
 	return PARSE_ERROR_NONE;
@@ -1074,6 +1145,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "message sym type sym attr", parse_prefs_message);
 	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
 	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
+	parser_reg(p, "entry-renderer sym name ?sym colors ?sym labelcolors ?sym symbols", parse_prefs_entry_renderer);
 	register_sound_pref_parser(p);
 
 	return p;

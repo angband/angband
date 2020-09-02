@@ -6,6 +6,7 @@ TESTPROGS += parse/a-info \
 	parse/graphics \
 	parse/h-info \
 	parse/k-info \
+	parse/lore \
 	parse/names \
 	parse/p-info \
 	parse/parse \
