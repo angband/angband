@@ -139,6 +139,11 @@ Collect disconnection stats ``D``
   a level has non-vault areas that are inaccessible to the player.  The
   results are written to the message window.
 
+Collect pit stats ``P``
+  Generates several pits of the room type you specify (pit, nest, or
+  other) and computes a histogram of the types of monsters involved.
+  The results are written to the message window.
+
 Nick hack ``_``
   Maps out the reachable grids (by the sound and scent algorithm) in
   successive distances from the player grid.
