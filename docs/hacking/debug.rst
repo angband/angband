@@ -21,8 +21,10 @@ Create a very good object ``v``
 
 Play with an object ``o``
   Lets you modify an object by randomly rerolling it as a normal, good, or
-  excellent object, or lets you modify it directly, tweaking the pval and
-  combat values.
+  excellent object or lets you edit its attributes, including quantity, ego
+  type, presence or absence of curses, combat values, and modifiers.  There's
+  also a statistics option to evaluate how likely worse, better, or matching
+  objects of the same kind would be generated.
 
 Test kind ``V``
   Will prompt for a tval, as an integer.  For that tval, creates one object
