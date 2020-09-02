@@ -28,7 +28,9 @@ Play with an object ``o``
 
 Test kind ``V``
   Will prompt for a tval, as an integer.  For that tval, creates one object
-  of each sval and drops it nearby.
+  of each sval and drops it nearby.  There is a similar option with the 'c'
+  command, but this one will generate any instant artifacts associated with
+  a tval and selects the tval by number rather than name.
 
 Detection / Information
 =======================
