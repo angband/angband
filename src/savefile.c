@@ -378,21 +378,37 @@ bool savefile_save(const char *path)
 	char old_savefile[1024];
 
 	/* New savefile */
+#ifdef DJGPP
+	strnfmt(old_savefile, sizeof(old_savefile), "%s/temp.old",
+		dirname(path));
+	while (file_exists(old_savefile) && (count++ < 100))
+		strnfmt(old_savefile, sizeof(old_savefile), "%stemp%u.old",
+				dirname(path), count);
+#else
 	strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,
 			Rand_simple(1000000));
 	while (file_exists(old_savefile) && (count++ < 100))
 		strnfmt(old_savefile, sizeof(old_savefile), "%s%u%u.old", path,
 				Rand_simple(1000000),count);
+#endif /* DJGPP */
 
 	count = 0;
 
 	/* Open the savefile */
 	safe_setuid_grab();
+#ifdef DJGPP
+	strnfmt(new_savefile, sizeof(new_savefile), "%s/temp.new",
+		dirname(path));
+	while (file_exists(new_savefile) && (count++ < 100))
+		strnfmt(new_savefile, sizeof(new_savefile), "%s/temp%u.new",
+				dirname(path), count);
+#else
 	strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,
 			Rand_simple(1000000));
 	while (file_exists(new_savefile) && (count++ < 100))
 		strnfmt(new_savefile, sizeof(new_savefile), "%s%u%u.new", path,
 				Rand_simple(1000000),count);
+#endif /* DJGPP */
 
 	file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
 	safe_setuid_drop();

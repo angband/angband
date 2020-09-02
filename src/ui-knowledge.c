@@ -57,6 +57,25 @@
 #include "ui-target.h"
 #include "wizard.h"
 
+#ifdef DJGPP
+#include <libc/unconst.h>
+
+wchar_t *
+wcschr(const wchar_t *s, wchar_t c)
+{
+  wchar_t cc = c;
+  while (*s)
+  {
+    if (*s == cc)
+      return unconst(s, wchar_t *);
+    s++;
+  }
+  if (cc == 0)
+    return unconst(s, wchar_t *);
+  return 0;
+}
+#endif /* DJGPP */
+
 /**
  * The first part of this file contains the knowledge menus.  Generic display
  * routines are followed  by sections which implement "subclasses" of the

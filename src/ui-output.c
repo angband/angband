@@ -293,7 +293,11 @@ void text_out_to_screen(byte a, const char *str)
 		}
 
 		/* Clean up the char */
+#ifdef DJGPP
+		ch = ((*s) < 0x100? *s : L' ');
+#else
 		ch = (iswprint(*s) ? *s : L' ');
+#endif
 
 		/* Wrap words as needed */
 		if ((x >= wrap - 1) && (ch != L' ')) {

@@ -89,7 +89,12 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	ang_file *cur_file;
 
 	/* Format up some filenames */
+#ifdef DJGPP
+	strnfmt(new_fname, sizeof(new_fname), "%s/temp.new",
+		dirname(cur_fname));
+#else
 	strnfmt(new_fname, sizeof(new_fname), "%s.new", cur_fname);
+#endif
 
 	/* Work out what we expect to find */
 	strnfmt(start_line, sizeof(start_line), "%s begin %s",
@@ -134,7 +139,12 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	/* If there are changes use the new file. otherwise just destroy it */
 	if (changed) {
 		char old_fname[1024];
+#ifdef DJGPP
+		strnfmt(old_fname, sizeof(old_fname), "%s/temp.old",
+			dirname(cur_fname));
+#else
 		strnfmt(old_fname, sizeof(old_fname), "%s.old", cur_fname);
+#endif
 
 		if (file_move(cur_fname, old_fname)) {
 			file_move(new_fname, cur_fname);

@@ -716,8 +716,13 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	safe_setuid_grab();
 
 	/* Format filenames */
+#ifdef DJGPP
+	strnfmt(new_fname, sizeof(new_fname), "%s/file.new", dirname(path));
+	strnfmt(old_fname, sizeof(old_fname), "%s/file.old", dirname(path));
+#else
 	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
 	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+#endif
 
 	/* Write new file */
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
@@ -733,7 +738,6 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	file_close(new_file);
 
 	/* Move files around */
-	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
 	if (!file_exists(path)) {
 		file_move(new_fname, path);
 	} else if (file_move(path, old_fname)) {
