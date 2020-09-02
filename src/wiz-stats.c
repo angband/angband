@@ -1787,7 +1787,7 @@ void calc_cave_distances(int **cave_dist)
 		}
 		d_old_max = d_new_max;
 
-	} while ((d_old_max > 0) || dist == DIST_MAX);
+	} while (d_old_max > 0 && dist < DIST_MAX);
 }
 
 void pit_stats(void)
