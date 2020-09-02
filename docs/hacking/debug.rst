@@ -159,3 +159,6 @@ Miscellaneous
 
 Animations demo ``G``
   Displays the graphics or characters used for animating projection effects.
+
+Key log ``L``
+  Displays the recent keystrokes entered.
