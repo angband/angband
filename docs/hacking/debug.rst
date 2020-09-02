@@ -150,3 +150,6 @@ Collect pit stats ``P``
 Nick hack ``_``
   Maps out the reachable grids (by the sound and scent algorithm) in
   successive distances from the player grid.
+
+Push objects ``>``
+  Pushes objects off the targeted grid as a way of excercising push_object().
