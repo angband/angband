@@ -113,7 +113,7 @@ dist:
 	@echo attempting to install sound and graphics
 	@cp ../lib/tiles/old/*.prf $(TMPDIR)/lib/tiles/old
 	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
-	@cp ../readme.txt $(TMPDIR)
+	@cp ../README.md $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	zip -r ../angband.zip $(TMPDIR)
 	rm -rf $(TMPDIR)
