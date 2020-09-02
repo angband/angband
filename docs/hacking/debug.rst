@@ -117,6 +117,9 @@ Dungeon
 Create a trap ``T``
   Prompts for the type of trap to create and places it on your square.
 
+Perform an effect ``E``
+  Prompts for an effect type and its parameters.  Then executes that effect.
+
 Quit without saving ``X``
   Quits the game without saving (prompts first).
 
