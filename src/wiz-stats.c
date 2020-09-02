@@ -1985,7 +1985,7 @@ void disconnect_stats(void)
 		msg("Iteration: %d",i); 
 
 		/* Free arrays */
-		for (y = 0; x < cave->height; x++)
+		for (y = 0; y < cave->height; y++)
 			mem_free(cave_dist[y]);
 		mem_free(cave_dist);
 	}
