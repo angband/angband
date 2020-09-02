@@ -108,6 +108,9 @@ Zap monsters ``z``
   Prompts for a distance, up to the maximum sight range, and deletes all
   monsters within that distance.
 
+Hit all in line of sight ``H``
+  Hits all monster in the line of sight for a large, 10000, amount of damage.
+
 Dungeon
 ========
 
