@@ -115,7 +115,7 @@ Dungeon
 ========
 
 Create a trap ``T``
-  Creates a random trap on your square.
+  Prompts for the type of trap to create and places it on your square.
 
 Quit without saving ``X``
   Quits the game without saving (prompts first).
