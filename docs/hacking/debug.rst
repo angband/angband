@@ -153,3 +153,9 @@ Nick hack ``_``
 
 Push objects ``>``
   Pushes objects off the targeted grid as a way of excercising push_object().
+
+Miscellaneous
+=============
+
+Animations demo ``G``
+  Displays the graphics or characters used for animating projection effects.
