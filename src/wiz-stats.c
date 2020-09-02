@@ -1763,8 +1763,9 @@ void calc_cave_distances(int **cave_dist)
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 
-				/* Is it a wall? */
-				if (square_iswall(cave, loc(tx, ty))) continue;
+				/* Is it neither passable nor a door? */
+				if (!square_ispassable(cave, loc(tx, ty)) &&
+					!square_isdoor(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -1932,8 +1933,12 @@ void disconnect_stats(void)
 			for (x = 1; x < cave->width - 1; x++) {
 				struct loc grid = loc(x, y);
 
-				/* Don't care about walls */
-				if (square_iswall(cave, grid)) continue;
+				/*
+				 * Don't care about impassable terrain that's
+				 * not a closed or secret door.
+				 */
+				if (!square_ispassable(cave, grid) &&
+					!square_isdoor(cave, grid)) continue;
 
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0) {
