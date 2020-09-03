@@ -102,6 +102,8 @@ static bool menu_action_handle(struct menu *m, const ui_event *event, int oid)
 			acts[oid].action(acts[oid].name, m->cursor);
 			return true;
 		}
+	} else if (m->keys_hook && event->type == EVT_KBRD) {
+		return m->keys_hook(m, event, oid);
 	}
 
 	return false;
@@ -125,7 +127,8 @@ static const menu_iter menu_iter_actions =
  * MN_STRINGS HELPER FUNCTIONS
  *
  * MN_STRINGS is the type of menu iterator that displays a simple list of 
- * strings - no action is associated, as selection will just return the index.
+ * strings - an action is associated, but only for cmd_keys and switch_keys
+ * handling via keys_hook as selection will just return the index.
  * ------------------------------------------------------------------------ */
 static void display_string(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
@@ -135,13 +138,21 @@ static void display_string(struct menu *m, int oid, bool cursor,
 	Term_putstr(col, row, width, color, items[oid]);
 }
 
+static bool handle_string(struct menu *m, const ui_event *event, int oid)
+{
+	if (m->keys_hook && event->type == EVT_KBRD) {
+		return m->keys_hook(m, event, oid);
+	}
+	return false;
+}
+
 /* Virtual function table for displaying arrays of strings */
 static const menu_iter menu_iter_strings =
 { 
 	NULL,              /* get_tag() */
 	NULL,              /* valid_row() */
 	display_string,    /* display_row() */
-	NULL, 	           /* row_handler() */
+	handle_string, 	   /* row_handler() */
 	NULL
 };
 
