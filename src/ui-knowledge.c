@@ -3195,6 +3195,26 @@ static void do_cmd_knowledge_equip_cmp(const char* name, int row)
 	equip_cmp_display();
 }
 
+static bool handle_store_shortcuts(struct menu *m, const ui_event *ev, int oid)
+{
+	int i = 0;
+
+	assert(ev->type == EVT_KBRD);
+	while (1) {
+		if (! m->cmd_keys[i]) {
+			return false;
+		}
+		if (ev->key.code == (unsigned) m->cmd_keys[i]) {
+			menu_action *acts = menu_priv(m);
+
+			do_cmd_knowledge_store(
+				acts[i + STORE_KNOWLEDGE_ROW].name,
+				i + STORE_KNOWLEDGE_ROW);
+			return true;
+		}
+		++i;
+	}
+}
 
 /**
  * Definition of the "player knowledge" menu.
@@ -3209,21 +3229,20 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
 { 0, 0, "Display shapechange effects",     do_cmd_knowledge_shapechange },
-{ 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of bookseller",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of general store (1)", do_cmd_knowledge_store },
+{ 0, 0, "Display contents of armourer (2)",      do_cmd_knowledge_store },
+{ 0, 0, "Display contents of weaponsmith (3)",   do_cmd_knowledge_store },
+{ 0, 0, "Display contents of bookseller (4)",    do_cmd_knowledge_store },
+{ 0, 0, "Display contents of alchemist (5)",     do_cmd_knowledge_store },
+{ 0, 0, "Display contents of magic shop (6)",    do_cmd_knowledge_store },
+{ 0, 0, "Display contents of black market (7)",  do_cmd_knowledge_store },
+{ 0, 0, "Display contents of home (8)",          do_cmd_knowledge_store },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 { 0, 0, "Display equipable comparison",    do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
-
 
 /**
  * Keep macro counts happy.
@@ -3241,6 +3260,10 @@ void textui_knowledge_init(void)
 
 	menu->title = "Display current knowledge";
 	menu->selections = lower_case;
+	/* Shortcuts to get the contents of the stores by number; does prevent
+	 * the normal use of 4 and 6 to go to the previous or next menu */
+	menu->cmd_keys = "12345678";
+	menu->keys_hook = handle_store_shortcuts;
 
 	/* initialize other static variables */
 	if (!obj_group_order) {
