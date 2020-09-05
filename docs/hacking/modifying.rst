@@ -385,7 +385,7 @@ list-history-types.h   list-object-modifiers.h  list-stats.h
 list-ignore-types.h    list-options.h           list-terrain-flags.h
 list-kind-flags.h      list-origins.h           list-trap-flags.h
 list-message.h         list-parser-errors.h     list-tvals.h
-list-mon-message.h     list-player-flags.h
+list-mon-message.h     list-player-flags.h      list-ui-entry-renderers.h
 list-mon-race-flags.h  list-player-timed.h
 =====================  =======================  ===========================
 
