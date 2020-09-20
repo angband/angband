@@ -2198,7 +2198,8 @@ static int compare_advances(const void *ap, const void *bp)
     for (i=0; i < GLYPH_COUNT; i++) latinString[i] = (unsigned char)i;
 
     /* Turn that into unichar. Angband uses ISO Latin 1. */
-    NSString *allCharsString = [[NSString alloc] initWithBytes:latinString length:sizeof latinString encoding:NSISOLatin1StringEncoding];
+    NSString *allCharsString = [[NSString alloc] initWithBytes:latinString
+        length:GLYPH_COUNT encoding:NSISOLatin1StringEncoding];
     unichar *unicharString = malloc(GLYPH_COUNT * sizeof(unichar));
     if (unicharString == 0) {
 	free(latinString);
