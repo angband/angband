@@ -1275,7 +1275,11 @@ static bool describe_damage(textblock *tb, const struct object *obj, bool throw)
 			textblock_append(tb, " %s", lastnm);
 		}
 
-		textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		if (nsort == 0) {
+			has_brands_or_slays = false;
+		} else {
+			textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		}
 		mem_free(sortind);
 	}
 
