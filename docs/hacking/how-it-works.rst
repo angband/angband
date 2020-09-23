@@ -151,13 +151,14 @@ begins.
 ``main.c`` and ``main-*.c``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 main.c's ``main()`` is the entry point for Angband execution except on Windows,
-where main-win.c's ``WinMain()`` is used, and on Nintendo DS, where a special
-``main()`` in main-nds.c is used. The ``main()`` function is responsible for
-dropping permissions if Angband is running setuid, parsing command line
-arguments, then finding a frontend to use and initializing it. Once ``main()``
-finds a frontend, it sets up signal handlers, sets up the display, and calls
-`init.c - init_angband`_, which loads all the `gamedata files`_ and initializes
-other static data used by the game.
+where main-win.c's ``WinMain()`` is used, on Nintendo DS, where a special
+``main()`` in main-nds.c is used, and on OS X where main-cocoa.m's ``main()``
+is used. The ``main()`` function is responsible for dropping permissions if
+Angband is running setuid, parsing command line arguments, then finding a
+frontend to use and initializing it. Once ``main()`` finds a frontend, it sets
+up signal handlers, sets up the display, and calls `init.c - init_angband`_,
+which loads all the `gamedata files`_ and initializes other static data used
+by the game.
 
 init.c - ``init_angband``
 ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -206,6 +206,23 @@ summon.txt
   Adding a new summon type is not yet possible, because the summon spells are
   hard-coded in src/list-mon-spells.h
 
+ui_entry.txt
+  Defines entries that will be displayed in the second part of the character
+  sheet and in the knowledge menu's equipable comparison.  You can modify
+  properties in object_property.txt and project_property.txt to bind them to
+  those entries.  The intent is to make it possible to add or remove a property
+  without having to update ui-player.c or ui-equipcmp.c in addition to the
+  changes necessary to have that property affect core gameplay.
+
+ui_entry_base.txt
+  Provides templates for use by ui_entry.txt.
+
+ui_entry_renderer.txt
+  Defines techniques, referenced in ui_entry.txt, for rendering a property in
+  the character sheet or equipable comparison.  While it is possible to add
+  something that simply uses different palettes of symbols or colors than
+  one of the current renderers, the basic rendering techniques are hard-coded
+  in list-ui-entry-renderers.h.
 
 Making Graphical Tilesets
 =========================
@@ -368,7 +385,7 @@ list-history-types.h   list-object-modifiers.h  list-stats.h
 list-ignore-types.h    list-options.h           list-terrain-flags.h
 list-kind-flags.h      list-origins.h           list-trap-flags.h
 list-message.h         list-parser-errors.h     list-tvals.h
-list-mon-message.h     list-player-flags.h
+list-mon-message.h     list-player-flags.h      list-ui-entry-renderers.h
 list-mon-race-flags.h  list-player-timed.h
 =====================  =======================  ===========================
 
