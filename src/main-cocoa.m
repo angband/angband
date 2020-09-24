@@ -4789,11 +4789,15 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     }
 
     for (int i = x; i < x + n * tile_width; i += tile_width) {
-	int a = *ap++;
-	wchar_t c = *cp++;
-        int ta = *tap++;
-	wchar_t tc = *tcp++;
+	int a = *ap;
+	wchar_t c = *cp;
+	int ta = *tap;
+	char tc = *tcp;
 
+	ap += tile_width;
+	cp += tile_width;
+	tap += tile_width;
+	tcp += tile_width;
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
 	    char fgdRow = ((byte)a & 0x7F) % pict_rows;
 	    char fgdCol = ((byte)c & 0x7F) % pict_cols;
