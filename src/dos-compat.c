@@ -4,7 +4,11 @@
 int iswprint(wint_t wc)
 {
 	int retval;
-	retval = (wc < 0x100);
+	if (wc < 0x100) {
+		retval = isprint((int)wc);
+	} else {
+		retval = (int)wc;
+	}
 	return retval;
 }
 
