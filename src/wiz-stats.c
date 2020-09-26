@@ -1771,9 +1771,13 @@ void calc_cave_distances(int **cave_dist)
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 
-				/* Is it neither passable nor a door? */
+				/*
+				 * Impassable terrain which isn't a door or
+				 * rubble blocks progress.
+				 */
 				if (!square_ispassable(cave, loc(tx, ty)) &&
-					!square_isdoor(cave, loc(tx, ty))) continue;
+					!square_isdoor(cave, loc(tx, ty)) &&
+					!square_isrubble(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
 				if (n_new == cap_new - 1) {
@@ -1951,10 +1955,12 @@ void disconnect_stats(void)
 
 				/*
 				 * Don't care about impassable terrain that's
-				 * not a closed or secret door.
+				 * not a closed or secret door or impassable
+				 * rubble.
 				 */
 				if (!square_ispassable(cave, grid) &&
-					!square_isdoor(cave, grid)) continue;
+					!square_isdoor(cave, grid) &&
+					!square_isrubble(cave, grid)) continue;
 
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0) {
