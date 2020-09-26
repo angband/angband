@@ -32,6 +32,8 @@
 #    * - treasure vein
 #    : - rubble
 #    ` - lava
+#    \ - water (treated as plain floor in Vanilla)
+#    ; - tree (treated as plain floor in Vanilla)
 #    & - treasure or trap
 #    + - secret door
 #    ^ - trap
