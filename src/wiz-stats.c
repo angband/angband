@@ -2007,8 +2007,6 @@ void disconnect_stats(void)
 			if (stop_for_dis) i = tries;
 		}
 
-		msg("Iteration: %d",i); 
-
 		/* Free arrays */
 		for (y = 0; y < cave->height; y++)
 			mem_free(cave_dist[y]);
