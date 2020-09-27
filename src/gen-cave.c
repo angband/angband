@@ -1935,6 +1935,8 @@ struct chunk *modified_chunk(int depth, int height, int width)
 		while (join) {
 			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
 							true)) {
+				dump_level_simple(NULL, "Modified Generation:"
+					"  Failed to Build Staircase Room", c);
 				quit("Failed to place stairs");
 			}
 			join = join->next;

@@ -348,6 +348,7 @@ void new_player_spot(struct chunk *c, struct player *p)
 		square_isstairs(c, p->grid)) {
 		grid = p->grid;
 	} else if (!find_start(c, &grid)) {
+		dump_level_simple(NULL, "Player Placement Failure", c);
 		quit("Failed to place player!");
 	}
 
@@ -735,6 +736,33 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 			break;
 		}
     }
+}
+
+
+/**
+ * Dump the given level for post-mortem analysis; handle all I/O.
+ * \param basefilename Is the base name (no directory or extension) for the
+ * file to use.  If NULL, "dumpedlevel" will be used.
+ * \param title Is the label to use within the file.  If NULL, "Dumped Level"
+ * will be used.
+ * \param c Is the chunk to dump.
+ */
+void dump_level_simple(const char *basefilename, const char *title,
+	struct chunk *c)
+{
+	char path[1024];
+	ang_file *fo;
+
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, (basefilename) ?
+		format("%s.html", basefilename) : "dumpedlevel.html");
+	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (fo) {
+		dump_level(fo, (title) ? title : "Dumped Level", c, NULL);
+		if (file_close(fo)) {
+			msg(format("Level dumped to %s.html",
+				(basefilename) ? basefilename : "dumpedlevel"));
+		}
+	}
 }
 
 
