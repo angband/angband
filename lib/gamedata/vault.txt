@@ -333,11 +333,11 @@ rows:5
 columns:5
 min-depth:0
 max-depth:0
-D:%%%%%
+D: %%% 
 D:%#9#%
 D:%999%
 D:%#9#%
-D:%%%%%
+D: %%% 
 
 
 name:Interlock
