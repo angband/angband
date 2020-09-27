@@ -1905,6 +1905,9 @@ void disconnect_stats(void)
 	static char prompt[50];
 
 	long dsc_area = 0, dsc_from_stairs = 0;
+	bool stop_for_dis;
+	char path[1024];
+	ang_file *disfile;
 
 	/* This is the prompt for no. of tries */
 	strnfmt(prompt, sizeof(prompt), "Num of simulations: ");
@@ -1924,6 +1927,14 @@ void disconnect_stats(void)
 
 	/* Save */
 	tries = temp;
+
+	stop_for_dis = get_check("Stop if disconnected level found? ");
+
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, "disconnect.html");
+	disfile = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (disfile) {
+		dump_level_header(disfile, "Disconnected Levels");
+	}
 
 	for (i = 1; i <= tries; i++) {
 		/* Assume no disconnected areas */
@@ -1988,6 +1999,14 @@ void disconnect_stats(void)
 
 		if (has_dsc) dsc_area++;
 
+		if (has_dsc || has_dsc_from_stairs) {
+			if (disfile) {
+				dump_level_body(disfile, "Disconnected Level",
+					cave, cave_dist);
+			}
+			if (stop_for_dis) i = tries;
+		}
+
 		msg("Iteration: %d",i); 
 
 		/* Free arrays */
@@ -1998,6 +2017,12 @@ void disconnect_stats(void)
 
 	msg("Total levels with disconnected areas: %ld",dsc_area);
 	msg("Total levels isolated from stairs: %ld",dsc_from_stairs);
+	if (disfile) {
+		dump_level_footer(disfile);
+		if (file_close(disfile)) {
+			msg("Map is in disconnect.html.");
+		}
+	}
 
 	/* Redraw the level */
 	do_cmd_redraw();
