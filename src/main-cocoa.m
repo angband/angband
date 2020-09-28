@@ -1794,7 +1794,7 @@ static void draw_image_tile(
 @interface AngbandContext : NSObject <NSWindowDelegate>
 {
 @public
-    
+
     /* The Angband term */
     term *terminal;
 
@@ -4198,7 +4198,7 @@ static void Term_init_cocoa(term *t)
 
 	/* Get the window */
 	NSWindow *window = [context makePrimaryWindow];
-    
+
 	/* Set its title and, for auxiliary terms, tentative size */
 	if (termIdx == 0)
 	{
@@ -4209,7 +4209,7 @@ static void Term_init_cocoa(term *t)
 	    [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
 	}
 	[context constrainWindowSize:termIdx];
-    
+
 	/*
 	 * If this is the first term, and we support full screen (Mac OS X Lion
 	 * or later), then allow it to go full screen (sweet). Allow other
@@ -4353,7 +4353,7 @@ static void Term_nuke_cocoa(term *t)
 
 	    /* Balance our CFBridgingRetain from when we created it */
 	    CFRelease(t->data);
-        
+
 	    /* Done with it */
 	    t->data = NULL;
 	}
@@ -4587,7 +4587,7 @@ static errr Term_xtra_cocoa(int n, int v)
 	    /* Process an event */
 	    (void)check_events(v);
 	    break;
-            
+
 	    /* Flush all pending events (if any) */
         case TERM_XTRA_FLUSH:
 	    /* Hack -- flush all events */
@@ -4942,7 +4942,7 @@ static void quit_calmly(void)
 
         /* Save the game */
         record_current_savefile();
-		close_game();
+        close_game();
 
         /* Quit */
         quit(NULL);
@@ -6253,7 +6253,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
 	return;
     }
-    
+
     /* We can only open one file. Use the last one. */
     NSString *file = [filenames lastObject];
     if (! file) {
@@ -6261,20 +6261,20 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
 	return;
     }
-    
+
     /* Put it in savefile */
     if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile]) {
 	[[NSApplication sharedApplication]
 	    replyToOpenOrPrint:NSApplicationDelegateReplyFailure];
 	return;
     }
-    
+
     game_in_progress = TRUE;
 
     /* Wake us up in case this arrives while we're sitting at the Welcome
 	 * screen! */
     wakeup_event_loop();
-    
+
     [[NSApplication sharedApplication]
 	replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
