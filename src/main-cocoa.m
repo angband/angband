@@ -2085,6 +2085,8 @@ static NSString* get_lib_directory(void);
 static NSString* get_doc_directory(void);
 static NSString* AngbandCorrectedDirectoryPath(NSString *originalPath);
 static void prepare_paths_and_directories(void);
+static void load_prefs(void);
+static void init_windows(void);
 static void hook_quit(const char * str);
 static void handle_open_when_ready(void);
 static void play_sound(game_event_type unused, game_event_data *data, void *user);
@@ -4243,10 +4245,9 @@ static void Term_init_cocoa(term *t)
 		 * This is a bit of a trick to allow us to display multiple
 		 * windows in the "standard default" window position in OS X:
 		 * the upper center of the screen.  The term sizes set in
-		 * AngbandAppDelegate's loadPrefs() are based on a 5-wide by
-		 * 3-high grid, with the main term being 4/5 wide by 2/3 high
-		 * (hence the scaling to find what the containing rect would
-		 * be).
+		 * load_prefs() are based on a 5-wide by 3-high grid, with the
+		 * main term being 4/5 wide by 2/3 high (hence the scaling to
+		 * find what the containing rect would be).
 		 */
 		NSRect originalMainTermFrame = [window frame];
 		NSRect scaledFrame = originalMainTermFrame;
@@ -5339,6 +5340,161 @@ static void prepare_paths_and_directories(void)
 }
 
 /**
+ * Create and initialize Angband terminal number "i".
+ */
+static term *term_data_link(int i)
+{
+    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults]
+				    valueForKey: AngbandTerminalsDefaultsKey];
+    NSInteger rows = 24;
+    NSInteger columns = 80;
+
+    if (i < (int)[terminalDefaults count]) {
+        NSDictionary *term = [terminalDefaults objectAtIndex:i];
+        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey]
+		   integerValue];
+        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey]
+		      integerValue];
+    }
+
+    /* Allocate */
+    term *newterm = mem_zalloc(sizeof(term));
+
+    /* Initialize the term */
+    term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
+
+    /* Use a "software" cursor */
+    newterm->soft_cursor = TRUE;
+
+    /* Disable the per-row flush notifications since they are not used. */
+    newterm->never_frosh = TRUE;
+
+    /*
+     * Differentiate between BS/^h, Tab/^i, ... so ^h and ^j work under the
+     * roguelike command set.
+     */
+    newterm->complex_input = TRUE;
+
+    /* Prepare the init/nuke hooks */
+    newterm->init_hook = Term_init_cocoa;
+    newterm->nuke_hook = Term_nuke_cocoa;
+
+    /* Prepare the function hooks */
+    newterm->xtra_hook = Term_xtra_cocoa;
+    newterm->wipe_hook = Term_wipe_cocoa;
+    newterm->curs_hook = Term_curs_cocoa;
+    newterm->bigcurs_hook = Term_bigcurs_cocoa;
+    newterm->text_hook = Term_text_cocoa;
+    newterm->pict_hook = Term_pict_cocoa;
+
+    /* Global pointer */
+    angband_term[i] = newterm;
+
+    return newterm;
+}
+
+/**
+ * Load preferences from preferences file for current host+current user+
+ * current application.
+ */
+static void load_prefs(void)
+{
+    NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
+
+    /* Make some default defaults */
+    NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
+
+    /*
+     * The following default rows/cols were determined experimentally by first
+     * finding the ideal window/font size combinations. But because of awful
+     * temporal coupling in Term_init_cocoa(), it's impossible to set up the
+     * defaults there, so we do it this way.
+     */
+    for (NSUInteger i = 0; i < ANGBAND_TERM_MAX; i++) {
+	int columns, rows;
+	BOOL visible = YES;
+
+	switch (i) {
+	case 0:
+	    columns = 129;
+	    rows = 32;
+	    break;
+	case 1:
+	    columns = 84;
+	    rows = 20;
+	    break;
+	case 2:
+	    columns = 42;
+	    rows = 24;
+	    break;
+	case 3:
+	    columns = 42;
+	    rows = 20;
+	    break;
+	case 4:
+	    columns = 42;
+	    rows = 16;
+	    break;
+	case 5:
+	    columns = 84;
+	    rows = 20;
+	    break;
+	default:
+	    columns = 80;
+	    rows = 24;
+	    visible = NO;
+	    break;
+	}
+
+	NSDictionary *standardTerm =
+	    [NSDictionary dictionaryWithObjectsAndKeys:
+			  [NSNumber numberWithInt: rows], AngbandTerminalRowsDefaultsKey,
+			  [NSNumber numberWithInt: columns], AngbandTerminalColumnsDefaultsKey,
+			  [NSNumber numberWithBool: visible], AngbandTerminalVisibleDefaultsKey,
+			  nil];
+        [defaultTerms addObject: standardTerm];
+    }
+
+    NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
+                              @"Menlo", @"FontName",
+                              [NSNumber numberWithFloat:13.f], @"FontSize",
+                              [NSNumber numberWithInt:60], @"FramesPerSecond",
+                              [NSNumber numberWithBool:YES], @"AllowSound",
+                              [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              [NSNumber numberWithBool:YES], AngbandUseDefaultTileMultDefaultsKey,
+                              [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
+                              [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
+                              defaultTerms, AngbandTerminalsDefaultsKey,
+                              nil];
+    [defs registerDefaults:defaults];
+
+    /* Preferred graphics mode */
+    graf_mode_req = [defs integerForKey:@"GraphicsID"];
+    if (graphics_will_be_enabled()) {
+        tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
+        tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
+    } else {
+        tile_width = 1;
+        tile_height = 1;
+    }
+
+    /* Use sounds */
+    [AngbandSoundCatalog sharedSounds].enabled =
+	[defs boolForKey:@"AllowSound"];
+
+    /* fps */
+    frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
+
+    /* Font */
+    [AngbandContext
+	setDefaultFont:[NSFont fontWithName:[defs valueForKey:@"FontName-0"]
+			       size:[defs floatForKey:@"FontSize-0"]]];
+    if (! [AngbandContext defaultFont])
+	[AngbandContext
+	    setDefaultFont:[NSFont fontWithName:@"Menlo" size:13.]];
+}
+
+/**
  * Play sound effects asynchronously.  Select a sound from any available
  * for the required event, and bridge to Cocoa to play it.
  */
@@ -5346,6 +5502,24 @@ static void play_sound(game_event_type unused, game_event_data *data, void *user
 {
     int event = data->message.type;
     [[AngbandSoundCatalog sharedSounds] playSound:event];
+}
+
+/**
+ * Allocate the primary Angband terminal and activate it.  Allocate the other
+ * Angband terminals.
+ */
+static void init_windows(void)
+{
+    /* Create the primary window */
+    term *primary = term_data_link(0);
+
+    /* Prepare to create any additional windows */
+    for (int i = 1; i < ANGBAND_TERM_MAX; i++) {
+        term_data_link(i);
+    }
+
+    /* Activate the primary term */
+    Term_activate(primary);
 }
 
 /**
@@ -5592,171 +5766,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 }
 
 /**
- * Create and initialize Angband terminal number "termIndex".
- */
-- (void)linkTermData:(int)termIndex
-{
-    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults]
-				    valueForKey: AngbandTerminalsDefaultsKey];
-    NSInteger rows = 24;
-    NSInteger columns = 80;
-
-    if (termIndex < (int)[terminalDefaults count]) {
-        NSDictionary *term = [terminalDefaults objectAtIndex:termIndex];
-        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey]
-		   integerValue];
-        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey]
-		      integerValue];
-    }
-
-    /* Allocate */
-    term *newterm = mem_zalloc(sizeof(term));
-
-    /* Initialize the term */
-    term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
-
-    /* Use a "software" cursor */
-    newterm->soft_cursor = TRUE;
-
-    /* Disable the per-row flush notifications since they are not used. */
-    newterm->never_frosh = TRUE;
-
-    /*
-     * Differentiate between BS/^h, Tab/^i, ... so ^h and ^j work under the
-     * roguelike command set.
-     */
-    newterm->complex_input = TRUE;
-
-    /* Prepare the init/nuke hooks */
-    newterm->init_hook = Term_init_cocoa;
-    newterm->nuke_hook = Term_nuke_cocoa;
-
-    /* Prepare the function hooks */
-    newterm->xtra_hook = Term_xtra_cocoa;
-    newterm->wipe_hook = Term_wipe_cocoa;
-    newterm->curs_hook = Term_curs_cocoa;
-    newterm->bigcurs_hook = Term_bigcurs_cocoa;
-    newterm->text_hook = Term_text_cocoa;
-    newterm->pict_hook = Term_pict_cocoa;
-
-    /* Global pointer */
-    angband_term[termIndex] = newterm;
-}
-
-/**
- * Allocate the primary Angband terminal and activate it.  Allocate the other
- * Angband terminals.
- */
-- (void)initWindows {
-    for (int i = 0; i < ANGBAND_TERM_MAX; i++) {
-	[self linkTermData:i];
-    }
-
-    Term_activate(angband_term[0]);
-}
-
-/**
- * Load preferences from preferences file for current host+current user+
- * current application.
- */
-- (void)loadPrefs
-{
-    NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
-
-    /* Make some default defaults */
-    NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
-
-    /*
-     * The following default rows/cols were determined experimentally by first
-     * finding the ideal window/font size combinations. But because of awful
-     * temporal coupling in Term_init_cocoa(), it's impossible to set up the
-     * defaults there, so we do it this way.
-     */
-    for (NSUInteger i = 0; i < ANGBAND_TERM_MAX; i++) {
-	int columns, rows;
-	BOOL visible = YES;
-
-	switch (i) {
-	case 0:
-	    columns = 129;
-	    rows = 32;
-	    break;
-	case 1:
-	    columns = 84;
-	    rows = 20;
-	    break;
-	case 2:
-	    columns = 42;
-	    rows = 24;
-	    break;
-	case 3:
-	    columns = 42;
-	    rows = 20;
-	    break;
-	case 4:
-	    columns = 42;
-	    rows = 16;
-	    break;
-	case 5:
-	    columns = 84;
-	    rows = 20;
-	    break;
-	default:
-	    columns = 80;
-	    rows = 24;
-	    visible = NO;
-	    break;
-	}
-
-	NSDictionary *standardTerm =
-	    [NSDictionary dictionaryWithObjectsAndKeys:
-			  [NSNumber numberWithInt: rows], AngbandTerminalRowsDefaultsKey,
-			  [NSNumber numberWithInt: columns], AngbandTerminalColumnsDefaultsKey,
-			  [NSNumber numberWithBool: visible], AngbandTerminalVisibleDefaultsKey,
-			  nil];
-        [defaultTerms addObject: standardTerm];
-    }
-
-    NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              @"Menlo", @"FontName",
-                              [NSNumber numberWithFloat:13.f], @"FontSize",
-                              [NSNumber numberWithInt:60], @"FramesPerSecond",
-                              [NSNumber numberWithBool:YES], @"AllowSound",
-                              [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
-                              [NSNumber numberWithBool:YES], AngbandUseDefaultTileMultDefaultsKey,
-                              [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
-                              [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
-                              defaultTerms, AngbandTerminalsDefaultsKey,
-                              nil];
-    [defs registerDefaults:defaults];
-
-    /* Preferred graphics mode */
-    graf_mode_req = [defs integerForKey:@"GraphicsID"];
-    if (graphics_will_be_enabled()) {
-        tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
-        tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
-    } else {
-        tile_width = 1;
-        tile_height = 1;
-    }
-
-    /* Use sounds */
-    [AngbandSoundCatalog sharedSounds].enabled =
-	[defs boolForKey:@"AllowSound"];
-
-    /* fps */
-    frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
-
-    /* Font */
-    [AngbandContext
-	setDefaultFont:[NSFont fontWithName:[defs valueForKey:@"FontName-0"]
-			       size:[defs floatForKey:@"FontSize-0"]]];
-    if (! [AngbandContext defaultFont])
-	[AngbandContext
-	    setDefaultFont:[NSFont fontWithName:@"Menlo" size:13.]];
-}
-
-/**
  * Entry point for initializing Angband
  */
 - (void)beginGame
@@ -5785,10 +5794,10 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	init_graphics_modes("graphics.txt");
 
 	/* Load preferences */
-	[self loadPrefs];
+	load_prefs();
 
 	/* Prepare the windows */
-	[self initWindows];
+	init_windows();
 	text_mbcs_hook = Term_mbcs_cocoa;
 
 	/* Set up game event handlers */
