@@ -4357,8 +4357,8 @@ static void Term_nuke_cocoa(term *t)
 }
 
 /**
- * Returns the CGImageRef corresponding to an image with the given name in the
- * resource directory, transferring ownership to the caller
+ * Returns the CGImageRef corresponding to an image with the given path.
+ * Transfers ownership to the caller.
  */
 static CGImageRef create_angband_image(NSString *path)
 {
