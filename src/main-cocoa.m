@@ -2264,9 +2264,9 @@ static int compare_advances(const void *ap, const void *bp)
 
     /* Pick the center to find the median */
     CGFloat medianAdvance = 0;
+    /* In case we have all zero advances for some reason */
     if (startIdx < GLYPH_COUNT)
     {
-		/* In case we have all zero advances for some reason */
         medianAdvance = advances[(startIdx + GLYPH_COUNT)/2].width;
     }
 
