@@ -64,12 +64,15 @@ static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
+static NSString * const AngbandGraphicsDefaultsKey = @"GraphicsID";
 static NSString * const AngbandUseDefaultTileMultDefaultsKey =
     @"UseDefaultTileMultiplier";
 static NSString * const AngbandTileWidthMultDefaultsKey =
     @"TileWidthMultiplier";
 static NSString * const AngbandTileHeightMultDefaultsKey =
     @"TileHeightMultiplier";
+static NSString * const AngbandFrameRateDefaultsKey = @"FramesPerSecond";
+static NSString * const AngbandSoundDefaultsKey = @"AllowSound";
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
@@ -4472,7 +4475,8 @@ static errr Term_xtra_cocoa_react(void)
 			tile_multipliers_changed = 1;
 		    }
 		    [[NSUserDefaults angbandDefaults]
-			setInteger:GRAPHICS_NONE forKey:@"GraphicsID"];
+			setInteger:GRAPHICS_NONE
+			forKey:AngbandGraphicsDefaultsKey];
 
 		    NSAlert *alert = [[NSAlert alloc] init];
 		    alert.messageText = @"Failed to Load Tile Set";
@@ -5459,9 +5463,9 @@ static void load_prefs(void)
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
                               @"Menlo", @"FontName",
                               [NSNumber numberWithFloat:13.f], @"FontSize",
-                              [NSNumber numberWithInt:60], @"FramesPerSecond",
-                              [NSNumber numberWithBool:YES], @"AllowSound",
-                              [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              [NSNumber numberWithInt:60], AngbandFrameRateDefaultsKey,
+                              [NSNumber numberWithBool:YES], AngbandSoundDefaultsKey,
+                              [NSNumber numberWithInt:GRAPHICS_NONE], AngbandGraphicsDefaultsKey,
                               [NSNumber numberWithBool:YES], AngbandUseDefaultTileMultDefaultsKey,
                               [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
                               [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
@@ -5470,7 +5474,7 @@ static void load_prefs(void)
     [defs registerDefaults:defaults];
 
     /* Preferred graphics mode */
-    graf_mode_req = [defs integerForKey:@"GraphicsID"];
+    graf_mode_req = [defs integerForKey:AngbandGraphicsDefaultsKey];
     if (graphics_will_be_enabled()) {
         tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
         tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
@@ -5481,10 +5485,10 @@ static void load_prefs(void)
 
     /* Use sounds */
     [AngbandSoundCatalog sharedSounds].enabled =
-	[defs boolForKey:@"AllowSound"];
+	[defs boolForKey:AngbandSoundDefaultsKey];
 
     /* fps */
-    frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
+    frames_per_second = [defs integerForKey:AngbandFrameRateDefaultsKey];
 
     /* Font */
     [AngbandContext
@@ -5893,13 +5897,13 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     else if (sel == @selector(setRefreshRate:) &&
 	     [[menuItem parentItem] tag] == 150)
     {
-        NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
+        NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey:AngbandFrameRateDefaultsKey];
         [menuItem setState: ([menuItem tag] == fps)];
         return YES;
     }
     else if( sel == @selector(setGraphicsMode:) )
     {
-        NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey: @"GraphicsID"];
+        NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey:AngbandGraphicsDefaultsKey];
         [menuItem setState: (tag == requestedGraphicsMode)];
         return YES;
     }
@@ -5919,7 +5923,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 - (IBAction)setRefreshRate:(NSMenuItem *)menuItem
 {
     frames_per_second = [menuItem tag];
-    [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
+    [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:AngbandFrameRateDefaultsKey];
 }
 
 - (IBAction)showTileSetScalingPanel:(id)sender
@@ -5945,7 +5949,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     graf_mode_req = [sender tag];
 
     /* Stash it in UserDefaults */
-    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
+    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:AngbandGraphicsDefaultsKey];
     [self recomputeDefaultTileMultipliersIfNecessary];
 
     redraw_for_tiles_or_term0_font();
