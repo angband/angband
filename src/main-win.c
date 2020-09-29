@@ -1675,7 +1675,7 @@ static errr Term_xtra_win_react(void)
 		}
 
 		/* Reset visuals */
-		reset_visuals(true);
+		if (character_dungeon) reset_visuals(true);
 	}
 
 	/* Handle "change_tilesize" */
