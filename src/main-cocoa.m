@@ -4583,6 +4583,7 @@ static errr Term_xtra_cocoa(int n, int v)
 	    /* Process an event */
 	    (void)check_events(CHECK_EVENTS_NO_WAIT);
 	    break;
+
 	    /* Process pending events */
         case TERM_XTRA_EVENT:
 	    /* Process an event */
@@ -5832,7 +5833,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	@autoreleasepool {
 	    NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
 	    if (event) [NSApp sendEvent:event];
-        }
+	}
     }
 
     /*
