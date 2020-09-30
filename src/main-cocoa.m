@@ -146,7 +146,7 @@ static bool new_game = FALSE;
 - (void)playSound:(int)event;
 
 /**
- * Impose an arbitary limit on number of possible samples per event.
+ * Impose an arbitrary limit on the number of possible samples per event.
  * Currently not declaring this as a class property for compatibility with
  * versions of Xcode prior to 8.
  */
@@ -160,7 +160,7 @@ static bool new_game = FALSE;
 + (AngbandSoundCatalog*)sharedSounds;
 
 /**
- * Release any resouces associated with shared sounds.
+ * Release any resources associated with shared sounds.
  */
 + (void)clearSharedSounds;
 
