@@ -354,7 +354,7 @@ static __strong AngbandSoundCatalog* gSharedSounds = nil;
     if (gSharedSounds == nil) {
 	gSharedSounds = [[AngbandSoundCatalog alloc] init];
     }
-    return gSharedSounds;;
+    return gSharedSounds;
 }
 
 + (void)clearSharedSounds {
