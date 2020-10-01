@@ -884,28 +884,28 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 			const char *s = "#";
 
 			if (square_in_bounds_fully(c, grid)) {
-				if (square_isplayer(cave, grid)) {
+				if (square_isplayer(c, grid)) {
 					s = "@";
 				} else if (square_isoccupied(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"M" : "*";
-				} else if (square_isdoor(cave, grid)) {
+				} else if (square_isdoor(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"+" : "*";
-				} else if (square_isrubble(cave, grid)) {
+				} else if (square_isrubble(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						":" : "*";
-				} else if (square_isdownstairs(cave, grid)) {
+				} else if (square_isdownstairs(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"&gt;" : "*";
-				} else if (square_isupstairs(cave, grid)) {
+				} else if (square_isupstairs(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"&lt;" : "*";
-				} else if (square_istrap(cave, grid) ||
-					square_isplayertrap(cave, grid)) {
+				} else if (square_istrap(c, grid) ||
+					square_isplayertrap(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"^" : "*";
-				} else if (square_iswebbed(cave, grid)) {
+				} else if (square_iswebbed(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"w" : "*";
 				} else if (square_object(c, grid)) {
@@ -916,7 +916,7 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 						square_isno_stairs(c, grid))) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						" " : "*";
-				} else if (square_ispassable(cave, grid)) {
+				} else if (square_ispassable(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"." : "*";
 				}
