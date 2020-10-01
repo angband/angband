@@ -2532,7 +2532,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 		square_set_feat(c, loc(x + left_cavern_wid, centre_cavern_ypos),
 						FEAT_FLOOR);
 		square_set_feat(c, loc(x + left_cavern_wid,
-							   centre_cavern_ypos + centre->height - 1),
+							   centre_cavern_ypos + centre_cavern_hgt - 1),
 						FEAT_FLOOR);
 	}
 
