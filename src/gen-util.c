@@ -778,7 +778,7 @@ void dump_level_simple(const char *basefilename, const char *title,
  * least c->width elements.  For a location (x,y) in the level, if dist[y][x]
  * is negative, the contents will be rendered differently.
  *
- * The current output format is HTML since a typical brower will happily
+ * The current output format is HTML since a typical browser will happily
  * display the content in a scrollable area without wrapping lines.  This
  * function is a convenience to replace a set of calls to dump_level_header(),
  * dump_level_body(), and dump_level_footer().
