@@ -911,9 +911,14 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 				} else if (square_object(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"$" : "*";
-				} else if (square_ispassable(cave, grid)) {
+				} else if (square_isempty(c, grid) &&
+						(square_isvault(c, grid) ||
+						square_isno_stairs(c, grid))) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						" " : "*";
+				} else if (square_ispassable(cave, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"." : "*";
 				}
 			}
 			file_put(fo, s);
