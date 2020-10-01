@@ -2359,7 +2359,6 @@ struct chunk *vault_chunk(struct player *p)
 {
 	struct vault *v;
 	struct chunk *c;
-	int y;
 
 	if (one_in_(2)) v = random_vault(p->depth, "Greater vault (new)");
 	else v = random_vault(p->depth, "Greater vault");
@@ -2369,13 +2368,8 @@ struct chunk *vault_chunk(struct player *p)
 	c->depth = p->depth;
 
 	/* Fill with granite; the vault will override for the grids it sets. */
-	for (y = 0; y < v->hgt; ++y) {
-		int x;
-
-		for (x = 0; x < v->wid; ++x) {
-			square_set_feat(c, loc(x, y), FEAT_GRANITE);
-		}
-	}
+	fill_rectangle(c, 0, 0, v->hgt - 1, v->wid - 1, FEAT_GRANITE,
+		SQUARE_NONE);
 
 	/* Build the vault in it */
 	build_vault(c, loc(v->wid / 2, v->hgt / 2), v);
