@@ -2359,6 +2359,7 @@ struct chunk *vault_chunk(struct player *p)
 {
 	struct vault *v;
 	struct chunk *c;
+	int y;
 
 	if (one_in_(2)) v = random_vault(p->depth, "Greater vault (new)");
 	else v = random_vault(p->depth, "Greater vault");
@@ -2366,6 +2367,15 @@ struct chunk *vault_chunk(struct player *p)
 	/* Make the chunk */
 	c = cave_new(v->hgt, v->wid);
 	c->depth = p->depth;
+
+	/* Fill with granite; the vault will override for the grids it sets. */
+	for (y = 0; y < v->hgt; ++y) {
+		int x;
+
+		for (x = 0; x < v->wid; ++x) {
+			square_set_feat(c, loc(x, y), FEAT_GRANITE);
+		}
+	}
 
 	/* Build the vault in it */
 	build_vault(c, loc(v->wid / 2, v->hgt / 2), v);
@@ -2421,12 +2431,13 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	int rotate = 0;
 
 	/* Dimensions for the surrounding caverns */
-	int centre_cavern_hgt;
-	int centre_cavern_wid;
+	int centre_cavern_ypos;
+	int centre_cavern_hgt, centre_cavern_wid;
+	int upper_cavern_hgt, lower_cavern_hgt;
 	struct chunk *upper_cavern;
 	struct chunk *lower_cavern;
 	int lower_cavern_ypos;
-	int side_cavern_wid;
+	int left_cavern_wid, right_cavern_wid;
 	struct chunk *left_cavern;
 	struct chunk *right_cavern;
 	struct chunk *c;
@@ -2440,21 +2451,27 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	/* Measure the vault, rotate to make it wider than it is high */
 	if (centre->height > centre->width) {
 		rotate = 1;
-		centre_cavern_hgt = (z_info->dungeon_hgt - centre->width) / 2;
+		centre_cavern_ypos = (z_info->dungeon_hgt - centre->width) / 2;
+		centre_cavern_hgt = centre->width;
 		centre_cavern_wid = centre->height;
-		lower_cavern_ypos = centre_cavern_hgt + centre->width;
 	} else {
-		centre_cavern_hgt = (z_info->dungeon_hgt - centre->height) / 2;
+		centre_cavern_ypos = (z_info->dungeon_hgt - centre->height) / 2;
+		centre_cavern_hgt = centre->height;
 		centre_cavern_wid = centre->width;
-		lower_cavern_ypos = centre_cavern_hgt + centre->height;
 	}
+	upper_cavern_hgt = centre_cavern_ypos;
+	lower_cavern_hgt = z_info->dungeon_hgt - upper_cavern_hgt -
+		centre_cavern_hgt;
+	lower_cavern_ypos = centre_cavern_ypos + centre_cavern_hgt;
 
 	/* Make the caverns */
-	upper_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
-	lower_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
-	side_cavern_wid = (z_info->dungeon_wid - centre_cavern_wid) / 2;
-	left_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, side_cavern_wid);
-	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, side_cavern_wid);
+	upper_cavern = cavern_chunk(p->depth, upper_cavern_hgt, centre_cavern_wid);
+	lower_cavern = cavern_chunk(p->depth, lower_cavern_hgt, centre_cavern_wid);
+	left_cavern_wid = (z_info->dungeon_wid - centre_cavern_wid) / 2;
+	right_cavern_wid = z_info->dungeon_wid - left_cavern_wid -
+		centre_cavern_wid;
+	left_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, left_cavern_wid);
+	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, right_cavern_wid);
 
 	/* Return on failure */
 	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern)
@@ -2467,30 +2484,30 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	/* Left */
 	chunk_copy(c, left_cavern, 0, 0, 0, false);
 	find_empty_range(c, &grid, loc(0, 0),
-					 loc(side_cavern_wid - 1, z_info->dungeon_hgt - 1));
+					 loc(left_cavern_wid - 1, z_info->dungeon_hgt - 1));
 	floor[0] = grid;
 
 	/* Upper */
-	chunk_copy(c, upper_cavern, 0, side_cavern_wid, 0, false);
-	find_empty_range(c, &grid, loc(0, 0),
-					 loc(side_cavern_wid + centre_cavern_wid - 1,
-						 centre_cavern_hgt - 1));
+	chunk_copy(c, upper_cavern, 0, left_cavern_wid, 0, false);
+	find_empty_range(c, &grid, loc(left_cavern_wid, 0),
+					 loc(left_cavern_wid + centre_cavern_wid - 1,
+						 upper_cavern_hgt - 1));
 	floor[1] = grid;
 
 	/* Centre */
-	chunk_copy(c, centre, centre_cavern_hgt, side_cavern_wid, rotate, false);
+	chunk_copy(c, centre, centre_cavern_ypos, left_cavern_wid, rotate, false);
 
 	/* Lower */
-	chunk_copy(c, lower_cavern, lower_cavern_ypos, side_cavern_wid, 0, false);
-	find_empty_range(c, &grid, loc(side_cavern_wid, lower_cavern_ypos),
-					 loc(side_cavern_wid + centre_cavern_wid - 1,
+	chunk_copy(c, lower_cavern, lower_cavern_ypos, left_cavern_wid, 0, false);
+	find_empty_range(c, &grid, loc(left_cavern_wid, lower_cavern_ypos),
+					 loc(left_cavern_wid + centre_cavern_wid - 1,
 						 z_info->dungeon_hgt - 1));
 	floor[3] = grid;
 
 	/* Right */
-	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0,
+	chunk_copy(c, right_cavern, 0, left_cavern_wid + centre_cavern_wid, 0,
 			   false);
-	find_empty_range(c, &grid, loc(side_cavern_wid + centre_cavern_wid, 0),
+	find_empty_range(c, &grid, loc(left_cavern_wid + centre_cavern_wid, 0),
 					 loc(z_info->dungeon_wid - 1, z_info->dungeon_hgt - 1));
 	floor[2] = grid;
 
@@ -2505,17 +2522,17 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	ensure_connectedness(c);
 
 	/* Temporary until connecting to vault entrances works better */
-	for (y = 0; y < centre->height; y++) {
-		square_set_feat(c, loc(side_cavern_wid, y + centre_cavern_hgt),
+	for (y = 0; y < centre_cavern_hgt; y++) {
+		square_set_feat(c, loc(left_cavern_wid, y + centre_cavern_ypos),
 						FEAT_FLOOR);
-		square_set_feat(c, loc(side_cavern_wid + centre_cavern_wid - 1,
-							   y + centre_cavern_hgt), FEAT_FLOOR);
+		square_set_feat(c, loc(left_cavern_wid + centre_cavern_wid - 1,
+							   y + centre_cavern_ypos), FEAT_FLOOR);
 	}
-	for (x = 0; x < centre->width; x++) {
-		square_set_feat(c, loc(x + side_cavern_wid, centre_cavern_hgt),
+	for (x = 0; x < centre_cavern_wid; x++) {
+		square_set_feat(c, loc(x + left_cavern_wid, centre_cavern_ypos),
 						FEAT_FLOOR);
-		square_set_feat(c, loc(x + side_cavern_wid,
-							   centre_cavern_hgt + centre->height - 1),
+		square_set_feat(c, loc(x + left_cavern_wid,
+							   centre_cavern_ypos + centre->height - 1),
 						FEAT_FLOOR);
 	}
 
@@ -2526,8 +2543,8 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	cave_free(lower_cavern);
 	cave_free(right_cavern);
 
-	cavern_area = 2 * (side_cavern_wid * z_info->dungeon_hgt +
-					   centre_cavern_wid * centre_cavern_hgt);
+	cavern_area = (left_cavern_wid + right_cavern_wid) * z_info->dungeon_hgt +
+		centre_cavern_wid * (upper_cavern_hgt + lower_cavern_hgt);
 
 	/* Place 2-3 down stairs near some walls */
 	alloc_stairs(c, FEAT_MORE, rand_range(1, 3));
