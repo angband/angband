@@ -1831,6 +1831,13 @@ static enum parser_error parse_object_msg(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_vis_msg(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+	k->vis_msg = string_append(k->vis_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_time(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
@@ -1959,6 +1966,7 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "dice str dice", parse_object_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_object_expr);
 	parser_reg(p, "msg str text", parse_object_msg);
+	parser_reg(p, "vis-msg str text", parse_object_vis_msg);
 	parser_reg(p, "time rand time", parse_object_time);
 	parser_reg(p, "pval rand pval", parse_object_pval);
 	parser_reg(p, "values str values", parse_object_values);
@@ -2019,6 +2027,7 @@ static void cleanup_object(void)
 		string_free(kind->name);
 		string_free(kind->text);
 		string_free(kind->effect_msg);
+		string_free(kind->vis_msg);
 		mem_free(kind->brands);
 		mem_free(kind->slays);
 		mem_free(kind->curses);

@@ -20,6 +20,7 @@
 # pile: chance of being generated in a pile : dice for number of items
 # power: power of the effect for object power eveluations
 # msg: message on using the object
+# vis-msg: message on using the object, only when player is not blind
 # effect: effect when used : parameter (maybe) : paramater (maybe)
 # effect-yx: y value for effect : x value for effect
 # dice:dice string
@@ -3854,7 +3855,7 @@ alloc:20:3 to 60
 attack:1d1:0:0
 armor:0:0
 charges:6+d10
-msg:A line of shimmering blue light appears.
+vis-msg:A line of shimmering blue light appears.
 power:6
 effect:LINE:LIGHT_WEAK
 dice:6d8
@@ -4812,7 +4813,7 @@ cost:500
 alloc:30:5 to 100
 attack:1d1:0:0
 armor:0:0
-msg:A line of shimmering blue light appears.
+vis-msg:A line of shimmering blue light appears.
 power:6
 effect:LINE:LIGHT_WEAK
 dice:6d8
