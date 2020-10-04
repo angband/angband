@@ -2229,7 +2229,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Movement speed */
-	state->num_moves = 1 + extra_moves;
+	state->num_moves = extra_moves;
 
 	return;
 }

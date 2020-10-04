@@ -275,6 +275,16 @@ void death_knowledge(struct player *p)
 }
 
 /**
+ * Energy per move, taking extra moves into account
+ */
+int energy_per_move(struct player *p)
+{
+	int num = p->state.num_moves;
+	int energy = z_info->move_energy;
+	return (energy * (1 + ABS(num) - num)) / (1 + ABS(num));
+}
+
+/**
  * Modify a stat value by a "modifier", return new value
  *
  * Stats go up: 3,4,...,17,18,18/10,18/20,...,18/220

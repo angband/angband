@@ -873,13 +873,16 @@ static size_t prt_moves(int row, int col)
 	int i = player->state.num_moves;
 
 	/* 1 move is normal and requires no display */
-	if (i > 1) {
+	if (i > 0) {
 		/* Display the number of moves */
-		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i - 1), row, col);
+		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i), row, col);
+	} else if (i < 0) {
+		/* Display the number of moves */
+		c_put_str(COLOUR_L_TEAL, format("Moves -%d ", ABS(i)), row, col);
 	}
 
 	/* Shouldn't be double digits, but be paranoid */
-	return (i > 1) ? 9 + (i - 1)  / 10 : 0;
+	return (i != 0) ? (9 + ABS(i)) / 10 : 0;
 }
 
 /**

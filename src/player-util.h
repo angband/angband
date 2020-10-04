@@ -65,6 +65,7 @@ bool player_get_recall_depth(struct player *p);
 void dungeon_change_level(struct player *p, int dlev);
 void take_hit(struct player *p, int dam, const char *kb_str);
 void death_knowledge(struct player *p);
+int energy_per_move(struct player *p);
 s16b modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
