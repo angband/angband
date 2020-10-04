@@ -264,6 +264,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	u16b tmp16u;
 	char race_name[80];
 	size_t j;
+	bool delete = false;
 
 	/* Read the monster race */
 	rd_u16b(&tmp16u);
@@ -311,7 +312,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		/* Find and set the mimicked object */
 		struct object *square_obj = square_object(c, mon->grid);
 
-		/* Try and find the mimicked object; if we fail, create a new one */
+		/* Try and find the mimicked object; if we fail, delete the monster */
 		while (square_obj) {
 			if (square_obj->mimicking_m_idx == tmp16u) break;
 			square_obj = square_obj->next;
@@ -319,7 +320,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		if (square_obj) {
 			mon->mimicked_obj = square_obj;
 		} else {
-			mon_create_mimicked_object(c, mon, tmp16u);
+			delete = true;
 		}
 	}
 
@@ -344,6 +345,11 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->group_info[SUMMON_GROUP].index = tmp16u;
 	rd_byte(&tmp8u);
 	mon->group_info[SUMMON_GROUP].role = tmp8u;
+
+	/* Now delete the monster if necessary */
+	if (delete) {
+		delete_monster(mon->grid);
+	}
 
 	return true;
 }
