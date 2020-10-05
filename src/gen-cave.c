@@ -2470,8 +2470,13 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, right_cavern_wid);
 
 	/* Return on failure */
-	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern)
+	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern) {
+		if (right_cavern) cave_free(right_cavern);
+		if (left_cavern) cave_free(left_cavern);
+		if (lower_cavern) cave_free(lower_cavern);
+		if (upper_cavern) cave_free(upper_cavern);
 		return NULL;
+	}
 
 	/* Make a cave to copy them into, and find a floor square in each cavern */
 	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
@@ -2622,7 +2627,10 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	normal->depth = p->depth;
 
 	lair = cavern_chunk(p->depth, y_size, x_size / 2);
-	if (!lair) return NULL;
+	if (!lair) {
+		cave_free(normal);
+		return NULL;
+	}
 	lair->depth = p->depth;
 
     /* General amount of rubble, traps and monsters */
