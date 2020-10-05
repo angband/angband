@@ -2442,7 +2442,10 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	struct loc floor[4];
 
 	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
+	if (OPT(p, birth_levels_persist)) {
+		cave_free(centre);
+		return NULL;
+	}
 
 	/* Measure the vault, rotate to make it wider than it is high */
 	if (centre->height > centre->width) {
@@ -2475,6 +2478,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 		if (left_cavern) cave_free(left_cavern);
 		if (lower_cavern) cave_free(lower_cavern);
 		if (upper_cavern) cave_free(upper_cavern);
+		cave_free(centre);
 		return NULL;
 	}
 
