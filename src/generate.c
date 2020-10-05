@@ -1227,9 +1227,10 @@ void prepare_next_level(struct chunk **c, struct player *p)
 						struct object *obj = square_object(*c, loc(x, y));
 						while (obj) {
 							if (obj->artifact) {
-								bool found = obj->known && obj->known->artifact;
+								bool found = obj_is_known_artifact(obj);
 								if (OPT(p, birth_lose_arts) || found) {
 									history_lose_artifact(p, obj->artifact);
+									obj->artifact->created = true;
 								} else {
 									obj->artifact->created = false;
 								}

@@ -3364,11 +3364,13 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, grid);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(player, birth_lose_arts) &&
-							!(obj->known && obj->known->artifact))
-							obj->artifact->created = false;
-						else
+						if (OPT(player, birth_lose_arts) ||
+							obj_is_known_artifact(obj)) {
 							history_lose_artifact(player, obj->artifact);
+							obj->artifact->created = true;
+						} else {
+							obj->artifact->created = false;
+						}
 					}
 					obj = obj->next;
 				}

@@ -348,8 +348,9 @@ void delete_monster_idx(int m_idx)
 		/* Preserve unseen artifacts (we assume they were created as this
 		 * monster's drop) - this will cause unintended behaviour in preserve
 		 * off mode if monsters can pick up artifacts */
-		if (obj->artifact && !(obj->known && obj->known->artifact))
+		if (obj->artifact && !obj_is_known_artifact(obj)) {
 			obj->artifact->created = false;
+		}
 
 		/* Delete the object.  Since it's in the cave's list do
 		 * some additional bookkeeping. */

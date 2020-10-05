@@ -672,9 +672,9 @@ void wr_artifacts(void)
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {
 		struct artifact *art = &a_info[i];
-		wr_byte(art->created);
-		wr_byte(art->seen);
-		wr_byte(art->everseen);
+		wr_byte(art->created ? 1 : 0);
+		wr_byte(art->seen ? 1 : 0);
+		wr_byte(art->everseen ? 1 : 0);
 		wr_byte(0);
 	}
 }

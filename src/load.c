@@ -1034,11 +1034,11 @@ int rd_artifacts(void)
 		byte tmp8u;
 
 		rd_byte(&tmp8u);
-		a_info[i].created = tmp8u;
+		a_info[i].created = tmp8u ? true : false;
 		rd_byte(&tmp8u);
-		a_info[i].seen = tmp8u;
+		a_info[i].seen = tmp8u ? true : false;
 		rd_byte(&tmp8u);
-		a_info[i].everseen = tmp8u;
+		a_info[i].everseen = tmp8u ? true : false;
 		rd_byte(&tmp8u);
 	}
 
