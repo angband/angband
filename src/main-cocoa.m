@@ -5257,7 +5257,7 @@ static NSString* get_lib_directory(void)
 
     if( !libExists || !isDirectory )
     {
-	NSLog( @"Angband: can't find %@/ in bundle: isDirectory: %d libExists: %d", AngbandDirectoryNameLib, isDirectory, libExists );
+	NSLog( @"%@: can't find %@/ in bundle: isDirectory: %d libExists: %d", @VERSION_NAME, AngbandDirectoryNameLib, isDirectory, libExists );
 
 	NSAlert *alert = [[NSAlert alloc] init];
 	/*
@@ -5266,7 +5266,9 @@ static NSString* get_lib_directory(void)
 	 */
 	alert.alertStyle = NSCriticalAlertStyle;
 	alert.messageText = @"MissingResources";
-	alert.informativeText = @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.";
+	alert.informativeText = [NSString stringWithFormat:@"%@ %@",
+		@VERSION_NAME,
+		@"was unable to find required resources and must quit. Please report a bug on the Angband forums."];
 	[alert addButtonWithTitle:@"Quit"];
 	[alert runModal];
 	exit(0);
