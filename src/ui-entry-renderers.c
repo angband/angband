@@ -44,6 +44,7 @@ typedef void (*renderer_func)(
 	const struct renderer_info *info);
 typedef int (*valuewidth_func)(const struct renderer_info *info);
 
+static void safe_queue_chars(int x, int y, int n, int a, const wchar_t *s);
 static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 	bool nonneg, bool use_sign, int nbuf, wchar_t *buf);
 static void show_combined_generic(const struct renderer_info *info,
@@ -391,6 +392,21 @@ char *ui_entry_renderer_get_symbols(int ind)
 }
 
 
+static void safe_queue_chars(int x, int y, int n, int a, const wchar_t *s)
+{
+	if (y < 0 || y >= Term->hgt) {
+		return;
+	}
+	if (n + x > Term->wid) {
+		n = Term->wid - x;
+	}
+	if (n <= 0) {
+		return;
+	}
+	Term_queue_chars(x, y, n, a, s);
+}
+
+
 static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 	bool nonneg, bool use_sign, int nbuf, wchar_t *buf)
 {
@@ -600,7 +616,7 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -690,7 +706,7 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -815,7 +831,7 @@ static void renderer_COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -922,7 +938,7 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -1030,10 +1046,10 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 				info->sign == UI_ENTRY_ALWAYS_SIGN,
 				nbuf, buffer);
 		}
-		Term_queue_chars(p.x, p.y, nbuf,
+		safe_queue_chars(p.x, p.y, nbuf,
 			info->colors[palette_index + color_offset], buffer);
 		if (info->units_nlabel != 0) {
-			Term_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
+			safe_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
 				info->colors[palette_index + color_offset],
 				info->units_label);
 		}
@@ -1081,7 +1097,7 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -1187,10 +1203,10 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 				info->sign == UI_ENTRY_ALWAYS_SIGN,
 				nbuf, buffer);
 		}
-		Term_queue_chars(p.x, p.y, nbuf,
+		safe_queue_chars(p.x, p.y, nbuf,
 			info->colors[palette_index + color_offset], buffer);
 		if (info->units_nlabel != 0) {
-			Term_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
+			safe_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
 				info->colors[palette_index + color_offset],
 				info->units_label);
 		}
@@ -1233,7 +1249,7 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
