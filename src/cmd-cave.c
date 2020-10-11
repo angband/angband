@@ -540,6 +540,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			best_digger->number = oldn;
 		}
 		player->body.slots[weapon_slot].obj = current_weapon;
+		calc_bonuses(player, &local_state, false, true);
 	}
 
 	/* Success */
