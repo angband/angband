@@ -882,7 +882,7 @@ static size_t prt_moves(int row, int col)
 	}
 
 	/* Shouldn't be double digits, but be paranoid */
-	return (i != 0) ? (9 + ABS(i)) / 10 : 0;
+	return (i != 0) ? (9 + ABS(i) / 10) : 0;
 }
 
 /**
