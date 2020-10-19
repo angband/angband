@@ -1048,19 +1048,22 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Find the first quiver object with the correct label */
 		for (current = gear; current; current = current->next) {
-			/* Ignore non-ammo */
-			if (!tval_is_ammo(current)) continue;
+			bool throwing = of_has(current->flags, OF_THROWING);
+
+			/* Only allow ammo and throwing weapons */
+			if (!(tval_is_ammo(current) || throwing)) continue;
 
 			/* Allocate inscribed objects if it's the right slot */
 			if (current->note) {
 				const char *s = strchr(quark_str(current->note), '@');
-				if (s && s[1] == 'f') {
+				if (s && (s[1] == 'f' || s[1] == 'v')) {
 					int choice = s[2] - '0';
 
 					/* Correct slot, fill it straight away */
 					if (choice == i) {
+						int mult = tval_is_ammo(current) ? 1 : 5;
 						upkeep->quiver[i] = current;
-						upkeep->quiver_cnt += current->number;
+						upkeep->quiver_cnt += current->number * mult;
 
 						/* In the quiver counts as worn */
 						object_learn_on_wield(player, current);
