@@ -4065,7 +4065,7 @@ Boolean open_when_ready = FALSE;
 /**
  * Given an Angband color index, returns the index into angband_color_table
  * to be used as the background color.  The returned index is between -1 and
- * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0),
+ * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0).
  */
 static int get_background_color_index(int idx)
 {
