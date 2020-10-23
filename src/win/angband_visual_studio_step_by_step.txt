@@ -12,7 +12,7 @@ To build Angband using Microsoft's Visual Studio.
  4. Copy libpng.dll and zlib1.dll from src\win\dll\ to the project directory.
 
  5. In the project settings, in the C/C++ tab, in the additional include
-    directories ilne, add: src, src/win, src/win/include.
+    directories line, add: src, src/win, src/win/include.
 
  6. In the project settings, in the Link tab, in the Object/library modules
     line, add: "src\win\zlib1.lib src\win\libpng.lib msimg32.lib winmm.lib "
