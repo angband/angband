@@ -34,16 +34,24 @@ To build Angband using Microsoft's Visual Studio.
 
 10. Add main-win.c from the src directory to the project.
 
-11. Save the project, then compile the project. There will be a lot of
+11. (optional) To include sound support, open the project's "Property Pages"
+    dialog box.  In the left pane, select "Configuration Properties, C/C++,
+    Preprocessor".  In the right pane of the "Preprocessor Definitions"
+    property, open the drop-down menu and choose "Edit".  In the "Preprocessor
+    Definitions" dialog box, add a line containing "SOUND" (without the quotes;
+    a semicolon may be necessary after "SOUND" to separate it from the other
+    definitions).
+
+12. Save the project, then compile the project. There will be a lot of
     warnings, but there should not be any errors. The warnings can be ignored.
 
-12. If there are no errors, enjoy playing angband. There should not be any
+13. If there are no errors, enjoy playing angband. There should not be any
     errors and the executable should be built. If there are any errors, and
     you do not know how to fix them, you can ask on the forums at
     http://angband.oook.cz or in the #angband-dev IRC channel on Freenode.
 
-13. Report bugs or request changes on https://github.com/angband/angband/issues
+14. Report bugs or request changes on https://github.com/angband/angband/issues
     at the Github site or on the forums at http://angband.oook.cz .
 
-14. To submit bug fixes, changes, etc please open pull requests on the Github
+15. To submit bug fixes, changes, etc please open pull requests on the Github
     site.
