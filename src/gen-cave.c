@@ -2745,9 +2745,9 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	int i, k, y;
 	struct chunk *c;
-	struct chunk *arrival;
+	struct chunk *left;
 	struct chunk *gauntlet;
-	struct chunk *departure;
+	struct chunk *right;
 	int gauntlet_hgt = 2 * randint1(5) + 3;
 	int gauntlet_wid = 2 * randint1(10) + 19;
 	int y_size = z_info->dungeon_hgt - randint0(25 - gauntlet_hgt);
@@ -2763,38 +2763,38 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	if (!gauntlet) return NULL;
 	gauntlet->depth = p->depth;
 
-	arrival = cavern_chunk(p->depth, y_size, x_size);
-	if (!arrival) {
+	left = cavern_chunk(p->depth, y_size, x_size);
+	if (!left) {
 		cave_free(gauntlet);
 		return NULL;
 	}
-	arrival->depth = p->depth;
+	left->depth = p->depth;
 
-	departure = cavern_chunk(p->depth, y_size, x_size);
-	if (!departure) {
+	right = cavern_chunk(p->depth, y_size, x_size);
+	if (!right) {
 		cave_free(gauntlet);
-		cave_free(arrival);
+		cave_free(left);
 		return NULL;
 	}
-	departure->depth = p->depth;
+	right->depth = p->depth;
 
 	/* Record lines between chunks */
-	line1 = arrival->width;
+	line1 = left->width;
 	line2 = line1 + gauntlet->width;
 
 	/* Set the movement and mapping restrictions */
-	generate_mark(arrival, 0, 0, arrival->height - 1, arrival->width - 1,
+	generate_mark(left, 0, 0, left->height - 1, left->width - 1,
 				  SQUARE_NO_TELEPORT);
 	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
 				  SQUARE_NO_MAP);
 	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
 				  SQUARE_NO_TELEPORT);
 
-	/* Place down stairs in the departure cavern */
-	alloc_stairs(departure, FEAT_MORE, rand_range(2, 3));
+	/* Place down stairs in the right cavern */
+	alloc_stairs(right, FEAT_MORE, rand_range(2, 3));
 
-	/* Place up stairs in the arrival cavern */
-	alloc_stairs(arrival, FEAT_LESS, rand_range(1, 3));
+	/* Place up stairs in the left cavern */
+	alloc_stairs(left, FEAT_LESS, rand_range(1, 3));
 
 	/* Open the ends of the gauntlet */
 	square_set_feat(gauntlet, loc(0, randint1(gauntlet->height - 2)),
@@ -2807,21 +2807,21 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
 
 	/* Put the character in the arrival cavern */
-	new_player_spot(arrival, p);
+	new_player_spot(p->upkeep->create_down_stair ? right : left, p);
 
-	/* Pick some monsters for the arrival cavern */
+	/* Pick some monsters for the left cavern */
 	i = z_info->level_monster_min + randint1(4) + k;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
-		pick_and_place_distant_monster(arrival, p, 0, true, arrival->depth);
+		pick_and_place_distant_monster(left, p, 0, true, left->depth);
 
-	/* Pick some of monsters for the departure cavern */
+	/* Pick some of monsters for the right cavern */
 	i = z_info->level_monster_min + randint1(4) + k;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
-		pick_and_place_distant_monster(departure, p, 0, true, departure->depth);
+		pick_and_place_distant_monster(right, p, 0, true, right->depth);
 
 	/* Pick a larger number of monsters for the gauntlet */
 	i = (z_info->level_monster_min + randint1(6) + k);
@@ -2848,7 +2848,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	(void) mon_restrict(NULL, gauntlet->depth, false);
 
 	/* Make the level */
-	c = cave_new(y_size, arrival->width + gauntlet->width + departure->width);
+	c = cave_new(y_size, left->width + gauntlet->width + right->width);
 	c->depth = p->depth;
 
 	/* Fill cave area with basic granite */
@@ -2860,14 +2860,14 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 				   SQUARE_NONE);
 
 	/* Copy in the pieces */
-	chunk_copy(c, arrival, 0, 0, 0, false);
+	chunk_copy(c, left, 0, 0, 0, false);
 	chunk_copy(c, gauntlet, (y_size - gauntlet->height) / 2, line1, 0, false);
-	chunk_copy(c, departure, 0, line2, 0, false);
+	chunk_copy(c, right, 0, line2, 0, false);
 
 	/* Free the chunks */
-	cave_free(arrival);
+	cave_free(left);
 	cave_free(gauntlet);
-	cave_free(departure);
+	cave_free(right);
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
