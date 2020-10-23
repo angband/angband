@@ -42,7 +42,8 @@ To build Angband using Microsoft's Visual Studio.
     you do not know how to fix them, you can ask on the forums at
     http://angband.oook.cz or in the #angband-dev IRC channel on Freenode.
 
-13. Report bugs or request changes at trac.rephial.org.
+13. Report bugs or request changes on https://github.com/angband/angband/issues
+    at the Github site or on the forums at http://angband.oook.cz .
 
 14. To submit bug fixes, changes, etc please open pull requests on the Github
     site.
