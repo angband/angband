@@ -1330,6 +1330,9 @@ void square_smash_wall(struct chunk *c, struct loc grid)
 		/* Ignore permanent grids */
 		if (square_isperm(c, adj_grid)) continue;
 
+		/* Ignore floors */
+		if (square_isfloor(c, adj_grid)) continue;
+
 		/* Give this grid a chance to survive */
 		if ((square_isgranite(c, adj_grid) && one_in_(4)) ||
 			(square_isquartz(c, adj_grid) && one_in_(10)) ||
