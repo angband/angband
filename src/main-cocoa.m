@@ -1783,7 +1783,8 @@ static void draw_image_tile(
 }
 
 
-/* The max number of glyphs we support.  Currently this only affects
+/*
+ * The max number of glyphs we support.  Currently this only affects
  * updateGlyphInfo() for the calculation of the tile size, fontAscender,
  * fontDescender, nColPre, and nColPost.  The rendering in drawWChar() will
  * work for a glyph not in updateGlyphInfo()'s set, though there may be
@@ -1792,8 +1793,10 @@ static void draw_image_tile(
  */
 #define GLYPH_COUNT 256
 
-/* An AngbandContext represents a logical Term (i.e. what Angband thinks is
- * a window). */
+/*
+ * An AngbandContext represents a logical Term (i.e. what Angband thinks is
+ * a window).
+ */
 @interface AngbandContext : NSObject <NSWindowDelegate>
 {
 @public
@@ -1878,8 +1881,10 @@ static void draw_image_tile(
 - (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile screenFont:(NSFont*)font
 	  context:(CGContextRef)ctx;
 
-/* Returns the primary window for this angband context, creating it if
- * necessary */
+/*
+ * Returns the primary window for this angband context, creating it if
+ * necessary
+ */
 - (NSWindow *)makePrimaryWindow;
 
 /* Handle becoming the main window */
@@ -1900,8 +1905,10 @@ static void draw_image_tile(
 /* Display (flush) our Angband views */
 - (void)displayIfNeeded;
 
-/* Resize context to size of contentRect, and optionally save size to
- * defaults */
+/*
+ * Resize context to size of contentRect, and optionally save size to
+ * defaults
+ */
 - (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults;
 
 /*
@@ -1957,8 +1964,10 @@ u32b AngbandMaskForValidSubwindowFlags(void)
  */
 static void AngbandUpdateWindowVisibility(void)
 {
-    /* Because this function is called frequently, we'll make the mask static.
-	 * It doesn't change between calls, as the flags themselves are hardcoded */
+    /*
+     * Because this function is called frequently, we'll make the mask static.
+     * It doesn't change between calls, as the flags themselves are hardcoded
+     */
     static u32b validWindowFlagsMask = 0;
 
     if( validWindowFlagsMask == 0 )
@@ -1966,9 +1975,11 @@ static void AngbandUpdateWindowVisibility(void)
         validWindowFlagsMask = AngbandMaskForValidSubwindowFlags();
     }
 
-    /* Loop through all of the subwindows and see if there is a change in the
-	 * flags. If so, show or hide the corresponding window. We don't care about
-	 * the flags themselves; we just want to know if any are set. */
+    /*
+     * Loop through all of the subwindows and see if there is a change in the
+     * flags. If so, show or hide the corresponding window. We don't care about
+     * the flags themselves; we just want to know if any are set.
+     */
     for( int i = 1; i < ANGBAND_TERM_MAX; i++ )
     {
         AngbandContext *angbandContext =
@@ -1979,12 +1990,14 @@ static void AngbandUpdateWindowVisibility(void)
             continue;
         }
 
-        /* This horrible mess of flags is so that we can try to maintain some
-		 * user visibility preference. This should allow the user a window and
-		 * have it stay closed between application launches. However, this
-		 * means that when a subwindow is turned on, it will no longer appear
-		 * automatically. Angband has no concept of user control over window
-		 * visibility, other than the subwindow flags. */
+        /*
+         * This horrible mess of flags is so that we can try to maintain some
+         * user visibility preference. This should allow the user a window and
+         * have it stay closed between application launches. However, this
+         * means that when a subwindow is turned on, it will no longer appear
+         * automatically. Angband has no concept of user control over window
+         * visibility, other than the subwindow flags.
+         */
         if( !angbandContext.windowVisibilityChecked )
         {
             if( [angbandContext windowVisibleUsingDefaults] )
@@ -2125,8 +2138,10 @@ static bool initialized = FALSE;
 }
 @end
 
-/* Methods for pulling images out of the Angband bundle (which may be separate
- * from the current bundle in the case of a screensaver */
+/*
+ * Methods for pulling images out of the Angband bundle (which may be separate
+ * from the current bundle in the case of a screensaver
+ */
 @interface NSImage (AngbandImages)
 + (NSImage *)angbandImage:(NSString *)name;
 @end
@@ -2144,8 +2159,10 @@ static bool initialized = FALSE;
 
 @implementation NSImage (AngbandImages)
 
-/* Returns an image in the resource directoy of the bundle containing the
- * Angband view class. */
+/*
+ * Returns an image in the resource directoy of the bundle containing the
+ * Angband view class.
+ */
 + (NSImage *)angbandImage:(NSString *)name
 {
     NSBundle *bundle = [NSBundle bundleForClass:[AngbandView class]];
@@ -2422,10 +2439,12 @@ static int compare_advances(const void *ap, const void *bp)
 	advances, 1);
     CGSize advance = advances[0];
 
-    /* If our font is not monospaced, our tile width is deliberately not big
-	 * enough for every character. In that event, if our glyph is too wide, we
-	 * need to compress it horizontally. Compute the compression ratio.
-	 * 1.0 means no compression. */
+    /*
+     * If our font is not monospaced, our tile width is deliberately not big
+     * enough for every character. In that event, if our glyph is too wide, we
+     * need to compress it horizontally. Compute the compression ratio.
+     * 1.0 means no compression.
+     */
     double compressionRatio;
     if (advance.width <= NSWidth(tile))
     {
@@ -2484,8 +2503,10 @@ static int compare_advances(const void *ap, const void *bp)
 
     if( adjustTerminal )
     {
-        /* Adjust terminal to fit window with new font; save the new columns
-		 * and rows since they could be changed */
+        /*
+         * Adjust terminal to fit window with new font; save the new columns
+         * and rows since they could be changed
+         */
         NSRect contentRect =
 	    [self.primaryWindow
 		 contentRectForFrameRect: [self.primaryWindow frame]];
@@ -2596,8 +2617,10 @@ static __strong NSFont* gDefaultFont = nil;
 {
     if (! self.primaryWindow)
     {
-        /* This has to be done after the font is set, which it already is in
-		 * term_init_cocoa() */
+        /*
+         * This has to be done after the font is set, which it already is in
+         * term_init_cocoa()
+         */
         NSSize sz = self.baseSize;
         NSRect contentRect = NSMakeRect( 0.0, 0.0, sz.width, sz.height );
 
@@ -3224,8 +3247,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
  */
 - (void)drawRect:(NSRect)rect inView:(NSView *)view
 {
-    /* Take this opportunity to throttle so we don't flush faster than desired.
-	 */
+    /*
+     * Take this opportunity to throttle so we don't flush faster than desired.
+     */
     [self throttle];
 
     CGFloat bottomY =
@@ -4041,7 +4065,7 @@ Boolean open_when_ready = FALSE;
 /**
  * Given an Angband color index, returns the index into angband_color_table
  * to be used as the background color.  The returned index is between -1 and
- * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0),
+ * MAX_COLORS - 1 inclusive where -1 means use the RGB triplet, (0, 0, 0).
  */
 static int get_background_color_index(int idx)
 {
@@ -4303,8 +4327,10 @@ static void Term_init_cocoa(term *t)
 	    [window setFrame: windowFrame display: NO];
 	}
 
-	/* Override the default frame above if the user has adjusted windows in
-	 * the past */
+	/*
+	 * Override the default frame above if the user has adjusted windows in
+	 * the past
+	 */
 	if (autosaveName) [window setFrameAutosaveName:autosaveName];
 
 	/*
@@ -4819,20 +4845,22 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
     return 0;
 }
 
-/* From the Linux mbstowcs(3) man page:
- *   If dest is NULL, n is ignored, and the conversion  proceeds  as  above,
- *   except  that  the converted wide characters are not written out to mem‐
- *   ory, and that no length limit exists.
+/*
+ * From the Linux mbstowcs(3) man page:
+ * If dest is NULL, n is ignored, and the conversion proceeds as above,
+ * except that the converted wide characters are not written out to
+ * memory, and that no length limit exists.
  */
 static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 {
     int i;
     int count = 0;
 
-    /* Unicode code point to UTF-8
-     *  0x0000-0x007f:   0xxxxxxx
-     *  0x0080-0x07ff:   110xxxxx 10xxxxxx
-     *  0x0800-0xffff:   1110xxxx 10xxxxxx 10xxxxxx
+    /*
+     * Unicode code point to UTF-8
+     * 0x0000-0x007f:    0xxxxxxx
+     * 0x0080-0x07ff:    110xxxxx 10xxxxxx
+     * 0x0800-0xffff:    1110xxxx 10xxxxxx 10xxxxxx
      * 0x10000-0x1fffff: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
      * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
      * endian-agnostic.
@@ -4980,31 +5008,39 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		NSSize border = angbandContext.borderSize;
 		NSPoint windowPoint = [event locationInWindow];
 
-		/* Adjust for border; add border height because window origin is at
-		 * bottom */
+		/*
+		 * Adjust for border; add border height because window origin
+		 * is at bottom
+		 */
 		windowPoint = NSMakePoint( windowPoint.x - border.width, windowPoint.y + border.height );
 
 		NSPoint p = [[[event window] contentView] convertPoint: windowPoint fromView: nil];
 		x = floor( p.x / tileSize.width );
 		y = floor( p.y / tileSize.height );
 
-		/* Being safe about this, since xcode doesn't seem to like the
-		 * bool_hack stuff */
+		/*
+		 * Being safe about this, since xcode doesn't seem to like the
+		 * bool_hack stuff
+		 */
 		BOOL displayingMapInterface = ((int)inkey_flag != 0);
 
 		/* Sidebar plus border == thirteen characters; top row is reserved. */
 		/* Coordinates run from (0,0) to (cols-1, rows-1). */
 		BOOL mouseInMapSection = (x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2);
 
-		/* If we are displaying a menu, allow clicks anywhere within
+		/*
+		 * If we are displaying a menu, allow clicks anywhere within
 		 * the terminal bounds; if we are displaying the main game
-		 * interface, only allow clicks in the map section */
+		 * interface, only allow clicks in the map section
+		 */
 		if ((!displayingMapInterface && x >= 0 && x < cols &&
 		     y >= 0 && y < rows) ||
 		     (displayingMapInterface && mouseInMapSection))
 		{
-			/* [event buttonNumber] will return 0 for left click,
-			 * 1 for right click, but this is safer */
+			/*
+			 * [event buttonNumber] will return 0 for left click,
+			 * 1 for right click, but this is safer
+			 */
 			int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
 
 #ifdef KC_MOD_ALT
@@ -5028,7 +5064,8 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 
 /**
  * Encodes an NSEvent Angband-style, or forwards it along.  Returns YES if the
- * event was sent to Angband, NO if Cocoa (or nothing) handled it */
+ * event was sent to Angband, NO if Cocoa (or nothing) handled it
+ */
 static BOOL send_event(NSEvent *event)
 {
 
@@ -5071,9 +5108,11 @@ static BOOL send_event(NSEvent *event)
             unichar c = [[event characters] characterAtIndex:0];
             keycode_t ch;
             switch (c) {
-                /* Note that NSNumericPadKeyMask is set if any of the arrow
+                /*
+                 * Note that NSNumericPadKeyMask is set if any of the arrow
                  * keys are pressed. We don't want KC_MOD_KEYPAD set for
-                 * those. See #1662 for more details. */
+                 * those. See #1662 for more details.
+                 */
                 case NSUpArrowFunctionKey: ch = ARROW_UP; kp = 0; break;
                 case NSDownArrowFunctionKey: ch = ARROW_DOWN; kp = 0; break;
                 case NSLeftArrowFunctionKey: ch = ARROW_LEFT; kp = 0; break;
@@ -6075,7 +6114,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 }
 
 /**
- *  Send a command to Angband via a menu item. This places the appropriate key
+ * Send a command to Angband via a menu item. This places the appropriate key
  * down events into the queue so that it seems like the user pressed them
  * (instead of trying to use the term directly).
  */
@@ -6115,7 +6154,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 }
 
 /**
- *  Set up the command menu dynamically, based on CommandMenu.plist.
+ * Set up the command menu dynamically, based on CommandMenu.plist.
  */
 - (void)prepareCommandMenu
 {
@@ -6173,8 +6212,10 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     [self beginGame];
     
-    /* Once beginGame finished, the game is over - that's how Angband works,
-	 * and we should quit */
+    /*
+     * Once beginGame finished, the game is over - that's how Angband works,
+     * and we should quit
+     */
     game_is_finished = TRUE;
     [NSApp terminate:self];
 }
@@ -6196,12 +6237,16 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         /* Stop playing */
         player->upkeep->playing = FALSE;
 
-        /* Post an escape event so that we can return from our get-key-event
-		 * function */
+        /*
+         * Post an escape event so that we can return from our get-key-event
+         * function
+         */
         wakeup_event_loop();
         quit_when_ready = true;
-        /* Must return Cancel, not Later, because we need to get out of the
-		 * run loop and back to Angband's loop */
+        /*
+         * Must return Cancel, not Later, because we need to get out of the
+         * run loop and back to Angband's loop
+         */
         return NSTerminateCancel;
     }
 }
@@ -6215,10 +6260,12 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     if (! [[menu title] isEqualToString:@"Graphics"])
         return;
     
-    /* If it's non-empty, then we've already built it. Currently graphics modes
-	 * won't change once created; if they ever can we can remove this check.
+    /*
+     * If it's non-empty, then we've already built it. Currently graphics modes
+     * won't change once created; if they ever can we can remove this check.
      * Note that the check mark does change, but that's handled in
-	 * validateMenuItem: instead of menuNeedsUpdate: */
+     * validateMenuItem: instead of menuNeedsUpdate:
+     */
     if ([menu numberOfItems] > 0)
         return;
     
@@ -6235,8 +6282,10 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     {
         const graphics_mode *graf = &graphics_modes[i];
         
-        /* Make the title. NSMenuItem throws on a nil title, so ensure it's
-		 * not nil. */
+        /*
+         * Make the title. NSMenuItem throws on a nil title, so ensure it's
+         * not nil.
+         */
         NSString *title = [[NSString alloc] initWithUTF8String:graf->menuname];
         if (! title) title = [@"(Unknown)" copy];
         
@@ -6275,8 +6324,10 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
     game_in_progress = TRUE;
 
-    /* Wake us up in case this arrives while we're sitting at the Welcome
-	 * screen! */
+    /*
+     * Wake us up in case this arrives while we're sitting at the Welcome
+     * screen!
+     */
     wakeup_event_loop();
 
     [[NSApplication sharedApplication]
