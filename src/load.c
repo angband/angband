@@ -49,6 +49,7 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
+#include "ui-term.h"
 
 /**
  * Setting this to 1 and recompiling gives a chance to recover a savefile 
@@ -427,8 +428,6 @@ int rd_options(void)
 {
 	byte b;
 
-	u16b tmp16u;
-
 	/*** Special info */
 
 	/* Read "delay_factor" */
@@ -440,8 +439,13 @@ int rd_options(void)
 	player->opts.hitpoint_warn = b;
 
 	/* Read lazy movement delay */
-	rd_u16b(&tmp16u);
-	player->opts.lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+	rd_byte(&b);
+	player->opts.lazymove_delay = b;
+
+	/* Read sidebar mode */
+	rd_byte(&b);
+	if (b >= SIDEBAR_MAX) b = SIDEBAR_LEFT;
+	SIDEBAR_MODE = b;
 
 
 	/* Read options */

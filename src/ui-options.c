@@ -910,6 +910,42 @@ static void do_cmd_delay(const char *name, int row)
 	screen_load();
 }
 
+/**
+ * Set sidebar mode
+ */
+static void do_cmd_sidebar_mode(const char *name, int row)
+{
+	char tmp[20] = "";	
+	const char *names[SIDEBAR_MAX] = {"Left", "Top", "None"};
+	struct keypress cx = KEYPRESS_NULL;
+
+	screen_save();
+
+	while (true) {	
+
+		// Get the name
+		my_strcpy(tmp, names[SIDEBAR_MODE % SIDEBAR_MAX], sizeof(tmp));
+
+		/* Prompt */
+		prt("Command: Sidebar Mode", 20, 0);
+
+		prt("ESC: go back, other: cycle", 22, 0);
+
+		prt(format("Current mode: %s", tmp), 21, 0);
+
+		/* Get a command */
+		cx = inkey();
+
+		/* All done */
+		if (cx.code == ESCAPE) break;
+
+		// Cycle
+		SIDEBAR_MODE = (SIDEBAR_MODE + 1) % SIDEBAR_MAX;
+	}
+
+	screen_load();
+}
+
 
 /**
  * Set hitpoint warning level
@@ -972,8 +1008,10 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
 
 	/* Process input */
-	if (res)
-		player->opts.lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+	if (res) {
+		u16b delay = (u16b)strtoul(tmp, NULL, 0);
+		player->opts.lazymove_delay = MIN(delay, 255);
+	}
 
 	screen_load();
 }
@@ -1820,6 +1858,7 @@ static menu_action option_actions[] =
 	{ 0, 'd', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0, 'o', "Set sidebar mode", do_cmd_sidebar_mode },
 	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
