@@ -290,8 +290,8 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 
 u32b window_flag[ANGBAND_TERM_MAX];
 
-
-
+int row_map[SIDEBAR_MAX] = {1, 3, 1};
+int col_map[SIDEBAR_MAX] = {13, 1, 1};
 
 /**
  * The current "term"
@@ -2492,6 +2492,8 @@ errr term_init(term *t, int w, int h, int k)
 
 	/* No saves yet */
 	t->saved = 0;
+
+	t->sidebar_mode = SIDEBAR_LEFT;
 
 	/* Success */
 	return (0);

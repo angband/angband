@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "ui-term.h"
 
 
 /**
@@ -317,7 +318,8 @@ void wr_options(void)
 	/* Special Options */
 	wr_byte(player->opts.delay_factor);
 	wr_byte(player->opts.hitpoint_warn);
-	wr_u16b(player->opts.lazymove_delay);
+	wr_byte(player->opts.lazymove_delay);
+	wr_byte(SIDEBAR_MODE);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
