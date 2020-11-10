@@ -143,6 +143,34 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 			next = true;
 		} else if (event->key.code == 't' || event->key.code == 'T') {
 			option_set(option_name(oid), !player->opts.opt[oid]);
+		} else if (event->key.code == 's' || event->key.code == 'S') {
+			char dummy;
+
+			screen_save();
+			if (options_save_custom_birth(&player->opts)) {
+				get_com("Successfully saved.  Press any key to continue.", &dummy);
+			} else {
+				get_com("Save failed.  Press any key to continue.", &dummy);
+			}
+			screen_load();
+		/* Only allow restore from custom defaults at birth. */
+		} else if ((event->key.code == 'r' || event->key.code == 'R') &&
+				m->flags == MN_DBL_TAP) {
+			screen_save();
+			if (options_restore_custom_birth(&player->opts)) {
+				screen_load();
+				menu_refresh(m, false);
+			} else {
+				char dummy;
+
+				get_com("Restore failed.  Press any key to continue.", &dummy);
+				screen_load();
+			}
+		/* Only allow reset to maintainer's defaults at birth. */
+		} else if ((event->key.code == 'm' || event->key.code == 'M') &&
+				m->flags == MN_DBL_TAP) {
+			options_reset_birth(&player->opts);
+			menu_refresh(m, false);
 		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
@@ -195,6 +223,8 @@ static void option_toggle_menu(const char *name, int page)
 		m->cmd_keys = "?";
 		m->flags = MN_NO_TAGS;
 	} else if (page == OPT_PAGE_BIRTH + 10) {
+		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'm' to reset, '?' for help";
+		m->cmd_keys = "?YyNnTtSsRrMm";
 		page -= 10;
 	}
 
