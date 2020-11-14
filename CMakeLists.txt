@@ -16,6 +16,10 @@ IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND)
     SET(SUPPORT_X11_FRONTEND OFF)
 ENDIF()
 
+IF (NOT SUPPORT_SDL_FRONTEND)
+    SET(SUPPORT_SDL_SOUND OFF)
+ENDIF()
+
 ADD_EXECUTABLE(Angband
         src/buildid.c
         src/cave-map.c
@@ -30,6 +34,7 @@ ADD_EXECUTABLE(Angband
         src/datafile.c
         src/debug.c
         src/effects.c
+        src/effects-info.c
         src/game-event.c
         src/game-input.c
         src/game-world.c
@@ -109,6 +114,7 @@ ADD_EXECUTABLE(Angband
         src/project.c
         src/randname.c
         src/save.c
+        src/save-charoutput.c
         src/savefile.c
         src/score.c
 
@@ -190,12 +196,15 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
     INCLUDE(src/cmake/macros/SDL_Frontend.cmake)
     CONFIGURE_SDL_FRONTEND(Angband)
 
-ELSEIF(SUPPORT_SDL_SOUND)
+    IF (SUPPORT_SDL_SOUND)
 
-    INCLUDE(src/cmake/macros/SDL_Sound.cmake)
-    CONFIGURE_SDL_SOUND(Angband)
+        INCLUDE(src/cmake/macros/SDL_Sound.cmake)
+        CONFIGURE_SDL_SOUND(Angband)
+
+    ENDIF()
 
 ENDIF()
+
 
 #[[
 For Linux Systems the compilation without the libm library
