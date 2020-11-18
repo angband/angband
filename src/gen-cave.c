@@ -2687,9 +2687,6 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	if (one_in_(2)) {
 		chunk_copy(c, lair, 0, 0, 0, false);
 		chunk_copy(c, normal, 0, x_size / 2, 0, false);
-
-		/* The player needs to move */
-		p->grid.x += x_size / 2;
 	} else {
 		chunk_copy(c, normal, 0, 0, 0, false);
 		chunk_copy(c, lair, 0, x_size / 2, 0, false);
