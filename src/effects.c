@@ -5201,8 +5201,11 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
-	if (!target_okay()) {return false;}
+	if (!target_okay()) {
+		return false;
+	}
 
+	/* Check target validity */
 	taim = distance(grid, target);
 	mon = square_monster(cave, target);
 	if (taim > 1) {
@@ -5213,17 +5216,21 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		return false;
 	}
 
-	while (blows-- > 0) {
+	while ((blows > 0) && mon) {
 		/* Lame test for hitting the monster */
 		int hp = mon->hp;
 		if (py_attack_real(player, target, &fear)) return true;
-		if (mon->hp == hp) continue;
+		mon = square_monster(cave, target);
+		if (mon && (mon->hp == hp)) continue;
 
 		/* Apply side-effects */
 		if (project(context->origin, 0, target, dam, context->subtype,
 					PROJECT_KILL, 0, 0, context->obj)) {
 			context->ident = true;
 		}
+
+		/* Prepare for next round */
+		blows--;
 	}
 	return true;
 }
