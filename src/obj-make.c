@@ -665,7 +665,7 @@ static bool make_artifact(struct object *obj)
 	int i;
 
 	/* Make sure birth no artifacts isn't set */
-	if (!OPT(player, birth_no_artifacts)) return false;
+	if (OPT(player, birth_no_artifacts)) return false;
 
 	/* No artifacts in the town */
 	if (!player->depth) return false;
