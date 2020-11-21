@@ -2426,13 +2426,21 @@ static int compare_advances(const void *ap, const void *bp)
 {
     CGFloat tileOffsetY = self.fontAscender;
     CGFloat tileOffsetX = 0.0;
-    UniChar unicharString[2] = {(UniChar)wchar, 0};
+    UniChar unicharString[2];
+    int nuni;
+
+    if (CFStringGetSurrogatePairForLongCharacter(wchar, unicharString)) {
+	nuni = 2;
+    } else {
+	unicharString[0] = (UniChar) wchar;
+	nuni = 1;
+    }
 
     /* Get glyph and advance */
-    CGGlyph thisGlyphArray[1] = { 0 };
-    CGSize advances[1] = { { 0, 0 } };
+    CGGlyph thisGlyphArray[2] = { 0, 0 };
+    CGSize advances[2] = { { 0, 0 }, { 0, 0 } };
     CTFontGetGlyphsForCharacters(
-	(CTFontRef)font, unicharString, thisGlyphArray, 1);
+	(CTFontRef)font, unicharString, thisGlyphArray, nuni);
     CGGlyph glyph = thisGlyphArray[0];
     CTFontGetAdvancesForGlyphs(
 	(CTFontRef)font, kCTFontHorizontalOrientation, thisGlyphArray,
