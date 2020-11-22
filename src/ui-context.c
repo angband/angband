@@ -1125,14 +1125,14 @@ static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row,
 	Term_putstr(col, row, -1, attr, commands[oid].desc);
 
 	/* Include keypress */
-	Term_addch(attr, ' ');
-	Term_addch(attr, '(');
+	Term_addch(attr, L' ');
+	Term_addch(attr, L'(');
 
 	/* Get readable version */
 	keypress_to_readable(buf, sizeof buf, kp);
 	Term_addstr(-1, attr, buf);
 
-	Term_addch(attr, ')');
+	Term_addch(attr, L')');
 }
 
 /**
