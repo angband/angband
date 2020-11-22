@@ -213,7 +213,7 @@ static void do_cmd_wiz_hack_nick(void)
  * Output part of a bitflag set in binary format.
  */
 static void prt_binary(const bitflag *flags, int offset, int row, int col,
-					   char ch, int num)
+					   wchar_t ch, int num)
 {
 	int flag;
 
@@ -222,7 +222,7 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 		if (of_has(flags, flag))
 			Term_putch(col++, row, COLOUR_BLUE, ch);
 		else
-			Term_putch(col++, row, COLOUR_WHITE, '-');
+			Term_putch(col++, row, COLOUR_WHITE, L'-');
 }
 
 /**
@@ -476,9 +476,9 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt("siwdcelotdfrei  plommfegrccc....", 19, j);
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
-	prt_binary(f, 0, 22, j, '*', 28);
+	prt_binary(f, 0, 22, j, L'*', 28);
 	if (obj->known) {
-		prt_binary(obj->known->flags, 0, 23, j, '+', 28);
+		prt_binary(obj->known->flags, 0, 23, j, L'+', 28);
 	}
 }
 

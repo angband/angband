@@ -287,7 +287,7 @@ static void prt_equippy(int row, int col)
 			c = object_char(obj);
 			a = object_attr(obj);
 		} else {
-			c = ' ';
+			c = L' ';
 			a = COLOUR_WHITE;
 		}
 
@@ -1359,7 +1359,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 #endif
 
 		if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
+			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, L' ');
 	}
 
 	/* Refresh the main screen unless the map needs to center */

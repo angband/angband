@@ -316,7 +316,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 			/* Display the windows */
 			for (j = 0; j < ANGBAND_TERM_MAX; j++) {
-				char c = '.';
+				wchar_t c = L'.';
 
 				a = COLOUR_WHITE;
 
@@ -324,7 +324,7 @@ static void do_cmd_options_win(const char *name, int row)
 				if ((i == y) && (j == x)) a = COLOUR_L_BLUE;
 
 				/* Active flag */
-				if (new_flags[j] & (1L << i)) c = 'X';
+				if (new_flags[j] & (1L << i)) c = L'X';
 
 				/* Flag value */
 				Term_putch(35 + j * 5, i + 5, a, c);
