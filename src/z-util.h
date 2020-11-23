@@ -71,6 +71,28 @@ size_t utf8_strlen(char *s);
 void utf8_clipto(char *s, size_t n);
 
 /**
+ * Advance a pointer to a UTF-8 buffer by a given number of Unicode code points.
+ */
+char *utf8_fskip(char *s, size_t n, char *lim);
+
+/**
+ * Decrement a pointer to a UTF-8 buffer by a given number of Unicode code
+ * points.
+ */
+char *utf8_rskip(char *s, size_t n, char *lim);
+
+/**
+ * Convert a sequence of UTF-32 values, in the native byte order, to UTF-8.
+ */
+size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
+	size_t *pn_cnvt);
+
+/**
+ * Return whether a given UTF-32 value corresponds to a printable character.
+ */
+bool utf32_isprint(u32b v);
+
+/**
  * Case insensitive comparison between two strings
  */
 extern int my_stricmp(const char *s1, const char *s2);

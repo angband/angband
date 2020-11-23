@@ -213,6 +213,11 @@ keycode_t keycode_find_code(const char *str, size_t len);
 const char *keycode_find_desc(keycode_t kc);
 
 /**
+ * Given a keycode, return whether it corresponds to a printable character.
+ */
+bool keycode_isprint(keycode_t kc);
+
+/**
  * Convert a string of keypresses into their textual representation
  */
 void keypress_to_text(char *buf, size_t len, const struct keypress *src,

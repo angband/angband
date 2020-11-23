@@ -73,6 +73,286 @@ void utf8_clipto(char *s, size_t n)
 }
 
 /**
+ * Advance a pointer to a UTF-8 buffer by a given number of Unicode code points.
+ * \param s Is the pointer to advance.
+ * \param n Is the number of code points to skip over.
+ * \param lim If not NULL, is the limit for how far to advance.
+ * \return If s could be advanced by n code points before reaching lim (if
+ * lim is not NULL) or before reaching the end of the input, the returned
+ * value is the incremented pointer.  Otherwise, the returned value is NULL.
+ * If n is zero, the return value may be different than s if s does not
+ * point to the start of a code point.  In that case, the returned value will
+ * point to the start of the next code point.
+ */
+char *utf8_fskip(char *s, size_t n, char *lim)
+{
+	while (1) {
+		if (*s == 0) {
+			/* Reached the end of the input. */
+			return (n > 0) ? NULL : s;
+		}
+		if ((*s & 0xc0) != 0x80) {
+			/* It's not marked as a continuation byte. */
+			if (n == 0) {
+				return s;
+			}
+			--n;
+		}
+		if (s == lim) {
+			return NULL;
+		}
+		++s;
+	}
+}
+
+/**
+ * Decrement a pointer to a UTF-8 buffer by a given number of Unicode code
+ * points.
+ * \param s Is the pointer to decrement.
+ * \param n Is the number of code points to skip over.
+ * \param lim Is the limit for how far to backtrack.  Must not be NULL.
+ * \return If s could be decremented by n code points before reaching lim,
+ * the returned value is the decremented pointer.  Otherwise, the returned
+ * value is NULL.  If n is zero, the return value may be different than s
+ * if s does not point to the start of a code point.  In that case, the
+ * returned valued will be the start of the first code point prior to s or
+ * NULL, if the start of a code point could not be found before reaching lim.
+ */
+char *utf8_rskip(char *s, size_t n, char *lim)
+{
+	while (1) {
+		if ((*s & 0xc0) != 0x80) {
+			/* It's not marked as a continuation byte. */
+			if (n == 0) {
+				return s;
+			}
+			--n;
+		}
+		if (s == lim) {
+			return NULL;
+		}
+		--s;
+	}
+}
+
+/**
+ * Convert a sequence of UTF-32 values, in the native byte order, to UTF-8.
+ * \param out Is the pointer to the buffer to hold the conversion.
+ * \param n_out Is the number of char-sized units that can be placed in out.
+ * \param in Is the pointer to the sequence to convert.
+ * \param n_in Is the maximum number of values to convert from in.  Conversion
+ * will terminate before that if the sequence to convert contains a zero or
+ * something that is not a valid Unicode code point (either larger than
+ * 0x10FFFF or in the range of 0xD800 to 0xDFFF reserved for surrogate pairs)
+ * or if the next value to convert would cause the output buffer to overflow.
+ * \param pn_cnvt If not NULL, *pn_cnvt will be set to the number of UTF-32
+ * values converted.
+ * \return The returned value is the number of char-sized units, excluding
+ * the terminating null character, written to out.  The returned value will
+ * be less than n_out if n_out is greater than zero.
+ */
+size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
+	size_t *pn_cnvt)
+{
+	size_t nwritten = 0;
+	const u32b *in_orig = in;
+	const u32b *in_lim = in + n_in;
+
+	while (1) {
+		if (in == in_lim) {
+			break;
+		}
+		if (*in <= 0x7f) {
+			/* Encoded as single byte. */
+			if (*in == 0) {
+				break;
+			}
+			if (n_out <= 1) {
+				break;
+			}
+			out[nwritten++] = (char) *in;
+			--n_out;
+		} else if (*in <= 0x7ff) {
+			/* Encoded as two bytes. */
+			if (n_out <= 2) {
+				break;
+			}
+			out[nwritten++] = 0xc0 + ((*in & 0x7c0) >> 6);
+			out[nwritten++] = 0x80 + (*in & 0x3f);
+			n_out -= 2;
+		} else if (*in <= 0xffff) {
+			/* Encoded as three bytes. */
+			if (*in >= 0xd800 && *in <= 0xdfff) {
+				/*
+				 * Those are reserved for UTF-16 surrogate
+				 * pairs and should not be encoded.
+				 */
+				break;
+			}
+			if (n_out <= 3) {
+				break;
+			}
+			out[nwritten++] = 0xe0 + ((*in & 0xf000) >> 12);
+			out[nwritten++] = 0x80 + ((*in & 0xfc0) >> 6);
+			out[nwritten++] = 0x80 + (*in & 0x3f);
+			n_out -= 3;
+		} else if (*in <= 0x10ffff) {
+			/*
+			 * Encoded as four bytes.  The upper limit of 0x10ffff
+			 * is imposed by the limits of UTF-16.  Without that,
+			 * the four byte encoding can handle values up to
+			 * 0x1fffff.
+			 */
+			if (n_out <= 4) {
+				break;
+			}
+			out[nwritten++] = 0xf0 + ((*in & 0x1c0000) >> 18);
+			out[nwritten++] = 0x80 + ((*in & 0x3f000) >> 12);
+			out[nwritten++] = 0x80 + ((*in & 0xfc0) >> 6);
+			out[nwritten++] = 0x80 + (*in & 0x3f);
+			n_out -= 4;
+		} else {
+			break;
+		}
+		++in;
+	}
+	if (n_out > 0) {
+		out[nwritten] = 0;
+	}
+	if (pn_cnvt) {
+		*pn_cnvt = in - in_orig;
+	}
+	return nwritten;
+}
+
+/**
+ * Return whether a given UTF-32 value corresponds to a printable character.
+ *
+ * The similar standard library functions are isprint() and iswprint().
+ * Choose not to use those because both depend on the locale and only want
+ * to use the locale when converting a keyboard event to a keycode and when
+ * converting internally stored text to a final form for display.  Between
+ * those two points, use fixed encodings:  UTF-32 for single keycodes and
+ * UTF-8 for bulk storage of text.  Also, isprint() is, in general, limited
+ * to distinguishing 8 bits, and the wchar_t for iswprint() is, at least on
+ * Windows, a 16-bit type.
+ */
+bool utf32_isprint(u32b v)
+{
+	/* Switch based on the plane (each plane has 2^16 code points). */
+        switch ((v & 0xff0000) >> 16) {
+        case 0:
+                /* Is the basic multilingual plane.  Most things are here. */
+                switch ((v & 0xff00) >> 8) {
+                case 0:
+                        /*
+                         * C0 control characters, DEL, and C1 controls are
+                         * not printable.
+                         */
+                        if (v <= 0x1f || (v >= 0x7f && v <= 0x9f)) {
+                                return false;
+                        }
+                        break;
+
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                        /* Used for surrogate pairs in UTF-16. */
+                        return false;
+
+                case 0xfd:
+                        /*
+                         * Part of the arabic presentation forms-a block is
+                         * guaranteed to not be used for characters.
+                         */
+                        if (v >= 0xfdd0 && v <= 0xfdef) {
+                                return false;
+                        }
+                        break;
+
+                case 0xfe:
+                        /*
+                         * The variation selectors indicate how to present a
+                         * preceding character.  Treat as not printable.
+                         * Also exclude the byte-order mark, 0xfeff.
+                         */
+                        if ((v & 0xfff0) == 0xfe00 || v == 0xfeff) {
+                                return false;
+                        }
+                        break;
+
+                case 0xff:
+                        /* Interlinear annotation marks are not printable. */
+                        if (v >= 0xfff9 && v <= 0xfffb) {
+                                return false;
+                        }
+                        break;
+
+                default:
+                        /* Do no special casing for the rest. */
+                        break;
+                }
+                break;
+
+        case 1:
+                /* Is the supplemental multilingual plane. */
+        case 2:
+                /* Is the supplmental ideographic plane. */
+        case 3:
+                /* Is the tertiary ideographic plane. */
+                /* Assume no no special casing for those planes. */
+                break;
+
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+                /*
+                 * Those planes are currently unassigned.  Assume unprintable.
+                 */
+                return false;
+
+        case 14:
+                /*
+                 * Is the supplemental special-purpose plane.  Used for tags
+                 * to modify a preceding character or to indicate a variant
+                 * form of an ideograph.  Assume all are unprintable.
+                 */
+                return false;
+
+        case 15:
+        case 16:
+                /*
+                 * These are private use planes.  Assume that no special
+                 * cases are necessary.
+                 */
+                break;
+
+        default:
+                /* Is not a valid Unicode code point. */
+                return false;
+        }
+
+        /*
+         * Assume printable unless it is xxfffe or xxffff which are guaranteed
+         * to not be characters (i.e. the code points in the basic multilingual
+         * plane used as byte-order marks).
+         */
+        return ((v & 0xfffe) != 0xfffe);
+}
+
+/**
  * Case insensitive comparison between two strings
  */
 int my_stricmp(const char *s1, const char *s2)
