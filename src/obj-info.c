@@ -1699,7 +1699,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	/* Activations get a special message */
 	if (obj->activation && obj->activation->desc) {
 		textblock_append(tb, "When activated, it ");
-		textblock_append(tb, obj->activation->desc);
+		textblock_append(tb, "%s", obj->activation->desc);
 	} else {
 		int level = obj->artifact ?
 			obj->artifact->level : obj->kind->level;
