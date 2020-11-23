@@ -637,7 +637,7 @@ static void spoil_mon_info(const char *fname)
 		 * there is no conversion from the source edit files. */
 		textblock_append_utf8(tb, race->name);
 		textblock_append(tb, "  (");	/* ---)--- */
-		textblock_append(tb, attr_to_text(race->d_attr));
+		textblock_append(tb, "%s", attr_to_text(race->d_attr));
 		textblock_append(tb, " '%c')\n", race->d_char);
 
 		/* Line 2: number, level, rarity, speed, HP, AC, exp */

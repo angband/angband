@@ -163,7 +163,7 @@ void do_cmd_version(void)
 			  format("You are playing %s.  Type '?' for more info.", buildver),
 			  sizeof(header_buf));
 	textblock_append(tb, "\n");
-	textblock_append(tb, copyright);
+	textblock_append(tb, "%s", copyright);
 	textui_textblock_show(tb, local_area, header_buf);
 	textblock_free(tb);
 }
