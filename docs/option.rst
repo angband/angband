@@ -9,9 +9,6 @@ In the descriptions below, each option is listed as the textual summary
 which is shown on the "options" screen, plus the internal name of the
 option in brackets, followed by a textual description of the option.
 
-Note that the internal name of the option can be used in user pref files to
-force the option to a given setting, see "customize.txt" for more info.
-
 Various concepts are mentioned in the descriptions below, including
 "disturb", (cancel any running, resting, or repeated commands, which are in
 progress), "flush" (forget any keypresses waiting in the keypress queue),
