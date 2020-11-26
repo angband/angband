@@ -31,6 +31,24 @@ char *argv0 = NULL;
 size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n) = NULL;
 
 /**
+ * Hook to convert a wide character (in whatever encoding the platform uses)
+ * back to a multibyte representation using UTF-8.  Expected to behave like
+ * wctomb().
+ */
+int (*text_wctomb_hook)(char *s, wchar_t wchar) = NULL;
+
+/**
+ * Hook to get the maximum number of bytes needed to store a wide character
+ * converted to a multibyte representation using UTF-8.
+ */
+int (*text_wcsz_hook)(void) = NULL;
+
+/**
+ * Hook to test whether a given wide character is printable.
+ */
+int (*text_iswprint_hook)(wint_t wc) = NULL;
+
+/**
  * Count the number of characters in a UTF-8 encoded string
  *
  * Taken from http://canonical.org/~kragen/strlen-utf8.html
@@ -661,6 +679,37 @@ size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
 		return (*text_mbcs_hook)(dest, src, n);
 	else
 		return mbstowcs(dest, src, n);
+}
+
+/**
+ * Convert a wide character to a multibyte representation.
+ * \param s Points to a buffer to hold the converted result.  That buffer must
+ * have at least text_wcsz() bytes.  With the exception of the case where wchar
+ * is 0, the contents written to the buffer will not be null terminated.
+ * \param wchar Is the wide character to convert.
+ * \return The returned value is the number of bytes in the converted character
+ * or -1 if the character could not be recognized and converted.
+ */
+int text_wctomb(char *s, wchar_t wchar)
+{
+	return (text_wctomb_hook) ?
+		(*text_wctomb_hook)(s, wchar) : wctomb(s, wchar);
+}
+
+/**
+ * Get the maximum size to store a wide character converted to multibyte.
+ */
+int text_wcsz(void)
+{
+	return (text_wcsz_hook) ? (*text_wcsz_hook)() : MB_LEN_MAX;
+}
+
+/**
+ * Return whether the given wide character is printable.
+ */
+int text_iswprint(wint_t wc)
+{
+	return (text_iswprint_hook) ? (*text_iswprint)(wc) : iswprint(wc);
 }
 
 /**

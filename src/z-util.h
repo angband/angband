@@ -38,6 +38,9 @@ extern char *argv0;
  * Aux functions
  */
 extern size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
+extern int (*text_wctomb_hook)(char *s, wchar_t wchar);
+extern int (*text_wcsz_hook)(void);
+extern int (*text_iswprint_hook)(wint_t wc);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
@@ -168,6 +171,21 @@ bool is_a_vowel(int ch);
  * Allow override of the multi-byte to wide char conversion
  */
 size_t text_mbstowcs(wchar_t *dest, const char *src, int n);
+
+/**
+ * Convert a wide character to multibyte representation.
+ */
+int text_wctomb(char *s, wchar_t wchar);
+
+/**
+ * Get the maximum size to store a wide character converted to multibyte.
+ */
+int text_wcsz(void);
+
+/**
+ * Return whether the given wide character is printable.
+ */
+int text_iswprint(wint_t wc);
 
 /**
  * Print an error message

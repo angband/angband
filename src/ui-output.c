@@ -293,7 +293,7 @@ void text_out_to_screen(byte a, const char *str)
 		}
 
 		/* Clean up the char */
-		ch = (iswprint(*s) ? *s : L' ');
+		ch = (text_iswprint(*s) ? *s : L' ');
 
 		/* Wrap words as needed */
 		if ((x >= wrap - 1) && (ch != L' ')) {
