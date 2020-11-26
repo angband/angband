@@ -633,9 +633,7 @@ static void spoil_mon_info(const char *fname)
 		else
 			textblock_append(tb, "The ");
 
-		/* As of 3.5, race->name and race->text are stored as UTF-8 strings;
-		 * there is no conversion from the source edit files. */
-		textblock_append_utf8(tb, race->name);
+		textblock_append(tb, "%s", race->name);
 		textblock_append(tb, "  (");	/* ---)--- */
 		textblock_append(tb, attr_to_text(race->d_attr));
 		textblock_append(tb, " '%c')\n", race->d_char);
