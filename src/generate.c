@@ -186,12 +186,12 @@ static enum parser_error parse_profile_min_level(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_profile_cutoff(struct parser *p) {
+static enum parser_error parse_profile_alloc(struct parser *p) {
     struct cave_profile *c = parser_priv(p);
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->cutoff = parser_getint(p, "cutoff");
+	c->alloc = parser_getint(p, "alloc");
 	return PARSE_ERROR_NONE;
 }
 
@@ -204,7 +204,7 @@ static struct parser *init_parse_profile(void) {
 	parser_reg(p, "streamer int den int rng int mag int mc int qua int qc", parse_profile_streamer);
 	parser_reg(p, "room sym name int rating int height int width int level int pit int rarity int cutoff", parse_profile_room);
 	parser_reg(p, "min-level int min", parse_profile_min_level);
-	parser_reg(p, "cutoff int cutoff", parse_profile_cutoff);
+	parser_reg(p, "alloc int alloc", parse_profile_alloc);
 	return p;
 }
 
@@ -782,8 +782,8 @@ bool labyrinth_check(int depth)
 const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
-	int moria_cutoff = find_cave_profile("moria")->cutoff;
-	int labyrinth_cutoff = find_cave_profile("labyrinth")->cutoff;
+	int moria_alloc = find_cave_profile("moria")->alloc;
+	int labyrinth_alloc = find_cave_profile("labyrinth")->alloc;
 
 	/* A bit of a hack, but worth it for now NRM */
 	if (player->noscore & NOSCORE_JUMPING) {
@@ -806,25 +806,39 @@ const struct cave_profile *choose_profile(struct player *p)
 	} else if (is_quest(p->depth) && !OPT(p, birth_levels_persist)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	} else if (labyrinth_check(p->depth) && (labyrinth_cutoff >= -1)) {
+	} else if (labyrinth_check(p->depth) &&
+			(labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
 		profile = find_cave_profile("labyrinth");
 	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
-			   (moria_cutoff >= -1)) {
+			(moria_alloc > 0 || moria_alloc == -1)) {
 		profile = find_cave_profile("moria");
 	} else {
-		int tries = 100;
-		while (tries) {
-			size_t i;
-			int pick = randint0(200);
-			for (i = 0; i < z_info->profile_max; i++) {
-				profile = &cave_profiles[i];
-				if (p->depth < profile->min_level) continue;
-				if (profile->cutoff >= pick) break;
+		int total_alloc = 0;
+		size_t i;
+
+		/*
+		 * Use PowerWyrm's selection algorithm from
+		 * get_random_monster_object() so the selection can be done in
+		 * one pass and without auxiliary storage (at the cost of more
+		 * calls to randint0()).  The mth valid profile out of n valid
+		 * profiles appears with probability, alloc(m) /
+		 * sum(i = 0 to m, alloc(i)) * product(j = m + 1 to n - 1,
+		 * 1 - alloc(j) / sum(k = 0 to j, alloc(k))) which is equal to
+		 * alloc(m) / sum(i = 0 to m, alloc(i)) * product(j = m + 1 to
+		 * n - 1, sum(k = 0 to j - 1, alloc(k)) / sum(l = 0 to j,
+		 * alloc(l))) which, by the canceling of successive numerators
+		 * and denominators is alloc(m) / sum(l = 0 to n - 1, alloc(l)).
+		 */
+		for (i = 0; i < z_info->profile_max; i++) {
+			struct cave_profile *test_profile = &cave_profiles[i];
+			if (test_profile->alloc <= 0 ||
+				 p->depth < test_profile->min_level) continue;
+			total_alloc += test_profile->alloc;
+			if (randint0(total_alloc) < test_profile->alloc) {
+				profile = test_profile;
 			}
-			if (profile && i < z_info->profile_max) break;
-			tries--;
 		}
-		if (!profile || !tries) {
+		if (!profile) {
 			profile = find_cave_profile("classic");
 		}
 	}
