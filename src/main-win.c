@@ -2281,6 +2281,37 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 }
 
 
+int Term_wcsz_win(void)
+{
+	/*
+	 * Any Unicode code point is representable by at most 4 bytes in UTF-8.
+	 */
+	return 4;
+}
+
+
+/**
+ * Convert back to UTF-8 from a wide character.
+ *
+ * This is a necessary counterpart to Term_mbstowcs_win():  since the forward
+ * conversion from UTF-8 to wide characters was overridden, need to override
+ * the reverse conversion so that file output from screen captures and text
+ * blocks properly translates any multibyte characters.
+ */
+int Term_wctomb_win(char *s, wchar_t wchar)
+{
+	/*
+	 * If only want compatibility with Vista and later, could use
+	 * WC_ERR_INVALID_CHARS rather than zero for the second argument;
+	 * that would give an error if converting something not representable
+	 * in UTF-8.
+	 */
+	int n = WideCharToMultiByte(CP_UTF8, 0, &wchar, 1, s, Term_wcsz_win(),
+		NULL, NULL);
+	return (n > 0) ? n : -1;
+}
+
+
 #ifndef AC_SRC_ALPHA
 #define AC_SRC_ALPHA     0x01
 #endif
@@ -2687,6 +2718,8 @@ static void init_windows(void)
 	term_data_link(td);
 	term_screen = &td->t;
 	text_mbcs_hook = Term_mbstowcs_win;
+	text_wctomb_hook = Term_wctomb_win;
+	text_wcsz_hook = Term_wcsz_win;
 
 	/* Activate the main window */
 	SetActiveWindow(td->w);
