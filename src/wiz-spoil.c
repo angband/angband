@@ -176,8 +176,11 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 		strnfmt(wgt, wgt_len, "%3d.%d", obj->weight / 10, obj->weight % 10);
 
 	/* Hack */
-	if (!dam)
+	if (!dam) {
+		object_delete(&known_obj);
+		object_delete(&obj);
 		return;
+	}
 
 	/* Misc info */
 	dam[0] = '\0';
