@@ -4967,6 +4967,64 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 }
 
 /**
+ * Convert a UTF-32 stored in the native byte order to UTF-8.
+ * \param s Points to the buffer where the conversion should be stored.
+ * That buffer must have at least Term_wcsz_cocoa() bytes.
+ * \param wchar Is the UTF-32 value to convert.
+ * \return The returned value is the number of bytes written to s or -1
+ * if the UTF-32 value could not be converted.
+ *
+ * This is a necessary counterpart to Term_mbcs_cocoa():  since we are
+ * overriding the default multibyte to wide character conversion, need to
+ * override the reverse conversion as well.
+ */
+static int Term_wctomb_cocoa(char *s, wchar_t wchar)
+{
+    if (wchar < 0) {
+        /* Refuse to encode something beyond the range encodeable by UTF-16. */
+        return -1;
+    }
+    if (wchar <= 0x7f) {
+        *s = wchar;
+        return 1;
+    }
+    if (wchar <= 0x7ff) {
+        *s++ = 0xc0 + (((unsigned int) wchar & 0x7c0) >> 6);
+        *s++ = 0x80 + ((unsigned int) wchar & 0x3f);
+        return 2;
+    }
+    if (wchar <= 0xffff) {
+        /* Refuse to encode a value reserved for surrogate pairs in UTF-16. */
+        if (wchar >= 0xd800 && wchar <= 0xdfff) {
+            return -1;
+        }
+        *s++ = 0xe0 + (((unsigned int) wchar & 0xf000) >> 12);
+        *s++ = 0x80 + (((unsigned int) wchar & 0xfc0) >> 6);
+        *s++ = 0x80 + ((unsigned int) wchar & 0x3f);
+        return 3;
+    }
+    if (wchar <= 0x10ffff) {
+        *s++ = 0xf0 + (((unsigned int) wchar & 0x1c0000) >> 18);
+        *s++ = 0x80 + (((unsigned int) wchar & 0x3f000) >> 12);
+        *s++ = 0x80 + (((unsigned int) wchar & 0xfc0) >> 6);
+        *s++ = 0x80 + ((unsigned int) wchar & 0x3f);
+        return 4;
+    }
+    /* Refuse to encode something beyond the range encodeable by UTF-16. */
+    return -1;
+}
+
+/**
+ * Return the maximum number of bytes needed for a multibyte encoding of a
+ * wchar.
+ */
+static int Term_wcsz_cocoa(void)
+{
+    /* UTF-8 takes at most 4 bytes to encode a Unicode code point. */
+    return 4;
+}
+
+/**
  * Handle redrawing for a change to the tile set, tile scaling, or main window
  * font.  Returns YES if the redrawing was initiated.  Otherwise returns NO.
  */
@@ -5919,6 +5977,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	/* Prepare the windows */
 	init_windows();
 	text_mbcs_hook = Term_mbcs_cocoa;
+	text_wctomb_hook = Term_wctomb_cocoa;
+	text_wcsz_hook = Term_wcsz_cocoa;
 
 	/* Set up game event handlers */
 	init_display();
