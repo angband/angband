@@ -2312,6 +2312,25 @@ int Term_wctomb_win(char *s, wchar_t wchar)
 }
 
 
+/**
+ * Return whether a wide character is printable.
+ *
+ * This is a necessary counterpart to Term_mbstowcs_win() so that screening
+ * of wide characters in the core's text_out_to_screen() is consistent with what
+ * Term_mbstowcs_win() does.
+ */
+int Term_iswprint_win(wint_t wc)
+{
+	/*
+	 * It's a UTF-16 value, but can cast and test as UTF-32 (if it's the
+	 * leading part of a surrogate pair it'll be treated as unprintable
+	 * which is desirable:  on Windows, ui-term as it is can't handle
+	 * characters that have to be encoded as surrogate pairs in UTF-16).
+	 */
+	return utf32_isprint((u32b) wc);
+}
+
+
 #ifndef AC_SRC_ALPHA
 #define AC_SRC_ALPHA     0x01
 #endif
@@ -2720,6 +2739,7 @@ static void init_windows(void)
 	text_mbcs_hook = Term_mbstowcs_win;
 	text_wctomb_hook = Term_wctomb_win;
 	text_wcsz_hook = Term_wcsz_win;
+	text_iswprint_hook = Term_iswprint_win;
 
 	/* Activate the main window */
 	SetActiveWindow(td->w);
