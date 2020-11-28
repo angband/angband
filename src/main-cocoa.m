@@ -5015,6 +5015,18 @@ static int Term_wctomb_cocoa(char *s, wchar_t wchar)
 }
 
 /**
+ * Return whether a UTF-32 value is printable.
+ *
+ * This is a necessary counterpart to Term_mbcs_cocoa() so that screening
+ * of wide characters in the core's text_out_to_screen() is consistent with
+ * what Term_mbcs_cocoa() does.
+ */
+static int Term_iswprint_cocoa(wint_t wc)
+{
+	return utf32_isprint((u32b) wc);
+}
+
+/**
  * Return the maximum number of bytes needed for a multibyte encoding of a
  * wchar.
  */
@@ -5979,6 +5991,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	text_mbcs_hook = Term_mbcs_cocoa;
 	text_wctomb_hook = Term_wctomb_cocoa;
 	text_wcsz_hook = Term_wcsz_cocoa;
+	text_iswprint_hook = Term_iswprint_cocoa;
 
 	/* Set up game event handlers */
 	init_display();
