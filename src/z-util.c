@@ -709,7 +709,7 @@ int text_wcsz(void)
  */
 int text_iswprint(wint_t wc)
 {
-	return (text_iswprint_hook) ? (*text_iswprint)(wc) : iswprint(wc);
+	return (text_iswprint_hook) ? (*text_iswprint_hook)(wc) : iswprint(wc);
 }
 
 /**
