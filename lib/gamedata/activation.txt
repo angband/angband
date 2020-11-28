@@ -107,7 +107,7 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-desc:heals 35%% of max HP (minimum 300HP), cut damage, and cures stunning, poisoning, blindness, and confusion
+desc:heals 35% of max HP (minimum 300HP), cut damage, and cures stunning, poisoning, blindness, and confusion
 
 name:CURE_FULL2
 aim:0
