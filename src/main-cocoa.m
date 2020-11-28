@@ -2426,13 +2426,21 @@ static int compare_advances(const void *ap, const void *bp)
 {
     CGFloat tileOffsetY = self.fontAscender;
     CGFloat tileOffsetX = 0.0;
-    UniChar unicharString[2] = {(UniChar)wchar, 0};
+    UniChar unicharString[2];
+    int nuni;
+
+    if (CFStringGetSurrogatePairForLongCharacter(wchar, unicharString)) {
+	nuni = 2;
+    } else {
+	unicharString[0] = (UniChar) wchar;
+	nuni = 1;
+    }
 
     /* Get glyph and advance */
-    CGGlyph thisGlyphArray[1] = { 0 };
-    CGSize advances[1] = { { 0, 0 } };
+    CGGlyph thisGlyphArray[2] = { 0, 0 };
+    CGSize advances[2] = { { 0, 0 }, { 0, 0 } };
     CTFontGetGlyphsForCharacters(
-	(CTFontRef)font, unicharString, thisGlyphArray, 1);
+	(CTFontRef)font, unicharString, thisGlyphArray, nuni);
     CGGlyph glyph = thisGlyphArray[0];
     CTFontGetAdvancesForGlyphs(
 	(CTFontRef)font, kCTFontHorizontalOrientation, thisGlyphArray,
@@ -4845,53 +4853,115 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
     return 0;
 }
 
-/*
- * From the Linux mbstowcs(3) man page:
- * If dest is NULL, n is ignored, and the conversion proceeds as above,
- * except that the converted wide characters are not written out to
- * memory, and that no length limit exists.
+/**
+ * Convert UTF-8 to UTF-32 with each UTF-32 stored in the native byte order as
+ * a wchar_t.  Return the total number of code points that would be generated
+ * by converting the UTF-8 input.
+ *
+ * \param dest Points to the buffer in which to store the conversion.  May be
+ * NULL.
+ * \param src Is a null-terminated UTF-8 sequence.
+ * \param n Is the maximum number of code points to store in dest.
+ *
+ * In case of malformed UTF-8, inserts a U+FFFD in the converted output at the
+ * point of the error.
  */
 static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 {
-    int i;
-    int count = 0;
+    size_t nout = (n > 0) ? n : 0;
+    size_t count = 0;
 
-    /*
-     * Unicode code point to UTF-8
-     * 0x0000-0x007f:    0xxxxxxx
-     * 0x0080-0x07ff:    110xxxxx 10xxxxxx
-     * 0x0800-0xffff:    1110xxxx 10xxxxxx 10xxxxxx
-     * 0x10000-0x1fffff: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-     * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
-     * endian-agnostic.
-     */
-    for (i = 0; i < n || dest == NULL; i++) {
-        if ((src[i] & 0x80) == 0) {
-            if (dest != NULL) dest[count] = src[i];
-            if (src[i] == 0) break;
-        } else if ((src[i] & 0xe0) == 0xc0) {
-            if (dest != NULL) dest[count] =
-                            (((unsigned char)src[i] & 0x1f) << 6)|
-                            ((unsigned char)src[i+1] & 0x3f);
-            i++;
-        } else if ((src[i] & 0xf0) == 0xe0) {
-            if (dest != NULL) dest[count] =
-                            (((unsigned char)src[i] & 0x0f) << 12) |
-                            (((unsigned char)src[i+1] & 0x3f) << 6) |
-                            ((unsigned char)src[i+2] & 0x3f);
-            i += 2;
-        } else if ((src[i] & 0xf8) == 0xf0) {
-            if (dest != NULL) dest[count] =
-                            (((unsigned char)src[i] & 0x0f) << 18) |
-                            (((unsigned char)src[i+1] & 0x3f) << 12) |
-                            (((unsigned char)src[i+2] & 0x3f) << 6) |
-                            ((unsigned char)src[i+3] & 0x3f);
-            i += 3;
-        } else {
-            /* Found an invalid multibyte sequence */
-            return (size_t)-1;
-        }
-        count++;
+    while (1) {
+	/*
+	 * Default to U+FFFD to indicate an erroneous UTF-8 sequence that
+	 * could not be decoded.  Follow "best practice" recommended by the
+	 * Unicode 6 standard:  an erroneous sequence ends as soon as a
+	 * disallowed byte is encountered.
+         */
+	unsigned int decoded = 0xfffd;
+
+	if (((unsigned int) *src & 0x80) == 0) {
+            /* Encoded as single byte:  U+0000 to U+0007F -> 0xxxxxxx. */
+	    if (*src == 0) {
+		if (dest && count < nout) {
+                    dest[count] = 0;
+		}
+		break;
+	    }
+	    decoded = *src;
+	    ++src;
+	} else if (((unsigned int) *src & 0xe0) == 0xc0) {
+	    /* Encoded as two bytes:  U+0080 to U+07FF -> 110xxxxx 10xxxxxx. */
+	    unsigned int part = ((unsigned int) *src & 0x1f) << 6;
+
+	    ++src;
+	    /*
+	     * Check that the first two bits of the continuation byte are
+	     * valid and the encoding is not overlong.
+	     */
+	    if (((unsigned int) *src & 0xc0) == 0x80 && part > 0x40) {
+		decoded = part + ((unsigned int) *src & 0x3f);
+		++src;
+	    }
+	} else if (((unsigned int) *src & 0xf0) == 0xe0) {
+	    /*
+	     * Encoded as three bytes:  U+0800 to U+FFFF -> 1110xxxx 10xxxxxx
+	     * 10xxxxxx.
+	     */
+	    unsigned int part = ((unsigned int) *src & 0xf) << 12;
+
+	    ++src;
+	    if (((unsigned int) *src & 0xc0) == 0x80) {
+		part += ((unsigned int) *src & 0x3f) << 6;
+		++src;
+		/*
+		 * The second part of the test rejects overlong encodings.  The
+		 * third part rejects encodings of U+D800 to U+DFFF, reserved
+		 * for surrogate pairs.
+		 */
+		if (((unsigned int) *src & 0xc0) == 0x80 && part >= 0x800 &&
+			(part & 0xf800) != 0xd800) {
+		    decoded = part + ((unsigned int) *src & 0x3f);
+		    ++src;
+		}
+	    }
+	} else if (((unsigned int) *src & 0xf8) == 0xf0) {
+	    /*
+	     * Encoded as four bytes:  U+10000 to U+1FFFFF -> 11110xxx 10xxxxxx
+	     * 10xxxxxx 10xxxxxx.
+	     */
+	    unsigned int part = ((unsigned int) *src & 0x7) << 18;
+
+	    ++src;
+	    if (((unsigned int) *src & 0xc0) == 0x80) {
+		part += ((unsigned int) *src & 0x3f) << 12;
+		++src;
+		/*
+		 * The second part of the test rejects overlong encodings.
+		 * The third part rejects code points beyond U+10FFFF which
+		 * can't be encoded in UTF-16.
+		 */
+		if (((unsigned int) *src & 0xc0) == 0x80 && part >= 0x10000 &&
+			(part & 0xff0000) <= 0x100000) {
+		    part += ((unsigned int) *src & 0x3f) << 6;
+		    ++src;
+		    if (((unsigned int) *src & 0xc0) == 0x80) {
+			decoded = part + ((unsigned int) *src & 0x3f);
+			++src;
+		    }
+		}
+	    }
+	} else {
+	    /*
+	     * Either an impossible byte or one that signals the start of a
+	     * five byte or longer encoding.
+	     */
+	    ++src;
+	}
+	if (dest && count < nout) {
+	    dest[count] = decoded;
+	}
+	++count;
     }
     return count;
 }
