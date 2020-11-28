@@ -381,14 +381,32 @@ char *ui_entry_renderer_get_label_colors(int ind)
 /*
  * If ind is valid, returns a dynamically allocated string with the current
  * setting for the palette of symbols.  That string should be released
- * with string_free().  Otherwise, returns NULL.
+ * with mem_free().  Otherwise, returns NULL.
  */
 char *ui_entry_renderer_get_symbols(int ind)
 {
+	char *result, *p;
+	int isym;
+
 	if (ind < 1 || ind > renderer_count) {
 		return NULL;
 	}
-	return string_make(format("%ls", renderers[ind - 1].symbols));
+
+	result = mem_alloc(renderers[ind - 1].nsym * text_wcsz() + 1);
+	p = result;
+	for (isym = 0; isym < renderers[ind - 1].nsym; ++isym) {
+		int n = text_wctomb(p, renderers[ind - 1].symbols[isym]);
+
+		if (n > 0) {
+			p += n;
+		} else {
+			*p++ = ' ';
+		}
+	}
+	/* Terminate the string. */
+	*p = 0;
+
+	return result;
 }
 
 
