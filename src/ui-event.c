@@ -90,6 +90,19 @@ const char *keycode_find_desc(keycode_t kc)
 
 
 /**
+ * Given a keycode, return whether it corresponds to a printable character.
+ */
+bool keycode_isprint(keycode_t kc)
+{
+	/*
+	 * Exclude ESCAPE (not part of the Unicode standard).  Otherwise,
+	 * treat the keycode as a Unicode code point.
+	 */
+	return kc != ESCAPE && utf32_isprint(kc);
+}
+
+
+/**
  * Convert a hexidecimal-digit into a decimal
  */
 static int dehex(char c)

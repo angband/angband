@@ -5214,10 +5214,26 @@ static BOOL send_event(NSEvent *event)
                 case NSBreakFunctionKey: ch = KC_BREAK; break;
                     
                 default:
-                    if (c <= 0x7F)
+                    if (c <= 0x7F) {
                         ch = (char)c;
-                    else
+                    } else if (c > 0x9f) {
+                        /*
+                         * It's beyond the range of the C1 control
+                         * characters.  Pass it on.
+                         */
+                        if (CFStringIsSurrogateHighCharacter(c)) {
+                            ch = CFStringGetLongCharacterForSurrogatePair(c,
+                                [[event characters] characterAtIndex:1]);
+                        } else {
+                            ch = c;
+                        }
+                    } else {
+                        /*
+                         * Exclude the control characters not caught by the
+                         * special cases.
+                         */
                         ch = '\0';
+                    }
                     break;
             }
             
