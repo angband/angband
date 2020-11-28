@@ -604,10 +604,6 @@ Redraw Screen ('^R')
   such as after changing the visual attr/char mappings, or enabling
   "graphics" mode.
 
-Load screen dump (left-paren)
-  This command loads a "snap-shot" of the current screen from the file
-  'dump.txt', and displays it on the screen.
-
 Save screen dump (|``)``|)
   This command dumps a "snap-shot" of the current screen to a file,
   including encoded color information. The command has two variants:

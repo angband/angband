@@ -555,6 +555,8 @@ void clear_from(int row)
 bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 						 struct keypress keypress, bool firsttime)
 {
+	size_t ulen = utf8_strlen(buf);
+
 	switch (keypress.code)
 	{
 		case ESCAPE:
@@ -565,51 +567,71 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 		
 		case KC_ENTER:
 		{
-			*curs = *len;
+			*curs = ulen;
 			return true;
 		}
 		
 		case ARROW_LEFT:
 		{
-			if (firsttime) *curs = 0;
-			if (*curs > 0) (*curs)--;
+			if (firsttime) {
+				*curs = 0;
+			} else if (*curs > 0) {
+				(*curs)--;
+			}
 			break;
 		}
 		
 		case ARROW_RIGHT:
 		{
-			if (firsttime) *curs = *len - 1;
-			if (*curs < *len) (*curs)++;
+			if (firsttime) {
+				*curs = ulen;
+			} else if (*curs < ulen) {
+				(*curs)++;
+			}
 			break;
 		}
 		
 		case KC_BACKSPACE:
 		case KC_DELETE:
 		{
+			char *ocurs, *oshift;
+
 			/* If this is the first time round, backspace means "delete all" */
 			if (firsttime) {
 				buf[0] = '\0';
 				*curs = 0;
 				*len = 0;
-
 				break;
 			}
 
 			/* Refuse to backspace into oblivion */
 			if ((keypress.code == KC_BACKSPACE && *curs == 0) ||
-				(keypress.code == KC_DELETE && *curs >= *len))
+				(keypress.code == KC_DELETE && *curs >= ulen))
 				break;
 
-			/* Move the string from k to nul along to the left by 1 */
-			if (keypress.code == KC_BACKSPACE)
-				memmove(&buf[*curs - 1], &buf[*curs], *len - *curs);
-			else
-				memmove(&buf[*curs], &buf[*curs+1], *len - *curs -1);
-
-			/* Decrement */
-			if(keypress.code == KC_BACKSPACE)
+			/*
+			 * Move the string from k to nul along to the left
+			 * by 1.  First, have to get offset corresponding to
+			 * the cursor position.
+			 */
+			ocurs = utf8_fskip(buf, *curs, NULL);
+			assert(ocurs);
+			if (keypress.code == KC_BACKSPACE) {
+				/* Get offset of the previous character. */
+				oshift = utf8_rskip(ocurs, 1, buf);
+				assert(oshift);
+				memmove(oshift, ocurs, *len - (ocurs - buf));
+				/* Decrement. */
 				(*curs)--;
-			(*len)--;
+				*len -= ocurs - oshift;
+			} else {
+				/* Get offset of the next character. */
+				oshift = utf8_fskip(buf + *curs, 1, NULL);
+				assert(oshift);
+				memmove(ocurs, oshift, *len - (oshift - buf));
+				/* Decrement */
+				*len -= oshift - ocurs;
+			}
 
 			/* Terminate */
 			buf[*len] = '\0';
@@ -619,9 +641,17 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 		
 		default:
 		{
-			bool atnull = (buf[*curs] == 0);
+			bool atnull = (*curs == ulen);
+			char encoded[5];
+			size_t n_enc = 0;
+			char *ocurs;
 
-			if (!isprint(keypress.code)) {
+			if (keycode_isprint(keypress.code)) {
+				n_enc = utf32_to_utf8(encoded,
+					N_ELEMENTS(encoded), &keypress.code,
+					1, NULL);
+			}
+			if (n_enc == 0) {
 				bell("Illegal edit key!");
 				break;
 			}
@@ -634,20 +664,29 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 				atnull = 1;
 			}
 
-			if (atnull) {
-				/* Make sure we have enough room for a new character */
-				if ((*curs + 1) >= buflen) break;
-			} else {
-				/* Make sure we have enough room to add a new character */
-				if ((*len + 1) >= buflen) break;
-
-				/* Move the rest of the buffer along to make room */
-				memmove(&buf[*curs+1], &buf[*curs], *len - *curs);
+			/* Make sure we have enough room for the new character */
+			if (*len + n_enc >= buflen) {
+				break;
 			}
 
-			/* Insert the character */
-			buf[(*curs)++] = (char)keypress.code;
-			(*len)++;
+			/* Insert the encoded character. */
+			if (atnull) {
+				ocurs = buf + *len;
+			} else {
+				ocurs = utf8_fskip(buf, *curs, NULL);
+				assert(ocurs);
+				/*
+				 * Move the rest of the buffer along to make
+				 * room.
+				 */
+				memmove(ocurs + n_enc, ocurs,
+					*len - (ocurs - buf));
+			}
+			memcpy(ocurs, encoded, n_enc);
+
+			/* Update position and length. */
+			(*curs)++;
+			*len += n_enc;
 
 			/* Terminate */
 			buf[*len] = '\0';

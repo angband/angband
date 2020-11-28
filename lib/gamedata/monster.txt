@@ -4413,7 +4413,7 @@ spells:BLIND | WOUND | CONF | HEAL | MIND_BLAST
 desc:The friend and companion of the dwarven king Thrór, he went mad with grief
 desc: after Thrór's death at the hands of Azog the Orc.  With torn beard and
 desc: ragged clothes, he seems to have fixed on you as a convenient target to
-desc: vent  his anger.
+desc: vent his anger.
 
 name:2-headed hydra
 base:hydra

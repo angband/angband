@@ -468,19 +468,19 @@ void window_make(int origin_x, int origin_y, int end_x, int end_y)
 
 	region_erase(&to_clear);
 
-	Term_putch(origin_x, origin_y, COLOUR_WHITE, '+');
-	Term_putch(end_x, origin_y, COLOUR_WHITE, '+');
-	Term_putch(origin_x, end_y, COLOUR_WHITE, '+');
-	Term_putch(end_x, end_y, COLOUR_WHITE, '+');
+	Term_putch(origin_x, origin_y, COLOUR_WHITE, L'+');
+	Term_putch(end_x, origin_y, COLOUR_WHITE, L'+');
+	Term_putch(origin_x, end_y, COLOUR_WHITE, L'+');
+	Term_putch(end_x, end_y, COLOUR_WHITE, L'+');
 
 	for (n = 1; n < (end_x - origin_x); n++) {
-		Term_putch(origin_x + n, origin_y, COLOUR_WHITE, '-');
-		Term_putch(origin_x + n, end_y, COLOUR_WHITE, '-');
+		Term_putch(origin_x + n, origin_y, COLOUR_WHITE, L'-');
+		Term_putch(origin_x + n, end_y, COLOUR_WHITE, L'-');
 	}
 
 	for (n = 1; n < (end_y - origin_y); n++) {
-		Term_putch(origin_x, origin_y + n, COLOUR_WHITE, '|');
-		Term_putch(end_x, origin_y + n, COLOUR_WHITE, '|');
+		Term_putch(origin_x, origin_y + n, COLOUR_WHITE, L'|');
+		Term_putch(end_x, origin_y + n, COLOUR_WHITE, L'|');
 	}
 }
 

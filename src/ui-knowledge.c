@@ -861,10 +861,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			/* Print dividers: horizontal and vertical */
 			for (i = 0; i < 79; i++)
-				Term_putch(i, 5, COLOUR_WHITE, '=');
+				Term_putch(i, 5, COLOUR_WHITE, L'=');
 
 			for (i = 0; i < browser_rows; i++)
-				Term_putch(g_name_len + 1, 6 + i, COLOUR_WHITE, '|');
+				Term_putch(g_name_len + 1, 6 + i, COLOUR_WHITE, L'|');
 
 
 			/* Reset redraw flag */
@@ -2113,9 +2113,9 @@ static void rune_lore(int oid)
 	char *title = string_make(rune_name(oid));
 
 	my_strcap(title);
-	textblock_append_c(tb, COLOUR_L_BLUE, title);
+	textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 	textblock_append(tb, "\n");
-	textblock_append(tb, rune_desc(oid));
+	textblock_append(tb, "%s", rune_desc(oid));
 	textblock_append(tb, "\n");
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
@@ -2302,9 +2302,9 @@ static void feat_lore(int oid)
 
 	if (feat->desc) {
 		my_strcap(title);
-		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 		textblock_append(tb, "\n");
-		textblock_append(tb, feat->desc);
+		textblock_append(tb, "%s", feat->desc);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
@@ -2487,9 +2487,9 @@ static void trap_lore(int oid)
 
 	if (trap->text) {
 		my_strcap(title);
-		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 		textblock_append(tb, "\n");
-		textblock_append(tb, trap->text);
+		textblock_append(tb, "%s", trap->text);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
@@ -3100,7 +3100,7 @@ static void do_cmd_knowledge_shapechange(const char *name, int row)
 			prt("Knowledge - shapes", 2, 0);
 			prt("Name", 4, 0);
 			for (i = 0; i < MIN(80, wnew); i++) {
-				Term_putch(i, 5, COLOUR_WHITE, '=');
+				Term_putch(i, 5, COLOUR_WHITE, L'=');
 			}
 			prt("<dir>, 'r' to recall, ESC", h - 2, 0);
 			redraw = false;
