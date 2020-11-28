@@ -926,20 +926,12 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
  *
  * \param tb is the textblock we are adding to.
  * \param race is the monster race we are describing.
- * \param append_utf8 indicates if we should append the flavor text as UTF-8
- *        (which is preferred for spoiler files).
  */
-void lore_append_flavor(textblock *tb, const struct monster_race *race,
-						bool append_utf8)
+void lore_append_flavor(textblock *tb, const struct monster_race *race)
 {
 	assert(tb && race);
 
-	if (append_utf8)
-		textblock_append_utf8(tb, race->text);
-	else
-		textblock_append(tb, "%s", race->text);
-
-	textblock_append(tb, "\n");
+	textblock_append(tb, "%s\n", race->text);
 }
 
 /**

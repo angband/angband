@@ -134,35 +134,6 @@ void textblock_append_pict(textblock *tb, byte attr, int c)
 }
 
 /**
- * Append a UTF-8 string to the textblock.
- *
- * This is needed in order for proper file writing. Normally, textblocks convert
- * to the system's encoding when a string is appended. However, there are still
- * some strings in the game that are imported from external files as UTF-8.
- * Instead of requiring each port to provide another converter back to UTF-8,
- * we'll just use the original strings as is.
- *
- * \param tb is the textblock we are appending to.
- * \param utf8_string is the C string that is encoded as UTF-8.
- */
-void textblock_append_utf8(textblock *tb, const char *utf8_string)
-{
-	size_t i;
-	size_t new_length = strlen(utf8_string);
-
-	textblock_resize_if_needed(tb, new_length);
-
-	/* Append each UTF-8 char one at a time, so we don't trigger any
-	 * conversions (which would require multiple bytes). */
-	for (i = 0; i < new_length; i++) {
-		tb->text[tb->strlen + i] = (wchar_t)utf8_string[i];
-	}
-
-	memset(tb->attrs + tb->strlen, COLOUR_WHITE, new_length);
-	tb->strlen += new_length;
-}
-
-/**
  * Append one textblock to another.
  *
  * \param tb is the textblock we are appending to.
@@ -341,23 +312,35 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 	size_t *line_starts = NULL;
 	size_t *line_lengths = NULL;
 
-	size_t n_lines, i;
+	size_t n_lines, i, j;
+	char *mbbuf;
 
 	int width = wrap_at - indent;
 	assert(width > 0);
 
 	n_lines = textblock_calculate_lines(tb, &line_starts, &line_lengths, width);
+	mbbuf = mem_alloc(text_wcsz() + 1);
 
 	for (i = 0; i < n_lines; i++) {
-		/* For some reason, the %*c part of the format string was still
-		 * indenting, even when indent was zero */
-		if (indent == 0)
-			file_putf(f, "%.*ls\n", line_lengths[i], tb->text + line_starts[i]);
-		else
-			file_putf(f, "%*c%.*ls\n", indent, ' ', line_lengths[i],
-					  tb->text + line_starts[i]);
+		if (indent > 0) {
+			file_putf(f, "%*c", indent, ' ');
+		}
+		for (j = 0; j < line_lengths[i]; ++j) {
+			int nc = text_wctomb(mbbuf,
+				tb->text[line_starts[i] + j]);
+
+			if (nc > 0) {
+				mbbuf[nc] = 0;
+			} else {
+				mbbuf[0] = ' ';
+				mbbuf[1] = 0;
+			}
+			file_putf(f, "%s", mbbuf);
+		}
+		file_putf(f, "\n");
 	}
 
+	mem_free(mbbuf);
 	mem_free(line_starts);
 	mem_free(line_lengths);
 }
