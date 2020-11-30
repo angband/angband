@@ -154,6 +154,9 @@ Nick hack ``_``
 Push objects ``>``
   Pushes objects off the targeted grid as a way of excercising push_object().
 
+Write a map of the current level ``M``
+  Writes out a map of the current level as an HTML file.
+
 Miscellaneous
 =============
 
