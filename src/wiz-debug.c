@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
+#include "generate.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -264,6 +265,30 @@ static void do_cmd_keylog(void) {
 	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
 	anykey();
 	screen_load();
+}
+
+
+/**
+ * Dump a map of the current level as an HTML file.
+ */
+static void do_cmd_wiz_dump_level_map(void)
+{
+	char path[1024] = "";
+	char title[80];
+	ang_file *fo;
+
+	strnfmt(title, sizeof(title), "Map of level %d", player->depth);
+	if (!get_file("level.html", path, sizeof(path)) ||
+			!get_string("Title for map: ", title, sizeof(title))) {
+		return;
+	}
+	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (fo) {
+		dump_level(fo, title, cave, NULL);
+		if (file_close(fo)) {
+			msg(format("Level dumped to %s.", path));
+		}
+	}
 }
 
 
@@ -2228,6 +2253,11 @@ void get_debug_command(void)
 			effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, 22, 40, NULL);
 			break;
 		}
+
+		/* Dump a map of the current level as HTML. */
+		case 'M':
+			do_cmd_wiz_dump_level_map();
+			break;
 
 		/* Summon Named Monster */
 		case 'n':
