@@ -2040,9 +2040,9 @@ void do_cmd_wiz_effect(void)
 
 	/* Get the parameters */
 	p2 = get_quantity("Enter second parameter (radius): ", 100);
-	p3 = get_quantity("Enter third parameter (other):", 100);
-	y = get_quantity("Enter y parameter:", 100);
-	x = get_quantity("Enter x parameter:", 100);
+	p3 = get_quantity("Enter third parameter (other): ", 100);
+	y = get_quantity("Enter y parameter: ", 100);
+	x = get_quantity("Enter x parameter: ", 100);
 
 	/* Reload the screen */
 	screen_load();
