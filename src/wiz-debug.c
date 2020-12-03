@@ -2008,11 +2008,8 @@ void do_cmd_wiz_effect(void)
 	/* Avoid the prompt getting in the way */
 	screen_save();
 
-	/* Prompt */
-	prt("Do which effect? ", 0, 0);
-
 	/* Get the name */
-	if (askfor_aux(name, sizeof(name), NULL)) {
+	if (get_string("Do which effect: ", name, sizeof(name))) {
 		/* See if an effect index was entered */
 		index = get_idx_from_name(name);
 
@@ -2027,27 +2024,25 @@ void do_cmd_wiz_effect(void)
 		}
 	}
 
-	/* Prompt */
-	prt("Enter damage dice (eg 1+2d6M2): ", 0, 0);
-
 	/* Get the dice */
-	if (!askfor_aux(dice, sizeof(dice), NULL))
+	if (! get_string("Enter damage dice (eg 1+2d6M2): ", dice,
+			sizeof(dice))) {
 		my_strcpy(dice, "0", sizeof(dice));
+	}
 
-	/* Get the parameters */
-	prt("Enter name or number for effect subtype: ", 0, 0);
-
-	/* Get the name */
-	if (askfor_aux(name, sizeof(name), NULL)) {
+	/* Get the effect subtype */
+	if (get_string("Enter name or number for effect subtype: ", name,
+			sizeof(name))) {
 		/* See if an effect parameter was entered */
 		p1 = effect_subtype(index, name);
 		if (p1 == -1) p1 = 0;
 	}
 
+	/* Get the parameters */
 	p2 = get_quantity("Enter second parameter (radius): ", 100);
-	p3 = get_quantity("Enter third parameter (other):", 100);
-	y = get_quantity("Enter y parameter:", 100);
-	x = get_quantity("Enter x parameter:", 100);
+	p3 = get_quantity("Enter third parameter (other): ", 100);
+	y = get_quantity("Enter y parameter: ", 100);
+	x = get_quantity("Enter x parameter: ", 100);
 
 	/* Reload the screen */
 	screen_load();
