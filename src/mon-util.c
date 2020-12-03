@@ -1085,6 +1085,7 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* When the player kills a Unique, it stays dead */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		char unique_name[80];
+		assert(mon->original_race == NULL);
 		mon->race->max_num = 0;
 
 		/*

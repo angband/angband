@@ -315,8 +315,8 @@ void delete_monster_idx(int m_idx)
 	grid = mon->grid;
 
 	/* Hack -- Reduce the racial counter */
-     if (mon->original_race) mon->original_race->cur_num--;
-     else mon->race->cur_num--;
+	if (mon->original_race) mon->original_race->cur_num--;
+	else mon->race->cur_num--;
 
 	/* Count the number of "reproducers" */
 	if (rf_has(mon->race->flags, RF_MULTIPLY)) {
@@ -583,7 +583,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		}
 
 		/* Reduce the racial counter */
-           if (mon->original_race) mon->original_race->cur_num--;
+		if (mon->original_race) mon->original_race->cur_num--;
 		else mon->race->cur_num--;
 
 		/* Monster is gone from square */
@@ -996,8 +996,8 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) c->num_repro++;
 
 	/* Count racial occurrences */
-     if (new_mon->original_race) new_mon->original_race->cur_num++; 
-     else new_mon->race->cur_num++;
+	if (new_mon->original_race) new_mon->original_race->cur_num++;
+	else new_mon->race->cur_num++;
 
 	/* Create the monster's drop, if any */
 	if (origin)
