@@ -1650,7 +1650,7 @@ bool monster_change_shape(struct monster *mon)
 
 	/* Set the race */
 	if (race) {
-		mon->original_race = mon->race;
+		if (!mon->original_race) mon->original_race = mon->race;
 		mon->race = race;
 		mon->mspeed += mon->race->speed - mon->original_race->speed;
 	}
