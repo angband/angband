@@ -5216,11 +5216,11 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		return false;
 	}
 
-	while ((blows > 0) && mon) {
-		/* Lame test for hitting the monster */
+	while ((blows-- > 0) && mon) {
+		/* Test for damaging the monster */
 		int hp = mon->hp;
 		if (py_attack_real(player, target, &fear)) return true;
-		mon = square_monster(cave, target);
+		/*mon = square_monster(cave, target); */
 		if (mon && (mon->hp == hp)) continue;
 
 		/* Apply side-effects */
@@ -5228,9 +5228,6 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 					PROJECT_KILL, 0, 0, context->obj)) {
 			context->ident = true;
 		}
-
-		/* Prepare for next round */
-		blows--;
 	}
 	return true;
 }
