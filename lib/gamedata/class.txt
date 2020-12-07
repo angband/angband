@@ -1547,7 +1547,7 @@ effect:CURE:STUN
 effect:CURE:BLACKBREATH
 desc:Cures all cuts, poison, stunning and black breath.
 
- 
+
 ############### BLACKGUARD ###############
 name:Blackguard
 stats:2:0:-3:0:2
