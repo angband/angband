@@ -67,7 +67,7 @@ H:A bigger weapon isn't always better - check your damage using 'I'nspect
 H:Can't keep track of all the information on the screen? Add extra windows.
 H:You can use subwindows to display messages, monsters, items and more.
 H:If you teleport away a tough monster, beware of teleporting afterwards!
-H:The protection granted by resistances to higher elements varies. Be careful!
+H:Resistance to higher elements protects you from 33% to 50% of the damage.
 H:Hold life will not block all experience drain, just most of it.
 H:Fire damage can destroy scrolls, books, and staves in your inventory.
 H:Cold damage can destroy potions in your inventory.
