@@ -5201,10 +5201,6 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
-	if (!target_okay()) {
-		return false;
-	}
-
 	/* Check target validity */
 	taim = distance(grid, target);
 	mon = square_monster(cave, target);
