@@ -492,11 +492,8 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
  */
 static int quiver_absorb_num(const struct object *obj)
 {
-	/* Must be ammo or marked for throwing */
-	if (tval_is_ammo(obj) ||
-			(of_has(obj->flags, OF_THROWING) &&
-			(check_for_inscrip(obj, "@v") ||
-			check_for_inscrip(obj, "@f")))) {
+	/* Must be ammo or good for throwing */
+	if (tval_is_ammo(obj) || of_has(obj->flags, OF_THROWING)) {
 		int i, quiver_count = 0, space_free = 0;
 
 		/* Count the current space this object could go into */
