@@ -51,7 +51,7 @@ jobs:
       image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake --noconfirm
+        run: pacman -Sy gcc make cmake sdl_image sdl_ttf --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
