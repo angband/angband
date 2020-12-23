@@ -13,7 +13,7 @@ jobs:
       image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy base-devel cmake libx11 --noconfirm
+        run: pacman -Sy gcc make cmake libx11 --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
