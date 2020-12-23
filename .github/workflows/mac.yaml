@@ -1,0 +1,19 @@
+name: Mac
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Cocoa
+    runs-on: macos-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd src
+          make -f Makefile.osx
