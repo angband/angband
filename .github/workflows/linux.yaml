@@ -24,3 +24,22 @@ jobs:
           cd build
           cmake ..
           make
+
+  build:
+    name: NCurses
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Install Build Dependencies
+        run: pacman -Sy gcc make cmake ncurses --noconfirm
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DSUPPORT_NCURSES_FRONTEND=ON ..
+          make
