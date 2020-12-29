@@ -6,6 +6,25 @@ on:
   pull_request:
 
 jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Install Build Dependencies
+        run: pacman -Sy gcc automake autoconf make libx11 --noconfirm
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --with-no-install
+          make
+          make tests
+
   x11:
     name: X11
     runs-on: ubuntu-latest
