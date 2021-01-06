@@ -43,16 +43,27 @@ static struct {
 /**
  * Get the possible dice strings.
  */
-static void format_dice_string(const random_value *v, size_t len,
-	char* dice_string)
+static void format_dice_string(const random_value *v, int multiplier,
+	size_t len, char* dice_string)
 {
 	if (v->dice && v->base) {
-		strnfmt(dice_string, len, "%d+%dd%d", v->base, v->dice,
-			v->sides);
+		if (multiplier == 1) {
+			strnfmt(dice_string, len, "%d+%dd%d", v->base, v->dice,
+				v->sides);
+		} else {
+			strnfmt(dice_string, len, "%d+%d*(%dd%d)",
+				multiplier * v->base, multiplier, v->dice,
+				v->sides);
+		}
 	} else if (v->dice) {
-		strnfmt(dice_string, len, "%dd%d", v->dice, v->sides);
+		if (multiplier == 1) {
+			strnfmt(dice_string, len, "%dd%d", v->dice, v->sides);
+		} else {
+			strnfmt(dice_string, len, "%d*(%dd%d)", multiplier,
+				v->dice, v->sides);
+		}
 	} else {
-		strnfmt(dice_string, len, "%d", v->base);
+		strnfmt(dice_string, len, "%d", multiplier * v->base);
 	}
 }
 
@@ -189,7 +200,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 		}
 
 		/* Then use that in the effect description. */
-		format_dice_string(&first_rv, sizeof(dice_string), dice_string);
+		format_dice_string(&first_rv, 1, sizeof(dice_string),
+			dice_string);
 		strnfmt(desc, sizeof(desc), effect_desc(efirst), breaths,
 			efirst->other, dice_string);
 		if (dev_skill_boost != 0 && efirst->index != EF_BREATH) {
@@ -318,7 +330,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			continue;
 		}
 
-		format_dice_string(&value, sizeof(dice_string), dice_string);
+		format_dice_string(&value, 1, sizeof(dice_string), dice_string);
 
 		/* Check all the possible types of description format. */
 		switch (base_descs[e->index].efinfo_flag) {
@@ -353,10 +365,14 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 				const char *fed = e->subtype ?
 					(e->subtype == 1 ? "uses enough food value" : 
 					 "leaves you nourished") : "feeds you";
+				char turn_dice_string[20];
+
+				format_dice_string(&value, z_info->food_value,
+					sizeof(turn_dice_string),
+					turn_dice_string);
 
 				strnfmt(desc, sizeof(desc), edesc, fed,
-					value.base * z_info->food_value,
-					value.base);
+					turn_dice_string, dice_string);
 			}
 			break;
 
