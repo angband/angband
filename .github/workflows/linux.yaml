@@ -21,9 +21,10 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install
+          ./configure --with-no-install --enable-test
           make
           make tests
+          ./run-tests
 
   x11:
     name: X11
