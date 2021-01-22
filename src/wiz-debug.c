@@ -495,15 +495,15 @@ static void wiz_display_item(const struct object *obj, bool all)
 			   obj->ego ? obj->ego->eidx : 0,
 			   (long)object_value(obj, 1)), 6, j);
 
-	prt("+------------FLAGS-------------+", 16, j);
-	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
-	prt("     fbcssf  s  ibniiatadlhp....", 18, j);
-	prt("siwdcelotdfrei  plommfegrccc....", 19, j);
-	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
-	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
-	prt_binary(f, 0, 22, j, L'*', 28);
+	prt("+------------FLAGS------------------+", 16, j);
+	prt("SUST.PROT<-OTHER----><BAD->C.MISC....", 17, j);
+	prt("     fbcssf  s  ibbtniiatadsflldddett", 18, j);
+	prt("siwdcelotdfrei  pluaommfegrcrggiiixrh", 19, j);
+	prt("tnieoannuiaesnfhcerffhsrlgxuattgggppr", 20, j);
+	prt("rtsxnrdfnglgpvaltsnuuppderprg23123liw", 21, j);
+	prt_binary(f, 0, 22, j, L'*',37);
 	if (obj->known) {
-		prt_binary(obj->known->flags, 0, 23, j, L'+', 28);
+		prt_binary(obj->known->flags, 0, 23, j, L'+', 37);
 	}
 }
 
