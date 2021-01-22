@@ -1,0 +1,26 @@
+name: Windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Stock 
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Install Build Dependencies
+        run: pacman -Sy mingw-w64-gcc automake autoconf make --noconfirm
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          make
+
