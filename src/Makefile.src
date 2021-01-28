@@ -71,7 +71,7 @@ SNDSDLFILES = snd-sdl.o
 TESTMAINFILES = main-test.o
 
 WINMAINFILES = \
-        win/angband.res \
+        win/$(PROGNAME).res \
         main-win.o \
         win/readdib.o \
         win/readpng.o \
