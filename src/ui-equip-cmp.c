@@ -446,7 +446,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 	static const char *trans_msg_onlystore =
 		"Only showing goods from stores; press c to change";
 	static const char *trans_msg_withstore =
-		"Showing possesions and goods from stores; press c to change";
+		"Showing possessions and goods from stores; press c to change";
 	static const char *trans_msg_carried =
 		"Only showing carried items; press c to change";
 	static const char *trans_msg_save_ok = "Successfully saved to file";
