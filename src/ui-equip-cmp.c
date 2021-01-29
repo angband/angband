@@ -2385,7 +2385,9 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 
 	/*
 	 * Display the column labels and the combined values for @ and the
-	 * the current equipment.
+	 * the current equipment.  The display of the labels bypasses what's
+	 * done by ui_entry_renderer_apply() so the color of the label can
+	 * alternate between columns.
 	 */
 	rdetails.label_position.x = s->icol_name + s->nshortnm + 1;
 	rdetails.label_position.y = s->irow_combined_equip - s->nproplab;
@@ -2393,7 +2395,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	rdetails.value_position.y = s->irow_combined_equip;
 	rdetails.position_step = loc(1, 0);
 	rdetails.combined_position = loc(0, 0);
-	rdetails.vertical_label = true;
+	rdetails.vertical_label = false;
 	rdetails.alternate_color_first = false;
 	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, L'@');
@@ -2405,17 +2407,32 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 		}
 		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j) {
 			int joff = j + s->propcats[i].ivw[s->iview];
+			/*
+			 * As a hack, label colors are hardwired; it would be
+			 * better if they configurable so they'd be consistent
+			 * with the scheme for the symbol colors.
+			 */
+			int label_color = (j % 2 == 0) ?
+				COLOUR_WHITE : COLOUR_L_WHITE;
+			int k;
 
+			for (k = 0; k < s->nproplab; ++k) {
+				Term_putch(rdetails.label_position.x,
+					rdetails.label_position.y + k,
+					label_color,
+					s->propcats[i].labels[joff][k]);
+			}
 			rdetails.known_rune = is_ui_entry_for_known_rune(
 				s->propcats[i].entries[joff], p);
 			ui_entry_renderer_apply(get_ui_entry_renderer_index(
-				s->propcats[i].entries[joff]),
-				s->propcats[i].labels[joff], s->nproplab,
+				s->propcats[i].entries[joff]), NULL, 0,
 				s->p_and_eq_vals + joff + s->propcats[i].off,
 				s->p_and_eq_auxvals + joff +
 				s->propcats[i].off, 1, &rdetails);
 			++rdetails.label_position.x;
 			++rdetails.value_position.x;
+			rdetails.alternate_color_first =
+				!rdetails.alternate_color_first;
 		}
 	}
 
@@ -2444,6 +2461,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 		Term_putstr(s->icol_name, rdetails.value_position.y,
 			e->nmlen, nmcolor, e->short_name);
 		rdetails.value_position.x = s->icol_name + s->nshortnm + 1;
+		rdetails.alternate_color_first = false;
 		for (j = 0; j < (int)N_ELEMENTS(s->propcats); ++j) {
 			int k;
 
@@ -2460,6 +2478,8 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 					e->auxvals + koff + s->propcats[j].off,
 					1, &rdetails);
 				++rdetails.value_position.x;
+				rdetails.alternate_color_first =
+					!rdetails.alternate_color_first;
 			}
 		}
 		++rdetails.value_position.y;
