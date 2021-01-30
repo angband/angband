@@ -386,7 +386,7 @@ static void display_equip_cmp_help(void)
 	++irow;
 	prt("q           quick filter     !           use opposite quick", irow, 0);
 	++irow;
-	prt("c           cycle inclusion of stores' goods", irow, 0);
+	prt("c           cycle through sources of items", irow, 0);
 	++irow;
 	prt("r           reverse", irow, 0);
 	++irow;
