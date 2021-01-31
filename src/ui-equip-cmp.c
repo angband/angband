@@ -123,7 +123,8 @@ struct equipable_sorter {
 enum store_inclusion {
 	EQUIPABLE_NO_STORE,
 	EQUIPABLE_ONLY_STORE,
-	EQUIPABLE_YES_STORE
+	EQUIPABLE_YES_STORE,
+	EQUIPABLE_ONLY_CARRIED,
 };
 
 struct prop_category {
@@ -240,6 +241,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	bool allow_reconfig);
 static void display_equip_cmp_help(void);
 static void display_equip_cmp_sel_help(void);
+static int get_expected_easy_filter_count(enum store_inclusion stores);
 static int handle_key_bail(struct keypress ch, int istate,
 	struct equipable_summary *s, struct player *p);
 static int handle_key_equip_cmp_general(struct keypress ch, int istate,
@@ -384,7 +386,7 @@ static void display_equip_cmp_help(void)
 	++irow;
 	prt("q           quick filter     !           use opposite quick", irow, 0);
 	++irow;
-	prt("c           cycle inclusion of stores' goods", irow, 0);
+	prt("c           cycle through sources of items", irow, 0);
 	++irow;
 	prt("r           reverse", irow, 0);
 	++irow;
@@ -407,6 +409,26 @@ static void display_equip_cmp_help(void)
 }
 
 
+static int get_expected_easy_filter_count(enum store_inclusion stores)
+{
+	switch (stores) {
+	case EQUIPABLE_NO_STORE:
+	case EQUIPABLE_ONLY_STORE:
+		return 1;
+
+	case EQUIPABLE_YES_STORE:
+		return 0;
+
+	case EQUIPABLE_ONLY_CARRIED:
+		return 3;
+
+	default:
+		assert(0);
+		return 0;
+	}
+}
+
+
 static int handle_key_bail(struct keypress ch, int istate,
 	struct equipable_summary *s, struct player *p)
 {
@@ -424,12 +446,15 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 	static const char *trans_msg_onlystore =
 		"Only showing goods from stores; press c to change";
 	static const char *trans_msg_withstore =
-		"Showing possesions and goods from stores; press c to change";
+		"Showing possessions and goods from stores; press c to change";
+	static const char *trans_msg_carried =
+		"Only showing carried items; press c to change";
 	static const char *trans_msg_save_ok = "Successfully saved to file";
 	static const char *trans_msg_save_bad = "Failed to save to file!";
 	static const char *trans_msg_sel0 = "Select first item to examine";
 	int result;
 	int ilast;
+	int nfilt;
 
 	switch (ch.code) {
 	case 'n':
@@ -522,13 +547,14 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 
 	case 'c':
 		/*
-		 * Cycle through no goods from stores(default), only goods
-		 * from stores, and both possesoions and gopds from stores.
+		 * Cycle through no goods from stores (default), only goods
+		 * from stores, both possessions and gopds from stores,
+		 * and only what's carried (either equipped or in pack).
 		 */
 		switch (s->stores) {
 		case EQUIPABLE_NO_STORE:
 			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
-				s->easy_filt.nv >= 1 &&
+				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
 				s->easy_filt.v[0].s.func == sel_exclude_src &&
 				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
 			s->easy_filt.v[0].s.func = sel_only_src;
@@ -538,12 +564,14 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 
 		case EQUIPABLE_ONLY_STORE:
 			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
-				s->easy_filt.nv >= 1 &&
+				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
 				s->easy_filt.v[0].s.func == sel_only_src &&
 				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
 			s->easy_filt.v[0] = s->easy_filt.v[1];
-			if (s->easy_filt.nv > 1) {
+			if (s->easy_filt.nv == 2) {
 				s->easy_filt.v[1] = s->easy_filt.v[2];
+			} else {
+				s->easy_filt.simple = EQUIP_EXPR_TERMINATOR;
 			}
 			--s->easy_filt.nv;
 			s->stores = EQUIPABLE_YES_STORE;
@@ -552,12 +580,38 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 
 		case EQUIPABLE_YES_STORE:
 			assert(s->easy_filt.nv == 0 || s->easy_filt.nv == 1);
-			s->easy_filt.v[2] = s->easy_filt.v[1];
-			s->easy_filt.v[1] = s->easy_filt.v[0];
+			s->easy_filt.v[3] = s->easy_filt.v[0];
+			s->easy_filt.simple = EQUIP_EXPR_AND;
 			s->easy_filt.v[0].s.func = sel_exclude_src;
 			s->easy_filt.v[0].s.ex.src = EQUIP_SOURCE_STORE;
 			s->easy_filt.v[0].c = EQUIP_EXPR_SELECTOR;
-			++s->easy_filt.nv;
+			s->easy_filt.v[1].s.func = sel_exclude_src;
+			s->easy_filt.v[1].s.ex.src = EQUIP_SOURCE_HOME;
+			s->easy_filt.v[1].c = EQUIP_EXPR_SELECTOR;
+			s->easy_filt.v[2].s.func = sel_exclude_src;
+			s->easy_filt.v[2].s.ex.src = EQUIP_SOURCE_FLOOR;
+			s->easy_filt.v[2].c = EQUIP_EXPR_SELECTOR;
+			s->easy_filt.nv += 3;
+			s->stores = EQUIPABLE_ONLY_CARRIED;
+			s->dlg_trans_msg = trans_msg_carried;
+			break;
+
+		case EQUIPABLE_ONLY_CARRIED:
+			assert(s->easy_filt.simple = EQUIP_EXPR_AND &&
+				(s->easy_filt.nv == 3 || s->easy_filt.nv == 4) &&
+				s->easy_filt.v[0].s.func == sel_exclude_src &&
+				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE &&
+				s->easy_filt.v[1].s.func == sel_exclude_src &&
+				s->easy_filt.v[1].s.ex.src == EQUIP_SOURCE_HOME &&
+				s->easy_filt.v[2].s.func == sel_exclude_src &&
+				s->easy_filt.v[2].s.ex.src == EQUIP_SOURCE_FLOOR);
+			s->easy_filt.v[1] = s->easy_filt.v[s->easy_filt.nv - 1];
+			s->easy_filt.v[0].s.func = sel_exclude_src;
+			s->easy_filt.v[0].s.ex.src = EQUIP_SOURCE_STORE;
+			s->easy_filt.v[0].c = EQUIP_EXPR_SELECTOR;
+			s->easy_filt.v[2].c = EQUIP_EXPR_TERMINATOR;
+			s->easy_filt.v[3].c = EQUIP_EXPR_TERMINATOR;
+			s->easy_filt.nv -= 2;
 			s->stores = EQUIPABLE_NO_STORE;
 			break;
 		}
@@ -641,36 +695,33 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 	case '!':
 		/*
 		 * If using a quick filter, use not for the criteria.
-		 * Otherwise, set up a quick filter to do that.
+		 * Otherwise, set up a quick filter where not is applied.
 		 */
-		if (! s->config_filt_is_on && (s->easy_filt.nv == 2 ||
-			(s->easy_filt.nv == 1 &&
-			s->stores == EQUIPABLE_YES_STORE))) {
-			int ind = (s->easy_filt.nv == 2) ? 1 : 0;
-
-			assert(s->easy_filt.v[ind].c == EQUIP_EXPR_SELECTOR);
-			if (s->easy_filt.v[ind].s.func ==
-				sel_at_least_resists) {
-				s->easy_filt.v[ind].s.func =
+		nfilt = get_expected_easy_filter_count(s->stores);
+		if (! s->config_filt_is_on && s->easy_filt.nv > nfilt) {
+			assert(s->easy_filt.v[nfilt].c == EQUIP_EXPR_SELECTOR);
+			if (s->easy_filt.v[nfilt].s.func ==
+					sel_at_least_resists) {
+				s->easy_filt.v[nfilt].s.func =
 					sel_does_not_resist;
-			} else if (s->easy_filt.v[ind].s.func ==
-				sel_has_flag) {
-				s->easy_filt.v[ind].s.func =
+			} else if (s->easy_filt.v[nfilt].s.func ==
+					sel_has_flag) {
+				s->easy_filt.v[nfilt].s.func =
 					sel_does_not_have_flag;
-			} else if (s->easy_filt.v[ind].s.func ==
-				sel_has_pos_mod) {
-				s->easy_filt.v[ind].s.func =
+			} else if (s->easy_filt.v[nfilt].s.func ==
+					sel_has_pos_mod) {
+				s->easy_filt.v[nfilt].s.func =
 					sel_has_nonpos_mod;
-			} else if (s->easy_filt.v[ind].s.func ==
-				sel_does_not_resist) {
-				s->easy_filt.v[ind].s.func =
+			} else if (s->easy_filt.v[nfilt].s.func ==
+					sel_does_not_resist) {
+				s->easy_filt.v[nfilt].s.func =
 					sel_at_least_resists;
-			} else if (s->easy_filt.v[ind].s.func ==
-				sel_does_not_have_flag) {
-				s->easy_filt.v[ind].s.func = sel_has_flag;
-			} else if (s->easy_filt.v[ind].s.func ==
-				sel_has_nonpos_mod) {
-				s->easy_filt.v[ind].s.func = sel_has_pos_mod;
+			} else if (s->easy_filt.v[nfilt].s.func ==
+					sel_does_not_have_flag) {
+				s->easy_filt.v[nfilt].s.func = sel_has_flag;
+			} else if (s->easy_filt.v[nfilt].s.func ==
+					sel_has_nonpos_mod) {
+				s->easy_filt.v[nfilt].s.func = sel_has_pos_mod;
 			} else {
 				assert(0);
 			}
@@ -933,9 +984,8 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 	/* Clear the current filter. */
 	if (c[0] == '\0') {
 		s->config_filt_is_on = false;
-		if (s->easy_filt.nv == 2 ||
-			(s->easy_filt.nv == 1 &&
-			s->stores == EQUIPABLE_YES_STORE)) {
+		if (s->easy_filt.nv >
+				get_expected_easy_filter_count(s->stores)) {
 			s->easy_filt.v[s->easy_filt.nv - 1] =
 				s->easy_filt.v[s->easy_filt.nv];
 			--s->easy_filt.nv;
@@ -1057,9 +1107,8 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 				int ind;
 
 				s->config_filt_is_on = false;
-				if (s->easy_filt.nv == 0 ||
-					(s->easy_filt.nv == 1 &&
-					s->stores != EQUIPABLE_YES_STORE)) {
+				if (s->easy_filt.nv ==
+						get_expected_easy_filter_count(s->stores)) {
 					s->easy_filt.v[s->easy_filt.nv].c =
 						EQUIP_EXPR_SELECTOR;
 					++s->easy_filt.nv;
@@ -2121,9 +2170,10 @@ static int initialize_summary(struct player *p,
 		/*
 		 * Start with nothing for the easy filter but set up space
 		 * so it is trivial to add one term filtering on an attribute
-		 * and another that includes/excludes the stores' inventories.
+		 * and up to three others that can filter on the source of the
+		 * item.
 		 */
-		(*s)->easy_filt.nalloc = 3;
+		(*s)->easy_filt.nalloc = 5;
 		(*s)->easy_filt.v = mem_alloc((*s)->easy_filt.nalloc *
 			sizeof(*(*s)->easy_filt.v));
 		switch ((*s)->stores) {
@@ -2148,12 +2198,23 @@ static int initialize_summary(struct player *p,
 			(*s)->easy_filt.simple = EQUIP_EXPR_TERMINATOR;
 			(*s)->easy_filt.nv = 0;
 			break;
+
+		case EQUIPABLE_ONLY_CARRIED:
+			(*s)->easy_filt.simple = EQUIP_EXPR_AND;
+			(*s)->easy_filt.nv = 3;
+			(*s)->easy_filt.v[0].s.func = sel_exclude_src;
+			(*s)->easy_filt.v[0].s.ex.src = EQUIP_SOURCE_STORE;
+			(*s)->easy_filt.v[0].c = EQUIP_EXPR_SELECTOR;
+			(*s)->easy_filt.v[1].s.func = sel_exclude_src;
+			(*s)->easy_filt.v[1].s.ex.src = EQUIP_SOURCE_HOME;
+			(*s)->easy_filt.v[1].c = EQUIP_EXPR_SELECTOR;
+			(*s)->easy_filt.v[2].s.func = sel_exclude_src;
+			(*s)->easy_filt.v[2].s.ex.src = EQUIP_SOURCE_FLOOR;
+			(*s)->easy_filt.v[2].c = EQUIP_EXPR_SELECTOR;
 		}
-		(*s)->easy_filt.v[(*s)->easy_filt.nv].c =
-			EQUIP_EXPR_TERMINATOR;
-		if ((*s)->easy_filt.nv + 1 < (*s)->easy_filt.nalloc) {
-			(*s)->easy_filt.v[(*s)->easy_filt.nv + 1].c =
-				EQUIP_EXPR_TERMINATOR;
+
+		for (i = (*s)->easy_filt.nv; i < (*s)->easy_filt.nalloc; ++i) {
+			(*s)->easy_filt.v[i].c = EQUIP_EXPR_TERMINATOR;
 		}
 
 		/* Start with nothing for the specially configured filter. */
@@ -2385,7 +2446,9 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 
 	/*
 	 * Display the column labels and the combined values for @ and the
-	 * the current equipment.
+	 * the current equipment.  The display of the labels bypasses what's
+	 * done by ui_entry_renderer_apply() so the color of the label can
+	 * alternate between columns.
 	 */
 	rdetails.label_position.x = s->icol_name + s->nshortnm + 1;
 	rdetails.label_position.y = s->irow_combined_equip - s->nproplab;
@@ -2393,7 +2456,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	rdetails.value_position.y = s->irow_combined_equip;
 	rdetails.position_step = loc(1, 0);
 	rdetails.combined_position = loc(0, 0);
-	rdetails.vertical_label = true;
+	rdetails.vertical_label = false;
 	rdetails.alternate_color_first = false;
 	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, L'@');
@@ -2405,17 +2468,32 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 		}
 		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j) {
 			int joff = j + s->propcats[i].ivw[s->iview];
+			/*
+			 * As a hack, label colors are hardwired; it would be
+			 * better if they configurable so they'd be consistent
+			 * with the scheme for the symbol colors.
+			 */
+			int label_color = (j % 2 == 0) ?
+				COLOUR_WHITE : COLOUR_L_WHITE;
+			int k;
 
+			for (k = 0; k < s->nproplab; ++k) {
+				Term_putch(rdetails.label_position.x,
+					rdetails.label_position.y + k,
+					label_color,
+					s->propcats[i].labels[joff][k]);
+			}
 			rdetails.known_rune = is_ui_entry_for_known_rune(
 				s->propcats[i].entries[joff], p);
 			ui_entry_renderer_apply(get_ui_entry_renderer_index(
-				s->propcats[i].entries[joff]),
-				s->propcats[i].labels[joff], s->nproplab,
+				s->propcats[i].entries[joff]), NULL, 0,
 				s->p_and_eq_vals + joff + s->propcats[i].off,
 				s->p_and_eq_auxvals + joff +
 				s->propcats[i].off, 1, &rdetails);
 			++rdetails.label_position.x;
 			++rdetails.value_position.x;
+			rdetails.alternate_color_first =
+				!rdetails.alternate_color_first;
 		}
 	}
 
@@ -2444,6 +2522,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 		Term_putstr(s->icol_name, rdetails.value_position.y,
 			e->nmlen, nmcolor, e->short_name);
 		rdetails.value_position.x = s->icol_name + s->nshortnm + 1;
+		rdetails.alternate_color_first = false;
 		for (j = 0; j < (int)N_ELEMENTS(s->propcats); ++j) {
 			int k;
 
@@ -2460,6 +2539,8 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 					e->auxvals + koff + s->propcats[j].off,
 					1, &rdetails);
 				++rdetails.value_position.x;
+				rdetails.alternate_color_first =
+					!rdetails.alternate_color_first;
 			}
 		}
 		++rdetails.value_position.y;
