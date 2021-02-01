@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Cocoa
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
       - name: Clone Project
         uses: actions/checkout@v2
@@ -16,4 +16,4 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.osx
+          env SDKROOT=macosx11.1 make -f Makefile.osx
