@@ -92,6 +92,12 @@ done
 
 cp ../lib/fonts/*.fon lib/fonts
 
+for f in `find ../lib/icons \( -name '*.desktop' -o -name '*.svg' \) \
+		-print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+cp ../lib/icons/*.png lib/icons
+
 for f in `find ../lib/tiles \( -name '*.txt' -o -name '*.prf' \) -print` ; do
 	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
 done
