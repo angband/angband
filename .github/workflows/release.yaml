@@ -1,0 +1,188 @@
+name: create-github-release
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+    # Used as the name when uploading or downloading the artifact for passing
+    # configuration data from the Setup job to those dependent on it.
+    CONFIG_ARTIFACT: release-config
+    # Used as the path for the file with the configuration data passed from
+    # the Setup job to those dependent on it.
+    CONFIG_ARTIFACT_PATH: release-config.txt
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Extract Names from Makefile
+        id: get_names
+        run: |
+          name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          echo "::set-output name=progname::$progname"
+
+      - name: Set Release Version
+        id: get_release_vars
+        run: |
+          version=`scripts/version.sh`
+          echo "::set-output name=version::$version"
+          prerelease=`echo $version | awk '/^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
+          echo "::set-output name=prerelease::$prerelease"
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Create Bare Release
+        id: create_bare_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token provided by Actions
+        with:
+          tag_name: ${{ steps.get_release_vars.outputs.version }}
+          release_name: Release ${{ steps.get_release_vars.outputs.version }}
+          commitish: ${{ github.sha }}
+          prerelease: ${{ steps.get_release_vars.outputs.prerelease }}
+
+      # The quoting here may be too simple-minded:  what if there are single
+      # quotes in the steps.*.outputs.* stuff.
+      - name: Create Artifact with Configuration Details
+        run: |
+          echo name= '${{ steps.get_names.outputs.name }}' > $CONFIG_ARTIFACT_PATH
+          echo progname= '${{ steps.get_names.outputs.progname }}' >> $CONFIG_ARTIFACT_PATH
+          echo version= '${{ steps.get_release_vars.outputs.version }}' >> $CONFIG_ARTIFACT_PATH
+          echo prerelease= '${{ steps.get_release_vars.outputs.prerelease }}' >> $CONFIG_ARTIFACT_PATH
+          echo upload_url= '${{ steps.create_bare_release.outputs.upload_url }}' >> $CONFIG_ARTIFACT_PATH
+
+      - name: Upload Artifact for Use by Dependent Steps
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+          path: ${{ env.CONFIG_ARTIFACT_PATH }}
+          retention-days: 1
+
+  windows:
+    needs: setup
+    name: Windows
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Install Build Dependencies
+        run: pacman -Sy mingw-w64-gcc automake autoconf make zip --noconfirm
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create Windows Archive
+        id: create_windows_archive
+        run: |
+          ./autogen.sh
+          ./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          make
+          cp src/${{ steps.store_config.outputs.progname }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=archive_file::${archive_prefix}-win.zip"
+          echo "::set-output name=archive_content_type::application/zip"
+          scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Windows Archive
+        id: upload_windows_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_windows_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_windows_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_windows_archive.outputs.archive_content_type }}
+
+  mac:
+    needs: setup
+    name: Mac
+    runs-on: macos-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # Currently, macos-latest defaults to using the 10.15 SDK which does not
+      # support creating arm64 objects.  Override the default using SDKROOT # set to an SDK that can generate both x86_64 and arm64 objects.
+      - name: Create Mac Archive
+        id: create_mac_archive
+        run: |
+          cd src
+          env SDKROOT=macosx11.1 make -f Makefile.osx dist
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
+          echo "::set-output name=archive_file::${archive_prefix}.dmg"
+          echo "::set-output name=archive_content_type::application/octet-stream"
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Mac Archive
+        id: upload_mac_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_mac_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_mac_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_mac_archive.outputs.archive_content_type }}
+
