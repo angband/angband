@@ -33,6 +33,9 @@ mkdir -p $DIR
 cd $DIR
 
 mkdir docs
+mkdir docs/_static
+mkdir docs/_templates
+mkdir docs/hacking
 mkdir lib
 mkdir lib/gamedata
 mkdir lib/customize
@@ -60,7 +63,15 @@ cp ../*.exe .
 cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
-cp_unix2dos ../docs/*.rst docs/
+
+# Assumes that all those files in docs have names that don't contain spaces
+# or other characters that the shell uses as field separators.
+for f in `find ../docs \( -name '*.rst' -o -name '*.sty' -o -name '*.svg' \
+		-o -name '*.css' -o -name '*.html' -o -name '*.txt' \
+		-o -name 'Makefile*' -o -name 'make.bat' -o -name '*.py' \) \
+		-print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
 
 cp ../lib/readme.txt lib/
 
