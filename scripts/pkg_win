@@ -64,6 +64,8 @@ cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
 
+cp_unix2dos ../changes.txt changes.txt
+
 # Assumes that all those files in docs have names that don't contain spaces
 # or other characters that the shell uses as field separators.
 for f in `find ../docs \( -name '*.rst' -o -name '*.sty' -o -name '*.svg' \
