@@ -33,6 +33,9 @@ mkdir -p $DIR
 cd $DIR
 
 mkdir docs
+mkdir docs/_static
+mkdir docs/_templates
+mkdir docs/hacking
 mkdir lib
 mkdir lib/gamedata
 mkdir lib/customize
@@ -60,31 +63,59 @@ cp ../*.exe .
 cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
-cp_unix2dos ../docs/*.rst docs/
 
-cp ../lib/readme.txt lib/
+cp_unix2dos ../changes.txt changes.txt
 
-cp ../lib/gamedata/*.txt lib/gamedata
-cp ../lib/screens/*.txt lib/screens
+# Assumes that all those files in docs have names that don't contain spaces
+# or other characters that the shell uses as field separators.
+for f in `find ../docs \( -name '*.rst' -o -name '*.sty' -o -name '*.svg' \
+		-o -name '*.css' -o -name '*.html' -o -name '*.txt' \
+		-o -name 'Makefile*' -o -name 'make.bat' -o -name '*.py' \) \
+		-print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
 
-cp ../lib/help/*.txt lib/help
+cp_unix2dos ../lib/readme.txt lib/readme.txt
 
-cp ../lib/customize/*.prf lib/customize
+# Ditto the comment above for the way find is used here.
+for f in `find ../lib/gamedata -name '*.txt' -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+for f in `find ../lib/screens -name '*.txt' -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+for f in `find ../lib/help -name '*.txt' -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+
+for f in `find ../lib/customize -name '*.prf' -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
 
 cp ../lib/fonts/*.fon lib/fonts
 
-cp ../lib/tiles/*.txt lib/tiles
-cp ../lib/tiles/adam-bolt/* lib/tiles/adam-bolt
-cp ../lib/tiles/gervais/* lib/tiles/gervais
-cp ../lib/tiles/nomad/* lib/tiles/nomad
-cp ../lib/tiles/old/* lib/tiles/old
-cp ../lib/tiles/shockbolt/* lib/tiles/shockbolt
-rm lib/tiles/*/Makefile
+for f in `find ../lib/icons \( -name '*.desktop' -o -name '*.svg' \) \
+		-print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+cp ../lib/icons/*.png lib/icons
 
-cp ../lib/sounds/sound.cfg lib/sounds
+for f in `find ../lib/tiles \( -name '*.txt' -o -name '*.prf' \) -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
+cp ../lib/tiles/adam-bolt/*.png lib/tiles/adam-bolt
+cp ../lib/tiles/gervais/*.png lib/tiles/gervais
+cp ../lib/tiles/nomad/*.png lib/tiles/nomad
+cp ../lib/tiles/old/*.png lib/tiles/old
+cp ../lib/tiles/shockbolt/*.png lib/tiles/shockbolt
+
+cp_unix2dos ../lib/sounds/sound.cfg lib/sounds/sound.cfg
 cp ../lib/sounds/*.mp3 lib/sounds
 
-cp ../lib/user/info/*.txt lib/user/info
+for f in `find ../lib/user/info \( -name '*.txt' -o -name '*.hlp' \) \
+		-print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
 
 cd ..
 zip -9 -r $OUT $DIR
