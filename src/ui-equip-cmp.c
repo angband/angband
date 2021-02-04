@@ -39,7 +39,7 @@
 #include "z-util.h"
 #include "z-virt.h"
 
-enum equipable_source {
+enum equippable_source {
 	EQUIP_SOURCE_WORN,
 	EQUIP_SOURCE_PACK,
 	EQUIP_SOURCE_FLOOR,
@@ -47,7 +47,7 @@ enum equipable_source {
 	EQUIP_SOURCE_STORE
 };
 
-enum equipable_quality {
+enum equippable_quality {
 	EQUIP_QUAL_ARTIFACT,
 	EQUIP_QUAL_EGO,
 	EQUIP_QUAL_GOOD,
@@ -55,76 +55,76 @@ enum equipable_quality {
 	EQUIP_QUAL_BAD
 };
 
-struct equipable {
+struct equippable {
 	char *short_name;
 	int *vals;
 	int *auxvals;
 	const struct object *obj;
-	enum equipable_source src;
-	enum equipable_quality qual;
+	enum equippable_source src;
+	enum equippable_quality qual;
 	int slot;
 	int nmlen;
 	wchar_t ch;
 	byte at;
 };
 
-union equipable_selfunc_extra {
-	enum equipable_source src;
-	enum equipable_quality qual;
+union equippable_selfunc_extra {
+	enum equippable_source src;
+	enum equippable_quality qual;
 	int slot;
 	int propind;
 };
-typedef bool (*equipable_selfunc)(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-struct equipable_selector {
-	equipable_selfunc func;
-	union equipable_selfunc_extra ex;
+typedef bool (*equippable_selfunc)(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+struct equippable_selector {
+	equippable_selfunc func;
+	union equippable_selfunc_extra ex;
 };
-enum equipable_expr_class {
+enum equippable_expr_class {
 	EQUIP_EXPR_SELECTOR,
 	EQUIP_EXPR_AND,
 	EQUIP_EXPR_OR,
 	EQUIP_EXPR_TERMINATOR
 };
-struct equipable_expr {
-	struct equipable_selector s;
-	enum equipable_expr_class c;
+struct equippable_expr {
+	struct equippable_selector s;
+	enum equippable_expr_class c;
 };
-struct equipable_filter {
+struct equippable_filter {
 	/*
 	 * Has nv + 1 used elements with the last a sentinel (c ==
 	 * EQUIP_EXPR_TERMINATOR).
 	 */
-	struct equipable_expr *v;
+	struct equippable_expr *v;
 	/*
 	 * Use EQUIP_EXPR_SELECTOR to indicate the simple evaluation is not
 	 * possible.  Use EQUIP_EXPR_TERMINATOR when nv is zero:  there's no
 	 * filtering.  The others indicate the way the terms are combined
 	 * during simple evaluation.
 	 */
-	enum equipable_expr_class simple;
+	enum equippable_expr_class simple;
 	int nv;
 	int nalloc;
 };
 
-typedef int (*equipable_cmpfunc)(const struct equipable *left,
-	const struct equipable *right, int propind);
-struct equipable_arranger {
-	equipable_cmpfunc func;
+typedef int (*equippable_cmpfunc)(const struct equippable *left,
+	const struct equippable *right, int propind);
+struct equippable_arranger {
+	equippable_cmpfunc func;
 	int propind;
 };
-struct equipable_sorter {
+struct equippable_sorter {
 	/* Has nv + 1 used elements with the last a sentinel (funct == 0). */
-	struct equipable_arranger *v;
+	struct equippable_arranger *v;
 	int nv;
 	int nalloc;
 };
 
 enum store_inclusion {
-	EQUIPABLE_NO_STORE,
-	EQUIPABLE_ONLY_STORE,
-	EQUIPABLE_YES_STORE,
-	EQUIPABLE_ONLY_CARRIED,
+	EQUIPPABLE_NO_STORE,
+	EQUIPPABLE_ONLY_STORE,
+	EQUIPPABLE_YES_STORE,
+	EQUIPPABLE_ONLY_CARRIED,
 };
 
 struct prop_category {
@@ -134,9 +134,9 @@ struct prop_category {
 	int n, off, nvw[3], ivw[3];
 };
 
-struct equipable_summary {
+struct equippable_summary {
 	/* Has space for nalloc items; nitems are currently used */
-	struct equipable *items;
+	struct equippable *items;
 	/*
 	 * Has space for nalloc + 1 items; nfilt + 1 are currently used with
 	 * the last a sentinel (-1).
@@ -146,7 +146,7 @@ struct equipable_summary {
 	int *p_and_eq_auxvals;
 	const char *dlg_trans_msg;
 	struct prop_category propcats[5];
-	struct equipable_filter easy_filt;
+	struct equippable_filter easy_filt;
 	/*
 	 * Was intended to be an alternative to easy_filt where the player
 	 * could configure a filter on more than one attribute.  Backend
@@ -157,16 +157,16 @@ struct equipable_summary {
 	 * modified to handle the filtering of items from the stores as set
 	 * by 'c'.
 	 */
-	struct equipable_filter config_filt;
-	struct equipable_filter config_mod_filt;
-	struct equipable_sorter default_sort;
+	struct equippable_filter config_filt;
+	struct equippable_filter config_mod_filt;
+	struct equippable_sorter default_sort;
 	/*
 	 * Was intended to be an alternative to the default sort that the
 	 * player could configure.  While backend support should mostly be
 	 * there, there's nothing that allows the player to do the
 	 * configuration.  Leaving it here for now, just in case.
 	 */
-	struct equipable_sorter config_sort;
+	struct equippable_sorter config_sort;
 	enum store_inclusion stores;
 	/* Is the index, in sorted_indices, for first shown on page. */
 	int ifirst;
@@ -210,8 +210,8 @@ struct equipable_summary {
 };
 
 struct indirect_sort_data {
-	const struct equipable *items;
-	const struct equipable_arranger *arr;
+	const struct equippable *items;
+	const struct equippable_arranger *arr;
 };
 
 
@@ -227,73 +227,73 @@ enum {
 struct menu_display_state {
 	const char *prompt;
 	int (*keyfunc)(struct keypress ch, int istate,
-		struct equipable_summary *s, struct player *p);
+		struct equippable_summary *s, struct player *p);
 	bool clear;
 	bool refresh;
 };
 
 
 static int initialize_summary(struct player *p,
-	struct equipable_summary **s);
-static void cleanup_summary(struct equipable_summary *s);
-static void cleanup_summary_items(struct equipable_summary *s);
-static int display_page(struct equipable_summary *s, const struct player *p,
+	struct equippable_summary **s);
+static void cleanup_summary(struct equippable_summary *s);
+static void cleanup_summary_items(struct equippable_summary *s);
+static int display_page(struct equippable_summary *s, const struct player *p,
 	bool allow_reconfig);
 static void display_equip_cmp_help(void);
 static void display_equip_cmp_sel_help(void);
 static int get_expected_easy_filter_count(enum store_inclusion stores);
 static int handle_key_bail(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p);
+	struct equippable_summary *s, struct player *p);
 static int handle_key_equip_cmp_general(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p);
+	struct equippable_summary *s, struct player *p);
 static int handle_key_equip_cmp_select(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p);
-static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not);
-static void display_object_comparison(const struct equipable_summary *s);
+	struct equippable_summary *s, struct player *p);
+static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not);
+static void display_object_comparison(const struct equippable_summary *s);
 static bool dump_to_file(const char *path);
 static void append_to_file(ang_file *fff);
-static void filter_items(struct equipable_summary *s);
+static void filter_items(struct equippable_summary *s);
 /*
  * Not used at the moment; left here in case more configurable filtering
  * is implemented.
  */
 #if 0
-static bool sel_better_than(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
+static bool sel_better_than(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
 #endif
-static bool sel_at_least_resists(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_does_not_resist(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_has_flag(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_does_not_have_flag(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_has_pos_mod(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_has_nonpos_mod(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
+static bool sel_at_least_resists(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_does_not_resist(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_has_flag(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_does_not_have_flag(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_has_pos_mod(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_has_nonpos_mod(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
 /*
  * Not used at the moment; left here in case more configurable filtering
  * is implemented.
  */
 #if 0
-static bool sel_exclude_slot(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_only_slot(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
+static bool sel_exclude_slot(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_only_slot(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
 #endif
-static bool sel_exclude_src(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static bool sel_only_src(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex);
-static void sort_items(struct equipable_summary *s);
-static wchar_t source_to_char(enum equipable_source src);
+static bool sel_exclude_src(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static bool sel_only_src(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex);
+static void sort_items(struct equippable_summary *s);
+static wchar_t source_to_char(enum equippable_source src);
 
 
-static struct equipable_summary *the_summary = NULL;
+static struct equippable_summary *the_summary = NULL;
 /* Used by append_to_file() (and therefore for dump_to_file()) */
-static struct equipable_summary *s_for_file = NULL;
+static struct equippable_summary *s_for_file = NULL;
 static struct indirect_sort_data sort_dat;
 
 
@@ -412,14 +412,14 @@ static void display_equip_cmp_help(void)
 static int get_expected_easy_filter_count(enum store_inclusion stores)
 {
 	switch (stores) {
-	case EQUIPABLE_NO_STORE:
-	case EQUIPABLE_ONLY_STORE:
+	case EQUIPPABLE_NO_STORE:
+	case EQUIPPABLE_ONLY_STORE:
 		return 1;
 
-	case EQUIPABLE_YES_STORE:
+	case EQUIPPABLE_YES_STORE:
 		return 0;
 
-	case EQUIPABLE_ONLY_CARRIED:
+	case EQUIPPABLE_ONLY_CARRIED:
 		return 3;
 
 	default:
@@ -430,14 +430,14 @@ static int get_expected_easy_filter_count(enum store_inclusion stores)
 
 
 static int handle_key_bail(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p)
+	struct equippable_summary *s, struct player *p)
 {
 	return EQUIP_CMP_MENU_DONE;
 }
 
 
 static int handle_key_equip_cmp_general(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p)
+	struct equippable_summary *s, struct player *p)
 {
 	static const char *trans_msg_unknown_key =
 		"Unknown key pressed; ? will list available keys";
@@ -552,17 +552,17 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		 * and only what's carried (either equipped or in pack).
 		 */
 		switch (s->stores) {
-		case EQUIPABLE_NO_STORE:
+		case EQUIPPABLE_NO_STORE:
 			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
 				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
 				s->easy_filt.v[0].s.func == sel_exclude_src &&
 				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
 			s->easy_filt.v[0].s.func = sel_only_src;
-			s->stores = EQUIPABLE_ONLY_STORE;
+			s->stores = EQUIPPABLE_ONLY_STORE;
 			s->dlg_trans_msg = trans_msg_onlystore;
 			break;
 
-		case EQUIPABLE_ONLY_STORE:
+		case EQUIPPABLE_ONLY_STORE:
 			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
 				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
 				s->easy_filt.v[0].s.func == sel_only_src &&
@@ -574,11 +574,11 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 				s->easy_filt.simple = EQUIP_EXPR_TERMINATOR;
 			}
 			--s->easy_filt.nv;
-			s->stores = EQUIPABLE_YES_STORE;
+			s->stores = EQUIPPABLE_YES_STORE;
 			s->dlg_trans_msg = trans_msg_withstore;
 			break;
 
-		case EQUIPABLE_YES_STORE:
+		case EQUIPPABLE_YES_STORE:
 			assert(s->easy_filt.nv == 0 || s->easy_filt.nv == 1);
 			s->easy_filt.v[3] = s->easy_filt.v[0];
 			s->easy_filt.simple = EQUIP_EXPR_AND;
@@ -592,11 +592,11 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 			s->easy_filt.v[2].s.ex.src = EQUIP_SOURCE_FLOOR;
 			s->easy_filt.v[2].c = EQUIP_EXPR_SELECTOR;
 			s->easy_filt.nv += 3;
-			s->stores = EQUIPABLE_ONLY_CARRIED;
+			s->stores = EQUIPPABLE_ONLY_CARRIED;
 			s->dlg_trans_msg = trans_msg_carried;
 			break;
 
-		case EQUIPABLE_ONLY_CARRIED:
+		case EQUIPPABLE_ONLY_CARRIED:
 			assert(s->easy_filt.simple = EQUIP_EXPR_AND &&
 				(s->easy_filt.nv == 3 || s->easy_filt.nv == 4) &&
 				s->easy_filt.v[0].s.func == sel_exclude_src &&
@@ -612,7 +612,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 			s->easy_filt.v[2].c = EQUIP_EXPR_TERMINATOR;
 			s->easy_filt.v[3].c = EQUIP_EXPR_TERMINATOR;
 			s->easy_filt.nv -= 2;
-			s->stores = EQUIPABLE_NO_STORE;
+			s->stores = EQUIPPABLE_NO_STORE;
 			break;
 		}
 		filter_items(s);
@@ -679,7 +679,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		s->indinc = 1;
 		s->iview = 0;
 		s->config_filt_is_on = false;
-		s->stores = EQUIPABLE_NO_STORE;
+		s->stores = EQUIPPABLE_NO_STORE;
 		s->easy_filt.simple = EQUIP_EXPR_AND;
 		s->easy_filt.nv = 1;
 		s->easy_filt.v[0].s.func = sel_exclude_src;
@@ -780,7 +780,7 @@ static void display_equip_cmp_sel_help(void)
 
 
 static int handle_key_equip_cmp_select(struct keypress ch, int istate,
-	struct equipable_summary *s, struct player *p)
+	struct equippable_summary *s, struct player *p)
 {
 	static const char *trans_msg_unknown_key =
 		"Unknown key pressed; ? will list available keys";
@@ -968,7 +968,7 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 }
 
 
-static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
+static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 {
 	static const char *no_matching_attribute_msg =
 		"Did not find attribute with that name; filter unchanged";
@@ -1172,7 +1172,7 @@ static int prompt_for_easy_filter(struct equipable_summary *s, bool apply_not)
 }
 
 
-static void display_object_comparison(const struct equipable_summary *s)
+static void display_object_comparison(const struct equippable_summary *s)
 {
 	char hbuf[120];
 	textblock *tb0;
@@ -1365,88 +1365,88 @@ static char *set_short_name(const struct object *obj, size_t length)
 
 
 #if 0
-static bool sel_better_than(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_better_than(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->qual < ex->qual;
 }
 #endif
 
 
-static bool sel_at_least_resists(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_at_least_resists(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] >= 1;
 }
 
 
-static bool sel_does_not_resist(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_does_not_resist(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] < 1;
 }
 
 
-static bool sel_has_flag(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_has_flag(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] != 0;
 }
 
 
-static bool sel_does_not_have_flag(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_does_not_have_flag(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] == 0;
 }
 
 
-static bool sel_has_pos_mod(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_has_pos_mod(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] > 0;
 }
 
 
-static bool sel_has_nonpos_mod(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_has_nonpos_mod(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->vals[ex->propind] <= 0;
 }
 
 
 #if 0
-static bool sel_exclude_slot(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_exclude_slot(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->slot != ex->slot;
 }
 
 
-static bool sel_only_slot(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_only_slot(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->slot == ex->slot;
 }
 #endif
 
 
-static bool sel_exclude_src(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_exclude_src(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->src != ex->src;
 }
 
 
-static bool sel_only_src(const struct equipable *eq,
-	const union equipable_selfunc_extra *ex)
+static bool sel_only_src(const struct equippable *eq,
+	const union equippable_selfunc_extra *ex)
 {
 	return eq->src == ex->src;
 }
 
 
-static void apply_simple_filter(const struct equipable_filter *f,
-	struct equipable_summary *s)
+static void apply_simple_filter(const struct equippable_filter *f,
+	struct equippable_summary *s)
 {
 	int i;
 
@@ -1504,8 +1504,8 @@ static void apply_simple_filter(const struct equipable_filter *f,
 }
 
 
-static void apply_complex_filter(const struct equipable_filter *f,
-	struct equipable_summary *s)
+static void apply_complex_filter(const struct equippable_filter *f,
+	struct equippable_summary *s)
 {
 	bool *stack;
 	int nst, i;
@@ -1566,7 +1566,7 @@ static void apply_complex_filter(const struct equipable_filter *f,
 }
 
 
-static void filter_items(struct equipable_summary *s)
+static void filter_items(struct equippable_summary *s)
 {
 	if (s->config_filt_is_on) {
 		if (s->config_mod_filt.simple == EQUIP_EXPR_SELECTOR) {
@@ -1598,32 +1598,32 @@ static void filter_items(struct equipable_summary *s)
 }
 
 
-static int cmp_by_location(const struct equipable *left,
-	const struct equipable *right, int propind)
+static int cmp_by_location(const struct equippable *left,
+	const struct equippable *right, int propind)
 {
 	return (left->src < right->src) ?
 		-1 : ((left->src > right->src) ? 1 : 0);
 }
 
 
-static int cmp_by_quality(const struct equipable *left,
-	const struct equipable *right, int propind)
+static int cmp_by_quality(const struct equippable *left,
+	const struct equippable *right, int propind)
 {
 	return (left->qual < right->qual) ?
 		-1 : ((left->qual > right->qual) ? 1 : 0);
 }
 
 
-static int cmp_by_short_name(const struct equipable *left,
-	const struct equipable *right, int propind)
+static int cmp_by_short_name(const struct equippable *left,
+	const struct equippable *right, int propind)
 {
 
 	return strcmp(left->short_name, right->short_name);
 }
 
 
-static int cmp_by_slot(const struct equipable *left,
-	const struct equipable *right, int propind)
+static int cmp_by_slot(const struct equippable *left,
+	const struct equippable *right, int propind)
 {
 	return (left->slot < right->slot) ?
 		-1 : ((left->slot > right->slot) ? 1 : 0);
@@ -1652,7 +1652,7 @@ static int cmp_for_sort_items(const void *left, const void *right)
 }
 
 
-static void sort_items(struct equipable_summary *s)
+static void sort_items(struct equippable_summary *s)
 {
 	sort_dat.items = s->items;
 	sort_dat.arr = (s->config_sort_is_on) ?
@@ -1727,18 +1727,18 @@ static void count_objects(const struct object *obj, void *closure)
 
 
 /**
- * Add an object to the summary of equipable items; intended for use with
+ * Add an object to the summary of equippable items; intended for use with
  * apply_visitor_to_pile() or apply_visitor_to_equipped().
  */
 struct add_obj_to_summary_closure {
 	const struct player *p;
-	struct equipable_summary *summary;
-	enum equipable_source src;
+	struct equippable_summary *summary;
+	enum equippable_source src;
 };
 static void add_obj_to_summary(const struct object *obj, void *closure)
 {
 	struct add_obj_to_summary_closure *c = closure;
-	struct equipable *e;
+	struct equippable *e;
 	struct cached_object_data *cache;
 	int i;
 
@@ -1846,7 +1846,7 @@ static void apply_visitor_to_equipped(struct player *p,
 
 
 static int reconfigure_for_term_if_necessary(bool update_names,
-	struct equipable_summary *s)
+	struct equippable_summary *s)
 {
 	int result = 0;
 	int min_length = 16;
@@ -1976,7 +1976,7 @@ static int reconfigure_for_term_if_necessary(bool update_names,
 
 
 static void compute_player_and_equipment_values(struct player *p,
-	struct equipable_summary *s)
+	struct equippable_summary *s)
 {
 	struct cached_player_data *pcache;
 	struct ui_entry_combiner_state *cstates;
@@ -2083,7 +2083,7 @@ static bool check_for_two_categories(const struct ui_entry *entry,
 
 
 static int initialize_summary(struct player *p,
-	struct equipable_summary **s)
+	struct equippable_summary **s)
 {
 	struct obj_visitor_data visitor;
 	struct add_obj_to_summary_closure add_obj_data;
@@ -2107,7 +2107,7 @@ static int initialize_summary(struct player *p,
 		(*s)->dlg_trans_msg = NULL;
 		(*s)->nitems = 0;
 		(*s)->nalloc = 0;
-		(*s)->stores = EQUIPABLE_NO_STORE;
+		(*s)->stores = EQUIPPABLE_NO_STORE;
 		(*s)->ifirst = 0;
 		(*s)->indinc = 1;
 		(*s)->iview = 0;
@@ -2177,7 +2177,7 @@ static int initialize_summary(struct player *p,
 		(*s)->easy_filt.v = mem_alloc((*s)->easy_filt.nalloc *
 			sizeof(*(*s)->easy_filt.v));
 		switch ((*s)->stores) {
-		case EQUIPABLE_NO_STORE:
+		case EQUIPPABLE_NO_STORE:
 			(*s)->easy_filt.simple = EQUIP_EXPR_AND;
 			(*s)->easy_filt.nv = 1;
 			(*s)->easy_filt.v[0].s.func = sel_exclude_src;
@@ -2185,7 +2185,7 @@ static int initialize_summary(struct player *p,
 			(*s)->easy_filt.v[0].c = EQUIP_EXPR_SELECTOR;
 			break;
 
-		case EQUIPABLE_ONLY_STORE:
+		case EQUIPPABLE_ONLY_STORE:
 			(*s)->easy_filt.simple = EQUIP_EXPR_AND;
 			(*s)->easy_filt.nv = 1;
 			(*s)->easy_filt.v[0].s.func = sel_only_src;
@@ -2193,13 +2193,13 @@ static int initialize_summary(struct player *p,
 			(*s)->easy_filt.v[0].c = EQUIP_EXPR_SELECTOR;
 			break;
 
-		case EQUIPABLE_YES_STORE:
+		case EQUIPPABLE_YES_STORE:
 			/* There's no filtering to be done. */
 			(*s)->easy_filt.simple = EQUIP_EXPR_TERMINATOR;
 			(*s)->easy_filt.nv = 0;
 			break;
 
-		case EQUIPABLE_ONLY_CARRIED:
+		case EQUIPPABLE_ONLY_CARRIED:
 			(*s)->easy_filt.simple = EQUIP_EXPR_AND;
 			(*s)->easy_filt.nv = 3;
 			(*s)->easy_filt.v[0].s.func = sel_exclude_src;
@@ -2349,7 +2349,7 @@ static int initialize_summary(struct player *p,
 }
 
 
-static void cleanup_summary(struct equipable_summary *s)
+static void cleanup_summary(struct equippable_summary *s)
 {
 	int i;
 
@@ -2375,7 +2375,7 @@ static void cleanup_summary(struct equipable_summary *s)
 }
 
 
-static void cleanup_summary_items(struct equipable_summary *s)
+static void cleanup_summary_items(struct equippable_summary *s)
 {
 	int i;
 
@@ -2387,7 +2387,7 @@ static void cleanup_summary_items(struct equipable_summary *s)
 }
 
 
-static wchar_t source_to_char(enum equipable_source src)
+static wchar_t source_to_char(enum equippable_source src)
 {
 	static bool first_call = true;
 	static wchar_t wchars[7];
@@ -2430,7 +2430,7 @@ static wchar_t source_to_char(enum equipable_source src)
 }
 
 
-static int display_page(struct equipable_summary *s, const struct player *p,
+static int display_page(struct equippable_summary *s, const struct player *p,
 	bool allow_reconfig)
 {
 	struct ui_entry_details rdetails;
@@ -2500,7 +2500,7 @@ static int display_page(struct equipable_summary *s, const struct player *p,
 	/* Display the items available on the current page. */
 	++rdetails.value_position.y;
 	for (i = 0; i < s->npage; ++i) {
-		const struct equipable *e;
+		const struct equippable *e;
 		int icnv, isort, j, nmcolor;
 
 		icnv = s->ifirst + s->indinc * i;

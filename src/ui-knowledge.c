@@ -3239,7 +3239,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display contents of home (8)",          do_cmd_knowledge_store },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
-{ 0, 0, "Display equipable comparison",    do_cmd_knowledge_equip_cmp },
+{ 0, 0, "Display equippable comparison",   do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
