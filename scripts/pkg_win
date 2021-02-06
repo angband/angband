@@ -33,8 +33,9 @@ mkdir -p $DIR
 cd $DIR
 
 mkdir docs
+mkdir docs/_sources
+mkdir docs/_sources/hacking
 mkdir docs/_static
-mkdir docs/_templates
 mkdir docs/hacking
 mkdir lib
 mkdir lib/gamedata
@@ -66,13 +67,20 @@ cp ../*.dll .
 
 cp_unix2dos ../changes.txt changes.txt
 
-# Assumes that all those files in docs have names that don't contain spaces
-# or other characters that the shell uses as field separators.
-for f in `find ../docs \( -name '*.rst' -o -name '*.sty' -o -name '*.svg' \
-		-o -name '*.css' -o -name '*.html' -o -name '*.txt' \
-		-o -name 'Makefile*' -o -name 'make.bat' -o -name '*.py' \) \
-		-print` ; do
-	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+# Assumes that all the converted files in docs have names that don't contain
+# spaces or other characters that the shell uses as field separators.
+# First copy the ones that will benefit from newline conversion; then
+# do the rest.
+for f in `find ../docs/_build/html \( -name '*.css' -o -name '*.html' \
+		-o -name '*.js' -o -name '*.svg' -o -name '*.txt' \) \
+		\! -type d -print` ; do
+	cp_unix2dos "$f" \
+		`echo "$f" | sed -E -e 's%^\.\./docs/_build/html%docs%'`
+done
+for f in `find ../docs/_build/html \! -name '*.css' \! -name '*.html' \
+		\! -name '*.js' \! -name '*.svg' \! -name '*.txt' \
+		\! -type d -print` ; do
+	cp "$f" `echo "$f" | sed -E -e 's%^\.\./docs/_build/html%docs%'`
 done
 
 cp_unix2dos ../lib/readme.txt lib/readme.txt
