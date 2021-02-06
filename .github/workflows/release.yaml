@@ -97,7 +97,7 @@ jobs:
           echo "::set-output name=upload_url::$upload_url"
 
       - name: Install Build Dependencies
-        run: pacman -Sy mingw-w64-gcc automake autoconf make zip --noconfirm
+        run: pacman -Sy mingw-w64-gcc automake autoconf git make zip --noconfirm
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
