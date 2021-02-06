@@ -92,7 +92,7 @@ for f in `find ../lib/customize -name '*.prf' -print` ; do
 	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
 done
 
-cp ../lib/fonts/*.fon lib/fonts
+cp ../lib/fonts/*.fon ../lib/fonts/*.woff lib/fonts
 
 for f in `find ../lib/icons \( -name '*.desktop' -o -name '*.svg' \) \
 		-print` ; do
