@@ -12,8 +12,11 @@ jobs:
     container:
       image: archlinux
     steps:
+      # Force a system update (u added to -Sy) because had problems with the
+      # clone step failing because the system libc lacked a symbol needed by
+      # docker.
       - name: Install Build Dependencies
-        run: pacman -Sy gcc automake autoconf make libx11 --noconfirm
+        run: pacman -Syu gcc automake autoconf make libx11 --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -32,8 +35,9 @@ jobs:
     container:
       image: archlinux
     steps:
+      # See above comment for why a system update is forced.
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake libx11 --noconfirm
+        run: pacman -Syu gcc make cmake libx11 --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -51,8 +55,9 @@ jobs:
     container:
       image: archlinux
     steps:
+      # See above comment for why a system update is forced.
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake ncurses --noconfirm
+        run: pacman -Syu gcc make cmake ncurses --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -70,8 +75,9 @@ jobs:
     container:
       image: archlinux
     steps:
+      # See above comment for why a system update is forced.
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake sdl_image sdl_ttf --noconfirm
+        run: pacman -Syu gcc make cmake sdl_image sdl_ttf --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
