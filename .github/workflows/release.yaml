@@ -74,8 +74,6 @@ jobs:
     needs: setup
     name: Windows
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v2
@@ -97,7 +95,7 @@ jobs:
           echo "::set-output name=upload_url::$upload_url"
 
       - name: Install Build Dependencies
-        run: pacman -Sy mingw-w64-gcc automake autoconf make zip --noconfirm
+        run: sudo apt-get install gcc-mingw-w64 automake autoconf make zip
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
