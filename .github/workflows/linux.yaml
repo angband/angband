@@ -9,11 +9,9 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy gcc automake autoconf make libx11 --noconfirm
+        run: sudo apt-get install gcc automake autoconf make libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -29,11 +27,9 @@ jobs:
   x11:
     name: X11
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake libx11 --noconfirm
+        run: sudo apt-get install gcc make cmake libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -48,11 +44,9 @@ jobs:
   ncurses:
     name: NCurses
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake ncurses --noconfirm
+        run: sudo apt-get install gcc make cmake libncursesw5-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -67,11 +61,9 @@ jobs:
   sdl:
     name: SDL
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
     steps:
       - name: Install Build Dependencies
-        run: pacman -Sy gcc make cmake sdl_image sdl_ttf --noconfirm
+        run: sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
