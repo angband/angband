@@ -31,6 +31,10 @@ release = version
 
 # -- General configuration ---------------------------------------------------
 
+# 2.0 changed the default value to 'index'.  Set this manually for backwards
+# compatibility with previous versions.
+master_doc = 'index'
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
