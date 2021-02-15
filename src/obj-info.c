@@ -131,10 +131,6 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 			textblock_append(tb, ".\n");
 		}
 	}
-	/* Say if curse removal has been tried */
-	if (of_has(obj->flags, OF_FRAGILE)) {
-		textblock_append(tb, "Attempting to uncurse it may destroy it.\n");
-	}
 
 	return true;
 }
