@@ -92,6 +92,11 @@ name:Spell Choice
 desc:You may choose your own spells to study.
 
 type:player
+code:LIKE_SPELLS
+name:Spell Preference
+desc:Spells are usually preferred to extra blows.
+
+type:player
 code:NO_MANA
 name:No Magic
 desc:You cannot cast spells.

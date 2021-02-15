@@ -698,12 +698,11 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_lo
 
 /**
  * This picks some reasonable starting values for stats based on the
- * current race/class combo, etc.  For now I'm disregarding concerns
- * about role-playing, etc, and using the simple outline from
- * http://angband.oook.cz/forum/showpost.php?p=17588&postcount=6:
+ * current race/class combo, etc. using the discussion from
+ * http://angband.oook.cz/forum/showthread.php?t=1691:
  *
  * 0. buy base STR 17
- * 1. if possible buy adj DEX of 18/10
+ * 1. buy base DEX of up to 17, stopping at the last breakpoint for blows
  * 2. spend up to half remaining points on each of spell-stat and con, 
  *    but only up to max base of 16 unless a pure class 
  *    [mage or priest or warrior]
@@ -720,6 +719,8 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 		player->class->magic.books[0].realm->stat : 0;
 	bool caster = player->class->max_attacks < 5 ? true : false;
 	bool warrior = player->class->max_attacks > 5 ? true : false;
+	int blows = 10;
+	int dex_break = 10;
 
 	while (*points_left && step >= 0) {
 	
@@ -735,8 +736,9 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				} else {
 					step++;
 					
-					/* If pure caster skip to step 3 */
-					if (caster){
+					/* If spells preferred to blows (pure caster or special
+					 * case) skip to step 3 */
+					if (caster || player_has(player, PF_LIKE_SPELLS)) {
 						step = 3;
 					}
 				}
@@ -744,13 +746,17 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				break;
 			}
 
-			/* Try and buy adj DEX of 18/10 */
+			/* Buy base DEX of 17, record best breakpoint */
 			case 1: {
-				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX]
-					< 18+10) {
+				if (!maxed[STAT_DEX] && stats[STAT_DEX]	< 17) {
 					if (!buy_stat(STAT_DEX, stats, points_spent,
-								  points_left, false))
+								  points_left, true)) {
 						maxed[STAT_DEX] = true;
+					}
+					if (player->state.num_blows / 10 > blows) {
+						blows = player->state.num_blows / 10;
+						dex_break = stats[STAT_DEX];
+					}
 				} else {
 					step++;
 				}
@@ -758,12 +764,11 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				break;
 			}
 
-			/* If we can't get 18/10 dex, sell it back. */
+			/* Sell back DEX that isn't getting us an extra blow. */
 			case 2: {
-				if (player->state.stat_top[STAT_DEX] < 18+10) {
-					while (stats[STAT_DEX] > 10)
-						sell_stat(STAT_DEX, stats, points_spent,
-								  points_left, false);
+				while (stats[STAT_DEX] > dex_break) {
+					sell_stat(STAT_DEX, stats, points_spent, points_left,
+							  false);
 					maxed[STAT_DEX] = false;
 				}
 				step++;
@@ -773,7 +778,7 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 			/* 
 			 * Spend up to half remaining points on each of spell-stat and 
 			 * con, but only up to max base of 16 unless a pure class 
-			 * [mage or priest or warrior]
+			 * [caster or warrior]
 			 */
 			case 3: 
 			{
@@ -800,8 +805,6 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 					}
 				}
 
-				/* Skip CON for casters because DEX is more important early
-				 * and is handled in 4 */
 				while (!maxed[STAT_CON] &&
 					   stats[STAT_CON] < 16 &&
 					   points_spent[STAT_CON] < points_trigger) {
