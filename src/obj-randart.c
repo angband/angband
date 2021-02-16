@@ -88,7 +88,8 @@ static s16b art_idx_boot[] = {
 	ART_IDX_BOOT_FEATHER,
 	ART_IDX_BOOT_STEALTH,
 	ART_IDX_BOOT_TRAP_IMM,
-	ART_IDX_BOOT_SPEED
+	ART_IDX_BOOT_SPEED,
+	ART_IDX_BOOT_MOVES
 };
 static s16b art_idx_glove[] = {
 	ART_IDX_GLOVE_AC,
@@ -711,8 +712,13 @@ void count_modifiers(const struct artifact *art, struct artifact_set_data *data)
 
 	/* Handle moves bonus - fully generic */
 	if (art->modifiers[OBJ_MOD_MOVES] > 0) {
-		file_putf(log_file, "Adding 1 for moves bonus - general.\n");
-		(data->art_probs[ART_IDX_GEN_MOVES])++;
+		if (art->tval == TV_BOOTS) {
+			file_putf(log_file, "Adding 1 for moves bonus on boots.\n");
+			(data->art_probs[ART_IDX_BOOT_MOVES])++;
+		} else {
+			file_putf(log_file, "Adding 1 for moves bonus - general.\n");
+			(data->art_probs[ART_IDX_GEN_MOVES])++;
+		}
 	}
 
 	/* Speed - boots handled separately.
@@ -1737,7 +1743,7 @@ static bool add_mod(struct artifact *art, int mod)
 			file_putf(log_file, "Adding ability: %s (%+d)\n", prop->name,
 					  art->modifiers[mod]);
 			success = true;
-		} else if (one_in_(2 * art->modifiers[mod])) {
+		} else if (one_in_(20 * art->modifiers[mod])) {
 			art->modifiers[mod]++;
 			file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
 					  prop->name, art->modifiers[mod]);
