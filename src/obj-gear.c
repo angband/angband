@@ -492,8 +492,10 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
  */
 static int quiver_absorb_num(const struct object *obj)
 {
+	bool throwing = of_has(obj->flags, OF_THROWING);
+
 	/* Must be ammo or good for throwing */
-	if (tval_is_ammo(obj) || of_has(obj->flags, OF_THROWING)) {
+	if (tval_is_ammo(obj) || throwing) {
 		int i, quiver_count = 0, space_free = 0;
 
 		/* Count the current space this object could go into */
@@ -506,8 +508,22 @@ static int quiver_absorb_num(const struct object *obj)
 				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
 					space_free += z_info->quiver_slot_size
 						- quiver_obj->number * mult;
-			} else {
+			} else if (!throwing) {
 				space_free += z_info->quiver_slot_size;
+			} else if (obj->note) {
+				/*
+				 * Per calc_inventory(), throwing weapons
+				 * will be added to the quiver if inscribed
+				 * to go into an unoccupied slot.  The
+				 * inscription test should match what
+				 * calc_inventory() uses.
+				 */
+				const char *s = strchr(quark_str(obj->note), '@');
+
+				if (s && (s[1] == 'f' || s[1] == 'v') &&
+						s[2] - '0' == i) {
+					space_free += z_info->quiver_slot_size;
+				}
 			}
 		}
 
