@@ -85,11 +85,17 @@ jobs:
       - name: Install Build Dependencies
         id: build_dep
         run: |
-          sudo apt-get install make python-pip sphinx-common git
+          sudo apt-get install make sphinx-common git
+          use_python3=`python --version 2>&1 | awk "/^Python 3\\./ { print \"YES\" ; exit 0 ; } ; { print \"NO\" ; exit 0; }"`
           # On Debian and Arch, could just use sphinx-build since they put it
-          # in /usr/bin.  Ubuntu, however, does it differently.  This will
-          # need to changed if the default python switches to python 3.
-          sphinxpath=/usr/share/sphinx/scripts/python2/sphinx-build
+          # in /usr/bin.  Ubuntu, however, does it differently.
+          if test X$use_python3 == XYES ; then
+            sudo apt-get install python3-pip
+            sphinxpath=/usr/share/sphinx/scripts/python3/sphinx-build
+          else
+            sudo apt-get install python-pip
+            sphinxpath=/usr/share/sphinx/scripts/python2/sphinx-build
+          fi
           echo "::set-output name=sphinxpath::$sphinxpath"
           "$sphinxpath" --version
           pip install sphinx-better-theme
