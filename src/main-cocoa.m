@@ -5389,23 +5389,6 @@ static BOOL check_events(int wait)
 		event = [NSApp nextEventMatchingMask:-1 untilDate:endDate
 			       inMode:NSDefaultRunLoopMode dequeue:YES];
 
-		static BOOL periodicStarted = NO;
-
-		if (OPT(player, animate_flicker) && !periodicStarted) {
-		    [NSEvent startPeriodicEventsAfterDelay: 0.0
-			     withPeriod: 0.2];
-		    periodicStarted = YES;
-		}
-		else if (!OPT(player, animate_flicker) && periodicStarted) {
-		    [NSEvent stopPeriodicEvents];
-		    periodicStarted = NO;
-		}
-
-		if (OPT(player, animate_flicker) && wait && periodicStarted &&
-		    [event type] == NSPeriodic) {
-		    idle_update();
-		}
-
 		if (! event) {
 		    result = NO;
 		    break;
@@ -6369,8 +6352,21 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
 - (void)applicationDidFinishLaunching:sender
 {
+    /* Setup timer to refresh animations. */
+    NSTimer *animation_timer = [NSTimer scheduledTimerWithTimeInterval:0.2
+        repeats:YES block:^(NSTimer *timer) { idle_update(); }];
+
+    /*
+     * Requires 10.9. Apple's documentation suggests that the tolerance be
+     * at least 10% of the interval for a repeated timer.
+     */
+    animation_timer.tolerance = 0.02;
+
     [self beginGame];
     
+    /* Remove the animation timer. */
+    [animation_timer invalidate];
+
     /*
      * Once beginGame finished, the game is over - that's how Angband works,
      * and we should quit
