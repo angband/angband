@@ -736,9 +736,8 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				} else {
 					step++;
 					
-					/* If spells preferred to blows (pure caster or special
-					 * case) skip to step 3 */
-					if (caster || player_has(player, PF_LIKE_SPELLS)) {
+					/* If pure caster skip to step 3 */
+					if (caster) {
 						step = 3;
 					}
 				}

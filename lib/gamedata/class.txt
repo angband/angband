@@ -1573,7 +1573,7 @@ equip:shield:Leather Shield:1:1
 equip:scroll:Word of Recall:1:1
 equip:potion:Cure Light Wounds:1:1
 obj-flags:IMPAIR_HP
-player-flags:CHOOSE_SPELLS | SHIELD_BASH | COMBAT_REGEN | LIKE_SPELLS
+player-flags:CHOOSE_SPELLS | SHIELD_BASH | COMBAT_REGEN
 title:Rat
 title:Bully
 title:Thug
