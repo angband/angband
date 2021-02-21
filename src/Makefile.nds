@@ -30,7 +30,7 @@ all: checkarm7 checkarm9 $(TARGET).nds
 
 #---------------------------------------------------------------------------------
 $(TARGET).nds	:	$(TARGET).arm7.elf $(TARGET).arm9.elf
-	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf
+	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf -h 0x200
 
 #---------------------------------------------------------------------------------
 checkarm7 $(TARGET).arm7.elf:
