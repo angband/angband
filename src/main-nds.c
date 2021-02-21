@@ -1282,9 +1282,9 @@ bool nds_load_kbd()
 #define NUM_FILES 3
 	const char *files[] = {
 	    /*	"subfont_rgb.bin","subfont_bgr.bin", */
-	    "kbd.bin",
-	    "kbd.pal",
-	    "kbd.map",
+	    "/angband/nds/kbd.bin",
+	    "/angband/nds/kbd.pal",
+	    "/angband/nds/kbd.map",
 	};
 	const u16b *dests[] = {
 	    /*	subfont_rgb_bin, subfont_bgr_bin, */
