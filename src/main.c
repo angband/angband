@@ -166,6 +166,7 @@ static const struct {
 	{ "icons", &ANGBAND_DIR_ICONS, true },
 	{ "user", &ANGBAND_DIR_USER, true },
 	{ "save", &ANGBAND_DIR_SAVE, false },
+	{ "archive", &ANGBAND_DIR_ARCHIVE, true },
 };
 
 /**
