@@ -288,26 +288,28 @@ if test "$enable_sdl2" = "yes"; then
 			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_image -lSDL2_ttf"
 			MAINFILES="${MAINFILES} \$(SDL2MAINFILES)"
+			enable_sdl=no
+			enable_sdl_mixer=no
 		fi
 	fi
-fi
+else
+	dnl SDL checking
+	if test "$enable_sdl" = "yes"; then
+	   AM_PATH_SDL(1.2.10,,)
 
-dnl SDL checking
-if test "$enable_sdl" = "yes"; then
-	AM_PATH_SDL(1.2.10,,)
+	   if test "$SDL_CONFIG" = "no"; then
+		  with_sdl=no
+	   else
+			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
+			AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
 
-	if test "$SDL_CONFIG" = "no"; then
-		with_sdl=no
-	else
-		AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
-		AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
-
-		if test "$with_sdl" = "yes"; then
-			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
-			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
-			LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
-			MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
-		fi
+			if test "$with_sdl" = "yes"; then
+			   		AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
+					CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+					LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
+					MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
+		    fi
+	    fi
 	fi
 fi
 
