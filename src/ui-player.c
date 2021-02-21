@@ -925,6 +925,10 @@ void write_character_dump(ang_file *fff)
 	int n;
 	char *buf, *p;
 
+	if (!have_valid_char_sheet_config()) {
+		configure_char_sheet();
+	}
+
 	n = 80;
 	if (n < 2 * cached_config->res_cols + 1) {
 		n = 2 * cached_config->res_cols + 1;
