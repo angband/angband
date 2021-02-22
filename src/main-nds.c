@@ -1521,6 +1521,11 @@ int main(int argc, char *argv[])
 		nds_fatal_err("Make sure the game is patched with the correct DLDI.\n");
 		nds_fatal_err(" (see https://www.chishm.com/DLDI/ for more info).\n");
 		nds_fatal_err("\n\nUnable to access filesystem.\nCannot continue.\n");
+
+		/* Lock up */
+		while(1)
+			swiWaitForVBlank();
+
 		return 1;
 	}
 
@@ -1532,6 +1537,11 @@ int main(int argc, char *argv[])
 	chdir("/angband");
 	if (!nds_load_kbd()) {
 		nds_fatal_err("\nError loading keyboard graphics.\nCannot continue.\n");
+
+		/* Lock up */
+		while(1)
+			swiWaitForVBlank();
+
 		return 1; /* die */
 	}
 	kbd_init();
@@ -1541,6 +1551,11 @@ int main(int argc, char *argv[])
 
 	if (!nds_load_tiles()) {
 		nds_fatal_err("\n\nNo tileset could be loaded.\nCannot continue.\n");
+
+		/* Lock up */
+		while(1)
+			swiWaitForVBlank();
+
 		return 1;
 	}
 
