@@ -1352,23 +1352,6 @@ void swap_font(bool bottom)
 	}
 }
 
-void on_irq();
-
-/* on_irq, do nothing */
-void on_irq()
-{
-	REG_IME = 0;
-	if (REG_IF & IRQ_VBLANK) {
-		/* Tell the DS we handled the VBLANK interrupt */
-		INTR_WAIT_FLAGS |= IRQ_VBLANK;
-		REG_IF |= IRQ_VBLANK;
-	} else {
-		/* Ignore all other interrupts */
-		REG_IF = REG_IF;
-	}
-	REG_IME = 1;
-}
-
 void nds_raw_print(const char *str)
 {
 	static u16b x = 0, y = 32;
@@ -1586,14 +1569,6 @@ int main(int argc, char *argv[])
 	REG_BG2PD_SUB = 1 << 8;
 	REG_BG2Y_SUB = 0;
 	REG_BG2X_SUB = 0;
-
-	/* Enable the V-blank interrupt */
-	REG_IME = 0;
-	IRQ_HANDLER = on_irq;
-	REG_IE = IRQ_VBLANK;
-	REG_IF = ~0;
-	REG_DISPSTAT = DISP_VBLANK_IRQ;
-	REG_IME = 1;
 
 	register int fd;
 
