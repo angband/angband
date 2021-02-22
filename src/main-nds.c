@@ -31,13 +31,9 @@
 #include "ui-term.h"
 
 /* DS includes */
-#include "nds/ds_errfont.h"
-#include "nds/ds_ipc.h"
+#include "nds/ds_font_3x8.h"
 #include "nds/ds_main.h"
-u16 *subfont_rgb_bin = (u16 *)(0x06018400);
-u16 *subfont_bgr_bin = (u16 *)(0x0601C400);
-u16 *top_font_bin;
-u16 *btm_font_bin;
+
 u16 *tiles_bin; /* = (u16*)0x06020400; */
 
 #define NDS_BUTTON_FILE "buttons.dat"
@@ -531,23 +527,6 @@ byte kbd_vblank()
 					    'R' & 0x1F; /* send a redraw command
 					                   to nethack */
 					last_code = 0;
-				} else if (keycode ==
-				           K_F(6)) { /* F6: toggle top font */
-					swap_font(false);
-					nds_updated = 0xFF;
-					if (access("/NetHack/swapfont", 04) !=
-					    -1) {
-						unlink("/NetHack/swapfont");
-					} else {
-						FILE *f = fopen(
-						    "/NetHack/swapfont", "w");
-						fwrite(
-						    &f, 4, 1,
-						    f); /* otherwise FileExists
-						           doesnt work */
-						fclose(f);
-					}
-					keycode = last_code = 0;
 				}
 				kbd_togglemod(K_MODIFIER, 0);
 			}
@@ -915,36 +894,35 @@ static errr Term_curs_nds(int x, int y)
 
 void draw_char(byte x, byte y, char c)
 {
-	u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
+	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
+
 	u16b *fb = BG_GFX;
-	const u16b *chardata = top_font_bin;
 	if (y & 32) {
 		fb = &BG_GFX_SUB[16 * 1024];
-		chardata = btm_font_bin;
 	}
+
 	byte xx, yy;
-	for (yy = 0; yy < 8; yy++)
-		for (xx = 0; xx < 3; xx++)
-			fb[yy * 256 + xx + vram_offset] =
-			    chardata[yy * 3 + xx + tile_offset] | BIT(15);
+	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
+		for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
+			fb[yy * 256 + xx + vram_offset] = nds_font_pixel(c, xx, yy) | BIT(15);
+		}
+	}
 }
 
 void draw_color_char(byte x, byte y, char c, byte clr)
 {
-	u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
+	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
+
 	u16b *fb = BG_GFX;
-	const u16b *chardata = top_font_bin;
 	if (y & 32) {
 		fb = &BG_GFX_SUB[16 * 1024];
-		chardata = btm_font_bin;
 	}
+
 	byte xx, yy;
-	u16b val;
 	u16b fgc = color_data[clr & 0xF];
-	for (yy = 0; yy < 8; yy++) {
-		for (xx = 0; xx < 3; xx++) {
-			val = (chardata[yy * 3 + xx + tile_offset]);
-			fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
+	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
+		for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
+			fb[yy * 256 + xx + vram_offset] = (nds_font_pixel(c, xx, yy) & fgc) | BIT(15);
 		}
 	}
 }
@@ -1214,40 +1192,16 @@ static void init_stuff(void)
 	// strcpy(savefile, "/angband/lib/save/PLAYER");
 }
 
-void nds_init_fonts()
-{
-	/* the font is now compiled in as ds_subfont for error reporting
-	 * purposes */
-	/* ds_subfont contains the bgr version */
-	/*subfont_bgr_bin = &ds_subfont[0]; */
-	u16b i;
-	u16b t, t2;
-	for (i = 0; i < 8 * 3 * 256; i++) {
-		t = ds_subfont[i];
-		t2 = t & 0x8000;
-		t2 |= (t & 0x001f) << 10;
-		t2 |= (t & 0x03e0);
-		t2 |= (t & 0x7c00) >> 10;
-		subfont_bgr_bin[i] = t;
-		subfont_rgb_bin[i] = t2;
-	}
-	top_font_bin = subfont_rgb_bin;
-	btm_font_bin = subfont_bgr_bin;
-}
-
 /* if you are calling this function, not much should be happening after */
 /* since it clobbers the font pointers */
 void nds_fatal_err(const char *msg)
 {
 	static byte x = 2, y = 1;
 	byte i = 0;
-	/*top_font_bin = btm_font_bin = &ds_subfont[0]; */
-	/*	x = 2; */
-	/*	y = 1; */
 	for (i = 0; msg[i] != '\0'; i++) {
 		draw_char(x, y, msg[i]);
 		x++;
-		if (msg[i] == '\n' || x > 80) {
+		if (msg[i] == '\n' || x > (250 / NDS_FONT_WIDTH) - 2) {
 			x = 2;
 			y++;
 		}
@@ -1281,13 +1235,11 @@ bool nds_load_kbd()
 {
 #define NUM_FILES 3
 	const char *files[] = {
-	    /*	"subfont_rgb.bin","subfont_bgr.bin", */
 	    "/angband/nds/kbd.bin",
 	    "/angband/nds/kbd.pal",
 	    "/angband/nds/kbd.map",
 	};
 	const u16b *dests[] = {
-	    /*	subfont_rgb_bin, subfont_bgr_bin, */
 	    (u16b *)BG_TILE_RAM_SUB(0),
 	    BG_PALETTE_SUB,
 	    (u16 *)BG_MAP_RAM_SUB(8),
@@ -1335,21 +1287,6 @@ void nds_init_buttons()
 	fread(&nds_btn_cmds[0], NDS_CMD_LENGTH,
 	      (NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER), f);
 	fclose(f);
-}
-
-void swap_font(bool bottom)
-{
-	if (!bottom) {
-		if (top_font_bin == subfont_rgb_bin)
-			top_font_bin = subfont_bgr_bin;
-		else
-			top_font_bin = subfont_rgb_bin;
-	} else {
-		if (btm_font_bin == subfont_rgb_bin)
-			btm_font_bin = subfont_bgr_bin;
-		else
-			btm_font_bin = subfont_rgb_bin;
-	}
 }
 
 void nds_raw_print(const char *str)
@@ -1572,8 +1509,6 @@ int main(int argc, char *argv[])
 
 	register int fd;
 
-	nds_init_fonts();
-
 	swiWaitForVBlank();
 	swiWaitForVBlank();
 	swiWaitForVBlank();
@@ -1601,16 +1536,6 @@ int main(int argc, char *argv[])
 	}
 	kbd_init();
 	nds_init_buttons();
-
-	fifoSendValue32(IPC_NDS_TYPE, 0); /* to arm7: everything has init'ed */
-	fifoWaitValue32(
-	    IPC_NDS_TYPE); /* wait for response about the NDS type */
-
-	if (fifoGetValue32(IPC_NDS_TYPE) == 1) { /* it's a DS lite */
-		swap_font(false);
-	} else if (access("/angband/swapfont", 04) != -1) {
-		swap_font(false);
-	}
 
 	use_graphics = true;
 
