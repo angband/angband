@@ -1545,7 +1545,7 @@ void nds_exit(int code)
 		nds_updated = 0xFF;
 		do_vblank(); /* wait 1 sec. */
 	}
-	fifoSendValue32(IPC_SHUTDOWN, 1); /* tell arm7 to shut down the DS */
+	systemShutDown();
 }
 
 /*
