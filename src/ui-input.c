@@ -409,6 +409,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	const char *msg;
 
 	if (!data) return;
+	if (OPT(player, auto_more) || keymap_auto_more) return;
 
 	type = data->message.type;
 	msg = data->message.msg;
