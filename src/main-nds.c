@@ -1107,6 +1107,21 @@ void nds_log(const char *msg)
 	}
 }
 
+void nds_logf(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	int len = vsnprintf(NULL, 0, format, args);
+
+	char buf[len];
+
+	vsprintf(buf, format, args);
+	nds_log(buf);
+
+	va_end(args);
+}
+
 /*should be replaced with open and read from z-file.c */
 bool nds_load_file(const char *name, u16b *dest, u32b len)
 {
@@ -1144,12 +1159,10 @@ bool nds_load_kbd()
 	    (u16 *)BG_MAP_RAM_SUB(8),
 	};
 
-	char buf[64] = "\0";
 	u16b i;
 	for (i = 0; i < NUM_FILES; i++) {
 		if (!nds_load_file(files[i], dests[i], 0)) {
-			sprintf(buf, "Error opening %s (errno=%d)\n", files[i], errno);
-			nds_log(buf);
+			nds_logf("Error opening %s (errno=%d)\n", files[i], errno);
 			return false;
 		}
 	}
