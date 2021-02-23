@@ -1093,9 +1093,7 @@ static void init_stuff(void)
 	// strcpy(savefile, "/angband/lib/save/PLAYER");
 }
 
-/* if you are calling this function, not much should be happening after */
-/* since it clobbers the font pointers */
-void nds_fatal_err(const char *msg)
+void nds_log(const char *msg)
 {
 	static byte x = 2, y = 1;
 	byte i = 0;
@@ -1151,7 +1149,7 @@ bool nds_load_kbd()
 	for (i = 0; i < NUM_FILES; i++) {
 		if (!nds_load_file(files[i], dests[i], 0)) {
 			sprintf(buf, "Error opening %s (errno=%d)\n", files[i], errno);
-			nds_fatal_err(buf);
+			nds_log(buf);
 			return false;
 		}
 	}
@@ -1227,7 +1225,7 @@ static void hook_quit(const char *str)
 
 	/* Give a warning */
 	if (str) {
-		nds_fatal_err(str);
+		nds_log(str);
 	}
 
 	/* Bail */
@@ -1293,10 +1291,10 @@ int main(int argc, char *argv[])
 	swiWaitForVBlank();
 
 	if (!fatInitDefault()) {
-		nds_fatal_err("\nError initializing FAT drivers.\n");
-		nds_fatal_err("Make sure the game is patched with the correct DLDI.\n");
-		nds_fatal_err(" (see https://www.chishm.com/DLDI/ for more info).\n");
-		nds_fatal_err("\n\nUnable to access filesystem.\nCannot continue.\n");
+		nds_log("\nError initializing FAT drivers.\n");
+		nds_log("Make sure the game is patched with the correct DLDI.\n");
+		nds_log(" (see https://www.chishm.com/DLDI/ for more info).\n");
+		nds_log("\n\nUnable to access filesystem.\nCannot continue.\n");
 
 		/* Lock up */
 		while(1)
@@ -1312,7 +1310,7 @@ int main(int argc, char *argv[])
 
 	chdir("/angband");
 	if (!nds_load_kbd()) {
-		nds_fatal_err("\nError loading keyboard graphics.\nCannot continue.\n");
+		nds_log("\nError loading keyboard graphics.\nCannot continue.\n");
 
 		/* Lock up */
 		while(1)

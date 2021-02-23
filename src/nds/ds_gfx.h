@@ -13,7 +13,7 @@ void draw_color_char(byte x, byte y, char c, byte clr);
 void draw_curs(byte x, byte y);
 void render_all_windows();
 bool nds_load_kbd();	// now this is just kbd gfx
-void nds_fatal_err(const char* msg);
+void nds_log(const char* msg);
 
 
 #endif
