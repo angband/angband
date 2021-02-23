@@ -9,7 +9,6 @@
 #include "ds_kbd.h"
 #include "ds_btn.h"
 
-extern u8 nds_ascii_graphics;
 void do_vblank();
 void nds_debug_print();
 

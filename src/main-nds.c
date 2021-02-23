@@ -34,8 +34,6 @@
 #include "nds/ds_font_3x8.h"
 #include "nds/ds_main.h"
 
-u16 *tiles_bin; /* = (u16*)0x06020400; */
-
 #define NDS_BUTTON_FILE "buttons.dat"
 
 #define NDS_MAPPABLE_MASK (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START | KEY_SELECT)
@@ -70,23 +68,6 @@ s16 nds_buttons_to_btnid(u16 kd, u16 kh)
 	}
 	return -1;
 }
-
-#define total_tiles_used 512 /*hack, guess  */
-
-#define DEF_TILE_WIDTH 8
-#define DEF_TILE_HEIGHT 8
-#define DEF_TILE_FILE "/angband/lib/xtra/graf/8x8.bmp"
-#define DEF_TILES_PER_ROW 32
-
-/* don't change these */
-u16b TILE_WIDTH;
-u16b TILE_HEIGHT;
-char *TILE_FILE;
-u16b NDS_SCREEN_COLS;
-u16b NDS_SCREEN_ROWS;
-#define c1(a, i) (RGB15((a[i] >> 3), (a[i + 1] >> 3), (a[i + 2] >> 3)))
-#define c2(a, i) (RGB15((a[i + 2] >> 3), (a[i + 1] >> 3), (a[i] >> 3)))
-#define TILE_BUFFER_SIZE (TILE_WIDTH * TILE_HEIGHT * (total_tiles_used + 1) * 2)
 
 const nds_kbd_key row0[] = {{16, (u16)'`'}, {16, (u16)'1'},  {16, (u16)'2'},
                             {16, (u16)'3'}, {16, (u16)'4'},  {16, (u16)'5'},
@@ -125,12 +106,6 @@ typedef struct term_data term_data;
 
 struct term_data {
 	term t;
-
-	byte rows;
-	byte cols;
-
-	int tile_height;
-	int tile_width;
 };
 
 /*
@@ -212,8 +187,8 @@ static void Term_nuke_nds(term *t)
 static void pixel_to_square(int *const x, int *const y, const int ox,
                             const int oy)
 {
-	(*x) = ox / TILE_WIDTH;
-	(*y) = oy / TILE_HEIGHT;
+	(*x) = ox / NDS_FONT_WIDTH;
+	(*y) = oy / NDS_FONT_HEIGHT;
 }
 
 /*
@@ -517,17 +492,6 @@ byte kbd_vblank()
 			}
 
 			if (keycode & K_F(0)) { /* its an f-key */
-				if (keycode ==
-				    K_F(5)) { /* F5: toggle to text mode */
-					// nds_ascii_graphics =
-					// ~nds_ascii_graphics; iflags.use_color
-					// = nds_ascii_graphics;
-					/*doredraw(); */
-					keycode =
-					    'R' & 0x1F; /* send a redraw command
-					                   to nethack */
-					last_code = 0;
-				}
 				kbd_togglemod(K_MODIFIER, 0);
 			}
 		}
@@ -874,17 +838,16 @@ static errr Term_xtra_nds(int n, int v)
  */
 static errr Term_curs_nds(int x, int y)
 {
-	u32b vram_offset =
-	    (y - 1) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 8 * 256;
+	u32b vram_offset = y * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
 	byte xx, yy;
-	for (xx = 0; xx < TILE_WIDTH; xx++) {
+	for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
 		BG_GFX[xx + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[256 * (TILE_HEIGHT - 1) + xx + vram_offset] =
+		BG_GFX[256 * (NDS_FONT_HEIGHT - 1) + xx + vram_offset] =
 		    RGB15(31, 31, 0) | BIT(15);
 	}
-	for (yy = 0; yy < TILE_HEIGHT; yy++) {
+	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		BG_GFX[yy * 256 + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[yy * 256 + TILE_WIDTH - 1 + vram_offset] =
+		BG_GFX[yy * 256 + NDS_FONT_WIDTH - 1 + vram_offset] =
 		    RGB15(31, 31, 0) | BIT(15);
 	}
 
@@ -1005,63 +968,6 @@ static errr Term_text_nds(int x, int y, int n, byte a, const char *cp)
 	return (0);
 }
 
-void draw_tile(byte x, byte y, u16b tile)
-{
-	u32b vram_offset = (y & 0x7F) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 8 * 256,
-	     tile_offset = (tile & 0x7FFF) * TILE_WIDTH * TILE_HEIGHT;
-	u16b *fb = BG_GFX;
-	byte xx, yy;
-	for (yy = 0; yy < TILE_HEIGHT; yy++)
-		for (xx = 0; xx < TILE_WIDTH; xx++)
-			fb[yy * 256 + xx + vram_offset] =
-			    tiles_bin[yy * TILE_WIDTH + xx + tile_offset] | BIT(15);
-}
-
-/*
- * Draw some attr/char pairs on the screen
- *
- * This routine should display the given "n" attr/char pairs at
- * the given location (x,y).  This function is only used if one
- * of the flags "always_pict" or "higher_pict" is defined.
- *
- * You must be sure that the attr/char pairs, when displayed, will
- * erase anything (including any visual cursor) that used to be at
- * the given location.  On many machines this is automatic, but on
- * others, you must first call "Term_wipe_xxx(x, y, 1)".
- *
- * With the "higher_pict" flag, this function can be used to allow
- * the display of "pseudo-graphic" pictures, for example, by using
- * the attr/char pair as an encoded index into a pixmap of special
- * "pictures".
- *
- * With the "always_pict" flag, this function can be used to force
- * every attr/char pair to be drawn by this function, which can be
- * very useful if this file can optimize its own display calls.
- *
- * This function is often associated with the "arg_graphics" flag.
- *
- * This function is only used if one of the "higher_pict" and/or
- * "always_pict" flags are set.
- */
-static errr Term_pict_nds(int x, int y, int n, const byte *ap, const char *cp)
-{
-	term_data *td = (term_data *)(Term->data);
-	u16b tile_number = DEF_TILES_PER_ROW * (*ap - 0x80) + (*cp - 0x80);
-	/* XXX XXX XXX */
-
-	int i;
-
-	/* Put the characters directly */
-	for (i = 0; i < n, *cp; i++) {
-		if ((x + i < Term->wid) && (*cp != '\0'))
-			draw_tile(x + i, y, tile_number);
-		else
-			break;
-	}
-	/* Success */
-	return (0);
-}
-
 /*** Internal Functions ***/
 
 /*
@@ -1102,7 +1008,7 @@ static void term_data_link(int i)
 
 	/* Use "Term_pict()" for some attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
-	t->higher_pict = true;
+	/* t->higher_pict = true; */
 
 	/* Use "Term_text()" even for "black" text XXX XXX XXX */
 	/* See the "Term_text_xxx()" function above. */
@@ -1125,7 +1031,6 @@ static void term_data_link(int i)
 	t->curs_hook = Term_curs_nds;
 	t->wipe_hook = Term_wipe_nds;
 	t->text_hook = Term_text_nds;
-	t->pict_hook = Term_pict_nds;
 
 	/* Remember where we came from */
 	t->data = (void *)(td);
@@ -1151,10 +1056,6 @@ errr init_nds(void)
 	/* Main window */
 	td = &data[0];
 	memset(td, 0, sizeof(term_data));
-	td->rows = 24;
-	td->cols = 37;
-	td->tile_height = 8;
-	td->tile_width = 3;
 
 	/* Create windows (backwards!) */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--) {
@@ -1306,131 +1207,6 @@ void nds_raw_print(const char *str)
 	fflush(0);
 }
 
-bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
-{
-#define h TILE_HEIGHT
-#define w TILE_WIDTH
-	/* bmpxy2off works ONLY inside nds_load_tile_bmp! */
-#define bmpxy2off(x, y) (((y - (y % h)) * iw + (y % h)) * w + x * h)
-	FILE *f = fopen(name, "r");
-	u32b writeidx = 0;
-	u32b i, j, l;
-	s16b y;
-	u32b off;
-	s32b iw2, ih2;
-	u16b iw = 0, ih = 0;
-	/*s32 ty; */
-	u16b depth;
-	char buf[10];
-	/*if (f) nds_raw_print("File OK"); */
-	/*else nds_raw_print("No file opened"); */
-	fseek(f, 10, SEEK_SET);
-	fread(&off, 4, 1, f);
-	fseek(f, 4, SEEK_CUR);
-	fread(&iw2, 4, 1, f);
-	fread(&ih2, 4, 1, f);
-	fseek(f, 2, SEEK_CUR);
-	fread(&depth, 2, 1, f);
-	strnfmt(buf, 10, "depth = %d", depth);
-	if (depth != 24) {
-		fclose(f);
-		nds_raw_print(" depth problem");
-		return false;
-	}
-	y = ih2 - 1; /* some crazy person decided to store the lines in a .bmp
-	                backwards */
-	ih = ih2 / h;
-	iw = iw2 / w;
-
-	if (len == 0)
-		len = 0xffffffff;
-
-	fseek(f, off, SEEK_SET);
-
-	byte temp[1];
-	while (y >= 0) {
-		for (i = 0; i < iw; i++) {
-			writeidx = bmpxy2off(i * w, y);
-			for (j = 0; j < w; j++) {
-				fread(temp, 1, 1, f);
-				if (writeidx * 2 < len)
-					dest[writeidx++] = c2(temp, 0);
-			}
-		}
-		/* x&3 == x%4 */
-		fseek(f, 2 - (iw * w), SEEK_CUR);
-		y--;
-	}
-
-	fclose(f);
-	return true;
-#undef bmpxy2off
-#undef h
-#undef w
-}
-
-bool nds_load_tile_file(char *name, u16b *dest, u32b len)
-{
-	char ext[4];
-	u16b slen = strlen(name);
-	strcpy(ext, name + slen - 3);
-	nds_raw_print(name + len - 3);
-	if (strcmp(ext, "bmp") == 0) {
-		return nds_load_tile_bmp(name, dest, len);
-	} else { /* assume .bin maybe w/ funny ext */
-		return nds_load_file(name, dest, len);
-	}
-}
-
-bool nds_load_tiles()
-{
-	char buf[64];
-	int died1 = -1, died2 = -1;
-	;
-	if (TILE_FILE != NULL) {
-		if (TILE_WIDTH == 0)
-			TILE_WIDTH = DEF_TILE_WIDTH;
-		if (TILE_HEIGHT == 0)
-			TILE_HEIGHT = DEF_TILE_HEIGHT;
-		tiles_bin = (u16b *)malloc(TILE_BUFFER_SIZE);
-		if (!nds_load_tile_file(TILE_FILE, tiles_bin,
-		                        TILE_BUFFER_SIZE)) {
-			died1 = errno;
-			free(tiles_bin);
-		} else {
-			goto finish;
-		}
-	}
-	TILE_WIDTH = DEF_TILE_WIDTH;
-	TILE_HEIGHT = DEF_TILE_HEIGHT;
-	tiles_bin = (u16b *)malloc(TILE_BUFFER_SIZE);
-	if (!nds_load_tile_file(DEF_TILE_FILE, tiles_bin, TILE_BUFFER_SIZE)) {
-		died2 = errno;
-		free(tiles_bin);
-	}
-
-	if (died1 != -1) {
-		sprintf(buf, "Error loading tileset %s (errno=%d)\n", TILE_FILE,
-		        died1);
-		if (died2 == -1) {
-			nds_raw_print(buf);
-		} else {
-			nds_fatal_err(buf);
-		}
-	}
-	if (died2 != -1) {
-		sprintf(buf, "Error loading default tileset %s %s\n",
-		        DEF_TILE_FILE, strerror(died2));
-		nds_fatal_err(buf);
-		return false;
-	}
-
-finish:
-	NDS_SCREEN_ROWS = 168 / TILE_HEIGHT;
-	NDS_SCREEN_COLS = 256 / TILE_WIDTH;
-	return true;
-}
-
 /*
  * Display warning message (see "z-util.c")
  */
@@ -1547,23 +1323,6 @@ int main(int argc, char *argv[])
 	kbd_init();
 	nds_init_buttons();
 
-	use_graphics = true;
-
-	if (!nds_load_tiles()) {
-		nds_fatal_err("\n\nNo tileset could be loaded.\nCannot continue.\n");
-
-		/* Lock up */
-		while(1)
-			swiWaitForVBlank();
-
-		return 1;
-	}
-
-	if (!use_graphics) {
-		TILE_HEIGHT = 8;
-		TILE_WIDTH = 3;
-	}
-
 	/* Activate hooks */
 	plog_aux = hook_plog;
 	quit_aux = hook_quit;
@@ -1578,11 +1337,6 @@ int main(int argc, char *argv[])
 	/* Initialize some stuff */
 	init_stuff();
 
-	draw_tile(2, 2, 5);
-	draw_tile(4, 2, 15);
-	draw_tile(6, 2, 25);
-	draw_tile(8, 2, 35);
-
 	/* About to start */
 	game_start = true;
 
@@ -1590,8 +1344,6 @@ int main(int argc, char *argv[])
 		/* Initialize */
 		init_angband();
 
-		for (i = 0; i < 50; i++)
-			draw_tile(i % 10, i / 10, i + 600);
 		/* Wait for response */
 		pause_line(Term);
 
