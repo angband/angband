@@ -1910,6 +1910,86 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 }
 
 /**
+ * Learn things when an object is bought or sold.
+ *
+ * \param p is the player
+ * \param obj is the object being bought or sold
+ */
+void object_learn_on_trade(struct player *p, struct object *obj)
+{
+	bool learned = false;
+
+	/* Learn flavor and effect. */
+	object_flavor_aware(obj);
+	obj->known->effect = obj->effect;
+
+	/* Learn any curse runes and the runes affected by those curses. */
+	if (obj->curses) {
+		int i;
+		bitflag f[OF_SIZE];
+
+		for (i = 1; i < z_info->curse_max; i++) {
+			int j;
+
+			if (!obj->curses[i].power) continue;
+
+			if (!player_knows_curse(p, i)) {
+				learned = true;
+				player_learn_rune(p,
+					rune_index(RUNE_VAR_CURSE, i), true);
+			}
+
+			object_flags(curses[i].obj, f);
+			for (j = of_next(f, FLAG_START); j != FLAG_END;
+					j = of_next(f, j + 1)) {
+				if (!of_has(p->obj_k->flags, j)) {
+					learned = true;
+					player_learn_rune(p,
+						rune_index(RUNE_VAR_FLAG, j),
+						true);
+				}
+			}
+
+			for (j = 0; j < OBJ_MOD_MAX; j++) {
+				if (!curses[i].obj->modifiers[j]) continue;
+				if (!p->obj_k->modifiers[j]) {
+					learned = true;
+					player_learn_rune(p,
+						rune_index(RUNE_VAR_MOD, j),
+						true);
+				}
+			}
+
+			for (j = 0; j < ELEM_MAX; j++) {
+				if (!curses[i].obj->el_info[j].res_level)
+					continue;
+				if (!p->obj_k->el_info[j].res_level) {
+					learned = true;
+					player_learn_rune(p,
+						rune_index(RUNE_VAR_RESIST, j),
+						true);
+				}
+			}
+		}
+	}
+
+	/* Learn all the other runes. */
+	while (!object_fully_known(obj)) {
+		learned = true;
+		object_learn_unknown_rune(p, obj);
+	}
+
+	/*
+	 * Since the object is in transit between the player and store, it
+	 * wouldn't have been updated by update_player_object_knowledge().
+	 * Do so now.
+	 */
+	if (learned) {
+		player_know_object(p, obj);
+	}
+}
+
+/**
  * ------------------------------------------------------------------------
  * Functions for learning about equipment properties
  * These functions are for gaining object knowledge from the behaviour of

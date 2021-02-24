@@ -95,6 +95,7 @@ void object_learn_on_use(struct player *p, struct object *obj);
 void object_learn_brand(struct player *p, struct object *obj, int index);
 void object_learn_slay(struct player *p, struct object *obj, int index);
 void missile_learn_on_ranged_attack(struct player *p, struct object *obj);
+void object_learn_on_trade(struct player *p, struct object *obj);
 
 bool easy_know(const struct object *obj);
 bool object_flavor_is_aware(const struct object *obj);

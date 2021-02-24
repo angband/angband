@@ -1703,12 +1703,7 @@ void do_cmd_buy(struct command *cmd)
 	bought->known = known_obj;
 
 	/* Learn flavor, any effect and all the runes */
-	object_flavor_aware(bought);
-	bought->known->effect = bought->effect;
-	while (!object_fully_known(bought)) {
-		object_learn_unknown_rune(player, bought);
-		player_know_object(player, bought);
-	}
+	object_learn_on_trade(player, bought);
 
 	/* Give it to the player */
 	inven_carry(player, bought, true, true);
@@ -1900,13 +1895,8 @@ void do_cmd_sell(struct command *cmd)
 	 */
 	object_wipe(&dummy_item);
 
-	/* Know flavor of consumables */
-	object_flavor_aware(obj);
-	obj->known->effect = obj->effect;
-	while (!object_fully_known(obj)) {
-		object_learn_unknown_rune(player, obj);
-		player_know_object(player, obj);
-	}
+	/* Learn flavor, any effect and all the runes */
+	object_learn_on_trade(player, obj);
 
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);
