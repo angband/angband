@@ -503,7 +503,7 @@ static int quiver_absorb_num(const struct object *obj)
 		for (i = 0; i < z_info->quiver_size; i++) {
 			struct object *quiver_obj = player->upkeep->quiver[i];
 			if (quiver_obj) {
-				int mult = ammo ? 1 : 5;
+				int mult = tval_is_ammo(quiver_obj) ? 1 : 5;
 
 				quiver_count += quiver_obj->number * mult;
 				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
