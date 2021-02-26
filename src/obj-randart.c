@@ -473,9 +473,9 @@ void count_bow_abilities(const struct artifact *art,
 		data->art_probs[ART_IDX_WEAPON_AGGR]++;
 	}
 
-	/* Do we have 3 or more extra shots? (Unlikely) */
-	if (art->modifiers[OBJ_MOD_SHOTS] > 2) {
-		file_putf(log_file, "Adding 1 for supercharged shots (3 or more!)\n");
+	/* Do we have more than 1 extra shot? (Unlikely) */
+	if (art->modifiers[OBJ_MOD_SHOTS] > 10) {
+		file_putf(log_file, "Adding 1 for supercharged shots (more than 1!)\n");
 		(data->art_probs[ART_IDX_BOW_SHOTS_SUPER])++;
 	} else if (art->modifiers[OBJ_MOD_SHOTS] > 0) {
 		file_putf(log_file, "Adding 1 for extra shots\n");
@@ -1234,16 +1234,16 @@ static void adjust_freqs(struct artifact_set_data *data)
 		data->art_probs[ART_IDX_GEN_TUNN] = 5;
 	if (data->art_probs[ART_IDX_NONWEAPON_BRAND] < 2)
 		data->art_probs[ART_IDX_NONWEAPON_BRAND] = 2;
-	if (data->art_probs[ART_IDX_NONWEAPON_SLAY] < 2)
-		data->art_probs[ART_IDX_NONWEAPON_SLAY] = 2;
+	if (data->art_probs[ART_IDX_NONWEAPON_SLAY] < 1)
+		data->art_probs[ART_IDX_NONWEAPON_SLAY] = 1;
 	if (data->art_probs[ART_IDX_BOW_BRAND] < 2)
 		data->art_probs[ART_IDX_BOW_BRAND] = 2;
 	if (data->art_probs[ART_IDX_BOW_SLAY] < 2)
 		data->art_probs[ART_IDX_BOW_SLAY] = 2;
-	if (data->art_probs[ART_IDX_NONWEAPON_BLOWS] < 2)
-		data->art_probs[ART_IDX_NONWEAPON_BLOWS] = 2;
-	if (data->art_probs[ART_IDX_NONWEAPON_SHOTS] < 2)
-		data->art_probs[ART_IDX_NONWEAPON_SHOTS] = 2;
+	if (data->art_probs[ART_IDX_NONWEAPON_BLOWS] < 1)
+		data->art_probs[ART_IDX_NONWEAPON_BLOWS] = 1;
+	if (data->art_probs[ART_IDX_NONWEAPON_SHOTS] < 1)
+		data->art_probs[ART_IDX_NONWEAPON_SHOTS] = 1;
 	if (data->art_probs[ART_IDX_GEN_AC_SUPER] < 5)
 		data->art_probs[ART_IDX_GEN_AC_SUPER] = 5;
 	if (data->art_probs[ART_IDX_MELEE_AC] < 5)
@@ -1722,9 +1722,9 @@ static bool add_mod(struct artifact *art, int mod)
 {
 	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_MOD, mod);
 
-	/* Blows, might, shots need special treatment */
+	/* Blows, might, moves need special treatment */
 	bool powerful = ((mod == OBJ_MOD_BLOWS) || (mod == OBJ_MOD_MIGHT) ||
-					 (mod == OBJ_MOD_SHOTS) || (mod == OBJ_MOD_MOVES));
+					 (mod == OBJ_MOD_MOVES));
 	bool success = false;
 
 	/* This code aims to favour a few larger bonuses over many small ones */
@@ -2354,6 +2354,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 			break;
 
 		case ART_IDX_GEN_MOVES:
+		case ART_IDX_BOOT_MOVES:
 			add_mod(art, OBJ_MOD_MOVES);
 			break;
 
