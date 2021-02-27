@@ -19,5 +19,6 @@ dist:
 	scripts/version.sh > $(TAG)/version
 	$(TAG)/autogen.sh
 	rm -rf $(TAG)/autogen.sh $(TAG)/autom4te.cache
-	tar --exclude .gitignore --exclude *.dll -czvf $(OUT) $(TAG)
+	tar --exclude .gitignore --exclude *.dll --exclude .github \
+		--exclude .travis.yml -czvf $(OUT) $(TAG)
 	rm -rf $(TAG)
