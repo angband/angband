@@ -943,28 +943,12 @@ static errr Term_wipe_nds(int x, int y, int n)
  * the "always_text" flag is set, if this flag is not set, all the
  * "black" text will be handled by the "Term_wipe_xxx()" hook.
  */
-static errr Term_text_nds(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
-	int i;
-
-	/* Do nothing if the string is null */
-	if (!cp || !*cp)
-		return (-1);
-
-	/* Get the length of the string */
-	if ((n > strlen(cp)) || (n < 0))
-		n = strlen(cp);
-
-	/* Put the characters directly */
-	for (i = 0; i < n, *cp; i++) {
-		/* Check it's the right attr */
-		if ((x + i < Term->wid) && (Term->scr->a[y][x + i] == a))
-			/* Put the char */
-			draw_color_char(x + i, y, (*(cp++)), a);
-		else
-			break;
+	for (int i = 0; i < n; i++) {
+		draw_color_char(x + i, y, s[i], a);
 	}
-	/* Success */
+
 	return (0);
 }
 
