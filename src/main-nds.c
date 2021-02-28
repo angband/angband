@@ -27,8 +27,12 @@
 #include "init.h"
 #include "main.h"
 #include "savefile.h"
+#include "ui-display.h"
+#include "ui-game.h"
+#include "ui-input.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "ui-init.h"
 
 /* DS includes */
 #include "nds/ds_font_3x8.h"
@@ -477,7 +481,7 @@ byte kbd_vblank()
 			the_y = yarr[1];
 
 		/* get the keycode that corresponds to this key */
-		u16b keycode = kbd_xy2key(the_x, the_y);
+		keycode = kbd_xy2key(the_x, the_y);
 
 		/* if it's not a modifier, highlight it */
 		if (keycode && !(keycode & K_MODIFIER))
@@ -711,8 +715,6 @@ static errr Term_xtra_nds(int n, int v)
 		 * Clear the entire window
 		 */
 		int x, y;
-		u32b vram_offset;
-		u16b *fb = BG_GFX;
 
 		for (y = 0; y < NDS_SCREEN_LINES; y++) {
 			for (x = 0; x < NDS_SCREEN_COLS; x++) {
@@ -1137,7 +1139,7 @@ bool nds_load_kbd()
 	    "/angband/nds/kbd.pal",
 	    "/angband/nds/kbd.map",
 	};
-	const u16b *dests[] = {
+	u16b *dests[] = {
 	    (u16b *)BG_TILE_RAM_SUB(0),
 	    BG_PALETTE_SUB,
 	    (u16 *)BG_MAP_RAM_SUB(8),
@@ -1213,22 +1215,6 @@ static void hook_plog(const char *str)
 	}
 }
 
-/*
- * Display error message and quit (see "z-util.c")
- */
-static void hook_quit(const char *str)
-{
-	int i, j;
-
-	/* Give a warning */
-	if (str) {
-		nds_log(str);
-	}
-
-	/* Bail */
-	nds_exit(0);
-}
-
 void nds_exit(int code)
 {
 	u16b i;
@@ -1240,6 +1226,20 @@ void nds_exit(int code)
 }
 
 /*
+ * Display error message and quit (see "z-util.c")
+ */
+static void hook_quit(const char *str)
+{
+	/* Give a warning */
+	if (str) {
+		nds_log(str);
+	}
+
+	/* Bail */
+	nds_exit(0);
+}
+
+/*
  * Main function
  *
  * This function must do a lot of stuff.
@@ -1248,7 +1248,6 @@ int main(int argc, char *argv[])
 {
 	bool game_start = false;
 	bool new_game = false;
-	int i;
 
 	/* Initialize the machine itself  */
 	/*START NETHACK STUFF */
@@ -1277,8 +1276,6 @@ int main(int argc, char *argv[])
 	REG_BG2PD_SUB = 1 << 8;
 	REG_BG2Y_SUB = 0;
 	REG_BG2X_SUB = 0;
-
-	register int fd;
 
 	swiWaitForVBlank();
 	swiWaitForVBlank();
