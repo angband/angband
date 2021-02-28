@@ -123,6 +123,65 @@ jobs:
           path: ${{ env.DOC_ARTIFACT_PATH }}
           retention-days: 1
 
+  source:
+    needs: setup
+    name: Source Archive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Install Build Dependencies
+        run: sudo apt-get install automake autoconf git make
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create Source Archive
+        id: create_source_archive
+        run: |
+          ./autogen.sh
+          ./configure
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=archive_file::${archive_prefix}.tar.gz"
+          echo "::set-output name=archive_content_type::application/gzip"
+          make TAG="$archive_prefix" OUT="$archive_prefix".tar.gz dist
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Source Archive
+        id: upload_source_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_source_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_source_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_source_archive.outputs.archive_content_type }}
+
   windows:
     needs: [setup, docconvert]
     name: Windows
