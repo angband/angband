@@ -34,6 +34,12 @@
 #include "nds/ds_font_3x8.h"
 #include "nds/ds_main.h"
 
+#define NDS_SCREEN_WIDTH 256
+#define NDS_SCREEN_HEIGHT 192
+
+#define NDS_SCREEN_COLS (NDS_SCREEN_WIDTH / NDS_FONT_WIDTH)
+#define NDS_SCREEN_LINES (NDS_SCREEN_HEIGHT / NDS_FONT_HEIGHT)
+
 #define NDS_BUTTON_FILE "buttons.dat"
 
 #define NDS_MAPPABLE_MASK (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START | KEY_SELECT)
@@ -708,15 +714,9 @@ static errr Term_xtra_nds(int n, int v)
 		u32b vram_offset;
 		u16b *fb = BG_GFX;
 
-		for (y = 0; y < 24; y++) {
-			for (x = 0; x < 80; x++) {
-				vram_offset = (y & 0x1F) * 8 * 256 + x * 3;
-
-				byte xx, yy;
-				for (yy = 0; yy < 8; yy++)
-					for (xx = 0; xx < 3; xx++)
-						fb[yy * 256 + xx +
-						   vram_offset] = 0;
+		for (y = 0; y < NDS_SCREEN_LINES; y++) {
+			for (x = 0; x < NDS_SCREEN_COLS; x++) {
+				draw_char(x, y, 0);
 			}
 		}
 
@@ -838,16 +838,16 @@ static errr Term_xtra_nds(int n, int v)
  */
 static errr Term_curs_nds(int x, int y)
 {
-	u32b vram_offset = y * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
+	u32b vram_offset = y * NDS_FONT_HEIGHT * NDS_SCREEN_WIDTH + x * NDS_FONT_WIDTH;
 	byte xx, yy;
 	for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
 		BG_GFX[xx + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[256 * (NDS_FONT_HEIGHT - 1) + xx + vram_offset] =
+		BG_GFX[NDS_SCREEN_WIDTH * (NDS_FONT_HEIGHT - 1) + xx + vram_offset] =
 		    RGB15(31, 31, 0) | BIT(15);
 	}
 	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
-		BG_GFX[yy * 256 + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[yy * 256 + NDS_FONT_WIDTH - 1 + vram_offset] =
+		BG_GFX[yy * NDS_SCREEN_WIDTH + vram_offset] = RGB15(31, 31, 0) | BIT(15);
+		BG_GFX[yy * NDS_SCREEN_WIDTH + NDS_FONT_WIDTH - 1 + vram_offset] =
 		    RGB15(31, 31, 0) | BIT(15);
 	}
 
@@ -857,7 +857,7 @@ static errr Term_curs_nds(int x, int y)
 
 void draw_char(byte x, byte y, char c)
 {
-	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
+	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * NDS_SCREEN_WIDTH + x * NDS_FONT_WIDTH;
 
 	u16b *fb = BG_GFX;
 	if (y & 32) {
@@ -867,14 +867,14 @@ void draw_char(byte x, byte y, char c)
 	byte xx, yy;
 	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-			fb[yy * 256 + xx + vram_offset] = nds_font_pixel(c, xx, yy) | BIT(15);
+			fb[yy * NDS_SCREEN_WIDTH + xx + vram_offset] = nds_font_pixel(c, xx, yy) | BIT(15);
 		}
 	}
 }
 
 void draw_color_char(byte x, byte y, char c, byte clr)
 {
-	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * 256 + x * NDS_FONT_WIDTH;
+	u32b vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * NDS_SCREEN_WIDTH + x * NDS_FONT_WIDTH;
 
 	u16b *fb = BG_GFX;
 	if (y & 32) {
@@ -885,7 +885,7 @@ void draw_color_char(byte x, byte y, char c, byte clr)
 	u16b fgc = color_data[clr & 0xF];
 	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-			fb[yy * 256 + xx + vram_offset] = (nds_font_pixel(c, xx, yy) & fgc) | BIT(15);
+			fb[yy * NDS_SCREEN_WIDTH + xx + vram_offset] = (nds_font_pixel(c, xx, yy) & fgc) | BIT(15);
 		}
 	}
 }
@@ -994,7 +994,7 @@ static void term_data_link(int i)
 	term *t = &td->t;
 
 	/* Initialize the term */
-	term_init(t, 85, 24, 256);
+	term_init(t, NDS_SCREEN_COLS, NDS_SCREEN_LINES, 256);
 
 	/* Choose "soft" or "hard" cursor XXX XXX XXX */
 	/* A "soft" cursor must be explicitly "drawn" by the program */
@@ -1100,7 +1100,7 @@ void nds_log(const char *msg)
 	for (i = 0; msg[i] != '\0'; i++) {
 		draw_char(x, y, msg[i]);
 		x++;
-		if (msg[i] == '\n' || x > (250 / NDS_FONT_WIDTH) - 2) {
+		if (msg[i] == '\n' || x > NDS_SCREEN_COLS - 2) {
 			x = 2;
 			y++;
 		}
