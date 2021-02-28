@@ -1353,7 +1353,9 @@ int main(int argc, char *argv[])
 
 	while (game_start) {
 		/* Initialize */
+		init_display();
 		init_angband();
+		textui_init();
 
 		/* Wait for response */
 		pause_line(Term);
@@ -1362,6 +1364,7 @@ int main(int argc, char *argv[])
 		play_game(new_game);
 
 		/* Free resources */
+		textui_cleanup();
 		cleanup_angband();
 	}
 
