@@ -255,12 +255,12 @@ void kbd_set_color_from_pos(u16b r, u16b k, byte color)
 	}
 	for (ii = 0; ii < (kbdrows[r][k].width >> 3); ii++) {
 		for (jj = 0; jj < 4; jj++) {
-			map[jj][(10 + r * 2) * 32 + ii + xx + 1] =
-			    (map[jj][(10 + r * 2) * 32 + ii + xx + 1] &
+			map[jj][(7 + r * 2) * 32 + ii + xx + 1] =
+			    (map[jj][(7 + r * 2) * 32 + ii + xx + 1] &
 			     0x0FFF) |
 			    (color << 12);
-			map[jj][(10 + r * 2 + 1) * 32 + ii + xx + 1] =
-			    (map[jj][(10 + r * 2 + 1) * 32 + ii + xx + 1] &
+			map[jj][(7 + r * 2 + 1) * 32 + ii + xx + 1] =
+			    (map[jj][(7 + r * 2 + 1) * 32 + ii + xx + 1] &
 			     0x0FFF) |
 			    (color << 12);
 		}
