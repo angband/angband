@@ -137,27 +137,9 @@ struct term_data {
 static term_data data[MAX_TERM_DATA];
 
 /*
- * Colour data
+ * Color data
  */
-
-u16b color_data[] = {
-    RGB15(0, 0, 0),    /* COLOUR_DARK */
-    RGB15(31, 31, 31), /* COLOUR_WHITE */
-    RGB15(15, 15, 15), /* COLOUR_SLATE */
-    RGB15(31, 15, 0),  /* COLOUR_ORANGE */
-    RGB15(23, 0, 0),   /* COLOUR_RED */
-    RGB15(0, 15, 9),   /* COLOUR_GREEN */
-    RGB15(0, 0, 31),   /* COLOUR_BLUE */
-    RGB15(15, 9, 0),   /* COLOUR_UMBER */
-    RGB15(9, 9, 9),    /* COLOUR_L_DARK */
-    RGB15(23, 23, 23), /* COLOUR_L_WHITE */
-    RGB15(31, 0, 31),  /* COLOUR_VIOLET */
-    RGB15(31, 31, 0),  /* COLOUR_YELLOW */
-    RGB15(31, 0, 0),   /* COLOUR_L_RED */
-    RGB15(0, 31, 0),   /* COLOUR_L_GREEN */
-    RGB15(0, 31, 31),  /* COLOUR_L_BLUE */
-    RGB15(23, 15, 9)   /* COLOUR_L_UMBER */
-};
+static u16b color_data[MAX_COLORS];
 
 /*** Function hooks needed by "Term" ***/
 
@@ -884,7 +866,7 @@ void draw_color_char(byte x, byte y, char c, byte clr)
 	}
 
 	byte xx, yy;
-	u16b fgc = color_data[clr & 0xF];
+	u16b fgc = color_data[clr & BASIC_COLORS];
 	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
 			fb[yy * NDS_SCREEN_WIDTH + xx + vram_offset] = (nds_font_pixel(c, xx, yy) & fgc) | BIT(15);
@@ -929,7 +911,7 @@ static errr Term_wipe_nds(int x, int y, int n)
  * you must first call "Term_wipe_xxx()" to clear the area.
  *
  * In color environments, you should activate the color contained
- * in "color_data[a & 0x0F]", if needed, before drawing anything.
+ * in "color_data[a & BASIC_COLORS]", if needed, before drawing anything.
  *
  * You may ignore the "attribute" if you are only supporting a
  * monochrome environment, since this routine is normally never
@@ -1042,6 +1024,13 @@ errr init_nds(void)
 	/* Main window */
 	td = &data[0];
 	memset(td, 0, sizeof(term_data));
+
+	/* Initialize the "color_data" array */
+	for (int i = 0; i < MAX_COLORS; i++) {
+	    color_data[i] = RGB15(angband_color_table[i][1] >> 3,
+		                      angband_color_table[i][2] >> 3,
+		                      angband_color_table[i][3] >> 3);
+	}
 
 	/* Create windows (backwards!) */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--) {
