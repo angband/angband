@@ -25,10 +25,12 @@ DATA		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
-CFLAGS	:=	-g -Wall -O2\
- 			-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
-			-ffast-math \
-			$(ARCH)
+CFLAGS	:=	-g -Wall -march=armv5te -mtune=arm946e-s $(ARCH)
+
+# Omit some flags for easier debugging
+ifeq (,$(NDS_DEBUG))
+CFLAGS	+=	-O2 -fomit-frame-pointer -ffast-math
+endif
 
 CFLAGS	+=	$(INCLUDE) -DARM9
 
