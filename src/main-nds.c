@@ -1318,6 +1318,9 @@ int main(int argc, char *argv[])
 	/* Initialize some stuff */
 	init_stuff();
 
+	/* Set command hook */
+	cmd_get_hook = textui_get_cmd;
+
 	/* About to start */
 	game_start = true;
 
