@@ -1097,51 +1097,46 @@ void nds_logf(const char* format, ...)
 	va_end(args);
 }
 
-/*should be replaced with open and read from z-file.c */
-bool nds_load_file(const char *name, u16b *dest, u32b len)
-{
-	FILE *f = fopen(name, "r");
-	if (f == NULL)
-		return false;
-	u16b readbuf[1024];
-	u32b i, l, wi = 0;
-	if (len == 0)
-		len = 0xffffffff; /* max possible len */
-	for (i = 0; i < 1024; i++)
-		readbuf[i] = 0;
-	while ((l = fread(readbuf, 2, 1024, f)) > 0 && wi * 2 < len) {
-		for (i = 0; i < (l) && wi * 2 < len; i++) { /* 0 to l/2 */
-			dest[wi++] = readbuf[i];
-		}
-		for (i = 0; i < 1024; i++)
-			readbuf[i] = 0;
-	}
-	fclose(f);
-	return true;
-}
-
 bool nds_load_kbd()
 {
-#define NUM_FILES 3
 	const char *files[] = {
 	    "/angband/nds/kbd.bin",
 	    "/angband/nds/kbd.pal",
 	    "/angband/nds/kbd.map",
 	};
-	u16b *dests[] = {
-	    (u16b *)BG_TILE_RAM_SUB(0),
-	    BG_PALETTE_SUB,
-	    (u16 *)BG_MAP_RAM_SUB(8),
+	char *dests[] = {
+	    (char *) BG_TILE_RAM_SUB(0),
+	    (char *) BG_PALETTE_SUB,
+	    (char *) BG_MAP_RAM_SUB(8),
 	};
 
-	u16b i;
-	for (i = 0; i < NUM_FILES; i++) {
-		if (!nds_load_file(files[i], dests[i], 0)) {
-			nds_logf("Error opening %s (errno=%d)\n", files[i], errno);
+	for (int i = 0; i < N_ELEMENTS(files); i++) {
+		ang_file *handle = file_open(files[i], MODE_READ, -1);
+
+		if (!handle) {
+			nds_logf("Error opening '%s'\n", files[i]);
 			return false;
 		}
+
+		char *dest = dests[i];
+		int read_bytes;
+
+		while ((read_bytes = file_read(handle, dest, 1024))) {
+			if (read_bytes == -1) {
+				nds_logf("Error reading '%s'\n", files[i]);
+				return false;
+			}
+
+			if (read_bytes != 1024) {
+				/* We're done reading the file */
+				break;
+			}
+
+			dest += read_bytes;
+		}
+
+		file_close(handle);
 	}
-#undef NUM_FILES
 
 	return true;
 }
