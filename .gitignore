@@ -21,7 +21,9 @@
 /*.vcxproj*
 aclocal.m4
 angband
+angband.3dsx
 angband.nds
+angband.smdh
 autom4te.cache/
 cmake-build-debug/
 config.log
@@ -48,12 +50,14 @@ mk/buildsys.mk
 mk/extra.mk
 mk/sinclude.mk
 Release/
+src/**/*.d
 src/**/*.o
 src/*.d
 src/*.dep
 src/*.o
 src/*.o.*
 src/.deps
+src/3ds-build
 src/angband
 src/angband-master
 src/autoconf.h
