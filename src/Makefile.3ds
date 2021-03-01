@@ -52,9 +52,13 @@ GFXBUILD	:=	$(BUILD)
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections \
+CFLAGS	:=	-g -Wall -mword-relocations -ffunction-sections \
 			$(ARCH)
+
+# Omit some flags for easier debugging
+ifeq (,$(NDS_DEBUG))
+CFLAGS	+=	-O2 -fomit-frame-pointer
+endif
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
