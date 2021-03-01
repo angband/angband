@@ -303,7 +303,8 @@ jobs:
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
       # Currently, macos-latest defaults to using the 10.15 SDK which does not
-      # support creating arm64 objects.  Override the default using SDKROOT # set to an SDK that can generate both x86_64 and arm64 objects.
+      # support creating arm64 objects.  Override the default using SDKROOT
+      # set to an SDK that can generate both x86_64 and arm64 objects.
       - name: Create Mac Archive
         id: create_mac_archive
         run: |
