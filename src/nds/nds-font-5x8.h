@@ -1,5 +1,5 @@
-#ifndef DS_FONT_5X8_H
-#define DS_FONT_5X8_H
+#ifndef _NDS_FONT_5X8_H
+#define _NDS_FONT_5X8_H
 
 #define NDS_FONT_WIDTH 5
 #define NDS_FONT_HEIGHT 8
@@ -14,7 +14,7 @@
 	0, 0, 0, 0, 0, \
 	0, 0, 0, 0, 0
 
-const char ds_subfont[] = {
+static const char ds_subfont[] = {
 /* 0x0 - 0xf */
 EMPTY, EMPTY, EMPTY, EMPTY,
 EMPTY, EMPTY, EMPTY, EMPTY,
