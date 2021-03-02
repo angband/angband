@@ -1,6 +1,6 @@
 #include "nds-draw.h"
 
-#include "../h-basic.h"
+#include <nds.h>
 
 /*
  * Find the square a particular pixel is part of.
@@ -12,18 +12,25 @@ void nds_pixel_to_square(int *const x, int *const y, const int ox,
 	(*y) = oy / NDS_FONT_HEIGHT;
 }
 
-void nds_draw_color_char(byte x, byte y, char c, u16 clr)
-{
-	u32 vram_offset = (y & 0x1F) * NDS_FONT_HEIGHT * NDS_SCREEN_WIDTH + x * NDS_FONT_WIDTH;
+void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
+	nds_pixel *fb = BG_GFX;
 
-	u16 *fb = BG_GFX;
-	if (y & 32) {
+	/* Bottom screen? */
+	if (y >= NDS_SCREEN_HEIGHT) {
 		fb = &BG_GFX_SUB[16 * 1024];
+		y -= NDS_SCREEN_HEIGHT;
 	}
 
+	fb[y * NDS_SCREEN_WIDTH + x] = data;
+}
+
+void nds_draw_color_char(byte x, byte y, char c, nds_pixel clr)
+{
 	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-			fb[yy * NDS_SCREEN_WIDTH + xx + vram_offset] = (nds_font_pixel(c, xx, yy) & clr) | BIT(15);
+			nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
+			                     y * NDS_FONT_HEIGHT + yy,
+			                     (nds_font_pixel(c, xx, yy) & clr) | BIT(15));
 		}
 	}
 }
@@ -58,7 +65,7 @@ void nds_logf(const char* format, ...)
 
 void nds_raw_print(const char *str)
 {
-	static u16 x = 0, y = 32;
+	static u16b x = 0, y = 32;
 	while (*str) {
 		nds_draw_char(x, y, *(str++));
 		x++;

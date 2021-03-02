@@ -1029,9 +1029,9 @@ EMPTY, EMPTY, EMPTY, EMPTY,
 EMPTY, EMPTY, EMPTY, EMPTY,
 };
 
-static inline u16 nds_font_pixel(char c, char subX, char subY) {
+static inline nds_pixel nds_font_pixel(char c, char subX, char subY) {
 	u32b char_offset = c * NDS_FONT_HEIGHT * NDS_FONT_WIDTH;
-	return ds_subfont[char_offset + subY * NDS_FONT_WIDTH + subX] ? 0xffff : 0x0;
+	return ds_subfont[char_offset + subY * NDS_FONT_WIDTH + subX] ? NDS_WHITE_PIXEL : NDS_BLACK_PIXEL;
 }
 
 #endif
