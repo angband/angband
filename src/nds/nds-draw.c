@@ -2,14 +2,35 @@
 
 #include <nds.h>
 
-/*
- * Find the square a particular pixel is part of.
- */
-void nds_pixel_to_square(int *const x, int *const y, const int ox,
-                         const int oy)
-{
-	(*x) = ox / NDS_FONT_WIDTH;
-	(*y) = oy / NDS_FONT_HEIGHT;
+void nds_video_init() {
+	powerOn(POWER_ALL_2D | POWER_SWAP_LCDS);
+	videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE);
+	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
+	vramSetBankA(VRAM_A_MAIN_BG_0x06000000); /* BG2, event buf, fonts */
+	vramSetBankB(VRAM_B_MAIN_BG_0x06020000); /* for storage (tileset) */
+	vramSetBankC(VRAM_C_SUB_BG_0x06200000);
+	vramSetBankD(VRAM_D_MAIN_BG_0x06040000); /* for storage (tileset) */
+	vramSetBankE(VRAM_E_LCD);                /* for storage (WIN_TEXT) */
+	vramSetBankF(VRAM_F_LCD);                /* for storage (WIN_TEXT) */
+	REG_BG2CNT = BG_BMP16_256x256;
+	REG_BG2PA = 1 << 8;
+	REG_BG2PB = 0;
+	REG_BG2PC = 0;
+	REG_BG2PD = 1 << 8;
+	REG_BG2Y = 0;
+	REG_BG2X = 0;
+	REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_COLOR_16;
+	REG_BG2CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(2);
+	REG_BG2PA_SUB = 1 << 8;
+	REG_BG2PB_SUB = 0;
+	REG_BG2PC_SUB = 0;
+	REG_BG2PD_SUB = 1 << 8;
+	REG_BG2Y_SUB = 0;
+	REG_BG2X_SUB = 0;
+}
+
+void nds_video_vblank() {
+	swiWaitForVBlank();
 }
 
 void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
@@ -33,6 +54,35 @@ void nds_draw_color_char(byte x, byte y, char c, nds_pixel clr)
 			                     (nds_font_pixel(c, xx, yy) & clr) | BIT(15));
 		}
 	}
+}
+
+void nds_draw_cursor(int x, int y) {
+	for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
+		nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
+		                     y * NDS_FONT_HEIGHT,
+		                     NDS_CURSOR_COLOR);
+		nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
+		                     y * NDS_FONT_HEIGHT + (NDS_FONT_HEIGHT - 1),
+		                     NDS_CURSOR_COLOR);
+	}
+	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
+		nds_draw_color_pixel(x * NDS_FONT_WIDTH,
+		                     y * NDS_FONT_HEIGHT + yy,
+		                     NDS_CURSOR_COLOR);
+		nds_draw_color_pixel(x * NDS_FONT_WIDTH + (NDS_FONT_WIDTH - 1),
+		                     y * NDS_FONT_HEIGHT + yy,
+		                     NDS_CURSOR_COLOR);
+	}
+}
+
+/*
+ * Find the square a particular pixel is part of.
+ */
+void nds_pixel_to_square(int *const x, int *const y, const int ox,
+                         const int oy)
+{
+	(*x) = ox / NDS_FONT_WIDTH;
+	(*y) = oy / NDS_FONT_HEIGHT;
 }
 
 void nds_log(const char *msg)

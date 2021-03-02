@@ -75,7 +75,7 @@ static term_data data[MAX_TERM_DATA];
 /*
  * Color data
  */
-static u16b color_data[MAX_COLORS];
+static nds_pixel color_data[MAX_COLORS];
 
 /*** Function hooks needed by "Term" ***/
 
@@ -123,7 +123,7 @@ static void handle_touch(int x, int y, int button, bool press)
 
 void do_vblank()
 {
-	swiWaitForVBlank();
+	nds_video_vblank();
 
 	/* Check hardware for new inputs */
 	scanKeys();
@@ -348,18 +348,7 @@ static errr Term_xtra_nds(int n, int v)
  */
 static errr Term_curs_nds(int x, int y)
 {
-	u32b vram_offset = y * NDS_FONT_HEIGHT * NDS_SCREEN_WIDTH + x * NDS_FONT_WIDTH;
-	byte xx, yy;
-	for (xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-		BG_GFX[xx + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[NDS_SCREEN_WIDTH * (NDS_FONT_HEIGHT - 1) + xx + vram_offset] =
-		    RGB15(31, 31, 0) | BIT(15);
-	}
-	for (yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
-		BG_GFX[yy * NDS_SCREEN_WIDTH + vram_offset] = RGB15(31, 31, 0) | BIT(15);
-		BG_GFX[yy * NDS_SCREEN_WIDTH + NDS_FONT_WIDTH - 1 + vram_offset] =
-		    RGB15(31, 31, 0) | BIT(15);
-	}
+	nds_draw_cursor(x, y);
 
 	/* Success */
 	return (0);
@@ -606,37 +595,9 @@ int main(int argc, char *argv[])
 	/* Initialize the machine itself  */
 	/*START NETHACK STUFF */
 
-	powerOn(POWER_ALL_2D | POWER_SWAP_LCDS);
-	videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE);
-	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
-	vramSetBankA(VRAM_A_MAIN_BG_0x06000000); /* BG2, event buf, fonts */
-	vramSetBankB(VRAM_B_MAIN_BG_0x06020000); /* for storage (tileset) */
-	vramSetBankC(VRAM_C_SUB_BG_0x06200000);
-	vramSetBankD(VRAM_D_MAIN_BG_0x06040000); /* for storage (tileset) */
-	vramSetBankE(VRAM_E_LCD);                /* for storage (WIN_TEXT) */
-	vramSetBankF(VRAM_F_LCD);                /* for storage (WIN_TEXT) */
-	REG_BG2CNT = BG_BMP16_256x256;
-	REG_BG2PA = 1 << 8;
-	REG_BG2PB = 0;
-	REG_BG2PC = 0;
-	REG_BG2PD = 1 << 8;
-	REG_BG2Y = 0;
-	REG_BG2X = 0;
-	REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_COLOR_16;
-	REG_BG2CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(2);
-	REG_BG2PA_SUB = 1 << 8;
-	REG_BG2PB_SUB = 0;
-	REG_BG2PC_SUB = 0;
-	REG_BG2PD_SUB = 1 << 8;
-	REG_BG2Y_SUB = 0;
-	REG_BG2X_SUB = 0;
+	nds_video_init();
 
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
+	nds_video_vblank();
 
 	if (!fatInitDefault()) {
 		nds_log("\nError initializing FAT drivers.\n");
@@ -646,15 +607,12 @@ int main(int argc, char *argv[])
 
 		/* Lock up */
 		while(1)
-			swiWaitForVBlank();
+			nds_video_vblank();
 
 		return 1;
 	}
 
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
-	swiWaitForVBlank();
+	nds_video_vblank();
 
 	chdir("/angband");
 	if (!nds_kbd_init()) {
@@ -662,7 +620,7 @@ int main(int argc, char *argv[])
 
 		/* Lock up */
 		while(1)
-			swiWaitForVBlank();
+			nds_video_vblank();
 
 		return 1; /* die */
 	}
