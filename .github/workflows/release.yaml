@@ -44,6 +44,12 @@ jobs:
           echo "::set-output name=version::$version"
           prerelease=`echo $version | awk '/^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
           echo "::set-output name=prerelease::$prerelease"
+          # Mark anything that isn't a prerelease as a draft.
+          draft=true
+          if test x$prerelease = xtrue ; then
+              draft=false
+          fi
+          echo "::set-output name=draft::$draft"
 
       # Largely cribbed from the example in README.md at
       # https://github.com/actions/upload-release-asset .
@@ -57,6 +63,7 @@ jobs:
           release_name: Release ${{ steps.get_release_vars.outputs.version }}
           commitish: ${{ github.sha }}
           prerelease: ${{ steps.get_release_vars.outputs.prerelease }}
+          draft: ${{ steps.get_release_vars.outputs.draft }}
 
       # The quoting here may be too simple-minded:  what if there are single
       # quotes in the steps.*.outputs.* stuff.
@@ -66,6 +73,7 @@ jobs:
           echo progname= '${{ steps.get_names.outputs.progname }}' >> $CONFIG_ARTIFACT_PATH
           echo version= '${{ steps.get_release_vars.outputs.version }}' >> $CONFIG_ARTIFACT_PATH
           echo prerelease= '${{ steps.get_release_vars.outputs.prerelease }}' >> $CONFIG_ARTIFACT_PATH
+          echo draft= '${{ steps.get_release_vars.outputs.draft }}' >> $CONFIG_ARTIFACT_PATH
           echo upload_url= '${{ steps.create_bare_release.outputs.upload_url }}' >> $CONFIG_ARTIFACT_PATH
 
       - name: Upload Artifact for Use by Dependent Steps
@@ -203,6 +211,8 @@ jobs:
           echo "::set-output name=version::$version"
           prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
           echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
           upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
           echo "::set-output name=upload_url::$upload_url"
 
@@ -271,6 +281,8 @@ jobs:
           echo "::set-output name=version::$version"
           prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
           echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
           upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
           echo "::set-output name=upload_url::$upload_url"
 
@@ -291,7 +303,8 @@ jobs:
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
       # Currently, macos-latest defaults to using the 10.15 SDK which does not
-      # support creating arm64 objects.  Override the default using SDKROOT # set to an SDK that can generate both x86_64 and arm64 objects.
+      # support creating arm64 objects.  Override the default using SDKROOT
+      # set to an SDK that can generate both x86_64 and arm64 objects.
       - name: Create Mac Archive
         id: create_mac_archive
         run: |
