@@ -21,7 +21,6 @@
 
 #ifdef _3DS
 #include <3ds/services/fs.h>
-#include <3ds/services/hid.h>
 #else
 #include <fat.h>
 #include <nds.h>
@@ -129,9 +128,6 @@ static void handle_touch(int x, int y, int button, bool press)
 void do_vblank()
 {
 	nds_video_vblank();
-
-	/* Check hardware for new inputs */
-	scanKeys();
 	
 	/* Handle button inputs */
 	nds_btn_vblank();

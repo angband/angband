@@ -3,12 +3,7 @@
 #include "../h-basic.h"
 #include "nds-event.h"
 
-#ifdef _3DS
-
-void nds_btn_init() {}
-void nds_btn_vblank() {}
-
-#else /* _3DS */
+#ifndef _3DS
 
 #include <nds.h>
 
@@ -49,6 +44,9 @@ s16 nds_buttons_to_btnid(u16 kd, u16 kh)
 }
 
 void nds_btn_vblank() {
+	/* Check hardware for new inputs */
+	scanKeys();
+
 	/* Retrieve currently held and newly pressed keys */
 	u32b kd = keysDown();
 	u32b kh = keysHeld();
@@ -111,4 +109,4 @@ void nds_btn_init()
 	fclose(f);
 }
 
-#endif /* _3DS */
+#endif
