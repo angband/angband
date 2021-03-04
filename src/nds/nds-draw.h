@@ -4,6 +4,21 @@
 #include "../h-basic.h"
 
 
+#ifdef _3DS
+
+/* Each pixel is really only 24 bit, but that type does not exist */
+typedef uint32_t nds_pixel;
+#define NDS_WHITE_PIXEL 0xffffff
+#define NDS_BLACK_PIXEL 0x000000
+#define NDS_CURSOR_COLOR 0xffff00
+
+#define NDS_SCREEN_WIDTH 400
+#define NDS_SCREEN_HEIGHT 240
+
+#include "nds-font-5x8.h"
+
+#else
+
 typedef uint16_t nds_pixel;
 #define NDS_WHITE_PIXEL 0xffff
 #define NDS_BLACK_PIXEL 0x0000
@@ -13,6 +28,8 @@ typedef uint16_t nds_pixel;
 #define NDS_SCREEN_HEIGHT 192
 
 #include "nds-font-3x8.h"
+
+#endif
 
 
 #define NDS_SCREEN_COLS (NDS_SCREEN_WIDTH / NDS_FONT_WIDTH)

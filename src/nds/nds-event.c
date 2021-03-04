@@ -1,10 +1,28 @@
 #include "nds-event.h"
 
+#ifndef _3DS
 #include <nds.h>
+#endif
 
 /* Event queue ring buffer and its read/write pointers */
+#ifdef _3DS
+u16b *ebuf;
+#else
 u16b *ebuf = (u16b *)(&BG_GFX[256 * 192]);
+#endif
 u16b ebuf_read = 0, ebuf_write = 0;
+
+bool nds_event_init() {
+#ifdef _3DS
+	ebuf = (u16b *) malloc(sizeof(u16b) * MAX_EBUF);
+
+	if (!ebuf) {
+		return false;
+	}
+#endif
+
+	return true;
+}
 
 bool nds_event_ready()
 {

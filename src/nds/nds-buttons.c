@@ -1,8 +1,16 @@
 #include "nds-buttons.h"
 
-#include <nds.h>
 #include "../h-basic.h"
 #include "nds-event.h"
+
+#ifdef _3DS
+
+void nds_btn_init() {}
+void nds_btn_vblank() {}
+
+#else /* _3DS */
+
+#include <nds.h>
 
 #define NDS_BUTTON_FILE "buttons.dat"
 
@@ -102,3 +110,5 @@ void nds_btn_init()
 	      (NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER), f);
 	fclose(f);
 }
+
+#endif /* _3DS */

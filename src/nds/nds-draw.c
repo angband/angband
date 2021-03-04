@@ -1,8 +1,17 @@
 #include "nds-draw.h"
 
-#include <nds.h>
+#ifdef _3DS
+# include <3ds.h>
+#else
+# include <nds.h>
+#endif
 
 void nds_video_init() {
+#ifdef _3DS
+	gfxInitDefault();
+	gfxSetDoubleBuffering(GFX_BOTTOM, false);
+	gfxSetDoubleBuffering(GFX_TOP, false);
+#else
 	powerOn(POWER_ALL_2D | POWER_SWAP_LCDS);
 	videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE);
 	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
@@ -27,23 +36,45 @@ void nds_video_init() {
 	REG_BG2PD_SUB = 1 << 8;
 	REG_BG2Y_SUB = 0;
 	REG_BG2X_SUB = 0;
+#endif
 }
 
 void nds_video_vblank() {
+#ifdef _3DS
+	//gfxFlushBuffers();
+	//gfxSwapBuffers();
+	gspWaitForVBlank();
+#else
 	swiWaitForVBlank();
+#endif
 }
 
 void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
+#ifdef _3DS
+	u8 *fb = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL);
+#else
 	nds_pixel *fb = BG_GFX;
+#endif
 
 	/* Bottom screen? */
 	if (y >= NDS_SCREEN_HEIGHT) {
+#ifdef _3DS
+		fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+#else
 		fb = &BG_GFX_SUB[16 * 1024];
+#endif
 		y -= NDS_SCREEN_HEIGHT;
 	}
 
-	fb[y * NDS_SCREEN_WIDTH + x] = data;
+#ifdef _3DS
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3]     = (u8) (data) & 0xFF;
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3 + 1] = (u8) (data >> 8) & 0xFF;
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3 + 2] = (u8) (data >> 16) & 0xFF;
+#else
+	fb[y * NDS_SCREEN_WIDTH + x] = data | BIT(15);
+#endif
 }
+
 
 void nds_draw_color_char(byte x, byte y, char c, nds_pixel clr)
 {
@@ -51,7 +82,7 @@ void nds_draw_color_char(byte x, byte y, char c, nds_pixel clr)
 		for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
 			nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
 			                     y * NDS_FONT_HEIGHT + yy,
-			                     (nds_font_pixel(c, xx, yy) & clr) | BIT(15));
+			                     nds_font_pixel(c, xx, yy) & clr);
 		}
 	}
 }

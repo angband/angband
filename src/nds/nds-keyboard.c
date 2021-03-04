@@ -1,8 +1,13 @@
 #include "nds-keyboard.h"
 
-#include <nds.h>
 #include "../z-file.h"
 #include "nds-draw.h"
+
+#ifdef _3DS
+#include <3ds.h>
+#else
+#include <nds.h>
+#endif
 
 const nds_kbd_key row0[] = {{16, (u16b)'`'}, {16, (u16b)'1'},  {16, (u16b)'2'},
                             {16, (u16b)'3'}, {16, (u16b)'4'},  {16, (u16b)'5'},
@@ -58,6 +63,7 @@ u16b nds_kbd_mod_code(u16b ret)
 
 void nds_kbd_set_color_from_pos(u16b r, u16b k, byte color)
 {
+#ifndef _3DS
 	u16b ii, xx = 0, jj;
 	u16b *map[] = {(u16b *)(BG_MAP_RAM_SUB(8) + 3 * 32 * 2),
 	               (u16b *)(BG_MAP_RAM_SUB(9) + 3 * 32 * 2),
@@ -78,6 +84,7 @@ void nds_kbd_set_color_from_pos(u16b r, u16b k, byte color)
 			    (color << 12);
 		}
 	}
+#endif
 }
 
 void nds_kbd_set_color_from_code(u16b code, byte color)
@@ -98,9 +105,11 @@ void nds_kbd_set_color_from_code(u16b code, byte color)
 
 void nds_kbd_set_map()
 {
+#ifndef _3DS
 	REG_BG0CNT_SUB = BG_TILE_BASE(0) |
 	                 BG_MAP_BASE(8 + (caps | (shift << 1))) |
 	                 BG_PRIORITY(0) | BG_COLOR_16;
+#endif
 }
 
 u16b nds_kbd_xy2key(byte x, byte y)
@@ -333,6 +342,7 @@ byte nds_kbd_vblank()
 
 bool nds_kbd_init()
 {
+#ifndef _3DS
 	const char *files[] = {
 	    "/angband/nds/kbd.bin",
 	    "/angband/nds/kbd.pal",
@@ -376,6 +386,7 @@ bool nds_kbd_init()
 	for (u16b i = 0; i < 16; i++) {
 		BG_PALETTE_SUB[i + 16] = BG_PALETTE_SUB[i] ^ 0x7FFF;
 	}
+#endif
 
 	return true;
 }

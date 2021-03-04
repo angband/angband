@@ -19,8 +19,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#ifdef _3DS
+#include <3ds/services/fs.h>
+#include <3ds/services/hid.h>
+#else
 #include <fat.h>
 #include <nds.h>
+#endif
 
 #include "angband.h"
 #include "buildid.h"
@@ -333,7 +338,7 @@ static errr Term_xtra_nds(int n, int v)
 		 */
 		int i;
 		for (i = 0; i < v; i++)
-			swiWaitForVBlank();
+			nds_video_vblank();
 
 		return (0);
 	}
@@ -507,9 +512,15 @@ errr init_nds(void)
 
 	/* Initialize the "color_data" array */
 	for (int i = 0; i < MAX_COLORS; i++) {
+#ifdef _3DS
+		color_data[i] = angband_color_table[i][1] << 16 |
+		                angband_color_table[i][2] << 8 |
+		                angband_color_table[i][3];
+#else
 	    color_data[i] = RGB15(angband_color_table[i][1] >> 3,
 		                      angband_color_table[i][2] >> 3,
 		                      angband_color_table[i][3] >> 3);
+#endif
 	}
 
 	/* Create windows (backwards!) */
@@ -545,7 +556,7 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Hack */
-	// strcpy(savefile, "/angband/lib/save/PLAYER");
+	strcpy(savefile, "/angband/lib/save/PLAYER");
 }
 
 /*
@@ -565,7 +576,7 @@ void nds_exit(int code)
 	for (i = 0; i < 60; i++) {
 		do_vblank(); /* wait 1 sec. */
 	}
-	systemShutDown();
+	//systemShutDown();
 }
 
 /*
@@ -599,6 +610,21 @@ int main(int argc, char *argv[])
 
 	nds_video_vblank();
 
+	if (!nds_event_init()) {
+		nds_log("\nFailed to initialize event queue\nCannot continue.\n");
+
+		/* Lock up */
+		while(1)
+			nds_video_vblank();
+
+		return 1;
+	}
+
+	nds_video_vblank();
+
+#ifdef _3DS
+	fsInit();
+#else
 	if (!fatInitDefault()) {
 		nds_log("\nError initializing FAT drivers.\n");
 		nds_log("Make sure the game is patched with the correct DLDI.\n");
@@ -611,10 +637,10 @@ int main(int argc, char *argv[])
 
 		return 1;
 	}
+#endif
 
 	nds_video_vblank();
 
-	chdir("/angband");
 	if (!nds_kbd_init()) {
 		nds_log("\nError loading keyboard graphics.\nCannot continue.\n");
 
@@ -670,6 +696,8 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
+#ifndef _3DS
 double sqrt(double x) {
 	return f32tofloat(sqrtf32(floattof32(x)));
 }
+#endif
