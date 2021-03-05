@@ -596,12 +596,6 @@ static void hook_quit(const char *str)
  */
 int main(int argc, char *argv[])
 {
-	bool game_start = false;
-	bool new_game = false;
-
-	/* Initialize the machine itself  */
-	/*START NETHACK STUFF */
-
 	nds_video_init();
 
 	nds_video_vblank();
@@ -665,25 +659,20 @@ int main(int argc, char *argv[])
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
 
-	/* About to start */
-	game_start = true;
+	/* Initialize */
+	init_display();
+	init_angband();
+	textui_init();
 
-	while (game_start) {
-		/* Initialize */
-		init_display();
-		init_angband();
-		textui_init();
+	/* Wait for response */
+	pause_line(Term);
 
-		/* Wait for response */
-		pause_line(Term);
+	/* Play the game */
+	play_game(false);
 
-		/* Play the game */
-		play_game(new_game);
-
-		/* Free resources */
-		textui_cleanup();
-		cleanup_angband();
-	}
+	/* Free resources */
+	textui_cleanup();
+	cleanup_angband();
 
 	/* Quit */
 	quit(NULL);
