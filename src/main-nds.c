@@ -568,11 +568,18 @@ static void hook_plog(const char *str)
 
 void nds_exit(int code)
 {
-	u16b i;
-	for (i = 0; i < 60; i++) {
-		do_vblank(); /* wait 1 sec. */
+#ifndef _3DS
+	/* If we exited gracefully, just shut down */
+	if (!code) {
+		systemShutDown();
+		while(1);
 	}
-	//systemShutDown();
+#endif
+
+	/* Lock up so that the user can see potential errors */
+	while(1) {
+		nds_video_vblank();
+	}
 }
 
 /*
@@ -586,7 +593,7 @@ static void hook_quit(const char *str)
 	}
 
 	/* Bail */
-	nds_exit(0);
+	nds_exit(str ? 1 : 0);
 }
 
 /*
@@ -603,10 +610,7 @@ int main(int argc, char *argv[])
 	if (!nds_event_init()) {
 		nds_log("\nFailed to initialize event queue\nCannot continue.\n");
 
-		/* Lock up */
-		while(1)
-			nds_video_vblank();
-
+		nds_exit(1);
 		return 1;
 	}
 
@@ -621,10 +625,7 @@ int main(int argc, char *argv[])
 		nds_log(" (see https://www.chishm.com/DLDI/ for more info).\n");
 		nds_log("\n\nUnable to access filesystem.\nCannot continue.\n");
 
-		/* Lock up */
-		while(1)
-			nds_video_vblank();
-
+		nds_exit(1);
 		return 1;
 	}
 #endif
@@ -634,12 +635,10 @@ int main(int argc, char *argv[])
 	if (!nds_kbd_init()) {
 		nds_log("\nError loading keyboard graphics.\nCannot continue.\n");
 
-		/* Lock up */
-		while(1)
-			nds_video_vblank();
-
-		return 1; /* die */
+		nds_exit(1);
+		return 1;
 	}
+
 	nds_btn_init();
 
 	/* Activate hooks */
@@ -648,7 +647,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize the windows */
 	if (init_nds())
-		quit("Oops!");
+		quit("No terminals initialized!");
 
 	/* XXX XXX XXX */
 	ANGBAND_SYS = "nds";
