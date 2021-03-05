@@ -601,6 +601,8 @@ static enum parser_error parse_constants_carry_cap(struct parser *p) {
 		z->quiver_size = value;
 	else if (streq(label, "quiver-slot-size"))
 		z->quiver_slot_size = value;
+	else if (streq(label, "thrown-quiver-mult"))
+		z->thrown_quiver_mult = value;
 	else if (streq(label, "floor-size"))
 		z->floor_size = value;
 	else

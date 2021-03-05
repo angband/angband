@@ -1050,7 +1050,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		for (current = gear; current; current = current->next) {
 			/* Allocate inscribed objects if it's the right slot */
 			if (preferred_quiver_slot(current) == i) {
-				int mult = tval_is_ammo(current) ? 1 : 5;
+				int mult = tval_is_ammo(current) ?
+					 1 : z_info->thrown_quiver_mult;
 				upkeep->quiver[i] = current;
 				upkeep->quiver_cnt += current->number * mult;
 

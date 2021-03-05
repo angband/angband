@@ -176,7 +176,8 @@ int pack_slots_used(struct player *p)
 				for (i = 0; i < z_info->quiver_size; i++) {
 					if (p->upkeep->quiver[i] == obj) {
 						quiver_ammo += obj->number *
-							(tval_is_ammo(obj) ? 1 : 5);
+							(tval_is_ammo(obj) ?
+							1 : z_info->thrown_quiver_mult);
 						found = true;
 						break;
 					}
@@ -503,7 +504,8 @@ static int quiver_absorb_num(const struct object *obj)
 		for (i = 0; i < z_info->quiver_size; i++) {
 			struct object *quiver_obj = player->upkeep->quiver[i];
 			if (quiver_obj) {
-				int mult = tval_is_ammo(quiver_obj) ? 1 : 5;
+				int mult = tval_is_ammo(quiver_obj) ?
+					 1 : z_info->thrown_quiver_mult;
 
 				quiver_count += quiver_obj->number * mult;
 				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
@@ -531,8 +533,8 @@ static int quiver_absorb_num(const struct object *obj)
 
 			/* Return the number, or the number that will fit */
 			space_free = MIN(space_free, z_info->quiver_slot_size - quiver_count);
-			return MIN(obj->number,
-				space_free / (tval_is_ammo(obj) ? 1 : 5));
+			return MIN(obj->number, space_free /
+				(tval_is_ammo(obj) ? 1 : z_info->thrown_quiver_mult));
 		}
 	}
 

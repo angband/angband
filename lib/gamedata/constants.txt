@@ -137,6 +137,9 @@ carry-cap:quiver-size:10
 # Max number of missiles per quiver slot
 carry-cap:quiver-slot-size:40
 
+# For computing quiver capacity, is the multiplier for non-ammo thrown items
+carry-cap:thrown-quiver-mult:5
+
 # Maximum number of objects allowed in a single dungeon grid.
 #
 # The main screen originally had a minimum size of 24 rows, so it could always
