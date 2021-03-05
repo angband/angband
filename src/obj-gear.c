@@ -544,28 +544,9 @@ static int quiver_absorb_num(const struct object *obj)
 
 /**
  * Calculate how much of an item is can be carried in the inventory or quiver.
- *
- * Optionally only return a positive value if there is already a similar object.
  */
-int inven_carry_num(const struct object *obj, bool stack)
+int inven_carry_num(const struct object *obj)
 {
-	/* Check for similarity */
-	if (stack) {
-		struct object *gear_obj;
-
-		for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
-			if (!object_is_equipped(player->body, gear_obj) &&
-					object_stackable(gear_obj, obj, OSTACK_PACK)) {
-				break;
-			}
-		}
-
-		/* No similar object, so no stacking */
-		if (!gear_obj) {
-			return 0;
-		}
-	}
-
 	/* Free inventory slots, so there is definitely room */
 	if (pack_slots_used(player) < z_info->pack_size) {
 		return obj->number;
@@ -589,12 +570,11 @@ int inven_carry_num(const struct object *obj, bool stack)
 }
 
 /**
- * Check if we have space for some of an item in the pack, optionally requiring
- * stacking
+ * Check if we have space for some of an item in the pack.
  */
 bool inven_carry_okay(const struct object *obj)
 {
-	return inven_carry_num(obj, false) > 0;
+	return inven_carry_num(obj) > 0;
 }
 
 /**

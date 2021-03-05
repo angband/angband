@@ -639,7 +639,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		}
 
 		/* Limit to the number that can be carried */
-		amt = MIN(amt, inven_carry_num(obj, false));
+		amt = MIN(amt, inven_carry_num(obj));
 
 		/* Fail if there is no room */
 		if ((amt <= 0) || (!object_flavor_is_aware(obj) && pack_is_full())) {
