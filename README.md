@@ -1,4 +1,4 @@
-# Angband 4.2.1
+# Angband 4.2.2
 
 <p align="center">
   <img src="screenshots/title.png" width="425"/>
