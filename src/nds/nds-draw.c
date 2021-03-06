@@ -41,8 +41,8 @@ void nds_video_init() {
 
 void nds_video_vblank() {
 #ifdef _3DS
-	//gfxFlushBuffers();
-	//gfxSwapBuffers();
+	gfxFlushBuffers();
+	gfxSwapBuffers();
 	gspWaitForVBlank();
 #else
 	swiWaitForVBlank();
