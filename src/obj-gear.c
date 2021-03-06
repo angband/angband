@@ -951,10 +951,37 @@ static bool inven_can_stack_partial(const struct object *obj1,
 {
 	if (!(mode & OSTACK_STORE)) {
 		int total = obj1->number + obj2->number;
-		int remainder = total - obj1->kind->base->max_stack;
 
-		if (remainder > obj1->kind->base->max_stack)
-			return false;
+		/* The quiver may have stricter limits. */
+		if (mode & OSTACK_QUIVER) {
+			int limit = z_info->quiver_slot_size /
+				(tval_is_ammo(obj1) ?
+				1 : z_info->thrown_quiver_mult);
+
+			if (mode & ~OSTACK_QUIVER) {
+				/*
+				 * May be combining between stacks with
+				 * different limits.
+				 */
+				int remainder =
+					total - obj1->kind->base->max_stack;
+
+				if (remainder > limit) {
+					return false;
+				}
+			} else {
+				int remainder = total - limit;
+
+				if (remainder > limit) {
+					return false;
+				}
+			}
+		} else {
+			int remainder = total - obj1->kind->base->max_stack;
+
+			if (remainder > obj1->kind->base->max_stack)
+				return false;
+		}
 	}
 
 	return object_stackable(obj1, obj2, mode);
@@ -978,10 +1005,14 @@ void combine_pack(void)
 
 		/* Scan the items above that item */
 		for (obj2 = player->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
+			object_stack_t stack_mode2 =
+				object_is_in_quiver(player, obj2) ?
+				OSTACK_QUIVER : OSTACK_PACK;
+
 			assert(obj2->kind);
 
 			/* Can we drop "obj1" onto "obj2"? */
-			if (object_similar(obj2, obj1, OSTACK_PACK)) {
+			if (object_similar(obj2, obj1, stack_mode2)) {
 				display_message = true;
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
@@ -991,17 +1022,33 @@ void combine_pack(void)
 				obj2->known->number = obj2->number;
 
 				break;
-			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
-				/* Setting this to true spams the combine message. */
-				display_message = false;
-				object_absorb_partial(obj2->known, obj1->known);
-				object_absorb_partial(obj2, obj1);
+			} else {
+				object_stack_t stack_mode1 =
+					object_is_in_quiver(player, obj1) ?
+					OSTACK_QUIVER : OSTACK_PACK;
 
-				/* Ensure numbers align (should not be necessary, but safer) */
-				obj2->known->number = obj2->number;
-				obj1->known->number = obj1->number;
+				if (inven_can_stack_partial(obj2, obj1,
+						stack_mode2 | stack_mode1)) {
+					/*
+					 * Setting this to true spams the
+					 * combine message.
+					 */
+					display_message = false;
+					object_absorb_partial(obj2->known,
+						obj1->known, stack_mode2,
+						stack_mode1);
+					object_absorb_partial(obj2, obj1,
+						stack_mode2, stack_mode1);
 
-				break;
+					/*
+					 * Ensure numbers align (should not be
+					 * necessary, but safer)
+					 */
+					obj2->known->number = obj2->number;
+					obj1->known->number = obj1->number;
+
+					break;
+				}
 			}
 		}
 		obj1 = prev;
