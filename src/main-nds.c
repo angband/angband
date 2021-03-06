@@ -20,6 +20,9 @@
  */
 
 #ifdef _3DS
+/* We can't include 3ds.h because utf32_to_utf8 conflicts */
+#include <3ds/types.h>
+#include <3ds/services/apt.h>
 #include <3ds/services/fs.h>
 #else
 #include <fat.h>
@@ -129,6 +132,13 @@ void do_vblank()
 {
 	nds_video_vblank();
 	
+#ifdef _3DS
+	/* Handle home menu, poweroff, etc */
+	if (!aptMainLoop()) {
+		quit(NULL);
+	}
+#endif
+
 	/* Handle button inputs */
 	nds_btn_vblank();
 
@@ -568,16 +578,18 @@ static void hook_plog(const char *str)
 
 void nds_exit(int code)
 {
-#ifndef _3DS
 	/* If we exited gracefully, just shut down */
 	if (!code) {
-		systemShutDown();
-		while(1);
+		return;
 	}
-#endif
 
 	/* Lock up so that the user can see potential errors */
 	while(1) {
+#ifdef _3DS
+		if (!aptMainLoop())
+			break;
+#endif
+
 		nds_video_vblank();
 	}
 }
