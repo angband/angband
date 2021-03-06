@@ -392,7 +392,7 @@ static errr Term_wipe_nds(int x, int y, int n)
  * you must first call "Term_wipe_xxx()" to clear the area.
  *
  * In color environments, you should activate the color contained
- * in "color_data[a & BASIC_COLORS]", if needed, before drawing anything.
+ * in "color_data[a & (MAX_COLORS - 1)]", if needed, before drawing anything.
  *
  * You may ignore the "attribute" if you are only supporting a
  * monochrome environment, since this routine is normally never
@@ -411,7 +411,7 @@ static errr Term_wipe_nds(int x, int y, int n)
 static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
 	for (int i = 0; i < n; i++) {
-		nds_draw_color_char(x + i, y, s[i], color_data[a & BASIC_COLORS]);
+		nds_draw_color_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)]);
 	}
 
 	return (0);
