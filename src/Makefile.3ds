@@ -47,6 +47,12 @@ GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
+# Application information
+APP_TITLE	:=	Angband
+APP_DESCRIPTION	:=	A free, single-player dungeon exploration game.
+APP_AUTHOR	:=	The Angband team
+ICON		:=	nds/att-48.png
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
