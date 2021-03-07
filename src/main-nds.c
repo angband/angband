@@ -143,10 +143,7 @@ void do_vblank()
 	nds_btn_vblank();
 
 	/* Handle touchscreen (keyboard) inputs */
-	byte keycode = nds_kbd_vblank();
-	if ((keycode & 0x7F) != 0) { /* it's an actual keystroke, return it */
-		nds_event_put_key(keycode & 0xFF);
-	}
+	nds_kbd_vblank();
 }
 
 /*END JUST MOVED */

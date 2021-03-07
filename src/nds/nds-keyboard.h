@@ -17,6 +17,6 @@ typedef struct {
 #define K_SHIFTED_MOVE	0x0200
 
 bool nds_kbd_init();
-byte nds_kbd_vblank();
+void nds_kbd_vblank();
 
 #endif

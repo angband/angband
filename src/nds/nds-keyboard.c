@@ -2,6 +2,7 @@
 
 #include "../z-file.h"
 #include "nds-draw.h"
+#include "nds-event.h"
 
 #ifdef _3DS
 #include <3ds.h>
@@ -226,7 +227,7 @@ byte process_special_keystrokes = 1;
  * returns a key code if one has been typed, else returns 0
  * assumes scankeys() was already called this frame (in real vblank handler)
  */
-byte nds_kbd_vblank()
+void nds_kbd_vblank()
 {
 	/* frames the stylus has been held down for */
 	static u16b touched = 0;
@@ -331,13 +332,12 @@ byte nds_kbd_vblank()
 		/* if it's a modifier, toggle it */
 		if (keycode & K_MODIFIER)
 			nds_kbd_togglemod(keycode, -1);
-		else if ((keycode & 0x7F) !=
-		         0) { /* it's an actual keystroke, return it */
-			return (keycode & 0xFF);
+		else if ((keycode & 0x7F) != 0) { /* it's an actual keystroke */
+			nds_event_put_key(keycode & 0xFF);
 		}
 	}
 
-	return 0;
+	return;
 }
 
 bool nds_kbd_init()
