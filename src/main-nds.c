@@ -234,7 +234,7 @@ static errr Term_xtra_nds(int n, int v)
 
 		for (y = 0; y < NDS_SCREEN_LINES; y++) {
 			for (x = 0; x < NDS_SCREEN_COLS; x++) {
-				nds_draw_char(x, y, 0);
+				nds_draw_char(x, y, 0, NDS_BLACK_PIXEL);
 			}
 		}
 
@@ -377,7 +377,7 @@ static errr Term_wipe_nds(int x, int y, int n)
 
 	/* Draw a blank */
 	for (i = 0; i < n; i++)
-		nds_draw_color_char(x + i, y, 0, 0);
+		nds_draw_char(x + i, y, 0, NDS_BLACK_PIXEL);
 
 	/* Success */
 	return (0);
@@ -418,7 +418,7 @@ static errr Term_wipe_nds(int x, int y, int n)
 static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
 	for (int i = 0; i < n; i++) {
-		nds_draw_color_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)]);
+		nds_draw_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)]);
 	}
 
 	return (0);

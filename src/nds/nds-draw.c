@@ -49,7 +49,7 @@ void nds_video_vblank() {
 #endif
 }
 
-void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
+void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 #ifdef _3DS
 	nds_pixel *fb = (nds_pixel *) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL);
 #else
@@ -73,34 +73,38 @@ void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
 #endif
 }
 
-
-void nds_draw_color_char(byte x, byte y, char c, nds_pixel clr)
+void nds_draw_char_px(int x, int y, char c, nds_pixel clr)
 {
 	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
 		for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-			nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
-			                     y * NDS_FONT_HEIGHT + yy,
-			                     nds_font_pixel(c, xx, yy) & clr);
+			nds_draw_pixel(x + xx,
+			               y + yy,
+			               nds_font_pixel(c, xx, yy) & clr);
 		}
 	}
 }
 
+void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
+{
+	nds_draw_char_px(x * NDS_FONT_WIDTH, y * NDS_FONT_HEIGHT, c, clr);
+}
+
 void nds_draw_cursor(int x, int y) {
 	for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-		nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
-		                     y * NDS_FONT_HEIGHT,
-		                     NDS_CURSOR_COLOR);
-		nds_draw_color_pixel(x * NDS_FONT_WIDTH + xx,
-		                     y * NDS_FONT_HEIGHT + (NDS_FONT_HEIGHT - 1),
-		                     NDS_CURSOR_COLOR);
+		nds_draw_pixel(x * NDS_FONT_WIDTH + xx,
+		               y * NDS_FONT_HEIGHT,
+		               NDS_CURSOR_COLOR);
+		nds_draw_pixel(x * NDS_FONT_WIDTH + xx,
+		               y * NDS_FONT_HEIGHT + (NDS_FONT_HEIGHT - 1),
+		               NDS_CURSOR_COLOR);
 	}
 	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
-		nds_draw_color_pixel(x * NDS_FONT_WIDTH,
-		                     y * NDS_FONT_HEIGHT + yy,
-		                     NDS_CURSOR_COLOR);
-		nds_draw_color_pixel(x * NDS_FONT_WIDTH + (NDS_FONT_WIDTH - 1),
-		                     y * NDS_FONT_HEIGHT + yy,
-		                     NDS_CURSOR_COLOR);
+		nds_draw_pixel(x * NDS_FONT_WIDTH,
+		               y * NDS_FONT_HEIGHT + yy,
+		               NDS_CURSOR_COLOR);
+		nds_draw_pixel(x * NDS_FONT_WIDTH + (NDS_FONT_WIDTH - 1),
+		               y * NDS_FONT_HEIGHT + yy,
+		               NDS_CURSOR_COLOR);
 	}
 }
 
@@ -118,7 +122,7 @@ void nds_log(const char *msg)
 {
 	static byte x = 2, y = 1;
 	for (byte i = 0; msg[i] != '\0'; i++) {
-		nds_draw_char(x, y, msg[i]);
+		nds_draw_char(x, y, msg[i], NDS_WHITE_PIXEL);
 		x++;
 		if (msg[i] == '\n' || x > NDS_SCREEN_COLS - 2) {
 			x = 2;
@@ -146,7 +150,7 @@ void nds_raw_print(const char *str)
 {
 	static u16b x = 0, y = 32;
 	while (*str) {
-		nds_draw_char(x, y, *(str++));
+		nds_draw_char(x, y, *(str++), NDS_WHITE_PIXEL);
 		x++;
 		if (x > 78) {
 			x = 0;
@@ -155,6 +159,6 @@ void nds_raw_print(const char *str)
 				y = 32;
 		}
 	}
-	nds_draw_char(x, y, 219);
+	nds_draw_char(x, y, 219, NDS_WHITE_PIXEL);
 	fflush(0);
 }
