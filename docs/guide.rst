@@ -147,7 +147,7 @@ a. Escapes:
 b. Protection from secondary effects (confusion, blindness, poison)
 
   * 1 !CLW (for identification and blindness)
-  * 1+ !CSW (for identification confusion)
+  * 1+ !CSW (for identification and confusion)
 
 c. Buffing
 
@@ -438,7 +438,7 @@ speed bonus, etc) and lose it all due to something very avoidable had you been
 paying diligent attention.
 
 While playing, always make sure to check for the basics -- particularly
-monsters, stairs, and traps. Don't loose a character, asserting that you can
+monsters, stairs, and traps. Don't lose a character, asserting that you can
 kill a "C" easily only to discover that a "wild dog" is a far cry from a
 "hellhound".
 

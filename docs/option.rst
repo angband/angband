@@ -51,11 +51,11 @@ Show flavors in object descriptions ``show_flavors``
 
 Highlight target with cursor ``show_target``
   Highlights the current targeted monster with a cursor.  Useful when 
-  combined with "use old target by default"
+  combined with "use old target by default".
 
 Highlight player with cursor between turns ``highlight_player``
   Highlights the player with a cursor.  Useful if you have trouble finding
-  the player
+  the player.
 
 Disturb whenever viewable monster moves ``disturb_near``
   Disturb the player when any viewable monster moves, whenever any monster
@@ -70,7 +70,7 @@ Show walls as solid blocks ``solid_walls``
 
 Show walls with shaded backgrounds ``hybrid_walls``
   Walls appear as # and % symbols overlaid on a gray background block.  
-  This overrides ``solid_walls``
+  This overrides ``solid_walls``.
 
 Color: Illuminate torchlight in yellow ``view_yellow_light``
   This option causes special colors to be used for "torch-lit" grids.
@@ -201,7 +201,7 @@ Monsters learn from their mistakes ``birth_ai_learn``
 Know all runes on birth ``birth_know_runes``
   For players who don't enjoy the "identify by use" process for wearable
   items.  This option means all object properties are known at the outset, so
-  artifacts and ego items will identified on walking over them.
+  artifacts and ego items will be identified on walking over them.
 
 Know all flavors on birth ``birth_know_flavors``
   For players who don't enjoy the "identify by use" process for consumable
@@ -210,7 +210,7 @@ Know all flavors on birth ``birth_know_flavors``
 Persistent levels (experimental) ``birth_levels_persist``
   Each level is generated for the first time when the player enters it, and 
   from then on when the player returns the level is as they last saw it, 
-  includeing monsters, items and traps.
+  including monsters, items and traps.
 
 To-damage is a percentage of dice (experimental) ``birth_percent_damage``
   Instead of bonuses to damage being just added on to damage dealt, each +1

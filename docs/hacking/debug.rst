@@ -152,7 +152,7 @@ Nick hack ``_``
   successive distances from the player grid.
 
 Push objects ``>``
-  Pushes objects off the targeted grid as a way of excercising push_object().
+  Pushes objects off the targeted grid as a way of exercising push_object().
 
 Write a map of the current level ``M``
   Writes out a map of the current level as an HTML file.

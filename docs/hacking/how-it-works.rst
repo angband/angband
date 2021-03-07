@@ -130,7 +130,7 @@ Savefiles
 Currently, a savefile is a series of concatenated blocks. Each block has a name
 describing what type it is and a version tag. The version tag allows for old
 savefiles to be loaded, although the load/save code will only write new
-savefiles. Numbers in savefiles are stored in little-endian byte orderand
+savefiles. Numbers in savefiles are stored in little-endian byte order and
 strings are stored null-terminated.
 
 Control Flow
