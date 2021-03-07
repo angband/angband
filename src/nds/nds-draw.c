@@ -67,9 +67,9 @@ void nds_draw_color_pixel(u16b x, u16b y, nds_pixel data) {
 	}
 
 #ifdef _3DS
-	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3]     = (u8) (data) & 0xFF;
-	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3 + 1] = (u8) (data >> 8) & 0xFF;
-	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y)) * 3 + 2] = (u8) (data >> 16) & 0xFF;
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)) * 3]     = (u8) (data) & 0xFF;
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)) * 3 + 1] = (u8) (data >> 8) & 0xFF;
+	fb[(x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)) * 3 + 2] = (u8) (data >> 16) & 0xFF;
 #else
 	fb[y * NDS_SCREEN_WIDTH + x] = data | BIT(15);
 #endif
