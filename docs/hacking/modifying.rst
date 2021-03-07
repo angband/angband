@@ -204,7 +204,7 @@ realm.txt
 summon.txt
   This contains definitions for the types of monsters that can be summoned.
   Adding a new summon type is not yet possible, because the summon spells are
-  hard-coded in src/list-mon-spells.h
+  hard-coded in src/list-mon-spells.h.
 
 ui_entry.txt
   Defines entries that will be displayed in the second part of the character
@@ -259,7 +259,7 @@ The only file you'll need to edit outside of your tileset's directory is
 lib/tiles/list.txt. list.txt contains a registry of which tilesets to load as
 well as some information about the size of the tiles and any special flags to
 set. The format of the file is documented in list.txt's header. Specifically,
-You will be defining the name of the tileset, which directory contains the
+you will be defining the name of the tileset, which directory contains the
 tileset's files, how big the tiles are in pixels (i.e. 64x64), the name of the
 main preference file for the tileset and some additional flags which have to do
 with alpha blending. Not all tilesets need to set extra flags.
