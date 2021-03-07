@@ -519,9 +519,9 @@ errr init_nds(void)
 	/* Initialize the "color_data" array */
 	for (int i = 0; i < MAX_COLORS; i++) {
 #ifdef _3DS
-		color_data[i] = angband_color_table[i][1] << 16 |
-		                angband_color_table[i][2] << 8 |
-		                angband_color_table[i][3];
+		color_data[i] = angband_color_table[i][1] << 24 |
+		                angband_color_table[i][2] << 16 |
+		                angband_color_table[i][3] << 8;
 #else
 	    color_data[i] = RGB15(angband_color_table[i][1] >> 3,
 		                      angband_color_table[i][2] >> 3,

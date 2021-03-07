@@ -6,11 +6,11 @@
 
 #ifdef _3DS
 
-/* Each pixel is really only 24 bit, but that type does not exist */
+/* RGBA8 */
 typedef uint32_t nds_pixel;
-#define NDS_WHITE_PIXEL 0xffffff
-#define NDS_BLACK_PIXEL 0x000000
-#define NDS_CURSOR_COLOR 0xffff00
+#define NDS_WHITE_PIXEL 0xffffffff
+#define NDS_BLACK_PIXEL 0x000000ff
+#define NDS_CURSOR_COLOR 0xffff00ff
 
 #define NDS_SCREEN_WIDTH 400
 #define NDS_SCREEN_HEIGHT 240
