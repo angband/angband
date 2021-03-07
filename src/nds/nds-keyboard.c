@@ -4,11 +4,22 @@
 #include "nds-draw.h"
 #include "nds-event.h"
 
-#ifdef _3DS
-#include <3ds.h>
-#else
+#ifndef _3DS
+
+typedef struct {
+	u16b width;
+	u16b code;
+} nds_kbd_key;
+
+#define K_MODIFIER	0x100
+#define K_CAPS		0x101
+#define K_SHIFT		0x102
+#define K_CTRL		0x103
+#define K_ALT		0x104
+#define K_F(n)		(0x200 + n)
+#define K_SHIFTED_MOVE	0x0200
+
 #include <nds.h>
-#endif
 
 const nds_kbd_key row0[] = {{16, (u16b)'`'}, {16, (u16b)'1'},  {16, (u16b)'2'},
                             {16, (u16b)'3'}, {16, (u16b)'4'},  {16, (u16b)'5'},
@@ -64,7 +75,6 @@ u16b nds_kbd_mod_code(u16b ret)
 
 void nds_kbd_set_color_from_pos(u16b r, u16b k, byte color)
 {
-#ifndef _3DS
 	u16b ii, xx = 0, jj;
 	u16b *map[] = {(u16b *)(BG_MAP_RAM_SUB(8) + 3 * 32 * 2),
 	               (u16b *)(BG_MAP_RAM_SUB(9) + 3 * 32 * 2),
@@ -85,7 +95,6 @@ void nds_kbd_set_color_from_pos(u16b r, u16b k, byte color)
 			    (color << 12);
 		}
 	}
-#endif
 }
 
 void nds_kbd_set_color_from_code(u16b code, byte color)
@@ -106,11 +115,9 @@ void nds_kbd_set_color_from_code(u16b code, byte color)
 
 void nds_kbd_set_map()
 {
-#ifndef _3DS
 	REG_BG0CNT_SUB = BG_TILE_BASE(0) |
 	                 BG_MAP_BASE(8 + (caps | (shift << 1))) |
 	                 BG_PRIORITY(0) | BG_COLOR_16;
-#endif
 }
 
 u16b nds_kbd_xy2key(byte x, byte y)
@@ -342,7 +349,6 @@ void nds_kbd_vblank()
 
 bool nds_kbd_init()
 {
-#ifndef _3DS
 	const char *files[] = {
 	    "/angband/nds/kbd.bin",
 	    "/angband/nds/kbd.pal",
@@ -386,7 +392,8 @@ bool nds_kbd_init()
 	for (u16b i = 0; i < 16; i++) {
 		BG_PALETTE_SUB[i + 16] = BG_PALETTE_SUB[i] ^ 0x7FFF;
 	}
-#endif
 
 	return true;
 }
+
+#endif
