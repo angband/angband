@@ -511,7 +511,7 @@ static int quiver_absorb_num(const struct object *obj)
 						- quiver_obj->number * mult;
 			} else if (ammo) {
 				space_free += z_info->quiver_slot_size;
-			} else if (obj->note) {
+			} else if (preferred_quiver_slot(obj) == i) {
 				/*
 				 * Per calc_inventory(), throwing weapons
 				 * which aren't also ammo will be added to the
@@ -519,12 +519,7 @@ static int quiver_absorb_num(const struct object *obj)
 				 * slot.  The inscription test should match what
 				 * calc_inventory() uses.
 				 */
-				const char *s = strchr(quark_str(obj->note), '@');
-
-				if (s && (s[1] == 'f' || s[1] == 'v') &&
-						s[2] - '0' == i) {
-					space_free += z_info->quiver_slot_size;
-				}
+				space_free += z_info->quiver_slot_size;
 			}
 		}
 
@@ -1072,4 +1067,25 @@ void pack_overflow(struct object *obj)
 	if (player->upkeep->notice) notice_stuff(player);
 	if (player->upkeep->update) update_stuff(player);
 	if (player->upkeep->redraw) redraw_stuff(player);
+}
+
+/**
+ * Look at an item's inscription to determine where it wants to be placed in
+ * the quiver.  If the item is not appropriate for the quiver or is not
+ * appropriately inscribed, return -1.
+ */
+int preferred_quiver_slot(const struct object *obj)
+{
+	int desired_slot = -1;
+
+	if (obj->note && (tval_is_ammo(obj) ||
+			of_has(obj->flags, OF_THROWING))) {
+		const char *s = strchr(quark_str(obj->note), '@');
+
+		if (s && (s[1] == 'f' || s[1] == 'v')) {
+			desired_slot = s[2] - '0';
+		}
+	}
+
+	return desired_slot;
 }

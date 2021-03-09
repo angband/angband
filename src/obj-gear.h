@@ -60,6 +60,7 @@ void combine_pack(void);
 bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(struct object *obj);
+int preferred_quiver_slot(const struct object *obj);
 
 
 #endif /* OBJECT_GEAR_H */
