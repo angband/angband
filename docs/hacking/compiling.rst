@@ -3,7 +3,8 @@ Compiling Instructions
 
 The methods for compiling Angband vary by platform and by build system. If
 you get Angband working on a different platform or build system please let us
-know so we can add to this file.
+know so we can add to this file.  Unless otherwise noted, all the commands
+listed are to be run from top-level directory of the Angband source files.
 
 .. contents:: Contents
    :local:
@@ -51,15 +52,21 @@ can optionally build (GCU, SDL, X11, and GTK) using arguments to configure
 such as --enable-sdl, --disable-gtk, etc. Each front end has different
 dependencies (e.g. ncurses, SDL libraries, etc).
 
-To build Angband to be run in-place::
+If your source files are from cloning the git repository, you'll first need
+to run this to create the configure script::
 
     ./autogen.sh
+
+That is not necessary if your source files are from the source archive,
+a .tar.gz file, for a release.
+
+To build Angband to be run in-place, then run this::
+
     ./configure --with-no-install [other options as needed]
     make
 
-To build Angband to be installed in some other location::
+To build Angband to be installed in some other location, run this::
 
-    ./autogen.sh
     ./configure --prefix /path/to [other options as needed]
     make
     make install
@@ -99,11 +106,22 @@ Many developers (as well as the auto-builder) build Angband for Windows using
 Mingw on Linux. This requires that the necessary Mingw packages are all
 installed.
 
-This type of build now also uses autotools, so you must configure it to
-cross-compile, e.g.::
+This type of build now also uses autotools so the overall procedure is very
+similar to that for a native build.  The key difference is setting up to
+cross-compile when running configure.
 
-	./autogen.sh
+If your source files are from cloning the git repository, you'll first need
+to run this to create the configure script::
+
+        ./autogen.sh
+
+That is not necessary if your source files are from the source archive,
+a .tar.gz file, for a release.
+
+Then configure the cross-comilation and perform the compilation itself::
+
 	./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i586-mingw32msvc
+	make
 
 Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
 should be that same command with the '-gcc' removed. Instead of i586 you may
@@ -137,9 +155,17 @@ Using MinGW
 ~~~~~~~~~~~
 
 This build now also uses autotools, so should be very similar to the Linux
-build. Open the MinGW shell (MSYS) by running msys.bat then run these commands::
+build. Open the MinGW shell (MSYS) by running msys.bat.
 
-	./autogen.sh
+If your source files are from cloning the git repository, you'll first need
+to run this in the directory to create the configure script::
+
+        ./autogen.sh
+
+That is not necessary if your source files are from the source archive,
+a .tar.gz file, for a release.
+
+Then run these commands::
 	./configure --enable-win
 	make
 
@@ -158,9 +184,16 @@ can run with or without Cygwin.
 Use the Cygwin setup.exe to install the mingw-gcc-core package and any
 dependencies suggested by the installer.
 
-Run these commands::
+If your source files are from cloning the git repository, you'll first need
+to run this in the directory to create the configure script::
 
-	./autogen.sh
+        ./autogen.sh
+
+That is not necessary if your source files are from the source archive,
+a .tar.gz file, for a release.
+
+Then run these commands::
+
 	./configure --enable-win --with-no-install --host=i686-pc-mingw32
 	make
 
@@ -221,7 +254,8 @@ Using eclipse (Indigo) on Windows (with MinGW)
 * Go to C/C++ Build | Toolchain Editor, select "Gnu Make Builder" instead of "CDT Internal Builder"
 * go to C/C++ Build, uncheck "Generate Makefiles automatically"
 
-You still need to run ./autogen.sh and ./configure manually, outside eclipse (see above)
+You still need to run ./autogen.sh, if your source files are from cloning the
+git repository, and ./configure manually, outside eclipse (see above)
 
 Using Visual Studio
 ~~~~~~~~~~~~~~~~~~~
