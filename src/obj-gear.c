@@ -486,60 +486,99 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 }
 
 /**
- * Check how many missiles can be put in the quiver without increasing the
- * number of pack slots used.
+ * Check how many missiles can be put in the quiver with a limit on whether
+ * the quiver can expand to take more slots in the pack.
  *
- * Returns the quantity from a given stack of missiles that can be added.
+ * \param obj Is the object to add.
+ * \param n_add_pack At entry, *n_add_pack is the maximum number of additional
+ * pack slots to give to the quiver.  At exit, *n_add_pack will be the number
+ * of those slots that were not used to expand the quiver.
+ * \param n_to_quiver At exit, *n_to_quiver will be the number that can be
+ * added to the quiver.  It will be no more than obj->number.  The value of
+ * *n_to_quiver at entry is not used.
  */
-static int quiver_absorb_num(const struct object *obj)
+static void quiver_absorb_num(const struct object *obj, int *n_add_pack,
+	int *n_to_quiver)
 {
 	bool ammo = tval_is_ammo(obj);
-	bool throwing = of_has(obj->flags, OF_THROWING);
 
 	/* Must be ammo or good for throwing */
-	if (ammo || throwing) {
-		int i, quiver_count = 0, space_free = 0;
+	if (ammo || of_has(obj->flags, OF_THROWING)) {
+		int i, quiver_count = 0, space_free = 0, n_empty = 0;
+		int desired_slot = preferred_quiver_slot(obj);
+		bool displaces = false;
 
-		/* Count the current space this object could go into */
+		/* Count the current space this object could go into. */
 		for (i = 0; i < z_info->quiver_size; i++) {
 			struct object *quiver_obj = player->upkeep->quiver[i];
 			if (quiver_obj) {
 				int mult = tval_is_ammo(quiver_obj) ?
-					 1 : z_info->thrown_quiver_mult;
+					1 : z_info->thrown_quiver_mult;
 
 				quiver_count += quiver_obj->number * mult;
-				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
-					space_free += z_info->quiver_slot_size
-						- quiver_obj->number * mult;
-			} else if (ammo) {
-				space_free += z_info->quiver_slot_size;
-			} else if (preferred_quiver_slot(obj) == i) {
+				if (object_stackable(quiver_obj, obj, OSTACK_PACK)) {
+					assert(quiver_obj->number * mult <=
+						z_info->quiver_slot_size);
+					space_free += z_info->quiver_slot_size -
+						quiver_obj->number * mult;
+				} else if (desired_slot == i &&
+						preferred_quiver_slot(quiver_obj) != i) {
+					/*
+					 * The object to be added prefers to go
+					 * in this slot, but it's occupied by
+					 * something that could be displaced
+					 * to another quiver slot, if one is
+					 * available.
+					 */
+					displaces = true;
+					space_free += z_info->quiver_slot_size -
+						quiver_obj->number * mult;
+				}
+			} else {
+				++n_empty;
 				/*
-				 * Per calc_inventory(), throwing weapons
-				 * which aren't also ammo will be added to the
-				 * quiver if inscribed to go into an unoccupied
-				 * slot.  The inscription test should match what
-				 * calc_inventory() uses.
+				 * Ammo can fit in any empty slot in the quiver.
+				 * Non-ammo throwing items are restricted to
+				 * their preferred slot.
 				 */
-				space_free += z_info->quiver_slot_size;
+				if (ammo || desired_slot == i) {
+					space_free += z_info->quiver_slot_size;
+				}
 			}
 		}
 
-		if (space_free) {
-			/* Check we won't need another pack slot */
-			quiver_count += z_info->quiver_slot_size;
-			while (quiver_count > z_info->quiver_slot_size)
-				quiver_count -= z_info->quiver_slot_size;
+		/*
+		 * Only possible to add if there is space free in the quiver
+		 * and either are displacing a pile with an empty quiver slot
+		 * available for it or are not displacing a pile at all.
+		 */
+		if (space_free && ((displaces && n_empty) || !displaces)) {
+			int mult = ammo ? 1 : z_info->thrown_quiver_mult;
+			/*
+			 * When quiver_count % quiver_slot_size is zero, adding
+			 * anything will require a pack slot.
+			 */
+			int remainder = quiver_count % z_info->quiver_slot_size;
+			int limit_from_pack = (remainder) ?
+				z_info->quiver_slot_size - remainder : 0;
 
-			/* Return the number, or the number that will fit */
-			space_free = MIN(space_free, z_info->quiver_slot_size - quiver_count);
-			return MIN(obj->number, space_free /
-				(tval_is_ammo(obj) ? 1 : z_info->thrown_quiver_mult));
+			if (*n_add_pack > 0) {
+				limit_from_pack += *n_add_pack *
+					z_info->quiver_slot_size;
+			}
+
+			/* Return the number or amount that fits. */
+			space_free = MIN(space_free, limit_from_pack);
+			*n_to_quiver = MIN(obj->number, space_free / mult);
+			*n_add_pack -= (*n_to_quiver * mult +
+				z_info->quiver_slot_size - 1 -
+				remainder) / z_info->quiver_slot_size;
+			return;
 		}
 	}
 
-	/* No ammo or no space */
-	return 0;
+	/* Not suitable for the quiver or no space */
+	*n_to_quiver = 0;
 }
 
 /**
@@ -547,26 +586,30 @@ static int quiver_absorb_num(const struct object *obj)
  */
 int inven_carry_num(const struct object *obj)
 {
-	/* Free inventory slots, so there is definitely room */
-	if (pack_slots_used(player) < z_info->pack_size) {
+	int n_free_slot = z_info->pack_size - pack_slots_used(player);
+	int num_to_quiver, num_left, i;
+
+	/* Absorb as many as we can in the quiver. */
+	quiver_absorb_num(obj, &n_free_slot, &num_to_quiver);
+
+	/* The quiver will get everything, or the pack can hold what's left. */
+	if (num_to_quiver == obj->number || n_free_slot > 0) {
 		return obj->number;
-	} else {
-		int i;
-
-		/* Absorb as many as we can in the quiver */
-		int num_left = obj->number - quiver_absorb_num(obj);
-
-		/* See if we can add to a part full inventory slot */
-		for (i = 0; i < z_info->pack_size; i++) {
-			struct object *inven_obj = player->upkeep->inven[i];
-			if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
-				num_left -= inven_obj->kind->base->max_stack - inven_obj->number;
-			}
-		}
-
-		/* Return the number we can absorb */
-		return obj->number - MAX(num_left, 0);
 	}
+
+	/* See if we can add to a partially full inventory slot. */
+	num_left = obj->number - num_to_quiver;
+	for (i = 0; i < z_info->pack_size; i++) {
+		struct object *inven_obj = player->upkeep->inven[i];
+		if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
+			num_left -= inven_obj->kind->base->max_stack -
+				inven_obj->number;
+			if (num_left <= 0) break;
+		}
+	}
+
+	/* Return the number we can absorb */
+	return obj->number - MAX(num_left, 0);
 }
 
 /**
