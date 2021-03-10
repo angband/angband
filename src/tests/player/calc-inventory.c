@@ -228,6 +228,40 @@ static bool verify_quiver(struct player *p, const struct out_slot_desc *slots) {
 	return true;
 }
 
+/*
+ * Verify that another call to calc_inventory() with the gear unchanged gives
+ * the same result.
+ */
+static bool verify_stability(struct player *p) {
+	struct object **old_pack =
+		mem_alloc(z_info->pack_size * sizeof(*old_pack));
+	struct object **old_quiver =
+		mem_alloc(z_info->quiver_size * sizeof(old_quiver));
+	bool result = true;
+	int i;
+
+	for (i = 0; i < z_info->pack_size; ++i) {
+		old_pack[i] = p->upkeep->inven[i];
+	}
+	for (i = 0; i < z_info->quiver_size; ++i) {
+		old_quiver[i] = p->upkeep->quiver[i];
+	}
+	calc_inventory(p->upkeep, p->gear, p->body);
+	for (i = 0; i < z_info->pack_size; ++i) {
+		if (old_pack[i] != p->upkeep->inven[i]) {
+			result = false;
+		}
+	}
+	for (i = 0; i < z_info->quiver_size; ++i) {
+		if (old_quiver[i] != p->upkeep->quiver[i]) {
+			result = false;
+		}
+	}
+	mem_free(old_quiver);
+	mem_free(old_pack);
+	return true;
+}
+
 static int test_calc_inventory_empty(void *state) {
 	struct out_slot_desc empty = { -1, -1, -1 };
 
@@ -235,6 +269,7 @@ static int test_calc_inventory_empty(void *state) {
 	calc_inventory(player->upkeep, player->gear, player->body);
 	require(verify_pack(player, &empty, 0));
 	require(verify_quiver(player, &empty));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -257,6 +292,7 @@ static int test_calc_inventory_only_equipped(void *state) {
 	calc_inventory(player->upkeep, player->gear, player->body);
 	require(verify_pack(player, only_equipped_case.pack_out, 0));
 	require(verify_quiver(player, only_equipped_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -300,6 +336,7 @@ static int test_calc_inventory_only_pack(void *state) {
 	calc_inventory(player->upkeep, player->gear, player->body);
 	require(verify_pack(player, only_pack_case.pack_out, 0));
 	require(verify_quiver(player, only_pack_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -351,6 +388,7 @@ static int test_calc_inventory_only_quiver(void *state) {
 		(quiver_size + z_info->quiver_slot_size - 1) /
 		z_info->quiver_slot_size));
 	require(verify_quiver(player, only_quiver_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -435,6 +473,7 @@ static int test_calc_inventory_equipped_pack_quiver(void *state) {
 		(quiver_size + z_info->quiver_slot_size - 1) /
 		z_info->quiver_slot_size));
 	require(verify_quiver(player, this_test_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -497,6 +536,7 @@ static int test_calc_inventory_oversubscribed_quiver(void *state) {
 		(quiver_size + z_info->quiver_slot_size - 1) /
 		z_info->quiver_slot_size));
 	require(verify_quiver(player, this_test_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -561,6 +601,7 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 		(quiver_size + z_info->quiver_slot_size - 1) /
 		z_info->quiver_slot_size));
 	require(verify_quiver(player, this_test_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
@@ -588,6 +629,7 @@ static test_calc_inventory_quiver_split_pile(void *state) {
 	calc_inventory(player->upkeep, player->gear, player->body);
 	require(verify_pack(player, this_test_case.pack_out, 1));
 	require(verify_quiver(player, this_test_case.quiv_out));
+	require(verify_stability(player));
 	ok;
 }
 
