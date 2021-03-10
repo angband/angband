@@ -662,8 +662,12 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		struct object *gear_obj = p->gear;
 		while ((combine_item == NULL) && (gear_obj != NULL)) {
+			object_stack_t stack_mode =
+				object_is_in_quiver(p, gear_obj) ?
+				OSTACK_QUIVER : OSTACK_PACK;
+
 			if (!object_is_equipped(p->body, gear_obj) &&
-					object_similar(gear_obj, obj, OSTACK_PACK)) {
+					object_similar(gear_obj, obj, stack_mode)) {
 				combine_item = gear_obj;
 			}
 
