@@ -1089,6 +1089,10 @@ static struct object TEST_DATA test_player_knowledge = {
 	.note = 0,
 };
 
+static struct player_shape TEST_DATA test_player_shape = {
+	.name = "normal",
+};
+
 
 static struct player TEST_DATA test_player = {
 	.grid = { 1, 1 },
