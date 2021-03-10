@@ -22,8 +22,14 @@
 #include "player-calcs.h"
 #include "project.h"
 
-/* 31 = TMD_MAX */
-static s16b TEST_DATA test_timed[31] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+/* 53 = TMD_MAX */
+static s16b TEST_DATA test_timed[53] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0
 };
 
 static struct object_base TEST_DATA sword_base = {
