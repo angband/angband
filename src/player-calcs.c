@@ -1072,9 +1072,22 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 					assert(nsplit < current->number);
 					if (nsplit > 0 && n_stack_split <=
 							n_pack_remaining) {
-						to_quiver = object_split(
-							current, nsplit);
-						gear_insert_end(to_quiver);
+						/*
+						 * Split off the portion that
+						 * go to the pack.  Since the
+						 * stack in the quiver is
+						 * earlier in the gear list
+						 * it will prefer to remain
+						 * in the quiver in future
+						 * calls to calc_inventory()
+						 * and will be the preferential
+						 * destination for merges in
+						 * combine_pack().
+						 */
+						to_quiver = current;
+						gear_insert_end(object_split(
+							current, current->number
+							- nsplit));
 						++n_stack_split;
 					} else {
 						to_quiver = NULL;
@@ -1131,9 +1144,13 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			to_quiver = first;
 		} else if (z_info->quiver_slot_size > 0 &&
 				n_stack_split <= n_pack_remaining) {
-			to_quiver = object_split(first,
-				z_info->quiver_slot_size);
-			gear_insert_end(to_quiver);
+			/*
+			 * As above, split off the portion that goes to the
+			 * pack.
+			 */
+			to_quiver = first;
+			gear_insert_end(object_split(first,
+				first->number - z_info->quiver_slot_size));
 			++n_stack_split;
 		} else {
 			to_quiver = NULL;
