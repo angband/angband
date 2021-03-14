@@ -103,6 +103,7 @@ typedef enum cmd_code {
 	/* Debugging commands */
 	CMD_WIZ_ADVANCE,
 	CMD_WIZ_CURE_ALL,
+	CMD_WIZ_TELEPORT_TO,
 
 	/* Hors categorie Commands */
 	CMD_SUICIDE,

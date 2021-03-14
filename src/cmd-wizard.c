@@ -19,6 +19,8 @@
 #include "effects.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "target.h"
+#include "ui-target.h"
 
 
 /**
@@ -111,4 +113,34 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 	/* Give the player some feedback */
 	msg("You feel *much* better!");
+}
+
+
+/**
+ * Teleport to the requested position (CMD_WIZ_TELEPORT_TO).  Can take the
+ * position from the argument, "point", of type point in cmd.
+ */
+void do_cmd_wiz_teleport_to(struct command *cmd)
+{
+	struct loc grid;
+
+	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
+		/* Use the targeting function. */
+		if (!target_set_interactive(TARGET_LOOK, -1, -1)) return;
+
+		/* Grab the target coordinates. */
+		target_get(&grid);
+
+		/* Record in the command to facilitate repetition. */
+		cmd_set_arg_point(cmd, "point", grid);
+	}
+
+	/* Test for passable terrain. */
+	if (square_ispassable(cave, grid)) {
+		/* Teleport to the target */
+		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0,
+			grid.y, grid.x, NULL);
+	} else {
+		msg("The square you are aiming for is impassable.");
+	}
 }

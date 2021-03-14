@@ -293,33 +293,6 @@ static void do_cmd_wiz_dump_level_map(void)
 
 
 /**
- * Teleport to the requested target
- */
-static void do_cmd_wiz_bamf(void)
-{
-	struct loc grid = loc(0, 0);
-
-	/* Use the targeting function. */
-	if (!target_set_interactive(TARGET_LOOK, -1, -1))
-		return;
-
-	/* grab the target coords. */
-	target_get(&grid);
-
-	/* Test for passable terrain. */
-	if (!square_ispassable(cave, grid)) {
-		msg("The square you are aiming for is impassable.");
-
-	} else {
-		/* Teleport to the target */
-		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0, grid.y,
-					  grid.x, NULL);
-	}
-}
-
-
-
-/**
  * Aux function for "do_cmd_wiz_change()"
  */
 static void do_cmd_wiz_change_aux(void)
@@ -2028,10 +2001,8 @@ void get_debug_command(void)
 
 		/* Teleport to target */
 		case 'b':
-		{
-			do_cmd_wiz_bamf();
+			cmdq_push(CMD_WIZ_TELEPORT_TO);
 			break;
-		}
 
 		/* Create any object */
 		case 'c':
