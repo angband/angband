@@ -19,6 +19,7 @@
 #include "effects.h"
 #include "game-input.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-util.h"
 #include "obj-knowledge.h"
@@ -612,6 +613,56 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 
 
 /**
+ * Make the player fully aware of a monster race's attributes
+ * (CMD_WIZ_RECALL_MONSTER).  Can take the race from the argument, "index", of
+ * type number in cmd.  If that index is -1, make the player aware of all
+ * races.
+ */
+void do_cmd_wiz_recall_monster(struct command *cmd)
+{
+	int r_idx = z_info->r_max;
+
+	if (cmd_get_arg_number(cmd, "index", &r_idx) != CMD_OK) {
+		char s[80] = "";
+		char c;
+
+		if (!get_com("Full recall for [a]ll monsters or [s]pecific monster? ", &c)) return;
+		if (c == 'a' || c == 'A') {
+			r_idx = -1;
+		} else if (c == 's' || c == 'S') {
+			if (!get_string("Which monster? ", s, sizeof(s)))
+				return;
+			if (!get_int_from_string(s, &r_idx)) {
+				const struct monster_race *race =
+					lookup_monster(s);
+
+				if (race) {
+					r_idx = race->ridx;
+				}
+			}
+		} else {
+			return;
+		}
+		cmd_set_arg_number(cmd, "index", r_idx);
+	}
+
+	if (r_idx >= 0 && r_idx < z_info->r_max) {
+		const struct monster_race *race = &r_info[r_idx];
+
+		cheat_monster_lore(race, get_lore(race));
+	} else if (r_idx == -1) {
+		int i;
+
+		for (i = 0; i < z_info->r_max; i++) {
+			cheat_monster_lore(&r_info[i], &l_list[i]);
+		}
+	} else {
+		msg("No monster found.");
+	}
+}
+
+
+/**
  * Rerate the player's hit points (CMD_WIZ_RERATE).  Takes no arguments from
  * cmd.
  */
@@ -764,5 +815,55 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 			grid.y, grid.x, NULL);
 	} else {
 		msg("The square you are aiming for is impassable.");
+	}
+}
+
+
+/**
+ * Make the player ignorant of a monster race's attributes
+ * (CMD_WIZ_WIPE_RECALL).  Can take the race from the argument, "index", of
+ * type number in cmd.  If that index is -1, make the player ignorant of all
+ * races.
+ */
+void do_cmd_wiz_wipe_recall(struct command *cmd)
+{
+	int r_idx = z_info->r_max;
+
+	if (cmd_get_arg_number(cmd, "index", &r_idx) != CMD_OK) {
+		char s[80] = "";
+		char c;
+
+		if (!get_com("Wipe recall for [a]ll monsters or [s]pecific monster? ", &c)) return;
+		if (c == 'a' || c == 'A') {
+			r_idx = -1;
+		} else if (c == 's' || c == 'S') {
+			if (!get_string("Which monster? ", s, sizeof(s)))
+				return;
+			if (!get_int_from_string(s, &r_idx)) {
+				const struct monster_race *race =
+					lookup_monster(s);
+
+				if (race) {
+					r_idx = race->ridx;
+				}
+			}
+		} else {
+			return;
+		}
+		cmd_set_arg_number(cmd, "index", r_idx);
+	}
+
+	if (r_idx >= 0 && r_idx < z_info->r_max) {
+		const struct monster_race *race = &r_info[r_idx];
+
+		wipe_monster_lore(race, get_lore(race));
+	} else if (r_idx == -1) {
+		int i;
+
+		for (i = 0; i < z_info->r_max; i++) {
+			wipe_monster_lore(&r_info[i], &l_list[i]);
+		}
+	} else {
+		msg("No monster found.");
 	}
 }

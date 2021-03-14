@@ -24,7 +24,6 @@
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
-#include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -1814,56 +1813,8 @@ void get_debug_command(void)
 
 		/* Get full recall for a monster */
 		case 'r':
-		{
-			const struct monster_race *race = NULL;
-
-			char sym;
-			const char *prompt =
-				"Full recall for [a]ll monsters or [s]pecific monster? ";
-
-			if (!get_com(prompt, &sym)) return;
-
-			if (sym == 'a' || sym == 'A')
-			{
-				int i;
-				for (i = 0; i < z_info->r_max; i++)
-					cheat_monster_lore(&r_info[i], &l_list[i]);
-				msg("Done.");
-			}
-			else if (sym == 's' || sym == 'S')
-			{
-				char name[80] = "";
-					
-				/* Avoid the prompt getting in the way */
-				screen_save();
-
-				/* Prompt */
-				prt("Which monster? ", 0, 0);
-
-				/* Get the name */
-				if (askfor_aux(name, sizeof(name), NULL))
-				{
-					/* See if a r_idx was entered */
-					int r_idx = get_idx_from_name(name);
-					if (r_idx)
-						race = &r_info[r_idx];
-					else
-						/* If not, find the monster with that name */
-						race = lookup_monster(name); 
-				}
-
-				/* Reload the screen */
-				screen_load();
-
-				/* Did we find a valid monster? */
-				if (race)
-					cheat_monster_lore(race, get_lore(race));
-				else
-					msg("No monster found.");
-			}
-
+			cmdq_push(CMD_WIZ_RECALL_MONSTER);
 			break;
-		}
 
 		/* Summon Random Monster(s) */
 		case 's':
@@ -1949,53 +1900,8 @@ void get_debug_command(void)
 
 		/* Wipe recall for a monster */
 		case 'W':
-		{
-			const struct monster_race *race = NULL;
-			s16b r_idx = 0; 
-
-			char sym;
-			const char *prompt =
-				"Wipe recall for [a]ll monsters or [s]pecific monster? ";
-
-			if (!get_com(prompt, &sym)) return;
-
-			if (sym == 'a' || sym == 'A') {
-				int i;
-				for (i = 0; i < z_info->r_max; i++)
-					wipe_monster_lore(&r_info[i], &l_list[i]);
-				msg("Done.");
-			} else if (sym == 's' || sym == 'S') {
-				char name[80] = "";
-
-				/* Avoid the prompt getting in the way */
-				screen_save();
-
-				/* Prompt */
-				prt("Which monster? ", 0, 0);
-
-				/* Get the name */
-				if (askfor_aux(name, sizeof(name), NULL)) {
-					/* See if a r_idx was entered */
-					r_idx = get_idx_from_name(name);
-					if (r_idx)
-						race = &r_info[r_idx];
-					else
-						/* If not, find the monster with that name */
-						race = lookup_monster(name); 
-				}
-					
-				/* Reload the screen */
-				screen_load();
-
-				/* Did we find a valid monster? */
-				if (race)
-					wipe_monster_lore(race, get_lore(race));
-				else
-					msg("No monster found.");
-			}
-	
+			cmdq_push(CMD_WIZ_WIPE_RECALL);
 			break;
-		}
 
 		/* Increase Experience */
 		case 'x':
