@@ -89,6 +89,7 @@ void do_cmd_wiz_cure_all(struct command *cmd);
 void do_cmd_wiz_detect_all_local(struct command *cmd);
 void do_cmd_wiz_detect_all_monsters(struct command *cmd);
 void do_cmd_wiz_hit_all_los(struct command *cmd);
+void do_cmd_wiz_increase_exp(struct command *cmd);
 void do_cmd_wiz_jump_level(struct command *cmd);
 void do_cmd_wiz_learn_object_kinds(struct command *cmd);
 void do_cmd_wiz_query_feature(struct command *cmd);

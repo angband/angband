@@ -567,6 +567,24 @@ void do_cmd_wiz_hit_all_los(struct command *cmd)
 
 
 /**
+ * Increase the player's experience by a given amount (CMD_WIZ_INCREASE_EXP).
+ * Can take the amount from the argument, "quantity", of type number in cmd.
+ */
+void do_cmd_wiz_increase_exp(struct command *cmd)
+{
+	int n;
+
+	if (cmd_get_arg_number(cmd, "quantity", &n) != CMD_OK) {
+		n = get_quantity("Gain how much experience? ", 9999);
+		cmd_set_arg_number(cmd, "quantity", n);
+	}
+
+	if (n < 1) n = 1;
+	player_exp_gain(player, n);
+}
+
+
+/**
  * Go to any level, optionally choosing the level generation algorithm
  * (CMD_WIZ_JUMP_LEVEL).  Can take the level to jump to from the argument,
  * "level", of type number in cmd.  Can take whether to choose the generation

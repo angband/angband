@@ -1689,15 +1689,8 @@ void get_debug_command(void)
 
 		/* Increase Experience */
 		case 'x':
-		{
-			int n;
-			screen_save();
-			n = get_quantity("Gain how much experience? ", 9999);
-			screen_load();
-			if (n < 1) n = 1;
-			player_exp_gain(player, n);
+			cmdq_push(CMD_WIZ_INCREASE_EXP);
 			break;
-		}
 
 		/* Quit the game, don't save */
 		case 'X':
