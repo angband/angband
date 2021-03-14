@@ -1519,76 +1519,6 @@ static void do_cmd_wiz_zap(int d)
 
 
 /**
- * Query square flags - needs alteration if list-square-flags.h changes
- */
-static void do_cmd_wiz_query(void)
-{
-	int y, x;
-	char cmd;
-	int flag = 0;
-
-
-	/* Get a "debug command" */
-	if (!get_com("Debug Command Query: ", &cmd)) return;
-
-	/* Extract a flag */
-	switch (cmd)
-	{
-		case 'g': flag = (SQUARE_GLOW); break;
-		case 'r': flag = (SQUARE_ROOM); break;
-		case 'a': flag = (SQUARE_VAULT); break;
-		case 's': flag = (SQUARE_SEEN); break;
-		case 'v': flag = (SQUARE_VIEW); break;
-		case 'w': flag = (SQUARE_WASSEEN); break;
-		case 'd': flag = (SQUARE_DTRAP); break;
-		case 'f': flag = (SQUARE_FEEL); break;
-		case 't': flag = (SQUARE_TRAP); break;
-		case 'n': flag = (SQUARE_INVIS); break;
-		case 'i': flag = (SQUARE_WALL_INNER); break;
-		case 'o': flag = (SQUARE_WALL_OUTER); break;
-		case 'l': flag = (SQUARE_WALL_SOLID); break;
-		case 'x': flag = (SQUARE_MON_RESTRICT); break;
-	}
-
-	/* Scan map */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-			byte a = COLOUR_RED;
-			struct loc grid = loc(x, y);
-
-			if (!square_in_bounds_fully(cave, grid)) continue;
-
-			/* Given flag, show only those grids */
-			if (flag && !sqinfo_has(square(cave, grid)->info, flag)) continue;
-
-			/* Given no flag, show known grids */
-			if (!flag && (!square_isknown(cave, grid))) continue;
-
-			/* Color */
-			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
-
-			/* Display player/floors/walls */
-			if (loc_eq(grid, player->grid))
-				print_rel(L'@', a, y, x);
-			else if (square_ispassable(cave, grid))
-				print_rel(L'*', a, y, x);
-			else
-				print_rel(L'#', a, y, x);
-		}
-	}
-
-	Term_redraw();
-
-	/* Get keypress */
-	msg("Press any key.");
-	inkey_ex();
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-	/* Redraw map */
-	prt_map();
-}
-
-/**
  * Create lots of items.
  */
 static void wiz_test_kind(int tval)
@@ -1876,13 +1806,11 @@ void get_debug_command(void)
 			pit_stats();
 			break;
 		}
-		
+
 		/* Query the dungeon */
 		case 'q':
-		{
-			do_cmd_wiz_query();
+			cmdq_push(CMD_WIZ_QUERY_SQUARE_FLAG);
 			break;
-		}
 
 		/* Get full recall for a monster */
 		case 'r':

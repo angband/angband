@@ -538,6 +538,80 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 
 
 /**
+ * Is a helper function passed by do_cmd_wiz_query_square_flag() to
+ * wiz_hack_map().
+ *
+ * \param c is the chunk to access for data.
+ * \param closure is a pointer to the int with the flag to highlight.
+ * \param grid is the location in the chunk.
+ * \param show is dereferenced and set to true if the grid has the flag.
+ * Otherwise, it is dereferenced and set to false.
+ * \param color is dereferenced and set to the color to use if *show is set
+ * to true.  Otherwise, it is not dereferenced.
+ */
+static void wiz_hack_map_query_square_flag(struct chunk *c, void *closure,
+	struct loc grid, bool *show, byte *color)
+{
+	int flag = *((int*)closure);
+
+	/* With a flag, test for that.  Otherwise, test if grid is known. */
+	if ((flag && sqinfo_has(square(c, grid)->info, flag)) ||
+			(!flag && square_isknown(c, grid))) {
+		*show = true;
+		*color = (square_ispassable(c, grid)) ?
+			COLOUR_YELLOW : COLOUR_RED;
+	} else {
+		*show = false;
+	}
+}
+
+
+/**
+ * Redraw the visible portion of the map to highlight squares with a given
+ * flag (CMD_WIZ_QUERY_SQUARE_FLAG).  Can take the flag to highlight from the
+ * argument, "choice", of type choice in cmd.  This function will need to
+ * be changed if list-square-flags.h changes.
+ */
+void do_cmd_wiz_query_square_flag(struct command *cmd)
+{
+	int flag = 0;
+
+	if (cmd_get_arg_choice(cmd, "choice", &flag) != CMD_OK) {
+		char c;
+
+		if (!get_com("Debug Command Query [grasvwdftniolx]: ", &c))
+			return;
+		switch (c) {
+			case 'g': flag = SQUARE_GLOW; break;
+			case 'r': flag = SQUARE_ROOM; break;
+			case 'a': flag = SQUARE_VAULT; break;
+			case 's': flag = SQUARE_SEEN; break;
+			case 'v': flag = SQUARE_VIEW; break;
+			case 'w': flag = SQUARE_WASSEEN; break;
+			case 'd': flag = SQUARE_DTRAP; break;
+			case 'f': flag = SQUARE_FEEL; break;
+			case 't': flag = SQUARE_TRAP; break;
+			case 'n': flag = SQUARE_INVIS; break;
+			case 'i': flag = SQUARE_WALL_INNER; break;
+			case 'o': flag = SQUARE_WALL_OUTER; break;
+			case 'l': flag = SQUARE_WALL_SOLID; break;
+			case 'x': flag = SQUARE_MON_RESTRICT; break;
+		}
+		cmd_set_arg_choice(cmd, "choice", flag);
+	}
+
+	wiz_hack_map(cave, player, wiz_hack_map_query_square_flag, &flag);
+
+	msg("Press any key.");
+	inkey_ex();
+	prt("", 0, 0);
+
+	/* Redraw map */
+	prt_map();
+}
+
+
+/**
  * Rerate the player's hit points (CMD_WIZ_RERATE).  Takes no arguments from
  * cmd.
  */
