@@ -18,6 +18,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
+#include "obj-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "target.h"
@@ -72,6 +73,34 @@ static void wiz_hack_map(struct chunk *c, struct player *p,
 	}
 
 	Term_redraw();
+}
+
+
+/**
+ * Acquire some good or great objects and drop them near the player
+ * (CMD_WIZ_ACQUIRE).  Can take the number of objects to acquire from the
+ * argument, "quantity", of type number in cmd.  Can take whether to get good
+ * or great objects from the argument, "choice", of type choice in cmd:  a
+ * non-zero value for that will select great objects.
+ */
+void do_cmd_wiz_acquire(struct command *cmd)
+{
+	int n, great;
+
+	if (cmd_get_arg_choice(cmd, "choice", &great) != CMD_OK) {
+		great = (get_check("Acquire great objects? ")) ? 1 : 0;
+		cmd_set_arg_choice(cmd, "choice", great);
+	}
+
+	if (cmd_get_arg_number(cmd, "quantity", &n) != CMD_OK) {
+		n = get_quantity((great) ?
+			"How many great objects? " : "How many good objects? ",
+			40);
+		if (n < 1) return;
+		cmd_set_arg_number(cmd, "quantity", n);
+	}
+
+	acquirement(player->grid, player->depth, n, great);
 }
 
 

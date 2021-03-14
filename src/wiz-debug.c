@@ -1947,15 +1947,9 @@ void get_debug_command(void)
 
 		/* Good Objects */
 		case 'g':
-		{
-			int n;
-			screen_save();
-			n= get_quantity("How many good objects? ", 40);
-			screen_load();
-			if (n < 1) n = 1;
-			acquirement(player->grid, player->depth, n, false);
+			cmdq_push(CMD_WIZ_ACQUIRE);
+			cmd_set_arg_choice(cmdq_peek(), "choice", 0);
 			break;
-		}
 
 		/* GF demo */
 		case 'G':
@@ -2192,15 +2186,9 @@ void get_debug_command(void)
 
 		/* Very Good Objects */
 		case 'v':
-		{
-			int n;
-			screen_save();
-			n = get_quantity("How many great objects? ", 40);
-			screen_load();
-			if (n < 1) n = 1;
-			acquirement(player->grid, player->depth, n, true);
+			cmdq_push(CMD_WIZ_ACQUIRE);
+			cmd_set_arg_choice(cmdq_peek(), "choice", 1);
 			break;
-		}
 
 		case 'V':
 		{
