@@ -117,6 +117,29 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 
 /**
+ * Detect everything nearby (CMD_WIZ_DETECT_ALL_LOCAL).  Takes no arguments
+ * from cmd.
+ */
+void do_cmd_wiz_detect_all_local(struct command *cmd)
+{
+	effect_simple(EF_DETECT_TRAPS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_DOORS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_STAIRS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_GOLD, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_OBJECTS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
+		0, 0, 0, 22, 40, NULL);
+}
+
+
+/**
  * Teleport to the requested position (CMD_WIZ_TELEPORT_TO).  Can take the
  * position from the argument, "point", of type point in cmd.
  */

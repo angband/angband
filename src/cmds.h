@@ -78,6 +78,7 @@ void do_cmd_autopickup(struct command *cmd);
 /* cmd-wizard.c */
 void do_cmd_wiz_advance(struct command *cmd);
 void do_cmd_wiz_cure_all(struct command *cmd);
+void do_cmd_wiz_detect_all_local(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
 
 #endif
