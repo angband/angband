@@ -84,6 +84,9 @@
     <ClCompile Include="src\cmd-pickup.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\cmd-wizard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\datafile.c">
       <Filter>Source Files</Filter>
     </ClCompile>

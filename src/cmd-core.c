@@ -112,6 +112,8 @@ static const struct command_info game_cmds[] =
 	{ CMD_REPEAT, "repeat", NULL, false, 0 },
 
 	{ CMD_COMMAND_MONSTER, "make a monster act", do_cmd_mon_command, false, 0 },
+
+	{ CMD_WIZ_CURE_ALL, "cure everything", do_cmd_wiz_cure_all, false, 0 },
 };
 
 const char *cmd_verb(cmd_code cmd)

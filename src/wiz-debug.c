@@ -1505,61 +1505,6 @@ void wiz_cheat_death(void)
 	dungeon_change_level(player, 0);
 }
 
-/**
- * Cure everything instantly
- */
-static void do_cmd_wiz_cure_all(void)
-{
-	int i;
-
-	/* Remove curses */
-	for (i = 0; i < player->body.count; i++) {
-		if (player->body.slots[i].obj && player->body.slots[i].obj->curses) {
-			mem_free(player->body.slots[i].obj->curses);
-			player->body.slots[i].obj->curses = NULL;
-		}
-	}
-
-	/* Restore stats */
-	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_STR, 0, 0, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_INT, 0, 0, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_WIS, 0, 0, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_DEX, 0, 0, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_CON, 0, 0, 0, 0, NULL);
-
-	/* Restore the level */
-	effect_simple(EF_RESTORE_EXP, source_none(), "0", 0, 0, 0, 0, 0, NULL);
-
-	/* Heal the player */
-	player->chp = player->mhp;
-	player->chp_frac = 0;
-
-	/* Restore mana */
-	player->csp = player->msp;
-	player->csp_frac = 0;
-
-	/* Cure stuff */
-	(void)player_clear_timed(player, TMD_BLIND, true);
-	(void)player_clear_timed(player, TMD_CONFUSED, true);
-	(void)player_clear_timed(player, TMD_POISONED, true);
-	(void)player_clear_timed(player, TMD_AFRAID, true);
-	(void)player_clear_timed(player, TMD_PARALYZED, true);
-	(void)player_clear_timed(player, TMD_IMAGE, true);
-	(void)player_clear_timed(player, TMD_STUN, true);
-	(void)player_clear_timed(player, TMD_CUT, true);
-	(void)player_clear_timed(player, TMD_SLOW, true);
-	(void)player_clear_timed(player, TMD_AMNESIA, true);
-
-	/* No longer hungry */
-	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false);
-
-	/* Redraw everything */
-	do_cmd_redraw();
-	
-	/* Give the player some feedback */
-	msg("You feel *much* better!");
-}
-
 
 /**
  * Go to any level. optionally choosing level generation algorithm
@@ -2114,10 +2059,8 @@ void get_debug_command(void)
 
 		/* Cure all maladies */
 		case 'a':
-		{
-			do_cmd_wiz_cure_all();
+			cmdq_push(CMD_WIZ_CURE_ALL);
 			break;
-		}
 
 		/* Make the player powerful */
 		case 'A':

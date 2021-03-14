@@ -75,4 +75,7 @@ int do_autopickup(struct player *p);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 
+/* cmd-wizard.c */
+void do_cmd_wiz_cure_all(struct command *cmd);
+
 #endif
