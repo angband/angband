@@ -1492,38 +1492,6 @@ static void do_cmd_wiz_summon(int num)
 
 
 /**
- * Summon a creature of the specified type
- */
-static void do_cmd_wiz_named(struct monster_race *r, bool slp)
-{
-	int i;
-	struct monster_group_info info = { 0, 0 };
-
-	/* Paranoia */
-	assert(r);
-
-	/* Try 10 times */
-	for (i = 0; i < 10; i++) {
-		struct loc grid;
-		int d = 1;
-
-		/* Pick a location */
-		scatter(cave, &grid, player->grid, d, true);
-
-		/* Require empty grids */
-		if (!square_isempty(cave, grid)) continue;
-
-		/* Place it (allow groups) */
-		if (place_new_monster(cave, grid, r, slp, true, info,
-							  ORIGIN_DROP_WIZARD)) {
-			break;
-		}
-	}
-}
-
-
-
-/**
  * Delete all nearby monsters
  */
 static void do_cmd_wiz_zap(int d)
@@ -1886,40 +1854,8 @@ void get_debug_command(void)
 
 		/* Summon Named Monster */
 		case 'n':
-		{
-			struct monster_race *r = NULL;
-			char name[80] = "";
-
-			/* Avoid the prompt getting in the way */
-			screen_save();
-
-			/* Prompt */
-			prt("Summon which monster? ", 0, 0);
-
-			/* Get the name */
-			if (askfor_aux(name, sizeof(name), NULL))
-			{
-				/* See if a r_idx was entered */
-				int r_idx = get_idx_from_name(name);
-				if (r_idx)
-					r = &r_info[r_idx];
-				else
-					/* If not, find the monster with that name */
-					r = lookup_monster(name); 
-					
-				player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
-			}
-
-			/* Reload the screen */
-			screen_load();
-
-			if (r)
-				do_cmd_wiz_named(r, true);
-			else
-				msg("No monster found.");
-			
+			cmdq_push(CMD_WIZ_SUMMON_NAMED);
 			break;
-		}
 
 		/* Object playing routines */
 		case 'o':

@@ -19,6 +19,8 @@
 #include "effects.h"
 #include "game-input.h"
 #include "init.h"
+#include "mon-make.h"
+#include "mon-util.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "player-calcs.h"
@@ -574,6 +576,68 @@ void do_cmd_wiz_rerate(struct command *cmd)
 	player->upkeep->redraw |= PR_HP;
 
 	msg("Current Life Rating is %d/100.", percent);
+}
+
+
+/**
+ * Summon a specific monster (CMD_WIZ_SUMMON_NAMED).  Can take the index
+ * of the monster to summon from the argument, "index", of type number in cmd.
+ */
+void do_cmd_wiz_summon_named(struct command *cmd)
+{
+	int r_idx, i = 0;
+	struct monster_race *r = NULL;
+	struct monster_group_info info = { 0, 0 };
+
+	if (cmd_get_arg_number(cmd, "index", &r_idx) == CMD_OK) {
+		if (r_idx > 0 && r_idx < z_info->r_max) {
+			r = &r_info[r_idx];
+		}
+	} else {
+		char s[80] = "";
+
+		if (!get_string("Summon which monster? ", s, sizeof(s))) return;
+		/* See if an index was entered */
+		if (get_int_from_string(s, &r_idx)) {
+			if (r_idx > 0 && r_idx < z_info->r_max) {
+				r = &r_info[r_idx];
+			}
+		} else {
+			/* If not, find by name */
+			r = lookup_monster(s);
+		}
+		if (r != NULL) {
+			cmd_set_arg_number(cmd, "index", r->ridx);
+		}
+	}
+
+	if (r == NULL) {
+		msg("No monster found.");
+		return;
+	}
+
+	/* Try 10 times */
+	while (1) {
+		struct loc grid;
+
+		if (i >= 10) {
+			msg("Could not place monster.");
+			break;
+		}
+
+		/* Pick a location */
+		scatter(cave, &grid, player->grid, 1, true);
+
+		/* Try to place (allowing groups) if empty */
+		if (square_isempty(cave, grid) &&
+				place_new_monster(cave, grid, r, true, true,
+				info, ORIGIN_DROP_WIZARD)) {
+			player->upkeep->redraw |= PR_MAP | PR_MONLIST;
+			break;
+		}
+
+		++i;
+	}
 }
 
 
