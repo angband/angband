@@ -1866,11 +1866,9 @@ void get_debug_command(void)
 
 		/* Phase Door */
 		case 'p':
-		{
-			const char *near = "10";
-			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0, NULL);
+			cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
+			cmd_set_arg_number(cmdq_peek(), "range", 10);
 			break;
-		}
 
 		/* Monster pit stats */
 		case 'P':
@@ -1960,11 +1958,9 @@ void get_debug_command(void)
 
 		/* Teleport */
 		case 't':
-		{
-			const char *far = "100";
-			effect_simple(EF_TELEPORT, source_player(), far, 0, 0, 0, 0, 0, NULL);
+			cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
+			cmd_set_arg_number(cmdq_peek(), "range", 100);
 			break;
-		}
 
 		/* Create a trap */
 		case 'T':

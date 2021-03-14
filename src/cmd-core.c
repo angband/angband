@@ -123,6 +123,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_QUERY_FEATURE, "highlight specific feature", do_cmd_wiz_query_feature, false, 0 },
 	{ CMD_WIZ_RERATE, "rerate hitpoints", do_cmd_wiz_rerate, false, 0 },
 	{ CMD_WIZ_SUMMON_NAMED, "summon specific monster", do_cmd_wiz_summon_named, false, 0 },
+	{ CMD_WIZ_TELEPORT_RANDOM, "teleport", do_cmd_wiz_teleport_random, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, 0 },
 };
 

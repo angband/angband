@@ -642,6 +642,29 @@ void do_cmd_wiz_summon_named(struct command *cmd)
 
 
 /**
+ * Teleport the player randomly with a given approximate range
+ * (CMD_WIZ_TELEPORT_RANDOM).  Can take the range from the argument, "range",
+ * of type number in cmd.
+ */
+void do_cmd_wiz_teleport_random(struct command *cmd)
+{
+	int range;
+	char sr[30];
+
+	if (cmd_get_arg_number(cmd, "range", &range) != CMD_OK) {
+		char s[80] = "100";
+
+		if (!get_string("Teleport range? ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &range) || range < 1) return;
+		cmd_set_arg_number(cmd, "range", range);
+	}
+
+	strnfmt(sr, sizeof(sr), "%d", range);
+	effect_simple(EF_TELEPORT, source_player(), sr, 0, 0, 0, 0, 0, NULL);
+}
+
+
+/**
  * Teleport to the requested position (CMD_WIZ_TELEPORT_TO).  Can take the
  * position from the argument, "point", of type point in cmd.
  */

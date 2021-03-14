@@ -111,6 +111,7 @@ typedef enum cmd_code {
 	CMD_WIZ_QUERY_FEATURE,
 	CMD_WIZ_RERATE,
 	CMD_WIZ_SUMMON_NAMED,
+	CMD_WIZ_TELEPORT_RANDOM,
 	CMD_WIZ_TELEPORT_TO,
 
 	/* Hors categorie Commands */

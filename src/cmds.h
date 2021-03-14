@@ -86,6 +86,7 @@ void do_cmd_wiz_learn_object_kinds(struct command *cmd);
 void do_cmd_wiz_query_feature(struct command *cmd);
 void do_cmd_wiz_rerate(struct command *cmd);
 void do_cmd_wiz_summon_named(struct command *cmd);
+void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
 
 #endif
