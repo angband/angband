@@ -1828,11 +1828,8 @@ void get_debug_command(void)
 
 		/* Un-hide all monsters */
 		case 'u':
-		{
-			effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "0", 0, 0, 0, 500, 500, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0", 0, 0, 0, 500, 500, NULL);
+			cmdq_push(CMD_WIZ_DETECT_ALL_MONSTERS);
 			break;
-		}
 
 		/* Very Good Objects */
 		case 'v':

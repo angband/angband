@@ -292,6 +292,19 @@ void do_cmd_wiz_detect_all_local(struct command *cmd)
 
 
 /**
+ * Detect all monsters (CMD_WIZ_DETECT_ALL_MONSTERS).  Takes no arguments
+ * from cmd.
+ */
+void do_cmd_wiz_detect_all_monsters(struct command *cmd)
+{
+	effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "0",
+		0, 0, 0, 500, 500, NULL);
+	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
+		0, 0, 0, 500, 500, NULL);
+}
+
+
+/**
  * Hit all monsters in the player's line of sight (CMD_WIZ_HIT_ALL_LOS).  Takes
  * no arguments from cmd.
  */
