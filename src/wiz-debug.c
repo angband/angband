@@ -43,7 +43,6 @@
 #include "player-util.h"
 #include "project.h"
 #include "target.h"
-#include "trap.h"
 #include "ui-command.h"
 #include "ui-event.h"
 #include "ui-display.h"
@@ -1824,28 +1823,8 @@ void get_debug_command(void)
 
 		/* Create a trap */
 		case 'T':
-		{
-			if (!square_isfloor(cave, player->grid)) {
-				msg("You can't place a trap there!");
-				break;
-			} else if (player->depth == 0) {
-				msg("You can't place a trap in the town!");
-				break;
-			}
-
-			char buf[40];
-			if (!get_string("Create which trap? ", buf, sizeof(buf)))
-				break;
-
-			struct trap_kind *trap = lookup_trap(buf);
-			if (trap) {
-				place_trap(cave, player->grid, trap->tidx, 0);
-			} else {
-				msg("Trap not found.");
-			}
-
+			cmdq_push(CMD_WIZ_CREATE_TRAP);
 			break;
-		}
 
 		/* Un-hide all monsters */
 		case 'u':

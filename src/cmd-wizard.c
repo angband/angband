@@ -29,6 +29,7 @@
 #include "player-util.h"
 #include "project.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-output.h"
@@ -171,6 +172,41 @@ void do_cmd_wiz_advance(struct command *cmd)
 
 	/* Flag update and redraw for things not handled in player_exp_gain() */
 	player->upkeep->redraw |= PR_GOLD | PR_HP | PR_MANA;
+}
+
+
+/**
+ * Create a trap at the player's position (CMD_WIZ_CREATE_TRAP).  Can take
+ * the type of trap to generate from the argument, "index", of type number
+ * in cmd.
+ */
+void do_cmd_wiz_create_trap(struct command *cmd)
+{
+	int tidx;
+
+	if (cmd_get_arg_number(cmd, "index", &tidx) != CMD_OK) {
+		char s[80] = "";
+
+		if (!get_string("Create which trap? ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &tidx)) {
+			const struct trap_kind *trap = lookup_trap(s);
+
+			tidx = (trap) ? trap->tidx : z_info->trap_max;
+		}
+		cmd_set_arg_number(cmd, "index", tidx);
+	}
+
+	if (!square_isfloor(cave, player->grid)) {
+		msg("You can't place a trap there!");
+	} else if (player->depth == 0) {
+		msg("You can't place a trap in the town!");
+	} else if (tidx < 1 || tidx >= z_info->trap_max) {
+		msg("Trap not found.");
+	} else {
+		place_trap(cave, player->grid, tidx, 0);
+		/* Can not repeat since there's now a trap here. */
+		cmd_disable_repeat();
+	}
 }
 
 

@@ -103,6 +103,7 @@ typedef enum cmd_code {
 	/* Debugging commands */
 	CMD_WIZ_ACQUIRE,
 	CMD_WIZ_ADVANCE,
+	CMD_WIZ_CREATE_TRAP,
 	CMD_WIZ_CURE_ALL,
 	CMD_WIZ_DETECT_ALL_LOCAL,
 	CMD_WIZ_HIT_ALL_LOS,
