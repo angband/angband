@@ -22,6 +22,41 @@
 
 
 /**
+ * Advance the player to level 50 with max stats and other bonuses
+ * (CMD_WIZ_ADVANCE).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_advance(struct command *cmd)
+{
+	int i;
+
+	/* Max stats */
+	for (i = 0; i < STAT_MAX; i++) {
+		player->stat_cur[i] = player->stat_max[i] = 118;
+	}
+
+	/* Lots of money */
+	player->au = 1000000L;
+
+	/* Level 50 */
+	player_exp_gain(player, PY_MAX_EXP);
+
+	/* Heal the player */
+	player->chp = player->mhp;
+	player->chp_frac = 0;
+
+	/* Restore mana */
+	player->csp = player->msp;
+	player->csp_frac = 0;
+
+	/* Get some awesome equipment */
+	/* Artifacts: 3, 5, 12, ... */
+
+	/* Flag update and redraw for things not handled in player_exp_gain() */
+	player->upkeep->redraw |= PR_GOLD | PR_HP | PR_MANA;
+}
+
+
+/**
  * Instantly cure the player of everything (CMD_WIZ_CURE_ALL).  Takes no
  * arguments from cmd.
  */

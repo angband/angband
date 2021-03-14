@@ -101,6 +101,7 @@ typedef enum cmd_code {
 	CMD_RETRIEVE,
 
 	/* Debugging commands */
+	CMD_WIZ_ADVANCE,
 	CMD_WIZ_CURE_ALL,
 
 	/* Hors categorie Commands */
