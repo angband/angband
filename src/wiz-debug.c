@@ -1480,53 +1480,6 @@ void wiz_cheat_death(void)
 
 
 /**
- * Go to any level. optionally choosing level generation algorithm
- */
-static void do_cmd_wiz_jump(void)
-{
-	int depth;
-
-	char ppp[80];
-	char tmp_val[160];
-
-	/* Prompt */
-	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", z_info->max_depth-1);
-
-	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", player->depth);
-
-	/* Ask for a level */
-	if (!get_string(ppp, tmp_val, 11)) return;
-
-	/* Extract request */
-	depth = atoi(tmp_val);
-
-	/* Paranoia */
-	if (depth < 0) depth = 0;
-
-	/* Paranoia */
-	if (depth > z_info->max_depth - 1)
-		depth = z_info->max_depth - 1;
-
-	/* Prompt */
-	strnfmt(ppp, sizeof(ppp), "Choose cave_profile?");
-
-	/* Get to choose generation algorithm */
-	if (get_check(ppp))
-		player->noscore |= NOSCORE_JUMPING;
-
-	/* Accept request */
-	msg("You jump to dungeon level %d.", depth);
-
-	/* New depth */
-	dungeon_change_level(player, depth);
-
-	/* Hack - should be handled by redoing how debug commands work - NRM */
-	cmdq_push(CMD_HOLD);
-}
-
-
-/**
  * Become aware of all object flavors
  */
 static void do_cmd_wiz_learn(int lev)
@@ -1925,10 +1878,8 @@ void get_debug_command(void)
 
 		/* Go up or down in the dungeon */
 		case 'j':
-		{
-			do_cmd_wiz_jump();
+			cmdq_push(CMD_WIZ_JUMP_LEVEL);
 			break;
-		}
 
 		/* Learn about objects */
 		case 'l':

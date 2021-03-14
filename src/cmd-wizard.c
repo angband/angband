@@ -18,9 +18,11 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
+#include "init.h"
 #include "obj-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "player-util.h"
 #include "project.h"
 #include "target.h"
 #include "ui-input.h"
@@ -28,6 +30,34 @@
 #include "ui-output.h"
 #include "ui-target.h"
 #include "ui-term.h"
+
+
+/**
+ * Extract a decimal integer from a string while ensuring that only the
+ * decimal value and white space are present in the string.
+ * \param s is the string to parse.
+ * \param val is dereferenced and set to the extracted value.
+ * \return true if val was dereferenced and set; false if the extraction
+ * failed
+ */
+static bool get_int_from_string(const char *s, int *val)
+{
+	char *endptr;
+	long lval = strtol(s, &endptr, 10);
+
+	/*
+	 * Reject INT_MIN and INT_MAX so, for systems where
+	 * sizeof(long) == sizeof(int), it isn't necessary to check errno to
+	 * see if the value in the string was out of range.
+	 */
+	if (s[0] == '\0' ||
+			(*endptr != '\0' && !contains_only_spaces(endptr)) ||
+			lval <= INT_MIN || lval >= INT_MAX) {
+		return false;
+	}
+	*val = (int)lval;
+	return true;
+}
 
 
 /**
@@ -229,6 +259,59 @@ void do_cmd_wiz_hit_all_los(struct command *cmd)
 {
 	effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL,
 		0, 0, 0, 0, NULL);
+}
+
+
+/**
+ * Go to any level, optionally choosing the level generation algorithm
+ * (CMD_WIZ_JUMP_LEVEL).  Can take the level to jump to from the argument,
+ * "level", of type number in cmd.  Can take whether to choose the generation
+ * algorithm from the argument, "choice", of type choice in cmd.
+ *
+ * Bugs:
+ * Because choose_profile() prompts for the generation algorithm, it is not
+ * stored in the command and the prompt will be repeated if the command is
+ * repeated.
+ */
+void do_cmd_wiz_jump_level(struct command *cmd)
+{
+	int level, choose_gen;
+
+	if (cmd_get_arg_number(cmd, "level", &level) != CMD_OK) {
+		char prompt[80], s[80];
+
+		strnfmt(prompt, sizeof(prompt), "Jump to level (0-%d): ",
+			z_info->max_depth - 1);
+
+		/* Set default */
+		strnfmt(s, sizeof(s), "%d", player->depth);
+
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &level)) return;
+		cmd_set_arg_number(cmd, "level", level);
+	}
+
+	/* Paranoia */
+	if (level < 0 || level >= z_info->max_depth) return;
+
+	if (cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
+		choose_gen = (get_check("Choose cave profile? ")) ? 1 : 0;
+		cmd_set_arg_choice(cmd, "choice", choose_gen);
+	}
+
+	if (choose_gen) {
+		player->noscore |= NOSCORE_JUMPING;
+	}
+
+	msg("You jump to dungeon level %d.", level);
+	dungeon_change_level(player, level);
+
+	/*
+	 * Because of the structure of the game loop, need to take some energy,
+	 * or the change level request will not be processed until after
+	 * performing another action that takes energy.
+	 */
+	player->upkeep->energy_use = z_info->move_energy;
 }
 
 
