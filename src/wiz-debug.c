@@ -1480,28 +1480,6 @@ void wiz_cheat_death(void)
 
 
 /**
- * Become aware of all object flavors
- */
-static void do_cmd_wiz_learn(int lev)
-{
-	int i;
-
-	/* Scan every object */
-	for (i = 1; i < z_info->k_max; i++) {
-		struct object_kind *kind = &k_info[i];
-
-		if (!kind || !kind->name) continue;
-
-		/* Induce awareness */
-		if (kind->level <= lev)
-			kind->aware = true;
-	}
-	
-	msg("You now know about many items!");
-}
-
-
-/**
  * Summon some creatures
  */
 static void do_cmd_wiz_summon(int num)
@@ -1883,13 +1861,12 @@ void get_debug_command(void)
 
 		/* Learn about objects */
 		case 'l':
-		{
-			do_cmd_wiz_learn(100);
+			cmdq_push(CMD_WIZ_LEARN_OBJECT_KINDS);
+			cmd_set_arg_number(cmdq_peek(), "level", 100);
 			break;
-		}
 
 		/* Work out what the player is typing */
-		case 'L': 
+		case 'L':
 		{
 			do_cmd_keylog();
 			break;

@@ -19,6 +19,7 @@
 #include "effects.h"
 #include "game-input.h"
 #include "init.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
@@ -312,6 +313,39 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	 * performing another action that takes energy.
 	 */
 	player->upkeep->energy_use = z_info->move_energy;
+}
+
+
+/**
+ * Make the player aware of all object kinds up to a given level
+ * (CMD_WIZ_LEARN_OBJECT_KINDS).  Can take the level from the argument,
+ * "level", of type number in cmd.
+ */
+void do_cmd_wiz_learn_object_kinds(struct command *cmd)
+{
+	int level, i;
+
+	if (cmd_get_arg_number(cmd, "level", &level) != CMD_OK) {
+		char s[80] = "100";
+
+		if (!get_string("Learn object kinds up to level (0-100)? ",
+			s, sizeof(s))) return;
+		if (!get_int_from_string(s, &level)) return;
+		cmd_set_arg_number(cmd, "level", level);
+	}
+
+	/* Scan all object kinds */
+	for (i = 1; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+
+		/* Induce awareness */
+		if (kind && kind->name && kind->level <= level) {
+			kind->aware = true;
+		}
+	}
+
+	update_player_object_knowledge(player);
+	msg("You now know about many items!");
 }
 
 
