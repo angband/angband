@@ -767,6 +767,27 @@ void do_cmd_wiz_summon_named(struct command *cmd)
 
 
 /**
+ * Summon random monsters near the player (CMD_WIZ_SUMMON_RANDOM).  Can take
+ * the number to summon from the argument, "quantity", of type number in cmd.
+ */
+void do_cmd_wiz_summon_random(struct command *cmd)
+{
+	int n, i;
+
+	if (cmd_get_arg_number(cmd, "quantity", &n) != CMD_OK) {
+		n = get_quantity("How many monsters? ", 40);
+		if (n < 1) n = 1;
+		cmd_set_arg_number(cmd, "quantity", n);
+	}
+
+	for (i = 0; i < n; i++) {
+		effect_simple(EF_SUMMON, source_player(), "1",
+			0, 0, 0, 0, 0, NULL);
+	}
+}
+
+
+/**
  * Teleport the player randomly with a given approximate range
  * (CMD_WIZ_TELEPORT_RANDOM).  Can take the range from the argument, "range",
  * of type number in cmd.

@@ -1479,18 +1479,6 @@ void wiz_cheat_death(void)
 
 
 /**
- * Summon some creatures
- */
-static void do_cmd_wiz_summon(int num)
-{
-	int i;
-
-	for (i = 0; i < num; i++)
-		effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, 0, 0, NULL);
-}
-
-
-/**
  * Delete all nearby monsters
  */
 static void do_cmd_wiz_zap(int d)
@@ -1818,16 +1806,9 @@ void get_debug_command(void)
 
 		/* Summon Random Monster(s) */
 		case 's':
-		{
-			int n;
-			screen_save();
-			n = get_quantity("How many monsters? ", 40);
-			screen_load();
-			if (n < 1) n = 1;
-			do_cmd_wiz_summon(n);
+			cmdq_push(CMD_WIZ_SUMMON_RANDOM);
 			break;
-		}
-		
+
 		/* Collect stats (S) */
 		case 'S':
 		{

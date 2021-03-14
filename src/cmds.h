@@ -88,6 +88,7 @@ void do_cmd_wiz_query_square_flag(struct command *cmd);
 void do_cmd_wiz_recall_monster(struct command *cmd);
 void do_cmd_wiz_rerate(struct command *cmd);
 void do_cmd_wiz_summon_named(struct command *cmd);
+void do_cmd_wiz_summon_random(struct command *cmd);
 void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
 void do_cmd_wiz_wipe_recall(struct command *cmd);
