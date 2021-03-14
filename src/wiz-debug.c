@@ -1920,10 +1920,8 @@ void get_debug_command(void)
 
 		/* Hit all monsters in LOS */
 		case 'H':
-		{
-			effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL, 0, 0, 0, 0, NULL);
+			cmdq_push(CMD_WIZ_HIT_ALL_LOS);
 			break;
-		}
 
 		/* Go up or down in the dungeon */
 		case 'j':

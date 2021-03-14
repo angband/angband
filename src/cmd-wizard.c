@@ -21,6 +21,7 @@
 #include "obj-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "project.h"
 #include "target.h"
 #include "ui-input.h"
 #include "ui-map.h"
@@ -217,6 +218,17 @@ void do_cmd_wiz_detect_all_local(struct command *cmd)
 		0, 0, 0, 22, 40, NULL);
 	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
 		0, 0, 0, 22, 40, NULL);
+}
+
+
+/**
+ * Hit all monsters in the player's line of sight (CMD_WIZ_HIT_ALL_LOS).  Takes
+ * no arguments from cmd.
+ */
+void do_cmd_wiz_hit_all_los(struct command *cmd)
+{
+	effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL,
+		0, 0, 0, 0, NULL);
 }
 
 
