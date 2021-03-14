@@ -125,6 +125,7 @@ typedef enum cmd_code {
 	CMD_WIZ_TELEPORT_RANDOM,
 	CMD_WIZ_TELEPORT_TO,
 	CMD_WIZ_WIPE_RECALL,
+	CMD_WIZ_WIZARD_LIGHT,
 
 	/* Hors categorie Commands */
 	CMD_SUICIDE,

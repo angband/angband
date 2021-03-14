@@ -1679,10 +1679,8 @@ void get_debug_command(void)
 
 		/* Wizard Light the Level */
 		case 'w':
-		{
-			wiz_light(cave, player, true);
+			cmdq_push(CMD_WIZ_WIZARD_LIGHT);
 			break;
-		}
 
 		/* Wipe recall for a monster */
 		case 'W':

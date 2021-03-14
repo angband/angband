@@ -100,5 +100,6 @@ void do_cmd_wiz_summon_random(struct command *cmd);
 void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
 void do_cmd_wiz_wipe_recall(struct command *cmd);
+void do_cmd_wiz_wizard_light(struct command *cmd);
 
 #endif

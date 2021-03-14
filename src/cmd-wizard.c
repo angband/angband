@@ -1188,3 +1188,12 @@ void do_cmd_wiz_wipe_recall(struct command *cmd)
 		msg("No monster found.");
 	}
 }
+
+
+/**
+ * Wizard light the level (CMD_WIZ_WIZARD_LIGHT).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_wizard_light(struct command *cmd)
+{
+	wiz_light(cave, player, true);
+}

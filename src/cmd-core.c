@@ -137,6 +137,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_TELEPORT_RANDOM, "teleport", do_cmd_wiz_teleport_random, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, 0 },
 	{ CMD_WIZ_WIPE_RECALL, "erase monster recall", do_cmd_wiz_wipe_recall, false, 0 },
+	{ CMD_WIZ_WIZARD_LIGHT, "wizard light the level", do_cmd_wiz_wizard_light, false, 0 },
 };
 
 const char *cmd_verb(cmd_code cmd)
