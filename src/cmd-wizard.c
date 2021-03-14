@@ -17,10 +17,62 @@
 #include "angband.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-input.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "target.h"
+#include "ui-input.h"
+#include "ui-map.h"
+#include "ui-output.h"
 #include "ui-target.h"
+#include "ui-term.h"
+
+
+/**
+ * Redraw the visible portion of the map to accentuate some chosen
+ * characteristic.
+ *
+ * \param c is the chunk to use as the source for data.
+ * \param p is the player to use.
+ * \param func is a pointer to a function which will set the value pointed
+ * to by its fourth argument to whether or not to display the given grid and,
+ * if displaying that grid, set its fifth argument to the color to use for the
+ * grid.
+ * \param closure is passed as the second argument to func.
+ *
+ * Assumes the active terminal displays a map.
+ */
+static void wiz_hack_map(struct chunk *c, struct player *p,
+	void (*func)(struct chunk *, void *, struct loc, bool *, byte *),
+	void *closure)
+{
+	int y;
+
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
+		int x;
+
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
+			struct loc grid = loc(x, y);
+			bool show;
+			byte color;
+
+			if (!square_in_bounds_fully(c, grid)) continue;
+
+			(*func)(c, closure, grid, &show, &color);
+			if (!show) continue;
+
+			if (loc_eq(grid, p->grid)) {
+				print_rel(L'@', color, y, x);
+			} else if (square_ispassable(c, grid)) {
+				print_rel(L'*', color, y, x);
+			} else {
+				print_rel(L'#', color, y, x);
+			}
+		}
+	}
+
+	Term_redraw();
+}
 
 
 /**
@@ -136,6 +188,192 @@ void do_cmd_wiz_detect_all_local(struct command *cmd)
 		0, 0, 0, 22, 40, NULL);
 	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
 		0, 0, 0, 22, 40, NULL);
+}
+
+
+struct wiz_query_feature_closure {
+	const int *features;
+	int n;
+};
+
+
+/**
+ * Is a helper function passed by do_cmd_wiz_query_feature() to wiz_hack_map().
+ *
+ * \param c is the chunk to access for data.
+ * \param closure is a pointer to a struct wiz_query_feature_closure cast to a
+ * pointer to void.  Selects the terrain shown.
+ * \param grid is the location in the chunk.
+ * \param show is dereferenced and set to true if grid contains one of the
+ * types of terrain selected by closure.  Otherwise, it is dereferenced and
+ * set to false.
+ * \param color is dereferenced and set to the color to use if *show is set
+ * to true.  Otherwise, it is not dereferenced.
+ */
+static void wiz_hack_map_query_feature(struct chunk *c, void *closure,
+	struct loc grid, bool *show, byte *color)
+{
+	const struct wiz_query_feature_closure *sel_feats = closure;
+	int i = 0;
+	int sq_feat = square(c, grid)->feat;
+
+	while (1) {
+		if (i >= sel_feats->n) {
+			*show = false;
+			return;
+		}
+		if (sq_feat == sel_feats->features[i]) {
+			*show = true;
+			*color = (square_ispassable(c, grid)) ?
+				COLOUR_YELLOW : COLOUR_RED;
+			return;
+		}
+		++i;
+	}
+}
+
+
+/**
+ * Redraw the visible portion of the map to highlight certain terrain
+ * (CMD_WIZ_QUERY_FEATURE).  Can take the terrain to highlight from the
+ * argument, "choice", of type choice in cmd.  This function will need
+ * to be changed if the terrain types change.
+ */
+void do_cmd_wiz_query_feature(struct command *cmd)
+{
+	int feature_class;
+	struct wiz_query_feature_closure selected;
+	/* OMG hax */
+	const int featf[] = { FEAT_FLOOR };
+	const int feato[] = { FEAT_OPEN };
+	const int featb[] = { FEAT_BROKEN };
+	const int featu[] = { FEAT_LESS };
+	const int featz[] = { FEAT_MORE };
+	const int featt[] = { FEAT_LESS, FEAT_MORE };
+	const int featc[] = { FEAT_CLOSED };
+	const int featd[] = { FEAT_CLOSED, FEAT_OPEN, FEAT_BROKEN,
+		FEAT_SECRET };
+	const int feath[] = { FEAT_SECRET };
+	const int featm[] = { FEAT_MAGMA, FEAT_MAGMA_K };
+	const int featq[] = { FEAT_QUARTZ, FEAT_QUARTZ_K };
+	const int featg[] = { FEAT_GRANITE };
+	const int featp[] = { FEAT_PERM };
+	const int featr[] = { FEAT_RUBBLE };
+	const int feata[] = { FEAT_PASS_RUBBLE };
+
+	if (cmd_get_arg_choice(cmd, "choice", &feature_class) != CMD_OK) {
+		char choice;
+
+		if (!get_com("Debug Command Feature Query: ", &choice)) return;
+		feature_class = choice;
+		cmd_set_arg_choice(cmd, "choice", feature_class);
+	}
+
+	switch (feature_class) {
+		/* Floors */
+		case 'f':
+			selected.features = featf;
+			selected.n = (int) N_ELEMENTS(featf);
+			break;
+
+		/* Open doors */
+		case 'o':
+			selected.features = feato;
+			selected.n = (int) N_ELEMENTS(feato);
+			break;
+
+		/* Broken doors */
+		case 'b':
+			selected.features = featb;
+			selected.n = (int) N_ELEMENTS(featb);
+			break;
+
+		/* Upstairs */
+		case 'u':
+			selected.features = featu;
+			selected.n = (int) N_ELEMENTS(featu);
+			break;
+
+		/* Downstairs */
+		case 'z':
+			selected.features = featz;
+			selected.n = (int) N_ELEMENTS(featz);
+			break;
+
+		/* Stairs */
+		case 't':
+			selected.features = featt;
+			selected.n = (int) N_ELEMENTS(featt);
+			break;
+
+		/* Closed doors */
+		case 'c':
+			selected.features = featc;
+			selected.n = (int) N_ELEMENTS(featc);
+			break;
+
+		/* Doors */
+		case 'd':
+			selected.features = featd;
+			selected.n = (int) N_ELEMENTS(featd);
+			break;
+
+		/* Secret doors */
+		case 'h':
+			selected.features = feath;
+			selected.n = (int) N_ELEMENTS(feath);
+			break;
+
+		/* Magma */
+		case 'm':
+			selected.features = featm;
+			selected.n = (int) N_ELEMENTS(featm);
+			break;
+
+		/* Quartz */
+		case 'q':
+			selected.features = featq;
+			selected.n = (int) N_ELEMENTS(featq);
+			break;
+
+		/* Granite */
+		case 'g':
+			selected.features = featg;
+			selected.n = (int) N_ELEMENTS(featg);
+			break;
+
+		/* Permanent wall */
+		case 'p':
+			selected.features = featp;
+			selected.n = (int) N_ELEMENTS(featp);
+			break;
+
+		/* Rubble */
+		case 'r':
+			selected.features = featr;
+			selected.n = (int) N_ELEMENTS(featr);
+			break;
+
+		/* Passable rubble */
+		case 'a':
+			selected.features = feata;
+			selected.n = (int) N_ELEMENTS(feata);
+			break;
+
+		/* Invalid entry */
+		default:
+			msg("That was an invalid selection.  Use one of fobuztcdhmqgpra .");
+			return;
+	}
+
+	wiz_hack_map(cave, player, wiz_hack_map_query_feature, &selected);
+
+	msg("Press any key.");
+	inkey_ex();
+	prt("", 0, 0);
+
+	/* Redraw map */
+	prt_map();
 }
 
 

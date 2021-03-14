@@ -1735,115 +1735,6 @@ static void do_cmd_wiz_query(void)
 }
 
 /**
- * Query terrain - needs alteration if terrain types change
- */
-static void do_cmd_wiz_features(void)
-{
-	int y, x;
-
-	char cmd;
-
-	/* OMG hax */
-	int *feat = NULL;
-	int featf[] = {FEAT_FLOOR};
-	int feato[] = {FEAT_OPEN};
-	int featb[] = {FEAT_BROKEN};
-	int featu[] = {FEAT_LESS};
-	int featz[] = {FEAT_MORE};
-	int featt[] = {FEAT_LESS, FEAT_MORE};
-	int featc[] = {FEAT_CLOSED};
-	int featd[] = {FEAT_CLOSED, FEAT_OPEN, FEAT_BROKEN, FEAT_SECRET};
-	int feath[] = {FEAT_SECRET};
-	int featm[] = {FEAT_MAGMA, FEAT_MAGMA_K};
-	int featq[] = {FEAT_QUARTZ, FEAT_QUARTZ_K};
-	int featg[] = {FEAT_GRANITE};
-	int featp[] = {FEAT_PERM};
-	int featr[] = {FEAT_RUBBLE};
-	int feata[] = {FEAT_PASS_RUBBLE};
-	int length = 0;
-
-
-	/* Get a "debug command" */
-	if (!get_com("Debug Command Feature Query: ", &cmd)) return;
-
-	/* Choose a feature (type) */
-	switch (cmd)
-	{
-		/* Floors */
-		case 'f': feat = featf; length = 1; break;
-		/* Open doors */
-		case 'o': feat = feato; length = 1; break;
-		/* Broken doors */
-		case 'b': feat = featb; length = 1; break;
-		/* Upstairs */
-		case 'u': feat = featu; length = 1; break;
-		/* Downstairs */
-		case 'z': feat = featz; length = 1; break;
-		/* Stairs */
-		case 't': feat = featt; length = 2; break;
-		/* Closed doors */
-		case 'c': feat = featc; length = 1; break;
-		/* Doors */
-		case 'd': feat = featd; length = 4; break;
-		/* Secret doors */
-		case 'h': feat = feath; length = 1; break;
-		/* Magma */
-		case 'm': feat = featm; length = 2; break;
-		/* Quartz */
-		case 'q': feat = featq; length = 2; break;
-		/* Granite */
-		case 'g': feat = featg; length = 1; break;
-		/* Permanent wall */
-		case 'p': feat = featp; length = 1; break;
-		/* Rubble */
-		case 'r': feat = featr; length = 1; break;
-		/* Passable rubble */
-		case 'a': feat = feata; length = 1; break;
-		/* Invalid entry */
-		default: return;
-	}
-
-	/* Scan map */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-			struct loc grid = loc(x, y);
-			byte a = COLOUR_RED;
-			bool show = false;
-			int i;
-
-			if (!square_in_bounds_fully(cave, loc(x, y))) continue;
-
-			/* Given feature, show only those grids */
-			for (i = 0; i < length; i++)
-				if (square(cave, grid)->feat == feat[i]) show = true;
-
-			/* Color */
-			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
-
-			if (!show) continue;
-
-			/* Display player/floors/walls */
-			if (loc_eq(grid, player->grid))
-				print_rel(L'@', a, y, x);
-			else if (square_ispassable(cave, grid))
-				print_rel(L'*', a, y, x);
-			else
-				print_rel(L'#', a, y, x);
-		}
-	}
-
-	Term_redraw();
-
-	/* Get keypress */
-	msg("Press any key.");
-	inkey_ex();
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-	/* Redraw map */
-	prt_map();
-}
-
-/**
  * Create lots of items.
  */
 static void wiz_test_kind(int tval)
@@ -2051,10 +1942,8 @@ void get_debug_command(void)
 		}
 
 		case 'F':
-		{
-			do_cmd_wiz_features();
+			cmdq_push(CMD_WIZ_QUERY_FEATURE);
 			break;
-		}
 
 		/* Good Objects */
 		case 'g':
