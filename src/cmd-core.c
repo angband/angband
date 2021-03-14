@@ -118,6 +118,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_CURE_ALL, "cure everything", do_cmd_wiz_cure_all, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_LOCAL, "detect everything nearby", do_cmd_wiz_detect_all_local, false, 0 },
 	{ CMD_WIZ_QUERY_FEATURE, "highlight specific feature", do_cmd_wiz_query_feature, false, 0 },
+	{ CMD_WIZ_RERATE, "rerate hitpoints", do_cmd_wiz_rerate, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, 0 },
 };
 
