@@ -115,6 +115,12 @@ static const struct command_info game_cmds[] =
 
 	{ CMD_WIZ_ACQUIRE, "acquire objects", do_cmd_wiz_acquire, false, 0 },
 	{ CMD_WIZ_ADVANCE, "make character powerful", do_cmd_wiz_advance, false, 0 },
+	{ CMD_WIZ_CREATE_ALL_ARTIFACT, "create all artifacts", do_cmd_wiz_create_all_artifact, false, 0 },
+	{ CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL, "create all artifacts of a tval", do_cmd_wiz_create_all_artifact_from_tval, false, 0 },
+	{ CMD_WIZ_CREATE_ALL_OBJ, "create all objects", do_cmd_wiz_create_all_obj, false, 0 },
+	{ CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL, "create all objects of a tval", do_cmd_wiz_create_all_obj_from_tval, false, 0 },
+	{ CMD_WIZ_CREATE_ARTIFACT, "create artifact", do_cmd_wiz_create_artifact, false, 0 },
+	{ CMD_WIZ_CREATE_OBJ, "create object", do_cmd_wiz_create_obj, false, 0 },
 	{ CMD_WIZ_CREATE_TRAP, "create trap", do_cmd_wiz_create_trap, false, 0 },
 	{ CMD_WIZ_CURE_ALL, "cure everything", do_cmd_wiz_cure_all, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_LOCAL, "detect everything nearby", do_cmd_wiz_detect_all_local, false, 0 },

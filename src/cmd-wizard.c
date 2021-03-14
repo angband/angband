@@ -24,6 +24,9 @@
 #include "mon-util.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -62,6 +65,79 @@ static bool get_int_from_string(const char *s, int *val)
 	}
 	*val = (int)lval;
 	return true;
+}
+
+
+/**
+ * Create an instance of an artifact.
+ *
+ * \param art The artifact to instantiate.
+ * \return An object that represents the artifact.
+ */
+static struct object *wiz_create_object_from_artifact(struct artifact *art)
+{
+	struct object_kind *kind;
+	struct object *obj;
+
+	/* Ignore "empty" artifacts */
+	if (!art->name) return NULL;
+
+	/* Acquire the "kind" index */
+	kind = lookup_kind(art->tval, art->sval);
+	if (!kind) return NULL;
+
+	/* Create the artifact */
+	obj = object_new();
+	object_prep(obj, kind, art->alloc_min, RANDOMISE);
+	obj->artifact = art;
+	copy_artifact_data(obj, art);
+
+	/* Mark that the artifact has been created. */
+	art->created = true;
+
+	return obj;
+}
+
+
+/**
+ * Create an instance of an object of a given kind.
+ *
+ * \param kind The base type of object to instantiate.
+ * \return An object of the provided object type.
+ */
+static struct object *wiz_create_object_from_kind(struct object_kind *kind)
+{
+	struct object *obj;
+
+	if (tval_is_money_k(kind)) {
+		obj = make_gold(player->depth, kind->name);
+	} else {
+		obj = object_new();
+		object_prep(obj, kind, player->depth, RANDOMISE);
+
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(obj, player->depth, false, false, false, false);
+	}
+
+	return obj;
+}
+
+
+/**
+ * Drop an object near the player in a manner suitable for debugging.
+ *
+ * \param obj The object to drop.
+ */
+static void wiz_drop_object(struct object *obj)
+{
+	if (obj == NULL) return;
+
+	/* Mark as cheat and where it was created */
+	obj->origin = ORIGIN_CHEAT;
+	obj->origin_depth = player->depth;
+
+	/* Drop the object from heaven. */
+	drop_near(cave, &obj, 0, player->grid, true, true);
 }
 
 
@@ -172,6 +248,181 @@ void do_cmd_wiz_advance(struct command *cmd)
 
 	/* Flag update and redraw for things not handled in player_exp_gain() */
 	player->upkeep->redraw |= PR_GOLD | PR_HP | PR_MANA;
+}
+
+
+/**
+ * Create all artifacts and drop them near the player
+ * (CMD_WIZ_CREATE_ALL_ARTIFACT).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_create_all_artifact(struct command *cmd)
+{
+	int i;
+
+	for (i = 1; i < z_info->a_max; i++) {
+		struct artifact *art = &a_info[i];
+		struct object *obj = wiz_create_object_from_artifact(art);
+
+		wiz_drop_object(obj);
+	}
+}
+
+
+/**
+ * Create all artifacts of a given tval and drop them near the player
+ * (CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL).  Can take the tval to use from
+ * the argument, "tval", of type number in cmd.
+ */
+void do_cmd_wiz_create_all_artifact_from_tval(struct command *cmd)
+{
+	int tval, i;
+
+	if (cmd_get_arg_number(cmd, "tval", &tval) != CMD_OK) {
+		char prompt[80];
+		char s[80] = "";
+
+		strnfmt(prompt, sizeof(prompt),
+			"Create all artifacts of which tval (1-%d)? ",
+			TV_MAX - 1);
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &tval) || tval < 1 ||
+			tval >= TV_MAX) return;
+		cmd_set_arg_number(cmd, "tval", tval);
+	}
+
+	for (i = 1; i < z_info->a_max; i++) {
+		struct artifact *art = &a_info[i];
+
+		if (art->tval == tval) {
+			struct object *obj =
+				wiz_create_object_from_artifact(art);
+
+			wiz_drop_object(obj);
+		}
+	}
+}
+
+
+/**
+ * Create one of each kind of ordinary object and drop them near the player
+ * (CMD_WIZ_CREATE_ALL_OBJ).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_create_all_obj(struct command *cmd)
+{
+	int i;
+
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+		struct object *obj;
+
+		if (kind->base == NULL || kind->base->name == NULL) continue;
+		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
+
+		obj = wiz_create_object_from_kind(kind);
+		wiz_drop_object(obj);
+	}
+}
+
+
+/**
+ * Create one of each kind of object from a tval and drop them near the player
+ * (CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL).  Can take the tval to use from the
+ * argument, "tval", of type number in cmd.  Can take whether to create instant
+ * artifacts from the argument, "choice", of type choice in cmd.
+ */
+void do_cmd_wiz_create_all_obj_from_tval(struct command *cmd)
+{
+	int tval, art;
+	int i;
+
+	if (cmd_get_arg_number(cmd, "tval", &tval) != CMD_OK) {
+		char prompt[80];
+		char s[80] = "";
+
+		strnfmt(prompt, sizeof(prompt),
+			"Create all items of which tval (1-%d)? ", TV_MAX - 1);
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &tval) || tval < 1 ||
+			tval >= TV_MAX) return;
+		cmd_set_arg_number(cmd, "tval", tval);
+	}
+
+	if (cmd_get_arg_choice(cmd, "choice", &art) != CMD_OK) {
+		art = get_check("Create instant artifacts? ");
+		cmd_set_arg_choice(cmd, "choice", art);
+	}
+
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+		struct object *obj;
+
+		if (kind->tval != tval ||
+			(!art && kf_has(kind->kind_flags, KF_INSTA_ART))) continue;
+
+		obj = wiz_create_object_from_kind(kind);
+		wiz_drop_object(obj);
+	}
+}
+
+
+/**
+ * Create a specified artifact (CMD_WIZ_CREATE_ARTIFACT).  Can take the index
+ * of the artifact to create from the argument, "index", of type number in cmd.
+ */
+void do_cmd_wiz_create_artifact(struct command *cmd)
+{
+	int ind;
+
+	if (cmd_get_arg_number(cmd, "index", &ind) != CMD_OK) {
+		char prompt[80];
+		char s[80] = "";
+
+		strnfmt(prompt, sizeof(prompt),
+			"Create which artifact (1-%d)? ", z_info->a_max - 1);
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &ind)) return;
+		cmd_set_arg_number(cmd, "index", ind);
+	}
+
+	if (ind >= 1 && ind < z_info->a_max) {
+		struct artifact *art = &a_info[ind];
+		struct object *obj = wiz_create_object_from_artifact(art);
+
+		wiz_drop_object(obj);
+	} else {
+		msg("That's not a valid artifact.");
+	}
+}
+
+
+/**
+ * Create an object of a given kind and drop it near the player
+ * (CMD_WIZ_CREATE_OBJ).  Can take the index of the kind of object from the
+ * argument, "index", of type number in cmd.
+ */
+void do_cmd_wiz_create_obj(struct command *cmd)
+{
+	int ind;
+
+	if (cmd_get_arg_number(cmd, "index", &ind) != CMD_OK) {
+		char prompt[80];
+		char s[80] = "";
+
+		strnfmt(prompt, sizeof(prompt),
+			"Create which object (0-%d)? ", z_info->k_max - 1);
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &ind)) return;
+		cmd_set_arg_number(cmd, "index", ind);
+	}
+
+	if (ind >= 0 && ind < z_info->k_max) {
+		struct object_kind *kind = &k_info[ind];
+		struct object *obj = wiz_create_object_from_kind(kind);
+
+		wiz_drop_object(obj);
+	} else {
+		msg("That's not a valid kind of object.");
+	}
 }
 
 

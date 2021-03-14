@@ -527,118 +527,6 @@ static void get_art_name(char *buf, int max, int a_idx)
 #define WIZ_CREATE_ALL_MENU_ITEM -9999
 
 /**
- * Create an instance of an object of a given kind.
- *
- * \param kind The base type of object to instantiate.
- * \return An object of the provided object type.
- */
-static struct object *wiz_create_item_object_from_kind(struct object_kind *kind)
-{
-	struct object *obj;
-
-	/* Create the item */
-	if (tval_is_money_k(kind))
-		obj = make_gold(player->depth, kind->name);
-	else {
-		/* Get object */
-		obj = object_new();
-		object_prep(obj, kind, player->depth, RANDOMISE);
-
-		/* Apply magic (no messages, no artifacts) */
-		apply_magic(obj, player->depth, false, false, false, false);
-	}
-
-	return obj;
-}
-
-/**
- * Create an instance of an artifact.
- *
- * \param art The artifact to instantiate.
- * \return An object that represents the artifact.
- */
-static struct object *wiz_create_item_object_from_artifact(struct artifact *art)
-{
-	struct object_kind *kind;
-	struct object *obj;
-
-	/* Ignore "empty" artifacts */
-	if (!art->name) return NULL;
-
-	/* Acquire the "kind" index */
-	kind = lookup_kind(art->tval, art->sval);
-	if (!kind)
-		return NULL;
-
-	/* Get object */
-	obj = object_new();
-
-	/* Create the artifact */
-	object_prep(obj, kind, art->alloc_min, RANDOMISE);
-	obj->artifact = art;
-	copy_artifact_data(obj, art);
-
-	/* Mark that the artifact has been created. */
-	art->created = true;
-
-	return obj;
-}
-
-/**
- * Drop an object near the player in a manner suitable for debugging.
- *
- * \param obj The object to drop.
- */
-static void wiz_create_item_drop_object(struct object *obj)
-{
-	if (obj == NULL)
-		return;
-
-	/* Mark as cheat, and where created */
-	obj->origin = ORIGIN_CHEAT;
-	obj->origin_depth = player->depth;
-
-	/* Drop the object from heaven */
-	drop_near(cave, &obj, 0, player->grid, true, true);
-}
-
-/**
- * Drop all possible artifacts or objects by the player.
- *
- * \param create_artifacts When true, all artifacts will be created; when false,
- *		  all regular objects will be created.
- */
-static void wiz_create_item_all_items(bool create_artifacts)
-{
-	int i;
-	struct object *obj;
-	struct object_kind *kind;
-	struct artifact *art;
-
-	if (create_artifacts) {
-		for (i = 1; i < z_info->a_max; i++) {
-			art = &a_info[i];
-			obj = wiz_create_item_object_from_artifact(art);
-			wiz_create_item_drop_object(obj);
-		}
-	}
-	else {
-		for (i = 0; i < z_info->k_max; i++) {
-			kind = &k_info[i];
-
-			if (kind->base == NULL || kind->base->name == NULL)
-				continue;
-
-			if (kf_has(kind->kind_flags, KF_INSTA_ART))
-				continue;
-
-			obj = wiz_create_item_object_from_kind(kind);
-			wiz_create_item_drop_object(obj);
-		}
-	}
-}
-
-/**
  * Artifact or object kind selection
  */
 static void wiz_create_item_subdisplay(struct menu *m, int oid, bool cursor,
@@ -674,38 +562,24 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 {
 	int *choices = menu_priv(m);
 	int selected = choices[oid];
-	struct object_kind *kind;
-	struct object *obj;
-	struct artifact *art;
 
 	if (e->type != EVT_SELECT)
 		return true;
 
 	if (selected == WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
-		int cur;
-		for (cur = 0; cur < oid; cur++) {
-			kind = &k_info[choices[cur]];
-			obj = wiz_create_item_object_from_kind(kind);
-			wiz_create_item_drop_object(obj);
-		}
-	}
-	else if (selected == WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
-		int cur;
-		for (cur = 0; cur < oid; cur++) {
-			art = &a_info[choices[cur]];
-			obj = wiz_create_item_object_from_artifact(art);
-			wiz_create_item_drop_object(obj);
-		}
-	}
-	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
-		kind = &k_info[choices[oid]];
-		obj = wiz_create_item_object_from_kind(kind);
-		wiz_create_item_drop_object(obj);
-	}
-	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
-		art = &a_info[choices[oid]];
-		obj = wiz_create_item_object_from_artifact(art);
-		wiz_create_item_drop_object(obj);
+		cmdq_push(CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL);
+		/* Same hack as in wiz_create_item_subdisplay() to get tval. */
+		cmd_set_arg_number(cmdq_peek(), "tval", choices[oid + 1]);
+		cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+	} else if (selected == WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		cmdq_push(CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL);
+		cmd_set_arg_number(cmdq_peek(), "tval", choices[oid + 1]);
+	} else if (selected != WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
+		cmdq_push(CMD_WIZ_CREATE_OBJ);
+		cmd_set_arg_number(cmdq_peek(), "index", choices[oid]);
+	} else if (selected != WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		cmdq_push(CMD_WIZ_CREATE_ARTIFACT);
+		cmd_set_arg_number(cmdq_peek(), "index", choices[oid]);
 	}
 
 	return false;
@@ -759,7 +633,8 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 		return true;
 
 	if (oid == WIZ_CREATE_ALL_MENU_ITEM) {
-		wiz_create_item_all_items(choose_artifact);
+		cmdq_push((choose_artifact) ? CMD_WIZ_CREATE_ALL_ARTIFACT :
+			CMD_WIZ_CREATE_ALL_OBJ);
 		return false;
 	}
 
@@ -1505,46 +1380,6 @@ static void do_cmd_wiz_zap(int d)
 
 
 /**
- * Create lots of items.
- */
-static void wiz_test_kind(int tval)
-{
-	int sval;
-
-	struct object *obj, *known_obj;
-
-	for (sval = 0; sval < 255; sval++) {
-		/* This spams failure messages, but that's the downside of wizardry */
-		struct object_kind *kind = lookup_kind(tval, sval);
-		if (!kind) continue;
-
-		/* Create the item */
-		if (tval == TV_GOLD)
-			obj = make_gold(player->depth, kind->name);
-		else {
-			obj = object_new();
-			object_prep(obj, kind, player->depth, RANDOMISE);
-
-			/* Apply magic (no messages, no artifacts) */
-			apply_magic(obj, player->depth, false, false, false, false);
-
-			/* Mark as cheat, and where created */
-			obj->origin = ORIGIN_CHEAT;
-			obj->origin_depth = player->depth;
-		}
-
-		/* Make a known object */
-		known_obj = object_new();
-		obj->known = known_obj;
-
-		/* Drop the object from heaven */
-		drop_near(cave, &obj, 0, player->grid, true, true);
-	}
-
-	msg("Done.");
-}
-
-/**
  * Display the debug commands help file.
  */
 static void do_cmd_wiz_help(void) 
@@ -1838,15 +1673,9 @@ void get_debug_command(void)
 			break;
 
 		case 'V':
-		{
-			int n;
-			screen_save();
-			n = get_quantity("Create all items of what tval? ", 255);
-			screen_load();
-			if (n)
-				wiz_test_kind(n);
+			cmdq_push(CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL);
+			cmd_set_arg_choice(cmdq_peek(), "choice", 1);
 			break;
-		}
 
 		/* Wizard Light the Level */
 		case 'w':

@@ -78,6 +78,12 @@ void do_cmd_autopickup(struct command *cmd);
 /* cmd-wizard.c */
 void do_cmd_wiz_acquire(struct command *cmd);
 void do_cmd_wiz_advance(struct command *cmd);
+void do_cmd_wiz_create_all_artifact(struct command *cmd);
+void do_cmd_wiz_create_all_artifact_from_tval(struct command *cmd);
+void do_cmd_wiz_create_all_obj(struct command *cmd);
+void do_cmd_wiz_create_all_obj_from_tval(struct command *cmd);
+void do_cmd_wiz_create_artifact(struct command *cmd);
+void do_cmd_wiz_create_obj(struct command *cmd);
 void do_cmd_wiz_create_trap(struct command *cmd);
 void do_cmd_wiz_cure_all(struct command *cmd);
 void do_cmd_wiz_detect_all_local(struct command *cmd);
