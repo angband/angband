@@ -45,7 +45,6 @@
 #include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"
-#include "ui-map.h"
 #include "ui-menu.h"
 #include "ui-prefs.h"
 #include "ui-target.h"
@@ -125,84 +124,6 @@ static s16b get_idx_from_name(char *s)
 	long l = strtol(s, &endptr, 10);
 	return *endptr == '\0' ? (s16b)l : 0;
 }
-
-/**
- * Display in sequence the squares at n grids from the player, as measured by
- * the noise and scent algorithms; n goes from 1 to max flow depth
- */
-static void do_cmd_wiz_hack_nick(void)
-{
-	int i, y, x;
-
-	char kp;
-
-	/* Noise */
-	for (i = 0; i < 100; i++) {
-		/* Update map */
-		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-				byte a = COLOUR_RED;
-				struct loc grid = loc(x, y);
-
-				if (!square_in_bounds_fully(cave, grid)) continue;
-
-				/* Display proper noise */
-				if (cave->noise.grids[y][x] != i) continue;
-
-				/* Display player/floors/walls */
-				if (loc_eq(grid, player->grid))
-					print_rel(L'@', a, y, x);
-				else if (square_ispassable(cave, grid))
-					print_rel(L'*', a, y, x);
-				else
-					print_rel(L'#', a, y, x);
-			}
-
-		/* Get key */
-		if (!get_com(format("Depth %d: ", i), &kp))
-			break;
-
-		/* Redraw map */
-		prt_map();
-	}
-
-	/* Smell */
-	for (i = 0; i < 50; i++) {
-		/* Update map */
-		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-				byte a = COLOUR_YELLOW;
-				struct loc grid = loc(x, y);
-
-				if (!square_in_bounds_fully(cave, grid)) continue;
-
-				/* Display proper smell */
-				if (cave->scent.grids[y][x] != i) continue;
-
-				/* Display player/floors/walls */
-				if (loc_eq(grid, player->grid))
-					print_rel(L'@', a, y, x);
-				else if (square_ispassable(cave, grid))
-					print_rel(L'*', a, y, x);
-				else
-					print_rel(L'#', a, y, x);
-			}
-
-		/* Get key */
-		if (!get_com(format("Depth %d: ", i), &kp))
-			break;
-
-		/* Redraw map */
-		prt_map();
-	}
-
-	/* Done */
-	prt("", 0, 0);
-
-	/* Redraw map */
-	prt_map();
-}
-
 
 
 /**
@@ -1676,10 +1597,8 @@ void get_debug_command(void)
 
 		/* Hack */
 		case '_':
-		{
-			do_cmd_wiz_hack_nick();
+			cmdq_push(CMD_WIZ_PEEK_NOISE_SCENT);
 			break;
-		}
 
 		case '>':
 		{

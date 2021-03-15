@@ -183,8 +183,6 @@ static void wiz_hack_map(struct chunk *c, struct player *p,
 			}
 		}
 	}
-
-	Term_redraw();
 }
 
 
@@ -702,6 +700,94 @@ void do_cmd_wiz_learn_object_kinds(struct command *cmd)
 }
 
 
+/**
+ * Is a helper function passed by do_cmd_wiz_peek_noise_scent() to
+ * wiz_hack_map() in order to peek at the noise.
+ *
+ * \param c is the chunk to access for data.
+ * \param closure is a pointer to an integer with the desired noise level.
+ * \param grid is the location in the chunk.
+ * \param show is dereferenced and set to true if grid has the desired noise.
+ * Otherwise, it is dereferenced and set to false.
+ * \param color is dereferenced and set to the color to use if *show is set
+ * to true.  Otherwise, it is not dereferenced.
+ */
+static void wiz_hack_map_peek_noise(struct chunk *c, void *closure,
+	struct loc grid, bool *show, byte *color)
+{
+	if (c->noise.grids[grid.y][grid.x] == *((int*)closure)) {
+		*show = true;
+		*color = COLOUR_RED;
+	} else {
+		*show = false;
+	}
+}
+
+
+/**
+ * Is a helper function passed by do_cmd_wiz_peek_noise_scent() to
+ * wiz_hack_map() in order to peek at the scent.
+ *
+ * \param c is the chunk to access for data.
+ * \param closure is a pointer to an integer with the desired scent level.
+ * \param grid is the location in the chunk.
+ * \param show is dereferenced and set to true if grid has the desired scent.
+ * Otherwise, it is dereferenced and set to false.
+ * \param color is dereferenced and set to the color to use if *show is set
+ * to true.  Otherwise, it is not dereferenced.
+ */
+static void wiz_hack_map_peek_scent(struct chunk *c, void *closure,
+	struct loc grid, bool *show, byte *color)
+{
+	if (c->scent.grids[grid.y][grid.x] == *((int*)closure)) {
+		*show = true;
+		*color = COLOUR_YELLOW;
+	} else {
+		*show = false;
+	}
+}
+
+
+/**
+ * Display in sequence the squares at n grids from the player, as measured by
+ * the noise and scent algorithms; n goes from 1 to the maximum flow depth
+ * (CMD_WIZ_PEEK_NOISE_SCENT).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_peek_noise_scent(struct command *cmd)
+{
+	int i;
+	char kp;
+
+	/* Noise */
+	for (i = 0; i < 100; i++) {
+		wiz_hack_map(cave, player, wiz_hack_map_peek_noise, &i);
+
+		/* Get key */
+		if (!get_com(format("Depth %d: ", i), &kp)) break;
+
+		/* Redraw map */
+		prt_map();
+	}
+
+	/* Smell */
+	for (i = 0; i < 50; i++) {
+		wiz_hack_map(cave, player, wiz_hack_map_peek_scent, &i);
+
+		/* Get key */
+		if (!get_com(format("Depth %d: ", i), &kp)) break;
+
+		/* Redraw map */
+		prt_map();
+	}
+
+	/* Done */
+	prt("", 0, 0);
+
+	/* Redraw map */
+	prt_map();
+}
+
+
 struct wiz_query_feature_closure {
 	const int *features;
 	int n;
@@ -879,6 +965,8 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_feature, &selected);
 
+	Term_redraw();
+
 	msg("Press any key.");
 	inkey_ex();
 	prt("", 0, 0);
@@ -952,6 +1040,8 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 	}
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_square_flag, &flag);
+
+	Term_redraw();
 
 	msg("Press any key.");
 	inkey_ex();
