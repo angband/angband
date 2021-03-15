@@ -252,6 +252,38 @@ void do_cmd_wiz_advance(struct command *cmd)
 
 
 /**
+ * Banish nearby monsters (CMD_WIZ_BANISH).  Can take the range of the effect
+ * from the argument, "range", of type number in cmd.
+ */
+void do_cmd_wiz_banish(struct command *cmd)
+{
+	int d, i;
+
+	if (cmd_get_arg_number(cmd, "range", &d) != CMD_OK) {
+		d = get_quantity("Zap within what distance? ",
+			z_info->max_sight);
+		cmd_set_arg_number(cmd, "range", d);
+	}
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Skip distant monsters */
+		if (mon->cdis > d) continue;
+
+		/* Delete the monster */
+		delete_monster_idx(i);
+	}
+
+	/* Update monster list window */
+	player->upkeep->redraw |= PR_MONLIST;
+}
+
+
+/**
  * Create all artifacts and drop them near the player
  * (CMD_WIZ_CREATE_ALL_ARTIFACT).  Takes no arguments from cmd.
  */

@@ -115,6 +115,7 @@ static const struct command_info game_cmds[] =
 
 	{ CMD_WIZ_ACQUIRE, "acquire objects", do_cmd_wiz_acquire, false, 0 },
 	{ CMD_WIZ_ADVANCE, "make character powerful", do_cmd_wiz_advance, false, 0 },
+	{ CMD_WIZ_BANISH, "banish nearby monsters", do_cmd_wiz_banish, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_ARTIFACT, "create all artifacts", do_cmd_wiz_create_all_artifact, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL, "create all artifacts of a tval", do_cmd_wiz_create_all_artifact_from_tval, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_OBJ, "create all objects", do_cmd_wiz_create_all_obj, false, 0 },

@@ -24,9 +24,6 @@
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
-#include "mon-make.h"
-#include "mon-util.h"
-#include "monster.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
@@ -1353,33 +1350,6 @@ void wiz_cheat_death(void)
 
 
 /**
- * Delete all nearby monsters
- */
-static void do_cmd_wiz_zap(int d)
-{
-	int i;
-
-	/* Banish everyone nearby */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
-		struct monster *mon = cave_monster(cave, i);
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		/* Skip distant monsters */
-		if (mon->cdis > d) continue;
-
-		/* Delete the monster */
-		delete_monster_idx(i);
-	}
-
-	/* Update monster list window */
-	player->upkeep->redraw |= PR_MONLIST;
-}
-
-
-/**
  * Display the debug commands help file.
  */
 static void do_cmd_wiz_help(void) 
@@ -1701,14 +1671,8 @@ void get_debug_command(void)
 
 		/* Zap Monsters (Banishment) */
 		case 'z':
-		{
-			int n;
-			screen_save();
-			n = get_quantity("Zap within what distance? ", z_info->max_sight);
-			screen_load();
-			do_cmd_wiz_zap(n);
+			cmdq_push(CMD_WIZ_BANISH);
 			break;
-		}
 
 		/* Hack */
 		case '_':

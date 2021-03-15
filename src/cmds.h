@@ -78,6 +78,7 @@ void do_cmd_autopickup(struct command *cmd);
 /* cmd-wizard.c */
 void do_cmd_wiz_acquire(struct command *cmd);
 void do_cmd_wiz_advance(struct command *cmd);
+void do_cmd_wiz_banish(struct command *cmd);
 void do_cmd_wiz_create_all_artifact(struct command *cmd);
 void do_cmd_wiz_create_all_artifact_from_tval(struct command *cmd);
 void do_cmd_wiz_create_all_obj(struct command *cmd);
