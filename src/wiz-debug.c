@@ -142,47 +142,6 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 			Term_putch(col++, row, COLOUR_WHITE, L'-');
 }
 
-/**
- * This ugly piece of code exists to figure out what keycodes the user has
- * been generating.
- */
-static void do_cmd_keylog(void) {
-	int i;
-	char buf[50];
-	char buf2[12];
-	struct keypress keys[2] = {KEYPRESS_NULL, KEYPRESS_NULL};
-
-	screen_save();
-
-	prt("Previous keypresses (top most recent):", 0, 0);
-
-	for (i = 0; i < KEYLOG_SIZE; i++) {
-		if (i < log_size) {
-			/* find the keypress from our log */
-			int j = (log_i + i) % KEYLOG_SIZE;
-			struct keypress k = keylog[j];
-
-			/* ugh. it would be nice if there was a verion of keypress_to_text
-			 * which took only one keypress. */
-			keys[0] = k;
-			keypress_to_text(buf2, sizeof(buf2), keys, true);
-
-			/* format this line of output */
-			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)", buf2,
-					k.code, k.mods);
-		} else {
-			/* create a blank line of output */
-			strnfmt(buf, sizeof(buf), "%40s", "");
-		}
-
-		prt(buf, i + 1, 0);
-	}
-
-	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
-	anykey();
-	screen_load();
-}
-
 
 /**
  * Dump a map of the current level as an HTML file.
@@ -1473,10 +1432,8 @@ void get_debug_command(void)
 
 		/* Work out what the player is typing */
 		case 'L':
-		{
-			do_cmd_keylog();
+			cmdq_push(CMD_WIZ_DISPLAY_KEYLOG);
 			break;
-		}
 
 		/* Magic Mapping */
 		case 'm':
