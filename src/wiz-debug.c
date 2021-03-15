@@ -38,7 +38,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "target.h"
 #include "ui-command.h"
 #include "ui-event.h"
 #include "ui-display.h"
@@ -46,7 +45,6 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-prefs.h"
-#include "ui-target.h"
 #include "wizard.h"
 
 
