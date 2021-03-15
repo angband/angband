@@ -931,6 +931,15 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 
 
 /**
+ * Quit without saving (CMD_WIZ_QUIT_NO_SAVE).  Takes no arguments from cmd.
+ */
+void do_cmd_wiz_quit_no_save(struct command *cmd)
+{
+	quit("user choice");
+}
+
+
+/**
  * Make the player fully aware of a monster race's attributes
  * (CMD_WIZ_RECALL_MONSTER).  Can take the race from the argument, "index", of
  * type number in cmd.  If that index is -1, make the player aware of all

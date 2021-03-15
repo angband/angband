@@ -1694,11 +1694,10 @@ void get_debug_command(void)
 
 		/* Quit the game, don't save */
 		case 'X':
-		{
-			if (get_check("Really quit without saving? "))
-				quit("user choice");
+			if (get_check("Really quit without saving? ")) {
+				cmdq_push(CMD_WIZ_QUIT_NO_SAVE);
+			}
 			break;
-		}
 
 		/* Zap Monsters (Banishment) */
 		case 'z':
