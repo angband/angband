@@ -883,6 +883,16 @@ void do_cmd_wiz_learn_object_kinds(struct command *cmd)
 
 
 /**
+ * Map the area near the player (CMD_WIZ_MAGIC_MAP).  Takes no arguments from
+ * cmd.
+ */
+void do_cmd_wiz_magic_map(struct command *cmd)
+{
+	effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, 22, 40, NULL);
+}
+
+
+/**
  * Is a helper function passed by do_cmd_wiz_peek_noise_scent() to
  * wiz_hack_map() in order to peek at the noise.
  *

@@ -1437,10 +1437,8 @@ void get_debug_command(void)
 
 		/* Magic Mapping */
 		case 'm':
-		{
-			effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, 22, 40, NULL);
+			cmdq_push(CMD_WIZ_MAGIC_MAP);
 			break;
-		}
 
 		/* Dump a map of the current level as HTML. */
 		case 'M':
