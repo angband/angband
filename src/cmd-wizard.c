@@ -38,6 +38,7 @@
 #include "ui-output.h"
 #include "ui-target.h"
 #include "ui-term.h"
+#include "wizard.h"
 
 
 /**
@@ -278,6 +279,139 @@ void do_cmd_wiz_banish(struct command *cmd)
 
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
+}
+
+
+/**
+ * Generate levels and collect statistics about those with disconnected areas
+ * and those where the player is disconnected from stairs
+ * (CMD_WIZ_COLLECT_DISCONNECT_STATS).  Can take the number of simulations
+ * from the argument, "quantity", of type number in cmd.  Can take whether to
+ * stop if a disconnected level is found from the argument, "choice", of type
+ * choice in cmd (a nonzero value means stop).
+ */
+void do_cmd_wiz_collect_disconnect_stats(struct command *cmd)
+{
+	/* Record last-used value to be the default in next run. */
+	static int default_nsim = 50;
+	int nsim, stop_on_disconnect;
+
+	if (!stats_are_enabled()) return;
+
+	if (cmd_get_arg_number(cmd, "quantity", &nsim) != CMD_OK) {
+		char s[80];
+
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", default_nsim);
+
+		if (!get_string("Number of simulations: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &nsim) || nsim < 1) return;
+		cmd_set_arg_number(cmd, "quantity", nsim);
+	}
+	default_nsim = nsim;
+
+	if (cmd_get_arg_choice(cmd, "choice", &stop_on_disconnect) != CMD_OK) {
+		stop_on_disconnect =
+			get_check("Stop if disconnected level found? ") ? 1 : 0;
+		cmd_set_arg_choice(cmd, "choice", stop_on_disconnect);
+	}
+
+	disconnect_stats(nsim, stop_on_disconnect != 0);
+}
+
+
+/**
+ * Generate levels and collect statistics about the included objects and
+ * monsters (CMD_WIZ_COLLECT_OBJ_MON_STATS).  Can take the number of
+ * simulations from the argument, "quantity", of type number in cmd.  Can take
+ * the type of simulation (diving (1), clearing (2), or clearing with randart
+ * regeneration (3)) from the argument, "choice", of type choice in cmd.
+ */
+void do_cmd_wiz_collect_obj_mon_stats(struct command *cmd)
+{
+	/* Record last-used values to be the default in next run. */
+	static int default_nsim = 50;
+	static int default_simtype = 1;
+	int nsim, simtype;
+	char s[80];
+
+	if (!stats_are_enabled()) return;
+
+	if (cmd_get_arg_number(cmd, "quantity", &nsim) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", default_nsim);
+
+		if (!get_string("Number of simulations: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &nsim) || nsim < 1) return;
+		cmd_set_arg_number(cmd, "quantity", nsim);
+	}
+	default_nsim = nsim;
+
+	if (cmd_get_arg_choice(cmd, "choice", &simtype) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", default_simtype);
+
+		if (!get_string("Type of Sim: Diving (1) or Clearing (2) ",
+			s, sizeof(s))) return;
+		if (!get_int_from_string(s, &simtype) || simtype < 1 ||
+			simtype > 2) return;
+		if (simtype == 2) {
+			if (get_check("Regen randarts (warning SLOW)? ")) {
+				simtype = 3;
+			}
+		}
+		cmd_set_arg_choice(cmd, "choice", simtype);
+	}
+	default_simtype = (simtype == 1) ? 1 : 2;
+
+	stats_collect(nsim, simtype);
+}
+
+
+/**
+ * Generate several pits and collect statistics about the types of monsters
+ * used (CMD_WIZ_COLLECT_PIT_STATS).  Can take the number of simulations from
+ * the argument, "quantity", of type number in cmd.  Can take the depth to use
+ * for the simulations from the argument, "depth", of type number in cmd.  Can
+ * take the type of pit (pit (1), nest (2), or other (3)) from the argument,
+ * "choice", of type choice in cmd.
+ */
+void do_cmd_wiz_collect_pit_stats(struct command *cmd)
+{
+	int nsim, depth, pittype;
+	char s[80];
+
+	if (!stats_are_enabled()) return;
+
+	if (cmd_get_arg_number(cmd, "quantity", &nsim) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", 1000);
+
+		if (!get_string("Number of simulations: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &nsim) || nsim < 1) return;
+		cmd_set_arg_number(cmd, "quantity", nsim);
+	}
+
+	if (cmd_get_arg_choice(cmd, "choice", &pittype) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", 1);
+
+		if (!get_string("Pit type (1-3): ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &pittype) || pittype < 1 ||
+			pittype > 3) return;
+		cmd_set_arg_choice(cmd, "choice", pittype);
+	}
+
+	if (cmd_get_arg_number(cmd, "depth", &depth) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", player->depth);
+
+		if (!get_string("Depth: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &depth) || depth < 1) return;
+		cmd_set_arg_number(cmd, "depth", depth);
+	}
+
+	pit_stats(nsim, pittype, depth);
 }
 
 

@@ -1412,10 +1412,8 @@ void get_debug_command(void)
 
 		/* Test for disconnected dungeon */
 		case 'D':
-		{
-			disconnect_stats();
+			cmdq_push(CMD_WIZ_COLLECT_DISCONNECT_STATS);
 			break;
-		}
 
 		/* Edit character */
 		case 'e':
@@ -1432,10 +1430,8 @@ void get_debug_command(void)
 		}
 
 		case 'f':
-		{
-			stats_collect();
+			cmdq_push(CMD_WIZ_COLLECT_OBJ_MON_STATS);
 			break;
-		}
 
 		case 'F':
 			cmdq_push(CMD_WIZ_QUERY_FEATURE);
@@ -1514,10 +1510,8 @@ void get_debug_command(void)
 
 		/* Monster pit stats */
 		case 'P':
-		{
-			pit_stats();
+			cmdq_push(CMD_WIZ_COLLECT_PIT_STATS);
 			break;
-		}
 
 		/* Query the dungeon */
 		case 'q':
@@ -1536,10 +1530,8 @@ void get_debug_command(void)
 
 		/* Collect stats (S) */
 		case 'S':
-		{
-			stats_collect();
+			cmdq_push(CMD_WIZ_COLLECT_OBJ_MON_STATS);
 			break;
-		}
 
 		/* Teleport */
 		case 't':

@@ -19,7 +19,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
-#include "game-input.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
@@ -1583,84 +1582,44 @@ static void clearing_stats(void)
 }
 
 /**
- * Prompt the user for sim type and number of sims for a stats run
+ * Check whether statistic collection is enabled.  Prints a message if it is
+ * not.
+ *
+ * \return true if statistics were enabled at compile time; otherwise, return
+ * false.
  */
-static int stats_prompt(void)
+bool stats_are_enabled(void)
 {
-	static int temp,simtype = 1;
-	static char tmp_val[100];
-	static char prompt[50];
-
-	/* This is the prompt for no. of tries*/
-	strnfmt(prompt, sizeof(prompt), "Num of simulations: ");
-
-	/* This is the default value (50) */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", tries);
-
-	/* Ask for the input */
-	if (!get_string(prompt, tmp_val, 7)) return 0;
-
-	/* Get the new value */
-	temp = atoi(tmp_val);
-
-	/* Convert */
-	if (temp < 1) temp = 1;
-
-	/* Save */
-	tries = temp;
-
-	/* Set 'value to add' for arrays */
-	addval = 1.0 / tries;
-
-	/* Get info on what type of run to do */
-	strnfmt(prompt, sizeof(prompt), "Type of Sim: Diving (1) or Clearing (2) ");
-
-	/* Set default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", simtype);
-
-	/* Get the input */
-	if (!get_string(prompt, tmp_val, 4)) return 0;
-
-	temp = atoi(tmp_val);
-
-	/* Make sure that the type is good */
-	if ((temp == 1) || (temp == 2))
-		simtype = temp;
-	else
-		return 0;
-
-	/* For clearing sim, check for randart regen */
-	if (temp == 2) {
-		/* Prompt */
-		strnfmt(prompt, sizeof(prompt), "Regen randarts? (warning SLOW)");
-
-		regen = get_check(prompt) ? true : false;
-	}
-
-	return simtype;
+	return true;
 }
 
 /**
- * This is the function called from wiz-debug.c.
+ * Generate levels and collect statistics about the objects and monsters
+ * in those levels.
+ *
+ * \param nsim Is the number of simulations to perform.
+ * \param simtype Must be either 1 for a diving simulation, 2 for a clearing
+ * simulation, or 3 for a clearing simulation with a regeneration of the
+ * random artifacts between each simulation.
  */
-void stats_collect(void)
+void stats_collect(int nsim, int simtype)
 {
-	static int simtype;
-	static bool auto_flag;
+	bool auto_flag;
 	char buf[1024];
 
-	/* Prompt the user for sim params */
-	simtype = stats_prompt();
+	/* Make sure the inputs are good! */
+	if (nsim < 1 || simtype < 1 || simtype > 3) return;
 
-	/* Make sure the results are good! */
-	if (!((simtype == 1) || (simtype == 2)))
-		return; 
+	tries = nsim;
+	addval = 1.0 / tries;
 
 	/* Are we in diving or clearing mode */
-	if (simtype == 2)
-		clearing = true;
-	else
+	if (simtype == 1) {
 		clearing = false;
+	} else {
+		clearing = true;
+		regen = (simtype == 3);
+	}
 
 	/* Open log file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "stats.log");
@@ -1811,51 +1770,23 @@ void calc_cave_distances(int **cave_dist)
 	mem_free(ogrids);
 }
 
-void pit_stats(void)
+/**
+ * Generate several pits and collect statistics about the type of inhabitants.
+ *
+ * \param nsim Is the number of pits to generate.
+ * \param pittype Must be 1 (pit), 2 (nest), or 3 (other).
+ * \param depth Is the depth to use for the simulations.
+ */
+void pit_stats(int nsim, int pittype, int depth)
 {
-	int tries = 1000;
-	int depth = 0;
 	int hist[z_info->pit_max];
 	int j, p;
-	int type = 1;
-
-	char tmp_val[100];
 
 	/* Initialize hist */
 	for (p = 0; p < z_info->pit_max; p++)
 		hist[p] = 0;
 
-	/* Format default value */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", tries);
-
-	/* Ask for the input - take the first 7 characters*/
-	if (!get_string("Num of simulations: ", tmp_val, 7)) return;
-
-	/* Get the new value */
-	tries = atoi(tmp_val);
-	if (tries < 1) tries = 1;
-
-	/* Format second default value */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", type);
-
-	/* Ask for the input - take the first 7 characters*/
-	if (!get_string("Pit type: ", tmp_val, 7)) return;
-
-	/* get the new value */
-	type = atoi(tmp_val);
-	if (type < 1) type = 1;
-
-	/* Format second default value */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", player->depth);
-
-	/* Ask for the input - take the first 7 characters*/
-	if (!get_string("Depth: ", tmp_val, 7)) return;
-
-	/* get the new value */
-	depth = atoi(tmp_val);
-	if (depth < 1) depth = 1;
-
-	for (j = 0; j < tries; j++) {
+	for (j = 0; j < nsim; j++) {
 		int i;
 		int pit_idx = 0;
 		int pit_dist = 999;
@@ -1864,7 +1795,7 @@ void pit_stats(void)
 			int offset, dist;
 			struct pit_profile *pit = &pit_info[i];
 
-			if (!pit->name || pit->room_type != type) continue;
+			if (!pit->name || pit->room_type != pittype) continue;
 
 			offset = Rand_normal(pit->ave, 10);
 			dist = ABS(offset - depth);
@@ -1892,7 +1823,7 @@ void pit_stats(void)
  * Gather whether the dungeon has disconnects in it and whether the player
  * is disconnected from the stairs
  */
-void disconnect_stats(void)
+void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
 	int i, y, x;
 
@@ -1900,35 +1831,9 @@ void disconnect_stats(void)
 
 	bool has_dsc, has_dsc_from_stairs;
 
-	static int temp;
-	static char tmp_val[100];
-	static char prompt[50];
-
 	long dsc_area = 0, dsc_from_stairs = 0;
-	bool stop_for_dis;
 	char path[1024];
 	ang_file *disfile;
-
-	/* This is the prompt for no. of tries */
-	strnfmt(prompt, sizeof(prompt), "Num of simulations: ");
-
-	/* This is the default value (50) */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", tries);
-
-	/* Ask for the input */
-	if (!get_string(prompt,tmp_val,7)) return;
-
-	/* Get the new value */
-	temp = atoi(tmp_val);
-
-	/* Try at least once */
-	if (temp < 1)
-		temp = 1;
-
-	/* Save */
-	tries = temp;
-
-	stop_for_dis = get_check("Stop if disconnected level found? ");
 
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "disconnect.html");
 	disfile = file_open(path, MODE_WRITE, FTYPE_TEXT);
@@ -1936,7 +1841,7 @@ void disconnect_stats(void)
 		dump_level_header(disfile, "Disconnected Levels");
 	}
 
-	for (i = 1; i <= tries; i++) {
+	for (i = 1; i <= nsim; i++) {
 		/* Assume no disconnected areas */
 		has_dsc = false;
 
@@ -2004,7 +1909,7 @@ void disconnect_stats(void)
 				dump_level_body(disfile, "Disconnected Level",
 					cave, cave_dist);
 			}
-			if (stop_for_dis) i = tries;
+			if (stop_on_disconnect) i = nsim;
 		}
 
 		/* Free arrays */
@@ -2029,18 +1934,21 @@ void disconnect_stats(void)
 
 #else /* USE_STATS */
 
-void stats_collect(void)
+bool stats_are_enabled(void)
 {
 	msg("Statistics generation not turned on in this build.");
+	return false;
 }
 
-void disconnect_stats(void)
+void stats_collect(int nsim, int simtype)
 {
-	msg("Statistics generation not turned on in this build.");
 }
 
-void pit_stats(void)
+void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
-	msg("Statistics generation not turned on in this build.");
+}
+
+void pit_stats(int nsim, int pittype, int depth)
+{
 }
 #endif /* USE_STATS */
