@@ -788,6 +788,23 @@ void do_cmd_wiz_peek_noise_scent(struct command *cmd)
 }
 
 
+/**
+ * Push objects from a selected grid (CMD_WIZ_PUSH_OBJECT).  Can take the
+ * location from the argument, "point", of type point in cmd.
+ */
+void do_cmd_wiz_push_object(struct command *cmd)
+{
+	struct loc grid;
+
+	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
+		if (!target_set_interactive(TARGET_KILL, -1, -1)) return;
+		target_get(&grid);
+		cmd_set_arg_point(cmd, "point", grid);
+	}
+	push_object(grid);
+}
+
+
 struct wiz_query_feature_closure {
 	const int *features;
 	int n;

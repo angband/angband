@@ -1600,23 +1600,14 @@ void get_debug_command(void)
 			cmdq_push(CMD_WIZ_PEEK_NOISE_SCENT);
 			break;
 
+		/* Use push_object() on a selected grid. */
 		case '>':
-		{
-			/* Perform push_object() on a selected grid. */
-			if (target_set_interactive(TARGET_KILL, -1, -1)) {
-				struct loc grid = loc(0, 0);
-
-				target_get(&grid);
-				push_object(grid);
-			}
+			cmdq_push(CMD_WIZ_PUSH_OBJECT);
 			break;
-		}
 
 		/* Oops */
 		default:
-		{
 			msg("That is not a valid debug command.");
 			break;
-		}
 	}
 }

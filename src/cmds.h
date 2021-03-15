@@ -94,6 +94,7 @@ void do_cmd_wiz_increase_exp(struct command *cmd);
 void do_cmd_wiz_jump_level(struct command *cmd);
 void do_cmd_wiz_learn_object_kinds(struct command *cmd);
 void do_cmd_wiz_peek_noise_scent(struct command *cmd);
+void do_cmd_wiz_push_object(struct command *cmd);
 void do_cmd_wiz_query_feature(struct command *cmd);
 void do_cmd_wiz_query_square_flag(struct command *cmd);
 void do_cmd_wiz_quit_no_save(struct command *cmd);
