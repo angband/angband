@@ -18,6 +18,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -764,6 +765,39 @@ void do_cmd_wiz_display_keylog(struct command *cmd)
 	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
 	anykey();
 	screen_load();
+}
+
+
+/**
+ * Dump a map of the current level as an HTML file (CMD_WIZ_DUMP_LEVEL_MAP).
+ * Takes no arguments from cmd.
+ *
+ * Bugs:
+ * The path and title could be passed through arguments of type string on the
+ * command.  That, however, is problematic because there's nothing to say how
+ * the lifetime of the string should be handled (does it need to be freed at
+ * all, should it be freed here which would break the option to repeat the
+ * command, or should it be freed within cmd-core.c as part of managing the
+ * lifecycle for the command).
+ */
+void do_cmd_wiz_dump_level_map(struct command *cmd)
+{
+	char path[1024] = "";
+	char title[80];
+	ang_file *fo;
+
+	strnfmt(title, sizeof(title), "Map of level %d", player->depth);
+	if (!get_file("level.html", path, sizeof(path)) ||
+			!get_string("Title for map: ", title, sizeof(title))) {
+		return;
+	}
+	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (fo) {
+		dump_level(fo, title, cave, NULL);
+		if (file_close(fo)) {
+			msg(format("Level dumped to %s.", path));
+		}
+	}
 }
 
 

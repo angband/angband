@@ -21,7 +21,6 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
-#include "generate.h"
 #include "grafmode.h"
 #include "init.h"
 #include "obj-curse.h"
@@ -140,30 +139,6 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 			Term_putch(col++, row, COLOUR_BLUE, ch);
 		else
 			Term_putch(col++, row, COLOUR_WHITE, L'-');
-}
-
-
-/**
- * Dump a map of the current level as an HTML file.
- */
-static void do_cmd_wiz_dump_level_map(void)
-{
-	char path[1024] = "";
-	char title[80];
-	ang_file *fo;
-
-	strnfmt(title, sizeof(title), "Map of level %d", player->depth);
-	if (!get_file("level.html", path, sizeof(path)) ||
-			!get_string("Title for map: ", title, sizeof(title))) {
-		return;
-	}
-	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
-	if (fo) {
-		dump_level(fo, title, cave, NULL);
-		if (file_close(fo)) {
-			msg(format("Level dumped to %s.", path));
-		}
-	}
 }
 
 
@@ -1442,7 +1417,7 @@ void get_debug_command(void)
 
 		/* Dump a map of the current level as HTML. */
 		case 'M':
-			do_cmd_wiz_dump_level_map();
+			cmdq_push(CMD_WIZ_DUMP_LEVEL_MAP);
 			break;
 
 		/* Summon Named Monster */

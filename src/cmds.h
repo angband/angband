@@ -93,6 +93,7 @@ void do_cmd_wiz_cure_all(struct command *cmd);
 void do_cmd_wiz_detect_all_local(struct command *cmd);
 void do_cmd_wiz_detect_all_monsters(struct command *cmd);
 void do_cmd_wiz_display_keylog(struct command *cmd);
+void do_cmd_wiz_dump_level_map(struct command *cmd);
 void do_cmd_wiz_hit_all_los(struct command *cmd);
 void do_cmd_wiz_increase_exp(struct command *cmd);
 void do_cmd_wiz_jump_level(struct command *cmd);
