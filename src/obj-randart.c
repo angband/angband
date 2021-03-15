@@ -1394,6 +1394,8 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 	art->brands = NULL;
 	copy_brands(&art->brands, kind->brands);
 	art->activation = NULL;
+	string_free(art->alt_msg);
+	art->alt_msg = NULL;
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		art->modifiers[i] = randcalc(kind->modifiers[i], 0, MINIMISE);
 	}
