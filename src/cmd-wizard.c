@@ -41,6 +41,13 @@
 #include "wizard.h"
 
 
+/*
+ * Used by do_cmd_wiz_edit_player_*() functions to disable later editing stages
+ * so it is possible to break out of the editing process.
+ */
+static int break_editing = 0;
+
+
 /**
  * Extract a decimal integer from a string while ensuring that only the
  * decimal value and white space are present in the string.
@@ -65,6 +72,33 @@ static bool get_int_from_string(const char *s, int *val)
 		return false;
 	}
 	*val = (int)lval;
+	return true;
+}
+
+
+/**
+ * Extract a long decimal integer from a string while ensuring that only the
+ * decimal value and white space are present in the string.
+ * \param s is the string to parse.
+ * \param val is dereferenced and set to the extracted value.
+ * \return true if val was dereferenced and set; false if the extraction
+ * failed
+ */
+static bool get_long_from_string(const char *s, long *val)
+{
+	char *endptr;
+	long lval = strtol(s, &endptr, 10);
+
+	/*
+	 * Reject LONG_MIN and LONG_MAX so it isn't necessary to check errno
+	 * to see if the value in the string was out of range.
+	 */
+	if (s[0] == '\0' ||
+			(*endptr != '\0' && !contains_only_spaces(endptr)) ||
+			lval <= LONG_MIN || lval >= LONG_MAX) {
+		return false;
+	}
+	*val = lval;
 	return true;
 }
 
@@ -798,6 +832,158 @@ void do_cmd_wiz_dump_level_map(struct command *cmd)
 			msg(format("Level dumped to %s.", path));
 		}
 	}
+}
+
+
+/**
+ * Edit the player's amount of experience (CMD_WIZ_EDIT_PLAYER_EXP).  Takes
+ * no arguments from cmd.
+ */
+void do_cmd_wiz_edit_player_exp(struct command *cmd)
+{
+	char s[80];
+	long newv;
+
+	if (break_editing) return;
+
+	/* Set default value. */
+	strnfmt(s, sizeof(s), "%ld", (long)(player->exp));
+
+	if (!get_string("Experience: ", s, sizeof(s)) ||
+			!get_long_from_string(s, &newv)) {
+		/* Set next editing stage to break. */
+		break_editing = 1;
+		return;
+	}
+
+	/* Keep in the bounds of [0, PY_MAX_EXP]. */
+	newv = MIN(PY_MAX_EXP, MAX(0, newv));
+
+	if (newv > player->exp) {
+		player_exp_gain(player, newv - player->exp);
+	} else {
+		player_exp_lose(player, player->exp - newv, false);
+	}
+}
+
+
+/**
+ * Edit the player's amount of gold (CMD_WIZ_EDIT_PLAYER_GOLD).  Takes no
+ * arguments from cmd.
+ */
+void do_cmd_wiz_edit_player_gold(struct command *cmd)
+{
+	char s[80];
+	long newv;
+
+	if (break_editing) return;
+
+	/* Set default value. */
+	strnfmt(s, sizeof(s), "%ld", (long)(player->au));
+
+	if (!get_string("Gold: ", s, sizeof(s)) ||
+			!get_long_from_string(s, &newv)) {
+		/* Set next editing stage to break. */
+		break_editing = 1;
+		return;
+	}
+
+	/*
+	 * Keep in the bounds of [0, maximum s32b].  Assumes a two's complement
+	 * representation.
+	 */
+	player->au = MIN((1L << 31) - 1, MAX(0, newv));
+
+	/* Flag what needs to be updated or redrawn. */
+	player->upkeep->redraw |= PR_GOLD;
+}
+
+
+/**
+ * Start editing the player (CMD_WIZ_EDIT_PLAYER_START).  Takes no arguments
+ * from cmd.  Because of the use of static state (break_editing), this is not
+ * reentrant.
+ */
+void do_cmd_wiz_edit_player_start(struct command *cmd)
+{
+	int i;
+
+	break_editing = 0;
+	for (i = 0; i < STAT_MAX; ++i) {
+		if (cmdq_push(CMD_WIZ_EDIT_PLAYER_STAT) != 0) {
+			/* Failed.  Skip any queued edit commands. */
+			break_editing = 1;
+			return;
+		}
+		cmd_set_arg_choice(cmdq_peek(), "choice", i);
+	}
+	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_GOLD) != 0) {
+		/* Failed.  Skip any queued edit commands. */
+		break_editing = 1;
+		return;
+	}
+	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_EXP) != 0) {
+		/* Failed.  Skip any queued edit commands. */
+		break_editing = 1;
+		return;
+	}
+}
+
+
+/**
+ * Edit one of the player's statistics (CMD_WIZ_EDIT_PLAYER_STAT).  Takes
+ * the index of the statistic to edit from the argument, "choice", of type
+ * choice in the command.
+ */
+void do_cmd_wiz_edit_player_stat(struct command *cmd)
+{
+	int stat, newv;
+	char prompt[80], s[80];
+
+	if (break_editing) return;
+
+	if (cmd_get_arg_choice(cmd, "choice", &stat) != CMD_OK) {
+		strnfmt(prompt, sizeof(prompt),
+			"Edit which stat (name or 0-%d): ", STAT_MAX - 1);
+
+		/* Set default value. */
+		strnfmt(s, sizeof(s), "%s", stat_idx_to_name(0));
+
+		if (!get_string(prompt, s, sizeof(s))) return;
+		if (!get_int_from_string(s, &stat)) {
+			stat = stat_name_to_idx(s);
+			if (stat < 0) {
+				return;
+			}
+		}
+
+		cmd_set_arg_choice(cmd, "choice", stat);
+	}
+
+	if (stat < 0 || stat >= STAT_MAX) {
+		return;
+	}
+
+	strnfmt(prompt, sizeof(prompt), "%s (3-118): ", stat_idx_to_name(stat));
+
+	/* Set default value. */
+	strnfmt(s, sizeof(s), "%d", player->stat_max[stat]);
+
+	if (!get_string(prompt, s, sizeof(s)) ||
+			!get_int_from_string(s, &newv)) {
+		/* Set next editing stage to break. */
+		break_editing = 1;
+		return;
+	}
+
+	/* Limit to the range of [3, 118]. */
+	newv = MIN(118, MAX(3, newv));
+
+	player->stat_cur[stat] = player->stat_max[stat] = newv;
+
+	/* Flag what needs to be updated or redrawn. */
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_STATS);
 }
 
 

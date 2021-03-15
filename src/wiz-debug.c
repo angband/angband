@@ -141,93 +141,6 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 
 
 /**
- * Aux function for "do_cmd_wiz_change()"
- */
-static void do_cmd_wiz_change_aux(void)
-{
-	int i;
-
-	int tmp_int;
-
-	long tmp_long;
-
-	char tmp_val[160];
-
-	char ppp[80];
-
-
-	/* Query the stats */
-	for (i = 0; i < STAT_MAX; i++) {
-		/* Prompt */
-		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
-
-		/* Default */
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", player->stat_max[i]);
-
-		/* Query */
-		if (!get_string(ppp, tmp_val, 4)) return;
-
-		/* Extract */
-		tmp_int = atoi(tmp_val);
-
-		/* Verify */
-		if (tmp_int > 18+100) tmp_int = 18+100;
-		else if (tmp_int < 3) tmp_int = 3;
-
-		/* Save it */
-		player->stat_cur[i] = player->stat_max[i] = tmp_int;
-	}
-
-
-	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(player->au));
-
-	/* Query */
-	if (!get_string("Gold: ", tmp_val, 10)) return;
-
-	/* Extract */
-	tmp_long = atol(tmp_val);
-
-	/* Verify */
-	if (tmp_long < 0) tmp_long = 0L;
-
-	/* Save */
-	player->au = tmp_long;
-
-
-	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(player->exp));
-
-	/* Query */
-	if (!get_string("Experience: ", tmp_val, 10)) return;
-
-	/* Extract */
-	tmp_long = atol(tmp_val);
-
-	/* Verify */
-	if (tmp_long < 0) tmp_long = 0L;
-
-	if (tmp_long > player->exp)
-		player_exp_gain(player, tmp_long - player->exp);
-	else
-		player_exp_lose(player, player->exp - tmp_long, false);
-}
-
-
-/**
- * Change player stats, gold and experience.
- */
-static void do_cmd_wiz_change(void)
-{
-	/* Interact */
-	do_cmd_wiz_change_aux();
-
-	/* Redraw everything */
-	do_cmd_redraw();
-}
-
-
-/**
  * Wizard routines for creating objects and modifying them
  *
  * This has been rewritten to make the whole procedure
@@ -1349,10 +1262,8 @@ void get_debug_command(void)
 
 		/* Edit character */
 		case 'e':
-		{
-			do_cmd_wiz_change();
+			cmdq_push(CMD_WIZ_EDIT_PLAYER_START);
 			break;
-		}
 
 		/* Perform an effect. */
 		case 'E':
