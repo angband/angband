@@ -1896,6 +1896,9 @@ static errr finish_parse_feat(struct parser *p) {
 static void cleanup_feat(void) {
 	int idx;
 	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].look_in_preposition);
+		string_free(f_info[idx].look_prefix);
+		string_free(f_info[idx].confused_msg);
 		string_free(f_info[idx].die_msg);
 		string_free(f_info[idx].hurt_msg);
 		string_free(f_info[idx].run_msg);
