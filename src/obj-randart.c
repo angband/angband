@@ -2589,6 +2589,8 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		kf_has(kind->kind_flags, KF_QUEST_ART)) {
 		(*aidx)++;
 		if ((*aidx) >= z_info->a_max) {
+			string_free(new_name);
+			mem_free(a_old);
 			return;
 		}
 		art = &a_info[*aidx];
