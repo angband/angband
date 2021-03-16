@@ -23,9 +23,13 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-util.h"
+#include "obj-curse.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -104,6 +108,25 @@ static bool get_long_from_string(const char *s, long *val)
 
 
 /**
+ * Output part of a bitflag set in binary format.
+ */
+static void prt_binary(const bitflag *flags, int offset, int row, int col,
+	wchar_t ch, int num)
+{
+	int flag;
+
+	/* Scan the flags. */
+	for (flag = FLAG_START + offset; flag < FLAG_START + offset + num; flag++) {
+		if (of_has(flags, flag)) {
+			Term_putch(col++, row, COLOUR_BLUE, ch);
+		} else {
+			Term_putch(col++, row, COLOUR_WHITE, L'-');
+		}
+	}
+}
+
+
+/**
  * Create an instance of an artifact.
  *
  * \param art The artifact to instantiate.
@@ -155,6 +178,58 @@ static struct object *wiz_create_object_from_kind(struct object_kind *kind)
 	}
 
 	return obj;
+}
+
+
+/**
+ * Display an item's properties.
+ */
+static void wiz_display_item(const struct object *obj, bool all)
+{
+	int j = 0;
+	bitflag f[OF_SIZE];
+	char buf[256];
+
+	/* Extract the flags. */
+	if (all) {
+		object_flags(obj, f);
+	} else {
+		object_flags_known(obj, f);
+	}
+
+	/* Clear screen. */
+	Term_clear();
+
+	/* Describe fully */
+	object_desc(buf, sizeof(buf), obj,
+		ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+
+	prt(buf, 2, j);
+
+	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
+		obj->dd, obj->ds, obj->to_h, obj->to_d, obj->ac, obj->to_a),
+		4, j);
+
+	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
+		obj->kind->kidx, obj->tval, obj->sval, obj->weight,
+		obj->timeout), 5, j);
+
+	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
+		obj->number, obj->pval,
+		obj->artifact ? obj->artifact->aidx : 0,
+		obj->ego ? obj->ego->eidx : -1,
+		(long)object_value(obj, 1)), 6, j);
+
+	prt("+------------FLAGS------------------+", 16, j);
+	prt("SUST.PROT<-OTHER----><BAD->C.MISC....", 17, j);
+	prt("     fbcssf  s  ibbtniiatadsflldddett", 18, j);
+	prt("siwdcelotdfrei  pluaommfegrcrggiiixrh", 19, j);
+	prt("tnieoannuiaesnfhcerffhsrlgxuattgggppr", 20, j);
+	prt("rtsxnrdfnglgpvaltsnuuppderprg23123liw", 21, j);
+	prt_binary(f, 0, 22, j, L'*', 37);
+	if (obj->known) {
+		prt_binary(obj->known->flags, 0, 23, j, L'+', 37);
+	}
 }
 
 
@@ -217,6 +292,38 @@ static void wiz_hack_map(struct chunk *c, struct player *p,
 				print_rel(L'#', color, y, x);
 			}
 		}
+	}
+}
+
+
+/**
+ * Update the queued command object for do_cmd_wiz_play_item() to reflect
+ * that the item has changed.
+ *
+ * Hack:  this assumes that there's only one command queued.
+ */
+static void wiz_play_item_notify_changed(void)
+{
+	struct command *cmd = cmdq_peek();
+
+	if (cmd) {
+		assert(cmd->code == CMD_WIZ_PLAY_ITEM);
+		cmd_set_arg_choice(cmd, "changed", 1);
+	}
+}
+
+
+/**
+ * Handle the typical updates needed to upkeep flags after playing with an item.
+ */
+static void wiz_play_item_standard_upkeep(struct player *p, struct object *obj)
+{
+	if (object_is_carried(p, obj)) {
+		p->upkeep->update |= (PU_BONUS | PU_INVEN);
+		p->upkeep->notice |= (PN_COMBINE);
+		p->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	} else {
+		p->upkeep->redraw |= (PR_ITEMLIST);
 	}
 }
 
@@ -313,6 +420,99 @@ void do_cmd_wiz_banish(struct command *cmd)
 
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
+}
+
+
+/**
+ * Change the quantity of an item (CMD_WIZ_CHANGE_ITEM_QUANTITY).  Can take
+ * the item to modify from the argument, "item", of type item in cmd.  Can
+ * take the new amount from the argument, "quantity", of type number in cmd.
+ * Takes whether to update player information from the argument, "update",
+ * of type choice in cmd.
+ */
+void do_cmd_wiz_change_item_quantity(struct command *cmd)
+{
+	struct object *obj;
+	int n, nmax;
+	int update = 0;
+
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
+		if (!get_item(&obj, "Change quantity of which item? ",
+				"You have nothing to change.", cmd->code,
+				NULL, (USE_INVEN | USE_QUIVER | USE_FLOOR))) {
+			return;
+		}
+		cmd_set_arg_item(cmd, "item", obj);
+	} else if (object_is_equipped(player->body, obj)) {
+		msg("Can not change the quantity of an equipped item.");
+		return;
+	}
+
+	/* Don't allow multiple artifacts. */
+	if (obj->artifact) {
+		msg("Can not modify the quantity of an artifact.");
+		return;
+	}
+
+	/* Find limit on stack size. */
+	nmax = obj->kind->base->max_stack;
+	if (tval_can_have_charges(obj) && obj->pval > 0 && obj->number > 0) {
+		/* Items with charges have a limit imposed by MAX_PVAL. */
+		nmax = MIN((MAX_PVAL * obj->number) / obj->pval, nmax);
+	}
+
+	/* Get the new quantity. */
+	if (cmd_get_arg_number(cmd, "quantity", &n) != CMD_OK) {
+		char prompt[80], s[80];
+
+		strnfmt(prompt, sizeof(prompt), "Quantity (1-%d): ", nmax);
+
+		/* Set the default value. */
+		strnfmt(s, sizeof(s), "%d", obj->number);
+
+		if (!get_string(prompt, s, sizeof(s)) ||
+				!get_int_from_string(s, &n) ||
+				n < 1 || n > obj->kind->base->max_stack) {
+			return;
+		}
+
+		cmd_set_arg_number(cmd, "quantity", n);
+	}
+
+	/* Impose limits. */
+	n = MAX(1, MIN(nmax, n));
+
+	if (n != obj->number) {
+		/* Adjust charges or timeouts for devices. */
+		if (tval_can_have_charges(obj) && obj->number > 0) {
+			obj->pval = (obj->pval * n) / obj->number;
+		}
+		if (tval_can_have_timeout(obj) && obj->number > 0) {
+			obj->timeout = (obj->timeout * n) / obj->number;
+		}
+
+		/* Accept change. */
+		if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK ||
+				update) {
+			if (object_is_carried(player, obj)) {
+				/*
+				 * Remove the weight of the old number of
+				 * objects.
+				 */
+				player->upkeep->total_weight -=
+					obj->number * obj->weight;
+
+				/*
+				 * Add the weight of the new number of objects.
+				 */
+				player->upkeep->total_weight += n * obj->weight;
+			}
+			wiz_play_item_standard_upkeep(player, obj);
+		} else {
+			wiz_play_item_notify_changed();
+		}
+		obj->number = n;
+	}
 }
 
 
@@ -714,6 +914,99 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 	/* Give the player some feedback */
 	msg("You feel *much* better!");
+}
+
+
+/**
+ * Change a curse on an item (CMD_WIZ_CURSE_ITEM).  Can take the item to use
+ * from the argument, "item", of type item.  Can take the index of the curse
+ * to use from the argument, "index", of type number.  Can take the power of
+ * the curse from the argument, "power", of type number.  Using a power of
+ * zero will remove a curse.  Takes whether to update player information
+ * from the argument, "update", of type choice; when update is zero, something
+ * else, presumably do_cmd_wiz_play_item(), handles the update.
+ */
+void do_cmd_wiz_curse_item(struct command *cmd)
+{
+	struct object *obj;
+	int curse_index, power;
+	char s[80];
+	bool changed;
+
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
+		if (!get_item(&obj, "Change curse on which item? ",
+				"You have nothing to change.", cmd->code,
+				NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER |
+				USE_FLOOR))) {
+			return;
+		}
+		cmd_set_arg_item(cmd, "item", obj);
+	}
+
+	/* Get curse. */
+	if (cmd_get_arg_number(cmd, "index", &curse_index) != CMD_OK) {
+		strnfmt(s, sizeof(s), "0");
+		if (!get_string("Enter curse name or index: ",
+				s, sizeof(s))) return;
+		if (!get_int_from_string(s, &curse_index)) {
+			curse_index = lookup_curse(s);
+		}
+		cmd_set_arg_number(cmd, "index", curse_index);
+	}
+	if (curse_index <= 0 || curse_index >= z_info->curse_max) {
+		return;
+	}
+
+	/* Get power for curse. */
+	if (cmd_get_arg_number(cmd, "power", &power) != CMD_OK) {
+		strnfmt(s, sizeof(s), "0");
+		if (!get_string("Enter curse power (0 removes): ", s,
+				sizeof(s)) || !get_int_from_string(s, &power)) {
+			return;
+		}
+		cmd_set_arg_number(cmd, "power", power);
+	}
+	if (power < 0) {
+		return;
+	}
+
+	/* Apply. */
+	if (power) {
+		append_object_curse(obj, curse_index, power);
+		changed = true;
+	} else if (obj->curses) {
+		int i = 0;
+
+		changed = (obj->curses[curse_index].power > 0);
+		obj->curses[curse_index].power = 0;
+
+		/* Duplicates logic from non-public check_object_curses(). */
+		while (1) {
+			if (i >= z_info->curse_max) {
+				changed = true;
+				mem_free(obj->curses);
+				obj->curses = NULL;
+				break;
+			}
+			if (obj->curses[i].power) {
+				break;
+			}
+			++i;
+		}
+	} else {
+		changed = false;
+	}
+
+	if (changed) {
+		int update = 0;
+
+		if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK ||
+				update) {
+			wiz_play_item_standard_upkeep(player, obj);
+		} else {
+			wiz_play_item_notify_changed();
+		}
+	}
 }
 
 
@@ -1201,6 +1494,282 @@ void do_cmd_wiz_peek_noise_scent(struct command *cmd)
 
 
 /**
+ * Play with an item (CMD_WIZ_PLAY_ITEM).  Can take the item to play with
+ * from the argument, "item", of type item in cmd.  Uses the arguments,
+ * "original_item" (of type item), "all_prop" (of type choice), and "changed"
+ * (of type choice), internally for a session of playing with the same object.
+ *
+ * Things that can be done are:
+ * - output statistics via CMD_WIZ_STAT_ITEM
+ * - reroll item via CMD_WIZ_REROLL_ITEM
+ * - change properties via CMD_WIZ_TWEAK_ITEM
+ * - change a curse via CMD_WIZ_CURSE_ITEM
+ * - change the number of items via CMD_WIZ_CHANGE_ITEM_QUANTITY
+ */
+void do_cmd_wiz_play_item(struct command *cmd)
+{
+	struct object *obj = NULL;
+	struct object *orig_obj = NULL;
+	int display_all_prop = 1;
+	int object_changed = 0;
+	bool done = false;
+	bool rejected = true;
+	char *done_msg = NULL;
+	char ch;
+
+	/*
+	 * When called to initiate a play session, "item" may be set, but
+	 * "original_item" should not be set or should be set to NULL.
+	 * Subsequent calls in the same session will have both set to
+	 * non-NULL vales along with "all_prop" and "changed".
+	 */
+	if (cmd_get_arg_item(cmd, "original_item", &orig_obj) == CMD_OK &&
+			orig_obj) {
+		if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK || !obj) {
+			assert(0);
+			return;
+		}
+		if (cmd_get_arg_choice(cmd, "all_prop", &display_all_prop) !=
+				CMD_OK) {
+			assert(0);
+			return;
+		}
+		if (cmd_get_arg_choice(cmd, "changed", &object_changed) !=
+				CMD_OK) {
+			assert(0);
+			return;
+		}
+	} else {
+		if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK || !obj) {
+			if (!get_item(&obj, "Play with which object? ",
+					"You have nothing to play with.",
+					cmd->code, NULL, (USE_EQUIP |
+					USE_INVEN | USE_QUIVER | USE_FLOOR))) {
+				return;
+			}
+		}
+
+		/* Remember the object. */
+		cmd_set_arg_item(cmd, "item", obj);
+
+		/* Make a copy so changes can be rejected. */
+		orig_obj = object_new();
+		object_copy(orig_obj, obj);
+		cmd_set_arg_item(cmd, "original_item", orig_obj);
+
+		/*
+		 * Store whether all properties are shown or only the known
+		 * ones.
+		 */
+		if (cmd_get_arg_choice(cmd, "all_prop", &display_all_prop) !=
+				CMD_OK) {
+			display_all_prop = 1;
+			cmd_set_arg_choice(cmd, "all_prop", display_all_prop);
+		}
+
+		/*
+		 * Store whether the working item may have changed from the
+		 * original.
+		 */
+		if (cmd_get_arg_choice(cmd, "changed", &object_changed) !=
+				CMD_OK) {
+			object_changed = 0;
+			cmd_set_arg_choice(cmd, "changed", object_changed);
+		}
+
+		/* Save screen. */
+		screen_save();
+	}
+
+	/* Display the (possibly modified) item. */
+	wiz_display_item(obj, display_all_prop != 0);
+
+	/* Get choice. */
+	if (get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch)) {
+		bool queue_failed = false;
+
+		switch (ch) {
+			case 'A':
+			case 'a':
+				/* Accept whatever changes were made. */
+				done = true;
+				rejected = false;
+				if (object_changed) {
+					/* Mark for updates. */
+					if (object_is_carried(player, obj) &&
+							(obj->number !=
+							orig_obj->number ||
+							obj->weight !=
+							orig_obj->weight)) {
+						/*
+						 * Remove the weight of the old
+						 * version.
+						 */
+						player->upkeep->total_weight -=
+							orig_obj->number *
+							orig_obj->weight;
+
+						/*
+						 * Add the weight of the new
+						 * version.
+						 */
+						player->upkeep->total_weight +=
+							obj->number *
+							obj->weight;
+					}
+					wiz_play_item_standard_upkeep(player,
+						obj);
+				}
+				break;
+
+			case 'C':
+			case 'c':
+				/* Change a curse on the item. */
+				if (cmdq_push(CMD_WIZ_CURSE_ITEM) == 0) {
+					cmd_set_arg_item(cmdq_peek(), "item",
+						obj);
+					cmd_set_arg_choice(cmdq_peek(),
+						"update", 0);
+				} else {
+					queue_failed = true;
+				}
+				break;
+
+			case 'S':
+			case 's':
+				/* Get statistics about the item. */
+				if (cmdq_push(CMD_WIZ_STAT_ITEM) == 0) {
+					cmd_set_arg_item(cmdq_peek(), "item",
+						obj);
+				} else {
+					queue_failed = true;
+				}
+				break;
+
+			case 'R':
+			case 'r':
+				/* Reroll the item. */
+				if (cmdq_push(CMD_WIZ_REROLL_ITEM) == 0) {
+					cmd_set_arg_item(cmdq_peek(), "item",
+						obj);
+					cmd_set_arg_choice(cmdq_peek(),
+						"update", 0);
+				} else {
+					queue_failed = true;
+				}
+				break;
+
+			case 'T':
+			case 't':
+				/* Tweak the object's properties. */
+				if (cmdq_push(CMD_WIZ_TWEAK_ITEM) == 0) {
+					cmd_set_arg_item(cmdq_peek(), "item",
+						obj);
+					cmd_set_arg_choice(cmdq_peek(),
+						"update", 0);
+				} else {
+					queue_failed = true;
+				}
+				break;
+
+			case 'K':
+			case 'k':
+				/* Toggle whether showing all properties. */
+				display_all_prop = !display_all_prop;
+				cmd_set_arg_choice(cmd, "all_prop",
+					display_all_prop);
+				break;
+
+			case 'Q':
+			case 'q':
+				/* Change the number of items in the stack. */
+				if (cmdq_push(CMD_WIZ_CHANGE_ITEM_QUANTITY) == 0) {
+					cmd_set_arg_item(cmdq_peek(), "item",
+						obj);
+					cmd_set_arg_choice(cmdq_peek(),
+						"update", 0);
+				} else {
+					queue_failed = true;
+				}
+				break;
+
+			default:
+				/*
+				 * Don't have to do anything, next pass through
+				 * will ask again what's wanted.
+				 */
+				break;
+		}
+
+		if (queue_failed &&
+				get_check("Couldn't proceed.  Stop playing with item and lose all changes? ")) {
+			done = true;
+			if (object_changed) {
+				done_msg = "Bailed out.  Changes to item lost.";
+			}
+		}
+	} else {
+		done = true;
+		if (object_changed) {
+			done_msg = "Changes ignored.";
+		}
+	}
+
+	if (!done) {
+		/* Push the command back on the queue to be reexecuted. */
+		if (cmdq_push_copy(cmd) != 0) {
+			/* Failed.  Bail out without saving changes. */
+			done = true;
+			done_msg = "Couldn't queue command.  Changes lost.";
+		}
+	}
+
+	if (done) {
+		if (rejected && object_changed) {
+			/*
+			 * Restore to the original values.  The pile links
+			 * require special handling because object_copy()
+			 * resets them.
+			 */
+			struct object *prev = obj->prev;
+			struct object *next = obj->next;
+
+			/* Free slays, brands, and curses by hand. */
+			mem_free(obj->slays);
+			obj->slays = NULL;
+			mem_free(obj->brands);
+			obj->brands = NULL;
+			mem_free(obj->curses);
+			obj->curses = NULL;
+
+			object_copy(obj, orig_obj);
+			obj->prev = prev;
+			obj->next = next;
+		}
+
+		/* Release the preserved copy. */
+		object_delete(&orig_obj);
+
+		/*
+		 * Reset the original_item and changed arguments so repeating
+		 * the command will start a new play session without a
+		 * dangling reference to the deleted preserved copy.
+		 */
+		cmd_set_arg_item(cmd, "original_item", NULL);
+		cmd_set_arg_choice(cmd, "changed", 0);
+
+		/* Restore the screen. */
+		screen_load();
+
+		/* Provide some feedback. */
+		if (done_msg) {
+			msg(done_msg);
+		}
+	}
+}
+
+
+/**
  * Push objects from a selected grid (CMD_WIZ_PUSH_OBJECT).  Can take the
  * location from the argument, "point", of type point in cmd.
  */
@@ -1583,6 +2152,323 @@ void do_cmd_wiz_rerate(struct command *cmd)
 
 
 /**
+ * Reroll an item (CMD_WIZ_REROLL_ITEM).  Can take the item to use from
+ * the argument, "item", of type item in cmd.  Can take the type of roll
+ * to use from the argument, "choice", of type choice in cmd:  0 means set
+ * good and great to false for the roll, 1 means set good to true and great
+ * to false for the roll, and 2 means set good and great to true for the roll.
+ */
+void do_cmd_wiz_reroll_item(struct command *cmd)
+{
+	bool good = false;
+	bool great = false;
+	int roll_choice = 0;
+	int update = 0;
+	struct object *obj;
+	struct object *new;
+
+	/* Get the item to reroll. */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
+		if (!get_item(&obj, "Reroll which item? ",
+				"You have nothing to reroll.", cmd->code,
+				NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER |
+				USE_FLOOR))) {
+			return;
+		}
+		cmd_set_arg_item(cmd, "item", obj);
+	}
+
+	/* Get the type of roll to use. */
+	if (cmd_get_arg_choice(cmd, "choice", &roll_choice) != CMD_OK) {
+		char ch;
+
+		if (!get_com("Roll as [n]ormal, [g]ood, or [e]xcellent? ", &ch)) {
+			return;
+		}
+		if (ch == 'n' || ch == 'N') {
+			roll_choice = 0;
+		} else if (ch == 'g' || ch == 'G') {
+			roll_choice = 1;
+		} else if (ch == 'e' || ch == 'E') {
+			roll_choice = 2;
+		} else {
+			return;
+		}
+		cmd_set_arg_choice(cmd, "choice", roll_choice);
+	}
+	if (roll_choice == 0) {
+		good = false;
+		great = false;
+	} else if (roll_choice == 1) {
+		good = true;
+		great = false;
+	} else if (roll_choice == 2) {
+		good = true;
+		great = true;
+	} else {
+		return;
+	}
+
+	/* Hack -- leave artifacts alone */
+	if (obj->artifact) {
+		return;
+	}
+
+	/* Get a new object with a clean slate. */
+	new = object_new();
+
+	/* Reroll based on old kind and player's depth.  Then apply magic. */
+	object_prep(new, obj->kind, player->depth, RANDOMISE);
+	apply_magic(new, player->depth, false, good, great, false);
+
+	/* Copy over changes to the original. */
+	{
+		/* Record old pile information. */
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+		struct object *known_obj = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
+		/* Free slays, brands, and curses on the old object by hand. */
+		mem_free(obj->slays);
+		obj->slays = NULL;
+		mem_free(obj->brands);
+		obj->brands = NULL;
+		mem_free(obj->curses);
+		obj->curses = NULL;
+
+		/* Copy over; pile information needs to be restored. */
+		object_copy(obj, new);
+		obj->prev = prev;
+		obj->next = next;
+		obj->known = known_obj;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
+	}
+
+	/* Mark as cheat */
+	obj->origin = ORIGIN_CHEAT;
+
+	/* Flag what needs to be updated. */
+	if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK || update) {
+		wiz_play_item_standard_upkeep(player, obj);
+	} else {
+		wiz_play_item_notify_changed();
+	}
+
+	/* Free the copy. */
+	object_delete(&new);
+}
+
+
+/**
+ * Get some statistics about the rarity of an item (CMD_WIZ_STAT_ITEM).  Can
+ * take the item to use from the argument, "item", of type item in cmd.  Can
+ * take how items used for comparison are rolled from the argument, "choice",
+ * of type choice in cmd:  a value of zero means calling make_object() with
+ * good and great set to false, a value of one means calling make_object()
+ * with good set to true and great set to false, and a value of two means
+ * calling make_object() with good and great set to true.  Can take the
+ * depth used when generating items from the argument, "depth", of type
+ * number in cmd.
+ *
+ * Generate a lot of fake items and see if they are of the same type (tval and
+ * sval).  Then compare modifiers, AC, to-hit, and to-dam to get whether the
+ * fake item matches (all modifiers are the same as are the AC, to-hit, and
+ * to-dam), is better (all modifiers, AC, to-hit, and to-dam are not less
+ * than on the target item and at least one of those is more than the matching
+ * attribute on the target item), is worse (all modifiers, AC, to-hit, and
+ * to-dam are not more than on the target item and at least one of those is
+ * less than the matching attribute on the target item), or is different.
+ * Curses, brands, slays, and other properties not treated as modifiers have
+ * no effect on that classification.  A comment left about this procedure in
+ * wiz-debug.c was "HINT: This is *very* useful for balancing the game!".
+ */
+/* This is the maximum number of rolls to use. */
+#define TEST_ROLL 100000
+void do_cmd_wiz_stat_item(struct command *cmd)
+{
+	const char *repfmt =
+		"Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
+	int level = player->depth;
+	int treasure_choice = 0;
+	bool good = false, great = false;
+	long matches = 0, better = 0, worse = 0, other = 0;
+	long n = TEST_ROLL;
+	struct object *obj;
+	long i;
+	const char *quality;
+
+	/* Get the target item for comparison. */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
+		if (!get_item(&obj, "Compare with which item? ",
+				"You have nothing to compare.", cmd->code,
+				NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER |
+				USE_FLOOR))) {
+			return;
+		}
+		cmd_set_arg_item(cmd, "item", obj);
+	}
+
+	/* Display item. */
+	wiz_display_item(obj, true);
+
+	/* Get what kind of treasure to generate. */
+	if (cmd_get_arg_choice(cmd, "choice", &treasure_choice) != CMD_OK) {
+		char ch;
+
+		if (!get_com("Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ", &ch)) {
+			return;
+		}
+		if (ch == 'n' || ch == 'N') {
+			treasure_choice = 0;
+		} else if (ch == 'g' || ch == 'G') {
+			treasure_choice = 1;
+		} else if (ch == 'e' || ch == 'E') {
+			treasure_choice = 2;
+		} else {
+			return;
+		}
+		cmd_set_arg_choice(cmd, "choice", treasure_choice);
+	}
+	if (treasure_choice == 0) {
+		good = false;
+		great = false;
+		quality = "normal";
+	} else if (treasure_choice == 1) {
+		good = true;
+		great = false;
+		quality = "good";
+	} else if (treasure_choice == 2) {
+		good = true;
+		great = true;
+		quality = "excellent";
+	} else {
+		return;
+	}
+
+	/* Get the depth to use when generating treasure. */
+	if (cmd_get_arg_number(cmd, "depth", &level) != CMD_OK) {
+		char prompt[80], s[80];
+
+		strnfmt(prompt, sizeof(prompt), "Depth for treasure (0-%d): ",
+			z_info->max_depth - 1);
+
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", player->depth);
+
+		if (!get_string(prompt, s, sizeof(s)) ||
+				!get_int_from_string(s, &level) || level < 0 ||
+				level >= z_info->max_depth) {
+			return;
+		}
+		cmd_set_arg_number(cmd, "depth", level);
+	}
+	if (level < 0 || level >= z_info->max_depth) {
+		return;
+	}
+
+	/* Give feedback about what's going to be done. */
+	msg("Creating a lot of %s items.  Base level = %d.", quality, level);
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	for (i = 0; i < n; i++) {
+		bool ismatch = true, isbetter = true, isworse = true;
+		struct object *test_obj;
+		int j;
+
+		/* Output every few rolls. */
+		if (i < 100 || i % 100 == 0) {
+			ui_event e;
+
+			/* Do not wait. */
+			inkey_scan = SCAN_INSTANT;
+
+			/* Allow interrupt */
+			e = inkey_ex();
+			if (e.type != EVT_NONE) {
+				event_signal(EVENT_INPUT_FLUSH);
+				break;
+			}
+
+			/* Dump the stats. */
+			prt(format(repfmt, i, matches, better, worse, other),
+				0, 0);
+			Term_fresh();
+		}
+
+		/* Create an object. */
+		test_obj = make_object(cave, level, good, great, false, NULL, 0);
+
+		/*
+		 * Allow multiple artifacts, because breaking the game is OK
+		 * here.
+		 */
+		if (obj->artifact) {
+			obj->artifact->created = false;
+		}
+
+		/* Check for failures to generate an object. */
+		if (!test_obj) continue;
+
+		/* Test for same tval and sval. */
+		if (obj->tval != test_obj->tval ||
+				obj->sval != test_obj->sval) {
+			object_delete(&test_obj);
+			continue;
+		}
+
+		/* Check the modifiers. */
+		for (j = 0; j < OBJ_MOD_MAX; j++) {
+			if (test_obj->modifiers[j] != obj->modifiers[j]) {
+				ismatch = false;
+				if (test_obj->modifiers[j] < obj->modifiers[j]) {
+					isbetter = false;
+				} else {
+					isworse = false;
+				}
+			}
+		}
+
+		/* Check for match over all the tested properties. */
+		if (ismatch && test_obj->to_a == obj->to_a &&
+				test_obj->to_h == obj->to_h &&
+				test_obj->to_d == obj->to_d) {
+			++matches;
+		/* Check for same or better over all the tested properties. */
+		} else if (isbetter && test_obj->to_a >= obj->to_a &&
+				test_obj->to_h >= obj->to_h &&
+				test_obj->to_d >= obj->to_d) {
+			++better;
+		/* Check for same or worse over all the tested properties. */
+		} else if (isworse && test_obj->to_a <= obj->to_a &&
+				test_obj->to_h <= obj->to_h &&
+				test_obj->to_d <= obj->to_d) {
+			++worse;
+		/* Everything else is merely different. */
+		} else {
+			++other;
+		}
+
+		/* Nuke the test object. */
+		object_delete(&test_obj);
+	}
+
+	/* Final dump */
+	msg(repfmt, i, matches, better, worse, other);
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Hack -- normally only make a single artifact */
+	if (obj->artifact) {
+		obj->artifact->created = true;
+	}
+}
+
+
+/**
  * Summon a specific monster (CMD_WIZ_SUMMON_NAMED).  Can take the index
  * of the monster to summon from the argument, "index", of type number in cmd.
  */
@@ -1714,6 +2600,168 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 			grid.y, grid.x, NULL);
 	} else {
 		msg("The square you are aiming for is impassable.");
+	}
+}
+
+
+/**
+ * Tweak an item:  make it ego or artifact, give values for modifiers, to_a,
+ * to_h, or to_d.  Can take the item to modify from the argument, "item", of
+ * type item in cmd.  Takes whether to update player information from the
+ * argument, "update", of type choice in cmd.
+ */
+void do_cmd_wiz_tweak_item(struct command *cmd)
+{
+	static const char *obj_mods[] = {
+		#define STAT(a) #a,
+		#include "list-stats.h"
+		#undef STAT
+		#define OBJ_MOD(a) #a,
+		#include "list-object-modifiers.h"
+		#undef OBJ_MOD
+		NULL
+	};
+	struct object *obj;
+	char tmp_val[80];
+	int i, val;
+	int update = 0;
+
+	/* Get the item to tweak. */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
+		if (!get_item(&obj, "Tweak which item? ",
+				"You have nothing to tweak.", cmd->code,
+				NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER |
+				USE_FLOOR))) {
+			return;
+		}
+		cmd_set_arg_item(cmd, "item", obj);
+	}
+
+	/* Hack -- leave artifacts alone */
+	if (obj->artifact) return;
+
+	/*
+	 * Check for whether updating the player information or let
+	 * do_cmd_wiz_play_item() handle it.
+	 */
+	if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK) {
+		update = 1;
+	}
+
+	/* Get ego name. */
+	if (obj->ego) {
+		strnfmt(tmp_val, sizeof(tmp_val), "%s", obj->ego->name);
+	} else {
+		strnfmt(tmp_val, sizeof(tmp_val), "-1");
+	}
+	if (!get_string("Enter ego item: ", tmp_val, sizeof(tmp_val))) return;
+
+	/* Accept index or name */
+	if (get_int_from_string(tmp_val, &val)) {
+		if (val >= 0 && val < z_info->e_max) {
+			obj->ego = &e_info[val];
+		} else {
+			obj->ego = NULL;
+		}
+	} else {
+		obj->ego = lookup_ego_item(tmp_val, obj->tval, obj->sval);
+	}
+	if (obj->ego) {
+		struct ego_item *e = obj->ego;
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
+		object_prep(obj, obj->kind, player->depth, RANDOMISE);
+		obj->ego = e;
+		obj->prev = prev;
+		obj->next = next;
+		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
+		ego_apply_magic(obj, player->depth);
+	}
+	wiz_display_item(obj, true);
+
+	/* Get artifact name */
+	if (obj->artifact) {
+		strnfmt(tmp_val, sizeof(tmp_val), "%s", obj->artifact->name);
+	} else {
+		strnfmt(tmp_val, sizeof(tmp_val), "0");
+	}
+	if (!get_string("Enter new artifact: ", tmp_val, sizeof(tmp_val))) {
+		if (update) {
+			wiz_play_item_standard_upkeep(player, obj);
+		} else {
+			wiz_play_item_notify_changed();
+		}
+		return;
+	}
+
+	/* Accept index or name */
+	if (get_int_from_string(tmp_val, &val)) {
+		if (val > 0 && val < z_info->a_max) {
+			obj->artifact = &a_info[val];
+		} else {
+			obj->artifact = NULL;
+		}
+	} else {
+		obj->artifact = lookup_artifact_name(tmp_val);
+	}
+	if (obj->artifact) {
+		struct artifact *a = obj->artifact;
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
+		obj->ego = NULL;
+		object_prep(obj, obj->kind, obj->artifact->alloc_min, RANDOMISE);
+		obj->artifact = a;
+		obj->prev = prev;
+		obj->next = next;
+		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
+		copy_artifact_data(obj, obj->artifact);
+	}
+	wiz_display_item(obj, true);
+
+#define WIZ_TWEAK(attribute, name) do {\
+		char prompt[80];\
+		strnfmt(prompt, sizeof(prompt), "Enter new %s setting: ", name);\
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->attribute);\
+		if (!get_string(prompt, tmp_val, sizeof(tmp_val))) {\
+			if (update) {\
+				wiz_play_item_standard_upkeep(player, obj);\
+			} else {\
+				wiz_play_item_notify_changed();\
+			}\
+			return;\
+		}\
+		if (get_int_from_string(tmp_val, &val)) {\
+			obj->attribute = val;\
+			wiz_display_item(obj, true);\
+		}\
+} while (0)
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		WIZ_TWEAK(modifiers[i], obj_mods[i]);
+	}
+	WIZ_TWEAK(to_a, "AC bonus");
+	WIZ_TWEAK(to_h, "to-hit");
+	WIZ_TWEAK(to_d, "to-dam");
+
+	if (update) {
+		wiz_play_item_standard_upkeep(player, obj);
+	} else {
+		wiz_play_item_notify_changed();
 	}
 }
 
