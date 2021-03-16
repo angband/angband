@@ -531,6 +531,8 @@ static void quiver_absorb_num(const struct object *obj, int *n_add_pack,
 					 * available.
 					 */
 					displaces = true;
+					assert(quiver_obj->number * mult <=
+						z_info->quiver_slot_size);
 					space_free += z_info->quiver_slot_size -
 						quiver_obj->number * mult;
 				}
