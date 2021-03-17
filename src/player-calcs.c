@@ -2310,6 +2310,11 @@ static void update_bonuses(struct player *p)
 		p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 
+	/* Notice changes to the weight limit. */
+	if (weight_limit(&p->state) != weight_limit(&state)) {
+		p->upkeep->redraw |= (PR_INVEN);
+	}
+
 	/* Hack -- handle partial mode */
 	if (!p->upkeep->only_partial) {
 		/* Take note when "heavy bow" changes */
