@@ -325,7 +325,7 @@ bool file_exists(const char *fname)
 	DWORD attrib;
 
 	/* API says we mustn't pass anything larger than MAX_PATH */
-	my_strcpy(path, s, sizeof(path));
+	my_strcpy(path, fname, sizeof(path));
 
 	attrib = GetFileAttributes(path);
 	if (attrib == INVALID_FILE_NAME) return false;
