@@ -1006,10 +1006,12 @@ void do_cmd_cast(struct command *cmd)
 	const struct class_spell *spell;
 
 	if (player_is_shapechanged(player)) {
-		if (get_check("Change back to your original form? " )) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
+		} else {
+			return;
 		}
-		return;
 	}
 
 	/* Check the player can cast spells at all */
