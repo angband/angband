@@ -38,6 +38,7 @@
 
 #if !defined(WINDOWS)
 #include "langinfo.h"
+#endif
 
 /**
  * Some machines have a "main()" function in their "main-xxx.c" file,
