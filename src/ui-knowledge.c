@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "dos-compat.h"
 #include "effects.h"
 #include "effects-info.h"
 #include "game-input.h"

@@ -15,6 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "dos-compat.h"
 #include "z-form.h"
 #include "z-type.h"
 #include "z-util.h"

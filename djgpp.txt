@@ -1,0 +1,27 @@
+Rough notes on how i built angband for DOS.
+
+I installed the following cross-compiler:
+https://github.com/andrewwutw/build-djgpp
+
+git clone https://github.com/andrewwutw/build-djgpp.git
+cd build-djgpp
+DJGPP_PREFIX=~/local/cross-djgpp ./build-djgpp.sh 7.2.0
+
+I ran something like the following commands:
+
+cd ~/local/src/angband
+git diff master >angband.dif
+cd src
+sed -i Makefile.ibm -e 's/^CC = gcc/CC = i586-pc-msdosdjgpp-gcc/'
+PATH=$PATH:~/local/cross-djgpp/bin
+make -f Makefile.ibm
+i586-pc-msdosdjgpp-strip angband.exe
+make -f Makefile.ibm dist
+cd
+unzip ~/local/src/angband/angband.zip
+cd angband
+mkdir src
+cd src
+mv ~/local/src/angband/angband.dif .
+cd
+zip -9r angband.zip angband

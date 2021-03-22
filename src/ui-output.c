@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "cave.h"
+#include "dos-compat.h"
 #include "player-calcs.h"
 #include "ui-input.h"
 #include "ui-output.h"
