@@ -40,6 +40,7 @@
 #include "store.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-input.h"
 
 /**
  * Increment to the next or decrement to the preceeding level
@@ -838,6 +839,38 @@ struct player_shape *player_shape_by_idx(int index)
 	}
 	msg("Could not find shape %d!", index);
 	return NULL;
+}
+
+/**
+ * Give shapechanged players a choice of returning to normal shape and
+ * performing a command, just returning to normal shape without acting, or
+ * canceling.
+ *
+ * \param p the player
+ * \param cmd the command being performed
+ * \return true if the player wants to proceed with their command
+ */
+bool player_get_resume_normal_shape(struct player *p, struct command *cmd)
+{
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		char prompt[100];
+		strnfmt(prompt, sizeof(prompt),
+		        "Change back and %s (y/n) or (r)eturn to normal? ",
+		        cmd_verb(cmd->code));
+		char p = get_char(prompt, "yrn", 3, 'n');
+
+		// Change back to normal shape
+		if (p == 'y' || p == 'r') {
+			player_resume_normal_shape(player);
+		}
+
+		// Players may only act if they return to normal shape
+		return p == 'y';
+	}
+
+	// Normal shape players can proceed as usual
+	return true;
 }
 
 /**

@@ -20,6 +20,7 @@
 #ifndef PLAYER_UTIL_H
 #define PLAYER_UTIL_H
 
+#include "cmd-core.h"
 #include "player.h"
 
 /* Player regeneration constants */
@@ -81,6 +82,7 @@ void player_take_terrain_damage(struct player *p, struct loc grid);
 struct player_shape *lookup_player_shape(const char *name);
 int shape_name_to_idx(const char *name);
 struct player_shape *player_shape_by_idx(int index);
+bool player_get_resume_normal_shape(struct player *p, struct command *cmd);
 void player_resume_normal_shape(struct player *p);
 bool player_is_shapechanged(struct player *p);
 bool player_is_trapsafe(struct player *p);

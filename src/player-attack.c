@@ -1195,13 +1195,8 @@ void do_cmd_fire(struct command *cmd) {
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	struct object *obj;
 
-	if (player_is_shapechanged(player)) {
-		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back? " )) {
-			player_resume_normal_shape(player);
-		} else {
-			return;
-		}
+	if (!player_get_resume_normal_shape(player, cmd)) {
+		return;
 	}
 
 	/* Get arguments */
@@ -1254,13 +1249,8 @@ void do_cmd_throw(struct command *cmd) {
 	int range;
 	struct object *obj;
 
-	if (player_is_shapechanged(player)) {
-		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back? " )) {
-			player_resume_normal_shape(player);
-		} else {
-			return;
-		}
+	if (!player_get_resume_normal_shape(player, cmd)) {
+		return;
 	}
 
 	/* Get arguments */
