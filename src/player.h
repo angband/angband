@@ -407,7 +407,7 @@ struct player_state {
 
 	int num_blows;		/**< Number of blows x100 */
 	int num_shots;		/**< Number of shots x10 */
-	int num_moves;		/**< Number of movement actions */
+	int num_moves;		/**< Number of extra movement actions */
 
 	int ammo_mult;		/**< Ammo multiplier */
 	int ammo_tval;		/**< Ammo variety */

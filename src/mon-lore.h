@@ -76,8 +76,7 @@ void get_attack_colors(int *melee_colors);
 void lore_append_kills(textblock *tb, const struct monster_race *race,
 					   const struct monster_lore *lore,
 					   const bitflag known_flags[RF_SIZE]);
-void lore_append_flavor(textblock *tb, const struct monster_race *race,
-						bool append_utf8);
+void lore_append_flavor(textblock *tb, const struct monster_race *race);
 void lore_append_movement(textblock *tb, const struct monster_race *race,
 						  const struct monster_lore *lore,
 						  bitflag known_flags[RF_SIZE]);

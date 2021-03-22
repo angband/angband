@@ -35,6 +35,8 @@
  * locale junk
  */
 #include "locale.h"
+
+#if !defined(WINDOWS)
 #include "langinfo.h"
 
 /**
@@ -167,6 +169,7 @@ static const struct {
 	{ "icons", &ANGBAND_DIR_ICONS, true },
 	{ "user", &ANGBAND_DIR_USER, true },
 	{ "save", &ANGBAND_DIR_SAVE, false },
+	{ "archive", &ANGBAND_DIR_ARCHIVE, true },
 };
 
 /**
@@ -473,13 +476,13 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
-#ifndef DJGPP
+#if !defined(WINDOWS) && !defined(DJGPP)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
 		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
 			quit("Angband requires UTF-8 support");
 	}
-#endif /* DJGPP */
+#endif
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {

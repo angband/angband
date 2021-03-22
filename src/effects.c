@@ -297,6 +297,10 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			take_hit(player, damroll(5, 5), "Failed uncursing");
 			if (object_is_carried(player, obj)) {
 				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				if (destroyed->artifact) {
+					/* Artifacts are marked as lost */
+					history_lose_artifact(player, destroyed->artifact);
+				}
 				object_delete(&destroyed->known);
 				object_delete(&destroyed);
 			} else {
@@ -556,6 +560,8 @@ void brand_object(struct object *obj, const char *name)
 			}
 			if (ok) break;
 		}
+
+		assert(ok);
 
 		/* Make it an ego item */
 		obj->ego = &e_info[i];
@@ -880,14 +886,20 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 	amount *= z_info->food_value;
 	if (context->subtype == 0) {
+		/* Increase food level by amount */
 		player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false, false);
 	} else if (context->subtype == 1) {
+		/* Decrease food level by amount */
+		player_dec_timed(player, TMD_FOOD, MAX(amount, 0), false);
+	} else if (context->subtype == 2) {
+		/* Set food level to amount, vomiting if necessary */
 		bool message = player->timed[TMD_FOOD] > amount;
 		if (message) {
 			msg("You vomit!");
 		}
 		player_set_timed(player, TMD_FOOD, MAX(amount, 0), false);
-	} else if (context->subtype == 2) {
+	} else if (context->subtype == 3) {
+		/* Increase food level to amount if needed */
 		if (player->timed[TMD_FOOD] < amount) {
 			player_set_timed(player, TMD_FOOD, MAX(amount + 1, 0), false);
 		}
@@ -1453,6 +1465,12 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 		return true;
 	}
 
+	/* No recall from single combat */
+	if (player->upkeep->arena_level) {
+		msg("Nothing happens.");
+		return true;
+	}
+
 	/* Warn the player if they're descending to an unrecallable level */
 	target_depth = dungeon_get_next_level(player->max_depth, 1);
 	if (OPT(player, birth_force_descend) && !(player->depth) &&
@@ -1714,7 +1732,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				}
 			}
 			/* Mark as trap-detected */
-			sqinfo_on(square(cave, loc(x, y)).info, SQUARE_DTRAP);
+			sqinfo_on(square(cave, loc(x, y))->info, SQUARE_DTRAP);
 		}
 	}
 
@@ -2809,7 +2827,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 					MDESC_IND_HID | MDESC_CAPITAL);
 
 			/* Describe the monster */
-			msg("%s has %d hit points.", m_name, mon->hp);
+			msg("%s has %d hit point%s.", m_name, mon->hp, (mon->hp == 1) ? "" : "s");
 
 			/* Learn all of the non-spell, non-treasure flags */
 			lore_do_probe(mon);
@@ -2988,7 +3006,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	monster_swap(start, spots->grid);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(square(cave, spots->grid).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, spots->grid)->info, SQUARE_PROJECT);
 
 	/* Clear monster target if it's no longer visible */
 	if (!target_able(target_get_monster())) {
@@ -3118,7 +3136,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	monster_swap(start, land);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(square(cave, land).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, land)->info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -3301,8 +3319,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No effect in town */
-	if (!player->depth) {
+	/* No effect in town or arena */
+	if ((!player->depth) || (player->upkeep->arena_level)) {
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -3320,14 +3338,14 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(square(cave, grid).info, SQUARE_ROOM);
-			sqinfo_off(square(cave, grid).info, SQUARE_VAULT);
+			sqinfo_off(square(cave, grid)->info, SQUARE_ROOM);
+			sqinfo_off(square(cave, grid)->info, SQUARE_VAULT);
 
 			/* Forget completely */
 			if (!square_isbright(cave, grid)) {
-				sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
+				sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
 			}
-			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
+			sqinfo_off(square(cave, grid)->info, SQUARE_SEEN);
 			square_forget(cave, grid);
 			square_light_spot(cave, grid);
 
@@ -3346,11 +3364,13 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, grid);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(player, birth_lose_arts) &&
-							!(obj->known && obj->known->artifact))
-							obj->artifact->created = false;
-						else
+						if (OPT(player, birth_lose_arts) ||
+							obj_is_known_artifact(obj)) {
 							history_lose_artifact(player, obj->artifact);
+							obj->artifact->created = true;
+						} else {
+							obj->artifact->created = false;
+						}
 					}
 					obj = obj->next;
 				}
@@ -3421,10 +3441,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	if (player->depth) {
+	if ((player->depth) && ((!player->upkeep->arena_level)
+							|| (context->origin.what == SRC_MONSTER))) {
 		msg("The ground shakes! The ceiling caves in!");
 	} else {
-		/* No effect in town */
+		/* No effect in town or arena */
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -3459,14 +3480,14 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (distance(centre, grid) > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(square(cave, grid).info, SQUARE_ROOM);
-			sqinfo_off(square(cave, grid).info, SQUARE_VAULT);
+			sqinfo_off(square(cave, grid)->info, SQUARE_ROOM);
+			sqinfo_off(square(cave, grid)->info, SQUARE_VAULT);
 
 			/* Forget completely */
 			if (!square_isbright(cave, grid)) {
-				sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
+				sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
 			}
-			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
+			sqinfo_off(square(cave, grid)->info, SQUARE_SEEN);
 			square_forget(cave, grid);
 			square_light_spot(cave, grid);
 
@@ -3573,7 +3594,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!map[16 + grid.y - centre.y][16 + grid.x - centre.x]) continue;
 
 			/* Process monsters */
-			if (square(cave, grid).mon > 0) {
+			if (square(cave, grid)->mon > 0) {
 				struct monster *mon = square_monster(cave, grid);
 
 				/* Most monsters cannot co-exist with rock */
@@ -3945,12 +3966,27 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
+		int conf_level, accuracy = 100;
+
 		flg |= PROJECT_PLAY;
 
-		/* Target player or monster? */
-		if (t_mon) {
+		conf_level = monster_effect_level(mon, MON_TMD_CONF);
+		while (conf_level) {
+			accuracy *= (100 - CONF_RANDOM_CHANCE);
+			accuracy /= 100;
+			conf_level--;
+		}
+
+		if (randint1(100) > accuracy) {
+			/* Confused direction. */
+			int dir = randint1(9);
+
+			target = loc_sum(mon->grid, ddgrid[dir]);
+		} else if (t_mon) {
+			/* Target monster. */
 			target = t_mon->grid;
 		} else {
+			/* Target player. */
 			struct loc decoy = cave_find_decoy(cave);
 			if (!loc_is_zero(decoy)) {
 				target = decoy;
@@ -4019,7 +4055,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, false);
+	int dam = effect_calculate_value(context, true);
 	int type = context->subtype;
 	int rad = context->radius;
 
@@ -4999,9 +5035,9 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	drain = MIN(mon->hp, amount);
 	if (drain == 0) return true;
 	if (OPT(player, show_damage)) {
-		msg("You bite the %s. (%d)", m_name, drain);
+		msg("You bite %s. (%d)", m_name, drain);
 	} else {
-		msg("You bite the %s.", m_name);
+		msg("You bite %s.", m_name);
 	}
 	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
 
@@ -5038,8 +5074,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 	/* Ask for a target */
 	if (context->dir == DIR_TARGET) {
 		target_get(&target);
-	}
-	else {
+	} else {
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
@@ -5051,6 +5086,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 	while (distance(player->grid, target) > 1 && moves > 0) {
 		int choice[] = { 0, 1, -1 };
+		bool attack = false;
 		grid_diff = loc_diff(target, player->grid);
 
 		/* Choice of direction simplified by prioritizing diagonals */
@@ -5070,6 +5106,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 			next_grid = loc_sum(player->grid, clockwise_grid[d_test]);
 			if (square_ispassable(cave, next_grid)) {
 				d = d_test;
+				if (square_monster(cave, next_grid)) attack = true;
 				break;
 			} else if (i == 2) {
 				msg("The way is barred.");
@@ -5079,6 +5116,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 		move_player(clockwise_ddd[d], false);
 		moves--;
+		if (attack) return false;
 	}
 
 	/* Reduce blows based on distance traveled, round to nearest blow */
@@ -5119,7 +5157,10 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		}
 
 		/* Swap the targeted monster with the first in the monster list */
-		if (cave_monster(cave, 1)->race) {
+		if (old_idx == 1) {
+			/* Do nothing */
+			;
+		} else if (cave_monster(cave, 1)->race) {
 			monster_index_move(old_idx, cave_monster_max(cave));
 			monster_index_move(1, old_idx);
 			monster_index_move(cave_monster_max(cave), 1);
@@ -5142,10 +5183,12 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 {
 	int blows = effect_calculate_value(context, false);
+	int dam = context->radius;
 	bool fear;
 	int taim;
 	struct loc target = loc(-1, -1);
 	struct loc grid = player->grid;
+	struct monster *mon = NULL;
 
 	/* players only for now */
 	if (context->origin.what != SRC_PLAYER)
@@ -5158,16 +5201,29 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
-	if (!target_okay()) {return false;}
-
+	/* Check target validity */
 	taim = distance(grid, target);
+	mon = square_monster(cave, target);
 	if (taim > 1) {
 		msgt(MSG_GENERIC, "Target too far away (%d).", taim);
 		return false;
+	} else if (!mon) {
+		msg("You must attack a monster.");
+		return false;
 	}
 
-	while (blows-- > 0) {
+	while ((blows-- > 0) && mon) {
+		/* Test for damaging the monster */
+		int hp = mon->hp;
 		if (py_attack_real(player, target, &fear)) return true;
+		/*mon = square_monster(cave, target); */
+		if (mon && (mon->hp == hp)) continue;
+
+		/* Apply side-effects */
+		if (project(context->origin, 0, target, dam, context->subtype,
+					PROJECT_KILL, 0, 0, context->obj)) {
+			context->ident = true;
+		}
 	}
 	return true;
 }
@@ -5565,6 +5621,7 @@ int effect_subtype(int index, const char *type)
 			case EF_BOLT_STATUS:
 			case EF_BOLT_STATUS_DAM:
 			case EF_BOLT_AWARE:
+			case EF_MELEE_BLOWS:
 			case EF_TOUCH:
 			case EF_TOUCH_AWARE: {
 				val = proj_name_to_idx(type);
@@ -5585,10 +5642,12 @@ int effect_subtype(int index, const char *type)
 			case EF_NOURISH: {
 				if (streq(type, "INC_BY"))
 					val = 0;
-				else if (streq(type, "SET_TO"))
+				else if (streq(type, "DEC_BY"))
 					val = 1;
-				else if (streq(type, "INC_TO"))
+				else if (streq(type, "SET_TO"))
 					val = 2;
+				else if (streq(type, "INC_TO"))
+					val = 3;
 				break;
 			}
 

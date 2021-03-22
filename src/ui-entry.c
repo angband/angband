@@ -804,7 +804,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 			}
 			if (entry->p_abilities[i].have_value) {
 				int v = entry->p_abilities[i].value;
-				int a = 0;
+				int a = UI_ENTRY_VALUE_NOT_PRESENT;
 
 				if (entry->p_abilities[i].isaux) {
 					int t = v;
@@ -831,7 +831,7 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 				case PF_FAST_SHOT:
 					launcher = equipped_item_by_slot_name(
 						p, "shooting");
-					if (kf_has(launcher->kind->kind_flags,
+					if (launcher && kf_has(launcher->kind->kind_flags,
 						KF_SHOOTS_ARROWS)) {
 						v = p->lev / 3;
 						a = 0;
@@ -1020,8 +1020,8 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 		}
 	}
 	if (first) {
-		*val = 0;
-		*auxval = 0;
+		*val = UI_ENTRY_VALUE_NOT_PRESENT;
+		*auxval = UI_ENTRY_VALUE_NOT_PRESENT;
 	} else {
 		(*combiner.finish_func)(&cst);
 		*val = cst.accum;

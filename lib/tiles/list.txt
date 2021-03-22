@@ -59,10 +59,10 @@ name:5:Shockbolt Dark
 directory:shockbolt
 size:64:64:64x64.png
 pref:graf-shb-dark.prf
-extra:1:29:31
+extra:1:27:31
 
 name:6:Shockbolt Light
 directory:shockbolt
 size:64:64:64x64.png
 pref:graf-shb-light.prf
-extra:1:29:31
+extra:1:27:31

@@ -5,7 +5,7 @@ Version Information
 Angband has been maintained and developed by a succession of volunteers since
 it was written in the early 1990s. The current maintainer is Nick McConnell.
 
-The current version is 4.2.1. Detailed information about this version and
+The current version is 4.2.2. Detailed information about this version and
 previous versions can be found at http://rephial.org.  Also additional
 information can be found at the angband forums (http://angband.oook.cz).
 

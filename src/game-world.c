@@ -435,7 +435,7 @@ static void make_noise(struct player *p)
 			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
 
 			/* Skip the player grid */
-			if (loc_eq(player->grid, grid)) continue;
+			if (loc_eq(p->grid, grid)) continue;
 
 			/* Save the noise */
 			cave->noise.grids[grid.y][grid.x] = noise;
@@ -644,33 +644,40 @@ void process_world(struct chunk *c)
 
 	/*** Check the Food, and Regenerate ***/
 
-	/* Digest normally */
-	if (!(turn % 100)) {
-		/* Basic digestion rate based on speed */
-		i = turn_energy(player->state.speed);
+	/* Digest */
+	if (!player_timed_grade_eq(player, TMD_FOOD, "Full")) {
+		/* Digest normally */
+		if (!(turn % 100)) {
+			/* Basic digestion rate based on speed */
+			i = turn_energy(player->state.speed);
 
-		/* Adjust for food value */
-		i = (i * 100) / z_info->food_value;
+			/* Adjust for food value */
+			i = (i * 100) / z_info->food_value;
 
-		/* Regeneration takes more food */
-		if (player_of_has(player, OF_REGEN)) i *= 2;
+			/* Regeneration takes more food */
+			if (player_of_has(player, OF_REGEN)) i *= 2;
 
-		/* Slow digestion takes less food */
-		if (player_of_has(player, OF_SLOW_DIGEST)) i /= 2;
+			/* Slow digestion takes less food */
+			if (player_of_has(player, OF_SLOW_DIGEST)) i /= 2;
 
-		/* Minimal digestion */
-		if (i < 1) i = 1;
+			/* Minimal digestion */
+			if (i < 1) i = 1;
 
-		/* Digest some food */
-		player_dec_timed(player, TMD_FOOD, i, false);
-	}
-
-	/* Fast metabolism */
-	if (player->timed[TMD_HEAL]) {
-		player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
-		if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
-			player_set_timed(player, TMD_HEAL, 0, true);
+			/* Digest some food */
+			player_dec_timed(player, TMD_FOOD, i, false);
 		}
+
+		/* Fast metabolism */
+		if (player->timed[TMD_HEAL]) {
+			player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
+			if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
+				player_set_timed(player, TMD_HEAL, 0, true);
+			}
+		}
+	} else {
+		/* Digest quickly when gorged */
+		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value, false);
+		player->upkeep->update |= PU_BONUS;
 	}
 
 	/* Faint or starving */
@@ -706,9 +713,11 @@ void process_world(struct chunk *c)
 	/* Process light */
 	player_update_light(player);
 
-	/* Update noise and scent */
-	make_noise(player);
-	update_scent();
+	/* Update noise and scent (not if resting) */
+	if (!player_is_resting(player)) {
+		make_noise(player);
+		update_scent();
+	}
 
 
 	/*** Process Inventory ***/
@@ -735,7 +744,7 @@ void process_world(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid).trap;
+			struct trap *trap = square(c, grid)->trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;
@@ -994,6 +1003,9 @@ void on_new_level(void)
 	if (player->depth)
 		display_feeling(false);
 
+	/* Check the surroundings */
+	search(player);
+
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
 	if (player->energy < z_info->move_energy)
@@ -1128,7 +1140,9 @@ void run_game_loop(void)
 			/* Kill arena monster */
 			if (arena) {
 				player->upkeep->arena_level = false;
-				kill_arena_monster(player->upkeep->health_who);
+				if (player->upkeep->health_who) {
+					kill_arena_monster(player->upkeep->health_who);
+				}
 			}
 		}
 

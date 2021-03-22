@@ -1068,7 +1068,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	drop_find_grid(*dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
-		if (dont_ignore && (square(c, best).mon < 0)) {
+		if (dont_ignore && (square(c, best)->mon < 0)) {
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {
@@ -1129,8 +1129,62 @@ void push_object(struct loc grid)
 		/* Take object from the queue */
 		obj = q_pop_ptr(queue);
 
-		/* Drop the object */
-		drop_near(cave, &obj, 0, grid, false, false);
+		/* Unrevealed mimics require special handling, as always. */
+		if (obj->mimicking_m_idx) {
+			/*
+			 * Try to find a location; there's 49 positions in
+			 * the 7 x 7 square so make at most a small multiple
+			 * of that number in attempts to find an appropriate
+			 * one that doesn't already have a monster or the
+			 * player.  If scatter accepted a predicate argument,
+			 * could avoid the multiple attempts.
+			 */
+			struct monster *mimic =
+				cave_monster(cave, obj->mimicking_m_idx);
+			int ntry = 0;
+
+			assert(mimic);
+			/*
+			 * Reset since the current value is a dangling
+			 * reference to a deleted object.
+			 */
+			mimic->mimicked_obj = NULL;
+
+			while (1) {
+				struct loc newgrid;
+
+				if (ntry > 150) {
+					/*
+					 * Give up.  Destroy both the mimic
+					 * and the object.
+					 */
+					delete_monster_idx(obj->mimicking_m_idx);
+					if (obj->known) {
+						object_delete(&obj->known);
+					}
+					object_delete(&obj);
+					break;
+				}
+				scatter(cave, &newgrid, grid, 3, true);
+				if (square(cave, newgrid)->mon == 0) {
+					bool dummy = true;
+
+					if (floor_carry(cave, newgrid, obj, &dummy)) {
+						/*
+						 * Move the monster and give it
+						 * the object.
+						 */
+						monster_swap(grid, newgrid);
+						mimic->mimicked_obj = obj;
+						break;
+					}
+				}
+				++ntry;
+			}
+		} else {
+			/* Drop the object */
+			drop_near(cave, &obj, 0, grid, false, false);
+		}
 	}
 
 	/* Reset cave feature, remove trap if needed */

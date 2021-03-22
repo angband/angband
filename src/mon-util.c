@@ -224,7 +224,7 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	for (i = 0; i < path_n - 1; ++i) {
 		/* Forget grids which would block los */
 		if (square_iswall(player->cave, path_g[i])) {
-			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
+			sqinfo_off(square(c, path_g[i])->info, SQUARE_SEEN);
 			square_forget(c, path_g[i]);
 			square_light_spot(c, path_g[i]);
 		}
@@ -515,6 +515,51 @@ static void player_leaving(struct loc grid1, struct loc grid2)
 }
 
 /**
+ * Is a helper function to move a mimicked object when the mimic (not known
+ * to the player) is moved.  Assumes that the caller will be calling
+ * square_light_spot() for the source grid.
+ */
+static void move_mimicked_object(struct chunk *c, struct monster *mon,
+	struct loc src, struct loc dest)
+{
+	struct object *mimicked = mon->mimicked_obj;
+	/*
+	 * Move a copy so, if necessary, the original can remain as a
+	 * placeholder for the known version of the object in the player's
+	 * view of the cave.
+	 */
+	struct object *moved = object_new();
+	bool dummy = true;
+
+	assert(mimicked);
+	object_copy(moved, mimicked);
+	moved->oidx = 0;
+	mimicked->mimicking_m_idx = 0;
+	if (mimicked->known) {
+		moved->known = object_new();
+		object_copy(moved->known, mimicked->known);
+		moved->known->oidx = 0;
+		moved->known->grid = loc(0,0);
+	}
+	if (floor_carry(c, dest, moved, &dummy)) {
+		mon->mimicked_obj = moved;
+	} else {
+		/* Could not move the object so cancel mimicry. */
+		moved->mimicking_m_idx = 0;
+		mon->mimicked_obj = NULL;
+		/* Give object to monster if appropriate; otherwise, delete. */
+		if (! rf_has(mon->race->flags, RF_MIMIC_INV) ||
+			! monster_carry(c, mon, moved)) {
+			if (moved->known) {
+				object_delete(&moved->known);
+			}
+			object_delete(&moved);
+		}
+	}
+	square_delete_object(c, src, mimicked, true, false);
+}
+
+/**
  * Swap the players/monsters (if any) at two locations.
  */
 void monster_swap(struct loc grid1, struct loc grid2)
@@ -535,9 +580,23 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	if (m1 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m1);
-		mon->grid = grid2;
 
 		/* Update monster */
+		if (monster_is_mimicking(mon)) {
+			/*
+			 * Become aware if the player can see the mimic before
+			 * or after the swap.
+			 */
+			if (monster_is_in_view(mon) ||
+				(m2 >= 0 && los(cave, pgrid, grid2)) ||
+				(m2 < 0 && los(cave, grid1, grid2))) {
+				become_aware(mon);
+			} else {
+				move_mimicked_object(cave, mon, grid1, grid2);
+				player->upkeep->redraw |= (PR_ITEMLIST);
+			}
+		}
+		mon->grid = grid2;
 		update_mon(mon, cave, true);
 
 		/* Affect light? */
@@ -570,9 +629,23 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	if (m2 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m2);
-		mon->grid = grid1;
 
 		/* Update monster */
+		if (monster_is_mimicking(mon)) {
+			/*
+			 * Become aware if the player can see the mimic before
+			 * or after the swap.
+			 */
+			if (monster_is_in_view(mon) ||
+				(m1 >= 0 && los(cave, pgrid, grid1)) ||
+				(m1 < 0 && los(cave, grid2, grid1))) {
+				become_aware(mon);
+			} else {
+				move_mimicked_object(cave, mon, grid2, grid1);
+				player->upkeep->redraw |= (PR_ITEMLIST);
+			}
+		}
+		mon->grid = grid1;
 		update_mon(mon, cave, true);
 
 		/* Affect light? */
@@ -1012,6 +1085,7 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* When the player kills a Unique, it stays dead */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		char unique_name[80];
+		assert(mon->original_race == NULL);
 		mon->race->max_num = 0;
 
 		/*
@@ -1205,6 +1279,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		/* Deal with arena monsters */
 		if (player->upkeep->arena_level) {
 			player->upkeep->generate_level = true;
+			player->upkeep->health_who = mon;
 			(*fear) = false;
 			return true;
 		}
@@ -1318,26 +1393,21 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
  */
 struct object *get_random_monster_object(struct monster *mon)
 {
-	struct object *obj = mon->held_obj;
-	int count = 0;
+    struct object *obj, *pick = NULL;
+    int i = 1;
 
-	if (!obj) return NULL;
+    /* Pick a random object */
+    for (obj = mon->held_obj; obj; obj = obj->next)
+    {
+        /* Check it isn't a quest artifact */
+        if (obj->artifact && kf_has(obj->kind->kind_flags, KF_QUEST_ART))
+            continue;
 
-	/* Count the objects */
-	while (obj) {
-		count++;
-		obj = obj->next;
-	}
+        if (one_in_(i)) pick = obj;
+        i++;
+    }
 
-	/* Now pick one... */
-	obj = mon->held_obj;
-	count -= randint1(count);
-	while (count) {
-		obj = obj->next;
-		count--;
-	}
-
-	return obj;
+    return pick;
 }
 
 /**
@@ -1580,7 +1650,7 @@ bool monster_change_shape(struct monster *mon)
 
 	/* Set the race */
 	if (race) {
-		mon->original_race = mon->race;
+		if (!mon->original_race) mon->original_race = mon->race;
 		mon->race = race;
 		mon->mspeed += mon->race->speed - mon->original_race->speed;
 	}

@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-input.h"
+#include "generate.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -213,7 +214,7 @@ static void do_cmd_wiz_hack_nick(void)
  * Output part of a bitflag set in binary format.
  */
 static void prt_binary(const bitflag *flags, int offset, int row, int col,
-					   char ch, int num)
+					   wchar_t ch, int num)
 {
 	int flag;
 
@@ -222,7 +223,7 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 		if (of_has(flags, flag))
 			Term_putch(col++, row, COLOUR_BLUE, ch);
 		else
-			Term_putch(col++, row, COLOUR_WHITE, '-');
+			Term_putch(col++, row, COLOUR_WHITE, L'-');
 }
 
 /**
@@ -264,6 +265,30 @@ static void do_cmd_keylog(void) {
 	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
 	anykey();
 	screen_load();
+}
+
+
+/**
+ * Dump a map of the current level as an HTML file.
+ */
+static void do_cmd_wiz_dump_level_map(void)
+{
+	char path[1024] = "";
+	char title[80];
+	ang_file *fo;
+
+	strnfmt(title, sizeof(title), "Map of level %d", player->depth);
+	if (!get_file("level.html", path, sizeof(path)) ||
+			!get_string("Title for map: ", title, sizeof(title))) {
+		return;
+	}
+	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (fo) {
+		dump_level(fo, title, cave, NULL);
+		if (file_close(fo)) {
+			msg(format("Level dumped to %s.", path));
+		}
+	}
 }
 
 
@@ -470,15 +495,15 @@ static void wiz_display_item(const struct object *obj, bool all)
 			   obj->ego ? obj->ego->eidx : 0,
 			   (long)object_value(obj, 1)), 6, j);
 
-	prt("+------------FLAGS-------------+", 16, j);
-	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
-	prt("     fbcssf  s  ibniiatadlhp....", 18, j);
-	prt("siwdcelotdfrei  plommfegrccc....", 19, j);
-	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
-	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
-	prt_binary(f, 0, 22, j, '*', 28);
+	prt("+------------FLAGS------------------+", 16, j);
+	prt("SUST.PROT<-OTHER----><BAD->C.MISC....", 17, j);
+	prt("     fbcssf  s  ibbtniiatadsflldddett", 18, j);
+	prt("siwdcelotdfrei  pluaommfegrcrggiiixrh", 19, j);
+	prt("tnieoannuiaesnfhcerffhsrlgxuattgggppr", 20, j);
+	prt("rtsxnrdfnglgpvaltsnuuppderprg23123liw", 21, j);
+	prt_binary(f, 0, 22, j, L'*',37);
 	if (obj->known) {
-		prt_binary(obj->known->flags, 0, 23, j, '+', 28);
+		prt_binary(obj->known->flags, 0, 23, j, L'+', 37);
 	}
 }
 
@@ -914,11 +939,18 @@ static void wiz_tweak_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
 		object_prep(obj, obj->kind, player->depth, RANDOMISE);
 		obj->ego = e;
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 		ego_apply_magic(obj, player->depth);
 	}
 	wiz_display_item(obj, true);
@@ -942,12 +974,19 @@ static void wiz_tweak_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
+
 		obj->ego = NULL;
 		object_prep(obj, obj->kind, obj->artifact->alloc_min, RANDOMISE);
 		obj->artifact = a;
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 		copy_artifact_data(obj, obj->artifact);
 	}
 	wiz_display_item(obj, true);
@@ -1030,6 +1069,9 @@ static void wiz_reroll_item(struct object *obj)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known_obj = obj->known;
+		u16b oidx = obj->oidx;
+		struct loc grid = obj->grid;
+		bitflag notice = obj->notice;
 
 		/* Free slays and brands on the old object by hand */
 		mem_free(obj->slays);
@@ -1044,6 +1086,9 @@ static void wiz_reroll_item(struct object *obj)
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known_obj;
+		obj->oidx = oidx;
+		obj->grid = grid;
+		obj->notice = notice;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
@@ -1140,14 +1185,14 @@ static void wiz_statistics(struct object *obj, int level)
 		for (i = 0; i <= TEST_ROLL; i++) {
 			/* Output every few rolls */
 			if ((i < 100) || (i % 100 == 0)) {
-				struct keypress kp;
+				ui_event e;
 
 				/* Do not wait */
 				inkey_scan = SCAN_INSTANT;
 
 				/* Allow interupt */
-				kp = inkey();
-				if (kp.type != EVT_NONE) {
+				e = inkey_ex();
+				if (e.type != EVT_NONE) {
 					event_signal(EVENT_INPUT_FLUSH);
 					break;
 				}
@@ -1163,9 +1208,15 @@ static void wiz_statistics(struct object *obj, int level)
 			/* Allow multiple artifacts, because breaking the game is OK here */
 			if (obj->artifact) obj->artifact->created = false;
 
+			/* Check for failures to generate an object */
+			if (!test_obj) continue;
+
 			/* Test for the same tval and sval. */
-			if ((obj->tval) != (test_obj->tval)) continue;
-			if ((obj->sval) != (test_obj->sval)) continue;
+			if (obj->tval != test_obj->tval ||
+					obj->sval != test_obj->sval) {
+				object_delete(&test_obj);
+				continue;
+			}
 
 			/* Check modifiers */
 			ismatch = true;
@@ -1736,7 +1787,7 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Given flag, show only those grids */
-			if (flag && !sqinfo_has(square(cave, grid).info, flag)) continue;
+			if (flag && !sqinfo_has(square(cave, grid)->info, flag)) continue;
 
 			/* Given no flag, show known grids */
 			if (!flag && (!square_isknown(cave, grid))) continue;
@@ -1846,7 +1897,7 @@ static void do_cmd_wiz_features(void)
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (square(cave, grid).feat == feat[i]) show = true;
+				if (square(cave, grid)->feat == feat[i]) show = true;
 
 			/* Color */
 			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
@@ -1982,11 +2033,8 @@ void do_cmd_wiz_effect(void)
 	/* Avoid the prompt getting in the way */
 	screen_save();
 
-	/* Prompt */
-	prt("Do which effect? ", 0, 0);
-
 	/* Get the name */
-	if (askfor_aux(name, sizeof(name), NULL)) {
+	if (get_string("Do which effect: ", name, sizeof(name))) {
 		/* See if an effect index was entered */
 		index = get_idx_from_name(name);
 
@@ -2001,27 +2049,25 @@ void do_cmd_wiz_effect(void)
 		}
 	}
 
-	/* Prompt */
-	prt("Enter damage dice (eg 1+2d6M2): ", 0, 0);
-
 	/* Get the dice */
-	if (!askfor_aux(dice, sizeof(dice), NULL))
+	if (! get_string("Enter damage dice (eg 1+2d6M2): ", dice,
+			sizeof(dice))) {
 		my_strcpy(dice, "0", sizeof(dice));
+	}
 
-	/* Get the parameters */
-	prt("Enter name or number for effect subtype: ", 0, 0);
-
-	/* Get the name */
-	if (askfor_aux(name, sizeof(name), NULL)) {
+	/* Get the effect subtype */
+	if (get_string("Enter name or number for effect subtype: ", name,
+			sizeof(name))) {
 		/* See if an effect parameter was entered */
 		p1 = effect_subtype(index, name);
 		if (p1 == -1) p1 = 0;
 	}
 
+	/* Get the parameters */
 	p2 = get_quantity("Enter second parameter (radius): ", 100);
-	p3 = get_quantity("Enter third parameter (other):", 100);
-	y = get_quantity("Enter y parameter:", 100);
-	x = get_quantity("Enter x parameter:", 100);
+	p3 = get_quantity("Enter third parameter (other): ", 100);
+	y = get_quantity("Enter y parameter: ", 100);
+	x = get_quantity("Enter x parameter: ", 100);
 
 	/* Reload the screen */
 	screen_load();
@@ -2207,6 +2253,11 @@ void get_debug_command(void)
 			effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, 22, 40, NULL);
 			break;
 		}
+
+		/* Dump a map of the current level as HTML. */
+		case 'M':
+			do_cmd_wiz_dump_level_map();
+			break;
 
 		/* Summon Named Monster */
 		case 'n':
@@ -2502,6 +2553,18 @@ void get_debug_command(void)
 		case '_':
 		{
 			do_cmd_wiz_hack_nick();
+			break;
+		}
+
+		case '>':
+		{
+			/* Perform push_object() on a selected grid. */
+			if (target_set_interactive(TARGET_KILL, -1, -1)) {
+				struct loc grid = loc(0, 0);
+
+				target_get(&grid);
+				push_object(grid);
+			}
 			break;
 		}
 

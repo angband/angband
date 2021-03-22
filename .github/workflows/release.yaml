@@ -1,0 +1,329 @@
+name: create-github-release
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+    # Used as the name when uploading or downloading the artifact for passing
+    # configuration data from the Setup job to those dependent on it.
+    CONFIG_ARTIFACT: release-config
+    # Used as the path for the file with the configuration data passed from
+    # the Setup job to those dependent on it.
+    CONFIG_ARTIFACT_PATH: release-config.txt
+    # Used as the name when uploading or downloading the artifact with the
+    # converted document files.
+    DOC_ARTIFACT: release-docs
+    # Used as the path for the file with the converted document files.
+    DOC_ARTIFACT_PATH: release-docs.tar
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Extract Names from Makefile
+        id: get_names
+        run: |
+          name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          echo "::set-output name=progname::$progname"
+
+      - name: Set Release Version
+        id: get_release_vars
+        run: |
+          version=`scripts/version.sh`
+          echo "::set-output name=version::$version"
+          prerelease=`echo $version | awk '/^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
+          echo "::set-output name=prerelease::$prerelease"
+          # Mark anything that isn't a prerelease as a draft.
+          draft=true
+          if test x$prerelease = xtrue ; then
+              draft=false
+          fi
+          echo "::set-output name=draft::$draft"
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Create Bare Release
+        id: create_bare_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token provided by Actions
+        with:
+          tag_name: ${{ steps.get_release_vars.outputs.version }}
+          release_name: Release ${{ steps.get_release_vars.outputs.version }}
+          commitish: ${{ github.sha }}
+          prerelease: ${{ steps.get_release_vars.outputs.prerelease }}
+          draft: ${{ steps.get_release_vars.outputs.draft }}
+
+      # The quoting here may be too simple-minded:  what if there are single
+      # quotes in the steps.*.outputs.* stuff.
+      - name: Create Artifact with Configuration Details
+        run: |
+          echo name= '${{ steps.get_names.outputs.name }}' > $CONFIG_ARTIFACT_PATH
+          echo progname= '${{ steps.get_names.outputs.progname }}' >> $CONFIG_ARTIFACT_PATH
+          echo version= '${{ steps.get_release_vars.outputs.version }}' >> $CONFIG_ARTIFACT_PATH
+          echo prerelease= '${{ steps.get_release_vars.outputs.prerelease }}' >> $CONFIG_ARTIFACT_PATH
+          echo draft= '${{ steps.get_release_vars.outputs.draft }}' >> $CONFIG_ARTIFACT_PATH
+          echo upload_url= '${{ steps.create_bare_release.outputs.upload_url }}' >> $CONFIG_ARTIFACT_PATH
+
+      - name: Upload Artifact for Use by Dependent Steps
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+          path: ${{ env.CONFIG_ARTIFACT_PATH }}
+          retention-days: 1
+
+  docconvert:
+    name: Document Conversion
+    runs-on: ubuntu-latest
+    steps:
+      # Need both Sphinx (Python documentation tool) and a 3rd party theme.
+      # Also install pip (to get theme), make (for make html), and git (so
+      # scripts/version.sh works).
+      - name: Install Build Dependencies
+        id: build_dep
+        run: |
+          sudo apt-get install make sphinx-common git
+          use_python3=`python --version 2>&1 | awk "/^Python 3\\./ { print \"YES\" ; exit 0 ; } ; { print \"NO\" ; exit 0; }"`
+          # On Debian and Arch, could just use sphinx-build since they put it
+          # in /usr/bin.  Ubuntu, however, does it differently.
+          if test X$use_python3 == XYES ; then
+            sudo apt-get install python3-pip
+            sphinxpath=/usr/share/sphinx/scripts/python3/sphinx-build
+          else
+            sudo apt-get install python-pip
+            sphinxpath=/usr/share/sphinx/scripts/python2/sphinx-build
+          fi
+          echo "::set-output name=sphinxpath::$sphinxpath"
+          "$sphinxpath" --version
+          pip install sphinx-better-theme
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Convert
+        run: |
+          cd docs
+          make SPHINXBUILD=${{ steps.build_dep.outputs.sphinxpath }} html
+
+      - name: Archive
+        run: |
+          tar -cf ${{ env.DOC_ARTIFACT_PATH }} docs/_build/html
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+          path: ${{ env.DOC_ARTIFACT_PATH }}
+          retention-days: 1
+
+  source:
+    needs: setup
+    name: Source Archive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Install Build Dependencies
+        run: sudo apt-get install automake autoconf git make
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create Source Archive
+        id: create_source_archive
+        run: |
+          ./autogen.sh
+          ./configure
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=archive_file::${archive_prefix}.tar.gz"
+          echo "::set-output name=archive_content_type::application/gzip"
+          make TAG="$archive_prefix" OUT="$archive_prefix".tar.gz dist
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Source Archive
+        id: upload_source_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_source_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_source_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_source_archive.outputs.archive_content_type }}
+
+  windows:
+    needs: [setup, docconvert]
+    name: Windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc-mingw-w64 automake autoconf git make zip
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Create Windows Archive
+        id: create_windows_archive
+        run: |
+          ./autogen.sh
+          ./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          make
+          cp src/${{ steps.store_config.outputs.progname }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=archive_file::${archive_prefix}-win.zip"
+          echo "::set-output name=archive_content_type::application/zip"
+          scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Windows Archive
+        id: upload_windows_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_windows_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_windows_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_windows_archive.outputs.archive_content_type }}
+
+  mac:
+    needs: [setup, docconvert]
+    name: Mac
+    runs-on: macos-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # Currently, macos-latest defaults to using the 10.15 SDK which does not
+      # support creating arm64 objects.  Override the default using SDKROOT
+      # set to an SDK that can generate both x86_64 and arm64 objects.
+      - name: Create Mac Archive
+        id: create_mac_archive
+        run: |
+          cd src
+          env SDKROOT=macosx11.1 make -f Makefile.osx dist
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
+          echo "::set-output name=archive_file::${archive_prefix}.dmg"
+          echo "::set-output name=archive_content_type::application/octet-stream"
+
+      # Largely cribbed from the example in README.md at
+      # https://github.com/actions/upload-release-asset .
+      - name: Upload Mac Archive
+        id: upload_mac_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_mac_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_mac_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_mac_archive.outputs.archive_content_type }}
+

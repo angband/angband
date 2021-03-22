@@ -922,8 +922,18 @@ void write_character_dump(ang_file *fff)
 										   z_info->store_inven_max);
 	char o_name[80];
 
-	char buf[1024];
-	char *p;
+	int n;
+	char *buf, *p;
+
+	if (!have_valid_char_sheet_config()) {
+		configure_char_sheet();
+	}
+
+	n = 80;
+	if (n < 2 * cached_config->res_cols + 1) {
+		n = 2 * cached_config->res_cols + 1;
+	}
+	buf = mem_alloc(text_wcsz() * n + 1);
 
 	/* Begin dump */
 	file_putf(fff, "  [%s Character Dump]\n\n", buildid);
@@ -940,7 +950,12 @@ void write_character_dump(ang_file *fff)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			p += wctomb(p, c);
+			n = text_wctomb(p, c);
+			if (n > 0) {
+				p += n;
+			} else {
+				*p++ = ' ';
+			}
 		}
 
 		/* Back up over spaces */
@@ -973,7 +988,12 @@ void write_character_dump(ang_file *fff)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			p += wctomb(p, c);
+			n = text_wctomb(p, c);
+			if (n > 0) {
+				p += n;
+			} else {
+				*p++ = ' ';
+			}
 		}
 
 		/* Back up over spaces */
@@ -1006,7 +1026,12 @@ void write_character_dump(ang_file *fff)
 			(void)(Term_what(x + 2 * cached_config->res_cols + 2, y, &a, &c));
 
 			/* Dump it */
-			p += wctomb(p, c);
+			n = text_wctomb(p, c);
+			if (n > 0) {
+				p += n;
+			} else {
+				*p++ = ' ';
+			}
 		}
 
 		/* Back up over spaces */
@@ -1124,6 +1149,7 @@ void write_character_dump(ang_file *fff)
 	}
 
 	mem_free(home_list);
+	mem_free(buf);
 }
 
 /**

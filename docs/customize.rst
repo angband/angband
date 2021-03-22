@@ -11,7 +11,9 @@ Angband allows you to change various aspects of the game to suit your tastes.  T
 * `Visuals`_ - allowing you to change the appearance of in-game entities like objects and monsters
 * `Colours`_ - allowing you to make a given color brighter, darker, or even completely different
 
-You can save your preferences for these into files, which are called `user pref files`.
+Except for the options, which are linked to the save file, you can save your
+preferences for these into files, which are called `user pref files`.  For
+the options, customize those using the ``=`` command while playing.
 
 
 User Pref Files

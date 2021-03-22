@@ -20,6 +20,7 @@
 # pile: chance of being generated in a pile : dice for number of items
 # power: power of the effect for object power eveluations
 # msg: message on using the object
+# vis-msg: message on using the object, only when player is not blind
 # effect: effect when used : parameter (maybe) : paramater (maybe)
 # effect-yx: y value for effect : x value for effect
 # dice:dice string
@@ -36,7 +37,13 @@
 # optional, and the number of dice is optional and assumed to be 1
 # when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
 # range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
-# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.  Randomized
+# expressions which begin with "-" are currently handled differently in the
+# "values" line than they are elsewhere.  In the "values" line, the leading
+# "-" sets the sign on the base value (i.e. 10 in the example).  On other lines,
+# a leading "-" in the randomized expression means multiply the random result
+# from what follows by negative one.  As a result, something like "-d4" will
+# not work as you want when used for a "values" line.  Use "-5+1d4" instead.
 
 # 'name' indicates the beginning of an entry. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
@@ -148,7 +155,7 @@ graphics:*:r
 
 name:<unknown treasure>
 type:none
-graphics:*:o
+graphics:*:w
 
 name:<curse object>
 type:none
@@ -3848,7 +3855,7 @@ alloc:20:3 to 60
 attack:1d1:0:0
 armor:0:0
 charges:6+d10
-msg:A line of shimmering blue light appears.
+vis-msg:A line of shimmering blue light appears.
 power:6
 effect:LINE:LIGHT_WEAK
 dice:6d8
@@ -3969,7 +3976,7 @@ armor:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
-effect:BREATH:FIRE:0:30
+effect:ARC:FIRE:0:30
 dice:200
 
 name:Dragon's Frost
@@ -3984,7 +3991,7 @@ armor:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BREATH:COLD:0:30
+effect:ARC:COLD:0:30
 dice:160
 
 name:Dragon's Breath
@@ -4001,15 +4008,15 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:0:30
+effect:ARC:ACID:0:30
 dice:160
-effect:BREATH:ELEC:0:30
+effect:ARC:ELEC:0:30
 dice:160
-effect:BREATH:FIRE:0:30
+effect:ARC:FIRE:0:30
 dice:160
-effect:BREATH:COLD:0:30
+effect:ARC:COLD:0:30
 dice:160
-effect:BREATH:POIS:0:30
+effect:ARC:POIS:0:30
 dice:160
 
 
@@ -4806,7 +4813,7 @@ cost:500
 alloc:30:5 to 100
 attack:1d1:0:0
 armor:0:0
-msg:A line of shimmering blue light appears.
+vis-msg:A line of shimmering blue light appears.
 power:6
 effect:LINE:LIGHT_WEAK
 dice:6d8
@@ -4867,7 +4874,7 @@ graphics:~:s
 level:5
 weight:250
 cost:20
-alloc:5:5 to 100
+alloc:15:5 to 100
 attack:2d3:0:0
 armor:0:0
 
@@ -4877,7 +4884,7 @@ graphics:~:s
 level:15
 weight:500
 cost:60
-alloc:5:15 to 100
+alloc:10:15 to 100
 attack:2d5:0:0
 armor:0:0
 
@@ -4887,7 +4894,7 @@ graphics:~:s
 level:25
 weight:300
 cost:100
-alloc:5:25 to 100
+alloc:15:25 to 100
 attack:2d4:0:0
 armor:0:0
 
@@ -4897,7 +4904,7 @@ graphics:~:s
 level:35
 weight:1000
 cost:150
-alloc:5:35 to 100
+alloc:10:35 to 100
 attack:2d6:0:0
 armor:0:0
 
@@ -4907,7 +4914,7 @@ graphics:~:s
 level:45
 weight:500
 cost:200
-alloc:5:45 to 100
+alloc:15:45 to 100
 attack:2d4:0:0
 armor:0:0
 
@@ -4917,7 +4924,7 @@ graphics:~:s
 level:55
 weight:1000
 cost:250
-alloc:5:55 to 100
+alloc:10:55 to 100
 attack:2d6:0:0
 armor:0:0
 
@@ -5125,7 +5132,7 @@ effect:BREATH:DISEN:0:20
 dice:220
 time:50
 desc:A suit of scales that ripples and twists through every color and shape
-desc:imaginable as you stare in fascination.
+desc: imaginable as you stare in fascination.
 
 name:Balance Dragon Scale Mail~
 type:dragon armor

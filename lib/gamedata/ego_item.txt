@@ -30,7 +30,13 @@
 # optional, and the number of dice is optional and assumed to be 1
 # when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
 # range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
-# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.  Randomized
+# expressions which begin with "-" are currently handled differently in
+# the "values" line than they are elsewhere.  In the "values" line, the
+# leading "-" sets the sign on the base value (i.e. 10 in the example).
+# On other lines, a leading "-" in the randomized expression means multiply
+# what follows by negative one.  As a result, something like "-d4" will not
+# work as you want when used for a "values" line.  Use "-5+1d4" instead.
 
 # 'name' indicates the beginning of an entry.
 
@@ -99,7 +105,7 @@ info:1000:10
 alloc:40:10 to 100
 item:light:Lantern
 values:STEALTH[d2] | RES_LIGHT[1] | LIGHT[-4]
-min-values:STEALTH[0]
+min-values:STEALTH[0] | LIGHT[-4]
 
 name:of Brightness
 info:2000:10
@@ -649,6 +655,7 @@ name:of Backbiting
 info:0:0
 alloc:0:10 to 80
 combat:-26+d25:-26+d25:0
+min-combat:255:255:0
 type:shot
 type:arrow
 type:bolt

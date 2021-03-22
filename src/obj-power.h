@@ -53,7 +53,7 @@
 #define INHIBIT_POWER		20000
 #define INHIBIT_BLOWS		3
 #define INHIBIT_MIGHT		4
-#define INHIBIT_SHOTS		11
+#define INHIBIT_SHOTS		21
 #define HIGH_TO_AC			26
 #define VERYHIGH_TO_AC		36
 #define INHIBIT_AC			56

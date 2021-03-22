@@ -1,0 +1,76 @@
+name: Linux
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc automake autoconf make libx11-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --with-no-install --enable-test
+          make
+          make tests
+          ./run-tests
+
+  x11:
+    name: X11
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc make cmake libx11-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
+  ncurses:
+    name: NCurses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc make cmake libncursesw5-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DSUPPORT_NCURSES_FRONTEND=ON ..
+          make
+
+  sdl:
+    name: SDL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DSUPPORT_SDL_FRONTEND=ON ..
+          make

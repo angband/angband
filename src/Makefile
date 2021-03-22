@@ -13,6 +13,10 @@ ifneq (${VERSION},)
 endif
 
 CFLAGS += -I. -fPIC -std=c99 -O0
+# Replace above line with the two below and then look at gmon.out
+# to do performance monitoring
+# CFLAGS += -g -pg -I. -fPIC -std=c99 -O0
+# LDFLAGS += -g -pg
 
 # gcov intermediate data
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)

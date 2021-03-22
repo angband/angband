@@ -469,6 +469,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (can_use) {
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
+		int number = 0;
 		bool ident = false, used;
 		struct object *work_obj;
 
@@ -484,6 +485,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			activation_message(obj);
 		} else if (obj->kind->effect_msg) {
 			msgt(snd, obj->kind->effect_msg);
+		} else if (obj->kind->vis_msg && !player->timed[TMD_BLIND]) {
+			msgt(snd, obj->kind->vis_msg);
 		} else {
 			/* Make a noise! */
 			sound(snd);
@@ -506,6 +509,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				work_obj = floor_object_for_use(obj, 1, false, &none_left);
 				from_floor = true;
 			}
+			/* Record number for messages after use */
+			number = (none_left) ? 0 : obj->number;
 		} else  {
 			if (use == USE_CHARGE) {
 				charges = obj->pval;
@@ -551,9 +556,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					object_copy(dropped->known, work_obj->known);
 				}
 				if (from_floor) {
-					drop_near(cave, &dropped, 0, player->grid, true, true);
+					drop_near(cave, &dropped, 0, player->grid, false, true);
 				} else {
-					inven_carry(player, dropped, true, true);
+					inven_carry(player, dropped, true, false);
 				}
 			} else if (use == USE_CHARGE) {
 				obj->pval = charges;
@@ -577,23 +582,21 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Increase knowledge */
 		if (use == USE_SINGLE) {
 			char name[80];
+			int old_num = work_obj->number;
+
 			/* Single use items are automatically learned */
 			if (!was_aware) {
-				object_learn_on_use(player, obj);
+				object_learn_on_use(player, work_obj);
 			}
 			/* Get a description */
-			if (used && none_left) {
-				obj->number--;
-			}
-			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+			work_obj->number = number + ((used) ? 0 : 1);
+			object_desc(name, sizeof(name), work_obj, ODESC_PREFIX | ODESC_FULL);
+			work_obj->number = old_num;
 			if (from_floor) {
 				/* Print a message */
 				msg("You see %s.", name);
 			} else {
 				msg("You have %s (%c).", name, label);
-			}
-			if (used && none_left) {
-				obj->number++;
 			}
 		} else {
 			/* Wearables may need update, other things become known or tried */
@@ -913,7 +916,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			used->timeout = 0;
 
 			/* Carry or drop */
-			if (object_is_carried(player, obj))
+			if (object_is_carried(player, obj) && inven_carry_okay(used))
 				inven_carry(player, used, true, true);
 			else
 				drop_near(cave, &used, 0, player->grid, false, true);

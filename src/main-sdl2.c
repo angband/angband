@@ -562,6 +562,9 @@ struct font_info {
 const char help_sdl2[] = "SDL2 frontend";
 static SDL_Color g_colors[MAX_COLORS];
 static struct font_info g_font_info[MAX_FONTS];
+/* True if KC_MOD_KEYPAD will be sent for numeric keypad keys at the expense
+ * of not handling some keyboard layouts properly. */
+static int g_kp_as_mod = 0;
 
 /* Forward declarations */
 
@@ -1418,6 +1421,14 @@ static void render_button_menu_fullscreen(const struct window *window,
 			window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
+static void render_button_menu_kp_mod(const struct window *window,
+		struct button *button)
+{
+	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_NONE);
+
+	render_button_menu_toggle(window, button, g_kp_as_mod);
+}
+
 /* the menu proper is rendered via this callback, used by the "Menu" button */
 static void render_menu_button(const struct window *window, struct button *button)
 {
@@ -1919,6 +1930,19 @@ static void handle_menu_fullscreen(struct window *window,
 	}
 
 	window->flags = SDL_GetWindowFlags(window->window);
+}
+
+static void handle_menu_kp_mod(struct window *window,
+		struct button *button, const SDL_Event *event,
+		struct menu_panel *menu_panel)
+{
+	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_NONE);
+
+	if (!click_menu_button(button, menu_panel, event)) {
+		return;
+	}
+
+	g_kp_as_mod = !g_kp_as_mod;
 }
 
 static void handle_menu_about(struct window *window,
@@ -2454,6 +2478,10 @@ static void load_main_menu_panel(struct status_bar *status_bar)
 		{
 			"Fullscreen",
 			data, render_button_menu_fullscreen, handle_menu_fullscreen
+		},
+		{
+			status_bar->window->index == MAIN_WINDOW ? "Send Keypad Modifier" : NULL,
+			data, render_button_menu_kp_mod, handle_menu_kp_mod
 		},
 		{
 			status_bar->window->index == MAIN_WINDOW ? "Windows" : NULL,
@@ -3296,15 +3324,11 @@ static bool handle_keydown(const SDL_KeyboardEvent *key)
 	 * Between this function and handle_text_input we need to make sure that
 	 * Term_keypress gets called exactly once for a given key press from the
 	 * user.
-	 * This function handles keys that don't produce text, the keypad, and
-	 * keypresses that will produce the same characters as keypad keypresses.
+	 * This function handles keys that don't produce text, and, if
+	 * g_kp_as_mod is true, the keypad and keypresses that will produce the
+	 * same characters as keypad keypresses.
 	 * Others should be handled in handle_text_input.
 	 */
-
-	/* If numlock is set and shift is not pressed, numpad numbers produce
-	 * regular numbers and not keypad numbers */
-	byte keypad_num_mod = ((key->keysym.mod & KMOD_NUM) && !(key->keysym.mod & KMOD_SHIFT))
-			? 0x00 : KC_MOD_KEYPAD;
 
 	switch (key->keysym.sym) {
 		/* arrow keys */
@@ -3339,60 +3363,79 @@ static bool handle_keydown(const SDL_KeyboardEvent *key)
 		case SDLK_F13:         ch = KC_F13;                          break;
 		case SDLK_F14:         ch = KC_F14;                          break;
 		case SDLK_F15:         ch = KC_F15;                          break;
-
-		/* Keypad */
-		case SDLK_KP_0:        ch = '0';      mods |= keypad_num_mod; break;
-		case SDLK_KP_1:        ch = '1';      mods |= keypad_num_mod; break;
-		case SDLK_KP_2:        ch = '2';      mods |= keypad_num_mod; break;
-		case SDLK_KP_3:        ch = '3';      mods |= keypad_num_mod; break;
-		case SDLK_KP_4:        ch = '4';      mods |= keypad_num_mod; break;
-		case SDLK_KP_5:        ch = '5';      mods |= keypad_num_mod; break;
-		case SDLK_KP_6:        ch = '6';      mods |= keypad_num_mod; break;
-		case SDLK_KP_7:        ch = '7';      mods |= keypad_num_mod; break;
-		case SDLK_KP_8:        ch = '8';      mods |= keypad_num_mod; break;
-		case SDLK_KP_9:        ch = '9';      mods |= keypad_num_mod; break;
-
-		case SDLK_KP_MULTIPLY: ch = '*';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_PERIOD:   ch = '.';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_DIVIDE:   ch = '/';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_EQUALS:   ch = '=';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_MINUS:    ch = '-';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_PLUS:     ch = '+';      mods |= KC_MOD_KEYPAD; break;
-		case SDLK_KP_ENTER:    ch = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
-
-		/* Keys that produce the same character as keypad keys */
-		case SDLK_ASTERISK:    ch = '*';      break;
-		case SDLK_PLUS:        ch = '+';      break;
 	}
-	if((mods & KC_MOD_SHIFT)) {
-		bool match = true;
-		switch(key->keysym.sym) {
-			/* Doesn't match every keyboard layout, unfortunately. */
-			case SDLK_8:           ch = '*';      break;
-			case SDLK_EQUALS:      ch = '+';      break;
-			default: match = false;
+
+	if (g_kp_as_mod) {
+		/* If numlock is set and shift is not pressed, numpad numbers
+		 * produce regular numbers and not keypad numbers */
+		byte keypad_num_mod = ((key->keysym.mod & KMOD_NUM) && !(key->keysym.mod & KMOD_SHIFT))
+			? 0x00 : KC_MOD_KEYPAD;
+
+		switch (key->keysym.sym) {
+			/* Keypad */
+			case SDLK_KP_0: ch = '0'; mods |= keypad_num_mod; break;
+			case SDLK_KP_1: ch = '1'; mods |= keypad_num_mod; break;
+			case SDLK_KP_2: ch = '2'; mods |= keypad_num_mod; break;
+			case SDLK_KP_3: ch = '3'; mods |= keypad_num_mod; break;
+			case SDLK_KP_4: ch = '4'; mods |= keypad_num_mod; break;
+			case SDLK_KP_5: ch = '5'; mods |= keypad_num_mod; break;
+			case SDLK_KP_6: ch = '6'; mods |= keypad_num_mod; break;
+			case SDLK_KP_7: ch = '7'; mods |= keypad_num_mod; break;
+			case SDLK_KP_8: ch = '8'; mods |= keypad_num_mod; break;
+			case SDLK_KP_9: ch = '9'; mods |= keypad_num_mod; break;
+
+			case SDLK_KP_MULTIPLY:
+				ch = '*'; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_PERIOD:
+				ch = '.'; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_DIVIDE:
+				ch = '/'; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_EQUALS:
+				ch = '='; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_MINUS:
+				ch = '-'; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_PLUS:
+				ch = '+'; mods |= KC_MOD_KEYPAD; break;
+			case SDLK_KP_ENTER:
+				ch = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
+
+			/* Keys that produce the same character as keypad keys */
+			case SDLK_ASTERISK: ch = '*'; break;
+			case SDLK_PLUS: ch = '+'; break;
 		}
-		if(match) {
-			mods &= ~KC_MOD_SHIFT;
+		if((mods & KC_MOD_SHIFT)) {
+			bool match = true;
+			switch(key->keysym.sym) {
+				/* Doesn't match every keyboard layout, unfortunately. */
+				case SDLK_8: ch = '*'; break;
+				case SDLK_EQUALS: ch = '+'; break;
+				default: match = false;
+			}
+			if(match) {
+				mods &= ~KC_MOD_SHIFT;
+			}
+		} else {
+			switch(key->keysym.sym) {
+				case SDLK_0: ch = '0'; break;
+				case SDLK_1: ch = '1'; break;
+				case SDLK_2: ch = '2'; break;
+				case SDLK_3: ch = '3'; break;
+				case SDLK_4: ch = '4'; break;
+				case SDLK_5: ch = '5'; break;
+				case SDLK_6: ch = '6'; break;
+				case SDLK_7: ch = '7'; break;
+				case SDLK_8: ch = '8'; break;
+				case SDLK_9: ch = '9'; break;
+				case SDLK_SLASH: ch = '/'; break;
+				case SDLK_EQUALS: ch = '='; break;
+				case SDLK_PERIOD: ch = '.'; break;
+				case SDLK_MINUS: ch = '-'; break;
+			}
 		}
-	} else {
-		switch(key->keysym.sym) {
-			case SDLK_0:           ch = '0';      break;
-			case SDLK_1:           ch = '1';      break;
-			case SDLK_2:           ch = '2';      break;
-			case SDLK_3:           ch = '3';      break;
-			case SDLK_4:           ch = '4';      break;
-			case SDLK_5:           ch = '5';      break;
-			case SDLK_6:           ch = '6';      break;
-			case SDLK_7:           ch = '7';      break;
-			case SDLK_8:           ch = '8';      break;
-			case SDLK_9:           ch = '9';      break;
-			case SDLK_SLASH:       ch = '/';      break;
-			case SDLK_EQUALS:      ch = '=';      break;
-			case SDLK_PERIOD:      ch = '.';      break;
-			case SDLK_MINUS:       ch = '-';      break;
-		}
+	} else if (key->keysym.sym == SDLK_KP_ENTER) {
+		ch = KC_ENTER;
 	}
+
 	/* encode control */
 	if (mods & KC_MOD_CONTROL) {
 		bool match = true;
@@ -3486,24 +3529,27 @@ static bool handle_text_input(const SDL_TextInputEvent *input)
 {
 	keycode_t ch = utf8_to_codepoint(input->text);
 
-	/* Don't handle any characters that can be produced by the keypad */
-	switch (ch) {
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '/':
-		case '*':
-		case '-':
-		case '+':
-		case '.':
-			return false;
+	/* Don't handle any characters that can be produced by the keypad if
+	 * they were handled in handle_keydown */
+	if (g_kp_as_mod) {
+		switch (ch) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '/':
+			case '*':
+			case '-':
+			case '+':
+			case '.':
+				return false;
+		}
 	}
 
 	byte mods = translate_key_mods(SDL_GetModState());
@@ -5724,6 +5770,7 @@ static void dump_config_file(void)
 			dump_window(&g_windows[i], config);
 		}
 	}
+	file_putf(config, "kp-as-modifier:%d\n", (g_kp_as_mod) ? 1 : 0);
 
 	file_close(config);
 }
@@ -6021,6 +6068,12 @@ static enum parser_error config_subwindow_alpha(struct parser *parser)
 #undef GET_SUBWINDOW_FROM_INDEX
 #undef SUBWINDOW_INIT_OK
 
+static enum parser_error config_kp_as_mod(struct parser *parser)
+{
+	g_kp_as_mod = parser_getint(parser, "enabled");
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_config(void)
 {
 	struct parser *parser = parser_new();
@@ -6056,6 +6109,7 @@ static struct parser *init_parse_config(void)
 			config_subwindow_top);
 	parser_reg(parser, "subwindow-alpha uint index int alpha",
 			config_subwindow_alpha);
+	parser_reg(parser, "kp-as-modifier int enabled", config_kp_as_mod);
 
 	return parser;
 }

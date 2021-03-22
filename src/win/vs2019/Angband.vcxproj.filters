@@ -90,6 +90,9 @@
     <ClCompile Include="src\debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\effects-info.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\effects.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -289,6 +292,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\randname.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\save-charoutput.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\save.c">
@@ -518,6 +524,9 @@
     <ClInclude Include="src\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\effects-info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\effects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -630,6 +639,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\list-tvals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\list-ui-entry-renderers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\message.h">
@@ -779,6 +791,9 @@
     <ClInclude Include="src\randname.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\save-charoutput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\savefile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -894,6 +909,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-term.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-visuals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\wizard.h">
@@ -1169,6 +1187,12 @@
     <None Include="lib\tiles\shockbolt\graf-shb.prf">
       <Filter>Resource Files\tiles\shockbolt</Filter>
     </None>
+    <None Include="lib\tiles\shockbolt\graf-shb-dark.prf">
+      <Filter>Resource Files\tiles\shockbolt</Filter>
+    </None>
+    <None Include="lib\tiles\shockbolt\graf-shb-light.prf">
+      <Filter>Resource Files\tiles\shockbolt</Filter>
+    </None>
     <None Include="lib\tiles\shockbolt\xtra-shb.prf">
       <Filter>Resource Files\tiles\shockbolt</Filter>
     </None>
@@ -1190,6 +1214,9 @@
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\brand.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
+    <Text Include="lib\gamedata\chest_trap.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\class.txt">
@@ -1252,6 +1279,9 @@
     <Text Include="lib\gamedata\pit.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
+    <Text Include="lib\gamedata\player_property.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
     <Text Include="lib\gamedata\player_timed.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
@@ -1285,7 +1315,19 @@
     <Text Include="lib\gamedata\trap.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
+    <Text Include="lib\gamedata\ui_entry.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
+    <Text Include="lib\gamedata\ui_entry_base.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
+    <Text Include="lib\gamedata\ui_entry_renderer.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
     <Text Include="lib\gamedata\vault.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
+    <Text Include="lib\gamedata\visuals.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\world.txt">

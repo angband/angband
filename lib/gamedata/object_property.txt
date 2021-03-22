@@ -120,7 +120,7 @@ power:5
 mult:6
 bindui:damage_reduction_ui_compact_0:0
 
-name:attack speed
+name:extra blows
 type:mod
 code:BLOWS
 power:0
@@ -186,7 +186,7 @@ type-mult:gloves:0
 type-mult:boots:0
 bindui:shooting_power_ui_compact_0:0
 
-name:movement speed
+name:extra moves
 type:mod
 code:MOVES
 power:0

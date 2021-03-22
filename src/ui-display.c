@@ -170,31 +170,36 @@ static void prt_stat(int stat, int row, int col)
 		put_str("!", row, col + 3);
 }
 
+static int fmt_title(char buf[], int max, bool short_mode)
+{
+	buf[0] = 0;
+
+	/* Wizard, winner or neither */
+	if (player->wizard) {
+		my_strcpy(buf, "[=-WIZARD-=]", max);
+	} else if (player->total_winner || (player->lev > PY_MAX_LEVEL)) {
+		my_strcpy(buf, "***WINNER***", max);
+	} else if (player_is_shapechanged(player)) {		
+		my_strcpy(buf, player->shape->name, max);
+		my_strcap(buf);		
+	} else if (!short_mode) {
+		my_strcpy(buf, player->class->title[(player->lev - 1) / 5], max);
+	}
+
+	return strlen(buf);
+}
 
 /**
  * Prints title, including wizard, winner or shape as needed.
  */
 static void prt_title(int row, int col)
-{
-	const char *p;
+{	
+	char buf[32];
 
-	/* Wizard, winner or neither */
-	if (player->wizard) {
-		p = "[=-WIZARD-=]";
-	} else if (player->total_winner || (player->lev > PY_MAX_LEVEL)) {
-		p = "***WINNER***";
-	} else if (player_is_shapechanged(player)) {
-		char buf[20];
-		my_strcpy(buf, player->shape->name, sizeof(buf));
-		my_strcap(buf);
-		p = buf;
-	} else {
-		p = player->class->title[(player->lev - 1) / 5];
-	}
+	fmt_title(buf, sizeof(buf), false);	
 
-	prt_field(p, row, col);
+	prt_field(buf, row, col);
 }
-
 
 /**
  * Prints level
@@ -282,7 +287,7 @@ static void prt_equippy(int row, int col)
 			c = object_char(obj);
 			a = object_attr(obj);
 		} else {
-			c = ' ';
+			c = L' ';
 			a = COLOUR_WHITE;
 		}
 
@@ -410,17 +415,7 @@ byte monster_health_attr(void)
 	return attr;
 }
 
-/**
- * Redraw the "monster health bar"
- *
- * The "monster health bar" provides visual feedback on the "health"
- * of the monster currently being "tracked".  There are several ways
- * to "track" a monster, including targetting it, attacking it, and
- * affecting it (and nobody else) with a ranged attack.  When nothing
- * is being tracked, we clear the health bar.  If the monster being
- * tracked is not currently visible, a special health bar is shown.
- */
-static void prt_health(int row, int col)
+static int prt_health_aux(int row, int col)
 {
 	byte attr = monster_health_attr();
 	struct monster *mon = player->upkeep->health_who;
@@ -429,7 +424,7 @@ static void prt_health(int row, int col)
 	if (!mon) {
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
-		return;
+		return 0;
 	}
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
@@ -451,43 +446,78 @@ static void prt_health(int row, int col)
 		/* Dump the current "health" (use '*' symbols) */
 		Term_putstr(col + 1, row, len, attr, "**********");
 	}
+
+	return 12;
 }
 
+/**
+ * Redraw the "monster health bar"
+ *
+ * The "monster health bar" provides visual feedback on the "health"
+ * of the monster currently being "tracked".  There are several ways
+ * to "track" a monster, including targetting it, attacking it, and
+ * affecting it (and nobody else) with a ranged attack.  When nothing
+ * is being tracked, we clear the health bar.  If the monster being
+ * tracked is not currently visible, a special health bar is shown.
+ */
+static void prt_health(int row, int col)
+{
+	prt_health_aux(row, col);
+}
+
+static int prt_speed_aux(char buf[], int max, byte *attr)
+{
+	int i = player->state.speed;
+	const char *type = NULL;
+
+	*attr = COLOUR_WHITE;
+	buf[0] = 0;
+
+	/* 110 is normal speed, and requires no display */
+	if (i > 110) {
+		*attr = COLOUR_L_GREEN;
+		type = "Fast";
+	} else if (i < 110) {
+		*attr = COLOUR_L_UMBER;
+		type = "Slow";
+	}
+
+	if (type && !OPT(player, effective_speed))
+		strnfmt(buf, max, "%s (%+d)", type, (i - 110));
+	else if (type && OPT(player, effective_speed))
+	{
+		int multiplier = 10 * extract_energy[i] / extract_energy[110];
+		int int_mul = multiplier / 10;
+		int dec_mul = multiplier % 10;
+		strnfmt(buf, max, "%s (%d.%dx)", type, int_mul, dec_mul);
+	}
+
+	return strlen(buf);
+}
 
 /**
  * Prints the speed of a character.
  */
 static void prt_speed(int row, int col)
 {
-	int i = player->state.speed;
-
-	byte attr = COLOUR_WHITE;
-	const char *type = NULL;
+	byte attr = COLOUR_WHITE;	
 	char buf[32] = "";
 
-	/* 110 is normal speed, and requires no display */
-	if (i > 110) {
-		attr = COLOUR_L_GREEN;
-		type = "Fast";
-	} else if (i < 110) {
-		attr = COLOUR_L_UMBER;
-		type = "Slow";
-	}
-
-	if (type && !OPT(player, effective_speed))
-		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
-	else if (type && OPT(player, effective_speed))
-	{
-		int multiplier = 10 * extract_energy[i] / extract_energy[110];
-		int int_mul = multiplier / 10;
-		int dec_mul = multiplier % 10;
-		strnfmt(buf, sizeof(buf), "%s (%d.%dx)", type, int_mul, dec_mul);
-	}
+	prt_speed_aux(buf, sizeof(buf), &attr);
 
 	/* Display the speed */
 	c_put_str(attr, format("%-11s", buf), row, col);
 }
 
+static int fmt_depth(char buf[], int max)
+{
+	if (!player->depth)
+		my_strcpy(buf, "Town", max);
+	else
+		strnfmt(buf, max, "%d' (L%d)",
+		        player->depth * 50, player->depth);
+	return strlen(buf);
+}
 
 /**
  * Prints depth in stat area
@@ -496,11 +526,7 @@ static void prt_depth(int row, int col)
 {
 	char depths[32];
 
-	if (!player->depth)
-		my_strcpy(depths, "Town", sizeof(depths));
-	else
-		strnfmt(depths, sizeof(depths), "%d' (L%d)",
-		        player->depth * 50, player->depth);
+	fmt_depth(depths, sizeof(depths));
 
 	/* Right-Adjust the "depth", and clear old values */
 	put_str(format("%-13s", depths), row, col);
@@ -530,6 +556,221 @@ static void prt_class(int row, int col) {
 	} else {
 		prt_field(player->class->name, row, col);
 	}
+}
+
+/**
+ * Prints level
+ */
+static int prt_level_short(int row, int col)
+{
+	char tmp[32];
+
+	strnfmt(tmp, sizeof(tmp), "%d", player->lev);
+
+	if (player->lev >= player->max_lev) {
+		put_str("L:", row, col);
+		c_put_str(COLOUR_L_GREEN, tmp, row, col + 2);
+	} else {
+		put_str("l:", row, col);
+		c_put_str(COLOUR_YELLOW, tmp, row, col + 2);
+	}
+
+	return 3+strlen(tmp);
+}
+
+static int prt_stat_short(int stat, int row, int col)
+{
+	char tmp[32];
+
+	/* Injured or healthy stat */
+	if (player->stat_cur[stat] < player->stat_max[stat]) {
+		put_str(format("%c:", stat_names_reduced[stat][0]), row, col);		
+		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
+		/* Trim whitespace */
+		strskip(tmp,' ', 0);
+		c_put_str(COLOUR_YELLOW, tmp, row, col + 2);
+	} else {
+		put_str(format("%c:", stat_names[stat][0]), row, col);
+		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
+		/* Trim whitespace */
+		strskip(tmp,' ', 0);
+		if (player->stat_max[stat] == 18+100) {
+			c_put_str(COLOUR_L_BLUE, tmp, row, col + 2);
+		}
+		else {
+			c_put_str(COLOUR_L_GREEN, tmp, row, col + 2);	
+		}		
+	}
+
+	return 3+strlen(tmp);
+}
+
+static int prt_exp_short(int row, int col)
+{
+	char out_val[32];
+	bool lev50 = (player->lev == 50);
+
+	long xp = (long)player->exp;
+
+	/* Calculate XP for next level */
+	if (!lev50)
+		xp = (long)(player_exp[player->lev - 1] * player->expfact / 100L) -
+			player->exp;
+
+	/* Format XP */
+	strnfmt(out_val, sizeof(out_val), "%d", xp);
+
+	if (player->exp >= player->max_exp) {
+		put_str((lev50 ? "EXP:" : "NXT:"), row, col);
+		c_put_str(COLOUR_L_GREEN, out_val, row, col + 4);
+	} else {
+		put_str((lev50 ? "exp:" : "nxt:"), row, col);
+		c_put_str(COLOUR_YELLOW, out_val, row, col + 4);
+	}
+
+	return 5+strlen(out_val);
+}
+
+static int prt_ac_short(int row, int col)
+{
+	char tmp[32];
+
+	put_str("AC:", row, col);
+	strnfmt(tmp, sizeof(tmp), "%d", 
+			player->known_state.ac + player->known_state.to_a);
+	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
+	return 4+strlen(tmp);
+}
+
+static int prt_gold_short(int row, int col)
+{
+	char tmp[32];
+
+	put_str("AU:", row, col);
+	strnfmt(tmp, sizeof(tmp), "%d", player->au);
+	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
+	return 4+strlen(tmp);
+}
+
+static int prt_hp_short(int row, int col)
+{
+	char cur_hp[32], max_hp[32];
+	byte color = player_hp_attr(player);	
+
+	put_str("HP:", row, col);
+	col += 3;
+
+	strnfmt(max_hp, sizeof(max_hp), "%d", player->mhp);
+	strnfmt(cur_hp, sizeof(cur_hp), "%d", player->chp);
+	
+	c_put_str(color, cur_hp, row, col);
+	col += strlen(cur_hp);
+	c_put_str(COLOUR_WHITE, "/", row, col);
+	col += 1;
+	c_put_str(COLOUR_L_GREEN, max_hp, row, col);
+	return 5+strlen(cur_hp)+strlen(max_hp);
+}
+
+static int prt_sp_short(int row, int col)
+{
+	char cur_sp[32], max_sp[32];
+	byte color = player_sp_attr(player);
+
+	/* Do not show mana unless we should have some */
+	if (player_has(player, PF_NO_MANA) || 
+		(player->lev < player->class->magic.spell_first))
+		return 0;
+
+	put_str("SP:", row, col);
+	col += 3;
+
+	strnfmt(max_sp, sizeof(max_sp), "%d", player->msp);
+	strnfmt(cur_sp, sizeof(cur_sp), "%d", player->csp);
+
+	/* Show mana */
+	c_put_str(color, cur_sp, row, col);
+	col += strlen(cur_sp);
+	c_put_str(COLOUR_WHITE, "/", row, col);
+	col += 1;
+	c_put_str(COLOUR_L_GREEN, max_sp, row, col);
+	return 5+strlen(cur_sp)+strlen(max_sp);
+}
+
+static int prt_health_short(int row, int col)
+{
+	int len = prt_health_aux(row, col);
+	if (len > 0) {
+		return len+1;
+	}
+	return 0;
+}
+
+static int prt_speed_short(int row, int col)
+{
+	char buf[32];
+	byte attr;
+
+	int len = prt_speed_aux(buf, sizeof(buf), &attr);	
+	if (len > 0) {
+		c_put_str(attr, buf, row, col);
+		return len+1;
+	}
+	return 0;
+}
+
+static int prt_depth_short(int row, int col)
+{
+	char buf[32];
+	
+	int len = fmt_depth(buf, sizeof(buf));
+	put_str(buf, row, col);
+	return len+1;
+}
+
+static int prt_title_short(int row, int col)
+{
+	char buf[32];
+	
+	int len = fmt_title(buf, sizeof(buf), true);
+	if (len > 0) {
+		c_put_str(COLOUR_YELLOW, buf, row, col);	
+		return len+1;
+	}	
+	return 0;
+}
+
+static void update_topbar(game_event_type type, game_event_data *data,
+						  void *user, int row)
+{	
+	int col = 0;	
+
+	prt("", row, col);	
+
+	col += prt_level_short(row, col);
+
+	col += prt_exp_short(row, col);
+	
+	col += prt_stat_short(STAT_STR, row, col);
+	col += prt_stat_short(STAT_INT, row, col);
+	col += prt_stat_short(STAT_WIS, row, col);
+	col += prt_stat_short(STAT_DEX, row, col);
+	col += prt_stat_short(STAT_CON, row, col);
+
+	col += prt_ac_short(row, col);
+
+	col += prt_gold_short(row, col);
+
+	++row;
+	col = 0;
+
+	prt("", row, col);
+
+	col += prt_hp_short(row, col);
+	col += prt_sp_short(row, col);
+	col += prt_health_short(row, col);	
+	col += prt_speed_short(row, col);
+	col += prt_depth_short(row, col);
+	col += prt_title_short(row, col);
 }
 
 
@@ -582,6 +823,14 @@ static void update_sidebar(game_event_type type, game_event_data *data,
 	int max_priority;
 	size_t i;
 
+	if (Term->sidebar_mode == SIDEBAR_NONE) {		
+		return;
+	}
+
+	if (Term->sidebar_mode == SIDEBAR_TOP) {
+		update_topbar(type, data, user, 1);
+		return;
+	}
 
 	Term_get_size(&x, &y);
 
@@ -873,13 +1122,16 @@ static size_t prt_moves(int row, int col)
 	int i = player->state.num_moves;
 
 	/* 1 move is normal and requires no display */
-	if (i > 1) {
+	if (i > 0) {
 		/* Display the number of moves */
-		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i - 1), row, col);
+		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i), row, col);
+	} else if (i < 0) {
+		/* Display the number of moves */
+		c_put_str(COLOUR_L_TEAL, format("Moves -%d ", ABS(i)), row, col);
 	}
 
 	/* Shouldn't be double digits, but be paranoid */
-	return (i > 1) ? 9 + (i - 1)  / 10 : 0;
+	return (i != 0) ? (9 + ABS(i) / 10) : 0;
 }
 
 /**
@@ -1026,7 +1278,7 @@ static status_f *status_handlers[] =
 static void update_statusline(game_event_type type, game_event_data *data, void *user)
 {
 	int row = Term->hgt - 1;
-	int col = 13;
+	int col = COL_MAP;
 	size_t i;
 
 	/* Clear the remainder of the line */
@@ -1107,7 +1359,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 #endif
 
 		if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
+			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, L' ');
 	}
 
 	/* Refresh the main screen unless the map needs to center */
@@ -1488,6 +1740,9 @@ void toggle_inven_equip(void)
 
 	/* Redraw any subwindows showing the inventory/equipment lists */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		/* Skip unused subwindows. */
+		if (!angband_term[i]) continue;
+
 		Term_activate(angband_term[i]); 
 
 		if (window_flag[i] & PW_INVEN) {
@@ -1723,6 +1978,22 @@ static void update_player1_subwindow(game_event_type type,
 	Term_activate(old);
 }
 
+static void update_topbar_subwindow(game_event_type type,
+									game_event_data *data, void *user)
+{
+	term *old = Term;
+	term *inv_term = user;
+
+	/* Activate */
+	Term_activate(inv_term);
+
+	update_topbar(type, data, user, 0);
+
+	Term_fresh();
+	
+	/* Restore */
+	Term_activate(old);
+}
 
 /**
  * Display the left-hand-side of the main term, in more compact fashion.
@@ -1820,7 +2091,7 @@ const char *window_flag_desc[32] =
 	"Display monster list",
 	"Display status",
 	"Display item list",
-	NULL,
+	"Display player (topbar)",
 	NULL,
 	NULL,
 	NULL,
@@ -1897,7 +2168,16 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 		{
 			set_register_or_deregister(player_events, 
 						   N_ELEMENTS(player_events),
-						   update_player_compact_subwindow,
+						   update_player_compact_subwindow,						   
+						   angband_term[win_idx]);
+			break;
+		}
+
+		case PW_PLAYER_3:
+		{
+			set_register_or_deregister(player_events, 
+						   N_ELEMENTS(player_events),						 
+						   update_topbar_subwindow,
 						   angband_term[win_idx]);
 			break;
 		}
@@ -2342,9 +2622,10 @@ static void ui_enter_init(game_event_type type, game_event_data *data,
 static void ui_leave_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
-	/* Reset visuals, then load prefs */
+	/* Reset visuals, then load prefs, and react to changes */
 	reset_visuals(true);
 	process_character_pref_files();
+	Term_xtra(TERM_XTRA_REACT, 0);
 
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
@@ -2365,9 +2646,6 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
 	redraw_stuff(player);
-
-	/* React to changes */
-	Term_xtra(TERM_XTRA_REACT, 0);
 
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */

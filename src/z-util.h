@@ -38,6 +38,9 @@ extern char *argv0;
  * Aux functions
  */
 extern size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
+extern int (*text_wctomb_hook)(char *s, wchar_t wchar);
+extern int (*text_wcsz_hook)(void);
+extern int (*text_iswprint_hook)(wint_t wc);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
@@ -69,6 +72,28 @@ size_t utf8_strlen(char *s);
  * e.g. utf8_clipto("example", 4) will clip after 'm', resulting in 'exam'.
  */
 void utf8_clipto(char *s, size_t n);
+
+/**
+ * Advance a pointer to a UTF-8 buffer by a given number of Unicode code points.
+ */
+char *utf8_fskip(char *s, size_t n, char *lim);
+
+/**
+ * Decrement a pointer to a UTF-8 buffer by a given number of Unicode code
+ * points.
+ */
+char *utf8_rskip(char *s, size_t n, char *lim);
+
+/**
+ * Convert a sequence of UTF-32 values, in the native byte order, to UTF-8.
+ */
+size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
+	size_t *pn_cnvt);
+
+/**
+ * Return whether a given UTF-32 value corresponds to a printable character.
+ */
+bool utf32_isprint(u32b v);
 
 /**
  * Case insensitive comparison between two strings
@@ -146,6 +171,21 @@ bool is_a_vowel(int ch);
  * Allow override of the multi-byte to wide char conversion
  */
 size_t text_mbstowcs(wchar_t *dest, const char *src, int n);
+
+/**
+ * Convert a wide character to multibyte representation.
+ */
+int text_wctomb(char *s, wchar_t wchar);
+
+/**
+ * Get the maximum size to store a wide character converted to multibyte.
+ */
+int text_wcsz(void);
+
+/**
+ * Return whether the given wide character is printable.
+ */
+int text_iswprint(wint_t wc);
 
 /**
  * Print an error message

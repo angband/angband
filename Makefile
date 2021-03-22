@@ -8,7 +8,7 @@ CLEAN = config.status config.log *.dll *.exe
 tests:
 	$(MAKE) -C src tests
 
-TAG = angband-`git describe`
+TAG = angband-`scripts/version.sh`
 OUT = $(TAG).tar.gz
 
 manual:
@@ -16,8 +16,9 @@ manual:
 
 dist:
 	git checkout-index --prefix=$(TAG)/ -a
-	git describe > $(TAG)/version
+	scripts/version.sh > $(TAG)/version
 	$(TAG)/autogen.sh
 	rm -rf $(TAG)/autogen.sh $(TAG)/autom4te.cache
-	tar --exclude .gitignore --exclude *.dll -czvf $(OUT) $(TAG)
+	tar --exclude .gitignore --exclude *.dll --exclude .github \
+		--exclude .travis.yml -czvf $(OUT) $(TAG)
 	rm -rf $(TAG)

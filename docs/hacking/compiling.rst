@@ -16,6 +16,29 @@ To build the new Cocoa front-end::
     cd src
     make -f Makefile.osx
 
+Debug build
+~~~~~~~~~~~
+
+This will generate a debugging build like that described in the Linux section::
+
+    cd src
+    make -f Makefile.osx clean
+    make -f Makefile.osx OPT="-g -O1 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address"
+
+The clean step is there to clean out object files that were compiled with the
+default options.  The "-g" adds debugging symbols.
+"-O1 -fno-omit-frame-pointer" dials back the optimization to get call stack
+traces that are easier to interpret.  For even clearer call stack traces, you
+could add "-fno-optimize-sibling-calls" to the options or omit optimization
+entirely by replacing "-O1 -fno-omit-frame-pointer" with "-O0".
+"-fsanitize=address -fsanitize=undefined" enables the AddressSanitizer and
+UndefinedBehaviorSanitizer tools.
+
+To run the generated executable under Xcode's command-line debugger, lldb, do
+this if you are already in the src directory from the compilation step::
+
+    cd ../Angband.app/Contents/MacOS
+    lldb ./angband
 
 Linux / other UNIX
 ------------------
@@ -44,6 +67,30 @@ To build Angband to be installed in some other location::
 On some BSDs, you may need to copy install-sh into lib/ and various
 subdirectories of lib/ in order to install correctly.
 
+Compilation with CMake
+~~~~~~~~~~~~~~~~~~~~~~
+
+The compilation process with CMake requires a version greater than 3,
+by default the compilation process uses the X11 front end unless
+that the contrary is indicated. The optional front ends are: SDL and NCurses.
+
+To build Angband (X11 Frontend) to be run::
+
+    mkdir build && cd build
+    cmake ..
+    make
+
+To build Angband with the frontend SDL::
+
+    mkdir build && cd build
+    cmake  -DSUPPORT_SDL_FRONTEND=ON ..
+    make
+
+To build Angband with the frontend NCurses::
+
+    mkdir build && cd build
+    cmake  -DSUPPORT_NCURSES_FRONTEND=ON ..
+    make
 
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,7 +128,7 @@ When debugging crashes it can be very useful to get more information about *what
 
 Note that compiling with this tools will require installing additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
 
-There is probably a way to get these tools to work on Windows and Mac OS. If you know how, please add the information to this file.
+There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
 
 Windows
 -------
