@@ -64,6 +64,12 @@ bool arg_wizard;			/* Command arg -- Request wizard mode */
  */
 char savefile[1024];
 
+/**
+ * Set by the front end to perform necessary actions when restarting after death
+ * without exiting.  May be NULL.
+ */
+void (*reinit_hook)(void) = NULL;
+
 
 /**
  * Here are lists of commands, stored in this format so that they can be
@@ -456,6 +462,9 @@ void play_game(bool new_game)
 		init_display();
 		init_angband();
 		textui_init();
+		if (reinit_hook != NULL) {
+			(*reinit_hook)();
+		}
 		play_game(true);
 	}
 }
