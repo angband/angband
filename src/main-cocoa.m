@@ -5746,6 +5746,16 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 }
 
 /**
+ * Perform (as ui-game.c's reinit_hook) platform-specific actions necessary
+ * when restarting without exiting.  Also called directly at startup.
+ */
+static void cocoa_reinit(void)
+{
+    /* Register the sound hook */
+    event_add_handler(EVENT_SOUND, play_sound, NULL);
+}
+
+/**
  * ------------------------------------------------------------------------
  * Main program
  * ------------------------------------------------------------------------ */
@@ -5983,8 +5993,12 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	init_angband();
 	textui_init();
 
-	/* Register the sound hook */
-	event_add_handler(EVENT_SOUND, play_sound, (__bridge void*) self);
+	/*
+	 * Set action that needs to be done if restarting without exiting.
+	 * Also need to do it now.
+	 */
+	reinit_hook = cocoa_reinit;
+	cocoa_reinit();
 
 	/* Initialize some save file stuff */
 	player_egid = getegid();

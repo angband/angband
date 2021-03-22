@@ -347,6 +347,7 @@ static void close_audio(void)
  */
 errr init_sound(const char *soundstr, int argc, char **argv)
 {
+	static bool firstcall = true;
 	int i = 0;
 	bool done = false;
 
@@ -371,7 +372,10 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 
 	/* Enable sound */
 	event_add_handler(EVENT_SOUND, play_sound, NULL);
-	atexit(close_audio);
+	if (firstcall) {
+		atexit(close_audio);
+		firstcall = false;
+	}
 
 	/* Success */
 	return (0);

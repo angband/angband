@@ -25,6 +25,7 @@
 
 extern bool arg_wizard;
 extern char savefile[1024];
+extern void (*reinit_hook)(void);
 
 void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);

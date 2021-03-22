@@ -5000,6 +5000,17 @@ static void init_stuff(void)
 }
 
 
+/**
+ * Perform (as ui-game.c's reinit_hook) platform-specific actions necessary
+ * when restarting without exiting.  Also called directly at startup.
+ */
+static void win_reinit(void)
+{
+	/* Initialise sound. */
+	init_sound("win", 0, NULL);
+}
+
+
 int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
                        LPSTR lpCmdLine, int nCmdShow)
 {
@@ -5152,8 +5163,12 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
 
-	/* Initialise sound */
-	init_sound("win", 0, NULL);
+	/*
+	 * Set action that needs to be done if restarting without exiting.
+	 * Also need to do it now.
+	 */
+	reinit_hook = win_reinit;
+	win_reinit();
 
 	/* Set up the display handlers and things. */
 	init_display();
