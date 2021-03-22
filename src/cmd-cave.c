@@ -540,6 +540,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			best_digger->number = oldn;
 		}
 		player->body.slots[weapon_slot].obj = current_weapon;
+		calc_bonuses(player, &local_state, false, true);
 	}
 
 	/* Success */
@@ -1218,7 +1219,7 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(grid))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
+	player->upkeep->energy_use = energy_per_move(player);
 
 	/* Attempt to disarm unless it's a trap and we're trapsafe */
 	move_player(dir, !(square_isdisarmabletrap(cave, grid) && trapsafe));
@@ -1255,7 +1256,7 @@ void do_cmd_jump(struct command *cmd)
 	if (!do_cmd_walk_test(grid))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
+	player->upkeep->energy_use = energy_per_move(player);
 
 	move_player(dir, false);
 }

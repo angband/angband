@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "ui-term.h"
 
 
 /**
@@ -317,7 +318,9 @@ void wr_options(void)
 	/* Special Options */
 	wr_byte(player->opts.delay_factor);
 	wr_byte(player->opts.hitpoint_warn);
-	wr_u16b(player->opts.lazymove_delay);
+	wr_byte(player->opts.lazymove_delay);
+	/* Fix for tests - only write if angband_term exists, ie in a real game */
+	wr_byte(angband_term[0] ? SIDEBAR_MODE : 0);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
@@ -672,9 +675,9 @@ void wr_artifacts(void)
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {
 		struct artifact *art = &a_info[i];
-		wr_byte(art->created);
-		wr_byte(art->seen);
-		wr_byte(art->everseen);
+		wr_byte(art->created ? 1 : 0);
+		wr_byte(art->seen ? 1 : 0);
+		wr_byte(art->everseen ? 1 : 0);
 		wr_byte(0);
 	}
 }

@@ -40,6 +40,10 @@ buy:food
 buy:mushroom
 buy:flask
 buy:digger
+buy:cloak
+buy:shot
+buy:bolt
+buy:arrow
 
 # Armoury
 store:2:Armoury
@@ -201,8 +205,6 @@ buy:ring
 buy:staff
 buy:wand
 buy:rod
-buy:scroll
-buy:potion
 
 # Black Market - no stock given but we still need slot/turnover info
 store:7:Black Market

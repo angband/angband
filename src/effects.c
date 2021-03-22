@@ -3364,11 +3364,13 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, grid);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(player, birth_lose_arts) &&
-							!(obj->known && obj->known->artifact))
-							obj->artifact->created = false;
-						else
+						if (OPT(player, birth_lose_arts) ||
+							obj_is_known_artifact(obj)) {
 							history_lose_artifact(player, obj->artifact);
+							obj->artifact->created = true;
+						} else {
+							obj->artifact->created = false;
+						}
 					}
 					obj = obj->next;
 				}
@@ -5199,8 +5201,7 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		target = loc_sum(player->grid, ddgrid[context->dir]);
 	}
 
-	if (!target_okay()) {return false;}
-
+	/* Check target validity */
 	taim = distance(grid, target);
 	mon = square_monster(cave, target);
 	if (taim > 1) {
@@ -5211,11 +5212,12 @@ bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 		return false;
 	}
 
-	while (blows-- > 0) {
-		/* Lame test for hitting the monster */
+	while ((blows-- > 0) && mon) {
+		/* Test for damaging the monster */
 		int hp = mon->hp;
 		if (py_attack_real(player, target, &fear)) return true;
-		if (mon->hp == hp) continue;
+		/*mon = square_monster(cave, target); */
+		if (mon && (mon->hp == hp)) continue;
 
 		/* Apply side-effects */
 		if (project(context->origin, 0, target, dam, context->subtype,

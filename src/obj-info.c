@@ -80,7 +80,7 @@ static void info_out_list(textblock *tb, const char *list[], size_t count)
 	size_t i;
 
 	for (i = 0; i < count; i++) {
-		textblock_append(tb, list[i]);
+		textblock_append(tb, "%s", list[i]);
 		if (i != (count - 1)) textblock_append(tb, ", ");
 	}
 
@@ -124,16 +124,12 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 	for (i = 1; i < z_info->curse_max; i++) {
 		if (c[i].power) {
 			textblock_append(tb, "It ");
-			textblock_append_c(tb, COLOUR_L_RED, curses[i].desc);
+			textblock_append_c(tb, COLOUR_L_RED, "%s", curses[i].desc);
 			if (c[i].power == 100) {
 				textblock_append(tb, "; this curse cannot be removed");
 			}
 			textblock_append(tb, ".\n");
 		}
-	}
-	/* Say if curse removal has been tried */
-	if (of_has(obj->flags, OF_FRAGILE)) {
-		textblock_append(tb, "Attempting to uncurse it may destroy it.\n");
 	}
 
 	return true;
@@ -381,7 +377,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 	for (i = 1; i < z_info->slay_max; i++) {
 		if (!s[i]) continue;
 
-		textblock_append(tb, slays[i].name);
+		textblock_append(tb, "%s", slays[i].name);
 		if (slays[i].multiplier > 3)
 			textblock_append(tb, " (powerfully)");
 		if (count > 1)
@@ -421,7 +417,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 
 		if (brands[i].multiplier < 3)
 			textblock_append(tb, "weak ");
-		textblock_append(tb, brands[i].name);
+		textblock_append(tb, "%s", brands[i].name);
 		if (count > 1)
 			textblock_append(tb, ", ");
 		else
@@ -1275,7 +1271,11 @@ static bool describe_damage(textblock *tb, const struct object *obj, bool throw)
 			textblock_append(tb, " %s", lastnm);
 		}
 
-		textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		if (nsort == 0) {
+			has_brands_or_slays = false;
+		} else {
+			textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		}
 		mem_free(sortind);
 	}
 
@@ -1695,7 +1695,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	/* Activations get a special message */
 	if (obj->activation && obj->activation->desc) {
 		textblock_append(tb, "When activated, it ");
-		textblock_append(tb, obj->activation->desc);
+		textblock_append(tb, "%s", obj->activation->desc);
 	} else {
 		int level = obj->artifact ?
 			obj->artifact->level : obj->kind->level;

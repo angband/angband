@@ -627,7 +627,7 @@ void lore_adjective_speed(textblock *tb, const struct monster_race *race)
 	if (race->speed == 110)
 		textblock_append(tb, "at ");
 
-	textblock_append_c(tb, COLOUR_GREEN, lore_describe_speed(race->speed));
+	textblock_append_c(tb, COLOUR_GREEN, "%s", lore_describe_speed(race->speed));
 }
 
 /**
@@ -648,7 +648,7 @@ void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 	byte attr = COLOUR_ORANGE;
 
 	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
-	textblock_append_c(tb, COLOUR_L_BLUE, buf);
+	textblock_append_c(tb, COLOUR_L_BLUE, "%s", buf);
 
 	textblock_append(tb, " normal speed, which is ");
 	multiplier = 100 * extract_energy[race->speed]
@@ -671,7 +671,7 @@ void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 	if (player->state.speed == race->speed) {
 		textblock_append(tb, "the same as you");
 	} else {
-		textblock_append_c(tb, attr, buf);
+		textblock_append_c(tb, attr, "%s", buf);
 		textblock_append(tb, " your speed");
 	}
 }
@@ -770,7 +770,7 @@ static void lore_append_clause(textblock *tb, bitflag *f, byte attr,
 
 	if (count) {
 		int flag;
-		textblock_append(tb, start);
+		textblock_append(tb, "%s", start);
 		for (flag = rf_next(f, FLAG_START); flag; flag = rf_next(f, flag + 1)) {
 			/* First entry starts immediately */
 			if (flag != rf_next(f, FLAG_START)) {
@@ -780,13 +780,13 @@ static void lore_append_clause(textblock *tb, bitflag *f, byte attr,
 				/* Last entry */
 				if (rf_next(f, flag + 1) == FLAG_END) {
 					textblock_append(tb, " ");
-					textblock_append(tb, conjunction);
+					textblock_append(tb, "%s", conjunction);
 				}
 				textblock_append(tb, " ");
 			}
-			textblock_append_c(tb, attr, describe_race_flag(flag));
+			textblock_append_c(tb, attr, "%s", describe_race_flag(flag));
 		}
-		textblock_append(tb, end);
+		textblock_append(tb, "%s", end);
 	}
 }
 
@@ -826,17 +826,17 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f, bool know_hp,
 				/* Last entry */
 				if (rsf_next(f, spell + 1) == FLAG_END) {
 					textblock_append(tb, " ");
-					textblock_append(tb, conjunction);
+					textblock_append(tb, "%s", conjunction);
 				}
 				textblock_append(tb, " ");
 			}
-			textblock_append_c(tb, color,
+			textblock_append_c(tb, color, "%s",
 							   mon_spell_lore_description(spell, race));
 			if (damage > 0) {
 				textblock_append_c(tb, color, " (%d)", damage);
 			}
 		}
-		textblock_append(tb, end);
+		textblock_append(tb, "%s", end);
 	}
 }
 
@@ -926,20 +926,12 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
  *
  * \param tb is the textblock we are adding to.
  * \param race is the monster race we are describing.
- * \param append_utf8 indicates if we should append the flavor text as UTF-8
- *        (which is preferred for spoiler files).
  */
-void lore_append_flavor(textblock *tb, const struct monster_race *race,
-						bool append_utf8)
+void lore_append_flavor(textblock *tb, const struct monster_race *race)
 {
 	assert(tb && race);
 
-	if (append_utf8)
-		textblock_append_utf8(tb, race->text);
-	else
-		textblock_append(tb, race->text);
-
-	textblock_append(tb, "\n");
+	textblock_append(tb, "%s\n", race->text);
 }
 
 /**
@@ -1647,14 +1639,14 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, ", and ");
 
 		/* Describe the method */
-		textblock_append(tb, race->blow[i].method->desc);
+		textblock_append(tb, "%s", race->blow[i].method->desc);
 
 		/* Describe the effect (if any) */
 		if (effect_str && strlen(effect_str) > 0) {
 			int index = blow_index(race->blow[i].effect->name);
 			/* Describe the attack type */
 			textblock_append(tb, " to ");
-			textblock_append_c(tb, blow_color(player, index), effect_str);
+			textblock_append_c(tb, blow_color(player, index), "%s", effect_str);
 
 			textblock_append(tb, " (");
 			/* Describe damage (if known) */

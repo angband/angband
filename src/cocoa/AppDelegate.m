@@ -125,15 +125,6 @@
 - (void)recomputeDefaultTileMultipliersIfNecessary {
 }
 
-- (void)linkTermData:(int)termIndex {
-}
-
-- (void)initWindows {
-}
-
-- (void)loadPrefs {
-}
-
 - (void)beginGame {
 }
 

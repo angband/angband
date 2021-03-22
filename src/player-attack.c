@@ -218,6 +218,7 @@ static bool is_debuffed(const struct monster *monster)
 {
 	return monster->m_timed[MON_TMD_CONF] > 0 ||
 			monster->m_timed[MON_TMD_HOLD] > 0 ||
+			monster->m_timed[MON_TMD_FEAR] > 0 ||
 			monster->m_timed[MON_TMD_STUN] > 0;
 }
 

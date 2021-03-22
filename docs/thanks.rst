@@ -15,24 +15,31 @@ Code contribution:
 * Ben Semmler (molybdenum)
 * Bardur Arantsson
 * Bill Peterson
+* Binrui Dong
 * bron
 * Cameron Ball
+* Colin Woodbury
 * Cuboideb (Diego Gonzalez)
 * Dag Arneson (sanedragon)
+* Daniel Burgener
 * David Medley
 * Derakon
 * Eastwind921
 * Elly Fong-Jones (elly)
 * fizzix (Aaron Bader)
 * fruviad
+* Joan Andrés
 * John Weismiller (emar)
 * Kusunose Toru
+* magnate (Chris Carr)
 * Michael Courtney (wobbly)
 * Mikolaj Konarski
 * Paul Johnson
 * PowerWyrm
 * pwinckles (moosferatu)
+* Rodent/Sideways/sulkasormi
 * Ryan Schmidt
+* Shanoah Alkire
 * spenserblack
 * Stefan Strogin
 * tangar
@@ -40,6 +47,7 @@ Code contribution:
 * Vic K
 * wkmanire
 * wobbly
+* Yutao Yuan (infmagic2047)
 
 Thanks are due to many people for, reporting bugs, suggesting changes and
 contributing to discussion which has influenced this version.  The following is
@@ -75,6 +83,7 @@ you ought to be included:
 * Djbanete
 * dos350
 * Dragget
+* drquicksilver
 * Ed_47569
 * Egavactip
 * emulord
@@ -85,6 +94,7 @@ you ought to be included:
 * Evilpotatoe
 * Flambard
 * floatRand
+* FogSpear
 * fph
 * Gauss
 * Geoff Hill (yes, that one)
@@ -103,6 +113,7 @@ you ought to be included:
 * Hrrunstar
 * Huqhox
 * Ingwe Ingweron
+* JBright
 * Jeff Greene (nppangband)
 * jevansau
 * jml34
@@ -138,6 +149,7 @@ you ought to be included:
 * Philip
 * Pondlife
 * Pussy Galore
+* quarague
 * Quirk
 * Raerick
 * Raxmei
@@ -147,8 +159,8 @@ you ought to be included:
 * Scatha
 * schatz
 * scrarth
+* Selkie
 * shirish
-* Sideways
 * Sinquen
 * Sky
 * spara
@@ -163,10 +175,12 @@ you ought to be included:
 * TJA
 * TJS
 * topazg
+* Torr
 * Vivit
 * Voovus
 * Vorczar
 * Werbaer
+* whartung
 * Whelk
 * WindLord
 * Wiwaxia

@@ -1443,9 +1443,9 @@ void mod_message(struct object *obj, int mod)
 			break;
 		case OBJ_MOD_SHOTS:
 			if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
-				msg("Your bow tingles in your hands.");
+				msg("Your missile weapon tingles in your hands.");
 			else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
-				msg("Your bow aches in your hands.");
+				msg("Your missile weapon aches in your hands.");
 			break;
 		case OBJ_MOD_INFRA:
 			msg("Your eyes tingle.");

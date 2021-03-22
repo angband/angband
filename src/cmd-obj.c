@@ -485,6 +485,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			activation_message(obj);
 		} else if (obj->kind->effect_msg) {
 			msgt(snd, obj->kind->effect_msg);
+		} else if (obj->kind->vis_msg && !player->timed[TMD_BLIND]) {
+			msgt(snd, obj->kind->vis_msg);
 		} else {
 			/* Make a noise! */
 			sound(snd);

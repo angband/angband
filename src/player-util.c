@@ -275,6 +275,16 @@ void death_knowledge(struct player *p)
 }
 
 /**
+ * Energy per move, taking extra moves into account
+ */
+int energy_per_move(struct player *p)
+{
+	int num = p->state.num_moves;
+	int energy = z_info->move_energy;
+	return (energy * (1 + ABS(num) - num)) / (1 + ABS(num));
+}
+
+/**
  * Modify a stat value by a "modifier", return new value
  *
  * Stats go up: 3,4,...,17,18,18/10,18/20,...,18/220
@@ -595,28 +605,40 @@ void player_update_light(struct player *p)
  */
 struct object *player_best_digger(struct player *p, bool forbid_stack)
 {
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *current_weapon = slot_object(player, weapon_slot);
 	struct object *obj, *best = NULL;
 	/* Prefer any melee weapon over unarmed digging, i.e. best == NULL. */
 	int best_score = -1;
+	struct player_state local_state;
 
 	for (obj = p->gear; obj; obj = obj->next) {
-		int score = 0;
+		int score, old_number;
 		if (!tval_is_melee_weapon(obj)) continue;
 		if (obj->number < 1 || (forbid_stack && obj->number > 1)) continue;
-		if (tval_is_digger(obj)) {
-			if (of_has(obj->flags, OF_DIG_1))
-				score = 1;
-			else if (of_has(obj->flags, OF_DIG_2))
-				score = 2;
-			else if (of_has(obj->flags, OF_DIG_3))
-				score = 3;
+
+		/* Swap temporarily for the calc_bonuses() computation. */
+		old_number = obj->number;
+		if (obj != current_weapon) {
+			obj->number = 1;
+			p->body.slots[weapon_slot].obj = obj;
 		}
-		score += obj->modifiers[OBJ_MOD_TUNNEL]
-			* p->obj_k->modifiers[OBJ_MOD_TUNNEL];
-		/* Convert tunnel modifier to digging skill as in player-calcs.c */
-		score *= 20;
-		/* Add in weapon weight (does not account for heavy wield) */
-		score += obj->weight / 10;
+
+		/*
+		 * Avoid side effects from using update set to false
+		 * with calc_bonuses().
+		 */
+		local_state.stat_ind[STAT_STR] = 0;
+		local_state.stat_ind[STAT_DEX] = 0;
+		calc_bonuses(p, &local_state, true, false);
+		score = local_state.skills[SKILL_DIGGING];
+
+		/* Swap back. */
+		if (obj != current_weapon) {
+			obj->number = old_number;
+			player->body.slots[weapon_slot].obj = current_weapon;
+		}
+
 		if (score > best_score) {
 			best = obj;
 			best_score = score;

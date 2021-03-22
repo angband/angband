@@ -27,11 +27,16 @@
 # and quartz streamers per level; 1/mc and 1/qc are the chances of treasure in
 # magma and quartz.
 
-# cutoff is used to decide which profile to use; a random number 0 to 199
-# is picked and successive profiles are rejected until this number is smaller
-# than the cutoff.  If cutoff is -1, those profiles are not used or are picked
-# in some different way.  It is IMPORTANT that non-zero cutoffs appear in
-# ascending order through this file.
+# alloc is used to decide which profile to use.  For a profile that has a
+# positive value for alloc, the profile will be used for a level that satisfies
+# the profile's min-level with a probability of the value of alloc divided by
+# the sum of the alloc values for all other possible profiles at that level.
+# Except for the town profile, if alloc is zero or less than -1, the profile
+# will not be used.  If alloc is -1, the profile can only be selected by
+# hard-coded tests in generate.c for the profile selection.  If those tests do
+# not already include the profile, using a value of -1 will be the same as
+# using 0 for alloc.  The hard-coded tests currently include checks for the
+# town, moria, and labyrinth profiles.
 
 # min-level is the shallowest dungeon level on which the profile can be used
 
@@ -46,36 +51,36 @@
 # rarity is the room's rarity - normally 0, 1 or 2 (see comments about profile
 # rarity above).  Some rooms are chosen by a different means; in this case
 # rarity is usually 0.
-# cutoff is used as for profile cutoffs to pick between rooms once a rarity is
-# chosen.  It is IMPORTANT that non-zero cutoffs appear in ascending order
-# within the rooms of the same rarity for a given profile.
-
-# Note that getting a smaller cave profile cutoff or room cutoff after a larger
-# one will result in the smaller one never appearing.
+# cutoff is used to pick between rooms once a rarity is chosen:  a random value
+# from 0 to 99 is selected and a room may appear if its cutoff is greater than
+# that value.  It is IMPORTANT that non-zero cutoffs appear in ascending order
+# within the rooms of the same rarity for a given profile:  a room with a
+# smaller cutoff appearing after one with a larger cutoff will never be
+# selected.
 
 ## Town
 name:town
 streamer:1:1:0:0:0:0
 params:1:0:200:0
-cutoff:-1
+alloc:-1
 
-## Labyrinth - these have cutoff -1, but still appear after other checks
-## To completely turn them off, set cutoff to a more negative value (eg -2)
+## Labyrinth - these have alloc -1, but still appear after other checks
+## To completely turn them off, set alloc to zero
 name:labyrinth
 params:1:0:200:0
-cutoff:-1
+alloc:-1
 
 ## Cavern
 name:cavern
 params:1:0:200:0
-cutoff:10
+alloc:10
 
 ## Classic
 name:classic
 params:11:50:200:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:99
+alloc:90
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -103,7 +108,7 @@ name:modified
 params:1:50:300:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:199
+alloc:97
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -133,13 +138,13 @@ room:simple room:0:11:33:1:0:0:100
 # these rooms are specially generated to join persistent levels
 room:staircase room:0:1:1:1:0:99:0
 
-## Moria - these have cutoff -1, but still appear after other checks
-## To completely turn them off, set cutoff to a more negative value (eg -2)
+## Moria - these have alloc -1, but still appear after other checks
+## To completely turn them off, set alloc to zero
 name:moria
 params:1:50:250:2
 tunnel:10:30:15:25:30
 streamer:5:2:3:90:2:40
-cutoff:-1
+alloc:-1
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -161,7 +166,7 @@ params:1:50:500:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
 min-level:20
-cutoff:197
+alloc:1
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -191,10 +196,10 @@ room:simple room:0:11:33:1:0:0:100
 name:gauntlet
 params:1:0:200:0
 min-level:20
-cutoff:198
+alloc:1
 
 ## Hard Centre
 name:hard centre
 params:1:0:200:0
 min-level:50
-cutoff:199
+alloc:1

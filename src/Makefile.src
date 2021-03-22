@@ -6,8 +6,8 @@
 #
 
 NAME = Angband
-VERSION = 4.2.1
-COPYRIGHT = (c) 1995-2020 Angband contributors
+VERSION = 4.2.2
+COPYRIGHT = (c) 1995-2021 Angband contributors
 PROGNAME = angband
 
 HEADERS = \
@@ -71,7 +71,7 @@ SNDSDLFILES = snd-sdl.o
 TESTMAINFILES = main-test.o
 
 WINMAINFILES = \
-        win/angband.res \
+        win/$(PROGNAME).res \
         main-win.o \
         win/readdib.o \
         win/readpng.o \

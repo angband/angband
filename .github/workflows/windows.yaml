@@ -1,0 +1,24 @@
+name: Windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Stock 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: sudo apt-get install gcc-mingw-w64 automake autoconf make
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          make
+

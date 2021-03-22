@@ -149,7 +149,11 @@ static bool monster_can_kill(struct chunk *c, struct monster *mon,
 	if (!mon1) return true;
 
 	/* No trampling uniques */
-	if (rf_has(mon1->race->flags, RF_UNIQUE)) return false;
+	if (rf_has(mon1->race->flags, RF_UNIQUE) ||
+			(mon1->original_race &&
+			rf_has(mon1->original_race->flags, RF_UNIQUE))) {
+		return false;
+	}
 
 	if (rf_has(mon->race->flags, RF_KILL_BODY) &&
 		compare_monsters(mon, mon1) > 0) {

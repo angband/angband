@@ -878,14 +878,23 @@ int edit_text(char *buffer, int buflen) {
 
 		size_t *line_starts = NULL, *line_lengths = NULL;
 		size_t n_lines;
+		/*
+		 * This is the total number of UTF-8 characters; can be less
+		 * less than len, the number of 8-bit units in the buffer,
+		 * if a single character is encoded with more than one 8-bit
+		 * unit.
+		 */
+		int ulen;
 
 		/* Display on screen */
 		clear_from(HIST_INSTRUCT_ROW);
-		textblock_append(tb, buffer);
+		textblock_append(tb, "%s", buffer);
 		textui_textblock_place(tb, area, NULL);
 
 		n_lines = textblock_calculate_lines(tb,
 				&line_starts, &line_lengths, area.width);
+		ulen = (n_lines > 0) ? line_starts[n_lines - 1] +
+			line_lengths[n_lines - 1]: 0;
 
 		/* Set cursor to current editing position */
 		get_screen_loc(cursor, &x, &y, n_lines, line_starts, line_lengths);
@@ -905,12 +914,12 @@ int edit_text(char *buffer, int buflen) {
 				break;
 
 			case ARROW_RIGHT:
-				if (cursor < len) cursor++;
+				if (cursor < ulen) cursor++;
 				break;
 
 			case ARROW_DOWN: {
 				int add = line_lengths[y] + 1;
-				if (cursor + add < len) cursor += add;
+				if (cursor + add < ulen) cursor += add;
 				break;
 			}
 
@@ -922,7 +931,7 @@ int edit_text(char *buffer, int buflen) {
 				break;
 
 			case KC_END:
-				cursor = MAX(0, len);
+				cursor = MAX(0, ulen);
 				break;
 
 			case KC_HOME:
@@ -931,21 +940,38 @@ int edit_text(char *buffer, int buflen) {
 
 			case KC_BACKSPACE:
 			case KC_DELETE: {
+				char *ocurs, *oshift;
+
 				/* Refuse to backspace into oblivion */
 				if ((ke.code == KC_BACKSPACE && cursor == 0) ||
-						(ke.code == KC_DELETE && cursor >= len))
+						(ke.code == KC_DELETE && cursor >= ulen))
 					break;
 
-				/* Move the string from k to nul along to the left by 1 */
-				if (ke.code == KC_BACKSPACE)
-					memmove(&buffer[cursor - 1], &buffer[cursor], len - cursor);
-				else
-					memmove(&buffer[cursor], &buffer[cursor + 1], len - cursor - 1);
-
-				/* Decrement */
-				if (ke.code == KC_BACKSPACE)
-					cursor--;
-				len--;
+				/*
+				 * Move the string from k to nul along to the
+				 * left by 1.  First, have to get offset
+				 * corresponding to the cursor position.
+				 */
+				ocurs = utf8_fskip(buffer, cursor, NULL);
+				assert(ocurs);
+				if (ke.code == KC_BACKSPACE) {
+					/* Get offset of the previous character. */
+					oshift = utf8_rskip(ocurs, 1, buffer);
+					assert(oshift);
+					memmove(oshift, ocurs,
+						len - (ocurs - buffer));
+					/* Decrement */
+					--cursor;
+					len -= ocurs - oshift;
+				} else {
+					/* Get offset of the next character. */
+					oshift = utf8_fskip(ocurs, 1, NULL);
+					assert(oshift);
+					memmove(ocurs, oshift,
+						len - (oshift - buffer));
+					/* Decrement. */
+					len -= oshift - ocurs;
+				}
 
 				/* Terminate */
 				buffer[len] = '\0';
@@ -954,27 +980,43 @@ int edit_text(char *buffer, int buflen) {
 			}
 			
 			default: {
-				bool atnull = (buffer[cursor] == 0);
+				bool atnull = (cursor == ulen);
+				char encoded[5];
+				int n_enc;
+				char *ocurs;
 
-				if (!isprint(ke.code))
+				if (!keycode_isprint(ke.code))
 					break;
 
-				if (atnull) {
-					/* Make sure we have enough room for a new character */
-					if ((cursor + 1) >= buflen) break;
-					if ((len + 1) >= buflen) break;
-				} else {
-					/* Make sure we have enough room to add a new character */
-					if ((cursor + 1) >= buflen) break;
-					if ((len + 1) >= buflen) break;
+				n_enc = utf32_to_utf8(encoded,
+					N_ELEMENTS(encoded), &ke.code, 1, NULL);
 
-					/* Move the rest of the buffer along to make room */
-					memmove(&buffer[cursor + 1], &buffer[cursor], len - cursor);
+				/*
+				 * Make sure we have something to add and have
+				 * enough space.
+				 */
+				if (n_enc == 0 || n_enc + len >= buflen) {
+					break;
 				}
 
-				/* Insert the character */
-				buffer[cursor++] = (char)ke.code;
-				len++;
+				/* Insert the encoded character. */
+				if (atnull) {
+					ocurs = buffer + len;
+				} else {
+					ocurs = utf8_fskip(buffer, cursor, NULL);
+					assert(ocurs);
+					/*
+					 * Move the rest of the buffer along
+					 * to make room.
+					 */
+					memmove(ocurs + n_enc, ocurs,
+						len - (ocurs - buffer));
+				}
+				memcpy(ocurs, encoded, n_enc);
+
+				/* Update cursor position and length. */
+				++cursor;
+				len += n_enc;
 
 				/* Terminate */
 				buffer[len] = '\0';

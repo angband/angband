@@ -36,9 +36,6 @@
 - (void)setGraphicsMode:(NSMenuItem *)sender;
 - (void)selectWindow:(id)sender;
 - (void)recomputeDefaultTileMultipliersIfNecessary;
-- (void)loadPrefs;
-- (void)linkTermData:(int)termIndex;
-- (void)initWindows;
 - (void)beginGame;
 
 @end

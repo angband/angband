@@ -173,7 +173,7 @@ struct cave_profile {
     struct streamer_profile str;	/*!< Used to build mineral streamers*/
     struct room_profile *room_profiles;	/*!< Used to build rooms */
     int min_level;			/*!< Shallowest level to use this profile */
-    int cutoff;				/*!< Used to see if we should try this dungeon */
+    int alloc;				/*!< Allocation weight for this profile */
 };
 
 
@@ -337,6 +337,13 @@ void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
 void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
+void dump_level_simple(const char *basefilename, const char *title,
+	struct chunk *c);
+void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist);
+void dump_level_header(ang_file *fo, const char *title);
+void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
+	int **dist);
+void dump_level_footer(ang_file *fo);
 
 /* gen-monster.c */
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok);

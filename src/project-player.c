@@ -131,7 +131,7 @@ typedef struct project_player_handler_context_s {
 	const struct source origin;
 	const int r;
 	const struct loc grid;
-	const int dam;
+	int dam; /* May need adjustment */
 	const int type;
 	const int power;
 
@@ -787,7 +787,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	int res_level = typ < ELEM_MAX ? player->state.el_info[typ].res_level : 0;
 
 	/* Decoy has been hit */
-	if (square_isdecoyed(cave, grid) && dam) {
+	if (square_isdecoyed(cave, grid) && context.dam) {
 		square_destroy_decoy(cave, grid);
 	}
 
@@ -856,18 +856,18 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	}
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(player,
-					 typ,
-					 dam,
-					 RANDOMISE,
-					 res_level,
-					 true);
-	if (dam) {
+	context.dam = adjust_dam(player,
+							 typ,
+							 context.dam,
+							 RANDOMISE,
+							 res_level,
+							 true);
+	if (context.dam) {
 		/* Self-inflicted damage is scaled down */
 		if (self) {
-			dam /= 10;
+			context.dam /= 10;
 		}
-		take_hit(player, dam, killer);
+		take_hit(player, context.dam, killer);
 	}
 
 	/* Handle side effects, possibly including extra damage */

@@ -81,5 +81,8 @@ bool option_set(const char *opt, int val);
 void options_init_cheat(void);
 void options_init_defaults(struct player_options *opts);
 void init_options(void);
+bool options_save_custom_birth(struct player_options *opts);
+bool options_restore_custom_birth(struct player_options *opts);
+void options_reset_birth(struct player_options *opts);
 
 #endif /* !INCLUDED_OPTIONS_H */

@@ -22,14 +22,18 @@ copyright = "2019, Angband developers past and present"
 author = "Angband developers past and present"
 
 # The full version, including alpha/beta/rc tags
-import re
-
-version_regex = r"AC_INIT\([a-zA-Z]+, (.+),"
-parsed_lines = [re.findall(version_regex, line) for line in open("../configure.ac")]
-versions = [line[0] for line in parsed_lines if len(line) != 0]
-release = versions[0]
+import subprocess
+# Python 3.5 introduces subprocess.run(); use check_output() instead in case
+# the system's Python is older than that.
+version = subprocess.check_output(['../scripts/version.sh'],
+        universal_newlines=True)
+release = version
 
 # -- General configuration ---------------------------------------------------
+
+# 2.0 changed the default value to 'index'.  Set this manually for backwards
+# compatibility with previous versions.
+master_doc = 'index'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

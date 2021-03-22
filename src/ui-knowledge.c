@@ -880,10 +880,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			/* Print dividers: horizontal and vertical */
 			for (i = 0; i < 79; i++)
-				Term_putch(i, 5, COLOUR_WHITE, '=');
+				Term_putch(i, 5, COLOUR_WHITE, L'=');
 
 			for (i = 0; i < browser_rows; i++)
-				Term_putch(g_name_len + 1, 6 + i, COLOUR_WHITE, '|');
+				Term_putch(g_name_len + 1, 6 + i, COLOUR_WHITE, L'|');
 
 
 			/* Reset redraw flag */
@@ -2132,9 +2132,9 @@ static void rune_lore(int oid)
 	char *title = string_make(rune_name(oid));
 
 	my_strcap(title);
-	textblock_append_c(tb, COLOUR_L_BLUE, title);
+	textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 	textblock_append(tb, "\n");
-	textblock_append(tb, rune_desc(oid));
+	textblock_append(tb, "%s", rune_desc(oid));
 	textblock_append(tb, "\n");
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
@@ -2321,9 +2321,9 @@ static void feat_lore(int oid)
 
 	if (feat->desc) {
 		my_strcap(title);
-		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 		textblock_append(tb, "\n");
-		textblock_append(tb, feat->desc);
+		textblock_append(tb, "%s", feat->desc);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
@@ -2506,9 +2506,9 @@ static void trap_lore(int oid)
 
 	if (trap->text) {
 		my_strcap(title);
-		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
 		textblock_append(tb, "\n");
-		textblock_append(tb, trap->text);
+		textblock_append(tb, "%s", trap->text);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
@@ -3119,7 +3119,7 @@ static void do_cmd_knowledge_shapechange(const char *name, int row)
 			prt("Knowledge - shapes", 2, 0);
 			prt("Name", 4, 0);
 			for (i = 0; i < MIN(80, wnew); i++) {
-				Term_putch(i, 5, COLOUR_WHITE, '=');
+				Term_putch(i, 5, COLOUR_WHITE, L'=');
 			}
 			prt("<dir>, 'r' to recall, ESC", h - 2, 0);
 			redraw = false;
@@ -3214,6 +3214,26 @@ static void do_cmd_knowledge_equip_cmp(const char* name, int row)
 	equip_cmp_display();
 }
 
+static bool handle_store_shortcuts(struct menu *m, const ui_event *ev, int oid)
+{
+	int i = 0;
+
+	assert(ev->type == EVT_KBRD);
+	while (1) {
+		if (! m->cmd_keys[i]) {
+			return false;
+		}
+		if (ev->key.code == (unsigned) m->cmd_keys[i]) {
+			menu_action *acts = menu_priv(m);
+
+			do_cmd_knowledge_store(
+				acts[i + STORE_KNOWLEDGE_ROW].name,
+				i + STORE_KNOWLEDGE_ROW);
+			return true;
+		}
+		++i;
+	}
+}
 
 /**
  * Definition of the "player knowledge" menu.
@@ -3228,21 +3248,20 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
 { 0, 0, "Display shapechange effects",     do_cmd_knowledge_shapechange },
-{ 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of bookseller",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of general store (1)", do_cmd_knowledge_store },
+{ 0, 0, "Display contents of armourer (2)",      do_cmd_knowledge_store },
+{ 0, 0, "Display contents of weaponsmith (3)",   do_cmd_knowledge_store },
+{ 0, 0, "Display contents of bookseller (4)",    do_cmd_knowledge_store },
+{ 0, 0, "Display contents of alchemist (5)",     do_cmd_knowledge_store },
+{ 0, 0, "Display contents of magic shop (6)",    do_cmd_knowledge_store },
+{ 0, 0, "Display contents of black market (7)",  do_cmd_knowledge_store },
+{ 0, 0, "Display contents of home (8)",          do_cmd_knowledge_store },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
-{ 0, 0, "Display equipable comparison",    do_cmd_knowledge_equip_cmp },
+{ 0, 0, "Display equippable comparison",   do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
-
 
 /**
  * Keep macro counts happy.
@@ -3260,6 +3279,10 @@ void textui_knowledge_init(void)
 
 	menu->title = "Display current knowledge";
 	menu->selections = lower_case;
+	/* Shortcuts to get the contents of the stores by number; does prevent
+	 * the normal use of 4 and 6 to go to the previous or next menu */
+	menu->cmd_keys = "12345678";
+	menu->keys_hook = handle_store_shortcuts;
 
 	/* initialize other static variables */
 	if (!obj_group_order) {

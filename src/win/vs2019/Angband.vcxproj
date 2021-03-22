@@ -176,6 +176,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\cmd-pickup.c" />
     <ClCompile Include="src\datafile.c" />
     <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\effects-info.c" />
     <ClCompile Include="src\effects.c" />
     <ClCompile Include="src\game-event.c" />
     <ClCompile Include="src\game-input.c" />
@@ -245,6 +246,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\project-player.c" />
     <ClCompile Include="src\project.c" />
     <ClCompile Include="src\randname.c" />
+    <ClCompile Include="src\save-charoutput.c" />
     <ClCompile Include="src\save.c" />
     <ClCompile Include="src\savefile.c" />
     <ClCompile Include="src\score.c" />
@@ -320,6 +322,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\datafile.h" />
     <ClInclude Include="src\debug.h" />
+    <ClInclude Include="src\effects-info.h" />
     <ClInclude Include="src\effects.h" />
     <ClInclude Include="src\game-event.h" />
     <ClInclude Include="src\game-input.h" />
@@ -358,6 +361,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\list-terrain-flags.h" />
     <ClInclude Include="src\list-trap-flags.h" />
     <ClInclude Include="src\list-tvals.h" />
+    <ClInclude Include="src\list-ui-entry-renderers.h" />
     <ClInclude Include="src\message.h" />
     <ClInclude Include="src\mon-attack.h" />
     <ClInclude Include="src\mon-blows.h" />
@@ -408,6 +412,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\player.h" />
     <ClInclude Include="src\project.h" />
     <ClInclude Include="src\randname.h" />
+    <ClInclude Include="src\save-charoutput.h" />
     <ClInclude Include="src\savefile.h" />
     <ClInclude Include="src\score.h" />
     <ClInclude Include="src\snd-sdl.h" />
@@ -452,6 +457,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-store.h" />
     <ClInclude Include="src\ui-target.h" />
     <ClInclude Include="src\ui-term.h" />
+    <ClInclude Include="src\ui-visuals.h" />
     <ClInclude Include="src\win\include\png.h" />
     <ClInclude Include="src\win\include\pngconf.h" />
     <ClInclude Include="src\win\include\zconf.h" />
@@ -541,6 +547,8 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <None Include="lib\tiles\old\xtra-xxx.prf" />
     <None Include="lib\tiles\shockbolt\flvr-shb.prf" />
     <None Include="lib\tiles\shockbolt\graf-shb.prf" />
+    <None Include="lib\tiles\shockbolt\graf-shb-dark.prf" />
+    <None Include="lib\tiles\shockbolt\graf-shb-light.prf" />
     <None Include="lib\tiles\shockbolt\xtra-shb.prf" />
   </ItemGroup>
   <ItemGroup>
@@ -550,6 +558,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\blow_methods.txt" />
     <Text Include="lib\gamedata\body.txt" />
     <Text Include="lib\gamedata\brand.txt" />
+    <Text Include="lib\gamedata\chest_trap.txt" />
     <Text Include="lib\gamedata\class.txt" />
     <Text Include="lib\gamedata\constants.txt" />
     <Text Include="lib\gamedata\curse.txt" />
@@ -569,6 +578,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\old_class.txt" />
     <Text Include="lib\gamedata\pain.txt" />
     <Text Include="lib\gamedata\pit.txt" />
+    <Text Include="lib\gamedata\player_property.txt" />
     <Text Include="lib\gamedata\player_timed.txt" />
     <Text Include="lib\gamedata\projection.txt" />
     <Text Include="lib\gamedata\p_race.txt" />
@@ -581,7 +591,11 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\summon.txt" />
     <Text Include="lib\gamedata\terrain.txt" />
     <Text Include="lib\gamedata\trap.txt" />
+    <Text Include="lib\gamedata\ui_entry.txt" />
+    <Text Include="lib\gamedata\ui_entry_base.txt" />
+    <Text Include="lib\gamedata\ui_entry_renderer.txt" />
     <Text Include="lib\gamedata\vault.txt" />
+    <Text Include="lib\gamedata\visuals.txt" />
     <Text Include="lib\gamedata\world.txt" />
     <Text Include="lib\help\commands.txt" />
     <Text Include="lib\help\debug.txt" />

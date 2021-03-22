@@ -1714,40 +1714,48 @@ void stats_collect(void)
 
 void calc_cave_distances(int **cave_dist)
 {
-	int dist, i;
-	int oy, ox, ty, tx, d;
+	int dist;
 
 	/* Squares with distance from player of n - 1 */
-	int d_x_old[DIST_MAX];
-	int d_y_old[DIST_MAX];
-	int d_old_max;
+	struct loc *ogrids;
+	int n_old, cap_old;
 
 	/* Squares with distance from player of n */
-	int d_x_new[DIST_MAX];
-	int d_y_new[DIST_MAX];
-	int d_new_max;
+	struct loc *ngrids;
+	int n_new, cap_new;
 
-	/* Get player location */
-	oy = d_y_old[0] = player->grid.y;
-	ox = d_x_old[0] = player->grid.x;
-	d_old_max = 1;
+	/*
+	 * The perimeter of the cave should overestimate the space needed so
+	 * there's fewer reallocations within the loop.
+	 */
+	cap_old = 2 * (cave->width + cave->height - 1);
+	ogrids = mem_alloc(cap_old * sizeof(*ogrids));
+	cap_new = cap_old;
+	ngrids = mem_alloc(cap_new * sizeof(*ngrids));
+
+	/* The player's location is the first one to test. */
+	ogrids[0] = player->grid;
+	n_old = 1;
 
 	/* Distance from player starts at 0 */
 	dist = 0;
 
 	/* Assign the distance value to the first square (player) */
-	cave_dist[oy][ox] = dist;
+	cave_dist[ogrids[0].y][ogrids[0].x] = dist;
 
 	do {
-		d_new_max = 0;
+		int i, n_tmp;
+		struct loc *gtmp;
+
+		n_new = 0;
 		dist++;
 
 		/* Loop over all visited squares of the previous iteration */
-		for (i = 0; i < d_old_max; i++){
-
+		for (i = 0; i < n_old; i++){
+			int d;
 			/* Get the square we want to look at */
-			oy = d_y_old[i];
-			ox = d_x_old[i];
+			int oy = ogrids[i].y;
+			int ox = ogrids[i].x;
 
 			/* debug
 			msg("x: %d y: %d dist: %d %d ",ox,oy,dist-1,i); */
@@ -1755,39 +1763,52 @@ void calc_cave_distances(int **cave_dist)
 			/* Get all adjacent squares */
 			for (d = 0; d < 8; d++) {
 				/* Adjacent square location */
-				ty = oy + ddy_ddd[d];
-				tx = ox + ddx_ddd[d];
+				int ty = oy + ddy_ddd[d];
+				int tx = ox + ddx_ddd[d];
 
 				if (!(square_in_bounds_fully(cave, loc(tx, ty)))) continue;
 
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 
-				/* Is it a wall? */
-				if (square_iswall(cave, loc(tx, ty))) continue;
+				/*
+				 * Impassable terrain which isn't a door or
+				 * rubble blocks progress.
+				 */
+				if (!square_ispassable(cave, loc(tx, ty)) &&
+					!square_isdoor(cave, loc(tx, ty)) &&
+					!square_isrubble(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
-				d_y_new[d_new_max] = ty;
-				d_x_new[d_new_max] = tx;
+				if (n_new == cap_new - 1) {
+					cap_new *= 2;
+					ngrids = mem_realloc(ngrids,
+						cap_new * sizeof(ngrids));
+				}
+				ngrids[n_new].y = ty;
+				ngrids[n_new].x = tx;
+				++n_new;
 
 				/* Assign the distance to that spot */
 				cave_dist[ty][tx] = dist;
-
-				d_new_max++;
 
 				/* debug
 				msg("x: %d y: %d dist: %d ",tx,ty,dist); */
 			}
 		}
 
-		/* Copy the new distance list to the old one */
-		for (i = 0; i < d_new_max; i++) {
-			d_y_old[i] = d_y_new[i];
-			d_x_old[i] = d_x_new[i];
-		}
-		d_old_max = d_new_max;
+		/* Swap the lists; do not need to preserve n_old. */
+		gtmp = ogrids;
+		ogrids = ngrids;
+		ngrids = gtmp;
+		n_tmp = cap_old;
+		cap_old = cap_new;
+		cap_new = n_tmp;
+		n_old = n_new;
+	} while (n_old > 0 && dist < DIST_MAX);
 
-	} while ((d_old_max > 0) || dist == DIST_MAX);
+	mem_free(ngrids);
+	mem_free(ogrids);
 }
 
 void pit_stats(void)
@@ -1884,6 +1905,9 @@ void disconnect_stats(void)
 	static char prompt[50];
 
 	long dsc_area = 0, dsc_from_stairs = 0;
+	bool stop_for_dis;
+	char path[1024];
+	ang_file *disfile;
 
 	/* This is the prompt for no. of tries */
 	strnfmt(prompt, sizeof(prompt), "Num of simulations: ");
@@ -1903,6 +1927,14 @@ void disconnect_stats(void)
 
 	/* Save */
 	tries = temp;
+
+	stop_for_dis = get_check("Stop if disconnected level found? ");
+
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, "disconnect.html");
+	disfile = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (disfile) {
+		dump_level_header(disfile, "Disconnected Levels");
+	}
 
 	for (i = 1; i <= tries; i++) {
 		/* Assume no disconnected areas */
@@ -1932,8 +1964,14 @@ void disconnect_stats(void)
 			for (x = 1; x < cave->width - 1; x++) {
 				struct loc grid = loc(x, y);
 
-				/* Don't care about walls */
-				if (square_iswall(cave, grid)) continue;
+				/*
+				 * Don't care about impassable terrain that's
+				 * not a closed or secret door or impassable
+				 * rubble.
+				 */
+				if (!square_ispassable(cave, grid) &&
+					!square_isdoor(cave, grid) &&
+					!square_isrubble(cave, grid)) continue;
 
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0) {
@@ -1961,16 +1999,28 @@ void disconnect_stats(void)
 
 		if (has_dsc) dsc_area++;
 
-		msg("Iteration: %d",i); 
+		if (has_dsc || has_dsc_from_stairs) {
+			if (disfile) {
+				dump_level_body(disfile, "Disconnected Level",
+					cave, cave_dist);
+			}
+			if (stop_for_dis) i = tries;
+		}
 
 		/* Free arrays */
-		for (y = 0; x < cave->height; x++)
+		for (y = 0; y < cave->height; y++)
 			mem_free(cave_dist[y]);
 		mem_free(cave_dist);
 	}
 
 	msg("Total levels with disconnected areas: %ld",dsc_area);
 	msg("Total levels isolated from stairs: %ld",dsc_from_stairs);
+	if (disfile) {
+		dump_level_footer(disfile);
+		if (file_close(disfile)) {
+			msg("Map is in disconnect.html.");
+		}
+	}
 
 	/* Redraw the level */
 	do_cmd_redraw();

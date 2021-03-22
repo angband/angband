@@ -13,7 +13,7 @@ OPT ?= -O2
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
 
-ARCHS = x86_64
+ARCHS = x86_64 arm64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 OSXVERSFLAGS = -mmacosx-version-min=10.9
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
@@ -200,7 +200,7 @@ PACKAGE_NAME = $(NAME)-$(VERSION)
 dist: install
 	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
-	cp -r ../docs/* disttemp/Docs
+	(cd ../docs/_build/html && tar -cf - .) | (cd disttemp/Docs && tar -xf -)
 	cp -R -p "$(APPBNDL)" disttemp
 	SetFile -a B disttemp/$(APPNAME)
 
