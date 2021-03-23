@@ -1118,7 +1118,8 @@ bool effect_handler_WEB(effect_handler_context_t *context)
 	/* Check within the radius for clear floor */
 	for (grid.y = mon->grid.y - rad; grid.y <= mon->grid.y + rad; grid.y++) {
 		for (grid.x = mon->grid.x - rad; grid.x <= mon->grid.x + rad; grid.x++){
-			if (distance(grid, mon->grid) > rad) continue;
+			if (distance(grid, mon->grid) > rad ||
+				!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Require a floor grid with no existing traps or glyphs */
 			if (!square_iswebbable(cave, grid)) continue;
