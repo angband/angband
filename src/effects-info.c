@@ -462,6 +462,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 				strnfmt(desc, sizeof(desc), edesc,
 					projections[e->subtype].player_desc,
 					e->radius, i_radius, dice_string);
+				append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			}
 			break;
 
