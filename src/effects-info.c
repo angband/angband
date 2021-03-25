@@ -68,6 +68,28 @@ static void format_dice_string(const random_value *v, int multiplier,
 }
 
 
+/**
+ * Appends a message describing the magical device skill bonus and the average
+ * damage. Average damage is only displayed if there is variance or a magical
+ * device bonus.
+ */
+static void append_damage(char *buffer, size_t buffer_size, random_value value,
+	int dev_skill_boost)
+{
+	if (dev_skill_boost != 0) {
+		my_strcat(buffer, format(", which your device skill increases by %d%%",
+			dev_skill_boost), buffer_size);
+	}
+
+	if (randcalc_varies(value) || dev_skill_boost > 0) {
+		// Ten times the average damage, for 1 digit of precision
+		int dam = (100 + dev_skill_boost) * randcalc(value, 0, AVERAGE) / 10;
+		my_strcat(buffer, format(" for an average of %d.%d damage", dam / 10,
+			dam % 10), buffer_size);
+	}
+}
+
+
 static void copy_to_textblock_with_coloring(textblock *tb, const char *s)
 {
 	while (*s) {
@@ -204,12 +226,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 			dice_string);
 		strnfmt(desc, sizeof(desc), effect_desc(efirst), breaths,
 			efirst->other, dice_string);
-		if (dev_skill_boost != 0 && efirst->index != EF_BREATH) {
-			my_strcat(desc,
-				format(", which your device skill increases by %d per cent",
-					dev_skill_boost),
-				sizeof(desc));
-		}
+		append_damage(desc, sizeof(desc), first_rv,
+			efirst->index == EF_BREATH ? 0 : dev_skill_boost);
 
 		res = textblock_new();
 		if (prefix) {
@@ -290,13 +308,12 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 {
 	textblock *tb = NULL;
 	int nadded = 0;
-	char desc[200];
+	char desc[250];
 
 	while (e) {
 		const char* edesc = effect_desc(e);
 		int roll = 0;
 		random_value value = { 0, 0, 0, 0 };
-		bool boosted = false;
 		char dice_string[20];
 
 		if (e->dice != NULL) {
@@ -435,7 +452,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].player_desc,
 				e->radius, dice_string);
-			boosted = (dev_skill_boost != 0);
+			append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			break;
 
 		case EFINFO_SPOT:
@@ -452,8 +469,8 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].player_desc, e->other,
 				dice_string);
-			boosted = (dev_skill_boost != 0 &&
-				e->index != EF_BREATH);
+			append_damage(desc, sizeof(desc), value,
+				e->index == EF_BREATH ? 0 : dev_skill_boost);
 			break;
 
 		case EFINFO_SHORT:
@@ -479,7 +496,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			/* Bolts and beams that damage */
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].desc, dice_string);
-			boosted = (dev_skill_boost != 0);
+			append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			break;
 
 		case EFINFO_TOUCH:
@@ -499,13 +516,6 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), "");
 			msg("Bad effect description passed to effect_info().  Please report this bug.");
 			break;
-		}
-
-		if (boosted) {
-			my_strcat(desc,
-				format(", which your device skill increases by %d per cent",
-					 dev_skill_boost),
-				sizeof(desc));
 		}
 
 		e = (only_first) ? NULL : e->next;
