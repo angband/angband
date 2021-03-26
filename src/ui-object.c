@@ -932,7 +932,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	if (event->type == EVT_SELECT) {
-		if (get_item_allow(choice[oid].object, cmd_lookup_key(item_cmd, mode),
+		if (choice[oid].object && get_item_allow(choice[oid].object, cmd_lookup_key(item_cmd, mode),
 						   item_cmd, is_harmless))
 			selection = choice[oid].object;
 	}
