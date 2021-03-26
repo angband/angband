@@ -542,3 +542,112 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 
 	return tb;
 }
+
+/**
+ * Returns a pointer to the next effect in the effect stack, skipping over
+ * all the sub-effects from random effects
+ */
+struct effect *effect_next(struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		struct effect *e = effect;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		// Skip all the sub-effects, plus one to advance beyond current
+		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
+			e = e->next;
+		}
+		return e;
+	} else {
+		return effect->next;
+	}
+}
+
+/**
+ * Checks if the effect deals damage, by checking the effect's info string.
+ * Random effects are considered to deal damage if any sub-effect deals
+ * damage.
+ */
+bool effect_damages(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect
+		struct effect *e = effect->next;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+
+		// Check if any of the subeffects do damage
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			if (effect_damages(e)) {
+				return true;
+			}
+			e = e->next;
+		}
+		return false;
+	} else {
+		// Non-random effect, check the info string for damage
+		return effect_info(effect) != NULL &&
+			streq(effect_info(effect), "dam");
+	}
+}
+
+/**
+ * Calculates the average damage of the effect. Random effects return an
+ * average of all sub-effect averages.
+ */
+int effect_avg_damage(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect, check the sub-effects to accumulate damage
+		int total = 0;
+		struct effect *e = effect->next;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			total += effect_avg_damage(e);
+			e = e->next;
+		}
+		// Return an average of the sub-effects' average damages
+		return total / num_subeffects;
+	} else {
+		// Non-random effect, calculate the average damage
+		return effect_damages(effect) ?
+			dice_evaluate(effect->dice, 0, AVERAGE, NULL)
+			: 0;
+	}
+}
+
+/**
+ * Returns the projection of the effect, or an empty string if it has none.
+ * Random effects only return a projection if all sub-effects have the same
+ * projection.
+ */
+const char *effect_projection(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		struct effect *e = effect->next;
+		const char *subeffect_proj = effect_projection(e);
+
+		// Check if all subeffects have the same projection, and if not just
+		// give up on it
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			if (!streq(subeffect_proj, effect_projection(e))) {
+				return "";
+			}
+			e = e->next;
+		}
+
+		return subeffect_proj;
+	} else if (projections[effect->subtype].player_desc != NULL) {
+		// Non-random effect, extract the projection if there is one
+		switch (base_descs[effect->index].efinfo_flag) {
+			case EFINFO_BALL:
+			case EFINFO_BOLTD:
+			case EFINFO_BREATH:
+			case EFINFO_SHORT:
+			case EFINFO_SPOT:
+				return projections[effect->subtype].player_desc;
+		}
+	}
+
+	return "";
+}

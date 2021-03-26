@@ -23,5 +23,9 @@ struct effect;
 
 textblock *effect_describe(const struct effect *e, const char *prefix,
 	int dev_skill_boost, bool only_first);
+struct effect *effect_next(struct effect *effect);
+bool effect_damages(const struct effect *effect);
+int effect_avg_damage(const struct effect *effect);
+const char *effect_projection(const struct effect *effect);
 
 #endif /* !EFFECTS_INFO_H */
