@@ -495,7 +495,6 @@ power:4
 effect:LIGHT_AREA
 effect:SPOT:LIGHT_WEAK:2
 dice:2d8
-desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
 name:TELE_PHASE
 aim:0
@@ -664,7 +663,6 @@ msg:The {kind} well{s} with clear light...
 effect:LIGHT_AREA
 effect:SPOT:LIGHT_WEAK:3
 dice:2d15
-desc:lights up the surrounding area, hurting light-sensitive creatures
 
 name:CLAIRVOYANCE
 aim:0
@@ -751,7 +749,6 @@ power:18
 msg:Lightning surrounds your {kind}!
 effect:STAR_BALL:ELEC:3
 dice:150
-desc:fires balls of electricity in all directions, each one causing 150 damage
 
 name:RAGE_BLESS_RESIST
 aim:0
@@ -804,21 +801,18 @@ power:5
 msg:Your {kind} {is} covered in fire...
 effect:BOLT:FIRE
 dice:9d8
-desc:creates a fire bolt with damage 9d8
 
 name:FIRE_BOLT2
 aim:1
 power:7
 effect:BOLT_OR_BEAM:FIRE
 dice:12d8
-desc:creates a fire bolt with damage 12d8
 
 name:FIRE_BOLT3
 aim:1
 power:9
 effect:BOLT_OR_BEAM:FIRE
 dice:16d8
-desc:creates a fire bolt with damage 16d8
 
 name:FIRE_BOLT72
 aim:1
@@ -826,7 +820,6 @@ power:9
 msg:{name} rages in fire...
 effect:BALL:FIRE:2
 dice:72
-desc:creates a fire ball with damage 72
 
 name:FIRE_BALL
 aim:1
@@ -834,21 +827,18 @@ power:11
 msg:The {kind} glow{s} deep red...
 effect:BALL:FIRE:2
 dice:144
-desc:creates a fire ball with damage 144
 
 name:FIRE_BALL2
 aim:1
 power:11
 effect:BALL:FIRE:3
 dice:120
-desc:creates a large fire ball with damage 120
 
 name:FIRE_BALL200
 aim:1
 power:13
 effect:BALL:FIRE:3
 dice:200
-desc:creates a large fire ball with damage 200
 
 name:COLD_BOLT
 aim:1
@@ -856,7 +846,6 @@ power:4
 msg:Your {kind} {is} covered in frost...
 effect:BOLT_OR_BEAM:COLD
 dice:6d8
-desc:creates a frost bolt with damage 6d8
 
 name:COLD_BOLT2
 aim:1
@@ -864,14 +853,12 @@ power:7
 msg:{name} glows a pale blue...
 effect:BOLT:COLD
 dice:12d8
-desc:creates a frost bolt with damage 12d8
 
 name:COLD_BALL2
 aim:1
 power:13
 effect:BALL:COLD:3
 dice:200
-desc:creates a large frost ball with damage 200
 
 name:COLD_BALL50
 aim:1
@@ -879,7 +866,6 @@ power:8
 msg:Your {kind} {is} covered in frost...
 effect:BALL:COLD:2
 dice:50
-desc:creates a frost ball with damage 50
 
 name:COLD_BALL100
 aim:1
@@ -887,14 +873,12 @@ power:10
 msg:{name} glows an intense blue...
 effect:BALL:COLD:2
 dice:100
-desc:creates a frost ball with damage 100
 
 name:COLD_BALL160
 aim:1
 power:12
 effect:BALL:COLD:3
 dice:160
-desc:creates a frost ball with damage 160
 
 name:ACID_BOLT
 aim:1
@@ -902,28 +886,24 @@ power:4
 msg:Your {kind} {is} covered in acid...
 effect:BOLT:ACID
 dice:5d8
-desc:creates an acid bolt with damage 5d8
 
 name:ACID_BOLT2
 aim:1
 power:6
 effect:BOLT_OR_BEAM:ACID
 dice:10d8
-desc:creates an acid bolt with damage 10d8
 
 name:ACID_BOLT3
 aim:1
 power:7
 effect:BOLT_OR_BEAM:ACID
 dice:12d8
-desc:creates an acid bolt with damage 12d8
 
 name:ACID_BALL
 aim:1
 power:11
 effect:BALL:ACID:2
 dice:120
-desc:creates an acid ball with damage 120
 
 name:ELEC_BOLT
 aim:1
@@ -931,21 +911,18 @@ power:5
 msg:Your {kind} {is} covered in sparks...
 effect:BEAM:ELEC
 dice:6d6
-desc:creates a lightning bolt (that always beams) with damage 6d6
 
 name:ELEC_BALL
 aim:1
 power:9
 effect:BALL:ELEC:2
 dice:64
-desc:creates a lightning ball with damage 64
 
 name:ELEC_BALL2
 aim:1
 power:14
 effect:BALL:ELEC:3
 dice:250
-desc:creates a large lightning ball with damage 250
 
 
 name:DRAIN_LIFE1
@@ -984,7 +961,6 @@ power:3
 msg:{name} glows very brightly...
 effect:BOLT_OR_BEAM:MISSILE
 dice:3d4
-desc:fires a magic missile with damage 3d4
 
 name:MANA_BOLT
 aim:1
@@ -992,7 +968,6 @@ power:7
 msg:Your {kind} glow{s} white...
 effect:BOLT:MANA
 dice:12d8
-desc:fires a mana bolt with damage 12d8
 
 name:BIZARRE
 aim:1
@@ -1007,7 +982,6 @@ power:11
 msg:Your {kind} form{s} a magical arrow...
 effect:BOLT:ARROW
 dice:150
-desc:fires a magical arrow with damage 150
 
 name:STINKING_CLOUD
 aim:1
@@ -1015,7 +989,6 @@ power:3
 msg:{name} throws deep green shadows...
 effect:BALL:POIS:3
 dice:12
-desc:fires a stinking cloud with damage 12
 
 name:STONE_TO_MUD
 aim:1
@@ -1023,7 +996,6 @@ power:6
 msg:Your {kind} pulsate{s}...
 effect:LINE:KILL_WALL
 dice:20+1d30
-desc:turns rock into mud
 
 name:TELE_OTHER
 aim:1
@@ -1078,7 +1050,6 @@ power:6
 msg:A line of shimmering blue light appears.
 effect:LINE:LIGHT_WEAK
 dice:6d8
-desc:lights up part of the dungeon in a straight line
 
 name:DISABLE_TRAPS
 aim:1
@@ -1106,7 +1077,6 @@ aim:0
 power:5
 effect:STAR:LIGHT_WEAK
 dice:6d8
-desc:fires a line of light in all directions, each one causing light-sensitive creatures 6d8 damage
 
 name:STARLIGHT2
 aim:0
@@ -1114,7 +1084,6 @@ power:7
 msg:Your {kind} glow{s} with the light of a thousand stars...
 effect:STAR:LIGHT
 dice:10d8
-desc:fires a line of light in all directions, each one causing 10d8 damage
 
 name:BERSERKER
 aim:0
@@ -1149,7 +1118,6 @@ effect:BREATH:COLD:0:30
 dice:160
 effect:BREATH:POIS:0:30
 dice:160
-desc:shoots a large cone of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI
 aim:0
@@ -1189,7 +1157,6 @@ effect:BREATH:FIRE:0:30
 dice:80
 effect:BREATH:COLD:0:30
 dice:80
-desc:causes you to breathe either cold or flames for 80 damage
 
 name:FOOD_WAYBREAD
 aim:0
@@ -1262,7 +1229,6 @@ effect:BALL:ACID:2
 dice:70
 effect:TIMED_INC:OPP_ACID
 dice:20+1d20
-desc:grants acid resistance for d20+20 turns and creates an acid ball of damage 70
 
 name:RING_FLAMES
 aim:1
@@ -1271,7 +1237,6 @@ effect:BALL:FIRE:2
 dice:80
 effect:TIMED_INC:OPP_FIRE
 dice:20+1d20
-desc:grants fire resistance for d20+20 turns and creates a fire ball of damage 80
 
 name:RING_ICE
 aim:1
@@ -1280,7 +1245,6 @@ effect:BALL:COLD:2
 dice:75
 effect:TIMED_INC:OPP_COLD
 dice:20+1d20
-desc:grants cold resistance for d20+20 turns and creates a cold ball of damage 75
 
 name:RING_LIGHTNING
 aim:1
@@ -1289,7 +1253,6 @@ effect:BALL:ELEC:2
 dice:85
 effect:TIMED_INC:OPP_ELEC
 dice:20+1d20
-desc:grants electricity resistance for d20+20 turns and creates a lightning ball of damage 85
 
 
 name:DRAGON_BLUE
@@ -1297,21 +1260,18 @@ aim:1
 power:18
 effect:BREATH:ELEC:0:20
 dice:150
-desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
 effect:BREATH:POIS:0:20
 dice:150
-desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
 effect:BREATH:FIRE:0:20
 dice:200
-desc:allows you to breathe fire for 200 damage
 
 name:DRAGON_MULTIHUED
 aim:1
@@ -1328,14 +1288,12 @@ effect:BREATH:COLD:0:20
 dice:250
 effect:BREATH:POIS:0:20
 dice:250
-desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
 effect:BREATH:SOUND:0:20
 dice:150
-desc:allows you to breathe sound for 150 damage
 
 name:DRAGON_CHAOS
 aim:1
@@ -1346,7 +1304,6 @@ effect:BREATH:CHAOS:0:20
 dice:220
 effect:BREATH:DISEN:0:20
 dice:220
-desc:allows you to breathe chaos or disenchantment for 220 damage
 
 name:DRAGON_LAW
 aim:1
@@ -1357,7 +1314,6 @@ effect:BREATH:SOUND:0:20
 dice:230
 effect:BREATH:SHARD:0:20
 dice:230
-desc:allows you to breathe sound or shards for 230 damage
 
 name:DRAGON_BALANCE
 aim:1
@@ -1372,7 +1328,6 @@ effect:BREATH:CHAOS:0:20
 dice:250
 effect:BREATH:DISEN:0:20
 dice:250
-desc:allows you to breathe balance for 250 damage
 
 name:DRAGON_SHINING
 aim:1
@@ -1383,11 +1338,9 @@ effect:BREATH:LIGHT:0:20
 dice:200
 effect:BREATH:DARK:0:20
 dice:200
-desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
 effect:BREATH:MISSILE:0:20
 dice:300
-desc:allows you to breathe for 300 damage
