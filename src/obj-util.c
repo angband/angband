@@ -656,7 +656,7 @@ bool obj_kind_can_browse(const struct object_kind *kind)
 
 	for (i = 0; i < player->class->magic.num_books; i++) {
 		struct class_book book = player->class->magic.books[i];
-		if (kind == lookup_kind(book.tval, book.sval))
+		if (kind->tval == book.tval && kind->sval == book.sval)
 			return true;
 	}
 
