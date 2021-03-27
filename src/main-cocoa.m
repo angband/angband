@@ -1969,6 +1969,7 @@ static void AngbandUpdateWindowVisibility(void)
      * It doesn't change between calls, as the flags themselves are hardcoded
      */
     static u32b validWindowFlagsMask = 0;
+    BOOL anyChanged = NO;
 
     if( validWindowFlagsMask == 0 )
     {
@@ -2004,11 +2005,13 @@ static void AngbandUpdateWindowVisibility(void)
             {
                 [angbandContext.primaryWindow orderFront: nil];
                 angbandContext.windowVisibilityChecked = YES;
+                anyChanged = YES;
             }
-            else
+            else if ([angbandContext.primaryWindow isVisible])
             {
                 [angbandContext.primaryWindow close];
                 angbandContext.windowVisibilityChecked = NO;
+                anyChanged = YES;
             }
         }
         else
@@ -2020,20 +2023,24 @@ static void AngbandUpdateWindowVisibility(void)
                 [angbandContext.primaryWindow close];
                 angbandContext.hasSubwindowFlags = NO;
                 [angbandContext saveWindowVisibleToDefaults: NO];
+                anyChanged = YES;
             }
             else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
             {
                 [angbandContext.primaryWindow orderFront: nil];
                 angbandContext.hasSubwindowFlags = YES;
                 [angbandContext saveWindowVisibleToDefaults: YES];
+                anyChanged = YES;
             }
         }
     }
 
     /* Make the main window key so that user events go to the right spot */
-    AngbandContext *mainWindow =
-	(__bridge AngbandContext*) (angband_term[0]->data);
-    [mainWindow.primaryWindow makeKeyAndOrderFront: nil];
+    if (anyChanged) {
+        AngbandContext *mainWindow =
+	    (__bridge AngbandContext*) (angband_term[0]->data);
+        [mainWindow.primaryWindow makeKeyAndOrderFront: nil];
+    }
 }
 
 /**
