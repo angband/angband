@@ -4301,13 +4301,6 @@ static void Term_init_cocoa(term *t)
 
 	    if( termIdx == 0 )
 	    {
-		/*
-		 * The height and width adjustments were determined
-		 * experimentally, so that the rest of the windows line up
-		 * nicely without overlapping.
-		 */
-		windowFrame.size.width += 7.0;
-		windowFrame.size.height += 9.0;
 		windowFrame.origin.x = NSMinX( overallBoundingRect );
 		windowFrame.origin.y =
 		    NSMaxY( overallBoundingRect ) - NSHeight( windowFrame );
@@ -5601,28 +5594,28 @@ static void load_prefs(void)
 
 	switch (i) {
 	case 0:
-	    columns = 129;
-	    rows = 32;
+	    columns = 100;
+	    rows = 30;
 	    break;
 	case 1:
-	    columns = 84;
-	    rows = 20;
+	    columns = 66;
+	    rows = 10;
 	    break;
 	case 2:
-	    columns = 42;
+	    columns = 38;
 	    rows = 24;
 	    break;
 	case 3:
-	    columns = 42;
-	    rows = 20;
+	    columns = 38;
+	    rows = 10;
 	    break;
 	case 4:
-	    columns = 42;
-	    rows = 16;
+	    columns = 38;
+	    rows = 15;
 	    break;
 	case 5:
-	    columns = 84;
-	    rows = 20;
+	    columns = 66;
+	    rows = 10;
 	    break;
 	default:
 	    columns = 80;
