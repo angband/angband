@@ -1703,7 +1703,9 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		const char *prefix;
 		textblock *tbe;
 
-		if (aimed)
+		if (obj->activation)
+			prefix = "When activated, it ";
+		else if (aimed)
 			prefix = "When aimed, it ";
 		else if (tval_is_edible(obj))
 			prefix = "When eaten, it ";

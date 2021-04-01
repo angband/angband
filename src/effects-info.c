@@ -68,6 +68,28 @@ static void format_dice_string(const random_value *v, int multiplier,
 }
 
 
+/**
+ * Appends a message describing the magical device skill bonus and the average
+ * damage. Average damage is only displayed if there is variance or a magical
+ * device bonus.
+ */
+static void append_damage(char *buffer, size_t buffer_size, random_value value,
+	int dev_skill_boost)
+{
+	if (dev_skill_boost != 0) {
+		my_strcat(buffer, format(", which your device skill increases by %d%%",
+			dev_skill_boost), buffer_size);
+	}
+
+	if (randcalc_varies(value) || dev_skill_boost > 0) {
+		// Ten times the average damage, for 1 digit of precision
+		int dam = (100 + dev_skill_boost) * randcalc(value, 0, AVERAGE) / 10;
+		my_strcat(buffer, format(" for an average of %d.%d damage", dam / 10,
+			dam % 10), buffer_size);
+	}
+}
+
+
 static void copy_to_textblock_with_coloring(textblock *tb, const char *s)
 {
 	while (*s) {
@@ -204,12 +226,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 			dice_string);
 		strnfmt(desc, sizeof(desc), effect_desc(efirst), breaths,
 			efirst->other, dice_string);
-		if (dev_skill_boost != 0 && efirst->index != EF_BREATH) {
-			my_strcat(desc,
-				format(", which your device skill increases by %d per cent",
-					dev_skill_boost),
-				sizeof(desc));
-		}
+		append_damage(desc, sizeof(desc), first_rv,
+			efirst->index == EF_BREATH ? 0 : dev_skill_boost);
 
 		res = textblock_new();
 		if (prefix) {
@@ -290,13 +308,12 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 {
 	textblock *tb = NULL;
 	int nadded = 0;
-	char desc[200];
+	char desc[250];
 
 	while (e) {
 		const char* edesc = effect_desc(e);
 		int roll = 0;
 		random_value value = { 0, 0, 0, 0 };
-		bool boosted = false;
 		char dice_string[20];
 
 		if (e->dice != NULL) {
@@ -435,7 +452,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].player_desc,
 				e->radius, dice_string);
-			boosted = (dev_skill_boost != 0);
+			append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			break;
 
 		case EFINFO_SPOT:
@@ -445,6 +462,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 				strnfmt(desc, sizeof(desc), edesc,
 					projections[e->subtype].player_desc,
 					e->radius, i_radius, dice_string);
+				append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			}
 			break;
 
@@ -452,8 +470,8 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].player_desc, e->other,
 				dice_string);
-			boosted = (dev_skill_boost != 0 &&
-				e->index != EF_BREATH);
+			append_damage(desc, sizeof(desc), value,
+				e->index == EF_BREATH ? 0 : dev_skill_boost);
 			break;
 
 		case EFINFO_SHORT:
@@ -479,7 +497,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			/* Bolts and beams that damage */
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].desc, dice_string);
-			boosted = (dev_skill_boost != 0);
+			append_damage(desc, sizeof(desc), value, dev_skill_boost);
 			break;
 
 		case EFINFO_TOUCH:
@@ -499,13 +517,6 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), "");
 			msg("Bad effect description passed to effect_info().  Please report this bug.");
 			break;
-		}
-
-		if (boosted) {
-			my_strcat(desc,
-				format(", which your device skill increases by %d per cent",
-					 dev_skill_boost),
-				sizeof(desc));
 		}
 
 		e = (only_first) ? NULL : e->next;
@@ -530,4 +541,113 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 	}
 
 	return tb;
+}
+
+/**
+ * Returns a pointer to the next effect in the effect stack, skipping over
+ * all the sub-effects from random effects
+ */
+struct effect *effect_next(struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		struct effect *e = effect;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		// Skip all the sub-effects, plus one to advance beyond current
+		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
+			e = e->next;
+		}
+		return e;
+	} else {
+		return effect->next;
+	}
+}
+
+/**
+ * Checks if the effect deals damage, by checking the effect's info string.
+ * Random effects are considered to deal damage if any sub-effect deals
+ * damage.
+ */
+bool effect_damages(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect
+		struct effect *e = effect->next;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+
+		// Check if any of the subeffects do damage
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			if (effect_damages(e)) {
+				return true;
+			}
+			e = e->next;
+		}
+		return false;
+	} else {
+		// Non-random effect, check the info string for damage
+		return effect_info(effect) != NULL &&
+			streq(effect_info(effect), "dam");
+	}
+}
+
+/**
+ * Calculates the average damage of the effect. Random effects return an
+ * average of all sub-effect averages.
+ */
+int effect_avg_damage(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect, check the sub-effects to accumulate damage
+		int total = 0;
+		struct effect *e = effect->next;
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			total += effect_avg_damage(e);
+			e = e->next;
+		}
+		// Return an average of the sub-effects' average damages
+		return total / num_subeffects;
+	} else {
+		// Non-random effect, calculate the average damage
+		return effect_damages(effect) ?
+			dice_evaluate(effect->dice, 0, AVERAGE, NULL)
+			: 0;
+	}
+}
+
+/**
+ * Returns the projection of the effect, or an empty string if it has none.
+ * Random effects only return a projection if all sub-effects have the same
+ * projection.
+ */
+const char *effect_projection(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM) {
+		// Random effect
+		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		struct effect *e = effect->next;
+		const char *subeffect_proj = effect_projection(e);
+
+		// Check if all subeffects have the same projection, and if not just
+		// give up on it
+		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+			if (!streq(subeffect_proj, effect_projection(e))) {
+				return "";
+			}
+			e = e->next;
+		}
+
+		return subeffect_proj;
+	} else if (projections[effect->subtype].player_desc != NULL) {
+		// Non-random effect, extract the projection if there is one
+		switch (base_descs[effect->index].efinfo_flag) {
+			case EFINFO_BALL:
+			case EFINFO_BOLTD:
+			case EFINFO_BREATH:
+			case EFINFO_SHORT:
+			case EFINFO_SPOT:
+				return projections[effect->subtype].player_desc;
+		}
+	}
+
+	return "";
 }
