@@ -31,6 +31,7 @@ ADD_EXECUTABLE(Angband
         src/cmd-misc.c
         src/cmd-obj.c
         src/cmd-pickup.c
+        src/cmd-wizard.c
         src/datafile.c
         src/debug.c
         src/effects.c
