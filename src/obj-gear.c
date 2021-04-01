@@ -176,7 +176,8 @@ int pack_slots_used(struct player *p)
 				for (i = 0; i < z_info->quiver_size; i++) {
 					if (p->upkeep->quiver[i] == obj) {
 						quiver_ammo += obj->number *
-							(tval_is_ammo(obj) ? 1 : 5);
+							(tval_is_ammo(obj) ?
+							1 : z_info->thrown_quiver_mult);
 						found = true;
 						break;
 					}
@@ -485,119 +486,140 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 }
 
 /**
- * Check how many missiles can be put in the quiver without increasing the
- * number of pack slots used.
+ * Check how many missiles can be put in the quiver with a limit on whether
+ * the quiver can expand to take more slots in the pack.
  *
- * Returns the quantity from a given stack of missiles that can be added.
+ * \param obj Is the object to add.
+ * \param n_add_pack At entry, *n_add_pack is the maximum number of additional
+ * pack slots to give to the quiver.  At exit, *n_add_pack will be the number
+ * of those slots that were not used to expand the quiver.
+ * \param n_to_quiver At exit, *n_to_quiver will be the number that can be
+ * added to the quiver.  It will be no more than obj->number.  The value of
+ * *n_to_quiver at entry is not used.
  */
-static int quiver_absorb_num(const struct object *obj)
+static void quiver_absorb_num(const struct object *obj, int *n_add_pack,
+	int *n_to_quiver)
 {
 	bool ammo = tval_is_ammo(obj);
-	bool throwing = of_has(obj->flags, OF_THROWING);
 
 	/* Must be ammo or good for throwing */
-	if (ammo || throwing) {
-		int i, quiver_count = 0, space_free = 0;
+	if (ammo || of_has(obj->flags, OF_THROWING)) {
+		int i, quiver_count = 0, space_free = 0, n_empty = 0;
+		int desired_slot = preferred_quiver_slot(obj);
+		bool displaces = false;
 
-		/* Count the current space this object could go into */
+		/* Count the current space this object could go into. */
 		for (i = 0; i < z_info->quiver_size; i++) {
 			struct object *quiver_obj = player->upkeep->quiver[i];
 			if (quiver_obj) {
-				int mult = tval_is_ammo(quiver_obj) ? 1 : 5;
+				int mult = tval_is_ammo(quiver_obj) ?
+					1 : z_info->thrown_quiver_mult;
 
 				quiver_count += quiver_obj->number * mult;
-				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
-					space_free += z_info->quiver_slot_size
-						- quiver_obj->number * mult;
-			} else if (ammo) {
-				space_free += z_info->quiver_slot_size;
-			} else if (obj->note) {
+				if (object_stackable(quiver_obj, obj, OSTACK_PACK)) {
+					assert(quiver_obj->number * mult <=
+						z_info->quiver_slot_size);
+					space_free += z_info->quiver_slot_size -
+						quiver_obj->number * mult;
+				} else if (desired_slot == i &&
+						preferred_quiver_slot(quiver_obj) != i) {
+					/*
+					 * The object to be added prefers to go
+					 * in this slot, but it's occupied by
+					 * something that could be displaced
+					 * to another quiver slot, if one is
+					 * available.
+					 */
+					displaces = true;
+					assert(quiver_obj->number * mult <=
+						z_info->quiver_slot_size);
+					space_free += z_info->quiver_slot_size -
+						quiver_obj->number * mult;
+				}
+			} else {
+				++n_empty;
 				/*
-				 * Per calc_inventory(), throwing weapons
-				 * which aren't also ammo will be added to the
-				 * quiver if inscribed to go into an unoccupied
-				 * slot.  The inscription test should match what
-				 * calc_inventory() uses.
+				 * Ammo can fit in any empty slot in the quiver.
+				 * Non-ammo throwing items are restricted to
+				 * their preferred slot.
 				 */
-				const char *s = strchr(quark_str(obj->note), '@');
-
-				if (s && (s[1] == 'f' || s[1] == 'v') &&
-						s[2] - '0' == i) {
+				if (ammo || desired_slot == i) {
 					space_free += z_info->quiver_slot_size;
 				}
 			}
 		}
 
-		if (space_free) {
-			/* Check we won't need another pack slot */
-			quiver_count += z_info->quiver_slot_size;
-			while (quiver_count > z_info->quiver_slot_size)
-				quiver_count -= z_info->quiver_slot_size;
+		/*
+		 * Only possible to add if there is space free in the quiver
+		 * and either are displacing a pile with an empty quiver slot
+		 * available for it or are not displacing a pile at all.
+		 */
+		if (space_free && ((displaces && n_empty) || !displaces)) {
+			int mult = ammo ? 1 : z_info->thrown_quiver_mult;
+			/*
+			 * When quiver_count % quiver_slot_size is zero, adding
+			 * anything will require a pack slot.
+			 */
+			int remainder = quiver_count % z_info->quiver_slot_size;
+			int limit_from_pack = (remainder) ?
+				z_info->quiver_slot_size - remainder : 0;
 
-			/* Return the number, or the number that will fit */
-			space_free = MIN(space_free, z_info->quiver_slot_size - quiver_count);
-			return MIN(obj->number,
-				space_free / (tval_is_ammo(obj) ? 1 : 5));
+			if (*n_add_pack > 0) {
+				limit_from_pack += *n_add_pack *
+					z_info->quiver_slot_size;
+			}
+
+			/* Return the number or amount that fits. */
+			space_free = MIN(space_free, limit_from_pack);
+			*n_to_quiver = MIN(obj->number, space_free / mult);
+			*n_add_pack -= (*n_to_quiver * mult +
+				z_info->quiver_slot_size - 1 -
+				remainder) / z_info->quiver_slot_size;
+			return;
 		}
 	}
 
-	/* No ammo or no space */
-	return 0;
+	/* Not suitable for the quiver or no space */
+	*n_to_quiver = 0;
 }
 
 /**
  * Calculate how much of an item is can be carried in the inventory or quiver.
- *
- * Optionally only return a positive value if there is already a similar object.
  */
-int inven_carry_num(const struct object *obj, bool stack)
+int inven_carry_num(const struct object *obj)
 {
-	/* Check for similarity */
-	if (stack) {
-		struct object *gear_obj;
+	int n_free_slot = z_info->pack_size - pack_slots_used(player);
+	int num_to_quiver, num_left, i;
 
-		for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
-			if (!object_is_equipped(player->body, gear_obj) &&
-					object_stackable(gear_obj, obj, OSTACK_PACK)) {
-				break;
-			}
-		}
+	/* Absorb as many as we can in the quiver. */
+	quiver_absorb_num(obj, &n_free_slot, &num_to_quiver);
 
-		/* No similar object, so no stacking */
-		if (!gear_obj) {
-			return 0;
-		}
-	}
-
-	/* Free inventory slots, so there is definitely room */
-	if (pack_slots_used(player) < z_info->pack_size) {
+	/* The quiver will get everything, or the pack can hold what's left. */
+	if (num_to_quiver == obj->number || n_free_slot > 0) {
 		return obj->number;
-	} else {
-		int i;
-
-		/* Absorb as many as we can in the quiver */
-		int num_left = obj->number - quiver_absorb_num(obj);
-
-		/* See if we can add to a part full inventory slot */
-		for (i = 0; i < z_info->pack_size; i++) {
-			struct object *inven_obj = player->upkeep->inven[i];
-			if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
-				num_left -= inven_obj->kind->base->max_stack - inven_obj->number;
-			}
-		}
-
-		/* Return the number we can absorb */
-		return obj->number - MAX(num_left, 0);
 	}
+
+	/* See if we can add to a partially full inventory slot. */
+	num_left = obj->number - num_to_quiver;
+	for (i = 0; i < z_info->pack_size; i++) {
+		struct object *inven_obj = player->upkeep->inven[i];
+		if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
+			num_left -= inven_obj->kind->base->max_stack -
+				inven_obj->number;
+			if (num_left <= 0) break;
+		}
+	}
+
+	/* Return the number we can absorb */
+	return obj->number - MAX(num_left, 0);
 }
 
 /**
- * Check if we have space for some of an item in the pack, optionally requiring
- * stacking
+ * Check if we have space for some of an item in the pack.
  */
 bool inven_carry_okay(const struct object *obj)
 {
-	return inven_carry_num(obj, false) > 0;
+	return inven_carry_num(obj) > 0;
 }
 
 /**
@@ -642,8 +664,12 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		struct object *gear_obj = p->gear;
 		while ((combine_item == NULL) && (gear_obj != NULL)) {
+			object_stack_t stack_mode =
+				object_is_in_quiver(p, gear_obj) ?
+				OSTACK_QUIVER : OSTACK_PACK;
+
 			if (!object_is_equipped(p->body, gear_obj) &&
-					object_similar(gear_obj, obj, OSTACK_PACK)) {
+					object_similar(gear_obj, obj, stack_mode)) {
 				combine_item = gear_obj;
 			}
 
@@ -935,10 +961,37 @@ static bool inven_can_stack_partial(const struct object *obj1,
 {
 	if (!(mode & OSTACK_STORE)) {
 		int total = obj1->number + obj2->number;
-		int remainder = total - obj1->kind->base->max_stack;
 
-		if (remainder > obj1->kind->base->max_stack)
-			return false;
+		/* The quiver may have stricter limits. */
+		if (mode & OSTACK_QUIVER) {
+			int limit = z_info->quiver_slot_size /
+				(tval_is_ammo(obj1) ?
+				1 : z_info->thrown_quiver_mult);
+
+			if (mode & ~OSTACK_QUIVER) {
+				/*
+				 * May be combining between stacks with
+				 * different limits.
+				 */
+				int remainder =
+					total - obj1->kind->base->max_stack;
+
+				if (remainder > limit) {
+					return false;
+				}
+			} else {
+				int remainder = total - limit;
+
+				if (remainder > limit) {
+					return false;
+				}
+			}
+		} else {
+			int remainder = total - obj1->kind->base->max_stack;
+
+			if (remainder > obj1->kind->base->max_stack)
+				return false;
+		}
 	}
 
 	return object_stackable(obj1, obj2, mode);
@@ -962,10 +1015,14 @@ void combine_pack(void)
 
 		/* Scan the items above that item */
 		for (obj2 = player->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
+			object_stack_t stack_mode2 =
+				object_is_in_quiver(player, obj2) ?
+				OSTACK_QUIVER : OSTACK_PACK;
+
 			assert(obj2->kind);
 
 			/* Can we drop "obj1" onto "obj2"? */
-			if (object_similar(obj2, obj1, OSTACK_PACK)) {
+			if (object_similar(obj2, obj1, stack_mode2)) {
 				display_message = true;
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
@@ -975,17 +1032,33 @@ void combine_pack(void)
 				obj2->known->number = obj2->number;
 
 				break;
-			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
-				/* Setting this to true spams the combine message. */
-				display_message = false;
-				object_absorb_partial(obj2->known, obj1->known);
-				object_absorb_partial(obj2, obj1);
+			} else {
+				object_stack_t stack_mode1 =
+					object_is_in_quiver(player, obj1) ?
+					OSTACK_QUIVER : OSTACK_PACK;
 
-				/* Ensure numbers align (should not be necessary, but safer) */
-				obj2->known->number = obj2->number;
-				obj1->known->number = obj1->number;
+				if (inven_can_stack_partial(obj2, obj1,
+						stack_mode2 | stack_mode1)) {
+					/*
+					 * Setting this to true spams the
+					 * combine message.
+					 */
+					display_message = false;
+					object_absorb_partial(obj2->known,
+						obj1->known, stack_mode2,
+						stack_mode1);
+					object_absorb_partial(obj2, obj1,
+						stack_mode2, stack_mode1);
 
-				break;
+					/*
+					 * Ensure numbers align (should not be
+					 * necessary, but safer)
+					 */
+					obj2->known->number = obj2->number;
+					obj1->known->number = obj1->number;
+
+					break;
+				}
 			}
 		}
 		obj1 = prev;
@@ -1076,4 +1149,25 @@ void pack_overflow(struct object *obj)
 	if (player->upkeep->notice) notice_stuff(player);
 	if (player->upkeep->update) update_stuff(player);
 	if (player->upkeep->redraw) redraw_stuff(player);
+}
+
+/**
+ * Look at an item's inscription to determine where it wants to be placed in
+ * the quiver.  If the item is not appropriate for the quiver or is not
+ * appropriately inscribed, return -1.
+ */
+int preferred_quiver_slot(const struct object *obj)
+{
+	int desired_slot = -1;
+
+	if (obj->note && (tval_is_ammo(obj) ||
+			of_has(obj->flags, OF_THROWING))) {
+		const char *s = strchr(quark_str(obj->note), '@');
+
+		if (s && (s[1] == 'f' || s[1] == 'v')) {
+			desired_slot = s[2] - '0';
+		}
+	}
+
+	return desired_slot;
 }

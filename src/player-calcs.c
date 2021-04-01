@@ -30,6 +30,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1024,6 +1025,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 {
 	int i;
 	int old_inven_cnt = upkeep->inven_cnt;
+	int n_stack_split = 0;
+	int n_pack_remaining = z_info->pack_size - pack_slots_used(player);
 	struct object **old_quiver = mem_zalloc(z_info->quiver_size *
 												sizeof(struct object *));
 	struct object **old_pack = mem_zalloc(z_info->pack_size *
@@ -1048,29 +1051,59 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Find the first quiver object with the correct label */
 		for (current = gear; current; current = current->next) {
-			bool throwing = of_has(current->flags, OF_THROWING);
-
-			/* Only allow ammo and throwing weapons */
-			if (!(tval_is_ammo(current) || throwing)) continue;
-
 			/* Allocate inscribed objects if it's the right slot */
-			if (current->note) {
-				const char *s = strchr(quark_str(current->note), '@');
-				if (s && (s[1] == 'f' || s[1] == 'v')) {
-					int choice = s[2] - '0';
+			if (preferred_quiver_slot(current) == i) {
+				int mult = tval_is_ammo(current) ?
+					1 : z_info->thrown_quiver_mult;
+				struct object *to_quiver;
 
-					/* Correct slot, fill it straight away */
-					if (choice == i) {
-						int mult = tval_is_ammo(current) ? 1 : 5;
-						upkeep->quiver[i] = current;
-						upkeep->quiver_cnt += current->number * mult;
+				/*
+				 * Split the stack if necessary.  Don't allow
+				 * splitting if it could result in overfilling
+				 * the pack by more than one slot.
+				 */
+				if (current->number * mult <=
+						z_info->quiver_slot_size) {
+					to_quiver = current;
+				} else {
+					int nsplit = z_info->quiver_slot_size /
+						mult;
 
-						/* In the quiver counts as worn */
-						object_learn_on_wield(player, current);
-
-						/* Done with this slot */
-						break;
+					assert(nsplit < current->number);
+					if (nsplit > 0 && n_stack_split <=
+							n_pack_remaining) {
+						/*
+						 * Split off the portion that
+						 * go to the pack.  Since the
+						 * stack in the quiver is
+						 * earlier in the gear list
+						 * it will prefer to remain
+						 * in the quiver in future
+						 * calls to calc_inventory()
+						 * and will be the preferential
+						 * destination for merges in
+						 * combine_pack().
+						 */
+						to_quiver = current;
+						gear_insert_end(object_split(
+							current, current->number
+							- nsplit));
+						++n_stack_split;
+					} else {
+						to_quiver = NULL;
 					}
+				}
+
+				if (to_quiver) {
+					upkeep->quiver[i] = to_quiver;
+					upkeep->quiver_cnt +=
+						to_quiver->number * mult;
+
+					/* In the quiver counts as worn */
+					object_learn_on_wield(player, to_quiver);
+
+					/* Done with this slot */
+					break;
 				}
 			}
 		}
@@ -1078,7 +1111,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 	/* Now fill the rest of the slots in order */
 	for (i = 0; i < z_info->quiver_size; i++) {
-		struct object *current, *first = NULL;
+		struct object *current, *to_quiver, *first = NULL;
 		int j;
 
 		/* If the slot is full, move on */
@@ -1106,12 +1139,30 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		/* Stop looking if there's nothing left */
 		if (!first) break;
 
-		/* If we have an item, slot it */
-		upkeep->quiver[i] = first;
-		upkeep->quiver_cnt += first->number;
+		/* If we have an item, slot it, splitting if needed, to fit. */
+		if (first->number <= z_info->quiver_slot_size) {
+			to_quiver = first;
+		} else if (z_info->quiver_slot_size > 0 &&
+				n_stack_split <= n_pack_remaining) {
+			/*
+			 * As above, split off the portion that goes to the
+			 * pack.
+			 */
+			to_quiver = first;
+			gear_insert_end(object_split(first,
+				first->number - z_info->quiver_slot_size));
+			++n_stack_split;
+		} else {
+			to_quiver = NULL;
+		}
 
-		/* In the quiver counts as worn */
-		object_learn_on_wield(player, first);
+		if (to_quiver) {
+			upkeep->quiver[i] = to_quiver;
+			upkeep->quiver_cnt += to_quiver->number;
+
+			/* In the quiver counts as worn */
+			object_learn_on_wield(player, to_quiver);
+		}
 	}
 
 	/* Note reordering */

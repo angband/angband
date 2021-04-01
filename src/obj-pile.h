@@ -64,7 +64,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 bool object_similar(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
 void object_origin_combine(struct object *obj1, const struct object *obj2);
-void object_absorb_partial(struct object *obj1, struct object *obj2);
+void object_absorb_partial(struct object *obj1, struct object *obj2,
+	object_stack_t mode1, object_stack_t mode2);
 void object_absorb(struct object *obj1, struct object *obj2);
 void object_wipe(struct object *obj);
 void object_copy(struct object *obj1, const struct object *obj2);

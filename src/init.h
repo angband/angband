@@ -99,6 +99,7 @@ struct angband_constants
 	u16b pack_size;		/**< Maximum number of pack slots */
 	u16b quiver_size;	/**< Maximum number of quiver slots */
 	u16b quiver_slot_size;	/**< Maximum number of missiles per quiver slot */
+	u16b thrown_quiver_mult;/**< Size multiplier for non-ammo in quiver */
 	u16b floor_size;	/**< Maximum number of items per floor grid */
 
 	/* Store parameters, read from constants.txt */
