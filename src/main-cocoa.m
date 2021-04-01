@@ -2322,10 +2322,15 @@ static int compare_advances(const void *ap, const void *bp)
     }
 
     /*
-     * Record the tile size.  Round both values up to have tile boundaries
-     * match pixel boundaries.
+     * Record the tile size.  Round the values (height rounded up; width to
+     * nearest unless that would be zero) to have tile boundaries match pixel
+     * boundaries.
      */
-    self->_tileSize.width = ceil(medianAdvance);
+    if (medianAdvance < 1.0) {
+	self->_tileSize.width = 1.0;
+    } else {
+	self->_tileSize.width = floor(medianAdvance + 0.5);
+    }
     self->_tileSize.height = ceil(self.fontAscender - self.fontDescender);
 
     /*
