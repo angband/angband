@@ -605,7 +605,7 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 	ok;
 }
 
-static test_calc_inventory_quiver_split_pile(void *state) {
+static int test_calc_inventory_quiver_split_pile(void *state) {
 	struct simple_test_case this_test_case = {
 		{
 			{ TV_FLASK, 1, 10 },
