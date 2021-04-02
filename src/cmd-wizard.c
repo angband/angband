@@ -217,7 +217,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
 		obj->number, obj->pval,
 		obj->artifact ? obj->artifact->aidx : 0,
-		obj->ego ? obj->ego->eidx : -1,
+		obj->ego ? (int) obj->ego->eidx : -1,
 		(long)object_value(obj, 1)), 6, j);
 
 	prt("+------------FLAGS------------------+", 16, j);
@@ -1185,7 +1185,7 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 	 * Keep in the bounds of [0, maximum s32b].  Assumes a two's complement
 	 * representation.
 	 */
-	player->au = MIN((1L << 31) - 1, MAX(0, newv));
+	player->au = MIN((s32b)((1UL << 31) - 1), MAX(0, newv));
 
 	/* Flag what needs to be updated or redrawn. */
 	player->upkeep->redraw |= PR_GOLD;
