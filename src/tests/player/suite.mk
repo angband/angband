@@ -1,6 +1,6 @@
 TESTPROGS += player/birth \
              player/calc-inventory \
-             player/inven-carry-num \
              player/history \
+             player/inven-carry-num \
              player/pathfind \
              player/playerstat

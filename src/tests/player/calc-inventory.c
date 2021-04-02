@@ -259,7 +259,7 @@ static bool verify_stability(struct player *p) {
 	}
 	mem_free(old_quiver);
 	mem_free(old_pack);
-	return true;
+	return result;
 }
 
 static int test_calc_inventory_empty(void *state) {
@@ -605,7 +605,7 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 	ok;
 }
 
-static test_calc_inventory_quiver_split_pile(void *state) {
+static int test_calc_inventory_quiver_split_pile(void *state) {
 	struct simple_test_case this_test_case = {
 		{
 			{ TV_FLASK, 1, 10 },
