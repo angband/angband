@@ -29,7 +29,6 @@ struct carry_num_state {
 
 int setup_tests(void **state) {
 	struct carry_num_state *cns;
-	int i;
 
 	set_file_paths();
 	init_angband();
@@ -94,7 +93,6 @@ int setup_tests(void **state) {
 
 int teardown_tests(void *state) {
 	struct carry_num_state *cns = state;
-	int i;
 
 	if (cns->torch->known) {
 		object_free(cns->torch->known);
