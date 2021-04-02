@@ -22,8 +22,6 @@ static bool find_empty_spot(struct chunk *c, struct player *p)
 	int ntry = 0;
 
 	while (ntry < 100) {
-		int dir, dir_next, dir_fallback;
-
 		if (square_isobjectholding(c, p->grid) &&
 				square_object(c, p->grid) == NULL) {
 			return true;
