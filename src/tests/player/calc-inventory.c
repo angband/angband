@@ -259,7 +259,7 @@ static bool verify_stability(struct player *p) {
 	}
 	mem_free(old_quiver);
 	mem_free(old_pack);
-	return true;
+	return result;
 }
 
 static int test_calc_inventory_empty(void *state) {
