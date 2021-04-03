@@ -46,10 +46,12 @@
 
 
 /*
- * Used by do_cmd_wiz_edit_player_*() functions to disable later editing stages
- * so it is possible to break out of the editing process.
+ * Used by do_cmd_wiz_edit_player_*() functions to track the state of the
+ * editing process.
  */
-static int break_editing = 0;
+enum EditPlayerState {
+	EDIT_PLAYER_UNKNOWN, EDIT_PLAYER_STARTED, EDIT_PLAYER_BREAK
+} edit_player_state = EDIT_PLAYER_UNKNOWN;
 
 
 /**
@@ -1137,7 +1139,7 @@ void do_cmd_wiz_edit_player_exp(struct command *cmd)
 	char s[80];
 	long newv;
 
-	if (break_editing) return;
+	if (edit_player_state == EDIT_PLAYER_BREAK) return;
 
 	/* Set default value. */
 	strnfmt(s, sizeof(s), "%ld", (long)(player->exp));
@@ -1145,7 +1147,7 @@ void do_cmd_wiz_edit_player_exp(struct command *cmd)
 	if (!get_string("Experience: ", s, sizeof(s)) ||
 			!get_long_from_string(s, &newv)) {
 		/* Set next editing stage to break. */
-		break_editing = 1;
+		edit_player_state = EDIT_PLAYER_BREAK;
 		return;
 	}
 
@@ -1169,7 +1171,7 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 	char s[80];
 	long newv;
 
-	if (break_editing) return;
+	if (edit_player_state == EDIT_PLAYER_BREAK) return;
 
 	/* Set default value. */
 	strnfmt(s, sizeof(s), "%ld", (long)(player->au));
@@ -1177,7 +1179,7 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 	if (!get_string("Gold: ", s, sizeof(s)) ||
 			!get_long_from_string(s, &newv)) {
 		/* Set next editing stage to break. */
-		break_editing = 1;
+		edit_player_state = EDIT_PLAYER_BREAK;
 		return;
 	}
 
@@ -1194,30 +1196,44 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 
 /**
  * Start editing the player (CMD_WIZ_EDIT_PLAYER_START).  Takes no arguments
- * from cmd.  Because of the use of static state (break_editing), this is not
- * reentrant.
+ * from cmd.  Because of the use of static state (edit_player_state), this is
+ * not reentrant.
  */
 void do_cmd_wiz_edit_player_start(struct command *cmd)
 {
 	int i;
 
-	break_editing = 0;
+	if (edit_player_state != EDIT_PLAYER_UNKNOWN) {
+		/*
+		 * Invoked as the cleanup stage for an edit session to work
+		 * nicely with command repetition.
+		 */
+		edit_player_state = EDIT_PLAYER_UNKNOWN;
+		return;
+	}
+	edit_player_state = EDIT_PLAYER_STARTED;
 	for (i = 0; i < STAT_MAX; ++i) {
 		if (cmdq_push(CMD_WIZ_EDIT_PLAYER_STAT) != 0) {
 			/* Failed.  Skip any queued edit commands. */
-			break_editing = 1;
+			edit_player_state = EDIT_PLAYER_BREAK;
 			return;
 		}
 		cmd_set_arg_choice(cmdq_peek(), "choice", i);
 	}
 	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_GOLD) != 0) {
 		/* Failed.  Skip any queued edit commands. */
-		break_editing = 1;
+		edit_player_state = EDIT_PLAYER_BREAK;
 		return;
 	}
 	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_EXP) != 0) {
 		/* Failed.  Skip any queued edit commands. */
-		break_editing = 1;
+		edit_player_state = EDIT_PLAYER_BREAK;
+		return;
+	}
+	/* Make the last command look like the first so repetition works. */
+	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_START) != 0) {
+		/* Failed. Skip any queued edit commands. */
+		edit_player_state = EDIT_PLAYER_BREAK;
 		return;
 	}
 }
@@ -1233,7 +1249,7 @@ void do_cmd_wiz_edit_player_stat(struct command *cmd)
 	int stat, newv;
 	char prompt[80], s[80];
 
-	if (break_editing) return;
+	if (edit_player_state == EDIT_PLAYER_BREAK) return;
 
 	if (cmd_get_arg_choice(cmd, "choice", &stat) != CMD_OK) {
 		strnfmt(prompt, sizeof(prompt),
@@ -1265,7 +1281,7 @@ void do_cmd_wiz_edit_player_stat(struct command *cmd)
 	if (!get_string(prompt, s, sizeof(s)) ||
 			!get_int_from_string(s, &newv)) {
 		/* Set next editing stage to break. */
-		break_editing = 1;
+		edit_player_state = EDIT_PLAYER_BREAK;
 		return;
 	}
 
