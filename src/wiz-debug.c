@@ -36,6 +36,7 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-prefs.h"
+#include "ui-spoil.h"
 #include "wizard.h"
 
 
@@ -457,23 +458,17 @@ void get_debug_command(void)
 	{
 		/* Ignore */
 		case ' ':
-		{
 			break;
-		}
 
 		/* Hack -- Generate Spoilers */
 		case '"':
-		{
 			do_cmd_spoilers();
 			break;
-		}
 
 		/* Hack -- Help */
 		case '?':
-		{
 			do_cmd_wiz_help();
 			break;
-		}
 
 		/* Cure all maladies */
 		case 'a':

@@ -100,6 +100,12 @@ typedef enum cmd_code {
 	CMD_STASH,
 	CMD_RETRIEVE,
 
+	/* Spoiler commands */
+	CMD_SPOIL_ARTIFACT,
+	CMD_SPOIL_MON,
+	CMD_SPOIL_MON_BRIEF,
+	CMD_SPOIL_OBJ,
+
 	/* Debugging commands */
 	CMD_WIZ_ACQUIRE,
 	CMD_WIZ_ADVANCE,

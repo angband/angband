@@ -84,6 +84,9 @@
     <ClCompile Include="src\cmd-pickup.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\cmd-spoil.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\cmd-wizard.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -403,6 +406,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ui-spell.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui-spoil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ui-store.c">
@@ -903,6 +909,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-spell.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-spoil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-store.h">

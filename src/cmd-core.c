@@ -113,6 +113,11 @@ static const struct command_info game_cmds[] =
 
 	{ CMD_COMMAND_MONSTER, "make a monster act", do_cmd_mon_command, false, 0 },
 
+	{ CMD_SPOIL_ARTIFACT, "generate spoiler file for artifacts", do_cmd_spoil_artifact, false, 0 },
+	{ CMD_SPOIL_MON, "generate spoiler file for monsters", do_cmd_spoil_monster, false, 0 },
+	{ CMD_SPOIL_MON_BRIEF, "generate brief spoiler file for monsters", do_cmd_spoil_monster_brief, false, 0 },
+	{ CMD_SPOIL_OBJ, "generate spoiler file for objects", do_cmd_spoil_obj, false, 0 },
+
 	{ CMD_WIZ_ACQUIRE, "acquire objects", do_cmd_wiz_acquire, false, 0 },
 	{ CMD_WIZ_ADVANCE, "make character powerful", do_cmd_wiz_advance, false, 0 },
 	{ CMD_WIZ_BANISH, "banish nearby monsters", do_cmd_wiz_banish, false, 0 },

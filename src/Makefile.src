@@ -90,6 +90,7 @@ ANGFILES = \
 	cmd-misc.o \
 	cmd-obj.o \
 	cmd-pickup.o \
+	cmd-spoil.o \
 	cmd-wizard.o \
 	datafile.o \
 	debug.o \
@@ -202,6 +203,7 @@ ANGFILES = \
 	ui-score.o \
 	ui-signals.o \
 	ui-spell.o \
+	ui-spoil.o \
 	ui-store.o \
 	ui-target.o \
 	ui-term.o \
