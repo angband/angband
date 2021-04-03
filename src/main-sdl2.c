@@ -564,7 +564,7 @@ static SDL_Color g_colors[MAX_COLORS];
 static struct font_info g_font_info[MAX_FONTS];
 /* True if KC_MOD_KEYPAD will be sent for numeric keypad keys at the expense
  * of not handling some keyboard layouts properly. */
-static int g_kp_as_mod = 0;
+static int g_kp_as_mod = 1;
 
 /* Forward declarations */
 
