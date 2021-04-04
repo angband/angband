@@ -293,6 +293,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-target.c" />
     <ClCompile Include="src\ui-term.c" />
     <ClCompile Include="src\ui-visuals.c" />
+    <ClCompile Include="src\ui-wizard.c" />
     <ClCompile Include="src\win\readdib.c" />
     <ClCompile Include="src\win\readpng.c" />
     <ClCompile Include="src\win\scrnshot.c" />
@@ -462,6 +463,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-target.h" />
     <ClInclude Include="src\ui-term.h" />
     <ClInclude Include="src\ui-visuals.h" />
+    <ClInclude Include="src\ui-wizard.h" />
     <ClInclude Include="src\win\include\png.h" />
     <ClInclude Include="src\win\include\pngconf.h" />
     <ClInclude Include="src\win\include\zconf.h" />

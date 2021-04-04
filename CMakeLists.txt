@@ -163,6 +163,7 @@ ADD_EXECUTABLE(Angband
         src/ui-target.c
         src/ui-term.c
         src/ui-visuals.c
+        src/ui-wizard.c
         src/wiz-debug.c
         src/wiz-spoil.c
         src/wiz-stats.c

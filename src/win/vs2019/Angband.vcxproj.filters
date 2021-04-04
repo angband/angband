@@ -420,6 +420,9 @@
     <ClCompile Include="src\ui-term.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui-wizard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\wiz-debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -924,6 +927,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-visuals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-wizard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\wizard.h">
