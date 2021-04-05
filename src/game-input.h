@@ -56,6 +56,7 @@ extern bool (*get_item_hook)(struct object **choice, const char *pmt,
 							 int mode);
 extern bool (*get_curse_hook)(int *choice, struct object *obj,
 							  char *dice_string);
+extern bool (*confirm_debug_hook)(void);
 extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 extern bool (*map_is_visible_hook)(void);
@@ -74,6 +75,7 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
 bool get_curse(int *choice, struct object *obj, char *dice_string);
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
+bool confirm_debug(void);
 bool panel_contains(unsigned int y, unsigned int x);
 bool map_is_visible(void);
 

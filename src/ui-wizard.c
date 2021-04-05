@@ -1,6 +1,6 @@
 /**
  * \file ui-wizard.c
- * \brief Implements menus related to debug commands
+ * \brief Implements menus and ui-game.c shims related to debug commands
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -16,6 +16,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
 #include "obj-desc.h"
@@ -370,4 +371,94 @@ void wiz_create_item(bool art)
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
 	handle_stuff(player);
+}
+
+
+/**
+ * Confirm before quitting without a save.
+ */
+void wiz_confirm_quit_no_save(void)
+{
+	if (get_check("Really quit without saving? ")) {
+		cmdq_push(CMD_WIZ_QUIT_NO_SAVE);
+	}
+}
+
+
+/**
+ * Shim for ui-game.c to call wiz_create_item(true).
+ */
+void wiz_create_artifact(void)
+{
+	wiz_create_item(true);
+}
+
+
+/**
+ * Shim for ui-game.c to call wiz_create_item(false).
+ */
+void wiz_create_nonartifact(void)
+{
+	wiz_create_item(false);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_ACQUIRE for good objects.
+ */
+void wiz_acquire_good(void)
+{
+	cmdq_push(CMD_WIZ_ACQUIRE);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_ACQUIRE for great objects.
+ */
+void wiz_acquire_great(void)
+{
+	cmdq_push(CMD_WIZ_ACQUIRE);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 1);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL with
+ * instant artifacts included.
+ */
+void wiz_create_all_for_tval(void)
+{
+	cmdq_push(CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 1);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_LEARN_OBJECT_KINDS for all levels.
+ */
+void wiz_learn_all_object_kinds(void)
+{
+	cmdq_push(CMD_WIZ_LEARN_OBJECT_KINDS);
+	cmd_set_arg_number(cmdq_peek(), "level", 100);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_TELEPORT_RANDOM for short distances.
+ */
+void wiz_phase_door(void)
+{
+	cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
+	cmd_set_arg_number(cmdq_peek(), "range", 10);
+}
+
+
+/**
+ * Shim for ui-game.c to set up CMD_WIZ_TELEPORT_RANDOM for long distances.
+ */
+void wiz_teleport(void)
+{
+	cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
+	cmd_set_arg_number(cmdq_peek(), "range", 100);
 }

@@ -46,7 +46,6 @@
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-target.h"
-#include "wizard.h"
 
 
 
@@ -166,30 +165,6 @@ void do_cmd_version(void)
 	textblock_append(tb, "%s", copyright);
 	textui_textblock_show(tb, local_area, header_buf);
 	textblock_free(tb);
-}
-
-/**
- * Verify use of "debug" mode
- */
-void textui_cmd_debug(void)
-{
-	/* Ask first time */
-	if (!(player->noscore & NOSCORE_DEBUG)) {
-		/* Mention effects */
-		msg("You are about to use the dangerous, unsupported, debug commands!");
-		msg("Your machine may crash, and your savefile may become corrupted!");
-		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to use the debug commands? "))
-			return;
-
-		/* Mark savefile */
-		player->noscore |= NOSCORE_DEBUG;
-	}
-
-	/* Okay */
-	get_debug_command();
 }
 
 /**

@@ -21,7 +21,6 @@
 
 /* wiz-debug.c */
 void wiz_cheat_death(void);
-void get_debug_command(void);
 
 /* wiz-stats.c */
 bool stats_are_enabled(void);

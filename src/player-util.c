@@ -1111,6 +1111,24 @@ bool player_can_refuel_prereq(void)
 }
 
 /**
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
+ */
+bool player_can_debug_prereq(void)
+{
+	if (player->noscore & NOSCORE_DEBUG) {
+		return true;
+	}
+	if (confirm_debug()) {
+		/* Mark savefile */
+		player->noscore |= NOSCORE_DEBUG;
+		return true;
+	}
+	return false;
+}
+
+
+/**
  * Return true if the player has access to a book that has unlearned spells.
  *
  * \param p is the player

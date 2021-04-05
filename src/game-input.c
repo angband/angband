@@ -34,6 +34,7 @@ int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 bool (*get_curse_hook)(int *choice, struct object *obj, char *dice_string);
+bool (*confirm_debug_hook)(void);
 void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 bool (*map_is_visible_hook)(void);
@@ -199,6 +200,25 @@ bool get_curse(int *choice, struct object *obj, char *dice_string)
 		return get_curse_hook(choice, obj, dice_string);
 	else
 		return false;
+}
+
+/**
+ * Confirm whether to enable the debugging commands.
+ */
+bool confirm_debug(void)
+{
+	/* Use a UI-specific method. */
+	if (confirm_debug_hook) {
+		return confirm_debug_hook();
+	}
+
+	/* Otherwise, use a generic procedure.  First, mention effects. */
+	msg("You are about to use the dangerous, unsupported, debug commands!");
+	msg("Your machine may crash, and your savefile may become corrupted!");
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Then verify. */
+	return get_check("Are you sure you want to use the debug commands?");
 }
 
 /**
