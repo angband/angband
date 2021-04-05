@@ -1510,6 +1510,77 @@ void do_cmd_wiz_peek_noise_scent(struct command *cmd)
 
 
 /**
+ * Perform an effect (CMD_WIZ_PERFORM_EFFECT).  Takes no arguments from cmd.
+ *
+ * Bugs:
+ * If the command is repeated, it prompts again for all the effect's parameters.
+ * The number of parameters currently exceeds CMD_MAX_ARGS so a one-to-one
+ * mapping for storing the parameters as arguments in the command would require
+ * increasing CMD_MAX_ARGS.  Otherwise, the parameters would have to be
+ * multiplexed into the available arguments to store them in the command.  The
+ * handling of the lifetime of string arguments for commands is also awkward
+ * which would also hamper storing the effect's parameters in the command.
+ */
+void do_cmd_wiz_perform_effect(struct command *cmd)
+{
+	char name[80] = "";
+	char dice[80] = "0";
+	int index = -1;
+	int p1 = 0, p2 = 0, p3 = 0;
+	int y = 0, x = 0;
+	bool ident = false;
+
+	/* Avoid the prompt getting in the way */
+	screen_save();
+
+	/* Get the name */
+	if (get_string("Do which effect: ", name, sizeof(name))) {
+		/* See if an effect index was entered */
+		if (!get_int_from_string(name, &index)) {
+			/* If not, find the effect with that name */
+			index = effect_lookup(name);
+		}
+
+		/* Failed */
+		if (index <= EF_NONE || index >= EF_MAX) {
+			msg("No effect found.");
+			return;
+		}
+	}
+
+	/* Get the dice */
+	if (! get_string("Enter damage dice (eg 1+2d6M2): ", dice,
+			sizeof(dice))) {
+		my_strcpy(dice, "0", sizeof(dice));
+	}
+
+	/* Get the effect subtype */
+	my_strcpy(name, "0", sizeof(name));
+	if (get_string("Enter name or number for effect subtype: ", name,
+			sizeof(name))) {
+		/* See if an effect parameter was entered */
+		p1 = effect_subtype(index, name);
+		if (p1 == -1) p1 = 0;
+	}
+
+	/* Get the parameters */
+	p2 = get_quantity("Enter second parameter (radius): ", 100);
+	p3 = get_quantity("Enter third parameter (other): ", 100);
+	y = get_quantity("Enter y parameter: ", 100);
+	x = get_quantity("Enter x parameter: ", 100);
+
+	/* Reload the screen */
+	screen_load();
+
+	effect_simple(index, source_player(), dice, p1, p2, p3, y, x, &ident);
+
+	if (ident) {
+		msg("Identified!");
+	}
+}
+
+
+/**
  * Play with an item (CMD_WIZ_PLAY_ITEM).  Can take the item to play with
  * from the argument, "item", of type item in cmd.  Uses the arguments,
  * "original_item" (of type item), "all_prop" (of type choice), and "changed"

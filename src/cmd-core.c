@@ -143,6 +143,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_LEARN_OBJECT_KINDS, "learn about kinds of objects", do_cmd_wiz_learn_object_kinds, false, 0 },
 	{ CMD_WIZ_MAGIC_MAP, "map local area", do_cmd_wiz_magic_map, false, 0 },
 	{ CMD_WIZ_PEEK_NOISE_SCENT, "peek at noise and scent", do_cmd_wiz_peek_noise_scent, false, 0 },
+	{ CMD_WIZ_PERFORM_EFFECT, "perform an effect", do_cmd_wiz_perform_effect, false, 0 },
 	{ CMD_WIZ_PLAY_ITEM, "play with item", do_cmd_wiz_play_item, false, 0 },
 	{ CMD_WIZ_PUSH_OBJECT, "push objects from square", do_cmd_wiz_push_object, false, 0 },
 	{ CMD_WIZ_QUERY_FEATURE, "highlight specific feature", do_cmd_wiz_query_feature, false, 0 },

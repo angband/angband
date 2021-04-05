@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "effects.h"
 #include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
@@ -94,24 +93,6 @@ static void wiz_proj_demo(void)
 	menu_select(m, 0, false);
 	screen_load();
 	mem_free(m);
-}
-
-
-
-
-
-
-
-
-/**
- * This is a nice utility function; it determines if a (NULL-terminated)
- * string consists of only digits (starting with a non-zero digit).
- */
-static s16b get_idx_from_name(char *s)
-{
-	char *endptr = NULL;
-	long l = strtol(s, &endptr, 10);
-	return *endptr == '\0' ? (s16b)l : 0;
 }
 
 
@@ -461,66 +442,6 @@ static void do_cmd_wiz_help(void)
 }
 
 /**
- * Prompt for an effect and perform it.
- */
-void do_cmd_wiz_effect(void)
-{
-	char name[80] = "";
-	char dice[80] = "0";
-	int index = -1;
-	int p1 = 0, p2 = 0, p3 = 0;
-	int y = 0, x = 0;
-	bool ident = false;
-
-	/* Avoid the prompt getting in the way */
-	screen_save();
-
-	/* Get the name */
-	if (get_string("Do which effect: ", name, sizeof(name))) {
-		/* See if an effect index was entered */
-		index = get_idx_from_name(name);
-
-		/* If not, find the effect with that name */
-		if (index <= EF_NONE || index >= EF_MAX)
-			index = effect_lookup(name);
-
-		/* Failed */
-		if (index <= EF_NONE || index >= EF_MAX) {
-			msg("No effect found.");
-			return;
-		}
-	}
-
-	/* Get the dice */
-	if (! get_string("Enter damage dice (eg 1+2d6M2): ", dice,
-			sizeof(dice))) {
-		my_strcpy(dice, "0", sizeof(dice));
-	}
-
-	/* Get the effect subtype */
-	if (get_string("Enter name or number for effect subtype: ", name,
-			sizeof(name))) {
-		/* See if an effect parameter was entered */
-		p1 = effect_subtype(index, name);
-		if (p1 == -1) p1 = 0;
-	}
-
-	/* Get the parameters */
-	p2 = get_quantity("Enter second parameter (radius): ", 100);
-	p3 = get_quantity("Enter third parameter (other): ", 100);
-	y = get_quantity("Enter y parameter: ", 100);
-	x = get_quantity("Enter x parameter: ", 100);
-
-	/* Reload the screen */
-	screen_load();
-
-	effect_simple(index, source_player(), dice, p1, p2, p3, y, x, &ident);
-
-	if (ident)
-		msg("Identified!");
-}
-
-/**
  * Main switch for processing debug commands.  This is a step back in time to
  * how all commands used to be processed
  */
@@ -600,10 +521,8 @@ void get_debug_command(void)
 
 		/* Perform an effect. */
 		case 'E':
-		{
-			do_cmd_wiz_effect();
+			cmdq_push(CMD_WIZ_PERFORM_EFFECT);
 			break;
-		}
 
 		case 'f':
 			cmdq_push(CMD_WIZ_COLLECT_OBJ_MON_STATS);
