@@ -174,6 +174,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\cmd-misc.c" />
     <ClCompile Include="src\cmd-obj.c" />
     <ClCompile Include="src\cmd-pickup.c" />
+    <ClCompile Include="src\cmd-spoil.c" />
     <ClCompile Include="src\cmd-wizard.c" />
     <ClCompile Include="src\datafile.c" />
     <ClCompile Include="src\debug.c" />
@@ -287,10 +288,12 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-score.c" />
     <ClCompile Include="src\ui-signals.c" />
     <ClCompile Include="src\ui-spell.c" />
+    <ClCompile Include="src\ui-spoil.c" />
     <ClCompile Include="src\ui-store.c" />
     <ClCompile Include="src\ui-target.c" />
     <ClCompile Include="src\ui-term.c" />
     <ClCompile Include="src\ui-visuals.c" />
+    <ClCompile Include="src\ui-wizard.c" />
     <ClCompile Include="src\win\readdib.c" />
     <ClCompile Include="src\win\readpng.c" />
     <ClCompile Include="src\win\scrnshot.c" />
@@ -455,10 +458,12 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-score.h" />
     <ClInclude Include="src\ui-signals.h" />
     <ClInclude Include="src\ui-spell.h" />
+    <ClInclude Include="src\ui-spoil.h" />
     <ClInclude Include="src\ui-store.h" />
     <ClInclude Include="src\ui-target.h" />
     <ClInclude Include="src\ui-term.h" />
     <ClInclude Include="src\ui-visuals.h" />
+    <ClInclude Include="src\ui-wizard.h" />
     <ClInclude Include="src\win\include\png.h" />
     <ClInclude Include="src\win\include\pngconf.h" />
     <ClInclude Include="src\win\include\zconf.h" />

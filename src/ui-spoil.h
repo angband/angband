@@ -1,8 +1,6 @@
 /**
- * \file ui-command.h
- * \brief Deal with UI only command processing.
- *
- * Copyright (c) 1997-2014 Angband developers
+ * \file ui-spoil.h
+ * \brief Declarations for menu to generate spoiler files
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -15,18 +13,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#ifndef INCLUDED_UI_SPOIL_H
+#define INCLUDED_UI_SPOIL_H
 
-#ifndef UI_COMMAND_H
-#define UI_COMMAND_H
+void do_cmd_spoilers(void);
 
-void do_cmd_redraw(void);
-void do_cmd_xxx_options(void);
-void do_cmd_unknown(void);
-void do_cmd_version(void);
-void textui_cmd_suicide(void);
-void html_screenshot(const char *path, int mode);
-void do_cmd_save_screen(void);
-void textui_cmd_rest(void);
-void textui_quit(void);
-
-#endif /* UI_COMMAND_H */
+#endif /* INCLUDED_UI_SPOIL_H */

@@ -31,9 +31,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "ui-input.h"
 #include "ui-knowledge.h"
-#include "ui-menu.h"
 #include "ui-mon-lore.h"
 #include "wizard.h"
 #include "z-file.h"
@@ -199,7 +197,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 /**
  * Create a spoiler file for items
  */
-static void spoil_obj_desc(const char *fname)
+void spoil_obj_desc(const char *fname)
 {
 	int i, k, s, t, n = 0;
 	u16b *who;
@@ -372,7 +370,7 @@ static const grouper group_artifact[] =
 /**
  * Create a spoiler file for artifacts
  */
-static void spoil_artifact(const char *fname)
+void spoil_artifact(const char *fname)
 {
 	int i, j;
 	char buf[1024];
@@ -483,7 +481,7 @@ static void spoil_artifact(const char *fname)
 /**
  * Create a brief spoiler file for monsters
  */
-static void spoil_mon_desc(const char *fname)
+void spoil_mon_desc(const char *fname)
 {
 	int i, n = 0;
 
@@ -618,7 +616,7 @@ static void spoil_mon_desc(const char *fname)
 /**
  * Create a spoiler file for monsters (-SHAWN-)
  */
-static void spoil_mon_info(const char *fname)
+void spoil_mon_info(const char *fname)
 {
 	char buf[1024];
 	int i, n;
@@ -712,46 +710,4 @@ static void spoil_mon_info(const char *fname)
 	}
 
 	msg("Successfully created a spoiler file.");
-}
-
-static void spoiler_menu_act(const char *title, int row)
-{
-	if (row == 0)
-		spoil_obj_desc("obj-desc.spo");
-	else if (row == 1)
-		spoil_artifact("artifact.spo");
-	else if (row == 2)
-		spoil_mon_desc("mon-desc.spo");
-	else if (row == 3)
-		spoil_mon_info("mon-info.spo");
-
-	event_signal(EVENT_MESSAGE_FLUSH);
-}
-
-static struct menu *spoil_menu;
-static menu_action spoil_actions[] =
-{
-	{ 0, 0, "Brief Object Info (obj-desc.spo)",		spoiler_menu_act },
-	{ 0, 0, "Brief Artifact Info (artifact.spo)",	spoiler_menu_act },
-	{ 0, 0, "Brief Monster Info (mon-desc.spo)",	spoiler_menu_act },
-	{ 0, 0, "Full Monster Info (mon-info.spo)",		spoiler_menu_act },
-};
-
-
-/**
- * Create Spoiler files
- */
-void do_cmd_spoilers(void)
-{
-	if (!spoil_menu) {
-		spoil_menu = menu_new_action(spoil_actions, N_ELEMENTS(spoil_actions));
-		spoil_menu->selections = lower_case;
-		spoil_menu->title = "Create spoilers";
-	}
-
-	screen_save();
-	clear_from(0);
-	menu_layout(spoil_menu, &SCREEN_REGION);
-	menu_select(spoil_menu, 0, false);
-	screen_load();
 }

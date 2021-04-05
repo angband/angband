@@ -21,7 +21,6 @@
 
 /* wiz-debug.c */
 void wiz_cheat_death(void);
-void get_debug_command(void);
 
 /* wiz-stats.c */
 bool stats_are_enabled(void);
@@ -30,6 +29,9 @@ void disconnect_stats(int nsim, bool stop_on_disconnect);
 void pit_stats(int nsim, int pittype, int depth);
 
 /* wiz-spoil.c */
-void do_cmd_spoilers(void);
+void spoil_artifact(const char *fname);
+void spoil_mon_desc(const char *fname);
+void spoil_mon_info(const char *fname);
+void spoil_obj_desc(const char *fname);
 
 #endif /* !INCLUDED_WIZARD_H */

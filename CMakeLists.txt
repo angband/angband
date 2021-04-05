@@ -31,6 +31,7 @@ ADD_EXECUTABLE(Angband
         src/cmd-misc.c
         src/cmd-obj.c
         src/cmd-pickup.c
+        src/cmd-spoil.c
         src/cmd-wizard.c
         src/datafile.c
         src/debug.c
@@ -157,10 +158,12 @@ ADD_EXECUTABLE(Angband
         src/ui-score.c
         src/ui-signals.c
         src/ui-spell.c
+        src/ui-spoil.c
         src/ui-store.c
         src/ui-target.c
         src/ui-term.c
         src/ui-visuals.c
+        src/ui-wizard.c
         src/wiz-debug.c
         src/wiz-spoil.c
         src/wiz-stats.c

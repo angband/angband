@@ -75,6 +75,12 @@ int do_autopickup(struct player *p);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 
+/* cmd-spoil.c */
+void do_cmd_spoil_artifact(struct command *cmd);
+void do_cmd_spoil_monster(struct command *cmd);
+void do_cmd_spoil_monster_brief(struct command *cmd);
+void do_cmd_spoil_obj(struct command *cmd);
+
 /* cmd-wizard.c */
 void do_cmd_wiz_acquire(struct command *cmd);
 void do_cmd_wiz_advance(struct command *cmd);
@@ -106,6 +112,7 @@ void do_cmd_wiz_jump_level(struct command *cmd);
 void do_cmd_wiz_learn_object_kinds(struct command *cmd);
 void do_cmd_wiz_magic_map(struct command *cmd);
 void do_cmd_wiz_peek_noise_scent(struct command *cmd);
+void do_cmd_wiz_perform_effect(struct command *cmd);
 void do_cmd_wiz_play_item(struct command *cmd);
 void do_cmd_wiz_push_object(struct command *cmd);
 void do_cmd_wiz_query_feature(struct command *cmd);

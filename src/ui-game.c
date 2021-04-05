@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "datafile.h"
+#include "game-input.h"
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
@@ -53,8 +54,10 @@
 #include "ui-spell.h"
 #include "ui-score.h"
 #include "ui-signals.h"
+#include "ui-spoil.h"
 #include "ui-store.h"
 #include "ui-target.h"
+#include "ui-wizard.h"
 
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
@@ -84,22 +87,22 @@ void (*reinit_hook)(void) = NULL;
  */
 struct cmd_info cmd_item[] =
 {
-	{ "Inscribe an object", { '{' }, CMD_INSCRIBE, NULL, NULL },
-	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE, NULL, NULL },
-	{ "Wear/wield an item", { 'w' }, CMD_WIELD, NULL, NULL },
-	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF, NULL, NULL },
-	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine, NULL },
-	{ "Drop an item", { 'd' }, CMD_DROP, NULL, NULL },
-	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq },
-	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF, NULL, NULL },
-	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND, NULL, NULL },
-	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD, NULL, NULL },
-	{ "Activate an object", {'A' }, CMD_ACTIVATE, NULL, NULL },
-	{ "Eat some food", { 'E' }, CMD_EAT, NULL, NULL },
-	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL },
-	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq },
-	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq },
-	{ "Use an item", { 'U', 'X' }, CMD_USE, NULL, NULL }
+	{ "Inscribe an object", { '{' }, CMD_INSCRIBE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Wear/wield an item", { 'w' }, CMD_WIELD, NULL, NULL, 0, NULL, NULL, 0 },
+	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Drop an item", { 'd' }, CMD_DROP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Activate an object", {'A' }, CMD_ACTIVATE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Eat some food", { 'E' }, CMD_EAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Use an item", { 'U', 'X' }, CMD_USE, NULL, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**
@@ -107,19 +110,19 @@ struct cmd_info cmd_item[] =
  */
 struct cmd_info cmd_action[] =
 {
-	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM, NULL, NULL },
-	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest, NULL },
-	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look, NULL },
-	{ "Target monster or location", { '*' }, CMD_NULL, textui_target, NULL },
-	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest, NULL },
-	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL, NULL, NULL },
-	{ "Go up staircase", {'<' }, CMD_GO_UP, NULL, NULL },
-	{ "Go down staircase", { '>' }, CMD_GO_DOWN, NULL, NULL },
-	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL },
-	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL },
-	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest, NULL },
-	{ "Throw an item", { 'v' }, CMD_THROW, NULL, NULL },
-	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL, NULL },
+	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Target monster or location", { '*' }, CMD_NULL, textui_target, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Go up staircase", {'<' }, CMD_GO_UP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Go down staircase", { '>' }, CMD_GO_DOWN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Throw an item", { 'v' }, CMD_THROW, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
@@ -127,11 +130,11 @@ struct cmd_info cmd_action[] =
  */
 struct cmd_info cmd_item_manage[] =
 {
-	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip, NULL },
-	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven, NULL },
-	{ "Display quiver listing", { '|' }, CMD_NULL, do_cmd_quiver, NULL },
-	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL, NULL },
-	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL },
+	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Display quiver listing", { '|' }, CMD_NULL, do_cmd_quiver, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
@@ -139,23 +142,23 @@ struct cmd_info cmd_item_manage[] =
  */
 struct cmd_info cmd_info[] =
 {
-	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL },
-	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq },
-	{ "View abilities", { 'S' }, CMD_NULL, do_cmd_abilities, NULL },
-	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq },
-	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq },
-	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL },
-	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore, NULL },
-	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist, NULL },
-	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist, NULL },
-	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL },
-	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL },
-	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol, NULL },
-	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name, NULL },
-	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL },
-	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL },
-	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL },
-	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL }
+	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "View abilities", { 'S' }, CMD_NULL, do_cmd_abilities, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**
@@ -163,14 +166,14 @@ struct cmd_info cmd_info[] =
  */
 struct cmd_info cmd_util[] =
 {
-	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options, NULL },
+	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options, NULL, 0, NULL, NULL, NULL, 0 },
 
-	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game, NULL },
-	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit, NULL },
-	{ "Kill character and quit", { 'Q' }, CMD_NULL, textui_cmd_suicide, NULL },
-	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw, NULL },
+	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Kill character and quit", { 'Q' }, CMD_NULL, textui_cmd_suicide, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw, NULL, 0, NULL, NULL, NULL, 0 },
 
-	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen, NULL }
+	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**
@@ -178,33 +181,144 @@ struct cmd_info cmd_util[] =
  */
 struct cmd_info cmd_hidden[] =
 {
-	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note, NULL },
-	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version, NULL },
-	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL },
-	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL }, /* XXX */
-	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL },
-	{ "Steal from a monster", { 's' }, CMD_STEAL, NULL, NULL },
-	{ "Walk", { ';' }, CMD_WALK, NULL, NULL },
-	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL },
-	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL },
-	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map, NULL },
-	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL },
-	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL, NULL },
-	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL },
-	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, textui_cmd_debug, NULL },
+	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL, 0, NULL, NULL, NULL, 0 }, /* XXX */
+	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Steal from a monster", { 's' }, CMD_STEAL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Walk", { ';' }, CMD_WALK, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, NULL, NULL, 1, "Debug Command: ", "That is not a valid debug command.", "Debug", -1 },
 };
 
 /**
- * List of command lists */
+ * Debug mode command categories; placeholders for the Enter menu system
+ */
+struct cmd_info cmd_debug[] =
+{
+	{ "Items", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgObj", -1 },
+	{ "Player", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgPlayer", -1 },
+	{ "Teleport", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgTele", -1 },
+	{ "Effects", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgEffects", -1 },
+	{ "Summon", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgSummon", -1 },
+	{ "Files", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgFiles", -1 },
+	{ "Statistics", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgStat", -1 },
+	{ "Query", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgQuery", -1 },
+	{ "Miscellaneous", { '\0' }, CMD_NULL, NULL, NULL, 0, NULL, NULL, "DbgMisc", -1 },
+};
+
+struct cmd_info cmd_debug_obj[] =
+{
+	{ "Create an object", { 'c' }, CMD_NULL, wiz_create_nonartifact, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Create an artifact", { 'C' }, CMD_NULL, wiz_create_artifact, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Create all from tval", { 'V' }, CMD_NULL, wiz_create_all_for_tval, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Acquire good", { 'g' }, CMD_NULL, wiz_acquire_good, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Acquire great", { 'v' }, CMD_NULL, wiz_acquire_great, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Play with item", { 'o' }, CMD_WIZ_PLAY_ITEM, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_player[] =
+{
+	{ "Cure everything", { 'a' }, CMD_WIZ_CURE_ALL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Make powerful", { 'A' }, CMD_WIZ_ADVANCE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Increase experience", { 'x' }, CMD_WIZ_INCREASE_EXP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Rerate hitpoints", { 'h' }, CMD_WIZ_RERATE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Edit player", { 'e' }, CMD_WIZ_EDIT_PLAYER_START, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Learn object kinds", { 'l' }, CMD_NULL, wiz_learn_all_object_kinds, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Recall monster", { 'r' }, CMD_WIZ_RECALL_MONSTER, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Erase monster recall", { 'W' }, CMD_WIZ_WIPE_RECALL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_tele[] =
+{
+	{ "To location", { 'b' }, CMD_WIZ_TELEPORT_TO, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Random near", { 'p' }, CMD_NULL, wiz_phase_door, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Random far", { 't' }, CMD_NULL, wiz_teleport, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Jump to a level", { 'j' }, CMD_WIZ_JUMP_LEVEL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_effects[] =
+{
+	{ "Detect all nearby", { 'd' }, CMD_WIZ_DETECT_ALL_LOCAL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Detect all monsters", { 'u' }, CMD_WIZ_DETECT_ALL_MONSTERS, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Map local area", { 'm' }, CMD_WIZ_MAGIC_MAP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Hit all in LOS", { 'H' }, CMD_WIZ_HIT_ALL_LOS, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Perform an effect", { 'E' }, CMD_WIZ_PERFORM_EFFECT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Graphics demo", { 'G' }, CMD_NULL, wiz_proj_demo, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_summon[] =
+{
+	{ "Summon specific", { 'n' }, CMD_WIZ_SUMMON_NAMED, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Summon random", { 's' }, CMD_WIZ_SUMMON_RANDOM, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_files[] =
+{
+	{ "Create spoilers", { '"' }, CMD_NULL, do_cmd_spoilers, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Write map", { 'M' }, CMD_WIZ_DUMP_LEVEL_MAP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_stats[] =
+{
+	{ "Objects and monsters", { 'S' }, CMD_WIZ_COLLECT_OBJ_MON_STATS, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Pits", { 'P' }, CMD_WIZ_COLLECT_PIT_STATS, NULL, player_can_debug_prereq, 0, NULL, NULL, 0 },
+	{ "Disconnected levels", { 'D' }, CMD_WIZ_COLLECT_DISCONNECT_STATS, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Obj/mon alternate key", { 'f' }, CMD_WIZ_COLLECT_OBJ_MON_STATS, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_query[] =
+{
+	{ "Feature", { 'F' }, CMD_WIZ_QUERY_FEATURE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Square flag", { 'q' }, CMD_WIZ_QUERY_SQUARE_FLAG, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Noise and scent", { '_' }, CMD_WIZ_PEEK_NOISE_SCENT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Keystroke log", { 'L' }, CMD_WIZ_DISPLAY_KEYLOG, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+struct cmd_info cmd_debug_misc[] =
+{
+	{ "Wizard light level", { 'w' }, CMD_WIZ_WIZARD_LIGHT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Create a trap", { 'T' }, CMD_WIZ_CREATE_TRAP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Banish nearby monsters", { 'z' }, CMD_WIZ_BANISH, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Push objects from square", { '>' }, CMD_WIZ_PUSH_OBJECT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Quit without saving", { 'X' }, CMD_NULL, wiz_confirm_quit_no_save, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+};
+
+/**
+ * List of command lists; because of the implementation in ui-context.c all
+ * entries with menu_level == 0 should appear first; hardwired geometry in
+ * ui-context.c limits the maximum nesting level to 2
+ */
 struct command_list cmds_all[] =
 {
-	{ "Items",           cmd_item,        N_ELEMENTS(cmd_item) },
-	{ "Action commands", cmd_action,      N_ELEMENTS(cmd_action) },
-	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage) },
-	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info) },
-	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util) },
-	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden) },
-	{ NULL,              NULL,            0 }
+	{ "Items",           cmd_item,        N_ELEMENTS(cmd_item), 0, 0 },
+	{ "Action commands", cmd_action,      N_ELEMENTS(cmd_action), 0, 0 },
+	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage), 0, false },
+	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info), 0, 0 },
+	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util), 0, 0 },
+	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden), 0, 0 },
+	/*
+	 * This is nested below "Hidden"->"Debug mode commands" and only
+	 * contains categories.
+	 */
+	{ "Debug", cmd_debug, N_ELEMENTS(cmd_debug), 1, -1 },
+	/* These are nested in "Debug"; names have to match with cmd_debug. */
+	{ "DbgObj", cmd_debug_obj, N_ELEMENTS(cmd_debug_obj), 2, 1 },
+	{ "DbgPlayer", cmd_debug_player, N_ELEMENTS(cmd_debug_player), 2, 1 },
+	{ "DbgTele", cmd_debug_tele, N_ELEMENTS(cmd_debug_tele), 2, 1 },
+	{ "DbgEffects", cmd_debug_effects, N_ELEMENTS(cmd_debug_effects), 2, 1 },
+	{ "DbgSummon", cmd_debug_summon, N_ELEMENTS(cmd_debug_summon), 2, 1 },
+	{ "DbgFiles", cmd_debug_files, N_ELEMENTS(cmd_debug_files), 2, 1 },
+	{ "DbgStat", cmd_debug_stats, N_ELEMENTS(cmd_debug_stats), 2, 1 },
+	{ "DbgQuery", cmd_debug_query, N_ELEMENTS(cmd_debug_query), 2, 1 },
+	{ "DbgMisc", cmd_debug_misc, N_ELEMENTS(cmd_debug_misc), 2, 1 },
+	{ NULL,              NULL,            0, 0, false }
 };
 
 
@@ -213,9 +327,15 @@ struct command_list cmds_all[] =
 
 #define KEYMAP_MAX 2
 
-/* List indexed by char */
+/* List of directly accessible commands indexed by char */
 static struct cmd_info *converted_list[KEYMAP_MAX][UCHAR_MAX+1];
 
+/*
+ * Lists of nested commands; each list is also indexed by char but there's no
+ * distinction between original/roguelike keys
+ */
+static int n_nested = 0;
+static struct cmd_info ***nested_lists = NULL;
 
 /**
  * Initialise the command list.
@@ -226,19 +346,67 @@ void cmd_init(void)
 
 	memset(converted_list, 0, sizeof(converted_list));
 
+	/* Set up storage for the nested command lists */
+	if (nested_lists != NULL) {
+		assert(n_nested >= 0);
+		for (j = 0; j < (size_t)n_nested; j++) {
+			mem_free(nested_lists[j]);
+		}
+		nested_lists = NULL;
+	}
+	n_nested = 0;
+	for (j = 0; j < N_ELEMENTS(cmds_all) - 1; j++) {
+		n_nested = MAX(n_nested, cmds_all[j].keymap);
+	}
+	if (n_nested > 0) {
+		nested_lists = mem_zalloc(n_nested * sizeof(*nested_lists));
+		for (j = 0; j < (size_t)n_nested; j++) {
+			nested_lists[j] = mem_zalloc((UCHAR_MAX + 1) *
+				sizeof(*(nested_lists[j])));
+		}
+	}
+
 	/* Go through all generic commands (-1 for NULL end entry) */
 	for (j = 0; j < N_ELEMENTS(cmds_all) - 1; j++)
 	{
 		struct cmd_info *commands = cmds_all[j].list;
 
 		/* Fill everything in */
-		for (i = 0; i < cmds_all[j].len; i++) {
-			/* If a roguelike key isn't set, use default */
-			if (!commands[i].key[1])
+		if (cmds_all[j].keymap == 0) {
+			for (i = 0; i < cmds_all[j].len; i++) {
+				/* If a roguelike key isn't set, use default */
+				if (!commands[i].key[1])
+					commands[i].key[1] = commands[i].key[0];
+
+				/* Skip entries that don't have a valid key. */
+				if (!commands[i].key[0] || !commands[i].key[1])
+					continue;
+
+				converted_list[0][commands[i].key[0]] =
+					&commands[i];
+				converted_list[1][commands[i].key[1]] =
+					&commands[i];
+			}
+		} else if (cmds_all[j].keymap > 0) {
+			int kidx = cmds_all[j].keymap - 1;
+
+			assert(kidx < n_nested);
+			for (i = 0; i < cmds_all[j].len; i++) {
+				/*
+				 * Nested commands don't go through a keymap;
+				 * use the default for the roguelike key.
+				 */
 				commands[i].key[1] = commands[i].key[0];
 
-			converted_list[0][commands[i].key[0]] = &commands[i];
-			converted_list[1][commands[i].key[1]] = &commands[i];
+				/*
+				 * Check for duplicated keys in the same
+				 * command set.
+				 */
+				assert(!nested_lists[kidx][commands[i].key[0]]);
+
+				nested_lists[kidx][commands[i].key[0]] =
+					&commands[i];
+			}
 		}
 	}
 }
@@ -281,6 +449,31 @@ cmd_code cmd_lookup(unsigned char key, int mode)
 
 
 /**
+ * Return the index into cmds_all for the given name or -2 if not found.
+ */
+size_t cmd_list_lookup_by_name(const char *name)
+{
+	size_t i = 0;
+
+	while (1) {
+		if (i >= (int) N_ELEMENTS(cmds_all)) {
+			/*
+			 * Return a negative value other than -1 to prevent
+			 * future lookups for the same name by ui-context.c.
+			 * Those lookups are guaranteed to fail since the
+			 * names in cmds_all don't change.
+			 */
+			return -2;
+		}
+		if (streq(cmds_all[i].name, name)) {
+			return i;
+		}
+		++i;
+	}
+}
+
+
+/**
  * Parse and execute the current command
  * Give "Warning" on illegal commands.
  */
@@ -314,9 +507,40 @@ void textui_process_command(void)
 	}
 
 	if (cmd && done) {
-		/* Confirm for worn equipment inscriptions, check command prereqs */
-		if (!key_confirm_command(key) || (cmd->prereq && !cmd->prereq()))
-			cmd = NULL;
+		if (cmd->cmd || cmd->hook) {
+			/* Confirm for worn equipment inscriptions. */
+			if (!key_confirm_command(key)) cmd = NULL;
+		} else {
+			/*
+			 * It refers to nested commands.  Get the nested
+			 * command.  Those aren't subject to keymaps and
+			 * inherit the count.
+			 */
+			while (cmd && !cmd->cmd && !cmd->hook) {
+				char nestkey;
+
+				if (cmd->nested_keymap > 0 &&
+						cmd->nested_keymap <= n_nested &&
+						cmd->nested_prompt) {
+					if (get_com(cmd->nested_prompt, &nestkey)) {
+						const char* em =
+							cmd->nested_error;
+
+						cmd = nested_lists[cmd->nested_keymap - 1][(unsigned char) nestkey];
+						if (!cmd) {
+							msg(em ? em : "That is not a valid nested command.");
+						}
+					} else {
+						cmd = NULL;
+					}
+				} else {
+					cmd = NULL;
+				}
+			}
+		}
+
+		/* Check prereqs. */
+		if (cmd && cmd->prereq && !cmd->prereq()) cmd = NULL;
 
 		/* Split on type of command */
 		if (cmd && cmd->hook)

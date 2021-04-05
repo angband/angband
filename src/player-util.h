@@ -96,6 +96,7 @@ bool player_can_study_prereq(void);
 bool player_can_read_prereq(void);
 bool player_can_fire_prereq(void);
 bool player_can_refuel_prereq(void);
+bool player_can_debug_prereq(void);
 bool player_book_has_unlearned_spells(struct player *p);
 bool player_confuse_dir(struct player *p, int *dir, bool too);
 bool player_resting_is_special(s16b count);
