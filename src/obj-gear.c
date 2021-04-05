@@ -141,7 +141,7 @@ bool object_is_carried(struct player *p, const struct object *obj)
 /**
  * Check if an object is in the quiver
  */
-static bool object_is_in_quiver(struct player *p, const struct object *obj)
+bool object_is_in_quiver(struct player *p, const struct object *obj)
 {
 	int i;
 

@@ -462,6 +462,12 @@ void do_cmd_wiz_change_item_quantity(struct command *cmd)
 		/* Items with charges have a limit imposed by MAX_PVAL. */
 		nmax = MIN((MAX_PVAL * obj->number) / obj->pval, nmax);
 	}
+	if (object_is_in_quiver(player, obj)) {
+		/* The quiver may have stricter limits. */
+		nmax = MIN(z_info->quiver_slot_size /
+			(tval_is_ammo(obj) ? 1 : z_info->thrown_quiver_mult),
+			nmax);
+	}
 
 	/* Get the new quantity. */
 	if (cmd_get_arg_number(cmd, "quantity", &n) != CMD_OK) {

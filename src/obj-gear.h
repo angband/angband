@@ -40,6 +40,7 @@ struct object *equipped_item_by_slot_name(struct player *p, const char *name);
 int object_slot(struct player_body body, const struct object *obj);
 bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
+bool object_is_in_quiver(struct player *p, const struct object *obj);
 int pack_slots_used(struct player *p);
 const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
