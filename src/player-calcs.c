@@ -2001,11 +2001,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->el_info[ELEM_HOLY_ORB].res_level = -1;
 	}
 
-	/* Combat Regeneration */
-	if (player_has(p, PF_COMBAT_REGEN) && character_dungeon) {
-		of_on(state->flags, OF_IMPAIR_HP);
-	}
-
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
