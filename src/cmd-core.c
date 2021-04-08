@@ -252,12 +252,9 @@ errr cmdq_push_copy(struct command *cmd)
 void process_command(cmd_context ctx, struct command *cmd)
 {
 	int oldrepeats = cmd->nrepeats;
-	int idx = cmd_idx(cmd->code);
-
 	/* Hack - command a monster */
-	if (player->timed[TMD_COMMAND]) {
-		idx = (int) N_ELEMENTS(game_cmds) - 1;
-	}
+	int idx = cmd_idx(player->timed[TMD_COMMAND] ?
+		CMD_COMMAND_MONSTER : cmd->code);
 
 	/* Reset so that when selecting items, we look in the default location */
 	player->upkeep->command_wrk = 0;
