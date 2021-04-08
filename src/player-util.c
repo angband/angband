@@ -1071,7 +1071,8 @@ bool player_can_refuel(struct player *p, bool show_msg)
 }
 
 /**
- * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
  */
 bool player_can_cast_prereq(void)
 {
@@ -1079,7 +1080,8 @@ bool player_can_cast_prereq(void)
 }
 
 /**
- * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
  */
 bool player_can_study_prereq(void)
 {
@@ -1087,7 +1089,8 @@ bool player_can_study_prereq(void)
 }
 
 /**
- * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
  */
 bool player_can_read_prereq(void)
 {
@@ -1095,7 +1098,8 @@ bool player_can_read_prereq(void)
 }
 
 /**
- * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
  */
 bool player_can_fire_prereq(void)
 {
@@ -1103,7 +1107,8 @@ bool player_can_fire_prereq(void)
 }
 
 /**
- * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ * Prerequisite function for command. See struct cmd_info in ui-input.h and
+ * it's use in ui-game.c.
  */
 bool player_can_refuel_prereq(void)
 {
