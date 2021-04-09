@@ -242,8 +242,73 @@ Some aspects of how the game is presented, notably the font, window placement
 and graphical tile set, are controlled by the front end, rather than the core
 of the game itself.  Each front end has its own mechanism for setting those
 details and recording them between game sessions.  Below are brief descriptions
-for what you can configure with the standard `X11`_, `SDL`_, `SDL2`_ and
-`Mac`_ front ends.
+for what you can configure with the standard `Windows`_, `X11`_, `SDL`_,
+`SDL2`_ and `Mac`_ front ends.
+
+Windows
+~~~~~~~
+
+With the Windows front end, the game, by default, displays several of the
+the subwindows and uses David Gervais's graphical tiles to display the map.
+You can close a subwindow with the standard close control on the window's
+upper right corner.  Closing the main window with the standard control causes
+the game to save its current state and then exit.  You can reopen or also
+close a subwindow via the "Visibilty" menu, the first entry in the "Window"
+menu for the main window.  To move a window, use the standard procedure:
+position the mouse pointer on the window's title bar and then click and drag
+the mouse to change the window's position.  Click and drag on the edges or
+corners of a window to change its size.  To select the font for a window, use
+the "Font" menu, the second entry in the "Window" menu for the main window.
+
+The "Term Options" entry in the "Window" menu for the main window is a shortcut
+to access the core game's method for selecting the contents of the subwindows.
+You can read more about that in `Showing extra info in subwindows`_.  The
+"Reset Layout" will rearrange the windows to conform with the current size and
+will have a similar result to what you would get from restarting the Windows
+interface without a preset configuration.
+
+The "Bizarre Display" entry in the "Window" menu allows to toggle on or off
+an alternate text display algorithm for each window.  That was added for
+compatibility with Windows Vista and later.  The default setting, on, should
+likely be used, unless text display is garbled on your system and the off
+setting allows text to be displayed properly.
+
+The "Increase Tile Width" and "Decrease Tile Width" options in the "Window",
+let you increment or decrement, by one pixel, the width of the columns in a
+window.  The "Increase Tile Height" and "Decrease Tile Height" options are
+similar but work with the height of the rows.  For the primary window, you
+could use the "Term 0 Font Tile Size" entry as an alternative to those to set
+the width of the columns and height of the rows to certain combinations or to
+match the width and height of the font, which is the default.  When the
+"Enable Nice Graphics" option is on (it's in the "Options" menu for the main
+window), the "Increase Tile Width", "Decrease Tile Width",
+"Increase Tile Height", "Decrease Tile Height", and "Term 0 Font Tile Size"
+entries will have no effect since the column width and row height are set
+automatically when that option is on.
+
+To change whether graphical tiles are used, use the "Graphics" menu, the first
+entry in the "Options" menu for the main window.  The "None" option in the
+"Graphics" menu will disable graphical tiles and use text for the map.  The
+next section section in that menu allows you to select one of the graphical
+tile sets.  Turning on the "Enable Nice Graphics" option in the "Graphics"
+menu is a shortcut for automatically setting sizes to get a reasonable-looking
+result.  When that is turned on or is already on and the tile set is changed,
+the width of the columns ("tile width"), height of the rows ("tile height")
+and the number of rows and columns used to display a tile (the
+"Tile Multiplier") will be adjusted to work well with the current font size and
+the native size of the graphical tiles.  You can manually adjust the number of
+rows and columns used for displaying a tile with the "Tile Multiplier" entry
+in the "Graphics" menu.  Since typical fonts are often twice as tall as wide,
+multipliers where the first value, for the width, is twice the second, often
+x work better with the tiles that are natively square (the original ones,
+Adam Bolt's, David Gervais's, and the two versions of Shockbolt's tiles).
+Nomad's tiles are 8 x 16 and so usually work best with multipliers that use the
+same value for both dimensions.
+
+When you leave the game, the current settings for the Windows interface are
+saved as ``angband.INI`` in the directory that holds the executable.  Those
+settings will be automatically reloaded the next time you start the Windows
+interface.
 
 X11
 ~~~
