@@ -351,7 +351,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 
 		/* Check all the possible types of description format. */
 		switch (base_descs[e->index].efinfo_flag) {
-		case EFINFO_HURT:
+		case EFINFO_DICE:
 			strnfmt(desc, sizeof(desc), edesc, dice_string);
 			break;
 
@@ -503,10 +503,6 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 		case EFINFO_TOUCH:
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].desc);
-			break;
-
-		case EFINFO_TAP:
-			strnfmt(desc, sizeof(desc), edesc, dice_string);
 			break;
 
 		case EFINFO_NONE:

@@ -35,33 +35,6 @@ typedef enum {
 } oinfo_detail_t;
 
 
-/**
- * Flags for effect descriptions
- */
-enum {
-	EFINFO_NONE,
-	EFINFO_HURT,
-	EFINFO_HEAL,
-	EFINFO_CONST,
-	EFINFO_FOOD,
-	EFINFO_CURE,
-	EFINFO_TIMED,
-	EFINFO_STAT,
-	EFINFO_SEEN,
-	EFINFO_SUMM,
-	EFINFO_TELE,
-	EFINFO_QUAKE,
-	EFINFO_BALL,
-	EFINFO_SPOT,
-	EFINFO_BREATH,
-	EFINFO_SHORT,
-	EFINFO_LASH,
-	EFINFO_BOLT,
-	EFINFO_BOLTD,
-	EFINFO_TOUCH,
-	EFINFO_TAP
-};
-
 textblock *object_info(const struct object *obj, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const struct object *obj, int wrap);
