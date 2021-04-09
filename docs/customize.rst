@@ -10,10 +10,13 @@ Angband allows you to change various aspects of the game to suit your tastes.  T
 * `Keymaps`_ - a way to assign commonly-used actions to specific keys
 * `Visuals`_ - allowing you to change the appearance of in-game entities like objects and monsters
 * `Colours`_ - allowing you to make a given color brighter, darker, or even completely different
+* `Interface details`_ - depending on which interface to the game you use, these give you control over the font, window placement, and graphical tile set
 
-Except for the options, which are linked to the save file, you can save your
-preferences for these into files, which are called `user pref files`.  For
-the options, customize those using the ``=`` command while playing.
+Except for the options, which are linked to the save file, and interface
+details, that are handled by the front end rather than the core of the game,
+you can save your preferences for these into files, which are called
+`user pref files`.  For the options, customize those using the ``=`` command
+while playing.
 
 
 User Pref Files
@@ -230,3 +233,169 @@ You can change how various in-game entities are displayed using the visuals edit
 If you are in graphics mode, you will be able to select a new tile for the entity.  If you are not, you will only be able to change its colours.
 
 Once you have made edits, you can save them from the options menu (``=``).  Press ``v`` for 'save visuals' and choose what you want to save.
+
+
+Interface details
+=================
+
+Some aspects of how the game is presented, notably the font, window placement
+and graphical tile set, are controlled by the front end, rather than the core
+of the game itself.  Each front end has its own mechanism for setting those
+details and recording them between game sessions.  Below are brief descriptions
+for what you can configure with the standard `X11`_, `SDL`_, `SDL2`_ and
+`Mac`_ front ends.
+
+X11
+~~~
+
+With the X11 front end, the number of windows opened is set by the '-n' option
+on the command line, i.e. running ``./angband -mx11 -- -n4`` will open the
+main window and subwindows one through three if the executable is in the
+current working directory.  To control the font, placement, and size used for
+each of the windows, set enviroment variables before running Angband.  Those
+environment variables for window 'z' where 'z' is an integer between 0 (the
+main window) and 7 are:
+
+* ANGBAND_X11_FONT_z holds the name of the font to use for the window
+* ANGBAND_X11_AT_X_z holds the horizontal coordinate (zero is leftmost) for the upper left corner of the window
+* ANGBAND_X11_AT_Y_z holds the vertical coordinate (zero is topmost) for the upper left corner of the window
+* ANGBAND_X11_COLS_z holds the number of columns to display in the window
+* ANGBAND_X11_ROWS_z holds the number of rows to display in the window
+
+SDL
+~~~
+
+With the SDL front end, the main window and any subwindows are displayed within
+the application's rectangular window.  At the top of the application's window
+is a status line.  Within that status line, items highlighted in yellow are
+buttons that can be pressed to initiate an action.  From left to right they are:
+
+* The application's version number - pressing it displays an information dialog about the application
+* The currently selected terminal - pressing it brings up a menu for selecting the current terminal; you can also make a terminal the current one by clicking on the terminal's title bar if it is visible
+* Whether or not the current terminal is visible - pressing it for any terminal that is not the main window will allow you to show or hide that terminal
+* The font for the current terminal - pressing it brings up a menu to choose the font for the terminal
+* Options - brings up a dialog for selecting global options including those for the graphical tile set used and whether fullscreen mode is enabled
+* Quit - to save the game and exit
+
+To move a terminal window, click on its title bar and then drag the mouse.
+To resize a terminal window, position the mouse pointer over the lower right
+corner.  That should cause a blue square to appear, then click and drag to
+resize the terminal.
+
+To change the graphical tile set used when displaying the game's map, press
+the Options button in the status bar.  Then, in the dialog that appears, press
+one of the red buttons that appear to the right of the label,
+"Available Graphics:".  The last of those buttons, labeled "None", selects
+text as the method for displaying the map.  Your choice for the graphical tile
+set does not take effect until you press the red button labeled "OK" at the
+bottom of the dialog.
+
+When you leave the game, the current settings for the SDL interface are saved
+as ``sdlinit.txt`` in the same directory as is used for preference files, see
+`User Pref Files`_ for details.  Those settings will be automatically reloaded
+the next time you start the SDL interface.
+
+SDL2
+~~~~
+
+With the SDL2 front end, the application has one window that can contain the
+main window and any of the subwindows.  The application may also have up to
+three additional windows which can contain any of the subwindows.  A subwindow
+may not appear in more than of those application windows.  Unused portions of
+an application window are tiled with repetitions of the game's logo.
+
+Each of the application windows has a menu bar along the top.  The "Menu"
+entry at the left end of the menu bar has the main menu for controlling
+aspects of the SDL2 interface.
+
+Next to "Menu", are a series of one letter labels that act as toggles for the
+terminal windows shown in the application window.  Click on one to toggle it
+between on (drawn in white) and off (drawn in gray).  It is not possible to
+toggle off the main window shown in the primary application window.
+
+At the end of the menu bar are two toggle buttons labeled "Size" and "Move".
+Each will be gray if disabled or white if enabled.  Clicking on "Size" when
+it is disabled will enable it, disable "Move", turn off input to the game's
+core, and cause clicks and drags within the displayed subwindows to change
+the sizes for those subwindows.  Clicking on "Move" when it is disabled will
+enable it, disable "Size", turn off input to the game's core, and cause clicks
+and drags within the displayed subwindows to change the positions for those
+subwindows.  Disable both "Move" and "Size", by clicking on one if it is
+enabled, to restore passing input to the game's core.
+
+Within "Menu", the first entries control properties each of the displayed
+terminal windows within that application window.  For the main window, you
+can set the font, graphical tile set, whether the window is shown with borders
+or not, and whether or not the window will be shown on top of the other windows.
+For subwindows, you can set the font, the purpose (which is a shortcut for
+enabling the subwindow content as described in
+`Showing extra info in subwindows`_), the opaqueness ("alpha") of the window,
+whether the window is shown with borders or not, and whether or not the window
+will be shown on top of the other windows.
+
+Below the entries for the contained terminal windows, is an entry,
+"Fullscreen" for toggling fullscreen mode for that application window.  That
+entry will be gray when fullscreen mode is off and white when it is on.
+
+In the primary application window which contains the main window, there is an
+entry, "Send Keypad Modifier", after that for whether key strokes from the
+numeric keypad will be sent to the game with the keypad modifier set.  That
+entry will be gray when the modifier is not send and will be white when the
+modifier is sent.  Sending the modifier allows some predefined keymaps to work,
+for instance shift with 8 from the numeric keypad to run north, at the cost of
+compatibility issues with some keyboard layouts that differ from the standard
+English keyboard layout for which normal keys have equivalents on the numeric
+keypad.  https://github.com/angband/angband/issues/4522 has an example of the
+problems that can be avoided by not sending the keypad modifier.
+
+Below "Send Keypad Modifier" in the primary application window's "Menu" is
+"Windows", use that to bring up one of the additional application windows.
+
+The final two entries in "Menu" are "About" for displaying an information
+dialog about the game and "Quit" to save the game and exit.
+
+When you leave the game, the current settings for the SDL interface are saved
+as ``sdl2init.txt`` in the same directory as is used for preference files, see
+`User Pref Files`_ for details.  Those settings will be automatically reloaded
+the next time you start the SDL interface.
+
+Mac
+~~~
+
+With the Mac-specific front end, you can use Apple's standard mechanisms to
+control window placement:  click and drag on a window's title bar to move it,
+click and drag on a window's edge or corner to change the window's dimensions,
+and click the red button at the top left corner of a subwindow to close it.
+To reopen a subwindow that you closed, use the Window menu from the Mac's
+menu bar while the game is the active application and select the entry near the
+bottom of that menu that corresponds to the subwindow you want to see.  For a
+subwindow's entry to be enabled in the Window menu, that subwindow must be
+configured to display at least one category of information:  see
+`Showing extra info in subwindows`_ for details.
+
+To change the font for a window, click on the window's title bar and select
+"Edit Font" from the Settings menu in the Mac's menu bar.  That will open a
+dialog which displays the family, typeface and size for the current font.
+Changing the selection for any of those will change the font in the window.
+
+Whether the game's map is displayed as text or as graphical tiles can be set
+by selecting Settings from the Mac's menu bar while the game is the active
+application and then choosing from one of the entries in the Graphics option.
+Choosing "Classic ASCII" will display the map as text.  Any of the other options
+will use some form of graphical tiles to display the map.  If you wish to
+adjust how graphical tiles are scaled to match up with the currently selected
+font in the main window, select 'Change Tile Set Scaling...' in the Settings
+menu.
+
+When you leave the game, the current Mac-specific settings are saved and will
+be automatically reloaded when you restart.  The settings are stored in
+``Library/Preferences/org.rephial.angband.plist`` within your user directory.
+If you suspect those settings have been corrupted in some way or would like to
+start again from the default settings, quit the game if it is running, open a
+Terminal window (i.e. select 'Go->Utilities->Terminal' from the Finder's
+menus), and, in that Terminal window, run this::
+
+	defaults delete org.rephial.angband
+
+to clear the contents of the preferences file and any cached preferences that
+may be retained in memory.
