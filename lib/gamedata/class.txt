@@ -23,7 +23,7 @@
 # info:mhp:exp
 # attack:max_attacks:min_weight:att_multiply
 # title:title
-# equip:tval:sval:min:max
+# equip:tval:sval:min:max:eopts
 # player-flags:class flags
 # magic:spell_first:spell_weight:num_books
 # book:tval:quality:name:spells:realm
@@ -57,7 +57,10 @@
 # attack calculations.
 
 # 'equip' is for starting equipment - tval of the item, sval of the item,
-# minimum amount, maximum amount.
+# minimum amount, maximum amount, names of birth options separated by spaces
+# or | (or none for no exclusion rules) which will exclude the item if set
+# (or, if the name of the option is preceded by NOT-, will exclude the item if
+# not set).
 
 # 'flags' is for class flags.
 
@@ -124,12 +127,12 @@ hitdie:9
 max-attacks:6
 min-weight:30
 strength-multiplier:5
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:potion:Berserk Strength:1:1
-equip:sword:Dagger:1:1
-equip:soft armour:Soft Leather Armour:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:potion:Berserk Strength:1:1:none
+equip:sword:Dagger:1:1:none
+equip:soft armour:Soft Leather Armour:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BRAVERY_30 | NO_MANA | SHIELD_BASH
 title:Rookie
 title:Soldier
@@ -160,10 +163,10 @@ hitdie:0
 max-attacks:4
 min-weight:40
 strength-multiplier:2
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Rapier:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Rapier:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
 title:Apprentice
@@ -181,7 +184,7 @@ magic:1:300:5
 book:magic book:town:[First Spells]:7:arcane
 book-graphics:?:R
 book-properties:25:40:1 to 100
-equip:magic book:[First Spells]:1:1
+equip:magic book:[First Spells]:1:1:none
 
 spell:Magic Missile:1:1:22:4
 effect:BOLT_OR_BEAM:MISSILE:0:-10
@@ -435,10 +438,10 @@ hitdie:2
 max-attacks:4
 min-weight:35
 strength-multiplier:3
-equip:food:Ration of Food:1:3
-equip:hafted:Whip:1:1
-equip:light:Wooden Torch:1:3
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:hafted:Whip:1:1:none
+equip:light:Wooden Torch:1:3:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:ZERO_FAIL | CHOOSE_SPELLS | CHARM
 title:Wanderer
 title:Tamer
@@ -456,7 +459,7 @@ magic:1:350:5
 book:nature book:town:[Lesser Charms]:6:nature
 book-graphics:?:y
 book-properties:25:40:1 to 100
-equip:nature book:[Lesser Charms]:1:1
+equip:nature book:[Lesser Charms]:1:1:none
 
 spell:Detect Life:1:1:23:2
 effect:DETECT_LIVING_MONSTERS
@@ -670,11 +673,11 @@ hitdie:2
 max-attacks:4
 min-weight:35
 strength-multiplier:3
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:hafted:Mace:1:1
-equip:potion:Cure Serious Wounds:2:2
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:hafted:Mace:1:1:none
+equip:potion:Cure Serious Wounds:2:2:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
@@ -692,7 +695,7 @@ magic:1:350:5
 book:prayer book:town:[Novice's Handbook]:6:divine
 book-graphics:?:G
 book-properties:25:40:1 to 100
-equip:prayer book:[Novice's Handbook]:1:1
+equip:prayer book:[Novice's Handbook]:1:1:none
 
 spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
@@ -939,9 +942,9 @@ hitdie:2
 max-attacks:4
 min-weight:35
 strength-multiplier:3
-equip:food:Ration of Food:1:3
-equip:sword:Main Gauche:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:sword:Main Gauche:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT | EVIL
 title:Acolyte
 title:Curser
@@ -959,7 +962,7 @@ magic:1:300:5
 book:shadow book:town:[Into the Shadows]:5:shadow
 book-graphics:?:P
 book-properties:25:40:1 to 100
-equip:shadow book:[Into the Shadows]:1:1
+equip:shadow book:[Into the Shadows]:1:1:none
 
 spell:Nether Bolt:1:1:22:2
 effect:BOLT:NETHER
@@ -1194,12 +1197,12 @@ hitdie:6
 max-attacks:5
 min-weight:30
 strength-multiplier:5
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Main Gauche:1:1
-equip:scroll:Protection from Evil:1:1
-equip:scroll:Word of Recall:1:1
-equip:prayer book:[Novice's Handbook]:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Main Gauche:1:1:none
+equip:scroll:Protection from Evil:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
+equip:prayer book:[Novice's Handbook]:1:1:none
 player-flags:BLESS_WEAPON | SHIELD_BASH
 title:Gallant
 title:Keeper
@@ -1355,12 +1358,12 @@ hitdie:4
 max-attacks:5
 min-weight:20
 strength-multiplier:4
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
-equip:soft armour:Soft Leather Armour:1:1
-equip:scroll:Word of Recall:1:1
-equip:magic book:[First Spells]:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Dagger:1:1:none
+equip:soft armour:Soft Leather Armour:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
+equip:magic book:[First Spells]:1:1:none
 player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
@@ -1459,13 +1462,13 @@ hitdie:5
 max-attacks:5
 min-weight:35
 strength-multiplier:4
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Main Gauche:1:1
-equip:bow:Short Bow:1:1
-equip:arrow:Arrow:15:20
-equip:scroll:Word of Recall:1:1
-equip:nature book:[Lesser Charms]:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Main Gauche:1:1:none
+equip:bow:Short Bow:1:1:none
+equip:arrow:Arrow:15:20:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
+equip:nature book:[Lesser Charms]:1:1:none
 player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
@@ -1565,13 +1568,13 @@ hitdie:8
 max-attacks:5
 min-weight:100
 strength-multiplier:5
-equip:shadow book:[Into the Shadows]:1:1
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Tulwar:1:1
-equip:shield:Leather Shield:1:1
-equip:scroll:Word of Recall:1:1
-equip:potion:Cure Light Wounds:1:1
+equip:shadow book:[Into the Shadows]:1:1:none
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Tulwar:1:1:none
+equip:shield:Leather Shield:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
+equip:potion:Cure Light Wounds:1:1:none
 obj-flags:IMPAIR_HP
 player-flags:CHOOSE_SPELLS | SHIELD_BASH | COMBAT_REGEN
 title:Rat
