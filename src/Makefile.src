@@ -216,5 +216,7 @@ ANGFILES = \
 STATSMAINFILES = main-stats.o \
         stats/db.o
 
+SPOILMAINFILES = main-spoil.o
+
 buildid.o: $(ANGFILES)
 ANGFILES += buildid.o

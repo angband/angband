@@ -221,6 +221,10 @@ AC_ARG_ENABLE(stats,
 	[AS_HELP_STRING([--enable-stats],     [Enables stats frontend (default: disabled)])],
 	[enable_stats=$enableval],
 	[enable_stats=no])
+AC_ARG_ENABLE(spoil,
+	[AS_HELP_STRING([--enable-spoil],     [Enable command-line spoiler generation (default: enabled)])],
+	[enable_spoil=$enableval],
+	[enable_spoil=yes])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl2_mixer,
@@ -429,6 +433,12 @@ if test "$enable_stats" = "yes"; then
 	fi
 fi
 
+dnl Spoiler checking
+if test "$enable_spoil" = "yes"; then
+	AC_DEFINE(USE_SPOIL, 1, [Define to 1 to build the command-line spoiler generation])
+	MAINFILES="${MAINFILES} \$(SPOILMAINFILES)"
+fi
+
 AC_SUBST(MAINFILES, ${MAINFILES})
 AC_CONFIG_FILES([mk/buildsys.mk mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
@@ -520,6 +530,12 @@ if test "$enable_stats" = "yes"; then
 	echo "- Stats                                   Yes"
 else
     echo "- Stats                                   No"
+fi
+
+if test "$enable_spoil" = "yes"; then
+	echo "- Spoilers                                Yes"
+else
+    echo "- Spoilers                                No"
 fi
 
 echo
