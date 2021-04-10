@@ -77,6 +77,10 @@ static const struct module modules[] =
 #ifdef USE_STATS
 	{ "stats", help_stats, init_stats },
 #endif /* USE_STATS */
+
+#ifdef USE_SPOIL
+	{ "spoil", help_spoil, init_spoil },
+#endif
 };
 
 /**

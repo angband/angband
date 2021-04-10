@@ -40,6 +40,7 @@ extern errr init_sdl(int argc, char **argv);
 extern errr init_sdl2(int argc, char **argv);
 extern errr init_test(int argc, char **argv);
 extern errr init_stats(int argc, char **argv);
+extern errr init_spoil(int argc, char **argv);
 
 
 extern const char help_lfb[];
@@ -60,6 +61,7 @@ extern const char help_sdl[];
 extern const char help_sdl2[];
 extern const char help_test[];
 extern const char help_stats[];
+extern const char help_spoil[];
 
 //phantom server play
 extern bool arg_force_name;
