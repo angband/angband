@@ -503,21 +503,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	/* Try the modules in the order specified by modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {
-		/* User requested a specific module? */
-		if (!mstr || (streq(mstr, modules[i].name))) {
-			ANGBAND_SYS = modules[i].name;
-			if (0 == modules[i].init(argc, argv)) {
-				done = true;
-				break;
-			}
-		}
-	}
-
-	/* Make sure we have a display! */
-	if (!done) quit("Unable to prepare any 'display module'!");
-
 #ifdef UNIX
 
 	/* Get the "user name" as default player name, unless set with -u switch */
@@ -532,6 +517,21 @@ int main(int argc, char *argv[])
 	create_needed_dirs();
 
 #endif /* UNIX */
+
+	/* Try the modules in the order specified by modules[] */
+	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {
+		/* User requested a specific module? */
+		if (!mstr || (streq(mstr, modules[i].name))) {
+			ANGBAND_SYS = modules[i].name;
+			if (0 == modules[i].init(argc, argv)) {
+				done = true;
+				break;
+			}
+		}
+	}
+
+	/* Make sure we have a display! */
+	if (!done) quit("Unable to prepare any 'display module'!");
 
 	/* Catch nasty signals */
 	signals_init();
