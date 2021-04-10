@@ -22,10 +22,10 @@ hitdie:0
 max-attacks:4
 min-weight:40
 strength-multiplier:2
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Dagger:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
 title:Apprentice
@@ -43,7 +43,7 @@ magic:1:300:9
 book:magic book:town:[Magic for Beginners]:6:arcane
 book-graphics:?:R
 book-properties:25:40:1 to 100
-equip:magic book:[Magic for Beginners]:1:1
+equip:magic book:[Magic for Beginners]:1:1:none
 
 spell:Magic Missile:1:1:22:4
 effect:BOLT_OR_BEAM:MISSILE:0:-10
@@ -498,11 +498,11 @@ hitdie:2
 max-attacks:4
 min-weight:35
 strength-multiplier:3
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:hafted:Mace:1:1
-equip:potion:Cure Serious Wounds:2:2
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:hafted:Mace:1:1:none
+equip:potion:Cure Serious Wounds:2:2:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
@@ -520,7 +520,7 @@ magic:1:350:9
 book:prayer book:town:[Beginners Handbook]:7:divine
 book-graphics:?:G
 book-properties:25:40:1 to 100
-equip:prayer book:[Beginners Handbook]:1:1
+equip:prayer book:[Beginners Handbook]:1:1:none
 
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
@@ -978,11 +978,11 @@ hitdie:6
 max-attacks:5
 min-weight:30
 strength-multiplier:4
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
-equip:soft armour:Soft Leather Armour:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Dagger:1:1:none
+equip:soft armour:Soft Leather Armour:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHOOSE_SPELLS
 title:Vagabond
 title:Cutpurse
@@ -998,7 +998,7 @@ title:Master Thief
 magic:5:350:9
 
 book:magic book:town:[Magic for Beginners]:6:arcane
-equip:magic book:[Magic for Beginners]:1:1
+equip:magic book:[Magic for Beginners]:1:1:none
 
 spell:Detect Monsters:5:1:50:1
 effect:DETECT_VISIBLE_MONSTERS
@@ -1300,12 +1300,12 @@ hitdie:4
 max-attacks:5
 min-weight:35
 strength-multiplier:4
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
-equip:bow:Short Bow:1:1
-equip:arrow:Arrow:15:20
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Dagger:1:1:none
+equip:bow:Short Bow:1:1:none
+equip:arrow:Arrow:15:20:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
@@ -1321,7 +1321,7 @@ title:Ranger Lord
 magic:3:400:9
 
 book:magic book:town:[Magic for Beginners]:7:arcane
-equip:magic book:[Magic for Beginners]:1:1
+equip:magic book:[Magic for Beginners]:1:1:none
 
 spell:Magic Missile:3:1:30:1
 effect:BOLT_OR_BEAM:MISSILE:0:-10
@@ -1739,11 +1739,11 @@ hitdie:6
 max-attacks:5
 min-weight:30
 strength-multiplier:5
-equip:food:Ration of Food:1:3
-equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
-equip:scroll:Protection from Evil:1:1
-equip:scroll:Word of Recall:1:1
+equip:food:Ration of Food:1:3:none
+equip:light:Wooden Torch:1:3:none
+equip:sword:Dagger:1:1:none
+equip:scroll:Protection from Evil:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
 title:Gallant
 title:Keeper
 title:Protector
@@ -1758,7 +1758,7 @@ title:Paladin Lord
 magic:1:400:9
 
 book:prayer book:town:[Beginners Handbook]:7:divine
-equip:prayer book:[Beginners Handbook]:1:1
+equip:prayer book:[Beginners Handbook]:1:1:none
 
 spell:Detect Evil:1:1:30:4
 effect:DETECT_EVIL

@@ -241,7 +241,7 @@ struct start_item {
 	int sval;	/**< Object sub-type  */
 	int min;	/**< Minimum starting amount */
 	int max;	/**< Maximum starting amount */
-
+	int *eopts;     /**< Indices (zero terminated array) for birth options which can exclude item */
 	struct start_item *next;
 };
 

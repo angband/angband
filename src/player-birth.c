@@ -546,6 +546,26 @@ static void player_outfit(struct player *p)
 			num = 1;
 		}
 
+		/* Exclude if configured to do so based on birth options. */
+		if (si->eopts) {
+			bool included = true;
+			int eind = 0;
+
+			while (si->eopts[eind] && included) {
+				if (si->eopts[eind] > 0) {
+					if (p->opts.opt[si->eopts[eind]]) {
+						included = false;
+					}
+				} else {
+					if (!p->opts.opt[-si->eopts[eind]]) {
+						included = false;
+					}
+				}
+				++eind;
+			}
+			if (!included) continue;
+		}
+
 		/* Prepare a new item */
 		obj = object_new();
 		object_prep(obj, kind, 0, MINIMISE);
