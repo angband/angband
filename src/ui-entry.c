@@ -633,7 +633,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 				break;
 
 			case OBJ_PROPERTY_FLAG:
-				if (object_flag_is_known(obj, ind)) {
+				if (object_flag_is_known(p, obj, ind)) {
 					int v = of_has(cache2->f, ind) ? 1 : 0;
 					int a = 0;
 
@@ -659,7 +659,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 				break;
 
 			case OBJ_PROPERTY_IGNORE:
-				if (object_element_is_known(obj, ind)) {
+				if (object_element_is_known(p, obj, ind)) {
 					int v = (obj->el_info[ind].flags &
 						EL_INFO_IGNORE) ? 1 : 0;
 					int a = 0;
@@ -688,7 +688,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			case OBJ_PROPERTY_RESIST:
 			case OBJ_PROPERTY_VULN:
 			case OBJ_PROPERTY_IMM:
-				if (object_element_is_known(obj, ind)) {
+				if (object_element_is_known(p, obj, ind)) {
 					int v = obj->el_info[ind].res_level;
 					int a = 0;
 
