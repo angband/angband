@@ -556,6 +556,47 @@ bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
 }
 
 
+/**
+ * For a given object and set of object properties bound to a ui_entry, loop
+ * over those properties and report the combined value of them for the object.
+ * \param entry Is the ui_entry to use.  It is the source of the object
+ * properties that will be combined and the algorithm for combining the values.
+ * \param obj Is the object to assess.  May be NULL.
+ * \param p Is the player used to assess whether an object property is known.
+ * Must not be NULL.
+ * \param cache If *cache is not NULL, *cache is assumed to have been
+ * initialized by a prior call to compute_ui_entry_values_for_object() for the
+ * same object and for a player whose state of knowledge is the same as p's.
+ * If *cache is NULL, it will be initialized by this call and is specific to
+ * obj and the state of p's knowledge.  The cache is to optimize away repeated
+ * calculations that would be performed when looping over multiple ui_entry
+ * structures and calling this function for each of them with the same object
+ * and player.  Once it is no longer needed, *cache should be passed to
+ * release_cached_object_data() to release the resources associated with it.
+ * \param val At exit, *val will be the combined value for the object across
+ * the non-auxiliary object properties bound to entry.  It will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
+ *   b) 0 if all the properties bound to entry are auxiliary properties
+ *   c) UI_ENTRY_UNKNOWN_VALUE if there's at least one non-auxiliary property
+ *   bound to entry but all such properties are unknown to p
+ *   d) the combined value of the known non-auxiliary properties if there's at
+ *   least one non-auxiliary property bound to entry and at least one such
+ *   property is known to p
+ * The value of *val at entry is not used.
+ * One use of auxiliary properties is to have the modifier for a stat be bound
+ * to an entry and have the sustain for the stat be bound to the same entry as
+ * an auxiliary property.
+ * \param auxval At exit, *auxval will be the combined value for the object
+ * across the auxiliary object properties bound to entry.  It will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
+ *   b) 0 if all the properties bound to entry are non-auxiliary properties
+ *   c) UI_ENTRY_UNKNOWN_VALUE if there's at least one auxiliary property
+ *   bound to entry but all such properties are unknown to p
+ *   d) the combined value of the known auxiliary properties if there's at
+ *   least one auxiliary property bound to entry and at least one such
+ *   property is known to p
+ * The value of *auxval at entry is not used.
+ */
 void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	const struct object *obj, const struct player *p,
 	struct cached_object_data **cache, int *val, int *auxval)
