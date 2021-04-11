@@ -563,7 +563,7 @@ bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
  * properties that will be combined and the algorithm for combining the values.
  * \param obj Is the object to assess.  May be NULL.
  * \param p Is the player used to assess whether an object property is known.
- * Must not be NULL.
+ * May be NULL to assume that all the properties are known.
  * \param cache If *cache is not NULL, *cache is assumed to have been
  * initialized by a prior call to compute_ui_entry_values_for_object() for the
  * same object and for a player whose state of knowledge is the same as p's.
@@ -616,7 +616,11 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	if (*cache == NULL) {
 		*cache = mem_alloc(sizeof(**cache));
 		of_wipe((*cache)->f);
-		object_flags_known(obj, (*cache)->f);
+		if (p) {
+			object_flags_known(obj, (*cache)->f);
+		} else {
+			object_flags(obj, (*cache)->f);
+		}
 	}
 	first = true;
 	all_unknown = true;
@@ -647,7 +651,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			switch (entry->obj_props[i].type) {
 			case OBJ_PROPERTY_STAT:
 			case OBJ_PROPERTY_MOD:
-				if (p->obj_k->modifiers[ind] != 0 ||
+				if (!p || p->obj_k->modifiers[ind] != 0 ||
 					obj->modifiers[ind] == 0) {
 					int v = obj->modifiers[ind];
 					int a = 0;
@@ -674,7 +678,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 				break;
 
 			case OBJ_PROPERTY_FLAG:
-				if (object_flag_is_known(p, obj, ind)) {
+				if (!p || object_flag_is_known(p, obj, ind)) {
 					int v = of_has(cache2->f, ind) ? 1 : 0;
 					int a = 0;
 
@@ -700,7 +704,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 				break;
 
 			case OBJ_PROPERTY_IGNORE:
-				if (object_element_is_known(p, obj, ind)) {
+				if (!p || object_element_is_known(p, obj, ind)) {
 					int v = (obj->el_info[ind].flags &
 						EL_INFO_IGNORE) ? 1 : 0;
 					int a = 0;
@@ -729,7 +733,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			case OBJ_PROPERTY_RESIST:
 			case OBJ_PROPERTY_VULN:
 			case OBJ_PROPERTY_IMM:
-				if (object_element_is_known(p, obj, ind)) {
+				if (!p || object_element_is_known(p, obj, ind)) {
 					int v = obj->el_info[ind].res_level;
 					int a = 0;
 
@@ -777,7 +781,12 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 				if (curse[curse_ind].power) {
 					obj = curses[curse_ind].obj;
 					of_wipe(cache2->f);
-					object_flags_known(obj, cache2->f);
+					if (p) {
+						object_flags_known(obj,
+							cache2->f);
+					} else {
+						object_flags(obj, cache2->f);
+					}
 					break;
 				}
 				++curse_ind;
