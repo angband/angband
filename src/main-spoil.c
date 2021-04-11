@@ -23,7 +23,7 @@
 #include "init.h"
 #include "main.h"
 #include "obj-init.h"
-#include "player-birth.h"
+#include "obj-util.h"
 #include "savefile.h"
 #include "ui-game.h"
 #include "wizard.h"
@@ -118,6 +118,21 @@ static u32b parse_seed(const char *src)
 		(void) file_close(fin);
 	}
 	return result;
+}
+
+static void setup_player(void)
+{
+	cmdq_push(CMD_BIRTH_INIT);
+	cmdq_push(CMD_BIRTH_RESET);
+	cmdq_push(CMD_CHOOSE_RACE);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+	cmdq_push(CMD_CHOOSE_CLASS);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+	cmdq_push(CMD_ROLL_STATS);
+	cmdq_push(CMD_NAME_CHOICE);
+	cmd_set_arg_string(cmdq_peek(), "name", "Spoiler");
+	cmdq_push(CMD_ACCEPT_CHARACTER);
+	cmdq_execute(CTX_BIRTH);
 }
 
 /**
@@ -224,6 +239,8 @@ errr init_spoil(int argc, char *argv[]) {
 		init_angband();
 
 		if (load_randart) {
+			setup_player();
+			option_set(option_name(OPT_birth_randarts), true);
 			deactivate_randart_file();
 			if (randart_name) {
 				char defname[1024];
@@ -241,8 +258,6 @@ errr init_spoil(int argc, char *argv[]) {
 					cleanup_parser(&artifact_parser);
 					run_parser(&randart_parser);
 					file_delete(defname);
-
-					player_generate(player, races, classes, false);
 				} else {
 					printf("init-spoil: could not copy randart file to '%s'.\n", defname);
 					result = 1;
@@ -265,10 +280,11 @@ errr init_spoil(int argc, char *argv[]) {
 				result = 1;
 			}
 		} else {
-			player_generate(player, races, classes, false);
+			setup_player();
 		}
 
 		if (result == 0) {
+			flavor_set_all_aware();
 			for (i = 0; i < (int)N_ELEMENTS(opts); ++i) {
 				if (!opts[i].enabled) continue;
 				(*(opts[i].func))(opts[i].path);
