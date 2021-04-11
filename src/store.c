@@ -562,7 +562,7 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 
 		/* OK if the object is known to have the flag */
 		if (of_has(obj->flags, buy->flag) &&
-			object_flag_is_known(obj, buy->flag))
+			object_flag_is_known(player, obj, buy->flag))
 			return true;
 	}
 

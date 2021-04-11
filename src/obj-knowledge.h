@@ -65,8 +65,10 @@ bool object_has_standard_to_h(const struct object *obj);
 bool object_has_rune(const struct object *obj, int rune_no);
 bool object_runes_known(const struct object *obj);
 bool object_fully_known(const struct object *obj);
-bool object_flag_is_known(const struct object *obj, int flag);
-bool object_element_is_known(const struct object *obj, int element);
+bool object_flag_is_known(const struct player *p, const struct object *obj,
+	int flag);
+bool object_element_is_known(const struct player *p, const struct object *obj,
+	int element);
 
 void object_set_base_known(struct object *obj);
 void object_sense(struct player *p, struct object *obj);
