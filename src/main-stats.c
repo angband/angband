@@ -760,7 +760,7 @@ static int stats_dump_lists(void)
 	char *object_flag_names[] =
 	{
 		"NONE",
-		#define OF(a) #a,
+		#define OF(a, b) #a,
 		#include "list-object-flags.h"
 		#undef OF
 	};

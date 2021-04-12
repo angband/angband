@@ -46,7 +46,7 @@ enum
  */
 enum {
 	OF_NONE,
-	#define OF(a) OF_##a,
+	#define OF(a, b) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };

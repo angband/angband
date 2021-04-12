@@ -188,9 +188,15 @@ static struct object *wiz_create_object_from_kind(struct object_kind *kind)
  */
 static void wiz_display_item(const struct object *obj, bool all)
 {
-	int j = 0;
+	static const char *flagLabels[] = {
+		#define OF(a, b) b,
+		#include "list-object-flags.h"
+		#undef OF
+	};
+	int j = 0, i, k, nflg;
 	bitflag f[OF_SIZE];
 	char buf[256];
+	bool *labelsDone;
 
 	/* Extract the flags. */
 	if (all) {
@@ -222,15 +228,55 @@ static void wiz_display_item(const struct object *obj, bool all)
 		obj->ego ? (int) obj->ego->eidx : -1,
 		(long)object_value(obj, 1)), 6, j);
 
-	prt("+------------FLAGS------------------+", 16, j);
-	prt("SUST.PROT<-OTHER----><BAD->C.MISC....", 17, j);
-	prt("     fbcssf  s  ibbtniiatadsflldddett", 18, j);
-	prt("siwdcelotdfrei  pluaommfegrcrggiiixrh", 19, j);
-	prt("tnieoannuiaesnfhcerffhsrlgxuattgggppr", 20, j);
-	prt("rtsxnrdfnglgpvaltsnuuppderprg23123liw", 21, j);
-	prt_binary(f, 0, 22, j, L'*', 37);
+	nflg = MIN(OF_MAX - FLAG_START, 80);
+
+	/* Set up header line. */
+	if (nflg >= 6) {
+		buf[0] = '+';
+		k = (nflg - 6) / 2;
+		for (i = 1; i < k; ++i) {
+			buf[i] = '-';
+		}
+	} else {
+		k = 0;
+	}
+	buf[k] = 'F';
+	buf[k + 1] = 'L';
+	buf[k + 2] = 'A';
+	buf[k + 3] = 'G';
+	buf[k + 4] = 'S';
+	for (i = k + 5; i < nflg - 1; ++i) {
+		buf[i] = '-';
+	}
+	if (nflg >= 7) {
+		buf[nflg - 1] = '+';
+		buf[nflg] = '\0';
+	} else {
+		buf[k + 5] = '\0';
+	}
+	prt(buf, 16, j);
+
+	/* Display first five letters of flag labels vertically. */
+	labelsDone = mem_zalloc(nflg * sizeof(*labelsDone));
+	for (k = 0; k < 5; ++k) {
+		for (i = 0; i < nflg; ++i) {
+			if (labelsDone[i]) {
+				buf[i] = ' ';
+			} else if (flagLabels[i][k] == '\0') {
+				labelsDone[i] = true;
+				buf[i] = ' ';
+			} else {
+				buf[i] = flagLabels[i][k];
+			}
+		}
+		buf[nflg] = '\0';
+		prt(buf, 17 + k, j);
+	}
+	mem_free(labelsDone);
+
+	prt_binary(f, 0, 22, j, L'*', nflg);
 	if (obj->known) {
-		prt_binary(obj->known->flags, 0, 23, j, L'+', 37);
+		prt_binary(obj->known->flags, 0, 23, j, L'+', nflg);
 	}
 }
 
