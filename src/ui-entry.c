@@ -1111,12 +1111,18 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 }
 
 
+/**
+ * Release a cache allocated by compute_ui_entry_values_for_object().
+ */
 void release_cached_object_data(struct cached_object_data *cache)
 {
 	mem_free(cache);
 }
 
 
+/**
+ * Release a cache allocated by compute_ui_entry_values_for_player().
+ */
 void release_cached_player_data(struct cached_player_data *cache)
 {
 	mem_free(cache);
