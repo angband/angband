@@ -26,9 +26,9 @@
 #          sustain, for instance).  The second is the value to pass.  That can
 #          be an integer or "special" where the latter indicates that the
 #          value passed will be determined internally.  bindui currently only
-#          affects parts of the second character screen.  It can appear
-#          multiple times for the same entry to bind it to multiple user
-#          interface elements.
+#          affects parts of the second character screen and the equippable
+#          comparison.  It can appear multiple times for the same entry to
+#          bind it to multiple user interface elements.
 # name - the name of the property
 # desc - the description of the property
 # value - value for elements; -1 (vulnerability), 1 (resistance) or 3 (immunity)

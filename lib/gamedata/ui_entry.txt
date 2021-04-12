@@ -2,7 +2,7 @@
 
 # Configure user interface elements to combine one or more object or player
 # properties and display them.  Currently only used for parts of the second
-# character screen.
+# character screen and the equippable comparison.
 
 # Descriptions can be edited without bad effects.
 # The name is used to link the element from bindui fields in

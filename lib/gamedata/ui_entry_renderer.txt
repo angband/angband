@@ -1,7 +1,8 @@
 # File: ui_entry_renderer.txt
 
 # Configure how a quantity is rendered in the user interface.  Currently only
-# used for the parts of the second character screen.
+# used for the parts of the second character screen and the equippable
+# comparison.
 
 # The name is used to link the renderer with a user interface element in
 # ui_entry.txt so changes here would have to be mirrored there to keep the
