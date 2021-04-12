@@ -814,6 +814,37 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 }
 
 
+/**
+ * For a player and a set of object properties bound to a ui_entry, loop
+ * over those properties and report the combined value of them for the player.
+ * \param entry Is the ui_entry to use.  It is the source of the object
+ * properties that will be combined and the algorithm for combining the values.
+ * \param p Is the player to assess.  May be NULL.
+ * \param cache If *cache is not NULL, *cache is assumed to have been
+ * initialized by a prior call to compute_ui_entry_values_for_player()
+ * while the given player was in the same state.  If *cache is NULL, it will
+ * be initialized by this call and is specific to the state of the given player.
+ * The cache is to optimize away repeated calculations that would be performed
+ * when looping over multiple ui_entry structures and calling this function for
+ * each of them with the same player.  Once it is no longer needed, *cache
+ * should be passed to release_cached_player_data() to release the resources
+ * associated with it.
+ * \param val At exit, *val will be the combined value for the player across
+ * the non-auxiliary object properties bound to entry.  It will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL
+ *   bound to entry but all such properties are unknown to p
+ *   b) the combined value of the non-auxiliary properties bound to entry
+ * The value of *val at entry is not used.
+ * One use of auxiliary properties is to have the modifier for a stat be bound
+ * to an entry and have the sustain for the stat be bound to the same entry as
+ * an auxiliary property.
+ * \param auxval At exit, *auxval will be the combined value for the object
+ * across the auxiliary object properties bound to entry.  It will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL
+ *   bound to entry but all such properties are unknown to p
+ *   b) the combined value of the auxiliary properties bound to entry
+ * The value of *auxval at entry is not used.
+ */
 void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 	struct player *p, struct cached_player_data **cache, int *val,
 	int *auxval)
