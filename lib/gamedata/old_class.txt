@@ -19,6 +19,7 @@ skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
 hitdie:0
+exp:30
 max-attacks:4
 min-weight:40
 strength-multiplier:2
@@ -495,6 +496,7 @@ skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
 hitdie:2
+exp:20
 max-attacks:4
 min-weight:35
 strength-multiplier:3
@@ -975,6 +977,7 @@ skill-shoot:66:30
 skill-throw:66:30
 skill-dig:0:0
 hitdie:6
+exp:25
 max-attacks:5
 min-weight:30
 strength-multiplier:4
@@ -1297,6 +1300,7 @@ skill-shoot:72:45
 skill-throw:72:45
 skill-dig:0:0
 hitdie:4
+exp:30
 max-attacks:5
 min-weight:35
 strength-multiplier:4
@@ -1736,6 +1740,7 @@ skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
 hitdie:6
+exp:35
 max-attacks:5
 min-weight:30
 strength-multiplier:5

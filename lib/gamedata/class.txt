@@ -22,6 +22,7 @@
 # skill-throw:base:increment
 # skill-dig:base:increment
 # hitdie:increment
+# exp:percent
 # max-attacks:count
 # min-weight:weight in tenths of pounds
 # strength-multiplier:multiplicative factor
@@ -56,6 +57,10 @@
 
 # 'hitdie' sets the class's contribution to the maximum hitpoints gained per
 # level
+
+# 'exp' sets the classes additive contribution, in percent, to the experience
+# point penalty.  The current classes don't set this and get the default of
+# no experience point penalty.
 
 # 'max-attacks' sets the maximum possible number of blows per round.
 
