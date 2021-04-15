@@ -18,7 +18,7 @@
 # alloc: commonness : min " to " max
 # charges: charges
 # pile: chance of being generated in a pile : dice for number of items
-# power: power of the effect for object power eveluations
+# power: power of the effect for object power evaluations
 # msg: message on using the object
 # vis-msg: message on using the object, only when player is not blind
 # effect: effect when used : subtype (optional) : radius (optional) : parameter (optional)
