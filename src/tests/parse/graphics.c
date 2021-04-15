@@ -9,8 +9,9 @@
 #include "init.h" /* init_angband */
 #include "message.h" /* msg */
 #include "grafmode.h"
+#include "player.h"
+#include "player-birth.h"
 #include "ui-prefs.h"
-#include "cmd-core.h"
 
 #include "mon-util.h" /* lookup_monster_base */
 #include "obj-tval.h" /* tval_find_idx */
@@ -41,8 +42,7 @@ int test_prefs(void *state) {
 
 	/* This is a bit of a hack to ensure we have a player struct set up */
 	/* Otherwise race/class dependent graphics will crash */
-	cmdq_push(CMD_BIRTH_RESET);
-	cmdq_execute(CTX_BIRTH);
+	eq(player_make_simple(NULL, NULL, NULL), true);
 
 	event_add_handler(EVENT_MESSAGE, getmsg, &error);
 

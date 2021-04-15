@@ -4,7 +4,6 @@
 #include "unit-test.h"
 #include "test-utils.h"
 #include "cave.h"
-#include "cmd-core.h"
 #include "effects.h"
 #include "game-world.h"
 #include "init.h"
@@ -15,6 +14,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-birth.h"
 #include "z-quark.h"
 
 static bool find_empty_spot(struct chunk *c, struct player *p)
@@ -186,17 +186,11 @@ int setup_tests(void **state) {
 	init_angband();
 
 	/* Set up the player. */
-	cmdq_push(CMD_BIRTH_INIT);
-	cmdq_push(CMD_BIRTH_RESET);
-	cmdq_push(CMD_CHOOSE_RACE);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
-	cmdq_push(CMD_CHOOSE_CLASS);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
-	cmdq_push(CMD_ROLL_STATS);
-	cmdq_push(CMD_NAME_CHOICE);
-	cmd_set_arg_string(cmdq_peek(), "name", "Tester");
-	cmdq_push(CMD_ACCEPT_CHARACTER);
-	cmdq_execute(CTX_BIRTH);
+	if (!player_make_simple(NULL, NULL, "Tester")) {
+		cleanup_angband();
+		return 1;
+	}
+
 	prepare_next_level(&cave, player);
 	on_new_level();
 

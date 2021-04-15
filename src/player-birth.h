@@ -26,6 +26,8 @@ extern void player_generate(struct player *p, const struct player_race *r,
                             const struct player_class *c, bool old_history);
 extern char *get_history(struct history_chart *h);
 extern void wield_all(struct player *p);
+extern bool player_make_simple(const char *nrace, const char *nclass,
+	const char *nplayer);
 
 void do_cmd_birth_init(struct command *cmd);
 void do_cmd_birth_reset(struct command *cmd);
