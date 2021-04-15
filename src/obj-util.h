@@ -66,7 +66,7 @@ int get_use_device_chance(const struct object *obj);
 void distribute_charges(struct object *source, struct object *dest, int amt);
 int number_charging(const struct object *obj);
 bool recharge_timeout(struct object *obj);
-bool verify_object(const char *prompt, struct object *obj);
+bool verify_object(const char *prompt, const struct object *obj);
 void print_custom_message(struct object *obj, const char *string, int msg_type);
 
 

@@ -435,8 +435,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* ... otherwise ok */
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
 		tval_is_jewelry(obj1) || tval_is_light(obj1)) {
-		bool obj1_is_known = object_fully_known((struct object *)obj1);
-		bool obj2_is_known = object_fully_known((struct object *)obj2);
+		bool obj1_is_known = object_fully_known(obj1);
+		bool obj2_is_known = object_fully_known(obj2);
 
 		/* Require identical values */
 		if (obj1->ac != obj2->ac) return false;

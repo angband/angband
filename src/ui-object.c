@@ -646,8 +646,7 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 		/* Prompt for confirmation n times */
 		while (n--) {
-			if (!verify_object(prompt_buf, (struct object *) obj))
-				return (false);
+			if (!verify_object(prompt_buf, obj)) return (false);
 		}
 	}
 

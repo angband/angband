@@ -939,7 +939,7 @@ bool recharge_timeout(struct object *obj)
  *
  * The item can be negative to mean "item on floor".
  */
-bool verify_object(const char *prompt, struct object *obj)
+bool verify_object(const char *prompt, const struct object *obj)
 {
 	char o_name[80];
 
