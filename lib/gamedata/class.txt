@@ -11,7 +11,8 @@
 # Format:
 # name:class number:class name
 # stats:str:int:wis:dex:con
-# skill-disarm:base:increment
+# skill-disarm-phys:base:increment
+# skill-disarm-magic:base:increment
 # skill-device:base:increment
 # skill-save:base:increment
 # skill-stealth:base:increment
@@ -20,17 +21,22 @@
 # skill-shoot:base:increment
 # skill-throw:base:increment
 # skill-dig:base:increment
-# info:mhp:exp
-# attack:max_attacks:min_weight:att_multiply
+# hitdie:increment
+# exp:percent
+# max-attacks:count
+# min-weight:weight in tenths of pounds
+# strength-multiplier:multiplicative factor
 # title:title
 # equip:tval:sval:min:max:eopts
-# player-flags:class flags
+# obj-flags:object property flags
+# player-flags:player property flags
 # magic:spell_first:spell_weight:num_books
 # book:tval:quality:name:spells:realm
 # book-graphics:symbol:color
 # book-properties:cost:commonness:min to max
 # spell:name:level:mana:fail:exp
 # effect:effect:subtype (if needed):radius (if needed):parameter (if needed)
+# effect-yx:yrange:xrange
 # dice:dice string
 # expr:dice expression
 # effect-msg:message
@@ -49,12 +55,20 @@
 # character's skills at birth, the increments are added to the base skill
 # every ten levels.
 
-# 'info' is for extra info - max. hitpoints gained per level, experience
-# factor in percent.
+# 'hitdie' sets the class's contribution to the maximum hitpoints gained per
+# level
 
-# 'attack' is for attack info - maximum possible number of attacks, minimum
-# weapon weight for calculating the number of attacks, multiplier for
-# attack calculations.
+# 'exp' sets the classes additive contribution, in percent, to the experience
+# point penalty.  The current classes don't set this and get the default of
+# no experience point penalty.
+
+# 'max-attacks' sets the maximum possible number of blows per round.
+
+# 'min-weight' is the minimum, in tenths of pounds, imposed on a weapon's weight
+# when computing the number of blows per round.
+
+# 'strength-multiplier' is the multiplier for strength's contribution to the
+# number of blows per round; a bigger value grants more blows.
 
 # 'equip' is for starting equipment - tval of the item, sval of the item,
 # minimum amount, maximum amount, names of birth options separated by spaces
@@ -62,7 +76,11 @@
 # (or, if the name of the option is preceded by NOT-, will exclude the item if
 # not set).
 
-# 'flags' is for class flags.
+# 'obj-flags' is for object properties (from object_property.txt) that the
+# class has.
+
+# 'player-flags' is for player properties (from player_property.txt) that the
+# class has.
 
 # 'title' is for class titles.
 
@@ -91,6 +109,10 @@
 # 'effect' defines the spell effect (as listed in src/list-effects.h),
 # and optionally parameters for effect subtype, effect radius and
 # an extra parameter for various things
+
+# 'effect-yx' sets the y (i.e. vertical) range and x (i.e. horizontal) range
+# about the effect's centre.  Only some effects (often detections) use those
+# ranges.
 
 # 'dice' provides a random value to be used by an effect (for damage,
 # healing, etc).  As well as the normal random value fields described above,
