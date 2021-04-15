@@ -24,7 +24,7 @@
 # effect: effect when used : parameter (maybe) : paramater (maybe)
 # effect-yx: y value for effect : x value for effect
 # dice:dice string
-# expr:dice expression
+# expr:substitution code:base value:expression
 # flags: flag | flag | etc.
 # values: label[value] | label[value] | etc.
 # pval: pval
