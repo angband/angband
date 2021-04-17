@@ -2744,7 +2744,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
  * \return a pointer to the generated chunk
  */
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
-	int i, k, y;
+	int i, k;
 	struct chunk *c;
 	struct chunk *left;
 	struct chunk *gauntlet;
@@ -2905,14 +2905,6 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_PERM, SQUARE_NONE);
-
-	/* Temporary until connecting to vault entrances works better */
-	for (y = 0; y < gauntlet_hgt; y++) {
-		square_set_feat(c, loc(line1 - 1, y + (y_size - gauntlet_hgt) / 2),
-						FEAT_FLOOR);
-		square_set_feat(c, loc(line2, y + (y_size - gauntlet_hgt) / 2),
-						FEAT_FLOOR);
-	}
 
 	/* Connect */
 	ensure_connectedness(c);
