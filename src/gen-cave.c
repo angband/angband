@@ -1183,7 +1183,13 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 				}
 				++counts[color];
 				colors[n1] = color;
-				if (!square_isperm(c, grid) && !square_isvault(c, grid)) {
+				/* Don't break permanent walls or vaults.  Also
+				 * don't override terrain that already allows
+				 * passage. */
+				if (!square_isperm(c, grid) &&
+						!square_isvault(c, grid) &&
+						!(square_ispassable(c, grid) ||
+						square_isdoor(c, grid))) {
 					square_set_feat(c, grid, FEAT_FLOOR);
 				}
 				n1 = previous[n1];
