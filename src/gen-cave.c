@@ -2188,8 +2188,10 @@ struct chunk *moria_chunk(int depth, int height, int width)
     dun->pit_num = 0;
     dun->cent_n = 0;
 
-    /* Build rooms until we have enough floor grids */
-    while (c->feat_count[FEAT_FLOOR] < num_floors) {
+    /* Build rooms until we have enough floor grids and at least two rooms
+     * (the latter is to make it easier to satisfy the constraints for player
+     * placement) */
+    while (c->feat_count[FEAT_FLOOR] < num_floors || dun->cent_n < 2) {
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
