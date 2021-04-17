@@ -1178,6 +1178,10 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 			while (colors[n1] != color) {
 				struct loc grid;
 				i_to_grid(n1, w, &grid);
+				if (colors[n1] > 0) {
+					--counts[colors[n1]];
+				}
+				++counts[color];
 				colors[n1] = color;
 				if (!square_isperm(c, grid) && !square_isvault(c, grid)) {
 					square_set_feat(c, grid, FEAT_FLOOR);
