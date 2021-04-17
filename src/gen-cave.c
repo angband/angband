@@ -2797,12 +2797,44 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	/* Place up stairs in the left cavern */
 	alloc_stairs(left, FEAT_LESS, rand_range(1, 3));
 
-	/* Open the ends of the gauntlet */
-	square_set_feat(gauntlet, loc(0, randint1(gauntlet->height - 2)),
-					FEAT_GRANITE);
-	square_set_feat(gauntlet, loc(gauntlet->width - 1,
-								  randint1(gauntlet->height - 2)),
-					FEAT_GRANITE);
+	/*
+	 * Open the ends of the gauntlet.  Make sure the opening is
+	 * horizontally adjacent to a non-permanent wall for interoperability
+	 * with ensure_connectedness().
+	 */
+	i = 0;
+	while (1) {
+		struct loc grid = loc(0, randint1(gauntlet->height - 2));
+
+		if (i >= 20) {
+			cave_free(gauntlet);
+			cave_free(left);
+			cave_free(right);
+			return NULL;
+		}
+		if (!square_isperm(gauntlet, loc_sum(grid, loc(1, 0)))) {
+			square_set_feat(gauntlet, grid, FEAT_GRANITE);
+			break;
+		}
+		++i;
+	}
+	i = 0;
+	while (1) {
+		struct loc grid = loc(gauntlet->width - 1,
+			randint1(gauntlet->height - 2));
+
+		if (i >= 20) {
+			cave_free(gauntlet);
+			cave_free(left);
+			cave_free(right);
+			return NULL;
+		}
+		if (!square_isperm(gauntlet, loc_sum(grid, loc(-1, 0)))) {
+			square_set_feat(gauntlet, grid, FEAT_GRANITE);
+			break;
+		}
+		++i;
+	}
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
