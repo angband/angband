@@ -1206,9 +1206,13 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 			/* Make sure we stay inside the boundaries */
 			if (!square_in_bounds(c, grid)) continue;
 
-			/* If the cell hasn't already been procssed, add it to the queue */
+			/* If the cell hasn't already been processed and we're
+			 * willing to include it (do allow a vault, unlike
+			 * above; though, that can allow the vault to disconnect
+			 * regions), add it to the queue */
 			n2 = grid_to_i(grid, w);
 			if (previous[n2] >= 0) continue;
+			if (square_isperm(c, grid)) continue;
 			q_push_int(queue, n2);
 			previous[n2] = n1;
 		}
