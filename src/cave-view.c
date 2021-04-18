@@ -684,15 +684,15 @@ void update_view(struct chunk *c, struct player *p)
 	/* Record the current view */
 	mark_wasseen(c);
 
+	/* Calculate light levels */
+	calc_lighting(c, p);
+
 	/* Assume we can view the player grid */
 	sqinfo_on(square(c, p->grid)->info, SQUARE_VIEW);
-	if (p->state.cur_light > 0 || square_isglow(c, p->grid) ||
+	if (p->state.cur_light > 0 || square_islit(c, p->grid) ||
 		player_has(p, PF_UNLIGHT)) {
 		sqinfo_on(square(c, p->grid)->info, SQUARE_SEEN);
 	}
-
-	/* Calculate light levels */
-	calc_lighting(c, p);
 
 	/* Squares we have LOS to get marked as in the view, and perhaps seen */
 	for (y = 0; y < c->height; y++)
