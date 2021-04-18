@@ -612,6 +612,8 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 			return false;
 		}
 	} else {
+		bool flavor_aware;
+
 		if (store->sidx == STORE_HOME) {
 			amt = obj->number;
 		} else {
@@ -641,14 +643,19 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		/* Limit to the number that can be carried */
 		amt = MIN(amt, inven_carry_num(obj));
 
-		/* Fail if there is no room */
-		if ((amt <= 0) || (!object_flavor_is_aware(obj) && pack_is_full())) {
+		/* Fail if there is no room.  Don't leak information about
+		 * unknown flavors for a purchase (getting it from home doesn't
+		 * leak information since it doesn't show the true flavor). */
+		flavor_aware = object_flavor_is_aware(obj);
+		if (amt <= 0 || (!flavor_aware && store->sidx != STORE_HOME &&
+				pack_is_full())) {
 			msg("You cannot carry that many items.");
 			return false;
 		}
 
-		/* Find the number of this item in the inventory */
-		if (!object_flavor_is_aware(obj))
+		/* Find the number of this item in the inventory.  As above,
+		 * avoid leaking information about unknown flavors. */
+		if (!flavor_aware && store->sidx != STORE_HOME)
 			num = 0;
 		else
 			num = find_inven(obj);
