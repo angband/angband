@@ -218,7 +218,7 @@ bool confirm_debug(void)
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Then verify. */
-	return get_check("Are you sure you want to use the debug commands?");
+	return get_check("Are you sure you want to use the debug commands? ");
 }
 
 /**
