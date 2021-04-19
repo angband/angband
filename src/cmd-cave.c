@@ -112,7 +112,7 @@ void do_cmd_go_down(struct command *cmd)
 	if (OPT(player, birth_force_descend)) {
 		descend_to = dungeon_get_next_level(player->max_depth, 1);
 		if (is_quest(descend_to) &&
-			!get_check("Are you sure you want to descend?"))
+			!get_check("Are you sure you want to descend? "))
 			return;
 	}
 
