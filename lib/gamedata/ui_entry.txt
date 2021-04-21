@@ -2,7 +2,7 @@
 
 # Configure user interface elements to combine one or more object or player
 # properties and display them.  Currently only used for parts of the second
-# character screen.
+# character screen and the equippable comparison.
 
 # Descriptions can be edited without bad effects.
 # The name is used to link the element from bindui fields in
@@ -21,7 +21,7 @@
 # parameter is set, the undecorated name is not entered into the list of user
 # interface elements and can not be successfully referenced from bindui in
 # other files or template fields in this one.
-# The template field specifies that entry with that name be used as the
+# The template field specifies that the entry with that name be used as the
 # default values for the fields in this entry.  The template field is optional.
 # The renderer must be one of those set in ui_entry_renderer.txt.
 # The label defines a label to be shown for the element.  Changing its value
