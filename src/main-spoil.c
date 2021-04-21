@@ -24,6 +24,7 @@
 #include "main.h"
 #include "obj-init.h"
 #include "obj-util.h"
+#include "player-birth.h"
 #include "savefile.h"
 #include "ui-game.h"
 #include "wizard.h"
@@ -118,21 +119,6 @@ static u32b parse_seed(const char *src)
 		(void) file_close(fin);
 	}
 	return result;
-}
-
-static void setup_player(void)
-{
-	cmdq_push(CMD_BIRTH_INIT);
-	cmdq_push(CMD_BIRTH_RESET);
-	cmdq_push(CMD_CHOOSE_RACE);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
-	cmdq_push(CMD_CHOOSE_CLASS);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
-	cmdq_push(CMD_ROLL_STATS);
-	cmdq_push(CMD_NAME_CHOICE);
-	cmd_set_arg_string(cmdq_peek(), "name", "Spoiler");
-	cmdq_push(CMD_ACCEPT_CHARACTER);
-	cmdq_execute(CTX_BIRTH);
 }
 
 /**
@@ -234,16 +220,19 @@ errr init_spoil(int argc, char *argv[]) {
 		i += increment;
 	}
 
-	if (result == 0) {
-		/* Generate the spoilers. */
-		init_angband();
+	if (result != 0) return result;
 
-		if (load_randart) {
-			setup_player();
-			option_set(option_name(OPT_birth_randarts), true);
-			deactivate_randart_file();
-			if (randart_name) {
+	/* Generate the spoilers. */
+	init_angband();
+
+	if (load_randart) {
+		if (randart_name) {
+			if (player_make_simple(NULL, NULL, "Spoiler")) {
 				char defname[1024];
+
+				deactivate_randart_file();
+				option_set(option_name(OPT_birth_randarts),
+					true);
 
 				path_build(defname, sizeof(defname),
 					ANGBAND_DIR_USER, "randart.txt");
@@ -252,8 +241,7 @@ errr init_spoil(int argc, char *argv[]) {
 				 * supplied is read-only.
 				 */
 				if (copy_file(randart_name, defname, FTYPE_TEXT)) {
-					seed_randart =
-						parse_seed(randart_name);
+					seed_randart = parse_seed(randart_name);
 
 					cleanup_parser(&artifact_parser);
 					run_parser(&randart_parser);
@@ -262,40 +250,43 @@ errr init_spoil(int argc, char *argv[]) {
 					printf("init-spoil: could not copy randart file to '%s'.\n", defname);
 					result = 1;
 				}
-			} else if (file_exists(savefile)) {
-				bool loaded_save =
-					savefile_load(savefile, false);
-
-				deactivate_randart_file();
-				if (!loaded_save) {
-					printf("init-spoil: using artifacts associated with a savefile, but the savefile set by main, '%s', failed to load.\n", savefile);
-					result = 1;
-				}
 			} else {
-				if (savefile[0]) {
-					printf("init-spoil: using artifacts associated with a savefile, but the savefile set by main, '%s', does not exist.\n", savefile);
-				} else {
-					printf("init-spoil: using artifacts associated with a savefile, but main did not set the savefile\n");
-				}
+				printf("init-spoil: could not initialize player.\n");
+				result = 1;
+			}
+		} else if (file_exists(savefile)) {
+			bool loaded_save = savefile_load(savefile, false);
+
+			deactivate_randart_file();
+			if (!loaded_save) {
+				printf("init-spoil: using artifacts associated with a savefile, but the savefile set by main, '%s', failed to load.\n", savefile);
 				result = 1;
 			}
 		} else {
-			setup_player();
-		}
-
-		if (result == 0) {
-			flavor_set_all_aware();
-			for (i = 0; i < (int)N_ELEMENTS(opts); ++i) {
-				if (!opts[i].enabled) continue;
-				(*(opts[i].func))(opts[i].path);
+			if (savefile[0]) {
+				printf("init-spoil: using artifacts associated with a savefile, but the savefile set by main, '%s', does not exist.\n", savefile);
+			} else {
+				printf("init-spoil: using artifacts associated with a savefile, but main did not set the savefile.\n");
 			}
+			result = 1;
 		}
+	} else if (!player_make_simple(NULL, NULL, "Spoiler")) {
+		printf("init-spoil: could not initializer player.\n");
+		result = 1;
+	}
 
-		cleanup_angband();
-
-		if (result == 0) {
-			exit(0);
+	if (result == 0) {
+		flavor_set_all_aware();
+		for (i = 0; i < (int)N_ELEMENTS(opts); ++i) {
+			if (!opts[i].enabled) continue;
+			(*(opts[i].func))(opts[i].path);
 		}
+	}
+
+	cleanup_angband();
+
+	if (result == 0) {
+		exit(0);
 	}
 
 	return result;

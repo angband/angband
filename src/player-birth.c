@@ -508,6 +508,76 @@ void wield_all(struct player *p)
 
 
 /**
+ * Initialize the global player as if the full birth process happened.
+ * \param nrace Is the name of the race to use.  It may be NULL to use *races.
+ * \param nclass Is the name of the class to use.  It may be NULL to use
+ * *classes.
+ * \param nplayer Is the name to use for the player.  It may be NULL.
+ * \return The return value will be true if the full birth process will be
+ * successful.  It will be false if the process failed.  One reason for that
+ * would be that the requested race or class could not be found.
+ * Requires a prior call to init_angband().  Intended for use by test cases
+ * or stub front ends that need a fully initialized player.
+ */
+bool player_make_simple(const char *nrace, const char *nclass,
+	const char* nplayer)
+{
+	int ir = 0, ic = 0;
+
+	if (nrace) {
+		const struct player_race *rc = races;
+		int nr = 0;
+
+		while (1) {
+			if (!rc) return false;
+			if (streq(rc->name, nrace)) break;
+			rc = rc->next;
+			++ir;
+			++nr;
+		}
+		while (rc) {
+			rc = rc->next;
+			++nr;
+		}
+		ir = nr - ir  - 1;
+	}
+
+	if (nclass) {
+		const struct player_class *cc = classes;
+		int nc = 0;
+
+		while (1) {
+			if (!cc) return false;
+			if (streq(cc->name, nclass)) break;
+			cc = cc->next;
+			++ic;
+			++nc;
+		}
+		while (cc) {
+			cc = cc->next;
+			++nc;
+		}
+		ic = nc - ic - 1;
+	}
+
+	cmdq_push(CMD_BIRTH_INIT);
+	cmdq_push(CMD_BIRTH_RESET);
+	cmdq_push(CMD_CHOOSE_RACE);
+	cmd_set_arg_choice(cmdq_peek(), "choice", ir);
+	cmdq_push(CMD_CHOOSE_CLASS);
+	cmd_set_arg_choice(cmdq_peek(), "choice", ic);
+	cmdq_push(CMD_ROLL_STATS);
+	cmdq_push(CMD_NAME_CHOICE);
+	cmd_set_arg_string(cmdq_peek(), "name",
+		(nplayer == NULL) ? "Simple" : nplayer);
+	cmdq_push(CMD_ACCEPT_CHARACTER);
+	cmdq_execute(CTX_BIRTH);
+
+	return true;
+}
+
+
+/**
  * Init players with some belongings
  *
  * Having an item identifies it and makes the player "aware" of its purpose.
