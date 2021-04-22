@@ -2538,9 +2538,6 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	/* Connect up all the caverns */
 	connect_caverns(c, floor);
 
-	/* Connect to the centre */
-	ensure_connectedness(c);
-
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < centre_cavern_hgt; y++) {
 		square_set_feat(c, loc(left_cavern_wid, y + centre_cavern_ypos),
@@ -2555,6 +2552,9 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 							   centre_cavern_ypos + centre_cavern_hgt - 1),
 						FEAT_FLOOR);
 	}
+
+	/* Connect to the centre */
+	ensure_connectedness(c);
 
 	/* Free all the chunks */
 	cave_free(left_cavern);
