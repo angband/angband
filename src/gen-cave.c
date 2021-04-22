@@ -2404,13 +2404,13 @@ struct chunk *vault_chunk(struct player *p)
 void connect_caverns(struct chunk *c, struct loc floor[])
 {
 	int i;
-    int size = c->height * c->width;
-    int *colors = mem_zalloc(size * sizeof(int));
-    int *counts = mem_zalloc(size * sizeof(int));
+	int size = c->height * c->width;
+	int *colors = mem_zalloc(size * sizeof(int));
+	int *counts = mem_zalloc(size * sizeof(int));
 	int color_of_floor[4];
 
 	/* Color the regions, find which cavern is which color */
-    build_colors(c, colors, counts, true);
+	build_colors(c, colors, counts, true);
 	for (i = 0; i < 4; i++) {
 		int spot = grid_to_i(floor[i], c->width);
 		color_of_floor[i] = colors[spot];
@@ -2420,16 +2420,15 @@ void connect_caverns(struct chunk *c, struct loc floor[])
 	join_region(c, colors, counts, color_of_floor[0], color_of_floor[1]);
 	join_region(c, colors, counts, color_of_floor[2], color_of_floor[3]);
 
-	/* Redo the colors, join the two big caverns */
-    build_colors(c, colors, counts, true);
+	/* Join the two big caverns */
 	for (i = 1; i < 3; i++) {
 		int spot = grid_to_i(floor[i], c->width);
 		color_of_floor[i] = colors[spot];
 	}
 	join_region(c, colors, counts, color_of_floor[1], color_of_floor[2]);
 
-    mem_free(colors);
-    mem_free(counts);
+	mem_free(colors);
+	mem_free(counts);
 }
 /**
  * Generate a hard centre level - a greater vault surrounded by caverns
