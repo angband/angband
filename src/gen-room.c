@@ -364,6 +364,104 @@ void set_marked_granite(struct chunk *c, struct loc grid, int flag)
 }
 
 /**
+ * Given a room (with all grids converted to floors), convert floors on the
+ * edges to outer walls so no floor will be adjacent to a grid that is not a
+ * floor or outer wall.
+ * \param c the current chunk
+ * \param y1 lower y bound for room's bounding box
+ * \param x1 lower x bound for room's bounding box
+ * \param y2 upper y bound for rooms' bounding box
+ * \param x2 upper x bound for rooms' bounding box
+ * Will not properly handle cases where rooms are close enough that their
+ * minimal bounding boxes overlap.
+ */
+static void set_bordering_walls(struct chunk *c, int y1, int x1, int y2, int x2)
+{
+	int nx;
+	struct loc grid;
+	bool *walls;
+
+	assert(x2 >= x1 && y2 >= y1);
+
+	/* Set up storage to track which grids to convert. */
+	nx = x2 - x1 + 1;
+	walls = mem_zalloc((x2 - x1 + 1) * (y2 - y1 + 1) * sizeof(*walls));
+
+	/* Find the grids to convert. */
+	y1 = MAX(0, y1);
+	y2 = MIN(c->height - 1, y2);
+	x1 = MAX(0, x1);
+	x2 = MIN(c->width - 1, x2);
+	for (grid.y = y1; grid.y <= y2; grid.y++) {
+		int adjy1 = MAX(0, grid.y - 1);
+		int adjy2 = MIN(c->height - 1, grid.y + 1);
+
+		for (grid.x = x1; grid.x <= x2; grid.x++) {
+			if (square_isfloor(c, grid)) {
+				int adjx1 = MAX(0, grid.x - 1);
+				int adjx2 = MIN(c->width - 1, grid.x + 1);
+				assert(square_isroom(c, grid));
+
+				if (adjy2 - adjy1 != 2 || adjx2 - adjx1 != 2) {
+					/*
+					 * Adjacent grids are out of bounds.
+					 * Make it an outer wall.
+					 */
+					walls[grid.x - x1 + nx *
+						(grid.y - y1)] = true;
+				} else {
+					int nfloor = 0;
+					struct loc adj;
+
+					for (adj.y = adjy1;
+							adj.y <= adjy2;
+							adj.y++) {
+						for (adj.x = adjx1;
+								adj.x <= adjx2;
+								adj.x++) {
+							bool floor =
+								square_isfloor(
+								c, adj);
+
+							assert(floor ==
+								square_isroom(
+								c, adj));
+							if (floor) {
+								++nfloor;
+							}
+						}
+					}
+					if (nfloor != 9) {
+						/*
+						 * At least one neighbor is not
+						 * in the room.  Make it an
+						 * outer wall.
+						 */
+						walls[grid.x - x1 + nx *
+							(grid.y - y1)] = true;
+					}
+				}
+			} else {
+				assert(!square_isroom(c, grid));
+			}
+		}
+	}
+
+	/* Perform the floor to wall conversions. */
+	for (grid.y = y1; grid.y <= y2; grid.y++) {
+		for (grid.x = x1; grid.x <= x2; grid.x++) {
+			if (walls[grid.x - x1 + nx * (grid.y - y1)]) {
+				assert(square_isfloor(c, grid) &&
+					square_isroom(c, grid));
+				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
+			}
+		}
+	}
+
+	mem_free(walls);
+}
+
+/**
  * Make a starburst room. -LM-
  *
  * \param c the current chunk
@@ -1623,11 +1721,13 @@ bool build_circular(struct chunk *c, struct loc centre, int rating)
 			return (false);
 	}
 
-	/* Generate outer walls and inner floors */
-	fill_circle(c, centre.y, centre.x, radius + 1, 1, FEAT_GRANITE,
-				SQUARE_WALL_OUTER, light);
-	fill_circle(c, centre.y, centre.x, radius, 0, FEAT_FLOOR,
-				SQUARE_NONE, light);
+	/* Mark as a room. */
+	fill_circle(c, centre.y, centre.x, radius + 1, 0, FEAT_FLOOR,
+		SQUARE_NONE, light);
+
+	/* Convert some floors to be the outer walls. */
+	set_bordering_walls(c, centre.y - radius - 2, centre.x - radius - 2,
+		centre.y + radius + 2, centre.x + radius + 2);
 
 	/* Especially large circular rooms will have a middle chamber */
 	if (radius - 4 > 0 && randint0(4) < radius - 4) {
