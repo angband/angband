@@ -271,7 +271,7 @@ errr init_spoil(int argc, char *argv[]) {
 			result = 1;
 		}
 	} else if (!player_make_simple(NULL, NULL, "Spoiler")) {
-		printf("init-spoil: could not initializer player.\n");
+		printf("init-spoil: could not initialize player.\n");
 		result = 1;
 	}
 
