@@ -250,7 +250,8 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 			/* Forbid re-entry near this piercing */
 			for (grid.y = grid1.y - 1; grid.y <= grid1.y + 1; grid.y++) {
 				for (grid.x = grid1.x - 1; grid.x <= grid1.x + 1; grid.x++) {
-					if (square_is_granite_with_flag(c, grid, SQUARE_WALL_OUTER))
+					if (square_in_bounds(c, grid) &&
+							square_is_granite_with_flag(c, grid, SQUARE_WALL_OUTER))
 						set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 				}
 			}
