@@ -1794,7 +1794,31 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 		for (y = y1; y <= y2; y += 2)
 			for (x = x1; x <= x2; x += 2)
 				set_marked_granite(c, loc(x, y), SQUARE_WALL_INNER);
-
+		/*
+		 * Drop room/outer wall flags on corners if not adjacent to a
+		 * floor.  Lets tunnels enter those grids.
+		 */
+		sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info, SQUARE_ROOM);
+		sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info,
+			SQUARE_WALL_OUTER);
+		if ((x2 - x1) % 2 == 0) {
+			sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
+				SQUARE_ROOM);
+			sqinfo_off(square(c, loc(x1 + 1, y1 - 1))->info,
+				SQUARE_WALL_OUTER);
+		}
+		if ((y2 - y1) % 2 == 0) {
+			sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
+				SQUARE_ROOM);
+			sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
+				SQUARE_WALL_OUTER);
+			if ((x2 - x1) % 2 == 0) {
+				sqinfo_off(square(c, loc(x2 + 1, y2 + 1))->info,
+					SQUARE_ROOM);
+				sqinfo_off(square(c, loc(x2 + 1, y2 + 1))->info,
+					SQUARE_WALL_OUTER);
+			}
+		}
 	} else if (one_in_(50)) {
 		/* Sometimes make a ragged-edge room */
 		for (y = y1 + 2; y <= y2 - 2; y += 2) {
