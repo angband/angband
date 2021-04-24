@@ -1083,7 +1083,7 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 			return (false);
 	}
 
-	/* Place dungeon features and objects */
+	/* Place dungeon features, objects, and monsters for specific grids. */
 	for (t = data, dy = 0; dy < ymax && *t; dy++) {
 		for (dx = 0; dx < xmax && *t; dx++, t++) {
 			/* Extract the location */
@@ -1128,42 +1128,20 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 				break;
 			}
 			case '8': {
-
 				/* Put something nice in this square
 				 * Object (80%) or Stairs (20%) */
-				if ((randint0(100) < 80) || OPT(player, birth_levels_persist))
+				if ((randint0(100) < 80) || OPT(player, birth_levels_persist)) {
 					place_object(c, grid, c->depth, false, false,
 								 ORIGIN_SPECIAL, 0);
-				else
+				} else {
 					place_random_stairs(c, grid);
-
-				/* Some monsters to guard it */
-				vault_monsters(c, grid, c->depth + 2, randint0(2) + 3);
-
+				}
+				/* Place nearby guards in second pass. */
 				break;
 			}
 			case '9': {
-				/* Create some interesting stuff nearby */
-				struct loc off2 = loc(2, -2);
-				struct loc off3 = loc(3, 3);
-
-				/* A few monsters */
-				vault_monsters(c, loc_diff(grid, off3), c->depth + randint0(2),
-							   randint1(2));
-				vault_monsters(c, loc_sum(grid, off3), c->depth + randint0(2),
-							   randint1(2));
-
-				/* And maybe a bit of treasure */
-				if (one_in_(2))
-					vault_objects(c, loc_sum(grid, off2), c->depth,
-								  1 + randint0(2));
-
-				if (one_in_(2))
-					vault_objects(c, loc_diff(grid, off2), c->depth,
-								  1 + randint0(2));
-
+				/* Everything is handled in the second pass. */
 				break;
-
 			}
 			case '[': {
 				
@@ -1194,6 +1172,63 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 			sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
 			if (light)
 				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+		}
+	}
+
+	/*
+	 * Perform second pass for placement of monsters and objects at
+	 * unspecified locations after all the features are in place.
+	 */
+	for (t = data, dy = 0; dy < ymax && *t; dy++) {
+		for (dx = 0; dx < xmax && *t; dx++, t++) {
+			/* Extract the location */
+			struct loc grid = loc(centre.x - (xmax / 2) + dx,
+				centre.y - (ymax / 2) + dy);
+
+			/* Analyze the grid. */
+			switch (*t) {
+			case '8':
+				/* Check consistency with first pass. */
+				assert(square_isroom(c, grid) &&
+					(square_isfloor(c, grid) ||
+					square_isstairs(c, grid)));
+
+				/* Add some monsters to guard it. */
+				vault_monsters(c, grid, c->depth + 2,
+					randint0(2) + 3);
+				break;
+
+			case '9': {
+				/* Create some interesting stuff nearby. */
+				struct loc off2 = loc(2, -2);
+				struct loc off3 = loc(3, 3);
+
+				/* Check consistency with first pass. */
+				assert(square_isroom(c, grid) &&
+					square_isfloor(c, grid));
+
+				/* Add a few monsters. */
+				vault_monsters(c, loc_diff(grid, off3),
+					c->depth + randint0(2), randint1(2));
+				vault_monsters(c, loc_sum(grid, off3),
+					c->depth + randint0(2), randint1(2));
+
+				/* And maybe a bit of treasure. */
+				if (one_in_(2)) {
+					vault_objects(c, loc_sum(grid, off2),
+						c->depth, 1 + randint0(2));
+				}
+				if (one_in_(2)) {
+					vault_objects(c, loc_diff(grid, off2),
+						c->depth, 1 + randint0(2));
+				}
+				break;
+			}
+
+			default:
+				/* Everything was handled in the first pass. */
+				break;
+			}
 		}
 	}
 
