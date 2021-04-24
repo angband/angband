@@ -250,7 +250,8 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 			/* Forbid re-entry near this piercing */
 			for (grid.y = grid1.y - 1; grid.y <= grid1.y + 1; grid.y++) {
 				for (grid.x = grid1.x - 1; grid.x <= grid1.x + 1; grid.x++) {
-					if (square_is_granite_with_flag(c, grid, SQUARE_WALL_OUTER))
+					if (square_in_bounds(c, grid) &&
+							square_is_granite_with_flag(c, grid, SQUARE_WALL_OUTER))
 						set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 				}
 			}
@@ -296,10 +297,10 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 			/* Hack -- allow pre-emptive tunnel termination */
 			if (randint0(100) >= dun->profile->tun.con) {
 				/* Offset between grid1 and start */
-				offset = loc_diff(grid1, start);
+				tmp_grid = loc_diff(grid1, start);
 
 				/* Terminate the tunnel if too far vertically or horizontally */
-				if ((ABS(offset.x) > 10) || (ABS(offset.y) > 10)) break;
+				if ((ABS(tmp_grid.x) > 10) || (ABS(tmp_grid.y) > 10)) break;
 			}
 		}
     }
