@@ -20,7 +20,18 @@
 # tval:tval of treasure to place
 # D:lines giving full layout of room using symbols below
 
-# Type and rating are not currently used.
+# The value set on 'type' lines should be one.  You could use another
+# value as a way of disabling a template without commenting it out or
+# deleting it.  Making the 'type' lines more useful than that will
+# require changes to the source code:  the hard-coding of one is in
+# src/gen-room.c's build_template() and other changes, presumably in
+# src/generate.c to allow passing of the desired type through the
+# dungeon profiles, would be needed.
+#
+# The value set on the 'rating' line allows for selection of a subset
+# of the room templates by a dungeon profile in dungeon_profile.txt.
+# The current profiles use values of 1, 2, or 3 for the rating.
+#
 # Where doors is set to n, the generator will pick a number between 
 # 1 and n and place doors at squares marked with that number.  
 # Squares marked with other numbers will be generated as walls.  If 
