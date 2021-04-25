@@ -94,7 +94,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([mkdir setresgid setegid stat])
 
 dnl needed because h-basic.h checks for this define for autoconf support.
-CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
+CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
 if test "$GCC" = "yes"; then
