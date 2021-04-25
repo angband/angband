@@ -155,6 +155,8 @@ struct term_win
  *	- Hook for drawing a string of chars using an attr
  *
  *	- Hook for drawing a sequence of special attr/char pairs
+ *
+ *      - Hook to test if an attr/char pair is a double-height tile
  */
 
 typedef struct term term;
@@ -233,6 +235,8 @@ struct term
 	errr (*pict_hook)(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp);
 
 	void (*view_map_hook)(term *t);
+
+        int (*dblh_hook)(int a, wchar_t c);
 
 };
 

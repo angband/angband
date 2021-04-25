@@ -1032,9 +1032,6 @@ static void render_tile_font_scaled(const struct subwindow *subwindow,
 
 		SDL_RenderCopy(subwindow->window->renderer,
 				graphics->texture, &src, &dst);
-
-		Term_mark(col, row - tile_height);
-		Term_mark(col, row);
 	} else {
 		SDL_RenderCopy(subwindow->window->renderer,
 				graphics->texture, &src, &dst);
@@ -4129,6 +4126,7 @@ static void load_graphics(struct window *window, graphics_mode *mode)
 		tile_width = 1;
 		tile_height = 1;
 	} else {
+		size_t i;
 		char path[4096];
 		path_build(path, sizeof(path), mode->path, mode->file);
 		if (!file_exists(path)) {
@@ -4143,6 +4141,15 @@ static void load_graphics(struct window *window, graphics_mode *mode)
 
 		window->graphics.overdraw_row = mode->overdrawRow;
 		window->graphics.overdraw_max = mode->overdrawMax;
+
+		for (i = 0; i < N_ELEMENTS(window->subwindows); i++) {
+			if (window->subwindows[i] &&
+					window->subwindows[i]->term) {
+				window->subwindows[i]->term->dblh_hook =
+					(window->graphics.overdraw_row) ?
+					is_dh_tile : NULL;
+			}
+		}
 	}
 
 	if (character_dungeon) {
@@ -5214,6 +5221,11 @@ static void link_term(struct subwindow *subwindow)
 	subwindow->term->text_hook = term_text_hook;
 	subwindow->term->pict_hook = term_pict_hook;
 	subwindow->term->view_map_hook = term_view_map_hook;
+	if (subwindow->window->graphics.overdraw_row) {
+		subwindow->term->dblh_hook = is_dh_tile;
+	} else {
+		subwindow->term->dblh_hook = NULL;
+	}
 
 	subwindow->term->data = subwindow;
 	angband_term[subwindow->index] = subwindow->term;

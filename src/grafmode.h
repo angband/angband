@@ -63,4 +63,6 @@ bool init_graphics_modes();
 void close_graphics_modes(void);
 graphics_mode* get_graphics_mode(byte id);
 
+int is_dh_tile(int a, wchar_t c);
+
 #endif /* INCLUDED_GRAFMODE_H */

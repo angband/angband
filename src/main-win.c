@@ -1656,6 +1656,7 @@ static errr Term_xtra_win_react(void)
 				td->t.pict_hook = Term_pict_win;
 			}
 		}
+		td->t.dblh_hook = (overdraw) ? is_dh_tile : NULL;
 
 		/* make sure the current graphics mode is set */
 		current_graphics_mode = get_graphics_mode(arg_graphics);
@@ -2415,9 +2416,6 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 			(trow <= overdrawmax)) {
 			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x3, y3-h1, w1, h1,
 					   blendfn);
-			/* Tell the core that the top tile is not what it thinks */
-			Term_mark(x, y-tile_height);
-			Term_mark(x, y); /* This tile is drawn every frame */
 		}
 
 		/* Only draw if terrain and overlay are different */
@@ -2428,12 +2426,6 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 				(row <= overdrawmax)) {
 				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1,
 						   h1*2, blendfn);
-				/* Tell the core that the top tile is not what it thinks */
-				Term_mark(x, y-tile_height);
-				/* This tile is drawn every frame but it is needed, otherwise
-				 * the top does not get drawn again when the user of this tile
-				 * does not move, but something else does */
-				Term_mark(x, y); 
 			} else {
 				AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1,
 						   blendfn);
@@ -2571,6 +2563,7 @@ static void term_data_link(term_data *td)
 	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
+	t->dblh_hook = NULL;
 
 	/* Remember where we came from */
 	t->data = td;
