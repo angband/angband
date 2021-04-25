@@ -1050,7 +1050,7 @@ static bool find_space(struct loc *centre, int height, int width)
 /**
  * Build a room template from its string representation.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param ymax the room dimensions
  * \param xmax the room dimensions
  * \param doors the door position
@@ -1239,7 +1239,7 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 /**
  * Helper function for building room templates.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param typ template room type to select
  * \param rating template room rating to select
  * \return success
@@ -1265,7 +1265,7 @@ static bool build_room_template_type(struct chunk *c, struct loc centre,
 /**
  * Build a vault from its string representation.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param v pointer to the vault template
  * \return success
  */
@@ -1533,7 +1533,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 /**
  * Helper function for building vaults.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param typ the vault type
  * \param label name of the vault type (eg "Greater vault")
  * \return success
@@ -1741,7 +1741,7 @@ bool build_staircase(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a circular room (interior radius 4-7).
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  */
 bool build_circular(struct chunk *c, struct loc centre, int rating)
@@ -1792,7 +1792,7 @@ bool build_circular(struct chunk *c, struct loc centre, int rating)
 /**
  * Builds a normal rectangular room.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  */
 bool build_simple(struct chunk *c, struct loc centre, int rating)
@@ -1875,7 +1875,7 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 /**
  * Builds an overlapping rectangular room.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  */
 bool build_overlap(struct chunk *c, struct loc centre, int rating)
@@ -1950,7 +1950,7 @@ bool build_overlap(struct chunk *c, struct loc centre, int rating)
 /**
  * Builds a cross-shaped room.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  *
  * Room "a" runs north/south, and Room "b" runs east/east 
@@ -2113,7 +2113,7 @@ bool build_crossed(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a large room with an inner room.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  *
  * Possible sub-types:
@@ -2341,7 +2341,7 @@ bool build_large(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a monster nest
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \return success
  *
  * A monster nest consists of a rectangular moat around a room containing
@@ -2461,7 +2461,7 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a monster pit
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  *
@@ -2686,7 +2686,7 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a template room
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating template room rating to select
  * \return success
 */
@@ -2702,7 +2702,7 @@ bool build_template(struct chunk *c, struct loc centre, int rating)
 /**
  * Build an interesting room.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  */
@@ -2715,7 +2715,7 @@ bool build_interesting(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a lesser vault.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  */
@@ -2730,7 +2730,7 @@ bool build_lesser_vault(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a medium vault.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  */
@@ -2745,7 +2745,7 @@ bool build_medium_vault(struct chunk *c, struct loc centre, int rating)
 /**
  * Build a greater vaults.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  *
@@ -2801,7 +2801,7 @@ bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
 /**
  * Moria room (from Oangband).  Uses the "starburst room" code.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  */
@@ -2870,7 +2870,7 @@ bool build_moria(struct chunk *c, struct loc centre, int rating)
 /**
  * Rooms of chambers
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  *
@@ -3179,7 +3179,7 @@ bool build_room_of_chambers(struct chunk *c, struct loc centre, int rating)
  * even divided with irregularly-shaped fields of rubble. No special
  * monsters.  Appears deeper than level 40.
  * \param c the chunk the room is being built in
- *\ param centre the room centre; out of chunk centre invokes find_space()
+ * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
  * \return success
  *
