@@ -227,3 +227,29 @@ graphics_mode *get_graphics_mode(byte id) {
 	}
 	return NULL;
 }
+
+/**
+ * Test for whether an attribute/character pair corresponds to a double-height
+ * tile.
+ * \param a Is the attribute.
+ * \param c Is the character.
+ * Intended for use as struct term's dblh_hook field.
+ */
+int is_dh_tile(int a, wchar_t c)
+{
+	int tileset_row;
+
+	/*
+	 * If it's not a tile (assumes tiles have high-bit set on the
+	 * attribute), graphics aren't enabled, or the graphics mode doesn't
+	 * use double-height tiles, it can't be double-height.
+	 */
+	if (!(a & 0x80) || !current_graphics_mode ||
+			!current_graphics_mode->overdrawRow) {
+		return 0;
+	}
+	/* Test the row for the tile. */
+	tileset_row = a & 0x7f;
+	return tileset_row >= current_graphics_mode->overdrawRow &&
+		tileset_row <= current_graphics_mode->overdrawMax;
+}

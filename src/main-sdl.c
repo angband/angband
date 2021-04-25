@@ -3035,10 +3035,11 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	/* Get the right window */
 	term_window *win = (term_window*)(Term->data);
 
-	SDL_Rect rc, src;
+	SDL_Rect rc, src, ur;
 	int i, j;
 	char mbforeground[MB_LEN_MAX * 255];
 	char mbterrain[MB_LEN_MAX * 255];
+	bool haddbl = false;
 
 	/* First time a pict is requested we load the tileset in */
 	if (!win->tiles) {
@@ -3061,6 +3062,10 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	/* Get the dimensions of the graphic surface */
 	src.w = rc.w;
 	src.h = rc.h;
+
+	/* Set up the bounds for what will be updated. */
+	ur = rc;
+	ur.w *= n;
 
 	/* Clear the way */
 	for (i = 0; i < tile_width; i++)
@@ -3086,8 +3091,7 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 			rc.h = (rc.h >> 1); /* halve the height */
 			rc.y += rc.h;
-			Term_mark(col, row-tile_height);
-			Term_mark(col, row);
+			haddbl = true;
 		} else
 			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 		
@@ -3108,14 +3112,17 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 			rc.h = (rc.h >> 1); /* halve the height */
 			rc.y += rc.h;
-			Term_mark(col, row-tile_height);
-			Term_mark(col, row);
+			haddbl = true;
 		} else
 			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 	}
 
 	/* Update area */
-	set_update_rect(win, &rc);
+	if (haddbl) {
+		ur.y -= ur.h;
+		ur.h *= 2;
+	}
+	set_update_rect(win, &ur);
 
 	return (0);
 }
@@ -3197,6 +3204,7 @@ static void term_data_link_sdl(term_window *win)
 	t->text_hook = Term_text_sdl;
 	t->pict_hook = Term_pict_sdl;
 	t->view_map_hook = Term_view_map_sdl;
+	t->dblh_hook = (use_graphics && overdraw) ? is_dh_tile : NULL;
 
 	/* Remember where we came from */
 	t->data = win;
@@ -3307,6 +3315,7 @@ static errr load_gfx(void)
 	char buf[1024];
 	const char *filename;
 	SDL_Surface *temp;
+	int i;
 
 	if (current_graphics_mode && GfxSurface
 		&& (use_graphics == current_graphics_mode->grafID)) {
@@ -3337,6 +3346,14 @@ static errr load_gfx(void)
 	/* Make sure we know what pref file to use */
 	overdraw = current_graphics_mode->overdrawRow;
 	overdraw_max = current_graphics_mode->overdrawMax;
+
+	/* Set double-height tile handling for terminals. */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		if (angband_term[i]) {
+			angband_term[i]->dblh_hook = (overdraw) ?
+				is_dh_tile : NULL;
+		}
+	}
 
 	/* Reset the graphics mapping for this tileset */
 	if (character_dungeon) reset_visuals(true);

@@ -4533,10 +4533,15 @@ static errr Term_xtra_cocoa_react(void)
 	    use_graphics = new_mode ? new_mode->grafID : 0;
 	    current_graphics_mode = new_mode;
 
-	    /* Enable or disable higher picts.  */
+	    /*
+	     * Enable or disable higher picts.  Also set double-height handling.
+	     */
 	    for (int iterm = 0; iterm < ANGBAND_TERM_MAX; ++iterm) {
 		if (angband_term[iterm]) {
 		    angband_term[iterm]->higher_pict = !! use_graphics;
+		    angband_term[iterm]->dblh_hook = (current_graphics_mode &&
+			current_graphics_mode->overdrawRow) ?
+			is_dh_tile : NULL;
 		}
 	    }
 
@@ -4819,17 +4824,6 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 		[angbandContext.changes markChangedBlockAtColumn:i
 			       row:(y - tile_height) width:tile_width
 			       height:(tile_height + tile_height)];
-		/*
-		 * Either the foreground or the background is a double-height
-		 * tile.  Need to tell the core to redraw the upper half in
-		 * the next update since what's displayed there no longer
-		 * corresponds to what the core thinks is there.  Also tell
-		 * the core to redraw the lower half in the next update
-		 * because, if it remains a double-height tile, that is
-		 * necessary to trigger the drawing of the upper half.
-		 */
-		Term_mark(i, y - tile_height);
-		Term_mark(i, y);
 	    } else {
 		[angbandContext.changes markChangedBlockAtColumn:i row:y
 			       width:tile_width height:tile_height];
@@ -5564,6 +5558,7 @@ static term *term_data_link(int i)
     newterm->bigcurs_hook = Term_bigcurs_cocoa;
     newterm->text_hook = Term_text_cocoa;
     newterm->pict_hook = Term_pict_cocoa;
+    newterm->dblh_hook = NULL;
 
     /* Global pointer */
     angband_term[i] = newterm;

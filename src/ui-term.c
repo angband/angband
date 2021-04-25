@@ -195,6 +195,7 @@
  *   Term->wipe_hook = Draw some blank spaces
  *   Term->text_hook = Draw some text in the window
  *   Term->pict_hook = Draw some attr/chars in the window
+ *   Term->dblh_hook = Test if attr/char pair represents a double-height tile
  *
  * The "Term->xtra_hook" hook provides a variety of different functions,
  * based on the first parameter (which should be taken from the various
@@ -236,6 +237,15 @@
  * be used to implement transparency when using graphics by drawing
  * the terrain values as a background and the "ap", "cp" values in
  * the foreground.
+ *
+ * The "Term->dblh_hook" hook provides this package a way to query whether
+ * an attr/char pair corresponds to a double-height tile when it determines what
+ * has changed and needs to be redrawn.  This hook is optional.  Set to NULL,
+ * if no pairs correspond to a double-height tile.  Non-NULL values will only
+ * be used if either the "always_pict" or "higher_pict" flags are are on.
+ * Another, less efficient way to handle double-height tiles is to use
+ * Term_mark() to force a position affected by a double-height tile to be
+ * redrawn at the next refresh.
  *
  * The game "Angband" uses a set of files called "main-xxx.c", for
  * various "xxx" suffixes.  Most of these contain a function called
@@ -538,6 +548,45 @@ void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta,
 	/* Check for new min/max col info for this row */
 	if (x < t->x1[y]) t->x1[y] = x;
 	if (x > t->x2[y]) t->x2[y] = x;
+
+	if (t->dblh_hook) {
+		/*
+		 * If the previous contents are a double-height tile also
+		 * adjust the modified bounds to encompass the position on
+		 * the previous row of tiles so it can be included when
+		 * redrawing at the next refresh.
+		 */
+		if (y >= tile_height) {
+			int ofg_dbl = (*t->dblh_hook)(oa, oc);
+			int obg_dbl = (*t->dblh_hook)(ota, otc);
+
+			if (ofg_dbl || obg_dbl) {
+				int yp = y - tile_height;
+
+				if (yp < t->y1) t->y1 = yp;
+				if (x < t->x1[yp]) t->x1[yp] = x;
+				if (x > t->x2[yp]) t->x2[yp] = x;
+			}
+		}
+		/*
+		 * If the next row had a double-height tile, expand the modified
+		 * bounds to encompass it as well since at least its upper
+		 * half will need to be redrawn for the change here.
+		 */
+		if (y < t->hgt - tile_height) {
+			int yn = y + tile_height;
+			int ofg_dbl_nr = (*t->dblh_hook)(
+				t->old->a[yn][x], t->old->c[yn][x]);
+			int obg_dbl_nr = (*t->dblh_hook)(
+				t->old->ta[yn][x], t->old->tc[yn][x]);
+
+			if (ofg_dbl_nr || obg_dbl_nr) {
+				if (yn > t->y2) t->y2 = yn;
+				if (x < t->x1[yn]) t->x1[yn] = x;
+				if (x > t->x2[yn]) t->x2[yn] = x;
+			}
+		}
+	}
 }
 
 /**
@@ -739,6 +788,187 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 }
 
 
+/**
+ * Flush a row of the current window when checking for double-height tiles
+ * (see "Term_fresh")
+ *
+ * Display text using "Term_pict()"
+ */
+static void Term_fresh_row_pict_dblh(int y, int x1, int x2, int *pr_drw)
+{
+	int x;
+
+	int *old_aa = Term->old->a[y];
+	wchar_t *old_cc = Term->old->c[y];
+
+	const int *scr_aa = Term->scr->a[y];
+	const wchar_t *scr_cc = Term->scr->c[y];
+
+	int *old_taa = Term->old->ta[y];
+	wchar_t *old_tcc = Term->old->tc[y];
+
+	const int *scr_taa = Term->scr->ta[y];
+	const wchar_t *scr_tcc = Term->scr->tc[y];
+
+	const int *scr_aa_nr;
+	const wchar_t *scr_cc_nr;
+	const int *scr_taa_nr;
+	const wchar_t *scr_tcc_nr;
+	const int *old_aa_nr;
+	const wchar_t *old_cc_nr;
+	const int *old_taa_nr;
+	const wchar_t *old_tcc_nr;
+
+	/* Pending length */
+	int fn = 0;
+
+	/* Pending start */
+	int fx = 0;
+
+	if (y < Term->hgt - tile_height) {
+		scr_aa_nr = Term->scr->a[y + tile_height];
+		scr_cc_nr = Term->scr->c[y + tile_height];
+		scr_taa_nr = Term->scr->ta[y + tile_height];
+		scr_tcc_nr = Term->scr->tc[y + tile_height];
+		old_aa_nr = Term->old->a[y + tile_height];
+		old_cc_nr = Term->old->c[y + tile_height];
+		old_taa_nr = Term->old->ta[y + tile_height];
+		old_tcc_nr = Term->old->tc[y + tile_height];
+	} else {
+		/*
+		 * Can't examine the next row of tiles because it would be
+		 * out of bounds.  To avoid writing much the same code but
+		 * with the checks on the next row skipped, fake it so the
+		 * next row looks unmodified.
+		 */
+		scr_aa_nr = scr_aa;
+		scr_cc_nr = scr_cc;
+		scr_taa_nr = scr_taa;
+		scr_tcc_nr = scr_tcc;
+		old_aa_nr = scr_aa_nr;
+		old_cc_nr = scr_cc_nr;
+		old_taa_nr = scr_taa_nr;
+		old_tcc_nr = scr_tcc_nr;
+	}
+
+	/*
+	 * For unmodified columns at the start, set flags so processing of the
+	 * next row knows they were not redrawn.
+	 */
+	for (x = 0; x < x1; x++) {
+		pr_drw[x] = 0;
+	}
+
+	/* Scan "modified" columns */
+	for (x = x1; x <= x2; x++) {
+		/* See what is currently here. */
+		int oa = old_aa[x];
+		wchar_t oc = old_cc[x];
+		int ota = old_taa[x];
+		wchar_t otc = old_tcc[x];
+
+		/* See what is desired here. */
+		int na = scr_aa[x];
+		wchar_t nc = scr_cc[x];
+		int nta = scr_taa[x];
+		wchar_t ntc = scr_tcc[x];
+
+		int draw;
+
+		if (na == oa && nc == oc && nta == ota && ntc == otc) {
+			/*
+			 * That element did not change.  If it is double-height
+			 * and the previous row was drawn will have to redraw
+			 * to get the upper half of this one drawn correctly.
+			 */
+			if (pr_drw[x] &&
+					((*Term->dblh_hook)(na, nc) ||
+					(*Term->dblh_hook)(nta, ntc))) {
+				draw = 1;
+			} else {
+				/*
+				 * If the next row had double-height tiles and
+				 * those have changed, also have to redraw
+				 * (either to clear what was there if now gone
+				 * or to get the correct backdrop for the new
+				 * double-height tile there now).
+				 */
+				/* See what is in the next row. */
+				int oa_nr = old_aa_nr[x];
+				wchar_t oc_nr = old_cc_nr[x];
+				int ota_nr = old_taa_nr[x];
+				wchar_t otc_nr = old_tcc_nr[x];
+
+				/* See what is desired in the next row. */
+				int na_nr = scr_aa_nr[x];
+				wchar_t nc_nr = scr_cc_nr[x];
+				int nta_nr = scr_taa_nr[x];
+				wchar_t ntc_nr = scr_tcc_nr[x];
+
+				if (((*Term->dblh_hook)(oa_nr, oc_nr) ||
+						(*Term->dblh_hook)(ota_nr, otc_nr)) &&
+						(na_nr != oa_nr ||
+						nc_nr != oc_nr ||
+						nta_nr != ota_nr ||
+						ntc_nr != otc_nr)) {
+					draw = 1;
+				} else {
+					draw = 0;
+				}
+			}
+
+			/* Remember if this element was redrawn or not. */
+			pr_drw[x] = draw;
+		} else {
+			draw = 1;
+			/* Remember that this element was redrawn. */
+			pr_drw[x] = 1;
+		}
+
+		/* Handle grids that don't have to be drawn. */
+		if (!draw) {
+			/* Flush */
+			if (fn) {
+				/* Draw pending attr/char pairs */
+				(void)((*Term->pict_hook)(fx, y, fn,
+					&scr_aa[fx], &scr_cc[fx], &scr_taa[fx],
+					&scr_tcc[fx]));
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip */
+			continue;
+		}
+
+		/* Save new contents */
+		old_aa[x] = na;
+		old_cc[x] = nc;
+
+		old_taa[x] = nta;
+		old_tcc[x] = ntc;
+
+		/* Restart and Advance */
+		if (fn++ == 0) fx = x;
+	}
+
+	/* Flush */
+	if (fn) {
+		/* Draw pending attr/char pairs */
+		(void)((*Term->pict_hook)(fx, y, fn, &scr_aa[fx], &scr_cc[fx],
+			&scr_taa[fx], &scr_tcc[fx]));
+	}
+
+	/*
+	 * For unmodified columns at the end, set flags so processing of the
+	 * next row knows they weren't redrawn.
+	 */
+	for (x = x2 + 1; x < Term->wid; x++) {
+		pr_drw[x] = 0;
+	}
+}
+
 
 /**
  * Flush a row of the current window (see "Term_fresh")
@@ -876,6 +1106,244 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 			(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
 		else
 			(void)((*Term->wipe_hook)(fx, y, fn));
+	}
+}
+
+
+/**
+ * Flush a row of the current window when checking for double-height tiles
+ * (see "Term_fresh")
+ *
+ * Display text using "Term_text()" and "Term_wipe()",
+ * but use "Term_pict()" for high-bit attr/char pairs
+ */
+static void Term_fresh_row_both_dblh(int y, int x1, int x2, int *pr_drw)
+{
+	int x;
+
+	int *old_aa = Term->old->a[y];
+	wchar_t *old_cc = Term->old->c[y];
+	const int *scr_aa = Term->scr->a[y];
+	const wchar_t *scr_cc = Term->scr->c[y];
+
+	int *old_taa = Term->old->ta[y];
+	wchar_t *old_tcc = Term->old->tc[y];
+	const int *scr_taa = Term->scr->ta[y];
+	const wchar_t *scr_tcc = Term->scr->tc[y];
+
+	const int *scr_aa_nr;
+	const wchar_t *scr_cc_nr;
+	const int *scr_taa_nr;
+	const wchar_t *scr_tcc_nr;
+	const int *old_aa_nr;
+	const wchar_t *old_cc_nr;
+	const int *old_taa_nr;
+	const wchar_t *old_tcc_nr;
+
+	/* The "always_text" flag */
+	int always_text = Term->always_text;
+
+	/* Pending length */
+	int fn = 0;
+
+	/* Pending start */
+	int fx = 0;
+
+	/* Pending attr */
+	int fa = Term->attr_blank;
+
+	if (y < Term->hgt - tile_height) {
+		scr_aa_nr = Term->scr->a[y + tile_height];
+		scr_cc_nr = Term->scr->c[y + tile_height];
+		scr_taa_nr = Term->scr->ta[y + tile_height];
+		scr_tcc_nr = Term->scr->tc[y + tile_height];
+		old_aa_nr = Term->old->a[y + tile_height];
+		old_cc_nr = Term->old->c[y + tile_height];
+		old_taa_nr = Term->old->ta[y + tile_height];
+		old_tcc_nr = Term->old->tc[y + tile_height];
+	} else {
+		/*
+		 * Can't examine the next row of tiles because it would be
+		 * out of bounds.  To avoid writing much the same code but
+		 * with the checks on the next row skipped, fake it so the
+		 * next row looks unmodified.
+		 */
+		scr_aa_nr = scr_aa;
+		scr_cc_nr = scr_cc;
+		scr_taa_nr = scr_taa;
+		scr_tcc_nr = scr_tcc;
+		old_aa_nr = scr_aa_nr;
+		old_cc_nr = scr_cc_nr;
+		old_taa_nr = scr_taa_nr;
+		old_tcc_nr = scr_tcc_nr;
+	}
+
+	/*
+	 * For unmodified columns at the start, set flags so processing of the
+	 * next row knows they weren't redrawn.
+	 */
+	for (x = 0; x < x1; x++) {
+		pr_drw[x] = 0;
+	}
+
+	/* Scan "modified" columns */
+	for (x = x1; x <= x2; x++) {
+		/* See what is currently here. */
+		int oa = old_aa[x];
+		wchar_t oc = old_cc[x];
+		int ota = old_taa[x];
+		wchar_t otc = old_tcc[x];
+
+		/* See what is desired here. */
+		int na = scr_aa[x];
+		wchar_t nc = scr_cc[x];
+		int nta = scr_taa[x];
+		wchar_t ntc = scr_tcc[x];
+
+		int draw;
+
+		if (na == oa && nc == oc && nta == ota && ntc == otc) {
+			/*
+			 * That element did not change.  If it is double-height
+			 * and the previous row was drawn, still have to redraw
+			 * to get the upper half of this one drawn correctly.
+			 */
+			if (pr_drw[x] &&
+					((*Term->dblh_hook)(na, nc) ||
+					(*Term->dblh_hook)(nta, ntc))) {
+				draw = 1;
+			} else {
+				/*
+				 * If the next row had double-height tiles and
+				 * those have changed, also have to redraw
+				 * (either to clear what was where if now gone
+				 * or to get the correct background for the new
+				 * double-height tile there now).
+				 */
+				/* See what is in the next row. */
+				int oa_nr = old_aa_nr[x];
+				wchar_t oc_nr = old_cc_nr[x];
+				int ota_nr = old_taa_nr[x];
+				wchar_t otc_nr = old_tcc_nr[x];
+
+				/* See what is desired in the next row. */
+				int na_nr = scr_aa_nr[x];
+				wchar_t nc_nr = scr_cc_nr[x];
+				int nta_nr = scr_taa_nr[x];
+				wchar_t ntc_nr = scr_tcc_nr[x];
+
+				if (((*Term->dblh_hook)(oa_nr, oc_nr) ||
+						(*Term->dblh_hook)(ota_nr, otc_nr)) &&
+						(na_nr != oa_nr ||
+						nc_nr != oc_nr ||
+						nta_nr != ota_nr ||
+						ntc_nr != otc_nr)) {
+					draw = 1;
+				} else {
+					draw = 0;
+				}
+			}
+
+			/* Remember if this element was redrawn or not. */
+			pr_drw[x] = draw;
+		} else {
+			draw = 1;
+			/* Remember that this element was redrawn. */
+			pr_drw[x] = 1;
+		}
+
+		/* Handle grids that don't have to be drawn. */
+		if (!draw) {
+			/* Flush */
+			if (fn) {
+				/* Draw pending chars (normal or black) */
+				if (fa || always_text) {
+					(void)((*Term->text_hook)(fx, y, fn, fa,
+						&scr_cc[fx]));
+				} else {
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip */
+			continue;
+		}
+
+		/* Save new contents */
+		old_aa[x] = na;
+		old_cc[x] = nc;
+		old_taa[x] = nta;
+		old_tcc[x] = ntc;
+
+		/* Handle high-bit attr/chars */
+		if ((na & 0x80)) {
+			/* Flush */
+			if (fn) {
+				/* Draw pending chars (normal or black) */
+				if (fa || always_text) {
+					(void)((*Term->text_hook)(fx, y, fn, fa,
+						&scr_cc[fx]));
+				} else {
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip padding element for big tiles. */
+			if (na == 255) continue;
+
+			/* Hack -- Draw the special attr/char pair */
+			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta,
+				&ntc));
+
+			/* Skip */
+			continue;
+		}
+
+		/* Notice new color */
+		if (fa != na) {
+			/* Flush */
+			if (fn) {
+				/*
+				 * Draw the pending chars, erase leading spaces
+				 */
+				if (fa || always_text) {
+					(void)((*Term->text_hook)(fx, y, fn, fa,
+						&scr_cc[fx]));
+				} else {
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Save the new color */
+			fa = na;
+		}
+
+		/* Restart and Advance */
+		if (fn++ == 0) fx = x;
+	}
+
+	/* Flush */
+	if (fn) {
+		/* Draw pending chars (normal or black) */
+		if (fa || always_text) {
+			(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+		} else {
+			(void)((*Term->wipe_hook)(fx, y, fn));
+		}
+	}
+
+	/*
+	 * For unmodified columns at end, set flags so processing of the next
+	 * knows they weren't redrawn.
+	 */
+	for (x = x2 + 1; x < Term->wid; x++) {
+		pr_drw[x] = 0;
 	}
 }
 
@@ -1248,6 +1716,25 @@ errr Term_fresh(void)
 
 	/* Something to update */
 	if (y1 <= y2) {
+		int **pr_drw;
+		int ipr;
+
+		if (Term->dblh_hook && (Term->always_pict ||
+				Term->higher_pict)) {
+			/*
+			 * Have to track whether each location in the previous
+			 * tile_height rows was redrawn.  First dimension in
+			 * pr_drw will be treated circularly so there's no
+			 * need for copying or swapping pointers.
+			 */
+			pr_drw = mem_alloc(tile_height * sizeof(*pr_drw));
+			for (y = 0; y < tile_height; ++y) {
+				pr_drw[y] = mem_zalloc(w * sizeof(**pr_drw));
+			}
+		} else {
+			pr_drw = NULL;
+		}
+
 		/* Handle "icky corner" */
 		if ((Term->icky_corner) && (y2 >= h - 1) && (Term->x2[h - 1] > w - 2))
 			Term->x2[h - 1] = w - 2;
@@ -1263,6 +1750,7 @@ errr Term_fresh(void)
 		Term->y2 = 0;
 
 		/* Scan the "modified" rows */
+		ipr = 0;
 		for (y = y1; y <= y2; ++y) {
 			int x1 = Term->x1[y];
 			int x2 = Term->x2[y];
@@ -1277,19 +1765,47 @@ errr Term_fresh(void)
 				Term->x2[y] = 0;
 
 				/* Use "Term_pict()" - always, sometimes or never */
-				if (Term->always_pict)
+				if (Term->always_pict) {
 					/* Flush the row */
-					Term_fresh_row_pict(y, x1, x2);
-				else if (Term->higher_pict)
+					if (Term->dblh_hook) {
+						Term_fresh_row_pict_dblh(
+							y, x1, x2, pr_drw[ipr]);
+						ipr = (ipr + 1) % tile_height;
+					} else {
+						Term_fresh_row_pict(y, x1, x2);
+					}
+				} else if (Term->higher_pict) {
 					/* Flush the row */
-					Term_fresh_row_both(y, x1, x2);
-				else
+					if (Term->dblh_hook) {
+						Term_fresh_row_both_dblh(
+							y, x1, x2, pr_drw[ipr]);
+						ipr = (ipr + 1) % tile_height;
+					} else {
+						Term_fresh_row_both(y, x1, x2);
+					}
+				} else {
 					/* Flush the row */
 					Term_fresh_row_text(y, x1, x2);
-
+				}
 				/* Hack -- Flush that row (if allowed) */
 				if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
+			} else if (pr_drw) {
+				/*
+				 * Remember that nothing was redrawn on that
+				 * row.
+				 */
+				for (x = 0; x < w; ++x) {
+					pr_drw[ipr][x] = 0;
+				}
+				ipr = (ipr + 1) % tile_height;
 			}
+		}
+
+		if (pr_drw) {
+			for (y = 0; y < tile_height; ++y) {
+				mem_free(pr_drw[y]);
+			}
+			mem_free(pr_drw);
 		}
 	}
 
