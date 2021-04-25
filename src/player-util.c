@@ -617,6 +617,8 @@ struct object *player_best_digger(struct player *p, bool forbid_stack)
 		int score, old_number;
 		if (!tval_is_melee_weapon(obj)) continue;
 		if (obj->number < 1 || (forbid_stack && obj->number > 1)) continue;
+		/* Don't use it if it has a sticky curse. */
+		if (!obj_can_takeoff(obj)) continue;
 
 		/* Swap temporarily for the calc_bonuses() computation. */
 		old_number = obj->number;

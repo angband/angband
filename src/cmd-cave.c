@@ -517,7 +517,8 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 
 	/* Find what we're digging with and our chance of success */
 	best_digger = player_best_digger(player, false);
-	if (best_digger != current_weapon) {
+	if (best_digger != current_weapon &&
+			(!current_weapon || obj_can_takeoff(current_weapon))) {
 		/* Use only one without the overhead of gear_obj_for_use(). */
 		if (best_digger) {
 			oldn = best_digger->number;
