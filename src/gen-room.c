@@ -1839,7 +1839,7 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 		if ((x2 - x1) % 2 == 0) {
 			sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
 				SQUARE_ROOM);
-			sqinfo_off(square(c, loc(x1 + 1, y1 - 1))->info,
+			sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
 				SQUARE_WALL_OUTER);
 		}
 		if ((y2 - y1) % 2 == 0) {
