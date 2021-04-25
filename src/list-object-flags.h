@@ -3,8 +3,8 @@
  * \brief object flags for all objects
  *
  * Changing flag order will break savefiles. Flags
- * below start from 1 on line 14, so a flag's sequence number is its line
- * number minus 13.
+ * below start from 1 on line 17, so a flag's sequence number is its line
+ * number minus 16.
  *
  * Each sustain flag (SUST_*) has a matching stat in src/list-stats.h,
  * which should be at the same index in that file as the sustain in this file.
