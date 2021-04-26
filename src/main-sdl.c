@@ -3037,8 +3037,6 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 
 	SDL_Rect rc, src, ur;
 	int i, j;
-	char mbforeground[MB_LEN_MAX * 255];
-	char mbterrain[MB_LEN_MAX * 255];
 	bool haddbl = false;
 
 	/* First time a pict is requested we load the tileset in */
@@ -3071,9 +3069,6 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	for (i = 0; i < tile_width; i++)
 		for (j = 0; j < tile_height; j++)
 			Term_wipe_sdl(col + i, row + j, n);
-
-	wcstombs(mbforeground, cp, n * MB_LEN_MAX);
-	wcstombs(mbterrain, tcp, n * MB_LEN_MAX);
 
 	/* Blit 'em! (it) */
 	for (i = 0; i < n; i++) {
