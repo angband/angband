@@ -2101,6 +2101,7 @@ static errr Term_pict_win(int x, int y, int n,
 	term_data *td = (term_data*)(Term->data);
 
 	int i;
+	int mw, mh;
 	int x1, y1, w1, h1;
 	int x2, y2, w2, h2, tw2, th2;
 	int x3, y3;
@@ -2110,9 +2111,6 @@ static errr Term_pict_win(int x, int y, int n,
 	HDC hdcSrc;
 	HBITMAP hbmSrcOld;
 
-	/* Erase the grids */
-	Term_wipe_win(x, y, n);
-
 	/* Size of bitmap cell */
 	w1 = infGraph.CellWidth;
 	h1 = infGraph.CellHeight;
@@ -2121,16 +2119,21 @@ static errr Term_pict_win(int x, int y, int n,
 	if (td->map_active) {
 		w2 = td->map_tile_wid;
 		h2 = td->map_tile_hgt;
-		tw2 = w2;
-		th2 = h2;
+		mw = 1;
+		mh = 1;
 	} else {
 		w2 = td->tile_wid;
 		h2 = td->tile_hgt;
 
 		/* Large tile mode */
-		th2 = tile_height * h2;
-		tw2 = tile_width * w2;
+		mw = tile_width;
+		mh = tile_height;
 	}
+	tw2 = mw * w2;
+	th2 = mh * h2;
+
+	/* Erase the grids */
+	for (i = 0; i < mh; ++i) Term_wipe_win(x, y + i, n * mw);
 
 	/* Location of window cell */
 	x2 = x * w2 + td->size_ow1;
@@ -2342,6 +2345,7 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 	term_data *td = (term_data*)(Term->data);
 
 	int i;
+	int mw, mh;
 	int x1, y1, w1, h1;
 	int x2, y2, w2, h2, tw2, th2;
 	int x3, y3;
@@ -2349,9 +2353,6 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 	HDC hdc;
 	HDC hdcSrc;
 	HBITMAP hbmSrcOld;
-
-	/* Erase the grids */
-	Term_wipe_win(x, y, n);
 
 	/* Size of bitmap cell */
 	w1 = infGraph.CellWidth;
@@ -2361,16 +2362,21 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 	if (td->map_active) {
 		w2 = td->map_tile_wid;
 		h2 = td->map_tile_hgt;
-		tw2 = w2;
-		th2 = h2;
+		mw = 1;
+		mh = 1;
 	} else {
 		w2 = td->tile_wid;
 		h2 = td->tile_hgt;
 
 		/* Large tile mode */
-		th2 = tile_height * h2;
-		tw2 = tile_width * w2;
+		mw = tile_width;
+		mh = tile_height;
 	}
+	tw2 = mw * w2;
+	th2 = mh * h2;
+
+	/* Erase the grids */
+	for (i = 0; i < mh; ++i) Term_wipe_win(x, y + i, n * mw);
 
 	/* Location of window cell */
 	x2 = x * w2 + td->size_ow1;
