@@ -1870,29 +1870,43 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 	fill_rectangle(c, y1, x1, y2, x2, FEAT_FLOOR, SQUARE_NONE);
 
 	if (one_in_(20)) {
-		/* Sometimes make a pillar room */
-		for (y = y1; y <= y2; y += 2)
-			for (x = x1; x <= x2; x += 2)
+		/*
+		 * Sometimes make a pillar room.
+		 * If a dimension is even, don't always put a pillar in the
+		 * upper left corner.
+		 */
+		int offx = ((x2 - x1) % 2 == 0) ? 0 : randint0(2);
+		int offy = ((y2 - y1) % 2 == 0) ? 0 : randint0(2);
+
+		for (y = y1 + offy; y <= y2; y += 2)
+			for (x = x1 + offx; x <= x2; x += 2)
 				set_marked_granite(c, loc(x, y), SQUARE_WALL_INNER);
 		/*
 		 * Drop room/outer wall flags on corners if not adjacent to a
 		 * floor.  Lets tunnels enter those grids.
 		 */
-		sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info, SQUARE_ROOM);
-		sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info,
-			SQUARE_WALL_OUTER);
-		if ((x2 - x1) % 2 == 0) {
-			sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
-				SQUARE_ROOM);
-			sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
-				SQUARE_WALL_OUTER);
+		if (!offy) {
+			if (!offx) {
+				sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info,
+					SQUARE_ROOM);
+				sqinfo_off(square(c, loc(x1 - 1, y1 - 1))->info,
+					SQUARE_WALL_OUTER);
+			}
+			if ((x2 - x1 - offx) % 2 == 0) {
+				sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
+					SQUARE_ROOM);
+				sqinfo_off(square(c, loc(x2 + 1, y1 - 1))->info,
+					SQUARE_WALL_OUTER);
+			}
 		}
-		if ((y2 - y1) % 2 == 0) {
-			sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
-				SQUARE_ROOM);
-			sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
-				SQUARE_WALL_OUTER);
-			if ((x2 - x1) % 2 == 0) {
+		if ((y2 - y1 - offy) % 2 == 0) {
+			if (!offx) {
+				sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
+					SQUARE_ROOM);
+				sqinfo_off(square(c, loc(x1 - 1, y2 + 1))->info,
+					SQUARE_WALL_OUTER);
+			}
+			if ((x2 - x1 - offx) % 2 == 0) {
 				sqinfo_off(square(c, loc(x2 + 1, y2 + 1))->info,
 					SQUARE_ROOM);
 				sqinfo_off(square(c, loc(x2 + 1, y2 + 1))->info,
@@ -1900,13 +1914,20 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 			}
 		}
 	} else if (one_in_(50)) {
-		/* Sometimes make a ragged-edge room */
-		for (y = y1 + 2; y <= y2 - 2; y += 2) {
+		/*
+		 * Sometimes make a ragged-edge room.
+		 * If a dimension is even, don't always put the first
+		 * indentations at (x1, y1 + 2) and (x1 + 2, y1).
+		 */
+		int offx = ((x2 - x1) % 2 == 0) ? 0 : randint0(2);
+		int offy = ((y2 - y1) % 2 == 0) ? 0 : randint0(2);
+
+		for (y = y1 + 2 + offy; y <= y2 - 2; y += 2) {
 			set_marked_granite(c, loc(x1, y), SQUARE_WALL_INNER);
 			set_marked_granite(c, loc(x2, y), SQUARE_WALL_INNER);
 		}
 
-		for (x = x1 + 2; x <= x2 - 2; x += 2) {
+		for (x = x1 + 2 + offx; x <= x2 - 2; x += 2) {
 			set_marked_granite(c, loc(x, y1), SQUARE_WALL_INNER);
 			set_marked_granite(c, loc(x, y2), SQUARE_WALL_INNER);
 		}
