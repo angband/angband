@@ -3066,9 +3066,8 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	ur.w *= n;
 
 	/* Clear the way */
-	for (i = 0; i < tile_width; i++)
-		for (j = 0; j < tile_height; j++)
-			Term_wipe_sdl(col + i, row + j, n);
+	for (j = 0; j < tile_height; j++)
+		Term_wipe_sdl(col, row + j, n * tile_width);
 
 	/* Blit 'em! (it) */
 	for (i = 0; i < n; i++) {
