@@ -4818,7 +4818,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 			   backgroundRow:bckRow
 			   tileWidth:tile_width
 			   tileHeight:tile_height];
-	    if (overdraw_row && y > 2 &&
+	    if (overdraw_row && y > ROW_MAP + 1 &&
 		((bckRow >= overdraw_row && bckRow <= overdraw_max) ||
 		 (fgdRow >= overdraw_row && fgdRow <= overdraw_max))) {
 		[angbandContext.changes markChangedBlockAtColumn:i
