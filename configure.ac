@@ -289,7 +289,9 @@ if test "$enable_sdl2" = "yes"; then
 
 		if test "$with_sdl2" = "yes"; then
 			AC_DEFINE(USE_SDL2, 1, [Define to 1 if using the SDL2 interface and SDL2 is found.])
-			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
+			SDL2_CFLAGS=`sdl2-config --cflags`
+			CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
+			SDL2_LIBS=`sdl2-config --libs`
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_image -lSDL2_ttf"
 			MAINFILES="${MAINFILES} \$(SDL2MAINFILES)"
 			enable_sdl=no
@@ -309,7 +311,9 @@ else
 
 			if test "$with_sdl" = "yes"; then
 			   		AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
-					CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+					SDL_CFLAGS=`sdl-config --cflags`
+					CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
+					SDL_LIBS=`sdl-config --libs`
 					LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
 					MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
 		    fi
@@ -343,7 +347,7 @@ if test "$enable_sdl2_mixer" = "yes"; then
 			LIBS="${LIBS} -lSDL2_mixer"
 		else
 			SDL2_CFLAGS=`sdl2-config --cflags`
-			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
+			CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
 			SDL2_LIBS=`sdl2-config --libs`
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_mixer"
 		fi
@@ -362,7 +366,7 @@ if test "$enable_sdl_mixer" = "yes"; then
 			LIBS="${LIBS} -lSDL_mixer"
 		else
 			SDL_CFLAGS=`sdl-config --cflags`
-			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+			CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
 			SDL_LIBS=`sdl-config --libs`
 			LIBS="${LIBS} ${SDL_LIBS} -lSDL_mixer"
 		fi
