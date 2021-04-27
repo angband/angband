@@ -1021,7 +1021,7 @@ static void render_tile_font_scaled(const struct subwindow *subwindow,
 	src.y = src_row * src.h;
 
 	if (graphics->overdraw_row != 0
-			&& row > 2
+			&& row > ROW_MAP + 1
 			&& src_row >= graphics->overdraw_row
 			&& src_row <= graphics->overdraw_max)
 	{

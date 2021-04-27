@@ -3077,7 +3077,8 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 		src.y = j * src.h;
 		
 		/* if we are using overdraw, draw the top rectangle */
-		if (overdraw && (row > 2) && (j >= overdraw) && (j <= overdraw_max)) {
+		if (overdraw && row > ROW_MAP + 1 &&
+				 j >= overdraw && j <= overdraw_max) {
 			src.y -= rc.h;
 			rc.y -= rc.h;
 			rc.h = (rc.h << 1); /* double the height */
@@ -3098,7 +3099,8 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 		src.y = j * src.h;
 		
 		/* if we are using overdraw, draw the top rectangle */
-		if (overdraw && (row > 2) && (j >= overdraw) && (j <= overdraw_max)) {
+		if (overdraw && row > ROW_MAP + 1 &&
+				j >= overdraw && j <= overdraw_max) {
 			src.y -= rc.h;
 			rc.y -= rc.h;
 			rc.h = (rc.h << 1); /* double the height */
