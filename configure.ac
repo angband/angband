@@ -321,7 +321,8 @@ dnl Windows checking
 if test "$enable_win" = "yes"; then
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
 	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
-	CFLAGS="${CFLAGS} -DWINDOWS -static -Iwin/include"
+	CPPFLAGS="${CPPFLAGS} -DWINDOWS -Iwin/include"
+	CFLAGS="${CFLAGS} -static"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
