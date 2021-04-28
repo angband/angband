@@ -582,11 +582,17 @@ extern void hit_trap(struct loc grid, int delayed)
 
 		/* Trap becomes visible (always XXX) */
 		trf_on(trap->flags, TRF_VISIBLE);
-		square_memorize(cave, grid);
 	}
 
     /* Verify traps (remove marker if appropriate) */
-    (void)square_verify_trap(cave, grid, 0);
+    if (square_verify_trap(cave, grid, 0)) {
+	/* At least one trap left.  Memorize the visible ones and the grid. */
+	square_memorize_traps(cave, grid);
+	square_memorize(cave, grid);
+    }
+    if (square_isseen(cave, grid)) {
+	square_light_spot(cave, grid);
+    }
 }
 
 /**
