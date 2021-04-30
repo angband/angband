@@ -1164,8 +1164,13 @@ int preferred_quiver_slot(const struct object *obj)
 			of_has(obj->flags, OF_THROWING))) {
 		const char *s = strchr(quark_str(obj->note), '@');
 
-		if (s && (s[1] == 'f' || s[1] == 'v')) {
-			desired_slot = s[2] - '0';
+		while (1) {
+			if (!s) break;
+			if (s[1] == 'f' || s[1] == 'v') {
+				desired_slot = s[2] - '0';
+				break;
+			}
+			s = strchr(s + 1, '@');
 		}
 	}
 
