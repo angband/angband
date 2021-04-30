@@ -1163,10 +1163,22 @@ int preferred_quiver_slot(const struct object *obj)
 	if (obj->note && (tval_is_ammo(obj) ||
 			of_has(obj->flags, OF_THROWING))) {
 		const char *s = strchr(quark_str(obj->note), '@');
+		char fire_key, throw_key;
 
+		/*
+		 * Would be nice to use cmd_lookup_key() for this, but that is
+		 * part of the ui layer (declared in ui-game.h).  Instead,
+		 * hardwire the keys for the fire and throw commands.
+		 */
+		if (OPT(player, rogue_like_commands)) {
+			fire_key = 't';
+		} else {
+			fire_key = 'f';
+		}
+		throw_key = 'v';
 		while (1) {
 			if (!s) break;
-			if (s[1] == 'f' || s[1] == 'v') {
+			if (s[1] == fire_key || s[1] == throw_key) {
 				desired_slot = s[2] - '0';
 				break;
 			}
