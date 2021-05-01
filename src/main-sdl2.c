@@ -2068,6 +2068,7 @@ static void handle_menu_tile_sets(struct window *window,
 	}
 
 	size_t num_elems = 0;
+	struct menu_elem *elems;
 
 	graphics_mode *mode = graphics_modes;
 	while (mode != NULL) {
@@ -2075,7 +2076,7 @@ static void handle_menu_tile_sets(struct window *window,
 		mode = mode->pNext;
 	}
 
-	struct menu_elem elems[num_elems];
+	elems = mem_alloc(num_elems * sizeof(*elems));
 
 	mode = graphics_modes;
 	for (size_t i = 0; i < num_elems; i++) {
@@ -2089,6 +2090,8 @@ static void handle_menu_tile_sets(struct window *window,
 	}
 
 	load_next_menu_panel(window, menu_panel, button, num_elems, elems);
+
+	mem_free(elems);
 }
 
 static void handle_menu_tiles(struct window *window,
