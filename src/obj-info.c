@@ -1418,8 +1418,8 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	struct player_state state;
 	int i;
 	int chances[DIGGING_MAX];
-	int slot = wield_slot(obj);
-	struct object *current = slot_object(player, slot);
+	int slot;
+	struct object *current;
 
 	/* Doesn't remotely resemble a digger */
 	if (!tval_is_wearable(obj) ||
@@ -1431,6 +1431,8 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 		return false;
 
 	/* Pretend we're wielding the object */
+	slot = wield_slot(obj);
+	current = slot_object(player, slot);
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
