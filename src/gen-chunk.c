@@ -166,18 +166,23 @@ struct chunk *chunk_find_adjacent(struct player *p, bool above)
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 						int rotate, bool reflect)
 {
+	/* Track what the dimensions are after rotations. */
+	int rheight = height, rwidth = width;
 	int i;
 
 	/* Rotate (in multiples of 90 degrees clockwise) */
-    for (i = 0; i < rotate % 4; i++) {
-        int temp = grid->x;
-        grid->x = height - 1 - (grid->y);
-        grid->y = temp;
-    }
+	for (i = 0; i < rotate % 4; i++) {
+		int temp = grid->x;
+		grid->x = rheight - 1 - (grid->y);
+		grid->y = temp;
+		temp = rwidth;
+		rwidth = rheight;
+		rheight = temp;
+	}
 
-	/* Reflect (horizontally) */
+	/* Reflect (horizontally in the rotated system) */
 	if (reflect)
-		grid->x = width - 1 - grid->x;
+		grid->x = rwidth - 1 - grid->x;
 
 	/* Translate */
 	grid->y += y0;
