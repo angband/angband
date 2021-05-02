@@ -593,7 +593,11 @@ int cave_monster_count(struct chunk *c) {
 }
 
 /**
- * Return the number of doors/traps around (or under) the character.
+ * Return the number of matching grids around (or under) the character.
+ * \param grid If not NULL, *grid is set to the location of the last match.
+ * \param test Is the predicate to use when testing for a match.
+ * \param under If true, the character's grid is tested as well.
+ * Only tests grids that are known and fully in bounds.
  */
 int count_feats(struct loc *grid,
 				bool (*test)(struct chunk *c, struct loc grid), bool under)
@@ -622,7 +626,7 @@ int count_feats(struct loc *grid,
 		/* Count it */
 		++count;
 
-		/* Remember the location of the last door found */
+		/* Remember the location of the last match */
 		if (grid) {
 			*grid = grid1;
 		}
