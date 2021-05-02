@@ -243,6 +243,15 @@ struct room_template {
     byte tval;			/*!< tval for objects in this room */
 };
 
+/**
+ * Constants for working with random symmetry transforms
+ */
+#define SYMTR_FLAG_NONE (0)
+#define SYMTR_FLAG_NO_ROT (1)
+#define SYMTR_FLAG_NO_REF (2)
+#define SYMTR_FLAG_FORCE_REF (4)
+#define SYMTR_MAX_WEIGHT (32768)
+
 extern struct dun_data *dun;
 extern struct vault *vaults;
 extern struct room_template *room_templates;
@@ -267,6 +276,12 @@ bool chunk_list_remove(char *name);
 struct chunk *chunk_find_name(char *name);
 bool chunk_find(struct chunk *c);
 struct chunk *chunk_find_adjacent(struct player *p, bool above);
+void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
+	int rotate, bool reflect);
+void get_random_symmetry_transform(int height, int width, int flags,
+	int transpose_weight, int *rotate, bool *reflect,
+	int *theight, int *twidth);
+int calc_default_transpose_weight(int height, int width);
 bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect);
 

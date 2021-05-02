@@ -166,22 +166,158 @@ struct chunk *chunk_find_adjacent(struct player *p, bool above)
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 						int rotate, bool reflect)
 {
+	/* Track what the dimensions are after rotations. */
+	int rheight = height, rwidth = width;
 	int i;
 
 	/* Rotate (in multiples of 90 degrees clockwise) */
-    for (i = 0; i < rotate % 4; i++) {
-        int temp = grid->x;
-        grid->x = height - 1 - (grid->y);
-        grid->y = temp;
-    }
+	for (i = 0; i < rotate % 4; i++) {
+		int temp = grid->x;
+		grid->x = rheight - 1 - (grid->y);
+		grid->y = temp;
+		temp = rwidth;
+		rwidth = rheight;
+		rheight = temp;
+	}
 
-	/* Reflect (horizontally) */
+	/* Reflect (horizontally in the rotated system) */
 	if (reflect)
-		grid->x = width - 1 - grid->x;
+		grid->x = rwidth - 1 - grid->x;
 
 	/* Translate */
 	grid->y += y0;
 	grid->x += x0;
+}
+
+/**
+ * Select a random symmetry transformation subject to certain constraints.
+ * \param height Is the height of the piece to transform.
+ * \param width Is the height of the piece to transform.
+ * \param flags Is a bitwise-or of one or more of SYMTR_FLAG_NONE,
+ * SYMTR_FLAG_NO_ROT (disallow 90 and 270 degree rotation and 180 degree
+ * rotation if not accompanied by a horizontal reflection - equivalent to a
+ * vertical reflection), SYMTR_FLAG_NO_REF (forbid horizontal reflection), and
+ * SYMTR_FLAG_FORCE_REF (force horizontal reflection).  If flags
+ * includes both SYMTR_FLAG_NO_REF and SYMTR_FLAG_FORCE_REF, the former takes
+ * precedence.
+ * \param transpose_weight Is the probability weight to use for transformations
+ * that include a tranposition (90 degree rotation, 270 degree rotation,
+ * 90 degree rotation + horizontal reflection, 270 degree rotation + horizontal
+ * reflection).  Coerced to be in the range of [0, SYMTR_MAX_WEIGHT] where 0
+ * means forbidding such transformations.
+ * \param rotate *rotate is set to the number of 90 degree clockwise rotations
+ * to perform for the random transform.
+ * \param reflect *reflect is set to whether the random transform includes a
+ * horizontal reflection.
+ * \param theight If theight is not NULL, *theight is set to the height of the
+ * piece after applying the transform.
+ * \param twidth If twidth is not NULL, *twidth is set to the width of the
+ * piece after applying the transform.
+ */
+void get_random_symmetry_transform(int height, int width, int flags,
+	int transpose_weight, int *rotate, bool *reflect,
+	int *theight, int *twidth)
+{
+	/*
+	 * Without any constraints there are 8 possibilities (4 rotations times
+	 * 2 options for whether or not there is a horizontal reflection).
+	 * Use an array of 9 elements (extra element for a leading zero) to
+	 * store the cumulative probability weights.  The first four are for
+	 * rotations without reflection.  The remainder are for the rotations
+	 * with reflection.
+	 */
+	int weights[9], draw, ilow, ihigh;
+
+	transpose_weight = MIN(SYMTR_MAX_WEIGHT, MAX(0, transpose_weight));
+	weights[0] = 0;
+	if ((flags & SYMTR_FLAG_NO_REF) || !(flags & SYMTR_FLAG_FORCE_REF)) {
+		weights[1] = weights[0] + SYMTR_MAX_WEIGHT;
+	} else {
+		weights[1] = weights[0];
+	}
+	if (flags & SYMTR_FLAG_NO_ROT) {
+		weights[2] = weights[1];
+		weights[3] = weights[2];
+		weights[4] = weights[3];
+	} else if ((flags & SYMTR_FLAG_NO_REF) ||
+			!(flags & SYMTR_FLAG_FORCE_REF)) {
+		weights[2] = weights[1] + transpose_weight;
+		weights[3] = weights[2] + SYMTR_MAX_WEIGHT;
+		weights[4] = weights[3] + transpose_weight;
+	} else {
+		/* Reflection is forced so these all have zero weight. */
+		weights[2] = weights[1];
+		weights[3] = weights[2];
+		weights[4] = weights[3];
+	}
+	if (flags & SYMTR_FLAG_NO_REF) {
+		/* Reflection is forbidden so these all have zero weight. */
+		weights[5] = weights[4];
+		weights[6] = weights[5];
+		weights[7] = weights[6];
+		weights[8] = weights[7];
+	} else {
+		weights[5] = weights[4] + SYMTR_MAX_WEIGHT;
+		if (flags & SYMTR_FLAG_NO_ROT) {
+			weights[6] = weights[5];
+			/*
+			 * 180 degree rotation with a horizontal reflection is
+			 * equivalent to a vertical reflection so don't exclude
+			 * in when forbidding rotations.
+			 */
+			weights[7] = weights[6] + SYMTR_MAX_WEIGHT;
+			weights[8] = weights[7];
+		} else {
+			weights[6] = weights[5] + transpose_weight;
+			weights[7] = weights[6] + SYMTR_MAX_WEIGHT;
+			weights[8] = weights[7] + transpose_weight;
+		}
+	}
+	assert(weights[8] > 0);
+
+	draw = randint0(weights[8]);
+
+	/* Find by a binary search. */
+	ilow = 0;
+	ihigh = 8;
+	while (1) {
+		int imid;
+
+		if (ilow == ihigh - 1) {
+			break;
+		}
+		imid = (ilow + ihigh) / 2;
+		if (weights[imid] <= draw) {
+			ilow = imid;
+		} else {
+			ihigh = imid;
+		}
+	}
+
+	*rotate = ilow % 4;
+	*reflect = (ilow >= 4);
+	if (theight) {
+		*theight = (*rotate == 0 || *rotate == 2) ?  height : width;
+	}
+	if (twidth) {
+		*twidth = (*rotate == 0 || *rotate == 2) ?  width : height;
+	}
+}
+
+/**
+ * Select a weight for transforms that involve transpositions so that
+ * such transforms are forbidden if width >= 2 * height and the probability of
+ * such a transform increases as height / width up to a maximum of
+ * SYMTR_MAX_WEIGHT when the height is greater than or equal to the width.
+ * That's so transformed pieces will usually fit well into the aspect ratio
+ * of generated levels.
+ * \param height Is the height of the piece being transformed.
+ * \param width Is the width of the piece being transformed.
+ */
+int calc_default_transpose_weight(int height, int width)
+{
+	return (SYMTR_MAX_WEIGHT / 64) *
+		MAX(0, MIN(64, (128 * height) / width - 64));
 }
 
 /**

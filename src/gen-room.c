@@ -1064,7 +1064,8 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 	int dx, dy, rnddoors, doorpos;
 	const char *t;
 	bool rndwalls, light;
-	
+	int rotate, txmax, tymax;
+	bool reflect;
 
 	assert(c);
 
@@ -1080,16 +1081,30 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((centre.y >= c->height) || (centre.x >= c->width)) {
-		if (!find_space(&centre, ymax + 2, xmax + 2))
+		get_random_symmetry_transform(ymax, xmax, SYMTR_FLAG_NONE,
+			calc_default_transpose_weight(ymax, xmax),
+			&rotate, &reflect, &tymax, &txmax);
+		if (!find_space(&centre, tymax + 2, txmax + 2))
 			return (false);
+	} else {
+		/* Given the preset centre, don't allow transposition. */
+		get_random_symmetry_transform(ymax, xmax, SYMTR_FLAG_NONE, 0,
+			&rotate, &reflect, &tymax, &txmax);
+		assert(tymax == ymax && txmax == xmax);
 	}
+
+	/* Convert centre to translation for the symmetry transformation. */
+	centre.x -= txmax / 2;
+	centre.y -= tymax / 2;
 
 	/* Place dungeon features, objects, and monsters for specific grids. */
 	for (t = data, dy = 0; dy < ymax && *t; dy++) {
 		for (dx = 0; dx < xmax && *t; dx++, t++) {
 			/* Extract the location */
-			struct loc grid = loc(centre.x - (xmax / 2) + dx,
-								  centre.y - (ymax / 2) + dy);
+			struct loc grid = loc(dx, dy);
+
+			symmetry_transform(&grid, centre.y, centre.x,
+				ymax, xmax, rotate, reflect);
 
 			/* Skip non-grids */
 			if (*t == ' ') continue;
@@ -1183,8 +1198,10 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 	for (t = data, dy = 0; dy < ymax && *t; dy++) {
 		for (dx = 0; dx < xmax && *t; dx++, t++) {
 			/* Extract the location */
-			struct loc grid = loc(centre.x - (xmax / 2) + dx,
-				centre.y - (ymax / 2) + dy);
+			struct loc grid = loc(dx, dy);
+
+			symmetry_transform(&grid, centre.y, centre.x,
+				ymax, xmax, rotate, reflect);
 
 			/* Analyze the grid. */
 			switch (*t) {
@@ -1277,28 +1294,48 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 	const char *t;
 	char racial_symbol[30] = "";
 	bool icky;
+	int rotate, thgt, twid;
+	bool reflect;
 
 	assert(c);
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((centre.y >= c->height) || (centre.x >= c->width)) {
-		if (!find_space(&centre, v->hgt + 2, v->wid + 2))
+		get_random_symmetry_transform(v->hgt, v->wid, SYMTR_FLAG_NONE,
+			calc_default_transpose_weight(v->hgt, v->wid),
+			&rotate, &reflect, &thgt, &twid);
+		if (!find_space(&centre, thgt + 2, twid + 2))
 			return (false);
+	} else {
+		/* Given the preset centre, don't allow transposition. */
+		get_random_symmetry_transform(v->hgt, v->wid, SYMTR_FLAG_NONE,
+			0, &rotate, &reflect, &thgt, &twid);
+		assert(v->hgt == thgt && v->wid == twid);
 	}
 
+	/* Convert centre to translation for the symmetry transformation. */
+	centre.x -= twid / 2;
+	centre.y -= thgt / 2;
+
 	/* Get the room corners */
-	y1 = centre.y - (v->hgt / 2);
-	x1 = centre.x - (v->wid / 2);
-	y2 = y1 + v->hgt - 1;
-	x2 = x1 + v->wid - 1;
+	y1 = centre.y;
+	x1 = centre.x;
+	y2 = y1 + thgt - 1;
+	x2 = x1 + twid - 1;
 
 	/* No random monsters in vaults. */
 	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
 
 	/* Place dungeon features and objects */
-	for (t = data, y = y1; y <= y2 && *t; y++) {
-		for (x = x1; x <= x2 && *t; x++, t++) {
+	for (t = data, y = 0; y < v->hgt && *t; y++) {
+		for (x = 0; x < v->wid && *t; x++, t++) {
 			struct loc grid = loc(x, y);
+
+			symmetry_transform(&grid, centre.y, centre.x, v->hgt,
+				v->wid, rotate, reflect);
+			assert(grid.x >= x1 && grid.x <= x2 &&
+				grid.y >= y1 && grid.y <= y2);
+
 			/* Skip non-grids */
 			if (*t == ' ') continue;
 
@@ -1381,9 +1418,15 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 
 
 	/* Place regular dungeon monsters and objects */
-	for (t = data, y = y1; y <= y2 && *t; y++) {
-		for (x = x1; x <= x2 && *t; x++, t++) {
+	for (t = data, y = 0; y < v->hgt && *t; y++) {
+		for (x = 0; x < v->wid && *t; x++, t++) {
 			struct loc grid = loc(x, y);
+
+			symmetry_transform(&grid, centre.y, centre.x, v->hgt,
+				v->wid, rotate, reflect);
+			assert(grid.x >= x1 && grid.x <= x2 &&
+				grid.y >= y1 && grid.y <= y2);
+
 			/* Hack -- skip "non-grids" */
 			if (*t == ' ') continue;
 
