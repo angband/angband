@@ -47,13 +47,13 @@ feat:down staircase:lit:0x9A:0xF2
 feat:down staircase:dark:0x9A:0xF3
 
 # General Store
-feat:General Store:*:0x9B:0xF1
+feat:General Store:*:0x99:0x83
 
 # Armoury
-feat:Armoury:*:0x9B:0xF2
+feat:Armoury:*:0x99:0x84
 
 # Weapon Smiths
-feat:Weapon Smiths:*:0x9B:0xF3
+feat:Weapon Smiths:*:0x99:0x85
 
 # Bookseller
 feat:Bookseller:*:0x9B:0xF4
