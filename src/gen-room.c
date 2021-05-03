@@ -1205,6 +1205,25 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 
 			/* Analyze the grid. */
 			switch (*t) {
+			case '#':
+				/* Check consistency with first pass. */
+				assert(square_isroom(c, grid) &&
+					square_isgranite(c, grid) &&
+					sqinfo_has(square(c, grid)->info,
+					SQUARE_WALL_SOLID));
+				/*
+				 * Convert to SQUARE_WALL_INNER if it does not
+				 * touch the outside of the room.
+				 */
+				if (count_neighbors(NULL, c, grid,
+						square_isroom, false) == 8) {
+					sqinfo_off(square(c, grid)->info,
+						SQUARE_WALL_SOLID);
+					sqinfo_on(square(c, grid)->info,
+						SQUARE_WALL_INNER);
+				}
+				break;
+
 			case '8':
 				/* Check consistency with first pass. */
 				assert(square_isroom(c, grid) &&
@@ -1359,8 +1378,8 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 				icky = false;
 				break;
 			}
-				/* Inner granite wall */
-			case '#': set_marked_granite(c, grid, SQUARE_WALL_INNER); break;
+				/* Inner or non-tunnelable outside granite wall */
+			case '#': set_marked_granite(c, grid, SQUARE_WALL_SOLID); break;
 				/* Permanent wall */
 			case '@': square_set_feat(c, grid, FEAT_PERM); break;
 				/* Gold seam */
@@ -1417,7 +1436,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 	}
 
 
-	/* Place regular dungeon monsters and objects */
+	/* Place regular dungeon monsters and objects, convert inner walls */
 	for (t = data, y = 0; y < v->hgt && *t; y++) {
 		for (x = 0; x < v->wid && *t; x++, t++) {
 			struct loc grid = loc(x, y);
@@ -1563,6 +1582,25 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 					/* Food or mushroom. */
 				case ',': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_FOOD); break;
+					/* Inner or non-tunnelable outside granite wall */
+				case '#': {
+					/* Check consistency with first pass. */
+					assert(square_isroom(c, grid) &&
+						square_isvault(c, grid) &&
+						square_isgranite(c, grid) &&
+						sqinfo_has(square(c, grid)->info, SQUARE_WALL_SOLID));
+					/*
+					 * Convert to SQUARE_WALL_INNER if does
+					 * not touch the outside of the vault.
+					 */
+					if (count_neighbors(NULL, c, grid,
+							square_isroom, false) == 8) {
+						sqinfo_off(square(c, grid)->info,
+							SQUARE_WALL_SOLID);
+						sqinfo_on(square(c, grid)->info,
+							SQUARE_WALL_INNER);
+					}
+				}
 				}
 		}
 	}
