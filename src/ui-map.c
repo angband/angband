@@ -553,7 +553,17 @@ static void prt_map_aux(void)
 		for (y = t->offset_y, vy = 0; y < ty; vy += tile_height, y++) {
 			for (x = t->offset_x, vx = 0; x < tx; vx += tile_width, x++) {
 				/* Check bounds */
-				if (!square_in_bounds(cave, loc(x, y))) continue;
+				if (!square_in_bounds(cave, loc(x, y))) {
+					Term_queue_char(t, vx, vy,
+						t->attr_blank, t->char_blank,
+						0, 0);
+					if (tile_width > 1 || tile_height > 1) {
+						Term_big_queue_char(t, vx, vy,
+							t->attr_blank,
+							t->char_blank, 0, 0);
+					}
+					continue;
+				}
 
 				/* Determine what is there */
 				map_info(loc(x, y), &g);
@@ -562,6 +572,18 @@ static void prt_map_aux(void)
 
 				if ((tile_width > 1) || (tile_height > 1))
 					Term_big_queue_char(t, vx, vy, 255, -1, 0, 0);
+			}
+			/* Clear partial tile at the end of each line. */
+			for (; vx < t->wid; ++vx) {
+				Term_queue_char(t, vx, vy, t->attr_blank,
+					t->char_blank, 0, 0);
+			}
+		}
+		/* Clear row of partial tiles at the bottom. */
+		for (; vy < t->hgt; ++vy) {
+			for (vx = 0; vx < t->wid; ++vx) {
+				Term_queue_char(t, vx, vy, t->attr_blank,
+					t->char_blank, 0, 0);
 			}
 		}
 	}
