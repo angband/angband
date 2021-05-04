@@ -636,6 +636,44 @@ int count_feats(struct loc *grid,
 	return count;
 }
 
+/**
+ * Return the number of matching grids around a location.
+ * \param match If not NULL, *match is set to the location of the last match.
+ * \param c Is the chunk to use.
+ * \param grid Is the location whose neighbors will be tested.
+ * \param test Is the predicate to use when testing for a match.
+ * \param under If true, grid is tested as well.
+ */
+int count_neighbors(struct loc *match, struct chunk *c, struct loc grid,
+	bool (*test)(struct chunk *c, struct loc grid), bool under)
+{
+	int dlim = (under) ? 9 : 8;
+	int count = 0; /* Count how many matches */
+	int d;
+	struct loc grid1;
+
+	/* Check the grid's neighbors and, if under is true, grid */
+	for (d = 0; d < dlim; d++) {
+		/* Extract adjacent (legal) location */
+		grid1 = loc_sum(grid, ddgrid_ddd[d]);
+		if (!square_in_bounds(c, grid1)) continue;
+
+		/* Reject those that don't match */
+		if (!((*test)(c, grid1))) continue;
+
+		/* Count it */
+		++count;
+
+		/* Remember the location of the last match */
+		if (match) {
+			*match = grid1;
+		}
+	}
+
+	/* All done */
+	return count;
+}
+
 struct loc cave_find_decoy(struct chunk *c)
 {
 	return c->decoy;
