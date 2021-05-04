@@ -551,11 +551,9 @@ static void prt_map_aux(void)
 
 		/* Dump the map */
 		for (y = t->offset_y, vy = 0; y < ty; vy += tile_height, y++) {
-			if (vy + tile_height - 1 >= t->hgt) continue;
 			for (x = t->offset_x, vx = 0; x < tx; vx += tile_width, x++) {
 				/* Check bounds */
 				if (!square_in_bounds(cave, loc(x, y))) continue;
-				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
 				map_info(loc(x, y), &g);
