@@ -125,16 +125,16 @@ feat:open door:*:0x82:0x84
 feat:broken door:*:0x82:0x85
 
 # up staircase
-feat:up staircase:torch:0x80:0x96
-feat:up staircase:los:0x80:0x96
-feat:up staircase:lit:0x80:0x94
-feat:up staircase:dark:0x80:0x95
+feat:up staircase:torch:0x80:0x98
+feat:up staircase:los:0x80:0x98
+feat:up staircase:lit:0x80:0x96
+feat:up staircase:dark:0x80:0x97
 
 # down staircase
-feat:down staircase:torch:0x80:0x99
-feat:down staircase:los:0x80:0x99
-feat:down staircase:lit:0x80:0x97
-feat:down staircase:dark:0x80:0x98
+feat:down staircase:torch:0x80:0x9B
+feat:down staircase:los:0x80:0x9B
+feat:down staircase:lit:0x80:0x99
+feat:down staircase:dark:0x80:0x9A
 
 # General Store
 feat:General Store:*:0x82:0x87
@@ -206,10 +206,10 @@ feat:permanent wall:dark:0x80:0x94
 feat:lava:*:0xB6:0x9E
 
 # passable rubble
-feat:pile of passable rubble:torch:0x80:0x9C
-feat:pile of passable rubble:los:0x80:0x9C
-feat:pile of passable rubble:lit:0x80:0x9A
-feat:pile of passable rubble:dark:0x80:0x9B
+feat:pile of passable rubble:torch:0x80:0x9E
+feat:pile of passable rubble:los:0x80:0x9E
+feat:pile of passable rubble:lit:0x80:0x9C
+feat:pile of passable rubble:dark:0x80:0x9D
 
 
 
