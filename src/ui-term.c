@@ -971,6 +971,45 @@ static void Term_fresh_row_pict_dblh(int y, int x1, int x2, int *pr_drw)
 
 
 /**
+ * Helper function for Term_fresh_row_both() and Term_fresh_row_both_dblh():
+ * check padding of big tile for changes.
+ * \param t Is the terminal to check.
+ * \param y Is the row coordinate for the upper left corner of the big tile.
+ * \param x Is the column coordinate for the upper left corner of the big tile.
+ * \return Returns a nonzero value if there is a change in one or more grids
+ * whose desired contents are padding for the big tile.
+ */
+static int is_padding_changed(term *t, int y, int x)
+{
+	int xsl = MIN(x + tile_width, t->wid);
+	int ysl = MIN(y + tile_height, t->hgt);
+	int xs, ys;
+
+	for (xs = x + 1; xs < xsl; ++xs) {
+		if (t->scr->a[y][xs] == 255 &&
+				(t->scr->a[y][xs] != t->old->a[y][xs] ||
+				t->scr->c[y][xs] != t->old->c[y][xs] ||
+				t->scr->ta[y][xs] != t->old->ta[y][xs] ||
+				t->scr->tc[y][xs] != t->old->tc[y][xs])) {
+			return 1;
+		}
+	}
+	for (ys = y + 1; ys < ysl; ++ys) {
+		for (xs = x; xs < xsl; ++xs) {
+			if (t->scr->a[y][xs] == 255 &&
+					(t->scr->a[ys][xs] != t->old->a[ys][xs] ||
+					t->scr->c[ys][xs] != t->old->c[ys][xs] ||
+					t->scr->ta[ys][xs] != t->old->ta[ys][xs] ||
+					t->scr->tc[ys][xs] != t->old->tc[ys][xs])) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+/**
  * Flush a row of the current window (see "Term_fresh")
  *
  * Display text using "Term_text()" and "Term_wipe()",
@@ -1031,6 +1070,18 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 
 		/* Handle unchanged grids */
 		if ((na == oa) && (nc == oc) && (nta == ota) && (ntc == otc)) {
+			int draw;
+
+			/*
+			 * If (x,y) is the upper left corner of a big tile,
+			 * check for change in its padded area.
+			 */
+			if ((na & 0x80) && na != 255) {
+				draw = is_padding_changed(Term, y, x);
+			} else {
+				draw = 0;
+			}
+
 			/* Flush */
 			if (fn) {
 				/* Draw pending chars (normal or black) */
@@ -1041,6 +1092,16 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 
 				/* Forget */
 				fn = 0;
+			}
+
+			if (draw) {
+				/*
+				 * Since a change occurred in the padded area,
+				 * redraw the whole tile even though the upper
+				 * left is unchanged.
+				 */
+				(void)((*Term->pict_hook)(x, y, 1, &na, &nc,
+					&nta, &ntc));
 			}
 
 			/* Skip */
@@ -1240,7 +1301,17 @@ static void Term_fresh_row_both_dblh(int y, int x1, int x2, int *pr_drw)
 						ntc_nr != otc_nr)) {
 					draw = 1;
 				} else {
-					draw = 0;
+					/*
+					 * If (x,y) is the upper left corner of
+					 * a big tile, check for change in its
+					 * padded area.
+					 */
+					if ((na & 0x80) && na != 255) {
+						draw = is_padding_changed(
+							Term, y, x);
+					} else {
+						draw = 0;
+					}
 				}
 			}
 
