@@ -370,7 +370,8 @@ extern u32b window_flag[ANGBAND_TERM_MAX];
 extern errr Term_xtra(int n, int v);
 
 extern void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta, wchar_t tc);
-extern void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1, wchar_t c1);
+extern void Term_big_queue_char(term *t, int x, int y, int clipy,
+	int a, wchar_t c, int a1, wchar_t c1);
 extern void Term_queue_chars(int x, int y, int n, int a, const wchar_t *s);
 
 extern errr Term_fresh(void);
