@@ -590,7 +590,13 @@ void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta,
 }
 
 /**
- * Queue a large-sized tile
+ * Queue a large-sized tile.
+ * \param x Is the column for the upper left corner of the tile.
+ * \param y Is the row for the upper left corner of the tile.
+ * \param a Is the foreground attribute.
+ * \param c Is the foreground character.
+ * \param a1 Is the background attribute.
+ * \param c1 Is the background character.
  */
 void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1,
 						 wchar_t c1)
