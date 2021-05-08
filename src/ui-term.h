@@ -413,4 +413,6 @@ extern errr term_init(term *t, int w, int h, int k);
 
 extern int big_pad(int col, int row, byte a, wchar_t c);
 
+extern int Term_get_first_tile_row(term *t);
+
 #endif /* INCLUDED_Z_TERM_H */

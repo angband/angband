@@ -3049,10 +3049,12 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 			   pcell->voff_n / (1.0 * pcell->voff_d)),
 	    graf_width * pcell->hscl / (1.0 * pcell->hoff_d),
 	    graf_height * pcell->vscl / (1.0 * pcell->voff_d));
-	int dbl_height_bck = overdraw_row && (irow > self.firstTileRow + 1) &&
+	int dbl_height_bck = overdraw_row &&
+	    irow >= self.firstTileRow + pcell->hoff_d &&
 	    (pcell->v.ti.bckRow >= overdraw_row &&
 	     pcell->v.ti.bckRow <= overdraw_max);
-	int dbl_height_fgd = overdraw_row && (irow > self.firstTileRow + 1) &&
+	int dbl_height_fgd = overdraw_row &&
+	    irow >= self.firstTileRow + pcell->hoff_d &&
 	    (pcell->v.ti.fgdRow >= overdraw_row) &&
 	    (pcell->v.ti.fgdRow <= overdraw_max);
 	int aligned_row = 0, aligned_col = 0;
@@ -4785,13 +4787,9 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	alphablend = (ainfo & (kCGImageAlphaPremultipliedFirst |
 			       kCGImageAlphaPremultipliedLast)) ? 1 : 0;
 	if (overdraw_row) {
-	    if (Term == angband_term[0]) {
-		angbandContext.firstTileRow = ROW_MAP;
-		angbandContext.firstTileCol = COL_MAP;
-	    } else {
-		angbandContext.firstTileRow = 0;
-		angbandContext.firstTileCol = 0;
-	    }
+	    angbandContext.firstTileRow = Term_get_first_tile_row(Term);
+	    angbandContext.firstTileCol = (Term == angband_term[0]) ?
+		COL_MAP : 0;
 	} else {
 	    angbandContext.firstTileRow = 0;
 	    angbandContext.firstTileCol = 0;
@@ -4837,7 +4835,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 			   backgroundRow:bckRow
 			   tileWidth:tile_width
 			   tileHeight:tile_height];
-	    if (overdraw_row && y > angbandContext.firstTileRow + 1 &&
+	    if (overdraw_row &&
+		y > angbandContext.firstTileRow + tile_height - 1 &&
 		((bckRow >= overdraw_row && bckRow <= overdraw_max) ||
 		 (fgdRow >= overdraw_row && fgdRow <= overdraw_max))) {
 		[angbandContext.changes markChangedBlockAtColumn:i

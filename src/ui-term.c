@@ -3107,3 +3107,54 @@ int big_pad(int col, int row, byte a, wchar_t c)
 
 	return tile_width;
 }
+
+/**
+ * For the given terminal, return the first row where tiles may be rendered.
+ * \param t Is the terminal to be queried.
+ */
+int Term_get_first_tile_row(term *t)
+{
+	int result;
+
+	if (t == angband_term[0]) {
+		/*
+		 * In the main window, there's no tiles in the top bar, does
+		 * not account for the case where the main window is used as
+		 * the target for display_map() or displays tiles in the
+		 * knowledge menus.
+		 */
+		result = ROW_MAP;
+	} else {
+		/* In other windows, have to check the flags. */
+		int i = 1;
+
+		while (1) {
+			if (i >= ANGBAND_TERM_MAX) {
+				/*
+				 * Don't know the flags.  Err on the side of
+				 * drawing too few tiles.
+				 */
+				result = 1;
+				break;
+			}
+			if (t == angband_term[i]) {
+				if (window_flag[i] & PW_OVERHEAD) {
+					/*
+					 * All rows are valid targets for
+					 * tiles.
+					 */
+					result = 0;
+				} else {
+					/*
+					 * It's presumably a minimap view where
+					 * the first row has a non-tile border.
+					 */
+					result = 1;
+				}
+				break;
+			}
+			++i;
+		}
+	}
+	return result;
+}

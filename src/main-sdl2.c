@@ -995,7 +995,7 @@ static void render_tile_rect_scaled(const struct subwindow *subwindow,
 }
 
 static void render_tile_font_scaled(const struct subwindow *subwindow,
-		int col, int row, int a, int c, bool fill)
+		int col, int row, int a, int c, bool fill, int dhrclip)
 {
 	struct graphics *graphics = &subwindow->window->graphics;
 
@@ -1021,7 +1021,7 @@ static void render_tile_font_scaled(const struct subwindow *subwindow,
 	src.y = src_row * src.h;
 
 	if (graphics->overdraw_row != 0
-			&& row > ROW_MAP + 1
+			&& row > dhrclip
 			&& src_row >= graphics->overdraw_row
 			&& src_row <= graphics->overdraw_max)
 	{
@@ -3872,19 +3872,30 @@ static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 static errr term_pict_hook(int col, int row, int n,
 		const int *ap, const wchar_t *cp, const int *tap, const int *tcp)
 {
+	int dhrclip;
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
 	assert(subwindow->window->graphics.texture != NULL);
 
+	if (subwindow->window->graphics.overdraw_row) {
+		dhrclip = Term_get_first_tile_row(Term) + tile_height - 1;
+	} else {
+		/*
+		 * There's no double-height tiles so the value does not
+		 * matter.
+		 */
+		dhrclip = 0;
+	}
+
 	for (int i = 0; i < n; i++) {
-		render_tile_font_scaled(subwindow, col + i, row, tap[i], tcp[i], true);
+		render_tile_font_scaled(subwindow, col + i, row, tap[i], tcp[i], true, dhrclip);
 
 		if (tap[i] == ap[i] && tcp[i] == cp[i]) {
 			continue;
 		}
 
-		render_tile_font_scaled(subwindow, col + i, row, ap[i], cp[i], false);
+		render_tile_font_scaled(subwindow, col + i, row, ap[i], cp[i], false, dhrclip);
 	}
 
 	subwindow->window->dirty = true;
