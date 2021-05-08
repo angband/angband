@@ -602,6 +602,11 @@ int inven_carry_num(const struct object *obj)
 	int n_free_slot = z_info->pack_size - pack_slots_used(player);
 	int num_to_quiver, num_left, i;
 
+	/* Treasure can always be picked up. */
+	if (tval_is_money(obj) && lookup_kind(obj->tval, obj->sval)) {
+		return obj->number;
+	}
+
 	/* Absorb as many as we can in the quiver. */
 	quiver_absorb_num(obj, &n_free_slot, &num_to_quiver);
 
