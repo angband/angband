@@ -82,3 +82,21 @@ jobs:
           cd build
           cmake -DSUPPORT_SDL_FRONTEND=ON ..
           make
+
+  sdl2:
+    name: SDL2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc autoconf automake make libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --with-no-install --enable-sdl2
+          make
