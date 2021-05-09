@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
-        run: sudo apt-get install gcc-mingw-w64 automake autoconf make
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-mingw-w64 automake autoconf make
 
       - name: Clone Project
         uses: actions/checkout@v2
