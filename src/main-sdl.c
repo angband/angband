@@ -3038,11 +3038,26 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	SDL_Rect rc, src, ur;
 	int i, j;
 	bool haddbl = false;
+	int dhrclip;
 
 	/* First time a pict is requested we load the tileset in */
 	if (!win->tiles) {
 		sdl_BuildTileset(win);
 		if (!win->tiles) return (1);
+	}
+
+	/*
+	 * Set exclusive lower bound in y for rendering upper halves of
+	 * double-height tiles.
+	 */
+	if (overdraw) {
+		dhrclip = Term_get_first_tile_row(Term) + tile_height - 1;
+	} else {
+		/*
+		 * There's no double-height tiles so the value does not
+		 * matter.
+		 */
+		dhrclip = 0;
 	}
 
 	/* Make the destination rectangle */
@@ -3077,7 +3092,7 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 		src.y = j * src.h;
 		
 		/* if we are using overdraw, draw the top rectangle */
-		if (overdraw && row > ROW_MAP + 1 &&
+		if (overdraw && row > dhrclip &&
 				 j >= overdraw && j <= overdraw_max) {
 			src.y -= rc.h;
 			rc.y -= rc.h;
@@ -3099,7 +3114,7 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 		src.y = j * src.h;
 		
 		/* if we are using overdraw, draw the top rectangle */
-		if (overdraw && row > ROW_MAP + 1 &&
+		if (overdraw && row > dhrclip &&
 				j >= overdraw && j <= overdraw_max) {
 			src.y -= rc.h;
 			rc.y -= rc.h;

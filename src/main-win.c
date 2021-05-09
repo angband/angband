@@ -2343,7 +2343,8 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 								const int *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
-
+	int dhrclip = (overdraw) ?
+		Term_get_first_tile_row(Term) + tile_height - 1 : 0;
 	int i;
 	int mw, mh;
 	int x1, y1, w1, h1;
@@ -2418,7 +2419,7 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 			StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 		}
 
-		if (overdraw && trow >= overdraw && y > ROW_MAP + 1 &&
+		if (overdraw && trow >= overdraw && y > dhrclip &&
 				trow <= overdrawmax) {
 			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x3, y3-h1, w1, h1,
 					   blendfn);
@@ -2428,7 +2429,7 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 		if ((x1 != x3) || (y1 != y3))
 		{
 			/* Copy the picture from the bitmap to the window */
-			if (overdraw && row >= overdraw && y > ROW_MAP + 1 &&
+			if (overdraw && row >= overdraw && y > dhrclip &&
 					row <= overdrawmax) {
 				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1,
 						   h1*2, blendfn);
