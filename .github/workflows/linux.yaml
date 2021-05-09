@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
-        run: sudo apt-get install gcc automake autoconf make libx11-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc automake autoconf make libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -29,7 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
-        run: sudo apt-get install gcc make cmake libx11-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc make cmake libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -46,7 +50,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
-        run: sudo apt-get install gcc make cmake libncursesw5-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc make cmake libncursesw5-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -63,7 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
-        run: sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
