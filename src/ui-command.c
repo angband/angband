@@ -279,7 +279,7 @@ static void write_html_escape_char(ang_file *fp, char *mbbuf, wchar_t c)
 
 static void screenshot_term_query(int wid, int hgt, int x, int y, int *a, wchar_t *c)
 {
-	if (y < ROW_MAP || y == hgt - 1 || x < COL_MAP) {
+	if (y < ROW_MAP || y == hgt - ROW_BOTTOM_MAP || x < COL_MAP) {
 		/* Record everything outside the map. */
 		(void) Term_what(x, y, a, c);
 	} else {
@@ -290,7 +290,7 @@ static void screenshot_term_query(int wid, int hgt, int x, int y, int *a, wchar_
 		int srcx = (x - COL_MAP) * tile_width + COL_MAP;
 		int srcy = (y - ROW_MAP) * tile_height + ROW_MAP;
 
-		if (srcx < wid && srcy < hgt - 1) {
+		if (srcx < wid && srcy < hgt - ROW_BOTTOM_MAP) {
 			(void) Term_what(srcx, srcy, a, c);
 		} else {
 			*a = Term->attr_blank;

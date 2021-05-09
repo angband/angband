@@ -259,16 +259,18 @@ struct term
 #define SIDEBAR_NONE 2
 #define SIDEBAR_MAX  (SIDEBAR_NONE+1)
 
-extern int row_map[SIDEBAR_MAX];
+extern int row_top_map[SIDEBAR_MAX];
+extern int row_bottom_map[SIDEBAR_MAX];
 extern int col_map[SIDEBAR_MAX];
 
-#define ROW_MAP	(row_map[Term->sidebar_mode])
+#define ROW_MAP	(row_top_map[Term->sidebar_mode])
+#define ROW_BOTTOM_MAP (row_bottom_map[Term->sidebar_mode])
 #define COL_MAP	(col_map[Term->sidebar_mode])
 
 /**
  * Number of text rows in each map screen, regardless of tile size
  */
-#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
+#define SCREEN_ROWS	(Term->hgt - ROW_MAP - ROW_BOTTOM_MAP)
 
 /**
  * Number of grids in each screen (vertically)
