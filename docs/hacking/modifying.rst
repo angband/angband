@@ -380,13 +380,13 @@ files, some of which have already been mentioned:
 list-dun-profiles.h    list-mon-spells.h        list-projections.h
 list-effects.h         list-mon-temp-flags.h    list-randart-properties.h
 list-elements.h        list-mon-timed.h         list-rooms.h
-list-equip-slots.h     list-object-flags.h      list-square-flags.h
-list-history-types.h   list-object-modifiers.h  list-stats.h
-list-ignore-types.h    list-options.h           list-terrain-flags.h
-list-kind-flags.h      list-origins.h           list-trap-flags.h
-list-message.h         list-parser-errors.h     list-tvals.h
-list-mon-message.h     list-player-flags.h      list-ui-entry-renderers.h
-list-mon-race-flags.h  list-player-timed.h
+list-equip-slots.h     list-object-flags.h      list-room-flags.h
+list-history-types.h   list-object-modifiers.h  list-square-flags.h
+list-ignore-types.h    list-options.h           list-stats.h
+list-kind-flags.h      list-origins.h           list-terrain-flags.h
+list-message.h         list-parser-errors.h     list-trap-flags.h
+list-mon-message.h     list-player-flags.h      list-tvals.h
+list-mon-race-flags.h  list-player-timed.h      list-ui-entry-renderers.h
 =====================  =======================  ===========================
 
 Beyond this, you will have to have some knowledge of the C programming

@@ -36,6 +36,36 @@ enum
 };
 
 /**
+ * Flag for room types
+ */
+enum {
+	ROOMF_NONE,
+	#define ROOMF(a, b) ROOMF_##a,
+	#include "list-room-flags.h"
+	#undef ROOMF
+};
+
+#define ROOMF_SIZE FLAG_SIZE(ROOMF_MAX)
+
+#define roomf_has(f, flag) flag_has_dbg(f, ROOMF_SIZE, flag, #f, #flag)
+#define roomf_next(f, flag) flag_next(f, ROOMF_SIZE, flag)
+#define roomf_count(f) flag_count(f, ROOMF_SIZE)
+#define roomf_is_empty(f) flag_is_empty(f, ROOMF_SIZE)
+#define roomf_is_full(f) flag_is_full(f, ROOMF_SIZE)
+#define roomf_is_inter(f1, f2) flag_is_inter(f1, f2, ROOMF_SIZE)
+#define roomf_is_subset(f1, f2) flag_is_subset(f1, f2, ROOMF_SIZE)
+#define roomf_is_equal(f1, f2) flag_is_equal(f1, f2, ROOMF_SIZE)
+#define roomf_on(f, flag) flag_on_dbg(f, ROOMF_SIZE, flag, #f, #flag)
+#define roomf_off(f, flag) flag_off(f, ROOMF_SIZE, flag)
+#define roomf_wipe(f) flag_wipe(f, ROOMF_SIZE)
+#define roomf_setall(f) flag_setall(f, ROOMF_SIZE)
+#define roomf_negate(f) flag_negate(f, ROOMF_SIZE)
+#define roomf_copy(f1, f2) flag_copy(f1, f2, ROOMF_SIZE)
+#define roomf_union(f1, f2) flag_union(f1, f2, ROOMF_SIZE)
+#define roomf_inter(f1, f2) flag_iter(f1, f2, ROOMF_SIZE)
+#define roomf_diff(f1, f2) flag_diff(f1, f2, ROOMF_SIZE)
+
+/**
  * Monster base for a pit
  */
 struct pit_monster_profile {
@@ -213,6 +243,8 @@ struct vault {
 
     char *typ;			/*!< Vault type */
 
+    bitflag flags[ROOMF_SIZE];	/*!< Vault flags */
+
     byte rat;			/*!< Vault rating */
 
     byte hgt;			/*!< Vault height */
@@ -232,6 +264,8 @@ struct room_template {
 
     char *name;         /*!< Room name */
     char *text;         /*!< Grid by grid description of room layout */
+
+    bitflag flags[ROOMF_SIZE];	/*!< Room flags */
 
     byte typ;			/*!< Room type */
 
