@@ -279,7 +279,7 @@ static void write_html_escape_char(ang_file *fp, char *mbbuf, wchar_t c)
 
 static void screenshot_term_query(int wid, int hgt, int x, int y, int *a, wchar_t *c)
 {
-	if (y < ROW_MAP || y == hgt - ROW_BOTTOM_MAP || x < COL_MAP) {
+	if (y < ROW_MAP || y >= hgt - ROW_BOTTOM_MAP || x < COL_MAP) {
 		/* Record everything outside the map. */
 		(void) Term_what(x, y, a, c);
 	} else {
