@@ -1026,7 +1026,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 
     /* Connect all the rooms together */
     do_traditional_tunneling(c);
-    ensure_connectedness(c);
+    ensure_connectedness(c, true);
 
     /* Add some magma streamers */
     for (i = 0; i < dun->profile->str.mag; i++)
@@ -1599,9 +1599,11 @@ static void fix_colors(int colors[], int counts[], int from, int to, int size) {
  * \param counts is the array of current color counts
  * \param color is the color of the region we want to connect
  * \param new_color is the color of the region we want to connect to (if used)
+ * \param allow_vault_disconnect If true, vaults can be included in path
+ * planning which can leave regions disconnected.
  */
 static void join_region(struct chunk *c, int colors[], int counts[], int color,
-	int new_color)
+	int new_color, bool allow_vault_disconnect)
 {
     int i;
     int h = c->height;
@@ -1680,12 +1682,12 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 			if (!square_in_bounds(c, grid)) continue;
 
 			/* If the cell hasn't already been processed and we're
-			 * willing to include it (do allow a vault, unlike
-			 * above; though, that can allow the vault to disconnect
-			 * regions), add it to the queue */
+			 * willing to include it, add it to the queue */
 			n2 = grid_to_i(grid, w);
 			if (previous[n2] >= 0) continue;
 			if (square_isperm(c, grid)) continue;
+			if (square_isvault(c, grid) &&
+				!allow_vault_disconnect) continue;
 			q_push_int(queue, n2);
 			previous[n2] = n1;
 		}
@@ -1702,8 +1704,11 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
  * \param c is the current chunk
  * \param colors is the array of current point colors
  * \param counts is the array of current color counts
+ * \param allow_vault_disconnect If true, allows vaults to be included in
+ * path planning which can leave regions disconnected.
  */
-static void join_regions(struct chunk *c, int colors[], int counts[]) {
+static void join_regions(struct chunk *c, int colors[], int counts[],
+		bool allow_vault_disconnect) {
     int h = c->height;
     int w = c->width;
     int size = h * w;
@@ -1714,7 +1719,8 @@ static void join_regions(struct chunk *c, int colors[], int counts[]) {
      */
     while (num > 1) {
 		int color = first_color(counts, size);
-		join_region(c, colors, counts, color, -1);
+		join_region(c, colors, counts, color, -1,
+			allow_vault_disconnect);
 		num--;
     }
 }
@@ -1727,13 +1733,13 @@ static void join_regions(struct chunk *c, int colors[], int counts[]) {
  * This function colors each connected region of the dungeon, then uses that
  * information to join them into one conected region.
  */
-void ensure_connectedness(struct chunk *c) {
+void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect) {
     int size = c->height * c->width;
     int *colors = mem_zalloc(size * sizeof(int));
     int *counts = mem_zalloc(size * sizeof(int));
 
     build_colors(c, colors, counts, true);
-    join_regions(c, colors, counts);
+    join_regions(c, colors, counts, allow_vault_disconnect);
 
     mem_free(colors);
     mem_free(counts);
@@ -1792,7 +1798,7 @@ struct chunk *cavern_chunk(int depth, int h, int w)
 
 	build_colors(c, colors, counts, false);
 	clear_small_regions(c, colors, counts);
-	join_regions(c, colors, counts);
+	join_regions(c, colors, counts, true);
 
     mem_free(colors);
     mem_free(counts);
@@ -2455,7 +2461,7 @@ struct chunk *modified_chunk(int depth, int height, int width)
 
     /* Connect all the rooms together */
     do_traditional_tunneling(c);
-    ensure_connectedness(c);
+    ensure_connectedness(c, true);
 
     /* Turn the outer permanent walls back to granite  */
     draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
@@ -2657,7 +2663,7 @@ struct chunk *moria_chunk(int depth, int height, int width)
 
     /* Connect all the rooms together */
     do_traditional_tunneling(c);
-    ensure_connectedness(c);
+    ensure_connectedness(c, true);
 
     /* Turn the outer permanent walls back to granite  */
     draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
@@ -2820,15 +2826,18 @@ void connect_caverns(struct chunk *c, struct loc floor[])
 	}
 
 	/* Join left and upper, right and lower */
-	join_region(c, colors, counts, color_of_floor[0], color_of_floor[1]);
-	join_region(c, colors, counts, color_of_floor[2], color_of_floor[3]);
+	join_region(c, colors, counts, color_of_floor[0], color_of_floor[1],
+		false);
+	join_region(c, colors, counts, color_of_floor[2], color_of_floor[3],
+		false);
 
 	/* Join the two big caverns */
 	for (i = 1; i < 3; i++) {
 		int spot = grid_to_i(floor[i], c->width);
 		color_of_floor[i] = colors[spot];
 	}
-	join_region(c, colors, counts, color_of_floor[1], color_of_floor[2]);
+	join_region(c, colors, counts, color_of_floor[1], color_of_floor[2],
+		false);
 
 	mem_free(colors);
 	mem_free(counts);
@@ -2855,7 +2864,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	struct chunk *left_cavern;
 	struct chunk *right_cavern;
 	struct chunk *c;
-	int i, k, y, x, cavern_area;
+	int i, k, cavern_area;
 	struct loc grid;
 	struct loc floor[4];
 
@@ -2864,6 +2873,48 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 		wipe_mon_list(centre, p);
 		cave_free(centre);
 		return NULL;
+	}
+
+	/*
+	 * Carve out entrances to the vault.  Only use one if there aren't
+	 * explicitly marked entrances since those vaults typically have empty
+	 * space about them and the extra entrances aren't useful.
+	 */
+	k = 1 + ((dun->ent_n[0] > 0) ? randint1(3) : 0);
+	dun->wall_n = 0;
+	for (i = 0; i < k; ++i) {
+		if (dun->ent_n[0] == 0) {
+			/*
+			 * There's no explicitly marked entrances.  Look for a
+			 * square marked SQUARE_WALL_OUTER.
+			 */
+			if (!cave_find(centre, &grid, square_iswall_outer)) {
+				if (i == 0) {
+					wipe_mon_list(centre, p);
+					cave_free(centre);
+					return NULL;
+				}
+				break;
+			}
+		} else {
+			grid = choose_random_entrance(centre, 0, NULL, 0,
+				dun->wall, i);
+			if (loc_eq(grid, loc(0, 0))) {
+				if (i == 0) {
+					wipe_mon_list(centre, p);
+					cave_free(centre);
+					return NULL;
+				}
+				break;
+			}
+		}
+		/*
+		 * Store position in dun->wall and mark neighbors as invalid
+		 * entrances.
+		 */
+		pierce_outer_wall(centre, grid);
+		/* Convert it to a floor. */
+		square_set_feat(centre, grid, FEAT_FLOOR);
 	}
 
 	/* Measure the vault, rotate to make it wider than it is high */
@@ -2943,23 +2994,8 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	/* Connect up all the caverns */
 	connect_caverns(c, floor);
 
-	/* Temporary until connecting to vault entrances works better */
-	for (y = 0; y < centre_cavern_hgt; y++) {
-		square_set_feat(c, loc(left_cavern_wid, y + centre_cavern_ypos),
-						FEAT_FLOOR);
-		square_set_feat(c, loc(left_cavern_wid + centre_cavern_wid - 1,
-							   y + centre_cavern_ypos), FEAT_FLOOR);
-	}
-	for (x = 0; x < centre_cavern_wid; x++) {
-		square_set_feat(c, loc(x + left_cavern_wid, centre_cavern_ypos),
-						FEAT_FLOOR);
-		square_set_feat(c, loc(x + left_cavern_wid,
-							   centre_cavern_ypos + centre_cavern_hgt - 1),
-						FEAT_FLOOR);
-	}
-
-	/* Connect to the centre */
-	ensure_connectedness(c);
+	/* Connect to the centre entrances. */
+	ensure_connectedness(c, false);
 
 	/* Free all the chunks */
 	cave_free(left_cavern);
@@ -3122,7 +3158,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 				   FEAT_PERM, SQUARE_NONE, true);
 
 	/* Connect */
-	ensure_connectedness(c);
+	ensure_connectedness(c, true);
 
     /* Place 3 or 4 down stairs near some walls */
     alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
@@ -3324,7 +3360,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 				   FEAT_PERM, SQUARE_NONE, true);
 
 	/* Connect */
-	ensure_connectedness(c);
+	ensure_connectedness(c, true);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);

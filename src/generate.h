@@ -303,7 +303,7 @@ extern struct room_template *room_templates;
 struct chunk *town_gen(struct player *p, int min_height, int min_width);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width);
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
-void ensure_connectedness(struct chunk *c);
+void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect);
 struct chunk *cavern_gen(struct player *p, int min_height, int min_width);
 struct chunk *modified_gen(struct player *p, int min_height, int min_width);
 struct chunk *moria_gen(struct player *p, int min_height, int min_width);
