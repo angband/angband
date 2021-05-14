@@ -191,6 +191,9 @@ AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}", [Path to the game's var
 
 NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)
+if test "x$wsetgid" == "xyes"; then
+	AC_DEFINE(SETGID, 1, [Define if running as a central install on a multiuser system that has setresgid or setegid support.])
+fi
 
 dnl Frontends
 AC_ARG_ENABLE(curses,
