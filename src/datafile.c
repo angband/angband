@@ -25,6 +25,12 @@
 #include "init.h"
 #include "parser.h"
 
+/**
+ * Hold a prefix to distinguish files from different users when the archive
+ * directory is shared.
+ */
+static char *archive_user_pfx = NULL;
+
 const char *parser_error_str[PARSE_ERROR_MAX] = {
 	#define PARSE_ERROR(a, b) b,
 	#include "list-parser-errors.h"
@@ -491,6 +497,17 @@ void write_elements(ang_file *fff, const struct element_info *el_info)
 }
 
 /**
+ * Set the prefix to use for the current user when archiving files.
+ * \param pfx Is the new prefix to use.  May be NULL which is treated
+ * like an empty string.
+ */
+void set_archive_user_prefix(const char *pfx)
+{
+	string_free(archive_user_pfx);
+	archive_user_pfx = string_make(pfx);
+}
+
+/**
  * Archive a data file from ANGBAND_DIR_USER into ANGBAND_DIR_ARCHIVE
  */
 void file_archive(char *fname, char *append)
@@ -502,12 +519,16 @@ void file_archive(char *fname, char *append)
 	/* Add a suffix to the filename, custom if requested */
 	if (append) {
 		path_build(arch, sizeof(arch), ANGBAND_DIR_ARCHIVE,
-				   format("%s_%s.txt", fname, append));
+			format("%s%s_%s.txt",
+			(archive_user_pfx) ? archive_user_pfx : "", fname,
+			append));
 	} else {
 		/* Check the indices of existing archived files, get the next one */
 		for (i = 1; i < max_arch; i++) {
 			path_build(arch, sizeof(arch), ANGBAND_DIR_ARCHIVE,
-					   format("%s_%d.txt", fname, i));
+				format("%s%s_%d.txt",
+				(archive_user_pfx) ? archive_user_pfx : "",
+				fname, i));
 			if (!file_exists(arch)) break;
 			my_strcpy(arch, "", sizeof(arch));
 		} 
@@ -515,7 +536,9 @@ void file_archive(char *fname, char *append)
 
 	/* Move the file */
 	path_build(old, sizeof(old), ANGBAND_DIR_USER, format("%s.txt", fname));
+	safe_setuid_grab();
 	file_move(old, arch);
+	safe_setuid_drop();
 }
 
 /**
@@ -528,11 +551,14 @@ void activate_randart_file(void)
 
 	/* Get the randart filename and path */
 	path_build(old, sizeof(old), ANGBAND_DIR_ARCHIVE,
-			   format("randart_%08x.txt", seed_randart));
+		format("%srandart_%08x.txt",
+		(archive_user_pfx) ? archive_user_pfx : "", seed_randart));
 
 	/* Move it into place */
 	path_build(new, sizeof(new), ANGBAND_DIR_USER, "randart.txt");
+	safe_setuid_grab();
 	file_move(old, new);
+	safe_setuid_drop();
 }
 
 /**

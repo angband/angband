@@ -711,6 +711,7 @@ void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix)
 	strnfmt(path, pathlen, "%d.", player_uid);
 	off = strlen(path);
 	pathlen -= off;
+	set_archive_user_prefix(path);
 #endif
 
 	if (make_safe) {
