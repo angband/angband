@@ -64,4 +64,16 @@ gen-covs: tests/ran-already $(GCOVS)
 %.gcov: %
 	(gcov -o $(dir $^) -p $^ >/dev/null)
 
+post-install:
+	# For a shared installation, set appropriate owner for executable
+	# and mark it as setgid.
+	if [ "x$(SETEGID)" != "x" ]; then \
+		${INSTALL_STATUS}; \
+		if chown root:${SETEGID} ${DESTDIR}${bindir}/${PROG} && chmod g+s ${DESTDIR}${bindir}/${PROG} ; then \
+			${INSTALL_OK}; \
+		else \
+			${INSTALL_FAILED}; \
+		fi \
+	fi
+
 .PHONY : tests coverage clean-coverage tests/ran-already
