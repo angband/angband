@@ -3,6 +3,7 @@ SETEGID = @SETEGID@
 LIBDIR = ${libdir}
 libdatadir = @libdatadir@
 vardatadir = @vardatadir@
+varshareddatadir = @varshareddatadir@
 docdatadir = @docdatadir@
 configdir = @configdir@
 pdfdir ?= @pdfdir@

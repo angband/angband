@@ -178,11 +178,17 @@ case "/$varpath" in
 	*/) MY_EXPAND_DIR(vardatadir, "$varpath")  ;;
 	*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
 esac
+if test "x$with_private_dirs" != "x"; then
+	varshareddatadir="${vardatadir}user/"
+else
+	varshareddatadir="${vardatadir}"
+fi
 
 
 AC_SUBST([configdir])
 AC_SUBST([libdatadir])
 AC_SUBST([vardatadir])
+AC_SUBST([varshareddatadir])
 AC_SUBST([docdatadir])
 
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}", [Path to the game's configuration data])
