@@ -23,3 +23,7 @@ dist:
 	tar --exclude .gitignore --exclude *.dll --exclude .github \
 		--exclude .travis.yml -czvf $(OUT) $(TAG)
 	rm -rf $(TAG)
+
+# Hack to clean up test results in tests.
+pre-distclean:
+	@find tests -name run.out -exec rm {} \;
