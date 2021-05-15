@@ -163,8 +163,8 @@ static bool adjust_panel_help(int y, int x, bool help)
 
 	int j;
 
-	int screen_hgt_main = help ? (Term->hgt - ROW_MAP - 3) 
-			 : (Term->hgt - ROW_MAP - 1);
+	int screen_hgt_main = help ? (Term->hgt - ROW_MAP - ROW_BOTTOM_MAP - 2)
+			 : (Term->hgt - ROW_MAP - ROW_BOTTOM_MAP);
 
 	/* Scan windows */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)

@@ -550,6 +550,22 @@ static void prt_race(int row, int col) {
 		prt_field(player->race->name, row, col);
 	}
 }
+
+static int prt_race_class_short(int row, int col)
+{
+	char buf[512] = "";
+
+	if (player_is_shapechanged(player)) return 0;
+
+	strnfmt(buf, sizeof(buf), "%s %s",
+		player->race->name,
+		player->class->title[(player->lev - 1) / 5]);
+
+	c_put_str(COLOUR_L_GREEN, buf, row, col);
+
+	return strlen(buf)+1;
+}
+
 static void prt_class(int row, int col) {
 	if (player_is_shapechanged(player)) {
 		prt_field("", row, col);
@@ -759,6 +775,8 @@ static void update_topbar(game_event_type type, game_event_data *data,
 	col += prt_ac_short(row, col);
 
 	col += prt_gold_short(row, col);
+
+	col += prt_race_class_short(row, col);
 
 	++row;
 	col = 0;
@@ -1272,13 +1290,8 @@ static status_f *status_handlers[] =
   prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap, prt_terrain };
 
 
-/**
- * Print the status line.
- */
-static void update_statusline(game_event_type type, game_event_data *data, void *user)
+static void update_statusline_aux(int row, int col)
 {
-	int row = Term->hgt - 1;
-	int col = COL_MAP;
 	size_t i;
 
 	/* Clear the remainder of the line */
@@ -1287,6 +1300,24 @@ static void update_statusline(game_event_type type, game_event_data *data, void 
 	/* Display those which need redrawing */
 	for (i = 0; i < N_ELEMENTS(status_handlers); i++)
 		col += status_handlers[i](row, col);
+}
+
+/**
+ * Print the status line.
+ */
+static void update_statusline(game_event_type type, game_event_data *data, void *user)
+{
+	int row = Term->hgt - 1;
+
+	if (Term->sidebar_mode == SIDEBAR_NONE) {
+		return;
+	}
+
+	if (Term->sidebar_mode == SIDEBAR_TOP) {
+		row = 3;
+	}
+
+	update_statusline_aux(row, COL_MAP);
 }
 
 
@@ -1991,10 +2022,15 @@ static void update_topbar_subwindow(game_event_type type,
 	term *old = Term;
 	term *inv_term = user;
 
+	/* Check sanity */
+	if (!(player && player->race && player->class && cave)) return;
+
 	/* Activate */
 	Term_activate(inv_term);
 
 	update_topbar(type, data, user, 0);
+
+	update_statusline_aux(2, 0);
 
 	Term_fresh();
 	
@@ -2182,10 +2218,18 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_PLAYER_3:
 		{
+			/* Topbar */
 			set_register_or_deregister(player_events, 
 						   N_ELEMENTS(player_events),						 
 						   update_topbar_subwindow,
 						   angband_term[win_idx]);
+
+			/* Also update status */
+			set_register_or_deregister(statusline_events,
+						   N_ELEMENTS(statusline_events),
+						   update_topbar_subwindow,
+						   angband_term[win_idx]);
+
 			break;
 		}
 

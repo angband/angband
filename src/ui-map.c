@@ -561,7 +561,7 @@ static void prt_map_aux(void)
 		 * The overhead view can use the last row of the terminal.
 		 * Others can not.
 		 */
-		clipy = t->hgt - ((window_flag[j] & PW_OVERHEAD) ? 0 : 1);
+		clipy = t->hgt - ((window_flag[j] & PW_OVERHEAD) ? 0 : ROW_BOTTOM_MAP);
 
 		/* Dump the map */
 		for (y = t->offset_y, vy = 0; y < ty; vy += tile_height, y++) {
