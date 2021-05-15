@@ -2,8 +2,9 @@ MKPATH=mk/
 include $(MKPATH)buildsys.mk
 
 SUBDIRS = src lib
-CLEAN = config.status config.log *.dll *.exe
-DISTCLEAN = docs/.deps mk/buildsys.mk mk/extra.mk mk/sinclude.mk
+CLEAN = *.dll *.exe
+DISTCLEAN = config.status config.log docs/.deps \
+	mk/buildsys.mk mk/extra.mk mk/sinclude.mk
 
 .PHONY: tests dist
 tests:
