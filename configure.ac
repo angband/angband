@@ -178,11 +178,17 @@ case "/$varpath" in
 	*/) MY_EXPAND_DIR(vardatadir, "$varpath")  ;;
 	*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
 esac
+if test "x$with_private_dirs" != "x"; then
+	varshareddatadir="${vardatadir}user/"
+else
+	varshareddatadir="${vardatadir}"
+fi
 
 
 AC_SUBST([configdir])
 AC_SUBST([libdatadir])
 AC_SUBST([vardatadir])
+AC_SUBST([varshareddatadir])
 AC_SUBST([docdatadir])
 
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}", [Path to the game's configuration data])
@@ -191,6 +197,9 @@ AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}", [Path to the game's var
 
 NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)
+if test "x$wsetgid" == "xyes"; then
+	AC_DEFINE(SETGID, 1, [Define if running as a central install on a multiuser system that has setresgid or setegid support.])
+fi
 
 dnl Frontends
 AC_ARG_ENABLE(curses,

@@ -1,13 +1,13 @@
 MKPATH=../../../mk/
 include $(MKPATH)buildsys.mk
 
-PACKAGE = user/save
+PACKAGE = save
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
 		if [ "x$(DRY)" = "x" ]; then \
-			${MKDIR_P} ${DESTDIR}${vardatadir}${PACKAGE}; \
-			chown root:${SETEGID} ${DESTDIR}${vardatadir}${PACKAGE}; \
-			chmod 070 ${DESTDIR}${vardatadir}${PACKAGE}; \
+			${MKDIR_P} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+			chown root:${SETEGID} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+			chmod 171 ${DESTDIR}${varshareddatadir}${PACKAGE}; \
 		fi; \
 	fi

@@ -73,13 +73,6 @@
 #endif
 
 /**
- * Define SETGID if we are running as a central install on a multiuser
- * system that has setgid support.
- */
-/* #define SETGID */
-
-
-/**
  * Every system seems to use its own symbol as a path separator.
  *
  * Default to the standard Unix slash, but attempt to change this

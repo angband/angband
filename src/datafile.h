@@ -56,6 +56,7 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 				 int flag_size, const char *names[]);
 void write_mods(ang_file *fff, const int values[]);
 void write_elements(ang_file *fff, const struct element_info *el_info);
+void set_archive_user_prefix(const char *pfx);
 void file_archive(char *fname, char *append);
 void activate_randart_file(void);
 void deactivate_randart_file(void);
