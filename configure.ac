@@ -252,7 +252,7 @@ if test "$enable_curses" = "yes"; then
 	if test "$with_curses" = "yes"; then
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-		CFLAGS="${CFLAGS} ${NCURSES_CFLAGS}"
+		CPPFLAGS="${CPPFLAGS} ${NCURSES_CFLAGS}"
 		LIBS="${LIBS} ${NCURSES_LIBS}"
 		MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
 	else
@@ -278,7 +278,7 @@ if test "$enable_x11" = "yes"; then
 		with_x11=no
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
-		CFLAGS="$CFLAGS $X_CFLAGS"
+		CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 		LIBS="${LIBS} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS}"
 		MAINFILES="${MAINFILES} \$(X11MAINFILES)"
 		with_x11=yes
@@ -432,7 +432,7 @@ if test "$enable_stats" = "yes"; then
 	fi
 	if test "x$SQLITE3_OK" = xyes; then
 		AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
-		CFLAGS="${CFLAGS} ${SQLITE3_CFLAGS}"
+		CPPFLAGS="${CPPFLAGS} ${SQLITE3_CFLAGS}"
 		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
 		LIBS="${LIBS} ${SQLITE3_LIBS}"
 		MAINFILES="${MAINFILES} \$(STATSMAINFILES)"
