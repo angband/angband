@@ -111,4 +111,5 @@ void textui_cleanup(void)
 
 	keymap_free();
 	textui_prefs_free();
+	textui_knowledge_cleanup();
 }

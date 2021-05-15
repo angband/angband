@@ -4891,6 +4891,7 @@ static void hook_quit(const char *str)
 #ifdef HAS_CLEANUP
 	textui_cleanup();
 	cleanup_angband();
+	close_sound();
 #endif /* HAS_CLEANUP */
 
 	exit(0);

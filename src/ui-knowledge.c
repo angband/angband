@@ -3244,13 +3244,6 @@ static menu_action knowledge_actions[] =
 
 static struct menu knowledge_menu;
 
-/**
- * Keep macro counts happy.
- */
-static void cleanup_cmds(void) {
-	mem_free(obj_group_order);
-}
-
 void textui_knowledge_init(void)
 {
 	/* Initialize the menus */
@@ -3271,7 +3264,6 @@ void textui_knowledge_init(void)
 		int gid = -1;
 
 		obj_group_order = mem_zalloc((TV_MAX + 1) * sizeof(int));
-		atexit(cleanup_cmds);
 
 		/* Allow for missing values */
 		for (i = 0; i < TV_MAX; i++)
@@ -3283,6 +3275,13 @@ void textui_knowledge_init(void)
 			obj_group_order[object_text_order[i].tval] = gid;
 		}
 	}
+}
+
+
+void textui_knowledge_cleanup(void)
+{
+	mem_free(obj_group_order);
+	obj_group_order = NULL;
 }
 
 
