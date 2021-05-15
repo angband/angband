@@ -564,6 +564,9 @@ int main(int argc, char *argv[])
 	/* Free resources */
 	textui_cleanup();
 	cleanup_angband();
+#ifdef SOUND
+	close_sound();
+#endif
 
 	/* Quit */
 	quit(NULL);

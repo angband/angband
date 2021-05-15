@@ -215,8 +215,7 @@ static bool close_audio_sdl(void)
 	 */
 	Mix_CloseAudio();
 
-	/* XXX This may conflict with the SDL port */
-	SDL_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
 	return true;
 }

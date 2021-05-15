@@ -62,6 +62,7 @@ struct sound_hooks
 };
 
 errr init_sound(const char *soundstr, int argc, char **argv);
+void close_sound(void);
 errr register_sound_pref_parser(struct parser *p);
 void print_sound_help(void);
 

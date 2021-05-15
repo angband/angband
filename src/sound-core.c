@@ -314,42 +314,17 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	}
 }
 
-/*
- * Shut down the sound system and free resources.
- */
-static void close_audio(void)
-{
-	int i;
-
-	if (0 == next_sound_id)
-		return;	/* Never opened */
-
-	/*
-	 * Ask the platforms sound module to free resources for each
-	 * sound
-	 */
-	if (hooks.unload_sound_hook)
-		for (i = 0; i < next_sound_id; i++) {
-			hooks.unload_sound_hook(&sounds[i]);
-			string_free(sounds[i].name);
-		}
-
-	mem_free(sounds);
-
-	/* Close the platform's sound module */
-	if (hooks.close_audio_hook)
-		hooks.close_audio_hook();
-}
-
 
 /**
  * Init the sound "module".
  */
 errr init_sound(const char *soundstr, int argc, char **argv)
 {
-	static bool firstcall = true;
 	int i = 0;
 	bool done = false;
+
+	/* Release resources previously allocated if called multiple times. */
+	close_sound();
 
 	/* Try the modules in the order specified by sound_modules[] */
 	while (sound_modules[i].init && !done) {
@@ -372,13 +347,39 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 
 	/* Enable sound */
 	event_add_handler(EVENT_SOUND, play_sound, NULL);
-	if (firstcall) {
-		atexit(close_audio);
-		firstcall = false;
-	}
 
 	/* Success */
 	return (0);
+}
+
+/**
+ * Shut down the sound "module".
+ */
+void close_sound(void)
+{
+	if (0 == next_sound_id) return;	/* Never opened */
+
+	/*
+	 * Ask the platforms sound module to free resources for each
+	 * sound
+	 */
+	if (hooks.unload_sound_hook) {
+		int i;
+
+		for (i = 0; i < next_sound_id; i++) {
+			hooks.unload_sound_hook(&sounds[i]);
+			string_free(sounds[i].name);
+		}
+	}
+
+	mem_free(sounds);
+	sounds = NULL;
+	next_sound_id = 0;
+
+	/* Close the platform's sound module */
+	if (hooks.close_audio_hook) {
+		hooks.close_audio_hook();
+	}
 }
 
 /**
