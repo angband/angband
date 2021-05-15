@@ -17,3 +17,9 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Explicitly handle this one to take care of the empty directory for the
+# built documents.
+clean: Makefile
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) clean
+	@if test -f $(BUILDDIR) -o -d $(BUILDDIR); then rm -fr $(BUILDDIR); fi
