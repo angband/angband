@@ -44,6 +44,9 @@ tests: $(PROGNAME).o
 test-clean:
 	$(MAKE) -C tests clean
 
+# Hack to descend into tests and clean since it isn't included in SUBDIRS.
+pre-clean: test-clean
+
 splint:
 	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c
 
