@@ -203,7 +203,7 @@ dnl Now check if the installed SDL2 is sufficiently new. (Also sanity
 dnl checks the results of sdl2-config to some extent
 dnl
       rm -f conf.sdl2test
-      AC_TRY_RUN([
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -260,7 +260,7 @@ int main (int argc, char *argv[])
     }
 }
 
-],, no_sdl2=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+]])],[],[no_sdl2=yes],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        CFLAGS="$ac_save_CFLAGS"
        LIBS="$ac_save_LIBS"
      fi
@@ -282,11 +282,10 @@ int main (int argc, char *argv[])
           echo "*** Could not run SDL2 test program, checking why..."
           CFLAGS="$CFLAGS $SDL2_CFLAGS"
           LIBS="$LIBS $SDL2_LIBS"
-          AC_TRY_LINK([
+          AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include "SDL.h"
-],      [ return 0; ],
-        [ echo "*** The test program compiled, but did not run. This usually means"
+]], [[ return 0; ]])],[ echo "*** The test program compiled, but did not run. This usually means"
           echo "*** that the run-time linker is not finding SDL2 or finding the wrong"
           echo "*** version of SDL2. If it is not finding SDL2, you'll need to set your"
           echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
@@ -294,8 +293,7 @@ int main (int argc, char *argv[])
           echo "*** is required on your system"
 	  echo "***"
           echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
-        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means SDL2 was incorrectly installed"
           echo "*** or that you have moved SDL2 since it was installed. In the latter case, you"
           echo "*** may want to edit the sdl2-config script: $SDL2_CONFIG" ])
@@ -372,7 +370,7 @@ dnl Now check if the installed SDL is sufficiently new. (Also sanity
 dnl checks the results of sdl-config to some extent
 dnl
       rm -f conf.sdltest
-      AC_TRY_RUN([
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -429,7 +427,7 @@ int main (int argc, char *argv[])
     }
 }
 
-],, no_sdl=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+]])],[],[no_sdl=yes],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
        CFLAGS="$ac_save_CFLAGS"
        LIBS="$ac_save_LIBS"
      fi
@@ -451,11 +449,10 @@ int main (int argc, char *argv[])
           echo "*** Could not run SDL test program, checking why..."
           CFLAGS="$CFLAGS $SDL_CFLAGS"
           LIBS="$LIBS $SDL_LIBS"
-          AC_TRY_LINK([
+          AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include "SDL.h"
-],      [ return 0; ],
-        [ echo "*** The test program compiled, but did not run. This usually means"
+]], [[ return 0; ]])],[ echo "*** The test program compiled, but did not run. This usually means"
           echo "*** that the run-time linker is not finding SDL or finding the wrong"
           echo "*** version of SDL. If it is not finding SDL, you'll need to set your"
           echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
@@ -463,8 +460,7 @@ int main (int argc, char *argv[])
           echo "*** is required on your system"
 	  echo "***"
           echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
-        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means SDL was incorrectly installed"
           echo "*** or that you have moved SDL since it was installed. In the latter case, you"
           echo "*** may want to edit the sdl-config script: $SDL_CONFIG" ])
@@ -533,7 +529,7 @@ dnl Now check if the installed ncurses is installed OK. (Also sanity
 dnl checks the results of ncursesw5-config to some extent)
 dnl
     rm -f conf.ncursestest
-    AC_TRY_RUN([
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include "ncurses.h"
 
@@ -544,7 +540,7 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-],, no_ncurses=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+]])],[],[no_ncurses=yes],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
   	CFLAGS="$ac_save_CFLAGS"
   	LIBS="$ac_save_LIBS"
   fi
@@ -566,19 +562,17 @@ int main (int argc, char *argv[])
           echo "*** Could not run ncurses test program, checking why..."
           CFLAGS="$CFLAGS $NCURSES_CFLAGS"
           LIBS="$LIBS $NCURSES_LIBS"
-          AC_TRY_LINK([
+          AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include "ncurses.h"
-],      [ return 0; ],
-        [ echo "*** The test program compiled, but did not run. This usually means"
+]], [[ return 0; ]])],[ echo "*** The test program compiled, but did not run. This usually means"
           echo "*** that the run-time linker is not finding ncursesw. If it is not finding"
           echo "*** ncursesw, you'll need to set your LD_LIBRARY_PATH environment variable,"
           echo "*** or edit /etc/ld.so.conf to point to the installed location.  Also, make"
           echo "*** sure you have run ldconfig if that is required on your system"
           echo "***"
           echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
-        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means ncursesw was incorrectly"
           echo "*** installed or that you have moved ncursesw since it was installed. In the"
           echo "*** latter case, you may want to edit the ncursesw5-config script:"
