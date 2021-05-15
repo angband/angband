@@ -3,6 +3,7 @@ include $(MKPATH)buildsys.mk
 
 SUBDIRS = src lib
 CLEAN = config.status config.log *.dll *.exe
+DISTCLEAN = docs/.deps mk/buildsys.mk mk/extra.mk mk/sinclude.mk
 
 .PHONY: tests dist
 tests:

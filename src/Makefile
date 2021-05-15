@@ -23,7 +23,7 @@ GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
 CLEAN = angband.o $(OBJECTS) win/angband.res
-DISTCLEAN = autoconf.h
+DISTCLEAN = autoconf.h tests/.deps
 
 export CFLAGS CPPFLAGS LDFLAGS LIBS
 
