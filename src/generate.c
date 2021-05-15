@@ -1045,6 +1045,9 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 		dun->cent = mem_zalloc(z_info->level_room_max * sizeof(struct loc));
+		dun->ent_n = mem_zalloc(z_info->level_room_max * sizeof(*dun->ent_n));
+		dun->ent = mem_zalloc(z_info->level_room_max * sizeof(*dun->ent));
+		dun->ent2room = NULL;
 		dun->door = mem_zalloc(z_info->level_door_max * sizeof(struct loc));
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
@@ -1062,6 +1065,17 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			error = "Failed to find builder";
 			mem_free(dun->join);
 			mem_free(dun->cent);
+			mem_free(dun->ent_n);
+			for (i = 0; i < z_info->level_room_max; ++i) {
+				mem_free(dun->ent[i]);
+			}
+			mem_free(dun->ent);
+			if (dun->ent2room) {
+				for (i = 0; dun->ent2room[i]; ++i) {
+					mem_free(dun->ent2room[i]);
+				}
+				mem_free(dun->ent2room);
+			}
 			mem_free(dun->door);
 			mem_free(dun->wall);
 			mem_free(dun->tunn);
@@ -1126,6 +1140,17 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 		mem_free(dun->join);
 		mem_free(dun->cent);
+		mem_free(dun->ent_n);
+		for (i = 0; i < z_info->level_room_max; ++i) {
+			mem_free(dun->ent[i]);
+		}
+		mem_free(dun->ent);
+		if (dun->ent2room) {
+			for (i = 0; dun->ent2room[i]; ++i) {
+				mem_free(dun->ent2room[i]);
+			}
+			mem_free(dun->ent2room);
+		}
 		mem_free(dun->door);
 		mem_free(dun->wall);
 		mem_free(dun->tunn);

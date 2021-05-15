@@ -128,6 +128,15 @@ struct dun_data {
     int cent_n;
     struct loc *cent;
 
+    /*!< Array (cent_n elements) for counts of marked entrance points */
+    int *ent_n;
+
+    /*!< Array of arrays (cent_n by ent_n[i]) for locations of marked entrance points */
+    struct loc **ent;
+
+    /*!< Lookup for room number of a room entrance by (y,x) for the entrance */
+    int **ent2room;
+
     /*!< Array of possible door locations */
     int door_n;
     struct loc *door;
