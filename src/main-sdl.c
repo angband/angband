@@ -1925,6 +1925,7 @@ static errr load_prefs(void)
 		} else if (strstr(buf, "Keys")) {
 			win->keys = atoi(s);
 		} else if (strstr(buf, "Font")) {
+			string_free(win->req_font);
 			win->req_font = string_make(s);
 		}
 	}
