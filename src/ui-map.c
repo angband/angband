@@ -480,7 +480,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 			 * the terminal.  Others leave it be.
 			 */
 			Term_big_queue_char(t, kx, ky, t->hgt -
-				((window_flag[j] & PW_OVERHEAD) ? 0 : 1),
+				((window_flag[j] & PW_OVERHEAD) ? 0 : ROW_BOTTOM_MAP),
 				a, c, 0, 0);
 	}
 }
