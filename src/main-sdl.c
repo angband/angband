@@ -2772,9 +2772,10 @@ static errr Term_xtra_sdl(int n, int v)
 	return (1);
 }
 
-
-
-static errr Term_wipe_sdl(int col, int row, int n)
+/**
+ * Erase a nc x nr block of characters whose upper left corner is at (col, row).
+ */
+static errr Term_wipe_sdl_helper(int col, int row, int nc, int nr)
 {
 	term_window *win = (term_window*)(Term->data);
 
@@ -2783,8 +2784,8 @@ static errr Term_wipe_sdl(int col, int row, int n)
 	/* Build the area to black out */
 	rc.x = col * win->tile_wid;
 	rc.y = row * win->tile_hgt;
-	rc.w = win->tile_wid * n;
-	rc.h = win->tile_hgt;
+	rc.w = win->tile_wid * nc;
+	rc.h = win->tile_hgt * nr;
 
 	/* Translate it */
 	rc.x += win->border;
@@ -2797,6 +2798,11 @@ static errr Term_wipe_sdl(int col, int row, int n)
 	set_update_rect(win, &rc);
 
 	return (0);
+}
+
+static errr Term_wipe_sdl(int col, int row, int n)
+{
+	return Term_wipe_sdl_helper(col, row, n, 1);
 }
 
 /**
@@ -2821,7 +2827,7 @@ static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 	if (!win->visible) return (0);
 
 	/* Clear the way */
-	Term_wipe_sdl(col, row, n);
+	Term_wipe_sdl_helper(col, row, n, 1);
 
 	/* Take a copy of the incoming string, but truncate it at n chars */
 	wcsncpy(src, s, n);
@@ -3082,8 +3088,7 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 	ur.w *= n;
 
 	/* Clear the way */
-	for (j = 0; j < tile_height; j++)
-		Term_wipe_sdl(col, row + j, n * tile_width);
+	Term_wipe_sdl_helper(col, row, n * tile_width, tile_height);
 
 	/* Blit 'em! (it) */
 	for (i = 0; i < n; i++) {
