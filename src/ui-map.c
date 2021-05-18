@@ -337,6 +337,26 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 
 /**
+ * Get dimensions of a small-scale map (i.e. display_map()'s result).
+ * \param term Is the terminal displaying the map.
+ * \param chunk Is the chunk to display.
+ * \param mw *mw is set to the width of the small-scale map.
+ * \param mh *mh is set to the height of the small-scale map.
+ */
+static void get_minimap_dimensions(term *t, const struct chunk *c,
+	int *mw, int *mh)
+{
+	int map_height = t->hgt - 2;
+	int map_width = t->wid - 2;
+	int cave_height = c->height;
+	int cave_width = c->width;
+
+	*mh = MIN(map_height, cave_height);
+	*mw = MIN(map_width, cave_width);
+}
+
+
+/**
  * Move the cursor to a given map location.
  */
 static void move_cursor_relative_map(int y, int x)
@@ -357,22 +377,38 @@ static void move_cursor_relative_map(int y, int x)
 		/* No relevant flags */
 		if (!(window_flag[j] & (PW_MAPS))) continue;
 
-		/* Location relative to panel */
-		ky = y - t->offset_y;
+		if (window_flag[j] & PW_MAP) {
+			/* Be consistent with display_map(). */
+			int map_width, map_height;
 
-		if (tile_height > 1)
-			ky = tile_height * ky;
+			get_minimap_dimensions(t, cave,
+				&map_width, &map_height);
+
+			ky = (y * map_height) / cave->height;
+			if (tile_height > 1) {
+				ky = ky - (ky % tile_height) + 1;
+			} else {
+				++ky;
+			}
+			kx = (x * map_width) / cave->width;
+			if (tile_width > 1) {
+				kx = kx - (kx % tile_width) + 1;
+			} else {
+				++kx;
+			}
+		} else {
+			/* Location relative to panel */
+			ky = y - t->offset_y;
+			if (tile_height > 1)
+				ky = tile_height * ky;
+
+			kx = x - t->offset_x;
+			if (tile_width > 1)
+				kx = tile_width * kx;
+		}
 
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
-
-		/* Location relative to panel */
-		kx = x - t->offset_x;
-
-		if (tile_width > 1)
-			kx = tile_width * kx;
-
-		/* Verify location */
 		if ((kx < 0) || (kx >= t->wid)) continue;
 
 		/* Go there */
@@ -449,26 +485,44 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		/* No relevant flags */
 		if (!(window_flag[j] & (PW_MAPS))) continue;
 
-		/* Location relative to panel */
-		ky = y - t->offset_y;
+		if (window_flag[j] & PW_MAP) {
+			/* Be consistent with display_map(). */
+			int map_width, map_height;
 
-		if (tile_height > 1) {
-			ky = tile_height * ky;
-			if (ky + 1 >= t->hgt) continue;
+			get_minimap_dimensions(t, cave,
+				&map_width, &map_height);
+
+			kx = (x * map_width) / cave->width;
+			ky = (y * map_height) / cave->height;
+			if (tile_width > 1) {
+				kx = kx - (kx % tile_width) + 1;
+			} else {
+				++kx;
+			}
+			if (tile_height > 1) {
+				ky = ky - (ky % tile_height) + 1;
+			} else {
+				++ky;
+			}
+		} else {
+			/* Location relative to panel */
+			ky = y - t->offset_y;
+
+			if (tile_height > 1) {
+				ky = tile_height * ky;
+				if (ky + 1 >= t->hgt) continue;
+			}
+
+			kx = x - t->offset_x;
+
+			if (tile_width > 1) {
+				kx = tile_width * kx;
+				if (kx + 1 >= t->wid) continue;
+			}
 		}
 
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
-
-		/* Location relative to panel */
-		kx = x - t->offset_x;
-
-		if (tile_width > 1) {
-			kx = tile_width * kx;
-			if (kx + 1 >= t->wid) continue;
-		}
-
-		/* Verify location */
 		if ((kx < 0) || (kx >= t->wid)) continue;
 
 		/* Hack -- Queue it */
@@ -552,6 +606,15 @@ static void prt_map_aux(void)
 
 		/* No relevant flags */
 		if (!(window_flag[j] & (PW_MAPS))) continue;
+
+		if (window_flag[j] & PW_MAP) {
+			term *old = Term;
+
+			Term_activate(t);
+			display_map(NULL, NULL);
+			Term_activate(old);
+			continue;
+		}
 
 		/* Assume screen */
 		ty = t->offset_y + (t->hgt / tile_height);
@@ -689,12 +752,7 @@ void display_map(int *cy, int *cx)
 		mp[y] = mem_zalloc(cave->width * sizeof(byte));
 
 	/* Desired map height */
-	map_hgt = Term->hgt - 2;
-	map_wid = Term->wid - 2;
-
-	/* Prevent accidents */
-	if (map_hgt > cave->height) map_hgt = cave->height;
-	if (map_wid > cave->width) map_wid = cave->width;
+	get_minimap_dimensions(Term, cave, &map_wid, &map_hgt);
 
 	/* Prevent accidents */
 	if ((map_wid < 1) || (map_hgt < 1)) {
@@ -714,15 +772,13 @@ void display_map(int *cy, int *cx)
 	window_make(0, 0, map_wid + 1, map_hgt + 1);
 
 	/* Analyze the actual map */
-	for (y = 0; y < cave->height; y++)
-		for (x = 0; x < cave->width; x++) {
-			row = (y * map_hgt / cave->height);
-			col = (x * map_wid / cave->width);
+	for (y = 0; y < cave->height; y++) {
+		row = (y * map_hgt) / cave->height;
+		if (tile_height > 1) row = row - (row % tile_height);
 
-			if (tile_width > 1)
-				col = col - (col % tile_width);
-			if (tile_height > 1)
-				row = row - (row % tile_height);
+		for (x = 0; x < cave->width; x++) {
+			col = (x * map_wid) / cave->width;
+			if (tile_width > 1) col = col - (col % tile_width);
 
 			/* Get the attr/char at that map location */
 			map_info(loc(x, y), &g);
@@ -751,6 +807,7 @@ void display_map(int *cy, int *cx)
 				mp[row][col] = tp;
 			}
 		}
+	}
 
 	/*** Display the player ***/
 
