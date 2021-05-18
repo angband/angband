@@ -820,15 +820,21 @@ void display_map(int *cy, int *cx)
 	if (tile_height > 1)
 		row = row - (row % tile_height);
 
+	/* Get the terrain at the player's spot. */
+	map_info(player->grid, &g);
+	g.lighting = LIGHTING_LIT;
+	grid_data_as_text(&g, &a, &c, &ta, &tc);
+
 	/* Get the "player" tile */
-	ta = monster_x_attr[race->ridx];
-	tc = monster_x_char[race->ridx];
+	a = monster_x_attr[race->ridx];
+	c = monster_x_char[race->ridx];
 
 	/* Draw the player */
-	Term_putch(col + 1, row + 1, ta, tc);
+	Term_queue_char(Term, col + 1, row + 1, a, c, ta, tc);
 
 	if ((tile_width > 1) || (tile_height > 1))
-		Term_big_putch(col + 1, row + 1, ta, tc);
+		Term_big_queue_char(Term, col + 1, row + 1, Term->hgt - 1,
+			255, -1, 0, 0);
   
 	/* Return player location */
 	if (cy != NULL) (*cy) = row + 1;
