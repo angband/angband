@@ -1947,7 +1947,7 @@ static void update_minimap_subwindow(game_event_type type,
 		Term_activate(t);
 
 		/* If whole-map redraw, clear window first. */
-		if (flags->needs_redraw	|| tile_width > 1 || tile_height > 1)
+		if (flags->needs_redraw)
 			Term_clear();
 
 		/* Redraw map */
