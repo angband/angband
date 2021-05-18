@@ -340,16 +340,44 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
  * Get dimensions of a small-scale map (i.e. display_map()'s result).
  * \param term Is the terminal displaying the map.
  * \param chunk Is the chunk to display.
+ * \param tw Is the tile width in characters.
+ * \param th Is the tile height in characters.
  * \param mw *mw is set to the width of the small-scale map.
  * \param mh *mh is set to the height of the small-scale map.
  */
 static void get_minimap_dimensions(term *t, const struct chunk *c,
-	int *mw, int *mh)
+	int tw, int th, int *mw, int *mh)
 {
 	int map_height = t->hgt - 2;
 	int map_width = t->wid - 2;
 	int cave_height = c->height;
 	int cave_width = c->width;
+	int remainder;
+
+	if (th > 1) {
+		/*
+		 * Round cave height up to a multiple of the tile height
+		 * (ideally want no information truncated).
+		 */
+		remainder = cave_height % th;
+		if (remainder > 0) {
+			cave_height += th - remainder;
+		}
+
+		/*
+		 * Round map height down to a multiple of the tile height
+		 * (don't want partial tiles overwriting the map borders).
+		 */
+		map_height -= map_height % th;
+	}
+	if (tw > 1) {
+		/* As above but for the width. */
+		remainder = cave_width % tw;
+		if (remainder > 0) {
+			cave_width += tw - remainder;
+		}
+		map_width -= map_width % tw;
+	}
 
 	*mh = MIN(map_height, cave_height);
 	*mw = MIN(map_width, cave_width);
@@ -381,8 +409,8 @@ static void move_cursor_relative_map(int y, int x)
 			/* Be consistent with display_map(). */
 			int map_width, map_height;
 
-			get_minimap_dimensions(t, cave,
-				&map_width, &map_height);
+			get_minimap_dimensions(t, cave, tile_width,
+				tile_height, &map_width, &map_height);
 
 			ky = (y * map_height) / cave->height;
 			if (tile_height > 1) {
@@ -489,8 +517,8 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 			/* Be consistent with display_map(). */
 			int map_width, map_height;
 
-			get_minimap_dimensions(t, cave,
-				&map_width, &map_height);
+			get_minimap_dimensions(t, cave, tile_width,
+				tile_height, &map_width, &map_height);
 
 			kx = (x * map_width) / cave->width;
 			ky = (y * map_height) / cave->height;
@@ -752,7 +780,8 @@ void display_map(int *cy, int *cx)
 		mp[y] = mem_zalloc(cave->width * sizeof(byte));
 
 	/* Desired map height */
-	get_minimap_dimensions(Term, cave, &map_wid, &map_hgt);
+	get_minimap_dimensions(Term, cave, tile_width, tile_height,
+		&map_wid, &map_hgt);
 
 	/* Prevent accidents */
 	if ((map_wid < 1) || (map_hgt < 1)) {
@@ -770,6 +799,18 @@ void display_map(int *cy, int *cx)
 
 	/* Draw a box around the edge of the term */
 	window_make(0, 0, map_wid + 1, map_hgt + 1);
+
+	/* Clear outside that boundary. */
+	if (map_wid + 1 < Term->wid - 1) {
+		for (y = 0; y < map_hgt + 1; y++) {
+			Term_erase(map_wid + 2, y, Term->wid - map_wid - 2);
+		}
+	}
+	if (map_hgt + 1 < Term->hgt - 1) {
+		for (y = map_hgt + 2; y < Term->hgt; y++) {
+			Term_erase(0, y, Term->wid);
+		}
+	}
 
 	/* Analyze the actual map */
 	for (y = 0; y < cave->height; y++) {
