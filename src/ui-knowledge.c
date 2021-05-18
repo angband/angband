@@ -3697,18 +3697,25 @@ void do_cmd_look(void)
 }
 
 
-
-/**
- * Number of basic grids per panel, vertically and horizontally
- */
-#define PANEL_SIZE	11
-
 /**
  * Allow the player to examine other sectors on the map
  */
 void do_cmd_locate(void)
 {
+	int panel_hgt, panel_wid;
 	int y1, x1;
+
+	/* Use dimensions that match those in ui-output.c. */
+	if (Term == term_screen) {
+		panel_hgt = SCREEN_HGT;
+		panel_wid = SCREEN_WID;
+	} else {
+		panel_hgt = Term->hgt / tile_height;
+		panel_wid = Term->wid / tile_width;
+	}
+	/* Bound below to avoid division by zero. */
+	panel_hgt = MAX(panel_hgt, 1);
+	panel_wid = MAX(panel_wid, 1);
 
 	/* Start at current panel */
 	y1 = Term->offset_y;
@@ -3726,10 +3733,6 @@ void do_cmd_locate(void)
 		int y2 = Term->offset_y;
 		int x2 = Term->offset_x;
 		
-		/* Adjust for tiles */
-		int panel_hgt = (int)(PANEL_SIZE / tile_height);
-		int panel_wid = (int)(PANEL_SIZE / tile_width);
-
 		/* Describe the location */
 		if ((y2 == y1) && (x2 == x1)) {
 			tmp_val[0] = '\0';
@@ -3742,14 +3745,14 @@ void do_cmd_locate(void)
 		/* Prepare to ask which way to look */
 		strnfmt(out_val, sizeof(out_val),
 		        "Map sector [%d,%d], which is%s your sector.  Direction?",
-		        (y2 / panel_hgt), (x2 / panel_wid), tmp_val);
+		        (2 * y2) / panel_hgt, (2 * x2) / panel_wid, tmp_val);
 
 		/* More detail */
 		if (OPT(player, center_player)) {
 			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
-					(y2 / panel_hgt), (y2 % panel_hgt),
-					(x2 / panel_wid), (x2 % panel_wid), tmp_val);
+					(2 * y2) / panel_hgt, (2 * y2) % panel_hgt,
+					(2 * x2) / panel_wid, (2 * x2) % panel_wid, tmp_val);
 		}
 
 		/* Get a direction */
