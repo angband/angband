@@ -7,18 +7,28 @@ ENDIF()
 
 OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend." OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support to SDL Frontend." OFF)
+OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
 OPTION(SUPPORT_X11_FRONTEND "Support to X11 Frontend." ON)
 OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL." OFF)
+OPTION(SUPPORT_SDL2_SOUND "Support to Sound System with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for Spoiler Generation." ON)
 
 # For default, X11 is the frontend, if the user want specific
 # a new frontend is needed set to false (OFF) the frontend X11
-IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND)
+IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND OR SUPPORT_SDL2_FRONTEND)
     SET(SUPPORT_X11_FRONTEND OFF)
 ENDIF()
-
+# Can not have support for SDL and SDL2 at the same time.
+IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
+    IF (SUPPORT_SDL_FRONTEND OR SUPPORT_SDL_SOUND)
+        MESSAGE(FATAL_ERROR "Can not configure with support for both SDL and SDL2")
+    ENDIF()
+ENDIF()
 IF (NOT SUPPORT_SDL_FRONTEND)
     SET(SUPPORT_SDL_SOUND OFF)
+ENDIF()
+IF (NOT SUPPORT_SDL2_FRONTEND)
+    SET(SUPPORT_SDL2_SOUND OFF)
 ENDIF()
 
 ADD_EXECUTABLE(Angband
@@ -55,7 +65,7 @@ ADD_EXECUTABLE(Angband
         $<$<BOOL:${SUPPORT_NCURSES_FRONTEND}>:src/main-gcu.c>
 #        src/main-nds.c
         $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
-#        src/main-sdl2.c
+        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
         $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
 #        src/main-stats.c
 #        src/main-test.c
@@ -122,7 +132,7 @@ ADD_EXECUTABLE(Angband
         src/savefile.c
         src/score.c
 
-        $<$<BOOL:${SUPPORT_SDL_SOUND}>:src/snd-sdl.c>
+        $<$<OR:$<BOOL:${SUPPORT_SDL_SOUND}>,$<BOOL:${SUPPORT_SDL2_SOUND}>>:src/snd-sdl.c>
 
         src/sound-core.c
         src/source.c
@@ -206,6 +216,18 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
 
         INCLUDE(src/cmake/macros/SDL_Sound.cmake)
         CONFIGURE_SDL_SOUND(Angband)
+
+    ENDIF()
+
+ELSEIF(SUPPORT_SDL2_FRONTEND)
+
+    INCLUDE(src/cmake/macros/SDL2_Frontend.cmake)
+    CONFIGURE_SDL2_FRONTEND(Angband)
+
+    IF (SUPPORT_SDL2_SOUND)
+
+        INCLUDE(src/cmake/macros/SDL2_Sound.cmake)
+        CONFIGURE_SDL2_SOUND(Angband)
 
     ENDIF()
 
