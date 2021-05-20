@@ -4792,8 +4792,8 @@ static void set_window_delay(struct window *window)
 	}
 
 	SDL_DisplayMode mode;
-	if (SDL_GetCurrentDisplayMode(display, &mode) != 0)
-	{
+	if (SDL_GetCurrentDisplayMode(display, &mode) != 0 ||
+			mode.refresh_rate <= 0) {
 		/* lets just guess; 60 fps is standard */
 		mode.refresh_rate = 60;
 	}
