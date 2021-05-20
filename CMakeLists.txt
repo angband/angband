@@ -8,15 +8,14 @@ ENDIF()
 OPTION(SUPPORT_NCURSES_FRONTEND "Support for NCurses front end." OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
 OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
-OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." ON)
+OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
 
-# For default, X11 is the frontend, if the user want specific
-# a new frontend is needed set to false (OFF) the frontend X11
-IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND OR SUPPORT_SDL2_FRONTEND)
-    SET(SUPPORT_X11_FRONTEND OFF)
+# If none of the graphical front ends will be configured, configure the X11 one.
+IF ((NOT SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+    SET(SUPPORT_X11_FRONTEND ON)
 ENDIF()
 # Can not have support for SDL and SDL2 at the same time.
 IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
