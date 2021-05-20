@@ -5,7 +5,8 @@ IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     MESSAGE(FATAL_ERROR "No support for CMake on Windows")
 ENDIF()
 
-OPTION(SUPPORT_NCURSES_FRONTEND "Support for NCurses front end." OFF)
+OPTION(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
+OPTION(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
 OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
 OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
@@ -13,8 +14,11 @@ OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
 
+IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
+    SET(SUPPORT_GCU_FRONTEND ON)
+ENDIF()
 # If none of the graphical front ends will be configured, configure the X11 one.
-IF ((NOT SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+IF ((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
     SET(SUPPORT_X11_FRONTEND ON)
 ENDIF()
 # Can not have support for SDL and SDL2 at the same time.
@@ -61,7 +65,7 @@ ADD_EXECUTABLE(Angband
         src/init.c
         src/load.c
 #        src/main-cocoa.m
-        $<$<BOOL:${SUPPORT_NCURSES_FRONTEND}>:src/main-gcu.c>
+        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
 #        src/main-nds.c
         $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
@@ -201,10 +205,10 @@ IF (SUPPORT_X11_FRONTEND)
     INCLUDE(src/cmake/macros/X11_Frontend.cmake)
     CONFIGURE_X11_FRONTEND(Angband)
 
-ELSEIF(SUPPORT_NCURSES_FRONTEND)
+ELSEIF(SUPPORT_GCU_FRONTEND)
 
-    INCLUDE(src/cmake/macros/CURSES_Frontend.cmake)
-    CONFIGURE_CURSES_FRONTEND(Angband)
+    INCLUDE(src/cmake/macros/GCU_Frontend.cmake)
+    CONFIGURE_GCU_FRONTEND(Angband)
 
 ELSEIF(SUPPORT_SDL_FRONTEND)
 

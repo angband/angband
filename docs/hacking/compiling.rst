@@ -106,10 +106,10 @@ To build Angband with the frontend SDL::
     cmake  -DSUPPORT_SDL_FRONTEND=ON ..
     make
 
-To build Angband with the frontend NCurses::
+To build Angband with the GCU front end::
 
     mkdir build && cd build
-    cmake  -DSUPPORT_NCURSES_FRONTEND=ON ..
+    cmake -DSUPPORT_GCU_FRONTEND=ON ..
     make
 
 Cross-building for Windows with Mingw
