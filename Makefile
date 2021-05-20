@@ -8,7 +8,7 @@ CLEAN = config.status config.log *.dll *.exe
 tests:
 	$(MAKE) -C src tests
 
-TAG = angband-`scripts/version.sh`
+TAG = angband-`cd scripts && ./version.sh`
 OUT = $(TAG).tar.gz
 
 manual:
