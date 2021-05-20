@@ -2,6 +2,11 @@
 #
 # This scripts adds local version information from git.
 #
+# Because of the assumed path to the version stamp file in the top-level
+# directory of the source tree and because it needs access to the git
+# repository, the working directory when this script is invoked should be
+# an immediate subdirectory of the top-level directory of the source tree.
+#
 # Copied from Linux 2.6.32 scripts/setlocalversion and modified
 # slightly to work better for OpenOCD, then taken and ripped to
 # pieces for angband
