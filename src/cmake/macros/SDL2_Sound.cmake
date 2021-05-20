@@ -10,11 +10,11 @@ MACRO(CONFIGURE_SDL2_SOUND _NAME_TARGET)
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D SOUND_SDL2)
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D SOUND)
 
-        MESSAGE(STATUS "Support to Sound with SDL2 Mixer - Ready")
+        MESSAGE(STATUS "Support for sound with SDL2 - Ready")
 
     ELSE()
 
-        MESSAGE(FATAL_ERROR "Support to Sound with SDL2 Mixer - Fail")
+        MESSAGE(FATAL_ERROR "Support for sound with SDL2 - Failed")
 
     ENDIF()
 

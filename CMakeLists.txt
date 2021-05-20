@@ -2,16 +2,16 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
 PROJECT(Angband VERSION 4.2.1 LANGUAGES C)
 
 IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    MESSAGE(FATAL_ERROR "Not support to CMake in Windows")
+    MESSAGE(FATAL_ERROR "No support for CMake on Windows")
 ENDIF()
 
-OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend." OFF)
-OPTION(SUPPORT_SDL_FRONTEND "Support to SDL Frontend." OFF)
+OPTION(SUPPORT_NCURSES_FRONTEND "Support for NCurses front end." OFF)
+OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
 OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
-OPTION(SUPPORT_X11_FRONTEND "Support to X11 Frontend." ON)
-OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL." OFF)
-OPTION(SUPPORT_SDL2_SOUND "Support to Sound System with SDL2." OFF)
-OPTION(SUPPORT_SPOIL_FRONTEND "Support for Spoiler Generation." ON)
+OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." ON)
+OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
+OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
+OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
 
 # For default, X11 is the frontend, if the user want specific
 # a new frontend is needed set to false (OFF) the frontend X11
@@ -262,6 +262,6 @@ Ref: https://en.wikipedia.org/wiki/C_mathematical_functions#libm
 ]]
 TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
 
-MESSAGE(STATUS "Moving files needed")
+MESSAGE(STATUS "Copying needed files")
 
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

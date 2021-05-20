@@ -7,11 +7,11 @@ MACRO(CONFIGURE_CURSES_FRONTEND _NAME_TARGET)
         TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${CURSES_LIBRARIES} ncursesw)
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_GCU)
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_NCURSES)
-        MESSAGE(STATUS "Support to NCurses Frontend - Ready")
+        MESSAGE(STATUS "Support for NCurses front end - Ready")
 
     ELSE()
 
-        MESSAGE(FATAL_ERROR "Support to NCurses Frontend - Fail")
+        MESSAGE(FATAL_ERROR "Support for NCurses front end - Failed")
 
     ENDIF()
 
