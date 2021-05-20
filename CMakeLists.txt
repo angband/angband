@@ -240,6 +240,13 @@ IF (SUPPORT_SPOIL_FRONTEND)
 
 ENDIF()
 
+# Set the build ID.  Assumes a Unix-like environment.
+EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
+
+     TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D BUILD_ID=${ANGBAND_BUILD_ID})
+
+ENDIF()
 
 #[[
 For Linux Systems the compilation without the libm library
