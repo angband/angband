@@ -23,7 +23,7 @@ GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
 CLEAN = angband.o $(OBJECTS) win/angband.res
-DISTCLEAN = autoconf.h
+DISTCLEAN = autoconf.h tests/.deps
 
 export CFLAGS CPPFLAGS LDFLAGS LIBS
 
@@ -43,6 +43,9 @@ tests: $(PROGNAME).o
 
 test-clean:
 	$(MAKE) -C tests clean
+
+# Hack to descend into tests and clean since it isn't included in SUBDIRS.
+pre-clean: test-clean
 
 splint:
 	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c

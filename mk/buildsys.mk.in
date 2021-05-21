@@ -104,7 +104,7 @@ MO_FILES = ${LOCALES:.po=.mo}
 .SILENT:
 .SUFFIXES:
 .SUFFIXES: .beam .c .c.dep .cc .cc.dep .class .cxx .cxx.dep .d .erl .lib.o .java .mo .m .m.dep .mm .mm.dep .o .plugin.o .po .py .pyc .rc .S .S.dep .xpm
-.PHONY: all subdirs pre-depend depend install install-extra post-install uninstall uninstall-extra clean distclean locales
+.PHONY: all subdirs pre-depend depend install install-extra post-install uninstall uninstall-extra clean pre-clean distclean pre-distclean locales
 
 all:
 	${MAKE} ${MFLAGS} subdirs
@@ -627,7 +627,7 @@ uninstall: uninstall-extra
 
 uninstall-extra:
 
-clean:
+clean: pre-clean
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} clean || exit $$?; \
@@ -644,7 +644,9 @@ clean:
 		fi \
 	done
 
-distclean: clean
+pre-clean:
+
+distclean: clean pre-distclean
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} distclean || exit $$?; \
@@ -660,6 +662,8 @@ distclean: clean
 			fi \
 		fi \
 	done
+
+pre-distclean:
 
 DIR_ENTER = printf "@TERM_EL@@TERM_SETAF6@Entering directory @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n"; cd $$i || exit $$?
 DIR_LEAVE = printf "@TERM_EL@@TERM_SETAF6@Leaving directory @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n"; cd .. || exit $$?
