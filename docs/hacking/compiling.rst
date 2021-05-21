@@ -92,25 +92,58 @@ Compilation with CMake
 
 The compilation process with CMake requires a version greater than 3,
 by default the compilation process uses the X11 front end unless
-that the contrary is indicated. The optional front ends are: SDL and NCurses.
+one or more of the other graphical front ends are selected. The graphical front
+ends are: GCU, SDL, SDL2 and X11.  All of the following generate a
+self-contained directory, build, that you can move elsewhere or rename.  To
+run the result, change directories to build (or whatever you renamed it to) and
+run ./Angband .
 
-To build Angband (X11 Frontend) to be run::
+To build Angband with the X11 front end::
 
     mkdir build && cd build
     cmake ..
     make
 
-To build Angband with the frontend SDL::
+If you want to build the X11 front end while building one of the other
+graphical front ends, the option to pass to cmake is -DSUPPORT_X11_FRONTEND=ON .
+
+To build Angband with the SDL front end::
 
     mkdir build && cd build
-    cmake  -DSUPPORT_SDL_FRONTEND=ON ..
+    cmake -DSUPPORT_SDL_FRONTEND=ON ..
     make
 
-To build Angband with the frontend NCurses::
+To build Angband with the SDL2 front end::
 
     mkdir build && cd build
-    cmake  -DSUPPORT_NCURSES_FRONTEND=ON ..
+    cmake -DSUPPORT_SDL2_FRONTEND=ON ..
     make
+
+To build Angband with the GCU front end::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_GCU_FRONTEND=ON ..
+    make
+
+On OpenBSD (at least with OpenBSD 6.9), there's known issues with detecting
+the software needed for the GCU front end.  As a workaround, you could use
+this instead::
+
+    mkdir build && cd build
+    mkdir -p ncursesw/include/ncursesw
+    ln -s /usr/include/ncurses.h ncursesw/include/ncursesw
+    mkdir -p ncursesw/lib
+    ln -s /usr/lib/libncursesw.so* ncursesw/lib
+    cmake -DCMAKE_PREFIX_PATH=`pwd`/ncursesw -DSUPPORT_GCU_FRONTEND=ON ..
+    make
+
+You can build support for more than one of the graphical front ends by setting
+all the desired SUPPORT_*_FRONTEND options when running cmake (the exception to
+this are the SDL and SDL2 which can not be built at the same time).  If you
+want the executable to have support for sound, pass -DSUPPORT_SDL_SOUND=ON or
+-DSUPPORT_SDL2_SOUND=ON to cmake (as with the SDL and SDL2 front ends, you
+can't build support for both SDL and SDL2 sound; it is also not possible to
+build the SDL front end with SDL2 sound or the SDL2 front end with SDL sound).
 
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

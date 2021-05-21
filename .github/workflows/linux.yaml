@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSUPPORT_NCURSES_FRONTEND=ON ..
+          cmake -DSUPPORT_GCU_FRONTEND=ON ..
           make
 
   sdl:

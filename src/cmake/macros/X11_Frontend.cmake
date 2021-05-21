@@ -7,11 +7,11 @@ MACRO(CONFIGURE_X11_FRONTEND _NAME_TARGET)
         TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${X11_LIBRARIES})
         TARGET_INCLUDE_DIRECTORIES(${_NAME_TARGET} PRIVATE ${X11_INCLUDE_DIR})
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_X11)
-        MESSAGE(STATUS "Support to X11 Frontend - Ready")
+        MESSAGE(STATUS "Support for X11 front end - Ready")
 
     ELSE()
 
-        MESSAGE(FATAL_ERROR "Support to X11 Frontend - Fail")
+        MESSAGE(FATAL_ERROR "Support for X11 front end - Failed")
 
     ENDIF()
 

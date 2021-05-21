@@ -70,6 +70,14 @@
 # ifndef HAVE_DIRENT_H
 #  define HAVE_DIRENT_H
 # endif
+
+/**
+ * May need to be tightened:  without autoconf.h assume all Unixes have mkdir().
+ */
+# if !defined(HAVE_MKDIR) && !defined(HAVE_CONFIG_H)
+#   define HAVE_MKDIR
+# endif
+
 #endif
 
 /**

@@ -1,22 +1,25 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
-PROJECT(Angband VERSION 4.2.1 LANGUAGES C)
+PROJECT(Angband LANGUAGES C)
 
 IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    MESSAGE(FATAL_ERROR "Not support to CMake in Windows")
+    MESSAGE(FATAL_ERROR "No support for CMake on Windows")
 ENDIF()
 
-OPTION(SUPPORT_NCURSES_FRONTEND "Support to NCurses Frontend." OFF)
-OPTION(SUPPORT_SDL_FRONTEND "Support to SDL Frontend." OFF)
+OPTION(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
+OPTION(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
+OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
 OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
-OPTION(SUPPORT_X11_FRONTEND "Support to X11 Frontend." ON)
-OPTION(SUPPORT_SDL_SOUND "Support to Sound System with SDL." OFF)
-OPTION(SUPPORT_SDL2_SOUND "Support to Sound System with SDL2." OFF)
-OPTION(SUPPORT_SPOIL_FRONTEND "Support for Spoiler Generation." ON)
+OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
+OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
+OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
+OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
 
-# For default, X11 is the frontend, if the user want specific
-# a new frontend is needed set to false (OFF) the frontend X11
-IF (SUPPORT_NCURSES_FRONTEND OR SUPPORT_SDL_FRONTEND OR SUPPORT_SDL2_FRONTEND)
-    SET(SUPPORT_X11_FRONTEND OFF)
+IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
+    SET(SUPPORT_GCU_FRONTEND ON)
+ENDIF()
+# If none of the graphical front ends will be configured, configure the X11 one.
+IF ((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+    SET(SUPPORT_X11_FRONTEND ON)
 ENDIF()
 # Can not have support for SDL and SDL2 at the same time.
 IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
@@ -62,7 +65,7 @@ ADD_EXECUTABLE(Angband
         src/init.c
         src/load.c
 #        src/main-cocoa.m
-        $<$<BOOL:${SUPPORT_NCURSES_FRONTEND}>:src/main-gcu.c>
+        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
 #        src/main-nds.c
         $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
@@ -202,10 +205,10 @@ IF (SUPPORT_X11_FRONTEND)
     INCLUDE(src/cmake/macros/X11_Frontend.cmake)
     CONFIGURE_X11_FRONTEND(Angband)
 
-ELSEIF(SUPPORT_NCURSES_FRONTEND)
+ELSEIF(SUPPORT_GCU_FRONTEND)
 
-    INCLUDE(src/cmake/macros/CURSES_Frontend.cmake)
-    CONFIGURE_CURSES_FRONTEND(Angband)
+    INCLUDE(src/cmake/macros/GCU_Frontend.cmake)
+    CONFIGURE_GCU_FRONTEND(Angband)
 
 ELSEIF(SUPPORT_SDL_FRONTEND)
 
@@ -240,6 +243,13 @@ IF (SUPPORT_SPOIL_FRONTEND)
 
 ENDIF()
 
+# Set the build ID.  Assumes a Unix-like environment.
+EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
+
+     TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D BUILD_ID=${ANGBAND_BUILD_ID})
+
+ENDIF()
 
 #[[
 For Linux Systems the compilation without the libm library
@@ -255,6 +265,6 @@ Ref: https://en.wikipedia.org/wiki/C_mathematical_functions#libm
 ]]
 TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
 
-MESSAGE(STATUS "Moving files needed")
+MESSAGE(STATUS "Copying needed files")
 
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
