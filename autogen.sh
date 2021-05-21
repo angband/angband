@@ -44,6 +44,34 @@ run_or_die ()
     return 0
 }
 
+if test X`uname` = XOpenBSD ; then
+    # OpenBSD's autoconf and automake require the AUTOCONF_VERSION and
+    # AUTOMAKE_VERSION environment variables be set.  For autoconf,
+    # there's some documentation for that here:
+    # https://www.openbsd.org/faq/ports/specialtopics.html#Autoconf
+    # Grab the version from pkg_info's output using the last version it
+    # reports about if there are multiple versions installed.
+    if test -z "$AUTOCONF_VERSION" ; then
+        version=`pkg_info autoconf | grep '^Information for inst:autoconf-' | tail -n 1 | cut -d - -f 2`
+        version_major=`echo " $version" | cut -d . -f 1 | tr -d ' \n\r\t'`
+        version_minor=`echo " $version" | cut -d . -f 2 | cut -d p -f 1 | tr -d ' \n\r\t'`
+        if test -n "$version_major" -a -n "$version_minor" ; then
+            AUTOCONF_VERSION="$version_major"."$version_minor"
+            export AUTOCONF_VERSION
+        fi
+    fi
+    if test -z "$AUTOMAKE_VERSION" ; then
+        version=`pkg_info automake | grep 'Information for inst:automake-' | tail -n 1 | cut -d - -f 2`
+        version_major=`echo " $version" | cut -d . -f 1 | tr -d ' \n\r\t'`
+        version_minor=`echo " $version" | cut -d . -f 2 | cut -d p -f 1 | tr -d ' \n\r\t'`
+        if test -n "$version_major" -a -n "$version_minor" ; then
+            AUTOMAKE_VERSION="$version_major"."$version_minor"
+            export AUTOMAKE_VERSION
+        fi
+    fi
+    echo "OpenBSD; using AUTOCONF_VERSION=$AUTOCONF_VERSION AUTOMAKE_VERSION=$AUTOMAKE_VERSION"
+fi
+
 cd $TOP_DIR
 
 run_or_die $ACLOCAL -I m4
