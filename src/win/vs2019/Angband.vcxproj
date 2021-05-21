@@ -360,6 +360,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\list-projections.h" />
     <ClInclude Include="src\list-randart-properties.h" />
     <ClInclude Include="src\list-rooms.h" />
+    <ClInclude Include="src\list-room-flags.h" />
     <ClInclude Include="src\list-square-flags.h" />
     <ClInclude Include="src\list-stats.h" />
     <ClInclude Include="src\list-terrain-flags.h" />

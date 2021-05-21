@@ -94,6 +94,45 @@ struct vault *random_vault(int depth, const char *typ)
 
 /**
  * ------------------------------------------------------------------------
+ * Helper functions to fill in information in the global dun (see also
+ * find_space() and room_build() which set cent_n and cent in that structure)
+ * ------------------------------------------------------------------------
+ */
+/**
+ * Append a grid to the marked entrances for a room in the global dun.
+ * \param grid Is the location for the entrance
+ * Only call after the centre has been set and cent_n incremented.
+ */
+static void append_entrance(struct loc grid)
+{
+	int ridx;
+
+	if (dun->cent_n <= 0 || dun->cent_n > z_info->level_room_max) return;
+	ridx = dun->cent_n - 1;
+	/* Expand allocated space if needed. */
+	assert(dun->ent_n[ridx] >= 0);
+	if (!dun->ent[ridx] ||
+			loc_eq(dun->ent[ridx][dun->ent_n[ridx]], loc(-1, -1))) {
+		int alloc_n = (dun->ent_n[ridx] > 0) ?
+			2 * dun->ent_n[ridx] : 8;
+		int i;
+
+		dun->ent[ridx] = mem_realloc(dun->ent[ridx],
+			alloc_n * sizeof(*dun->ent[ridx]));
+		for (i = dun->ent_n[ridx] + 1; i < alloc_n - 1; ++i) {
+			dun->ent[ridx][i] = loc(0, 0);
+		}
+		/* Add sentinel to track allocated size. */
+		dun->ent[ridx][alloc_n - 1] = loc(-1, -1);
+	}
+	/* Record the entrance */
+	dun->ent[ridx][dun->ent_n[ridx]] = grid;
+	++dun->ent_n[ridx];
+	dun->ent2room[grid.y][grid.x] = ridx;
+}
+
+/**
+ * ------------------------------------------------------------------------
  * Room build helper functions
  * ------------------------------------------------------------------------ */
 /**
@@ -1066,10 +1105,12 @@ static bool find_space(struct loc *centre, int height, int width)
  * \param doors the door position
  * \param data the room template text description
  * \param tval the object type for any included objects
+ * \param flags the flags for the room
  * \return success
  */
 static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
-								int xmax, int doors, const char *data, int tval)
+	int xmax, int doors, const char *data, int tval,
+	const bitflag flags[ROOMF_SIZE])
 {
 	int dx, dy, rnddoors, doorpos;
 	const char *t;
@@ -1127,7 +1168,13 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 
 			/* Analyze the grid */
 			switch (*t) {
-			case '%': set_marked_granite(c, grid, SQUARE_WALL_OUTER); break;
+			case '%': {
+				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
+				if (roomf_has(flags, ROOMF_FEW_ENTRANCES)) {
+					append_entrance(grid);
+				}
+				break;
+			}
 			case '#': set_marked_granite(c, grid, SQUARE_WALL_SOLID); break;
 			case '+': place_closed_door(c, grid); break;
 			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
@@ -1200,7 +1247,6 @@ static bool build_room_template(struct chunk *c, struct loc centre, int ymax,
 				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
 		}
 	}
-
 	/*
 	 * Perform second pass for placement of monsters and objects at
 	 * unspecified locations after all the features are in place.
@@ -1300,7 +1346,7 @@ static bool build_room_template_type(struct chunk *c, struct loc centre,
 
 	/* Build the room */
 	if (!build_room_template(c, centre, room->hgt, room->wid, room->dor,
-							 room->text, room->tval))
+			room->text, room->tval, room->flags))
 		return false;
 
 	ROOM_LOG("Room template (%s)", room->name);
@@ -1380,11 +1426,15 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 			/* Analyze the grid */
 			switch (*t) {
 			case '%': {
-				/* In this case, the square isn't really part of the
-				 * vault, but rather is part of the "door step" to the
-				 * vault. We don't mark it icky so that the tunneling
-				 * code knows its allowed to remove this wall. */
+				/* In this case, the square isn't really part
+				 * of the vault, but rather is part of the
+				 * "door step" to the vault. We don't mark it
+				 * icky so that the tunneling code knows it's
+				 * allowed to remove this wall. */
 				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
+				if (roomf_has(v->flags, ROOMF_FEW_ENTRANCES)) {
+					append_entrance(grid);
+				}
 				icky = false;
 				break;
 			}
@@ -2891,8 +2941,12 @@ bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
 	int numerator   = 1;
 	int denominator = 3;
 	
-	/* Only try to build a GV as the first room. */
-	if (dun->cent_n > 0) return false;
+	/*
+	 * Only try to build a GV as the first room.  If not finding space,
+	 * cent_n has already been incremented.
+	 */
+	if (dun->cent_n > ((centre.y >= c->height ||
+		centre.x >= c->width) ? 0 : 1)) return false;
 
 	/* Level 90+ has a 1/3 chance, level 80-89 has 2/9, ... */
 	for (i = 90; i > c->depth; i -= 10) {
@@ -3304,6 +3358,7 @@ bool build_room_of_chambers(struct chunk *c, struct loc centre, int rating)
  */
 bool build_huge(struct chunk *c, struct loc centre, int rating)
 {
+	bool finding_space = centre.y >= c->height || centre.x >= c->width;
 	bool light;
 
 	int i, count;
@@ -3315,8 +3370,11 @@ bool build_huge(struct chunk *c, struct loc centre, int rating)
 	int height = 30 + randint0(10);
 	int width = 45 + randint0(50);
 
-	/* Only try to build a huge room as the first room. */
-	if (dun->cent_n > 0) return false;
+	/*
+	 * Only try to build a huge room as the first room.  If not finding
+	 * space, cent_n has already been increment.
+	 */
+	if (dun->cent_n > ((finding_space) ? 0 : 1)) return false;
 
 	/* Flat 5% chance */
 	if (!one_in_(20)) return false;
@@ -3325,7 +3383,7 @@ bool build_huge(struct chunk *c, struct loc centre, int rating)
 	light = !one_in_(3);
 
 	/* Find and reserve some space.  Get center of room. */
-	if ((centre.y >= c->height) || (centre.x >= c->width)) {
+	if (finding_space) {
 		if (!find_space(&centre, height, width))
 			return (false);
 	}
@@ -3430,13 +3488,17 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 		centre = loc(((bx1 + bx2 + 1) * dun->block_wid) / 2,
 					 ((by1 + by2 + 1) * dun->block_hgt) / 2);
 
-		/* Try to build a room */
-		if (!profile.builder(c, centre, profile.rating)) return false;
-
-		/* Save the room location */
+		/* Save the room location (must be before builder call to
+		 * properly store entrance information). */
 		if (dun->cent_n < z_info->level_room_max) {
 			dun->cent[dun->cent_n] = centre;
 			dun->cent_n++;
+		}
+
+		/* Try to build a room */
+		if (!profile.builder(c, centre, profile.rating)) {
+			--dun->cent_n;
+			return false;
 		}
 
 		/* Reserve some blocks */

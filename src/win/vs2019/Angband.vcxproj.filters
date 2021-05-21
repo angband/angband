@@ -638,6 +638,9 @@
     <ClInclude Include="src\list-rooms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\list-room-flags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\list-square-flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
