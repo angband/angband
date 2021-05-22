@@ -1,17 +1,20 @@
 #!/bin/sh
 # Test runner
 # Assumption is that this is run in the top-level directory
+# If an executable is not specified via the -x option, it defaults to be
+# src/angband.
 
 usage() {
-	echo "Usage: $0 <test>"
+	echo "Usage: $0 [-x executable] <test>"
 }
 
 run() {
 	rm -rf ~/.angband/Test
 
 	test="$1"
+        exe="$2"
 	printf "Running: $test... "
-	src/angband -mtest < "$test/input" > "$test/run.out"
+	$exe -mtest < "$test/input" > "$test/run.out"
 	if [ -x "$test/matcher" ]; then
 		"$test/matcher" "$test"
 	else
@@ -26,9 +29,24 @@ run() {
 	return $result
 }
 
-if [ $# -lt 1 ]; then
+argexe=src/angband
+if test $# -gt 0 ; then
+	if test x"$1" = x-x ; then
+		shift
+		if test $# -ge 1 ; then
+			argexe="$1"
+			shift
+		else
+			usage
+			exit 1
+		fi
+	fi
+fi
+if test $# -eq 1 ; then
+	argtest="$1"
+else
 	usage
 	exit 1
 fi
 
-run "$@"
+run "$argtest" "$argexe"

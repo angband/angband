@@ -13,6 +13,7 @@ OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
+OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
@@ -200,7 +201,7 @@ ADD_EXECUTABLE(Angband
         $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
         $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
 #        src/main-stats.c
-#        src/main-test.c
+        $<$<BOOL:${SUPPORT_TEST_FRONTEND}>:src/main-test.c>
         src/main.c
 )
 
@@ -250,6 +251,11 @@ IF (SUPPORT_SPOIL_FRONTEND)
 
 ENDIF()
 
+IF(SUPPORT_TEST_FRONTEND)
+    INCLUDE(src/cmake/macros/TEST_Frontend.cmake)
+    CONFIGURE_TEST_FRONTEND(Angband)
+ENDIF()
+
 # Set the build ID.  Assumes a Unix-like environment.
 EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
 IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
@@ -270,6 +276,9 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR
 # tree.
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/run-tests
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/unittests/)
+IF(SUPPORT_TEST_FRONTEND)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+ENDIF()
 FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/unittests/bin)
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/run-tests
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
@@ -280,11 +289,14 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 # using the test front end will be run directly.  The unit tests will be
 # handled through a dependency.
 ADD_CUSTOM_TARGET(alltests
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ./Angband
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(allunittests
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+IF(SUPPORT_TEST_FRONTEND)
+    ADD_DEPENDENCIES(alltests Angband)
+ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
 
 # Set up an object library with the shared code for unit tests.
