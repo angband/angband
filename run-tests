@@ -3,7 +3,7 @@
 RAN=0
 OK=0
 
-for x in tests/*/*; do
+for x in `find tests -mindepth 2 -maxdepth 2 -type d -print`; do
 	tests/run-test $x
 	if [ $? -eq 0 ]; then
 		OK=$(expr $OK + 1)
