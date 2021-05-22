@@ -34,7 +34,7 @@ IF (NOT SUPPORT_SDL2_FRONTEND)
     SET(SUPPORT_SDL2_SOUND OFF)
 ENDIF()
 
-ADD_EXECUTABLE(Angband
+ADD_LIBRARY(AngbandCoreLib OBJECT
         src/buildid.c
         src/cave-map.c
         src/cave-square.c
@@ -64,18 +64,6 @@ ADD_EXECUTABLE(Angband
         src/guid.c
         src/init.c
         src/load.c
-#        src/main-cocoa.m
-        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
-#        src/main-nds.c
-        $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
-        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
-        $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
-#        src/main-stats.c
-#        src/main-test.c
-#        src/main-win.c
-        $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
-#        src/main-xxx.c
-        src/main.c
         src/message.c
         src/mon-attack.c
         src/mon-blows.c
@@ -134,9 +122,6 @@ ADD_EXECUTABLE(Angband
         src/save-charoutput.c
         src/savefile.c
         src/score.c
-
-        $<$<OR:$<BOOL:${SUPPORT_SDL_SOUND}>,$<BOOL:${SUPPORT_SDL2_SOUND}>>:src/snd-sdl.c>
-
         src/sound-core.c
         src/source.c
         src/store.c
@@ -198,7 +183,29 @@ ADD_EXECUTABLE(Angband
         src/z-virt.c
 )
 
+SET_TARGET_PROPERTIES(AngbandCoreLib PROPERTIES C_STANDARD 99)
+
+SET(ANGBAND_CORE_LINK_LIBRARIES "")
+FIND_LIBRARY(MATH_LIBRARY m)
+IF(MATH_LIBRARY)
+    LIST(APPEND ANGBAND_CORE_LINK_LIBRARIES ${MATH_LIBRARY})
+ENDIF()
+
+ADD_EXECUTABLE(Angband
+        $<TARGET_OBJECTS:AngbandCoreLib>
+        $<$<OR:$<BOOL:${SUPPORT_SDL_SOUND}>,$<BOOL:${SUPPORT_SDL2_SOUND}>>:src/snd-sdl.c>
+        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
+        $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
+        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
+        $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
+        $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
+#        src/main-stats.c
+#        src/main-test.c
+        src/main.c
+)
+
 SET_TARGET_PROPERTIES(Angband PROPERTIES C_STANDARD 99)
+TARGET_LINK_LIBRARIES(Angband PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
 
 IF (SUPPORT_X11_FRONTEND)
 
@@ -247,23 +254,12 @@ ENDIF()
 EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
 IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
 
-     TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D BUILD_ID=${ANGBAND_BUILD_ID})
-
+     SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+ELSE()
+     SET(ANGBAND_BUILD_ID_OPTION "")
 ENDIF()
-
-#[[
-For Linux Systems the compilation without the libm library
-throw undefined references to mathematical functions, this requirement
-is only present in Linux Systems.
-
-Wikipedia say: Under Linux and BSD, the mathematical functions
-(as declared in <math.h>) are bundled separately in the mathematical
-library libm. Therefore, if any of those functions are used, the linker
-must be given the directive -lm.
-
-Ref: https://en.wikipedia.org/wiki/C_mathematical_functions#libm
-]]
-TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
+TARGET_COMPILE_DEFINITIONS(Angband PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+TARGET_COMPILE_DEFINITIONS(AngbandCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
 MESSAGE(STATUS "Copying needed files")
 
