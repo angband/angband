@@ -78,6 +78,24 @@ To see what command line options are accepted, use::
 
     src/angband -?
 
+Note that some of Angband's makefiles (src/Makefile and src/tests/Makefile are
+the primary offenders) assume features present in GNU make.  If the default
+make on your system is not GNU make, you'll likely have to replace instances
+of make in the quoted commands with whatever will run GNU make.  On OpenBSD,
+for instance, that is gmake (which can be installed by running "pkg_add gmake").
+
+On systems where there's several C compilers, ./configure may choose the
+wrong one.  One example of that is on OpenBSD 6.9 when building Angband with
+SDL2:  ./configure chooses gcc but the installed version of gcc can't handle
+the SDL2 header files that are installed via pkg_add.  To override ./configure's
+default selection of the compiler, use::
+
+    env CC=the_good_compiler ./configure [the appropriate configure options]
+
+Replace the_good_compiler in that command with the command for running the
+compiler that you want.  For OpenBSD 6.9 when compiling with SDL2, you'd
+replace the_good_compiler with cc or clang.
+
 To build Angband to be installed in some other location, run this::
 
     ./configure --prefix /path/to [other options as needed]
@@ -182,8 +200,7 @@ Then use wine::
 Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
 should be that same command with the '-gcc' removed. Instead of i586 you may
 see i686, amd64, etc. The value of --build should be the host you're building
-on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/
-autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
+on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
 gory details of how these triplets are arrived at)
 
 TODO: you will probably need to manually disable curses, or the host curses
