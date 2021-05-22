@@ -78,6 +78,12 @@ To see what command line options are accepted, use
 
     src/angband -?
 
+Note that some of Angband's makefiles (src/Makefile and src/tests/Makefile are
+the primary offenders) assume features present in GNU make.  If the default
+make on your system is not GNU make, you'll likely have to replace instances
+of make in the quoted commands with whatever will run GNU make.  On OpenBSD,
+for instance, that is gmake (which can be installed by running "pkg_add gmake").
+
 To build Angband to be installed in some other location, run this::
 
     ./configure --prefix /path/to [other options as needed]
