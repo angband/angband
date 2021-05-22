@@ -200,8 +200,7 @@ Then use wine:
 Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
 should be that same command with the '-gcc' removed. Instead of i586 you may
 see i686, amd64, etc. The value of --build should be the host you're building
-on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/
-autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
+on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
 gory details of how these triplets are arrived at)
 
 TODO: you will probably need to manually disable curses, or the host curses
