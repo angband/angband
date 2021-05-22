@@ -13,10 +13,15 @@ OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
+OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
 OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
+OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
+ENDIF()
+IF((SUPPORT_STATS_FRONTEND) AND (NOT SUPPORT_STATS_BACKEND))
+    SET(SUPPORT_STATS_BACKEND ON)
 ENDIF()
 # If none of the graphical front ends will be configured, configure the X11 one.
 IF ((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
@@ -200,12 +205,16 @@ ADD_EXECUTABLE(Angband
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
         $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
         $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
-#        src/main-stats.c
+        $<$<BOOL:${SUPPORT_STATS_FRONTEND}>:src/main-stats.c>
+        $<$<BOOL:${SUPPORT_STATS_FRONTEND}>:src/stats/db.c>
         $<$<BOOL:${SUPPORT_TEST_FRONTEND}>:src/main-test.c>
         src/main.c
 )
 
 SET_TARGET_PROPERTIES(Angband PROPERTIES C_STANDARD 99)
+TARGET_INCLUDE_DIRECTORIES(Angband PRIVATE
+    ${ANGBAND_CORE_INCLUDE_DIRS}
+)
 TARGET_LINK_LIBRARIES(Angband PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
 
 IF (SUPPORT_X11_FRONTEND)
@@ -249,6 +258,17 @@ IF (SUPPORT_SPOIL_FRONTEND)
     INCLUDE(src/cmake/macros/SPOIL_Frontend.cmake)
     CONFIGURE_SPOIL_FRONTEND(Angband)
 
+ENDIF()
+
+IF(SUPPORT_STATS_FRONTEND)
+    INCLUDE(src/cmake/macros/STATS_Frontend.cmake)
+    CONFIGURE_STATS_FRONTEND(Angband)
+ENDIF()
+
+IF(SUPPORT_STATS_BACKEND)
+    INCLUDE(src/cmake/macros/STATS_Backend.cmake)
+    CONFIGURE_STATS_BACKEND(Angband)
+    CONFIGURE_STATS_BACKEND(AngbandCoreLib)
 ENDIF()
 
 IF(SUPPORT_TEST_FRONTEND)
