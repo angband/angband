@@ -84,6 +84,18 @@ make on your system is not GNU make, you'll likely have to replace instances
 of make in the quoted commands with whatever will run GNU make.  On OpenBSD,
 for instance, that is gmake (which can be installed by running "pkg_add gmake").
 
+On systems where there's several C compilers, ./configure may choose the
+wrong one.  One example of that is on OpenBSD 6.9 when building Angband with
+SDL2:  ./configure chooses gcc but the installed version of gcc can't handle
+the SDL2 header files that are installed via pkg_add.  To override ./configure's
+default selection of the compiler, use::
+
+    env CC=the_good_compiler ./configure [the appropriate configure options]
+
+Replace the_good_compiler in that command with the command for running the
+compiler that you want.  For OpenBSD 6.9 when compiling with SDL2, you'd
+replace the_good_compiler with cc or clang.
+
 To build Angband to be installed in some other location, run this::
 
     ./configure --prefix /path/to [other options as needed]
