@@ -569,7 +569,7 @@ static void verify_panel_int(bool centered)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if ((j > 0) && !(window_flag[j] & (PW_MAPS))) continue;
+		if ((j > 0) && !(window_flag[j] & (PW_OVERHEAD))) continue;
 
 		wy = t->offset_y;
 		wx = t->offset_x;
@@ -625,7 +625,7 @@ bool change_panel(int dir)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if ((j > 0) && !(window_flag[j] & PW_MAPS)) continue;
+		if ((j > 0) && !(window_flag[j] & PW_OVERHEAD)) continue;
 
 		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt / tile_height;
 		screen_wid = (j == 0) ? SCREEN_WID : t->wid / tile_width;
