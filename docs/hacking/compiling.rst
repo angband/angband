@@ -52,8 +52,8 @@ Native builds
 ~~~~~~~~~~~~~
 
 Linux builds using autotools. There are several different front ends that you
-can optionally build (GCU, SDL, X11, and GTK) using arguments to configure
-such as --enable-sdl, --disable-gtk, etc. Each front end has different
+can optionally build (GCU, SDL, SDL2, and X11) using arguments to configure
+such as --enable-sdl, --disable-x11, etc. Each front end has different
 dependencies (e.g. ncurses, SDL libraries, etc).
 
 If your source files are from cloning the git repository, you'll first need
