@@ -538,9 +538,6 @@ bool modify_panel(term *t, int wy, int wx)
 		/* Redraw map */
 		player->upkeep->redraw |= (PR_MAP);
 
-		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
-
 		/* Changed */
 		return (true);
 	}
