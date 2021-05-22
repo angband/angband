@@ -13,6 +13,7 @@ OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
+OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
@@ -34,7 +35,7 @@ IF (NOT SUPPORT_SDL2_FRONTEND)
     SET(SUPPORT_SDL2_SOUND OFF)
 ENDIF()
 
-ADD_EXECUTABLE(Angband
+ADD_LIBRARY(AngbandCoreLib OBJECT
         src/buildid.c
         src/cave-map.c
         src/cave-square.c
@@ -64,18 +65,6 @@ ADD_EXECUTABLE(Angband
         src/guid.c
         src/init.c
         src/load.c
-#        src/main-cocoa.m
-        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
-#        src/main-nds.c
-        $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
-        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
-        $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
-#        src/main-stats.c
-#        src/main-test.c
-#        src/main-win.c
-        $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
-#        src/main-xxx.c
-        src/main.c
         src/message.c
         src/mon-attack.c
         src/mon-blows.c
@@ -134,9 +123,6 @@ ADD_EXECUTABLE(Angband
         src/save-charoutput.c
         src/savefile.c
         src/score.c
-
-        $<$<OR:$<BOOL:${SUPPORT_SDL_SOUND}>,$<BOOL:${SUPPORT_SDL2_SOUND}>>:src/snd-sdl.c>
-
         src/sound-core.c
         src/source.c
         src/store.c
@@ -198,7 +184,29 @@ ADD_EXECUTABLE(Angband
         src/z-virt.c
 )
 
+SET_TARGET_PROPERTIES(AngbandCoreLib PROPERTIES C_STANDARD 99)
+SET(ANGBAND_CORE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+SET(ANGBAND_CORE_LINK_LIBRARIES "")
+FIND_LIBRARY(MATH_LIBRARY m)
+IF(MATH_LIBRARY)
+    LIST(APPEND ANGBAND_CORE_LINK_LIBRARIES ${MATH_LIBRARY})
+ENDIF()
+
+ADD_EXECUTABLE(Angband
+        $<TARGET_OBJECTS:AngbandCoreLib>
+        $<$<OR:$<BOOL:${SUPPORT_SDL_SOUND}>,$<BOOL:${SUPPORT_SDL2_SOUND}>>:src/snd-sdl.c>
+        $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
+        $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
+        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
+        $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
+        $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
+#        src/main-stats.c
+        $<$<BOOL:${SUPPORT_TEST_FRONTEND}>:src/main-test.c>
+        src/main.c
+)
+
 SET_TARGET_PROPERTIES(Angband PROPERTIES C_STANDARD 99)
+TARGET_LINK_LIBRARIES(Angband PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
 
 IF (SUPPORT_X11_FRONTEND)
 
@@ -243,28 +251,100 @@ IF (SUPPORT_SPOIL_FRONTEND)
 
 ENDIF()
 
+IF(SUPPORT_TEST_FRONTEND)
+    INCLUDE(src/cmake/macros/TEST_Frontend.cmake)
+    CONFIGURE_TEST_FRONTEND(Angband)
+ENDIF()
+
 # Set the build ID.  Assumes a Unix-like environment.
 EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
 IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
 
-     TARGET_COMPILE_DEFINITIONS(Angband PRIVATE -D BUILD_ID=${ANGBAND_BUILD_ID})
-
+     SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+ELSE()
+     SET(ANGBAND_BUILD_ID_OPTION "")
 ENDIF()
-
-#[[
-For Linux Systems the compilation without the libm library
-throw undefined references to mathematical functions, this requirement
-is only present in Linux Systems.
-
-Wikipedia say: Under Linux and BSD, the mathematical functions
-(as declared in <math.h>) are bundled separately in the mathematical
-library libm. Therefore, if any of those functions are used, the linker
-must be given the directive -lm.
-
-Ref: https://en.wikipedia.org/wiki/C_mathematical_functions#libm
-]]
-TARGET_LINK_LIBRARIES(Angband PRIVATE $<$<PLATFORM_ID:Linux>:m>)
+TARGET_COMPILE_DEFINITIONS(Angband PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+TARGET_COMPILE_DEFINITIONS(AngbandCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
 MESSAGE(STATUS "Copying needed files")
 
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+
+# Set up tests.
+# First copy some scripts and, as necessary, test case data from the source
+# tree.
+FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/run-tests
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/unittests/)
+IF(SUPPORT_TEST_FRONTEND)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+ENDIF()
+FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/unittests/bin)
+FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/run-tests
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
+# Set up target for running all tests.  Those (from tests in the source tree)
+# using the test front end will be run directly.  The unit tests will be
+# handled through a dependency.
+ADD_CUSTOM_TARGET(alltests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ./Angband
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+ADD_CUSTOM_TARGET(allunittests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+IF(SUPPORT_TEST_FRONTEND)
+    ADD_DEPENDENCIES(alltests Angband)
+ENDIF()
+ADD_DEPENDENCIES(alltests allunittests)
+
+# Set up an object library with the shared code for unit tests.
+ADD_LIBRARY(AngbandUnitTestLib OBJECT EXCLUDE_FROM_ALL
+        src/tests/test-utils.c
+        src/tests/unit-test.c
+)
+SET_TARGET_PROPERTIES(AngbandUnitTestLib PROPERTIES C_STANDARD 99)
+SET(ANGBAND_UNIT_TEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
+TARGET_INCLUDE_DIRECTORIES(AngbandUnitTestLib PRIVATE
+    ${ANGBAND_CORE_INCLUDE_DIRS}
+)
+TARGET_COMPILE_DEFINITIONS(AngbandUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+
+# Set up targets for exercising the unit tests (from src/tests in the source
+# tree).
+EXECUTE_PROCESS(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/list-tests" -d
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tests"
+    OUTPUT_VARIABLE ANGBAND_TEST_DIRS
+)
+STRING(REGEX REPLACE "[ \t\n\r]" ";" ANGBAND_TEST_DIR_LIST ${ANGBAND_TEST_DIRS})
+FOREACH(ANGBAND_TEST_DIR ${ANGBAND_TEST_DIR_LIST})
+    FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/unittests/bin/${ANGBAND_TEST_DIR}")
+ENDFOREACH()
+EXECUTE_PROCESS(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/list-tests"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tests"
+    OUTPUT_VARIABLE ANGBAND_TEST_CASES
+)
+STRING(REGEX REPLACE "[ \t\n\r]" ";" ANGBAND_TEST_CASE_LIST ${ANGBAND_TEST_CASES})
+SET(ANGBAND_TEST_CASE_INDEX 1)
+FOREACH(ANGBAND_TEST_CASE ${ANGBAND_TEST_CASE_LIST})
+    SET(ANGBAND_TEST_CASE_NAME "unittest${ANGBAND_TEST_CASE_INDEX}")
+    SET(ANGBAND_TEST_CASE_PATH "unittests/bin/${ANGBAND_TEST_CASE}")
+    ADD_EXECUTABLE(${ANGBAND_TEST_CASE_NAME} EXCLUDE_FROM_ALL
+            "src/tests/${ANGBAND_TEST_CASE}.c"
+            $<TARGET_OBJECTS:AngbandUnitTestLib>
+            $<TARGET_OBJECTS:AngbandCoreLib>
+    )
+    SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
+        C_STANDARD 99 OUTPUT_NAME "${ANGBAND_TEST_CASE_PATH}")
+    TARGET_INCLUDE_DIRECTORIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
+        ${ANGBAND_CORE_INCLUDE_DIRS}
+        ${ANGBAND_UNIT_TEST_INCLUDE_DIRS}
+    )
+    TARGET_COMPILE_DEFINITIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+    TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
+        ${ANGBAND_CORE_LINK_LIBRARIES}
+    )
+    ADD_DEPENDENCIES(allunittests ${ANGBAND_TEST_CASE_NAME})
+    MATH(EXPR ANGBAND_TEST_CASE_INDEX "${ANGBAND_TEST_CASE_INDEX} + 1")
+ENDFOREACH()

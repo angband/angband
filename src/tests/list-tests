@@ -1,0 +1,35 @@
+#!/bin/sh
+# List the test cases or, if run with the -d option, the test case directories.
+# Currently used by CMakeLists.txt to populate its list of dependencies for
+# the "alltests" target.  Should be run with the working directory set to the
+# top of the tree with the source code for the test cases (i.e. the location of
+# this script).
+
+printdir=""
+if test $# -gt 0 ; then
+	if test $# -eq 1 -a x"$1" = x-d ; then
+		printdir=yes
+	else
+		echo "list-tests: invalid argument(s)" >&2
+		echo "usage: list-tests [-d]" >&2
+		exit 1
+	fi
+fi
+currdir=`pwd`
+for suite in `find . -mindepth 2 -maxdepth 2 -name suite.mk \! -type d -print` ; do
+	tempmk=/var/tmp/list-tests-$$.mk
+	cat >${tempmk} <<EOF
+include $suite
+
+all:
+	@echo \${TESTPROGS}
+EOF
+	for x in `make -I ${currdir} -f $tempmk`; do
+		if test -n "$printdir" ; then
+			echo `dirname $x`
+			break
+		fi
+		echo "$x"
+	done
+	rm ${tempmk}
+done
