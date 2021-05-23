@@ -22,12 +22,12 @@
 #include "init.h"
 #include "sound.h"
 
-#ifdef USE_SDL
+#ifdef SOUND_SDL
 #  include <SDL/SDL.h>
 #  include <SDL/SDL_mixer.h>
 #endif /* USE_SDL */
 
-#ifdef USE_SDL2
+#ifdef SOUND_SDL2
 #  include <SDL.h>
 #  include <SDL_mixer.h>
 #endif /* USE_SDL2 */

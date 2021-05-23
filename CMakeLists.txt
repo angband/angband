@@ -33,12 +33,6 @@ IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
         MESSAGE(FATAL_ERROR "Can not configure with support for both SDL and SDL2")
     ENDIF()
 ENDIF()
-IF (NOT SUPPORT_SDL_FRONTEND)
-    SET(SUPPORT_SDL_SOUND OFF)
-ENDIF()
-IF (NOT SUPPORT_SDL2_FRONTEND)
-    SET(SUPPORT_SDL2_SOUND OFF)
-ENDIF()
 
 ADD_LIBRARY(AngbandCoreLib OBJECT
         src/buildid.c
@@ -232,27 +226,23 @@ ELSEIF(SUPPORT_SDL_FRONTEND)
     INCLUDE(src/cmake/macros/SDL_Frontend.cmake)
     CONFIGURE_SDL_FRONTEND(Angband)
 
-    IF (SUPPORT_SDL_SOUND)
-
-        INCLUDE(src/cmake/macros/SDL_Sound.cmake)
-        CONFIGURE_SDL_SOUND(Angband NO)
-        CONFIGURE_SDL_SOUND(AngbandCoreLib YES)
-
-    ENDIF()
-
 ELSEIF(SUPPORT_SDL2_FRONTEND)
 
     INCLUDE(src/cmake/macros/SDL2_Frontend.cmake)
     CONFIGURE_SDL2_FRONTEND(Angband)
 
-    IF (SUPPORT_SDL2_SOUND)
+ENDIF()
 
-        INCLUDE(src/cmake/macros/SDL2_Sound.cmake)
-        CONFIGURE_SDL2_SOUND(Angband NO)
-        CONFIGURE_SDL2_SOUND(AngbandCoreLib YES)
+IF(SUPPORT_SDL_SOUND)
+    INCLUDE(src/cmake/macros/SDL_Sound.cmake)
+    CONFIGURE_SDL_SOUND(Angband NO)
+    CONFIGURE_SDL_SOUND(AngbandCoreLib YES)
+ENDIF()
 
-    ENDIF()
-
+IF (SUPPORT_SDL2_SOUND)
+    INCLUDE(src/cmake/macros/SDL2_Sound.cmake)
+    CONFIGURE_SDL2_SOUND(Angband NO)
+    CONFIGURE_SDL2_SOUND(AngbandCoreLib YES)
 ENDIF()
 
 IF (SUPPORT_SPOIL_FRONTEND)
