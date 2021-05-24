@@ -1660,6 +1660,24 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 						sqinfo_on(square(c, grid)->info,
 							SQUARE_WALL_INNER);
 					}
+					break;
+				}
+					/* Permanent wall */
+				case '@': {
+					/* Check consistency with first pass. */
+					assert(square_isroom(c, grid) &&
+						square_isvault(c, grid) &&
+						square_isperm(c, grid));
+					/*
+					 * Mark as SQUARE_WALL_INNER if it does
+					 * not touch the outside of the vault.
+					 */
+					if (count_neighbors(NULL, c, grid,
+							square_isroom, false) == 8) {
+						sqinfo_on(square(c, grid)->info,
+							SQUARE_WALL_INNER);
+					}
+					break;
 				}
 				}
 		}
