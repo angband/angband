@@ -1,7 +1,7 @@
 # File: room_template.txt
 
 
-# This file is used to initialize the "room template" information 
+# This file is used to initialize the "room template" information
 # for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
@@ -33,11 +33,13 @@
 # of the room templates by a dungeon profile in dungeon_profile.txt.
 # The current profiles use values of 1, 2, or 3 for the rating.
 #
-# Where doors is set to n, the generator will pick a number between 
-# 1 and n and place doors at squares marked with that number.  
-# Squares marked with other numbers will be generated as walls.  If 
-# the 1 to n range encompasses numbers not included in the D lines, 
-# there is a chance that no doors will be generated.
+# Where doors is set to n, the generator will pick a number between
+# 1 and n and place secret doors at squares marked with that number.
+# Squares marked with other numbers will be generated as walls.  If
+# n is greater than 6 or the 1 to n range encompasses numbers not
+# included in the D lines, there is a chance that no doors will be
+# generated.
+
 # tval is used to make sure that the items in the room corresponding
 # to '[' are only of the given type.
 
@@ -47,16 +49,18 @@
 
 #    % - outside of the room, where corridors may be connected
 #    # - granite
-#    ^ - trap
+#    ^ - trap (generated 25% of the time)
 #    + - fixed position door (always generated)
-#    1,2,3,4,5,6 - potential positions for random doors
+#    1,2,3,4,5,6 - potential positions for random secret doors; will be
+#        walls if not a secret door
 #    x - optional wall (generated 50% of the time)
-#    ( - optional door (generated if optional walls are generated)
-#    ) - optional door (generated if optional walls are NOT generated, 
+#    ( - optional secret door (generated if optional walls are generated)
+#    ) - optional secret door (generated if optional walls are NOT generated,
 #        otherwise rock)
-#    8 - a treasure or stairs, with guardian monsters
+#    8 - a treasure (80%) or stairs (20%) and will always be treasure if
+#        using persistent levels, with guardian monsters
 #    9 - place some monsters and treasures nearby
-#	[ - a treasure of the specified tval
+#    [ - a treasure of the specified tval
 
 # 'flags' lines are optional and list the flags, from src/list-room-flags.h,
 # that should be applied to the room.  As many flags: lines may be used as
