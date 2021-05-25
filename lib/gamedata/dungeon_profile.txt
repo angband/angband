@@ -7,11 +7,14 @@
 # list-dun-profiles.h so the correct level-building function can be called
 
 # params: block_size : rooms : unusual : rarity
-# block_size is the size of the blocks which the dungeon is divided into; a
-# room will never cross a block boundary.  rooms is the number of rooms to
+# The dungeon is divided into non-overlapping square blocks of block_size by
+# block_size grids.  When rooms are placed, each is assigned a rectangular
+# chunk of blocks, and those assignments won't leave a block assigned to more
+# than one room.  So, block_size affects how densely the rooms can be packed
+# and the maximum number of rooms possible.  rooms is the number of rooms to
 # aim for.  unusual is a measure of how likely high rarity roooms are to
-# appear - higher values give less rare rooms.  rarity is the maximum rarity
-# room allowed with this cave profile
+# appear - higher values make the rare rooms rarer.  rarity is the maximum
+# rarity room allowed with this cave profile.
 
 # tunnel: rnd : chg : con : pen : jct
 # These are percentage chances - rnd of choosing a random tunnel direction
