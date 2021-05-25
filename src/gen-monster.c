@@ -199,7 +199,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin)
 {
-	int i, j;			/* Limits on loops */
+	int i, j;
 	int count;
 	int y = y0, x = x0;
 	int start_mon_num = c->mon_max;
