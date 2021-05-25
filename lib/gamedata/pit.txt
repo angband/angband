@@ -14,7 +14,6 @@
 # obj-rarity: object rarity
 # color: color
 # mon-base: template name
-# mon-base: template name
 # flags-req: flag | flag | ...
 # flags-ban: forbidden flag | ...
 # innate-freq:freq
@@ -45,10 +44,10 @@
 # monsters in this pit will be one of the specified colors. 
 # As many 'color' lines as are necessary may be used.
 #
-# 'mon-base' is for monster template (see monster_base.txt). Up to 4
-# 'mon-base' lines may be  present.  If there are no 'mon-base' lines,
-# then monsters may have any monster template. Otherwise, every monster in
-# this pit/nest will be one of the listed templates.
+# 'mon-base' is for monster template (see monster_base.txt).  If there are
+# no 'mon-base' lines, then monsters may have any monster template.  Otherwise,
+# every monster in this pit/nest will be one of the listed templates.  As
+# many 'mon-base' lines as are necessary may be used.
 #
 # 'mon-ban' is for forbidden monsters. The named monster will not appear in
 # this pit.
