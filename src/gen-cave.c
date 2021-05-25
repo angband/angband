@@ -987,9 +987,10 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -2433,9 +2434,10 @@ struct chunk *modified_chunk(int depth, int height, int width)
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -2635,9 +2637,10 @@ struct chunk *moria_chunk(int depth, int height, int width)
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
