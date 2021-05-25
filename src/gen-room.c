@@ -2586,11 +2586,9 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 	x1 = x1 + 2;
 	x2 = x2 - 2;
 
-	/* Generate inner walls */
+	/* Generate inner walls; add one door as entrance */
 	draw_rectangle(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_GRANITE,
 		SQUARE_WALL_INNER, false);
-
-	/* Open the inner room with a secret door */
 	generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
 
 	/* Decide on the pit type */
@@ -2712,7 +2710,7 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	x1 = x1 + 2;
 	x2 = x2 - 2;
 
-	/* Generate inner walls, and open with a secret door */
+	/* Generate inner walls; add one door as entrance */
 	draw_rectangle(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_GRANITE,
 		SQUARE_WALL_INNER, false);
 	generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
