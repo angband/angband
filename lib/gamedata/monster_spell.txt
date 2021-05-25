@@ -183,7 +183,8 @@ hit:100
 effect:BREATH:POIS:0:30
 lore:poison
 lore-color-base:Orange
-lore-color-resist:Light Green
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 message-vis:{name} breathes poison.
 message-invis:You hear a sickening roar.
 
@@ -413,7 +414,8 @@ dice:$Dd4
 expr:D:SPELL_POWER:/ 2 + 3
 lore:produce poison balls
 lore-color-base:Orange
-lore-color-resist:Light Green
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 message-vis:{name} casts a venomous cloud.
 message-invis:Something mumbles.
 power-cutoff:60
@@ -687,7 +689,8 @@ dice:$B+9d8
 expr:B:SPELL_POWER:/ 3
 lore:produce poison bolts
 lore-color-base:Orange
-lore-color-resist:Light Green
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 message-vis:{name} spews a stream of poison.
 message-invis:Something retches.
 
