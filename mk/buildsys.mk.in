@@ -159,6 +159,7 @@ depend: pre-depend
 	: >.deps
 	for i in "" ${DEPS}; do \
 		test x"$$i" = x"" && continue; \
+		test x`basename "$$i" .dep` = x`basename "$$i"` && continue; \
 		echo "-include \$${.CURDIR}/$$i" >>.deps; \
 	done
 
