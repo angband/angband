@@ -13,7 +13,7 @@
 
 # name:vault name
 # type:room type
-# rating:rating for level feeling calculation
+# rating:added to danger component for level feeling calculation
 # rows:number of rows
 # columns:number of columns
 # min-depth:minimum depth this vault can appear (0 if no minimum)
