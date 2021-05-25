@@ -495,7 +495,7 @@ void place_secret_door(struct chunk *c, struct loc grid)
 
 
 /**
- * Place a closed door at a given location.
+ * Place a closed (and possibly locked) door at a given location.
  * \param c current chunk
  * \param grid location
  */
@@ -512,7 +512,7 @@ void place_closed_door(struct chunk *c, struct loc grid)
  * \param c current chunk
  * \param grid location
  *
- * The door generated could be closed, open, broken, or secret.
+ * The door generated could be closed (and possibly locked), open, or broken.
  */
 void place_random_door(struct chunk *c, struct loc grid)
 {
