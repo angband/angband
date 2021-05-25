@@ -17,9 +17,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  *
  * In this file, we use the SQUARE_WALL flags to the info field in
- * cave->squares, which should only be applied to granite.  SQUARE_WALL_SOLID
- * indicates the wall should not be tunnelled; SQUARE_WALL_INNER is the
- * inward-facing wall of a room; SQUARE_WALL_OUTER is the outer wall of a room.
+ * cave->squares.  Those are usually only applied and tested on granite, but
+ * some (SQUARE_WALL_INNER) is applied and tested on permanent walls.
+ * SQUARE_WALL_SOLID indicates the wall should not be tunnelled;
+ * SQUARE_WALL_INNER marks an inward-facing wall of a room; SQUARE_WALL_OUTER
+ * marks an outer wall of a room.
  *
  * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
  * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
