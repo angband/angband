@@ -1,7 +1,7 @@
 /**
  * \file generate.h
  * \brief Dungeon generation.
-*/
+ */
 
 
 #ifndef GENERATE_H
@@ -106,7 +106,7 @@ struct pit_profile {
     int obj_rarity;           /**< How rare objects are in this pit */
     bitflag flags[RF_SIZE];   /**< Required flags */
     bitflag forbidden_flags[RF_SIZE];         /**< Forbidden flags */
-	int freq_innate;          /**< Minimum innate frequency */
+    int freq_innate;          /**< Minimum innate frequency */
     bitflag spell_flags[RSF_SIZE];            /**< Required spell flags */
     bitflag forbidden_spell_flags[RSF_SIZE];  /**< Forbidden spell flags */
     struct pit_monster_profile *bases;     /**< List of vaild monster bases */
@@ -149,11 +149,11 @@ struct dun_data {
     int tunn_n;
     struct loc *tunn;
 
-	/*!< Number of grids in each block (vertically) */
-	int block_hgt;
+    /*!< Number of grids in each block (vertically) */
+    int block_hgt;
 
-	/*!< Number of grids in each block (horizontally) */
-	int block_wid;
+    /*!< Number of grids in each block (horizontally) */
+    int block_wid;
 
     /*!< Number of blocks along each axis */
     int row_blocks;
@@ -165,11 +165,11 @@ struct dun_data {
     /*!< Number of pits/nests on the level */
     int pit_num;
 
-	/*!< Current pit profile in use */
-	struct pit_profile *pit_type;
+    /*!< Current pit profile in use */
+    struct pit_profile *pit_type;
 
-	/*!< Info for connecting to persistent levels */
-	struct connector *join;
+    /*!< Info for connecting to persistent levels */
+    struct connector *join;
 };
 
 
@@ -199,11 +199,11 @@ typedef struct chunk * (*cave_builder) (struct player *p, int h, int w);
 
 
 struct cave_profile {
-	struct cave_profile *next;
+    struct cave_profile *next;
 
     const char *name;
     cave_builder builder;	/*!< Function used to build the level */
-	int block_size;			/*!< Default height and width of dungeon blocks */
+    int block_size;			/*!< Default height and width of dungeon blocks */
     int dun_rooms;			/*!< Number of rooms to attempt */
     int dun_unusual;		/*!< Level/chance of unusual room */
     int max_rarity;			/*!< Max number of room generation rarity levels */
@@ -228,11 +228,11 @@ typedef bool (*room_builder) (struct chunk *c, struct loc centre, int rating);
  * name and the function used to build it.
  */
 struct room_profile {
-	struct room_profile *next;
+    struct room_profile *next;
 
     const char *name;
     room_builder builder;	/*!< Function used to build fixed size rooms */
-	int rating;				/*!< Extra control for template rooms */
+    int rating;				/*!< Extra control for template rooms */
     int height, width;		/*!< Space required in grids */
     int level;				/*!< Minimum dungeon level */
     bool pit;				/*!< Whether this room is a pit/nest or not */
