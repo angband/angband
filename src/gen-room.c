@@ -1969,7 +1969,7 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 			return (false);
 	}
 
-	/* Pick a room size */
+	/* Set bounds */
 	y1 = centre.y - height / 2;
 	x1 = centre.x - width / 2;
 	y2 = y1 + height - 1;
