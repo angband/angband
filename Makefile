@@ -4,7 +4,7 @@ include $(MKPATH)buildsys.mk
 SUBDIRS = src lib
 CLEAN = *.dll *.exe
 DISTCLEAN = config.status config.log docs/.deps \
-	mk/buildsys.mk mk/extra.mk mk/sinclude.mk
+	mk/buildsys.mk mk/extra.mk
 REPOCLEAN = aclocal.m4 autom4te.cache configure src/autoconf.h.in version
 
 .PHONY: tests dist

@@ -1,8 +1,9 @@
 #
-#  Copyright (c) 2007, 2008, 2009, 2010, 2011
-#  Jonathan Schleifer <js@webkeks.org>
+#  Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+#                2017, 2018, 2020, 2021
+#    Jonathan Schleifer <js@nil.im>
 #
-#  https://webkeks.org/hg/buildsys/
+#  https://fossil.nil.im/buildsys
 #
 #  Permission to use, copy, modify, and/or distribute this software for any
 #  purpose with or without fee is hereby granted, provided that the above
@@ -23,6 +24,7 @@
 include ${MKPATH}extra.mk
 
 PACKAGE = @PACKAGE@
+VERSION = @VERSION@
 AS = @AS@
 CC = @CC@
 CXX = @CXX@
@@ -52,14 +54,26 @@ PROG_IMPLIB_LDFLAGS = @PROG_IMPLIB_LDFLAGS@
 PROG_SUFFIX = @EXEEXT@
 LIB_CFLAGS = @LIB_CFLAGS@
 LIB_LDFLAGS = @LIB_LDFLAGS@
+LIB_LDFLAGS_INSTALL_NAME = @LIB_LDFLAGS_INSTALL_NAME@
 LIB_PREFIX = @LIB_PREFIX@
 LIB_SUFFIX = @LIB_SUFFIX@
+LINK_LIB = @LINK_LIB@
+AMIGA_LIB_CFLAGS = @AMIGA_LIB_CFLAGS@
+AMIGA_LIB_LDFLAGS = @AMIGA_LIB_LDFLAGS@
 PLUGIN_CFLAGS = @PLUGIN_CFLAGS@
 PLUGIN_LDFLAGS = @PLUGIN_LDFLAGS@
 PLUGIN_SUFFIX = @PLUGIN_SUFFIX@
-INSTALL_LIB = @INSTALL_LIB@
-UNINSTALL_LIB = @UNINSTALL_LIB@
+FRAMEWORK_LDFLAGS = @FRAMEWORK_LDFLAGS@
+FRAMEWORK_LDFLAGS_INSTALL_NAME = @FRAMEWORK_LDFLAGS_INSTALL_NAME@
+FRAMEWORK_LIBS = @FRAMEWORK_LIBS@
+CODESIGN = @CODESIGN@
+CODESIGN_IDENTITY ?= -
 CLEAN_LIB = @CLEAN_LIB@
+DEP_ASFLAGS = @DEP_ASFLAGS@
+DEP_CFLAGS = @DEP_CFLAGS@
+DEP_CXXFLAGS = @DEP_CXXFLAGS@
+DEP_OBJCFLAGS = @DEP_OBJCFLAGS@
+DEP_OBJCXXFLAGS = @DEP_OBJCXXFLAGS@
 LN_S = @LN_S@
 MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
@@ -69,15 +83,18 @@ JAVAC = @JAVAC@
 JAVACFLAGS = @JAVACFLAGS@
 JAR = @JAR@
 WINDRES = @WINDRES@
+BUILD_AND_HOST_ARE_DARWIN = @BUILD_AND_HOST_ARE_DARWIN@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
+amigalibdir ?= ${prefix}/libs
 plugindir ?= ${libdir}/${PACKAGE}
 datarootdir = @datarootdir@
 datadir = @datadir@
 includedir = @includedir@
 includesubdir ?= ${PACKAGE}
+INSTALL_INCLUDES ?= yes
 localedir = @localedir@
 localename ?= ${PACKAGE}
 mandir = @mandir@
@@ -97,111 +114,243 @@ OBJS11 = ${OBJS10:.S=.o}
 OBJS += ${OBJS11:.xpm=.o}
 
 LIB_OBJS = ${OBJS:.o=.lib.o}
+AMIGA_LIB_OBJS = ${OBJS:.o=.amigalib.o}
 PLUGIN_OBJS = ${OBJS:.o=.plugin.o}
+
+DEPS = ${OBJS:.o=.dep}			\
+       ${LIB_OBJS:.o=.dep}		\
+       ${AMIGA_LIB_OBJS:.o=.dep}	\
+       ${PLUGIN_OBJS:.o=.dep}
 
 MO_FILES = ${LOCALES:.po=.mo}
 
 .SILENT:
 .SUFFIXES:
-.SUFFIXES: .beam .c .c.dep .cc .cc.dep .class .cxx .cxx.dep .d .erl .lib.o .java .mo .m .m.dep .mm .mm.dep .o .plugin.o .po .py .pyc .rc .S .S.dep .xpm
-.PHONY: all subdirs pre-depend depend install install-extra post-install uninstall uninstall-extra clean pre-clean distclean pre-distclean locales
+.SUFFIXES: .amigalib.o .beam .c .cc .class .cxx .d .erl .lib.o .java .mo .m .mm .o .plugin.o .po .py .pyc .rc .S .xpm
+.PHONY: all subdirs subdirs-after pre-depend depend install install-extra post-install uninstall uninstall-extra clean pre-clean distclean pre-distclean locales copy-headers-into-framework ${SUBDIRS} ${SUBDIRS_AFTER}
 
 all:
-	${MAKE} ${MFLAGS} subdirs
-	${MAKE} ${MFLAGS} depend
-	${MAKE} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${PROG} ${PROG_NOINST} ${JARFILE} locales
+	${MAKE} -s pre-all
+	${MAKE} -s subdirs
+	${MAKE} -s depend
+	${MAKE} -s ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${FRAMEWORK} ${FRAMEWORK_NOINST} ${AMIGA_LIB} ${AMIGA_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${PROG} ${PROG_NOINST} ${JARFILE} locales
+	${MAKE} -s subdirs-after
+	${MAKE} -s post-all
+
+pre-all post-all:
 
 subdirs:
-	for i in ${SUBDIRS}; do \
+	for i in "" ${SUBDIRS}; do \
+		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} ${MFLAGS} || exit $$?; \
+		${MAKE} -s || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-depend: pre-depend ${SRCS}
-	regen=0; \
-	deps=""; \
-	test -f .deps || regen=1; \
-	for i in ${SRCS}; do \
-		case $$i in \
-			*.c | *.cc | *.cxx | *.m | *.mm | *.S) \
-				test $$i -nt .deps && regen=1; \
-				deps="$$deps $$i.dep"; \
-				;; \
-		esac; \
-	done; \
-	if test x"$$regen" = x"1" -a x"$$deps" != x""; then \
-		${DEPEND_STATUS}; \
-		if ${MAKE} ${MFLAGS} $$deps && cat $$deps >.deps; then \
-			rm -f $$deps; \
-			${DEPEND_OK}; \
-		else \
-			:> .deps; \
-			touch -t 0001010000 .deps; \
-			${DEPEND_FAILED}; \
-		fi; \
-	fi
+subdirs-after:
+	for i in "" ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
+		${DIR_ENTER}; \
+		${MAKE} -s || exit $$?; \
+		${DIR_LEAVE}; \
+	done
 
-.c.c.dep .cc.cc.dep .cxx.cxx.dep .m.m.dep .mm.mm.dep .S.S.dep:
-	${CPP} ${CPPFLAGS} -M $< | \
-	sed 's/^\([^\.]*\)\.o:/\1.o \1.lib.o \1.plugin.o:/' >$@ || \
-	{ rm -f $@; false; }
+depend: pre-depend
+	: >.deps
+	for i in "" ${DEPS}; do \
+		test x"$$i" = x"" && continue; \
+		test x`basename "$$i" .dep` = x`basename "$$i"` && continue; \
+		echo "-include \$${.CURDIR}/$$i" >>.deps; \
+	done
 
 pre-depend:
 
-${PROG} ${PROG_NOINST}: ${EXT_DEPS} ${OBJS}
+${PROG} ${PROG_NOINST}: ${EXT_DEPS} ${OBJS} ${OBJS_EXTRA}
 	${LINK_STATUS}
-	if ${LD} -o $@ ${OBJS} ${LDFLAGS} ${LIBS}; then \
+	out="$@"; \
+	if ${LD} -o $@ ${OBJS} ${OBJS_EXTRA} ${LDFLAGS} ${LIBS}; then \
 		${LINK_OK}; \
 	else \
 		${LINK_FAILED}; \
 	fi
 
-${JARFILE}: ${EXT_DEPS} ${JAR_MANIFEST} ${OBJS}
+${JARFILE}: ${EXT_DEPS} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}
 	${LINK_STATUS}
 	if test x"${JAR_MANIFEST}" != x""; then \
-		if ${JAR} cfm ${JARFILE} ${JAR_MANIFEST} ${OBJS}; then \
+		if ${JAR} cfm ${JARFILE} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}; then \
 			${LINK_OK}; \
 		else \
 			${LINK_FAILED}; \
 		fi \
 	else \
-		if ${JAR} cf ${JARFILE} ${OBJS}; then \
+		if ${JAR} cf ${JARFILE} ${OBJS} ${OBJS_EXTRA}; then \
 			${LINK_OK}; \
 		else \
 			${LINK_FAILED}; \
 		fi \
 	fi
 
-${SHARED_LIB} ${SHARED_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS}
-	${LINK_STATUS}; \
-	if ${LD} -o $@ ${LIB_OBJS} ${LIB_LDFLAGS} ${LDFLAGS} ${LIBS}; then \
+${SHARED_LIB} ${SHARED_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
+	${LINK_STATUS}
+	out="$@"; \
+	if ${LD} -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${LIB_LDFLAGS} ${LIB_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${LIBS} ${LINK_LIB}; then \
 		${LINK_OK}; \
 	else \
 		${LINK_FAILED}; \
-	fi \
+	fi
+
+${FRAMEWORK} ${FRAMEWORK_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
+	${LINK_STATUS}
+	out="$@"; \
+	if rm -fr $$out && ${MKDIR_P} $$out && ${MAKE} -s COPY_HEADERS_IF_SUBDIR=${includesubdir} COPY_HEADERS_DESTINATION=$$PWD/$@/Headers copy-headers-into-framework && if test -f Info.plist; then ${INSTALL} -m 644 Info.plist $$out/Info.plist; fi && if test -f module.modulemap; then ${MKDIR_P} $$out/Modules && ${INSTALL} -m 644 module.modulemap $$out/Modules/module.modulemap; fi && ${LD} -o $$out/$${out%.framework} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} ${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${FRAMEWORK_LIBS} && ${CODESIGN} -fs ${CODESIGN_IDENTITY} $$out; then \
+		${LINK_OK}; \
+	else \
+		rm -fr $$out; false; \
+		${LINK_FAILED}; \
+	fi
+
+copy-headers-into-framework:
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
+		cd $$i || exit 1; \
+		${MAKE} -s copy-headers-into-framework || exit $$?; \
+		cd .. || exit 1; \
+	done
+
+	if test x"${includesubdir}" = x"${COPY_HEADERS_IF_SUBDIR}"; then \
+		for i in "" ${INCLUDES}; do \
+			test x"$$i" = x"" && continue; \
+			${MKDIR_P} $$(dirname ${COPY_HEADERS_DESTINATION}/$$i) || exit $$?; \
+			${INSTALL} -m 644 $$i ${COPY_HEADERS_DESTINATION}/$$i || exit $$?; \
+		done \
+	fi
+
+${AMIGA_LIB} ${AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}
+	${LINK_STATUS}
+	if ${LD} -o $@ ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA} ${AMIGA_LIB_LDFLAGS} ${AMIGA_LIB_LIBS}; then \
+		${LINK_OK}; \
+	else \
+		${LINK_FAILED}; \
+	fi
 
 ${PLUGIN} ${PLUGIN_NOINST}: ${EXT_DEPS} ${PLUGIN_OBJS}
 	${LINK_STATUS}
-	if ${LD} -o $@ ${PLUGIN_OBJS} ${PLUGIN_LDFLAGS} ${LDFLAGS} ${LIBS}; then \
+	out="$@"; \
+	if @LINK_PLUGIN@; then \
 		${LINK_OK}; \
 	else \
+		rm -fr $$out; false; \
 		${LINK_FAILED}; \
 	fi
 
-${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS}
+${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS} ${OBJS_EXTRA}
 	${LINK_STATUS}
 	rm -f $@
-	objs=""; \
-	ars=""; \
-	for i in ${OBJS}; do \
-		case $$i in \
+	if test x"${BUILD_AND_HOST_ARE_DARWIN}" = x"yes"; then \
+		if /usr/bin/libtool -static -o $@ ${OBJS} ${OBJS_EXTRA}; then \
+			${LINK_OK}; \
+		else \
+			rm -f $@; false; \
+			${LINK_FAILED}; \
+		fi; \
+	else \
+		out="$@"; \
+		objs=""; \
+		ars=""; \
+		for i in ${OBJS} ${OBJS_EXTRA}; do \
+			case $$i in \
 			*.a) \
 				ars="$$ars $$i" \
 				;; \
 			*.o) \
 				objs="$$objs $$i" \
 				;; \
+			esac \
+		done; \
+		for i in $$ars; do \
+			dir=".$$(echo $$i | sed 's/\//_/g').objs"; \
+			rm -fr $$dir; \
+			mkdir -p $$dir; \
+			cd $$dir; \
+			${AR} x ../$$i; \
+			for j in *.o; do \
+				objs="$$objs $$dir/$$j"; \
+			done; \
+			cd ..; \
+		done; \
+		if ${AR} cr $@ $$objs && ${RANLIB} $@; then \
+			${LINK_OK}; \
+		else \
+			rm -f $@; false; \
+			${LINK_FAILED}; \
+		fi; \
+		for i in $$ars; do \
+			dir=".$$(echo $$i | sed 's/\//_/g').objs"; \
+			rm -fr $$dir; \
+		done; \
+	fi
+
+${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
+	${LINK_STATUS}
+	rm -f $@
+	if test x"${BUILD_AND_HOST_ARE_DARWIN}" = x"yes"; then \
+		if /usr/bin/libtool -static -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA}; then \
+			${LINK_OK}; \
+		else \
+			rm -f $@; false; \
+			${LINK_FAILED}; \
+		fi; \
+	else \
+		out="$@"; \
+		objs=""; \
+		ars=""; \
+		for i in ${LIB_OBJS} ${LIB_OBJS_EXTRA}; do \
+			case $$i in \
+			*.a) \
+				ars="$$ars $$i" \
+				;; \
+			*.o) \
+				objs="$$objs $$i" \
+				;; \
+			esac \
+		done; \
+		for i in $$ars; do \
+			dir=".$$(echo $$i | sed 's/\//_/g').objs"; \
+			rm -fr $$dir; \
+			mkdir -p $$dir; \
+			cd $$dir; \
+			${AR} x ../$$i; \
+			for j in *.o; do \
+				objs="$$objs $$dir/$$j"; \
+			done; \
+			cd ..; \
+		done; \
+		if ${AR} cr $@ $$objs && ${RANLIB} $@; then \
+			${LINK_OK}; \
+		else \
+			rm -f $@; false; \
+			${LINK_FAILED}; \
+		fi; \
+		for i in $$ars; do \
+			dir=".$$(echo $$i | sed 's/\//_/g').objs"; \
+			rm -fr $$dir; \
+		done; \
+	fi
+
+${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}
+	${LINK_STATUS}
+	rm -f $@
+	out="$@"; \
+	objs=""; \
+	ars=""; \
+	for i in ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}; do \
+		case $$i in \
+		*.a) \
+			ars="$$ars $$i" \
+			;; \
+		*.o) \
+			objs="$$objs $$i" \
+			;; \
 		esac \
 	done; \
 	for i in $$ars; do \
@@ -218,43 +367,48 @@ ${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS}
 	if ${AR} cr $@ $$objs && ${RANLIB} $@; then \
 		${LINK_OK}; \
 	else \
+		rm -f $@; false; \
 		${LINK_FAILED}; \
-		rm -f $@; \
 	fi; \
 	for i in $$ars; do \
 		dir=".$$(echo $$i | sed 's/\//_/g').objs"; \
 		rm -fr $$dir; \
 	done
 
-${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS}
-	${LINK_STATUS}
-	rm -f $@
-	if ${AR} cr $@ ${LIB_OBJS} && ${RANLIB} $@; then \
-		${LINK_OK}; \
-	else \
-		${LINK_FAILED}; \
-		rm -f $@; \
-	fi
-
 locales: ${MO_FILES}
 
 .c.o:
 	${COMPILE_STATUS}
-	if ${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .c.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
+.c.amigalib.o:
+	${COMPILE_AMIGA_LIB_STATUS}
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
+		${COMPILE_AMIGA_LIB_OK}; \
+	else \
+		${COMPILE_AMIGA_LIB_FAILED}; \
+	fi
 .c.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -262,21 +416,36 @@ locales: ${MO_FILES}
 
 .cc.o .cxx.o:
 	${COMPILE_STATUS}
-	if ${CXX} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CXX} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .cc.lib.o .cxx.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${CXX} ${LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CXX} ${LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
+.cc.amigalib.o .cxx.amigalib.o:
+	${COMPILE_AMIGA_LIB_STATUS}
+	in="$<"; \
+	out="$@"; \
+	if ${CXX} ${AMIGA_LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
+		${COMPILE_AMIGA_LIB_OK}; \
+	else \
+		${COMPILE_AMIGA_LIB_FAILED}; \
+	fi
 .cc.plugin.o .cxx.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${CXX} ${PLUGIN_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CXX} ${PLUGIN_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -284,6 +453,8 @@ locales: ${MO_FILES}
 
 .d.o:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if test x"$(basename ${DC})" = x"dmd"; then \
 		if ${DC} ${DFLAGS} -c -of$@ $<; then \
 			${COMPILE_OK}; \
@@ -300,6 +471,8 @@ locales: ${MO_FILES}
 
 .erl.beam:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if ${ERLC} ${ERLCFLAGS} -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
@@ -308,6 +481,8 @@ locales: ${MO_FILES}
 
 .java.class:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if ${JAVAC} ${JAVACFLAGS} $<; then \
 		${COMPILE_OK}; \
 	else \
@@ -316,21 +491,36 @@ locales: ${MO_FILES}
 
 .m.o:
 	${COMPILE_STATUS}
-	if ${OBJC} ${OBJCFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJC} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .m.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${OBJC} ${LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJC} ${LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
+.m.amigalib.o:
+	${COMPILE_AMIGA_LIB_STATUS}
+	in="$<"; \
+	out="$@"; \
+	if ${OBJC} ${AMIGA_LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
+		${COMPILE_AMIGA_LIB_OK}; \
+	else \
+		${COMPILE_AMIGA_LIB_FAILED}; \
+	fi
 .m.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${OBJC} ${PLUGIN_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJC} ${PLUGIN_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -338,21 +528,36 @@ locales: ${MO_FILES}
 
 .mm.o:
 	${COMPILE_STATUS}
-	if ${OBJCXX} ${OBJCXXFLAGS} ${OBJCFLAGS} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJCXX} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .mm.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${OBJCXX} ${LIB_CFLAGS} ${OBJCXXFLAGS} ${OBJCFLAGS} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJCXX} ${LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
+.mm.amigalib.o:
+	${COMPILE_AMIGA_LIB_STATUS}
+	in="$<"; \
+	out="$@"; \
+	if ${OBJCXX} ${AMIGA_LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
+		${COMPILE_AMIGA_LIB_OK}; \
+	else \
+		${COMPILE_AMIGA_LIB_FAILED}; \
+	fi
 .mm.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${OBJCXX} ${PLUGIN_CFLAGS} ${OBJCXXFLAGS} ${OBJCFLAGS} ${CXXFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${OBJCXX} ${PLUGIN_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -360,6 +565,8 @@ locales: ${MO_FILES}
 
 .po.mo:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if ${MSGFMT} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
@@ -368,6 +575,8 @@ locales: ${MO_FILES}
 
 .py.pyc:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if ${PYTHON} ${PYTHON_FLAGS} -c "import py_compile; py_compile.compile('$<')"; then \
 		${COMPILE_OK}; \
 	else \
@@ -376,29 +585,37 @@ locales: ${MO_FILES}
 
 .rc.o .rc.lib.o .rc.plugin.o:
 	${COMPILE_STATUS}
+	in="$<"; \
+	out="$@"; \
 	if ${WINDRES} ${CPPFLAGS} -J rc -O coff -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 
-.S.o:
+.S.o .S.amigalib.o:
 	${COMPILE_STATUS}
-	if ${AS} ${ASFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${AS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .S.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${AS} ${LIB_CFLAGS} ${ASFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${AS} ${LIB_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
 .S.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${AS} ${PLUGIN_CFLAGS} ${ASFLAGS} ${CPPFLAGS} -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${AS} ${PLUGIN_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -406,44 +623,83 @@ locales: ${MO_FILES}
 
 .xpm.o:
 	${COMPILE_STATUS}
-	if ${CC} ${CFLAGS} ${CPPFLAGS} -x c -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
 	fi
 .xpm.lib.o:
 	${COMPILE_LIB_STATUS}
-	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} -x c -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
 	fi
+.xpm.amigalib.o:
+	${COMPILE_AMIGA_LIB_STATUS}
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
+		${COMPILE_AMIGA_LIB_OK}; \
+	else \
+		${COMPILE_AMIGA_LIB_FAILED}; \
+	fi
 .xpm.plugin.o:
 	${COMPILE_PLUGIN_STATUS}
-	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} -x c -c -o $@ $<; then \
+	in="$<"; \
+	out="$@"; \
+	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
 	fi
 
-install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install-extra
-	for i in ${SUBDIRS}; do \
+install: all install-extra
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} ${MFLAGS} install || exit $$?; \
-		${MAKE} ${MFLAGS} post-install || exit $$?; \
+		${MAKE} -s install || exit $$?; \
+		${MAKE} -s post-install || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-	for i in ${SHARED_LIB}; do \
+	for i in "" ${SHARED_LIB}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${libdir} ${INSTALL_LIB}; then \
+		if ${MKDIR_P} ${DESTDIR}${libdir} @INSTALL_LIB@; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
 		fi \
 	done
 
-	for i in ${STATIC_LIB} ${STATIC_PIC_LIB}; do \
+	for i in "" ${FRAMEWORK}; do \
+		test x"$$i" = x"" && continue; \
+		${INSTALL_STATUS}; \
+		rm -fr ${DESTDIR}${prefix}/Library/Frameworks/$$i; \
+		if ${MKDIR_P} ${DESTDIR}${prefix}/Library/Frameworks && cp -R $$i ${DESTDIR}${prefix}/Library/Frameworks/; then \
+			${INSTALL_OK}; \
+		else \
+			${INSTALL_FAILED}; \
+		fi \
+	done
+
+	for i in "" ${AMIGA_LIB}; do \
+		test x"$$i" = x"" && continue; \
+		${INSTALL_STATUS}; \
+		if ${MKDIR_P} ${DESTDIR}${amigalibdir} && ${INSTALL} -m 755 $$i ${DESTDIR}${amigalibdir}/$$i; then \
+			${INSTALL_OK}; \
+		else \
+			${INSTALL_FAILED}; \
+		fi \
+	done
+
+	for i in "" ${STATIC_LIB} ${STATIC_PIC_LIB} ${STATIC_AMIGA_LIB}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} ${DESTDIR}${libdir} && ${INSTALL} -m 644 $$i ${DESTDIR}${libdir}/$$i; then \
 			${INSTALL_OK}; \
@@ -452,16 +708,18 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${PLUGIN}; do \
+	for i in "" ${PLUGIN}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${plugindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${plugindir}/$$i; then \
+		if ${MKDIR_P} ${DESTDIR}${plugindir} @INSTALL_PLUGIN@; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
 		fi \
 	done
 
-	for i in ${DATA}; do \
+	for i in "" ${DATA}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${libdatadir}/${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${libdatadir}/${PACKAGE}/$$i; then \
 			${INSTALL_OK}; \
@@ -470,7 +728,8 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${CONFIG}; do \
+	for i in "" ${CONFIG}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${configdir}/${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${configdir}/${PACKAGE}/$$i; then \
 			${INSTALL_OK}; \
@@ -479,7 +738,8 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${DOC}; do \
+	for i in "" ${DOC}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if [ -f $$i ]; then \
 			if ${MKDIR_P} $$(dirname ${DESTDIR}${docdatadir}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${docdatadir}/$$i; then \
@@ -492,7 +752,8 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${PROG}; do \
+	for i in "" ${PROG}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i; then \
 			${INSTALL_OK}; \
@@ -501,16 +762,20 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${INCLUDES}; do \
-		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${includedir}/${includesubdir} && ${INSTALL} -m 644 $$i ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
-			${INSTALL_OK}; \
-		else \
-			${INSTALL_FAILED}; \
-		fi \
-	done
+	if test x"${INSTALL_INCLUDES}" = x"yes"; then \
+		for i in "" ${INCLUDES}; do \
+			test x"$$i" = x"" && continue; \
+			${INSTALL_STATUS}; \
+			if ${MKDIR_P} $$(dirname ${DESTDIR}${includedir}/${includesubdir}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
+				${INSTALL_OK}; \
+			else \
+				${INSTALL_FAILED}; \
+			fi \
+		done \
+	fi
 
-	for i in ${MO_FILES}; do \
+	for i in "" ${MO_FILES}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES && ${INSTALL} -m 644 $$i ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
 			${INSTALL_OK}; \
@@ -519,7 +784,8 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	for i in ${MAN}; do \
+	for i in "" ${MAN}; do \
+		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} ${DESTDIR}${mandir}/${mansubdir} && ${INSTALL} -m 644 $$i ${DESTDIR}${mandir}/${mansubdir}/$$i; then \
 			${INSTALL_OK}; \
@@ -528,22 +794,24 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
-	${MAKE} ${MFLAGS} post-install
+	${MAKE} -s post-install
 
 install-extra:
 
 post-install:
 
 uninstall: uninstall-extra
-	for i in ${SUBDIRS}; do \
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} ${MFLAGS} uninstall || exit $$?; \
+		${MAKE} -s uninstall || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-	for i in ${SHARED_LIB}; do \
+	for i in "" ${SHARED_LIB}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${libdir}/$$i; then \
-			if : ${UNINSTALL_LIB}; then \
+			if : @UNINSTALL_LIB@; then \
 				${DELETE_OK}; \
 			else \
 				${DELETE_FAILED}; \
@@ -551,7 +819,21 @@ uninstall: uninstall-extra
 		fi; \
 	done
 
-	for i in ${STATIC_LIB} ${STATIC_PIC_LIB}; do \
+	for i in "" ${FRAMEWORK}; do \
+		test x"$$i" = x"" && continue; \
+		if test -d ${DESTDIR}${prefix}/Library/Frameworks/$$i; then \
+			if rm -fr ${DESTDIR}${prefix}/Library/Frameworks/$$i; then \
+				${DELETE_OK}; \
+			else \
+				${DELETE_FAILED}; \
+			fi \
+		fi \
+	done
+	rmdir ${DESTDIR}${prefix}/Library/Frameworks >/dev/null 2>&1 || true
+	rmdir ${DESTDIR}${prefix}/Library >/dev/null 2>&1 || true
+
+	for i in "" ${STATIC_LIB} ${STATIC_PIC_LIB} ${STATIC_AMIGA_LIB}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${libdir}/$$i; then \
 			if rm -f ${DESTDIR}${libdir}/$$i; then \
 				${DELETE_OK}; \
@@ -561,18 +843,20 @@ uninstall: uninstall-extra
 		fi \
 	done
 
-	for i in ${PLUGIN}; do \
-		if test -f ${DESTDIR}${plugindir}/$$i; then \
-			if rm -f ${DESTDIR}${plugindir}/$$i; then \
+	for i in "" ${PLUGIN}; do \
+		test x"$$i" = x"" && continue; \
+		if test -e ${DESTDIR}${plugindir}/$$i; then \
+			if : @UNINSTALL_PLUGIN@; then \
 				${DELETE_OK}; \
 			else \
 				${DELETE_FAILED}; \
 			fi \
 		fi \
 	done
-	-rmdir ${DESTDIR}${plugindir} >/dev/null 2>&1
+	rmdir ${DESTDIR}${plugindir} >/dev/null 2>&1 || true
 
-	for i in ${DATA}; do \
+	for i in "" ${DATA}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${datadir}/${PACKAGE}/$$i; then \
 			if rm -f ${DESTDIR}${datadir}/${PACKAGE}/$$i; then \
 				${DELETE_OK}; \
@@ -582,9 +866,10 @@ uninstall: uninstall-extra
 		fi; \
 		rmdir "$$(dirname ${DESTDIR}${datadir}/${PACKAGE}/$$i)" >/dev/null 2>&1 || true; \
 	done
-	-rmdir ${DESTDIR}${datadir}/${PACKAGE} >/dev/null 2>&1
+	rmdir ${DESTDIR}${datadir}/${PACKAGE} >/dev/null 2>&1 || true
 
-	for i in ${PROG}; do \
+	for i in "" ${PROG}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${bindir}/$$i; then \
 			if rm -f ${DESTDIR}${bindir}/$$i; then \
 				${DELETE_OK}; \
@@ -594,7 +879,8 @@ uninstall: uninstall-extra
 		fi \
 	done
 
-	for i in ${INCLUDES}; do \
+	for i in "" ${INCLUDES}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
 			if rm -f ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
 				${DELETE_OK}; \
@@ -603,9 +889,10 @@ uninstall: uninstall-extra
 			fi \
 		fi \
 	done
-	-rmdir ${DESTDIR}${includedir}/${includesubdir} >/dev/null 2>&1
+	rmdir ${DESTDIR}${includedir}/${includesubdir} >/dev/null 2>&1 || true
 
-	for i in ${MO_FILES}; do \
+	for i in "" ${MO_FILES}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
 			if rm -f ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
 				${DELETE_OK}; \
@@ -615,7 +902,8 @@ uninstall: uninstall-extra
 		fi \
 	done
 
-	for i in ${MAN}; do \
+	for i in "" ${MAN}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${mandir}/${mansubdir}/$$i; then \
 			if rm -f ${DESTDIR}${mandir}/${mansubdir}/$$i; then \
 				${DELETE_OK}; \
@@ -628,13 +916,17 @@ uninstall: uninstall-extra
 uninstall-extra:
 
 clean: pre-clean
-	for i in ${SUBDIRS}; do \
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} ${MFLAGS} clean || exit $$?; \
+		${MAKE} -s clean || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-	for i in ${DEPS} ${OBJS} ${LIB_OBJS} ${PLUGIN_OBJS} ${PROG} ${PROG_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${CLEAN_LIB} ${MO_FILES} ${CLEAN}; do \
+	: >.deps
+
+	for i in "" ${DEPS} ${OBJS} ${OBJS_EXTRA} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS_EXTRA} ${PLUGIN_OBJS} ${PROG} ${PROG_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${AMIGA_LIB} ${AMIGA_LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST} ${FRAMEWORK} ${PLUGIN} ${PLUGIN_NOINST} ${CLEAN_LIB} ${MO_FILES} ${CLEAN}; do \
+		test x"$$i" = x"" && continue; \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
 				${DELETE_OK}; \
@@ -647,13 +939,15 @@ clean: pre-clean
 pre-clean:
 
 distclean: clean pre-distclean
-	for i in ${SUBDIRS}; do \
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} ${MFLAGS} distclean || exit $$?; \
+		${MAKE} -s distclean || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-	for i in ${DISTCLEAN} .deps *~; do \
+	for i in "" ${DISTCLEAN} .deps *~; do \
+		test x"$$i" = x"" && continue; \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
 				${DELETE_OK}; \
@@ -665,28 +959,41 @@ distclean: clean pre-distclean
 
 pre-distclean:
 
-DIR_ENTER = printf "@TERM_EL@@TERM_SETAF6@Entering directory @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n"; cd $$i || exit $$?
-DIR_LEAVE = printf "@TERM_EL@@TERM_SETAF6@Leaving directory @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n"; cd .. || exit $$?
-DEPEND_STATUS = printf "@TERM_EL@@TERM_SETAF3@Generating dependencies...@TERM_SGR0@\r"
-DEPEND_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully generated dependencies.@TERM_SGR0@\n"
-DEPEND_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to generate dependencies!@TERM_SGR0@\n"; exit $$err
-COMPILE_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r"
-COMPILE_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n"
-COMPILE_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
-COMPILE_LIB_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF3@ (lib)...@TERM_SGR0@\r"
-COMPILE_LIB_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF2@ (lib).@TERM_SGR0@\n"
-COMPILE_LIB_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF1@ (lib)!@TERM_SGR0@\n"; exit $$err
-COMPILE_PLUGIN_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF3@ (plugin)...@TERM_SGR0@\r"
-COMPILE_PLUGIN_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF2@ (plugin).@TERM_SGR0@\n"
-COMPILE_PLUGIN_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@$<@TERM_SGR0@@TERM_SETAF1@ (plugin)!@TERM_SGR0@\n"; exit $$err
+print-hierarchy:
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
+		echo ${PRINT_HIERARCHY_PREFIX}$$i; \
+		cd $$i || exit $$?; \
+		${MAKE} -s PRINT_HIERARCHY_PREFIX=$$i/ print-hierarchy || exit $$?; \
+		cd .. || exit $$?; \
+	done
+
+print-var:
+	printf '%s\n' '${${VAR}}'
+
+DIR_ENTER = printf "@TERM_EL@@TERM_SETAF6@Entering directory @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n" "$$i"; cd $$i || exit $$?
+DIR_LEAVE = printf "@TERM_EL@@TERM_SETAF6@Leaving directory @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF6@.@TERM_SGR0@\n" "$$i"; cd .. || exit $$?
+COMPILE_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r" "$<"
+COMPILE_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n" "$<"
+COMPILE_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n" "$<"; exit $$err
+COMPILE_LIB_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF3@ (lib)...@TERM_SGR0@\r" "$<"
+COMPILE_LIB_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF2@ (lib).@TERM_SGR0@\n" "$<"
+COMPILE_LIB_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@ (lib)!@TERM_SGR0@\n" "$<"; exit $$err
+COMPILE_AMIGA_LIB_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF3@ (Amiga lib)...@TERM_SGR0@\r" "$<"
+COMPILE_AMIGA_LIB_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF2@ (Amiga lib).@TERM_SGR0@\n" "$<"
+COMPILE_AMIGA_LIB_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@ (Amiga lib)!@TERM_SGR0@\n" "$<"; exit $$err
+COMPILE_PLUGIN_STATUS = printf "@TERM_EL@@TERM_SETAF3@Compiling @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF3@ (plugin)...@TERM_SGR0@\r" "$<"
+COMPILE_PLUGIN_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully compiled @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF2@ (plugin).@TERM_SGR0@\n" "$<"
+COMPILE_PLUGIN_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to compile @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@ (plugin)!@TERM_SGR0@\n" "$<"; exit $$err
 LINK_STATUS = printf "@TERM_EL@@TERM_SETAF3@Linking @TERM_BOLD@$@@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r"
 LINK_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully linked @TERM_BOLD@$@@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n"
 LINK_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to link @TERM_BOLD@$@@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
-INSTALL_STATUS = printf "@TERM_EL@@TERM_SETAF3@Installing @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r"
-INSTALL_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully installed @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n"
-INSTALL_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to install @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
+INSTALL_STATUS = printf "@TERM_EL@@TERM_SETAF3@Installing @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r" "$$i"
+INSTALL_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully installed @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n" "$$i"
+INSTALL_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to install @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n" "$$i"; exit $$err
 INSTALL_SKIP = printf "Skipping $$i\n"
-DELETE_OK = printf "@TERM_EL@@TERM_SETAF4@Deleted @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF4@.@TERM_SGR0@\n"
-DELETE_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to delete @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
+DELETE_OK = printf "@TERM_EL@@TERM_SETAF4@Deleted @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF4@.@TERM_SGR0@\n" "$$i"
+DELETE_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to delete @TERM_BOLD@%s@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n" "$$i"; exit $$err
 
-include .deps
+.CURDIR ?= .
+-include ${.CURDIR}/.deps
