@@ -28,7 +28,6 @@
 #include "object.h"
 #include "player-calcs.h"
 #include "ui-display.h"
-#include "ui-help.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
@@ -171,10 +170,6 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 				m->flags == MN_DBL_TAP) {
 			options_reset_birth(&player->opts);
 			menu_refresh(m, false);
-		} else if (event->key.code == '?') {
-			screen_save();
-			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
-			screen_load();
 		} else {
 			return false;
 		}
@@ -212,19 +207,19 @@ static void option_toggle_menu(const char *name, int page)
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
 
 	/* for all menus */
-	m->prompt = "Set option (y/n/t), '?' for information";
-	m->cmd_keys = "?YyNnTt";
+	m->prompt = "Set option (y/n/t), select with movement keys or index";
+	m->cmd_keys = "YyNnTt";
 	m->selections = "abcdefghijklmopqrsuvwxz";
 	m->flags = MN_DBL_TAP;
 
 	/* We add 10 onto the page amount to indicate we're at birth */
 	if (page == OPT_PAGE_BIRTH) {
-		m->prompt = "You can only modify these options at character birth. '?' for information";
-		m->cmd_keys = "?";
+		m->prompt = "You can only modify these options at character birth.";
+		m->cmd_keys = "";
 		m->flags = MN_NO_TAGS;
 	} else if (page == OPT_PAGE_BIRTH + 10) {
-		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'm' to reset, '?' for help";
-		m->cmd_keys = "?YyNnTtSsRrMm";
+		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'm' to reset";
+		m->cmd_keys = "YyNnTtSsRrMm";
 		page -= 10;
 	}
 
