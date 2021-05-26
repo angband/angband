@@ -1650,8 +1650,9 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 						square_isgranite(c, grid) &&
 						sqinfo_has(square(c, grid)->info, SQUARE_WALL_SOLID));
 					/*
-					 * Convert to SQUARE_WALL_INNER if does
-					 * not touch the outside of the vault.
+					 * Convert to SQUARE_WALL_INNER if it
+					 * does not touch the outside of the
+					 * vault.
 					 */
 					if (count_neighbors(NULL, c, grid,
 							square_isroom, false) == 8) {
@@ -1969,7 +1970,7 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 			return (false);
 	}
 
-	/* Pick a room size */
+	/* Set bounds */
 	y1 = centre.y - height / 2;
 	x1 = centre.x - width / 2;
 	y2 = y1 + height - 1;
@@ -2586,11 +2587,9 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 	x1 = x1 + 2;
 	x2 = x2 - 2;
 
-	/* Generate inner walls */
+	/* Generate inner walls; add one door as entrance */
 	draw_rectangle(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_GRANITE,
 		SQUARE_WALL_INNER, false);
-
-	/* Open the inner room with a secret door */
 	generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
 
 	/* Decide on the pit type */
@@ -2712,7 +2711,7 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	x1 = x1 + 2;
 	x2 = x2 - 2;
 
-	/* Generate inner walls, and open with a secret door */
+	/* Generate inner walls; add one door as entrance */
 	draw_rectangle(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_GRANITE,
 		SQUARE_WALL_INNER, false);
 	generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);

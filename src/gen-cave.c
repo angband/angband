@@ -17,9 +17,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  *
  * In this file, we use the SQUARE_WALL flags to the info field in
- * cave->squares, which should only be applied to granite.  SQUARE_WALL_SOLID
- * indicates the wall should not be tunnelled; SQUARE_WALL_INNER is the
- * inward-facing wall of a room; SQUARE_WALL_OUTER is the outer wall of a room.
+ * cave->squares.  Those are usually only applied and tested on granite, but
+ * some (SQUARE_WALL_INNER) is applied and tested on permanent walls.
+ * SQUARE_WALL_SOLID indicates the wall should not be tunnelled;
+ * SQUARE_WALL_INNER marks an inward-facing wall of a room; SQUARE_WALL_OUTER
+ * marks an outer wall of a room.
  *
  * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
  * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
@@ -106,14 +108,14 @@ static bool square_is_granite_with_flag(struct chunk *c, struct loc grid,
  */
 static void build_streamer(struct chunk *c, int feat, int chance)
 {
-    /* Hack -- Choose starting point */
+	/* Hack -- Choose starting point */
 	struct loc grid = rand_loc(loc(c->width / 2, c->height / 2), 15, 10);
 
-    /* Choose a random direction */
-    int dir = ddd[randint0(8)];
+	/* Choose a random direction */
+	int dir = ddd[randint0(8)];
 
-    /* Place streamer into dungeon */
-    while (true) {
+	/* Place streamer into dungeon */
+	while (true) {
 		int i;
 		struct loc change;
 
@@ -139,7 +141,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 
 		/* Stop at dungeon edge */
 		if (!square_in_bounds(c, grid)) break;
-    }
+	}
 }
 
 
@@ -491,23 +493,25 @@ static bool allows_wall_piercing_door(struct chunk *c, struct loc grid)
  */
 static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 {
-    int i;
-    int main_loop_count = 0;
-    struct loc start = grid1, tmp_grid, offset;
-    /* Used to prevent random bends for a while. */
-    int bend_intvl = 0;
-    /* Used to prevent excessive door creation along overlapping corridors. */
-    bool door_flag = false;
+	int i;
+	int main_loop_count = 0;
+	struct loc start = grid1, tmp_grid, offset;
+	/* Used to prevent random bends for a while. */
+	int bend_intvl = 0;
+	/*
+	 * Used to prevent excessive door creation along overlapping corridors.
+	 */
+	bool door_flag = false;
 
-    /* Reset the arrays */
-    dun->tunn_n = 0;
-    dun->wall_n = 0;
+	/* Reset the arrays */
+	dun->tunn_n = 0;
+	dun->wall_n = 0;
 
-    /* Start out in the correct direction */
-    correct_dir(&offset, grid1, grid2);
+	/* Start out in the correct direction */
+	correct_dir(&offset, grid1, grid2);
 
-    /* Keep going until done (or bored) */
-    while (!loc_eq(grid1, grid2)) {
+	/* Keep going until done (or bored) */
+	while (!loc_eq(grid1, grid2)) {
 		/* Mega-Hack -- Paranoia -- prevent infinite loops */
 		if (main_loop_count++ > 2000) break;
 
@@ -729,17 +733,16 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 				if ((ABS(tmp_grid.x) > 10) || (ABS(tmp_grid.y) > 10)) break;
 			}
 		}
-    }
+	}
 
-    /* Turn the tunnel into corridor */
-    for (i = 0; i < dun->tunn_n; i++) {
+	/* Turn the tunnel into corridor */
+	for (i = 0; i < dun->tunn_n; i++) {
 		/* Clear previous contents, add a floor */
 		square_set_feat(c, dun->tunn[i], FEAT_FLOOR);
-    }
+	}
 
-
-    /* Apply the piercings that we found */
-    for (i = 0; i < dun->wall_n; i++) {
+	/* Apply the piercings that we found */
+	for (i = 0; i < dun->wall_n; i++) {
 		/* Convert to floor grid */
 		square_set_feat(c, dun->wall[i], FEAT_FLOOR);
 
@@ -747,7 +750,7 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 		if (randint0(100) < dun->profile->tun.pen &&
 				allows_wall_piercing_door(c, dun->wall[i]))
 			place_random_door(c, dun->wall[i]);
-    }
+	}
 }
 
 /**
@@ -763,20 +766,20 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
  */
 static int next_to_corr(struct chunk *c, struct loc grid)
 {
-    int i, k = 0;
-    assert(square_in_bounds(c, grid));
+	int i, k = 0;
+	assert(square_in_bounds(c, grid));
 
-    /* Scan adjacent grids */
-    for (i = 0; i < 4; i++) {
+	/* Scan adjacent grids */
+	for (i = 0; i < 4; i++) {
 		/* Extract the location */
 		struct loc grid1 = loc_sum(grid, ddgrid_ddd[i]);
 
 		/* Count only floors which aren't part of rooms */
 		if (square_isfloor(c, grid1) && !square_isroom(c, grid1)) k++;
-    }
+	}
 
-    /* Return the number of corridors */
-    return k;
+	/* Return the number of corridors */
+	return k;
 }
 
 /**
@@ -790,16 +793,16 @@ static int next_to_corr(struct chunk *c, struct loc grid)
  */
 static bool possible_doorway(struct chunk *c, struct loc grid)
 {
-   assert(square_in_bounds(c, grid));
-    if (next_to_corr(c, grid) < 2)
+	assert(square_in_bounds(c, grid));
+	if (next_to_corr(c, grid) < 2)
 		return false;
-    else if (square_isstrongwall(c, next_grid(grid, DIR_N)) &&
+	else if (square_isstrongwall(c, next_grid(grid, DIR_N)) &&
 			 square_isstrongwall(c, next_grid(grid, DIR_S)))
 		return true;
-    else if (square_isstrongwall(c, next_grid(grid, DIR_W)) &&
+	else if (square_isstrongwall(c, next_grid(grid, DIR_W)) &&
 			 square_isstrongwall(c, next_grid(grid, DIR_E)))
 		return true;
-    else
+	else
 		return false;
 }
 
@@ -812,16 +815,16 @@ static bool possible_doorway(struct chunk *c, struct loc grid)
  */
 static void try_door(struct chunk *c, struct loc grid)
 {
-    assert(square_in_bounds(c, grid));
+	assert(square_in_bounds(c, grid));
 
-    if (square_isstrongwall(c, grid)) return;
-    if (square_isroom(c, grid)) return;
-    if (square_isplayertrap(c, grid)) return;
-    if (square_isdoor(c, grid)) return;
+	if (square_isstrongwall(c, grid)) return;
+	if (square_isroom(c, grid)) return;
+	if (square_isplayertrap(c, grid)) return;
+	if (square_isdoor(c, grid)) return;
 
-    if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, grid))
+	if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, grid))
 		place_random_door(c, grid);
-    else if (randint0(500) < dun->profile->tun.jct && possible_doorway(c, grid))
+	else if (randint0(500) < dun->profile->tun.jct && possible_doorway(c, grid))
 		place_trap(c, grid, -1, c->depth);
 }
 
@@ -900,64 +903,64 @@ static void do_traditional_tunneling(struct chunk *c)
  * \return a pointer to the generated chunk
  */
 struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
-    int i, j, k;
-    int by, bx = 0, tby, tbx, key, rarity, built;
-    int num_rooms, size_percent;
-    int dun_unusual = dun->profile->dun_unusual;
+	int i, j, k;
+	int by, bx = 0, tby, tbx, key, rarity, built;
+	int num_rooms, size_percent;
+	int dun_unusual = dun->profile->dun_unusual;
 
-    bool **blocks_tried;
-    struct chunk *c;
+	bool **blocks_tried;
+	struct chunk *c;
 
-    /* No persistent levels of this type for now */
-    if (OPT(p, birth_levels_persist)) return NULL;
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
-    /* This code currently does nothing - see comments below */
-    i = randint1(10) + p->depth / 24;
-    if (is_quest(p->depth)) size_percent = 100;
-    else if (i < 2) size_percent = 75;
-    else if (i < 3) size_percent = 80;
-    else if (i < 4) size_percent = 85;
-    else if (i < 5) size_percent = 90;
-    else if (i < 6) size_percent = 95;
-    else size_percent = 100;
+	/* This code currently does nothing - see comments below */
+	i = randint1(10) + p->depth / 24;
+	if (is_quest(p->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
+	else size_percent = 100;
 
-    /* scale the various generation variables */
-    num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
+	/* scale the various generation variables */
+	num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
 	c->depth = p->depth;
-    ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
+	ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
-    /* Fill cave area with basic granite */
-    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_GRANITE, SQUARE_NONE);
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_GRANITE, SQUARE_NONE);
 
-    /* Actual maximum number of rooms on this level */
-    dun->row_blocks = c->height / dun->block_hgt;
-    dun->col_blocks = c->width / dun->block_wid;
+	/* Actual maximum number of rooms on this level */
+	dun->row_blocks = c->height / dun->block_hgt;
+	dun->col_blocks = c->width / dun->block_wid;
 
-    /* Initialize the room table */
+	/* Initialize the room table */
 	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
 	for (i = 0; i < dun->row_blocks; i++)
 		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
-    /* Initialize the block table */
-    blocks_tried = mem_zalloc(dun->row_blocks * sizeof(bool*));
+	/* Initialize the block table */
+	blocks_tried = mem_zalloc(dun->row_blocks * sizeof(bool*));
 
 	for (i = 0; i < dun->row_blocks; i++)
 		blocks_tried[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
-    /* No rooms yet, pits or otherwise. */
-    dun->pit_num = 0;
-    dun->cent_n = 0;
-    reset_entrance_data(c);
+	/* No rooms yet, pits or otherwise. */
+	dun->pit_num = 0;
+	dun->cent_n = 0;
+	reset_entrance_data(c);
 
-    /* Build some rooms.  Note that the theoretical maximum number of rooms
+	/* Build some rooms.  Note that the theoretical maximum number of rooms
 	 * in this profile is currently 36, so built never reaches num_rooms,
 	 * and room generation is always terminated by having tried all blocks */
-    built = 0;
-    while(built < num_rooms) {
+	built = 0;
+	while(built < num_rooms) {
 
 		/* Count the room blocks we haven't tried yet. */
 		j = 0;
@@ -987,9 +990,10 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -1012,7 +1016,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 				break;
 			}
 		}
-    }
+	}
 
 	for (i = 0; i < dun->row_blocks; i++){
 		mem_free(blocks_tried[i]);
@@ -1021,58 +1025,58 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	mem_free(blocks_tried);
 	mem_free(dun->room_map);
 
-    /* Generate permanent walls around the edge of the generated area */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE, true);
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_PERM, SQUARE_NONE, true);
 
-    /* Connect all the rooms together */
-    do_traditional_tunneling(c);
-    ensure_connectedness(c, true);
+	/* Connect all the rooms together */
+	do_traditional_tunneling(c);
+	ensure_connectedness(c, true);
 
-    /* Add some magma streamers */
-    for (i = 0; i < dun->profile->str.mag; i++)
+	/* Add some magma streamers */
+	for (i = 0; i < dun->profile->str.mag; i++)
 		build_streamer(c, FEAT_MAGMA, dun->profile->str.mc);
 
-    /* Add some quartz streamers */
-    for (i = 0; i < dun->profile->str.qua; i++)
+	/* Add some quartz streamers */
+	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-    /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
+	/* Place 3 or 4 down stairs near some walls */
+	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
 
-    /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 1 or 2 up stairs near some walls */
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
 
-    /* General amount of rubble, traps and monsters */
-    k = MAX(MIN(c->depth / 3, 10), 2);
+	/* General amount of rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
 
-    /* Put some rubble in corridors */
-    alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
+	/* Place some traps in the dungeon, reduce frequency by factor of 5 */
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
-    /* Determine the character location */
-    new_player_spot(c, p);
+	/* Determine the character location */
+	new_player_spot(c, p);
 
-    /* Pick a base number of monsters */
-    i = z_info->level_monster_min + randint1(8) + k;
+	/* Pick a base number of monsters */
+	i = z_info->level_monster_min + randint1(8) + k;
 
-    /* Put some monsters in the dungeon */
-    for (; i > 0; i--)
+	/* Put some monsters in the dungeon */
+	for (; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
-    /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects in rooms */
+	alloc_objects(c, SET_ROOM, TYP_OBJECT,
+		Rand_normal(z_info->room_item_av, 3), c->depth, ORIGIN_FLOOR);
 
-    /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT,
+		Rand_normal(z_info->both_item_av, 3), c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD,
+		Rand_normal(z_info->both_gold_av, 3), c->depth, ORIGIN_FLOOR);
 
-    return c;
+	return c;
 }
 
 
@@ -1088,15 +1092,15 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
  * \param b are the two cell indices
  */
 static void lab_get_adjoin(int i, int w, int *a, int *b) {
-    struct loc grid;
-    i_to_grid(i, w, &grid);
-    if (grid.x % 2 == 0) {
+	struct loc grid;
+	i_to_grid(i, w, &grid);
+	if (grid.x % 2 == 0) {
 		*a = grid_to_i(next_grid(grid, DIR_N), w);
 		*b = grid_to_i(next_grid(grid, DIR_S), w);
-    } else {
+	} else {
 		*a = grid_to_i(next_grid(grid, DIR_W), w);
 		*b = grid_to_i(next_grid(grid, DIR_E), w);
-    }
+	}
 }
 
 /**
@@ -1115,16 +1119,16 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * walking diagonally around them).
  */
 static bool lab_is_tunnel(struct chunk *c, struct loc grid) {
-    bool west = square_ispassable(c, next_grid(grid, DIR_W)) ||
-	square_iscloseddoor(c, next_grid(grid, DIR_W));
-    bool east = square_ispassable(c, next_grid(grid, DIR_E)) ||
-	square_iscloseddoor(c, next_grid(grid, DIR_E));
-    bool north = square_ispassable(c, next_grid(grid, DIR_N)) ||
-	square_iscloseddoor(c, next_grid(grid, DIR_N));
-    bool south = square_ispassable(c, next_grid(grid, DIR_S)) ||
-	square_iscloseddoor(c, next_grid(grid, DIR_S));
+	bool west = square_ispassable(c, next_grid(grid, DIR_W)) ||
+		square_iscloseddoor(c, next_grid(grid, DIR_W));
+	bool east = square_ispassable(c, next_grid(grid, DIR_E)) ||
+		square_iscloseddoor(c, next_grid(grid, DIR_E));
+	bool north = square_ispassable(c, next_grid(grid, DIR_N)) ||
+		square_iscloseddoor(c, next_grid(grid, DIR_N));
+	bool south = square_ispassable(c, next_grid(grid, DIR_S)) ||
+		square_iscloseddoor(c, next_grid(grid, DIR_S));
 
-    return north == south && west == east && north != west;
+	return north == south && west == east && north != west;
 }
 
 
@@ -1140,48 +1144,48 @@ static bool lab_is_tunnel(struct chunk *c, struct loc grid) {
  */
 struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 {
-    int i, j, k;
+	int i, j, k;
 	struct loc grid;
 
-    /* This is the number of squares in the labyrinth */
-    int n = h * w;
+	/* This is the number of squares in the labyrinth */
+	int n = h * w;
 
-    /* NOTE: 'sets' and 'walls' are too large... we only need to use about
-     * 1/4 as much memory. However, in that case, the addressing math becomes
-     * a lot more complicated, so let's just stick with this because it's
-     * easier to read. */
+	/* NOTE: 'sets' and 'walls' are too large... we only need to use about
+	 * 1/4 as much memory. However, in that case, the addressing math
+	 * becomes a lot more complicated, so let's just stick with this
+	 * because it's easier to read. */
 
-    /* 'sets' tracks connectedness; if sets[i] == sets[j] then cells i and j
-     * are connected to each other in the maze. */
-    int *sets;
+	/* 'sets' tracks connectedness; if sets[i] == sets[j] then cells i and j
+	 * are connected to each other in the maze. */
+	int *sets;
 
-    /* 'walls' is a list of wall coordinates which we will randomize */
-    int *walls;
+	/* 'walls' is a list of wall coordinates which we will randomize */
+	int *walls;
 
 	/* The labyrinth chunk */
 	struct chunk *c = cave_new(h + 2, w + 2);
 	c->depth = depth;
-    /* allocate our arrays */
-    sets = mem_zalloc(n * sizeof(int));
-    walls = mem_zalloc(n * sizeof(int));
+	/* allocate our arrays */
+	sets = mem_zalloc(n * sizeof(int));
+	walls = mem_zalloc(n * sizeof(int));
 
-    /* Bound with perma-rock */
-    draw_rectangle(c, 0, 0, h + 1, w + 1, FEAT_PERM, SQUARE_NONE, true);
+	/* Bound with perma-rock */
+	draw_rectangle(c, 0, 0, h + 1, w + 1, FEAT_PERM, SQUARE_NONE, true);
 
-    /* Fill the labyrinth area with rock */
+	/* Fill the labyrinth area with rock */
 	if (soft)
 		fill_rectangle(c, 1, 1, h, w, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	else
 		fill_rectangle(c, 1, 1, h, w, FEAT_PERM, SQUARE_NONE);
 
-    /* Initialize each wall. */
-    for (i = 0; i < n; i++) {
+	/* Initialize each wall. */
+	for (i = 0; i < n; i++) {
 		walls[i] = i;
 		sets[i] = -1;
-    }
+	}
 
-    /* Cut out a grid of 1x1 rooms which we will call "cells" */
-    for (grid.y = 0; grid.y < h; grid.y += 2) {
+	/* Cut out a grid of 1x1 rooms which we will call "cells" */
+	for (grid.y = 0; grid.y < h; grid.y += 2) {
 		for (grid.x = 0; grid.x < w; grid.x += 2) {
 			int k_local = grid_to_i(grid, w);
 			struct loc diag = next_grid(grid, DIR_SE);
@@ -1189,16 +1193,16 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			square_set_feat(c, diag, FEAT_FLOOR);
 			if (lit) sqinfo_on(square(c, diag)->info, SQUARE_GLOW);
 		}
-    }
+	}
 
-    /* Shuffle the walls, using Knuth's shuffle. */
-    shuffle(walls, n);
+	/* Shuffle the walls, using Knuth's shuffle. */
+	shuffle(walls, n);
 
-    /* For each adjoining wall, look at the cells it divides. If they aren't
-     * in the same set, remove the wall and join their sets.
-     *
-     * This is a randomized version of Kruskal's algorithm. */
-    for (i = 0; i < n; i++) {
+	/* For each adjoining wall, look at the cells it divides. If they aren't
+	 * in the same set, remove the wall and join their sets.
+	 *
+	 * This is a randomized version of Kruskal's algorithm. */
+	for (i = 0; i < n; i++) {
 		int a, b;
 
 		j = walls[i];
@@ -1224,10 +1228,10 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 				if (sets[k] == sb) sets[k] = sa;
 			}
 		}
-    }
+	}
 
-    /* Generate a door for every 100 squares in the labyrinth */
-    for (i = n / 100; i > 0; i--) {
+	/* Generate a door for every 100 squares in the labyrinth */
+	for (i = n / 100; i > 0; i--) {
 		/* Try 10 times to find a useful place for a door, then place it */
 		for (j = 0; j < 10; j++) {
 			find_empty(c, &grid);
@@ -1235,21 +1239,21 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 
 		}
 		place_closed_door(c, grid);
-    }
+	}
 
-    /* Unlit labyrinths will have some good items */
-    if (!lit)
-		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth,
-					  ORIGIN_LABYRINTH);
+	/* Unlit labyrinths will have some good items */
+	if (!lit)
+		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2),
+			c->depth, ORIGIN_LABYRINTH);
 
-    /* Hard (non-diggable) labyrinths will have some great items */
-    if (!soft)
-		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth,
-					  ORIGIN_LABYRINTH);
+	/* Hard (non-diggable) labyrinths will have some great items */
+	if (!soft)
+		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1),
+			c->depth, ORIGIN_LABYRINTH);
 
-    /* Deallocate our lists */
-    mem_free(sets);
-    mem_free(walls);
+	/* Deallocate our lists */
+	mem_free(sets);
+	mem_free(walls);
 
 	return c;
 }
@@ -1263,24 +1267,24 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
  * labyrinths than others).
  */
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
-    int i, k;
+	int i, k;
 	struct chunk *c;
 	struct loc grid;
-    /* Size of the actual labyrinth part must be odd. */
-    /* NOTE: these are not the actual dungeon size, but rather the size of the
-     * area we're generating a labyrinth in (which doesn't count the enclosing
-     * outer walls. */
-    int h = 15 + randint0(p->depth / 10) * 2;
-    int w = 51 + randint0(p->depth / 10) * 2;
+	/* Size of the actual labyrinth part must be odd. */
+	/* NOTE: these are not the actual dungeon size, but rather the size of
+	 * the area we're generating a labyrinth in (which doesn't count the
+	 * enclosing outer walls. */
+	int h = 15 + randint0(p->depth / 10) * 2;
+	int w = 51 + randint0(p->depth / 10) * 2;
 
-    /* Most labyrinths are lit */
-    bool lit = randint0(p->depth) < 25 || randint0(2) < 1;
+	/* Most labyrinths are lit */
+	bool lit = randint0(p->depth) < 25 || randint0(2) < 1;
 
-    /* Many labyrinths are known */
-    bool known = lit && randint0(p->depth) < 25;
+	/* Many labyrinths are known */
+	bool known = lit && randint0(p->depth) < 25;
 
-    /* Most labyrinths have soft (diggable) walls */
-    bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
+	/* Most labyrinths have soft (diggable) walls */
+	bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
 
 	/* No persistent levels of this type for now */
 	if (OPT(p, birth_levels_persist)) return NULL;
@@ -1294,47 +1298,47 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 	if (!c) return NULL;
 	c->depth = p->depth;
 
-    /* Determine the character location */
-    new_player_spot(c, p);
+	/* Determine the character location */
+	new_player_spot(c, p);
 
-    /* Generate a single set of stairs up if necessary. */
-    if (!cave_find(c, &grid, square_isupstairs))
+	/* Generate a single set of stairs up if necessary. */
+	if (!cave_find(c, &grid, square_isupstairs))
 		alloc_stairs(c, FEAT_LESS, 1);
 
-    /* Generate a single set of stairs down if necessary. */
-    if (!cave_find(c, &grid, square_isdownstairs))
+	/* Generate a single set of stairs down if necessary. */
+	if (!cave_find(c, &grid, square_isdownstairs))
 		alloc_stairs(c, FEAT_MORE, 1);
 
-    /* General some rubble, traps and monsters */
-    k = MAX(MIN(c->depth / 3, 10), 2);
+	/* General some rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
 
-    /* Scale number of monsters items by labyrinth size */
-    k = (3 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid);
+	/* Scale number of monsters items by labyrinth size */
+	k = (3 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid);
 
-    /* Put some rubble in corridors */
-    alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
+	/* Place some traps in the dungeon */
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
-    /* Put some monsters in the dungeon */
-    for (i = z_info->level_monster_min + randint1(8) + k; i > 0; i--)
+	/* Put some monsters in the dungeon */
+	for (i = z_info->level_monster_min + randint1(8) + k; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
-    /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k * 6, 2), c->depth,
-				  ORIGIN_LABYRINTH);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k * 3, 2), c->depth,
-				  ORIGIN_LABYRINTH);
-    alloc_objects(c, SET_BOTH, TYP_GOOD, randint1(2), c->depth,
-				  ORIGIN_LABYRINTH);
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k * 6, 2), c->depth,
+		ORIGIN_LABYRINTH);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k * 3, 2), c->depth,
+		ORIGIN_LABYRINTH);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint1(2), c->depth,
+		ORIGIN_LABYRINTH);
 
-    /* Notify if we want the player to see the maze layout */
-    if (known) {
+	/* Notify if we want the player to see the maze layout */
+	if (known) {
 		player->upkeep->light_level = true;
 	}
 
-    return c;
+	return c;
 }
 
 
@@ -1346,22 +1350,22 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
  * \param density is the percentage of floors we are aiming for
  */
 static void init_cavern(struct chunk *c, int density) {
-    int h = c->height;
-    int w = c->width;
-    int size = h * w;
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
 	
-    int count = (size * density) / 100;
+	int count = (size * density) / 100;
 
-    /* Fill the entire chunk with rock */
-    fill_rectangle(c, 0, 0, h - 1, w - 1, FEAT_GRANITE, SQUARE_WALL_SOLID);
+	/* Fill the entire chunk with rock */
+	fill_rectangle(c, 0, 0, h - 1, w - 1, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	
-    while (count > 0) {
+	while (count > 0) {
 		struct loc grid = loc(randint1(w - 2), randint1(h - 2));
 		if (square_isrock(c, grid)) {
 			square_set_feat(c, grid, FEAT_FLOOR);
 			count--;
 		}
-    }
+	}
 }
 
 /**
@@ -1371,15 +1375,15 @@ static void init_cavern(struct chunk *c, int density) {
  * \param x are the co-ordinates
  */
 static int count_adj_walls(struct chunk *c, struct loc grid) {
-    int d;
-    int count = 0;
+	int d;
+	int count = 0;
 
-    for (d = 0; d < 8; d++) {
+	for (d = 0; d < 8; d++) {
 		if (square_isfloor(c, loc_sum(grid, ddgrid_ddd[d]))) continue;
 		count++;
 	}
 
-    return count;
+	return count;
 }
 
 /**
@@ -1388,12 +1392,12 @@ static int count_adj_walls(struct chunk *c, struct loc grid) {
  */
 static void mutate_cavern(struct chunk *c) {
 	struct loc grid;
-    int h = c->height;
-    int w = c->width;
+	int h = c->height;
+	int w = c->width;
 
-    int *temp = mem_zalloc(h * w * sizeof(int));
+	int *temp = mem_zalloc(h * w * sizeof(int));
 
-    for (grid.y = 1; grid.y < h - 1; grid.y++) {
+	for (grid.y = 1; grid.y < h - 1; grid.y++) {
 		for (grid.x = 1; grid.x < w - 1; grid.x++) {
 			int count = count_adj_walls(c, grid);
 			if (count > 5)
@@ -1403,18 +1407,18 @@ static void mutate_cavern(struct chunk *c) {
 			else
 				temp[grid_to_i(grid, w)] = square(c, grid)->feat;
 		}
-    }
+	}
 
-    for (grid.y = 1; grid.y < h - 1; grid.y++) {
+	for (grid.y = 1; grid.y < h - 1; grid.y++) {
 		for (grid.x = 1; grid.x < w - 1; grid.x++) {
 			if (temp[grid_to_i(grid, w)] == FEAT_GRANITE)
 				set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 			else
 				square_set_feat(c, grid, temp[grid_to_i(grid, w)]);
 		}
-    }
+	}
 
-    mem_free(temp);
+	mem_free(temp);
 }
 
 /**
@@ -1424,8 +1428,8 @@ static void mutate_cavern(struct chunk *c) {
  * \param size is the array length
  */
 static void array_filler(int data[], int value, int size) {
-    int i;
-    for (i = 0; i < size; i++) data[i] = value;
+	int i;
+	for (i = 0; i < size; i++) data[i] = value;
 }
 
 /**
@@ -1436,13 +1440,13 @@ static void array_filler(int data[], int value, int size) {
  * \param x are the co-ordinates
  */
 static int ignore_point(struct chunk *c, int colors[], struct loc grid) {
-    int n = grid_to_i(grid, c->width);
+	int n = grid_to_i(grid, c->width);
 
-    if (!square_in_bounds(c, grid)) return true;
-    if (colors[n]) return true;
-    if (square_ispassable(c, grid)) return false;
-    if (square_isdoor(c, grid)) return false;
-    return true;
+	if (!square_in_bounds(c, grid)) return true;
+	if (colors[n]) return true;
+	if (square_ispassable(c, grid)) return false;
+	if (square_isdoor(c, grid)) return false;
+	return true;
 }
 
 /**
@@ -1455,21 +1459,21 @@ static int ignore_point(struct chunk *c, int colors[], struct loc grid) {
  * \param diagonal controls whether we can progress diagonally
  */
 static void build_color_point(struct chunk *c, int colors[], int counts[],
-							  struct loc grid, int color, bool diagonal) {
-    int h = c->height;
-    int w = c->width;
-    int size = h * w;
-    struct queue *queue = q_new(size);
+		struct loc grid, int color, bool diagonal) {
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+	struct queue *queue = q_new(size);
 
-    int *added = mem_zalloc(size * sizeof(int));
+	int *added = mem_zalloc(size * sizeof(int));
 
-    array_filler(added, 0, size);
+	array_filler(added, 0, size);
 
-    q_push_int(queue, grid_to_i(grid, w));
+	q_push_int(queue, grid_to_i(grid, w));
 
-    counts[color] = 0;
+	counts[color] = 0;
 
-    while (q_len(queue) > 0) {
+	while (q_len(queue) > 0) {
 		int i;
 		struct loc grid1;
 		int n1 = q_pop_int(queue);
@@ -1490,10 +1494,10 @@ static void build_color_point(struct chunk *c, int colors[], int counts[],
 			q_push_int(queue, n2);
 			added[n2] = 1;
 		}
-    }
+	}
 
-    mem_free(added);
-    q_free(queue);
+	mem_free(added);
+	q_free(queue);
 }
 
 /**
@@ -1504,18 +1508,18 @@ static void build_color_point(struct chunk *c, int colors[], int counts[],
  * \param diagonal controls whether we can progress diagonally
  */
 static void build_colors(struct chunk *c, int colors[], int counts[], bool diagonal) {
-    int y, x;
-    int h = c->height;
-    int w = c->width;
-    int color = 1;
+	int y, x;
+	int h = c->height;
+	int w = c->width;
+	int color = 1;
 
-    for (y = 0; y < h; y++) {
+	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
 			if (ignore_point(c, colors, loc(x, y))) continue;
 			build_color_point(c, colors, counts, loc(x, y), color, diagonal);
 			color++;
 		}
-    }
+	}
 }
 
 /**
@@ -1525,22 +1529,22 @@ static void build_colors(struct chunk *c, int colors[], int counts[], bool diago
  * \param counts is the array of current color counts
  */
 static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
-    int i, y, x;
-    int h = c->height;
-    int w = c->width;
-    int size = h * w;
+	int i, y, x;
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
 
-    int *deleted = mem_zalloc(size * sizeof(int));
-    array_filler(deleted, 0, size);
+	int *deleted = mem_zalloc(size * sizeof(int));
+	array_filler(deleted, 0, size);
 
-    for (i = 0; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		if (counts[i] < 9) {
 			deleted[i] = 1;
 			counts[i] = 0;
 		}
-    }
+	}
 
-    for (y = 1; y < c->height - 1; y++) {
+	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
 			struct loc grid = loc(x, y);
 			i = grid_to_i(grid, w);
@@ -1550,8 +1554,8 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
 			colors[i] = 0;
 			set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 		}
-    }
-    mem_free(deleted);
+	}
+	mem_free(deleted);
 }
 
 /**
@@ -1560,10 +1564,10 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
  * \param size is the total area
  */
 static int count_colors(int counts[], int size) {
-    int i;
-    int num = 0;
-    for (i = 0; i < size; i++) if (counts[i] > 0) num++;
-    return num;
+	int i;
+	int num = 0;
+	for (i = 0; i < size; i++) if (counts[i] > 0) num++;
+	return num;
 }
 
 /**
@@ -1572,9 +1576,9 @@ static int count_colors(int counts[], int size) {
  * \param size is the total area
  */
 static int first_color(int counts[], int size) {
-    int i;
-    for (i = 0; i < size; i++) if (counts[i] > 0) return i;
-    return -1;
+	int i;
+	for (i = 0; i < size; i++) if (counts[i] > 0) return i;
+	return -1;
 }
 
 /**
@@ -1586,10 +1590,10 @@ static int first_color(int counts[], int size) {
  * \param size is the total area
  */
 static void fix_colors(int colors[], int counts[], int from, int to, int size) {
-    int i;
-    for (i = 0; i < size; i++) if (colors[i] == from) colors[i] = to;
-    counts[to] += counts[from];
-    counts[from] = 0;
+	int i;
+	for (i = 0; i < size; i++) if (colors[i] == from) colors[i] = to;
+	counts[to] += counts[from];
+	counts[from] = 0;
 }
 
 /**
@@ -1606,30 +1610,30 @@ static void fix_colors(int colors[], int counts[], int from, int to, int size) {
 static void join_region(struct chunk *c, int colors[], int counts[], int color,
 	int new_color, bool allow_vault_disconnect)
 {
-    int i;
-    int h = c->height;
-    int w = c->width;
-    int size = h * w;
+	int i;
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
 
-    /* Allocate a processing queue */
-    struct queue *queue = q_new(size);
+	/* Allocate a processing queue */
+	struct queue *queue = q_new(size);
 
-    /* Allocate an array to keep track of handled squares, and which square
-     * we reached them from.
-     */
-    int *previous = mem_zalloc(size * sizeof(int));
-    array_filler(previous, -1, size);
+	/* Allocate an array to keep track of handled squares, and which square
+	 * we reached them from.
+	 */
+	int *previous = mem_zalloc(size * sizeof(int));
+	array_filler(previous, -1, size);
 
-    /* Push all squares of the given color onto the queue */
-    for (i = 0; i < size; i++) {
+	/* Push all squares of the given color onto the queue */
+	for (i = 0; i < size; i++) {
 		if (colors[i] == color) {
 			q_push_int(queue, i);
 			previous[i] = i;
 		}
-    }
+	}
 
-    /* Process all squares into the queue */
-    while (q_len(queue) > 0) {
+	/* Process all squares into the queue */
+	while (q_len(queue) > 0) {
 		/* Get the current square and its color */
 		int n1 = q_pop_int(queue);
 		int color2 = colors[n1];
@@ -1692,11 +1696,11 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 			q_push_int(queue, n2);
 			previous[n2] = n1;
 		}
-    }
+	}
 
-    /* Free the memory we've allocated */
-    q_free(queue);
-    mem_free(previous);
+	/* Free the memory we've allocated */
+	q_free(queue);
+	mem_free(previous);
 }
 
 
@@ -1710,20 +1714,20 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
  */
 static void join_regions(struct chunk *c, int colors[], int counts[],
 		bool allow_vault_disconnect) {
-    int h = c->height;
-    int w = c->width;
-    int size = h * w;
-    int num = count_colors(counts, size);
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+	int num = count_colors(counts, size);
 
-    /* While we have multiple colors (i.e. disconnected regions), join one of
-     * the regions to another one.
-     */
-    while (num > 1) {
+	/* While we have multiple colors (i.e. disconnected regions), join one
+	 * of the regions to another one.
+	 */
+	while (num > 1) {
 		int color = first_color(counts, size);
 		join_region(c, colors, counts, color, -1,
 			allow_vault_disconnect);
 		num--;
-    }
+	}
 }
 
 
@@ -1735,15 +1739,15 @@ static void join_regions(struct chunk *c, int colors[], int counts[],
  * information to join them into one conected region.
  */
 void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect) {
-    int size = c->height * c->width;
-    int *colors = mem_zalloc(size * sizeof(int));
-    int *counts = mem_zalloc(size * sizeof(int));
+	int size = c->height * c->width;
+	int *colors = mem_zalloc(size * sizeof(int));
+	int *counts = mem_zalloc(size * sizeof(int));
 
-    build_colors(c, colors, counts, true);
-    join_regions(c, colors, counts, allow_vault_disconnect);
+	build_colors(c, colors, counts, true);
+	join_regions(c, colors, counts, allow_vault_disconnect);
 
-    mem_free(colors);
-    mem_free(counts);
+	mem_free(colors);
+	mem_free(counts);
 }
 
 
@@ -1757,21 +1761,21 @@ void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect) {
  */
 struct chunk *cavern_chunk(int depth, int h, int w)
 {
-    int i;
-    int size = h * w;
-    int limit = size / 13;
-    int density = rand_range(25, 40);
-    int times = rand_range(3, 6);
+	int i;
+	int size = h * w;
+	int limit = size / 13;
+	int density = rand_range(25, 40);
+	int times = rand_range(3, 6);
 
-    int *colors = mem_zalloc(size * sizeof(int));
-    int *counts = mem_zalloc(size * sizeof(int));
+	int *colors = mem_zalloc(size * sizeof(int));
+	int *counts = mem_zalloc(size * sizeof(int));
 
-    int tries;
+	int tries;
 
 	struct chunk *c = cave_new(h, w);
 	c->depth = depth;
 
-    ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size,
+	ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size,
 			 density, times);
 
 	/* Start trying to build caverns */
@@ -1801,8 +1805,8 @@ struct chunk *cavern_chunk(int depth, int h, int w)
 	clear_small_regions(c, colors, counts);
 	join_regions(c, colors, counts, true);
 
-    mem_free(colors);
-    mem_free(counts);
+	mem_free(colors);
+	mem_free(counts);
 
 	return c;
 }
@@ -1813,21 +1817,21 @@ struct chunk *cavern_chunk(int depth, int h, int w)
  * \param p is the player
  */
 struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
-    int i, k;
+	int i, k;
 
-    int h = rand_range(z_info->dungeon_hgt / 2, (z_info->dungeon_hgt * 3) / 4);
-    int w = rand_range(z_info->dungeon_wid / 2, (z_info->dungeon_wid * 3) / 4);
+	int h = rand_range(z_info->dungeon_hgt / 2, (z_info->dungeon_hgt * 3) / 4);
+	int w = rand_range(z_info->dungeon_wid / 2, (z_info->dungeon_wid * 3) / 4);
 
 	struct chunk *c;
 
 	/* No persistent levels of this type for now */
 	if (OPT(p, birth_levels_persist)) return NULL;
 
-    if (p->depth < 15) {
+	if (p->depth < 15) {
 		/* If we're too shallow then don't do it */
 		return false;
 
-    } else {
+	} else {
 		/* Enforce minimum dimensions */
 		h = MAX(h, min_height);
 		w = MAX(w, min_width);
@@ -1835,7 +1839,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 		/* Try to build the cavern, fail gracefully */
 		c = cavern_chunk(p->depth, h, w);
 		if (!c) return NULL;
-    }
+	}
 	c->depth = p->depth;
 
 	/* Surround the level with perma-rock */
@@ -1868,11 +1872,11 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 
 	/* Put some objects/gold in the dungeon */
 	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 
 	return c;
 }
@@ -1921,11 +1925,11 @@ void get_lot_bounds(struct loc xroads, struct loc lot,
 }
 
 bool lot_is_clear(struct chunk *c, struct loc xroads, struct loc lot,
-				  int lot_wid, int lot_hgt) {
+		int lot_wid, int lot_hgt) {
 	struct loc nw_corner, se_corner, probe;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
-				   &se_corner.x, &se_corner.y);
+	get_lot_bounds(xroads, lot, lot_wid, lot_hgt,
+		&nw_corner.x, &nw_corner.y, &se_corner.x, &se_corner.y);
 
 	if (se_corner.x - nw_corner.x < lot_wid - 1 || se_corner.y - nw_corner.y < lot_hgt - 1) {
 		return false;
@@ -1975,10 +1979,10 @@ static void build_store(struct chunk *c, int n, struct loc xroads,
 
 	int lot_w, lot_n, lot_e, lot_s;
 
-    int build_w, build_n, build_e, build_s;
+	int build_w, build_n, build_e, build_s;
 
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e,
-				   &lot_s);
+		&lot_s);
 
 	if (lot.x < -1 || lot.x > 1) {
 		/* on the east west street */
@@ -2083,11 +2087,11 @@ static void build_store(struct chunk *c, int n, struct loc xroads,
 
 		// Avoid placing buildings without space between them
 		if (lot.x < 0 && build_e - build_w > 1 &&
-			!square_isfloor(c, loc(build_w - 1, door.y))) {
+				!square_isfloor(c, loc(build_w - 1, door.y))) {
 			build_w++;
 			door.x = MAX(door.x, build_w);
 		} else if (lot.x > 0 && build_e - build_w > 1 &&
-				   !square_isfloor(c, loc(build_e + 1, door.y))) {
+				!square_isfloor(c, loc(build_e + 1, door.y))) {
 			build_e--;
 			door.x = MIN(door.x, build_e);
 		}
@@ -2111,7 +2115,7 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 	int wid, hgt;
 
 	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north,
-				   &lot_east, &lot_south);
+		&lot_east, &lot_south);
 
 	if (lot_east - lot_west < 1 || lot_south - lot_north < 1) return;
 
@@ -2139,16 +2143,16 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 					square_set_feat(c, loc(x,y), FEAT_RUBBLE);
 				}
 			} else if (!randint0(3) &&
-					   square_isfloor(c, loc(x,y)) &&
-					   /* Avoid placing rubble next to a store */
-					   (x > lot_west || x == 2 ||
-						!square_isperm(c, loc(x-1, y))) &&
-					   (x < lot_east || x == z_info->town_wid-2 ||
-						!square_isperm(c, loc(x+1, y))) &&
-					   (y > lot_north || y == 2 ||
-						!square_isperm(c, loc(x, y-1))) &&
-					   (y < lot_south || y == z_info-> town_hgt-2 ||
-						!square_isperm(c, loc(x, y+1)))) {
+					square_isfloor(c, loc(x,y)) &&
+					/* Avoid placing rubble next to a store */
+					(x > lot_west || x == 2 ||
+					!square_isperm(c, loc(x-1, y))) &&
+					(x < lot_east || x == z_info->town_wid-2 ||
+					!square_isperm(c, loc(x+1, y))) &&
+					(y > lot_north || y == 2 ||
+					!square_isperm(c, loc(x, y-1))) &&
+					(y < lot_south || y == z_info-> town_hgt-2 ||
+					!square_isperm(c, loc(x, y+1)))) {
 				square_set_feat(c, loc(x,y), FEAT_PASS_RUBBLE);
 			}
 		}
@@ -2181,7 +2185,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
-				   SQUARE_NONE, true);
+		SQUARE_NONE, true);
 
 	while (!success) {
 		/* Initialize to ROCK for build_streamer precondition */
@@ -2195,9 +2199,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 			build_streamer(c, FEAT_LAVA, 0);
 
 		/* Make a town-sized starburst room. */
-		(void) generate_starburst_room(c, 0, 0, c->height - 1, c->width - 1,
-									   false,
-									   FEAT_FLOOR, false);
+		(void) generate_starburst_room(c, 0, 0, c->height - 1,
+			c->width - 1, false, FEAT_FLOOR, false);
 
 		/* Turn off room illumination flag */
 		for (grid.y = 1; grid.y < c->height - 1; grid.y++) {
@@ -2209,7 +2212,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 		/* Stairs along north wall */
 		pgrid.x = rand_spread(z_info->town_wid / 2,
-							  z_info->town_wid / 6);
+			z_info->town_wid / 6);
 		pgrid.y = 1;
 		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_hgt / 4)) {
 			pgrid.y++;
@@ -2254,8 +2257,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 					store_lot.y = rand_range(lot_min_y, lot_max_y);
 				}
 				if (store_lot.y == 0 || store_lot.x == 0) continue;
-				found_spot = lot_is_clear(c, xroads, store_lot, lot_wid,
-										  lot_hgt);
+				found_spot = lot_is_clear(c, xroads, store_lot,
+					lot_wid, lot_hgt);
 			}
 			if (num_attempts >= max_attempts) break;
 
@@ -2285,13 +2288,10 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	/* clear the street */
 	square_set_feat(c, loc(pgrid.x, pgrid.y + 1), FEAT_FLOOR);
 	fill_rectangle(c, pgrid.y + 2, pgrid.x - 1,
-				   max_store_y, pgrid.x + 1,
-				   FEAT_FLOOR, SQUARE_NONE);
+		max_store_y, pgrid.x + 1, FEAT_FLOOR, SQUARE_NONE);
 
 	fill_rectangle(c, xroads.y, min_store_x,
-			xroads.y + 1, max_store_x,
-			FEAT_FLOOR, SQUARE_NONE);
-
+		xroads.y + 1, max_store_x, FEAT_FLOOR, SQUARE_NONE);
 
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, pgrid, FEAT_MORE);
@@ -2370,42 +2370,42 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
  */
 struct chunk *modified_chunk(int depth, int height, int width)
 {
-    int i;
-    int by = 0, bx = 0, key, rarity;
-    int num_floors;
-    int num_rooms = dun->profile->n_room_profiles;
-    int dun_unusual = dun->profile->dun_unusual;
-    struct connector *join = dun->join;
+	int i;
+	int by = 0, bx = 0, key, rarity;
+	int num_floors;
+	int num_rooms = dun->profile->n_room_profiles;
+	int dun_unusual = dun->profile->dun_unusual;
+	struct connector *join = dun->join;
 
-    /* Make the cave */
-    struct chunk *c = cave_new(height, width);
+	/* Make the cave */
+	struct chunk *c = cave_new(height, width);
 	c->depth = depth;
 
 	/* Set the intended number of floor grids based on cave floor area */
-    num_floors = c->height * c->width / 7;
-    ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
+	num_floors = c->height * c->width / 7;
+	ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
 
-    /* Fill cave area with basic granite */
-    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_GRANITE, SQUARE_NONE);
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_GRANITE, SQUARE_NONE);
 
-    /* Generate permanent walls around the generated area (temporarily!) */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE, true);
+	/* Generate permanent walls around the generated area (temporarily!) */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_PERM, SQUARE_NONE, true);
 
-    /* Actual maximum number of blocks on this level */
-    dun->row_blocks = c->height / dun->block_hgt;
-    dun->col_blocks = c->width / dun->block_wid;
+	/* Actual maximum number of blocks on this level */
+	dun->row_blocks = c->height / dun->block_hgt;
+	dun->col_blocks = c->width / dun->block_wid;
 
-    /* Initialize the room table */
+	/* Initialize the room table */
 	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
 	for (i = 0; i < dun->row_blocks; i++)
 		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
-    /* No rooms yet, pits or otherwise. */
-    dun->pit_num = 0;
-    dun->cent_n = 0;
-    reset_entrance_data(c);
+	/* No rooms yet, pits or otherwise. */
+	dun->pit_num = 0;
+	dun->cent_n = 0;
+	reset_entrance_data(c);
 
 	/* Build the special staircase rooms */
 	if (OPT(player, birth_levels_persist)) {
@@ -2427,15 +2427,16 @@ struct chunk *modified_chunk(int depth, int height, int width)
 		}
 	}
 
-    /* Build rooms until we have enough floor grids and at least two rooms */
-    while ((c->feat_count[FEAT_FLOOR] < num_floors) || (dun->cent_n < 2)) {
+	/* Build rooms until we have enough floor grids and at least two rooms */
+	while ((c->feat_count[FEAT_FLOOR] < num_floors) || (dun->cent_n < 2)) {
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -2454,19 +2455,19 @@ struct chunk *modified_chunk(int depth, int height, int width)
 			if (profile.cutoff <= key) continue;
 			if (room_build(c, by, bx, profile, true)) break;
 		}
-    }
+	}
 
 	for (i = 0; i < dun->row_blocks; i++)
 		mem_free(dun->room_map[i]);
 	mem_free(dun->room_map);
 
-    /* Connect all the rooms together */
-    do_traditional_tunneling(c);
-    ensure_connectedness(c, true);
+	/* Connect all the rooms together */
+	do_traditional_tunneling(c);
+	ensure_connectedness(c, true);
 
-    /* Turn the outer permanent walls back to granite  */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_GRANITE, SQUARE_NONE, true);
+	/* Turn the outer permanent walls back to granite */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_GRANITE, SQUARE_NONE, true);
 
 	return c;
 }
@@ -2495,19 +2496,19 @@ struct chunk *modified_chunk(int depth, int height, int width)
  *   areas or the whole dungeon
  */
 struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
-    int i, k;
-    int size_percent, y_size, x_size;
+	int i, k;
+	int size_percent, y_size, x_size;
 	struct chunk *c;
 
-    /* Scale the level */
-    i = randint1(10) + p->depth / 24;
-    if (is_quest(p->depth)) size_percent = 100;
-    else if (i < 2) size_percent = 75;
-    else if (i < 3) size_percent = 80;
-    else if (i < 4) size_percent = 85;
-    else if (i < 5) size_percent = 90;
-    else if (i < 6) size_percent = 95;
-    else size_percent = 100;
+	/* Scale the level */
+	i = randint1(10) + p->depth / 24;
+	if (is_quest(p->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
+	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
@@ -2515,69 +2516,69 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	y_size = MAX(y_size, min_height);
 	x_size = MAX(x_size, min_width);
 
-    /* Set the block height and width */
+	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
-					   MIN(z_info->dungeon_wid, x_size));
+	c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
+		MIN(z_info->dungeon_wid, x_size));
 	c->depth = p->depth;
 
-    /* Generate permanent walls around the edge of the generated area */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
-				   FEAT_PERM, SQUARE_NONE, true);
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_PERM, SQUARE_NONE, true);
 
-    /* Add some magma streamers */
-    for (i = 0; i < dun->profile->str.mag; i++)
+	/* Add some magma streamers */
+	for (i = 0; i < dun->profile->str.mag; i++)
 		build_streamer(c, FEAT_MAGMA, dun->profile->str.mc);
 
-    /* Add some quartz streamers */
-    for (i = 0; i < dun->profile->str.qua; i++)
+	/* Add some quartz streamers */
+	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-    /* Place 3 or 4 down stairs near some walls */
+	/* Place 3 or 4 down stairs near some walls */
 	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, false)) {
 		alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
 	}
 
-    /* Place 1 or 2 up stairs near some walls */
+	/* Place 1 or 2 up stairs near some walls */
 	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, true)) {
 		alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
 	}
 
-    /* General amount of rubble, traps and monsters */
-    k = MAX(MIN(c->depth / 3, 10), 2);
+	/* General amount of rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
 
-    /* Put some rubble in corridors */
-    alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
+	/* Place some traps in the dungeon, reduce frequency by factor of 5 */
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
-    /* Determine the character location */
-    new_player_spot(c, p);
+	/* Determine the character location */
+	new_player_spot(c, p);
 
-    /* Pick a base number of monsters */
-    i = z_info->level_monster_min + randint1(8) + k;
+	/* Pick a base number of monsters */
+	i = z_info->level_monster_min + randint1(8) + k;
 
 	/* Remove all monster restrictions. */
 	mon_restrict(NULL, c->depth, true);
 
-    /* Put some monsters in the dungeon */
-    for (; i > 0; i--)
+	/* Put some monsters in the dungeon */
+	for (; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
-    /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects in rooms */
+	alloc_objects(c, SET_ROOM, TYP_OBJECT,
+		Rand_normal(z_info->room_item_av, 3), c->depth, ORIGIN_FLOOR);
 
-    /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT,
+		Rand_normal(z_info->both_item_av, 3), c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD,
+		Rand_normal(z_info->both_gold_av, 3), c->depth, ORIGIN_FLOOR);
 
-    return c;
+	return c;
 }
 
 
@@ -2591,53 +2592,54 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
  */
 struct chunk *moria_chunk(int depth, int height, int width)
 {
-    int i;
-    int by = 0, bx = 0, key, rarity;
-    int num_floors;
-    int num_rooms = dun->profile->n_room_profiles;
-    int dun_unusual = dun->profile->dun_unusual;
+	int i;
+	int by = 0, bx = 0, key, rarity;
+	int num_floors;
+	int num_rooms = dun->profile->n_room_profiles;
+	int dun_unusual = dun->profile->dun_unusual;
 
-    /* Make the cave */
-    struct chunk *c = cave_new(height, width);
+	/* Make the cave */
+	struct chunk *c = cave_new(height, width);
 	c->depth = depth;
 
 	/* Set the intended number of floor grids based on cave floor area */
-    num_floors = c->height * c->width / 7;
-    ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
+	num_floors = c->height * c->width / 7;
+	ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
 
-    /* Fill cave area with basic granite */
-    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_GRANITE, SQUARE_NONE);
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_GRANITE, SQUARE_NONE);
 
-    /* Generate permanent walls around the generated area (temporarily!) */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE, true);
+	/* Generate permanent walls around the generated area (temporarily!) */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_PERM, SQUARE_NONE, true);
 
-    /* Actual maximum number of blocks on this level */
-    dun->row_blocks = c->height / dun->block_hgt;
-    dun->col_blocks = c->width / dun->block_wid;
+	/* Actual maximum number of blocks on this level */
+	dun->row_blocks = c->height / dun->block_hgt;
+	dun->col_blocks = c->width / dun->block_wid;
 
-    /* Initialize the room table */
+	/* Initialize the room table */
 	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
 	for (i = 0; i < dun->row_blocks; i++)
 		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
-    /* No rooms yet, pits or otherwise. */
-    dun->pit_num = 0;
-    dun->cent_n = 0;
-    reset_entrance_data(c);
+	/* No rooms yet, pits or otherwise. */
+	dun->pit_num = 0;
+	dun->cent_n = 0;
+	reset_entrance_data(c);
 
-    /* Build rooms until we have enough floor grids and at least two rooms
-     * (the latter is to make it easier to satisfy the constraints for player
-     * placement) */
-    while (c->feat_count[FEAT_FLOOR] < num_floors || dun->cent_n < 2) {
+	/* Build rooms until we have enough floor grids and at least two rooms
+	 * (the latter is to make it easier to satisfy the constraints for
+	 * player placement) */
+	while (c->feat_count[FEAT_FLOOR] < num_floors || dun->cent_n < 2) {
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
 
-		/* We generate a rarity number to figure out how exotic to make the
-		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -2656,21 +2658,21 @@ struct chunk *moria_chunk(int depth, int height, int width)
 			if (profile.cutoff <= key) continue;
 			if (room_build(c, by, bx, profile, true)) break;
 		}
-    }
+	}
 
-    for (i = 0; i < dun->row_blocks; i++)
+	for (i = 0; i < dun->row_blocks; i++)
 		mem_free(dun->room_map[i]);
-    mem_free(dun->room_map);
+	mem_free(dun->room_map);
 
-    /* Connect all the rooms together */
-    do_traditional_tunneling(c);
-    ensure_connectedness(c, true);
+	/* Connect all the rooms together */
+	do_traditional_tunneling(c);
+	ensure_connectedness(c, true);
 
-    /* Turn the outer permanent walls back to granite  */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_GRANITE, SQUARE_NONE, true);
+	/* Turn the outer permanent walls back to granite */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+		FEAT_GRANITE, SQUARE_NONE, true);
 
-    return c;
+	return c;
 }
 
 /**
@@ -2690,19 +2692,19 @@ struct chunk *moria_chunk(int depth, int height, int width)
  *	if ((c->depth >= 10) && (c->depth < 40) && one_in_(40))
  */
 struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
-    int i, k;
-    int size_percent, y_size, x_size;
+	int i, k;
+	int size_percent, y_size, x_size;
 	struct chunk *c;
 
-    /* Scale the level */
-    i = randint1(10) + p->depth / 24;
-    if (is_quest(p->depth)) size_percent = 100;
-    else if (i < 2) size_percent = 75;
-    else if (i < 3) size_percent = 80;
-    else if (i < 4) size_percent = 85;
-    else if (i < 5) size_percent = 90;
-    else if (i < 6) size_percent = 95;
-    else size_percent = 100;
+	/* Scale the level */
+	i = randint1(10) + p->depth / 24;
+	if (is_quest(p->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
+	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
@@ -2710,68 +2712,68 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	y_size = MAX(y_size, min_height);
 	x_size = MAX(x_size, min_width);
 
-    /* Set the block height and width */
+	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    c = moria_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
-					   MIN(z_info->dungeon_wid, x_size));
+	c = moria_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
+		MIN(z_info->dungeon_wid, x_size));
 	c->depth = p->depth;
 
-    /* Generate permanent walls around the edge of the generated area */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
-				   FEAT_PERM, SQUARE_NONE, true);
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_PERM, SQUARE_NONE, true);
 
-    /* Add some magma streamers */
-    for (i = 0; i < dun->profile->str.mag; i++)
+	/* Add some magma streamers */
+	for (i = 0; i < dun->profile->str.mag; i++)
 		build_streamer(c, FEAT_MAGMA, dun->profile->str.mc);
 
-    /* Add some quartz streamers */
-    for (i = 0; i < dun->profile->str.qua; i++)
+	/* Add some quartz streamers */
+	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-    /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
+	/* Place 3 or 4 down stairs near some walls */
+	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
 
-    /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 1 or 2 up stairs near some walls */
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
 
-    /* General amount of rubble, traps and monsters */
-    k = MAX(MIN(c->depth / 3, 10), 2);
+	/* General amount of rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
 
-    /* Put some rubble in corridors */
-    alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
+	/* Place some traps in the dungeon, reduce frequency by factor of 5 */
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
-    /* Determine the character location */
-    new_player_spot(c, p);
+	/* Determine the character location */
+	new_player_spot(c, p);
 
-    /* Pick a base number of monsters */
-    i = z_info->level_monster_min + randint1(8) + k;
+	/* Pick a base number of monsters */
+	i = z_info->level_monster_min + randint1(8) + k;
 
 	/* Moria levels have a high proportion of cave dwellers. */
 	mon_restrict("Moria dwellers", c->depth, true);
 
-    /* Put some monsters in the dungeon */
-    for (; i > 0; i--)
+	/* Put some monsters in the dungeon */
+	for (; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
 	/* Remove our restrictions. */
 	(void) mon_restrict(NULL, c->depth, false);
 
-    /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects in rooms */
+	alloc_objects(c, SET_ROOM, TYP_OBJECT,
+		Rand_normal(z_info->room_item_av, 3), c->depth, ORIGIN_FLOOR);
 
-    /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT,
+		Rand_normal(z_info->both_item_av, 3), c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD,
+		Rand_normal(z_info->both_gold_av, 3), c->depth, ORIGIN_FLOOR);
 
-    return c;
+	return c;
 }
 
 
@@ -2983,14 +2985,14 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Right */
 	chunk_copy(c, right_cavern, 0, left_cavern_wid + centre_cavern_wid, 0,
-			   false);
+		false);
 	find_empty_range(c, &grid, loc(left_cavern_wid + centre_cavern_wid, 0),
-					 loc(z_info->dungeon_wid - 1, z_info->dungeon_hgt - 1));
+		loc(z_info->dungeon_wid - 1, z_info->dungeon_hgt - 1));
 	floor[2] = grid;
 
 	/* Encase in perma-rock */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
-				   FEAT_PERM, SQUARE_NONE, true);
+		FEAT_PERM, SQUARE_NONE, true);
 
 	/* Connect up all the caverns */
 	connect_caverns(c, floor);
@@ -3035,11 +3037,11 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Put some objects/gold in the dungeon */
 	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
-				  ORIGIN_CAVERN);
+		ORIGIN_CAVERN);
 
 	return c;
 }
@@ -3054,8 +3056,8 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
  * \return a pointer to the generated chunk
  */
 struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
-    int i, k;
-    int size_percent, y_size, x_size;
+	int i, k;
+	int size_percent, y_size, x_size;
 	struct chunk *c;
 	struct chunk *normal;
 	struct chunk *lair;
@@ -3063,15 +3065,15 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* No persistent levels of this type for now */
 	if (OPT(p, birth_levels_persist)) return NULL;
 
-    /* Scale the level */
-    i = randint1(10) + p->depth / 24;
-    if (is_quest(p->depth)) size_percent = 100;
-    else if (i < 2) size_percent = 75;
-    else if (i < 3) size_percent = 80;
-    else if (i < 4) size_percent = 85;
-    else if (i < 5) size_percent = 90;
-    else if (i < 6) size_percent = 95;
-    else size_percent = 100;
+	/* Scale the level */
+	i = randint1(10) + p->depth / 24;
+	if (is_quest(p->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
+	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
@@ -3079,11 +3081,11 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	y_size = MAX(y_size, min_height);
 	x_size = MAX(x_size, min_width);
 
-    /* Set the block height and width */
+	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    normal = modified_chunk(p->depth, y_size, x_size / 2);
+	normal = modified_chunk(p->depth, y_size, x_size / 2);
 	if (!normal) return NULL;
 	normal->depth = p->depth;
 
@@ -3095,29 +3097,29 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	}
 	lair->depth = p->depth;
 
-    /* General amount of rubble, traps and monsters */
-    k = MAX(MIN(p->depth / 3, 10), 2) / 2;
+	/* General amount of rubble, traps and monsters */
+	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
 
-    /* Put the character in the normal half */
-    new_player_spot(normal, p);
+	/* Put the character in the normal half */
+	new_player_spot(normal, p);
 
-    /* Pick a smallish number of monsters for the normal half */
-    i = randint1(4) + k;
+	/* Pick a smallish number of monsters for the normal half */
+	i = randint1(4) + k;
 
-    /* Put some monsters in the dungeon */
-    for (; i > 0; i--)
+	/* Put some monsters in the dungeon */
+	for (; i > 0; i--)
 		pick_and_place_distant_monster(normal, p, 0, true, normal->depth);
 
-    /* Add some magma streamers */
-    for (i = 0; i < dun->profile->str.mag; i++)
+	/* Add some magma streamers */
+	for (i = 0; i < dun->profile->str.mag; i++)
 		build_streamer(normal, FEAT_MAGMA, dun->profile->str.mc);
 
-    /* Add some quartz streamers */
-    for (i = 0; i < dun->profile->str.qua; i++)
+	/* Add some quartz streamers */
+	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
 
-    /* Pick a larger number of monsters for the lair */
-    i = (z_info->level_monster_min + randint1(20) + k);
+	/* Pick a larger number of monsters for the lair */
+	i = (z_info->level_monster_min + randint1(20) + k);
 
 	/* Find appropriate monsters */
 	while (true) {
@@ -3131,7 +3133,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 
 	ROOM_LOG("Monster lair - %s", dun->pit_type->name);
 
-    /* Place lair monsters */
+	/* Place lair monsters */
 	spread_monsters(lair, dun->pit_type->name, lair->depth, i, lair->height / 2,
 					lair->width / 2, lair->height / 2, lair->width / 2, 
 					ORIGIN_CAVERN);
@@ -3156,34 +3158,34 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
-				   FEAT_PERM, SQUARE_NONE, true);
+		FEAT_PERM, SQUARE_NONE, true);
 
 	/* Connect */
 	ensure_connectedness(c, true);
 
-    /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
+	/* Place 3 or 4 down stairs near some walls */
+	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
 
-    /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 1 or 2 up stairs near some walls */
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
 
-    /* Put some rubble in corridors */
-    alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
-    /* Place some traps in the dungeon, reduce frequency by factor of 5 */
-    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
+	/* Place some traps in the dungeon, reduce frequency by factor of 5 */
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k)/5, c->depth, 0);
 
-    /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects in rooms */
+	alloc_objects(c, SET_ROOM, TYP_OBJECT,
+		Rand_normal(z_info->room_item_av, 3), c->depth, ORIGIN_FLOOR);
 
-    /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT,
+		Rand_normal(z_info->both_item_av, 3), c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD,
+		Rand_normal(z_info->both_gold_av, 3), c->depth, ORIGIN_FLOOR);
 
-    return c;
+	return c;
 }
 
 
@@ -3214,7 +3216,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	if (OPT(p, birth_levels_persist)) return NULL;
 
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
-							   false);
+		false);
 	if (!gauntlet) return NULL;
 	gauntlet->depth = p->depth;
 
@@ -3239,11 +3241,11 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 
 	/* Set the movement and mapping restrictions */
 	generate_mark(left, 0, 0, left->height - 1, left->width - 1,
-				  SQUARE_NO_TELEPORT);
+		SQUARE_NO_TELEPORT);
 	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
-				  SQUARE_NO_MAP);
+		SQUARE_NO_MAP);
 	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
-				  SQUARE_NO_TELEPORT);
+		SQUARE_NO_TELEPORT);
 
 	/* Place down stairs in the right cavern */
 	alloc_stairs(right, FEAT_MORE, rand_range(2, 3));
@@ -3340,11 +3342,11 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 
 	/* Fill cave area with basic granite */
 	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1,
-				   FEAT_GRANITE, SQUARE_NONE);
+		FEAT_GRANITE, SQUARE_NONE);
 
 	/* Fill the area between the caverns with permanent rock */
 	fill_rectangle(c, 0, line1, c->height - 1, line2 - 1, FEAT_PERM,
-				   SQUARE_NONE);
+		SQUARE_NONE);
 
 	/* Copy in the pieces */
 	chunk_copy(c, left, 0, 0, 0, false);
@@ -3358,7 +3360,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE, true);
+		FEAT_PERM, SQUARE_NONE, true);
 
 	/* Connect */
 	ensure_connectedness(c, true);
@@ -3370,14 +3372,14 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some objects in rooms */
-	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_ROOM, TYP_OBJECT,
+		Rand_normal(z_info->room_item_av, 3), c->depth, ORIGIN_FLOOR);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
-				  c->depth, ORIGIN_FLOOR);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
-				  c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_OBJECT,
+		Rand_normal(z_info->both_item_av, 3), c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD,
+		Rand_normal(z_info->both_gold_av, 3), c->depth, ORIGIN_FLOOR);
 
 	return c;
 }
@@ -3398,13 +3400,13 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	c->depth = p->depth;
 	c->name = string_make("arena");
 
-    /* Fill cave area with floors */
-    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_FLOOR,
-				   SQUARE_NONE);
+	/* Fill cave area with floors */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_FLOOR,
+		SQUARE_NONE);
 
 	/* Bound with perma-rock */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
-				   SQUARE_NONE, true);
+		SQUARE_NONE, true);
 
 	/* Place the player */
 	player_place(c, p, loc(1, c->height - 2));

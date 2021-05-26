@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  *
  * This file maintains a list of saved chunks of world which can be reloaded
- * at any time.  The intitial example of this is the town, which is saved 
+ * at any time.  The initial example of this is the town, which is saved
  * immediately after generation and restored when the player returns there.
  *
  * The copying routines are also useful for generating a level in pieces and
@@ -192,7 +192,7 @@ void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 /**
  * Select a random symmetry transformation subject to certain constraints.
  * \param height Is the height of the piece to transform.
- * \param width Is the height of the piece to transform.
+ * \param width Is the width of the piece to transform.
  * \param flags Is a bitwise-or of one or more of SYMTR_FLAG_NONE,
  * SYMTR_FLAG_NO_ROT (disallow 90 and 270 degree rotation and 180 degree
  * rotation if not accompanied by a horizontal reflection - equivalent to a

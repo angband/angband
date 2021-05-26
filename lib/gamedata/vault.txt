@@ -1,7 +1,7 @@
 # File: vault.txt
 
 
-# This file is used to initialize the "vault template" information for 
+# This file is used to initialize the "vault template" information for
 # the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
@@ -13,7 +13,7 @@
 
 # name:vault name
 # type:room type
-# rating:rating for level feeling calculation
+# rating:added to danger component for level feeling calculation
 # rows:number of rows
 # columns:number of columns
 # min-depth:minimum depth this vault can appear (0 if no minimum)
@@ -35,15 +35,16 @@
 #    ` - lava
 #    / - water; treated as plain floor by Vanilla
 #    ; - tree; treated as plain floor by Vanilla
-#    & - treasure or trap
+#    & - treasure (75%) or trap (6.25%)
 #    + - secret door
-#    ^ - trap
-#    < - upstair
-#    > - downstair
-#    1 - monster, object or trap
+#    ^ - trap (25%)
+#    < - upstair (not placed on persistent levels)
+#    > - downstair (not placed on persistent or quest levels)
+#    1 - monster (50%), object (25%) or trap (6.25%)
 #    2 - monster up to 5 levels out of depth (OOD)
 #    3 - object up to 3 levels OOD
-#    4 - monster up to 3 levels OOD and/or treasure up to 7 levels OOD
+#    4 - monster up to 3 levels OOD and/or treasure up to 7 levels OOD;
+#        50% chance for each
 #    5 - object up to 7 levels OOD
 #    6 - monster up to 11 levels OOD
 #    7 - object up to 15 levels OOD
