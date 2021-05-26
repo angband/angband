@@ -1650,8 +1650,9 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 						square_isgranite(c, grid) &&
 						sqinfo_has(square(c, grid)->info, SQUARE_WALL_SOLID));
 					/*
-					 * Convert to SQUARE_WALL_INNER if does
-					 * not touch the outside of the vault.
+					 * Convert to SQUARE_WALL_INNER if it
+					 * does not touch the outside of the
+					 * vault.
 					 */
 					if (count_neighbors(NULL, c, grid,
 							square_isroom, false) == 8) {
