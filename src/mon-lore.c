@@ -491,11 +491,12 @@ bool lore_is_fully_known(const struct monster_race *race)
  * about the treasure (even when the monster is killed for the first
  * time, such as uniques, and the treasure has not been examined yet).
  *
- * This "indirect" method is used to prevent the player from learning
+ * This "indirect" method was used to prevent the player from learning
  * exactly how much treasure a monster can drop from observing only
  * a single example of a drop.  This method actually observes how much
  * gold and items are dropped, and remembers that information to be
- * described later by the monster recall code.
+ * described later by the monster recall code.  The current recall code,
+ * however, makes no use of drop_item and drop_gold.
  */
 void lore_treasure(struct monster *mon, int num_item, int num_gold)
 {
