@@ -810,7 +810,8 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		obj->origin = origin;
 		obj->origin_depth = player->depth;
 		obj->origin_race = mon->race;
-		obj->number = randint0(drop->max - drop->min) + drop->min;
+		obj->number = (obj->artifact) ?
+			1 : randint0(drop->max - drop->min) + drop->min;
 
 		/* Try to carry */
 		if (monster_carry(c, mon, obj)) {
