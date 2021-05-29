@@ -345,6 +345,9 @@
     <ClCompile Include="src\ui-display.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui-effect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\ui-event.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -852,6 +855,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-effect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-event.h">

@@ -84,6 +84,7 @@ struct effect_kind {
 	const char *info;    /* Effect info (for spell tips) */
 	effect_handler_f handler;    /* Function to perform the effect */
 	const char *desc;    /* Effect description */
+	const char *menu_name;       /* Format string for short name */
 };
 
 
@@ -5487,6 +5488,16 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	}
 }
 
+/**
+ * Dummy effect, to tell the effect code to pick one of the next
+ * context->value.base effects at the player's selection or, if the effect
+ * wasn't initiated by the player, at random.
+ */
+bool effect_handler_SELECT(effect_handler_context_t *context)
+{
+	return true;
+}
+
 
 /**
  * ------------------------------------------------------------------------
@@ -5499,7 +5510,7 @@ static const struct effect_kind effects[] =
 {
 	{ EF_NONE, false, NULL, NULL, NULL },
 	#define F(x) effect_handler_##x
-	#define EFFECT(x, a, b, c, d, e)	{ EF_##x, a, b, F(x), e },
+	#define EFFECT(x, a, b, c, d, e, f)	{ EF_##x, a, b, F(x), e, f },
 	#include "list-effects.h"
 	#undef EFFECT
 	#undef F
@@ -5509,7 +5520,7 @@ static const struct effect_kind effects[] =
 
 static const char *effect_names[] = {
 	NULL,
-	#define EFFECT(x, a, b, c, d, e)	#x,
+	#define EFFECT(x, a, b, c, d, e, f)	#x,
 	#include "list-effects.h"
 	#undef EFFECT
 };
@@ -5773,7 +5784,7 @@ bool effect_do(struct effect *effect,
 	random_value value = { 0, 0, 0, 0 };
 
 	do {
-		int random_choices = 0, leftover = 0;
+		int choice_count = 0, leftover = 1;
 
 		if (!effect_valid(effect)) {
 			msg("Bad effect passed to effect_do(). Please report this bug.");
@@ -5781,12 +5792,51 @@ bool effect_do(struct effect *effect,
 		}
 
 		if (effect->dice != NULL)
-			random_choices = dice_roll(effect->dice, &value);
+			choice_count = dice_roll(effect->dice, &value);
 
-		/* Deal with special random effect */
-		if (effect->index == EF_RANDOM) {
-			int choice = randint0(random_choices);
-			leftover = random_choices - choice;
+		/* Deal with special random and select effects */
+		if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
+			int choice;
+
+			/*
+			 * Treat select effects like random ones if they
+			 * aren't from a player or if there's really no choice
+			 * to be made.
+			 */
+			if (effect->index == EF_RANDOM ||
+					origin.what != SRC_PLAYER ||
+					choice_count < 2) {
+				choice = randint0(choice_count);
+			} else {
+				assert(effect->index == EF_SELECT &&
+					origin.what == SRC_PLAYER);
+				if (cmd) {
+					if (cmd_get_effect_from_list(cmd,
+							"list_index",
+							&choice, NULL,
+							effect->next,
+							choice_count,
+							true) != CMD_OK) {
+						return false;
+					}
+				} else {
+					choice = get_effect_from_list(NULL,
+						effect->next, choice_count,
+						true);
+					if (choice == -1) return false;
+				}
+
+				/*
+				 * If the player chose to use a random effect,
+				 * roll for it.
+				 */
+				if (choice == -2) {
+					choice = randint0(choice_count);
+				}
+				assert(choice >= 0 && choice < choice_count);
+			}
+
+			leftover = choice_count - choice;
 
 			/* Skip to the chosen effect */
 			effect = effect->next;
@@ -5825,11 +5875,7 @@ bool effect_do(struct effect *effect,
 		}
 
 		/* Get the next effect, if there is one */
-		if (leftover)
-			/* Skip the remaining non-chosen effects */
-			while (leftover--)
-				effect = effect->next;
-		else
+		while (leftover--)
 			effect = effect->next;
 	} while (effect);
 

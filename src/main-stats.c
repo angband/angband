@@ -740,7 +740,7 @@ static int stats_dump_lists(void)
 	{
 		{ EF_NONE, false, NULL },
 		#define F(x) effect_handler_##x
-		#define EFFECT(x, a, b, c, d, e)    { EF_##x, a, #x },
+		#define EFFECT(x, a, b, c, d, e, f)    { EF_##x, a, #x },
 		#include "list-effects.h"
 		#undef EFFECT
 		#undef F

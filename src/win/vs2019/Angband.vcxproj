@@ -263,6 +263,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-curse.c" />
     <ClCompile Include="src\ui-death.c" />
     <ClCompile Include="src\ui-display.c" />
+    <ClCompile Include="src\ui-effect.c" />
     <ClCompile Include="src\ui-entry-combiner.c" />
     <ClCompile Include="src\ui-entry-renderers.c" />
     <ClCompile Include="src\ui-entry.c" />
@@ -433,6 +434,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-curse.h" />
     <ClInclude Include="src\ui-death.h" />
     <ClInclude Include="src\ui-display.h" />
+    <ClInclude Include="src\ui-effect.h" />
     <ClInclude Include="src\ui-entry-combiner.h" />
     <ClInclude Include="src\ui-entry-init.h" />
     <ClInclude Include="src\ui-entry-renderers.h" />

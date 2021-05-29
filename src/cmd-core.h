@@ -386,5 +386,8 @@ int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 				  const char *verb, item_tester book_filter, const char *error,
 				  bool (*spell_filter)(int spell));
+int cmd_get_effect_from_list(struct command *cmd, const char *arg, int *choice,
+	const char *prompt, struct effect *effect, int count,
+	bool allow_random);
 
 #endif
