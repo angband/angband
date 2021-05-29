@@ -1174,7 +1174,7 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 					  const struct monster_lore *lore,
 					  bitflag known_flags[RF_SIZE])
 {
-	int n = 0;
+	int n = 0, nspec = 0;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -1184,42 +1184,74 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 	msex = lore_monster_sex(race);
 
 	/* Count maximum drop */
-	n = mon_create_drop_count(race, true);
+	n = mon_create_drop_count(race, true, false, &nspec);
 
 	/* Drops gold and/or items */
-	if (n > 0) {
-		bool only_item = rf_has(known_flags, RF_ONLY_ITEM);
-		bool only_gold = rf_has(known_flags, RF_ONLY_GOLD);
-
+	if (n > 0 || nspec > 0) {
 		textblock_append(tb, "%s may carry",
-						 lore_pronoun_nominative(msex, true));
+			lore_pronoun_nominative(msex, true));
 
-		/* Count drops */
-		if (n == 1)
-			textblock_append_c(tb, COLOUR_BLUE, " a single ");
-		else if (n == 2)
-			textblock_append_c(tb, COLOUR_BLUE, " one or two ");
-		else {
-			textblock_append(tb, " up to ");
-			textblock_append_c(tb, COLOUR_BLUE, format("%d ", n));
+		/* Report general drops */
+		if (n > 0) {
+			bool only_item = rf_has(known_flags, RF_ONLY_ITEM);
+			bool only_gold = rf_has(known_flags, RF_ONLY_GOLD);
+
+			if (n == 1) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					" a single ");
+			} else if (n == 2) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					" one or two ");
+			} else {
+				textblock_append(tb, " up to ");
+				textblock_append_c(tb, COLOUR_BLUE,
+					format("%d ", n));
+			}
+
+			/* Quality */
+			if (rf_has(known_flags, RF_DROP_GREAT)) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					"exceptional ");
+			} else if (rf_has(known_flags, RF_DROP_GOOD)) {
+				textblock_append_c(tb, COLOUR_BLUE, "good ");
+			}
+
+			/* Objects or treasures */
+			if (only_item && only_gold) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					"error%s", PLURAL(n));
+			} else if (only_item && !only_gold) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					"object%s", PLURAL(n));
+			} else if (!only_item && only_gold) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					"treasure%s", PLURAL(n));
+			} else if (!only_item && !only_gold) {
+				textblock_append_c(tb, COLOUR_BLUE,
+					"object%s or treasure%s",
+					PLURAL(n), PLURAL(n));
+			}
 		}
 
-		/* Quality */
-		if (rf_has(known_flags, RF_DROP_GREAT))
-			textblock_append_c(tb, COLOUR_BLUE, "exceptional ");
-		else if (rf_has(known_flags, RF_DROP_GOOD))
-			textblock_append_c(tb, COLOUR_BLUE, "good ");
-
-		/* Objects or treasures */
-		if (only_item && only_gold)
-			textblock_append_c(tb, COLOUR_BLUE, "error%s", PLURAL(n));
-		else if (only_item && !only_gold)
-			textblock_append_c(tb, COLOUR_BLUE, "object%s", PLURAL(n));
-		else if (!only_item && only_gold)
-			textblock_append_c(tb, COLOUR_BLUE, "treasure%s", PLURAL(n));
-		else if (!only_item && !only_gold)
-			textblock_append_c(tb, COLOUR_BLUE, "object%s or treasure%s",
-							   PLURAL(n), PLURAL(n));
+		/*
+		 * Report specific drops (just maximum number, no types,
+		 * does not include quest artifacts).
+		 */
+		if (nspec > 0) {
+			if (n > 0) {
+				textblock_append(tb, " and");
+			}
+			if (nspec == 1) {
+				textblock_append(tb, " a single");
+			} else if (nspec == 2) {
+				textblock_append(tb, " one or two");
+			} else {
+				textblock_append(tb, " up to");
+				textblock_append_c(tb, COLOUR_BLUE,
+					format(" %d", nspec));
+			}
+			textblock_append(tb, " specific items");
+		}
 
 		textblock_append(tb, ".  ");
 	}
