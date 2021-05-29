@@ -517,6 +517,8 @@ static int cmd_get_arg(struct command *cmd, const char *arg,
  * - selecting an effect for an item that activates for an EF_SELECT effect
  *   (dragon's breath wands or potions, dragon armor that has multiple breath
  *   types)
+ * - several debugging commands for integer or boolean arguments that did not
+ *   seem to be a good match for 'number' arguments
  *
  * Each of these should have its own type, which will allow for proper
  * validity checking of data.
