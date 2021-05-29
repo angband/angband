@@ -676,13 +676,21 @@ s16b mon_pop(struct chunk *c)
  * \param race is the monster race.
  * \param maximize should be set to false for a random number, true to find
  * out the maximum count.
+ * \param specific if true, specific drops will be included in the total
+ * returned; otherwise they are excluded from that value.
+ * \param specific_count if not NULL, *specific_count will be set to the
+ * number of specific objects (either a random value or the maximum if maximize
+ * is true).
  */
-int mon_create_drop_count(const struct monster_race *race, bool maximize)
+int mon_create_drop_count(const struct monster_race *race, bool maximize,
+	bool specific, int *specific_count)
 {
 	int number = 0;
+	int specnum = 0;
 	static const int drop_4_max = 6;
 	static const int drop_3_max = 4;
 	static const int drop_2_max = 3;
+	struct monster_drop *drop;
 
 	if (maximize) {
 		if (rf_has(race->flags, RF_DROP_20)) number++;
@@ -692,6 +700,9 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
 		if (rf_has(race->flags, RF_DROP_3)) number += drop_3_max;
 		if (rf_has(race->flags, RF_DROP_2)) number += drop_2_max;
 		if (rf_has(race->flags, RF_DROP_1)) number++;
+		for (drop = race->drops; drop; drop = drop->next) {
+			specnum += drop->max;
+		}
 	} else {
 		if (rf_has(race->flags, RF_DROP_20) && randint0(100) < 20) number++;
 		if (rf_has(race->flags, RF_DROP_40) && randint0(100) < 40) number++;
@@ -700,8 +711,20 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
 		if (rf_has(race->flags, RF_DROP_3)) number += rand_range(2, drop_3_max);
 		if (rf_has(race->flags, RF_DROP_2)) number += rand_range(1, drop_2_max);
 		if (rf_has(race->flags, RF_DROP_1)) number++;
+		for (drop = race->drops; drop; drop = drop->next) {
+			if ((unsigned int)randint0(100) <
+					drop->percent_chance) {
+				specnum += randint0(drop->max - drop->min) +
+					drop->min;
+			}
+		}
 	}
-
+	if (specific) {
+		number += specnum;
+	}
+	if (specific_count) {
+		*specific_count = specnum;
+	}
 	return number;
 }
 
@@ -717,7 +740,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 	struct monster_lore *lore = get_lore(mon->race);
 
 	bool great, good, gold_ok, item_ok;
-    bool extra_roll = false;
+	bool extra_roll = false;
 	bool any = false;
 
 	int number = 0, level, j, monlevel;
@@ -732,24 +755,24 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 	item_ok = (!rf_has(mon->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	number = mon_create_drop_count(mon->race, false);
+	number = mon_create_drop_count(mon->race, false, false, NULL);
 
 	/* Uniques that have been stolen from get their quantity reduced */
-    if (rf_has(mon->race->flags, RF_UNIQUE)) {
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		number = MAX(0, number - lore->thefts);
 	}
 
-    /* Give added bonus for unique monsters */
-    monlevel = mon->race->level;
-    if (rf_has(mon->race->flags, RF_UNIQUE)) {
-        monlevel = MIN(monlevel + 15, monlevel * 2);
-        extra_roll = true;
-    }
+	/* Give added bonus for unique monsters */
+	monlevel = mon->race->level;
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		monlevel = MIN(monlevel + 15, monlevel * 2);
+		extra_roll = true;
+	}
 
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
 	level = MAX((monlevel + player->depth) / 2, monlevel);
-    level = MIN(level, 100);
+	level = MIN(level, 100);
 
 	/* Morgoth currently drops all artifacts with the QUEST_ART flag */
 	if (rf_has(mon->race->flags, RF_QUESTOR) && (mon->race->level == 100)) {
