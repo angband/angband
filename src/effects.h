@@ -29,7 +29,7 @@
 typedef enum
 {
 	EF_NONE,
-	#define EFFECT(x, a, b, c, d, e)	EF_##x,
+	#define EFFECT(x, a, b, c, d, e, f)	EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
 	EF_MAX

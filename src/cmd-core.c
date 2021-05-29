@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "effects-info.h"
 #include "game-input.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
@@ -513,6 +514,9 @@ static int cmd_get_arg(struct command *cmd, const char *arg,
  * - birth choices
  * - store items
  * - spells
+ * - selecting an effect for an item that activates for an EF_SELECT effect
+ *   (dragon's breath wands or potions, dragon armor that has multiple breath
+ *   types)
  *
  * Each of these should have its own type, which will allow for proper
  * validity checking of data.
@@ -570,6 +574,57 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 		return CMD_OK;
 	}
 
+	return CMD_ARG_ABORTED;
+}
+
+/**
+ * Choose an effect from a list, first try the command but then prompt
+ * \param cmd is the command to use.
+ * \param arg is the name of the argument to consult in the command
+ * \param choice When the return value is CMD_OK, *choice will be set to the
+ * index in the list for the selected effect or to -2 if the user selected the
+ * random option enabled by allow_random.
+ * \param prompt Is the text for the prompt displayed when querying the user.
+ * May be NULL to use a default prompt.
+ * \param effect points to the first effect in the linked list of effects.
+ * \param count is the number of effects from which to choose.  If count is -1,
+ * all the effects in the list will be used.
+ * \param allow_random when true, present the user an additional option which
+ * will choose one of the effects at random; when false, only present the
+ * options that correspond to the effects in the list.
+ * \return CMD_OK if *choice was updated with a valid selection; otherwise
+ * return CMD_ARG_ABORTED.
+ */
+int cmd_get_effect_from_list(struct command *cmd, const char *arg, int *choice,
+	const char *prompt, struct effect *effect, int count,
+	bool allow_random)
+{
+	int selection;
+
+	if (count == -1) {
+		struct effect *cursor = effect;
+
+		count = 0;
+		while (cursor) {
+			++count;
+			cursor = effect_next(cursor);
+		}
+	}
+
+	if (cmd_get_arg_choice(cmd, arg, &selection) != CMD_OK ||
+			((selection != -2 || !allow_random) &&
+			(selection < 0 || selection >= count))) {
+		/* It isn't in the command or is invalid; prompt. */
+		selection = get_effect_from_list(prompt, effect, count,
+			allow_random);
+	}
+	if ((selection == -2 && allow_random) ||
+			(selection >= 0 && selection < count)) {
+		/* Record the selection in the command. */
+		cmd_set_arg_choice(cmd, arg, selection);
+		*choice = selection;
+		return CMD_OK;
+	}
 	return CMD_ARG_ABORTED;
 }
 

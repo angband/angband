@@ -178,6 +178,7 @@ ANGFILES = \
 	ui-curse.o \
 	ui-death.o \
 	ui-display.o \
+	ui-effect.o \
 	ui-entry.o \
 	ui-entry-combiner.o \
 	ui-entry-renderers.o \

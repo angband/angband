@@ -134,6 +134,7 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/ui-curse.c
         src/ui-death.c
         src/ui-display.c
+        src/ui-effect.c
         src/ui-entry-combiner.c
         src/ui-entry-renderers.c
         src/ui-entry.c

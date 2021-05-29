@@ -56,6 +56,8 @@ extern bool (*get_item_hook)(struct object **choice, const char *pmt,
 							 int mode);
 extern bool (*get_curse_hook)(int *choice, struct object *obj,
 							  char *dice_string);
+extern int (*get_effect_from_list_hook)(const char *prompt,
+	struct effect *effect, int count, bool allow_random);
 extern bool (*confirm_debug_hook)(void);
 extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
@@ -74,6 +76,8 @@ int get_spell(const char *verb, item_tester book_filter, cmd_code cmd,
 bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
 bool get_curse(int *choice, struct object *obj, char *dice_string);
+int get_effect_from_list(const char *prompt, struct effect *effect, int count,
+	bool allow_random);
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
 bool confirm_debug(void);
 bool panel_contains(unsigned int y, unsigned int x);

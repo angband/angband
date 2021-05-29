@@ -32,9 +32,10 @@ static struct {
         int args;
         int efinfo_flag;
         const char *desc;
+	const char *menu_name;
 } base_descs[] = {
         { EF_NONE, 0, EFINFO_NONE, "" },
-        #define EFFECT(x, a, b, c, d, e) { EF_##x, c, d, e },
+        #define EFFECT(x, a, b, c, d, e, f) { EF_##x, c, d, e, f },
         #include "list-effects.h"
         #undef EFFECT
 };
@@ -104,17 +105,19 @@ static void copy_to_textblock_with_coloring(textblock *tb, const char *s)
 
 
 /**
- * Creates a description of the random effect which chooses from the next count
- * effects in the linked list starting with e.  The description is prefaced
- * with the contents of *prefix if prefix is not NULL.  dev_skill_boost is the
- * percent increase in damage to report for the device skill.  Sets *nexte to
- * point to the element in the linked list or NULL that is immediately after
- * the count effects.  Returns a non-NULL value if there was at least one
- * effect that could be described.  Otherwise, returns NULL.
+ * Creates a description of the random or select effect which chooses from the
+ * next count effects in the linked list starting with e.  The description is
+ * prefaced with the contents of *prefix if prefix is not NULL.  It is also
+ * prefaced with the contents of *type_prefix which would normally be
+ * "randomly " for a random effect and NULL for a select effect.
+ * dev_skill_boost is the percent increase in damage to report for the device
+ * skill.  Sets *nexte to point to the element in the linked list or NULL that
+ * is immediately after the count effects.  Returns a non-NULL value if there
+ * was at least one effect that could be described.  Otherwise, returns NULL.
  */
-static textblock *create_random_effect_description(const struct effect *e,
-	int count, const char *prefix, int dev_skill_boost,
-	const struct effect **nexte)
+static textblock *create_nested_effect_description(const struct effect *e,
+	int count, const char *prefix, const char *type_prefix,
+	int dev_skill_boost, const struct effect **nexte)
 {
 	/*
 	 * Do one pass through the effects to determine if they are of all the
@@ -132,7 +135,7 @@ static textblock *create_random_effect_description(const struct effect *e,
 	int irand, jrand;
 	int nvalid;
 
-	/* Find the first effect that's valid and not random. */
+	/* Find the first effect that's valid and not random nor select. */
 	irand = 0;
 	while (1) {
 		if (!e || irand >= count) {
@@ -142,7 +145,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 			*nexte = e;
 			return false;
 		}
-		if (effect_desc(e) && e->index != EF_RANDOM) {
+		if (effect_desc(e) && e->index != EF_RANDOM &&
+				e->index != EF_SELECT) {
 			break;
 		}
 		e = e->next;
@@ -164,7 +168,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 	for (e = efirst->next, jrand = irand + 1;
 		e && jrand < count;
 		e = e->next, ++jrand) {
-		if (!effect_desc(e) || e->index == EF_RANDOM) {
+		if (!effect_desc(e) || e->index == EF_RANDOM ||
+				e->index == EF_SELECT) {
 			continue;
 		}
 		++nvalid;
@@ -206,7 +211,8 @@ static textblock *create_random_effect_description(const struct effect *e,
 		for (e = efirst->next, jrand = irand + 1;
 			e && jrand < count;
 			e = e->next, ++jrand) {
-			if (!effect_desc(e) || e->index == EF_RANDOM) {
+			if (!effect_desc(e) || e->index == EF_RANDOM ||
+					e->index == EF_SELECT) {
 				continue;
 			}
 			if (ivalid == nvalid - 1) {
@@ -233,14 +239,16 @@ static textblock *create_random_effect_description(const struct effect *e,
 		if (prefix) {
 			textblock_append(res, "%s", prefix);
 		}
-		textblock_append(res, "randomly ");
+		if (type_prefix) {
+			textblock_append(res, "%s", type_prefix);
+		}
 		copy_to_textblock_with_coloring(res, desc);
 	} else {
 		/* Concatenate the effect descriptions. */
 		textblock *tb;
 		int ivalid;
 		
-		tb = effect_describe(efirst, "randomly ", dev_skill_boost,
+		tb = effect_describe(efirst, type_prefix, dev_skill_boost,
 			true);
 		if (tb) {
 			ivalid = 1;
@@ -259,11 +267,12 @@ static textblock *create_random_effect_description(const struct effect *e,
 		for (e = efirst->next, jrand = irand + 1;
 			e && jrand < count;
 			e = e->next, ++jrand) {
-			if (!effect_desc(e) || e->index == EF_RANDOM) {
+			if (!effect_desc(e) || e->index == EF_RANDOM ||
+					e->index == EF_SELECT) {
 				continue;
 			}
 			tb = effect_describe(e,
-				(ivalid == 0) ? "randomly " : NULL,
+				(ivalid == 0) ? type_prefix : NULL,
 				dev_skill_boost, true);
 			if (!tb) {
 				--nvalid;
@@ -295,13 +304,13 @@ static textblock *create_random_effect_description(const struct effect *e,
 
 /**
  * Creates a new textblock which has a description of the effect in *e (and
- * any linked to it because e->index == EF_RANDOM) if only_first is true or
- * has a description of *e and all the subsequent effects if only_first is
- * false.  If none of the effects has a description, will return NULL.  If
- * there is at least one effect with a description and prefix is not NULL,
- * the string pointed to by prefix will be added to the textblock before
- * the descriptions.  dev_skill_boost is the percent increase from the device
- * skill to show in the descriptions.
+ * any linked to it because e->index == EF_RANDOM or e->index == EF_SELECT) if
+ * only_first is true or has a description of *e and all the subsequent effects
+ * if only_first is false.  If none of the effects has a description, will
+ * return NULL.  If there is at least one effect with a description and prefix
+ * is not NULL, the string pointed to by prefix will be added to the textblock
+ * before the descriptions.  dev_skill_boost is the percent increase from the
+ * device skill to show in the descriptions.
  */
 textblock *effect_describe(const struct effect *e, const char *prefix,
 	int dev_skill_boost, bool only_first)
@@ -320,11 +329,12 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			roll = dice_roll(e->dice, &value);
 		}
 
-		/* Deal with special random effect. */
-		if (e->index == EF_RANDOM) {
+		/* Deal with special random or select effects. */
+		if (e->index == EF_RANDOM || e->index == EF_SELECT) {
 			const struct effect *nexte;
-			textblock *tbe = create_random_effect_description(
+			textblock *tbe = create_nested_effect_description(
 				e->next, roll, (nadded == 0) ? prefix : NULL,
+				(e->index == EF_RANDOM) ? "randomly " : NULL,
 				dev_skill_boost, &nexte);
 
 			e = (only_first) ? NULL : nexte;
@@ -540,12 +550,155 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 }
 
 /**
+ * Fills a buffer with a short description, suitable for use a menu entry, of
+ * an effect.
+ * \param buf is the buffer to fill.
+ * \param max is the maximum number of characters the buffer can hold.
+ * \param e is the effect to describe.
+ * \return the number of characters written to the buffer; will be zero if
+ * the effect is invalid
+ */
+size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
+{
+	const char *fmt;
+	size_t len;
+
+	if (!e || e->index <= EF_NONE || e->index >= EF_MAX) {
+		return 0;
+	}
+
+	fmt = base_descs[e->index].menu_name;
+	switch (base_descs[e->index].efinfo_flag) {
+	case EFINFO_DICE:
+	case EFINFO_HEAL:
+	case EFINFO_CONST:
+	case EFINFO_QUAKE:
+	case EFINFO_NONE:
+		len = strnfmt(buf, max, fmt);
+		break;
+
+	case EFINFO_FOOD:
+		{
+			const char *actstr;
+			const char *actarg;
+			int avg;
+
+			switch (e->subtype) {
+			case 0: /* INC_BY */
+				actstr = "feed";
+				actarg = "yourelf";
+				break;
+			case 1: /* DEC_BY */
+				actstr = "increase";
+				actarg = "hunger";
+				break;
+			case 2: /* SET_TO */
+				avg = (e->dice) ?
+					dice_evaluate(e->dice, 1, AVERAGE, NULL) : 0;
+				actstr = "become";
+				if (avg > PY_FOOD_FULL) {
+					actarg = "bloated";
+				} else if (avg > PY_FOOD_HUNGRY) {
+					actarg = "satisfied";
+				} else {
+					actarg = "hungry";
+				}
+				break;
+			case 3: /* INC_TO */
+				avg = (e->dice) ?
+					dice_evaluate(e->dice, 1, AVERAGE, NULL): 0;
+				actstr = "leave";
+				if (avg > PY_FOOD_FULL) {
+					actarg = "bloated";
+				} else if (avg > PY_FOOD_HUNGRY) {
+					actarg = "nourished";
+				} else {
+					actarg = "hungry";
+				}
+				break;
+			default:
+				actstr = NULL;
+				actarg = NULL;
+				break;
+			}
+			if (actstr && actarg) {
+				len = strnfmt(buf, max, fmt, actstr, actarg);
+			} else {
+				len = strnfmt(buf, max, "");
+			}
+		}
+		break;
+
+	case EFINFO_CURE:
+	case EFINFO_TIMED:
+		len = strnfmt(buf, max, fmt, timed_effects[e->subtype].desc);
+		break;
+
+	case EFINFO_STAT:
+		len = strnfmt(buf, max, fmt,
+			lookup_obj_property(OBJ_PROPERTY_STAT,
+			e->subtype)->name);
+		break;
+
+	case EFINFO_SEEN:
+	case EFINFO_BOLT:
+	case EFINFO_BOLTD:
+	case EFINFO_TOUCH:
+		len = strnfmt(buf, max, fmt, projections[e->subtype].desc);
+		break;
+
+	case EFINFO_SUMM:
+		len = strnfmt(buf, max, fmt, summon_desc(e->subtype));
+		break;
+
+	case EFINFO_TELE:
+		{
+			random_value value = { 0, 0, 0, 0 };
+			char dist[32];
+			int avg;
+
+			if (e->dice) {
+				avg = dice_evaluate(e->dice, 1, AVERAGE,
+					&value);
+			}
+			if (value.m_bonus) {
+				strnfmt(dist, sizeof(dist), "some distance");
+			} else {
+				strnfmt(dist, sizeof(dist), "%d grids", avg);
+			}
+			len = strnfmt(buf, max, fmt,
+				(e->subtype) ? "other" : "you", dist);
+		}
+		break;
+
+	case EFINFO_BALL:
+	case EFINFO_SPOT:
+	case EFINFO_BREATH:
+	case EFINFO_SHORT:
+		len = strnfmt(buf, max, fmt,
+			projections[e->subtype].player_desc);
+		break;
+
+	case EFINFO_LASH:
+		len = strnfmt(buf, max, fmt, projections[e->subtype].lash_desc);
+		break;
+
+	default:
+		len = strnfmt(buf, max, "");
+		msg("Bad effect description passed to effect_get_menu_name().  Please report this bug.");
+		break;
+	}
+
+	return len;
+}
+
+/**
  * Returns a pointer to the next effect in the effect stack, skipping over
- * all the sub-effects from random effects
+ * all the sub-effects from random or select effects
  */
 struct effect *effect_next(struct effect *effect)
 {
-	if (effect->index == EF_RANDOM) {
+	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		struct effect *e = effect;
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
 		// Skip all the sub-effects, plus one to advance beyond current
@@ -560,13 +713,13 @@ struct effect *effect_next(struct effect *effect)
 
 /**
  * Checks if the effect deals damage, by checking the effect's info string.
- * Random effects are considered to deal damage if any sub-effect deals
- * damage.
+ * Random or select effects are considered to deal damage if any sub-effect
+ * deals damage.
  */
 bool effect_damages(const struct effect *effect)
 {
-	if (effect->index == EF_RANDOM) {
-		// Random effect
+	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
+		// Random or select effect
 		struct effect *e = effect->next;
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
 
@@ -579,20 +732,22 @@ bool effect_damages(const struct effect *effect)
 		}
 		return false;
 	} else {
-		// Non-random effect, check the info string for damage
+		// Not a random or select effect, check the info string for
+		// damage
 		return effect_info(effect) != NULL &&
 			streq(effect_info(effect), "dam");
 	}
 }
 
 /**
- * Calculates the average damage of the effect. Random effects return an
- * average of all sub-effect averages.
+ * Calculates the average damage of the effect. Random effects and select
+ * effects return an average of all sub-effect averages.
  */
 int effect_avg_damage(const struct effect *effect)
 {
-	if (effect->index == EF_RANDOM) {
-		// Random effect, check the sub-effects to accumulate damage
+	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
+		// Random or select effect, check the sub-effects to
+		// accumulate damage
 		int total = 0;
 		struct effect *e = effect->next;
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
@@ -612,13 +767,13 @@ int effect_avg_damage(const struct effect *effect)
 
 /**
  * Returns the projection of the effect, or an empty string if it has none.
- * Random effects only return a projection if all sub-effects have the same
- * projection.
+ * Random or select effects only return a projection if all sub-effects have
+ * the same projection.
  */
 const char *effect_projection(const struct effect *effect)
 {
-	if (effect->index == EF_RANDOM) {
-		// Random effect
+	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
+		// Random or select effect
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
 		struct effect *e = effect->next;
 		const char *subeffect_proj = effect_projection(e);

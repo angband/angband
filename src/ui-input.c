@@ -33,6 +33,7 @@
 #include "ui-context.h"
 #include "ui-curse.h"
 #include "ui-display.h"
+#include "ui-effect.h"
 #include "ui-help.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
@@ -1371,6 +1372,7 @@ void textui_input_init(void)
 	get_aim_dir_hook = textui_get_aim_dir;
 	get_spell_from_book_hook = textui_get_spell_from_book;
 	get_spell_hook = textui_get_spell;
+	get_effect_from_list_hook = textui_get_effect_from_list;
 	get_item_hook = textui_get_item;
 	get_curse_hook = textui_get_curse;
 	get_panel_hook = textui_get_panel;
