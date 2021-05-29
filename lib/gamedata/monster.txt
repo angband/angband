@@ -150,9 +150,10 @@
 # describe the monster. Leading whitespace will be removed, and a single space
 # will be added between desc: lines.
 
-# 'drop' lines create possible drops for specific monsters. If any drop lines
-# are present, the monster will drop *only* items from its drop lines.
-# Each item has its percent chance rolled for individually.
+# 'drop' lines create possible drops for specific monsters.  Each item
+# has its percent chance rolled for individually.  Any specified drops are in
+# addition to those that are possible due to the flags set.  Specific drops
+# can be affected by the DROP_GREAT and DROP_GOOD flags.
 
 # 'drop-base' lines work as for drops, but only the object tval is specified.
 
