@@ -98,7 +98,8 @@ bool player_get_recall_depth(struct player *p)
 	int new = 0;
 
 	while (!level_ok) {
-		char *prompt = "Which level do you wish to return to (0 to cancel)? ";
+		const char *prompt =
+			"Which level do you wish to return to (0 to cancel)? ";
 		int i;
 
 		/* Choose the level */
