@@ -266,7 +266,7 @@ struct menu
 /**
  * Allocate and return a new, initialised, menu.
  */
-struct menu *menu_new(skin_id, const menu_iter *iter);
+struct menu *menu_new(skin_id id, const menu_iter *iter);
 struct menu *menu_new_action(menu_action *acts, size_t n);
 void menu_free(struct menu *m);
 
@@ -274,7 +274,7 @@ void menu_free(struct menu *m);
 /**
  * Initialise a menu, using the skin and iter functions specified.
  */
-void menu_init(struct menu *menu, skin_id skin, const menu_iter *iter);
+void menu_init(struct menu *menu, skin_id id, const menu_iter *iter);
 
 
 /**
