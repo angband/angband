@@ -2,6 +2,10 @@
  * \file effects-info.c
  * \brief Implement interfaces for displaying information about effects
  *
+ * Copyright (c) 2020 Eric Branlund
+ * Copyright (c) 2010 Andi Sidwell
+ * Copyright (c) 2004 Robert Ruehlmann
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *

@@ -2,6 +2,8 @@
  * \file ui-equip-cmp.c
  * \brief Supply a "resistance grid for home" in the knowledge menu
  *
+ * Copyright (c) 2020 - 2021 Eric Branlund
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *

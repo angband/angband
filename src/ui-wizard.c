@@ -2,6 +2,9 @@
  * \file ui-wizard.c
  * \brief Implements menus and ui-game.c shims related to debug commands
  *
+ * Copyright (c) 2021 Eric Branlund
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *
