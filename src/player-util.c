@@ -861,15 +861,15 @@ bool player_get_resume_normal_shape(struct player *p, struct command *cmd)
 		strnfmt(prompt, sizeof(prompt),
 		        "Change back and %s (y/n) or (r)eturn to normal? ",
 		        cmd_verb(cmd->code));
-		char p = get_char(prompt, "yrn", 3, 'n');
+		char answer = get_char(prompt, "yrn", 3, 'n');
 
 		// Change back to normal shape
-		if (p == 'y' || p == 'r') {
+		if (answer == 'y' || answer == 'r') {
 			player_resume_normal_shape(player);
 		}
 
 		// Players may only act if they return to normal shape
-		return p == 'y';
+		return answer == 'y';
 	}
 
 	// Normal shape players can proceed as usual
