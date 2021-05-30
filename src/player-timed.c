@@ -49,7 +49,7 @@ const char *list_player_flag_names[] = {
 };
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
-	#define TMD(a, b, c)	{ #a, b, c },
+	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL },
 	#include "list-player-timed.h"
 	#undef TMD
 };
