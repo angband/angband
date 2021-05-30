@@ -100,7 +100,7 @@ static struct level_data {
 	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[LEVEL_MAX];
 
-static void create_indices()
+static void create_indices(void)
 {
 	int i;
 
@@ -123,7 +123,7 @@ static void create_indices()
 	}
 }
 
-static void alloc_memory()
+static void alloc_memory(void)
 {
 	int i, j, k, l;
 
@@ -177,7 +177,7 @@ static void free_stats_memory(void)
 }
 
 /* Copied from birth.c:generate_player() */
-static void generate_player_for_stats()
+static void generate_player_for_stats(void)
 {
 	OPT(player, birth_randarts) = randarts;
 	OPT(player, birth_no_selling) = no_selling;
