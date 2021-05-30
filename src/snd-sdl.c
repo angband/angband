@@ -90,9 +90,9 @@ static bool open_audio_sdl(void)
 /**
  * Load a sound from file.
  */
-static bool load_sample_sdl(const char *filename, int file_type, sdl_sample *sample)
+static bool load_sample_sdl(const char *filename, int ft, sdl_sample *sample)
 {
-	switch (file_type) {
+	switch (ft) {
 		case SDL_CHUNK:
 			sample->sample_data.chunk = Mix_LoadWAV(filename);
 
@@ -121,7 +121,7 @@ static bool load_sample_sdl(const char *filename, int file_type, sdl_sample *sam
  * Load a sound and return a pointer to the associated SDL Sound data
  * structure back to the core sound module.
  */
-static bool load_sound_sdl(const char *filename, int file_type, struct sound_data *data)
+static bool load_sound_sdl(const char *filename, int ft, struct sound_data *data)
 {
 	sdl_sample *sample = (sdl_sample *)(data->plat_data);
 
@@ -129,10 +129,10 @@ static bool load_sound_sdl(const char *filename, int file_type, struct sound_dat
 		sample = mem_zalloc(sizeof(*sample));
 
 	/* Try and load the sample file */
-	data->loaded = load_sample_sdl(filename, file_type, sample);
+	data->loaded = load_sample_sdl(filename, ft, sample);
 
 	if (data->loaded) {
-		sample->sample_type = file_type;
+		sample->sample_type = ft;
 	} else {
 		mem_free(sample);
 		sample = NULL;
