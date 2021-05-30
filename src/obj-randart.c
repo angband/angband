@@ -493,12 +493,12 @@ static void count_bow_abilities(const struct artifact *art,
 
 	/* Count brands and slays */
 	if (art->slays) {
-		int bonus = slay_count(art->slays);
+		bonus = slay_count(art->slays);
 		data->art_probs[ART_IDX_BOW_SLAY] += bonus;
 		file_putf(log_file, "Adding %d for slays\n", bonus);
 	}
 	if (art->brands) {
-		int bonus = brand_count(art->brands);
+		bonus = brand_count(art->brands);
 		data->art_probs[ART_IDX_BOW_BRAND] += bonus;
 		file_putf(log_file, "Adding %d for brands\n", bonus);
 	}
