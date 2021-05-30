@@ -38,7 +38,7 @@ static struct {
         const char *desc;
 	const char *menu_name;
 } base_descs[] = {
-        { EF_NONE, 0, EFINFO_NONE, "" },
+        { EF_NONE, 0, EFINFO_NONE, "", "" },
         #define EFFECT(x, a, b, c, d, e, f) { EF_##x, c, d, e, f },
         #include "list-effects.h"
         #undef EFFECT
