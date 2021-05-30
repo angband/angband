@@ -36,7 +36,7 @@ EFFECT(GAIN_EXP,					false,	NULL,		1,		EFINFO_CONST,	"grants %d experience point
 EFFECT(DRAIN_LIGHT,					false,	NULL,		0,		EFINFO_NONE,	"drains your light source",	"")
 EFFECT(DRAIN_MANA,					false,	NULL,		0,		EFINFO_NONE,	"drains some mana",	"")
 EFFECT(RESTORE_MANA,				false,	NULL,		0,		EFINFO_NONE,	"restores some mana",	"restore some mana")
-EFFECT(REMOVE_CURSE,				false,	NULL,		0,		EFINFO_NONE,	"attempts removal of a single curse on an object",	"remove curse")
+EFFECT(REMOVE_CURSE,				false,	NULL,		1,		EFINFO_DICE,	"attempts power %s removal of a single curse on an object",	"remove curse")
 EFFECT(RECALL,						false,	NULL,		0,		EFINFO_NONE,	"returns you from the dungeon or takes you to the dungeon after a short delay",	"recall")
 EFFECT(DEEP_DESCENT,				false,	NULL,		0,		EFINFO_NONE,	"teleports you up to five dungeon levels lower than the lowest point you have reached so far", "descend to the depths")
 EFFECT(ALTER_REALITY,				false,	NULL,		0,		EFINFO_NONE,	"creates a new dungeon level",	"alter reality")
