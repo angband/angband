@@ -1260,11 +1260,11 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 			/* If the brand was unknown, add it to known brands */
 			if (!player_knows_brand(p, r->index)) {
-				int i;
-				for (i = 1; i < z_info->brand_max; i++) {
+				int j;
+				for (j = 1; j < z_info->brand_max; j++) {
 					/* Check base and race flag */
-					if (streq(brands[r->index].name, brands[i].name)) {
-						p->obj_k->brands[i] = true;
+					if (streq(brands[r->index].name, brands[j].name)) {
+						p->obj_k->brands[j] = true;
 						learned = true;
 					}
 				}
@@ -1277,11 +1277,11 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 			/* If the slay was unknown, add it to known slays */
 			if (!player_knows_slay(p, r->index)) {
-				int i;
-				for (i = 1; i < z_info->slay_max; i++) {
+				int j;
+				for (j = 1; j < z_info->slay_max; j++) {
 					/* Check base and race flag */
-					if (same_monsters_slain(r->index, i)) {
-						p->obj_k->slays[i] = true;
+					if (same_monsters_slain(r->index, j)) {
+						p->obj_k->slays[j] = true;
 						learned = true;
 					}
 				}
@@ -1291,12 +1291,12 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			int i = r->index;
-			assert(i < z_info->curse_max);
+			int j = r->index;
+			assert(j < z_info->curse_max);
 
 			/* If the curse was unknown, add it to known curses */
-			if (!player_knows_curse(p, i)) {
-				p->obj_k->curses[i].power = 1;
+			if (!player_knows_curse(p, j)) {
+				p->obj_k->curses[j].power = 1;
 				learned = true;
 			}
 			break;
