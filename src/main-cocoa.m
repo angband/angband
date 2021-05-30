@@ -5993,7 +5993,7 @@ static void cocoa_reinit(void)
 	ANGBAND_SYS = "mac";
 
 	/* Load possible graphics modes */
-	init_graphics_modes("graphics.txt");
+	init_graphics_modes();
 
 	/* Load preferences */
 	load_prefs();
