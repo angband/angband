@@ -137,9 +137,7 @@ static void spell_message(struct monster *mon,
 
 				case SPELL_TAG_TARGET: {
 					char m_name[80];
-					struct monster *t_mon;
 					if (mon->target.midx > 0) {
-						t_mon = cave_monster(cave, mon->target.midx);
 						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
