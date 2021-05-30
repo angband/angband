@@ -73,17 +73,22 @@ static const struct sound_module sound_modules[] =
 static u16b next_sound_id;
 static struct sound_data *sounds;
 
+#ifdef SOUND
 #define SOUND_DATA_ARRAY_INC	10
+#endif
 
 /* These are the hooks installed by the platform sound module */
 static struct sound_hooks hooks;
 
+#ifdef SOUND
 /*
  * If preload_sounds is true, sounds are loaded immediately when assigned to
  * a message. Otherwise, each sound is only loaded when first played.
  */
 static bool preload_sounds = false;
+#endif
 
+#ifdef SOUND
 static struct sound_data *grow_sound_list(void)
 {
 	int new_size;
@@ -104,6 +109,7 @@ static struct sound_data *grow_sound_list(void)
 
 	return sounds;
 }
+#endif
 
 /**
  * Iterate through all the sound types supporting by the platform's sound
@@ -153,6 +159,7 @@ static void load_sound(struct sound_data *sound_data)
 	}
 }
 
+#ifdef SOUND
 /**
  * Parse a string of sound names provided by the preferences parser and:
  *  - Allocate a unique 'sound id' to any new sounds and add them to the
@@ -160,7 +167,7 @@ static void load_sound(struct sound_data *sound_data)
  *  - Add each sound assigned to a message type to that message types
  *    'sound map
  */
-void message_sound_define(u16b message_id, const char *sounds_str)
+static void message_sound_define(u16b message_id, const char *sounds_str)
 {
 	char *search;
 	char *str;
@@ -251,8 +258,10 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 
 	string_free(str);
 }
+#endif
 
-enum parser_error parse_prefs_sound(struct parser *p)
+#ifdef SOUND
+static enum parser_error parse_prefs_sound(struct parser *p)
 {
 	int msg_index;
 	const char *type;
@@ -274,6 +283,7 @@ enum parser_error parse_prefs_sound(struct parser *p)
 
 	return PARSE_ERROR_NONE;
 }
+#endif
 
 errr register_sound_pref_parser(struct parser *p)
 {

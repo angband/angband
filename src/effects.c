@@ -101,7 +101,7 @@ static const char *desc_stat(int stat, bool positive)
 }
 
 
-int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
+static int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
 	int final = 0;
 
@@ -419,7 +419,7 @@ static bool enchant2(struct object *obj, s16b *score)
  *
  * \returns true if the item was changed in some way
  */
-bool enchant(struct object *obj, int n, int eflag)
+static bool enchant(struct object *obj, int n, int eflag)
 {
 	int i, prob;
 	bool res = false;
@@ -473,7 +473,7 @@ bool enchant(struct object *obj, int n, int eflag)
  * both to_hit and to_dam with the same flag.  This
  * may not be the most desirable behavior (ACB).
  */
-bool enchant_spell(int num_hit, int num_dam, int num_ac, struct command *cmd)
+static bool enchant_spell(int num_hit, int num_dam, int num_ac, struct command *cmd)
 {
 	bool okay = false;
 
@@ -528,7 +528,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac, struct command *cmd)
  *
  * Turns the (non-magical) object into an ego-item of 'brand_type'.
  */
-void brand_object(struct object *obj, const char *name)
+static void brand_object(struct object *obj, const char *name)
 {
 	int i;
 	struct ego_item *ego;

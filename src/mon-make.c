@@ -1261,7 +1261,7 @@ static bool place_monster_base_okay(struct monster_race *race)
 /**
  * Helper function to place monsters that appear as friends or escorts
  */
-bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
+static bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 					struct monster_race *friends_race, int total, bool sleep,
 					struct monster_group_info group_info, byte origin)
 {

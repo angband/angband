@@ -314,7 +314,7 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
 /**
  * Get correct monster glyphs.
  */
-void monster_list_get_glyphs(monster_list_t *list)
+static void monster_list_get_glyphs(monster_list_t *list)
 {
 	int i;
 

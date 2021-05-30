@@ -141,7 +141,7 @@ static enum parser_error parse_summon_desc(struct parser *p) {
 
 
 
-struct parser *init_parse_summon(void) {
+static struct parser *init_parse_summon(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 

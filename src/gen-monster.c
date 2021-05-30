@@ -44,7 +44,7 @@ static char base_d_char[15];
  * \param name the pit profile name
  * \return the pit profile
  */
-struct pit_profile *lookup_pit_profile(const char *name)
+static struct pit_profile *lookup_pit_profile(const char *name)
 {
 	struct pit_profile *profile;
 

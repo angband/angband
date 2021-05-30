@@ -153,7 +153,7 @@ int code_index_in_array(const char *code_name[], const char *code)
  * \param string is the random value string to return (NULL if not required)
  * \param num is the integer to return (NULL if not required)
  */
-bool find_value_arg(char *value_name, char *string, int *num)
+static bool find_value_arg(char *value_name, char *string, int *num)
 {
 	char *t;
 

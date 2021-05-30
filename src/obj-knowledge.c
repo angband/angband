@@ -1393,7 +1393,7 @@ void player_learn_all_runes(struct player *p)
  * \param obj is the object 
  * \param mod is the modifier being noticed
  */
-void mod_message(struct object *obj, int mod)
+static void mod_message(struct object *obj, int mod)
 {
 	/* Special messages for individual properties */
 	switch (mod) {
@@ -1462,7 +1462,7 @@ void mod_message(struct object *obj, int mod)
 	}
 }
 
-void object_curses_find_to_a(struct player *p, struct object *obj)
+static void object_curses_find_to_a(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_A);
 	if (obj->curses) {
@@ -1485,7 +1485,7 @@ void object_curses_find_to_a(struct player *p, struct object *obj)
 	}
 }
 
-void object_curses_find_to_h(struct player *p, struct object *obj)
+static void object_curses_find_to_h(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
 	if (obj->curses) {
@@ -1508,7 +1508,7 @@ void object_curses_find_to_h(struct player *p, struct object *obj)
 	}
 }
 
-void object_curses_find_to_d(struct player *p, struct object *obj)
+static void object_curses_find_to_d(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
 	if (obj->curses) {
@@ -1539,7 +1539,7 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
  * \param test_flags is the set of flags to check for
  * \return whether a flag was found
  */
-bool object_curses_find_flags(struct player *p, struct object *obj,
+static bool object_curses_find_flags(struct player *p, struct object *obj,
 							  bitflag *test_flags)
 {
 	char o_name[80];
@@ -1588,7 +1588,7 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
  * \param p is the player
  * \param obj is the object
  */
-void object_curses_find_modifiers(struct player *p, struct object *obj)
+static void object_curses_find_modifiers(struct player *p, struct object *obj)
 {
 	int i;
 
@@ -1628,7 +1628,7 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
  * \param elem the element
  * \return whether the element appeared in a curse
  */
-bool object_curses_find_element(struct player *p, struct object *obj, int elem)
+static bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 {
 	char o_name[80];
 	bool new = false;
@@ -1671,7 +1671,7 @@ bool object_curses_find_element(struct player *p, struct object *obj, int elem)
  * \param obj is the object
  * \return the index into the rune list, or -1 for no unknown runes
  */
-int object_find_unknown_rune(struct player *p, struct object *obj)
+static int object_find_unknown_rune(struct player *p, struct object *obj)
 {
 	size_t i, num = 0;
 	int *poss_runes;

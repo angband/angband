@@ -250,7 +250,7 @@ errr cmdq_push_copy(struct command *cmd)
  * Process a game command from the UI or the command queue and carry out
  * whatever actions go along with it.
  */
-void process_command(cmd_context ctx, struct command *cmd)
+static void process_command(cmd_context ctx, struct command *cmd)
 {
 	int oldrepeats = cmd->nrepeats;
 	/* Hack - command a monster */

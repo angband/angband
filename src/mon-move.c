@@ -1364,7 +1364,7 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 /**
  * Grab all objects from the grid.
  */
-void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
+static void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 							   const char *m_name, struct loc new)
 {
 	struct monster_lore *lore = get_lore(mon->race);

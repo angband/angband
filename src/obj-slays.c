@@ -246,7 +246,7 @@ int slay_count(bool *slays)
  * \param slay is the slay we're testing for effectiveness
  * \param mon is the monster we're testing for being slain
  */
-bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
+static bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 {
 	if (!slay->name) return false;
 	if (!mon->race->base) return false;

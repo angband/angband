@@ -860,7 +860,7 @@ bool get_character_name(char *buf, size_t buflen)
  * See "askfor_aux" for some notes about "buf" and "len", and about
  * the return value of this function.
  */
-bool textui_get_string(const char *prompt, char *buf, size_t len)
+static bool textui_get_string(const char *prompt, char *buf, size_t len)
 {
 	bool res;
 
@@ -885,7 +885,7 @@ bool textui_get_string(const char *prompt, char *buf, size_t len)
 /**
  * Request a "quantity" from the user
  */
-int textui_get_quantity(const char *prompt, int max)
+static int textui_get_quantity(const char *prompt, int max)
 {
 	int amt = 1;
 
@@ -934,7 +934,7 @@ int textui_get_quantity(const char *prompt, int max)
  *
  * Note that "[y/n]" is appended to the prompt.
  */
-bool textui_get_check(const char *prompt)
+static bool textui_get_check(const char *prompt)
 {
 	ui_event ke;
 
@@ -1083,7 +1083,7 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
  * -------
  * Returns true unless the character is "Escape"
  */
-bool textui_get_com(const char *prompt, char *command)
+static bool textui_get_com(const char *prompt, char *command)
 {
 	ui_event ke;
 	bool result;
@@ -1165,7 +1165,7 @@ static int dir_transitions[10][10] =
  * This function tracks and uses the "global direction", and uses
  * that as the "desired direction", if it is set.
  */
-bool textui_get_rep_dir(int *dp, bool allow_5)
+static bool textui_get_rep_dir(int *dp, bool allow_5)
 {
 	int dir = 0;
 
@@ -1271,7 +1271,7 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
  */
-bool textui_get_aim_dir(int *dp)
+static bool textui_get_aim_dir(int *dp)
 {
 	/* Global direction */
 	int dir = 0;

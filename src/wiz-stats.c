@@ -1083,7 +1083,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
  * It also replaces drop near with a new function that drops all 
  * the items on the exact square that the monster was on.
  */
-void monster_death_stats(int m_idx)
+static void monster_death_stats(int m_idx)
 {
 	struct object *obj;
 	struct monster *mon;
@@ -1671,7 +1671,7 @@ void stats_collect(int nsim, int simtype)
 
 #define DIST_MAX 10000
 
-void calc_cave_distances(int **cave_dist)
+static void calc_cave_distances(int **cave_dist)
 {
 	int dist;
 

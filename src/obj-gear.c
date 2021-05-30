@@ -68,7 +68,7 @@ int slot_by_name(struct player *p, const char *name)
 /**
  * Gets a slot of the given type, preferentially empty unless full is true
  */
-int slot_by_type(struct player *p, int type, bool full)
+static int slot_by_type(struct player *p, int type, bool full)
 {
 	int i, fallback = p->body.count;
 

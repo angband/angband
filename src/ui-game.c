@@ -592,7 +592,7 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 	}
 }
 
-void pre_turn_refresh(void)
+static void pre_turn_refresh(void)
 {
 	term *old = Term;
 	int j;

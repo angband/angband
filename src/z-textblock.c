@@ -71,7 +71,7 @@ void textblock_free(textblock *tb)
  * \param tb is the textblock we need to resize.
  * \param additional_size is how many characters we want to add.
  */
-void textblock_resize_if_needed(textblock *tb, size_t additional_size)
+static void textblock_resize_if_needed(textblock *tb, size_t additional_size)
 {
 	size_t remaining = tb->size - tb->strlen;
 

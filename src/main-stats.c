@@ -1426,7 +1426,7 @@ static int stats_write_db(u32b run)
 
 #define STATS_PROGRESS_BAR_LEN 30
 
-void progress_bar(u32b run, time_t start) {
+static void progress_bar(u32b run, time_t start) {
 	u32b i;
 	u32b n = (run * STATS_PROGRESS_BAR_LEN) / num_runs;
 	u32b p10 = ((long long)run * 1000) / num_runs;

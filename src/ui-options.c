@@ -1377,7 +1377,7 @@ static int cmp_ignore(const void *a, const void *b)
 /**
  * Determine if an item is a valid choice
  */
-int quality_validity(struct menu *menu, int oid)
+static int quality_validity(struct menu *menu, int oid)
 {
 	return oid ? 1 : 0;
 }

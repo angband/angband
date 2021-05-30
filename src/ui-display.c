@@ -1155,7 +1155,7 @@ static size_t prt_moves(int row, int col)
 /**
  * Get the longest relevant terrain or trap name for prt_terrain()
  */
-int longest_terrain_name(void)
+static int longest_terrain_name(void)
 {
 	size_t i, max = 0;
 	for (i = 0; i < z_info->trap_max; i++) {
