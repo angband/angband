@@ -2931,10 +2931,10 @@ static void cleanup_shape(void)
 		string_free((char *)shape->name);
 		free_effect(shape->effect);
 		while (blow) {
-			struct player_blow *next = blow->next;
+			struct player_blow *next_blow = blow->next;
 			string_free(blow->name);
 			mem_free(blow);
-			blow = next;
+			blow = next_blow;
 		}
 		mem_free(shape);
 		shape = next;
