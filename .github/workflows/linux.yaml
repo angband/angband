@@ -71,7 +71,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev
+          sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSUPPORT_SDL_FRONTEND=ON ..
+          cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
           make
 
   sdl2:
@@ -98,5 +98,27 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install --enable-sdl2
+          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer
+          make
+
+  statbuild:
+    name: Statistics Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc autoconf automake make libsqlite3-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      # Build with some extra warnings.  Others that could be good additions
+      # are -Wwrite-strings, -Wshadow, and disabling how configure currently
+      # turns off -Wmissing-field-initializers, but, for now, those generate
+      # a lot of warnings to wade through.
+      - name: Build
+        run: |
+          ./autogen.sh
+          env CFLAGS="-Wvla -Wnested-externs -Wno-multichar -Wstrict-prototypes -Wlogical-op -Wbad-function-cast" ./configure --with-no-install --enable-stats
           make
