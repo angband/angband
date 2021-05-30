@@ -897,7 +897,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 /**
  * Get information for constructing stairs in the correct places
  */
-static void get_join_info(struct player *p, struct dun_data *dun)
+static void get_join_info(struct player *p, struct dun_data *dd)
 {
 	struct level *lev = NULL;
 
@@ -913,8 +913,8 @@ static void get_join_info(struct player *p, struct dun_data *dun)
 					new->grid.y = join->grid.y;
 					new->grid.x = join->grid.x;
 					new->feat = FEAT_LESS;
-					new->next = dun->join;
-					dun->join = new;
+					new->next = dd->join;
+					dd->join = new;
 				}
 				join = join->next;
 			}
@@ -933,8 +933,8 @@ static void get_join_info(struct player *p, struct dun_data *dun)
 					new->grid.y = join->grid.y;
 					new->grid.x = join->grid.x;
 					new->feat = FEAT_MORE;
-					new->next = dun->join;
-					dun->join = new;
+					new->next = dd->join;
+					dd->join = new;
 				}
 				join = join->next;
 			}
