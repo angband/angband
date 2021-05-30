@@ -25,7 +25,7 @@
 
 struct set;
 
-extern struct set *set_new();
+extern struct set *set_new(void);
 extern void set_free(struct set *s);
 extern void set_add(struct set *s, void *p);
 extern bool set_del(struct set *s, void *p);
