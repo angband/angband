@@ -1779,12 +1779,11 @@ void calc_cave_distances(int **cave_dist)
  */
 void pit_stats(int nsim, int pittype, int depth)
 {
-	int hist[z_info->pit_max];
+	int *hist;
 	int j, p;
 
 	/* Initialize hist */
-	for (p = 0; p < z_info->pit_max; p++)
-		hist[p] = 0;
+	hist = mem_zalloc(z_info->pit_max * sizeof(*hist));
 
 	for (j = 0; j < nsim; j++) {
 		int i;
@@ -1814,6 +1813,8 @@ void pit_stats(int nsim, int pittype, int depth)
 		if (pit->name)
 			msg("Type: %s, Number: %d.", pit->name, hist[p]);
 	}
+
+	mem_free(hist);
 
 	return;
 }
