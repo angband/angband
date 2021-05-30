@@ -22,6 +22,7 @@
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "player-timed.h"
+#include "ui-mon-list.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"

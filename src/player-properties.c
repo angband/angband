@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "player-properties.h"
 #include "ui-input.h"
 #include "ui-menu.h"
 

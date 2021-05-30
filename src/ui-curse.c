@@ -21,6 +21,7 @@
 #include "init.h"
 #include "obj-curse.h"
 #include "obj-knowledge.h"
+#include "ui-curse.h"
 #include "ui-menu.h"
 #include "ui-output.h"
 

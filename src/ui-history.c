@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "player-history.h"
+#include "ui-history.h"
 #include "ui-input.h"
 #include "ui-output.h"
 

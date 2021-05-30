@@ -24,6 +24,7 @@
 
 #include "angband.h"
 #include "init.h"
+#include "stats/db.h"
 
 /**
  * Module state variables
