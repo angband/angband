@@ -52,7 +52,7 @@ static struct object *fail_pile;
 static struct object *fail_object;
 static bool fail_prev;
 static bool fail_next;
-static char *fail_file;
+static const char *fail_file;
 static int fail_line;
 
 static void write_pile(ang_file *fff)
@@ -96,7 +96,7 @@ static void write_pile(ang_file *fff)
  * Quit on getting an object pile error, writing a diagnosis file
  */
 static void pile_integrity_fail(struct object *pile, struct object *obj,
-	char *file, int line)
+	const char *file, int line)
 {
 	char path[1024];
 
@@ -985,8 +985,9 @@ static void floor_carry_fail(struct object *drop, bool broke)
 	/* Delete completely */
 	if (known) {
 		char o_name[80];
-		char *verb = broke ? VERB_AGREEMENT(drop->number, "breaks", "break")
-			: VERB_AGREEMENT(drop->number, "disappears", "disappear");
+		const char *verb = broke ?
+			VERB_AGREEMENT(drop->number, "breaks", "break") :
+			VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
 		if (!loc_is_zero(known->grid))

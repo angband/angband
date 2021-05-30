@@ -63,7 +63,7 @@
  * ------------------------------------------------------------------------ */
 static size_t rune_max;
 static struct rune *rune_list;
-static char *c_rune[] = {
+static const char *c_rune[] = {
 	"enchantment to armor",
 	"enchantment to hit",
 	"enchantment to damage"
@@ -316,7 +316,7 @@ bool player_knows_rune(struct player *p, size_t i)
 /**
  * The name of a rune
  */
-char *rune_name(size_t i)
+const char *rune_name(size_t i)
 {
 	struct rune *r = &rune_list[i];
 
@@ -337,7 +337,7 @@ char *rune_name(size_t i)
 /**
  * The description of a rune
  */
-char *rune_desc(size_t i)
+const char *rune_desc(size_t i)
 {
 	struct rune *r = &rune_list[i];
 

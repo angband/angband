@@ -772,7 +772,7 @@ static int calc_mon_feeling(struct chunk *c)
  * Find a cave_profile by name
  * \param name is the name of the cave_profile being looked for
  */
-static const struct cave_profile *find_cave_profile(char *name)
+static const struct cave_profile *find_cave_profile(const char *name)
 {
 	int i;
 

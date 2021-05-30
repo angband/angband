@@ -40,6 +40,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval);
 void acquirement(struct loc grid, int level, int num, bool great);
 struct object_kind *money_kind(const char *name, int value);
-struct object *make_gold(int lev, char *coin_type);
+struct object *make_gold(int lev, const char *coin_type);
 
 #endif /* OBJECT_MAKE_H */

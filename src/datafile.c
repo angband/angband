@@ -510,7 +510,7 @@ void set_archive_user_prefix(const char *pfx)
 /**
  * Archive a data file from ANGBAND_DIR_USER into ANGBAND_DIR_ARCHIVE
  */
-void file_archive(char *fname, char *append)
+void file_archive(const char *fname, const char *append)
 {
 	char arch[1024];
 	char old[1024];

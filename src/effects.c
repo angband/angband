@@ -674,7 +674,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 
 		case SRC_TRAP: {
 			struct trap *trap = context->origin.which.trap;
-			char *article = is_a_vowel(trap->kind->desc[0]) ? "an " : "a ";
+			const char *article = is_a_vowel(trap->kind->desc[0]) ? "an " : "a ";
 			strnfmt(killer, sizeof(killer), "%s%s", article, trap->kind->desc);
 			break;
 		}
@@ -4782,7 +4782,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 	bool used = false;
 	int itemmode = (USE_INVEN | USE_FLOOR);
 	const char *q, *s;
-	char *item = "";
+	const char *item = "";
 
 	/* Get an item */
 	q = "Drain charges from which item? ";

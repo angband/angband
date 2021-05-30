@@ -747,7 +747,7 @@ static int stats_dump_lists(void)
 		{ EF_MAX, false, NULL }
 	};
 
-	char *r_info_flags[] =
+	const char *r_info_flags[] =
 	{
 		#define RF(a, b, c) #a,
 		#include "list-mon-race-flags.h"
@@ -757,7 +757,7 @@ static int stats_dump_lists(void)
 
 	/** Really want elements (at least) here - NRM **/
 
-	char *object_flag_names[] =
+	const char *object_flag_names[] =
 	{
 		"NONE",
 		#define OF(a, b) #a,
@@ -765,7 +765,7 @@ static int stats_dump_lists(void)
 		#undef OF
 	};
 
-	char *object_mods[] =
+	const char *object_mods[] =
 	{
 		#define STAT(a) #a,
         #include "list-stats.h"

@@ -1656,7 +1656,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 	int object_changed = 0;
 	bool done = false;
 	bool rejected = true;
-	char *done_msg = NULL;
+	const char *done_msg = NULL;
 	char ch;
 
 	/*

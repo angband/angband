@@ -182,7 +182,7 @@ static s16b art_idx_high_resist[] =	{
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static int artifact_power(int a_idx, char *reason, bool verbose)
+static int artifact_power(int a_idx, const char *reason, bool verbose)
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();

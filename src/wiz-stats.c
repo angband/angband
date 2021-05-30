@@ -203,7 +203,7 @@ stat_code;
 struct stat_data
 {
 	stat_code st;
-	char *name;
+	const char *name;
 };
 
 static const struct stat_data stat_message[] =
@@ -344,7 +344,7 @@ struct stat_ff_data
 {
 	stat_first_find st_ff;
 	stat_code st;
-	char *name;
+	const char *name;
 };
 
 static const struct stat_ff_data stat_ff_message[] =
