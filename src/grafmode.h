@@ -59,7 +59,7 @@ extern graphics_mode *graphics_modes;
 extern graphics_mode *current_graphics_mode;
 extern int graphics_mode_high_id;
 
-bool init_graphics_modes();
+bool init_graphics_modes(void);
 void close_graphics_modes(void);
 graphics_mode* get_graphics_mode(byte id);
 
