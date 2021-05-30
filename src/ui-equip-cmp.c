@@ -2077,7 +2077,7 @@ static void compute_player_and_equipment_values(struct player *p,
 static bool check_for_two_categories(const struct ui_entry *entry,
 	void *closure)
 {
-	char **categories = closure;
+	const char **categories = closure;
 
 	return ui_entry_has_category(entry, categories[0]) &&
 		ui_entry_has_category(entry, categories[1]);
@@ -2092,14 +2092,14 @@ static int initialize_summary(struct player *p,
 	int count, i;
 
 	if (*s == NULL) {
-		char *categories[] = {
+		const char *categories[] = {
 			"resistances",
 			"abilities",
 			"hindrances",
 			"modifiers",
 			"stat_modifiers"
 		};
-		char *test_categories[2];
+		const char *test_categories[2];
 
 		*s = mem_alloc(sizeof(**s));
 		(*s)->items = NULL;
