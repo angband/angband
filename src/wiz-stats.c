@@ -391,7 +391,7 @@ static double uniq_total[MAX_LVL], uniq_ood[MAX_LVL], uniq_deadly[MAX_LVL];
 
 
 /* set everything to 0.0 to begin */
-static void init_stat_vals()
+static void init_stat_vals(void)
 {
 	int i,j,k;
 
