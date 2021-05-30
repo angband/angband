@@ -221,7 +221,7 @@ static bool close_audio_sdl(void)
 	return true;
 }
 
-const struct sound_file_type *supported_files_sdl(void)
+static const struct sound_file_type *supported_files_sdl(void)
 {
 	return supported_sound_files;
 }
