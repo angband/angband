@@ -100,3 +100,25 @@ jobs:
           ./autogen.sh
           ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer
           make
+
+  statbuild:
+    name: Statistics Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc autoconf automake make libsqlite3-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      # Build with some extra warnings.  Others that could be good additions
+      # are -Wwrite-strings, -Wshadow, and disabling how configure currently
+      # turns off -Wmissing-field-initializers, but, for now, those generate
+      # a lot of warnings to wade through.
+      - name: Build
+        run: |
+          ./autogen.sh
+          env CFLAGS="-Wvla -Wnested-externs -Wno-multichar -Wstrict-prototypes -Wlogical-op -Wbad-function-cast" ./configure --with-no-install --enable-stats
+          make
