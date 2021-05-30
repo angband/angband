@@ -1025,7 +1025,7 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 			/* Make sure it's actually a filename */
 			if (buf[0] == '\0' || buf[0] == ' ') return false;
 	} else {
-		int len;
+		int old_len;
 		time_t ltime;
 		struct tm *today;
 
@@ -1037,8 +1037,8 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 
 		/* Overwrite the ".txt" that was added */
 		assert(strlen(buf) >= 4);
-		len = strlen(buf) - 4;
-		strftime(buf + len, sizeof(buf) - len, "-%Y-%m-%d-%H-%M.txt", today);
+		old_len = strlen(buf) - 4;
+		strftime(buf + old_len, sizeof(buf) - len, "-%Y-%m-%d-%H-%M.txt", today);
 
 		/* Prompt the user to confirm or cancel the file dump */
 		if (!get_check(format("Confirm writing to %s? ", buf))) return false;
