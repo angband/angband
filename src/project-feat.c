@@ -24,6 +24,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "project.h"
 #include "source.h"
 #include "trap.h"
 

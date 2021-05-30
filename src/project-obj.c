@@ -27,6 +27,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "project.h"
 #include "source.h"
 
 
