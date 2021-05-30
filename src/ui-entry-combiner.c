@@ -2,6 +2,8 @@
  * \file ui-entry-combiner.h
  * \brief Define algorithms for combining property values
  *
+ * Copyright (c) 2020 Eric Branlund
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *

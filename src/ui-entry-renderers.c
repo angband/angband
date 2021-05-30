@@ -2,6 +2,8 @@
  * \file ui-entry-renderers.c
  * \brief Define backend handling for some parts of the second character screen
  *
+ * Copyright (c) 2020 Eric Branlund
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *

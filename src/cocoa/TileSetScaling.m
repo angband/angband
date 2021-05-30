@@ -2,6 +2,8 @@
  *\file TileSetScaling.m
  *\brief Define tile set scaling panel used by OS X front end.
  *
+ * Copyright (c) 2020 Eric Branlund
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *

@@ -4020,8 +4020,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	/* Adjust the diameter of the energy source */
 	if (degrees_of_arc < 60) {
 		/* Narrower cone means energy drops off less quickly. We now have:
-		 * - 30 degree regular breath  | full strength at 5 grids
-		 * - 30 degree powerful breath | full strength at 9 grids
+		 * - 30 degree regular breath  | full strength at 7 grids
+		 * - 30 degree powerful breath | full strength at 11 grids
 		 * - 20 degree regular breath  | full strength at 11 grids
 		 * - 20 degree powerful breath | full strength at 17 grids
 		 * where grids are measured from the breather. */

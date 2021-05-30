@@ -2,6 +2,8 @@
  * \file main-spoil.c
  * \brief Support spoiler generation from the command line
  *
+ * Copyright (c) 2021 Eric Branlund
+ *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
  *
