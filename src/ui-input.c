@@ -1128,12 +1128,12 @@ bool get_com_ex(const char *prompt, ui_event *command)
  *
  * This function is stupid.  XXX XXX XXX
  */
-void pause_line(struct term *term)
+void pause_line(struct term *tm)
 {
-	prt("", term->hgt - 1, 0);
-	put_str("[Press any key to continue]", term->hgt - 1, (Term->wid - 27) / 2);
+	prt("", tm->hgt - 1, 0);
+	put_str("[Press any key to continue]", tm->hgt - 1, (Term->wid - 27) / 2);
 	(void)anykey();
-	prt("", term->hgt - 1, 0);
+	prt("", tm->hgt - 1, 0);
 }
 
 static int dir_transitions[10][10] =
