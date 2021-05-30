@@ -20,6 +20,7 @@
  */
 #include "angband.h"
 #include "init.h"
+#include "snd-sdl.h"
 #include "sound.h"
 
 #ifdef SOUND_SDL
