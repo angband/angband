@@ -65,21 +65,20 @@
 static void monster_get_target_dist_grid(struct monster *mon, struct chunk *c,
 	int *dist, struct loc *grid)
 {
-	struct loc decoy = cave_find_decoy(c);
-
-	if (loc_is_zero(decoy)) {
-		if (dist) {
-			*dist = mon->cdis;
-		}
-		if (grid) {
-			*grid = player->grid;
-		}
-	} else {
+	if (monster_is_decoyed(mon)) {
+		struct loc decoy = cave_find_decoy(c);
 		if (dist) {
 			*dist = distance(mon->grid, decoy);
 		}
 		if (grid) {
 			*grid = decoy;
+		}
+	} else {
+		if (dist) {
+			*dist = mon->cdis;
+		}
+		if (grid) {
+			*grid = player->grid;
 		}
 	}
 }

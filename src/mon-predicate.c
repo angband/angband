@@ -292,3 +292,19 @@ bool monster_can_be_scared(const struct monster *mon)
 	}
 	return true;
 }
+
+/**
+ * Monster attracted to a decoy, not the player
+ */
+bool monster_is_decoyed(const struct monster *mon)
+{
+	struct loc decoy = cave_find_decoy(cave);
+
+	/* No decoy */
+	if (loc_is_zero(decoy)) return false;
+
+	/* Monster can't see the decoy */
+	if (!los(cave, mon->grid, decoy)) return false;
+
+	return true;
+}

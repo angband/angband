@@ -146,9 +146,8 @@ static void get_target(struct source origin, int dir, struct loc *grid,
 				struct monster *mon = cave_monster(cave, monster->target.midx);
 				*grid = mon->grid;
 			} else {
-				struct loc decoy = cave_find_decoy(cave);
-				if (!loc_is_zero(decoy)) {
-					*grid = decoy;
+				if (monster_is_decoyed(monster)) {
+					*grid = cave_find_decoy(cave);
 				} else {
 					*grid = player->grid;
 				}
@@ -3061,9 +3060,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		start = mon->grid;
 	} else {
 		/* Targeted decoys get destroyed */
-		struct loc decoy = cave_find_decoy(cave);
-		if (!loc_is_zero(decoy) && mon) {
-			square_destroy_decoy(cave, decoy);
+		if (mon && monster_is_decoyed(mon)) {
+			square_destroy_decoy(cave, cave_find_decoy(cave));
 			return true;
 		}
 
@@ -3756,9 +3754,14 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
 	struct loc target = player->grid;
 	bool message = player->timed[TMD_BLIND] ? false : true;
+	struct monster *mon = NULL;
 	struct monster *t_mon = monster_target_monster(context);
 	struct loc decoy = cave_find_decoy(cave);
 	bool decoy_unseen = false;
+
+	if (context->origin.what == SRC_MONSTER) {
+		mon = cave_monster(cave, context->origin.which.monster);
+	}
 
 	/* Check for monster targeting another monster */
 	if (t_mon) {
@@ -3772,7 +3775,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	}
 
 	/* Check for decoy */
-	if (!loc_is_zero(decoy)) {
+	if (mon && monster_is_decoyed(mon)) {
 		target = decoy;
 		if (!los(cave, player->grid, decoy) ||
 			player->timed[TMD_BLIND]) {
@@ -3897,9 +3900,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 				target = t_mon->grid;
 			} else {
 				/* Target player */
-				struct loc decoy = cave_find_decoy(cave);
-				if (!loc_is_zero(decoy)) {
-					target = decoy;
+				if (monster_is_decoyed(mon)) {
+					target = cave_find_decoy(cave);
 				} else {
 					target = player->grid;
 				}
@@ -3989,9 +3991,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			target = t_mon->grid;
 		} else {
 			/* Target player. */
-			struct loc decoy = cave_find_decoy(cave);
-			if (!loc_is_zero(decoy)) {
-				target = decoy;
+			if (monster_is_decoyed(mon)) {
+				target = cave_find_decoy(cave);
 			} else {
 				target = player->grid;
 			}
@@ -4191,9 +4192,8 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 		if (t_mon) {
 			target = t_mon->grid;
 		} else {
-			struct loc decoy = cave_find_decoy(cave);
-			if (!loc_is_zero(decoy)) {
-				target = decoy;
+			if (monster_is_decoyed(mon)) {
+				target = cave_find_decoy(cave);
 			} else {
 				target = player->grid;
 			}
