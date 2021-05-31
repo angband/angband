@@ -24,6 +24,7 @@
 
 #include "angband.h"
 #include "init.h"
+#include "stats/db.h"
 
 /**
  * Module state variables
@@ -107,7 +108,7 @@ bool stats_db_close(void) {
  * sqlite3_step() for more complex statements.
  */
 
-int stats_db_exec(char *sql_str) {
+int stats_db_exec(const char *sql_str) {
 	assert(strlen(sql_str) > 0);
 	return sqlite3_exec(db, sql_str, NULL, NULL, NULL);
 }
@@ -121,7 +122,7 @@ int stats_db_exec(char *sql_str) {
  * failure.
  */
 
-int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, char *sql_str) {
+int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, const char *sql_str) {
 	assert(strlen(sql_str) > 0);
 	assert(sql_stmt != NULL);
 	return sqlite3_prepare_v2(db, sql_str, strlen(sql_str),

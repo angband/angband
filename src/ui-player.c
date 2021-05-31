@@ -174,7 +174,7 @@ static void release_char_sheet_config(void)
 static bool check_for_two_categories(const struct ui_entry* entry,
 	void *closure)
 {
-	char **categories = closure;
+	const char **categories = closure;
 
 	return ui_entry_has_category(entry, categories[0]) &&
 		ui_entry_has_category(entry, categories[1]);
@@ -183,13 +183,13 @@ static bool check_for_two_categories(const struct ui_entry* entry,
 
 static void configure_char_sheet(void)
 {
-	char* region_categories[] = {
+	const char* region_categories[] = {
 		"resistances",
 		"abilities",
 		"hindrances",
 		"modifiers"
 	};
-	char* test_categories[2];
+	const char* test_categories[2];
 	struct ui_entry_iterator* ui_iter;
 	int i, n;
 

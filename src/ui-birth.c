@@ -844,7 +844,8 @@ static enum birth_stage get_name_command(void)
 	return next;
 }
 
-void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_starts, size_t *line_lengths)
+static void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines,
+	size_t *line_starts, size_t *line_lengths)
 {
 	size_t lengths_so_far = 0;
 	size_t i;
@@ -864,7 +865,7 @@ void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_
 	}
 }
 
-int edit_text(char *buffer, int buflen) {
+static int edit_text(char *buffer, int buflen) {
 	int len = strlen(buffer);
 	bool done = false;
 	int cursor = 0;

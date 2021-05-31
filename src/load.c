@@ -1340,7 +1340,6 @@ static int rd_dungeon_aux(struct chunk **c)
 	if (OPT(player, birth_levels_persist)) {
 		rd_byte(&tmp8u);
 		while (tmp8u != 0xff) {
-			size_t n;
 			struct connector *current = mem_zalloc(sizeof *current);
 			current->info = mem_zalloc(square_size * sizeof(bitflag));
 			current->grid.x = tmp8u;

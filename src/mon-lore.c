@@ -174,7 +174,7 @@ static int spell_color(struct player *p, const struct monster_race *race,
  * dangerous the attack is to the player given current state. Blows may be
  * colored green (least dangerous), yellow, orange, or red (most dangerous).
  */
-int blow_color(struct player *p, int blow_idx)
+static int blow_color(struct player *p, int blow_idx)
 {
 	const struct blow_effect *blow = &blow_effects[blow_idx];
 
@@ -621,7 +621,7 @@ static const char *lore_describe_speed(byte speed)
  * \param tb is the textblock we are adding to.
  * \param race is the monster race we are describing.
  */
-void lore_adjective_speed(textblock *tb, const struct monster_race *race)
+static void lore_adjective_speed(textblock *tb, const struct monster_race *race)
 {
 	/* "at" is separate from the normal speed description in order to use the
 	 * normal text colour */
@@ -637,7 +637,7 @@ void lore_adjective_speed(textblock *tb, const struct monster_race *race)
  * \param tb is the textblock we are adding to.
  * \param race is the monster race we are describing.
  */
-void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
+static void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 {
 	// moves at 2.3x normal speed (0.9x your current speed)
 	textblock_append(tb, "at ");
@@ -1739,7 +1739,7 @@ struct monster_lore *get_lore(const struct monster_race *race)
 /**
  * Write the monster lore
  */
-void write_lore_entries(ang_file *fff)
+static void write_lore_entries(ang_file *fff)
 {
 	int i, n;
 

@@ -153,7 +153,7 @@ int code_index_in_array(const char *code_name[], const char *code)
  * \param string is the random value string to return (NULL if not required)
  * \param num is the integer to return (NULL if not required)
  */
-bool find_value_arg(char *value_name, char *string, int *num)
+static bool find_value_arg(char *value_name, char *string, int *num)
 {
 	char *t;
 
@@ -510,7 +510,7 @@ void set_archive_user_prefix(const char *pfx)
 /**
  * Archive a data file from ANGBAND_DIR_USER into ANGBAND_DIR_ARCHIVE
  */
-void file_archive(char *fname, char *append)
+void file_archive(const char *fname, const char *append)
 {
 	char arch[1024];
 	char old[1024];

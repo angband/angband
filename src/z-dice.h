@@ -32,7 +32,7 @@ bool dice_parse_string(dice_t *dice, const char *string);
 int dice_bind_expression(dice_t *dice, const char *name,
 						 const expression_t *expression);
 void dice_random_value(dice_t *dice, random_value *v);
-int dice_evaluate(dice_t *dice, int level, aspect aspect, random_value *v);
+int dice_evaluate(dice_t *dice, int level, aspect asp, random_value *v);
 int dice_roll(dice_t *dice, random_value *v);
 bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
 					  int bonus);

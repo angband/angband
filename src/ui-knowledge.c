@@ -47,6 +47,7 @@
 #include "ui-context.h"
 #include "ui-equip-cmp.h"
 #include "ui-history.h"
+#include "ui-knowledge.h"
 #include "ui-menu.h"
 #include "ui-mon-list.h"
 #include "ui-mon-lore.h"

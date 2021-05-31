@@ -1286,7 +1286,7 @@ struct object_kind *money_kind(const char *name, int value)
  * \param coin_type the name of the type of money object to make
  * \return a pointer to the newly minted cash (cannot fail)
  */
-struct object *make_gold(int lev, char *coin_type)
+struct object *make_gold(int lev, const char *coin_type)
 {
 	/* This average is 16 at dlev0, 80 at dlev40, 176 at dlev100. */
 	int avg = (16 * lev)/10 + 16;

@@ -74,8 +74,8 @@ static void c_version(char *rest) {
  * Player commands
  */
 static void c_player_birth(char *rest) {
-	char *race = strtok(rest, " ");
-	char *class = strtok(NULL, " ");
+	const char *race = strtok(rest, " ");
+	const char *class = strtok(NULL, " ");
 	struct player_class *c;
 	struct player_race *r;
 

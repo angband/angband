@@ -117,7 +117,7 @@ static void flavor_assign_random(byte tval)
  * Mainly useful for randarts so that fixed flavors for standards aren't
  * predictable. The One Ring is kept as fixed, since it lives through randarts.
  */
-void flavor_reset_fixed(void)
+static void flavor_reset_fixed(void)
 {
 	struct flavor *f;
 

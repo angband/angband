@@ -203,7 +203,7 @@ stat_code;
 struct stat_data
 {
 	stat_code st;
-	char *name;
+	const char *name;
 };
 
 static const struct stat_data stat_message[] =
@@ -344,7 +344,7 @@ struct stat_ff_data
 {
 	stat_first_find st_ff;
 	stat_code st;
-	char *name;
+	const char *name;
 };
 
 static const struct stat_ff_data stat_ff_message[] =
@@ -391,7 +391,7 @@ static double uniq_total[MAX_LVL], uniq_ood[MAX_LVL], uniq_deadly[MAX_LVL];
 
 
 /* set everything to 0.0 to begin */
-static void init_stat_vals()
+static void init_stat_vals(void)
 {
 	int i,j,k;
 
@@ -1083,7 +1083,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
  * It also replaces drop near with a new function that drops all 
  * the items on the exact square that the monster was on.
  */
-void monster_death_stats(int m_idx)
+static void monster_death_stats(int m_idx)
 {
 	struct object *obj;
 	struct monster *mon;
@@ -1671,7 +1671,7 @@ void stats_collect(int nsim, int simtype)
 
 #define DIST_MAX 10000
 
-void calc_cave_distances(int **cave_dist)
+static void calc_cave_distances(int **cave_dist)
 {
 	int dist;
 
@@ -1779,12 +1779,11 @@ void calc_cave_distances(int **cave_dist)
  */
 void pit_stats(int nsim, int pittype, int depth)
 {
-	int hist[z_info->pit_max];
+	int *hist;
 	int j, p;
 
 	/* Initialize hist */
-	for (p = 0; p < z_info->pit_max; p++)
-		hist[p] = 0;
+	hist = mem_zalloc(z_info->pit_max * sizeof(*hist));
 
 	for (j = 0; j < nsim; j++) {
 		int i;
@@ -1814,6 +1813,8 @@ void pit_stats(int nsim, int pittype, int depth)
 		if (pit->name)
 			msg("Type: %s, Number: %d.", pit->name, hist[p]);
 	}
+
+	mem_free(hist);
 
 	return;
 }

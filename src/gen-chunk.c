@@ -83,7 +83,7 @@ void chunk_list_add(struct chunk *c)
  * \param name the name of the chunk being removed from the list
  * \return whether it was found; success means it was successfully removed
  */
-bool chunk_list_remove(char *name)
+bool chunk_list_remove(const char *name)
 {
 	int i;
 
@@ -111,7 +111,7 @@ bool chunk_list_remove(char *name)
  * \param name the name of the chunk being sought
  * \return the pointer to the chunk
  */
-struct chunk *chunk_find_name(char *name)
+struct chunk *chunk_find_name(const char *name)
 {
 	int i;
 

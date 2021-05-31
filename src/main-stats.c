@@ -100,7 +100,7 @@ static struct level_data {
 	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[LEVEL_MAX];
 
-static void create_indices()
+static void create_indices(void)
 {
 	int i;
 
@@ -123,7 +123,7 @@ static void create_indices()
 	}
 }
 
-static void alloc_memory()
+static void alloc_memory(void)
 {
 	int i, j, k, l;
 
@@ -177,7 +177,7 @@ static void free_stats_memory(void)
 }
 
 /* Copied from birth.c:generate_player() */
-static void generate_player_for_stats()
+static void generate_player_for_stats(void)
 {
 	OPT(player, birth_randarts) = randarts;
 	OPT(player, birth_no_selling) = no_selling;
@@ -747,7 +747,7 @@ static int stats_dump_lists(void)
 		{ EF_MAX, false, NULL }
 	};
 
-	char *r_info_flags[] =
+	const char *r_info_flags[] =
 	{
 		#define RF(a, b, c) #a,
 		#include "list-mon-race-flags.h"
@@ -757,7 +757,7 @@ static int stats_dump_lists(void)
 
 	/** Really want elements (at least) here - NRM **/
 
-	char *object_flag_names[] =
+	const char *object_flag_names[] =
 	{
 		"NONE",
 		#define OF(a, b) #a,
@@ -765,7 +765,7 @@ static int stats_dump_lists(void)
 		#undef OF
 	};
 
-	char *object_mods[] =
+	const char *object_mods[] =
 	{
 		#define STAT(a) #a,
         #include "list-stats.h"
@@ -1426,7 +1426,7 @@ static int stats_write_db(u32b run)
 
 #define STATS_PROGRESS_BAR_LEN 30
 
-void progress_bar(u32b run, time_t start) {
+static void progress_bar(u32b run, time_t start) {
 	u32b i;
 	u32b n = (run * STATS_PROGRESS_BAR_LEN) / num_runs;
 	u32b p10 = ((long long)run * 1000) / num_runs;

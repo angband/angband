@@ -633,11 +633,11 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			break;
 		case EF_SHORT_BEAM: {
 			/* Append length of beam */
-			int len = effect->radius;
+			int beam_len = effect->radius;
 			if (effect->other) {
-				len += player->lev / effect->other;
+				beam_len += player->lev / effect->other;
 			}
-			special = format(", len %d", len);
+			special = format(", len %d", beam_len);
 			break;
 		}
 		case EF_SWARM:

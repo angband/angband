@@ -18,6 +18,7 @@
 
 #include "init.h"
 #include "player.h"
+#include "save-charoutput.h"
 #include "z-file.h"
 
 /* Based on the adaptation of Exo's patch to frogcomposband. */

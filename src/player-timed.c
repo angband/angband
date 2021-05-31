@@ -49,7 +49,7 @@ const char *list_player_flag_names[] = {
 };
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
-	#define TMD(a, b, c)	{ #a, b, c },
+	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL },
 	#include "list-player-timed.h"
 	#undef TMD
 };
@@ -384,7 +384,7 @@ static void player_fix_scramble(struct player *p)
 /**
  * Return true if the player timed effect matches the given string
  */
-bool player_timed_grade_eq(struct player *p, int idx, char *match)
+bool player_timed_grade_eq(struct player *p, int idx, const char *match)
 {
 	if (p->timed[idx]) {
 		struct timed_grade *grade = timed_effects[idx].grade;

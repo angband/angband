@@ -114,7 +114,7 @@ static int num_ego_types;
 /**
  * Initialise the ignore package 
  */
-void init_ignore(void)
+static void init_ignore(void)
 {
 	int i;
 
@@ -128,7 +128,7 @@ void init_ignore(void)
 /**
  * Clean up the ignore package
  */
-void cleanup_ignore(void)
+static void cleanup_ignore(void)
 {
 	int i;
 	for (i = 0; i < num_ego_types; i++)

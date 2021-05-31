@@ -28,6 +28,7 @@
 #include "player-spell.h"
 #include "ui-menu.h"
 #include "ui-output.h"
+#include "ui-spell.h"
 
 
 /**

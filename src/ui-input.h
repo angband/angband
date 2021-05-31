@@ -102,7 +102,7 @@ char get_char(const char *prompt, const char *options, size_t len,
 			  char fallback);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 bool get_com_ex(const char *prompt, ui_event *command);
-void pause_line(struct term *term);
+void pause_line(struct term *tm);
 void textui_input_init(void);
 ui_event textui_get_command(int *count);
 bool key_confirm_command(unsigned char c);

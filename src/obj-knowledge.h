@@ -48,8 +48,8 @@ struct rune {
 int max_runes(void);
 enum rune_variety rune_variety(size_t i);
 bool player_knows_rune(struct player *p, size_t i);
-char *rune_name(size_t i);
-char *rune_desc(size_t i);
+const char *rune_name(size_t i);
+const char *rune_desc(size_t i);
 quark_t rune_note(size_t i);
 void rune_set_note(size_t i, const char *inscription);
 

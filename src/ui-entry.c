@@ -1634,7 +1634,7 @@ static int get_priority_from_negative_index(int i)
 
 /* Convert list of categories in the embryo to its final form. */
 static void parameterize_category_list(
-	const struct embryonic_category_reference *categories, int n, int ind,
+	const struct embryonic_category_reference *ctgs, int n, int ind,
 	struct ui_entry *entry)
 {
 	int i;
@@ -1644,12 +1644,12 @@ static void parameterize_category_list(
 	entry->nalloc_category = n;
 
 	for (i = 0; i < n; ++i) {
-		entry->categories[i].name = categories[i].name;
-		if (categories[i].priority_set) {
+		entry->categories[i].name = ctgs[i].name;
+		if (ctgs[i].priority_set) {
 			entry->categories[i].priority =
-				(categories[i].psource_index > 0) ?
-				(*priority_schemes[categories[i].psource_index].priority)(ind) :
-				categories[i].priority;
+				(ctgs[i].psource_index > 0) ?
+				(*priority_schemes[ctgs[i].psource_index].priority)(ind) :
+				ctgs[i].priority;
 			entry->categories[i].priority_set = true;
 		} else {
 			entry->categories[i].priority = 0;

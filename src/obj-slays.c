@@ -207,13 +207,13 @@ bool append_random_slay(bool **current, struct slay **slay)
  * Count a set of brands
  * \param brands The brands to count.
  */
-int brand_count(bool *brands)
+int brand_count(const bool *brands_on)
 {
 	int i, count = 0;
 
 	/* Count the brands */
 	for (i = 0; i < z_info->brand_max; i++) {
-		if (brands[i]) {
+		if (brands_on[i]) {
 			count++;
 		}
 	}
@@ -226,13 +226,13 @@ int brand_count(bool *brands)
  * Count a set of slays
  * \param slays The slays to count.
  */
-int slay_count(bool *slays)
+int slay_count(const bool *slays_on)
 {
 	int i, count = 0;
 
 	/* Count the slays */
 	for (i = 0; i < z_info->slay_max; i++) {
-		if (slays[i]) {
+		if (slays_on[i]) {
 			count++;
 		}
 	}
@@ -246,7 +246,7 @@ int slay_count(bool *slays)
  * \param slay is the slay we're testing for effectiveness
  * \param mon is the monster we're testing for being slain
  */
-bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
+static bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 {
 	if (!slay->name) return false;
 	if (!mon->race->base) return false;

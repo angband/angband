@@ -53,7 +53,7 @@
  * \param rating template room rating to select
  * \return a pointer to the room template
  */
-struct room_template *random_room_template(int typ, int rating)
+static struct room_template *random_room_template(int typ, int rating)
 {
 	struct room_template *t = room_templates;
 	struct room_template *r = NULL;

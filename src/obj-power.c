@@ -138,7 +138,7 @@ static ang_file *object_log;
 /**
  * Log progress info to the object log
  */
-void log_obj(char *message)
+static void log_obj(const char *message)
 {
 	file_putf(object_log, "%s", message);
 }

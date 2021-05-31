@@ -893,7 +893,7 @@ static void menu_header(void)
 /**
  * Get an item tag
  */
-char get_item_tag(struct menu *menu, int oid)
+static char get_item_tag(struct menu *menu, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 
@@ -903,7 +903,7 @@ char get_item_tag(struct menu *menu, int oid)
 /**
  * Determine if an item is a valid choice
  */
-int get_item_validity(struct menu *menu, int oid)
+static int get_item_validity(struct menu *menu, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 
@@ -913,7 +913,7 @@ int get_item_validity(struct menu *menu, int oid)
 /**
  * Display an entry on the item menu
  */
-void get_item_display(struct menu *menu, int oid, bool cursor, int row,
+static void get_item_display(struct menu *menu, int oid, bool cursor, int row,
 					  int col, int width)
 {
 	/* Print it */
@@ -923,7 +923,7 @@ void get_item_display(struct menu *menu, int oid, bool cursor, int row,
 /**
  * Deal with events on the get_item menu
  */
-bool get_item_action(struct menu *menu, const ui_event *event, int oid)
+static bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 	char key = event->key.code;
@@ -1037,7 +1037,7 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 /**
  * Display list items to choose from
  */
-struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
+static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 {
 	menu_iter menu_f = { get_item_tag, get_item_validity, get_item_display,
 						 get_item_action, 0 };

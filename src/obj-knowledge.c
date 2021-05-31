@@ -63,7 +63,7 @@
  * ------------------------------------------------------------------------ */
 static size_t rune_max;
 static struct rune *rune_list;
-static char *c_rune[] = {
+static const char *c_rune[] = {
 	"enchantment to armor",
 	"enchantment to hit",
 	"enchantment to damage"
@@ -316,7 +316,7 @@ bool player_knows_rune(struct player *p, size_t i)
 /**
  * The name of a rune
  */
-char *rune_name(size_t i)
+const char *rune_name(size_t i)
 {
 	struct rune *r = &rune_list[i];
 
@@ -337,7 +337,7 @@ char *rune_name(size_t i)
 /**
  * The description of a rune
  */
-char *rune_desc(size_t i)
+const char *rune_desc(size_t i)
 {
 	struct rune *r = &rune_list[i];
 
@@ -1260,11 +1260,11 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 			/* If the brand was unknown, add it to known brands */
 			if (!player_knows_brand(p, r->index)) {
-				int i;
-				for (i = 1; i < z_info->brand_max; i++) {
+				int j;
+				for (j = 1; j < z_info->brand_max; j++) {
 					/* Check base and race flag */
-					if (streq(brands[r->index].name, brands[i].name)) {
-						p->obj_k->brands[i] = true;
+					if (streq(brands[r->index].name, brands[j].name)) {
+						p->obj_k->brands[j] = true;
 						learned = true;
 					}
 				}
@@ -1277,11 +1277,11 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 			/* If the slay was unknown, add it to known slays */
 			if (!player_knows_slay(p, r->index)) {
-				int i;
-				for (i = 1; i < z_info->slay_max; i++) {
+				int j;
+				for (j = 1; j < z_info->slay_max; j++) {
 					/* Check base and race flag */
-					if (same_monsters_slain(r->index, i)) {
-						p->obj_k->slays[i] = true;
+					if (same_monsters_slain(r->index, j)) {
+						p->obj_k->slays[j] = true;
 						learned = true;
 					}
 				}
@@ -1291,12 +1291,12 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			int i = r->index;
-			assert(i < z_info->curse_max);
+			int j = r->index;
+			assert(j < z_info->curse_max);
 
 			/* If the curse was unknown, add it to known curses */
-			if (!player_knows_curse(p, i)) {
-				p->obj_k->curses[i].power = 1;
+			if (!player_knows_curse(p, j)) {
+				p->obj_k->curses[j].power = 1;
 				learned = true;
 			}
 			break;
@@ -1393,7 +1393,7 @@ void player_learn_all_runes(struct player *p)
  * \param obj is the object 
  * \param mod is the modifier being noticed
  */
-void mod_message(struct object *obj, int mod)
+static void mod_message(struct object *obj, int mod)
 {
 	/* Special messages for individual properties */
 	switch (mod) {
@@ -1462,7 +1462,7 @@ void mod_message(struct object *obj, int mod)
 	}
 }
 
-void object_curses_find_to_a(struct player *p, struct object *obj)
+static void object_curses_find_to_a(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_A);
 	if (obj->curses) {
@@ -1485,7 +1485,7 @@ void object_curses_find_to_a(struct player *p, struct object *obj)
 	}
 }
 
-void object_curses_find_to_h(struct player *p, struct object *obj)
+static void object_curses_find_to_h(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
 	if (obj->curses) {
@@ -1508,7 +1508,7 @@ void object_curses_find_to_h(struct player *p, struct object *obj)
 	}
 }
 
-void object_curses_find_to_d(struct player *p, struct object *obj)
+static void object_curses_find_to_d(struct player *p, struct object *obj)
 {
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
 	if (obj->curses) {
@@ -1539,7 +1539,7 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
  * \param test_flags is the set of flags to check for
  * \return whether a flag was found
  */
-bool object_curses_find_flags(struct player *p, struct object *obj,
+static bool object_curses_find_flags(struct player *p, struct object *obj,
 							  bitflag *test_flags)
 {
 	char o_name[80];
@@ -1588,7 +1588,7 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
  * \param p is the player
  * \param obj is the object
  */
-void object_curses_find_modifiers(struct player *p, struct object *obj)
+static void object_curses_find_modifiers(struct player *p, struct object *obj)
 {
 	int i;
 
@@ -1628,7 +1628,7 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
  * \param elem the element
  * \return whether the element appeared in a curse
  */
-bool object_curses_find_element(struct player *p, struct object *obj, int elem)
+static bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 {
 	char o_name[80];
 	bool new = false;
@@ -1671,7 +1671,7 @@ bool object_curses_find_element(struct player *p, struct object *obj, int elem)
  * \param obj is the object
  * \return the index into the rune list, or -1 for no unknown runes
  */
-int object_find_unknown_rune(struct player *p, struct object *obj)
+static int object_find_unknown_rune(struct player *p, struct object *obj)
 {
 	size_t i, num = 0;
 	int *poss_runes;

@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "init.h"
+#include "ui-help.h"
 #include "ui-input.h"
 #include "ui-output.h"
 #include "ui-term.h"

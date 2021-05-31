@@ -52,10 +52,10 @@ static struct object *fail_pile;
 static struct object *fail_object;
 static bool fail_prev;
 static bool fail_next;
-static char *fail_file;
+static const char *fail_file;
 static int fail_line;
 
-void write_pile(ang_file *fff)
+static void write_pile(ang_file *fff)
 {
 	file_putf(fff, "Pile integrity failure at %s:%d\n\n", fail_file, fail_line);
 	file_putf(fff, "Guilty object\n=============\n");
@@ -95,8 +95,8 @@ void write_pile(ang_file *fff)
 /**
  * Quit on getting an object pile error, writing a diagnosis file
  */
-void pile_integrity_fail(struct object *pile, struct object *obj, char *file,
-						 int line)
+static void pile_integrity_fail(struct object *pile, struct object *obj,
+	const char *file, int line)
 {
 	char path[1024];
 
@@ -121,7 +121,8 @@ void pile_integrity_fail(struct object *pile, struct object *obj, char *file,
  * Check the integrity of a linked - make sure it's not circular and that each
  * entry in the chain has consistent next and prev pointers.
  */
-void pile_check_integrity(const char *op, struct object *pile, struct object *hilight)
+static void pile_check_integrity(const char *op, struct object *pile,
+	struct object *hilight)
 {
 	struct object *obj = pile;
 	struct object *prev = NULL;
@@ -984,8 +985,9 @@ static void floor_carry_fail(struct object *drop, bool broke)
 	/* Delete completely */
 	if (known) {
 		char o_name[80];
-		char *verb = broke ? VERB_AGREEMENT(drop->number, "breaks", "break")
-			: VERB_AGREEMENT(drop->number, "disappears", "disappear");
+		const char *verb = broke ?
+			VERB_AGREEMENT(drop->number, "breaks", "break") :
+			VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
 		if (!loc_is_zero(known->grid))

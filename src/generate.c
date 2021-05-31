@@ -772,7 +772,7 @@ static int calc_mon_feeling(struct chunk *c)
  * Find a cave_profile by name
  * \param name is the name of the cave_profile being looked for
  */
-const struct cave_profile *find_cave_profile(char *name)
+static const struct cave_profile *find_cave_profile(const char *name)
 {
 	int i;
 
@@ -792,7 +792,7 @@ const struct cave_profile *find_cave_profile(char *name)
  * Do d_m's prime check for labyrinths
  * \param depth is the depth where we're trying to generate a labyrinth
  */
-bool labyrinth_check(int depth)
+static bool labyrinth_check(int depth)
 {
 	/* There's a base 2 in 100 to accept the labyrinth */
 	int chance = 2;
@@ -821,7 +821,7 @@ bool labyrinth_check(int depth)
  * Choose a cave profile
  * \param p is the player
  */
-const struct cave_profile *choose_profile(struct player *p)
+static const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
 	int moria_alloc = find_cave_profile("moria")->alloc;
@@ -897,7 +897,7 @@ const struct cave_profile *choose_profile(struct player *p)
 /**
  * Get information for constructing stairs in the correct places
  */
-static void get_join_info(struct player *p, struct dun_data *dun)
+static void get_join_info(struct player *p, struct dun_data *dd)
 {
 	struct level *lev = NULL;
 
@@ -913,8 +913,8 @@ static void get_join_info(struct player *p, struct dun_data *dun)
 					new->grid.y = join->grid.y;
 					new->grid.x = join->grid.x;
 					new->feat = FEAT_LESS;
-					new->next = dun->join;
-					dun->join = new;
+					new->next = dd->join;
+					dd->join = new;
 				}
 				join = join->next;
 			}
@@ -933,8 +933,8 @@ static void get_join_info(struct player *p, struct dun_data *dun)
 					new->grid.y = join->grid.y;
 					new->grid.x = join->grid.x;
 					new->feat = FEAT_MORE;
-					new->next = dun->join;
-					dun->join = new;
+					new->next = dd->join;
+					dd->join = new;
 				}
 				join = join->next;
 			}
