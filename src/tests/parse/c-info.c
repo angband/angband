@@ -218,9 +218,8 @@ int test_title0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_sval() requires z_info/k_info */
 int test_equip0(void *state) {
-	enum parser_error r = parser_parse(state, "E:magic book:2:2:5");
+	enum parser_error r = parser_parse(state, "equip:magic book:2:2:5:none");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -230,6 +229,7 @@ int test_equip0(void *state) {
 	eq(c->start_items[0].sval, 2);
 	eq(c->start_items[0].min, 2);
 	eq(c->start_items[0].max, 5);
+	eq(c->start_items[0].eopts, NULL);
 	ok;
 }
 
@@ -285,7 +285,7 @@ struct test tests[] = {
 	{ "min_weight0", test_min_weight0 },
 	{ "strength_multiplier0", test_strength_multiplier0 },
 	{ "title0", test_title0 },
-	/* { "equip0", test_equip0 }, */
+	{ "equip0", test_equip0 },
 	{ "flags0", test_flags0 },
 	{ "flags1", test_flags1 },
 	//{ "magic0", test_magic0 },
