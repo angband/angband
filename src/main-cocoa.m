@@ -3764,7 +3764,7 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	(contentRect.size.width - (self.borderSize.width * 2.0)) /
 	self.tileSize.width);
 
-    plog(format("recalculated rows and columns: %.0f x %0.f",
+    plog(format("recalculated rows and columns: %.0f x %.0f",
 		newColumns, newRows));
     if (newRows < 1 || newColumns < 1) return;
     [self resizeWithColumns:newColumns rows:newRows];
