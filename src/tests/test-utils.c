@@ -9,6 +9,7 @@
 #include "h-basic.h"
 #include "config.h"
 #include "init.h"
+#include "test-utils.h"
 #include "z-util.h"
 
 #ifdef SOUND_SDL
