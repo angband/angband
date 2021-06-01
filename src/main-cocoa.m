@@ -3620,8 +3620,7 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 				 * necessary.  Don't redraw them.
 				 */
 				if (pcell->v.ch.glyph != blank) {
-				    int a = pcell->v.ch.attr % MAX_COLORS;
-
+				    a = pcell->v.ch.attr % MAX_COLORS;
 				    if (alast != a) {
 					alast = a;
 					set_color_for_index(a);
