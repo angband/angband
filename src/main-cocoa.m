@@ -2215,6 +2215,7 @@ static int compare_advances(const void *ap, const void *bp)
  */
 - (void)updateGlyphInfo
 {
+    plog("Entering updateGlyphInfo...\n");
     NSFont *screenFont = [self.angbandViewFont screenFont];
 
     /* Generate a string containing each MacRoman character */
@@ -2390,9 +2391,11 @@ static int compare_advances(const void *ap, const void *bp)
     } else {
 	self->_nColPost = 0;
     }
+    plog(format("font metrics: %f ascender %f descender %f median advance %f x %f tile dimensions %d npre %d npost\n", self->_fontAscender, self->_fontDescender, medianAdvance, self.tileSize.width, self.tileSize.height, self->_nColPre, self->_nColPost));
 
     free(glyphWidths);
     free(glyphArray);
+    plog("Leaving updateGlyphInfo\n");
 }
 
 
@@ -2522,6 +2525,7 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (void)setSelectionFont:(NSFont*)font adjustTerminal: (BOOL)adjustTerminal
 {
+    plog("Entering setSelectionFont...\n");
     /* Record the new font */
     self.angbandViewFont = font;
 
@@ -2550,18 +2554,23 @@ static int compare_advances(const void *ap, const void *bp)
 	    windowNeedsResizing = YES;
 	}
 	if (windowNeedsResizing) {
+	    plog(format("window needs resizing to %.0f %.0f/n",
+				contentRect.size.width, contentRect.size.height));
 	    size.width = contentRect.size.width;
 	    size.height = contentRect.size.height;
 	    [self.primaryWindow setContentSize:size];
 	}
         [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
     }
+    plog("Leaving setSelectionFont\n");
 }
 
 - (id)init
 {
+    plog("Entering context's init...\n");
     if ((self = [super init]))
     {
+        plog("Finished super class's init\n");
         /* Default rows and cols */
         self->_cols = 80;
         self->_rows = 24;
@@ -2585,6 +2594,7 @@ static int compare_advances(const void *ap, const void *bp)
 	self->_firstTileCol = 0;
 	self->_windowVisibilityChecked = NO;
     }
+    plog("Leaving context's init\n");
     return self;
 }
 
@@ -2646,6 +2656,7 @@ static __strong NSFont* gDefaultFont = nil;
 {
     if (! self.primaryWindow)
     {
+        plog("Creating primary window in makePrimaryWindow...\n");
         /*
          * This has to be done after the font is set, which it already is in
          * term_init_cocoa()
@@ -2675,6 +2686,8 @@ static __strong NSFont* gDefaultFont = nil;
 
         /* We are its delegate */
         [self.primaryWindow setDelegate:self];
+        plog(format("Finished creating primary window; window = %p view = %p\n",
+            (__bridge void*) self.primaryWindow, (__bridge void*) self->angbandView));
     }
     return self.primaryWindow;
 }
@@ -3751,6 +3764,8 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	(contentRect.size.width - (self.borderSize.width * 2.0)) /
 	self.tileSize.width);
 
+    plog(format("recalculated rows and columns: %.0f x %0.f",
+		newColumns, newRows));
     if (newRows < 1 || newColumns < 1) return;
     [self resizeWithColumns:newColumns rows:newRows];
 
@@ -4167,6 +4182,10 @@ static void record_current_savefile(void)
  */
 static void Term_init_cocoa(term *t)
 {
+    plog("Entering Term_init_cocoa...\n");
+    if (t == angband_term[0]) {
+        plog("this is the main window\n");
+    }
     @autoreleasepool {
 	AngbandContext *context = [[AngbandContext alloc] init];
 
@@ -4215,6 +4234,7 @@ static void Term_init_cocoa(term *t)
 	    fontSize = [fontSizeNumber floatValue];
 	}
 
+	plog(format("window font %s %.0f\n", [fontName UTF8String], fontSize));
 	[context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]
 		 adjustTerminal: NO];
 
@@ -4238,6 +4258,7 @@ static void Term_init_cocoa(term *t)
 	    if (defaultColumns > 0) columns = defaultColumns;
 	}
 
+	plog(format("window initial size %d x %d\n", columns, rows));
 	[context resizeWithColumns:columns rows:rows];
 
 	/* Get the window */
@@ -4365,14 +4386,17 @@ static void Term_init_cocoa(term *t)
 	 * problem where Angband aggressively tells us to initialize terms that
 	 * don't do anything!
 	 */
-	if (t == angband_term[0])
+	if (t == angband_term[0]) {
+	    plog(format("calling main window's makeKeyAndOrderFront window = %p\n", (__bridge void*) context.primaryWindow));
 	    [context.primaryWindow makeKeyAndOrderFront: nil];
+	}
 
 	NSEnableScreenUpdates();
 
 	/* Set "mapped" flag */
 	t->mapped_flag = true;
     }
+    plog("Leaving Term_init_cocoa\n");
 }
 
 
@@ -5422,12 +5446,41 @@ static BOOL check_events(int wait)
 /**
  * Hook to tell the user something important
  */
+static FILE* g_log_file = NULL;
+
+static FILE* get_log_file(void) {
+	if (!g_log_file && ANGBAND_DIR_USER) {
+		char name[256];
+		size_t len;
+
+		len = path_build(name, sizeof(name), ANGBAND_DIR_USER,
+			"mac.log");
+		if (len < sizeof(name)) {
+			g_log_file = fopen(name, "w");
+		}
+	}
+	return g_log_file;
+}
+
+static void close_log_file(void)
+{
+	if (g_log_file) {
+		(void) fclose(g_log_file);
+		g_log_file = NULL;
+	}
+}
+
 static void hook_plog(const char * str)
 {
-    if (str)
-    {
-		NSLog( @"%s", str );
-    }
+	if (str) {
+		FILE* fo = get_log_file();
+
+		if (fo) {
+			(void) fprintf(fo, "%s", str);
+		} else if (str) {
+			NSLog( @"%s", str );
+		}
+	}
 }
 
 
@@ -5591,6 +5644,7 @@ static term *term_data_link(int i)
  */
 static void load_prefs(void)
 {
+    plog("Entering load_prefs...\n");
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
 
     /* Make some default defaults */
@@ -5684,6 +5738,8 @@ static void load_prefs(void)
     if (! [AngbandContext defaultFont])
 	[AngbandContext
 	    setDefaultFont:[NSFont fontWithName:@"Menlo" size:13.]];
+
+    plog("Leaving load_prefs\n");
 }
 
 /**
@@ -5702,6 +5758,7 @@ static void play_sound(game_event_type unused, game_event_data *data, void *user
  */
 static void init_windows(void)
 {
+    plog("Entering init_windows...\n");
     /* Create the primary window */
     term *primary = term_data_link(0);
 
@@ -5712,6 +5769,7 @@ static void init_windows(void)
 
     /* Activate the primary term */
     Term_activate(primary);
+    plog("Leaving init_windows...\n");
 }
 
 /**
@@ -6054,6 +6112,7 @@ static void cocoa_reinit(void)
     /* Free resources */
     textui_cleanup();
     cleanup_angband();
+    close_log_file();
 
     quit(NULL);
 }
