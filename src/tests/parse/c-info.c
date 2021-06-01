@@ -21,6 +21,18 @@ int teardown_tests(void *state) {
 	for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
 		string_free((char *)c->title[i]);
 	}
+	while (c->start_items) {
+		struct start_item *si = c->start_items;
+
+		c->start_items = si->next;
+		mem_free(si->eopts);
+		mem_free(si);
+	}
+	/*
+	 * If tests are set up that lead to spell allocation, those will also
+	 * have to be freed here before releasing the books.
+	 */
+	mem_free(c->magic.books);
 	mem_free(c);
 	parser_destroy(state);
 	return 0;
