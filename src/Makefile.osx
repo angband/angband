@@ -16,8 +16,9 @@ BUNDLE_IDENTIFIER = org.rephial.angband
 ARCHS = x86_64 arm64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 OSXVERSFLAGS = -mmacosx-version-min=10.9
-WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
-	-Wunused-macros
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
+	-Wno-missing-field-initializers -Wwrite-strings -Wmissing-prototypes \
+	-Wnested-externs -Wshadow -Wunused-macros
 JUST_C = -std=c99
 OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
