@@ -3210,6 +3210,7 @@ static enum parser_error parse_class_equip(struct parser *p) {
 	si->eopts = einds;
 
 	if (si->min > 99 || si->max > 99) {
+		mem_free(si->eopts);
 		mem_free(si);
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
 	}
