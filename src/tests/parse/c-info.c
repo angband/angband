@@ -264,6 +264,7 @@ int test_magic0(void *state) {
 	require(c);
 	eq(c->magic.spell_first, 3);
 	eq(c->magic.spell_weight, 400);
+	noteq(c->magic.books, NULL);
 	ok;
 }
 
@@ -288,6 +289,6 @@ struct test tests[] = {
 	{ "equip0", test_equip0 },
 	{ "flags0", test_flags0 },
 	{ "flags1", test_flags1 },
-	//{ "magic0", test_magic0 },
+	{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };
