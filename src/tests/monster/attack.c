@@ -99,7 +99,7 @@ static int test_effects(void *state) {
 }
 
 const char *suite_name = "monster/attack";
-const struct test tests[] = {
+struct test tests[] = {
 	{ "blows", test_blows },
 	{ "effects", test_effects },
 	{ NULL, NULL },

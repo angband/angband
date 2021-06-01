@@ -13,11 +13,22 @@ extern int verbose;
 extern int showpass(void);
 extern int showfail(void);
 
-/* Forward declaration, since suite_names may be at the end of the test
- * file.
+/* Forward declaration for string provided by the test case but expected by
+ * unit-test.c and the macros declared here.
  */
-const char *suite_name; 
+extern const char *suite_name;
 
+/* Forward declaration for the test case array provided by the test case but
+ * expected by unit-test.c.
+ */
+extern struct test tests[];
+
+/* Provided by the test case and called by unit-test.c.  If a test case
+ * does not need setup or teardown use the NOSETUP or NOTEARDOWN macros
+ * in the test case to provide the functions unit-test.c wants.
+ */
+extern int setup_tests(void **data);
+extern int teardown_tests(void *data);
 #define NOSETUP int setup_tests(void **data) { return 0; }
 #define NOTEARDOWN int teardown_tests(void *data) { return 0; }
 
