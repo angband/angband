@@ -56,16 +56,36 @@ int test_base_object0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_kind() requires z_info/k_info */
-int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:3:8:200");
+int test_level0(void *state) {
+	enum parser_error r = parser_parse(state, "level:3");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->level, 3);
+	ok;
+}
+
+/* Causes segfault: lookup_kind() requires z_info/k_info() */
+int test_weight0(void *state) {
+	enum parser_error r = parser_parse(state, "weight:8");
+	struct artifact *a;
+
+	eq(r, PARSE_ERROR_NONE);
+	a = parser_priv(state);
+	require(a);
 	eq(a->weight, 8);
+	ok;
+}
+
+int test_cost0(void *state) {
+	enum parser_error r = parser_parse(state, "cost:200");
+	struct artifact *a;
+
+	eq(r, PARSE_ERROR_NONE);
+	a = parser_priv(state);
+	require(a);
 	eq(a->cost, 200);
 	ok;
 }
@@ -189,7 +209,9 @@ struct test tests[] = {
 	{ "badtval0", test_badtval0 },
 	{ "badtval1", test_badtval1 },
 	{ "base-object0", test_base_object0 },
-	//{ "info0", test_info0 },
+	{ "level0", test_level0 },
+	//{ "weight0", test_weight0 },
+	{ "cost0", test_cost0 },
 	{ "alloc0", test_alloc0 },
 	{ "alloc1", test_alloc1 },
 	{ "alloc2", test_alloc2 },
