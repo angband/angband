@@ -156,6 +156,7 @@ int test_mexp0(void *state) {
 	ok;
 }
 
+/* Without initialization of the blow_methods array, this crashes so not run. */
 int test_blow0(void *state) {
 	enum parser_error r = parser_parse(state, "blow:CLAW:FIRE:9d12");
 	struct monster_race *mr;
@@ -170,6 +171,7 @@ int test_blow0(void *state) {
 	ok;
 }
 
+/* Without initialization of the blow_methods array, this crashes so not run. */
 int test_blow1(void *state) {
 	enum parser_error r = parser_parse(state, "blow:BITE:FIRE:6d8:0");
 	struct monster_race *mr;
