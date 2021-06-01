@@ -215,11 +215,36 @@ int test_utf32_to_utf8(void *state) {
 	ok;
 }
 
+static int test_gcd(void *state)
+{
+	struct { int a, b, r; } cases[] = {
+		{ 1, 1, 1 },
+		{ 7, 1, 1 },
+		{ 1, 15, 1 },
+		{ 104, 143, 13 },
+		{ 1365, 330, 15 },
+		{ 990, 1638, 18 },
+		{ 2145, 238, 1 },
+		{ 131071, 524287, 1 },
+	};
+	int i;
+
+	for (i = 0; i < (int)N_ELEMENTS(cases); ++i) {
+		int r1 = gcd(cases[i].a, cases[i].b);
+		int r2 = gcd(cases[i].b, cases[i].a);
+
+		eq(cases[i].r, r1);
+		eq(r1, r2);
+	}
+	ok;
+}
+
 const char *suite_name = "z-util/util";
 struct test tests[] = {
 	{ "utf8_clipto", test_alloc },
 	{ "utf8_fskip", test_utf8_fskip },
 	{ "utf8_rskip", test_utf8_rskip },
 	{ "utf32_to_utf8", test_utf32_to_utf8 },
+	{ "gcd", test_gcd },
 	{ NULL, NULL }
 };

@@ -212,6 +212,7 @@ u32b djb2_hash(const char *str);
 /**
  * Mathematical functions
  */
+int gcd(int a, int b);
 int mean(int *nums, int size);
 int variance(int *nums, int size);
 

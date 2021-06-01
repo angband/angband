@@ -758,6 +758,32 @@ void quit(const char *str)
 }
 
 /**
+ * Compute the greatest common divisor of two positive integers.
+ * \param a is the first integer.  Must be positive.
+ * \param b is the second integer.  Must be positive.
+ * Uses Euclid's algorithm.
+ */
+int gcd(int a, int b)
+{
+	assert(a > 0 && b > 0);
+	if (b > a) {
+		int t = a;
+
+		a = b;
+		b = t;
+	}
+	while (1) {
+		int r = a % b;
+
+		if (r == 0) {
+			return b;
+		}
+		a = b;
+		b = r;
+	}
+}
+
+/**
  * Arithmetic mean of the first 'size' entries of the array 'nums'
  */
 int mean(int *nums, int size)
