@@ -1947,7 +1947,7 @@ static void draw_image_tile(
  * for future changes to the set of flags without needed to update it here
  * (unless the underlying types change).
  */
-u32b AngbandMaskForValidSubwindowFlags(void)
+static u32b AngbandMaskForValidSubwindowFlags(void)
 {
     int windowFlagBits = sizeof(*(window_flag)) * CHAR_BIT;
     int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
