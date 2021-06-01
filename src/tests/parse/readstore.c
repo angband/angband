@@ -63,7 +63,7 @@ int test_owner0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_name() requires z_info/k_info */
+/* Without initialization of the svals, fails with an unrecognised sval. */
 int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "normal:3:5");
 	struct store *s;
