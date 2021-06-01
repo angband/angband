@@ -71,8 +71,6 @@ $(EXE).o: $(OBJS)
 	done; \
 	lipo $$LIPO_ARGS -create -output $@
 
-izzywizzy: $(OBJS) izzywizzy.o
-
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
 
