@@ -16,10 +16,11 @@ BUNDLE_IDENTIFIER = org.rephial.angband
 ARCHS = x86_64 arm64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 OSXVERSFLAGS = -mmacosx-version-min=10.9
-WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
-	-Wunused-macros
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
+	-Wno-missing-field-initializers -Wwrite-strings -Wmissing-prototypes \
+	-Wnested-externs -Wshadow -Wunused-macros
 JUST_C = -std=c99
-OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc $(OSXVERSFLAGS)
+OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-fno-stack-protector $(OSXVERSFLAGS) $(ARCHFLAGS)
 LIBS = -framework Cocoa
@@ -69,8 +70,6 @@ $(EXE).o: $(OBJS)
 		LIPO_ARGS="$$LIPO_ARGS -arch $$A $@.$$A"; \
 	done; \
 	lipo $$LIPO_ARGS -create -output $@
-
-izzywizzy: $(OBJS) izzywizzy.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
@@ -211,7 +210,7 @@ dist: install
 
 	rm -rf disttemp*
 
-tests:
+tests: $(EXE).o
 	$(MAKE) -C tests all CFLAGS='-I.. -DDEFAULT_CONFIG_PATH=\"../../lib\" -DDEFAULT_LIB_PATH=\"../../lib\" -DDEFAULT_DATA_PATH=\"../../lib\" $(CFLAGS)' LDFLAGS="$(LIBS)"
 
 test-clean:
