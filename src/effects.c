@@ -5799,6 +5799,16 @@ bool effect_do(struct effect *effect,
 			int choice;
 
 			/*
+			 * If it has no subeffects, act as if it completed
+			 * successfully and go to the next effect.
+			 */
+			if (choice_count <= 0) {
+				completed = true;
+				effect = effect->next;
+				continue;
+			}
+
+			/*
 			 * Treat select effects like random ones if they
 			 * aren't from a player or if there's really no choice
 			 * to be made.
@@ -5840,8 +5850,16 @@ bool effect_do(struct effect *effect,
 
 			/* Skip to the chosen effect */
 			effect = effect->next;
-			while (choice--)
+			while (choice-- && effect)
 				effect = effect->next;
+			if (!effect) {
+				/*
+				 * There's fewer subeffects than expected.  Act
+				 * as if it ran successfully.
+				 */
+				completed = true;
+				break;
+			}
 
 			/* Roll the damage, if needed */
 			if (effect->dice != NULL)
@@ -5875,7 +5893,7 @@ bool effect_do(struct effect *effect,
 		}
 
 		/* Get the next effect, if there is one */
-		while (leftover--)
+		while (leftover-- && effect)
 			effect = effect->next;
 	} while (effect);
 

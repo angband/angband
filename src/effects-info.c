@@ -590,7 +590,7 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 			switch (e->subtype) {
 			case 0: /* INC_BY */
 				actstr = "feed";
-				actarg = "yourelf";
+				actarg = "yourself";
 				break;
 			case 1: /* DEC_BY */
 				actstr = "increase";
@@ -704,7 +704,8 @@ struct effect *effect_next(struct effect *effect)
 {
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		struct effect *e = effect;
-		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		int num_subeffects = MAX(0,
+			dice_evaluate(effect->dice, 0, AVERAGE, NULL));
 		// Skip all the sub-effects, plus one to advance beyond current
 		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
 			e = e->next;
@@ -754,13 +755,16 @@ int effect_avg_damage(const struct effect *effect)
 		// accumulate damage
 		int total = 0;
 		struct effect *e = effect->next;
-		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
-		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+		int n_stated = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		int n_actual = 0;
+
+		for (int i = 0; e != NULL && i < n_stated; i++) {
 			total += effect_avg_damage(e);
+			++n_actual;
 			e = e->next;
 		}
 		// Return an average of the sub-effects' average damages
-		return total / num_subeffects;
+		return (n_actual > 0) ? total / n_actual : 0;
 	} else {
 		// Non-random effect, calculate the average damage
 		return effect_damages(effect) ?
@@ -779,11 +783,17 @@ const char *effect_projection(const struct effect *effect)
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		// Random or select effect
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
-		struct effect *e = effect->next;
-		const char *subeffect_proj = effect_projection(e);
+		struct effect *e;
+		const char *subeffect_proj;
 
-		// Check if all subeffects have the same projection, and if not just
-		// give up on it
+		// Check if all subeffects have the same projection, and if
+		// not just give up on it
+		if (num_subeffects <= 0 || !effect->next) {
+			return "";
+		}
+
+		e = effect->next;
+		subeffect_proj = effect_projection(e);
 		for (int i = 0; e != NULL && i < num_subeffects; i++) {
 			if (!streq(subeffect_proj, effect_projection(e))) {
 				return "";
