@@ -855,8 +855,8 @@ struct player_shape *player_shape_by_idx(int index)
  */
 bool player_get_resume_normal_shape(struct player *p, struct command *cmd)
 {
-	if (player_is_shapechanged(player)) {
-		msg("You cannot do this while in %s form.",	player->shape->name);
+	if (player_is_shapechanged(p)) {
+		msg("You cannot do this while in %s form.", p->shape->name);
 		char prompt[100];
 		strnfmt(prompt, sizeof(prompt),
 		        "Change back and %s (y/n) or (r)eturn to normal? ",
@@ -865,7 +865,7 @@ bool player_get_resume_normal_shape(struct player *p, struct command *cmd)
 
 		// Change back to normal shape
 		if (answer == 'y' || answer == 'r') {
-			player_resume_normal_shape(player);
+			player_resume_normal_shape(p);
 		}
 
 		// Players may only act if they return to normal shape
@@ -888,9 +888,9 @@ void player_resume_normal_shape(struct player *p)
 	(void) player_clear_timed(p, TMD_ATT_VAMP, true);
 
 	/* Update */
-	player->upkeep->update |= (PU_BONUS);
-	player->upkeep->redraw |= (PR_TITLE | PR_MISC);
-	handle_stuff(player);
+	p->upkeep->update |= (PU_BONUS);
+	p->upkeep->redraw |= (PR_TITLE | PR_MISC);
+	handle_stuff(p);
 }
 
 /**
