@@ -26,6 +26,8 @@ int setup_tests(void **state) {
 
 int teardown_tests(void *state) {
 	textui_prefs_free();
+	close_graphics_modes();
+	cleanup_angband();
 	return 0;
 }
 
