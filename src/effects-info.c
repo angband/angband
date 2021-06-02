@@ -755,14 +755,16 @@ int effect_avg_damage(const struct effect *effect)
 		// accumulate damage
 		int total = 0;
 		struct effect *e = effect->next;
-		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
-		if (num_subeffects <= 0) return 0;
-		for (int i = 0; e != NULL && i < num_subeffects; i++) {
+		int n_stated = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		int n_actual = 0;
+
+		for (int i = 0; e != NULL && i < n_stated; i++) {
 			total += effect_avg_damage(e);
+			++n_actual;
 			e = e->next;
 		}
 		// Return an average of the sub-effects' average damages
-		return total / num_subeffects;
+		return (n_actual > 0) ? total / n_actual : 0;
 	} else {
 		// Non-random effect, calculate the average damage
 		return effect_damages(effect) ?
