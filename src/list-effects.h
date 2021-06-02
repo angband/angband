@@ -96,7 +96,7 @@ EFFECT(BOLT_OR_BEAM,				true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt or beam of
 EFFECT(LINE,						true,	"dam",		2,		EFINFO_BOLTD,	"creates a line of %s dealing %s damage",	"create a line of %s")
 EFFECT(ALTER,						true,	NULL,		1,		EFINFO_BOLT,	"creates a line which %s",	"create a line which %s")
 EFFECT(BOLT_STATUS,					true,	NULL,		1,		EFINFO_BOLT,	"casts a bolt which %s",	"cast a bolt which %s")
-EFFECT(BOLT_STATUS_DAM,				true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt which %s, dealing %s damage",	"cast a bolt which %s and damages")
+EFFECT(BOLT_STATUS_DAM,				true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt which %s, dealing %s damage",	"cast a bolt which %s")
 EFFECT(BOLT_AWARE,					true,	NULL,		1,		EFINFO_BOLT,	"creates a bolt which %s",	"create a bolt which %s")
 EFFECT(TOUCH,						false,	NULL,		1,		EFINFO_TOUCH,	"%s on all adjacent squares",	"%s all adjacent")
 EFFECT(TOUCH_AWARE,					false,	NULL,		1,		EFINFO_TOUCH,	"%s on all adjacent squares",	"%s all adjacent")
