@@ -212,7 +212,7 @@ static bool new_game = FALSE;
 		char *search;
 		char *cur_token;
 		char *next_token;
-		int event;
+		int lookup_result;
 
 		/* Skip anything not beginning with an alphabetic character */
 		if (!buffer[0] || !isalpha((unsigned char)buffer[0])) continue;
@@ -228,8 +228,8 @@ static bool new_game = FALSE;
 		search[0] = '\0';
 
 		/* Make sure this is a valid event name */
-		event = message_lookup_by_sound_name(msg_name);
-		if (event < 0) continue;
+		lookup_result = message_lookup_by_sound_name(msg_name);
+		if (lookup_result < 0) continue;
 
 		/*
 		 * Advance the sample list pointer so it's at the beginning of
@@ -254,12 +254,12 @@ static bool new_game = FALSE;
 		while (cur_token) {
 		    NSMutableArray *soundSamples =
 			[self->soundArraysByEvent
-			     objectForKey:[NSNumber numberWithInteger:event]];
+			     objectForKey:[NSNumber numberWithInteger:lookup_result]];
 		    if (soundSamples == nil) {
 			soundSamples = [[NSMutableArray alloc] init];
 			[self->soundArraysByEvent
 			     setObject:soundSamples
-			     forKey:[NSNumber numberWithInteger:event]];
+			     forKey:[NSNumber numberWithInteger:lookup_result]];
 		    }
 		    int num = (int) soundSamples.count;
 
@@ -1947,7 +1947,7 @@ static void draw_image_tile(
  * for future changes to the set of flags without needed to update it here
  * (unless the underlying types change).
  */
-u32b AngbandMaskForValidSubwindowFlags(void)
+static u32b AngbandMaskForValidSubwindowFlags(void)
 {
     int windowFlagBits = sizeof(*(window_flag)) * CHAR_BIT;
     int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
@@ -3620,8 +3620,7 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 				 * necessary.  Don't redraw them.
 				 */
 				if (pcell->v.ch.glyph != blank) {
-				    int a = pcell->v.ch.attr % MAX_COLORS;
-
+				    a = pcell->v.ch.attr % MAX_COLORS;
 				    if (alast != a) {
 					alast = a;
 					set_color_for_index(a);
