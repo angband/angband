@@ -704,7 +704,8 @@ struct effect *effect_next(struct effect *effect)
 {
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		struct effect *e = effect;
-		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		int num_subeffects = MAX(0,
+			dice_evaluate(effect->dice, 0, AVERAGE, NULL));
 		// Skip all the sub-effects, plus one to advance beyond current
 		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
 			e = e->next;
@@ -755,6 +756,7 @@ int effect_avg_damage(const struct effect *effect)
 		int total = 0;
 		struct effect *e = effect->next;
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		if (num_subeffects <= 0) return 0;
 		for (int i = 0; e != NULL && i < num_subeffects; i++) {
 			total += effect_avg_damage(e);
 			e = e->next;
@@ -779,11 +781,17 @@ const char *effect_projection(const struct effect *effect)
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		// Random or select effect
 		int num_subeffects = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
-		struct effect *e = effect->next;
-		const char *subeffect_proj = effect_projection(e);
+		struct effect *e;
+		const char *subeffect_proj;
 
-		// Check if all subeffects have the same projection, and if not just
-		// give up on it
+		// Check if all subeffects have the same projection, and if
+		// not just give up on it
+		if (num_subeffects <= 0 || !effect->next) {
+			return "";
+		}
+
+		e = effect->next;
+		subeffect_proj = effect_projection(e);
 		for (int i = 0; e != NULL && i < num_subeffects; i++) {
 			if (!streq(subeffect_proj, effect_projection(e))) {
 				return "";

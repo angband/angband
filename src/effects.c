@@ -5799,6 +5799,16 @@ bool effect_do(struct effect *effect,
 			int choice;
 
 			/*
+			 * If it has no subeffects, act as if it completed
+			 * successfully and go to the next effect.
+			 */
+			if (choice_count <= 0) {
+				completed = true;
+				effect = effect->next;
+				continue;
+			}
+
+			/*
 			 * Treat select effects like random ones if they
 			 * aren't from a player or if there's really no choice
 			 * to be made.
