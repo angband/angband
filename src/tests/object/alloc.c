@@ -214,7 +214,7 @@ static void compute_obj_num_expected(int level, bool good, int tval,
  * below that can get more than one kind of object) but can happen even if
  * get_obj_num() performs correctly.
  */
-int test_get_obj_num_basic(void *state) {
+static int test_get_obj_num_basic(void *state) {
 	struct {
 		int level, tval;
 		bool good;

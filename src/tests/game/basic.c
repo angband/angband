@@ -45,7 +45,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_newgame(void *state) {
+static int test_newgame(void *state) {
 
 	/* Try making a new game */
 	eq(player_make_simple(NULL, NULL, "Tester"), true);
@@ -66,7 +66,7 @@ int test_newgame(void *state) {
 	ok;
 }
 
-int test_loadgame(void *state) {
+static int test_loadgame(void *state) {
 
 	/* Try loading the just-saved game */
 	eq(savefile_load("Test1", false), true);
@@ -79,7 +79,7 @@ int test_loadgame(void *state) {
 	ok;
 }
 
-int test_stairs1(void *state) {
+static int test_stairs1(void *state) {
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
@@ -91,7 +91,7 @@ int test_stairs1(void *state) {
 	ok;
 }
 
-int test_stairs2(void *state) {
+static int test_stairs2(void *state) {
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
@@ -109,7 +109,7 @@ int test_stairs2(void *state) {
 	ok;
 }
 
-int test_drop_pickup(void *state) {
+static int test_drop_pickup(void *state) {
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
@@ -131,7 +131,7 @@ int test_drop_pickup(void *state) {
 	ok;
 }
 
-int test_drop_eat(void *state) {
+static int test_drop_eat(void *state) {
 	int num = 0;
 
 	/* Load the saved game */

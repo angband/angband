@@ -23,7 +23,7 @@ int teardown_tests(void *state) {
 }
 
 /* Regression test for #1409 */
-int test_match_monster_bases(void *state) {
+static int test_match_monster_bases(void *state) {
 	struct monster_base *base;
 
 	/* Scruffy little dog */

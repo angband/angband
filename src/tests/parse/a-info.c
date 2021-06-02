@@ -21,7 +21,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:of Thrain");
 	struct artifact *a;
 
@@ -32,19 +32,19 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_badtval0(void *state) {
+static int test_badtval0(void *state) {
 	enum parser_error r = parser_parse(state, "base-object:badtval:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
-int test_badtval1(void *state) {
+static int test_badtval1(void *state) {
 	enum parser_error r = parser_parse(state, "base-object:-1:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
-int test_base_object0(void *state) {
+static int test_base_object0(void *state) {
 	enum parser_error r = parser_parse(state, "base-object:light:6");
 	struct artifact *a;
 
@@ -56,7 +56,7 @@ int test_base_object0(void *state) {
 	ok;
 }
 
-int test_level0(void *state) {
+static int test_level0(void *state) {
 	enum parser_error r = parser_parse(state, "level:3");
 	struct artifact *a;
 
@@ -79,7 +79,7 @@ int test_weight0(void *state) {
 	ok;
 }
 
-int test_cost0(void *state) {
+static int test_cost0(void *state) {
 	enum parser_error r = parser_parse(state, "cost:200");
 	struct artifact *a;
 
@@ -90,19 +90,19 @@ int test_cost0(void *state) {
 	ok;
 }
 
-int test_alloc0(void *state) {
+static int test_alloc0(void *state) {
 	enum parser_error r = parser_parse(state, "alloc:3:5");
 	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
 	ok;
 }
 
-int test_alloc1(void *state) {
+static int test_alloc1(void *state) {
 	enum parser_error r = parser_parse(state, "alloc:3:5 to 300");
 	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
 	ok;
 }
 
-int test_alloc2(void *state) {
+static int test_alloc2(void *state) {
 	enum parser_error r = parser_parse(state, "alloc:3:5 to 10");
 	struct artifact *a;
 
@@ -115,7 +115,7 @@ int test_alloc2(void *state) {
 	ok;
 }
 
-int test_attack0(void *state) {
+static int test_attack0(void *state) {
 	enum parser_error r = parser_parse(state, "attack:4d5:8:2");
 	struct artifact *a;
 
@@ -129,7 +129,7 @@ int test_attack0(void *state) {
 	ok;
 }
 
-int test_armor0(void *state) {
+static int test_armor0(void *state) {
 	enum parser_error r = parser_parse(state, "armor:3:1");
 	struct artifact *a;
 
@@ -141,7 +141,7 @@ int test_armor0(void *state) {
 	ok;
 }
 
-int test_flags0(void *state) {
+static int test_flags0(void *state) {
 	enum parser_error r = parser_parse(state, "flags:SEE_INVIS | HOLD_LIFE");
 	struct artifact *a;
 
@@ -152,7 +152,7 @@ int test_flags0(void *state) {
 	ok;
 }
 
-int test_values0(void *state) {
+static int test_values0(void *state) {
 	enum parser_error r = parser_parse(state, "values:STR[1] | CON[1]");
 	struct artifact *a;
 
@@ -176,7 +176,7 @@ int test_time0(void *state) {
 	ok;
 }
 
-int test_msg0(void *state) {
+static int test_msg0(void *state) {
 	enum parser_error r = parser_parse(state, "msg:foo");
 	struct artifact *a;
 
@@ -190,7 +190,7 @@ int test_msg0(void *state) {
 }
 
 
-int test_desc0(void *state) {
+static int test_desc0(void *state) {
 	enum parser_error r = parser_parse(state, "desc:baz");
 	struct artifact *a;
 

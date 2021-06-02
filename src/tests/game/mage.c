@@ -47,7 +47,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_magic_missile(void *state) {
+static int test_magic_missile(void *state) {
 
 	/* Try making a new game */
 	eq(player_make_simple("Gnome", "Mage", "Tyrion"), true);

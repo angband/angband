@@ -21,7 +21,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	errr r = parser_parse(state, "name:Test Object Kind");
 	struct object_kind *k;
 
@@ -32,7 +32,7 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_graphics0(void *state) {
+static int test_graphics0(void *state) {
 	errr r = parser_parse(state, "graphics:~:red");
 	struct object_kind *k;
 
@@ -44,7 +44,7 @@ int test_graphics0(void *state) {
 	ok;
 }
 
-int test_graphics1(void *state) {
+static int test_graphics1(void *state) {
 	errr r = parser_parse(state, "graphics:!:W");
 	struct object_kind *k;
 
@@ -68,7 +68,7 @@ int test_type0(void *state) {
 	ok;
 }
 
-int test_level0(void *state) {
+static int test_level0(void *state) {
 	errr r = parser_parse(state, "level:10");
 	struct object_kind *k;
 
@@ -79,7 +79,7 @@ int test_level0(void *state) {
 	ok;
 }
 
-int test_weight0(void *state) {
+static int test_weight0(void *state) {
 	errr r = parser_parse(state, "weight:5");
 	struct object_kind *k;
 
@@ -90,7 +90,7 @@ int test_weight0(void *state) {
 	ok;
 }
 
-int test_cost0(void *state) {
+static int test_cost0(void *state) {
 	errr r = parser_parse(state, "cost:120");
 	struct object_kind *k;
 
@@ -101,7 +101,7 @@ int test_cost0(void *state) {
 	ok;
 }
 
-int test_alloc0(void *state) {
+static int test_alloc0(void *state) {
 	errr r = parser_parse(state, "alloc:3:4 to 6");
 	struct object_kind *k;
 
@@ -114,7 +114,7 @@ int test_alloc0(void *state) {
 	ok;
 }
 
-int test_attack0(void *state) {
+static int test_attack0(void *state) {
 	errr r = parser_parse(state, "attack:4d8:1d4:2d5");
 	struct object_kind *k;
 
@@ -130,7 +130,7 @@ int test_attack0(void *state) {
 	ok;
 }
 
-int test_armor0(void *state) {
+static int test_armor0(void *state) {
 	errr r = parser_parse(state, "armor:3:7d6");
 	struct object_kind *k;
 
@@ -143,7 +143,7 @@ int test_armor0(void *state) {
 	ok;
 }
 
-int test_charges0(void *state) {
+static int test_charges0(void *state) {
 	errr r = parser_parse(state, "charges:2d8");
 	struct object_kind *k;
 
@@ -155,7 +155,7 @@ int test_charges0(void *state) {
 	ok;
 }
 
-int test_pile0(void *state) {
+static int test_pile0(void *state) {
 	errr r = parser_parse(state, "pile:4:3d6");
 	struct object_kind *k;
 
@@ -168,7 +168,7 @@ int test_pile0(void *state) {
 	ok;
 }
 
-int test_flags0(void *state) {
+static int test_flags0(void *state) {
 	errr r = parser_parse(state, "flags:EASY_KNOW | FEATHER");
 	struct object_kind *k;
 
@@ -184,7 +184,7 @@ int test_flags0(void *state) {
 	ok;
 }
 
-int test_pval0(void *state) {
+static int test_pval0(void *state) {
 	errr r = parser_parse(state, "pval:1+2d3M4");
 	struct object_kind *k;
 
@@ -198,7 +198,7 @@ int test_pval0(void *state) {
 	ok;
 }
 
-int test_time0(void *state) {
+static int test_time0(void *state) {
 	errr r = parser_parse(state, "time:4d5");
 	struct object_kind *k;
 
@@ -210,7 +210,7 @@ int test_time0(void *state) {
 	ok;
 }
 
-int test_desc0(void *state) {
+static int test_desc0(void *state) {
 	errr r = parser_parse(state, "desc:foo bar");
 	struct object_kind *k;
 

@@ -38,7 +38,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:Ranger");
 	struct player_class *c;
 
@@ -49,7 +49,7 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_stats0(void *state) {
+static int test_stats0(void *state) {
 	enum parser_error r = parser_parse(state, "stats:3:-3:2:-2:1");
 	struct player_class *c;
 
@@ -64,7 +64,7 @@ int test_stats0(void *state) {
 	ok;
 }
 
-int test_skill_disarm0(void *state) {
+static int test_skill_disarm0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-disarm-phys:30:8");
 	struct player_class *c;
 
@@ -76,7 +76,7 @@ int test_skill_disarm0(void *state) {
 	ok;
 }
 
-int test_skill_device0(void *state) {
+static int test_skill_device0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-device:32:10");
 	struct player_class *c;
 
@@ -88,7 +88,7 @@ int test_skill_device0(void *state) {
 	ok;
 }
 
-int test_skill_save0(void *state) {
+static int test_skill_save0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-save:28:10");
 	struct player_class *c;
 
@@ -100,7 +100,7 @@ int test_skill_save0(void *state) {
 	ok;
 }
 
-int test_skill_stealth0(void *state) {
+static int test_skill_stealth0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-stealth:3:0");
 	struct player_class *c;
 
@@ -112,7 +112,7 @@ int test_skill_stealth0(void *state) {
 	ok;
 }
 
-int test_skill_search0(void *state) {
+static int test_skill_search0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-search:24:0");
 	struct player_class *c;
 
@@ -124,7 +124,7 @@ int test_skill_search0(void *state) {
 	ok;
 }
 
-int test_skill_melee0(void *state) {
+static int test_skill_melee0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-melee:56:30");
 	struct player_class *c;
 
@@ -136,7 +136,7 @@ int test_skill_melee0(void *state) {
 	ok;
 }
 
-int test_skill_shoot0(void *state) {
+static int test_skill_shoot0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-shoot:72:45");
 	struct player_class *c;
 
@@ -148,7 +148,7 @@ int test_skill_shoot0(void *state) {
 	ok;
 }
 
-int test_skill_throw0(void *state) {
+static int test_skill_throw0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-throw:72:45");
 	struct player_class *c;
 
@@ -160,7 +160,7 @@ int test_skill_throw0(void *state) {
 	ok;
 }
 
-int test_skill_dig0(void *state) {
+static int test_skill_dig0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-dig:0:0");
 	struct player_class *c;
 
@@ -172,7 +172,7 @@ int test_skill_dig0(void *state) {
 	ok;
 }
 
-int test_hitdie0(void *state) {
+static int test_hitdie0(void *state) {
 	enum parser_error r = parser_parse(state, "hitdie:4");
 	struct player_class *c;
 
@@ -183,7 +183,7 @@ int test_hitdie0(void *state) {
 	ok;
 }
 
-int test_max_attacks0(void *state) {
+static int test_max_attacks0(void *state) {
 	enum parser_error r = parser_parse(state, "max-attacks:5");
 	struct player_class *c;
 
@@ -194,7 +194,7 @@ int test_max_attacks0(void *state) {
 	ok;
 }
 
-int test_min_weight0(void *state) {
+static int test_min_weight0(void *state) {
 	enum parser_error r = parser_parse(state, "min-weight:35");
 	struct player_class *c;
 
@@ -205,7 +205,7 @@ int test_min_weight0(void *state) {
 	ok;
 }
 
-int test_strength_multiplier0(void *state) {
+static int test_strength_multiplier0(void *state) {
 	enum parser_error r = parser_parse(state, "strength-multiplier:4");
 	struct player_class *c;
 
@@ -216,7 +216,7 @@ int test_strength_multiplier0(void *state) {
 	ok;
 }
 
-int test_title0(void *state) {
+static int test_title0(void *state) {
 	enum parser_error r0 = parser_parse(state, "title:Runner");
 	enum parser_error r1 = parser_parse(state, "title:Strider");
 	struct player_class *c;
@@ -230,7 +230,7 @@ int test_title0(void *state) {
 	ok;
 }
 
-int test_equip0(void *state) {
+static int test_equip0(void *state) {
 	enum parser_error r = parser_parse(state, "equip:magic book:2:2:5:none");
 	struct player_class *c;
 
@@ -245,7 +245,7 @@ int test_equip0(void *state) {
 	ok;
 }
 
-int test_flags0(void *state) {
+static int test_flags0(void *state) {
 	enum parser_error r = parser_parse(state, "player-flags:BLESS_WEAPON | CHOOSE_SPELLS");
 	struct player_class *c;
 
@@ -256,7 +256,7 @@ int test_flags0(void *state) {
 	ok;
 }
 
-int test_flags1(void *state) {
+static int test_flags1(void *state) {
 	enum parser_error r = parser_parse(state, "obj-flags:SEE_INVIS | IMPAIR_HP");
 	struct player_class *c;
 
@@ -267,7 +267,7 @@ int test_flags1(void *state) {
 	ok;
 }
 
-int test_magic0(void *state) {
+static int test_magic0(void *state) {
 	enum parser_error r = parser_parse(state, "magic:3:400:9");
 	struct player_class *c;
 

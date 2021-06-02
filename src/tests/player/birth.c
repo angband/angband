@@ -33,7 +33,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_generate0(void *state) {
+static int test_generate0(void *state) {
 	struct player *p = state;
 	player_generate(p, &test_race, &test_class, false);
 	eq(p->lev, 1);

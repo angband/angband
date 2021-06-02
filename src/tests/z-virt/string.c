@@ -6,7 +6,7 @@
 NOSETUP
 NOTEARDOWN
 
-int test_string_make(void *state) {
+static int test_string_make(void *state) {
 	char *s1 = string_make("foo");
 	require(s1);
 	require(!strcmp(s1, "foo"));
@@ -14,18 +14,18 @@ int test_string_make(void *state) {
 	ok;
 }
 
-int test_string_make_null(void *state) {
+static int test_string_make_null(void *state) {
 	char *s1 = string_make(NULL);
 	require(!s1);
 	ok;
 }
 
-int test_string_free_null(void *state) {
+static int test_string_free_null(void *state) {
 	string_free(NULL);
 	ok;
 }
 
-int test_string_append(void *state) {
+static int test_string_append(void *state) {
 	char *s1 = string_make("foo");
 	char *s3 = string_append(s1, "bar");
 
@@ -36,7 +36,7 @@ int test_string_append(void *state) {
 	ok;
 }
 
-int test_string_append_null0(void *state) {
+static int test_string_append_null0(void *state) {
 	char *r = string_append(NULL, "foo");
 	require(r);
 	require(!strcmp(r, "foo"));
@@ -44,7 +44,7 @@ int test_string_append_null0(void *state) {
 	ok;
 }
 
-int test_string_append_null1(void *state) {
+static int test_string_append_null1(void *state) {
 	char *s = string_make("bar");
 	char *r = string_append(s, NULL);
 	require(r);
@@ -53,7 +53,7 @@ int test_string_append_null1(void *state) {
 	ok;
 }
 
-int test_string_append_null2(void *state) {
+static int test_string_append_null2(void *state) {
 	char *r = string_append(NULL, NULL);
 	require(!r);
 	ok;

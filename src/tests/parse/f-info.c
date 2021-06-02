@@ -24,7 +24,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:Test Feature");
 	struct feature *f;
 
@@ -35,7 +35,7 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_graphics0(void *state) {
+static int test_graphics0(void *state) {
 	enum parser_error r = parser_parse(state, "graphics:::red");
 	struct feature *f;
 
@@ -47,7 +47,7 @@ int test_graphics0(void *state) {
 	ok;
 }
 
-int test_mimic0(void *state) {
+static int test_mimic0(void *state) {
 	enum parser_error r = parser_parse(state, "mimic:marshmallow");
 	struct feature *f;
 
@@ -58,7 +58,7 @@ int test_mimic0(void *state) {
 	ok;
 }
 
-int test_priority0(void *state) {
+static int test_priority0(void *state) {
 	enum parser_error r = parser_parse(state, "priority:2");
 	struct feature *f;
 
@@ -69,7 +69,7 @@ int test_priority0(void *state) {
 	ok;
 }
 
-int test_flags0(void *state) {
+static int test_flags0(void *state) {
 	enum parser_error r = parser_parse(state, "flags:LOS | PERMANENT | DOWNSTAIR");
 	struct feature *f;
 
@@ -80,7 +80,7 @@ int test_flags0(void *state) {
 	ok;
 }
 
-int test_info0(void *state) {
+static int test_info0(void *state) {
 	enum parser_error r = parser_parse(state, "info:9:2");
 	struct feature *f;
 
@@ -92,7 +92,7 @@ int test_info0(void *state) {
 	ok;
 }
 
-int test_walk_msg0(void *state) {
+static int test_walk_msg0(void *state) {
 	enum parser_error r = parser_parse(state, "walk-msg:lookout ");
 	struct feature *f;
 
@@ -103,7 +103,7 @@ int test_walk_msg0(void *state) {
 	ok;
 }
 
-int test_run_msg0(void *state) {
+static int test_run_msg0(void *state) {
 	enum parser_error r = parser_parse(state, "run-msg:lookout! ");
 	struct feature *f;
 
@@ -114,7 +114,7 @@ int test_run_msg0(void *state) {
 	ok;
 }
 
-int test_hurt_msg0(void *state) {
+static int test_hurt_msg0(void *state) {
 	enum parser_error r = parser_parse(state, "hurt-msg:ow!");
 	struct feature *f;
 
@@ -125,7 +125,7 @@ int test_hurt_msg0(void *state) {
 	ok;
 }
 
-int test_die_msg0(void *state) {
+static int test_die_msg0(void *state) {
 	enum parser_error r = parser_parse(state, "die-msg:aargh");
 	struct feature *f;
 
@@ -136,7 +136,7 @@ int test_die_msg0(void *state) {
 	ok;
 }
 
-int test_resist_flag0(void *state) {
+static int test_resist_flag0(void *state) {
 	enum parser_error r = parser_parse(state, "resist-flag:IM_POIS");
 	struct feature *f;
 

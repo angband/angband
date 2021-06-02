@@ -39,7 +39,7 @@ const char *names[] = {
 
 const char **p[] = { names, names };
 
-int test_names(void *state) {
+static int test_names(void *state) {
 	struct artifact a;
 	char *n;
 	int i;

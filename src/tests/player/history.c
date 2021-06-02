@@ -55,7 +55,7 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-int test_0(void *state) {
+static int test_0(void *state) {
 	int i;
 	for (i = 0; i < 100; i++) {
 		char *h = get_history(&ca);

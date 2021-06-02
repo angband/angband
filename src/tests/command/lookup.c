@@ -28,7 +28,7 @@ int teardown_tests(void *state) {
 }
 
 /* Regression test for #1330 */
-int test_cmd_lookup_orig(void *state) {
+static int test_cmd_lookup_orig(void *state) {
 	require(cmd_lookup('Z', KEYMAP_MODE_ORIG) == CMD_NULL);
 	require(cmd_lookup('{', KEYMAP_MODE_ORIG) == CMD_INSCRIBE);
 	require(cmd_lookup('u', KEYMAP_MODE_ORIG) == CMD_USE_STAFF);
@@ -41,7 +41,7 @@ int test_cmd_lookup_orig(void *state) {
 }
 
 /* Introduced after commit 8871070 added modes to cmd_lookup() calls */
-int test_cmd_lookup_rogue(void *state) {
+static int test_cmd_lookup_rogue(void *state) {
 	require(cmd_lookup('{', KEYMAP_MODE_ROGUE) == CMD_INSCRIBE);
 	require(cmd_lookup('Z', KEYMAP_MODE_ROGUE) == CMD_USE_STAFF);
 	require(cmd_lookup(KTRL('T'), KEYMAP_MODE_ROGUE) == CMD_TUNNEL);

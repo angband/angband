@@ -19,7 +19,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_chart0(void *state) {
+static int test_chart0(void *state) {
 	enum parser_error r = parser_parse(state, "chart:1:3:5");
 	struct history_chart *c;
 	struct history_entry *e;
@@ -36,7 +36,7 @@ int test_chart0(void *state) {
 	ok;
 }
 
-int test_phrase0(void *state) {
+static int test_phrase0(void *state) {
 	enum parser_error r = parser_parse(state, "phrase:hello there");
 	struct history_chart *h;
 

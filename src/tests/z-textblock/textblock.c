@@ -12,7 +12,7 @@ int teardown_tests(void *state) {
 	ok;
 }
 
-int test_alloc(void *state) {
+static int test_alloc(void *state) {
 	textblock *tb = textblock_new();
 
 	require(tb);
@@ -22,7 +22,7 @@ int test_alloc(void *state) {
 	ok;
 }
 
-int test_append(void *state) {
+static int test_append(void *state) {
 	textblock *tb = textblock_new();
 
 	require(!wcscmp(textblock_text(tb), L""));
@@ -38,7 +38,7 @@ int test_append(void *state) {
 	ok;
 }
 
-int test_colour(void *state) {
+static int test_colour(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "two";
@@ -53,7 +53,7 @@ int test_colour(void *state) {
 	ok;
 }
 
-int test_length(void *state) {
+static int test_length(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "1234567";
@@ -81,7 +81,7 @@ int test_length(void *state) {
 	ok;
 }
 
-int test_append_textblock(void *state) {
+static int test_append_textblock(void *state) {
 	const byte attrs[] = { COLOUR_L_BLUE, COLOUR_L_BLUE, COLOUR_L_BLUE,
 		COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_L_GREEN };
 	textblock *tb1 = textblock_new();

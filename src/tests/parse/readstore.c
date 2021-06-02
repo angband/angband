@@ -28,7 +28,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_store0(void *state) {
+static int test_store0(void *state) {
 	enum parser_error r = parser_parse(state, "store:1:foobar");
 	struct store *s;
 
@@ -40,7 +40,7 @@ int test_store0(void *state) {
 	ok;
 }
 
-int test_slots0(void *state) {
+static int test_slots0(void *state) {
 	enum parser_error r = parser_parse(state, "slots:2:33");
 	struct store *s;
 
@@ -52,7 +52,7 @@ int test_slots0(void *state) {
 	ok;
 }
 
-int test_owner0(void *state) {
+static int test_owner0(void *state) {
 	enum parser_error r = parser_parse(state, "owner:5000:Foo");
 	struct store *s;
 

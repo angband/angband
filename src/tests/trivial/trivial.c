@@ -5,11 +5,11 @@
 NOSETUP
 NOTEARDOWN
 
-int test_empty(void *state) {
+static int test_empty(void *state) {
 	ok;
 }
 
-int test_require(void *state) {
+static int test_require(void *state) {
 	require(1);
 	ok;
 }

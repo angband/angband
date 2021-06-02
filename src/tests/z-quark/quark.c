@@ -13,7 +13,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_alloc(void *state) {
+static int test_alloc(void *state) {
 	quark_t q1 = quark_add("0-foo");
 	quark_t q2 = quark_add("0-bar");
 	quark_t q3 = quark_add("0-baz");
@@ -29,7 +29,7 @@ int test_alloc(void *state) {
 	ok;
 }
 
-int test_dedup(void *state) {
+static int test_dedup(void *state) {
 	quark_t q1 = quark_add("1-foo");
 	quark_t q2 = quark_add("1-foo");
 	quark_t q3 = quark_add("1-bar");
