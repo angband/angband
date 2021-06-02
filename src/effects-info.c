@@ -697,26 +697,6 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 }
 
 /**
- * Returns a pointer to the next effect in the effect stack, skipping over
- * all the sub-effects from random or select effects
- */
-struct effect *effect_next(struct effect *effect)
-{
-	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
-		struct effect *e = effect;
-		int num_subeffects = MAX(0,
-			dice_evaluate(effect->dice, 0, AVERAGE, NULL));
-		// Skip all the sub-effects, plus one to advance beyond current
-		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
-			e = e->next;
-		}
-		return e;
-	} else {
-		return effect->next;
-	}
-}
-
-/**
  * Checks if the effect deals damage, by checking the effect's info string.
  * Random or select effects are considered to deal damage if any sub-effect
  * deals damage.

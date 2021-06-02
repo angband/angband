@@ -5942,3 +5942,32 @@ void effect_simple(int index,
 	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0, NULL);
 	dice_free(effect.dice);
 }
+
+/**
+ * Returns a pointer to the next effect in the effect stack, skipping over
+ * all the sub-effects from random or select effects.
+ */
+struct effect *effect_next(struct effect *effect)
+{
+	return (struct effect*) effect_next_const(effect);
+}
+
+/**
+ * Returns a pointer to the next effect in the effect stack, skipping over
+ * all the sub-effects from random or select effects.  The effect is treated
+ * as read-only.
+ */
+const struct effect *effect_next_const(const struct effect *effect)
+{
+	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
+		const struct effect *e = effect;
+		int num_subeffects = MAX(0,
+			dice_evaluate(effect->dice, 0, AVERAGE, NULL));
+		/* Advance one and skip all of the sub-effects. */
+		for (int i = 0; e != NULL && i < num_subeffects + 1; i++) {
+			e = e->next;
+		}
+		return e;
+        }
+	return effect->next;
+}

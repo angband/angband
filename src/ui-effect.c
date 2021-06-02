@@ -15,6 +15,7 @@
  */
 
 #include "angband.h"
+#include "effects.h"
 #include "effects-info.h"
 #include "ui-effect.h"
 #include "ui-menu.h"

@@ -19,6 +19,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "effects.h"
 #include "effects-info.h"
 #include "game-input.h"
 #include "obj-tval.h"
