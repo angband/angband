@@ -21,6 +21,18 @@ int teardown_tests(void *state) {
 	for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
 		string_free((char *)c->title[i]);
 	}
+	while (c->start_items) {
+		struct start_item *si = c->start_items;
+
+		c->start_items = si->next;
+		mem_free(si->eopts);
+		mem_free(si);
+	}
+	/*
+	 * If tests are set up that lead to spell allocation, those will also
+	 * have to be freed here before releasing the books.
+	 */
+	mem_free(c->magic.books);
 	mem_free(c);
 	parser_destroy(state);
 	return 0;
@@ -218,9 +230,8 @@ int test_title0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_sval() requires z_info/k_info */
 int test_equip0(void *state) {
-	enum parser_error r = parser_parse(state, "E:magic book:2:2:5");
+	enum parser_error r = parser_parse(state, "equip:magic book:2:2:5:none");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -230,6 +241,7 @@ int test_equip0(void *state) {
 	eq(c->start_items[0].sval, 2);
 	eq(c->start_items[0].min, 2);
 	eq(c->start_items[0].max, 5);
+	eq(c->start_items[0].eopts, NULL);
 	ok;
 }
 
@@ -264,6 +276,7 @@ int test_magic0(void *state) {
 	require(c);
 	eq(c->magic.spell_first, 3);
 	eq(c->magic.spell_weight, 400);
+	noteq(c->magic.books, NULL);
 	ok;
 }
 
@@ -285,9 +298,9 @@ struct test tests[] = {
 	{ "min_weight0", test_min_weight0 },
 	{ "strength_multiplier0", test_strength_multiplier0 },
 	{ "title0", test_title0 },
-	/* { "equip0", test_equip0 }, */
+	{ "equip0", test_equip0 },
 	{ "flags0", test_flags0 },
 	{ "flags1", test_flags1 },
-	//{ "magic0", test_magic0 },
+	{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };
