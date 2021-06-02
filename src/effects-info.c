@@ -590,7 +590,7 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 			switch (e->subtype) {
 			case 0: /* INC_BY */
 				actstr = "feed";
-				actarg = "yourelf";
+				actarg = "yourself";
 				break;
 			case 1: /* DEC_BY */
 				actstr = "increase";
