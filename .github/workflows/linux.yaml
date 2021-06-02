@@ -108,17 +108,17 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc autoconf automake make libsqlite3-dev
+          sudo apt-get install gcc autoconf automake make libsqlite3-dev libsdl1.2-dev libsdl-mixer1.2-dev
 
       - name: Clone Project
         uses: actions/checkout@v2
 
-      # Build with some extra warnings.  Others that could be good additions
-      # are -Wwrite-strings, -Wshadow, and disabling how configure currently
-      # turns off -Wmissing-field-initializers, but, for now, those generate
-      # a lot of warnings to wade through.
+      # Build with some extra warnings.  Add some that are only supported in
+      # more recent versions of GCC that the configure script won't enable.
+      # Also turn on sound and the test front end so more of the basic
+      # infrastructure is compiled.
       - name: Build
         run: |
           ./autogen.sh
-          env CFLAGS="-Wvla -Wnested-externs -Wno-multichar -Wstrict-prototypes -Wlogical-op -Wbad-function-cast" ./configure --with-no-install --enable-stats
+          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer
           make

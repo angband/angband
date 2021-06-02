@@ -98,16 +98,25 @@ dnl needed because h-basic.h checks for this define for autoconf support.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
+AC_ARG_ENABLE(more-gcc-warnings,
+	[  --enable-more-gcc-warnings       enable more warnings if using GCC],
+	[ more_gcc_warnings=yes],
+	[ more_gcc_warnings=no])
+
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
-	AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
-	_gcc_cflags_save=$CFLAGS
-	CFLAGS="-Wno-missing-field-initializers"
-	AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],_gcc_wopt=yes,_gcc_wopt=no)
-	AC_MSG_RESULT($_gcc_wopt)
-	CFLAGS=$_gcc_cflags_save;
-	if test x"$_gcc_wopt" = xyes ; then
-		CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+	if test x"$more_gcc_warnings" = xyes ; then
+		CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings -Wbad-function-cast -Wnested-externs -Wshadow"
+	else
+		AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+		_gcc_cflags_save=$CFLAGS
+		CFLAGS="-Wno-missing-field-initializers"
+		AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],_gcc_wopt=yes,_gcc_wopt=no)
+		AC_MSG_RESULT($_gcc_wopt)
+		CFLAGS=$_gcc_cflags_save;
+		if test x"$_gcc_wopt" = xyes ; then
+			CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+		fi
 	fi
 fi
 
