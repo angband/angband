@@ -38,7 +38,7 @@ static void getmsg(game_event_type type, game_event_data *data, void *user) {
 	*error = true;
 }
 
-int test_prefs(void *state) {
+static int test_prefs(void *state) {
 	bool error = false;
 	graphics_mode *mode;
 
@@ -64,7 +64,7 @@ int test_prefs(void *state) {
 	ok;
 }
 
-int test_defaults(void *state) {
+static int test_defaults(void *state) {
 	size_t i;
 	struct monster_base *mb = lookup_monster_base("giant");
 	int tval = tval_find_idx("sword");

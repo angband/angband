@@ -22,7 +22,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:Carcharoth, the Jaws of Thirst");
 	struct monster_race *mr;
 
@@ -33,7 +33,7 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_base0(void *state) {
+static int test_base0(void *state) {
 	enum parser_error r;
 	struct monster_race *mr;
 
@@ -46,7 +46,7 @@ int test_base0(void *state) {
 	ok;
 }
 
-int test_color0(void *state) {
+static int test_color0(void *state) {
 	enum parser_error r = parser_parse(state, "color:v");
 	struct monster_race *mr;
 
@@ -57,7 +57,7 @@ int test_color0(void *state) {
 	ok;
 }
 
-int test_speed0(void *state) {
+static int test_speed0(void *state) {
 	enum parser_error r = parser_parse(state, "speed:7");
 	struct monster_race *mr;
 
@@ -68,7 +68,7 @@ int test_speed0(void *state) {
 	ok;
 }
 
-int test_hp0(void *state) {
+static int test_hp0(void *state) {
 	enum parser_error r = parser_parse(state, "hit-points:500");
 	struct monster_race *mr;
 
@@ -79,7 +79,7 @@ int test_hp0(void *state) {
 	ok;
 }
 
-int test_hearing0(void *state) {
+static int test_hearing0(void *state) {
 	enum parser_error r = parser_parse(state, "hearing:80");
 	struct monster_race *mr;
 
@@ -90,7 +90,7 @@ int test_hearing0(void *state) {
 	ok;
 }
 
-int test_smell0(void *state) {
+static int test_smell0(void *state) {
 	enum parser_error r = parser_parse(state, "smell:30");
 	struct monster_race *mr;
 
@@ -101,7 +101,7 @@ int test_smell0(void *state) {
 	ok;
 }
 
-int test_ac0(void *state) {
+static int test_ac0(void *state) {
 	enum parser_error r = parser_parse(state, "armor-class:22");
 	struct monster_race *mr;
 
@@ -112,7 +112,7 @@ int test_ac0(void *state) {
 	ok;
 }
 
-int test_sleep0(void *state) {
+static int test_sleep0(void *state) {
 	enum parser_error r = parser_parse(state, "sleepiness:3");
 	struct monster_race *mr;
 
@@ -123,7 +123,7 @@ int test_sleep0(void *state) {
 	ok;
 }
 
-int test_depth0(void *state) {
+static int test_depth0(void *state) {
 	enum parser_error r = parser_parse(state, "depth:42");
 	struct monster_race *mr;
 
@@ -134,7 +134,7 @@ int test_depth0(void *state) {
 	ok;
 }
 
-int test_rarity0(void *state) {
+static int test_rarity0(void *state) {
 	enum parser_error r = parser_parse(state, "rarity:11");
 	struct monster_race *mr;
 
@@ -145,7 +145,7 @@ int test_rarity0(void *state) {
 	ok;
 }
 
-int test_mexp0(void *state) {
+static int test_mexp0(void *state) {
 	enum parser_error r = parser_parse(state, "experience:4");
 	struct monster_race *mr;
 
@@ -156,6 +156,7 @@ int test_mexp0(void *state) {
 	ok;
 }
 
+/* Without initialization of the blow_methods array, this crashes so not run. */
 int test_blow0(void *state) {
 	enum parser_error r = parser_parse(state, "blow:CLAW:FIRE:9d12");
 	struct monster_race *mr;
@@ -170,6 +171,7 @@ int test_blow0(void *state) {
 	ok;
 }
 
+/* Without initialization of the blow_methods array, this crashes so not run. */
 int test_blow1(void *state) {
 	enum parser_error r = parser_parse(state, "blow:BITE:FIRE:6d8:0");
 	struct monster_race *mr;
@@ -184,7 +186,7 @@ int test_blow1(void *state) {
 	ok;
 }
 
-int test_flags0(void *state) {
+static int test_flags0(void *state) {
 	enum parser_error r = parser_parse(state, "flags:UNIQUE | MALE");
 	struct monster_race *mr;
 
@@ -195,7 +197,7 @@ int test_flags0(void *state) {
 	ok;
 }
 
-int test_desc0(void *state) {
+static int test_desc0(void *state) {
 	enum parser_error r = parser_parse(state, "desc:foo bar ");
 	enum parser_error s = parser_parse(state, "desc: baz");
 	struct monster_race *mr;
@@ -208,7 +210,7 @@ int test_desc0(void *state) {
 	ok;
 }
 
-int test_innate_freq0(void *state) {
+static int test_innate_freq0(void *state) {
 	enum parser_error r = parser_parse(state, "innate-freq:10");
 	struct monster_race *mr;
 
@@ -219,7 +221,7 @@ int test_innate_freq0(void *state) {
 	ok;
 }
 
-int test_spell_freq0(void *state) {
+static int test_spell_freq0(void *state) {
 	enum parser_error r = parser_parse(state, "spell-freq:4");
 	struct monster_race *mr;
 
@@ -230,7 +232,7 @@ int test_spell_freq0(void *state) {
 	ok;
 }
 
-int test_spells0(void *state) {
+static int test_spells0(void *state) {
 	enum parser_error r = parser_parse(state, "spells:BR_DARK | S_HOUND");
 	struct monster_race *mr;
 

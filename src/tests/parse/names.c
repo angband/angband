@@ -27,13 +27,13 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_section0(void *state) {
+static int test_section0(void *state) {
 	errr r = parser_parse(state, "section:1");
 	eq(r, 0);
 	ok;
 }
 
-int test_word0(void *state) {
+static int test_word0(void *state) {
 	errr r = parser_parse(state, "word:foo");
 	struct names_parse *s = parser_priv(state);
 	eq(r, 0);
@@ -47,13 +47,13 @@ int test_word0(void *state) {
 	ok;
 }
 
-int test_section1(void *state) {
+static int test_section1(void *state) {
 	errr r = parser_parse(state, "section:2");
 	eq(r, 0);
 	ok;
 }
 
-int test_word1(void *state) {
+static int test_word1(void *state) {
 	errr r = parser_parse(state, "word:baz");
 	struct names_parse *s = parser_priv(state);
 	eq(r, 0);

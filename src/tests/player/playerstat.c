@@ -31,7 +31,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_stat_inc(void *state) {
+static int test_stat_inc(void *state) {
 	struct player *p = state;
 	int v;
 
@@ -50,7 +50,7 @@ int test_stat_inc(void *state) {
 	ok;
 }
 
-int test_stat_dec(void *state) {
+static int test_stat_dec(void *state) {
 	struct player *p = state;
 	int v;
 

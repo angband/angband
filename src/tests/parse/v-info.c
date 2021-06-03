@@ -22,7 +22,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_name0(void *state) {
+static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:round");
 	struct vault *v;
 
@@ -33,7 +33,7 @@ int test_name0(void *state) {
 	ok;
 }
 
-int test_typ0(void *state) {
+static int test_typ0(void *state) {
 	enum parser_error r = parser_parse(state, "type:Lesser vault");
 	struct vault *v;
 
@@ -44,7 +44,7 @@ int test_typ0(void *state) {
 	ok;
 }
 
-int test_rat0(void *state) {
+static int test_rat0(void *state) {
 	enum parser_error r = parser_parse(state, "rating:5");
 	struct vault *v;
 
@@ -55,7 +55,7 @@ int test_rat0(void *state) {
 	ok;
 }
 
-int test_hgt0(void *state) {
+static int test_hgt0(void *state) {
 	enum parser_error r = parser_parse(state, "rows:12");
 	struct vault *v;
 
@@ -66,7 +66,7 @@ int test_hgt0(void *state) {
 	ok;
 }
 
-int test_wid0(void *state) {
+static int test_wid0(void *state) {
 	enum parser_error r = parser_parse(state, "columns:6");
 	struct vault *v;
 
@@ -77,7 +77,7 @@ int test_wid0(void *state) {
 	ok;
 }
 
-int test_min_lev0(void *state) {
+static int test_min_lev0(void *state) {
 	enum parser_error r = parser_parse(state, "min-depth:15");
 	struct vault *v;
 
@@ -88,7 +88,7 @@ int test_min_lev0(void *state) {
 	ok;
 }
 
-int test_max_lev0(void *state) {
+static int test_max_lev0(void *state) {
 	enum parser_error r = parser_parse(state, "max-depth:25");
 	struct vault *v;
 
@@ -99,7 +99,7 @@ int test_max_lev0(void *state) {
 	ok;
 }
 
-int test_d0(void *state) {
+static int test_d0(void *state) {
 	enum parser_error r0 = parser_parse(state, "D:  %%  ");
 	enum parser_error r1 = parser_parse(state, "D: %  % ");
 	struct vault *v;

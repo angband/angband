@@ -15,7 +15,7 @@ int setup_tests(void **state) {
 NOTEARDOWN
 
 /* Testing the linked list functions in obj-pile.c */
-int test_obj_piles(void *state) {
+static int test_obj_piles(void *state) {
 	struct object *pile = NULL;
 
 	struct object *o1 = object_new();

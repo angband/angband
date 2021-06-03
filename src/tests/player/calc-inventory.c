@@ -487,7 +487,7 @@ static int test_calc_inventory_oversubscribed_quiver(void *state) {
 			{ TV_SHOT, 1, 25, true, false },
 			{ TV_BOLT, 2, 12, true, false },
 			{ TV_SHOT, 3, 17, true, false },
-			{ -1, -1, -1 }
+			{ -1, -1, -1, false, false }
 		},
 		{
 			{ TV_SHOT, 2, 40 },
@@ -601,8 +601,8 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 static int test_calc_inventory_quiver_split_pile(void *state) {
 	struct simple_test_case this_test_case = {
 		{
-			{ TV_FLASK, 1, 10 },
-			{ -1, -1, -1 }
+			{ TV_FLASK, 1, 10, false, false },
+			{ -1, -1, -1, false, false }
 		},
 		{
 			{ TV_FLASK, 1, 2 },

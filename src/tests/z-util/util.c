@@ -11,7 +11,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_alloc(void *state) {
+static int test_alloc(void *state) {
 	char buffer[64];
 
 	/* Check it functions at all */
@@ -41,7 +41,7 @@ int test_alloc(void *state) {
 	ok;
 }
 
-int test_utf8_fskip(void *state) {
+static int test_utf8_fskip(void *state) {
 	/*
 	 * dollar sign (U+0024; 1 byte as UTF-8), cent sign (U+00A2; 2 bytes
 	 * as UTF-8)), euro sign (U+20AC; 3 bytes as UTF-8), gothic letter
@@ -83,7 +83,7 @@ int test_utf8_fskip(void *state) {
 	ok;
 }
 
-int test_utf8_rskip(void *state) {
+static int test_utf8_rskip(void *state) {
 	/*
 	 * dollar sign (U+0024; 1 byte as UTF-8), cent sign (U+00A2; 2 bytes
 	 * as UTF-8)), euro sign (U+20AC; 3 bytes as UTF-8), gothic letter
@@ -117,7 +117,7 @@ int test_utf8_rskip(void *state) {
 	ok;
 }
 
-int test_utf32_to_utf8(void *state) {
+static int test_utf32_to_utf8(void *state) {
 	/*
 	 * dollar sign (U+0024; 1 byte as UTF-8), cent sign (U+00A2; 2 bytes
 	 * as UTF-8)), euro sign (U+20AC; 3 bytes as UTF-8), gothic letter

@@ -6,7 +6,7 @@
 NOSETUP
 NOTEARDOWN
 
-int test_alloc(void *state)
+static int test_alloc(void *state)
 {
 	dice_t *new = dice_new();
 	require(new != NULL);
@@ -14,7 +14,7 @@ int test_alloc(void *state)
 	ok;
 }
 
-int test_parse_success(void *state)
+static int test_parse_success(void *state)
 {
 	dice_t *new = dice_new();
 
@@ -122,7 +122,7 @@ int test_parse_success(void *state)
 	ok;
 }
 
-int test_parse_failure(void *state)
+static int test_parse_failure(void *state)
 {
 	dice_t *new = dice_new();
 
@@ -160,12 +160,12 @@ int test_parse_failure(void *state)
 	ok;
 }
 
-s32b test_evaluate_base(void)
+static s32b test_evaluate_base(void)
 {
 	return 3;
 }
 
-int test_evaluate(void *state)
+static int test_evaluate(void *state)
 {
 	int value = 0;
 	expression_t *expression = expression_new();

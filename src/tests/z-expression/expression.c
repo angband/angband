@@ -6,7 +6,7 @@
 NOSETUP
 NOTEARDOWN
 
-int test_alloc(void *state)
+static int test_alloc(void *state)
 {
 	expression_t *new = expression_new();
 	expression_t *copy;
@@ -21,7 +21,7 @@ int test_alloc(void *state)
 	ok;
 }
 
-int test_parse_success(void *state)
+static int test_parse_success(void *state)
 {
 	int result = 0;
 	expression_t *new = expression_new()	;
@@ -74,7 +74,7 @@ int test_parse_success(void *state)
 	ok;
 }
 
-int test_parse_failure(void *state)
+static int test_parse_failure(void *state)
 {
 	int result = 0;
 	expression_t *new = expression_new();
@@ -126,7 +126,7 @@ static s32b base_value_2(void)
 	return 9;
 }
 
-int test_evaluate(void *state)
+static int test_evaluate(void *state)
 {
 	expression_t *new = expression_new();
 

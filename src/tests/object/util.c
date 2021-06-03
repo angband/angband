@@ -28,7 +28,7 @@ int teardown_tests(void *state) {
 }
 
 /* Regression test for #1661 */
-int test_obj_can_refill(void *state) {
+static int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
 
     /* Torches cannot be refilled */
@@ -64,7 +64,7 @@ int test_obj_can_refill(void *state) {
 }
 
 /* Test basic functionality of check_for_inscrip_with_int(). */
-int test_basic_check_for_inscrip_with_int(void *state) {
+static int test_basic_check_for_inscrip_with_int(void *state) {
     struct object obj;
     int dummy = 8974;
     int inarg;

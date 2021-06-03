@@ -10,7 +10,7 @@
 NOSETUP
 NOTEARDOWN
 
-int test_breakage_chance(void *state) {
+static int test_breakage_chance(void *state) {
 	struct object obj;
 	int c;
 

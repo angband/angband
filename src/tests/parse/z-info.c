@@ -18,20 +18,20 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_negative(void *state) {
+static int test_negative(void *state) {
 	errr r = parser_parse(state, "level-max:F:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
-int test_badmax(void *state) {
+static int test_badmax(void *state) {
 	errr r = parser_parse(state, "level-max:D:1");
 	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 
 #define TEST_MAX(l,u) \
-	int test_##l(void *s) { \
+	static int test_##l(void *s) { \
 		struct angband_constants *m = parser_priv(s); \
 		char buf[64]; \
 		errr r; \
@@ -45,7 +45,7 @@ int test_badmax(void *state) {
 TEST_MAX(level_monster_max, "monsters")
 
 #define TEST_MON(l,u) \
-	int test_##l(void *s) { \
+	static int test_##l(void *s) { \
 		struct angband_constants *m = parser_priv(s); \
 		char buf[64]; \
 		errr r; \

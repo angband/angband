@@ -43,7 +43,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_empty(void *state) {
+static int test_empty(void *state) {
 	const char *txt;
 	u16b n, mtype;
 	byte color;
@@ -73,7 +73,7 @@ int test_empty(void *state) {
 	ok;
 }
 
-int test_add(void *state) {
+static int test_add(void *state) {
 	const char *m1 = "msg1";
 	u16b t1 = MSG_GENERIC;
 	const char *m2 = "msg2";
@@ -201,7 +201,7 @@ int test_add(void *state) {
 	ok;
 }
 
-int test_fill(void *state) {
+static int test_fill(void *state) {
 	int i = 0;
 	const char *txt;
 	char buf[16];
@@ -249,7 +249,7 @@ int test_fill(void *state) {
 	ok;
 }
 
-int test_many_repeat(void *state)
+static int test_many_repeat(void *state)
 {
 	int i = 0;
 	const char *txt;
@@ -293,7 +293,7 @@ int test_many_repeat(void *state)
 	ok;
 }
 
-int test_color(void *state) {
+static int test_color(void *state) {
 	byte color;
 
 	messages_free();
@@ -325,7 +325,7 @@ int test_color(void *state) {
 	ok;
 }
 
-int test_msg(void *state) {
+static int test_msg(void *state) {
 	struct test_message_event_state *st = state;
 	const char expected1[] = "%   abcde   1  +2  3 4  ";
 	const char expected2[] = "ab      -7";
@@ -371,7 +371,7 @@ int test_msg(void *state) {
 	ok;
 }
 
-int test_sound(void *state) {
+static int test_sound(void *state) {
 	struct test_message_event_state *st = state;
 
 	reset_event_counters(st);
@@ -395,7 +395,7 @@ int test_sound(void *state) {
 	ok;
 }
 
-int test_bell(void *state) {
+static int test_bell(void *state) {
 	struct test_message_event_state *st = state;
 	const char expected1[] = "msg1";
 	const char expected2[] = "msg2";
@@ -447,7 +447,7 @@ int test_bell(void *state) {
 	ok;
 }
 
-int test_msgt(void *state)
+static int test_msgt(void *state)
 {
 	struct test_message_event_state *st = state;
 	const char expected1[] = "msg1";
@@ -497,7 +497,7 @@ int test_msgt(void *state)
 	ok;
 }
 
-int test_lookup(void *state)
+static int test_lookup(void *state)
 {
 	char buffer[16];
 	int i, j;
@@ -537,7 +537,7 @@ int test_lookup(void *state)
 	ok;
 }
 
-int test_sound_lookup(void *state)
+static int test_sound_lookup(void *state)
 {
 	int i;
 

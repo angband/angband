@@ -21,14 +21,14 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_kind0(void *state) {
+static int test_kind0(void *state) {
 	enum parser_error r = parser_parse(state, "kind:light:&");
 
 	eq(r, PARSE_ERROR_NONE);
 	ok;
 }
 
-int test_flavor0(void *state) {
+static int test_flavor0(void *state) {
 	enum parser_error r = parser_parse(state, "flavor:2:blue:Fishy");
 	struct flavor *f;
 
