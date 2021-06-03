@@ -655,7 +655,7 @@ static int test_iterate1(void *state)
 			}
 			ai[naicurr] = e;
 			++naicurr;
-			e = effect_next(e);
+			e = effect_next(e, AVERAGE);
 		}
 		free_effect(ec);
 	}

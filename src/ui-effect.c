@@ -15,7 +15,6 @@
  */
 
 #include "angband.h"
-#include "effects.h"
 #include "effects-info.h"
 #include "ui-effect.h"
 #include "ui-menu.h"
@@ -76,7 +75,18 @@ static struct menu *effect_menu_new(struct effect *effect, int count,
 		ms[ms_count] = string_make(buf);
 		width = MAX(width, (int)MIN(len + 3, (size_t)(Term->wid)));
 		++ms_count;
-		effect = effect_next(effect);
+		/*
+		 * For consistency with the current behavior of effect_do(),
+		 * any nested random or selection effects within this selection
+		 * effect have no special meaning - they are simply a no-op
+		 * with no subeffects.  If that changes, would need to account
+		 * for that when stepping forward here.  Would also need to
+		 * record the offset within the effect list for each menu entry,
+		 * since if those nested container effects have random member
+		 * counts, a second pass through to step to the selection
+		 * could get different values for those counts.
+		 */
+		effect = effect->next;
 	}
 	/* Set the sentinel element. */
 	ms[ms_count] = NULL;
@@ -157,16 +167,6 @@ int textui_get_effect_from_list(const char *prompt, struct effect *effect,
 {
 	struct menu *m;
 	int choice;
-
-	if (count == -1) {
-		struct effect *cursor = effect;
-
-		count = 0;
-		while (cursor) {
-			++count;
-			cursor = effect_next(cursor);
-		}
-	}
 
 	m = effect_menu_new(effect, count, allow_random);
 	if (m) {

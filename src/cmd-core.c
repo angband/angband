@@ -20,7 +20,6 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cmd-core.h"
-#include "effects.h"
 #include "game-input.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
@@ -589,8 +588,7 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
  * \param prompt Is the text for the prompt displayed when querying the user.
  * May be NULL to use a default prompt.
  * \param effect points to the first effect in the linked list of effects.
- * \param count is the number of effects from which to choose.  If count is -1,
- * all the effects in the list will be used.
+ * \param count is the number of effects from which to choose.
  * \param allow_random when true, present the user an additional option which
  * will choose one of the effects at random; when false, only present the
  * options that correspond to the effects in the list.
@@ -602,16 +600,6 @@ int cmd_get_effect_from_list(struct command *cmd, const char *arg, int *choice,
 	bool allow_random)
 {
 	int selection;
-
-	if (count == -1) {
-		struct effect *cursor = effect;
-
-		count = 0;
-		while (cursor) {
-			++count;
-			cursor = effect_next(cursor);
-		}
-	}
 
 	if (cmd_get_arg_choice(cmd, arg, &selection) != CMD_OK ||
 			((selection != -2 || !allow_random) &&

@@ -209,8 +209,7 @@ bool get_curse(int *choice, struct object *obj, char *dice_string)
  * \param prompt is the prompt to present to the user.  May be NULL to use
  * a default prompt.
  * \param effect is the pointer to the first effect in the linked list.
- * \param count is the number of effects in the list.  If count is -1, use
- * all of the effects in the list.
+ * \param count is the number of effects in the list.
  * \param allow_random if true, present an additional option which will
  * select a random effect from the list.  If false, only present the options
  * corresponding to the effects in the list.

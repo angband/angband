@@ -149,7 +149,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 
 		/* To summarize average damage, count the damaging effects */
 		int num_damaging = 0;
-		for (struct effect *e = spell->effect; e != NULL; e = effect_next(e)) {
+		for (struct effect *e = spell->effect; e != NULL; e = effect_next(e, AVERAGE)) {
 			if (effect_damages(e)) {
 				num_damaging++;
 			}
@@ -160,7 +160,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 			&& !(player->spell_flags[spell_index] & PY_SPELL_FORGOTTEN)) {
 			text_out("  Inflicts an average of");
 			int i = 0;
-			for (struct effect *e = spell->effect; e != NULL; e = effect_next(e)) {
+			for (struct effect *e = spell->effect; e != NULL; e = effect_next(e, AVERAGE)) {
 				if (effect_damages(e)) {
 					if (num_damaging > 2 && i > 0) {
 						text_out(",");

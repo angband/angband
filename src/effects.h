@@ -23,6 +23,7 @@
 #include "object.h"
 #include "player-attack.h"
 #include "cmds.h"
+#include "z-rand.h"
 
 
 /* Types of effect */
@@ -62,8 +63,8 @@ void effect_simple(int index,
 	int y,
 	int x,
 	bool *ident);
-struct effect *effect_next(struct effect *effect);
-const struct effect *effect_next_const(const struct effect *effect);
+struct effect *effect_next(struct effect *effect, aspect asp);
+const struct effect *effect_next_const(const struct effect *effect, aspect asp);
 int recharge_failure_chance(const struct object *obj, int strength);
 
 #endif /* INCLUDED_EFFECTS_H */
