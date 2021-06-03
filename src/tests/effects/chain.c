@@ -30,6 +30,10 @@ struct simple_effect {
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
+#ifdef UNIX
+	/* Necessary for creating the randart file. */
+	create_needed_dirs();
+#endif
 	/* Set up the player so there's a target available for the effects. */
 	if (!player_make_simple(NULL, NULL, "Tester")) {
 		cleanup_angband();
