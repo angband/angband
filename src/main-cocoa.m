@@ -1107,7 +1107,7 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     load_prefs();
     
 	/* Load possible graphics modes */
-	init_graphics_modes("graphics.txt");
+	init_graphics_modes();
     
     /* load sounds */
     load_sounds();
