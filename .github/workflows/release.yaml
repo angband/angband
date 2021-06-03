@@ -2,7 +2,7 @@ name: create-github-release
 
 on:
   push:
-    branches: [ master ]
+    branches: [ 'master', 'macos-pre-4-2-1' ]
 
 env:
     # Used as the name when uploading or downloading the artifact for passing
