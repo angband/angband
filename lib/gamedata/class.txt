@@ -1030,15 +1030,12 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 4 + 2
 desc:Targets the nearest undead monster and damages it to gain player mana.
 
-spell:Miasma:10:4:40:5
-effect:SPOT:CHAOS:4
+spell:Crush:10:6:40:5
+effect:PROJECT_LOS:MON_CRUSH
 dice:$B
-expr:B:PLAYER_LEVEL:* 3
-#effect:TIMED_INC:IMAGE
-#dice:$B
-#expr:B:PLAYER_LEVEL:/ 4
-desc:Produces a cloud of hallucinogenic gas affecting the player and monsters
-desc: within radius 4.
+expr:B:PLAYER_LEVEL:* 4
+desc:Instantly kill any monster in line-of-sight with less than four times the
+desc: player's level in hitpoints.  Other monsters are unharmed.
 
 spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
@@ -1168,12 +1165,12 @@ effect:RESTORE_MANA
 dice:50
 desc:Exchanges 50 hitpoints for 50 mana.
 
-spell:Crush:32:30:60:130
-effect:PROJECT_LOS:MON_CRUSH
+spell:Zone of Unmagic:32:16:60:110
+effect:SPOT:DISEN:4
 dice:$B
-expr:B:PLAYER_LEVEL:* 4
-desc:Instantly kill any monster in line-of-sight with less than four times the
-desc: player's level in hitpoints.  Other monsters are unharmed.
+expr:B:PLAYER_LEVEL:* 3
+desc:Produces a zone of diesenchantment affecting the player and monsters
+desc: within radius 4.
 
 spell:Vampire Form:37:20:60:140
 effect:SHAPECHANGE:vampire
@@ -1201,6 +1198,7 @@ spell:Command:45:40:60:250
 effect:COMMAND
 dice:5+1d10
 desc:Allows you to take control of a monster, and move it instead of yourself.
+desc:  Possible actions are move, stand still, 'd'rop, 'm'agic, or 'r'elease.
 
 ############### PALADIN ###############
 name:Paladin

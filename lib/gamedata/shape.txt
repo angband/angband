@@ -135,7 +135,7 @@ blow:tear
 name:vampire
 combat:3:3:-5
 obj-flags:SEE_INVIS | HOLD_LIFE
-values:LIGHT[-1] | STEALTH[3] | INFRA[3]
+values:LIGHT[-1] | STEALTH[5] | INFRA[5] | SPEED[5]
 effect:DAMAGE
 dice:$B
 expr:B:PLAYER_HP:/ 4
