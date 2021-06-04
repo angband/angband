@@ -4835,6 +4835,7 @@ static bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 
 			msg("You feel your head clear.");
 			used = true;
+			player_inc_timed(player, TMD_STUN, randint1(2), true, true);
 
 			player->upkeep->redraw |= (PR_MANA);
 		} else {
