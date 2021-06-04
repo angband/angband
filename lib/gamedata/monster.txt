@@ -10356,7 +10356,7 @@ blow:BITE:CONFUSE:2d6
 blow:BITE:EXP_10:2d6
 flags:DROP_4
 flags:OPEN_DOOR | MOVE_BODY
-flags:IM_FIRE
+flags:IM_FIRE | IM_POIS | IM_ACID
 innate-freq:7
 spell-freq:5
 spells:SCARE
@@ -11895,7 +11895,7 @@ blow:BITE:HURT:10d6
 flags:SMART | POWERFUL | REGENERATE
 flags:DROP_3
 flags:OPEN_DOOR | KILL_BODY
-flags:IM_FIRE | IM_POIS | IM_ACID | NO_CONF | NO_SLEEP | NO_HOLD
+flags:IM_FIRE | IM_POIS | IM_ACID | IM_NETHER | NO_CONF | NO_SLEEP | NO_HOLD
 innate-freq:4
 spell-freq:9
 spells:SCARE
@@ -12128,7 +12128,7 @@ blow:ENGULF:FIRE:5d5
 blow:ENGULF:ACID:5d5
 blow:ENGULF:COLD:5d5
 flags:RAND_25
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | IM_NETHER
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_NEXUS | IM_NETHER
 flags:IM_PLASMA | NO_SLOW | NO_STUN
 flags:ATTR_MULTI
 innate-freq:4
@@ -12454,7 +12454,7 @@ blow:ENGULF:ACID:6d10
 blow:ENGULF:ACID:6d10
 flags:COLD_BLOOD | POWERFUL
 flags:BASH_DOOR | KILL_BODY | KILL_ITEM
-flags:IM_ACID | IM_WATER
+flags:IM_ACID | IM_WATER | IM_COLD
 innate-freq:5
 spell-freq:5
 spells:BA_WATE | BO_WATE
@@ -12789,7 +12789,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:INVISIBLE
 flags:PASS_WALL
-flags:NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER
+flags:NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER | IM_DISEN
 flags:FORCE_SLEEP
 innate-freq:5
 spells:BR_NETH | BR_DISE | BR_TIME
@@ -13144,7 +13144,7 @@ blow:HIT:HURT:10d10
 flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD
 flags:MOVE_BODY
-flags:IM_ACID | IM_ELEC | IM_WATER
+flags:IM_ACID | IM_ELEC | IM_WATER | IM_DISEN
 innate-freq:4
 spell-freq:2
 spells:BLIND | TELE_TO | WHIP
@@ -14627,7 +14627,7 @@ blow:CLAW:PARALYZE:6d8
 flags:UNIQUE | MALE | EVIL | REGENERATE
 flags:FORCE_SLEEP | FORCE_DEPTH
 flags:SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_POIS | IM_ELEC | IM_FIRE | IM_COLD
+flags:IM_POIS | IM_ELEC | IM_FIRE | IM_COLD | IM_NETHER
 flags:NO_CONF | NO_SLEEP | NO_FEAR
 innate-freq:3
 spell-freq:3
