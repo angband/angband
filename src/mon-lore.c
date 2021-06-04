@@ -495,8 +495,8 @@ bool lore_is_fully_known(const struct monster_race *race)
  * exactly how much treasure a monster can drop from observing only
  * a single example of a drop.  This method actually observes how much
  * gold and items are dropped, and remembers that information to be
- * described later by the monster recall code.  The current recall code,
- * however, makes no use of drop_item and drop_gold.
+ * described later by the monster recall code.  It gives the player a chance
+ * to learn if a monster drops only objects or only gold.
  */
 void lore_treasure(struct monster *mon, int num_item, int num_gold)
 {
@@ -506,18 +506,29 @@ void lore_treasure(struct monster *mon, int num_item, int num_gold)
 	assert(num_gold >= 0);
 
 	/* Note the number of things dropped */
-	if (num_item > lore->drop_item)
+	if (num_item > lore->drop_item) {
 		lore->drop_item = num_item;
-	if (num_gold > lore->drop_gold)
+	}
+	if (num_gold > lore->drop_gold) {
 		lore->drop_gold = num_gold;
+	}
 
 	/* Learn about drop quality */
 	rf_on(lore->flags, RF_DROP_GOOD);
 	rf_on(lore->flags, RF_DROP_GREAT);
 
+	/* Have a chance to learn ONLY_ITEM and ONLY_GOLD */
+	if (num_item && (lore->drop_gold == 0) && one_in_(4)) {
+		rf_on(lore->flags, RF_ONLY_ITEM);
+	}
+	if (num_gold && (lore->drop_item == 0) && one_in_(4)) {
+		rf_on(lore->flags, RF_ONLY_GOLD);
+	}
+
 	/* Update monster recall window */
-	if (player->upkeep->monster_race == mon->race)
+	if (player->upkeep->monster_race == mon->race) {
 		player->upkeep->redraw |= (PR_MONSTER);
+	}
 }
 
 /**
