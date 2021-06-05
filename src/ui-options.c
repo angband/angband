@@ -1464,7 +1464,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 /**
  * Display quality ignore menu.
  */
-static void quality_menu(void *unused, const char *also_unused)
+static void quality_menu(const char *unused, int also_unused)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, quality_validity, quality_display,
@@ -1743,7 +1743,7 @@ static struct
 {
 	char tag;
 	const char *name;
-	void (*action)(); /* this is a nasty hack */
+	void (*action)(const char*, int);
 } extra_item_options[] = {
 	{ 'Q', "Quality ignoring options", quality_menu },
 	{ 'E', "Ego ignoring options", ego_menu},
@@ -1819,7 +1819,7 @@ static bool handle_options_item(struct menu *menu, const ui_event *event,
 		} else {
 			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
 			assert((size_t) oid < N_ELEMENTS(extra_item_options));
-			extra_item_options[oid].action();
+			extra_item_options[oid].action(NULL, 0);
 		}
 
 		return true;
