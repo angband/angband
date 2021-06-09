@@ -71,7 +71,12 @@
 # 'type' is for the base type of item, from object_base.txt.
 
 # 'level' defines how "advanced" the object is, when determining how easy it
-# is to use a wand, staff or rod.
+# is to use a wand, staff or rod.  In a similar vein, it affects how likely
+# a wand or staff can be recharged without backfiring.  If an object is the
+# base kind for an artifact, an extra out-of-depth check will be imposed when
+# attempting to generate an artifact whose base kind has a level greater than
+# the level assumed for the object generation.  For a chest, the level affects
+# the types of traps the chest may have.
 
 # 'weight' is in tenth-pounds.
 
