@@ -424,7 +424,18 @@ static bool store_can_carry(struct store *store, struct object_kind *kind) {
 	return store_is_staple(store, kind);
 }
 
-
+/**
+ * Check if an object is such that selling it should reduce the stock.
+ */
+static bool store_sale_should_reduce_stock(struct store *store,
+		struct object *obj)
+{
+	if (obj->artifact || obj->ego) return true;
+	if (tval_is_weapon(obj) && (obj->to_h || obj->to_d))
+		return true;
+	if (tval_is_armor(obj) && obj->to_a) return true;
+	return !store_is_staple(store, obj->kind);
+}
 
 
 /**
@@ -1007,9 +1018,11 @@ static void store_delete(struct store *s, struct object *obj, int amt)
 
 
 /**
- * Find a given object kind in the store.
+ * Find a given object kind in the store.  If fexclude is not NULL, exclude
+ * any object, o, for which (*fexclude)(s, o) is true.
  */
-static struct object *store_find_kind(struct store *s, struct object_kind *k) {
+static struct object *store_find_kind(struct store *s, struct object_kind *k,
+		bool (*fexclude)(struct store *, struct object *)) {
 	struct object *obj;
 
 	assert(s);
@@ -1017,8 +1030,8 @@ static struct object *store_find_kind(struct store *s, struct object_kind *k) {
 
 	/* Check if it's already in stock */
 	for (obj = s->stock; obj; obj = obj->next) {
-		if (obj->kind == k && !obj->ego)
-			return obj;
+		if (obj->kind == k && (fexclude == NULL ||
+			!((*fexclude)(s, obj)))) return obj;
 	}
 
 	return NULL;
@@ -1354,7 +1367,8 @@ static void store_maint(struct store *s)
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
 			struct object_kind *kind = s->always_table[i];
-			struct object *obj = store_find_kind(s, kind);
+			struct object *obj = store_find_kind(s, kind,
+				store_sale_should_reduce_stock);
 
 			/* Create the item if it doesn't exist */
 			if (!obj)
@@ -1716,8 +1730,9 @@ void do_cmd_buy(struct command *cmd)
 	/* Handle stuff */
 	handle_stuff(player);
 
-	/* Remove the bought objects from the store if it's not a staple */
-	if (!store_is_staple(store, obj->kind)) {
+	/* Remove the bought objects from the store if it's not a readily
+	 * replaced staple item */
+	if (store_sale_should_reduce_stock(store, obj)) {
 		/* Reduce or remove the item */
 		store_delete(store, obj, amt);
 
