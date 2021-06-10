@@ -1282,6 +1282,12 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Disable repeat command, so we don't try to be born again */
 	cmd_disable_repeat();
 
+	/* No longer need the cached history. */
+	string_free(prev.history);
+	prev.history = NULL;
+	string_free(quickstart_prev.history);
+	quickstart_prev.history = NULL;
+
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
 }
