@@ -978,7 +978,7 @@ bool target_set_interactive(int mode, int x, int y)
 	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the target set */
-	targets = target_get_monsters(mode, NULL);
+	targets = target_get_monsters(mode, NULL, true);
 
 	/* Start near the player */
 	m = 0;
@@ -1211,7 +1211,7 @@ bool target_set_interactive(int mode, int x, int y)
 					if (change_panel(d)) {
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_get_monsters(mode, NULL);
+						targets = target_get_monsters(mode, NULL, true);
 
 						/* Find a new monster */
 						i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
@@ -1220,7 +1220,7 @@ bool target_set_interactive(int mode, int x, int y)
 						if ((i < 0) && modify_panel(Term, old_wy, old_wx)) {
 							/* Recalculate interesting grids */
 							point_set_dispose(targets);
-							targets = target_get_monsters(mode, NULL);
+							targets = target_get_monsters(mode, NULL, true);
 						}
 
 						/* Handle stuff */
@@ -1323,7 +1323,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_get_monsters(mode, NULL);
+						targets = target_get_monsters(mode, NULL, true);
 					}
 
 					if (square_monster(cave, loc(x, y)) ||
@@ -1469,7 +1469,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					/* Recalculate interesting grids */
 					point_set_dispose(targets);
-					targets = target_get_monsters(mode, NULL);
+					targets = target_get_monsters(mode, NULL, true);
 				}
 			}
 		}
