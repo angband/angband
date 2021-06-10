@@ -56,7 +56,8 @@ void coords_desc(char *buf, int size, int y, int x);
 void target_get(struct loc *grid);
 struct monster *target_get_monster(void);
 bool target_sighted(void);
-struct point_set *target_get_monsters(int mode, monster_predicate pred);
+struct point_set *target_get_monsters(int mode, monster_predicate pred,
+	bool restrict_to_panel);
 bool target_set_closest(int mode, monster_predicate pred);
 
 #endif /* !TARGET_H */
