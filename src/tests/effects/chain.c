@@ -12,6 +12,7 @@
 #include "effects-info.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-make.h"
 #include "player.h"
 #include "player-birth.h"
 #include "player-calcs.h"
@@ -39,6 +40,7 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	wipe_mon_list(cave, player);
 	cleanup_angband();
 	return 0;
 }
