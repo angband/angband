@@ -193,8 +193,8 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	player->race     = saved->race;
 	player->class    = saved->class;
 	player->age      = saved->age;
-	player->wt       = player->wt_birth = player->wt;
-	player->ht       = player->ht_birth = player->ht;
+	player->wt       = player->wt_birth = saved->wt;
+	player->ht       = player->ht_birth = saved->ht;
 	player->au_birth = saved->au;
 	player->au       = z_info->start_gold;
 
