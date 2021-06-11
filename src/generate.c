@@ -999,6 +999,38 @@ static void cave_clear(struct chunk *c, struct player *p)
 
 
 /**
+ * Release the dynamically allocated resources in a dun_data structure.
+ */
+static void cleanup_dun_data(struct dun_data *dd)
+{
+	int i;
+	struct connector *join = dun->join;
+
+	while (join) {
+		struct connector *jtgt = join;
+
+		join = join->next;
+		mem_free(jtgt);
+	}
+	mem_free(dun->cent);
+	mem_free(dun->ent_n);
+	for (i = 0; i < z_info->level_room_max; ++i) {
+		mem_free(dun->ent[i]);
+	}
+	mem_free(dun->ent);
+	if (dun->ent2room) {
+		for (i = 0; dun->ent2room[i]; ++i) {
+			mem_free(dun->ent2room[i]);
+		}
+		mem_free(dun->ent2room);
+	}
+	mem_free(dun->door);
+	mem_free(dun->wall);
+	mem_free(dun->tunn);
+}
+
+
+/**
  * Generate a random level.
  *
  * Confusingly, this function also generates the town level (level 0).
@@ -1063,22 +1095,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
-			mem_free(dun->join);
-			mem_free(dun->cent);
-			mem_free(dun->ent_n);
-			for (i = 0; i < z_info->level_room_max; ++i) {
-				mem_free(dun->ent[i]);
-			}
-			mem_free(dun->ent);
-			if (dun->ent2room) {
-				for (i = 0; dun->ent2room[i]; ++i) {
-					mem_free(dun->ent2room[i]);
-				}
-				mem_free(dun->ent2room);
-			}
-			mem_free(dun->door);
-			mem_free(dun->wall);
-			mem_free(dun->tunn);
+			cleanup_dun_data(dun);
 			continue;
 		}
 
@@ -1138,22 +1155,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			cave_clear(chunk, p);
 		}
 
-		mem_free(dun->join);
-		mem_free(dun->cent);
-		mem_free(dun->ent_n);
-		for (i = 0; i < z_info->level_room_max; ++i) {
-			mem_free(dun->ent[i]);
-		}
-		mem_free(dun->ent);
-		if (dun->ent2room) {
-			for (i = 0; dun->ent2room[i]; ++i) {
-				mem_free(dun->ent2room[i]);
-			}
-			mem_free(dun->ent2room);
-		}
-		mem_free(dun->door);
-		mem_free(dun->wall);
-		mem_free(dun->tunn);
+		cleanup_dun_data(dun);
 	}
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
