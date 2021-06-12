@@ -2984,10 +2984,10 @@ bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
 	int denominator = 3;
 	
 	/*
-	 * Only try to build a GV as the first room.  If not finding space,
-	 * cent_n has already been incremented.
+	 * Only try to build a GV as the first non-staircase room.  If not
+	 * finding space, cent_n has already been incremented.
 	 */
-	if (dun->cent_n > ((centre.y >= c->height ||
+	if (dun->cent_n - dun->nstair_room > ((centre.y >= c->height ||
 		centre.x >= c->width) ? 0 : 1)) return false;
 
 	/* Level 90+ has a 1/3 chance, level 80-89 has 2/9, ... */
@@ -3413,10 +3413,11 @@ bool build_huge(struct chunk *c, struct loc centre, int rating)
 	int width = 45 + randint0(50);
 
 	/*
-	 * Only try to build a huge room as the first room.  If not finding
-	 * space, cent_n has already been increment.
+	 * Only try to build a huge room as the first non-staircase room.  If
+	 * not finding space, cent_n has already been increment.
 	 */
-	if (dun->cent_n > ((finding_space) ? 0 : 1)) return false;
+	if (dun->cent_n - dun->nstair_room > ((finding_space) ? 0 : 1))
+		return false;
 
 	/* Flat 5% chance */
 	if (!one_in_(20)) return false;

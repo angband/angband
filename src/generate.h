@@ -177,6 +177,9 @@ struct dun_data {
 
     /*!< The connection information to use for the next staircase room */
     struct connector *curr_join;
+
+    /*!< The number of staircase rooms */
+    int nstair_room;
 };
 
 

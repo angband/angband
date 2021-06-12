@@ -926,6 +926,7 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 				c->width), c);
 			quit("Failed to place stairs");
 		}
+		++dun->nstair_room;
 	}
 }
 

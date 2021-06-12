@@ -1144,6 +1144,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->one_off_above = NULL;
 		dun->one_off_below = NULL;
 		dun->curr_join = NULL;
+		dun->nstair_room = 0;
 
 		/* Get connector info for persistent levels */
 		if (OPT(p, birth_levels_persist)) {
