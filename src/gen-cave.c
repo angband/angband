@@ -898,6 +898,72 @@ static void do_traditional_tunneling(struct chunk *c)
 
 
 /**
+ * Build the staircase rooms for a persistent level.
+ */
+static void build_staircase_rooms(struct chunk *c, const char *label)
+{
+	int num_rooms = dun->profile->n_room_profiles;
+	struct room_profile profile;
+	struct connector *join;
+	int i;
+
+	for (i = 0; i < num_rooms; i++) {
+		profile = dun->profile->room_profiles[i];
+		if (streq(profile.name, "staircase room")) {
+			break;
+		}
+	}
+	assert(i < num_rooms);
+	for (join = dun->join; join; join = join->next) {
+		dun->curr_join = join;
+		if (!room_build(c, (join->grid.y - 1) / dun->block_hgt,
+				(join->grid.x - 1) / dun->block_wid,
+				profile, true)) {
+			dump_level_simple(NULL, format("%s:  Failed to Build "
+				"Staircase Room at Row=%d Column=%d in a "
+				"Cave with %d Rows and %d Columns", label,
+				join->grid.y, join->grid.x, c->height,
+				c->width), c);
+			quit("Failed to place stairs");
+		}
+	}
+}
+
+
+/**
+ * Add stairs to a level, taking into account the special treatment needed
+ * for persistent levels.
+ */
+static void handle_level_stairs(struct chunk *c, struct player *p,
+		int down_count, int up_count)
+{
+	bool persistent;
+	int minsep;
+
+	if (OPT(p, birth_levels_persist)) {
+		persistent = true;
+		/*
+		 * For persistent levels, require that the stairs be at least
+		 * three grids (two for surrounding walls; one for a buffer
+		 * between the walls) apart so the staircase rooms in the
+		 * connecting level won't overlap.
+		 */
+		minsep = 3;
+	} else {
+		persistent = false;
+		/* Don't contrain the separation between the staircases. */
+		minsep = 0;
+	}
+	if (!persistent || !chunk_find_adjacent(p, false)) {
+		alloc_stairs(c, FEAT_MORE, down_count, minsep, false);
+	}
+	if (!persistent || !chunk_find_adjacent(p, true)) {
+		alloc_stairs(c, FEAT_LESS, up_count, minsep, false);
+	}
+}
+
+
+/**
  * Generate a new dungeon level.
  * \param p is the player 
  * \return a pointer to the generated chunk
@@ -910,9 +976,6 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 
 	bool **blocks_tried;
 	struct chunk *c;
-
-	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
 
 	/* This code currently does nothing - see comments below */
 	i = randint1(10) + p->depth / 24;
@@ -955,6 +1018,11 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	dun->pit_num = 0;
 	dun->cent_n = 0;
 	reset_entrance_data(c);
+
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		build_staircase_rooms(c, "Classic Generation");
+	}
 
 	/* Build some rooms.  Note that the theoretical maximum number of rooms
 	 * in this profile is currently 36, so built never reaches num_rooms,
@@ -1041,11 +1109,8 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 0, false);
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 0, false);
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2375,7 +2440,6 @@ static struct chunk *modified_chunk(int depth, int height, int width)
 	int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
 	int dun_unusual = dun->profile->dun_unusual;
-	struct connector *join = dun->join;
 
 	/* Make the cave */
 	struct chunk *c = cave_new(height, width);
@@ -2409,22 +2473,7 @@ static struct chunk *modified_chunk(int depth, int height, int width)
 
 	/* Build the special staircase rooms */
 	if (OPT(player, birth_levels_persist)) {
-		struct room_profile profile;
-		for (i = 0; i < num_rooms; i++) {
-			profile = dun->profile->room_profiles[i];
-			if (streq(profile.name, "staircase room")) {
-				break;
-			}
-		}
-		while (join) {
-			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
-							true)) {
-				dump_level_simple(NULL, "Modified Generation:"
-					"  Failed to Build Staircase Room", c);
-				quit("Failed to place stairs");
-			}
-			join = join->next;
-		}
+		build_staircase_rooms(c, "Modified Generation");
 	}
 
 	/* Build rooms until we have enough floor grids and at least two rooms */
@@ -2536,23 +2585,8 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, false)) {
-		/*
-		 * For persistent levels, require that the stairs be at least
-		 * three grids (two for surrounding walls; one for a buffer
-		 * between the walls) apart so the staircase rooms in the
-		 * connecting level won't overlap.
-		 */
-		alloc_stairs(c, FEAT_MORE, rand_range(3, 4),
-			OPT(p, birth_levels_persist) ? 3 : 0, false);
-	}
-
-	/* Place 1 or 2 up stairs near some walls */
-	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, true)) {
-		alloc_stairs(c, FEAT_LESS, rand_range(1, 2),
-			OPT(p, birth_levels_persist) ? 3 : 0, false);
-	}
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2635,6 +2669,11 @@ static struct chunk *moria_chunk(int depth, int height, int width)
 	dun->pit_num = 0;
 	dun->cent_n = 0;
 	reset_entrance_data(c);
+
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		build_staircase_rooms(c, "Moria Generation");
+	}
 
 	/* Build rooms until we have enough floor grids and at least two rooms
 	 * (the latter is to make it easier to satisfy the constraints for
@@ -2740,11 +2779,8 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 0, false);
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 0, false);
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);

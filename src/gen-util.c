@@ -157,7 +157,7 @@ void shuffle(int *arr, int n)
  * \param pred square_predicate specifying what we're looking for
  * \return success
  */
-static bool cave_find_in_range(struct chunk *c, struct loc *grid,
+bool cave_find_in_range(struct chunk *c, struct loc *grid,
 	struct loc top_left, struct loc bottom_right,
 	square_predicate pred)
 {

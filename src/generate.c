@@ -1084,6 +1084,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
 		dun->join = NULL;
+		dun->curr_join = NULL;
 
 		/* Get connector info for persistent levels */
 		if (OPT(p, birth_levels_persist)) {
