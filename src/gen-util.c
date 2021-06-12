@@ -537,8 +537,11 @@ void place_random_door(struct chunk *c, struct loc grid)
  * \param sepany If true, the minimum separation contraint applies to any
  * type of staircase.  Otherwise, the minimum separation contraint only applies
  * to staircases of the same type.
+ * \param avoid_list If not NULL and minsep is greater than zero, also avoid
+ * the locations in avoid_list which have staircases of the opposite type.
  */
-void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany)
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+		const struct connector *avoid_list)
 {
 	int i, navalloc, nav;
 	struct loc *av;
@@ -553,6 +556,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany)
 			((feat == FEAT_MORE) ?
 			square_isdownstairs : square_isupstairs);
 		struct loc grid;
+		const struct connector *avc;
 
 		navalloc = 8;
 		av = mem_alloc(navalloc * sizeof(*av));
@@ -567,6 +571,19 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany)
 					}
 					av[nav++] = grid;
 				}
+			}
+		}
+
+		/* Also add the locations that were passed in. */
+		for (avc = avoid_list; avc; avc = avc->next) {
+			if (avc->feat != feat) {
+				assert(nav >= 0 && nav <= navalloc);
+				if (nav == navalloc) {
+					navalloc += navalloc;
+					av = mem_realloc(av, navalloc *
+						sizeof(*av));
+				}
+				av[nav++] = avc->grid;
 			}
 		}
 	} else {

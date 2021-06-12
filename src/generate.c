@@ -919,6 +919,30 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 				join = join->next;
 			}
 		}
+	} else if ((lev = level_by_depth(p->depth - 2))) {
+		/*
+		 * When there isn't a level above but there is one two levels
+		 * up, remember where the down staircases are so up staircases
+		 * on this level won't conflict with them if the level above is
+		 * ever generated.
+		 */
+		struct chunk *check = chunk_find_name(lev->name);
+
+		if (check) {
+			struct connector *join;
+
+			for (join = check->join; join; join = join->next) {
+				if (join->feat == FEAT_MORE) {
+					struct connector *nc =
+						mem_zalloc(sizeof(*nc));
+
+					nc->grid = join->grid;
+					nc->feat = FEAT_MORE;
+					nc->next = dd->one_off_above;
+					dd->one_off_above = nc;
+				}
+			}
+		}
 	}
 
 	/* Check level below */
@@ -937,6 +961,25 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 					dd->join = new;
 				}
 				join = join->next;
+			}
+		}
+	} else if ((lev = level_by_depth(p->depth + 2))) {
+		/* Same logic as above for looking one past the next level */
+		struct chunk *check = chunk_find_name(lev->name);
+
+		if (check) {
+			struct connector *join;
+
+			for (join = check->join; join; join = join->next) {
+				if (join->feat == FEAT_LESS) {
+					struct connector *nc =
+						mem_zalloc(sizeof(*nc));
+
+					nc->grid = join->grid;
+					nc->feat = FEAT_LESS;
+					nc->next = dd->one_off_below;
+					dd->one_off_below = nc;
+				}
 			}
 		}
 	}
@@ -1006,6 +1049,20 @@ static void cleanup_dun_data(struct dun_data *dd)
 	int i;
 	struct connector *join = dun->join;
 
+	while (join) {
+		struct connector *jtgt = join;
+
+		join = join->next;
+		mem_free(jtgt);
+	}
+	join = dun->one_off_above;
+	while (join) {
+		struct connector *jtgt = join;
+
+		join = join->next;
+		mem_free(jtgt);
+	}
+	join = dun->one_off_below;
 	while (join) {
 		struct connector *jtgt = join;
 
@@ -1084,6 +1141,8 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
 		dun->join = NULL;
+		dun->one_off_above = NULL;
+		dun->one_off_below = NULL;
 		dun->curr_join = NULL;
 
 		/* Get connector info for persistent levels */

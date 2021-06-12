@@ -171,6 +171,10 @@ struct dun_data {
     /*!< Info for connecting to persistent levels */
     struct connector *join;
 
+    /*!< Info for avoiding conflicts with persistent levels two away */
+    struct connector *one_off_above;
+    struct connector *one_off_below;
+
     /*!< The connection information to use for the next staircase room */
     struct connector *curr_join;
 };
@@ -394,7 +398,8 @@ void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
 void place_random_stairs(struct chunk *c, struct loc grid);
-void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany);
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+	const struct connector *avoid_list);
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
