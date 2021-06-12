@@ -944,11 +944,13 @@ static void handle_level_stairs(struct chunk *c, struct player *p,
 		persistent = true;
 		/*
 		 * For persistent levels, require that the stairs be at least
-		 * three grids (two for surrounding walls; one for a buffer
-		 * between the walls) apart so the staircase rooms in the
-		 * connecting level won't overlap.
+		 * four grids apart (two for surrounding walls; two for a
+		 * buffer between the walls; the buffer space could be one -
+		 * shared by the staircases - but the reservations in the
+		 * room map don't allow for that) so the staircase rooms in
+		 * the connecting level won't overlap.
 		 */
-		minsep = 3;
+		minsep = 4;
 	} else {
 		persistent = false;
 		/* Don't contrain the separation between the staircases. */
