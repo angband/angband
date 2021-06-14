@@ -3991,4 +3991,5 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_SAVE);
 	string_free(ANGBAND_DIR_SCORES);
 	string_free(ANGBAND_DIR_INFO);
+	string_free(ANGBAND_DIR_ARCHIVE);
 }
