@@ -38,6 +38,7 @@
 #include "mon-init.h"
 #include "mon-list.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -3948,17 +3949,20 @@ bool init_angband(void)
 void cleanup_angband(void)
 {
 	int i;
+
+	/* Free the chunk list */
+	for (i = 0; i < chunk_list_max; i++) {
+		wipe_mon_list(chunk_list[i], player);
+		cave_free(chunk_list[i]);
+	}
+	mem_free(chunk_list);
+	chunk_list = NULL;
+
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
 
 	event_remove_all_handlers();
-
-	/* Free the chunk list */
-	for (i = 0; i < chunk_list_max; i++)
-		cave_free(chunk_list[i]);
-	mem_free(chunk_list);
-	chunk_list = NULL;
 
 	/* Free the main cave */
 	if (cave) {

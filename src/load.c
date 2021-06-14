@@ -1630,6 +1630,7 @@ int rd_chunks(void)
 			u16b tmp16u;
 
 			rd_string(buf, sizeof(buf));
+			string_free(c->name);
 			c->name = string_make(buf);
 			rd_s32b(&c->turn);
 			rd_u16b(&tmp16u);
