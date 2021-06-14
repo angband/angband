@@ -382,17 +382,26 @@ struct chunk *cave_new(int height, int width) {
 }
 
 /**
+ * Free a linked list of cave connections.
+ */
+void cave_connectors_free(struct connector *join)
+{
+	while (join) {
+		struct connector *current = join;
+
+		join = current->next;
+		mem_free(current->info);
+		mem_free(current);
+	}
+}
+
+/**
  * Free a chunk
  */
 void cave_free(struct chunk *c) {
 	int y, x, i;
 
-	while (c->join) {
-		struct connector *current = c->join;
-		mem_free(current->info);
-		c->join = current->next;
-		mem_free(current);
-	}
+	cave_connectors_free(c->join);
 
 	/* Look for orphaned objects and delete them. */
 	for (i = 1; i < c->obj_max; i++) {

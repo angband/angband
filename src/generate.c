@@ -1047,28 +1047,10 @@ static void cave_clear(struct chunk *c, struct player *p)
 static void cleanup_dun_data(struct dun_data *dd)
 {
 	int i;
-	struct connector *join = dun->join;
 
-	while (join) {
-		struct connector *jtgt = join;
-
-		join = join->next;
-		mem_free(jtgt);
-	}
-	join = dun->one_off_above;
-	while (join) {
-		struct connector *jtgt = join;
-
-		join = join->next;
-		mem_free(jtgt);
-	}
-	join = dun->one_off_below;
-	while (join) {
-		struct connector *jtgt = join;
-
-		join = join->next;
-		mem_free(jtgt);
-	}
+	cave_connectors_free(dun->join);
+	cave_connectors_free(dun->one_off_above);
+	cave_connectors_free(dun->one_off_below);
 	mem_free(dun->cent);
 	mem_free(dun->ent_n);
 	for (i = 0; i < z_info->level_room_max; ++i) {

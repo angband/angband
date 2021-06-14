@@ -969,6 +969,156 @@ static void handle_level_stairs(struct chunk *c, struct player *p,
 
 
 /**
+ * Locate two consecutive columns that do not contain any connections to other
+ * levels.
+ * \param join Is the linked list of connection information.
+ * \param colpref Is the column for the center of the search range.  If there
+ * are multiple possible results, prefer the one closest to colpref.
+ * \param range The search includes the columns from colpref - range to
+ * colpref + range, inclusive.  range must be non-negative.
+ * \param rowmin Ignore any connection whose row coordinate is less than rowmin.
+ * \param rowmax Ignore any connection whose row coordinate is greater than
+ * rowmax.
+ * \return Return the column index of the first column in the pair or, if
+ * two consecutive columns without connections could not be found, -1.
+ */
+static int find_joinfree_vertical_seam(const struct connector *join,
+		int colpref, int range, int rowmin, int rowmax)
+{
+	int metric = range + 1;
+	int result = -1;
+	int i;
+	/* Remember which columns in the range had a connector. */
+	bool *disallowed;
+
+	assert(range >= 0);
+	disallowed = mem_zalloc((range + range + 1) * sizeof(*disallowed));
+
+	/*
+	 * Scan the connections and record the columns that can't be in a
+	 * seam.
+	 */
+	for (; join; join = join->next) {
+		if (ABS(join->grid.x - colpref) <= range &&
+				join->grid.y >= rowmin &&
+				join->grid.y <= rowmax) {
+			disallowed[range + join->grid.x - colpref] = true;
+		}
+	}
+
+	/*
+	 * Find the pair of adjacent columns that are allowed and are closest
+	 * to colpref.
+	 */
+	i = 0;
+	while (i < range + range) {
+		if (!disallowed[i]) {
+			if (!disallowed[i + 1]) {
+				if (metric > ABS(i - range)) {
+					metric = ABS(i - range);
+					result = colpref + i - range;
+				}
+				++i;
+			} else {
+				i += 2;
+			}
+		} else {
+			++i;
+		}
+	}
+
+	mem_free(disallowed);
+
+	return result;
+}
+
+
+/**
+ * Generate a new linked list of connections based on a geometric transform,
+ * via gen-chunk.c's symmetry_transform(), and clipping of another list of
+ * connections.
+ * \param join Is the source linked list of connections.
+ * \param nrow Is the number of rows for the chunk that'll contain the
+ * transformed connections.
+ * \param ncol Is the number of columns for the chunk that'll contain the
+ * transformed connections.
+ * \param y0 Is the translation in y (rows) applied after the rotations and
+ * reflection that places the nrow by ncol chunk into the coordinate system
+ * for the untransformed connections.
+ * \param x0 Is the translation in x (columns) applied after the rotations and
+ * reflection that places the nrow by ncol chunk into the coordinate system
+ * for the untransformed connections.
+ * \param rotate Is the number of 90 clockwise rotations to apply to nrow by
+ * ncol chunk to get it into the coordinate system for the untransformed
+ * coordinates.
+ * \param reflect Is whether a horizontal reflection (after applying the
+ * rotations) is necessary to get the nrow by ncol chunk into the coordinate
+ * system for the untransformed coordinates.
+ * \return Returns a dynamically allocated linked list (each element will have
+ * to be released by mem_free) of the transformed connection coordinates or
+ * NULL if the list is empty.
+ */
+static struct connector *transform_join_list(const struct connector *join,
+		int nrow, int ncol, int y0, int x0, int rotate, bool reflect)
+{
+	/*
+	 * The transformation specified by the arguments is that to map the
+	 * chunk to the untransformed coordinates of the connections.  Invert
+	 * that to get the transformation to apply to the connections.  Mimic
+	 * the logic symmetry_transform().
+	 */
+	struct connector *result = NULL;
+	struct connector **next_link = &result;
+	int ntcol, ntrow, i;
+
+	/*
+	 * Get the dimensions of the chunk after the forward (chunk to
+	 * untransformed connection coordinates) transform.
+	 */
+	ntrow = nrow;
+	ntcol = ncol;
+	for (i = 0; i < rotate % 4; ++i) {
+		int temp = ntrow;
+
+		ntrow = ntcol;
+		ntcol = temp;
+	}
+
+	for (; join; join = join->next) {
+		/* Undo the translation. */
+		struct loc g = loc(join->grid.x - x0, join->grid.y - y0);
+		int rheight = nrow, rwidth = ncol;
+
+		/* Only keep the ones that are in bounds for the chunk. */
+		if (g.y < 0 || g.y >= nrow || g.x < 0 || g.x >= ncol) continue;
+
+		/* Undo the reflection. */
+		if (reflect) {
+			g.x = ncol - 1 - g.x;
+		}
+
+		/* Undo the rotations. */
+		for (i = 0; i < rotate % 4; ++i) {
+			int temp = g.y;
+
+			g.y = rwidth - 1 - g.x;
+			g.x = temp;
+			temp = rwidth;
+			rwidth = rheight;
+			rheight = temp;
+		}
+
+		*next_link = mem_zalloc(sizeof(**next_link));
+		(*next_link)->grid = g;
+		(*next_link)->feat = join->feat;
+		next_link = &((*next_link)->next);
+	}
+
+	return result;
+}
+
+
+/**
  * Generate a new dungeon level.
  * \param p is the player 
  * \return a pointer to the generated chunk
@@ -3190,12 +3340,12 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
 	int size_percent, y_size, x_size;
+	int left_width, normal_width, lair_width;
+	int normal_offset, lair_offset;
 	struct chunk *c;
 	struct chunk *normal;
 	struct chunk *lair;
-
-	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
+	struct connector *cached_join;
 
 	/* Scale the level */
 	i = randint1(10) + p->depth / 24;
@@ -3217,11 +3367,55 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	normal = modified_chunk(p->depth, y_size, x_size / 2);
-	if (!normal) return NULL;
+	cached_join = dun->join;
+	dun->join = NULL;
+	if (OPT(p, birth_levels_persist)) {
+		left_width = 1 + find_joinfree_vertical_seam(cached_join,
+			x_size / 2, MIN(5, x_size / 20), 0, y_size - 1);
+		if (left_width < 4 || x_size - left_width < 4) return NULL;
+	} else {
+		assert(cached_join == NULL);
+		left_width = x_size / 2;
+	}
+	if (one_in_(2)) {
+		/* Place the normal part on the left. */
+		normal_width = left_width;
+		normal_offset = 0;
+		lair_width = x_size - left_width;
+		lair_offset = left_width;
+	} else {
+		/* Place the lair part on the left. */
+		normal_width = x_size - left_width;
+		normal_offset = left_width;
+		lair_width = left_width;
+		lair_offset = 0;
+	}
+
+	/*
+	 * The transformation applied here should match that for chunk_copy()
+	 * below.
+	 */
+	dun->join = transform_join_list(cached_join, y_size, normal_width,
+		0, normal_offset, 0, false);
+	normal = modified_chunk(p->depth, y_size, normal_width);
+	/* Done with the transformed connector information. */
+	cave_connectors_free(dun->join);
+	dun->join = cached_join;
+	if (!normal) {
+		return NULL;
+	}
 	normal->depth = p->depth;
 
-	lair = cavern_chunk(p->depth, y_size, x_size / 2, NULL);
+	/*
+	 * The transformation applied here should match that for chunk_copy()
+	 * below.
+	 */
+	dun->join = transform_join_list(cached_join, y_size, lair_width,
+		0, lair_offset, 0, false);
+	lair = cavern_chunk(p->depth, y_size, lair_width, dun->join);
+	/* Done with the transformed connector information. */
+	cave_connectors_free(dun->join);
+	dun->join = cached_join;
 	if (!lair) {
 		wipe_mon_list(normal, p);
 		cave_free(normal);
@@ -3276,13 +3470,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Make the level */
 	c = cave_new(y_size, x_size);
 	c->depth = p->depth;
-	if (one_in_(2)) {
-		chunk_copy(c, lair, 0, 0, 0, false);
-		chunk_copy(c, normal, 0, x_size / 2, 0, false);
-	} else {
-		chunk_copy(c, normal, 0, 0, 0, false);
-		chunk_copy(c, lair, 0, x_size / 2, 0, false);
-	}
+	chunk_copy(c, normal, 0, normal_offset, 0, false);
+	chunk_copy(c, lair, 0, lair_offset, 0, false);
 
 	/* Free the chunks */
 	cave_free(normal);
@@ -3295,11 +3484,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Connect */
 	ensure_connectedness(c, true);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 0, false, NULL);
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 0, false, NULL);
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
