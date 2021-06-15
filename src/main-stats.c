@@ -814,7 +814,7 @@ static int stats_dump_lists(void)
 	if (err) return err;
 
 	for (idx = 0; idx < OF_MAX; idx++) {
-		err = stats_db_bind_ints(sql_stmt, 1, idx);
+		err = sqlite3_bind_int(sql_stmt, 1, idx);
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 2, object_flag_names[idx],
 			strlen(object_flag_names[idx]), SQLITE_STATIC);
@@ -829,7 +829,7 @@ static int stats_dump_lists(void)
 	if (err) return err;
 
 	for (idx = 0; object_mods[idx] != NULL; idx++) {
-		err = stats_db_bind_ints(sql_stmt, 1, idx);
+		err = sqlite3_bind_int(sql_stmt, 1, idx);
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 2, object_mods[idx],
 			strlen(object_mods[idx]), SQLITE_STATIC);
@@ -1027,10 +1027,10 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE monster_spell_flags_list(idx INT PRIMARY KEY, cap INT, div INT, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, type INT, power INT, name TEXT);");
+	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_mods_list(idx INT PRIMARY KEY, type INT, power INT, mod_mult INT, name TEXT);");
+	err = stats_db_exec("CREATE TABLE object_mods_list(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");
