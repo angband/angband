@@ -318,12 +318,39 @@ static void log_all_objects(int level)
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
 			struct loc grid = loc(x, y);
-			struct object *obj;
+			struct monster *mon = square_monster(cave, grid);
+			struct object *obj = square_object(cave, grid);
 
-			for (obj = square_object(cave, grid); obj; obj = obj->next) {
+			while (1) {
 				/*	u32b o_power = 0; */
 
+				if (!obj) {
+					/*
+					 * Look at the objects from the monster
+					 * as well.
+					 */
+					if (!mon) {
+						break;
+					}
+					obj = mon->held_obj;
+					if (!obj) {
+						break;
+					}
+					mon = NULL;
+				}
+
 /*				o_power = object_power(obj, false, NULL, true); */
+
+				/*
+				 * Skip those we're not tracking (since monsters
+				 * aren't killed before collecting item
+				 * statistics, mimicked objects are one that
+				 * that'll be skipped.
+				 */
+				if (obj->origin >= ORIGIN_STATS) {
+					obj = obj->next;
+					continue;
+				}
 
 				/* Capture gold amounts */
 				if (tval_is_money(obj))
@@ -356,8 +383,11 @@ static void log_all_objects(int level)
 						int p = obj->modifiers[i];
 						w->modifiers[MIN(MAX(p, 0), TOP_MOD - 1)][i]++;
 					}
-				} else
+				} else {
 					level_data[level].consumables[obj->origin][consumables_index[obj->kind->kidx]]++;
+				}
+
+				obj = obj->next;
 			}
 		}
 	}
@@ -392,8 +422,9 @@ static void descend_dungeon(void)
 		level_data[level].obj_feelings[MIN(obj_f, OBJ_FEEL_MAX - 1)]++;
 		level_data[level].mon_feelings[MIN(mon_f, MON_FEEL_MAX - 1)]++;
 
-		kill_all_monsters(level);
 		log_all_objects(level);
+		/* Besides killing, also gathers counts. */
+		kill_all_monsters(level);
 	}
 }
 
