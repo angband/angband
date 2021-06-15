@@ -268,6 +268,9 @@ static void kill_all_monsters(int level)
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		struct monster *mon = cave_monster(cave, i);
 
+		/* Skip the ones that are already dead. */
+		if (!mon->race) continue;
+
 		level_data[level].monsters[mon->race->ridx]++;
 
 		monster_death(mon, true);
