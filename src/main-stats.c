@@ -1477,7 +1477,8 @@ static void progress_bar(u32b run, time_t start) {
 
 static void stats_cleanup_angband_run(void)
 {
-	if (player->history) mem_free(player->history);
+	mem_free(player->history);
+	player->history = NULL;
 }
 
 static errr run_stats(void)
