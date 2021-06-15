@@ -1477,6 +1477,18 @@ static void progress_bar(u32b run, time_t start) {
 
 static void stats_cleanup_angband_run(void)
 {
+	if (character_dungeon) {
+		wipe_mon_list(cave, player);
+		if (player->cave) {
+			cave_free(player->cave);
+			player->cave = NULL;
+		}
+		if (cave) {
+			cave_free(cave);
+			cave = NULL;
+		}
+		character_dungeon = false;
+	}
 	mem_free(player->history);
 	player->history = NULL;
 }
