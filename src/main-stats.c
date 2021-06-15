@@ -179,6 +179,9 @@ static void free_stats_memory(void)
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats(void)
 {
+	char buf[80];
+	int i;
+
 	OPT(player, birth_randarts) = randarts;
 	OPT(player, birth_no_selling) = no_selling;
 	OPT(player, birth_stacking) = true;
@@ -188,6 +191,21 @@ static void generate_player_for_stats(void)
 
 	player->race = races;  /* Human   */
 	player->class = classes; /* Warrior */
+
+	/* Needs a body; duplicates logic from the private player_embody(). */
+	memcpy(&player->body, &bodies[player->race->body],
+		sizeof(player->body));
+	my_strcpy(buf, bodies[player->race->body].name, sizeof(buf));
+	player->body.name = string_make(buf);
+	player->body.slots = mem_zalloc(player->body.count *
+		sizeof(*(player->body.slots)));
+	for (i = 0; i < player->body.count; ++i) {
+		player->body.slots[i].type =
+			bodies[player->race->body].slots[i].type;
+		my_strcpy(buf, bodies[player->race->body].slots[i].name,
+			sizeof(buf));
+		player->body.slots[i].name = string_make(buf);
+	}
 
 	/* Level 1 */
 	player->max_lev = player->lev = 1;
