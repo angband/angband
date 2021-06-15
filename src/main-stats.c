@@ -751,7 +751,6 @@ static int stats_dump_monsters(void)
 static int stats_dump_lists(void)
 {
 	int err, idx;
-	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
 
 	/* Note: these lists are sometimes different from the ones the core
@@ -794,6 +793,13 @@ static int stats_dump_lists(void)
         #define OBJ_MOD(a) #a,
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
+		NULL
+	};
+
+	const char *origin_names[] = {
+		#define ORIGIN(a, b, c) #a,
+		#include "list-origins.h"
+		#undef ORIGIN
 		NULL
 	};
 
@@ -860,27 +866,20 @@ static int stats_dump_lists(void)
 
 	STATS_DB_FINALIZE(sql_stmt)
 
-	/* Hack, until we refactor origin kinds into a header */
-	#define STATS_ORIGIN(idx,name) \
-		strnfmt(sql_buf, 256, "INSERT INTO origin_flags_list VALUES(%d,'%s');", idx, #name); \
-		err = stats_db_exec(sql_buf);\
-		if (err) return err;
+	err = stats_db_stmt_prep(&sql_stmt,
+		"INSERT INTO origin_flags_list VALUES(?,?);");
+	if (err) return err;
 
-	STATS_ORIGIN(0,NONE)
-	STATS_ORIGIN(1,FLOOR)
-	STATS_ORIGIN(2,DROP)
-	STATS_ORIGIN(3,CHEST)
-	STATS_ORIGIN(4,DROP_SPECIAL)
-	STATS_ORIGIN(5,DROP_PIT)
-	STATS_ORIGIN(6,DROP_VAULT)
-	STATS_ORIGIN(7,SPECIAL)
-	STATS_ORIGIN(8,PIT)
-	STATS_ORIGIN(9,VAULT)
-	STATS_ORIGIN(10,LABYRINTH)
-	STATS_ORIGIN(11,CAVERN)
-	STATS_ORIGIN(12,RUBBLE)
-	STATS_ORIGIN(13,MIXED)
-	#undef STATS_ORIGIN
+	for (idx = 0; idx < ORIGIN_STATS && origin_names[idx]; idx++) {
+		err = sqlite3_bind_int(sql_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 2, origin_names[idx],
+			strlen(origin_names[idx]), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
 
 	return SQLITE_OK;
 }
