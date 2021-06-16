@@ -1259,9 +1259,11 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Wake it up, make it aware of the player */
-	monster_wake(mon, false, 100);
-	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
+	/* If the hit doesn't kill, wake it up, make it aware of the player */
+	if (dam <= mon->hp) {
+		monster_wake(mon, false, 100);
+		mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
+	}
 
 	/* Become aware of its presence */
 	if (monster_is_camouflaged(mon))
