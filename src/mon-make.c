@@ -323,6 +323,9 @@ void delete_monster_idx(int m_idx)
 		cave->num_repro--;
 	}
 
+	/* Affect light? */
+	if (mon->race->light != 0) player->upkeep->update |= PU_UPDATE_VIEW;
+
 	/* Hack -- remove target monster */
 	if (target_get_monster() == mon)
 		target_set_monster(NULL);
