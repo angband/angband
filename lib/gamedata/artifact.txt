@@ -97,7 +97,7 @@ alloc:40:5 to 100
 attack:1d1:0:0
 armor:0:0
 flags:NO_FUEL
-values:LIGHT[3]
+values:LIGHT[4]
 act:ILLUMINATION
 time:10+d10
 desc:A small crystal phial containing the light of Eärendil's Star.
@@ -113,7 +113,7 @@ alloc:4:30 to 100
 attack:1d1:0:0
 armor:0:0
 flags:SEE_INVIS | NO_FUEL
-values:LIGHT[3]
+values:LIGHT[4]
 act:MAPPING
 time:50+d50
 desc:The shining Star of the North, a treasured heirloom of Elendil's house.
@@ -128,7 +128,7 @@ alloc:2:50 to 127
 attack:1d1:0:0
 armor:0:0
 flags:SEE_INVIS | HOLD_LIFE | NO_FUEL
-values:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
+values:LIGHT[4] | RES_LIGHT[1] | RES_DARK[1]
 act:CLAIRVOYANCE
 time:50+d50
 desc:A great globe seemingly filled with moonlight, the famed Heart of the
