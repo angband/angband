@@ -95,7 +95,8 @@ struct vault *random_vault(int depth, const char *typ)
 /**
  * ------------------------------------------------------------------------
  * Helper functions to fill in information in the global dun (see also
- * find_space() and room_build() which set cent_n and cent in that structure)
+ * find_space(), room_build(), and build_staircase() which set cent_n and
+ * cent in that structure)
  * ------------------------------------------------------------------------
  */
 /**
@@ -978,6 +979,50 @@ void set_pit_type(int depth, int type)
 }
 
 /**
+ * Check that a rectangular range has not been reserved in the block map.
+ * \param by1 Is the y block coordinate for the top left corner of the range.
+ * \param bx1 Is the x block coordinate for the top left corner of the range.
+ * \param by2 Is the y block coordinate for the bottom right corner.
+ * \param bx2 Is the x block coordinate for the bottom right corner.
+ * \return Return true if the complete range has not been reserved and falls
+ * within the bounds of the map.  Otherwise, return false.
+ */
+static bool check_for_unreserved_blocks(int by1, int bx1, int by2, int bx2)
+{
+	int by, bx;
+
+	/* Never run off the screen */
+	if (by1 < 0 || by2 >= dun->row_blocks) return false;
+	if (bx1 < 0 || bx2 >= dun->col_blocks) return false;
+
+	/* Verify open space */
+	for (by = by1; by <= by2; by++) {
+		for (bx = bx1; bx <= bx2; bx++) {
+			if (dun->room_map[by][bx]) return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * Reserve a rectangular range in the block map.
+ * \param by1 Is the y block coordinate for the top left corner of the range.
+ * \param bx1 Is the x block coordinate for the top left corner of the range.
+ * \param by2 Is the y block coordinate for the bottom right corner.
+ * \param bx2 Is the x block coordinate for the bottom right corner.
+ */
+static void reserve_blocks(int by1, int bx1, int by2, int bx2)
+{
+	int by, bx;
+
+	for (by = by1; by <= by2; by++) {
+		for (bx = bx1; bx <= bx2; bx++) {
+			dun->room_map[by][bx] = true;
+		}
+	}
+}
+
+/**
  * Find a good spot for the next room.
  *
  * \param y centre of the room
@@ -999,55 +1044,14 @@ void set_pit_type(int depth, int type)
 static bool find_space(struct loc *centre, int height, int width)
 {
 	int i;
-	int by, bx, by1, bx1, by2, bx2;
-
-	bool filled;
+	int by1, bx1, by2, bx2;
 
 	/* Find out how many blocks we need. */
 	int blocks_high = 1 + ((height - 1) / dun->block_hgt);
 	int blocks_wide = 1 + ((width - 1) / dun->block_wid);
 
-	/* Deal with staircase "rooms" */
-	if (OPT(player, birth_levels_persist) && (height * width == 1)) {
-		struct connector *join = dun->join;
-		bool found = false;
-
-		/* Acquire the location of the room */
-		int n = dun->cent_n;
-
-		while (n) {
-			join = join->next;
-			n--;
-		}
-		if (join) {
-			*centre = join->grid;
-			found = true;
-		}
-
-		/* Check we have found one */
-		if (found) {
-			/* Get the blocks */
-			by = (centre->y + 1) / dun->block_hgt;
-			bx = (centre->x + 1) / dun->block_wid;
-
-			/* Save the room location */
-			if (dun->cent_n < z_info->level_room_max) {
-				dun->cent[dun->cent_n] = *centre;
-				dun->cent_n++;
-			}
-
-			/* Reserve a block, marked with the room index */
-			dun->room_map[by][bx] = dun->cent_n;
-
-			/* Success. */
-			return (true);
-		}
-	}
-
 	/* We'll allow twenty-five guesses. */
 	for (i = 0; i < 25; i++) {
-		filled = false;
-
 		/* Pick a top left block at random */
 		by1 = randint0(dun->row_blocks);
 		bx1 = randint0(dun->col_blocks);
@@ -1056,20 +1060,7 @@ static bool find_space(struct loc *centre, int height, int width)
 		by2 = by1 + blocks_high - 1;
 		bx2 = bx1 + blocks_wide - 1;
 
-		/* Never run off the screen */
-		if (by1 < 0 || by2 >= dun->row_blocks) continue;
-		if (bx1 < 0 || bx2 >= dun->col_blocks) continue;
-
-		/* Verify open space */
-		for (by = by1; by <= by2; by++) {
-			for (bx = bx1; bx <= bx2; bx++) {
-				if (dun->room_map[by][bx])
-					filled = true;
-			}
-		}
-
-		/* If space filled, try again. */
-		if (filled)	continue;
+		if (!check_for_unreserved_blocks(by1, bx1, by2, bx2)) continue;
 
 		/* Get the location of the room */
 		centre->y = ((by1 + by2 + 1) * dun->block_hgt) / 2;
@@ -1081,12 +1072,7 @@ static bool find_space(struct loc *centre, int height, int width)
 			dun->cent_n++;
 		}
 
-		/* Reserve some blocks */
-		for (by = by1; by <= by2; by++) {
-			for (bx = bx1; bx <= bx2; bx++) {
-				dun->room_map[by][bx] = true;
-			}
-		}
+		reserve_blocks(by1, bx1, by2, bx2);
 
 		/* Success. */
 		return (true);
@@ -1870,11 +1856,59 @@ static void hollow_out_room(struct chunk *c, struct loc grid)
  */
 bool build_staircase(struct chunk *c, struct loc centre, int rating)
 {
-	struct connector *join = dun->join;
+	struct connector *join = dun->curr_join;
 
-	/* Find and reserve one grid in the dungeon */
-	if (!find_space(&centre, 1, 1))
+	if (!join) {
+		quit_fmt("build_staircase() called without dun->curr_join set");
+	}
+
+	if (centre.y >= c->height || centre.x >= c->width) {
+		/*
+		 * Verify that there's space for the 1 x 1 room at the
+		 * staircase location (3 x 3 including the walls; if not at
+		 * an edge also want a one grid buffer around the walls so
+		 * the wall piercings for tunneling will work).
+		 */
+		struct loc tl, br;
+		int by1, bx1, by2, bx2;
+
+		centre = join->grid;
+		if (centre.y < 1 || centre.y > c->height - 2 || centre.x < 1 ||
+			centre.x > c->width - 2) return false;
+		tl = loc(centre.x - ((centre.x > 1) ? 2 : 1),
+			centre.y - ((centre.y > 1) ? 2 : 1));
+		br = loc(centre.x + ((centre.x < c->width - 2) ? 2 : 1),
+			centre.y + ((centre.y < c->height - 2) ? 2 : 1));
+		by1 = tl.y / dun->block_hgt;
+		bx1 = tl.x / dun->block_wid;
+		by2 = br.y / dun->block_hgt;
+		bx2 = br.x / dun->block_wid;
+		/*
+		 * If the block size is greater than one, look for room flags
+		 * rather than check the block map.  It's less efficient, but
+		 * gives a better chance of success since multiple staircase
+		 * rooms could be placed in a block if they're far enough apart.
+		 */
+		if (dun->block_hgt > 1 || dun->block_wid > 1) {
+			struct loc rg;
+
+			if (cave_find_in_range(c, &rg, tl, br, square_isroom))
+				return false;
+		} else if (!check_for_unreserved_blocks(by1, bx1, by2, bx2)) {
+			return false;
+		}
+
+		reserve_blocks(by1, bx1, by2, bx2);
+
+		/* Save the room location */
+		if (dun->cent_n < z_info->level_room_max) {
+			dun->cent[dun->cent_n] = centre;
+			dun->cent_n++;
+		}
+	} else {
+		/* Never works for the caller to set the location. */
 		return false;
+	}
 
 	/* Generate new room and outer walls */
 	generate_room(c, centre.y - 1, centre.x - 1, centre.y + 1, centre.x + 1,
@@ -1883,16 +1917,7 @@ bool build_staircase(struct chunk *c, struct loc centre, int rating)
 		FEAT_GRANITE, SQUARE_WALL_OUTER, false);
 
 	/* Place the correct stair */
-	while (join) {
-		if (loc_eq(join->grid, centre)) {
-			square_set_feat(c, join->grid, join->feat);
-			break;
-		}
-		join = join->next;
-	}
-	if (!join) {
-		quit_fmt("Stair connect mismatch y=%d x=%d!", centre.y, centre.x);
-	}
+	square_set_feat(c, centre, join->feat);
 
 	/* Success */
 	return true;
@@ -2959,10 +2984,10 @@ bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
 	int denominator = 3;
 	
 	/*
-	 * Only try to build a GV as the first room.  If not finding space,
-	 * cent_n has already been incremented.
+	 * Only try to build a GV as the first non-staircase room.  If not
+	 * finding space, cent_n has already been incremented.
 	 */
-	if (dun->cent_n > ((centre.y >= c->height ||
+	if (dun->cent_n - dun->nstair_room > ((centre.y >= c->height ||
 		centre.x >= c->width) ? 0 : 1)) return false;
 
 	/* Level 90+ has a 1/3 chance, level 80-89 has 2/9, ... */
@@ -3388,10 +3413,11 @@ bool build_huge(struct chunk *c, struct loc centre, int rating)
 	int width = 45 + randint0(50);
 
 	/*
-	 * Only try to build a huge room as the first room.  If not finding
-	 * space, cent_n has already been increment.
+	 * Only try to build a huge room as the first non-staircase room.  If
+	 * not finding space, cent_n has already been increment.
 	 */
-	if (dun->cent_n > ((finding_space) ? 0 : 1)) return false;
+	if (dun->cent_n - dun->nstair_room > ((finding_space) ? 0 : 1))
+		return false;
 
 	/* Flat 5% chance */
 	if (!one_in_(20)) return false;
@@ -3471,7 +3497,6 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	int bx2 = bx0 + profile.width / dun->block_wid;
 
 	struct loc centre;
-	int by, bx;
 
 	/* Enforce the room profile's minimum depth */
 	if (c->depth < profile.level) return false;
@@ -3489,17 +3514,8 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 		if (!profile.builder(c, loc(c->width, c->height), profile.rating))
 			return false;
 	} else {
-		/* Never run off the screen */
-		if (by1 < 0 || by2 >= dun->row_blocks) return false;
-		if (bx1 < 0 || bx2 >= dun->col_blocks) return false;
-
-		/* Verify open space */
-		for (by = by1; by <= by2; by++) {
-			for (bx = bx1; bx <= bx2; bx++) {
-				/* previous rooms prevent new ones */
-				if (dun->room_map[by][bx]) return false;
-			}
-		}
+		if (!check_for_unreserved_blocks(by1, bx1, by2, bx2))
+			return false;
 
 		/* Get the location of the room */
 		centre = loc(((bx1 + bx2 + 1) * dun->block_wid) / 2,
@@ -3518,12 +3534,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 			return false;
 		}
 
-		/* Reserve some blocks */
-		for (by = by1; by < by2; by++) {
-			for (bx = bx1; bx < bx2; bx++) {
-				dun->room_map[by][bx] = true;
-			}
-		}
+		reserve_blocks(by1, bx1, by2, bx2);
 	}
 
 	/* Count pit/nests rooms */

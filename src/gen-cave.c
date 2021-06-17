@@ -898,6 +898,227 @@ static void do_traditional_tunneling(struct chunk *c)
 
 
 /**
+ * Build the staircase rooms for a persistent level.
+ */
+static void build_staircase_rooms(struct chunk *c, const char *label)
+{
+	int num_rooms = dun->profile->n_room_profiles;
+	struct room_profile profile;
+	struct connector *join;
+	int i;
+
+	for (i = 0; i < num_rooms; i++) {
+		profile = dun->profile->room_profiles[i];
+		if (streq(profile.name, "staircase room")) {
+			break;
+		}
+	}
+	assert(i < num_rooms);
+	for (join = dun->join; join; join = join->next) {
+		dun->curr_join = join;
+		if (!room_build(c, (join->grid.y - 1) / dun->block_hgt,
+				(join->grid.x - 1) / dun->block_wid,
+				profile, true)) {
+			dump_level_simple(NULL, format("%s:  Failed to Build "
+				"Staircase Room at Row=%d Column=%d in a "
+				"Cave with %d Rows and %d Columns", label,
+				join->grid.y, join->grid.x, c->height,
+				c->width), c);
+			quit("Failed to place stairs");
+		}
+		++dun->nstair_room;
+	}
+}
+
+
+/**
+ * Add stairs to a level, taking into account the special treatment needed
+ * for persistent levels.
+ */
+static void handle_level_stairs(struct chunk *c, struct player *p,
+		int down_count, int up_count)
+{
+	bool persistent;
+	int minsep;
+
+	if (OPT(p, birth_levels_persist)) {
+		persistent = true;
+		/*
+		 * For persistent levels, require that the stairs be at least
+		 * four grids apart (two for surrounding walls; two for a
+		 * buffer between the walls; the buffer space could be one -
+		 * shared by the staircases - but the reservations in the
+		 * room map don't allow for that) so the staircase rooms in
+		 * the connecting level won't overlap.
+		 */
+		minsep = 4;
+	} else {
+		persistent = false;
+		/* Don't contrain the separation between the staircases. */
+		minsep = 0;
+	}
+	if (!persistent || !chunk_find_adjacent(p, false)) {
+		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
+			dun->one_off_below);
+	}
+	if (!persistent || !chunk_find_adjacent(p, true)) {
+		alloc_stairs(c, FEAT_LESS, up_count, minsep, false,
+			dun->one_off_above);
+	}
+}
+
+
+/**
+ * Locate two consecutive columns that do not contain any connections to other
+ * levels.
+ * \param join Is the linked list of connection information.
+ * \param colpref Is the column for the center of the search range.  If there
+ * are multiple possible results, prefer the one closest to colpref.
+ * \param range The search includes the columns from colpref - range to
+ * colpref + range, inclusive.  range must be non-negative.
+ * \param rowmin Ignore any connection whose row coordinate is less than rowmin.
+ * \param rowmax Ignore any connection whose row coordinate is greater than
+ * rowmax.
+ * \return Return the column index of the first column in the pair or, if
+ * two consecutive columns without connections could not be found, -1.
+ */
+static int find_joinfree_vertical_seam(const struct connector *join,
+		int colpref, int range, int rowmin, int rowmax)
+{
+	int metric = range + 1;
+	int result = -1;
+	int i;
+	/* Remember which columns in the range had a connector. */
+	bool *disallowed;
+
+	assert(range >= 0);
+	disallowed = mem_zalloc((range + range + 1) * sizeof(*disallowed));
+
+	/*
+	 * Scan the connections and record the columns that can't be in a
+	 * seam.
+	 */
+	for (; join; join = join->next) {
+		if (ABS(join->grid.x - colpref) <= range &&
+				join->grid.y >= rowmin &&
+				join->grid.y <= rowmax) {
+			disallowed[range + join->grid.x - colpref] = true;
+		}
+	}
+
+	/*
+	 * Find the pair of adjacent columns that are allowed and are closest
+	 * to colpref.
+	 */
+	i = 0;
+	while (i < range + range) {
+		if (!disallowed[i]) {
+			if (!disallowed[i + 1]) {
+				if (metric > ABS(i - range)) {
+					metric = ABS(i - range);
+					result = colpref + i - range;
+				}
+				++i;
+			} else {
+				i += 2;
+			}
+		} else {
+			++i;
+		}
+	}
+
+	mem_free(disallowed);
+
+	return result;
+}
+
+
+/**
+ * Generate a new linked list of connections based on a geometric transform,
+ * via gen-chunk.c's symmetry_transform(), and clipping of another list of
+ * connections.
+ * \param join Is the source linked list of connections.
+ * \param nrow Is the number of rows for the chunk that'll contain the
+ * transformed connections.
+ * \param ncol Is the number of columns for the chunk that'll contain the
+ * transformed connections.
+ * \param y0 Is the translation in y (rows) applied after the rotations and
+ * reflection that places the nrow by ncol chunk into the coordinate system
+ * for the untransformed connections.
+ * \param x0 Is the translation in x (columns) applied after the rotations and
+ * reflection that places the nrow by ncol chunk into the coordinate system
+ * for the untransformed connections.
+ * \param rotate Is the number of 90 clockwise rotations to apply to nrow by
+ * ncol chunk to get it into the coordinate system for the untransformed
+ * coordinates.
+ * \param reflect Is whether a horizontal reflection (after applying the
+ * rotations) is necessary to get the nrow by ncol chunk into the coordinate
+ * system for the untransformed coordinates.
+ * \return Returns a dynamically allocated linked list (each element will have
+ * to be released by mem_free) of the transformed connection coordinates or
+ * NULL if the list is empty.
+ */
+static struct connector *transform_join_list(const struct connector *join,
+		int nrow, int ncol, int y0, int x0, int rotate, bool reflect)
+{
+	/*
+	 * The transformation specified by the arguments is that to map the
+	 * chunk to the untransformed coordinates of the connections.  Invert
+	 * that to get the transformation to apply to the connections.  Mimic
+	 * the logic symmetry_transform().
+	 */
+	struct connector *result = NULL;
+	struct connector **next_link = &result;
+	int ntcol, ntrow, i;
+
+	/*
+	 * Get the dimensions of the chunk after the forward (chunk to
+	 * untransformed connection coordinates) transform.
+	 */
+	ntrow = nrow;
+	ntcol = ncol;
+	for (i = 0; i < rotate % 4; ++i) {
+		int temp = ntrow;
+
+		ntrow = ntcol;
+		ntcol = temp;
+	}
+
+	for (; join; join = join->next) {
+		/* Undo the translation. */
+		struct loc g = loc(join->grid.x - x0, join->grid.y - y0);
+		int rheight = nrow, rwidth = ncol;
+
+		/* Only keep the ones that are in bounds for the chunk. */
+		if (g.y < 0 || g.y >= nrow || g.x < 0 || g.x >= ncol) continue;
+
+		/* Undo the reflection. */
+		if (reflect) {
+			g.x = ncol - 1 - g.x;
+		}
+
+		/* Undo the rotations. */
+		for (i = 0; i < rotate % 4; ++i) {
+			int temp = g.y;
+
+			g.y = rwidth - 1 - g.x;
+			g.x = temp;
+			temp = rwidth;
+			rwidth = rheight;
+			rheight = temp;
+		}
+
+		*next_link = mem_zalloc(sizeof(**next_link));
+		(*next_link)->grid = g;
+		(*next_link)->feat = join->feat;
+		next_link = &((*next_link)->next);
+	}
+
+	return result;
+}
+
+
+/**
  * Generate a new dungeon level.
  * \param p is the player 
  * \return a pointer to the generated chunk
@@ -910,9 +1131,6 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 
 	bool **blocks_tried;
 	struct chunk *c;
-
-	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
 
 	/* This code currently does nothing - see comments below */
 	i = randint1(10) + p->depth / 24;
@@ -955,6 +1173,11 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	dun->pit_num = 0;
 	dun->cent_n = 0;
 	reset_entrance_data(c);
+
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		build_staircase_rooms(c, "Classic Generation");
+	}
 
 	/* Build some rooms.  Note that the theoretical maximum number of rooms
 	 * in this profile is currently 36, so built never reaches num_rooms,
@@ -1041,11 +1264,8 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -1303,11 +1523,11 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 
 	/* Generate a single set of stairs up if necessary. */
 	if (!cave_find(c, &grid, square_isupstairs))
-		alloc_stairs(c, FEAT_LESS, 1);
+		alloc_stairs(c, FEAT_LESS, 1, 0, false, NULL);
 
 	/* Generate a single set of stairs down if necessary. */
 	if (!cave_find(c, &grid, square_isdownstairs))
-		alloc_stairs(c, FEAT_MORE, 1);
+		alloc_stairs(c, FEAT_MORE, 1, 0, false, NULL);
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -1348,8 +1568,13 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
  * Initialize the dungeon array, with a random percentage of squares open.
  * \param c is the current chunk
  * \param density is the percentage of floors we are aiming for
+ * \param join Is a linked list of the connection information to adjacent
+ * levels; the cavern will build in stairs at those locations.  May be NULL
+ * to not build in stairs during cavern generation.
  */
-static void init_cavern(struct chunk *c, int density) {
+static void init_cavern(struct chunk *c, int density,
+		const struct connector *join)
+{
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -1358,7 +1583,65 @@ static void init_cavern(struct chunk *c, int density) {
 
 	/* Fill the entire chunk with rock */
 	fill_rectangle(c, 0, 0, h - 1, w - 1, FEAT_GRANITE, SQUARE_WALL_SOLID);
-	
+
+	/*
+	 * Add in the desired stairs.  Surround each staircase with three
+	 * floors, preferentially pointing to the center of the level, so the
+	 * staircase will remain in place during applications of
+	 * mutate_cavern().  Make three of the other squares adjacent to
+	 * the stairs permanent rock so they'll remain as walls during
+	 * applications of mutate_cavern().
+	 */
+	while (join) {
+		if (join->grid.y > 0 && join->grid.y < h - 1 &&
+				join->grid.x > 0 && join->grid.x < w - 1 &&
+				!square_isstairs(c, join->grid)) {
+			int bcrit = randint0(h) +
+				((join->grid.y > h / 2) ? -10 : 10);
+			int rcrit = randint0(w) +
+				((join->grid.x > w / 2) ? -10 : 10);
+			int offy = (bcrit > join->grid.y) ? 1 : -1;
+			int offx = (rcrit > join->grid.x) ? 1 : -1;
+			struct loc adj;
+
+			if (!square_isfloor(c, join->grid)) {
+				--count;
+			}
+			square_set_feat(c, join->grid, join->feat);
+			adj = loc(join->grid.x + offx, join->grid.y + offy);
+			if (!square_isstairs(c, adj) &&
+					!square_isfloor(c, adj)) {
+				--count;
+				square_set_feat(c, adj, FEAT_FLOOR);
+			}
+			adj = loc(join->grid.x, join->grid.y + offy);
+			if (!square_isstairs(c, adj) &&
+					!square_isfloor(c, adj)) {
+				--count;
+				square_set_feat(c, adj, FEAT_FLOOR);
+			}
+			adj = loc(join->grid.x + offx, join->grid.y);
+			if (!square_isstairs(c, adj) &&
+					!square_isfloor(c, adj)) {
+				--count;
+				square_set_feat(c, adj, FEAT_FLOOR);
+			}
+			adj = loc(join->grid.x - offx, join->grid.y - offy);
+			if (square_isrock(c, adj)) {
+				square_set_feat(c, adj, FEAT_PERM);
+			}
+			adj = loc(join->grid.x, join->grid.y - offy);
+			if (square_isrock(c, adj)) {
+				square_set_feat(c, adj, FEAT_PERM);
+			}
+			adj = loc(join->grid.x - offx, join->grid.y);
+			if (square_isrock(c, adj)) {
+				square_set_feat(c, adj, FEAT_PERM);
+			}
+		}
+		join = join->next;
+	}
+
 	while (count > 0) {
 		struct loc grid = loc(randint1(w - 2), randint1(h - 2));
 		if (square_isrock(c, grid)) {
@@ -1366,24 +1649,6 @@ static void init_cavern(struct chunk *c, int density) {
 			count--;
 		}
 	}
-}
-
-/**
- * Return the number of walls (0-8) adjacent to this square.
- * \param c is the current chunk
- * \param y are the co-ordinates
- * \param x are the co-ordinates
- */
-static int count_adj_walls(struct chunk *c, struct loc grid) {
-	int d;
-	int count = 0;
-
-	for (d = 0; d < 8; d++) {
-		if (square_isfloor(c, loc_sum(grid, ddgrid_ddd[d]))) continue;
-		count++;
-	}
-
-	return count;
 }
 
 /**
@@ -1399,13 +1664,20 @@ static void mutate_cavern(struct chunk *c) {
 
 	for (grid.y = 1; grid.y < h - 1; grid.y++) {
 		for (grid.x = 1; grid.x < w - 1; grid.x++) {
-			int count = count_adj_walls(c, grid);
-			if (count > 5)
+			int count = 8 - count_neighbors(NULL, c, grid,
+				square_ispassable, false);
+			if (square_isstairs(c, grid) ||
+					square_isperm(c, grid)) {
+				temp[grid_to_i(grid, w)] =
+					square(c, grid)->feat;
+			} else if (count > 5) {
 				temp[grid_to_i(grid, w)] = FEAT_GRANITE;
-			else if (count < 4)
+			} else if (count < 4) {
 				temp[grid_to_i(grid, w)] = FEAT_FLOOR;
-			else
-				temp[grid_to_i(grid, w)] = square(c, grid)->feat;
+			} else {
+				temp[grid_to_i(grid, w)] =
+					square(c, grid)->feat;
+			}
 		}
 	}
 
@@ -1454,12 +1726,15 @@ static int ignore_point(struct chunk *c, int colors[], struct loc grid) {
  * \param c is the current chunk
  * \param colors is the array of current point colors
  * \param counts is the array of current color counts
+ * \param stairs If not NULL, stairs is an array with the same number of
+ * elements as counts.  At exit, stairs[i] will indicate whether the region
+ * with color i includes a staircase.
  * \param grid is the location
  * \param color is the color we are coloring
  * \param diagonal controls whether we can progress diagonally
  */
 static void build_color_point(struct chunk *c, int colors[], int counts[],
-		struct loc grid, int color, bool diagonal) {
+		bool *stairs, struct loc grid, int color, bool diagonal) {
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -1484,6 +1759,7 @@ static void build_color_point(struct chunk *c, int colors[], int counts[],
 
 		colors[n1] = color;
 		counts[color]++;
+		if (stairs && square_isstairs(c, grid1)) stairs[color] = true;
 
 		for (i = 0; i < (diagonal ? 8 : 4); i++) {
 			struct loc grid2 = loc_sum(grid1, ddgrid_ddd[i]);
@@ -1505,9 +1781,14 @@ static void build_color_point(struct chunk *c, int colors[], int counts[],
  * \param c is the current chunk
  * \param colors is the array of current point colors
  * \param counts is the array of current color counts
+ * \param stairs If not NULL, stairs is an array with the same number of
+ * elements as counts.  At exit, stairs[i] will indicate whether the region
+ * with color i includes a staircase.
  * \param diagonal controls whether we can progress diagonally
  */
-static void build_colors(struct chunk *c, int colors[], int counts[], bool diagonal) {
+static void build_colors(struct chunk *c, int colors[], int counts[],
+		bool *stairs, bool diagonal)
+{
 	int y, x;
 	int h = c->height;
 	int w = c->width;
@@ -1516,7 +1797,8 @@ static void build_colors(struct chunk *c, int colors[], int counts[], bool diago
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
 			if (ignore_point(c, colors, loc(x, y))) continue;
-			build_color_point(c, colors, counts, loc(x, y), color, diagonal);
+			build_color_point(c, colors, counts, stairs,
+				loc(x, y), color, diagonal);
 			color++;
 		}
 	}
@@ -1527,8 +1809,13 @@ static void build_colors(struct chunk *c, int colors[], int counts[], bool diago
  * \param c is the current chunk
  * \param colors is the array of current point colors
  * \param counts is the array of current color counts
+ * \param stairs If not NULL, stairs is an array with the same number of
+ * elements as counts and stairs[i] will indicate whether the region with
+ * color i includes a staircase.  Regions with staircases will not be deleted.
  */
-static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
+static void clear_small_regions(struct chunk *c, int colors[], int counts[],
+		bool *stairs)
+{
 	int i, y, x;
 	int h = c->height;
 	int w = c->width;
@@ -1538,7 +1825,7 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
 	array_filler(deleted, 0, size);
 
 	for (i = 0; i < size; i++) {
-		if (counts[i] < 9) {
+		if (counts[i] < 9 && (!stairs || !stairs[i])) {
 			deleted[i] = 1;
 			counts[i] = 0;
 		}
@@ -1743,7 +2030,7 @@ void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect) {
 	int *colors = mem_zalloc(size * sizeof(int));
 	int *counts = mem_zalloc(size * sizeof(int));
 
-	build_colors(c, colors, counts, true);
+	build_colors(c, colors, counts, NULL, true);
 	join_regions(c, colors, counts, allow_vault_disconnect);
 
 	mem_free(colors);
@@ -1757,9 +2044,13 @@ void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect) {
  * \param depth the chunk's native depth
  * \param h the chunk's dimensions
  * \param w the chunk's dimensions
+ * \param join Is a linked list of the connection information to adjacent
+ * levels; the cavern will build in stairs at those locations.  May be NULL
+ * to not build in stairs during cavern generation.
  * \return a pointer to the generated chunk
  */
-static struct chunk *cavern_chunk(int depth, int h, int w)
+static struct chunk *cavern_chunk(int depth, int h, int w,
+		const struct connector *join)
 {
 	int i;
 	int size = h * w;
@@ -1769,7 +2060,7 @@ static struct chunk *cavern_chunk(int depth, int h, int w)
 
 	int *colors = mem_zalloc(size * sizeof(int));
 	int *counts = mem_zalloc(size * sizeof(int));
-
+	bool *stairs = (join) ? mem_zalloc(size * sizeof(*stairs)) : NULL;
 	int tries;
 
 	struct chunk *c = cave_new(h, w);
@@ -1781,7 +2072,7 @@ static struct chunk *cavern_chunk(int depth, int h, int w)
 	/* Start trying to build caverns */
 	for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
 		/* Build a random cavern and mutate it a number of times */
-		init_cavern(c, density);
+		init_cavern(c, density, join);
 		for (i = 0; i < times; i++) mutate_cavern(c);
 
 		/* If there are enough open squares then we're done */
@@ -1797,16 +2088,30 @@ static struct chunk *cavern_chunk(int depth, int h, int w)
 	if (tries == MAX_CAVERN_TRIES) {
 		mem_free(colors);
 		mem_free(counts);
+		mem_free(stairs);
 		cave_free(c);
 		return NULL;
 	}
 
-	build_colors(c, colors, counts, false);
-	clear_small_regions(c, colors, counts);
+	build_colors(c, colors, counts, stairs, false);
+	clear_small_regions(c, colors, counts, stairs);
 	join_regions(c, colors, counts, true);
+
+	/* Convert the permanent rock walls near stairs back to granite. */
+	while (join) {
+		for (i = 0; i < 8; ++i) {
+			struct loc adj = loc_sum(join->grid, ddgrid_ddd[i]);
+
+			if (square_in_bounds(c, adj) && square_isperm(c, adj)) {
+				set_marked_granite(c, adj, SQUARE_WALL_SOLID);
+			}
+		}
+		join = join->next;
+	}
 
 	mem_free(colors);
 	mem_free(counts);
+	mem_free(stairs);
 
 	return c;
 }
@@ -1824,9 +2129,6 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 
 	struct chunk *c;
 
-	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
-
 	if (p->depth < 15) {
 		/* If we're too shallow then don't do it */
 		return false;
@@ -1837,7 +2139,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 		w = MAX(w, min_width);
 
 		/* Try to build the cavern, fail gracefully */
-		c = cavern_chunk(p->depth, h, w);
+		c = cavern_chunk(p->depth, h, w, dun->join);
 		if (!c) return NULL;
 	}
 	c->depth = p->depth;
@@ -1845,11 +2147,8 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	/* Surround the level with perma-rock */
 	draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE, true);
 
-	/* Place 2-3 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(1, 3));
-
-	/* Place 1-2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 1-3 down stairs and 1-2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(1, 3), rand_range(1, 2));
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2375,7 +2674,6 @@ static struct chunk *modified_chunk(int depth, int height, int width)
 	int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
 	int dun_unusual = dun->profile->dun_unusual;
-	struct connector *join = dun->join;
 
 	/* Make the cave */
 	struct chunk *c = cave_new(height, width);
@@ -2409,22 +2707,7 @@ static struct chunk *modified_chunk(int depth, int height, int width)
 
 	/* Build the special staircase rooms */
 	if (OPT(player, birth_levels_persist)) {
-		struct room_profile profile;
-		for (i = 0; i < num_rooms; i++) {
-			profile = dun->profile->room_profiles[i];
-			if (streq(profile.name, "staircase room")) {
-				break;
-			}
-		}
-		while (join) {
-			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
-							true)) {
-				dump_level_simple(NULL, "Modified Generation:"
-					"  Failed to Build Staircase Room", c);
-				quit("Failed to place stairs");
-			}
-			join = join->next;
-		}
+		build_staircase_rooms(c, "Modified Generation");
 	}
 
 	/* Build rooms until we have enough floor grids and at least two rooms */
@@ -2536,15 +2819,8 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, false)) {
-		alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
-	}
-
-	/* Place 1 or 2 up stairs near some walls */
-	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, true)) {
-		alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
-	}
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2627,6 +2903,11 @@ static struct chunk *moria_chunk(int depth, int height, int width)
 	dun->pit_num = 0;
 	dun->cent_n = 0;
 	reset_entrance_data(c);
+
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		build_staircase_rooms(c, "Moria Generation");
+	}
 
 	/* Build rooms until we have enough floor grids and at least two rooms
 	 * (the latter is to make it easier to satisfy the constraints for
@@ -2732,11 +3013,8 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2822,7 +3100,7 @@ static void connect_caverns(struct chunk *c, struct loc floor[])
 	int color_of_floor[4];
 
 	/* Color the regions, find which cavern is which color */
-	build_colors(c, colors, counts, true);
+	build_colors(c, colors, counts, NULL, true);
 	for (i = 0; i < 4; i++) {
 		int spot = grid_to_i(floor[i], c->width);
 		color_of_floor[i] = colors[spot];
@@ -2937,13 +3215,17 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	lower_cavern_ypos = centre_cavern_ypos + centre_cavern_hgt;
 
 	/* Make the caverns */
-	upper_cavern = cavern_chunk(p->depth, upper_cavern_hgt, centre_cavern_wid);
-	lower_cavern = cavern_chunk(p->depth, lower_cavern_hgt, centre_cavern_wid);
+	upper_cavern = cavern_chunk(p->depth, upper_cavern_hgt,
+		centre_cavern_wid, NULL);
+	lower_cavern = cavern_chunk(p->depth, lower_cavern_hgt,
+		centre_cavern_wid, NULL);
 	left_cavern_wid = (z_info->dungeon_wid - centre_cavern_wid) / 2;
 	right_cavern_wid = z_info->dungeon_wid - left_cavern_wid -
 		centre_cavern_wid;
-	left_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, left_cavern_wid);
-	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, right_cavern_wid);
+	left_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt,
+		left_cavern_wid, NULL);
+	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt,
+		right_cavern_wid, NULL);
 
 	/* Return on failure */
 	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern) {
@@ -3011,10 +3293,10 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 		centre_cavern_wid * (upper_cavern_hgt + lower_cavern_hgt);
 
 	/* Place 2-3 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(1, 3));
+	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 0, false, NULL);
 
 	/* Place 1-2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 0, false, NULL);
 
 	/* Generate some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -3058,12 +3340,12 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
 	int size_percent, y_size, x_size;
+	int left_width, normal_width, lair_width;
+	int normal_offset, lair_offset;
 	struct chunk *c;
 	struct chunk *normal;
 	struct chunk *lair;
-
-	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
+	struct connector *cached_join;
 
 	/* Scale the level */
 	i = randint1(10) + p->depth / 24;
@@ -3085,11 +3367,55 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	normal = modified_chunk(p->depth, y_size, x_size / 2);
-	if (!normal) return NULL;
+	cached_join = dun->join;
+	dun->join = NULL;
+	if (OPT(p, birth_levels_persist)) {
+		left_width = 1 + find_joinfree_vertical_seam(cached_join,
+			x_size / 2, MIN(5, x_size / 20), 0, y_size - 1);
+		if (left_width < 4 || x_size - left_width < 4) return NULL;
+	} else {
+		assert(cached_join == NULL);
+		left_width = x_size / 2;
+	}
+	if (one_in_(2)) {
+		/* Place the normal part on the left. */
+		normal_width = left_width;
+		normal_offset = 0;
+		lair_width = x_size - left_width;
+		lair_offset = left_width;
+	} else {
+		/* Place the lair part on the left. */
+		normal_width = x_size - left_width;
+		normal_offset = left_width;
+		lair_width = left_width;
+		lair_offset = 0;
+	}
+
+	/*
+	 * The transformation applied here should match that for chunk_copy()
+	 * below.
+	 */
+	dun->join = transform_join_list(cached_join, y_size, normal_width,
+		0, normal_offset, 0, false);
+	normal = modified_chunk(p->depth, y_size, normal_width);
+	/* Done with the transformed connector information. */
+	cave_connectors_free(dun->join);
+	dun->join = cached_join;
+	if (!normal) {
+		return NULL;
+	}
 	normal->depth = p->depth;
 
-	lair = cavern_chunk(p->depth, y_size, x_size / 2);
+	/*
+	 * The transformation applied here should match that for chunk_copy()
+	 * below.
+	 */
+	dun->join = transform_join_list(cached_join, y_size, lair_width,
+		0, lair_offset, 0, false);
+	lair = cavern_chunk(p->depth, y_size, lair_width, dun->join);
+	/* Done with the transformed connector information. */
+	cave_connectors_free(dun->join);
+	dun->join = cached_join;
 	if (!lair) {
 		wipe_mon_list(normal, p);
 		cave_free(normal);
@@ -3144,13 +3470,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Make the level */
 	c = cave_new(y_size, x_size);
 	c->depth = p->depth;
-	if (one_in_(2)) {
-		chunk_copy(c, lair, 0, 0, 0, false);
-		chunk_copy(c, normal, 0, x_size / 2, 0, false);
-	} else {
-		chunk_copy(c, normal, 0, 0, 0, false);
-		chunk_copy(c, lair, 0, x_size / 2, 0, false);
-	}
+	chunk_copy(c, normal, 0, normal_offset, 0, false);
+	chunk_copy(c, lair, 0, lair_offset, 0, false);
 
 	/* Free the chunks */
 	cave_free(normal);
@@ -3163,11 +3484,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Connect */
 	ensure_connectedness(c, true);
 
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4));
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2));
+	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
+	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -3220,14 +3538,14 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	if (!gauntlet) return NULL;
 	gauntlet->depth = p->depth;
 
-	left = cavern_chunk(p->depth, y_size, x_size);
+	left = cavern_chunk(p->depth, y_size, x_size, NULL);
 	if (!left) {
 		cave_free(gauntlet);
 		return NULL;
 	}
 	left->depth = p->depth;
 
-	right = cavern_chunk(p->depth, y_size, x_size);
+	right = cavern_chunk(p->depth, y_size, x_size, NULL);
 	if (!right) {
 		cave_free(gauntlet);
 		cave_free(left);
@@ -3248,10 +3566,10 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		SQUARE_NO_TELEPORT);
 
 	/* Place down stairs in the right cavern */
-	alloc_stairs(right, FEAT_MORE, rand_range(2, 3));
+	alloc_stairs(right, FEAT_MORE, rand_range(2, 3), 0, false, NULL);
 
 	/* Place up stairs in the left cavern */
-	alloc_stairs(left, FEAT_LESS, rand_range(1, 3));
+	alloc_stairs(left, FEAT_LESS, rand_range(1, 3), 0, false, NULL);
 
 	/*
 	 * Open the ends of the gauntlet.  Make sure the opening is

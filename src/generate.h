@@ -170,6 +170,16 @@ struct dun_data {
 
     /*!< Info for connecting to persistent levels */
     struct connector *join;
+
+    /*!< Info for avoiding conflicts with persistent levels two away */
+    struct connector *one_off_above;
+    struct connector *one_off_below;
+
+    /*!< The connection information to use for the next staircase room */
+    struct connector *curr_join;
+
+    /*!< The number of staircase rooms */
+    int nstair_room;
 };
 
 
@@ -373,6 +383,8 @@ extern byte get_angle_to_grid[41][41];
 int grid_to_i(struct loc grid, int w);
 void i_to_grid(int i, int w, struct loc *grid);
 void shuffle(int *arr, int n);
+bool cave_find_in_range(struct chunk *c, struct loc *grid, struct loc top_left,
+	struct loc bottom_right, square_predicate pred);
 bool cave_find(struct chunk *c, struct loc *grid, square_predicate pred);
 bool find_empty(struct chunk *c, struct loc *grid);
 bool find_empty_range(struct chunk *c, struct loc *grid, struct loc top_left,
@@ -389,7 +401,8 @@ void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
 void place_random_stairs(struct chunk *c, struct loc grid);
-void alloc_stairs(struct chunk *c, int feat, int num);
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+	const struct connector *avoid_list);
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);

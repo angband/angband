@@ -447,6 +447,7 @@ struct loc next_grid(struct loc grid, int dir);
 int lookup_feat(const char *name);
 void set_terrain(void);
 struct chunk *cave_new(int height, int width);
+void cave_connectors_free(struct connector *join);
 void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);

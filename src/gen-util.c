@@ -157,7 +157,7 @@ void shuffle(int *arr, int n)
  * \param pred square_predicate specifying what we're looking for
  * \return success
  */
-static bool cave_find_in_range(struct chunk *c, struct loc *grid,
+bool cave_find_in_range(struct chunk *c, struct loc *grid,
 	struct loc top_left, struct loc bottom_right,
 	square_predicate pred)
 {
@@ -531,11 +531,65 @@ void place_random_door(struct chunk *c, struct loc grid)
  * \param c the current chunk
  * \param feat the stair terrain type
  * \param num number of staircases to place
- * \param walls number of walls to surround the stairs (negotiable)
+ * \param minsep If greater than zero, the stairs must be more than minsep
+ * grids in x or y from other staircases.  sepany controls which types of
+ * staircases are considered when enforcing the separation constraint.
+ * \param sepany If true, the minimum separation contraint applies to any
+ * type of staircase.  Otherwise, the minimum separation contraint only applies
+ * to staircases of the same type.
+ * \param avoid_list If not NULL and minsep is greater than zero, also avoid
+ * the locations in avoid_list which have staircases of the opposite type.
  */
-void alloc_stairs(struct chunk *c, int feat, int num)
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+		const struct connector *avoid_list)
 {
-	int i;
+	int i, navalloc, nav;
+	struct loc *av;
+
+	nav = 0;
+	if (minsep > 0) {
+		/*
+		 * Get the locations of the stairs already there that'll have
+		 * to be avoided.
+		 */
+		square_predicate tester = (sepany) ? square_isstairs :
+			((feat == FEAT_MORE) ?
+			square_isdownstairs : square_isupstairs);
+		struct loc grid;
+		const struct connector *avc;
+
+		navalloc = 8;
+		av = mem_alloc(navalloc * sizeof(*av));
+		for (grid.y = 0; grid.y < c->height; ++grid.y) {
+			for (grid.x = 0; grid.x < c->width; ++grid.x) {
+				if ((*tester)(c, grid)) {
+					assert(nav >= 0 && nav <= navalloc);
+					if (nav == navalloc) {
+						navalloc += navalloc;
+						av = mem_realloc(av, navalloc *
+							sizeof(*av));
+					}
+					av[nav++] = grid;
+				}
+			}
+		}
+
+		/* Also add the locations that were passed in. */
+		for (avc = avoid_list; avc; avc = avc->next) {
+			if (avc->feat != feat) {
+				assert(nav >= 0 && nav <= navalloc);
+				if (nav == navalloc) {
+					navalloc += navalloc;
+					av = mem_realloc(av, navalloc *
+						sizeof(*av));
+				}
+				av[nav++] = avc->grid;
+			}
+		}
+	} else {
+		navalloc = 0;
+		av = NULL;
+	}
 
 	/* Place "num" stairs */
 	for (i = 0; i < num; i++) {
@@ -552,6 +606,34 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 				if (!find_empty(c, &grid)) continue;
 
 				if (square_num_walls_adjacent(c, grid) < walls) continue;
+				if (minsep > 0) {
+					int k;
+
+					/*
+					 * Check against the stairs to be
+					 * avoided.
+					 */
+					for (k = 0; k < nav; ++k) {
+						if (ABS(grid.y - av[k].y) <=
+								minsep &&
+								ABS(grid.x -
+								av[k].x) <=
+								minsep) {
+							break;
+						}
+					}
+					if (k < nav) {
+						continue;
+					}
+					/* Add this to the avoidance list. */
+					assert(nav >= 0 && nav <= navalloc);
+					if (nav == navalloc) {
+						navalloc += navalloc;
+						av = mem_realloc(av, navalloc *
+							sizeof(*av));
+					}
+					av[nav++] = grid;
+				}
 
 				place_stairs(c, grid, feat);
 				assert(square_isstairs(c, grid));
@@ -562,6 +644,8 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 			if (walls) walls--;
 		}
 	}
+
+	mem_free(av);
 }
 
 

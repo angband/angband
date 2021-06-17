@@ -10,7 +10,8 @@
 # The dungeon is divided into non-overlapping square blocks of block_size by
 # block_size grids.  When rooms are placed, each is assigned a rectangular
 # chunk of blocks, and those assignments won't leave a block assigned to more
-# than one room.  So, block_size affects how densely the rooms can be packed
+# than one room (the staircase rooms for persistent levels are an exception
+# to that rule).  So, block_size affects how densely the rooms can be packed
 # and the maximum number of rooms possible.  rooms is the number of rooms to
 # aim for.  unusual is a measure of how likely high rarity roooms are to
 # appear - higher values make the rare rooms rarer.  rarity is the maximum
@@ -106,6 +107,10 @@ room:room template:3:11:33:30:0:1:100
 # Normal rooms (rarity = 0)
 room:simple room:0:11:33:1:0:0:100
 
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:0:3:3:1:0:99:0
+
 ## Modified
 name:modified
 params:1:50:300:2
@@ -139,7 +144,7 @@ room:simple room:0:11:33:1:0:0:100
 
 # Staircase rooms - rarity 99 to prevent random occurrence
 # these rooms are specially generated to join persistent levels
-room:staircase room:0:1:1:1:0:99:0
+room:staircase room:0:3:3:1:0:99:0
 
 ## Moria - these have alloc -1, but still appear after other checks
 ## To completely turn them off, set alloc to zero
@@ -162,6 +167,10 @@ room:Interesting room:0:44:55:0:0:2:100
 
 # Normal moria-style rooms (rarity = 0)
 room:moria room:0:11:33:1:0:0:100
+
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:0:3:3:1:0:99:0
 
 ## Lair
 name:lair
@@ -194,6 +203,10 @@ room:room template:3:11:33:30:0:1:100
 
 # Normal rooms (rarity = 0)
 room:simple room:0:11:33:1:0:0:100
+
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:0:3:3:1:0:99:0
 
 ## Gauntlet
 name:gauntlet
