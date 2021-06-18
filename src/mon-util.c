@@ -601,7 +601,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Affect light? */
 		if (mon->race->light != 0)
-			player->upkeep->update |= PU_UPDATE_VIEW;
+			player->upkeep->update |= PU_UPDATE_VIEW | PU_MONSTERS;
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
@@ -650,7 +650,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 
 		/* Affect light? */
 		if (mon->race->light != 0)
-			player->upkeep->update |= PU_UPDATE_VIEW;
+			player->upkeep->update |= PU_UPDATE_VIEW | PU_MONSTERS;
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
