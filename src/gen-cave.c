@@ -2129,19 +2129,13 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 
 	struct chunk *c;
 
-	if (p->depth < 15) {
-		/* If we're too shallow then don't do it */
-		return false;
+	/* Enforce minimum dimensions */
+	h = MAX(h, min_height);
+	w = MAX(w, min_width);
 
-	} else {
-		/* Enforce minimum dimensions */
-		h = MAX(h, min_height);
-		w = MAX(w, min_width);
-
-		/* Try to build the cavern, fail gracefully */
-		c = cavern_chunk(p->depth, h, w, dun->join);
-		if (!c) return NULL;
-	}
+	/* Try to build the cavern, fail gracefully */
+	c = cavern_chunk(p->depth, h, w, dun->join);
+	if (!c) return NULL;
 	c->depth = p->depth;
 
 	/* Surround the level with perma-rock */

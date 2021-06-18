@@ -77,6 +77,7 @@ alloc:-1
 ## Cavern
 name:cavern
 params:1:0:200:0
+min-level:15
 alloc:10
 
 ## Classic
