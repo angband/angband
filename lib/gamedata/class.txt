@@ -628,7 +628,10 @@ effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:BLACKBREATH
-desc:Cures all cuts, poison, stunning and black breath.
+effect:NOURISH:INC_TO
+dice:80
+desc:Cures all cuts, poison, stunning and black breath, and leaves you
+desc: well-nourished.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
 book-graphics:?:o
@@ -1513,9 +1516,12 @@ effect:DETECT_LIVING_MONSTERS
 effect-yx:22:40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Cure Poison:9:4:30:4
+spell:Herbal Curing:9:6:30:4
+effect:CURE:CUT
 effect:CURE:POISONED
-desc:Neutralizes poison.
+effect:CURE:STUN
+effect:CURE:BLACKBREATH
+desc:Cures all cuts, poison, stunning and black breath.
 
 spell:Resist Poison:12:10:32:5
 effect:TIMED_INC:OPP_POIS
@@ -1561,12 +1567,13 @@ spell:Decoy:30:30:40:60
 effect:GLYPH:DECOY
 desc:Leaves a magical decoy that looks and sounds like the player.
 
-spell:Herbal Curing:40:20:90:200
-effect:CURE:CUT
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:BLACKBREATH
-desc:Cures all cuts, poison, stunning and black breath.
+spell:Brand Ammunition:40:60:95:120
+effect:BRAND_AMMO
+desc:Brands one stack of ammunition with fire, cold, or poison
+desc: (selected at random) and at the same time attempts to improve
+desc: the to-hit bonus and the to-dam bonus of the same ammunition.
+desc:  The spell has no effect if the ammunition is already branded, has a
+desc: slay, is broken, or is cursed.
 
 
 ############### BLACKGUARD ###############
