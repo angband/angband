@@ -387,7 +387,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
-desc:Detects all treasure, objects and monsters in the immediate area.
+desc:Detects all traps, doors, stairs, treasure, objects and monsters in the
+desc: immediate area.
 
 spell:Dimension Door:35:30:80:40
 effect:TELEPORT_TO
