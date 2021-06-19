@@ -636,6 +636,7 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			int beam_len = effect->radius;
 			if (effect->other) {
 				beam_len += player->lev / effect->other;
+				beam_len = MIN(beam_len, z_info->max_range);
 			}
 			special = format(", len %d", beam_len);
 			break;
