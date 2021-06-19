@@ -1035,8 +1035,11 @@ spell:Crush:10:6:40:5
 effect:PROJECT_LOS:MON_CRUSH
 dice:$B
 expr:B:PLAYER_LEVEL:* 4
+effect:DAMAGE
+dice:d$S
+expr:S:PLAYER_LEVEL:* 2
 desc:Instantly kill any monster in line-of-sight with less than four times the
-desc: player's level in hitpoints.  Other monsters are unharmed.
+desc: player's level in hitpointsting the player.  Other monsters are unharmed.
 
 spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
