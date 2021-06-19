@@ -519,12 +519,12 @@ cost:60
 alloc:10:5 to 100
 pile:70:1d4
 power:7
+effect:SET_VALUE
+dice:25+5d5
 effect:TIMED_INC:IMAGE
-dice:25+5d5
 effect:TIMED_INC:OPP_FIRE
-dice:25+5d5
 effect:TIMED_INC:OPP_COLD
-dice:25+5d5
+effect:CLEAR_VALUE
 effect:HEAL_HP
 dice:200
 effect:NOURISH:INC_BY

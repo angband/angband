@@ -329,14 +329,13 @@ desc:Produces a bolt that teleports away the first monster in its path.
 desc: Distance teleported increases with player level.
 
 spell:Resistance:20:20:65:20
+effect:SET_VALUE
+dice:20+d20
 effect:TIMED_INC:OPP_ACID
-dice:20+d20
 effect:TIMED_INC:OPP_ELEC
-dice:20+d20
 effect:TIMED_INC:OPP_COLD
-dice:20+d20
 effect:TIMED_INC:OPP_FIRE
-dice:20+d20
+effect:CLEAR_VALUE
 desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
 spell:Tap Magical Energy:22:2:30:12
@@ -1650,10 +1649,11 @@ desc: melee blow.  You gain an additional blow at levels 25 and 40.  If you
 desc: moved, the number of blows is reduced by 25% for each space, then rounded.
 
 spell:Grim Purpose:13:8:30:12
+effect:SET_VALUE
+dice:12+d12
 effect:TIMED_INC:OPP_CONF
-dice:12+d12
 effect:TIMED_INC:FREE_ACT
-dice:12+d12
+effect:CLEAR_VALUE
 desc:Your mind becomes too focused to be slowed, paralyzed or confused
 desc: for 12+d12 turns.
 

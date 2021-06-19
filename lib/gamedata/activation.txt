@@ -381,18 +381,16 @@ name:RESIST_ALL
 aim:0
 power:10
 msg:{name} glows many colours...
+effect:SET_VALUE
+dice:20+1d20
 effect:TIMED_INC:OPP_ACID
-dice:20+1d20
 effect:TIMED_INC:OPP_ELEC
-dice:20+1d20
 effect:TIMED_INC:OPP_FIRE
-dice:20+1d20
 effect:TIMED_INC:OPP_COLD
-dice:20+1d20
 effect:TIMED_INC:OPP_POIS
-dice:20+1d20
-desc:grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns
-
+effect:CLEAR_VALUE
+desc:grants temporary resistance to acid, electricity, fire, cold and poison
+desc: for 1d20+20 turns
 
 name:DETECT_TREASURE
 aim:0
@@ -757,20 +755,16 @@ msg:{name} glow{s} many colors...
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
+dice:50+1d50
+effect:SET_VALUE
 effect:TIMED_INC:SHERO
-dice:50+1d50
 effect:TIMED_INC:BLESSED
-dice:50+1d50
 effect:TIMED_INC:OPP_ACID
-dice:50+1d50
 effect:TIMED_INC:OPP_ELEC
-dice:50+1d50
 effect:TIMED_INC:OPP_FIRE
-dice:50+1d50
 effect:TIMED_INC:OPP_COLD
-dice:50+1d50
 effect:TIMED_INC:OPP_POIS
-dice:50+1d50
+effect:CLEAR_VALUE
 desc:bestows upon you berserk rage, bless, and resistance
 
 name:RESTORE_LIFE
@@ -1173,10 +1167,11 @@ aim:0
 power:7
 effect:TIMED_INC:IMAGE
 dice:249+1d101
+effect:SET_VALUE
+dice:19+1d21
 effect:TIMED_INC:OPP_FIRE
-dice:19+1d21
 effect:TIMED_INC:OPP_COLD
-dice:19+1d21
+effect:CLEAR_VALUE
 effect:HEAL_HP
 dice:200
 desc:grants temporary resistance to fire and cold, cures 200HP, but also makes you hallucinate wildly

@@ -119,3 +119,5 @@ EFFECT(SWEEP,						false,	"blows",	1,		EFINFO_DICE,	"strikes %d blows against al
 EFFECT(BIZARRE,						true,	NULL,		0,		EFINFO_NONE,	"does bizarre things",	"do bizarre things")
 EFFECT(WONDER,						true,	NULL,		0,		EFINFO_NONE,	"creates random and unpredictable effects",	"create random effects")
 EFFECT(SELECT,						false,	NULL,		0,		EFINFO_NONE,	"selects one of ",	"")
+EFFECT(SET_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"selects one of ",	"")
+EFFECT(CLEAR_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"selects one of ",	"")

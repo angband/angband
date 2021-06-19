@@ -87,6 +87,10 @@ struct effect_kind {
 	const char *menu_name;       /* Format string for short name */
 };
 
+/**
+ * Set value for a chain of effects
+ */
+static int set_value = 0;
 
 /**
  * Stat adjectives
@@ -104,6 +108,10 @@ static const char *desc_stat(int stat, bool positive)
 static int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
 	int final = 0;
+
+	if (set_value) {
+		return set_value;
+	}
 
 	if (context->value.base > 0 ||
 		(context->value.dice > 0 && context->value.sides > 0)) {
@@ -5506,6 +5514,29 @@ static bool effect_handler_SELECT(effect_handler_context_t *context)
 	return true;
 }
 
+
+/**
+ * Dummy effect, to tell the effect code to set a value for a string of
+ * following effects to use, rather than setting their own value.
+ * The value will not use the device boost, which should not be a problem
+ * as it is unlikely to be used for damage (the main use case is to
+ * synchronise the end of timed effects).
+ */
+static bool effect_handler_SET_VALUE(effect_handler_context_t *context)
+{
+	set_value = effect_calculate_value(context, false);
+	return true;
+}
+
+/**
+ * Dummy effect, to tell the effect code to clear a value set by the
+ * SET_VALUE effect.
+ */
+static bool effect_handler_CLEAR_VALUE(effect_handler_context_t *context)
+{
+	set_value = 0;
+	return true;
+}
 
 /**
  * ------------------------------------------------------------------------
