@@ -1039,7 +1039,8 @@ effect:DAMAGE
 dice:d$S
 expr:S:PLAYER_LEVEL:* 2
 desc:Instantly kill any monster in line-of-sight with less than four times the
-desc: player's level in hitpointsting the player.  Other monsters are unharmed.
+desc: player's level in hitpoints, also hurting the player.  Other monsters are
+desc: unharmed.
 
 spell:Sleep Evil:12:5:50:5
 effect:PROJECT_LOS:SLEEP_EVIL
