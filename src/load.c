@@ -975,9 +975,13 @@ int rd_misc(void)
 
 	/* Handle randart file parsing */
 	if (OPT(player, birth_randarts)) {
-		cleanup_parser(&artifact_parser);
-		activate_randart_file();
-		run_parser(&randart_parser);
+		if (randart_file_exists()) {
+			cleanup_parser(&artifact_parser);
+			activate_randart_file();
+			run_parser(&randart_parser);
+		} else {
+			do_randart(seed_randart, true);
+		}
 		deactivate_randart_file();
 	}
 

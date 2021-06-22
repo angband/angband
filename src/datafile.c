@@ -542,6 +542,20 @@ void file_archive(const char *fname, const char *append)
 }
 
 /**
+ * Check if an archived randart file for the current seed exists
+ */
+bool randart_file_exists(void)
+{
+	char path[1024];
+
+	/* Get the randart filename and path */
+	path_build(path, sizeof(path), ANGBAND_DIR_ARCHIVE,
+			   format("%srandart_%08x.txt", (archive_user_pfx) ?
+					  archive_user_pfx : "", seed_randart));
+	return file_exists(path);
+}
+
+/**
  * Prepare the randart file for the current seed to be loaded
  */
 void activate_randart_file(void)
