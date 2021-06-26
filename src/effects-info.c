@@ -322,14 +322,32 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 	textblock *tb = NULL;
 	int nadded = 0;
 	char desc[250];
+	random_value value = { 0, 0, 0, 0 };
+	bool value_set = false;
 
 	while (e) {
 		const char* edesc = effect_desc(e);
 		int roll = 0;
-		random_value value = { 0, 0, 0, 0 };
 		char dice_string[20];
 
-		if (e->dice != NULL) {
+		/* Deal with special clear value effect. */
+		if (e->index == EF_CLEAR_VALUE) {
+			assert(value_set);
+			value_set = false;
+			e = e->next;
+			continue;
+		}
+
+		/* Deal with special set value effect. */
+		if (e->index == EF_SET_VALUE) {
+			assert(e->dice != NULL);
+			roll = dice_roll(e->dice, &value);
+			value_set = true;
+			e = e->next;
+			continue;
+		}
+
+		if ((e->dice != NULL) && !value_set) {
 			roll = dice_roll(e->dice, &value);
 		}
 
