@@ -444,7 +444,7 @@ Thanks are due for contributing to discussion which has influenced this
 version to a great many people (too many to list) on
 
 * the Angband forums (http://angband.oook.cz/forum/)
-* the #angband-dev and #angband IRC channels on freenode.net
+* the #angband-dev and #angband IRC channels on libera.chat
 * the roguelikes subreddit (https://www.reddit.com/r/roguelikes/)
 * the #band channel on the roguelikes discord
 
