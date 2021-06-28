@@ -238,7 +238,7 @@ Gain new spells (``G``)
   only cast from two or three of these.  Higher level books are normally found
   only in the dungeon. This command takes some energy.
 
-Cast a spell (``m`` and ``p`` in both keysets)
+Cast a spell (``m`` in both keysets)
   To cast a spell, you must have previously learned the spell and must have
   in your inventory a book from which the spell can be read. Each spell has
   a chance of failure which starts out fairly large but decreases as you
