@@ -299,10 +299,8 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
  *
  * The "SQUARE_GLOW" flag is used to determine which grids are "permanently 
  * illuminated".  This flag is used by the update_view() function to help 
- * determine which viewable flags may be "seen" by the player.  This flag 
- * is used by the "map_info" function to determine if a grid is only lit by 
- * the player's torch.  This flag has special semantics for wall grids 
- * (see "update_view()").
+ * determine which viewable flags may be "seen" by the player.  This flag
+ * has special semantics for wall grids (see "update_view()").
  *
  * The "SQUARE_VIEW" flag is used to determine which grids are currently in
  * line of sight of the player.  This flag is set by (and used by) the
@@ -338,6 +336,10 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
  * This flag must always be cleared by any code which sets it.
+ *
+ * The "SQUARE_CLOSE_PLAYER" flag is set for squares that are seen and either
+ * in the player's light radius or the UNLIGHT detection radius.  It is used
+ * by "map_info()" to select which lighting effects to apply to a square.
  *
  * The "update_view()" function is an extremely important function.  It is
  * called only when the player moves, significant terrain changes, or the
@@ -440,6 +442,7 @@ static void mark_wasseen(struct chunk *c)
 				sqinfo_on(square(c, grid)->info, SQUARE_WASSEEN);
 			sqinfo_off(square(c, grid)->info, SQUARE_VIEW);
 			sqinfo_off(square(c, grid)->info, SQUARE_SEEN);
+			sqinfo_off(square(c, grid)->info, SQUARE_CLOSE_PLAYER);
 		}
 	}
 }
@@ -642,8 +645,10 @@ static void become_viewable(struct chunk *c, struct loc grid, struct player *p,
 
 	/* Add the grid to the view, make seen if it's close enough to the player */
 	sqinfo_on(square(c, grid)->info, SQUARE_VIEW);
-	if (close)
+	if (close) {
 		sqinfo_on(square(c, grid)->info, SQUARE_SEEN);
+		sqinfo_on(square(c, grid)->info, SQUARE_CLOSE_PLAYER);
+	}
 
 	/* Mark lit grids, and walls near to them, as seen */
 	if (square_islit(c, grid)) {
@@ -738,6 +743,7 @@ static void update_one(struct chunk *c, struct loc grid, int blind)
 	/* Remove view if blind, check visible squares for traps */
 	if (blind) {
 		sqinfo_off(square(c, grid)->info, SQUARE_SEEN);
+		sqinfo_off(square(c, grid)->info, SQUARE_CLOSE_PLAYER);
 	} else if (square_isseen(c, grid)) {
 		square_reveal_trap(c, grid, false, true);
 	}
@@ -784,6 +790,7 @@ void update_view(struct chunk *c, struct player *p)
 	if (p->state.cur_light > 0 || square_islit(c, p->grid) ||
 		player_has(p, PF_UNLIGHT)) {
 		sqinfo_on(square(c, p->grid)->info, SQUARE_SEEN);
+		sqinfo_on(square(c, p->grid)->info, SQUARE_CLOSE_PLAYER);
 	}
 
 	/* Squares we have LOS to get marked as in the view, and perhaps seen */
