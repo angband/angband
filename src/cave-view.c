@@ -445,6 +445,123 @@ static void mark_wasseen(struct chunk *c)
 }
 
 /**
+ * Help add_light() and calc_lighting():  check for whether a wall can appear
+ * to be lit, as viewed by the player, by a light source regardless of
+ * line-of-sight details.
+ * \param c Is the chunk in which to do the evaluation.
+ * \param p Is the player to test.
+ * \param sgrid Is the location of the light source.
+ * \param wgrid Is the location of the wall.
+ * \return Return true if the wall will appear to be lit for the player.
+ * Otherwise, return false.
+ */
+static bool source_can_light_wall(struct chunk *c, struct player *p,
+		struct loc sgrid, struct loc wgrid)
+{
+	struct loc sn = next_grid(wgrid, motion_dir(wgrid, sgrid)), pn, cn;
+
+	/*
+	 * If the light source is coincident with the wall, all faces will be
+	 * lit, and the player can potentially see it if it's within range and
+	 * the line of sight isn't broken.
+	 */
+	if (loc_eq(sn, wgrid)) return true;
+
+	/*
+	 * If the player is coincident with the wall, all faces of the wall are
+	 * visible to the player and the player can see whichever of those is
+	 * lit by the light source.
+	 */
+	pn = next_grid(wgrid, motion_dir(wgrid, p->grid));
+	if (loc_eq(pn, wgrid)) return true;
+
+	/*
+	 * For the lit face of the wall to be visible to the player, the
+	 * view directions from the wall to the player and the wall to the
+	 * light source must share at least one component.
+	 */
+	if (sn.x == pn.x) {
+		/*
+		 * If the view directions share both components, the lit face
+		 * will be visible to the player if in range and the line of
+		 * sight isn't broken.
+		 */
+		if (sn.y == pn.y) return true;
+		cn.x = sn.x;
+		cn.y = 0;
+	} else if (sn.y == pn.y) {
+		cn.x = 0;
+		cn.y = sn.y;
+	} else {
+		/*
+		 * If the view directions don't share a component, the lit face
+		 * is not visible to the player.
+		 */
+		return false;
+	}
+
+	/*
+	 * When only one component of the view directions is shared, take the
+	 * common component and test whether there's a wall there that would
+	 * block the player's view of the lit face.  That prevents instances
+	 * like this:
+	 *  p
+	 * ###1#
+	 *  @
+	 * where both the light-emitting monster, 'p', and the player, '@',
+	 * have line of sight to the wall, '1', but the face of '1' that would
+	 * be lit is blocked by the wall immediately to the left of '1'.
+	 */
+	return !square_iswall(c, cn);
+}
+
+/**
+ * Help calc_lighting():  add in the effect of a light source.
+ * \param c Is the chunk to use.
+ * \param p Is the player to use.
+ * \param sgrid Is the location of the light source.
+ * \param radius Is the radius, in grids, of the light source.
+ * \param inten Is the intensity of the light source.
+ * This is a brute force approach.  Some computation probably could be saved by
+ * propagating the light out from the source and terminating paths when they
+ * reach a wall.
+ */
+static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
+		int radius, int inten)
+{
+	int y;
+
+	for (y = -radius; y <= radius; y++) {
+		int x;
+
+		for (x = -radius; x <= radius; x++) {
+			struct loc grid = loc_sum(sgrid, loc(x, y));
+			int dist = distance(sgrid, grid);
+			if (!square_in_bounds(c, grid)) continue;
+			if (dist > radius) continue;
+			/* Don't propagate the light through walls. */
+			if (!los(c, sgrid, grid)) continue;
+			/*
+			 * Only light a wall if the face lit is possibly visible
+			 * to the player.
+			 */
+			if (square_iswall(c, grid) && !source_can_light_wall(c,
+					p, sgrid, grid)) continue;
+			/* Adjust the light level */
+			if (inten > 0) {
+				/* Light getting less further away */
+				c->squares[grid.y][grid.x].light +=
+					inten - dist;
+			} else {
+				/* Light getting greater further away */
+				c->squares[grid.y][grid.x].light +=
+					inten + dist;
+			}
+		}
+	}
+}
+
+/**
  * Calculate light level for every grid in view - stolen from Sil
  */
 static void calc_lighting(struct chunk *c, struct player *p)
@@ -465,6 +582,15 @@ static void calc_lighting(struct chunk *c, struct player *p)
 				for (dir = 0; dir < 8; dir++) {
 					struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
 					if (!square_in_bounds(c, adj_grid)) continue;
+					/*
+					 * Only brighten a wall if the player
+					 * is in position to view the face
+					 * that's lit up.
+					 */
+					if (square_iswall(c, adj_grid) &&
+							!source_can_light_wall(
+							c, p, grid, adj_grid))
+							continue;
 					c->squares[adj_grid.y][adj_grid.x].light += 1;
 				}
 			}
@@ -472,24 +598,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	}
 
 	/* Light around the player */
-	for (y = -radius; y <= radius; y++) {
-		for (x = -radius; x <= radius; x++) {
-			/* Get valid grids within the player's light effect radius */
-			struct loc grid = loc_sum(p->grid, loc(x, y));
-			int dist = distance(p->grid, grid);
-			if (!square_in_bounds(c, grid)) continue;
-			if (dist > radius) continue;
-
-			/* Adjust the light level */
-			if (light > 0) {
-				/* Light getting less further away */
-				c->squares[grid.y][grid.x].light += light - dist;
-			} else {
-				/* Light getting greater further away */
-				c->squares[grid.y][grid.x].light += light + dist;
-			}
-		}
-	}
+	add_light(c, p, p->grid, radius, light);
 
 	/* Scan monster list and add monster light or darkness */
 	for (k = 1; k < cave_monster_max(c); k++) {
@@ -506,28 +615,11 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		/* Skip monsters not affecting light */
 		if (!light) continue;
 
-		/* Light or darken around the monster */
-		for (y = -radius; y <= radius; y++) {
-			for (x = -radius; x <= radius; x++) {
-				/* Get valid grids within the monster's light effect radius */
-				struct loc grid = loc_sum(mon->grid, loc(x, y));
-				int dist = distance(mon->grid, grid);
-				if (!square_in_bounds(c, grid)) continue;
-				if (dist > radius) continue;
+		/* Skip if the player can't see it. */
+		if (distance(p->grid, mon->grid) - radius > z_info->max_sight)
+			continue;
 
-				/* Only set it if the player can see it */
-				if (distance(p->grid, grid) > z_info->max_sight) continue;
-
-				/* Adjust the light level */
-				if (light > 0) {
-					/* Light getting less further away */
-					c->squares[grid.y][grid.x].light += light - dist;
-				} else {
-					/* Light getting greater further away */
-					c->squares[grid.y][grid.x].light += light + dist;
-				}
-			}
-		}
+		add_light(c, p, mon->grid, radius, light);
 	}
 
 	/* Update light level indicator */
