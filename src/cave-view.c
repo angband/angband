@@ -299,7 +299,7 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
  *
  * The "SQUARE_GLOW" flag is used to determine which grids are "permanently 
  * illuminated".  This flag is used by the update_view() function to help 
- * determine which viewable flags may be "seen" by the player.  This flag
+ * determine which viewable grids may be "seen" by the player.  This flag
  * has special semantics for wall grids (see "update_view()").
  *
  * The "SQUARE_VIEW" flag is used to determine which grids are currently in
@@ -351,7 +351,8 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
  * on every cave grid in the player's field of view.  It also checks the torch
  * radius of the player, and sets the "SQUARE_SEEN" flag for every grid which
  * is in the "field of view" of the player and which is also "illuminated",
- * either by the players torch (if any) or by any permanent light source.
+ * either by the player's torch (if any), light from monsters, light from
+ * bright terrain, or by any permanent light source (as marked by SQUARE_GLOW).
  * It could use and help maintain information about multiple light sources,
  * which would be helpful in a multi-player version of Angband.
  *
@@ -382,29 +383,28 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
  * some way.  However, for the player to "see" the grid, as determined by
  * the "SQUARE_SEEN" flag, the player must not be blind, the grid must have
  * the "SQUARE_VIEW" flag set, and if the grid is a "wall" grid, and it is
- * not lit by the player's torch, then it must touch a projectable grid 
- * which has both the "SQUARE_GLOW"
- * and "SQUARE_VIEW" flags set.  This last part about wall grids is induced
- * by the semantics of "SQUARE_GLOW" as applied to wall grids, and checking
- * the technical requirements can be very expensive, especially since the
- * grid may be touching some "illegal" grids.  Luckily, it is more or less
- * correct to restrict the "touching" grids from the eight "possible" grids
- * to the (at most) three grids which are touching the grid, and which are
- * closer to the player than the grid itself, which eliminates more than
- * half of the work, including all of the potentially "illegal" grids, if
- * at most one of the three grids is a "diagonal" grid.  In addition, in
- * almost every situation, it is possible to ignore the "SQUARE_VIEW" flag
- * on these three "touching" grids, for a variety of technical reasons.
- * Finally, note that in most situations, it is only necessary to check
- * a single "touching" grid, in fact, the grid which is strictly closest
- * to the player of all the touching grids, and in fact, it is normally
- * only necessary to check the "SQUARE_GLOW" flag of that grid, again, for
- * various technical reasons.  However, one of the situations which does
- * not work with this last reduction is the very common one in which the
+ * not lit by some other light source, then it must touch a projectable grid
+ * which has both the "SQUARE_GLOW" and "SQUARE_VIEW" flags set.  This last
+ * part about wall grids is induced by the semantics of "SQUARE_GLOW" as
+ * applied to wall grids, and checking the technical requirements can be very
+ * expensive, especially since the grid may be touching some "illegal" grids.
+ * Luckily, it is more or less correct to restrict the "touching" grids from
+ * the eight "possible" grids to the (at most) three grids which are touching
+ * the grid, and which are closer to the player than the grid itself, which
+ * eliminates more than half of the work, including all of the potentially
+ * "illegal" grids, if at most one of the three grids is a "diagonal" grid.
+ * In addition, in almost every situation, it is possible to ignore the
+ * "SQUARE_VIEW" flag on these three "touching" grids, for a variety of
+ * technical reasons.  Finally, note that in most situations, it is only
+ * necessary to check a single "touching" grid, in fact, the grid which is
+ * strictly closest to the player of all the touching grids, and in fact,
+ * it is normally only necessary to check the "SQUARE_GLOW" flag of that grid,
+ * again, for various technical reasons.  However, one of the situations which
+ * does not work with this last reduction is the very common one in which the
  * player approaches an illuminated room from a dark hallway, in which the
  * two wall grids which form the "entrance" to the room would not be marked
  * as "SQUARE_SEEN", since of the three "touching" grids nearer to the player
- * than each wall grid, only the farthest of these grids is itself marked
+ * than each wall grid, only the farthest of those grids is itself marked
  * "SQUARE_GLOW".
  *
  *
@@ -448,9 +448,9 @@ static void mark_wasseen(struct chunk *c)
 }
 
 /**
- * Help add_light() and calc_lighting():  check for whether a wall can appear
- * to be lit, as viewed by the player, by a light source regardless of
- * line-of-sight details.
+ * Help glow_can_light_wall(), add_light() and calc_lighting():  check for
+ * whether a wall can appear to be lit, as viewed by the player, by a light
+ * source regardless of line-of-sight details.
  * \param c Is the chunk in which to do the evaluation.
  * \param p Is the player to test.
  * \param sgrid Is the location of the light source.
@@ -519,6 +519,93 @@ static bool source_can_light_wall(struct chunk *c, struct player *p,
 }
 
 /**
+ * Help calc_lighting():  check for whether a wall marked with SQUARE_GLOW
+ * can appear to be lit, as viewed by the player regardless of line-of-sight
+ * details.
+ * \param c Is the chunk in which to do the evaluation.
+ * \param p Is the player to test.
+ * \param wgrid Is the location of the wall.
+ * \return Return true if the wall will appear to be lit for the player.
+ * Otherwise, return false.
+ */
+static bool glow_can_light_wall(struct chunk *c, struct player *p,
+		struct loc wgrid)
+{
+	struct loc pn = next_grid(wgrid, motion_dir(wgrid, p->grid)), chk;
+
+	/*
+	 * If the player is in the wall grid, the player will see the lit face.
+	 */
+	if (loc_eq(pn, wgrid)) return true;
+
+	/*
+	 * If the grid in the direction of the player is not a wall, is in a
+	 * room, and is glowing, it'll illuminate the wall.
+	 */
+	if (!square_iswall(c, pn) && square_isroom(c, pn) &&
+			square_isglow(c, pn)) return true;
+
+	/*
+	 * Try the two neighboring squares adjacent to the one in the direction
+	 * of the player to see if one or more will illuminate the wall by
+	 * glowing.  Those could be out of bounds if the direction isn't
+	 * diagonal.
+	 */
+	if (pn.x != wgrid.x) {
+		if (pn.y != wgrid.y) {
+			chk.x = pn.x;
+			chk.y = wgrid.y;
+			if (!square_iswall(c, chk) && square_isroom(c, chk) &&
+					square_isglow(c, chk) &&
+					source_can_light_wall(c, p, chk, wgrid))
+				return true;
+			chk.x = wgrid.x;
+			chk.y = pn.y;
+			if (!square_iswall(c, chk) && square_isroom(c, chk) &&
+					square_isglow(c, chk) &&
+					source_can_light_wall(c, p, chk, wgrid))
+				return true;
+		} else {
+			chk.x = pn.x;
+			chk.y = wgrid.y - 1;
+			if (square_in_bounds(c, chk) &&
+					!square_iswall(c, chk) &&
+					square_isroom(c, chk) &&
+					square_isglow(c, chk) &&
+					source_can_light_wall(c, p, chk, wgrid))
+				return true;
+			chk.y = wgrid.y + 1;
+			if (square_in_bounds(c, chk) &&
+					!square_iswall(c, chk) &&
+					square_isroom(c, chk) &&
+					square_isglow(c, chk) &&
+					source_can_light_wall(c, p, chk, wgrid))
+				return true;
+		}
+	} else {
+		chk.y = pn.y;
+		chk.x = wgrid.x - 1;
+		if (square_in_bounds(c, chk) && !square_iswall(c, chk) &&
+				square_isroom(c, chk) &&
+				square_isglow(c, chk) &&
+				source_can_light_wall(c, p, chk, wgrid))
+			return true;
+		chk.x = wgrid.x + 1;
+		if (square_in_bounds(c, chk) && !square_iswall(c, chk) &&
+				square_isroom(c, chk) &&
+				square_isglow(c, chk) &&
+				source_can_light_wall(c, p, chk, wgrid))
+			return true;
+	}
+
+	/*
+	 * The adjacent squares towards the player won't light the wall by
+	 * by glowing.
+	 */
+	return false;
+}
+
+/**
  * Help calc_lighting():  add in the effect of a light source.
  * \param c Is the chunk to use.
  * \param p Is the player to use.
@@ -577,7 +664,14 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			c->squares[y][x].light = square_isglow(c, grid) ? 1 : 0;
+
+			if (square_isglow(c, grid) &&
+					(!square_iswall(c, grid) ||
+					glow_can_light_wall(c, p, grid))) {
+				c->squares[y][x].light = 1;
+			} else {
+				c->squares[y][x].light = 0;
+			}
 
 			/* Squares with bright terrain have intensity 2 */
 			if (square_isbright(c, grid)) {

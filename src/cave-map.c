@@ -104,18 +104,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
 
 	if (g->in_view) {
-		bool lit;
-
-		if (square_isglow(cave, grid) && square_iswall(cave, grid)) {
-			/*
-			 * The contribution from SQUARE_GLOW should only count
-			 * if the player is looking from the room that is lit.
-			 */
-			lit = (square_light(cave, grid) >
-				(square_islitwall(cave, grid) ? 0 : 1));
-		} else {
-			lit = square_islit(cave, grid);
-		}
+		bool lit = square_islit(cave, grid);
 
 		if (sqinfo_has(square(cave, grid)->info, SQUARE_CLOSE_PLAYER)) {
 			if (player_has(player, PF_UNLIGHT) &&
