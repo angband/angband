@@ -1736,6 +1736,32 @@ int weight_remaining(struct player *p)
 
 
 /**
+ * Adjust a value by a relative factor of the absolute value.  Mimics the
+ * inline calculations of value = (value * (den + num)) / num when value is
+ * positive.
+ * \param v Is a pointer to the value to adjust.
+ * \param num Is the numerator of the relative factor.  Use a negative value
+ * for a decrease in the value, and a positive value for an increase.
+ * \param den Is the denominator for the relative factor.  Must be positive.
+ * \param minv Is the minimum absolute value of v to use when computing the
+ * adjustment; use zero for this to get a pure relative adjustment.  Must be
+ * be non-negative.
+ */
+static void adjust_skill_scale(int *v, int num, int den, int minv)
+{
+	if (num >= 0) {
+		*v += (MAX(minv, ABS(*v)) * num) / den;
+	} else {
+		/*
+		 * To mimic what (value * (den * num)) / num would give for
+		 * positive value, need to round up the adjustment.
+		 */
+		*v -= (MAX(minv, ABS(*v)) * -num + den - 1) / den;
+	}
+}
+
+
+/**
  * Calculate the effect of a shapechange on player state
  */
 static void calc_shapechange(struct player_state *state,
@@ -2057,18 +2083,18 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->to_h -= lack;
 			state->to_d -= lack;
 			if ((lack > 10) && (lack <= 15)) {
-				state->skills[SKILL_DEVICE] *= 9;
-				state->skills[SKILL_DEVICE] /= 10;
+				adjust_skill_scale(&state->skills[SKILL_DEVICE],
+					-1, 10, 0);
 			} else if ((lack > 15) && (lack <= 18)) {
-				state->skills[SKILL_DEVICE] *= 8;
-				state->skills[SKILL_DEVICE] /= 10;
+				adjust_skill_scale(&state->skills[SKILL_DEVICE],
+					-1, 5, 0);
 				state->skills[SKILL_DISARM_PHYS] *= 9;
 				state->skills[SKILL_DISARM_PHYS] /= 10;
 				state->skills[SKILL_DISARM_MAGIC] *= 9;
 				state->skills[SKILL_DISARM_MAGIC] /= 10;
 			} else if (lack > 18) {
-				state->skills[SKILL_DEVICE] *= 7;
-				state->skills[SKILL_DEVICE] /= 10;
+				adjust_skill_scale(&state->skills[SKILL_DEVICE],
+					-3, 10, 0);
 				state->skills[SKILL_DISARM_PHYS] *= 8;
 				state->skills[SKILL_DISARM_PHYS] /= 10;
 				state->skills[SKILL_DISARM_MAGIC] *= 8;
@@ -2087,14 +2113,14 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 5, 0);
 		if (update) {
 			p->timed[TMD_FASTCAST] = 0;
 		}
 	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 10, 0);
 		if (update) {
 			p->timed[TMD_FASTCAST] = 0;
 		}
@@ -2105,7 +2131,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (p->timed[TMD_BLESSED]) {
 		state->to_a += 5;
 		state->to_h += 10;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], 1, 20, 0);
 	}
 	if (p->timed[TMD_SHIELD]) {
 		state->to_a += 50;
@@ -2116,12 +2142,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_HERO]) {
 		state->to_h += 12;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], 1, 20, 0);
 	}
 	if (p->timed[TMD_SHERO]) {
 		state->skills[SKILL_TO_HIT_MELEE] += 75;
 		state->to_a -= 10;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 10, 0);
 	}
 	if (p->timed[TMD_FAST] || p->timed[TMD_SPRINT]) {
 		state->speed += 10;
@@ -2151,16 +2177,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->el_info[ELEM_POIS].res_level++;
 	}
 	if (p->timed[TMD_CONFUSED]) {
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 75 / 100;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 4, 0);
 	}
 	if (p->timed[TMD_AMNESIA]) {
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 5, 0);
 	}
 	if (p->timed[TMD_POISONED]) {
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 20, 0);
 	}
 	if (p->timed[TMD_IMAGE]) {
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 5, 0);
 	}
 	if (p->timed[TMD_BLOODLUST]) {
 		state->to_d += p->timed[TMD_BLOODLUST] / 2;
@@ -2174,7 +2200,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (of_has(state->flags, OF_AFRAID)) {
 		state->to_h -= 20;
 		state->to_a += 8;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
+		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 20, 0);
 	}
 
 	/* Analyze weight */
