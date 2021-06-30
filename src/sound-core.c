@@ -208,7 +208,7 @@ static void message_sound_define(u16b message_id, const char *sounds_str)
 
 		while ((!found) && (i < next_sound_id)) {
 			if (sounds[i].hash == hash) {
-				if (!strcmp(sounds[i].name, cur_token)) {
+				if (streq(sounds[i].name, cur_token)) {
 					found = true;
 					sound_id = i;
 				}
