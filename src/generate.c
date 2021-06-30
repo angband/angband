@@ -780,7 +780,7 @@ static const struct cave_profile *find_cave_profile(const char *name)
 		const struct cave_profile *profile;
 
 		profile = &cave_profiles[i];
-		if (!strcmp(name, profile->name))
+		if (streq(name, profile->name))
 			return profile;
 	}
 

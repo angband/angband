@@ -117,7 +117,7 @@ void message_add(const char *str, u16b type)
 
 	if (messages->head &&
 	    messages->head->type == type &&
-	    !strcmp(messages->head->str, str) &&
+	    streq(messages->head->str, str) &&
 	    messages->head->count != (u16b)-1) {
 		messages->head->count++;
 		return;

@@ -29,17 +29,17 @@ static int verbose = 0;
 static int nextkey = 0;
 
 static void c_key(char *rest) {
-	if (!strcmp(rest, "left")) {
+	if (streq(rest, "left")) {
 		nextkey = ARROW_LEFT;
-	} else if (!strcmp(rest, "right")) {
+	} else if (streq(rest, "right")) {
 		nextkey = ARROW_RIGHT;
-	} else if (!strcmp(rest, "up")) {
+	} else if (streq(rest, "up")) {
 		nextkey = ARROW_UP;
-	} else if (!strcmp(rest, "down")) {
+	} else if (streq(rest, "down")) {
 		nextkey = ARROW_DOWN;
-	} else if (!strcmp(rest, "space")) {
+	} else if (streq(rest, "space")) {
 		nextkey = ' ';
-	} else if (!strcmp(rest, "enter")) {
+	} else if (streq(rest, "enter")) {
 		nextkey = '\n';
 	} else if (rest[0] == 'C' && rest[1] == '-') {
 		nextkey = KTRL(rest[2]);
@@ -57,7 +57,7 @@ static void c_quit(char *rest) {
 }
 
 static void c_verbose(char *rest) {
-	if (rest && !strcmp(rest, "0")) {
+	if (rest && streq(rest, "0")) {
 		printf("cmd-verbose: off\n");
 		verbose = 0;
 	} else {
@@ -83,7 +83,7 @@ static void c_player_birth(char *rest) {
 	if (!class) class = "Warrior";
 
 	for (r = races; r; r = r->next)
-		if (!strcmp(race, r->name))
+		if (streq(race, r->name))
 			break;
 	if (!r) {
 		printf("player-birth: bad race '%s'\n", race);
@@ -91,7 +91,7 @@ static void c_player_birth(char *rest) {
 	}
 
 	for (c = classes; c; c = c->next)
-		if (!strcmp(class, c->name))
+		if (streq(class, c->name))
 			break;
 
 	if (!c) {
@@ -155,7 +155,7 @@ static errr test_docmd(void) {
 	rest = strtok(NULL, "");
 
 	for (i = 0; cmds[i].name; i++) {
-		if (!strcmp(cmds[i].name, cmd)) {
+		if (streq(cmds[i].name, cmd)) {
 			cmds[i].func(rest);
 			return 0;
 		}
@@ -302,7 +302,7 @@ errr init_test(int argc, char *argv[]) {
 
 	/* Skip over argv[0] */
 	for (i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-p")) {
+		if (streq(argv[i], "-p")) {
 			prompt = 1;
 			continue;
 		}

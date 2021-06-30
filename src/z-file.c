@@ -778,8 +778,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 
 		/* Skip directories */
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ||
-		    strcmp(fd.cFileName, ".") == 0 ||
-		    strcmp(fd.cFileName, "..") == 0)
+		    streq(fd.cFileName, ".") || streq(fd.cFileName, ".."))
 			continue;
 
 		/* Take this one */

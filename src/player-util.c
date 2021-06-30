@@ -180,8 +180,8 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	 * Unenviable task of separating what should and should not cause rage
 	 * If we eliminate the most exploitable cases it should be fine.
 	 * All traps and lava currently give mana, which could be exploited  */
-	if (player_has(p, PF_COMBAT_REGEN)  && strcmp(kb_str, "poison")
-		&& strcmp(kb_str, "a fatal wound") && strcmp(kb_str, "starvation")) {
+	if (player_has(p, PF_COMBAT_REGEN)  && !streq(kb_str, "poison")
+		&& !streq(kb_str, "a fatal wound") && !streq(kb_str, "starvation")) {
 		/* lose X% of hitpoints get X% of spell points */
 		s32b sp_gain = (MAX((s32b)p->msp, 10) << 16) / (s32b)p->mhp * dam;
 		player_adjust_mana_precise(p, sp_gain);

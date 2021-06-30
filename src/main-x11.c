@@ -584,7 +584,7 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 {
 	unsigned int mask=0;
 	
-	if (strcmp(name, "Caps Lock") == 0) return 2;
+	if (streq(name, "Caps Lock")) return 2;
 	
 	for (int i = 0; (!mask) && (i < XkbNumVirtualMods); i++ ) {
 		char* modStr;
@@ -595,7 +595,7 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 		}
 		modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
 		if (modStr) {
-			if (!strcmp(name, modStr))
+			if (streq(name, modStr))
 				XkbVirtualModsToReal( xkb, 1 << i, &mask );
 
 			XFree(modStr);

@@ -498,7 +498,7 @@ int main(int argc, char *argv[])
 #if !defined(WINDOWS)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
-		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
+		if (!streq(nl_langinfo(CODESET), "UTF-8"))
 			quit("Angband requires UTF-8 support");
 	}
 #endif

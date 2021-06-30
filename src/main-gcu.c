@@ -1198,17 +1198,17 @@ errr init_gcu(int argc, char **argv) {
 
         for (i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i], "-spacer") == 0)
+            if (streq(argv[i], "-spacer"))
             {
                 i++;
                 if (i >= argc)
                     quit("Missing size specifier for -spacer");
                 sscanf(argv[i], "%dx%d", &spacer_cx, &spacer_cy);
             }
-            else if (strcmp(argv[i], "-right") == 0 || strcmp(argv[i], "-left") == 0)
+            else if (streq(argv[i], "-right") || streq(argv[i], "-left"))
             {
                 const char *arg, *tmp;
-                bool left = strcmp(argv[i], "-left") == 0;
+                bool left = streq(argv[i], "-left");
                 int  cx, cys[MAX_TERM_DATA] = {0}, ct, j, x, y;
 
                 i++;
@@ -1255,10 +1255,10 @@ errr init_gcu(int argc, char **argv) {
                     term_ct++;
                 }
             }
-            else if (strcmp(argv[i], "-top") == 0 || strcmp(argv[i], "-bottom") == 0)
+            else if (streq(argv[i], "-top") || streq(argv[i], "-bottom"))
             {
                 const char *arg, *tmp;
-                bool top = strcmp(argv[i], "-top") == 0;
+                bool top = streq(argv[i], "-top");
                 int  cy, cxs[MAX_TERM_DATA] = {0}, ct, j, x, y;
 
                 i++;
