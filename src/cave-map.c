@@ -73,10 +73,11 @@
  * doors out of the player's view still change from closed to open and so on.
  *
  * TODO:
- * Hallucination is currently disabled (it was a display-level hack before,
- * and we need it to be a knowledge-level hack).  The idea is that objects
- * may turn into different objects, monsters into different monsters, and
- * terrain may be objects, monsters, or stay the same.
+ * Hallucination is a display-level hack (mostly in ui-map.c's
+ * grid_data_as_text(); some here) and we need it to be a knowledge-level
+ * hack.  The idea is that objects may turn into different objects, monsters
+ * into different monsters, and terrain may be objects, monsters, or stay the
+ * same.
  */
 void map_info(struct loc grid, struct grid_data *g)
 {
