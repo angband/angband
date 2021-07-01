@@ -494,6 +494,7 @@ static bool allows_wall_piercing_door(struct chunk *c, struct loc grid)
 static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 {
 	int i;
+	int dstart = ABS(grid1.x - grid2.x) + ABS(grid1.y - grid2.y);
 	int main_loop_count = 0;
 	struct loc start = grid1, tmp_grid, offset;
 	/* Used to prevent random bends for a while. */
@@ -502,6 +503,7 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 	 * Used to prevent excessive door creation along overlapping corridors.
 	 */
 	bool door_flag = false;
+	bool preemptive = false;
 
 	/* Reset the arrays */
 	dun->tunn_n = 0;
@@ -730,7 +732,11 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 				tmp_grid = loc_diff(grid1, start);
 
 				/* Terminate the tunnel if too far vertically or horizontally */
-				if ((ABS(tmp_grid.x) > 10) || (ABS(tmp_grid.y) > 10)) break;
+				if ((ABS(tmp_grid.x) > 10) ||
+						(ABS(tmp_grid.y) > 10)) {
+					preemptive = true;
+					break;
+				}
 			}
 		}
 	}
@@ -751,6 +757,10 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 				allows_wall_piercing_door(c, dun->wall[i]))
 			place_random_door(c, dun->wall[i]);
 	}
+
+	event_signal_tunnel(EVENT_GEN_TUNNEL_FINISHED,
+		main_loop_count, dun->wall_n, dun->tunn_n, dstart,
+		ABS(grid1.x - grid2.x) + ABS(grid1.y - grid2.y), preemptive);
 }
 
 /**

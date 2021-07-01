@@ -1085,6 +1085,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	/* Arena levels handled separately */
 	if (p->upkeep->arena_level) {
 		/* Generate level */
+		event_signal_string(EVENT_GEN_LEVEL_START, "arena");
 		chunk = arena_gen(p, height, width);
 
 		/* Allocate new known level, light it if requested */
@@ -1135,10 +1136,12 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
+		event_signal_string(EVENT_GEN_LEVEL_START, dun->profile->name);
 		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
 			cleanup_dun_data(dun);
+			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 			continue;
 		}
 
@@ -1196,6 +1199,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 				msg("Generation restarted: %s.", error);
 			}
 			cave_clear(chunk, p);
+			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 		}
 
 		cleanup_dun_data(dun);
@@ -1469,6 +1473,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 		} else if (p->upkeep->arena_level) {
 			/* We're creating a new arena level */
 			*c = cave_generate(p, 6, 6);
+			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		} else {
 			/* Check dimensions */
 			struct level *lev;
@@ -1494,10 +1499,12 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 			/* Generate a new level */
 			*c = cave_generate(p, min_height, min_width);
+			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		}
 	} else {
 		/* Generate a new level */
 		*c = cave_generate(p, 0, 0);
+		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	}
 
 	/* Know the town */
