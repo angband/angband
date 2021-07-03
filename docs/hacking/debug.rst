@@ -140,7 +140,8 @@ Collect disconnection stats ``D``
   Generates several levels to collect statistics about how often all
   down staircases are inaccessible to the player and about how often
   a level has non-vault areas that are inaccessible to the player.  The
-  results are written to the message window.
+  results are written to the message window.  Also collects general
+  statistics about the generated levels and writes them to a file.
 
 Collect pit stats ``P``
   Generates several pits of the room type you specify (pit, nest, or
