@@ -1521,6 +1521,66 @@ void prepare_next_level(struct chunk **c, struct player *p)
 }
 
 /**
+ * Return the number of room builders available.
+ */
+int get_room_builder_count(void)
+{
+	return (int) N_ELEMENTS(room_builders);
+}
+
+/**
+ * Convert the name of a room builder into its index.  Return -1 if the
+ * name does not match any of the room builders.
+ */
+int get_room_builder_index_from_name(const char *name)
+{
+	int i = 0;
+
+	while (1) {
+		if (i >= (int) N_ELEMENTS(room_builders)) {
+			return -1;
+		}
+		if (streq(name, room_builders[i].name)) {
+			return i;
+		}
+		++i;
+	}
+}
+
+/**
+ * Get the name of a room builder given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * get_room_builder_count()).
+ */
+const char *get_room_builder_name_from_index(int i)
+{
+	return (i >= 0 && i < (int) get_room_builder_count()) ?
+		room_builders[i].name : NULL;
+}
+
+/**
+ * Convert the name of a level profile into its index in the cave_profiles
+ * list.  Return -1 if the name does not match any of the profiles.
+ */
+int get_level_profile_index_from_name(const char *name)
+{
+	const struct cave_profile *p = find_cave_profile(name);
+
+	return (p) ? (int) (p - cave_profiles) : -1;
+}
+
+/**
+ * Get the name of a level profile given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * z_info->profile_max).
+ */
+const char *get_level_profile_name_from_index(int i)
+{
+	return (i >= 0 && i < z_info->profile_max) ?
+		cave_profiles[i].name : NULL;
+}
+
+/**
  * The generate module, which initialises template rooms and vaults
  * Should it clean up?
  */
