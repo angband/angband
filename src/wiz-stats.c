@@ -1910,7 +1910,7 @@ static double compute_covar(const struct covar_n *cv, int i, int j)
 		j = i;
 		i = t;
 	}
-	assert(i >= 0 && i < cv->n && j >= 0 && cv->count >= 0);
+	assert(i >= 0 && i < cv->n && j >= 0);
 	if (cv->count <= 1) return 0.0;
 	result = cv->c[(i * (i + 1)) / 2 + j] - cv->s[i] * cv->s[i] / cv->count;
 	return (i != j || result > 0.0) ? result / (cv->count - 1) : 0.0;
