@@ -1085,6 +1085,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	/* Arena levels handled separately */
 	if (p->upkeep->arena_level) {
 		/* Generate level */
+		event_signal_string(EVENT_GEN_LEVEL_START, "arena");
 		chunk = arena_gen(p, height, width);
 
 		/* Allocate new known level, light it if requested */
@@ -1135,10 +1136,12 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
+		event_signal_string(EVENT_GEN_LEVEL_START, dun->profile->name);
 		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
 			cleanup_dun_data(dun);
+			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 			continue;
 		}
 
@@ -1196,6 +1199,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 				msg("Generation restarted: %s.", error);
 			}
 			cave_clear(chunk, p);
+			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 		}
 
 		cleanup_dun_data(dun);
@@ -1469,6 +1473,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 		} else if (p->upkeep->arena_level) {
 			/* We're creating a new arena level */
 			*c = cave_generate(p, 6, 6);
+			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		} else {
 			/* Check dimensions */
 			struct level *lev;
@@ -1494,10 +1499,12 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 			/* Generate a new level */
 			*c = cave_generate(p, min_height, min_width);
+			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		}
 	} else {
 		/* Generate a new level */
 		*c = cave_generate(p, 0, 0);
+		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	}
 
 	/* Know the town */
@@ -1511,6 +1518,66 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 	/* The dungeon is ready */
 	character_dungeon = true;
+}
+
+/**
+ * Return the number of room builders available.
+ */
+int get_room_builder_count(void)
+{
+	return (int) N_ELEMENTS(room_builders);
+}
+
+/**
+ * Convert the name of a room builder into its index.  Return -1 if the
+ * name does not match any of the room builders.
+ */
+int get_room_builder_index_from_name(const char *name)
+{
+	int i = 0;
+
+	while (1) {
+		if (i >= (int) N_ELEMENTS(room_builders)) {
+			return -1;
+		}
+		if (streq(name, room_builders[i].name)) {
+			return i;
+		}
+		++i;
+	}
+}
+
+/**
+ * Get the name of a room builder given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * get_room_builder_count()).
+ */
+const char *get_room_builder_name_from_index(int i)
+{
+	return (i >= 0 && i < (int) get_room_builder_count()) ?
+		room_builders[i].name : NULL;
+}
+
+/**
+ * Convert the name of a level profile into its index in the cave_profiles
+ * list.  Return -1 if the name does not match any of the profiles.
+ */
+int get_level_profile_index_from_name(const char *name)
+{
+	const struct cave_profile *p = find_cave_profile(name);
+
+	return (p) ? (int) (p - cave_profiles) : -1;
+}
+
+/**
+ * Get the name of a level profile given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * z_info->profile_max).
+ */
+const char *get_level_profile_name_from_index(int i)
+{
+	return (i >= 0 && i < z_info->profile_max) ?
+		cave_profiles[i].name : NULL;
 }
 
 /**

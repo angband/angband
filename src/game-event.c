@@ -248,3 +248,26 @@ void event_signal_missile(game_event_type type,
 
 	game_event_dispatch(type, &data);
 }
+
+void event_signal_size(game_event_type type, int h, int w)
+{
+	game_event_data data;
+
+	data.size.h = h;
+	data.size.w = w;
+	game_event_dispatch(type, &data);
+}
+
+void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
+		int dstart, int dend, bool early)
+{
+	game_event_data data;
+
+	data.tunnel.nstep = nstep;
+	data.tunnel.npierce = npierce;
+	data.tunnel.ndug = ndug;
+	data.tunnel.dstart = dstart;
+	data.tunnel.dend = dend;
+	data.tunnel.early = early;
+	game_event_dispatch(type, &data);
+}

@@ -309,6 +309,13 @@ extern struct dun_data *dun;
 extern struct vault *vaults;
 extern struct room_template *room_templates;
 
+/* generate.c */
+int get_room_builder_count(void);
+int get_room_builder_index_from_name(const char *name);
+const char *get_room_builder_name_from_index(int i);
+int get_level_profile_index_from_name(const char *name);
+const char *get_level_profile_name_from_index(int i);
+
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p, int min_height, int min_width);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width);
