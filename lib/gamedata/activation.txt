@@ -1100,7 +1100,7 @@ desc:creates random and unpredictable effects
 name:WAND_BREATH
 aim:1
 power:12
-effect:RANDOM
+effect:SELECT
 dice:5
 effect:BREATH:ACID:0:30
 dice:160
@@ -1145,7 +1145,7 @@ desc:inflicts damage on evil creatures you can see, heals 50 hit points, cures a
 name:DRINK_BREATH
 aim:1
 power:8
-effect:RANDOM
+effect:SELECT
 dice:2
 effect:BREATH:FIRE:0:30
 dice:80
@@ -1271,7 +1271,7 @@ dice:200
 name:DRAGON_MULTIHUED
 aim:1
 power:20
-effect:RANDOM
+effect:SELECT
 dice:5
 effect:BREATH:ACID:0:20
 dice:250
@@ -1293,7 +1293,7 @@ dice:150
 name:DRAGON_CHAOS
 aim:1
 power:23
-effect:RANDOM
+effect:SELECT
 dice:2
 effect:BREATH:CHAOS:0:20
 dice:220
@@ -1303,7 +1303,7 @@ dice:220
 name:DRAGON_LAW
 aim:1
 power:23
-effect:RANDOM
+effect:SELECT
 dice:2
 effect:BREATH:SOUND:0:20
 dice:230
@@ -1313,7 +1313,7 @@ dice:230
 name:DRAGON_BALANCE
 aim:1
 power:24
-effect:RANDOM
+effect:SELECT
 dice:4
 effect:BREATH:SOUND:0:20
 dice:250
@@ -1327,7 +1327,7 @@ dice:250
 name:DRAGON_SHINING
 aim:1
 power:21
-effect:RANDOM
+effect:SELECT
 dice:2
 effect:BREATH:LIGHT:0:20
 dice:200
