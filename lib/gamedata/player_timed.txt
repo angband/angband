@@ -5,9 +5,20 @@
 
 # Descriptions, messages and message types can be edited without bad effects.
 # Changing fail may have unpredictable results.
-# Changing the name, reordering, or adding whole new entires will severely
+# Changing the name, reordering, or adding whole new entries will severely
 # disrupt the game, and should only be done when list-player-timed.h
 # (and other code) is also  being changed, and the game recompiled.
+# Changing a resist line will have to match to one of the hard-coded elements
+# from list-elements.h; currently, those resist lines are used to filter out
+# unnecessary messages when timed effects lapse and to affect selection of
+# randart activations.
+# Changing a brand or slay line will have to match to an entry in brand.txt or
+# slay.txt, respectively; besides the effect on combat, those lines also
+# affect selection of randart activations.
+# Changing a flag-synonym line will have to match to an entry, of type flag, in
+# object_property.txt; those lines are currently used to filter out unnecessary
+# messages when timed effects lapse and to affect selection of randart
+# activations.
 
 # Fields:
 # name - the effect name
@@ -27,7 +38,21 @@
 #          4 - player flag
 #        param two:
 #          the actual flag that causes the failure
-#
+# resist - (optional) when this timed property is active, the recipient gains
+#         a temporary resistance to the named element
+# brand - (optional) when this timed property is active, the recipient gains
+#         the given brand (by its code in brand.txt) on equipped weapons; when
+#         there's no brand line, the timed property does not induce a brand
+# slay - (optional) when this timed property is active, the recipient gains
+#        the given slay (by its code in slay.txt) on equipped weapons; when
+#        there's no slay line, the timed property does not induce a slay
+# flag-synonym - (optional) indicate that this timed property is (largely)
+#         synonymous to the object property of type flag in
+#         object_property.txt with the code given by the first parameter; if
+#         the second parameter is not zero, this timed property is an exact
+#         synonym, except for duration; if the second parameter is zero, the
+#         timed property has other effects that are not implied by the named
+#         object property
 
 name:FAST
 desc:haste
@@ -142,6 +167,7 @@ grade:G:10000:Hero:You feel like a hero!
 on-end:You no longer feel heroic.
 on-increase:You feel more like a hero!
 msgt:HERO
+flag-synonym:PROT_FEAR:0
 
 name:SHERO
 desc:berserk rage
@@ -149,6 +175,7 @@ grade:G:10000:Berserk:You feel like a killing machine!
 on-end:You no longer feel berserk.
 on-increase:You feel even more berserk!
 msgt:BERSERK
+flag-synonym:PROT_FEAR:0
 
 name:SHIELD
 desc:mystic shield
@@ -170,6 +197,7 @@ grade:G:10000:SInvis:Your eyes feel very sensitive!
 on-end:Your eyes no longer feel so sensitive.
 on-increase:Your eyes feel more sensitive!
 msgt:SEE_INVIS
+flag-synonym:SEE_INVIS:1
 
 name:SINFRA
 desc:enhanced infravision
@@ -185,6 +213,7 @@ on-end:You are no longer resistant to acid.
 on-increase:You feel more resistant to acid!
 msgt:RES_ACID
 fail:3:ACID
+resist:ACID
 
 name:OPP_ELEC
 desc:electricity resistance
@@ -193,6 +222,7 @@ on-end:You are no longer resistant to electricity.
 on-increase:You feel more resistant to electricity!
 msgt:RES_ELEC
 fail:3:ELEC
+resist:ELEC
 
 name:OPP_FIRE
 desc:fire resistance
@@ -201,6 +231,7 @@ on-end:You are no longer resistant to fire.
 on-increase:You feel more resistant to fire!
 msgt:RES_FIRE
 fail:3:FIRE
+resist:FIRE
 
 name:OPP_COLD
 desc:cold resistance
@@ -209,6 +240,7 @@ on-end:You are no longer resistant to cold.
 on-increase:You feel more resistant to cold!
 msgt:RES_COLD
 fail:3:COLD
+resist:COLD
 
 name:OPP_POIS
 desc:poison resistance
@@ -217,12 +249,14 @@ on-end:You are no longer resistant to poison.
 on-increase:You feel more resistant to poison!
 msgt:RES_POIS
 fail:3:POIS
+resist:POIS
 
 name:OPP_CONF
 desc:confusion resistance
 grade:v:10000:RConf:You feel resistant to confusion!
 on-end:You are no longer resistant to confusion.
 on-increase:You feel more resistant to confusion!
+flag-synonym:PROT_CONF:1
 
 name:AMNESIA
 desc:amnesia
@@ -236,6 +270,7 @@ grade:B:10000:ESP:Your mind expands.
 on-end:Your horizons are once more limited.
 on-increase:Your mind expands further.
 msgt:GENERIC
+flag-synonym:TELEPATHY:1
 
 name:STONESKIN
 desc:stone skin
@@ -261,6 +296,7 @@ grade:G:10000:Bold:You feel bold.
 on-end:You no longer feel bold.
 on-increase:You feel even bolder!
 msgt:BOLD
+flag-synonym:PROT_FEAR:1
 
 name:SCRAMBLE
 desc:scrambled
@@ -275,6 +311,7 @@ desc:safety from traps
 grade:G:10000:TrapSafe:You feel safe from traps.
 on-end:You feel vulnerable to traps again.
 on-increase:You feel even safer from traps!
+flag-synonym:TRAP_IMMUNE:1
 
 name:FASTCAST
 desc:mana channelling
@@ -285,26 +322,31 @@ name:ATT_ACID
 desc:temporary acid brand
 grade:s:10000:AttAcid:Your {kind} start{s} to drip with acid!
 on-end:The acid disappears from your {kind}.
+brand:ACID_3
 
 name:ATT_ELEC
 desc:temporary lightning brand
 grade:b:10000:AttElec:Sparks gather around your {kind}!
 on-end:The sparks fade from your {kind}.
+brand:ELEC_3
 
 name:ATT_FIRE
 desc:temporary fire brand
 grade:r:10000:AttFire:Flames surround your {kind}!
 on-end:The flames on your {kind} subside.
+brand:FIRE_3
 
 name:ATT_COLD
 desc:temporary cold brand
 grade:w:10000:AttCold:Your {kind} {is} covered in frost!
 on-end:The frost evaporates from your {kind}.
+brand:COLD_3
 
 name:ATT_POIS
 desc:temporary poison brand
 grade:g:10000:AttPois:Your {kind} drip{s} with poison!
 on-end:The poison disappears from your {kind}.
+brand:POIS_3
 
 name:ATT_CONF
 desc:temporary monster confusion
@@ -315,11 +357,13 @@ name:ATT_EVIL
 desc:temporary slay evil
 grade:w:10000:AttEvil:Your {kind} {is} imbued with holy force!
 on-end:Holy force fades from your {kind}.
+slay:EVIL_2
 
 name:ATT_DEMON
 desc:temporary slay demon
 grade:R:10000:AttDemon:Your {kind} become{s} a bane of demons!
 on-end:Your {kind} return{s} to normal.
+slay:DEMON_5
 
 name:ATT_VAMP
 desc:temporary hitpoint siphoning
@@ -381,3 +425,4 @@ desc:free action
 grade:G:10000:FrAct:Your limbs fill with energy!
 on-end:Your limbs return to normal.
 on-increase:Your limbs feel more energetic!
+flag-synonym:FREE_ACT:1

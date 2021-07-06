@@ -24,10 +24,13 @@
 #include "mon-util.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
+#include "obj-properties.h"
+#include "obj-slays.h"
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "project.h"
 
 int PY_FOOD_MAX;
 int PY_FOOD_FULL;
@@ -49,9 +52,17 @@ const char *list_player_flag_names[] = {
 };
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
-	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL },
+	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, OF_NONE, false, -1, -1, -1 },
 	#include "list-player-timed.h"
 	#undef TMD
+};
+
+const char *obj_flags[] = {
+	"NONE",
+	#define OF(a, b) #a,
+	#include "list-object-flags.h"
+	#undef OF
+	NULL
 };
 
 int timed_name_to_idx(const char *name)
@@ -258,6 +269,66 @@ static enum parser_error parse_player_timed_grade(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_player_timed_resist(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	const char *name = parser_getsym(p, "elem");
+	int idx = (name) ? proj_name_to_idx(name) : -1;
+
+	assert(t);
+	if (idx < 0 || idx >= ELEM_MAX) return PARSE_ERROR_INVALID_VALUE;
+	t->temp_resist = idx;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_brand(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	const char *name = parser_getsym(p, "name");
+	int idx = z_info->brand_max;
+
+	assert(t);
+	if (name) {
+		for (idx = 1; idx < z_info->brand_max; ++idx) {
+			if (streq(name, brands[idx].code)) break;
+		}
+	}
+	if (idx == z_info->brand_max) return PARSE_ERROR_UNRECOGNISED_BRAND;
+	t->temp_brand = idx;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_slay(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	const char *name = parser_getsym(p, "name");
+	int idx = z_info->slay_max;
+
+	assert(t);
+	if (name) {
+		for (idx = 1; idx < z_info->slay_max; ++idx) {
+			if (streq(name, slays[idx].code)) break;
+		}
+	}
+	if (idx == z_info->slay_max) return PARSE_ERROR_UNRECOGNISED_SLAY;
+	t->temp_brand = idx;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_flag_synonym(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	const char *code = parser_getsym(p, "code");
+	bool is_exact = parser_getint(p, "exact") != 0;
+	int idx = (code) ? code_index_in_array(obj_flags, code) : OF_NONE;
+
+	assert(t);
+	if (idx <= OF_NONE) return PARSE_ERROR_INVALID_OBJ_PROP_CODE;
+	t->oflag_dup = idx;
+	t->oflag_syn = is_exact;
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_player_timed(void)
 {
 	struct parser *p = parser_new();
@@ -270,6 +341,11 @@ static struct parser *init_parse_player_timed(void)
 	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
 	parser_reg(p, "fail uint code str flag", parse_player_timed_fail);
 	parser_reg(p, "grade sym color int max sym name sym up_msg ?sym down_msg", parse_player_timed_grade);
+	parser_reg(p, "resist sym elem", parse_player_timed_resist);
+	parser_reg(p, "brand sym name", parse_player_timed_brand);
+	parser_reg(p, "slay sym name", parse_player_timed_slay);
+	parser_reg(p, "flag-synonym sym code int exact",
+		parse_player_timed_flag_synonym);
 	return p;
 }
 
@@ -397,7 +473,7 @@ bool player_timed_grade_eq(struct player *p, int idx, const char *match)
 	return false;
 }
 
-static bool player_of_has_prot_conf(struct player *p)
+static bool player_of_has_not_timed(struct player *p, int flag)
 {
     bitflag collect_f[OF_SIZE], f[OF_SIZE];
     int i;
@@ -412,7 +488,7 @@ static bool player_of_has_prot_conf(struct player *p)
         of_union(collect_f, f);
     }
 
-    return of_has(collect_f, OF_PROT_CONF);
+    return of_has(collect_f, flag);
 }
 
 /**
@@ -453,16 +529,16 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	/* Upper bound */
 	v = MIN(v, new_grade->max);
 
-	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID)) {
+	/* Don't mention effects which already match the known player state. */
+	if (timed_effects[idx].temp_resist != -1 &&
+			p->obj_k->el_info[timed_effects[idx].temp_resist].res_level &&
+			player_is_immune(p, timed_effects[idx].temp_resist)) {
 		notify = false;
-	} else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC)) {
-		notify = false;
-	} else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE)) {
-		notify = false;
-	} else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD)) {
-		notify = false;
-	} else if (idx == TMD_OPP_CONF && player_of_has_prot_conf(p)) {
+	}
+	if (timed_effects[idx].oflag_syn &&
+			timed_effects[idx].oflag_dup != OF_NONE &&
+			of_has(p->obj_k->flags, timed_effects[idx].oflag_dup) &&
+			player_of_has_not_timed(p, timed_effects[idx].oflag_dup)) {
 		notify = false;
 	}
 
