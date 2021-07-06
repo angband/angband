@@ -1021,6 +1021,7 @@ void combine_pack(void)
 {
 	struct object *obj1, *obj2, *prev;
 	bool display_message = false;
+	bool disable_repeat = false;
 
 	/* Combine the pack (backwards) */
 	obj1 = gear_last_item();
@@ -1040,6 +1041,7 @@ void combine_pack(void)
 			/* Can we drop "obj1" onto "obj2"? */
 			if (object_similar(obj2, obj1, stack_mode2)) {
 				display_message = true;
+				disable_repeat = true;
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
 				object_absorb(obj2, obj1);
@@ -1055,17 +1057,18 @@ void combine_pack(void)
 
 				if (inven_can_stack_partial(obj2, obj1,
 						stack_mode2 | stack_mode1)) {
-					/*
-					 * Setting this to true spams the
-					 * combine message.
-					 */
-					display_message = false;
+					int oldn2 = obj2->number;
+					int oldn1 = obj1->number;
+
 					object_absorb_partial(obj2->known,
 						obj1->known, stack_mode2,
 						stack_mode1);
 					object_absorb_partial(obj2, obj1,
 						stack_mode2, stack_mode1);
-
+					if (obj2->number != oldn2 ||
+							obj1->number != oldn1) {
+						display_message = true;
+					}
 					/*
 					 * Ensure numbers align (should not be
 					 * necessary, but safer)
@@ -1090,8 +1093,11 @@ void combine_pack(void)
 	if (display_message) {
 		msg("You combine some items in your pack.");
 
-		/* Stop "repeat last command" from working. */
-		cmd_disable_repeat();
+		/*
+		 * Stop "repeat last command" from working if a stack was
+		 * completely combined with another.
+		 */
+		if (disable_repeat) cmd_disable_repeat();
 	}
 }
 
