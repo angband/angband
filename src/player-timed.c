@@ -49,7 +49,7 @@ const char *list_player_flag_names[] = {
 };
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
-	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL },
+	#define TMD(a, b, c, d, e, f, g, h, i) { #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, d, e, f, g, h, i },
 	#include "list-player-timed.h"
 	#undef TMD
 };
@@ -69,7 +69,7 @@ int timed_name_to_idx(const char *name)
  * List of timed effect names
  */
 static const char *list_timed_effect_names[] = {
-	#define TMD(a, b, c) #a,
+	#define TMD(a, b, c, d, e, f, g, h, i) #a,
 	#include "list-player-timed.h"
 	#undef TMD
 	"MAX",
@@ -397,7 +397,7 @@ bool player_timed_grade_eq(struct player *p, int idx, const char *match)
 	return false;
 }
 
-static bool player_of_has_prot_conf(struct player *p)
+static bool player_of_has_not_timed(struct player *p, int flag)
 {
     bitflag collect_f[OF_SIZE], f[OF_SIZE];
     int i;
@@ -412,7 +412,7 @@ static bool player_of_has_prot_conf(struct player *p)
         of_union(collect_f, f);
     }
 
-    return of_has(collect_f, OF_PROT_CONF);
+    return of_has(collect_f, flag);
 }
 
 /**
@@ -453,16 +453,16 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	/* Upper bound */
 	v = MIN(v, new_grade->max);
 
-	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID)) {
+	/* Don't mention effects which already match the known player state. */
+	if (timed_effects[idx].temp_elem != ELEM_MAX &&
+			p->obj_k->el_info[timed_effects[idx].temp_elem].res_level &&
+			player_is_immune(p, timed_effects[idx].temp_elem)) {
 		notify = false;
-	} else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC)) {
-		notify = false;
-	} else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE)) {
-		notify = false;
-	} else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD)) {
-		notify = false;
-	} else if (idx == TMD_OPP_CONF && player_of_has_prot_conf(p)) {
+	}
+	if (timed_effects[idx].oflag_syn &&
+			timed_effects[idx].oflag_dup != OF_NONE &&
+			of_has(p->obj_k->flags, timed_effects[idx].oflag_dup) &&
+			player_of_has_not_timed(p, timed_effects[idx].oflag_dup)) {
 		notify = false;
 	}
 
