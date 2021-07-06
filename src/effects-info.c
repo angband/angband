@@ -24,6 +24,7 @@
 #include "message.h"
 #include "mon-summon.h"
 #include "obj-info.h"
+#include "obj-slays.h"
 #include "player-timed.h"
 #include "project.h"
 #include "z-color.h"
@@ -833,4 +834,217 @@ const char *effect_projection(const struct effect *effect)
 	}
 
 	return "";
+}
+
+/**
+ * Help effect_summarize_properties():  update the summaries for an effect
+ * that acts like a cure.
+ * \param tmd Is the TMD_* index for the timed effect being cured.
+ * \param summaries Is the pointer to the linked list of summaries.
+ * \param unsummarized_count Is the count of unsummarized effects.
+ */
+static void summarize_cure(int tmd, struct effect_object_property **summaries,
+		int *unsummarized_count)
+{
+	if (timed_effects[tmd].oflag_cure != OF_NONE) {
+		struct effect_object_property *prop = mem_alloc(sizeof(*prop));
+
+		prop->next = *summaries;
+		prop->prop.cure_flag = timed_effects[tmd].oflag_cure;
+		prop->kind = EFPROP_CURE;
+		*summaries = prop;
+	} else if (tmd == TMD_POISONED) {
+		/*
+		 * Hack; curing poison is irrelevant if poison immunity is
+		 * present.
+		 */
+		struct effect_object_property *prop = mem_alloc(sizeof(*prop));
+
+		prop->next = *summaries;
+		prop->prop.temp_resist = ELEM_POIS;
+		prop->kind = EFPROP_RESIST;
+		*summaries = prop;
+	} else {
+		++*unsummarized_count;
+	}
+}
+
+/**
+ * Return a summary of the object properties that match up with the effects in
+ * an effect chain.
+ * \param ef Is the pointer to the first effect in the chain.
+ * \param unsummarized_count If not NULL, *unsummarized_count will be set to
+ * the count of effects in the chain that do something which can't be summarized
+ * by an object property.
+ * \return Return a pointer to a linked list of the object properties implied
+ * by the effect chain.  When no longer needed, each element of that linked
+ * list should be released with mem_free().
+ */
+struct effect_object_property *effect_summarize_properties(
+		const struct effect *ef, int *unsummarized_count)
+{
+	int unsummarized = 0;
+	struct effect_object_property *summaries = NULL;
+	bool have_set_value = false;
+	int value_set_max = 0;
+
+	for (; ef; ef = ef->next) {
+		int value_max = (ef->dice) ?
+			dice_evaluate(ef->dice, 0, MAXIMISE, NULL) : 0;
+		struct effect_object_property *prop;
+		int value_this;
+
+		switch (ef->index) {
+		case EF_RANDOM:
+		case EF_SELECT:
+			/*
+			 * For random or select effects, summarize all of the
+			 * subeffects since any of them is possible.  That's
+			 * equivalent to simply skipping over the random or
+			 * select effect and stepping one by one through what
+			 * follows.
+			 */
+			break;
+
+		case EF_SET_VALUE:
+			/*
+			 * Remember the value.  Does nothing that should be
+			 * remembered in the summaries or unsummarized count.
+			 */
+			have_set_value = true;
+			value_set_max = value_max;
+			break;
+
+		case EF_CLEAR_VALUE:
+			/*
+			 * Forget the value.  Does nothing that should be
+			 * be remembered in the summaries or unsummarized count.
+			 */
+			have_set_value = false;
+			break;
+
+		case EF_CURE:
+			if (ef->subtype >= 0 && ef->subtype < TMD_MAX) {
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+			}
+			break;
+
+		case EF_TIMED_SET:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			if (value_this <= 0 && ef->subtype >= 0 &&
+					ef->subtype < TMD_MAX) {
+				/* It's equivalent to a cure. */
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+				break;
+			}
+			/* Fall through intentionally. */
+
+		case EF_TIMED_INC:
+		case EF_TIMED_INC_NO_RES:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			if (value_this > 0 && ef->subtype >= 0 &&
+					ef->subtype < TMD_MAX) {
+				bool summarized = false;
+
+				if (timed_effects[ef->subtype].oflag_dup !=
+						OF_NONE) {
+					prop = mem_alloc(sizeof(*prop));
+					prop->next = summaries;
+					prop->prop.temp_flag.flag =
+						timed_effects[
+						ef->subtype].oflag_dup;
+					prop->prop.temp_flag.syn =
+						timed_effects[
+						ef->subtype].oflag_syn;
+					prop->kind = EFPROP_OBJECT_FLAG;
+					summaries = prop;
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].temp_elem !=
+						ELEM_MAX) {
+					prop = mem_alloc(sizeof(*prop));
+					prop->next = summaries;
+					prop->prop.temp_resist = timed_effects[
+						ef->subtype].temp_elem;
+					prop->kind = EFPROP_RESIST;
+					summaries = prop;
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].brand_dup) {
+					int i = lookup_brand_by_name(
+						timed_effects[ef->subtype].brand_dup);
+
+					if (i > 0) {
+						prop = mem_alloc(sizeof(*prop));
+						prop->next = summaries;
+						prop->prop.temp_brand = i;
+						prop->kind = EFPROP_BRAND;
+						summaries = prop;
+					}
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].slay_dup) {
+					int i = lookup_slay_by_name(
+						timed_effects[ef->subtype].slay_dup);
+
+					if (i > 0) {
+						prop = mem_alloc(sizeof(*prop));
+						prop->next = summaries;
+						prop->prop.temp_slay = i;
+						prop->kind = EFPROP_SLAY;
+						summaries = prop;
+					}
+					summarized = true;
+				}
+				if (!summarized) ++unsummarized;
+			}
+			break;
+
+		case EF_TIMED_DEC:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			/* If it decreases the duration it's a partial cure. */
+			if (value_this > 0) {
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+			}
+			break;
+
+		case EF_TELEPORT:
+		case EF_TELEPORT_TO:
+		case EF_TELEPORT_LEVEL:
+			prop =  mem_alloc(sizeof(*prop));
+			prop->next = summaries;
+			prop->prop.conflict_flag = OF_NO_TELEPORT;
+			prop->kind = EFPROP_CONFLICT;
+			summaries = prop;
+			break;
+
+		/*
+		 * There's other effects that have limited utility when the
+		 * object already has some flags:
+		 * DISABLE_TRAPS with OF_TRAP_IMMUNE is only good for unlocking
+		 * DETECT_INVISIBLE with OF_SEE_INVISIBLE or OF_TELEPATHY
+		 * RESTORE_x with OF_SUST_x
+		 * RESTORE_EXP with OF_HOLD_LIFE
+		 * For now, don't try to flag those.
+		 */
+		default:
+			/*
+			 * Everything else isn't described by an object
+			 * property.
+			 */
+			++unsummarized;
+			break;
+		}
+	}
+
+	if (unsummarized_count) {
+		*unsummarized_count = unsummarized;
+	}
+	return summaries;
 }

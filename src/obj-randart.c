@@ -22,6 +22,7 @@
 #include "angband.h"
 #include "datafile.h"
 #include "effects.h"
+#include "effects-info.h"
 #include "init.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
@@ -2368,6 +2369,121 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 }
 
 /**
+ * Help remove_contradictory():  remove the activation if it is redundant with
+ * the other properties of the artifact.
+ * \param art Is the artifact.  Must not be NULL.
+ */
+static void remove_contradictory_activation(struct artifact *art)
+{
+	bool redundant = true;
+	int unsummarized_count;
+	struct effect_object_property *props, *pcurr;
+
+	if (!art->activation) return;
+
+	props = effect_summarize_properties(art->activation->effect,
+		&unsummarized_count);
+
+	if (unsummarized_count > 0) {
+		/*
+		 * The activation does at least one thing that doesn't
+		 * correspond to an object property.
+		 */
+		redundant = false;
+	} else {
+		for (pcurr = props; pcurr && redundant; pcurr = pcurr->next) {
+			int i, maxmult;
+
+			switch (pcurr->kind) {
+			case EFPROP_BRAND:
+				maxmult = 1;
+				for (i = 1; i < z_info->brand_max; ++i) {
+					if (!art->brands[i]) continue;
+					if (brands[i].resist_flag !=
+						brands[pcurr->prop.temp_brand].resist_flag)
+							continue;
+					maxmult = MAX(brands[i].multiplier,
+						maxmult);
+				}
+				if (maxmult < brands[pcurr->prop.temp_brand].multiplier) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_SLAY:
+				maxmult = 1;
+				for (i = 1; i < z_info->slay_max; ++i) {
+					if (!art->slays[i]) continue;
+					if (!same_monsters_slain(i,
+						pcurr->prop.temp_slay)) continue;
+					maxmult = MAX(slays[i].multiplier,
+						maxmult);
+				}
+				if (maxmult < slays[pcurr->prop.temp_slay].multiplier) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_RESIST:
+				/*
+				 * Anything less than immune can benefit from
+				 * the temporary resist.
+				 */
+				if (art->el_info[pcurr->prop.temp_resist].res_level < 3) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_OBJECT_FLAG:
+				if (!pcurr->prop.temp_flag.syn) {
+					/*
+					 * The effect does something more than
+					 * just temporarily set the flag.
+					 * Assume that something is useful
+					 * (perhaps questionable for heroism
+					 * and superheroism).
+					 */
+					redundant = false;
+				} else if (!of_has(art->flags,
+						pcurr->prop.temp_flag.flag)) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_CURE:
+				if (!of_has(art->flags, pcurr->prop.cure_flag)) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_CONFLICT:
+				if (!of_has(art->flags, pcurr->prop.conflict_flag)) {
+					redundant = false;
+				}
+				break;
+
+			default:
+				/*
+				 * effect_summarize_properties() gave us
+				 * something unexpected.  Assume it's useful.
+				 */
+				redundant = false;
+			}
+		}
+	}
+
+	while (props) {
+		pcurr = props;
+		props = props->next;
+		mem_free(pcurr);
+	}
+
+	if (redundant) {
+		art->activation = NULL;
+	}
+}
+
+/**
  * Clean up the artifact by removing illogical combinations of powers.
  */
 static void remove_contradictory(struct artifact *art)
@@ -2400,6 +2516,8 @@ static void remove_contradictory(struct artifact *art)
 			if (!art->curses) break;
 		}
 	}
+
+	remove_contradictory_activation(art);
 }
 
 /**

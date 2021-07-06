@@ -38,5 +38,7 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 int *brand_used, int *slay_used, char *verb,
 							 bool range);
 bool react_to_slay(struct object *obj, const struct monster *mon);
+int lookup_brand_by_name(const char *name);
+int lookup_slay_by_name(const char *name);
 
 #endif /* OBJECT_SLAYS_H */

@@ -470,3 +470,39 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 
 	return false;
 }
+
+
+/**
+ * Return the brand index corresponding to a name.
+ * \param name Is the name of the brand.
+ * \return Return the index (1 to z_info->brand_max - 1) of the brand in the
+ * brands array or -1 if it is not in that array.
+ */
+int lookup_brand_by_name(const char *name)
+{
+	int i = 1;
+
+	while (1) {
+		if (i >= z_info->brand_max) return -1;
+		if (streq(brands[i].name, name)) return i;
+		++i;
+	}
+}
+
+
+/**
+ * Return the slay index corresponding to a name.
+ * \param name Is the name of the slay.
+ * \return Return the index (1 to z_info->slay_max - 1) of the slay in the
+ * slays array or -1 if it is not in that array.
+ */
+int lookup_slay_by_name(const char *name)
+{
+	int i = 1;
+
+	while (1) {
+		if (i >= z_info->slay_max) return -1;
+		if (streq(slays[i].name, name)) return i;
+		++i;
+	}
+}
