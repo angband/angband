@@ -944,7 +944,7 @@ struct effect_object_property *effect_summarize_properties(
 					&unsummarized);
 				break;
 			}
-			/* Fall through intentionally. */
+			/* Fall through. */
 
 		case EF_TIMED_INC:
 		case EF_TIMED_INC_NO_RES:
