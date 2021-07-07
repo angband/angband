@@ -22,6 +22,7 @@
 #include "angband.h"
 #include "datafile.h"
 #include "effects.h"
+#include "effects-info.h"
 #include "init.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
@@ -2368,6 +2369,118 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 }
 
 /**
+ * Help remove_contradictory():  remove the activation if it conflicts or is
+ * redundant with the other properties of the artifact.
+ * \param art Is the artifact.  Must not be NULL.
+ */
+static void remove_contradictory_activation(struct artifact *art)
+{
+	bool redundant = true;
+	int unsummarized_count;
+	struct effect_object_property *props, *pcurr;
+
+	if (!art->activation) return;
+
+	props = effect_summarize_properties(art->activation->effect,
+		&unsummarized_count);
+
+	if (unsummarized_count > 0) {
+		/*
+		 * The activation does at least one thing that doesn't
+		 * correspond to an object property.
+		 */
+		redundant = false;
+	} else {
+		for (pcurr = props; pcurr && redundant; pcurr = pcurr->next) {
+			int i, maxmult;
+
+			switch (pcurr->kind) {
+			case EFPROP_BRAND:
+				maxmult = 1;
+				for (i = 1; i < z_info->brand_max; ++i) {
+					if (!art->brands[i]) continue;
+					if (brands[i].resist_flag !=
+						brands[pcurr->idx].resist_flag) continue;
+					maxmult = MAX(brands[i].multiplier,
+						maxmult);
+				}
+				if (maxmult < brands[pcurr->idx].multiplier) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_SLAY:
+				maxmult = 1;
+				for (i = 1; i < z_info->slay_max; ++i) {
+					if (!art->slays[i]) continue;
+					if (!same_monsters_slain(i, pcurr->idx)) continue;
+					maxmult = MAX(slays[i].multiplier,
+						maxmult);
+				}
+				if (maxmult < slays[pcurr->idx].multiplier) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_RESIST:
+			case EFPROP_CONFLICT_RESIST:
+			case EFPROP_CONFLICT_VULN:
+				if (art->el_info[pcurr->idx].res_level >=
+						pcurr->reslevel_min &&
+						art->el_info[pcurr->idx].res_level <=
+						pcurr->reslevel_max) {
+					redundant = false;
+				}
+				break;
+
+			case EFPROP_OBJECT_FLAG:
+				/*
+				 * It does something more than just the object
+				 * flag so don't call it redundant.  To screen
+				 * out HERO and SHERO activations when the
+				 * object has OF_PROT_FEAR, use the same
+				 * handling for this case as for
+				 * EFPROP_OBJECT_FLAG_EXACT.
+				 */
+				redundant = false;
+				break;
+
+			case EFPROP_OBJECT_FLAG_EXACT:
+			case EFPROP_CURE_FLAG:
+			case EFPROP_CONFLICT_FLAG:
+				/*
+				 * If the object doesn't have the flag, it's
+				 * not redundant.
+				 */
+				if (!of_has(art->flags, pcurr->idx)) {
+					redundant = false;
+				}
+				break;
+
+			default:
+				/*
+				 * effect_summarize_properties() gave use
+				 * something unexpected.  Assume the effect is
+				 * useful.
+				 */
+				redundant = false;
+				break;
+			}
+		}
+	}
+
+	while (props) {
+		pcurr = props;
+		props = props->next;
+		mem_free(pcurr);
+	}
+
+	if (redundant) {
+		art->activation = NULL;
+	}
+}
+
+/**
  * Clean up the artifact by removing illogical combinations of powers.
  */
 static void remove_contradictory(struct artifact *art)
@@ -2400,6 +2513,8 @@ static void remove_contradictory(struct artifact *art)
 			if (!art->curses) break;
 		}
 	}
+
+	remove_contradictory_activation(art);
 }
 
 /**

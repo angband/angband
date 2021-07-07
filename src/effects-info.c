@@ -834,3 +834,225 @@ const char *effect_projection(const struct effect *effect)
 
 	return "";
 }
+
+/**
+ * Help effect_summarize_properties() and summarize_cure():  add one element
+ * to the linked list of object properties.
+ */
+static void add_to_summaries(struct effect_object_property **summaries,
+		int idx, int reslevel_min, int reslevel_max,
+		enum effect_object_property_kind kind)
+{
+	struct effect_object_property *prop = mem_alloc(sizeof(*prop));
+
+	prop->next = *summaries;
+	prop->idx = idx;
+	prop->reslevel_min = reslevel_min;
+	prop->reslevel_max = reslevel_max;
+	prop->kind = kind;
+	*summaries = prop;
+}
+
+/**
+ * Help effect_summarize_properties():  update the summaries for an effect that
+ * acts like a cure.
+ * \param tmd Is the TMD_* index for the timed effect being cured.
+ * \param summaries Is the pointer to the linked list of summaries.
+ * \param unsummarized_count Is the count of unsummarized effects.
+ */
+static void summarize_cure(int tmd, struct effect_object_property **summaries,
+		int *unsummarized_count)
+{
+	if (timed_effects[tmd].fail_code == TMD_FAIL_FLAG_OBJECT) {
+		add_to_summaries(summaries, timed_effects[tmd].fail, 0, 0,
+			EFPROP_CURE_FLAG);
+	} else if (timed_effects[tmd].fail_code == TMD_FAIL_FLAG_RESIST) {
+		add_to_summaries(summaries, timed_effects[tmd].fail, -1, 0,
+			EFPROP_CURE_RESIST);
+	} else {
+		++*unsummarized_count;
+	}
+}
+
+/**
+ * Return a summary of the object properties that match up with the effects in
+ * an effect chain.
+ * \param ef Is the pointer to the first effect in the chain.
+ * \param unsummarized_count If not NULL, *unsummarized_count will be set to
+ * the count of effects in the chain that do something which can't be summarized
+ * by an object property.
+ * \return Return a pointer to a linked list of the object properties implied
+ * by the effect chain.  When no longer needed, each element of that linked
+ * list should be released with mem_free().
+ */
+struct effect_object_property *effect_summarize_properties(
+		const struct effect *ef, int *unsummarized_count)
+{
+	int unsummarized = 0;
+	struct effect_object_property *summaries = NULL;
+	bool have_set_value = false;
+	int value_set_max = 0;
+
+	for (; ef; ef = ef->next) {
+		int value_max = (ef->dice) ?
+			dice_evaluate(ef->dice, 0, MAXIMISE, NULL) : 0;
+		int value_this;
+
+		switch (ef->index) {
+		case EF_RANDOM:
+		case EF_SELECT:
+			/*
+			 * For random or select effects, summarize all of the
+			 * subeffects since any of them is possible.  That's
+			 * equivalent to simply skipping over the random or
+			 * select effect and stepping one by one through what
+			 * follows.
+			 */
+			break;
+
+		case EF_SET_VALUE:
+			/*
+			 * Remember the value.  Does nothing that should be
+			 * remembered in the summaries or unsummarized count.
+			 */
+			have_set_value = true;
+			value_set_max = value_max;
+			break;
+
+		case EF_CLEAR_VALUE:
+			/*
+			 * Forget the value.  Does nothing that should be
+			 * remembered in the summaries or unsummarized count.
+			 */
+			have_set_value = false;
+			break;
+
+		case EF_CURE:
+			if (ef->subtype >= 0 && ef->subtype < TMD_MAX) {
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+			}
+			break;
+
+		case EF_TIMED_SET:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			if (value_this <= 0 && ef->subtype >= 0 &&
+					ef->subtype < TMD_MAX) {
+				/* It's equivalent to a cure. */
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+				break;
+			}
+			/* Fall through intentionally. */
+
+		case EF_TIMED_INC:
+		case EF_TIMED_INC_NO_RES:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			if (value_this > 0 && ef->subtype >= 0 &&
+					ef->subtype < TMD_MAX) {
+				bool summarized = false;
+
+				if (timed_effects[ef->subtype].oflag_dup !=
+						OF_NONE) {
+					add_to_summaries(&summaries,
+						timed_effects[ef->subtype].oflag_dup,
+						0, 0,
+						timed_effects[ef->subtype].oflag_syn ?
+						EFPROP_OBJECT_FLAG_EXACT : EFPROP_OBJECT_FLAG);
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].temp_resist >= 0) {
+					int rmin = -1, rmax = 1;
+
+					if (timed_effects[ef->subtype].fail ==
+							timed_effects[ef->subtype].temp_resist) {
+						if (timed_effects[ef->subtype].fail_code == TMD_FAIL_FLAG_RESIST) {
+							rmax = MIN(rmax, 0);
+						} else if (timed_effects[ef->subtype].fail_code == TMD_FAIL_FLAG_VULN) {
+							rmin = MAX(rmin, 0);
+						}
+					}
+					add_to_summaries(&summaries,
+						timed_effects[ef->subtype].temp_resist,
+						rmin, rmax, EFPROP_RESIST);
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].fail !=
+						timed_effects[ef->subtype].temp_resist) {
+					if (timed_effects[ef->subtype].fail_code == TMD_FAIL_FLAG_RESIST) {
+						add_to_summaries(&summaries,
+							timed_effects[ef->subtype].fail,
+							-1, 0,
+							EFPROP_CONFLICT_RESIST);
+						summarized = true;
+					} else if (timed_effects[ef->subtype].fail_code == TMD_FAIL_FLAG_VULN) {
+						add_to_summaries(&summaries,
+							timed_effects[ef->subtype].fail,
+							0, 3,
+							EFPROP_CONFLICT_VULN);
+						summarized = true;
+					}
+				}
+				if (timed_effects[ef->subtype].temp_brand >= 0) {
+					add_to_summaries(&summaries,
+						timed_effects[ef->subtype].temp_brand,
+						0, 0, EFPROP_BRAND);
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].temp_slay >= 0) {
+					add_to_summaries(&summaries,
+						timed_effects[ef->subtype].temp_slay,
+						0, 0, EFPROP_SLAY);
+					summarized = true;
+				}
+				if (timed_effects[ef->subtype].fail_code ==
+						TMD_FAIL_FLAG_OBJECT) {
+					add_to_summaries(&summaries,
+						timed_effects[ef->subtype].fail,
+						0, 0, EFPROP_CONFLICT_FLAG);
+					summarized = true;
+				}
+				if (!summarized) ++unsummarized;
+			}
+			break;
+
+		case EF_TIMED_DEC:
+			value_this = (have_set_value) ?
+				value_set_max : value_max;
+			/* If it decreases the duration, it's a partial cure. */
+			if (value_this > 0) {
+				summarize_cure(ef->subtype, &summaries,
+					&unsummarized);
+			}
+			break;
+
+		case EF_TELEPORT:
+		case EF_TELEPORT_TO:
+		case EF_TELEPORT_LEVEL:
+			add_to_summaries(&summaries, OF_NO_TELEPORT,
+				0, 0, EFPROP_CONFLICT_FLAG);
+			break;
+
+		/*
+		 * There's other effects that have limited utility when the
+		 * object already has some flags:
+		 * DISABLE_TRAPS with OF_TRAP_IMMUNE is only good for unlocking
+		 * DETECT_INVISIBLE with OF_SEE_INVISIBLE or OF_TELEPATHY
+		 * RESTORE_x with OF_SUST_x
+		 * RESTORE_EXP with OF_HOLD_LIFE
+		 * For now, don't try to flag those.
+		 */
+		default:
+			/*
+			 * Everything else isn't related to an object property.
+			 */
+			++unsummarized;
+			break;
+		}
+	}
+
+	if (unsummarized_count) *unsummarized_count = unsummarized;
+	return summaries;
+}
