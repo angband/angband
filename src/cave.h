@@ -128,6 +128,9 @@ struct feature {
 	char *run_msg;	/**< Message on running into feature */
 	char *hurt_msg;	/**< Message on being hurt by feature */
 	char *die_msg;	/**< Message on dying to feature */
+	char *confused_msg; /**< Message on confused monster move into feature */
+	char *look_prefix; /**< Prefix for name in look result */
+	char *look_in_preposition; /**< Preposition in look result when on the terrain */
 	int resist_flag;/**< Monster resist flag for entering feature */
 };
 
@@ -381,7 +384,7 @@ bool square_suits_stairs_well(struct chunk *c, struct loc grid);
 bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 
-struct square square(struct chunk *c, struct loc grid);
+const struct square *square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, struct loc grid);
 int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
@@ -430,6 +433,8 @@ void square_force_floor(struct chunk *c, struct loc grid);
 int square_shopnum(struct chunk *c, struct loc grid);
 int square_digging(struct chunk *c, struct loc grid);
 const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid);
+const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid);
+const char *square_apparent_look_in_preposition(struct chunk *c, struct player *p, struct loc grid);
 
 void square_memorize(struct chunk *c, struct loc grid);
 void square_forget(struct chunk *c, struct loc grid);

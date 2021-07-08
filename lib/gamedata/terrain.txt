@@ -35,6 +35,9 @@
 # run-msg: warning message - running
 # hurt-msg: damage message
 # die-msg: death message
+# confused-msg: message for confused monster move into non-passable terrain
+# look-prefix: used before the name in the result from looking
+# look-in-preposition: preposition used when looking at one's own position
 # resist-flag: monster race flag for resist
 
 # 'name' indicates the beginning of an entry. The serial number must
@@ -73,6 +76,17 @@
 
 # 'die-msg' is the description if damaging terrain kills the player
 
+# 'confused-msg' is the description of an attempt for a monster to move into
+# non-passable terrain due to confusion
+
+# 'look-prefix' is printed before the name in the result of looking at the
+# terrain.  If not set, the default is to use 'an' if the name starts with
+# a vowel or 'a' if the name does not start with a vowel.
+
+# 'look-in-preposition' is the preposition that will be used when printing
+# the result for an observer looking at the observer's grid:  'You are
+# <preposition> <prefix> <name>'.  If not set, the default is to use 'on'.
+
 # 'resist-flag' is the race flag a monster must have to be able to enter
 # damaging terrain
 
@@ -93,6 +107,7 @@ graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
 info:0:5
+confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your 
 desc:disarming skill makes all the difference to your ability to handle locks, 
 desc:but you can also take a pickaxe to them, or blast them open 
@@ -103,6 +118,7 @@ name:open door
 graphics:':U
 priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
+look-in-preposition:in
 desc:A door that is already open.  Player, monster, spell and missile can pass 
 desc:through as long as it stays open.
 
@@ -110,6 +126,7 @@ name:broken door
 graphics:':u
 priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
+look-in-preposition:in
 desc:A door so broken that it cannot be shut.
 
 name:up staircase
@@ -131,6 +148,8 @@ graphics:1:U
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:1:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:The General Store sells food, ammunition and lighting supplies.
 
 name:Armoury
@@ -138,6 +157,8 @@ graphics:2:s
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:2:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:The armour sold here will give you some protection against the blows of 
 desc:your enemies.
 
@@ -146,6 +167,8 @@ graphics:3:w
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:3:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid 
 desc:backroom of this enticing shop.
 
@@ -154,6 +177,8 @@ graphics:4:g
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:4:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:A quiet, reflective place of refuge, lined with shelves of 
 desc:mystical tomes.
 
@@ -162,6 +187,8 @@ graphics:5:b
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:5:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:A dim, scented room where potions and scrolls are traded.
 
 name:Magic Shop
@@ -169,6 +196,8 @@ graphics:6:r
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:6:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:A shop for devices and adornments with magic trapped within.
 
 name:Black Market
@@ -176,6 +205,8 @@ graphics:7:D
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:7:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:Watch your back and hold onto your purse as you enter this disreputable 
 desc:haunt - and do not expect friendly service or good bargains.
 
@@ -184,6 +215,8 @@ graphics:8:y
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:8:0
+look-prefix:the entrance to the
+look-in-preposition:at
 desc:Your safe piece of Middle Earth, and the only place you can store goods 
 desc:apart from on your person.
 
@@ -192,6 +225,7 @@ graphics:#:w
 priority:10
 mimic:granite wall
 flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
+confused-msg:bashes into a wall
 desc:A door that appears like a granite wall to untrained eyes.
 
 name:pile of rubble
@@ -199,6 +233,7 @@ graphics:::W
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1
+confused-msg:bumps into some rocks
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
 desc:to normal floor.
 
@@ -207,6 +242,7 @@ graphics:%:D
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
 info:0:2
+confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
@@ -216,6 +252,7 @@ graphics:%:s
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:3
+confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
@@ -225,6 +262,7 @@ graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
 info:0:2
+confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
@@ -234,6 +272,7 @@ graphics:*:y
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 info:0:3
+confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
@@ -243,6 +282,7 @@ graphics:#:W
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:4
+confused-msg:bashes into a wall
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight. 
@@ -251,6 +291,7 @@ name:permanent wall
 graphics:#:z
 priority:10
 flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
+confused-msg:bashes into a wall
 desc:You can dig through most walls but these are impenetrable.  The dungeon is 
 desc:surrounded by these kinds of walls and some special rooms are made of them.
 
@@ -260,6 +301,7 @@ name:lava
 graphics:#:r
 priority:10
 flags:PROJECT | FIERY | PASSABLE | NO_SCENT | BRIGHT
+look-prefix:some
 desc:A fiery pool of glowing lava.  Step in it at your peril!
 walk-msg:The lava will scald you!  Really step in? 
 run-msg:Lava blocks your path.  Step into it? 

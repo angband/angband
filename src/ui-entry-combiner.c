@@ -54,6 +54,14 @@ static void logical_or_combine_accum(int v, int a,
 	struct ui_entry_combiner_state *st);
 static void logical_or_vec(int n, const int *vals, const int *auxs,
 	int *accum, int *accum_aux);
+static void logical_or_with_cancel_combine_init(int v, int a,
+	struct ui_entry_combiner_state *st);
+static void logical_or_with_cancel_combine_accum(int v, int a,
+	struct ui_entry_combiner_state *st);
+static void logical_or_with_cancel_combine_finish(
+	struct ui_entry_combiner_state *st);
+static void logical_or_with_cancel_vec(int n, const int *vals, const int *auxs,
+	int *accum, int *accum_aux);
 static void resist_0_combine_init(int v, int a,
 	struct ui_entry_combiner_state *st);
 static void resist_0_combine_accum_help(int x, int *posaccum, int *negaccum);
@@ -83,6 +91,10 @@ static struct combining_algorithm combiners[] = {
 		dummy_combine_finish, last_vec } },
 	{ "LOGICAL_OR", { logical_combine_init, logical_or_combine_accum,
 		dummy_combine_finish, logical_or_vec } },
+	{ "LOGICAL_OR_WITH_CANCEL", { logical_or_with_cancel_combine_init,
+		logical_or_with_cancel_combine_accum,
+		logical_or_with_cancel_combine_finish,
+		logical_or_with_cancel_vec } },
 	{ "RESIST_0", { resist_0_combine_init, resist_0_combine_accum,
 		resist_0_combine_finish, resist_0_vec } },
 	{ "SMALLEST", { simple_combine_init, smallest_combine_accum,
@@ -401,6 +413,120 @@ static void logical_or_vec(int n, const int *vals, const int *auxs,
 }
 
 
+/*
+ * The accumulated value will be either UI_ENTRY_UNKNOWN_VALUE,
+ * UI_ENTRY_VALUE_NOT_PRESENT, or a bitwise-or of 0, 1, or 2.  In the last
+ * case, if 1 is in the bitwise-or, at least one positive value has been seen,
+ * and if 2 is in the bitwise-or, at least one negative value has been seen.
+ */
+static void logical_or_with_cancel_combine_init(int v, int a,
+	struct ui_entry_combiner_state *st)
+{
+	st->work = 0;
+	if (v == UI_ENTRY_UNKNOWN_VALUE || v == UI_ENTRY_VALUE_NOT_PRESENT) {
+		st->accum = v;
+	} else {
+		st->accum = (v > 0) ? 1 : ((v < 0) ? 2 : 0);
+	}
+	if (a == UI_ENTRY_UNKNOWN_VALUE || a == UI_ENTRY_VALUE_NOT_PRESENT) {
+		st->accum_aux = a;
+	} else {
+		st->accum_aux = (a > 0) ? 1 : ((a < 0) ? 2 : 0);
+	}
+}
+
+
+static void logical_or_with_cancel_combine_accum_help(int x, int *accum)
+{
+	if (x == UI_ENTRY_VALUE_NOT_PRESENT) {
+		return;
+	}
+	if (x == UI_ENTRY_UNKNOWN_VALUE) {
+		if (*accum == UI_ENTRY_VALUE_NOT_PRESENT) {
+			*accum = UI_ENTRY_UNKNOWN_VALUE;
+		}
+		return;
+	}
+	if (*accum == UI_ENTRY_UNKNOWN_VALUE ||
+		*accum == UI_ENTRY_VALUE_NOT_PRESENT) {
+		*accum = (x > 0) ? 1 : ((x < 0) ? 2 : 0);
+	} else if (x > 0) {
+		*accum |= 1;
+	} else if (x < 0) {
+		*accum |= 2;
+	}
+}
+
+
+static void logical_or_with_cancel_combine_accum(int v, int a,
+	struct ui_entry_combiner_state *st)
+{
+	logical_or_with_cancel_combine_accum_help(v, &st->accum);
+	logical_or_with_cancel_combine_accum_help(a, &st->accum_aux);
+}
+
+
+static void logical_or_with_cancel_combine_finish(
+	struct ui_entry_combiner_state *st)
+{
+	/*
+	 * Any negative values override positive values.  If there were no
+	 * negatives, the accumulated result already has the desired value,
+	 * either one if there were a positive number of positive values, or
+	 * zero if there were no positive or negative values.
+	 */
+	if (st->accum != UI_ENTRY_UNKNOWN_VALUE &&
+		st->accum != UI_ENTRY_VALUE_NOT_PRESENT) {
+		if ((st->accum & 2) != 0) {
+			st->accum = -1;
+		} else {
+			assert(st->accum == 0 || st->accum == 1);
+		}
+	}
+	if (st->accum_aux != UI_ENTRY_UNKNOWN_VALUE &&
+		st->accum_aux != UI_ENTRY_VALUE_NOT_PRESENT) {
+		if ((st->accum_aux & 2) != 0) {
+			st->accum_aux = -1;
+		} else {
+			assert(st->accum_aux == 0 || st->accum_aux == 1);
+		}
+	}
+}
+
+
+static void logical_or_with_cancel_vec(int n, const int *vals, const int *auxs,
+	int *accum, int *accum_aux)
+{
+	int i;
+
+	*accum = UI_ENTRY_VALUE_NOT_PRESENT;
+	for (i = 0; i < n; ++i) {
+		logical_or_with_cancel_combine_accum_help(vals[i], accum);
+	}
+	if (*accum != UI_ENTRY_UNKNOWN_VALUE &&
+		*accum != UI_ENTRY_VALUE_NOT_PRESENT) {
+		if ((*accum & 2) != 0) {
+			*accum = -1;
+		} else {
+			assert(*accum == 0 || *accum == 1);
+		}
+	}
+
+	*accum_aux = UI_ENTRY_VALUE_NOT_PRESENT;
+	for (i = 0; i < n; ++i) {
+		logical_or_with_cancel_combine_accum_help(auxs[i], accum_aux);
+	}
+	if (*accum_aux != UI_ENTRY_UNKNOWN_VALUE &&
+		*accum_aux != UI_ENTRY_VALUE_NOT_PRESENT) {
+		if ((*accum_aux & 2) != 0) {
+			*accum_aux = -1;
+		} else {
+			assert(*accum_aux == 0 || *accum_aux == 1);
+		}
+	}
+}
+
+
 static void resist_0_combine_init(int v, int a,
 	struct ui_entry_combiner_state *st)
 {
@@ -506,8 +632,8 @@ static void resist_0_vec(int n, const int *vals, const int *auxs,
 {
 	int i, neg;
 
-	*accum = UI_ENTRY_UNKNOWN_VALUE;
-	neg = UI_ENTRY_UNKNOWN_VALUE;
+	*accum = UI_ENTRY_VALUE_NOT_PRESENT;
+	neg = UI_ENTRY_VALUE_NOT_PRESENT;
 	for (i = 0; i < n; ++i) {
 		resist_0_combine_accum_help(vals[i], accum, &neg);
 	}
@@ -520,8 +646,8 @@ static void resist_0_vec(int n, const int *vals, const int *auxs,
 		}
 	}
 
-	*accum_aux = UI_ENTRY_UNKNOWN_VALUE;
-	neg = UI_ENTRY_UNKNOWN_VALUE;
+	*accum_aux = UI_ENTRY_VALUE_NOT_PRESENT;
+	neg = UI_ENTRY_VALUE_NOT_PRESENT;
 	for (i = 0; i < n; ++i) {
 		resist_0_combine_accum_help(auxs[i], accum_aux, &neg);
 	}

@@ -312,9 +312,9 @@ static bool find_start(struct chunk *c, struct loc *grid)
 			for (j = 0; j < 10000; j++) {
 				int total_walls = 0;
 
-				cave_find_in_range(c, grid, loc(1, 1),
+				if (!cave_find_in_range(c, grid, loc(1, 1),
 								   loc(c->width - 2, c->height - 2),
-								   square_isempty);
+								   square_isempty)) continue;
 				if (square_isvault(c, *grid) || square_isno_stairs(c, *grid)) {
 					continue;
 				}
@@ -348,6 +348,7 @@ void new_player_spot(struct chunk *c, struct player *p)
 		square_isstairs(c, p->grid)) {
 		grid = p->grid;
 	} else if (!find_start(c, &grid)) {
+		dump_level_simple(NULL, "Player Placement Failure", c);
 		quit("Failed to place player!");
 	}
 
@@ -546,7 +547,7 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 
 			/* Try several times, then decrease "walls" */
 			for (j = 0; !done && j <= 100; j++) {
-				find_empty(c, &grid);
+				if (!find_empty(c, &grid)) continue;
 
 				if (square_num_walls_adjacent(c, grid) < walls) continue;
 
@@ -604,7 +605,7 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
     while (tries < 2000) {
 		tries++;
 
-		find_empty(c, &grid);
+		if (!find_empty(c, &grid)) continue;
 
 		/* If we are ok with a corridor and we're in one, we're done */
 		if (set & SET_CORR && !square_isroom(c, grid)) break;
@@ -646,7 +647,7 @@ void vault_objects(struct chunk *c, struct loc grid, int depth, int num)
 			struct loc near;
 
 			/* Pick a random location */
-			find_nearby_grid(c, &near, grid, 2, 3);
+			if (!find_nearby_grid(c, &near, grid, 2, 3)) assert(0);
 
 			/* Require "clean" floor space */
 			if (!square_canputitem(c, near)) continue;
@@ -677,7 +678,7 @@ static void vault_trap_aux(struct chunk *c, struct loc grid, int yd, int xd)
     /* Find a nearby empty grid and place a trap */
     for (tries = 0; tries <= 5; tries++) {
 		struct loc near;
-		find_nearby_grid(c, &near, grid, yd, xd);
+		if (!find_nearby_grid(c, &near, grid, yd, xd)) assert(0);
 		if (!square_isempty(c, near)) continue;
 
 		square_add_trap(c, near);
@@ -738,3 +739,202 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 }
 
 
+/**
+ * Dump the given level for post-mortem analysis; handle all I/O.
+ * \param basefilename Is the base name (no directory or extension) for the
+ * file to use.  If NULL, "dumpedlevel" will be used.
+ * \param title Is the label to use within the file.  If NULL, "Dumped Level"
+ * will be used.
+ * \param c Is the chunk to dump.
+ */
+void dump_level_simple(const char *basefilename, const char *title,
+	struct chunk *c)
+{
+	char path[1024];
+	ang_file *fo;
+
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, (basefilename) ?
+		format("%s.html", basefilename) : "dumpedlevel.html");
+	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
+	if (fo) {
+		dump_level(fo, (title) ? title : "Dumped Level", c, NULL);
+		if (file_close(fo)) {
+			msg(format("Level dumped to %s.html",
+				(basefilename) ? basefilename : "dumpedlevel"));
+		}
+	}
+}
+
+
+/**
+ * Dump the given level to a file for post-mortem analysis.
+ * \param fo Is the file handle to use.  Must be capable of sequential writes
+ * in text format.  The level is dumped starting at the current offset in the
+ * file.
+ * \param title Is the title to use for the contents.
+ * \param c Is the chunk to dump.
+ * \param dist If not NULL, must act like a two dimensional C array with the
+ * first dimension being at least c->height elements and the second being at
+ * least c->width elements.  For a location (x,y) in the level, if dist[y][x]
+ * is negative, the contents will be rendered differently.
+ *
+ * The current output format is HTML since a typical browser will happily
+ * display the content in a scrollable area without wrapping lines.  This
+ * function is a convenience to replace a set of calls to dump_level_header(),
+ * dump_level_body(), and dump_level_footer().
+ */
+void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist)
+{
+	dump_level_header(fo, title);
+	dump_level_body(fo, title, c, dist);
+	dump_level_footer(fo);
+}
+
+
+/**
+ * Helper function to write a string while escaping any special characters.
+ * \param fo Is the file handle to use.
+ * \param s Is the string to write.
+ */
+static void dump_level_escaped_string(ang_file *fo, const char *s)
+{
+	while (*s) {
+		switch (*s) {
+		case '&':
+			file_put(fo, "&amp;");
+			break;
+
+		case '<':
+			file_put(fo, "&lt;");
+			break;
+
+		case '>':
+			file_put(fo, "&gt;");
+			break;
+
+		case '\"':
+			file_put(fo, "&quot;");
+			break;
+
+		default:
+			file_putf(fo, "%c", *s);
+			break;
+		}
+		++s;
+	}
+}
+
+
+/**
+ * Write the introductory material for the dump of one or move levels.
+ * \param fo Is the file handle to use.  Must be capable of sequential writes
+ * in text format.  Writes start at the current offset in the file.
+ * \param title Is the title to use for the contents of the file.
+ *
+ * The current format uses HTML.  This should be called once per dump (or
+ * take other measures to overwrite a previous call).
+ */
+void dump_level_header(ang_file *fo, const char *title)
+{
+	file_put(fo,
+		"<!DOCTYPE html>\n"
+		"<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+		"  <head>\n"
+		"    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
+		"    <title>");
+	dump_level_escaped_string(fo, title);
+	file_put(fo, "</title>\n  </head>\n  <body>\n");
+}
+
+
+/**
+ * Dump the given level to a file.
+ * \param fo Is the file handle to use.  Must be capable of sequential writes
+ * in text format.  The level is dumped starting at the current offset in the
+ * file.
+ * \param title Is the title to use for the level.
+ * \param c Is the chunk to dump.
+ * \param dist If not NULL, must act like a two dimensional C array with the
+ * first dimension being at least c->height elements and the second being at
+ * least c->width elements.  For a location (x,y) in the level, if dist[y][x]
+ * is negative, the contents will be rendered differently.
+ *
+ * The current output format is HTML.  You can dump more than one level to
+ * the same file by calling dump_level_header() once for the file, followed
+ * by calling dump_level_body() for each level of interest, then calling
+ * dump_level_footer() once to finish things off before you close the file
+ * with file_close().
+ */
+void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
+	int **dist)
+{
+	int y;
+
+	file_put(fo, "    <p>");
+	dump_level_escaped_string(fo, title);
+	if (dist != NULL) {
+		file_put(fo, "\n    <p>A location where the distance array was negative is marked with *.");
+	}
+	file_put(fo, "\n    <pre>\n");
+	for (y = 0; y < c->height; ++y) {
+		int x;
+
+		for (x = 0; x < c->width; ++x) {
+			struct loc grid = loc(x, y);
+			const char *s = "#";
+
+			if (square_in_bounds_fully(c, grid)) {
+				if (square_isplayer(c, grid)) {
+					s = "@";
+				} else if (square_isoccupied(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"M" : "*";
+				} else if (square_isdoor(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"+" : "*";
+				} else if (square_isrubble(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						":" : "*";
+				} else if (square_isdownstairs(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"&gt;" : "*";
+				} else if (square_isupstairs(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"&lt;" : "*";
+				} else if (square_istrap(c, grid) ||
+					square_isplayertrap(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"^" : "*";
+				} else if (square_iswebbed(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"w" : "*";
+				} else if (square_object(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"$" : "*";
+				} else if (square_isempty(c, grid) &&
+						(square_isvault(c, grid) ||
+						square_isno_stairs(c, grid))) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						" " : "*";
+				} else if (square_ispassable(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"." : "*";
+				}
+			}
+			file_put(fo, s);
+		}
+		file_put(fo, "\n");
+	}
+	file_put(fo, "    </pre>\n");
+}
+
+
+/**
+ * Write the concluding material for the dump of one or more levels.
+ * \param fo Is the file handle to use.  Must be capable of sequential writes
+ * in text format.  Writes start at the current offset in the file.
+ */
+void dump_level_footer(ang_file *fo)
+{
+	file_put(fo, "  </body>\n</html>\n");
+}

@@ -2485,6 +2485,7 @@ static errr term_data_init(term_data *td, int i)
 		wmh->window_group = data[0].win->win;
 	}
 	XSetWMHints(Metadpy->dpy, Infowin->win, wmh);
+	XFree(wmh);
 
 	/* Map the window */
 	Infowin_map();

@@ -12,7 +12,7 @@ To build Angband using Microsoft's Visual Studio.
  4. Copy libpng.dll and zlib1.dll from src\win\dll\ to the project directory.
 
  5. In the project settings, in the C/C++ tab, in the additional include
-    directories ilne, add: src, src/win, src/win/include.
+    directories line, add: src, src/win, src/win/include.
 
  6. In the project settings, in the Link tab, in the Object/library modules
     line, add: "src\win\zlib1.lib src\win\libpng.lib msimg32.lib winmm.lib "
@@ -29,29 +29,29 @@ To build Angband using Microsoft's Visual Studio.
     choosing "Add Files to Project" from the context menu or by going to
     "Project" -> "Add to Project" -> "Files" from the menu bar.
 
- 9. Add all of the files that end in ".c" or ".h" in the src\player directory
-    to the project.
-
-10. Add all of the files that end in ".c" or ".h" in the src\object directory
-    to the project.
-
-11. Add all of the files that end in ".c" or ".h" in the src\monster directory
-    to the project.
-
-12. Add all of the files that end in ".c" or ".h" in the src\win directory
+ 9. Add all of the files that end in ".c" or ".h" in the src\win directory
     to the project, as well as angband.rc.
 
-13. Add main-win.c from the src directory to the project.
+10. Add main-win.c from the src directory to the project.
 
-14. Save the project, then compile the project. There will be a lot of
+11. (optional) To include sound support, open the project's "Property Pages"
+    dialog box.  In the left pane, select "Configuration Properties, C/C++,
+    Preprocessor".  In the right pane of the "Preprocessor Definitions"
+    property, open the drop-down menu and choose "Edit".  In the "Preprocessor
+    Definitions" dialog box, add a line containing "SOUND" (without the quotes;
+    a semicolon may be necessary after "SOUND" to separate it from the other
+    definitions).
+
+12. Save the project, then compile the project. There will be a lot of
     warnings, but there should not be any errors. The warnings can be ignored.
 
-15. If there are no errors, enjoy playing angband. There should not be any
+13. If there are no errors, enjoy playing angband. There should not be any
     errors and the executable should be built. If there are any errors, and
     you do not know how to fix them, you can ask on the forums at
     http://angband.oook.cz or in the #angband-dev IRC channel on Freenode.
 
-16. Report bugs or request changes at trac.rephial.org.
+14. Report bugs or request changes on https://github.com/angband/angband/issues
+    at the Github site or on the forums at http://angband.oook.cz .
 
-17. To submit bug fixes, changes, etc please open pull requests on the Github
+15. To submit bug fixes, changes, etc please open pull requests on the Github
     site.

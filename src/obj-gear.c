@@ -171,10 +171,12 @@ int pack_slots_used(struct player *p)
 		/* Equipment doesn't count */
 		if (!object_is_equipped(p->body, obj)) {
 			/* Check if it is in the quiver */
-			if (tval_is_ammo(obj)) {
+			if (tval_is_ammo(obj) ||
+					of_has(obj->flags, OF_THROWING)) {
 				for (i = 0; i < z_info->quiver_size; i++) {
 					if (p->upkeep->quiver[i] == obj) {
-						quiver_ammo += obj->number;
+						quiver_ammo += obj->number *
+							(tval_is_ammo(obj) ? 1 : 5);
 						found = true;
 						break;
 					}
@@ -490,19 +492,39 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
  */
 static int quiver_absorb_num(const struct object *obj)
 {
-	/* Must be ammo */
-	if (tval_is_ammo(obj)) {
+	bool ammo = tval_is_ammo(obj);
+	bool throwing = of_has(obj->flags, OF_THROWING);
+
+	/* Must be ammo or good for throwing */
+	if (ammo || throwing) {
 		int i, quiver_count = 0, space_free = 0;
 
 		/* Count the current space this object could go into */
 		for (i = 0; i < z_info->quiver_size; i++) {
 			struct object *quiver_obj = player->upkeep->quiver[i];
 			if (quiver_obj) {
-				quiver_count += quiver_obj->number;
+				int mult = tval_is_ammo(quiver_obj) ? 1 : 5;
+
+				quiver_count += quiver_obj->number * mult;
 				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
-					space_free += z_info->quiver_slot_size - quiver_obj->number;
-			} else {
+					space_free += z_info->quiver_slot_size
+						- quiver_obj->number * mult;
+			} else if (ammo) {
 				space_free += z_info->quiver_slot_size;
+			} else if (obj->note) {
+				/*
+				 * Per calc_inventory(), throwing weapons
+				 * which aren't also ammo will be added to the
+				 * quiver if inscribed to go into an unoccupied
+				 * slot.  The inscription test should match what
+				 * calc_inventory() uses.
+				 */
+				const char *s = strchr(quark_str(obj->note), '@');
+
+				if (s && (s[1] == 'f' || s[1] == 'v') &&
+						s[2] - '0' == i) {
+					space_free += z_info->quiver_slot_size;
+				}
 			}
 		}
 
@@ -514,7 +536,8 @@ static int quiver_absorb_num(const struct object *obj)
 
 			/* Return the number, or the number that will fit */
 			space_free = MIN(space_free, z_info->quiver_slot_size - quiver_count);
-			return MIN(obj->number, space_free);
+			return MIN(obj->number,
+				space_free / (tval_is_ammo(obj) ? 1 : 5));
 		}
 	}
 

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.2.1, bugs@rephial.org)
+AC_INIT(Angband, 4.2.2, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -288,26 +288,28 @@ if test "$enable_sdl2" = "yes"; then
 			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_image -lSDL2_ttf"
 			MAINFILES="${MAINFILES} \$(SDL2MAINFILES)"
+			enable_sdl=no
+			enable_sdl_mixer=no
 		fi
 	fi
-fi
+else
+	dnl SDL checking
+	if test "$enable_sdl" = "yes"; then
+	   AM_PATH_SDL(1.2.10,,)
 
-dnl SDL checking
-if test "$enable_sdl" = "yes"; then
-	AM_PATH_SDL(1.2.10,,)
+	   if test "$SDL_CONFIG" = "no"; then
+		  with_sdl=no
+	   else
+			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
+			AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
 
-	if test "$SDL_CONFIG" = "no"; then
-		with_sdl=no
-	else
-		AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
-		AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
-
-		if test "$with_sdl" = "yes"; then
-			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
-			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
-			LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
-			MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
-		fi
+			if test "$with_sdl" = "yes"; then
+			   		AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
+					CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+					LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
+					MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
+		    fi
+	    fi
 	fi
 fi
 
@@ -324,6 +326,9 @@ fi
 
 dnl SDL2 mixer checking
 if test "$enable_sdl2_mixer" = "yes"; then
+	if test "$enable_sdl_mixer" = "yes"; then
+		AC_MSG_ERROR(both --enable-sdl-mixer and --enable-sdl2-mixer set, 1)
+	fi
 	AC_CHECK_LIB(SDL2_mixer, Mix_OpenAudio, found_sdl2_mixer=yes, found_sdl2_mixer=no)
 
 	if test "$found_sdl2_mixer" = "yes"; then
@@ -337,7 +342,7 @@ if test "$enable_sdl2_mixer" = "yes"; then
 			SDL2_LIBS=`sdl2-config --libs`
 			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_mixer"
 		fi
-		MAINFILES="${MAINFILES} \$(SNDSDL2FILES)"
+		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
 	fi
 fi
 

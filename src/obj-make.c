@@ -574,18 +574,16 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
  * We *prefer* to create the special artifacts in order, but this is
  * normally outweighed by the "rarity" rolls for those artifacts.
  */
-static struct object *make_artifact_special(int level)
+static struct object *make_artifact_special(int level, int tval)
 {
 	int i;
 	struct object *new_obj;
 
 	/* No artifacts, do nothing */
-	if (OPT(player, birth_no_artifacts))
-		return NULL;
+	if (OPT(player, birth_no_artifacts)) return NULL;
 
 	/* No artifacts in the town */
-	if (!player->depth)
-		return NULL;
+	if (!player->depth) return NULL;
 
 	/* Check the special artifacts */
 	for (i = 0; i < z_info->a_max; ++i) {
@@ -597,6 +595,9 @@ static struct object *make_artifact_special(int level)
 
 		/* Make sure the kind was found */
 		if (!kind) continue;
+
+		/* Make sure it's the right tval (if given) */
+		if (tval && (tval != art->tval)) continue;
 
 		/* Skip non-special artifacts */
 		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
@@ -662,18 +663,15 @@ static struct object *make_artifact_special(int level)
 static bool make_artifact(struct object *obj)
 {
 	int i;
-	bool art_ok = true;
 
 	/* Make sure birth no artifacts isn't set */
-	if (OPT(player, birth_no_artifacts)) art_ok = false;
-
-	if (!art_ok) return (false);
+	if (OPT(player, birth_no_artifacts)) return false;
 
 	/* No artifacts in the town */
-	if (!player->depth) return (false);
+	if (!player->depth) return false;
 
 	/* Paranoia -- no "plural" artifacts */
-	if (obj->number != 1) return (false);
+	if (obj->number != 1) return false;
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = 0; !obj->artifact && i < z_info->a_max; i++) {
@@ -1178,7 +1176,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
-		new_obj = make_artifact_special(lev);
+		new_obj = make_artifact_special(lev, tval);
 		if (new_obj) {
 			if (value) *value = object_value_real(new_obj, 1);
 			return new_obj;
@@ -1212,7 +1210,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
 
 	/* Generate multiple items */
-	if (kind->gen_mult_prob >= randint1(100))
+	if (!new_obj->artifact && kind->gen_mult_prob >= randint1(100))
 		new_obj->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
 	if (new_obj->number > new_obj->kind->base->max_stack)

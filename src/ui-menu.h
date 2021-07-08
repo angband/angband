@@ -226,6 +226,13 @@ struct menu
   	/* auxiliary browser help function */
 	void (*browse_hook)(int oid, void *db, const region *loc);
 
+	/* This is an auxiliary function to allow predefined skins to handle
+	 * events for cmd_keys or switch_keys within menu_select() rather than
+	 * have menu_select()'s caller handle them.  If used, the function
+	 * should return true if the event, ev, was handled or false if it was
+	 * not. oid is the index of the cursor position in the list. */
+	bool (*keys_hook)(struct menu *m, const ui_event *ev, int oid);
+
 	/* Flags specifying the behavior of this menu (from struct menu_flags) */
 	int flags;
 

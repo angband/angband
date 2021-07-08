@@ -44,6 +44,7 @@ typedef void (*renderer_func)(
 	const struct renderer_info *info);
 typedef int (*valuewidth_func)(const struct renderer_info *info);
 
+static void safe_queue_chars(int x, int y, int n, int a, const wchar_t *s);
 static void format_int(int i, bool add_one, wchar_t zero, wchar_t overflow,
 	bool nonneg, bool use_sign, int nbuf, wchar_t *buf);
 static void show_combined_generic(const struct renderer_info *info,
@@ -70,6 +71,17 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info
 );
 static int valuewidth_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
+	const struct renderer_info *info);
+static void renderer_COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX(
+	const wchar_t *label,
+	int nlabel,
+	const int *vals,
+	const int *auxvals,
+	int n,
+	const struct ui_entry_details *details,
+	const struct renderer_info *info
+);
+static int valuewidth_COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info);
 static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	const wchar_t *label,
@@ -369,14 +381,47 @@ char *ui_entry_renderer_get_label_colors(int ind)
 /*
  * If ind is valid, returns a dynamically allocated string with the current
  * setting for the palette of symbols.  That string should be released
- * with string_free().  Otherwise, returns NULL.
+ * with mem_free().  Otherwise, returns NULL.
  */
 char *ui_entry_renderer_get_symbols(int ind)
 {
+	char *result, *p;
+	int isym;
+
 	if (ind < 1 || ind > renderer_count) {
 		return NULL;
 	}
-	return string_make(format("%ls", renderers[ind - 1].symbols));
+
+	result = mem_alloc(renderers[ind - 1].nsym * text_wcsz() + 1);
+	p = result;
+	for (isym = 0; isym < renderers[ind - 1].nsym; ++isym) {
+		int n = text_wctomb(p, renderers[ind - 1].symbols[isym]);
+
+		if (n > 0) {
+			p += n;
+		} else {
+			*p++ = ' ';
+		}
+	}
+	/* Terminate the string. */
+	*p = 0;
+
+	return result;
+}
+
+
+static void safe_queue_chars(int x, int y, int n, int a, const wchar_t *s)
+{
+	if (y < 0 || y >= Term->hgt) {
+		return;
+	}
+	if (n + x > Term->wid) {
+		n = Term->wid - x;
+	}
+	if (n <= 0) {
+		return;
+	}
+	Term_queue_chars(x, y, n, a, s);
 }
 
 
@@ -523,7 +568,7 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 14 && info->nlabcolors >= 13 &&
+	assert(info->ncolors >= 28 && info->nlabcolors >= 13 &&
 		info->nsym >= 14);
 
 	for (i = 0; i < n; ++i) {
@@ -589,7 +634,7 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -624,7 +669,7 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 5 && info->nlabcolors >= 4 && info->nsym >= 5);
+	assert(info->ncolors >= 10 && info->nlabcolors >= 4 && info->nsym >= 5);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index = 2;
@@ -679,7 +724,7 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -692,6 +737,131 @@ static void renderer_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
 
 
 static int valuewidth_COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX(
+	const struct renderer_info *info)
+{
+	return 1;
+}
+
+
+static void renderer_COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX(
+	const wchar_t *label,
+	int nlabel,
+	const int *vals,
+	const int *auxvals,
+	int n,
+	const struct ui_entry_details *details,
+	const struct renderer_info *info)
+{
+	struct loc p = details->value_position;
+	int color_offset = (details->alternate_color_first) ? 11 : 0;
+	struct ui_entry_combiner_funcs combiner;
+	int vc, ac;
+	int i;
+
+	/* Check for defaults that are too short in list-ui-entry-renders.h. */
+	assert(info->ncolors >= 22 && info->nlabcolors >= 7 && info->nsym >= 11);
+
+	for (i = 0; i < n; ++i) {
+		int palette_index;
+
+		if (vals[i] == UI_ENTRY_UNKNOWN_VALUE ||
+			auxvals[i] == UI_ENTRY_UNKNOWN_VALUE) {
+			palette_index = 0;
+		} else if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT &&
+			auxvals[i] == UI_ENTRY_VALUE_NOT_PRESENT) {
+			palette_index = 1;
+		} else if (auxvals[i] == UI_ENTRY_VALUE_NOT_PRESENT ||
+			auxvals[i] == 0) {
+			if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT ||
+				vals[i] == 0) {
+				palette_index = 2;
+			} else if (vals[i] > 0) {
+				palette_index = 3;
+			} else {
+				palette_index = 4;
+			}
+		} else if (auxvals[i] > 0) {
+			if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT ||
+				vals[i] == 0) {
+				palette_index = 5;
+			} else if (vals[i] > 0) {
+				palette_index = 6;
+			} else {
+				palette_index = 7;
+			}
+		} else {
+			if (vals[i] == UI_ENTRY_VALUE_NOT_PRESENT ||
+				vals[i] == 0) {
+				palette_index = 8;
+			} else if (vals[i] > 0) {
+				palette_index = 9;
+			} else {
+				palette_index = 10;
+			}
+		}
+		Term_putch(p.x, p.y,
+			info->colors[palette_index + color_offset],
+			info->symbols[palette_index]);
+		p = loc_sum(p, details->position_step);
+		color_offset ^= 11;
+	}
+
+	if (nlabel <= 0 && !details->show_combined) {
+		return;
+	}
+
+	if (ui_entry_combiner_get_funcs(info->combiner_index, &combiner)) {
+		assert(0);
+	}
+	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
+
+	if (nlabel > 0) {
+		int palette_index;
+
+		if (! details->known_rune) {
+			palette_index = 0;
+		} else if (vc == UI_ENTRY_VALUE_NOT_PRESENT ||
+			vc == UI_ENTRY_UNKNOWN_VALUE || vc == 0) {
+			if (ac == UI_ENTRY_VALUE_NOT_PRESENT ||
+				ac == UI_ENTRY_UNKNOWN_VALUE || ac == 0) {
+				palette_index = 4;
+			} else if (ac > 0) {
+				palette_index = 6;
+			} else {
+				palette_index = 2;
+			}
+		} else if (vc > 0) {
+			if (ac == UI_ENTRY_VALUE_NOT_PRESENT ||
+				ac == UI_ENTRY_UNKNOWN_VALUE || ac >= 0) {
+				palette_index = 5;
+			} else {
+				palette_index = 3;
+			}
+		} else {
+			palette_index = 1;
+		}
+		if (details->vertical_label) {
+			p = details->label_position;
+			for (i = 0; i < nlabel; ++i) {
+				Term_putch(p.x, p.y,
+					info->label_colors[palette_index],
+					label[i]);
+				p.y += 1;
+			}
+		} else {
+			safe_queue_chars(details->label_position.x,
+				details->label_position.y, nlabel,
+				info->label_colors[palette_index], label);
+		}
+	}
+
+	if (details->show_combined) {
+		show_combined_generic(info, details, vc, ac);
+	}
+}
+
+
+static int valuewidth_COMPACT_FLAG_WITH_CANCEL_RENDERER_WITH_COMBINED_AUX(
 	const struct renderer_info *info)
 {
 	return 1;
@@ -714,7 +884,7 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 7 && info->nlabcolors >= 6 && info->nsym >= 7);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 6 && info->nsym >= 7);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index = 2;
@@ -786,7 +956,7 @@ static void renderer_NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -823,7 +993,7 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 7 && info->nlabcolors >= 6 && info->nsym >= 7);
+	assert(info->ncolors >= 14 && info->nlabcolors >= 6 && info->nsym >= 7);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index;
@@ -894,10 +1064,10 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 				info->sign == UI_ENTRY_ALWAYS_SIGN,
 				nbuf, buffer);
 		}
-		Term_queue_chars(p.x, p.y, nbuf,
+		safe_queue_chars(p.x, p.y, nbuf,
 			info->colors[palette_index + color_offset], buffer);
 		if (info->units_nlabel != 0) {
-			Term_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
+			safe_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
 				info->colors[palette_index + color_offset],
 				info->units_label);
 		}
@@ -945,7 +1115,7 @@ static void renderer_NUMERIC_RENDERER_WITH_COMBINED_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}
@@ -983,7 +1153,7 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 8 && info->nlabcolors >= 7 && info->nsym >= 6);
+	assert(info->ncolors >= 16 && info->nlabcolors >= 7 && info->nsym >= 6);
 
 	for (i = 0; i < n; ++i) {
 		int palette_index;
@@ -1051,10 +1221,10 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 				info->sign == UI_ENTRY_ALWAYS_SIGN,
 				nbuf, buffer);
 		}
-		Term_queue_chars(p.x, p.y, nbuf,
+		safe_queue_chars(p.x, p.y, nbuf,
 			info->colors[palette_index + color_offset], buffer);
 		if (info->units_nlabel != 0) {
-			Term_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
+			safe_queue_chars(p.x + nbuf, p.y, info->units_nlabel,
 				info->colors[palette_index + color_offset],
 				info->units_label);
 		}
@@ -1097,7 +1267,7 @@ static void renderer_NUMERIC_RENDERER_WITH_BOOL_AUX(
 				p.y += 1;
 			}
 		} else {
-			Term_queue_chars(details->label_position.x,
+			safe_queue_chars(details->label_position.x,
 				details->label_position.y, nlabel,
 				info->label_colors[palette_index], label);
 		}

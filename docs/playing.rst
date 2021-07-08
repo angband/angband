@@ -85,64 +85,64 @@ which is most convenient when using the original keyset.
 Original Keyset Command Summary
 ===============================
 
-====== ============================= ====== ============================
-``a``  Aim a wand                    ``A``  Activate an object 
-``b``  Browse a book                 ``B``  (unused)
-``c``  Close a door                  ``C``  Character description
-``d``  Drop an item                  ``D``  Disarm a trap or lock a door
-``e``  Equipment list                ``E``  Eat some food
-``f``  Fire an item                  ``F``  Fuel your lantern/torch
-``g``  Get objects on floor          ``G``  Gain new spells/prayers
-``h``  Fire default ammo at target   ``H``  (unused)
-``i``  Inventory list                ``I``  Observe an item
-``j``  (unused)                      ``J``  (unused)
-``k``  Ignore an item                ``K``  Toggle ignore
-``l``  Look around                   ``L``  Locate player on map
-``m``  Cast a spell                  ``M``  Full dungeon map
-``n``  Repeat previous command       ``N``  (unused)
-``o``  Open a door or chest          ``O``  (unused)
-``p``  Cast a spell                  ``P``  (unused)
-``q``  Quaff a potion                ``Q``  End character & quit
-``r``  Read a scroll                 ``R``  Rest for a period
-``s``  Steal (rogues only)           ``S``  (unused)
-``t``  Take off equipment            ``T``  Dig a tunnel
-``u``  Use a staff                   ``U``  Use an item
-``v``  Throw an item                 ``V``  Version info
-``w``  Wear/wield equipment          ``W``  Walk into a trap
-``x``  (unused)                      ``X``  (unused)
-``y``  (unused)                      ``Y``  (unused)
-``z``  Zap a rod                     ``Z``  (unused)
-``!``  (unused)                      ``^A`` Debug mode
-``@``  (unused)                      ``^B`` (unused)
-``#``  (unused)                      ``^C`` (special - break)
-``$``  (unused)                      ``^D`` (unused)
-``%``  (unused)                      ``^E`` Toggle inven/equip window
-``^``  (special - control key)       ``^F`` Repeat level feeling
-``&``  (unused)                      ``^G`` Do autopickup
-``*`` Target monster or location     ``^H`` (unused)
-``(``  Load screen dump              ``^I`` (special - tab)
-``)``  Dump screen dump              ``^J`` (special - linefeed)
-``{``  Inscribe an object            ``^K`` (unused)
-``}``  Uninscribe an object          ``^L`` Center map
-``[``  Display visible monster list  ``^M`` (special - return)
-``]``  Display visible object list   ``^N`` (unused)
-``-`` (unused)                       ``^O`` Show previous message
-``_``  Enter store                   ``^P`` Show previous messages
-``+`` Alter grid                     ``^Q`` (unused)
-``=``  Set options                   ``^R`` Redraw the screen
-``;``  Walk (with pickup)            ``^S`` Save and don't quit
-``:``  Take notes                    ``^T`` (unused)
-``'``  Target closest monster        ``^U`` (unused)
-``"``  Enter a user pref command     ``^V`` (unused)
-``,``  Stay still (with pickup)      ``^W`` (special - wizard mode)
-``<``  Go up staircase               ``^X`` Save and quit
-``.``  Run                           ``^Y`` (unused)
-``>``  Go down staircase             ``^Z`` (unused)
-``\``  (special - bypass keymap)     ``~``  Check knowledge
-`` ` `` (special - escape)           ``?``  Help
-``/``  Identify symbol
-``|``  Quiver list
-====== ============================= ====== ============================
+======= ============================= ====== ============================
+ ``a``  Aim a wand                    ``A``  Activate an object 
+ ``b``  Browse a book                 ``B``  (unused)
+ ``c``  Close a door                  ``C``  Character description
+ ``d``  Drop an item                  ``D``  Disarm a trap or lock a door
+ ``e``  Equipment list                ``E``  Eat some food
+ ``f``  Fire an item                  ``F``  Fuel your lantern/torch
+ ``g``  Get objects on floor          ``G``  Gain new spells/prayers
+ ``h``  Fire default ammo at target   ``H``  (unused)
+ ``i``  Inventory list                ``I``  Observe an item
+ ``j``  (unused)                      ``J``  (unused)
+ ``k``  Ignore an item                ``K``  Toggle ignore
+ ``l``  Look around                   ``L``  Locate player on map
+ ``m``  Cast a spell                  ``M``  Full dungeon map
+ ``n``  Repeat previous command       ``N``  (unused)
+ ``o``  Open a door or chest          ``O``  (unused)
+ ``p``  Cast a spell                  ``P``  (unused)
+ ``q``  Quaff a potion                ``Q``  End character & quit
+ ``r``  Read a scroll                 ``R``  Rest for a period
+ ``s``  Steal (rogues only)           ``S``  (unused)
+ ``t``  Take off equipment            ``T``  Dig a tunnel
+ ``u``  Use a staff                   ``U``  Use an item
+ ``v``  Throw an item                 ``V``  Version info
+ ``w``  Wear/wield equipment          ``W``  Walk into a trap
+ ``x``  (unused)                      ``X``  (unused)
+ ``y``  (unused)                      ``Y``  (unused)
+ ``z``  Zap a rod                     ``Z``  (unused)
+ ``!``  (unused)                      ``^A`` Debug mode
+ ``@``  (unused)                      ``^B`` (unused)
+ ``#``  (unused)                      ``^C`` (special - break)
+ ``$``  (unused)                      ``^D`` (unused)
+ ``%``  (unused)                      ``^E`` Toggle inven/equip window
+ ``^``  (special - control key)       ``^F`` Repeat level feeling
+ ``&``  (unused)                      ``^G`` Do autopickup
+ ``*``  Target monster or location    ``^H`` (unused)
+ ``(``  Load screen dump              ``^I`` (special - tab)
+ ``)``  Dump screen dump              ``^J`` (special - linefeed)
+ ``{``  Inscribe an object            ``^K`` (unused)
+ ``}``  Uninscribe an object          ``^L`` Center map
+ ``[``  Display visible monster list  ``^M`` (special - return)
+ ``]``  Display visible object list   ``^N`` (unused)
+ ``-``  (unused)                      ``^O`` Show previous message
+ ``_``  Enter store                   ``^P`` Show previous messages
+ ``+``  Alter grid                    ``^Q`` (unused)
+ ``=``  Set options                   ``^R`` Redraw the screen
+ ``;``  Walk (with pickup)            ``^S`` Save and don't quit
+ ``:``  Take notes                    ``^T`` (unused)
+ ``'``  Target closest monster        ``^U`` (unused)
+ ``"``  Enter a user pref command     ``^V`` (unused)
+ ``,``  Stay still (with pickup)      ``^W`` (special - wizard mode)
+ ``<``  Go up staircase               ``^X`` Save and quit
+ ``.``  Run                           ``^Y`` (unused)
+ ``>``  Go down staircase             ``^Z`` (unused)
+ ``\``  (special - bypass keymap)     ``~``  Check knowledge
+`` ` `` (special - escape)            ``?``  Help
+ ``/``  Identify symbol
+ ``|``  Quiver list
+======= ============================= ====== ============================
 
 Roguelike Keyset Command Summary
 ================================
@@ -181,16 +181,16 @@ Roguelike Keyset Command Summary
   %    (unused)                        ^E   Toggle inven/equip window
   ^    (special - control key)         ^F   Repeat level feeling
   &    (unused)                        ^G   Do autopickup
-  |*|    Target monster or location      ^H   (alter - west)
+  \*   Target monster or location      ^H   (alter - west)
   (    Load screen dump                ^I   (special - tab)
   )    Dump screen dump                ^J   alter - south)
   {    Inscribe an object              ^K   (alter - north)
   }    Uninscribe an object            ^L   (alter - east)
   [    Display visible monster list    ^M   (special - return)
   ]    Display visible object list     ^N   (alter - south east)
-  |-|    Walk into a trap                ^O   Show previous message
+  \-   Walk into a trap                ^O   Show previous message
   _    Enter store                     ^P   Show previous messages
-  |+|    Alter grid                      ^Q   (unused)
+  \+   Alter grid                      ^Q   (unused)
   =    Set options                     ^R   Redraw the screen
   ;    Walk (with pickup)              ^S   Save and don't quit
   :    Take notes                      ^T   Dig a tunnel

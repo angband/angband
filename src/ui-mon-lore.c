@@ -60,7 +60,7 @@ void lore_title(textblock *tb, const struct monster_race *race)
 	}
 
 	/* Dump the name and then append standard attr/char info */
-	textblock_append(tb, race->name);
+	textblock_append(tb, "%s", race->name);
 
 	textblock_append(tb, " ('");
 	textblock_append_pict(tb, standard_attr, standard_char);
@@ -116,10 +116,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	if (!spoilers)
 		lore_append_kills(tb, race, lore, known_flags);
 
-	/* If we are generating spoilers, we want to output as UTF-8. As of 3.5,
-	 * the values in race->name and race->text remain unconverted from the
-	 * UTF-8 edit files. */
-	lore_append_flavor(tb, race, spoilers);
+	lore_append_flavor(tb, race);
 
 	/* Describe the monster type, speed, life, and armor */
 	lore_append_movement(tb, race, lore, known_flags);

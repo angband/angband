@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "ui-term.h"
 
 
 /**
@@ -317,7 +318,9 @@ void wr_options(void)
 	/* Special Options */
 	wr_byte(player->opts.delay_factor);
 	wr_byte(player->opts.hitpoint_warn);
-	wr_u16b(player->opts.lazymove_delay);
+	wr_byte(player->opts.lazymove_delay);
+	/* Fix for tests - only write if angband_term exists, ie in a real game */
+	wr_byte(angband_term[0] ? SIDEBAR_MODE : 0);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
@@ -672,9 +675,9 @@ void wr_artifacts(void)
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {
 		struct artifact *art = &a_info[i];
-		wr_byte(art->created);
-		wr_byte(art->seen);
-		wr_byte(art->everseen);
+		wr_byte(art->created ? 1 : 0);
+		wr_byte(art->seen ? 1 : 0);
+		wr_byte(art->everseen ? 1 : 0);
 		wr_byte(0);
 	}
 }
@@ -786,7 +789,7 @@ static void wr_dungeon_aux(struct chunk *c)
 		for (y = 0; y < c->height; y++) {
 			for (x = 0; x < c->width; x++) {
 				/* Extract the important c->squares[y][x].info flags */
-				tmp8u = square(c, loc(x, y)).info[i];
+				tmp8u = square(c, loc(x, y))->info[i];
 
 				/* If the run is broken, or too full, flush it */
 				if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
@@ -814,7 +817,7 @@ static void wr_dungeon_aux(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			/* Extract a byte */
-			tmp8u = square(c, loc(x, y)).feat;
+			tmp8u = square(c, loc(x, y))->feat;
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
@@ -873,7 +876,7 @@ static void wr_objects_aux(struct chunk *c)
 	wr_u16b(c->obj_max);
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			struct object *obj = square(c, loc(x, y)).obj;
+			struct object *obj = square(c, loc(x, y))->obj;
 			while (obj) {
 				wr_item(obj);
 				obj = obj->next;
@@ -933,7 +936,7 @@ static void wr_traps_aux(struct chunk *c)
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			struct trap *trap = square(c, loc(x, y)).trap;
+			struct trap *trap = square(c, loc(x, y))->trap;
 			while (trap) {
 				wr_trap(trap);
 				trap = trap->next;

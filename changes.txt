@@ -1,6 +1,25 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.2
+=============
+
+This version is almost entirely bug-fixing and quality-of-life improvements,
+plus a few balance tweaks.  The game was also set up to automatically build and
+run tests on Github.
+
+ - many bugfixes and UI improvements
+ - a further significant overhaul of blackguard spells
+ - tweaks to some priest spells
+ - new knowledge menu for player shapes
+ - increase to chest frequency
+ - uniques can no longer be trampled
+ - adjustment to food system, including much quicker reduction of Full status
+ - afraid monsters with nowhere to run become held
+ - throwing weapons can be stored in the quiver
+ - improved method for default stat point allocation at birth
+ - tweaks to powerful modifiers in randart generation
+
 Angband 4.2.1
 =============
 

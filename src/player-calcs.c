@@ -1048,19 +1048,22 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Find the first quiver object with the correct label */
 		for (current = gear; current; current = current->next) {
-			/* Ignore non-ammo */
-			if (!tval_is_ammo(current)) continue;
+			bool throwing = of_has(current->flags, OF_THROWING);
+
+			/* Only allow ammo and throwing weapons */
+			if (!(tval_is_ammo(current) || throwing)) continue;
 
 			/* Allocate inscribed objects if it's the right slot */
 			if (current->note) {
 				const char *s = strchr(quark_str(current->note), '@');
-				if (s && s[1] == 'f') {
+				if (s && (s[1] == 'f' || s[1] == 'v')) {
 					int choice = s[2] - '0';
 
 					/* Correct slot, fill it straight away */
 					if (choice == i) {
+						int mult = tval_is_ammo(current) ? 1 : 5;
 						upkeep->quiver[i] = current;
-						upkeep->quiver_cnt += current->number;
+						upkeep->quiver_cnt += current->number * mult;
 
 						/* In the quiver counts as worn */
 						object_learn_on_wield(player, current);
@@ -1881,7 +1884,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			for (j = 0; j < ELEM_MAX; j++) {
 				if (!known_only || obj->known->el_info[j].res_level) {
 					if (obj->el_info[j].res_level == -1)
-						vuln[i] = true;
+						vuln[j] = true;
 
 					/* OK because res_level hasn't included vulnerability yet */
 					if (obj->el_info[j].res_level > state->el_info[j].res_level)
@@ -2229,7 +2232,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Movement speed */
-	state->num_moves = 1 + extra_moves;
+	state->num_moves = extra_moves;
 
 	return;
 }

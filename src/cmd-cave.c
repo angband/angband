@@ -417,7 +417,7 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Monster - alert, then attack */
-	if (square(cave, grid).mon > 0) {
+	if (square(cave, grid)->mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, grid);
 	} else
@@ -501,7 +501,7 @@ static bool twall(struct loc grid)
 static bool do_cmd_tunnel_aux(struct loc grid)
 {
 	bool more = false;
-	int digging_chances[DIGGING_MAX];
+	int digging_chances[DIGGING_MAX], chance;
 	bool okay = false;
 	bool gold = square_hasgoldvein(cave, grid);
 	bool rubble = square_isrubble(cave, grid);
@@ -517,10 +517,12 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 
 	/* Find what we're digging with and our chance of success */
 	best_digger = player_best_digger(player, false);
-	if (best_digger && best_digger != current_weapon) {
+	if (best_digger != current_weapon) {
 		/* Use only one without the overhead of gear_obj_for_use(). */
-		oldn = best_digger->number;
-		best_digger->number = 1;
+		if (best_digger) {
+			oldn = best_digger->number;
+			best_digger->number = 1;
+		}
 		player->body.slots[weapon_slot].obj = best_digger;
 		memcpy(&local_state, &player->state, sizeof(local_state));
 		calc_bonuses(player, &local_state, false, true);
@@ -529,12 +531,16 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	calc_digging_chances(used_state, digging_chances);
 
 	/* Do we succeed? */
-	okay = (digging_chances[square_digging(cave, grid) - 1] > randint0(1600));
+	chance = digging_chances[square_digging(cave, grid) - 1];
+	okay = (chance > randint0(1600));
 
 	/* Swap back */
-	if (best_digger && best_digger != current_weapon) {
-		best_digger->number = oldn;
+	if (best_digger != current_weapon) {
+		if (best_digger) {
+			best_digger->number = oldn;
+		}
 		player->body.slots[weapon_slot].obj = current_weapon;
+		calc_bonuses(player, &local_state, false, true);
 	}
 
 	/* Success */
@@ -562,7 +568,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		} else {
 			msg("You have finished the tunnel.");
 		}
-	} else {
+	} else if (chance > 0) {
 		/* Failure, continue digging */
 		if (rubble)
 			msg("You dig in the rubble.");
@@ -570,6 +576,14 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You tunnel into the %s.",
 				square_apparent_name(cave, player, grid));
 		more = true;
+	} else {
+		/* Don't automatically repeat if there's no hope. */
+		if (rubble) {
+			msg("You dig in the rubble with little effect.");
+		} else {
+			msg("You chip away futilely at the %s.",
+				square_apparent_name(cave, player, grid));
+		}
 	}
 
 	/* Result */
@@ -613,7 +627,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Attack any monster we run into */
-	if (square(cave, grid).mon > 0) {
+	if (square(cave, grid)->mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, grid);
 	} else {
@@ -717,7 +731,7 @@ static bool do_cmd_lock_door(struct loc grid)
 static bool do_cmd_disarm_aux(struct loc grid)
 {
 	int skill, power, chance;
-    struct trap *trap = square(cave, grid).trap;
+    struct trap *trap = square(cave, grid)->trap;
 	bool more = false;
 
 	/* Verify legality */
@@ -837,7 +851,7 @@ void do_cmd_disarm(struct command *cmd)
 
 
 	/* Monster */
-	if (square(cave, grid).mon > 0) {
+	if (square(cave, grid)->mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, grid);
 	} else if (obj)
@@ -891,7 +905,7 @@ void do_cmd_alter_aux(int dir)
 	o_chest_trapped = chest_check(grid, CHEST_TRAPPED);
 
 	/* Action depends on what's there */
-	if (square(cave, grid).mon > 0) {
+	if (square(cave, grid)->mon > 0) {
 		/* Attack monster */
 		py_attack(player, grid);
 	} else if (square_isdiggable(cave, grid)) {
@@ -947,7 +961,7 @@ void do_cmd_steal_aux(int dir)
 	}
 
 	/* Attack or steal from monsters */
-	if ((square(cave, grid).mon > 0) && player_has(player, PF_STEAL)) {
+	if ((square(cave, grid)->mon > 0) && player_has(player, PF_STEAL)) {
 		steal_monster_item(square_monster(cave, grid), -1);
 	} else {
 		/* Oops */
@@ -978,7 +992,7 @@ void move_player(int dir, bool disarm)
 {
 	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
 
-	int m_idx = square(cave, grid).mon;
+	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trapsafe = player_is_trapsafe(player);
 	bool trap = square_isdisarmabletrap(cave, grid);
@@ -1122,7 +1136,7 @@ void move_player(int dir, bool disarm)
  */
 static bool do_cmd_walk_test(struct loc grid)
 {
-	int m_idx = square(cave, grid).mon;
+	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
@@ -1205,7 +1219,7 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(grid))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
+	player->upkeep->energy_use = energy_per_move(player);
 
 	/* Attempt to disarm unless it's a trap and we're trapsafe */
 	move_player(dir, !(square_isdisarmabletrap(cave, grid) && trapsafe));
@@ -1242,7 +1256,7 @@ void do_cmd_jump(struct command *cmd)
 	if (!do_cmd_walk_test(grid))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
+	player->upkeep->energy_use = energy_per_move(player);
 
 	move_player(dir, false);
 }

@@ -706,6 +706,17 @@ bool obj_is_throwing(const struct object *obj)
 	return of_has(obj->flags, OF_THROWING);
 }
 
+/**
+ * Determine if an object is a known artifact
+ */
+bool obj_is_known_artifact(const struct object *obj)
+{
+	if (!obj->artifact) return false;
+	if (!obj->known) return false;
+	if (!obj->known->artifact) return false;
+	return true;
+}
+
 /* Can has inscrip pls */
 bool obj_has_inscrip(const struct object *obj)
 {

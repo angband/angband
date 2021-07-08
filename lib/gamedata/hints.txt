@@ -15,7 +15,7 @@ H:Cure Critical Wounds potions will cure blindness and confusion; carry lots.
 H:Staves can be used even when confused and blinded.
 H:Potions of Heroism or Berserk Strength will protect you from being scared. 
 H:Monsters that breathe fire, acid, electricity, or cold can deal big damage.
-H:Resistances cut damage to 1/3rd for the basic four elements.
+H:Resistances cut damage to 1/3rd for the four basic elements.
 H:The more hitpoints a monster has, the more damage its breath will do.
 H:You can combine equipment of Resist Fire and a potion of the same name.
 H:You can combine equipment of Resist Cold and a potion of the same name.
@@ -42,6 +42,7 @@ H:If acid hits your armor, you take less damage from it.
 H:Nexus attacks can swap your stats. Smart, weak warriors don't do well.
 H:Regeneration improves your recovery of both hitpoints and mana.
 H:Never be too afraid to run away.
+H:He who fights and runs away lives to fight another day.
 H:Never go exploring without an escape option.
 H:Pay attention to how your enemies move - some are erratic, some can blink.
 H:Even among the same type, some enemies will be faster or slower than others.
@@ -60,14 +61,15 @@ H:Acid can destroy your stuff - watch out for water hounds and water vortices.
 H:Never underestimate monsters you haven't fought before.
 H:Quivers can hold different types of ammo in one inventory slot (max. 40).
 H:If you have more than 40 items in your quiver, it will take up more slots.
+H:Try inscribing thrown weapons, "@v0" for example.
 H:Many items are bad, but few are cursed to the point of needing magic.
 H:A bigger weapon isn't always better - check your damage using 'I'nspect
 H:Can't keep track of all the information on the screen? Add extra windows.
 H:You can use subwindows to display messages, monsters, items and more.
 H:If you teleport away a tough monster, beware of teleporting afterwards!
-H:Resistances to higher elements are somewhat random, so be careful.
+H:Resistance to higher elements protects you from 33% to 50% of the damage.
 H:Hold life will not block all experience drain, just most of it.
-H:Fire damage can destroy scrolls, books, and staves in your inventory. 
+H:Fire damage can destroy scrolls, books, and staves in your inventory.
 H:Cold damage can destroy potions in your inventory.
 H:Electrical damage can destroy wands, rods and rings in your inventory.
 H:Immunity to an element prevents inventory destruction from that element.
@@ -75,12 +77,12 @@ H:Phase door is a good escape if the terrain is appropriate.
 H:In open rooms Phase Door may well keep you in the line of fire.
 H:In a vault, any form of teleportation will always teleport you outside.
 H:Identical resistances on different pieces of equipment do not stack.
-H:Curing potions and spells reduce or eliminate cuts, stunning and poison.
+H:Curing potions and spells can reduce or eliminate cuts, stunning and poison.
 H:Nexus attacks can teleport to, teleport away, teleport level, or swap stats.
 H:Time attacks are not mitigated by sustains.
 H:Drain charge attacks remove charges from your items and heal the monster!
 H:You cannot cast spells or fire missiles at monsters in walls, but they can.
-H:To attack a monster in a wall with your weapon, use the 'T'unnel command.
+H:You can attack a monster in a wall with your melee weapon.
 H:Acquirement scrolls produce better items if you read them deeper down.
 H:In truly desperate times, use Teleport Level or Destruction to escape.
 H:You always get the first move when entering a level. 
@@ -94,6 +96,17 @@ H:Wands and staves sell for a good price even with 0 charges.
 H:Walking around with lots of heavy weapons is not necessarily a good idea.
 H:Carry around extra copies of town spellbooks in case one gets burned.
 H:You don't have to cover every resist all the time - carry swap items.
-H:The better fed you are, the faster you regenerate.
+H:The better fed you are, the faster you recover hitpoints.
 H:The food indicator at the bottom of the screen shows how well fed you are.
 H:The light meter at the bottom of the screen shows your light radius.
+H:If stores will not buy your items, check your birth options.
+H:Blackguards can use Rings of Open Wounds without slowing their recovery.
+H:Stunned monsters deal less damage in melee and sometimes miss a turn.
+H:Confused monsters cannot cast spells reliably and may misstep.
+H:Scared monsters suffer penalties and may freeze in terror if cornered!
+H:Held monsters will take no action until it wears off or they take damage.
+H:Melee attacks, damage, and some effects will wake sleeping monsters.
+H:Time spent within sight or hearing range will eventually wake sleepers.
+H:Stealth is very helpful against sleeping monsters but not against alert ones.
+H:Inspect your racial and class abilities with the S command.
+H:When shapechanged inspect items with I. Resume your shape with m or p.

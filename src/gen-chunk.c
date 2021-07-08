@@ -53,8 +53,8 @@ struct chunk *chunk_write(struct chunk *c)
 	for (y = 0; y < new->height; y++) {
 		for (x = 0; x < new->width; x++) {
 			/* Terrain */
-			new->squares[y][x].feat = square(c, loc(x, y)).feat;
-			sqinfo_copy(square(new, loc(x, y)).info, square(c, loc(x, y)).info);
+			new->squares[y][x].feat = square(c, loc(x, y))->feat;
+			sqinfo_copy(square(new, loc(x, y))->info, square(c, loc(x, y))->info);
 		}
 	}
 
@@ -226,9 +226,9 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 			/* Terrain */
 			dest->squares[dest_grid.y][dest_grid.x].feat =
-				square(source, grid).feat;
-			sqinfo_copy(square(dest, dest_grid).info,
-						square(source, grid).info);
+				square(source, grid)->feat;
+			sqinfo_copy(square(dest, dest_grid)->info,
+						square(source, grid)->info);
 
 			/* Dungeon objects */
 			if (square_object(source, grid)) {
@@ -244,8 +244,8 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			}
 
 			/* Traps */
-			if (square(source, grid).trap) {
-				struct trap *trap = square(source, grid).trap;
+			if (square(source, grid)->trap) {
+				struct trap *trap = square(source, grid)->trap;
 				dest->squares[dest_grid.y][dest_grid.x].trap = trap;
 
 				/* Traverse the trap list */
@@ -258,8 +258,10 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			}
 
 			/* Player */
-			if (square(source, grid).mon == -1) 
+			if (square(source, grid)->mon == -1) {
 				dest->squares[dest_grid.y][dest_grid.x].mon = -1;
+				player->grid = dest_grid;
+			}
 		}
 	}
 
@@ -368,7 +370,7 @@ void chunk_validate_objects(struct chunk *c) {
 			struct loc grid = loc(x, y);
 			for (obj = square_object(c, grid); obj; obj = obj->next)
 				assert(obj->tval != 0);
-			if (square(c, grid).mon > 0) {
+			if (square(c, grid)->mon > 0) {
 				struct monster *mon = square_monster(c, grid);
 				if (mon->held_obj)
 					for (obj = mon->held_obj; obj; obj = obj->next)

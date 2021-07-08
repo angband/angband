@@ -337,7 +337,7 @@ void dump_ui_entry_renderers(ang_file *fff)
 		file_putf(fff, "entry-renderer:%s:%s:%s:%s\n",
 			ui_entry_renderer_get_name(i), colors, labcolors,
 			symbols);
-		string_free(symbols);
+		mem_free(symbols);
 		string_free(labcolors);
 		string_free(colors);
 	}

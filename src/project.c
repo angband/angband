@@ -214,7 +214,7 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {
-				if ((n > 0) && (square(cave, loc(x, y)).mon != 0)) break;
+				if ((n > 0) && (square(cave, loc(x, y))->mon != 0)) break;
 				if (loc_eq(loc(x, y), decoy)) break;
 			}
 
@@ -279,7 +279,7 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {
-				if ((n > 0) && (square(cave, loc(x, y)).mon != 0)) break;
+				if ((n > 0) && (square(cave, loc(x, y))->mon != 0)) break;
 				if (loc_eq(loc(x, y), decoy)) break;
 			}
 
@@ -338,7 +338,7 @@ int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 
 			/* Sometimes stop at non-initial monsters/players, decoys */
 			if (flg & (PROJECT_STOP)) {
-				if ((n > 0) && (square(cave, loc(x, y)).mon != 0)) break;
+				if ((n > 0) && (square(cave, loc(x, y))->mon != 0)) break;
 				if (loc_eq(loc(x, y), decoy)) break;
 			}
 
@@ -662,7 +662,7 @@ bool project(struct source origin, int rad, struct loc finish,
 		blast_grid[num_grids] =  finish;
 		centre = finish;
 		distance_to_grid[num_grids] = 0;
-		sqinfo_on(square(cave, finish).info, SQUARE_PROJECT);
+		sqinfo_on(square(cave, finish)->info, SQUARE_PROJECT);
 		num_grids++;
 	} else {
 		/* Start from caster */
@@ -706,13 +706,13 @@ bool project(struct source origin, int rad, struct loc finish,
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
-					sqinfo_on(square(cave, loc(x, y)).info, SQUARE_PROJECT);
+					sqinfo_on(square(cave, loc(x, y))->info, SQUARE_PROJECT);
 					num_grids++;
 				} else if (i == num_path_grids - 1) {
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
-					sqinfo_on(square(cave, loc(x, y)).info, SQUARE_PROJECT);
+					sqinfo_on(square(cave, loc(x, y))->info, SQUARE_PROJECT);
 					num_grids++;
 				}
 
@@ -763,7 +763,7 @@ bool project(struct source origin, int rad, struct loc finish,
 		if (num_grids == 0) {
 			blast_grid[num_grids] = centre;
 			distance_to_grid[num_grids] = 0;
-			sqinfo_on(square(cave, centre).info, SQUARE_PROJECT);
+			sqinfo_on(square(cave, centre)->info, SQUARE_PROJECT);
 			num_grids++;
 		}
 
@@ -771,6 +771,7 @@ bool project(struct source origin, int rad, struct loc finish,
 		for (y = centre.y - rad; y <= centre.y + rad; y++) {
 			for (x = centre.x - rad; x <= centre.x + rad; x++) {
 				struct loc grid = loc(x, y);
+				bool on_path = false;
 
 				/* Center grid has already been stored. */
 				if (loc_eq(grid, centre))
@@ -815,6 +816,12 @@ bool project(struct source origin, int rad, struct loc finish,
 				if (dist_from_centre > rad)
 					continue;
 
+				/* Mark grids which are on the projection path */
+				for (i = 0; i < num_path_grids; i++) {
+					if (loc_eq(grid, path_grid[i])) {
+						on_path = true;
+					}
+				}
 
 				/* Do we need to consider a restricted angle? */
 				if (flg & (PROJECT_ARC)) {
@@ -832,22 +839,18 @@ bool project(struct source origin, int rad, struct loc finish,
 					tmp = ABS(get_angle_to_grid[n2y][n2x] + rotate) % 180;
 					diff = ABS(90 - tmp);
 
-					/* If difference is greater then that allowed, skip it */
-					if (diff >= (degrees_of_arc + 6) / 4) {
-						/* ...unless it's on the target path */
-						for (i = 0; i < num_path_grids; i++) {
-							if (loc_eq(grid, path_grid[i])) break;
-						}
-						if (i == num_path_grids) continue;
-					}
+					/* If difference is greater then that allowed, skip it,
+					 * unless it's on the target path */
+					if ((diff >= (degrees_of_arc + 6) / 4) && !on_path)
+						continue;
 				}
 
-				/* Accept remaining grids if in LOS */
-				if (los(cave, centre, grid)) {
+				/* Accept remaining grids if in LOS or on the projection path */
+				if (los(cave, centre, grid) || on_path) {
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = dist_from_centre;
-					sqinfo_on(square(cave, grid).info, SQUARE_PROJECT);
+					sqinfo_on(square(cave, grid)->info, SQUARE_PROJECT);
 					num_grids++;
 				}
 			}
@@ -967,7 +970,7 @@ bool project(struct source origin, int rad, struct loc finish,
 			int y = last_hit_grid.y;
 
 			/* Track if possible */
-			if (square(cave, loc(x, y)).mon > 0) {
+			if (square(cave, loc(x, y))->mon > 0) {
 				struct monster *mon = square_monster(cave, loc(x, y));
 
 				/* Recall and track */
@@ -1018,7 +1021,7 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Clear all the processing marks. */
 	for (i = 0; i < num_grids; i++) {
 		/* Clear the mark */
-		sqinfo_off(square(cave, blast_grid[i]).info, SQUARE_PROJECT);
+		sqinfo_off(square(cave, blast_grid[i])->info, SQUARE_PROJECT);
 	}
 
 	/* Update stuff if needed */

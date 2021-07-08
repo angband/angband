@@ -9,9 +9,6 @@ In the descriptions below, each option is listed as the textual summary
 which is shown on the "options" screen, plus the internal name of the
 option in brackets, followed by a textual description of the option.
 
-Note that the internal name of the option can be used in user pref files to
-force the option to a given setting, see "customize.txt" for more info.
-
 Various concepts are mentioned in the descriptions below, including
 "disturb", (cancel any running, resting, or repeated commands, which are in
 progress), "flush" (forget any keypresses waiting in the keypress queue),
@@ -120,6 +117,15 @@ Show effective speed as multiplier ``effective_speed``
 
 Birth options
 =============
+
+The birth options may only be changed when creating a character or using
+the quick restart option for a dead character.  When setting the birth
+options, there are handful of commands to make it easier to get to a
+well-known state for all the birth options.  They are:  's' to save the
+current selections so that they will be used as the starting point for
+future characters, 'r' to reset the current selections to the defaults
+for a new character, and 'm' to reset the current selections to the
+Angband maintainer's defaults for the birth options.
 
 Generate a new, random artifact set ``birth_randarts``
   A different set of artifacts will be created, in place of the standard
