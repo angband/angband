@@ -337,3 +337,31 @@ Using Visual Studio
 Blue Baron has detailed instructions for setting this up at:
 
     src/win/angband_visual_studio_step_by_step.txt
+
+Documentation
+-------------
+To convert the documentation from restructured text to the desired output
+format, you'll need Sphinx ( https://www.sphinx-doc.org/en/master/ )
+and, unless you change the theme in the documentation configuration, the
+sphinx-better-theme ( https://pypi.org/project/sphinx-better-theme/ ; which
+can be installed via pip using::
+
+	pip install sphinx-better-theme
+
+).
+
+With those utilities in place and sphinx-build in your path, you can perform
+the conversion by running::
+
+	make html
+
+in the docs subdirectory of the top-level directory in the source files.
+That will generate a _build/html directory with the result of the conversion;
+_build/html/index.html is the top-level help with links to everything else.
+
+Other output formats besides HTML are possible.  Run::
+
+	make
+
+without any arguments in the docs subdirectory to see the formats that Sphinx
+can generate.
