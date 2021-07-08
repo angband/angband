@@ -1000,6 +1000,7 @@ void store_delete(struct store *s, struct object *obj, int amt)
 		object_delete(&obj);
 		pile_excise(&s->stock_k, known_obj);
 		object_delete(&known_obj);
+		assert(s->stock_num);
 		s->stock_num--;
 	}
 }
@@ -1754,6 +1755,7 @@ void do_cmd_retrieve(struct command *cmd)
 	struct object *obj, *known_obj, *picked_item;
 
 	struct store *store = store_at(cave, player->grid);
+	if (!store) return;
 
 	if (store->sidx != STORE_HOME) {
 		msg("You are not currently at home.");
@@ -1863,6 +1865,7 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Check if the store has space for the items */
 	if (!store_check_num(store, &dummy_item)) {
+		object_wipe(&dummy_item);
 		msg("I have not the room in my store to keep it.");
 		return;
 	}
@@ -1891,6 +1894,11 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Get the "apparent" value */
 	dummy = object_value(&dummy_item, amt);
+	/*
+	 * Do not need the dummy any more so release the memory allocated
+	 * within it.
+	 */
+	object_wipe(&dummy_item);
 
 	/* Know flavor of consumables */
 	object_flavor_aware(obj);
@@ -1933,7 +1941,14 @@ void do_cmd_sell(struct command *cmd)
 	handle_stuff(player);
 
 	/* The store gets that (known) object */
-	store_carry(store, sold_item);
+	if (! store_carry(store, sold_item)) {
+		/* The store rejected it; delete. */
+		if (sold_item->known) {
+			object_delete(&sold_item->known);
+			sold_item->known = NULL;
+		}
+		object_delete(&sold_item);
+	}
 
 	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
@@ -1953,6 +1968,7 @@ void do_cmd_stash(struct command *cmd)
 
 	struct object *obj, *dropped;
 	bool none_left = false;
+	bool no_room;
 
 	if (cmd_get_arg_item(cmd, "item", &obj))
 		return;
@@ -1975,7 +1991,13 @@ void do_cmd_stash(struct command *cmd)
 	/* Get a copy of the object representing the number being sold */
 	object_copy_amt(&dummy, obj, amt);
 
-	if (!store_check_num(store, &dummy)) {
+	no_room = !store_check_num(store, &dummy);
+	/*
+	 * Do not need the dummy any more so release the memory allocated
+	 * within it.
+	 */
+	object_wipe(&dummy);
+	if (no_room) {
 		msg("Your home is full.");
 		return;
 	}

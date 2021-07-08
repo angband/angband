@@ -188,7 +188,7 @@ alloc:50:1 to 100
 attack:1d4:0:0
 armor:0:0
 pval:7500
-flags:EXPLODE
+flags:EXPLODE | THROWING
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
 desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
@@ -411,10 +411,12 @@ type:food
 graphics:,:w
 level:0
 weight:10
-cost:1
+cost:2000
 alloc:10:60 to 100
 power:0
 msg:Refreshing!
+effect:NOURISH:INC_TO
+dice:60
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:STR
@@ -1106,7 +1108,7 @@ alloc:20:20 to 100
 attack:2d6:0:0
 armor:0:0
 desc:A reinforced wooden pole eight feet long, topped by a massive knife blade
-desc: that can can be used to thrust or chop.
+desc: that can be used to thrust or chop.
 
 name:& Lance~
 type:polearm
@@ -1140,7 +1142,7 @@ cost:376
 alloc:20:10 to 100
 attack:2d5:0:0
 armor:0:0
-desc:A long pole with a three- or four-pronged head balnced by a long spike.
+desc:A long pole with a three- or four-pronged head balanced by a long spike.
 
 
 ##### Bows, Crossbows, Slings #####
@@ -1293,7 +1295,8 @@ pile:100:5d7
 alloc:30:0 to 100
 attack:1d2:0:0
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 
 name:& Iron Shot~
@@ -1306,7 +1309,8 @@ pile:100:5d7
 alloc:25:3 to 100
 attack:1d4:0:0
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 name:& Mithril Shot~
 type:shot
@@ -1318,7 +1322,8 @@ pile:100:5d7
 alloc:20:40 to 100
 attack:2d4:5:5
 armor:0:0
-desc:It can be shot with a sling.
+flags:THROWING
+desc:It can be shot with a sling or thrown.
 
 
 ##### Digging Tools #####
@@ -1839,9 +1844,8 @@ weight:5
 cost:500
 alloc:10:50 to 100
 attack:1d1:0:0
-armor:0:2
+armor:0:5+d5
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-flags:SPELLS_OK
 desc:Highly protective gloves designed for an alchemist's elemental magics.
 
 #N:179:& Set~ of Mining Gloves
@@ -2198,12 +2202,12 @@ armor:0:-8+4d3
 name:Open Wounds
 type:ring
 graphics:=:d
-level:0
+level:10
 weight:2
 cost:700
 alloc:20:10 to 50
 flags:IMPAIR_HP | EASY_KNOW
-power:6
+power:25
 effect:HEAL_HP
 dice:40
 effect:CURE:BLIND
@@ -3147,7 +3151,7 @@ effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
 effect:NOURISH:INC_BY
-dice:2
+dice:1
 
 name:*Healing*
 type:potion
@@ -3167,8 +3171,6 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-effect:NOURISH:INC_BY
-dice:3
 
 name:Life
 type:potion
@@ -3378,10 +3380,10 @@ type:potion
 graphics:!:d
 level:3
 weight:4
-cost:100
+cost:80
 alloc:40:3 to 100
 pile:25:2
-power:9
+power:8
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
@@ -5122,8 +5124,8 @@ dice:220
 effect:BREATH:DISEN:0:20
 dice:220
 time:50
-desc:A suit of scales.  Every shape, in every color imaginable, riot and
-desc:contend upon its surface as you stare in fascination.
+desc:A suit of scales that ripples and twists through every color and shape
+desc:imaginable as you stare in fascination.
 
 name:Balance Dragon Scale Mail~
 type:dragon armor
@@ -5171,7 +5173,7 @@ effect:BREATH:MISSILE:0:20
 dice:300
 time:50
 desc:A suit with scales of every color, surrounded in a nimbus of perfectly
-desc: untramelled yet inextricably intermingled and utterly mastered powers
+desc: untrammelled yet inextricably intermingled and utterly mastered powers
 desc: elemental and ethereal.
 
 

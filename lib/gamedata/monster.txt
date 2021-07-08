@@ -292,6 +292,7 @@ blow:MOAN
 flags:UNIQUE | MALE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:NO_CONF | NO_SLEEP
+drop-base:mushroom:100:1:2
 desc:He's lost his dogs.  He's had his mushrooms stolen.  He's not a happy
 desc: hobbit!
 
@@ -470,6 +471,7 @@ flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:He doesn't take to strangers kindly.
 
 name:red-hatted elf
+plural:red-hatted elves
 base:humanoid
 color:r
 speed:110
@@ -2066,6 +2068,7 @@ desc: pervades the air.
 ### Dungeon level 7 ###
 
 name:crow of Durthang
+plural:crows of Durthang
 base:bird
 color:D
 speed:120
@@ -3313,7 +3316,7 @@ experience:6
 blow:TOUCH:EXP_10
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR
-flags:HURT_LIGHT | NO_FEAR
+flags:HURT_LIGHT | NO_FEAR | IM_NETHER
 desc:It is a disgusting mass of dark worms, eating each other, the floor, the
 desc: air, you....
 
@@ -3388,7 +3391,7 @@ flags:FORCE_SLEEP
 spell-freq:3
 spell-power:6
 spells:HEAL | SCARE | HEAL_KIN
-spells:BA_LIGHT
+spells:BA_LIGHT | BA_HOLY
 spells:S_KIN
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
@@ -6787,7 +6790,7 @@ blow:PUNCH:HURT:2d8
 blow:PUNCH:HURT:2d8
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
-flags:UNIQUE | MALE | SMART | SPIRIT
+flags:UNIQUE | MALE | SMART
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:FORCE_SLEEP
 spell-freq:2
@@ -6891,7 +6894,7 @@ desc:It is a massive worm form, many feet in length.  Its vast maw drips acid
 desc: and poison.
 
 name:catoblepas
-plural:catoblepae
+plural:catoblepones
 base:quadruped
 color:g
 speed:110
@@ -7476,6 +7479,7 @@ desc:A tree which has become entish, or maybe an ent which has become tree-ish.
 ### Dungeon level 32 ###
 
 name:serpent of the brownlands
+plural:serpents of the brownlands
 base:snake
 color:u
 speed:120
@@ -9725,7 +9729,7 @@ flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLIND | HEAL | HEAL_KIN | MIND_BLAST
-spells:BA_LIGHT | BA_ELEC
+spells:BA_LIGHT | BA_ELEC | BA_HOLY
 spells:S_KIN
 drop-base:prayer book:5:1:1
 drop-base:prayer book:10:1:1
@@ -11032,6 +11036,7 @@ innate-freq:12
 spell-freq:6
 spells:CONF | SCARE | SLOW
 spells:BR_SHAR
+color-cycle:fancy:crystal
 desc:A huge crystalline dragon.  Its claws could cut you to shreds and its teeth
 desc: are razor sharp.  Strange colours ripple through it as it moves in the
 desc: light.
@@ -11421,7 +11426,7 @@ blow:CLAW:HURT:3d4
 blow:BITE:ACID:3d10
 blow:BITE:BLIND:3d10
 flags:SMART | DROP_1
-flags:IM_FIRE IM_ACID | NO_FEAR
+flags:IM_FIRE | IM_ACID | NO_FEAR
 spell-freq:3
 spells:BO_FIRE | BO_ACID
 spells:BR_FIRE | BR_ACID
@@ -12014,9 +12019,9 @@ blow:HIT:COLD:9d10
 blow:HIT:COLD:9d10
 blow:HIT:HURT:10d9
 blow:HIT:CONFUSE:10d9
-flags:UNIQUE | MALE | SMART
+flags:UNIQUE | MALE | SMART | ATTR_FLICKER
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | TAKE_ITEM
+flags:OPEN_DOOR | TAKE_ITEM | IM_COLD
 flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:3
@@ -12100,6 +12105,7 @@ flags:COLD_BLOOD | POWERFUL
 flags:PASS_WALL | KILL_BODY | KILL_ITEM
 flags:HURT_ROCK | IM_ELEC
 innate-freq:6
+spell-freq:6
 spells:BOULDER | BR_SHAR | BA_SHAR
 desc:Appearing as a giant of stone, this mighty elemental seems to draw its
 desc: power from the very fabric of the dungeon.
@@ -12121,7 +12127,7 @@ blow:ENGULF:FIRE:5d5
 blow:ENGULF:ACID:5d5
 blow:ENGULF:COLD:5d5
 flags:RAND_25
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_NEXUS | IM_NETHER
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | IM_NETHER
 flags:IM_PLASMA | NO_SLOW | NO_STUN
 flags:ATTR_MULTI
 innate-freq:4
@@ -12315,6 +12321,7 @@ desc:A massive wolf, appearing like a mighty shadow.  Its glowing red eyes
 desc: glare malevolently as it defends its evil master's fortress.
 
 name:spider of Gorgoroth
+plural:spiders of Gorgoroth
 base:spider
 color:P
 speed:120
@@ -12806,7 +12813,7 @@ blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 flags:UNIQUE | MALE | SMART | ATTR_FLICKER
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:TAKE_ITEM
+flags:TAKE_ITEM | IM_FIRE
 flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:4
@@ -12835,7 +12842,7 @@ blow:BITE:ACID:10d10
 blow:BITE:ACID:10d10
 flags:SMART | ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR
 flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT
 flags:HURT_LIGHT| NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:IM_FIRE | IM_COLD | IM_POIS | IM_NETHER
@@ -12914,6 +12921,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_ELEC
+color-cycle:fancy:storm
 desc:A vast dragon of power.  Storms and lightning crash around its titanic
 desc: form.  Deep blue scales reflect the flashes and highlight the creature's
 desc: great muscles.  It regards you with contempt.
@@ -12941,6 +12949,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_COLD
+color-cycle:fancy:ice
 desc:An immense dragon capable of awesome destruction.  You have never felt such
 desc: extreme cold, or witnessed such an icy stare.  Begone quickly or feel its
 desc: wrath!
@@ -12968,6 +12977,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_POIS
+color-cycle:fancy:swamp
 desc:A truly enormous dragon with great powers.  The foul gases issuing from the
 desc: beast nearly make you vomit; and while you may try to hold your breath as
 desc: you fight it, it sees no reason to do likewise.
@@ -13130,10 +13140,10 @@ blow:HIT:DISENCHANT:10d5
 blow:HIT:DISENCHANT:10d5
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
-flags:UNIQUE | MALE | SMART
+flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD
 flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER
+flags:IM_ACID | IM_ELEC | IM_WATER
 innate-freq:4
 spell-freq:2
 spells:BLIND | TELE_TO | WHIP
@@ -13174,6 +13184,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_FIRE
+color-cycle:fancy:hell
 desc:A vast dragon of immense power.  Fire leaps continuously from its huge
 desc: form. The air around it scalds you.  Its slightest glance burns you, and
 desc: you truly realize how insignificant you are.
@@ -13201,6 +13212,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_ACID
+color-cycle:fancy:bile
 desc:A huge and very powerful dragon.  Great steaming pools of acid drip from
 desc: its form onto the ground.  You shudder when you see the acid eating away
 desc: the very stones of the dungeon - what could it do to you?
@@ -13229,6 +13241,7 @@ innate-freq:8
 spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_SOUN
+color-cycle:fancy:thunder
 desc:A dragon of gigantic proportions, with destructive abilities to match.  The
 desc: sheer loudness of its roar leaves you stunned and unable to think clearly
 desc: enough to defend yourself adequately.
@@ -13428,6 +13441,7 @@ spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_SHAR | BR_SOUN
 spells:S_DRAGON | S_HI_DRAGON
+color-cycle:fancy:law
 desc:A massive dragon of powerful intellect.  It seeks to dominate the universe
 desc: and despises all other life.  It sees all who do not obey it as mere
 desc: insects to be crushed underfoot.
@@ -13564,7 +13578,6 @@ flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD
 flags:KILL_WALL | KILL_BODY
 flags:IM_ACID | IM_ELEC
-flags:FORCE_SLEEP
 desc:A battle-hungry spirit from amongst the Ainur, who built a grim hall in
 desc: the early days of Arda to host endless battles.  When not at home, he
 desc: and his sister Meássë hunt and seek out the turmoils caused by Morgoth.
@@ -13662,6 +13675,7 @@ desc: to taste your blood.
 ### Dungeon level 78 ###
 
 name:serpent of chaos
+plural:serpents of chaos
 base:snake
 color:y
 speed:130
@@ -13681,7 +13695,7 @@ spells:BLINK | TELE_TO
 spells:BR_CHAO
 desc:Writhing coil upon coil, this mighty spawn of chaos constantly
 desc: disintegrates and reforms before your dazzled eyes.  It seeks to
-desc: obiterate you utterly; beware!
+desc: obliterate you utterly; beware!
 
 name:Adunaphel the Quiet
 base:wraith
@@ -13864,7 +13878,8 @@ blow:ENGULF:COLD:3d6
 blow:ENGULF:CONFUSE:3d6
 blow:ENGULF:HURT:3d6
 flags:UNIQUE | NEVER_MOVE
-flags:IM_COLD | IM_FIRE | IM_ACID | IM_POIS
+flags:IM_COLD | IM_FIRE | IM_ACID
+flags-off:RAND_50 | BASH_DOOR | CLEAR_WEB
 innate-freq:3
 spell-freq:5
 spells:BR_COLD | BR_SOUN
@@ -13987,6 +14002,7 @@ spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 spells:S_DRAGON | S_HI_DRAGON
+color-cycle:fancy:balance
 desc:A massive dragon, one of the mightiest of dragonkind.  It is thousands of
 desc: years old and seeks to maintain the Cosmic Balance.  It sees you as an
 desc: upstart troublemaker without the wisdom to control your actions.  It will
@@ -14178,7 +14194,7 @@ blow:GAZE:EXP_80:5d5
 blow:GAZE:EXP_80:5d5
 blow:TOUCH:POISON:5d5
 blow:TOUCH:POISON:5d5
-flags:UNIQUE | MALE | SMART | SPIRIT
+flags:UNIQUE | MALE | SMART | SPIRIT | ATTR_FLICKER
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_FIRE
@@ -14336,9 +14352,8 @@ blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 flags:UNIQUE | FEMALE
 flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY | TAKE_ITEM
+flags:MOVE_BODY
 flags:IM_ACID | IM_ELEC | NO_STUN
-flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:5
 spells:HEAL | HEAL_KIN
@@ -14664,10 +14679,10 @@ blow:BITE:EXP_80:6d12
 blow:CLAW:TERRIFY:8d12
 blow:HIT:DRAIN_CHARGES:8d12
 blow:HIT:DRAIN_CHARGES:8d12
-flags:UNIQUE | MALE | EVIL
-flags:FORCE_SLEEP | FORCE_DEPTH
+flags:UNIQUE | MALE
+flags:FORCE_DEPTH
 flags:MOVE_BODY | IM_ELEC
-flags:NO_CONF | NO_FEAR
+flags:NO_FEAR
 spell-freq:2
 spell-power:130
 spells:BLINK | TPORT | TELE_LEVEL | BLIND | CONF

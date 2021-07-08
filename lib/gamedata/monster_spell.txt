@@ -23,9 +23,13 @@
 # message-invis - Message printed when spell is cast by an unseen monster,
 #                 e.g. Something utters a terrible incantation!
 
-# {name} and {pronoun} are markers that will be replaced with the acting
-# monster's name and his/her/its when the message is displayed,
-# e.g. {name} concentrates on {pronoun} body.
+# Text in braces {} will be replaced with the appropriate word when the message
+# is displayed :
+# - {name} is the acting monster's name
+# - {pronoun} is his/her/its
+# - {type} is the projection type being used
+# - {oftype} is like {type}, but with "of" added - e.g. "a whip of fire"
+# - {target} is the target of the spell - player or (rarely) another monster
 
 name:SHRIEK
 msgt:SHRIEK
@@ -117,7 +121,7 @@ message-vis:{name} fires a little bolt.
 message-invis:You hear a soft twung.
 message-miss:{name} fires a little bolt, but misses.
 power-cutoff:25
-lore:fire arrows
+lore:fire bolts
 lore-color-base:Yellow
 message-vis:{name} fires a crossbow bolt.
 message-invis:You hear a twung.
@@ -473,6 +477,16 @@ lore:invoke mana storms
 lore-color-base:Light Red
 message-vis:{name} invokes a storm of raw magic.
 message-invis:Something screams loudly.
+
+name:BA_HOLY
+hit:100
+effect:BALL:HOLY_ORB:2
+dice:10+1d$S
+expr:S:SPELL_POWER:* 3 / 2
+lore:cast orbs of draining
+lore-color-base:Orange
+message-vis:{name} casts an orb of draining.
+message-invis:Something chants.
 
 name:BA_DARK
 hit:100
@@ -1018,7 +1032,7 @@ effect:SUMMON:HYDRA
 dice:6
 lore:summon hydras
 lore-color-base:Orange
-message-vis:{name} summons hydrae.
+message-vis:{name} summons hydras.
 message-invis:You hear some things appear nearby!
 
 name:S_AINU

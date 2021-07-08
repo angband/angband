@@ -1410,9 +1410,7 @@ static void scan_for_objects(void)
 				get_obj_data(obj, y, x, false, false);
 
 				/* Delete the object */
-				square_excise_object(cave, grid, obj);
-				delist_object(cave, obj);
-				object_delete(&obj);
+				square_delete_object(cave, grid, obj, false, false);
 			}
 		}
 	}
@@ -1689,7 +1687,7 @@ void stats_collect(void)
 
 	/* Close log file */
 	if (!file_close(stats_log)) {
-		msg("Error - can't close randart.log file.");
+		msg("Error - can't close stats.log file.");
 		exit(1);
 	}
 }

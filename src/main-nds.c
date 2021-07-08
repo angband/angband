@@ -27,11 +27,13 @@
 #include "main.h"
 #include "init.h"
 #include "ui-prefs.h"
+#include "ui-term.h"
 #include "savefile.h"
 
 /* DS includes */
 #include "nds/ds_errfont.h"
 #include "nds/ds_main.h"
+#include "nds/ds_ipc.h"
 u16* subfont_rgb_bin = (u16*)(0x06018400);
 u16* subfont_bgr_bin = (u16*)(0x0601C400);
 u16* top_font_bin;
@@ -310,7 +312,7 @@ void kbd_set_color_from_code(u16b code, byte color)
 }
 
 void kbd_set_map() {
-  SUB_BG0_CR = BG_TILE_BASE(0) | BG_MAP_BASE(8 + (caps | (shift<<1))) | BG_PRIORITY(0) | BG_16_COLOR;
+  REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8 + (caps | (shift<<1))) | BG_PRIORITY(0) | BG_COLOR_16;
   
 }
 
@@ -415,13 +417,17 @@ byte kbd_vblank()
   static u16b last_code;
   /* the keycode of the currently pressed key, is usu. returned */
   u16b keycode;
+  /* current input data */
+  touchPosition touch;
+
+  touchRead(&touch);
   
   /* if screen is being touched... */
   if (keysHeld() & KEY_TOUCH) {
     if (touched < 3) {	/* if counter < 3... */
       touched++;				/* add to counter */
-      xarr[touched-1] = IPC->touchXpx;	/* add this to the array for */
-      yarr[touched-1] = IPC->touchYpx;	/* finding the median */
+      xarr[touched-1] = touch.px;	/* add this to the array for */
+      yarr[touched-1] = touch.py;	/* finding the median */
     }
   } 
   else 
@@ -496,14 +502,14 @@ byte kbd_vblank()
 	  /* clear hiliting */
 	  kbd_set_color_from_code(keycode,0);
 	  kbd_togglemod(K_MODIFIER,0);
-	  nds_assign_button();
+	  //nds_assign_button();
 	  keycode = last_code = 0;	/* don't let nethack process it */
 	}
 	
 	if (keycode & K_F(0)) {	/* its an f-key */
 	  if (keycode == K_F(5)) {	/* F5: toggle to text mode */
-	    nds_ascii_graphics = ~nds_ascii_graphics;
-	    iflags.use_color = nds_ascii_graphics;
+	    //nds_ascii_graphics = ~nds_ascii_graphics;
+	    //iflags.use_color = nds_ascii_graphics;
 	    /*doredraw(); */
 	    keycode = 'R' & 0x1F;	/* send a redraw command to nethack */
 	    last_code = 0;
@@ -521,7 +527,7 @@ byte kbd_vblank()
 	  }
 	  kbd_togglemod(K_MODIFIER,0);
 	}
-	}*/
+	}
       
       /* if it's a modifier, toggle it */
       if (keycode & K_MODIFIER) kbd_togglemod(keycode,-1);
@@ -672,7 +678,7 @@ static errr CheckEvents(bool wait)
 
   /* Key */
   else
-    Term_keypress(EVENT_C(e));
+    Term_keypress(EVENT_C(e), 0);
 
   return (0);
 }
@@ -776,21 +782,6 @@ static errr Term_xtra_nds(int n, int v)
 	 * This action should produce a "beep" noise.
 	 *
 	 * This action is optional, but convenient.
-	 */
-	
-	return (0);
-      }
-      
-    case TERM_XTRA_SOUND:
-      {
-	/*
-	 * Make a sound XXX XXX XXX
-	 *
-	 * This action should produce sound number "v", where the
-	 * "name" of that sound is "sound_names[v]".  This method
-	 * is still under construction.
-	 *
-	 * This action is optional, and not very important.
 	 */
 	
 	return (0);
@@ -934,13 +925,13 @@ void draw_color_char(byte x, byte y, char c, byte clr)
     }
 	byte xx, yy;
 	u16b val;
-	u16b fgc = color_data[clr & 0xF]
-		for (yy = 0; yy < 8; yy++) {
-			for (xx = 0;xx < 3; xx++) {
-				val = (chardata[yy * 3 + xx + tile_offset]);
-				fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
-			}
+	u16b fgc = color_data[clr & 0xF];
+	for (yy = 0; yy < 8; yy++) {
+		for (xx = 0;xx < 3; xx++) {
+			val = (chardata[yy * 3 + xx + tile_offset]);
+			fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
 		}
+	}
 }
 
 /*
@@ -1148,7 +1139,7 @@ static void term_data_link(int i)
   t->pict_hook = Term_pict_nds;
 
   /* Remember where we came from */
-  t->data = (vptr)(td);
+  t->data = (void*)(td);
   
   /* Activate it */
   Term_activate(t);
@@ -1212,7 +1203,7 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Hack */
-	strcpy(savefile, "/angband/lib/save/PLAYER");
+	//strcpy(savefile, "/angband/lib/save/PLAYER");
 }
 
 void nds_init_fonts() {
@@ -1353,7 +1344,7 @@ void on_irq() {
   if(REG_IF & IRQ_VBLANK) 
     {
       /* Tell the DS we handled the VBLANK interrupt */
-      VBLANK_INTR_WAIT_FLAGS |= IRQ_VBLANK;
+      INTR_WAIT_FLAGS |= IRQ_VBLANK;
       REG_IF |= IRQ_VBLANK;
     } 
   else 
@@ -1451,7 +1442,7 @@ bool nds_load_tile_file(char* name, u16b* dest, u32b len) {
   u16b slen = strlen(name);
   strcpy(ext, name + slen - 3);
   nds_raw_print(name + len - 3);
-  if (strcmpi(ext, "bmp") == 0) 
+  if (strcmp(ext, "bmp") == 0)
     {
       return nds_load_tile_bmp(name, dest, len);
     } 
@@ -1554,7 +1545,7 @@ void nds_exit(int code) {
     nds_updated = 0xFF;
     do_vblank();	/* wait 1 sec. */
   }
-  IPC->mailData = 0xDEADC0DE;	/* tell arm7 to shut down the DS */
+  fifoSendValue32(IPC_SHUTDOWN, 1);	/* tell arm7 to shut down the DS */
 }
 
 
@@ -1565,13 +1556,14 @@ void nds_exit(int code) {
  */
 int main(int argc, char *argv[])
 {
+  bool game_start = false;
   bool new_game = false;
   int i;
 
   /* Initialize the machine itself  */
   /*START NETHACK STUFF */
   
-  powerON(POWER_ALL_2D | POWER_SWAP_LCDS);
+  powerOn(POWER_ALL_2D | POWER_SWAP_LCDS);
   videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE);
   videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG2_ACTIVE);
   vramSetBankA(VRAM_A_MAIN_BG_0x06000000); /* BG2, event buf, fonts */
@@ -1580,21 +1572,21 @@ int main(int argc, char *argv[])
   vramSetBankD(VRAM_D_MAIN_BG_0x06040000);       /* for storage (tileset) */
   vramSetBankE(VRAM_E_LCD);	/* for storage (WIN_TEXT) */
   vramSetBankF(VRAM_F_LCD);	/* for storage (WIN_TEXT) */
-  BG2_CR = BG_BMP16_256x256;
-  BG2_XDX = 1<<8;
-  BG2_XDY = 0;
-  BG2_YDX = 0;
-  BG2_YDY = 1<<8;
-  BG2_CY = 0;
-  BG2_CX = 0;
-  SUB_BG0_CR = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_16_COLOR;
-  SUB_BG2_CR = BG_BMP16_256x256 | BG_BMP_BASE(2);
-  SUB_BG2_XDX = 1<<8;
-  SUB_BG2_XDY = 0;
-  SUB_BG2_YDX = 0;
-  SUB_BG2_YDY = 1<<8;
-  SUB_BG2_CY = 0;
-  SUB_BG2_CX = 0;
+  REG_BG2CNT = BG_BMP16_256x256;
+  REG_BG2PA = 1<<8;
+  REG_BG2PB = 0;
+  REG_BG2PC = 0;
+  REG_BG2PD = 1<<8;
+  REG_BG2Y = 0;
+  REG_BG2X = 0;
+  REG_BG0CNT_SUB = BG_TILE_BASE(0) | BG_MAP_BASE(8) | BG_PRIORITY(0) | BG_COLOR_16;
+  REG_BG2CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(2);
+  REG_BG2PA_SUB = 1<<8;
+  REG_BG2PB_SUB = 0;
+  REG_BG2PC_SUB = 0;
+  REG_BG2PD_SUB = 1<<8;
+  REG_BG2Y_SUB = 0;
+  REG_BG2X_SUB = 0;
   
   /* Enable the V-blank interrupt */
   REG_IME = 0;
@@ -1621,7 +1613,7 @@ int main(int argc, char *argv[])
     {
       nds_fatal_err("\nError initializing FAT drivers.\n");
       nds_fatal_err("Make sure the game is patched with the correct DLDI.\n");
-      nds_fatal_err(" (see http://chishm.drunkencoders.com/DLDI/ for more info).\n"); 
+      nds_fatal_err(" (see https://www.chishm.com/DLDI/ for more info).\n");
       nds_fatal_err("\n\nUnable to access filesystem.\nCannot continue.\n");
       return 1;
     }
@@ -1640,10 +1632,10 @@ int main(int argc, char *argv[])
   kbd_init();
   nds_init_buttons();
   
-  IPC->mailData = 0x00424242;	/* to arm7: everything has init'ed */
-  while ((IPC->mailData & 0xFFFFFF00) != 0x42424200); 
-  /*wait for arm7's reply */
-  if (IPC->mailData & 0x00000001) 
+  fifoSendValue32(IPC_NDS_TYPE, 0);	/* to arm7: everything has init'ed */
+  fifoWaitValue32(IPC_NDS_TYPE);	/* wait for response about the NDS type */
+
+  if (fifoGetValue32(IPC_NDS_TYPE) == 1)
     {	/* it's a DS lite */
       swap_font(false);
     } 
@@ -1713,4 +1705,7 @@ int main(int argc, char *argv[])
   return (0);
 }
 
+double sqrt(double x) {
+	return f32tofloat(sqrtf32(floattof32(x)));
+}
 

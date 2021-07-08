@@ -72,7 +72,7 @@ checking of permissible combinations to configure is necessary
 Debug build
 ~~~~~~~~~~~
 
-**WARNING** this build is intended primarily for debugging purposes. It might have a somewhat slower performance, higher memory requirements and panic saves don't alvays work (in case of a crash there is a higher chance of losing progress).
+**WARNING** this build is intended primarily for debugging purposes. It might have a somewhat slower performance, higher memory requirements and panic saves don't always work (in case of a crash there is a higher chance of losing progress).
 
 When debugging crashes it can be very useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband::
 
@@ -102,7 +102,6 @@ Following build, to get the program to run, you need to copy the executable
 from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
 and zlib1.dll) from src/win/dll to the top-level dir
 
-
 Using Cygwin (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -125,6 +124,40 @@ If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build
 instructions (./autogen.sh; ./configure; make; make install).
 
+Using MSYS2 (with MinGW64) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install the dependencies by::
+
+	pacman -S make mingw-w64-x86_64-toolchain mingw-w64-x86_64-ncurses
+
+Additional dependencies for SDL2 client::
+
+	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx \
+		  mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf
+
+Then run the following to compile with ncurse::
+
+	cd src
+	make -f Makefile.msys2
+
+For SDL2, do::
+
+	cd src
+	make -f Makefile.msys2.sdl2
+
+Go to the root of the source directory and start angband by::
+
+	./angband.exe -uPLAYER
+
+The ncurse client may not be able to start properly from msys2 shell, try::
+
+	start bash
+
+and run::
+
+	export TERM=
+	./angband.exe -uPLAYER
 
 Using eclipse (Indigo) on Windows (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

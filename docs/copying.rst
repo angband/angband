@@ -15,7 +15,7 @@ With the following exceptions:
 * The SDL runtime libraries (if provided with your copy of the game) are under
   the following licence:
 
-    The Simple DirectMedia Layer (SDL for short) is a cross-platfrom library designed to make it easy to write multi-media software, such as games and emulators.
+    The Simple DirectMedia Layer (SDL for short) is a cross-platform library designed to make it easy to write multi-media software, such as games and emulators.
 
     The Simple DirectMedia Layer library source code is available from: http://www.libsdl.org/
 

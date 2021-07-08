@@ -209,7 +209,7 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 	}
 
 	/* Terminate */
-	cur = MIN(cur, len);
+	cur = MIN(cur, len - 1);
 	buf[cur].type = EVT_NONE;
 }
 

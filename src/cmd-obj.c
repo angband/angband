@@ -210,6 +210,7 @@ void do_cmd_inscribe(struct command *cmd)
 		return;
 
 	obj->note = quark_add(str);
+	string_free((char *)str);
 
 	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
@@ -358,10 +359,10 @@ void do_cmd_wield(struct command *cmd)
 	else
 		act = "You were wearing";
 
+	inven_wield(obj, slot);
+
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(equip_obj));
-
-	inven_wield(obj, slot);
 }
 
 /**
@@ -421,11 +422,12 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
 	struct effect *effect = object_effect(obj);
-	bool ident = false, used = false, can_use = true;
-	bool was_aware;
+	bool can_use = true;
+	bool was_aware, from_floor;
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
+	char label = gear_to_label(obj);
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -466,7 +468,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Execute the effect */
 	if (can_use) {
 		int beam = beam_chance(obj->tval);
-		int boost, level;
+		int boost, level, charges = 0;
+		bool ident = false, used;
+		struct object *work_obj;
 
 		/* Get the level */
 		if (obj->artifact)
@@ -486,9 +490,43 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		}
 
 		/* Boost damage effects if skill > difficulty */
-		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
+		boost = MAX((player->state.skills[SKILL_DEVICE] - level) / 2, 0);
 
-		/* Do effect */
+		/*
+		 * Tentatively deduct the amount used - the effect could leave
+		 * the object inaccessible making it difficult to do after a
+		 * successful use.  For the same reason, get a copy of the
+		 * object to use for propagating knowledge.
+		 */
+		if (use == USE_SINGLE) {
+			if (object_is_carried(player, obj)) {
+				work_obj = gear_object_for_use(obj, 1, false, &none_left);
+				from_floor = false;
+			} else {
+				work_obj = floor_object_for_use(obj, 1, false, &none_left);
+				from_floor = true;
+			}
+		} else  {
+			if (use == USE_CHARGE) {
+				charges = obj->pval;
+				/* Use a single charge */
+				obj->pval--;
+			} else if (use == USE_TIMEOUT) {
+				charges = obj->timeout;
+				obj->timeout += randcalc(obj->time, 0, RANDOMISE);
+			}
+			work_obj = object_new();
+			object_copy(work_obj, obj);
+			work_obj->oidx = 0;
+			if (obj->known) {
+				work_obj->known = object_new();
+				object_copy(work_obj->known, obj->known);
+				work_obj->known->oidx = 0;
+			}
+			from_floor = !object_is_carried(player, obj);
+		}
+
+		/* Do effect; use original not copy (proj. effect handling) */
 		target_fix();
 		used = effect_do(effect,
 							source_player(),
@@ -497,64 +535,98 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 							was_aware,
 							dir,
 							beam,
-							boost);
+							boost,
+							cmd);
 		target_release();
 
-		/* Quit if the item wasn't used and no knowledge was gained */
-		if (!used && (was_aware || !ident)) return;
-	}
+		if (!used) {
+			/* Restore the tentative deduction. */
+			if (use == USE_SINGLE) {
+				/* Drop copy to simplify subsequent logic */
+				struct object *dropped = object_new();
 
-	/* If the item is a null pointer or has been wiped, be done now */
-	if (!obj) return;
+				object_copy(dropped, work_obj);
+				if (work_obj->known) {
+					dropped->known = object_new();
+					object_copy(dropped->known, work_obj->known);
+				}
+				if (from_floor) {
+					drop_near(cave, &dropped, 0, player->grid, true, true);
+				} else {
+					inven_carry(player, dropped, true, true);
+				}
+			} else if (use == USE_CHARGE) {
+				obj->pval = charges;
+			} else if (use == USE_TIMEOUT) {
+				obj->timeout = charges;
+			}
+
+			/*
+			 * Quit if the item wasn't used and no knowledge was
+			 * gained
+			 */
+			if (was_aware || !ident) {
+				if (work_obj->known) {
+					object_delete(&work_obj->known);
+				}
+				object_delete(&work_obj);
+				return;
+			}
+		}
+
+		/* Increase knowledge */
+		if (use == USE_SINGLE) {
+			char name[80];
+			/* Single use items are automatically learned */
+			if (!was_aware) {
+				object_learn_on_use(player, obj);
+			}
+			/* Get a description */
+			if (used && none_left) {
+				obj->number--;
+			}
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+			if (from_floor) {
+				/* Print a message */
+				msg("You see %s.", name);
+			} else {
+				msg("You have %s (%c).", name, label);
+			}
+			if (used && none_left) {
+				obj->number++;
+			}
+		} else {
+			/* Wearables may need update, other things become known or tried */
+			if (tval_is_wearable(work_obj)) {
+				update_player_object_knowledge(player);
+			} else if (!was_aware && ident) {
+				object_learn_on_use(player, work_obj);
+			} else {
+				object_flavor_tried(work_obj);
+			}
+		}
+
+		if (used && use == USE_CHARGE) {
+			/* Describe charges */
+			if (from_floor)
+				floor_item_charges(work_obj);
+			else
+				inven_item_charges(work_obj);
+		}
+
+		/* Clean up created copy. */
+		if (work_obj->known)
+			object_delete(&work_obj->known);
+		object_delete(&work_obj);
+	} else {
+		from_floor = !object_is_carried(player, obj);
+	}
 
 	/* Use the turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Increase knowledge */
-	if (use == USE_SINGLE) {
-		/* Single use items are automatically learned */
-		if (!was_aware) {
-			object_learn_on_use(player, obj);
-		}
-	} else {
-		/* Wearables may need update, other things become known or tried */
-		if (tval_is_wearable(obj)) {
-			update_player_object_knowledge(player);
-		} else if (!was_aware && ident) {
-			object_learn_on_use(player, obj);
-		} else if (can_use) {
-			object_flavor_tried(obj);
-		}
-	}
-
-	/* Chargeables act differently to single-used items when not used up */
-	if (used && use == USE_CHARGE) {
-		/* Use a single charge */
-		obj->pval--;
-
-		/* Describe charges */
-		if (object_is_carried(player, obj))
-			inven_item_charges(obj);
-		else
-			floor_item_charges(obj);
-	} else if (used && use == USE_TIMEOUT) {
-		obj->timeout += randcalc(obj->time, 0, RANDOMISE);
-	} else if (used && use == USE_SINGLE) {
-		struct object *used_obj;
-
-		/* Destroy an item in the pack */
-		if (object_is_carried(player, obj))
-			used_obj = gear_object_for_use(obj, 1, true, &none_left);
-		else
-			/* Destroy an item on the floor */
-			used_obj = floor_object_for_use(obj, 1, true, &none_left);
-		if (used_obj->known)
-			object_delete(&used_obj->known);
-		object_delete(&used_obj);
-	}
-
-	/* Autoinscribe if we still have any */
-	if (!none_left)
+	/* Autoinscribe if we are guaranteed to still have any */
+	if (!none_left && !from_floor)
 		apply_autoinscription(obj);
 
 	/* Mark as tried and redisplay */
@@ -799,8 +871,13 @@ void do_cmd_use(struct command *cmd)
 	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);
 	else if (tval_is_scroll(obj))		do_cmd_read_scroll(cmd);
 	else if (obj_can_refill(obj))		do_cmd_refill(cmd);
-	else if (obj_is_activatable(obj))	do_cmd_activate(cmd);
-	else
+	else if (obj_is_activatable(obj)) {
+		if (object_is_equipped(player->body, obj)) {
+			do_cmd_activate(cmd);
+		} else {
+			msg("Equip the item to use it.");
+		}
+	} else
 		msg("The item cannot be used at the moment");
 }
 
@@ -839,7 +916,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, &used, 0, player->grid, false);
+				drop_near(cave, &used, 0, player->grid, false, true);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;
@@ -893,7 +970,7 @@ void do_cmd_refill(struct command *cmd)
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
 	/* Check what we're wielding. */
-	if (!tval_is_light(light)) {
+	if (!light || !tval_is_light(light)) {
 		msg("You are not wielding a light.");
 		return;
 	} else if (of_has(light->flags, OF_NO_FUEL)) {
@@ -971,9 +1048,9 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Cast a spell */
 	target_fix();
-	if (spell_cast(spell_index, dir)) {
+	if (spell_cast(spell_index, dir, cmd)) {
 		if (player->timed[TMD_FASTCAST]) {
-			player->upkeep->energy_use = z_info->move_energy / 2;
+			player->upkeep->energy_use = (z_info->move_energy * 3) / 4;
 		} else {
 			player->upkeep->energy_use = z_info->move_energy;
 		}

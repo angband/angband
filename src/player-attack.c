@@ -47,6 +47,10 @@
 #include "target.h"
 
 /**
+ * ------------------------------------------------------------------------
+ * Hit and breakage calculations
+ * ------------------------------------------------------------------------ */
+/**
  * Returns percent chance of an object breaking after throwing or shooting.
  *
  * Artifacts will never break.
@@ -64,23 +68,53 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 	int perc = obj->kind->base->break_perc;
 
 	if (obj->artifact) return 0;
+	if (of_has(obj->flags, OF_THROWING) &&
+		!of_has(obj->flags, OF_EXPLODE) &&
+		!tval_is_ammo(obj)) {
+		perc = 1;
+	}
 	if (!hit_target) return (perc * perc) / 100;
 	return perc;
 }
 
+/**
+ * Return the player's chance to hit with a particular weapon.
+ */
+int chance_of_melee_hit(const struct player *p, const struct object *weapon)
+{
+	int chance, bonus = p->state.to_h;
+
+	if (weapon)
+		bonus += weapon->to_h;
+	chance = p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	return chance;
+}
+
+/**
+ * Return the player's chance to hit with a particular missile and
+ * (optionally) launcher.
+ */
 static int chance_of_missile_hit(const struct player *p,
 								 const struct object *missile,
 								 const struct object *launcher,
 								 struct loc grid)
 {
-	bool throw = (launcher ? false : true);
-	int bonus = p->state.to_h + missile->to_h;
+	int bonus = missile->to_h;
 	int chance;
 
-	if (throw) {
-		chance = p->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
+	if (!launcher) {
+		/* Other thrown objects are easier to use, but only throwing weapons 
+		 * take advantage of bonuses to Skill and Deadliness from other 
+		 * equipped items. */
+		if (of_has(missile->flags, OF_THROWING)) {
+			bonus += p->state.to_h;
+			chance = p->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
+		} else {
+			chance = 3 * p->state.skills[SKILL_TO_HIT_THROW] / 2
+				+ bonus * BTH_PLUS_ADJ;
+		}
 	} else {
-		bonus += launcher->to_h;
+		bonus += p->state.to_h + launcher->to_h;
 		chance = p->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
 	}
 
@@ -110,104 +144,70 @@ bool test_hit(int chance, int ac, int vis) {
 
 
 /**
- * Determine standard melee damage.
- *
- * Factor in damage dice, to-dam and any brand or slay.
+ * ------------------------------------------------------------------------
+ * Damage calculations
+ * ------------------------------------------------------------------------ */
+/**
+ * Conversion of plusses to Deadliness to a percentage added to damage.
+ * Much of this table is not intended ever to be used, and is included
+ * only to handle possible inflation elsewhere. -LM-
  */
-static int melee_damage(struct object *obj, int b, int s)
-{
-	int dmg = damroll(obj->dd, obj->ds);
-
-	if (s) {
-		dmg *= slays[s].multiplier;
-	} else if (b) {
-		dmg *= brands[b].multiplier;
-	}
-
-	dmg += obj->to_d;
-
-	return dmg;
-}
+byte deadliness_conversion[151] =
+  {
+    0,
+    5,  10,  14,  18,  22,  26,  30,  33,  36,  39,
+    42,  45,  48,  51,  54,  57,  60,  63,  66,  69,
+    72,  75,  78,  81,  84,  87,  90,  93,  96,  99,
+    102, 104, 107, 109, 112, 114, 117, 119, 122, 124,
+    127, 129, 132, 134, 137, 139, 142, 144, 147, 149,
+    152, 154, 157, 159, 162, 164, 167, 169, 172, 174,
+    176, 178, 180, 182, 184, 186, 188, 190, 192, 194,
+    196, 198, 200, 202, 204, 206, 208, 210, 212, 214,
+    216, 218, 220, 222, 224, 226, 228, 230, 232, 234,
+    236, 238, 240, 242, 244, 246, 248, 250, 251, 253,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255
+  };
 
 /**
- * Determine experimental birth_percent_damage melee damage.
+ * Deadliness multiplies the damage done by a percentage, which varies 
+ * from 0% (no damage done at all) to at most 355% (damage is multiplied 
+ * by more than three and a half times!).
  *
- * Factor in damage dice, to-dam and any brand or slay.
- */
-static int exp_melee_damage(struct player *p, struct object *obj, int b, int s)
-{
-	int dmg = damroll(obj->dd, obj->ds);
-
-	if (s) {
-		dmg *= slays[s].multiplier;
-	} else if (b) {
-		dmg *= brands[b].multiplier;
-	}
-
-	dmg += ((obj->to_d + p->state.to_d) * dmg) / 20;
-
-	return dmg;
-}
-
-/**
- * Determine standard ranged damage.
+ * We use the table "deadliness_conversion" to translate internal plusses 
+ * to deadliness to percentage values.
  *
- * Factor in damage dice, to-dam, multiplier and any brand or slay.
+ * This function multiplies damage by 100.
  */
-static int ranged_damage(struct player *p, struct object *missile,
-						 struct object *launcher, int b, int s, int mult)
+void apply_deadliness(int *die_average, int deadliness)
 {
-	int dam;
+	int i;
 
-	/* If we have a slay or brand , modify the multiplier appropriately */
-	if (b) {
-		mult += brands[b].multiplier;
-	} else if (s) {
-		mult += slays[s].multiplier;
+	/* Paranoia - ensure legal table access. */
+	if (deadliness > 150)
+		deadliness = 150;
+	if (deadliness < -150)
+		deadliness = -150;
+
+	/* Deadliness is positive - damage is increased */
+	if (deadliness >= 0) {
+		i = deadliness_conversion[deadliness];
+
+		*die_average *= (100 + i);
 	}
 
-	/* Apply damage: multiplier, slays, bonuses */
-	dam = damroll(missile->dd, missile->ds);
-	dam += missile->to_d;
-	if (launcher) {
-		dam += launcher->to_d;
-	} else if (of_has(missile->flags, OF_THROWING)) {
-		dam += p->state.to_d;
+	/* Deadliness is negative - damage is decreased */
+	else {
+		i = deadliness_conversion[ABS(deadliness)];
+
+		if (i >= 100)
+			*die_average = 0;
+		else
+			*die_average *= (100 - i);
 	}
-	dam *= mult;
-
-	return dam;
-}
-
-/**
- * Determine experimental birth_percent_damage ranged damage.
- *
- * Factor in damage dice, to-dam, multiplier and any brand or slay.
- */
-static int exp_ranged_damage(struct player *p, struct object *missile,
-							 struct object *launcher, int b, int s, int mult)
-{
-	int dam;
-
-	/* If we have a slay or brand , modify the multiplier appropriately */
-	if (b) {
-		mult += brands[b].multiplier;
-	} else if (s) {
-		mult += slays[s].multiplier;
-	}
-
-	/* Apply damage: multiplier, slays, bonuses */
-	dam = damroll(missile->dd, missile->ds);
-	if (launcher) {
-		dam += ((missile->to_d + launcher->to_d) * dam) / 20;
-	} else if (of_has(missile->flags, OF_THROWING)) {
-		dam += (p->state.to_d * dam) / 20;
-	} else {
-		dam += (missile->to_d * dam) / 20;
-	}
-	dam *= mult;
-
-	return dam;
 }
 
 /**
@@ -234,23 +234,63 @@ static int critical_shot(const struct player *p,
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
 	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 4 + p->lev * 2;
 	int power = weight + randint1(500);
+	int new_dam = dam;
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_SHOOT_HIT;
-		return dam;
-
 	} else if (power < 500) {
 		*msg_type = MSG_HIT_GOOD;
-		return 2 * dam + 5;
-
+		new_dam = 2 * dam + 5;
 	} else if (power < 1000) {
 		*msg_type = MSG_HIT_GREAT;
-		return 2 * dam + 10;
-
+		new_dam = 2 * dam + 10;
 	} else {
 		*msg_type = MSG_HIT_SUPERB;
-		return 3 * dam + 15;
+		new_dam = 3 * dam + 15;
 	}
+
+	return new_dam;
+}
+
+/**
+ * Determine O-combat damage for critical hits from shooting.
+ *
+ * Factor in item weight, total plusses, and player level.
+ */
+static int o_critical_shot(const struct player *p,
+						   const struct monster *monster,
+						   const struct object *missile,
+						   const struct object *launcher,
+						   u32b *msg_type)
+{
+	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
+	int power = chance_of_missile_hit(p, missile, launcher, monster->grid)
+		+ debuff_to_hit;
+	int add_dice = 0;
+
+	/* Thrown weapons get lots of critical hits. */
+	if (!launcher) {
+		power = power * 3 / 2;
+	}
+
+	/* Test for critical hit - chance power / (power + 360) */
+	if (randint1(power + 360) <= power) {
+		/* Determine level of critical hit. */
+		if (one_in_(50)) {
+			*msg_type = MSG_HIT_SUPERB;
+			add_dice = 3;
+		} else if (one_in_(10)) {
+			*msg_type = MSG_HIT_GREAT;
+			add_dice = 2;
+		} else {
+			*msg_type = MSG_HIT_GOOD;
+			add_dice = 1;
+		}
+	} else {
+		*msg_type = MSG_SHOOT_HIT;
+	}
+
+	return add_dice;
 }
 
 /**
@@ -258,39 +298,252 @@ static int critical_shot(const struct player *p,
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_norm(const struct player *p,
+static int critical_melee(const struct player *p,
 		const struct monster *monster,
 		int weight, int plus,
 		int dam, u32b *msg_type)
 {
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
 	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5 + p->lev * 3;
+	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5
+		+ (p->state.skills[SKILL_TO_HIT_MELEE] - 60);
+	int new_dam = dam;
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_HIT;
-		return dam;
-
 	} else if (power < 400) {
 		*msg_type = MSG_HIT_GOOD;
-		return 2 * dam + 5;
-
+		new_dam = 2 * dam + 5;
 	} else if (power < 700) {
 		*msg_type = MSG_HIT_GREAT;
-		return 2 * dam + 10;
-
+		new_dam = 2 * dam + 10;
 	} else if (power < 900) {
 		*msg_type = MSG_HIT_SUPERB;
-		return 3 * dam + 15;
-
+		new_dam = 3 * dam + 15;
 	} else if (power < 1300) {
 		*msg_type = MSG_HIT_HI_GREAT;
-		return 3 * dam + 20;
-
+		new_dam = 3 * dam + 20;
 	} else {
 		*msg_type = MSG_HIT_HI_SUPERB;
-		return 4 * dam + 20;
+		new_dam = 4 * dam + 20;
 	}
+
+	return new_dam;
+}
+
+/**
+ * Determine O-combat damage for critical hits from melee.
+ *
+ * Factor in weapon weight, total plusses, player level.
+ */
+static int o_critical_melee(const struct player *p,
+							const struct monster *monster,
+							const struct object *obj, u32b *msg_type)
+{
+	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
+	int power = (chance_of_melee_hit(p, obj) + debuff_to_hit) / 3;
+	int add_dice = 0;
+
+	/* Test for critical hit - chance power / (power + 240) */
+	if (randint1(power + 240) <= power) {
+		/* Determine level of critical hit. */
+		if (one_in_(40)) {
+			*msg_type = MSG_HIT_HI_SUPERB;
+			add_dice = 5;
+		} else if (one_in_(12)) {
+			*msg_type = MSG_HIT_HI_GREAT;
+			add_dice = 4;
+		} else if (one_in_(3)) {
+			*msg_type = MSG_HIT_SUPERB;
+			add_dice = 3;
+		} else if (one_in_(2)) {
+			*msg_type = MSG_HIT_GREAT;
+			add_dice = 2;
+		} else {
+			*msg_type = MSG_HIT_GOOD;
+			add_dice = 1;
+		}
+	} else {
+		*msg_type = MSG_HIT;
+	}
+
+	return add_dice;
+}
+
+/**
+ * Determine standard melee damage.
+ *
+ * Factor in damage dice, to-dam and any brand or slay.
+ */
+static int melee_damage(const struct monster *mon, struct object *obj, int b, int s)
+{
+	int dmg = damroll(obj->dd, obj->ds);
+
+	if (s) {
+		dmg *= slays[s].multiplier;
+	} else if (b) {
+		dmg *= get_monster_brand_multiplier(mon, &brands[b]);
+	}
+
+	dmg += obj->to_d;
+
+	return dmg;
+}
+
+/**
+ * Determine O-combat melee damage.
+ *
+ * Deadliness and any brand or slay add extra sides to the damage dice,
+ * criticals add extra dice.
+ */
+static int o_melee_damage(struct player *p, const struct monster *mon,
+		struct object *obj, int b, int s, u32b *msg_type)
+{
+	int dice = obj->dd;
+	int sides, dmg, add = 0;
+	bool extra;
+
+	/* Get the average value of a single damage die. (x10) */
+	int die_average = (10 * (obj->ds + 1)) / 2;
+
+	/* Adjust the average for slays and brands. (10x inflation) */
+	if (s) {
+		die_average *= slays[s].o_multiplier;
+		add = slays[s].o_multiplier - 10;
+	} else if (b) {
+		int bmult = get_monster_brand_multiplier(mon, &brands[b]);
+
+		die_average *= bmult;
+		add = bmult - 10;
+	} else {
+		die_average *= 10;
+	}
+
+	/* Apply deadliness to average. (100x inflation) */
+	apply_deadliness(&die_average, MIN(obj->to_d + p->state.to_d, 150));
+
+	/* Calculate the actual number of sides to each die. */
+	sides = (2 * die_average) - 10000;
+	extra = randint0(10000) < (sides % 10000);
+	sides /= 10000;
+	sides += (extra ? 1 : 0);
+
+	/* Get number of critical dice */
+	dice += o_critical_melee(p, mon, obj, msg_type);
+
+	/* Roll out the damage. */
+	dmg = damroll(dice, sides);
+
+	/* Apply any special additions to damage. */
+	dmg += add;
+
+	return dmg;
+}
+
+/**
+ * Determine standard ranged damage.
+ *
+ * Factor in damage dice, to-dam, multiplier and any brand or slay.
+ */
+static int ranged_damage(struct player *p, const struct monster *mon,
+						 struct object *missile, struct object *launcher,
+						 int b, int s)
+{
+	int dmg;
+	int mult = (launcher ? p->state.ammo_mult : 1);
+
+	/* If we have a slay or brand, modify the multiplier appropriately */
+	if (b) {
+		mult += get_monster_brand_multiplier(mon, &brands[b]);
+	} else if (s) {
+		mult += slays[s].multiplier;
+	}
+
+	/* Apply damage: multiplier, slays, bonuses */
+	dmg = damroll(missile->dd, missile->ds);
+	dmg += missile->to_d;
+	if (launcher) {
+		dmg += launcher->to_d;
+	} else if (of_has(missile->flags, OF_THROWING)) {
+		/* Adjust damage for throwing weapons.
+		 * This is not the prettiest equation, but it does at least try to
+		 * keep throwing weapons competitive. */
+		dmg *= 2 + missile->weight / 12;
+	}
+	dmg *= mult;
+
+	return dmg;
+}
+
+/**
+ * Determine O-combat ranged damage.
+ *
+ * Deadliness, launcher multiplier and any brand or slay add extra sides to the
+ * damage dice, criticals add extra dice.
+ */
+static int o_ranged_damage(struct player *p, const struct monster *mon,
+						   struct object *missile, struct object *launcher,
+						   int b, int s, u32b *msg_type)
+{
+	int mult = (launcher ? p->state.ammo_mult : 1);
+	int dice = missile->dd;
+	int sides, deadliness, dmg, add = 0;
+	bool extra;
+
+	/* Get the average value of a single damage die. (x10) */
+	int die_average = (10 * (missile->ds + 1)) / 2;
+
+	/* Apply the launcher multiplier. */
+	die_average *= mult;
+
+	/* Adjust the average for slays and brands. (10x inflation) */
+	if (b) {
+		int bmult = get_monster_brand_multiplier(mon, &brands[b]);
+
+		die_average *= bmult;
+		add = bmult - 10;
+	} else if (s) {
+		die_average *= slays[s].o_multiplier;
+		add = slays[s].o_multiplier - 10;
+	} else {
+		die_average *= 10;
+	}
+
+	/* Apply deadliness to average. (100x inflation) */
+	if (launcher) {
+		deadliness = missile->to_d + launcher->to_d + p->state.to_d;
+	} else if (of_has(missile->flags, OF_THROWING)) {
+		deadliness = missile->to_d + p->state.to_d;
+	} else {
+		deadliness = missile->to_d;
+	}
+	apply_deadliness(&die_average, MIN(deadliness, 150));
+
+	/* Calculate the actual number of sides to each die. */
+	sides = (2 * die_average) - 10000;
+	extra = randint0(10000) < (sides % 10000);
+	sides /= 10000;
+	sides += (extra ? 1 : 0);
+
+	/* Get number of critical dice - only for suitable objects */
+	if (launcher) {
+		dice += o_critical_shot(p, mon, missile, launcher, msg_type);
+	} else if (of_has(missile->flags, OF_THROWING)) {
+		dice += o_critical_shot(p, mon, missile, NULL, msg_type);
+
+		/* Multiply the number of damage dice by the throwing weapon
+		 * multiplier.  This is not the prettiest equation,
+		 * but it does at least try to keep throwing weapons competitive. */
+		dice *= 2 + missile->weight / 12;
+	}
+
+	/* Roll out the damage. */
+	dmg = damroll(dice, sides);
+
+	/* Apply any special additions to damage. */
+	dmg += add;
+
+	return dmg;
 }
 
 /**
@@ -301,6 +554,10 @@ static int player_damage_bonus(struct player_state *state)
 	return state->to_d;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Non-damage melee blow effects
+ * ------------------------------------------------------------------------ */
 /**
  * Apply blow side effects
  */
@@ -316,117 +573,10 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 }
 
 /**
- * Apply knock back from powerful blows
- */
-static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
-							bool *fear)
-{
-	struct loc grid = mon->grid;
-	struct loc offset = loc_diff(grid, p->grid);
-	int power = (p->state.num_blows - 100) / 100;
-
-	/* Not enough power left */
-	if (!power) return false;
-
-	/* Forced backwards until power runs out */
-	while (power > 0) {
-		/* Move back a square */
-		grid = loc_sum(grid, offset);
-
-		/* React differently depending on the terrain behind the monster */
-		if (square_ispassable(cave, grid)) {
-			/* Monster there - current monster takes all the damage
-			 * Note we could have more fun here by pushing it back... */
-			if (square_monster(cave, grid)) {
-				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
-				break;
-			} else {
-				/* Push back a square */
-				monster_swap(mon->grid, grid);
-				power--;
-			}
-		} else {
-			bool moved = false;
-
-			/* Deal with impassable terrain */
-			if (square_isdoor(cave, grid)) {
-				if (power >= 1) {
-					square_open_door(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_isrubble(cave, grid)) {
-				if (power >= 1) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_ismagma(cave, grid)) {
-				if (power >= 1) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
-					}
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
-					power--;
-					moved = true;
-				}
-			} else if (square_isquartz(cave, grid)) {
-				if (power >= 2) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
-					}
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg * 2, fear, NULL)) return true;
-					power -= 2;
-					moved = true;
-				}
-			} else if (square_isgranite(cave, grid)) {
-				if (power >= 3) {
-					square_destroy_wall(cave, grid);
-					monster_swap(mon->grid, grid);
-					if (randint0(20) < power) {
-						effect_simple(EF_EARTHQUAKE,
-									  source_monster(mon->midx), "0",
-									  0, 3, 0, 0, 0, NULL);
-					}
-					if (mon_take_hit(mon, dmg * 3, fear, NULL)) return true;
-					power -= 3;
-					moved = true;
-				}
-			}
-			if (!moved) {
-				/* Monster can't move, give it the remaining damage */
-				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
-				break;
-			}
-		}
-	}
-	/* Player needs to stop hitting if the monster has moved */
-	return (ABS(mon->grid.y - p->grid.y) > 1) ||
-		(ABS(mon->grid.x - p->grid.x) > 1);
-}
-
-/**
  * Apply blow after effects
  */
-static bool blow_after_effects(struct loc grid, bool quake)
+static bool blow_after_effects(struct loc grid, int dmg, int splash,
+							   bool *fear, bool quake)
 {
 	/* Apply earthquake brand */
 	if (quake) {
@@ -441,6 +591,10 @@ static bool blow_after_effects(struct loc grid, bool quake)
 	return false;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Melee attack
+ * ------------------------------------------------------------------------ */
 /* Melee and throwing hit types */
 static const struct hit_types melee_hit_types[] = {
 	{ MSG_MISS, NULL },
@@ -453,22 +607,9 @@ static const struct hit_types melee_hit_types[] = {
 };
 
 /**
- * Return the player's chance to hit with a particular weapon.
- */
-int py_attack_hit_chance(const struct player *p, const struct object *weapon)
-{
-	int chance, bonus = p->state.to_h;
-
-	if (weapon)
-		bonus += weapon->to_h;
-	chance = p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
-	return chance;
-}
-
-/**
  * Attack the monster at the given location with a single blow.
  */
-static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
+bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 {
 	size_t i;
 
@@ -481,8 +622,9 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	struct object *obj = equipped_item_by_slot_name(p, "weapon");
 
 	/* Information about the attack */
-	int chance = py_attack_hit_chance(p, obj);
+	int chance = chance_of_melee_hit(p, obj);
 	int drain = 0;
+	int splash = 0;
 	bool do_quake = false;
 	bool success = false;
 
@@ -534,7 +676,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (obj) {
 		int j;
 		int b = 0, s = 0;
-		int weight = obj->weight * (p->timed[TMD_POWERBLOW] ? 2 : 1);
+		int weight = obj->weight;
 
 		my_strcpy(verb, "hit", sizeof(verb));
 
@@ -549,14 +691,16 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		improve_attack_modifier(obj, mon, &b, &s, verb, false);
 		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
 
+		/* Get the damage */
 		if (!OPT(p, birth_percent_damage)) {
-			dmg = melee_damage(obj, b, s);
+			dmg = melee_damage(mon, obj, b, s);
+			dmg = critical_melee(p, mon, weight, obj->to_h, dmg, &msg_type);
 		} else {
-			dmg = exp_melee_damage(p, obj, b, s);
+			dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
 		}
 
-		dmg = critical_norm(p, mon, weight, obj->to_h, dmg, &msg_type);
-
+		/* Splash damage and earthquakes */
+		splash = (weight * dmg) / 100;
 		if (player_of_has(p, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
 			equip_learn_flag(p, OF_IMPACT);
@@ -607,7 +751,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* Pre-damage side effects */
 	blow_side_effects(p, mon);
 
-	/* Damage, check for hp drain, knockback, fear and death */
+	/* Damage, check for hp drain, fear and death */
 	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, dmg, fear, NULL);
 
@@ -621,16 +765,6 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
 						  0, 0, 0, 0, 0, NULL);
-		} else if (p->timed[TMD_POWERBLOW]) {
-			stop = blow_knock_back(p, mon, dmg, fear);
-
-			/* Small chance of side-effects */
-			if (one_in_(50)) {
-				msg("You swing around wildly!");
-				player_over_exert(p, PY_EXERT_CONF, 40, 10);
-			}
-
-			player_clear_timed(p, TMD_POWERBLOW, true);
 		}
 	}
 
@@ -638,7 +772,7 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		(*fear) = false;
 
 	/* Post-damage effects */
-	if (blow_after_effects(grid, do_quake))
+	if (blow_after_effects(grid, dmg, splash, fear, do_quake))
 		stop = true;
 
 	return stop;
@@ -648,13 +782,12 @@ static bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 /**
  * Attempt a shield bash; return true if the monster dies
  */
-bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
-						 int *blows)
+bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
 {
 	struct object *weapon = slot_object(p, slot_by_name(p, "weapon"));
 	struct object *shield = slot_object(p, slot_by_name(p, "arm"));
 	int nblows = p->state.num_blows / 100;
-	int bash_quality, bash_dam;
+	int bash_quality, bash_dam, energy_lost;
 
 	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
 	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] / 8 +
@@ -676,49 +809,58 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 	}
 
 	/* Try to get in a shield bash. */
-	if (bash_chance > randint0(200 + mon->race->level)) {
-		msgt(MSG_HIT, "You get in a shield bash!");
-
-		/* Calculate attack quality, a mix of momentum and accuracy. */
-		bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] / 4 + p->wt / 8 +
-			p->upkeep->total_weight / 80 + shield->weight / 2;
-
-		/* Calculate damage.  Big shields are deadly. */
-		bash_dam = damroll(shield->dd, shield->ds);
-
-		/* Multiply by quality and experience factors */
-		bash_dam *= bash_quality / 40 + p->lev / 14;
-
-		/* Strength bonus. */
-		bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
-
-		/* Paranoia. */
-		bash_dam = MIN(bash_dam, 125);
-
-		/* Encourage the player to keep wearing that heavy shield. */
-		if (randint1(bash_dam) > 30 + randint1(bash_dam / 2)) {
-			msgt(MSG_HIT_HI_SUPERB, "WHAMM!");
-		}
-
-		/* Damage, check for fear and death. */
-		if (mon_take_hit(mon, bash_dam, fear, NULL)) return true;
-
-		/* Stunning. */
-		if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
-			mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0);
-		}
-
-		/* Confusion. */
-		if (bash_quality + p->lev > randint1(300 + mon->race->level * 12)) {
-			mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0);
-		}
-
-		/* The player will sometimes stumble. */
-		if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
-			*blows += randint1(p->state.num_blows / 100);
-			msgt(MSG_GENERIC, "You stumble!");
-		}
+	if (bash_chance <= randint0(200 + mon->race->level)) {
+		return false;
 	}
+
+	/* Calculate attack quality, a mix of momentum and accuracy. */
+	bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] / 4 + p->wt / 8 +
+		p->upkeep->total_weight / 80 + shield->weight / 2;
+
+	/* Calculate damage.  Big shields are deadly. */
+	bash_dam = damroll(shield->dd, shield->ds);
+
+	/* Multiply by quality and experience factors */
+	bash_dam *= bash_quality / 40 + p->lev / 14;
+
+	/* Strength bonus. */
+	bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
+
+	/* Paranoia. */
+	bash_dam = MIN(bash_dam, 125);
+
+	if (OPT(p, show_damage)) {
+		msgt(MSG_HIT, "You get in a shield bash! (%d)", bash_dam);
+	} else {
+		msgt(MSG_HIT, "You get in a shield bash!");
+	}
+
+	/* Encourage the player to keep wearing that heavy shield. */
+	if (randint1(bash_dam) > 30 + randint1(bash_dam / 2)) {
+		msgt(MSG_HIT_HI_SUPERB, "WHAMM!");
+	}
+
+	/* Damage, check for fear and death. */
+	if (mon_take_hit(mon, bash_dam, fear, NULL)) return true;
+
+	/* Stunning. */
+	if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
+		mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0);
+	}
+
+	/* Confusion. */
+	if (bash_quality + p->lev > randint1(300 + mon->race->level * 12)) {
+		mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0);
+	}
+
+	/* The player will sometimes stumble. */
+	if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
+		energy_lost = randint1(50) + 25;
+		/* Lose 26-75% of a turn due to stumbling after shield bash. */
+		msgt(MSG_GENERIC, "You stumble!");
+		p->upkeep->energy_use += energy_lost * z_info->move_energy / 100;
+	}
+
 	return false;
 }
 
@@ -727,40 +869,41 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
  *
  * We get blows until energy drops below that required for another blow, or
  * until the target monster dies. Each blow is handled by py_attack_real().
- * We don't allow @ to spend more than 100 energy in one go, to avoid slower
- * monsters getting double moves.
+ * We don't allow @ to spend more than 1 turn's worth of energy,
+ * to avoid slower monsters getting double moves.
  */
 void py_attack(struct player *p, struct loc grid)
 {
+	int avail_energy = MIN(p->energy, z_info->move_energy);
 	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	int blows = 0;
-	bool fear = false;
+	bool slain = false, fear = false;
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
-	disturb(p, 0);
+	disturb(p);
 
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;
+
+	/* Reward BGs with 5% of max SPs, min 1/2 point */
+	if (player_has(p, PF_COMBAT_REGEN)) {
+		s32b sp_gain = (s32b)(MAX(p->msp, 10) << 16) / 20;
+		player_adjust_mana_precise(p, sp_gain);
+	}
 
 	/* Player attempts a shield bash if they can, and if monster is visible
 	 * and not too pathetic */
 	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon)) {
 		/* Monster may die */
-		if (attempt_shield_bash(p, mon, &fear, &blows)) return;
+		if (attempt_shield_bash(p, mon, &fear)) return;
 	}
 
-	/* Deduct any energy lost due to stumbling after shield bash. */
-	p->upkeep->energy_use += blow_energy * blows;
-
-	/* Attack until energy runs out or enemy dies. We limit energy use to 100
+	/* Attack until the next attack would exceed energy available or
+	 * a full turn or until the enemy dies. We limit energy use
 	 * to avoid giving monsters a possible double move. */
-	while (p->energy >= blow_energy * (blows + 1)) {
-		bool stop = py_attack_real(player, grid, &fear);
+	while (avail_energy - p->upkeep->energy_use >= blow_energy && !slain) {
+		slain = py_attack_real(p, grid, &fear);
 		p->upkeep->energy_use += blow_energy;
-		if (p->upkeep->energy_use + blow_energy > z_info->move_energy ||
-			stop) break;
-		blows++;
 	}
 
 	/* Hack - delay fear messages */
@@ -769,6 +912,10 @@ void py_attack(struct player *p, struct loc grid)
 	}
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Ranged attacks
+ * ------------------------------------------------------------------------ */
 /* Shooting hit types */
 static const struct hit_types ranged_hit_types[] = {
 	{ MSG_MISS, NULL },
@@ -954,7 +1101,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	}
 
 	/* Drop (or break) near that location */
-	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true);
+	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true, false);
 }
 
 
@@ -969,7 +1116,6 @@ static struct attack_result make_ranged_shot(struct player *p,
 	struct object *bow = equipped_item_by_slot_name(p, "shooting");
 	struct monster *mon = square_monster(cave, grid);
 	int chance = chance_of_missile_hit(p, ammo, bow, grid);
-	int multiplier = p->state.ammo_mult;
 	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", 20);
@@ -984,12 +1130,12 @@ static struct attack_result make_ranged_shot(struct player *p,
 	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(p, ammo, bow, b, s, multiplier);
+		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
+		result.dmg = critical_shot(p, mon, ammo->weight, ammo->to_h,
+								   result.dmg, &result.msg_type);
 	} else {
-		result.dmg = exp_ranged_damage(p, ammo, bow, b, s, multiplier);
+		result.dmg = o_ranged_damage(p, mon, ammo, bow, b, s, &result.msg_type);
 	}
-	result.dmg = critical_shot(player, mon, ammo->weight, ammo->to_h,
-							   result.dmg, &result.msg_type);
 
 	missile_learn_on_ranged_attack(p, bow);
 
@@ -1003,11 +1149,10 @@ static struct attack_result make_ranged_shot(struct player *p,
 static struct attack_result make_ranged_throw(struct player *p,
 	struct object *obj, struct loc grid)
 {
-	char *hit_verb = mem_alloc(20*sizeof(char));
+	char *hit_verb = mem_alloc(20 * sizeof(char));
 	struct attack_result result = {false, 0, 0, hit_verb};
 	struct monster *mon = square_monster(cave, grid);
 	int chance = chance_of_missile_hit(p, obj, NULL, grid);
-	int multiplier = 1;
 	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", 20);
@@ -1021,12 +1166,12 @@ static struct attack_result make_ranged_throw(struct player *p,
 	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(p, obj, NULL, b, s, multiplier);
+		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
+		result.dmg = critical_shot(p, mon, obj->weight, obj->to_h,
+								   result.dmg, &result.msg_type);
 	} else {
-		result.dmg = exp_ranged_damage(p, obj, NULL, b, s, multiplier);
+		result.dmg = o_ranged_damage(p, mon, obj, NULL, b, s, &result.msg_type);
 	}
-	result.dmg = critical_norm(player, mon, obj->weight, obj->to_h, result.dmg,
-							   &result.msg_type);
 
 	/* Direct adjustment for exploding things (flasks of oil) */
 	if (of_has(obj->flags, OF_EXPLODE))
@@ -1108,12 +1253,21 @@ void do_cmd_throw(struct command *cmd) {
 	int range;
 	struct object *obj;
 
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back? " )) {
+			player_resume_normal_shape(player);
+		} else {
+			return;
+		}
+	}
+
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
-			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR | QUIVER_TAGS)
+			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR | SHOW_THROWING)
 		!= CMD_OK)
 		return;
 
@@ -1132,8 +1286,8 @@ void do_cmd_throw(struct command *cmd) {
 		return;
 	}
 
-	ranged_helper(player, obj, dir, range, shots, attack, melee_hit_types,
-				  (int) N_ELEMENTS(melee_hit_types));
+	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
+				  (int) N_ELEMENTS(ranged_hit_types));
 }
 
 /**

@@ -22,6 +22,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-predicate.h"
+#include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -50,7 +51,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 	if (p && p->race) {
 		/* Ice is a special case */
 		int res_type = (type == PROJ_ICE) ? PROJ_COLD: type;
-		resist = p->state.el_info[res_type].res_level;
+		resist = res_type < ELEM_MAX ? p->state.el_info[res_type].res_level : 0;
 
 		/* Notice element stuff */
 		if (actual) {
@@ -61,8 +62,8 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 	if (resist == 3) /* immune */
 		return 0;
 
-	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == PROJ_ACID && p && minus_ac(p)) || type == PROJ_HOLY_ORB)
+	/* Hack - acid damage is halved by armour */
+	if (type == PROJ_ACID && p && minus_ac(p))
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */
@@ -161,18 +162,18 @@ static int project_player_handler_FIRE(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful fire attacks */
 	if (context->power >= 80) {
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			msg("The intense heat saps you.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0, 0,
 						  0, &context->obvious);
 		}
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_BLIND,
 								 randint1(context->dam / 100), true, true)) {
 				msg("Your eyes fill with smoke!");
 			}
 		}
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_POISONED,
 								 randint1(context->dam / 10), true, true)) {
 				msg("You are assailed by poisonous fumes!");
@@ -189,7 +190,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful cold attacks */
 	if (context->power >= 80) {
-		if (randint0(context->dam > 500)) {
+		if (randint0(context->dam) > 500) {
 			msg("The cold seeps into your bones.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_DEX, 0, 0, 0,
 						  0, &context->obvious);
@@ -199,7 +200,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("You feel your life force draining away!");
+				msg("The cold withers your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
@@ -217,7 +218,7 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 
 	/* Occasional side-effects for powerful poison attacks */
 	if (context->power >= 60) {
-		if (randint0(context->dam > 200)) {
+		if (randint0(context->dam) > 200) {
 			if (!player_is_immune(player, ELEM_ACID)) {
 				int dam = context->dam / 5;
 				msg("The venom stings your skin!");
@@ -227,7 +228,7 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 								 true);
 			}
 		}
-		if (randint0(context->dam > 200)) {
+		if (randint0(context->dam) > 200) {
 			msg("The stench sickens you.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_CON, 0, 0, 0,
 						  0, &context->obvious);
@@ -247,6 +248,7 @@ static int project_player_handler_LIGHT(project_player_handler_context_t *contex
 
 	/* Confusion for strong unresisted light */
 	if (context->dam > 300) {
+		msg("You are dazzled!");
 		(void)player_inc_timed(player, TMD_CONFUSED,
 							   2 + randint1(context->dam / 100), true, true);
 	}
@@ -270,19 +272,21 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("You feel your life force draining away!");
+				msg("The darkness steals your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
 
 		/* Slowing */
 		if (randint0(context->dam) > 200) {
+			msg("You feel unsure of yourself in the darkness.");
 			(void)player_inc_timed(player, TMD_SLOW, context->dam / 100, true,
 								   false);
 		}
 
 		/* Amnesia */
 		if (randint0(context->dam) > 300) {
+			msg("Darkness penetrates your mind!");
 			(void)player_inc_timed(player, TMD_AMNESIA, context->dam / 100,
 								   true, false);
 		}
@@ -308,6 +312,7 @@ static int project_player_handler_SOUND(project_player_handler_context_t *contex
 
 	/* Confusion for strong unresisted sound */
 	if (context->dam > 300) {
+		msg("The noise disorients you.");
 		(void)player_inc_timed(player, TMD_CONFUSED,
 							   2 + randint1(context->dam / 100), true, true);
 	}
@@ -411,7 +416,7 @@ static int project_player_handler_CHAOS(project_player_handler_context_t *contex
 
 	/* Life draining */
 	if (!player_of_has(player, OF_HOLD_LIFE)) {
-		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
+		int drain = ((player->exp * 3)/ (100 * 2)) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
 	} else {
@@ -760,7 +765,7 @@ static const project_player_handler_f player_handlers[] = {
  * We assume the player is aware of some effect, and always return "true".
  */
 bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
-			   int power)
+			   int power, bool self)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
@@ -792,9 +797,12 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	}
 
 	switch (origin.what) {
-		case SRC_PLAYER:
-			/* Never affect projector */
-			return false;
+		case SRC_PLAYER: {
+			/* Don't affect projector unless explicitly allowed */
+			if (!self) return false;
+
+			break;
+		}
 
 		case SRC_MONSTER: {
 			struct monster *mon = cave_monster(cave, origin.which.monster);
@@ -805,6 +813,9 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 
 			/* Get the monster's real name */
 			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+
+			/* Monster sees what is going on */
+			update_smart_learn(mon, player, 0, 0, typ);
 
 			break;
 		}
@@ -821,6 +832,15 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		case SRC_OBJECT: {
 			struct object *obj = origin.which.object;
 			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_BASE);
+			break;
+		}
+
+		case SRC_CHEST_TRAP: {
+			struct chest_trap *trap = origin.which.chest_trap;
+
+			/* Get the trap name */
+			strnfmt(killer, sizeof(killer), "%s", trap->msg_death);
+
 			break;
 		}
 
@@ -843,6 +863,10 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 					 res_level,
 					 true);
 	if (dam) {
+		/* Self-inflicted damage is scaled down */
+		if (self) {
+			dam /= 10;
+		}
 		take_hit(player, dam, killer);
 	}
 
@@ -853,7 +877,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	}
 
 	/* Disturb */
-	disturb(player, 1);
+	disturb(player);
 
 	/* Return "Anything seen?" */
 	return context.obvious;

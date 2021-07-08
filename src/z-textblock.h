@@ -33,6 +33,7 @@ void textblock_append(textblock *tb, const char *fmt, ...);
 void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...);
 void textblock_append_pict(textblock *tb, byte attr, int c);
 void textblock_append_utf8(textblock *tb, const char *utf8_string);
+void textblock_append_textblock(textblock *tb, const textblock *tba);
 
 const wchar_t *textblock_text(textblock *tb);
 const byte *textblock_attrs(textblock *tb);

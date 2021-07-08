@@ -79,7 +79,7 @@ static struct {
 
 /**
  * ------------------------------------------------------------------------
- * List-writiing utility code
+ * List-writing utility code
  * ------------------------------------------------------------------------ */
 
 /**
@@ -462,7 +462,8 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 static void calculate_melee_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 5 * (state->to_h + plus) + 3 * player->lev;
+	int k, to_crit = weight + 5 * (state->to_h + plus) +
+		3 * state->skills[SKILL_TO_HIT_MELEE] - 60;
 	to_crit = MIN(5000, MAX(0, to_crit));
 
 	*mult = *add = 0;
@@ -472,16 +473,31 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 		if (k <  700) { *mult += 4; *add += 20; continue; }
 		if (k <  900) { *mult += 6; *add += 30; continue; }
 		if (k < 1300) { *mult += 6; *add += 40; continue; }
-		                *mult += 7; *add += 50;
+		                *mult += 8; *add += 40;
 	}
 
-	/*
-	 * Scale the output down to a more reasonable size, to prevent
-	 * integer overflow downstream.
-	 */
-	*mult = 100 + to_crit*(*mult - 1300)/(50*1300);
-	*add  = *add * to_crit / (500*50);
+	/* Scale the output to a reasonable size to prevent integer overflow. */
+	*mult = 100 + to_crit * (*mult - 1300) / (50 * 1300);
+	*add  = *add * to_crit / (500 * 50);
 	*div  = 100;
+}
+
+/**
+ * Account for criticals in the calculation of melee prowess for O-combat;
+ * crit chance * average number of dice added
+ *
+ * Return value is 100x number of dice
+ */
+static int o_calculate_melee_crits(struct player_state state,
+								   const struct object *obj)
+{
+	int dice = 0;
+	int chance = BTH_PLUS_ADJ * (state.to_h + obj->known->to_h) +
+		state.skills[SKILL_TO_HIT_MELEE];
+	chance = (100 * chance) / (chance + 240);
+	dice = (537 * chance) / 240;
+
+	return dice;
 }
 
 /**
@@ -504,6 +520,29 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 	*mult = 100 + to_crit * (*mult - 500) / (500 * 50);
 	*add  = *add * to_crit / (500 * 50);
 	*div  = 100;
+}
+
+/**
+ * Missile crits follow the same approach as melee crits.
+ */
+static int o_calculate_missile_crits(struct player_state state,
+									 const struct object *obj,
+									 const struct object *launcher)
+{
+	int dice = 0;
+	int bonus = state.to_h + obj->known->to_h
+		+ (launcher ? launcher->known->to_h : 0);
+	int chance = BTH_PLUS_ADJ * bonus;
+	if (launcher) {
+		chance += state.skills[SKILL_TO_HIT_BOW];
+	} else {
+		chance += state.skills[SKILL_TO_HIT_THROW];
+		chance *= 3 / 2;
+	}
+	chance = (100 * chance) / (chance + 360);
+	dice = (569 * chance) / 500;
+
+	return dice;
 }
 
 /**
@@ -726,7 +765,7 @@ static bool describe_blows(textblock *tb, const struct object *obj)
  */
 static bool obj_known_damage(const struct object *obj, int *normal_damage,
 							 int *brand_damage, int *slay_damage,
-							 bool *nonweap_slay)
+							 bool *nonweap_slay, bool throw)
 {
 	int i;
 	int dice, sides, dam, total_dam, plus = 0;
@@ -738,8 +777,8 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	bool has_brands_or_slays = false;
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
-	bool weapon = tval_is_melee_weapon(obj);
-	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	bool weapon = tval_is_melee_weapon(obj) && !throw;
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow) && !throw;
 	int melee_adj_mult = ammo ? 0 : 1;
 	int multiplier = 1;
 
@@ -777,7 +816,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 							  &crit_div);
 
 		old_blows = state.num_blows;
-	} else { /* Ammo */
+	} else if (ammo) {
 		plus += obj->known->to_h;
 
 		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
@@ -785,6 +824,14 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 		dam += (obj->known->to_d * 10);
 		dam += (bow->known->to_d * 10);
+	} else {
+		plus += obj->known->to_h;
+
+		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
+								&crit_add, &crit_div);
+
+		dam += (obj->known->to_d * 10);
+		dam *= 1 + player->lev / 12;
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
@@ -838,7 +885,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 		if (weapon) {
 			total_dam = (total_dam * old_blows) / 100;
-		} else {
+		} else if (ammo) {
 			total_dam *= player->state.num_shots;
 			total_dam /= 10;
 		}
@@ -864,7 +911,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 		if (weapon) {
 			total_dam = (total_dam * old_blows) / 100;
-		} else {
+		} else if (ammo) {
 			total_dam *= player->state.num_shots;
 			total_dam /= 10;
 		}
@@ -880,7 +927,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	/* Normal damage, not considering brands or slays */
 	if (weapon) {
 		total_dam = (total_dam * old_blows) / 100;
-	} else {
+	} else if (ammo) {
 		total_dam *= player->state.num_shots;
 		total_dam /= 10;
 	}
@@ -908,22 +955,21 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
+static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 								 int *brand_damage, int *slay_damage,
-								 bool *nonweap_slay)
+							   bool *nonweap_slay, bool throw)
 {
 	int i;
-	int dice, sides, dam, total_dam, plus = 0;
-	int crit_mult, crit_div, crit_add;
+	int dice, sides, die_average, total_dam;
+	int deadliness = obj->known->to_d;
 	int old_blows = 0;
 	bool *total_brands;
 	bool *total_slays;
 	bool has_brands_or_slays = false;
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
-	bool weapon = tval_is_melee_weapon(obj);
-	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
-	int melee_adj_mult = ammo ? 0 : 1;
+	bool weapon = tval_is_melee_weapon(obj) && !throw;
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow) && !throw;
 	int multiplier = 1;
 
 	struct player_state state;
@@ -944,31 +990,36 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 	player->body.slots[weapon_slot].obj = current_weapon;
 
 	/* Finish if dice not known */
-	dice = obj->known->dd;
+	dice = obj->known->dd * 100;
 	sides = obj->known->ds;
 	if (!dice || !sides) return false;
 
-	/* Calculate damage */
-	dam = ((sides + 1) * dice * 5);
-
+	/* Get the number of additional dice from criticals (x100) */
 	if (weapon)	{
-		dam += ((state.to_d + obj->known->to_d) * dam) / 20;
-		plus += obj->known->to_h;
-
-		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
-							  &crit_div);
-
+		dice += o_calculate_melee_crits(state, obj);
 		old_blows = state.num_blows;
-	} else { /* Ammo */
-		plus += obj->known->to_h;
-
-		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
-								&crit_add, &crit_div);
-
-		dam += ((obj->known->to_d + bow->known->to_d) * dam) / 20;
+	} else if (ammo) {
+		dice += o_calculate_missile_crits(player->state, obj, bow);
+	} else {
+		dice += o_calculate_missile_crits(player->state, obj, NULL);
+		dice *= 2 + player->lev / 12;
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
+
+	/* Get the average value of a single damage die. (x10) */
+	die_average = 5 * (sides + 1);
+
+	/* Apply the launcher multiplier. */
+	die_average *= multiplier;
+
+	/* Apply deadliness to average. (100x inflation) */
+	if (ammo) {
+		deadliness = obj->known->to_d + bow->known->to_d + state.to_d;
+	} else {
+		deadliness = obj->known->to_d + state.to_d;
+	}
+	apply_deadliness(&die_average, MIN(deadliness, 150));
 
 	/* Get the brands */
 	total_brands = mem_zalloc(z_info->brand_max * sizeof(bool));
@@ -1001,62 +1052,79 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 		}
 	}
 
-	/* Get damage for each brand on the objects */
+	/* Increase die average for each brand on the objects */
 	for (i = 1; i < z_info->brand_max; i++) {
+		int brand_average, add = brands[i].o_multiplier - 10;
+
 		/* Must have the brand */
 		if (total_brands[i])
 			has_brands_or_slays = true;
 		else
 			continue;
 
-		/* Include bonus damage and brand in stated average */
-		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult);
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		/* Include brand in stated average (x10), deflate (/1000) */
+		brand_average = die_average * brands[i].o_multiplier;
+		brand_average /= 1000;
 
+		/* Damage per hit is now dice * die average, (still x1000) */
+		total_dam = (dice * brand_average);
+
+		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
-		} else {
+			total_dam *= old_blows;
+			total_dam /= 10000;
+		} else if (ammo) {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			total_dam /= 1000;
+		} else {
+			total_dam /= 100;
 		}
 
-		brand_damage[i] = total_dam;
+		brand_damage[i] = total_dam + add;
 	}
 
 	/* Get damage for each slay on the objects */
 	for (i = 1; i < z_info->slay_max; i++) {
+		int slay_average, add = slays[i].o_multiplier - 10;
+
 		/* Must have the slay */
 		if (total_slays[i])
 			has_brands_or_slays = true;
 		else
 			continue;
 
-		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult);
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		/* Include slay in stated average (x10), deflate (/1000) */
+		slay_average = die_average * slays[i].o_multiplier;
+		slay_average /= 1000;
 
+		/* Damage per hit is now dice * die average, (still x1000) */
+		total_dam = (dice * slay_average);
+
+		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
-		} else {
+			total_dam *= old_blows;
+			total_dam /= 10000;
+		} else if (ammo) {
 			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			total_dam /= 1000;
+		} else {
+			total_dam /= 100;
 		}
 
-		slay_damage[i] = total_dam;
+		slay_damage[i] = total_dam + add;
 	}
-
-	/* Include bonus damage in stated average */
-	total_dam = dam * multiplier;
-	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 
 	/* Normal damage, not considering brands or slays */
+	total_dam = (dice * die_average) / 1000;
 	if (weapon) {
-		total_dam = (total_dam * old_blows) / 100;
-	} else {
+		total_dam *= old_blows;
+		total_dam /= 1000;
+	} else if (ammo) {
 		total_dam *= player->state.num_shots;
+		total_dam /= 100;
+	} else {
 		total_dam /= 10;
 	}
-
 	*normal_damage = total_dam;
 
 	mem_free(total_brands);
@@ -1068,7 +1136,7 @@ static bool exp_obj_known_damage(const struct object *obj, int *normal_damage,
 /**
  * Describe damage.
  */
-static bool describe_damage(textblock *tb, const struct object *obj)
+static bool describe_damage(textblock *tb, const struct object *obj, bool throw)
 {
 	int i;
 	bool nonweap_slay = false;
@@ -1078,48 +1146,150 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 
 	/* Collect brands and slays */
 	bool has_brands_or_slays = OPT(player, birth_percent_damage) ?
-		exp_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
-							 &nonweap_slay) :
+		o_obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
+						   &nonweap_slay, throw) :
 		obj_known_damage(obj, &normal_damage, brand_damage, slay_damage,
-						 &nonweap_slay);
+						 &nonweap_slay, throw);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
 		textblock_append(tb, "This weapon may benefit from one or more off-weapon brands or slays.\n");
 
-	textblock_append(tb, "Average damage/round: ");
+	if (throw) {
+		textblock_append(tb, "Average thrown damage: ");
+	} else {
+		textblock_append(tb, "Average damage/round: ");
+	}
 
 	if (has_brands_or_slays) {
-		/* Output damage for creatures effected by the brands */
-		for (i = 0; i < z_info->brand_max; i++) {
-			if (brand_damage[i] <= 0) {
-				continue;
-			} else if (brand_damage[i] % 10) {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   brand_damage[i] / 10, brand_damage[i] % 10);
-			} else {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-								   brand_damage[i] / 10);
-			}
-			textblock_append(tb, " vs. creatures not resistant to %s, ",
-							 brands[i].name);
-		}
+		/*
+		 * Sort by decreasing damage so entries with the same damage
+		 * can be printed together.
+		 */
+		int *sortind = mem_alloc(
+			(z_info->brand_max + z_info->slay_max) *
+			sizeof(*sortind));
+		int nsort = 0;
+		const char *lastnm;
+		int lastdam, groupn;
+		bool last_is_brand;
 
-		/* Output damage for creatures effected by the slays */
+		/*
+		 * Assemble the indices.  Do the slays first so, if tied
+		 * for damage, they'll appear first.  That's easier to read.
+		 */
 		for (i = 0; i < z_info->slay_max; i++) {
-			if (slay_damage[i] <= 0) {
-				continue;
-			} else if (slay_damage[i] % 10) {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   slay_damage[i] / 10, slay_damage[i] % 10);
-			} else {
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
-								   slay_damage[i] / 10);
+			if (slay_damage[i] > 0) {
+				sortind[nsort] = i + z_info->brand_max;
+				++nsort;
 			}
-			textblock_append(tb, " vs. %s, ", slays[i].name);
+		}
+		for (i = 0; i < z_info->brand_max; i++) {
+			if (brand_damage[i] > 0) {
+				sortind[nsort] = i;
+				++nsort;
+			}
+		}
+		/* Sort.  Since the number is small, insertion sort is fine. */
+		for (i = 0; i < nsort - 1; i++) {
+			int maxdam = (sortind[i] < z_info->brand_max) ?
+				brand_damage[sortind[i]] :
+				slay_damage[sortind[i] - z_info->brand_max];
+			int maxind = i;
+			int j;
+
+			for (j = i + 1; j < nsort; j++) {
+				int dam = (sortind[j] < z_info->brand_max) ?
+					brand_damage[sortind[j]] :
+					slay_damage[sortind[j] -
+						z_info->brand_max];
+
+				if (maxdam < dam) {
+					maxdam = dam;
+					maxind = j;
+				}
+			}
+			if (maxind != i) {
+				int tmp = sortind[maxind];
+
+				sortind[maxind] = sortind[i];
+				sortind[i] = tmp;
+			}
 		}
 
-		textblock_append(tb, "and ");
+		/* Output. */
+		lastdam = 0;
+		groupn = 0;
+		lastnm = NULL;
+		last_is_brand = false;
+		for (i = 0; i < nsort; i++) {
+			const char *tgt;
+			int dam;
+			bool is_brand;
+
+			if (sortind[i] < z_info->brand_max) {
+				is_brand = true;
+				tgt = brands[sortind[i]].name;
+				dam = brand_damage[sortind[i]];
+			} else {
+				is_brand = false;
+				tgt = slays[sortind[i] -
+					z_info->brand_max].name;
+				dam = slay_damage[sortind[i] -
+					z_info->brand_max];
+			}
+
+			if (groupn > 0) {
+				if (dam != lastdam) {
+					if (groupn > 2) {
+						textblock_append(tb, ", and");
+					} else if (groupn == 2) {
+						textblock_append(tb, " and");
+					}
+				} else if (groupn > 1) {
+					textblock_append(tb, ",");
+				}
+				if (last_is_brand) {
+					textblock_append(tb,
+						" creatures not resistant to");
+				}
+				textblock_append(tb, " %s", lastnm);
+			}
+			if (dam != lastdam) {
+				if (i != 0) {
+					textblock_append(tb, ", ");
+				}
+				if (dam % 10) {
+					textblock_append_c(tb, COLOUR_L_GREEN,
+						"%d.%d vs", dam / 10, dam % 10);
+				} else {
+					textblock_append_c(tb, COLOUR_L_GREEN,
+						"%d vs", dam / 10);
+				}
+				groupn = 1;
+				lastdam = dam;
+			} else {
+				assert(groupn > 0);
+				++groupn;
+			}
+			lastnm = tgt;
+			last_is_brand = is_brand;
+		}
+		if (groupn > 0) {
+			if (groupn > 2) {
+				textblock_append(tb, ", and");
+			} else if (groupn == 2) {
+				textblock_append(tb, " and");
+			}
+			if (last_is_brand) {
+				textblock_append(tb,
+					" creatures not resistant to");
+			}
+			textblock_append(tb, " %s", lastnm);
+		}
+
+		textblock_append(tb, (nsort == 1) ? " and " : ", and ");
+		mem_free(sortind);
 	}
 
 	if (normal_damage <= 0)
@@ -1200,13 +1370,15 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
+	bool throwing_weapon = weapon && of_has(obj->flags, OF_THROWING);
+	bool rock = tval_is_ammo(obj) && of_has(obj->flags, OF_THROWING);
 
 	int range, break_chance;
 	bool thrown_effect, heavy;
 
 	obj_known_misc_combat(obj, &thrown_effect, &range, &break_chance, &heavy);
 
-	if (!weapon && !ammo) {
+	if (!weapon && !ammo && !rock) {
 		if (thrown_effect) {
 			textblock_append(tb, "It can be thrown at creatures with damaging effect.\n");
 			return true;
@@ -1221,13 +1393,18 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 
 	describe_blows(tb, obj);
 
-	if (!weapon) { /* Ammo */
-		textblock_append(tb, "Hits targets up to ");
+	if (ammo) {
+		textblock_append(tb, "When fired, hits targets up to ");
 		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", range));
 		textblock_append(tb, " feet away.\n");
 	}
 
-	describe_damage(tb, obj);
+	if (weapon || ammo) {
+		describe_damage(tb, obj, false);
+	}
+	if (throwing_weapon || rock) {
+		describe_damage(tb, obj, true);
+	}
 
 	if (ammo) {
 		textblock_append_c(tb, COLOUR_L_GREEN, "%d%%", break_chance);
@@ -1587,6 +1764,10 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Check all the possible types of description format */
 			switch (base_descs[effect->index].efinfo_flag) {
 				/* Healing sometimes has a minimum percentage */
+			case EFINFO_HURT: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string);
+				break;
+			}
 			case EFINFO_HEAL: {
 				char min_string[50];
 				if (value.m_bonus)
@@ -1666,6 +1847,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
+				break;
+			}
+
+			case EFINFO_SPOT: {
+				int i_radius = effect->other ? effect->other : effect->radius;
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						projections[effect->subtype].player_desc,
+						effect->radius, i_radius, dice_string);
 				break;
 			}
 
@@ -1994,12 +2183,12 @@ static textblock *object_info_out(const struct object *obj, int mode)
 			something = true;
 			textblock_append(tb, "\n");
 		}
-		
+
 		if (subjective && describe_combat(tb, obj)) {
 			something = true;
 			textblock_append(tb, "\n");
 		}
-		
+
 		if (!terse && subjective && describe_digger(tb, obj)) something = true;
 	}
 
@@ -2031,6 +2220,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	struct object_kind *kind = NULL;
 	struct object obj = OBJECT_NULL, known_obj = OBJECT_NULL;
 	size_t i;
+	textblock *result;
 
 	for (i = 0; i < z_info->k_max; i++) {
 		kind = &k_info[i];
@@ -2049,7 +2239,10 @@ textblock *object_info_ego(struct ego_item *ego)
 	object_copy(&known_obj, &obj);
 	obj.known = &known_obj;
 
-	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
+	result = object_info_out(&obj, OINFO_NONE | OINFO_EGO);
+	object_wipe(&known_obj);
+	object_wipe(&obj);
+	return result;
 }
 
 

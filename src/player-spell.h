@@ -34,7 +34,7 @@ bool spell_okay_to_study(int spell_index);
 bool spell_okay_to_browse(int spell_index);
 s16b spell_chance(int spell_index);
 void spell_learn(int spell_index);
-bool spell_cast(int spell_index, int dir);
+bool spell_cast(int spell_index, int dir, struct command *cmd);
 
 extern void get_spell_info(int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);

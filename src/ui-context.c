@@ -613,7 +613,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		case CMD_PATHFIND:
 			cmdq_push(selected);
-			cmd_set_arg_point(cmdq_peek(), "point", x, y);
+			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 			break;
 
 		case CMD_ALTER:
@@ -1065,7 +1065,7 @@ void textui_process_click(ui_event e)
 										  motion_dir(player->grid, loc(x, y)));
 				} else {
 					cmdq_push(CMD_PATHFIND);
-					cmd_set_arg_point(cmdq_peek(), "point", y, x);
+					cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 				}
 			}
 		}

@@ -21,6 +21,9 @@
 
 #include "source.h"
 #include "object.h"
+#include "player-attack.h"
+#include "cmds.h"
+
 
 /* Types of effect */
 typedef enum
@@ -48,7 +51,8 @@ bool effect_do(struct effect *effect,
 	bool aware,
 	int dir,
 	int beam,
-	int boost);
+	int boost,
+	struct command *cmd);
 void effect_simple(int index,
 	struct source origin,
 	const char *dice_string,

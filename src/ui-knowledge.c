@@ -37,10 +37,12 @@
 #include "object.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "store.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-context.h"
+#include "ui-equip-cmp.h"
 #include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-mon-list.h"
@@ -519,20 +521,18 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 			  int height, int width, byte *cur_attr_ptr,
 			  wchar_t *cur_char_ptr, int col, int row)
 {
-        static byte attr_old = 0;
+	static byte attr_old = 0;
 	static char char_old = 0;
 	
 	/* Get mouse movement */
 	if (*glyph_picker_ptr && (ke.type == EVT_MOUSE)) {
-	        byte a = *cur_attr_ptr;
-
 		int mx = logical_width(ke.mouse.x - col);
 		
-		if (ke.mouse.y != row + height/2) return false;
+		if (ke.mouse.y != row + height / 2) return false;
 		
 		if ((mx >= 0) && (mx < MAX_COLORS) && (ke.mouse.button == 1)) {
-		        /* Set the visual */
-		        *cur_attr_ptr = a = mx - 14;
+			/* Set the visual */
+			*cur_attr_ptr = mx - 14;
 
 			/* Accept change */
 			remove_tiles(col, row, glyph_picker_ptr, width, height);
@@ -732,7 +732,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int g_cur = 0, grp_old = -1; /* group list positions */
 	int o_cur = 0;					/* object list positions */
 	int g_o_count = 0;				 /* object count for group */
-	int oid = -1;  				/* object identifiers */
+	int oid;  				/* object identifiers */
 
 	region title_area = { 0, 0, 0, 4 };
 	region group_region = { 0, 6, MISSING, -2 };
@@ -1475,6 +1475,34 @@ static struct object *find_artifact(struct artifact *artifact)
 		}
 	}
 
+	/* Stored chunk objects */
+	for (i = 0; i < chunk_list_max; i++) {
+		struct chunk *c = chunk_list[i];
+		int j;
+		if (strstr(c->name, "known")) continue;
+
+		/* Ground objects */
+		for (y = 1; y < c->height; y++) {
+			for (x = 1; x < c->width; x++) {
+				struct loc grid = loc(x, y);
+				for (obj = square_object(c, grid); obj; obj = obj->next) {
+					if (obj->artifact == artifact) return obj;
+				}
+			}
+		}
+
+		/* Monster objects */
+		for (j = cave_monster_max(c) - 1; j >= 1; j--) {
+			struct monster *mon = cave_monster(c, j);
+			obj = mon ? mon->held_obj : NULL;
+
+			while (obj) {
+				if (obj->artifact == artifact) return obj;
+				obj = obj->next;
+			}
+		}
+	}	
+
 	return NULL;
 }
 
@@ -1895,6 +1923,7 @@ static int obj2gid(int oid)
 static wchar_t *o_xchar(int oid)
 {
 	struct object_kind *kind = objkind_byid(oid);
+	if (!kind) return 0;
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_char[kind->kidx];
@@ -1905,6 +1934,7 @@ static wchar_t *o_xchar(int oid)
 static byte *o_xattr(int oid)
 {
 	struct object_kind *kind = objkind_byid(oid);
+	if (!kind) return NULL;
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_attr[kind->kidx];
@@ -1922,6 +1952,8 @@ static const char *o_xtra_prompt(int oid)
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
+	if (!kind) return NULL;
+
 	/* Appropriate prompt */
 	if (kind->aware)
 		return kind->note_aware ? with_insc : no_insc;
@@ -1935,6 +1967,7 @@ static const char *o_xtra_prompt(int oid)
 static void o_xtra_act(struct keypress ch, int oid)
 {
 	struct object_kind *k = objkind_byid(oid);
+	if (!k) return;
 
 	/* Toggle ignore */
 	if (ignore_tval(k->tval) && (ch.code == 's' || ch.code == 'S')) {
@@ -2212,13 +2245,13 @@ static void display_feature(int col, int row, bool cursor, int oid )
 		/* Display symbols */
 		col = 65;
 		col += big_pad(col, row, feat_x_attr[LIGHTING_DARK][feat->fidx],
-				feat_x_char[LIGHTING_DARK][feat->fidx]);
+					   feat_x_char[LIGHTING_DARK][feat->fidx]);
 		col += big_pad(col, row, feat_x_attr[LIGHTING_LIT][feat->fidx],
-				feat_x_char[LIGHTING_LIT][feat->fidx]);
+					   feat_x_char[LIGHTING_LIT][feat->fidx]);
 		col += big_pad(col, row, feat_x_attr[LIGHTING_TORCH][feat->fidx],
-				feat_x_char[LIGHTING_TORCH][feat->fidx]);
-		col += big_pad(col, row, feat_x_attr[LIGHTING_LOS][feat->fidx],
-				feat_x_char[LIGHTING_LOS][feat->fidx]);
+					   feat_x_char[LIGHTING_TORCH][feat->fidx]);
+		(void) big_pad(col, row, feat_x_attr[LIGHTING_LOS][feat->fidx],
+					   feat_x_char[LIGHTING_LOS][feat->fidx]);
 	}
 }
 
@@ -2380,7 +2413,7 @@ static void display_trap(int col, int row, bool cursor, int oid )
 				trap_x_char[LIGHTING_LIT][trap->tidx]);
 		col += big_pad(col, row, trap_x_attr[LIGHTING_TORCH][trap->tidx],
 				trap_x_char[LIGHTING_TORCH][trap->tidx]);
-		col += big_pad(col, row, trap_x_attr[LIGHTING_LOS][trap->tidx],
+		(void) big_pad(col, row, trap_x_attr[LIGHTING_LOS][trap->tidx],
 				trap_x_char[LIGHTING_LOS][trap->tidx]);
 	}
 }
@@ -2545,6 +2578,11 @@ static void do_cmd_knowledge_history(const char *name, int row)
 	history_display();
 }
 
+static void do_cmd_knowledge_equip_cmp(const char* name, int row)
+{
+	equip_cmp_display();
+}
+
 
 /**
  * Definition of the "player knowledge" menu.
@@ -2568,6 +2606,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
+{ 0, 0, "Display equipable comparison",    do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
@@ -2618,7 +2657,7 @@ void textui_knowledge_init(void)
 void textui_browse_knowledge(void)
 {
 	int i, rune_max = max_runes();
-	region knowledge_region = { 0, 0, -1, 19 };
+	region knowledge_region = { 0, 0, -1, 2 + (int)N_ELEMENTS(knowledge_actions) };
 
 	/* Runes */
 	knowledge_actions[1].flags = MN_ACT_GRAYED;
@@ -2740,7 +2779,7 @@ void do_cmd_messages(void)
 			Term_putstr(0, hgt - 3 - j, -1, attr, msg);
 
 			/* Highlight "shower" */
-			if (shower[0]) {
+			if (strlen(shower)) {
 				str = msg;
 
 				/* Display matches */
@@ -2761,7 +2800,7 @@ void do_cmd_messages(void)
 				   i, i + j - 1, n, q), 0, 0);
 
 		/* Display prompt (not very informative) */
-		if (shower[0])
+		if (strlen(shower))
 			prt("[Movement keys to navigate, '-' for next, '=' to find]",
 				hgt - 1, 0);
 		else
@@ -2839,7 +2878,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Find the next item */
-		if (ke.key.code == '-' && shower[0]) {
+		if (ke.key.code == '-' && strlen(shower)) {
 			s16b z;
 
 			/* Scan messages */
@@ -2896,7 +2935,9 @@ void do_cmd_inven(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while ((ret = context_menu_object(obj)) == 2);
+				}
 			}
 		} else {
 			/* Load screen */
@@ -2939,7 +2980,9 @@ void do_cmd_equip(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while ((ret = context_menu_object(obj)) == 2);
+				}
 
 				/* Stay in "equipment" mode */
 				player->upkeep->command_wrk = (USE_EQUIP);
@@ -2985,7 +3028,9 @@ void do_cmd_quiver(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				while ((ret = context_menu_object(obj)) == 2);
+				if (!player_is_shapechanged(player)) {
+					while  ((ret = context_menu_object(obj)) == 2);
+				}
 
 				/* Stay in "quiver" mode */
 				player->upkeep->command_wrk = (USE_QUIVER);
@@ -3221,7 +3266,7 @@ static void lookup_symbol(char sym, char *buf, size_t max)
  */
 void do_cmd_query_symbol(void)
 {
-	int i, n;
+	int idx, num;
 	char buf[128];
 
 	char sym;
@@ -3260,9 +3305,9 @@ void do_cmd_query_symbol(void)
 	who = mem_zalloc(z_info->r_max * sizeof(u16b));
 
 	/* Collect matching monsters */
-	for (n = 0, i = 1; i < z_info->r_max - 1; i++) {
-		struct monster_race *race = &r_info[i];
-		struct monster_lore *lore = &l_list[i];
+	for (num = 0, idx = 1; idx < z_info->r_max - 1; idx++) {
+		struct monster_race *race = &r_info[idx];
+		struct monster_lore *lore = &l_list[idx];
 
 		/* Nothing to recall */
 		if (!lore->all_known && !lore->sights)
@@ -3275,14 +3320,13 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(race->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || char_matches_key(race->d_char, sym)) who[n++] = i;
+		if (all || char_matches_key(race->d_char, sym)) who[num++] = idx;
 	}
 
-	/* Nothing to recall */
-	if (!n) {
-		/* XXX XXX Free the "who" array */
+	/* No monsters to recall */
+	if (!num) {
+		/* Free the "who" array */
 		mem_free(who);
-
 		return;
 	}
 
@@ -3298,35 +3342,32 @@ void do_cmd_query_symbol(void)
 	/* Interpret the response */
 	if (query.code == 'k') {
 		/* Sort by kills (and level) */
-		sort(who, n, sizeof(*who), cmp_pkill);
+		sort(who, num, sizeof(*who), cmp_pkill);
 	} else if (query.code == 'y' || query.code == 'p') {
 		/* Sort by level; accept 'p' as legacy */
-		sort(who, n, sizeof(*who), cmp_level);
+		sort(who, num, sizeof(*who), cmp_level);
 	} else {
 		/* Any unsupported response is "nope, no history please" */
-	
-		/* XXX XXX Free the "who" array */
 		mem_free(who);
-
 		return;
 	}
 
-	/* Start at the end */
-	i = n - 1;
+	/* Start at the end, as the array is sorted lowest to highest */
+	idx = num - 1;
 
 	/* Scan the monster memory */
 	while (1) {
 		textblock *tb;
 
 		/* Extract a race */
-		int r_idx = who[i];
+		int r_idx = who[idx];
 		struct monster_race *race = &r_info[r_idx];
 		struct monster_lore *lore = &l_list[r_idx];
 
-		/* Hack -- Auto-recall */
+		/* Auto-recall */
 		monster_race_track(player->upkeep, race);
 
-		/* Hack -- Handle stuff */
+		/* Do any necessary updates or redraws */
 		handle_stuff(player);
 
 		tb = textblock_new();
@@ -3355,13 +3396,21 @@ void do_cmd_query_symbol(void)
 		/* Stop scanning */
 		if (query.code == ESCAPE) break;
 
-		/* Move to "prev" or "next" monster */
+		/* Move to previous or next monster */
 		if (query.code == '-') {
-			if (++i == n)
-				i = 0;
+			/* Previous is a step forward in the array */
+			idx++;
+			/* Wrap if we're at the end of the array */
+			if (idx == num) {
+				idx = 0;
+			}
 		} else {
-			if (i-- == 0)
-				i = n - 1;
+			/* Next is a step back in the array */
+			idx--;
+			/* Wrap if we're at the start of the array */
+			if (idx < 0) {
+				idx = num - 1;
+			}
 		}
 	}
 

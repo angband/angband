@@ -20,6 +20,6 @@
 #define INCLUDED_UI_SCORE_H
 
 void show_scores(void);
-void predict_score(void);
+void predict_score(bool allow_scrolling);
 
 #endif /* INCLUDED_UI_SCORE_H */

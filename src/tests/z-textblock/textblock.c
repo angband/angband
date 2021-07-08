@@ -81,11 +81,33 @@ int test_length(void *state) {
 	ok;
 }
 
+int test_append_textblock(void *state) {
+	const byte attrs[] = { COLOUR_L_BLUE, COLOUR_L_BLUE, COLOUR_L_BLUE,
+		COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_L_GREEN };
+	textblock *tb1 = textblock_new();
+	textblock *tb2 = textblock_new();
+
+	textblock_append_c(tb1, COLOUR_L_BLUE, "Hey");
+	textblock_append_c(tb2, COLOUR_L_GREEN, " you");
+	textblock_append_textblock(tb1, tb2);
+	require(!wcscmp(textblock_text(tb1), L"Hey you"));
+	require(!memcmp(textblock_attrs(tb1), attrs, sizeof(attrs)));
+	require(!wcscmp(textblock_text(tb2), L" you"));
+	require(!memcmp(textblock_attrs(tb2), attrs + 3,
+		sizeof(attrs) - 3 * sizeof(*attrs)));
+
+	textblock_free(tb2);
+	textblock_free(tb1);
+
+	ok;
+}
+
 const char *suite_name = "z-textblock/textblock";
 struct test tests[] = {
 	{ "alloc", test_alloc },
 	{ "append", test_append },
 	{ "colour", test_colour },
 	{ "length", test_length },
+	{ "append_textblock", test_append_textblock },
 	{ NULL, NULL }
 };

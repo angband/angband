@@ -75,7 +75,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 				 bool *note);
 void drop_near(struct chunk *c, struct object **dropped, int chance,
-			   struct loc grid, bool verbose);
+			   struct loc grid, bool verbose, bool prefer_pile);
 void push_object(struct loc grid);
 void floor_item_charges(struct object *obj);
 int scan_floor(struct object **items, int max_size, object_floor_t mode,

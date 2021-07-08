@@ -1,3 +1,5 @@
+# File blow_methods.txt
+
 # Methods for monster blows
 
 # name: blow method code

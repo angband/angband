@@ -115,13 +115,15 @@ desc:A door so broken that it cannot be shut.
 name:up staircase
 graphics:<:w
 priority:25
-flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR | EASY
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR
+flags:EASY | TORCH
 desc:A staircase up to a shallower part of the dungeon.
 
 name:down staircase
 graphics:>:w
 priority:25
-flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR | EASY
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
+flags:EASY | TORCH
 desc:A staircase down to a deeper part of the dungeon.
 
 name:General Store

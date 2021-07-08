@@ -1,0 +1,73 @@
+# File: Makefile.msys2
+# Makefile for compiling Angband with ncurse using the msys2 shell in Windows
+#
+# Requirements: make, mingw-w64-x86_64-gcc, mingw-w64-x86_64-ncurses
+#
+# Run the following to compile:
+#
+# cd src
+# make -f Makefile.msys2
+#
+# angband.exe is copied to the project root automatically
+# You can double click it to run angband
+# 
+# Issue when opening ncurse application in msys2 shell:
+# https://sourceforge.net/p/msys2/discussion/general/thread/f81f0b97/
+#
+# Even with "export TERM=xterm" and "export TERMINFO=/mingw64/share/terminfo",
+# the input is not working
+#
+# To run angband from msys2 shell:
+# start bash
+# export TERM=
+# ./angband.exe 
+#
+
+# Executable name and default target
+EXE = angband.exe
+all: ../$(EXE)
+
+# Include list of object files and add system-specific ones
+include Makefile.inc
+AINFILES="$(WINMAINFILES)"
+
+CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -DUSE_NCURSES -I$(NCURSES_INC) -static
+LIBS = -s $(NCURSES_LIB)
+IOBJS = $(BASEOBJS) main-gcu.o main.o
+
+NCURSES_INC = /mingw64/include/ncurses
+NCURSES_LIB = /mingw64/lib/libncurses.a
+
+CC = gcc
+WRES = windres
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+CFLAGS += $(WARNINGS) -std=c99 -DUSE_PRIVATE_PATHS -O2 -I.
+
+# This is an issue on mingw32 on linux
+CFLAGS += -D_stdcall=
+
+OBJS = $(IOBJS)
+
+#
+# Targets
+#
+
+../$(EXE): $(EXE)
+	cp $(EXE) ..
+
+$(EXE): $(OBJS)
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+
+clean:
+	rm -f ../$(EXE) $(EXE) $(OBJS)
+
+
+#
+# Rules
+#
+
+win/$(PROGNAME).res: win/$(PROGNAME).rc
+	$(WRES) $< -O coff -o $@
+
+$(OBJDIR)%.o: %.c $(INCS)
+	$(CC) $(CFLAGS) -c -o $@ $<

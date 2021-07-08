@@ -54,3 +54,11 @@ struct source source_object(struct object *object)
 	src.which.object = object;
 	return src;
 }
+
+struct source source_chest_trap(struct chest_trap *chest_trap)
+{
+	struct source src;
+	src.what = SRC_CHEST_TRAP;
+	src.which.chest_trap = chest_trap;
+	return src;
+}

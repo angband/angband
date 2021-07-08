@@ -1,0 +1,302 @@
+# File: player_property.txt
+
+# Used in conjunction with list-player-flags.h, list-object-flags.h and
+# list-elements.h
+# Player properties
+
+# Descriptions and names can be edited without bad effects.
+# Changing the code, or type will severely disrupt the game, and should only
+# be done when the associated list-*.h files (and other code) are also
+# being changed, and the game recompiled.
+# Adding new entries will have no effect without further datafile and code
+# changes
+
+# Fields:
+# type - the type of player property.  Valid types are
+#    player  - special player flag from list-player-flags.h
+#    object  - object flag from list-object-flags.h
+#    element - resistance, immunity or vulnerability to an element
+# code - the property name used by the game. Element codes are templates, and
+#        one is made for each element
+# bindui - Binds the property to a user interface element in ui_entry.txt.
+#          When binding an element property, the name will be parameterized
+#          with the element name.  Takes two parameters.  The first is an
+#          integer, which if nonzero, says the value is passed to the user
+#          interface element as an auxiliary one (used on some to indicate a
+#          sustain, for instance).  The second is the value to pass.  That can
+#          be an integer or "special" where the latter indicates that the
+#          value passed will be determined internally.  bindui currently only
+#          affects parts of the second character screen.  It can appear
+#          multiple times for the same entry to bind it to multiple user
+#          interface elements.
+# name - the name of the property
+# desc - the description of the property
+# value - value for elements; -1 (vulnerability), 1 (resistance) or 3 (immunity)
+
+## Shapechange player flags
+
+type:player
+code:ROCK
+name:Rock
+desc:You are made of rock.
+
+## Racial player flags
+
+type:player
+code:KNOW_MUSHROOM
+name:Mushroom Lore
+desc:You easily recognize mushrooms.
+
+type:player
+code:KNOW_ZAPPER
+name:Device Lore
+desc:You easily recognize magic devices.
+
+type:player
+code:SEE_ORE
+name:Miner
+desc:You can sense ore in the walls.
+
+## Class player flags
+
+type:player
+code:FAST_SHOT
+bindui:shots_ui_compact_0:0:special
+name:Extra Shots
+desc:Your shooting speed improves with tension bows every 10 levels.
+
+type:player
+code:BRAVERY_30
+bindui:pfear_ui_compact_0:0:special
+name:Relentless [30]
+desc:You become immune to fear at level 30.
+
+type:player
+code:BLESS_WEAPON
+name:Blessed Fighter
+desc:You get improved melee with blessed or hafted weapons.
+
+type:player
+code:ZERO_FAIL
+name:Full Spellcaster
+desc:You may obtain a perfect success rate with magic.
+
+type:player
+code:BEAM
+name:Extra Spell Beaming
+desc:Your bolt spells frequently turn into beams.
+
+type:player
+code:CHOOSE_SPELLS
+name:Spell Choice
+desc:You may choose your own spells to study.
+
+type:player
+code:NO_MANA
+name:No Magic
+desc:You cannot cast spells.
+
+type:player
+code:CHARM
+name:Charms
+desc:You are extra persuasive to monsters.
+
+type:player
+code:UNLIGHT
+bindui:resist_ui_compact_0<DARK>:0:1
+name:Unlight
+desc:You gain stealth in, can see in, and resist the dark.
+
+type:player
+code:STEAL
+name:Pickpocketing
+desc:You can steal from monsters.
+
+type:player
+code:SHIELD_BASH
+name:Shield Bash
+desc:You can bash monsters with a shield in melee.
+
+type:player
+code:EVIL
+bindui:resist_ui_compact_0<NETHER>:0:1
+name:Evil
+desc:You resist nether, but are hurt by holy attacks.
+
+type:player
+code:COMBAT_REGEN
+bindui:imphp_ui_compact_0:0:1
+name:Combat Regeneration
+desc:You draw power from the thrill of combat, represented by
+desc: Spell Points (SP). You gain SP when damaged by an enemy or
+desc: when you attack in melee. As your blood cools your power fades;
+desc: you lose SP at half the rate other classes gain them.
+desc: When you spend SP by casting a spell you regain some health, and
+desc: fading SP replenish your health even more efficiently. The more damaged
+desc: you are, the bigger these health gains will be.
+
+
+# Object flags
+
+type:object
+code:SUST_STR
+bindui:stat_mod_ui_compact_0<STR>:1:1
+name:Sustain Strength
+desc:Your strength is sustained.
+
+type:object
+code:SUST_INT
+bindui:stat_mod_ui_compact_0<INT>:1:1
+name:Sustain Intelligence
+desc:Your intelligence is sustained.
+
+type:object
+code:SUST_WIS
+bindui:stat_mod_ui_compact_0<WIS>:1:1
+name:Sustain Wisdom
+desc:Your wisdom is sustained.
+
+type:object
+code:SUST_DEX
+bindui:stat_mod_ui_compact_0<DEX>:1:1
+name:Sustain Dexterity
+desc:Your dexterity is sustained.
+
+type:object
+code:SUST_CON
+bindui:stat_mod_ui_compact_0<CON>:1:1
+name:Sustain Constitution
+desc:Your constitution is sustained.
+
+type:object
+code:PROT_FEAR
+bindui:pfear_ui_compact_0:0:1
+name:Fear Immunity
+desc:You are immune to fear.
+
+type:object
+code:PROT_BLIND
+bindui:pblind_ui_compact_0:0:1
+name:Blindness Immunity
+desc:You cannot be blinded.
+
+type:object
+code:PROT_CONF
+bindui:pconf_ui_compact_0:0:1
+name:Confusion Immunity
+desc:You cannot be confused.
+
+type:object
+code:PROT_STUN
+bindui:pstun_ui_compact_0:0:1
+name:Stun Immunity
+desc:You cannot be stunned.
+
+type:object
+code:SLOW_DIGEST
+bindui:slow_digestion_ui_compact_0:0:1
+name:Slow Digestion
+desc:You have slow metabolism.
+
+type:object
+code:FEATHER
+bindui:feather_falling_ui_compact_0:0:1
+name:Feather Falling
+desc:You fall lightly.
+
+type:object
+code:REGEN
+bindui:regen_ui_compact_0:0:1
+name:Regeneration
+desc:You regenerate quickly.
+
+type:object
+code:TELEPATHY
+bindui:esp_ui_compact_0:0:1
+name:Telepathy
+desc:You have telepathy.
+
+type:object
+code:SEE_INVIS
+bindui:see_invis_ui_compact_0:0:1
+name:See Invisible
+desc:You can see invisible creatures.
+
+type:object
+code:FREE_ACT
+bindui:free_action_ui_compact_0:0:1
+name:Free Action
+desc:You are immune to paralysis.
+
+type:object
+code:HOLD_LIFE
+bindui:holdlife_ui_compact_0:0:1
+name:Hold Life
+desc:Your life force is sustained.
+
+type:object
+code:IMPACT
+name:Earthquakes
+desc:You sometimes create earthquakes on impact.
+
+type:object
+code:IMPAIR_HP
+bindui:imphp_ui_compact_0:0:1
+name:Slow Regeneration
+desc:Your hitpoint recovery is impaired.
+
+type:object
+code:IMPAIR_MANA
+bindui:impsp_ui_compact_0:0:1
+name:Slow Mana Regeneration
+desc:Your mana recovery is impaired.
+
+type:object
+code:AFRAID
+bindui:fear_ui_compact_0:0:1
+name:Constant Fear
+desc:You are afraid of melee, and bad at shooting and casting spells.
+
+type:object
+code:NO_TELEPORT
+bindui: noteleport_ui_compact_0:0:1
+name:Teleport Ban
+desc:You cannot teleport.
+
+type:object
+code:AGGRAVATE
+bindui:aggravate_ui_compact_0:0:1
+name:Aggravate
+desc:You aggravate creatures nearby.
+
+type:object
+code:DRAIN_EXP
+bindui:drainxp_ui_compact_0:0:1
+name:Experience Drain
+desc:Your experience constantly drains away.
+
+type:object
+code:TRAP_IMMUNE
+bindui:trap_immunity_ui_compact_0:0:1
+name:Trap Immune
+desc:You are immune to traps.
+
+## Element flags
+
+type:element
+bindui:resist_ui_compact_0:0:1
+name:Resistance
+desc:You resist
+value:1
+
+type:element
+bindui:resist_ui_compact_0:0:3
+name:Immunity
+desc:You are immune to
+value:3
+
+type:element
+bindui:resist_ui_compact_0:0:-1
+name:Vulnerability
+desc:You are vulnerable to
+value:-1

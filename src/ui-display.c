@@ -41,6 +41,7 @@
 #include "project.h"
 #include "savefile.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -55,6 +56,7 @@
 #include "ui-prefs.h"
 #include "ui-store.h"
 #include "ui-term.h"
+#include "ui-visuals.h"
 #include "wizard.h"
 
 /**
@@ -753,7 +755,7 @@ static const byte obj_feeling_color[] =
 	COLOUR_L_GREEN, /* "there may not be much interesting here." */
 	COLOUR_L_GREEN, /* "there aren't many treasures here." */
 	COLOUR_L_BLUE, /* "there are only scraps of junk here." */
-	COLOUR_L_BLUE  /* "there are naught but cobwebs here. */
+	COLOUR_L_BLUE  /* "there is naught but cobwebs here. */
 };
 
 static const byte mon_feeling_color[] = 
@@ -799,10 +801,10 @@ static size_t prt_level_feeling(int row, int col)
 	 *   0 -> * "Looks like any other level."
 	 *   1 -> $ "you sense an item of wondrous power!" (special feeling)
 	 *   2 to 10 are feelings from 2 meaning superb feeling to 10
-	 * meaning naught but cowebs.
+	 * meaning naught but cobwebs.
 	 *   It is easier for the player to have poor feelings as a
 	 * low number and superb feelings as a higher one. So for
-	 * display we reverse this numbers and substract 1.
+	 * display we reverse this numbers and subtract 1.
 	 *   Thus (2-10) becomes (1-9 reversed)
 	 *
 	 *   But before that check if the player has explored enough
@@ -864,6 +866,64 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Prints the movement speed of a character.
+ */
+static size_t prt_moves(int row, int col)
+{
+	int i = player->state.num_moves;
+
+	/* 1 move is normal and requires no display */
+	if (i > 1) {
+		/* Display the number of moves */
+		c_put_str(COLOUR_L_TEAL, format("Moves +%d ", i - 1), row, col);
+	}
+
+	/* Shouldn't be double digits, but be paranoid */
+	return (i > 1) ? 9 + (i - 1)  / 10 : 0;
+}
+
+/**
+ * Get the longest relevant terrain or trap name for prt_terrain()
+ */
+int longest_terrain_name(void)
+{
+	size_t i, max = 0;
+	for (i = 0; i < z_info->trap_max; i++) {
+		if (strlen(trap_info[i].name) > max) {
+			max = strlen(trap_info[i].name);
+		}
+	}
+	for (i = 0; i < z_info->f_max; i++) {
+		if (strlen(f_info[i].name) > max) {
+			max = strlen(f_info[i].name);
+		}
+	}
+	return max;
+}
+
+/**
+ * Prints player trap (if any) or terrain
+ */
+static size_t prt_terrain(int row, int col)
+{
+	struct feature *feat = square_feat(cave, player->grid);
+	struct trap *trap = square_trap(cave, player->grid);
+	char buf[30];
+
+	if (trap && !square_isinvis(cave, player->grid)) {
+		my_strcpy(buf, trap->kind->name, strlen(trap->kind->name) + 1);
+		my_strcap(buf);
+		c_put_str(trap->kind->d_attr, format("%s ", buf), row, col);
+	} else {
+		my_strcpy(buf, feat->name, strlen(feat->name) + 1);
+		my_strcap(buf);
+		c_put_str(feat->d_attr, format("%s ", buf), row, col);
+	}
+
+	return longest_terrain_name() + 1;
+}
+
+/**
  * Prints trap detection status
  */
 static size_t prt_dtrap(int row, int col)
@@ -872,11 +932,11 @@ static size_t prt_dtrap(int row, int col)
 	if (square_isdtrap(cave, player->grid)) {
 		/* The player is on the border */
 		if (square_dtrap_edge(cave, player->grid))
-			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
+			c_put_str(COLOUR_YELLOW, "DTrap ", row, col);
 		else
-			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
+			c_put_str(COLOUR_L_GREEN, "DTrap ", row, col);
 
-		return 5;
+		return 6;
 	}
 
 	return 0;
@@ -956,8 +1016,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_light, prt_unignore, prt_recall, prt_descent,
-  prt_state, prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_light, prt_moves, prt_unignore, prt_recall,
+  prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap, prt_terrain };
 
 
 /**
@@ -1070,48 +1130,10 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
  * ------------------------------------------------------------------------ */
 
 static bool animations_allowed = true;
+/**
+ * A counter to select the step color from the flicker table.
+ */
 static byte flicker = 0;
-static byte color_flicker[MAX_COLORS][3] = 
-{
-	{COLOUR_DARK, COLOUR_L_DARK, COLOUR_L_RED},
-	{COLOUR_WHITE, COLOUR_L_WHITE, COLOUR_L_BLUE},
-	{COLOUR_SLATE, COLOUR_WHITE, COLOUR_L_DARK},
-	{COLOUR_ORANGE, COLOUR_YELLOW, COLOUR_L_RED},
-	{COLOUR_RED, COLOUR_L_RED, COLOUR_L_PINK},
-	{COLOUR_GREEN, COLOUR_L_GREEN, COLOUR_L_TEAL},
-	{COLOUR_BLUE, COLOUR_L_BLUE, COLOUR_SLATE},
-	{COLOUR_UMBER, COLOUR_L_UMBER, COLOUR_MUSTARD},
-	{COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_VIOLET},
-	{COLOUR_WHITE, COLOUR_SLATE, COLOUR_L_WHITE},
-	{COLOUR_L_PURPLE, COLOUR_PURPLE, COLOUR_L_VIOLET},
-	{COLOUR_YELLOW, COLOUR_L_YELLOW, COLOUR_MUSTARD},
-	{COLOUR_L_RED, COLOUR_RED, COLOUR_L_PINK},
-	{COLOUR_L_GREEN, COLOUR_L_TEAL, COLOUR_GREEN},
-	{COLOUR_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_BLUE_SLATE},
-	{COLOUR_L_UMBER, COLOUR_UMBER, COLOUR_MUD},
-	{COLOUR_PURPLE, COLOUR_VIOLET, COLOUR_MAGENTA},
-	{COLOUR_VIOLET, COLOUR_L_VIOLET, COLOUR_MAGENTA},
-	{COLOUR_TEAL, COLOUR_L_TEAL, COLOUR_L_GREEN},
-	{COLOUR_MUD, COLOUR_YELLOW, COLOUR_UMBER},
-	{COLOUR_L_YELLOW, COLOUR_WHITE, COLOUR_L_UMBER},
-	{COLOUR_MAGENTA, COLOUR_L_PINK, COLOUR_L_RED},
-	{COLOUR_L_TEAL, COLOUR_L_WHITE, COLOUR_TEAL},
-	{COLOUR_L_VIOLET, COLOUR_L_PURPLE, COLOUR_VIOLET},
-	{COLOUR_L_PINK, COLOUR_L_RED, COLOUR_L_WHITE},
-	{COLOUR_MUSTARD, COLOUR_YELLOW, COLOUR_UMBER},
-	{COLOUR_BLUE_SLATE, COLOUR_BLUE, COLOUR_SLATE},
-	{COLOUR_DEEP_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE},
-};
-
-static byte get_flicker(byte a)
-{
-	switch(flicker % 3)
-	{
-		case 1: return color_flicker[a][1];
-		case 2: return color_flicker[a][2];
-	}
-	return a;
-}
 
 /**
  * This animates monsters and/or items as necessary.
@@ -1128,8 +1150,22 @@ static void do_animation(void)
 			continue;
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
-		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(monster_x_attr[mon->race->ridx]);
+		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER)) {
+			byte base_attr = monster_x_attr[mon->race->ridx];
+
+			/* Get the color cycled attribute, if available. */
+			attr = visuals_cycler_get_attr_for_race(mon->race, flicker);
+
+			if (attr == BASIC_COLORS) {
+				/* Fall back to the flicker attribute. */
+				attr = visuals_flicker_get_attr_for_frame(base_attr, flicker);
+			}
+
+			if (attr == BASIC_COLORS) {
+				/* Fall back to the static attribute if cycling fails. */
+				attr = base_attr;
+			}
+		}
 		else
 			continue;
 
@@ -1737,7 +1773,7 @@ static void update_player_compact_subwindow(game_event_type type,
 	prt_sp(row++, col);
 
 	/* Monster health */
-	prt_health(row++, col);
+	prt_health(row, col);
 
 	Term_fresh();
 	

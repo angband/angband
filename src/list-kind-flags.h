@@ -5,8 +5,8 @@
  * These are flags that go on object kinds, egos and artifacts, but not on
  * individual objects.
  *
- * Changing flag order will break savefiles. Flags below start from 1 on 
- * line 13, so a flag's sequence number is its line number minus 12.
+ * Flags below start from 1 on line 13, so a flag's sequence number is
+ * its line number minus 12.
  */
 /* symbol			message */
 KF(NONE,			"")
@@ -19,7 +19,6 @@ KF(EASY_KNOW,		"")
 KF(GOOD,			"")
 KF(SHOW_DICE,		"")
 KF(SHOW_MULT,		"")
-KF(SPELLS_OK,		"")
 KF(SHOOTS_SHOTS,	"")
 KF(SHOOTS_ARROWS,	"")
 KF(SHOOTS_BOLTS,	"")

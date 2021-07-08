@@ -356,6 +356,44 @@ unsigned check_for_inscrip(const struct object *obj, const char *inscrip)
 	return i;
 }
 
+/**
+ * Looks if "inscrip" immediately followed by a decimal integer without a
+ * leading sign character is present on the given object.  Returns the number
+ * of times such an inscription occurs and, if that value is at least one,
+ * sets *ival to the value of the integer that followed the first such
+ * inscription.
+ */
+unsigned check_for_inscrip_with_int(const struct object *obj, const char *inscrip, int* ival)
+{
+	unsigned i = 0;
+	size_t inlen = strlen(inscrip);
+	const char *s;
+
+	if (!obj->note) return 0;
+
+	s = quark_str(obj->note);
+
+	/* Needing this implies there are bad instances of obj->note around,
+	 * but I haven't been able to track down their origins - NRM */
+	if (!s) return 0;
+
+	do {
+		s = strstr(s, inscrip);
+		if (!s) break;
+		if (isdigit(s[inlen])) {
+			if (i == 0) {
+				long inarg = strtol(s + inlen, 0, 10);
+
+				*ival = (inarg < INT_MAX) ? (int) inarg : INT_MAX;
+			}
+			i++;
+		}
+		s++;
+	} while (s);
+
+	return i;
+}
+
 /*** Object kind lookup functions ***/
 
 /**
@@ -479,7 +517,7 @@ void object_short_name(char *buf, size_t max, const char *name)
 	size_t j, k;
 	/* Copy across the name, stripping modifiers & and ~) */
 	size_t len = strlen(name);
-	for (j = 0, k = 0; j < len && k < max; j++) {
+	for (j = 0, k = 0; j < len && k < max - 1; j++) {
 		if (j == 0 && name[0] == '&' && name[1] == ' ')
 			j += 2;
 		if (name[j] == '~')
@@ -581,8 +619,7 @@ bool obj_is_activatable(const struct object *obj)
  */
 bool obj_can_activate(const struct object *obj)
 {
-	if (obj_is_activatable(obj))
-	{
+	if (obj_is_activatable(obj)) {
 		/* Check the recharge */
 		if (!obj->timeout) return true;
 	}
@@ -639,7 +676,7 @@ bool obj_can_cast_from(const struct object *obj)
 bool obj_can_study(const struct object *obj)
 {
 	return obj_can_browse(obj) &&
-			spell_book_count_spells(obj, spell_okay_to_study) > 0;
+		spell_book_count_spells(obj, spell_okay_to_study) > 0;
 }
 
 
@@ -659,6 +696,14 @@ bool obj_can_wear(const struct object *obj)
 bool obj_can_fire(const struct object *obj)
 {
 	return obj->tval == player->state.ammo_tval;
+}
+
+/**
+ * Determine if an object is designed for throwing
+ */
+bool obj_is_throwing(const struct object *obj)
+{
+	return of_has(obj->flags, OF_THROWING);
 }
 
 /* Can has inscrip pls */

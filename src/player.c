@@ -32,12 +32,13 @@
 /**
  * Pointer to the player struct
  */
-struct player *player;
+struct player *player = NULL;
 
 struct player_body *bodies;
 struct player_race *races;
 struct player_shape *shapes;
 struct player_class *classes;
+struct player_ability *player_abilities;
 struct magic_realm *realms;
 
 /**
@@ -298,6 +299,32 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 }
 
 
+/**
+ * Combine any flags due to timed effects on the player into those in f.
+ */
+void player_flags_timed(struct player *p, bitflag f[OF_SIZE])
+{
+	if (p->timed[TMD_BOLD] || p->timed[TMD_HERO] || p->timed[TMD_SHERO]) {
+		of_on(f, OF_PROT_FEAR);
+	}
+	if (p->timed[TMD_TELEPATHY]) {
+		of_on(f, OF_TELEPATHY);
+	}
+	if (p->timed[TMD_SINVIS]) {
+		of_on(f, OF_SEE_INVIS);
+	}
+	if (p->timed[TMD_FREE_ACT]) {
+		of_on(f, OF_FREE_ACT);
+	}
+	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
+		of_on(f, OF_AFRAID);
+	}
+	if (p->timed[TMD_OPP_CONF]) {
+		of_on(f, OF_PROT_CONF);
+	}
+}
+
+
 byte player_hp_attr(struct player *p)
 {
 	byte attr;
@@ -384,6 +411,51 @@ void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_s
 
 
 /**
+ * Release resources allocated for fields in the player structure.
+ */
+void player_cleanup_members(struct player *p)
+{
+	/* Free the history */
+	history_clear(p);
+
+	/* Free the things that are always initialised */
+	if (p->obj_k) {
+		object_free(p->obj_k);
+	}
+	mem_free(p->timed);
+	if (p->upkeep) {
+		mem_free(p->upkeep->quiver);
+		mem_free(p->upkeep->inven);
+		mem_free(p->upkeep);
+		p->upkeep = NULL;
+	}
+
+	/* Free the things that are only sometimes initialised */
+	if (p->quests) {
+		player_quests_free(p);
+	}
+	if (p->spell_flags) {
+		player_spells_free(p);
+	}
+	if (p->gear) {
+		object_pile_free(p->gear);
+		object_pile_free(p->gear_k);
+	}
+	if (p->body.slots) {
+		for (int i = 0; i < p->body.count; i++)
+			string_free(p->body.slots[i].name);
+		mem_free(p->body.slots);
+	}
+	string_free(p->body.name);
+	string_free(p->history);
+	if (p->cave) {
+		cave_free(p->cave);
+		p->cave = NULL;
+	}
+}
+
+
+/**
  * Initialise player struct
  */
 static void init_player(void) {
@@ -408,41 +480,9 @@ static void init_player(void) {
  * Free player struct
  */
 static void cleanup_player(void) {
-	int i;
+	if (!player) return;
 
-	/* Free the history */
-	history_clear(player);
-
-	/* Free the things that are always initialised */
-	object_free(player->obj_k);
-	mem_free(player->timed);
-	mem_free(player->upkeep->quiver);
-	mem_free(player->upkeep->inven);
-	mem_free(player->upkeep);
-	player->upkeep = NULL;
-
-	/* Free the things that are only sometimes initialised */
-	if (player->quests) {
-		player_quests_free(player);
-	}
-	if (player->spell_flags) {
-		player_spells_free(player);
-	}
-	if (player->gear) {
-		object_pile_free(player->gear);
-		object_pile_free(player->gear_k);
-	}
-	if (player->body.slots) {
-		for (i = 0; i < player->body.count; i++)
-			string_free(player->body.slots[i].name);
-		mem_free(player->body.slots);
-	}
-	string_free(player->body.name);
-	string_free(player->history);
-	if (player->cave) {
-		cave_free(player->cave);
-		player->cave = NULL;
-	}
+	player_cleanup_members(player);
 
 	/* Free the basic player struct */
 	mem_free(player);

@@ -599,12 +599,20 @@ void object_absorb_partial(struct object *obj1, struct object *obj2)
  */
 void object_absorb(struct object *obj1, struct object *obj2)
 {
+	struct object *known = obj2->known;
 	int total = obj1->number + obj2->number;
 
 	/* Add together the item counts */
 	obj1->number = MIN(total, obj1->kind->base->max_stack);
 
 	object_absorb_merge(obj1, obj2);
+	if (known) {
+		if (!loc_is_zero(known->grid)) {
+			square_excise_object(player->cave, known->grid, known);
+		}
+		delist_object(player->cave, known);
+		object_delete(&known);
+	}
 	object_delete(&obj2);
 }
 
@@ -724,8 +732,8 @@ struct object *object_split(struct object *src, int amt)
 	if (src->note)
 		dest->note = src->note;
 	if (src->known) {
-		dest->known->number = amt;
-		src->known->number -= amt;
+		dest->known->number = dest->number;
+		src->known->number = src->number;
 		dest->known->note = src->known->note;
 	}
 
@@ -879,6 +887,16 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	/* Record in the level list */
 	list_object(c, drop);
 
+	/* If there's a known version, put it in the player's view of the
+	 * cave but at an unknown location.  square_note_spot() will move
+	 * it to the correct place if seen. */
+	if (drop->known) {
+		drop->known->oidx = drop->oidx;
+		drop->known->held_m_idx = 0;
+		drop->known->grid = loc(0, 0);
+		player->cave->objects[drop->oidx] = drop->known;
+	}
+
 	/* Redraw */
 	square_note_spot(c, grid);
 	square_light_spot(c, grid);
@@ -923,9 +941,12 @@ static void floor_carry_fail(struct object *drop, bool broke)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  *
+ * If prefer_pile is true, does not apply a penalty for putting different types
+ * items in the same grid.
+ *
  * If no appropriate grid is found, the given grid is unchanged
  */
-static void drop_find_grid(struct object *drop, struct loc *grid)
+static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *grid)
 {
 	int best_score = -1;
 	struct loc start = *grid;
@@ -973,7 +994,8 @@ static void drop_find_grid(struct object *drop, struct loc *grid)
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
-			score = 1000 - (dist + num_shown * 5);
+			score = 1000 -
+				(dist + (prefer_pile ? 0 : num_shown * 5));
 
 			if ((score < best_score) || ((score == best_score) && one_in_(2)))
 				continue;
@@ -1017,11 +1039,14 @@ static void drop_find_grid(struct object *drop, struct loc *grid)
  * This function will produce a description of a drop event under the player
  * when "verbose" is true.
  *
+ * If "prefer_pile" is true, the penalty for putting different types of items
+ * in the same square is not applied.
+ *
  * The calling function needs to deal with the consequences of the dropped
  * object being destroyed or absorbed into an existing pile.
  */
 void drop_near(struct chunk *c, struct object **dropped, int chance,
-			   struct loc grid, bool verbose)
+			   struct loc grid, bool verbose, bool prefer_pile)
 {
 	char o_name[80];
 	struct loc best = grid;
@@ -1040,7 +1065,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(*dropped, &best);
+	drop_find_grid(*dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
 		if (dont_ignore && (square(c, best).mon < 0)) {
@@ -1069,12 +1094,24 @@ void push_object(struct loc grid)
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
 		struct object *next = obj->next;
-		q_push_ptr(queue, obj);
+		/* In case the object is known, make a copy to work with
+		 * and try to delete the original which will orphan it to
+		 * serve as a placeholder for the known version. */
+		struct object *newobj = object_new();
 
-		/* Orphan the object */
-		obj->next = NULL;
-		obj->prev = NULL;
-		obj->grid = loc(0, 0);
+		object_copy(newobj, obj);
+		newobj->oidx = 0;
+		newobj->grid = loc(0, 0);
+		if (newobj->known) {
+			newobj->known = object_new();
+			object_copy(newobj->known, obj->known);
+			newobj->known->oidx = 0;
+			newobj->known->grid = loc(0, 0);
+		}
+		q_push_ptr(queue, newobj);
+
+		delist_object(cave, obj);
+		object_delete(&obj);
 
 		/* Next object */
 		obj = next;
@@ -1093,7 +1130,7 @@ void push_object(struct loc grid)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, &obj, 0, grid, false);
+		drop_near(cave, &obj, 0, grid, false, false);
 	}
 
 	/* Reset cave feature, remove trap if needed */

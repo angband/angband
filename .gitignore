@@ -6,6 +6,10 @@ configure
 lib/scores/scores.*
 *.out
 *.exe
+*.elf
+*.map
+angband
+angband.nds
 lib/save/*
 .project
 .cproject
@@ -24,3 +28,11 @@ mk/buildsys.mk
 *~
 .DS_Store
 *.sublime*
+# Added for VS build: ignore 3 trees of VS build stuff
+.vs/
+Debug/
+Release/
+# And personal copies of the vcxproj files should not be checked into the root
+/*.vcxproj*
+.idea/
+cmake-build-debug/

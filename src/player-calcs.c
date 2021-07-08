@@ -947,6 +947,17 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
 	}
 
+	/* Usable ammo is before other ammo */
+	if (tval_is_ammo(orig) && tval_is_ammo(new)) {
+		/* First favour usable ammo */
+		if ((player->state.ammo_tval == orig->tval) &&
+			(player->state.ammo_tval != new->tval))
+			return false;
+		if ((player->state.ammo_tval != orig->tval) &&
+			(player->state.ammo_tval == new->tval))
+			return true;
+	}
+
 	/* Objects sort by decreasing type */
 	if (orig->tval > new->tval) return false;
 	if (orig->tval < new->tval) return true;
@@ -975,18 +986,14 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value(orig, 1) <
-			object_value(new, 1))
+		if (object_value(orig, 1) < object_value(new, 1))
 			return false;
-		if (object_value(orig, 1) >
-			object_value(new, 1))
+		if (object_value(orig, 1) >	object_value(new, 1))
 			return true;
 	} else {
-		if (object_value(orig, 1) >
-			object_value(new, 1))
+		if (object_value(orig, 1) >	object_value(new, 1))
 			return false;
-		if (object_value(orig, 1) <
-			object_value(new, 1))
+		if (object_value(orig, 1) <	object_value(new, 1))
 			return true;
 	}
 
@@ -1555,11 +1562,17 @@ static void calc_light(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (of_has(obj->flags, OF_LIGHT_2))
+		if (of_has(obj->flags, OF_LIGHT_2)) {
 			amt = 2;
-		else if (of_has(obj->flags, OF_LIGHT_3))
+		} else if (of_has(obj->flags, OF_LIGHT_3)) {
 			amt = 3;
+		}
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
+
+		/* Adjustment to allow UNLIGHT players to use +1 LIGHT gear */
+		if ((obj->modifiers[OBJ_MOD_LIGHT] > 0) && player_has(p, PF_UNLIGHT)) {
+			amt--;
+		}
 
 		/* Examine actual lights */
 		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
@@ -1631,8 +1644,9 @@ int calc_blows(struct player *p, const struct object *obj,
 
 	blows = MIN((10000 / blow_energy), (100 * p->class->max_attacks));
 
-	/* Require at least one blow */
-	return MAX(blows + (100 * extra_blows), 100);
+	/* Require at least one blow, two for O-combat */
+	return MAX(blows + (100 * extra_blows),
+			   OPT(p, birth_percent_damage) ? 200 : 100);
 }
 
 
@@ -1927,6 +1941,17 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->el_info[ELEM_DARK].res_level = 1;
 	}
 
+	/* Evil */
+	if (player_has(p, PF_EVIL) && character_dungeon) {
+		state->el_info[ELEM_NETHER].res_level = 1;
+		state->el_info[ELEM_HOLY_ORB].res_level = -1;
+	}
+
+	/* Combat Regeneration */
+	if (player_has(p, PF_COMBAT_REGEN) && character_dungeon) {
+		of_on(state->flags, OF_IMPAIR_HP);
+	}
+
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
@@ -2008,14 +2033,22 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Other timed effects */
+	player_flags_timed(p, state->flags);
+
 	if (player_timed_grade_eq(p, TMD_STUN, "Heavy Stun")) {
 		state->to_h -= 20;
 		state->to_d -= 20;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	} else if (player_timed_grade_eq(p, TMD_STUN, "Stun")) {
 		state->to_h -= 5;
 		state->to_d -= 5;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
+		if (update) {
+			p->timed[TMD_FASTCAST] = 0;
+		}
 	}
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
@@ -2032,17 +2065,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_a += 40;
 		state->speed -= 5;
 	}
-	if (p->timed[TMD_BOLD]) {
-		of_on(state->flags, OF_PROT_FEAR);
-	}
 	if (p->timed[TMD_HERO]) {
-		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
 	}
 	if (p->timed[TMD_SHERO]) {
-		of_on(state->flags, OF_PROT_FEAR);
-		state->to_h += 24;
+		state->skills[SKILL_TO_HIT_MELEE] += 75;
 		state->to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
@@ -2054,15 +2082,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_SINFRA]) {
 		state->see_infra += 5;
-	}
-	if (p->timed[TMD_TELEPATHY]) {
-		of_on(state->flags, OF_TELEPATHY);
-	}
-	if (p->timed[TMD_SINVIS]) {
-		of_on(state->flags, OF_SEE_INVIS);
-	}
-	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
-		of_on(state->flags, OF_AFRAID);
 	}
 	if (p->timed[TMD_TERROR]) {
 		state->speed += 10;
@@ -2081,9 +2100,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	if (p->timed[TMD_OPP_POIS] && (state->el_info[ELEM_POIS].res_level < 2)) {
 			state->el_info[ELEM_POIS].res_level++;
-	}
-	if (p->timed[TMD_OPP_CONF]) {
-		of_on(state->flags, OF_PROT_CONF);
 	}
 	if (p->timed[TMD_CONFUSED]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 75 / 100;
@@ -2202,6 +2218,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->bless_wield = true;
 		}
 	} else {
+		/* Unarmed */
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
 
@@ -2212,7 +2229,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Movement speed */
-	state->num_moves = 1 + extra_moves;;
+	state->num_moves = 1 + extra_moves;
 
 	return;
 }
@@ -2574,7 +2591,7 @@ void redraw_stuff(struct player *p)
 
 	/* Hack - rarely update while resting or running, makes it over quicker */
 	if (((player_resting_count(p) % 100) || (p->upkeep->running % 100))
-		&& !(redraw & PR_MESSAGE))
+		&& !(redraw & (PR_MESSAGE | PR_MAP)))
 		return;
 
 	/* For each listed flag, send the appropriate signal to the UI */

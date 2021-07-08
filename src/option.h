@@ -74,7 +74,6 @@ extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 /**
  * Functions
  */
-void options_init_cheat(void);
 const char *option_name(int opt);
 const char *option_desc(int opt);
 int option_type(int opt);

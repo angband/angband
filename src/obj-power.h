@@ -67,7 +67,7 @@
 
 /*** Functions ***/
 
-int object_power(const struct object *obj, bool verbose, ang_file *log_file);
+s32b object_power(const struct object *obj, bool verbose, ang_file *log_file);
 int object_value_real(const struct object *obj, int qty);
 int object_value(const struct object *obj, int qty);
 

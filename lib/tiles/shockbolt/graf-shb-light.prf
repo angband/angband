@@ -1,8 +1,8 @@
-# File: graf-shb.prf
+# File: graf-shb-light.prf
 
 #
 # This file defines special attr/char mappings for use in "graphics" mode
-# with Shockbolt's 64x64 tiles.
+# with Shockbolt's 64x64 tiles, with light-coloured background.
 #
 # Converted by Mogami from the dg32-assign of AngbandTK
 # Additional work by Ivan Jekic (the.edge@Net.yu)
@@ -65,10 +65,10 @@ feat:Alchemy Shop:*:0x99:0x87
 feat:Magic Shop:*:0x99:0x88
 
 # Black Market
-feat:Black Market:*:0x99:0x9B
+feat:Black Market:*:0x99:0x8a
 
 # Home
-feat:Home:*:0x99:0x97
+feat:Home:*:0x99:0x89
 
 # pile of rubble
 feat:pile of rubble:torch:0x8C:0xB4
@@ -372,6 +372,7 @@ object:hafted:Two-Handed Great Flail:0x8A:0x9A
 object:hafted:Mace:0x8A:0x94
 object:hafted:Lead-Filled Mace:0x8A:0x98
 object:hafted:Quarterstaff:0x8A:0x95
+object:hafted:Throwing Hammer:0x8B:0xAB
 object:hafted:War Hammer:0x8A:0x93
 object:hafted:Maul:0x8A:0xB0
 object:hafted:Great Hammer:0x8B:0x94
@@ -387,6 +388,7 @@ object:polearm:Pike:0x8A:0xA2
 
 ### Axes ###
 
+object:polearm:Throwing Axe:0x8B:0xBF
 object:polearm:Beaked Axe:0x8A:0xA3
 object:polearm:Broad Axe:0x8A:0xA4
 object:polearm:Battle Axe:0x8A:0xA1
@@ -814,7 +816,7 @@ monster:Clear worm mass:0x91:0x93
 monster:Radiation eye:0x90:0x87
 monster:Cave lizard:0x93:0x8E
 monster:Scout:0x84:0x84
-monster:tamer:0x91:0xA4
+monster:Tamer:0x84:0x92
 monster:Gallant:0x84:0x85
 monster:Blue jelly:0x8F:0x86
 monster:Creeping copper coins:0x8F:0xDE

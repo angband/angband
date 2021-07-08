@@ -69,6 +69,16 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	/* Not allowed to cast spells */
 	if (!chance) return false;
 
+	/* Taunted monsters are likely just to attack */
+	if (player->timed[TMD_TAUNT]) {
+		chance /= 2;
+	}
+
+	/* Monsters at their preferred range are more likely to cast */
+	if (mon->cdis == mon->best_range) {
+		chance *= 2;
+	}
+
 	/* Only do spells occasionally */
 	if (randint0(100) >= chance) return false;
 
@@ -76,7 +86,7 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	if (mon->cdis > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->grid, player->grid, PROJECT_NONE))
+	if (!projectable(cave, mon->grid, player->grid, PROJECT_SHORT))
 		return false;
 
 	return true;
@@ -128,7 +138,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		bool know_something = false;
 
 		/* Occasionally forget player status */
-		if (one_in_(100)) {
+		if (one_in_(20)) {
 			of_wipe(mon->known_pstate.flags);
 			pf_wipe(mon->known_pstate.pflags);
 			for (i = 0; i < ELEM_MAX; i++)
@@ -216,15 +226,17 @@ int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
 
 	int i;
 
+	/* Paranoid initialization */
+	for (i = 0; i < RSF_MAX; i++) {
+		spells[i] = 0;
+	}
+
 	/* Extract spells, filtering as necessary */
 	for (i = FLAG_START, num = 0; i < RSF_MAX; i++) {
 		if (!innate && mon_spell_is_innate(i)) continue;
 		if (!non_innate && !mon_spell_is_innate(i)) continue;
 		if (rsf_has(f, i)) spells[num++] = i;
 	}
-
-	/* Paranoia */
-	if (num == 0) return 0;
 
 	/* Pick at random */
 	return (spells[randint0(num)]);
@@ -356,7 +368,7 @@ bool make_ranged_attack(struct monster *mon)
 	}
 
 	/* Cast the spell. */
-	disturb(player, 1);
+	disturb(player);
 	do_mon_spell(thrown_spell, mon, seen);
 
 	/* Remember what the monster did */
@@ -522,7 +534,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
-			disturb(p, 1);
+			disturb(p);
 
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
@@ -663,7 +675,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Visible monster missed player, so notify if appropriate. */
 			if (monster_is_visible(mon) &&	method->miss) {
 				/* Disturbing */
-				disturb(p, 1);
+				disturb(p);
 				msg("%s misses you.", m_name);
 			}
 		}

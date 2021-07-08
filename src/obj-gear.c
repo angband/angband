@@ -163,18 +163,24 @@ static bool object_is_in_quiver(struct player *p, const struct object *obj)
 int pack_slots_used(struct player *p)
 {
 	struct object *obj;
-	int quiver_slots = 0;
-	int pack_slots = 0;
+	int i, pack_slots = 0;
 	int quiver_ammo = 0;
 
 	for (obj = p->gear; obj; obj = obj->next) {
+		bool found = false;
 		/* Equipment doesn't count */
 		if (!object_is_equipped(p->body, obj)) {
-			/* Check if it could be in the quiver */
-			if (tval_is_ammo(obj) && quiver_slots < z_info->quiver_size) {
-				quiver_slots++;
-				quiver_ammo += obj->number;
-			} else {
+			/* Check if it is in the quiver */
+			if (tval_is_ammo(obj)) {
+				for (i = 0; i < z_info->quiver_size; i++) {
+					if (p->upkeep->quiver[i] == obj) {
+						quiver_ammo += obj->number;
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
 				/* Count regular slots */
 				pack_slots++;
 			}
@@ -804,12 +810,13 @@ void inven_takeoff(struct object *obj)
 	player->body.slots[slot].obj = NULL;
 	player->upkeep->equip_cnt--;
 
-	/* Message */
-	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, I2A(slot));
-
 	player->upkeep->update |= (PU_BONUS | PU_INVEN | PU_UPDATE_VIEW);
 	player->upkeep->notice |= (PN_IGNORE);
 	update_stuff(player);
+
+	/* Message */
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(obj));
+
 	return;
 }
 
@@ -881,7 +888,7 @@ void inven_drop(struct object *obj, int amt)
 	}
 
 	/* Drop it near the player */
-	drop_near(cave, &dropped, 0, player->grid, false);
+	drop_near(cave, &dropped, 0, player->grid, false, true);
 
 	/* Sound for quiver objects */
 	if (quiver)
@@ -1001,7 +1008,7 @@ void pack_overflow(struct object *obj)
 	if (!pack_is_overfull()) return;
 
 	/* Disturbing */
-	disturb(player, 0);
+	disturb(player);
 
 	/* Warning */
 	msg("Your pack overflows!");
@@ -1030,7 +1037,7 @@ void pack_overflow(struct object *obj)
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
-	drop_near(cave, &obj, 0, player->grid, false);
+	drop_near(cave, &obj, 0, player->grid, false, true);
 
 	/* Describe */
 	if (artifact)

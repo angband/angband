@@ -172,6 +172,7 @@ struct cave_profile {
     struct tunnel_profile tun;		/*!< Used to build tunnels */
     struct streamer_profile str;	/*!< Used to build mineral streamers*/
     struct room_profile *room_profiles;	/*!< Used to build rooms */
+    int min_level;			/*!< Shallowest level to use this profile */
     int cutoff;				/*!< Used to see if we should try this dungeon */
 };
 

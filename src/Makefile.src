@@ -6,8 +6,8 @@
 #
 
 NAME = Angband
-VERSION = 4.2.0
-COPYRIGHT = (c) 1995-2019 Angband contributors
+VERSION = 4.2.1
+COPYRIGHT = (c) 1995-2020 Angband contributors
 PROGNAME = angband
 
 HEADERS = \
@@ -148,6 +148,7 @@ ANGFILES = \
 	player-class.o \
 	player-history.o \
 	player-path.o \
+	player-properties.o \
 	player-quest.o \
 	player-race.o \
 	player-spell.o \
@@ -173,6 +174,10 @@ ANGFILES = \
 	ui-curse.o \
 	ui-death.o \
 	ui-display.o \
+	ui-entry.o \
+	ui-entry-combiner.o \
+	ui-entry-renderers.o \
+	ui-equip-cmp.o \
 	ui-event.o \
 	ui-game.o \
 	ui-help.o \
@@ -197,6 +202,7 @@ ANGFILES = \
 	ui-store.o \
 	ui-target.o \
 	ui-term.o \
+	ui-visuals.o \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \

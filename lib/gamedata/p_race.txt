@@ -27,7 +27,9 @@
 # age:agebase:agemod
 # height:hgt:modhgt
 # weight:wgt:modwgt
-# flags:object flags
+# obj-flags:object flags
+# player-flags:player flags
+# values:values
 
 # 'name' indicates the beginning of an entry.
 
@@ -55,7 +57,7 @@
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
 # races possess innately.
 
-# 'play-flags' is for player flags (as in src/list-player-flags.h) that
+# 'player-flags' is for player flags (as in src/list-player-flags.h) that
 # races possess innately.
 
 # 'values' is for object modifiers which take a value that races possess

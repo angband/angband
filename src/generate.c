@@ -177,6 +177,15 @@ static enum parser_error parse_profile_room(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_profile_min_level(struct parser *p) {
+    struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->min_level = parser_getint(p, "min");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_profile_cutoff(struct parser *p) {
     struct cave_profile *c = parser_priv(p);
 
@@ -194,6 +203,7 @@ static struct parser *init_parse_profile(void) {
 	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_profile_tunnel);
 	parser_reg(p, "streamer int den int rng int mag int mc int qua int qc", parse_profile_streamer);
 	parser_reg(p, "room sym name int rating int height int width int level int pit int rarity int cutoff", parse_profile_room);
+	parser_reg(p, "min-level int min", parse_profile_min_level);
 	parser_reg(p, "cutoff int cutoff", parse_profile_cutoff);
 	return p;
 }
@@ -717,6 +727,26 @@ static int calc_mon_feeling(struct chunk *c)
 }
 
 /**
+ * Find a cave_profile by name
+ * \param name is the name of the cave_profile being looked for
+ */
+const struct cave_profile *find_cave_profile(char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->profile_max; i++) {
+		const struct cave_profile *profile;
+
+		profile = &cave_profiles[i];
+		if (!strcmp(name, profile->name))
+			return profile;
+	}
+
+	/* Not there */
+	return NULL;
+}
+
+/**
  * Do d_m's prime check for labyrinths
  * \param depth is the depth where we're trying to generate a labyrinth
  */
@@ -746,32 +776,14 @@ bool labyrinth_check(int depth)
 }
 
 /**
- * Find a cave_profile by name
- * \param name is the name of the cave_profile being looked for
- */
-const struct cave_profile *find_cave_profile(char *name)
-{
-	int i;
-
-	for (i = 0; i < z_info->profile_max; i++) {
-		const struct cave_profile *profile;
-
-		profile = &cave_profiles[i];
-		if (!strcmp(name, profile->name))
-			return profile;
-	}
-
-	/* Not there */
-	return NULL;
-}
-
-/**
  * Choose a cave profile
  * \param p is the player
  */
 const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
+	int moria_cutoff = find_cave_profile("moria")->cutoff;
+	int labyrinth_cutoff = find_cave_profile("labyrinth")->cutoff;
 
 	/* A bit of a hack, but worth it for now NRM */
 	if (player->noscore & NOSCORE_JUMPING) {
@@ -794,16 +806,26 @@ const struct cave_profile *choose_profile(struct player *p)
 	} else if (is_quest(p->depth) && !OPT(p, birth_levels_persist)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	} else if (labyrinth_check(p->depth)) {
+	} else if (labyrinth_check(p->depth) && (labyrinth_cutoff >= -1)) {
 		profile = find_cave_profile("labyrinth");
-	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40)) {
+	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
+			   (moria_cutoff >= -1)) {
 		profile = find_cave_profile("moria");
 	} else {
-		int pick = randint0(200);
-		size_t i;
-		for (i = 0; i < z_info->profile_max; i++) {
-			profile = &cave_profiles[i];
-			if (profile->cutoff >= pick) break;
+		int tries = 100;
+		while (tries) {
+			size_t i;
+			int pick = randint0(200);
+			for (i = 0; i < z_info->profile_max; i++) {
+				profile = &cave_profiles[i];
+				if (p->depth < profile->min_level) continue;
+				if (profile->cutoff >= pick) break;
+			}
+			if (profile) break;
+			tries--;
+		}
+		if (!profile) {
+			profile = find_cave_profile("classic");
 		}
 	}
 
@@ -1087,14 +1109,14 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 static void sanitize_player_loc(struct chunk *c, struct player *p)
 {
 	/* TODO potential problem: stairs in vaults? */
-	
+
 	/* allow direct transfer if target location is teleportable */
 	if (square_in_bounds_fully(c, p->grid)
 		&& square_isarrivable(c, p->grid)
 		&& !square_isvault(c, p->grid)) {
 		return;
 	}
-	
+
 	/* TODO should use something similar to teleport code, but this will
 	 *  do for now as a quick'n dirty fix
 	 */
@@ -1106,8 +1128,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* a bunch of random locations */
 	while (try) {
 		try = try - 1;
-		tx = randint0(c->width-1) + 1;
-		ty = randint0(c->height-1) + 1;
+		tx = randint0(c->width - 1) + 1;
+		ty = randint0(c->height - 1) + 1;
 		if (square_isempty(c, loc(tx, ty))
 			&& !square_isvault(c, loc(tx, ty))) {
 			p->grid.y = ty;
@@ -1115,10 +1137,10 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			return;
 		}
 	}
-	
+
 	/* whelp, that didnt work */
-	ix = randint0(c->width-1) + 1;
-	iy = randint0(c->height-1) + 1;
+	ix = randint0(c->width - 1) + 1;
+	iy = randint0(c->height - 1) + 1;
 	ty = iy;
 	tx = tx + 1;
 	if (tx >= c->width - 1) {
@@ -1128,7 +1150,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			ty = 1;
 		}
 	}
-	
+
 	while (1) {		//until full loop through dungeon
 		if (square_isempty(c, loc(tx, ty))) {
 			if (!square_isvault(c, loc(tx, ty))) {
@@ -1154,7 +1176,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 			}
 		}
 	}
-	
+
 	// fallback vault location (or at least a non-crashy square)
 	p->grid.x = vx;
 	p->grid.y = vy;
@@ -1354,6 +1376,10 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	/* Know the town */
 	if (!(p->depth)) {
 		cave_known(p);
+		if (persist) {
+			cave_illuminate(*c, is_daytime());
+		}
+
 	}
 
 	/* The dungeon is ready */
