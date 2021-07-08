@@ -311,7 +311,7 @@ static enum parser_error parse_player_timed_slay(struct parser *p)
 		}
 	}
 	if (idx == z_info->slay_max) return PARSE_ERROR_UNRECOGNISED_SLAY;
-	t->temp_brand = idx;
+	t->temp_slay = idx;
 	return PARSE_ERROR_NONE;
 }
 
