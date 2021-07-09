@@ -15,4 +15,4 @@ abouttab = "class='selected'"
 <li>Drop by our IRC channel: it's #angband-dev on irc.freenode.net.
 </ul>
 
-<p>We also have an <a href='/nightlies'>autobuilder</a> which has the latest binaries for the "it might blow up in your face" development version of the game, available for Windows and OS X.
+<p>We also have a <a href='https://github.com/angband/angband/releases'>pre-releases page</a> which has the latest binaries for the "it might blow up in your face" development version of the game, available for Windows and OS X.
