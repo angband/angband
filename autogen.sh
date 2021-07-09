@@ -69,7 +69,7 @@ if test X`uname` = XOpenBSD ; then
             export AUTOMAKE_VERSION
         fi
     fi
-    echo "OpenBSD; using AUTOCONF_VERSION=$AUTOCONF_VERSION AUTOMAKE_VERSION=$AUTOMAKE_VERSION"
+    echo "*info* OpenBSD; using AUTOCONF_VERSION=$AUTOCONF_VERSION AUTOMAKE_VERSION=$AUTOMAKE_VERSION"
 fi
 
 cd $TOP_DIR
