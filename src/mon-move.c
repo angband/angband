@@ -983,7 +983,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
  */
 bool multiply_monster(struct chunk *c, const struct monster *mon)
 {
-	struct loc grid;
+	struct loc grid = mon->grid;
 	int i;
 	bool result = false;
 	struct monster_group_info info = { 0, 0 };

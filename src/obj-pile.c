@@ -1216,7 +1216,7 @@ void push_object(struct loc grid)
 			mimic->mimicked_obj = NULL;
 
 			while (1) {
-				struct loc newgrid;
+				struct loc newgrid = grid;
 
 				if (ntry > 150) {
 					/*

@@ -2649,7 +2649,7 @@ void do_cmd_wiz_summon_named(struct command *cmd)
 
 	/* Try 10 times */
 	while (1) {
-		struct loc grid;
+		struct loc grid = player->grid;
 
 		if (i >= 10) {
 			msg("Could not place monster.");
