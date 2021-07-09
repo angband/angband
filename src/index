@@ -14,27 +14,27 @@ pageclass = "class='front'"
 <a id="osx" href="/downloads/4.2/Angband-4.2.1-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
 <a id="source" href="/downloads/4.2/angband-4.2.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
-<a href="/release">Read about the changes in this version</a>
+<a href="/angband/release">Read about the changes in this version</a>
 </section>
 
 <section id="images" class="slots">
 <div class="slot">
-<img src="/img/shot1.png" width="175" height="175">
+<img src="/angband/img/shot1.png" width="175" height="175">
 <p class="caption">You (the <tt>@</tt>) begin in the small trading town above Angband, ready to descend into its depths (using the down staircase, '<tt>></tt>').
 </div>
 
 <div class="slot">
-<img src="/img/shot2.png" width="175" height="175">
+<img src="/angband/img/shot2.png" width="175" height="175">
 <p class="caption">You explore randomly-generated caverns, and find treasure: <tt>=</tt> is a ring, <tt>?</tt> is a scroll.
 </div>
 
 <div class="slot">
-<img src="/img/shot3.png" width="180" height="175">
+<img src="/angband/img/shot3.png" width="180" height="175">
 <p class="caption">You fight monsters.  <tt>o</tt> is an orc, <tt>p</tt> a human, and <tt>r</tt> a rat.  If you die in battle, you have to start the game again!
 </div>
 
 <div class="slot">
-<img src="/img/shot4.png" width="180" height="175">
+<img src="/angband/img/shot4.png" width="180" height="175">
 <p class="caption">Graphics are also available if ASCII isn't your style.
 </div>
 </section>
@@ -50,7 +50,7 @@ pageclass = "class='front'"
 <dt><a href="https://angband.live/">angband.live</a>
 <dd>This live webserver has Angband and a selection of popular variants available to play in a web browser.  Play, spectate on other games, or chat live with other players.
 
-<dt><a href="/help">User manual & strategy guide</a>
+<dt><a href="/angband/help">User manual & strategy guide</a>
 <dd>You might want to read some hints and tips.  The latest documentation is also available <a href="https://angband.readthedocs.io/en/latest/index.html">here</a>, and some brief help notes are included with the game too - just type <tt>?</tt> to access them.
 
 <dt><a href="http://angband.oook.cz/ladder.php">Angband ladder</a>
