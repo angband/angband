@@ -161,7 +161,7 @@ for my $release (@releases) {
 		if ($r->{'filename'} eq $release->{'filename'}) {
 			$release->{'release_list'} .= "<li>$r->{'release_name'}";
 		} else {
-			$release->{'release_list'} .= "<li><a href='$r->{'filename'}'>$r->{'release_name'}</a>";
+			$release->{'release_list'} .= "<li><a href='release/$r->{'filename'}'>$r->{'release_name'}</a>";
 		}
 	}
 	$release->{'releasetab'} = "class='selected'";
