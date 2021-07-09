@@ -7,12 +7,12 @@ pageclass = "class='front'"
 </section>
 
 <section id="downloads">
-<p><a id="download" href="/downloads/4.2/angband-4.2.1-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
-<span class="sub">version 4.2.1, <span id="os">Windows</span></span></a>
+<p><a id="download" href="https://github.com/angband/angband/releases/download/4.2.2/Angband-4.2.2-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
+<span class="sub">version 4.2.2, <span id="os">Windows</span></span></a>
 
 <p class="other">Also available:
-<a id="osx" href="/downloads/4.2/Angband-4.2.1-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
-<a id="source" href="/downloads/4.2/angband-4.2.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
+<a id="osx" href="https://github.com/angband/angband/releases/download/4.2.2/Angband-4.2.2-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
+<a id="source" href="https://github.com/angband/angband/releases/download/4.2.2/Angband-4.2.2.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
 <a href="/angband/release">Read about the changes in this version</a>
 </section>
