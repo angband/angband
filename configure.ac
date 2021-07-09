@@ -517,11 +517,13 @@ fi
 
 echo
 echo "-- Frontends --"
+local_player_frontends=""
 if test "$enable_curses" = "yes"; then
 	if test "$with_curses" = "no"; then
 		echo "- Curses                                  No; missing libraries"
 	else
 		echo "- Curses                                  Yes"
+		local_player_frontends="$local_player_frontends"+
 	fi
 else
 	echo "- Curses                                  Disabled"
@@ -531,6 +533,7 @@ if test "$enable_x11" = "yes"; then
 		echo "- X11                                     No; missing libraries"
 	else
 		echo "- X11                                     Yes"
+		local_player_frontends="$local_player_frontends"+
 	fi
 else
 	echo "- X11                                     Disabled"
@@ -540,6 +543,7 @@ if test "$enable_sdl2" = "yes"; then
 		echo "- SDL2                                    No; missing libraries"
 	else
 		echo "- SDL2                                    Yes"
+		local_player_frontends="$local_player_frontends"+
 	fi
 else
 	echo "- SDL2                                    Disabled"
@@ -549,6 +553,7 @@ if test "$enable_sdl" = "yes"; then
 		echo "- SDL                                     No; missing libraries"
 	else
 		echo "- SDL                                     Yes"
+		local_player_frontends="$local_player_frontends"+
 	fi
 else
 	echo "- SDL                                     Disabled"
@@ -559,6 +564,7 @@ if test "$enable_win" = "yes"; then
 		echo "- Windows                                 No; missing libraries"
 	else
 		echo "- Windows                                 Yes"
+		local_player_frontends="$local_player_frontends"+
 	fi
 else
 	echo "- Windows                                 Disabled"
@@ -601,4 +607,8 @@ if test "$enable_sdl_mixer" = "yes"; then
 	fi
 else
 	echo "- SDL sound                               Disabled"
+fi
+
+if test x"$local_player_frontends" = "x" ; then
+	AC_MSG_WARN([No player frontends are enabled.  Check your --enable options and prerequisites for the frontends.])
 fi
