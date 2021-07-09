@@ -19,8 +19,8 @@ help:
 	@perl -e '$(HELPME)' Makefile
 
 build:					## Build the site locally
-	./build.pl
-	cp -r static/* output/
+	perl -I ./ build.pl
+	cp -r static/* docs/
 
 install:				##@unused Install (superceded by ansible deployment)
 	./build.pl
@@ -29,8 +29,8 @@ install:				##@unused Install (superceded by ansible deployment)
 	cp mappings /var/www/rephial.org/
 	sudo /etc/init.d/lighttpd reload
 
-deploy:					## Run ansible deployment script
+deploy:					##@unused Run ansible deployment script
 	ansible-playbook deploy.yml -K
 
-upload:					## Upload contents of upload/ to remote downloads directory
+upload:					##@unused Upload contents of upload/ to remote downloads directory
 	scp -r upload/* takkaria@rephial.org:/var/www/rephial.org/public/downloads/
