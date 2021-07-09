@@ -807,7 +807,7 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 	for (k = 0; k < num; k++) {
 		/* Try nine locations */
 		for (i = 0; i < 9; i++) {
-			struct loc near;
+			struct loc near = grid;
 
 			/* Pick a nearby location */
 			scatter(c, &near, grid, 1, true);

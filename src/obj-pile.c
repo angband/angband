@@ -1200,9 +1200,8 @@ void push_object(struct loc grid)
 			 * Try to find a location; there's 49 positions in
 			 * the 7 x 7 square so make at most a small multiple
 			 * of that number in attempts to find an appropriate
-			 * one that doesn't already have a monster or the
-			 * player.  If scatter accepted a predicate argument,
-			 * could avoid the multiple attempts.
+			 * one that's empty.  If scatter accepted a predicate
+			 * argument, could avoid the multiple attempts.
 			 */
 			struct monster *mimic =
 				cave_monster(cave, obj->mimicking_m_idx);
@@ -1216,7 +1215,7 @@ void push_object(struct loc grid)
 			mimic->mimicked_obj = NULL;
 
 			while (1) {
-				struct loc newgrid;
+				struct loc newgrid = grid;
 
 				if (ntry > 150) {
 					/*
@@ -1231,7 +1230,7 @@ void push_object(struct loc grid)
 					break;
 				}
 				scatter(cave, &newgrid, grid, 3, true);
-				if (square(cave, newgrid)->mon == 0) {
+				if (square_isempty(cave, newgrid)) {
 					bool dummy = true;
 
 					if (floor_carry(cave, newgrid, obj, &dummy)) {

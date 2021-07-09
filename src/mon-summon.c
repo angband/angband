@@ -400,7 +400,7 @@ static int call_monster(struct loc grid)
 int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 {
 	int i;
-	struct loc near;
+	struct loc near = grid;
 	struct monster *mon;
 	struct monster_race *race;
 	struct monster_group_info info = { 0, 0 };

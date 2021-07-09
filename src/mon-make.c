@@ -1307,7 +1307,7 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 										   total, origin);
 		} else {
 			int j;
-			struct loc new;
+			struct loc new = grid;
 
 			/* Find a nearby place to put the other groups */
 			for (j = 0; j < 50; j++) {
