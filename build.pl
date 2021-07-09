@@ -203,7 +203,7 @@ sub write_files {
 	}
 }
 
-write_files("output", $output_files);
+write_files("docs", $output_files);
 
 # Nasty hack to configure lighttpd to not need .html extensions
 # for any of the generated files, and to make /releases/ link

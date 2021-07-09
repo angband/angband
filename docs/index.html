@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<title>Home of Angband - rephial.org</title>
+<meta charset="utf-8">
+
+<link href='https://fonts.googleapis.com/css?family=Libre+Baskerville:700,400|Open+Sans' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/css/style.css" type="text/css">
+<link rel="shortcut icon" href="/img/favicon.png" type="image/png">
+<meta name="viewport" content="width=device-width">
+
+<body class='front'>
+
+<header>
+	<div class="container">
+		<h1><a href="/"><img src='/img/header.png' alt="Angband"></a></h1>
+		<nav>
+			<a href="/develop" >About</a>
+			<a href="/release" >Releases</a>
+			<a href="https://angband.readthedocs.io/">Docs</a>
+			<a href="http://angband.oook.cz/forum/">Forum</a>
+		</nav>
+	</div>
+</header>
+
+<div id="content">
+	<div class="container">
+		
+<section id="intro">
+<p class="lede">Angband is a free, single-player dungeon exploration game.
+
+<p>You play an adventurer seeking riches, fighting monsters, and preparing for a final battle with Morgoth, the Lord of Darkness.</p>
+</section>
+
+<section id="downloads">
+<p><a id="download" href="/downloads/4.2/angband-4.2.1-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
+<span class="sub">version 4.2.1, <span id="os">Windows</span></span></a>
+
+<p class="other">Also available:
+<a id="osx" href="/downloads/4.2/Angband-4.2.1-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
+<a id="source" href="/downloads/4.2/angband-4.2.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
+
+<a href="/release">Read about the changes in this version</a>
+</section>
+
+<section id="images" class="slots">
+<div class="slot">
+<img src="/img/shot1.png" width="175" height="175">
+<p class="caption">You (the <tt>@</tt>) begin in the small trading town above Angband, ready to descend into its depths (using the down staircase, '<tt>></tt>').
+</div>
+
+<div class="slot">
+<img src="/img/shot2.png" width="175" height="175">
+<p class="caption">You explore randomly-generated caverns, and find treasure: <tt>=</tt> is a ring, <tt>?</tt> is a scroll.
+</div>
+
+<div class="slot">
+<img src="/img/shot3.png" width="180" height="175">
+<p class="caption">You fight monsters.  <tt>o</tt> is an orc, <tt>p</tt> a human, and <tt>r</tt> a rat.  If you die in battle, you have to start the game again!
+</div>
+
+<div class="slot">
+<img src="/img/shot4.png" width="180" height="175">
+<p class="caption">Graphics are also available if ASCII isn't your style.
+</div>
+</section>
+
+<section>&nbsp;</section>
+
+<section id="resources">
+<h3>Now you're playing, check out:</h3>
+<dl>
+<dt><a href="http://angband.oook.cz/forum/">Angband forums</a>
+<dd>Angband and its variants have an active community.  Ask here for advice, share tips, and talk about the game.
+
+<dt><a href="https://angband.live/">angband.live</a>
+<dd>This live webserver has Angband and a selection of popular variants available to play in a web browser.  Play, spectate on other games, or chat live with other players.
+
+<dt><a href="/help">User manual & strategy guide</a>
+<dd>You might want to read some hints and tips.  The latest documentation is also available <a href="https://angband.readthedocs.io/en/latest/index.html">here</a>, and some brief help notes are included with the game too - just type <tt>?</tt> to access them.
+
+<dt><a href="http://angband.oook.cz/ladder.php">Angband ladder</a>
+<dd>Upload your character sheet to the ladder for rankings and advice - and check out other adventurers too!
+
+</dl>
+</section>
+
+<script src="/js/detect.js" async defer></script>
+<script>
+function downloadClick(pathname) {
+	ga('send', 'pageview', pathname);
+	var resources = document.getElementById("resources");
+	var images = document.getElementById("images");
+	images.parentNode.insertBefore(resources, images);
+}
+</script>
+
+	</div>
+</div>
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-10039059-1', 'auto');
+ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
