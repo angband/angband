@@ -2777,6 +2777,16 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 		/* Assume you can't get to stairs */
 		has_dsc_from_stairs = true;
 
+		/*
+		 * 50% of the time act as if came in via a down staircase;
+		 * otherwise come in as if by word of recall/trap door/teleport
+		 * level.
+		 */
+		if (one_in_(2)) {
+			player->upkeep->create_up_stair = true;
+			player->upkeep->create_down_stair = false;
+		}
+
 		/* Make a new cave */
 		prepare_next_level(&cave, player);
 
