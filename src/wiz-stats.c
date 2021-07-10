@@ -2221,6 +2221,13 @@ struct cgen_stats {
 	struct tunnel_instance *curr_tunn;
 	int n_curr_tunn, alloc_curr_tunn;
 	/*
+	 * badst_counts[i] is the number of levels of type i where the
+	 * player's starting location was invalid (not a staircase if playing
+	 * with connected stairs and used a staircase to enter; otherwise,
+	 * not passable).
+	 */
+	u32b* badst_counts;
+	/*
 	 * disarea_counts[i] is the number of levels of type i that had at
 	 * least one disconnected area that wasn't in a vault.
 	 */
@@ -2417,6 +2424,8 @@ static void initialize_generation_stats(struct cgen_stats *gs)
 	gs->n_curr_tunn = 0;
 	gs->alloc_curr_tunn = 0;
 
+	gs->badst_counts = mem_zalloc(z_info->profile_max *
+		sizeof(*gs->badst_counts));
 	gs->disarea_counts = mem_zalloc(z_info->profile_max *
 		sizeof(*gs->disarea_counts));
 	gs->disdstair_counts = mem_zalloc(z_info->profile_max *
@@ -2446,6 +2455,7 @@ static void cleanup_generation_stats(struct cgen_stats *gs)
 
 	mem_free(gs->disdstair_counts);
 	mem_free(gs->disarea_counts);
+	mem_free(gs->badst_counts);
 
 	mem_free(gs->curr_tunn);
 
@@ -2720,6 +2730,14 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 		file_put(fo, "\n");
 	}
 
+	file_put(fo, "Counts of Levels with Invalid Starting Locations::\n");
+	for (i = 0; i < z_info->profile_max; ++i) {
+		file_putf(fo, "\"%s\"\t%lu\n",
+			get_level_profile_name_from_index(i),
+			(unsigned long) gs->badst_counts[i]);
+	}
+	file_put(fo, "\n");
+
 	file_put(fo, "Counts of Levels with Disconnected Non-vault Areas::\n");
 	for (i = 0; i < z_info->profile_max; ++i) {
 		file_putf(fo, "\"%s\"\t%lu\n",
@@ -2743,12 +2761,8 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
 	int i, y, x;
-
 	int **cave_dist;
-
-	bool has_dsc, has_dsc_from_stairs;
-
-	long dsc_area = 0, dsc_from_stairs = 0;
+	long bad_starts = 0, dsc_area = 0, dsc_from_stairs = 0;
 	char path[1024];
 	ang_file *disfile;
 	struct cgen_stats gs;
@@ -2772,10 +2786,23 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 
 	for (i = 1; i <= nsim; i++) {
 		/* Assume no disconnected areas */
-		has_dsc = false;
+		bool has_dsc = false;
+		/* Assume you can't get to the down staircase */
+		bool has_dsc_from_stairs = true;
+		bool has_bad_start, use_stairs;
 
-		/* Assume you can't get to stairs */
-		has_dsc_from_stairs = true;
+		/*
+		 * 50% of the time act as if came in via a down staircase;
+		 * otherwise come in as if by word of recall/trap door/teleport
+		 * level.
+		 */
+		if (one_in_(2)) {
+			player->upkeep->create_up_stair = true;
+			player->upkeep->create_down_stair = false;
+			use_stairs = OPT(player, birth_connect_stairs);
+		} else {
+			use_stairs = false;
+		}
 
 		/* Make a new cave */
 		prepare_next_level(&cave, player);
@@ -2829,6 +2856,18 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 			}
 		}
 
+		if ((use_stairs && !square_isupstairs(cave, player->grid))
+				|| (!use_stairs
+				&& !square_ispassable(cave, player->grid))) {
+			has_bad_start = true;
+			bad_starts++;
+			if (gs.level_type >= 0) {
+				++gs.badst_counts[gs.level_type];
+			}
+		} else {
+			has_bad_start = false;
+		}
+
 		if (has_dsc_from_stairs) {
 			dsc_from_stairs++;
 			if (gs.level_type >= 0) {
@@ -2843,7 +2882,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 			}
 		}
 
-		if (has_dsc || has_dsc_from_stairs) {
+		if (has_bad_start || has_dsc || has_dsc_from_stairs) {
 			if (disfile) {
 				dump_level_body(disfile, "Disconnected Level",
 					cave, cave_dist);
@@ -2857,6 +2896,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 		mem_free(cave_dist);
 	}
 
+	msg("Total levels with bad starts: %ld", bad_starts);
 	msg("Total levels with disconnected areas: %ld",dsc_area);
 	msg("Total levels isolated from stairs: %ld",dsc_from_stairs);
 	if (disfile) {
