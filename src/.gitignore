@@ -7,3 +7,7 @@ autoconf.h.in
 angband
 config
 *.o.*
+
+3ds-build
+angband.3dsx
+angband.smdh

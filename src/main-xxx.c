@@ -461,7 +461,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * you must first call "Term_wipe_xxx()" to clear the area.
  *
  * In color environments, you should activate the color contained
- * in "color_data[a & BASIC_COLORS]", if needed, before drawing anything.
+ * in "color_data[a & (MAX_COLORS - 1)]", if needed, before drawing anything.
  *
  * You may ignore the "attribute" if you are only supporting a
  * monochrome environment, since this routine is normally never
