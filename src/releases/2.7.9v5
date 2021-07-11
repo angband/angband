@@ -6,10 +6,10 @@ Downloads
  - [Amiga][ami]
  - [OS/2][os2]
 
-[src]:http://rephial.org/downloads/2.7/angband-2.7.9v5-src.tar.gz "Source tarball, 867k"
-[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v5-os2.zip "OS/2 port, 521k zip file"
-[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v5-ros.arc "RISC OS port, 559k Arc file"
-[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v5-ami.lha "Amiga port, 688k lha file."
+[src]:https://github.com/angband/angband/releases/download/v2.7.9v5/2.7.9v5.tar.gz "Source tarball, 867k"
+[os2]:https://github.com/angband/angband/releases/download/v2.7.9v5/angband-2.7.9v5-os2.zip "OS/2 port, 521k zip file"
+[ros]:https://github.com/angband/angband/releases/download/v2.7.9v5/angband-2.7.9v5-ros.arc "RISC OS port, 559k Arc file"
+[ami]:https://github.com/angband/angband/releases/download/v2.7.9v5/angband-2.7.9v5-ami.lha "Amiga port, 688k lha file."
 
 Background
 ==========

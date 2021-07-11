@@ -7,12 +7,12 @@ Downloads
  - Mac [PPC][ppc] or [68k][68k]
  - [OS/2][os2]
 
-[src]:http://rephial.org/downloads/2.8/angband-2.8.0-src.tar.gz "Source tarball, 773k"
-[win]:http://rephial.org/downloads/2.8/angband-2.8.0-win.zip "Windows port, 712k zipfile"
-[dos]:http://rephial.org/downloads/2.8/angband-2.8.0-dos.zip "DOS port, 594k zipfile"
-[68k]:http://rephial.org/downloads/2.8/angband-2.8.0-mac.sit.bin.gz "Mac 68k port, 357k .sit.gz file"
-[ppc]:http://rephial.org/downloads/2.8/angband-2.8.0-ppc.sit.bin.gz "Mac PPC port, 442k .sit.gz file"
-[os2]:http://rephial.org/downloads/2.8/angband-2.8.0-os2.zip "OS/2 port, 503k zip file"
+[src]:https://github.com/angband/angband/releases/download/v2.8.0/2.8.0.tar.gz "Source tarball, 773k"
+[win]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-win.zip "Windows port, 712k zipfile"
+[dos]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-dos.zip "DOS port, 594k zipfile"
+[68k]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-mac.sit.bin.gz "Mac 68k port, 357k .sit.gz file"
+[ppc]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-ppc.sit.bin.gz "Mac PPC port, 442k .sit.gz file"
+[os2]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-os2.zip "OS/2 port, 503k zip file"
 
 Background
 ==========

@@ -5,10 +5,10 @@ Downloads
  - [Windows][2]  and [extra "console" executable][3]
  - [Mac OS X][4], universal binary
 
-[1]:http://rephial.org/downloads/3.0/angband-3.0.9a-src.tar.gz "Source tarball, 2.8M"
-[2]:http://rephial.org/downloads/3.0/angband-3.0.9a-win.zip "Windows port, 1.5M zip file"
-[3]:http://rephial.org/downloads/3.0/angband-3.0.9a-con.zip "Windows console port, 559k zip file"
-[4]:http://rephial.org/downloads/3.0/angband-3.0.9a-osx.dmg "Max OS X port, 2.3M .dmg file"
+[1]:https://github.com/angband/angband/releases/download/v3.0.9a/3.0.9a.tar.gz "Source tarball, 2.8M"
+[2]:https://github.com/angband/angband/releases/download/v3.0.9a/angband-3.0.9a-win.zip "Windows port, 1.5M zip file"
+[3]:https://github.com/angband/angband/releases/download/v3.0.9a/angband-3.0.9a-con.zip "Windows console port, 559k zip file"
+[4]:https://github.com/angband/angband/releases/download/v3.0.9a/angband-3.0.9a-osx.dmg "Max OS X port, 2.3M .dmg file"
 
 
 Background

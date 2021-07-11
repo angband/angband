@@ -7,12 +7,12 @@ Downloads
  - Mac [PPC][ppc] or [68k][68k]
  - [Amiga][ami]
 
-[src]:http://rephial.org/downloads/2.9/angband-2.9.0-src.tar.gz "Source tarball, 875k"
-[win]:http://rephial.org/downloads/2.9/angband-2.9.0-win.zip "Windows port, 816k zipfile"
-[dos]:http://rephial.org/downloads/2.9/angband-2.9.0-dos.zip "DOS port, 986k zip file"
-[68k]:http://rephial.org/downloads/2.9/angband-2.9.0-mac.sit.bin "Mac 68k port, 726k .sit file"
-[ppc]:http://rephial.org/downloads/2.9/angband-2.9.0-ppc.sit.bin "Mac PPC port, 723k .sit file"
-[ami]:http://rephial.org/downloads/2.9/angband-2.9.0-ami.lha "Amiga port, 507k lha file"
+[src]:https://github.com/angband/angband/releases/download/v2.9.0/2.9.0.tar.gz "Source tarball, 875k"
+[win]:https://github.com/angband/angband/releases/download/v2.9.0/angband-2.9.0-win.zip "Windows port, 816k zipfile"
+[dos]:https://github.com/angband/angband/releases/download/v2.9.0/angband-2.9.0-dos.zip "DOS port, 986k zip file"
+[68k]:https://github.com/angband/angband/releases/download/v2.9.0/angband-2.9.0-mac.sit.bin "Mac 68k port, 726k .sit file"
+[ppc]:https://github.com/angband/angband/releases/download/v2.9.0/angband-2.9.0-ppc.sit.bin "Mac PPC port, 723k .sit file"
+[ami]:https://github.com/angband/angband/releases/download/v2.9.0/angband-2.9.0-ami.lha "Amiga port, 507k lha file"
 
 Background
 ==========

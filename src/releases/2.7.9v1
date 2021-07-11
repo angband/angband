@@ -5,9 +5,9 @@ Downloads
  - [Amiga][ami]
  - [OS/2][os2]
 
-[src]:http://rephial.org/downloads/2.7/angband-2.7.9v1-src.tar.gz "Source tarball, 799k"
-[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v1-os2.zip "OS/2 port, 359k zip file"
-[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v1-ami.lha "Amiga port, 394k lha file."
+[src]:https://github.com/angband/angband/releases/download/v2.7.9v1/2.7.9v1.tar.gz "Source tarball, 799k"
+[os2]:https://github.com/angband/angband/releases/download/v2.7.9v1/angband-2.7.9v1-os2.zip "OS/2 port, 359k zip file"
+[ami]:https://github.com/angband/angband/releases/download/v2.7.9v1/angband-2.7.9v1-ami.lha "Amiga port, 394k lha file."
 
 Background
 ==========

@@ -9,14 +9,14 @@ Downloads
  - [Amiga][ami]
  - [OS/2][os2]
 
-[src]:http://rephial.org/downloads/2.7/angband-2.7.9v6-src.tar.gz "Source tarball, 773k"
-[win]:http://rephial.org/downloads/2.7/angband-2.7.9v6-win.zip "Windows port, 678k zipfile"
-[dos]:http://rephial.org/downloads/2.7/angband-2.7.9v6-dos.zip "DOS port, 681k zipfile"
-[68k]:http://rephial.org/downloads/2.7/angband-2.7.9v6-mac.sit.bin.gz "Mac 68k port, 356k .sit.gz file"
-[ppc]:http://rephial.org/downloads/2.7/angband-2.7.9v6-ppc.sit.bin.gz "Mac PPC port, 452k .sit.gz file"
-[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v6-os2.zip "OS/2 port, 410k zip file"
-[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v6-ros.arc "RISC OS port, 633k Arc file"
-[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v6-ami.lha "Amiga port, 434k lha file."
+[src]:https://github.com/angband/angband/releases/download/v2.7.9v6/2.7.9v6.tar.gz "Source tarball, 773k"
+[win]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-win.zip "Windows port, 678k zipfile"
+[dos]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-dos.zip "DOS port, 681k zipfile"
+[68k]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-mac.sit.bin.gz "Mac 68k port, 356k .sit.gz file"
+[ppc]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-ppc.sit.bin.gz "Mac PPC port, 452k .sit.gz file"
+[os2]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-os2.zip "OS/2 port, 410k zip file"
+[ros]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-ros.arc "RISC OS port, 633k Arc file"
+[ami]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-ami.lha "Amiga port, 434k lha file."
 
 Background
 ==========

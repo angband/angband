@@ -6,9 +6,9 @@ markdown = "true"
  - [Windows][2]
  - [macOS][3] (10.9+)
 
-[1]:http://rephial.org/downloads/4.2/angband-4.2.0.tar.gz "Source tarball, 25M"
-[2]:http://rephial.org/downloads/4.2/angband-4.2.0-win.zip "Windows port, 22M zip file"
-[3]:http://rephial.org/downloads/4.2/Angband-4.2.0-osx.dmg "Max OS X port, 23M .dmg file"
+[1]:https://github.com/angband/angband/releases/download/4.2.0/4.2.0.tar.gz "Source tarball, 25M"
+[2]:https://github.com/angband/angband/releases/download/4.2.0/angband-4.2.0-win.zip "Windows port, 22M zip file"
+[3]:https://github.com/angband/angband/releases/download/4.2.0/Angband-4.2.0-osx.dmg "Max OS X port, 23M .dmg file"
 
 # Background
 4.2.0 was slated to make big changes to two important parts of the game: classes, and monsters.  While each of these was big enough to deserve a minor version increase in its own right, doing both together so they could be balanced against each other was preferred.  As with 4.1.0, there was much community discussion about the changes.  Version 4.2.0 was released on Saturday the 17th of August 2019.

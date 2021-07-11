@@ -5,9 +5,9 @@ Downloads
  - [DOS][dos]
  - [RISC OS][ros]
 
-[src]:http://rephial.org/downloads/2.7/angband-2.7.9v2-src.tar.gz "Source tarball, 810k"
-[dos]:http://rephial.org/downloads/2.7/angband-2.7.9v2-dos.zip "DOS port, 416k zip file"
-[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v2-ros.arc "RISC OS port, 619k Arc file"
+[src]:https://github.com/angband/angband/releases/download/v2.7.9v2/2.7.9v2.tar.gz "Source tarball, 810k"
+[dos]:https://github.com/angband/angband/releases/download/v2.7.9v2/angband-2.7.9v2-dos.zip "DOS port, 416k zip file"
+[ros]:https://github.com/angband/angband/releases/download/v2.7.9v2/angband-2.7.9v2-ros.arc "RISC OS port, 619k Arc file"
 
 Background
 ==========
