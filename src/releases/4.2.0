@@ -6,7 +6,7 @@ markdown = "true"
  - [Windows][2]
  - [macOS][3] (10.9+)
 
-[1]:https://github.com/angband/angband/releases/download/4.2.0/4.2.0.tar.gz "Source tarball, 25M"
+[1]:https://github.com/angband/angband/archive/refs/tags/4.2.0.tar.gz "Source tarball, 25M"
 [2]:https://github.com/angband/angband/releases/download/4.2.0/angband-4.2.0-win.zip "Windows port, 22M zip file"
 [3]:https://github.com/angband/angband/releases/download/4.2.0/Angband-4.2.0-osx.dmg "Max OS X port, 23M .dmg file"
 

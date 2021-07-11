@@ -8,7 +8,7 @@ Downloads
  - [RISC OS][ros]
  - [Amiga][ami]
 
-[src]:https://github.com/angband/angband/releases/download/v3.0.0/3.0.0.tar.gz "Source tarball, 1.3M"
+[src]:https://github.com/angband/angband/archive/refs/tags/v3.0.0.tar.gz "Source tarball, 1.3M"
 [win]:https://github.com/angband/angband/releases/download/v3.0.0/angband-3.0.0-win.zip "Windows port, 934k zipfile"
 [winext]:https://github.com/angband/angband/releases/download/v3.0.0/extra-3.0.0-win.zip "Fonts, sounds, etc. for the Windows port. 218k zip file"
 [dos]:https://github.com/angband/angband/releases/download/v3.0.0/angband-3.0.0-dos.zip "DOS port, 1.1M zip file"

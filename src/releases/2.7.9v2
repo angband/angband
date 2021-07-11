@@ -5,7 +5,7 @@ Downloads
  - [DOS][dos]
  - [RISC OS][ros]
 
-[src]:https://github.com/angband/angband/releases/download/v2.7.9v2/2.7.9v2.tar.gz "Source tarball, 810k"
+[src]:https://github.com/angband/angband/archive/refs/tags/v2.7.9v2.tar.gz "Source tarball, 810k"
 [dos]:https://github.com/angband/angband/releases/download/v2.7.9v2/angband-2.7.9v2-dos.zip "DOS port, 416k zip file"
 [ros]:https://github.com/angband/angband/releases/download/v2.7.9v2/angband-2.7.9v2-ros.arc "RISC OS port, 619k Arc file"
 

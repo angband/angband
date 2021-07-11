@@ -5,7 +5,7 @@ Downloads
  - [Windows][2]
  - [OS X][3] (10.5+)
 
-[1]:https://github.com/angband/angband/releases/download/4.1.0/4.1.0.tar.gz "Source tarball, 20M"
+[1]:https://github.com/angband/angband/archive/refs/tags/4.1.0.tar.gz "Source tarball, 20M"
 [2]:https://github.com/angband/angband/releases/download/4.1.0/angband-4.1.0-win.zip "Windows port, 19M zip file"
 [3]:https://github.com/angband/angband/releases/download/4.1.0/Angband-4.1.0-osx.dmg "Max OS X port, 19M .dmg file"
 

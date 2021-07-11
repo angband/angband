@@ -7,7 +7,7 @@ Downloads
  - Mac [PPC][ppc] or [68k][68k]
  - [OS/2][os2]
 
-[src]:https://github.com/angband/angband/releases/download/v2.8.0/2.8.0.tar.gz "Source tarball, 773k"
+[src]:https://github.com/angband/angband/archive/refs/tags/v2.8.0.tar.gz "Source tarball, 773k"
 [win]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-win.zip "Windows port, 712k zipfile"
 [dos]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-dos.zip "DOS port, 594k zipfile"
 [68k]:https://github.com/angband/angband/releases/download/v2.8.0/angband-2.8.0-mac.sit.bin.gz "Mac 68k port, 357k .sit.gz file"

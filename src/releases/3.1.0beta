@@ -5,7 +5,7 @@ Downloads
  - [Windows][2]
  - [Mac OS X][3], universal binary
 
-[1]:https://github.com/angband/angband/releases/download/v3.1.0beta/3.1.0beta.tar.gz "Source tarball, 2.8M"
+[1]:https://github.com/angband/angband/archive/refs/tags/v3.1.0beta.tar.gz "Source tarball, 2.8M"
 [2]:https://github.com/angband/angband/releases/download/v3.1.0beta/angband-3.1.0beta-win.zip "Windows port, 1.5M zip file"
 [3]:https://github.com/angband/angband/releases/download/v3.1.0beta/Angband-3.1.0beta-osx.dmg "Max OS X port, 2.0M .dmg file"
 

@@ -5,7 +5,7 @@ Downloads
  - [Amiga][ami]
  - [OS/2][os2]
 
-[src]:https://github.com/angband/angband/releases/download/v2.7.9v1/2.7.9v1.tar.gz "Source tarball, 799k"
+[src]:https://github.com/angband/angband/archive/refs/tags/v2.7.9v1.tar.gz "Source tarball, 799k"
 [os2]:https://github.com/angband/angband/releases/download/v2.7.9v1/angband-2.7.9v1-os2.zip "OS/2 port, 359k zip file"
 [ami]:https://github.com/angband/angband/releases/download/v2.7.9v1/angband-2.7.9v1-ami.lha "Amiga port, 394k lha file."
 

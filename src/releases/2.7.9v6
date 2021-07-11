@@ -9,7 +9,7 @@ Downloads
  - [Amiga][ami]
  - [OS/2][os2]
 
-[src]:https://github.com/angband/angband/releases/download/v2.7.9v6/2.7.9v6.tar.gz "Source tarball, 773k"
+[src]:https://github.com/angband/angband/archive/refs/tags/v2.7.9v6.tar.gz "Source tarball, 773k"
 [win]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-win.zip "Windows port, 678k zipfile"
 [dos]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-dos.zip "DOS port, 681k zipfile"
 [68k]:https://github.com/angband/angband/releases/download/v2.7.9v6/angband-2.7.9v6-mac.sit.bin.gz "Mac 68k port, 356k .sit.gz file"
