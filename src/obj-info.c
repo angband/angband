@@ -1811,7 +1811,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	switch (origins[origin].args)
 	{
 		case -1: return false;
-		case 0: textblock_append(tb, origins[origin].desc); break;
+		case 0: textblock_append(tb, "%s", origins[origin].desc); break;
 		case 1: textblock_append(tb, origins[origin].desc, loot_spot);
 				break;
 		case 2:
