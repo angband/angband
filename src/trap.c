@@ -516,7 +516,7 @@ extern void hit_trap(struct loc grid, int delayed)
 
 		/* Give a message */
 		if (trap->kind->msg)
-			msg(trap->kind->msg);
+			msg("%s", trap->kind->msg);
 
 		/* Test for save due to flag */
 		for (flag = of_next(trap->kind->save_flags, FLAG_START);
@@ -539,10 +539,10 @@ extern void hit_trap(struct loc grid, int delayed)
 		/* Save, or fire off the trap */
 		if (saved) {
 			if (trap->kind->msg_good)
-				msg(trap->kind->msg_good);
+				msg("%s", trap->kind->msg_good);
 		} else {
 			if (trap->kind->msg_bad)
-				msg(trap->kind->msg_bad);
+				msg("%s", trap->kind->msg_bad);
 			effect = trap->kind->effect;
 			effect_do(effect, source_trap(trap), NULL, &ident, false, 0, 0, 0, NULL);
 
@@ -552,7 +552,7 @@ extern void hit_trap(struct loc grid, int delayed)
 			/* Do any extra effects */
 			if (trap->kind->effect_xtra && one_in_(2)) {
 				if (trap->kind->msg_xtra)
-					msg(trap->kind->msg_xtra);
+					msg("%s", trap->kind->msg_xtra);
 				effect = trap->kind->effect_xtra;
 				effect_do(effect, source_trap(trap), NULL, &ident, false,
 						  0, 0, 0, NULL);

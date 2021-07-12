@@ -845,8 +845,8 @@ void dump_level_simple(const char *basefilename, const char *title,
 	if (fo) {
 		dump_level(fo, (title) ? title : "Dumped Level", c, NULL);
 		if (file_close(fo)) {
-			msg(format("Level dumped to %s.html",
-				(basefilename) ? basefilename : "dumpedlevel"));
+			msg("Level dumped to %s.html",
+				(basefilename) ? basefilename : "dumpedlevel");
 		}
 	}
 }
