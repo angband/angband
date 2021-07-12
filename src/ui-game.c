@@ -527,7 +527,7 @@ void textui_process_command(void)
 
 						cmd = nested_lists[cmd->nested_keymap - 1][(unsigned char) nestkey];
 						if (!cmd) {
-							msg(em ? em : "That is not a valid nested command.");
+							msg("%s", em ? em : "That is not a valid nested command.");
 						}
 					} else {
 						cmd = NULL;

@@ -1905,7 +1905,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 
 		/* Provide some feedback. */
 		if (done_msg) {
-			msg(done_msg);
+			msg("%s", done_msg);
 		}
 	}
 }
