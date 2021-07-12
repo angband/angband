@@ -8,6 +8,7 @@ Version 4.2.x
 Code contribution:
 
 * Adriankhl
+* Adrian Siekierka (asiekirk)
 * Alex Mooney
 * Anna Sidwell (takkaria)
 * bacchist
@@ -32,6 +33,7 @@ Code contribution:
 * John Weismiller (emar)
 * Kusunose Toru
 * magnate (Chris Carr)
+* MarbleDice
 * Michael Courtney (wobbly)
 * Mikolaj Konarski
 * Paul Johnson
@@ -43,7 +45,7 @@ Code contribution:
 * spenserblack
 * Stefan Strogin
 * tangar
-* timschumi
+* Tim Scumacher (timschumi)
 * Vic K
 * wkmanire
 * wobbly
@@ -71,6 +73,7 @@ you ought to be included:
 * Carnivean
 * cccfire
 * Chud
+* cjslates
 * ClaytonAguiar
 * Clearshade
 * clouded
@@ -92,6 +95,7 @@ you ought to be included:
 * Estie
 * Estragon
 * Evilpotatoe
+* ewert
 * Flambard
 * floatRand
 * FogSpear
@@ -112,11 +116,14 @@ you ought to be included:
 * Hounded
 * Hrrunstar
 * Huqhox
+* ImEsteban
 * Ingwe Ingweron
 * JBright
 * Jeff Greene (nppangband)
 * jevansau
 * jml34
+* jsv
+* Julian (jl8e)
 * Jungle_Boy
 * kandrc
 * kaypy
@@ -127,6 +134,7 @@ you ought to be included:
 * luneya
 * Mark
 * MattB
+* Mike
 * misanthropope
 * MITZE
 * MKula
@@ -137,6 +145,7 @@ you ought to be included:
 * Muscleguy
 * MWGE
 * Narry
+* NCountr
 * Netbrian
 * NightLizard
 * Nomad
@@ -182,8 +191,10 @@ you ought to be included:
 * Werbaer
 * whartung
 * Whelk
+* will_asher
 * WindLord
 * Wiwaxia
+* Xaxyx
 * Youssarian
 * Zikke
 * Zirael

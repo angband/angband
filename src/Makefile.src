@@ -6,7 +6,7 @@
 #
 
 NAME = Angband
-VERSION = 4.2.2
+VERSION = 4.2.3
 COPYRIGHT = (c) 1995-2021 Angband contributors
 PROGNAME = angband
 
