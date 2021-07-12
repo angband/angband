@@ -1179,7 +1179,7 @@ void do_cmd_wiz_dump_level_map(struct command *cmd)
 	if (fo) {
 		dump_level(fo, title, cave, NULL);
 		if (file_close(fo)) {
-			msg(format("Level dumped to %s.", path));
+			msg("Level dumped to %s.", path);
 		}
 	}
 }
