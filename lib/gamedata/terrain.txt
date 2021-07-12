@@ -90,6 +90,11 @@
 # 'resist-flag' is the race flag a monster must have to be able to enter
 # damaging terrain
 
+# 'desc' is for description. As many desc: lines may be used as are needed
+# to describe the terrain. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
+
 name:unknown grid
 graphics: :w
 priority:2
@@ -99,8 +104,8 @@ name:open floor
 graphics:.:w
 priority:5
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
-desc:An open floor or bare ground.  Can be walked across by anything, and can 
-desc:hold traps or items.  Does not break line of sight.
+desc:An open floor or bare ground.  Can be walked across by anything, and can
+desc: hold traps or items.  Does not break line of sight.
 
 name:closed door
 graphics:+:U
@@ -108,19 +113,19 @@ priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
 info:0:5
 confused-msg:bangs into a door
-desc:Doors may be locked; getting through them may not be easy.  Your 
-desc:disarming skill makes all the difference to your ability to handle locks, 
-desc:but you can also take a pickaxe to them, or blast them open 
-desc:with magic.  Monsters are also slowed down by doors; you can earn yourself 
-desc:valuable time by locking them.
+desc:Doors may be locked; getting through them may not be easy.  Your
+desc: disarming skill makes all the difference to your ability to handle locks,
+desc: but you can also take a pickaxe to them, or blast them open
+desc: with magic.  Monsters are also slowed down by doors; you can earn yourself
+desc: valuable time by locking them.
 
 name:open door
 graphics:':U
 priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
 look-in-preposition:in
-desc:A door that is already open.  Player, monster, spell and missile can pass 
-desc:through as long as it stays open.
+desc:A door that is already open.  Player, monster, spell and missile can pass
+desc: through as long as it stays open.
 
 name:broken door
 graphics:':u
@@ -159,8 +164,8 @@ flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:2:0
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:The armour sold here will give you some protection against the blows of 
-desc:your enemies.
+desc:The armour sold here will give you some protection against the blows of
+desc: your enemies.
 
 name:Weapon Smiths
 graphics:3:w
@@ -169,8 +174,8 @@ flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:3:0
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid 
-desc:backroom of this enticing shop.
+desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid
+desc: backroom of this enticing shop.
 
 name:Bookseller
 graphics:4:g
@@ -179,8 +184,8 @@ flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:4:0
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:A quiet, reflective place of refuge, lined with shelves of 
-desc:mystical tomes.
+desc:A quiet, reflective place of refuge, lined with shelves of
+desc: mystical tomes.
 
 name:Alchemy Shop
 graphics:5:b
@@ -207,8 +212,8 @@ flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:7:0
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:Watch your back and hold onto your purse as you enter this disreputable 
-desc:haunt - and do not expect friendly service or good bargains.
+desc:Watch your back and hold onto your purse as you enter this disreputable
+desc: haunt - and do not expect friendly service or good bargains.
 
 name:Home
 graphics:8:y
@@ -217,8 +222,8 @@ flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:8:0
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:Your safe piece of Middle Earth, and the only place you can store goods 
-desc:apart from on your person.
+desc:Your safe piece of Middle Earth, and the only place you can store goods
+desc: apart from on your person.
 
 name:secret door
 graphics:#:w
@@ -234,8 +239,8 @@ priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1
 confused-msg:bumps into some rocks
-desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
-desc:to normal floor.
+desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled
+desc: to normal floor.
 
 name:magma vein
 graphics:%:D
@@ -243,9 +248,9 @@ priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
 info:0:2
 confused-msg:bashes into a wall
-desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight.
+desc:A seam of soft rock.  It can be removed by digging or magic, and passed
+desc: through by immaterial monsters.  It stops any spells, missiles or line of
+desc: sight.
 
 name:quartz vein
 graphics:%:s
@@ -253,9 +258,9 @@ priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:3
 confused-msg:bashes into a wall
-desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight.
+desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
+desc: through by immaterial monsters.  It stops any spells, missiles or line of
+desc: sight.
 
 name:magma vein with treasure
 graphics:*:o
@@ -263,9 +268,9 @@ priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
 info:0:2
 confused-msg:bashes into a wall
-desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight.  It contains visible treasure.
+desc:A seam of soft rock.  It can be removed by digging or magic, and passed
+desc: through by immaterial monsters.  It stops any spells, missiles or line of
+desc: sight.  It contains visible treasure.
 
 name:quartz vein with treasure
 graphics:*:y
@@ -273,9 +278,9 @@ priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 info:0:3
 confused-msg:bashes into a wall
-desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight.  It contains visible treasure.
+desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
+desc: through by immaterial monsters.  It stops any spells, missiles or line of
+desc: sight.  It contains visible treasure.
 
 name:granite wall
 graphics:#:W
@@ -283,17 +288,17 @@ priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:4
 confused-msg:bashes into a wall
-desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight. 
+desc:A seam of hard rock.  It can be removed by digging or magic, and passed
+desc: through by immaterial monsters.  It stops any spells, missiles or line of
+desc: sight.
 
 name:permanent wall
 graphics:#:z
 priority:10
 flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 confused-msg:bashes into a wall
-desc:You can dig through most walls but these are impenetrable.  The dungeon is 
-desc:surrounded by these kinds of walls and some special rooms are made of them.
+desc:You can dig through most walls but these are impenetrable.  The dungeon is
+desc: surrounded by these kinds of walls and some special rooms are made of them.
 
 ## New terrain
 
@@ -314,7 +319,7 @@ graphics:::u
 priority:13
 flags:ROCK | PASSABLE | INTERESTING | TORCH
 info:0:1
-desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
-desc:spells.  May dissolve or be tunnelled to normal floor, and can be walked 
-desc:through by the player and monsters.
+desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
+desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
+desc: through by the player and monsters.
 
