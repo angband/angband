@@ -128,11 +128,11 @@ code:COMBAT_REGEN
 bindui:imphp_ui_compact_0:0:1
 name:Combat Regeneration
 desc:You draw power from the thrill of combat, represented by
-desc: Spell Points (SP). You gain SP when damaged by an enemy or
-desc: when you attack in melee. As your blood cools your power fades;
+desc: Spell Points (SP).  You gain SP when damaged by an enemy or
+desc: when you attack in melee.  As your blood cools your power fades;
 desc: you lose SP at half the rate other classes gain them.
-desc: When you spend SP by casting a spell you regain some health, and
-desc: fading SP replenish your health more efficiently. The more damaged
+desc:  When you spend SP by casting a spell you regain some health, and
+desc: fading SP replenish your health more efficiently.  The more damaged
 desc: you are, the bigger these health gains will be.
 
 

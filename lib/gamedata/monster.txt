@@ -147,8 +147,9 @@
 # 'spells' is for spell flags, which work just like regular flags.
 
 # 'desc' is for description. As many desc: lines may be used as are needed to
-# describe the monster. Leading whitespace will be removed, and a single space
-# will be added between desc: lines.
+# describe the monster. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
 
 # 'drop' lines create possible drops for specific monsters.  Each item
 # has its percent chance rolled for individually.  Any specified drops are in
@@ -4858,7 +4859,7 @@ flags:IM_POIS | IM_ACID
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 spell-freq:10
 spells:TELE_TO | HOLD
-desc:The ancient grey willow tree, ruler of the Old Forest. He despises
+desc:The ancient grey willow tree, ruler of the Old Forest.  He despises
 desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
 desc:  Enormous it looked, its sprawling branches going up like racing arms
 desc: with many long-fingered hands, its knotted and twisted trunk gaping in
@@ -4885,9 +4886,9 @@ blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:3d8
 flags:NO_FEAR
-desc:A blinding whirlwind of fear and feathers. Its razor sharp beak and talons
-desc: fill its foes with terror as it seeks to rend flesh from bone with
-desc: unbridled ferocity.
+desc:A blinding whirlwind of fear and feathers.  Its razor sharp beak and
+desc: talons fill its foes with terror as it seeks to rend flesh from bone
+desc: with unbridled ferocity.
 
 name:Mirkwood spider
 base:spider
@@ -6053,7 +6054,7 @@ blow:CRAWL:EXP_10:1d5
 flags:EVIL | WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR | KILL_WALL
 flags:HURT_LIGHT | NO_FEAR | COLD_BLOOD | INVISIBLE
-desc:A writhing wormlike shimmer of blackness, large as your arm. It squirms
+desc:A writhing wormlike shimmer of blackness, large as your arm.  It squirms
 desc: through air and walls with equal facility, leaving void in its wake.
 
 name:giant firefly
@@ -6380,7 +6381,7 @@ innate-freq:5
 spells:BR_NEXU
 friends:100:2d7:Same
 desc:A locus of conflicting points coalesce to form the vague shape of a huge
-desc: hound. Or is it just your imagination?
+desc: hound.  Or is it just your imagination?
 
 name:vampire
 base:vampire
@@ -9929,7 +9930,7 @@ spells:WOUND
 spells:BO_MANA | BO_WATE
 desc:This sad creature - once a mighty warrior - betrayed his former friends to
 desc: Morgoth's army in return for, he thought, safety for himself and his
-desc: wife.   And so he fell under Morgoth's power and became little more than
+desc: wife.  And so he fell under Morgoth's power and became little more than
 desc: a mindless servant of evil, even though the other side of his "bargain"
 desc: was not kept.
 
@@ -11706,7 +11707,7 @@ spell-freq:12
 spells:CONF | SCARE
 spells:BR_COLD | BR_NETH
 desc:The skeletal form of a once-great dragon, enchanted by magic most
-desc: perilous.   Its animated form strikes with speed and drains life from its
+desc: perilous.  Its animated form strikes with speed and drains life from its
 desc: prey to satisfy its hunger.
 
 name:dracolisk
@@ -12711,7 +12712,7 @@ spell-freq:10
 spells:WOUND
 spells:BR_CHAO
 desc:"Beware the Jabberwock, my son!  The jaws that bite, the claws that catch!"
-desc: Run and run quickly, for death incarnate chases behind you!
+desc:  Run and run quickly, for death incarnate chases behind you!
 
 name:Tselakus, the Dreadlord
 base:ghost
@@ -12823,7 +12824,7 @@ spells:BOULDER
 spells:BO_PLAS | BA_FIRE
 spells:S_MONSTERS
 desc:Known as the giant of summer and the south, he towers above you
-desc: like a great elm. In his right hand, he holds the longest
+desc: like a great elm.  In his right hand, he holds the longest
 desc: sword you have ever beheld.
 
 name:nightcrawler
@@ -13155,7 +13156,7 @@ spells:S_AINU
 desc:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
 desc: sea has dragged himself down into Angband to send you to a watery grave.
 desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
-desc: the untamed power of the ocean. Terror grows in your heart with each
+desc: the untamed power of the ocean.  Terror grows in your heart with each
 desc: squelching step of his approach.
 
 
@@ -13187,7 +13188,7 @@ spells:BLIND | CONF | SCARE
 spells:BR_FIRE
 color-cycle:fancy:hell
 desc:A vast dragon of immense power.  Fire leaps continuously from its huge
-desc: form. The air around it scalds you.  Its slightest glance burns you, and
+desc: form.  The air around it scalds you.  Its slightest glance burns you, and
 desc: you truly realize how insignificant you are.
 
 name:great bile wyrm
@@ -13477,7 +13478,7 @@ spells:S_KIN
 desc:This enormous, hideous spirit of void is in the form of a spider of immense
 desc: proportions.  She is surrounded by a cloud of Unlight as she sucks in all
 desc: living light into her bloated body, and breathes out the blackest of
-desc: darkness. She is always ravenously hungry and would even eat herself to
+desc: darkness.  She is always ravenously hungry and would even eat herself to
 desc: avoid starvation.
 
 name:bronze golem

@@ -326,7 +326,7 @@ effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 desc:Produces a bolt that teleports away the first monster in its path.
-desc: Distance teleported increases with player level.
+desc:  Distance teleported increases with player level.
 
 spell:Resistance:20:20:65:20
 effect:SET_VALUE
@@ -557,7 +557,7 @@ effect:SHORT_BEAM:SHARD:4:5
 dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 3 + 2
 desc:Causes shards to explode in a line out of the earth, striking objects and
-desc: monsters. Length of the line increases with player level.
+desc: monsters.  Length of the line increases with player level.
 
 book:nature book:dungeon:[Creature Dominion]:5:nature
 book-graphics:?:o
@@ -1182,7 +1182,7 @@ effect:SHAPECHANGE:vampire
 effect:JUMP_AND_BITE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Allows you to assume the form of a vampire at the cost of half your 
+desc:Allows you to assume the form of a vampire at the cost of half your
 desc: current hitpoints, than teleports you to the nearest living monster
 desc: and drains a level-dependent number of hitpoints, healing and nourishing
 desc: you.  When first transformed you will temporarily be able
@@ -1462,7 +1462,7 @@ effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 desc:Produces a bolt that teleports away the first monster in its path.
-desc: Distance teleported increases with player level.
+desc:  Distance teleported increases with player level.
 
 spell:Teleport Level:35:17:65:80
 effect:TELEPORT_LEVEL
@@ -1700,7 +1700,7 @@ desc:Coats all your melee weapons with poison for 18+d18 turns.
 spell:Werewolf Form:32:30:40:100
 effect:SHAPECHANGE:werewolf
 desc:With a blood-curdling cry you change into a half-man half-wolf!
-desc: In this form you move, attack, and heal faster.
+desc:  In this form you move, attack, and heal faster.
 
 book:shadow book:dungeon:[Deadly Powers]:4:shadow
 
@@ -1708,7 +1708,7 @@ spell:Bloodlust:30:25:37:80
 effect:TIMED_INC:BLOODLUST:0:-1
 dice:10
 desc:Gives you a powerful desire to kill, increased every time you satisfy it.
-desc: Gives you extra melee damage and extra blows, but comes
+desc:  Gives you extra melee damage and extra blows, but comes
 desc: with dangerous side-effects.
 
 spell:Unholy Reprieve:34:45:60:120

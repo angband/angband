@@ -66,7 +66,7 @@
 # list-mon-race-flags.h or monster bases in monster_base.txt) and resistances
 # (based on list-elements.h).
 
-# 'desc' is for the artifact description.  These appear when the item is 
+# 'desc' is for the artifact description.  These appear when the item is
 # identified.  Special thanks to J.R.R Tolkien, without whom the words would
 # be unwritten, the images unconceived, the deed undone. -LM-
 # Contributors: Jeff Butler, Neal Hackler, Ethan Sicotte, Pat Tracy,
@@ -153,8 +153,8 @@ desc: sparks of white radiance shot with glints of the rainbow.
 #time:50+d50
 #msg:The {kind} glow{s} a deep green...
 #values:INT[2] | WIS[2] | INFRA[3] |  SEARCH[3] | LIGHT[3] | RES_CHAOS[1]
-#desc:A great globe with a heart of fire, the Palantír provides the wearer with 
-#desc:sight of far places - at a cost, for those espied upon are aware of it.
+#desc:A great globe with a heart of fire, the Palantír provides the wearer with
+#desc: sight of far places - at a cost, for those espied upon are aware of it.
 
 
 ### Swords and Daggers ###
@@ -437,7 +437,7 @@ values:RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
 brand:POIS_3
 slay:EVIL_2
 slay:DEMON_3
-desc:This black blade was forged of meteoric iron by Eöl the Dark Elf. It is
+desc:This black blade was forged of meteoric iron by Eöl the Dark Elf.  It is
 desc: imbued with the malice of its maker; as dangerous to its wielder as it is
 desc: deadly to his foes.
 
@@ -800,8 +800,8 @@ brand:ELEC_3
 slay:DRAGON_5
 act:HASTE1
 time:100+d100
-desc:A great ridged mace that surrounds you with a nimbus of living lightning.  
-desc:You remain utterly untouched, even as fat sparks crackle around your
+desc:A great ridged mace that surrounds you with a nimbus of living lightning.
+desc:  You remain utterly untouched, even as fat sparks crackle around your
 desc: fingers and eyebrows.
 
 name:'Nar-i-vagil'
@@ -873,8 +873,8 @@ slay:DRAGON_5
 slay:EVIL_2
 slay:UNDEAD_3
 slay:DEMON_3
-desc:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.  
-desc: It bears demolishing magics that no serpent or demon can withstand, and
+desc:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.
+desc:  It bears demolishing magics that no serpent or demon can withstand, and
 desc: invokes the strength of mountains to ward off the tumult of the elements.
 
 name:'Deathwreaker'
@@ -1295,8 +1295,8 @@ alloc:5:40 to 127
 attack:0d0:20:22
 armor:0:0
 values:DEX[3] | SPEED[1] | STEALTH[1] | SHOTS[10] | RES_DISEN[1]
-desc:The great bow of Beleg Cúthalion, the most famous archer of the Elves. 
-desc: Its backbone of black yew holds strings of bear sinew, and of old, only
+desc:The great bow of Beleg Cúthalion, the most famous archer of the Elves.
+desc:  Its backbone of black yew holds strings of bear sinew, and of old, only
 desc: Beleg himself could draw them.
 
 name:of Bard
@@ -1471,8 +1471,8 @@ values:SPEED[6] | RES_ELEC[3] | RES_SOUND[1]
 act:BERSERKER
 time:100
 desc:And they hewed off Gelmir's hands and feet, and his head last, within
-desc: sight of the Elves, and left him. By ill chance there stood Gwindor
-desc: of Nargothrond, the brother of Gelmir. Now his wrath was kindled to
+desc: sight of the Elves, and left him.  By ill chance there stood Gwindor
+desc: of Nargothrond, the brother of Gelmir.  Now his wrath was kindled to
 desc: madness, and he leapt forth on horseback, and many riders with him;
 desc: and they pursued the heralds and slew them, and drove on deep into
 desc: the main host.
@@ -1580,7 +1580,7 @@ values:RES_ACID[1] | RES_NEXUS[1] | RES_COLD[1] | RES_DARK[1]
 desc:A great helm, as steady and as distinctive as the hero of the Westdike.
 desc:  Many long months was Helm Hammerhand besieged in the Hornburg, yet he
 desc: strode out time and again among his foes and slew many.  Although they
-desc: knew of his coming, none could stand against him. 
+desc: knew of his coming, none could stand against him.
 
 name:of Berúthiel
 base-object:crown:Iron Crown
@@ -1767,7 +1767,7 @@ values:RES_DARK[1] | RES_DISEN[1]
 act:BANISHMENT
 time:500
 desc:A shimmering suit of true-silver, forged long ago by dwarven smiths of
-desc: legend. It gleams with purest white as you gaze upon it, and mighty are
+desc: legend.  It gleams with purest white as you gaze upon it, and mighty are
 desc: its powers to protect and banish.
 
 name:'Soulkeeper'
@@ -2037,7 +2037,7 @@ attack:1d1:0:0
 armor:2:20
 flags:PROT_CONF | HOLD_LIFE
 values:CON[4] | WIS[1] | INT[1] | RES_ELEC[1] | RES_SHARD[1]
-desc:The shield of Elros Tar-Minyatur, founder of Númenor. Granted long
+desc:The shield of Elros Tar-Minyatur, founder of Númenor.  Granted long
 desc: life by the Valar, even his shield became imbued with power.
 
 name:of Thorin
@@ -2080,8 +2080,8 @@ flags:SUST_STR | SUST_CON | PROT_FEAR | PROT_BLIND
 values:STR[2] | CON[2] | STEALTH[-2] | RES_POIS[1]
 act:BERSERKER
 time:50
-desc:The painted shield of a chieftain of Far Harad, gaudy and barbaric. 
-desc: Its wielder will fear nothing and fight with unnatural strength, but
+desc:The painted shield of a chieftain of Far Harad, gaudy and barbaric.
+desc:  Its wielder will fear nothing and fight with unnatural strength, but
 desc: also draw attention to himself.
 
 name:of Anárion
@@ -2327,7 +2327,7 @@ desc: return to the Shire.
 #flags:PROT_FEAR | PROT_BLIND | PROT_STUN | PROT_CONF
 #values:SEARCH[4] | SPEED[2] | RES_ELEC[1] | RES_COLD[1]
 #desc:The pendant of Amandil, the last Lord of Andúnië, and mighty
-#desc: ship-captain of Númenor. First among Númenóreans to see
+#desc: ship-captain of Númenor.  First among Númenóreans to see
 #desc: Sauron for what he was.
 
 
@@ -2346,8 +2346,8 @@ values:LIGHT[1] | RES_ELEC[3] | RES_DISEN[1] | RES_ACID[1] | RES_FIRE[1]
 values:RES_COLD[1] | RES_POIS[1] | RES_LIGHT[1] | RES_DARK[1]
 act:STAR_BALL
 time:50
-desc:A massive suit of heavy dragon scales deeply saturated with many colors.  
-desc: It throbs with angry energies, and you feel the raw elemental might of
+desc:A massive suit of heavy dragon scales deeply saturated with many colors.
+desc:  It throbs with angry energies, and you feel the raw elemental might of
 desc: untamed Lightning as you put it on.
 
 name:'Mediator'
