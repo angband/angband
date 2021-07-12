@@ -1458,6 +1458,11 @@ static void term_change_font(term_data *td)
 
 	/* Force choice if legal */
 	if (GetOpenFileName(&ofn)) {
+		/* Remember if tile size matched the font size. */
+		bool tile_match_size = !use_graphics_nice
+			&& td->tile_wid == td->font_wid
+			&& td->tile_hgt == td->font_hgt;
+
 		/* Force the font */
 		if (term_force_font(td, tmp)) {
 			/* Access the standard font file */
@@ -1474,8 +1479,11 @@ static void term_change_font(term_data *td)
 		/* HACK - Assume bizarre */
 		td->bizarre = true;
 
-		/* Reset the tile info */
-		if (!td->tile_wid || !td->tile_hgt) {
+		/*
+		 * Reset the tile info (if not already set or if matching
+		 * the font size.
+		 */
+		if (!td->tile_wid || !td->tile_hgt || tile_match_size) {
 			td->tile_wid = td->font_wid;
 			td->tile_hgt = td->font_hgt;
 		}
