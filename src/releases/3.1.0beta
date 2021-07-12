@@ -119,9 +119,7 @@ may be gone again next release.
 Gold drops have also been reworked.  By the end of the game, there is
 about 3.6x less gold per drop than in any earlier version or Angband
 or Moria, but the amount per drop at the beginning of the dungeon 
-is quite similar to pre-existing levels.  You may be interested in
-looking at http://rephial.org/research/avg_gold_drop.pdf for an
-illustration.
+is quite similar to pre-existing levels.
 
 Magic mapping and detection use the same-sized rectangular area around
 the player regardless of screen size.
