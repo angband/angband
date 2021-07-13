@@ -1382,7 +1382,7 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 
 	if (ammo) {
 		textblock_append(tb, "When fired, hits targets up to ");
-		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", range));
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d", range);
 		textblock_append(tb, " feet away.\n");
 	}
 
@@ -1568,7 +1568,7 @@ static bool describe_light(textblock *tb, const struct object *obj,
 
 	if (tval_is_light(obj)) {
 		textblock_append(tb, "Intensity ");
-		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", intensity));
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d", intensity);
 		textblock_append(tb, " light.");
 
 		if (!obj->artifact && !uses_fuel)
@@ -1811,7 +1811,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	switch (origins[origin].args)
 	{
 		case -1: return false;
-		case 0: textblock_append(tb, origins[origin].desc); break;
+		case 0: textblock_append(tb, "%s", origins[origin].desc); break;
 		case 1: textblock_append(tb, origins[origin].desc, loot_spot);
 				break;
 		case 2:

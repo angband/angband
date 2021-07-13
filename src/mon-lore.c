@@ -1151,7 +1151,8 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 
 	/* Mention the experience */
 	textblock_append(tb, " is worth ");
-	textblock_append_c(tb, COLOUR_BLUE, format("%s point%s", buf, PLURAL((exp_integer == 1) && (exp_fraction == 0))));
+	textblock_append_c(tb, COLOUR_BLUE, "%s point%s", buf,
+		PLURAL((exp_integer == 1) && (exp_fraction == 0)));
 
 	/* Take account of annoying English */
 	ordinal = "th";
