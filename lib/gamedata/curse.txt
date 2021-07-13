@@ -9,7 +9,64 @@
 # time: average frequency of random effect
 # flags: flag | flag | etc.
 # values: label[value] | label[value] | etc.
+# msg: text
 # desc: description
+# conflict: curse_name
+# conflict-flags: flag | flag | etc.
+
+# 'type' appends a kind of object (from object_base.txt) to the kinds which
+# can be afflicted with the curse.
+
+# 'combat' sets the adjustments to to-hit, to-damage, and AC for a cursed
+# object.  If not supplied, the adjustments are all zero.
+
+# 'effect' sets the name of the effect that'll randomly trigger on the cursed
+# object.  The fields are the name of the effect (from src/list-effects.h),
+# the subtype which is either an index or a name (look at effect_subtype()
+# in src/effects.c for more information), the radius, and the other parameter.
+# The effect name is required.  The others are optional, and the trailing ones
+# that are unused can be omitted.
+
+# 'dice' provides a random value to be used by the effect (for damage, healing,
+# duration, ...).
+
+# 'expr' provides an expression for use in the dice value for the effect.
+# It consists of a code letter (eg B) for the expression, a base function to
+# use (for example PLAYER_LEVEL), and a sequence of operations to perform on
+# that base.
+
+# 'msg' sets the text to display when the curse effect triggers.  If there
+# multiple 'msg' lines for a curse, they'll be concatenated.
+
+# 'time' sets a random expression.  Each time the curse effect happens, that
+# expression will be reevaluated to determine the number of turns until the
+# next time the curse effect will happen.
+
+# 'flags' is for the flags that the cursed object will have.  Those flags can
+# either be object flags (as found in src/list-object-flags.h) or element
+# flags (IGNORE_ or HATES_ with an element name from src/list-elements.h
+# appended).  As many 'flags' lines may be used as are needed to specify all
+# of the flags.  More than one flag can be set per line:  use '|' to separate
+# one flag from the next.
+
+# 'values' is for the object modifiers which take a value (stats, resistances,
+# and so on) that'll be present on the cursed item.  Like 'flags', values
+# are separated by '|' and as many 'values' lines as needed can be used.
+
+# 'desc' is for the description of the curse.  It will be included in the
+# description of the cursed object when the curse is known.  As many 'desc'
+# lines may be used as are needed to describe the curse.
+
+# 'conflict' sets the name of a curse that conflicts with this curse.
+# Two curses that conflict will not both be present on an object.  You may
+# use multiple 'conflict' lines to specify that this curse conflicts with
+# more than one other curse.
+
+# 'conflict-flags' lists the object flags (from src/list-object-flags.h) that
+# conflict with this curse:  this curse will not appear on an object that has
+# one or more of those flags.  More than one flag can be included on the line:
+# separate them with '|', and more than one 'conflicts-flags' lines may be
+# used to specify all of the conflicting flags.
 
 name:vulnerability
 combat:0:0:-50
