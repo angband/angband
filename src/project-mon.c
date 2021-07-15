@@ -1158,7 +1158,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Uniques cannot be polymorphed */
 		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			add_monster_message(mon, hurt_msg, false);
+			if (context->seen) add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -1171,7 +1171,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			savelvl = randint1(90);
 		if (mon->race->level > savelvl) {
 			if (typ == PROJ_MON_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
-			add_monster_message(mon, hurt_msg, false);
+			if (context->seen) add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -1184,14 +1184,23 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
-			add_monster_message(mon, hurt_msg, false);
+			if (context->seen) add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, grid, new, false, false, info,
 							  ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, grid);
-		} else {
+			/*
+			 * Note the appearance of the new one if it is visible
+			 * but the old one wasn't.
+			 */
+			if (!context->seen && context->mon
+					&& monster_is_visible(context->mon)) {
+				add_monster_message(context->mon,
+					MON_MSG_APPEAR, false);
+			}
+		} else if (context->seen) {
 			add_monster_message(mon, hurt_msg, false);
 		}
 	} else if (context->teleport_distance > 0) {
