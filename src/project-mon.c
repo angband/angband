@@ -1346,7 +1346,12 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	context.lore = lore;
 
 	/* See visible monsters */
-	if (monster_is_visible(mon)) {
+	if (monster_is_mimicking(mon)) {
+		if (monster_is_in_view(mon)) {
+			seen = true;
+			context.seen = true;
+		}
+	} else if (monster_is_visible(mon)) {
 		seen = true;
 		context.seen = seen;
 	}
