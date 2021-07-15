@@ -1009,7 +1009,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		/* Try the attack on the monster at (x, y) if any */
 		mon = square_monster(cave, path_g[i]);
 		if (mon) {
-			int visible = monster_is_visible(mon);
+			int visible = monster_is_obvious(mon);
 
 			bool fear = false;
 			const char *note_dies = monster_is_destroyed(mon) ? 
@@ -1065,7 +1065,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 					}
 
 					/* Track this monster */
-					if (monster_is_visible(mon)) {
+					if (monster_is_obvious(mon)) {
 						monster_race_track(p->upkeep, mon->race);
 						health_track(p->upkeep, mon);
 					}
@@ -1074,7 +1074,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 				/* Hit the monster, check for death */
 				if (!mon_take_hit(mon, dmg, &fear, note_dies)) {
 					message_pain(mon, dmg);
-					if (fear && monster_is_visible(mon)) {
+					if (fear && monster_is_obvious(mon)) {
 						add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 					}
 				}
@@ -1122,7 +1122,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	my_strcpy(hit_verb, "hits", 20);
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
+	if (!test_hit(chance, mon->race->ac, monster_is_obvious(mon)))
 		return result;
 
 	result.success = true;
@@ -1159,7 +1159,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	my_strcpy(hit_verb, "hits", 20);
 
 	/* If we missed then we're done */
-	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
+	if (!test_hit(chance, mon->race->ac, monster_is_obvious(mon)))
 		return result;
 
 	result.success = true;
