@@ -99,7 +99,6 @@ bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
 bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
 						bool domsg);
 void square_memorize_traps(struct chunk *c, struct loc grid);
-bool trap_check_hit(int power);
 void hit_trap(struct loc grid, int delayed);
 bool square_player_trap_allowed(struct chunk *c, struct loc grid);
 void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level);

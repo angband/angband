@@ -531,6 +531,28 @@ bool randcalc_varies(random_value v)
 	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
 }
 
+/**
+ * Roll on a random chance and check for success.
+ *
+ * \param c The random_chance to roll on
+ */
+bool check_random_chance(random_chance c)
+{
+	return randint0(c.denominator) < c.numerator;
+}
+
+/**
+ * Return a percentage based on the random chance, with the given scale. For
+ * example, a chance of 7 / 13 (53.8%) with scale 100 would be 53
+ *
+ * \param c The random_chance converted to a percentage
+ * \param scale The scale by which the ratio is multiplied
+ */
+int calc_random_chance(random_chance c, int scale)
+{
+	return scale * c.numerator / c.denominator;
+}
+
 void rand_fix(u32b val)
 {
 	rand_fixed = true;

@@ -327,6 +327,38 @@ static int monster_spell_failrate(struct monster *mon)
 }
 
 /**
+ * Calculate the base to-hit value for a monster attack based on race only.
+ * See also: chance_of_spell_hit_base
+ *
+ * \param race The monster race
+ * \param effect The attack
+ */
+int chance_of_monster_hit_base(const struct monster_race *race,
+	const struct blow_effect *effect)
+{
+	return MAX(race->level, 1) * 3 + effect->power;
+}
+
+/**
+ * Calculate the to-hit value of a monster attack for a specific monster
+ *
+ * \param mon The monster
+ * \param effect The attack
+ */
+int chance_of_monster_hit(const struct monster *mon,
+	const struct blow_effect *effect)
+{
+	int to_hit = chance_of_monster_hit_base(mon->race, effect);
+
+	/* Apply stun hit reduction if applicable */
+	if (mon->m_timed[MON_TMD_STUN]) {
+		to_hit = to_hit * (100 - STUN_HIT_REDUCTION) / 100;
+	}
+
+	return to_hit;
+}
+
+/**
  * Creatures can cast spells, shoot missiles, and breathe.
  *
  * Returns "true" if a spell (or whatever) was (successfully) cast.
@@ -490,48 +522,15 @@ static int monster_critical(random_value dice, int rlev, int dam)
 }
 
 /**
- * Determine if a monster attack against the player succeeds.
+ * Determine if an attack against the player succeeds.
  */
-bool check_hit(struct player *p, int power, int level, int accuracy)
+bool check_hit(struct player *p, int to_hit)
 {
-	int chance, ac;
-
-	/* Calculate the "attack quality" */
-	chance = (power + (level * 3));
-
-	/* Total armor */
-	ac = p->state.ac + p->state.to_a;
-
-	/* If the monster checks vs ac, the player learns ac bonuses */
+	/* If anything checks vs ac, the player learns ac bonuses */
 	equip_learn_on_defend(p);
 
-	/* Apply accuracy */
-	chance *= accuracy;
-	chance /= 100;
-
 	/* Check if the player was hit */
-	return test_hit(chance, ac, true);
-}
-
-/**
- * Determine if a monster attack against a monster succeeds.
- */
-bool check_hit_monster(struct monster *mon, int power, int level, int accuracy)
-{
-	int chance, ac;
-
-	/* Calculate the "attack quality" */
-	chance = (power + (level * 3));
-
-	/* Total armor */
-	ac = mon->race->ac;
-
-	/* Apply accuracy */
-	chance *= accuracy;
-	chance /= 100;
-
-	/* Check if the monster was hit */
-	return test_hit(chance, ac, true);
+	return test_hit(to_hit, p->state.ac + p->state.to_a);
 }
 
 /**
@@ -554,7 +553,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	char m_name[80];
 	char ddesc[80];
 	bool blinked = false;
-	int accuracy = 100 - (mon->m_timed[MON_TMD_STUN] ? STUN_HIT_REDUCTION : 0);
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -592,7 +590,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		/* Monster hits player */
 		assert(effect);
 		if (streq(effect->name, "NONE") ||
-			check_hit(p, effect->power, rlev, accuracy)) {
+			check_hit(p, chance_of_monster_hit(mon, effect))) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
@@ -786,7 +784,6 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	char m_name[80];
 	char t_name[80];
 	bool blinked = false;
-	int accuracy = 100 - (mon->m_timed[MON_TMD_STUN] ? STUN_HIT_REDUCTION : 0);
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -818,7 +815,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		/* Monster hits monster */
 		assert(effect);
 		if (streq(effect->name, "NONE") ||
-			check_hit_monster(t_mon, effect->power, rlev, accuracy)) {
+			test_hit(chance_of_monster_hit(mon, effect), t_mon->race->ac)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Describe the attack method */

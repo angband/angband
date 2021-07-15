@@ -54,6 +54,6 @@ int mon_timed_name_to_idx(const char *name);
 bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag);
 bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag);
 bool mon_clear_timed(struct monster *mon, int effect_type, int flag);
-int monster_effect_level(struct monster *mon, int effect_type);
+int monster_effect_level(const struct monster *mon, int effect_type);
 
 #endif /* MONSTER_TIMED_H */
