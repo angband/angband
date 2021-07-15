@@ -1357,6 +1357,12 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (monster_is_destroyed(mon))
 		context.die_msg = MON_MSG_DESTROYED;
 
+	/* Reveal a camouflaged monster if in view and it stopped an effect. */
+	if ((flg & PROJECT_STOP) && monster_is_camouflaged(mon)
+			&& monster_is_in_view(mon)) {
+		become_aware(mon);
+	}
+
 	/* Force obviousness for certain types if seen. */
 	if (projections[typ].obvious && context.seen)
 		context.obvious = true;
