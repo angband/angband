@@ -544,22 +544,25 @@ errr init_nds(void)
 }
 
 /*
- * Init some stuff
+ * Initialize file path information
  *
  * This function is used to keep the "path" variable off the stack.
  */
-static void init_stuff(void)
+static void init_files(void)
 {
 	char path[1024];
 
 	/* Prepare the path */
 	strcpy(path, "/angband/lib/");
 
-	/* Prepare the filepaths */
+	/* Pass the paths to the game */
 	init_file_paths(path, path, path);
 
-	/* Hack */
+	/* Set the savefile path to a well-known value */
 	strcpy(savefile, "/angband/lib/save/PLAYER");
+
+	/* Create all the missing required directories */
+	create_needed_dirs();
 }
 
 /*
@@ -661,8 +664,8 @@ int main(int argc, char *argv[])
 	/* XXX XXX XXX */
 	ANGBAND_SYS = "nds";
 
-	/* Initialize some stuff */
-	init_stuff();
+	/* Set up file paths */
+	init_files();
 
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
