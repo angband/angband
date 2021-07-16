@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "init.h"
+#include "game-world.h"
 #include "monster.h"
 #include "player-calcs.h"
 #include "player-timed.h"
@@ -525,11 +526,12 @@ static bool source_can_light_wall(struct chunk *c, struct player *p,
  * \param c Is the chunk in which to do the evaluation.
  * \param p Is the player to test.
  * \param wgrid Is the location of the wall.
+ * \param sunlit Is true if the level is lit by the sun.
  * \return Return true if the wall will appear to be lit for the player.
  * Otherwise, return false.
  */
 static bool glow_can_light_wall(struct chunk *c, struct player *p,
-		struct loc wgrid)
+		struct loc wgrid, bool sunlit)
 {
 	struct loc pn = next_grid(wgrid, motion_dir(wgrid, p->grid)), chk;
 
@@ -539,10 +541,10 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	if (loc_eq(pn, wgrid)) return true;
 
 	/*
-	 * If the grid in the direction of the player is not a wall, is in a
-	 * room, and is glowing, it'll illuminate the wall.
+	 * If the grid in the direction of the player is not a wall, is either
+	 * sunlit or in a room, and is glowing, it'll illuminate the wall.
 	 */
-	if (!square_iswall(c, pn) && square_isroom(c, pn) &&
+	if (!square_iswall(c, pn) && (sunlit || square_isroom(c, pn)) &&
 			square_isglow(c, pn)) return true;
 
 	/*
@@ -555,13 +557,15 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 		if (pn.y != wgrid.y) {
 			chk.x = pn.x;
 			chk.y = wgrid.y;
-			if (!square_iswall(c, chk) && square_isroom(c, chk) &&
+			if (!square_iswall(c, chk) &&
+					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.x = wgrid.x;
 			chk.y = pn.y;
-			if (!square_iswall(c, chk) && square_isroom(c, chk) &&
+			if (!square_iswall(c, chk) &&
+					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -570,14 +574,14 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 			chk.y = wgrid.y - 1;
 			if (square_in_bounds(c, chk) &&
 					!square_iswall(c, chk) &&
-					square_isroom(c, chk) &&
+					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.y = wgrid.y + 1;
 			if (square_in_bounds(c, chk) &&
 					!square_iswall(c, chk) &&
-					square_isroom(c, chk) &&
+					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -586,13 +590,13 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 		chk.y = pn.y;
 		chk.x = wgrid.x - 1;
 		if (square_in_bounds(c, chk) && !square_iswall(c, chk) &&
-				square_isroom(c, chk) &&
+				(sunlit || square_isroom(c, chk)) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;
 		chk.x = wgrid.x + 1;
 		if (square_in_bounds(c, chk) && !square_iswall(c, chk) &&
-				square_isroom(c, chk) &&
+				(sunlit || square_isroom(c, chk)) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;
@@ -659,6 +663,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	int dir, k, x, y;
 	int light = p->state.cur_light, radius = ABS(light) - 1;
 	int old_light = square_light(c, p->grid);
+	bool sunlit = (c->depth == 0) && is_daytime();
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -667,7 +672,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 
 			if (square_isglow(c, grid) &&
 					(!square_iswall(c, grid) ||
-					glow_can_light_wall(c, p, grid))) {
+					glow_can_light_wall(c, p, grid, sunlit))) {
 				c->squares[y][x].light = 1;
 			} else {
 				c->squares[y][x].light = 0;
