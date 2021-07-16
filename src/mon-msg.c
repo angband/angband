@@ -145,7 +145,7 @@ static int message_flags(const struct monster *mon)
 		flags |= MON_MSG_FLAG_OFFSCREEN;
 	}
 
-	if (!monster_is_visible(mon)) {
+	if (!monster_is_obvious(mon)) {
 		flags |= MON_MSG_FLAG_INVISIBLE;
 	}
 

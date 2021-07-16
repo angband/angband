@@ -762,6 +762,9 @@ void become_aware(struct monster *mon)
 			 * done below outside of the if block.
 			 */
 			square_delete_object(cave, obj->grid, obj, false, false);
+
+			/* Since mimicry affects visibility, update that. */
+			update_mon(mon, cave, false);
 		}
 
 		/* Update monster and item lists */
