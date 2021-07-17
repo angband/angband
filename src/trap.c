@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "mon-attack.h"
 #include "mon-util.h"
 #include "obj-knowledge.h"
 #include "player-attack.h"
@@ -470,17 +471,6 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 }
 
 /**
- * Determine if a trap affects the player.
- * Always miss 5% of the time, Always hit 5% of the time.
- * Otherwise, match trap power against player armor.
- */
-bool trap_check_hit(int power)
-{
-	return test_hit(power, player->state.ac + player->state.to_a, true);
-}
-
-
-/**
  * Hit a trap. 
  */
 extern void hit_trap(struct loc grid, int delayed)
@@ -528,7 +518,8 @@ extern void hit_trap(struct loc grid, int delayed)
 			}
 
 		/* Test for save due to armor */
-		if (trf_has(trap->kind->flags, TRF_SAVE_ARMOR) && !trap_check_hit(125))
+		if (trf_has(trap->kind->flags, TRF_SAVE_ARMOR)
+			&& !check_hit(player, 125))
 			saved = true;
 
 		/* Test for save due to saving throw */

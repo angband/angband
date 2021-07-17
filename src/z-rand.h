@@ -45,6 +45,14 @@ typedef struct random {
 } random_value;
 
 /**
+ * A struct representing a random chance of success, such as 8 in 125 (6.4%).
+ */
+typedef struct random_chance_s {
+	s32b numerator;
+	s32b denominator;
+} random_chance;
+
+/**
  * The number of 32-bit integers worth of seed state.
  */
 #define RAND_DEG 32
@@ -190,6 +198,10 @@ bool randcalc_valid(random_value v, int test);
  * Test to see if a random_value actually varies.
  */
 bool randcalc_varies(random_value v);
+
+bool random_chance_check(random_chance c);
+
+int random_chance_scaled(random_chance c, int scale);
 
 extern void rand_fix(u32b val);
 
