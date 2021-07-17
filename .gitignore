@@ -59,5 +59,6 @@ src/angband-master
 src/autoconf.h
 src/autoconf.h.in
 src/config
+src/stats/db.dep
 src/tests/bin/
 src/tests/ran-already
