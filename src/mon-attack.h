@@ -19,10 +19,14 @@
 #ifndef MONSTER_ATTACK_H
 #define MONSTER_ATTACK_H
 
+#include "monster.h"
+#include "mon-blows.h"
+
 int choose_attack_spell(bitflag *f, bool innate, bool non_innate);
+int chance_of_monster_hit_base(const struct monster_race *race,
+	const struct blow_effect *effect);
 bool make_ranged_attack(struct monster *mon);
-bool check_hit(struct player *p, int power, int level, int accuracy);
-bool check_hit_monster(struct monster *mon, int power, int level, int accuracy);
+bool check_hit(struct player *p, int to_hit);
 int adjust_dam_armor(int damage, int ac);
 bool make_attack_normal(struct monster *mon, struct player *p);
 bool monster_attack_monster(struct monster *mon, struct monster *t_mon);

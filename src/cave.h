@@ -267,6 +267,7 @@ void light_room(struct loc grid, bool light);
 void wiz_light(struct chunk *c, struct player *p, bool full);
 void wiz_dark(struct chunk *c, struct player *p, bool full);
 void cave_illuminate(struct chunk *c, bool daytime);
+void expose_to_sun(struct chunk *c, struct loc grid, bool daytime);
 void cave_update_flow(struct chunk *c);
 void cave_forget_flow(struct chunk *c);
 

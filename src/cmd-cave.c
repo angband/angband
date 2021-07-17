@@ -22,6 +22,7 @@
 #include "cmds.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-attack.h"
@@ -569,6 +570,12 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		} else {
 			msg("You have finished the tunnel.");
 		}
+		/* On the surface, new terrain may be exposed to the sun. */
+		if (cave->depth == 0) expose_to_sun(cave, grid, is_daytime());
+		/* Update the visuals. */
+		square_memorize(cave, grid);
+		square_light_spot(cave, grid);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	} else if (chance > 0) {
 		/* Failure, continue digging */
 		if (rubble)
