@@ -556,6 +556,12 @@ int random_chance_scaled(random_chance c, int scale)
 	return scale * c.numerator / c.denominator;
 }
 
+/**
+ * Cause the output from Rand_div() to be fixed rather than random.
+ *
+ * \param val Is the percent of the maximum value that Rand_div() will
+ * return.  val should be between 0 and 100, inclusive.
+ */
 void rand_fix(u32b val)
 {
 	rand_fixed = true;
