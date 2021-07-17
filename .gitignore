@@ -62,3 +62,4 @@ src/autoconf.h.in
 src/angband
 src/config
 src/*.o.*
+src/**/*.o
