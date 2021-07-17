@@ -531,6 +531,12 @@ bool randcalc_varies(random_value v)
 	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
 }
 
+/**
+ * Cause the output from Rand_div() to be fixed rather than random.
+ *
+ * \param val Is the percent of the maximum value that Rand_div() will
+ * return.  val should be between 0 and 100, inclusive.
+ */
 void rand_fix(u32b val)
 {
 	rand_fixed = true;
