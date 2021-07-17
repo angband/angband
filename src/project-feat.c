@@ -173,6 +173,9 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		square_destroy_wall(cave, grid);
 	}
 
+	/* On the surface, new terrain may be exposed to the sun. */
+	if (cave->depth == 0) expose_to_sun(cave, grid, is_daytime());
+
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 }
@@ -199,6 +202,9 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 
 		/* Destroy the feature */
 		square_destroy_door(cave, grid);
+
+		/* On the surface, new terrain may be exposed to the sun. */
+		if (cave->depth == 0) expose_to_sun(cave, grid, is_daytime());
 	}
 }
 
@@ -318,6 +324,8 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
 		square_set_feat(cave, context->grid, FEAT_LAVA);
+		if (cave->depth == 0)
+			expose_to_sun(cave, context->grid, is_daytime());
 
 		/* Objects that have survived should move */
 		push_object(context->grid);
@@ -345,6 +353,8 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 		} else {
 			square_set_feat(cave, context->grid, FEAT_PASS_RUBBLE);
 		}
+		if (cave->depth == 0)
+			expose_to_sun(cave, context->grid, is_daytime());
 	}
 }
 
@@ -453,6 +463,8 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 		} else {
 			square_set_feat(cave, context->grid, FEAT_PASS_RUBBLE);
 		}
+		if (cave->depth == 0)
+			expose_to_sun(cave, context->grid, is_daytime());
 	}
 }
 
@@ -506,6 +518,8 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
 		square_set_feat(cave, context->grid, FEAT_LAVA);
+		if (cave->depth == 0)
+			expose_to_sun(cave, context->grid, is_daytime());
 
 		/* Objects that have survived should move */
 		push_object(context->grid);

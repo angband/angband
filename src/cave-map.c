@@ -603,6 +603,21 @@ void cave_illuminate(struct chunk *c, bool daytime)
 }
 
 /**
+ * Expose one grid on the surface to the sun.
+ *
+ * Update the SQUARE_GLOW flag for one grid as cave_illuminate() would do based
+ * on the new terrain in the grid.
+ */
+void expose_to_sun(struct chunk *c, struct loc grid, bool daytime)
+{
+	if (daytime || !square_isfloor(c, grid)) {
+		sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+	} else if (!square_isbright(c, grid)) {
+		sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
+	}
+}
+
+/**
  * Make map features known, except wall/lava surrounded by wall/lava
  */
 void cave_known(struct player *p)
