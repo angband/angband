@@ -45,6 +45,24 @@ this if you are already in the src directory from the compilation step::
     cd ../Angband.app/Contents/MacOS
     lldb ./angband
 
+Test cases
+~~~~~~~~~~
+
+To compile and run the unit tests, do this::
+
+    cd src
+    make -f Makefile.osx tests
+
+If you want to rerun just one part, say monster/attack, of the unit tests,
+that's most easily done by::
+
+    cd src/tests
+    bin/tests/monster/attack
+
+The reason for changing directories to src/tests is to match up with how the
+tests were compiled:  they expect Angband's configuration data to be in
+../../lib.
+
 Linux / other UNIX
 ------------------
 
@@ -220,6 +238,41 @@ When debugging crashes it can be very useful to get more information about *what
 Note that compiling with this tools will require installing additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
 
 There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
+
+Test cases
+~~~~~~~~~~
+
+To compile and run the unit tests if you used ./configure --with-no-install,
+do this::
+
+    make tests
+
+If you want to rerun just one part, say monster/attack, of the unit tests,
+that's most easily done by directly running from the top-level directory::
+
+    src/tests/bin/monster/attack
+
+There's a separate set of tests that use scripts to control a character in
+the full game.  To run those tests, you'll need to enable the test module
+when running configure and then run the run-tests script in the top-level
+directory::
+
+    ./configure --with-no-install --enable-test
+    make
+    ./run-tests
+
+To compile and run the unit tests and run the run-tests script while using
+CMake, do the following::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_TEST_FRONTEND=ON ..
+    make alltests
+
+If you only want the unit tests while using CMake, its a little simpler::
+
+    mkdir build && cd build
+    cmake ..
+    make allunittests
 
 Windows
 -------
