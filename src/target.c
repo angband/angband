@@ -423,7 +423,13 @@ bool target_sighted(void)
 #define TS_INITIAL_SIZE	20
 
 /**
- * Return a target set of target_able monsters.
+ * Return a target set of interesting locations including monsters, objects,
+ * traps, and features.
+ *
+ * \mode If mode includes TARGET_KILL, only target_able monsters matching pred
+ *       are included
+ * \pred The monster predicate used to filter monsters (optional)
+ * \restrict_to_panel Restricts the interesting points to the current panel
  */
 struct point_set *target_get_monsters(int mode, monster_predicate pred,
 		bool restrict_to_panel)
