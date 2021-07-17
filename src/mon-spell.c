@@ -220,7 +220,7 @@ static void spell_check_for_fail_rune(const struct monster_spell *spell)
  * \param race The monster race
  * \param spell The spell
  */
-int chance_of_spell_hit_base(const struct monster_race *race,
+static int chance_of_spell_hit_base(const struct monster_race *race,
 	const struct monster_spell *spell)
 {
 	return MAX(race->level, 1) * 3 + spell->hit;
@@ -232,7 +232,7 @@ int chance_of_spell_hit_base(const struct monster_race *race,
  * \param mon The monster
  * \param spell The spell
  */
-int chance_of_spell_hit(const struct monster *mon,
+static int chance_of_spell_hit(const struct monster *mon,
 	const struct monster_spell *spell)
 {
 	int to_hit = chance_of_spell_hit_base(mon->race, spell);
