@@ -536,9 +536,10 @@ bool randcalc_varies(random_value v)
  *
  * \param c The random_chance to roll on
  */
-bool check_random_chance(random_chance c)
+bool random_chance_check(random_chance c)
 {
-	return randint0(c.denominator) < c.numerator;
+	/* Calculated so that high rolls pass the check */
+	return randint0(c.denominator) >= c.denominator - c.numerator;
 }
 
 /**
@@ -548,7 +549,7 @@ bool check_random_chance(random_chance c)
  * \param c The random_chance converted to a percentage
  * \param scale The scale by which the ratio is multiplied
  */
-int calc_random_chance(random_chance c, int scale)
+int random_chance_percent(random_chance c, int scale)
 {
 	return scale * c.numerator / c.denominator;
 }

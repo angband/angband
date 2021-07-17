@@ -174,7 +174,7 @@ bool test_hit(int to_hit, int ac)
 {
 	random_chance c;
 	hit_chance(&c, to_hit, ac);
-	return check_random_chance(c);
+	return random_chance_check(c);
 }
 
 /**

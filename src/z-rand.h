@@ -199,9 +199,9 @@ bool randcalc_valid(random_value v, int test);
  */
 bool randcalc_varies(random_value v);
 
-bool check_random_chance(random_chance c);
+bool random_chance_check(random_chance c);
 
-int calc_random_chance(random_chance c, int scale);
+int random_chance_percent(random_chance c, int scale);
 
 extern void rand_fix(u32b val);
 
