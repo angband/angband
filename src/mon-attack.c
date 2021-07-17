@@ -345,7 +345,7 @@ int chance_of_monster_hit_base(const struct monster_race *race,
  * \param mon The monster
  * \param effect The attack
  */
-int chance_of_monster_hit(const struct monster *mon,
+static int chance_of_monster_hit(const struct monster *mon,
 	const struct blow_effect *effect)
 {
 	int to_hit = chance_of_monster_hit_base(mon->race, effect);
