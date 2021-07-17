@@ -201,7 +201,7 @@ bool randcalc_varies(random_value v);
 
 bool random_chance_check(random_chance c);
 
-int random_chance_percent(random_chance c, int scale);
+int random_chance_scaled(random_chance c, int scale);
 
 extern void rand_fix(u32b val);
 

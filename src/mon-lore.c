@@ -1085,7 +1085,7 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 		/* Player's base chance to hit */
 		random_chance c;
 		hit_chance(&c, chance_of_melee_hit_base(player, weapon), race->ac);
-		int percent = random_chance_percent(c, 100);
+		int percent = random_chance_scaled(c, 100);
 
 		textblock_append(tb, "You have a");
 		if (percent == 8 || percent / 10 == 8)
@@ -1703,7 +1703,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			random_chance c;
 			hit_chance(&c, chance_of_monster_hit_base(race, race->blow[i].effect),
 				player->state.ac + player->state.to_a);
-			int percent = random_chance_percent(c, 100);
+			int percent = random_chance_scaled(c, 100);
 			textblock_append_c(tb, COLOUR_L_BLUE, "%d", percent);
 			textblock_append(tb, "%%)");
 
