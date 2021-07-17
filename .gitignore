@@ -3,14 +3,14 @@ autom4te.cache/
 config.log
 config.status
 configure
-lib/scores/scores.*
+lib/user/scores/scores.*
 *.out
 *.exe
 *.elf
 *.map
 angband
 angband.nds
-lib/save/*
+lib/user/save/*
 .project
 .cproject
 *.orig
@@ -37,3 +37,8 @@ Release/
 /*.vcxproj*
 .idea/
 cmake-build-debug/
+.settings
+lib/user/lore.txt
+lib/user/sdl2init.txt
+lib/user/window.prf
+lib/user/CharOutput.txt
