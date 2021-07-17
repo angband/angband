@@ -21,7 +21,7 @@ int setup_tests(void **state) {
 	r_info = r;
 	*state = m;
 
-	rand_fix(100);
+	rand_fix(10);
 	return 0;
 }
 
