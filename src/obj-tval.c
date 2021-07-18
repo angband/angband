@@ -162,6 +162,11 @@ bool tval_is_sharp_missile(const struct object *obj)
 	}
 }
 
+bool tval_is_bolt(const struct object *obj)
+{
+	return obj->tval == TV_BOLT;
+}
+
 bool tval_is_launcher(const struct object *obj)
 {
 	return obj->tval == TV_BOW;
