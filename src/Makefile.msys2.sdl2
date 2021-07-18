@@ -38,6 +38,7 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 	-lbrotlicommon-static \
 	-lgraphite2 \
 	-lpng \
+	-ldeflate \
 	-ljpeg \
 	-lbz2 \
 	-lintl \
@@ -60,11 +61,15 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 # Compiler to use
 CC := gcc
 
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
+	-Wno-missing-field-initializers -Wwrite-strings -Wmissing-prototypes \
+	-Wnested-externs -Wshadow -Wunused-macros
+
 # Flags to use in compilation
 CFLAGS := -std=c99 \
 	-g \
 	-O2 \
-	-W -Wall -Wextra -Wno-unused-parameter -pedantic \
+	$(WARNINGS) -pedantic \
 	-static \
 	-DUSE_PRIVATE_PATHS \
 	-DHAVE_DIRENT_H \

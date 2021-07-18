@@ -35,7 +35,7 @@
  */
 # if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
   || (defined(_MSC_VER) && _MSC_VER >= 1600L)
-#  define HAVE_STDINT_H
+#  define HAVE_STDINT_H 1
 # endif
 
 # if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L

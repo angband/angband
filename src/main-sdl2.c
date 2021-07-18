@@ -24,6 +24,7 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 
+#include "main.h"
 #include "init.h"
 #include "ui-term.h"
 #include "buildid.h"
@@ -96,7 +97,6 @@
 	(DEFAULT_BORDER * 2)
 #define DEFAULT_VISIBLE_BORDER 2
 
-#define DEFAULT_FONT_SIZE 0
 /* XXX hack: the widest character present in a font
  * for determining font advance (width) */
 #define GLYPH_FOR_ADVANCE 'W'
@@ -107,8 +107,6 @@
 #define DEFAULT_FONT_H 20
 
 #define DEFAULT_STATUS_BAR_FONT "8x13x.fon"
-#define DEFAULT_STATUS_BAR_FONT_W 8
-#define DEFAULT_STATUS_BAR_FONT_H 13
 
 #define MAX_VECTOR_FONT_SIZE 24
 #define MIN_VECTOR_FONT_SIZE 4
@@ -3870,7 +3868,7 @@ static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 }
 
 static errr term_pict_hook(int col, int row, int n,
-		const int *ap, const wchar_t *cp, const int *tap, const int *tcp)
+		const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
 	int dhrclip;
 	struct subwindow *subwindow = Term->data;
@@ -4032,9 +4030,9 @@ static void term_view_map_text(struct subwindow *subwindow)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 }
 
-static void term_view_map_hook(term *term)
+static void term_view_map_hook(term *terminal)
 {
-	struct subwindow *subwindow = term->data;
+	struct subwindow *subwindow = terminal->data;
 	if (subwindow->window->graphics.id == GRAPHICS_NONE) {
 		term_view_map_text(subwindow);
 	} else {
@@ -5620,7 +5618,7 @@ static void init_systems(void)
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 }
 
-int init_sdl2(int argc, char **argv)
+errr init_sdl2(int argc, char **argv)
 {
 	init_systems();
 	init_globals();
