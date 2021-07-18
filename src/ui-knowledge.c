@@ -2860,7 +2860,7 @@ static void shape_lore_append_protection_flags(textblock *tb,
 	}
 
 	if (n > 0) {
-		textblock_append(tb, "Provides projection from");
+		textblock_append(tb, "Provides protection from");
 		shape_lore_append_list(tb, msgs, n);
 		textblock_append(tb, ".\n");
 		for (i = 0; i < n; ++i) {
