@@ -677,7 +677,7 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 		{
 			random_value value = { 0, 0, 0, 0 };
 			char dist[32];
-			int avg;
+			int avg = 0;
 
 			if (e->dice) {
 				avg = dice_evaluate(e->dice, 1, AVERAGE,
