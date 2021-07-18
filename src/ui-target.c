@@ -887,7 +887,7 @@ static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
  * Return true if the object pile contains the player's tracked object
  */
 static bool pile_is_tracked(const struct object *obj) {
-	for (struct object *o = obj; o != NULL; o = o->next) {
+	for (const struct object *o = obj; o != NULL; o = o->next) {
 		if (player->upkeep->object == o) {
 			return true;
 		}
@@ -899,7 +899,7 @@ static bool pile_is_tracked(const struct object *obj) {
  * Return true if the object pile contains at least 1 known item
  */
 static bool pile_has_known(const struct object *obj) {
-	for (struct object *o = obj; o != NULL; o = o->next) {
+	for (const struct object *o = obj; o != NULL; o = o->next) {
 		struct object *base_obj = cave->objects[o->oidx];
 		if (!is_unknown(base_obj)) {
 			return true;
