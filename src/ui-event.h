@@ -237,5 +237,11 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src);
 
 extern bool char_matches_key(wchar_t c, keycode_t key);
 
+bool event_is_key(ui_event e, keycode_t key);
+
+bool event_is_mouse(ui_event e, byte button);
+
+bool event_is_mouse_m(ui_event e, byte button, byte mods);
+
 
 #endif /* INCLUDED_UI_EVENT_H */

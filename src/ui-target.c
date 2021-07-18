@@ -95,7 +95,7 @@ int target_dir_allow(struct keypress ch, bool allow_5)
 /**
  * Display targeting help at the bottom of the screen.
  */
-void target_display_help(bool monster, bool free)
+void target_display_help(bool monster, bool object, bool free)
 {
 	/* Determine help location */
 	int wid, hgt, help_loc;
@@ -116,34 +116,36 @@ void target_display_help(bool monster, bool free)
 	text_out_c(COLOUR_L_GREEN, "<click>");
 	text_out(" look around. '");
 	text_out_c(COLOUR_L_GREEN, "g");
-	text_out(" moves to the selection. '");
+	text_out("' moves to selection. '");
 	text_out_c(COLOUR_L_GREEN, "p");
-	text_out("' selects the player. '");
+	text_out("' selects player. '");
 	text_out_c(COLOUR_L_GREEN, "q");
 	text_out("' exits. '");
 	text_out_c(COLOUR_L_GREEN, "r");
 	text_out("' displays details. '");
 
-	if (free)
-	{
+	if (free) {
 		text_out_c(COLOUR_L_GREEN, "m");
-		text_out("' restricts to interesting places. ");
-	}
-	else
-	{
+		text_out("' restricts to interesting places.");
+	} else {
 		text_out_c(COLOUR_L_GREEN, "+");
 		text_out("' and '");
 		text_out_c(COLOUR_L_GREEN, "-");
-		text_out("' cycle through interesting places. '");
+		text_out("' cycle through places. '");
 		text_out_c(COLOUR_L_GREEN, "o");
-		text_out("' allows free selection. ");
+		text_out("' allows free selection.");
 	}
 	
-	if (monster || free)
-	{
-		text_out("'");
+	if (monster || free) {
+		text_out(" '");
 		text_out_c(COLOUR_L_GREEN, "t");
-		text_out("' targets the current selection.");
+		text_out("' targets selection.");
+	}
+
+	if (object) {
+		text_out(" '");
+		text_out_c(COLOUR_L_GREEN, OPT(player, rogue_like_commands) ? "^D" : "k");
+		text_out("' ignores selection.");
 	}
 
 	/* Reset */
@@ -389,13 +391,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				/* Get the monster name ("a kobold") */
 				monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
 
-				/* Hack -- track this monster race */
+				/* Track this monster's race and health */
 				monster_race_track(player->upkeep, mon->race);
-
-				/* Hack -- health bar for this monster */
 				health_track(player->upkeep, mon);
 
-				/* Hack -- handle stuff */
 				handle_stuff(player);
 
 				/* Interact */
@@ -588,7 +587,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			handle_stuff(player);
 
 			/* If there is more than one item... */
-			if (floor_num > 1)
+			if (floor_num > 1) {
 				while (1) {
 					/* Describe the pile */
 					if (player->wizard) {
@@ -618,9 +617,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 							/* Save screen */
 							screen_save();
 
-							/* Display */
-							show_floor(floor_list, floor_num,
-									   (OLIST_WEIGHT | OLIST_GOLD), NULL);
+							/* Use OLIST_DEATH to show item labels */
+							show_floor(floor_list, floor_num, (OLIST_DEATH
+									| OLIST_WEIGHT | OLIST_GOLD), NULL);
 
 							/* Describe the pile */
 							prt(out_val, 0, 0);
@@ -650,9 +649,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					/* Done */
 					break;
 				}
-			/* Only one object to display */
-			else {
-				/* Get the single object in the list */
+			} else {
+				/* Only one object to display */
 				struct object *obj_local = floor_list[0];
 
 				/* Allow user to recall an object */
@@ -885,22 +883,43 @@ static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
 	Term_fresh();
 }
 
+/**
+ * Return true if the object pile contains the player's tracked object
+ */
+static bool pile_is_tracked(const struct object *obj) {
+	for (const struct object *o = obj; o != NULL; o = o->next) {
+		if (player->upkeep->object == o) {
+			return true;
+		}
+	}
+	return false;
+}
 
 /**
- * Handle "target" and "look".
+ * Return true if the object pile contains at least 1 known item
+ */
+static bool pile_has_known(const struct object *obj) {
+	for (const struct object *o = obj; o != NULL; o = o->next) {
+		struct object *base_obj = cave->objects[o->oidx];
+		if (!is_unknown(base_obj)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Handle "target" and "look". May be called from commands or "get_aim_dir()".
  *
- * Note that this code can be called from "get_aim_dir()".
+ * Currently, when "interesting" grids are being used, and a directional key is
+ * pressed, we only scroll by a single panel, in the direction requested, and
+ * check for any interesting grids on that panel.  The "correct" solution would
+ * actually involve scanning a larger set of grids, including ones in panels
+ * which are adjacent to the one currently scanned, but this is overkill for
+ * this function.
  *
- * Currently, when "flag" is true, that is, when
- * "interesting" grids are being used, and a directional key is used, we
- * only scroll by a single panel, in the direction requested, and check
- * for any interesting grids on that panel.  The "correct" solution would
- * actually involve scanning a larger set of grids, including ones in
- * panels which are adjacent to the one currently scanned, but this is
- * overkill for this function.  XXX XXX
- *
- * Hack -- targetting/observing an "outer border grid" may induce
- * problems, so this is not currently allowed.
+ * Targetting/observing an "outer border grid" may induce problems, so this is
+ * not currently allowed.
  *
  * The player can use the direction keys to move among "interesting"
  * grids in a heuristic manner, or the "space", "+", and "-" keys to
@@ -935,25 +954,18 @@ static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
  */
 bool target_set_interactive(int mode, int x, int y)
 {
-	int py = player->grid.y;
-	int px = player->grid.x;
-
 	int path_n;
 	struct loc path_g[256];
 
-	int i, d, m, t, bd;
 	int wid, hgt, help_prompt_loc;
 
 	bool done = false;
-	bool flag = true;
+	bool show_interesting = true;
 	bool help = false;
-
-	ui_event press;
 
 	/* These are used for displaying the path to the target */
 	wchar_t *path_char = mem_zalloc(z_info->max_range * sizeof(wchar_t));
 	int *path_attr = mem_zalloc(z_info->max_range * sizeof(int));
-	struct point_set *targets;
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
@@ -961,7 +973,7 @@ bool target_set_interactive(int mode, int x, int y)
 		x = player->grid.x;
 		y = player->grid.y;
 	} else {
-		flag = false;
+		show_interesting = false;
 	}
 
 	/* Cancel target */
@@ -978,493 +990,280 @@ bool target_set_interactive(int mode, int x, int y)
 	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the target set */
-	targets = target_get_monsters(mode, NULL, true);
-
-	/* Start near the player */
-	m = 0;
+	struct point_set *targets = target_get_monsters(mode, NULL, true);
+	int target_index = 0;
 
 	/* Interact */
 	while (!done) {
 		bool path_drawn = false;
-		
-		/* Interesting grids if chosen and there are any, otherwise arbitrary */
-		if (flag && point_set_size(targets)) {
-			y = targets->pts[m].y;
-			x = targets->pts[m].x;
+		bool use_interesting_mode = show_interesting && point_set_size(targets);
+		bool use_free_mode = !use_interesting_mode;
+
+		/* Use an interesting grid if requested and there are any */
+		if (use_interesting_mode) {
+			y = targets->pts[target_index].y;
+			x = targets->pts[target_index].x;
 
 			/* Adjust panel if needed */
 			if (adjust_panel_help(y, x, help)) handle_stuff(player);
-		
-			/* Update help */
-			if (help) {
-				bool good_target =
-					target_able(square_monster(cave, targets->pts[m]));
-				target_display_help(good_target,
-									!(flag && point_set_size(targets)));
+		}
+
+		/* Update help */
+		if (help) {
+			bool has_target = target_able(square_monster(cave, loc(x, y)));
+			bool has_object = !(mode & TARGET_KILL)
+					&& pile_has_known(square_object(cave, loc(x, y)));
+			target_display_help(has_target, has_object, use_free_mode);
+		}
+
+		/* Find the path. */
+		path_n = project_path(path_g, z_info->max_range, loc(player->grid.x,
+				player->grid.y), loc(x, y), PROJECT_THRU | PROJECT_INFO);
+
+		/* Draw the path in "target" mode. If there is one */
+		if (mode & (TARGET_KILL))
+			path_drawn = draw_path(path_n, path_g, path_char, path_attr,
+					player->grid.y, player->grid.x);
+
+		/* Describe and Prompt */
+		ui_event press = target_set_interactive_aux(y, x,
+				mode | (use_free_mode ? TARGET_LOOK : 0));
+
+		/* Remove the path */
+		if (path_drawn) load_path(path_n, path_g, path_char, path_attr);
+
+		/* Handle an input event */
+		if (event_is_mouse_m(press, 2, KC_MOD_CONTROL) || event_is_mouse(press, 3)) {
+			/* Set a target and done */
+			y = KEY_GRID_Y(press);
+			x = KEY_GRID_X(press);
+			if (use_free_mode) {
+				/* Free mode: Target a location */
+				target_set_location(y, x);
+				done = true;
+			} else {
+				/* Interesting mode: Try to target a monster and done, or bell */
+				struct monster *m_local = square_monster(cave, loc(x, y));
+
+				if (target_able(m_local)) {
+					/* Monster race and health tracked by target_set_interactive_aux() */
+					target_set_monster(m_local);
+					done = true;
+				} else {
+					bell("Illegal target!");
+					if (!square_in_bounds(cave, loc(x, y))) {
+						x = player->grid.x;
+						y = player->grid.y;
+					}
+				}
 			}
 
-			/* Find the path. */
-			path_n = project_path(path_g, z_info->max_range, loc(px, py),
-								  loc(x, y), PROJECT_THRU | PROJECT_INFO);
+		} else if (event_is_mouse_m(press, 2, KC_MOD_ALT)) {
+			/* Navigate to location and done */
+			y = KEY_GRID_Y(press);
+			x = KEY_GRID_X(press);
+			cmdq_push(CMD_PATHFIND);
+			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
+			done = true;
 
-			/* Draw the path in "target" mode. If there is one */
-			if (mode & (TARGET_KILL))
-				path_drawn = draw_path(path_n, path_g, path_char, path_attr,
-									   py, px);
+		} else if (event_is_mouse(press, 2)) {
+			/* Cancel and done */
+			if (use_free_mode && (mode & TARGET_KILL)
+					&& y == KEY_GRID_Y(press) && x == KEY_GRID_X(press)) {
+				/* Free/kill mode: Clicked current location, set target */
+				target_set_location(y, x);
+			}
+			done = true;
 
-			/* Describe and Prompt */
-			press = target_set_interactive_aux(y, x, mode);
+		} else if (event_is_mouse(press, 1)) {
+			/* Relocate cursor */
+			y = KEY_GRID_Y(press);
+			x = KEY_GRID_X(press);
 
-			/* Remove the path */
-			if (path_drawn) load_path(path_n, path_g, path_char, path_attr);
+			/* If they clicked on an edge of the map, drag the cursor further
+			   to trigger a panel scroll */
+			if (press.mouse.y <= 1) {
+				y--;
+			} else if (press.mouse.y >= Term->hgt - 2) {
+				y++;
+			} else if (press.mouse.x <= COL_MAP) {
+				x--;
+			} else if (press.mouse.x >= Term->wid - 2) {
+				x++;
+			}
 
-			/* Assume no "direction" */
-			d = 0;
+			/* Restrict cursor to inbounds */
+			x = MAX(0, MIN(x, cave->width - 1));
+			y = MAX(0, MIN(y, cave->height - 1));
 
+			/* Adjust panel if needed */
+			if (adjust_panel_help(y, x, help)) {
+				handle_stuff(player);
 
-			/* Analyze */
-			if (press.type == EVT_MOUSE) {
-				if (press.mouse.button == 3) {
-					/* give the target selection command */
-					press.mouse.button = 2;
-					press.mouse.mods = KC_MOD_CONTROL;
+				/* Recalculate interesting grids */
+				point_set_dispose(targets);
+				targets = target_get_monsters(mode, NULL, true);
+			}
+
+			/* Turn interesting mode off if they clicked a boring spot... */
+			show_interesting = false;
+
+			/* ...but turn it on if they clicked an interesting spot */
+			for (int i = 0; i < point_set_size(targets); i++) {
+				if (y == targets->pts[i].y && x == targets->pts[i].x) {
+					target_index = i;
+					show_interesting = true;
+					break;
 				}
-				if (press.mouse.button == 2) {
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (press.mouse.mods & KC_MOD_CONTROL) {
-						/* same as keyboard target selection command below */
-						struct monster *m_local = square_monster(cave, loc(x, y));
+			}
 
-						if (target_able(m_local)) {
-							/* Set up target information */
-							monster_race_track(player->upkeep, m_local->race);
-							health_track(player->upkeep, m_local);
-							target_set_monster(m_local);
-							done = true;
-						} else {
-							bell("Illegal target!");
-							/*
-							 * So there's something
-							 * to work with in the
-							 * next pass through
-							 * the loop.
-							 */
-							if (!square_in_bounds(cave, loc(x, y))) {
-							    x = player->grid.x;
-							    y = player->grid.y;
-							}
-						}
-					} else if (press.mouse.mods & KC_MOD_ALT) {
-						/* go to spot - same as 'g' command below */
-						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
-						done = true;
-					} else {
-						/* cancel look mode */
-						done = true;
+		} else if (event_is_key(press, ESCAPE) || event_is_key(press, 'q')) {
+			/* Cancel */
+			done = true;
+
+		} else if (event_is_key(press, ' ') || event_is_key(press, '*')
+				|| event_is_key(press, '+')) {
+			/* Cycle interesting target forward */
+			if (use_interesting_mode && ++target_index == point_set_size(targets)) {
+				target_index = 0;
+			}
+
+		} else if (event_is_key(press, '-')) {
+			/* Cycle interesting target backwards */
+			if (use_interesting_mode && target_index-- == 0) {
+				target_index = point_set_size(targets) - 1;
+			}
+
+		} else if (event_is_key(press, 'p')) {
+			/* Focus the player and switch to free mode */
+			y = player->grid.y;
+			x = player->grid.x;
+			show_interesting = false;
+
+			/* Recenter around player */
+			verify_panel();
+			handle_stuff(player);
+
+		} else if (event_is_key(press, 'o')) {
+			/* Switch to free mode */
+			show_interesting = false;
+
+		} else if (event_is_key(press, 'm')) {
+			/* Switch to interesting mode */
+			if (use_free_mode && point_set_size(targets) > 0) {
+				show_interesting = true;
+				target_index = 0;
+				int min_dist = 999;
+
+				/* Pick the nearest interesting target */
+				for (int i = 0; i < point_set_size(targets); i++) {
+					int dist = distance(loc(x, y), targets->pts[i]);
+					if (dist < min_dist) {
+						target_index = i;
+						min_dist = dist;
 					}
+				}
+			}
+
+		} else if (event_is_key(press, 't') || event_is_key(press, '5')
+				|| event_is_key(press, '0') || event_is_key(press, '.')) {
+			/* Set a target and done */
+			if (use_interesting_mode) {
+				struct monster *m_local = square_monster(cave, loc(x, y));
+
+				if (target_able(m_local)) {
+					/* Monster race and health tracked by target_set_interactive_aux() */
+					target_set_monster(m_local);
+					done = true;
 				} else {
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (square_monster(cave, loc(x, y)) ||
-						square_object(cave, loc(x, y))) {
-							/* reset the flag, to make sure we stay in this
-							 * mode if something is actually there */
-						flag = false;
-						/* scan the interesting list and see if there is
-						 * anything here */
-						for (i = 0; i < point_set_size(targets); i++) {
-							if ((y == targets->pts[i].y) &&
-								(x == targets->pts[i].x)) {
-								m = i;
-								flag = true;
-								break;
-							}
-						}
-					} else {
-						flag = false;
-						if (! square_in_bounds(cave, loc(x, y))) {
-						    x = player->grid.x;
-						    y = player->grid.y;
-						}
-					}
+					bell("Illegal target!");
 				}
-			} else
-				switch (press.key.code)
-				{
-					case ESCAPE:
-					case 'q':
-					{
-						done = true;
-						break;
-					}
+			} else {
+				target_set_location(y, x);
+				done = true;
+			}
 
-					case ' ':
-					case '*':
-					case '+':
-					{
-						if (++m == point_set_size(targets))
-							m = 0;
+		} else if (event_is_key(press, 'g')) {
+			/* Navigate to a location and done */
+			cmdq_push(CMD_PATHFIND);
+			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
+			done = true;
 
-						break;
-					}
+		} else if (event_is_key(press, 'k') || event_is_key(press, KTRL('D'))) {
+			/* Ignore the tracked object, set by target_set_interactive_aux() */
+			if (!(mode & TARGET_KILL)
+					&& pile_is_tracked(square_object(cave, loc(x, y)))) {
+				textui_cmd_ignore_menu(player->upkeep->object);
+				handle_stuff(player);
 
-					case '-':
-					{
-						if (m-- == 0)
-							m = point_set_size(targets) - 1;
+				/* Recalculate interesting grids */
+				point_set_dispose(targets);
+				targets = target_get_monsters(mode, NULL, true);
+			}
 
-						break;
-					}
+		} else if (event_is_key(press, '?')) {
+			/* Toggle help text */
+			help = !help;
 
-					case 'p':
-					{
-						/* Recenter around player */
-						verify_panel();
+			/* Redraw main window */
+			player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
+			Term_clear();
+			handle_stuff(player);
+			if (!help)
+				prt("Press '?' for help.", help_prompt_loc, 0);
 
-						/* Handle stuff */
-						handle_stuff(player);
+		} else {
+			/* Try to extract a direction from the key press */
+			int dir = target_dir(press.key);
 
-						y = player->grid.y;
-						x = player->grid.x;
-						flag = false;
-						break;
-					}
+			if (!dir) {
+				bell("Illegal command for target mode!");
+			} else if (use_interesting_mode) {
+				/* Interesting mode direction: Pick new interesting grid */
+				int old_y = targets->pts[target_index].y;
+				int old_x = targets->pts[target_index].x;
+				int new_index;
 
-					case 'o':
-					{
-						flag = false;
-						break;
-					}
+				/* Look for a new interesting grid */
+				new_index = target_pick(old_y, old_x, ddy[dir], ddx[dir], targets);
 
-					case 'm':
-					{
-						break;
-					}
-
-					case 't':
-					case '5':
-					case '0':
-					case '.':
-					{
-						struct monster *m_local = square_monster(cave, loc(x, y));
-
-						if (target_able(m_local)) {
-							health_track(player->upkeep, m_local);
-							target_set_monster(m_local);
-							done = true;
-						} else {
-							bell("Illegal target!");
-						}
-						break;
-					}
-
-					case 'g':
-					{
-						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
-						done = true;
-						break;
-					}
-				
-					case '?':
-					{
-						help = !help;
-					
-						/* Redraw main window */
-						player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
-						Term_clear();
-						handle_stuff(player);
-						if (!help)
-							prt("Press '?' for help.", help_prompt_loc, 0);
-					
-						break;
-					}
-
-					default:
-					{
-						/* Extract direction */
-						d = target_dir(press.key);
-
-						/* Oops */
-						if (!d) bell("Illegal command for target mode!");
-
-						break;
-					}
-				}
-
-			/* Hack -- move around */
-			if (d) {
-				int old_y = targets->pts[m].y;
-				int old_x = targets->pts[m].x;
-
-				/* Find a new monster */
-				i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
-
-				/* Scroll to find interesting grid */
-				if (i < 0) {
+				/* If none found, try in the next panel */
+				if (new_index < 0) {
 					int old_wy = Term->offset_y;
 					int old_wx = Term->offset_x;
 
-					/* Change if legal */
-					if (change_panel(d)) {
+					if (change_panel(dir)) {
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
 						targets = target_get_monsters(mode, NULL, true);
 
-						/* Find a new monster */
-						i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
+						/* Look for a new interesting grid again */
+						new_index = target_pick(old_y, old_x, ddy[dir], ddx[dir], targets);
 
-						/* Restore panel if needed */
-						if ((i < 0) && modify_panel(Term, old_wy, old_wx)) {
+						/* If none found again, reset the panel and do nothing */
+						if (new_index < 0 && modify_panel(Term, old_wy, old_wx)) {
 							/* Recalculate interesting grids */
 							point_set_dispose(targets);
 							targets = target_get_monsters(mode, NULL, true);
 						}
 
-						/* Handle stuff */
 						handle_stuff(player);
 					}
 				}
 
 				/* Use interesting grid if found */
-				if (i >= 0) m = i;
-			}
-		} else {
-			/* Update help */
-			if (help) {
-				bool good_target = target_able(square_monster(cave, loc(x, y)));
-				target_display_help(good_target,
-									!(flag && point_set_size(targets)));
-			}
+				if (new_index >= 0) target_index = new_index;
+			} else {
+				/* Free mode direction: Move cursor */
+				x += ddx[dir];
+				y += ddy[dir];
 
-			/* Find the path. */
-			path_n = project_path(path_g, z_info->max_range, loc(px, py),
-								  loc(x, y), PROJECT_THRU | PROJECT_INFO);
-
-			/* Draw the path in "target" mode. If there is one */
-			if (mode & (TARGET_KILL))
-				path_drawn = draw_path (path_n, path_g, path_char, path_attr,
-										py, px);
-
-			/* Describe and Prompt (enable "TARGET_LOOK") */
-			press = target_set_interactive_aux(y, x, mode | TARGET_LOOK);
-
-			/* Remove the path */
-			if (path_drawn)  load_path(path_n, path_g, path_char, path_attr);
-
-			/* Assume no direction */
-			d = 0;
-
-			/* Analyze the keypress */
-			if (press.type == EVT_MOUSE) {
-				if (press.mouse.button == 3) {
-					/* give the target selection command */
-					press.mouse.button = 2;
-					press.mouse.mods = KC_MOD_CONTROL;
-				}
-				if (press.mouse.button == 2) {
-					if (mode & (TARGET_KILL)) {
-						if ((y == KEY_GRID_Y(press)) 
-								&& (x == KEY_GRID_X(press))) {
-							d = -1;
-						}
-					}
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (press.mouse.mods & KC_MOD_CONTROL) {
-						/* same as keyboard target selection command below */
-						target_set_location(y, x);
-						done = true;
-					} else if (press.mouse.mods & KC_MOD_ALT) {
-						/* go to spot - same as 'g' command below */
-						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
-						done = true;
-					} else {
-						/* cancel look mode */
-						done = true;
-						if (d == -1) {
-							target_set_location(y, x);
-							d = 0;
-						}
-					}
-				} else {
-					int dungeon_hgt = cave->height;
-					int dungeon_wid = cave->width;
-
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-				  
-					if (press.mouse.y <= 1) {
-						/* move the screen north */
-						y--;
-					} else if (press.mouse.y >= (Term->hgt - 2)) {
-						/* move the screen south */
-						y++;
-					} else if (press.mouse.x <= COL_MAP) {
-						/* move the screen in west */
-						x--;
-					} else if (press.mouse.x >= (Term->wid - 2)) {
-						/* move the screen east */
-						x++;
-					}
-          
-					if (y < 0) y = 0;
-					if (x < 0) x = 0;
-					if (y >= dungeon_hgt-1) y = dungeon_hgt-1;
-					if (x >= dungeon_wid-1) x = dungeon_wid-1;
-
-					/* Adjust panel if needed */
-					if (adjust_panel_help(y, x, help)) {
-						/* Handle stuff */
-						handle_stuff(player);
-
-						/* Recalculate interesting grids */
-						point_set_dispose(targets);
-						targets = target_get_monsters(mode, NULL, true);
-					}
-
-					if (square_monster(cave, loc(x, y)) ||
-						square_object(cave, loc(x, y))) {
-						/* scan the interesting list and see if there in
-						 * anything here */
-						for (i = 0; i < point_set_size(targets); i++) {
-							if ((y == targets->pts[i].y) &&
-								(x == targets->pts[i].x)) {
-								m = i;
-								flag = true;
-								break;
-							}
-						}
-					} else {
-						flag = false;
-					}
-				}
-			} else
-				switch (press.key.code)
-				{
-					case ESCAPE:
-					case 'q':
-					{
-						done = true;
-						break;
-					}
-
-					case ' ':
-					case '*':
-					case '+':
-					case '-':
-					{
-						break;
-					}
-
-					case 'p':
-					{
-						/* Recenter around player */
-						verify_panel();
-
-						/* Handle stuff */
-						handle_stuff(player);
-
-						y = player->grid.y;
-						x = player->grid.x;
-					}
-
-					case 'o':
-					{
-						break;
-					}
-
-					case 'm':
-					{
-						flag = true;
-
-						m = 0;
-						bd = 999;
-
-						/* Pick a nearby monster */
-						for (i = 0; i < point_set_size(targets); i++) {
-							t = distance(loc(x, y), targets->pts[i]);
-
-							/* Pick closest */
-							if (t < bd) {
-								m = i;
-								bd = t;
-							}
-						}
-
-						/* Nothing interesting */
-						if (bd == 999) flag = false;
-
-						break;
-					}
-
-					case 't':
-					case '5':
-					case '0':
-					case '.':
-					{
-						target_set_location(y, x);
-						done = true;
-						break;
-					}
-
-					case 'g':
-					{
-						cmdq_push(CMD_PATHFIND);
-						cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
-						done = true;
-						break;
-					}
-
-					case '?':
-					{
-						help = !help;
-
-						/* Redraw main window */
-						player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
-						Term_clear();
-						handle_stuff(player);
-						if (!help)
-							prt("Press '?' for help.", help_prompt_loc, 0);
-					
-						break;
-					}
-
-					default:
-					{
-						/* Extract a direction */
-						d = target_dir(press.key);
-
-						/* Oops */
-						if (!d) bell("Illegal command for target mode!");
-
-						break;
-					}
-				}
-
-			/* Handle "direction" */
-			if (d) {
-				int dungeon_hgt = cave->height;
-				int dungeon_wid = cave->width;
-
-				/* Move */
-				x += ddx[d];
-				y += ddy[d];
-
-				/* Slide into legality */
-				if (x >= dungeon_wid - 1) x--;
-				else if (x <= 0) x++;
-
-				/* Slide into legality */
-				if (y >= dungeon_hgt - 1) y--;
-				else if (y <= 0) y++;
+				/* Keep 1 away from the edge */
+				x = MAX(1, MIN(x, cave->width - 2));
+				y = MAX(1, MIN(y, cave->height - 2));
 
 				/* Adjust panel if needed */
 				if (adjust_panel_help(y, x, help)) {
-					/* Handle stuff */
 					handle_stuff(player);
 
 					/* Recalculate interesting grids */
@@ -1473,6 +1272,7 @@ bool target_set_interactive(int mode, int x, int y)
 				}
 			}
 		}
+		/* End of while finally */
 	}
 
 	/* Forget */
@@ -1491,7 +1291,6 @@ bool target_set_interactive(int mode, int x, int y)
 	/* Recenter around player */
 	verify_panel();
 
-	/* Handle stuff */
 	handle_stuff(player);
 
 	mem_free(path_attr);
@@ -1500,11 +1299,5 @@ bool target_set_interactive(int mode, int x, int y)
 	/* Allow animations again */
 	allow_animations();
 
-	/* Failure to set target */
-	if (!target_is_set()) return (false);
-
-	/* Success */
-	return (true);
+	return target_is_set();
 }
-
-

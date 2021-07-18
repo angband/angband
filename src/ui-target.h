@@ -48,7 +48,7 @@
 
 int target_dir(struct keypress ch);
 int target_dir_allow(struct keypress ch, bool allow_5);
-void target_display_help(bool monster, bool free);
+void target_display_help(bool monster, bool object, bool free);
 void textui_target(void);
 void textui_target_closest(void);
 bool target_set_interactive(int mode, int x, int y);
