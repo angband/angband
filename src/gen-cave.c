@@ -2508,8 +2508,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		/* Turn off room illumination flag */
 		for (grid.y = 1; grid.y < c->height - 1; grid.y++) {
 			for (grid.x = 1; grid.x < c->width - 1; grid.x++) {
-				if (square_isfloor(c, grid))
-					sqinfo_off(square(c, grid)->info, SQUARE_ROOM);
+				sqinfo_off(square(c, grid)->info, SQUARE_ROOM);
 			}
 		}
 
