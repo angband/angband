@@ -4,17 +4,21 @@
 #include <nds.h>
 #endif
 
+/* Mainly imposed by NDS, but 85 events should be more than enough. */
+#define MAX_EBUF	(1024 / sizeof(nds_event))
+
 /* Event queue ring buffer and its read/write pointers */
 #ifdef _3DS
-u16b *ebuf;
+nds_event *ebuf;
 #else
-u16b *ebuf = (u16b *)(&BG_GFX[256 * 192]);
+nds_event *ebuf = (nds_event *)(&BG_GFX[256 * 192]);
 #endif
 u16b ebuf_read = 0, ebuf_write = 0;
+nds_event empty_event = { 0 };
 
 bool nds_event_init() {
 #ifdef _3DS
-	ebuf = (u16b *) malloc(sizeof(u16b) * MAX_EBUF);
+	ebuf = (nds_event *) malloc(sizeof(nds_event) * MAX_EBUF);
 
 	if (!ebuf) {
 		return false;
@@ -26,17 +30,15 @@ bool nds_event_init() {
 
 bool nds_event_ready()
 {
-	/* read < write should never happen without EVENT_SET, but */
-	/* just in case... */
-	return ((ebuf[ebuf_read] & EVENT_SET) || (ebuf_read < ebuf_write));
+	return ((ebuf_read < ebuf_write) && ebuf[ebuf_read].type != NDS_EVENT_INVALID);
 }
 
-u16b nds_event_get()
+nds_event nds_event_get()
 {
 	if (!nds_event_ready())
-		return 0;
-	u16b r = ebuf[ebuf_read];
-	ebuf[ebuf_read] = 0;
+		return empty_event;
+	nds_event event = ebuf[ebuf_read];
+	ebuf[ebuf_read].type = NDS_EVENT_INVALID;
 	ebuf_read++;
 	if (ebuf_read > ebuf_write) {
 		ebuf_write++;
@@ -45,19 +47,23 @@ u16b nds_event_get()
 	}
 	if (ebuf_read >= MAX_EBUF)
 		ebuf_read = 0;
-	return r;
+	return event;
 }
 
-void nds_event_put_key(byte c)
+void nds_event_put_key(keycode_t key, byte mods)
 {
-	ebuf[ebuf_write++] = EVENT_SET | (u16b)c;
-	if (ebuf_write >= MAX_EBUF)
+	ebuf[ebuf_write].type = NDS_EVENT_KEYBOARD;
+	ebuf[ebuf_write].keyboard.key = key;
+	ebuf[ebuf_write].keyboard.mods = mods;
+	if (++ebuf_write >= MAX_EBUF)
 		ebuf_write = 0;
 }
 
 void nds_event_put_mouse(byte x, byte y)
 {
-	ebuf[ebuf_write++] = EVENT_SET | MEVENT_FLAG | (u16b)x | (((u16b)y) << 7);
-	if (ebuf_write >= MAX_EBUF)
+	ebuf[ebuf_write].type = NDS_EVENT_MOUSE;
+	ebuf[ebuf_write].mouse.x = x;
+	ebuf[ebuf_write].mouse.y = y;
+	if (++ebuf_write >= MAX_EBUF)
 		ebuf_write = 0;
 }

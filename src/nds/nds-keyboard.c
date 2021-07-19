@@ -340,7 +340,7 @@ void nds_kbd_vblank()
 		if (keycode & K_MODIFIER)
 			nds_kbd_togglemod(keycode, -1);
 		else if ((keycode & 0x7F) != 0) { /* it's an actual keystroke */
-			nds_event_put_key(keycode & 0xFF);
+			nds_event_put_key(keycode & 0xFF, 0);
 		}
 	}
 
