@@ -38,7 +38,7 @@ extern bool character_dungeon;
 extern const byte extract_energy[200];
 extern struct level *world;
 
-struct level *level_by_name(char *name);
+struct level *level_by_name(const char *name);
 struct level *level_by_depth(int depth);
 bool is_daytime(void);
 int turn_energy(int speed);

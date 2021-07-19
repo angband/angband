@@ -92,7 +92,7 @@ const byte extract_energy[200] =
 /**
  * Find a level by its name
  */
-struct level *level_by_name(char *name)
+struct level *level_by_name(const char *name)
 {
 	struct level *lev = world;
 	while (lev) {
