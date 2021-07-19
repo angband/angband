@@ -1192,8 +1192,9 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 {
 	assert(t_mon);
 
-	/* "Unique" monsters can only be "killed" by the player */
-	if (rf_has(t_mon->race->flags, RF_UNIQUE)) {
+	/* "Unique" or arena monsters can only be "killed" by the player */
+	if (rf_has(t_mon->race->flags, RF_UNIQUE)
+			|| player->upkeep->arena_level) {
 		/* Reduce monster hp to zero, but don't kill it. */
 		if (dam > t_mon->hp) dam = t_mon->hp;
 	}
