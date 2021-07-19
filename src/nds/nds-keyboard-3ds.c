@@ -325,7 +325,27 @@ void nds_kbd_vblank()
 
 	char c = shift ? key.alt : key.main;
 
-	nds_event_put_key(c, 0);
+	byte mods = 0;
+
+	/* SHIFT only gets passed as a modifier if we haven't applied it to the keycode */
+	if (nds_kbd_modifier_active(KBD_SHIFT) && !shift)
+		mods |= KC_MOD_SHIFT;
+
+	if (nds_kbd_modifier_active(KBD_CTRL)) {
+		/* Automatically make 'a' - 'z' uppercase for convenience */
+		if (c >= 'a' && c <= 'z')
+			c -= 0x20;
+
+		if (ENCODE_KTRL(c))
+			c = KTRL(c);
+		else
+			mods |= KC_MOD_CONTROL;
+	}
+
+	if (nds_kbd_modifier_active(KBD_ALT))
+		mods |= KC_MOD_ALT;
+
+	nds_event_put_key(c, mods);
 
 	/* Remove all modifiers except for caps */
 	nds_kbd_active_mods &= KBD_CAPS;

@@ -67,7 +67,11 @@ u16b nds_kbd_mod_code(u16b ret)
 	if (alt) {
 		ret |= 0x80;
 	}
-	if (ctrl /* && ret >= 'a' && ret < 'a'+32*/) {
+	if (ctrl) {
+		/* Automatically make 'a' - 'z' uppercase for convenience */
+		if (ret >= 'a' && ret <= 'z')
+			ret -= 0x20;
+
 		ret = ret & 0x1f;
 	}
 	return ret;
