@@ -90,7 +90,7 @@ void nds_btn_check_cpad()
 	for (int i = 0; nds_btn_cpad_map[i].input; i++) {
 		if (cpad_ang >= nds_btn_cpad_map[i].min &&
 		    cpad_ang < nds_btn_cpad_map[i].max)
-			nds_event_put_key(nds_btn_cpad_map[i].input);
+			nds_event_put_key(nds_btn_cpad_map[i].input, 0);
 	}
 }
 
@@ -118,7 +118,7 @@ void nds_btn_vblank()
 		if (!(kd & keys))
 			continue;
 
-		nds_event_put_key(nds_btn_default_map[i].input);
+		nds_event_put_key(nds_btn_default_map[i].input, 0);
 		break;
 	}
 }

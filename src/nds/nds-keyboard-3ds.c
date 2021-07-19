@@ -325,7 +325,7 @@ void nds_kbd_vblank()
 
 	char c = shift ? key.alt : key.main;
 
-	nds_event_put_key(c);
+	nds_event_put_key(c, 0);
 
 	/* Remove all modifiers except for caps */
 	nds_kbd_active_mods &= KBD_CAPS;

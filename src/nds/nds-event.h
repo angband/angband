@@ -2,20 +2,34 @@
 #define _NDS_EVENT_H
 
 #include "../h-basic.h"
+#include "../ui-event.h"
 
-#define MAX_EBUF	512
-#define MEVENT_FLAG	(1<<15)
-#define EVENT_SET	(1<<14)
+typedef struct {
+    keycode_t key;
+    byte mods;
+} nds_event_keyboard;
 
-#define EVENT_X(e)	((uint8_t)((e) & 0x7F))
-#define EVENT_Y(e)	((uint8_t)(((e) & 0xF8) >> 7))
-#define EVENT_C(e)	((uint8_t)((e) & 0xFF))
-#define IS_MEVENT(e)	((e) & MEVENT_FLAG)
+typedef struct {
+    byte x;
+    byte y;
+} nds_event_mouse;
+
+typedef struct {
+    enum {
+        NDS_EVENT_INVALID = 0,
+        NDS_EVENT_KEYBOARD,
+        NDS_EVENT_MOUSE,
+    } type;
+    union {
+        nds_event_keyboard keyboard;
+        nds_event_mouse mouse;
+    };
+} nds_event;
 
 bool nds_event_init();
 bool nds_event_ready();
-u16b nds_event_get();
-void nds_event_put_key(byte c);
+nds_event nds_event_get();
+void nds_event_put_key(keycode_t k, byte mods);
 void nds_event_put_mouse(byte x, byte y);
 
 #endif

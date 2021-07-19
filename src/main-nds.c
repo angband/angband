@@ -160,30 +160,30 @@ void do_vblank()
  */
 static errr CheckEvents(bool wait)
 {
-	u16b e = 0;
+	nds_event e;
 
 	do_vblank();
 
 	if (!wait && !nds_event_ready())
 		return (1);
 
-	while (!e) {
+	do {
 		e = nds_event_get();
 
 		do_vblank();
+	} while (e.type == NDS_EVENT_INVALID);
+
+	switch (e.type) {
+	case NDS_EVENT_MOUSE:
+		handle_touch(e.mouse.x, e.mouse.y, 1, true);
+		break;
+	case NDS_EVENT_KEYBOARD:
+		Term_keypress(e.keyboard.key, e.keyboard.mods);
+		break;
+	default:
+		nds_logf("Got unknown event type: %d\n", e.type);
+		break;
 	}
-
-	/* Mouse */
-	if (IS_MEVENT(e))
-		handle_touch(EVENT_X(e) + 1, EVENT_Y(e), 1, true);
-
-	/* Undefined */
-	else if ((EVENT_C(e) & 0x7F) == 0)
-		return (1);
-
-	/* Key */
-	else
-		Term_keypress(EVENT_C(e), 0);
 
 	return (0);
 }

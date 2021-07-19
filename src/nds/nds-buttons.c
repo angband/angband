@@ -69,11 +69,11 @@ void nds_btn_vblank() {
 		if (dirs_down == 1 && !(kh & (KEY_R | KEY_L))) {
 			for (i = 0; i < 4; i++)
 				if (kh & (1 << (i + 4)))
-					nds_event_put_key(k2d[i]);
+					nds_event_put_key(k2d[i], 0);
 		} else if (dirs_down == 2 && (kh & (KEY_R | KEY_L))) {
 			for (i = 0; i < 4; i++)
 				if (kh & (1 << (i + 4)))
-					nds_event_put_key(k2d[i + 4]);
+					nds_event_put_key(k2d[i + 4], 0);
 		}
 	}
 
@@ -83,7 +83,7 @@ void nds_btn_vblank() {
 		return;
 	byte *cmd = &nds_btn_cmds[btn][0];
 	while (*cmd != 0) {
-		nds_event_put_key(*(cmd++));
+		nds_event_put_key(*(cmd++), 0);
 	}
 }
 
