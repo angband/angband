@@ -7,13 +7,16 @@
 /* Mainly imposed by NDS, but 85 events should be more than enough. */
 #define MAX_EBUF	(1024 / sizeof(nds_event))
 
-/* Event queue ring buffer and its read/write pointers */
+/* Event queue ring buffer */
 #ifdef _3DS
 nds_event *ebuf;
 #else
 nds_event *ebuf = (nds_event *)(&BG_GFX[256 * 192]);
 #endif
+
+/* Read and write pointers, that always point to the next element */
 u16b ebuf_read = 0, ebuf_write = 0;
+
 nds_event empty_event = { 0 };
 
 bool nds_event_init() {
@@ -25,12 +28,15 @@ bool nds_event_init() {
 	}
 #endif
 
+	/* Make sure that we don't read garbage events */
+	memset(ebuf, 0, sizeof(nds_event) * MAX_EBUF);
+
 	return true;
 }
 
 bool nds_event_ready()
 {
-	return ((ebuf_read < ebuf_write) && ebuf[ebuf_read].type != NDS_EVENT_INVALID);
+	return (ebuf[ebuf_read].type != NDS_EVENT_INVALID);
 }
 
 nds_event nds_event_get()
@@ -39,13 +45,7 @@ nds_event nds_event_get()
 		return empty_event;
 	nds_event event = ebuf[ebuf_read];
 	ebuf[ebuf_read].type = NDS_EVENT_INVALID;
-	ebuf_read++;
-	if (ebuf_read > ebuf_write) {
-		ebuf_write++;
-		if (ebuf_write >= MAX_EBUF)
-			ebuf_write = 0;
-	}
-	if (ebuf_read >= MAX_EBUF)
+	if (++ebuf_read >= MAX_EBUF)
 		ebuf_read = 0;
 	return event;
 }
