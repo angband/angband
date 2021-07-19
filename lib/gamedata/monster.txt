@@ -13414,7 +13414,7 @@ spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_CHAO | BR_DISE
 spells:S_DRAGON | S_HI_DRAGON
-desc:A massive dragon of changing form.  As you watch, it appears first fair a$
+desc:A massive dragon of changing form.  As you watch, it appears first fair and
 desc: then foul.  Its body is twisted by chaotic forces as it strives to stay
 desc: real.  Its very existence distorts the universe around it.
 
