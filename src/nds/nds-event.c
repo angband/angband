@@ -4,15 +4,10 @@
 #include <nds.h>
 #endif
 
-/* Mainly imposed by NDS, but 85 events should be more than enough. */
-#define MAX_EBUF	(1024 / sizeof(nds_event))
+#define MAX_EBUF	32
 
 /* Event queue ring buffer */
-#ifdef _3DS
 nds_event *ebuf;
-#else
-nds_event *ebuf = (nds_event *)(&BG_GFX[256 * 192]);
-#endif
 
 /* Read and write pointers, that always point to the next element */
 u16b ebuf_read = 0, ebuf_write = 0;
@@ -20,13 +15,11 @@ u16b ebuf_read = 0, ebuf_write = 0;
 nds_event empty_event = { 0 };
 
 bool nds_event_init() {
-#ifdef _3DS
 	ebuf = (nds_event *) malloc(sizeof(nds_event) * MAX_EBUF);
 
 	if (!ebuf) {
 		return false;
 	}
-#endif
 
 	/* Make sure that we don't read garbage events */
 	memset(ebuf, 0, sizeof(nds_event) * MAX_EBUF);
