@@ -1653,6 +1653,21 @@ int rd_chunks(void)
 				rd_u16b(&tmp16u);
 				c->feat_count[i] = tmp16u;
 			}
+		} else if (c->name) {
+			struct level *lev = level_by_name(c->name);
+
+			if (lev) {
+				c->depth = lev->depth;
+			} else if (suffix(c->name, " known")) {
+				size_t offset = strlen(c->name) -
+					strlen(" known");
+				c->name[offset] = '\0';
+				lev = level_by_name(c->name);
+				if (lev) {
+					c->depth = lev->depth;
+				}
+				c->name[offset] = ' ';
+			}
 		}
 
 		chunk_list_add(c);
