@@ -2,12 +2,23 @@
 
 #ifdef _3DS
 
+#ifdef _3DS
 #include <3ds.h>
+#else
+#include <nds.h>
+#endif
+
 #include "nds-draw.h"
 #include "nds-event.h"
 
+#ifdef _3DS
 #define KBD_MARGIN	8
 #define KBD_UNIT	10
+#else
+#define KBD_MARGIN	7
+#define KBD_UNIT	8
+#endif
+
 #define KBD_KEY_HEIGHT	(KBD_UNIT*2)
 #define KBD_PADDING	(KBD_UNIT/2)
 
@@ -263,12 +274,12 @@ void nds_kbd_vblank()
 	}
 
 	/* Nothing to do if no touch input */
-	if (!(hidKeysDown() & KEY_TOUCH))
+	if (!(keysDown() & KEY_TOUCH))
 		return;
 
 	/* Read current touch input */
 	touchPosition touch;
-	hidTouchRead(&touch);
+	touchRead(&touch);
 
 	/* To the top or the left of the keyboard? */
 	if (touch.px < KBD_MARGIN || touch.py < KBD_MARGIN)
