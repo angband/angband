@@ -15,7 +15,7 @@
 #define KBD_MARGIN	8
 #define KBD_UNIT	10
 #else
-#define KBD_MARGIN	7
+#define KBD_MARGIN	8
 #define KBD_UNIT	8
 #endif
 
@@ -240,12 +240,18 @@ void nds_kbd_redraw_key(int r, int k, bool active)
 
 void nds_kbd_redraw()
 {
+	/* Temporarily use the 5x8 font */
+	const nds_font_handle *old_font = nds_font;
+	nds_font = &nds_font_5x8;
+
 	/* Redraw all keys */
 	for (int r = 0; r < N_ELEMENTS(nds_kbd_map); r++) {
 		for (int k = 0; k < nds_kbd_map[r].length; k++) {
 			nds_kbd_redraw_key(r, k, false);
 		}
 	}
+
+	nds_font = old_font;
 }
 
 bool nds_kbd_init()
@@ -316,7 +322,10 @@ void nds_kbd_vblank()
 	nds_kbd_key key = row.keys[k];
 
 	/* Redraw key as "pressed" */
+	const nds_font_handle *old_font = nds_font;
+	nds_font = &nds_font_5x8;
 	nds_kbd_redraw_key(r, k, true);
+	nds_font = old_font;
 
 	/* If it's a modifier, toggle it and return */
 	if (key.main & KBD_MOD) {
