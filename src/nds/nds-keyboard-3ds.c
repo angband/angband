@@ -1,8 +1,6 @@
 #include "nds-keyboard.h"
 
 #ifdef _3DS
-
-#ifdef _3DS
 #include <3ds.h>
 #else
 #include <nds.h>
@@ -370,5 +368,3 @@ void nds_kbd_vblank()
 	/* Remove all modifiers except for caps */
 	nds_kbd_active_mods &= KBD_CAPS;
 }
-
-#endif
