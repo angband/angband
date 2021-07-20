@@ -6,6 +6,12 @@
 # include <nds.h>
 #endif
 
+#ifdef _3DS
+const nds_font_handle *nds_font = &nds_font_5x8;
+#else
+const nds_font_handle *nds_font = &nds_font_3x8;
+#endif
+
 void nds_video_init() {
 #ifdef _3DS
 	gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
@@ -75,35 +81,35 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 
 void nds_draw_char_px(int x, int y, char c, nds_pixel clr)
 {
-	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
-		for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
+	for (byte yy = 0; yy < nds_font->height; yy++) {
+		for (byte xx = 0; xx < nds_font->width; xx++) {
 			nds_draw_pixel(x + xx,
 			               y + yy,
-			               nds_font_pixel(c, xx, yy) & clr);
+			               nds_font->pixel(c, xx, yy) & clr);
 		}
 	}
 }
 
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
 {
-	nds_draw_char_px(x * NDS_FONT_WIDTH, y * NDS_FONT_HEIGHT, c, clr);
+	nds_draw_char_px(x * nds_font->width, y * nds_font->height, c, clr);
 }
 
 void nds_draw_cursor(int x, int y) {
-	for (byte xx = 0; xx < NDS_FONT_WIDTH; xx++) {
-		nds_draw_pixel(x * NDS_FONT_WIDTH + xx,
-		               y * NDS_FONT_HEIGHT,
+	for (byte xx = 0; xx < nds_font->width; xx++) {
+		nds_draw_pixel(x * nds_font->width + xx,
+		               y * nds_font->height,
 		               NDS_CURSOR_COLOR);
-		nds_draw_pixel(x * NDS_FONT_WIDTH + xx,
-		               y * NDS_FONT_HEIGHT + (NDS_FONT_HEIGHT - 1),
+		nds_draw_pixel(x * nds_font->width + xx,
+		               y * nds_font->height + (nds_font->height - 1),
 		               NDS_CURSOR_COLOR);
 	}
-	for (byte yy = 0; yy < NDS_FONT_HEIGHT; yy++) {
-		nds_draw_pixel(x * NDS_FONT_WIDTH,
-		               y * NDS_FONT_HEIGHT + yy,
+	for (byte yy = 0; yy < nds_font->height; yy++) {
+		nds_draw_pixel(x * nds_font->width,
+		               y * nds_font->height + yy,
 		               NDS_CURSOR_COLOR);
-		nds_draw_pixel(x * NDS_FONT_WIDTH + (NDS_FONT_WIDTH - 1),
-		               y * NDS_FONT_HEIGHT + yy,
+		nds_draw_pixel(x * nds_font->width + (nds_font->width - 1),
+		               y * nds_font->height + yy,
 		               NDS_CURSOR_COLOR);
 	}
 }
@@ -114,8 +120,8 @@ void nds_draw_cursor(int x, int y) {
 void nds_pixel_to_square(int *const x, int *const y, const int ox,
                          const int oy)
 {
-	(*x) = ox / NDS_FONT_WIDTH;
-	(*y) = oy / NDS_FONT_HEIGHT;
+	(*x) = ox / nds_font->width;
+	(*y) = oy / nds_font->height;
 }
 
 void nds_log(const char *msg)

@@ -222,7 +222,7 @@ void nds_kbd_redraw_key(int r, int k, bool active)
 	/* Final printing coordinates */
 	int str_x = key_offset + KBD_PADDING;
 	int str_y = NDS_SCREEN_HEIGHT + row_offset +
-	            (KBD_KEY_HEIGHT - NDS_FONT_HEIGHT - KBD_PADDING);
+	            (KBD_KEY_HEIGHT - nds_font->height - KBD_PADDING);
 
 	/* If no special handling is required, just print the char */
 	if (s == NULL) {
@@ -233,7 +233,7 @@ void nds_kbd_redraw_key(int r, int k, bool active)
 
 	/* Print the text */
 	for (int i = 0; i < strlen(s); i++) {
-		nds_draw_char_px(str_x + (i * NDS_FONT_WIDTH), str_y, s[i],
+		nds_draw_char_px(str_x + (i * nds_font->width), str_y, s[i],
 		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL);
 	}
 }

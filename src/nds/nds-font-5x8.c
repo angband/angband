@@ -1,8 +1,4 @@
-#ifndef _NDS_FONT_5X8_H
-#define _NDS_FONT_5X8_H
-
-#define NDS_FONT_WIDTH 5
-#define NDS_FONT_HEIGHT 8
+#include "nds-draw.h"
 
 #define EMPTY \
 	0, 0, 0, 0, 0, \
@@ -1029,9 +1025,13 @@ EMPTY, EMPTY, EMPTY, EMPTY,
 EMPTY, EMPTY, EMPTY, EMPTY,
 };
 
-static inline nds_pixel nds_font_pixel(char c, char subX, char subY) {
-	u32b char_offset = c * NDS_FONT_HEIGHT * NDS_FONT_WIDTH;
-	return ds_subfont[char_offset + subY * NDS_FONT_WIDTH + subX] ? NDS_WHITE_PIXEL : NDS_BLACK_PIXEL;
+static inline nds_pixel nds_font_pixel(char c, byte subX, byte subY) {
+	u32b char_offset = c * nds_font_5x8.height * nds_font_5x8.width;
+	return ds_subfont[char_offset + subY * nds_font_5x8.width + subX] ? NDS_WHITE_PIXEL : NDS_BLACK_PIXEL;
 }
 
-#endif
+const nds_font_handle nds_font_5x8 = {
+	.width = 5,
+	.height = 8,
+	.pixel = nds_font_pixel,
+};

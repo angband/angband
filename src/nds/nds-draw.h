@@ -15,8 +15,6 @@ typedef uint32_t nds_pixel;
 #define NDS_SCREEN_WIDTH 400
 #define NDS_SCREEN_HEIGHT 240
 
-#include "nds-font-5x8.h"
-
 #else
 
 typedef uint16_t nds_pixel;
@@ -27,14 +25,21 @@ typedef uint16_t nds_pixel;
 #define NDS_SCREEN_WIDTH 256
 #define NDS_SCREEN_HEIGHT 192
 
-#include "nds-font-3x8.h"
-
 #endif
 
+typedef struct {
+	byte width;
+	byte height;
+	nds_pixel (*pixel)(char c, byte subX, byte subY);
+} nds_font_handle;
 
-#define NDS_SCREEN_COLS (NDS_SCREEN_WIDTH / NDS_FONT_WIDTH)
-#define NDS_SCREEN_LINES (NDS_SCREEN_HEIGHT / NDS_FONT_HEIGHT)
+extern const nds_font_handle *nds_font;
 
+extern const nds_font_handle nds_font_3x8;
+extern const nds_font_handle nds_font_5x8;
+
+#define NDS_SCREEN_COLS (NDS_SCREEN_WIDTH / nds_font->width)
+#define NDS_SCREEN_LINES (NDS_SCREEN_HEIGHT / nds_font->height)
 
 void nds_video_init();
 void nds_video_vblank();

@@ -1,8 +1,4 @@
-#ifndef _NDS_FONT_3X8_H
-#define _NDS_FONT_3X8_H
-
-#define NDS_FONT_WIDTH 3
-#define NDS_FONT_HEIGHT 8
+#include "nds-draw.h"
 
 static const nds_pixel ds_subfont[] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
@@ -391,8 +387,12 @@ static const nds_pixel ds_subfont[] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
 };
 
-static inline nds_pixel nds_font_pixel(char c, char subX, char subY) {
-	return ds_subfont[c * NDS_FONT_HEIGHT * NDS_FONT_WIDTH + subY * NDS_FONT_WIDTH + subX];
+static inline nds_pixel nds_font_pixel(char c, byte subX, byte subY) {
+	return ds_subfont[c * nds_font_3x8.height * nds_font_3x8.width + subY * nds_font_3x8.width + subX];
 }
 
-#endif
+const nds_font_handle nds_font_3x8 = {
+	.width = 3,
+	.height = 8,
+	.pixel = nds_font_pixel,
+};
