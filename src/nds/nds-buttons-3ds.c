@@ -37,7 +37,11 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 	{0, 0, 0},
 };
 
-/* Most specific combinations first! */
+#define NDS_BTN_KEYS (KEY_DUP | KEY_DDOWN | KEY_DLEFT | KEY_DRIGHT | \
+                      KEY_A | KEY_B | KEY_Y | KEY_X | KEY_START | KEY_SELECT)
+#define NDS_BTN_MODS (KEY_L | KEY_R)
+#define NDS_BTN_ALL (NDS_BTN_KEYS | NDS_BTN_MODS)
+
 const nds_btn_map nds_btn_default_map[] = {
 	{'9',	KEY_DUP | KEY_DRIGHT},
 	{'7',	KEY_DUP | KEY_DLEFT},
@@ -108,14 +112,14 @@ void nds_btn_vblank()
 		u32 keys = nds_btn_default_map[i].keys;
 
 		/* Check if all the buttons are held */
-		if ((kh & keys) != keys)
+		if ((kh & NDS_BTN_ALL) != keys)
 			continue;
 
 		/*
 		 * Check if at least one of the buttons has
 		 * been pressed this frame
 		 */
-		if (!(kd & keys))
+		if (!(kd & NDS_BTN_KEYS & keys))
 			continue;
 
 		nds_event_put_key(nds_btn_default_map[i].input, 0);
