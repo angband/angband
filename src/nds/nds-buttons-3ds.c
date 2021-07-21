@@ -4,8 +4,10 @@
 #include "nds-event.h"
 
 #ifdef _3DS
-
 #include <3ds.h>
+#else
+#include <nds.h>
+#endif
 
 #include "math.h"
 
@@ -37,6 +39,17 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 	{0, 0, 0},
 };
 
+#ifndef _3DS
+#define KEY_DUP KEY_UP
+#define KEY_DDOWN KEY_DOWN
+#define KEY_DLEFT KEY_LEFT
+#define KEY_DRIGHT KEY_RIGHT
+
+#define hidScanInput scanKeys
+#define hidKeysDown keysDown
+#define hidKeysHeld keysHeld
+#endif
+
 #define NDS_BTN_KEYS (KEY_DUP | KEY_DDOWN | KEY_DLEFT | KEY_DRIGHT | \
                       KEY_A | KEY_B | KEY_Y | KEY_X | KEY_START | KEY_SELECT)
 #define NDS_BTN_MODS (KEY_L | KEY_R)
@@ -63,6 +76,7 @@ void nds_btn_init()
 
 void nds_btn_check_cpad()
 {
+#ifdef _3DS
 	static uint8_t input_cooldown = 0;
 
 	/* Skip if cooldown isn't expired yet */
@@ -96,6 +110,7 @@ void nds_btn_check_cpad()
 		    cpad_ang < nds_btn_cpad_map[i].max)
 			nds_event_put_key(nds_btn_cpad_map[i].input, 0);
 	}
+#endif
 }
 
 void nds_btn_vblank()
@@ -126,5 +141,3 @@ void nds_btn_vblank()
 		break;
 	}
 }
-
-#endif
