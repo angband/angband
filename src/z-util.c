@@ -641,6 +641,74 @@ void strescape(char *s, const char c) {
 }
 
 /**
+ * Rewrite string s in-place, replacing encoded representations of escaped characters
+ * ("\\r", etc.) with their literal character counterparts.
+ * This does only handle escape sequences visible on the ascii manpage (and "\e").
+ */
+void strunescape(char *s) {
+	char *in = s;
+	char *out = s;
+	bool unescapenext = false;
+
+	while (*in) {
+		if (unescapenext) {
+			unescapenext = false;
+
+			switch (*in) {
+			case '0':
+				*out++ = '\0';
+				break;
+			case 'a':
+				*out++ = '\a';
+				break;
+			case 'b':
+				*out++ = '\b';
+				break;
+			case 't':
+				*out++ = '\t';
+				break;
+			case 'n':
+				*out++ = '\n';
+				break;
+			case 'v':
+				*out++ = '\v';
+				break;
+			case 'f':
+				*out++ = '\f';
+				break;
+			case 'r':
+				*out++ = '\r';
+				break;
+			case '\\':
+				*out++ = '\\';
+				break;
+			case 'e':
+				*out++ = '\e';
+				break;
+			default:
+				/* Add back the unmodified sequence */
+				*out++ = '\\';
+				*out++ = *in;
+				break;
+			}
+
+			in++;
+			continue;
+		}
+
+		if (*in == '\\') {
+			unescapenext = true;
+			in++;
+			continue;
+		}
+
+		*out++ = *in++;
+	}
+
+	*out = 0;
+}
+
+/**
  * returns true if string only contains spaces
  */
 bool contains_only_spaces(const char* s){
