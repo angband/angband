@@ -1,15 +1,23 @@
 #include "nds-buttons.h"
 
 #include "../h-basic.h"
+#include "nds-draw.h"
 #include "nds-event.h"
+#include "../z-util.h"
+#include "../z-virt.h"
 
 #ifdef _3DS
-#include <3ds.h>
+#include <3ds/types.h>
+#include <3ds/services/hid.h>
 #else
 #include <nds.h>
 #endif
 
 #include "math.h"
+
+#define NDS_BTN_SEQ_LEN 10
+#define NDS_BTN_FILE "/angband/nds/button-mappings.txt"
+#define NDS_BTN_FILE_MAX_LINE 512
 
 #define NDS_CPAD_MAX 154
 #define NDS_CPAD_DEADZONE 20
@@ -22,9 +30,9 @@ typedef struct {
 } nds_btn_cpad_zone;
 
 typedef struct {
-	char input;
+	char input[NDS_BTN_SEQ_LEN];
 	u32 keys;
-} nds_btn_map;
+} nds_btn_map_entry;
 
 const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 	{'6',	-22.5,	22.5},		/* right */
@@ -55,23 +63,116 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 #define NDS_BTN_MODS (KEY_L | KEY_R)
 #define NDS_BTN_ALL (NDS_BTN_KEYS | NDS_BTN_MODS)
 
-const nds_btn_map nds_btn_default_map[] = {
-	{'9',	KEY_DUP | KEY_DRIGHT},
-	{'7',	KEY_DUP | KEY_DLEFT},
-	{'1',	KEY_DDOWN | KEY_DLEFT},
-	{'3',	KEY_DDOWN | KEY_DRIGHT},
-	{'6',	KEY_DRIGHT},
-	{'8',	KEY_DUP},
-	{'4',	KEY_DLEFT},
-	{'2',	KEY_DDOWN},
-	{'\e',	KEY_X},
-	{'y',	KEY_Y},
-	{'\r',	KEY_A},
-	{0, 0},
+const nds_btn_map_entry nds_btn_default_map[] = {
+	{"9",	KEY_DUP | KEY_DRIGHT},
+	{"7",	KEY_DUP | KEY_DLEFT},
+	{"1",	KEY_DDOWN | KEY_DLEFT},
+	{"3",	KEY_DDOWN | KEY_DRIGHT},
+	{"6",	KEY_DRIGHT},
+	{"8",	KEY_DUP},
+	{"4",	KEY_DLEFT},
+	{"2",	KEY_DDOWN},
+	{"\e",	KEY_B},
+	{"y",	KEY_Y},
+	{"\r",	KEY_A},
 };
+
+nds_btn_map_entry *nds_btn_map = NULL;
+int nds_btn_map_num = 0;
+
+void nds_btn_add_mappings(const nds_btn_map_entry *new_entries, int num) {
+	nds_btn_map = mem_realloc(nds_btn_map, (nds_btn_map_num + num) * sizeof(nds_btn_map_entry));
+	memcpy(&nds_btn_map[nds_btn_map_num], new_entries, num * sizeof(nds_btn_map_entry));
+	nds_btn_map_num += num;
+}
+
+/*
+ * The format of the button definitions is line-based.
+ *
+ * The first part of the line lists a set of keys, each delimited by a '+':
+ *   "A", "B", "Y", "X", "Up", "Down", "Left", "Right", "Start", "Select", "L" and "R".
+ * L and R are modifier keys and can not trigger an action on their own.
+ *
+ * The second part of the line is delimited by a ':', followed by a sequence of up to
+ * NDS_BTN_SEQ_LEN character inputs that should be triggered.
+ * Escaped characters are escaped using '\' (most notably "\r", "\b", "\e", "\t" and "\\").
+ * Quotation marks and question marks are not escaped and can be used as-is.
+ *
+ * Encoding a null-byte will end the input sequence, even if more characters may follow.
+ *
+ * User-defined button mappings may override any of the default mappings seen
+ * in `nds_btn_default_map`. Earlier definitions will take precedence over later ones.
+ *
+ * Empty lines and lines starting with a '#' will be ignored.
+ */
+void nds_btn_add_mappings_from_file(FILE *f) {
+	char *line = mem_alloc(NDS_BTN_FILE_MAX_LINE);
+
+	while (fgets(line, NDS_BTN_FILE_MAX_LINE, f)) {
+		if (line[0] == '\0' || line[0] == '#' || line[0] == '\n')
+			continue;
+
+		char *buttons = strtok(line, ":");
+		char *sequence = strtok(NULL, "\n");
+
+		nds_btn_map_entry entry = { 0 };
+
+		char *button = strtok(buttons, "+");
+
+		while (button) {
+			if (streq(button, "A")) {
+				entry.keys |= KEY_A;
+			} else if (streq(button, "B")) {
+				entry.keys |= KEY_B;
+			} else if (streq(button, "Y")) {
+				entry.keys |= KEY_Y;
+			} else if (streq(button, "X")) {
+				entry.keys |= KEY_X;
+			} else if (streq(button, "Up")) {
+				entry.keys |= KEY_DUP;
+			} else if (streq(button, "Down")) {
+				entry.keys |= KEY_DDOWN;
+			} else if (streq(button, "Left")) {
+				entry.keys |= KEY_DLEFT;
+			} else if (streq(button, "Right")) {
+				entry.keys |= KEY_DRIGHT;
+			} else if (streq(button, "Start")) {
+				entry.keys |= KEY_START;
+			} else if (streq(button, "Select")) {
+				entry.keys |= KEY_SELECT;
+			} else if (streq(button, "L")) {
+				entry.keys |= KEY_L;
+			} else if (streq(button, "R")) {
+				entry.keys |= KEY_R;
+			} else {
+				nds_logf("Unknown button: '%s'\n", button);
+			}
+
+			button = strtok(NULL, "+");
+		}
+
+		strunescape(sequence);
+
+		for (int i = 0; i < NDS_BTN_SEQ_LEN && sequence[i]; i++) {
+			entry.input[i] = sequence[i];
+		}
+
+		nds_btn_add_mappings(&entry, 1);
+	}
+
+	mem_free(line);
+}
 
 void nds_btn_init()
 {
+	FILE *f = fopen(NDS_BTN_FILE, "r");
+
+	if (f) {
+		nds_btn_add_mappings_from_file(f);
+		fclose(f);
+	}
+
+	nds_btn_add_mappings(nds_btn_default_map, N_ELEMENTS(nds_btn_default_map));
 }
 
 void nds_btn_check_cpad()
@@ -123,8 +224,8 @@ void nds_btn_vblank()
 	u32 kh = hidKeysHeld();
 
 	/* Check all mapped inputs */
-	for (int i = 0; nds_btn_default_map[i].input; i++) {
-		u32 keys = nds_btn_default_map[i].keys;
+	for (int i = 0; i < nds_btn_map_num; i++) {
+		u32 keys = nds_btn_map[i].keys;
 
 		/* Check if all the buttons are held */
 		if ((kh & NDS_BTN_ALL) != keys)
@@ -137,7 +238,9 @@ void nds_btn_vblank()
 		if (!(kd & NDS_BTN_KEYS & keys))
 			continue;
 
-		nds_event_put_key(nds_btn_default_map[i].input, 0);
+		for (int si = 0; si < NDS_BTN_SEQ_LEN && nds_btn_map[i].input[si]; si++) {
+			nds_event_put_key(nds_btn_map[i].input[si], 0);
+		}
 		break;
 	}
 }
