@@ -24,6 +24,7 @@
 #include <3ds/types.h>
 #include <3ds/services/apt.h>
 #include <3ds/services/fs.h>
+#include <3ds/os.h>
 #else
 #include <fat.h>
 #include <nds.h>
@@ -615,6 +616,10 @@ static void hook_quit(const char *str)
  */
 int main(int argc, char *argv[])
 {
+#ifdef _3DS
+	osSetSpeedupEnable(1);
+#endif
+
 	nds_video_init();
 
 	nds_video_vblank();
@@ -628,9 +633,7 @@ int main(int argc, char *argv[])
 
 	nds_video_vblank();
 
-#ifdef _3DS
-	fsInit();
-#else
+#ifndef _3DS
 	if (!fatInitDefault()) {
 		nds_log("\nError initializing FAT drivers.\n");
 		nds_log("Make sure the game is patched with the correct DLDI.\n");
@@ -638,6 +641,7 @@ int main(int argc, char *argv[])
 		nds_log("\n\nUnable to access filesystem.\nCannot continue.\n");
 
 		nds_exit(1);
+
 		return 1;
 	}
 #endif

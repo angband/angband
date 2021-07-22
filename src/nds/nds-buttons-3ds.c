@@ -53,6 +53,9 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 #define KEY_DLEFT KEY_LEFT
 #define KEY_DRIGHT KEY_RIGHT
 
+#define KEY_ZL 0
+#define KEY_ZR 0
+
 #define hidScanInput scanKeys
 #define hidKeysDown keysDown
 #define hidKeysHeld keysHeld
@@ -60,7 +63,7 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 
 #define NDS_BTN_KEYS (KEY_DUP | KEY_DDOWN | KEY_DLEFT | KEY_DRIGHT | \
                       KEY_A | KEY_B | KEY_Y | KEY_X | KEY_START | KEY_SELECT)
-#define NDS_BTN_MODS (KEY_L | KEY_R)
+#define NDS_BTN_MODS (KEY_L | KEY_R | KEY_ZL | KEY_ZR)
 #define NDS_BTN_ALL (NDS_BTN_KEYS | NDS_BTN_MODS)
 
 const nds_btn_map_entry nds_btn_default_map[] = {
@@ -90,8 +93,9 @@ void nds_btn_add_mappings(const nds_btn_map_entry *new_entries, int num) {
  * The format of the button definitions is line-based.
  *
  * The first part of the line lists a set of keys, each delimited by a '+':
- *   "A", "B", "Y", "X", "Up", "Down", "Left", "Right", "Start", "Select", "L" and "R".
- * L and R are modifier keys and can not trigger an action on their own.
+ *   "A", "B", "Y", "X", "Up", "Down", "Left", "Right", "Start", "Select",
+ *   "L", "R", "ZL" and "ZR".
+ * L, R, ZL and ZR are modifier keys and do not trigger an action on their own.
  *
  * The second part of the line is delimited by a ':', followed by a sequence of up to
  * NDS_BTN_SEQ_LEN character inputs that should be triggered.
@@ -144,6 +148,12 @@ void nds_btn_add_mappings_from_file(FILE *f) {
 				entry.keys |= KEY_L;
 			} else if (streq(button, "R")) {
 				entry.keys |= KEY_R;
+#ifdef _3DS
+			} else if (streq(button, "ZL")) {
+				entry.keys |= KEY_ZL;
+			} else if (streq(button, "ZR")) {
+				entry.keys |= KEY_ZR;
+#endif
 			} else {
 				nds_logf("Unknown button: '%s'\n", button);
 			}
