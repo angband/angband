@@ -189,6 +189,22 @@ static errr CheckEvents(bool wait)
 	return (0);
 }
 
+static void init_color_data(void)
+{
+	/* Initialize the "color_data" array */
+	for (int i = 0; i < MAX_COLORS; i++) {
+#ifdef _3DS
+		color_data[i] = angband_color_table[i][1] << 24 |
+		                angband_color_table[i][2] << 16 |
+		                angband_color_table[i][3] << 8;
+#else
+		color_data[i] = RGB15(angband_color_table[i][1] >> 3,
+		                      angband_color_table[i][2] >> 3,
+		                      angband_color_table[i][3] >> 3);
+#endif
+	}
+}
+
 /*
  * Do a "special thing" to the current "term"
  *
@@ -294,6 +310,8 @@ static errr Term_xtra_nds(int n, int v)
 		 * handling "color changes" and the "arg_sound" and/or
 		 * "arg_graphics" options.
 		 */
+
+		init_color_data();
 
 		return (0);
 	}
@@ -514,18 +532,7 @@ errr init_nds(void)
 	td = &data[0];
 	memset(td, 0, sizeof(term_data));
 
-	/* Initialize the "color_data" array */
-	for (int i = 0; i < MAX_COLORS; i++) {
-#ifdef _3DS
-		color_data[i] = angband_color_table[i][1] << 24 |
-		                angband_color_table[i][2] << 16 |
-		                angband_color_table[i][3] << 8;
-#else
-	    color_data[i] = RGB15(angband_color_table[i][1] >> 3,
-		                      angband_color_table[i][2] >> 3,
-		                      angband_color_table[i][3] >> 3);
-#endif
-	}
+	init_color_data();
 
 	/* Create windows (backwards!) */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--) {
