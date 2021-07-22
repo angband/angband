@@ -163,7 +163,7 @@ bool nds_kbd_modifier_active(char mod) {
 	return (nds_kbd_active_mods & mod) == mod;
 }
 
-void nds_kbd_redraw_key(int r, int k, bool active)
+void nds_kbd_redraw_key(int r, int k, bool initial, bool active)
 {
 	/* Fetch the matching row and key */
 	nds_kbd_row row = nds_kbd_map[r];
@@ -180,24 +180,26 @@ void nds_kbd_redraw_key(int r, int k, bool active)
 
 	int key_width = key.width * KBD_UNIT;
 
-	/* Draw the outline (left and right) */
-	for (int y = 0; y < KBD_KEY_HEIGHT; y++) {
-		nds_draw_pixel(key_offset,
-		               NDS_SCREEN_HEIGHT + row_offset + y,
-		               NDS_WHITE_PIXEL);
-		nds_draw_pixel(key_offset + key_width,
-		               NDS_SCREEN_HEIGHT + row_offset + y,
-		               NDS_WHITE_PIXEL);
-	}
+	if (initial) {
+		/* Draw the outline (left and right) */
+		for (int y = 0; y < KBD_KEY_HEIGHT; y++) {
+			nds_draw_pixel(key_offset,
+			               NDS_SCREEN_HEIGHT + row_offset + y,
+			               NDS_WHITE_PIXEL);
+			nds_draw_pixel(key_offset + key_width,
+			               NDS_SCREEN_HEIGHT + row_offset + y,
+			               NDS_WHITE_PIXEL);
+		}
 
-	/* Draw the outline (top and bottom) */
-	for (int x = 0; x < key_width; x++) {
-		nds_draw_pixel(key_offset + x,
-		               NDS_SCREEN_HEIGHT + row_offset,
-		               NDS_WHITE_PIXEL);
-		nds_draw_pixel(key_offset + x,
-		               NDS_SCREEN_HEIGHT + row_offset + KBD_KEY_HEIGHT,
-		               NDS_WHITE_PIXEL);
+		/* Draw the outline (top and bottom) */
+		for (int x = 0; x < key_width; x++) {
+			nds_draw_pixel(key_offset + x,
+			               NDS_SCREEN_HEIGHT + row_offset,
+			               NDS_WHITE_PIXEL);
+			nds_draw_pixel(key_offset + x,
+			               NDS_SCREEN_HEIGHT + row_offset + KBD_KEY_HEIGHT,
+			               NDS_WHITE_PIXEL);
+		}
 	}
 
 	/* The key is active if it's a modifier and the modifier is active */
@@ -236,7 +238,7 @@ void nds_kbd_redraw_key(int r, int k, bool active)
 	}
 }
 
-void nds_kbd_redraw()
+void nds_kbd_redraw(bool initial)
 {
 	/* Temporarily use the 5x8 font */
 	const nds_font_handle *old_font = nds_font;
@@ -245,7 +247,7 @@ void nds_kbd_redraw()
 	/* Redraw all keys */
 	for (int r = 0; r < N_ELEMENTS(nds_kbd_map); r++) {
 		for (int k = 0; k < nds_kbd_map[r].length; k++) {
-			nds_kbd_redraw_key(r, k, false);
+			nds_kbd_redraw_key(r, k, initial, false);
 		}
 	}
 
@@ -263,7 +265,7 @@ bool nds_kbd_init()
 		}
 	}
 
-	nds_kbd_redraw();
+	nds_kbd_redraw(true);
 
 	return true;
 }
@@ -272,8 +274,8 @@ void nds_kbd_vblank()
 {
 	static bool need_redraw = false;
 
-	if (need_redraw) {
-		nds_kbd_redraw();
+	if (need_redraw && (keysUp() & KEY_TOUCH)) {
+		nds_kbd_redraw(false);
 		need_redraw = false;
 	}
 
@@ -322,7 +324,7 @@ void nds_kbd_vblank()
 	/* Redraw key as "pressed" */
 	const nds_font_handle *old_font = nds_font;
 	nds_font = &nds_font_5x8;
-	nds_kbd_redraw_key(r, k, true);
+	nds_kbd_redraw_key(r, k, false, true);
 	nds_font = old_font;
 
 	/* If it's a modifier, toggle it and return */
