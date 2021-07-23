@@ -96,9 +96,22 @@ void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr)
 #endif
 }
 
+void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr)
+{
+	while (*str != '\0') {
+		nds_draw_char_px(x, y, *(str++), clr);
+		x += nds_font->width;
+	}
+}
+
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
 {
 	nds_draw_char_px(x * nds_font->width, y * nds_font->height, c, clr);
+}
+
+void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr)
+{
+	nds_draw_str_px(x * nds_font->width, y * nds_font->height, str, clr);
 }
 
 void nds_draw_cursor(int x, int y) {

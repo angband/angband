@@ -56,6 +56,9 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data);
 void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr);
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr);
 
+void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr);
+void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr);
+
 void nds_draw_cursor(int x, int y);
 
 void nds_pixel_to_square(int *const x, int *const y, const int ox,
