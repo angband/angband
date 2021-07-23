@@ -382,9 +382,15 @@ static errr Term_xtra_nds(int n, int v)
 		/*
 		 * Delay for some milliseconds
 		 */
+#ifdef _3DS
+		if (v > 0) {
+			svcSleepThread(1e6 * v);
+		}
+#else
 		int i;
-		for (i = 0; i < v; i++)
+		for (i = 0; i < ((v + 15) >> 4); i++)
 			nds_video_vblank();
+#endif
 
 		return (0);
 	}
