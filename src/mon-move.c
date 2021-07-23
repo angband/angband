@@ -325,7 +325,7 @@ static bool get_move_bodyguard(struct chunk *c, struct monster *mon)
 	if (dist <= 1) return false;
 
 	/* If the leader's too out of sight and far away, save yourself */
-	if (!los(cave, mon->grid, leader->grid) && (dist > 10)) return false;
+	if (!los(c, mon->grid, leader->grid) && (dist > 10)) return false;
 
 	/* Check nearby adjacent grids and assess */
 	for (i = 0; i < 8; i++) {
