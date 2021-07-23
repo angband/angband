@@ -1025,13 +1025,18 @@ EMPTY, EMPTY, EMPTY, EMPTY,
 EMPTY, EMPTY, EMPTY, EMPTY,
 };
 
-static inline nds_pixel nds_font_pixel(char c, byte subX, byte subY) {
-	u32b char_offset = c * nds_font_5x8.height * nds_font_5x8.width;
-	return ds_subfont[char_offset + subY * nds_font_5x8.width + subX] ? NDS_WHITE_PIXEL : NDS_BLACK_PIXEL;
+static void nds_font_draw(char c, nds_pixel *pixels, nds_pixel clr) {
+	const char *font = ds_subfont + (c * 5 * 8);
+
+	for (byte yy = 0; yy < 8; yy++, pixels += NDS_Y_PITCH) {
+		for (byte xx = 0; xx < 5; xx++, font++) {
+			pixels[xx * NDS_X_PITCH] = ((*font) ? NDS_WHITE_PIXEL : NDS_BLACK_PIXEL) & clr;
+		}
+	}
 }
 
 const nds_font_handle nds_font_5x8 = {
 	.width = 5,
 	.height = 8,
-	.pixel = nds_font_pixel,
+	.draw_char = nds_font_draw
 };

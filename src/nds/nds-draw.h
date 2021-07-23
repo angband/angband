@@ -15,6 +15,9 @@ typedef uint32_t nds_pixel;
 #define NDS_SCREEN_WIDTH 400
 #define NDS_SCREEN_HEIGHT 240
 
+#define NDS_X_PITCH	NDS_SCREEN_HEIGHT
+#define NDS_Y_PITCH	-1
+
 #else
 
 typedef uint16_t nds_pixel;
@@ -25,12 +28,15 @@ typedef uint16_t nds_pixel;
 #define NDS_SCREEN_WIDTH 256
 #define NDS_SCREEN_HEIGHT 192
 
+#define NDS_X_PITCH	1
+#define NDS_Y_PITCH	256
+
 #endif
 
 typedef struct {
 	byte width;
 	byte height;
-	nds_pixel (*pixel)(char c, byte subX, byte subY);
+	void (*draw_char)(char c, nds_pixel *pixels, nds_pixel clr);
 } nds_font_handle;
 
 extern const nds_font_handle *nds_font;

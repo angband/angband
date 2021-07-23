@@ -55,7 +55,7 @@ void nds_video_vblank() {
 #endif
 }
 
-void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
+static inline nds_pixel *nds_get_framebuffer(u16b *y) {
 #ifdef _3DS
 	nds_pixel *fb = (nds_pixel *) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL);
 #else
@@ -63,14 +63,20 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 #endif
 
 	/* Bottom screen? */
-	if (y >= NDS_SCREEN_HEIGHT) {
+	if (*y >= NDS_SCREEN_HEIGHT) {
 #ifdef _3DS
 		fb = (nds_pixel *) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
 #else
 		fb = &BG_GFX_SUB[16 * 1024];
 #endif
-		y -= NDS_SCREEN_HEIGHT;
+		*y -= NDS_SCREEN_HEIGHT;
 	}
+
+	return fb;
+}
+
+void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
+	nds_pixel *fb = nds_get_framebuffer(&y);
 
 #ifdef _3DS
 	fb[x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)] = data;
@@ -81,13 +87,13 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 
 void nds_draw_char_px(int x, int y, char c, nds_pixel clr)
 {
-	for (byte yy = 0; yy < nds_font->height; yy++) {
-		for (byte xx = 0; xx < nds_font->width; xx++) {
-			nds_draw_pixel(x + xx,
-			               y + yy,
-			               nds_font->pixel(c, xx, yy) & clr);
-		}
-	}
+	nds_pixel *fb = nds_get_framebuffer(&y);
+
+#ifdef _3DS
+	nds_font->draw_char(c, fb + (x * NDS_SCREEN_HEIGHT) + (NDS_SCREEN_HEIGHT - y - 1), clr);
+#else
+	nds_font->draw_char(c, fb + (y * NDS_SCREEN_WIDTH) + x, clr);
+#endif
 }
 
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
