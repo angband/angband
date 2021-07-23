@@ -468,7 +468,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
-		if ((square(cave, grid)->mon > 0) && player_has(player, PF_STEAL)) {
+		if ((square(c, grid)->mon > 0) && player_has(player, PF_STEAL)) {
 			ADD_LABEL("Steal", CMD_STEAL, MN_ROW_VALID);
 		}
 
