@@ -63,7 +63,7 @@ CFLAGS	:=	-g -Wall -mword-relocations -ffunction-sections \
 
 # Omit some flags for easier debugging
 ifeq (,$(NDS_DEBUG))
-CFLAGS	+=	-O2 -fomit-frame-pointer
+CFLAGS	+=	-O2 -fomit-frame-pointer -DNDEBUG
 endif
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
