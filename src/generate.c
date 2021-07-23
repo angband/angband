@@ -828,11 +828,11 @@ static const struct cave_profile *choose_profile(struct player *p)
 	int labyrinth_alloc = find_cave_profile("labyrinth")->alloc;
 
 	/* A bit of a hack, but worth it for now NRM */
-	if (player->noscore & NOSCORE_JUMPING) {
+	if (p->noscore & NOSCORE_JUMPING) {
 		char name[30] = "";
 
 		/* Cancel the query */
-		player->noscore &= ~(NOSCORE_JUMPING);
+		p->noscore &= ~(NOSCORE_JUMPING);
 
 		/* Ask debug players for the profile they want */
 		if (get_string("Profile name (eg classic): ", name, sizeof(name)))
