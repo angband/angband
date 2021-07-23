@@ -200,7 +200,7 @@ static void init_color_data(void)
 #else
 		color_data[i] = RGB15(angband_color_table[i][1] >> 3,
 		                      angband_color_table[i][2] >> 3,
-		                      angband_color_table[i][3] >> 3);
+		                      angband_color_table[i][3] >> 3) | 0x8000;
 #endif
 	}
 }

@@ -81,11 +81,11 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 #ifdef _3DS
 	fb[x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)] = data;
 #else
-	fb[y * NDS_SCREEN_WIDTH + x] = data | BIT(15);
+	fb[y * NDS_SCREEN_WIDTH + x] = data;
 #endif
 }
 
-void nds_draw_char_px(int x, int y, char c, nds_pixel clr)
+void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr)
 {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 

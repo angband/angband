@@ -53,7 +53,7 @@ void nds_video_vblank();
 void nds_draw_pixel(u16b x, u16b y, nds_pixel data);
 
 /* Same as nds_draw_char, but x/y is pixels instead of tiles */
-void nds_draw_char_px(int x, int y, char c, nds_pixel clr);
+void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr);
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr);
 
 void nds_draw_cursor(int x, int y);

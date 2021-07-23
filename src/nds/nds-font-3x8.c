@@ -389,7 +389,6 @@ static const nds_pixel ds_subfont[] = {
 
 static void nds_font_draw(char c, nds_pixel *pixels, nds_pixel clr) {
 	const nds_pixel *font = ds_subfont + (c * 3 * 8);
-	clr |= 0x8000;
 
 	for (byte yy = 0; yy < 8; yy++, pixels += NDS_Y_PITCH) {
 		for (byte xx = 0; xx < 3; xx++, font++) {
