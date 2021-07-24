@@ -39,6 +39,7 @@ bool flag_has(const bitflag *flags, const size_t size, const int flag)
 	return false;
 }
 
+#ifndef NDEBUG
 bool flag_has_dbg(const bitflag *flags, const size_t size, const int flag,
 				  const char *fi, const char *fl)
 {
@@ -58,7 +59,7 @@ bool flag_has_dbg(const bitflag *flags, const size_t size, const int flag,
 
 	return false;
 }
-
+#endif
 
 /**
  * Iterates over the flags which are "on" in a bitflag set.
@@ -210,6 +211,7 @@ bool flag_on(bitflag *flags, const size_t size, const int flag)
 	return true;
 }
 
+#ifndef NDEBUG
 bool flag_on_dbg(bitflag *flags, const size_t size, const int flag,
 				 const char *fi, const char *fl)
 {
@@ -229,7 +231,7 @@ bool flag_on_dbg(bitflag *flags, const size_t size, const int flag,
 
 	return true;
 }
-
+#endif
 
 /**
  * Clears one flag in a bitfield.

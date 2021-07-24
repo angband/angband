@@ -60,8 +60,6 @@ typedef byte bitflag;
 
 
 bool flag_has       (const bitflag *flags, const size_t size, const int flag);
-bool flag_has_dbg   (const bitflag *flags, const size_t size, const int flag,
-					 const char *fi, const char *fl);
 int  flag_next      (const bitflag *flags, const size_t size, const int flag);
 int  flag_count     (const bitflag *flags, const size_t size);
 bool flag_is_empty  (const bitflag *flags, const size_t size);
@@ -73,8 +71,6 @@ bool flag_is_subset (const bitflag *flags1, const bitflag *flags2,
 bool flag_is_equal  (const bitflag *flags1, const bitflag *flags2,
 					 const size_t size);
 bool flag_on        (bitflag *flags, const size_t size, const int flag);
-bool flag_on_dbg    (bitflag *flags, const size_t size, const int flag,
-					 const char *fi, const char *fl);
 bool flag_off       (bitflag *flags, const size_t size, const int flag);
 void flag_wipe      (bitflag *flags, const size_t size);
 void flag_setall    (bitflag *flags, const size_t size);
@@ -90,5 +86,15 @@ bool flags_clear    (bitflag *flags, const size_t size, ...);
 bool flags_set      (bitflag *flags, const size_t size, ...);
 void flags_init     (bitflag *flags, const size_t size, ...);
 bool flags_mask     (bitflag *flags, const size_t size, ...);
+
+#ifdef NDEBUG
+#define flag_has_dbg(flags, size, flag, fi, fl) flag_has(flags, size, flag)
+#define flag_on_dbg(flags, size, flag, fi, fl) flag_on(flags, size, flag)
+#else
+bool flag_has_dbg   (const bitflag *flags, const size_t size, const int flag,
+					 const char *fi, const char *fl);
+bool flag_on_dbg    (bitflag *flags, const size_t size, const int flag,
+					 const char *fi, const char *fl);
+#endif
 
 #endif
