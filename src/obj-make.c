@@ -216,10 +216,10 @@ static void cleanup_obj_make(void) {
 	}
 	mem_free(money_type);
 	mem_free(alloc_ego_table);
-	mem_free(obj_total_tval_great);
-	mem_free(obj_total_tval);
-	mem_free(obj_alloc_great);
-	mem_free(obj_alloc);
+	mem_free_alt(obj_total_tval_great);
+	mem_free_alt(obj_total_tval);
+	mem_free_alt(obj_alloc_great);
+	mem_free_alt(obj_alloc);
 }
 
 /*** Make an ego item ***/

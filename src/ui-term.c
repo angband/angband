@@ -327,20 +327,20 @@ struct keypress keylog[KEYLOG_SIZE];
 static errr term_win_nuke(term_win *s)
 {
 	/* Free the window access arrays */
-	mem_free(s->a);
-	mem_free(s->c);
+	mem_free_alt(s->a);
+	mem_free_alt(s->c);
 
 	/* Free the window content arrays */
-	mem_free(s->va);
-	mem_free(s->vc);
+	mem_free_alt(s->va);
+	mem_free_alt(s->vc);
 
 	/* Free the terrain access arrays */
-	mem_free(s->ta);
-	mem_free(s->tc);
+	mem_free_alt(s->ta);
+	mem_free_alt(s->tc);
 
 	/* Free the terrain content arrays */
-	mem_free(s->vta);
-	mem_free(s->vtc);
+	mem_free_alt(s->vta);
+	mem_free_alt(s->vtc);
 
 	/* Success */
 	return (0);
