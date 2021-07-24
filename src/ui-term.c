@@ -327,20 +327,20 @@ struct keypress keylog[KEYLOG_SIZE];
 static errr term_win_nuke(term_win *s)
 {
 	/* Free the window access arrays */
-	mem_free(s->a);
-	mem_free(s->c);
+	mem_free_alt(s->a);
+	mem_free_alt(s->c);
 
 	/* Free the window content arrays */
-	mem_free(s->va);
-	mem_free(s->vc);
+	mem_free_alt(s->va);
+	mem_free_alt(s->vc);
 
 	/* Free the terrain access arrays */
-	mem_free(s->ta);
-	mem_free(s->tc);
+	mem_free_alt(s->ta);
+	mem_free_alt(s->tc);
 
 	/* Free the terrain content arrays */
-	mem_free(s->vta);
-	mem_free(s->vtc);
+	mem_free_alt(s->vta);
+	mem_free_alt(s->vtc);
 
 	/* Success */
 	return (0);
@@ -355,20 +355,20 @@ static errr term_win_init(term_win *s, int w, int h)
 	int y;
 
 	/* Make the window access arrays */
-	s->a = mem_zalloc(h * sizeof(int*));
-	s->c = mem_zalloc(h * sizeof(wchar_t*));
+	s->a = mem_zalloc_alt(h * sizeof(int*));
+	s->c = mem_zalloc_alt(h * sizeof(wchar_t*));
 
 	/* Make the window content arrays */
-	s->va = mem_zalloc(h * w * sizeof(int));
-	s->vc = mem_zalloc(h * w * sizeof(wchar_t));
+	s->va = mem_zalloc_alt(h * w * sizeof(int));
+	s->vc = mem_zalloc_alt(h * w * sizeof(wchar_t));
 
 	/* Make the terrain access arrays */
-	s->ta = mem_zalloc(h * sizeof(int*));
-	s->tc = mem_zalloc(h * sizeof(wchar_t*));
+	s->ta = mem_zalloc_alt(h * sizeof(int*));
+	s->tc = mem_zalloc_alt(h * sizeof(wchar_t*));
 
 	/* Make the terrain content arrays */
-	s->vta = mem_zalloc(h * w * sizeof(int));
-	s->vtc = mem_zalloc(h * w * sizeof(wchar_t));
+	s->vta = mem_zalloc_alt(h * w * sizeof(int));
+	s->vtc = mem_zalloc_alt(h * w * sizeof(wchar_t));
 
 	/* Prepare the window access arrays */
 	for (y = 0; y < h; y++) {

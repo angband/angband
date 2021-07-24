@@ -28,7 +28,7 @@ CFLAGS	:=	-g -Wall -mcpu=arm7tdmi -mtune=arm7tdmi -ffast-math $(ARCH)
 
 # Omit some flags for easier debugging
 ifeq (,$(NDS_DEBUG))
-CFLAGS	+=	-O2 -fomit-frame-pointer -ffast-math
+CFLAGS	+=	-Os -fomit-frame-pointer -ffast-math
 endif
 
 CFLAGS	+=	$(INCLUDE) -DARM7

@@ -47,6 +47,7 @@
 #include "nds/nds-event.h"
 #include "nds/nds-keyboard.h"
 #include "nds/nds-buttons.h"
+#include "nds/nds-slot2-virt.h"
 
 #ifdef DEBUG_MEMORY_USAGE
 
@@ -671,6 +672,8 @@ int main(int argc, char *argv[])
 	nds_video_vblank();
 
 #ifndef _3DS
+	mem_init_alt();
+
 	if (!fatInitDefault()) {
 		nds_log("\nError initializing FAT drivers.\n");
 		nds_log("Make sure the game is patched with the correct DLDI.\n");
