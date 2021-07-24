@@ -14,29 +14,9 @@
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
 
-#include "ds_ipc.h"
-
 //---------------------------------------------------------------------------------
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
-	u32 temp=0;
-	if (fifoGetValue32(IPC_SHUTDOWN) == 1) {
-		SerialWaitBusy();
-		REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz | SPI_CONTINUOUS;
-		REG_SPIDATA = 0x80;
-		SerialWaitBusy();
-		REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz;
-		REG_SPIDATA = 0;
-		SerialWaitBusy();
-		temp = REG_SPIDATA & 0xFF;
-
-		REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz | SPI_CONTINUOUS;
-		REG_SPIDATA = 0;
-		SerialWaitBusy();
-		REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz;
-		REG_SPIDATA = temp | PM_SYSTEM_PWR;
-	}
-
 	// Read the touch data
 	inputGetAndSend();
 }
@@ -55,25 +35,9 @@ int main(int argc, char ** argv) {
 	// Reset the clock if needed
 	rtcReset();
 
-	// wait until arm9 wants to query the DS type
-	fifoWaitValue32(IPC_NDS_TYPE);
-// check if it is running on DS Lite or not
-	SerialWaitBusy();
-	REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz | SPI_CONTINUOUS;
-	REG_SPIDATA = 0x80;
-	SerialWaitBusy();
-	REG_SPICNT = SPI_ENABLE | SPI_DEVICE_POWER | SPI_BAUD_1MHz;
-	REG_SPIDATA = 0;
-	SerialWaitBusy();
+	// Install the system FIFO handler (poweroff, etc.)
+	installSystemFIFO();
 
-// bit 6 set means it's a DS lite
-	if((REG_SPIDATA & BIT(6))) {
-		fifoSendValue32(IPC_NDS_TYPE, 1);
-	} else {
-		fifoSendValue32(IPC_NDS_TYPE, 0);
-	}
-
-	irqInit();
 	irqSet(IRQ_VBLANK, VblankHandler);
 	irqEnable(IRQ_VBLANK);
 

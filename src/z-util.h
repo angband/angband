@@ -157,6 +157,11 @@ extern void strskip(char *s, const char c, const char e);
 extern void strescape(char *s, const char c);
 
 /**
+ * Change escaped characters into their literal representation
+ */
+extern void strunescape(char *s);
+
+/**
  * Determines if a string is "empty"
  */
 bool contains_only_spaces(const char* s);

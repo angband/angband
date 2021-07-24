@@ -48,7 +48,7 @@
 
 #if defined (WINDOWS) && !defined (CYGWIN)
 # define my_mkdir(path, perms) mkdir(path)
-#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON) || defined (CYGWIN)
+#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON) || defined (CYGWIN) || defined(NDS)
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
 # define my_mkdir(path, perms) false

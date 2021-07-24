@@ -21,15 +21,6 @@
 
 #else
 
-/* Necessary? */
-#ifdef NDS
-# include <fat.h>
-# include <unistd.h>
-# include <reent.h>
-# include <sys/iosupport.h>
-# include <errno.h>
-#endif
-
 /**
  * Using C99, assume we have stdint and stdbool
  */
