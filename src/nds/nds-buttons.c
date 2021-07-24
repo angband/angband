@@ -75,7 +75,7 @@ const nds_btn_map_entry nds_btn_default_map[] = {
 	{"8",	KEY_DUP},
 	{"4",	KEY_DLEFT},
 	{"2",	KEY_DDOWN},
-	{"\e",	KEY_B},
+	{"\x1B",	KEY_B},
 	{"y",	KEY_Y},
 	{"\r",	KEY_A},
 };
