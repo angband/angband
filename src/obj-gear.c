@@ -728,17 +728,17 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 		if (!object_flavor_is_aware(obj)) {
-			if (player_has(player, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
+			if (player_has(p, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
 				object_flavor_aware(obj);
 				msg("Mushrooms for breakfast!");
-			} else if (player_has(player, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
+			} else if (player_has(p, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
 				object_flavor_aware(obj);
 		}
 	}
 
 	p->upkeep->update |= (PU_BONUS | PU_INVEN);
 	p->upkeep->redraw |= (PR_INVEN);
-	update_stuff(player);
+	update_stuff(p);
 
 	if (message) {
 		char o_name[80];
