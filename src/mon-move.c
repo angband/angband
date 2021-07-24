@@ -680,7 +680,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 	int best_score = -1;
 
 	/* Taking damage from terrain makes moving vital */
-	if (!monster_taking_terrain_damage(mon)) {
+	if (!monster_taking_terrain_damage(c, mon)) {
 		/* If the player is not currently near the monster, no reason to flow */
 		if (mon->cdis >= mon->best_range) {
 			return false;
@@ -877,7 +877,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	}
 
 	/* Monster is taking damage from terrain */
-	if (monster_taking_terrain_damage(mon)) {
+	if (monster_taking_terrain_damage(c, mon)) {
 		/* Try to find safe place */
 		if (get_move_find_safety(c, mon)) {
 			/* Set a course for the safe place */
@@ -1699,7 +1699,7 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 	} else if (monster_can_smell(c, mon)) {
 		/* Monster can smell the player */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-	} else if (monster_taking_terrain_damage(mon)) {
+	} else if (monster_taking_terrain_damage(c, mon)) {
 		/* Monster is taking damage from the terrain */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else {
