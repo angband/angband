@@ -28,19 +28,6 @@ Dark monsters are hard to see
 
 Fix (reduce) the alpha on your screen, or use the "Interact with colors" screen under the options (``=``) menu.  Navigate to the ``8`` using ``n`` and increase the color intensity with r(ed)/g(reen)/b(lue).
 
-I play in a terminal on Linux, and the colours are screwed up
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-It's very likely that your console is not set to display 256 colours. Try setting the TERM environment variable to "xterm-256color" in your shell before starting angband::
-
-	$ export TERM=xterm-256color
-	$ angband
-
-I'm playing in a terminal and the Escape key isn't working as it should
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This is a feature of terminals to allow you to enter keypresses that can't be sent directly.  Use the backtick ``\`` key instead - it's equivalent in every way to Escape.  (This doesn't apply in Sangband, or NPPAngband.)
-
 Is there a way to disable that thing that pops up when you hit the enter key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -57,7 +44,7 @@ Development
 What are the current plans for the game?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ever-changing and subject to U-turning with public dissent. See http://trac.rephial.org/roadmap
+Ever-changing and subject to U-turning with public dissent. Discussion typically happens in the `Vanilla section`_ of the forums.
 
 How do I suggest an idea/feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +73,8 @@ You have two options:
 
 All contributions are accepted as dual-licenced with both the Angband and GPLv2 licences.
 
+There are contribution guidelines in CONTRIBUTING.md in the top level directory of the source code.
+
 If the patch is a bugfix, then you can reasonably expect it to be integrated into the development tree. If it's more involved, and the feature is not one that the next version is planned to have, the patch may go through several reviews before being incorporated. It may also just be unsuitable for Angband - in which case, please don't take rejection badly; you may just be better off writing a variant.
 
 Non-code activities are different. Documentation can be written on the wiki, or if you're a graphics designer (and they're always welcome) then please talk on the mailing list about your work.
@@ -93,3 +82,4 @@ Non-code activities are different. Documentation can be written on the wiki, or 
 
 .. _GitHub: https://github.com/angband/angband/
 .. _Angband forum: http://angband.oook.cz/forum
+.. _Vanilla section: http://angband.oook.cz/forum/forumdisplay.php?f=3

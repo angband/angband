@@ -23,7 +23,8 @@ symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
 The "slash" command (``/``) will identify any character appearing on your
-map (see 'commands.txt').
+map (see 'commands.txt'), and there is a comprehensive menu of terrain,
+objects, monsters and so on using the "tilde" (``~``) command.
 
 Note that you can use a "user pref file" to change any of these symbols to
 something you are more comfortable with.
@@ -230,7 +231,7 @@ stairs.
 
 In the dungeon, there are many things to find, but your character must
 survive many horrible and challenging encounters to find the treasure lying
-about and take it safely back to the town to sell.
+about.
 
 There are two sources for light once inside the dungeon. Permanent light
 which has been magically placed within rooms, and a light source carried by
@@ -488,7 +489,8 @@ The possible messages are :
 ===   ========================================= 
 
 The last message indicates an artifact is present and is only possible
-if the preserve option is disabled.
+if the preserve option is disabled (if preserve is enabled, an artifact will
+guarantee a feeling of 5 or better).
 
 You may review your level feeling any time by using the ^K command.
 You may also consult it by checking the LF: indicator at the bottom
