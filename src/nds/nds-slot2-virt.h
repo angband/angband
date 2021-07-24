@@ -1,0 +1,10 @@
+#ifndef _NDS_SLOT2_VIRT_H
+#define _NDS_SLOT2_VIRT_H
+
+#include "../h-basic.h"
+
+#ifndef _3DS
+void mem_init_alt(void);
+#endif
+
+#endif
