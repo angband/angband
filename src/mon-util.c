@@ -1335,10 +1335,10 @@ void monster_take_terrain_damage(struct monster *mon)
 /**
  * Terrain is currently damaging monster
  */
-bool monster_taking_terrain_damage(struct monster *mon)
+bool monster_taking_terrain_damage(struct chunk *c, struct monster *mon)
 {
-	if (square_isdamaging(cave, mon->grid) &&
-		!rf_has(mon->race->flags, square_feat(cave, mon->grid)->resist_flag)) {
+	if (square_isdamaging(c, mon->grid) &&
+		!rf_has(mon->race->flags, square_feat(c, mon->grid)->resist_flag)) {
 		return true;
 	}
 
