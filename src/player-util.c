@@ -607,8 +607,8 @@ void player_update_light(struct player *p)
  */
 struct object *player_best_digger(struct player *p, bool forbid_stack)
 {
-	int weapon_slot = slot_by_name(player, "weapon");
-	struct object *current_weapon = slot_object(player, weapon_slot);
+	int weapon_slot = slot_by_name(p, "weapon");
+	struct object *current_weapon = slot_object(p, weapon_slot);
 	struct object *obj, *best = NULL;
 	/* Prefer any melee weapon over unarmed digging, i.e. best == NULL. */
 	int best_score = -1;
@@ -640,7 +640,7 @@ struct object *player_best_digger(struct player *p, bool forbid_stack)
 		/* Swap back. */
 		if (obj != current_weapon) {
 			obj->number = old_number;
-			player->body.slots[weapon_slot].obj = current_weapon;
+			p->body.slots[weapon_slot].obj = current_weapon;
 		}
 
 		if (score > best_score) {
@@ -664,7 +664,7 @@ bool player_attack_random_monster(struct player *p)
 
 	/* Look for a monster, attack */
 	for (i = 0; i < 8; i++, dir++) {
-		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
+		struct loc grid = loc_sum(p->grid, ddgrid_ddd[dir % 8]);
 		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
 			msg("You angrily lash out at a nearby foe!");
@@ -792,10 +792,10 @@ void player_take_terrain_damage(struct player *p, struct loc grid)
 	}
 
 	/* Damage the player and inventory */
-	take_hit(player, dam_taken, square_feat(cave, grid)->die_msg);
+	take_hit(p, dam_taken, square_feat(cave, grid)->die_msg);
 	if (square_isfiery(cave, grid)) {
 		msg(square_feat(cave, grid)->hurt_msg);
-		inven_damage(player, PROJ_FIRE, dam_taken);
+		inven_damage(p, PROJ_FIRE, dam_taken);
 	}
 }
 
