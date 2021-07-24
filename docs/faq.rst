@@ -31,7 +31,7 @@ Fix (reduce) the alpha on your screen, or use the "Interact with colors" screen 
 Is there a way to disable that thing that pops up when you hit the enter key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Go into the options menu, choose "Edit keymaps", then "Create a keymap".  Press Enter at the "Keypress" prompt and a single space as the "Action".  In short: ``=m8 <enter> <enter>``.
+Go into the options menu, choose "Edit keymaps", then "Create a keymap".  Press Enter at the "Key" prompt and a single space as the "Action".
 
 And then you'll probably want to choose to "Append keymaps to a file" so that it persists for next time you load the game.
 
