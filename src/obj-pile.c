@@ -978,7 +978,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
  * Delete an object when the floor fails to carry it, and attempt to remove
  * it from the object list
  */
-static void floor_carry_fail(struct object *drop, bool broke)
+static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 {
 	struct object *known = drop->known;
 
@@ -995,7 +995,7 @@ static void floor_carry_fail(struct object *drop, bool broke)
 		delist_object(player->cave, known);
 		object_delete(&known);
 	}
-	delist_object(cave, drop);
+	delist_object(c, drop);
 	object_delete(&drop);
 }
 
@@ -1011,7 +1011,8 @@ static void floor_carry_fail(struct object *drop, bool broke)
  *
  * If no appropriate grid is found, the given grid is unchanged
  */
-static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *grid)
+static void drop_find_grid(struct chunk *c, struct object *drop,
+		bool prefer_pile, struct loc *grid)
 {
 	int best_score = -1;
 	struct loc start = *grid;
@@ -1031,14 +1032,14 @@ static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *gr
 
 			/* Lots of reasons to say no */
 			if ((dist > 10) ||
-				!square_in_bounds_fully(cave, try) ||
-				!los(cave, start, try) ||
-				!square_isfloor(cave, try) ||
-				square_istrap(cave, try))
+				!square_in_bounds_fully(c, try) ||
+				!los(c, start, try) ||
+				!square_isfloor(c, try) ||
+				square_istrap(c, try))
 				continue;
 
 			/* Analyse the grid for carrying the new object */
-			for (obj = square_object(cave, try); obj; obj = obj->next){
+			for (obj = square_object(c, try); obj; obj = obj->next){
 				/* Check for possible combination */
 				if (object_similar(obj, drop, OSTACK_FLOOR))
 					combine = true;
@@ -1055,7 +1056,7 @@ static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *gr
 			/* Disallow if the stack size is too big */
 			if ((!OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(cave, try)))
+				 !floor_get_oldest_ignored(c, try)))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
@@ -1083,9 +1084,9 @@ static void drop_find_grid(struct object *drop, bool prefer_pile, struct loc *gr
 			best = rand_loc(best, 1, 1);
 		} else {
 			/* Now go to purely random locations */
-			best = loc(randint0(cave->width), randint0(cave->height));
+			best = loc(randint0(c->width), randint0(c->height));
 		}
-		if (square_canputitem(cave, best)) {
+		if (square_canputitem(c, best)) {
 			*grid = best;
 			return;
 		}
@@ -1125,19 +1126,19 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 
 	/* Handle normal breakage */
 	if (!((*dropped)->artifact) && (randint0(100) < chance)) {
-		floor_carry_fail(*dropped, true);
+		floor_carry_fail(c, *dropped, true);
 		return;
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(*dropped, prefer_pile, &best);
+	drop_find_grid(c, *dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
 		if (dont_ignore && (square(c, best)->mon < 0)) {
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {
-		floor_carry_fail(*dropped, false);
+		floor_carry_fail(c, *dropped, false);
 	}
 }
 
