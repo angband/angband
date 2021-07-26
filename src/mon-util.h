@@ -33,7 +33,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(struct loc grid1, struct loc grid2);
 void monster_wake(struct monster *mon, bool notify, int aware_chance);
 bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid);
-void become_aware(struct monster *m);
+void become_aware(struct chunk *c, struct monster *m, struct player *p);
 void update_smart_learn(struct monster *mon, struct player *p, int flag,
 						int pflag, int element);
 bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon);
