@@ -472,7 +472,7 @@ void monster_index_move(int i1, int i2)
  * monsters of a slightly higher level, and monsters slightly closer to
  * the player.
  */
-void compact_monsters(int num_to_compact)
+void compact_monsters(struct chunk *c, int num_to_compact)
 {
 	int m_idx, num_compacted, iter;
 
@@ -493,8 +493,8 @@ void compact_monsters(int num_to_compact)
 		min_dis = 5 * (20 - iter);
 
 		/* Check all the monsters */
-		for (m_idx = 1; m_idx < cave_monster_max(cave); m_idx++) {
-			struct monster *mon = cave_monster(cave, m_idx);
+		for (m_idx = 1; m_idx < cave_monster_max(c); m_idx++) {
+			struct monster *mon = cave_monster(c, m_idx);
 
 			/* Skip "dead" monsters */
 			if (!mon->race) continue;
@@ -528,17 +528,17 @@ void compact_monsters(int num_to_compact)
 
 
 	/* Excise dead monsters (backwards!) */
-	for (m_idx = cave_monster_max(cave) - 1; m_idx >= 1; m_idx--) {
-		struct monster *mon = cave_monster(cave, m_idx);
+	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
+		struct monster *mon = cave_monster(c, m_idx);
 
 		/* Skip real monsters */
 		if (mon->race) continue;
 
 		/* Move last monster into open hole */
-		monster_index_move(cave_monster_max(cave) - 1, m_idx);
+		monster_index_move(cave_monster_max(c) - 1, m_idx);
 
-		/* Compress "cave->mon_max" */
-		cave->mon_max--;
+		/* Compress "c->mon_max" */
+		c->mon_max--;
 	}
 }
 

@@ -24,7 +24,7 @@
 void delete_monster_idx(int m_idx);
 void delete_monster(struct loc grid);
 void monster_index_move(int i1, int i2);
-void compact_monsters(int num_to_compact);
+void compact_monsters(struct chunk *c, int num_to_compact);
 void wipe_mon_list(struct chunk *c, struct player *p);
 s16b mon_pop(struct chunk *c);
 void get_mon_num_prep(bool (*get_mon_num_hook)(struct monster_race *race));

@@ -534,11 +534,11 @@ void process_world(struct chunk *c)
 
 	/* Compact the monster list if we're approaching the limit */
 	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
-		compact_monsters(64);
+		compact_monsters(c, 64);
 
 	/* Too many holes in the monster list - compress */
 	if (cave_monster_count(c) + 32 < cave_monster_max(c))
-		compact_monsters(0);
+		compact_monsters(c, 0);
 
 	/*** Check the Time ***/
 

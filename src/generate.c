@@ -1331,7 +1331,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Arenas don't get stored */
 			if (!(*c)->name || !streq((*c)->name, "arena")) {
 				/* Tidy up */
-				compact_monsters(0);
+				compact_monsters(*c, 0);
 				if (!p->upkeep->arena_level) {
 					/* Leave the player marker if going to an arena */
 					square_set_mon(*c, p->grid, 0);
