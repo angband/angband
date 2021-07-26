@@ -94,16 +94,16 @@ enum
 @end
 
 /* Delay handling of pre-emptive "quit" event */
-static BOOL quit_when_ready = FALSE;
+static BOOL quit_when_ready = NO;
 
 /* Set to indicate the game is over and we can quit without delay */
-static Boolean game_is_finished = FALSE;
+static BOOL game_is_finished = NO;
 
 /* Our frames per second (e.g. 60). A value of 0 means unthrottled. */
 static int frames_per_second;
 
 /* Force a new game or not? */
-static bool new_game = FALSE;
+static bool new_game = false;
 
 @class AngbandView;
 
@@ -2104,7 +2104,7 @@ static BOOL graphics_will_be_enabled(void)
 /**
  * Hack -- game in progress
  */
-static Boolean game_in_progress = FALSE;
+static BOOL game_in_progress = NO;
 
 
 #pragma mark Prototypes
@@ -2137,7 +2137,7 @@ static void record_current_savefile(void);
 /**
  * Note when "open"/"new" become valid
  */
-static bool initialized = FALSE;
+static BOOL initialized = NO;
 
 /* Methods for getting the appropriate NSUserDefaults */
 @interface NSUserDefaults (AngbandDefaults)
@@ -4168,7 +4168,7 @@ static void Term_init_cocoa(term *t)
 
 	/* Handle graphics */
 	t->higher_pict = !! use_graphics;
-	t->always_pict = FALSE;
+	t->always_pict = false;
 
 	NSDisableScreenUpdates();
 
@@ -4565,14 +4565,14 @@ static errr Term_xtra_cocoa_react(void)
 	    /* Reset visuals */
 	    if (! tile_multipliers_changed)
 	    {
-		reset_visuals(TRUE);
+		reset_visuals(true);
 	    }
 	}
 
 	if (tile_multipliers_changed)
 	{
 	    /* Reset visuals */
-	    reset_visuals(TRUE);
+	    reset_visuals(true);
 
 	    if (character_dungeon) {
 		/*
@@ -5089,8 +5089,8 @@ static void quit_calmly(void)
     if (inkey_flag)
     {
         /* Hack -- Forget messages and term */
-        msg_flag = FALSE;
-        Term->mapped_flag = FALSE;
+        msg_flag = false;
+        Term->mapped_flag = false;
 
         /* Save the game */
         record_current_savefile();
@@ -5149,11 +5149,7 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		x = floor( p.x / tileSize.width );
 		y = floor( p.y / tileSize.height );
 
-		/*
-		 * Being safe about this, since xcode doesn't seem to like the
-		 * bool_hack stuff
-		 */
-		BOOL displayingMapInterface = ((int)inkey_flag != 0);
+		BOOL displayingMapInterface = (inkey_flag) ? YES : NO;
 
 		/* Sidebar plus border == thirteen characters; top row is reserved. */
 		/* Coordinates run from (0,0) to (cols-1, rows-1). */
@@ -5304,7 +5300,7 @@ static BOOL send_event(NSEvent *event)
                 case kVK_Escape: ch = ESCAPE; break;
                 case kVK_Tab: ch = KC_TAB; break;
                 case kVK_Delete: ch = KC_BACKSPACE; break;
-                case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
+                case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = 1; break;
             }
 
             /* Hide the mouse pointer */
@@ -5353,7 +5349,7 @@ static BOOL send_event(NSEvent *event)
 }
 
 /**
- * Check for Events, return TRUE if we process any
+ * Check for Events, return YES if we process any
  */
 static BOOL check_events(int wait)
 {
@@ -5528,16 +5524,16 @@ static term *term_data_link(int i)
     term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
 
     /* Use a "software" cursor */
-    newterm->soft_cursor = TRUE;
+    newterm->soft_cursor = true;
 
     /* Disable the per-row flush notifications since they are not used. */
-    newterm->never_frosh = TRUE;
+    newterm->never_frosh = true;
 
     /*
      * Differentiate between BS/^h, Tab/^i, ... so ^h and ^j work under the
      * roguelike command set.
      */
-    newterm->complex_input = TRUE;
+    newterm->complex_input = true;
 
     /* Prepare the init/nuke hooks */
     newterm->init_hook = Term_init_cocoa;
@@ -5720,7 +5716,7 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
  */
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
-    bool result = FALSE;
+    bool result = false;
     @autoreleasepool {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSURL *directoryURL = [NSURL URLWithString:[NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding]];
@@ -5730,7 +5726,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	if ([panel runModal] == NSOKButton) {
 	    const char *p = [[[panel URL] path] UTF8String];
 	    my_strcpy(path, p, len);
-	    result = TRUE;
+	    result = true;
 	}
     }
 
@@ -5760,8 +5756,8 @@ static void cocoa_reinit(void)
 - (IBAction)newGame:sender
 {
     /* Game is in progress */
-    game_in_progress = TRUE;
-    new_game = TRUE;
+    game_in_progress = YES;
+    new_game = true;
 }
 
 - (IBAction)editFont:sender
@@ -5885,7 +5881,7 @@ static void cocoa_reinit(void)
 	    record_current_savefile();
 
 	    /* Game is in progress */
-	    game_in_progress = TRUE;
+	    game_in_progress = YES;
 	}
     }
 }
@@ -5893,7 +5889,7 @@ static void cocoa_reinit(void)
 - (IBAction)saveGame:sender
 {
     /* Hack -- Forget messages */
-    msg_flag = FALSE;
+    msg_flag = false;
     
     /* Save the game */
     save_game();
@@ -5996,7 +5992,7 @@ static void cocoa_reinit(void)
 	player_egid = getegid();
 
 	/* We are now initialized */
-	initialized = TRUE;
+	initialized = YES;
 
 	/* Handle pending events (most notably update) and flush input */
 	Term_flush();
@@ -6374,15 +6370,15 @@ static void cocoa_reinit(void)
      * Once beginGame finished, the game is over - that's how Angband works,
      * and we should quit
      */
-    game_is_finished = TRUE;
+    game_is_finished = YES;
     [NSApp terminate:self];
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    if (player->upkeep->playing == FALSE || game_is_finished == TRUE)
+    if (!player->upkeep->playing || game_is_finished)
     {
-        quit_when_ready = true;
+        quit_when_ready = YES;
         return NSTerminateNow;
     }
     else if (! inkey_flag)
@@ -6393,14 +6389,14 @@ static void cocoa_reinit(void)
     else
     {
         /* Stop playing */
-        player->upkeep->playing = FALSE;
+        player->upkeep->playing = false;
 
         /*
          * Post an escape event so that we can return from our get-key-event
          * function
          */
         wakeup_event_loop();
-        quit_when_ready = true;
+        quit_when_ready = YES;
         /*
          * Must return Cancel, not Later, because we need to get out of the
          * run loop and back to Angband's loop
@@ -6480,7 +6476,7 @@ static void cocoa_reinit(void)
 	return;
     }
 
-    game_in_progress = TRUE;
+    game_in_progress = YES;
 
     /*
      * Wake us up in case this arrives while we're sitting at the Welcome
