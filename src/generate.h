@@ -424,7 +424,8 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 void dump_level_footer(ang_file *fo);
 
 /* gen-monster.c */
-bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
+bool mon_restrict(const char *monster_type, int depth,
+	int current_depth, bool unique_ok);
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin);
 void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,

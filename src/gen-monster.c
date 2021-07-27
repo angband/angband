@@ -99,6 +99,7 @@ static bool mon_select(struct monster_race *race)
  *
  * \param monster_type the monster type to be selected, as described below
  * \param depth the native depth to choose monsters
+ * \param current_depth is the depth at which the monsters will be placed
  * \param unique_ok whether to allow uniques to be chosen
  * \return success if the monster allocation table has been rebuilt
  *
@@ -112,7 +113,8 @@ static bool mon_select(struct monster_race *race)
  * If called with monster_type "random", it will get a random monster base and 
  * describe the monsters by its name (for use by cheat_room).
  */
-bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
+bool mon_restrict(const char *monster_type, int depth, int current_depth,
+		bool unique_ok)
 {
 	int i, j = 0;
 
@@ -139,8 +141,8 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 			if (i < 200) {
 				if ((!rf_has(r_info[j].flags, RF_UNIQUE))
 					&& (r_info[j].level != 0) && (r_info[j].level <= depth)
-					&& (ABS(r_info[j].level - player->depth) <
-						1 + (player->depth / 4)))
+					&& (ABS(r_info[j].level - current_depth) <
+						1 + (current_depth / 4)))
 					break;
 			} else {
 				if ((!rf_has(r_info[j].flags, RF_UNIQUE))
@@ -205,7 +207,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 	int start_mon_num = c->mon_max;
 
 	/* Restrict monsters.  Allow uniques. Leave area empty if none found. */
-	if (!mon_restrict(type, depth, true))
+	if (!mon_restrict(type, depth, c->depth, true))
 		return;
 
 	/* Build the monster probability table. */
@@ -220,7 +222,8 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 			y = y0;
 			x = x0;
 			if (!square_in_bounds(c, loc(x, y))) {
-				(void) mon_restrict(NULL, depth, true);
+				(void) mon_restrict(NULL, depth,
+					c->depth, true);
 				return;
 			}
 		} else {
@@ -231,7 +234,8 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 					if (j < 9) {
 						continue;
 					} else {
-						(void) mon_restrict(NULL, depth, true);
+						(void) mon_restrict(NULL, depth,
+							c->depth, true);
 						return;
 					}
 				}
@@ -255,7 +259,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 	}
 
 	/* Remove monster restrictions. */
-	(void) mon_restrict(NULL, depth, true);
+	(void) mon_restrict(NULL, depth, c->depth, true);
 }
 
 
@@ -357,18 +361,18 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 
 	/* Set monster generation restrictions. Occasionally random. */
 	if (random) {
-		if (!mon_restrict("random", depth, true))
+		if (!mon_restrict("random", depth, c->depth, true))
 			return;
 		my_strcpy(name, "random", sizeof(name));
 	} else {
-		if (!mon_restrict(dun->pit_type->name, depth, true))
+		if (!mon_restrict(dun->pit_type->name, depth, c->depth, true))
 			return;
 		my_strcpy(name, dun->pit_type->name, sizeof(name));
 	}
 
 	/* Build the monster probability table. */
 	if (!get_mon_num(depth, c->depth)) {
-		(void) mon_restrict(NULL, depth, false);
+		(void) mon_restrict(NULL, depth, c->depth, false);
 		name = NULL;
 		return;
 	}
@@ -402,6 +406,6 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	}
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, depth, false);
+	(void) mon_restrict(NULL, depth, c->depth, false);
 }
 

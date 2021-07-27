@@ -2841,7 +2841,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	i = z_info->level_monster_min + randint1(8) + k;
 
 	/* Remove all monster restrictions. */
-	mon_restrict(NULL, c->depth, true);
+	mon_restrict(NULL, c->depth, c->depth, true);
 
 	/* Put some monsters in the dungeon */
 	for (; i > 0; i--)
@@ -3036,14 +3036,14 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	i = z_info->level_monster_min + randint1(8) + k;
 
 	/* Moria levels have a high proportion of cave dwellers. */
-	mon_restrict("Moria dwellers", c->depth, true);
+	mon_restrict("Moria dwellers", c->depth, c->depth, true);
 
 	/* Put some monsters in the dungeon */
 	for (; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, c->depth, false);
+	(void) mon_restrict(NULL, c->depth, c->depth, false);
 
 	/* Put some objects in rooms */
 	alloc_objects(c, SET_ROOM, TYP_OBJECT,
@@ -3456,7 +3456,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 		set_pit_type(lair->depth, 0);
 
 		/* Set monster generation restrictions */
-		if (mon_restrict(dun->pit_type->name, lair->depth, true))
+		if (mon_restrict(dun->pit_type->name, lair->depth, lair->depth, true))
 			break;
 	}
 
@@ -3468,7 +3468,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 					ORIGIN_CAVERN);
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, lair->depth, false);
+	(void) mon_restrict(NULL, lair->depth, lair->depth, false);
 
 	/* Make the level */
 	c = cave_new(y_size, x_size);
@@ -3639,7 +3639,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		set_pit_type(gauntlet->depth, 0);
 
 		/* Set monster generation restrictions */
-		if (mon_restrict(dun->pit_type->name, gauntlet->depth, true))
+		if (mon_restrict(dun->pit_type->name, gauntlet->depth, gauntlet->depth, true))
 			break;
 	}
 
@@ -3652,7 +3652,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 					ORIGIN_LABYRINTH);
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, gauntlet->depth, false);
+	(void) mon_restrict(NULL, gauntlet->depth, gauntlet->depth, false);
 
 	/* Make the level */
 	c = cave_new(y_size, left->width + gauntlet->width + right->width);
