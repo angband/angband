@@ -1526,7 +1526,6 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 	/* Generate the actual labyrinth */
 	c = labyrinth_chunk(p->depth, h, w, lit, soft);
 	if (!c) return NULL;
-	c->depth = p->depth;
 
 	/* Determine the character location */
 	new_player_spot(c, p);
@@ -2146,7 +2145,6 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	/* Try to build the cavern, fail gracefully */
 	c = cavern_chunk(p->depth, h, w, dun->join);
 	if (!c) return NULL;
-	c->depth = p->depth;
 
 	/* Surround the level with perma-rock */
 	draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE, true);
@@ -2811,7 +2809,6 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 
 	c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
 		MIN(z_info->dungeon_wid, x_size), OPT(p, birth_levels_persist));
-	c->depth = p->depth;
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -3007,7 +3004,6 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 
 	c = moria_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
 		MIN(z_info->dungeon_wid, x_size), OPT(p, birth_levels_persist));
-	c->depth = p->depth;
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -3413,7 +3409,6 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	if (!normal) {
 		return NULL;
 	}
-	normal->depth = p->depth;
 
 	/*
 	 * The transformation applied here should match that for chunk_copy()
@@ -3430,7 +3425,6 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 		cave_free(normal);
 		return NULL;
 	}
-	lair->depth = p->depth;
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
@@ -3545,14 +3539,12 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
 		false);
 	if (!gauntlet) return NULL;
-	gauntlet->depth = p->depth;
 
 	left = cavern_chunk(p->depth, y_size, x_size, NULL);
 	if (!left) {
 		cave_free(gauntlet);
 		return NULL;
 	}
-	left->depth = p->depth;
 
 	right = cavern_chunk(p->depth, y_size, x_size, NULL);
 	if (!right) {
@@ -3560,7 +3552,6 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		cave_free(left);
 		return NULL;
 	}
-	right->depth = p->depth;
 
 	/* Record lines between chunks */
 	line1 = left->width;
