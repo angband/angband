@@ -98,6 +98,16 @@ dnl needed because h-basic.h checks for this define for autoconf support.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
+AC_ARG_ENABLE(release,
+	[AS_HELP_STRING([--enable-release], [enable a release build])],
+	[release=yes],
+	[release=no])
+
+if test x"$release" = xyes ; then
+	dnl Currently only adding -DNDEBUG to CFLAGS.
+	CFLAGS="$CFLAGS -DNDEBUG"
+fi
+
 AC_ARG_ENABLE(more-gcc-warnings,
 	[  --enable-more-gcc-warnings       enable more warnings if using GCC],
 	[ more_gcc_warnings=yes],
