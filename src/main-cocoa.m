@@ -1191,6 +1191,7 @@ static int hasSameBackground(const struct TerminalCell* c)
 
 - (void)assertInvariants
 {
+#ifndef NDEBUG
     const struct TerminalCell *cellsRow = self->cells;
 
     /*
@@ -1339,6 +1340,7 @@ static int hasSameBackground(const struct TerminalCell* c)
 	}
 	cellsRow += self.columnCount;
     }
+#endif
 }
 
 + (wchar_t)getBlankChar
