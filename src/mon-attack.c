@@ -62,11 +62,11 @@
  * decoy, if present.  Either dist or grid may be NULL if that value is not
  * needed.
  */
-static void monster_get_target_dist_grid(struct monster *mon, struct chunk *c,
-	int *dist, struct loc *grid)
+static void monster_get_target_dist_grid(struct monster *mon, int *dist,
+										 struct loc *grid)
 {
 	if (monster_is_decoyed(mon)) {
-		struct loc decoy = cave_find_decoy(c);
+		struct loc decoy = cave_find_decoy(cave);
 		if (dist) {
 			*dist = distance(mon->grid, decoy);
 		}
@@ -92,7 +92,7 @@ static bool monster_can_cast(struct monster *mon, bool innate)
 	int tdist;
 	struct loc tgrid;
 
-	monster_get_target_dist_grid(mon, cave, &tdist, &tgrid);
+	monster_get_target_dist_grid(mon, &tdist, &tgrid);
 
 	/* Cannot cast spells when nice */
 	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
@@ -155,7 +155,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	bitflag f2[RSF_SIZE];
 	int tdist;
 
-	monster_get_target_dist_grid(mon, cave, &tdist, NULL);
+	monster_get_target_dist_grid(mon, &tdist, NULL);
 
 	/* Take working copy of spell flags */
 	rsf_copy(f2, f);
@@ -426,7 +426,7 @@ bool make_ranged_attack(struct monster *mon)
 		remove_bad_spells(mon, f);
 
 		/* Check for a clean bolt shot */
-		monster_get_target_dist_grid(mon, cave, NULL, &tgrid);
+		monster_get_target_dist_grid(mon, NULL, &tgrid);
 		if (test_spells(f, RST_BOLT) &&
 			!projectable(cave, mon->grid, tgrid, PROJECT_STOP)) {
 			ignore_spells(f, RST_BOLT);
