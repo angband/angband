@@ -157,11 +157,11 @@ AC_DEFUN([AM_PATH_SDL2],
 [dnl 
 dnl Get the cflags and libraries from the sdl2-config script
 dnl
-AC_ARG_WITH(sdl2-prefix,[  --with-sdl2-prefix=PFX   Prefix where SDL2 is installed (optional)],
+AC_ARG_WITH(sdl2-prefix,[AS_HELP_STRING([--with-sdl2-prefix=PFX], [set prefix where SDL2 is installed (optional)])],
             sdl2_prefix="$withval", sdl2_prefix="")
-AC_ARG_WITH(sdl2-exec-prefix,[  --with-sdl2-exec-prefix=PFX Exec prefix where SDL2 is installed (optional)],
+AC_ARG_WITH(sdl2-exec-prefix,[AS_HELP_STRING([--with-sdl2-exec-prefix=PFX], [set exec prefix where SDL2 is installed (optional)])],
             sdl2_exec_prefix="$withval", sdl2_exec_prefix="")
-AC_ARG_ENABLE(sdl2test, [  --disable-sdl2test       Do not try to compile and run a test SDL2 program],
+AC_ARG_ENABLE(sdl2test, [AS_HELP_STRING([--disable-sdl2test], [do not try to compile and run a test SDL2 program])],
 		    , enable_sdl2test=yes)
 
   if test x$sdl2_exec_prefix != x ; then
@@ -324,11 +324,11 @@ AC_DEFUN([AM_PATH_SDL],
 [dnl 
 dnl Get the cflags and libraries from the sdl-config script
 dnl
-AC_ARG_WITH(sdl-prefix,[  --with-sdl-prefix=PFX   Prefix where SDL is installed (optional)],
+AC_ARG_WITH(sdl-prefix,[AS_HELP_STRING([--with-sdl-prefix=PFX], [set prefix where SDL is installed (optional)])],
             sdl_prefix="$withval", sdl_prefix="")
-AC_ARG_WITH(sdl-exec-prefix,[  --with-sdl-exec-prefix=PFX Exec prefix where SDL is installed (optional)],
+AC_ARG_WITH(sdl-exec-prefix,[AS_HELP_STRING([--with-sdl-exec-prefix=PFX], [set exec prefix where SDL is installed (optional)])],
             sdl_exec_prefix="$withval", sdl_exec_prefix="")
-AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run a test SDL program],
+AC_ARG_ENABLE(sdltest, [AS_HELP_STRING([--disable-sdltest], [do not try to compile and run a test SDL program])],
 		    , enable_sdltest=yes)
 
   if test x$sdl_exec_prefix != x ; then
@@ -491,11 +491,11 @@ AC_DEFUN([AM_PATH_NCURSESW],
 [dnl 
 dnl Get the cflags and libraries from the ncursesw5-config script
 dnl
-AC_ARG_WITH(ncurses-prefix,[  --with-ncurses-prefix=PFX   Prefix where ncurses is installed (optional)],
+AC_ARG_WITH(ncurses-prefix,[AS_HELP_STRING([--with-ncurses-prefix=PFX], [set prefix where ncurses is installed (optional)])],
             ncurses_prefix="$withval", ncurses_prefix="")
-AC_ARG_WITH(ncurses-exec-prefix,[  --with-ncurses-exec-prefix=PFX Exec prefix where ncurses is installed (optional)],
+AC_ARG_WITH(ncurses-exec-prefix,[AS_HELP_STRING([--with-ncurses-exec-prefix=PFX], [set exec prefix where ncurses is installed (optional)])],
             ncurses_exec_prefix="$withval", ncurses_exec_prefix="")
-AC_ARG_ENABLE(ncursestest, [  --disable-ncursestest       Do not try to compile and run a test ncurses program],
+AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try to compile and run a test ncurses program])],
 		    , enable_ncursestest=yes)
 
   if test x$ncurses_exec_prefix != x ; then

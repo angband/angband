@@ -20,12 +20,12 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
-	[  --with-setgid=NAME      install angband as group NAME],
+	[AS_HELP_STRING([--with-setgid=NAME], [install angband as group NAME])],
 	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
-	[  --with-private-dirs     use private scorefiles/savefiles])
+	[AS_HELP_STRING([--with-private-dirs], [use private scorefiles/savefiles])])
 AC_ARG_WITH(no_install,
-	[  --with-no-install       don't install, just run in-place])
+	[AS_HELP_STRING([--with-no-install], [don't install, just run in-place])])
 
 if test "x$with_setgid" = "xyes"; then
 	AC_MSG_ERROR([Please specify a group to install as.])
@@ -109,7 +109,7 @@ if test x"$release" = xyes ; then
 fi
 
 AC_ARG_ENABLE(more-gcc-warnings,
-	[  --enable-more-gcc-warnings       enable more warnings if using GCC],
+	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
 	[ more_gcc_warnings=yes],
 	[ more_gcc_warnings=no])
 
@@ -223,45 +223,45 @@ fi
 
 dnl Frontends
 AC_ARG_ENABLE(curses,
-	[AS_HELP_STRING([--enable-curses],    [Enables Curses frontend (default: enabled)])],
+	[AS_HELP_STRING([--enable-curses], [enable Curses frontend (default: enabled)])],
 	[enable_curses=$enableval],
 	[enable_curses=yes])
 AC_ARG_ENABLE(x11,
-	[AS_HELP_STRING([--enable-x11],       [Enables X11 frontend (default: enabled)])],
+	[AS_HELP_STRING([--enable-x11], [enable X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
 	[enable_x11=yes])
 AC_ARG_ENABLE(sdl2,
-	[AS_HELP_STRING([--enable-sdl2],       [Enables SDL2 frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-sdl2], [enable SDL2 frontend (default: disabled)])],
 	[enable_sdl2=$enableval],
 	[enable_sdl2=no])
 AC_ARG_ENABLE(sdl,
-	[AS_HELP_STRING([--enable-sdl],       [Enables SDL frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-sdl], [enable SDL frontend (default: disabled)])],
 	[enable_sdl=$enableval],
 	[enable_sdl=no])
 AC_ARG_ENABLE(win,
-	[AS_HELP_STRING([--enable-win],       [Enables Windows frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-win], [enable Windows frontend (default: disabled)])],
 	[enable_win=$enableval],
 	[enable_win=no])
 AC_ARG_ENABLE(test,
-	[AS_HELP_STRING([--enable-test],      [Enables test frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-test], [enable test frontend (default: disabled)])],
 	[enable_test=$enableval],
 	[enable_test=no])
 AC_ARG_ENABLE(stats,
-	[AS_HELP_STRING([--enable-stats],     [Enables stats frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-stats], [enable stats frontend (default: disabled)])],
 	[enable_stats=$enableval],
 	[enable_stats=no])
 AC_ARG_ENABLE(spoil,
-	[AS_HELP_STRING([--enable-spoil],     [Enable command-line spoiler generation (default: enabled)])],
+	[AS_HELP_STRING([--enable-spoil], [enable command-line spoiler generation (default: enabled)])],
 	[enable_spoil=$enableval],
 	[enable_spoil=yes])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl2_mixer,
-	[AS_HELP_STRING([--enable-sdl2-mixer], [Enables SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
+	[AS_HELP_STRING([--enable-sdl2-mixer], [enable SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
 	[enable_sdl2_mixer=$enable_sdl2_mixer],
 	[enable_sdl2_mixer=$enable_sdl2])
 AC_ARG_ENABLE(sdl_mixer,
-	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: disabled unless SDL enabled)])],
+	[AS_HELP_STRING([--enable-sdl-mixer], [enable SDL mixer sound support (default: disabled unless SDL enabled)])],
 	[enable_sdl_mixer=$enable_sdl_mixer],
 	[enable_sdl_mixer=$enable_sdl])
 
