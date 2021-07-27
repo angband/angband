@@ -19,8 +19,14 @@
 #define MONSTER_MOVE_H
 
 
-bool multiply_monster(struct chunk *c, const struct monster *mon);
-void process_monsters(struct chunk *c, int minimum_energy);
+enum monster_stagger {
+	 NO_STAGGER = 0,
+	 CONFUSED_STAGGER = 1,
+	 INNATE_STAGGER = 2
+};
+
+bool multiply_monster(const struct monster *mon);
+void process_monsters(int minimum_energy);
 void reset_monsters(void);
 void restore_monsters(void);
 

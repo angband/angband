@@ -884,7 +884,7 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY);
 
 	/* Attempt to clone. */
-	if (multiply_monster(cave, context->mon) && context->seen)
+	if (multiply_monster(context->mon) && context->seen)
 		context->hurt_msg = MON_MSG_SPAWN;
 
 	/* No "real" damage */

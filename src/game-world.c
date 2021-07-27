@@ -1056,7 +1056,7 @@ void run_game_loop(void)
 		event_signal(EVENT_ANIMATE);
 		
 		/* Process monster with even more energy first */
-		process_monsters(cave, player->energy + 1);
+		process_monsters(player->energy + 1);
 		if (player->is_dead || !player->upkeep->playing ||
 			player->upkeep->generate_level)
 			break;
@@ -1085,7 +1085,7 @@ void run_game_loop(void)
 			return;
 		else if (!player->upkeep->generate_level) {
 			/* Process the rest of the monsters */
-			process_monsters(cave, 0);
+			process_monsters(0);
 
 			/* Mark all monsters as ready to act when they have the energy */
 			reset_monsters();
@@ -1147,7 +1147,7 @@ void run_game_loop(void)
 			event_signal(EVENT_ANIMATE);
 
 			/* Process monster with even more energy first */
-			process_monsters(cave, player->energy + 1);
+			process_monsters(player->energy + 1);
 			if (player->is_dead || !player->upkeep->playing ||
 				player->upkeep->generate_level)
 				break;
