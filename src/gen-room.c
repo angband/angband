@@ -2678,7 +2678,7 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 	/* Pick some monster types */
 	for (i = 0; i < 64; i++) {
 		/* Get a (hard) monster type */
-		what[i] = get_mon_num(c->depth + 10);
+		what[i] = get_mon_num(c->depth + 10, c->depth);
 
 		/* Notice failure */
 		if (!what[i]) empty = true;
@@ -2804,7 +2804,7 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	/* Pick some monster types */
 	for (i = 0; i < 16; i++) {
 		/* Get a (hard) monster type */
-		what[i] = get_mon_num(c->depth + 10);
+		what[i] = get_mon_num(c->depth + 10, c->depth);
 
 		/* Notice failure */
 		if (!what[i]) empty = true;

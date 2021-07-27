@@ -209,7 +209,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		return;
 
 	/* Build the monster probability table. */
-	if (!get_mon_num(depth))
+	if (!get_mon_num(depth, c->depth))
 		return;
 
 
@@ -298,7 +298,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 		get_mon_num_prep(mon_select);
 
 		/* Build the monster probability table. */
-		if (!get_mon_num(depth))
+		if (!get_mon_num(depth, c->depth))
 			continue;
 
 
@@ -367,7 +367,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	}
 
 	/* Build the monster probability table. */
-	if (!get_mon_num(depth)) {
+	if (!get_mon_num(depth, c->depth)) {
 		(void) mon_restrict(NULL, depth, false);
 		name = NULL;
 		return;

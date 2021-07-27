@@ -194,6 +194,10 @@ static struct monster_race *get_mon_race_aux(long total,
 /**
  * Chooses a monster race that seems appropriate to the given level
  *
+ * \param generated_level is the level to use when choosing the race.
+ * \param current_level is the level where the monster will be placed - used
+ * for checks on an out-of-depth monster.
+ *
  * This function uses the "prob2" field of the monster allocation table,
  * and various local information, to calculate the "prob3" field of the
  * same table, which is then used to choose an appropriate monster, in
@@ -213,7 +217,7 @@ static struct monster_race *get_mon_race_aux(long total,
  * Note that if no monsters are appropriate, then this function will
  * fail, and return zero, but this should *almost* never happen.
  */
-struct monster_race *get_mon_num(int level)
+struct monster_race *get_mon_num(int generated_level, int current_level)
 {
 	int i, p;
 	long total;
@@ -223,21 +227,22 @@ struct monster_race *get_mon_num(int level)
 	struct tm *date = localtime(&cur_time);
 
 	/* Occasionally produce a nastier monster in the dungeon */
-	if (level > 0 && one_in_(z_info->ood_monster_chance))
-		level += MIN(level / 4 + 2, z_info->ood_monster_amount);
+	if (generated_level > 0 && one_in_(z_info->ood_monster_chance))
+		generated_level += MIN(generated_level / 4 + 2,
+			z_info->ood_monster_amount);
 
 	total = 0L;
 
 	/* Process probabilities */
 	for (i = 0; i < alloc_race_size; i++) {
 		/* Monsters are sorted by depth */
-		if (table[i].level > level) break;
+		if (table[i].level > generated_level) break;
 
 		/* Default */
 		table[i].prob3 = 0;
 
 		/* No town monsters in dungeon */
-		if ((level > 0) && (table[i].level <= 0)) continue;
+		if (generated_level > 0 && table[i].level <= 0) continue;
 
 		/* Get the chosen monster */
 		race = &r_info[table[i].index];
@@ -252,7 +257,7 @@ struct monster_race *get_mon_num(int level)
 			continue;
 
 		/* Some monsters never appear out of depth */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > player->depth)
+		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > current_level)
 			continue;
 
 		/* Accept */
@@ -1404,7 +1409,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 		get_mon_num_prep(place_monster_base_okay);
 
 		/* Pick a random race */
-		friends_race = get_mon_num(race->level);
+		friends_race = get_mon_num(race->level, c->depth);
 
 		/* Reset allocation table */
 		get_mon_num_prep(NULL);
@@ -1445,7 +1450,7 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 							bool sleep, bool group_okay, byte origin)
 {
 	/* Pick a monster race, no specified group */
-	struct monster_race *race = get_mon_num(depth);
+	struct monster_race *race = get_mon_num(depth, c->depth);
 	struct monster_group_info info = { 0, 0 };
 
 	if (race) {
