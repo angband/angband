@@ -33,11 +33,12 @@
 #include "mon-spell.h"
 
 /**
- * Restrictions on monsters, used in pits, vaults, and chambers.
+ * Restrictions on monsters, used in pits, vaults, and chambers.  Used in
+ * mon_select().
  */
 static bool allow_unique;
 static char base_d_char[15];
-
+static int select_current_level;
 
 /**
  * Return the pit profile matching the given name.
@@ -76,8 +77,8 @@ static bool mon_select(struct monster_race *race)
 	}
 
 	/* No invisible undead until deep. */
-	if ((player->depth < 40) && (rf_has(race->flags, RF_UNDEAD))
-			&& (rf_has(race->flags, RF_INVISIBLE)))
+	if (select_current_level < 40 && rf_has(race->flags, RF_UNDEAD)
+			&& rf_has(race->flags, RF_INVISIBLE))
 		return (false);
 
 	/* Usually decline unique monsters. */
@@ -122,6 +123,7 @@ bool mon_restrict(const char *monster_type, int depth, int current_depth,
 	allow_unique = unique_ok;
 	for (i = 0; i < 10; i++)
 		base_d_char[i] = '\0';
+        select_current_level = current_depth;
 
 	/* No monster type specified, no restrictions. */
 	if (monster_type == NULL) {
@@ -287,6 +289,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 		allow_unique = true;
 		my_strcpy(base_d_char, format("%c", racial_symbol[i]),
 			sizeof(base_d_char));
+		select_current_level = c->depth;
 
 		/* Determine level of monster */
 		if (strstr(vault_type, "Lesser vault"))
