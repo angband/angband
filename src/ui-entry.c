@@ -301,7 +301,7 @@ void get_ui_entry_label(const struct ui_entry *entry, int length,
 	if (first_call) {
 		size_t nw = text_mbstowcs(spc, " ", 2);
 
-		assert(nw != (size_t)-1);
+		if (nw == (size_t)-1) assert(0);
 		first_call = false;
 	}
 
