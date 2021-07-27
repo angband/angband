@@ -20,12 +20,12 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
-	[  --with-setgid=NAME      install angband as group NAME],
+	[AS_HELP_STRING([--with-setgid=NAME], [install angband as group NAME])],
 	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
-	[  --with-private-dirs     use private scorefiles/savefiles])
+	[AS_HELP_STRING([--with-private-dirs], [use private scorefiles/savefiles])])
 AC_ARG_WITH(no_install,
-	[  --with-no-install       don't install, just run in-place])
+	[AS_HELP_STRING([--with-no-install], [don't install, just run in-place])])
 
 if test "x$with_setgid" = "xyes"; then
 	AC_MSG_ERROR([Please specify a group to install as.])
@@ -109,7 +109,7 @@ if test x"$release" = xyes ; then
 fi
 
 AC_ARG_ENABLE(more-gcc-warnings,
-	[  --enable-more-gcc-warnings       enable more warnings if using GCC],
+	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
 	[ more_gcc_warnings=yes],
 	[ more_gcc_warnings=no])
 
