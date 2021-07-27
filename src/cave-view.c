@@ -907,7 +907,7 @@ void update_view(struct chunk *c, struct player *p)
 /**
  * Returns true if the player's grid is dark
  */
-bool no_light(void)
+bool no_light(struct player *p)
 {
-	return (!square_isseen(cave, player->grid));
+	return (!square_isseen(cave, p->grid));
 }

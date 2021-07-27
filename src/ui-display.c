@@ -2561,7 +2561,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
-	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
+	bool blind = ((player->timed[TMD_BLIND]) || (no_light(player)));
 
 	const char *p = "see";
 	bool can_pickup = false;

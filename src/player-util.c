@@ -927,7 +927,7 @@ bool player_can_cast(struct player *p, bool show_msg)
 		return false;
 	}
 
-	if (p->timed[TMD_BLIND] || no_light()) {
+	if (p->timed[TMD_BLIND] || no_light(p)) {
 		if (show_msg) {
 			msg("You cannot see!");
 		}
@@ -1006,7 +1006,7 @@ bool player_can_read(struct player *p, bool show_msg)
 		return false;
 	}
 
-	if (no_light()) {
+	if (no_light(p)) {
 		if (show_msg)
 			msg("You have no light to read by.");
 
@@ -1463,7 +1463,7 @@ void search(struct player *p)
 	struct loc grid;
 
 	/* Various conditions mean no searching */
-	if (p->timed[TMD_BLIND] || no_light() ||
+	if (p->timed[TMD_BLIND] || no_light(p) ||
 		p->timed[TMD_CONFUSED] || p->timed[TMD_IMAGE])
 		return;
 
