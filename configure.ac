@@ -223,45 +223,45 @@ fi
 
 dnl Frontends
 AC_ARG_ENABLE(curses,
-	[AS_HELP_STRING([--enable-curses],    [Enables Curses frontend (default: enabled)])],
+	[AS_HELP_STRING([--enable-curses], [enable Curses frontend (default: enabled)])],
 	[enable_curses=$enableval],
 	[enable_curses=yes])
 AC_ARG_ENABLE(x11,
-	[AS_HELP_STRING([--enable-x11],       [Enables X11 frontend (default: enabled)])],
+	[AS_HELP_STRING([--enable-x11], [enable X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
 	[enable_x11=yes])
 AC_ARG_ENABLE(sdl2,
-	[AS_HELP_STRING([--enable-sdl2],       [Enables SDL2 frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-sdl2], [enable SDL2 frontend (default: disabled)])],
 	[enable_sdl2=$enableval],
 	[enable_sdl2=no])
 AC_ARG_ENABLE(sdl,
-	[AS_HELP_STRING([--enable-sdl],       [Enables SDL frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-sdl], [enable SDL frontend (default: disabled)])],
 	[enable_sdl=$enableval],
 	[enable_sdl=no])
 AC_ARG_ENABLE(win,
-	[AS_HELP_STRING([--enable-win],       [Enables Windows frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-win], [enable Windows frontend (default: disabled)])],
 	[enable_win=$enableval],
 	[enable_win=no])
 AC_ARG_ENABLE(test,
-	[AS_HELP_STRING([--enable-test],      [Enables test frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-test], [enable test frontend (default: disabled)])],
 	[enable_test=$enableval],
 	[enable_test=no])
 AC_ARG_ENABLE(stats,
-	[AS_HELP_STRING([--enable-stats],     [Enables stats frontend (default: disabled)])],
+	[AS_HELP_STRING([--enable-stats], [enable stats frontend (default: disabled)])],
 	[enable_stats=$enableval],
 	[enable_stats=no])
 AC_ARG_ENABLE(spoil,
-	[AS_HELP_STRING([--enable-spoil],     [Enable command-line spoiler generation (default: enabled)])],
+	[AS_HELP_STRING([--enable-spoil], [enable command-line spoiler generation (default: enabled)])],
 	[enable_spoil=$enableval],
 	[enable_spoil=yes])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl2_mixer,
-	[AS_HELP_STRING([--enable-sdl2-mixer], [Enables SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
+	[AS_HELP_STRING([--enable-sdl2-mixer], [enable SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
 	[enable_sdl2_mixer=$enable_sdl2_mixer],
 	[enable_sdl2_mixer=$enable_sdl2])
 AC_ARG_ENABLE(sdl_mixer,
-	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: disabled unless SDL enabled)])],
+	[AS_HELP_STRING([--enable-sdl-mixer], [enable SDL mixer sound support (default: disabled unless SDL enabled)])],
 	[enable_sdl_mixer=$enable_sdl_mixer],
 	[enable_sdl_mixer=$enable_sdl])
 
