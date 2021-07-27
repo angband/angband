@@ -775,7 +775,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((monlevel + player->depth) / 2, monlevel);
+	level = MAX((monlevel + c->depth) / 2, monlevel);
 	level = MIN(level, 100);
 
 	/* Morgoth currently drops all artifacts with the QUEST_ART flag */
@@ -797,7 +797,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 			/* Set origin details */
 			obj->origin = origin;
-			obj->origin_depth = player->depth;
+			obj->origin_depth = c->depth;
 			obj->origin_race = mon->race;
 			obj->number = 1;
 
@@ -835,7 +835,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Set origin details */
 		obj->origin = origin;
-		obj->origin_depth = player->depth;
+		obj->origin_depth = c->depth;
 		obj->origin_race = mon->race;
 		obj->number = (obj->artifact) ?
 			1 : randint0(drop->max - drop->min) + drop->min;
@@ -860,7 +860,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Set origin details */
 		obj->origin = origin;
-		obj->origin_depth = player->depth;
+		obj->origin_depth = c->depth;
 		obj->origin_race = mon->race;
 
 		/* Try to carry */
@@ -900,14 +900,14 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 	}
 
 	if (tval_is_money_k(kind)) {
-		obj = make_gold(player->depth, kind->name);
+		obj = make_gold(c->depth, kind->name);
 	} else {
 		obj = object_new();
 		object_prep(obj, kind, mon->race->level, RANDOMISE);
 		apply_magic(obj, mon->race->level, true, false, false, false);
 		obj->number = 1;
 		obj->origin = ORIGIN_DROP_MIMIC;
-		obj->origin_depth = player->depth;
+		obj->origin_depth = c->depth;
 	}
 
 	obj->mimicking_m_idx = index;
@@ -1092,7 +1092,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		return false;
 
 	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(race->flags, RF_FORCE_DEPTH) && player->depth < race->level)
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
 		return false;
 
 	/* Add to level feeling, note uniques for cheaters */
@@ -1272,7 +1272,7 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 	int extra_chance;
 
 	/* Find the difference between current dungeon depth and monster level */
-	int level_difference = player->depth - friends_race->level + 5;
+	int level_difference = c->depth - friends_race->level + 5;
 
 	/* Handle unique monsters */
 	bool is_unique = rf_has(friends_race->flags, RF_UNIQUE);

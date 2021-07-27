@@ -286,13 +286,13 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 
 		/* Determine level of monster */
 		if (strstr(vault_type, "Lesser vault"))
-			depth = player->depth + 2;
+			depth = c->depth + 2;
 		else if (strstr(vault_type, "Medium vault"))
-			depth = player->depth + 4;
+			depth = c->depth + 4;
 		else if (strstr(vault_type, "Greater vault"))
-			depth = player->depth + 6;
+			depth = c->depth + 6;
 		else
-			depth = player->depth;
+			depth = c->depth;
 
 		/* Prepare allocation table */
 		get_mon_num_prep(mon_select);
