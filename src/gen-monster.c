@@ -333,7 +333,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
  * \param x1 the limits of the vault
  * \param y2 the limits of the vault
  * \param x2 the limits of the vault
- * \param name the name of the monster type for use in mon_select()
+ * \param name the name of the monster type for use in mon_restrict()
  * \param area the total room area, used for scaling monster quantity
  */
 void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, 
