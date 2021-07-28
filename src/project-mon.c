@@ -37,9 +37,12 @@
 /**
  * Helper function -- return a "nearby" race for polymorphing
  *
+ * \param race is the current race of the monster to be polymorphed.
+ * \param current_level is the level that monster is on.
  * Note that this function is one of the more "dangerous" ones...
  */
-static struct monster_race *poly_race(struct monster_race *race)
+static struct monster_race *poly_race(struct monster_race *race,
+		int current_level)
 {
 	int i, minlvl, maxlvl, goal;
 
@@ -49,7 +52,7 @@ static struct monster_race *poly_race(struct monster_race *race)
 	if (rf_has(race->flags, RF_UNIQUE)) return race;
 
 	/* Allowable range of "levels" for resulting monster */
-	goal = (player->depth + race->level) / 2 + 5;
+	goal = (current_level + race->level) / 2 + 5;
 	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
 	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
 
@@ -58,14 +61,14 @@ static struct monster_race *poly_race(struct monster_race *race)
 
 	/* Try to pick a new, non-unique race within our level range */
 	for (i = 0; i < 1000; i++) {
-		struct monster_race *new_race = get_mon_num(goal);
+		struct monster_race *new_race = get_mon_num(goal, current_level);
 
 		if (!new_race || new_race == race) continue;
 		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
 		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
 
 		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
-		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && player->depth < new_race->level) continue;
+		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && current_level < new_race->level) continue;
 
 		return new_race;
 	}
@@ -1177,7 +1180,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		}
 
 		old = mon->race;
-		new = poly_race(old);
+		new = poly_race(old, player->depth);
 
 		/* Handle polymorph */
 		if (new != old) {

@@ -180,6 +180,9 @@ struct dun_data {
 
     /*!< The number of staircase rooms */
     int nstair_room;
+
+    /*!< Whether or not  persistent levels are being used */
+    bool persist;
 };
 
 
@@ -335,15 +338,15 @@ void chunk_list_add(struct chunk *c);
 bool chunk_list_remove(const char *name);
 struct chunk *chunk_find_name(const char *name);
 bool chunk_find(struct chunk *c);
-struct chunk *chunk_find_adjacent(struct player *p, bool above);
+struct chunk *chunk_find_adjacent(int depth, bool above);
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 	int rotate, bool reflect);
 void get_random_symmetry_transform(int height, int width, int flags,
 	int transpose_weight, int *rotate, bool *reflect,
 	int *theight, int *twidth);
 int calc_default_transpose_weight(int height, int width);
-bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
-				int rotate, bool reflect);
+bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
+	 int y0, int x0, int rotate, bool reflect);
 
 void chunk_validate_objects(struct chunk *c);
 
@@ -424,7 +427,8 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 void dump_level_footer(ang_file *fo);
 
 /* gen-monster.c */
-bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
+bool mon_restrict(const char *monster_type, int depth,
+	int current_depth, bool unique_ok);
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin);
 void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,

@@ -138,12 +138,15 @@ bool chunk_find(struct chunk *c)
 }
 
 /**
- * Find the saved chunk above or below the current player depth
+ * Find the saved chunk adjacent to a given depth.
+ *
+ * \param depth is the depth to use.
+ * \param above if true, finds the chunk immediately above the given depth.
+ * Otherwise, finds the chunk immediately below that depth.
  */
-struct chunk *chunk_find_adjacent(struct player *p, bool above)
+struct chunk *chunk_find_adjacent(int depth, bool above)
 {
-	int depth = above ? p->depth - 1 : p->depth + 1;
-	struct level *lev = level_by_depth(depth);
+	struct level *lev = level_by_depth(depth + ((above) ? -1 : 1));
 
 	if (lev) {
 		return chunk_find_name(lev->name);
@@ -329,6 +332,9 @@ int calc_default_transpose_weight(int height, int width)
  * are in their original positions.
  *
  * \param dest the chunk where the copy is going
+ * \param p is the player; if the player is in the chunk being copied, the
+ * player's position will be updated to be the player's location in the
+ * destination
  * \param source the chunk being copied
  * \param y0 transformation parameters  - see symmetry_transform()
  * \param x0 transformation parameters  - see symmetry_transform()
@@ -336,8 +342,8 @@ int calc_default_transpose_weight(int height, int width)
  * \param reflect transformation parameters  - see symmetry_transform()
  * \return success - fails if the copy would not fit in the destination chunk
  */
-bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
-				int rotate, bool reflect)
+bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
+		int y0, int x0, int rotate, bool reflect)
 {
 	int i, max_group_id = 0;
 	struct loc grid;
@@ -396,7 +402,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			/* Player */
 			if (square(source, grid)->mon == -1) {
 				dest->squares[dest_grid.y][dest_grid.x].mon = -1;
-				player->grid = dest_grid;
+				p->grid = dest_grid;
 			}
 		}
 	}
