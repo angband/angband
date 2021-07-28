@@ -945,28 +945,19 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
  * Add stairs to a level, taking into account the special treatment needed
  * for persistent levels.
  */
-static void handle_level_stairs(struct chunk *c, struct player *p,
+static void handle_level_stairs(struct chunk *c, bool persistent,
 		int down_count, int up_count)
 {
-	bool persistent;
-	int minsep;
+	/*
+	 * For persistent levels, require that the stairs be at least four
+	 * grids apart (two for surrounding walls; two for a buffer between
+	 * the walls; the buffer space could be one - shared by the
+	 * staircases - but the reservations in the room map don't allow for
+	 * that) so the staircase rooms in the connecting level won't overlap.
+	 * For non-persistent levels, don't constrain the stair placement.
+	 */
+	int minsep = (persistent) ? 4 : 0;
 
-	if (OPT(p, birth_levels_persist)) {
-		persistent = true;
-		/*
-		 * For persistent levels, require that the stairs be at least
-		 * four grids apart (two for surrounding walls; two for a
-		 * buffer between the walls; the buffer space could be one -
-		 * shared by the staircases - but the reservations in the
-		 * room map don't allow for that) so the staircase rooms in
-		 * the connecting level won't overlap.
-		 */
-		minsep = 4;
-	} else {
-		persistent = false;
-		/* Don't contrain the separation between the staircases. */
-		minsep = 0;
-	}
 	if (!persistent || !chunk_find_adjacent(c->depth, false)) {
 		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
 			dun->one_off_below);
@@ -1185,7 +1176,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	reset_entrance_data(c);
 
 	/* Build the special staircase rooms */
-	if (OPT(p, birth_levels_persist)) {
+	if (dun->persist) {
 		build_staircase_rooms(c, "Classic Generation");
 	}
 
@@ -1275,7 +1266,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
+	handle_level_stairs(c, dun->persist, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -1517,7 +1508,7 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 	bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
 
 	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
+	if (dun->persist) return NULL;
 
 	/* Enforce minimum dimensions */
 	h = MAX(h, min_height);
@@ -2150,7 +2141,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE, true);
 
 	/* Place 1-3 down stairs and 1-2 up stairs near some walls */
-	handle_level_stairs(c, p, rand_range(1, 3), rand_range(1, 2));
+	handle_level_stairs(c, dun->persist, rand_range(1, 3), rand_range(1, 2));
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -2808,7 +2799,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	dun->block_wid = dun->profile->block_size;
 
 	c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
-		MIN(z_info->dungeon_wid, x_size), OPT(p, birth_levels_persist));
+		MIN(z_info->dungeon_wid, x_size), dun->persist);
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -2823,7 +2814,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
+	handle_level_stairs(c, dun->persist, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -3003,7 +2994,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	dun->block_wid = dun->profile->block_size;
 
 	c = moria_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
-		MIN(z_info->dungeon_wid, x_size), OPT(p, birth_levels_persist));
+		MIN(z_info->dungeon_wid, x_size), dun->persist);
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -3018,7 +3009,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
+	handle_level_stairs(c, dun->persist, rand_range(3, 4), rand_range(1, 2));
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
@@ -3154,7 +3145,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	struct loc floor[4];
 
 	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) {
+	if (dun->persist) {
 		wipe_mon_list(centre, p);
 		cave_free(centre);
 		return NULL;
@@ -3373,7 +3364,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 
 	cached_join = dun->join;
 	dun->join = NULL;
-	if (OPT(p, birth_levels_persist)) {
+	if (dun->persist) {
 		left_width = 1 + find_joinfree_vertical_seam(cached_join,
 			x_size / 2, MIN(5, x_size / 20), 0, y_size - 1);
 		if (left_width < 4 || x_size - left_width < 4) return NULL;
@@ -3402,7 +3393,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	dun->join = transform_join_list(cached_join, y_size, normal_width,
 		0, normal_offset, 0, false);
 	normal = modified_chunk(p->depth, y_size, normal_width,
-		OPT(p, birth_levels_persist));
+		dun->persist);
 	/* Done with the transformed connector information. */
 	cave_connectors_free(dun->join);
 	dun->join = cached_join;
@@ -3488,7 +3479,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	ensure_connectedness(c, true);
 
 	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, p, rand_range(3, 4), rand_range(1, 2));
+	handle_level_stairs(c, dun->persist, rand_range(3, 4), rand_range(1, 2));
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -3534,7 +3525,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	int line1, line2;
 
 	/* No persistent levels of this type for now */
-	if (OPT(p, birth_levels_persist)) return NULL;
+	if (dun->persist) return NULL;
 
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
 		false);

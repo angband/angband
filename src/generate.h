@@ -180,6 +180,9 @@ struct dun_data {
 
     /*!< The number of staircase rooms */
     int nstair_room;
+
+    /*!< Whether or not  persistent levels are being used */
+    bool persist;
 };
 
 

@@ -1131,7 +1131,10 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 		/* Get connector info for persistent levels */
 		if (OPT(p, birth_levels_persist)) {
+			dun->persist = true;
 			get_join_info(p, dun);
+		} else {
+			dun->persist = false;
 		}
 
 		/* Choose a profile and build the level */
