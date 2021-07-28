@@ -345,8 +345,8 @@ void get_random_symmetry_transform(int height, int width, int flags,
 	int transpose_weight, int *rotate, bool *reflect,
 	int *theight, int *twidth);
 int calc_default_transpose_weight(int height, int width);
-bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
-				int rotate, bool reflect);
+bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
+	 int y0, int x0, int rotate, bool reflect);
 
 void chunk_validate_objects(struct chunk *c);
 

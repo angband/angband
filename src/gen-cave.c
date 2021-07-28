@@ -2620,7 +2620,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 	} else {
 		/* Copy from the chunk list, remove the old one */
 		c_new->depth = c_old->depth;
-		if (!chunk_copy(c_new, c_old, 0, 0, 0, 0))
+		if (!chunk_copy(c_new, p, c_old, 0, 0, 0, 0))
 			quit_fmt("chunk_copy() level bounds failed!");
 		chunk_list_remove("Town");
 		cave_free(c_old);
@@ -3238,30 +3238,30 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	c->depth = p->depth;
 
 	/* Left */
-	chunk_copy(c, left_cavern, 0, 0, 0, false);
+	chunk_copy(c, p, left_cavern, 0, 0, 0, false);
 	find_empty_range(c, &grid, loc(0, 0),
 					 loc(left_cavern_wid - 1, z_info->dungeon_hgt - 1));
 	floor[0] = grid;
 
 	/* Upper */
-	chunk_copy(c, upper_cavern, 0, left_cavern_wid, 0, false);
+	chunk_copy(c, p, upper_cavern, 0, left_cavern_wid, 0, false);
 	find_empty_range(c, &grid, loc(left_cavern_wid, 0),
 					 loc(left_cavern_wid + centre_cavern_wid - 1,
 						 upper_cavern_hgt - 1));
 	floor[1] = grid;
 
 	/* Centre */
-	chunk_copy(c, centre, centre_cavern_ypos, left_cavern_wid, rotate, false);
+	chunk_copy(c, p, centre, centre_cavern_ypos, left_cavern_wid, rotate, false);
 
 	/* Lower */
-	chunk_copy(c, lower_cavern, lower_cavern_ypos, left_cavern_wid, 0, false);
+	chunk_copy(c, p, lower_cavern, lower_cavern_ypos, left_cavern_wid, 0, false);
 	find_empty_range(c, &grid, loc(left_cavern_wid, lower_cavern_ypos),
 					 loc(left_cavern_wid + centre_cavern_wid - 1,
 						 z_info->dungeon_hgt - 1));
 	floor[3] = grid;
 
 	/* Right */
-	chunk_copy(c, right_cavern, 0, left_cavern_wid + centre_cavern_wid, 0,
+	chunk_copy(c, p, right_cavern, 0, left_cavern_wid + centre_cavern_wid, 0,
 		false);
 	find_empty_range(c, &grid, loc(left_cavern_wid + centre_cavern_wid, 0),
 		loc(z_info->dungeon_wid - 1, z_info->dungeon_hgt - 1));
@@ -3464,8 +3464,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Make the level */
 	c = cave_new(y_size, x_size);
 	c->depth = p->depth;
-	chunk_copy(c, normal, 0, normal_offset, 0, false);
-	chunk_copy(c, lair, 0, lair_offset, 0, false);
+	chunk_copy(c, p, normal, 0, normal_offset, 0, false);
+	chunk_copy(c, p, lair, 0, lair_offset, 0, false);
 
 	/* Free the chunks */
 	cave_free(normal);
@@ -3658,9 +3658,9 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		SQUARE_NONE);
 
 	/* Copy in the pieces */
-	chunk_copy(c, left, 0, 0, 0, false);
-	chunk_copy(c, gauntlet, (y_size - gauntlet->height) / 2, line1, 0, false);
-	chunk_copy(c, right, 0, line2, 0, false);
+	chunk_copy(c, p, left, 0, 0, 0, false);
+	chunk_copy(c, p, gauntlet, (y_size - gauntlet->height) / 2, line1, 0, false);
+	chunk_copy(c, p, right, 0, line2, 0, false);
 
 	/* Free the chunks */
 	cave_free(left);
