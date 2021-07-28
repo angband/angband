@@ -323,7 +323,7 @@ static void project_object_handler_MANA(project_object_handler_context_t *contex
 	context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 }
 
-/* Holy Orb -- destroys cursed non-artifacts */
+/* Holy Orb  */
 static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
 {
 }

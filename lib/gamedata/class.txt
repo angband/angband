@@ -782,7 +782,6 @@ expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
 desc: damage to each monster in its area of effect.
 desc:  Evil monsters take double damage.
-desc:  All cursed items in the area of effect are destroyed.
 desc:  The bigger area of effect is attained at character level 30.
 
 spell:Spear of Light:7:6:30:5
