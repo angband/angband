@@ -967,11 +967,11 @@ static void handle_level_stairs(struct chunk *c, struct player *p,
 		/* Don't contrain the separation between the staircases. */
 		minsep = 0;
 	}
-	if (!persistent || !chunk_find_adjacent(p, false)) {
+	if (!persistent || !chunk_find_adjacent(c->depth, false)) {
 		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
 			dun->one_off_below);
 	}
-	if (!persistent || !chunk_find_adjacent(p, true)) {
+	if (!persistent || !chunk_find_adjacent(c->depth, true)) {
 		alloc_stairs(c, FEAT_LESS, up_count, minsep, false,
 			dun->one_off_above);
 	}

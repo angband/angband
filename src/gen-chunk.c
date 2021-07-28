@@ -138,12 +138,15 @@ bool chunk_find(struct chunk *c)
 }
 
 /**
- * Find the saved chunk above or below the current player depth
+ * Find the saved chunk adjacent to a given depth.
+ *
+ * \param depth is the depth to use.
+ * \param above if true, finds the chunk immediately above the given depth.
+ * Otherwise, finds the chunk immediately below that depth.
  */
-struct chunk *chunk_find_adjacent(struct player *p, bool above)
+struct chunk *chunk_find_adjacent(int depth, bool above)
 {
-	int depth = above ? p->depth - 1 : p->depth + 1;
-	struct level *lev = level_by_depth(depth);
+	struct level *lev = level_by_depth(depth + ((above) ? -1 : 1));
 
 	if (lev) {
 		return chunk_find_name(lev->name);
