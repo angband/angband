@@ -2267,9 +2267,9 @@ static bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	/* Count slots */
 	for (i = 0; i < player->body.count; i++) {
 		/* Ignore rings, amulets and lights */
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(player, i, EQUIP_RING)) continue;
+		if (slot_type_is(player, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(player, i, EQUIP_LIGHT)) continue;
 
 		/* Count disenchantable slots */
 		count++;
@@ -2278,9 +2278,9 @@ static bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	/* Pick one at random */
 	for (i = player->body.count - 1; i >= 0; i--) {
 		/* Ignore rings, amulets and lights */
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(player, i, EQUIP_RING)) continue;
+		if (slot_type_is(player, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(player, i, EQUIP_LIGHT)) continue;
 
 		if (one_in_(count--)) break;
 	}
@@ -2311,7 +2311,8 @@ static bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	}
 
 	/* Apply disenchantment, depending on which kind of equipment */
-	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW)) {
+	if (slot_type_is(player, i, EQUIP_WEAPON)
+			|| slot_type_is(player, i, EQUIP_BOW)) {
 		/* Disenchant to-hit */
 		if (obj->to_h > 0) obj->to_h--;
 		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;

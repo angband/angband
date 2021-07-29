@@ -92,10 +92,18 @@ static int slot_by_type(struct player *p, int type, bool full)
 	return (i != p->body.count) ? i : fallback;
 }
 
-bool slot_type_is(int slot, int type)
+/**
+ * Indicate whether a slot is of a given type.
+ *
+ * \param p is the player to test; if NULL, will assume the default body plan.
+ * \param slot is the slot index for the player.
+ * \param type is one of the EQUIP_* constants from list-equip-slots.h.
+ * \return true if the slot can hold that type; otherwise false
+ */
+bool slot_type_is(struct player *p, int slot, int type)
 {
 	/* Assume default body if no player */
-	struct player_body body = player ? player->body : bodies[0];
+	struct player_body body = p ? p->body : bodies[0];
 
 	return body.slots[slot].type == type ? true : false;
 }
@@ -299,32 +307,32 @@ bool minus_ac(struct player *p)
 	if (!p->gear) return false;
 
 	/* Count the armor slots */
-	for (i = 0; i < player->body.count; i++) {
+	for (i = 0; i < p->body.count; i++) {
 		/* Ignore non-armor */
-		if (slot_type_is(i, EQUIP_WEAPON)) continue;
-		if (slot_type_is(i, EQUIP_BOW)) continue;
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(p, i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(p, i, EQUIP_BOW)) continue;
+		if (slot_type_is(p, i, EQUIP_RING)) continue;
+		if (slot_type_is(p, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(p, i, EQUIP_LIGHT)) continue;
 
 		/* Add */
 		count++;
 	}
 
 	/* Pick one at random */
-	for (i = player->body.count - 1; i >= 0; i--) {
+	for (i = p->body.count - 1; i >= 0; i--) {
 		/* Ignore non-armor */
-		if (slot_type_is(i, EQUIP_WEAPON)) continue;
-		if (slot_type_is(i, EQUIP_BOW)) continue;
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(p, i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(p, i, EQUIP_BOW)) continue;
+		if (slot_type_is(p, i, EQUIP_RING)) continue;
+		if (slot_type_is(p, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(p, i, EQUIP_LIGHT)) continue;
 
 		if (one_in_(count--)) break;
 	}
 
 	/* Get the item */
-	obj = slot_object(player, i);
+	obj = slot_object(p, i);
 
 	/* If we can still damage the item */
 	if (obj && (obj->ac + obj->to_a > 0)) {
@@ -866,11 +874,11 @@ void inven_takeoff(struct object *obj)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe removal by slot */
-	if (slot_type_is(slot, EQUIP_WEAPON))
+	if (slot_type_is(player, slot, EQUIP_WEAPON))
 		act = "You were wielding";
-	else if (slot_type_is(slot, EQUIP_BOW))
+	else if (slot_type_is(player, slot, EQUIP_BOW))
 		act = "You were holding";
-	else if (slot_type_is(slot, EQUIP_LIGHT))
+	else if (slot_type_is(player, slot, EQUIP_LIGHT))
 		act = "You were holding";
 	else
 		act = "You were wearing";
