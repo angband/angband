@@ -92,6 +92,14 @@ static int slot_by_type(struct player *p, int type, bool full)
 	return (i != p->body.count) ? i : fallback;
 }
 
+/**
+ * Indicate whether a slot is of a given type.
+ *
+ * \param p is the player to test; if NULL, will assume the default body plan.
+ * \param slot is the slot index for the player.
+ * \param type is one of the EQUIP_* constants from list-equip-slots.h.
+ * \return true if the slot can hold that type; otherwise false
+ */
 bool slot_type_is(struct player *p, int slot, int type)
 {
 	/* Assume default body if no player */
