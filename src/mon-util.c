@@ -771,7 +771,9 @@ void become_aware(struct chunk *c, struct monster *mon, struct player *p)
 		}
 
 		/* Update monster and item lists */
-		p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		if (mon->race->light != 0) {
+			p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		}
 		p->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 
