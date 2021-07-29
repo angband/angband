@@ -710,6 +710,9 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
+		/* Skip if the monster is hidden */
+		if (monster_is_camouflaged(mon)) continue;
+
 		/* Get light info for this monster */
 		light = mon->race->light;
 		radius = ABS(light) - 1;
