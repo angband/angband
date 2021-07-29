@@ -299,7 +299,7 @@ bool minus_ac(struct player *p)
 	if (!p->gear) return false;
 
 	/* Count the armor slots */
-	for (i = 0; i < player->body.count; i++) {
+	for (i = 0; i < p->body.count; i++) {
 		/* Ignore non-armor */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
 		if (slot_type_is(i, EQUIP_BOW)) continue;
@@ -312,7 +312,7 @@ bool minus_ac(struct player *p)
 	}
 
 	/* Pick one at random */
-	for (i = player->body.count - 1; i >= 0; i--) {
+	for (i = p->body.count - 1; i >= 0; i--) {
 		/* Ignore non-armor */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
 		if (slot_type_is(i, EQUIP_BOW)) continue;
@@ -324,7 +324,7 @@ bool minus_ac(struct player *p)
 	}
 
 	/* Get the item */
-	obj = slot_object(player, i);
+	obj = slot_object(p, i);
 
 	/* If we can still damage the item */
 	if (obj && (obj->ac + obj->to_a > 0)) {
