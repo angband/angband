@@ -92,10 +92,10 @@ static int slot_by_type(struct player *p, int type, bool full)
 	return (i != p->body.count) ? i : fallback;
 }
 
-bool slot_type_is(int slot, int type)
+bool slot_type_is(struct player *p, int slot, int type)
 {
 	/* Assume default body if no player */
-	struct player_body body = player ? player->body : bodies[0];
+	struct player_body body = p ? p->body : bodies[0];
 
 	return body.slots[slot].type == type ? true : false;
 }
@@ -301,11 +301,11 @@ bool minus_ac(struct player *p)
 	/* Count the armor slots */
 	for (i = 0; i < p->body.count; i++) {
 		/* Ignore non-armor */
-		if (slot_type_is(i, EQUIP_WEAPON)) continue;
-		if (slot_type_is(i, EQUIP_BOW)) continue;
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(p, i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(p, i, EQUIP_BOW)) continue;
+		if (slot_type_is(p, i, EQUIP_RING)) continue;
+		if (slot_type_is(p, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(p, i, EQUIP_LIGHT)) continue;
 
 		/* Add */
 		count++;
@@ -314,11 +314,11 @@ bool minus_ac(struct player *p)
 	/* Pick one at random */
 	for (i = p->body.count - 1; i >= 0; i--) {
 		/* Ignore non-armor */
-		if (slot_type_is(i, EQUIP_WEAPON)) continue;
-		if (slot_type_is(i, EQUIP_BOW)) continue;
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+		if (slot_type_is(p, i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(p, i, EQUIP_BOW)) continue;
+		if (slot_type_is(p, i, EQUIP_RING)) continue;
+		if (slot_type_is(p, i, EQUIP_AMULET)) continue;
+		if (slot_type_is(p, i, EQUIP_LIGHT)) continue;
 
 		if (one_in_(count--)) break;
 	}
@@ -866,11 +866,11 @@ void inven_takeoff(struct object *obj)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe removal by slot */
-	if (slot_type_is(slot, EQUIP_WEAPON))
+	if (slot_type_is(player, slot, EQUIP_WEAPON))
 		act = "You were wielding";
-	else if (slot_type_is(slot, EQUIP_BOW))
+	else if (slot_type_is(player, slot, EQUIP_BOW))
 		act = "You were holding";
-	else if (slot_type_is(slot, EQUIP_LIGHT))
+	else if (slot_type_is(player, slot, EQUIP_LIGHT))
 		act = "You were holding";
 	else
 		act = "You were wearing";
