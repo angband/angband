@@ -13,11 +13,12 @@ Run `make` for help.
 1. Make sure the release is marked as a proper release on Github.
 2. Edit `source/index` to replace the previous release URLs with the new ones.
 3. Make a new `source/releases/<version number>` file (copy the previous one, change the URLs and description).
-4. Build the html files by running `make build`.
-5. Manually copy `docs/release/<version number>.html` to docs/release.html.
-6. (Optional) Complain about having to do step 5.
-7. Run `git add docs/release/<version number>.html`.
-8. Run `git commit -a -m "Your commit message"`.
-9. Run `git push <remote> gh-pages`, where <remote> is your remote name for the official Angband site https://github.com/angband/angband.git.
+4. Run `git add source/releases/<version number>`.
+5. Build the html files by running `make build`.
+6. Manually copy `docs/release/<version number>.html` to docs/release.html.
+7. (Optional) Complain about having to do step 6.
+8. Run `git add docs/release/<version number>.html`.
+9. Run `git commit -a -m "Your commit message"`.
+10. Run `git push <remote> gh-pages`, where <remote> is your remote name for the official Angband site https://github.com/angband/angband.git.
 
 Voila.
