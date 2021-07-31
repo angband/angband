@@ -115,7 +115,7 @@ sub apply_template {
 my $output_files = {};
 
 # First work on the main site pages
-my $dir = "src";
+my $dir = "source";
 opendir(DIR, $dir) or die $!;	
 while (my $file = readdir(DIR)) {
 	next unless (-f "$dir/$file");
@@ -128,7 +128,7 @@ closedir(DIR);
 
 # Then do the release pages
 $output_files->{"release"} = {};
-$dir = "src/releases";
+$dir = "source/releases";
 opendir(DIR, "$dir") or die $!;
 my @releases = ();
 my $newest_mod = 0;

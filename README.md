@@ -11,8 +11,8 @@ Run `make` for help.
 ## How to update the gh-pages branch for a new release
 
 1. Make sure the release is marked as a proper release on Github.
-2. Edit `src/index` to replace the previous release URLs with the new ones.
-3. Make a new `src/releases/<version number>` file (copy the previous one, change the URLs and description).
+2. Edit `source/index` to replace the previous release URLs with the new ones.
+3. Make a new `source/releases/<version number>` file (copy the previous one, change the URLs and description).
 4. Build the html files by running `make build`.
 5. Manually copy `docs/release/<version number>.html` to docs/release.html.
 6. (Optional) Complain about having to do step 5.
