@@ -217,8 +217,8 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(path_g, z_info->max_range, player->grid, grid,
-						  PROJECT_NONE);
+	path_n = project_path(cave, path_g, z_info->max_range, player->grid,
+		grid, PROJECT_NONE);
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
