@@ -46,7 +46,7 @@ const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
 int wield_slot(const struct object *obj);
 bool minus_ac(struct player *p);
-char gear_to_label(struct object *obj);
+char gear_to_label(struct player *p, struct object *obj);
 struct object *gear_last_item(void);
 void gear_insert_end(struct object *obj);
 struct object *gear_object_for_use(struct object *obj, int num, bool message,

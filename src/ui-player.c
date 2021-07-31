@@ -1068,7 +1068,7 @@ void write_character_dump(ang_file *fff)
 		if (!obj) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");
@@ -1080,7 +1080,7 @@ void write_character_dump(ang_file *fff)
 		if (!obj) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");
@@ -1092,7 +1092,7 @@ void write_character_dump(ang_file *fff)
 		if (!obj) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");

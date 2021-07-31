@@ -365,25 +365,25 @@ bool minus_ac(struct player *p)
 /**
  * Convert a gear object into a one character label.
  */
-char gear_to_label(struct object *obj)
+char gear_to_label(struct player *p, struct object *obj)
 {
 	int i;
 
 	/* Equipment is easy */
-	if (object_is_equipped(player->body, obj)) {
-		return I2A(equipped_item_slot(player->body, obj));
+	if (object_is_equipped(p->body, obj)) {
+		return I2A(equipped_item_slot(p->body, obj));
 	}
 
 	/* Check the quiver */
 	for (i = 0; i < z_info->quiver_size; i++) {
-		if (player->upkeep->quiver[i] == obj) {
+		if (p->upkeep->quiver[i] == obj) {
 			return I2D(i);
 		}
 	}
 
 	/* Check the inventory */
 	for (i = 0; i < z_info->pack_size; i++) {
-		if (player->upkeep->inven[i] == obj) {
+		if (p->upkeep->inven[i] == obj) {
 			return I2A(i);
 		}
 	}
@@ -447,7 +447,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 {
 	struct object *usable;
 	char name[80];
-	char label = gear_to_label(obj);
+	char label = gear_to_label(player, obj);
 	bool artifact = (obj->known->artifact != NULL);
 
 	/* Bounds check */
@@ -751,7 +751,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	if (message) {
 		char o_name[80];
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		msg("You have %s (%c).", o_name, gear_to_label(obj));
+		msg("You have %s (%c).", o_name, gear_to_label(p, obj));
 	}
 
 	if (object_is_in_quiver(p, obj))
@@ -892,7 +892,7 @@ void inven_takeoff(struct object *obj)
 	update_stuff(player);
 
 	/* Message */
-	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(obj));
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(player, obj));
 
 	return;
 }
@@ -925,7 +925,7 @@ void inven_drop(struct object *obj, int amt)
 		return;
 
 	/* Get where the object is now */
-	label = gear_to_label(obj);
+	label = gear_to_label(player, obj);
 
 	/* Is it in the quiver? */
 	if (object_is_in_quiver(player, obj))

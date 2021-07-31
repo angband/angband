@@ -1886,7 +1886,7 @@ void do_cmd_sell(struct command *cmd)
 	}
 
 	/* Get the label */
-	label = gear_to_label(obj);
+	label = gear_to_label(player, obj);
 
 	price = price_item(store, &dummy_item, true, amt);
 
@@ -2018,7 +2018,7 @@ void do_cmd_stash(struct command *cmd)
 	}
 
 	/* Get where the object is now */
-	label = gear_to_label(obj);
+	label = gear_to_label(player, obj);
 
 	/* Now get the real item */
 	dropped = gear_object_for_use(obj, amt, false, &none_left);
