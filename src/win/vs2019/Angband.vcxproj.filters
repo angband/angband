@@ -96,6 +96,12 @@
     <ClCompile Include="src\debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\effect-handler-attack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\effect-handler-general.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\effects-info.c">
       <Filter>Source Files</Filter>
     </ClCompile>

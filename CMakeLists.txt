@@ -50,6 +50,8 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/cmd-wizard.c
         src/datafile.c
         src/debug.c
+        src/effect-handler-attack.c
+        src/effect-handler-general.c
         src/effects.c
         src/effects-info.c
         src/game-event.c
