@@ -116,8 +116,8 @@ void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
 bool project_p(struct source, int r, struct loc grid, int dam, int typ,
 			   int power, bool self);
 
-int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
-				 int flg);
+int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
+	struct loc grid2, int flg);
 bool projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg);
 int proj_name_to_idx(const char *name);
 const char *proj_idx_to_name(int type);
