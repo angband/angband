@@ -828,7 +828,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 	/* Damage, check for hp drain, fear and death */
 	drain = MIN(mon->hp, dmg);
-	stop = mon_take_hit(mon, dmg, fear, NULL);
+	stop = mon_take_hit(mon, p, dmg, fear, NULL);
 
 	/* Small chance of bloodlust side-effects */
 	if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
@@ -916,7 +916,7 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
 	}
 
 	/* Damage, check for fear and death. */
-	if (mon_take_hit(mon, bash_dam, fear, NULL)) return true;
+	if (mon_take_hit(mon, p, bash_dam, fear, NULL)) return true;
 
 	/* Stunning. */
 	if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
@@ -1146,7 +1146,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 				}
 
 				/* Hit the monster, check for death */
-				if (!mon_take_hit(mon, dmg, &fear, note_dies)) {
+				if (!mon_take_hit(mon, p, dmg, &fear, note_dies)) {
 					message_pain(mon, dmg);
 					if (fear && monster_is_obvious(mon)) {
 						add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
