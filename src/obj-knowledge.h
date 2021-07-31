@@ -70,7 +70,7 @@ bool object_flag_is_known(const struct player *p, const struct object *obj,
 bool object_element_is_known(const struct player *p, const struct object *obj,
 	int element);
 
-void object_set_base_known(struct object *obj);
+void object_set_base_known(struct player *p, struct object *obj);
 void object_sense(struct player *p, struct object *obj);
 void object_see(struct player *p, struct object *obj);
 void object_touch(struct player *p, struct object *obj);
