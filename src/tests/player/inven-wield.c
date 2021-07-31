@@ -117,7 +117,7 @@ static struct object *setup_object(int tval, int sval, int num) {
 		object_prep(obj, kind, 0, RANDOMISE);
 		obj->number = num;
 		obj->known = object_new();
-		object_set_base_known(obj);
+		object_set_base_known(player, obj);
 		object_touch(player, obj);
 	}
 	return obj;

@@ -1226,7 +1226,7 @@ static bool store_create_random(struct store *store)
 
 		/* Know everything the player knows, no origin yet */
 		obj->known->notice |= OBJ_NOTICE_ASSESSED;
-		object_set_base_known(obj);
+		object_set_base_known(player, obj);
 		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 		player_know_object(player, obj);
 		obj->origin = ORIGIN_NONE;
@@ -1282,7 +1282,7 @@ static struct object *store_create_item(struct store *store,
 	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
-	object_set_base_known(obj);
+	object_set_base_known(player, obj);
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	player_know_object(player, obj);
 	obj->origin = ORIGIN_NONE;
