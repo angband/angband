@@ -34,6 +34,7 @@
 #include "target.h"
 #include "trap.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-map.h"
@@ -962,6 +963,9 @@ bool target_set_interactive(int mode, int x, int y)
 	bool done = false;
 	bool show_interesting = true;
 	bool help = false;
+	keycode_t ignore_key = cmd_lookup_key(CMD_IGNORE,
+		(OPT(player, rogue_like_commands)) ?
+		KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
 
 	/* These are used for displaying the path to the target */
 	wchar_t *path_char = mem_zalloc(z_info->max_range * sizeof(wchar_t));
@@ -1190,7 +1194,7 @@ bool target_set_interactive(int mode, int x, int y)
 			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
 			done = true;
 
-		} else if (event_is_key(press, 'k') || event_is_key(press, KTRL('D'))) {
+		} else if (event_is_key(press, ignore_key)) {
 			/* Ignore the tracked object, set by target_set_interactive_aux() */
 			if (!(mode & TARGET_KILL)
 					&& pile_is_tracked(square_object(cave, loc(x, y)))) {
