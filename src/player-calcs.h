@@ -105,8 +105,7 @@ extern const int adj_str_hold[STAT_RANGE];
 
 bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
-void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
-					struct player_body body);
+void calc_inventory(struct player *p);
 void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 				  bool update);
 void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX]);

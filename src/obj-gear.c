@@ -415,7 +415,7 @@ static bool gear_excise_object(struct object *obj)
 	}
 
 	/* Update the gear */
-	calc_inventory(player->upkeep, player->gear, player->body);
+	calc_inventory(player);
 
 	/* Housekeeping */
 	player->upkeep->update |= (PU_BONUS);
@@ -425,15 +425,15 @@ static bool gear_excise_object(struct object *obj)
 	return true;
 }
 
-struct object *gear_last_item(void)
+struct object *gear_last_item(struct player *p)
 {
-	return pile_last_item(player->gear);
+	return pile_last_item(p->gear);
 }
 
-void gear_insert_end(struct object *obj)
+void gear_insert_end(struct player *p, struct object *obj)
 {
-	pile_insert_end(&player->gear, obj);
-	pile_insert_end(&player->gear_k, obj->known);
+	pile_insert_end(&p->gear, obj);
+	pile_insert_end(&p->gear_k, obj->known);
 }
 
 /**
@@ -722,7 +722,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 		/* Paranoia */
 		assert(pack_slots_used(p) <= z_info->pack_size);
 
-		gear_insert_end(obj);
+		gear_insert_end(p, obj);
 		apply_autoinscription(obj);
 
 		/* Remove cave object details */
@@ -1032,7 +1032,7 @@ void combine_pack(void)
 	bool disable_repeat = false;
 
 	/* Combine the pack (backwards) */
-	obj1 = gear_last_item();
+	obj1 = gear_last_item(player);
 	while (obj1) {
 		assert(obj1->kind);
 		assert(!tval_is_money(obj1));
@@ -1091,7 +1091,7 @@ void combine_pack(void)
 		obj1 = prev;
 	}
 
-	calc_inventory(player->upkeep, player->gear, player->body);
+	calc_inventory(player);
 
 	/* Redraw gear */
 	event_signal(EVENT_INVENTORY);

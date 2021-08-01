@@ -648,7 +648,7 @@ void ignore_drop(void)
 	struct object *obj;
 
 	/* Scan through the slots backwards */
-	for (obj = gear_last_item(); obj; obj = obj->prev) {
+	for (obj = gear_last_item(player); obj; obj = obj->prev) {
 		/* Skip non-objects and unignoreable objects */
 		assert(obj->kind);
 		if (!ignore_item_ok(obj)) continue;
