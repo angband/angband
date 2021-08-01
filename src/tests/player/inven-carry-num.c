@@ -55,22 +55,22 @@ int setup_tests(void **state) {
 	cns->torch = object_new();
 	object_prep(cns->torch, lookup_kind(TV_LIGHT, 1), 0, RANDOMISE);
 	cns->torch->known = object_new();
-	object_set_base_known(cns->torch);
+	object_set_base_known(cns->p, cns->torch);
 	object_touch(cns->p, cns->torch);
 	cns->arrow = object_new();
 	object_prep(cns->arrow, lookup_kind(TV_ARROW, 1), 0, RANDOMISE);
 	cns->arrow->known = object_new();
-	object_set_base_known(cns->arrow);
+	object_set_base_known(cns->p, cns->arrow);
 	object_touch(cns->p, cns->arrow);
 	cns->shot = object_new();
 	object_prep(cns->shot, lookup_kind(TV_SHOT, 1), 0, RANDOMISE);
 	cns->shot->known = object_new();
-	object_set_base_known(cns->shot);
+	object_set_base_known(cns->p, cns->shot);
 	object_touch(cns->p, cns->shot);
 	cns->flask = object_new();
 	object_prep(cns->flask, lookup_kind(TV_FLASK, 1), 0, RANDOMISE);
 	cns->flask->known = object_new();
-	object_set_base_known(cns->flask);
+	object_set_base_known(cns->p, cns->flask);
 	object_touch(cns->p, cns->flask);
 	/* Make a version that is inscribed so it will go into the quiver. */
 	cns->inscribed_flask = object_new();
@@ -78,11 +78,11 @@ int setup_tests(void **state) {
 	cns->inscribed_flask->note =
 		quark_add(format("@v%d", z_info->quiver_size - 1));
 	cns->inscribed_flask->known = object_new();
-	object_set_base_known(cns->inscribed_flask);
+	object_set_base_known(cns->p, cns->inscribed_flask);
 	object_touch(cns->p, cns->inscribed_flask);
 	cns->treasure = make_gold(1, "any");
 	cns->treasure->known = object_new();
-	object_set_base_known(cns->treasure);
+	object_set_base_known(cns->p, cns->treasure);
 	object_touch(cns->p, cns->treasure);
 	*state = cns;
 

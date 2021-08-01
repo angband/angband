@@ -217,8 +217,8 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(path_g, z_info->max_range, player->grid, grid,
-						  PROJECT_NONE);
+	path_n = project_path(cave, path_g, z_info->max_range, player->grid,
+		grid, PROJECT_NONE);
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
@@ -949,7 +949,7 @@ struct monster *choose_nearby_injured_kin(struct chunk *c,
  * If `stats` is true, then we skip updating the monster memory. This is
  * used by stats-generation code, for efficiency.
  */
-void monster_death(struct monster *mon, bool stats)
+void monster_death(struct monster *mon, struct player *p, bool stats)
 {
 	int dump_item = 0;
 	int dump_gold = 0;
@@ -1002,16 +1002,17 @@ void monster_death(struct monster *mon, bool stats)
 		lore_treasure(mon, dump_item, dump_gold);
 
 	/* Update monster list window */
-	player->upkeep->redraw |= PR_MONLIST;
+	p->upkeep->redraw |= PR_MONLIST;
 
 	/* Check if we finished a quest */
-	quest_check(mon);
+	quest_check(p, mon);
 }
 
 /**
  * Handle the consequences of the killing of a monster by the player
  */
-static void player_kill_monster(struct monster *mon, const char *note)
+static void player_kill_monster(struct monster *mon, struct player *p,
+		const char *note)
 {
 	s32b div, new_exp, new_exp_frac;
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1048,14 +1049,14 @@ static void player_kill_monster(struct monster *mon, const char *note)
 			my_strcap(str);
 
 			/* Make sure to flush any monster messages first */
-			notice_stuff(player);
+			notice_stuff(p);
 
 			/* Death by Missile attack */
 			msgt(soundfx, "%s", str);
 		}
 	} else {
 		/* Make sure to flush any monster messages first */
-		notice_stuff(player);
+		notice_stuff(p);
 
 		if (!monster_is_visible(mon))
 			/* Death by physical attack -- invisible monster */
@@ -1069,21 +1070,21 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	}
 
 	/* Player level */
-	div = player->lev;
+	div = p->lev;
 
 	/* Give some experience for the kill */
 	new_exp = ((long)mon->race->mexp * mon->race->level) / div;
 
 	/* Handle fractional experience */
 	new_exp_frac = ((((long)mon->race->mexp * mon->race->level) % div)
-					* 0x10000L / div) + player->exp_frac;
+					* 0x10000L / div) + p->exp_frac;
 
 	/* Keep track of experience */
 	if (new_exp_frac >= 0x10000L) {
 		new_exp++;
-		player->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+		p->exp_frac = (u16b)(new_exp_frac - 0x10000L);
 	} else {
-		player->exp_frac = (u16b)new_exp_frac;
+		p->exp_frac = (u16b)new_exp_frac;
 	}
 
 	/* When the player kills a Unique, it stays dead */
@@ -1101,20 +1102,20 @@ static void player_kill_monster(struct monster *mon, const char *note)
 
 		/* Log the slaying of a unique */
 		strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
-		history_add(player, buf, HIST_SLAY_UNIQUE);
+		history_add(p, buf, HIST_SLAY_UNIQUE);
 	}
 
 	/* Gain experience */
-	player_exp_gain(player, new_exp);
+	player_exp_gain(p, new_exp);
 
 	/* Generate treasure */
-	monster_death(mon, false);
+	monster_death(mon, p, false);
 
 	/* Bloodlust bonus */
-	if (player->timed[TMD_BLOODLUST]) {
-		player_inc_timed(player, TMD_BLOODLUST, 10, false, false);
-		player_over_exert(player, PY_EXERT_CONF, 5, 3);
-		player_over_exert(player, PY_EXERT_HALLU, 5, 10);
+	if (p->timed[TMD_BLOODLUST]) {
+		player_inc_timed(p, TMD_BLOODLUST, 10, false, false);
+		player_over_exert(p, PY_EXERT_CONF, 5, 3);
+		player_over_exert(p, PY_EXERT_HALLU, 5, 10);
 	}
 
 	/* Recall even invisible uniques or winners */
@@ -1127,7 +1128,7 @@ static void player_kill_monster(struct monster *mon, const char *note)
 
 		/* Update lore and tracking */
 		lore_update(mon->race, lore);
-		monster_race_track(player->upkeep, mon->race);
+		monster_race_track(p->upkeep, mon->race);
 	}
 
 	/* Delete the monster */
@@ -1220,7 +1221,7 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 		add_monster_message(t_mon, die_msg, false);
 
 		/* Generate treasure, etc */
-		monster_death(t_mon, false);
+		monster_death(t_mon, player, false);
 
 		/* Delete the monster */
 		delete_monster_idx(t_mon->midx);
@@ -1258,11 +1259,12 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
  **/
-bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
+bool mon_take_hit(struct monster *mon, struct player *p, int dam, bool *fear,
+		const char *note)
 {
 	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == mon)
-		player->upkeep->redraw |= (PR_HEALTH);
+	if (p->upkeep->health_who == mon)
+		p->upkeep->redraw |= (PR_HEALTH);
 
 	/* If the hit doesn't kill, wake it up, make it aware of the player */
 	if (dam <= mon->hp) {
@@ -1272,27 +1274,27 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 
 	/* Become aware of its presence */
 	if (monster_is_camouflaged(mon))
-		become_aware(cave, mon, player);
+		become_aware(cave, mon, p);
 
 	/* No damage, we're done */
 	if (dam == 0) return false;
 
 	/* Covering tracks is no longer possible */
-	player->timed[TMD_COVERTRACKS] = 0;
+	p->timed[TMD_COVERTRACKS] = 0;
 
 	/* Hurt it */
 	mon->hp -= dam;
 	if (mon->hp < 0) {
 		/* Deal with arena monsters */
-		if (player->upkeep->arena_level) {
-			player->upkeep->generate_level = true;
-			player->upkeep->health_who = mon;
+		if (p->upkeep->arena_level) {
+			p->upkeep->generate_level = true;
+			p->upkeep->health_who = mon;
 			(*fear) = false;
 			return true;
 		}
 
 		/* It is dead now */
-		player_kill_monster(mon, note);
+		player_kill_monster(mon, p, note);
 
 		/* Not afraid */
 		(*fear) = false;
@@ -1314,7 +1316,7 @@ void kill_arena_monster(struct monster *mon)
 	assert(old_mon);
 	update_mon(old_mon, cave, true);
 	old_mon->hp = -1;
-	player_kill_monster(old_mon, " is defeated!");
+	player_kill_monster(old_mon, player, " is defeated!");
 }
 
 /**

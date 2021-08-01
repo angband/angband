@@ -273,7 +273,7 @@ static void kill_all_monsters(int level)
 
 		level_data[level].monsters[mon->race->ridx]++;
 
-		monster_death(mon, true);
+		monster_death(mon, player, true);
 
 		if (rf_has(mon->race->flags, RF_UNIQUE))
 			mon->race->max_num = 0;

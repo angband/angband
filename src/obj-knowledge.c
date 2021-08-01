@@ -811,7 +811,7 @@ bool object_element_is_known(const struct player *p, const struct object *obj,
 /**
  * Sets the basic details on a known object
  */
-void object_set_base_known(struct object *obj)
+void object_set_base_known(struct player *p, struct object *obj)
 {
 	assert(obj->known);
 	obj->known->kind = obj->kind;
@@ -822,13 +822,13 @@ void object_set_base_known(struct object *obj)
 
 	/* Generic dice and ac, to_h for armor, and launcher multipliers */
 	if (!obj->known->dd) {
-		obj->known->dd = obj->kind->dd * player->obj_k->dd;
+		obj->known->dd = obj->kind->dd * p->obj_k->dd;
 	}
 	if (!obj->known->ds) {
-		obj->known->ds = obj->kind->ds * player->obj_k->ds;
+		obj->known->ds = obj->kind->ds * p->obj_k->ds;
 	}
 	if (!obj->known->ac) {
-		obj->known->ac = obj->kind->ac * player->obj_k->ac;
+		obj->known->ac = obj->kind->ac * p->obj_k->ac;
 	}
 	if (object_has_standard_to_h(obj)) {
 		obj->known->to_h = obj->kind->to_h.base;
@@ -907,7 +907,7 @@ void object_see(struct player *p, struct object *obj)
 		assert(! obj->known);
 		new_obj = object_new();
 		obj->known = new_obj;
-		object_set_base_known(obj);
+		object_set_base_known(p, obj);
 
 		/* List the known object */
 		p->cave->objects[obj->oidx] = new_obj;
@@ -927,7 +927,7 @@ void object_see(struct player *p, struct object *obj)
 
 		if (known_obj->kind != obj->kind) {
 			/* Copy over actual details */
-			object_set_base_known(obj);
+			object_set_base_known(p, obj);
 		} else {
 			known_obj->number = obj->number;
 		}
@@ -981,7 +981,7 @@ void object_grab(struct player *p, struct object *obj)
 		assert(! obj->known);
 		new_obj = object_new();
 		obj->known = new_obj;
-		object_set_base_known(obj);
+		object_set_base_known(p, obj);
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 	} else {
@@ -999,7 +999,7 @@ void object_grab(struct player *p, struct object *obj)
 		}
 
 		/* Copy over actual details */
-		object_set_base_known(obj);
+		object_set_base_known(p, obj);
 	}
 
 	/* Touch the object */
@@ -1025,7 +1025,7 @@ void player_know_object(struct player *p, struct object *obj)
 
 	/* Distant objects just get base properties */
 	if (obj->kind && !(obj->known->notice & OBJ_NOTICE_ASSESSED)) {
-		object_set_base_known(obj);
+		object_set_base_known(p, obj);
 		return;
 	}
 
@@ -1141,7 +1141,7 @@ void player_know_object(struct player *p, struct object *obj)
 		/* Describe the object if it's available */
 		if (object_is_carried(p, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-			msg("You have %s (%c).", o_name, gear_to_label(obj));
+			msg("You have %s (%c).", o_name, gear_to_label(p, obj));
 		} else if (cave && square_holds_object(cave, p->grid, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			msg("On the ground: %s.", o_name);
@@ -2231,13 +2231,13 @@ void object_flavor_aware(struct object *obj)
 
 	/* Update player objects */
 	for (obj1 = player->gear; obj1; obj1 = obj1->next)
-		object_set_base_known(obj1);
+		object_set_base_known(player, obj1);
 
 	/* Store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
-			object_set_base_known(obj1);
+			object_set_base_known(player, obj1);
 	}
 
 	/* Quit if no dungeon yet */

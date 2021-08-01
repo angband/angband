@@ -73,8 +73,8 @@ static bool monster_near_permwall(const struct monster *mon)
     if (randint0(99) < 5) return true;
 
 	/* Find the shortest path */
-	path_grids = project_path(gp, z_info->max_sight, mon->grid, player->grid,
-							  PROJECT_ROCK);
+	path_grids = project_path(cave, gp, z_info->max_sight, mon->grid,
+		player->grid, PROJECT_ROCK);
 
 	/* See if we can "see" the player without hitting permanent wall */
 	for (j = 0; j < path_grids; j++) {

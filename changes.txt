@@ -1,6 +1,25 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.3
+=============
+
+This version contains considerable bug-fixing - mostly by backwardsEric.  There
+is also a new offical site, basically the same as the old rephial.org but hosted
+on Github at http://angband.github.io/angband.  The main changes were:
+
+ - updates to necromancer and ranger spells
+ - improvements to quiver inscriptions
+ - many improvements to dungeon generation, especially robustness
+ - many improvements to testing and building the game, especially with SDL2
+ - make the duration of multiple timed effects exactly the same
+ - allow selection for effects that used to give a random choice of effects
+ - fix a bug that made radius of artifact lights too small by one
+ - improvements to handling in-game information on effects
+ - better documentation in datafiles
+ - debugging commands now use the Angband 4 command system
+ - upgrade of the NDS port to the 3DS with many improvements
+
 Angband 4.2.2
 =============
 

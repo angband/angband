@@ -105,7 +105,7 @@ static bool populate_gear(const struct in_slot_desc *slots) {
 		object_prep(obj, kind, 0, RANDOMISE);
 		obj->number = slots->num;
 		obj->known = object_new();
-		object_set_base_known(obj);
+		object_set_base_known(player, obj);
 		object_touch(player, obj);
 		if (slots->known && ! object_flavor_is_aware(obj)) {
 			object_learn_on_use(player, obj);

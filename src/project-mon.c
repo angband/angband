@@ -1058,7 +1058,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		add_monster_message(mon, die_msg, false);
 
 		/* Generate treasure, etc */
-		monster_death(mon, false);
+		monster_death(mon, player, false);
 
 		/* Delete the monster */
 		delete_monster_idx(m_idx);
@@ -1111,7 +1111,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	/* No damage is now going to mean the monster is not hit - and hence
 	 * is not woken or released from holding */
 	if (dam) {
-		mon_died = mon_take_hit(mon, dam, &fear, "");
+		mon_died = mon_take_hit(mon, player, dam, &fear, "");
 	}
 
 	/* If the monster didn't die, provide additional messages about how it was

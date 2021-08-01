@@ -644,7 +644,7 @@ static void player_outfit(struct player *p)
 
 		known_obj = object_new();
 		obj->known = known_obj;
-		object_set_base_known(obj);
+		object_set_base_known(p, obj);
 		object_flavor_aware(obj);
 		obj->known->pval = obj->pval;
 		obj->known->effect = obj->effect;
