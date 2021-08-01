@@ -1020,25 +1020,24 @@ int equipped_item_slot(struct player_body body, struct object *item)
  * Put the player's inventory and quiver into easily accessible arrays.  The
  * pack may be overfull by one item
  */
-void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
-					struct player_body body)
+void calc_inventory(struct player *p)
 {
 	int i;
-	int old_inven_cnt = upkeep->inven_cnt;
+	int old_inven_cnt = p->upkeep->inven_cnt;
 	int n_stack_split = 0;
-	int n_pack_remaining = z_info->pack_size - pack_slots_used(player);
+	int n_pack_remaining = z_info->pack_size - pack_slots_used(p);
 	struct object **old_quiver = mem_zalloc(z_info->quiver_size *
 												sizeof(struct object *));
 	struct object **old_pack = mem_zalloc(z_info->pack_size *
 											  sizeof(struct object *));
 
 	/* Prepare to fill the quiver */
-	upkeep->quiver_cnt = 0;
+	p->upkeep->quiver_cnt = 0;
 
 	/* Copy the current quiver */
 	for (i = 0; i < z_info->quiver_size; i++)
-		if (upkeep->quiver[i])
-			old_quiver[i] = upkeep->quiver[i];
+		if (p->upkeep->quiver[i])
+			old_quiver[i] = p->upkeep->quiver[i];
 		else
 			old_quiver[i] = NULL;
 
@@ -1047,10 +1046,10 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		struct object *current;
 
 		/* Start with an empty slot */
-		upkeep->quiver[i] = NULL;
+		p->upkeep->quiver[i] = NULL;
 
 		/* Find the first quiver object with the correct label */
-		for (current = gear; current; current = current->next) {
+		for (current = p->gear; current; current = current->next) {
 			/* Allocate inscribed objects if it's the right slot */
 			if (preferred_quiver_slot(current) == i) {
 				int mult = tval_is_ammo(current) ?
@@ -1085,7 +1084,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 						 * combine_pack().
 						 */
 						to_quiver = current;
-						gear_insert_end(object_split(
+						gear_insert_end(p, object_split(
 							current, current->number
 							- nsplit));
 						++n_stack_split;
@@ -1095,12 +1094,12 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 				}
 
 				if (to_quiver) {
-					upkeep->quiver[i] = to_quiver;
-					upkeep->quiver_cnt +=
+					p->upkeep->quiver[i] = to_quiver;
+					p->upkeep->quiver_cnt +=
 						to_quiver->number * mult;
 
 					/* In the quiver counts as worn */
-					object_learn_on_wield(player, to_quiver);
+					object_learn_on_wield(p, to_quiver);
 
 					/* Done with this slot */
 					break;
@@ -1115,10 +1114,10 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		int j;
 
 		/* If the slot is full, move on */
-		if (upkeep->quiver[i]) continue;
+		if (p->upkeep->quiver[i]) continue;
 
 		/* Find the first quiver object not yet allocated */
-		for (current = gear; current; current = current->next) {
+		for (current = p->gear; current; current = current->next) {
 			bool already = false;
 
 			/* Ignore non-ammo */
@@ -1126,7 +1125,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 			/* Ignore stuff already quivered */
 			for (j = 0; j < z_info->quiver_size; j++)
-				if (upkeep->quiver[j] == current)
+				if (p->upkeep->quiver[j] == current)
 					already = true;
 			if (already) continue;
 
@@ -1149,7 +1148,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			 * pack.
 			 */
 			to_quiver = first;
-			gear_insert_end(object_split(first,
+			gear_insert_end(p, object_split(first,
 				first->number - z_info->quiver_slot_size));
 			++n_stack_split;
 		} else {
@@ -1157,47 +1156,47 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		}
 
 		if (to_quiver) {
-			upkeep->quiver[i] = to_quiver;
-			upkeep->quiver_cnt += to_quiver->number;
+			p->upkeep->quiver[i] = to_quiver;
+			p->upkeep->quiver_cnt += to_quiver->number;
 
 			/* In the quiver counts as worn */
-			object_learn_on_wield(player, to_quiver);
+			object_learn_on_wield(p, to_quiver);
 		}
 	}
 
 	/* Note reordering */
 	if (character_dungeon)
 		for (i = 0; i < z_info->quiver_size; i++)
-			if (old_quiver[i] && (upkeep->quiver[i] != old_quiver[i])) {
+			if (old_quiver[i] && p->upkeep->quiver[i] != old_quiver[i]) {
 				msg("You re-arrange your quiver.");
 				break;
 			}
 
 	/* Copy the current pack */
 	for (i = 0; i < z_info->pack_size; i++)
-		old_pack[i] = upkeep->inven[i];
+		old_pack[i] = p->upkeep->inven[i];
 
 	/* Prepare to fill the inventory */
-	upkeep->inven_cnt = 0;
+	p->upkeep->inven_cnt = 0;
 
 	for (i = 0; i <= z_info->pack_size; i++) {
 		struct object *current, *first = NULL;
-		for (current = gear; current; current = current->next) {
+		for (current = p->gear; current; current = current->next) {
 			bool possible = true;
 			int j;
 
 			/* Skip equipment */
-			if (object_is_equipped(body, current))
+			if (object_is_equipped(p->body, current))
 				possible = false;
 
 			/* Skip quivered objects */
 			for (j = 0; j < z_info->quiver_size; j++)
-				if (upkeep->quiver[j] == current)
+				if (p->upkeep->quiver[j] == current)
 					possible = false;
 
 			/* Skip objects already allocated to the inventory */
-			for (j = 0; j < upkeep->inven_cnt; j++)
-				if (upkeep->inven[j] == current)
+			for (j = 0; j < p->upkeep->inven_cnt; j++)
+				if (p->upkeep->inven[j] == current)
 					possible = false;
 
 			/* If still possible, choose the first in order */
@@ -1209,27 +1208,22 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		}
 
 		/* Allocate */
-		upkeep->inven[i] = first;
+		p->upkeep->inven[i] = first;
 		if (first)
-			upkeep->inven_cnt++;
+			p->upkeep->inven_cnt++;
 	}
 
 	/* Note reordering */
-	if (character_dungeon && (upkeep->inven_cnt == old_inven_cnt))
+	if (character_dungeon && p->upkeep->inven_cnt == old_inven_cnt)
 		for (i = 0; i < z_info->pack_size; i++)
-			if (old_pack[i] && (upkeep->inven[i] != old_pack[i]) &&
-				!object_is_equipped(body, old_pack[i])) {
+			if (old_pack[i] && p->upkeep->inven[i] != old_pack[i]
+					 && !object_is_equipped(p->body, old_pack[i])) {
 				msg("You re-arrange your pack.");
 				break;
 			}
 
 	mem_free(old_quiver);
 	mem_free(old_pack);
-}
-
-static void update_inventory(struct player *p)
-{
-	calc_inventory(p->upkeep, p->gear, p->body);
 }
 
 /**
@@ -2550,7 +2544,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_INVEN)) {
 		p->upkeep->update &= ~(PU_INVEN);
-		update_inventory(p);
+		calc_inventory(p);
 	}
 
 	if (p->upkeep->update & (PU_BONUS)) {

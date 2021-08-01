@@ -1179,8 +1179,7 @@ int rd_gear(void)
 		player->upkeep->total_weight += (obj->number * obj->weight);
 	}
 
-	/* Maybe we have to duplicate also upkeep and body */
-	calc_inventory(player->upkeep, player->gear, player->body);
+	calc_inventory(player);
 
 	return 0;
 }
