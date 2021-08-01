@@ -545,6 +545,9 @@
     <ClInclude Include="src\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\effect-handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\effects-info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
