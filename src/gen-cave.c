@@ -3076,11 +3076,11 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
  */
 static struct chunk *vault_chunk(struct player *p)
 {
-	struct vault *v;
+	const char *vname = (one_in_(2)) ?
+		"Greater vault (new)" : "Greater vault";
+	struct vault *v = random_vault(p->depth, vname);
 	struct chunk *c;
-
-	if (one_in_(2)) v = random_vault(p->depth, "Greater vault (new)");
-	else v = random_vault(p->depth, "Greater vault");
+	bool built;
 
 	/* Make the chunk */
 	c = cave_new(v->hgt, v->wid);
@@ -3093,7 +3093,13 @@ static struct chunk *vault_chunk(struct player *p)
 	/* Build the vault in it */
 	dun->cent_n = 0;
 	reset_entrance_data(c);
-	build_vault(c, loc(v->wid / 2, v->hgt / 2), v);
+	event_signal_string(EVENT_GEN_ROOM_START, vname);
+	built = build_vault(c, loc(v->wid / 2, v->hgt / 2), v);
+	event_signal_flag(EVENT_GEN_ROOM_END, built);
+	if (!built) {
+		cave_free(c);
+		c = NULL;
+	}
 
 	return c;
 }
