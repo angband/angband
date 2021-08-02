@@ -144,8 +144,21 @@ void target_display_help(bool monster, bool object, bool free)
 	}
 
 	if (object) {
+		unsigned char key = cmd_lookup_key(CMD_IGNORE,
+			(OPT(player, rogue_like_commands)) ?
+			KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
+		char label[3];
+
+		if (KTRL(key) == key) {
+			label[0] = '^';
+			label[1] = UN_KTRL(key);
+			label[2] = '\0';
+		} else {
+			label[0] = key;
+			label[1] = '\0';
+		}
 		text_out(" '");
-		text_out_c(COLOUR_L_GREEN, OPT(player, rogue_like_commands) ? "^D" : "k");
+		text_out_c(COLOUR_L_GREEN, label);
 		text_out("' ignores selection.");
 	}
 
