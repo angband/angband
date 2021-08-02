@@ -104,8 +104,11 @@ AC_ARG_ENABLE(release,
 	[release=no])
 
 if test x"$release" = xyes ; then
-	dnl Currently only adding -DNDEBUG to CFLAGS.
+	dnl Currently only adding -DNDEBUG to CFLAGS.  Also leave something
+	dnl in autoconf.h so reconfiguring with or without release build will
+	dnl trigger rebuilds without running make clean.
 	CFLAGS="$CFLAGS -DNDEBUG"
+	AC_DEFINE(RELEASE_BUILD, 1, [Define to mark as a release build with extra optimizations.])
 fi
 
 AC_ARG_ENABLE(more-gcc-warnings,
