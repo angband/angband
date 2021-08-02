@@ -1045,14 +1045,12 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 		if (strlen(note) <= 1) {
 			/* Death by Spell attack - messages handled by project_m() */
 		} else {
-			char *str = format("%s%s", m_name, note);
-			my_strcap(str);
-
 			/* Make sure to flush any monster messages first */
 			notice_stuff(p);
 
 			/* Death by Missile attack */
-			msgt(soundfx, "%s", str);
+			my_strcap(m_name);
+			msgt(soundfx, "%s%s", m_name, note);
 		}
 	} else {
 		/* Make sure to flush any monster messages first */
