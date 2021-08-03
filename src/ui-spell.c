@@ -197,7 +197,7 @@ static const menu_iter spell_menu_iter = {
  * Create and initialise a spell menu, given an object and a validity hook
  */
 static struct menu *spell_menu_new(const struct object *obj,
-								   bool (*is_valid)(int spell_index))
+		bool (*is_valid)(int spell_index), bool show_description)
 {
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
@@ -218,7 +218,7 @@ static struct menu *spell_menu_new(const struct object *obj,
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
 	d->browse = false;
-	d->show_description = false;
+	d->show_description = show_description;
 
 	menu_setpriv(m, d->n_spells, d);
 
@@ -296,7 +296,7 @@ void textui_book_browse(const struct object *obj)
 	struct menu *m;
 	const char *noun = player_object_to_book(player, obj)->realm->spell_noun;
 
-	m = spell_menu_new(obj, spell_okay_to_browse);
+	m = spell_menu_new(obj, spell_okay_to_browse, true);
 	if (m) {
 		spell_menu_browse(m, noun);
 		spell_menu_destroy(m);
@@ -338,7 +338,7 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
 	track_object(player->upkeep, book);
 	handle_stuff(player);
 
-	m = spell_menu_new(book, spell_filter);
+	m = spell_menu_new(book, spell_filter, false);
 	if (m) {
 		int spell_index = spell_menu_select(m, noun, verb);
 		spell_menu_destroy(m);
