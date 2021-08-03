@@ -31,12 +31,20 @@ bool append_random_brand(bool **current, struct brand **brand);
 bool append_random_slay(bool **current, struct slay **slay);
 int brand_count(const bool *brands_on);
 int slay_count(const bool *slays_on);
-bool player_has_temporary_brand(int idx);
-bool player_has_temporary_slay(int idx);
-int get_monster_brand_multiplier(const struct monster *mon, const struct brand *b);
-void improve_attack_modifier(struct object *obj, const struct monster *mon, 
-							 int *brand_used, int *slay_used, char *verb,
-							 bool range);
+bool player_has_temporary_brand(const struct player *p, int idx);
+bool player_has_temporary_slay(const struct player *p, int idx);
+int get_monster_brand_multiplier(const struct monster *mon,
+	const struct brand *b, bool is_o_combat);
+void improve_attack_modifier(struct player *p, struct object *obj,
+	const struct monster *mon, int *brand_used, int *slay_used, char *verb,
+	bool range);
 bool react_to_slay(struct object *obj, const struct monster *mon);
+
+void learn_brand_slay_from_melee(struct player *p, struct object *weapon,
+	const struct monster *mon);
+void learn_brand_slay_from_launch(struct player *p, struct object *missile,
+	struct object *launcher, const struct monster *mon);
+void learn_brand_slay_from_throw(struct player *p, struct object *missile,
+	const struct monster *mon);
 
 #endif /* OBJECT_SLAYS_H */
