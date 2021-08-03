@@ -1015,8 +1015,6 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 {
 	int i, j;
 
-	char o_name[80];
-
 	int path_n;
 	struct loc path_g[256];
 
@@ -1048,9 +1046,6 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 	/* Sound */
 	sound(MSG_SHOOT);
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
 	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
@@ -1099,12 +1094,21 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			mem_free(result.hit_verb);
 
 			if (result.success) {
+				char o_name[80];
+
 				hit_target = true;
 
 				missile_learn_on_ranged_attack(p, obj);
 
 				/* Learn by use for other equipped items */
 				equip_learn_on_ranged_attack(p);
+
+				/*
+				 * Describe the object (have most up-to-date
+				 * knowledge now).
+				 */
+				object_desc(o_name, sizeof(o_name), obj,
+					ODESC_FULL | ODESC_SINGULAR);
 
 				/* No negative damage; change verb if no damage done */
 				if (dmg <= 0) {
