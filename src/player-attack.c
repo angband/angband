@@ -458,7 +458,7 @@ static int melee_damage(const struct monster *mon, struct object *obj, int b, in
 	if (s) {
 		dmg *= slays[s].multiplier;
 	} else if (b) {
-		dmg *= get_monster_brand_multiplier(mon, &brands[b]);
+		dmg *= get_monster_brand_multiplier(mon, &brands[b], false);
 	}
 
 	dmg += obj->to_d;
@@ -487,7 +487,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 		die_average *= slays[s].o_multiplier;
 		add = slays[s].o_multiplier - 10;
 	} else if (b) {
-		int bmult = get_monster_brand_multiplier(mon, &brands[b]);
+		int bmult = get_monster_brand_multiplier(mon, &brands[b], true);
 
 		die_average *= bmult;
 		add = bmult - 10;
@@ -530,7 +530,7 @@ static int ranged_damage(struct player *p, const struct monster *mon,
 
 	/* If we have a slay or brand, modify the multiplier appropriately */
 	if (b) {
-		mult += get_monster_brand_multiplier(mon, &brands[b]);
+		mult += get_monster_brand_multiplier(mon, &brands[b], false);
 	} else if (s) {
 		mult += slays[s].multiplier;
 	}
@@ -574,7 +574,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 
 	/* Adjust the average for slays and brands. (10x inflation) */
 	if (b) {
-		int bmult = get_monster_brand_multiplier(mon, &brands[b]);
+		int bmult = get_monster_brand_multiplier(mon, &brands[b], true);
 
 		die_average *= bmult;
 		add = bmult - 10;
@@ -759,12 +759,13 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		for (j = 2; j < p->body.count; j++) {
 			struct object *obj_local = slot_object(p, j);
 			if (obj_local)
-				improve_attack_modifier(obj_local, mon, &b, &s, verb, false);
+				improve_attack_modifier(p, obj_local, mon,
+					&b, &s, verb, false);
 		}
 
 		/* Get the best attack from all slays or brands - weapon or temporary */
-		improve_attack_modifier(obj, mon, &b, &s, verb, false);
-		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
+		improve_attack_modifier(p, obj, mon, &b, &s, verb, false);
+		improve_attack_modifier(p, NULL, mon, &b, &s, verb, false);
 
 		/* Get the damage */
 		if (!OPT(p, birth_percent_damage)) {
@@ -784,6 +785,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 	/* Learn by use */
 	equip_learn_on_melee_attack(p);
+	learn_brand_slay_from_melee(p, obj, mon);
 
 	/* Apply the player damage bonuses */
 	if (!OPT(p, birth_percent_damage)) {
@@ -1013,8 +1015,6 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 {
 	int i, j;
 
-	char o_name[80];
-
 	int path_n;
 	struct loc path_g[256];
 
@@ -1046,9 +1046,6 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 	/* Sound */
 	sound(MSG_SHOOT);
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
 	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
@@ -1097,12 +1094,21 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			mem_free(result.hit_verb);
 
 			if (result.success) {
+				char o_name[80];
+
 				hit_target = true;
 
 				missile_learn_on_ranged_attack(p, obj);
 
 				/* Learn by use for other equipped items */
 				equip_learn_on_ranged_attack(p);
+
+				/*
+				 * Describe the object (have most up-to-date
+				 * knowledge now).
+				 */
+				object_desc(o_name, sizeof(o_name), obj,
+					ODESC_FULL | ODESC_SINGULAR);
 
 				/* No negative damage; change verb if no damage done */
 				if (dmg <= 0) {
@@ -1200,8 +1206,8 @@ static struct attack_result make_ranged_shot(struct player *p,
 
 	result.success = true;
 
-	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, true);
-	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true);
+	improve_attack_modifier(p, ammo, mon, &b, &s, result.hit_verb, true);
+	improve_attack_modifier(p, bow, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
@@ -1212,6 +1218,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	}
 
 	missile_learn_on_ranged_attack(p, bow);
+	learn_brand_slay_from_launch(p, ammo, bow, mon);
 
 	return result;
 }
@@ -1236,7 +1243,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 
 	result.success = true;
 
-	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true);
+	improve_attack_modifier(p, obj, mon, &b, &s, result.hit_verb, true);
 
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
@@ -1249,6 +1256,8 @@ static struct attack_result make_ranged_throw(struct player *p,
 	/* Direct adjustment for exploding things (flasks of oil) */
 	if (of_has(obj->flags, OF_EXPLODE))
 		result.dmg *= 3;
+
+	learn_brand_slay_from_throw(p, obj, mon);
 
 	return result;
 }

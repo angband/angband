@@ -853,7 +853,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	/* Get damage for each brand on the objects */
 	for (i = 1; i < z_info->brand_max; i++) {
 		/* Must have the brand, possibly from a spell */
-		if (player_has_temporary_brand(i)) {
+		if (player_has_temporary_brand(player, i)) {
 			*nonweap_slay = true;
 		} else if (!total_brands[i]) {
 			continue;
@@ -879,7 +879,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	/* Get damage for each slay on the objects */
 	for (i = 1; i < z_info->slay_max; i++) {
 		/* Must have the slay, possibly from a spell */
-		if (player_has_temporary_slay(i)) {
+		if (player_has_temporary_slay(player, i)) {
 			*nonweap_slay = true;
 		} else if (!total_slays[i]) {
 			continue;
