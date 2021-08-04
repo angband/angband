@@ -222,7 +222,8 @@ static void steal_player_item(melee_effect_handler_context_t *context)
 				o_name, I2A(index));
 
 			/* Steal and carry */
-			stolen = gear_object_for_use(obj, 1, false, &none_left);
+			stolen = gear_object_for_use(context->p, obj, 1,
+				false, &none_left);
 			(void)monster_carry(cave, context->mon, stolen);
 		}
 
@@ -803,7 +804,8 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		}
 
 		/* Steal and eat */
-		eaten = gear_object_for_use(obj, 1, false, &none_left);
+		eaten = gear_object_for_use(context->p, obj, 1, false,
+			&none_left);
 		if (eaten->known)
 			object_delete(&eaten->known);
 		object_delete(&eaten);

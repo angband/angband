@@ -135,8 +135,8 @@ static bool fill_pack_quiver(struct carry_num_state *cns, int n_pack,
 			struct object *next = curr->next;
 			bool none_left = false;
 
-			curr = gear_object_for_use(curr, curr->number, false,
-				&none_left);
+			curr = gear_object_for_use(cns->p, curr, curr->number,
+				false, &none_left);
 			if (curr->known) {
 				object_free(curr->known);
 			}

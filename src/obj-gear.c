@@ -442,12 +442,12 @@ void gear_insert_end(struct player *p, struct object *obj)
  *
  * Optionally describe what remains.
  */
-struct object *gear_object_for_use(struct object *obj, int num, bool message,
-								   bool *none_left)
+struct object *gear_object_for_use(struct player *p, struct object *obj,
+	int num, bool message, bool *none_left)
 {
 	struct object *usable;
 	char name[80];
-	char label = gear_to_label(player, obj);
+	char label = gear_to_label(p, obj);
 	bool artifact = (obj->known->artifact != NULL);
 
 	/* Bounds check */
@@ -458,7 +458,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 
 		/* Change the weight */
-		player->upkeep->total_weight -= (num * obj->weight);
+		p->upkeep->total_weight -= (num * obj->weight);
 
 		if (message) {
 			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
@@ -481,17 +481,17 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		*none_left = true;
 
 		/* Stop tracking item */
-		if (tracked_object_is(player->upkeep, obj))
-			track_object(player->upkeep, NULL);
+		if (tracked_object_is(p->upkeep, obj))
+			track_object(p->upkeep, NULL);
 
 		/* Inventory has changed, so disable repeat command */
 		cmd_disable_repeat();
 	}
 
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS);
-	player->upkeep->notice |= (PN_COMBINE);
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	p->upkeep->update |= (PU_BONUS);
+	p->upkeep->notice |= (PN_COMBINE);
+	p->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Print a message if desired */
 	if (message) {
@@ -781,7 +781,8 @@ void inven_wield(struct object *obj, int slot)
 	if (object_is_carried(player, obj)) {
 		/* Split off a new object if necessary */
 		if (obj->number > 1) {
-			wielded = gear_object_for_use(obj, 1, false, &dummy);
+			wielded = gear_object_for_use(player, obj, 1, false,
+				&dummy);
 
 			/* It's still carried; keep its weight in the total. */
 			assert(wielded->number == 1);
@@ -939,7 +940,7 @@ void inven_drop(struct object *obj, int amt)
 		inven_takeoff(obj);
 
 	/* Get the object */
-	dropped = gear_object_for_use(obj, amt, false, &none_left);
+	dropped = gear_object_for_use(player, obj, amt, false, &none_left);
 
 	/* Describe the dropped object */
 	object_desc(name, sizeof(name), dropped, ODESC_PREFIX | ODESC_FULL);

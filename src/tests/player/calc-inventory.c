@@ -77,7 +77,7 @@ static bool flush_gear(void) {
 		if (object_is_equipped(player->body, curr)) {
 			inven_takeoff(curr);
 		}
-		curr = gear_object_for_use(curr, curr->number, false,
+		curr = gear_object_for_use(player, curr, curr->number, false,
 			&none_left);
 		if (curr->known) {
 			object_free(curr->known);

@@ -180,7 +180,8 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			msg("There is a bang and a flash!");
 			take_hit(player, damroll(5, 5), "Failed uncursing");
 			if (object_is_carried(player, obj)) {
-				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				destroyed = gear_object_for_use(player, obj,
+					1, false, &none_left);
 				if (destroyed->artifact) {
 					/* Artifacts are marked as lost */
 					history_lose_artifact(player, destroyed->artifact);
@@ -2039,10 +2040,12 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		msg("There is a bright flash of light.");
 
 		/* Reduce and describe inventory */
-		if (object_is_carried(player, obj))
-			destroyed = gear_object_for_use(obj, 1, true, &none_left);
-		else
+		if (object_is_carried(player, obj)) {
+			destroyed = gear_object_for_use(player, obj, 1, true,
+				&none_left);
+		} else {
 			destroyed = floor_object_for_use(obj, 1, true, &none_left);
+		}
 		if (destroyed->known)
 			object_delete(&destroyed->known);
 		object_delete(&destroyed);
@@ -3151,7 +3154,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 
 	/* Destroy the staff */
 	if (object_is_carried(player, obj)) {
-		staff = gear_object_for_use(obj, 1, true, &none_left);
+		staff = gear_object_for_use(player, obj, 1, true, &none_left);
 	} else {
 		staff = floor_object_for_use(obj, 1, true, &none_left);
 	}

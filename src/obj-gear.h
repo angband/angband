@@ -49,8 +49,8 @@ bool minus_ac(struct player *p);
 char gear_to_label(struct player *p, struct object *obj);
 struct object *gear_last_item(struct player *p);
 void gear_insert_end(struct player *p, struct object *obj);
-struct object *gear_object_for_use(struct object *obj, int num, bool message,
-								   bool *none_left);
+struct object *gear_object_for_use(struct player *p, struct object *obj,
+	int num, bool message, bool *none_left);
 int inven_carry_num(const struct object *obj);
 bool inven_carry_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
