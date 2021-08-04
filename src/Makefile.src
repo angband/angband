@@ -94,6 +94,8 @@ ANGFILES = \
 	cmd-wizard.o \
 	datafile.o \
 	debug.o \
+	effect-handler-attack.o \
+	effect-handler-general.o \
 	effects.o \
 	effects-info.o \
 	game-event.o \

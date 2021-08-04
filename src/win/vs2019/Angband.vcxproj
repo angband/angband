@@ -178,6 +178,8 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\cmd-wizard.c" />
     <ClCompile Include="src\datafile.c" />
     <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\effect-handler-attack.c" />
+    <ClCompile Include="src\effect-handler-general.c" />
     <ClCompile Include="src\effects-info.c" />
     <ClCompile Include="src\effects.c" />
     <ClCompile Include="src\game-event.c" />
@@ -327,6 +329,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\datafile.h" />
     <ClInclude Include="src\debug.h" />
+    <ClInclude Include="src\effect-handler.h" />
     <ClInclude Include="src\effects-info.h" />
     <ClInclude Include="src\effects.h" />
     <ClInclude Include="src\game-event.h" />

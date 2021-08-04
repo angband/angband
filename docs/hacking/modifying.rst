@@ -63,7 +63,7 @@ activation.txt
   used for ego items (although none currently are).  Some standard artifacts
   from artifact.txt have activations, and random artifacts may have any
   activation from this file chosen for them.  Activations can be made up of
-  any effects (see effects.c and list-effects.h).
+  any effects (see list-effects.h and effect-handler-*.c).
 
 flavor.txt
   Items such as potions and wands are assigned a flavor per object kind,
@@ -132,7 +132,7 @@ terrain.txt
 
 trap.txt
   This defines all traps, door locks and runes.  Actual trap effects appear in
-  effects.c and list-effects.h.
+  list-effects.h and effect-handler-*.c.
 
 room_template.txt
   This is a list of templates for interesting-shaped rooms which appear in the
