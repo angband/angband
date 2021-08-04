@@ -579,7 +579,6 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 void learn_brand_slay_from_melee(struct player *p, struct object *weapon,
 		const struct monster *mon)
 {
-	if (!weapon) return;
 	learn_brand_slay_helper(p, weapon, NULL, mon, true, true);
 }
 
