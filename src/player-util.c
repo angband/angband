@@ -583,8 +583,9 @@ void player_update_light(struct player *p)
 				/* If it's a torch, now is the time to delete it */
 				if (of_has(obj->flags, OF_BURNS_OUT)) {
 					bool dummy;
-					struct object *burnt = gear_object_for_use(obj, 1, false,
-															   &dummy);
+					struct object *burnt =
+						gear_object_for_use(p, obj, 1,
+						false, &dummy);
 					if (burnt->known)
 						object_delete(&burnt->known);
 					object_delete(&burnt);

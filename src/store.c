@@ -1924,7 +1924,7 @@ void do_cmd_sell(struct command *cmd)
 	}
 
 	/* Take a proper copy of the now known-about object. */
-	sold_item = gear_object_for_use(obj, amt, false, &none_left);
+	sold_item = gear_object_for_use(player, obj, amt, false, &none_left);
 
 	/* Get the "actual" value */
 	value = object_value_real(sold_item, amt);
@@ -2021,7 +2021,7 @@ void do_cmd_stash(struct command *cmd)
 	label = gear_to_label(player, obj);
 
 	/* Now get the real item */
-	dropped = gear_object_for_use(obj, amt, false, &none_left);
+	dropped = gear_object_for_use(player, obj, amt, false, &none_left);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);

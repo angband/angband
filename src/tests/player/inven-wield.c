@@ -70,7 +70,7 @@ static bool empty_gear(struct player *p) {
 		}
 
 		none_left = false;
-		curr = gear_object_for_use(curr, curr->number, false,
+		curr = gear_object_for_use(p, curr, curr->number, false,
 			&none_left);
 		if (curr->known) {
 			object_free(curr->known);

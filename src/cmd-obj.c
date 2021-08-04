@@ -479,7 +479,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		 */
 		if (use == USE_SINGLE) {
 			if (object_is_carried(player, obj)) {
-				work_obj = gear_object_for_use(obj, 1, false, &none_left);
+				work_obj = gear_object_for_use(player, obj, 1,
+					false, &none_left);
 				from_floor = false;
 			} else {
 				work_obj = floor_object_for_use(obj, 1, false, &none_left);
@@ -875,10 +876,12 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		bool none_left = false;
 
 		/* Decrease the item from the pack or the floor */
-		if (object_is_carried(player, obj))
-			used = gear_object_for_use(obj, 1, true, &none_left);
-		else
+		if (object_is_carried(player, obj)) {
+			used = gear_object_for_use(player, obj, 1, true,
+				&none_left);
+		} else {
 			used = floor_object_for_use(obj, 1, true, &none_left);
+		}
 		if (used->known)
 			object_delete(&used->known);
 		object_delete(&used);
