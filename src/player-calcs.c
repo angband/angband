@@ -2521,7 +2521,7 @@ void notice_stuff(struct player *p)
 	/* Combine the pack */
 	if (p->upkeep->notice & PN_COMBINE) {
 		p->upkeep->notice &= ~(PN_COMBINE);
-		combine_pack();
+		combine_pack(p);
 	}
 
 	/* Dump the monster messages */

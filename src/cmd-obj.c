@@ -247,7 +247,7 @@ void do_cmd_takeoff(struct command *cmd)
 		return;
 
 	inven_takeoff(obj);
-	combine_pack();
+	combine_pack(player);
 	pack_overflow(obj);
 	player->upkeep->energy_use = z_info->move_energy / 2;
 }

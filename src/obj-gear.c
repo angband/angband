@@ -838,7 +838,7 @@ void inven_wield(struct object *obj, int slot)
 	}
 
 	/* See if we have to overflow the pack */
-	combine_pack();
+	combine_pack(player);
 	pack_overflow(old);
 
 	/* Recalculate bonuses, torch, mana, gear */
@@ -1026,23 +1026,23 @@ static bool inven_can_stack_partial(const struct object *obj1,
 /**
  * Combine items in the pack, confirming no blank objects or gold
  */
-void combine_pack(void)
+void combine_pack(struct player *p)
 {
 	struct object *obj1, *obj2, *prev;
 	bool display_message = false;
 	bool disable_repeat = false;
 
 	/* Combine the pack (backwards) */
-	obj1 = gear_last_item(player);
+	obj1 = gear_last_item(p);
 	while (obj1) {
 		assert(obj1->kind);
 		assert(!tval_is_money(obj1));
 		prev = obj1->prev;
 
 		/* Scan the items above that item */
-		for (obj2 = player->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
+		for (obj2 = p->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
 			object_stack_t stack_mode2 =
-				object_is_in_quiver(player, obj2) ?
+				object_is_in_quiver(p, obj2) ?
 				OSTACK_QUIVER : OSTACK_PACK;
 
 			assert(obj2->kind);
@@ -1061,7 +1061,7 @@ void combine_pack(void)
 				break;
 			} else {
 				object_stack_t stack_mode1 =
-					object_is_in_quiver(player, obj1) ?
+					object_is_in_quiver(p, obj1) ?
 					OSTACK_QUIVER : OSTACK_PACK;
 
 				if (inven_can_stack_partial(obj2, obj1,
@@ -1092,7 +1092,7 @@ void combine_pack(void)
 		obj1 = prev;
 	}
 
-	calc_inventory(player);
+	calc_inventory(p);
 
 	/* Redraw gear */
 	event_signal(EVENT_INVENTORY);
