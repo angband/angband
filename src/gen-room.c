@@ -2980,9 +2980,20 @@ bool build_interesting(struct chunk *c, struct loc centre, int rating)
  */
 bool build_lesser_vault(struct chunk *c, struct loc centre, int rating)
 {
-	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
-		return build_vault_type(c, centre, "Lesser vault (new)");
 	return build_vault_type(c, centre, "Lesser vault");
+}
+
+
+/**
+ * Build a lesser new-style vault.
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
+ * \return success
+ */
+bool build_lesser_new_vault(struct chunk *c, struct loc centre, int rating)
+{
+	return build_vault_type(c, centre, "Lesser vault (new)");
 }
 
 
@@ -2995,17 +3006,29 @@ bool build_lesser_vault(struct chunk *c, struct loc centre, int rating)
  */
 bool build_medium_vault(struct chunk *c, struct loc centre, int rating)
 {
-	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
-		return build_vault_type(c, centre, "Medium vault (new)");
 	return build_vault_type(c, centre, "Medium vault");
 }
 
 
 /**
- * Build a greater vaults.
+ * Build a medium new-style vault.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
  * \param rating is not used for this room type
+ * \return success
+ */
+bool build_medium_new_vault(struct chunk *c, struct loc centre, int rating)
+{
+	return build_vault_type(c, centre, "Medium vault (new)");
+}
+
+
+/**
+ * Help greater_vault() or greater_new_vault().
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param name is the name of the type to build, i.e. "Greater vault" or
+ * "Greater vault (new)"
  * \return success
  *
  * Classic profile:
@@ -3029,7 +3052,8 @@ bool build_medium_vault(struct chunk *c, struct loc centre, int rating)
  * 50-59  1.8 -  2.1%
  * 0-49   0.0 -  1.0%
  */
-bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
+static bool help_greater_vault(struct chunk *c, struct loc centre,
+		const char *name)
 {
 	int i;
 	int numerator   = 1;
@@ -3054,10 +3078,33 @@ bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
 	/* Non-classic profiles need to adjust the probability */
 	if (!streq(dun->profile->name, "classic") && !one_in_(3)) return false;
 
-	if (!streq(dun->profile->name, "classic") && (one_in_(2))) {
-		return build_vault_type(c, centre, "Greater vault (new)");
-	}
-	return build_vault_type(c, centre, "Greater vault");
+	return build_vault_type(c, centre, name);
+}
+
+
+/**
+ * Build a greater vault.
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
+ * \return success
+ */
+bool build_greater_vault(struct chunk *c, struct loc centre, int rating)
+{
+	return help_greater_vault(c, centre, "Greater vault");
+}
+
+
+/**
+ * Build a greater new-style vault.
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
+ * \return success
+ */
+bool build_greater_new_vault(struct chunk *c, struct loc centre, int rating)
+{
+	return help_greater_vault(c, centre, "Greater vault (new)");
 }
 
 
