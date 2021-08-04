@@ -1582,8 +1582,11 @@ bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
 	effect_simple(EF_RESTORE_MANA, context->origin, format("%d", drain), 0, 0,
 				  0, 0, 0, NULL);
 
-	/* Handle fear for surviving monsters */
-	if (!dead && monster_is_visible(mon)) {
+	if (dead) {
+		/* Cancel the targeting of the dead creature. */
+		target_set_location(0, 0);
+	} else if (monster_is_visible(mon)) {
+		/* Handle fear for surviving monsters */
 		message_pain(mon, amount);
 		if (fear) {
 			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
@@ -1684,8 +1687,11 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 				  0, 0, NULL);
 	player_inc_timed(player, TMD_FOOD, MAX(drain, 0), false, false);
 
-	/* Handle fear for surviving monsters */
-	if (!dead && monster_is_visible(mon)) {
+	if (dead) {
+		/* Cancel the targeting of the dead creature. */
+		target_set_location(0, 0);
+	} else if (monster_is_visible(mon)) {
+		/* Handle fear for surviving monsters */
 		message_pain(mon, amount);
 		if (fear) {
 			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
