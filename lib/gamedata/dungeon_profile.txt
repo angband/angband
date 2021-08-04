@@ -57,10 +57,13 @@
 # rarity is usually 0.
 # cutoff is used to pick between rooms once a rarity is chosen:  a random value
 # from 0 to 99 is selected and a room may appear if its cutoff is greater than
-# that value.  It is IMPORTANT that non-zero cutoffs appear in ascending order
-# within the rooms of the same rarity for a given profile:  a room with a
-# smaller cutoff appearing after one with a larger cutoff will never be
-# selected.
+# that value.  Non-zero cutoffs normally appear in ascending order within the
+# rooms of the same rarity for a given profile.  A room with a smaller cutoff
+# appearing after one with a larger cutoff will only be selected if an attempt
+# to place the earlier room fails.  One way that can happen is because of the
+# depth restrictions set in this file.  For greater vaults and huge rooms,
+# there are also restrictions in the code that make their generation fail
+# frequently.
 
 ## Town
 name:town
