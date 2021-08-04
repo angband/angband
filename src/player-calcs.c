@@ -2515,13 +2515,13 @@ void notice_stuff(struct player *p)
 	/* Deal with ignore stuff */
 	if (p->upkeep->notice & PN_IGNORE) {
 		p->upkeep->notice &= ~(PN_IGNORE);
-		ignore_drop();
+		ignore_drop(p);
 	}
 
 	/* Combine the pack */
 	if (p->upkeep->notice & PN_COMBINE) {
 		p->upkeep->notice &= ~(PN_COMBINE);
-		combine_pack();
+		combine_pack(p);
 	}
 
 	/* Dump the monster messages */

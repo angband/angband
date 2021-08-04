@@ -19,6 +19,8 @@
 #ifndef OBJ_IGNORE_H
 #define OBJ_IGNORE_H
 
+struct player;
+
 /*
  * Used for mapping the values below to names.
  */
@@ -109,7 +111,7 @@ void kind_ignore_when_unaware(struct object_kind *kind);
 bool object_is_ignored(const struct object *obj);
 bool ignore_item_ok(const struct object *obj);
 bool ignore_known_item_ok(const struct object *obj);
-void ignore_drop(void);
+void ignore_drop(struct player *p);
 const char *ignore_name_for_type(ignore_type_t type);
 
 extern byte ignore_level[];

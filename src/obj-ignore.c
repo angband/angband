@@ -643,12 +643,12 @@ bool ignore_known_item_ok(const struct object *obj)
 /**
  * Drop all {ignore}able items.
  */
-void ignore_drop(void)
+void ignore_drop(struct player *p)
 {
 	struct object *obj;
 
 	/* Scan through the slots backwards */
-	for (obj = gear_last_item(player); obj; obj = obj->prev) {
+	for (obj = gear_last_item(p); obj; obj = obj->prev) {
 		/* Skip non-objects and unignoreable objects */
 		assert(obj->kind);
 		if (!ignore_item_ok(obj)) continue;
@@ -656,7 +656,7 @@ void ignore_drop(void)
 		/* Check for !d (no drop) inscription */
 		if (!check_for_inscrip(obj, "!d") && !check_for_inscrip(obj, "!*")) {
 			/* Confirm the drop if the item is equipped. */
-			if (object_is_equipped(player->body, obj)) {
+			if (object_is_equipped(p->body, obj)) {
 				if (!verify_object("Really take off and drop", obj)) {
 					/* Hack - inscribe the item with !d to prevent repeated
 					 * confirmations. */
@@ -676,8 +676,8 @@ void ignore_drop(void)
 			}
 
 			/* We're allowed to drop it. */
-			if (!square_isshop(cave, player->grid)) {
-				player->upkeep->dropping = true;
+			if (!square_isshop(cave, p->grid)) {
+				p->upkeep->dropping = true;
 				cmdq_push(CMD_DROP);
 				cmd_set_arg_item(cmdq_peek(), "item", obj);
 				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
@@ -686,10 +686,10 @@ void ignore_drop(void)
 	}
 
 	/* Update the gear */
-	player->upkeep->update |= (PU_INVEN);
+	p->upkeep->update |= (PU_INVEN);
 
 	/* Combine/reorder the pack */
-	player->upkeep->notice |= (PN_COMBINE);
+	p->upkeep->notice |= (PN_COMBINE);
 }
 
 /**
