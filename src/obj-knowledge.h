@@ -101,5 +101,5 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj);
 bool easy_know(const struct object *obj);
 bool object_flavor_is_aware(const struct object *obj);
 bool object_flavor_was_tried(const struct object *obj);
-void object_flavor_aware(struct object *obj);
+void object_flavor_aware(struct player *p, struct object *obj);
 void object_flavor_tried(struct object *obj);
