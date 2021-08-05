@@ -1043,6 +1043,9 @@ void calc_inventory(struct player *p)
 		assert(j < n_max);
 		assigned[j] = object_is_equipped(p->body, current);
 	}
+	for (; j < n_max; ++j) {
+		assigned[j] = false;
+	}
 
 	/* Prepare to fill the quiver */
 	p->upkeep->quiver_cnt = 0;
