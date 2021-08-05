@@ -56,7 +56,6 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 #define KEY_ZL 0
 #define KEY_ZR 0
 
-#define hidScanInput scanKeys
 #define hidKeysDown keysDown
 #define hidKeysHeld keysHeld
 #endif
@@ -224,8 +223,6 @@ void nds_btn_check_cpad()
 
 void nds_btn_vblank()
 {
-	hidScanInput();
-
 	nds_btn_check_cpad();
 
 	u32 kd = hidKeysDown();
