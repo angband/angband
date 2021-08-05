@@ -2649,19 +2649,17 @@ void do_cmd_wiz_summon_named(struct command *cmd)
 
 	/* Try 10 times */
 	while (1) {
-		struct loc grid = player->grid;
+		struct loc grid;
 
-		if (i >= 10) {
+		/* Pick an empty location. */
+		if (i >= 10 || scatter_ext(cave, &grid, 1, player->grid, 1,
+				true, square_isempty) == 0) {
 			msg("Could not place monster.");
 			break;
 		}
 
-		/* Pick a location */
-		scatter(cave, &grid, player->grid, 1, true);
-
-		/* Try to place (allowing groups) if empty */
-		if (square_isempty(cave, grid) &&
-				place_new_monster(cave, grid, r, true, true,
+		/* Try to place. */
+		if (place_new_monster(cave, grid, r, true, true,
 				info, ORIGIN_DROP_WIZARD)) {
 			player->upkeep->redraw |= PR_MAP | PR_MONLIST;
 			break;

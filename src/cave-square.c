@@ -912,6 +912,15 @@ bool square_suits_stairs_ok(struct chunk *c, struct loc grid)
 		(square_num_walls_diagonal(c, grid) == 4) && square_isempty(c, grid);
 }
 
+/**
+ * Checks if a square is appropriate for placing a summoned creature.
+ */
+bool square_allows_summon(struct chunk *c, struct loc grid)
+{
+	return square_isempty(c, grid) && !square_iswarded(c, grid)
+		&& !square_isdecoyed(c, grid);
+}
+
 
 
 /**
