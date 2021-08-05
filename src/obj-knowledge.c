@@ -1124,7 +1124,7 @@ void player_know_object(struct player *p, struct object *obj)
 
 	if (object_non_curse_runes_known(obj) && tval_is_jewelry(obj)) {
 		seen = obj->kind->everseen;
-		object_flavor_aware(obj);
+		object_flavor_aware(p, obj);
 	}
 
 	/* Ensure effect is known as if object_set_base_known() had been called. */
@@ -1827,7 +1827,7 @@ void object_learn_on_use(struct player *p, struct object *obj)
 	/* Object level */
 	int lev = obj->kind->level;
 
-	object_flavor_aware(obj);
+	object_flavor_aware(p, obj);
 	obj->known->effect = obj->effect;
 	update_player_object_knowledge(p);
 	player_exp_gain(p, (lev + (p->lev / 2)) / p->lev);
@@ -2212,9 +2212,10 @@ bool object_flavor_was_tried(const struct object *obj)
 /**
  * Mark an object's flavour as as one the player is aware of.
  *
+ * \param p is the player becoming aware of the flavor
  * \param obj is the object whose flavour should be marked as aware
  */
-void object_flavor_aware(struct object *obj)
+void object_flavor_aware(struct player *p, struct object *obj)
 {
 	int y, x, i;
 	struct object *obj1;
@@ -2227,17 +2228,17 @@ void object_flavor_aware(struct object *obj)
 	/* Fix ignore/autoinscribe */
 	if (kind_is_ignored_unaware(obj->kind))
 		kind_ignore_when_aware(obj->kind);
-	player->upkeep->notice |= PN_IGNORE;
+	p->upkeep->notice |= PN_IGNORE;
 
 	/* Update player objects */
-	for (obj1 = player->gear; obj1; obj1 = obj1->next)
-		object_set_base_known(player, obj1);
+	for (obj1 = p->gear; obj1; obj1 = obj1->next)
+		object_set_base_known(p, obj1);
 
 	/* Store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
-			object_set_base_known(player, obj1);
+			object_set_base_known(p, obj1);
 	}
 
 	/* Quit if no dungeon yet */
