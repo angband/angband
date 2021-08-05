@@ -628,6 +628,31 @@ static int test_calc_inventory_quiver_split_pile(void *state) {
 	ok;
 }
 
+static int test_calc_inventory_equipped_throwing_inscribed(void *state) {
+	struct simple_test_case this_test_case = {
+		{
+			{ TV_SWORD, 1, 1, true, true },
+			{ -1, -1, -1, false, false }
+		},
+		{
+			{ -1, -1, -1 }
+		},
+		{
+			{ -1, -1, -1 }
+		}
+	};
+
+	require(flush_gear());
+	require(populate_gear(this_test_case.gear_in));
+	/* Inscribe the dagger so it would go to the quiver if not equipped. */
+	player->gear->note = quark_add("@v1");
+	calc_inventory(player);
+	require(verify_pack(player, this_test_case.pack_out, 0));
+	require(verify_quiver(player, this_test_case.quiv_out));
+	require(verify_stability(player));
+	ok;
+}
+
 const char *suite_name = "player/calc-inventory";
 struct test tests[] = {
 	{ "calc_inventory empty", test_calc_inventory_empty },
@@ -638,5 +663,6 @@ struct test tests[] = {
 	{ "calc_inventory oversubscribed quiver", test_calc_inventory_oversubscribed_quiver },
 	{ "calc_inventory oversubscribed quiver slot", test_calc_inventory_oversubscribed_quiver_slot },
 	{ "calc_inventory split pile for quiver", test_calc_inventory_quiver_split_pile },
+	{ "calc_inventory equipped throwing inscribed", test_calc_inventory_equipped_throwing_inscribed },
 	{ NULL, NULL }
 };
