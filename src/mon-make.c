@@ -1311,25 +1311,23 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 			return place_new_monster_group(c, grid, race, sleep, group_info,
 										   total, origin);
 		} else {
-			int j;
-			struct loc new = grid;
+			struct loc new;
 
-			/* Find a nearby place to put the other groups */
-			for (j = 0; j < 50; j++) {
-				scatter(c, &new, grid, z_info->monster_group_dist, false);
-				if (square_isopen(c, new)) {
-					break;
+			/* Find a nearby place to put the other groups. */
+			if (scatter_ext(c, &new, 1, grid,
+					z_info->monster_group_dist, false,
+					square_isopen) > 0) {
+				/* Place the monsters */
+				bool success = place_new_monster_one(c, new,
+					friends_race, sleep, group_info, origin);
+
+				if (total > 1) {
+					success = place_new_monster_group(c,
+						new, friends_race, sleep,
+						group_info, total, origin);
 				}
+				return success;
 			}
-
-			/* Place the monsters */
-			bool success = place_new_monster_one(c, new, friends_race, sleep,
-												 group_info, origin);
-			if (total > 1)
-				success = place_new_monster_group(c, new, friends_race, sleep,
-												  group_info, total, origin);
-
-			return success;
 		}
 	}
 

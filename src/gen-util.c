@@ -810,13 +810,11 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 	for (k = 0; k < num; k++) {
 		/* Try nine locations */
 		for (i = 0; i < 9; i++) {
-			struct loc near = grid;
+			struct loc near;
 
-			/* Pick a nearby location */
-			scatter(c, &near, grid, 1, true);
-
-			/* Require "empty" floor grids */
-			if (!square_isempty(c, near)) continue;
+			/* Pick a nearby empty location. */
+			if (scatter_ext(c, &near, 1, grid, 1, true,
+					square_isempty) == 0) continue;
 
 			/* Place the monster (allow groups) */
 			pick_and_place_monster(c, near, depth, true, true,

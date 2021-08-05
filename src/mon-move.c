@@ -981,24 +981,16 @@ static bool get_move(struct monster *mon, int *dir, bool *good)
  */
 bool multiply_monster(const struct monster *mon)
 {
-	struct loc grid = mon->grid;
-	int i;
-	bool result = false;
+	struct loc grid;
+	bool result;
 	struct monster_group_info info = { 0, 0 };
 
-	/* Try up to 18 times */
-	for (i = 0; i < 18; i++) {
-		int d = 1;
-
-		/* Pick a location */
-		scatter(cave, &grid, mon->grid, d, true);
-
-		/* Require an "empty" floor grid */
-		if (!square_isempty(cave, grid)) continue;
-
+	/* Pick an empty location. */
+	if (scatter_ext(cave, &grid, 1, mon->grid, 1, true,
+			square_isempty) > 0) {
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(cave, grid, mon->race, false, false, info,
-								   ORIGIN_DROP_BREED);
+		result = place_new_monster(cave, grid, mon->race, false, false,
+			info, ORIGIN_DROP_BREED);
 		/*
 		 * Fix so multiplying a revealed mimic creates another
 		 * revealed mimic.
@@ -1011,9 +1003,8 @@ bool multiply_monster(const struct monster *mon)
 				become_aware(cave, child, player);
 			}
 		}
-
-		/* Done */
-		break;
+	} else {
+		result = false;
 	}
 
 	/* Result */

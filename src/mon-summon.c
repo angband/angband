@@ -399,34 +399,21 @@ static int call_monster(struct loc grid)
  */
 int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 {
-	int i;
+	int d;
 	struct loc near = grid;
 	struct monster *mon;
 	struct monster_race *race;
 	struct monster_group_info info = { 0, 0 };
 
 	/* Look for a location, allow up to 4 squares away */
-	for (i = 0; i < 60; ++i) {
-		/* Pick a distance */
-		int d = (i / 15) + 1;
-
-		/* Pick a location */
-		scatter(cave, &near, grid, d, true);
-
-		/* Require "empty" floor grid */
-		if (!square_isempty(cave, near)) continue;
-
-		/* No summon on glyphs */
-		if (square_iswarded(cave, near) || square_isdecoyed(cave, near)) {
-			continue;
-		}
-
-		/* Okay */
-		break;
+	for (d = 1; d < 5; ++d) {
+		/* Pick a location. */
+		if (scatter_ext(cave, &near, 1, grid, d, true,
+				square_allows_summon) > 0) break;
 	}
 
 	/* Failure */
-	if (i == 60) return (0);
+	if (d == 5) return 0;
 
 	/* Save the "summon" type */
 	summon_specific_type = type;

@@ -555,29 +555,67 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los)
 {
-	int tries = 0;
-
-	/* Pick a location, try many times */
-	while (tries < 1000) {
-		/* Pick a new location */
-		struct loc new_grid = rand_loc(grid, d, d);
-		tries++;
-
-		/* Ignore annoying locations */
-		if (!square_in_bounds_fully(c, new_grid)) continue;
-
-		/* Ignore "excessively distant" locations */
-		if ((d > 1) && (distance(grid, new_grid) > d)) continue;
-		
-		/* Require "line of sight" if set */
-		if (need_los && !los(c, grid, new_grid)) continue;
-
-		/* Set the location and return */
-		*place = new_grid;
-		return;
-	}
+	(void) scatter_ext(c, place, 1, grid, d, need_los, NULL);
 }
 
+
+/**
+ * Try to find a given number of distinct, randomly selected, locations that
+ * are within a given distance of a grid, fully in bounds, and, optionally,
+ * are in the line of sight of the given grid and satisfy an additional
+ * condition.
+ * \param c Is the chunk to search.
+ * \param places Points to the storage for the locations found.  That storage
+ * must have space for at least n grids.
+ * \param n Is the number of locations to find.
+ * \param grid Is the location to use as the origin for the search.
+ * \param d Is the maximum distance, in grids, that a location can be from
+ * grid and still be accepted.
+ * \param need_los If true, any locations found will also be in the line of
+ * sight from grid.
+ * \param pred If not NULL, evaluating that function at a found location, lct,
+ * will return true, i.e. (*pred)(c, lct) will be true.
+ * \return Return the number of locations found.  That number will be less
+ * than or equal to n if n is not negative and will be zero if n is negative.
+ */
+int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,
+		int d, bool need_los, bool (*pred)(struct chunk *, struct loc))
+{
+	int result = 0;
+	/* Stores feasible locations. */
+	struct loc *feas = mem_alloc(MIN(c->width, (1 + 2 * MAX(0, d)))
+			* (size_t) MIN(c->height, (1 + 2 * MAX(0, d)))
+			* sizeof(*feas));
+	int nfeas = 0;
+	struct loc g;
+
+	/* Get the feasible locations. */
+	for (g.y = grid.y - d; g.y <= grid.y + d; ++g.y) {
+		for (g.x = grid.x - d; g.x <= grid.x + d; ++g.x) {
+			if (!square_in_bounds_fully(c, g)) continue;
+			if (d > 1 && distance(grid, g) > d) continue;
+			if (need_los && !los(c, grid, g)) continue;
+			if (pred && !(*pred)(c, g)) continue;
+			feas[nfeas] = g;
+			++nfeas;
+		}
+	}
+
+	/* Assemble the result. */
+	while (result < n && nfeas > 0) {
+		/* Choose one at random and append it to the outgoing list. */
+		int choice = randint0(nfeas);
+
+		places[result] = feas[choice];
+		++result;
+		/* Shift the last feasible one to replace the one selected. */
+		--nfeas;
+		feas[choice] = feas[nfeas];
+	}
+
+	mem_free(feas);
+	return result;
+}
 
 /**
  * Get a monster on the current level by its index.

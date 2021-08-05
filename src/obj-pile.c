@@ -1197,16 +1197,9 @@ void push_object(struct loc grid)
 
 		/* Unrevealed mimics require special handling, as always. */
 		if (obj->mimicking_m_idx) {
-			/*
-			 * Try to find a location; there's 49 positions in
-			 * the 7 x 7 square so make at most a small multiple
-			 * of that number in attempts to find an appropriate
-			 * one that's empty.  If scatter accepted a predicate
-			 * argument, could avoid the multiple attempts.
-			 */
 			struct monster *mimic =
 				cave_monster(cave, obj->mimicking_m_idx);
-			int ntry = 0;
+			int d;
 
 			assert(mimic);
 			/*
@@ -1215,10 +1208,13 @@ void push_object(struct loc grid)
 			 */
 			mimic->mimicked_obj = NULL;
 
+			/* Try to find a location; use closer grids first. */
+			d = 1;
 			while (1) {
-				struct loc newgrid = grid;
+				struct loc newgrid;
+				bool dummy = true;
 
-				if (ntry > 150) {
+				if (d >= 4) {
 					/*
 					 * Give up.  Destroy both the mimic
 					 * and the object.
@@ -1230,21 +1226,19 @@ void push_object(struct loc grid)
 					object_delete(&obj);
 					break;
 				}
-				scatter(cave, &newgrid, grid, 3, true);
-				if (square_isempty(cave, newgrid)) {
-					bool dummy = true;
-
-					if (floor_carry(cave, newgrid, obj, &dummy)) {
-						/*
-						 * Move the monster and give it
-						 * the object.
-						 */
-						monster_swap(grid, newgrid);
-						mimic->mimicked_obj = obj;
-						break;
-					}
+				if (scatter_ext(cave, &newgrid, 1, grid, d,
+						true, square_isempty) > 0
+						&& floor_carry(cave, newgrid,
+						obj, &dummy)) {
+					/*
+					 * Move the monster and give it the
+					 * object.
+					 */
+					monster_swap(grid, newgrid);
+					mimic->mimicked_obj = obj;
+					break;
 				}
-				++ntry;
+				++d;
 			}
 		} else {
 			/* Drop the object */
