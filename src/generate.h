@@ -313,6 +313,7 @@ extern struct vault *vaults;
 extern struct room_template *room_templates;
 
 /* generate.c */
+void prepare_next_level(struct player *p);
 int get_room_builder_count(void);
 int get_room_builder_index_from_name(const char *name);
 const char *get_room_builder_name_from_index(int i);

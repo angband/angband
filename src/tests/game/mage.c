@@ -9,6 +9,7 @@
 #include "cmd-core.h"
 #include "game-event.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-make.h"
 #include "savefile.h"
@@ -53,7 +54,7 @@ static int test_magic_missile(void *state) {
 	eq(player_make_simple("Gnome", "Mage", "Tyrion"), true);
 
 	eq(player->is_dead, false);
-	prepare_next_level(&cave, player);
+	prepare_next_level(player);
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);

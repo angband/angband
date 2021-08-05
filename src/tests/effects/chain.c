@@ -11,6 +11,7 @@
 #include "effects.h"
 #include "effects-info.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-make.h"
 #include "player.h"
@@ -34,7 +35,7 @@ int setup_tests(void **state) {
 		cleanup_angband();
 		return 1;
 	}
-	prepare_next_level(&cave, player);
+	prepare_next_level(player);
 	on_new_level();
 	return 0;
 }

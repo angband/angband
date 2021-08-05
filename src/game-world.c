@@ -1126,7 +1126,7 @@ void run_game_loop(void)
 				}
 			}
 
-			prepare_next_level(&cave, player);
+			prepare_next_level(player);
 			on_new_level();
 
 			player->upkeep->generate_level = false;

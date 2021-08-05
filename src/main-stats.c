@@ -22,6 +22,7 @@
 
 #include "buildid.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "main.h"
 #include "mon-make.h"
@@ -258,7 +259,7 @@ static void initialize_character(void)
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;
-	prepare_next_level(&cave, player);
+	prepare_next_level(player);
 }
 
 static void kill_all_monsters(int level)
@@ -414,7 +415,7 @@ static void descend_dungeon(void)
 		}
 
 		dungeon_change_level(player, level);
-		prepare_next_level(&cave, player);
+		prepare_next_level(player);
 
 		/* Store level feelings */
 		obj_f = cave->feeling / 10;
