@@ -8,7 +8,7 @@ Version 4.2.x
 Code contribution:
 
 * Adriankhl
-* Adrian Siekierka (asiekirk)
+* Adrian Siekierka (asiekierka)
 * Alex Mooney
 * Anna Sidwell (takkaria)
 * bacchist
@@ -45,7 +45,7 @@ Code contribution:
 * spenserblack
 * Stefan Strogin
 * tangar
-* Tim Scumacher (timschumi)
+* Tim Schumacher (timschumi)
 * Vic K
 * wkmanire
 * wobbly

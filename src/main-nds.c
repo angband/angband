@@ -24,6 +24,7 @@
 #include <3ds/types.h>
 #include <3ds/services/apt.h>
 #include <3ds/services/fs.h>
+#include <3ds/services/hid.h>
 #include <3ds/os.h>
 #else
 #include <fat.h>
@@ -47,7 +48,12 @@
 #include "nds/nds-event.h"
 #include "nds/nds-keyboard.h"
 #include "nds/nds-buttons.h"
+#include "nds/nds-screenkeys.h"
 #include "nds/nds-slot2-virt.h"
+
+#ifndef _3DS
+#define hidScanInput scanKeys
+#endif
 
 #ifdef DEBUG_MEMORY_USAGE
 
@@ -165,11 +171,16 @@ void do_vblank()
 	}
 #endif
 
+	hidScanInput();
+
 	/* Handle button inputs */
 	nds_btn_vblank();
 
 	/* Handle touchscreen (keyboard) inputs */
 	nds_kbd_vblank();
+
+	/* Handle on-screen key inputs */
+	nds_scrkey_vblank();
 }
 
 /*END JUST MOVED */
@@ -696,6 +707,8 @@ int main(int argc, char *argv[])
 	}
 
 	nds_btn_init();
+
+	nds_scrkey_init();
 
 	/* Activate hooks */
 	plog_aux = hook_plog;

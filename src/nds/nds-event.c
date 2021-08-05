@@ -4,7 +4,7 @@
 #include <nds.h>
 #endif
 
-#define MAX_EBUF	32
+#define MAX_EBUF	64
 
 /* Event queue ring buffer */
 nds_event *ebuf;

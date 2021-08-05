@@ -15,7 +15,7 @@
 
 #include "math.h"
 
-#define NDS_BTN_SEQ_LEN 10
+#define NDS_BTN_SEQ_LEN 20
 #define NDS_BTN_FILE "/angband/nds/button-mappings.txt"
 #define NDS_BTN_FILE_MAX_LINE 512
 
@@ -56,7 +56,6 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 #define KEY_ZL 0
 #define KEY_ZR 0
 
-#define hidScanInput scanKeys
 #define hidKeysDown keysDown
 #define hidKeysHeld keysHeld
 #endif
@@ -75,7 +74,7 @@ const nds_btn_map_entry nds_btn_default_map[] = {
 	{"8",	KEY_DUP},
 	{"4",	KEY_DLEFT},
 	{"2",	KEY_DDOWN},
-	{"\e",	KEY_B},
+	{"\x1B",	KEY_B},
 	{"y",	KEY_Y},
 	{"\r",	KEY_A},
 };
@@ -163,9 +162,7 @@ void nds_btn_add_mappings_from_file(FILE *f) {
 
 		strunescape(sequence);
 
-		for (int i = 0; i < NDS_BTN_SEQ_LEN && sequence[i]; i++) {
-			entry.input[i] = sequence[i];
-		}
+		strncpy(entry.input, sequence, NDS_BTN_SEQ_LEN);
 
 		nds_btn_add_mappings(&entry, 1);
 	}
@@ -226,8 +223,6 @@ void nds_btn_check_cpad()
 
 void nds_btn_vblank()
 {
-	hidScanInput();
-
 	nds_btn_check_cpad();
 
 	u32 kd = hidKeysDown();
