@@ -1050,6 +1050,9 @@ void calc_inventory(struct player *p)
 
 		/* Find the first quiver object with the correct label */
 		for (current = p->gear; current; current = current->next) {
+			/* Skip equipped items. */
+			if (object_is_equipped(p->body, current)) continue;
+
 			/* Allocate inscribed objects if it's the right slot */
 			if (preferred_quiver_slot(current) == i) {
 				int mult = tval_is_ammo(current) ?
