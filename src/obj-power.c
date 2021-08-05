@@ -138,9 +138,15 @@ static ang_file *object_log;
 /**
  * Log progress info to the object log
  */
-static void log_obj(const char *message)
+static void log_obj(const char *fmt, ...)
 {
-	file_putf(object_log, "%s", message);
+	va_list ap;
+
+	if (!object_log) return;
+
+	va_start(ap, fmt);
+	file_vputf(object_log, fmt, ap);
+	va_end(ap);
 }
 
 /**
@@ -160,7 +166,7 @@ static int bow_multiplier(const struct object *obj)
 	else
 		mult = obj->pval;
 
-	log_obj(format("Base mult for this weapon is %d\n", mult));
+	log_obj("Base mult for this weapon is %d\n", mult);
 	return mult;
 }
 
@@ -172,7 +178,7 @@ static int to_damage_power(const struct object *obj)
 	int p;
 
 	p = (obj->to_d * DAMAGE_POWER / 2);
-	if (p) log_obj(format("%d power from to_dam\n", p));
+	if (p) log_obj("%d power from to_dam\n", p);
 
 	/* Add second lot of damage power for non-weapons */
 	if ((wield_slot(obj) != slot_by_name(player, "shooting")) &&
@@ -180,8 +186,8 @@ static int to_damage_power(const struct object *obj)
 		!tval_is_ammo(obj)) {
 		int q = (obj->to_d * DAMAGE_POWER);
 		p += q;
-		if (q)
-			log_obj(format("Add %d from non-weapon to_dam, total %d\n", q, p));
+		if (q) log_obj("Add %d from non-weapon to_dam, total %d\n",
+			q, p);
 	}
 	return p;
 }
@@ -196,7 +202,7 @@ static int damage_dice_power(const struct object *obj)
 	/* Add damage from dice for any wieldable weapon or ammo */
 	if (tval_is_melee_weapon(obj) || tval_is_ammo(obj)) {
 		dice = ((obj->dd * (obj->ds + 1) * DAMAGE_POWER) / 4);
-		log_obj(format("Add %d power for damage dice, ", dice));
+		log_obj("Add %d power for damage dice, ", dice);
 	} else if (wield_slot(obj) != slot_by_name(player, "shooting")) {
 		/* Add power boost for nonweapons with combat flags */
 		if (obj->brands || obj->slays ||
@@ -204,8 +210,8 @@ static int damage_dice_power(const struct object *obj)
 			(obj->modifiers[OBJ_MOD_SHOTS] > 0) ||
 			(obj->modifiers[OBJ_MOD_MIGHT] > 0)) {
 			dice = (WEAP_DAMAGE * DAMAGE_POWER);
-			log_obj(format("Add %d power for non-weapon combat bonuses, ",
-						   dice));
+			log_obj("Add %d power for non-weapon combat bonuses, ",
+				dice);
 		}
 	}
 	return dice;
@@ -229,8 +235,8 @@ static int ammo_damage_power(const struct object *obj, int p)
 
 		if (launcher != -1) {
 			q = (archery[launcher].ammo_dam * DAMAGE_POWER / 2);
-			log_obj(format("Adding %d power from ammo, total is %d\n", q,
-						   p + q));
+			log_obj("Adding %d power from ammo, total is %d\n", q,
+				p + q);
 		}
 	}
 	return q;
@@ -249,8 +255,8 @@ static int launcher_ammo_damage_power(const struct object *obj, int p)
 		if (obj->ego)
 			p += (archery[ammo_type].launch_dam * DAMAGE_POWER / 2);
 		p = p * archery[ammo_type].launch_mult / (2 * MAX_BLOWS);
-		log_obj(format("After multiplying ammo and rescaling, power is %d\n",
-					   p));
+		log_obj("After multiplying ammo and rescaling, power"
+			" is %d\n", p);
 	}
 	return p;
 }
@@ -274,8 +280,8 @@ static int extra_blows_power(const struct object *obj, int p)
 		/* Add boost for assumed off-weapon damage */
 		p += (NONWEAP_DAMAGE * obj->modifiers[OBJ_MOD_BLOWS]
 			  * DAMAGE_POWER / 2);
-		log_obj(format("Add %d power for extra blows, total is %d\n",
-					   p - q, p));
+		log_obj("Add %d power for extra blows, total is %d\n",
+			p - q, p);
 	}
 	return p;
 }
@@ -297,8 +303,8 @@ static int extra_shots_power(const struct object *obj, int p)
 		int q = obj->modifiers[OBJ_MOD_SHOTS];
 		p *= (10 + q);
 		p /= 10;
-		log_obj(format("Adding %d%% power for extra shots, total is %d\n",
-					   10 * q, p));
+		log_obj("Adding %d%% power for extra shots, total is %d\n",
+			10 * q, p);
 	}
 	return p;
 }
@@ -316,9 +322,9 @@ static int extra_might_power(const struct object *obj, int p, int mult)
 	} else {
 		mult += obj->modifiers[OBJ_MOD_MIGHT];
 	}
-	log_obj(format("Mult after extra might is %d\n", mult));
+	log_obj("Mult after extra might is %d\n", mult);
 	p *= mult;
-	log_obj(format("After multiplying power for might, total is %d\n", p));
+	log_obj("After multiplying power for might, total is %d\n", p);
 	return p;
 }
 
@@ -368,7 +374,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			for (i = 1; i < z_info->brand_max; i++) {
 				if (obj->brands[i]) {
 					struct brand *b = &brands[i];
-					log_obj(format("%sx%d ", b->name, b->multiplier));
+					log_obj("%sx%d ", b->name,
+						b->multiplier);
 				}
 			}
 		}
@@ -376,49 +383,52 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			for (i = 1; i < z_info->slay_max; i++) {
 				if (obj->slays[i]) {
 					struct slay *s = &slays[i];
-					log_obj(format("%sx%d ", s->name, s->multiplier));
+					log_obj("%sx%d ", s->name,
+						s->multiplier);
 				}
 			}
 		}
-		log_obj(format("\nbest power is : %d\n", best_power));
+		log_obj("\nbest power is : %d\n", best_power);
 	}
 
 	q = (dice_pwr * dice_pwr * (best_power - 100)) / 2500;
 	p += q;
-	log_obj(format("Add %d for slay power, total is %d\n", q, p));
+	log_obj("Add %d for slay power, total is %d\n", q, p);
 
 	/* Bonuses for multiple brands and slays */
 	if (num_slays > 1) {
 		q = (num_slays * num_slays * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		log_obj(format("Add %d power for multiple slays, total is %d\n", q, p));
+		log_obj("Add %d power for multiple slays, total is %d\n", q, p);
 	}
 	if (num_brands > 1) {
 		q = (2 * num_brands * num_brands * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		log_obj(format("Add %d power for multiple brands, total is %d\n",q, p));
+		log_obj("Add %d power for multiple brands, total is %d\n",
+			q, p);
 	}
 	if (num_slays && num_brands) {
 		q = (num_slays * num_brands * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		log_obj(format("Add %d power for slay and brand, total is %d\n", q, p));
+		log_obj("Add %d power for slay and brand, total is %d\n", q, p);
 	}
 	if (num_kills > 1) {
 		q = (3 * num_kills * num_kills * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		log_obj(format("Add %d power for multiple kills, total is %d\n", q, p));
+		log_obj("Add %d power for multiple kills, total is %d\n", q, p);
 	}
 	if (num_slays == 8) {
 		p += 10;
-		log_obj(format("Add 10 power for full set of slays, total is %d\n", p));
+		log_obj("Add 10 power for full set of slays, total is %d\n", p);
 	}
 	if (num_brands == 5) {
 		p += 20;
-		log_obj(format("Add 20 power for full set of brands, total is %d\n",p));
+		log_obj("Add 20 power for full set of brands, total"
+			" is %d\n", p);
 	}
 	if (num_kills == 3) {
 		p += 20;
-		log_obj(format("Add 20 power for full set of kills, total is %d\n", p));
+		log_obj("Add 20 power for full set of kills, total is %d\n", p);
 	}
 
 	return p;
@@ -432,7 +442,7 @@ static int rescale_bow_power(const struct object *obj, int p)
 {
 	if (wield_slot(obj) == slot_by_name(player, "shooting")) {
 		p /= MAX_BLOWS;
-		log_obj(format("Rescaling bow power, total is %d\n", p));
+		log_obj("Rescaling bow power, total is %d\n", p);
 	}
 	return p;
 }
@@ -445,7 +455,7 @@ static int to_hit_power(const struct object *obj, int p)
 	int q = (obj->to_h * TO_HIT_POWER / 2);
 	p += q;
 	if (p) 
-		log_obj(format("Add %d power for to hit, total is %d\n", q, p));
+		log_obj("Add %d power for to hit, total is %d\n", q, p);
 	return p;
 }
 
@@ -459,7 +469,7 @@ static int ac_power(const struct object *obj, int p)
 	if (obj->ac) {
 		p += BASE_ARMOUR_POWER;
 		q += (obj->ac * BASE_AC_POWER / 2);
-		log_obj(format("Adding %d power for base AC value\n", q));
+		log_obj("Adding %d power for base AC value\n", q);
 
 		/* Add power for AC per unit weight */
 		if (obj->weight > 0) {
@@ -475,7 +485,7 @@ static int ac_power(const struct object *obj, int p)
 		} else
 			q *= 5;
 		p += q;
-		log_obj(format("Add %d power for AC per unit weight, now %d\n",	q, p));
+		log_obj("Add %d power for AC per unit weight, now %d\n", q, p);
 	}
 	return p;
 }
@@ -492,18 +502,17 @@ static int to_ac_power(const struct object *obj, int p)
 
 	q = (obj->to_a * TO_AC_POWER / 2);
 	p += q;
-	log_obj(format("Add %d power for to_ac of %d, total is %d\n", 
-				   q, obj->to_a, p));
+	log_obj("Add %d power for to_ac of %d, total is %d\n", q, obj->to_a, p);
 	if (obj->to_a > HIGH_TO_AC) {
 		q = ((obj->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER);
 		p += q;
-		log_obj(format("Add %d power for high to_ac, total is %d\n",
-							q, p));
+		log_obj("Add %d power for high to_ac, total is %d\n", q, p);
 	}
 	if (obj->to_a > VERYHIGH_TO_AC) {
 		q = ((obj->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER * 2);
 		p += q;
-		log_obj(format("Add %d power for very high to_ac, total is %d\n",q, p));
+		log_obj("Add %d power for very high to_ac, total is %d\n",
+			q, p);
 	}
 	if (obj->to_a >= INHIBIT_AC) {
 		p += INHIBIT_POWER;
@@ -519,8 +528,8 @@ static int jewelry_power(const struct object *obj, int p)
 {
 	if (tval_is_jewelry(obj)) {
 		p += BASE_JEWELRY_POWER;
-		log_obj(format("Adding %d power for jewelry, total is %d\n", 
-					   BASE_JEWELRY_POWER, p));
+		log_obj("Adding %d power for jewelry, total is %d\n",
+			BASE_JEWELRY_POWER, p);
 	}
 	return p;
 }
@@ -543,22 +552,22 @@ static int modifier_power(const struct object *obj, int p)
 		if (mod->power) {
 			q = (k * mod->power * mod->type_mult[obj->tval]);
 			p += q;
-			if (q) log_obj(format("Add %d power for %d %s, total is %d\n", 
-								  q, k, mod->name, p));
+			if (q) log_obj("Add %d power for %d %s, total is %d\n",
+				q, k, mod->name, p);
 		}
 	}
 
 	/* Add extra power term if there are a lot of ability bonuses */
 	if (extra_stat_bonus > 249) {
-		log_obj(format("Inhibiting - Total ability bonus of %d is too high\n", 
-					   extra_stat_bonus));
+		log_obj("Inhibiting - Total ability bonus of %d is too high\n",
+			extra_stat_bonus);
 		p += INHIBIT_POWER;
 	} else if (extra_stat_bonus > 0) {
 		q = ability_power[extra_stat_bonus / 10];
 		if (!q) return p;
 		p += q;
-		log_obj(format("Add %d power for modifier total of %d, total is %d\n", 
-					   q, extra_stat_bonus, p));
+		log_obj("Add %d power for modifier total of %d, total is %d\n",
+			q, extra_stat_bonus, p);
 	}
 	return p;
 }
@@ -589,8 +598,8 @@ static int flags_power(const struct object *obj, int p, int verbose,
 		if (flag->power) {
 			q = (flag->power * flag->type_mult[obj->tval]);
 			p += q;
-			log_obj(format("Add %d power for %s, total is %d\n", 
-						   q, flag->name, p));
+			log_obj("Add %d power for %s, total is %d\n",
+				q, flag->name, p);
 		}
 
 		/* Track combinations of flag types */
@@ -604,16 +613,16 @@ static int flags_power(const struct object *obj, int p, int verbose,
 		if (flag_sets[i].count > 1) {
 			q = (flag_sets[i].factor * flag_sets[i].count * flag_sets[i].count);
 			p += q;
-			log_obj(format("Add %d power for multiple %s, total is %d\n",
-						   q, flag_sets[i].desc, p));
+			log_obj("Add %d power for multiple %s, total is %d\n",
+				q, flag_sets[i].desc, p);
 		}
 
 		/* Add bonus if item has a full set of these flags */
 		if (flag_sets[i].count == flag_sets[i].size) {
 			q = flag_sets[i].bonus;
 			p += q;
-			log_obj(format("Add %d power for full set of %s, total is %d\n", 
-						   q, flag_sets[i].desc, p));
+			log_obj("Add %d power for full set of %s,"
+				" total is %d\n", q, flag_sets[i].desc, p);
 		}
 	}
 
@@ -638,8 +647,8 @@ static int element_power(const struct object *obj, int p)
 			if (el_powers[i].ignore_power != 0) {
 				q = (el_powers[i].ignore_power);
 				p += q;
-				log_obj(format("Add %d power for ignoring %s, total is %d\n",
-							   q, el_powers[i].name, p));
+				log_obj("Add %d power for ignoring %s, total"
+					" is %d\n", q, el_powers[i].name, p);
 			}
 		}
 
@@ -647,20 +656,25 @@ static int element_power(const struct object *obj, int p)
 			if (el_powers[i].vuln_power != 0) {
 				q = (el_powers[i].vuln_power);
 				p += q;
-				log_obj(format("Add %d power for vulnerability to %s, total is %d\n", q, el_powers[i].name, p));
+				log_obj("Add %d power for vulnerability to"
+					" %s, total is %d\n", q,
+					el_powers[i].name, p);
 			}
 		} else if (obj->el_info[i].res_level == 1) {
 			if (el_powers[i].res_power != 0) {
 				q = (el_powers[i].res_power);
 				p += q;
-				log_obj(format("Add %d power for resistance to %s, total is %d\n", q, el_powers[i].name, p));
+				log_obj("Add %d power for resistance to"
+					" %s, total is %d\n", q,
+					el_powers[i].name, p);
 			}
 		} else if (obj->el_info[i].res_level == 3) {
 			if (el_powers[i].im_power != 0) {
 				q = (el_powers[i].im_power + el_powers[i].res_power);
 				p += q;
-				log_obj(format("Add %d power for immunity to %s, total is %d\n",
-							   q, el_powers[i].name, p));
+				log_obj("Add %d power for immunity to"
+					" %s, total is %d\n", q,
+					el_powers[i].name, p);
 			}
 		}
 
@@ -676,16 +690,16 @@ static int element_power(const struct object *obj, int p)
 		if (element_sets[i].count > 1) {
 			q = (element_sets[i].factor * element_sets[i].count * element_sets[i].count);
 			p += q;
-			log_obj(format("Add %d power for multiple %s, total is %d\n",
-						   q, element_sets[i].desc, p));
+			log_obj("Add %d power for multiple %s, total is %d\n",
+				q, element_sets[i].desc, p);
 		}
 
 		/* Add bonus if item has a full set of these flags */
 		if (element_sets[i].count == element_sets[i].size) {
 			q = element_sets[i].bonus;
 			p += q;
-			log_obj(format("Add %d power for full set of %s, total is %d\n", 
-						   q, element_sets[i].desc, p));
+			log_obj("Add %d power for full set of %s,"
+				" total is %d\n", q, element_sets[i].desc, p);
 		}
 	}
 
@@ -707,8 +721,8 @@ static int effects_power(const struct object *obj, int p)
 
 	if (q) {
 		p += q;
-		log_obj(format("Add %d power for item activation, total is %d\n",
-					   q, p));
+		log_obj("Add %d power for item activation, total is %d\n",
+			q, p);
 	}
 	return p;
 }
@@ -726,11 +740,13 @@ static int curse_power(const struct object *obj, int p, int verbose,
 		for (i = 1; i < z_info->curse_max; i++) {
 			if (obj->curses[i].power) {
 				int curse_power;
-				log_obj(format("Calculating %s curse power...\n",
-							   curses[i].name));
+				log_obj("Calculating %s curse power...\n",
+					curses[i].name);
 				curse_power = object_power(curses[i].obj, verbose, log_file);
 				curse_power -= obj->curses[i].power / 10;
-				log_obj(format("Adjust for strength of curse, %d for %s curse power\n", curse_power, curses[i].name));
+				log_obj("Adjust for strength of curse, %d for"
+					" %s curse power\n", curse_power,
+					curses[i].name);
 				q += curse_power;
 			}
 		}
@@ -738,8 +754,8 @@ static int curse_power(const struct object *obj, int p, int verbose,
 
 	if (q != 0) {
 		p += q;
-		log_obj(format("Total of %d power added for curses, total is %d\n",
-					   q, p));
+		log_obj("Total of %d power added for curses, total is %d\n",
+			q, p);
 	}
 	return p;
 }
@@ -760,7 +776,7 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	p = to_damage_power(obj);
 	dice_pwr = damage_dice_power(obj);
 	p += dice_pwr;
-	if (dice_pwr) log_obj(format("total is %d\n", p));
+	if (dice_pwr) log_obj("total is %d\n", p);
 	p += ammo_damage_power(obj, p);
 	mult = bow_multiplier(obj);
 	p = launcher_ammo_damage_power(obj, p);
@@ -788,7 +804,7 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	p = effects_power(obj, p);
 	p = curse_power(obj, p, verbose, object_log);
 
-	log_obj(format("FINAL POWER IS %d\n", p));
+	log_obj("FINAL POWER IS %d\n", p);
 
 	return p;
 }
