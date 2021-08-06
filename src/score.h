@@ -19,6 +19,8 @@
 #ifndef INCLUDED_SCORE_H
 #define INCLUDED_SCORE_H
 
+struct player;
+
 /**
  * Maximum number of high scores in the high score file
  */
@@ -59,8 +61,8 @@ size_t highscore_where(const struct high_score *entry,
 					   const struct high_score scores[], size_t sz);
 size_t highscore_add(const struct high_score *entry, struct high_score scores[],
 					 size_t sz);
-void build_score(struct high_score *entry, const char *died_from,
-				 time_t *death_time);
-void enter_score(time_t *death_time);
+void build_score(struct high_score *entry, const struct player *p,
+		const char *died_from, const time_t *death_time);
+void enter_score(const struct player *p, const time_t *death_time);
 
 #endif /* INCLUDED_SCORE_H */
