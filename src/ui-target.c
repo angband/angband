@@ -44,6 +44,26 @@
 #include "ui-target.h"
 #include "ui-term.h"
 
+/*
+ * Holds state passed between target_set_interactive_aux() and the handlers
+ * that help it handle different types of grids or situations.  In general,
+ * the handlers should only modify press (passed back from
+ * target_set_interactive_aux() to target_set_interactive()) and boring
+ * (modulates how later handlers act).
+ */
+struct target_aux_state {
+	char coord_desc[20];
+	const char *phrase1;
+	const char *phrase2;
+	struct loc grid;
+	ui_event press;
+	int mode;
+	bool boring;
+};
+
+typedef bool (*target_aux_handler)(struct chunk *c, struct player *p,
+	struct target_aux_state *auxst);
+
 /**
  * Extract a direction (or zero) from a character
  */
@@ -289,6 +309,535 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 }
 
 /**
+ * Help target_set_interactive_aux():  reset the state for another pass
+ * through the handlers.
+ */
+static bool aux_reinit(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	/* Set the default event to focus on the player. */
+	auxst->press.type = EVT_KBRD;
+	auxst->press.key.code = 'p';
+	auxst->press.key.mods = 0;
+
+	/* Bail if looking at a forbidden grid.  Don't run any more handlers. */
+	if (!square_in_bounds(c, auxst->grid)) return true;
+
+	/* Assume boring. */
+	auxst->boring = true;
+
+	if (square(c, auxst->grid)->mon < 0) {
+		/* Looking at the player's grid */
+		auxst->phrase1 = "You are ";
+		auxst->phrase2 = "on ";
+	} else {
+		/* Default */
+		auxst->phrase1 = "You see ";
+		auxst->phrase2 = "";
+	}
+
+	return false;
+}
+
+/**
+ * Help target_set_interactive_aux():  handle hallucination.
+ */
+static bool aux_hallucinate(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	const char *name_strange = "something strange";
+	char out_val[TARGET_OUT_VAL_SIZE];
+
+	if (!p->timed[TMD_IMAGE]) return false;
+
+	/* Hallucination messes things up */
+	/* Display a message */
+	if (p->wizard) {
+		strnfmt(out_val, sizeof(out_val),
+			"%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
+			auxst->phrase1,
+			auxst->phrase2,
+			name_strange,
+			auxst->coord_desc,
+			auxst->grid.y,
+			auxst->grid.x,
+			(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+			(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+	} else {
+		strnfmt(out_val, sizeof(out_val), "%s%s%s, %s.",
+			auxst->phrase1,
+			auxst->phrase2,
+			name_strange,
+			auxst->coord_desc);
+	}
+	prt(out_val, 0, 0);
+	move_cursor_relative(auxst->grid.y, auxst->grid.x);
+
+	auxst->press.key = inkey();
+
+	/* Stop on everything but "return" */
+	return auxst->press.key.code != KC_ENTER;
+}
+
+/**
+ * Help target_set_interactive_aux():  handle monsters.
+ *
+ * Note that if a monster is in the grid, we update both the monster
+ * recall info and the health bar info to track that monster.
+ */
+static bool aux_monster(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	struct monster *mon;
+	const struct monster_lore *lore;
+	char m_name[80];
+	char out_val[TARGET_OUT_VAL_SIZE];
+	bool recall;
+
+	if (square(c, auxst->grid)->mon <= 0) return false;
+
+	mon = square_monster(c, auxst->grid);
+	if (!monster_is_obvious(mon)) return false;
+
+	/* Actual visible monsters */
+	lore = get_lore(mon->race);
+
+	/* Not boring */
+	auxst->boring = false;
+
+	/* Get the monster name ("a kobold") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
+
+	/* Track this monster's race and health */
+	monster_race_track(p->upkeep, mon->race);
+	health_track(p->upkeep, mon);
+	handle_stuff(p);
+
+	/* Interact */
+	recall = false;
+	while (1) {
+		/* Recall or target */
+		if (recall) {
+			lore_show_interactive(mon->race, lore);
+			auxst->press = inkey_m();
+		} else {
+			char buf[80];
+
+			/* Describe the monster */
+			look_mon_desc(buf, sizeof(buf),
+				square(c, auxst->grid)->mon);
+
+			/* Describe, and prompt for recall */
+			if (p->wizard) {
+				strnfmt(out_val, sizeof(out_val),
+					"%s%s%s (%s), %s (%d:%d, noise=%d, scent=%d).",
+					auxst->phrase1,
+					auxst->phrase2,
+					m_name,
+					buf,
+					auxst->coord_desc,
+					auxst->grid.y,
+					auxst->grid.x,
+					(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+					(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+			} else {
+				strnfmt(out_val, sizeof(out_val),
+					"%s%s%s (%s), %s.",
+					auxst->phrase1,
+					auxst->phrase2,
+					m_name,
+					buf,
+					auxst->coord_desc);
+			}
+
+			prt(out_val, 0, 0);
+
+			/* Place cursor */
+			move_cursor_relative(auxst->grid.y, auxst->grid.x);
+
+			/* Command */
+			auxst->press = inkey_m();
+		}
+
+		/* Normal commands */
+		if (auxst->press.type == EVT_MOUSE
+				&& auxst->press.mouse.button == 1
+				&& KEY_GRID_X(auxst->press) == auxst->grid.x
+				&& KEY_GRID_Y(auxst->press) == auxst->grid.y) {
+			recall = !recall;
+		} else if (auxst->press.type == EVT_KBRD
+				&& auxst->press.key.code == 'r') {
+			recall = !recall;
+		} else {
+			break;
+		}
+	}
+
+	if (auxst->press.type == EVT_MOUSE) {
+		/* Stop on right click */
+		if (auxst->press.mouse.button == 2) return true;
+
+		/* Sometimes stop at "space" key */
+		if (auxst->press.mouse.button
+				&& !(auxst->mode & (TARGET_LOOK))) return true;
+	} else {
+		/* Stop on everything but "return"/"space" */
+		if (auxst->press.key.code != KC_ENTER
+				&& auxst->press.key.code != ' ') return true;
+
+		/* Sometimes stop at "space" key */
+		if (auxst->press.key.code == ' '
+				&& !(auxst->mode & (TARGET_LOOK))) return true;
+	}
+
+	/* Describe carried objects (wizards only) */
+	if (p->wizard) {
+		const char *lphrase1;
+		const char *lphrase2;
+		struct object *obj;
+
+		/* Take account of gender */
+		if (rf_has(mon->race->flags, RF_FEMALE)) {
+			lphrase1 = "She is ";
+		} else if (rf_has(mon->race->flags, RF_MALE)) {
+			lphrase1 = "He is ";
+		} else {
+			lphrase1 = "It is ";
+		}
+
+		/* Use a verb */
+		lphrase2 = "carrying ";
+
+		/* Scan all objects being carried */
+		for (obj = mon->held_obj; obj; obj = obj->next) {
+			char o_name[80];
+
+			/* Obtain an object description */
+			object_desc(o_name, sizeof(o_name), obj,
+				ODESC_PREFIX | ODESC_FULL);
+
+			strnfmt(out_val, sizeof(out_val),
+				"%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
+				lphrase1,
+				lphrase2,
+				o_name,
+				auxst->coord_desc,
+				auxst->grid.y,
+				auxst->grid.x,
+				(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+				(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+
+			prt(out_val, 0, 0);
+			move_cursor_relative(auxst->grid.y, auxst->grid.x);
+			auxst->press = inkey_m();
+
+			if (auxst->press.type == EVT_MOUSE) {
+				/* Stop on right click */
+				if (auxst->press.mouse.button == 2) break;
+
+				/* Sometimes stop at "space" key */
+				if (auxst->press.mouse.button
+						&& !(auxst->mode & (TARGET_LOOK)))
+					break;
+			} else {
+				/* Stop on everything but "return"/"space" */
+				if (auxst->press.key.code != KC_ENTER
+						&& auxst->press.key.code != ' ')
+					break;
+
+				/* Sometimes stop at "space" key */
+				if (auxst->press.key.code == ' '
+						&& !(auxst->mode & (TARGET_LOOK)))
+					break;
+			}
+
+			/* Change the intro */
+			lphrase2 = "also carrying ";
+		}
+
+		/* Double break */
+		if (obj) return true;
+	}
+
+	return false;
+}
+
+/**
+ * Help target_set_interactive_aux():  handle visible traps.
+ */
+static bool aux_trap(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	struct trap *trap;
+	char out_val[TARGET_OUT_VAL_SIZE];
+	const char *lphrase3;
+
+	if (!square_isvisibletrap(c, auxst->grid)) return false;
+
+	/* A trap */
+	trap = square(c, auxst->grid)->trap;
+
+	/* Not boring */
+	auxst->boring = false;
+
+	/* Pick proper indefinite article */
+	lphrase3 = (is_a_vowel(trap->kind->desc[0])) ? "an " : "a ";
+
+	/* Interact */
+	while (1) {
+		/* Describe, and prompt for recall */
+		if (p->wizard) {
+			strnfmt(out_val, sizeof(out_val),
+				"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
+				auxst->phrase1,
+				auxst->phrase2,
+				lphrase3,
+				trap->kind->name,
+				auxst->coord_desc,
+				auxst->grid.y,
+				auxst->grid.x,
+				(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+				(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+		} else {
+			strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
+				auxst->phrase1,
+				auxst->phrase2,
+				lphrase3,
+				trap->kind->desc,
+				auxst->coord_desc);
+		}
+
+		prt(out_val, 0, 0);
+
+		/* Place cursor */
+		move_cursor_relative(auxst->grid.y, auxst->grid.x);
+
+		/* Command */
+		auxst->press = inkey_m();
+
+		/* Stop on everything but "return"/"space" */
+		if (auxst->press.key.code != KC_ENTER
+				&& auxst->press.key.code != ' ')
+			break;
+
+		/* Sometimes stop at "space" key */
+		if (auxst->press.key.code == ' '
+				&& !(auxst->mode & (TARGET_LOOK)))
+			break;
+	}
+
+	return true;
+}
+
+/**
+ * Help target_set_interactive_aux():  handle objects.
+ */
+static bool aux_object(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	int floor_max = z_info->floor_size;
+	struct object **floor_list =
+		mem_zalloc(floor_max * sizeof(*floor_list));
+	bool result = false;
+	char out_val[TARGET_OUT_VAL_SIZE];
+	int floor_num;
+
+	/* Scan all sensed objects in the grid */
+	floor_num = scan_distant_floor(floor_list, floor_max, auxst->grid);
+	if (floor_num <= 0 || (p->timed[TMD_BLIND]
+			&& !loc_eq(auxst->grid, p->grid))) {
+		mem_free(floor_list);
+		return result;
+	}
+
+	/* Not boring */
+	auxst->boring = false;
+
+	track_object(p->upkeep, floor_list[0]);
+	handle_stuff(p);
+
+	/* If there is more than one item... */
+	if (floor_num > 1) {
+		while (1) {
+			/* Describe the pile */
+			if (p->wizard) {
+				strnfmt(out_val, sizeof(out_val),
+					"%s%sa pile of %d objects, %s (%d:%d, noise=%d, scent=%d).",
+					auxst->phrase1,
+					auxst->phrase2,
+					floor_num,
+					auxst->coord_desc,
+					auxst->grid.y,
+					auxst->grid.x,
+					(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+					(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+			} else {
+				strnfmt(out_val, sizeof(out_val),
+					"%s%sa pile of %d objects, %s.",
+					auxst->phrase1,
+					auxst->phrase2,
+					floor_num,
+					auxst->coord_desc);
+			}
+
+			prt(out_val, 0, 0);
+			move_cursor_relative(auxst->grid.y, auxst->grid.x);
+			auxst->press = inkey_m();
+
+			/* Display objects */
+			if ((auxst->press.type == EVT_MOUSE
+					&& auxst->press.mouse.button == 1
+					&& KEY_GRID_X(auxst->press) ==
+					auxst->grid.x
+					&& KEY_GRID_Y(auxst->press) ==
+					auxst->grid.y)
+					|| (auxst->press.type == EVT_KBRD
+					&& auxst->press.key.code == 'r')) {
+				int pos;
+				while (1) {
+					/* Save screen */
+					screen_save();
+
+					/*
+					 * Use OLIST_DEATH to show item labels
+					 */
+					show_floor(floor_list, floor_num,
+						(OLIST_DEATH | OLIST_WEIGHT
+						| OLIST_GOLD), NULL);
+
+					/* Describe the pile */
+					prt(out_val, 0, 0);
+					auxst->press = inkey_m();
+
+					/* Load screen */
+					screen_load();
+
+					if (auxst->press.type == EVT_MOUSE) {
+						pos = auxst->press.mouse.y - 1;
+					} else {
+						pos = auxst->press.key.code -
+							'a';
+					}
+					if (0 <= pos && pos < floor_num) {
+						track_object(p->upkeep,
+							floor_list[pos]);
+						handle_stuff(p);
+						continue;
+					}
+					break;
+				}
+
+				/*
+				 * Now that the user's done with the display
+				 * loop, let's do the outer loop over again.
+				 */
+				continue;
+			}
+
+			/* Done */
+			break;
+		}
+	} else {
+		/* Only one object to display */
+		/* Get the single object in the list */
+		struct object *obj_local = floor_list[0];
+
+		/* Allow user to recall an object */
+		auxst->press = target_recall_loop_object(obj_local,
+			auxst->grid.y, auxst->grid.x, out_val, auxst->phrase1,
+			auxst->phrase2, "", auxst->coord_desc);
+
+		/* Stop on everything but "return"/"space" */
+		if (auxst->press.key.code != KC_ENTER
+				&& auxst->press.key.code != ' ') result = true;
+
+		/* Sometimes stop at "space" key */
+		if (auxst->press.key.code == ' '
+				&& !(auxst->mode & (TARGET_LOOK))) result = true;
+	}
+
+	mem_free(floor_list);
+	return result;
+}
+
+/**
+ * Help target_set_interactive_aux():  handle terrain.
+ */
+static bool aux_terrain(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	const char *name, *lphrase2, *lphrase3;
+	char out_val[TARGET_OUT_VAL_SIZE];
+
+	if (!auxst->boring && !square_isinteresting(c, auxst->grid))
+		return false;
+
+	/* Terrain feature if needed */
+	name = square_apparent_name(c, p, auxst->grid);
+
+	/* Hack -- handle unknown grids */
+
+	/* Pick a preposition if needed */
+	lphrase2 = (*auxst->phrase2) ?
+		square_apparent_look_in_preposition(c, p, auxst->grid) : "";
+
+	/* Pick prefix for the name */
+	lphrase3 = square_apparent_look_prefix(c, p, auxst->grid);
+
+	/* Display a message */
+	if (p->wizard) {
+		strnfmt(out_val, sizeof(out_val),
+			"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
+			auxst->phrase1,
+			lphrase2,
+			lphrase3,
+			name,
+			auxst->coord_desc,
+			auxst->grid.y,
+			auxst->grid.x,
+			(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+			(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
+	} else {
+		strnfmt(out_val, sizeof(out_val),
+			"%s%s%s%s, %s.",
+			auxst->phrase1,
+			lphrase2,
+			lphrase3,
+			name,
+			auxst->coord_desc);
+	}
+
+	prt(out_val, 0, 0);
+	move_cursor_relative(auxst->grid.y, auxst->grid.x);
+	auxst->press = inkey_m();
+
+	/*
+	 * Stop on right click of mouse or everything but "return"/"space" for
+	 * a key.
+	 */
+	return (auxst->press.type == EVT_MOUSE
+			&& auxst->press.mouse.button == 2)
+		|| (auxst->press.type != EVT_MOUSE
+			&& auxst->press.key.code != KC_ENTER
+			&& auxst->press.key.code != ' ');
+}
+
+/**
+ * Help target_set_interactive_aux():  check what's in press to decide whether
+ * to do another pass through the handlers.
+ */
+static bool aux_wrapup(struct chunk *c, struct player *p,
+		struct target_aux_state *auxst)
+{
+	if (auxst->press.type == EVT_MOUSE) {
+		/* Stop on right click. */
+		return auxst->press.mouse.button != 2;
+	}
+	/* Stop on everything but "return". */
+	return auxst->press.key.code != KC_ENTER;
+}
+
+/**
  * Examine a grid, return a keypress.
  *
  * The "mode" argument contains the "TARGET_LOOK" bit flag, which
@@ -297,13 +846,6 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
  * the "look" command get complete information, without making the
  * "target" command annoying.
  *
- * The "info" argument contains the "commands" which should be shown
- * inside the "[xxx]" text.  This string must never be empty, or grids
- * containing monsters will be displayed with an extra comma.
- *
- * Note that if a monster is in the grid, we update both the monster
- * recall info and the health bar info to track that monster.
- *
  * This function correctly handles multiple objects per grid, and objects
  * and terrain features in the same grid, though the latter never happens.
  *
@@ -311,437 +853,41 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
  */
 static ui_event target_set_interactive_aux(int y, int x, int mode)
 {
-	struct object *obj = NULL;
+	/*
+	 * If there's other types to be handled, insert a function to do so
+	 * between aux_hallucinate and aux_wrapup.  Because each handler
+	 * can signal that the sequence be halted, these are ordered in
+	 * decreasing order of precedence.
+	 */
+	target_aux_handler handlers[] = {
+		aux_reinit,
+		aux_hallucinate,
+		aux_monster,
+		aux_trap,
+		aux_object,
+		aux_terrain,
+		aux_wrapup
+	};
+	struct target_aux_state auxst;
+	int ihandler;
 
-	const char *s1, *s2, *s3;
-
-	bool boring;
-
-	int floor_max = z_info->floor_size;
-	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
-	int floor_num;
-
-	ui_event press;
-
-	char out_val[TARGET_OUT_VAL_SIZE];
-
-	char coords[20];
-
-	const char *name;
+	auxst.mode = mode;
 
 	/* Describe the square location */
-	coords_desc(coords, sizeof(coords), y, x);
+	auxst.grid.x = x;
+	auxst.grid.y = y;
+	coords_desc(auxst.coord_desc, sizeof(auxst.coord_desc), y, x);
 
-	/* Repeat forever */
+	/* Apply the handlers in order until done */
+	ihandler = 0;
 	while (1) {
-		/* Make the default event to focus on the player */
-		press.type = EVT_KBRD;
-		press.key.code = 'p';
-		press.key.mods = 0;
-
-		/* Assume boring */
-		boring = true;
-
-		/* Default */
-		s1 = "You see ";
-		s2 = "";
-		s3 = "";
-
-		/* Bail if looking at a forbidden grid */
-		if (!square_in_bounds(cave, loc(x, y))) {
-			break;
-		}
-
-		/* The player */
-		if (square(cave, loc(x, y))->mon < 0) {
-			/* Description */
-			s1 = "You are ";
-
-			/* Preposition */
-			s2 = "on ";
-		}
-
-		/* Hallucination messes things up */
-		if (player->timed[TMD_IMAGE]) {
-			const char *name_strange = "something strange";
-
-			/* Display a message */
-			if (player->wizard)
-				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						name_strange, coords, y, x, (int)cave->noise.grids[y][x],
-						(int)cave->scent.grids[y][x]);
-			else
-				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
-						s1, s2, s3, name_strange, coords);
-
-			prt(out_val, 0, 0);
-			move_cursor_relative(y, x);
-
-			press.key = inkey();
-
-			/* Stop on everything but "return" */
-			if (press.key.code == KC_ENTER)
-				continue;
-
-			mem_free(floor_list);
-			return press;
-		}
-
-		/* Actual monsters */
-		if (square(cave, loc(x, y))->mon > 0) {
-			struct monster *mon = square_monster(cave, loc(x, y));
-			const struct monster_lore *lore = get_lore(mon->race);
-
-			/* Visible */
-			if (monster_is_obvious(mon)) {
-				bool recall = false;
-
-				char m_name[80];
-
-				/* Not boring */
-				boring = false;
-
-				/* Get the monster name ("a kobold") */
-				monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
-
-				/* Track this monster's race and health */
-				monster_race_track(player->upkeep, mon->race);
-				health_track(player->upkeep, mon);
-
-				handle_stuff(player);
-
-				/* Interact */
-				while (1) {
-					/* Recall or target */
-					if (recall) {
-						lore_show_interactive(mon->race, lore);
-						press = inkey_m();
-					} else {
-						char buf[80];
-
-						/* Describe the monster */
-						look_mon_desc(buf, sizeof(buf),
-									  square(cave, loc(x, y))->mon);
-
-						/* Describe, and prompt for recall */
-						if (player->wizard) {
-							strnfmt(out_val, sizeof(out_val),
-									"%s%s%s%s (%s), %s (%d:%d, noise=%d, scent=%d).",
-									s1, s2, s3, m_name, buf, coords, y, x,
-									(int)cave->noise.grids[y][x],
-									(int)cave->scent.grids[y][x]);
-						} else {
-							strnfmt(out_val, sizeof(out_val),
-									"%s%s%s%s (%s), %s.",
-									s1, s2, s3, m_name, buf, coords);
-						}
-
-						prt(out_val, 0, 0);
-
-						/* Place cursor */
-						move_cursor_relative(y, x);
-
-						/* Command */
-						press = inkey_m();
-					}
-
-					/* Normal commands */
-					if ((press.type == EVT_MOUSE) && (press.mouse.button == 1)
-						&& (KEY_GRID_X(press) == x) && (KEY_GRID_Y(press) == y))
-						recall = !recall;
-					else
-					if ((press.type == EVT_KBRD) && (press.key.code == 'r'))
-						recall = !recall;
-					else
-						break;
-				}
-
-				if (press.type == EVT_MOUSE) {
-					/* Stop on right click */
-					if (press.mouse.button == 2)
-						break;
-
-					/* Sometimes stop at "space" key */
-					if (press.mouse.button && !(mode & (TARGET_LOOK))) break;
-				} else {
-					/* Stop on everything but "return"/"space" */
-					if (press.key.code != KC_ENTER && press.key.code != ' ')
-						break;
-
-					/* Sometimes stop at "space" key */
-					if ((press.key.code == ' ') && !(mode & (TARGET_LOOK)))
-						break;
-				}
-
-				/* Take account of gender */
-				if (rf_has(mon->race->flags, RF_FEMALE)) s1 = "She is ";
-				else if (rf_has(mon->race->flags, RF_MALE)) s1 = "He is ";
-				else s1 = "It is ";
-
-				/* Describe carried objects (wizards only) */
-				if (player->wizard) {
-					/* Use a verb */
-					s2 = "carrying ";
-
-					/* Scan all objects being carried */
-					for (obj = mon->held_obj; obj; obj = obj->next) {
-						char o_name[80];
-
-						/* Obtain an object description */
-						object_desc(o_name, sizeof(o_name), obj,
-									ODESC_PREFIX | ODESC_FULL);
-
-						strnfmt(out_val, sizeof(out_val),
-								"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
-								s1, s2, s3, o_name, coords, y, x,
-								(int)cave->noise.grids[y][x],
-								(int)cave->scent.grids[y][x]);
-
-						prt(out_val, 0, 0);
-						move_cursor_relative(y, x);
-						press = inkey_m();
-
-						if (press.type == EVT_MOUSE) {
-							/* Stop on right click */
-							if (press.mouse.button == 2)
-								break;
-
-							/* Sometimes stop at "space" key */
-							if (press.mouse.button && !(mode & (TARGET_LOOK)))
-								break;
-						} else {
-							/* Stop on everything but "return"/"space" */
-							if ((press.key.code != KC_ENTER) &&
-								(press.key.code != ' '))
-								break;
-
-							/* Sometimes stop at "space" key */
-							if ((press.key.code == ' ') &&
-								!(mode & (TARGET_LOOK)))
-								break;
-						}
-
-						/* Change the intro */
-						s2 = "also carrying ";
-					}
-				}
-
-				/* Double break */
-				if (obj) break;
-
-				/* Use a preposition */
-				s2 = "on ";
-			}
-		}
-
-		/* A trap */
-		if (square_isvisibletrap(cave, loc(x, y))) {
-			struct trap *trap = square(cave, loc(x, y))->trap;
-
-			/* Not boring */
-			boring = false;
-
-			/* Interact */
-			while (1) {
-				/* Change the intro */
-				if (square(cave, loc(x, y))->mon < 0) {
-					s1 = "You are ";
-					s2 = "on ";
-				} else {
-					s1 = "You see ";
-					s2 = "";
-				}
-
-				/* Pick proper indefinite article */
-				s3 = (is_a_vowel(trap->kind->desc[0])) ? "an " : "a ";
-
-				/* Describe, and prompt for recall */
-				if (player->wizard) {
-					strnfmt(out_val, sizeof(out_val),
-							"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2,
-							s3, trap->kind->name, coords, y, x,
-							(int)cave->noise.grids[y][x],
-							(int)cave->scent.grids[y][x]);
-				} else {
-					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
-							s1, s2, s3, trap->kind->desc, coords);
-				}
-
-				prt(out_val, 0, 0);
-
-				/* Place cursor */
-				move_cursor_relative(y, x);
-
-				/* Command */
-				press = inkey_m();
-		
-				/* Stop on everything but "return"/"space" */
-				if ((press.key.code != KC_ENTER) && (press.key.code != ' '))
-					break;
-		
-				/* Sometimes stop at "space" key */
-				if ((press.key.code == ' ') && !(mode & (TARGET_LOOK)))
-					break;
-			}
-		}
-	
-		/* Double break */
-		if (square_isvisibletrap(cave, loc(x, y)))
-			break;
-	
-		/* Scan all sensed objects in the grid */
-		floor_num = scan_distant_floor(floor_list, floor_max, loc(x, y));
-		if ((floor_num > 0) &&
-		    (!(player->timed[TMD_BLIND]) || loc_eq(loc(x, y), player->grid))) {
-			/* Not boring */
-			boring = false;
-
-			track_object(player->upkeep, floor_list[0]);
-			handle_stuff(player);
-
-			/* If there is more than one item... */
-			if (floor_num > 1) {
-				while (1) {
-					/* Describe the pile */
-					if (player->wizard) {
-						strnfmt(out_val, sizeof(out_val),
-								"%s%s%sa pile of %d objects, %s (%d:%d, noise=%d, scent=%d).",
-								s1, s2, s3, floor_num, coords, y, x,
-								(int)cave->noise.grids[y][x],
-								(int)cave->scent.grids[y][x]);
-					} else {
-						strnfmt(out_val, sizeof(out_val),
-								"%s%s%sa pile of %d objects, %s.",
-								s1, s2, s3, floor_num, coords);
-					}
-
-					prt(out_val, 0, 0);
-					move_cursor_relative(y, x);
-					press = inkey_m();
-
-					/* Display objects */
-					if (((press.type == EVT_MOUSE) && (press.mouse.button == 1)
-						 && (KEY_GRID_X(press) == x) && 
-						 (KEY_GRID_Y(press) == y)) ||
-						((press.type == EVT_KBRD) && (press.key.code == 'r'))) {
-						int rdone = 0;
-						int pos;
-						while (!rdone) {
-							/* Save screen */
-							screen_save();
-
-							/* Use OLIST_DEATH to show item labels */
-							show_floor(floor_list, floor_num, (OLIST_DEATH
-									| OLIST_WEIGHT | OLIST_GOLD), NULL);
-
-							/* Describe the pile */
-							prt(out_val, 0, 0);
-							press = inkey_m();
-
-							/* Load screen */
-							screen_load();
-
-							if (press.type == EVT_MOUSE) {
-								pos = press.mouse.y-1;
-							} else {
-								pos = press.key.code - 'a';
-							}
-							if (0 <= pos && pos < floor_num) {
-								track_object(player->upkeep, floor_list[pos]);
-								handle_stuff(player);
-								continue;
-							}
-							rdone = 1;
-						}
-
-						/* Now that the user's done with the display loop,
-						 * let's do the outer loop over again */
-						continue;
-					}
-
-					/* Done */
-					break;
-				}
-			} else {
-				/* Only one object to display */
-				struct object *obj_local = floor_list[0];
-
-				/* Allow user to recall an object */
-				press = target_recall_loop_object(obj_local, y, x, out_val, s1, s2,
-												  s3, coords);
-
-				/* Stop on everything but "return"/"space" */
-				if ((press.key.code != KC_ENTER) && (press.key.code != ' '))
-					break;
-
-				/* Sometimes stop at "space" key */
-				if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
-
-				/* Plurals */
-				s1 = VERB_AGREEMENT(obj_local->number, "It is ", "They are ");
-
-				/* Preposition */
-				s2 = "on ";
-			}
-
-		}
-
-		/* Double break */
-		if (obj) break;
-
-		name = square_apparent_name(cave, player, loc(x, y));
-
-		/* Terrain feature if needed */
-		if (boring || square_isinteresting(cave, loc(x, y))) {
-			/* Hack -- handle unknown grids */
-
-			/* Pick a preposition if needed */
-			if (*s2) s2 = square_apparent_look_in_preposition(cave, player, loc(x, y));
-
-			/* Pick prefix for the name */
-			s3 = square_apparent_look_prefix(cave, player, loc(x, y));
-
-			/* Display a message */
-			if (player->wizard) {
-				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						name, coords, y, x, (int)cave->noise.grids[y][x],
-						(int)cave->scent.grids[y][x]);
-			} else {
-				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s.", s1, s2, s3, name, coords);
-			}
-
-			prt(out_val, 0, 0);
-			move_cursor_relative(y, x);
-			press = inkey_m();
-
-			if (press.type == EVT_MOUSE) {
-				/* Stop on right click */
-				if (press.mouse.button == 2)
-					break;
-			} else {
-				/* Stop on everything but "return"/"space" */
-				if ((press.key.code != KC_ENTER) && (press.key.code != ' '))
-					break;
-			}
-		}
-
-		/* Stop on everything but "return" */
-		if (press.type == EVT_MOUSE) {
-				/* Stop on right click */
-				if (press.mouse.button != 2)
-					break;
-		} else {
-    			if (press.key.code != KC_ENTER) break;
-		}
+		if ((*handlers[ihandler])(cave, player, &auxst)) break;
+		++ihandler;
+		if (ihandler >= (int) N_ELEMENTS(handlers)) ihandler = 0;
 	}
 
-	mem_free(floor_list);
-
 	/* Keep going */
-	return (press);
+	return auxst.press;
 }
 
 /**
