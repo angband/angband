@@ -25,9 +25,9 @@
 /**
  * Calculates the total number of points earned (wow - NRM)
  */
-static long total_points(void)
+static long total_points(const struct player *p)
 {
-	return (player->max_exp + (100 * player->max_depth));
+	return p->max_exp + 100 * p->max_depth;
 }
 
 
@@ -197,8 +197,22 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 
 
 
-void build_score(struct high_score *entry, const char *died_from,
-				 time_t *death_time)
+/**
+ * Fill in a score record for the given player.
+ *
+ * \param entry points to the record to fill in.
+ * \param p is the player whose score should be recorded.
+ * \param died_from is the reason for death.  In typical use, that will be
+ * p->died_from, but when the player isn't dead yet, the caller may want to
+ * use something else:  "nobody (yet!)" is traditional.
+ * \param death_time points to the time at which the player died.  May be NULL
+ * when the player isn't dead.
+ *
+ * Bug:  takes a player argument, but still accesses a bit of global state,
+ * player_uid, referring to the player
+ */
+void build_score(struct high_score *entry, const struct player *p,
+		const char *died_from, const time_t *death_time)
 {
 	memset(entry, 0, sizeof(struct high_score));
 
@@ -206,10 +220,10 @@ void build_score(struct high_score *entry, const char *died_from,
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
 
 	/* Calculate and save the points */
-	strnfmt(entry->pts, sizeof(entry->pts), "%9u", total_points());
+	strnfmt(entry->pts, sizeof(entry->pts), "%9u", total_points(p));
 
 	/* Save the current gold */
-	strnfmt(entry->gold, sizeof(entry->gold), "%9u", player->au);
+	strnfmt(entry->gold, sizeof(entry->gold), "%9u", p->au);
 
 	/* Save the current turn */
 	strnfmt(entry->turns, sizeof(entry->turns), "%9u", turn);
@@ -222,18 +236,18 @@ void build_score(struct high_score *entry, const char *died_from,
 		my_strcpy(entry->day, "TODAY", sizeof(entry->day));
 
 	/* Save the player name (15 chars) */
-	strnfmt(entry->who, sizeof(entry->who), "%-.15s", player->full_name);
+	strnfmt(entry->who, sizeof(entry->who), "%-.15s", p->full_name);
 
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
-	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", player->race->ridx);
-	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", player->class->cidx);
+	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p->race->ridx);
+	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p->class->cidx);
 
 	/* Save the level and such */
-	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", player->lev);
-	strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%3d", player->depth);
-	strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", player->max_lev);
-	strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", player->max_depth);
+	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p->lev);
+	strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%3d", p->depth);
+	strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", p->max_lev);
+	strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", p->max_depth);
 
 	/* No cause of death */
 	my_strcpy(entry->how, died_from, sizeof(entry->how));
@@ -242,11 +256,14 @@ void build_score(struct high_score *entry, const char *died_from,
 
 
 /**
- * Enters a players name on a hi-score table, if "legal".
+ * Enter a player's name on a hi-score table, if "legal".
  *
+ * \param p is the player to enter
+ * \param death_time points to the time at which the player died; may be NULL
+ * for a player that's not dead yet
  * Assumes "signals_ignore_tstp()" has been called.
  */
-void enter_score(time_t *death_time)
+void enter_score(const struct player *p, const time_t *death_time)
 {
 	int j;
 
@@ -254,7 +271,7 @@ void enter_score(time_t *death_time)
 	for (j = 0; j < OPT_MAX; ++j) {
 		if (option_type(j) != OP_SCORE)
 			continue;
-		if (!player->opts.opt[j])
+		if (!p->opts.opt[j])
 			continue;
 
 		msg("Score not registered for cheaters.");
@@ -263,21 +280,20 @@ void enter_score(time_t *death_time)
 	}
 
 	/* Add a new entry, if allowed */
-	if (player->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG)) {
+	if (p->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG)) {
 		msg("Score not registered for wizards.");
 		event_signal(EVENT_MESSAGE_FLUSH);
-	} else if (!player->total_winner &&
-			   streq(player->died_from, "Interrupting")) {
+	} else if (!p->total_winner && streq(p->died_from, "Interrupting")) {
 		msg("Score not registered due to interruption.");
 		event_signal(EVENT_MESSAGE_FLUSH);
-	} else if (!player->total_winner && streq(player->died_from, "Quitting")) {
+	} else if (!p->total_winner && streq(p->died_from, "Quitting")) {
 		msg("Score not registered due to quitting.");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	} else {
 		struct high_score entry;
 		struct high_score scores[MAX_HISCORES];
 
-		build_score(&entry, player->died_from, death_time);
+		build_score(&entry, p, p->died_from, death_time);
 
 		highscore_read(scores, N_ELEMENTS(scores));
 		highscore_add(&entry, scores, N_ELEMENTS(scores));

@@ -269,7 +269,7 @@ void death_knowledge(struct player *p)
 
 	/* Get time of death */
 	(void)time(&death_time);
-	enter_score(&death_time);
+	enter_score(p, &death_time);
 
 	/* Hack -- Recalculate bonuses */
 	p->upkeep->update |= (PU_BONUS);
