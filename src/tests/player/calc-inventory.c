@@ -344,6 +344,7 @@ static int test_calc_inventory_only_quiver(void *state) {
 			{ TV_POLEARM, 1, 1, true, false },
 			{ TV_SHOT, 1, 27, true, false },
 			{ TV_ARROW, 1, 15, true, false },
+			{ -1, -1, -1, false, false }
 		},
 		{ { -1, -1, -1 } },
 		/*
@@ -410,6 +411,7 @@ static int test_calc_inventory_equipped_pack_quiver(void *state) {
 			/* sling */
 			{ TV_BOW, 1, 1, false, true },
 			{ TV_POTION, 5, 2, true, false },
+			{ -1, -1, -1, false, false }
 		},
 		{
 			{ TV_MAGIC_BOOK, 1, 1 },
@@ -549,6 +551,7 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 			{ TV_ARROW, 1, 15, true, false },
 			{ TV_BOLT, 2, 5, true, false },
 			{ TV_SHOT, 2, 3, true, false },
+			{ -1, -1, -1, false, false }
 		},
 		{
 			{ TV_SWORD, 1, 1 },
