@@ -449,7 +449,7 @@ static int test_calc_inventory_equipped_pack_quiver(void *state) {
 	require(flush_gear());
 	require(populate_gear(this_test_case.gear_in));
 	/*
-	 * Inscribe the spear so it goes to the quiver.  Also, compute how
+	 * Inscribe the dagger so it goes to the quiver.  Also, compute how
 	 * much space the quiver will take.
 	 */
 	obj = player->gear;
