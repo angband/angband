@@ -14,27 +14,27 @@ pageclass = "class='front'"
 <a id="osx" href="https://github.com/angband/angband/releases/download/4.2.3/Angband-4.2.3-osx.dmg" download onclick="downloadClick(this.pathname);">macOS</a> |
 <a id="source" href="https://github.com/angband/angband/releases/download/4.2.3/Angband-4.2.3.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
-<a href="/angband/release">Read about the changes in this version</a>
+<a href="/release">Read about the changes in this version</a>
 </section>
 
 <section id="images" class="slots">
 <div class="slot">
-<img src="/angband/img/shot1.png" width="175" height="175">
+<img src="/img/shot1.png" width="175" height="175">
 <p class="caption">You (the <tt>@</tt>) begin in the small trading town above Angband, ready to descend into its depths (using the down staircase, '<tt>></tt>').
 </div>
 
 <div class="slot">
-<img src="/angband/img/shot2.png" width="175" height="175">
+<img src="/img/shot2.png" width="175" height="175">
 <p class="caption">You explore randomly-generated caverns, and find treasure: <tt>=</tt> is a ring, <tt>?</tt> is a scroll.
 </div>
 
 <div class="slot">
-<img src="/angband/img/shot3.png" width="180" height="175">
+<img src="/img/shot3.png" width="180" height="175">
 <p class="caption">You fight monsters.  <tt>o</tt> is an orc, <tt>p</tt> a human, and <tt>r</tt> a rat.  If you die in battle, you have to start the game again!
 </div>
 
 <div class="slot">
-<img src="/angband/img/shot4.png" width="180" height="175">
+<img src="/img/shot4.png" width="180" height="175">
 <p class="caption">Graphics are also available if ASCII isn't your style.
 </div>
 </section>
@@ -59,7 +59,7 @@ pageclass = "class='front'"
 </dl>
 </section>
 
-<script src="/angband/js/detect.js" async defer></script>
+<script src="/js/detect.js" async defer></script>
 <script>
 function downloadClick(pathname) {
 	ga('send', 'pageview', pathname);
