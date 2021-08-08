@@ -23,6 +23,7 @@
 #include "game-input.h"
 #include "obj-tval.h"
 #include "player.h"
+#include "player-birth.h"
 #include "player-spell.h"
 #include "ui-birth.h"
 #include "ui-display.h"
@@ -514,8 +515,9 @@ static void clear_question(void)
 	"{light blue}Please select your character traits from the menus below:{/}\n\n" \
 	"Use the {light green}movement keys{/} to scroll the menu, " \
 	"{light green}Enter{/} to select the current menu item, '{light green}*{/}' " \
-	"for a random menu item, '{light green}ESC{/}' to step back through the " \
-	"birth process, '{light green}={/}' for the birth options, '{light green}?{/}' " \
+	"for a random menu item, '{light green}@{/}' to finish the character with random selections, " \
+	"'{light green}ESC{/}' to step back through the birth process, " \
+	"'{light green}={/}' for the birth options, '{light green}?{/}' " \
 	"for help, or '{light green}Ctrl-X{/}' to quit."
 
 /**
@@ -541,6 +543,102 @@ static void print_menu_instructions(void)
 }
 
 /**
+ * Advance character generation to the confirmation step using random choices
+ * and a default point buy for the statistics.
+ *
+ * \param current is the current stage for character generation.
+ */
+static void finish_with_random_choices(enum birth_stage current)
+{
+	struct {
+		cmd_code code;
+		const char* arg_name;
+		int arg_choice;
+		char* arg_str;
+		bool arg_is_choice;
+	} cmds[4];
+	int ncmd = 0;
+	const struct player_race *pr;
+	char name[PLAYER_NAME_LEN];
+	char history[240];
+
+	if (current <= BIRTH_RACE_CHOICE) {
+		int n, i;
+
+		for (pr = races, n = 0; pr; pr = pr->next, ++n) {}
+		i = randint0(n);
+		pr = player_id2race(i);
+
+		assert(ncmd < (int)N_ELEMENTS(cmds));
+		cmds[ncmd].code = CMD_CHOOSE_RACE;
+		cmds[ncmd].arg_name = "choice";
+		cmds[ncmd].arg_choice = i;
+		cmds[ncmd].arg_is_choice = true;
+		++ncmd;
+	} else {
+		pr = player->race;
+	}
+
+	if (current <= BIRTH_CLASS_CHOICE) {
+		struct player_class *pc;
+		int n, i;
+
+		for (pc = classes, n = 0; pc; pc = pc->next, ++n) {}
+		i = randint0(n);
+
+		assert(ncmd < (int)N_ELEMENTS(cmds));
+		cmds[ncmd].code = CMD_CHOOSE_CLASS;
+		cmds[ncmd].arg_name = "choice";
+		cmds[ncmd].arg_choice = i;
+		cmds[ncmd].arg_is_choice = true;
+		++ncmd;
+	}
+
+	if (current <= BIRTH_NAME_CHOICE) {
+		player_random_name(name, sizeof(name));
+
+		assert(ncmd < (int)N_ELEMENTS(cmds));
+		cmds[ncmd].code = CMD_NAME_CHOICE;
+		cmds[ncmd].arg_name = "name";
+		cmds[ncmd].arg_str = name;
+		cmds[ncmd].arg_is_choice = false;
+		++ncmd;
+	}
+
+	if (current <= BIRTH_HISTORY_CHOICE) {
+		char *buf;
+
+		buf = get_history(pr->history);
+		my_strcpy(history, buf, sizeof(history));
+		string_free(buf);
+
+		assert(ncmd < (int)N_ELEMENTS(cmds));
+		cmds[ncmd].code = CMD_HISTORY_CHOICE;
+		cmds[ncmd].arg_name = "history";
+		cmds[ncmd].arg_str = history;
+		cmds[ncmd].arg_is_choice = false;
+		++ncmd;
+	}
+
+	/* Push in reverse order:  the last pushed will be executed first. */
+	while (ncmd > 0) {
+		--ncmd;
+		cmdq_push(cmds[ncmd].code);
+		if (cmds[ncmd].arg_name) {
+			if (cmds[ncmd].arg_is_choice) {
+				cmd_set_arg_choice(cmdq_peek(),
+					cmds[ncmd].arg_name,
+					cmds[ncmd].arg_choice);
+			} else {
+				cmd_set_arg_string(cmdq_peek(),
+					cmds[ncmd].arg_name,
+					cmds[ncmd].arg_str);
+			}
+		}
+	}
+}
+
+/**
  * Allow the user to select from the current menu, and return the 
  * corresponding command to the game.  Some actions are handled entirely
  * by the UI (displaying help text, for instance).
@@ -558,7 +656,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 	clear_question();
 	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, COLOUR_YELLOW, menu_data->hint);
 
-	current_menu->cmd_keys = "?=*\x18";	 /* ?, =, *, <ctl-X> */
+	current_menu->cmd_keys = "?=*@\x18";	 /* ?, =, *, @, <ctl-X> */
 
 	while (next == BIRTH_RESET) {
 		/* Display the menu, wait for a selection of some sort to be made. */
@@ -606,6 +704,12 @@ static enum birth_stage menu_question(enum birth_stage current,
 			} else if (cx.key.code == '=') {
 				do_cmd_options_birth();
 				next = current;
+			} else if (cx.key.code == '@') {
+				/*
+				 * Use random choices to complete the character.
+				 */
+				finish_with_random_choices(current);
+				next = BIRTH_FINAL_CONFIRM;
 			} else if (cx.key.code == KTRL('X')) {
 				quit(NULL);
 			} else if (cx.key.code == '?') {
