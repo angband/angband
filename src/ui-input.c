@@ -26,7 +26,6 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-path.h"
-#include "randname.h"
 #include "savefile.h"
 #include "target.h"
 #include "ui-command.h"
@@ -798,9 +797,7 @@ static bool get_name_keypress(char *buf, size_t buflen, size_t *curs,
 	{
 		case '*':
 		{
-			*len = randname_make(RANDNAME_TOLKIEN, 4, 8, buf, buflen,
-								 name_sections);
-			my_strcap(buf);
+			*len = player_random_name(buf, buflen);
 			*curs = 0;
 			result = false;
 			break;
