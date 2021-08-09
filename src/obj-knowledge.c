@@ -1189,7 +1189,7 @@ void update_player_object_knowledge(struct player *p)
 
 	/* Curse objects */
 	for (i = 1; i < z_info->curse_max; i++) {
-		player_know_object(player, curses[i].obj);
+		player_know_object(p, curses[i].obj);
 	}
 
 	/* Update */
