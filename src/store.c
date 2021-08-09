@@ -1944,7 +1944,7 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Autoinscribe if we still have any */
 	if (!none_left)
-		apply_autoinscription(obj);
+		apply_autoinscription(player, obj);
 
 	/* Set ignore flag */
 	player->upkeep->notice |= PN_IGNORE;

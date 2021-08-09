@@ -1194,8 +1194,8 @@ void update_player_object_knowledge(struct player *p)
 
 	/* Update */
 	if (cave)
-		autoinscribe_ground();
-	autoinscribe_pack();
+		autoinscribe_ground(p);
+	autoinscribe_pack(p);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }

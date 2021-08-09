@@ -723,7 +723,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 		assert(pack_slots_used(p) <= z_info->pack_size);
 
 		gear_insert_end(p, obj);
-		apply_autoinscription(obj);
+		apply_autoinscription(p, obj);
 
 		/* Remove cave object details */
 		obj->held_m_idx = 0;
