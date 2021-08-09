@@ -2167,7 +2167,7 @@ static void rune_xtra_act(struct keypress ch, int oid)
 
 			/* Add the autoinscription */
 			rune_set_note(oid, note_text);
-			rune_autoinscribe(oid);
+			rune_autoinscribe(player, oid);
 
 			/* Redraw gear */
 			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
