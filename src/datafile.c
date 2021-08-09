@@ -366,7 +366,7 @@ errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
 /**
  * Write the flag lines for a set of flags.
  */
-void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
+void write_flags(ang_file *fff, const char *intro_text, const bitflag *flags,
 					   int flag_size, const char *names[])
 {
 	int flag;

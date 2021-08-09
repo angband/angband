@@ -447,7 +447,7 @@ static void prep_output_dir(void)
  * should have two parameters. 
  */
 static int stats_dump_oflags(sqlite3_stmt *flags_stmt, int idx, 
-	bitflag flags[OF_SIZE]) 
+		const bitflag flags[OF_SIZE])
 {
 	int err, flag;
 
@@ -483,7 +483,7 @@ static int stats_dump_artifacts(void)
 	if (err) return err;
 
 	for (idx = 0; idx < z_info->a_max; idx++) {
-		struct artifact *art = &a_info[idx];
+		const struct artifact *art = &a_info[idx];
 
 		if (!art->name) continue;
 

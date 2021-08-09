@@ -52,7 +52,7 @@ errr grab_flag(bitflag *flags, const size_t size, const char **flag_table,
 errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
 				 const char *flag_name);
 
-void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
+void write_flags(ang_file *fff, const char *intro_text, const bitflag *flags,
 				 int flag_size, const char *names[]);
 void write_mods(ang_file *fff, const int values[]);
 void write_elements(ang_file *fff, const struct element_info *el_info);
