@@ -254,12 +254,7 @@ extern struct object_kind *pile_kind;
 extern struct object_kind *curse_object_kind;
 
 /**
- * Information about artifacts.
- *
- * Note that ::cur_num is written to the savefile.
- *
- * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
- * which artifacts have been created and haven't, so this can become read-only.
+ * Unchanging information about artifacts.
  */
 struct artifact {
 	char *name;
@@ -299,10 +294,6 @@ struct artifact {
 	int alloc_min;		/** Minimum depth (can appear earlier) */
 	int alloc_max;		/** Maximum depth (will NEVER appear deeper) */
 
-	bool created;		/**< Whether this artifact has been created */
-	bool seen;			/**< Whether this artifact has been seen this game */
-	bool everseen;		/**< Whether this artifact has ever been seen  */
-
 	struct activation *activation;	/**< Artifact activation */
 	char *alt_msg;
 
@@ -310,9 +301,21 @@ struct artifact {
 };
 
 /**
+ * Information about artifacts that changes during the course of play;
+ * except for aidx, saved to the save file
+ */
+struct artifact_upkeep {
+	u32b aidx;	/**< For cross-indexing with struct artifact */
+	bool created;	/**< Whether this artifact has been created */
+	bool seen;	/**< Whether this artifact has been seen this game */
+	bool everseen;	/**< Whether this artifact has ever been seen  */
+};
+
+/**
  * The artifact arrays
  */
 extern struct artifact *a_info;
+extern struct artifact_upkeep *aup_info;
 
 
 /**
@@ -419,7 +422,7 @@ struct curse_data {
 struct object {
 	struct object_kind *kind;	/**< Kind of the object */
 	struct ego_item *ego;		/**< Ego item info of the object, if any */
-	struct artifact *artifact;	/**< Artifact info of the object, if any */
+	const struct artifact *artifact;	/**< Artifact info of the object, if any */
 
 	struct object *prev;	/**< Previous object in a pile */
 	struct object *next;	/**< Next object in a pile */

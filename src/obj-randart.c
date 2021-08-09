@@ -219,7 +219,7 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 static void store_base_power(struct artifact_set_data *data)
 {
 	int i, num;
-	struct artifact *art;
+	const struct artifact *art;
 	struct object_kind *kind;
 	int *fake_total_power;
 	int **fake_tv_power;

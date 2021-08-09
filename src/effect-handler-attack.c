@@ -1208,9 +1208,13 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 						if (OPT(player, birth_lose_arts) ||
 							obj_is_known_artifact(obj)) {
 							history_lose_artifact(player, obj->artifact);
-							obj->artifact->created = true;
+							mark_artifact_created(
+								obj->artifact,
+								true);
 						} else {
-							obj->artifact->created = false;
+							mark_artifact_created(
+								obj->artifact,
+								false);
 						}
 					}
 					obj = obj->next;

@@ -441,7 +441,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	/* Give it to the floor */
 	if (!floor_carry(c, grid, new_obj, &dummy)) {
 		if (new_obj->artifact) {
-			new_obj->artifact->created = false;
+			mark_artifact_created(new_obj->artifact, false);
 		}
 		object_delete(&new_obj);
 		return;

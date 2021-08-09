@@ -1046,11 +1046,11 @@ int rd_artifacts(void)
 		byte tmp8u;
 
 		rd_byte(&tmp8u);
-		a_info[i].created = tmp8u ? true : false;
+		aup_info[i].created = tmp8u ? true : false;
 		rd_byte(&tmp8u);
-		a_info[i].seen = tmp8u ? true : false;
+		aup_info[i].seen = tmp8u ? true : false;
 		rd_byte(&tmp8u);
-		a_info[i].everseen = tmp8u ? true : false;
+		aup_info[i].everseen = tmp8u ? true : false;
 		rd_byte(&tmp8u);
 	}
 
@@ -1707,7 +1707,7 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		struct artifact *art = NULL;
+		const struct artifact *art = NULL;
 		int aidx = 0;
 		char name[80];
 		char text[80];
