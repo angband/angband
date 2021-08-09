@@ -403,9 +403,8 @@ void player_init(struct player *p)
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++) {
-		struct artifact *art = &a_info[i];
-		art->created = false;
-		art->seen = false;
+		mark_artifact_created(&a_info[i], false);
+		mark_artifact_seen(&a_info[i], false);
 	}
 
 	/* Start with no quests */

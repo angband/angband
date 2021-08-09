@@ -36,7 +36,7 @@ unsigned check_for_inscrip(const struct object *obj, const char *inscrip);
 unsigned check_for_inscrip_with_int(const struct object *obj, const char *insrip, int *ival);
 struct object_kind *lookup_kind(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
-struct artifact *lookup_artifact_name(const char *name);
+const struct artifact *lookup_artifact_name(const char *name);
 struct ego_item *lookup_ego_item(const char *name, int tval, int sval);
 int lookup_sval(int tval, const char *name);
 void object_short_name(char *buf, size_t max, const char *name);
@@ -69,5 +69,11 @@ bool recharge_timeout(struct object *obj);
 bool verify_object(const char *prompt, const struct object *obj);
 void print_custom_message(struct object *obj, const char *string, int msg_type);
 
+bool is_artifact_created(const struct artifact *art);
+bool is_artifact_seen(const struct artifact *art);
+bool is_artifact_everseen(const struct artifact *art);
+void mark_artifact_created(const struct artifact *art, bool created);
+void mark_artifact_seen(const struct artifact *art, bool seen);
+void mark_artifact_everseen(const struct artifact *art, bool seen);
 
 #endif /* OBJECT_UTIL_H */

@@ -464,7 +464,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 	bool vault = square_isvault(cave, loc(x, y));
 	int number = obj->number;
 	static int lvl;
-	struct artifact *art;
+	const struct artifact *art;
 
 	double gold_temp = 0;
 
@@ -1056,7 +1056,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			}
 		}
 		/* preserve the artifact */
-		if (!(clearing)) art->created = false;
+		if (!(clearing)) mark_artifact_created(art, false);
 	}
 
 	/* Get info on gold. */
@@ -1461,10 +1461,7 @@ static void uncreate_artifacts(void)
 
 	/* Loop through artifacts */
 	for (i = 0; z_info && i < z_info->a_max; i++) {
-		struct artifact *art = &a_info[i];
-
-		/* Uncreate */
-		art->created = false;
+		mark_artifact_created(&a_info[i], false);
 	}
 }
 

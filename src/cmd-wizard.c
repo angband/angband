@@ -137,7 +137,7 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
  * \param art The artifact to instantiate.
  * \return An object that represents the artifact.
  */
-static struct object *wiz_create_object_from_artifact(struct artifact *art)
+static struct object *wiz_create_object_from_artifact(const struct artifact *art)
 {
 	struct object_kind *kind;
 	struct object *obj;
@@ -155,8 +155,7 @@ static struct object *wiz_create_object_from_artifact(struct artifact *art)
 	obj->artifact = art;
 	copy_artifact_data(obj, art);
 
-	/* Mark that the artifact has been created. */
-	art->created = true;
+	mark_artifact_created(art, true);
 
 	return obj;
 }
@@ -2550,7 +2549,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		 * here.
 		 */
 		if (obj->artifact) {
-			obj->artifact->created = false;
+			mark_artifact_created(obj->artifact, false);
 		}
 
 		/* Check for failures to generate an object. */
@@ -2605,7 +2604,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 
 	/* Hack -- normally only make a single artifact */
 	if (obj->artifact) {
-		obj->artifact->created = true;
+		mark_artifact_created(obj->artifact, true);
 	}
 }
 
@@ -2853,7 +2852,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->artifact = lookup_artifact_name(tmp_val);
 	}
 	if (obj->artifact) {
-		struct artifact *a = obj->artifact;
+		const struct artifact *a = obj->artifact;
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;

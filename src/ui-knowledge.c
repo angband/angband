@@ -1601,7 +1601,7 @@ static bool artifact_is_known(int a_idx)
 	if (player->wizard)
 		return true;
 
-	if (!a_info[a_idx].created)
+	if (!is_artifact_created(&a_info[a_idx]))
 		return false;
 
 	/* Check all objects to see if it exists but hasn't been IDed */

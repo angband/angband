@@ -1363,9 +1363,9 @@ void prepare_next_level(struct player *p)
 								bool found = obj_is_known_artifact(obj);
 								if (OPT(p, birth_lose_arts) || found) {
 									history_lose_artifact(p, obj->artifact);
-									obj->artifact->created = true;
+									mark_artifact_created(obj->artifact, true);
 								} else {
-									obj->artifact->created = false;
+									mark_artifact_created(obj->artifact, false);
 								}
 							}
 

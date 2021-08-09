@@ -46,6 +46,7 @@
 struct object_base *kb_info;
 struct object_kind *k_info;
 struct artifact *a_info;
+struct artifact_upkeep *aup_info;
 struct ego_item *e_info;
 struct flavor *flavors;
 
@@ -427,14 +428,14 @@ struct object_kind *objkind_byid(int kidx) {
 /**
  * Return the a_idx of the artifact with the given name
  */
-struct artifact *lookup_artifact_name(const char *name)
+const struct artifact *lookup_artifact_name(const char *name)
 {
 	int i;
 	int a_idx = -1;
 
 	/* Look for it */
 	for (i = 0; i < z_info->a_max; i++) {
-		struct artifact *art = &a_info[i];
+		const struct artifact *art = &a_info[i];
 
 		/* Test for equality */
 		if (art->name && streq(name, art->name))
@@ -1040,4 +1041,58 @@ void print_custom_message(struct object *obj, const char *string, int msg_type)
 	strnfcat(buf, 1024, &end, string);
 
 	msgt(msg_type, "%s", buf);
+}
+
+/**
+ * Return if the given artifact has been created.
+ */
+bool is_artifact_created(const struct artifact *art)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	return aup_info[art->aidx].created;
+}
+
+/**
+ * Return if the given artifact has been seen.
+ */
+bool is_artifact_seen(const struct artifact *art)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	return aup_info[art->aidx].seen;
+}
+
+/**
+ * Return if the given artifact has ever been seen.
+ */
+bool is_artifact_everseen(const struct artifact *art)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	return aup_info[art->aidx].everseen;
+}
+
+/**
+ * Set whether the given artifact has been created or not.
+ */
+void mark_artifact_created(const struct artifact *art, bool created)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	aup_info[art->aidx].created = created;
+}
+
+/**
+ * Set whether the given artifact has been created or not.
+ */
+void mark_artifact_seen(const struct artifact *art, bool seen)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	aup_info[art->aidx].seen = seen;
+}
+
+/**
+ * Set whether the given artifact has been seen or not.
+ */
+void mark_artifact_everseen(const struct artifact *art, bool seen)
+{
+	assert(art->aidx == aup_info[art->aidx].aidx);
+	aup_info[art->aidx].everseen = seen;
 }

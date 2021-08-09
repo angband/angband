@@ -587,7 +587,7 @@ static struct object *make_artifact_special(int level, int tval)
 
 	/* Check the special artifacts */
 	for (i = 0; i < z_info->a_max; ++i) {
-		struct artifact *art = &a_info[i];
+		const struct artifact *art = &a_info[i];
 		struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" artifacts */
@@ -603,7 +603,7 @@ static struct object *make_artifact_special(int level, int tval)
 		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
-		if (art->created) continue;
+		if (is_artifact_created(art)) continue;
 
 		/* Enforce minimum "depth" (loosely) */
 		if (art->alloc_min > player->depth) {
@@ -640,7 +640,7 @@ static struct object *make_artifact_special(int level, int tval)
 		copy_artifact_data(new_obj, art);
 
 		/* Mark the artifact as "created" */
-		art->created = true;
+		mark_artifact_created(art, true);
 
 		/* Success */
 		return new_obj;
@@ -675,7 +675,7 @@ static bool make_artifact(struct object *obj)
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = 0; !obj->artifact && i < z_info->a_max; i++) {
-		struct artifact *art = &a_info[i];
+		const struct artifact *art = &a_info[i];
 		struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" items */
@@ -688,7 +688,7 @@ static bool make_artifact(struct object *obj)
 		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
-		if (art->created) continue;
+		if (is_artifact_created(art)) continue;
 
 		/* Must have the correct fields */
 		if (art->tval != obj->tval) continue;
@@ -716,7 +716,7 @@ static bool make_artifact(struct object *obj)
 
 	if (obj->artifact) {
 		copy_artifact_data(obj, obj->artifact);
-		obj->artifact->created = true;
+		mark_artifact_created(obj->artifact, true);
 		return true;
 	}
 
@@ -746,7 +746,7 @@ bool make_fake_artifact(struct object *obj, const struct artifact *artifact)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, MAXIMISE);
-	obj->artifact = (struct artifact *)artifact;
+	obj->artifact = artifact;
 	copy_artifact_data(obj, artifact);
 
 	return (true);

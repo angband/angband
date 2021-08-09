@@ -674,10 +674,10 @@ void wr_artifacts(void)
 	tmp16u = z_info->a_max;
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {
-		struct artifact *art = &a_info[i];
-		wr_byte(art->created ? 1 : 0);
-		wr_byte(art->seen ? 1 : 0);
-		wr_byte(art->everseen ? 1 : 0);
+		const struct artifact_upkeep *au = &aup_info[i];
+		wr_byte(au->created ? 1 : 0);
+		wr_byte(au->seen ? 1 : 0);
+		wr_byte(au->everseen ? 1 : 0);
 		wr_byte(0);
 	}
 }

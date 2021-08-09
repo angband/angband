@@ -405,9 +405,9 @@ void spoil_artifact(const char *fname)
 
 		/* Now search through all of the artifacts */
 		for (j = 1; j < z_info->a_max; ++j) {
-			struct artifact *art = &a_info[j];
+			const struct artifact *art = &a_info[j];
+			struct artifact artc;
 			char buf2[80];
-			char *temp;
 			struct object *obj, *known_obj;
 
 			/* We only want objects in the current group */
@@ -417,8 +417,16 @@ void spoil_artifact(const char *fname)
 			obj = object_new();
 			known_obj = object_new();
 
+			/*
+			 * Make a copy of the artifact state; hide the
+			 * flavour text:  spoilers spoil the mechanics, not
+			 * the atmosphere.
+			 */
+			memcpy(&artc, art, sizeof(artc));
+			artc.text = NULL;
+
 			/* Attempt to "forge" the artifact */
-			if (!make_fake_artifact(obj, art)) {
+			if (!make_fake_artifact(obj, &artc)) {
 				object_delete(&known_obj);
 				object_delete(&obj);
 				continue;
@@ -433,16 +441,8 @@ void spoil_artifact(const char *fname)
 			/* Print name and underline */
 			spoiler_underline(buf2, '-');
 
-			/* Temporarily blank the artifact flavour text - spoilers
-			   spoil the mechanics, not the atmosphere. */
-			temp = obj->artifact->text;
-			obj->artifact->text = NULL;
-
 			/* Write out the artifact description to the spoiler file */
 			object_info_spoil(fh, obj, 80);
-
-			/* Put back the flavour */
-			obj->artifact->text = temp;
 
 			/*
 			 * Determine the minimum and maximum depths an

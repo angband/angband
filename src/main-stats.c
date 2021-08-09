@@ -307,9 +307,9 @@ static void reset_artifacts(void)
 		fflush(stdout);
 	}
 
-	for (i = 0; i < z_info->a_max; i++)
-		a_info[i].created = false;
-
+	for (i = 0; i < z_info->a_max; i++) {
+		mark_artifact_created(&a_info[i], false);
+	}
 }
 
 static void log_all_objects(int level)
@@ -1528,6 +1528,7 @@ static errr run_stats(void)
 {
 	u32b run;
 	struct artifact *a_info_save;
+	struct artifact_upkeep *aup_info_save;
 	unsigned int i;
 	int err;
 	bool status; 
@@ -1539,10 +1540,15 @@ static errr run_stats(void)
 	alloc_memory();
 	if (randarts) {
 		a_info_save = mem_zalloc(z_info->a_max * sizeof(struct artifact));
+		aup_info_save = mem_zalloc(z_info->a_max
+			* sizeof(*aup_info_save));
 		for (i = 0; i < z_info->a_max; i++) {
 			if (!a_info[i].name) continue;
 
-			memcpy(&a_info_save[i], &a_info[i], sizeof(struct artifact));
+			memcpy(&a_info_save[i], &a_info[i],
+				sizeof(struct artifact));
+			memcpy(&aup_info_save[i], &aup_info[i],
+				sizeof(struct artifact_upkeep));
 		}
 	}
 
@@ -1559,9 +1565,14 @@ static errr run_stats(void)
 	for (run = 1; run <= num_runs; run++) {
 		if (!quiet) progress_bar(run - 1, start);
 
-		if (randarts)
-			for (i = 0; i < z_info->a_max; i++)
-				memcpy(&a_info[i], &a_info_save[i], sizeof(struct artifact));
+		if (randarts) {
+			for (i = 0; i < z_info->a_max; i++) {
+				memcpy(&a_info[i], &a_info_save[i],
+					sizeof(struct artifact));
+				memcpy(&aup_info[i], &aup_info_save[i],
+					sizeof(struct artifact_upkeep));
+			}
+		}
 
 		initialize_character();
 		unkill_uniques();
@@ -1595,8 +1606,10 @@ static errr run_stats(void)
 	stats_db_close();
 	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 
-	if (randarts)
+	if (randarts) {
+		mem_free(aup_info_save);
 		mem_free(a_info_save);
+	}
 	free_stats_memory();
 	cleanup_angband();
 	if (!quiet) printf("Done!\n");
