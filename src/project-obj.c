@@ -131,7 +131,8 @@ int inven_damage(struct player *p, int type, int cperc)
 				bool none_left = false;
 
 				/* Get a description */
-				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), obj,
+					ODESC_BASE, p);
 
 				/* Message */
 				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
@@ -544,7 +545,8 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			if (obj->known && !ignore_item_ok(obj) &&
 				square_isseen(cave, grid)) {
 				obvious = true;
-				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), obj,
+					ODESC_BASE, player);
 			}
 
 			/* Artifacts, and other objects, get to resist */

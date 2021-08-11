@@ -174,7 +174,7 @@ static void recharged_notice(const struct object *obj, bool all)
 	if (!notify) return;
 
 	/* Describe (briefly) */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
 
 	/* Disturb the player */
 	disturb(player);

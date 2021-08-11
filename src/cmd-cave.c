@@ -1625,7 +1625,8 @@ void do_cmd_mon_command(struct command *cmd)
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
 			drop_near(cave, &obj, 0, mon->grid, true, false);
-			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), obj,
+				ODESC_PREFIX | ODESC_FULL, player);
 			if (!ignore_item_ok(obj)) {
 				msg("%s drops %s.", m_name, o_name);
 			}

@@ -324,7 +324,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
  * Set object names and get their maximum length.
  * Only makes sense after building the object list.
  */
-static void set_obj_names(bool terse)
+static void set_obj_names(bool terse, const struct player *p)
 {
 	int i;
 	struct object *obj;
@@ -340,12 +340,16 @@ static void set_obj_names(bool terse)
 			else
 				strnfmt(items[i].o_name, sizeof(items[i].o_name), "(nothing)");
 		} else {
-			if (terse)
-				object_desc(items[i].o_name, sizeof(items[i].o_name), obj,
-							ODESC_PREFIX | ODESC_FULL | ODESC_TERSE);
-			else
-				object_desc(items[i].o_name, sizeof(items[i].o_name), obj,
-							ODESC_PREFIX | ODESC_FULL);
+			if (terse) {
+				object_desc(items[i].o_name,
+					sizeof(items[i].o_name), obj,
+					ODESC_PREFIX | ODESC_FULL | ODESC_TERSE,
+					p);
+			} else {
+				object_desc(items[i].o_name,
+					sizeof(items[i].o_name), obj,
+					ODESC_PREFIX | ODESC_FULL, p);
+			}
 		}
 
 		/* Max length of label + object name */
@@ -379,7 +383,7 @@ static void show_obj_list(olist_detail_t mode)
 	if (Term->wid < 50) terse = true;
 
 	/* Set the names and get the max length */
-	set_obj_names(terse);
+	set_obj_names(terse, player);
 
 	/* Take the quiver message into consideration */
 	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
@@ -646,7 +650,9 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 		/* Prompt for confirmation n times */
 		while (n--) {
-			if (!verify_object(prompt_buf, obj)) return (false);
+			if (!verify_object(prompt_buf, obj, player)) {
+				return false;
+			}
 		}
 	}
 
@@ -1075,7 +1081,7 @@ static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 
 	/* Set up the item list variables */
 	selection = NULL;
-	set_obj_names(false);
+	set_obj_names(false, player);
 
 	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
 		max_len = MAX(max_len, 24);
@@ -1513,7 +1519,8 @@ void display_object_recall(struct object *obj)
 	char header_buf[120];
 
 	textblock *tb = object_info(obj, OINFO_NONE);
-	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header_buf, sizeof(header_buf), obj,
+		ODESC_PREFIX | ODESC_FULL, player);
 
 	clear_from(0);
 	textui_textblock_place(tb, SCREEN_REGION, header_buf);
@@ -1549,7 +1556,8 @@ void display_object_recall_interactive(struct object *obj)
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header_buf, sizeof(header_buf), obj,
+		ODESC_PREFIX | ODESC_FULL, player);
 	textui_textblock_show(tb, SCREEN_REGION, header_buf);
 	textblock_free(tb);
 }
@@ -1577,7 +1585,7 @@ void textui_obj_examine(void)
 	/* Display info */
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header_buf, sizeof(header_buf), obj,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+		ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL, player);
 
 	textui_textblock_show(tb, local_area, header_buf);
 	textblock_free(tb);
@@ -1630,7 +1638,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 
 		char tmp[70];
 		object_desc(tmp, sizeof(tmp), obj,
-					ODESC_NOEGO | ODESC_BASE | ODESC_PLURAL);
+			ODESC_NOEGO | ODESC_BASE | ODESC_PLURAL, player);
 		if (!ignored) {
 			strnfmt(out_val, sizeof out_val, "All %s", tmp);
 			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
