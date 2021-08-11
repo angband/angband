@@ -137,7 +137,7 @@ struct file_parser quests_parser = {
 /**
  * Check if the given level is a quest level.
  */
-bool is_quest(int level)
+bool is_quest(struct player *p, int level)
 {
 	size_t i;
 
@@ -145,7 +145,7 @@ bool is_quest(int level)
 	if (!level) return false;
 
 	for (i = 0; i < z_info->quest_max; i++)
-		if (player->quests[i].level == level)
+		if (p->quests[i].level == level)
 			return true;
 
 	return false;

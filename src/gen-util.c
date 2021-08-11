@@ -382,33 +382,38 @@ static void place_rubble(struct chunk *c, struct loc grid)
 
 /**
  * Place stairs (of the requested type 'feat' if allowed) at a given location.
+ *
  * \param c current chunk
  * \param grid location
+ * \param quest is whether or not this is a quest level.
  * \param feat stair terrain type
  *
  * All stairs from town go down. All stairs on an unfinished quest level go up.
  */
-static void place_stairs(struct chunk *c, struct loc grid, int feat)
+static void place_stairs(struct chunk *c, struct loc grid, bool quest, int feat)
 {
-	if (!c->depth)
+	if (!c->depth) {
 		square_set_feat(c, grid, FEAT_MORE);
-	else if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)
+	} else if (quest || c->depth >= z_info->max_depth - 1) {
 		square_set_feat(c, grid, FEAT_LESS);
-	else
+	} else {
 		square_set_feat(c, grid, feat);
+	}
 }
 
 
 /**
  * Place random stairs at a given location.
+ *
  * \param c current chunk
  * \param grid location
+ * \param quest is whether or not this is a quest level.
  */
-void place_random_stairs(struct chunk *c, struct loc grid)
+void place_random_stairs(struct chunk *c, struct loc grid, bool quest)
 {
 	int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
 	if (square_canputitem(c, grid))
-		place_stairs(c, grid, feat);
+		place_stairs(c, grid, quest, feat);
 }
 
 
@@ -542,9 +547,10 @@ void place_random_door(struct chunk *c, struct loc grid)
  * to staircases of the same type.
  * \param avoid_list If not NULL and minsep is greater than zero, also avoid
  * the locations in avoid_list which have staircases of the opposite type.
+ * \param quest is whether or not this is a quest level.
  */
 void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-		const struct connector *avoid_list)
+		const struct connector *avoid_list, bool quest)
 {
 	int i, navalloc, nav;
 	struct loc *av;
@@ -638,7 +644,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 					av[nav++] = grid;
 				}
 
-				place_stairs(c, grid, feat);
+				place_stairs(c, grid, quest, feat);
 				assert(square_isstairs(c, grid));
 				done = true;
 			}

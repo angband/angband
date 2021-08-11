@@ -43,6 +43,7 @@
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-path.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -68,7 +69,7 @@ void do_cmd_go_up(struct command *cmd)
 		return;
 	}
 	
-	ascend_to = dungeon_get_next_level(player->depth, -1);
+	ascend_to = dungeon_get_next_level(player, player->depth, -1);
 	
 	if (ascend_to == player->depth) {
 		msg("You can't go up from here!");
@@ -95,7 +96,7 @@ void do_cmd_go_up(struct command *cmd)
  */
 void do_cmd_go_down(struct command *cmd)
 {
-	int descend_to = dungeon_get_next_level(player->depth, 1);
+	int descend_to = dungeon_get_next_level(player, player->depth, 1);
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
@@ -111,8 +112,9 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Warn a force_descend player if they're going to a quest level */
 	if (OPT(player, birth_force_descend)) {
-		descend_to = dungeon_get_next_level(player->max_depth, 1);
-		if (is_quest(descend_to) &&
+		descend_to = dungeon_get_next_level(player,
+			player->max_depth, 1);
+		if (is_quest(player, descend_to) &&
 			!get_check("Are you sure you want to descend? "))
 			return;
 	}
