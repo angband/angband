@@ -420,7 +420,8 @@ void object_list_format_name(const object_list_entry_t *entry,
 	 */
 	old_number = entry->object->number;
 	entry->object->number = entry->count[field];
-	object_desc(name, sizeof(name), base_obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(name, sizeof(name), base_obj, ODESC_PREFIX | ODESC_FULL,
+		player);
 	entry->object->number = old_number;
 
 	/* The source string for strtok() needs to be set properly, depending on

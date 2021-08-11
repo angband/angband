@@ -170,7 +170,8 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			remove_object_curse(obj, index, true);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
-			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL,
+				player);
 			msgt(MSG_CURSED, "The spell fails; your %s is now fragile.", o_name);
 			of_on(obj->flags, OF_FRAGILE);
 			player_learn_flag(player, OF_FRAGILE);
@@ -358,7 +359,7 @@ static bool enchant_spell(int num_hit, int num_dam, int num_ac, struct command *
 		return false;
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
 
 	/* Describe */
 	msg("%s %s glow%s brightly!",
@@ -399,7 +400,7 @@ static void brand_object(struct object *obj, const char *name)
 		char o_name[80];
 		char brand[20];
 
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
 		strnfmt(brand, sizeof(brand), "of %s", name);
 
 		/* Describe */
@@ -1924,7 +1925,7 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 		return true;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
 
 	/* Artifacts have a 60% chance to resist */
 	if (obj->artifact && (randint0(100) < 60)) {
@@ -2938,7 +2939,7 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	if (!obj) return (true);
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
 
 	/* Attempt a saving throw for artifacts */
 	if (obj->artifact && (randint0(100) < 50)) {
@@ -2996,7 +2997,7 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 	if (!obj) return (true);
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
 
 	/* Attempt a saving throw */
 	if (obj->artifact && (randint0(100) < 50)) {

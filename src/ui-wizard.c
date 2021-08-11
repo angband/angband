@@ -130,7 +130,7 @@ static void get_art_name(char *buf, int max, int a_idx)
 	known_obj->notice |= OBJ_NOTICE_IMAGINED;
 
 	/* Create the artifact description */
-	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
+	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL, NULL);
 
 	object_delete(&known_obj);
 	obj->known = NULL;

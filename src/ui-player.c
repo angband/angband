@@ -1067,7 +1067,8 @@ void write_character_dump(ang_file *fff)
 		struct object *obj = slot_object(player, i);
 		if (!obj) continue;
 
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), obj,
+			ODESC_PREFIX | ODESC_FULL, player);
 		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
@@ -1079,7 +1080,8 @@ void write_character_dump(ang_file *fff)
 		struct object *obj = player->upkeep->inven[i];
 		if (!obj) break;
 
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), obj,
+			ODESC_PREFIX | ODESC_FULL, player);
 		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
@@ -1091,7 +1093,8 @@ void write_character_dump(ang_file *fff)
 		struct object *obj = player->upkeep->quiver[i];
 		if (!obj) continue;
 
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), obj,
+			ODESC_PREFIX | ODESC_FULL, player);
 		file_putf(fff, "%c) %s\n", gear_to_label(player, obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
@@ -1107,7 +1110,8 @@ void write_character_dump(ang_file *fff)
 		for (i = 0; i < z_info->store_inven_max; i++) {
 			struct object *obj = home_list[i];
 			if (!obj) break;
-			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), obj,
+				ODESC_PREFIX | ODESC_FULL, player);
 			file_putf(fff, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(fff, obj, 5, 72);

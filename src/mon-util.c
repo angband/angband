@@ -727,7 +727,7 @@ void become_aware(struct chunk *c, struct monster *mon, struct player *p)
 		if (mon->mimicked_obj) {
 			struct object *obj = mon->mimicked_obj;
 			char o_name[80];
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, p);
 
 			/* Print a message */
 			if (square_isseen(c, obj->grid))
@@ -1485,7 +1485,8 @@ void steal_monster_item(struct monster *mon, int midx)
 				if (ignore_item_ok(obj)) {
 					char o_name[80];
 					object_desc(o_name, sizeof(o_name), obj,
-								ODESC_PREFIX | ODESC_FULL);
+						ODESC_PREFIX | ODESC_FULL,
+						player);
 					drop_near(cave, &obj, 0, player->grid, true, true);
 					msg("You drop %s.", o_name);
 				} else {
@@ -1507,7 +1508,7 @@ void steal_monster_item(struct monster *mon, int midx)
 				(void)strnfmt(o_name, sizeof(o_name), "treasure");
 			} else {
 				object_desc(o_name, sizeof(o_name), obj,
-							ODESC_PREFIX | ODESC_FULL);
+					ODESC_PREFIX | ODESC_FULL, player);
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
 			/* Monster wakes, may notice */

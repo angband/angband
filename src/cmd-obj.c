@@ -118,7 +118,7 @@ static int beam_chance(int tval)
 /**
  * Print an artifact activation message.
  */
-static void activation_message(struct object *obj)
+static void activation_message(struct object *obj, const struct player *p)
 {
 	const char *message;
 
@@ -130,7 +130,7 @@ static void activation_message(struct object *obj)
 	} else {
 		message = obj->activation->message;
 	}
-	print_custom_message(obj, message, MSG_GENERIC);
+	print_custom_message(obj, message, MSG_GENERIC, p);
 }
 
 
@@ -191,7 +191,8 @@ void do_cmd_inscribe(struct command *cmd)
 		return;
 
 	/* Form prompt */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL,
+		player);
 	strnfmt(prompt, sizeof prompt, "Inscribing %s.", o_name);
 
 	if (cmd_get_string(cmd, "inscription", &str,
@@ -306,7 +307,8 @@ void do_cmd_wield(struct command *cmd)
 
 	/* Prevent wielding into a stickied slot */
 	if (!obj_can_takeoff(equip_obj)) {
-		object_desc(o_name, sizeof(o_name), equip_obj, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), equip_obj, ODESC_BASE,
+			player);
 		msg("You cannot remove the %s you are %s.", o_name,
 			equip_describe(player, slot));
 		return;
@@ -317,14 +319,15 @@ void do_cmd_wield(struct command *cmd)
 	while (n--) {
 		/* Prompt */
 		object_desc(o_name, sizeof(o_name), equip_obj,
-					ODESC_PREFIX | ODESC_FULL);
+			ODESC_PREFIX | ODESC_FULL, player);
 		
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), equip_obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), equip_obj,
+		ODESC_PREFIX | ODESC_FULL, player);
 
 	/* Took off weapon */
 	if (slot_type_is(player, slot, EQUIP_WEAPON))
@@ -458,7 +461,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Sound and/or message */
 		if (obj->activation) {
 			msgt(snd, "You activate it.");
-			activation_message(obj);
+			activation_message(obj, player);
 		} else if (obj->kind->effect_msg) {
 			msgt(snd, "%s", obj->kind->effect_msg);
 		} else if (obj->kind->vis_msg && !player->timed[TMD_BLIND]) {
@@ -567,7 +570,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			}
 			/* Get a description */
 			work_obj->number = number + ((used) ? 0 : 1);
-			object_desc(name, sizeof(name), work_obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(name, sizeof(name), work_obj,
+				ODESC_PREFIX | ODESC_FULL, player);
 			work_obj->number = old_num;
 			if (from_floor) {
 				/* Print a message */

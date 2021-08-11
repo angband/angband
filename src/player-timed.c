@@ -544,22 +544,27 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	/* Always mention going up a grade, otherwise on request */
 	if (new_grade->grade > current_grade->grade) {
-		print_custom_message(weapon, new_grade->up_msg, effect->msgt);
+		print_custom_message(weapon, new_grade->up_msg,
+			effect->msgt, p);
 		notify = true;
 	} else if ((new_grade->grade < current_grade->grade) &&
 			   (new_grade->down_msg)) {
-		print_custom_message(weapon, new_grade->down_msg, effect->msgt);
+		print_custom_message(weapon, new_grade->down_msg,
+			effect->msgt, p);
 		notify = true;
 	} else if (notify) {
 		if (v == 0) {
 			/* Finishing */
-			print_custom_message(weapon, effect->on_end, MSG_RECOVER);
+			print_custom_message(weapon, effect->on_end,
+				MSG_RECOVER, p);
 		} else if (p->timed[idx] > v && effect->on_decrease) {
 			/* Decrementing */
-			print_custom_message(weapon, effect->on_decrease, effect->msgt);
+			print_custom_message(weapon, effect->on_decrease,
+				effect->msgt, p);
 		} else if (v > p->timed[idx] && effect->on_increase) {
 			/* Incrementing */
-			print_custom_message(weapon, effect->on_increase, effect->msgt);
+			print_custom_message(weapon, effect->on_increase,
+				effect->msgt, p);
 		}
 	}
 

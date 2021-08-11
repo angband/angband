@@ -2592,10 +2592,13 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 			p = "feel";
 
 		/* Describe the object.  Less detail if blind. */
-		if (blind)
-			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_BASE);
-		else
-			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		if (blind) {
+			object_desc(o_name, sizeof(o_name), obj,
+				ODESC_PREFIX | ODESC_BASE, player);
+		} else {
+			object_desc(o_name, sizeof(o_name), obj,
+				ODESC_PREFIX | ODESC_FULL, player);
+		}
 
 		/* Message */
 		event_signal(EVENT_MESSAGE_FLUSH);

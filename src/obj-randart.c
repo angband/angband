@@ -202,7 +202,7 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 	object_copy(known_obj, obj);
 	obj->known = known_obj;
 	object_desc(buf, 256 * sizeof(char), obj,
-				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+		ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL, NULL);
 	file_putf(log_file, "%s\n", buf);
 
 	power = object_power(obj, verbose, log_file);

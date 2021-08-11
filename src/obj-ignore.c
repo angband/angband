@@ -270,7 +270,7 @@ int apply_autoinscription(struct player *p, struct object *obj)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL, p);
 
 	if (note[0] != 0)
 		obj->note = quark_add(note);
@@ -657,7 +657,7 @@ void ignore_drop(struct player *p)
 		if (!check_for_inscrip(obj, "!d") && !check_for_inscrip(obj, "!*")) {
 			/* Confirm the drop if the item is equipped. */
 			if (object_is_equipped(p->body, obj)) {
-				if (!verify_object("Really take off and drop", obj)) {
+				if (!verify_object("Really take off and drop", obj, p)) {
 					/* Hack - inscribe the item with !d to prevent repeated
 					 * confirmations. */
 					const char *inscription = quark_str(obj->note);

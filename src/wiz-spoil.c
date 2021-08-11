@@ -166,8 +166,9 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	(*val) = object_value(obj, 1);
 
 	/* Description (too brief) */
-	if (buf)
-		object_desc(buf, buf_len, obj, ODESC_BASE | ODESC_SPOIL);
+	if (buf) {
+		object_desc(buf, buf_len, obj, ODESC_BASE | ODESC_SPOIL, NULL);
+	}
 
 	/* Weight */
 	if (wgt)
@@ -436,7 +437,7 @@ void spoil_artifact(const char *fname)
 			object_copy(known_obj, obj);
 			obj->known = known_obj;
 			object_desc(buf2, sizeof(buf2), obj, ODESC_PREFIX |
-				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
+				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL, NULL);
 
 			/* Print name and underline */
 			spoiler_underline(buf2, '-');

@@ -1116,7 +1116,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 				 * knowledge now).
 				 */
 				object_desc(o_name, sizeof(o_name), obj,
-					ODESC_FULL | ODESC_SINGULAR);
+					ODESC_FULL | ODESC_SINGULAR, p);
 
 				/* No negative damage; change verb if no damage done */
 				if (dmg <= 0) {

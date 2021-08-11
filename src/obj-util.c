@@ -933,14 +933,15 @@ bool recharge_timeout(struct object *obj)
  *
  * The item can be negative to mean "item on floor".
  */
-bool verify_object(const char *prompt, const struct object *obj)
+bool verify_object(const char *prompt, const struct object *obj,
+		const struct player *p)
 {
 	char o_name[80];
 
 	char out_val[160];
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL, p);
 
 	/* Prompt */
 	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);
@@ -976,7 +977,8 @@ static msg_tag_t msg_tag_lookup(const char *tag)
 /**
  * Print a message from a string, customised to include details about an object
  */
-void print_custom_message(struct object *obj, const char *string, int msg_type)
+void print_custom_message(struct object *obj, const char *string, int msg_type,
+		const struct player *p)
 {
 	char buf[1024] = "\0";
 	const char *next;
@@ -1005,7 +1007,7 @@ void print_custom_message(struct object *obj, const char *string, int msg_type)
 			case MSG_TAG_NAME:
 				if (obj) {
 					end += object_desc(buf, 1024, obj,
-									   ODESC_PREFIX | ODESC_BASE);
+						ODESC_PREFIX | ODESC_BASE, p);
 				} else {
 					strnfcat(buf, 1024, &end, "hands");
 				}

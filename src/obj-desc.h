@@ -49,6 +49,7 @@ void object_kind_name(char *buf, size_t max, const struct object_kind *kind,
 					  bool easy_know);
 size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt,
 							const char *modstr, bool pluralise);
-size_t object_desc(char *buf, size_t max, const struct object *obj, int mode);
+size_t object_desc(char *buf, size_t max, const struct object *obj, int mode,
+		const struct player *p);
 
 #endif /* OBJECT_DESC_H */

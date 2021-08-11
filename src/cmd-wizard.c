@@ -188,7 +188,8 @@ static struct object *wiz_create_object_from_kind(struct object_kind *kind)
 /**
  * Display an item's properties.
  */
-static void wiz_display_item(const struct object *obj, bool all)
+static void wiz_display_item(const struct object *obj, bool all,
+		const struct player *p)
 {
 	static const char *flagLabels[] = {
 		#define OF(a, b) b,
@@ -212,7 +213,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 
 	/* Describe fully */
 	object_desc(buf, sizeof(buf), obj,
-		ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+		ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL, p);
 
 	prt(buf, 2, j);
 
@@ -1723,7 +1724,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 	}
 
 	/* Display the (possibly modified) item. */
-	wiz_display_item(obj, display_all_prop != 0);
+	wiz_display_item(obj, display_all_prop != 0, player);
 
 	/* Get choice. */
 	if (get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch)) {
@@ -2455,7 +2456,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 	}
 
 	/* Display item. */
-	wiz_display_item(obj, true);
+	wiz_display_item(obj, true, player);
 
 	/* Get what kind of treasure to generate. */
 	if (cmd_get_arg_choice(cmd, "choice", &treasure_choice) != CMD_OK) {
@@ -2824,7 +2825,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->notice = notice;
 		ego_apply_magic(obj, player->depth);
 	}
-	wiz_display_item(obj, true);
+	wiz_display_item(obj, true, player);
 
 	/* Get artifact name */
 	if (obj->artifact) {
@@ -2871,7 +2872,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->notice = notice;
 		copy_artifact_data(obj, obj->artifact);
 	}
-	wiz_display_item(obj, true);
+	wiz_display_item(obj, true, player);
 
 #define WIZ_TWEAK(attribute, name) do {\
 		char prompt[80];\
@@ -2887,7 +2888,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		}\
 		if (get_int_from_string(tmp_val, &val)) {\
 			obj->attribute = val;\
-			wiz_display_item(obj, true);\
+			wiz_display_item(obj, true, player);\
 		}\
 } while (0)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {

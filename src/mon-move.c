@@ -1406,7 +1406,8 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
 		}
 
 		/* Get the object name */
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), obj,
+			ODESC_PREFIX | ODESC_FULL, player);
 
 		/* React to objects that hurt the monster */
 		if (react_to_slay(obj, mon))

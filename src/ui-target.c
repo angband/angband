@@ -262,9 +262,12 @@ static bool adjust_panel_help(int y, int x, bool help)
  * \param coords is part of the output string
  */
 static ui_event target_recall_loop_object(struct object *obj, int y, int x,
-										  char out_val[TARGET_OUT_VAL_SIZE],
-										  const char *s1, const char *s2,
-										  const char *s3, char *coords)
+		char out_val[TARGET_OUT_VAL_SIZE],
+		const char *s1,
+		const char *s2,
+		const char *s3,
+		const char *coords,
+		const struct player *p)
 {
 	bool recall = false;
 	ui_event press;
@@ -277,8 +280,9 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 			char o_name[80];
 
 			/* Obtain an object description */
-			object_desc(o_name, sizeof(o_name), cave->objects[obj->oidx],
-						ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name, sizeof(o_name),
+				cave->objects[obj->oidx],
+				ODESC_PREFIX | ODESC_FULL, p);
 
 			/* Describe the object */
 			if (player->wizard) {
@@ -514,7 +518,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 
 			/* Obtain an object description */
 			object_desc(o_name, sizeof(o_name), obj,
-				ODESC_PREFIX | ODESC_FULL);
+				ODESC_PREFIX | ODESC_FULL, p);
 
 			strnfmt(out_val, sizeof(out_val),
 				"%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
@@ -745,7 +749,7 @@ static bool aux_object(struct chunk *c, struct player *p,
 		/* Allow user to recall an object */
 		auxst->press = target_recall_loop_object(obj_local,
 			auxst->grid.y, auxst->grid.x, out_val, auxst->phrase1,
-			auxst->phrase2, "", auxst->coord_desc);
+			auxst->phrase2, "", auxst->coord_desc, p);
 
 		/* Stop on everything but "return"/"space" */
 		if (auxst->press.key.code != KC_ENTER

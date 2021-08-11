@@ -527,7 +527,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		/* Obtain an object description */
 		object_desc(o_name, sizeof (o_name), square_obj,
-					ODESC_PREFIX | ODESC_FULL);
+			ODESC_PREFIX | ODESC_FULL, player);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:",
 				   o_name), 0, 0);
@@ -663,7 +663,8 @@ int context_menu_object(struct object *obj)
 	if (!m || !obj)
 		return 0;
 
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_BASE);
+	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_BASE,
+		player);
 
 	labels = string_make(lower_case);
 	m->selections = labels;
@@ -774,7 +775,8 @@ int context_menu_object(struct object *obj)
 
 	/* Display info */
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL,
+		player);
 
 	textui_textblock_place(tb, area, format("%s", header));
 	textblock_free(tb);
@@ -801,7 +803,8 @@ int context_menu_object(struct object *obj)
 			/* copied from textui_obj_examine */
 			/* Display info */
 			tb = object_info(obj, OINFO_NONE);
-			object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(header, sizeof(header), obj,
+				ODESC_PREFIX | ODESC_FULL, player);
 
 			textui_textblock_show(tb, area, format("%s", header));
 			textblock_free(tb);
