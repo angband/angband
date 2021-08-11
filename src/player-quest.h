@@ -23,7 +23,7 @@
 extern struct quest *quests;
 
 /* Functions */
-bool is_quest(int level);
+bool is_quest(struct player *p, int level);
 void player_quests_reset(struct player *p);
 void player_quests_free(struct player *p);
 bool quest_check(struct player *p, const struct monster *m);

@@ -24,6 +24,7 @@
 #include "mon-util.h"
 #include "obj-knowledge.h"
 #include "player-attack.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "trap.h"
@@ -299,7 +300,7 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 		/* Check legality of trapdoors. */
 		if (trf_has(kind->flags, TRF_DOWN)) {
 			/* No trap doors on quest levels */
-			if (is_quest(player->depth)) continue;
+			if (is_quest(player, player->depth)) continue;
 
 			/* No trap doors on the deepest level */
 			if (player->depth >= z_info->max_depth - 1)
@@ -556,7 +557,8 @@ extern void hit_trap(struct loc grid, int delayed)
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN))
 			dungeon_change_level(player,
-								 dungeon_get_next_level(player->depth, 1));
+				dungeon_get_next_level(player,
+				player->depth, 1));
 
 		/* Some traps drop you onto them */
 		if (trf_has(trap->kind->flags, TRF_PIT))

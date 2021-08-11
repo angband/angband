@@ -40,6 +40,7 @@
 #include "obj-tval.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -1040,7 +1041,8 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	}
 
 	/* No recall from quest levels with force_descend */
-	if (OPT(player, birth_force_descend) && (is_quest(player->depth))) {
+	if (OPT(player, birth_force_descend)
+			&& is_quest(player, player->depth)) {
 		msg("Nothing happens.");
 		return true;
 	}
@@ -1052,9 +1054,9 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	}
 
 	/* Warn the player if they're descending to an unrecallable level */
-	target_depth = dungeon_get_next_level(player->max_depth, 1);
-	if (OPT(player, birth_force_descend) && !(player->depth) &&
-			(is_quest(target_depth))) {
+	target_depth = dungeon_get_next_level(player, player->max_depth, 1);
+	if (OPT(player, birth_force_descend) && !(player->depth)
+			&& is_quest(player, target_depth)) {
 		if (!get_check("Are you sure you want to descend? ")) {
 			return false;
 		}
@@ -1102,10 +1104,10 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 
 	/* Calculate target depth */
 	int target_increment = (4 / z_info->stair_skip) + 1;
-	int target_depth = dungeon_get_next_level(player->max_depth,
-											  target_increment);
+	int target_depth = dungeon_get_next_level(player, player->max_depth,
+		target_increment);
 	for (i = 5; i > 0; i--) {
-		if (is_quest(target_depth)) break;
+		if (is_quest(player, target_depth)) break;
 		if (target_depth >= z_info->max_depth - 1) break;
 
 		target_depth++;
@@ -2667,7 +2669,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
 	bool up = true;
 	bool down = true;
-	int target_depth = dungeon_get_next_level(player->max_depth, 1);
+	int target_depth = dungeon_get_next_level(player, player->max_depth, 1);
 	struct monster *t_mon = monster_target_monster(context);
 	struct loc decoy = cave_find_decoy(cave);
 
@@ -2715,11 +2717,12 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 		up = false;
 
 	/* No forcing player down to quest levels if they can't leave */
-	if (!up && is_quest(target_depth))
+	if (!up && is_quest(player, target_depth))
 		down = false;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
-	if (is_quest(player->depth) || (player->depth >= z_info->max_depth - 1))
+	if (is_quest(player, player->depth)
+			|| (player->depth >= z_info->max_depth - 1))
 		down = false;
 
 	/* Determine up/down if not already done */
@@ -2733,16 +2736,19 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	/* Now actually do the level change */
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		target_depth = dungeon_get_next_level(player->depth, -1);
+		target_depth = dungeon_get_next_level(player,
+			player->depth, -1);
 		dungeon_change_level(player, target_depth);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		if (OPT(player, birth_force_descend)) {
-			target_depth = dungeon_get_next_level(player->max_depth, 1);
+			target_depth = dungeon_get_next_level(player,
+				player->max_depth, 1);
 			dungeon_change_level(player, target_depth);
 		} else {
-			target_depth = dungeon_get_next_level(player->depth, 1);
+			target_depth = dungeon_get_next_level(player,
+				player->depth, 1);
 			dungeon_change_level(player, target_depth);
 		}
 	} else {

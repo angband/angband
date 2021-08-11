@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -48,7 +49,7 @@
    Keep in mind to check all intermediate level for unskippable
    quests
 */
-int dungeon_get_next_level(int dlev, int added)
+int dungeon_get_next_level(struct player *p, int dlev, int added)
 {
 	int target_level, i;
 
@@ -64,7 +65,7 @@ int dungeon_get_next_level(int dlev, int added)
 
 	/* Check intermediate levels for quests */
 	for (i = dlev; i <= target_level; i++) {
-		if (is_quest(i)) return i;
+		if (is_quest(p, i)) return i;
 	}
 
 	return target_level;
@@ -78,8 +79,10 @@ void player_set_recall_depth(struct player *p)
 	/* Account for forced descent */
 	if (OPT(p, birth_force_descend)) {
 		/* Force descent to a lower level if allowed */
-		if ((p->max_depth < z_info->max_depth - 1) && !is_quest(p->max_depth)) {
-			p->recall_depth = dungeon_get_next_level(p->max_depth, 1);
+		if (p->max_depth < z_info->max_depth - 1
+				&& !is_quest(p, p->max_depth)) {
+			p->recall_depth = dungeon_get_next_level(p,
+				p->max_depth, 1);
 		}
 	}
 

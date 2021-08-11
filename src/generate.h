@@ -181,7 +181,10 @@ struct dun_data {
     /*!< The number of staircase rooms */
     int nstair_room;
 
-    /*!< Whether or not  persistent levels are being used */
+    /*!< Whether or not this is a quest level */
+    bool quest;
+
+    /*!< Whether or not persistent levels are being used */
     bool persist;
 };
 
@@ -414,9 +417,9 @@ void place_gold(struct chunk *c, struct loc grid, int level, byte origin);
 void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
-void place_random_stairs(struct chunk *c, struct loc grid);
+void place_random_stairs(struct chunk *c, struct loc grid, bool quest);
 void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-	const struct connector *avoid_list);
+	const struct connector *avoid_list, bool quest);
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
