@@ -2665,20 +2665,23 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 /* ------------------ MODIFIED ---------------- */
 /**
  * The main modified generation algorithm
+ * \param p is the player, in case generation fails and the partially created
+ * level needs to be cleaned up
  * \param depth is the chunk's native depth
  * \param height are the chunk's dimensions
  * \param width are the chunk's dimensions
  * \param persistent If true, handle the connections for persistent levels.
  * \return a pointer to the generated chunk
  */
-static struct chunk *modified_chunk(int depth, int height, int width,
-		bool persistent)
+static struct chunk *modified_chunk(struct player *p, int depth, int height,
+		int width, bool persistent)
 {
 	int i;
 	int by = 0, bx = 0, key, rarity;
 	int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
 	int dun_unusual = dun->profile->dun_unusual;
+	int n_attempt;
 
 	/* Make the cave */
 	struct chunk *c = cave_new(height, width);
@@ -2715,8 +2718,32 @@ static struct chunk *modified_chunk(int depth, int height, int width,
 		build_staircase_rooms(c, "Modified Generation");
 	}
 
-	/* Build rooms until we have enough floor grids and at least two rooms */
-	while ((c->feat_count[FEAT_FLOOR] < num_floors) || (dun->cent_n < 2)) {
+	/*
+	 * Build rooms until we have enough floor grids and at least two rooms
+	 * or we appear to be stuck and can't match those criteria.
+	 */
+	n_attempt = 0;
+	while (1) {
+		if (c->feat_count[FEAT_FLOOR] >= num_floors
+				&& dun->cent_n >= 2) {
+			break;
+		}
+		/*
+		 * At an average of roughly 22 successful rooms per level
+		 * (and a standard deviation of 4.5 or so for that) and a
+		 * room failure rate that's less than .5 failures per success
+		 * (4.2.x profile doesn't use full allocation for rarity two
+		 * rooms - only up to 60; and the last type tried in that
+		 * rarity has a failure rate per successful rooms of all types
+		 * of around .024).  500 attempts is a generous cutoff for
+		 * saying no further progress is likely.
+		 */
+		if (n_attempt > 500) {
+			wipe_mon_list(c, p);
+			cave_free(c);
+			return NULL;
+		}
+		++n_attempt;
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
@@ -2808,8 +2835,9 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
+	c = modified_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
 		MIN(z_info->dungeon_wid, x_size), dun->persist);
+	if (!c) return NULL;
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -2869,20 +2897,23 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 /* ------------------ MORIA ---------------- */
 /**
  * The main moria generation algorithm
+ * \param p is the player, in case generation fails and the partially created
+ * level needs to be cleaned up
  * \param depth is the chunk's native depth
  * \param height are the chunk's dimensions
  * \param width are the chunk's dimensions
  * \param persistent If true, handle the connections for persistent levels.
  * \return a pointer to the generated chunk
  */
-static struct chunk *moria_chunk(int depth, int height, int width,
-		bool persistent)
+static struct chunk *moria_chunk(struct player *p, int depth, int height,
+		int width, bool persistent)
 {
 	int i;
 	int by = 0, bx = 0, key, rarity;
 	int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
 	int dun_unusual = dun->profile->dun_unusual;
+	int n_attempt;
 
 	/* Make the cave */
 	struct chunk *c = cave_new(height, width);
@@ -2919,10 +2950,33 @@ static struct chunk *moria_chunk(int depth, int height, int width,
 		build_staircase_rooms(c, "Moria Generation");
 	}
 
-	/* Build rooms until we have enough floor grids and at least two rooms
+	/*
+	 * Build rooms until we have enough floor grids and at least two rooms
 	 * (the latter is to make it easier to satisfy the constraints for
-	 * player placement) */
-	while (c->feat_count[FEAT_FLOOR] < num_floors || dun->cent_n < 2) {
+	 * player placement) or we appear to be stuck and can't match those
+	 * criteria.
+	 */
+	n_attempt = 0;
+	while (1) {
+		if (c->feat_count[FEAT_FLOOR] >= num_floors
+				&& dun->cent_n >= 2) {
+			break;
+		}
+		/*
+		 * At an average of around 10 successful rooms per level
+		 * (and a standard deviation of 3.1 or so for that) and a
+		 * a room failure rate that's less than .5 failures per success
+		 * (4.2.x profile doesn't specify any rarity 1 rooms; the
+		 * moria rooms at rarity zero have around .49 failures per
+		 * successful room of any type), 500 attempts is a generous
+		 * cutoff for saying no further progress is likely.
+		 */
+		if (n_attempt > 500) {
+			wipe_mon_list(c, p);
+			cave_free(c);
+			return NULL;
+		}
+		++n_attempt;
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
@@ -3007,8 +3061,9 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	c = moria_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
+	c = moria_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
 		MIN(z_info->dungeon_wid, x_size), dun->persist);
+	if (!c) return NULL;
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
@@ -3420,7 +3475,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	 */
 	dun->join = transform_join_list(cached_join, y_size, normal_width,
 		0, normal_offset, 0, false);
-	normal = modified_chunk(p->depth, y_size, normal_width,
+	normal = modified_chunk(p, p->depth, y_size, normal_width,
 		dun->persist);
 	/* Done with the transformed connector information. */
 	cave_connectors_free(dun->join);
