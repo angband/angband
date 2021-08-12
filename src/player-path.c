@@ -564,7 +564,7 @@ static void run_init(int dir)
  *
  * Return true if the running should be stopped
  */
-static bool run_test(void)
+static bool run_test(const struct player *p)
 {
 	int prev_dir;
 	int new_dir;
@@ -610,7 +610,7 @@ static bool run_test(void)
 		/* Visible objects abort running */
 		for (obj = square_object(cave, grid); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->known && !ignore_item_ok(obj)) return true;
+			if (obj->known && !ignore_item_ok(p, obj)) return true;
 
 		/* Assume unknown */
 		inv = true;
@@ -775,7 +775,7 @@ void run_step(int dir)
 		/* Continue running */
 		if (!player->upkeep->running_withpathfind) {
 			/* Update regular running */
-			if (run_test()) {
+			if (run_test(player)) {
 				/* Disturb */
 				disturb(player);
 				return;
@@ -831,12 +831,14 @@ void run_step(int dir)
 				}
 
 				/* Visible objects abort running */
-				for (obj = square_object(cave, grid); obj; obj = obj->next)
+				for (obj = square_object(cave, grid); obj;
+						obj = obj->next) {
 					/* Visible object */
-					if (obj->known && !ignore_item_ok(obj)) {
-					disturb(player);
-					player->upkeep->running_withpathfind = false;
-					return;
+					if (obj->known && !ignore_item_ok(player, obj)) {
+						disturb(player);
+						player->upkeep->running_withpathfind = false;
+						return;
+					}
 				}
 
 				/* Get step after */

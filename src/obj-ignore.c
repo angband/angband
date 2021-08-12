@@ -266,7 +266,7 @@ int apply_autoinscription(struct player *p, struct object *obj)
 		return 0;
 
 	/* Don't inscribe if ignored */
-	if (ignore_item_ok(obj))
+	if (ignore_item_ok(p, obj))
 		return 0;
 
 	/* Get an object description */
@@ -614,9 +614,9 @@ bool object_is_ignored(const struct object *obj)
 /**
  * Determines if an object is eligible for ignoring.
  */
-bool ignore_item_ok(const struct object *obj)
+bool ignore_item_ok(const struct player *p, const struct object *obj)
 {
-	if (player->unignoring)
+	if (p->unignoring)
 		return false;
 
 	return object_is_ignored(obj);
@@ -628,11 +628,11 @@ bool ignore_item_ok(const struct object *obj)
  * This function should only be called on known version of items which have a
  * (real or imaginary) listed base item in the current level
  */
-bool ignore_known_item_ok(const struct object *obj)
+bool ignore_known_item_ok(const struct player *p, const struct object *obj)
 {
 	struct object *base_obj = cave->objects[obj->oidx];
 
-	if (player->unignoring)
+	if (p->unignoring)
 		return false;
 
 	/* Get the real object and check its ignore properties */
@@ -651,7 +651,7 @@ void ignore_drop(struct player *p)
 	for (obj = gear_last_item(p); obj; obj = obj->prev) {
 		/* Skip non-objects and unignoreable objects */
 		assert(obj->kind);
-		if (!ignore_item_ok(obj)) continue;
+		if (!ignore_item_ok(p, obj)) continue;
 
 		/* Check for !d (no drop) inscription */
 		if (!check_for_inscrip(obj, "!d") && !check_for_inscrip(obj, "!*")) {

@@ -159,7 +159,7 @@ void map_info(struct loc grid, struct grid_data *g)
 			g->unseen_money = true;
 		} else if (obj->kind == unknown_item_kind) {
 			g->unseen_object = true;
-		} else if (ignore_known_item_ok(obj)) {
+		} else if (ignore_known_item_ok(player, obj)) {
 			/* Item stays hidden */
 		} else if (!g->first_kind) {
 			g->first_kind = obj->kind;
