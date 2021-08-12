@@ -74,7 +74,7 @@ static void player_pickup_gold(struct player *p)
 			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
-		if (!ignore_item_ok(obj))
+		if (!ignore_item_ok(p, obj))
 			verbal = true;
 
 		/* Increment total value */
@@ -420,7 +420,7 @@ int do_autopickup(struct player *p)
 		next = obj->next;
 
 		/* Ignore all hidden objects and non-objects */
-		if (!ignore_item_ok(obj)) {
+		if (!ignore_item_ok(p, obj)) {
 			int auto_num;
 
 			/* Hack -- disturb */

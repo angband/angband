@@ -1297,7 +1297,10 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			/* Scan all objects in the grid to look for traps on chests */
 			for (obj = square_object(cave, grid); obj; obj = obj->next) {
 				/* Skip anything not a trapped chest */
-				if (!is_trapped_chest(obj)) continue;
+				if (!is_trapped_chest(obj)
+						|| ignore_item_ok(player, obj)) {
+					continue;
+				}
 
 				/* Identify once */
 				if (!obj->known || obj->known->pval != obj->pval) {
@@ -1622,7 +1625,7 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			}
 
 			/* Notice an object is detected */
-			if (!ignore_item_ok(obj)) {
+			if (!ignore_item_ok(player, obj)) {
 				objects = true;
 			}
 

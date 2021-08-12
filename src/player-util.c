@@ -26,6 +26,7 @@
 #include "init.h"
 #include "obj-chest.h"
 #include "obj-gear.h"
+#include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -1485,8 +1486,10 @@ void search(struct player *p)
 
 			/* Traps on chests */
 			for (obj = square_object(cave, grid); obj; obj = obj->next) {
-				if (!obj->known || !is_trapped_chest(obj))
+				if (!obj->known || ignore_item_ok(p, obj)
+						|| !is_trapped_chest(obj)) {
 					continue;
+				}
 
 				if (obj->known->pval != obj->pval) {
 					msg("You have discovered a trap on the chest!");

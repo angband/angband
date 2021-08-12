@@ -291,7 +291,7 @@ int context_menu_player(int mx, int my)
 
 	/* if object under player add pickup option */
 	obj = square_object(cave, player->grid);
-	if (obj && !ignore_item_ok(obj)) {
+	if (obj && !ignore_item_ok(player, obj)) {
 			menu_row_validity_t valid;
 
 			/* 'f' isn't in rogue keymap, so we can use it here. */
@@ -451,11 +451,11 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 
 	if (adjacent) {
-		struct object *obj = chest_check(grid, CHEST_ANY);
+		struct object *obj = chest_check(player, grid, CHEST_ANY);
 		ADD_LABEL((square(c, grid)->mon) ? "Attack" : "Alter", CMD_ALTER,
 				  MN_ROW_VALID);
 
-		if (obj && !ignore_item_ok(obj)) {
+		if (obj && !ignore_item_ok(player, obj)) {
 			if (obj->known->pval) {
 				if (is_locked_chest(obj)) {
 					ADD_LABEL("Disarm Chest", CMD_DISARM, MN_ROW_VALID);
@@ -522,7 +522,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:",
 				   m_name), 0, 0);
-	} else if (square_obj && !ignore_item_ok(square_obj)) {
+	} else if (square_obj && !ignore_item_ok(player, square_obj)) {
 		char o_name[80];
 
 		/* Obtain an object description */

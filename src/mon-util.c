@@ -395,7 +395,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* If a mimic looks like an ignored item, it's not seen */
 	if (monster_is_mimicking(mon)) {
 		struct object *obj = mon->mimicked_obj;
-		if (ignore_item_ok(obj))
+		if (ignore_item_ok(player, obj))
 			easy = flag = false;
 	}
 
@@ -428,7 +428,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 		}
 	} else if (monster_is_visible(mon)) {
 		/* Not visible but was previously seen - treat mimics differently */
-		if (!mon->mimicked_obj || ignore_item_ok(mon->mimicked_obj)) {
+		if (!mon->mimicked_obj
+				|| ignore_item_ok(player, mon->mimicked_obj)) {
 			/* Mark as not visible */
 			mflag_off(mon->mflag, MFLAG_VISIBLE);
 
@@ -1482,7 +1483,7 @@ void steal_monster_item(struct monster *mon, int midx)
 				delist_object(player->cave, obj->known);
 				delist_object(cave, obj);
 				/* Drop immediately if ignored to prevent pack overflow */
-				if (ignore_item_ok(obj)) {
+				if (ignore_item_ok(player, obj)) {
 					char o_name[80];
 					object_desc(o_name, sizeof(o_name), obj,
 						ODESC_PREFIX | ODESC_FULL,

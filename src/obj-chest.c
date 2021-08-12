@@ -328,10 +328,6 @@ bool is_trapped_chest(const struct object *obj)
 	if (!tval_is_chest(obj))
 		return false;
 
-	/* Ignore if requested */
-	if (ignore_item_ok(obj))
-		return false;
-
 	/* Disarmed or opened chests are not trapped */
 	if (obj->pval <= 0)
 		return false;
@@ -347,10 +343,6 @@ bool is_trapped_chest(const struct object *obj)
 bool is_locked_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
-		return false;
-
-	/* Ignore if requested */
-	if (ignore_item_ok(obj))
 		return false;
 
 	/* Disarmed or opened chests are not locked */
@@ -428,14 +420,15 @@ void unlock_chest(struct object *obj)
  * Determine if a grid contains a chest matching the query type, and
  * return a pointer to the first such chest
  */
-struct object *chest_check(struct loc grid, enum chest_query check_type)
+struct object *chest_check(const struct player *p, struct loc grid,
+		enum chest_query check_type)
 {
 	struct object *obj;
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(cave, grid); obj; obj = obj->next) {
 		/* Ignore if requested */
-		if (ignore_item_ok(obj)) continue;
+		if (ignore_item_ok(p, obj)) continue;
 
 		/* Check for chests */
 		switch (check_type) {
@@ -476,7 +469,7 @@ int count_chests(struct loc *grid, enum chest_query check_type)
 		struct loc grid1 = loc_sum(player->grid, ddgrid_ddd[d]);
 
 		/* No (visible) chest is there */
-		if (!chest_check(grid1, check_type)) continue;
+		if (!chest_check(player, grid1, check_type)) continue;
 
 		/* Count it */
 		++count;
@@ -706,7 +699,7 @@ bool do_cmd_disarm_chest(struct object *obj)
 	if (diff < 2) diff = 2;
 
 	/* Must find the trap first. */
-	if (!obj->known->pval) {
+	if (!obj->known->pval || ignore_item_ok(player, obj)) {
 		msg("I don't see any traps.");
 	} else if (!is_trapped_chest(obj)) {
 		/* Already disarmed/unlocked or no traps */
