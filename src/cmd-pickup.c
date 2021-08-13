@@ -167,7 +167,7 @@ static int auto_pickup_okay(const struct object *obj)
 	 * inscriptions.  The player option to pickup if in the inventory
 	 * honors those inscriptions.
 	 */
-	int num = inven_carry_num(obj);
+	int num = inven_carry_num(player, obj);
 	unsigned obj_has_auto, obj_has_maxauto;
 	int obj_maxauto;
 
@@ -236,7 +236,7 @@ static int auto_pickup_okay(const struct object *obj)
 static void player_pickup_aux(struct player *p, struct object *obj,
 							  int auto_max, bool domsg)
 {
-	int max = inven_carry_num(obj);
+	int max = inven_carry_num(p, obj);
 
 	/* Confirm at least some of the object can be picked up */
 	if (max == 0)
@@ -340,7 +340,7 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 	/* Tally objects that can be at least partially picked up.*/
 	floor_num = scan_floor(floor_list, floor_max, p, OFLOOR_VISIBLE, NULL);
 	for (i = 0; i < floor_num; i++)
-	    if (inven_carry_okay(floor_list[i]))
+	    if (inven_carry_num(p, floor_list[i]) > 0)
 			can_pickup++;
 
 	if (!can_pickup) {

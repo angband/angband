@@ -1666,7 +1666,7 @@ void do_cmd_buy(struct command *cmd)
 	object_copy_amt(bought, obj, amt);
 
 	/* Ensure we have room */
-	if (bought->number > inven_carry_num(bought)) {
+	if (bought->number > inven_carry_num(player, bought)) {
 		msg("You cannot carry that many items.");
 		object_delete(&bought);
 		return;
@@ -1796,7 +1796,7 @@ void do_cmd_retrieve(struct command *cmd)
 	object_copy_amt(picked_item, obj, amt);
 
 	/* Ensure we have room */
-	if (picked_item->number > inven_carry_num(picked_item)) {
+	if (picked_item->number > inven_carry_num(player, picked_item)) {
 		msg("You cannot carry that many items.");
 		object_delete(&picked_item);
 		return;

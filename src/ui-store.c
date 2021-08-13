@@ -642,7 +642,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		}
 
 		/* Limit to the number that can be carried */
-		amt = MIN(amt, inven_carry_num(obj));
+		amt = MIN(amt, inven_carry_num(player, obj));
 
 		/* Fail if there is no room.  Don't leak information about
 		 * unknown flavors for a purchase (getting it from home doesn't
