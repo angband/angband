@@ -41,7 +41,7 @@ int object_slot(struct player_body body, const struct object *obj);
 bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
 bool object_is_in_quiver(struct player *p, const struct object *obj);
-int pack_slots_used(struct player *p);
+int pack_slots_used(const struct player *p);
 const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
 int wield_slot(const struct object *obj);
@@ -51,7 +51,7 @@ struct object *gear_last_item(struct player *p);
 void gear_insert_end(struct player *p, struct object *obj);
 struct object *gear_object_for_use(struct player *p, struct object *obj,
 	int num, bool message, bool *none_left);
-int inven_carry_num(const struct object *obj);
+int inven_carry_num(const struct player *p, const struct object *obj);
 bool inven_carry_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
 void inven_carry(struct player *p, struct object *obj, bool absorb,
