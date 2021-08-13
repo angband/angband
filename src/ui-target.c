@@ -647,7 +647,7 @@ static bool aux_object(struct chunk *c, struct player *p,
 	int floor_num;
 
 	/* Scan all sensed objects in the grid */
-	floor_num = scan_distant_floor(floor_list, floor_max, auxst->grid);
+	floor_num = scan_distant_floor(floor_list, floor_max, p, auxst->grid);
 	if (floor_num <= 0 || (p->timed[TMD_BLIND]
 			&& !loc_eq(auxst->grid, p->grid))) {
 		mem_free(floor_list);

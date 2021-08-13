@@ -1280,17 +1280,17 @@ void floor_item_charges(struct object *obj)
  *
  * Return the number of objects acquired.
  */
-int scan_floor(struct object **items, int max_size, object_floor_t mode,
-			   item_tester tester)
+int scan_floor(struct object **items, int max_size, struct player *p,
+		object_floor_t mode, item_tester tester)
 {
 	struct object *obj;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, player->grid)) return 0;
+	if (!square_in_bounds(cave, p->grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, player->grid); obj; obj = obj->next) {
+	for (obj = square_object(cave, p->grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1302,7 +1302,7 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 
 		/* Visible */
 		if ((mode & OFLOOR_VISIBLE) && !is_unknown(obj)
-				&& ignore_item_ok(player, obj)) continue;
+				&& ignore_item_ok(p, obj)) continue;
 
 		/* Accept this item */
 		items[num++] = obj;
@@ -1319,16 +1319,17 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
  *
  * Return the number of objects acquired.
  */
-int scan_distant_floor(struct object **items, int max_size, struct loc grid)
+int scan_distant_floor(struct object **items, int max_size, struct player *p,
+		struct loc grid)
 {
 	struct object *obj;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(player->cave, grid)) return 0;
+	if (!square_in_bounds(p->cave, grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
+	for (obj = square_object(p->cave, grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1336,7 +1337,7 @@ int scan_distant_floor(struct object **items, int max_size, struct loc grid)
 		if (obj->kind == unknown_item_kind) continue;
 
 		/* Visible */
-		if (ignore_known_item_ok(player, obj)) continue;
+		if (ignore_known_item_ok(p, obj)) continue;
 
 		/* Accept this item's base object */
 		items[num++] = cave->objects[obj->oidx];
@@ -1360,8 +1361,8 @@ int scan_distant_floor(struct object **items, int max_size, struct loc grid)
  * z_info->floor_size,
  * though practically speaking much smaller numbers are likely.
  */
-int scan_items(struct object **item_list, size_t item_max, int mode,
-			   item_tester tester)
+int scan_items(struct object **item_list, size_t item_max, struct player *p,
+		int mode, item_tester tester)
 {
 	bool use_inven = ((mode & USE_INVEN) ? true : false);
 	bool use_equip = ((mode & USE_EQUIP) ? true : false);
@@ -1377,27 +1378,26 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 
 	if (use_inven)
 		for (i = 0; i < z_info->pack_size && item_num < item_max; i++) {
-			if (object_test(tester, player->upkeep->inven[i]))
-				item_list[item_num++] = player->upkeep->inven[i];
+			if (object_test(tester, p->upkeep->inven[i]))
+				item_list[item_num++] = p->upkeep->inven[i];
 		}
 
 	if (use_equip)
-		for (i = 0; i < player->body.count && item_num < item_max; i++) {
-			if (object_test(tester, slot_object(player, i)))
-				item_list[item_num++] = slot_object(player, i);
+		for (i = 0; i < p->body.count && item_num < item_max; i++) {
+			if (object_test(tester, slot_object(p, i)))
+				item_list[item_num++] = slot_object(p, i);
 		}
 
 	if (use_quiver)
 		for (i = 0; i < z_info->quiver_size && item_num < item_max; i++) {
-			if (object_test(tester, player->upkeep->quiver[i]))
-				item_list[item_num++] = player->upkeep->quiver[i];
+			if (object_test(tester, p->upkeep->quiver[i]))
+				item_list[item_num++] = p->upkeep->quiver[i];
 		}
 
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
-		floor_num = scan_floor(floor_list, floor_max,
-							   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
-							   tester);
+		floor_num = scan_floor(floor_list, floor_max, p,
+			OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 		for (i = 0; i < floor_num && item_num < item_max; i++)
 			item_list[item_num++] = floor_list[i];

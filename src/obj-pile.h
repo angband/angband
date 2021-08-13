@@ -79,9 +79,10 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 			   struct loc grid, bool verbose, bool prefer_pile);
 void push_object(struct loc grid);
 void floor_item_charges(struct object *obj);
-int scan_floor(struct object **items, int max_size, object_floor_t mode,
-			   item_tester tester);
-int scan_distant_floor(struct object **items, int max_size, struct loc grid);
-int scan_items(struct object **item_list, size_t item_list_max, int mode,
-			   item_tester tester);
+int scan_floor(struct object **items, int max_size, struct player *p,
+		object_floor_t mode, item_tester tester);
+int scan_distant_floor(struct object **items, int max_size, struct player *p,
+		struct loc grid);
+int scan_items(struct object **item_list, size_t item_list_max,
+		struct player *p, int mode, item_tester tester);
 bool item_is_available(struct object *obj);
