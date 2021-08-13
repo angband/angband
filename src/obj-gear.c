@@ -396,31 +396,31 @@ char gear_to_label(struct player *p, struct object *obj)
  * \param obj the object being tested
  * \return whether an object was removed
  */
-static bool gear_excise_object(struct object *obj)
+static bool gear_excise_object(struct player *p, struct object *obj)
 {
 	int i;
 
-	pile_excise(&player->gear_k, obj->known);
-	pile_excise(&player->gear, obj);
+	pile_excise(&p->gear_k, obj->known);
+	pile_excise(&p->gear, obj);
 
 	/* Change the weight */
-	player->upkeep->total_weight -= (obj->number * obj->weight);
+	p->upkeep->total_weight -= (obj->number * obj->weight);
 
 	/* Make sure it isn't still equipped */
-	for (i = 0; i < player->body.count; i++) {
-		if (slot_object(player, i) == obj) {
-			player->body.slots[i].obj = NULL;
-			player->upkeep->equip_cnt--;
+	for (i = 0; i < p->body.count; i++) {
+		if (slot_object(p, i) == obj) {
+			p->body.slots[i].obj = NULL;
+			p->upkeep->equip_cnt--;
 		}
 	}
 
 	/* Update the gear */
-	calc_inventory(player);
+	calc_inventory(p);
 
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS);
-	player->upkeep->notice |= (PN_COMBINE);
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	p->upkeep->update |= (PU_BONUS);
+	p->upkeep->notice |= (PN_COMBINE);
+	p->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	return true;
 }
@@ -480,7 +480,7 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 
 		/* We're using the entire stack */
 		usable = obj;
-		gear_excise_object(usable);
+		gear_excise_object(p, usable);
 		*none_left = true;
 
 		/* Stop tracking item */
@@ -1177,7 +1177,7 @@ void pack_overflow(struct object *obj)
 	msg("You drop %s.", o_name);
 
 	/* Excise the object and drop it (carefully) near the player */
-	gear_excise_object(obj);
+	gear_excise_object(player, obj);
 	drop_near(cave, &obj, 0, player->grid, false, true);
 
 	/* Describe */
