@@ -338,7 +338,7 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 	}
 
 	/* Tally objects that can be at least partially picked up.*/
-	floor_num = scan_floor(floor_list, floor_max, OFLOOR_VISIBLE, NULL);
+	floor_num = scan_floor(floor_list, floor_max, p, OFLOOR_VISIBLE, NULL);
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup++;

@@ -1160,8 +1160,8 @@ bool player_book_has_unlearned_spells(struct player *p)
 	}
 
 	/* Check through all available books */
-	item_num = scan_items(item_list, item_max, USE_INVEN | USE_FLOOR,
-						  obj_can_study);
+	item_num = scan_items(item_list, item_max, p, USE_INVEN | USE_FLOOR,
+		obj_can_study);
 	for (i = 0; i < item_num; i++) {
 		const struct class_book *book = player_object_to_book(p, item_list[i]);
 		if (!book) continue;

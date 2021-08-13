@@ -1336,8 +1336,8 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max,
-						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
+	floor_num = scan_floor(floor_list, floor_max, player,
+		OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -1357,9 +1357,8 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		item_mode -= USE_FLOOR;
 
 	/* Scan all throwing objects in reach */
-	throwing_num = scan_items(throwing_list, throwing_max,
-							  USE_INVEN | USE_QUIVER | USE_FLOOR,
-							  obj_is_throwing);
+	throwing_num = scan_items(throwing_list, throwing_max, player,
+		USE_INVEN | USE_QUIVER | USE_FLOOR, obj_is_throwing);
 
 	/* Require at least one legal choice */
 	if (allow_inven || allow_equip || allow_quiver || allow_floor) {
