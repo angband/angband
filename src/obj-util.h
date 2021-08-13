@@ -25,6 +25,8 @@
 /* An item's pval (for charges, amount of gold, etc) is limited to s16b */
 #define MAX_PVAL  32767
 
+struct player;
+
 void flavor_init(void);
 void flavor_set_all_aware(void);
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE]);

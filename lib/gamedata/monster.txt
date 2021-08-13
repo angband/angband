@@ -6048,7 +6048,7 @@ hearing:10
 armor-class:25
 sleepiness:10
 depth:26
-rarity:3
+rarity:5
 experience:6
 blow:CRAWL:EXP_10:1d5
 flags:EVIL | WEIRD_MIND | MULTIPLY | STUPID
@@ -11370,7 +11370,7 @@ hearing:20
 armor-class:120
 sleepiness:20
 depth:52
-rarity:1
+rarity:3
 experience:3500
 blow:PUNCH:HURT:10d5
 blow:PUNCH:HURT:10d5
@@ -12782,7 +12782,7 @@ smell:50
 armor-class:120
 sleepiness:0
 depth:69
-rarity:5
+rarity:6
 experience:7000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
@@ -13570,7 +13570,7 @@ hearing:30
 armor-class:192
 sleepiness:15
 depth:76
-rarity:3
+rarity:5
 experience:37000
 blow:HIT:SHATTER:13d13
 blow:HIT:CONFUSE:13d13
@@ -14231,7 +14231,7 @@ blow:CRUSH:HURT:9d12
 blow:TOUCH:DRAIN_CHARGES
 flags:POWERFUL | ATTR_FLICKER
 flags:DROP_4
-flags:MOVE_BODY | KILL_WALL
+flags:MOVE_BODY
 flags:IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA
 innate-freq:5
 spell-freq:4
@@ -14393,7 +14393,7 @@ blow:CRUSH:HURT:8d12
 blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | MALE | POWERFUL
 flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY | KILL_WALL
+flags:MOVE_BODY
 flags:IM_FIRE | IM_PLASMA
 innate-freq:12
 spell-freq:6
@@ -14521,7 +14521,7 @@ hearing:50
 armor-class:48
 sleepiness:0
 depth:95
-rarity:3
+rarity:5
 experience:17000
 blow:ENGULF:EXP_80:5d7
 blow:ENGULF:DRAIN_CHARGES:5d7
@@ -14553,7 +14553,7 @@ blow:CRUSH:HURT:8d12
 blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | MALE | POWERFUL
 flags:DROP_4 | DROP_GOOD | DROP_GREAT
-flags:MOVE_BODY | KILL_WALL
+flags:MOVE_BODY
 flags:IM_ELEC | IM_FIRE | IM_PLASMA
 innate-freq:8
 spell-freq:4
