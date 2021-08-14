@@ -27,8 +27,9 @@ void create_mon_flag_mask(bitflag *f, ...);
 struct monster_race *lookup_monster(const char *name);
 struct monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(const struct monster_base *base, ...);
-void update_mon(struct monster *mon, struct chunk *c, bool full);
-void update_monsters(bool full);
+void update_mon(struct player *p, struct monster *mon, struct chunk *c,
+	bool full);
+void update_monsters(struct player *p, bool full);
 bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(struct loc grid1, struct loc grid2);
 void monster_wake(struct monster *mon, bool notify, int aware_chance);
