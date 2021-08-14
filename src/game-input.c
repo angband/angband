@@ -26,11 +26,12 @@ bool (*get_check_hook)(const char *prompt);
 bool (*get_com_hook)(const char *prompt, char *command);
 bool (*get_rep_dir_hook)(int *dir, bool allow_none);
 bool (*get_aim_dir_hook)(int *dir);
-int (*get_spell_from_book_hook)(const char *verb, struct object *book,
-								const char *error,
-								bool (*spell_filter)(int spell));
-int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
-					  const char *error, bool (*spell_filter)(int spell));
+int (*get_spell_from_book_hook)(struct player *p, const char *verb,
+	struct object *book, const char *error,
+	bool (*spell_filter)(const struct player *p, int spell));
+int (*get_spell_hook)(struct player *p, const char *verb,
+	item_tester book_filter, cmd_code cmd, const char *error,
+	bool (*spell_filter)(const struct player *p, int spell));
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 bool (*get_curse_hook)(int *choice, struct object *obj, char *dice_string);
@@ -143,28 +144,31 @@ bool get_aim_dir(int *dir)
 /**
  * Get a spell from a specified book.
  */
-int get_spell_from_book(const char *verb, struct object *book,
-		const char *error, bool (*spell_filter)(int spell))
+int get_spell_from_book(struct player *p, const char *verb,
+		struct object *book, const char *error,
+		bool (*spell_filter)(const struct player *p, int spell))
 {
 	/* Ask the UI for it */
-	if (get_spell_from_book_hook)
-		return get_spell_from_book_hook(verb, book, error, spell_filter);
-	else
-		return -1;
+	if (get_spell_from_book_hook) {
+		return get_spell_from_book_hook(p, verb, book, error,
+			spell_filter);
+	}
+	return -1;
 }
 
 /**
  * Get a spell from the player.
  */
-int get_spell(const char *verb, item_tester book_filter,
-						cmd_code cmd, const char *error,
-						bool (*spell_filter)(int spell))
+int get_spell(struct player *p, const char *verb,
+		item_tester book_filter, cmd_code cmd, const char *error,
+		bool (*spell_filter)(const struct player *p, int spell))
 {
 	/* Ask the UI for it */
-	if (get_spell_hook)
-		return get_spell_hook(verb, book_filter, cmd, error, spell_filter);
-	else
-		return -1;
+	if (get_spell_hook) {
+		return get_spell_hook(p, verb, book_filter, cmd, error,
+			spell_filter);
+	}
+	return -1;
 }
 
 /**

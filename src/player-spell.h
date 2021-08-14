@@ -21,17 +21,19 @@ void player_spells_free(struct player *p);
 struct magic_realm *class_magic_realms(const struct player_class *c,
 									   int *count);
 const struct class_book *object_kind_to_book(const struct object_kind *kind);
-const struct class_book *player_object_to_book(struct player *p,
-											   const struct object *obj);
-const struct class_spell *spell_by_index(int index);
-int spell_collect_from_book(const struct object *obj, int **spells);
-int spell_book_count_spells(const struct object *obj,
-							bool (*tester)(int spell_index));
-bool spell_okay_list(bool (*spell_test)(int spell_index), const int spells[],
-					 int n_spells);
-bool spell_okay_to_cast(int spell_index);
-bool spell_okay_to_study(int spell_index);
-bool spell_okay_to_browse(int spell_index);
+const struct class_book *player_object_to_book(const struct player *p,
+	const struct object *obj);
+const struct class_spell *spell_by_index(const struct player *p, int index);
+int spell_collect_from_book(const struct player *p, const struct object *obj,
+	int **spells);
+int spell_book_count_spells(const struct player *p, const struct object *obj,
+	bool (*tester)(const struct player *p, int spell_index));
+bool spell_okay_list(const struct player *p,
+	bool (*spell_test)(const struct player *p, int spell_index),
+	const int spells[], int n_spells);
+bool spell_okay_to_cast(const struct player *p, int spell_index);
+bool spell_okay_to_study(const struct player *p, int spell_index);
+bool spell_okay_to_browse(const struct player *p, int spell_index);
 s16b spell_chance(int spell_index);
 void spell_learn(int spell_index);
 bool spell_cast(int spell_index, int dir, struct command *cmd);
