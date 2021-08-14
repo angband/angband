@@ -1418,7 +1418,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (mon != NULL) {
 		/* Update the monster */
 		if (!mon_died)
-			update_mon(mon, cave, false);
+			update_mon(player, mon, cave, false);
 
 		/* Redraw the (possibly new) monster grid */
 		square_light_spot(cave, mon->grid);
