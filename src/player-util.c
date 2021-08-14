@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
-#include "cmds.h"
 #include "game-input.h"
 #include "game-world.h"
 #include "generate.h"
@@ -31,6 +30,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
@@ -670,10 +670,11 @@ bool player_attack_random_monster(struct player *p)
 	/* Look for a monster, attack */
 	for (i = 0; i < 8; i++, dir++) {
 		struct loc grid = loc_sum(p->grid, ddgrid_ddd[dir % 8]);
-		if (square_monster(cave, grid)) {
+		const struct monster *mon = square_monster(cave, grid);
+		if (mon && !monster_is_camouflaged(mon)) {
 			p->upkeep->energy_use = z_info->move_energy;
 			msg("You angrily lash out at a nearby foe!");
-			move_player(ddd[dir % 8], false);
+			py_attack(p, grid);
 			return true;
 		}
 	}
