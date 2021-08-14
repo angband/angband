@@ -847,11 +847,6 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	usable->known->grid = loc(0, 0);
 	usable->grid = loc(0, 0);
 
-	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS | PU_INVEN);
-	player->upkeep->notice |= (PN_COMBINE);
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-
 	/* Print a message if requested and there is anything left */
 	if (message) {
 		if (usable == obj)
