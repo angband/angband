@@ -957,7 +957,7 @@ void do_cmd_cast(struct command *cmd)
 		return;
 
 	/* Get arguments */
-	if (cmd_get_spell(cmd, "spell", &spell_index,
+	if (cmd_get_spell(cmd, "spell", player, &spell_index,
 			/* Verb */   "cast",
 			/* Book */   obj_can_cast_from,
 			/* Error */  "There are no spells you can cast.",
@@ -972,7 +972,7 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Get the spell */
-	spell = spell_by_index(spell_index);
+	spell = spell_by_index(player, spell_index);
 
 	/* Verify "dangerous" spells */
 	if (spell->smana > player->csp) {
@@ -1013,7 +1013,7 @@ void do_cmd_study_spell(struct command *cmd)
 	if (!player_can_study(player, true))
 		return;
 
-	if (cmd_get_spell(cmd, "spell", &spell_index,
+	if (cmd_get_spell(cmd, "spell", player, &spell_index,
 			/* Verb */   "study",
 			/* Book */   obj_can_study,
 			/* Error  */ "You cannot learn any new spells from the books you have.",
@@ -1052,7 +1052,7 @@ void do_cmd_study_book(struct command *cmd)
 
 	for (i = 0; i < book->num_spells; i++) {
 		spell = &book->spells[i];
-		if (!spell_okay_to_study(spell->sidx))
+		if (!spell_okay_to_study(player, spell->sidx))
 			continue;
 		if ((++k > 1) && (randint0(k) != 0))
 			continue;

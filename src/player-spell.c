@@ -223,8 +223,8 @@ const struct class_book *object_kind_to_book(const struct object_kind *kind)
  * Get the spellbook structure from an object which is a book the player can
  * cast from
  */
-const struct class_book *player_object_to_book(struct player *p,
-											   const struct object *obj)
+const struct class_book *player_object_to_book(const struct player *p,
+		const struct object *obj)
 {
 	int i;
 
@@ -236,10 +236,10 @@ const struct class_book *player_object_to_book(struct player *p,
 	return NULL;
 }
 
-const struct class_spell *spell_by_index(int index)
+const struct class_spell *spell_by_index(const struct player *p, int index)
 {
 	int book = 0, count = 0;
-	const struct class_magic *magic = &player->class->magic;
+	const struct class_magic *magic = &p->class->magic;
 
 	/* Check index validity */
 	if (index < 0 || index >= magic->total_spells)
@@ -257,9 +257,10 @@ const struct class_spell *spell_by_index(int index)
  * Collect spells from a book into the spells[] array, allocating
  * appropriate memory.
  */
-int spell_collect_from_book(const struct object *obj, int **spells)
+int spell_collect_from_book(const struct player *p, const struct object *obj,
+		int **spells)
 {
-	const struct class_book *book = player_object_to_book(player, obj);
+	const struct class_book *book = player_object_to_book(p, obj);
 	int i, n_spells = 0;
 
 	if (!book) {
@@ -284,10 +285,10 @@ int spell_collect_from_book(const struct object *obj, int **spells)
 /**
  * Return the number of castable spells in the spellbook 'obj'.
  */
-int spell_book_count_spells(const struct object *obj,
-		bool (*tester)(int spell))
+int spell_book_count_spells(const struct player *p, const struct object *obj,
+		bool (*tester)(const struct player *p, int spell))
 {
-	const struct class_book *book = player_object_to_book(player, obj);
+	const struct class_book *book = player_object_to_book(p, obj);
 	int i, n_spells = 0;
 
 	if (!book) {
@@ -295,7 +296,7 @@ int spell_book_count_spells(const struct object *obj,
 	}
 
 	for (i = 0; i < book->num_spells; i++)
-		if (tester(book->spells[i].sidx))
+		if (tester(p, book->spells[i].sidx))
 			n_spells++;
 
 	return n_spells;
@@ -305,14 +306,15 @@ int spell_book_count_spells(const struct object *obj,
 /**
  * True if at least one spell in spells[] is OK according to spell_test.
  */
-bool spell_okay_list(bool (*spell_test)(int spell),
+bool spell_okay_list(const struct player *p,
+		bool (*spell_test)(const struct player *p, int spell),
 		const int spells[], int n_spells)
 {
 	int i;
 	bool okay = false;
 
 	for (i = 0; i < n_spells; i++)
-		if (spell_test(spells[i]))
+		if (spell_test(p, spells[i]))
 			okay = true;
 
 	return okay;
@@ -321,30 +323,28 @@ bool spell_okay_list(bool (*spell_test)(int spell),
 /**
  * True if the spell is castable.
  */
-bool spell_okay_to_cast(int spell)
+bool spell_okay_to_cast(const struct player *p, int spell)
 {
-	return (player->spell_flags[spell] & PY_SPELL_LEARNED);
+	return (p->spell_flags[spell] & PY_SPELL_LEARNED);
 }
 
 /**
  * True if the spell can be studied.
  */
-bool spell_okay_to_study(int spell_index)
+bool spell_okay_to_study(const struct player *p, int spell_index)
 {
-	const struct class_spell *spell = spell_by_index(spell_index);
-	if (!spell) return false;
-	return (spell->slevel <= player->lev) &&
-			!(player->spell_flags[spell_index] & PY_SPELL_LEARNED);
+	const struct class_spell *spell = spell_by_index(p, spell_index);
+	return spell && spell->slevel <= p->lev
+		&& !(p->spell_flags[spell_index] & PY_SPELL_LEARNED);
 }
 
 /**
  * True if the spell is browsable.
  */
-bool spell_okay_to_browse(int spell_index)
+bool spell_okay_to_browse(const struct player *p, int spell_index)
 {
-	const struct class_spell *spell = spell_by_index(spell_index);
-	if (!spell) return false;
-	return (spell->slevel < 99);
+	const struct class_spell *spell = spell_by_index(p, spell_index);
+	return spell && spell->slevel < 99;
 }
 
 /**
@@ -378,7 +378,7 @@ s16b spell_chance(int spell_index)
 	if (!player->class->magic.total_spells) return chance;
 
 	/* Get the spell */
-	spell = spell_by_index(spell_index);
+	spell = spell_by_index(player, spell_index);
 	if (!spell) return chance;
 
 	/* Extract the base spell failure rate */
@@ -444,7 +444,7 @@ s16b spell_chance(int spell_index)
 void spell_learn(int spell_index)
 {
 	int i;
-	const struct class_spell *spell = spell_by_index(spell_index);
+	const struct class_spell *spell = spell_by_index(player, spell_index);
 
 	/* Learn the spell */
 	player->spell_flags[spell_index] |= PY_SPELL_LEARNED;
@@ -488,7 +488,7 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 	int beam  = beam_chance();
 
 	/* Get the spell */
-	const struct class_spell *spell = spell_by_index(spell_index);
+	const struct class_spell *spell = spell_by_index(player, spell_index);
 
 	/* Spell failure chance */
 	chance = spell_chance(spell_index);
@@ -553,7 +553,7 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 
 bool spell_needs_aim(int spell_index)
 {
-	const struct class_spell *spell = spell_by_index(spell_index);
+	const struct class_spell *spell = spell_by_index(player, spell_index);
 	assert(spell);
 	return effect_aim(spell->effect);
 }
@@ -667,7 +667,7 @@ static void spell_effect_append_value_info(const struct effect *effect,
 
 void get_spell_info(int spell_index, char *p, size_t len)
 {
-	struct effect *effect = spell_by_index(spell_index)->effect;
+	struct effect *effect = spell_by_index(player, spell_index)->effect;
 
 	p[0] = '\0';
 

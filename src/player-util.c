@@ -1169,7 +1169,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 
 		/* Extract spells */
 		for (j = 0; j < book->num_spells; j++)
-			if (spell_okay_to_study(book->spells[j].sidx)) {
+			if (spell_okay_to_study(p, book->spells[j].sidx)) {
 				/* There is a spell the player can study */
 				mem_free(item_list);
 				return true;

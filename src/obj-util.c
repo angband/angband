@@ -672,13 +672,13 @@ bool obj_can_browse(const struct object *obj)
 bool obj_can_cast_from(const struct object *obj)
 {
 	return obj_can_browse(obj) &&
-			spell_book_count_spells(obj, spell_okay_to_cast) > 0;
+		spell_book_count_spells(player, obj, spell_okay_to_cast) > 0;
 }
 
 bool obj_can_study(const struct object *obj)
 {
 	return obj_can_browse(obj) &&
-		spell_book_count_spells(obj, spell_okay_to_study) > 0;
+		spell_book_count_spells(player, obj, spell_okay_to_study) > 0;
 }
 
 
