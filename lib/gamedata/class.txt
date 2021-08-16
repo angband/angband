@@ -1173,7 +1173,7 @@ spell:Zone of Unmagic:32:16:60:110
 effect:SPOT:DISEN:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
-desc:Produces a zone of diesenchantment affecting the player and monsters
+desc:Produces a zone of disenchantment affecting the player and monsters
 desc: within radius 4.
 
 spell:Vampire Form:37:20:60:140
