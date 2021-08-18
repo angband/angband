@@ -1310,8 +1310,15 @@ int textui_do_birth(void)
 			{
 				roller = BIRTH_POINTBASED;
 		
-				if (prev > BIRTH_POINTBASED)
+				if (prev > BIRTH_POINTBASED) {
 					point_based_start();
+					/*
+					 * Force a redraw of the point
+					 * allocations but do not reset them.
+					 */
+					cmdq_push(CMD_REFRESH_STATS);
+					cmdq_execute(CTX_BIRTH);
+				}
 
 				next = point_based_command();
 
