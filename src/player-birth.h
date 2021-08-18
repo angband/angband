@@ -36,6 +36,7 @@ void do_cmd_choose_class(struct command *cmd);
 void do_cmd_buy_stat(struct command *cmd);
 void do_cmd_sell_stat(struct command *cmd);
 void do_cmd_reset_stats(struct command *cmd);
+void do_cmd_refresh_stats(struct command *cmd);
 void do_cmd_roll_stats(struct command *cmd);
 void do_cmd_prev_stats(struct command *cmd);
 void do_cmd_choose_name(struct command *cmd);

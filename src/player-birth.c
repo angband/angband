@@ -1129,6 +1129,13 @@ void do_cmd_reset_stats(struct command *cmd)
 	rolled_stats = false;
 }
 
+void do_cmd_refresh_stats(struct command *cmd)
+{
+	/* Refreshing is a no-op when using rolled stats. */
+	if (rolled_stats) return;
+	event_signal_birthpoints(points_spent, points_left);
+}
+
 void do_cmd_roll_stats(struct command *cmd)
 {
 	int i;

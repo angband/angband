@@ -62,6 +62,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, false, 0 },
 	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, false, 0 },
 	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, false, 0 },
+	{ CMD_REFRESH_STATS, "refresh stats", do_cmd_refresh_stats, false, 0 },
 	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, false, 0 },
 	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, false, 0 },
 	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, false, 0 },
