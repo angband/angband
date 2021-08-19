@@ -1103,7 +1103,12 @@ bool player_can_study_prereq(void)
  */
 bool player_can_read_prereq(void)
 {
-	return player_can_read(player, true);
+	/*
+	 * Accomodate hacks elsewhere:  'r' is overloaded to mean
+	 * release a commanded monster when TMD_COMMAND is active.
+	 */
+	return (player->timed[TMD_COMMAND]) ?
+		true : player_can_read(player, true);
 }
 
 /**
