@@ -1014,8 +1014,14 @@ errr init_gcu(int argc, char **argv) {
 
 	/* We do it like this to prevent a link error with curseses that
 	 * lack ESCDELAY. */
-	if (!getenv("ESCDELAY"))
-		putenv("ESCDELAY=20");
+	if (!getenv("ESCDELAY")) {
+#if _POSIX_C_SOURCE < 200112L
+		static char escdelbuf[80] = "ESCDELAY=20";
+		putenv(escdelbuf);
+#else
+		setenv("ESCDELAY", "20", 1);
+#endif
+	}
 
 	/* Initialize */
 	if (initscr() == NULL) return (-1);
