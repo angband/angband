@@ -2050,7 +2050,8 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 			destroyed = gear_object_for_use(player, obj, 1, true,
 				&none_left);
 		} else {
-			destroyed = floor_object_for_use(obj, 1, true, &none_left);
+			destroyed = floor_object_for_use(player, obj, 1, true,
+				&none_left);
 		}
 		if (destroyed->known)
 			object_delete(&destroyed->known);
@@ -3166,7 +3167,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	if (object_is_carried(player, obj)) {
 		staff = gear_object_for_use(player, obj, 1, true, &none_left);
 	} else {
-		staff = floor_object_for_use(obj, 1, true, &none_left);
+		staff = floor_object_for_use(player, obj, 1, true, &none_left);
 	}
 
 	if (staff->known) {

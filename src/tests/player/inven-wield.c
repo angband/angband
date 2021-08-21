@@ -88,9 +88,9 @@ static bool empty_gear(struct player *p) {
 	return true;
 }
 
-static bool empty_floor(struct chunk *c, struct loc grid) {
+static bool empty_floor(struct chunk *c, struct player *p) {
 	while (1) {
-		struct object *obj = square_object(c, grid);
+		struct object *obj = square_object(c, p->grid);
 		bool none_left;
 
 		if (!obj) {
@@ -98,7 +98,8 @@ static bool empty_floor(struct chunk *c, struct loc grid) {
 		}
 
 		none_left = false;
-		obj = floor_object_for_use(obj, obj->number, false, &none_left);
+		obj = floor_object_for_use(p, obj, obj->number, false,
+			&none_left);
 		if (obj->known) {
 			object_free(obj->known);
 		}
@@ -349,7 +350,7 @@ static int test_inven_wield_floor_single_empty(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj = setup_object(TV_BOOTS, 1, 1);
 	require(obj != NULL);
 	note = false;
@@ -378,7 +379,7 @@ static int test_inven_wield_floor_stack_empty(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj = setup_object(TV_CROWN, 1, 4);
 	require(obj != NULL);
 	note = false;
@@ -411,7 +412,7 @@ static int test_inven_wield_floor_single_filled(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj1 = setup_object(TV_AMULET, 1, 1);
 	require(obj1 != NULL);
 	gear_insert_end(player, obj1);
@@ -449,7 +450,7 @@ static int test_inven_wield_floor_stack_filled(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj1 = setup_object(TV_DIGGING, 1, 1);
 	require(obj1 != NULL);
 	gear_insert_end(player, obj1);
@@ -491,7 +492,7 @@ static int test_inven_wield_pack_full_no_overflow(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj1 = setup_object(TV_SOFT_ARMOR, 1, 1);
 	require(obj1 != NULL);
 	gear_insert_end(player, obj1);
@@ -531,7 +532,7 @@ static int test_inven_wield_pack_full_overflow(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj1 = setup_object(TV_HELM, 1, 1);
 	require(obj1 != NULL);
 	gear_insert_end(player, obj1);
@@ -576,7 +577,7 @@ static int test_inven_wield_floor_full_overflow(void *state) {
 	int old_slots;
 
 	require(empty_gear(player));
-	require(empty_floor(cave, player->grid));
+	require(empty_floor(cave, player));
 	obj1 = setup_object(TV_BOW, 1, 1);
 	require(obj1 != NULL);
 	gear_insert_end(player, obj1);
