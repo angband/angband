@@ -269,7 +269,7 @@ static void player_pickup_aux(struct player *p, struct object *obj,
 		else
 			num = get_quantity(NULL, max);
 		if (!num) return;
-		picked_up = floor_object_for_use(obj, num, false, &dummy);
+		picked_up = floor_object_for_use(p, obj, num, false, &dummy);
 		inven_carry(p, picked_up, true, domsg);
 	}
 }

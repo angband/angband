@@ -810,7 +810,7 @@ void inven_wield(struct object *obj, int slot)
 		}
 	} else {
 		/* Get a floor item and carry it */
-		wielded = floor_object_for_use(obj, 1, false, &dummy);
+		wielded = floor_object_for_use(player, obj, 1, false, &dummy);
 		inven_carry(player, wielded, false, false);
 	}
 

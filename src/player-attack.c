@@ -1182,7 +1182,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	if (object_is_carried(p, obj)) {
 		missile = gear_object_for_use(p, obj, 1, true, &none_left);
 	} else {
-		missile = floor_object_for_use(obj, 1, true, &none_left);
+		missile = floor_object_for_use(p, obj, 1, true, &none_left);
 	}
 
 	/* Terminate piercing */

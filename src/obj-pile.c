@@ -811,12 +811,13 @@ struct object *object_split(struct object *src, int amt)
 
 /**
  * Remove an amount of an object from the floor, returning a detached object
- * which can be used - it is assumed that the object is on the player grid.
+ * which can be used - it is assumed that the object is being manipulated by
+ * given player and is on that player's grid.
  *
  * Optionally describe what remains.
  */
-struct object *floor_object_for_use(struct object *obj, int num, bool message,
-									bool *none_left)
+struct object *floor_object_for_use(struct player *p, struct object *obj,
+	int num, bool message, bool *none_left)
 {
 	struct object *usable;
 	char name[80];
@@ -829,17 +830,17 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(player->cave, usable->grid, usable->known);
-		delist_object(player->cave, usable->known);
+		square_excise_object(p->cave, usable->grid, usable->known);
+		delist_object(p->cave, usable->known);
 		square_excise_object(cave, usable->grid, usable);
 		delist_object(cave, usable);
 		*none_left = true;
 
 		/* Stop tracking item */
-		if (tracked_object_is(player->upkeep, obj))
-			track_object(player->upkeep, NULL);
+		if (tracked_object_is(p->upkeep, obj))
+			track_object(p->upkeep, NULL);
 
-		/* Inventory has changed, so disable repeat command */ 
+		/* The pile is gone, so disable repeat command */
 		cmd_disable_repeat();
 	}
 
@@ -853,8 +854,8 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 			obj->number = 0;
 
 		/* Get a description */
-		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL,
-			player);
+		object_desc(name, sizeof(name), obj,
+			ODESC_PREFIX | ODESC_FULL, p);
 
 		if (usable == obj)
 			obj->number = num;
