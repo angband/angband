@@ -1158,7 +1158,6 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 			data->loaded = (0 != sample->op.wDeviceID);
 
 			if (!data->loaded) {
-				plog_fmt("Sound: Failed to load sound '%s')", data->name);
 				mem_free(sample);
 				sample = NULL;
 			}
