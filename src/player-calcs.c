@@ -1095,7 +1095,7 @@ void calc_inventory(struct player *p)
 					 * will prefer to remain in the quiver
 					 * in future calls to calc_inventory()
 					 * and will be the preferred target for
-					 * in combine_pack().
+					 * combine_pack().
 					 */
 					to_quiver = current;
 					gear_insert_end(p, object_split(current,
@@ -1143,7 +1143,7 @@ void calc_inventory(struct player *p)
 			if (!assigned[j] && tval_is_ammo(current)
 					&& (current->number
 					<= z_info->quiver_slot_size
-					|| (z_info->quiver_size > 0
+					|| (z_info->quiver_slot_size > 0
 					&& n_stack_split
 					<= n_pack_remaining))) {
 				/* Choose the first in order. */
@@ -1162,7 +1162,7 @@ void calc_inventory(struct player *p)
 
 		/* Put the item in the slot, splitting (if needed) to fit. */
 		if (first->number > z_info->quiver_slot_size) {
-			assert(z_info->quiver_size > 0
+			assert(z_info->quiver_slot_size > 0
 				&& n_stack_split <= n_pack_remaining);
 			/* As above, split off the portion going to the pack. */
 			gear_insert_end(p, object_split(first,
