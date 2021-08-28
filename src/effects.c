@@ -349,6 +349,11 @@ bool effect_do(struct effect *effect,
 			} else {
 				assert(effect->index == EF_SELECT &&
 					origin.what == SRC_PLAYER);
+				/*
+				 * Since a choice is presented, allow
+				 * identification, even if no choice is made.
+				 */
+				*ident = true;
 				if (cmd) {
 					if (cmd_get_effect_from_list(cmd,
 							"list_index",
