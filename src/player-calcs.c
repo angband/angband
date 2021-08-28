@@ -1095,7 +1095,7 @@ void calc_inventory(struct player *p)
 					 * will prefer to remain in the quiver
 					 * in future calls to calc_inventory()
 					 * and will be the preferred target for
-					 * in combine_pack().
+					 * combine_pack().
 					 */
 					to_quiver = current;
 					gear_insert_end(p, object_split(current,
