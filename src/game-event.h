@@ -95,7 +95,7 @@ typedef enum game_event_type
 	EVENT_GEN_LEVEL_START, /* has string in event data for profile name */
 	EVENT_GEN_LEVEL_END, /* has flag in event data indicating success */
 	EVENT_GEN_ROOM_START, /* has string in event data for room type */
-	EVENT_GEN_ROOM_CHOOSE_SIZE, /* has size in event data with name */
+	EVENT_GEN_ROOM_CHOOSE_SIZE, /* has size in event data */
 	EVENT_GEN_ROOM_CHOOSE_SUBTYPE, /* has string in event data with name */
 	EVENT_GEN_ROOM_END, /* has flag in event data indicating success */
 	EVENT_GEN_TUNNEL_FINISHED, /* has tunnel in event data with results */
