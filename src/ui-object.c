@@ -1647,14 +1647,16 @@ void textui_cmd_ignore_menu(struct object *obj)
 		}
 	}
 
+	type = ignore_type_of(obj);
+
 	/* Ego ignoring */
-	if (obj->known->ego) {
+	if (obj->known->ego && type != ITYPE_MAX) {
 		struct ego_desc choice;
 		struct ego_item *ego = obj->ego;
 		char tmp[80] = "";
 
 		choice.e_idx = ego->eidx;
-		choice.itype = ignore_type_of(obj);
+		choice.itype = type;
 		choice.short_name = "";
 		(void) ego_item_name(tmp, sizeof(tmp), &choice);
 		if (!ego_is_ignored(choice.e_idx, choice.itype)) {
@@ -1668,7 +1670,6 @@ void textui_cmd_ignore_menu(struct object *obj)
 
 	/* Quality ignoring */
 	value = ignore_level_of(obj);
-	type = ignore_type_of(obj);
 
 	if (tval_is_jewelry(obj) &&	ignore_level_of(obj) != IGNORE_BAD)
 		value = IGNORE_MAX;

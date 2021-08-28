@@ -591,13 +591,13 @@ bool object_is_ignored(const struct object *obj)
 		 kind_is_ignored_unaware(obj->kind))
 		return true;
 
-	/* Ignore ego items if known */
-	if (obj->known->ego && ego_is_ignored(obj->ego->eidx, ignore_type_of(obj)))
-		return true;
-
 	type = ignore_type_of(obj);
 	if (type == ITYPE_MAX)
 		return false;
+
+	/* Ignore ego items if known */
+	if (obj->known->ego && ego_is_ignored(obj->ego->eidx, type))
+		return true;
 
 	/* Ignore items known not to be artifacts */
 	if ((obj->known->notice & OBJ_NOTICE_ASSESSED) && !obj->artifact &&
