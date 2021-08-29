@@ -501,8 +501,8 @@ static void ui_keymap_create(const char *title, int row)
 	prt("Key: ", 14, 0);
 
 	c = keymap_get_trigger();
-	if (c.code == '$') {
-		c_prt(COLOUR_L_RED, "The '$' key is reserved.", 16, 2);
+	if (c.code == '=') {
+		c_prt(COLOUR_L_RED, "The '=' key is reserved.", 16, 2);
 		prt("Press any key to continue.", 18, 0);
 		inkey();
 		return;
@@ -519,14 +519,14 @@ static void ui_keymap_create(const char *title, int row)
 		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, false);
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
-		c_prt(COLOUR_L_BLUE, "  Press '$' when finished.", 17, 0);
+		c_prt(COLOUR_L_BLUE, "  Press '=' when finished.", 17, 0);
 		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
 		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)",
 									KEYMAP_ACTION_MAX), 19, 0);
 
 		kp = inkey();
 
-		if (kp.code == '$') {
+		if (kp.code == '=') {
 			done = true;
 			continue;
 		}
