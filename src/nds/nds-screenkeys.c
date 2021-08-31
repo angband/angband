@@ -3,6 +3,7 @@
 #include "../h-basic.h"
 #include "nds-draw.h"
 #include "nds-event.h"
+#include "../z-file.h"
 #include "../z-util.h"
 #include "../z-virt.h"
 
@@ -49,11 +50,11 @@ int nds_scrkeys_num = 0;
  *
  * Encoding a null-byte will end the input sequence, even if more characters may follow.
  */
-void nds_scrkey_add_file(FILE *f) {
+void nds_scrkey_add_file(ang_file *f) {
 	char *line = mem_alloc(NDS_SCRKEY_FILE_MAX_LINE);
 
-	while (fgets(line, NDS_SCRKEY_FILE_MAX_LINE, f)) {
-		if (line[0] == '\0' || line[0] == '#' || line[0] == '\n')
+	while (file_getl(f, line, NDS_SCRKEY_FILE_MAX_LINE)) {
+		if (line[0] == '\0' || line[0] == '#')
 			continue;
 
 		char *label = strtok(line, ":");
@@ -129,11 +130,11 @@ void nds_scrkey_redraw(bool initial)
 
 void nds_scrkey_init()
 {
-	FILE *f = fopen(NDS_SCRKEY_FILE, "r");
+	ang_file *f = file_open(NDS_SCRKEY_FILE, MODE_READ, FTYPE_TEXT);
 
 	if (f) {
 		nds_scrkey_add_file(f);
-		fclose(f);
+		file_close(f);
 	}
 
 	nds_scrkey_redraw(true);
