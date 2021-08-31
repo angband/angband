@@ -48,7 +48,7 @@ To build Angband using Microsoft's Visual Studio.
 13. If there are no errors, enjoy playing angband. There should not be any
     errors and the executable should be built. If there are any errors, and
     you do not know how to fix them, you can ask on the forums at
-    http://angband.oook.cz or in the #angband-dev IRC channel on Freenode.
+    http://angband.oook.cz or in the #angband-dev IRC channel on libera.chat.
 
 14. Report bugs or request changes on https://github.com/angband/angband/issues
     at the Github site or on the forums at http://angband.oook.cz .
