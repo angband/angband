@@ -166,7 +166,7 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 				screen_load();
 			}
 		/* Only allow reset to maintainer's defaults at birth. */
-		} else if ((event->key.code == 'm' || event->key.code == 'M') &&
+		} else if ((event->key.code == 'x' || event->key.code == 'X') &&
 				m->flags == MN_DBL_TAP) {
 			options_reset_birth(&player->opts);
 			menu_refresh(m, false);
@@ -218,8 +218,8 @@ static void option_toggle_menu(const char *name, int page)
 		m->cmd_keys = "";
 		m->flags = MN_NO_TAGS;
 	} else if (page == OPT_PAGE_BIRTH + 10) {
-		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'm' to reset";
-		m->cmd_keys = "YyNnTtSsRrMm";
+		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'x' to reset";
+		m->cmd_keys = "YyNnTtSsRrXx";
 		page -= 10;
 	}
 
