@@ -3,6 +3,7 @@
 #include "../h-basic.h"
 #include "nds-draw.h"
 #include "nds-event.h"
+#include "../z-file.h"
 #include "../z-util.h"
 #include "../z-virt.h"
 
@@ -108,11 +109,11 @@ void nds_btn_add_mappings(const nds_btn_map_entry *new_entries, int num) {
  *
  * Empty lines and lines starting with a '#' will be ignored.
  */
-void nds_btn_add_mappings_from_file(FILE *f) {
+void nds_btn_add_mappings_from_file(ang_file *f) {
 	char *line = mem_alloc(NDS_BTN_FILE_MAX_LINE);
 
-	while (fgets(line, NDS_BTN_FILE_MAX_LINE, f)) {
-		if (line[0] == '\0' || line[0] == '#' || line[0] == '\n')
+	while (file_getl(f, line, NDS_BTN_FILE_MAX_LINE)) {
+		if (line[0] == '\0' || line[0] == '#')
 			continue;
 
 		char *buttons = strtok(line, ":");
@@ -172,11 +173,11 @@ void nds_btn_add_mappings_from_file(FILE *f) {
 
 void nds_btn_init()
 {
-	FILE *f = fopen(NDS_BTN_FILE, "r");
+	ang_file *f = file_open(NDS_BTN_FILE, MODE_READ, FTYPE_TEXT);
 
 	if (f) {
 		nds_btn_add_mappings_from_file(f);
-		fclose(f);
+		file_close(f);
 	}
 
 	nds_btn_add_mappings(nds_btn_default_map, N_ELEMENTS(nds_btn_default_map));
