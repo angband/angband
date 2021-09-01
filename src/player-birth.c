@@ -775,9 +775,9 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_lo
 			/* Recalculate everything that's changed because
 			   the stat has changed, and inform the UI. */
 			recalculate_stats(stats_local, *points_left_local);
-	
-			return true;
 		}
+
+		return true;
 	}
 
 	/* Didn't adjust stat. */
