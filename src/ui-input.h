@@ -96,7 +96,12 @@ void message_flush(game_event_type unused, game_event_data *data, void *user);
 void clear_from(int row);
 bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 						 struct keypress keypress, bool firsttime);
+int askfor_aux_mouse(char *buf, size_t buflen, size_t *curs, size_t *len,
+	struct mouseclick mouse, bool firsttime);
 bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));
+bool askfor_aux_ext(char *buf, size_t len,
+	bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool),
+	int (*mouse_h)(char *, size_t, size_t *, size_t *, struct mouseclick, bool));
 bool get_character_name(char *buf, size_t buflen);
 char get_char(const char *prompt, const char *options, size_t len,
 			  char fallback);
