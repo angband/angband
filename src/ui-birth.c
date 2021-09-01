@@ -990,6 +990,12 @@ static enum birth_stage roller_command(bool first_call)
 #define COSTS_COL (42 + 32)
 #define TOTAL_COL (42 + 19)
 
+/*
+ * Remember what's possible for a given stat.  0 means can't buy or sell.
+ * 1 means can sell.  2 means can buy.  3 means can buy or sell.
+ */
+static int buysell[STAT_MAX];
+
 /**
  * This is called whenever a stat changes.  We take the easy road, and just
  * redisplay them all using the standard function.
@@ -1022,26 +1028,35 @@ static void point_based_points(game_event_type type, game_event_data *data,
 {
 	int i;
 	int sum = 0;
-	int *stats = data->birthstats.stats;
+	const int *spent = data->birthpoints.points;
+	const int *inc = data->birthpoints.inc_points;
+	int remaining = data->birthpoints.remaining;
 
 	/* Display the costs header */
 	put_str("Cost", COSTS_ROW - 1, COSTS_COL);
 	
-	/* Display the costs */
 	for (i = 0; i < STAT_MAX; i++) {
+		/* Remember what's allowed. */
+		buysell[i] = 0;
+		if (spent[i] > 0) {
+			buysell[i] |= 1;
+		}
+		if (inc[i] <= remaining) {
+			buysell[i] |= 2;
+		}
 		/* Display cost */
-		put_str(format("%4d", stats[i]), COSTS_ROW + i, COSTS_COL);
-		sum += stats[i];
+		put_str(format("%4d", spent[i]), COSTS_ROW + i, COSTS_COL);
+		sum += spent[i];
 	}
 	
-	put_str(format("Total Cost: %2d/%2d", sum,
-				   data->birthstats.remaining + sum), COSTS_ROW + STAT_MAX,
-			TOTAL_COL);
+	put_str(format("Total Cost: %2d/%2d", sum, remaining + sum),
+		COSTS_ROW + STAT_MAX, TOTAL_COL);
 }
 
 static void point_based_start(void)
 {
 	const char *prompt = "[up/down to move, left/right to modify, 'r' to reset, 'Enter' to accept]";
+	int i;
 
 	/* Clear */
 	Term_clear();
@@ -1051,6 +1066,10 @@ static void point_based_start(void)
 	display_player_stat_info();
 
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		buysell[i] = 0;
+	}
 
 	/* Register handlers for various events - cheat a bit because we redraw
 	   the lot at once rather than each bit at a time. */
@@ -1069,48 +1088,173 @@ static void point_based_stop(void)
 static enum birth_stage point_based_command(void)
 {
 	static int stat = 0;
-	struct keypress ch;
+	enum {
+		ACT_CTX_BIRTH_PTS_NONE,
+		ACT_CTX_BIRTH_PTS_BUY,
+		ACT_CTX_BIRTH_PTS_SELL,
+		ACT_CTX_BIRTH_PTS_ESCAPE,
+		ACT_CTX_BIRTH_PTS_RESET,
+		ACT_CTX_BIRTH_PTS_ACCEPT,
+		ACT_CTX_BIRTH_PTS_QUIT
+	};
+	int action = ACT_CTX_BIRTH_PTS_NONE;
+	ui_event in;
 	enum birth_stage next = BIRTH_POINTBASED;
 
 	/* Place cursor just after cost of current stat */
 	Term_gotoxy(COSTS_COL + 4, COSTS_ROW + stat);
 
-	/* Get key */
-	ch = inkey();
-	
-	if (ch.code == KTRL('X')) {
-		quit(NULL);
-	} else if (ch.code == ESCAPE) {
-		/* Go back a step, or back to the start of this step */
+	/*
+	 * Get input.  Emulate what inkey() does without coercing mouse events
+	 * to look like keystrokes.
+	 */
+	while (1) {
+		in = inkey_ex();
+		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+			break;
+		}
+		if (in.type == EVT_BUTTON) {
+			in.type = EVT_KBRD;
+		}
+		if (in.type == EVT_ESCAPE) {
+			in.type = EVT_KBRD;
+			in.key.code = ESCAPE;
+			in.key.mods = 0;
+			break;
+		}
+	}
+
+	/* Figure out what to do. */
+	if (in.type == EVT_KBRD) {
+		if (in.key.code == KTRL('X')) {
+			action = ACT_CTX_BIRTH_PTS_QUIT;
+		} else if (in.key.code == ESCAPE) {
+			action = ACT_CTX_BIRTH_PTS_ESCAPE;
+		} else if (in.key.code == 'r' || in.key.code == 'R') {
+			action = ACT_CTX_BIRTH_PTS_RESET;
+		} else if (in.key.code == KC_ENTER) {
+			action = ACT_CTX_BIRTH_PTS_ACCEPT;
+		} else {
+			int dir;
+
+			if (in.key.code == '-') {
+				dir = 4;
+			} else if (in.key.code == '+') {
+				dir = 6;
+			} else {
+				dir = target_dir(in.key);
+			}
+
+			/*
+			 * Go to previous stat.  Loop back to the last if at
+			 * the first.
+			 */
+			if (dir == 8) {
+				stat = (stat + STAT_MAX - 1) % STAT_MAX;
+			}
+
+			/*
+			 * Go to next stat.  Loop back to the first if at the
+			 * last.
+			 */
+			if (dir == 2) {
+				stat = (stat + 1) % STAT_MAX;
+			}
+
+			/* Decrease stat (if possible). */
+			if (dir == 4) {
+				action = ACT_CTX_BIRTH_PTS_SELL;
+			}
+
+			/* Increase stat (if possible). */
+			if (dir == 6) {
+				action = ACT_CTX_BIRTH_PTS_BUY;
+			}
+		}
+	} else if (in.type == EVT_MOUSE) {
+		assert(stat >= 0 && stat < STAT_MAX);
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_BIRTH_PTS_ESCAPE;
+		} else if (in.mouse.y >= COSTS_ROW
+				&& in.mouse.y < COSTS_ROW + STAT_MAX
+				&& in.mouse.y != COSTS_ROW + stat) {
+			/*
+			 * Make that stat the current one if buying or selling.
+			 */
+			stat = in.mouse.y - COSTS_ROW;
+		} else {
+			/* Present a context menu with the other actions. */
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			if (in.mouse.y == COSTS_ROW + stat
+					&& (buysell[stat] & 1)) {
+				menu_dynamic_add_label(m, "Sell", 's',
+					ACT_CTX_BIRTH_PTS_SELL, labels);
+			}
+			if (in.mouse.y == COSTS_ROW + stat
+					&& (buysell[stat] & 2)) {
+				menu_dynamic_add_label(m, "Buy", 'b',
+					ACT_CTX_BIRTH_PTS_BUY, labels);
+			}
+			menu_dynamic_add_label(m, "Accept", 'a',
+				ACT_CTX_BIRTH_PTS_ACCEPT, labels);
+			menu_dynamic_add_label(m, "Reset", 'r',
+				ACT_CTX_BIRTH_PTS_RESET, labels);
+			menu_dynamic_add_label(m, "Quit", 'q',
+				ACT_CTX_BIRTH_PTS_QUIT, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action = menu_dynamic_select(m);
+
+			menu_dynamic_free(m);
+			string_free(labels);
+
+			screen_load();
+		}
+	}
+
+	/* Do it. */
+	switch (action) {
+	case ACT_CTX_BIRTH_PTS_SELL:
+		assert(stat >= 0 && stat < STAT_MAX);
+		cmdq_push(CMD_SELL_STAT);
+		cmd_set_arg_choice(cmdq_peek(), "choice", stat);
+		break;
+
+	case ACT_CTX_BIRTH_PTS_BUY:
+		assert(stat >= 0 && stat < STAT_MAX);
+		cmdq_push(CMD_BUY_STAT);
+		cmd_set_arg_choice(cmdq_peek(), "choice", stat);
+		break;
+
+	case ACT_CTX_BIRTH_PTS_ESCAPE:
+		/* Go back a step or back to the start of this step. */
 		next = BIRTH_BACK;
-	} else if (ch.code == 'r' || ch.code == 'R') {
+		break;
+
+	case ACT_CTX_BIRTH_PTS_RESET:
 		cmdq_push(CMD_RESET_STATS);
 		cmd_set_arg_choice(cmdq_peek(), "choice", false);
-	} else if (ch.code == KC_ENTER) {
-		/* Done */
-		next = BIRTH_NAME_CHOICE;
-	} else {
-		int dir = target_dir(ch);
+		break;
 
-		/* Prev stat, looping round to the bottom when going off the top */
-		if (dir == 8)
-			stat = (stat + STAT_MAX - 1) % STAT_MAX;
-		
-		/* Next stat, looping round to the top when going off the bottom */
-		if (dir == 2)
-			stat = (stat + 1) % STAT_MAX;
-		
-		/* Decrease stat (if possible) */
-		if (dir == 4) {
-			cmdq_push(CMD_SELL_STAT);
-			cmd_set_arg_choice(cmdq_peek(), "choice", stat);
-		}
-		
-		/* Increase stat (if possible) */
-		if (dir == 6) {
-			cmdq_push(CMD_BUY_STAT);
-			cmd_set_arg_choice(cmdq_peek(), "choice", stat);
-		}
+	case ACT_CTX_BIRTH_PTS_ACCEPT:
+		/* Done with this stage.  Proceed to the next. */
+		next = BIRTH_NAME_CHOICE;
+		break;
+
+	case ACT_CTX_BIRTH_PTS_QUIT:
+		quit(NULL);
+		break;
+
+	default:
+		/* Do nothing and remain at this stage. */
+		break;
 	}
 
 	return next;

@@ -131,9 +131,10 @@ typedef union
 
   	struct
 	{
-		int *stats;
+		const int *points;
+		const int *inc_points;
 		int remaining;
-	} birthstats;
+	} birthpoints;
 
 	struct
 	{
@@ -213,7 +214,8 @@ void event_remove_all_handlers(void);
 void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 
-void event_signal_birthpoints(int stats[6], int remaining);
+void event_signal_birthpoints(const int *points, const int *inc_points,
+	int remaining);
 
 void event_signal_point(game_event_type, int x, int y);
 void event_signal_string(game_event_type, const char *s);
