@@ -233,6 +233,16 @@ struct menu
 	 * not. oid is the index of the cursor position in the list. */
 	bool (*keys_hook)(struct menu *m, const ui_event *ev, int oid);
 
+	/* This is an auxiliary function to allow presentation of a context
+	 * menu in response to a mouse click.  If used, the function should
+	 * return true if the event, in, was handled or false if it was not.
+	 * *out has the details for the event that will be passed upstream and
+	 * is initialized prior to the call to the auxiliary function.  If the
+	 * input event was handled, the function way want to modify *out.
+	 * This function is called after screening out any mouse events that
+	 * are handled natively by menu_select(). */
+	bool (*context_hook)(struct menu *m, const ui_event *in, ui_event *out);
+
 	/* Flags specifying the behavior of this menu (from struct menu_flags) */
 	int flags;
 

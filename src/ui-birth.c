@@ -91,6 +91,7 @@ enum birth_rollers
 };
 
 
+static void finish_with_random_choices(enum birth_stage current);
 static void point_based_start(void);
 static bool quickstart_allowed = false;
 bool arg_force_name;
@@ -180,14 +181,16 @@ typedef void (*browse_f) (int oid, void *db, const region *l);
 /**
  * We have one of these structures for each menu we display - it holds
  * the useful information for the menu - text of the menu items, "help"
- * text, current (or default) selection, and whether random selection
- * is allowed.
+ * text, current (or default) selection, whether random selection is allowed,
+ * and the current stage of the process for setting up a context menu and
+ * relaying the reuslt of a selection in that menu.
  */
 struct birthmenu_data 
 {
 	const char **items;
 	const char *hint;
 	bool allow_random;
+	enum birth_stage stage_inout;
 };
 
 /**
@@ -389,6 +392,103 @@ static void class_help(int i, void *db, const region *l)
 }
 
 /**
+ * Display and handle user interaction with a context menu appropriate for the
+ * current stage.  That way actions available with certain keys are also
+ * available if only using the mouse.
+ *
+ * \param current_menu is the standard (not contextual) menu for the stage.
+ * \param in is the event triggering the context menu.  in->type must be
+ * EVT_MOUSE.
+ * \param out is the event to be passed upstream (to internal handling in
+ * menu_select() or, potentially, menu_select()'s caller).
+ * \return true if the event was handled; otherwise, return false.
+ *
+ * The logic here overlaps with what's done to handle cmd_keys in
+ * menu_question().
+ */
+static bool use_context_menu_birth(struct menu *current_menu,
+		const ui_event *in, ui_event *out)
+{
+	enum {
+		ACT_CTX_BIRTH_OPT,
+		ACT_CTX_BIRTH_RAND,
+		ACT_CTX_BIRTH_FINISH_RAND,
+		ACT_CTX_BIRTH_QUIT,
+		ACT_CTX_BIRTH_HELP
+	};
+	struct birthmenu_data *menu_data = menu_priv(current_menu);
+	char *labels;
+	struct menu *m;
+	int selected;
+
+	assert(in->type == EVT_MOUSE);
+	if (in->mouse.y != QUESTION_ROW && in->mouse.y != QUESTION_ROW + 1) {
+		return false;
+	}
+
+	labels = string_make(lower_case);
+	m = menu_dynamic_new();
+
+	m->selections = labels;
+	menu_dynamic_add_label(m, "Show birth options", '=',
+		ACT_CTX_BIRTH_OPT, labels);
+	if (menu_data->allow_random) {
+		menu_dynamic_add_label(m, "Select one at random", '*',
+			ACT_CTX_BIRTH_RAND, labels);
+	}
+	menu_dynamic_add_label(m, "Finish with random choices", '@',
+		ACT_CTX_BIRTH_FINISH_RAND, labels);
+	menu_dynamic_add_label(m, "Quit", 'q', ACT_CTX_BIRTH_QUIT, labels);
+	menu_dynamic_add_label(m, "Help", '?', ACT_CTX_BIRTH_HELP, labels);
+
+	screen_save();
+
+	menu_dynamic_calc_location(m, in->mouse.x, in->mouse.y);
+	region_erase_bordered(&m->boundary);
+
+	selected = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+
+	switch (selected) {
+	case ACT_CTX_BIRTH_OPT:
+		do_cmd_options_birth();
+		/* The stage remains the same so leave stage_inout as is. */
+		out->type = EVT_SWITCH;
+		break;
+
+	case ACT_CTX_BIRTH_RAND:
+		current_menu->cursor = randint0(current_menu->count);
+		out->type = EVT_SELECT;
+		break;
+
+	case ACT_CTX_BIRTH_FINISH_RAND:
+		finish_with_random_choices(menu_data->stage_inout);
+		menu_data->stage_inout = BIRTH_FINAL_CONFIRM;
+		out->type = EVT_SWITCH;
+		break;
+
+	case ACT_CTX_BIRTH_QUIT:
+		quit(NULL);
+		break;
+
+	case ACT_CTX_BIRTH_HELP:
+		do_cmd_help();
+		menu_data->stage_inout = BIRTH_RESET;
+		out->type = EVT_SWITCH;
+
+	default:
+		/* There's nothing to do. */
+		break;
+	}
+
+	return true;
+}
+
+/**
  * Set up one of our menus ready to display choices for a birth question.
  * This is slightly involved.
  */
@@ -422,6 +522,13 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 
 	/* Set up the "browse" hook to display help text (where applicable). */
 	menu->browse_hook = aux;
+
+	/*
+	 * All use the same hook to display a context menu so that
+	 * functionality driven by keyboard input (see how cmd_keys is used
+	 * in menu_question()) is also available using the mouse.
+	 */
+	menu->context_hook = use_context_menu_birth;
 
 	/* Lay out the menu appropriately */
 	menu_layout(menu, reg);
@@ -660,6 +767,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 
 	while (next == BIRTH_RESET) {
 		/* Display the menu, wait for a selection of some sort to be made. */
+		menu_data->stage_inout = current;
 		cx = menu_select(current_menu, EVT_KBRD, false);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
@@ -692,6 +800,8 @@ static enum birth_stage menu_question(enum birth_stage current,
 				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
 				next = current + 1;
 			}
+		} else if (cx.type == EVT_SWITCH) {
+			next = menu_data->stage_inout;
 		} else if (cx.type == EVT_KBRD) {
 			/* '*' chooses an option at random from those the game's provided */
 			if (cx.key.code == '*' && menu_data->allow_random) {
