@@ -837,10 +837,19 @@ static enum birth_stage menu_question(enum birth_stage current,
  * ------------------------------------------------------------------------ */
 static enum birth_stage roller_command(bool first_call)
 {
+	enum {
+		ACT_CTX_BIRTH_ROLL_NONE,
+		ACT_CTX_BIRTH_ROLL_ESCAPE,
+		ACT_CTX_BIRTH_ROLL_REROLL,
+		ACT_CTX_BIRTH_ROLL_PREV,
+		ACT_CTX_BIRTH_ROLL_ACCEPT,
+		ACT_CTX_BIRTH_ROLL_QUIT,
+		ACT_CTX_BIRTH_ROLL_HELP
+	};
 	char prompt[80] = "";
 	size_t promptlen = 0;
-
-	struct keypress ch;
+	int action = ACT_CTX_BIRTH_ROLL_NONE;
+	ui_event in;
 
 	enum birth_stage next = BIRTH_ROLLER;
 
@@ -862,32 +871,110 @@ static enum birth_stage roller_command(bool first_call)
 	/* Prompt for it */
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
 	
-	/* Prompt and get a command */
-	ch = inkey();
+	/*
+	 * Get the response.  Emulate what inkey_does() without coercing mouse
+	 * events to look like keystrokes.
+	 */
+	while (1) {
+		in = inkey_ex();
+		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+			break;
+		}
+		if (in.type == EVT_BUTTON) {
+			in.type = EVT_KBRD;
+			break;
+		}
+		if (in.type == EVT_ESCAPE) {
+			in.type = EVT_KBRD;
+			in.key.code = ESCAPE;
+			in.key.mods = 0;
+			break;
+		}
+	}
 
 	/* Analyse the command */
-	if (ch.code == ESCAPE) {
-		/* Back out */
+	if (in.type == EVT_KBRD) {
+		if (in.key.code == ESCAPE) {
+			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
+		} else if (in.key.code == KC_ENTER) {
+			action = ACT_CTX_BIRTH_ROLL_ACCEPT;
+		} else if (in.key.code == ' ' || in.key.code == 'r') {
+			action = ACT_CTX_BIRTH_ROLL_REROLL;
+		} else if (prev_roll && in.key.code == 'p') {
+			action = ACT_CTX_BIRTH_ROLL_PREV;
+		} else if (in.key.code == KTRL('X')) {
+			action = ACT_CTX_BIRTH_ROLL_QUIT;
+		} else if (in.key.code == '?') {
+			action = ACT_CTX_BIRTH_ROLL_HELP;
+		} else {
+			/* Nothing handled directly here */
+			bell("Illegal roller command!");
+		}
+	} else if (in.type == EVT_MOUSE) {
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
+		} else {
+			/* Present a context menu with the other actions. */
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			menu_dynamic_add_label(m, "Reroll", 'r',
+				ACT_CTX_BIRTH_ROLL_REROLL, labels);
+			if (prev_roll) {
+				menu_dynamic_add_label(m, "Retrieve previous",
+					'p', ACT_CTX_BIRTH_ROLL_PREV, labels);
+			}
+			menu_dynamic_add_label(m, "Accept", 'a',
+				ACT_CTX_BIRTH_ROLL_ACCEPT, labels);
+			menu_dynamic_add_label(m, "Quit", 'q',
+				ACT_CTX_BIRTH_ROLL_QUIT, labels);
+			menu_dynamic_add_label(m, "Help", '?',
+				ACT_CTX_BIRTH_ROLL_HELP, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action = menu_dynamic_select(m);
+
+			menu_dynamic_free(m);
+			string_free(labels);
+
+			screen_load();
+		}
+	}
+
+	switch (action) {
+	case ACT_CTX_BIRTH_ROLL_ESCAPE:
+		/* Back out to the previous birth stage. */
 		next = BIRTH_BACK;
-	} else if (ch.code == KC_ENTER) {
-		/* 'Enter' accepts the roll */
-		next = BIRTH_NAME_CHOICE;
-	} else if ((ch.code == ' ') || (ch.code == 'r')) {
-		/* Reroll this character */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_REROLL:
+		/* Reroll this character. */
 		cmdq_push(CMD_ROLL_STATS);
 		prev_roll = true;
-	} else if (prev_roll && (ch.code == 'p')) {
-		/* Previous character */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_PREV:
+		/* Swap with previous roll. */
 		cmdq_push(CMD_PREV_STATS);
-	} else if (ch.code == KTRL('X')) {
-		/* Quit */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_ACCEPT:
+		/* Accept the roll.  Go to the next stage. */
+		next = BIRTH_NAME_CHOICE;
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_QUIT:
 		quit(NULL);
-	} else if (ch.code == '?') {
-		/* Help XXX */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_HELP:
 		do_cmd_help();
-	} else {
-		/* Nothing handled directly here */
-		bell("Illegal roller command!");
+		break;
 	}
 
 	return next;
