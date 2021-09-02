@@ -33,6 +33,7 @@
 #include "ui-event.h"
 #include "ui-input.h"
 #include "ui-object.h"
+#include "ui-menu.h"
 #include "ui-output.h"
 #include "ui-term.h"
 #include "z-color.h"
@@ -228,7 +229,7 @@ enum {
 };
 struct menu_display_state {
 	const char *prompt;
-	int (*keyfunc)(struct keypress ch, int istate,
+	int (*inputfunc)(ui_event in, int istate,
 		struct equippable_summary *s, struct player *p);
 	bool clear;
 	bool refresh;
@@ -244,11 +245,11 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 static void display_equip_cmp_help(void);
 static void display_equip_cmp_sel_help(void);
 static int get_expected_easy_filter_count(enum store_inclusion strs);
-static int handle_key_bail(struct keypress ch, int istate,
+static int handle_input_bail(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p);
-static int handle_key_equip_cmp_general(struct keypress ch, int istate,
+static int handle_input_equip_cmp_general(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p);
-static int handle_key_equip_cmp_select(struct keypress ch, int istate,
+static int handle_input_equip_cmp_select(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p);
 static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not);
 static void display_object_comparison(const struct equippable_summary *s,
@@ -308,15 +309,19 @@ void equip_cmp_display(void)
 		{ "", 0, false, false },
 		/* EQUIP_CMP_MENU_BAIL */
 		{ "Sorry, could not display.  Press any key.",
-			handle_key_bail, true, false },
+			handle_input_bail, true, false },
 		/* EQUIP_CMP_MENU_NEW_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to exit]", handle_key_equip_cmp_general, true, true },
+		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+			"exit]", handle_input_equip_cmp_general, true, true },
 		/* EQUIP_CMP_MENU_SAME_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to exit]", handle_key_equip_cmp_general, false, false },
+		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+			"exit]", handle_input_equip_cmp_general, false, false },
 		/* EQUIP_CMP_MENU_SEL0 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]", handle_key_equip_cmp_select, true, true },
+		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+			handle_input_equip_cmp_select, true, true },
 		/* EQUIP_CMP_MENU_SEL1 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]", handle_key_equip_cmp_select, true, true },
+		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+			handle_input_equip_cmp_select, true, true },
 	};
 	int istate;
 
@@ -329,7 +334,7 @@ void equip_cmp_display(void)
 	}
 
 	while (istate != EQUIP_CMP_MENU_DONE) {
-		struct keypress ch;
+		ui_event in;
 		int wid, hgt;
 
 		assert(istate >= 0 && istate < (int)N_ELEMENTS(states));
@@ -362,8 +367,27 @@ void equip_cmp_display(void)
 		Term_get_size(&wid, &hgt);
 		prt(states[istate].prompt, hgt - 1, 0);
 
-		ch = inkey();
-		istate = (*states[istate].keyfunc)(ch, istate, the_summary,
+		/*
+		 * Emulate what inkey() would do without coercing mouse events
+		 * into keystrokes.
+		 */
+		while (1) {
+			in = inkey_ex();
+			if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+				break;
+			}
+			if (in.type == EVT_BUTTON) {
+				in.type = EVT_KBRD;
+				break;
+			}
+			if (in.type == EVT_ESCAPE) {
+				in.type = EVT_KBRD;
+				in.key.code = ESCAPE;
+				in.key.mods = 0;
+				break;
+			}
+		}
+		istate = (*states[istate].inputfunc)(in, istate, the_summary,
 			player);
 	}
 
@@ -432,16 +456,34 @@ static int get_expected_easy_filter_count(enum store_inclusion strs)
 }
 
 
-static int handle_key_bail(struct keypress ch, int istate,
+static int handle_input_bail(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p)
 {
 	return EQUIP_CMP_MENU_DONE;
 }
 
 
-static int handle_key_equip_cmp_general(struct keypress ch, int istate,
+static int handle_input_equip_cmp_general(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p)
 {
+	enum {
+		ACT_CTX_EQUIPCMP_NONE,
+		ACT_CTX_EQUIPCMP_ESCAPE,
+		ACT_CTX_EQUIPCMP_NEXT_LINE,
+		ACT_CTX_EQUIPCMP_PREV_LINE,
+		ACT_CTX_EQUIPCMP_NEXT_PAGE,
+		ACT_CTX_EQUIPCMP_PREV_PAGE,
+		ACT_CTX_EQUIPCMP_REVERSE,
+		ACT_CTX_EQUIPCMP_RESET,
+		ACT_CTX_EQUIPCMP_CYCLE_SOURCES,
+		ACT_CTX_EQUIPCMP_CYCLE_VIEWS,
+		ACT_CTX_EQUIPCMP_START_SELECT,
+		ACT_CTX_EQUIPCMP_DUMP_FILE,
+		ACT_CTX_EQUIPCMP_HELP,
+		ACT_CTX_EQUIPCMP_QUICK_FILTER,
+		ACT_CTX_EQUIPCMP_QUICK_FILTER_NOT,
+		ACT_CTX_EQUIPCMP_UNKNOWN,
+	};
 	static const char *trans_msg_unknown_key =
 		"Unknown key pressed; ? will list available keys";
 	static const char *trans_msg_view =
@@ -455,14 +497,140 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 	static const char *trans_msg_save_ok = "Successfully saved to file";
 	static const char *trans_msg_save_bad = "Failed to save to file!";
 	static const char *trans_msg_sel0 = "Select first item to examine";
-	int result;
+	int action = ACT_CTX_EQUIPCMP_NONE;
+	int result = EQUIP_CMP_MENU_SAME_PAGE;
 	int ilast;
 	int nfilt;
 
-	switch (ch.code) {
-	case 'n':
-	case ' ':
-	case KC_PGDOWN:
+	if (in.type == EVT_KBRD) {
+		switch (in.key.code) {
+		case 'n':
+		case ' ':
+		case KC_PGDOWN:
+			action = ACT_CTX_EQUIPCMP_NEXT_PAGE;
+			break;
+
+		case 'p':
+		case KC_PGUP:
+			action = ACT_CTX_EQUIPCMP_PREV_PAGE;
+			break;
+
+		case ARROW_DOWN:
+			action = ACT_CTX_EQUIPCMP_NEXT_LINE;
+			break;
+
+		case ARROW_UP:
+			action = ACT_CTX_EQUIPCMP_PREV_LINE;
+			break;
+
+		case 'c':
+			action = ACT_CTX_EQUIPCMP_CYCLE_SOURCES;
+			break;
+
+		case 'd':
+			action = ACT_CTX_EQUIPCMP_DUMP_FILE;
+			break;
+
+		case 'q':
+			action = ACT_CTX_EQUIPCMP_QUICK_FILTER;
+			break;
+
+		case 'r':
+			action = ACT_CTX_EQUIPCMP_REVERSE;
+			break;
+
+		case 'v':
+			action = ACT_CTX_EQUIPCMP_CYCLE_VIEWS;
+			break;
+
+		case 'x':
+		case 'I':
+			action = ACT_CTX_EQUIPCMP_START_SELECT;
+			break;
+
+		case 'R':
+			action = ACT_CTX_EQUIPCMP_RESET;
+			break;
+
+		case '!':
+			action = ACT_CTX_EQUIPCMP_QUICK_FILTER_NOT;
+			break;
+
+		case '?':
+			action = ACT_CTX_EQUIPCMP_HELP;
+			break;
+
+		case ESCAPE:
+			action = ACT_CTX_EQUIPCMP_ESCAPE;
+			break;
+
+		default:
+			action = ACT_CTX_EQUIPCMP_UNKNOWN;
+			break;
+		}
+	} else if (in.type == EVT_MOUSE) {
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_EQUIPCMP_ESCAPE;
+		} else {
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			if (s->npage == s->maxpage) {
+				menu_dynamic_add_label(m, "Go to next page",
+					'n', ACT_CTX_EQUIPCMP_NEXT_PAGE,
+					labels);
+			}
+			if ((s->indinc > 0 && s->ifirst > 0)
+					|| (s->indinc <= 0
+					&& s->ifirst < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to previous page",
+					'p', ACT_CTX_EQUIPCMP_PREV_PAGE,
+					labels);
+			}
+			if (s->npage == s->maxpage) {
+				menu_dynamic_add_label(m, "Go to next line",
+					'N', ACT_CTX_EQUIPCMP_NEXT_LINE,
+					labels);
+			}
+			if ((s->indinc > 0 && s->ifirst > 0)
+					|| (s->indinc <= 0
+					&& s->ifirst < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to previous line",
+					'P', ACT_CTX_EQUIPCMP_PREV_LINE,
+					labels);
+			}
+			menu_dynamic_add_label(m, "Cycle equipment source", 'c',
+				ACT_CTX_EQUIPCMP_CYCLE_SOURCES, labels);
+			menu_dynamic_add_label(m, "Cycle attribute view", 'v',
+				ACT_CTX_EQUIPCMP_CYCLE_VIEWS, labels);
+			menu_dynamic_add_label(m, "Examine one or two items",
+				'x', ACT_CTX_EQUIPCMP_START_SELECT, labels);
+			menu_dynamic_add_label(m, "Reverse order", 'r',
+				ACT_CTX_EQUIPCMP_REVERSE, labels);
+			menu_dynamic_add_label(m, "Reset display", 'R',
+				ACT_CTX_EQUIPCMP_RESET, labels);
+			menu_dynamic_add_label(m, "Dump as file", 'd',
+				ACT_CTX_EQUIPCMP_DUMP_FILE, labels);
+			menu_dynamic_add_label(m, "Help", '?',
+				ACT_CTX_EQUIPCMP_HELP, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action = menu_dynamic_select(m);
+
+			screen_load();
+
+			menu_dynamic_free(m);
+			string_free(labels);
+		}
+	}
+
+	switch (action) {
+	case ACT_CTX_EQUIPCMP_NEXT_PAGE:
 		if (s->npage == s->maxpage) {
 			ilast = s->ifirst + 2 * s->indinc * s->npage;
 			if (ilast > s->nfilt) {
@@ -477,38 +645,32 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 				s->ifirst += s->indinc * s->npage;
 			}
 			result = EQUIP_CMP_MENU_NEW_PAGE;
-		} else {
-			/* Page already includes the end, so don't move. */
-			result = EQUIP_CMP_MENU_SAME_PAGE;
 		}
 		break;
 
-	case 'p':
-	case KC_PGUP:
+	case ACT_CTX_EQUIPCMP_PREV_PAGE:
 		if (s->indinc > 0) {
 			if (s->ifirst > 0) {
 				s->ifirst = (s->ifirst < s->maxpage) ?
 					0 : s->ifirst - s->maxpage;
-				s->npage = (s->ifirst + s->maxpage <= s->nfilt) ?
+				s->npage =
+					(s->ifirst + s->maxpage <= s->nfilt) ?
 					s->maxpage : s->nfilt - s->ifirst;
 				result = EQUIP_CMP_MENU_NEW_PAGE;
-			} else {
-				result = EQUIP_CMP_MENU_SAME_PAGE;
 			}
 		} else {
 			if (s->ifirst < s->nfilt - 1) {
-				s->ifirst = (s->ifirst >= s->nfilt - s->maxpage) ?
+				s->ifirst =
+					 (s->ifirst >= s->nfilt - s->maxpage) ?
 					s->nfilt - 1 : s->ifirst + s->maxpage;
 				s->npage = (s->ifirst - s->maxpage >= -1) ?
 					s->maxpage : s->ifirst + 1;
 				result = EQUIP_CMP_MENU_NEW_PAGE;
-			} else {
-				result = EQUIP_CMP_MENU_SAME_PAGE;
 			}
 		}
 		break;
 
-	case ARROW_DOWN:
+	case ACT_CTX_EQUIPCMP_NEXT_LINE:
 		if (s->npage == s->maxpage) {
 			s->ifirst += s->indinc;
 			ilast = s->ifirst + s->npage * s->indinc;
@@ -516,60 +678,55 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 				--s->npage;
 			}
 			result = EQUIP_CMP_MENU_NEW_PAGE;
-		} else {
-			/* Page already includes the end, so don't move. */
-			result = EQUIP_CMP_MENU_SAME_PAGE;
 		}
 		break;
 
-	case ARROW_UP:
+	case ACT_CTX_EQUIPCMP_PREV_LINE:
 		if (s->indinc > 0) {
 			if (s->ifirst > 0) {
 				--s->ifirst;
-				if (s->npage < s->maxpage &&
-					s->ifirst + s->npage < s->nfilt) {
+				if (s->npage < s->maxpage && s->ifirst
+						+ s->npage < s->nfilt) {
 					++s->npage;
 				}
 				result = EQUIP_CMP_MENU_NEW_PAGE;
-			} else {
-				result = EQUIP_CMP_MENU_SAME_PAGE;
 			}
 		} else {
 			if (s->ifirst < s->nfilt - 1) {
 				++s->ifirst;
-				if (s->npage < s->maxpage &&
-					s->ifirst - s->npage > -1) {
+				if (s->npage < s->maxpage
+						&& s->ifirst - s->npage > -1) {
 					++s->npage;
 				}
 				result = EQUIP_CMP_MENU_NEW_PAGE;
-			} else {
-				result = EQUIP_CMP_MENU_SAME_PAGE;
 			}
 		}
 		break;
 
-	case 'c':
+	case ACT_CTX_EQUIPCMP_CYCLE_SOURCES:
 		/*
 		 * Cycle through no goods from stores (default), only goods
-		 * from stores, both possessions and gopds from stores,
-		 * and only what's carried (either equipped or in pack).
+		 * from stores, both possessions and goods from stores, and
+		 * only what's carried (either equipped or in pack).
 		 */
 		switch (s->stores) {
 		case EQUIPPABLE_NO_STORE:
-			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
-				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
-				s->easy_filt.v[0].s.func == sel_exclude_src &&
-				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
+			assert(s->easy_filt.simple == EQUIP_EXPR_AND
+				&& (s->easy_filt.nv == 1
+				|| s->easy_filt.nv == 2)
+				&& s->easy_filt.v[0].s.func == sel_exclude_src
+				&& s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
 			s->easy_filt.v[0].s.func = sel_only_src;
 			s->stores = EQUIPPABLE_ONLY_STORE;
 			s->dlg_trans_msg = trans_msg_onlystore;
 			break;
 
 		case EQUIPPABLE_ONLY_STORE:
-			assert(s->easy_filt.simple == EQUIP_EXPR_AND &&
-				(s->easy_filt.nv == 1 || s->easy_filt.nv == 2) &&
-				s->easy_filt.v[0].s.func == sel_only_src &&
-				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
+			assert(s->easy_filt.simple == EQUIP_EXPR_AND
+				&& (s->easy_filt.nv == 1
+				|| s->easy_filt.nv == 2)
+				&& s->easy_filt.v[0].s.func == sel_only_src
+				&& s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE);
 			s->easy_filt.v[0] = s->easy_filt.v[1];
 			if (s->easy_filt.nv == 2) {
 				s->easy_filt.v[1] = s->easy_filt.v[2];
@@ -600,14 +757,15 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 			break;
 
 		case EQUIPPABLE_ONLY_CARRIED:
-			assert(s->easy_filt.simple = EQUIP_EXPR_AND &&
-				(s->easy_filt.nv == 3 || s->easy_filt.nv == 4) &&
-				s->easy_filt.v[0].s.func == sel_exclude_src &&
-				s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE &&
-				s->easy_filt.v[1].s.func == sel_exclude_src &&
-				s->easy_filt.v[1].s.ex.src == EQUIP_SOURCE_HOME &&
-				s->easy_filt.v[2].s.func == sel_exclude_src &&
-				s->easy_filt.v[2].s.ex.src == EQUIP_SOURCE_FLOOR);
+			assert(s->easy_filt.simple = EQUIP_EXPR_AND
+				&& (s->easy_filt.nv == 3
+				|| s->easy_filt.nv == 4)
+				&& s->easy_filt.v[0].s.func == sel_exclude_src
+				&& s->easy_filt.v[0].s.ex.src == EQUIP_SOURCE_STORE
+				&& s->easy_filt.v[1].s.func == sel_exclude_src
+				&& s->easy_filt.v[1].s.ex.src == EQUIP_SOURCE_HOME
+				&& s->easy_filt.v[2].s.func == sel_exclude_src
+				&& s->easy_filt.v[2].s.ex.src == EQUIP_SOURCE_FLOOR);
 			s->easy_filt.v[1] = s->easy_filt.v[s->easy_filt.nv - 1];
 			s->easy_filt.v[0].s.func = sel_exclude_src;
 			s->easy_filt.v[0].s.ex.src = EQUIP_SOURCE_STORE;
@@ -623,8 +781,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case 'd':
-		/* Dump to a file. */
+	case ACT_CTX_EQUIPCMP_DUMP_FILE:
 		{
 			char buf[1024];
 			char fname[80];
@@ -644,12 +801,12 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case 'q':
+	case ACT_CTX_EQUIPCMP_QUICK_FILTER:
 		/* Choose a quick filter - one based on a single attribute. */
 		result = prompt_for_easy_filter(s, false);
 		break;
 
-	case 'r':
+	case ACT_CTX_EQUIPCMP_REVERSE:
 		/* Reverse the order of display; keep in the same page. */
 		if (s->npage > 0) {
 			s->ifirst += (s->npage - 1) * s->indinc;
@@ -658,7 +815,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case 'v':
+	case ACT_CTX_EQUIPCMP_CYCLE_VIEWS:
 		/* Cycle through which attributes are shown. */
 		++s->iview;
 		if (s->iview >= s->nview) {
@@ -669,15 +826,14 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case 'x':
-	case 'I':
+	case ACT_CTX_EQUIPCMP_START_SELECT:
 		/* Select an item or two to examine. */
 		s->work_sel = s->ifirst;
 		s->dlg_trans_msg = trans_msg_sel0;
 		result = EQUIP_CMP_MENU_SEL0;
 		break;
 
-	case 'R':
+	case ACT_CTX_EQUIPCMP_RESET:
 		/* Reset view to defaults. */
 		s->indinc = 1;
 		s->iview = 0;
@@ -695,7 +851,7 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case '!':
+	case ACT_CTX_EQUIPCMP_QUICK_FILTER_NOT:
 		/*
 		 * If using a quick filter, use not for the criteria.
 		 * Otherwise, set up a quick filter where not is applied.
@@ -703,27 +859,27 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		nfilt = get_expected_easy_filter_count(s->stores);
 		if (! s->config_filt_is_on && s->easy_filt.nv > nfilt) {
 			assert(s->easy_filt.v[nfilt].c == EQUIP_EXPR_SELECTOR);
-			if (s->easy_filt.v[nfilt].s.func ==
-					sel_at_least_resists) {
+			if (s->easy_filt.v[nfilt].s.func
+					== sel_at_least_resists) {
 				s->easy_filt.v[nfilt].s.func =
 					sel_does_not_resist;
-			} else if (s->easy_filt.v[nfilt].s.func ==
-					sel_has_flag) {
+			} else if (s->easy_filt.v[nfilt].s.func
+					== sel_has_flag) {
 				s->easy_filt.v[nfilt].s.func =
 					sel_does_not_have_flag;
-			} else if (s->easy_filt.v[nfilt].s.func ==
-					sel_has_pos_mod) {
+			} else if (s->easy_filt.v[nfilt].s.func
+					== sel_has_pos_mod) {
 				s->easy_filt.v[nfilt].s.func =
 					sel_has_nonpos_mod;
-			} else if (s->easy_filt.v[nfilt].s.func ==
-					sel_does_not_resist) {
+			} else if (s->easy_filt.v[nfilt].s.func
+					== sel_does_not_resist) {
 				s->easy_filt.v[nfilt].s.func =
 					sel_at_least_resists;
-			} else if (s->easy_filt.v[nfilt].s.func ==
-					sel_does_not_have_flag) {
+			} else if (s->easy_filt.v[nfilt].s.func
+					== sel_does_not_have_flag) {
 				s->easy_filt.v[nfilt].s.func = sel_has_flag;
-			} else if (s->easy_filt.v[nfilt].s.func ==
-					sel_has_nonpos_mod) {
+			} else if (s->easy_filt.v[nfilt].s.func
+					== sel_has_nonpos_mod) {
 				s->easy_filt.v[nfilt].s.func = sel_has_pos_mod;
 			} else {
 				assert(0);
@@ -736,18 +892,17 @@ static int handle_key_equip_cmp_general(struct keypress ch, int istate,
 		}
 		break;
 
-	case '?':
+	case ACT_CTX_EQUIPCMP_HELP:
 		display_equip_cmp_help();
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case ESCAPE:
+	case ACT_CTX_EQUIPCMP_ESCAPE:
 		result = EQUIP_CMP_MENU_DONE;
 		break;
 
-	default:
+	case ACT_CTX_EQUIPCMP_UNKNOWN:
 		s->dlg_trans_msg = trans_msg_unknown_key;
-		result = EQUIP_CMP_MENU_SAME_PAGE;
 		break;
 	}
 
@@ -782,18 +937,141 @@ static void display_equip_cmp_sel_help(void)
 }
 
 
-static int handle_key_equip_cmp_select(struct keypress ch, int istate,
+static int handle_input_equip_cmp_select(ui_event in, int istate,
 	struct equippable_summary *s, struct player *p)
 {
+	enum {
+		ACT_CTX_EQUIPCMP_SELECT_NONE,
+		ACT_CTX_EQUIPCMP_SELECT_ESCAPE,
+		ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE,
+		ACT_CTX_EQUIPCMP_SELECT_PREV_LINE,
+		ACT_CTX_EQUIPCMP_SELECT_NEXT_PAGE,
+		ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE,
+		ACT_CTX_EQUIPCMP_SELECT_ACCEPT,
+		ACT_CTX_EQUIPCMP_SELECT_SKIP,
+		ACT_CTX_EQUIPCMP_SELECT_HELP,
+		ACT_CTX_EQUIPCMP_SELECT_UNKNOWN
+	};
 	static const char *trans_msg_unknown_key =
 		"Unknown key pressed; ? will list available keys";
 	static const char *trans_msg_sel1 = "Select second item; x to skip";
-	int result;
+	int action = ACT_CTX_EQUIPCMP_SELECT_NONE;
+	int result = istate;
 	int ilast;
 
-	switch (ch.code) {
-	case 'n':
-	case KC_PGDOWN:
+	if (in.type == EVT_KBRD) {
+		switch (in.key.code) {
+		case 'n':
+		case KC_PGDOWN:
+			action = ACT_CTX_EQUIPCMP_SELECT_NEXT_PAGE;
+			break;
+
+		 case 'p':
+		 case KC_PGUP:
+			action = ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE;
+			break;
+
+		case ARROW_DOWN:
+			action = ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE;
+			break;
+
+		case ARROW_UP:
+			action = ACT_CTX_EQUIPCMP_SELECT_PREV_LINE;
+			break;
+
+		case 'x':
+			action = ACT_CTX_EQUIPCMP_SELECT_SKIP;
+			break;
+
+		case KC_ENTER:
+			action = ACT_CTX_EQUIPCMP_SELECT_ACCEPT;
+			break;
+
+		case '?':
+			action = ACT_CTX_EQUIPCMP_SELECT_HELP;
+			break;
+
+		case ESCAPE:
+			action = ACT_CTX_EQUIPCMP_SELECT_ESCAPE;
+			break;
+
+		default:
+			action = ACT_CTX_EQUIPCMP_SELECT_UNKNOWN;
+			break;
+		}
+	} else if (in.type == EVT_MOUSE) {
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_EQUIPCMP_SELECT_ESCAPE;
+		} else if (in.mouse.y >= s->irow_combined_equip + 1
+				&& in.mouse.y < s->irow_combined_equip + 1
+				+ s->npage) {
+			/*
+			 * Mark that row as the new selection, or, if it is
+			 * already selected, accept it.
+			 */
+			int new_sel = (in.mouse.y - s->irow_combined_equip - 1)
+				* s->indinc + s->ifirst;
+
+			if (s->work_sel == new_sel) {
+				action = ACT_CTX_EQUIPCMP_SELECT_ACCEPT;
+			} else {
+				s->work_sel = new_sel;
+			}
+		} else {
+			/* Display a context menu for the other actions. */
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			if ((s->indinc < 0 && s->work_sel > 0)
+					|| (s->indinc >= 0
+					&& s->work_sel < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to next page",
+					'n', ACT_CTX_EQUIPCMP_SELECT_NEXT_PAGE,
+					labels);
+			}
+			if ((s->indinc > 0 && s->work_sel > 0)
+					|| (s->indinc <= 0
+					&& s->work_sel < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to previous page",
+					'p', ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE,
+					labels);
+			}
+			if ((s->indinc < 0 && s->work_sel > 0)
+					|| (s->indinc >= 0
+					&& s->work_sel < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to next line",
+					'N', ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE,
+					labels);
+			}
+			if ((s->indinc > 0 && s->work_sel > 0)
+					|| (s->indinc <= 0
+					&& s->work_sel < s->nfilt - 1)) {
+				menu_dynamic_add_label(m, "Go to previous line",
+					'P', ACT_CTX_EQUIPCMP_SELECT_PREV_LINE,
+					labels);
+			}
+			menu_dynamic_add_label(m, "Skip selection", 's',
+				ACT_CTX_EQUIPCMP_SELECT_SKIP, labels);
+			menu_dynamic_add_label(m, "Help", '?',
+				ACT_CTX_EQUIPCMP_SELECT_HELP, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action =  menu_dynamic_select(m);
+
+			screen_load();
+
+			menu_dynamic_free(m);
+			string_free(labels);
+		}
+	}
+
+	switch (action) {
+	case ACT_CTX_EQUIPCMP_SELECT_NEXT_PAGE:
 		/* Move selection by one page. */
 		s->work_sel += s->indinc * s->npage;
 		if (s->work_sel < 0) {
@@ -828,8 +1106,7 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 		result = istate;
 		break;
 
-	case 'p':
-	case KC_PGUP:
+	case ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE:
 		/* Move selection by one page. */
 		s->work_sel -= s->indinc * s->npage;
 		if (s->work_sel < 0) {
@@ -852,10 +1129,9 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 			s->npage = (ilast >= -1) ?
 				s->maxpage : s->ifirst + 1;
 		}
-		result = istate;
 		break;
 
-	case ARROW_DOWN:
+	case ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE:
 		/* Move selection by one line. */
 		s->work_sel += s->indinc;
 		if ((s->work_sel - s->ifirst) * s->indinc >= s->npage) {
@@ -880,10 +1156,9 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 				}
 			}
 		}
-		result = istate;
 		break;
 
-	case ARROW_UP:
+	case ACT_CTX_EQUIPCMP_SELECT_PREV_LINE:
 		/* Move selection by one line. */
 		s->work_sel -= s->indinc;
 		if ((s->work_sel - s->ifirst) * s->indinc < 0) {
@@ -919,10 +1194,9 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 				}
 			}
 		}
-		result = istate;
 		break;
 
-	case 'x':
+	case ACT_CTX_EQUIPCMP_SELECT_SKIP:
 		/* Skip the selection. For the first, acts like ESC. */
 		if (istate == EQUIP_CMP_MENU_SEL1) {
 			display_object_comparison(s, p);
@@ -933,7 +1207,7 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	case KC_ENTER:
+	case ACT_CTX_EQUIPCMP_SELECT_ACCEPT:
 		assert(s->work_sel >= 0 && s->work_sel < s->nfilt);
 		if (istate == EQUIP_CMP_MENU_SEL0) {
 			s->isel0 = s->sorted_indices[s->work_sel];
@@ -949,21 +1223,19 @@ static int handle_key_equip_cmp_select(struct keypress ch, int istate,
 		}
 		break;
 
-	case '?':
+	case ACT_CTX_EQUIPCMP_SELECT_HELP:
 		display_equip_cmp_sel_help();
-		result = istate;
 		break;
 
-	case ESCAPE:
+	case ACT_CTX_EQUIPCMP_SELECT_ESCAPE:
 		s->isel0 = -1;
 		s->isel1 = -1;
 		s->work_sel = -1;
 		result = EQUIP_CMP_MENU_NEW_PAGE;
 		break;
 
-	default:
+	case ACT_CTX_EQUIPCMP_SELECT_UNKNOWN:
 		s->dlg_trans_msg = trans_msg_unknown_key;
-		result = istate;
 		break;
 	}
 
