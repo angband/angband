@@ -186,6 +186,93 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 }
 
 /**
+ * Present a context menu for the birth options so what's accessible via the
+ * keyboard can also be done if only using a mouse.
+ *
+ * \param m is the structure describing the birth options menu.
+ * \param in is the event triggering the context menu.  in->type must be
+ * EVT_MOUSE.
+ * \param out is the event to be passed upstream (to internal handling in
+ * menu_select() or, potentially, menu_select()'s caller).
+ * \return true if the event was handled; otherwise, return false.
+ *
+ * Logic here overlaps with what's done in option_toggle_handle().
+ */
+static bool use_birth_option_context_menu(struct menu *m, const ui_event *in,
+		ui_event *out)
+{
+	enum {
+		ACT_CTX_BIRTH_OPT_SAVE,
+		ACT_CTX_BIRTH_OPT_RESTORE,
+		ACT_CTX_BIRTH_OPT_RESET
+	};
+	char *labels = string_make(lower_case);
+	struct menu *cm = menu_dynamic_new();
+	bool refresh = false;
+	int selected;
+	char dummy;
+
+	cm->selections = labels;
+	menu_dynamic_add_label(cm, "Save as default birth options", 's',
+		ACT_CTX_BIRTH_OPT_SAVE, labels);
+	if (m->flags == MN_DBL_TAP) {
+		menu_dynamic_add_label(cm, "Restore from saved defaults", 'r',
+			ACT_CTX_BIRTH_OPT_RESTORE, labels);
+		menu_dynamic_add_label(cm, "Reset to factory defaults", 'x',
+			ACT_CTX_BIRTH_OPT_RESET, labels);
+	}
+
+	screen_save();
+
+	assert(in->type == EVT_MOUSE);
+	menu_dynamic_calc_location(cm, in->mouse.x, in->mouse.y);
+	region_erase_bordered(&cm->boundary);
+
+	selected = menu_dynamic_select(cm);
+
+	menu_dynamic_free(cm);
+	string_free(labels);
+
+	switch (selected) {
+	case ACT_CTX_BIRTH_OPT_SAVE:
+		if (options_save_custom_birth(&player->opts)) {
+			get_com("Successfully saved.  Press any key to "
+				"continue.", &dummy);
+		} else {
+			get_com("Save failed.  Press any key to continue.",
+				&dummy);
+		}
+		break;
+
+	case ACT_CTX_BIRTH_OPT_RESTORE:
+		if (options_restore_custom_birth(&player->opts)) {
+			refresh = true;
+		} else {
+			get_com("Restore failed.  Press any key to continue.",
+				&dummy);
+		}
+		break;
+
+	case ACT_CTX_BIRTH_OPT_RESET:
+		options_reset_birth(&player->opts);
+		refresh = true;
+		break;
+
+	default:
+		/* There's nothing to do. */
+		break;
+	}
+
+	screen_load();
+	if (refresh) {
+		menu_refresh(m, false);
+	}
+
+	return true;
+}
+
+
+/**
  * Toggle option menu display and handling functions
  */
 static const menu_iter option_toggle_iter = {
@@ -220,6 +307,8 @@ static void option_toggle_menu(const char *name, int page)
 	} else if (page == OPT_PAGE_BIRTH + 10) {
 		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'x' to reset";
 		m->cmd_keys = "YyNnTtSsRrXx";
+		/* Provide a context menu for equivalents to 's', 'r', .... */
+		m->context_hook = use_birth_option_context_menu;
 		page -= 10;
 	}
 

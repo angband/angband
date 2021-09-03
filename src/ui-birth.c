@@ -91,6 +91,7 @@ enum birth_rollers
 };
 
 
+static void finish_with_random_choices(enum birth_stage current);
 static void point_based_start(void);
 static bool quickstart_allowed = false;
 bool arg_force_name;
@@ -180,14 +181,16 @@ typedef void (*browse_f) (int oid, void *db, const region *l);
 /**
  * We have one of these structures for each menu we display - it holds
  * the useful information for the menu - text of the menu items, "help"
- * text, current (or default) selection, and whether random selection
- * is allowed.
+ * text, current (or default) selection, whether random selection is allowed,
+ * and the current stage of the process for setting up a context menu and
+ * relaying the reuslt of a selection in that menu.
  */
 struct birthmenu_data 
 {
 	const char **items;
 	const char *hint;
 	bool allow_random;
+	enum birth_stage stage_inout;
 };
 
 /**
@@ -389,6 +392,103 @@ static void class_help(int i, void *db, const region *l)
 }
 
 /**
+ * Display and handle user interaction with a context menu appropriate for the
+ * current stage.  That way actions available with certain keys are also
+ * available if only using the mouse.
+ *
+ * \param current_menu is the standard (not contextual) menu for the stage.
+ * \param in is the event triggering the context menu.  in->type must be
+ * EVT_MOUSE.
+ * \param out is the event to be passed upstream (to internal handling in
+ * menu_select() or, potentially, menu_select()'s caller).
+ * \return true if the event was handled; otherwise, return false.
+ *
+ * The logic here overlaps with what's done to handle cmd_keys in
+ * menu_question().
+ */
+static bool use_context_menu_birth(struct menu *current_menu,
+		const ui_event *in, ui_event *out)
+{
+	enum {
+		ACT_CTX_BIRTH_OPT,
+		ACT_CTX_BIRTH_RAND,
+		ACT_CTX_BIRTH_FINISH_RAND,
+		ACT_CTX_BIRTH_QUIT,
+		ACT_CTX_BIRTH_HELP
+	};
+	struct birthmenu_data *menu_data = menu_priv(current_menu);
+	char *labels;
+	struct menu *m;
+	int selected;
+
+	assert(in->type == EVT_MOUSE);
+	if (in->mouse.y != QUESTION_ROW && in->mouse.y != QUESTION_ROW + 1) {
+		return false;
+	}
+
+	labels = string_make(lower_case);
+	m = menu_dynamic_new();
+
+	m->selections = labels;
+	menu_dynamic_add_label(m, "Show birth options", '=',
+		ACT_CTX_BIRTH_OPT, labels);
+	if (menu_data->allow_random) {
+		menu_dynamic_add_label(m, "Select one at random", '*',
+			ACT_CTX_BIRTH_RAND, labels);
+	}
+	menu_dynamic_add_label(m, "Finish with random choices", '@',
+		ACT_CTX_BIRTH_FINISH_RAND, labels);
+	menu_dynamic_add_label(m, "Quit", 'q', ACT_CTX_BIRTH_QUIT, labels);
+	menu_dynamic_add_label(m, "Help", '?', ACT_CTX_BIRTH_HELP, labels);
+
+	screen_save();
+
+	menu_dynamic_calc_location(m, in->mouse.x, in->mouse.y);
+	region_erase_bordered(&m->boundary);
+
+	selected = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+
+	switch (selected) {
+	case ACT_CTX_BIRTH_OPT:
+		do_cmd_options_birth();
+		/* The stage remains the same so leave stage_inout as is. */
+		out->type = EVT_SWITCH;
+		break;
+
+	case ACT_CTX_BIRTH_RAND:
+		current_menu->cursor = randint0(current_menu->count);
+		out->type = EVT_SELECT;
+		break;
+
+	case ACT_CTX_BIRTH_FINISH_RAND:
+		finish_with_random_choices(menu_data->stage_inout);
+		menu_data->stage_inout = BIRTH_FINAL_CONFIRM;
+		out->type = EVT_SWITCH;
+		break;
+
+	case ACT_CTX_BIRTH_QUIT:
+		quit(NULL);
+		break;
+
+	case ACT_CTX_BIRTH_HELP:
+		do_cmd_help();
+		menu_data->stage_inout = BIRTH_RESET;
+		out->type = EVT_SWITCH;
+
+	default:
+		/* There's nothing to do. */
+		break;
+	}
+
+	return true;
+}
+
+/**
  * Set up one of our menus ready to display choices for a birth question.
  * This is slightly involved.
  */
@@ -422,6 +522,13 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 
 	/* Set up the "browse" hook to display help text (where applicable). */
 	menu->browse_hook = aux;
+
+	/*
+	 * All use the same hook to display a context menu so that
+	 * functionality driven by keyboard input (see how cmd_keys is used
+	 * in menu_question()) is also available using the mouse.
+	 */
+	menu->context_hook = use_context_menu_birth;
 
 	/* Lay out the menu appropriately */
 	menu_layout(menu, reg);
@@ -660,6 +767,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 
 	while (next == BIRTH_RESET) {
 		/* Display the menu, wait for a selection of some sort to be made. */
+		menu_data->stage_inout = current;
 		cx = menu_select(current_menu, EVT_KBRD, false);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
@@ -692,6 +800,8 @@ static enum birth_stage menu_question(enum birth_stage current,
 				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
 				next = current + 1;
 			}
+		} else if (cx.type == EVT_SWITCH) {
+			next = menu_data->stage_inout;
 		} else if (cx.type == EVT_KBRD) {
 			/* '*' chooses an option at random from those the game's provided */
 			if (cx.key.code == '*' && menu_data->allow_random) {
@@ -727,10 +837,19 @@ static enum birth_stage menu_question(enum birth_stage current,
  * ------------------------------------------------------------------------ */
 static enum birth_stage roller_command(bool first_call)
 {
+	enum {
+		ACT_CTX_BIRTH_ROLL_NONE,
+		ACT_CTX_BIRTH_ROLL_ESCAPE,
+		ACT_CTX_BIRTH_ROLL_REROLL,
+		ACT_CTX_BIRTH_ROLL_PREV,
+		ACT_CTX_BIRTH_ROLL_ACCEPT,
+		ACT_CTX_BIRTH_ROLL_QUIT,
+		ACT_CTX_BIRTH_ROLL_HELP
+	};
 	char prompt[80] = "";
 	size_t promptlen = 0;
-
-	struct keypress ch;
+	int action = ACT_CTX_BIRTH_ROLL_NONE;
+	ui_event in;
 
 	enum birth_stage next = BIRTH_ROLLER;
 
@@ -752,32 +871,110 @@ static enum birth_stage roller_command(bool first_call)
 	/* Prompt for it */
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
 	
-	/* Prompt and get a command */
-	ch = inkey();
+	/*
+	 * Get the response.  Emulate what inkey_does() without coercing mouse
+	 * events to look like keystrokes.
+	 */
+	while (1) {
+		in = inkey_ex();
+		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+			break;
+		}
+		if (in.type == EVT_BUTTON) {
+			in.type = EVT_KBRD;
+			break;
+		}
+		if (in.type == EVT_ESCAPE) {
+			in.type = EVT_KBRD;
+			in.key.code = ESCAPE;
+			in.key.mods = 0;
+			break;
+		}
+	}
 
 	/* Analyse the command */
-	if (ch.code == ESCAPE) {
-		/* Back out */
+	if (in.type == EVT_KBRD) {
+		if (in.key.code == ESCAPE) {
+			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
+		} else if (in.key.code == KC_ENTER) {
+			action = ACT_CTX_BIRTH_ROLL_ACCEPT;
+		} else if (in.key.code == ' ' || in.key.code == 'r') {
+			action = ACT_CTX_BIRTH_ROLL_REROLL;
+		} else if (prev_roll && in.key.code == 'p') {
+			action = ACT_CTX_BIRTH_ROLL_PREV;
+		} else if (in.key.code == KTRL('X')) {
+			action = ACT_CTX_BIRTH_ROLL_QUIT;
+		} else if (in.key.code == '?') {
+			action = ACT_CTX_BIRTH_ROLL_HELP;
+		} else {
+			/* Nothing handled directly here */
+			bell("Illegal roller command!");
+		}
+	} else if (in.type == EVT_MOUSE) {
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
+		} else {
+			/* Present a context menu with the other actions. */
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			menu_dynamic_add_label(m, "Reroll", 'r',
+				ACT_CTX_BIRTH_ROLL_REROLL, labels);
+			if (prev_roll) {
+				menu_dynamic_add_label(m, "Retrieve previous",
+					'p', ACT_CTX_BIRTH_ROLL_PREV, labels);
+			}
+			menu_dynamic_add_label(m, "Accept", 'a',
+				ACT_CTX_BIRTH_ROLL_ACCEPT, labels);
+			menu_dynamic_add_label(m, "Quit", 'q',
+				ACT_CTX_BIRTH_ROLL_QUIT, labels);
+			menu_dynamic_add_label(m, "Help", '?',
+				ACT_CTX_BIRTH_ROLL_HELP, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action = menu_dynamic_select(m);
+
+			menu_dynamic_free(m);
+			string_free(labels);
+
+			screen_load();
+		}
+	}
+
+	switch (action) {
+	case ACT_CTX_BIRTH_ROLL_ESCAPE:
+		/* Back out to the previous birth stage. */
 		next = BIRTH_BACK;
-	} else if (ch.code == KC_ENTER) {
-		/* 'Enter' accepts the roll */
-		next = BIRTH_NAME_CHOICE;
-	} else if ((ch.code == ' ') || (ch.code == 'r')) {
-		/* Reroll this character */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_REROLL:
+		/* Reroll this character. */
 		cmdq_push(CMD_ROLL_STATS);
 		prev_roll = true;
-	} else if (prev_roll && (ch.code == 'p')) {
-		/* Previous character */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_PREV:
+		/* Swap with previous roll. */
 		cmdq_push(CMD_PREV_STATS);
-	} else if (ch.code == KTRL('X')) {
-		/* Quit */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_ACCEPT:
+		/* Accept the roll.  Go to the next stage. */
+		next = BIRTH_NAME_CHOICE;
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_QUIT:
 		quit(NULL);
-	} else if (ch.code == '?') {
-		/* Help XXX */
+		break;
+
+	case ACT_CTX_BIRTH_ROLL_HELP:
 		do_cmd_help();
-	} else {
-		/* Nothing handled directly here */
-		bell("Illegal roller command!");
+		break;
 	}
 
 	return next;
@@ -792,6 +989,12 @@ static enum birth_stage roller_command(bool first_call)
 #define COSTS_ROW 2
 #define COSTS_COL (42 + 32)
 #define TOTAL_COL (42 + 19)
+
+/*
+ * Remember what's possible for a given stat.  0 means can't buy or sell.
+ * 1 means can sell.  2 means can buy.  3 means can buy or sell.
+ */
+static int buysell[STAT_MAX];
 
 /**
  * This is called whenever a stat changes.  We take the easy road, and just
@@ -825,26 +1028,35 @@ static void point_based_points(game_event_type type, game_event_data *data,
 {
 	int i;
 	int sum = 0;
-	int *stats = data->birthstats.stats;
+	const int *spent = data->birthpoints.points;
+	const int *inc = data->birthpoints.inc_points;
+	int remaining = data->birthpoints.remaining;
 
 	/* Display the costs header */
 	put_str("Cost", COSTS_ROW - 1, COSTS_COL);
 	
-	/* Display the costs */
 	for (i = 0; i < STAT_MAX; i++) {
+		/* Remember what's allowed. */
+		buysell[i] = 0;
+		if (spent[i] > 0) {
+			buysell[i] |= 1;
+		}
+		if (inc[i] <= remaining) {
+			buysell[i] |= 2;
+		}
 		/* Display cost */
-		put_str(format("%4d", stats[i]), COSTS_ROW + i, COSTS_COL);
-		sum += stats[i];
+		put_str(format("%4d", spent[i]), COSTS_ROW + i, COSTS_COL);
+		sum += spent[i];
 	}
 	
-	put_str(format("Total Cost: %2d/%2d", sum,
-				   data->birthstats.remaining + sum), COSTS_ROW + STAT_MAX,
-			TOTAL_COL);
+	put_str(format("Total Cost: %2d/%2d", sum, remaining + sum),
+		COSTS_ROW + STAT_MAX, TOTAL_COL);
 }
 
 static void point_based_start(void)
 {
 	const char *prompt = "[up/down to move, left/right to modify, 'r' to reset, 'Enter' to accept]";
+	int i;
 
 	/* Clear */
 	Term_clear();
@@ -854,6 +1066,10 @@ static void point_based_start(void)
 	display_player_stat_info();
 
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		buysell[i] = 0;
+	}
 
 	/* Register handlers for various events - cheat a bit because we redraw
 	   the lot at once rather than each bit at a time. */
@@ -872,48 +1088,173 @@ static void point_based_stop(void)
 static enum birth_stage point_based_command(void)
 {
 	static int stat = 0;
-	struct keypress ch;
+	enum {
+		ACT_CTX_BIRTH_PTS_NONE,
+		ACT_CTX_BIRTH_PTS_BUY,
+		ACT_CTX_BIRTH_PTS_SELL,
+		ACT_CTX_BIRTH_PTS_ESCAPE,
+		ACT_CTX_BIRTH_PTS_RESET,
+		ACT_CTX_BIRTH_PTS_ACCEPT,
+		ACT_CTX_BIRTH_PTS_QUIT
+	};
+	int action = ACT_CTX_BIRTH_PTS_NONE;
+	ui_event in;
 	enum birth_stage next = BIRTH_POINTBASED;
 
 	/* Place cursor just after cost of current stat */
 	Term_gotoxy(COSTS_COL + 4, COSTS_ROW + stat);
 
-	/* Get key */
-	ch = inkey();
-	
-	if (ch.code == KTRL('X')) {
-		quit(NULL);
-	} else if (ch.code == ESCAPE) {
-		/* Go back a step, or back to the start of this step */
+	/*
+	 * Get input.  Emulate what inkey() does without coercing mouse events
+	 * to look like keystrokes.
+	 */
+	while (1) {
+		in = inkey_ex();
+		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+			break;
+		}
+		if (in.type == EVT_BUTTON) {
+			in.type = EVT_KBRD;
+		}
+		if (in.type == EVT_ESCAPE) {
+			in.type = EVT_KBRD;
+			in.key.code = ESCAPE;
+			in.key.mods = 0;
+			break;
+		}
+	}
+
+	/* Figure out what to do. */
+	if (in.type == EVT_KBRD) {
+		if (in.key.code == KTRL('X')) {
+			action = ACT_CTX_BIRTH_PTS_QUIT;
+		} else if (in.key.code == ESCAPE) {
+			action = ACT_CTX_BIRTH_PTS_ESCAPE;
+		} else if (in.key.code == 'r' || in.key.code == 'R') {
+			action = ACT_CTX_BIRTH_PTS_RESET;
+		} else if (in.key.code == KC_ENTER) {
+			action = ACT_CTX_BIRTH_PTS_ACCEPT;
+		} else {
+			int dir;
+
+			if (in.key.code == '-') {
+				dir = 4;
+			} else if (in.key.code == '+') {
+				dir = 6;
+			} else {
+				dir = target_dir(in.key);
+			}
+
+			/*
+			 * Go to previous stat.  Loop back to the last if at
+			 * the first.
+			 */
+			if (dir == 8) {
+				stat = (stat + STAT_MAX - 1) % STAT_MAX;
+			}
+
+			/*
+			 * Go to next stat.  Loop back to the first if at the
+			 * last.
+			 */
+			if (dir == 2) {
+				stat = (stat + 1) % STAT_MAX;
+			}
+
+			/* Decrease stat (if possible). */
+			if (dir == 4) {
+				action = ACT_CTX_BIRTH_PTS_SELL;
+			}
+
+			/* Increase stat (if possible). */
+			if (dir == 6) {
+				action = ACT_CTX_BIRTH_PTS_BUY;
+			}
+		}
+	} else if (in.type == EVT_MOUSE) {
+		assert(stat >= 0 && stat < STAT_MAX);
+		if (in.mouse.button == 2) {
+			action = ACT_CTX_BIRTH_PTS_ESCAPE;
+		} else if (in.mouse.y >= COSTS_ROW
+				&& in.mouse.y < COSTS_ROW + STAT_MAX
+				&& in.mouse.y != COSTS_ROW + stat) {
+			/*
+			 * Make that stat the current one if buying or selling.
+			 */
+			stat = in.mouse.y - COSTS_ROW;
+		} else {
+			/* Present a context menu with the other actions. */
+			char *labels = string_make(lower_case);
+			struct menu *m = menu_dynamic_new();
+
+			m->selections = labels;
+			if (in.mouse.y == COSTS_ROW + stat
+					&& (buysell[stat] & 1)) {
+				menu_dynamic_add_label(m, "Sell", 's',
+					ACT_CTX_BIRTH_PTS_SELL, labels);
+			}
+			if (in.mouse.y == COSTS_ROW + stat
+					&& (buysell[stat] & 2)) {
+				menu_dynamic_add_label(m, "Buy", 'b',
+					ACT_CTX_BIRTH_PTS_BUY, labels);
+			}
+			menu_dynamic_add_label(m, "Accept", 'a',
+				ACT_CTX_BIRTH_PTS_ACCEPT, labels);
+			menu_dynamic_add_label(m, "Reset", 'r',
+				ACT_CTX_BIRTH_PTS_RESET, labels);
+			menu_dynamic_add_label(m, "Quit", 'q',
+				ACT_CTX_BIRTH_PTS_QUIT, labels);
+
+			screen_save();
+
+			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
+			region_erase_bordered(&m->boundary);
+
+			action = menu_dynamic_select(m);
+
+			menu_dynamic_free(m);
+			string_free(labels);
+
+			screen_load();
+		}
+	}
+
+	/* Do it. */
+	switch (action) {
+	case ACT_CTX_BIRTH_PTS_SELL:
+		assert(stat >= 0 && stat < STAT_MAX);
+		cmdq_push(CMD_SELL_STAT);
+		cmd_set_arg_choice(cmdq_peek(), "choice", stat);
+		break;
+
+	case ACT_CTX_BIRTH_PTS_BUY:
+		assert(stat >= 0 && stat < STAT_MAX);
+		cmdq_push(CMD_BUY_STAT);
+		cmd_set_arg_choice(cmdq_peek(), "choice", stat);
+		break;
+
+	case ACT_CTX_BIRTH_PTS_ESCAPE:
+		/* Go back a step or back to the start of this step. */
 		next = BIRTH_BACK;
-	} else if (ch.code == 'r' || ch.code == 'R') {
+		break;
+
+	case ACT_CTX_BIRTH_PTS_RESET:
 		cmdq_push(CMD_RESET_STATS);
 		cmd_set_arg_choice(cmdq_peek(), "choice", false);
-	} else if (ch.code == KC_ENTER) {
-		/* Done */
-		next = BIRTH_NAME_CHOICE;
-	} else {
-		int dir = target_dir(ch);
+		break;
 
-		/* Prev stat, looping round to the bottom when going off the top */
-		if (dir == 8)
-			stat = (stat + STAT_MAX - 1) % STAT_MAX;
-		
-		/* Next stat, looping round to the top when going off the bottom */
-		if (dir == 2)
-			stat = (stat + 1) % STAT_MAX;
-		
-		/* Decrease stat (if possible) */
-		if (dir == 4) {
-			cmdq_push(CMD_SELL_STAT);
-			cmd_set_arg_choice(cmdq_peek(), "choice", stat);
-		}
-		
-		/* Increase stat (if possible) */
-		if (dir == 6) {
-			cmdq_push(CMD_BUY_STAT);
-			cmd_set_arg_choice(cmdq_peek(), "choice", stat);
-		}
+	case ACT_CTX_BIRTH_PTS_ACCEPT:
+		/* Done with this stage.  Proceed to the next. */
+		next = BIRTH_NAME_CHOICE;
+		break;
+
+	case ACT_CTX_BIRTH_PTS_QUIT:
+		quit(NULL);
+		break;
+
+	default:
+		/* Do nothing and remain at this stage. */
+		break;
 	}
 
 	return next;

@@ -37,6 +37,7 @@
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"
+#include "ui-menu.h"
 #include "ui-object.h"
 #include "ui-output.h"
 #include "ui-player.h"
@@ -545,9 +546,10 @@ void clear_from(int row)
 }
 
 /**
- * The default "keypress handling function" for askfor_aux, this takes the
- * given keypress, input buffer, length, etc, and does the appropriate action
- * for each keypress, such as moving the cursor left or inserting a character.
+ * The default "keypress handling function" for askfor_aux()/askfor_aux_ext(),
+ * this takes the given keypress, input buffer, length, etc, and does the
+ * appropriate action for that keypress, such as moving the cursor left or
+ * inserting a character.
  *
  * It should return true when editing of the buffer is "complete" (e.g. on
  * the press of RETURN).
@@ -701,6 +703,34 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 
 
 /**
+ * Handle a mouse event during editing of a string.  This is the default mouse
+ * event handler for askfor_aux_ext().
+ *
+ * \param buf is the buffer with the string to be edited.
+ * \param buflen is the maximum number of characters that may be stored in buf.
+ * \param curs is the pointer to the position of the cursor in the buffer.
+ * \param len is the pointer to position of the first null character in the
+ * buffer.
+ * \param mouse is a description of the mouse event to handle.
+ * \param firsttime is whether or not this is the first call to the keypress or
+ * mouse handler in this editing session.
+ * \return zero if the editing session should continue, one if the editing
+ * session should end and the current contents of the buffer be accepted, or
+ * two if the editing session should end and the current contents of the buffer
+ * be rejected.
+ *
+ * askfor_aux_mouse() is very simple.  Any mouse click terminates the editing
+ * session, and if that click is with the second button, the result of the
+ * editing is rejected.
+ */
+int askfor_aux_mouse(char *buf, size_t buflen, size_t *curs, size_t *len,
+		struct mouseclick mouse, bool firsttime)
+{
+	return (mouse.button == 2) ? 2 : 1;
+}
+
+
+/**
  * Get some input at the cursor location.
  *
  * The buffer is assumed to have been initialized to a default string.
@@ -780,6 +810,127 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 }
 
 
+/**
+ * Act like askfor_aux() but allow customization of what happens with mouse
+ * input.
+ *
+ * \param buf is the buffer with the string to edit.
+ * \param len is the maximum number of characters buf can hold.
+ * \param keypress_h is the function to call to handle a keypress.  It may be
+ * NULL.  In that case, askfor_aux_keypress() is used.  The function takes
+ * six arguments and should return whether or not to end this editing
+ * session.  The first argument is the buffer with the string to be edited.  The
+ * second argument is the maximum number of characters that can be stored in
+ * that buffer.  The third argument is a pointer to the position of the cursor
+ * in the buffer.  The fourth argument is a pointer to the position of the
+ * first null character in the buffer.  The fifth argument is a description of
+ * the keypress to be handled.  The sixth argument is whether or not this is
+ * the first call to the keypress handler or mouse handler in this editing
+ * session.
+ * \param mouse_h is the function to call to handle a mouse click.  It may be
+ * NULL.  In that case, askfor_aux_mouse() is used.  The function takes six
+ * arguments and should either return zero (this editing should session should
+ * continue), one (this editing session should end and the result in the buffer
+ * be accepted), or a non-zero value other than one (this editing session should
+ * end and the result in the buffer should not be accepted).  The first argument
+ * is the buffer with the string to be edited.  The second argument is the
+ * maximum number of characters that can be stored in that buffer.  The third
+ * argument is a pointer to the position of the cursor in the buffer.  The
+ * fourth argument is a pointer to the position of the first null character in
+ * the buffer.  The fifth argument is a description of the keypress to be
+ * handled.  The sixth argument is whether or not this is the first call to the
+ * keypress handler or mouse handler in this editing session.
+ */
+bool askfor_aux_ext(char *buf, size_t len,
+	bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool),
+	int (*mouse_h)(char *, size_t, size_t *, size_t *, struct mouseclick, bool))
+{
+	size_t k = 0;		/* Cursor position */
+	size_t nul = 0;		/* Position of the null byte in the string */
+	bool firsttime = true;
+	bool done = false;
+	bool accepted = true;
+	int y, x;
+
+	if (keypress_h == NULL) {
+		keypress_h = askfor_aux_keypress;
+	}
+	if (mouse_h == NULL) {
+		mouse_h = askfor_aux_mouse;
+	}
+
+	/* Locate the cursor */
+	Term_locate(&x, &y);
+
+	/* Paranoia */
+	if (x < 0 || x >= 80) x = 0;
+
+	/* Restrict the length */
+	if (x + len > 80) len = 80 - x;
+
+	/* Truncate the default entry */
+	buf[len-1] = '\0';
+
+	/* Get the position of the null byte */
+	nul = strlen(buf);
+
+	/* Display the default answer */
+	Term_erase(x, y, (int)len);
+	Term_putstr(x, y, -1, COLOUR_YELLOW, buf);
+
+	/* Process input */
+	while (!done) {
+		ui_event in;
+
+		/* Place cursor */
+		Term_gotoxy(x + k, y);
+
+		/*
+		 * Get input.  Emulate what inkey() does without the coercing
+		 * mouse events to look like keystrokes.
+		 */
+		while (1) {
+			in = inkey_ex();
+			if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
+				break;
+			}
+			if (in.type == EVT_BUTTON) {
+				in.type = EVT_KBRD;
+				break;
+			}
+			if (in.type == EVT_ESCAPE) {
+				in.type = EVT_KBRD;
+				in.key.code = ESCAPE;
+				in.key.mods = 0;
+				break;
+			}
+		}
+
+		/* Pass on to the appropriate handler. */
+		if (in.type == EVT_KBRD) {
+			done = keypress_h(buf, len, &k, &nul, in.key,
+				firsttime);
+			accepted = (in.key.code != ESCAPE);
+		} else if (in.type == EVT_MOUSE) {
+			int result = mouse_h(buf, len, &k, &nul, in.mouse,
+				firsttime);
+
+			if (result != 0) {
+				done = true;
+				accepted = (result == 1);
+			}
+		}
+
+		/* Update the entry */
+		Term_erase(x, y, (int)len);
+		Term_putstr(x, y, -1, COLOUR_WHITE, buf);
+
+		/* Not the first time round anymore */
+		firsttime = false;
+	}
+
+	return accepted;
+}
 
 
 /**
@@ -816,6 +967,90 @@ static bool get_name_keypress(char *buf, size_t buflen, size_t *curs,
 
 
 /**
+ * Handle a mouse event during editing of a string:  presents a context menu
+ * with options appropriate for handling editing a character's name.
+ *
+ * \param buf is the buffer with the string to be edited.
+ * \param buflen is the maximum number of characters that may be stored in buf.
+ * \param curs is the pointer to the position of the cursor in the buffer.
+ * \param len is the pointer to position of the first null character in the
+ * buffer.
+ * \param mouse is a description of the mouse event to handle.
+ * \param firsttime is whether or not this is the first call to the keypress or
+ * mouse handler in this editing session.
+ * \return zero if the editing session should continue, one if the editing
+ * session should end and the current contents of the buffer be accepted, or
+ * two if the editing session should end and the current contents of the buffer
+ * be rejected.
+ */
+static int handle_name_mouse(char *buf, size_t buflen, size_t *curs,
+		size_t *len, struct mouseclick mouse, bool firsttime)
+{
+	enum { ACT_CTX_NAME_ACCEPT, ACT_CTX_NAME_RANDOM, ACT_CTX_NAME_CLEAR };
+	int result = 2;
+	char *labels;
+	struct menu *m;
+	int action;
+
+	/*
+	 * A mouse click with the second button ends the editing session and
+	 * indicates that the result of editing should be rejected.
+	 */
+	if (mouse.button == 2) {
+		return result;
+	}
+
+	/* By default, don't end the editing session. */
+	result = 0;
+
+	/* Present a context menu with the possible actions. */
+	labels = string_make(lower_case);
+	m = menu_dynamic_new();
+
+	m->selections = labels;
+	menu_dynamic_add_label(m, "Accept", 'a', ACT_CTX_NAME_ACCEPT, labels);
+	menu_dynamic_add_label(m, "Set to random name", 'r',
+		ACT_CTX_NAME_RANDOM, labels);
+	menu_dynamic_add_label(m, "Clear name", 'c', ACT_CTX_NAME_CLEAR,
+		labels);
+
+	screen_save();
+
+	menu_dynamic_calc_location(m, mouse.x, mouse.y);
+	region_erase_bordered(&m->boundary);
+
+	action = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+
+	/* Do what was requested. */
+	switch (action) {
+	case ACT_CTX_NAME_ACCEPT:
+		/* End the editing session and accept the result. */
+		result = 1;
+		break;
+
+	case ACT_CTX_NAME_RANDOM:
+		*len = player_random_name(buf, buflen);
+		*curs = 0;
+		break;
+
+	case ACT_CTX_NAME_CLEAR:
+		assert(buflen > 0);
+		buf[0] = '\0';
+		*len = 0;
+		*curs = 0;
+		break;
+	}
+
+	return result;
+}
+
+
+/**
  * Gets a name for the character, reacting to name changes.
  *
  * If sf is true, we change the savefile name depending on the character name.
@@ -834,7 +1069,7 @@ bool get_character_name(char *buf, size_t buflen)
 	my_strcpy(buf, player->full_name, buflen);
 
 	/* Ask the user for a string */
-	res = askfor_aux(buf, buflen, get_name_keypress);
+	res = askfor_aux_ext(buf, buflen, get_name_keypress, handle_name_mouse);
 
 	/* Clear prompt */
 	prt("", 0, 0);

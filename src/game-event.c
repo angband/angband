@@ -180,12 +180,23 @@ void event_signal_message(game_event_type type, int t, const char *s)
 	game_event_dispatch(type, &data);
 }
 
-void event_signal_birthpoints(int stats[6], int remaining)
+/**
+ * Signal a change or refresh in the point buy for birth stats.
+ *
+ * \param points points[i] is the number of points already spent to increase
+ * the ith stat, i >= 0 and i < STAT_MAX.
+ * \param inc_points inc_points[i] is the number of additional points it would
+ * take to incrase the ith stat by one, i >= 0 and i < STAT_MAX.
+ * \param remaining is the number of poitns that remain to be spent.
+ */
+void event_signal_birthpoints(const int *points, const int *inc_points,
+		int remaining)
 {
 	game_event_data data;
 
-	data.birthstats.stats = stats;
-	data.birthstats.remaining = remaining;
+	data.birthpoints.points = points;
+	data.birthpoints.inc_points = inc_points;
+	data.birthpoints.remaining = remaining;
 
 	game_event_dispatch(EVENT_BIRTHPOINTS, &data);
 }

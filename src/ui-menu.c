@@ -633,9 +633,12 @@ bool menu_handle_mouse(struct menu *menu, const ui_event *in,
 		out->type = EVT_ESCAPE;
 	} else if (!region_inside(&menu->active, in)) {
 		/* A click to the left of the active region is 'back' */
-		if (!region_inside(&menu->active, in) &&
-				in->mouse.x < menu->active.col)
+		if (!region_inside(&menu->active, in)
+				&& in->mouse.x < menu->active.col) {
 			out->type = EVT_ESCAPE;
+		} else if (menu->context_hook) {
+			return (*menu->context_hook)(menu, in, out);
+		}
 	} else {
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
@@ -649,6 +652,8 @@ bool menu_handle_mouse(struct menu *menu, const ui_event *in,
 				out->type = EVT_MOVE;
 
 			menu->cursor = new_cursor;
+		} else if (menu->context_hook) {
+			return (*menu->context_hook)(menu, in, out);
 		}
 	}
 
