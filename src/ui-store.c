@@ -894,7 +894,10 @@ static int context_menu_store(struct store_context *ctx, const int oid, int mx, 
 	m->selections = labels;
 
 	menu_dynamic_add_label(m, "Inspect inventory", 'I', ACT_INSPECT_INVEN, labels);
-	menu_dynamic_add_label(m, home ? "Stash" : "Sell", 'd', ACT_SELL, labels);
+	if (!ctx->inspect_only) {
+		menu_dynamic_add_label(m, home ? "Stash" : "Sell", 'd',
+			ACT_SELL, labels);
+	}
 	menu_dynamic_add_label(m, "Exit", '`', ACT_EXIT, labels);
 
 	/* Hack -- no flush needed */
@@ -946,9 +949,14 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	m->selections = labels;
 
 	menu_dynamic_add_label(m, "Examine", 'x', ACT_EXAMINE, labels);
-	menu_dynamic_add_label(m, home ? "Take" : "Buy", 'd', ACT_SELL, labels);
-	if (obj->number > 1)
-		menu_dynamic_add_label(m, home ? "Take one" : "Buy one", 'o', ACT_BUY_ONE, labels);
+	if (!ctx->inspect_only) {
+		menu_dynamic_add_label(m, home ? "Take" : "Buy", 'd',
+			ACT_SELL, labels);
+		if (obj->number > 1) {
+			menu_dynamic_add_label(m, home ? "Take one" : "Buy one",
+				'o', ACT_BUY_ONE, labels);
+		}
+	}
 
 	/* Hack -- no flush needed */
 	msg_flag = false;
