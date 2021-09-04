@@ -49,7 +49,7 @@ AC_CACHE_CHECK([for $my_make silent inc@&t@lude syntax],
 -inc[]lude "conftest.inc"
 conftest.foo:
 EOF
-		if $my_make -f conftest.mk conftest.foo &>/dev/null ; then
+		if $my_make -f conftest.mk conftest.foo >/dev/null 2>&1 ; then
 			my_cv_make_sinc@&t@lude_syntax=gnu
 		fi
 		rm conftest.mk
@@ -59,7 +59,7 @@ EOF
 .sinc[]lude "conftest.inc"
 conftest.foo:
 EOF
-		if $my_make -f conftest.mk conftest.foo &>/dev/null ; then
+		if $my_make -f conftest.mk conftest.foo >/dev/null 2>&1 ; then
 			my_cv_make_sinc@&t@lude_syntax=bsd
 		fi
 		rm conftest.mk
