@@ -4221,8 +4221,10 @@ static void make_font_cache(const struct window *window, struct font *font)
 		SDL_Surface *surface = TTF_RenderGlyph_Blended(font->ttf.handle,
 				(Uint16) g_ascii_codepoints_for_cache[i], white);
 		if (surface == NULL) {
-			quit_fmt("cannot render surface for cache in font '%s': %s",
-					font->name, TTF_GetError());
+			quit_fmt("font cache rendering failed for '%c'"
+				" (ASCII %lu) in font '%s': %s",
+				g_ascii_codepoints_for_cache[i],
+				(unsigned long) i, font->name, TTF_GetError());
 		}
 
 		SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
