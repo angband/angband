@@ -1649,7 +1649,7 @@ bool monster_change_shape(struct monster *mon)
 	/* Print a message immediately, update visuals */
 	if (monster_is_obvious(mon)) {
 		char m_name[80];
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 		msgt(MSG_GENERIC, "%s %s", m_name, "shimmers and changes!");
 		if (player->upkeep->health_who == mon)
 			player->upkeep->redraw |= (PR_HEALTH);
@@ -1682,7 +1682,7 @@ bool monster_revert_shape(struct monster *mon)
 	if (mon->original_race) {
 		if (monster_is_obvious(mon)) {
 			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 			msgt(MSG_GENERIC, "%s %s", m_name, "shimmers and changes!");
 			if (player->upkeep->health_who == mon)
 				player->upkeep->redraw |= (PR_HEALTH);
