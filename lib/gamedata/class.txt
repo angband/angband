@@ -58,7 +58,7 @@
 # 'hitdie' sets the class's contribution to the maximum hitpoints gained per
 # level
 
-# 'exp' sets the classes additive contribution, in percent, to the experience
+# 'exp' sets the class's additive contribution, in percent, to the experience
 # point penalty.  The current classes don't set this and get the default of
 # no experience point penalty.
 
