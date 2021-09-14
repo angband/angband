@@ -260,7 +260,54 @@ that happen 'at random' from the player's point of view.
 Dungeon Generation
 ------------------
 
-TBD
+prepare_next_level() in generate.c controls the process of generating or loading
+a level.  To signal that run_game_loop() in game-world.c should call
+prepare_next_level(), game logic calls dungeon_change_level() in player-util.c
+to set the necessary data in the player structure.  When a level change happens
+by traversing a staircase, some other data in the player structure is set to
+indicate what should be done to connect stairs.  That doesn't happen in
+dungeon_change_level() and is instead set directly, currently in do_cmd_go_up()
+and do_cmd_go_down() in cmd-cave.c.
+
+With the default for non-persistent levels, loading only happens when
+returning to the town or when returning from a single combat arena.  The code
+and global data for handling stored levels is in gen-chunk.c.
+
+When a new level is needed, prepare_next_level() calls cave_generate(), also in
+generate.c.  That initializes a global bit of state, a dun_data structure called
+dun declared in generate.h, for passing a lot of the details needed when
+generating a level.  It then selects a level profile via choose_profile() in
+generate.c.  The level profile controls the layout of the level.  The available
+level profiles are those listed in list-dun-profiles.h and several aspects of
+each profile are configured at runtime from the contents of
+lib/gamedata/dungeon_profile.txt.  With a profile selected, cave_generate()
+uses the profile's builder function pointer to attempt to layout the new level.
+Those function pointers are initialized when list-dun-profiles.h is included
+in generate.c.  The level layout functions all have names with the name of
+the profile followed by *_gen*, classic_gen() for classic levels as an
+example.  Those functions are defined in gen-cave.c.
+
+Three of the level layout functions, classic_gen(), modified_gen(), and
+moria_gen() follow the same basic procedure.  They divide the level into a
+grid of rectangular blocks where, in general, each block can only contain
+one room though a room could occupy many blocks.  They then try to randomly
+place rooms in those blocks until some criteria is met.  Room selection is
+configurable from lib/gamedata/dungeon_profile.txt and uses the predefined
+room types listed in list-rooms.h.  When building a room, those level layout
+functions use the convenience function, room_build() from gen-room.c.  That, in
+turn, calls the appropriate function to build the type of room chosen.  The
+names of the room building functions have *build_* followed by the name of the
+room type, build_simple() for instance.  Those functions are defined in
+gen-room.c.  Once the rooms are built, there's an initial pass to connect them
+with corridors.  That happens in gen-cave.c's do_traditional_tunneling().
+A second pass, to try and ensure connectedness though vault areas can disrupt
+that, is then done with ensure_connectedness().  At that point, most other
+features (mineral veins, staircases, objects, and monsters) are added.  Some
+features will have already been added through some of the types of rooms.
+
+The other layout functions are more of a grab bag.  They are all in gen-cave.c.
+Many of them have portions that are caverns or labyrinths.  Those are generated
+using cavern_chunk() or labyrinth_chunk(), respectively, in gen-cave.c.
 
 Monster AI
 ----------
