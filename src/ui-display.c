@@ -2508,11 +2508,11 @@ static void new_level_display_update(game_event_type type,
 	/* Calculate torch radius */
 	player->upkeep->update |= (PU_TORCH);
 
-	/* Update stuff */
-	update_stuff(player);
-
 	/* Fully update the visuals (and monster distances) */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+
+	/* Update stuff */
+	update_stuff(player);
 
 	/* Redraw dungeon */
 	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
