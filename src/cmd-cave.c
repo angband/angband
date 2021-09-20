@@ -561,7 +561,8 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 							 ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
-				if (!ignore_item_ok(player,
+				if (square_object(cave, grid)
+						&& !ignore_item_ok(player,
 						square_object(cave, grid))
 						&& square_isseen(cave, grid)) {
 					msg("You have found something!");
