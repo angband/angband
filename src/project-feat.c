@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-world.h"
 #include "generate.h"
+#include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -112,12 +113,15 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Hack -- place an object */
 		if (randint0(100) < 10){
-			if (square_isseen(cave, grid)) {
+			place_object(cave, grid, player->depth, false, false,
+						 ORIGIN_RUBBLE, 0);
+			if (square_object(cave, grid)
+					&& !ignore_item_ok(player,
+					square_object(cave, grid))
+					&& square_isseen(cave, grid)) {
 				msg("There was something buried in the rubble!");
 				context->obvious = true;
 			}
-			place_object(cave, grid, player->depth, false, false,
-						 ORIGIN_RUBBLE, 0);
 		}
 	} else if (square_isdoor(cave, grid)) {
 		/* Hack -- special message */
