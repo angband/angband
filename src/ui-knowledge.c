@@ -1864,8 +1864,8 @@ static void desc_obj_fake(int k_idx)
 		ODESC_PREFIX | ODESC_CAPITAL, player);
 
 	textui_textblock_show(tb, area, header);
-	object_delete(&known_obj);
-	object_delete(&obj);
+	object_delete(NULL, NULL, &known_obj);
+	object_delete(NULL, NULL, &obj);
 	textblock_free(tb);
 
 	/* Restore the old trackee */

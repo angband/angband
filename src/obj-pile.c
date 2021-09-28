@@ -301,8 +301,12 @@ void object_free(struct object *obj)
 
 /**
  * Delete an object and free its memory, and set its pointer to NULL
+ * \param c is the chunk the object belongs to (usually)
+ * \param p_c is the corresponding known chunk (eg player->cave if c is cave)
+ * \param obj_address is the address of the struct object* to be deleted
  */
-void object_delete(struct object **obj_address)
+void object_delete(struct chunk *c, struct chunk *p_c,
+				   struct object **obj_address)
 {
 	struct object *obj = *obj_address;
 	struct object *prev = obj->prev;
@@ -325,9 +329,8 @@ void object_delete(struct object **obj_address)
 		player->upkeep->object = NULL;
 
 	/* Orphan rather than actually delete if we still have a known object */
-	if (cave && player && player->cave && obj->oidx &&
-		(obj == cave->objects[obj->oidx]) &&
-		player->cave->objects[obj->oidx]) {
+	if (c && p_c && obj->oidx && (obj == c->objects[obj->oidx]) &&
+		p_c->objects[obj->oidx]) {
 		obj->grid = loc(0, 0);
 		obj->held_m_idx = 0;
 		obj->mimicking_m_idx = 0;
@@ -339,13 +342,11 @@ void object_delete(struct object **obj_address)
 	}
 
 	/* Remove from any lists */
-	if (player && player->cave && player->cave->objects && obj->oidx
-		&& (obj == player->cave->objects[obj->oidx]))
-		player->cave->objects[obj->oidx] = NULL;
+	if (p_c && p_c->objects && obj->oidx && (obj == p_c->objects[obj->oidx]))
+		p_c->objects[obj->oidx] = NULL;
 
-	if (cave && cave->objects && obj->oidx
-		&& (obj == cave->objects[obj->oidx]))
-		cave->objects[obj->oidx] = NULL;
+	if (c && c->objects && obj->oidx && (obj == c->objects[obj->oidx]))
+		c->objects[obj->oidx] = NULL;
 
 	object_free(obj);
 	*obj_address = NULL;
@@ -354,13 +355,13 @@ void object_delete(struct object **obj_address)
 /**
  * Free an entire object pile
  */
-void object_pile_free(struct object *obj)
+void object_pile_free(struct chunk *c, struct object *obj)
 {
 	struct object *current = obj, *next;
 
 	while (current) {
 		next = current->next;
-		object_delete(&current);
+		object_delete(c, NULL, &current);
 		current = next;
 	}
 }
@@ -675,9 +676,9 @@ void object_absorb(struct object *obj1, struct object *obj2)
 			square_excise_object(player->cave, known->grid, known);
 		}
 		delist_object(player->cave, known);
-		object_delete(&known);
+		object_delete(player->cave, NULL, &known);
 	}
-	object_delete(&obj2);
+	object_delete(cave, player->cave, &obj2);
 }
 
 /**
@@ -929,9 +930,10 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	if (n >= z_info->floor_size || (!OPT(player, birth_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
+			struct chunk *p_c = (c == cave) ? player->cave : NULL;
 			square_excise_object(c, grid, ignore);
 			delist_object(c, ignore);
-			object_delete(&ignore);
+			object_delete(c, p_c, &ignore);
 		} else {
 			return false;
 		}
@@ -991,10 +993,10 @@ static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 		if (!loc_is_zero(known->grid))
 			square_excise_object(player->cave, known->grid, known);
 		delist_object(player->cave, known);
-		object_delete(&known);
+		object_delete(player->cave, NULL, &known);
 	}
 	delist_object(c, drop);
-	object_delete(&drop);
+	object_delete(cave, player->cave, &drop);
 }
 
 /**
@@ -1175,7 +1177,7 @@ void push_object(struct loc grid)
 		q_push_ptr(queue, newobj);
 
 		delist_object(cave, obj);
-		object_delete(&obj);
+		object_delete(cave, player->cave, &obj);
 
 		/* Next object */
 		obj = next;
@@ -1219,9 +1221,9 @@ void push_object(struct loc grid)
 					 */
 					delete_monster_idx(obj->mimicking_m_idx);
 					if (obj->known) {
-						object_delete(&obj->known);
+						object_delete(player->cave, NULL, &obj->known);
 					}
-					object_delete(&obj);
+					object_delete(cave, player->cave, &obj);
 					break;
 				}
 				if (scatter_ext(cave, &newgrid, 1, grid, d,

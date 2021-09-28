@@ -550,12 +550,13 @@ static void move_mimicked_object(struct chunk *c, struct monster *mon,
 		moved->mimicking_m_idx = 0;
 		mon->mimicked_obj = NULL;
 		/* Give object to monster if appropriate; otherwise, delete. */
-		if (! rf_has(mon->race->flags, RF_MIMIC_INV) ||
-			! monster_carry(c, mon, moved)) {
+		if (!rf_has(mon->race->flags, RF_MIMIC_INV) ||
+			!monster_carry(c, mon, moved)) {
+			struct chunk *p_c = (c == cave) ? player->cave : NULL;
 			if (moved->known) {
-				object_delete(&moved->known);
+				object_delete(p_c, NULL, &moved->known);
 			}
-			object_delete(&moved);
+			object_delete(c, p_c, &moved);
 		}
 	}
 	square_delete_object(c, src, mimicked, true, false);
@@ -754,11 +755,12 @@ void become_aware(struct chunk *c, struct monster *mon, struct player *p)
 					given->known->oidx = 0;
 					given->known->grid = loc(0, 0);
 				}
-				if (! monster_carry(c, mon, given)) {
+				if (!monster_carry(c, mon, given)) {
+					struct chunk *p_c = (c == cave) ? player->cave : NULL;
 					if (given->known) {
-						object_delete(&given->known);
+						object_delete(p_c, NULL, &given->known);
 					}
-					object_delete(&given);
+					object_delete(c, p_c, &given);
 				}
 			}
 
@@ -1478,7 +1480,7 @@ void steal_monster_item(struct monster *mon, int midx)
 				msg("You steal %d gold pieces worth of treasure.", obj->pval);
 				player->au += obj->pval;
 				delist_object(cave, obj);
-				object_delete(&obj);
+				object_delete(cave, player->cave, &obj);
 			} else {
 				object_grab(player, obj);
 				delist_object(player->cave, obj->known);

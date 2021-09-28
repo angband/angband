@@ -246,7 +246,7 @@ static void wr_monster(const struct monster *mon)
 		obj = obj->next;
 	}
 	wr_item(dummy);
-	object_delete(&dummy);
+	object_delete(NULL, NULL, &dummy);
 
 	/* Write group info */
 	wr_u16b(mon->group_info[PRIMARY_GROUP].index);

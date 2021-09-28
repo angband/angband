@@ -808,8 +808,8 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		eaten = gear_object_for_use(context->p, obj, 1, false,
 			&none_left);
 		if (eaten->known)
-			object_delete(&eaten->known);
-		object_delete(&eaten);
+			object_delete(player->cave, NULL, &eaten->known);
+		object_delete(cave, player->cave, &eaten);
 
 		/* Obvious */
 		context->obvious = true;

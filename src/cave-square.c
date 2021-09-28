@@ -1000,7 +1000,7 @@ void square_excise_object(struct chunk *c, struct loc grid, struct object *obj){
  */
 void square_excise_pile(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
-	object_pile_free(square_object(c, grid));
+	object_pile_free(c, square_object(c, grid));
 	square_set_obj(c, grid, NULL);
 }
 
@@ -1017,9 +1017,10 @@ void square_excise_pile(struct chunk *c, struct loc grid) {
  */
 void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, bool do_note, bool do_light)
 {
+	struct chunk *p_c = (c == cave) ? player->cave : NULL;
 	square_excise_object(c, grid, obj);
 	delist_object(c, obj);
-	object_delete(&obj);
+	object_delete(c, p_c, &obj);
 	if (do_note) {
 		square_note_spot(c, grid);
 	}
@@ -1075,10 +1076,10 @@ void square_know_pile(struct chunk *c, struct loc grid)
 			/* Delete objects which no longer exist anywhere */
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {
 				delist_object(player->cave, obj);
-				object_delete(&obj);
+				object_delete(player->cave, NULL, &obj);
 				original->known = NULL;
 				delist_object(c, original);
-				object_delete(&original);
+				object_delete(c, player->cave, &original);
 			}
 		}
 		obj = next;

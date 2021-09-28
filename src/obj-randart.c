@@ -194,8 +194,8 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
 
 	if (!make_fake_artifact(obj, &a_info[a_idx])) {
-		object_delete(&known_obj);
-		object_delete(&obj);
+		object_delete(NULL, NULL, &known_obj);
+		object_delete(NULL, NULL, &obj);
 		return 0;
 	}
 
@@ -207,8 +207,8 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 
 	power = object_power(obj, verbose, log_file);
 
-	object_delete(&known_obj);
-	object_delete(&obj);
+	object_delete(NULL, NULL, &known_obj);
+	object_delete(NULL, NULL, &obj);
 	return power;
 }
 

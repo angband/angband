@@ -60,7 +60,7 @@ static int test_obj_piles(void *state) {
 	eq(pile_contains(pile, o3), false);
 	ptreq(pile_last_item(pile), o2);
 	ptreq(pile_last_item(pile)->prev, o1);
-	object_delete(&o3);
+	object_delete(NULL, NULL, &o3);
 
 	/* Now put it back, and add another */
 	o3 = object_new();
@@ -85,7 +85,7 @@ static int test_obj_piles(void *state) {
 	null(o4->next);
 
 	/* Free up */
-	object_pile_free(pile);
+	object_pile_free(NULL, pile);
 	object_free(o3);
 
 	ok;

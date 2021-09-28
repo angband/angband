@@ -1111,7 +1111,7 @@ static void monster_death_stats(int m_idx)
 
 		/* Delete the object */
 		delist_object(cave, obj);
-		object_delete(&obj);
+		object_delete(cave, player->cave, &obj);
 
 		/* Next */
 		obj = next;

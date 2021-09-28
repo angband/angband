@@ -188,8 +188,8 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 					/* Artifacts are marked as lost */
 					history_lose_artifact(player, destroyed->artifact);
 				}
-				object_delete(&destroyed->known);
-				object_delete(&destroyed);
+				object_delete(player->cave, NULL, &destroyed->known);
+				object_delete(cave, player->cave, &destroyed);
 			} else {
 				square_delete_object(cave, obj->grid, obj, true, true);
 			}
@@ -1527,10 +1527,10 @@ static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, str
 		/* Delete objects which no longer exist anywhere */
 		if (obj->notice & OBJ_NOTICE_IMAGINED) {
 			delist_object(knownc, obj);
-			object_delete(&obj);
+			object_delete(player->cave, NULL, &obj);
 			original->known = NULL;
 			delist_object(c, original);
-			object_delete(&original);
+			object_delete(cave, player->cave, &original);
 		}
 		obj = next;
 	}
@@ -2054,8 +2054,8 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 				&none_left);
 		}
 		if (destroyed->known)
-			object_delete(&destroyed->known);
-		object_delete(&destroyed);
+			object_delete(player->cave, NULL, &destroyed->known);
+		object_delete(cave, player->cave, &destroyed);
 	} else {
 		/* Extract a "power" */
 		int ease_of_recharge = (100 - obj->kind->level) / 10;
@@ -3171,9 +3171,9 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	}
 
 	if (staff->known) {
-		object_delete(&staff->known);
+		object_delete(player->cave, NULL, &staff->known);
 	}
-	object_delete(&staff);
+	object_delete(cave, player->cave, &staff);
 
 	/* Make some arrows */
 	arrows = make_object(cave, player->lev, good, great, false, NULL, TV_ARROW);

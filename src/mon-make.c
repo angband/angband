@@ -371,11 +371,11 @@ void delete_monster_idx(int m_idx)
 			 * will not be in a floor pile. */
 			if (loc_is_zero(obj->known->grid)) {
 				delist_object(player->cave, obj->known);
-				object_delete(&obj->known);
+				object_delete(player->cave, NULL, &obj->known);
 			}
 		}
 		delist_object(cave, obj);
-		object_delete(&obj);
+		object_delete(cave, player->cave, &obj);
 		obj = next;
 	}
 
@@ -590,7 +590,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 				}
 				obj = obj->next;
 			}
-			object_pile_free(held_obj);
+			object_pile_free(c, held_obj);
 		}
 
 		/* Reduce the racial counter */
@@ -933,7 +933,7 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 			monster_carry(c, mon, obj);
 		} else {
 			/* Otherwise delete the mimicked object */
-			object_delete(&obj);
+			object_delete(c, NULL, &obj);
 		}
 	}
 }

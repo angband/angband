@@ -553,9 +553,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			 */
 			if (was_aware || !ident) {
 				if (work_obj->known) {
-					object_delete(&work_obj->known);
+					object_delete(player->cave, NULL, &work_obj->known);
 				}
-				object_delete(&work_obj);
+				object_delete(cave, player->cave, &work_obj);
 				return;
 			}
 		}
@@ -601,8 +601,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 		/* Clean up created copy. */
 		if (work_obj->known)
-			object_delete(&work_obj->known);
-		object_delete(&work_obj);
+			object_delete(player->cave, NULL, &work_obj->known);
+		object_delete(cave, player->cave, &work_obj);
 	} else {
 		from_floor = !object_is_carried(player, obj);
 	}
@@ -889,8 +889,8 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 				&none_left);
 		}
 		if (used->known)
-			object_delete(&used->known);
-		object_delete(&used);
+			object_delete(player->cave, NULL, &used->known);
+		object_delete(cave, player->cave, &used);
 	}
 
 	/* Recalculate torch */

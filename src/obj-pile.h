@@ -50,8 +50,9 @@ typedef enum
 
 struct object *object_new(void);
 void object_free(struct object *obj);
-void object_delete(struct object **obj_address);
-void object_pile_free(struct object *obj);
+void object_delete(struct chunk *c, struct chunk *p_c,
+				   struct object **obj_address);
+void object_pile_free(struct chunk *c, struct object *obj);
 
 void pile_insert(struct object **pile, struct object *obj);
 void pile_insert_end(struct object **pile, struct object *obj);

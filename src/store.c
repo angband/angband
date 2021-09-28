@@ -111,8 +111,8 @@ static void cleanup_stores(void)
 		struct store *store = &stores[i];
 
 		/* Free the store inventory */
-		object_pile_free(store->stock_k);
-		object_pile_free(store->stock);
+		object_pile_free(NULL, store->stock_k);
+		object_pile_free(NULL, store->stock);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
 
@@ -372,7 +372,7 @@ void store_reset(void) {
 		s = &stores[i];
 		s->stock_num = 0;
 		store_shuffle(s);
-		object_pile_free(s->stock);
+		object_pile_free(NULL, s->stock);
 		s->stock = NULL;
 		if (i == STORE_HOME)
 			continue;
@@ -841,7 +841,7 @@ static void store_object_absorb(struct object *old, struct object *new)
 	object_origin_combine(old, new);
 
 	/* Fully absorbed */
-	object_delete(&new);
+	object_delete(NULL, NULL, &new);
 }
 
 
@@ -1008,9 +1008,9 @@ static void store_delete(struct store *s, struct object *obj, int amt)
 		known_obj->number -= amt;
 	} else {
 		pile_excise(&s->stock, obj);
-		object_delete(&obj);
+		object_delete(NULL, NULL, &obj);
 		pile_excise(&s->stock_k, known_obj);
-		object_delete(&known_obj);
+		object_delete(NULL, NULL, &known_obj);
 		assert(s->stock_num);
 		s->stock_num--;
 	}
@@ -1214,7 +1214,7 @@ static bool store_create_random(struct store *store)
 		/* Reject if item is 'damaged' (negative combat mods, curses) */
 		if ((tval_is_weapon(obj) && ((obj->to_h < 0) || (obj->to_d < 0)))
 			|| (tval_is_armor(obj) && (obj->to_a < 0)) || (obj->curses)) {
-			object_delete(&obj);
+			object_delete(NULL, NULL, &obj);
 			continue;
 		}
 
@@ -1233,17 +1233,17 @@ static bool store_create_random(struct store *store)
 
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
-			object_delete(&known_obj);
+			object_delete(NULL, NULL, &known_obj);
 			obj->known = NULL;
-			object_delete(&obj);
+			object_delete(NULL, NULL, &obj);
 			continue;
 		}
 
 		/* No "worthless" items */
 		if (object_value_real(obj, 1) < 1)  {
-			object_delete(&known_obj);
+			object_delete(NULL, NULL, &known_obj);
 			obj->known = NULL;
-			object_delete(&obj);
+			object_delete(NULL, NULL, &obj);
 			continue;
 		}
 
@@ -1252,9 +1252,9 @@ static bool store_create_random(struct store *store)
 
 		/* Attempt to carry the object */
 		if (!store_carry(store, obj)) {
-			object_delete(&known_obj);
+			object_delete(NULL, NULL, &known_obj);
 			obj->known = NULL;
-			object_delete(&obj);
+			object_delete(NULL, NULL, &obj);
 			continue;
 		}
 
@@ -1668,7 +1668,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Ensure we have room */
 	if (bought->number > inven_carry_num(player, bought)) {
 		msg("You cannot carry that many items.");
-		object_delete(&bought);
+		object_delete(NULL, NULL, &bought);
 		return;
 	}
 
@@ -1681,7 +1681,7 @@ void do_cmd_buy(struct command *cmd)
 
 	if (price > player->au) {
 		msg("You cannot afford that purchase.");
-		object_delete(&bought);
+		object_delete(NULL, NULL, &bought);
 		return;
 	}
 
@@ -1798,7 +1798,7 @@ void do_cmd_retrieve(struct command *cmd)
 	/* Ensure we have room */
 	if (picked_item->number > inven_carry_num(player, picked_item)) {
 		msg("You cannot carry that many items.");
-		object_delete(&picked_item);
+		object_delete(NULL, NULL, &picked_item);
 		return;
 	}
 
@@ -1959,13 +1959,13 @@ void do_cmd_sell(struct command *cmd)
 	handle_stuff(player);
 
 	/* The store gets that (known) object */
-	if (! store_carry(store, sold_item)) {
+	if (!store_carry(store, sold_item)) {
 		/* The store rejected it; delete. */
 		if (sold_item->known) {
-			object_delete(&sold_item->known);
+			object_delete(NULL, NULL, &sold_item->known);
 			sold_item->known = NULL;
 		}
-		object_delete(&sold_item);
+		object_delete(NULL, NULL, &sold_item);
 	}
 
 	event_signal(EVENT_STORECHANGED);

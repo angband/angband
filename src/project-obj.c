@@ -151,8 +151,8 @@ int inven_damage(struct player *p, int type, int cperc)
 				destroyed = gear_object_for_use(p, obj, amt,
 					false, &none_left);
 				if (destroyed->known)
-					object_delete(&destroyed->known);
-				object_delete(&destroyed);
+					object_delete(NULL, NULL, &destroyed->known);
+				object_delete(NULL, NULL, &destroyed);
 
 				/* Count the casualties */
 				k += amt;

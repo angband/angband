@@ -679,7 +679,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 	/* Ensure we have room */
 	if (!inven_carry_okay(dummy)) {
 		msg("You cannot carry that many items.");
-		object_delete(&dummy);
+		object_delete(NULL, NULL, &dummy);
 		return false;
 	}
 
@@ -719,7 +719,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 	/* Update the display */
 	ctx->flags |= STORE_GOLD_CHANGE;
 
-	object_delete(&dummy);
+	object_delete(NULL, NULL, &dummy);
 
 	/* Not kicked out */
 	return true;

@@ -591,8 +591,8 @@ void player_update_light(struct player *p)
 						gear_object_for_use(p, obj, 1,
 						false, &dummy);
 					if (burnt->known)
-						object_delete(&burnt->known);
-					object_delete(&burnt);
+						object_delete(p->cave, NULL, &burnt->known);
+					object_delete(cave, p->cave, &burnt);
 				}
 			} else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
 				/* The light is getting dim */

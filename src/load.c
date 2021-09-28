@@ -240,7 +240,7 @@ static struct object *rd_item(void)
 
 	/* Check we have a kind */
 	if ((!obj->tval && !obj->sval) || !obj->kind) {
-		object_delete(&obj);
+		object_delete(NULL, NULL, &obj);
 		return NULL;
 	}
 

@@ -1890,7 +1890,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 		}
 
 		/* Release the preserved copy. */
-		object_delete(&orig_obj);
+		object_delete(cave, player->cave, &orig_obj);
 
 		/*
 		 * Reset the original_item and changed arguments so repeating
@@ -2402,7 +2402,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 	}
 
 	/* Free the copy. */
-	object_delete(&new);
+	object_delete(cave, player->cave, &new);
 }
 
 
@@ -2559,7 +2559,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		/* Test for same tval and sval. */
 		if (obj->tval != test_obj->tval ||
 				obj->sval != test_obj->sval) {
-			object_delete(&test_obj);
+			object_delete(cave, player->cave, &test_obj);
 			continue;
 		}
 
@@ -2596,7 +2596,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Nuke the test object. */
-		object_delete(&test_obj);
+		object_delete(cave, player->cave, &test_obj);
 	}
 
 	/* Final dump */
