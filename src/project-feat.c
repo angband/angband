@@ -163,7 +163,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, grid);
-	} else if (square_iswall(cave, grid)) {
+	} else if (square_isgranite(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid)) {
 			msg("The wall turns into mud!");

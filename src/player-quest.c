@@ -191,7 +191,7 @@ static void build_quest_stairs(struct player *p, struct loc grid)
 
 	/* Stagger around */
 	while (!square_changeable(cave, grid) &&
-		   !square_iswall(cave, grid) &&
+		   !square_ispassable(cave, grid) &&
 		   !square_isdoor(cave, grid)) {
 		/* Pick a location */
 		scatter(cave, &new_grid, grid, 1, false);

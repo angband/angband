@@ -1153,7 +1153,7 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 	}
 
 	/* Permanent wall in the way */
-	if (square_iswall(cave, new) && square_isperm(cave, new)) {
+	if (square_isperm(cave, new)) {
 		if (confused) {
 			*did_something = true;
 			monster_display_confused_move_msg(mon, m_name, new);

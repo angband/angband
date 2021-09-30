@@ -1670,7 +1670,7 @@ void do_cmd_mon_command(struct command *cmd)
 			} else if (square_ispassable(cave, grid)) {
 				/* Floor is open? */
 				can_move = true;
-			} else if (square_iswall(cave, grid) && square_isperm(cave, grid)) {
+			} else if (square_isperm(cave, grid)) {
 				/* Permanent wall in the way */
 				can_move = false;
 			} else {

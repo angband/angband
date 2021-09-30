@@ -223,7 +223,7 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
 		/* Forget grids which would block los */
-		if (square_iswall(player->cave, path_g[i])) {
+		if (!square_allowslos(player->cave, path_g[i])) {
 			sqinfo_off(square(c, path_g[i])->info, SQUARE_SEEN);
 			square_forget(c, path_g[i]);
 			square_light_spot(c, path_g[i]);
@@ -1668,7 +1668,8 @@ bool monster_change_shape(struct monster *mon)
 	}
 
 	/* Emergency teleport if needed */
-	if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+	if (!monster_passes_walls(mon) &&
+		!square_is_monster_walkable(cave, mon->grid)) {
 		effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
 					  mon->grid.y, mon->grid.x, NULL);
 	}
@@ -1697,7 +1698,8 @@ bool monster_revert_shape(struct monster *mon)
 		mon->original_race = NULL;
 
 		/* Emergency teleport if needed */
-		if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+		if (!monster_passes_walls(mon) &&
+			!square_is_monster_walkable(cave, mon->grid)) {
 			effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
 						  mon->grid.y, mon->grid.x, NULL);
 		}
