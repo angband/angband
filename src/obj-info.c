@@ -1039,11 +1039,13 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 	for (i = 1; i < z_info->brand_max; i++) {
 		int brand_average, add = brands[i].o_multiplier - 10;
 
-		/* Must have the brand */
-		if (total_brands[i])
-			has_brands_or_slays = true;
-		else
+		/* Must have the brand, possibly from a spell */
+		if (player_has_temporary_brand(player, i)) {
+			*nonweap_slay = true;
+		} else if (!total_brands[i]) {
 			continue;
+		}
+		has_brands_or_slays = true;
 
 		/* Include brand in stated average (x10), deflate (/1000) */
 		brand_average = die_average * brands[i].o_multiplier;
@@ -1070,11 +1072,13 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 	for (i = 1; i < z_info->slay_max; i++) {
 		int slay_average, add = slays[i].o_multiplier - 10;
 
-		/* Must have the slay */
-		if (total_slays[i])
-			has_brands_or_slays = true;
-		else
+		/* Must have the slay, possibly from a spell */
+		if (player_has_temporary_slay(player, i)) {
+			*nonweap_slay = true;
+		} else if (!total_slays[i]) {
 			continue;
+		}
+		has_brands_or_slays = true;
 
 		/* Include slay in stated average (x10), deflate (/1000) */
 		slay_average = die_average * slays[i].o_multiplier;
