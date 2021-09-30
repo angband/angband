@@ -399,6 +399,7 @@ void cave_connectors_free(struct connector *join)
  * Free a chunk
  */
 void cave_free(struct chunk *c) {
+	struct chunk *p_c = (c == cave && player) ? player->cave : NULL;
 	int y, x, i;
 
 	cave_connectors_free(c->join);
@@ -406,7 +407,6 @@ void cave_free(struct chunk *c) {
 	/* Look for orphaned objects and delete them. */
 	for (i = 1; i < c->obj_max; i++) {
 		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
-			struct chunk *p_c = (c == cave) ? player->cave : NULL;
 			object_delete(c, p_c, &c->objects[i]);
 		}
 	}
