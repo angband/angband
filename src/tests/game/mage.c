@@ -37,6 +37,10 @@ int setup_tests(void **state) {
 	/* Init the game */
 	set_file_paths();
 	init_angband();
+#ifdef UNIX
+	/* Necessary for creating the randart file. */
+	create_needed_dirs();
+#endif
 
 	return 0;
 }
