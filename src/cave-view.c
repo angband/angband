@@ -536,9 +536,9 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	struct loc pn = next_grid(wgrid, motion_dir(wgrid, p->grid)), chk;
 
 	/*
-	 * If the player is next to the wall grid, the player will see the lit face.
+	 * If the player is in the wall grid, the player will see the lit face.
 	 */
-	if (loc_eq(pn, p->grid)) return true;
+	if (loc_eq(pn, wgrid)) return true;
 
 	/*
 	 * If the grid in the direction of the player is not a wall, is either
