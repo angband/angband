@@ -24,6 +24,10 @@ int setup_tests(void **state)
 
 	set_file_paths();
 	init_angband();
+#ifdef UNIX
+	/* Necessary for creating the randart file. */
+	create_needed_dirs();
+#endif
 	ts = mem_alloc(sizeof(*ts));
 	ts->slays = mem_zalloc(z_info->slay_max * sizeof(*ts->slays));
 	ts->brands = mem_zalloc(z_info->brand_max * sizeof(*ts->brands));
