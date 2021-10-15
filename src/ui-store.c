@@ -703,9 +703,9 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		prt(format("Price: %d", price), 1, 0);
 
 		/* Confirm purchase */
-		response = store_get_check(format("Buy %s? %s %s",
+		response = store_get_check(format("Buy %s?%s %s",
 					o_name,
-					obj_can_use ? "" : "(Can't use!)",
+					obj_can_use ? "" : " (Can't use!)",
 					"[ESC, any other key to accept]"));
 
 		screen_load();
