@@ -1003,8 +1003,9 @@ void square_excise_object(struct chunk *c, struct loc grid, struct object *obj){
  * Excise an entire floor pile.
  */
 void square_excise_pile(struct chunk *c, struct loc grid) {
+	struct chunk *p_c = (player && c == cave) ? player->cave : NULL;
 	assert(square_in_bounds(c, grid));
-	object_pile_free(c, square_object(c, grid));
+	object_pile_free(c, p_c, square_object(c, grid));
 	square_set_obj(c, grid, NULL);
 }
 

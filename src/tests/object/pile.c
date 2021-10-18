@@ -85,7 +85,7 @@ static int test_obj_piles(void *state) {
 	null(o4->next);
 
 	/* Free up */
-	object_pile_free(NULL, pile);
+	object_pile_free(NULL, NULL, pile);
 	object_free(o3);
 
 	ok;
