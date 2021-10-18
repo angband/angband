@@ -458,8 +458,8 @@ void player_cleanup_members(struct player *p)
 		player_spells_free(p);
 	}
 	if (p->gear) {
-		object_pile_free(NULL, p->gear);
-		object_pile_free(NULL, p->gear_k);
+		object_pile_free(NULL, NULL, p->gear);
+		object_pile_free(NULL, NULL, p->gear_k);
 	}
 	if (p->body.slots) {
 		for (int i = 0; i < p->body.count; i++)
