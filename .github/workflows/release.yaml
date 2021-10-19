@@ -273,7 +273,7 @@ jobs:
   mac:
     needs: [setup, docconvert]
     name: Mac
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v2
