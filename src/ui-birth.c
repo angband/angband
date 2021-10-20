@@ -908,7 +908,7 @@ static enum birth_stage roller_command(bool first_call)
 			action = ACT_CTX_BIRTH_ROLL_HELP;
 		} else {
 			/* Nothing handled directly here */
-			bell("Illegal roller command!");
+			bell();
 		}
 	} else if (in.type == EVT_MOUSE) {
 		if (in.mouse.button == 2) {

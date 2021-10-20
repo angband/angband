@@ -397,50 +397,25 @@ static int test_sound(void *state) {
 
 static int test_bell(void *state) {
 	struct test_message_event_state *st = state;
-	const char expected1[] = "msg1";
-	const char expected2[] = "msg2";
 	const char *txt;
-	u16b n, mtype;
+	u16b n;
 
 	reset_event_counters(st);
 	messages_free();
 	messages_init();
 
 	player->opts.opt[OPT_use_sound] = false;
-	bell("%s", expected1);
+	bell();
 	n = messages_num();
-	eq(n, 1);
+	eq(n, 0);
 	n = message_count(0);
-	eq(n, 1);
+	eq(n, 0);
 	txt = message_str(0);
-	require(streq(txt, expected1));
-	mtype = message_type(0);
-	eq(mtype, MSG_BELL);
-	require(st->lastbell && streq(st->lastbell, expected1));
+	require(streq(txt, ""));
+	require(st->lastbell == NULL);
 	eq(st->n_msg, 0);
 	eq(st->n_sound, 0);
 	eq(st->n_bell, 1);
-	eq(st->n_other, 0);
-	require(!st->had_invalid_bell);
-
-	player->opts.opt[OPT_use_sound] = true;
-	bell("%s", expected2);
-	n = messages_num();
-	eq(n, 2);
-	n = message_count(0);
-	eq(n, 1);
-	txt = message_str(0);
-	require(streq(txt, expected2));
-	mtype = message_type(0);
-	eq(mtype, MSG_BELL);
-	require(st->lastbell && streq(st->lastbell, expected2));
-	eq(st->n_msg, 0);
-	/* Should the bell trigger a sound event? */
-#if 0
-	eq(st->n_sound, 1);
-	eq(st->lastsound_type, MSG_BELL);
-#endif
-	eq(st->n_bell, 2);
 	eq(st->n_other, 0);
 	require(!st->had_invalid_bell);
 

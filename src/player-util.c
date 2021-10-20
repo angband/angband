@@ -230,7 +230,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	if (p->chp < warning) {
 		/* Hack -- bell on first notice */
 		if (old_chp > warning)
-			bell("Low hitpoint warning!");
+			bell();
 
 		/* Message */
 		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");

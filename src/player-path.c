@@ -155,7 +155,7 @@ static bool set_up_path_distances(struct loc grid)
 			set_path_dist(grid, MAX_PF_LENGTH);
 		}
 	} else {
-		bell("Target out of range.");
+		bell();
 		return false;
 	}
 
@@ -189,7 +189,7 @@ static bool set_up_path_distances(struct loc grid)
 
 	/* Failure to find a path */
 	if (path_dist(grid) == -1 || path_dist(grid) == MAX_PF_LENGTH) {
-		bell("Target space unreachable.");
+		bell();
 		return false;
 	}
 
