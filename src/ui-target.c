@@ -1218,7 +1218,7 @@ bool target_set_interactive(int mode, int x, int y)
 					target_set_monster(m_local);
 					done = true;
 				} else {
-					bell("Illegal target!");
+					bell();
 					if (!square_in_bounds(cave, loc(x, y))) {
 						x = player->grid.x;
 						y = player->grid.y;
@@ -1344,7 +1344,7 @@ bool target_set_interactive(int mode, int x, int y)
 					target_set_monster(m_local);
 					done = true;
 				} else {
-					bell("Illegal target!");
+					bell();
 				}
 			} else {
 				target_set_location(y, x);
@@ -1385,7 +1385,7 @@ bool target_set_interactive(int mode, int x, int y)
 			int dir = target_dir(press.key);
 
 			if (!dir) {
-				bell("Illegal command for target mode!");
+				bell();
 			} else if (use_interesting_mode) {
 				/* Interesting mode direction: Pick new interesting grid */
 				int old_y = targets->pts[target_index].y;

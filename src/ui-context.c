@@ -157,7 +157,7 @@ static int context_menu_player_2(int mx, int my)
 
 		default:
 			/* Invalid command; prevent anything from happening. */
-			bell("Invalid context menu command.");
+			bell();
 			allowed = false;
 			break;
 	}
@@ -358,7 +358,7 @@ int context_menu_player(int mx, int my)
 
 		default:
 			/* Invalid command; prevent anything from happening. */
-			bell("Invalid context menu command.");
+			bell();
 			allowed = false;
 			break;
 	}
@@ -580,7 +580,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		default:
 			/* Invalid command; prevent anything from happening. */
-			bell("Invalid context menu command.");
+			bell();
 			allowed = false;
 			break;
 	}
@@ -847,7 +847,7 @@ int context_menu_object(struct object *obj)
 			break;
 		default:
 			/* Invalid command; prevent anything from happening. */
-			bell("Invalid context menu command.");
+			bell();
 			allowed = false;
 			break;
 	}

@@ -414,7 +414,12 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	type = data->message.type;
 	msg = data->message.msg;
 
-	if (type == MSG_BELL || !msg || !Term || !character_generated)
+	if (Term && type == MSG_BELL) {
+		Term_xtra(TERM_XTRA_NOISE, 0);
+		return;
+	}
+
+	if (!msg || !Term || !character_generated)
 		return;
 
 	/* Obtain the size */
@@ -654,7 +659,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len,
 					1, NULL);
 			}
 			if (n_enc == 0) {
-				bell("Illegal edit key!");
+				bell();
 				break;
 			}
 
@@ -1479,7 +1484,7 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
 		}
 
 		/* Oops */
-		if (!dir) bell("Illegal repeatable direction!");
+		if (!dir) bell();
 	}
 
 	/* Clear the prompt */
@@ -1580,7 +1585,7 @@ static bool textui_get_aim_dir(int *dp)
 		}
 
 		/* Error */
-		if (!dir) bell("Illegal aim direction!");
+		if (!dir) bell();
 	}
 
 	/* No direction */
@@ -1643,7 +1648,7 @@ static int textui_get_count(void)
 			count = count * 10 + D2I(ke.code);
 
 			if (count >= 9999) {
-				bell("Invalid repeat count!");
+				bell();
 				count = 9999;
 			}
 		} else {

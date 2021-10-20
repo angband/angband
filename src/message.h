@@ -46,7 +46,7 @@ int message_lookup_by_name(const char *name);
 int message_lookup_by_sound_name(const char *name);
 const char *message_sound_name(int message);
 void sound(int type);
-void bell(const char *fmt, ...);
+void bell(void);
 void msg(const char *fmt, ...);
 void msgt(unsigned int type, const char *fmt, ...);
 

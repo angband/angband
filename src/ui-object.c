@@ -954,14 +954,14 @@ static bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 				player->upkeep->command_wrk = USE_EQUIP;
 				newmenu = true;
 			} else {
-				bell("Cannot switch item selector!");
+				bell();
 			}
 		}
 
 		else if (key == '|') {
 			/* No toggle allowed */
 			if ((q1 > q2) && !allow_all){
-				bell("Cannot select quiver!");
+				bell();
 			} else {
 				/* Toggle to quiver */
 				player->upkeep->command_wrk = (USE_QUIVER);
@@ -972,7 +972,7 @@ static bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 		else if (key == '-') {
 			/* No toggle allowed */
 			if ((f1 > f2) && !allow_all) {
-				bell("Cannot select floor!");
+				bell();
 			} else {
 				/* Toggle to floor */
 				player->upkeep->command_wrk = (USE_FLOOR);

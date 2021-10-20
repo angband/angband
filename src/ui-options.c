@@ -453,7 +453,7 @@ static void do_cmd_options_win(const char *name, int row)
 					ke.key.code == KC_ENTER) {
 				/* Hack -- ignore the main window */
 				if (x == 0)
-					bell("Cannot set main window flags!");
+					bell();
 
 				/* Toggle flag (off) */
 				else if (new_flags[x] & (1L << y))

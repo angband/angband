@@ -362,33 +362,12 @@ void sound(int type)
 }
 
 /**
- * Clear everything, display a formatted message, ring the system bell.
- *
- * \param fmt Format string
+ * Ring the system bell.
  */
-void bell(const char *fmt, ...)
+void bell(void)
 {
-	va_list vp;
-
-	char buf[1024];
-
-	/* Begin the Varargs Stuff */
-	va_start(vp, fmt);
-
-	/* Format the args, save the length */
-	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
-
-	/* End the Varargs Stuff */
-	va_end(vp);
-
-	/* Fail if messages not loaded */
-	if (!messages) return;
-
-	/* Add to message log */
-	message_add(buf, MSG_BELL);
-
 	/* Send bell event */
-	event_signal_message(EVENT_BELL, MSG_BELL, buf);
+	event_signal_message(EVENT_BELL, MSG_BELL, NULL);
 }
 
 /**

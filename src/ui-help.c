@@ -329,7 +329,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 		/* Hack -- failed search */
 		if (find) {
-			bell("Search string not found!");
+			bell();
 			line = back;
 			find = NULL;
 			continue;
