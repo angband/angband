@@ -1823,6 +1823,7 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 			monster_index_move(old_idx, 1);
 		}
 		target_set_monster(cave_monster(cave, 1));
+		player->upkeep->health_who = cave_monster(cave, 1);
 	} else {
 		msg("No monster selected!");
 		return false;
