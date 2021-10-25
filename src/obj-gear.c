@@ -990,46 +990,59 @@ void inven_drop(struct object *obj, int amt)
 /**
  * Return whether each stack of objects can be merged into two uneven stacks.
  */
-static bool inven_can_stack_partial(const struct object *obj1,
-									const struct object *obj2,
-									object_stack_t mode)
+static bool inven_can_stack_partial(struct player *p, const struct object *obj1,
+	const struct object *obj2, object_stack_t mode1, object_stack_t mode2)
 {
-	if (!(mode & OSTACK_STORE)) {
-		int total = obj1->number + obj2->number;
+	object_stack_t cmode = mode1 | mode2;
 
+	if (! object_stackable(obj1, obj2, cmode)) {
+		return false;
+	}
+
+	/*
+	 * Now verify the numbers are suitable for uneven stacks.  Want the
+	 * the leading stack, obj1, to have its count maximized.
+	 */
+	if (!(cmode & OSTACK_STORE)) {
 		/* The quiver may have stricter limits. */
-		if (mode & OSTACK_QUIVER) {
-			int limit = z_info->quiver_slot_size /
+		if (mode1 & OSTACK_QUIVER) {
+			int qlimit = z_info->quiver_slot_size /
 				(tval_is_ammo(obj1) ?
 				1 : z_info->thrown_quiver_mult);
 
-			if (mode & ~OSTACK_QUIVER) {
-				/*
-				 * May be combining between stacks with
-				 * different limits.
-				 */
-				int remainder =
-					total - obj1->kind->base->max_stack;
+			/*
+			 * These's no reason to combine if already at the limit.
+			 */
+			if (obj1->number == qlimit) {
+				return false;
+			}
 
-				if (remainder > limit) {
-					return false;
-				}
-			} else {
-				int remainder = total - limit;
+			/*
+			 * Checked the per-stack limits.  If trying to move
+			 * items to the quiver, also check the overall quiver
+			 * limits to avoid combining and then splitting in
+			 * calc_inventory().
+			 */
+			if (mode2 & ~OSTACK_QUIVER) {
+				int n_free_slot = z_info->pack_size -
+					pack_slots_used(p);
+				int num_to_quiver;
 
-				if (remainder > limit) {
+				quiver_absorb_num(p, obj2, &n_free_slot,
+					&num_to_quiver);
+				if (num_to_quiver <= 0) {
 					return false;
 				}
 			}
-		} else {
-			int remainder = total - obj1->kind->base->max_stack;
-
-			if (remainder > obj1->kind->base->max_stack)
-				return false;
+		} else if (obj1->number == obj1->kind->base->max_stack) {
+			/*
+			 * These's no reason to combine if already at the limit.
+			 */
+			return false;
 		}
 	}
 
-	return object_stackable(obj1, obj2, mode);
+	return true;
 }
 
 
@@ -1074,8 +1087,8 @@ void combine_pack(struct player *p)
 					object_is_in_quiver(p, obj1) ?
 					OSTACK_QUIVER : OSTACK_PACK;
 
-				if (inven_can_stack_partial(obj2, obj1,
-						stack_mode2 | stack_mode1)) {
+				if (inven_can_stack_partial(p, obj2, obj1,
+						stack_mode2, stack_mode1)) {
 					int oldn2 = obj2->number;
 					int oldn1 = obj1->number;
 
