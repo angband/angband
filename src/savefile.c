@@ -325,6 +325,7 @@ static bool try_save(ang_file *file)
 {
 	byte savefile_head[SAVEFILE_HEAD_SIZE];
 	size_t i, pos;
+	bool success = true;
 
 	/* Start off the buffer */
 	buffer = mem_alloc(BUFFER_INITIAL_SIZE);
@@ -355,17 +356,25 @@ static bool try_save(ang_file *file)
 
 		assert(pos == SAVEFILE_HEAD_SIZE);
 
-		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
-		file_write(file, (char *)buffer, buffer_pos);
+		if (! file_write(file, (char *)savefile_head,
+				SAVEFILE_HEAD_SIZE)) {
+			success = false;
+		}
+		if (! file_write(file, (char *)buffer, buffer_pos)) {
+			success = false;
+		}
 
 		/* pad to 4 byte multiples */
-		if (buffer_pos % 4)
-			file_write(file, "xxx", 4 - (buffer_pos % 4));
+		if (buffer_pos % 4) {
+			if (! file_write(file, "xxx", 4 - (buffer_pos % 4))) {
+				success = false;
+			}
+		}
 	}
 
 	mem_free(buffer);
 
-	return true;
+	return success;
 }
 
 /**
@@ -402,10 +411,12 @@ bool savefile_save(const char *path)
 	safe_setuid_drop();
 
 	if (file) {
-		file_write(file, (char *) &savefile_magic, 4);
-		file_write(file, (char *) &savefile_name, 4);
-
-		character_saved = try_save(file);
+		if (file_write(file, (char *) &savefile_magic, 4)
+			&& file_write(file, (char *) &savefile_name, 4)) {
+			character_saved = try_save(file);
+		} else {
+			character_saved = false;
+		}
 		file_close(file);
 	}
 
