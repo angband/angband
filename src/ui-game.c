@@ -679,7 +679,7 @@ void play_game(bool new_game)
 	}
 
 	/* Close game on death or quitting */
-	close_game();
+	close_game(true);
 
 	if (play_again) {
 		cleanup_angband();
@@ -725,11 +725,22 @@ void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix)
 }
 
 /**
- * Save the game
+ * Save the game.
  */
 void save_game(void)
 {
+	(void) save_game_checked();
+}
+
+/**
+ * Save the game.
+ *
+ * \return whether the save was successful.
+ */
+bool save_game_checked(void)
+{
 	char path[1024];
+	bool result;
 
 	/* Disturb the player */
 	disturb(player);
@@ -753,10 +764,13 @@ void save_game(void)
 	signals_ignore_tstp();
 
 	/* Save the player */
-	if (savefile_save(savefile))
+	if (savefile_save(savefile)) {
 		prt("Saving game... done.", 0, 0);
-	else
+		result = true;
+	} else {
 		prt("Saving game... failed!", 0, 0);
+		result = false;
+	}
 
 	/* Refresh */
 	Term_fresh();
@@ -783,20 +797,26 @@ void save_game(void)
 
 	/* Note that the player is not dead */
 	my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+
+	return result;
 }
 
 
-
 /**
- * Close up the current game (player may or may not be dead)
+ * Close up the current game (player may or may not be dead).
+ *
+ * \param prompt_failed_save If true, prompt the user to retry if saving fails.
+ * Otherwise, no prompt is issued.
  *
  * Note that the savefile is not saved until the tombstone is
  * actually displayed and the player has a chance to examine
  * the inventory and such.  This allows cheating if the game
  * is equipped with a "quit without save" method.  XXX XXX XXX
  */
-void close_game(void)
+void close_game(bool prompt_failed_save)
 {
+	bool prompting = true;
+
 	/* Tell the UI we're done with the world */
 	event_signal(EVENT_LEAVE_WORLD);
 
@@ -826,13 +846,22 @@ void close_game(void)
 		death_screen();
 
 		/* Save dead player */
-		if (!savefile_save(savefile)) {
-			msg("death save failed!");
-			event_signal(EVENT_MESSAGE_FLUSH);
+		while (prompting && !savefile_save(savefile)) {
+			if (!prompt_failed_save
+					|| !get_check("Saving failed.  Try again? ")) {
+				prompting = false;
+				msg("death save failed!");
+				event_signal(EVENT_MESSAGE_FLUSH);
+			}
 		}
 	} else {
 		/* Save the game */
-		save_game();
+		while (prompting && !save_game_checked()) {
+			if (!prompt_failed_save
+					|| !get_check("Saving failed.  Try again? ")) {
+				prompting = false;
+			}
+		}
 
 		if (Term->mapped_flag) {
 			struct keypress ch;

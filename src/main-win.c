@@ -3309,7 +3309,7 @@ static void process_menus(WORD wCmd)
 
 				/* Save the game */
 				save_game();
-				close_game();
+				close_game(true);
 			}
 			quit(NULL);
 			break;
@@ -4323,7 +4323,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 				msg_flag = false;
 				save_game();
-				close_game();
+				close_game(true);
 			}
 
 			quit(NULL);
@@ -4342,7 +4342,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				/* Hack -- Forget messages */
 				msg_flag = false;
 				save_game();
-				close_game();
+				close_game(true);
 			}
 
 			quit(NULL);

@@ -5117,7 +5117,7 @@ static void quit_calmly(void)
 
         /* Save the game */
         record_current_savefile();
-        close_game();
+        close_game(true);
 
         /* Quit */
         quit(NULL);
