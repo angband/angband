@@ -125,7 +125,7 @@ static void handle_signal_simple(int sig)
 		/* Mark the savefile */
 		my_strcpy(player->died_from, "Abortion", sizeof(player->died_from));
 
-		close_game();
+		close_game(false);
 
 		/* Quit */
 		quit("interrupt");
@@ -140,7 +140,7 @@ static void handle_signal_simple(int sig)
 		player->upkeep->playing = false;
 
 		/* Close stuff */
-		close_game();
+		close_game(false);
 
 		/* Quit */
 		quit("interrupt");

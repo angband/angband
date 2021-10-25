@@ -39,6 +39,7 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 void play_game(bool new_game);
 void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix);
 void save_game(void);
-void close_game(void);
+bool save_game_checked(void);
+void close_game(bool prompt_failed_save);
 
 #endif /* INCLUDED_UI_GAME_H */
