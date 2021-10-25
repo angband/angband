@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
+#include "game-input.h"
 #include "game-world.h"
 #include "init.h"
 #include "ui-command.h"
