@@ -374,7 +374,8 @@ void object_pile_free(struct chunk *c, struct chunk *p_c, struct object *obj)
 
 
 /**
- * Determine if an item can "absorb" a second item
+ * Determine if, ignoring any inscriptions, one item like obj1 can be stacked
+ * with one item like obj2.
  *
  * See "object_absorb()" for the actual "absorption" code.
  *
@@ -388,7 +389,7 @@ void object_pile_free(struct chunk *c, struct chunk *p_c, struct object *obj)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool object_stackable(const struct object *obj1, const struct object *obj2,
+bool object_similar(const struct object *obj1, const struct object *obj2,
 					  object_stack_t mode)
 {
 	int i;
@@ -482,18 +483,28 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* Anything else probably okay */
 	}
 
-	/* Require compatible inscriptions */
-	if (obj1->note && obj2->note && (obj1->note != obj2->note))
-		return false;
-
 	/* They must be similar enough */
 	return true;
 }
 
 /**
+ * Determine if one item like obj1 can be stacked with one item like obj2
+ * (i.e. identical to object_similar() except for the inscription check).
+ */
+bool object_stackable(const struct object *obj1, const struct object *obj2,
+					  object_stack_t mode)
+{
+	if (object_similar(obj1, obj2, mode)) {
+		/* Require compatible inscriptions */
+		return !obj1->note || !obj2->note || obj1->note == obj2->note;
+	}
+	return false;
+}
+
+/**
  * Return whether each stack of objects can be merged into one stack.
  */
-bool object_similar(const struct object *obj1, const struct object *obj2,
+bool object_mergeable(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode)
 {
 	int total = obj1->number + obj2->number;
@@ -555,7 +566,7 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
  * In both these cases, we can simply use the existing note, unless the
  * blending object has a note, in which case we use that note.
  *
-* These assumptions are enforced by the "object_similar()" code.
+* These assumptions are enforced by the "object_mergeable()" code.
  */
 static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 {
@@ -892,7 +903,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, grid); obj; obj = obj->next) {
 		/* Check for combination */
-		if (object_similar(obj, drop, OSTACK_FLOOR)) {
+		if (object_mergeable(obj, drop, OSTACK_FLOOR)) {
 			/* Combine the items */
 			object_absorb(obj, drop);
 
@@ -1029,7 +1040,7 @@ static void drop_find_grid(const struct player *p, struct chunk *c,
 			/* Analyse the grid for carrying the new object */
 			for (obj = square_object(c, try); obj; obj = obj->next){
 				/* Check for possible combination */
-				if (object_similar(obj, drop, OSTACK_FLOOR))
+				if (object_mergeable(obj, drop, OSTACK_FLOOR))
 					combine = true;
 
 				/* Count objects */

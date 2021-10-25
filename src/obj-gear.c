@@ -667,7 +667,7 @@ void inven_item_charges(struct object *obj)
  * Add an item to the players inventory.
  *
  * If the new item can combine with an existing item in the inventory,
- * it will do so, using object_similar() and object_absorb(), else,
+ * it will do so, using object_mergeable() and object_absorb(), else,
  * the item will be placed into the first available gear array index.
  *
  * This function can be used to "over-fill" the player's pack, but only
@@ -697,7 +697,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 				OSTACK_QUIVER : OSTACK_PACK;
 
 			if (!object_is_equipped(p->body, gear_obj) &&
-					object_similar(gear_obj, obj, stack_mode)) {
+					object_mergeable(gear_obj, obj, stack_mode)) {
 				combine_item = gear_obj;
 			}
 
@@ -1058,7 +1058,7 @@ void combine_pack(struct player *p)
 			assert(obj2->kind);
 
 			/* Can we drop "obj1" onto "obj2"? */
-			if (object_similar(obj2, obj1, stack_mode2)) {
+			if (object_mergeable(obj2, obj1, stack_mode2)) {
 				display_message = true;
 				disable_repeat = true;
 				object_absorb(obj2->known, obj1->known);

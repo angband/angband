@@ -23,7 +23,7 @@
 #define OBJECT_LIST_INCR  128
 
 /**
- * Modes for stacking by object_similar()
+ * Modes for stacking by object_similar()/object_stackable()/object_mergeable()
  */
 typedef enum
 {
@@ -60,9 +60,11 @@ void pile_excise(struct object **pile, struct object *obj);
 struct object *pile_last_item(struct object *const pile);
 bool pile_contains(const struct object *top, const struct object *obj);
 
+bool object_similar(const struct object *obj1, const struct object *obj2,
+	object_stack_t mode);
 bool object_stackable(const struct object *obj1, const struct object *obj2,
 					  object_stack_t mode);
-bool object_similar(const struct object *obj1, const struct object *obj2,
+bool object_mergeable(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
 void object_origin_combine(struct object *obj1, const struct object *obj2);
 void object_absorb_partial(struct object *obj1, struct object *obj2,

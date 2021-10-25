@@ -130,7 +130,7 @@ static const struct object *find_stack_object_in_inventory(const struct object *
 	const struct object *gear_obj;
 	for (gear_obj = (start) ? start : player->gear; gear_obj; gear_obj = gear_obj->next) {
 		if (!object_is_equipped(player->body, gear_obj) &&
-				object_stackable(gear_obj, obj, OSTACK_PACK)) {
+				object_similar(gear_obj, obj, OSTACK_PACK)) {
 			/* We found the object */
 			return gear_obj;
 		}
