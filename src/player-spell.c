@@ -586,31 +586,38 @@ static void spell_effect_append_value_info(const struct effect *effect,
 {
 	random_value rv;
 	const char *type = NULL;
-	const char *special = NULL;
+	char special[40];
 	size_t offset = strlen(p);
 
 	type = effect_info(effect);
+	if (type == NULL) return;
 
-	if (effect->dice != NULL)
+	if (effect->dice != NULL) {
 		dice_roll(effect->dice, &rv);
+	}
 
 	/* Handle some special cases where we want to append some additional info */
 	switch (effect->index) {
 		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
-			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
+			if (rv.m_bonus) {
+				my_strcpy(special, format("/%d%%", rv.m_bonus),
+						  sizeof(special));
+			}
 			break;
 		case EF_TELEPORT:
 			/* m_bonus means it's a weird random thing */
-			if (rv.m_bonus) special = "random";
+			if (rv.m_bonus) {
+				my_strcpy(special, "random", sizeof(special));
+			}
 			break;
 		case EF_SPHERE:
 			/* Append radius */
 			if (effect->radius) {
 				int rad = effect->radius;
-				special = format(", rad %d", rad);
+				my_strcpy(special, format(", rad %d", rad), sizeof(special));
 			} else {
-				special = ", rad 2";
+				my_strcpy(special, ", rad 2", sizeof(special));
 			}
 			break;
 		case EF_BALL:
@@ -620,15 +627,16 @@ static void spell_effect_append_value_info(const struct effect *effect,
 				if (effect->other) {
 					rad += player->lev / effect->other;
 				}
-				special = format(", rad %d", rad);
+				my_strcpy(special, format(", rad %d", rad), sizeof(special));
 			} else {
-				special = "rad 2";
+				my_strcpy(special, "rad 2", sizeof(special));
 			}
 			break;
 		case EF_STRIKE:
 			/* Append radius */
 			if (effect->radius) {
-				special = format(", rad %d", effect->radius);
+				my_strcpy(special, format(", rad %d", effect->radius),
+						  sizeof(special));
 			}
 			break;
 		case EF_SHORT_BEAM: {
@@ -638,19 +646,17 @@ static void spell_effect_append_value_info(const struct effect *effect,
 				beam_len += player->lev / effect->other;
 				beam_len = MIN(beam_len, z_info->max_range);
 			}
-			special = format(", len %d", beam_len);
+			my_strcpy(special, format(", len %d", beam_len), sizeof(special));
 			break;
 		}
 		case EF_SWARM:
 			/* Append number of projectiles. */
-			special = format("x%d", rv.m_bonus);
+			my_strcpy(special, format("x%d", rv.m_bonus), sizeof(special));
 			break;
 		default:
+			my_strcpy(special, "", sizeof(special));
 			break;
 	}
-
-	if (type == NULL)
-		return;
 
 	if (offset) {
 		offset += strnfmt(p + offset, len - offset, ";");
@@ -660,8 +666,9 @@ static void spell_effect_append_value_info(const struct effect *effect,
 		offset += strnfmt(p + offset, len - offset, " %s ", type);
 		offset += append_random_value_string(p + offset, len - offset, &rv);
 
-		if (special != NULL)
+		if (strlen(special) > 1) {
 			strnfmt(p + offset, len - offset, "%s", special);
+		}
 	}
 }
 

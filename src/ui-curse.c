@@ -92,6 +92,7 @@ static int curse_menu(struct object *obj, char *dice_string)
 {
 	menu_iter menu_f = { 0, 0, get_curse_display, get_curse_action, 0 };
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &menu_f);
+	char header[80];
 	int row;
 	unsigned int length = 0;
 	int i, count = 0;
@@ -117,7 +118,10 @@ static int curse_menu(struct object *obj, char *dice_string)
 
 	/* Set up the menu */
 	menu_setpriv(m, count, available);
-	m->header = format(" Remove which curse (spell strength %s)?", dice_string);
+	my_strcpy(header,
+			  format(" Remove which curse (spell strength %s)?", dice_string),
+			  sizeof(header));
+	m->header = header;
 	m->selections = lower_case;
 	m->flags = (MN_PVT_TAGS);
 	m->browse_hook = curse_menu_browser;

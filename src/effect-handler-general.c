@@ -130,13 +130,12 @@ static void remove_object_curse(struct object *obj, int index, bool message)
 {
 	struct curse_data *c = &obj->curses[index];
 	char *name = curses[index].name;
-	char *removed = format("The %s curse is removed!", name);
 	int i;
 
 	c->power = 0;
 	c->timeout = 0;
 	if (message) {
-		msg(removed);
+		msg("The %s curse is removed!", name);
 	}
 
 	/* Check to see if that was the last one */
