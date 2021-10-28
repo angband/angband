@@ -694,7 +694,7 @@ static void place_feeling(struct chunk *c)
 			struct loc grid = loc(randint0(c->width), randint0(c->height));
 
 			/* Check to see if it is not passable */
-			if (square_ispassable(c, grid))
+			if (!square_ispassable(c, grid))
 				continue;
 
 			/* Check to see if it is already marked */
