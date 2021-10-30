@@ -537,24 +537,27 @@ bool object_mergeable(const struct object *obj1, const struct object *obj2,
  */
 void object_origin_combine(struct object *obj1, const struct object *obj2)
 {
-	if (obj1->origin_race && obj2->origin_race) {
-		bool uniq1 = rf_has(obj1->origin_race->flags, RF_UNIQUE) ? true : false;
-		bool uniq2 = rf_has(obj2->origin_race->flags, RF_UNIQUE) ? true : false;
+	if (obj1->origin_race != obj2->origin_race) {
+		bool uniq1 = (obj1->origin_race
+			&& rf_has(obj1->origin_race->flags, RF_UNIQUE));
+		bool uniq2 = (obj2->origin_race
+			&& rf_has(obj2->origin_race->flags, RF_UNIQUE));
 
-		if (obj1->origin_race != obj2->origin_race) {
-			if (uniq1 && !uniq2) {
-				/* Favour keeping record for a unique */
-				;
-			} else if (uniq2 && !uniq1) {
-				/* Favour keeping record for a unique */
-				obj1->origin = obj2->origin;
-				obj1->origin_depth = obj2->origin_depth;
-				obj1->origin_race = obj2->origin_race;
-			} else {
-				/* Different monsters, neither or both unique, mixed origin */
-				obj1->origin = ORIGIN_MIXED;
-			}
+		if (uniq1 && !uniq2) {
+			/* Favour keeping record for a unique */
+			;
+		} else if (uniq2 && !uniq1) {
+			/* Favour keeping record for a unique */
+			obj1->origin = obj2->origin;
+			obj1->origin_depth = obj2->origin_depth;
+			obj1->origin_race = obj2->origin_race;
+		} else {
+			/* Different monsters, neither or both unique, mixed origin */
+			obj1->origin = ORIGIN_MIXED;
 		}
+	} else if (obj1->origin != obj2->origin
+			|| obj1->origin_depth != obj2->origin_depth) {
+		obj1->origin = ORIGIN_MIXED;
 	}
 }
 
