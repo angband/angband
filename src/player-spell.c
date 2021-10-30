@@ -582,18 +582,27 @@ static size_t append_random_value_string(char *buffer, size_t size,
 }
 
 static void spell_effect_append_value_info(const struct effect *effect,
-										   char *p, size_t len)
+		char *p, size_t len, bool *have_shared, random_value *shared_rv)
 {
-	random_value rv;
+	random_value rv = { 0, 0, 0, 0 };
 	const char *type = NULL;
 	char special[40];
 	size_t offset = strlen(p);
+
+	if (effect->index == EF_CLEAR_VALUE) {
+		*have_shared = false;
+	} else if (effect->index == EF_SET_VALUE && effect->dice) {
+		*have_shared = true;
+		dice_roll(effect->dice, shared_rv);
+	}
 
 	type = effect_info(effect);
 	if (type == NULL) return;
 
 	if (effect->dice != NULL) {
 		dice_roll(effect->dice, &rv);
+	} else if (*have_shared) {
+		rv = *shared_rv;
 	}
 
 	/* Handle some special cases where we want to append some additional info */
@@ -675,11 +684,14 @@ static void spell_effect_append_value_info(const struct effect *effect,
 void get_spell_info(int spell_index, char *p, size_t len)
 {
 	struct effect *effect = spell_by_index(player, spell_index)->effect;
+	bool have_shared = false;
+	random_value shared_rv;
 
 	p[0] = '\0';
 
 	while (effect) {
-		spell_effect_append_value_info(effect, p, len);
+		spell_effect_append_value_info(effect, p, len, &have_shared,
+			&shared_rv);
 		effect = effect->next;
 	}
 }
