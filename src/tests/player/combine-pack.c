@@ -248,10 +248,12 @@ static int test_combine_pack_mixed(void *state) {
 			{ TV_SCROLL, 5, 3, "", ORIGIN_FLOOR, 3, true, false },
 			{ TV_WAND, 3, 1, "", ORIGIN_CHEST, 4, true, false },
 			{ TV_SWORD, 1, 1, "", ORIGIN_BIRTH, 0, true, true },
+			{ TV_ARROW, 1, 38, "", ORIGIN_BIRTH, 0, true, false },
 			{ TV_FOOD, 2, 4, "", ORIGIN_STORE, 0, true, false },
 			{ TV_SCROLL, 5, 4, "", ORIGIN_STORE, 0, true, false },
 			{ TV_FOOD, 2, 1, "", ORIGIN_STORE, 0, true, false },
 			{ TV_MAGIC_BOOK, 1, 1, "@m1", ORIGIN_STORE, 0, true, false },
+			{ TV_ARROW, 1, 6, "", ORIGIN_STORE, 0, true, false },
 			{ TV_SWORD, 1, 1, "", ORIGIN_FLOOR, 1, true, false },
 			{ -1, -1, -1, NULL, ORIGIN_NONE, 0, false, false }
 		},
@@ -260,8 +262,10 @@ static int test_combine_pack_mixed(void *state) {
 			{ TV_SCROLL, 5, 7, ORIGIN_MIXED, 0, false },
 			{ TV_WAND, 3, 1, ORIGIN_CHEST, 4, false },
 			{ TV_SWORD, 1, 1, ORIGIN_BIRTH, 0, true },
+			{ TV_ARROW, 1, 40, ORIGIN_MIXED, 0, false },
 			{ TV_FOOD, 2, 5, ORIGIN_STORE, 0, false },
 			{ TV_MAGIC_BOOK, 1, 1, ORIGIN_STORE, 0, false },
+			{ TV_ARROW, 1, 4, ORIGIN_STORE, 0, false },
 			{ TV_SWORD, 1, 1, ORIGIN_FLOOR, 1, false },
 			{ -1, -1, -1, ORIGIN_NONE, 0, false }
 		}
