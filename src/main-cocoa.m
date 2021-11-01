@@ -5760,6 +5760,9 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 	    const char *p = [[[panel URL] path] UTF8String];
 	    my_strcpy(path, p, len);
 	    result = true;
+	    prt(format("Saving as %s.", path), 0, 0);
+	    anykey();
+	    prt("", 0, 0);
 	}
     }
 
