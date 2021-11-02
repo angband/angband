@@ -513,7 +513,7 @@ struct player {
 	int16_t ht;		/* Height */
 	int16_t wt;		/* Weight */
 
-	s32b au;		/* Current Gold */
+	int32_t au;		/* Current Gold */
 
 	int16_t max_depth;	/* Max depth */
 	int16_t recall_depth;	/* Recall depth */
@@ -522,8 +522,8 @@ struct player {
 	int16_t max_lev;	/* Max level */
 	int16_t lev;		/* Cur level */
 
-	s32b max_exp;	/* Max experience */
-	s32b exp;		/* Cur experience */
+	int32_t max_exp;	/* Max experience */
+	int32_t exp;		/* Cur experience */
 	uint16_t exp_frac;	/* Cur exp frac (times 2^16) */
 
 	int16_t mhp;		/* Max hit pts */
@@ -569,7 +569,7 @@ struct player {
 	int16_t player_hp[PY_MAX_LEVEL];	/* HP gained per level */
 
 	/* Saved values for quickstart */
-	s32b au_birth;						/* Birth gold when option birth_money is false */
+	int32_t au_birth;			/* Birth gold when option birth_money is false */
 	int16_t stat_birth[STAT_MAX];		/* Birth "natural" stat values */
 	int16_t ht_birth;			/* Birth Height */
 	int16_t wt_birth;			/* Birth Weight */
@@ -604,7 +604,7 @@ extern struct player_class *classes;
 extern struct player_ability *player_abilities;
 extern struct magic_realm *realms;
 
-extern const s32b player_exp[PY_MAX_LEVEL];
+extern const int32_t player_exp[PY_MAX_LEVEL];
 extern struct player *player;
 
 /* player-class.c */
@@ -616,8 +616,8 @@ const char *stat_idx_to_name(int type);
 const struct magic_realm *lookup_realm(const char *code);
 bool player_stat_inc(struct player *p, int stat);
 bool player_stat_dec(struct player *p, int stat, bool permanent);
-void player_exp_gain(struct player *p, s32b amount);
-void player_exp_lose(struct player *p, s32b amount, bool permanent);
+void player_exp_gain(struct player *p, int32_t amount);
+void player_exp_lose(struct player *p, int32_t amount, bool permanent);
 void player_flags(struct player *p, bitflag f[OF_SIZE]);
 void player_flags_timed(struct player *p, bitflag f[OF_SIZE]);
 byte player_hp_attr(struct player *p);

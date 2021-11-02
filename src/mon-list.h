@@ -40,7 +40,7 @@ typedef struct monster_list_s {
 	monster_list_entry_t *entries;
 	size_t entries_size;
 	uint16_t distinct_entries;
-	s32b creation_turn;
+	int32_t creation_turn;
 	bool sorted;
 	uint16_t total_entries[MONSTER_LIST_SECTION_MAX];
 	uint16_t total_monsters[MONSTER_LIST_SECTION_MAX];

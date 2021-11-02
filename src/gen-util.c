@@ -430,7 +430,7 @@ void place_random_stairs(struct chunk *c, struct loc grid, bool quest)
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	bool great, byte origin, int tval)
 {
-	s32b rating = 0;
+	int32_t rating = 0;
 	struct object *new_obj;
 	bool dummy = true;
 

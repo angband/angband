@@ -188,7 +188,7 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
 	char buf[256];
-	s32b power;
+	int32_t power;
 
 	file_putf(log_file, "********** Evaluating %s ********\n", reason);
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
@@ -1117,7 +1117,7 @@ static void collect_artifact_data(struct artifact_set_data *data)
 static void rescale_freqs(struct artifact_set_data *data)
 {
 	size_t i;
-	s32b temp;
+	int32_t temp;
 
 	/* Bow-only abilities */
 	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
@@ -1587,7 +1587,7 @@ static void build_freq_table(struct artifact *art, int *freq,
  * abilities and attempting to add each in turn.  An artifact only gets one
  * chance at each of these up front (if applicable).
  */
-static void try_supercharge(struct artifact *art, s32b target_power,
+static void try_supercharge(struct artifact *art, int32_t target_power,
 							struct artifact_set_data *data)
 {
 	/* Huge damage dice or max blows - melee weapon only */
@@ -2103,7 +2103,7 @@ static int choose_ability (int *freq_table)
  * been done already.
  */
 
-static void add_ability_aux(struct artifact *art, int r, s32b target_power,
+static void add_ability_aux(struct artifact *art, int r, int32_t target_power,
 							struct artifact_set_data *data)
 {
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
@@ -2520,7 +2520,7 @@ static void remove_contradictory(struct artifact *art)
 /**
  * Randomly select an extra ability to be added to the artifact in question.
  */
-static void add_ability(struct artifact *art, s32b target_power, int *freq,
+static void add_ability(struct artifact *art, int32_t target_power, int *freq,
 						struct artifact_set_data *data)
 {
 	int r;

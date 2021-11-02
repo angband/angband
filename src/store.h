@@ -51,7 +51,7 @@ struct owner {
 	unsigned int oidx;
 	struct owner *next;
 	char *name;
-	s32b max_cost;
+	int32_t max_cost;
 };
 
 struct store {

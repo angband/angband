@@ -1168,7 +1168,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
  * \return a pointer to the newly allocated object, or NULL on failure.
  */
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
-						   bool extra_roll, s32b *value, int tval)
+		bool extra_roll, int32_t *value, int tval)
 {
 	int base, tries = 3;
 	struct object_kind *kind = NULL;
@@ -1306,7 +1306,7 @@ struct object *make_gold(int lev, const char *coin_type)
 		value *= 5;
 	}
 
-	/* Cap gold at max short (or alternatively make pvals s32b) */
+	/* Cap gold at max short (or alternatively make pvals int32_t) */
 	if (value >= SHRT_MAX) {
 		value = SHRT_MAX - randint0(200);
 	}

@@ -243,7 +243,7 @@ void wr_u32b(u32b v)
 	sf_put((byte)((v >> 24) & 0xFF));
 }
 
-void wr_s32b(s32b v)
+void wr_s32b(int32_t v)
 {
 	wr_u32b((u32b)v);
 }
@@ -283,7 +283,7 @@ void rd_u32b(u32b *ip)
 	(*ip) |= ((u32b)(sf_get()) << 24);
 }
 
-void rd_s32b(s32b *ip)
+void rd_s32b(int32_t *ip)
 {
 	rd_u32b((u32b*)ip);
 }

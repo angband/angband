@@ -1018,7 +1018,7 @@ void monster_death(struct monster *mon, struct player *p, bool stats)
 static void player_kill_monster(struct monster *mon, struct player *p,
 		const char *note)
 {
-	s32b div, new_exp, new_exp_frac;
+	int32_t div, new_exp, new_exp_frac;
 	struct monster_lore *lore = get_lore(mon->race);
 	char m_name[80];
 	char buf[80];

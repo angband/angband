@@ -100,7 +100,7 @@ struct birther
 	int16_t ht;
 	int16_t sc;
 
-	s32b au;
+	int32_t au;
 
 	int16_t stat[STAT_MAX];
 

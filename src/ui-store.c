@@ -267,7 +267,7 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 								int col, int width)
 {
 	struct object *obj;
-	s32b x;
+	int32_t x;
 	int desc = ODESC_PREFIX;
 
 	char o_name[80];
@@ -593,7 +593,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 
 	int amt, num;
 
-	s32b price;
+	int32_t price;
 
 	/* Clear all current messages */
 	msg_flag = false;

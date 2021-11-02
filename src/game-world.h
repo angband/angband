@@ -32,7 +32,7 @@ struct level {
 extern uint16_t daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;
-extern s32b turn;
+extern int32_t turn;
 extern bool character_generated;
 extern bool character_dungeon;
 extern const byte extract_energy[200];

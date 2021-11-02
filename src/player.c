@@ -45,7 +45,7 @@ struct magic_realm *realms;
 /**
  * Base experience levels, may be adjusted up for race and/or class
  */
-const s32b player_exp[PY_MAX_LEVEL] =
+const int32_t player_exp[PY_MAX_LEVEL] =
 {
 	10,
 	25,
@@ -266,7 +266,7 @@ static void adjust_level(struct player *p, bool verbose)
 	handle_stuff(p);
 }
 
-void player_exp_gain(struct player *p, s32b amount)
+void player_exp_gain(struct player *p, int32_t amount)
 {
 	p->exp += amount;
 	if (p->exp < p->max_exp)
@@ -274,7 +274,7 @@ void player_exp_gain(struct player *p, s32b amount)
 	adjust_level(p, true);
 }
 
-void player_exp_lose(struct player *p, s32b amount, bool permanent)
+void player_exp_lose(struct player *p, int32_t amount, bool permanent)
 {
 	if (p->exp < amount)
 		amount = p->exp;

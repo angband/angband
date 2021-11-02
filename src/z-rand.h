@@ -48,8 +48,8 @@ typedef struct random {
  * A struct representing a random chance of success, such as 8 in 125 (6.4%).
  */
 typedef struct random_chance_s {
-	s32b numerator;
-	s32b denominator;
+	int32_t numerator;
+	int32_t denominator;
 } random_chance;
 
 /**
@@ -74,7 +74,7 @@ typedef enum {
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint0(M) ((s32b) Rand_div(M))
+#define randint0(M) ((int32_t) Rand_div(M))
 
 
 /**
@@ -82,7 +82,7 @@ typedef enum {
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint1(M) ((s32b) Rand_div(M) + 1)
+#define randint1(M) ((int32_t) Rand_div(M) + 1)
 
 /**
  * Generate a random signed long integer X where "A - D <= X <= A + D" holds.

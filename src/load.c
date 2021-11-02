@@ -1704,7 +1704,7 @@ int rd_history(void)
 
 	rd_u32b(&tmp32u);
 	for (i = 0; i < tmp32u; i++) {
-		s32b turnno;
+		int32_t turnno;
 		int16_t dlev, clev;
 		bitflag type[HIST_SIZE];
 		const struct artifact *art = NULL;

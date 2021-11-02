@@ -1239,10 +1239,10 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 	}
 
 	/*
-	 * Keep in the bounds of [0, maximum s32b].  Assumes a two's complement
-	 * representation.
+	 * Keep in the bounds of [0, maximum int32_t].  Assumes a two's
+	 * complement representation.
 	 */
-	player->au = MIN((s32b)((1UL << 31) - 1), MAX(0, newv));
+	player->au = MIN((int32_t)((1UL << 31) - 1), MAX(0, newv));
 
 	/* Flag what needs to be updated or redrawn. */
 	player->upkeep->redraw |= PR_GOLD;

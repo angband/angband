@@ -44,7 +44,7 @@
  */
 static void player_pickup_gold(struct player *p)
 {
-	s32b total_gold = 0L;
+	int32_t total_gold = 0L;
 	char name[30] = "";
 
 	struct object *obj = square_object(cave, p->grid), *next;
@@ -78,7 +78,7 @@ static void player_pickup_gold(struct player *p)
 			verbal = true;
 
 		/* Increment total value */
-		total_gold += (s32b)obj->pval;
+		total_gold += (int32_t)obj->pval;
 
 		/* Delete the gold */
 		if (obj->known) {

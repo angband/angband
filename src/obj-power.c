@@ -331,7 +331,7 @@ static int extra_might_power(const struct object *obj, int p, int mult)
 /**
  * Calculate the rating for a given slay combination
  */
-static s32b slay_power(const struct object *obj, int p, int verbose,
+static int32_t slay_power(const struct object *obj, int p, int verbose,
 					   int dice_pwr)
 {
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
@@ -764,9 +764,9 @@ static int curse_power(const struct object *obj, int p, int verbose,
 /**
  * Evaluate the object's overall power level.
  */
-s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
+int32_t object_power(const struct object* obj, bool verbose, ang_file *log_file)
 {
-	s32b p = 0, dice_pwr = 0;
+	int32_t p = 0, dice_pwr = 0;
 	int mult;
 
 	/* Set the log file */

@@ -213,10 +213,10 @@ void expression_set_base_value(expression_t *expression,
  * Evaluate the given expression. If the base value function is NULL,
  * expression is evaluated from zero.
  */
-s32b expression_evaluate(expression_t const * const expression)
+int32_t expression_evaluate(expression_t const * const expression)
 {
 	size_t i;
-	s32b value = 0;
+	int32_t value = 0;
 
 	if (expression->base_value != NULL)
 		value = expression->base_value();

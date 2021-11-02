@@ -392,7 +392,7 @@ int rand_range(int A, int B)
 	if (A == B) return A;
 	assert(A < B);
 
-	return A + (s32b)Rand_div(1 + B - A);
+	return A + (int32_t)Rand_div(1 + B - A);
 }
 
 

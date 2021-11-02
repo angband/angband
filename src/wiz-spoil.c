@@ -139,7 +139,7 @@ static const grouper group_item[] =
  * Describe the kind
  */
 static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
-					  char *wgt, size_t wgt_len, int *lev, s32b *val, int k)
+		char *wgt, size_t wgt_len, int *lev, int32_t *val, int k)
 {
 	struct object_kind *kind = &k_info[k];
 	struct object *obj = object_new(), *known_obj = object_new();
@@ -241,8 +241,8 @@ void spoil_obj_desc(const char *fname)
 					int e1;
 					int e2;
 
-					s32b t1;
-					s32b t2;
+					int32_t t1;
+					int32_t t2;
 
 					kind_info(NULL, 0, NULL, 0, NULL, 0, &e1, &t1, who[i1]);
 					kind_info(NULL, 0, NULL, 0, NULL, 0, &e2, &t2, who[i2]);
@@ -258,7 +258,7 @@ void spoil_obj_desc(const char *fname)
 			/* Spoil each item */
 			for (s = 0; s < n; s++) {
 				int e;
-				s32b v;
+				int32_t v;
 				size_t u8len;
 
 				/* Describe the kind */

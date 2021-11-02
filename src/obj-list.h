@@ -37,7 +37,7 @@ typedef struct object_list_s {
 	object_list_entry_t *entries;
 	size_t entries_size;
 	uint16_t distinct_entries;
-	s32b creation_turn;
+	int32_t creation_turn;
 	uint16_t total_entries[OBJECT_LIST_SECTION_MAX];
 	uint16_t total_objects[OBJECT_LIST_SECTION_MAX];
 	bool sorted;
