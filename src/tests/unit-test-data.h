@@ -23,7 +23,7 @@
 #include "project.h"
 
 /* 53 = TMD_MAX */
-static s16b TEST_DATA test_timed[53] = {
+static int16_t TEST_DATA test_timed[53] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

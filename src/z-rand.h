@@ -138,7 +138,7 @@ u32b Rand_div(u32b m);
  * Generate a signed random integer within `stand` standard deviations of
  * `mean`, following a normal distribution.
  */
-s16b Rand_normal(int mean, int stand);
+int16_t Rand_normal(int mean, int stand);
 
 /**
  * Generate a signed random integer following a normal distribution, where
@@ -177,12 +177,12 @@ int rand_range(int A, int B);
  * Function used to determine enchantment bonuses, see function header for
  * a more complete description.
  */
-s16b m_bonus(int max, int level);
+int16_t m_bonus(int max, int level);
 
 /**
  * Calculation helper function for m_bonus.
  */
-s16b m_bonus_calc(int max, int level, aspect bonus_aspect);
+int16_t m_bonus_calc(int max, int level, aspect bonus_aspect);
 
 /**
  * Calculation helper function for random_value structs.

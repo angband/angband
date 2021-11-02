@@ -555,12 +555,12 @@ void monster_flags_known(const struct monster_race *race,
  *
  * \param awareness is the inactivity counter of the race (monster_race.sleep).
  */
-static const char *lore_describe_awareness(s16b awareness)
+static const char *lore_describe_awareness(int16_t awareness)
 {
 	/* Value table ordered descending, for priority. Terminator is
 	 * {SHRT_MAX, NULL}. */
 	static const struct lore_awareness {
-		s16b threshold;
+		int16_t threshold;
 		const char *description;
 	} lore_awareness_description[] = {
 		{200,	"prefers to ignore"},
@@ -1113,7 +1113,7 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 	const char *ordinal, *article;
 	char buf[20] = "";
 	long exp_integer, exp_fraction;
-	s16b level;
+	int16_t level;
 
 	/* Check legality and that this is a placeable monster */
 	assert(tb && race && lore);

@@ -1055,7 +1055,7 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			file_putf(fff, "> %s\n", message_str((s16b)i));
+			file_putf(fff, "> %s\n", message_str((int16_t)i));
 		}
 		file_putf(fff, "\nKilled by %s.\n\n", player->died_from);
 	}

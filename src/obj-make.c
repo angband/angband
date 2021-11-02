@@ -58,7 +58,7 @@ static u32b *obj_total_tval;
  */
 static u32b *obj_total_tval_great;
 
-static s16b alloc_ego_size = 0;
+static int16_t alloc_ego_size = 0;
 static alloc_entry *alloc_ego_table;
 
 struct money {
@@ -935,7 +935,7 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 				bool great, bool extra_roll)
 {
 	int i;
-	s16b power = 0;
+	int16_t power = 0;
 
 	/* Chance of being `good` and `great` */
 	/* This has changed over the years:

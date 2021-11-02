@@ -68,7 +68,7 @@ enum
  * Structure to describe ego item short name. 
  */
 struct ego_desc {
-  s16b e_idx;
+  int16_t e_idx;
   u16b itype;
   const char *short_name;
 };
@@ -91,8 +91,8 @@ void ignore_birth_init(void);
 void rune_autoinscribe(struct player *p, int i);
 const char *get_autoinscription(struct object_kind *kind, bool aware);
 int apply_autoinscription(struct player *p, struct object *obj);
-int remove_autoinscription(s16b kind);
-int add_autoinscription(s16b kind, const char *inscription, bool aware);
+int remove_autoinscription(int16_t kind);
+int add_autoinscription(int16_t kind, const char *inscription, bool aware);
 void autoinscribe_ground(struct player *p);
 void autoinscribe_pack(struct player *p);
 void object_ignore_flavor_of(const struct object *obj);

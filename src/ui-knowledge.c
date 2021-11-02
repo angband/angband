@@ -3520,7 +3520,7 @@ void do_cmd_messages(void)
 
 		/* Find the next item */
 		if (ke.key.code == '-' && strlen(shower)) {
-			s16b z;
+			int16_t z;
 
 			/* Scan messages */
 			for (z = i + 1; z < n; z++) {

@@ -39,7 +39,7 @@ expression_t *expression_copy(const expression_t *source);
 void expression_set_base_value(expression_t *expression,
 							   expression_base_value_f function);
 s32b expression_evaluate(expression_t const * const expression);
-s16b expression_add_operations_string(expression_t *expression,
+int16_t expression_add_operations_string(expression_t *expression,
 									  const char *string);
 bool expression_test_copy(const expression_t *a, const expression_t *b);
 

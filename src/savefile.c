@@ -230,7 +230,7 @@ void wr_u16b(u16b v)
 	sf_put((byte)((v >> 8) & 0xFF));
 }
 
-void wr_s16b(s16b v)
+void wr_s16b(int16_t v)
 {
 	wr_u16b((u16b)v);
 }
@@ -270,7 +270,7 @@ void rd_u16b(u16b *ip)
 	(*ip) |= ((u16b)(sf_get()) << 8);
 }
 
-void rd_s16b(s16b *ip)
+void rd_s16b(int16_t *ip)
 {
 	rd_u16b((u16b*)ip);
 }

@@ -19,7 +19,7 @@
 #ifndef INCLUDED_UI_SIGNALS_H
 #define INCLUDED_UI_SIGNALS_H
 
-extern s16b signal_count;
+extern int16_t signal_count;
 
 void signals_ignore_tstp(void);
 void signals_handle_tstp(void);

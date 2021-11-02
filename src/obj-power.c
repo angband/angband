@@ -127,7 +127,7 @@ static struct element_powers {
  * We go up to +24 here - anything higher is inhibited
  * N.B. Not all stats count equally towards this total
  */
-static s16b ability_power[25] =
+static int16_t ability_power[25] =
 	{0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 8,
 	12, 16, 20, 24, 30, 36, 42, 48, 56, 64,
 	74, 84, 96, 110};

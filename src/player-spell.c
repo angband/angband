@@ -368,7 +368,7 @@ static int min_fail(struct player *p, const struct class_spell *spell)
 /**
  * Returns chance of failure for a spell
  */
-s16b spell_chance(int spell_index)
+int16_t spell_chance(int spell_index)
 {
 	int chance = 100, minfail;
 

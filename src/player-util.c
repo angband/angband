@@ -299,7 +299,7 @@ int energy_per_move(struct player *p)
  * Stats go down: 18/220, 18/210,..., 18/10, 18, 17, ..., 3
  * Or even: 18/13, 18/03, 18, 17, ..., 3
  */
-s16b modify_stat_value(int value, int amount)
+int16_t modify_stat_value(int value, int amount)
 {
 	int i;
 
@@ -447,7 +447,7 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 	}
 
 	/* Break it back down*/
-	p->chp = (s16b)(new_chp >> 16);   /* div 65536 */
+	p->chp = (int16_t)(new_chp >> 16);   /* div 65536 */
 	p->chp_frac = (u16b)(new_chp & 0xFFFF); /* mod 65536 */
 	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative
 	 * new_chp will give -1 for chp and very high chp_frac.*/
@@ -493,7 +493,7 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 	}
 
 	/* Break it back down*/
-	p->csp = (s16b)(new_csp_long >> 16);   /* div 65536 */
+	p->csp = (int16_t)(new_csp_long >> 16);   /* div 65536 */
 	p->csp_frac = (u16b)(new_csp_long & 0xFFFF);    /* mod 65536 */
 
 	/* Max/min SP */
@@ -1219,7 +1219,7 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 /**
  * Return true if the provided count is one of the conditional REST_ flags.
  */
-bool player_resting_is_special(s16b count)
+bool player_resting_is_special(int16_t count)
 {
 	switch (count) {
 		case REST_COMPLETE:
@@ -1243,7 +1243,7 @@ bool player_is_resting(struct player *p)
 /**
  * Return the remaining number of resting turns.
  */
-s16b player_resting_count(struct player *p)
+int16_t player_resting_count(struct player *p)
 {
 	return p->upkeep->resting;
 }
@@ -1261,7 +1261,7 @@ static bool player_rest_disturb = false;
  *
  * \param count is the number of turns to rest or one of the REST_ constants.
  */
-void player_resting_set_count(struct player *p, s16b count)
+void player_resting_set_count(struct player *p, int16_t count)
 {
 	/* Cancel if player is disturbed */
 	if (player_rest_disturb) {
@@ -1376,7 +1376,7 @@ int player_get_resting_repeat_count(struct player *p)
  *
  * \param count is the number of turns requested for rest most recently.
  */
-void player_set_resting_repeat_count(struct player *p, s16b count)
+void player_set_resting_repeat_count(struct player *p, int16_t count)
 {
 	player_resting_repeat_count = count;
 }

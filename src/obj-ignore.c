@@ -286,7 +286,7 @@ int apply_autoinscription(struct player *p, struct object *obj)
 /**
  * Deregister an object kind autoinscription
  */
-int remove_autoinscription(s16b kind)
+int remove_autoinscription(int16_t kind)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)
@@ -314,7 +314,7 @@ int remove_autoinscription(s16b kind)
 /**
  * Register an object kind autoinscription
  */
-int add_autoinscription(s16b kind, const char *inscription, bool aware)
+int add_autoinscription(int16_t kind, const char *inscription, bool aware)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)

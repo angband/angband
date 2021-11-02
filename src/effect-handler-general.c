@@ -229,7 +229,7 @@ static const int enchant_table[16] =
  *
  * \returns true if the bonus was increased
  */
-static bool enchant_score(s16b *score, bool is_artifact)
+static bool enchant_score(int16_t *score, bool is_artifact)
 {
 	int chance;
 
@@ -255,7 +255,7 @@ static bool enchant_score(s16b *score, bool is_artifact)
  *
  * \returns true if a bonus was increased
  */
-static bool enchant2(struct object *obj, s16b *score)
+static bool enchant2(struct object *obj, int16_t *score)
 {
 	bool result = false;
 	bool is_artifact = obj->artifact ? true : false;

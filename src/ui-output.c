@@ -22,7 +22,7 @@
 #include "ui-output.h"
 #include "z-textblock.h"
 
-s16b screen_save_depth;
+int16_t screen_save_depth;
 
 /**
  * ------------------------------------------------------------------------
@@ -415,7 +415,7 @@ void prt(const char *str, int row, int col) {
 /**
  * Depth of the screen_save() stack
  */
-s16b screen_save_depth;
+int16_t screen_save_depth;
 
 /**
  * Save the screen, and increase the "icky" depth.

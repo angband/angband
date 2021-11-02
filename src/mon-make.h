@@ -26,14 +26,14 @@ void delete_monster(struct loc grid);
 void monster_index_move(int i1, int i2);
 void compact_monsters(struct chunk *c, int num_to_compact);
 void wipe_mon_list(struct chunk *c, struct player *p);
-s16b mon_pop(struct chunk *c);
+int16_t mon_pop(struct chunk *c);
 void get_mon_num_prep(bool (*get_mon_num_hook)(struct monster_race *race));
 struct monster_race *get_mon_num(int generated_level, int current_level);
 int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	bool specific, int *specific_count);
 void mon_create_mimicked_object(struct chunk *c, struct monster *mon,
 								int index);
-s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
+int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 				   byte origin);
 int mon_hp(const struct monster_race *race, aspect hp_aspect);
 bool place_new_monster(struct chunk *c, struct loc grid,

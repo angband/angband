@@ -60,7 +60,7 @@ void note(const char *msg);
 /* Writing bits */
 void wr_byte(byte v);
 void wr_u16b(u16b v);
-void wr_s16b(s16b v);
+void wr_s16b(int16_t v);
 void wr_u32b(u32b v);
 void wr_s32b(s32b v);
 void wr_string(const char *str);
@@ -69,7 +69,7 @@ void pad_bytes(int n);
 /* Reading bits */
 void rd_byte(byte *ip);
 void rd_u16b(u16b *ip);
-void rd_s16b(s16b *ip);
+void rd_s16b(int16_t *ip);
 void rd_u32b(u32b *ip);
 void rd_s32b(s32b *ip);
 void rd_string(char *str, int max);

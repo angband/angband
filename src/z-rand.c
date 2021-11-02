@@ -222,7 +222,7 @@ u32b Rand_div(u32b m)
 /**
  * The normal distribution table for the "Rand_normal()" function (below)
  */
-static s16b Rand_normal_table[RANDNOR_NUM] = {
+static int16_t Rand_normal_table[RANDNOR_NUM] = {
 	206,   613,   1022,  1430,  1838,  2245,  2652,  3058,
 	3463,  3867,  4271,  4673,  5075,  5475,  5874,  6271,
 	6667,  7061,  7454,  7845,  8234,  8621,  9006,  9389,
@@ -280,18 +280,18 @@ static s16b Rand_normal_table[RANDNOR_NUM] = {
  *
  * Note that the binary search takes up to 16 quick iterations.
  */
-s16b Rand_normal(int mean, int stand)
+int16_t Rand_normal(int mean, int stand)
 {
-	s16b tmp, offset;
+	int16_t tmp, offset;
 
-	s16b low = 0;
-	s16b high = RANDNOR_NUM;
+	int16_t low = 0;
+	int16_t high = RANDNOR_NUM;
 
 	/* Paranoia */
 	if (stand < 1) return (mean);
 
 	/* Roll for probability */
-	tmp = (s16b)randint0(32768);
+	tmp = (int16_t)randint0(32768);
 
 	/* Binary Search */
 	while (low < high) {
@@ -306,7 +306,7 @@ s16b Rand_normal(int mean, int stand)
 	}
 
 	/* Convert the index into an offset */
-	offset = (s16b)((long)stand * (long)low / RANDNOR_STD);
+	offset = (int16_t)((long)stand * (long)low / RANDNOR_STD);
 
 	/* One half should be negative */
 	if (one_in_(2)) return (mean - offset);
@@ -448,7 +448,7 @@ static int simulate_division(int dividend, int divisor)
  * 120    0.03  0.11  0.31  0.46  1.31  2.48  4.60  7.78 11.67 25.53 45.72
  * 128    0.02  0.01  0.13  0.33  0.83  1.41  3.24  6.17  9.57 14.22 64.07
  */
-s16b m_bonus(int max, int level)
+int16_t m_bonus(int max, int level)
 {
 	int bonus, stand, value;
 
@@ -477,7 +477,7 @@ s16b m_bonus(int max, int level)
 /**
  * Calculation helper function for m_bonus
  */
-s16b m_bonus_calc(int max, int level, aspect bonus_aspect)
+int16_t m_bonus_calc(int max, int level, aspect bonus_aspect)
 {
 	switch (bonus_aspect) {
 		case EXTREMIFY:

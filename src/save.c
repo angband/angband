@@ -338,7 +338,7 @@ void wr_options(void)
 
 void wr_messages(void)
 {
-	s16b i;
+	int16_t i;
 	u16b num;
 
 	num = messages_num();

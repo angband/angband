@@ -287,7 +287,7 @@ byte gamma_table[256];
 /**
  * Table of ln(x / 256) * 256 for x going from 0 -> 255
  */
-static const s16b gamma_helper[256] =
+static const int16_t gamma_helper[256] =
 {
 	0, -1420, -1242, -1138, -1065, -1007, -961, -921, -887, -857, -830,
 	-806, -783, -762, -744, -726, -710, -694, -679, -666, -652, -640,

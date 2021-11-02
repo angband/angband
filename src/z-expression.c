@@ -22,7 +22,7 @@
 
 struct expression_operation_s {
 	byte operator;
-	s16b operand;
+	int16_t operand;
 };
 
 struct expression_s {
@@ -274,7 +274,7 @@ static void expression_add_operation(expression_t *expression,
  * \param string is the string to be parsed.
  * \return The number of operations added to the expression or an error (expression_err_e).
  */
-s16b expression_add_operations_string(expression_t *expression,
+int16_t expression_add_operations_string(expression_t *expression,
 									  const char *string)
 {
 	char *parse_string;
@@ -325,7 +325,7 @@ s16b expression_add_operations_string(expression_t *expression,
 
 	while (token != NULL) {
 		char *end = NULL;
-		s16b value = strtol(token, &end, 0);
+		int16_t value = strtol(token, &end, 0);
 
 		if (end == token) {
 			parsed_operator = expression_operator_from_token(token);

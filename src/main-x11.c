@@ -304,11 +304,11 @@ struct infowin
 	Window win;
 	long mask;
 
-	s16b ox, oy;
+	int16_t ox, oy;
 
-	s16b x, y;
-	s16b x_save, y_save;
-	s16b w, h;
+	int16_t x, y;
+	int16_t x_save, y_save;
+	int16_t w, h;
 	u16b b;
 
 	byte byte1;
@@ -378,10 +378,10 @@ struct infofnt
 
 	const char *name;
 
-	s16b wid;
-	s16b twid;
-	s16b hgt;
-	s16b asc;
+	int16_t wid;
+	int16_t twid;
+	int16_t hgt;
+	int16_t asc;
 
 	byte off;
 

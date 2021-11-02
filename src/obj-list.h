@@ -30,7 +30,7 @@ typedef enum object_list_section_e {
 typedef struct object_list_entry_s {
 	struct object *object;
 	u16b count[OBJECT_LIST_SECTION_MAX];
-	s16b dx, dy;
+	int16_t dx, dy;
 } object_list_entry_t;
 
 typedef struct object_list_s {

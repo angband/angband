@@ -62,7 +62,7 @@ struct store {
 	const char *name;
 
 	byte stock_num;				/* Stock -- Number of entries */
-	s16b stock_size;			/* Stock -- Total Size of Array */
+	int16_t stock_size;		/* Stock -- Total Size of Array */
 	struct object *stock;		/* Stock -- Actual stock items */
 	struct object *stock_k;		/* Stock -- Stock as known by the character */
 

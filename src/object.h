@@ -131,7 +131,7 @@ enum {
  * Element info type
  */
 struct element_info {
-	s16b res_level;
+	int16_t res_level;
 	bitflag flags;
 };
 
@@ -435,19 +435,19 @@ struct object {
 	byte tval;				/**< Item type (from kind) */
 	byte sval;				/**< Item sub-type (from kind) */
 
-	s16b pval;				/**< Item extra-parameter */
+	int16_t pval;				/**< Item extra-parameter */
 
-	s16b weight;			/**< Item weight */
+	int16_t weight;				/**< Item weight */
 
 	byte dd;				/**< Number of damage dice */
 	byte ds;				/**< Number of sides on each damage die */
-	s16b ac;				/**< Normal AC */
-	s16b to_a;				/**< Plusses to AC */
-	s16b to_h;				/**< Plusses to hit */
-	s16b to_d;				/**< Plusses to damage */
+	int16_t ac;				/**< Normal AC */
+	int16_t to_a;				/**< Plusses to AC */
+	int16_t to_h;				/**< Plusses to hit */
+	int16_t to_d;				/**< Plusses to damage */
 
 	bitflag flags[OF_SIZE];	/**< Object flags */
-	s16b modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
+	int16_t modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
 	struct element_info el_info[ELEM_MAX];	/**< Object element info */
 	bool *brands;			/**< Flag absence/presence of each brand */
 	bool *slays;			/**< Flag absence/presence of each slay */
@@ -457,13 +457,13 @@ struct object {
 	char *effect_msg;		/**< Message on use */
 	struct activation *activation;	/**< Artifact activation, if applicable */
 	random_value time;		/**< Recharge time (rods/activation) */
-	s16b timeout;			/**< Timeout Counter */
+	int16_t timeout;		/**< Timeout Counter */
 
 	byte number;			/**< Number of items */
 	bitflag notice;			/**< Attention paid to the object */
 
-	s16b held_m_idx;		/**< Monster holding us (if any) */
-	s16b mimicking_m_idx;	/**< Monster mimicking us (if any) */
+	int16_t held_m_idx;		/**< Monster holding us (if any) */
+	int16_t mimicking_m_idx;	/**< Monster mimicking us (if any) */
 
 	byte origin;			/**< How this item was found */
 	byte origin_depth;		/**< What depth the item was found at */

@@ -1280,7 +1280,7 @@ static void calc_spells(struct player *p)
 
 	const struct class_spell *spell;
 
-	s16b old_spells;
+	int16_t old_spells;
 
 	/* Hack -- must be literate */
 	if (!p->class->magic.total_spells) return;

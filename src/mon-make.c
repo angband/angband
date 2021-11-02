@@ -50,7 +50,7 @@
  *         restrictions apply (for example, unique monsters can only appear
  *         once on a given level); prob3 is always either prob2 or 0.
  * ------------------------------------------------------------------------ */
-static s16b alloc_race_size;
+static int16_t alloc_race_size;
 static struct alloc_entry *alloc_race_table;
 
 /**
@@ -60,8 +60,9 @@ static void init_race_allocs(void) {
 	int i;
 	struct monster_race *race;
 	alloc_entry *table;
-	s16b *num = mem_zalloc(z_info->max_depth * sizeof(s16b));
-	s16b *already_counted = mem_zalloc(z_info->max_depth * sizeof(s16b));
+	int16_t *num = mem_zalloc(z_info->max_depth * sizeof(int16_t));
+	int16_t *already_counted =
+		mem_zalloc(z_info->max_depth * sizeof(int16_t));
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;
@@ -641,7 +642,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
  * This routine should almost never fail, but it *can* happen.
  * The calling code must check for and handle a 0 return.
  */
-s16b mon_pop(struct chunk *c)
+int16_t mon_pop(struct chunk *c)
 {
 	int m_idx;
 
@@ -990,10 +991,10 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
+int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 				   byte origin)
 {
-	s16b m_idx;
+	int16_t m_idx;
 	struct monster *new_mon;
 	struct monster_group_info *info = mon->group_info;
 	bool loading = mon->midx > 0;

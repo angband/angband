@@ -509,45 +509,45 @@ struct player {
 	byte hitdie;	/* Hit dice (sides) */
 	byte expfact;	/* Experience factor */
 
-	s16b age;		/* Characters age */
-	s16b ht;		/* Height */
-	s16b wt;		/* Weight */
+	int16_t age;		/* Characters age */
+	int16_t ht;		/* Height */
+	int16_t wt;		/* Weight */
 
 	s32b au;		/* Current Gold */
 
-	s16b max_depth;	/* Max depth */
-	s16b recall_depth;	/* Recall depth */
-	s16b depth;		/* Cur depth */
+	int16_t max_depth;	/* Max depth */
+	int16_t recall_depth;	/* Recall depth */
+	int16_t depth;		/* Cur depth */
 
-	s16b max_lev;	/* Max level */
-	s16b lev;		/* Cur level */
+	int16_t max_lev;	/* Max level */
+	int16_t lev;		/* Cur level */
 
 	s32b max_exp;	/* Max experience */
 	s32b exp;		/* Cur experience */
 	u16b exp_frac;	/* Cur exp frac (times 2^16) */
 
-	s16b mhp;		/* Max hit pts */
-	s16b chp;		/* Cur hit pts */
+	int16_t mhp;		/* Max hit pts */
+	int16_t chp;		/* Cur hit pts */
 	u16b chp_frac;	/* Cur hit frac (times 2^16) */
 
-	s16b msp;		/* Max mana pts */
-	s16b csp;		/* Cur mana pts */
+	int16_t msp;		/* Max mana pts */
+	int16_t csp;		/* Cur mana pts */
 	u16b csp_frac;	/* Cur mana frac (times 2^16) */
 
-	s16b stat_max[STAT_MAX];	/* Current "maximal" stat values */
-	s16b stat_cur[STAT_MAX];	/* Current "natural" stat values */
-	s16b stat_map[STAT_MAX];	/* Tracks remapped stats from temp stat swap */
+	int16_t stat_max[STAT_MAX];	/* Current "maximal" stat values */
+	int16_t stat_cur[STAT_MAX];	/* Current "natural" stat values */
+	int16_t stat_map[STAT_MAX];	/* Tracks remapped stats from temp stat swap */
 
-	s16b *timed;				/* Timed effects */
+	int16_t *timed;				/* Timed effects */
 
-	s16b word_recall;			/* Word of recall counter */
-	s16b deep_descent;			/* Deep Descent counter */
+	int16_t word_recall;			/* Word of recall counter */
+	int16_t deep_descent;			/* Deep Descent counter */
 
-	s16b energy;				/* Current energy */
+	int16_t energy;				/* Current energy */
 	u32b total_energy;			/* Total energy used (including resting) */
 	u32b resting_turn;			/* Number of player turns spent resting */
 
-	s16b food;					/* Current nutrition */
+	int16_t food;				/* Current nutrition */
 
 	byte unignoring;			/* Unignoring */
 
@@ -566,13 +566,13 @@ struct player {
 
 	bool wizard;				/* Player is in wizard mode */
 
-	s16b player_hp[PY_MAX_LEVEL];		/* HP gained per level */
+	int16_t player_hp[PY_MAX_LEVEL];	/* HP gained per level */
 
 	/* Saved values for quickstart */
 	s32b au_birth;						/* Birth gold when option birth_money is false */
-	s16b stat_birth[STAT_MAX];			/* Birth "natural" stat values */
-	s16b ht_birth;						/* Birth Height */
-	s16b wt_birth;						/* Birth Weight */
+	int16_t stat_birth[STAT_MAX];		/* Birth "natural" stat values */
+	int16_t ht_birth;			/* Birth Height */
+	int16_t wt_birth;			/* Birth Weight */
 
 	struct player_options opts;			/* Player options */
 	struct player_history hist;			/* Player history (see player-history.c) */

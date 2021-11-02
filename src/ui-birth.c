@@ -216,7 +216,7 @@ static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL 
 
 static void skill_help(const int r_skills[], const int c_skills[], int mhp, int exp, int infra)
 {
-	s16b skills[SKILL_MAX];
+	int16_t skills[SKILL_MAX];
 	unsigned i;
 
 	for (i = 0; i < SKILL_MAX ; ++i)

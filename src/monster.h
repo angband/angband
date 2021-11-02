@@ -373,10 +373,10 @@ struct monster {
 
 	struct loc grid;					/* Location on map */
 
-	s16b hp;							/* Current Hit points */
-	s16b maxhp;							/* Max Hit points */
+	int16_t hp;							/* Current Hit points */
+	int16_t maxhp;							/* Max Hit points */
 
-	s16b m_timed[MON_TMD_MAX];			/* Timed monster status effects */
+	int16_t m_timed[MON_TMD_MAX];			/* Timed monster status effects */
 
 	byte mspeed;						/* Monster "speed" */
 	byte energy;						/* Monster "energy" */

@@ -57,16 +57,16 @@ int FEAT_LAVA;
 /**
  * Global array for looping through the "keypad directions".
  */
-const s16b ddd[9] =
+const int16_t ddd[9] =
 { 2, 8, 6, 4, 3, 1, 9, 7, 5 };
 
 /**
  * Global arrays for converting "keypad direction" into "offsets".
  */
-const s16b ddx[10] =
+const int16_t ddx[10] =
 { 0, -1, 0, 1, -1, 0, 1, -1, 0, 1 };
 
-const s16b ddy[10] =
+const int16_t ddy[10] =
 { 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
 
 
@@ -81,17 +81,17 @@ const struct loc ddgrid[10] =
  * This means that each entry in this array corresponds to the direction
  * with the same array index in ddd[].
  */
-const s16b ddx_ddd[9] =
+const int16_t ddx_ddd[9] =
 { 0, 0, 1, -1, 1, -1, 1, -1, 0 };
 
-const s16b ddy_ddd[9] =
+const int16_t ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
 const struct loc ddgrid_ddd[9] =
 {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 0}};
 
 /* Can mult these by 45 deg or 1.5 o'clock e.g. [6] -> 270 deg or 9 o'clock */
-const s16b clockwise_ddd[9] =
+const int16_t clockwise_ddd[9] =
 { 8, 9, 6, 3, 2, 1, 4, 7, 5 };
 
 const struct loc clockwise_grid[9] =

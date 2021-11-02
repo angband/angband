@@ -477,7 +477,7 @@ int rd_messages(void)
 	char buf[128];
 	u16b tmp16u;
 
-	s16b num;
+	int16_t num;
 
 	/* Total */
 	rd_s16b(&num);
@@ -815,7 +815,7 @@ int rd_player(void)
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(s16b));
+			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(int16_t));
 	} else {
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
@@ -935,7 +935,7 @@ int rd_ignore(void)
 	/* Read the rune autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
-		s16b runeid;
+		int16_t runeid;
 
 		rd_s16b(&runeid);
 		rd_string(tmp, sizeof(tmp));
@@ -1705,7 +1705,7 @@ int rd_history(void)
 	rd_u32b(&tmp32u);
 	for (i = 0; i < tmp32u; i++) {
 		s32b turnno;
-		s16b dlev, clev;
+		int16_t dlev, clev;
 		bitflag type[HIST_SIZE];
 		const struct artifact *art = NULL;
 		int aidx = 0;
