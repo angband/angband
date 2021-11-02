@@ -747,7 +747,8 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
  *
  * Returns true if anything is created, false if nothing is.
  */
-static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
+static bool mon_create_drop(struct chunk *c, struct monster *mon,
+		uint8_t origin)
 {
 	struct monster_drop *drop;
 	struct monster_lore *lore = get_lore(mon->race);
@@ -992,7 +993,7 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
 int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
-				   byte origin)
+		uint8_t origin)
 {
 	int16_t m_idx;
 	struct monster *new_mon;
@@ -1072,9 +1073,9 @@ int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
  * directly.
  */
 static bool place_new_monster_one(struct chunk *c, struct loc grid,
-								  struct monster_race *race, bool sleep,
-								  struct monster_group_info group_info,
-								  byte origin)
+		struct monster_race *race, bool sleep,
+		struct monster_group_info group_info,
+		uint8_t origin)
 {
 	int i;
 	struct monster *mon;
@@ -1159,7 +1160,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	}
 
 	/* Give a random starting energy */
-	mon->energy = (byte)randint0(50);
+	mon->energy = (uint8_t)randint0(50);
 
 	/* Force monster to wait for player */
 	if (rf_has(race->flags, RF_FORCE_SLEEP))
@@ -1207,9 +1208,9 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
  * ORIGIN_DROP_PIT, etc.)
  */
 static bool place_new_monster_group(struct chunk *c, struct loc grid,
-									struct monster_race *race, bool sleep,
-									struct monster_group_info group_info,
-									int total, byte origin)
+		struct monster_race *race, bool sleep,
+		struct monster_group_info group_info,
+		int total, uint8_t origin)
 {
 	int n, i;
 
@@ -1275,8 +1276,8 @@ static bool place_monster_base_okay(struct monster_race *race)
  * Helper function to place monsters that appear as friends or escorts
  */
 static bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
-					struct monster_race *friends_race, int total, bool sleep,
-					struct monster_group_info group_info, byte origin)
+		struct monster_race *friends_race, int total, bool sleep,
+		struct monster_group_info group_info, uint8_t origin)
 {
 	int extra_chance;
 
@@ -1352,8 +1353,8 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
  * ORIGIN_DROP_PIT, etc.)
  */
 bool place_new_monster(struct chunk *c, struct loc grid,
-					   struct monster_race *race, bool sleep, bool group_ok,
-					   struct monster_group_info group_info, byte origin)
+		struct monster_race *race, bool sleep, bool group_ok,
+		struct monster_group_info group_info, uint8_t origin)
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
@@ -1449,7 +1450,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
  * Returns true if we successfully place a monster.
  */
 bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
-							bool sleep, bool group_okay, byte origin)
+		bool sleep, bool group_okay, uint8_t origin)
 {
 	/* Pick a monster race, no specified group */
 	struct monster_race *race = get_mon_num(depth, c->depth);

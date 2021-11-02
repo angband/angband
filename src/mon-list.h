@@ -33,7 +33,7 @@ typedef struct monster_list_entry_s {
 	uint16_t count[MONSTER_LIST_SECTION_MAX];
 	uint16_t asleep[MONSTER_LIST_SECTION_MAX];
 	int16_t dx[MONSTER_LIST_SECTION_MAX], dy[MONSTER_LIST_SECTION_MAX];
-	byte attr;
+	uint8_t attr;
 } monster_list_entry_t;
 
 typedef struct monster_list_s {
@@ -57,6 +57,6 @@ int monster_list_standard_compare(const void *a, const void *b);
 int monster_list_compare_exp(const void *a, const void *b);
 void monster_list_sort(monster_list_t *list,
 					   int (*compare)(const void *, const void *));
-byte monster_list_entry_line_color(const monster_list_entry_t *entry);
+uint8_t monster_list_entry_line_color(const monster_list_entry_t *entry);
 
 #endif /* MONSTER_LIST_H */

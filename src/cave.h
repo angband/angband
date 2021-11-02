@@ -37,7 +37,7 @@ extern const int16_t clockwise_ddd[9];
 extern const struct loc clockwise_grid[9];
 extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
-extern const byte side_dirs[20][8];
+extern const uint8_t side_dirs[20][8];
 
 enum {
 	DIR_UNKNOWN = 0,
@@ -113,15 +113,15 @@ struct feature {
 
 	struct feature *next;
 
-	char *mimic;	/**< Name of feature to mimic */
-	byte priority;	/**< Display priority */
+	char *mimic;		/**< Name of feature to mimic */
+	uint8_t priority;	/**< Display priority */
 
-	byte shopnum;	/**< Which shop does it take you to? */
-	byte dig;      /**< How hard is it to dig through? */
+	uint8_t shopnum;	/**< Which shop does it take you to? */
+	uint8_t dig;		/**< How hard is it to dig through? */
 
 	bitflag flags[TF_SIZE];	/**< Terrain flags */
 
-	byte d_attr;	/**< Default feature attribute */
+	uint8_t d_attr;	/**< Default feature attribute */
 	wchar_t d_char;	/**< Default feature character */
 
 	char *walk_msg;	/**< Message on walking into feature */
@@ -161,7 +161,7 @@ struct grid_data {
 };
 
 struct square {
-	byte feat;
+	uint8_t feat;
 	bitflag *info;
 	int light;
 	int16_t mon;
@@ -175,7 +175,7 @@ struct heatmap {
 
 struct connector {
 	struct loc grid;
-	byte feat;
+	uint8_t feat;
 	bitflag *info;
 	struct connector *next;
 };
@@ -185,7 +185,7 @@ struct chunk {
 	int32_t turn;
 	int depth;
 
-	byte feeling;
+	uint8_t feeling;
 	uint32_t obj_rating;
 	uint32_t mon_rating;
 	bool good_item;

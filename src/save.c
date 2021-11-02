@@ -388,7 +388,7 @@ void wr_object_memory(void)
 
 	/* Kind knowledge */
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
-		byte tmp8u = 0;
+		uint8_t tmp8u = 0;
 		struct object_kind *kind = &k_info[k_idx];
 
 		if (kind->aware) tmp8u |= 0x01;
@@ -770,10 +770,10 @@ static void wr_dungeon_aux(struct chunk *c)
 	int y, x;
 	size_t i;
 
-	byte tmp8u;
+	uint8_t tmp8u;
 
-	byte count;
-	byte prev_char;
+	uint8_t count;
+	uint8_t prev_char;
 
 	/* Dungeon specific info follows */
 	wr_string(c->name ? c->name : "Blank");
@@ -793,8 +793,8 @@ static void wr_dungeon_aux(struct chunk *c)
 
 				/* If the run is broken, or too full, flush it */
 				if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
-					wr_byte((byte)count);
-					wr_byte((byte)prev_char);
+					wr_byte(count);
+					wr_byte(prev_char);
 					prev_char = tmp8u;
 					count = 1;
 				} else /* Continue the run */
@@ -804,8 +804,8 @@ static void wr_dungeon_aux(struct chunk *c)
 
 		/* Flush the data (if any) */
 		if (count) {
-			wr_byte((byte)count);
-			wr_byte((byte)prev_char);
+			wr_byte(count);
+			wr_byte(prev_char);
 		}
 	}
 
@@ -821,8 +821,8 @@ static void wr_dungeon_aux(struct chunk *c)
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
-				wr_byte((byte)count);
-				wr_byte((byte)prev_char);
+				wr_byte(count);
+				wr_byte(prev_char);
 				prev_char = tmp8u;
 				count = 1;
 			} else /* Continue the run */
@@ -832,8 +832,8 @@ static void wr_dungeon_aux(struct chunk *c)
 
 	/* Flush the data (if any) */
 	if (count) {
-		wr_byte((byte)count);
-		wr_byte((byte)prev_char);
+		wr_byte(count);
+		wr_byte(prev_char);
 	}
 
 	/* Write feeling */

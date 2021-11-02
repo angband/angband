@@ -217,7 +217,7 @@ struct term
 	term_win *mem;
 
 	/* Number of times saved */
-	byte saved;
+	uint8_t saved;
 
 	void (*init_hook)(term *t);
 	void (*nuke_hook)(term *t);
@@ -349,8 +349,8 @@ extern struct keypress keylog[KEYLOG_SIZE];
  * ------------------------------------------------------------------------ */
 
 extern term *Term;
-extern byte tile_width;
-extern byte tile_height;
+extern uint8_t tile_width;
+extern uint8_t tile_height;
 extern bool bigcurs;
 extern bool smlcurs;
 extern term *angband_term[ANGBAND_TERM_MAX];
@@ -398,7 +398,7 @@ extern errr Term_what(int x, int y, int *a, wchar_t *c);
 
 extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);
-extern errr Term_keypress(keycode_t k, byte mods);
+extern errr Term_keypress(keycode_t k, uint8_t mods);
 extern errr Term_key_push(int k);
 extern errr Term_event_push(const ui_event *ke);
 extern errr Term_inkey(ui_event *ch, bool wait, bool take);
@@ -413,7 +413,7 @@ extern errr Term_activate(term *t);
 extern errr term_nuke(term *t);
 extern errr term_init(term *t, int w, int h, int k);
 
-extern int big_pad(int col, int row, byte a, wchar_t c);
+extern int big_pad(int col, int row, uint8_t a, wchar_t c);
 
 extern int Term_get_first_tile_row(term *t);
 

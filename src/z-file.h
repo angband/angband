@@ -233,14 +233,14 @@ bool file_write(ang_file *f, const char *buf, size_t n);
  *
  * Returns true if successful, false otherwise.
  */
-bool file_readc(ang_file *f, byte *b);
+bool file_readc(ang_file *f, uint8_t *b);
 
 /**
  * Write the byte `b` to the file represented by `f`.
  *
  * Returns true if successful, false otherwise.
  */
-bool file_writec(ang_file *f, byte b);
+bool file_writec(ang_file *f, uint8_t b);
 
 
 

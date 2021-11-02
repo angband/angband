@@ -46,7 +46,7 @@ int teardown_tests(void *state) {
 static int test_empty(void *state) {
 	const char *txt;
 	uint16_t n, mtype;
-	byte color;
+	uint8_t color;
 
 	messages_free();
 	messages_init();
@@ -294,7 +294,7 @@ static int test_many_repeat(void *state)
 }
 
 static int test_color(void *state) {
-	byte color;
+	uint8_t color;
 
 	messages_free();
 	messages_init();

@@ -61,7 +61,7 @@
  *
  * Note that grids diagonal to the origin have unique angles.
  */
-byte get_angle_to_grid[41][41] =
+uint8_t get_angle_to_grid[41][41] =
 {
   {  68,  67,  66,  65,  64,  63,  62,  62,  60,  59,  58,  57,  56,  55,  53,  52,  51,  49,  48,  46,  45,  44,  42,  41,  39,  38,  37,  35,  34,  33,  32,  31,  30,  28,  28,  27,  26,  25,  24,  24,  23 },
   {  69,  68,  67,  66,  65,  64,  63,  62,  61,  60,  59,  58,  56,  55,  54,  52,  51,  49,  48,  47,  45,  43,  42,  41,  39,  38,  36,  35,  34,  32,  31,  30,  29,  28,  27,  26,  25,  24,  24,  23,  22 },
@@ -428,7 +428,7 @@ void place_random_stairs(struct chunk *c, struct loc grid, bool quest)
  * \param tval specified tval, if any
  */
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
-	bool great, byte origin, int tval)
+		bool great, uint8_t origin, int tval)
 {
 	int32_t rating = 0;
 	struct object *new_obj;
@@ -471,7 +471,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
  * \param level generation depth
  * \param origin item origin
  */
-void place_gold(struct chunk *c, struct loc grid, int level, byte origin)
+void place_gold(struct chunk *c, struct loc grid, int level, uint8_t origin)
 {
 	struct object *money = NULL;
 	bool dummy = true;
@@ -670,7 +670,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
  * See alloc_object() for more information.
  */
 void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
-	byte origin)
+		uint8_t origin)
 {
 	int k, l = 0;
 	for (k = 0; k < num; k++) {
@@ -691,7 +691,7 @@ void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
  * 'set' controls where the object is placed (corridor, room, either).
  * 'typ' conrols the kind of object (rubble, trap, gold, item).
  */
-bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
+bool alloc_object(struct chunk *c, int set, int typ, int depth, uint8_t origin)
 {
 	int tries = 0;
 	struct loc grid;

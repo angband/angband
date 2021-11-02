@@ -272,7 +272,7 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 
 	char o_name[80];
 	char out_val[160];
-	byte colour;
+	uint8_t colour;
 
 	struct store_context *ctx = menu_priv(menu);
 	struct store *store = ctx->store;

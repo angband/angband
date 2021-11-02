@@ -3245,10 +3245,10 @@ static bool get_colrow_from_xy(const struct subwindow *subwindow,
 	return true;
 }
 
-static byte translate_key_mods(Uint16 mods)
+static uint8_t translate_key_mods(Uint16 mods)
 {
 #define TRANSLATE_K_MOD(m, k) ((m) & mods ? (k) : 0)
-	byte angband_mods =
+	uint8_t angband_mods =
 		TRANSLATE_K_MOD(KMOD_SHIFT, KC_MOD_SHIFT)
 		| TRANSLATE_K_MOD(KMOD_CTRL, KC_MOD_CONTROL)
 		| TRANSLATE_K_MOD(KMOD_ALT, KC_MOD_ALT)
@@ -3299,7 +3299,7 @@ static bool handle_mousebuttondown(const SDL_MouseButtonEvent *mouse)
 		return false;
 	}
 
-	byte mods = translate_key_mods(SDL_GetModState());
+	uint8_t mods = translate_key_mods(SDL_GetModState());
 	/* apparently mouse buttons dont get this */
 	mods &= ~KC_MOD_META;
 
@@ -3315,7 +3315,7 @@ static bool handle_mousebuttondown(const SDL_MouseButtonEvent *mouse)
 
 static bool handle_keydown(const SDL_KeyboardEvent *key)
 {
-	byte mods = translate_key_mods(key->keysym.mod);
+	uint8_t mods = translate_key_mods(key->keysym.mod);
 	keycode_t ch = 0;
 
 	/* SDL will give us both keydown and text input events in many cases.
@@ -3366,8 +3366,9 @@ static bool handle_keydown(const SDL_KeyboardEvent *key)
 	if (g_kp_as_mod) {
 		/* If numlock is set and shift is not pressed, numpad numbers
 		 * produce regular numbers and not keypad numbers */
-		byte keypad_num_mod = ((key->keysym.mod & KMOD_NUM) && !(key->keysym.mod & KMOD_SHIFT))
-			? 0x00 : KC_MOD_KEYPAD;
+		uint8_t keypad_num_mod = ((key->keysym.mod & KMOD_NUM)
+			&& !(key->keysym.mod & KMOD_SHIFT)) ?
+			0x00 : KC_MOD_KEYPAD;
 
 		switch (key->keysym.sym) {
 			/* Keypad */
@@ -3550,7 +3551,7 @@ static bool handle_text_input(const SDL_TextInputEvent *input)
 		}
 	}
 
-	byte mods = translate_key_mods(SDL_GetModState());
+	uint8_t mods = translate_key_mods(SDL_GetModState());
 
 	/* Shift is already encoded in characters we receive here */
 	if (!MODS_INCLUDE_SHIFT(ch)) {

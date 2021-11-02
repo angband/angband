@@ -96,7 +96,7 @@ static void object_list_format_section(const object_list_t *list,
 	for (entry_index = 0; entry_index < total && line_count < lines_to_display;
 		 entry_index++) {
 		char location[20] = { '\0' };
-		byte line_attr;
+		uint8_t line_attr;
 		size_t full_width;
 		const char *direction_y = (list->entries[entry_index].dy <= 0) ? "N" : "S";
 		const char *direction_x = (list->entries[entry_index].dx <= 0) ? "W" : "E";
@@ -128,7 +128,7 @@ static void object_list_format_section(const object_list_t *list,
 		/* textblock_append_pict will safely add the object symbol, regardless
 		 * of ASCII/graphics mode. */
 		if (tb != NULL && tile_width == 1 && tile_height == 1) {
-			byte a = COLOUR_RED;
+			uint8_t a = COLOUR_RED;
 			wchar_t c = L'*';
 
 			if (!is_unknown(list->entries[entry_index].object) &&

@@ -236,7 +236,7 @@ static void death_info(const char *title, int row)
 
 			/* Show 12 items */
 			for (line = 0; obj && line < 12; obj = obj->next, line++) {
-				byte attr;
+				uint8_t attr;
 
 				char o_name[80];
 				char tmp_val[80];

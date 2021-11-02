@@ -58,7 +58,7 @@ const char *savefile_get_description(const char *path);
 void note(const char *msg);
 
 /* Writing bits */
-void wr_byte(byte v);
+void wr_byte(uint8_t v);
 void wr_u16b(uint16_t v);
 void wr_s16b(int16_t v);
 void wr_u32b(uint32_t v);
@@ -67,7 +67,7 @@ void wr_string(const char *str);
 void pad_bytes(int n);
 
 /* Reading bits */
-void rd_byte(byte *ip);
+void rd_byte(uint8_t *ip);
 void rd_u16b(uint16_t *ip);
 void rd_s16b(int16_t *ip);
 void rd_u32b(uint32_t *ip);

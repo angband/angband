@@ -320,9 +320,9 @@ void object_list_sort(object_list_t *list,
  * \param entry is the object list entry to display.
  * \return a term attribute for the object entry.
  */
-byte object_list_entry_line_attribute(const object_list_entry_t *entry)
+uint8_t object_list_entry_line_attribute(const object_list_entry_t *entry)
 {
-	byte attr;
+	uint8_t attr;
 	struct object *base_obj;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
@@ -370,7 +370,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	bool has_singular_prefix;
 	bool los = false;
 	int field;
-	byte old_number;
+	uint8_t old_number;
 	struct loc pgrid = player->grid;
 	struct object *base_obj;
 	struct loc grid;

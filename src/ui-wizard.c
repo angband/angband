@@ -39,7 +39,7 @@ static void proj_display(struct menu *m, int type, bool cursor,
 {
 	size_t i;
 
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	const char *proj_name = proj_idx_to_name(type);
 
 	if (type % 2) c_prt(attr, ".........................", row, col);

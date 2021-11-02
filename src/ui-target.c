@@ -965,7 +965,7 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 
 	/* Draw the path. */
 	for (i = 0; i < path_n; i++) {
-		byte colour;
+		uint8_t colour;
 
 		/* Find the co-ordinates on the level. */
 		struct loc grid = path_g[i];

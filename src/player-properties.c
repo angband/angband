@@ -83,7 +83,7 @@ static void view_ability_display(struct menu *menu, int oid, bool cursor,
 	int row, int col, int width)
 {
 	char buf[80];
-	byte color;
+	uint8_t color;
 	struct player_ability *choices = menu->menu_data;
 
 	switch (choices[oid].group) {

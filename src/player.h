@@ -133,12 +133,12 @@ enum {
 struct quest
 {
 	struct quest *next;
-	byte index;
+	uint8_t index;
 	char *name;
-	byte level;					/* Dungeon level */
+	uint8_t level;			/* Dungeon level */
 	struct monster_race *race;	/* Monster race */
-	int cur_num;				/* Number killed (unused) */
-	int max_num;				/* Number required (unused) */
+	int cur_num;			/* Number killed (unused) */
+	int max_num;			/* Number required (unused) */
 };
 
 /**
@@ -506,8 +506,8 @@ struct player {
 
 	struct loc grid;/* Player location */
 
-	byte hitdie;	/* Hit dice (sides) */
-	byte expfact;	/* Experience factor */
+	uint8_t hitdie;		/* Hit dice (sides) */
+	uint8_t expfact;	/* Experience factor */
 
 	int16_t age;		/* Characters age */
 	int16_t ht;		/* Height */
@@ -549,10 +549,10 @@ struct player {
 
 	int16_t food;				/* Current nutrition */
 
-	byte unignoring;			/* Unignoring */
+	uint8_t unignoring;			/* Unignoring */
 
-	byte *spell_flags;			/* Spell flags */
-	byte *spell_order;			/* Spell order */
+	uint8_t *spell_flags;			/* Spell flags */
+	uint8_t *spell_order;			/* Spell order */
 
 	char full_name[PLAYER_NAME_LEN];	/* Full name */
 	char died_from[80];					/* Cause of death */
@@ -620,8 +620,8 @@ void player_exp_gain(struct player *p, int32_t amount);
 void player_exp_lose(struct player *p, int32_t amount, bool permanent);
 void player_flags(struct player *p, bitflag f[OF_SIZE]);
 void player_flags_timed(struct player *p, bitflag f[OF_SIZE]);
-byte player_hp_attr(struct player *p);
-byte player_sp_attr(struct player *p);
+uint8_t player_hp_attr(struct player *p);
+uint8_t player_sp_attr(struct player *p);
 bool player_restore_mana(struct player *p, int amt);
 size_t player_random_name(char *buf, size_t buflen);
 void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix);

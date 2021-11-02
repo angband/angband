@@ -326,9 +326,9 @@ void player_flags_timed(struct player *p, bitflag f[OF_SIZE])
 }
 
 
-byte player_hp_attr(struct player *p)
+uint8_t player_hp_attr(struct player *p)
 {
-	byte attr;
+	uint8_t attr;
 	
 	if (p->chp >= p->mhp)
 		attr = COLOUR_L_GREEN;
@@ -340,9 +340,9 @@ byte player_hp_attr(struct player *p)
 	return attr;
 }
 
-byte player_sp_attr(struct player *p)
+uint8_t player_sp_attr(struct player *p)
 {
-	byte attr;
+	uint8_t attr;
 	
 	if (p->csp >= p->msp)
 		attr = COLOUR_L_GREEN;

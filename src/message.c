@@ -36,7 +36,7 @@ typedef struct _message_t
 typedef struct _msgcolor_t
 {
 	uint16_t type;
-	byte color;
+	uint8_t color;
 	struct _msgcolor_t *next;
 } msgcolor_t;
 
@@ -209,7 +209,7 @@ uint16_t message_type(uint16_t age)
  * (i.e. age = 0 represents the last memorised message, age = 1 is the one
  * before that, etc).
  */
-byte message_color(uint16_t age)
+uint8_t message_color(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? message_type_color(m->type) : COLOUR_WHITE);
@@ -223,7 +223,7 @@ byte message_color(uint16_t age)
 /**
  * Defines the color `color` for the message type `type`.
  */
-void message_color_define(uint16_t type, byte color)
+void message_color_define(uint16_t type, uint8_t color)
 {
 	msgcolor_t *mc;
 
@@ -256,10 +256,10 @@ void message_color_define(uint16_t type, byte color)
 /**
  * Returns the colour for the message type `type`.
  */
-byte message_type_color(uint16_t type)
+uint8_t message_type_color(uint16_t type)
 {
 	msgcolor_t *mc;
-	byte color = COLOUR_WHITE;
+	uint8_t color = COLOUR_WHITE;
 
 	if (messages)
 	{

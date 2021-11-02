@@ -4829,13 +4829,13 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	tap += tile_width;
 	tcp += tile_width;
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
-	    char fgdRow = ((byte)a & 0x7F) % pict_rows;
-	    char fgdCol = ((byte)c & 0x7F) % pict_cols;
+	    char fgdRow = ((uint8_t)a & 0x7F) % pict_rows;
+	    char fgdCol = ((uint8_t)c & 0x7F) % pict_cols;
 	    char bckRow, bckCol;
 
 	    if (alphablend) {
-		bckRow = ((byte)ta & 0x7F) % pict_rows;
-		bckCol = ((byte)tc & 0x7F) % pict_cols;
+		bckRow = ((uint8_t)ta & 0x7F) % pict_rows;
+		bckCol = ((uint8_t)tc & 0x7F) % pict_cols;
 	    } else {
 		/*
 		 * Not blending so make the background the same as the
@@ -5195,7 +5195,7 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 
 #ifdef KC_MOD_ALT
 			NSUInteger eventModifiers = [event modifierFlags];
-			byte angbandModifiers = 0;
+			uint8_t angbandModifiers = 0;
 			angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
 			angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
 			angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
@@ -5335,7 +5335,7 @@ static BOOL send_event(NSEvent *event)
                 
                 /* Enqueue the keypress */
 #ifdef KC_MOD_ALT
-                byte mods = 0;
+                uint8_t mods = 0;
                 if (mo) mods |= KC_MOD_ALT;
                 if (mx) mods |= KC_MOD_META;
                 if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;

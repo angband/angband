@@ -68,7 +68,7 @@ struct equippable {
 	int slot;
 	int nmlen;
 	wchar_t ch;
-	byte at;
+	uint8_t at;
 };
 
 union equippable_selfunc_extra {

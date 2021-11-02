@@ -26,7 +26,7 @@
 /**
  * Cursor colours
  */
-const byte curs_attrs[2][2] =
+const uint8_t curs_attrs[2][2] =
 {
 	{ COLOUR_SLATE, COLOUR_BLUE },      /* Greyed row */
 	{ COLOUR_WHITE, COLOUR_L_BLUE }     /* Valid row */
@@ -52,7 +52,8 @@ static bool no_valid_row(struct menu *menu, int count);
 /**
  * Display an event, with possible preference overrides
  */
-static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
+static void display_action_aux(menu_action *act, uint8_t color,
+		int row, int col, int wid)
 {
 	/* TODO: add preference support */
 	/* TODO: wizard mode should show more data */
@@ -88,7 +89,7 @@ static int menu_action_valid(struct menu *m, int oid)
 static void menu_action_display(struct menu *m, int oid, bool cursor, int row, int col, int width)
 {
 	menu_action *acts = menu_priv(m);
-	byte color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
+	uint8_t color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
@@ -134,7 +135,7 @@ static void display_string(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	const char **items = menu_priv(m);
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	uint8_t color = curs_attrs[CURS_KNOWN][0 != cursor];
 	Term_putstr(col, row, width, color, items[oid]);
 }
 
@@ -575,7 +576,7 @@ static void display_menu_row(struct menu *menu, int pos, int top,
 
 	if (sel) {
 		menu_row_style_t style = menu_row_style_for_validity(row_valid);
-		byte color = curs_attrs[style][0 != (cursor)];
+		uint8_t color = curs_attrs[style][0 != (cursor)];
 		Term_putstr(col, row, 3, color, format("%c) ", sel));
 		col += 3;
 		width -= 3;
@@ -1022,7 +1023,7 @@ static void dynamic_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	struct menu_entry *entry;
-	byte color = curs_attrs[MN_ROW_STYLE_ENABLED][0 != cursor];
+	uint8_t color = curs_attrs[MN_ROW_STYLE_ENABLED][0 != cursor];
 
 	/* Hack? While row_funcs is private, we need to be consistent with what the menu will do. */
 	if (m->row_funcs->valid_row) {

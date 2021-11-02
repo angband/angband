@@ -1557,8 +1557,8 @@ errr Term_mark(int x, int y)
 	return (0);
 }
 
-byte tile_width = 1;            /* Tile width in units of font width */
-byte tile_height = 1;           /* Tile height in units of font height */
+uint8_t tile_width = 1;            /* Tile width in units of font width */
+uint8_t tile_height = 1;           /* Tile height in units of font height */
 
 /**
  * Helper variables for large cursor
@@ -2500,7 +2500,7 @@ static void log_keypress(ui_event e)
 /**
  * Add a keypress to the "queue"
  */
-errr Term_keypress(keycode_t k, byte mods)
+errr Term_keypress(keycode_t k, uint8_t mods)
 {
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!k) return (-1);
@@ -2543,7 +2543,7 @@ errr Term_keypress(keycode_t k, byte mods)
 /**
  * Add a mouse event to the "queue"
  */
-errr Term_mousepress(int x, int y, char button)/*, byte mods);*/
+errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 {
 	/* Store the char, advance the queue */
 	Term->key_queue[Term->key_head].type = EVT_MOUSE;
@@ -3099,7 +3099,7 @@ errr term_init(term *t, int w, int h, int k)
 /**
  * Emit a 'graphical' symbol and a padding character if appropriate
  */
-int big_pad(int col, int row, byte a, wchar_t c)
+int big_pad(int col, int row, uint8_t a, wchar_t c)
 {
 	Term_putch(col, row, a, c);
 

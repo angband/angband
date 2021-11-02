@@ -227,7 +227,7 @@ void hit_chance(random_chance *chance, int to_hit, int ac)
  * Much of this table is not intended ever to be used, and is included
  * only to handle possible inflation elsewhere. -LM-
  */
-byte deadliness_conversion[151] =
+uint8_t deadliness_conversion[151] =
   {
     0,
     5,  10,  14,  18,  22,  26,  30,  33,  36,  39,

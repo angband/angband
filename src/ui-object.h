@@ -41,9 +41,9 @@ typedef enum {
 } olist_detail_t;
 
 
-byte object_kind_attr(const struct object_kind *kind);
+uint8_t object_kind_attr(const struct object_kind *kind);
 wchar_t object_kind_char(const struct object_kind *kind);
-byte object_attr(const struct object *obj);
+uint8_t object_attr(const struct object *obj);
 wchar_t object_char(const struct object *obj);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);

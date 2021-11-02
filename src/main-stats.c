@@ -1222,9 +1222,9 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 			 * level_data[level].<table>[i] */
 			uint32_t count;
 			if (streq(table, "gold"))
-				count = *((long long *)((byte *)&level_data[level] + offset) + i);
+				count = *((long long *)((uint8_t *)&level_data[level] + offset) + i);
 			else
-				count = *((uint32_t *)((byte *)&level_data[level] + offset) + i);
+				count = *((uint32_t *)((uint8_t *)&level_data[level] + offset) + i);
 
 			if (!count) continue;
 
@@ -1256,7 +1256,7 @@ static int stats_write_db_level_data_items(const char *table, int max_idx,
 			for (i = 0; i < max_idx; i++) {
 				/* This arcane expression finds the value of 
 				 * level_data[level].<table>[origin][i] */
-				uint32_t count = ((uint32_t **)((byte *)&level_data[level] + offset))[origin][i];
+				uint32_t count = ((uint32_t **)((uint8_t *)&level_data[level] + offset))[origin][i];
 				if (!count) continue;
 				
 				err = stats_db_bind_ints(sql_stmt, 4, 0, level, count, translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
@@ -1332,9 +1332,9 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 					 * level_data[level].wearables[origin][idx].<field>[i] */
 					uint32_t count;
 					if (array_p)
-						count = ((uint32_t *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i];
+						count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i];
 					else
-						count = ((uint32_t *)*((uint32_t **)((byte *)&level_data[level].wearables[origin][idx] + offset)))[i];
+						count = ((uint32_t *)*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset)))[i];
 
 					if (!count) continue;
 
@@ -1388,9 +1388,9 @@ static int stats_write_db_wearables_2d_array(const char *field,
 						if (i == 0 && j == 0) continue;
 
 						if (array_p)
-							count = ((uint32_t *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
+							count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
 						else
-							count = *(*((uint32_t **)((byte *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
+							count = *(*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
 
 						if (!count) continue;
 

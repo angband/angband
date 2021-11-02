@@ -21,7 +21,7 @@
 #include "z-util.h"
 
 struct expression_operation_s {
-	byte operator;
+	uint8_t operator;
 	int16_t operand;
 };
 

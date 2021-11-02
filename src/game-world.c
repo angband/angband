@@ -65,7 +65,7 @@ struct level *world;
  *
  * Note that currently the fastest monster is "Fast (+30)".
  */
-const byte extract_energy[200] =
+const uint8_t extract_energy[200] =
 {
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,

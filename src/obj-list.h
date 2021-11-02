@@ -53,7 +53,7 @@ void object_list_collect(object_list_t *list);
 int object_list_standard_compare(const void *a, const void *b);
 void object_list_sort(object_list_t *list,
 					  int (*compare)(const void *, const void *));
-byte object_list_entry_line_attribute(const object_list_entry_t *entry);
+uint8_t object_list_entry_line_attribute(const object_list_entry_t *entry);
 void object_list_format_name(const object_list_entry_t *entry,
 							 char *line_buffer, size_t size);
 

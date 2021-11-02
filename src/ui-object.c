@@ -94,7 +94,7 @@ static bool use_flavor_glyph(const struct object_kind *kind)
  * Use "flavor" if available.
  * Default to user definitions.
  */
-byte object_kind_attr(const struct object_kind *kind)
+uint8_t object_kind_attr(const struct object_kind *kind)
 {
 	return use_flavor_glyph(kind) ? flavor_x_attr[kind->flavor->fidx] :
 		kind_x_attr[kind->kidx];
@@ -116,7 +116,7 @@ wchar_t object_kind_char(const struct object_kind *kind)
  * Use "flavor" if available.
  * Default to user definitions.
  */
-byte object_attr(const struct object *obj)
+uint8_t object_attr(const struct object *obj)
 {
 	return object_kind_attr(obj->kind);
 }
@@ -1613,7 +1613,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	struct menu *m;
 	region r;
 	int selected;
-	byte value;
+	uint8_t value;
 	int type;
 
 	if (!obj)
@@ -1709,7 +1709,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	} else if (selected == UNIGNORE_THIS_EGO) {
 		ego_ignore_clear(obj);
 	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte ignore_value = ignore_level_of(obj);
+		uint8_t ignore_value = ignore_level_of(obj);
 		int ignore_type = ignore_type_of(obj);
 
 		ignore_level[ignore_type] = ignore_value;

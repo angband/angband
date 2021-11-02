@@ -32,7 +32,7 @@
 
 struct textblock {
 	wchar_t *text;
-	byte *attrs;
+	uint8_t *attrs;
 
 	size_t strlen;
 	size_t size;
@@ -83,7 +83,7 @@ static void textblock_resize_if_needed(textblock *tb, size_t additional_size)
 	}
 }
 
-static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
+static void textblock_vappend_c(textblock *tb, uint8_t attr, const char *fmt,
 		va_list vp)
 {
 	size_t temp_len = TEXTBLOCK_LEN_INITIAL;
@@ -125,7 +125,7 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 /**
  * Add a graphics tile to a text block.
  */
-void textblock_append_pict(textblock *tb, byte attr, int c)
+void textblock_append_pict(textblock *tb, uint8_t attr, int c)
 {
 	textblock_resize_if_needed(tb, 1);
 	tb->text[tb->strlen] = (wchar_t)c;
@@ -165,7 +165,7 @@ void textblock_append(textblock *tb, const char *fmt, ...)
 /**
  * Add coloured text to a text block, formatted.
  */
-void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...)
+void textblock_append_c(textblock *tb, uint8_t attr, const char *fmt, ...)
 {
 	va_list vp;
 	va_start(vp, fmt);
@@ -187,7 +187,7 @@ const wchar_t *textblock_text(textblock *tb)
 /**
  * Return a pointer to the text attrs.
  */
-const byte *textblock_attrs(textblock *tb)
+const uint8_t *textblock_attrs(textblock *tb)
 {
 	return tb->attrs;
 }
@@ -357,7 +357,7 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 /**
  * Function hook to output (colored) text to the screen or to a file.
  */
-void (*text_out_hook)(byte a, const char *str);
+void (*text_out_hook)(uint8_t a, const char *str);
 
 /**
  * Hack -- Where to wrap the text when using text_out().  Use the default
@@ -395,7 +395,7 @@ ang_file *text_out_file = NULL;
  * You must be careful to end all file output with a newline character
  * to "flush" the stored line position.
  */
-void text_out_to_file(byte a, const char *str)
+void text_out_to_file(uint8_t a, const char *str)
 {
 	const char *s;
 	char buf[1024];
@@ -527,7 +527,7 @@ void text_out(const char *fmt, ...)
  * Output text to the screen (in color) or to a file depending on the
  * selected hook.
  */
-void text_out_c(byte a, const char *fmt, ...)
+void text_out_c(uint8_t a, const char *fmt, ...)
 {
 	char buf[1024];
 	va_list vp;

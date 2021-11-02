@@ -36,7 +36,7 @@ struct projection *projections;
  * Specify attr/char pairs for visual special effects for project()
  * Ideally move these and PROJ-type colors to the UI - NRM
  */
-byte proj_to_attr[PROJ_MAX][BOLT_MAX];
+uint8_t proj_to_attr[PROJ_MAX][BOLT_MAX];
 wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
 /**
@@ -576,7 +576,7 @@ struct loc origin_get_loc(struct source origin)
  */
 bool project(struct source origin, int rad, struct loc finish,
 			 int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source,
+			 int degrees_of_arc, uint8_t diameter_of_source,
 			 const struct object *obj)
 {
 	int i, j, k, dist_from_centre;

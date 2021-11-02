@@ -236,7 +236,7 @@ const int *dist_offsets_x[10] =
  * first.  If the left, it must add 10 to the central direction to
  * access the second part of the table.
  */
-const byte side_dirs[20][8] = {
+const uint8_t side_dirs[20][8] = {
 	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias right */
 	{1, 4, 2, 7, 3, 8, 6, 9},
 	{2, 1, 3, 4, 6, 7, 9, 8},

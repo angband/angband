@@ -61,32 +61,32 @@
 /**
  * Dungeon constants
  */
-static byte square_size = 0;
+static uint8_t square_size = 0;
 
 /**
  * Player constants
  */
-static byte hist_size = 0;
+static uint8_t hist_size = 0;
 
 /**
  * Object constants
  */
-static byte obj_mod_max = 0;
-static byte of_size = 0;
-static byte elem_max = 0;
-static byte brand_max;
-static byte slay_max;
-static byte curse_max;
+static uint8_t obj_mod_max = 0;
+static uint8_t of_size = 0;
+static uint8_t elem_max = 0;
+static uint8_t brand_max;
+static uint8_t slay_max;
+static uint8_t curse_max;
 
 /**
  * Monster constants
  */
-static byte mflag_size = 0;
+static uint8_t mflag_size = 0;
 
 /**
  * Trap constants
  */
-static byte trf_size = 0;
+static uint8_t trf_size = 0;
 
 /**
  * Shorthand function pointer for rd_item version
@@ -100,12 +100,12 @@ static struct object *rd_item(void)
 {
 	struct object *obj = object_new();
 
-	byte tmp8u;
+	uint8_t tmp8u;
 	uint16_t tmp16u;
-	byte effect;
+	uint8_t effect;
 	size_t i;
 	char buf[128];
-	byte ver = 1;
+	uint8_t ver = 1;
 
 	rd_u16b(&tmp16u);
 	rd_byte(&ver);
@@ -261,7 +261,7 @@ static struct object *rd_item(void)
  */
 static bool rd_monster(struct chunk *c, struct monster *mon)
 {
-	byte tmp8u;
+	uint8_t tmp8u;
 	uint16_t tmp16u;
 	char race_name[80];
 	size_t j;
@@ -362,7 +362,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 static void rd_trap(struct trap *trap)
 {
 	int i;
-	byte tmp8u;
+	uint8_t tmp8u;
 	char buf[80];
 
 	rd_string(buf, sizeof(buf));
@@ -426,7 +426,7 @@ int rd_randomizer(void)
  */
 int rd_options(void)
 {
-	byte b;
+	uint8_t b;
 
 	/*** Special info */
 
@@ -454,7 +454,7 @@ int rd_options(void)
 
 	/* Read options */
 	while (1) {
-		byte value;
+		uint8_t value;
 		char name[40];
 		rd_string(name, sizeof name);
 
@@ -605,7 +605,7 @@ int rd_object_memory(void)
 
 	/* Read the kind knowledge */
 	for (i = 0; i < tmp16u; i++) {
-		byte tmp8u;
+		uint8_t tmp8u;
 		struct object_kind *kind = &k_info[i];
 
 		rd_byte(&tmp8u);
@@ -654,8 +654,8 @@ int rd_quests(void)
 int rd_player(void)
 {
 	int i;
-	byte num;
-	byte stat_max = 0;
+	uint8_t num;
+	uint8_t stat_max = 0;
 	char buf[80];
 	struct player_race *r;
 	struct player_shape *s;
@@ -844,7 +844,7 @@ int rd_player(void)
 int rd_ignore(void)
 {
 	size_t i, j;
-	byte tmp8u = 24;
+	uint8_t tmp8u = 24;
 	uint16_t file_e_max;
 	uint16_t itype_size;
 	uint16_t inscriptions;
@@ -895,7 +895,7 @@ int rd_ignore(void)
 	/* Read the aware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
-		byte tval, sval;
+		uint8_t tval, sval;
 		struct object_kind *k;
 
 		rd_string(tmp, sizeof(tmp));
@@ -915,7 +915,7 @@ int rd_ignore(void)
 	/* Read the unaware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
-		byte tval, sval;
+		uint8_t tval, sval;
 		struct object_kind *k;
 
 		rd_string(tmp, sizeof(tmp));
@@ -949,7 +949,7 @@ int rd_ignore(void)
 int rd_misc(void)
 {
 	size_t i;
-	byte tmp8u;
+	uint8_t tmp8u;
 	
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
@@ -1043,7 +1043,7 @@ int rd_artifacts(void)
 
 	/* Read the artifact flags */
 	for (i = 0; i < tmp16u; i++) {
-		byte tmp8u;
+		uint8_t tmp8u;
 
 		rd_byte(&tmp8u);
 		aup_info[i].created = tmp8u ? true : false;
@@ -1119,7 +1119,7 @@ int rd_player_spells(void)
  */
 static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 {
-	byte code;
+	uint8_t code;
 	struct object *last_gear_obj = NULL;
 
 	/* Get the first item code */
@@ -1198,7 +1198,7 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 	for (i = 0; i < tmp16u; i++) {
 		struct store *store = &stores[i];
 
-		byte own, num;
+		uint8_t own, num;
 
 		/* Read the basic info */
 		rd_byte(&own);
@@ -1267,8 +1267,8 @@ static int rd_dungeon_aux(struct chunk **c)
 
 	uint16_t height, width;
 
-	byte count;
-	byte tmp8u;
+	uint8_t count;
+	uint8_t tmp8u;
 	uint16_t tmp16u;
 	char name[100];
 
@@ -1629,7 +1629,7 @@ int rd_chunks(void)
 		if (OPT(player, birth_levels_persist)) {
 			char buf[80];
 			int i;
-			byte tmp8u;
+			uint8_t tmp8u;
 			uint16_t tmp16u;
 
 			rd_string(buf, sizeof(buf));

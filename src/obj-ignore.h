@@ -97,7 +97,7 @@ void autoinscribe_ground(struct player *p);
 void autoinscribe_pack(struct player *p);
 void object_ignore_flavor_of(const struct object *obj);
 ignore_type_t ignore_type_of(const struct object *obj);
-byte ignore_level_of(const struct object *obj);
+uint8_t ignore_level_of(const struct object *obj);
 bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype);
 void kind_ignore_clear(struct object_kind *kind);
 void ego_ignore(struct object *obj);
@@ -114,7 +114,7 @@ bool ignore_known_item_ok(const struct player *p, const struct object *obj);
 void ignore_drop(struct player *p);
 const char *ignore_name_for_type(ignore_type_t type);
 
-extern byte ignore_level[];
+extern uint8_t ignore_level[];
 extern const size_t ignore_size;
 
 /* ui-options.c */

@@ -35,7 +35,7 @@ static void display_score_page(const struct high_score scores[], int start,
 	/* Dump 5 entries */
 	for (n = 0; start < count && n < 5; start++, n++) {
 		const struct high_score *score = &scores[start];
-		byte attr;
+		uint8_t attr;
 		int clev, mlev, cdun, mdun;
 		const char *user, *gold, *when, *aged;
 		struct player_class *c;

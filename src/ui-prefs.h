@@ -33,15 +33,15 @@ extern int use_graphics;
 extern int arg_graphics;
 extern bool arg_graphics_nice;
 
-extern byte *monster_x_attr;
+extern uint8_t *monster_x_attr;
 extern wchar_t *monster_x_char;
-extern byte *kind_x_attr;
+extern uint8_t *kind_x_attr;
 extern wchar_t *kind_x_char;
-extern byte *feat_x_attr[LIGHTING_MAX];
+extern uint8_t *feat_x_attr[LIGHTING_MAX];
 extern wchar_t *feat_x_char[LIGHTING_MAX];
-extern byte *trap_x_attr[LIGHTING_MAX];
+extern uint8_t *trap_x_attr[LIGHTING_MAX];
 extern wchar_t *trap_x_char[LIGHTING_MAX];
-extern byte *flavor_x_attr;
+extern uint8_t *flavor_x_attr;
 extern wchar_t *flavor_x_char;
 
 /**

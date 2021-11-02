@@ -61,7 +61,7 @@ struct store {
 	unsigned int sidx;
 	const char *name;
 
-	byte stock_num;				/* Stock -- Number of entries */
+	uint8_t stock_num;		/* Stock -- Number of entries */
 	int16_t stock_size;		/* Stock -- Total Size of Array */
 	struct object *stock;		/* Stock -- Actual stock items */
 	struct object *stock_k;		/* Stock -- Stock as known by the character */

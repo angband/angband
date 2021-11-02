@@ -214,7 +214,7 @@ struct object_kind {
 	bool *slays;
 	int *curses;			/**< Array of curse powers */
 
-	byte d_attr;			/**< Default object attribute */
+	uint8_t d_attr;			/**< Default object attribute */
 	wchar_t d_char;			/**< Default object character */
 
 	int alloc_prob;			/**< Allocation: commonness */
@@ -243,7 +243,7 @@ struct object_kind {
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */
 
-	byte ignore;  	/**< Ignore settings */
+	uint8_t ignore;  	/**< Ignore settings */
 	bool everseen; 	/**< Kind has been seen (to despoilify ignore menus) */
 };
 
@@ -430,21 +430,21 @@ struct object {
 
 	uint16_t oidx;		/**< Item list index, if any */
 
-	struct loc grid;		/**< position on map, or (0, 0) */
+	struct loc grid;	/**< position on map, or (0, 0) */
 
-	byte tval;				/**< Item type (from kind) */
-	byte sval;				/**< Item sub-type (from kind) */
+	uint8_t tval;		/**< Item type (from kind) */
+	uint8_t sval;		/**< Item sub-type (from kind) */
 
-	int16_t pval;				/**< Item extra-parameter */
+	int16_t pval;		/**< Item extra-parameter */
 
-	int16_t weight;				/**< Item weight */
+	int16_t weight;		/**< Item weight */
 
-	byte dd;				/**< Number of damage dice */
-	byte ds;				/**< Number of sides on each damage die */
-	int16_t ac;				/**< Normal AC */
-	int16_t to_a;				/**< Plusses to AC */
-	int16_t to_h;				/**< Plusses to hit */
-	int16_t to_d;				/**< Plusses to damage */
+	uint8_t dd;		/**< Number of damage dice */
+	uint8_t ds;		/**< Number of sides on each damage die */
+	int16_t ac;		/**< Normal AC */
+	int16_t to_a;		/**< Plusses to AC */
+	int16_t to_h;		/**< Plusses to hit */
+	int16_t to_d;		/**< Plusses to damage */
 
 	bitflag flags[OF_SIZE];	/**< Object flags */
 	int16_t modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
@@ -459,14 +459,14 @@ struct object {
 	random_value time;		/**< Recharge time (rods/activation) */
 	int16_t timeout;		/**< Timeout Counter */
 
-	byte number;			/**< Number of items */
+	uint8_t number;			/**< Number of items */
 	bitflag notice;			/**< Attention paid to the object */
 
 	int16_t held_m_idx;		/**< Monster holding us (if any) */
 	int16_t mimicking_m_idx;	/**< Monster mimicking us (if any) */
 
-	byte origin;			/**< How this item was found */
-	byte origin_depth;		/**< What depth the item was found at */
+	uint8_t origin;			/**< How this item was found */
+	uint8_t origin_depth;		/**< What depth the item was found at */
 	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
 	quark_t note; 			/**< Inscription index */
@@ -521,10 +521,10 @@ struct flavor
 	struct flavor *next;
 	unsigned int fidx;
 
-	byte tval;	  /* Associated object type */
-	byte sval;	  /* Associated object sub-type */
+	uint8_t tval;	/* Associated object type */
+	uint8_t sval;	/* Associated object sub-type */
 
-	byte d_attr;	/* Default flavor attribute */
+	uint8_t d_attr;	/* Default flavor attribute */
 	wchar_t d_char;	/* Default flavor character */
 };
 

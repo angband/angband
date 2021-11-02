@@ -77,8 +77,8 @@ bool character_saved;
 /**
  * Magic bits at beginning of savefile
  */
-static const byte savefile_magic[4] = { 83, 97, 118, 101 };
-static const byte savefile_name[4] = "VNLA";
+static const uint8_t savefile_magic[4] = { 83, 97, 118, 101 };
+static const uint8_t savefile_name[4] = "VNLA";
 
 /* Some useful types */
 typedef int (*loader_t)(void);
@@ -155,7 +155,7 @@ static const struct blockinfo loaders[] = {
 
 
 /* Buffer bits */
-static byte *buffer;
+static uint8_t *buffer;
 static uint32_t buffer_size;
 static uint32_t buffer_pos;
 static uint32_t buffer_check;
@@ -186,7 +186,7 @@ void note(const char *message)
  * Base put/get
  * ------------------------------------------------------------------------ */
 
-static void sf_put(byte v)
+static void sf_put(uint8_t v)
 {
 	assert(buffer != NULL);
 	assert(buffer_size > 0);
@@ -203,7 +203,7 @@ static void sf_put(byte v)
 	buffer_check += v;
 }
 
-static byte sf_get(void)
+static uint8_t sf_get(void)
 {
 	if ((buffer == NULL) || (buffer_size <= 0) || (buffer_pos >= buffer_size))
 		quit("Broken savefile - probably from a development version");
@@ -219,15 +219,15 @@ static byte sf_get(void)
  * Accessor functions
  * ------------------------------------------------------------------------ */
 
-void wr_byte(byte v)
+void wr_byte(uint8_t v)
 {
 	sf_put(v);
 }
 
 void wr_u16b(uint16_t v)
 {
-	sf_put((byte)(v & 0xFF));
-	sf_put((byte)((v >> 8) & 0xFF));
+	sf_put((uint8_t)(v & 0xFF));
+	sf_put((uint8_t)((v >> 8) & 0xFF));
 }
 
 void wr_s16b(int16_t v)
@@ -237,10 +237,10 @@ void wr_s16b(int16_t v)
 
 void wr_u32b(uint32_t v)
 {
-	sf_put((byte)(v & 0xFF));
-	sf_put((byte)((v >> 8) & 0xFF));
-	sf_put((byte)((v >> 16) & 0xFF));
-	sf_put((byte)((v >> 24) & 0xFF));
+	sf_put((uint8_t)(v & 0xFF));
+	sf_put((uint8_t)((v >> 8) & 0xFF));
+	sf_put((uint8_t)((v >> 16) & 0xFF));
+	sf_put((uint8_t)((v >> 24) & 0xFF));
 }
 
 void wr_s32b(int32_t v)
@@ -259,7 +259,7 @@ void wr_string(const char *str)
 }
 
 
-void rd_byte(byte *ip)
+void rd_byte(uint8_t *ip)
 {
 	*ip = sf_get();
 }
@@ -290,7 +290,7 @@ void rd_s32b(int32_t *ip)
 
 void rd_string(char *str, int max)
 {
-	byte tmp8u;
+	uint8_t tmp8u;
 	int i = 0;
 
 	do {
@@ -305,7 +305,7 @@ void rd_string(char *str, int max)
 
 void strip_bytes(int n)
 {
-	byte tmp8u;
+	uint8_t tmp8u;
 	while (n--) rd_byte(&tmp8u);
 }
 
@@ -323,7 +323,7 @@ void pad_bytes(int n)
 
 static bool try_save(ang_file *file)
 {
-	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	uint8_t savefile_head[SAVEFILE_HEAD_SIZE];
 	size_t i, pos;
 	bool success = true;
 
@@ -465,7 +465,7 @@ bool savefile_save(const char *path)
  * Check the savefile header file clearly inicates that it's a savefile
  */
 static bool check_header(ang_file *f) {
-	byte head[8];
+	uint8_t head[8];
 
 	if (file_read(f, (char *) &head, 8) == 8 &&
 			memcmp(&head[0], savefile_magic, 4) == 0 &&
@@ -479,7 +479,7 @@ static bool check_header(ang_file *f) {
  * Get the next block header from the savefile
  */
 static errr next_blockheader(ang_file *f, struct blockheader *b) {
-	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	uint8_t savefile_head[SAVEFILE_HEAD_SIZE];
 	size_t len;
 
 	len = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);

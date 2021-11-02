@@ -1943,7 +1943,7 @@ static void add_slay(struct artifact *art)
 static void add_damage_dice(struct artifact *art)
 {
 	/* CR 2001-09-02: changed this to increments 1 or 2 only */
-	art->dd += (byte)randint1(2);
+	art->dd += (uint8_t)randint1(2);
 	file_putf(log_file, "Adding ability: extra damage dice (now %d dice)\n",
 			  art->dd);
 }

@@ -311,7 +311,7 @@ struct infowin
 	int16_t w, h;
 	uint16_t b;
 
-	byte byte1;
+	uint8_t byte1;
 
 	unsigned int mapped:1;
 	unsigned int redraw:1;
@@ -383,7 +383,7 @@ struct infofnt
 	int16_t hgt;
 	int16_t asc;
 
-	byte off;
+	uint8_t off;
 
 	unsigned int mono:1;
 	unsigned int nuke:1;
@@ -494,7 +494,8 @@ static int gamma_val = 0;
 /**
  * Hack -- Convert an RGB value to an X11 Pixel, or die.
  */
-static uint32_t create_pixel(Display *dpy, byte red, byte green, byte blue)
+static uint32_t create_pixel(Display *dpy, uint8_t red, uint8_t green,
+		uint8_t blue)
 {
 	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
 
@@ -1566,7 +1567,7 @@ static infoclr *xor;
 /**
  * Color info (unused, red, green, blue).
  */
-static byte color_table_x11[MAX_COLORS][4];
+static uint8_t color_table_x11[MAX_COLORS][4];
 
 
 /**
@@ -1614,7 +1615,7 @@ static void react_keypress(XKeyEvent *ev)
 	int mx = (ev->state & m->super_mask) ? true : false;
 	int kp = false;
 
-	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
+	uint8_t mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);

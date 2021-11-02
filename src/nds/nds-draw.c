@@ -106,18 +106,18 @@ void nds_draw_str_px(uint16_t x, uint16_t y, const char *str, nds_pixel clr)
 	}
 }
 
-void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
+void nds_draw_char(uint8_t x, uint8_t y, char c, nds_pixel clr)
 {
 	nds_draw_char_px(x * nds_font->width, y * nds_font->height, c, clr);
 }
 
-void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr)
+void nds_draw_str(uint8_t x, uint8_t y, const char *str, nds_pixel clr)
 {
 	nds_draw_str_px(x * nds_font->width, y * nds_font->height, str, clr);
 }
 
 void nds_draw_cursor(int x, int y) {
-	for (byte xx = 0; xx < nds_font->width; xx++) {
+	for (uint8_t xx = 0; xx < nds_font->width; xx++) {
 		nds_draw_pixel(x * nds_font->width + xx,
 		               y * nds_font->height,
 		               NDS_CURSOR_COLOR);
@@ -125,7 +125,7 @@ void nds_draw_cursor(int x, int y) {
 		               y * nds_font->height + (nds_font->height - 1),
 		               NDS_CURSOR_COLOR);
 	}
-	for (byte yy = 0; yy < nds_font->height; yy++) {
+	for (uint8_t yy = 0; yy < nds_font->height; yy++) {
 		nds_draw_pixel(x * nds_font->width,
 		               y * nds_font->height + yy,
 		               NDS_CURSOR_COLOR);
@@ -147,8 +147,8 @@ void nds_pixel_to_square(int *const x, int *const y, const int ox,
 
 void nds_log(const char *msg)
 {
-	static byte x = 2, y = 1;
-	for (byte i = 0; msg[i] != '\0'; i++) {
+	static uint8_t x = 2, y = 1;
+	for (uint8_t i = 0; msg[i] != '\0'; i++) {
 		nds_draw_char(x, y, msg[i], NDS_WHITE_PIXEL);
 		x++;
 		if (msg[i] == '\n' || x > NDS_SCREEN_COLS - 2) {

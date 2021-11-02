@@ -45,7 +45,7 @@ enum {
 
 struct timed_grade {
 	int grade;
-	byte color;
+	uint8_t color;
 	int max;
 	char *name;
 	char *up_msg;

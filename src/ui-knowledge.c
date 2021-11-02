@@ -108,7 +108,7 @@ typedef struct {
 	wchar_t *(*xchar)(int oid);
 
 	/* Get color attr for OID (by address) */
-	byte *(*xattr)(int oid);
+	uint8_t *(*xattr)(int oid);
 
 	/* Returns optional extra prompt */
 	const char *(*xtra_prompt)(int oid);
@@ -138,8 +138,8 @@ static join_t *default_join;
 /**
  * Clipboard variables for copy & paste in visual mode
  */
-static byte attr_idx = 0;
-static byte char_idx = 0;
+static uint8_t attr_idx = 0;
+static wchar_t char_idx = 0;
 
 /**
  * ------------------------------------------------------------------------
@@ -218,7 +218,7 @@ static int logical_height(int height)
  * Display tiles.
  */
 static void display_tiles(int col, int row, int height, int width,
-						  byte attr_top, byte char_left)
+		uint8_t attr_top, wchar_t char_left)
 {
 	int i, j;
 
@@ -233,8 +233,8 @@ static void display_tiles(int col, int row, int height, int width,
 	for (i = 0; i < height; i++) {
 		/* Display columns until done */
 		for (j = 0; j < width; j++) {
-			byte a;
-			unsigned char c;
+			uint8_t a;
+			wchar_t c;
 			int x = col + actual_width(j);
 			int y = row + actual_height(i);
 			int ia, ic;
@@ -242,8 +242,8 @@ static void display_tiles(int col, int row, int height, int width,
 			ia = attr_top + i;
 			ic = char_left + j;
 
-			a = (byte)ia;
-			c = (unsigned char)ic;
+			a = (uint8_t)ia;
+			c = (wchar_t)ic;
 
 			/* Display symbol */
 			big_pad(x, y, a, c);
@@ -255,8 +255,8 @@ static void display_tiles(int col, int row, int height, int width,
 /**
  * Place the cursor at the correct position for tile picking
  */
-static void place_tile_cursor(int col, int row, byte a, byte c, byte attr_top,
-							  byte char_left)
+static void place_tile_cursor(int col, int row, uint8_t a, wchar_t c,
+		uint8_t attr_top, wchar_t char_left)
 {
 	int i = a - attr_top;
 	int j = c - char_left;
@@ -293,12 +293,11 @@ static void remove_tiles(int col, int row, bool *picker_ptr, int width,
  *  Do tile picker command -- Change tiles
  */
 static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
-								int height, int width, byte *attr_top_ptr,
-								byte *char_left_ptr, byte *cur_attr_ptr,
-								byte *cur_char_ptr, int col, int row,
-								int *delay)
+		int height, int width, uint8_t *attr_top_ptr,
+		wchar_t *char_left_ptr, uint8_t *cur_attr_ptr,
+		wchar_t *cur_char_ptr, int col, int row, int *delay)
 {
-	static byte attr_old = 0;
+	static uint8_t attr_old = 0;
 	static char char_old = 0;
 
 	/* These are the distance we want to maintain between the
@@ -313,8 +312,8 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 	if (*tile_picker_ptr &&  (ke.type == EVT_MOUSE)) {
 		int eff_width = actual_width(width);
 		int eff_height = actual_height(height);
-		byte a = *cur_attr_ptr;
-		byte c = *cur_char_ptr;
+		uint8_t a = *cur_attr_ptr;
+		wchar_t c = *cur_char_ptr;
 
 		int my = logical_height(ke.mouse.y - row);
 		int mx = logical_width(ke.mouse.x - col);
@@ -399,8 +398,8 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				*tile_picker_ptr = true;
 				bigcurs = true;
 
-				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
-				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
+				*attr_top_ptr = (uint8_t)MAX(0, (int)*cur_attr_ptr - frame_top);
+				*char_left_ptr = (wchar_t)MAX(0, (int)*cur_char_ptr - frame_left);
 
 				attr_old = *cur_attr_ptr;
 				char_old = *cur_char_ptr;
@@ -430,13 +429,13 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (attr_idx) {
 				/* Set the char */
 				*cur_attr_ptr = attr_idx;
-				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
+				*attr_top_ptr = (uint8_t)MAX(0, (int)*cur_attr_ptr - frame_top);
 			}
 
 			if (char_idx) {
 				/* Set the char */
 				*cur_char_ptr = char_idx;
-				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
+				*char_left_ptr = (wchar_t)MAX(0, (int)*cur_char_ptr - frame_left);
 			}
 
 			return true;
@@ -445,8 +444,8 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 		default:
 		{
 			int d = target_dir(ke.key);
-			byte a = *cur_attr_ptr;
-			byte c = *cur_char_ptr;
+			uint8_t a = *cur_attr_ptr;
+			wchar_t c = *cur_char_ptr;
 
 			if (!*tile_picker_ptr)
 				break;
@@ -499,7 +498,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 /**
  * Display glyph and colours
  */
-static void display_glyphs(int col, int row, int height, int width, byte a, 
+static void display_glyphs(int col, int row, int height, int width, uint8_t a,
 			   wchar_t c)
 {
 	int i;
@@ -522,11 +521,11 @@ static void display_glyphs(int col, int row, int height, int width, byte a,
  * Do glyph picker command -- Change glyphs
  */
 static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
-			  int height, int width, byte *cur_attr_ptr,
+			  int height, int width, uint8_t *cur_attr_ptr,
 			  wchar_t *cur_char_ptr, int col, int row)
 {
-	static byte attr_old = 0;
-	static char char_old = 0;
+	static uint8_t attr_old = 0;
+	static wchar_t char_old = 0;
 	
 	/* Get mouse movement */
 	if (*glyph_picker_ptr && (ke.type == EVT_MOUSE)) {
@@ -650,7 +649,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	    default:
 	    {
 		    int d = target_dir(ke.key);
-		    byte a = *cur_attr_ptr;
+		    uint8_t a = *cur_attr_ptr;
 		    
 		    if (!*glyph_picker_ptr)
 				break;
@@ -682,7 +681,7 @@ static void display_group_member(struct menu *menu, int oid,
 						bool cursor, int row, int col, int wid)
 {
 	const member_funcs *o_funcs = menu->menu_data;
-	byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
+	uint8_t attr = curs_attrs[CURS_KNOWN][cursor == oid];
 
 	(void)wid;
 
@@ -696,7 +695,7 @@ static void display_group_member(struct menu *menu, int oid,
 	/* Do visual mode */
 	if (o_funcs->is_visual && o_funcs->xattr) {
 		wchar_t c = *o_funcs->xchar(oid);
-		byte a = *o_funcs->xattr(oid);
+		uint8_t a = *o_funcs->xattr(oid);
 
 		c_put_str(attr, format("%d/%d", a, c), row, 60);
 	}
@@ -746,8 +745,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	bool tiles = (current_graphics_mode != NULL);
 	bool tile_picker = false;
 	bool glyph_picker = false;
-	byte attr_top = 0;
-	byte char_left = 0;
+	uint8_t attr_top = 0;
+	wchar_t char_left = 0;
 
 	int delay = 0;
 
@@ -937,17 +936,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		if (tile_picker) {
 		        bigcurs = true;
 			display_tiles(g_name_len + 3, 7, browser_rows - 1,
-				      wid - (g_name_len + 3), attr_top, 
+				      wid - (g_name_len + 3), attr_top,
 				      char_left);
 			place_tile_cursor(g_name_len + 3, 7, 
 					  *o_funcs.xattr(oid),
-					  (byte) *o_funcs.xchar(oid), 
+					  *o_funcs.xchar(oid),
 					  attr_top, char_left);
 		}
 
 		if (glyph_picker) {
 		        display_glyphs(g_name_len + 3, 7, browser_rows - 1,
-				       wid - (g_name_len + 3), 
+				       wid - (g_name_len + 3),
 				       *o_funcs.xattr(oid),
 				       *o_funcs.xchar(oid));
 		}
@@ -979,18 +978,19 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		if (o_funcs.xattr && o_funcs.xchar) {
 			if (tiles) {
 				if (tile_picker_command(ke, &tile_picker, 
-										browser_rows - 1,
-										wid - (g_name_len + 3),
-										&attr_top, &char_left,
-										o_funcs.xattr(oid),
-										(byte *) o_funcs.xchar(oid), 
-										g_name_len + 3, 7, &delay))
+						browser_rows - 1,
+						wid - (g_name_len + 3),
+						&attr_top, &char_left,
+						o_funcs.xattr(oid),
+						o_funcs.xchar(oid),
+						g_name_len + 3, 7, &delay))
 					continue;
 			} else {
 				if (glyph_command(ke, &glyph_picker, 
-								  browser_rows - 1, wid - (g_name_len + 3), 
-								  o_funcs.xattr(oid), o_funcs.xchar(oid), 
-								  g_name_len + 3, 7))
+						browser_rows - 1, wid - (g_name_len + 3),
+						o_funcs.xattr(oid),
+						o_funcs.xchar(oid),
+						g_name_len + 3, 7))
 					continue;
 			}
 		}
@@ -1149,8 +1149,8 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	struct monster_lore *lore = &l_list[r_idx];
 
 	/* Choose colors */
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	byte a = monster_x_attr[race->ridx];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t a = monster_x_attr[race->ridx];
 	wchar_t c = monster_x_char[race->ridx];
 
 	if ((tile_height != 1) && (a & 0x80)) {
@@ -1215,7 +1215,7 @@ static wchar_t *m_xchar(int oid)
 	return &monster_x_char[default_join[oid].oid];
 }
 
-static byte *m_xattr(int oid)
+static uint8_t *m_xattr(int oid)
 {
 	return &monster_x_attr[default_join[oid].oid];
 }
@@ -1430,7 +1430,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
  */
 static void display_artifact(int col, int row, bool cursor, int oid)
 {
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	char o_name[80];
 
 	get_artifact_display_name(o_name, sizeof o_name, oid);
@@ -1679,7 +1679,7 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
 	struct ego_item *ego = &e_info[default_item_id(oid)];
 
 	/* Choose a color */
-	byte attr = curs_attrs[0 != (int)ego->everseen][0 != (int)cursor];
+	uint8_t attr = curs_attrs[0 != (int)ego->everseen][0 != (int)cursor];
 
 	/* Display the name */
 	c_prt(attr, ego->name, row, col);
@@ -1797,10 +1797,10 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 	/* Choose a color */
 	bool aware = (!kind->flavor || kind->aware);
-	byte attr = curs_attrs[(int)aware][(int)cursor];
+	uint8_t attr = curs_attrs[(int)aware][(int)cursor];
 
 	/* Graphics versions of the object_char and object_attr defines */
-	byte a = object_kind_attr(kind);
+	uint8_t a = object_kind_attr(kind);
 	wchar_t c = object_kind_char(kind);
 
 	/* Don't display special artifacts */
@@ -1936,7 +1936,7 @@ static wchar_t *o_xchar(int oid)
 		return &flavor_x_char[kind->flavor->fidx];
 }
 
-static byte *o_xattr(int oid)
+static uint8_t *o_xattr(int oid)
 {
 	struct object_kind *kind = objkind_byid(oid);
 	if (!kind) return NULL;
@@ -2088,7 +2088,7 @@ static const char *rune_group_text[] =
  */
 static void display_rune(int col, int row, bool cursor, int oid )
 {
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	const char *inscrip = quark_str(rune_note(oid));
 
 	c_prt(attr, rune_name(oid), row, col);
@@ -2242,7 +2242,7 @@ static const char *feature_group_text[] =
 static void display_feature(int col, int row, bool cursor, int oid )
 {
 	struct feature *feat = &f_info[oid];
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 	c_prt(attr, feat->name, row, col);
 
@@ -2288,7 +2288,7 @@ static const char *fkind_name(int gid)
 static enum grid_light_level f_uik_lighting = LIGHTING_LIT;
 
 /* XXX needs *better* retooling for multi-light terrain */
-static byte *f_xattr(int oid)
+static uint8_t *f_xattr(int oid)
 {
 	return &feat_x_attr[f_uik_lighting][oid];
 }
@@ -2405,7 +2405,7 @@ static const char *trap_group_text[] =
 static void display_trap(int col, int row, bool cursor, int oid )
 {
 	struct trap_kind *trap = &trap_info[oid];
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 	c_prt(attr, trap->desc, row, col);
 
@@ -2473,7 +2473,7 @@ static const char *tkind_name(int gid)
 static enum grid_light_level t_uik_lighting = LIGHTING_LIT;
 
 /* XXX needs *better* retooling for multi-light terrain */
-static byte *t_xattr(int oid)
+static uint8_t *t_xattr(int oid)
 {
 	return &trap_x_attr[t_uik_lighting][oid];
 }
@@ -3405,7 +3405,7 @@ void do_cmd_messages(void)
 		for (j = 0; (j < hgt - 4) && (i + j < n); j++) {
 			const char *msg;
 			const char *str = message_str(i + j);
-			byte attr = message_color(i + j);
+			uint8_t attr = message_color(i + j);
 			uint16_t count = message_count(i + j);
 
 			if (count == 1)
