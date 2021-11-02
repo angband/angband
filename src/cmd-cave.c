@@ -797,7 +797,7 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		more = true;
 	} else {
 		msg("You set off the %s!", trap->kind->name);
-		hit_trap(grid, -1);
+		hit_trap(grid, -1, false);
 	}
 
 	/* Result */
@@ -1001,7 +1001,7 @@ void do_cmd_steal(struct command *cmd)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir, bool disarm)
+void move_player(int dir, bool disarm, bool skip_trap_save)
 {
 	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
 
@@ -1132,10 +1132,11 @@ void move_player(int dir, bool disarm)
 		/* Discover invisible traps, set off visible ones */
 		if (square_issecrettrap(cave, grid)) {
 			disturb(player);
-			hit_trap(grid, 0);
-		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
+			hit_trap(grid, 0, skip_trap_save);
+		} else if (square_isdisarmabletrap(cave, grid)
+				&& (!trapsafe || !skip_trap_save)) {
 			disturb(player);
-			hit_trap(grid, 0);
+			hit_trap(grid, 0, skip_trap_save);
 		}
 
 		/* Update view and search */
@@ -1237,12 +1238,15 @@ void do_cmd_walk(struct command *cmd)
 	player->upkeep->energy_use = energy_per_move(player);
 
 	/* Attempt to disarm unless it's a trap and we're trapsafe */
-	move_player(dir, !(square_isdisarmabletrap(cave, grid) && trapsafe));
+	move_player(dir, !(square_isdisarmabletrap(cave, grid) && trapsafe),
+		false);
 }
 
 
 /**
  * Walk into a trap.
+ * BUG:  skipping saving versus the trap's effect only works for non-delayed
+ * traps; see issue 3425 on GitHub.
  */
 void do_cmd_jump(struct command *cmd)
 {
@@ -1273,7 +1277,7 @@ void do_cmd_jump(struct command *cmd)
 
 	player->upkeep->energy_use = energy_per_move(player);
 
-	move_player(dir, false);
+	move_player(dir, false, true);
 }
 
 

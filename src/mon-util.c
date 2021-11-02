@@ -513,7 +513,7 @@ static void player_leaving(struct loc grid1, struct loc grid2)
 	}
 
 	/* Delayed traps trigger when the player leaves. */
-	hit_trap(grid1, 1);
+	hit_trap(grid1, 1, false);
 }
 
 /**

@@ -32,7 +32,7 @@ void do_cmd_tunnel(struct command *cmd);
 void do_cmd_disarm(struct command *cmd);
 void do_cmd_alter(struct command *cmd);
 void do_cmd_steal(struct command *cmd);
-void move_player(int dir, bool disarm);
+void move_player(int dir, bool disarm, bool skip_trap_save);
 void do_cmd_walk(struct command *cmd);
 void do_cmd_jump(struct command *cmd);
 void do_cmd_run(struct command *cmd);

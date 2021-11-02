@@ -1769,7 +1769,7 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 			}
 		}
 
-		move_player(clockwise_ddd[d], false);
+		move_player(clockwise_ddd[d], false, false);
 		moves--;
 		if (attack) return false;
 	}

@@ -861,7 +861,7 @@ void run_step(int dir)
 	player->upkeep->energy_use = energy_per_move(player);
 
 	/* Move the player; running straight into a trap == trying to disarm */
-	move_player(run_cur_dir, dir && disarm ? true : false);
+	move_player(run_cur_dir, dir && disarm ? true : false, false);
 
 	/* Decrease counter if it hasn't been cancelled */
 	/* occurs after movement so that using p->u->running as flag works */

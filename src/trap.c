@@ -474,14 +474,14 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 /**
  * Hit a trap. 
  */
-extern void hit_trap(struct loc grid, int delayed)
+extern void hit_trap(struct loc grid, int delayed, bool skip_save)
 {
 	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
 
 	/* The player is safe from all traps */
-	if (player_is_trapsafe(player)) return;
+	if (player_is_trapsafe(player) && !skip_save) return;
 
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
@@ -500,7 +500,7 @@ extern void hit_trap(struct loc grid, int delayed)
 		disturb(player);
 
 		/* Trap immune player learns the rune */
-		if (player_of_has(player, OF_TRAP_IMMUNE)) {
+		if (player_of_has(player, OF_TRAP_IMMUNE) && !skip_save) {
 			equip_learn_flag(player, OF_TRAP_IMMUNE);
 			break;
 		}
@@ -509,24 +509,26 @@ extern void hit_trap(struct loc grid, int delayed)
 		if (trap->kind->msg)
 			msg("%s", trap->kind->msg);
 
-		/* Test for save due to flag */
-		for (flag = of_next(trap->kind->save_flags, FLAG_START);
-			 flag != FLAG_END;
-			 flag = of_next(trap->kind->save_flags, flag + 1))
-			if (player_of_has(player, flag)) {
+		if (!skip_save) {
+			/* Test for save due to flag */
+			for (flag = of_next(trap->kind->save_flags, FLAG_START);
+					flag != FLAG_END;
+					flag = of_next(trap->kind->save_flags, flag + 1))
+				if (player_of_has(player, flag)) {
+					saved = true;
+					equip_learn_flag(player, flag);
+				}
+
+			/* Test for save due to armor */
+			if (trf_has(trap->kind->flags, TRF_SAVE_ARMOR)
+					&& !check_hit(player, 125))
 				saved = true;
-				equip_learn_flag(player, flag);
-			}
 
-		/* Test for save due to armor */
-		if (trf_has(trap->kind->flags, TRF_SAVE_ARMOR)
-			&& !check_hit(player, 125))
-			saved = true;
-
-		/* Test for save due to saving throw */
-		if (trf_has(trap->kind->flags, TRF_SAVE_THROW) &&
-			(randint0(100) < player->state.skills[SKILL_SAVE]))
-			saved = true;
+			/* Test for save due to saving throw */
+			if (trf_has(trap->kind->flags, TRF_SAVE_THROW)
+					&& (randint0(100) < player->state.skills[SKILL_SAVE]))
+				saved = true;
+		}
 
 		/* Save, or fire off the trap */
 		if (saved) {
@@ -577,15 +579,18 @@ extern void hit_trap(struct loc grid, int delayed)
 		trf_on(trap->flags, TRF_VISIBLE);
 	}
 
-    /* Verify traps (remove marker if appropriate) */
-    if (square_verify_trap(cave, grid, 0)) {
-	/* At least one trap left.  Memorize the visible ones and the grid. */
-	square_memorize_traps(cave, grid);
-	square_memorize(cave, grid);
-    }
-    if (square_isseen(cave, grid)) {
-	square_light_spot(cave, grid);
-    }
+	/* Verify traps (remove marker if appropriate) */
+	if (square_verify_trap(cave, grid, 0)) {
+		/*
+		 * At least one trap left.  Memorize the visible ones and the
+		 * grid.
+		 */
+		square_memorize_traps(cave, grid);
+		square_memorize(cave, grid);
+	}
+	if (square_isseen(cave, grid)) {
+		square_light_spot(cave, grid);
+	}
 }
 
 /**
