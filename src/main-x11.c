@@ -494,7 +494,7 @@ static int gamma_val = 0;
 /**
  * Hack -- Convert an RGB value to an X11 Pixel, or die.
  */
-static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
+static uint32_t create_pixel(Display *dpy, byte red, byte green, byte blue)
 {
 	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
 
@@ -1802,7 +1802,7 @@ static errr CheckEvent(bool wait)
 			else z = 0;
 
 			/* Save a byte in ui-term/Term_mousepress for some reason */
-			u32b state = ((XButtonEvent*) xev)->state;
+			uint32_t state = ((XButtonEvent*) xev)->state;
 			if(state & ShiftMask) {
 				z |= (KC_MOD_SHIFT << 4);
 			}

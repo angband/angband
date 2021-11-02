@@ -85,14 +85,14 @@ typedef int (*loader_t)(void);
 
 struct blockheader {
 	char name[16];
-	u32b version;
-	u32b size;
+	uint32_t version;
+	uint32_t size;
 };
 
 struct blockinfo {
 	char name[16];
 	loader_t loader;
-	u32b version;
+	uint32_t version;
 };
 
 /**
@@ -101,7 +101,7 @@ struct blockinfo {
 static const struct {
 	char name[16];
 	void (*save)(void);
-	u32b version;	
+	uint32_t version;
 } savers[] = {
 	{ "description", wr_description, 1 },
 	{ "rng", wr_randomizer, 1 },
@@ -156,9 +156,9 @@ static const struct blockinfo loaders[] = {
 
 /* Buffer bits */
 static byte *buffer;
-static u32b buffer_size;
-static u32b buffer_pos;
-static u32b buffer_check;
+static uint32_t buffer_size;
+static uint32_t buffer_pos;
+static uint32_t buffer_check;
 
 #define BUFFER_INITIAL_SIZE		1024
 #define BUFFER_BLOCK_INCREMENT	1024
@@ -235,7 +235,7 @@ void wr_s16b(int16_t v)
 	wr_u16b((uint16_t)v);
 }
 
-void wr_u32b(u32b v)
+void wr_u32b(uint32_t v)
 {
 	sf_put((byte)(v & 0xFF));
 	sf_put((byte)((v >> 8) & 0xFF));
@@ -245,7 +245,7 @@ void wr_u32b(u32b v)
 
 void wr_s32b(int32_t v)
 {
-	wr_u32b((u32b)v);
+	wr_u32b((uint32_t)v);
 }
 
 void wr_string(const char *str)
@@ -275,17 +275,17 @@ void rd_s16b(int16_t *ip)
 	rd_u16b((uint16_t*)ip);
 }
 
-void rd_u32b(u32b *ip)
+void rd_u32b(uint32_t *ip)
 {
 	(*ip) = sf_get();
-	(*ip) |= ((u32b)(sf_get()) << 8);
-	(*ip) |= ((u32b)(sf_get()) << 16);
-	(*ip) |= ((u32b)(sf_get()) << 24);
+	(*ip) |= ((uint32_t)(sf_get()) << 8);
+	(*ip) |= ((uint32_t)(sf_get()) << 16);
+	(*ip) |= ((uint32_t)(sf_get()) << 24);
 }
 
 void rd_s32b(int32_t *ip)
 {
-	rd_u32b((u32b*)ip);
+	rd_u32b((uint32_t*)ip);
 }
 
 void rd_string(char *str, int max)
@@ -491,10 +491,10 @@ static errr next_blockheader(ang_file *f, struct blockheader *b) {
 	}
 
 #define RECONSTRUCT_U32B(from) \
-	((u32b) savefile_head[from]) | \
-	((u32b) savefile_head[from+1] << 8) | \
-	((u32b) savefile_head[from+2] << 16) | \
-	((u32b) savefile_head[from+3] << 24);
+	((uint32_t) savefile_head[from]) | \
+	((uint32_t) savefile_head[from+1] << 8) | \
+	((uint32_t) savefile_head[from+2] << 16) | \
+	((uint32_t) savefile_head[from+3] << 24);
 
 	my_strcpy(b->name, (char *)&savefile_head, sizeof b->name);
 	b->version = RECONSTRUCT_U32B(16);

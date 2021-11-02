@@ -3062,7 +3062,7 @@ static void write_randart_entry(ang_file *fff, const struct artifact *art)
 /**
  * Randomize the artifacts
  */
-void do_randart(u32b randart_seed, bool create_file)
+void do_randart(uint32_t randart_seed, bool create_file)
 {
 	char fname[1024];
 	struct artifact_set_data *standarts = artifact_set_data_new();

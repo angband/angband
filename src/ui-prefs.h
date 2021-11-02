@@ -53,7 +53,7 @@ struct prefs_data
 	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 	bool user;
 	bool loaded_window_flag[ANGBAND_TERM_MAX];
-	u32b window_flags[ANGBAND_TERM_MAX];
+	uint32_t window_flags[ANGBAND_TERM_MAX];
 };
 
 enum parser_error parse_prefs_dummy(struct parser *p);

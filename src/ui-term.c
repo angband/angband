@@ -298,7 +298,7 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 	"Term-7"
 };
 
-u32b window_flag[ANGBAND_TERM_MAX];
+uint32_t window_flag[ANGBAND_TERM_MAX];
 
 int row_top_map[SIDEBAR_MAX] = {1, 4, 1};
 int row_bottom_map[SIDEBAR_MAX] = {1, 0, 0};

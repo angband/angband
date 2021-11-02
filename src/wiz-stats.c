@@ -1831,7 +1831,7 @@ struct covar_n {
 	 */
 	double *c;
 	/* Is the number of terms added to the sums. */
-	u32b count;
+	uint32_t count;
 	/* Is the number of components. */
 	int n;
 };
@@ -1941,12 +1941,12 @@ static void dump_covar_var(const struct covar_n *cv, ang_file* fo)
 
 /* Assumes the count of terms in the sum is maintained elsewhere. */
 struct i_sum_sum2 {
-	u32b sum, sum2_lo, sum2_hi;
+	uint32_t sum, sum2_lo, sum2_hi;
 };
 
 static void add_to_i_sum_sum2(struct i_sum_sum2 *s, int v)
 {
-	u32b v2 = v * v;
+	uint32_t v2 = v * v;
 
 	s->sum += v;
 	if (v2 > 4294967295UL - s->sum2_lo) {
@@ -2182,7 +2182,7 @@ struct cgen_stats {
 	 * the ith level type and level_counts[1][i] is the number of
 	 * unsuccessful builds of the ith level type.
 	 */
-	u32b* level_counts[2];
+	uint32_t *level_counts[2];
 	/*
 	 * This is a z_info->profile_max element array where total_rooms[i] has
 	 * the results for the total number of rooms per successful level in
@@ -2211,7 +2211,7 @@ struct cgen_stats {
 	 * This is a 2 x room_type_count array for the room counts of the
 	 * current level so they can be reverted upon a level failure.
 	 */
-	u32b* curr_room_counts[2];
+	uint32_t *curr_room_counts[2];
 	/*
 	 * This is a flat array of the tunneling results for the current level.
 	 */
@@ -2223,17 +2223,17 @@ struct cgen_stats {
 	 * with connected stairs and used a staircase to enter; otherwise,
 	 * not passable).
 	 */
-	u32b* badst_counts;
+	uint32_t *badst_counts;
 	/*
 	 * disarea_counts[i] is the number of levels of type i that had at
 	 * least one disconnected area that wasn't in a vault.
 	 */
-	u32b* disarea_counts;
+	uint32_t *disarea_counts;
 	/*
 	 * disdstair_counts[i] is the number of levels of type i where the
 	 * player is disconnected from all down staircases.
 	 */
-	u32b* disdstair_counts;
+	uint32_t *disdstair_counts;
 	/* Is the number of successfully generated levels. */
 	int nsuccess;
 	/* Is the number of failed levels. */

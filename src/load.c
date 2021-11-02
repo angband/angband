@@ -391,7 +391,7 @@ static void rd_trap(struct trap *trap)
 int rd_randomizer(void)
 {
 	int i;
-	u32b noop;
+	uint32_t noop;
 
 	/* current value for the simple RNG */
 	rd_u32b(&Rand_value);
@@ -1690,7 +1690,7 @@ int rd_chunks(void)
 
 int rd_history(void)
 {
-	u32b tmp32u;
+	uint32_t tmp32u;
 	size_t i, j;
 	
 	history_clear(player);

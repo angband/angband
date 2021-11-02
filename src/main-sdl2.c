@@ -381,7 +381,7 @@ struct font_value {
 
 struct term_flag_value {
 	struct subwindow *subwindow;
-	u32b flag;
+	uint32_t flag;
 };
 
 struct alpha_value {
@@ -1192,7 +1192,7 @@ static void render_button_menu_pw(const struct window *window, struct button *bu
 	CHECK_BUTTON_DATA_TYPE(button, BUTTON_DATA_TERM_FLAG);
 
 	struct subwindow *subwindow = button->data.value.term_flag_value.subwindow;
-	u32b flag = button->data.value.term_flag_value.flag;
+	uint32_t flag = button->data.value.term_flag_value.flag;
 
 	assert(subwindow->index != MAIN_SUBWINDOW);
 	assert(subwindow->index < N_ELEMENTS(window_flag));
@@ -2124,7 +2124,7 @@ static void handle_menu_pw(struct window *window,
 		return;
 	}
 
-	u32b new_flags[N_ELEMENTS(window_flag)];
+	uint32_t new_flags[N_ELEMENTS(window_flag)];
 	assert(sizeof(new_flags) == sizeof(window_flag));
 	memcpy(new_flags, window_flag, sizeof(new_flags));
 
@@ -5190,7 +5190,7 @@ static void clear_pw_flag(struct subwindow *subwindow)
 {
 	assert(subwindow->index < N_ELEMENTS(angband_term));
 
-	u32b new_flags[N_ELEMENTS(window_flag)];
+	uint32_t new_flags[N_ELEMENTS(window_flag)];
 	assert(sizeof(new_flags) == sizeof(window_flag));
 	memcpy(new_flags, window_flag, sizeof(new_flags));
 

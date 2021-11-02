@@ -581,7 +581,7 @@ bool project(struct source origin, int rad, struct loc finish,
 {
 	int i, j, k, dist_from_centre;
 
-	u32b dam_temp;
+	uint32_t dam_temp;
 
 	struct loc centre;
 	struct loc start;
@@ -870,7 +870,7 @@ bool project(struct source origin, int rad, struct loc finish,
 			 * energy is given, it is full strength to that diameter and
 			 * then reduces */
 			dam_temp = (diameter_of_source * dam) / (i + 1);
-			if (dam_temp > (u32b) dam) {
+			if (dam_temp > (uint32_t) dam) {
 				dam_temp = dam;
 			}
 		}

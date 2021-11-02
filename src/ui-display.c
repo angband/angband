@@ -2155,7 +2155,7 @@ const char *window_flag_desc[32] =
 	NULL
 };
 
-static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
+static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 {
 	void (*register_or_deregister)(game_event_type type, game_event_handler *fn,
 								   void *user);
@@ -2310,7 +2310,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
  * that has changed setting so that it can do any housekeeping to do with 
  * displaying the new thing or no longer displaying the old one.
  */
-static void subwindow_set_flags(int win_idx, u32b new_flags)
+static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 {
 	term *old = Term;
 	int i;
@@ -2343,7 +2343,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
  * Called with an array of the new flags for all the subwindows, in order
  * to set them to the new values, with a chance to perform housekeeping.
  */
-void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
+void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows)
 {
 	size_t j;
 

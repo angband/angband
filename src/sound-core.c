@@ -176,7 +176,7 @@ static void message_sound_define(uint16_t message_id, const char *sounds_str)
 
 	uint16_t sound_id = 0;
 
-	u32b hash;
+	uint32_t hash;
 	int i;
 	bool found = false;
 

@@ -50,12 +50,12 @@
 #define MAT0NEG(t, v) (v ^ (v << (-(t))))
 #define Identity(v) (v)
 
-u32b state_i = 0;
-u32b STATE[RAND_DEG] = {0, 0, 0, 0, 0, 0, 0, 0,
+uint32_t state_i = 0;
+uint32_t STATE[RAND_DEG] = {0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0};
-u32b z0, z1, z2;
+uint32_t z0, z1, z2;
 
 #define V0    STATE[state_i]
 #define VM1   STATE[(state_i + M1) & 0x0000001fU]
@@ -65,7 +65,7 @@ u32b z0, z1, z2;
 #define newV0 STATE[(state_i + 31) & 0x0000001fU]
 #define newV1 STATE[state_i]
 
-static u32b WELLRNG1024a (void){
+static uint32_t WELLRNG1024a (void){
 	z0      = VRm1;
 	z1      = Identity(V0) ^ MAT0POS (8, VM1);
 	z2      = MAT0NEG (-19, VM2) ^ MAT0NEG(-14,VM3);
@@ -90,15 +90,15 @@ bool Rand_quick = true;
 /**
  * The current "seed" of the simple RNG.
  */
-u32b Rand_value;
+uint32_t Rand_value;
 
 static bool rand_fixed = false;
-static u32b rand_fixval = 0;
+static uint32_t rand_fixval = 0;
 
 /**
  * Initialize the complex RNG using a new seed.
  */
-void Rand_state_init(u32b seed)
+void Rand_state_init(uint32_t seed)
 {
 	int i, j;
 
@@ -129,10 +129,10 @@ void Rand_init(void)
 {
 	/* Init RNG */
 	if (Rand_quick) {
-		u32b seed;
+		uint32_t seed;
 
 		/* Basic seed */
-		seed = (u32b)(time(NULL));
+		seed = (uint32_t)(time(NULL));
 
 #ifdef UNIX
 
@@ -161,9 +161,9 @@ void Rand_init(void)
  * This method has no bias, and is much less affected by patterns in the "low"
  * bits of the underlying RNG's. However, it is potentially non-terminating.
  */
-u32b Rand_div(u32b m)
+uint32_t Rand_div(uint32_t m)
 {
-	u32b n, r = 0;
+	uint32_t n, r = 0;
 
 	/* Division by zero will result if m is larger than 0x10000000 */
 	assert(m <= 0x10000000);
@@ -562,7 +562,7 @@ int random_chance_scaled(random_chance c, int scale)
  * \param val Is the percent of the maximum value that Rand_div() will
  * return.  val should be between 0 and 100, inclusive.
  */
-void rand_fix(u32b val)
+void rand_fix(uint32_t val)
 {
 	rand_fixed = true;
 	rand_fixval = val;
@@ -574,7 +574,7 @@ int getpid(void);
  * Another simple RNG that does not use any of the above state
  * (so can be used without disturbing the game's RNG state)
  */
-u32b Rand_simple(u32b m)
+uint32_t Rand_simple(uint32_t m)
 {
 	static time_t seed;
 	time_t v;

@@ -355,7 +355,7 @@ extern bool bigcurs;
 extern bool smlcurs;
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
-extern u32b window_flag[ANGBAND_TERM_MAX];
+extern uint32_t window_flag[ANGBAND_TERM_MAX];
 
 /**
  * Hack -- The main "screen"

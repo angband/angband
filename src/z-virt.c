@@ -112,7 +112,7 @@ void string_free(char *str)
 
 char *string_append(char *s1, const char *s2)
 {
-	u32b len;
+	size_t len;
 	if (!s1 && !s2) {
 		return NULL;
 	} else if (s1 && !s2) {

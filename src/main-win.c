@@ -2351,7 +2351,7 @@ int Term_iswprint_win(wint_t wc)
 	 * which is desirable:  on Windows, ui-term as it is can't handle
 	 * characters that have to be encoded as surrogate pairs in UTF-16).
 	 */
-	return utf32_isprint((u32b) wc);
+	return utf32_isprint((uint32_t) wc);
 }
 
 

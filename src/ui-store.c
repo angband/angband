@@ -543,7 +543,7 @@ static bool store_sell(struct store_context *ctx)
 	/* Real store */
 	if (store->sidx != STORE_HOME) {
 		/* Extract the value of the items */
-		u32b price = price_item(store, temp_obj, true, amt);
+		uint32_t price = price_item(store, temp_obj, true, amt);
 
 		object_wipe(temp_obj);
 		screen_save();
@@ -622,7 +622,7 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 			price = price_item(store, obj, false, 1);
 
 			/* Check if the player can afford any at all */
-			if ((u32b)player->au < (u32b)price) {
+			if ((uint32_t)player->au < (uint32_t)price) {
 				msg("You do not have enough gold for this item.");
 				return false;
 			}

@@ -169,12 +169,12 @@ char *utf8_rskip(char *s, size_t n, char *lim)
  * the terminating null character, written to out.  The returned value will
  * be less than n_out if n_out is greater than zero.
  */
-size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
+size_t utf32_to_utf8(char *out, size_t n_out, const uint32_t *in, size_t n_in,
 	size_t *pn_cnvt)
 {
 	size_t nwritten = 0;
-	const u32b *in_orig = in;
-	const u32b *in_lim = in + n_in;
+	const uint32_t *in_orig = in;
+	const uint32_t *in_lim = in + n_in;
 
 	while (1) {
 		if (in == in_lim) {
@@ -255,7 +255,7 @@ size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
  * to distinguishing 8 bits, and the wchar_t for iswprint() is, at least on
  * Windows, a 16-bit type.
  */
-bool utf32_isprint(u32b v)
+bool utf32_isprint(uint32_t v)
 {
 	/* Switch based on the plane (each plane has 2^16 code points). */
         switch ((v & 0xff0000) >> 16) {
@@ -861,9 +861,9 @@ void sort(void *base, size_t nmemb, size_t smemb,
 	qsort(base, nmemb, smemb, comp);
 }
 
-u32b djb2_hash(const char *str)
+uint32_t djb2_hash(const char *str)
 {
-	u32b hash = 5381;
+	uint32_t hash = 5381;
 	int c = *str;
 
 	while (c)

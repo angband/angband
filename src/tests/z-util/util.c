@@ -125,8 +125,8 @@ static int test_utf32_to_utf8(void *state) {
 	 * (U+10459; 4 bytes as UTF-8).
 	 */
 	char expected[] = "$¢€𐍈𐑙";
-	u32b in[] = { 0x0024, 0x00a2, 0x20ac, 0x10348, 0x10459 };
-	u32b bad_in[5];
+	uint32_t in[] = { 0x0024, 0x00a2, 0x20ac, 0x10348, 0x10459 };
+	uint32_t bad_in[5];
 	char out[32];
 	size_t n_in = sizeof(in) / sizeof(in[0]);
 	size_t n_out = sizeof(out) / sizeof(out[0]);

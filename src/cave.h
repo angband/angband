@@ -146,8 +146,8 @@ enum grid_light_level
 };
 
 struct grid_data {
-	u32b m_idx;				/* Monster index */
-	u32b f_idx;				/* Feature index */
+	uint32_t m_idx;			/* Monster index */
+	uint32_t f_idx;			/* Feature index */
 	struct object_kind *first_kind;	/* The kind of the first item on the grid */
 	struct trap *trap;		/* Trap */
 	bool multiple_objects;	/* Is there more than one item there? */
@@ -186,8 +186,8 @@ struct chunk {
 	int depth;
 
 	byte feeling;
-	u32b obj_rating;
-	u32b mon_rating;
+	uint32_t obj_rating;
+	uint32_t mon_rating;
 	bool good_item;
 
 	int height;

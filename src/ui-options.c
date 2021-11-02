@@ -355,7 +355,7 @@ static void do_cmd_options_win(const char *name, int row)
 	int y = 0;
 	int x = 0;
 	ui_event ke;
-	u32b new_flags[ANGBAND_TERM_MAX];
+	uint32_t new_flags[ANGBAND_TERM_MAX];
 
 	/* Set new flags to the old values */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)

@@ -45,8 +45,8 @@ typedef struct _msgqueue_t
 	message_t *head;
 	message_t *tail;
 	msgcolor_t *colors;
-	u32b count;
-	u32b max;
+	uint32_t count;
+	uint32_t max;
 } msgqueue_t;
 
 static msgqueue_t *messages = NULL;

@@ -153,7 +153,7 @@ typedef enum
 /**
  * Type capable of holding any input key we might want to use.
  */
-typedef u32b keycode_t;
+typedef uint32_t keycode_t;
 
 
 /**

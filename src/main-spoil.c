@@ -101,9 +101,9 @@ static bool copy_file(const char *src, const char *dest, file_type ft)
 }
 
 /* Make an effort to get the seed from the supplied randart file. */
-static u32b parse_seed(const char *src)
+static uint32_t parse_seed(const char *src)
 {
-	u32b result = 0;
+	uint32_t result = 0;
 	ang_file *fin = file_open(src, MODE_READ, -1);
 
 	if (fin) {
@@ -115,7 +115,7 @@ static u32b parse_seed(const char *src)
 			unsigned long ulv;
 
 			if (sscanf(s, "seed %lx", &ulv) == 1) {
-				result = (u32b)ulv;
+				result = (uint32_t)ulv;
 			}
 		}
 		(void) file_close(fin);

@@ -48,7 +48,7 @@
 #include "ui-target.h"
 
 static bool inkey_xtra;
-u32b inkey_scan;		/* See the "inkey()" function */
+uint32_t inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
 /**

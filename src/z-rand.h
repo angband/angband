@@ -105,22 +105,22 @@ extern bool Rand_quick;
 /**
  * The state used by the "quick" RNG.
  */
-extern u32b Rand_value;
+extern uint32_t Rand_value;
 
 /**
  * The state used by the "complex" RNG.
  */
-extern u32b state_i;
-extern u32b STATE[RAND_DEG];
-extern u32b z0;
-extern u32b z1;
-extern u32b z2;
+extern uint32_t state_i;
+extern uint32_t STATE[RAND_DEG];
+extern uint32_t z0;
+extern uint32_t z1;
+extern uint32_t z2;
 
 
 /**
  * Initialise the RNG state with the given seed.
  */
-void Rand_state_init(u32b seed);
+void Rand_state_init(uint32_t seed);
 
 /**
  * Initialise the RNG
@@ -132,7 +132,7 @@ void Rand_init(void);
  *
  * The integer X falls along a uniform distribution.
  */
-u32b Rand_div(u32b m);
+uint32_t Rand_div(uint32_t m);
 
 /**
  * Generate a signed random integer within `stand` standard deviations of
@@ -153,7 +153,7 @@ int Rand_sample(int mean, int upper, int lower, int stand_u, int stand_l);
  * gameplay.  This is intended for use by external program parts like the
  * main-*.c files.
  */
-u32b Rand_simple(u32b m);
+uint32_t Rand_simple(uint32_t m);
 
 /**
  * Emulate a number `num` of dice rolls of dice with `sides` sides.
@@ -203,6 +203,6 @@ bool random_chance_check(random_chance c);
 
 int random_chance_scaled(random_chance c, int scale);
 
-extern void rand_fix(u32b val);
+extern void rand_fix(uint32_t val);
 
 #endif /* INCLUDED_Z_RAND_H */

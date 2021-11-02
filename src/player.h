@@ -456,11 +456,11 @@ struct player_upkeep {
 	struct object *object;				/* Object trackee */
 	struct object_kind *object_kind;	/* Object kind trackee */
 
-	u32b notice;			/* Bit flags for pending actions such as
+	uint32_t notice;		/* Bit flags for pending actions such as
 							 * reordering inventory, ignoring, etc. */
-	u32b update;			/* Bit flags for recalculations needed
+	uint32_t update;		/* Bit flags for recalculations needed
 							 * such as HP, or visible area */
-	u32b redraw;			/* Bit flags for things that /have/ changed,
+	uint32_t redraw;		/* Bit flags for things that /have/ changed,
 							 * and just need to be redrawn by the UI,
 							 * such as HP, Speed, etc.*/
 
@@ -544,8 +544,8 @@ struct player {
 	int16_t deep_descent;			/* Deep Descent counter */
 
 	int16_t energy;				/* Current energy */
-	u32b total_energy;			/* Total energy used (including resting) */
-	u32b resting_turn;			/* Number of player turns spent resting */
+	uint32_t total_energy;			/* Total energy used (including resting) */
+	uint32_t resting_turn;			/* Number of player turns spent resting */
 
 	int16_t food;				/* Current nutrition */
 

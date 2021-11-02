@@ -186,7 +186,7 @@ struct object_kind {
 	struct object_base *base;
 
 	struct object_kind *next;
-	u32b kidx;
+	uint32_t kidx;
 
 	int tval;					/**< General object type (see TV_ macros) */
 	int sval;					/**< Object sub-type  */
@@ -260,7 +260,7 @@ struct artifact {
 	char *name;
 	char *text;
 
-	u32b aidx;
+	uint32_t aidx;
 
 	struct artifact *next;
 
@@ -305,7 +305,7 @@ struct artifact {
  * except for aidx, saved to the save file
  */
 struct artifact_upkeep {
-	u32b aidx;	/**< For cross-indexing with struct artifact */
+	uint32_t aidx;	/**< For cross-indexing with struct artifact */
 	bool created;	/**< Whether this artifact has been created */
 	bool seen;	/**< Whether this artifact has been seen this game */
 	bool everseen;	/**< Whether this artifact has ever been seen  */
@@ -322,7 +322,7 @@ extern struct artifact_upkeep *aup_info;
  * Structure for possible object kinds for an ego item
  */
 struct poss_item {
-	u32b kidx;
+	uint32_t kidx;
 	struct poss_item *next;
 };
 
@@ -335,7 +335,7 @@ struct ego_item {
 	char *name;
 	char *text;
 
-	u32b eidx;
+	uint32_t eidx;
 
 	int cost;						/* Ego-item "cost" */
 
