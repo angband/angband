@@ -448,7 +448,7 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 
 	/* Break it back down*/
 	p->chp = (int16_t)(new_chp >> 16);   /* div 65536 */
-	p->chp_frac = (u16b)(new_chp & 0xFFFF); /* mod 65536 */
+	p->chp_frac = (uint16_t)(new_chp & 0xFFFF); /* mod 65536 */
 	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative
 	 * new_chp will give -1 for chp and very high chp_frac.*/
 
@@ -494,7 +494,7 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 
 	/* Break it back down*/
 	p->csp = (int16_t)(new_csp_long >> 16);   /* div 65536 */
-	p->csp_frac = (u16b)(new_csp_long & 0xFFFF);    /* mod 65536 */
+	p->csp_frac = (uint16_t)(new_csp_long & 0xFFFF);    /* mod 65536 */
 
 	/* Max/min SP */
 	if (p->csp >= p->msp) {

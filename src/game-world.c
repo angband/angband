@@ -39,7 +39,7 @@
 #include "trap.h"
 #include "z-queue.h"
 
-u16b daycount = 0;
+uint16_t daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
 u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */

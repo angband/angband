@@ -2320,7 +2320,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
  */
 static void sdl_keypress(SDL_keysym keysym)
 {
-	u16b key_code = keysym.unicode;
+	uint16_t key_code = keysym.unicode;
 	SDLKey key_sym = keysym.sym;
 
 	int ch = 0;

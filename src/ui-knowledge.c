@@ -3406,7 +3406,7 @@ void do_cmd_messages(void)
 			const char *msg;
 			const char *str = message_str(i + j);
 			byte attr = message_color(i + j);
-			u16b count = message_count(i + j);
+			uint16_t count = message_count(i + j);
 
 			if (count == 1)
 				msg = str;
@@ -3787,8 +3787,8 @@ void do_cmd_locate(void)
 
 static int cmp_mexp(const void *a, const void *b)
 {
-	u16b ia = *(const u16b *)a;
-	u16b ib = *(const u16b *)b;
+	uint16_t ia = *(const uint16_t *)a;
+	uint16_t ib = *(const uint16_t *)b;
 	if (r_info[ia].mexp < r_info[ib].mexp)
 		return -1;
 	if (r_info[ia].mexp > r_info[ib].mexp)
@@ -3798,8 +3798,8 @@ static int cmp_mexp(const void *a, const void *b)
 
 static int cmp_level(const void *a, const void *b)
 {
-	u16b ia = *(const u16b *)a;
-	u16b ib = *(const u16b *)b;
+	uint16_t ia = *(const uint16_t *)a;
+	uint16_t ib = *(const uint16_t *)b;
 	if (r_info[ia].level < r_info[ib].level)
 		return -1;
 	if (r_info[ia].level > r_info[ib].level)
@@ -3809,8 +3809,8 @@ static int cmp_level(const void *a, const void *b)
 
 static int cmp_tkill(const void *a, const void *b)
 {
-	u16b ia = *(const u16b *)a;
-	u16b ib = *(const u16b *)b;
+	uint16_t ia = *(const uint16_t *)a;
+	uint16_t ib = *(const uint16_t *)b;
 	if (l_list[ia].tkills < l_list[ib].tkills)
 		return -1;
 	if (l_list[ia].tkills > l_list[ib].tkills)
@@ -3820,8 +3820,8 @@ static int cmp_tkill(const void *a, const void *b)
 
 static int cmp_pkill(const void *a, const void *b)
 {
-	u16b ia = *(const u16b *)a;
-	u16b ib = *(const u16b *)b;
+	uint16_t ia = *(const uint16_t *)a;
+	uint16_t ib = *(const uint16_t *)b;
 	if (l_list[ia].pkills < l_list[ib].pkills)
 		return -1;
 	if (l_list[ia].pkills > l_list[ib].pkills)
@@ -3922,7 +3922,7 @@ void do_cmd_query_symbol(void)
 
 	bool recall = false;
 
-	u16b *who;
+	uint16_t *who;
 
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym))
@@ -3946,7 +3946,7 @@ void do_cmd_query_symbol(void)
 	prt(buf, 0, 0);
 
 	/* Allocate the "who" array */
-	who = mem_zalloc(z_info->r_max * sizeof(u16b));
+	who = mem_zalloc(z_info->r_max * sizeof(uint16_t));
 
 	/* Collect matching monsters */
 	for (num = 0, idx = 1; idx < z_info->r_max - 1; idx++) {

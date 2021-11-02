@@ -192,10 +192,10 @@ struct term
 
 	ui_event *key_queue;
 
-	u16b key_head;
-	u16b key_tail;
-	u16b key_xtra;
-	u16b key_size;
+	uint16_t key_head;
+	uint16_t key_tail;
+	uint16_t key_xtra;
+	uint16_t key_size;
 
 	int wid;
 	int hgt;

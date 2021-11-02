@@ -35,7 +35,7 @@
 
 #define CHUNK_LIST_INCR 10
 struct chunk **chunk_list;     /**< list of pointers to saved chunks */
-u16b chunk_list_max = 0;      /**< current max actual chunk index */
+uint16_t chunk_list_max = 0;   /**< current max actual chunk index */
 
 /**
  * Write the terrain info of a chunk to memory and return a pointer to it

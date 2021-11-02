@@ -101,7 +101,7 @@ static struct object *rd_item(void)
 	struct object *obj = object_new();
 
 	byte tmp8u;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	byte effect;
 	size_t i;
 	char buf[128];
@@ -262,7 +262,7 @@ static struct object *rd_item(void)
 static bool rd_monster(struct chunk *c, struct monster *mon)
 {
 	byte tmp8u;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	char race_name[80];
 	size_t j;
 	bool delete = false;
@@ -475,7 +475,7 @@ int rd_messages(void)
 {
 	int i;
 	char buf[128];
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	int16_t num;
 
@@ -502,7 +502,7 @@ int rd_messages(void)
  */
 int rd_monster_memory(void)
 {
-	u16b nkill, ntheft;
+	uint16_t nkill, ntheft;
 	char buf[128];
 	int i;
 
@@ -551,7 +551,7 @@ int rd_monster_memory(void)
 int rd_object_memory(void)
 {
 	size_t i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Object Memory */
 	rd_u16b(&tmp16u);
@@ -626,7 +626,7 @@ int rd_object_memory(void)
 int rd_quests(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Load the Quests */
 	rd_u16b(&tmp16u);
@@ -638,7 +638,7 @@ int rd_quests(void)
 	/* Load the Quests */
 	player_quests_reset(player);
 	for (i = 0; i < tmp16u; i++) {
-		u16b cur_num;
+		uint16_t cur_num;
 		rd_byte(&player->quests[i].level);
 		rd_u16b(&cur_num);
 		player->quests[i].cur_num = cur_num;
@@ -845,9 +845,9 @@ int rd_ignore(void)
 {
 	size_t i, j;
 	byte tmp8u = 24;
-	u16b file_e_max;
-	u16b itype_size;
-	u16b inscriptions;
+	uint16_t file_e_max;
+	uint16_t itype_size;
+	uint16_t inscriptions;
 
 	/* Read how many ignore bytes we have */
 	rd_byte(&tmp8u);
@@ -1032,7 +1032,7 @@ int rd_misc(void)
 int rd_artifacts(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Load the Artifacts */
 	rd_u16b(&tmp16u);
@@ -1062,7 +1062,7 @@ int rd_artifacts(void)
 int rd_player_hp(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Read the player_hp array */
 	rd_u16b(&tmp16u);
@@ -1085,7 +1085,7 @@ int rd_player_hp(void)
 int rd_player_spells(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	int cnt;
 	
@@ -1191,7 +1191,7 @@ int rd_gear(void)
 static int rd_stores_aux(rd_item_t rd_item_version)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Read the stores */
 	rd_u16b(&tmp16u);
@@ -1265,11 +1265,11 @@ static int rd_dungeon_aux(struct chunk **c)
 	struct chunk *c1;
 	int i, n, y, x;
 
-	u16b height, width;
+	uint16_t height, width;
 
 	byte count;
 	byte tmp8u;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	char name[100];
 
 	/* Header info */
@@ -1408,7 +1408,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 static int rd_monsters_aux(struct chunk *c)
 {
 	int i;
-	u16b limit;
+	uint16_t limit;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
@@ -1483,8 +1483,8 @@ static int rd_traps_aux(struct chunk *c)
 
 int rd_dungeon(void)
 {
-	u16b depth;
-	u16b py, px;
+	uint16_t depth;
+	uint16_t py, px;
 
 	/* Header info */
 	rd_u16b(&depth);
@@ -1599,7 +1599,7 @@ int rd_traps(void)
 int rd_chunks(void)
 {
 	int j;
-	u16b chunk_max;
+	uint16_t chunk_max;
 
 	if (player->is_dead)
 		return 0;
@@ -1630,7 +1630,7 @@ int rd_chunks(void)
 			char buf[80];
 			int i;
 			byte tmp8u;
-			u16b tmp16u;
+			uint16_t tmp16u;
 
 			rd_string(buf, sizeof(buf));
 			string_free(c->name);

@@ -224,7 +224,7 @@ void wr_byte(byte v)
 	sf_put(v);
 }
 
-void wr_u16b(u16b v)
+void wr_u16b(uint16_t v)
 {
 	sf_put((byte)(v & 0xFF));
 	sf_put((byte)((v >> 8) & 0xFF));
@@ -232,7 +232,7 @@ void wr_u16b(u16b v)
 
 void wr_s16b(int16_t v)
 {
-	wr_u16b((u16b)v);
+	wr_u16b((uint16_t)v);
 }
 
 void wr_u32b(u32b v)
@@ -264,15 +264,15 @@ void rd_byte(byte *ip)
 	*ip = sf_get();
 }
 
-void rd_u16b(u16b *ip)
+void rd_u16b(uint16_t *ip)
 {
 	(*ip) = sf_get();
-	(*ip) |= ((u16b)(sf_get()) << 8);
+	(*ip) |= ((uint16_t)(sf_get()) << 8);
 }
 
 void rd_s16b(int16_t *ip)
 {
-	rd_u16b((u16b*)ip);
+	rd_u16b((uint16_t*)ip);
 }
 
 void rd_u32b(u32b *ip)

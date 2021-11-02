@@ -170,7 +170,7 @@ struct square {
 };
 
 struct heatmap {
-    u16b **grids;
+	uint16_t **grids;
 };
 
 struct connector {
@@ -193,7 +193,7 @@ struct chunk {
 	int height;
 	int width;
 
-	u16b feeling_squares; /* How many feeling squares the player has visited */
+	uint16_t feeling_squares; /* How many feeling squares the player has visited */
 	int *feat_count;
 
 	struct square **squares;
@@ -202,11 +202,11 @@ struct chunk {
 	struct loc decoy;
 
 	struct object **objects;
-	u16b obj_max;
+	uint16_t obj_max;
 
 	struct monster *monsters;
-	u16b mon_max;
-	u16b mon_cnt;
+	uint16_t mon_max;
+	uint16_t mon_cnt;
 	int mon_current;
 	int num_repro;
 
@@ -251,7 +251,7 @@ extern int FEAT_LAVA;
 extern struct chunk *cave;
 /* Stored levels */
 extern struct chunk **chunk_list;
-extern u16b chunk_list_max;
+extern uint16_t chunk_list_max;
 
 /* cave-view.c */
 int distance(struct loc grid1, struct loc grid2);

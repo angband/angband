@@ -4129,7 +4129,7 @@ static int get_background_color_index(int idx)
  */
 static void set_color_for_index(int idx)
 {
-    u16b rv, gv, bv;
+    uint16_t rv, gv, bv;
     
     /* Extract the R,G,B data */
     rv = angband_color_table[idx][1];

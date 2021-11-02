@@ -51,7 +51,7 @@ enum {
  */
 struct effect {
 	struct effect *next;
-	u16b index;		/**< The effect index */
+	uint16_t index;	/**< The effect index */
 	dice_t *dice;	/**< Dice expression used in the effect */
 	int y;			/**< Y coordinate or distance */
 	int x;			/**< X coordinate or distance */
@@ -428,7 +428,7 @@ struct object {
 	struct object *next;	/**< Next object in a pile */
 	struct object *known;	/**< Known version of this object */
 
-	u16b oidx;				/**< Item list index, if any */
+	uint16_t oidx;		/**< Item list index, if any */
 
 	struct loc grid;		/**< position on map, or (0, 0) */
 

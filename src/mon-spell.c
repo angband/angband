@@ -305,7 +305,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
  * Types of monster spells used for spell selection.
  */
 static const struct mon_spell_info {
-	u16b index;				/* Numerical index (RSF_FOO) */
+	uint16_t index;				/* Numerical index (RSF_FOO) */
 	int type;				/* Type bitflag */
 } mon_spell_types[] = {
     #define RSF(a, b)	{ RSF_##a, b },

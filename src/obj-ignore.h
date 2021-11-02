@@ -68,9 +68,9 @@ enum
  * Structure to describe ego item short name. 
  */
 struct ego_desc {
-  int16_t e_idx;
-  u16b itype;
-  const char *short_name;
+	int16_t e_idx;
+	uint16_t itype;
+	const char *short_name;
 };
 
 /*

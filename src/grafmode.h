@@ -47,8 +47,8 @@ typedef struct _graphics_mode {
 	byte alphablend;
 	byte overdrawRow;
 	byte overdrawMax;
-	u16b cell_width;
-	u16b cell_height;
+	uint16_t cell_width;
+	uint16_t cell_height;
 	char path[256];
 	char pref[32];
 	char file[32];

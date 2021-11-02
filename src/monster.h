@@ -135,8 +135,8 @@ enum
  * The monster flag structure
  */
 struct monster_flag {
-	u16b index;				/* the RF_ index */
-	u16b type;				/* RFT_ category */
+	uint16_t index;			/* the RF_ index */
+	uint16_t type;			/* RFT_ category */
 	const char *desc;		/* lore description */
 };
 
@@ -186,7 +186,7 @@ struct monster_spell_level {
 struct monster_spell {
 	struct monster_spell *next;
 
-	u16b index;				/* Numerical index (RSF_FOO) */
+	uint16_t index;				/* Numerical index (RSF_FOO) */
 	int msgt;				/* Flag for message colouring */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */

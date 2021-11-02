@@ -201,7 +201,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 void spoil_obj_desc(const char *fname)
 {
 	int i, k, s, t, n = 0;
-	u16b *who;
+	uint16_t *who;
 	char buf[1024];
 	char wgt[80];
 	char dam[80];
@@ -218,7 +218,7 @@ void spoil_obj_desc(const char *fname)
 	}
 
 	/* Allocate the "who" array */
-	who = mem_zalloc(z_info->r_max * sizeof(u16b));
+	who = mem_zalloc(z_info->r_max * sizeof(uint16_t));
 
 	/* Header */
 	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", buildid);
@@ -496,7 +496,7 @@ void spoil_mon_desc(const char *fname)
 	char hp[80];
 	char exp[80];
 
-	u16b *who;
+	uint16_t *who;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -519,14 +519,14 @@ void spoil_mon_desc(const char *fname)
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
-	who = mem_zalloc(z_info->r_max * sizeof(u16b));
+	who = mem_zalloc(z_info->r_max * sizeof(uint16_t));
 
 	/* Scan the monsters (except the ghost) */
 	for (i = 1; i < z_info->r_max - 1; i++) {
 		struct monster_race *race = &r_info[i];
 
 		/* Use that monster */
-		if (race->name) who[n++] = (u16b)i;
+		if (race->name) who[n++] = (uint16_t)i;
 	}
 
 	/* Sort the array by dungeon depth of monsters */
@@ -621,7 +621,7 @@ void spoil_mon_info(const char *fname)
 {
 	char buf[1024];
 	int i, n;
-	u16b *who;
+	uint16_t *who;
 	int count = 0;
 	textblock *tb = NULL;
 
@@ -643,14 +643,14 @@ void spoil_mon_info(const char *fname)
 	tb = NULL;
 
 	/* Allocate the "who" array */
-	who = mem_zalloc(z_info->r_max * sizeof(u16b));
+	who = mem_zalloc(z_info->r_max * sizeof(uint16_t));
 
 	/* Scan the monsters */
 	for (i = 1; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
 
 		/* Use that monster */
-		if (race->name) who[count++] = (u16b)i;
+		if (race->name) who[count++] = (uint16_t)i;
 	}
 
 	sort(who, count, sizeof(*who), cmp_monsters);

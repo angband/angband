@@ -1084,9 +1084,9 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	/* Keep track of experience */
 	if (new_exp_frac >= 0x10000L) {
 		new_exp++;
-		p->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+		p->exp_frac = (uint16_t)(new_exp_frac - 0x10000L);
 	} else {
-		p->exp_frac = (u16b)new_exp_frac;
+		p->exp_frac = (uint16_t)new_exp_frac;
 	}
 
 	/* When the player kills a Unique, it stays dead */

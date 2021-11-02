@@ -29,7 +29,7 @@ struct level {
 	struct level *next;
 };
 
-extern u16b daycount;
+extern uint16_t daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;
 extern s32b turn;

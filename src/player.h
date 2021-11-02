@@ -147,7 +147,7 @@ struct quest
 struct equip_slot {
 	struct equip_slot *next;
 
-	u16b type;
+	uint16_t type;
 	char *name;
 	struct object *obj;
 };
@@ -159,7 +159,7 @@ struct player_body {
 	struct player_body *next;
 
 	char *name;
-	u16b count;
+	uint16_t count;
 	struct equip_slot *slots;
 };
 
@@ -334,7 +334,7 @@ struct player_class {
  */
 struct player_ability {
 	struct player_ability *next;
-	u16b index;			/* PF_*, OF_* or element index */
+	uint16_t index;			/* PF_*, OF_* or element index */
 	char *type;			/* Ability type */
 	char *name;			/* Ability name */
 	char *desc;			/* Ability description */
@@ -524,15 +524,15 @@ struct player {
 
 	s32b max_exp;	/* Max experience */
 	s32b exp;		/* Cur experience */
-	u16b exp_frac;	/* Cur exp frac (times 2^16) */
+	uint16_t exp_frac;	/* Cur exp frac (times 2^16) */
 
 	int16_t mhp;		/* Max hit pts */
 	int16_t chp;		/* Cur hit pts */
-	u16b chp_frac;	/* Cur hit frac (times 2^16) */
+	uint16_t chp_frac;	/* Cur hit frac (times 2^16) */
 
 	int16_t msp;		/* Max mana pts */
 	int16_t csp;		/* Cur mana pts */
-	u16b csp_frac;	/* Cur mana frac (times 2^16) */
+	uint16_t csp_frac;	/* Cur mana frac (times 2^16) */
 
 	int16_t stat_max[STAT_MAX];	/* Current "maximal" stat values */
 	int16_t stat_cur[STAT_MAX];	/* Current "natural" stat values */
@@ -558,9 +558,9 @@ struct player {
 	char died_from[80];					/* Cause of death */
 	char *history;						/* Player history */
 	struct quest *quests;				/* Quest history */
-	u16b total_winner;					/* Total winner */
+	uint16_t total_winner;			/* Total winner */
 
-	u16b noscore;				/* Cheating flags */
+	uint16_t noscore;			/* Cheating flags */
 
 	bool is_dead;				/* Player is dead */
 

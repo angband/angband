@@ -57,7 +57,7 @@ void nds_video_vblank() {
 #endif
 }
 
-static inline nds_pixel *nds_get_framebuffer(u16b *y) {
+static inline nds_pixel *nds_get_framebuffer(uint16_t *y) {
 #ifdef _3DS
 	nds_pixel *fb = (nds_pixel *) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL);
 #else
@@ -77,7 +77,7 @@ static inline nds_pixel *nds_get_framebuffer(u16b *y) {
 	return fb;
 }
 
-void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
+void nds_draw_pixel(uint16_t x, uint16_t y, nds_pixel data) {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 
 #ifdef _3DS
@@ -87,7 +87,7 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 #endif
 }
 
-void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr)
+void nds_draw_char_px(uint16_t x, uint16_t y, char c, nds_pixel clr)
 {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 
@@ -98,7 +98,7 @@ void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr)
 #endif
 }
 
-void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr)
+void nds_draw_str_px(uint16_t x, uint16_t y, const char *str, nds_pixel clr)
 {
 	while (*str != '\0') {
 		nds_draw_char_px(x, y, *(str++), clr);
@@ -175,7 +175,7 @@ void nds_logf(const char* format, ...)
 
 void nds_raw_print(const char *str)
 {
-	static u16b x = 0, y = 32;
+	static uint16_t x = 0, y = 32;
 	while (*str) {
 		nds_draw_char(x, y, *(str++), NDS_WHITE_PIXEL);
 		x++;

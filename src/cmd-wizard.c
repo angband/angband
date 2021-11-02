@@ -2369,7 +2369,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known_obj = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
@@ -2811,7 +2811,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
@@ -2857,7 +2857,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 

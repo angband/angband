@@ -339,7 +339,7 @@ void wr_options(void)
 void wr_messages(void)
 {
 	int16_t i;
-	u16b num;
+	uint16_t num;
 
 	num = messages_num();
 	if (num > 80) num = 80;
@@ -668,7 +668,7 @@ void wr_misc(void)
 void wr_artifacts(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Hack -- Dump the artifacts */
 	tmp16u = z_info->a_max;

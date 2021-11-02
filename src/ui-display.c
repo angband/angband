@@ -1045,8 +1045,8 @@ static const byte mon_feeling_color[] =
  */
 static size_t prt_level_feeling(int row, int col)
 {
-	u16b obj_feeling;
-	u16b mon_feeling;
+	uint16_t obj_feeling;
+	uint16_t mon_feeling;
 	char obj_feeling_str[6];
 	char mon_feeling_str[6];
 	int new_col;
@@ -1900,7 +1900,7 @@ static void update_messages_subwindow(game_event_type type,
 	/* Dump messages */
 	for (i = 0; i < h; i++) {
 		byte color = message_color(i);
-		u16b count = message_count(i);
+		uint16_t count = message_count(i);
 		const char *str = message_str(i);
 
 		if (count == 1)

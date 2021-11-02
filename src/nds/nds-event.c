@@ -10,7 +10,7 @@
 nds_event *ebuf;
 
 /* Read and write pointers, that always point to the next element */
-u16b ebuf_read = 0, ebuf_write = 0;
+uint16_t ebuf_read = 0, ebuf_write = 0;
 
 nds_event empty_event = { 0 };
 

@@ -397,7 +397,7 @@ static void log_all_objects(int level)
 static void descend_dungeon(void)
 {
 	int level;
-	u16b obj_f, mon_f;
+	uint16_t obj_f, mon_f;
 
 	clock_t last = 0;
 

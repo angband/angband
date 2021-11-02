@@ -309,7 +309,7 @@ struct infowin
 	int16_t x, y;
 	int16_t x_save, y_save;
 	int16_t w, h;
-	u16b b;
+	uint16_t b;
 
 	byte byte1;
 

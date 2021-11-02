@@ -29,17 +29,17 @@ typedef enum object_list_section_e {
 
 typedef struct object_list_entry_s {
 	struct object *object;
-	u16b count[OBJECT_LIST_SECTION_MAX];
+	uint16_t count[OBJECT_LIST_SECTION_MAX];
 	int16_t dx, dy;
 } object_list_entry_t;
 
 typedef struct object_list_s {
 	object_list_entry_t *entries;
 	size_t entries_size;
-	u16b distinct_entries;
+	uint16_t distinct_entries;
 	s32b creation_turn;
-	u16b total_entries[OBJECT_LIST_SECTION_MAX];
-	u16b total_objects[OBJECT_LIST_SECTION_MAX];
+	uint16_t total_entries[OBJECT_LIST_SECTION_MAX];
+	uint16_t total_objects[OBJECT_LIST_SECTION_MAX];
 	bool sorted;
 } object_list_t;
 

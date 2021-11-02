@@ -1017,7 +1017,7 @@ static void do_cmd_delay(const char *name, int row)
 
 	/* Ask for a numeric value */
 	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
-		u16b val = (u16b) strtoul(tmp, NULL, 0);
+		uint16_t val = (uint16_t) strtoul(tmp, NULL, 0);
 		player->opts.delay_factor = MIN(val, 255);
 	}
 
@@ -1123,7 +1123,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 
 	/* Process input */
 	if (res) {
-		u16b delay = (u16b)strtoul(tmp, NULL, 0);
+		uint16_t delay = (uint16_t)strtoul(tmp, NULL, 0);
 		player->opts.lazymove_delay = MIN(delay, 255);
 	}
 

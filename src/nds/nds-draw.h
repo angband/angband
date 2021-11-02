@@ -50,13 +50,13 @@ extern const nds_font_handle nds_font_5x8;
 void nds_video_init();
 void nds_video_vblank();
 
-void nds_draw_pixel(u16b x, u16b y, nds_pixel data);
+void nds_draw_pixel(uint16_t x, uint16_t y, nds_pixel data);
 
 /* Same as nds_draw_char, but x/y is pixels instead of tiles */
-void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr);
+void nds_draw_char_px(uint16_t x, uint16_t y, char c, nds_pixel clr);
 void nds_draw_char(byte x, byte y, char c, nds_pixel clr);
 
-void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr);
+void nds_draw_str_px(uint16_t x, uint16_t y, const char *str, nds_pixel clr);
 void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr);
 
 void nds_draw_cursor(int x, int y);
