@@ -234,11 +234,11 @@ dnl Frontends
 AC_ARG_ENABLE(curses,
 	[AS_HELP_STRING([--enable-curses], [enable Curses frontend (default: enabled)])],
 	[enable_curses=$enableval],
-	[enable_curses=yes])
+	[enable_curses=default])
 AC_ARG_ENABLE(x11,
 	[AS_HELP_STRING([--enable-x11], [enable X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
-	[enable_x11=yes])
+	[enable_x11=default])
 AC_ARG_ENABLE(sdl2,
 	[AS_HELP_STRING([--enable-sdl2], [enable SDL2 frontend (default: disabled)])],
 	[enable_sdl2=$enableval],
@@ -262,7 +262,7 @@ AC_ARG_ENABLE(stats,
 AC_ARG_ENABLE(spoil,
 	[AS_HELP_STRING([--enable-spoil], [enable command-line spoiler generation (default: enabled)])],
 	[enable_spoil=$enableval],
-	[enable_spoil=yes])
+	[enable_spoil=default])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl2_mixer,
@@ -275,6 +275,23 @@ AC_ARG_ENABLE(sdl_mixer,
 	[enable_sdl_mixer=$enable_sdl])
 
 MAINFILES="\$(BASEMAINFILES)"
+
+dnl The Windows front end does not allow access to the others so disable them
+dnl unless explicitly told to build them.
+if test x"$enable_win" = xyes; then
+	default_override=no
+else
+	default_override=yes
+fi
+if test x"$enable_curses" = xdefault; then
+	enable_curses="$default_override"
+fi
+if test x"$enable_x11" = xdefault; then
+	enable_x11="$default_override"
+fi
+if test x"$enable_spoil" = xdefault; then
+	enable_spoil="$default_override"
+fi
 
 dnl curses checking
 if test "$enable_curses" = "yes"; then
