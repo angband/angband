@@ -100,7 +100,10 @@ CPPFLAGS="$CPPFLAGS -I."
 
 AC_ARG_ENABLE(release,
 	[AS_HELP_STRING([--enable-release], [enable a release build])],
-	[release=yes],
+	[AS_CASE(${enableval},
+		[yes], [release=yes],
+		[no], [release=no],
+		[AC_MSG_ERROR([bad value ${enableval} for --enable-release])])],
 	[release=no])
 
 if test x"$release" = xyes ; then
@@ -113,8 +116,11 @@ fi
 
 AC_ARG_ENABLE(more-gcc-warnings,
 	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
-	[ more_gcc_warnings=yes],
-	[ more_gcc_warnings=no])
+	[AS_CASE(${enableval},
+		[yes], [more_gcc_warnings=yes],
+		[no], [more_gcc_warnings=no],
+		[AC_MSG_ERROR([bad value ${enableval} for --enable-more-gcc-warnings])])],
+	[more_gcc_warnings=no])
 
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
