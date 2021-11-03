@@ -249,7 +249,7 @@ jobs:
         id: create_windows_archive
         run: |
           ./autogen.sh
-          env CFLAGS="-O2" ./configure --enable-release --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
           make
           cp src/${{ steps.store_config.outputs.progname }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
