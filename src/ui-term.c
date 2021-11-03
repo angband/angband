@@ -415,6 +415,8 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 	}
 
 	/* Copy cursor */
+	s->cnx = f->cnx;
+	s->cny = f->cny;
 	s->cx = f->cx;
 	s->cy = f->cy;
 	s->cu = f->cu;
@@ -1703,6 +1705,8 @@ errr Term_fresh(void)
 	    (scr->cv == old->cv) &&
 	    (scr->cx == old->cx) &&
 	    (scr->cy == old->cy) &&
+	    (scr->cnx == old->cnx) &&
+	    (scr->cny == old->cny) &&
 	    !(Term->total_erase)) {
 		/* Nothing */
 		return (1);
@@ -1728,6 +1732,7 @@ errr Term_fresh(void)
 		/* Hack -- clear all "cursor" data */
 		old->cv = old->cu = false;
 		old->cx = old->cy = 0;
+		old->cnx = old->cny = 1;
 
 		/* Wipe each row */
 		for (y = 0; y < h; y++) {
@@ -1771,21 +1776,30 @@ errr Term_fresh(void)
 		         * position will be redrawn along with any other
 			 * changes.
 			 */
-			int tx = old->cx;
-			int ty = old->cy;
+			int mty = MAX(old->cy,
+				MIN(old->cy + old->cny - 1, h - 1));
+			int mtx = MAX(old->cx,
+				MIN(old->cx + old->cnx - 1, w - 1));
+			int ty;
 
-			old->c[ty][tx] = ~scr->c[ty][tx];
-			if (y1 > ty) {
-			    y1 = ty;
+			for (ty = old->cy; ty <= mty; ++ty) {
+				int tx;
+
+				for (tx = old->cx; tx <= mtx; ++tx) {
+					old->c[ty][tx] = ~scr->c[ty][tx];
+				}
+				if (Term->x1[ty] > old->cx) {
+					Term->x1[ty] = old->cx;
+				}
+				if (Term->x2[ty] < mtx) {
+					Term->x2[ty] = mtx;
+				}
 			}
-			if (y2 < ty) {
-			    y2 = ty;
+			if (y1 > old->cy) {
+			    y1 = old->cy;
 			}
-			if (Term->x1[ty] > tx) {
-			    Term->x1[ty] = tx;
-			}
-			if (Term->x2[ty] < tx) {
-			    Term->x2[ty] = tx;
+			if (y2 < mty) {
+			    y2 = mty;
 			}
 		}
 	} else {
@@ -1897,10 +1911,18 @@ errr Term_fresh(void)
 		if (!scr->cu && scr->cv) {
 			if ((((tile_width > 1)||(tile_height > 1)) &&
 			     (!smlcurs) && (Term->saved == 0) && (scr->cy > 0))
-			    || bigcurs)
+			    || bigcurs) {
 				(void)((*Term->bigcurs_hook)(scr->cx, scr->cy));
-			else
+				scr->cnx = tile_width;
+				scr->cny = tile_height;
+			} else {
 				(void)((*Term->curs_hook)(scr->cx, scr->cy));
+				scr->cnx = 1;
+				scr->cny = 1;
+			}
+		} else {
+			scr->cnx = 1;
+			scr->cny = 1;
 		}
 	} else {
 		/* The cursor is useless or invisible ignore it, otherwise display */
@@ -1917,6 +1939,9 @@ errr Term_fresh(void)
 			/* Make the cursor visible */
 			Term_xtra(TERM_XTRA_SHAPE, 1);
 		}
+
+		scr->cnx = 1;
+		scr->cny = 1;
 	}
 
 	/* Save the "cursor state" */
@@ -1924,7 +1949,8 @@ errr Term_fresh(void)
 	old->cv = scr->cv;
 	old->cx = scr->cx;
 	old->cy = scr->cy;
-
+	old->cnx = scr->cnx;
+	old->cny = scr->cny;
 
 	/* Actually flush the output */
 	Term_xtra(TERM_XTRA_FRESH, 0);
