@@ -367,25 +367,6 @@ void cmdq_flush(void)
 }
 
 /**
- * Return true if the previous command used an item from the floor.
- * Otherwise, return false.
- */
-bool cmdq_does_previous_use_floor_item(void)
-{
-	int cmd_prev = cmd_head - 1;
-
-	if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
-	if (cmd_queue[cmd_prev].code != CMD_NULL) {
-		struct object *obj;
-
-		if (cmd_get_arg_item(&cmd_queue[cmd_prev], "item", &obj) == CMD_OK) {
-			return (obj->grid.x == 0 && obj->grid.y == 0) ? false : true;
-		}
-	}
-	return false;
-}
-
-/**
  * ------------------------------------------------------------------------
  * Handling of repeated commands
  * ------------------------------------------------------------------------ */
@@ -438,6 +419,32 @@ int cmd_get_nrepeats(void)
 void cmd_disable_repeat(void)
 {
 	repeat_prev_allowed = false;
+}
+
+/**
+ * Do not allow the current command to be repeated by the user using the
+ * "repeat last command" command if that command used an item from the floor.
+ */
+void cmd_disable_repeat_floor_item(void)
+{
+	int cmd_prev;
+
+	/*
+	 * Repeat already disallowed so skip further checks (avoids access
+	 * to dangling object references in the command structures).
+	 */
+	if (!repeat_prev_allowed) return;
+
+	cmd_prev = cmd_head - 1;
+	if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
+	if (cmd_queue[cmd_prev].code != CMD_NULL) {
+		struct object *obj;
+
+		if (cmd_get_arg_item(&cmd_queue[cmd_prev], "item", &obj) == CMD_OK
+				&& (obj->grid.x != 0 || obj->grid.y != 0)) {
+			repeat_prev_allowed = false;
+		}
+	}
 }
 
 /**
