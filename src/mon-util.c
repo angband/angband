@@ -623,9 +623,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		player->upkeep->redraw |= (PR_MONLIST);
 
 		/* Don't allow command repeat if moved away from item used. */
-		if (cmdq_does_previous_use_floor_item()) {
-			cmd_disable_repeat();
-		}
+		cmd_disable_repeat_floor_item();
 	}
 
 	/* Monster 2 */
@@ -672,9 +670,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		player->upkeep->redraw |= (PR_MONLIST);
 
 		/* Don't allow command repeat if moved away from item used. */
-		if (cmdq_does_previous_use_floor_item()) {
-			cmd_disable_repeat();
-		}
+		cmd_disable_repeat_floor_item();
 	}
 
 	/* Redraw */
