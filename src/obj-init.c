@@ -2587,9 +2587,16 @@ static enum parser_error parse_artifact_weight(struct parser *p) {
 
 static enum parser_error parse_artifact_cost(struct parser *p) {
 	struct artifact *a = parser_priv(p);
+	struct object_kind *k = lookup_kind(a->tval, a->sval);
 	assert(a);
+	assert(k);
 
 	a->cost = parser_getint(p, "cost");
+	/* Set kind cost for special artifacts */
+	if (k->kidx >= z_info->ordinary_kind_max) {
+		k->cost = a->cost;
+	}
+
 	return PARSE_ERROR_NONE;
 }
 

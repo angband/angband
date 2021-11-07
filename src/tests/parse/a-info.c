@@ -113,11 +113,17 @@ static int test_weight0(void *state) {
 static int test_cost0(void *state) {
 	enum parser_error r = parser_parse(state, "cost:200");
 	struct artifact *a;
+	struct object_kind *k;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->cost, 200);
+	k = lookup_kind(a->tval, a->sval);
+	noteq(k, NULL);
+	if (k->kidx >= z_info->ordinary_kind_max) {
+		eq(k->cost, 200);
+	}
 	ok;
 }
 
