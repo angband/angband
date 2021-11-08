@@ -46,7 +46,7 @@ static struct {
 const char help_spoil[] =
 	"Spoiler generation mode, subopts\n"
 	"              -a fname    Write artifact spoilers to fname;\n"
-	"                          if neither -p nor -u are used, uses the\n"
+	"                          if neither -p nor -r are used, uses the\n"
 	"                          standard artifacts\n"
 	"              -m fname    Write brief monster spoilers to fname\n"
 	"              -M fname    Write extended monster spoilers to fname\n"
@@ -130,7 +130,7 @@ static u32b parse_seed(const char *src)
  *     [-p] [-r fname]
  *
  *   -a fname  Write artifact spoilers to a file named fname.  If neither -p or
- *             -u are used, the artifacts will be the standard set.
+ *             -r are used, the artifacts will be the standard set.
  *   -m fname  Write brief monster spoilers to a file named fname.
  *   -M fname  Write extended monster spoilers to a file named fname.
  *   -o fname  Write object spoilers to a file named fname.
