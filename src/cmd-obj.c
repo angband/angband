@@ -556,6 +556,14 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					object_delete(player->cave, NULL, &work_obj->known);
 				}
 				object_delete(cave, player->cave, &work_obj);
+				/*
+				 * Selection of effect's target may have
+				 * triggered update to windows while tentative
+				 * deduction was in effect; signal another
+				 * update to remedy that.
+				 */
+				player->upkeep->redraw |= (from_floor) ?
+					(PR_OBJECT) : (PR_INVEN | PR_EQUIP);
 				return;
 			}
 		}
