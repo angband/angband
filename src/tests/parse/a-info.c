@@ -2,21 +2,47 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
+#include "effects.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "object.h"
 #include "init.h"
 	
 int setup_tests(void **state) {
 	*state = init_parse_artifact();
+	/* Do the bare minimum so kind lookups work. */
+	z_info = mem_zalloc(sizeof(*z_info));
+	z_info->k_max = 1;
+	z_info->ordinary_kind_max = 1;
+	k_info = mem_zalloc(TV_MAX * sizeof(*k_info));
+	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
+	kb_info[TV_LIGHT].tval = TV_LIGHT;
 	return !*state;
 }
 
 int teardown_tests(void *state) {
 	struct artifact *a = parser_priv(state);
+	int k;
+
 	string_free(a->name);
 	string_free(a->text);
 	string_free(a->alt_msg);
 	mem_free(a);
+	for (k = 1; k < z_info->k_max; ++k) {
+		struct object_kind *kind = &k_info[k];
+
+		string_free(kind->name);
+		string_free(kind->text);
+		string_free(kind->effect_msg);
+		string_free(kind->vis_msg);
+		mem_free(kind->brands);
+		mem_free(kind->slays);
+		mem_free(kind->curses);
+		free_effect(kind->effect);
+	}
+	mem_free(k_info);
+	mem_free(kb_info);
+	mem_free(z_info);
 	parser_destroy(state);
 	return 0;
 }
@@ -45,14 +71,14 @@ static int test_badtval1(void *state) {
 }
 
 static int test_base_object0(void *state) {
-	enum parser_error r = parser_parse(state, "base-object:light:6");
+	enum parser_error r = parser_parse(state, "base-object:light:Arkenstone");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->tval, TV_LIGHT);
-	eq(a->sval, 6);
+	eq(a->sval, z_info->ordinary_kind_max);
 	ok;
 }
 
@@ -67,26 +93,37 @@ static int test_level0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_kind() requires z_info/k_info() */
-int test_weight0(void *state) {
+static int test_weight0(void *state) {
 	enum parser_error r = parser_parse(state, "weight:8");
 	struct artifact *a;
+	struct object_kind *k;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->weight, 8);
+	k = lookup_kind(a->tval, a->sval);
+	noteq(k, NULL);
+	if (k->kidx >= z_info->ordinary_kind_max) {
+		eq(k->weight, 8);
+	}
 	ok;
 }
 
 static int test_cost0(void *state) {
 	enum parser_error r = parser_parse(state, "cost:200");
 	struct artifact *a;
+	struct object_kind *k;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
 	eq(a->cost, 200);
+	k = lookup_kind(a->tval, a->sval);
+	noteq(k, NULL);
+	if (k->kidx >= z_info->ordinary_kind_max) {
+		eq(k->cost, 200);
+	}
 	ok;
 }
 
@@ -163,16 +200,23 @@ static int test_values0(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_kind() requires z_info/k_info */
-int test_time0(void *state) {
+static int test_time0(void *state) {
 	enum parser_error r = parser_parse(state, "time:20+d30");
 	struct artifact *a;
+	struct object_kind *k;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
-	eq(a->time.base, 20);
-	eq(a->time.sides, 30);
+	k = lookup_kind(a->tval, a->sval);
+	noteq(k, NULL);
+	if (k->kidx >= z_info->ordinary_kind_max) {
+		eq(k->time.base, 20);
+		eq(k->time.sides, 30);
+	} else {
+		eq(a->time.base, 20);
+		eq(a->time.sides, 30);
+	}
 	ok;
 }
 
@@ -210,7 +254,7 @@ struct test tests[] = {
 	{ "badtval1", test_badtval1 },
 	{ "base-object0", test_base_object0 },
 	{ "level0", test_level0 },
-	//{ "weight0", test_weight0 },
+	{ "weight0", test_weight0 },
 	{ "cost0", test_cost0 },
 	{ "alloc0", test_alloc0 },
 	{ "alloc1", test_alloc1 },
@@ -218,7 +262,7 @@ struct test tests[] = {
 	{ "attack0", test_attack0 },
 	{ "armor0", test_armor0 },
 	{ "flags0", test_flags0 },
-	//{ "time0", test_time0 },
+	{ "time0", test_time0 },
 	{ "msg0", test_msg0 },
 	{ "desc0", test_desc0 },
 	{ "values0", test_values0 },
