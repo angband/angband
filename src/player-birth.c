@@ -566,7 +566,6 @@ bool player_make_simple(const char *nrace, const char *nclass,
 	cmd_set_arg_choice(cmdq_peek(), "choice", ir);
 	cmdq_push(CMD_CHOOSE_CLASS);
 	cmd_set_arg_choice(cmdq_peek(), "choice", ic);
-	cmdq_push(CMD_ROLL_STATS);
 	cmdq_push(CMD_NAME_CHOICE);
 	cmd_set_arg_string(cmdq_peek(), "name",
 		(nplayer == NULL) ? "Simple" : nplayer);
