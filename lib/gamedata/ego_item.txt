@@ -22,6 +22,10 @@
 # flags-off: flag | flag | etc
 # values: label[value] | label[value] | etc.
 # min-values: label[value] | label[value] | etc.
+# brand: code
+# slay: code
+# curse: name : power
+# desc: description
 
 # Some fields accept randomized numbers of the form "10+2d3M4" where
 # 10 is the non-variable base, 2d3 is a standard die roll, and
@@ -83,14 +87,34 @@
 # lanterns to take fuel, so we add a 'flags-off:TAKES_FUEL' line to subtract
 # that flag.
 
-# 'values' is for object modifiers which take a value - stats, slays, brands,
-# resistances and so on.  An example is SLAY_UNDEAD[3], which denotes that
-# the weapon concerned has a basic 3x slay against undead creatures.  Like
-# flags, values are separated by '|' and as many values: lines as needed
-# can be used.
+# 'values' is for properties that take a value.  Valid properties are the
+# object modifiers (as found in list-stats.h and list-object-modifiers.h)
+# or resistances ('RES_' prepended to the element name from list-elements.h).
+# The value appears in brackets after the property name.  For object modifiers,
+# the value can be any random expression.  For resistances, it must be a plain
+# integer value with the useful ones being 1 (resist), 3 (immune), and -1
+# (vulnerable).  Like flags, values are separated by '|' and as many values:
+# lines as needed can be used.
 
 # 'min-values' is for minimum values of values recorded in a 'values' line.
 # These work like minimum combat values, but for value-defined modifiers.
+# While resistances can be specified on a 'values' line, they can not appear
+# in a 'min-values' line.  Also, unlike the 'values' line, all the values must
+# be plain integers:  full random expressions are not allowed.
+
+# 'brand' adds a brand to the ego.  It should be omitted for egos without
+# brands and may appear more than once for egos with multiple brands.  Specify
+# the brand to be added by its code in brand.txt.
+
+# 'slay' adds a slay to the ego.  It should be omitted for egos without slays
+# and may appear more than once for egos with multiple slays.  Specify the slay
+# to be added by its code in slay.txt.
+
+# 'curse' adds curse to the ego.  It should be omitted for egos without curses
+# and may appear more than once for egos with multiple curses.  A curse has a
+# name (as given in curse.txt) and a power.  The power is a positive integer
+# and indicates how hard it is to remove the curse.  A larger power is more
+# difficult to remove.
 
 # 'desc' is for description. As many desc: lines may be used as are needed
 # to describe the object. Note that lines will need spaces at their

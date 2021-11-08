@@ -27,6 +27,9 @@
 # expr:substitution code:base value:expression
 # flags: flag | flag | etc.
 # values: label[value] | label[value] | etc.
+# brand: code
+# slay: code
+# curse: name : power
 # pval: pval
 # desc: description
 
@@ -106,11 +109,28 @@
 # flags: lines may be used as are needed to specify all the flags, and
 # flags are separated by the '|' symbol.
 
-# 'values' is for object modifiers which take a value - stats, slays, brands,
-# resistances and so on.  An example is SLAY_UNDEAD[3], which denotes that
-# the weapon concerned has a basic 3x slay against undead creatures.  Like
-# flags, values are separated by '|' and as many values: lines as needed
-# can be used.
+# 'values' is for properties that take a value.  Valid properties are the
+# object modifiers (as found in list-stats.h and list-object-modifiers.h)
+# or resistances ('RES_' prepended to the element name from list-elements.h).
+# The value appears in brackets after the property name.  For object modifiers,
+# the value can be any random expression.  For resistances, it must be a plain
+# integer value with the useful ones being 1 (resist), 3 (immune), and -1
+# (vulnerable).  Like flags, values are separated by '|' and as many values:
+# lines as needed can be used.
+
+# 'brand' adds a brand to the object.  It should be omitted for objects
+# without brands and may appear more than once for objects with multiple brands.
+# Specify the brand to be added by its code in brand.txt.
+
+# 'slay' adds a slay to the object.  It should be omitted for objects without
+# slays and may appear more than once for objects with multiple slays.  Specify
+# the slay to be added by its code in slay.txt.
+
+# 'curse' adds a curse to the object.  It should be omitted for objects without
+# curses and may appear more than once for objects with multiple curses.  A
+# curse has a name (as given in curse.txt) and a power.  The power is a
+# is a positive integer and indicates how hard it is to remove the curse.  A
+# larger power is more difficult to remove.
 
 # 'power' is used in calculating the power of the object for pricing and 
 # generating random artifacts.  It reflects the power of the effect of the
