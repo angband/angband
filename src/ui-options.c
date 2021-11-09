@@ -826,7 +826,7 @@ static void colors_pref_load(const char *title, int row)
 	 * colour changes - how about doing this in the pref file
 	 * loading code too? */
 	Term_xtra(TERM_XTRA_REACT, 0);
-	Term_redraw();
+	Term_redraw_all();
 }
 
 static void colors_pref_dump(const char *title, int row)
