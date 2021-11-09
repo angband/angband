@@ -8,16 +8,61 @@
 int setup_tests(void **state) {
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->max_sight = 20;
+	/*
+	 * Initialize just enough of the blow methods and effects so the tests
+	 * will work.
+	 */
+	z_info->blow_methods_max = 3;
+	blow_methods = mem_zalloc(z_info->blow_methods_max * sizeof(*blow_methods));
+	blow_methods[1].name = string_make("CLAW");
+	blow_methods[1].next = &blow_methods[2];
+	blow_methods[2].name = string_make("BITE");
+	blow_methods[2].next = NULL;
+	z_info->blow_effects_max = 2;
+	blow_effects = mem_zalloc(z_info->blow_effects_max * sizeof(*blow_effects));
+	blow_effects[0].name = string_make("NONE");
+	blow_effects[0].next = &blow_effects[1];
+	blow_effects[1].name = string_make("FIRE");
+	blow_effects[1].next = NULL;
 	*state = init_parse_monster();
 	return !*state;
 }
 
 int teardown_tests(void *state) {
 	struct monster_race *mr = parser_priv(state);
+	struct monster_blow *mb;
+	struct blow_method *meth;
+	struct blow_effect *eff;
+
 	string_free(mr->name);
 	string_free(mr->text);
+	mb = mr->blow;
+	while (mb) {
+		struct monster_blow *mbn = mb->next;
+
+		mem_free(mb);
+		mb = mbn;
+	}
 	mem_free(mr);
 	parser_destroy(state);
+	for (eff = blow_effects; eff; eff = eff->next) {
+		string_free(eff->effect_type);
+		string_free(eff->desc);
+		string_free(eff->name);
+	}
+	mem_free(blow_effects);
+	for (meth = &blow_methods[1]; meth; meth = meth->next) {
+		struct blow_message *msg = meth->messages;
+		string_free(meth->desc);
+		while (msg) {
+			struct blow_message *next = msg->next;
+			string_free(msg->act_msg);
+			mem_free(msg);
+			msg = next;
+		}
+		string_free(meth->name);
+	}
+	mem_free(blow_methods);
 	mem_free(z_info);
 	return 0;
 }
@@ -156,33 +201,43 @@ static int test_mexp0(void *state) {
 	ok;
 }
 
-/* Without initialization of the blow_methods array, this crashes so not run. */
-int test_blow0(void *state) {
+static int test_blow0(void *state) {
 	enum parser_error r = parser_parse(state, "blow:CLAW:FIRE:9d12");
 	struct monster_race *mr;
+	struct monster_blow *mb;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	require(mr->blow[0].method);
-	require(mr->blow[0].effect);
-	eq(mr->blow[0].dice.dice, 9);
-	eq(mr->blow[0].dice.sides, 12);
+	require(mr->blow);
+	mb = mr->blow;
+	while (mb->next) {
+		mb = mb->next;
+	}
+	require(mb->method && streq(mb->method->name, "CLAW"));
+	require(mb->effect && streq(mb->effect->name, "FIRE"));
+	eq(mb->dice.dice, 9);
+	eq(mb->dice.sides, 12);
 	ok;
 }
 
-/* Without initialization of the blow_methods array, this crashes so not run. */
-int test_blow1(void *state) {
+static int test_blow1(void *state) {
 	enum parser_error r = parser_parse(state, "blow:BITE:FIRE:6d8:0");
 	struct monster_race *mr;
+	struct monster_blow *mb;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	require(mr->blow[0].next->method);
-	require(mr->blow[0].next->effect);
-	eq(mr->blow[0].next->dice.dice, 6);
-	eq(mr->blow[0].next->dice.sides, 8);
+	require(mr->blow);
+	mb = mr->blow;
+	while (mb->next) {
+		mb = mb->next;
+	}
+	require(mb->method && streq(mb->method->name, "BITE"));
+	require(mb->effect && streq(mb->effect->name, "FIRE"));
+	eq(mb->dice.dice, 6);
+	eq(mb->dice.sides, 8);
 	ok;
 }
 
@@ -257,8 +312,8 @@ struct test tests[] = {
 	{ "depth0", test_depth0 },
 	{ "rarity0", test_rarity0 },
 	{ "mexp0", test_mexp0 },
-	//{ "blow0", test_blow0 },
-	//{ "blow1", test_blow1 },
+	{ "blow0", test_blow0 },
+	{ "blow1", test_blow1 },
 	{ "flags0", test_flags0 },
 	{ "desc0", test_desc0 },
 	{ "innate-freq0", test_innate_freq0 },
