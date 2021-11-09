@@ -14,7 +14,7 @@ int setup_tests(void **state) {
 	z_info = mem_zalloc(sizeof(*z_info));
 	z_info->k_max = 1;
 	z_info->ordinary_kind_max = 1;
-	k_info = mem_zalloc(TV_MAX * sizeof(*k_info));
+	k_info = mem_zalloc(z_info->k_max * sizeof(*k_info));
 	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
 	kb_info[TV_LIGHT].tval = TV_LIGHT;
 	return !*state;
