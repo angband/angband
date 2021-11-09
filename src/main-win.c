@@ -1,6 +1,6 @@
 /**
  * \file main-win.c
- * \brief Pseudo-UI for end-to-end testing.
+ * \brief Provide a front end for Microsoft Windows
  *
  * Copyright (c) 1997 Ben Harrison, Skirmantas Kligys, Robert Ruehlmann,
  * and others
