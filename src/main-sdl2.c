@@ -3661,13 +3661,7 @@ static void refresh_angband_terms(void)
 		handle_stuff(player);
 		move_cursor_relative(player->grid.x, player->grid.y);
 
-		for (size_t i = 0; i < ANGBAND_TERM_MAX; i++) {
-			if (angband_term[i] == NULL) {
-				continue;
-			}
-			Term_activate(angband_term[i]);
-			Term_redraw();
-		}
+		Term_redraw_all();
 	}
 
 	Term_activate(old);

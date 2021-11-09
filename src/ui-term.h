@@ -370,6 +370,7 @@ extern u32b window_flag[ANGBAND_TERM_MAX];
  *  Available Functions
  * ------------------------------------------------------------------------ */
 
+extern errr Term_redraw_all(void);
 extern errr Term_xtra(int n, int v);
 
 extern void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta, wchar_t tc);

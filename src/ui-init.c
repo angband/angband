@@ -81,6 +81,7 @@ void textui_init(void)
 
 		/* Update terminals for preference changes. */
 		(void) Term_xtra(TERM_XTRA_REACT, 0);
+		(void) Term_redraw_all();
 	}
 
 	/* initialize window options that will be overridden by the savefile */

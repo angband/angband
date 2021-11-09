@@ -430,6 +430,37 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 
 /**
  * ------------------------------------------------------------------------
+ * Public functions operating on all terminals
+ * ------------------------------------------------------------------------
+ */
+
+
+/**
+ * Redraw all the terminals.
+ */
+extern errr Term_redraw_all(void)
+{
+	term *old = Term;
+	errr combined = 0;
+	int j;
+
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
+		errr one_result;
+
+		if (!angband_term[j]) continue;
+		(void) Term_activate(angband_term[j]);
+		one_result = Term_redraw();
+		if (!one_result) {
+			combined = one_result;
+		}
+	}
+	(void) Term_activate(old);
+
+	return combined;
+}
+
+/**
+ * ------------------------------------------------------------------------
  * External hooks
  * ------------------------------------------------------------------------ */
 
