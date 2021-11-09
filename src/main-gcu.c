@@ -793,8 +793,8 @@ static errr Term_xtra_gcu(int n, int v) {
 		/* Delay */
 		case TERM_XTRA_DELAY: if (v > 0) usleep(1000 * v); return 0;
 
-		/* React to events; nothing special is done */
-		case TERM_XTRA_REACT: return 0;
+		/* React to events */
+		case TERM_XTRA_REACT: handle_extended_color_tables(); return 0;
 	}
 
 	/* Unknown event */
