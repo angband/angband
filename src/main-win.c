@@ -1797,7 +1797,7 @@ static errr Term_xtra_win_clear(void)
 
 	/* Erase it */
 	hdc = GetDC(td->w);
-	SetBkColor(hdc, RGB(0, 0, 0));
+	SetBkColor(hdc, (colors16) ? RGB(0, 0, 0) : win_clr[0]);
 	SelectObject(hdc, td->font_id);
 	ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
 	ReleaseDC(td->w, hdc);
@@ -1965,10 +1965,10 @@ static errr Term_bigcurs_win(int x, int y)
 
 /**
  * Help Term_wipe_win(), Term_pict_win(), and Term_pict_win_alpha():
- * erase a nc x nr block of characters where the upper left corner
- * of the block is at (x,y).
+ * fill a nc x nr block of characters with the color c where the upper
+ * left corner of the block is at (x,y).
  */
-static errr Term_wipe_win_helper(int x, int y, int nc, int nr)
+static errr Term_wipe_win_helper(int x, int y, int nc, int nr, COLORREF c)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -1982,7 +1982,7 @@ static errr Term_wipe_win_helper(int x, int y, int nc, int nr)
 	rc.bottom = rc.top + nr * td->tile_hgt;
 
 	hdc = GetDC(td->w);
-	SetBkColor(hdc, RGB(0, 0, 0));
+	SetBkColor(hdc, c);
 	SelectObject(hdc, td->font_id);
 	ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
 	ReleaseDC(td->w, hdc);
@@ -1999,7 +1999,8 @@ static errr Term_wipe_win_helper(int x, int y, int nc, int nr)
  */
 static errr Term_wipe_win(int x, int y, int n)
 {
-	return Term_wipe_win_helper(x, y, n, 1);
+	return Term_wipe_win_helper(x, y, n, 1,
+		(colors16) ? RGB(0, 0, 0) : win_clr[0]);
 }
 
 
@@ -2029,12 +2030,11 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 	/* Acquire DC */
 	hdc = GetDC(td->w);
 
-	/* Background color */
-	SetBkColor(hdc, RGB(0, 0, 0));
-
 	/* Foreground color */
 	if (colors16) {
 		SetTextColor(hdc, PALETTEINDEX(win_pal[a % MAX_COLORS]));
+		/* Background color */
+		SetBkColor(hdc, RGB(0, 0, 0));
 	} else {
 		if (paletted)
 			SetTextColor(hdc, win_clr[(a % MAX_COLORS) & 0x1F]);
@@ -2044,10 +2044,6 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 		/* Determine the background colour - from Sil */
 		switch (a / MAX_COLORS)
 		{
-			case BG_BLACK:
-				/* Default Background */
-				SetBkColor(hdc, win_clr[0]);
-				break;
 			case BG_SAME:
 				/* Background same as foreground*/
 				SetBkColor(hdc, win_clr[a % MAX_COLORS]);
@@ -2055,6 +2051,11 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 			case BG_DARK:
 				/* Highlight Background */
 				SetBkColor(hdc, win_clr[COLOUR_SHADE]);
+				break;
+			case BG_BLACK:
+			default:
+				/* Default Background */
+				SetBkColor(hdc, win_clr[0]);
 				break;
 		}
 	}
@@ -2153,7 +2154,7 @@ static errr Term_pict_win(int x, int y, int n,
 	th2 = mh * h2;
 
 	/* Erase the grids */
-	Term_wipe_win_helper(x, y, n * mw, mh);
+	Term_wipe_win_helper(x, y, n * mw, mh, RGB(0, 0, 0));
 
 	/* Location of window cell */
 	x2 = x * w2 + td->size_ow1;
@@ -2397,7 +2398,7 @@ static errr Term_pict_win_alpha(int x, int y, int n,
 	th2 = mh * h2;
 
 	/* Erase the grids */
-	Term_wipe_win_helper(x, y, n * mw, mh);
+	Term_wipe_win_helper(x, y, n * mw, mh, RGB(0, 0, 0));
 
 	/* Location of window cell */
 	x2 = x * w2 + td->size_ow1;
