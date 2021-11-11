@@ -1788,18 +1788,16 @@ static errr Term_xtra_win_clear(void)
 
 	HDC hdc;
 	RECT rc;
+	HBRUSH brush;
 
 	/* Rectangle to erase */
-	rc.left = td->size_ow1;
-	rc.right = rc.left + td->cols * td->tile_wid;
-	rc.top = td->size_oh1;
-	rc.bottom = rc.top + td->rows * td->tile_hgt;
+	GetClientRect(td->w, &rc);
 
 	/* Erase it */
 	hdc = GetDC(td->w);
-	SetBkColor(hdc, (colors16) ? RGB(0, 0, 0) : win_clr[0]);
-	SelectObject(hdc, td->font_id);
-	ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+	brush = CreateSolidBrush((colors16) ? RGB(0, 0, 0) : win_clr[0]);
+	FillRect(hdc, &rc, brush);
+	DeleteObject(brush);
 	ReleaseDC(td->w, hdc);
 
 	/* Success */
