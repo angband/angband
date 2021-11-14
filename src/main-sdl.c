@@ -2767,6 +2767,11 @@ static errr Term_xtra_sdl(int n, int v)
 		{
 			int i;
 			/* Re-initialize the colours */
+			back_colour.r = angband_color_table[COLOUR_DARK][1];
+			back_colour.g = angband_color_table[COLOUR_DARK][2];
+			back_colour.b = angband_color_table[COLOUR_DARK][3];
+			back_pixel_colour = SDL_MapRGB(AppWin->format,
+				back_colour.r, back_colour.g, back_colour.b);
 			for (i = 0; i < MAX_COLORS; i++)
 			{
 				text_colours[i].r = angband_color_table[i][1];
