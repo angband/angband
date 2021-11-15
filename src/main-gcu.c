@@ -746,6 +746,7 @@ static void handle_extended_color_tables(void) {
 		int i;
 		int scale = COLORS == 256 ? 6 : 4;
 
+		bg_color = create_color(COLOUR_DARK, scale);
 		for (i = 0; i < BASIC_COLORS; i++) {
 			int fg = create_color(i, scale);
 			int isbold = bold_extended ? A_BRIGHT : A_NORMAL;
@@ -753,6 +754,13 @@ static void handle_extended_color_tables(void) {
 			colortable[i] = COLOR_PAIR(i + 1) | isbold;
 			init_pair(BASIC_COLORS + i, fg, fg);
 			same_colortable[i] = COLOR_PAIR(BASIC_COLORS + i) | isbold;
+		}
+
+		for (i = 0; i < term_count; ++i) {
+			if (data[i].win) {
+				wbkgdset(data[i].win, ' ' |
+					colortable[COLOUR_DARK]);
+			}
 		}
 	}
 }
@@ -821,12 +829,19 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 
 	wmove(td->win, y, x);
 
-	if (x + n >= td->t.wid)
+	if (x + n >= td->t.wid) {
 		/* Clear to end of line */
 		wclrtoeol(td->win);
-	else
+	} else {
 		/* Clear some characters */
+		if (can_use_color) {
+			wattrset(td->win, colortable[COLOUR_DARK] | A_NORMAL);
+		}
 		whline(td->win, ' ', n);
+		if (can_use_color) {
+			wattrset(td->win, A_NORMAL);
+		}
+	}
 
 	return 0;
 }
