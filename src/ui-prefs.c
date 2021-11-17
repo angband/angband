@@ -302,8 +302,8 @@ void dump_colors(ang_file *fff)
 
 		const char *name = "unknown";
 
-		/* Skip non-entries, except color 0 as a special case */
-		if (!kv && !rv && !gv && !bv && i != 0) continue;
+		/* Skip non-entries, except those in the basic colors */
+		if (!kv && !rv && !gv && !bv && i >= BASIC_COLORS) continue;
 
 		/* Extract the color name */
 		if (i < BASIC_COLORS) name = color_table[i].name;
