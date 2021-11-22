@@ -37,6 +37,42 @@ static struct option_entry {
 };
 
 /**
+ * Given the option type, return a short name in all lower case.
+ */
+const char *option_type_name(int page)
+{
+	const char *result;
+
+	switch (page) {
+	case OP_INTERFACE:
+		result = "interface";
+		break;
+
+	case OP_BIRTH:
+		result = "birth";
+		break;
+
+	case OP_CHEAT:
+		result = "cheat";
+		break;
+
+	case OP_SCORE:
+		result = "score";
+		break;
+
+	case OP_SPECIAL:
+		result = "special";
+		break;
+
+	default:
+		result = "unknown";
+		break;
+	}
+
+	return result;
+}
+
+/**
  * Given an option index, return its name
  */
 const char *option_name(int opt)
@@ -116,8 +152,9 @@ void options_init_defaults(struct player_options *opts)
 	for (opt = 0; opt < OPT_MAX; opt++)
 		(*opts).opt[opt] = options[opt].normal;
 
-	/* Override with customized birth options. */
-	options_restore_custom_birth(opts);
+	/* Override with the player's customizations. */
+	options_restore_custom(opts, OP_BIRTH);
+	options_restore_custom(opts, OP_INTERFACE);
 
 	/* 40ms for the delay factor */
 	(*opts).delay_factor = 40;
@@ -127,23 +164,25 @@ void options_init_defaults(struct player_options *opts)
 }
 
 /**
- * Record the birth options for later recall.
+ * Record the options of type, page, for later recall.
  *
  * Return true if successful.  Return false if the operation failed.
  */
-bool options_save_custom_birth(struct player_options *opts)
+bool options_save_custom(struct player_options *opts, int page)
 {
+	const char *page_name = option_type_name(page);
 	bool success = true;
-	char path[1024];
+	char path[1024], file_name[80];
 	ang_file *f;
 
-	path_build(path, sizeof(path), ANGBAND_DIR_USER,
-		"customized_birth_options.txt");
+	strnfmt(file_name, sizeof(file_name), "customized_%s_options.txt",
+		page_name);
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, file_name);
 	f = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (f) {
 		int opt;
 
-		if (!file_put(f, "# These are customized defaults for the birth options.\n")) {
+		if (!file_putf(f, "# These are customized defaults for the %s options.\n", page_name)) {
 			success = false;
 		}
 		if (!file_put(f, "# All lines begin with \"option:\" followed by the internal option name.\n")) {
@@ -153,7 +192,7 @@ bool options_save_custom_birth(struct player_options *opts)
 			success = false;
 		}
 		for (opt = 0; opt < OPT_MAX; opt++) {
-			if (options[opt].type == OP_BIRTH) {
+			if (options[opt].type == page) {
 				if (!file_putf(f, "# %s\n",
 						 options[opt].description)) {
 					success = false;
@@ -176,20 +215,22 @@ bool options_save_custom_birth(struct player_options *opts)
 }
 
 /**
- * Reset the birth options to the customized defaults.
+ * Reset the options of type, page, to the customized defaults.
  *
  * Return true if successful.  That includes the case where no customized
- * defaults are available.  When that happens, the birth options are reset
- * to the maintainer's defaults.  Return false if the customized defaults
- * are present but unreadable.
+ * defaults are available.  When that happens, the options are reset to the
+ * maintainer's defaults.  Return false if the customized defaults are
+ * present but unreadable.
  */
-bool options_restore_custom_birth(struct player_options *opts)
+bool options_restore_custom(struct player_options *opts, int page)
 {
+	const char *page_name = option_type_name(page);
 	bool success = true;
-	char path[1024];
+	char path[1024], file_name[80];
 
-	path_build(path, sizeof(path), ANGBAND_DIR_USER,
-		"customized_birth_options.txt");
+	strnfmt(file_name, sizeof(file_name), "customized_%s_options.txt",
+		page_name);
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, file_name);
 	if (file_exists(path)) {
 		/*
 		 * Could use run_parser(), but that exits the application if
@@ -212,10 +253,11 @@ bool options_restore_custom_birth(struct player_options *opts)
 						size_t lname;
 
 						if (opt >= OPT_MAX) {
-							msg("Unrecognized birth option at line %d of the customized birth options.", linenum);
+							msg("Unrecognized option at line %d of the customized %s options.", linenum, page_name);
 							break;
 						}
-						if (!options[opt].name) {
+						if (options[opt].type != page ||
+								!options[opt].name) {
 							++opt;
 							continue;
 						}
@@ -229,7 +271,7 @@ bool options_restore_custom_birth(struct player_options *opts)
 							} else if (strncmp("no", buf + offset + lname + 1, 2) == 0 && contains_only_spaces(buf + offset + lname + 3)) {
 								(*opts).opt[opt] = false;
 							} else {
-								msg("Value at line %d of the customized birth options is not yes or no.", linenum);
+								msg("Value at line %d of the customized %s options is not yes or no.", linenum, page_name);
 							}
 							break;
 						}
@@ -238,7 +280,7 @@ bool options_restore_custom_birth(struct player_options *opts)
 				} else {
 					offset = 0;
 					if (sscanf(buf, "#%n*s", &offset) == 0 && offset == 0 && ! contains_only_spaces(buf)) {
-						msg("Line %d of the customized birth options is not parseable.", linenum);
+						msg("Line %d of the customized %s options is not parseable.", linenum, page_name);
 					}
 				}
 				++linenum;
@@ -250,19 +292,19 @@ bool options_restore_custom_birth(struct player_options *opts)
 			success = false;
 		}
 	} else {
-		options_reset_birth(opts);
+		options_restore_maintainer(opts, page);
 	}
 	return success;
 }
 
 /**
- * Reset the birth options to the maintainer's defaults.
+ * Reset the options of type, page, to the maintainer's defaults.
  */
-void options_reset_birth(struct player_options *opts)
+void options_restore_maintainer(struct player_options *opts, int page)
 {
 	int opt;
 	for (opt = 0; opt < OPT_MAX; opt++)
-		if (options[opt].type == OP_BIRTH) {
+		if (options[opt].type == page) {
 			(*opts).opt[opt] = options[opt].normal;
 		}
 }
