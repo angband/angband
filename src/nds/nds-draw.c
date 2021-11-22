@@ -87,33 +87,33 @@ void nds_draw_pixel(u16b x, u16b y, nds_pixel data) {
 #endif
 }
 
-void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr)
+void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr_fg, nds_pixel clr_bg)
 {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 
 #ifdef _3DS
-	nds_font->draw_char(c, fb + (x * NDS_SCREEN_HEIGHT) + (NDS_SCREEN_HEIGHT - y - 1), clr);
+	nds_font->draw_char(c, fb + (x * NDS_SCREEN_HEIGHT) + (NDS_SCREEN_HEIGHT - y - 1), clr_fg, clr_bg);
 #else
-	nds_font->draw_char(c, fb + (y * NDS_SCREEN_WIDTH) + x, clr);
+	nds_font->draw_char(c, fb + (y * NDS_SCREEN_WIDTH) + x, clr_fg, clr_bg);
 #endif
 }
 
-void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr)
+void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg)
 {
 	while (*str != '\0') {
-		nds_draw_char_px(x, y, *(str++), clr);
+		nds_draw_char_px(x, y, *(str++), clr_fg, clr_bg);
 		x += nds_font->width;
 	}
 }
 
-void nds_draw_char(byte x, byte y, char c, nds_pixel clr)
+void nds_draw_char(byte x, byte y, char c, nds_pixel clr_fg, nds_pixel clr_bg)
 {
-	nds_draw_char_px(x * nds_font->width, y * nds_font->height, c, clr);
+	nds_draw_char_px(x * nds_font->width, y * nds_font->height, c, clr_fg, clr_bg);
 }
 
-void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr)
+void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg)
 {
-	nds_draw_str_px(x * nds_font->width, y * nds_font->height, str, clr);
+	nds_draw_str_px(x * nds_font->width, y * nds_font->height, str, clr_fg, clr_bg);
 }
 
 void nds_draw_cursor(int x, int y) {
@@ -149,7 +149,7 @@ void nds_log(const char *msg)
 {
 	static byte x = 2, y = 1;
 	for (byte i = 0; msg[i] != '\0'; i++) {
-		nds_draw_char(x, y, msg[i], NDS_WHITE_PIXEL);
+		nds_draw_char(x, y, msg[i], NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 		x++;
 		if (msg[i] == '\n' || x > NDS_SCREEN_COLS - 2) {
 			x = 2;
@@ -177,7 +177,7 @@ void nds_raw_print(const char *str)
 {
 	static u16b x = 0, y = 32;
 	while (*str) {
-		nds_draw_char(x, y, *(str++), NDS_WHITE_PIXEL);
+		nds_draw_char(x, y, *(str++), NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 		x++;
 		if (x > 78) {
 			x = 0;
@@ -186,6 +186,6 @@ void nds_raw_print(const char *str)
 				y = 32;
 		}
 	}
-	nds_draw_char(x, y, 219, NDS_WHITE_PIXEL);
+	nds_draw_char(x, y, 219, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 	fflush(0);
 }

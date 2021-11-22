@@ -227,14 +227,14 @@ void nds_kbd_redraw_key(int r, int k, bool initial, bool active)
 	/* If no special handling is required, just print the char */
 	if (s == NULL) {
 		nds_draw_char_px(str_x, str_y, c,
-		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL);
+		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 		return;
 	}
 
 	/* Print the text */
 	for (int i = 0; i < strlen(s); i++) {
 		nds_draw_char_px(str_x + (i * nds_font->width), str_y, s[i],
-		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL);
+		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 	}
 }
 

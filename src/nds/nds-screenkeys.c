@@ -110,7 +110,7 @@ void nds_scrkey_redraw_key(nds_scrkey_entry *key, bool initial, bool active)
 
 	for (int i = 0; i < NDS_SCRKEY_LABEL_LEN && key->label[i]; i++) {
 		nds_draw_char_px(str_x + (i * nds_font->width), str_y, key->label[i],
-		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL);
+		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 	}
 }
 

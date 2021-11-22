@@ -387,12 +387,12 @@ static const nds_pixel ds_subfont[] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
 };
 
-static void nds_font_draw(char c, nds_pixel *pixels, nds_pixel clr) {
+static void nds_font_draw(char c, nds_pixel *pixels, nds_pixel clr_fg, nds_pixel clr_bg) {
 	const nds_pixel *font = ds_subfont + (c * 3 * 8);
 
 	for (byte yy = 0; yy < 8; yy++, pixels += NDS_Y_PITCH) {
 		for (byte xx = 0; xx < 3; xx++, font++) {
-			pixels[xx * NDS_X_PITCH] = (*font) & clr;
+			pixels[xx * NDS_X_PITCH] = ((*font) & clr_fg) | (~(*font) & clr_bg);
 		}
 	}
 }
