@@ -1334,6 +1334,33 @@ static errr Infoclr_change_fg(Pixell fg)
 
 
 /**
+ * Change the 'bg' for an infoclr
+ *
+ * Inputs:
+ *	bg:   The Pixell for the requested Background (see above)
+ */
+static errr Infoclr_change_bg(Pixell bg)
+{
+	infoclr *iclr = Infoclr;
+
+
+	/*** Simple error checking of opr and clr ***/
+
+	/* Check the 'Pixells' for realism */
+	if (bg > Metadpy->zg) return (-1);
+
+	/*** Change ***/
+
+	/* Change */
+	XSetBackground(Metadpy->dpy, iclr->gc, bg);
+
+	/* Success */
+	return (0);
+}
+
+
+
+/**
  * Nuke an old 'infofnt'.
  */
 static errr Infofnt_nuke(void)
@@ -1955,6 +1982,8 @@ static errr Term_xtra_x11_react(void)
 	int i;
 
 	if (Metadpy->color) {
+		XSetWindowAttributes xattr;
+
 		/* Check the colors */
 		for (i = 0; i < MAX_COLORS; i++) {
 			if ((color_table_x11[i][0] != angband_color_table[i][0]) ||
@@ -1978,7 +2007,31 @@ static errr Term_xtra_x11_react(void)
 				/* Change the foreground */
 				Infoclr_set(clr[i]);
 				Infoclr_change_fg(pixel);
+
+				if (i == COLOUR_DARK) {
+					int j;
+
+					Metadpy->bg = pixel;
+					/* Change the background */
+					for (j = 0; j < MAX_COLORS; ++j) {
+						Infoclr_set(clr[j]);
+						Infoclr_change_bg(pixel);
+					}
+				} else if (i == COLOUR_WHITE) {
+					Metadpy->fg = pixel;
+				}
 			}
+		}
+
+		xattr.background_pixel = Metadpy->bg;
+		for (i = 0; i < ANGBAND_TERM_MAX; ++i) {
+			term_data *td;
+
+			if (!angband_term[i]) continue;
+			td = (term_data*)(angband_term[i]->data);
+			if (!td || !td->win) continue;
+			XChangeWindowAttributes(Metadpy->dpy, td->win->win,
+				CWBackPixel, &xattr);
 		}
 	}
 

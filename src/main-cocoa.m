@@ -3363,9 +3363,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	    edge =
 		workingRects[irect].origin.y + workingRects[irect].size.height;
 	    if (edge <= self.borderSize.height) {
-		if (alast != -1) {
-		    [[NSColor blackColor] set];
-		    alast = -1;
+		if (alast != COLOUR_DARK) {
+		    alast = COLOUR_DARK;
+		    set_color_for_index(alast);
 		}
 		NSRectFill(workingRects[irect]);
 		continue;
@@ -3373,9 +3373,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	    clearRect = workingRects[irect];
 	    clearRect.size.height =
 		self.borderSize.height - workingRects[irect].origin.y;
-	    if (alast != -1) {
-		[[NSColor blackColor] set];
-		alast = -1;
+	    if (alast != COLOUR_DARK) {
+		alast = COLOUR_DARK;
+		set_color_for_index(alast);
 	    }
 	    NSRectFill(clearRect);
 	    modRect.origin.x = workingRects[irect].origin.x;
@@ -3390,18 +3390,18 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	if (modRect.origin.x < self.borderSize.width) {
 	    edge = modRect.origin.x + modRect.size.width;
 	    if (edge <= self.borderSize.width) {
-		if (alast != -1) {
-		    alast = -1;
-		    [[NSColor blackColor] set];
+		if (alast != COLOUR_DARK) {
+		    alast = COLOUR_DARK;
+		    set_color_for_index(alast);
 		}
 		NSRectFill(modRect);
 		continue;
 	    }
 	    clearRect = modRect;
 	    clearRect.size.width = self.borderSize.width - clearRect.origin.x;
-	    if (alast != -1) {
-		alast = -1;
-		[[NSColor blackColor] set];
+	    if (alast != COLOUR_DARK) {
+		alast = COLOUR_DARK;
+		set_color_for_index(alast);
 	    }
 	    NSRectFill(clearRect);
 	    modRect.origin.x = self.borderSize.width;
@@ -3660,9 +3660,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	edge = modRect.origin.x + modRect.size.width;
 	if (edge > rightX) {
 	    if (modRect.origin.x >= rightX) {
-		if (alast != -1) {
-		    alast = -1;
-		    [[NSColor blackColor] set];
+		if (alast != COLOUR_DARK) {
+		    alast = COLOUR_DARK;
+		    set_color_for_index(alast);
 		}
 		NSRectFill(modRect);
 		continue;
@@ -3670,9 +3670,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	    clearRect = modRect;
 	    clearRect.origin.x = rightX;
 	    clearRect.size.width = edge - rightX;
-	    if (alast != -1) {
-		alast = -1;
-		[[NSColor blackColor] set];
+	    if (alast != COLOUR_DARK) {
+		alast = COLOUR_DARK;
+		set_color_for_index(alast);
 	    }
 	    NSRectFill(clearRect);
 	    modRect.size.width = edge - modRect.origin.x;
@@ -3685,9 +3685,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 		modRect.origin.y = bottomY;
 		modRect.size.height = edge - bottomY;
 	    }
-	    if (alast != -1) {
-		alast = -1;
-		[[NSColor blackColor] set];
+	    if (alast != COLOUR_DARK) {
+		alast = COLOUR_DARK;
+		set_color_for_index(alast);
 	    }
 	    NSRectFill(modRect);
 	}
@@ -3967,7 +3967,7 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	if (count > 0) {
 	    NSRect viewRect = [self visibleRect];
 
-	    [[NSColor blackColor] set];
+	    set_color_for_index(COLOUR_DARK);
 	    while (count-- > 0) {
 		CGFloat drawTop = rects[count].origin.y - viewRect.origin.y;
 		CGFloat drawBottom = drawTop + rects[count].size.height;
@@ -4094,14 +4094,7 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
  */
 static int get_background_color_index(int idx)
 {
-    /*
-     * The Cocoa interface has always been using (0,0,0) as the clear color
-     * and not angband_color_table[0].  As of January 2020,  the Window's
-     * interface uses both ((0,0,0) in Term_xtra_win_clear() and
-     * Term_xtra_wipe_win() and win_clr[0], which is set from
-     * angband_color_table[0], in Term_text_win() for the BG_BLACK case.
-     */
-    int ibkg = -1;
+    int ibkg = COLOUR_DARK;
 
     switch (idx / MAX_COLORS) {
     case BG_BLACK:
