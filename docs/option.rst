@@ -22,6 +22,14 @@ below).
 User Interface Options
 ======================
 
+When setting the user interface options, there are a handful of commands
+to make it easier to get to a well-known state for all of those options.
+They are:  's' to save the current selections so that they will be used
+as the starting point for future characters, 'r' to reset the current
+selections to the defaults for a new character, and 'x' to reset the
+current selections to the Angband maintainer's defaults for the user
+interface options.
+
 Rogue-like commands ``rogue_like_commands``
   Selects the "roguelike" command set (see "command.txt" for info).
 
@@ -120,8 +128,8 @@ Birth options
 
 The birth options may only be changed when creating a character or using
 the quick restart option for a dead character.  When setting the birth
-options, there are handful of commands to make it easier to get to a
-well-known state for all the birth options.  They are:  's' to save the
+options, there are a handful of commands to make it easier to get to a
+well-known state for all of the birth options.  They are:  's' to save the
 current selections so that they will be used as the starting point for
 future characters, 'r' to reset the current selections to the defaults
 for a new character, and 'x' to reset the current selections to the
