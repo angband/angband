@@ -1195,7 +1195,7 @@ static enum parser_error parse_trap_name(struct parser *p) {
 }
 
 static enum parser_error parse_trap_graphics(struct parser *p) {
-    char glyph = parser_getchar(p, "glyph");
+    wchar_t glyph = parser_getchar(p, "glyph");
     const char *color = parser_getsym(p, "color");
     int attr = 0;
     struct trap_kind *t = parser_priv(p);
