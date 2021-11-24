@@ -385,6 +385,7 @@ if test "$enable_sdl2_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl2" != "yes"; then
+		AM_PATH_SDL2(2.0.0,,)
 		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
 		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
@@ -408,6 +409,7 @@ if test "$enable_sdl_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl" != "yes"; then
+		AM_PATH_SDL(1.2.10,,)
 		SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
 		SDL_LIBS=`${SDL_CONFIG} --libs`
