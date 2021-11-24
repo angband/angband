@@ -341,9 +341,9 @@ if test "$enable_sdl2" = "yes"; then
 	else
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL2_CFLAGS=`sdl2-config --cflags`
+		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
-		SDL2_LIBS=`sdl2-config --libs`
+		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL2_LIBS}"
 		AC_CHECK_LIB(SDL2_image, IMG_LoadPNG_RW, with_sdl2=yes, with_sdl2=no)
 		AC_CHECK_LIB(SDL2_ttf, TTF_Init, with_sdl2x=yes, with_sdl2=no)
@@ -369,9 +369,9 @@ else
 	   else
 			hold_CPPFLAGS="${CPPFLAGS}"
 			hold_LIBS="${LIBS}"
-			SDL_CFLAGS=`sdl-config --cflags`
+			SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 			CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-			SDL_LIBS=`sdl-config --libs`
+			SDL_LIBS=`${SDL_CONFIG} --libs`
 			LIBS="${LIBS} ${SDL_LIBS}"
 			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
 			AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
@@ -408,8 +408,9 @@ if test "$enable_sdl2_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl2" != "yes"; then
-		SDL2_CFLAGS=`sdl2-config --cflags`
-		SDL2_LIBS=`sdl2-config --libs`
+		AM_PATH_SDL2(2.0.0,,)
+		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
+		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
 		LIBS="${LIBS} ${SDL2_LIBS}"
 	fi
@@ -431,9 +432,10 @@ if test "$enable_sdl_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl" != "yes"; then
-		SDL_CFLAGS=`sdl-config --cflags`
+		AM_PATH_SDL(1.2.10,,)
+		SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-		SDL_LIBS=`sdl-config --libs`
+		SDL_LIBS=`${SDL_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL_LIBS}"
 	fi
 	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
