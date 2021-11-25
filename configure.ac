@@ -160,7 +160,7 @@ if test "x$bindir" = "x\${exec_prefix}/bin"; then
 fi
 
 if test "x$with_no_install" != "x"; then
-	configpath="${PWD}/lib/"
+	configpath="./lib/"
 else
 	configpath="${sysconfdir}/${PACKAGE}/"
 fi
@@ -172,7 +172,7 @@ esac
 
 
 if test "x$with_no_install" != "x"; then
-	libpath="${PWD}/lib/"
+	libpath="./lib/"
 	bindir=".."
 else
 	libpath="${datarootdir}/${PACKAGE}/"
@@ -184,7 +184,7 @@ case "/$libpath" in
 esac
 
 if test "x$with_no_install" != "x"; then
-	docdir="${PWD}/doc/"
+	docdir="./doc/"
 else
 	# Only change docdir if it's the configure-supplied default, which handily doesn't expand prefix
 	if test "x$docdir" = "x\${datarootdir}/doc/\${PACKAGE_TARNAME}"; then
@@ -198,7 +198,7 @@ case "/$docdir" in
 esac
 
 if test "x$with_no_install" != "x"; then
-	varpath="${PWD}/lib/"
+	varpath="./lib/"
 else
 	varpath="${localstatedir}/games/${PACKAGE}/"
 fi
