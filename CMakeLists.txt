@@ -2,10 +2,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
 PROJECT(Angband LANGUAGES C)
 SET(OUR_EXECUTABLE_NAME ${PROJECT_NAME})
 
-IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    MESSAGE(FATAL_ERROR "No support for CMake on Windows")
-ENDIF()
-
 OPTION(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
 OPTION(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
@@ -13,9 +9,15 @@ OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
 OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
 OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
-OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ON)
+IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    SET(SPOIL_DEFAULT OFF)
+ELSE()
+    SET(SPOIL_DEFAULT ON)
+ENDIF()
+OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ${SPOIL_DEFAULT})
 OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
 OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
+OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
 OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
@@ -24,15 +26,64 @@ ENDIF()
 IF((SUPPORT_STATS_FRONTEND) AND (NOT SUPPORT_STATS_BACKEND))
     SET(SUPPORT_STATS_BACKEND ON)
 ENDIF()
-# If none of the graphical front ends will be configured, configure the X11 one.
-IF ((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
-    SET(SUPPORT_X11_FRONTEND ON)
+# If none of the graphical front ends will be configured, configure the one for
+# Windows if that's the target plaform or the X11 one for anything else.
+IF((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        SET(SUPPORT_WINDOWS_FRONTEND ON)
+    ELSE()
+        SET(SUPPORT_X11_FRONTEND ON)
+    ENDIF()
 ENDIF()
 # Can not have support for SDL and SDL2 at the same time.
 IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
     IF (SUPPORT_SDL_FRONTEND OR SUPPORT_SDL_SOUND)
         MESSAGE(FATAL_ERROR "Can not configure with support for both SDL and SDL2")
     ENDIF()
+ENDIF()
+IF(SUPPORT_WINDOWS_FRONTEND)
+    # The Windows front end bypasses main.c so can't use any of the other front
+    # ends when it is used.  For somewhat similar reasons, disable SDL or SDL2
+    # sound with the Windows front end.
+    IF(SUPPORT_GCU_FRONTEND)
+        MESSAGE(WARNING "Disabling GCU front end because Windows front end is enabled")
+        SET(SUPPORT_GCU_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_SDL_FRONTEND)
+        MESSAGE(WARNING "Disabling SDL front end because Windows front end is enabled")
+        SET(SUPPORT_SDL_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_SDL2_FRONTEND)
+        MESSAGE(WARNING "Disabling SDL2 front end because Windows front end is enabled")
+        SET(SUPPORT_SDL2_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_SPOIL_FRONTEND)
+        MESSAGE(WARNING "Disabling spoiler front end because Windows front end is enabled")
+        SET(SUPPORT_SPOIL_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_STATS_FRONTEND)
+        MESSAGE(WARNING "Disabling statistics front end because Windows front end is enabled")
+        SET(SUPPORT_STATS_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_TEST_FRONTEND)
+        MESSAGE(WARNING "Disabling test front end because Windows front end is enabled")
+        SET(SUPPORT_TEST_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_X11_FRONTEND)
+        MESSAGE(WARNING "Disabling X11 front end because Windows front end is enabled")
+        SET(SUPPORT_X11_FRONTEND OFF)
+    ENDIF()
+    IF(SUPPORT_SDL_SOUND)
+        MESSAGE(WARNING "Disabling SDL sound because Windows front end is enabled")
+        SET(SUPPORT_SDL_SOUND OFF)
+    ENDIF()
+    IF(SUPPORT_SDL2_SOUND)
+        MESSAGE(WARNING "Disabling SDL2 sound because Windows front end is enabled")
+        SET(SUPPORT_SDL2_SOUND OFF)
+    ENDIF()
+    # Set up the path for the source of the resource file.
+    STRING(TOLOWER ${OUR_EXECUTABLE_NAME} OUR_WINDOWS_RC_BASE)
+    STRING(CONCAT src/win/ ${OUR_WINDOWS_RC_BASE} .rc OUR_WINDOWS_RC)
 ENDIF()
 
 ADD_LIBRARY(OurCoreLib OBJECT
@@ -211,12 +262,18 @@ ADD_EXECUTABLE(OurExecutable
         $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
         $<$<BOOL:${SUPPORT_SDL_FRONTEND}>:src/main-sdl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:${OUR_WINDOWS_RC}>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/main-win.c>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/win/readdib.c>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/win/readpng.c>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/win/scrnshot.c>
+        $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/win/win-layout.c>
         $<$<BOOL:${SUPPORT_X11_FRONTEND}>:src/main-x11.c>
         $<$<BOOL:${SUPPORT_SPOIL_FRONTEND}>:src/main-spoil.c>
         $<$<BOOL:${SUPPORT_STATS_FRONTEND}>:src/main-stats.c>
         $<$<BOOL:${SUPPORT_STATS_FRONTEND}>:src/stats/db.c>
         $<$<BOOL:${SUPPORT_TEST_FRONTEND}>:src/main-test.c>
-        src/main.c
+        $<$<NOT:$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>>:src/main.c>
 )
 
 SET_TARGET_PROPERTIES(OurExecutable PROPERTIES
@@ -242,6 +299,11 @@ IF(SUPPORT_SDL_FRONTEND)
 ELSEIF(SUPPORT_SDL2_FRONTEND)
     INCLUDE(src/cmake/macros/SDL2_Frontend.cmake)
     CONFIGURE_SDL2_FRONTEND(OurExecutable)
+ENDIF()
+IF(SUPPORT_WINDOWS_FRONTEND)
+    INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
+    CONFIGURE_WINDOWS_FRONTEND(OurExecutable NO)
+    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib YES)
 ENDIF()
 
 IF(SUPPORT_SDL_SOUND)
@@ -281,13 +343,28 @@ IF(SUPPORT_TEST_FRONTEND)
     CONFIGURE_TEST_FRONTEND(OurExecutable)
 ENDIF()
 
-# Set the build ID.  Assumes a Unix-like environment.
-EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
-IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
-
-     SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+# Set the build ID.
+IF(SUPPORT_WINDOWS_FRONTEND)
+    # Just check for the version file left in a snapshot.  If not in a snapshot,
+    # don't bother to set the build ID.
+    IF (EXISTS ./version)
+        EXECUTE_PROCESS(COMMAND type version WORKING_DIRECTORY . OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+        IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
+            SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+        ELSE()
+            SET(ANGBAND_BUILD_ID_OPTION "")
+        ENDIF()
+    ELSE()
+        SET(ANGBAND_BUILD_ID_OPTION "")
+    ENDIF()
 ELSE()
-     SET(ANGBAND_BUILD_ID_OPTION "")
+    # Assumes a Unix-like environment.
+    EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+    IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
+        SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+    ELSE()
+        SET(ANGBAND_BUILD_ID_OPTION "")
+    ENDIF()
 ENDIF()
 TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
@@ -296,7 +373,20 @@ MESSAGE(STATUS "Copying needed files")
 
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
-# Set up tests.
+IF(SUPPORT_WINDOWS_FRONTEND)
+    # Transfer the packaged DLLs so there in the same directory as the
+    # executable.
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+ENDIF()
+
+# Set up tests.  For now, don't bother on Windows since haven't worked out
+# replacements for the scripts used (src/tests/run-tests and
+# src/tests/list-tests).
+IF(SUPPORT_WINDOWS_FRONTEND)
+    RETURN()
+ENDIF()
+
 # First copy some scripts and, as necessary, test case data from the source
 # tree.
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/run-tests
