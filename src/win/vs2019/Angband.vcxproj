@@ -558,7 +558,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <None Include="lib\tiles\old\graf-xxx.prf" />
     <None Include="lib\tiles\old\xtra-xxx.prf" />
     <None Include="lib\tiles\shockbolt\flvr-shb.prf" />
-    <None Include="lib\tiles\shockbolt\graf-shb.prf" />
     <None Include="lib\tiles\shockbolt\graf-shb-dark.prf" />
     <None Include="lib\tiles\shockbolt\graf-shb-light.prf" />
     <None Include="lib\tiles\shockbolt\xtra-shb.prf" />
@@ -583,7 +582,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\monster_base.txt" />
     <Text Include="lib\gamedata\monster_spell.txt" />
     <Text Include="lib\gamedata\names.txt" />
-    <Text Include="lib\gamedata\negativity.txt" />
     <Text Include="lib\gamedata\object.txt" />
     <Text Include="lib\gamedata\object_base.txt" />
     <Text Include="lib\gamedata\object_property.txt" />
@@ -610,7 +608,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\visuals.txt" />
     <Text Include="lib\gamedata\world.txt" />
     <Text Include="lib\help\commands.txt" />
-    <Text Include="lib\help\debug.txt" />
     <Text Include="lib\help\index.txt" />
     <Text Include="lib\help\symbols.txt" />
     <Text Include="lib\screens\crown.txt" />

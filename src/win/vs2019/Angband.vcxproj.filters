@@ -1220,9 +1220,6 @@
     <None Include="lib\tiles\shockbolt\flvr-shb.prf">
       <Filter>Resource Files\tiles\shockbolt</Filter>
     </None>
-    <None Include="lib\tiles\shockbolt\graf-shb.prf">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
-    </None>
     <None Include="lib\tiles\shockbolt\graf-shb-dark.prf">
       <Filter>Resource Files\tiles\shockbolt</Filter>
     </None>
@@ -1289,9 +1286,6 @@
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\names.txt">
-      <Filter>Resource Files\gamedata</Filter>
-    </Text>
-    <Text Include="lib\gamedata\negativity.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\object.txt">
@@ -1370,9 +1364,6 @@
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\help\commands.txt">
-      <Filter>Resource Files\help</Filter>
-    </Text>
-    <Text Include="lib\help\debug.txt">
       <Filter>Resource Files\help</Filter>
     </Text>
     <Text Include="lib\help\index.txt">
