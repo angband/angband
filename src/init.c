@@ -309,7 +309,6 @@ static enum parser_error write_book_kind(struct class_book *book,
 void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
 {
 	char buf[1024];
-	char *userpath = NULL;
 
 	/*** Free everything ***/
 
@@ -376,19 +375,17 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 #endif /* PRIVATE_USER_PATH */
 
+#ifndef USE_PRIVATE_PATHS
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_USER, datapath, "user");
+#endif /* USE_PRIVATE_PATHS */
+
 	/* Build the path to the user info directory */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_INFO, ANGBAND_DIR_USER, "info");
 
-#ifdef USE_PRIVATE_PATHS
-	userpath = ANGBAND_DIR_USER;
-#else /* !USE_PRIVATE_PATHS */
-	userpath = (char *)datapath;
-#endif /* USE_PRIVATE_PATHS */
-
 	/* Build the path to the score, save and archive directories */
-	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
-	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
-	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, userpath, "archive");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, ANGBAND_DIR_USER, "scores");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, ANGBAND_DIR_USER, "save");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, ANGBAND_DIR_USER, "archive");
 
 #undef BUILD_DIRECTORY_PATH
 }
