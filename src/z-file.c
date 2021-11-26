@@ -171,8 +171,6 @@ static void path_process(char *buf, size_t len, size_t *cur_len,
  *
  * On Unixes, we convert a tidle at the beginning of a basename to mean the
  * directory, complicating things a little, but better now than later.
- *
- * Remember to free the return value.
  */
 size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 {
@@ -190,7 +188,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 
 
 	/*
-	 * If the leafname starts with the seperator,
+	 * If the leafname starts with the separator,
 	 *   or with the tilde (on Unix),
 	 *   or there's no base path,
 	 * We use the leafname only.
