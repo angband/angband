@@ -660,3 +660,25 @@ bool savefile_load(const char *path, bool cheat_death)
 
 	return ok;
 }
+
+
+/**
+ * Fill the given buffer with the panic save equivalent for a savefile.
+ *
+ * \param buf Is the buffer to fill.  The result wil be an empty string if
+ * the result can't fit in the given buffer or the savefile name or panic
+ * save directory are invalid.
+ * \param len Is the maximum number of characters that the buffer can hold.
+ * \param path Is the name of the savefile to use.  The storage for that must
+ * not overlap buffer.
+ */
+void savefile_get_panic_name(char *buf, size_t len, const char *path)
+{
+	size_t name_offset = path_filename_index(path);
+	size_t used = path_build(buf, len, ANGBAND_DIR_PANIC,
+		path + name_offset);
+
+	if (len > 0 && (used == 0 || !suffix(buf, path + name_offset))) {
+		buf[0] = '\0';
+	}
+}
