@@ -69,6 +69,14 @@ bool arg_wizard;			/* Command arg -- Request wizard mode */
 char savefile[1024];
 
 /**
+ * Buffer to hold the name of the panic save corresponding to savefile.  Only
+ * set and used as necessary (in start_game() and handle_signal_abort()).  Use
+ * static storage to avoid complications in the signal handler (i.e. limited
+ * stack space or the possibility of a full or corrupted heap).
+ */
+char panicfile[1024];
+
+/**
  * Set by the front end to perform necessary actions when restarting after death
  * without exiting.  May be NULL.
  */
@@ -626,11 +634,26 @@ static void pre_turn_refresh(void)
  */
 static void start_game(bool new_game)
 {
+	const char *loadpath = savefile;
+
 	/* Player will be resuscitated if living in the savefile */
 	player->is_dead = true;
 
 	/* Try loading */
-	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard))
+	savefile_get_panic_name(panicfile, sizeof(panicfile), loadpath);
+	if (file_exists(panicfile)) {
+		if (file_newer(panicfile, loadpath)) {
+			if (get_check("A panic save exists.  Use it? ")) {
+				loadpath = panicfile;
+			}
+		} else {
+			/* Remove the out-of-date panic save. */
+			safe_setuid_grab();
+			file_delete(panicfile);
+			safe_setuid_drop();
+		}
+	}
+	if (file_exists(loadpath) && !savefile_load(loadpath, arg_wizard))
 		quit("Broken savefile");
 
 	/* No living character loaded */
