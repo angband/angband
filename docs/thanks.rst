@@ -229,7 +229,7 @@ bugfixes, and other stuff for Angband prior to 4.0:
 
 Peter Berger, Andrew Hill, Werner Baer, Tom Morton, "Cyric the Mad", 
 Chris Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, "facade", 
-Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietila, 
+Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
 Shayne Steele, Dr. Andrew White, Greg Flint, Christopher Jeris, Ian 
 Parkhouse, "Warhammer", Scott Holder, Brent Ross, Kazuo Ito, Willem 
 Siemelink, "Luthien", David J. Grabiner, Ilya Bely, "chungkuo", Kieron 
