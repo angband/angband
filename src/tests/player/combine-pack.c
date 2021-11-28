@@ -27,12 +27,12 @@
 struct in_slot_desc {
 	int tval, sval, num;
 	const char* inscrip;
-	byte origin, origin_depth;
+	uint8_t origin, origin_depth;
 	bool known, equipped;
 };
 struct out_slot_desc {
 	int tval, sval, num;
-	byte origin, origin_depth;
+	uint8_t origin, origin_depth;
 	bool equipped;
 };
 struct simple_test_case {
