@@ -1,0 +1,30 @@
+# Use msbuild on Windows to test if building with the Visual Studio project
+# file (win/vs2019/Angband.vcxproj) works.
+
+name: msbuild
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Stock 
+    runs-on: windows-latest
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          # Copy the project file so that the project directory inferred by
+          # msbuild matches up with the location of the source files as
+          # specified in the project file.
+          xcopy src\win\vs2019\Angband.vcxproj .\
+          xcopy src\win\vs2019\Angband.vcxproj.filters .\
+          xcopy src\win\vs2019\Angband.vcxproj.user .\
+          msbuild Angband.vcxproj

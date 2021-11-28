@@ -159,7 +159,7 @@ void do_vblank()
 #ifdef DEBUG_MEMORY_USAGE
 	char mem_usage_str[96];
 	snprintf(mem_usage_str, sizeof(mem_usage_str), "Free mem: %d bytes", nds_free_memory_bytes());
-	nds_draw_str(0, NDS_SCREEN_LINES * 2 - 1, mem_usage_str, NDS_WHITE_PIXEL);
+	nds_draw_str(0, NDS_SCREEN_LINES * 2 - 1, mem_usage_str, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 #endif
 
 	nds_video_vblank();
@@ -287,7 +287,7 @@ static errr Term_xtra_nds(int n, int v)
 
 		for (y = 0; y < NDS_SCREEN_LINES; y++) {
 			for (x = 0; x < NDS_SCREEN_COLS; x++) {
-				nds_draw_char(x, y, 0, NDS_BLACK_PIXEL);
+				nds_draw_char(x, y, 0, color_data[COLOUR_DARK], color_data[COLOUR_DARK]);
 			}
 		}
 
@@ -438,7 +438,7 @@ static errr Term_wipe_nds(int x, int y, int n)
 
 	/* Draw a blank */
 	for (i = 0; i < n; i++)
-		nds_draw_char(x + i, y, 0, NDS_BLACK_PIXEL);
+		nds_draw_char(x + i, y, 0, color_data[COLOUR_DARK], color_data[COLOUR_DARK]);
 
 	/* Success */
 	return (0);
@@ -479,7 +479,7 @@ static errr Term_wipe_nds(int x, int y, int n)
 static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
 	for (int i = 0; i < n; i++) {
-		nds_draw_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)]);
+		nds_draw_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)], color_data[COLOUR_DARK]);
 	}
 
 	return (0);

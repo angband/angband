@@ -12,7 +12,7 @@
 #include "test-utils.h"
 #include "z-util.h"
 
-#ifdef SOUND_SDL
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
 #include "sound.h"
 #include "snd-sdl.h"
 

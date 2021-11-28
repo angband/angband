@@ -456,6 +456,6 @@ Peter Berger, "Prfnoff", Arcum Dagsson, Ed Cogburn, Matthias Kurzke,
 Ben Harrison, Steven Fuerst, Julian Lighton, Andrew Hill, Werner Baer,
 Tom Morton, "Cyric the Mad", Chris Kern, Tim Baker, Jurriaan Kalkman,
 Alexander Wilkins, Mauro Scarpa, John I'anson-Holton, "facade",
-Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietil‰,
+Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietil√§,
 Greg Wooledge, Keldon Jones, Shayne Steele, Dr. Andrew White, Musus Umbra,
 Jonathan Ellis

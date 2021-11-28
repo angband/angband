@@ -195,12 +195,13 @@ static void handle_signal_abort(int sig)
 
 	/* Panic save */
 	my_strcpy(player->died_from, "(panic save)", sizeof(player->died_from));
+	savefile_get_panic_name(panicfile, sizeof(panicfile), savefile);
 
 	/* Forbid suspend */
 	signals_ignore_tstp();
 
 	/* Attempt to save */
-	if (savefile_save(savefile))
+	if (panicfile[0] && savefile_save(panicfile))
 		Term_putstr(45, 23, -1, COLOUR_RED, "Panic save succeeded!");
 	else
 		Term_putstr(45, 23, -1, COLOUR_RED, "Panic save failed!");

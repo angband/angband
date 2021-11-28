@@ -47,6 +47,11 @@ bool savefile_load(const char *path, bool cheat_death);
  */
 const char *savefile_get_description(const char *path);
 
+/**
+ * Fill the given buffer with the panic save equivalent for a savefile.
+ */
+void savefile_get_panic_name(char *buffer, size_t len, const char *path);
+
 
 /**
  * ------------------------------------------------------------------------

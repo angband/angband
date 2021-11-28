@@ -312,12 +312,6 @@ void cmdq_execute(cmd_context ctx);
 void cmdq_flush(void);
 
 /**
- * Return true if the previous command used an item from the floor.
- * Otherwise, return false.
- */
-bool cmdq_does_previous_use_floor_item(void);
-
-/**
  * ------------------------------------------------------------------------
  * Command repeat manipulation
  * ------------------------------------------------------------------------ */
@@ -337,6 +331,12 @@ void cmd_set_repeat(int nrepeats);
  * "Repeat last command" command.
  */
 void cmd_disable_repeat(void);
+
+/**
+ * Disallow current command from being repeated if it used item from
+ * the floor.
+ */
+void cmd_disable_repeat_floor_item(void);
 
 /**
  * Returns the number of repeats left for the current command.

@@ -100,7 +100,10 @@ CPPFLAGS="$CPPFLAGS -I."
 
 AC_ARG_ENABLE(release,
 	[AS_HELP_STRING([--enable-release], [enable a release build])],
-	[release=yes],
+	[AS_CASE(${enableval},
+		[yes], [release=yes],
+		[no], [release=no],
+		[AC_MSG_ERROR([bad value ${enableval} for --enable-release])])],
 	[release=no])
 
 if test x"$release" = xyes ; then
@@ -113,8 +116,11 @@ fi
 
 AC_ARG_ENABLE(more-gcc-warnings,
 	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
-	[ more_gcc_warnings=yes],
-	[ more_gcc_warnings=no])
+	[AS_CASE(${enableval},
+		[yes], [more_gcc_warnings=yes],
+		[no], [more_gcc_warnings=no],
+		[AC_MSG_ERROR([bad value ${enableval} for --enable-more-gcc-warnings])])],
+	[more_gcc_warnings=no])
 
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
@@ -240,11 +246,11 @@ dnl Frontends
 AC_ARG_ENABLE(curses,
 	[AS_HELP_STRING([--enable-curses], [enable Curses frontend (default: enabled)])],
 	[enable_curses=$enableval],
-	[enable_curses=yes])
+	[enable_curses=default])
 AC_ARG_ENABLE(x11,
 	[AS_HELP_STRING([--enable-x11], [enable X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
-	[enable_x11=yes])
+	[enable_x11=default])
 AC_ARG_ENABLE(sdl2,
 	[AS_HELP_STRING([--enable-sdl2], [enable SDL2 frontend (default: disabled)])],
 	[enable_sdl2=$enableval],
@@ -268,7 +274,7 @@ AC_ARG_ENABLE(stats,
 AC_ARG_ENABLE(spoil,
 	[AS_HELP_STRING([--enable-spoil], [enable command-line spoiler generation (default: enabled)])],
 	[enable_spoil=$enableval],
-	[enable_spoil=yes])
+	[enable_spoil=default])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl2_mixer,
@@ -281,6 +287,23 @@ AC_ARG_ENABLE(sdl_mixer,
 	[enable_sdl_mixer=$enable_sdl])
 
 MAINFILES="\$(BASEMAINFILES)"
+
+dnl The Windows front end does not allow access to the others so disable them
+dnl unless explicitly told to build them.
+if test x"$enable_win" = xyes; then
+	default_override=no
+else
+	default_override=yes
+fi
+if test x"$enable_curses" = xdefault; then
+	enable_curses="$default_override"
+fi
+if test x"$enable_x11" = xdefault; then
+	enable_x11="$default_override"
+fi
+if test x"$enable_spoil" = xdefault; then
+	enable_spoil="$default_override"
+fi
 
 dnl curses checking
 if test "$enable_curses" = "yes"; then
@@ -330,9 +353,9 @@ if test "$enable_sdl2" = "yes"; then
 	else
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL2_CFLAGS=`sdl2-config --cflags`
+		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
-		SDL2_LIBS=`sdl2-config --libs`
+		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL2_LIBS}"
 		AC_CHECK_LIB(SDL2_image, IMG_LoadPNG_RW, with_sdl2=yes, with_sdl2=no)
 		AC_CHECK_LIB(SDL2_ttf, TTF_Init, with_sdl2x=yes, with_sdl2=no)
@@ -358,9 +381,9 @@ else
 	   else
 			hold_CPPFLAGS="${CPPFLAGS}"
 			hold_LIBS="${LIBS}"
-			SDL_CFLAGS=`sdl-config --cflags`
+			SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 			CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-			SDL_LIBS=`sdl-config --libs`
+			SDL_LIBS=`${SDL_CONFIG} --libs`
 			LIBS="${LIBS} ${SDL_LIBS}"
 			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
 			AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
@@ -397,8 +420,9 @@ if test "$enable_sdl2_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl2" != "yes"; then
-		SDL2_CFLAGS=`sdl2-config --cflags`
-		SDL2_LIBS=`sdl2-config --libs`
+		AM_PATH_SDL2(2.0.0,,)
+		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
+		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
 		LIBS="${LIBS} ${SDL2_LIBS}"
 	fi
@@ -420,9 +444,10 @@ if test "$enable_sdl_mixer" = "yes"; then
 	hold_CPPFLAGS="${CPPFLAGS}"
 	hold_LIBS="${LIBS}"
 	if test "$with_sdl" != "yes"; then
-		SDL_CFLAGS=`sdl-config --cflags`
+		AM_PATH_SDL(1.2.10,,)
+		SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-		SDL_LIBS=`sdl-config --libs`
+		SDL_LIBS=`${SDL_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL_LIBS}"
 	fi
 	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)

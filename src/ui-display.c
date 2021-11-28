@@ -2680,6 +2680,7 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 	reset_visuals(true);
 	process_character_pref_files();
 	Term_xtra(TERM_XTRA_REACT, 0);
+	(void) Term_redraw_all();
 
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);

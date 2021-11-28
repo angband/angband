@@ -9,6 +9,9 @@
 
 int setup_tests(void **state) {
 	*state = init_parse_object();
+	/* Do the bare minimum so the sval assignment will work. */
+	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
+	kb_info[TV_FOOD].tval = TV_FOOD;
 	return !*state;
 }
 
@@ -17,6 +20,7 @@ int teardown_tests(void *state) {
 	string_free(k->name);
 	string_free(k->text);
 	mem_free(k);
+	mem_free(kb_info);
 	parser_destroy(state);
 	return 0;
 }
@@ -56,8 +60,8 @@ static int test_graphics1(void *state) {
 	ok;
 }
 
-/* Without an initialization for the kb_info array, this crashes; so not run. */
-int test_type0(void *state) {
+static int test_type0(void *state) {
+	int previous_sval = kb_info[TV_FOOD].num_svals;
 	errr r = parser_parse(state, "type:food");
 	struct object_kind *k;
 
@@ -65,6 +69,7 @@ int test_type0(void *state) {
 	k = parser_priv(state);
 	require(k);
 	eq(k->tval, TV_FOOD);
+	eq(k->sval, previous_sval + 1);
 	ok;
 }
 
@@ -231,7 +236,7 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "graphics0", test_graphics0 },
 	{ "graphics1", test_graphics1 },
-	/* { "type0", test_type0 }, */
+	{ "type0", test_type0 },
 	{ "level0", test_level0 },
 	{ "weight0", test_weight0 },
 	{ "cost0", test_cost0 },

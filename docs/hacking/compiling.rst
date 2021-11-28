@@ -202,7 +202,7 @@ a .tar.gz file, for a release.
 
 Then configure the cross-comilation and perform the compilation itself::
 
-	./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i586-mingw32msvc
+	./configure --enable-win --build=i686-pc-linux-gnu --host=i586-mingw32msvc
 	make
 
 One way to run the generated executable, src/angband.exe, with wine is to first
@@ -221,9 +221,13 @@ see i686, amd64, etc. The value of --build should be the host you're building
 on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
 gory details of how these triplets are arrived at)
 
-TODO: you will probably need to manually disable curses, or the host curses
-installation will be found, and will not be able to link properly. More
-checking of permissible combinations to configure is necessary
+TODO: except for recent versions (after Angband 4.2.3) you likely need to
+manually disable curses (add --disable-curses to the options passed to
+configure), or the host curses installation will be found causing the build
+process to fail when linking angband.exe (the error message will likely be
+"cannot find -lncursesw" and "cannot find -ltinfo"). More checking of
+permissible combinations to configure is necessary. The --enable-release and
+--enable-more-gcc-warnings options are safe to use with --enable-win.
 
 Debug build
 ~~~~~~~~~~~
