@@ -294,3 +294,17 @@ letter. If lower case is used, the selection takes place immediately. If
 upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
 selection is thus safer, but requires an extra key stroke.
+
+Shape Changes
+=============
+
+Some classes, objects, or races may allow your character to change shape:
+becoming, for instance, a fox or a wolf.  While in the alternate shape,
+your character will not have access to items in the pack or quiver and
+will not be able to access items on the floor except for eating or pickup.
+The items your character was wearing upon changing shape will remain
+equipped and continue to affect the character's statistics, resistances,
+number of blows, and damage.  Your character will not be able to activate
+any equipped items while in the alternate shape.  To have your character
+change back to normal, cast a spell or use one of the commands, like drop,
+that uses an item.
