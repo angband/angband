@@ -3012,7 +3012,11 @@ static void shape_lore(const struct player_shape *s)
 	textblock_append(tb, "%s", s->name);
 	textblock_append(tb, "\nLike all shapes, the equipment at the time of "
 		"the shapechange sets the base attributes, including damage "
-		"per blow, number of blows and resistances.\n");
+		"per blow, number of blows and resistances.  While changed, "
+		"items in your pack or on the floor (except for pickup or "
+		"eating) are inaccessible.  To switch back to your normal "
+		"shape, cast a spell or use an item command other than eat "
+		"(drop, for instance).\n");
 	shape_lore_append_basic_combat(tb, s);
 	shape_lore_append_skills(tb, s);
 	shape_lore_append_non_stat_modifiers(tb, s);
