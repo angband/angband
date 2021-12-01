@@ -688,23 +688,26 @@ static void start_game(bool new_game)
  */
 void play_game(bool new_game)
 {
-	play_again = false;
+	while (1) {
+		play_again = false;
 
-	/* Load a savefile or birth a character, or both */
-	start_game(new_game);
+		/* Load a savefile or birth a character, or both */
+		start_game(new_game);
 
-	/* Get commands from the user, then process the game world until the
-	 * command queue is empty and a new player command is needed */
-	while (!player->is_dead && player->upkeep->playing) {
-		pre_turn_refresh();
-		cmd_get_hook(CTX_GAME);
-		run_game_loop();
-	}
+		/* Get commands from the user, then process the game world
+		 * until the command queue is empty and a new player command
+		 * is needed */
+		while (!player->is_dead && player->upkeep->playing) {
+			pre_turn_refresh();
+			cmd_get_hook(CTX_GAME);
+			run_game_loop();
+		}
 
-	/* Close game on death or quitting */
-	close_game(true);
+		/* Close game on death or quitting */
+		close_game(true);
 
-	if (play_again) {
+		if (!play_again) break;
+
 		cleanup_angband();
 		init_display();
 		init_angband();
@@ -712,7 +715,7 @@ void play_game(bool new_game)
 		if (reinit_hook != NULL) {
 			(*reinit_hook)();
 		}
-		play_game(true);
+		new_game = true;
 	}
 }
 
