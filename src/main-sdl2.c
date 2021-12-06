@@ -5617,6 +5617,8 @@ static void init_systems(void)
 	SDL_EventState(SDL_FINGERMOTION, SDL_DISABLE);
 	SDL_EventState(SDL_FINGERDOWN, SDL_DISABLE);
 	SDL_EventState(SDL_FINGERUP, SDL_DISABLE);
+	/* Ignore Keymap changed events since they are not handled */
+	SDL_EventState(SDL_KEYMAPCHANGED, SDL_DISABLE);
 
 	SDL_StartTextInput();
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
