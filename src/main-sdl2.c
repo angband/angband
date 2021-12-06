@@ -5620,6 +5620,9 @@ static void init_systems(void)
 
 	SDL_StartTextInput();
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+#ifdef SDL_HINT_POLL_SENTINEL
+	SDL_SetHint(SDL_HINT_POLL_SENTINEL, "0");
+#endif
 }
 
 errr init_sdl2(int argc, char **argv)
