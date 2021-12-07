@@ -107,18 +107,14 @@ APPCONT = $(APPBNDL)/Contents
 APPBIN = $(APPCONT)/MacOS
 APPRES = $(APPCONT)/Resources
 
-# Auxiliary files. Please note that it still uses resouce fork based
-# resources for menus, dialogues and sounds, so that it isn't safe to use
-# utilities that doesn't understand them (virtually all Un*x commands) to
-# copy or archive the application.
+# Auxiliary files.
 #
-# The graphics tiles have been moved out of the resource fork, but, again,
-# it isn't generally safe just to convert GIF or BMP files to PNG, because
-# the Mac OS takes dpi values stored in various images quite seriously.
-# Almost all tilesets for *band requires adjustment, with the sole exception
-# of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not* preserving
-# the actual size of image.  When you have them ready, put them in
-# the lib/xtra/graf directory and rebuild.
+# For graphics tiles, it isn't generally safe just to convert GIF or BMP files
+# to PNG, because the Mac OS takes dpi values stored in various images quite
+# seriously.  Almost all tilesets for *band requires adjustment, with the sole
+# exception of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not*
+# preserving the actual size of image.  When you have them ready, put them in
+# the subdirectories of lib/tiles and rebuild.
 PLIST = cocoa/$(NAME)-Cocoa.xml
 
 ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
