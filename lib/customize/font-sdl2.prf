@@ -1,0 +1,18 @@
+# File: font-sdl2.prf
+
+#
+# This file is used by Angband (when it was compiled using "main-sdl2.c")
+# to specify simple attr:char remappings using a standard font, allowing
+# the use of special pseudo-graphic pictures for walls and such.
+#
+# Note that this file is extremely similar to the "font-ibm.prf" file,
+# but it uses different codes, since it uses the special pseudo-graphic
+# symbols defined in the "lib:xtra:font:*.FON" files, and there is only
+# one special wall type, so we have to use special "colors".
+#
+
+
+### Terrain features ###
+
+# Floors (white : centered dot)
+feat:open floor:*:1:7
