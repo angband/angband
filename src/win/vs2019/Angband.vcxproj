@@ -513,6 +513,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
   <ItemGroup>
     <None Include="lib\customize\font-gcu.prf" />
     <None Include="lib\customize\font-sdl.prf" />
+    <None Include="lib\customize\font-sdl2.prf" />
     <None Include="lib\customize\font-win.prf" />
     <None Include="lib\customize\font-x11.prf" />
     <None Include="lib\customize\font.prf" />

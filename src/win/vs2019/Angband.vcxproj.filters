@@ -1088,6 +1088,9 @@
     <None Include="lib\customize\font-sdl.prf">
       <Filter>Resource Files\customize</Filter>
     </None>
+    <None Include="lib\customize\font-sdl2.prf">
+      <Filter>Resource Files\customize</Filter>
+    </None>
     <None Include="lib\customize\font-win.prf">
       <Filter>Resource Files\customize</Filter>
     </None>
