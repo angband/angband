@@ -974,13 +974,6 @@ void do_cmd_cast(struct command *cmd)
 			/* Filter */ spell_okay_to_cast) != CMD_OK)
 		return;
 
-	if (spell_needs_aim(spell_index)) {
-		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
-			player_confuse_dir(player, &dir, false);
-		else
-			return;
-	}
-
 	/* Get the spell */
 	spell = spell_by_index(player, spell_index);
 
@@ -997,6 +990,13 @@ void do_cmd_cast(struct command *cmd)
 
 		/* Verify */
 		if (!get_check("Attempt it anyway? ")) return;
+	}
+
+	if (spell_needs_aim(spell_index)) {
+		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
+			player_confuse_dir(player, &dir, false);
+		else
+			return;
 	}
 
 	/* Cast a spell */
