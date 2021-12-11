@@ -16,19 +16,24 @@ A command is made up of:
 * a list of arguments, which have a type and a name
 
 Arguments can have any of the following types:
-|| null      | No data held
-|| string    | An ASCII string
-|| item      | An integer 'item' - i.e. one referring to the backpack/equipment or the dungeon inventory array
+|| null      | no data held
+|| string    | a string encoded in UTF-8
+|| choice    | an integer indicating a selection from a known set of values
+|| item      | a pointer to the struct object describing an item or stack
+|| number    | an integer indicating a quantity, power, level, ...
 || direction | one of the 9 directions
 || target    | one of the directions or -1 for a target
-|| check     | a 'yes' or 'no' answer
-|| quantity  | the quantity of an item
-|| spell     | a spell index
-|| storeitem | an item from the inventory of the current store
+|| point     | a struct loc referring to a position in the current level
 
-In C a command is represented by the type 'struct command'.  Command arguments can be set using the cmd_set_arg_*() functions.
+In C a command is represented by the type 'struct command'.  Command arguments can be set using the cmd_set_arg_*() functions and can be retrieved with the
+cmd_get_arg_*() functions.
 
-Limitations: There can be at most [5 XXX] parameters. 
+Limitations:
+There can be at most 4 parameters.
+The lifetimes for arguments referenced through pointers (i.e. string and item)
+has to be at least as long as the lifetime of the command.  The command system
+provides little to help control the lifetime of the arguments and to prevent
+either dangling references or leaks of dynamically allocated resources.
 
 
 Command handlers
@@ -38,30 +43,27 @@ Each command type has a command handler function, which takes the command and ac
 
 	void command_handler(struct command *);
 
-There is a table that relates command types to command values in [game-cmd.c XXX].
+There is a table, a file-level static named game_cmds in cmd-core.c, that
+relates command types to command values.
 
-Inside the command handler, code can access the arguments using the cmd_get_arg_*() functions.  If there is a parameter with the name and type provided, these functions will return it.  If there is not, it ask the UI to provide the appropriate data, set the named parameter in case of future repetition, and return the data.  They return FALSE if this data is not provided and TRUE otherwise.
+Inside the command handler, code can access the arguments using the cmd_get_arg_*() functions.  Those will return CMD_OK if there's a parameter matching the name and type provided.  The command handler could also use the cmd_get_{direction,target,item,quantity,string,spell,effect_from_list}() functions which will use the cmd_get_arg_*() functions when the argument is available and will query the user interface for it when it is not.  In the case where the argument was already set or was successfully queried from the user interface, those will return CMD_OK, record the selection made in the command, and pass back the requested value.  In the case where the user interface aborts the selection, those will return CMD_ARG_ABORTED.
 
-If the data type has a validity filter (e.g. cmd_get_arg_item() has both an item type filter and an item location filter) then the getter will ensure that the object returned passes this/these filter(s).
+If the data type has a validity filter (e.g. cmd_get_item() has both an item type filter and a mode argument to constrain possible item locations) then the getter will ensure that the argument returned satisfies that filter.
 
 For example:
 
 	/* Gain a random spell from the given book (for priests) */
 	void do_cmd_study_book(struct command *cmd) {
-		if (!player_can_study()) {
-			msg("Sorry, you can't learn any spells right now.");
-			return;
-		}
+		struct object *book_obj;
 
-		int item;
-		if (!cmd_get_item(
+		if (cmd_get_item(
 				/* Our command */ cmd,
-				/* Item to return */ &item,
 				/* Name of parameter we're looking for */ "item",
-				/* Prompts */ "Learn from which book?",
-				/* Error */ "You have no books to learn from.",
-				/* Only allow objects passing this filter */ obj_can_browse,
-				/* Where are valid choices? */ USE_INVEN | USE_FLOOR));
+				/* Item to return */ &book_obj,
+				/* Prompt */ "Study which book? ",
+				/* Error */ "You cannot learn any new spells from the books you have.",
+				/* Only allow objects passing this filter */ obj_can_study,
+				/* Where are valid choices? */ USE_INVEN | USE_FLOOR) != CMD_OK);
 			return;
 
 		/* ... learn from 'item' */
@@ -73,41 +75,219 @@ For example:
 UI handlers
 -----------
 
-The UI must provide a set of functions (equivalent to the old get_*() functions) that allow the game to get information from the player.
-
-For each of the above parameter types, there is a corresponding function.
-
-If you do not provide a handler for the following types, the game will implement it in terms of another prompt type:
-* [XXX]
+game-input.h declares a set function pointers (get_string_hook is one) for requesting information from the player.  A UI assigns a specific implementation to a hook (i.e. "get_string_hook = textui_get_string;") to supply its own way of requesting that information.  The hooks that are used by the core of the command system are get_aim_dir_hook, get_effect_from_list_hook, get_item_hook, get_quantity_hook, get_rep_dir_hook, get_spell_hook, get_spell_from_book_hook, and get_string_hook.  The only dispatcher for those hooks which does something potentially useful when no hook is provided is get_effect_from_list():  when get_effect_from_list_hook is NULL it will use a random selection if that is allowed.
 
 
-List of commands and their arguments
-------------------------------------
+Partial list of commands and their arguments
+--------------------------------------------
+
+"activate"
+Constant: CMD_ACTIVATE
+Arguments:
+- 'item' (type item): reference to the item to activate
+
+"aim"
+Constant: CMD_USE_WAND
+Arguments:
+- 'item' (type item): the stack of wands to use
+
+"alter"
+Constant: CMD_ALTER
+Arguments:
+- 'direction' (type direction): the direction to alter
+
+"autoinscribe"
+Constant: CMD_AUTOINSCRIBE
+Arguments:
+- none
+
+"autopickup"
+Constant: CMD_AUTOPICKUP
+Arguments:
+- none
+
+"buy"
+Constant: CMD_BUY
+Arguemnts:
+- 'item' (type item): the stack from which to buy
+- 'quantity' (type number): the number of items to buy from the stack
+
+"cast"
+Constant: CMD_CAST
+Arguments:
+- 'spell' (type choice): index of the spell to cast
+- 'book' (type item): reference to the stack of books to use; only accessed if 'spell' is not set
+
+"close"
+Constant: CMD_CLOSE
+Arguments:
+- 'direction' (type direction): the direction to close
+
+"disarm"
+Constant: CMD_DISARM
+Arguments:
+- 'direction' (type direction): the direction to disarm
+
+"drop"
+Constant: CMD_DROP
+Arguments:
+- 'item' (type item): reference to that stack from which to drop
+- 'quantity' (type number): the number of items to drop
 
 "eat"
 Constant: CMD_EAT
 Arguments:
-- 'item' (type itemref): the item to be eaten
-- (plus 'effect' parameters, see below)
+- 'item' (type item): the stack of food to use
 
+"fire"
+Constant: CMD_FIRE
+Arguments:
+- 'item' (type item): the stack of ammunition to use
+- 'target' (type target): the direction or target for the attack
 
-Effect parameters:
-- These are variable, depend on effect and are preceded by "effect."
+"go down stairs"
+Constant: CMD_GO_DOWN
+Arguments:
+- none
 
+"go up stairs"
+Constant: CMD_GO_UP
+Arguments:
+- none
+
+"hold"
+Constant: CMD_HOLD
+Arguments:
+- none
+
+"inscribe"
+Constant: CMD_INSCRIBE
+Arguments:
+- 'item' (type item): the stack to inscribe
+- 'inscription' (type string): the inscription to use
+
+"jump"
+Constant: CMD_JUMP
+Arguments:
+- 'direction' (type direction): the direction to walk
+
+"open"
+Constant: CMD_OPEN
+Arguments:
+- 'direction' (type direction): the direction to open
+
+"pickup"
+Constant: CMD_PICKUP
+Arguments:
+- 'item' (type item): the item to pickup
+
+"quaff"
+Constant: CMD_QUAFF
+Arguments:
+- 'item' (type item): the stack of potions to use
+
+"read"
+Constant: CMD_READ_SCROLL
+Arguments:
+- 'item' (type item): the stack of scrolls to use
+
+"refuel with"
+Constant: CMD_REFILL
+Arguments:
+- 'item' (type item): the stack to use to refuel the currently equipped light
+
+"rest"
+Constant: CMD_REST
+Arguments:
+- 'choice' (type choice): is either the number of turns to rest or one of the special values given by the REST_* constants in player-util.h
+
+"retrieve"
+Constant: CMD_RETRIEVE
+Arguments:
+- 'item' (type item): the stack to retrieve
+- 'quantity' (type number): the number of items to retrieve from the stack
+
+"run"
+Constant: CMD_RUN
+Arguments:
+- 'direction' (type direction): the direction to move
+
+"sell"
+Constant: CMD_SELL
+Arguments:
+- 'item' (type item): the stack from which to sell
+- 'quantity' (type number): the number of items to sell from the stack
+
+"sleep"
+Constant: CMD_SLEEP
+Arguments:
+- none
+
+"stash"
+Constant: CMD_STASH
+Arguments:
+- 'item' (type item): the stack to stash
+- 'quantity' (type number): the number of items from the stack to stash
+
+"steal"
+Constant: CMD_STEAL
+Arguments:
+- 'direction' (type direction): the direction to steal from
+
+"take off"
+Constant: CMD_TAKEOFF
+Arguments:
+- 'item' (type item): reference to the equipped item to remove
+
+"throw"
+Constant: CMD_THROW
+Arguments:
+- 'item' (type item): the stack of items from which to draw one for throwing
+- 'target' (type target): the direction or target for the attack
+
+"tunnel"
+Constant: CMD_TUNNEL
+Arguments:
+- 'direction (type direction): the direction to tunnel
+
+"un-inscribe"
+Constant: CMD_UNINSCRIBE
+Arguments:
+- 'item' (type item): the stack to uninscribe
+
+"use"
+Constant: CMD_USE_STAFF
+Arguments:
+- 'item' (type item): the stack of staffs to use
+
+"walk"
+Constant: CMD_WALK
+- 'direction' (type direction): the direction to move
+
+"walk"
+Constant: CMD_PATHFIND
+- 'point' (type point): the destination to run to
+
+"wield"
+Constant: CMD_WIELD
+- 'item' (type item): the stack from which to draw one item
+- 'replace' (type item): the ring to replace; only used if 'item' is a ring and all ring slots are filled
+
+"zap"
+Constant: CMD_USE_ROD
+Arguments:
+- 'item' (type item): the stack of rods to use
 
 
 Design problems to be resolved
 ------------------------------
 
-Because there is no way to uniquely identify an item in Angband, repeating commands will work only so well.  For example, take the following situation:
+Besides the limitations mentioned above for the arguments, the logic for
+handling repeated commands is fragile:  various places call cmd_disable_repeat()
+or cmd_disable_repeat_floor_item() when they think a change would prevent
+repetition of a command.  Some of those are unduly pessimistic (if a stack in the inventory goes away it only would prevent command repetition if that stack was referenced by a command).  Others are not strict enough (https://github.com/angband/angband/issues/5122 is an example of an open issue at the time this was written).  Tnere may be places that should be calling cmd_disable_repeat() which do not.
 
- * Say the fourth item in the inventory is "2 Blue Mushrooms"
- * The player inputs the command 'eat item:-4' (eat fourth inventory item)
- * The mushroom is identified and the inventory is shuffled, putting a ration of food as the fourth item
- * The player hits 'repeat'
- * The ration is eaten instead of the mushroom.
-
-Solving this problem would also allow keymaps to be replaced with command chains in text files, since you could then specify "item:inventory:tval=mushroom,sval=Blue" instead of "item:-4", and similarly:
+If commands referred to objects by tval, sval, and location (inventory or floor) that perhaps could help with some of the repetition issues or possibilities for dangling object references.  It could also allow for keymaps to be replaced by commands chains in the text files, since you could then specify "item:inventory:tval=mushroom,sval=Blue" instead of "item:-4", and similarly:
 
 map '2' => { walk(direction: down) }
 map 'M' => { cast(spell: "Magic Missile") }
@@ -139,17 +319,13 @@ NOT DONE:
 
 4. Reimplement the following in terms of a core-UI split:
 
-  - ignore / destroy
+  - ignore
 
     This is currently almost entirely done in UI.
 
   - resting
 
     Instead of having magic numbers and using the 'choice' type, it should take strings (e.g. "*" or "mana" or "hp") or numbers.
-
-  - stores
-
-    There should not be a CMD_ENTER_STORE.  It should just be that the player can sell and purchase on the grid and the UI side deals with the implications.
 
   - pickup
 
@@ -162,17 +338,11 @@ NOT DONE:
 
 5. Reorganise files:
 
-	cmd-process.c -> ui-cmd.c
-	{game-cmd.h + cmds.h} -> cmds.h
 	{cmd-misc.c + cmd-cave.c(textui_cmd_rest)} -> [ui-misc.c XXX]
-	cmd-know.c -> [ui-know.c XXX]
-	cmd-context.c -> [ui-context.c XXX]
-	attack.c -> {cmd-attack.c + ui-cmd.c}
 	cmd-pickup.c(move_player) -> cmd-cave.c
 
 
 Later
 -----
 
-Refactor the get_* functions so that textui.c has the textui get_*() functions which it registers near game start, with the actual get_*() functions being generic dispatchers.
-
+The get_*() functions in game-input.c have been refactored so they act as dispatchers to the appropriate UI handler.  In some cases (get_quantity(), for instance, which could be implented based on get_string()), it may be desirable to provide a default implementation when the UI does not have one since that could save some code repetition between different UIs.
