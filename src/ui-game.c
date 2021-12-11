@@ -641,7 +641,7 @@ static void start_game(bool new_game)
 
 	/* Try loading */
 	savefile_get_panic_name(panicfile, sizeof(panicfile), loadpath);
-	if (file_exists(panicfile)) {
+	if (loadpath[0] && file_exists(panicfile)) {
 		if (file_newer(panicfile, loadpath)) {
 			if (get_check("A panic save exists.  Use it? ")) {
 				loadpath = panicfile;
