@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "cmd-core.h"
 #include "mon-util.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
@@ -569,6 +570,11 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 				if (obvious && obj->known && note_kill
 						&& !ignore_item_ok(player, obj)) {
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
+				}
+
+				/* Prevent command repetition, if necessary. */
+				if (loc_eq(grid, player->grid)) {
+					cmd_disable_repeat_floor_item();
 				}
 
 				/* Delete the object */
