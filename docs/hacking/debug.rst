@@ -111,6 +111,8 @@ Zap monsters ``z``
 Hit all in line of sight ``H``
   Hits all monster in the line of sight for a large, 10000, amount of damage.
 
+.. _DebugDungeon:
+
 Dungeon
 ========
 
