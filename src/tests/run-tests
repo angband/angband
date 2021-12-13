@@ -51,7 +51,7 @@ sub main {
         'quiet|q'    => sub { $quiet = 1; $verbose = 0 },
     ) || usage(1);
 
-    my $dir     = dirname($0) . '/bin';
+    my $dir     = dirname($0);
     my @paths   = `find $dir -mindepth 2 -maxdepth 2 -type f -perm -u+x`;
     my $pass    = 0;
     my $total   = 0;
