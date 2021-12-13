@@ -218,10 +218,12 @@ fi
 AC_ARG_WITH(gamedata_in_lib,
 	[AS_HELP_STRING([--gamedata-in-lib], [store the game data in the lib path.])])
 
+GAMEDATA_IN_LIB="false"
 if test "x$with_gamedata_in_lib" == "xyes"; then
-	GAMEDATA_IN_LIB="$with_gamedata_in_lib"; AC_SUBST(GAMEDATA_IN_LIB)
+	GAMEDATA_IN_LIB="true"
 	AC_DEFINE(GAMEDATA_IN_LIB, 1, [Define to store the game data in the lib path.])
 fi
+AC_SUBST(GAMEDATA_IN_LIB)
 
 AC_SUBST([configdir])
 AC_SUBST([libdatadir])
