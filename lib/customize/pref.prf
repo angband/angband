@@ -7,10 +7,11 @@
 #
 # See "lib/help/command.txt" and "src/files.c" for more information.
 #
-# Note that the "X" key is mapped in both keysets to the key sequence
+# Note that the "x" key is mapped in the original keyset to the key sequence
 # "w0", which will "swap weapons" as long as both weapons contain the
 # inscription "@0".  For example, inscribe your main weapon as "@1@0"
-# and your digger (or secondary weapon) as "@2@0".
+# and your secondary weapon as "@2@0".  There isn't a similar keymap for the
+# rogue-like keyset (previously had "X" mapped to "w0" for both keysets).
 #
 
 # Movement
