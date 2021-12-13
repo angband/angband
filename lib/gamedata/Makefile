@@ -10,4 +10,10 @@ CONFIG = activation.txt artifact.txt body.txt blow_methods.txt \
  room_template.txt shape.txt slay.txt store.txt summon.txt terrain.txt \
  trap.txt ui_entry.txt ui_entry_base.txt ui_entry_renderer.txt vault.txt \
  visuals.txt world.txt
+
+ifneq ($(GAMEDATA_IN_LIB),)
+DATA := $(CONFIG)
+undefine CONFIG
+endif
+
 PACKAGE = gamedata
