@@ -18,6 +18,22 @@
 
 #include "buildid.h"
 
+/*
+ * Allow the build system to generate version.h (and define
+ * the HAVE_VERSION_H preprocessor macro) or get the version via the BUILD_ID
+ * preprocessor macro.  If neither is available, use a sensible default.
+ */
+#ifdef HAVE_VERSION_H
+#include "version.h"
+#elif defined(BUILD_ID)
+#define STR(x) #x
+#define XSTR(x) STR(x)
+#define VERSION_STRING XSTR(BUILD_ID)
+#endif
+#ifndef VERSION_STRING
+#define VERSION_STRING "4.2.3"
+#endif
+
 const char *buildid = VERSION_NAME " " VERSION_STRING;
 const char *buildver = VERSION_STRING;
 

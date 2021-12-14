@@ -67,7 +67,7 @@ static void c_verbose(char *rest) {
 }
 
 static void c_version(char *rest) {
-	printf("cmd-version: %s %s\n", VERSION_NAME, VERSION_STRING);
+	printf("cmd-version: %s\n", buildid);
 }
 
 /**
@@ -176,7 +176,7 @@ typedef struct {
 } term_xtra_func;
 
 static void term_init_test(term *t) {
-	if (verbose) printf("term-init %s %s\n", VERSION_NAME, VERSION_STRING);
+	if (verbose) printf("term-init %s\n", buildid);
 }
 
 static void term_nuke_test(term *t) {
