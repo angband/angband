@@ -25,8 +25,6 @@ GCOVS = $(OBJECTS:.o=.c.gcov)
 CLEAN = angband.o $(OBJECTS) win/angband.res
 DISTCLEAN = autoconf.h tests/.deps
 
-export CFLAGS CPPFLAGS LDFLAGS LIBS
-
 $(PROG): $(PROGNAME).o $(MAINFILES)
 	$(CC) -o $@ $(PROGNAME).o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
@@ -39,10 +37,12 @@ $(PROGNAME).o: $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
 tests: $(PROGNAME).o
-	$(MAKE) -C tests all
+	env CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
+		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(LIBS)" \
+		$(MAKE) -C tests all
 
 test-clean:
-	$(MAKE) -C tests clean
+	env RM="$(RM)" $(MAKE) -C tests clean
 
 # Hack to descend into tests and clean since it isn't included in SUBDIRS.
 pre-clean: test-clean
