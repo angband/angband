@@ -5467,7 +5467,7 @@ static NSString* get_doc_directory(void)
 	NSString *documents = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
 
 #if defined(SAFE_DIRECTORY)
-	NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+	NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, buildver];
 	return [documents stringByAppendingPathComponent: versionedDirectory];
 #else
 	return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
