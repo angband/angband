@@ -369,14 +369,14 @@ void do_cmd_drop(struct command *cmd)
 			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER) != CMD_OK)
 		return;
 
-	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
-		return;
-
 	/* Cannot remove stickied items */
 	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
 		msg("Hmmm, it seems to be stuck.");
 		return;
 	}
+
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
 
 	inven_drop(obj, amt);
 	player->upkeep->energy_use = z_info->move_energy / 2;
@@ -918,6 +918,16 @@ void do_cmd_refill(struct command *cmd)
 		return;
 	}
 
+	/* Check what we're wielding. */
+	if (!light || !tval_is_light(light)) {
+		msg("You are not wielding a light.");
+		return;
+	} else if (of_has(light->flags, OF_NO_FUEL)
+			|| !of_has(light->flags, OF_TAKES_FUEL)) {
+		msg("Your light cannot be refilled.");
+		return;
+	}
+
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Refuel with with fuel source? ",
@@ -925,19 +935,7 @@ void do_cmd_refill(struct command *cmd)
 			obj_can_refill,
 			USE_INVEN | USE_FLOOR | USE_QUIVER) != CMD_OK) return;
 
-	/* Check what we're wielding. */
-	if (!light || !tval_is_light(light)) {
-		msg("You are not wielding a light.");
-		return;
-	} else if (of_has(light->flags, OF_NO_FUEL)) {
-		msg("Your light cannot be refilled.");
-		return;
-	} else if (of_has(light->flags, OF_TAKES_FUEL)) {
-		refill_lamp(light, obj);
-	} else {
-		msg("Your light cannot be refilled.");
-		return;
-	}
+	refill_lamp(light, obj);
 
 	player->upkeep->energy_use = z_info->move_energy / 2;
 }
@@ -974,13 +972,6 @@ void do_cmd_cast(struct command *cmd)
 			/* Filter */ spell_okay_to_cast) != CMD_OK)
 		return;
 
-	if (spell_needs_aim(spell_index)) {
-		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
-			player_confuse_dir(player, &dir, false);
-		else
-			return;
-	}
-
 	/* Get the spell */
 	spell = spell_by_index(player, spell_index);
 
@@ -997,6 +988,13 @@ void do_cmd_cast(struct command *cmd)
 
 		/* Verify */
 		if (!get_check("Attempt it anyway? ")) return;
+	}
+
+	if (spell_needs_aim(spell_index)) {
+		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
+			player_confuse_dir(player, &dir, false);
+		else
+			return;
 	}
 
 	/* Cast a spell */
@@ -1045,6 +1043,10 @@ void do_cmd_study_book(struct command *cmd)
 	struct class_spell *spell;
 	int i, k = 0;
 
+	/* Check the player can study at all atm */
+	if (!player_can_study(player, true))
+		return;
+
 	if (cmd_get_item(cmd, "item", &book_obj,
 			/* Prompt */ "Study which book? ",
 			/* Error  */ "You cannot learn any new spells from the books you have.",
@@ -1055,10 +1057,6 @@ void do_cmd_study_book(struct command *cmd)
 	book = player_object_to_book(player, book_obj);
 	track_object(player->upkeep, book_obj);
 	handle_stuff(player);
-
-	/* Check the player can study at all atm */
-	if (!player_can_study(player, true))
-		return;
 
 	for (i = 0; i < book->num_spells; i++) {
 		spell = &book->spells[i];
