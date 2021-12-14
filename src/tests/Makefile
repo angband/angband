@@ -51,7 +51,7 @@ $(TESTPROGS) : ../angband.o test-utils.o unit-test.o
 	@echo "  CC $@"
 
 clean :
-	$(RM) $(TESTOBJS) $(TESTPROGS)
+	-$(RM) $(TESTOBJS) $(TESTPROGS)
 
 .PHONY : all clean
 .PRECIOUS : %.o
