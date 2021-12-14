@@ -63,6 +63,22 @@ The reason for changing directories to src/tests is to match up with how the
 tests were compiled:  they expect Angband's configuration data to be in
 ../../lib.
 
+Statistics build
+~~~~~~~~~~~~~~~~
+
+The Mac front end bypasses main.c and can not use the statistics front end.
+It is possible to enable the debugging commands related to statistics (see
+the descriptions for ``S``, ``D``, and ``P`` in :ref:`DebugDungeon`).  To do so,
+include "-DUSE_STATS" in the setting for OPT passed to make.  The equivalent
+of the standard build with those debugging commands enabled would be::
+
+    cd src
+    make -f Makefile.osx OPT="-DUSE_STATS -O2"
+
+If you had already built everything without statistcs enabled, you would need to
+run either "rm wiz-stats.o" or "make -f Makefile.osx clean" immediately after
+running "cd src".
+
 Linux / other UNIX
 ------------------
 
@@ -278,6 +294,30 @@ If you only want the unit tests while using CMake, its a little simpler::
     cmake ..
     make allunittests
 
+Statistics build
+~~~~~~~~~~~~~~~~
+
+If building directly for Linux/Unix using configure, you can get the statistics
+front end and support for the debugging commands related to statistics (see
+the descriptions for ``S``, ``D``, and ``P`` in :ref:`DebugDungeon`) by
+including --enable-stats in the options to configure.  For that to work, you'll
+need to have sqlite3's headers and libraries installed (on Debian and Ubuntu,
+the libsqlite3-dev package and its dependencies provides those).   If using
+CMake, pass -DSUPPORT_STATS_FRONTEND=ON to cmake to get the statistics front
+end and support for the debugging commnands related to statistics; like builds
+with configure that use --enable-stats, that requires sqlite3.  With CMake, you
+also have an the option to only include support for the debugging commands
+related to statistics:  pass -DSUPPORT_STATS_BACKEND=ON to cmake and either do
+nothing for SUPPORT_STATS_FRONTEND or explicitly turn it off by passing
+-DSUPPORT_STATS_FRONTEND=OFF to cmake.
+
+When cross-compiling for Windows, the statistics front end is not useful
+(the Windows front end bypasses main.c and can not use the statistics front
+end).  With configure, you could include support for debugging commands
+related to statistics by setting CFLAGS to include -DUSE_STATS::
+
+    ./configure [your cross-compiling options] --enable-win CFLAGS=-DUSE_STATS
+
 Windows
 -------
 
@@ -394,6 +434,16 @@ Using Visual Studio
 Blue Baron has detailed instructions for setting this up at:
 
     src/win/angband_visual_studio_step_by_step.txt
+
+Statistics build
+~~~~~~~~~~~~~~~~
+
+The Windows front end bypasses main.c and can not use the statistics front end.
+It is possible to enable the debugging commands related to statistics (see
+the descriptions for ``S``, ``D``, and ``P`` in :ref:`DebugDungeon`).  To do
+so, set your compiler options so that the USE_STATS preprocessor macro is set.
+When using mingw (either stand-alone or as part of Cygwin) and configure,
+include CFLAGS=-DUSE_STATS in the options to configure to do that.
 
 Documentation
 -------------

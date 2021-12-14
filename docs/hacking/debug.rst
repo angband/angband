@@ -111,6 +111,8 @@ Zap monsters ``z``
 Hit all in line of sight ``H``
   Hits all monster in the line of sight for a large, 10000, amount of damage.
 
+.. _DebugDungeon:
+
 Dungeon
 ========
 
@@ -135,13 +137,23 @@ Collect stats ``f`` or ``S``
   Collects stats on monsters and objects present on level generation.
   Requests number of runs, and whether diving or clearing levels, and
   outputs the results into the file 'stats.log' in the user directory.
+  The comments in that file will be helpful for interpreting the
+  results; for more in-depth information, it's best to check the
+  implementation of stats_collect() in wiz-stats.c.
 
 Collect disconnection stats ``D``
   Generates several levels to collect statistics about how often all
-  down staircases are inaccessible to the player and about how often
-  a level has non-vault areas that are inaccessible to the player.  The
-  results are written to the message window.  Also collects general
-  statistics about the generated levels and writes them to a file.
+  down staircases are inaccessible to the player, how often the player's
+  starting location isn't valid,  and how often a level has non-vault
+  areas that are inaccessible to the player.  The results are written
+  to the message window, and maps of the levels that are disconnected or
+  have invalid starting locations are written to 'disconnect.html' in
+  the user directory.  Also collects general statistics about the
+  layout of all the generated levels and writes them to
+  'disconnect_gstat.txt' in the user directory.  For more in-depth
+  details about what's considered disconnected and what else is
+  summarized about level generation, check the implementation for
+  disconnect_stats() in wiz-stats.c.
 
 Collect pit stats ``P``
   Generates several pits of the room type you specify (pit, nest, or
