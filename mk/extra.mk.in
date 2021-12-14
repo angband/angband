@@ -1,5 +1,6 @@
 LIB_CPPFLAGS = @LIB_CPPFLAGS@
 SETEGID = @SETEGID@
+GAMEDATA_IN_LIB = @GAMEDATA_IN_LIB@
 LIBDIR = ${libdir}
 libdatadir = @libdatadir@
 vardatadir = @vardatadir@

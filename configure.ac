@@ -215,6 +215,15 @@ else
 	varshareddatadir="${vardatadir}"
 fi
 
+AC_ARG_WITH(gamedata_in_lib,
+	[AS_HELP_STRING([--gamedata-in-lib], [store the game data in the lib path.])])
+
+GAMEDATA_IN_LIB="false"
+if test "x$with_gamedata_in_lib" == "xyes"; then
+	GAMEDATA_IN_LIB="true"
+	AC_DEFINE(GAMEDATA_IN_LIB, 1, [Define to store the game data in the lib path.])
+fi
+AC_SUBST(GAMEDATA_IN_LIB)
 
 AC_SUBST([configdir])
 AC_SUBST([libdatadir])
@@ -527,6 +536,11 @@ echo "  config path:                            ${configdir}"
 echo "  lib path:                               ${libdatadir}"
 echo "  doc path:                               ${docdatadir}"
 echo "  var path:                               ${displayedvardatadir}"
+if test "x$with_gamedata_in_lib" == "xyes"; then
+	echo "  gamedata path:                          ${libdatadir}"
+else
+	echo "  gamedata path:                          ${configdir}"
+fi
 
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
