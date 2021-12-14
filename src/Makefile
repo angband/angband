@@ -7,10 +7,8 @@ INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 PROG    = $(PROGNAME)$(PROG_SUFFIX)
-VERSION := $(shell ../scripts/version.sh)
-ifneq (${VERSION},)
-	CFLAGS += -DBUILD_ID=${VERSION}
-endif
+# Will dynamically generate version.h with the build number.
+CFLAGS += -DHAVE_VERSION_H
 
 CFLAGS += -I. -fPIC -std=c99 -O0
 # Replace above line with the two below and then look at gmon.out
@@ -22,7 +20,7 @@ CFLAGS += -I. -fPIC -std=c99 -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-CLEAN = angband.o $(OBJECTS) win/angband.res
+CLEAN = angband.o $(OBJECTS) win/angband.res version.h
 DISTCLEAN = autoconf.h tests/.deps
 
 $(PROG): $(PROGNAME).o $(MAINFILES)
@@ -46,6 +44,31 @@ test-clean:
 
 # Hack to descend into tests and clean since it isn't included in SUBDIRS.
 pre-clean: test-clean
+
+# Track the build number in the dynamically generated file, version.h.
+# Use INSTALL_STATUS/INSTALL_OK from buildsys in lieu of something more
+# appropriate for automatically generated source files.
+version.h: FORCE
+	@xversion=`../scripts/version.sh` ; \
+	i="$@" ; \
+	if test -r "$$i" ; then \
+		xoldversion=`grep -E '^/\*"' "$$i" | sed -e 's%^/\*"%%' -e 's%"\*/$$%%' -e 'q'` ; \
+	else \
+		xoldversion=x$$xversion ; \
+	fi ; \
+	if test "x$$xversion" != "x$$xoldversion" ; then \
+		${INSTALL_STATUS} ; \
+		echo "#ifndef VERSION_H" > "$$i" ; \
+		echo "#define VERSION_H" >> "$$i" ; \
+		echo '/*"'"$$xversion"'"*/' >> "$$i" ; \
+		echo " $$xversion" | sed -e '/^[ \t\r]$$/q' -e 's/^ /#define VERSION_STRING "/' -e 's/$$/"/' -e 'q' >> "$$i" ; \
+		echo "#endif" >> "$$i" ; \
+		${INSTALL_OK} ; \
+	fi
+
+# Since version.h is dynamically generated, explicitly specify everything that
+# depends on it.
+buildid.o: version.h
 
 splint:
 	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c
@@ -79,4 +102,5 @@ post-install:
 		fi \
 	fi
 
+FORCE :
 .PHONY : tests coverage clean-coverage tests/ran-already
