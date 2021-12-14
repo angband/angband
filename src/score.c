@@ -169,7 +169,9 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 		msg("Failed to open new scorefile for writing.");
 
 		file_close(lok);
+		safe_setuid_grab();
 		file_delete(lok_name);
+		safe_setuid_drop();
 		return;
 	}
 
