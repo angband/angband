@@ -48,9 +48,11 @@ EXE = $(PROGNAME)
 
 VERSION := $(shell ../scripts/version.sh)
 ifeq (${VERSION},)
-	BUNDLE_VERSION := ${VERSION}
+	VERSION := unknown
+else
 	CFLAGS += -DBUILD_ID=${VERSION}
 endif
+BUNDLE_VERSION := ${VERSION}
 
 
 OBJS = $(BASEOBJS)
