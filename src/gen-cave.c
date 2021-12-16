@@ -3829,7 +3829,7 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	square_set_mon(c, mon->grid, mon->midx);
 	c->mon_max = mon->midx + 1;
 	c->mon_cnt = 1;
-	update_mon(p, mon, c, true);
+	update_mon(mon, c, true);
 	p->upkeep->health_who = mon;
 
 	/* Ignore its held objects */

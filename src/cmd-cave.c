@@ -292,7 +292,7 @@ void do_cmd_open(struct command *cmd)
 	if (mon) {
 		/* Mimics surprise the player */
 		if (monster_is_mimicking(mon)) {
-			become_aware(cave, mon, player);
+			become_aware(cave, mon);
 
 			/* Mimic wakes up and becomes aware*/
 			monster_wake(mon, false, 100);
@@ -1015,7 +1015,7 @@ void move_player(int dir, bool disarm)
 	if (m_idx > 0) {
 		/* Attack monsters */
 		if (monster_is_mimicking(mon)) {
-			become_aware(cave, mon, player);
+			become_aware(cave, mon);
 
 			/* Mimic wakes up and becomes aware*/
 			monster_wake(mon, false, 100);

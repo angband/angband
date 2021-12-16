@@ -1378,7 +1378,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	/* Reveal a camouflaged monster if in view and it stopped an effect. */
 	if ((flg & PROJECT_STOP) && monster_is_camouflaged(mon)
 			&& monster_is_in_view(mon)) {
-		become_aware(cave, mon, player);
+		become_aware(cave, mon);
 		/* Reevaluate whether it's seen. */
 		if (monster_is_visible(mon)) {
 			seen = true;
@@ -1418,7 +1418,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (mon != NULL) {
 		/* Update the monster */
 		if (!mon_died)
-			update_mon(player, mon, cave, false);
+			update_mon(mon, cave, false);
 
 		/* Redraw the (possibly new) monster grid */
 		square_light_spot(cave, mon->grid);
