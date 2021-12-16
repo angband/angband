@@ -188,6 +188,29 @@ void target_display_help(bool monster, bool object, bool free)
 
 
 /**
+ * Return whether a key triggers a running action.
+ */
+static bool is_running_keymap(struct keypress ch)
+{
+	int mode = (OPT(player, rogue_like_commands)) ?
+		KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	const struct keypress *act = keymap_find(mode, ch);
+
+	if (act) {
+		unsigned char run_key = cmd_lookup_key(CMD_RUN, mode);
+		const struct keypress *cur;
+
+		for (cur = act; cur->type == EVT_KBRD; cur++) {
+			if ((unsigned char)cur->code == run_key) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+/**
  * Perform the minimum "whole panel" adjustment to ensure that the given
  * location is contained inside the current panel, and return true if any
  * such adjustment was performed. Optionally accounts for the targeting
@@ -1422,9 +1445,12 @@ bool target_set_interactive(int mode, int x, int y)
 				/* Use interesting grid if found */
 				if (new_index >= 0) target_index = new_index;
 			} else {
+				int step = (is_running_keymap(press.key)) ?
+					10 : 1;
+
 				/* Free mode direction: Move cursor */
-				x += ddx[dir];
-				y += ddy[dir];
+				x += step * ddx[dir];
+				y += step * ddy[dir];
 
 				/* Keep 1 away from the edge */
 				x = MAX(1, MIN(x, cave->width - 2));
