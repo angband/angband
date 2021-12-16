@@ -2599,12 +2599,12 @@ void update_stuff(struct player *p)
 	if (p->upkeep->update & (PU_DISTANCE)) {
 		p->upkeep->update &= ~(PU_DISTANCE);
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(p, true);
+		update_monsters(true);
 	}
 
 	if (p->upkeep->update & (PU_MONSTERS)) {
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(p, false);
+		update_monsters(false);
 	}
 
 

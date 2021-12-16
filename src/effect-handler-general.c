@@ -1700,7 +1700,7 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Update the monster */
-			update_mon(player, mon, cave, false);
+			update_mon(mon, cave, false);
 
 			/* Detect */
 			monsters = true;

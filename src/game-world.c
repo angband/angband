@@ -843,8 +843,7 @@ static void process_player_cleanup(void)
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
-						update_mon(player, mon, cave,
-							false);
+						update_mon(mon, cave, false);
 					}
 				}
 			}

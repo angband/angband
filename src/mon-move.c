@@ -1000,7 +1000,7 @@ bool multiply_monster(const struct monster *mon)
 
 			if (child && monster_is_mimicking(child)
 					&& !monster_is_mimicking(mon)) {
-				become_aware(cave, child, player);
+				become_aware(cave, child);
 			}
 		}
 	} else {
@@ -1343,7 +1343,7 @@ static bool monster_turn_try_push(struct monster *mon, const char *m_name,
 
 		/* Reveal mimics */
 		if (monster_is_mimicking(mon1))
-			become_aware(cave, mon1, player);
+			become_aware(cave, mon1);
 
 		/* Note if visible */
 		if (monster_is_visible(mon) && monster_is_in_view(mon))
@@ -1664,7 +1664,7 @@ static void monster_turn(struct monster *mon)
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (did_something && monster_is_camouflaged(mon))
-		become_aware(cave, mon, player);
+		become_aware(cave, mon);
 }
 
 

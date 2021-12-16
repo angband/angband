@@ -452,7 +452,7 @@ bool make_ranged_attack(struct monster *mon)
 
 	/* If we see a hidden monster try to cast a spell, become aware of it */
 	if (monster_is_camouflaged(mon))
-		become_aware(cave, mon, player);
+		become_aware(cave, mon);
 
 	/* Check for spell failure (innate attacks never fail) */
 	failrate = monster_spell_failrate(mon);
