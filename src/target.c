@@ -273,7 +273,7 @@ int cmp_distance(const void *a, const void *b)
  * Help select a location.  This function picks the closest from a set in 
  *(roughly) a given direction.
  */
-s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
+int16_t target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
 {
 	int i, v;
 

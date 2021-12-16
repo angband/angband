@@ -492,21 +492,21 @@ bool file_skip(ang_file *f, int bytes)
 /**
  * Read a single, 8-bit character from file 'f'.
  */
-bool file_readc(ang_file *f, byte *b)
+bool file_readc(ang_file *f, uint8_t *b)
 {
 	int i = fgetc(f->fh);
 
 	if (i == EOF)
 		return false;
 
-	*b = (byte)i;
+	*b = (uint8_t)i;
 	return true;
 }
 
 /**
  * Write a single, 8-bit character 'b' to file 'f'.
  */
-bool file_writec(ang_file *f, byte b)
+bool file_writec(ang_file *f, uint8_t b)
 {
 	return file_write(f, (const char *)&b, 1);
 }
@@ -545,7 +545,7 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 bool file_getl(ang_file *f, char *buf, size_t len)
 {
 	bool seen_cr = false;
-	byte b;
+	uint8_t b;
 	size_t i = 0;
 
 	/* Leave a byte for the terminating 0 */

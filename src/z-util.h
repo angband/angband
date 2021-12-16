@@ -87,13 +87,13 @@ char *utf8_rskip(char *s, size_t n, char *lim);
 /**
  * Convert a sequence of UTF-32 values, in the native byte order, to UTF-8.
  */
-size_t utf32_to_utf8(char *out, size_t n_out, const u32b *in, size_t n_in,
+size_t utf32_to_utf8(char *out, size_t n_out, const uint32_t *in, size_t n_in,
 	size_t *pn_cnvt);
 
 /**
  * Return whether a given UTF-32 value corresponds to a printable character.
  */
-bool utf32_isprint(u32b v);
+bool utf32_isprint(uint32_t v);
 
 /**
  * Case insensitive comparison between two strings
@@ -212,7 +212,7 @@ extern void sort(void *array, size_t nmemb, size_t smemb,
 /**
  * Create a hash for a string
  */
-u32b djb2_hash(const char *str);
+uint32_t djb2_hash(const char *str);
 
 /**
  * Mathematical functions

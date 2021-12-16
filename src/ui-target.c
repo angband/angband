@@ -971,7 +971,7 @@ void textui_target_closest(void)
  * The first two result from information being lost from the dungeon arrays,
  * which requires changes elsewhere
  */
-static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
+static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 					 int y1, int x1)
 {
 	int i;
@@ -988,7 +988,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 
 	/* Draw the path. */
 	for (i = 0; i < path_n; i++) {
-		byte colour;
+		uint8_t colour;
 
 		/* Find the co-ordinates on the level. */
 		struct loc grid = path_g[i];
@@ -1055,7 +1055,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
  * Load the attr/char at each point along "path" which is on screen from
  * "a" and "c". This was saved in draw_path().
  */
-static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
+static void load_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a)
 {
 	int i;
 	for (i = 0; i < path_n; i++) {

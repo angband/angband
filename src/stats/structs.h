@@ -31,7 +31,7 @@
  */
 typedef struct
 {
-	u16b index;          /* Effect index */
+	uint16_t index;      /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
 	const char *desc;    /* Effect description */
 } info_entry;

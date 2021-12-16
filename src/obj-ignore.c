@@ -104,7 +104,7 @@ quality_name_struct quality_values[IGNORE_MAX] =
 	{ IGNORE_ALL,				"non-artifact" },
 };
 
-byte ignore_level[ITYPE_MAX];
+uint8_t ignore_level[ITYPE_MAX];
 const size_t ignore_size = ITYPE_MAX;
 bool **ego_ignore_types;
 /* Hackish - ego_ignore_types should be initialised with arrays */
@@ -286,7 +286,7 @@ int apply_autoinscription(struct player *p, struct object *obj)
 /**
  * Deregister an object kind autoinscription
  */
-int remove_autoinscription(s16b kind)
+int remove_autoinscription(int16_t kind)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)
@@ -314,7 +314,7 @@ int remove_autoinscription(s16b kind)
 /**
  * Register an object kind autoinscription
  */
-int add_autoinscription(s16b kind, const char *inscription, bool aware)
+int add_autoinscription(int16_t kind, const char *inscription, bool aware)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)
@@ -456,9 +456,9 @@ static int is_object_good(const struct object *obj)
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.
  */
-byte ignore_level_of(const struct object *obj)
+uint8_t ignore_level_of(const struct object *obj)
 {
-	byte value = 0;
+	uint8_t value = 0;
 	int i;
 
 	if (!obj->known) return IGNORE_MAX;
@@ -570,7 +570,7 @@ void kind_ignore_when_unaware(struct object_kind *kind)
  */
 bool object_is_ignored(const struct object *obj)
 {
-	byte type;
+	uint8_t type;
 
 	/* Objects that aren't yet known can't be ignored */
 	if (!obj->known)

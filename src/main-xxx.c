@@ -514,8 +514,8 @@ static errr Term_text_xxx(int x, int y, int n, int a, const char *cp)
  * This function is only used if one of the "higher_pict" and/or
  * "always_pict" flags are set.
  */
-static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp,
-                          const byte *tap, const char *tcp)
+static errr Term_pict_xxx(int x, int y, int n, const int *ap, const wchar_t *cp,
+		const int *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 

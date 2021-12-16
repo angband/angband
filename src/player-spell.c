@@ -134,8 +134,8 @@ void player_spells_init(struct player *p)
 	if (!num_spells) return;
 
 	/* Allocate */
-	p->spell_flags = mem_zalloc(num_spells * sizeof(byte));
-	p->spell_order = mem_zalloc(num_spells * sizeof(byte));
+	p->spell_flags = mem_zalloc(num_spells * sizeof(uint8_t));
+	p->spell_order = mem_zalloc(num_spells * sizeof(uint8_t));
 
 	/* None of the spells have been learned yet */
 	for (i = 0; i < num_spells; i++)
@@ -368,7 +368,7 @@ static int min_fail(struct player *p, const struct class_spell *spell)
 /**
  * Returns chance of failure for a spell
  */
-s16b spell_chance(int spell_index)
+int16_t spell_chance(int spell_index)
 {
 	int chance = 100, minfail;
 

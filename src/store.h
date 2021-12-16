@@ -51,7 +51,7 @@ struct owner {
 	unsigned int oidx;
 	struct owner *next;
 	char *name;
-	s32b max_cost;
+	int32_t max_cost;
 };
 
 struct store {
@@ -61,8 +61,8 @@ struct store {
 	unsigned int sidx;
 	const char *name;
 
-	byte stock_num;				/* Stock -- Number of entries */
-	s16b stock_size;			/* Stock -- Total Size of Array */
+	uint8_t stock_num;		/* Stock -- Number of entries */
+	int16_t stock_size;		/* Stock -- Total Size of Array */
 	struct object *stock;		/* Stock -- Actual stock items */
 	struct object *stock_k;		/* Stock -- Stock as known by the character */
 

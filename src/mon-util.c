@@ -1012,7 +1012,7 @@ void monster_death(struct monster *mon, struct player *p, bool stats)
 static void player_kill_monster(struct monster *mon, struct player *p,
 		const char *note)
 {
-	s32b div, new_exp, new_exp_frac;
+	int32_t div, new_exp, new_exp_frac;
 	struct monster_lore *lore = get_lore(mon->race);
 	char m_name[80];
 	char buf[80];
@@ -1078,9 +1078,9 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	/* Keep track of experience */
 	if (new_exp_frac >= 0x10000L) {
 		new_exp++;
-		p->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+		p->exp_frac = (uint16_t)(new_exp_frac - 0x10000L);
 	} else {
-		p->exp_frac = (u16b)new_exp_frac;
+		p->exp_frac = (uint16_t)new_exp_frac;
 	}
 
 	/* When the player kills a Unique, it stays dead */

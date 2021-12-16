@@ -66,7 +66,7 @@
 
 static int randarts = 0;
 static int no_selling = 0;
-static u32b num_runs = 1;
+static uint32_t num_runs = 1;
 static bool quiet = false;
 static int nextkey = 0;
 static int running_stats = 0;
@@ -78,26 +78,26 @@ static int wearable_count = 0;
 static int consumable_count = 0;
 
 struct wearables_data {
-	u32b count;
-	u32b dice[TOP_DICE][TOP_SIDES];
-	u32b ac[TOP_AC];
-	u32b hit[TOP_PLUS];
-	u32b dam[TOP_PLUS];
-/*	u32b power[TOP_POWER]; not enough memory - add it later in bands */
-	u32b *egos;
-	u32b flags[OF_MAX];
-	u32b *modifiers[TOP_MOD];
+	uint32_t count;
+	uint32_t dice[TOP_DICE][TOP_SIDES];
+	uint32_t ac[TOP_AC];
+	uint32_t hit[TOP_PLUS];
+	uint32_t dam[TOP_PLUS];
+/*	uint32_t power[TOP_POWER]; not enough memory - add it later in bands */
+	uint32_t *egos;
+	uint32_t flags[OF_MAX];
+	uint32_t *modifiers[TOP_MOD];
 };
 
 static struct level_data {
-	u32b *monsters;
-/*  u32b *vaults;  Add these later - requires passing into generate.c
-	u32b *pits; */
-	u32b obj_feelings[OBJ_FEEL_MAX];
-	u32b mon_feelings[MON_FEEL_MAX];
+	uint32_t *monsters;
+	/* uint32_t *vaults;  Add these later - requires passing into generate.c
+	uint32_t *pits; */
+	uint32_t obj_feelings[OBJ_FEEL_MAX];
+	uint32_t mon_feelings[MON_FEEL_MAX];
 	long long gold[ORIGIN_STATS];
-	u32b *artifacts[ORIGIN_STATS];
-	u32b *consumables[ORIGIN_STATS];
+	uint32_t *artifacts[ORIGIN_STATS];
+	uint32_t *consumables[ORIGIN_STATS];
 	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[LEVEL_MAX];
 
@@ -129,25 +129,25 @@ static void alloc_memory(void)
 	int i, j, k, l;
 
 	for (i = 0; i < LEVEL_MAX; i++) {
-		level_data[i].monsters = mem_zalloc(z_info->r_max * sizeof(u32b));
-/*		level_data[i].vaults = mem_zalloc(z_info->v_max * sizeof(u32b));
-		level_data[i].pits = mem_zalloc(z_info->pit_max * sizeof(u32b)); */
+		level_data[i].monsters = mem_zalloc(z_info->r_max * sizeof(uint32_t));
+/*		level_data[i].vaults = mem_zalloc(z_info->v_max * sizeof(uint32_t));
+		level_data[i].pits = mem_zalloc(z_info->pit_max * sizeof(uint32_t)); */
 
 		for (j = 0; j < ORIGIN_STATS; j++) {
 			level_data[i].artifacts[j] = mem_zalloc(z_info->a_max *
-													sizeof(u32b));
-			level_data[i].consumables[j] = mem_zalloc((consumable_count + 1) *
-													  sizeof(u32b));
+				sizeof(uint32_t));
+			level_data[i].consumables[j] = mem_zalloc(
+				(consumable_count + 1) * sizeof(uint32_t));
 			level_data[i].wearables[j]
 				= mem_zalloc((wearable_count + 1) *
 							 sizeof(struct wearables_data));
 
 			for (k = 0; k < wearable_count + 1; k++) {
 				level_data[i].wearables[j][k].egos
-					= mem_zalloc(z_info->e_max * sizeof(u32b));
+					= mem_zalloc(z_info->e_max * sizeof(uint32_t));
 				for (l = 0; l < TOP_MOD; l++)
 					level_data[i].wearables[j][k].modifiers[l]
-						= mem_zalloc((OBJ_MOD_MAX + 1) * sizeof(u32b));
+						= mem_zalloc((OBJ_MOD_MAX + 1) * sizeof(uint32_t));
 			}
 		}
 	}
@@ -234,7 +234,7 @@ static void generate_player_for_stats(void)
 
 static void initialize_character(void)
 {
-	u32b seed;
+	uint32_t seed;
 
 	if (!quiet) {
 		printf(" [I  ]\b\b\b\b\b\b");
@@ -323,7 +323,7 @@ static void log_all_objects(int level)
 			struct object *obj = square_object(cave, grid);
 
 			while (1) {
-				/*	u32b o_power = 0; */
+				/* uint32_t o_power = 0; */
 
 				if (!obj) {
 					/*
@@ -397,7 +397,7 @@ static void log_all_objects(int level)
 static void descend_dungeon(void)
 {
 	int level;
-	u16b obj_f, mon_f;
+	uint16_t obj_f, mon_f;
 
 	clock_t last = 0;
 
@@ -1220,11 +1220,11 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 		for (i = 0; i < max_idx; i++) {
 	/* This arcane expression finds the value of 
 			 * level_data[level].<table>[i] */
-			u32b count;
+			uint32_t count;
 			if (streq(table, "gold"))
-				count = *((long long *)((byte *)&level_data[level] + offset) + i);
+				count = *((long long *)((uint8_t *)&level_data[level] + offset) + i);
 			else
-				count = *((u32b *)((byte *)&level_data[level] + offset) + i);
+				count = *((uint32_t *)((uint8_t *)&level_data[level] + offset) + i);
 
 			if (!count) continue;
 
@@ -1256,7 +1256,7 @@ static int stats_write_db_level_data_items(const char *table, int max_idx,
 			for (i = 0; i < max_idx; i++) {
 				/* This arcane expression finds the value of 
 				 * level_data[level].<table>[origin][i] */
-				u32b count = ((u32b **)((byte *)&level_data[level] + offset))[origin][i];
+				uint32_t count = ((uint32_t **)((uint8_t *)&level_data[level] + offset))[origin][i];
 				if (!count) continue;
 				
 				err = stats_db_bind_ints(sql_stmt, 4, 0, level, count, translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
@@ -1280,7 +1280,7 @@ static int stats_write_db_wearables_count(void)
 	for (level = 1; level < LEVEL_MAX; level++)
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
 			for (idx = 0; idx < wearable_count + 1; idx++) {
-				u32b count = level_data[level].wearables[origin][idx].count;
+				uint32_t count = level_data[level].wearables[origin][idx].count;
 				/* Skip if object did not appear */
 				if (!count) continue;
 
@@ -1330,11 +1330,11 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 				for (i = 0; i < max_val; i++) {
 					/* This arcane expression finds the value of
 					 * level_data[level].wearables[origin][idx].<field>[i] */
-					u32b count;
+					uint32_t count;
 					if (array_p)
-						count = ((u32b *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i];
+						count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i];
 					else
-						count = ((u32b *)*((u32b **)((byte *)&level_data[level].wearables[origin][idx] + offset)))[i];
+						count = ((uint32_t *)*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset)))[i];
 
 					if (!count) continue;
 
@@ -1383,14 +1383,14 @@ static int stats_write_db_wearables_2d_array(const char *field,
 						/* This arcane expression finds the value of
 				 		* level_data[level].wearables[origin][idx].<field>[i][j]
 						*/
-						u32b count;
+						uint32_t count;
 
 						if (i == 0 && j == 0) continue;
 
 						if (array_p)
-							count = ((u32b *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
+							count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
 						else
-							count = *(*((u32b **)((byte *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
+							count = *(*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
 
 						if (!count) continue;
 
@@ -1406,7 +1406,7 @@ static int stats_write_db_wearables_2d_array(const char *field,
 	return sqlite3_finalize(sql_stmt);
 }
 
-static int stats_write_db(u32b run)
+static int stats_write_db(uint32_t run)
 {
 	char sql_buf[256];
 	int err;
@@ -1478,15 +1478,15 @@ static int stats_write_db(u32b run)
 
 #define STATS_PROGRESS_BAR_LEN 30
 
-static void progress_bar(u32b run, time_t start) {
-	u32b i;
-	u32b n = (run * STATS_PROGRESS_BAR_LEN) / num_runs;
-	u32b p10 = ((long long)run * 1000) / num_runs;
+static void progress_bar(uint32_t run, time_t start) {
+	uint32_t i;
+	uint32_t n = (run * STATS_PROGRESS_BAR_LEN) / num_runs;
+	uint32_t p10 = ((long long)run * 1000) / num_runs;
 
 	time_t delta = time(NULL) - start;
-	u32b togo = num_runs - run;
-	u32b expect = delta ? ((long long)delta * (long long)togo) / run 
-		: 0;
+	uint32_t togo = num_runs - run;
+	uint32_t expect = delta ?
+		((long long)delta * (long long)togo) / run : 0;
 
 	int h = expect / 3600;
 	int m = (expect % 3600) / 60;
@@ -1526,7 +1526,7 @@ static void stats_cleanup_angband_run(void)
 
 static errr run_stats(void)
 {
-	u32b run;
+	uint32_t run;
 	struct artifact *a_info_save;
 	struct artifact_upkeep *aup_info_save;
 	unsigned int i;

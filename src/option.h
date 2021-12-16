@@ -62,11 +62,11 @@ enum
 struct player_options {
 	bool opt[OPT_MAX];		/**< Options */
 
-	byte hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
-	u16b lazymove_delay;	/**< Delay in cs before moving to allow another key */
-	byte delay_factor;		/**< Delay factor (0 to 9) */
+	uint8_t hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
+	uint16_t lazymove_delay;	/**< Delay in cs before moving to allow another key */
+	uint8_t delay_factor;		/**< Delay factor (0 to 9) */
 
-	byte name_suffix;		/**< Numeric suffix for player name */
+	uint8_t name_suffix;		/**< Numeric suffix for player name */
 };
 
 extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];

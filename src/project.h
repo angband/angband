@@ -100,7 +100,7 @@ enum
 };
 
 /* Display attrs and chars */
-extern byte proj_to_attr[PROJ_MAX][BOLT_MAX];
+extern uint8_t proj_to_attr[PROJ_MAX][BOLT_MAX];
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
 void thrust_away(struct loc centre, struct loc target, int grids_away);
@@ -125,7 +125,7 @@ const char *proj_idx_to_name(int type);
 struct loc origin_get_loc(struct source origin);
 
 bool project(struct source origin, int rad, struct loc finish, int dam, int typ,
-			 int flg, int degrees_of_arc, byte diameter_of_source,
-			 const struct object *obj);
+	int flg, int degrees_of_arc, uint8_t diameter_of_source,
+	const struct object *obj);
 
 #endif /* !PROJECT_H */

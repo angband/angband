@@ -22,7 +22,7 @@
 /* Maximum number of scroll titles generated */
 #define MAX_TITLES	 50
 
-/* An item's pval (for charges, amount of gold, etc) is limited to s16b */
+/* An item's pval (for charges, amount of gold, etc) is limited to int16_t */
 #define MAX_PVAL  32767
 
 struct player;

@@ -395,7 +395,7 @@ static COLORREF win_clr[MAX_COLORS];
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte win_pal[MAX_COLORS] =
+static uint8_t win_pal[MAX_COLORS] =
 {
 	VID_BLACK,					/* Dark */
 	VID_WHITE,					/* White */
@@ -1596,7 +1596,7 @@ static errr Term_xtra_win_react(void)
 	} else {
 		COLORREF code;
 
-		byte rv, gv, bv;
+		uint8_t rv, gv, bv;
 
 		bool change = false;
 
@@ -2350,7 +2350,7 @@ int Term_iswprint_win(wint_t wc)
 	 * which is desirable:  on Windows, ui-term as it is can't handle
 	 * characters that have to be encoded as surrogate pairs in UTF-16).
 	 */
-	return utf32_isprint((u32b) wc);
+	return utf32_isprint((uint32_t) wc);
 }
 
 
@@ -5142,7 +5142,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	/* Initialize the colors */
 	for (i = 0; i < MAX_COLORS; i++) {
-		byte rv, gv, bv;
+		uint8_t rv, gv, bv;
 
 		/* Extract desired values */
 		rv = angband_color_table[i][1];

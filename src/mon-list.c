@@ -125,8 +125,8 @@ void monster_list_reset(monster_list_t *list)
 	}
 
 	memset(list->entries, 0, list->entries_size * sizeof(monster_list_entry_t));
-	memset(list->total_entries, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
-	memset(list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
+	memset(list->total_entries, 0, MONSTER_LIST_SECTION_MAX * sizeof(uint16_t));
+	memset(list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(uint16_t));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
 	list->sorted = false;
@@ -301,7 +301,7 @@ void monster_list_sort(monster_list_t *list,
  * \param entry is the monster list entry to display.
  * \return a color for the monster entry.
  */
-byte monster_list_entry_line_color(const monster_list_entry_t *entry)
+uint8_t monster_list_entry_line_color(const monster_list_entry_t *entry)
 {
 	/* Display uniques in a special colour */
 	if (rf_has(entry->race->flags, RF_UNIQUE))

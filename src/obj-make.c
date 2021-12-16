@@ -38,27 +38,27 @@
  * obj_alloc[ilv * (z_info->k_max + 1) + z_info->k_max], that an item whose
  * index is less than itm occurs at level, ilv.
  */
-static u32b *obj_alloc;
+static uint32_t *obj_alloc;
 
 /**
  * Has the same layout and interpretation as obj_alloc, but only items that
  * are good or better contribute to the cumulative probability distribution.
  */
-static u32b *obj_alloc_great;
+static uint32_t *obj_alloc_great;
 
 /**
  * Store the total allocation value for each tval by level.  The value at
  * ilv * TV_MAX + tval is the total for tval at the level, ilv.
  */
-static u32b *obj_total_tval;
+static uint32_t *obj_total_tval;
 
 /**
  * Same layout and interpretation as obj_total_tval, but only items that are
  * good or better contribute.
  */
-static u32b *obj_total_tval_great;
+static uint32_t *obj_total_tval_great;
 
-static s16b alloc_ego_size = 0;
+static int16_t alloc_ego_size = 0;
 static alloc_entry *alloc_ego_table;
 
 struct money {
@@ -101,7 +101,7 @@ static void alloc_init_objects(void) {
 
 			/* Add to the cumulative prob. in the standard table */
 			if ((lev < min) || (lev > max)) rarity = 0;
-			assert(rarity >= 0 && obj_alloc[(lev * (k_max + 1)) + item] <= (u32b)-1 - rarity);
+			assert(rarity >= 0 && obj_alloc[(lev * (k_max + 1)) + item] <= (uint32_t)-1 - rarity);
 			obj_alloc[(lev * (k_max + 1)) + item + 1] =
 				obj_alloc[(lev * (k_max + 1)) + item] + rarity;
 
@@ -312,7 +312,7 @@ static int random_high_resist(struct object *obj, int *resist)
  * tbl[i] <= p < tbl[i + 1].  p must be less than tbl[n - 1] and tbl[0] must be
  * zero.
  */
-static int binary_search_probtable(const u32b *tbl, int n, u32b p)
+static int binary_search_probtable(const uint32_t *tbl, int n, uint32_t p)
 {
 	int ilow = 0, ihigh = n;
 
@@ -935,7 +935,7 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 				bool great, bool extra_roll)
 {
 	int i;
-	s16b power = 0;
+	int16_t power = 0;
 
 	/* Chance of being `good` and `great` */
 	/* This has changed over the years:
@@ -1075,8 +1075,8 @@ bool kind_is_good(const struct object_kind *kind)
  */
 static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 {
-	const u32b *objects;
-	u32b total, value;
+	const uint32_t *objects;
+	uint32_t total, value;
 	int item;
 
 	assert(level >= 0 && level <= z_info->max_obj_depth);
@@ -1103,7 +1103,7 @@ static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	 */
 	for (item = 0; item < z_info->k_max; item++) {
 		if (objkind_byid(item)->tval == tval) {
-			u32b prob = objects[item + 1] - objects[item];
+			uint32_t prob = objects[item + 1] - objects[item];
 
 			if (value < prob) break;
 			value -= prob;
@@ -1121,8 +1121,8 @@ static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
  */
 struct object_kind *get_obj_num(int level, bool good, int tval)
 {
-	const u32b *objects;
-	u32b value;
+	const uint32_t *objects;
+	uint32_t value;
 	int item;
 
 	/* Occasional level boost */
@@ -1168,7 +1168,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
  * \return a pointer to the newly allocated object, or NULL on failure.
  */
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
-						   bool extra_roll, s32b *value, int tval)
+		bool extra_roll, int32_t *value, int tval)
 {
 	int base, tries = 3;
 	struct object_kind *kind = NULL;
@@ -1306,7 +1306,7 @@ struct object *make_gold(int lev, const char *coin_type)
 		value *= 5;
 	}
 
-	/* Cap gold at max short (or alternatively make pvals s32b) */
+	/* Cap gold at max short (or alternatively make pvals int32_t) */
 	if (value >= SHRT_MAX) {
 		value = SHRT_MAX - randint0(200);
 	}

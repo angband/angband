@@ -140,6 +140,10 @@
 /**
  * errr is an error code
  *
+ * byte/s16b/u16b/s32b/u32b/s64b/u64b have been deprecated; use the
+ * standard uint8_t, int16_t, uint16_t, ... types instead.  Those typedefs
+ * will still be defined if SKIP_ANGBAND_OLD_INT_TYPEDEFS is not set.
+ *
  * A "byte" is an unsigned byte of memory.
  * s16b/u16b are exactly 2 bytes (where possible)
  * s32b/u32b are exactly 4 bytes (where possible)
@@ -147,6 +151,7 @@
 
 typedef int errr;
 
+#ifndef SKIP_ANGBAND_OLD_INT_TYPEDEFS
 /* Use guaranteed-size types */
 typedef uint8_t byte;
 
@@ -158,7 +163,7 @@ typedef int32_t s32b;
 
 typedef uint64_t u64b;
 typedef int64_t s64b;
-
+#endif
 
 /** Debugging macros ***/
 

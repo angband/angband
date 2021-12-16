@@ -281,7 +281,7 @@ static bool summon_possible(struct loc grid)
 int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
 {
 	int num = 0;
-	byte spells[RSF_MAX];
+	uint8_t spells[RSF_MAX];
 
 	int i;
 

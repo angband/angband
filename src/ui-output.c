@@ -22,7 +22,7 @@
 #include "ui-output.h"
 #include "z-textblock.h"
 
-s16b screen_save_depth;
+int16_t screen_save_depth;
 
 /**
  * ------------------------------------------------------------------------
@@ -101,7 +101,7 @@ bool region_inside(const region *loc, const ui_event *key)
 /**
  * Utility function
  */
-static void display_area(const wchar_t *text, const byte *attrs,
+static void display_area(const wchar_t *text, const uint8_t *attrs,
 		size_t *line_starts, size_t *line_lengths,
 		size_t n_lines,
 		region area, size_t line_from)
@@ -247,7 +247,7 @@ struct keypress textui_textblock_show(textblock *tb, region orig_area, const cha
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void text_out_to_screen(byte a, const char *str)
+void text_out_to_screen(uint8_t a, const char *str)
 {
 	int x, y;
 
@@ -363,7 +363,7 @@ void text_out_to_screen(byte a, const char *str)
  * At the given location, using the given attribute, if allowed,
  * add the given string.  Do not clear the line.
  */
-void c_put_str(byte attr, const char *str, int row, int col) {
+void c_put_str(uint8_t attr, const char *str, int row, int col) {
 	/* Position cursor, Dump the attr/text */
 	Term_putstr(col, row, -1, attr, str);
 }
@@ -380,7 +380,7 @@ void put_str(const char *str, int row, int col) {
  * Display a string on the screen using an attribute, and clear to the
  * end of the line.
  */
-void c_prt(byte attr, const char *str, int row, int col) {
+void c_prt(uint8_t attr, const char *str, int row, int col) {
 	/* Clear line, position cursor */
 	Term_erase(col, row, 255);
 
@@ -415,7 +415,7 @@ void prt(const char *str, int row, int col) {
 /**
  * Depth of the screen_save() stack
  */
-s16b screen_save_depth;
+int16_t screen_save_depth;
 
 /**
  * Save the screen, and increase the "icky" depth.

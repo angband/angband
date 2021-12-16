@@ -74,9 +74,9 @@ struct blow_effect {
 	int power;
 	int eval;
 	char *desc;
-	byte lore_attr;			/* Color of the attack used in lore text */
-	byte lore_attr_resist;	/* Color used in lore text when resisted */
-	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
+	uint8_t lore_attr;		/* Color of the attack used in lore text */
+	uint8_t lore_attr_resist;	/* Color used in lore text when resisted */
+	uint8_t lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *effect_type;
 	int resist;
 	int lash_type;

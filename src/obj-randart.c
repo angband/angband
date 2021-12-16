@@ -49,18 +49,18 @@ struct activation *activations;
  * ------------------------------------------------------------------------
  * Arrays of indices by item type, used in frequency generation
  * ------------------------------------------------------------------------ */
-static s16b art_idx_bow[] = {
+static int16_t art_idx_bow[] = {
 	ART_IDX_BOW_SHOTS,
 	ART_IDX_BOW_MIGHT,
 	ART_IDX_BOW_BRAND,
 	ART_IDX_BOW_SLAY
 };
-static s16b art_idx_weapon[] = {
+static int16_t art_idx_weapon[] = {
 	ART_IDX_WEAPON_HIT,
 	ART_IDX_WEAPON_DAM,
 	ART_IDX_WEAPON_AGGR
 };
-static s16b art_idx_nonweapon[] = {
+static int16_t art_idx_nonweapon[] = {
 	ART_IDX_NONWEAPON_HIT,
 	ART_IDX_NONWEAPON_DAM,
 	ART_IDX_NONWEAPON_HIT_DAM,
@@ -70,7 +70,7 @@ static s16b art_idx_nonweapon[] = {
 	ART_IDX_NONWEAPON_BLOWS,
 	ART_IDX_NONWEAPON_SHOTS
 };
-static s16b art_idx_melee[] = {
+static int16_t art_idx_melee[] = {
 	ART_IDX_MELEE_BLESS,
 	ART_IDX_MELEE_SINV,
 	ART_IDX_MELEE_BRAND,
@@ -81,10 +81,10 @@ static s16b art_idx_melee[] = {
 	ART_IDX_MELEE_WEIGHT,
 	ART_IDX_MELEE_TUNN
 };
-static s16b art_idx_allarmor[] = {
+static int16_t art_idx_allarmor[] = {
 	ART_IDX_ALLARMOR_WEIGHT
 };
-static s16b art_idx_boot[] = {
+static int16_t art_idx_boot[] = {
 	ART_IDX_BOOT_AC,
 	ART_IDX_BOOT_FEATHER,
 	ART_IDX_BOOT_STEALTH,
@@ -92,13 +92,13 @@ static s16b art_idx_boot[] = {
 	ART_IDX_BOOT_SPEED,
 	ART_IDX_BOOT_MOVES
 };
-static s16b art_idx_glove[] = {
+static int16_t art_idx_glove[] = {
 	ART_IDX_GLOVE_AC,
 	ART_IDX_GLOVE_HIT_DAM,
 	ART_IDX_GLOVE_FA,
 	ART_IDX_GLOVE_DEX
 };
-static s16b art_idx_headgear[] = {
+static int16_t art_idx_headgear[] = {
 	ART_IDX_HELM_AC,
 	ART_IDX_HELM_RBLIND,
 	ART_IDX_HELM_ESP,
@@ -106,15 +106,15 @@ static s16b art_idx_headgear[] = {
 	ART_IDX_HELM_WIS,
 	ART_IDX_HELM_INT
 };
-static s16b art_idx_shield[] = {
+static int16_t art_idx_shield[] = {
 	ART_IDX_SHIELD_AC,
 	ART_IDX_SHIELD_LRES
 };
-static s16b art_idx_cloak[] = {
+static int16_t art_idx_cloak[] = {
 	ART_IDX_CLOAK_AC,
 	ART_IDX_CLOAK_STEALTH
 };
-static s16b art_idx_armor[] = {
+static int16_t art_idx_armor[] = {
 	ART_IDX_ARMOR_AC,
 	ART_IDX_ARMOR_STEALTH,
 	ART_IDX_ARMOR_HLIFE,
@@ -122,7 +122,7 @@ static s16b art_idx_armor[] = {
 	ART_IDX_ARMOR_LRES,
 	ART_IDX_ARMOR_ALLRES,
 	ART_IDX_ARMOR_HRES};
-static s16b art_idx_gen[] = {
+static int16_t art_idx_gen[] = {
 	ART_IDX_GEN_STAT,
 	ART_IDX_GEN_SUST,
 	ART_IDX_GEN_STEALTH,
@@ -159,7 +159,7 @@ static s16b art_idx_gen[] = {
 	ART_IDX_GEN_MOVES,
 	ART_IDX_GEN_TRAP_IMM
 };
-static s16b art_idx_high_resist[] =	{
+static int16_t art_idx_high_resist[] =	{
 	ART_IDX_GEN_RPOIS,
 	ART_IDX_GEN_RFEAR,
 	ART_IDX_GEN_RLIGHT,
@@ -188,7 +188,7 @@ static int artifact_power(int a_idx, const char *reason, bool verbose)
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
 	char buf[256];
-	s32b power;
+	int32_t power;
 
 	file_putf(log_file, "********** Evaluating %s ********\n", reason);
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
@@ -1117,7 +1117,7 @@ static void collect_artifact_data(struct artifact_set_data *data)
 static void rescale_freqs(struct artifact_set_data *data)
 {
 	size_t i;
-	s32b temp;
+	int32_t temp;
 
 	/* Bow-only abilities */
 	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
@@ -1414,9 +1414,9 @@ static void artifact_prep(struct artifact *art, const struct object_kind *kind,
 		case TV_HAFTED:
 		case TV_SWORD:
 		case TV_POLEARM:
-			art->to_h += (s16b)(data->hit_startval / 2 +
+			art->to_h += (int16_t)(data->hit_startval / 2 +
 								randint0(data->hit_startval));
-			art->to_d += (s16b)(data->dam_startval / 2 +
+			art->to_d += (int16_t)(data->dam_startval / 2 +
 								randint0(data->dam_startval));
 			file_putf(log_file,
 					  "Assigned basic stats, to_hit: %d, to_dam: %d\n",
@@ -1431,7 +1431,7 @@ static void artifact_prep(struct artifact *art, const struct object_kind *kind,
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			art->to_a += (s16b)(data->ac_startval / 2 +
+			art->to_a += (int16_t)(data->ac_startval / 2 +
 								randint0(data->ac_startval));
 			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
 					  art->to_a);
@@ -1587,7 +1587,7 @@ static void build_freq_table(struct artifact *art, int *freq,
  * abilities and attempting to add each in turn.  An artifact only gets one
  * chance at each of these up front (if applicable).
  */
-static void try_supercharge(struct artifact *art, s32b target_power,
+static void try_supercharge(struct artifact *art, int32_t target_power,
 							struct artifact_set_data *data)
 {
 	/* Huge damage dice or max blows - melee weapon only */
@@ -1943,7 +1943,7 @@ static void add_slay(struct artifact *art)
 static void add_damage_dice(struct artifact *art)
 {
 	/* CR 2001-09-02: changed this to increments 1 or 2 only */
-	art->dd += (byte)randint1(2);
+	art->dd += (uint8_t)randint1(2);
 	file_putf(log_file, "Adding ability: extra damage dice (now %d dice)\n",
 			  art->dd);
 }
@@ -1967,7 +1967,7 @@ static void add_to_hit(struct artifact *art, int fixed, int random)
 			return;
 		}
 	}
-	art->to_h += (s16b)(fixed + randint0(random));
+	art->to_h += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: extra to_h (now %+d)\n", art->to_h);
 }
 
@@ -1990,7 +1990,7 @@ static void add_to_dam(struct artifact *art, int fixed, int random)
 			return;
 		}
 	}
-	art->to_d += (s16b)(fixed + randint0(random));
+	art->to_d += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: extra to_dam (now %+d)\n",
 			  art->to_d);
 }
@@ -2014,7 +2014,7 @@ static void add_to_AC(struct artifact *art, int fixed, int random)
 			return;
 		}
 	}
-	art->to_a += (s16b)(fixed + randint0(random));
+	art->to_a += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: AC bonus (new bonus is %+d)\n",
 			  art->to_a);
 }
@@ -2103,7 +2103,7 @@ static int choose_ability (int *freq_table)
  * been done already.
  */
 
-static void add_ability_aux(struct artifact *art, int r, s32b target_power,
+static void add_ability_aux(struct artifact *art, int r, int32_t target_power,
 							struct artifact_set_data *data)
 {
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
@@ -2520,7 +2520,7 @@ static void remove_contradictory(struct artifact *art)
 /**
  * Randomly select an extra ability to be added to the artifact in question.
  */
-static void add_ability(struct artifact *art, s32b target_power, int *freq,
+static void add_ability(struct artifact *art, int32_t target_power, int *freq,
 						struct artifact_set_data *data)
 {
 	int r;
@@ -3062,7 +3062,7 @@ static void write_randart_entry(ang_file *fff, const struct artifact *art)
 /**
  * Randomize the artifacts
  */
-void do_randart(u32b randart_seed, bool create_file)
+void do_randart(uint32_t randart_seed, bool create_file)
 {
 	char fname[1024];
 	struct artifact_set_data *standarts = artifact_set_data_new();

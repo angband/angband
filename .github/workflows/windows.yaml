@@ -21,6 +21,6 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32 --enable-skip-old-int-typedefs
           make
 

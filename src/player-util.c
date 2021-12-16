@@ -187,7 +187,8 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	if (player_has(p, PF_COMBAT_REGEN)  && !streq(kb_str, "poison")
 		&& !streq(kb_str, "a fatal wound") && !streq(kb_str, "starvation")) {
 		/* lose X% of hitpoints get X% of spell points */
-		s32b sp_gain = (MAX((s32b)p->msp, 10) << 16) / (s32b)p->mhp * dam;
+		int32_t sp_gain = (MAX((int32_t)p->msp, 10) << 16)
+			/ (int32_t)p->mhp * dam;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
@@ -299,7 +300,7 @@ int energy_per_move(struct player *p)
  * Stats go down: 18/220, 18/210,..., 18/10, 18, 17, ..., 3
  * Or even: 18/13, 18/03, 18, 17, ..., 3
  */
-s16b modify_stat_value(int value, int amount)
+int16_t modify_stat_value(int value, int amount)
 {
 	int i;
 
@@ -336,7 +337,7 @@ s16b modify_stat_value(int value, int amount)
  */
 void player_regen_hp(struct player *p)
 {
-	s32b hp_gain;
+	int32_t hp_gain;
 	int percent = 0;/* max 32k -> 50% of mhp; more accurately "pertwobytes" */
 	int fed_pct, old_chp = p->chp;
 
@@ -371,7 +372,7 @@ void player_regen_hp(struct player *p)
 	if (p->timed[TMD_CUT]) percent = 0;
 
 	/* Extract the new hitpoints */
-	hp_gain = (s32b)(p->mhp * percent) + PY_REGEN_HPBASE;
+	hp_gain = (int32_t)(p->mhp * percent) + PY_REGEN_HPBASE;
 	player_adjust_hp_precise(p, hp_gain);
 
 	/* Notice changes */
@@ -387,7 +388,7 @@ void player_regen_hp(struct player *p)
  */
 void player_regen_mana(struct player *p)
 {
-	s32b sp_gain;
+	int32_t sp_gain;
 	int percent, old_csp = p->csp;
 
 	/* Save the old spell points */
@@ -412,7 +413,7 @@ void player_regen_mana(struct player *p)
 	}
 
 	/* Regenerate mana */
-	sp_gain = (s32b)(p->msp * percent);
+	sp_gain = (int32_t)(p->msp * percent);
 	if (percent >= 0)
 		sp_gain += PY_REGEN_MNBASE;
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
@@ -430,13 +431,13 @@ void player_regen_mana(struct player *p)
 	}
 }
 
-void player_adjust_hp_precise(struct player *p, s32b hp_gain)
+void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
 {
-	s32b new_chp;
+	int32_t new_chp;
 	int num, old_chp = p->chp;
 
 	/* Load it all into 4 byte format*/
-	new_chp = (s32b)((p->chp << 16) + p->chp_frac) + hp_gain;
+	new_chp = (int32_t)((p->chp << 16) + p->chp_frac) + hp_gain;
 
 	/* Check for overflow */
 	/*     {new_chp = LONG_MIN;} DAVIDTODO*/
@@ -447,8 +448,8 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
 	}
 
 	/* Break it back down*/
-	p->chp = (s16b)(new_chp >> 16);   /* div 65536 */
-	p->chp_frac = (u16b)(new_chp & 0xFFFF); /* mod 65536 */
+	p->chp = (int16_t)(new_chp >> 16);   /* div 65536 */
+	p->chp_frac = (uint16_t)(new_chp & 0xFFFF); /* mod 65536 */
 	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative
 	 * new_chp will give -1 for chp and very high chp_frac.*/
 
@@ -470,15 +471,15 @@ void player_adjust_hp_precise(struct player *p, s32b hp_gain)
  * Accept a 4 byte signed int, divide it by 65k, and add
  * to current spell points. p->csp and csp_frac are 2 bytes each.
  */
-s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
+int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 {
-	s32b old_csp_long, new_csp_long;
+	int32_t old_csp_long, new_csp_long;
 	int old_csp_short = p->csp;
 
 	if (sp_gain == 0) return 0;
 
 	/* Load it all into 4 byte format*/
-	old_csp_long = (s32b)((p->csp << 16) + p->csp_frac);
+	old_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
 	new_csp_long = old_csp_long + sp_gain;
 
 	/* Check for overflow */
@@ -493,8 +494,8 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 	}
 
 	/* Break it back down*/
-	p->csp = (s16b)(new_csp_long >> 16);   /* div 65536 */
-	p->csp_frac = (u16b)(new_csp_long & 0xFFFF);    /* mod 65536 */
+	p->csp = (int16_t)(new_csp_long >> 16);   /* div 65536 */
+	p->csp_frac = (uint16_t)(new_csp_long & 0xFFFF);    /* mod 65536 */
 
 	/* Max/min SP */
 	if (p->csp >= p->msp) {
@@ -514,26 +515,26 @@ s32b player_adjust_mana_precise(struct player *p, s32b sp_gain)
 
 	if (sp_gain == 0) {
 		/* Recalculate */
-		new_csp_long = (s32b)((p->csp << 16) + p->csp_frac);
+		new_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
 		sp_gain = new_csp_long - old_csp_long;
 	}
 
 	return sp_gain;
 }
 
-void convert_mana_to_hp(struct player *p, s32b sp_long) {
-	s32b hp_gain, sp_ratio;
+void convert_mana_to_hp(struct player *p, int32_t sp_long) {
+	int32_t hp_gain, sp_ratio;
 
 	if (sp_long <= 0 || p->msp == 0 || p->mhp == p->chp) return;
 
 	/* Total HP from max */
-	hp_gain = (s32b)((p->mhp - p->chp) << 16);
-	hp_gain -= (s32b)p->chp_frac;
+	hp_gain = (int32_t)((p->mhp - p->chp) << 16);
+	hp_gain -= (int32_t)p->chp_frac;
 
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
 	/* Gain stays low at msp<10 because MP gains are generous at msp<10 */
 	/* sp_ratio is max sp to spent sp, doubled to suit target rate. */
-	sp_ratio = (MAX(10, (s32b)p->msp) << 16) * 2 / sp_long;
+	sp_ratio = (MAX(10, (int32_t)p->msp) << 16) * 2 / sp_long;
 
 	/* Limit max healing to 25% of damage; ergo spending > 50% msp
 	 * is inefficient */
@@ -1219,7 +1220,7 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 /**
  * Return true if the provided count is one of the conditional REST_ flags.
  */
-bool player_resting_is_special(s16b count)
+bool player_resting_is_special(int16_t count)
 {
 	switch (count) {
 		case REST_COMPLETE:
@@ -1243,7 +1244,7 @@ bool player_is_resting(struct player *p)
 /**
  * Return the remaining number of resting turns.
  */
-s16b player_resting_count(struct player *p)
+int16_t player_resting_count(struct player *p)
 {
 	return p->upkeep->resting;
 }
@@ -1261,7 +1262,7 @@ static bool player_rest_disturb = false;
  *
  * \param count is the number of turns to rest or one of the REST_ constants.
  */
-void player_resting_set_count(struct player *p, s16b count)
+void player_resting_set_count(struct player *p, int16_t count)
 {
 	/* Cancel if player is disturbed */
 	if (player_rest_disturb) {
@@ -1376,7 +1377,7 @@ int player_get_resting_repeat_count(struct player *p)
  *
  * \param count is the number of turns requested for rest most recently.
  */
-void player_set_resting_repeat_count(struct player *p, s16b count)
+void player_set_resting_repeat_count(struct player *p, int16_t count)
 {
 	player_resting_repeat_count = count;
 }

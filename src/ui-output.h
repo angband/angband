@@ -78,22 +78,22 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
  * ------------------------------------------------------------------------
  * text_out hook for screen display
  * ------------------------------------------------------------------------ */
-void text_out_to_screen(byte a, const char *str);
+void text_out_to_screen(uint8_t a, const char *str);
 
 /**
  * ------------------------------------------------------------------------
  * Simple text display
  * ------------------------------------------------------------------------ */
-void c_put_str(byte attr, const char *str, int row, int col);
+void c_put_str(uint8_t attr, const char *str, int row, int col);
 void put_str(const char *str, int row, int col);
-void c_prt(byte attr, const char *str, int row, int col);
+void c_prt(uint8_t attr, const char *str, int row, int col);
 void prt(const char *str, int row, int col);
 
 /**
  * ------------------------------------------------------------------------
  * Screen loading/saving
  * ------------------------------------------------------------------------ */
-extern s16b screen_save_depth;
+extern int16_t screen_save_depth;
 void screen_save(void);
 void screen_load(void);
 bool textui_map_is_visible(void);

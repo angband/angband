@@ -555,12 +555,12 @@ void monster_flags_known(const struct monster_race *race,
  *
  * \param awareness is the inactivity counter of the race (monster_race.sleep).
  */
-static const char *lore_describe_awareness(s16b awareness)
+static const char *lore_describe_awareness(int16_t awareness)
 {
 	/* Value table ordered descending, for priority. Terminator is
 	 * {SHRT_MAX, NULL}. */
 	static const struct lore_awareness {
-		s16b threshold;
+		int16_t threshold;
 		const char *description;
 	} lore_awareness_description[] = {
 		{200,	"prefers to ignore"},
@@ -596,12 +596,12 @@ static const char *lore_describe_awareness(s16b awareness)
  *
  * \param speed is the speed rating of the race (monster_race.speed).
  */
-static const char *lore_describe_speed(byte speed)
+static const char *lore_describe_speed(uint8_t speed)
 {
 	/* Value table ordered descending, for priority. Terminator is
 	 * {UCHAR_MAX, NULL}. */
 	static const struct lore_speed {
-		byte threshold;
+		uint8_t threshold;
 		const char *description;
 	} lore_speed_description[] = {
 		{130,	"incredibly quickly"},
@@ -656,9 +656,9 @@ static void lore_multiplier_speed(textblock *tb, const struct monster_race *race
 
 	char buf[8] = "";
 	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
-	byte int_mul = multiplier / 10;
-	byte dec_mul = multiplier % 10;
-	byte attr = COLOUR_ORANGE;
+	uint8_t int_mul = multiplier / 10;
+	uint8_t dec_mul = multiplier % 10;
+	uint8_t attr = COLOUR_ORANGE;
 
 	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
 	textblock_append_c(tb, COLOUR_L_BLUE, "%s", buf);
@@ -774,7 +774,7 @@ static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
  * \param conjunction is a string that is added before the last item.
  * \param end is a string that is added after the last item.
  */
-static void lore_append_clause(textblock *tb, bitflag *f, byte attr,
+static void lore_append_clause(textblock *tb, bitflag *f, uint8_t attr,
 							   const char *start, const char *conjunction,
 							   const char *end)
 {
@@ -990,8 +990,8 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 	if (race->level == 0) {
 		textblock_append(tb, " lives in the town");
 	} else {
-		byte colour = (race->level > player->max_depth) ? COLOUR_RED :
-			COLOUR_L_BLUE;
+		uint8_t colour = (race->level > player->max_depth) ?
+			COLOUR_RED : COLOUR_L_BLUE;
 
 		if (rf_has(known_flags, RF_FORCE_DEPTH))
 			textblock_append(tb, " is found ");
@@ -1113,7 +1113,7 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 	const char *ordinal, *article;
 	char buf[20] = "";
 	long exp_integer, exp_fraction;
-	s16b level;
+	int16_t level;
 
 	/* Check legality and that this is a placeable monster */
 	assert(tb && race && lore);

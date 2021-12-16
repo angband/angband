@@ -201,7 +201,7 @@ bool mon_restrict(const char *monster_type, int depth, int current_depth,
  * if y0 or x0 are out of bounds, or the area is already occupied).
  */
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
-					 int y0, int x0, int dy, int dx, byte origin)
+		int y0, int x0, int dy, int dx, uint8_t origin)
 {
 	int i, j;
 	int count;
@@ -340,7 +340,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	char *name, int area)
 {
 	int i, y, x;
-	s16b monsters_left, depth;
+	int16_t monsters_left, depth;
 	bool random = one_in_(20);
 
 	/* Get a legal depth. */

@@ -29,14 +29,14 @@ typedef struct _message_t
 	char *str;
 	struct _message_t *newer;
 	struct _message_t *older;
-	u16b type;
-	u16b count;
+	uint16_t type;
+	uint16_t count;
 } message_t;
 
 typedef struct _msgcolor_t
 {
-	u16b type;
-	byte color;
+	uint16_t type;
+	uint8_t color;
 	struct _msgcolor_t *next;
 } msgcolor_t;
 
@@ -45,8 +45,8 @@ typedef struct _msgqueue_t
 	message_t *head;
 	message_t *tail;
 	msgcolor_t *colors;
-	u32b count;
-	u32b max;
+	uint32_t count;
+	uint32_t max;
 } msgqueue_t;
 
 static msgqueue_t *messages = NULL;
@@ -94,7 +94,7 @@ void messages_free(void)
 /**
  * Return the current number of messages stored.
  */
-u16b messages_num(void)
+uint16_t messages_num(void)
 {
 	return messages->count;
 }
@@ -111,14 +111,14 @@ u16b messages_num(void)
  * it, in which case the "count" of the message will be increased instead.
  * This count can be fetched using the message_count() function.
  */
-void message_add(const char *str, u16b type)
+void message_add(const char *str, uint16_t type)
 {
 	message_t *m;
 
 	if (messages->head &&
 	    messages->head->type == type &&
 	    streq(messages->head->str, str) &&
-	    messages->head->count != (u16b)-1) {
+	    messages->head->count != (uint16_t)-1) {
 		messages->head->count++;
 		return;
 	}
@@ -152,7 +152,7 @@ void message_add(const char *str, u16b type)
 /**
  * Returns the message of age `age`.
  */
-static message_t *message_get(u16b age)
+static message_t *message_get(uint16_t age)
 {
 	message_t *m = messages->head;
 
@@ -172,7 +172,7 @@ static message_t *message_get(u16b age)
  * Returns the empty string if the no messages of the age specified are
  * available.
  */
-const char *message_str(u16b age)
+const char *message_str(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->str : "");
@@ -186,7 +186,7 @@ const char *message_str(u16b age)
  * with the message "The orc sets your hair on fire.", then the text will only
  * have one age (age = 0), but will have a count of 5.
  */
-u16b message_count(u16b age)
+uint16_t message_count(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->count : 0);
@@ -198,7 +198,7 @@ u16b message_count(u16b age)
  *
  * The type is one of the MSG_ constants, defined in message.h.
  */
-u16b message_type(u16b age)
+uint16_t message_type(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->type : 0);
@@ -209,7 +209,7 @@ u16b message_type(u16b age)
  * (i.e. age = 0 represents the last memorised message, age = 1 is the one
  * before that, etc).
  */
-byte message_color(u16b age)
+uint8_t message_color(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? message_type_color(m->type) : COLOUR_WHITE);
@@ -223,7 +223,7 @@ byte message_color(u16b age)
 /**
  * Defines the color `color` for the message type `type`.
  */
-void message_color_define(u16b type, byte color)
+void message_color_define(uint16_t type, uint8_t color)
 {
 	msgcolor_t *mc;
 
@@ -256,10 +256,10 @@ void message_color_define(u16b type, byte color)
 /**
  * Returns the colour for the message type `type`.
  */
-byte message_type_color(u16b type)
+uint8_t message_type_color(uint16_t type)
 {
 	msgcolor_t *mc;
-	byte color = COLOUR_WHITE;
+	uint8_t color = COLOUR_WHITE;
 
 	if (messages)
 	{

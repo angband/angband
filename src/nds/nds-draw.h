@@ -34,8 +34,8 @@ typedef uint16_t nds_pixel;
 #endif
 
 typedef struct {
-	byte width;
-	byte height;
+	uint8_t width;
+	uint8_t height;
 	void (*draw_char)(char c, nds_pixel *pixels, nds_pixel clr_fg, nds_pixel clr_bg);
 } nds_font_handle;
 
@@ -50,14 +50,14 @@ extern const nds_font_handle nds_font_5x8;
 void nds_video_init();
 void nds_video_vblank();
 
-void nds_draw_pixel(u16b x, u16b y, nds_pixel data);
+void nds_draw_pixel(uint16_t x, uint16_t y, nds_pixel data);
 
 /* Same as nds_draw_char, but x/y is pixels instead of tiles */
-void nds_draw_char_px(u16b x, u16b y, char c, nds_pixel clr_fg, nds_pixel clr_bg);
-void nds_draw_char(byte x, byte y, char c, nds_pixel clr_fg, nds_pixel clr_bg);
+void nds_draw_char_px(uint16_t x, uint16_t y, char c, nds_pixel clr_fg, nds_pixel clr_bg);
+void nds_draw_char(uint8_t x, uint8_t y, char c, nds_pixel clr_fg, nds_pixel clr_bg);
 
-void nds_draw_str_px(u16b x, u16b y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg);
-void nds_draw_str(byte x, byte y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg);
+void nds_draw_str_px(uint16_t x, uint16_t y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg);
+void nds_draw_str(uint8_t x, uint8_t y, const char *str, nds_pixel clr_fg, nds_pixel clr_bg);
 
 void nds_draw_cursor(int x, int y);
 

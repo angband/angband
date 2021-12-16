@@ -317,7 +317,7 @@ static void wiz_drop_object(struct object *obj)
  * Assumes the active terminal displays a map.
  */
 static void wiz_hack_map(struct chunk *c, struct player *p,
-	void (*func)(struct chunk *, void *, struct loc, bool *, byte *),
+	void (*func)(struct chunk *, void *, struct loc, bool *, uint8_t *),
 	void *closure)
 {
 	int y;
@@ -328,7 +328,7 @@ static void wiz_hack_map(struct chunk *c, struct player *p,
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 			struct loc grid = loc(x, y);
 			bool show;
-			byte color;
+			uint8_t color;
 
 			if (!square_in_bounds_fully(c, grid)) continue;
 
@@ -1239,10 +1239,10 @@ void do_cmd_wiz_edit_player_gold(struct command *cmd)
 	}
 
 	/*
-	 * Keep in the bounds of [0, maximum s32b].  Assumes a two's complement
-	 * representation.
+	 * Keep in the bounds of [0, maximum int32_t].  Assumes a two's
+	 * complement representation.
 	 */
-	player->au = MIN((s32b)((1UL << 31) - 1), MAX(0, newv));
+	player->au = MIN((int32_t)((1UL << 31) - 1), MAX(0, newv));
 
 	/* Flag what needs to be updated or redrawn. */
 	player->upkeep->redraw |= PR_GOLD;
@@ -1489,7 +1489,7 @@ void do_cmd_wiz_magic_map(struct command *cmd)
  * to true.  Otherwise, it is not dereferenced.
  */
 static void wiz_hack_map_peek_noise(struct chunk *c, void *closure,
-	struct loc grid, bool *show, byte *color)
+	struct loc grid, bool *show, uint8_t *color)
 {
 	if (c->noise.grids[grid.y][grid.x] == *((int*)closure)) {
 		*show = true;
@@ -1513,7 +1513,7 @@ static void wiz_hack_map_peek_noise(struct chunk *c, void *closure,
  * to true.  Otherwise, it is not dereferenced.
  */
 static void wiz_hack_map_peek_scent(struct chunk *c, void *closure,
-	struct loc grid, bool *show, byte *color)
+	struct loc grid, bool *show, uint8_t *color)
 {
 	if (c->scent.grids[grid.y][grid.x] == *((int*)closure)) {
 		*show = true;
@@ -1948,7 +1948,7 @@ struct wiz_query_feature_closure {
  * to true.  Otherwise, it is not dereferenced.
  */
 static void wiz_hack_map_query_feature(struct chunk *c, void *closure,
-	struct loc grid, bool *show, byte *color)
+	struct loc grid, bool *show, uint8_t *color)
 {
 	const struct wiz_query_feature_closure *sel_feats = closure;
 	int i = 0;
@@ -2129,7 +2129,7 @@ void do_cmd_wiz_query_feature(struct command *cmd)
  * to true.  Otherwise, it is not dereferenced.
  */
 static void wiz_hack_map_query_square_flag(struct chunk *c, void *closure,
-	struct loc grid, bool *show, byte *color)
+	struct loc grid, bool *show, uint8_t *color)
 {
 	int flag = *((int*)closure);
 
@@ -2369,7 +2369,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known_obj = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
@@ -2811,7 +2811,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
@@ -2857,7 +2857,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
 		struct object *known = obj->known;
-		u16b oidx = obj->oidx;
+		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 

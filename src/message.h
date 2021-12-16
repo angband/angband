@@ -34,14 +34,14 @@ enum {
 /* Functions */
 void messages_init(void);
 void messages_free(void);
-u16b messages_num(void);
-void message_add(const char *str, u16b type);
-const char *message_str(u16b age);
-u16b message_count(u16b age);
-u16b message_type(u16b age);
-byte message_color(u16b age);
-byte message_type_color(u16b type);
-void message_color_define(u16b type, byte color);
+uint16_t messages_num(void);
+void message_add(const char *str, uint16_t type);
+const char *message_str(uint16_t age);
+uint16_t message_count(uint16_t age);
+uint16_t message_type(uint16_t age);
+uint8_t message_color(uint16_t age);
+uint8_t message_type_color(uint16_t type);
+void message_color_define(uint16_t type, uint8_t color);
 int message_lookup_by_name(const char *name);
 int message_lookup_by_sound_name(const char *name);
 const char *message_sound_name(int message);

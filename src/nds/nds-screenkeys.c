@@ -25,8 +25,8 @@
 
 typedef struct {
 	char label[NDS_SCRKEY_LABEL_LEN];
-	u16b x, y;
-	u16b w, h;
+	uint16_t x, y;
+	uint16_t w, h;
 	char sequence[NDS_SCRKEY_SEQ_LEN];
 } nds_scrkey_entry;
 

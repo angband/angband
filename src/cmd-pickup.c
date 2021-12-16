@@ -44,7 +44,7 @@
  */
 static void player_pickup_gold(struct player *p)
 {
-	s32b total_gold = 0L;
+	int32_t total_gold = 0L;
 	char name[30] = "";
 
 	struct object *obj = square_object(cave, p->grid), *next;
@@ -78,7 +78,7 @@ static void player_pickup_gold(struct player *p)
 			verbal = true;
 
 		/* Increment total value */
-		total_gold += (s32b)obj->pval;
+		total_gold += (int32_t)obj->pval;
 
 		/* Delete the gold */
 		if (obj->known) {
@@ -300,7 +300,7 @@ static void player_pickup_aux(struct player *p, struct object *obj,
  * \param obj is the object to pick up.
  * \param menu is whether to present a menu to the player
  */
-static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
+static uint8_t player_pickup_item(struct player *p, struct object *obj, bool menu)
 {
 	struct object *current = NULL;
 
@@ -315,7 +315,7 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 	bool domsg = true;
 
 	/* Objects picked up.  Used to determine time cost of command. */
-	byte objs_picked_up = 0;
+	uint8_t objs_picked_up = 0;
 
 	/* Always know what's on the floor */
 	square_know_pile(cave, p->grid);
@@ -405,7 +405,7 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 int do_autopickup(struct player *p)
 {
 	struct object *obj, *next;
-	byte objs_picked_up = 0;
+	uint8_t objs_picked_up = 0;
 
 	/* Nothing to pick up -- return */
 	if (!square_object(cave, p->grid))

@@ -127,7 +127,7 @@ static struct element_powers {
  * We go up to +24 here - anything higher is inhibited
  * N.B. Not all stats count equally towards this total
  */
-static s16b ability_power[25] =
+static int16_t ability_power[25] =
 	{0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 8,
 	12, 16, 20, 24, 30, 36, 42, 48, 56, 64,
 	74, 84, 96, 110};
@@ -331,7 +331,7 @@ static int extra_might_power(const struct object *obj, int p, int mult)
 /**
  * Calculate the rating for a given slay combination
  */
-static s32b slay_power(const struct object *obj, int p, int verbose,
+static int32_t slay_power(const struct object *obj, int p, int verbose,
 					   int dice_pwr)
 {
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
@@ -764,9 +764,9 @@ static int curse_power(const struct object *obj, int p, int verbose,
 /**
  * Evaluate the object's overall power level.
  */
-s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
+int32_t object_power(const struct object* obj, bool verbose, ang_file *log_file)
 {
-	s32b p = 0, dice_pwr = 0;
+	int32_t p = 0, dice_pwr = 0;
 	int mult;
 
 	/* Set the log file */

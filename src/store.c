@@ -928,7 +928,7 @@ void home_carry(struct object *obj)
 struct object *store_carry(struct store *store, struct object *obj)
 {
 	unsigned int i;
-	u32b value;
+	uint32_t value;
 	struct object *temp_obj, *known_obj = obj->known;
 
 	struct object_kind *kind = obj->kind;

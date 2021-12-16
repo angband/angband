@@ -16,4 +16,4 @@ jobs:
       - name: Build
         run: |
           cd src
-          env SDKROOT=macosx11.1 make -f Makefile.osx
+          env SDKROOT=macosx11.1 OPT=-DSKIP_ANGBAND_OLD_INT_TYPEDEFS make -f Makefile.osx

@@ -57,8 +57,8 @@ struct _term_data
 
 	uint keys;
 
-	byte rows;
-	byte cols;
+	uint8_t rows;
+	uint8_t cols;
 
 	uint pos_x;
 	uint pos_y;

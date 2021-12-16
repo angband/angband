@@ -86,19 +86,19 @@ struct color_type
 {
 	char index_char;            /* Character index:  'r' = red, etc. */
 	char name[32];              /* Color name */
-	byte color_translate[MAX_ATTR]; /* Index for various in-game translations */
+	uint8_t color_translate[MAX_ATTR]; /* Index for various in-game translations */
 };
 
-extern byte angband_color_table[MAX_COLORS][4];
+extern uint8_t angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
 
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);
-extern const char *attr_to_text(byte a);
-extern byte get_color(byte a, int attr, int n);
+extern const char *attr_to_text(uint8_t a);
+extern uint8_t get_color(uint8_t a, int attr, int n);
 
 extern void build_gamma_table(int gamma);
-extern byte gamma_table[256];
+extern uint8_t gamma_table[256];
 
 #endif /* INCLUDED_Z_COLOR_H */
 

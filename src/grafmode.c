@@ -217,7 +217,7 @@ void close_graphics_modes(void) {
 	}
 }
 
-graphics_mode *get_graphics_mode(byte id) {
+graphics_mode *get_graphics_mode(uint8_t id) {
 	graphics_mode *test = graphics_modes;
 	while (test) {
 		if (test->grafID == id) {

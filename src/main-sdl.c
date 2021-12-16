@@ -192,7 +192,7 @@ struct term_window
 	SDL_Surface *surface;	/* The surface for this window */
 	SDL_Surface *tiles;		/* The appropriately sized tiles for this window */
 	SDL_Surface *onebyone;	/* The appropriately sized tiles for this window */
-	byte Term_idx;			/* Index of term that relates to this */
+	uint8_t Term_idx;	/* Index of term that relates to this */
 
 	int top;				/* Window Coordinates on the main screen */
 	int left;
@@ -2320,7 +2320,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
  */
 static void sdl_keypress(SDL_keysym keysym)
 {
-	u16b key_code = keysym.unicode;
+	uint16_t key_code = keysym.unicode;
 	SDLKey key_sym = keysym.sym;
 
 	int ch = 0;
@@ -2333,7 +2333,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool mg = (keysym.mod & KMOD_MODE) > 0;
 	bool kp = false;
 
-	byte mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
+	uint8_t mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
 
 	/* Ignore if main term is not initialized */
 	if (!Term) return;

@@ -6,12 +6,12 @@
 
 typedef struct {
     keycode_t key;
-    byte mods;
+    uint8_t mods;
 } nds_event_keyboard;
 
 typedef struct {
-    byte x;
-    byte y;
+    uint8_t x;
+    uint8_t y;
 } nds_event_mouse;
 
 typedef struct {
@@ -29,7 +29,7 @@ typedef struct {
 bool nds_event_init();
 bool nds_event_ready();
 nds_event nds_event_get();
-void nds_event_put_key(keycode_t k, byte mods);
-void nds_event_put_mouse(byte x, byte y);
+void nds_event_put_key(keycode_t k, uint8_t mods);
+void nds_event_put_mouse(uint8_t x, uint8_t y);
 
 #endif

@@ -67,7 +67,7 @@ struct command_list
 	int keymap;
 };
 
-#define SCAN_INSTANT ((u32b) -1)
+#define SCAN_INSTANT ((uint32_t) -1)
 #define SCAN_OFF 0
 
 extern struct cmd_info cmd_item[];
@@ -79,9 +79,9 @@ extern struct cmd_info cmd_hidden[];
 extern struct command_list cmds_all[];
 
 extern struct keypress *inkey_next;
-extern u32b inkey_scan;
+extern uint32_t inkey_scan;
 extern bool inkey_flag;
-extern u16b lazymove_delay;
+extern uint16_t lazymove_delay;
 extern bool msg_flag;
 extern bool arg_force_name;
 

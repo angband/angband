@@ -59,7 +59,7 @@ struct trap_kind
 	struct trap_kind *next;
 	int tidx;					/**< Trap kind index */
 
-	byte d_attr;				/**< Default trap attribute */
+	uint8_t d_attr;				/**< Default trap attribute */
 	wchar_t d_char;				/**< Default trap character */
 
 	int rarity;					/**< Rarity */
@@ -81,14 +81,14 @@ extern struct trap_kind *trap_info;
  */
 struct trap
 {
-	byte t_idx;					/**< Trap kind index */
+	uint8_t t_idx;			/**< Trap kind index */
 	struct trap_kind *kind;		/**< Trap kind */
-	struct trap *next;			/**< Next trap in this location */
+	struct trap *next;		/**< Next trap in this location */
 
-	struct loc grid;			/**< Location of trap */
+	struct loc grid;		/**< Location of trap */
 
-	byte power;					/**< Power for locks, visibility for traps */
-	byte timeout;				/**< Timer for disabled traps */
+	uint8_t power;			/**< Power for locks, visibility for traps */
+	uint8_t timeout;		/**< Timer for disabled traps */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };

@@ -1952,11 +1952,11 @@ static void draw_image_tile(
  * for future changes to the set of flags without needed to update it here
  * (unless the underlying types change).
  */
-static u32b AngbandMaskForValidSubwindowFlags(void)
+static uint32_t AngbandMaskForValidSubwindowFlags(void)
 {
     int windowFlagBits = sizeof(*(window_flag)) * CHAR_BIT;
     int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
-    u32b mask = 0;
+    uint32_t mask = 0;
 
     for( int i = 0; i < maxBits; i++ )
     {
@@ -1980,7 +1980,7 @@ static void AngbandUpdateWindowVisibility(void)
      * Because this function is called frequently, we'll make the mask static.
      * It doesn't change between calls, as the flags themselves are hardcoded
      */
-    static u32b validWindowFlagsMask = 0;
+    static uint32_t validWindowFlagsMask = 0;
     BOOL anyChanged = NO;
 
     if( validWindowFlagsMask == 0 )
@@ -4122,7 +4122,7 @@ static int get_background_color_index(int idx)
  */
 static void set_color_for_index(int idx)
 {
-    u16b rv, gv, bv;
+    uint16_t rv, gv, bv;
     
     /* Extract the R,G,B data */
     rv = angband_color_table[idx][1];
@@ -4822,13 +4822,13 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 	tap += tile_width;
 	tcp += tile_width;
 	if (use_graphics && (a & 0x80) && (c & 0x80)) {
-	    char fgdRow = ((byte)a & 0x7F) % pict_rows;
-	    char fgdCol = ((byte)c & 0x7F) % pict_cols;
+	    char fgdRow = ((uint8_t)a & 0x7F) % pict_rows;
+	    char fgdCol = ((uint8_t)c & 0x7F) % pict_cols;
 	    char bckRow, bckCol;
 
 	    if (alphablend) {
-		bckRow = ((byte)ta & 0x7F) % pict_rows;
-		bckCol = ((byte)tc & 0x7F) % pict_cols;
+		bckRow = ((uint8_t)ta & 0x7F) % pict_rows;
+		bckCol = ((uint8_t)tc & 0x7F) % pict_cols;
 	    } else {
 		/*
 		 * Not blending so make the background the same as the
@@ -5049,7 +5049,7 @@ static int Term_wctomb_cocoa(char *s, wchar_t wchar)
  */
 static int Term_iswprint_cocoa(wint_t wc)
 {
-	return utf32_isprint((u32b) wc);
+	return utf32_isprint((uint32_t) wc);
 }
 
 /**
@@ -5188,7 +5188,7 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 
 #ifdef KC_MOD_ALT
 			NSUInteger eventModifiers = [event modifierFlags];
-			byte angbandModifiers = 0;
+			uint8_t angbandModifiers = 0;
 			angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
 			angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
 			angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
@@ -5328,7 +5328,7 @@ static BOOL send_event(NSEvent *event)
                 
                 /* Enqueue the keypress */
 #ifdef KC_MOD_ALT
-                byte mods = 0;
+                uint8_t mods = 0;
                 if (mo) mods |= KC_MOD_ALT;
                 if (mx) mods |= KC_MOD_META;
                 if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
@@ -5718,7 +5718,7 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
 	NSString *pathString = [NSString stringWithUTF8String:path];
 	if (pathString)
 	{
-	    u32b mac_type = 'TEXT';
+	    uint32_t mac_type = 'TEXT';
 	    if (ftype == FTYPE_RAW)
 		mac_type = 'DATA';
 	    else if (ftype == FTYPE_SAVE)

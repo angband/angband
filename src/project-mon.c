@@ -243,7 +243,7 @@ typedef struct project_monster_handler_context_s {
 	bool charm;
 	bool obvious;
 	bool skipped;
-	u16b flag;
+	uint16_t flag;
 	int do_poly;
 	int teleport_distance;
 	enum mon_messages hurt_msg;

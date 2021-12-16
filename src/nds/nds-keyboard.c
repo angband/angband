@@ -345,7 +345,7 @@ void nds_kbd_vblank()
 
 	char c = shift ? key.alt : key.main;
 
-	byte mods = 0;
+	uint8_t mods = 0;
 
 	/* SHIFT only gets passed as a modifier if we haven't applied it to the keycode */
 	if (nds_kbd_modifier_active(KBD_SHIFT) && !shift)

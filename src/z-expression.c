@@ -21,8 +21,8 @@
 #include "z-util.h"
 
 struct expression_operation_s {
-	byte operator;
-	s16b operand;
+	uint8_t operator;
+	int16_t operand;
 };
 
 struct expression_s {
@@ -213,10 +213,10 @@ void expression_set_base_value(expression_t *expression,
  * Evaluate the given expression. If the base value function is NULL,
  * expression is evaluated from zero.
  */
-s32b expression_evaluate(expression_t const * const expression)
+int32_t expression_evaluate(expression_t const * const expression)
 {
 	size_t i;
-	s32b value = 0;
+	int32_t value = 0;
 
 	if (expression->base_value != NULL)
 		value = expression->base_value();
@@ -274,7 +274,7 @@ static void expression_add_operation(expression_t *expression,
  * \param string is the string to be parsed.
  * \return The number of operations added to the expression or an error (expression_err_e).
  */
-s16b expression_add_operations_string(expression_t *expression,
+int16_t expression_add_operations_string(expression_t *expression,
 									  const char *string)
 {
 	char *parse_string;
@@ -325,7 +325,7 @@ s16b expression_add_operations_string(expression_t *expression,
 
 	while (token != NULL) {
 		char *end = NULL;
-		s16b value = strtol(token, &end, 0);
+		int16_t value = strtol(token, &end, 0);
 
 		if (end == token) {
 			parsed_operator = expression_operator_from_token(token);

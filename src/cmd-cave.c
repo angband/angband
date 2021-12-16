@@ -1505,8 +1505,8 @@ static const char *mon_feeling_text[] =
  */
 void display_feeling(bool obj_only)
 {
-	u16b obj_feeling = cave->feeling / 10;
-	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
+	uint16_t obj_feeling = cave->feeling / 10;
+	uint16_t mon_feeling = cave->feeling - (10 * obj_feeling);
 	const char *join;
 
 	/* Don't show feelings for cold-hearted characters */

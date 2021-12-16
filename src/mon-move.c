@@ -127,8 +127,10 @@ static bool monster_can_smell(struct monster *mon)
 static int compare_monsters(const struct monster *mon1,
 							const struct monster *mon2)
 {
-	u32b mexp1 = (mon1->original_race) ? mon1->original_race->mexp : mon1->race->mexp;
-	u32b mexp2 = (mon2->original_race) ? mon2->original_race->mexp : mon2->race->mexp;
+	uint32_t mexp1 = (mon1->original_race) ?
+		mon1->original_race->mexp : mon1->race->mexp;
+	uint32_t mexp2 = (mon2->original_race) ?
+		mon2->original_race->mexp : mon2->race->mexp;
 
 	/* Compare */
 	if (mexp1 < mexp2) return (-1);
@@ -210,10 +212,10 @@ static bool monster_hates_grid(struct monster *mon, struct loc grid)
  */
 static void get_move_find_range(struct monster *mon)
 {
-	u16b p_lev, m_lev;
-	u16b p_chp, p_mhp;
-	u16b m_chp, m_mhp;
-	u32b p_val, m_val;
+	uint16_t p_lev, m_lev;
+	uint16_t p_chp, p_mhp;
+	uint16_t m_chp, m_mhp;
+	uint32_t p_val, m_val;
 
 	/* Monsters will run up to z_info->flee_range grids out of sight */
 	int flee_range = z_info->max_sight + z_info->flee_range;

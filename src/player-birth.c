@@ -95,14 +95,14 @@ struct birther
 	const struct player_race *race;
 	const struct player_class *class;
 
-	s16b age;
-	s16b wt;
-	s16b ht;
-	s16b sc;
+	int16_t age;
+	int16_t wt;
+	int16_t ht;
+	int16_t sc;
 
-	s32b au;
+	int32_t au;
 
-	s16b stat[STAT_MAX];
+	int16_t stat[STAT_MAX];
 
 	char *history;
 	char name[PLAYER_NAME_LEN];
@@ -433,7 +433,7 @@ void player_init(struct player *p)
 								  sizeof(struct object *));
 	p->upkeep->quiver = mem_zalloc(z_info->quiver_size *
 								   sizeof(struct object *));
-	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
+	p->timed = mem_zalloc(TMD_MAX * sizeof(int16_t));
 	p->obj_k = mem_zalloc(sizeof(struct object));
 	p->obj_k->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
 	p->obj_k->slays = mem_zalloc(z_info->slay_max * sizeof(bool));

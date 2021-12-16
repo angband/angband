@@ -98,11 +98,11 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 	for (index = 0; index < total && line_count < lines_to_display; index++) {
 		char asleep[20] = { '\0' };
 		char location[20] = { '\0' };
-		byte line_attr;
+		uint8_t line_attr;
 		size_t full_width;
 		size_t name_width;
-		u16b count_in_section = 0;
-		u16b asleep_in_section = 0;
+		uint16_t count_in_section = 0;
+		uint16_t asleep_in_section = 0;
 
 		line_buffer[0] = '\0';
 

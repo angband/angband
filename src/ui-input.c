@@ -48,7 +48,7 @@
 #include "ui-target.h"
 
 static bool inkey_xtra;
-u32b inkey_scan;		/* See the "inkey()" function */
+uint32_t inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
 /**
@@ -353,7 +353,7 @@ ui_event inkey_m(void)
  */
 static void msg_flush(int x)
 {
-	byte a = COLOUR_L_BLUE;
+	uint8_t a = COLOUR_L_BLUE;
 
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
@@ -403,7 +403,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	int n;
 	char *t;
 	char buf[1024];
-	byte color;
+	uint8_t color;
 	int w, h;
 
 	int type;

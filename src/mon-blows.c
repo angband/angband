@@ -513,7 +513,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
 	} else {
-		s32b d = drain_amount +
+		int32_t d = drain_amount +
 			(context->p->exp/100) * z_info->life_drain_percent;
 		if (player_of_has(context->p, OF_HOLD_LIFE)) {
 			msg("You feel your life slipping away!");
@@ -682,7 +682,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
         /* Occasional blink anyway */
         if (randint0(3)) context->blinked = true;
     } else {
-        s32b gold = (current_player->au / 10) + randint1(25);
+        int32_t gold = (current_player->au / 10) + randint1(25);
         if (gold < 2) gold = 2;
         if (gold > 5000) gold = (current_player->au / 20) + randint1(3000);
         if (gold > current_player->au) gold = current_player->au;

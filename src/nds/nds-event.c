@@ -10,7 +10,7 @@
 nds_event *ebuf;
 
 /* Read and write pointers, that always point to the next element */
-u16b ebuf_read = 0, ebuf_write = 0;
+uint16_t ebuf_read = 0, ebuf_write = 0;
 
 nds_event empty_event = { 0 };
 
@@ -43,7 +43,7 @@ nds_event nds_event_get()
 	return event;
 }
 
-void nds_event_put_key(keycode_t key, byte mods)
+void nds_event_put_key(keycode_t key, uint8_t mods)
 {
 	ebuf[ebuf_write].type = NDS_EVENT_KEYBOARD;
 	ebuf[ebuf_write].keyboard.key = key;
@@ -52,7 +52,7 @@ void nds_event_put_key(keycode_t key, byte mods)
 		ebuf_write = 0;
 }
 
-void nds_event_put_mouse(byte x, byte y)
+void nds_event_put_mouse(uint8_t x, uint8_t y)
 {
 	ebuf[ebuf_write].type = NDS_EVENT_MOUSE;
 	ebuf[ebuf_write].mouse.x = x;

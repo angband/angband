@@ -80,7 +80,7 @@ struct pit_monster_profile {
 struct pit_color_profile {
     struct pit_color_profile *next;
 
-    byte color;
+    uint8_t color;
 };
 
 /**
@@ -270,13 +270,13 @@ struct vault {
 
     bitflag flags[ROOMF_SIZE];	/*!< Vault flags */
 
-    byte rat;			/*!< Vault rating */
+    uint8_t rat;		/*!< Vault rating */
 
-    byte hgt;			/*!< Vault height */
-    byte wid;			/*!< Vault width */
+    uint8_t hgt;		/*!< Vault height */
+    uint8_t wid;		/*!< Vault width */
 
-    byte min_lev;		/*!< Minimum allowable level, if specified. */
-    byte max_lev;		/*!< Maximum allowable level, if specified. */
+    uint8_t min_lev;		/*!< Minimum allowable level, if specified. */
+    uint8_t max_lev;		/*!< Maximum allowable level, if specified. */
 };
 
 
@@ -292,14 +292,14 @@ struct room_template {
 
     bitflag flags[ROOMF_SIZE];	/*!< Room flags */
 
-    byte typ;			/*!< Room type */
+    uint8_t typ;		/*!< Room type */
 
-    byte rat;			/*!< Room rating */
+    uint8_t rat;		/*!< Room rating */
 
-    byte hgt;			/*!< Room height */
-    byte wid;			/*!< Room width */
-    byte dor;           /*!< Random door options */
-    byte tval;			/*!< tval for objects in this room */
+    uint8_t hgt;		/*!< Room height */
+    uint8_t wid;		/*!< Room width */
+    uint8_t dor;		/*!< Random door options */
+    uint8_t tval;		/*!< tval for objects in this room */
 };
 
 /**
@@ -395,7 +395,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 
 
 /* gen-util.c */
-extern byte get_angle_to_grid[41][41];
+extern uint8_t get_angle_to_grid[41][41];
 
 int grid_to_i(struct loc grid, int w);
 void i_to_grid(int i, int w, struct loc *grid);
@@ -412,8 +412,8 @@ void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void rand_dir(struct loc *offset);
 bool new_player_spot(struct chunk *c, struct player *p);
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
-				  bool great, byte origin, int tval);
-void place_gold(struct chunk *c, struct loc grid, int level, byte origin);
+	bool great, uint8_t origin, int tval);
+void place_gold(struct chunk *c, struct loc grid, int level, uint8_t origin);
 void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
@@ -423,8 +423,9 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
-void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin);
-bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
+void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
+	uint8_t origin);
+bool alloc_object(struct chunk *c, int set, int typ, int depth, uint8_t origin);
 void dump_level_simple(const char *basefilename, const char *title,
 	struct chunk *c);
 void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist);
@@ -437,7 +438,7 @@ void dump_level_footer(ang_file *fo);
 bool mon_restrict(const char *monster_type, int depth,
 	int current_depth, bool unique_ok);
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
-					 int y0, int x0, int dy, int dx, byte origin);
+	int y0, int x0, int dy, int dx, uint8_t origin);
 void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 						const char *data, int y1, int y2, int x1, int x2);
 void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, char *name, int area);

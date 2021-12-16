@@ -39,8 +39,8 @@ struct sound_module
 
 struct msg_snd_data
 {
-	u16b num_sounds;
-	u16b sound_ids[MAX_SOUNDS_PER_MESSAGE];
+	uint16_t num_sounds;
+	uint16_t sound_ids[MAX_SOUNDS_PER_MESSAGE];
 };
 
 /*
@@ -70,7 +70,7 @@ static const struct sound_module sound_modules[] =
  * entries - each representing a sound that needs to be loaded by calling
  * load_sound_hook() for each entry.
  */
-static u16b next_sound_id;
+static uint16_t next_sound_id;
 static struct sound_data *sounds;
 
 #ifdef SOUND
@@ -167,16 +167,16 @@ static void load_sound(struct sound_data *sound_data)
  *  - Add each sound assigned to a message type to that message types
  *    'sound map
  */
-static void message_sound_define(u16b message_id, const char *sounds_str)
+static void message_sound_define(uint16_t message_id, const char *sounds_str)
 {
 	char *search;
 	char *str;
 	char *cur_token;
 	char *next_token;
 
-	u16b sound_id = 0;
+	uint16_t sound_id = 0;
 
-	u32b hash;
+	uint32_t hash;
 	int i;
 	bool found = false;
 

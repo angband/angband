@@ -45,8 +45,8 @@ int teardown_tests(void *state) {
 
 static int test_empty(void *state) {
 	const char *txt;
-	u16b n, mtype;
-	byte color;
+	uint16_t n, mtype;
+	uint8_t color;
 
 	messages_free();
 	messages_init();
@@ -75,11 +75,11 @@ static int test_empty(void *state) {
 
 static int test_add(void *state) {
 	const char *m1 = "msg1";
-	u16b t1 = MSG_GENERIC;
+	uint16_t t1 = MSG_GENERIC;
 	const char *m2 = "msg2";
-	u16b t2 = MSG_HIT;
+	uint16_t t2 = MSG_HIT;
 	const char *txt;
-	u16b n, mtype;
+	uint16_t n, mtype;
 
 	messages_free();
 	messages_init();
@@ -205,7 +205,7 @@ static int test_fill(void *state) {
 	int i = 0;
 	const char *txt;
 	char buf[16];
-	u16b n, n2, j;
+	uint16_t n, n2, j;
 
 	messages_free();
 	messages_init();
@@ -253,7 +253,7 @@ static int test_many_repeat(void *state)
 {
 	int i = 0;
 	const char *txt;
-	u16b n, mtype;
+	uint16_t n, mtype;
 
 	messages_free();
 	messages_init();
@@ -294,7 +294,7 @@ static int test_many_repeat(void *state)
 }
 
 static int test_color(void *state) {
-	byte color;
+	uint8_t color;
 
 	messages_free();
 	messages_init();
@@ -330,7 +330,7 @@ static int test_msg(void *state) {
 	const char expected1[] = "%   abcde   1  +2  3 4  ";
 	const char expected2[] = "ab      -7";
 	const char *txt;
-	u16b n, mtype;
+	uint16_t n, mtype;
 
 	reset_event_counters(st);
 	messages_free();
@@ -398,7 +398,7 @@ static int test_sound(void *state) {
 static int test_bell(void *state) {
 	struct test_message_event_state *st = state;
 	const char *txt;
-	u16b n;
+	uint16_t n;
 
 	reset_event_counters(st);
 	messages_free();
@@ -428,7 +428,7 @@ static int test_msgt(void *state)
 	const char expected1[] = "msg1";
 	const char expected2[] = "msg2";
 	const char *txt;
-	u16b n, mtype;
+	uint16_t n, mtype;
 
 	reset_event_counters(st);
 	messages_free();

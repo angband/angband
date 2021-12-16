@@ -41,7 +41,7 @@
 
 struct sound_data {
 	char *name;
-	u32b hash;
+	uint32_t hash;
 	bool loaded;
 	void *plat_data;
 };

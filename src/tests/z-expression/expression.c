@@ -121,7 +121,7 @@ static int test_parse_failure(void *state)
 	ok;
 }
 
-static s32b base_value_2(void)
+static int32_t base_value_2(void)
 {
 	return 9;
 }

@@ -43,7 +43,7 @@
  */
 void textui_init(void)
 {
-	u32b default_window_flag[ANGBAND_TERM_MAX];
+	uint32_t default_window_flag[ANGBAND_TERM_MAX];
 
 	if (!play_again) {
 		/* Initialize graphics info and basic pref data */
@@ -85,7 +85,7 @@ void textui_init(void)
 	}
 
 	/* initialize window options that will be overridden by the savefile */
-	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
+	memset(window_flag, 0, sizeof(uint32_t)*ANGBAND_TERM_MAX);
 	memset(default_window_flag, 0, sizeof default_window_flag);
 	if (ANGBAND_TERM_MAX > 1) default_window_flag[1] = (PW_MESSAGE);
 	if (ANGBAND_TERM_MAX > 2) default_window_flag[2] = (PW_INVEN);

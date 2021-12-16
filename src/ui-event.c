@@ -118,7 +118,7 @@ static int dehex(char c)
 void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 {
 	size_t cur = 0;
-	byte mods = 0;
+	uint8_t mods = 0;
 
 	memset(buf, 0, len * sizeof *buf);
 
@@ -126,7 +126,7 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 	{ \
 		int p = (pos); \
 		keycode_t c = (cod); \
-		byte m = (mod); \
+		uint8_t m = (mod); \
 \
 		if ((m & KC_MOD_CONTROL) && ENCODE_KTRL(c)) { \
 			m &= ~KC_MOD_CONTROL; \
@@ -364,7 +364,7 @@ bool event_is_key(ui_event e, keycode_t key)
 /**
  * Check if a UI event matches a certain mouse button (1, 2, 3)
  */
-bool event_is_mouse(ui_event e, byte button)
+bool event_is_mouse(ui_event e, uint8_t button)
 {
 	return e.type == EVT_MOUSE && e.mouse.button == button;
 }
@@ -373,7 +373,7 @@ bool event_is_mouse(ui_event e, byte button)
  * Check if a UI event matches a certain mouse button (1, 2, 3) and has
  * specific modifiers (KC_MOD_*)
  */
-bool event_is_mouse_m(ui_event e, byte button, byte mods)
+bool event_is_mouse_m(ui_event e, uint8_t button, uint8_t mods)
 {
 	return e.type == EVT_MOUSE && e.mouse.button == button && (e.mouse.mods & mods);
 }

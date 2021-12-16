@@ -27,23 +27,23 @@
  */
 typedef struct monster_lore
 {
-	int ridx;				/* Index of monster race */
+	int ridx;			/* Index of monster race */
 
-	u16b sights;			/* Count sightings of this monster */
-	u16b deaths;			/* Count deaths from this monster */
+	uint16_t sights;		/* Count sightings of this monster */
+	uint16_t deaths;		/* Count deaths from this monster */
 
-	u16b pkills;			/* Count monsters killed in this life */
-	u16b thefts;			/* Count objects stolen in this life */
-	u16b tkills;			/* Count monsters killed in all lives */
+	uint16_t pkills;		/* Count monsters killed in this life */
+	uint16_t thefts;		/* Count objects stolen in this life */
+	uint16_t tkills;		/* Count monsters killed in all lives */
 
-	byte wake;				/* Number of times woken up (?) */
-	byte ignore;			/* Number of times ignored (?) */
+	uint8_t wake;			/* Number of times woken up (?) */
+	uint8_t ignore;			/* Number of times ignored (?) */
 
-	byte drop_gold;			/* Max number of gold dropped at once */
-	byte drop_item;			/* Max number of item dropped at once */
+	uint8_t drop_gold;		/* Max number of gold dropped at once */
+	uint8_t drop_item;		/* Max number of item dropped at once */
 
-	byte cast_innate;		/* Max number of innate spells seen */
-	byte cast_spell;		/* Max number of other spells seen */
+	uint8_t cast_innate;		/* Max number of innate spells seen */
+	uint8_t cast_spell;		/* Max number of other spells seen */
 
 	struct monster_blow *blows; /* Knowledge of blows */
 

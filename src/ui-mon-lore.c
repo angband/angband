@@ -37,7 +37,7 @@
  */
 void lore_title(textblock *tb, const struct monster_race *race)
 {
-	byte standard_attr, optional_attr;
+	uint8_t standard_attr, optional_attr;
 	wchar_t standard_char, optional_char;
 
 	assert(race);

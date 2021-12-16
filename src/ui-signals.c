@@ -23,7 +23,7 @@
 #include "ui-signals.h"
 #include "ui-term.h"
 
-s16b signal_count;		/* Count interrupts ("I'm going to count to five") */
+int16_t signal_count;	/* Count interrupts ("I'm going to count to five") */
 
 #ifndef WINDOWS
 

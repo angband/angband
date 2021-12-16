@@ -45,7 +45,7 @@ enum {
 
 struct timed_grade {
 	int grade;
-	byte color;
+	uint8_t color;
 	int max;
 	char *name;
 	char *up_msg;
@@ -58,8 +58,8 @@ struct timed_grade {
  */
 struct timed_effect_data {
 	const char *name;
-	u32b flag_redraw;
-	u32b flag_update;
+	uint32_t flag_redraw;
+	uint32_t flag_update;
 
 	int index;
 	char *desc;
