@@ -81,7 +81,7 @@ extern struct command_list cmds_all[];
 extern struct keypress *inkey_next;
 extern uint32_t inkey_scan;
 extern bool inkey_flag;
-extern uint16_t lazymove_delay;
+extern uint8_t lazymove_delay;
 extern bool msg_flag;
 extern bool arg_force_name;
 

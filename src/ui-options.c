@@ -1148,8 +1148,8 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 
 	/* Process input */
 	if (res) {
-		uint16_t delay = (uint16_t)strtoul(tmp, NULL, 0);
-		player->opts.lazymove_delay = MIN(delay, 255);
+		unsigned long delay = strtoul(tmp, NULL, 0);
+		player->opts.lazymove_delay = (uint8_t) MIN(delay, 255);
 	}
 
 	screen_load();

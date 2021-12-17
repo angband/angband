@@ -1014,8 +1014,10 @@ static errr finish_parse_player_prop(struct parser *p) {
 	new = player_abilities;
 	while (embryo) {
 		if (streq(embryo->ability.type, "element")) {
-			size_t i;
-			for (i = 0; i < N_ELEMENTS(list_element_names) - 1; i++) {
+			uint16_t i, n;
+			assert(N_ELEMENTS(list_element_names) < 65536);
+			n = (uint16_t) N_ELEMENTS(list_element_names);
+			for (i = 0; i < n - 1; i++) {
 				char *name = projections[i].name;
 				new->index = i;
 				new->type = string_make(embryo->ability.type);
@@ -1030,7 +1032,7 @@ static errr finish_parse_player_prop(struct parser *p) {
 					string_free(name);
 					boundui_cursor = boundui_cursor->next;
 				}
-				if ((i != N_ELEMENTS(list_element_names) - 2) || embryo->next){
+				if ((i != n - 2) || embryo->next) {
 					previous = new;
 					new = mem_zalloc(sizeof(*new));
 					previous->next = new;

@@ -295,7 +295,7 @@ static void wiz_drop_object(struct object *obj)
 
 	/* Mark as cheat and where it was created */
 	obj->origin = ORIGIN_CHEAT;
-	obj->origin_depth = player->depth;
+	obj->origin_depth = convert_depth_to_origin(player->depth);
 
 	/* Drop the object from heaven. */
 	drop_near(cave, &obj, 0, player->grid, true, true);

@@ -513,10 +513,13 @@ void wr_player(void)
 
 void wr_ignore(void)
 {
-	size_t i, j, n;
+	size_t i;
+	uint16_t j, k, n;
+	int nrune;
 
 	/* Write number of ignore bytes */
-	wr_byte(ignore_size);
+	assert(ignore_size <= 255);
+	wr_byte((uint8_t)ignore_size);
 	for (i = 0; i < ignore_size; i++)
 		wr_byte(ignore_level[i]);
 
@@ -583,18 +586,20 @@ void wr_ignore(void)
 
 	/* Write the current number of rune auto-inscriptions */
 	j = 0;
-	n = max_runes();
-	for (i = 0; i < n; i++)
-		if (rune_note(i))
+	nrune = max_runes();
+	assert(nrune >= 0 && nrune <= 65535);
+	n = (uint16_t) MAX(0, MIN(65535, nrune));
+	for (k = 0; k < n; k++)
+		if (rune_note(k))
 			j++;
 
 	wr_u16b(j);
 
 	/* Write the rune autoinscriptions array */
-	for (i = 0; i < n; i++) {
-		if (rune_note(i)) {
-			wr_s16b(i);
-			wr_string(quark_str(rune_note(i)));
+	for (k = 0; k < n; k++) {
+		if (rune_note(k)) {
+			wr_s16b(k);
+			wr_string(quark_str(rune_note(k)));
 		}
 	}
 

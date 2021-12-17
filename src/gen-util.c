@@ -441,7 +441,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	new_obj = make_object(c, level, good, great, false, &rating, tval);
 	if (!new_obj) return;
 	new_obj->origin = origin;
-	new_obj->origin_depth = c->depth;
+	new_obj->origin_depth = convert_depth_to_origin(c->depth);
 
 	/* Give it to the floor */
 	if (!floor_carry(c, grid, new_obj, &dummy)) {
@@ -481,7 +481,7 @@ void place_gold(struct chunk *c, struct loc grid, int level, uint8_t origin)
 
 	money = make_gold(level, "any");
 	money->origin = origin;
-	money->origin_depth = level;
+	money->origin_depth = convert_depth_to_origin(level);
 
 	if (!floor_carry(c, grid, money, &dummy)) {
 		object_delete(c, NULL, &money);

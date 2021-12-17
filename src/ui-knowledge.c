@@ -298,7 +298,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 		wchar_t *cur_char_ptr, int col, int row, int *delay)
 {
 	static uint8_t attr_old = 0;
-	static char char_old = 0;
+	static wchar_t char_old = 0;
 
 	/* These are the distance we want to maintain between the
 	 * cursor and borders. */
