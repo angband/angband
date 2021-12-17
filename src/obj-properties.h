@@ -34,7 +34,7 @@
  */
 enum
 {
-	#define TV(a, b, c) TV_##a,
+	#define TV(a, b) TV_##a,
 	#include "list-tvals.h"
 	#undef TV
 
