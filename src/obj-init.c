@@ -763,11 +763,16 @@ static errr run_parse_slay(struct parser *p) {
 static errr finish_parse_slay(struct parser *p) {
 	struct slay *slay, *next = NULL;
 	int count = 1;
+	errr result = PARSE_ERROR_NONE;
 
 	/* Count the entries */
 	z_info->slay_max = 0;
 	slay = parser_priv(p);
 	while (slay) {
+		if (z_info->slay_max >= 254) {
+			result = PARSE_ERROR_TOO_MANY_ENTRIES;
+			break;
+		}
 		z_info->slay_max++;
 		slay = slay->next;
 	}
@@ -775,16 +780,17 @@ static errr finish_parse_slay(struct parser *p) {
 	/* Allocate the direct access list and copy the data to it */
 	slays = mem_zalloc((z_info->slay_max + 1) * sizeof(*slay));
 	for (slay = parser_priv(p); slay; slay = next, count++) {
-		memcpy(&slays[count], slay, sizeof(*slay));
 		next = slay->next;
-		slays[count].next = NULL;
-
+		if (count <= z_info->slay_max) {
+			memcpy(&slays[count], slay, sizeof(*slay));
+			slays[count].next = NULL;
+		}
 		mem_free(slay);
 	}
 	z_info->slay_max += 1;
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_slay(void)
@@ -927,11 +933,16 @@ static errr run_parse_brand(struct parser *p) {
 static errr finish_parse_brand(struct parser *p) {
 	struct brand *brand, *next = NULL;
 	int count = 1;
+	errr result = PARSE_ERROR_NONE;
 
 	/* Count the entries */
 	z_info->brand_max = 0;
 	brand = parser_priv(p);
 	while (brand) {
+		if (z_info->brand_max >= 254) {
+			result = PARSE_ERROR_TOO_MANY_ENTRIES;
+			break;
+		}
 		z_info->brand_max++;
 		brand = brand->next;
 	}
@@ -939,16 +950,17 @@ static errr finish_parse_brand(struct parser *p) {
 	/* Allocate the direct access list and copy the data to it */
 	brands = mem_zalloc((z_info->brand_max + 1) * sizeof(*brand));
 	for (brand = parser_priv(p); brand; brand = next, count++) {
-		memcpy(&brands[count], brand, sizeof(*brand));
 		next = brand->next;
-		brands[count].next = NULL;
-
+		if (count <= z_info->brand_max) {
+			memcpy(&brands[count], brand, sizeof(*brand));
+			brands[count].next = NULL;
+		}
 		mem_free(brand);
 	}
 	z_info->brand_max += 1;
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_brand(void)
@@ -1260,11 +1272,16 @@ static errr run_parse_curse(struct parser *p) {
 static errr finish_parse_curse(struct parser *p) {
 	struct curse *curse, *next = NULL;
 	int count = 1;
+	errr result = PARSE_ERROR_NONE;
 
 	/* Count the entries */
 	z_info->curse_max = 0;
 	curse = parser_priv(p);
 	while (curse) {
+		if (z_info->curse_max >= 254) {
+			result = PARSE_ERROR_TOO_MANY_ENTRIES;
+			break;
+		}
 		z_info->curse_max++;
 		curse = curse->next;
 	}
@@ -1272,16 +1289,17 @@ static errr finish_parse_curse(struct parser *p) {
 	/* Allocate the direct access list and copy the data to it */
 	curses = mem_zalloc((z_info->curse_max + 1) * sizeof(*curse));
 	for (curse = parser_priv(p); curse; curse = next, count++) {
-		memcpy(&curses[count], curse, sizeof(*curse));
 		next = curse->next;
-		curses[count].next = NULL;
-
+		if (count <= z_info->curse_max) {
+			memcpy(&curses[count], curse, sizeof(*curse));
+			curses[count].next = NULL;
+		}
 		mem_free(curse);
 	}
 	z_info->curse_max += 1;
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_curse(void)
