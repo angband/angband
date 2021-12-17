@@ -504,7 +504,8 @@ struct player {
 	const struct player_race *race;
 	const struct player_class *class;
 
-	struct loc grid;/* Player location */
+	struct loc grid;	/* Player location */
+	struct loc old_grid;/* Player location before leaving for an arena */
 
 	uint8_t hitdie;		/* Hit dice (sides) */
 	uint8_t expfact;	/* Experience factor */

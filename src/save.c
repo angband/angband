@@ -483,7 +483,8 @@ void wr_player(void)
 	wr_s16b(player->recall_depth);
 
 	/* More info */
-	wr_s16b(0);	/* oops */
+	wr_byte(player->old_grid.y);
+	wr_byte(player->old_grid.x);
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_byte(0);

@@ -1831,6 +1831,7 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 
 	/* Head to the arena */
 	player->upkeep->arena_level = true;
+	player->old_grid = player->grid;
 	dungeon_change_level(player, player->depth);
 	return true;
 }

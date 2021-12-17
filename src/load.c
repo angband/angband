@@ -654,7 +654,7 @@ int rd_quests(void)
 int rd_player(void)
 {
 	int i;
-	uint8_t num;
+	uint8_t tmp8u, num;
 	uint8_t stat_max = 0;
 	char buf[80];
 	struct player_race *r;
@@ -797,7 +797,11 @@ int rd_player(void)
 				  sizeof(player->died_from));
 
 	/* More info */
-	strip_bytes(7);
+	rd_byte(&tmp8u);
+	player->old_grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	player->old_grid.x = tmp8u;
+	strip_bytes(5);
 	rd_byte(&player->unignoring);
 	rd_s16b(&player->deep_descent);
 
@@ -1274,7 +1278,7 @@ static int rd_dungeon_aux(struct chunk **c)
 
 	/* Header info */
 	rd_string(name, sizeof(name));
-	if (streq(name, "arena")) {
+	if (streq(name, "arena") && (*c == cave)) {
 		player->upkeep->arena_level = true;
 	}
 	rd_u16b(&height);
