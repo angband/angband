@@ -584,6 +584,23 @@ int compare_items(const struct object *o1, const struct object *o2)
 
 
 /**
+ * Convert a depth from a chunk or player to a value appropriate for an
+ * object's origin.
+ *
+ * \param depth is the value to convert.
+ *
+ * Necessary since savefiles use 16-bit type to record the depth of a player
+ * or chunk and uint8_t to record the origin depth.
+ */
+uint8_t convert_depth_to_origin(int depth)
+{
+	if (depth < 0) return 0;
+	if (depth > 255) return 255;
+	return (uint8_t) depth;
+}
+
+
+/**
  * Determine if an object has charges
  */
 bool obj_has_charges(const struct object *obj)
