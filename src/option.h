@@ -63,7 +63,7 @@ struct player_options {
 	bool opt[OPT_MAX];		/**< Options */
 
 	uint8_t hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
-	uint16_t lazymove_delay;	/**< Delay in cs before moving to allow another key */
+	uint8_t lazymove_delay;		/**< Delay in cs before moving to allow another key */
 	uint8_t delay_factor;		/**< Delay factor (0 to 9) */
 
 	uint8_t name_suffix;		/**< Numeric suffix for player name */
