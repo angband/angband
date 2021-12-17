@@ -279,7 +279,7 @@ int16_t expression_add_operations_string(expression_t *expression,
 {
 	char *parse_string;
 	expression_operation_t operations[EXPRESSION_MAX_OPERATIONS];
-	size_t count = 0, i = 0;
+	int16_t count = 0, i = 0, nmax = EXPRESSION_MAX_OPERATIONS;
 	char *token = NULL;
 	expression_operator_t parsed_operator = OPERATOR_NONE;
 	expression_operator_t current_operator = OPERATOR_NONE;
@@ -325,7 +325,7 @@ int16_t expression_add_operations_string(expression_t *expression,
 
 	while (token != NULL) {
 		char *end = NULL;
-		int16_t value = strtol(token, &end, 0);
+		long value = strtol(token, &end, 0);
 
 		if (end == token) {
 			parsed_operator = expression_operator_from_token(token);
@@ -355,6 +355,10 @@ int16_t expression_add_operations_string(expression_t *expression,
 			current_operator = parsed_operator;
 		}
 		else if (state == EXPRESSION_STATE_OPERAND) {
+			if (value < -32768 || value > 32767) {
+				string_free(parse_string);
+				return EXPRESSION_ERR_OPERAND_OUT_OF_BOUNDS;
+			}
 			/* Try to catch divide by zero. */
 			if (current_operator == OPERATOR_DIV && value == 0) {
 				string_free(parse_string);
@@ -363,12 +367,12 @@ int16_t expression_add_operations_string(expression_t *expression,
 
 			/* Flush the operator and operand pair. */
 			operations[count].operator = current_operator;
-			operations[count].operand = value;
+			operations[count].operand = (int16_t)value;
 			count++;
 		}
 
 		/* Limit the number of expressions, saving what we have. */
-		if (count >= N_ELEMENTS(operations))
+		if (count >= nmax)
 			break;
 
 		token = strtok(NULL, EXPRESSION_DELIMITER);

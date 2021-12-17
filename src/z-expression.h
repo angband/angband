@@ -27,6 +27,7 @@ enum expression_err_e {
 	EXPRESSION_ERR_EXPECTED_OPERATOR = -3,
 	EXPRESSION_ERR_EXPECTED_OPERAND = -4,
 	EXPRESSION_ERR_DIVIDE_BY_ZERO = -5,
+	EXPRESSION_ERR_OPERAND_OUT_OF_BOUNDS = -6
 };
 
 typedef struct expression_operation_s expression_operation_t;
