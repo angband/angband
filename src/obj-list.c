@@ -370,7 +370,6 @@ void object_list_format_name(const object_list_entry_t *entry,
 	bool has_singular_prefix;
 	bool los = false;
 	int field;
-	uint8_t old_number;
 	struct loc pgrid = player->grid;
 	struct object *base_obj;
 	struct loc grid;
@@ -414,16 +413,11 @@ void object_list_format_name(const object_list_entry_t *entry,
 	field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
 	/*
-	 * Because each entry points to a specific object and not something more
-	 * general, the number of similar objects we counted has to be swapped in.
-	 * This isn't an ideal way to do this, but it's the easiest way until
-	 * object_desc is more flexible.
+	 * Pass the accumulated number via object_desc()'s ODESC_ALTNUM
+	 * mechanism:  it's in the high 16 bits of the mode.
 	 */
-	old_number = entry->object->number;
-	entry->object->number = entry->count[field];
-	object_desc(name, sizeof(name), base_obj, ODESC_PREFIX | ODESC_FULL,
-		player);
-	entry->object->number = old_number;
+	object_desc(name, sizeof(name), base_obj, ODESC_PREFIX | ODESC_FULL |
+		ODESC_ALTNUM | (entry->count[field] << 16), player);
 
 	/* The source string for strtok() needs to be set properly, depending on
 	 * when we use it. */
