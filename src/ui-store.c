@@ -268,7 +268,7 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 {
 	struct object *obj;
 	int32_t x;
-	int desc = ODESC_PREFIX;
+	uint32_t desc = ODESC_PREFIX;
 
 	char o_name[80];
 	char out_val[160];
@@ -742,7 +742,7 @@ static void store_examine(struct store_context *ctx, int item)
 	char header[120];
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
-	int odesc_flags = ODESC_PREFIX | ODESC_FULL;
+	uint32_t odesc_flags = ODESC_PREFIX | ODESC_FULL;
 
 	if (item < 0) return;
 
