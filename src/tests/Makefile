@@ -33,6 +33,8 @@ TESTPROGS := $(TESTPROGS:%=%.exe)
 
 TESTOBJS += test-utils.o unit-test.o
 
+include Makefile.inc
+
 build : $(TESTPROGS)
 
 run : build
