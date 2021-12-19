@@ -57,7 +57,12 @@ If you want to rerun just one part, say monster/attack, of the unit tests,
 that's most easily done by::
 
     cd src/tests
-    bin/tests/monster/attack
+    monster/attack.exe
+
+Previous versions put the test executables in src/tests/bin.  With those
+versions, the second line above would be::
+
+    bin/monster/attack
 
 The reason for changing directories to src/tests is to match up with how the
 tests were compiled:  they expect Angband's configuration data to be in
@@ -269,6 +274,11 @@ do this::
 
 If you want to rerun just one part, say monster/attack, of the unit tests,
 that's most easily done by directly running from the top-level directory::
+
+    src/tests/monster/attack.exe
+
+Previous versions put the test executables in src/tests/bin.  With those
+versions, the line above would be::
 
     src/tests/bin/monster/attack
 
