@@ -39,6 +39,9 @@ tests: $(PROGNAME).o
 		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(LIBS)" \
 		$(MAKE) -C tests all
 
+test-depgen:
+	env CC="$(CC)" $(MAKE) -C tests depgen
+
 test-clean:
 	env RM="$(RM)" $(MAKE) -C tests clean
 
