@@ -16,6 +16,9 @@ if test $# -gt 0 ; then
 	fi
 fi
 currdir=`pwd`
+# Need to suppress extra output if make is GNU make.
+GNUMAKEFLAGS=--no-print-directory
+export GNUMAKEFLAGS
 for suite in `find . -mindepth 2 -maxdepth 2 -name suite.mk \! -type d -print` ; do
 	tempmk=/var/tmp/list-tests-$$.mk
 	cat >${tempmk} <<EOF
