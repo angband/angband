@@ -320,10 +320,12 @@ Stats
 
 The stats generation code aims to make it easy to analyze object generation,
 monster generation, and other Angband processes suitable for Monte Carlo
-simulation. The supplied perl script (run-stats) repeatedly invokes the 
-angband executable with the stats pseudo-visual module. Each call initializes
-a player, walks her down the dungeon, and, for each dungeon level between one
-and ninety-nine, kills all the monsters on the generated map and dumps 
-information about the monsters and objects therein. The perl script then
-collects this information and outputs statistics about it as desired.
-
+simulation.  The stats pseudo-visual module will repeatedly create a character,
+walk her down the dungeon, and, for each dungeon level, kill the monsters
+there and dump information about the monsters and objects.  The end result
+is a SQLite3 database, written to the stats subdirectory of Angband's user
+directory.  A similar procedure is used by the ``S`` debugging command.  It
+will generate a text file summarizing the monsters and objects generated.
+That output may be more accessible, since one doesn't have to deal with the
+structure of the database, but the database stores finer-grained classifications
+of the objects and monsters.
