@@ -2,6 +2,73 @@
 
 This document is a guide to contributing to Angband.  It is largely a compilation of previous advice from various authors, updated as needed.
 
+## Offering your contribution to Angband
+
+When you've fixed a bug or implemented a new feature, please let us know.  The preferred way to do this is to submit a pull request on Github.
+
+### General git knowledge
+
+git is a version control system designed to keep track of the progress of a software codebase.  This advice assumes you are using git on the command line (a terminal in Linux or MacOS, or a tool like Github's git shell for Windows).
+
+To create a local copy of the official angband repository, use `git clone git://github.com/angband/angband.git`.  But if you want to participate in development, it is best not to do this straight away.  Instead, get an account at ​[Github](http://github.com), go to the official angband/angband repository and click Fork. This will create a new repository at ​`https://github.com/yourlogin/angband`.  This is the one you should clone locally using `git clone git://github.com/yourlogin/angband.git`.
+
+This will create a local repository with several branches. Use `git branch -a` to see them:
+
+* master
+* origin/master
+* (release branches and other things you don't need to worry about)
+
+Do NOT do your work in your master branch: this is asking for trouble.  Create a new branch using `git checkout -b newbranch`, and do your work there.  Use `git commit -a` to commit your changes to your new branch and then build and test them.
+
+Once you have tested your commits to your satisfaction, you can share them.  Assuming you have created a new branch and made your changes as described above, you can publish your changes to the world by using `git push origin newbranch` - this will make your new branch appear on Github for others to test. (It is advisable, but not essential, to use ssh keys for access to Github.)
+
+Keep your thinking clear: separate your work into different branches for different things.  Create a branch called 'docs' if you want to work on some docs.  Create one called 'stores' if you want to make changes to stores.  And so on.  There is no limit to the number of branches you can have, and you can use `git checkout branchname` to switch between branches at any time. (Ideally you should commit any changes in the current branch before switching branches, but git does not like people undoing things so read up on `git stash` if you need to switch branches and don't want to either commit or lose the current changes.)
+
+### Submitting a pull request
+
+To submit a pull request, you will need to have a Github account and a repository "forked" from the offical angband repository.  We will call the repository "yourfork" and the branch with the bugfix or new feature "yourbranch".  We assume that you have called your remote of the official repo "official".
+
+1. When you've finished and tested your work, publish it to Github using `git push origin yourbranch`.  Don't forget to rebase and fix any conflicts before pushing if necessary (`git fetch official; git rebase official/master`) - incorporating your work is much easier if it applies cleanly to the official/master branch.  Note that you must rebase before pushing, as rebase changes the commit IDs - this doesn't matter at all if the only place they exist is in your local repo. 
+
+   * Please make sure that yourbranch contains only commits you want merged to the official repository.  If you have not kept your branches separate and there are commits relating to local changes or other work in yourbranch, things will get messy.  To solve this, create a copy of master (`git checkout official/master; git checkout -b yourbranch2`) and cherry-pick the commits you actually want to offer up (this method can also be used to avoid rebase conflicts, or at least isolate which commits are causing them.)  From yourbranch2 you can use `git rebase -i yourbranch` as a sort of batch cherry-pick mechanism: it offers you a list of all the commits which are in yourbranch but not in master, and you can choose the ones to add.  Note that rebase will say "nothing to do" if yourbranch will apply cleanly (i.e. fast-forward merge) to master - so this is a good test.
+
+2. Go to your Github account in your browser and click on your fork. Don't forget to click the Branches tab and make sure you're looking at the right branch (Github will always default to the master branch).  Note that if you created yourbranch2 as described above, in order to tidy it up and offer only the right commits, then this is the one you need to look at. 
+
+3. Click the "Pull Request" button, which is up near the top-right (just below the Search box). If you don't get a screen inviting you to write a description of the pull request, something has gone wrong (maybe you were not looking at the right branch, or your push didn't work). 
+
+4. Write a description of what you're offering in the pull request. Please include details of any remaining issues (e.g. dependent on other tasks) or further related work you intend to do. Also, please include the issue number(s) (with a `#` in front of it) of any [issue](https://github.com/angband/angband/issues) that the request addresses (even if only partially).
+
+5. Click the "Send Pull Request" button.
+
+#### After you've issued the pull request
+
+Often you'll think of some important fix or change after you've submitted a pull request. Don't worry - Github handles this very cleanly.  Just commit your additional changes to the branch from which you issued the pull request (i.e. from yourbranch, or from yourbranch2 if you had to cherry-pick and tidy it up), and push again.  Github will automatically add those commits to the pull request.
+
+Please note, though, that you cannot rebase after submitting a pull request.  But that's not really your problem - once you've submitted the request, it's the Angband development team's job to review and merge it as soon as we can.  If we merge something else first, we'll fix any merge conflicts when we merge yours.
+
+After your work is merged, please don't continue working on that branch.  Even if you're continuing development of the same feature, please fetch from official/master and start a new branch from there for your next pull request (there is no limit to the number of branches you can make).  If for any reason you don't want to do this, then you must rebase your branch on official/master before pushing and offering up your next pull request.  You should use rebase instead of merging from official/master, to avoid a proliferation of merge commits.
+
+So the ideal loop is:
+
+1. `git fetch official/master`
+2. `git checkout official/master`
+3. `git checkout -b newbranch`
+4. ... do your work in newbranch ...
+5. `git fetch official/master` again (to see if it has updated while you were working) 
+   * (if it has) `git rebase official/master` (and fix any conflicts)
+6. `git push origin newbranch`
+7. Go to Github and open pull request
+8. Wait for pull request to be merged (you can push more commits while waiting)
+9. Go back to 1 and start again
+
+### General tips
+
+Don't be afraid to create and delete lots of branches.  They're totally expendable, and a new branch is a fresh start.
+
+Always update your local copy of the official repository (`git fetch official`) before pushing your work.  If possible, use `git rebase official/master` to ensure that your changes are on top of the very latest commits from the official repo - that will make them easier to merge, and is much neater than merging official branches into your branches and having the Angband development team merge them back again.  If you are nervous about trying rebase on a branch with lots of your hard work in it, create a new copy of that branch first - so if the rebase goes horribly wrong, your original branch is untouched.  Do not use rebase if you have published your branch on Github though, as this will mess up anyone who is tracking it.
+
+When submitting pull requests on Github, please ensure that you choose only the commits relevant to this request - try and avoid choosing merge commits or commits which are part of another pull request. 
+
 ## Coding Guidelines
 
 This section describes what Angband code and its documentation should look like.  You may also want to read the old [Angband security guide](/src/doc/security.txt), although the default build configuration no longer uses setgid.
