@@ -1,0 +1,278 @@
+                        The Angband Security Guide
+                        --------------------------
+
+             version 0.2 (1st March 2001) [incomplete Draft]
+
+                   by Robert Ruehlmann < rr9@angband.org >
+
+
+==========================================================================
+1. Background
+==========================================================================
+
+1.1 Running a program with more privileges than the user normally has
+---------------------------------------------------------------------
+
+Angband uses a highscore file to record the standings of all the players.
+The problem with such a file is that the game must be able to write to it,
+while the players themselves can't be allowed to cheat by modifying the
+highscores directly.
+
+The savefiles have the same problem.  Players can't be allowed to change
+them, but the game needs the permission to do so.  In addition the player
+shouldn't even be able to read the savefiles.  Reading the savefiles would
+allow finding out secret information and give an unfair advantage.
+
+Normally a program runs with the permissions of the user who starts it.
+Making a program setuid or setgid changes this and grants the program the
+privileges of the owner of the program (setuid) or the group the
+program belongs to (setgid).  This provides a way to solve the problems
+mentioned above.
+
+These extra privileges are a target for attackers.
+
+For Angband the use of setgid is recommended since it grants less
+privileges than setuid.  An attacker who manages to hack into the game
+just gains group membership instead of access as user owning the game.
+For example group access doesn't allow changing the ownership of files.
+
+- What kind of vulnerabilities are there?
+
+  - Buffer overflows
+  - Format string attacks
+  - Allowing the user write access to parts of the programs memory
+  - Running user-specified programs without dropping the privileges first
+  - ...
+
+
+1.2 Reading data from untrusted sources
+---------------------------------------
+
+Even if the game doesn't run with additional privileges a malicious user
+can still attack you directly to gain access to your account.
+
+Most computer users know that running executable files or other "active
+content" like Visual Basic scripts (remember Loveletter?) can be
+dangerous.  But most people overlook the fact that "non-executable" data
+can be dangerous too.  Bugs in programs like buffer overflows or format
+string vulnerabilities can allow an attacker to hide executable code
+inside the data.
+
+Possible data types that might be vulnerable are the binary savefiles and
+scores, but the processing of ASCII files like pref-files and Angband's
+screen-dumps may also contain hidden bugs.
+
+It may sound paranoid, but you should consider everybody as a source of
+untrusted data.  Always remember that even your best friend can
+unknowingly forward a savefile touched by a cracker to you.
+
+See also section 2.1 and 2.2
+
+
+Further reading:
+
+Malicious Data and Computer Security
+http://www.fish.com/security/maldata.html
+
+
+1.3 Writing files in world-writeable directories
+------------------------------------------------
+
+Writing to a directory that other users have write access to can allow an
+attacker to trick the program into following a link and overwriting files
+of the user running the program.  This is known as a "symlink attack".
+
+
+
+==========================================================================
+2. Possible security holes
+==========================================================================
+
+2.1 Buffer overflows
+--------------------
+
+A buffer overflow is the result of stuffing more data into a buffer than
+it can handle.
+
+Buffer overflows usually happen when processing strings, since that is the
+most common type of input in a program.  The C standard library provides
+many functions for manipulating strings and some of these functions don't
+perform boundary checking.  These dangerous string functions include
+strcat(), strcpy(), sprintf(), and vsprintf().
+
+Lets take a look at a small snippet of code:
+
+	char path[1024];
+	cptr env_path;
+
+	/* Get the environment variable */
+	env_path = getenv("ANGBAND_PATH");
+
+	if (env_path)
+	{
+		/* Use the angband_path, or a default */
+		strcpy(path, env_path);
+	}
+
+This snippet is a simplified version of the function that initializes the
+path to the lib/ directory of older Angband versions.  The getenv()
+function returns a pointer to the content of the "ANGBAND_PATH"
+environment variable.  This environment variable can be set by the user
+and has an unknown length. The strcpy() function takes the content of this
+variable and copies it character by character into the "path" buffer until
+it reaches a '\0' character in "env_path".  If "env_path" is longer than
+the 1024 characters that we allocated earlier, then strcpy() will happily
+write over the end of our buffer and overwrites parts of the stack.
+
+To prevent this bug you have to use functions that do bounds-checking
+instead like strncpy(), or check the length of the data before writing
+it to the buffer.
+
+The example above could be fixed by replacing the strcpy() call with the
+following snippet:
+
+	strncpy(path, env_path, 1024);
+	path[1023] = '\0';
+
+strncpy() takes an additional third argument containing the maximum length
+of the string to be copied.  Note that strncpy() doesn't automatically
+place a null character ('\0') at the end of the string if it is longer
+than the maximum, so the second line forces the string to be terminated.
+
+Advise:
+- Be paranoid.
+- Always do proper bounds-checking (not only in security relevant parts),
+  and check all user inputs especially carefully.  That also includes
+  command line arguments, environment variables, data from user-writeable
+  files, and even the name of the executable program.
+- Don't use strcpy() unless you are absolutely certain that it can't
+  overflow your buffer.  Use strncpy() instead and make sure to terminate
+  the result.
+- *Never ever* use the gets() function.  It is broken by design.
+- ...
+
+Further reading:
+
+Smashing The Stack For Fun And Profit
+http://www.2600.net/phrack/p49-14.html
+
+Buffer Overflows: Attacks and Defenses for the Vulnerability of the Decade
+http://immunix.org/StackGuard/discex00.pdf
+
+
+2.2 Allowing the user write access to parts of the programs memory
+------------------------------------------------------------------
+
+This kind of vulnerability is the result of not checking user input and
+using indices that are outside of the regular bounds of your data storage.
+This allows an attacker to write to random memory locations.  In many
+cases it is possible to replace parts of your executable code with
+malicious code pieces.
+
+One example is not checking the indices of monsters or objects when
+reading prf-files.  The attacker can specify an index that it outside the
+available range of monster indices and the game will happily access the
+illegal address and write the char/attr values there.
+
+Always be paranoid about bounds-checking all input processing functions.
+
+
+2.3 Allowing the user access to files that he shouldn't be able to access
+-------------------------------------------------------------------------
+
+When running setgid the game runs with more privileges than the user
+normally has.  This could allow the player to read or write files that
+he/she normally has no access to (like the savefiles).  Normally the game
+switches between the normal rights of the player and the enhanced rights
+provided by "setgid" depending on what file is accessed.  So savefiles and
+scorefiles are opened with the setgid rights while character dumps and
+*.prf files are opened with the normal rights of the player.
+
+If there is a bug in the switching between these two modes then the
+player could for example save a character dump over the savefile of
+another player or read a file that is readable by group games but not
+by the player.
+
+Angband 2.9.2 introduced a new approach to file access.
+
+In 2.9.2 the game drops all extra access rights granted by "setgid" at
+startup and grabs them only when it needs them to open a protected file.
+So most of the time the game is running without any extra rights and can
+read and write files exactly like the player could outside the game.  Only
+when it needs to access one of the protected files it switches on the
+extra rights, accesses the file with the rights of group "games", and then
+drops the rights again.
+
+In 2.9.1 and earlier it was the other way around.  The game grabbed the
+access rights at startup and dropped them when opening a file unless it
+needed the extra rights for the access.
+
+Old code that uses the "safe_setuid_grab()" and "safe_setuid_drop()"
+functions to turn off the extra rights for a file access has to be
+modified for Angband 2.9.2.  The old code dropped the rights, opened the
+file, and then grabbed the rights again.  With the new method the initial
+dropping of the rights does nothing since the rights already have been
+dropped by the game at startup.  Then the file is accessed without any
+additional rights.  And then the old code grabs the rights again.
+
+From this moment on the game holds the rights till it accesses a protected
+file like the savefile or scores and allows the player to access files
+with the additional rights granted by setgid!
+
+So the "safe_setuid_grab()" and "safe_setuid_drop()" calls have to be
+removed from the old code when you want to use it in Angband 2.9.2 or
+you'll introduce a security hole.
+
+
+==========================================================================
+A. Appendix
+==========================================================================
+
+A.1 Further reading
+-------------------
+
+Secure Programming for Linux and Unix HOWTO:
+http://dwheeler.com/secure-programs/
+
+Designing secure software
+http://www.sunworld.com/swol-04-1998/swol-04-security.html
+
+The Unix Secure Programming FAQ
+http://www.sunworld.com/sunworldonline/swol-08-1998/swol-08-security.html
+
+A Lab engineers check list for writing secure Unix code
+ftp://ftp.auscert.org.au/pub/auscert/papers/secure_programming_checklist/
+
+Make your software behave: Learning the basics of buffer overflows
+http://www-4.ibm.com/software/developer/library/overflows/index.html
+
+Secure UNIX Programming FAQ
+http://www.whitefang.com/sup/secure-faq.html
+
+Format String Attacks
+http://www.guardent.com/docs/FormatString.PDF
+
+How to find security holes
+http://www.dnaco.net/~kragen/security-holes.html
+
+Security Code Review Guidelines
+http://www.homeport.org/~adam/review.html
+
+
+A.2 Tools
+---------
+
+Fuzz Testing of Application Reliability
+http://www.cs.wisc.edu/~bart/fuzz/fuzz.html
+
+GCC bounds-checking patches
+http://web.inter.nl.net/hcc/Haj.Ten.Brugge/
+
+ITS4 - Software Security Tool
+http://www.cigital.com/its4/
+
+LCLint
+http://lclint.cs.virginia.edu/
+
+Electric Fence - malloc() debugger
+http://www.perens.com/FreeSoftware/
