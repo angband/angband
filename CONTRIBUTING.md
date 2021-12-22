@@ -4,7 +4,7 @@ This document is a guide to contributing to Angband.  It is largely a compilatio
 
 ## Coding Guidelines
 
-This section describes what Angband code and its documentation should look like.  You may also want to read the old [Angband security guide](http://thangorodrim.net/development/security.txt), although the default build configuration no longer uses setgid.
+This section describes what Angband code and its documentation should look like.  You may also want to read the old [Angband security guide](/src/doc/security.txt), although the default build configuration no longer uses setgid.
 
 ### Rules
 
