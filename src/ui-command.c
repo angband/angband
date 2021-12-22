@@ -303,13 +303,11 @@ void html_screenshot(const char *path, int mode)
 	int bg_colour = COLOUR_DARK;
 	wchar_t c = L' ';
 
-	const char *new_color_fmt = (mode == 0) ?
-					"<font color=\"#%02X%02X%02X\" style=\"background-color: #%02X%02X%02X\">"
-				 	: "[COLOR=\"#%02X%02X%02X\"]";
+	const char *new_color_fmt = "<font color=\"#%02X%02X%02X\" style=\"background-color: #%02X%02X%02X\">";
 	const char *change_color_fmt = (mode == 0) ?
 					"</font><font color=\"#%02X%02X%02X\" style=\"background-color: #%02X%02X%02X\">"
 					: "[/COLOR][COLOR=\"#%02X%02X%02X\"]";
-	const char *close_color_str = mode ==  0 ? "</font>" : "[/COLOR]";
+	const char *close_color_str = "</font>";
 
 	char *mbbuf;
 	ang_file *fp;
@@ -332,10 +330,22 @@ void html_screenshot(const char *path, int mode)
 		file_putf(fp, "  <meta='generator' content='%s'>\n", buildid);
 		file_putf(fp, "  <title>%s</title>\n", path);
 		file_putf(fp, "</head>\n\n");
-		file_putf(fp, "<body style='color: #fff; background: #000;'>\n");
+		file_putf(fp, "<body style='color: #%02X%02X%02X; background: #%02X%02X%02X;'>\n",
+			angband_color_table[COLOUR_WHITE][1],
+			angband_color_table[COLOUR_WHITE][2],
+			angband_color_table[COLOUR_WHITE][3],
+			angband_color_table[COLOUR_DARK][1],
+			angband_color_table[COLOUR_DARK][2],
+			angband_color_table[COLOUR_DARK][3]);
 		file_putf(fp, "<pre>\n");
 	} else {
-		file_putf(fp, "[CODE][TT][BC=black][COLOR=white]\n");
+		file_putf(fp, "[CODE][TT][BC=\"#%02X%02X%02X\"][COLOR=\"#%02X%02X%02X\"]\n",
+			angband_color_table[COLOUR_DARK][1],
+			angband_color_table[COLOUR_DARK][2],
+			angband_color_table[COLOUR_DARK][3],
+			angband_color_table[COLOUR_WHITE][1],
+			angband_color_table[COLOUR_WHITE][2],
+			angband_color_table[COLOUR_WHITE][3]);
 	}
 
 	/* Dump the screen */
@@ -361,9 +371,13 @@ void html_screenshot(const char *path, int mode)
 				assert((a >= BG_BLACK) && (a < BG_MAX * MAX_COLORS));
 			}
 
-			/* Color change */
-			if (oa != a) {
-				if (oa == COLOUR_WHITE) {
+			/*
+			 * Color change (for forum text, ignore changes if the character is
+			 * a space since the forum software strips [COLOR][/COLOR] elements that
+			 * only contain whitespace)
+			 */
+			if (oa != a && (mode == 0 || c != L' ')) {
+				if (oa == COLOUR_WHITE && mode == 0) {
 					/* From the default white to another color */
 					file_putf(fp, new_color_fmt,
 							  angband_color_table[fg_colour][1],
@@ -372,8 +386,9 @@ void html_screenshot(const char *path, int mode)
 							  angband_color_table[bg_colour][1],
 							  angband_color_table[bg_colour][2],
 							  angband_color_table[bg_colour][3]);
-				} else if (fg_colour == COLOUR_WHITE &&
-						   bg_colour == COLOUR_DARK) {
+				} else if (fg_colour == COLOUR_WHITE
+						&& bg_colour == COLOUR_DARK
+						&& mode == 0) {
 					/* From another color to the default white */
 					file_putf(fp, "%s", close_color_str);
 				} else {
@@ -411,7 +426,7 @@ void html_screenshot(const char *path, int mode)
 	}
 
 	/* Close the last font-color tag if necessary */
-	if (oa != COLOUR_WHITE) file_putf(fp, "%s", close_color_str);
+	if (oa != COLOUR_WHITE && mode == 0) file_putf(fp, "%s", close_color_str);
 
 	if (mode == 0) {
 		file_putf(fp, "</pre>\n");
