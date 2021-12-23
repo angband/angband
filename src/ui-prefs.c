@@ -1467,3 +1467,29 @@ void do_cmd_pref(void)
 	/* Process that pref command */
 	(void)process_pref_file_command(tmp);
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Utility functions
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Return the first active subwindow with the given flag enabled or NULL if
+ * there isn't an active subwindow with that flag enabled.
+ *
+ * \param flag is the flag to test.
+ */
+term *find_first_subwindow(uint32_t flag)
+{
+	int i = 1;
+
+	while (1) {
+		if (i >= ANGBAND_TERM_MAX) {
+			return NULL;
+		}
+		if ((window_flag[i] & flag) && angband_term[i]) {
+			return angband_term[i];
+		}
+		++i;
+	}
+}

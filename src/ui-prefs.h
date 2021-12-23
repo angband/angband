@@ -65,6 +65,7 @@ void dump_features(ang_file *fff);
 void dump_flavors(ang_file *fff);
 void dump_colors(ang_file *fff);
 void dump_ui_entry_renderers(ang_file *fff);
+term *find_first_subwindow(uint32_t flag);
 void option_dump(ang_file *fff);
 bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
 errr process_pref_file_command(const char *buf);
