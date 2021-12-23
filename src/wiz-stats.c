@@ -2881,8 +2881,37 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 
 		if (has_bad_start || has_dsc || has_dsc_from_stairs) {
 			if (disfile) {
-				dump_level_body(disfile, "Disconnected Level",
-					cave, cave_dist);
+				char label[100] = "Level with";
+
+				if (has_bad_start) {
+					(void) my_strcat(label,
+						" Bad Player Start",
+						sizeof(label));
+					if (has_dsc || has_dsc_from_stairs) {
+						my_strcat(label,
+							(has_dsc && has_dsc_from_stairs) ?
+							"," : " and",
+							sizeof(label));
+					}
+				}
+				if (has_dsc) {
+					(void) my_strcat(label,
+						" Disconnected Non-Vault",
+						sizeof(label));
+					if (has_dsc_from_stairs) {
+						my_strcat(label,
+							(has_bad_start) ?
+							", and" : " and",
+							sizeof(label));
+					}
+				}
+				if (has_dsc_from_stairs) {
+					(void) my_strcat(label,
+						" All Downstairs Inaccessible",
+						sizeof(label));
+				}
+				dump_level_body(disfile, label, cave,
+					cave_dist);
 			}
 			if (stop_on_disconnect) i = nsim;
 		}
