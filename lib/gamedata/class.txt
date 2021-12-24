@@ -1675,7 +1675,7 @@ dice:$S
 expr:S:PLAYER_LEVEL:/ 15
 desc:Attempts a level-dependent number of melee blows against the targeted
 desc: enemy.  You get 1 blow for every 15 levels.  If any of these blows
-desc: damage the enemy, it will be stunned for for 6 turns.
+desc: damage the enemy, it will be stunned for 6 turns.
 
 spell:Howl of the Damned:18:8:30:16
 effect:PROJECT_LOS:TURN_ALL
