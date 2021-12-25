@@ -37,5 +37,5 @@ pre-distclean:
 repoclean: distclean
 	for i in "" $(REPOCLEAN) ; do \
 		test x"$$i" = x"" && continue; \
-		if test -d "$$i" -o -f "$$i" ; then rm -rf "$$i" ; fi \
+		if test -d "$$i" || test -f "$$i" ; then rm -rf "$$i" ; fi \
 	done

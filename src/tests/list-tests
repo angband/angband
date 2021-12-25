@@ -7,7 +7,7 @@
 
 printdir=""
 if test $# -gt 0 ; then
-	if test $# -eq 1 -a x"$1" = x-d ; then
+	if test $# -eq 1 && test x"$1" = x-d ; then
 		printdir=yes
 	else
 		echo "list-tests: invalid argument(s)" >&2
