@@ -108,13 +108,8 @@ static void quit_hook(const char *s)
 /**
  * Initialize and verify the file paths, and the score file.
  *
- * Use the ANGBAND_PATH environment var if possible, else use
- * DEFAULT_PATH, and in either case, branch off appropriately.
- *
- * First, we'll look for the ANGBAND_PATH environment variable,
- * and then look for the files in there.  If that doesn't work,
- * we'll try the DEFAULT_PATH constants.  So be sure that one of
- * these two things works...
+ * Use the configured DEFAULT_*_PATH constants.  Be sure to
+ * set those properly when building...
  *
  * We must ensure that the path ends with "PATH_SEP" if needed,
  * since the "init_file_paths()" function will simply append the

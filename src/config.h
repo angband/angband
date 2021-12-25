@@ -33,11 +33,8 @@
  * user systems these go under the user's home directory).
  *
  * The configure script overrides these values. Check the "--prefix=<dir>"
- * option of the configure script.
- *
- * These values will be over-ridden by the "ANGBAND_PATH" environment
- * variable, if that variable is defined and accessible.  The final
- * "slash" is required if the value supplied is in fact a directory.
+ * option of the configure script.  The final "slash" is required if the
+ * value supplied is in fact a directory.
  *
  * Using the value "./lib/" below tells Angband that, by default,
  * the user will run "angband" from the same directory that contains
