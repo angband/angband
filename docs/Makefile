@@ -20,6 +20,6 @@ help:
 # built documents.
 clean:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) clean
-	@if test -f $(BUILDDIR) -o -d $(BUILDDIR); then rm -fr $(BUILDDIR); fi
+	@if test -f $(BUILDDIR) || test -d $(BUILDDIR); then rm -fr $(BUILDDIR); fi
 
 .PHONY: help clean
