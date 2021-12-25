@@ -8,6 +8,6 @@ install-extra:
 		if [ "x$(DRY)" = "x" ]; then \
 			${MKDIR_P} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
 			chown root:${SETEGID} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
-			chmod 171 ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+			chmod g+w ${DESTDIR}${varshareddatadir}${PACKAGE}; \
 		fi; \
 	fi
