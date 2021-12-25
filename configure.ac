@@ -228,7 +228,7 @@ else
 fi
 
 AC_ARG_WITH(gamedata_in_lib,
-	[AS_HELP_STRING([--gamedata-in-lib], [store the game data in the lib path.])])
+	[AS_HELP_STRING([--with-gamedata-in-lib], [store the game data in the lib path.])])
 
 GAMEDATA_IN_LIB="false"
 if test "x$with_gamedata_in_lib" == "xyes"; then
