@@ -21,6 +21,7 @@
 #include "main.h"
 #include "player.h"
 #include "player-birth.h"
+#include "ui-game.h"
 
 #ifdef USE_TEST
 
@@ -308,6 +309,12 @@ errr init_test(int argc, char *argv[]) {
 		}
 		printf("init-test: bad argument '%s'\n", argv[i]);
 	}
+
+	/*
+	 * Reset savefile set by main.c:  don't want it to interfere with the
+	 * test.
+	 */
+	savefile[0] = '\0';
 
 	term_data_link(0);
 	return 0;
