@@ -526,6 +526,13 @@ IF(SC_INSTALL)
     # Provide an install rule which copies the self-contained form to another
     # location.
     INSTALL(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
+    IF(SUPPORT_WINDOWS_FRONTEND)
+        # DATA_PERMISSIONS matches the permissions those files have in the
+        # source tree, but should the installed permissions be
+        # EXECUTABLE_PERMISSIONS?
+        INSTALL(zlib1.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+    ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
 
     MESSAGE(STATUS "Copying needed files")
