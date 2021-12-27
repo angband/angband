@@ -23,6 +23,7 @@
 #include "effects.h"
 #include "effects-info.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -1653,13 +1654,20 @@ static void do_cmd_knowledge_artifacts(const char *name, int row)
 
 	int *artifacts;
 	int a_count = 0;
+	char title[40];
 
 	artifacts = mem_zalloc(z_info->a_max * sizeof(int));
 
 	/* Collect valid artifacts */
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
-	display_knowledge("artifacts", artifacts, a_count, obj_f, art_f, NULL);
+	if (OPT(player, birth_randarts)) {
+		strnfmt(title, sizeof(title), "artifacts (seed %08x)",
+			seed_randart);
+	} else {
+		strnfmt(title, sizeof(title), "artifacts");
+	}
+	display_knowledge(title, artifacts, a_count, obj_f, art_f, NULL);
 	mem_free(artifacts);
 }
 
