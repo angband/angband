@@ -30,7 +30,6 @@ In general, these files are used to "customize" aspects of the game for
 a given site or a given player.
 
 
-
 === Directory "lib/help" ===
 
 The "lib/help" directory contains the "online help" files.
@@ -89,9 +88,12 @@ The "lib/icons" directory contains the Angband icon files.
 
 The "lib/user" directory is used to put various game-written configuration
 files (such as the monster memory file, lore.txt, and a .prf file with the
-subwindow configuration for the current character).  It also contains the
-directories for scores and savefiles (unless these are held systemwide, as in
-some Linux/Unix installations), and for user created help files.
+subwindow configuration for the current character).  It is the destination
+for character dumps, output from the death screen spoilers, and results
+from the statistics front end or statistics debugging commands.  It also
+contains the directories for scores, savefiles, and randart sets (all of
+those may be held systemwide, as in some Linux/Unix installations), and
+for user-created help files.
 
 
 === Directory "lib/user/save" ===
@@ -103,6 +105,12 @@ Each savefile is named the name of the character, or, on multi-user machines,
 
 The savefiles should be portable between systems, assuming that the
 appropriate renaming is perfomed.
+
+
+=== Directory "lib/user/panic" ===
+
+Is like "lib/user/save" but holds "savefiles" generated in repsonse to the
+game receiving a fatal signal, typically because of a game crash.
 
 
 === Directory "lib/user/scores" ===
@@ -119,7 +127,14 @@ must be present (or creatable) for the game to run correctly.
 On some multiuser systems there is a separate systemwide score file.
 
 
-=== Directory "lib/user/scores" ===
+=== Direcctory "lib/user/archive" ===
 
-This directory is used to save spoilers to.
+Holds the randart set files when they are not in use by a character loaded
+into the game.
+
+
+=== Directory "lib/user/info" ===
+
+Holds user-generated help files.  One use for it is to put spoiler files
+here so they be accessed through the in-game help system.
 
