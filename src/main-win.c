@@ -287,6 +287,22 @@ bool game_in_progress = false;
 bool initialized = false;
 
 /**
+ * This is a handle to a file; used to protect against playing with the same
+ * character simultaneously in multiple instances of the application.  Using
+ * a named mutex did not appear to work (at least with wine).  Using a file
+ * has the disadvantage that a system crash while playing a character will
+ * require the player to delete a file in order to bypass the check that
+ * another copy of the game is running.
+ */
+static HANDLE multapp_file = INVALID_HANDLE_VALUE;
+static bool create_savefile_tracking_file(bool message_on_failure);
+static bool monitor_existing_savefile(void);
+static void monitor_new_savefile(game_event_type ev_type,
+	game_event_data *ev_data, void *user);
+static void finish_monitoring_savefile(game_event_type ev_type,
+	game_event_data *ev_data, void *user);
+
+/**
  * screen paletted, i.e. 256 colors
  */
 bool paletted = false;
@@ -3267,11 +3283,13 @@ static void process_menus(WORD wCmd)
 					/* Load 'savefile' */
 					validate_file(savefile);
 
-					/* Start game */
-					game_in_progress = true;
-					Term_fresh();
-					play_game(false);
-					quit(NULL);
+					if (monitor_existing_savefile()) {
+						/* Start game */
+						game_in_progress = true;
+						Term_fresh();
+						play_game(false);
+						quit(NULL);
+					}
 				}
 			}
 			break;
@@ -4818,6 +4836,9 @@ static void hack_quit(const char *str)
 	/* Destroy the icon */
 	if (hIcon) DestroyIcon(hIcon);
 
+	/* Clean up guarding access to the savefile. */
+	finish_monitoring_savefile(EVENT_LEAVE_GAME, NULL, NULL);
+
 #ifdef USE_SAVER
 	if (screensaverSemaphore)
 		CloseHandle(screensaverSemaphore);
@@ -5029,6 +5050,13 @@ static void win_reinit(void)
 {
 	/* Initialise sound. */
 	init_sound("win", 0, NULL);
+
+	/*
+	 * Watch for these events to set up and tear down protection against
+	 * against accessing the savefile from multiple application instances.
+	 */
+	event_add_handler(EVENT_LEAVE_INIT, monitor_new_savefile, NULL);
+	event_add_handler(EVENT_LEAVE_GAME, finish_monitoring_savefile, NULL);
 }
 
 
@@ -5218,6 +5246,79 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	/* Paranoia */
 	return (0);
+}
+
+/**
+ * Use the existence or absence of a file in the user directory to guard against
+ * accessing a savefile simultaneously from multiple instances of the
+ * application.  Return true if, according to that mechanism, no other instance
+ * is accessing the savefile.  Return false if another instance appears to be
+ * accessing the savefile.
+ */
+static bool create_savefile_tracking_file(bool message_on_failure)
+{
+	const char *tracking_extension = ".lok";
+	char *name = mem_alloc(MAX_PATH);
+	size_t offset = path_filename_index(savefile);
+	bool result = true;
+
+	path_build(name, MAX_PATH, ANGBAND_DIR_USER, savefile + offset);
+	my_strcat(name, tracking_extension, MAX_PATH);
+
+	if (!suffix(name, tracking_extension)) {
+		/* Ugh, no room for it all.  Skip checking. */
+		mem_free(name);
+		return result;
+	}
+
+	multapp_file = CreateFileA(name, GENERIC_READ | GENERIC_WRITE,
+		0, NULL, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+	if (multapp_file == INVALID_HANDLE_VALUE) {
+		result = false;
+		if (message_on_failure) {
+			plog_fmt("Another instance of the game appears to using that savefile.  If that's incorrect, delete %s and retry.", name);
+		}
+	}
+
+	mem_free(name);
+	return result;
+}
+
+/**
+ * Set up to monitor an existing savefile so it isn't accessed by multiple
+ * application instances.
+ */
+static bool monitor_existing_savefile(void)
+{
+	assert(multapp_file == INVALID_HANDLE_VALUE);
+	return create_savefile_tracking_file(true);
+}
+
+/**
+ * Respond to EVENT_LEAVE_INIT events by monitoring the savefile, if not
+ * already monitored from the request to open it, so it won't be accessed
+ * simultaneously by multiple application instances.
+ */
+static void monitor_new_savefile(game_event_type ev_type,
+		game_event_data *ev_data, void *user)
+{
+	assert(ev_type == EVENT_LEAVE_INIT && ev_data == NULL && user == NULL);
+	if (multapp_file == INVALID_HANDLE_VALUE) {
+		(void) create_savefile_tracking_file(false);
+	}
+}
+
+/**
+ * Respond to EVENT_LEAVE_WORLD events by ceasing to monitor the savefile.
+ */
+static void finish_monitoring_savefile(game_event_type ev_type,
+		game_event_data *ev_data, void *user)
+{
+	assert(ev_type == EVENT_LEAVE_GAME && ev_data == NULL && user == NULL);
+	if (multapp_file != INVALID_HANDLE_VALUE) {
+		(void) CloseHandle(multapp_file);
+		multapp_file = INVALID_HANDLE_VALUE;
+	}
 }
 
 #endif /* WINDOWS */
