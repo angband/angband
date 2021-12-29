@@ -1480,8 +1480,9 @@ void steal_monster_item(struct monster *mon, int midx)
 				object_grab(player, obj);
 				delist_object(player->cave, obj->known);
 				delist_object(cave, obj);
-				/* Drop immediately if ignored to prevent pack overflow */
-				if (ignore_item_ok(player, obj)) {
+				/* Drop immediately if ignored,
+				   or if inventory already full to prevent pack overflow */
+				if (ignore_item_ok(player, obj) || !inven_carry_okay(obj)) {
 					char o_name[80];
 					object_desc(o_name, sizeof(o_name), obj,
 						ODESC_PREFIX | ODESC_FULL,
