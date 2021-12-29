@@ -21,6 +21,26 @@ That'll create a self-contained Mac application, Angband.app, in the directory
 above src.  You may use that application where it is or move it to wherever
 is convenient for you.
 
+By default, the current Makefile.osx builds an application that'll run natively
+on x86_64 or arm64 machines.  If only one of those architectures is of interest
+to you or the version of Xcode you have doesn't support building both (a
+typical error message in that case is something like ``/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:784:2: error: Unsupported architecture``),
+you can change the architectures built by setting ARCHS on the command line of
+make.  To only build for x86_64, for instance, you would use::
+
+    cd src
+    make -f Makefile.osx clean
+    make -f Makefile.osx ARCHS=x86_64
+
+(the clean step is to ensure that nothing from a previous build would cause
+trouble; you'll typically need to do that if you've built it before and then
+want to change the set of architectures to use).  To build for multiple
+architectures, use a list of architectures separated by whitespace, which
+you'll have to quote.  This is the equivalent to what Makefile.osx does by
+default::
+
+    make -f Makefile.osx ARCHS="x86_64 arm64"
+
 Debug build
 ~~~~~~~~~~~
 
