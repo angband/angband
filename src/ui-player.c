@@ -1153,6 +1153,15 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "\n");
 	}
 
+	/*
+	 * Display the randart seed, if applicable.  Use the same format as is
+	 * used when constructing the randart file name.
+	 */
+	if (OPT(player, birth_randarts)) {
+		file_putf(fff, "  [Randart seed]\n\n");
+		file_putf(fff, "%08x\n\n", seed_randart);
+	}
+
 	mem_free(home_list);
 	mem_free(buf);
 }
