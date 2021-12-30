@@ -484,7 +484,7 @@ static int beam_chance(void)
 bool spell_cast(int spell_index, int dir, struct command *cmd)
 {
 	int chance;
-	bool *ident = mem_zalloc(sizeof(*ident));
+	bool ident = false;
 	int beam  = beam_chance();
 
 	/* Get the spell */
@@ -499,9 +499,8 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 		msg("You failed to concentrate hard enough!");
 	} else {
 		/* Cast the spell */
-		if (!effect_do(spell->effect, source_player(), NULL, ident, true, dir,
+		if (!effect_do(spell->effect, source_player(), NULL, &ident, true, dir,
 					   beam, 0, cmd)) {
-			mem_free(ident);
 			return false;
 		}
 
@@ -546,7 +545,6 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 	/* Redraw mana */
 	player->upkeep->redraw |= (PR_MANA);
 
-	mem_free(ident);
 	return true;
 }
 
