@@ -20,6 +20,31 @@ OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
 OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
 
+# By default, generate a self-contained build left where the build was run.
+# If not using the Windows front end, the executable will have hardwired
+# relative paths to the game's data, and when run, the working directory should
+# be the location of executable.  The other options are to build for a shared
+# installation with a setgid executable that manages the save and high score
+# files or to build for a read-only installation where all the variable
+# persistent state is stored in the user's directories.  Those two other
+# options use paths from GNUInstallDirs as the basis for where stuff is
+# installed.  Because paths are configured into the executable, it is not
+# possible to set the destination dir when running make (i.e. with DESTDIR).
+# One can set the paths when running cmake.  To set the path prefix, set
+# CMAKE_INSTALL_PREFIX.  To customize where the pieces go beneath that prefix,
+# set CMAKE_INSTALL_BINDIR, CMAKE_INSTALL_DATAROOTDIR, CMAKE_INSTALL_SYSCONFDIR,
+# or CMAKE_INSTALL_SHAREDSTATEDIR.  Use the INSTALL_GROUP_ID cache variable
+# (a string either holding the name or number of the group) as the source for
+# the group ID to use for the setgid executable.  Note that with SHARED_INSTALL,
+# running "make install" will always require superuser privileges because
+# the owner of some of the installed files and directories is set to
+# root:${INSTALL_GROUP_ID}.
+OPTION(SC_INSTALL "Generate a self-contained build that could be left as is or moved elsewhere.  Conflicts with SHARED_INSTALL and READONLY_INSTALL." OFF)
+OPTION(SHARED_INSTALL "Install for shared use with a setgid executable.  Conflicts with SC_INSTALL, READONLY_INSTALL, and SUPPORT_WINOOWS_FRONTEND." OFF)
+SET(INSTALL_GROUP_ID "games" CACHE STRING "Group ID (either name or number) to use if SHARED_INSTALL is on.")
+OPTION(READONLY_INSTALL "Install for shared use with variable persistent data stored in the user's directories.  Conflicts with SC_INSTALL, SHARED_INSTALL, and SUPPORT_WINDOWS_FRONTEND." OFF)
+INCLUDE(GNUInstallDirs)
+
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
 ENDIF()
@@ -84,6 +109,31 @@ IF(SUPPORT_WINDOWS_FRONTEND)
     # Set up the path for the source of the resource file.
     STRING(TOLOWER ${OUR_EXECUTABLE_NAME} OUR_WINDOWS_RC_BASE)
     STRING(CONCAT src/win/ ${OUR_WINDOWS_RC_BASE} .rc OUR_WINDOWS_RC)
+ENDIF()
+
+# If none of SC_INSTALL, SHARED_INSTALL, and READONLY_INSTALL are set, use
+# SC_INSTALL.
+IF((NOT SC_INSTALL) AND (NOT SHARED_INSTALL) AND (NOT READONLY_INSTALL))
+    SET(SC_INSTALL ON)
+ENDIF()
+IF(SHARED_INSTALL)
+    IF(SC_INSTALL)
+        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SC_INSTALL, enabled")
+    ENDIF()
+    IF(READONLY_INSTALL)
+        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and READONLY_INSTALL, enabled")
+    ENDIF()
+    IF(SUPPORT_WINDOWS_FRONTEND)
+        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
+    ENDIF()
+ENDIF()
+IF(READONLY_INSTALL)
+    IF(SC_INSTALL)
+        MESSAGE(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SC_INSTALL, enabled")
+    ENDIF()
+    IF(SUPPORT_WINDOWS_FRONTEND)
+        MESSAGE(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
+    ENDIF()
 ENDIF()
 
 ADD_LIBRARY(OurCoreLib OBJECT
@@ -371,15 +421,130 @@ ENDIF()
 TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
-MESSAGE(STATUS "Copying needed files")
+SET(EXECUTABLE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+SET(DIR_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+SET(STRICT_VARDATADIR_PERMISSIONS ${DIR_PERMISIONS})
+SET(LOOSE_VARDATADIR_PERMISSIONS ${DIR_PERMISIONS})
+SET(DATA_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+IF(SHARED_INSTALL)
+    INCLUDE(src/cmake/macros/GID_Handling.cmake)
+    CONFIGURE_GID_HANDLING(OurExecutable)
+    CONFIGURE_GID_HANDLING(OurCoreLib)
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D SETGID)
+    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D SETGID)
+    SET(EXECUTABLE_PERMISSIONS ${EXECUTABLE_PERMISSIONS} SETGID)
+    # Override so only readily accessible by the group (i.e. the setgid
+    # executable).
+    SET(STRICT_VARDATADIR_PERMISSIONS OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_EXECUTE)
+    # As above, but allow general read access.
+    SET(LOOSE_VARDATADIR_PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_EXECUTE WORLD_READ)
+ENDIF()
 
-IF(SUPPORT_WINDOWS_FRONTEND)
-    # Transfer the packaged DLLs so there in the same directory as the
-    # executable.
-    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+IF(READONLY_INSTALL)
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D USE_PRIVATE_PATHS)
+    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D USE_PRIVATE_PATHS)
+ENDIF()
+
+# This is the executable to be used for the end-to-end tests; those will
+# be run with the current working direcctory set to CMAKE_CURRENT_BINARY_DIR.
+# Builds using an installation step will override this.
+SET(TEST_EXECUTABLE ./${OUR_EXECUTABLE_NAME})
+
+IF((SHARED_INSTALL) OR (READONLY_INSTALL))
+    # When hardwiring paths, assume lib/gamedata from the source directories
+    # is in DEFAULT_LIB_PATH rather than DEFAULT_CONFIG_PATH.  If not set,
+    # have to change the installation of lib/gamedata so it's parent is the
+    # same as lib/customize.
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D GAMEDATA_IN_LIB)
+    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D GAMEDATA_IN_LIB)
+    # The paths set here should end in a path separator and must match up with
+    # the paths passed to INSTALL().
+    SET(ANGBAND_CONFIG_PATH ${CMAKE_INSTALL_FULL_SYSCONFDIR}/${PROJECT_NAME}/)
+    SET(ANGBAND_LIB_PATH ${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/)
+    SET(ANGBAND_DATA_PATH ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/)
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+    # This is always passed to init_file_paths() but is ignored internally when
+    # the USE_PRIVATE_PATHS preprocessor macro is set (i.e. for READONLY_INSTALL
+    # builds).
+    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+
+    # Set up for installation.
+    INSTALL(TARGETS OurExecutable RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS ${EXECUTABLE_PERMISSIONS})
+    SET(INSTALLED_EXECUTABLE ${CMAKE_INSTALL_FULL_BINDIR}/${OUR_EXECUTABLE_NAME})
+    SET(TEST_EXECUTABLE ${INSTALLED_EXECUTABLE})
+    SET(ANGBAND_CHANGE_OWNER ${INSTALLED_EXECUTABLE})
+    SET(ANGBAND_DIRS gamedata help screens)
+    IF((SUPPORT_SDL_FRONTEND) OR (SUPPORT_SDL2_FRONTEND) OR (SUPPORT_WINDOWS_FRONTEND))
+        SET(ANGBAND_DIRS ${ANGBAND_DIRS} fonts icons tiles)
+    ENDIF()
+    IF((SUPPORT_WINDOWS_FRONTEND) OR (SUPPORT_SDL_SOUND) OR (SUPPORT_SDL2_SOUND))
+        SET(ANGBAND_DIRS ${ANGBAND_DIRS} sounds)
+    ENDIF()
+    FOREACH(ANGBAND_DIR ${ANGBAND_DIRS})
+        SET(ANGBAND_DEST ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+        INSTALL(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+    ENDFOREACH()
+    FOREACH(ANGBAND_DIR customize)
+        SET(ANGBAND_DEST ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME})
+        INSTALL(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+    ENDFOREACH()
+    IF(SHARED_INSTALL)
+        FOREACH(ANGBAND_DIR archive panic save scores)
+            SET(ANGBAND_DEST ${CMAKE_INSTALL_SHAREDSTATEDIR}/${PROJECT_NAME})
+            IF((ANGBAND_DIR STREQUAL panic) OR (ANGBAND_DIR STREQUAL save))
+                INSTALL(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${STRICT_VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+            ELSE()
+                INSTALL(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${LOOSE_VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+            ENDIF()
+            SET(ANGBAND_CHANGE_OWNER ${ANGBAND_CHANGE_OWNER} ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/${ANGBAND_DIR})
+        ENDFOREACH()
+        INSTALL(CODE "EXECUTE_PROCESS(COMMAND chown root:${INSTALL_GROUP_ID} ${ANGBAND_CHANGE_OWNER} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL_ERROR \"Changing ownership to root:${INSTALL_GROUP_ID} on ${ANGBAND_CHANGE_OWNER} failed\")\nENDIF()")
+        # Since chown can reset the setgid bit that CMake set when installing,
+        # turn that bit back on.
+        INSTALL(CODE "EXECUTE_PROCESS(COMMAND chmod g+s ${INSTALLED_EXECUTABLE} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL ERROR \"Resetting setgid bit on ${INSTALLED_EXECUTABLE} failed\")\nENDIF()")
+    ENDIF()
+ENDIF()
+
+IF(SC_INSTALL)
+    SET(ANGBAND_CONFIG_PATH ./lib/)
+    SET(ANGBAND_LIB_PATH ./lib/)
+    # Would use lib/user here to match up with the preexisting structure from
+    # the source directory, but previous CMake builds used this (because of
+    # the default setting in config.h).  So, to be compatible if people
+    # rebuild on an existing copy, use this.  When there's backward
+    # incompatible changes to the save files, could change this since
+    # compatiblity with something already on disk will be less of a concern.
+    SET(ANGBAND_DATA_PATH ./lib/)
+    # The Windows front end doesn't access these so don't set them in that case.
+    IF(NOT SUPPORT_WINDOWS_FRONTEND)
+        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+    ENDIF()
+    # Provide an install rule which copies the self-contained form to another
+    # location.
+    INSTALL(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
+    IF(SUPPORT_WINDOWS_FRONTEND)
+        # DATA_PERMISSIONS matches the permissions those files have in the
+        # source tree, but should the installed permissions be
+        # EXECUTABLE_PERMISSIONS?
+        INSTALL(zlib1.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+    ENDIF()
+    INSTALL(DIRECTORY lib/ DESTINATION lib)
+
+    MESSAGE(STATUS "Copying needed files")
+
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+
+    IF(SUPPORT_WINDOWS_FRONTEND)
+        # Transfer the packaged DLLs so there in the same directory as the
+        # executable.
+        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    ENDIF()
 ENDIF()
 
 # Set up tests.  For now, don't bother on Windows since haven't worked out
@@ -403,9 +568,12 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 
 # Set up target for running all tests.  Those (from tests in the source tree)
 # using the test front end will be run directly.  The unit tests will be
-# handled through a dependency.
+# handled through a dependency.  Note that when SHARED_INSTALL or
+# READONLY_INSTALL is set, the tests can only be successfully run after
+# installing.  In the SHARED_INSTALL case, some unit tests will fail even
+# after installation is done because the test case executables are not setgid.
 ADD_CUSTOM_TARGET(alltests
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ./${OUR_EXECUTABLE_NAME}
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(allunittests
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests
@@ -426,6 +594,11 @@ TARGET_INCLUDE_DIRECTORIES(OurUnitTestLib PRIVATE
     ${ANGBAND_CORE_INCLUDE_DIRS}
 )
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+# Use the same definitions for the hardwired paths as were used (or would
+# be used if it wasn't the Windows front end) for the executable.
+TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
 
 # Set up targets for exercising the unit tests (from src/tests in the source
 # tree).

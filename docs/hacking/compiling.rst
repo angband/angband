@@ -202,6 +202,36 @@ want the executable to have support for sound, pass -DSUPPORT_SDL_SOUND=ON or
 can't build support for both SDL and SDL2 sound; it is also not possible to
 build the SDL front end with SDL2 sound or the SDL2 front end with SDL sound).
 
+There are options to not build a self-contained installation and, instead,
+organize the files for a typical Linux or Unix layout.  One such option
+installs the executable as setgid so the high score and save files can be
+stored in a centralized location for multiple users.  To enable that option,
+pass -DSHARED_INSTALL=ON to cmake.  To specify the group used for the setgid
+executable, pass -DINSTALL_GROUP_ID=xxx to cmake where you replace xxx with
+the name or number of the group to use.  If you do not set the group, the games
+group will be used.  Another option creates a read-only installation with any
+variable state, including the high score and save files, stored on a per-user
+basis in the user's own directories.  To enable that option, pass
+-DREADONLY_INSTALL=ON to cmake.  Turning on both SHARED_INSTALL and
+READONLY_INSTALL is not supported and will cause cmake to exit with an error.
+Turning either SHARED_INSTALL or READONLY_INSTALL when SUPPORT_WINDOWS_FRONTEND
+is on is also not supported and will cause cmake to exit with an error.  To
+customize where the shared and read-only installations place files, pass
+-DCMAKE_INSTALL_PREFIX=prefix to install all the files within the given prefix
+(i.e. using -DCMAKE_INSTALL_PREFIX=/opt/Angband-4.2.3 would place all the files
+within /opt/Angband-4.2.3 or it's subdirectories).  For finer-grained placement
+of the files within the given prefix, you could also set CMAKE_INSTALL_BINDIR
+(for the subdirectory of prefix where the executable will be placed; by
+default that is bin), CMAKE_INSTALL_DATAROOTDIR (for the subdirectory of
+prefix to hold read-only data not configured for the site; by default that is
+share), CMAKE_INSTALL_SYSCONFDIR (for the subdrectory of prefix to hold data
+configured for the site; by default that is etc), and
+CMAKE_INSTALL_SHAREDSTATEDIR (for the subdirectory of prefix to hold writable
+persistent state; by default that is com).  Because paths to the data are
+hardwired in the executable, setting the destination directory when running
+make (i.e. by setting DESTDIR) is not supported and will not work in general:
+set the destination when running cmake by setting the variables mentioned above.
+
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
