@@ -26,6 +26,30 @@ static void println(const char *str) {
 	printf("%s\n", str);
 }
 
+static int choose_direction(struct chunk *c, struct player *p) {
+	int dir = 0;
+
+	while (1) {
+		struct loc grid;
+
+		if (dir >= 9) {
+			return -1;
+		}
+		grid.x = p->grid.x + ddx_ddd[dir];
+		grid.y = p->grid.y + ddy_ddd[dir];
+		if (square_isempty(c, grid)) {
+			return ddd[dir];
+		}
+		++dir;
+	}
+}
+
+static int reverse_direction(int dir) {
+	int rdir[10] = { 5, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+
+	return (dir >= 0 && dir <= 9) ? rdir[dir] : -1;
+}
+
 static void reset_before_load(void) {
 	play_again = true;
 	wipe_mon_list(cave, player);
@@ -110,17 +134,23 @@ static int test_stairs1(void *state) {
 }
 
 static int test_stairs2(void *state) {
+	int dir;
+
 	reset_before_load();
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
 
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
-	run_game_loop();
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 8);
-	run_game_loop();
+	dir = choose_direction(cave, player);
+	if (dir >= 0) {
+		cmdq_push(CMD_WALK);
+		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
+		run_game_loop();
+		cmdq_push(CMD_WALK);
+		cmd_set_arg_direction(cmdq_peek(), "direction",
+			reverse_direction(dir));
+		run_game_loop();
+	}
 	cmdq_push(CMD_GO_DOWN);
 	run_game_loop();
 	eq(player->depth, 1);
@@ -129,30 +159,37 @@ static int test_stairs2(void *state) {
 }
 
 static int test_drop_pickup(void *state) {
+	int dir;
+
 	reset_before_load();
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
 
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
-	run_game_loop();
-	if (player->upkeep->inven[0]->number > 1) {
-		cmdq_push(CMD_DROP);
-		cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
-		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
+	dir = choose_direction(cave, player);
+	if (dir >= 0) {
+		cmdq_push(CMD_WALK);
+		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
 		run_game_loop();
-		eq(square_object(cave, player->grid)->number, 1);
-		cmdq_push(CMD_AUTOPICKUP);
-		run_game_loop();
+		if (player->upkeep->inven[0]->number > 1) {
+			cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item",
+				player->upkeep->inven[0]);
+			cmd_set_arg_number(cmdq_peek(), "quantity", 1);
+			run_game_loop();
+			eq(square_object(cave, player->grid)->number, 1);
+			cmdq_push(CMD_AUTOPICKUP);
+			run_game_loop();
+		}
+		null(square_object(cave, player->grid));
 	}
-	null(square_object(cave, player->grid));
 
 	ok;
 }
 
 static int test_drop_eat(void *state) {
 	int num = 0;
+	int dir;
 
 	reset_before_load();
 
@@ -160,23 +197,26 @@ static int test_drop_eat(void *state) {
 	eq(savefile_load("Test1", false), true);
 	num = player->upkeep->inven[0]->number;
 
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
-	run_game_loop();
-	cmdq_push(CMD_DROP);
-	cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
-	cmd_set_arg_number(cmdq_peek(), "quantity",
+	dir = choose_direction(cave, player);
+	if (dir >= 0) {
+		cmdq_push(CMD_WALK);
+		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
+		run_game_loop();
+		cmdq_push(CMD_DROP);
+		cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
+		cmd_set_arg_number(cmdq_peek(), "quantity",
 					   player->upkeep->inven[0]->number);
-	run_game_loop();
-	eq(square_object(cave, player->grid)->number, num);
-	cmdq_push(CMD_EAT);
-	cmd_set_arg_item(cmdq_peek(), "item",
+		run_game_loop();
+		eq(square_object(cave, player->grid)->number, num);
+		cmdq_push(CMD_EAT);
+		cmd_set_arg_item(cmdq_peek(), "item",
 					 square_object(cave, player->grid));
-	run_game_loop();
-	if (num > 1) {
-		eq(square_object(cave, player->grid)->number, num - 1);
-	} else {
-		null(square_object(cave, player->grid));
+		run_game_loop();
+		if (num > 1) {
+			eq(square_object(cave, player->grid)->number, num - 1);
+		} else {
+			null(square_object(cave, player->grid));
+		}
 	}
 
 	ok;
