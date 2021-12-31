@@ -174,6 +174,81 @@ bool object_is_in_quiver(struct player *p, const struct object *obj)
 }
 
 /**
+ * Get the total number of objects in the pack or quiver that are like the
+ * given object.
+ *
+ * \param player is the player whose inventory is used for the calculation.
+ * \param obj is the template for the objects to look for.
+ * \param ignore_inscrip if true, ignore the inscriptions when testing whether
+ * an object is similar; otherwise, test the inscriptions as well.
+ * \param first if not NULL, set to the first stack like obj (by ordering in
+ * the quiver or pack with quiver taking precedence over pack; if the pack
+ * and quiver haven't been computed, it will be the first non-equipped stack
+ * in the gear).
+ */
+uint16_t object_pack_total(struct player *p, const struct object *obj,
+		bool ignore_inscrip, struct object **first)
+{
+	uint16_t total = 0;
+	char first_label = '\0';
+	struct object *cursor;
+
+	if (first) {
+		*first = NULL;
+	}
+	for (cursor = p->gear; cursor; cursor = cursor->next) {
+		bool like;
+
+		if (cursor == obj) {
+			/*
+			 * object_similar() excludes cursor == obj so if
+			 * obj is not equipped, account for it here.
+			 */
+			like = !object_is_equipped(p->body, obj);
+		} else if (ignore_inscrip) {
+			like = object_similar(obj, cursor, OSTACK_PACK);
+		} else {
+			like = object_stackable(obj, cursor, OSTACK_PACK);
+		}
+		if (like) {
+			total += cursor->number;
+			if (first) {
+				char test_label = gear_to_label(p, cursor);
+
+				if (!*first) {
+					*first = cursor;
+					first_label = test_label;
+				} else {
+					if (test_label >= 'a'
+							&& test_label <= 'z') {
+						if (first_label == '\0'
+								|| (first_label >= 'a'
+								&& first_label <= 'z'
+								&& test_label < first_label)) {
+							*first = cursor;
+							first_label = test_label;
+						}
+					} else if (test_label >= '0'
+							&& test_label <= '9') {
+						if (first_label == '\0'
+								|| (first_label >= 'a'
+								&& first_label <= 'z')
+								|| (first_label >= '0'
+								&& first_label <= '9'
+								&& test_label < first_label)) {
+							*first = cursor;
+							first_label = test_label;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return total;
+}
+
+/**
  * Calculate the number of pack slots used by the current gear.
  *
  * Note that this function does not check that there are adequate slots in the
@@ -446,6 +521,7 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 	int num, bool message, bool *none_left)
 {
 	struct object *usable;
+	struct object *first_remainder = NULL;
 	char name[80];
 	char label = gear_to_label(p, obj);
 	bool artifact = (obj->known->artifact != NULL);
@@ -461,8 +537,21 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 		p->upkeep->total_weight -= (num * obj->weight);
 
 		if (message) {
+			uint16_t total;
+
+			if (object_is_equipped(p->body, obj)) {
+				total = obj->number;
+			} else {
+				total = object_pack_total(p, obj, false,
+					&first_remainder);
+				assert(total >= first_remainder->number);
+				if (total == first_remainder->number) {
+					first_remainder = NULL;
+				}
+			}
 			object_desc(name, sizeof(name), obj,
-				ODESC_PREFIX | ODESC_FULL, p);
+				ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
+				(total << 16), p);
 		}
 	} else {
 		if (message) {
@@ -470,11 +559,18 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 				object_desc(name, sizeof(name), obj,
 					ODESC_FULL | ODESC_SINGULAR, p);
 			} else {
-				/* Describe zero amount */
-				obj->number = 0;
+				uint16_t total = (object_is_equipped(p->body, obj)) ?
+					obj->number :
+					object_pack_total(p, obj, false, &first_remainder);
+
+				assert(total >= num);
+				total -= num;
+				if (!total || total <= first_remainder->number) {
+					first_remainder = NULL;
+				}
 				object_desc(name, sizeof(name), obj,
-					ODESC_PREFIX | ODESC_FULL, p);
-				obj->number = num;
+					ODESC_PREFIX | ODESC_FULL |
+					ODESC_ALTNUM | (total << 16), p);
 			}
 		}
 
@@ -498,10 +594,14 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 
 	/* Print a message if desired */
 	if (message) {
-		if (artifact)
+		if (artifact) {
 			msg("You no longer have the %s (%c).", name, label);
-		else
+		} else if (first_remainder) {
+			label = gear_to_label(p, first_remainder);
+			msg("You have %s (1st %c).", name, label);
+		} else {
 			msg("You have %s (%c).", name, label);
+		}
 	}
 
 	return usable;
@@ -754,9 +854,21 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 	if (message) {
 		char o_name[80];
+		struct object *first;
+		uint16_t total = object_pack_total(p, obj, false, &first);
+		char label;
+
+		assert(first && total >= first->number);
 		object_desc(o_name, sizeof(o_name), obj,
-			ODESC_PREFIX | ODESC_FULL, p);
-		msg("You have %s (%c).", o_name, gear_to_label(p, obj));
+			ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
+			(total << 16), p);
+		label = gear_to_label(p, first);
+		if (total > first->number) {
+			msg("You have %s (1st %c).", o_name, label);
+		} else {
+			assert(first == obj);
+			msg("You have %s (%c).", o_name, label);
+		}
 	}
 
 	if (object_is_in_quiver(p, obj))
@@ -917,7 +1029,8 @@ void inven_drop(struct object *obj, int amt)
 {
 	struct object *dropped;
 	bool none_left = false;
-	bool quiver = false;
+	bool equipped = false;
+	bool quiver;
 
 	char name[80];
 	char label;
@@ -936,15 +1049,16 @@ void inven_drop(struct object *obj, int amt)
 	label = gear_to_label(player, obj);
 
 	/* Is it in the quiver? */
-	if (object_is_in_quiver(player, obj))
-		quiver = true;
+	quiver = object_is_in_quiver(player, obj);
 
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
 
 	/* Take off equipment, don't combine */
-	if (object_is_equipped(player->body, obj))
+	if (object_is_equipped(player->body, obj)) {
+		equipped = true;
 		inven_takeoff(obj);
+	}
 
 	/* Get the object */
 	dropped = gear_object_for_use(player, obj, amt, false, &none_left);
@@ -961,18 +1075,27 @@ void inven_drop(struct object *obj, int amt)
 		object_desc(name, sizeof(name), dropped,
 			ODESC_FULL | ODESC_SINGULAR, player);
 		msg("You no longer have the %s (%c).", name, label);
-	} else if (none_left) {
-		/* Play silly games to get the right description */
-		int number = dropped->number;
-		dropped->number = 0;
-		object_desc(name, sizeof(name), dropped,
-			ODESC_PREFIX | ODESC_FULL, player);
-		msg("You have %s (%c).", name, label);
-		dropped->number = number;
 	} else {
-		object_desc(name, sizeof(name), obj,
-			ODESC_PREFIX | ODESC_FULL, player);
-		msg("You have %s (%c).", name, label);
+		struct object *first = NULL;
+		uint16_t total = (equipped) ?
+			((none_left) ? 0 : obj->number) :
+			object_pack_total(player, obj, false, &first);
+
+		object_desc(name, sizeof(name), dropped,
+			ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
+			(total << 16), player);
+		if (equipped || total == 0) {
+			msg("You have %s (%c).", name, label);
+		} else {
+			assert(first);
+
+			label = gear_to_label(player, first);
+			if (total > first->number) {
+				msg("You have %s (1st %c).", name, label);
+			} else {
+				msg("You have %s (%c).", name, label);
+			}
+		}
 	}
 
 	/* Drop it near the player */
@@ -1089,18 +1212,17 @@ void combine_pack(struct player *p)
 
 				if (inven_can_stack_partial(p, obj2, obj1,
 						stack_mode2, stack_mode1)) {
-					int oldn2 = obj2->number;
-					int oldn1 = obj1->number;
-
+					/*
+					 * Don't display a message for this
+					 * case:  shuffling items between
+					 * stacks isn't interesting to the
+					 * player.
+					 */
 					object_absorb_partial(obj2->known,
 						obj1->known, stack_mode2,
 						stack_mode1);
 					object_absorb_partial(obj2, obj1,
 						stack_mode2, stack_mode1);
-					if (obj2->number != oldn2 ||
-							obj1->number != oldn1) {
-						display_message = true;
-					}
 					/*
 					 * Ensure numbers align (should not be
 					 * necessary, but safer)
