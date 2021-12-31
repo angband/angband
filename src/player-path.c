@@ -169,12 +169,12 @@ static bool set_up_path_distances(struct loc grid)
 			struct loc next = loc_sum(reached->pts[i], ddgrid_ddd[k]);
 
 			/* Enforce length and area bounds */
-			if ((path_dist(next) <= cur_distance) ||
-				(path_dist(next) > MAX_PF_LENGTH) ||
-				(next.y < top_left.y) ||
+			if ((next.y < top_left.y) ||
 				(next.y >= bottom_right.y) ||
 				(next.x < top_left.x) ||
-				(next.x >= bottom_right.x)) {
+				(next.x >= bottom_right.x) ||
+				(path_dist(next) <= cur_distance) ||
+				(path_dist(next) > MAX_PF_LENGTH)) {
 				continue;
 			}
 
