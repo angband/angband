@@ -406,7 +406,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
-	char label = gear_to_label(player, obj);
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -448,9 +447,11 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (can_use) {
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
-		int number = 0;
+		uint16_t number = 0;
 		bool ident = false, used;
 		struct object *work_obj;
+		struct object *first_remainder = NULL;
+		char label = '\0';
 
 		/* Get the level */
 		if (obj->artifact)
@@ -481,17 +482,27 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		 * object to use for propagating knowledge.
 		 */
 		if (use == USE_SINGLE) {
+			/*
+			 * In either case, record number for messages after
+			 * use.
+			 */
 			if (object_is_carried(player, obj)) {
+				label = gear_to_label(player, obj);
 				work_obj = gear_object_for_use(player, obj, 1,
 					false, &none_left);
 				from_floor = false;
+				number = object_pack_total(player, work_obj,
+					false, &first_remainder);
+				if (first_remainder
+						&& first_remainder->number == number) {
+					first_remainder = NULL;
+				}
 			} else {
 				work_obj = floor_object_for_use(player, obj, 1,
 					false, &none_left);
 				from_floor = true;
+				number = (none_left) ? 0 : obj->number;
 			}
-			/* Record number for messages after use */
-			number = (none_left) ? 0 : obj->number;
 		} else  {
 			if (use == USE_CHARGE) {
 				charges = obj->pval;
@@ -571,20 +582,21 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Increase knowledge */
 		if (use == USE_SINGLE) {
 			char name[80];
-			int old_num = work_obj->number;
 
 			/* Single use items are automatically learned */
 			if (!was_aware) {
 				object_learn_on_use(player, work_obj);
 			}
 			/* Get a description */
-			work_obj->number = number + ((used) ? 0 : 1);
 			object_desc(name, sizeof(name), work_obj,
-				ODESC_PREFIX | ODESC_FULL, player);
-			work_obj->number = old_num;
+				ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
+				((number + ((used) ? 0 : 1)) << 16), player);
 			if (from_floor) {
 				/* Print a message */
 				msg("You see %s.", name);
+			} else if (first_remainder) {
+				label = gear_to_label(player, first_remainder);
+				msg("You have %s (1st %c).", name, label);
 			} else {
 				msg("You have %s (%c).", name, label);
 			}

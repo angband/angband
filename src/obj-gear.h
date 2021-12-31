@@ -41,6 +41,8 @@ int object_slot(struct player_body body, const struct object *obj);
 bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
 bool object_is_in_quiver(struct player *p, const struct object *obj);
+uint16_t object_pack_total(struct player *p, const struct object *obj,
+	bool ignore_inscrip, struct object **first);
 int pack_slots_used(const struct player *p);
 const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
