@@ -2502,7 +2502,21 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	/* Report failure (very unlikely) */
 	if (!num_spots) {
-		msg("Failed to find teleport destination!");
+		if (is_player) {
+			msg("Failed to find teleport destination!");
+		} else {
+			/*
+			 * With either teleport self or teleport other, it'll
+			 * be the caster that is puzzled.
+			 */
+			struct monster *mon = cave_monster(cave,
+				context->origin.which.monster);
+
+			if (square_isseen(cave, mon->grid)) {
+				add_monster_message(mon, MON_MSG_BRIEF_PUZZLE,
+					true);
+			}
+		}
 		return true;
 	}
 

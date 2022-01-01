@@ -757,7 +757,10 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Blink away */
 	if (blinked) {
 		char dice[5];
-		msg("There is a puff of smoke!");
+
+		if (!p->is_dead && square_isseen(cave, mon->grid)) {
+			add_monster_message(mon, MON_MSG_HIT_AND_RUN, true);
+		}
 		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
 		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
 	}
@@ -774,7 +777,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 }
 
 /**
- * Attack the player via physical attacks.
+ * Attack the another monster via physical attacks.
  */
 bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 {
@@ -917,7 +920,10 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	/* Blink away */
 	if (blinked) {
 		char dice[5];
-		msg("There is a puff of smoke!");
+
+		if (square_isseen(cave, mon->grid)) {
+			add_monster_message(mon, MON_MSG_HIT_AND_RUN, true);
+		}
 		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
 		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
 	}
