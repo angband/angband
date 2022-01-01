@@ -77,14 +77,12 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_CHECK_TOOL(RC, windres, no)
-AC_ARG_VAR([RST2HTML], [command for converting reStructuredText to HTML])
-AC_CHECK_PROGS([RST2HTML], [rst2html.py rst2html], [NOTFOUND])
-AC_SUBST(RST2HTML)
-AC_ARG_VAR([RST2LATEX], [command for converting reStructuredText to LaTeX])
-AC_CHECK_PROGS([RST2LATEX], [rst2latex.py rst2latex], [NOTFOUND])
-AC_SUBST(RST2LATEX)
-AC_CHECK_PROGS([PDFLATEX], [pdflatex], [NOTFOUND])
-AC_SUBST(PDFLATEX)
+AC_ARG_VAR([SPHINXBUILD], [command to invoke the documentation builder, Sphinx])
+AC_PATH_PROGS([SPHINXBUILD],
+	[sphinx-build sphinx-build3 sphinx-build2],
+	[NOTFOUND],
+	[$PATH$PATH_SEPARATOR/usr/share/sphinx/scripts/python3$PATH_SEPARATOR/usr/share/sphinx/scripts/python2])
+AC_ARG_VAR([ANGBAND_SPHINX_BUILTIN], [the builtin Sphinx theme to use or, if not set, empty, or none, use the theme configured in docs/conf.py (currently the better theme)])
 
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
