@@ -402,7 +402,13 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 		/* Go to a specific file */
 		if (ch.code == '%') {
-			char ftmp[80] = "index.txt";
+			char ftmp[80];
+
+			if (OPT(player, rogue_like_commands)) {
+				my_strcpy(ftmp, "r_index.txt", sizeof(ftmp));
+			} else {
+				my_strcpy(ftmp, "index.txt", sizeof(ftmp));
+			}
 
 			prt("Goto File: ", hgt - 1, 0);
 			if (askfor_aux(ftmp, sizeof(ftmp), NULL)) {
@@ -475,7 +481,8 @@ void do_cmd_help(void)
 	screen_save();
 
 	/* Peruse the main help file */
-	(void)show_file("index.txt", NULL, 0, 0);
+	(void)show_file((OPT(player, rogue_like_commands)) ?
+		"r_index.txt" : "index.txt", NULL, 0, 0);
 
 	/* Load screen */
 	screen_load();
