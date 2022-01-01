@@ -610,6 +610,8 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\world.txt" />
     <Text Include="lib\help\commands.txt" />
     <Text Include="lib\help\index.txt" />
+    <Text Include="lib\help\r_comm.txt" />
+    <Text Include="lib\help\r_index.txt" />
     <Text Include="lib\help\symbols.txt" />
     <Text Include="lib\screens\crown.txt" />
     <Text Include="lib\screens\dead.txt" />
