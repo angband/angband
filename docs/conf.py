@@ -10,7 +10,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+# Always pick up os, to get os.environ, as used below.
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -53,22 +54,29 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-from better import better_theme_path
+# Use one of Sphinx's builtin themes if requested.  Otherwise use the better
+# theme, https://pypi.org/project/sphinx-better-theme/ .
+if ("ANGBAND_SPHINX_BUILTIN" in os.environ
+        and os.environ["ANGBAND_SPHINX_BUILTIN"] != ""
+        and os.environ["ANGBAND_SPHINX_BUILTIN"] != "none"):
+    html_theme = os.environ["ANGBAND_SPHINX_BUILTIN"]
+else:
+    from better import better_theme_path
 
-html_theme_path = [better_theme_path]
-html_theme = "better"
+    html_theme_path = [better_theme_path]
+    html_theme = "better"
+    html_theme_options = {
+        "cssfiles": ["_static/style.css"],
+        "showheader": True,
+        "textcolor": "rgb(230, 230, 242)",
+        "headtextcolor": "rgb(253, 229, 164)",
+    }
 
 html_title = "<img> The Angband Manual"
 html_short_title = "Home"
 html_sidebars = {
     "**": ["localtoc.html", "searchbox.html"],
     "index": ["globaltoc.html", "searchbox.html"],
-}
-html_theme_options = {
-    "cssfiles": ["_static/style.css"],
-    "showheader": True,
-    "textcolor": "rgb(230, 230, 242)",
-    "headtextcolor": "rgb(253, 229, 164)",
 }
 
 
