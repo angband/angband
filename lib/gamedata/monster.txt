@@ -1303,6 +1303,7 @@ flags:NEVER_MOVE
 flags:IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 spell-freq:15
 spells:DRAIN_MANA
+message-invis:DRAIN_MANA:Something slurps.
 desc:It is a large pile of silver flesh that sucks all light from its
 desc: surroundings.
 
@@ -1323,6 +1324,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 spell-freq:15
 spells:DRAIN_MANA
+message-invis:DRAIN_MANA:Something slurps.
 desc:It's a large pile of yellow flesh.
 
 name:scruffy looking hobbit
@@ -2100,6 +2102,8 @@ blow:BITE:HURT:1d2
 spell-freq:9
 spell-power:4
 spells:WOUND
+message-vis:WOUND:{name} caws three times.
+message-invis:WOUND:Something caws three times.
 desc:A crook-beaked bird with bedraggled black feathers.  It mocks you, and you
 desc: realise that its scorn can kill.
 
@@ -2553,6 +2557,7 @@ blow:CRAWL:ACID:2d4
 flags:EMPTY_MIND
 spell-freq:11
 spells:DRAIN_MANA
+message-invis:DRAIN_MANA:Something slurps.
 desc:It is a strange, slimy, icky creature.
 
 name:giant grey rat
@@ -3316,6 +3321,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | HURT_COLD | IM_POIS | NO_CONF | NO_SLEEP
 spell-freq:11
 spells:DRAIN_MANA
+message-invis:DRAIN_MANA:Something slurps.
 desc:Yum!  It looks quite tasty.  It is a pulsing mound of glowing flesh.
 
 name:nether worm mass
@@ -3831,6 +3837,7 @@ flags:IM_POIS
 flags:FORCE_SLEEP
 spell-freq:8
 spells:BLIND | CONF | SCARE
+message-invis:BLIND:Something slurps.
 desc:It is a strange, slimy, icky creature, with rudimentary intelligence, but
 desc: evil cunning.  It hungers for food, and you look tasty.
 
@@ -4714,6 +4721,7 @@ blow:BITE:HURT:1d8
 flags:RAND_25 | BASH_DOOR | GROUP_AI | ATTR_FLICKER
 spell-freq:4
 spells:BLINK | TELE_TO
+message-invis:BLINK:Something yips.
 friends:100:2d7:Same
 desc:A strange magical member of the canine race, its form seems to shimmer and
 desc: fade in front of your very eyes.
@@ -5104,6 +5112,7 @@ experience:250
 spell-freq:4
 spells:BLINK
 spells:S_MONSTER
+message-invis:BLINK:Something slurps.
 desc:It is a strange pulsing mound of flesh.
 
 name:sasquatch
@@ -5526,6 +5535,8 @@ flags:ANIMAL | WEIRD_MIND | ATTR_FLICKER
 flags:IM_POIS | GROUP_AI
 spell-freq:5
 spells:BLINK | TELE_TO | TELE_SELF_TO
+message-invis:BLINK:Something chitters.
+message-invis:TELE_SELF_TO:Something chitters.
 friends:100:2d7:Same
 desc:A spider that never seems quite there.  Everywhere you look it is just
 desc: half-seen in the corner of one eye.
@@ -5548,6 +5559,7 @@ flags:RAND_50 | OPEN_DOOR | BASH_DOOR | KILL_BODY | TAKE_ITEM
 flags:IM_POIS | HURT_COLD
 spell-freq:11
 spells:DRAIN_MANA
+message-invis:DRAIN_MANA:Something slurps.
 desc:It is a strangely moving puddle.
 
 name:Easterling champion
@@ -6225,6 +6237,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | NO_FEAR
 spell-freq:8
 spells:DARKNESS
+message-invis:DARKNESS:Something howls.
 friends:100:2d4:Wolf:servant
 friends:60:2d4:White wolf:servant
 friends:60:2d4:Warg:servant
@@ -7513,6 +7526,8 @@ blow:CRUSH:HURT:4d4
 flags:RAND_25 | KILL_BODY
 spell-freq:8
 spells:HOLD | BLIND | CONF
+message-invis:HOLD:Something hisses.
+message-invis:BLIND:Something hisses.
 desc:A great serpent, with coils of steel, a lunge faster than the eye can see,
 desc: and fangs that drip with acidic poison.  Its eyes are mesmerizing.
 
@@ -7556,6 +7571,7 @@ experience:300
 flags:IM_NEXUS
 spell-freq:1
 spells:BLINK | TELE_AWAY
+message-invis:BLINK:Something slurps.
 desc:It is a very unstable, strange pulsing mound of flesh.
 
 name:southron assassin
@@ -10439,6 +10455,7 @@ experience:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_UNDEAD
+message-invis:BLINK:Something slurps.
 desc:It is a pulsing flesh mound that reeks of death and putrefaction.
 
 name:nalfeshnee
@@ -10512,6 +10529,7 @@ experience:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_DEMON
+message-invis:BLINK:Something slurps.
 desc:A pile of pulsing flesh that glows with an inner hellish fire.  The world
 desc: itself seems to cry out against it.
 
@@ -10529,6 +10547,7 @@ experience:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_DRAGON
+message-invis:BLINK:Something slurps.
 desc:It looks like it was once a dragon corpse, now deeply infected with magical
 desc: bacteria that make it pulse in a foul and degrading way.
 
@@ -13074,6 +13093,7 @@ flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
 spells:S_HI_DEMON
+message-invis:BLINK:Something slurps.
 desc:A massive pulsating mound of flesh, glowing with a hellish light.
 
 name:greater draconic quylthulg
@@ -13091,6 +13111,7 @@ flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
 spells:S_HI_DRAGON
+message-invis:BLINK:Something slurps.
 desc:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
 desc: light.
 
@@ -13109,6 +13130,7 @@ flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
 spells:S_HI_UNDEAD
+message-invis:BLINK:Something slurps.
 desc:A massive pile of rotting flesh.  A disgusting stench fills the air as it
 desc: throbs and writhes.
 
@@ -13572,6 +13594,7 @@ flags:ATTR_FLICKER
 spell-freq:1
 spells:BLINK | TELE_TO
 spells:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS
+message-invis:BLINK:Something slurps.
 desc:A giant seething mass of flesh, overwhelming you with monster after
 desc: monster.
 
@@ -13709,6 +13732,7 @@ innate-freq:10
 spell-freq:6
 spells:BLINK | TELE_TO
 spells:BR_CHAO
+message-invis:BLINK:Something hisses.
 desc:Writhing coil upon coil, this mighty spawn of chaos constantly
 desc: disintegrates and reforms before your dazzled eyes.  It seeks to
 desc: obliterate you utterly; beware!
