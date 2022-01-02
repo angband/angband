@@ -195,6 +195,26 @@ struct monster_spell {
 
 
 /**
+ * Alternate spell message for a particular monster.
+ */
+enum monster_altmsg_type {
+	MON_ALTMSG_SEEN,
+	MON_ALTMSG_UNSEEN,
+	MON_ALTMSG_MISS
+};
+struct monster_altmsg {
+	struct monster_altmsg *next;
+
+	char *message;				/* The alternate text;
+							"" for no message */
+	enum monster_altmsg_type msg_type;	/* Which of the spell's messages
+							to override */
+	uint16_t index;				/* The spell's numerical
+							index (RSF_FOO) */
+};
+
+
+/**
  * Base monster type
  */
 struct monster_base {
@@ -345,12 +365,12 @@ struct monster_race {
 	uint8_t max_num;		/* Maximum population allowed per level */
 	int cur_num;			/* Monster population on current level */
 
+	struct monster_altmsg *spell_msgs;
 	struct monster_drop *drops;
-    
-    struct monster_friends *friends;
-	
-    struct monster_friends_base *friends_base;
-    
+
+	struct monster_friends *friends;
+	struct monster_friends_base *friends_base;
+
 	struct monster_mimic *mimic_kinds;
 
 	struct monster_shape *shapes;

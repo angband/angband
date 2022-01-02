@@ -1396,6 +1396,71 @@ static enum parser_error parse_monster_spells(struct parser *p) {
 	return ret;
 }
 
+static void add_alternate_spell_message(struct monster_race *r,
+		int s_idx, enum monster_altmsg_type msg_type, const char *msg)
+{
+	struct monster_altmsg *alt = mem_alloc(sizeof(*alt));
+
+	alt->next = r->spell_msgs;
+	r->spell_msgs = alt;
+	if (msg == NULL || contains_only_spaces(msg)) {
+		alt->message = string_make("");
+	} else {
+		alt->message = string_make(msg);
+	}
+	alt->msg_type = msg_type;
+	assert(s_idx >= 0 && s_idx <= 0xFFFF);
+	alt->index = (uint16_t) s_idx;
+}
+
+static enum parser_error parse_monster_msg_vis(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	const char *spell = parser_getsym(p, "spell");
+	const char *msg = (parser_hasval(p, "message")) ?
+		parser_getstr(p, "message") : NULL;
+	int s_idx;
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (grab_name("monster spell", spell, r_info_spell_flags,
+			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			return PARSE_ERROR_INVALID_SPELL_NAME;
+	add_alternate_spell_message(r, s_idx, MON_ALTMSG_SEEN, msg);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_msg_invis(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	const char *spell = parser_getsym(p, "spell");
+	const char *msg = (parser_hasval(p, "message")) ?
+		parser_getstr(p, "message") : NULL;
+	int s_idx;
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (grab_name("monster spell", spell, r_info_spell_flags,
+			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			return PARSE_ERROR_INVALID_SPELL_NAME;
+	add_alternate_spell_message(r, s_idx, MON_ALTMSG_UNSEEN, msg);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_msg_miss(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	const char *spell = parser_getsym(p, "spell");
+	const char *msg = (parser_hasval(p, "message")) ?
+		parser_getstr(p, "message") : NULL;
+	int s_idx;
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (grab_name("monster spell", spell, r_info_spell_flags,
+			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			return PARSE_ERROR_INVALID_SPELL_NAME;
+	add_alternate_spell_message(r, s_idx, MON_ALTMSG_MISS, msg);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_monster_drop(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_drop *d;
@@ -1623,6 +1688,9 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "spell-freq int freq", parse_monster_spell_freq);
 	parser_reg(p, "spell-power uint power", parse_monster_spell_power);
 	parser_reg(p, "spells str spells", parse_monster_spells);
+	parser_reg(p, "message-vis sym spell ?str message", parse_monster_msg_vis);
+	parser_reg(p, "message-invis sym spell ?str message", parse_monster_msg_invis);
+	parser_reg(p, "message-miss sym spell ?str message", parse_monster_msg_miss);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_monster_drop);
 	parser_reg(p, "drop-base sym tval uint chance uint min uint max", parse_monster_drop_base);
 	parser_reg(p, "friends uint chance rand number sym name ?sym role", parse_monster_friends);
@@ -1755,12 +1823,21 @@ static void cleanup_monster(void)
 
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
+		struct monster_altmsg *am;
 		struct monster_drop *d;
 		struct monster_friends *f;
 		struct monster_friends_base *fb;
 		struct monster_mimic *m;
 		struct monster_shape *s;
 
+		am = r->spell_msgs;
+		while (am) {
+			struct monster_altmsg *amn = am->next;
+
+			string_free(am->message);
+			mem_free(am);
+			am = amn;
+		}
 		d = r->drops;
 		while (d) {
 			struct monster_drop *dn = d->next;

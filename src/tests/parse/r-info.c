@@ -31,6 +31,7 @@ int setup_tests(void **state) {
 int teardown_tests(void *state) {
 	struct monster_race *mr = parser_priv(state);
 	struct monster_blow *mb;
+	struct monster_altmsg *ma;
 	struct blow_method *meth;
 	struct blow_effect *eff;
 
@@ -42,6 +43,14 @@ int teardown_tests(void *state) {
 
 		mem_free(mb);
 		mb = mbn;
+	}
+	ma = mr->spell_msgs;
+	while (ma) {
+		struct monster_altmsg *man = ma->next;
+
+		string_free(ma->message);
+		mem_free(ma);
+		ma = man;
 	}
 	mem_free(mr);
 	parser_destroy(state);
@@ -66,6 +75,20 @@ int teardown_tests(void *state) {
 	mem_free(z_info);
 	return 0;
 }
+
+static bool has_alternate_message(const struct monster_race *r, uint16_t s_idx,
+		enum monster_altmsg_type msg_type, const char *message)
+{
+	struct monster_altmsg *am = r->spell_msgs;
+
+	while (1) {
+		if (!am) return false;
+		if (am->index == s_idx && am->msg_type == msg_type
+				&& streq(am->message, message)) return true;
+		am = am->next;
+	}
+}
+
 
 static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:Carcharoth, the Jaws of Thirst");
@@ -298,6 +321,44 @@ static int test_spells0(void *state) {
 	ok;
 }
 
+static int test_messagevis0(void *state) {
+	enum parser_error r = parser_parse(state,
+		"message-vis:TRAPS:{name} grins mischieviously.");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	require(has_alternate_message(mr, RSF_TRAPS, MON_ALTMSG_SEEN,
+		"{name} grins mischieviously."));
+	ok;
+}
+
+static int test_messageinvis0(void *state) {
+	enum parser_error r = parser_parse(state,
+		"message-invis:BLINK");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	require(has_alternate_message(mr, RSF_BLINK, MON_ALTMSG_UNSEEN, ""));
+	ok;
+}
+
+static int test_messagemiss0(void *state) {
+	enum parser_error r = parser_parse(state,
+		"message-miss:BOULDER:{name} throws a boulder and misses.");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	require(has_alternate_message(mr, RSF_BOULDER, MON_ALTMSG_MISS,
+		"{name} throws a boulder and misses."));
+	ok;
+}
+
 const char *suite_name = "parse/r-info";
 struct test tests[] = {
 	{ "name0", test_name0 },
@@ -319,5 +380,8 @@ struct test tests[] = {
 	{ "innate-freq0", test_innate_freq0 },
 	{ "spell-freq0", test_spell_freq0 },
 	{ "spells0", test_spells0 },
+	{ "message-vis0", test_messagevis0 },
+	{ "message-invis0", test_messageinvis0 },
+	{ "message-miss0", test_messagemiss0 },
 	{ NULL, NULL }
 };

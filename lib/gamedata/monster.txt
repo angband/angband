@@ -29,6 +29,9 @@
 # spell-freq: spell frequency
 # spell-power: spell power
 # spells: spell type | spell type | etc
+# message-vis:spell type:message
+# message-invis:spell type:message
+# message-miss:spell type:message
 # desc: Description
 # drop: item type : item name : percent drop chance : min : max
 # drop-base: item type : percent drop chance : min : max
@@ -145,6 +148,17 @@
 # but no spells a spell power value is not required.
 
 # 'spells' is for spell flags, which work just like regular flags.
+
+# 'message-vis', 'message-invis', and 'message-miss' allow overriding of the
+# default messages (see monster_spell.txt) displayed when a monster casts a
+# particular spell.  'message-vis' is for the message when the monster is
+# visible to the observer.  'message-invis' is for the message when the monster
+# is not seen by the observer.  'message-miss' is for the message if the spell
+# misses.  The first field, the spell type, should be one of the names listed
+# on the spells line.  The last field is the message to use; if that is omitted
+# or is all whitespace, no message will be displayed on casting.  Any brace
+# expressions, as described in monster_spell.txt, will be expanded in the
+# message before it is displayed.
 
 # 'desc' is for description. As many desc: lines may be used as are needed to
 # describe the monster. Note that lines will need spaces at their
