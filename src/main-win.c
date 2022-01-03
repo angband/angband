@@ -90,21 +90,6 @@
 
 
 /**
- * Use HTML-Help.
- */
-/* #define HTML_HELP */
-
-#ifdef HTML_HELP
-# define HELP_GENERAL "angband.chm"
-# define HELP_SPOILERS "angband.chm"
-#else /* HTML_HELP */
-# define HELP_GENERAL "index.txt"
-# define HELP_SPOILERS "spoilers.hlp"
-#endif /* HTML_HELP */
-
-
-
-/**
  * This may need to be removed for some compilers XXX XXX XXX
  */
 #define STRICT
@@ -3224,7 +3209,7 @@ static void start_screensaver(void)
 /**
  * Display a help file
  */
-static void display_help(const char *filename)
+static void display_help(void)
 {
 	Term_keypress('?',0);
 }
@@ -3913,13 +3898,7 @@ static void process_menus(WORD wCmd)
 
 		case IDM_HELP_GENERAL:
 		{
-			display_help(HELP_GENERAL);
-			break;
-		}
-
-		case IDM_HELP_SPOILERS:
-		{
-			display_help(HELP_SPOILERS);
+			display_help();
 			break;
 		}
 

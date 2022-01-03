@@ -1,0 +1,61 @@
+
+Roguelike Keyset Command Summary
+================================
+
+  a    Zap a rod (Activate)            A    Activate an object
+  b    (walk - south west)             B    (run - south west)
+  c    Close a door                    C    Character description
+  d    Drop an item                    D    Disarm a trap or lock a door
+  e    List equipped items             E    Eat some food
+  f    -                               F    Fuel your lantern/torch
+  g    Get objects on floor            G    Gain new spells/prayers
+  h    (walk - west)                   H    (run - west)
+  i    List contents of pack           I    Inspect an item
+  j    (walk - south)                  J    (run - south)
+  k    (walk - north)                  K    (run - north)
+  l    (walk - east)                   L    (run - east)
+  m    Cast a spell                    M    Display map of entire level
+  n    (walk - south east)             N    (run - south east)
+  o    Open a door or chest            O    Toggle ignore
+  p    -                               P    Browse a book
+  q    Quaff a potion                  Q    Kill character & quit
+  r    Read a scroll                   R    Rest for a period
+  s    Steal from a monster (rogues)   S    See abilities
+  t    Fire an item                    T    Take off equipment
+  u    (walk - north east)             U    (run - north east)
+  v    Throw an item                   V    Display version info
+  w    Wear/wield equipment            W    Locate player on map (Where)
+  x    Look around                     X    Use an item
+  y    (walk - north west)             Y    (run - north west)
+  z    Aim a wand (Zap)                Z    Use a staff (Zap)
+  !    -                               ^A   (special - debug command)
+  @    Center map                      ^B   (alter - south west)
+  #    -                               ^C   (special - break)
+  $    -                               ^D   Ignore an item
+  %    -                               ^E   Toggle inven/equip window
+  ^    (special - control key)         ^F   Repeat level feeling
+  &    -                               ^G   Do autopickup
+  *    Target monster or location      ^H   (alter - west)
+  (    -                               ^I   (special - tab)
+  )    Dump screen to a file           ^J   (alter - south)
+  {    Inscribe an object              ^K   (alter - north)
+  }    Uninscribe an object            ^L   (alter - east)
+  [    Display visible monster list    ^M   (special - return)
+  ]    Display visible object list     ^N   (alter - south east)
+  -    Walk into a trap                ^O   Show previous message
+  _    Enter store                     ^P   Show previous messages
+  +    Alter grid (steal for rogues)   ^Q   -
+  =    Set options                     ^R   Redraw the screen
+  ;    Walk (with pickup)              ^S   Save and don't quit
+  :    Take notes                      ^T   Dig a tunnel
+  '    Target closest monster          ^U   (alter - north east)
+  "    Enter a user pref command       ^V   Repeat previous command
+  ,    Run                             ^W   (special - wizard mode)
+  <    Go up staircase                 ^X   Save and quit
+  .    Stay still (with pickup)        ^Y   (alter - north west)
+  >    Go down staircase               ^Z   -
+  \    (special - bypass keymap)       ~    Check knowledge
+  `    (special - escape)              ?    Display help
+  /    Identify symbol
+  TAB  Fire default ammo at target
+  |    List contents of quiver

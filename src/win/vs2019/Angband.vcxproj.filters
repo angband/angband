@@ -1372,6 +1372,12 @@
     <Text Include="lib\help\index.txt">
       <Filter>Resource Files\help</Filter>
     </Text>
+    <Text Include="lib\help\r_comm.txt">
+      <Filter>Resource Files\help</Filter>
+    </Text>
+    <Text Include="lib\help\r_index.txt">
+      <Filter>Resource Files\help</Filter>
+    </Text>
     <Text Include="lib\help\symbols.txt">
       <Filter>Resource Files\help</Filter>
     </Text>

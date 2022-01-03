@@ -18,6 +18,6 @@ Browser/help commands:
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sensitivity
 
-.. menu:: [a] commands.txt
+.. menu:: [a] r_comm.txt
 
 .. menu:: [b] symbols.txt
