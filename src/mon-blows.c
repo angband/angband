@@ -73,6 +73,7 @@ static blow_tag_t blow_tag_lookup(const char *tag)
  */
 char *monster_blow_method_action(struct blow_method *method, int midx)
 {
+	const char punct[] = ".!?;:,'";
 	char buf[1024] = "\0";
 	const char *next;
 	const char *s;
@@ -114,7 +115,14 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 				case BLOW_TAG_TARGET: {
 					char m_name[80];
 					if (midx > 0) {
-						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						int mdesc_mode = MDESC_TARG;
+
+						if (!strchr(punct, *in_cursor)) {
+							mdesc_mode |= MDESC_COMMA;
+						}
+						monster_desc(m_name,
+							sizeof(m_name), t_mon,
+							mdesc_mode);
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
@@ -124,7 +132,9 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 				case BLOW_TAG_OF_TARGET: {
 					char m_name[80];
 					if (midx > 0) {
-						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						monster_desc(m_name,
+							sizeof(m_name), t_mon,
+							MDESC_TARG | MDESC_COMMA);
 						strnfcat(buf, sizeof(buf), &end, m_name);
 						strnfcat(buf, sizeof(buf), &end, "'s");
 					} else {

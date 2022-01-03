@@ -1806,7 +1806,8 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		/* Monsters with high spell power can resist */
 		if (randint0(mon->race->spell_power) > player->lev) {
 			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL);
+			monster_desc(m_name, sizeof(m_name), mon,
+				MDESC_CAPITAL | MDESC_COMMA);
 			msg("%s resists!", m_name);
 			return true;
 		}
