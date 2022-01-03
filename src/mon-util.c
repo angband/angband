@@ -1016,18 +1016,19 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	struct monster_lore *lore = get_lore(mon->race);
 	char m_name[80];
 	char buf[80];
+	int desc_mode = MDESC_DEFAULT | ((note) ? MDESC_COMMA : 0);
 
 	/* Assume normal death sound */
 	int soundfx = MSG_KILL;
 
 	/* Extract monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+	monster_desc(m_name, sizeof(m_name), mon, desc_mode);
 
 	/* Shapechanged monsters revert on death */
 	if (mon->original_race) {
 		monster_revert_shape(mon);
 		lore = get_lore(mon->race);
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+		monster_desc(m_name, sizeof(m_name), mon, desc_mode);
 	}
 
 	/* Play a special sound if the monster was unique */

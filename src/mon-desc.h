@@ -34,9 +34,12 @@
 #define MDESC_HIDE      0x40    /* Assume the monster is hidden */
 #define MDESC_SHOW      0x80    /* Assume the monster is visible */
 #define MDESC_CAPITAL   0x100   /* Capitalise */
+#define MDESC_COMMA     0x200   /* If the name includes an unterminated phrase,
+					"Wormtongue, Agent of Saruman" as an
+					example, add a comma after the name */
 
 /* "someone", "something", or "the kobold" at the start of a message */
-#define MDESC_STANDARD  (MDESC_CAPITAL | MDESC_IND_HID | MDESC_PRO_HID)
+#define MDESC_STANDARD  (MDESC_CAPITAL | MDESC_IND_HID | MDESC_PRO_HID | MDESC_COMMA)
 
 /* "someone", "something", or "the kobold" as the target of an attack */
 #define MDESC_TARG  (MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID)

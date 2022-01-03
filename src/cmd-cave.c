@@ -1572,7 +1572,8 @@ void do_cmd_mon_command(struct command *cmd)
 	lore = get_lore(mon->race);
 
 	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
+	monster_desc(m_name, sizeof(m_name), mon,
+		MDESC_CAPITAL | MDESC_IND_HID | MDESC_COMMA);
 
 	switch (cmd->code) {
 		case CMD_READ_SCROLL: {

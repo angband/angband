@@ -95,6 +95,7 @@ static void spell_message(struct monster *mon,
 						  const struct monster_spell *spell,
 						  bool seen, bool hits)
 {
+	const char punct[] = ".!?;:,'";
 	char buf[1024] = "\0";
 	const char *next;
 	const char *s;
@@ -103,6 +104,7 @@ static void spell_message(struct monster *mon,
 	size_t end = 0;
 	struct monster_spell_level *level = spell->level;
 	struct monster *t_mon = NULL;
+	bool is_leading;
 
 	/* Get the right level of message */
 	while (level->next && mon->race->spell_power >= level->next->power) {
@@ -146,6 +148,7 @@ static void spell_message(struct monster *mon,
 	}
 
 	next = strchr(in_cursor, '{');
+	is_leading = (next == in_cursor);
 	while (next) {
 		/* Copy the text leading up to this { */
 		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
@@ -162,7 +165,17 @@ static void spell_message(struct monster *mon,
 			switch (spell_tag_lookup(tag)) {
 				case SPELL_TAG_NAME: {
 					char m_name[80];
-					monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+					int mdesc_mode = (MDESC_IND_HID |
+						MDESC_PRO_HID);
+
+					if (is_leading) {
+						mdesc_mode |= MDESC_CAPITAL;
+					}
+					if (!strchr(punct, *in_cursor)) {
+						mdesc_mode |= MDESC_COMMA;
+					}
+					monster_desc(m_name, sizeof(m_name),
+						mon, mdesc_mode);
 
 					strnfcat(buf, sizeof(buf), &end, m_name);
 					break;
@@ -181,7 +194,14 @@ static void spell_message(struct monster *mon,
 				case SPELL_TAG_TARGET: {
 					char m_name[80];
 					if (mon->target.midx > 0) {
-						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						int mdesc_mode = MDESC_TARG;
+
+						if (!strchr(punct, *in_cursor)) {
+							mdesc_mode |= MDESC_COMMA;
+						}
+						monster_desc(m_name,
+							sizeof(m_name), t_mon,
+							mdesc_mode);
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
@@ -220,6 +240,7 @@ static void spell_message(struct monster *mon,
 		}
 
 		next = strchr(in_cursor, '{');
+		is_leading = false;
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
 

@@ -518,7 +518,7 @@ bool target_set_closest(int mode, monster_predicate pred)
 	}
 
 	/* Target the monster */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_COMMA);
 	if (!(mode & TARGET_QUIET))
 		msg("%s is targeted.", m_name);
 

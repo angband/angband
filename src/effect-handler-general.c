@@ -2340,7 +2340,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 
 			/* Get "the monster" or "something" */
 			monster_desc(m_name, sizeof(m_name), mon,
-					MDESC_IND_HID | MDESC_CAPITAL);
+				MDESC_IND_HID | MDESC_CAPITAL | MDESC_COMMA);
 
 			/* Describe the monster */
 			msg("%s has %d hit point%s.", m_name, mon->hp, (mon->hp == 1) ? "" : "s");
