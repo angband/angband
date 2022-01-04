@@ -429,9 +429,6 @@ void create_needed_dirs(void)
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_INFO, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
-	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_HELP, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
-
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_ARCHIVE, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
