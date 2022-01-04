@@ -390,14 +390,11 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 {
 	ang_file *fff;
 
-	safe_setuid_grab();
-
 	/* Remove old keymaps */
 	remove_old_dump(path, title);
 
 	fff = file_open(path, MODE_APPEND, FTYPE_TEXT);
 	if (!fff) {
-		safe_setuid_drop();
 		return false;
 	}
 
@@ -410,8 +407,6 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 	file_putf(fff, "\n");
 	pref_footer(fff, title);
 	file_close(fff);
-
-	safe_setuid_drop();
 
 	return true;
 }

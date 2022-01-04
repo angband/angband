@@ -696,8 +696,6 @@ errr text_lines_to_file(const char *path, text_writer writer)
 
 	ang_file *new_file;
 
-	safe_setuid_grab();
-
 	/* Format filenames */
 	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
 	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
@@ -705,7 +703,6 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	/* Write new file */
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
 	if (!new_file) {
-		safe_setuid_drop();
 		return -1;
 	}
 
@@ -725,8 +722,6 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	} else {
 		file_delete(new_fname);
 	}
-
-	safe_setuid_drop();
 
 	return 0;
 }
