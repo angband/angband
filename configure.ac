@@ -245,7 +245,7 @@ AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}", [Path to the game's co
 AC_DEFINE_UNQUOTED([DEFAULT_LIB_PATH], "${libdatadir}", [Path to the game's lib directory])
 AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}", [Path to the game's variable data])
 
-NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
+NOINSTALL="$with_no_install"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)
 if test "x$wsetgid" == "xyes"; then
 	AC_DEFINE(SETGID, 1, [Define if running as a central install on a multiuser system that has setresgid or setegid support.])
@@ -441,6 +441,9 @@ fi
 
 dnl Windows checking
 if test "$enable_win" = "yes"; then
+	if test x"$with_no_install" != x || test x"$with_setgid" != x ; then
+		AC_MSG_ERROR([--enable-win is not compatible with --with-no-install or --with-setgid])
+	fi
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
 	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 	CPPFLAGS="${CPPFLAGS} -DWINDOWS -Iwin/include"
@@ -449,6 +452,8 @@ if test "$enable_win" = "yes"; then
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
+	# Set up for Windows-specific behavior in the Makefiles.
+	ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 fi
 
 
@@ -531,30 +536,42 @@ else
 	displayedvardatadir="$vardatadir"
 fi
 
-if test "x$with_no_install" = "xyes"; then
+if test "x$with_no_install" = "xyes" || test "x$enable_win" = "xyes"; then
 	displayedprefix="(not used)"
+	displayedbindir="(not used)"
+	displayeddocdir="(not used)"
 else
-	displayedprefix="$prefix"
+	displayedprefix="${prefix}"
+	displayedbindir="${bindir}"
+	displayeddocdir="${docdatadir}"
+fi
+
+if test "x$enable_win" = "xyes"; then
+	displayedconfigdir="./lib"
+	displayedlibdatadir="./lib"
+else
+	displayedconfigdir="${configdir}"
+	displayedlibdatadir="${libdatadir}"
 fi
 
 echo
 echo "Configuration:"
 echo
 echo "  Install path:                           ${displayedprefix}"
-echo "  binary path:                            ${bindir}"
-echo "  config path:                            ${configdir}"
-echo "  lib path:                               ${libdatadir}"
-echo "  doc path:                               ${docdatadir}"
+echo "  binary path:                            ${displayedbindir}"
+echo "  config path:                            ${displayedconfigdir}"
+echo "  lib path:                               ${displayedlibdatadir}"
+echo "  doc path:                               ${displayeddocdir}"
 echo "  var path:                               ${displayedvardatadir}"
 if test "x$with_gamedata_in_lib" == "xyes"; then
-	echo "  gamedata path:                          ${libdatadir}"
+	echo "  gamedata path:                          ${displayedlibdatadir}"
 else
-	echo "  gamedata path:                          ${configdir}"
+	echo "  gamedata path:                          ${displayedconfigdir}"
 fi
 
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
-elif test "x$with_private_dirs" = "xyes"; then
+elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
 	echo "  (with private save and score files in ~/.angband/Angband/)"
 fi
 

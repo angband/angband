@@ -93,6 +93,27 @@ gen-covs: tests/ran-already $(GCOVS)
 %.gcov: %
 	(gcov -o $(dir $^) -p $^ >/dev/null)
 
+install-extra:
+	# For Windows, copy the executable and the DLLs it needs.
+	if test x"${ENABLEWIN}" = xyes ; then \
+		for i in ${PROG} ; do \
+			${INSTALL_STATUS}; \
+			if ${INSTALL} -m 755 $$i ../$$i ; then \
+				${INSTALL_OK}; \
+			else \
+				${INSTALL_FAILED}; \
+			fi \
+		done ; \
+		for i in zlib1.dll libpng12.dll ; do \
+			${INSTALL_STATUS}; \
+			if ${INSTALL} -m 644 win/dll/$$i ../$$i ; then \
+				${INSTALL_OK}; \
+			else \
+				${INSTALL_FAILED}; \
+			fi \
+		done \
+	fi
+
 post-install:
 	# For a shared installation, set appropriate owner for executable
 	# and mark it as setgid.
