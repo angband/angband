@@ -274,15 +274,16 @@ a .tar.gz file, for a release.
 Then configure the cross-comilation and perform the compilation itself::
 
 	./configure --enable-win --build=i686-pc-linux-gnu --host=i586-mingw32msvc
+	make install
+
+The last step only works with very recent versions.  For older ones, use this
+instead of the last step::
+
 	make
+	cp src/angband.exe .
+	cp src/win/dll/*.dll .
 
-One way to run the generated executable, src/angband.exe, with wine is to first
-set up symbolic links to the executable and DLLs it uses::
-
-	ln -s src/angband.exe .
-	ln -s src/win/dll/*.dll .
-
-Then use wine::
+To run the result, you can use wine like this::
 
 	wine angband.exe
 
@@ -296,9 +297,11 @@ TODO: except for recent versions (after Angband 4.2.3) you likely need to
 manually disable curses (add --disable-curses to the options passed to
 configure), or the host curses installation will be found causing the build
 process to fail when linking angband.exe (the error message will likely be
-"cannot find -lncursesw" and "cannot find -ltinfo"). More checking of
-permissible combinations to configure is necessary. The --enable-release and
---enable-more-gcc-warnings options are safe to use with --enable-win.
+"cannot find -lncursesw" and "cannot find -ltinfo").  Most of the --with or
+--enable options for configure are not appropriate when using --enable-win.
+The ones that are okay are --with-private-dirs (on by default),
+--with-gamedata-in-lib (has no effect), --enable-release,
+--enable-more-gcc-warnings, and --enable-skip-old-int-typedefs.
 
 Debug build
 ~~~~~~~~~~~
@@ -398,13 +401,11 @@ a .tar.gz file, for a release.
 Then run these commands::
 
         ./configure --enable-win
-        make
+        make install
 
-The install target almost certainly won't work
-
-Following build, to get the program to run, you need to copy the executable
-from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
-and zlib1.dll) from src/win/dll to the top-level dir
+The last step only works with very recent versions.  For older ones, use
+"make" rather than "make install" and copy src/angband.exe,
+src/win/dll/libpng12.dll, and src/win/dll/zlib1.dll to the top-level directory.
 
 Using Cygwin (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -425,11 +426,12 @@ a .tar.gz file, for a release.
 
 Then run these commands::
 
-	./configure --enable-win --with-no-install --host=i686-pc-mingw32
-	make
+	./configure --enable-win --host=i686-pc-mingw32
+	make install
 
-As with the "Using MinGW" process, you need to copy the executable and
-DLLs to the top-level dir.
+The last step only works with very recent versions.  For older ones, use
+"make" rather than "make install" and copy src/angband.exe,
+src/win/dll/libpng12.dll, and src/win/zlib1.dll to the top-level directory.
 
 If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build

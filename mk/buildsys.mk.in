@@ -128,6 +128,7 @@ MO_FILES = ${LOCALES:.po=.mo}
 .SUFFIXES:
 .SUFFIXES: .amigalib.o .beam .c .cc .class .cxx .d .erl .lib.o .java .mo .m .mm .o .plugin.o .po .py .pyc .rc .S .xpm
 .PHONY: all subdirs subdirs-after pre-depend depend install install-extra post-install uninstall uninstall-extra clean pre-clean distclean pre-distclean locales copy-headers-into-framework ${SUBDIRS} ${SUBDIRS_AFTER}
+.PHONY: fake-install real-install
 
 all:
 	${MAKE} -s pre-all
@@ -658,7 +659,26 @@ locales: ${MO_FILES}
 		${COMPILE_PLUGIN_FAILED}; \
 	fi
 
-install: all install-extra
+# Skip most installation steps when NOINSTALL or ENABLEWIN are set.
+install:
+	if test "x${NOINSTALL}" = xyes || test "x${ENABLEWIN}" = xyes ; then \
+		${MAKE} -s fake-install ; \
+	else \
+		${MAKE} -s real-install ; \
+	fi
+
+fake-install: all install-extra
+	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
+		test x"$$i" = x"" && continue; \
+		${DIR_ENTER}; \
+		${MAKE} -s install || exit $$?; \
+		${MAKE} -s post-install || exit $$?; \
+		${DIR_LEAVE}; \
+	done
+
+	${MAKE} -s post-install
+
+real-install: all install-extra
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
