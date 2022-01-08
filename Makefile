@@ -16,9 +16,9 @@ OUT = $(TAG).tar.gz
 
 manual:
 	@if test ! x"$(SPHINXBUILD)" = x && test ! x"$(SPHINXBUILD)" = xNOTFOUND ; then \
-		env ANGBAND_SPHINX_BUILTIN="$(ANGBAND_SPHINX_BUILTIN)" $(MAKE) -C docs SPHINXBUILD="$(SPHINXBUILD)" html ; \
+		env DOC_HTML_THEME="$(DOC_HTML_THEME)" $(MAKE) -C docs SPHINXBUILD="$(SPHINXBUILD)" html ; \
 	else \
-		echo "sphinx-build was not found during configuration.  If it is not installed, you will have to install it.  You can either rerun the configuration or set SPHINXBUILD on the command line when running make to inform make how to run sphinx-build.  You may also want to set ANGBAND_SPHINX_BUILTIN to a builtin Sphinx theme to use instead of what is configured in docs/conf.py.  For instance, 'ANGBAND_SPHINX_BUILTIN=classic'." ; \
+		echo "sphinx-build was not found during configuration.  If it is not installed, you will have to install it.  You can either rerun the configuration or set SPHINXBUILD on the command line when running make to inform make how to run sphinx-build.  You may also want to set DOC_HTML_THEME to a builtin Sphinx theme to use instead of what is configured in docs/conf.py.  For instance, 'DOC_HTML_THEME=classic'." ; \
 		exit 1 ; \
 	fi
 

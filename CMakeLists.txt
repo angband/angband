@@ -2,6 +2,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
 PROJECT(Angband LANGUAGES C)
 SET(OUR_EXECUTABLE_NAME ${PROJECT_NAME})
 
+# Append the custom modules to the search path.
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
+
 OPTION(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
 OPTION(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
 OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
@@ -44,6 +47,8 @@ OPTION(SHARED_INSTALL "Install for shared use with a setgid executable.  Conflic
 SET(INSTALL_GROUP_ID "games" CACHE STRING "Group ID (either name or number) to use if SHARED_INSTALL is on.")
 OPTION(READONLY_INSTALL "Install for shared use with variable persistent data stored in the user's directories.  Conflicts with SC_INSTALL, SHARED_INSTALL, and SUPPORT_WINDOWS_FRONTEND." OFF)
 INCLUDE(GNUInstallDirs)
+
+SET(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
@@ -399,27 +404,116 @@ ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
     # Just check for the version file left in a snapshot.  If not in a snapshot,
     # don't bother to set the build ID.
-    IF (EXISTS ./version)
+    IF(EXISTS ./version)
         EXECUTE_PROCESS(COMMAND type version WORKING_DIRECTORY . OUTPUT_VARIABLE ANGBAND_BUILD_ID)
-        IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
-            SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
-        ELSE()
-            SET(ANGBAND_BUILD_ID_OPTION "")
+        IF(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
+            SET(ANGBAND_BUILD_ID "")
         ENDIF()
     ELSE()
-        SET(ANGBAND_BUILD_ID_OPTION "")
+        SET(ANGBAND_BUILD_ID "")
     ENDIF()
 ELSE()
     # Assumes a Unix-like environment.
     EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
-    IF (NOT (ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$"))
-        SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
-    ELSE()
-        SET(ANGBAND_BUILD_ID_OPTION "")
+    IF(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
+        SET(ANGBAND_BUILD_ID "")
     ENDIF()
+ENDIF()
+IF(NOT (ANGBAND_BUILD_ID STREQUAL ""))
+    SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+ELSE()
+    SET(ANGBAND_BUILD_ID_OPTION "")
 ENDIF()
 TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+
+# Set up to generate documentation if sphinx-build is available.
+find_package(Sphinx)
+IF(Sphinx_FOUND)
+    INCLUDE(src/cmake/modules/SphinxDocument.cmake)
+
+    # Use a custom target to rewrite some of the configuration information
+    # for sphinx-build.  Need to bring over the rest of the configuration
+    # information from the source directories because of that.
+    SET(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/manual-conf")
+    ADD_CUSTOM_TARGET(
+        OurManualConf ALL
+        "${CMAKE_COMMAND}" "-E" "make_directory" "${_OUTDIR}"
+        COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory"
+        "${CMAKE_CURRENT_SOURCE_DIR}/docs/_static"
+        "${_OUTDIR}/_static"
+        COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory"
+        "${CMAKE_CURRENT_SOURCE_DIR}/docs/_templates"
+        "${_OUTDIR}/_templates"
+        VERBATIM
+    )
+    SET_TARGET_PROPERTIES(OurManualConf PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${_OUTDIR}")
+    SET(_SCRIPT "src/cmake/scripts/rewrite.cmake")
+    SET(_IN "docs/conf.py")
+    SET(_OUT "conf.py")
+    ADD_CUSTOM_COMMAND(
+        TARGET OurManualConf POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        "-P" "${CMAKE_CURRENT_SOURCE_DIR}/${_SCRIPT}" --
+        "${_OUTDIR}/${_OUT}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${_IN}"
+        "DOC_VERSION" "${ANGBAND_BUILD_ID}"
+        "DOC_HTML_THEME" "${DOC_HTML_THEME}"
+        DEPENDS "${_IN}" "${_SCRIPT}"
+        BYPRODUCTS "${_OUTDIR}/${_OUT}"
+        VERBATIM
+    )
+
+    # Add the target to generate the documentation.
+    ADD_SPHINX_DOCUMENT(
+        OurManual
+        SOURCE_DIR docs
+        CONF_TARGET OurManualConf
+        OUTPUT_FORMATS html
+        OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/manual-output"
+        ALL
+        BUILD_FAIL_NO_SPHINX
+    )
+
+    IF(SC_INSTALL)
+        # Add another target to transfer the built documentation to the
+        # self-contained installation.  Don't do that as an install target
+        # since everything else will be put in place by the build process
+        # without an install step.
+        SPHINX_DOCUMENT_GET_OUTPUT_DIRECTORY(_DOC OurManual)
+        SPHINX_DOCUMENT_GET_OUTPUT_FORMATS(_FORMATS OurManual)
+        IF(_DOC STREQUAL "_DOC-NOTFOUND")
+            MESSAGE(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
+        ENDIF()
+        IF(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
+            MESSAGE(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
+        ENDIF()
+        IF(NOT (_DOC MATCHES "/$"))
+            SET(_DOC "${_DOC}/")
+        ENDIF()
+        SET(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        UNSET(_COMMANDS)
+        FOREACH(_X ${_FORMATS})
+            # Strip out the format-specific subdirectory when transferring
+            # so there's less nesting.  Works okay with only HTML output;
+            # will there be name conflicts if multiple formats are used?
+            LIST(
+                APPEND
+                _COMMANDS
+                "COMMAND" "${CMAKE_COMMAND}" "-E" "copy_directory"
+                "${_DOC}${_X}/"
+                "${_OUTDIR}"
+            )
+        ENDFOREACH()
+        ADD_CUSTOM_TARGET(
+            OurManualTransfer ALL
+            "${CMAKE_COMMAND}" "-E" "make_directory" "${_OUTDIR}"
+            ${_COMMANDS}
+            VERBATIM
+        )
+        ADD_DEPENDENCIES(OurManualTransfer OurManual)
+    ENDIF()
+ENDIF()
 
 SET(EXECUTABLE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 SET(DIR_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
@@ -505,6 +599,33 @@ IF((SHARED_INSTALL) OR (READONLY_INSTALL))
         # turn that bit back on.
         INSTALL(CODE "EXECUTE_PROCESS(COMMAND chmod g+s ${INSTALLED_EXECUTABLE} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL ERROR \"Resetting setgid bit on ${INSTALLED_EXECUTABLE} failed\")\nENDIF()")
     ENDIF()
+
+    IF(Sphinx_FOUND)
+        # Install the built documentation.
+        SPHINX_DOCUMENT_GET_OUTPUT_DIRECTORY(_DOC OurManual)
+        SPHINX_DOCUMENT_GET_OUTPUT_FORMATS(_FORMATS OurManual)
+        IF(_DOC STREQUAL "_DOC-NOTFOUND")
+            MESSAGE(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
+        ENDIF()
+        IF(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
+            MESSAGE(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
+        ENDIF()
+        IF(NOT (_DOC MATCHES "/$"))
+            SET(_DOC "${_DOC}/")
+        ENDIF()
+        FOREACH(_X ${_FORMATS})
+            # Remove the format subdirectory when installing for one less
+            # level of nesting.  Works okay with just HTML output; may have
+            # conflicting names with multiple output types.
+            INSTALL(
+                DIRECTORY "${_DOC}${_X}/"
+                DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+                FILE_PERMISSIONS ${DATA_PERMISSIONS}
+                DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS}
+                PATTERN .buildinfo  EXCLUDE
+            )
+        ENDFOREACH()
+    ENDIF()
 ENDIF()
 
 IF(SC_INSTALL)
@@ -534,6 +655,9 @@ IF(SC_INSTALL)
         INSTALL(libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
+    IF(Sphinx_FOUND)
+        INSTALL(DIRECTORY docs/ DESTINATION docs)
+    ENDIF()
 
     MESSAGE(STATUS "Copying needed files")
 
