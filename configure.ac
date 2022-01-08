@@ -82,7 +82,7 @@ AC_PATH_PROGS([SPHINXBUILD],
 	[sphinx-build sphinx-build3 sphinx-build2],
 	[NOTFOUND],
 	[$PATH$PATH_SEPARATOR/usr/share/sphinx/scripts/python3$PATH_SEPARATOR/usr/share/sphinx/scripts/python2])
-AC_ARG_VAR([ANGBAND_SPHINX_BUILTIN], [the builtin Sphinx theme to use or, if not set, empty, or none, use the theme configured in docs/conf.py (currently the better theme)])
+AC_ARG_VAR([DOC_HTML_THEME], [the builtin Sphinx HTML theme to use or, if not set or empty, use the theme configured in docs/conf.py (currently the better theme)])
 
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
