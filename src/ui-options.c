@@ -667,9 +667,9 @@ static void ui_keymap_create(const char *title, int row)
 		}
 	}
 
-	if (c.code && get_check("Save this keymap? ")) {
+	if (c.code && get_check("Keep this keymap? ")) {
 		keymap_add(mode, c, keymap_buffer, true);
-		prt("Keymap added.  Press any key to continue.", 17, 0);
+		prt("To use in other sessions, save the keymaps to a file.  Press a key to continue.", 17, 0);
 		inkey();
 	}
 }
