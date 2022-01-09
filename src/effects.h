@@ -44,6 +44,7 @@ const char *effect_info(const struct effect *effect);
 const char *effect_desc(const struct effect *effect);
 effect_index effect_lookup(const char *name);
 int effect_subtype(int index, const char *type);
+extern expression_base_value_f effect_value_base_by_name(const char *name);
 bool effect_do(struct effect *effect,
 	struct source origin,
 	struct object *obj,

@@ -41,5 +41,4 @@ bool spell_cast(int spell_index, int dir, struct command *cmd);
 extern void get_spell_info(int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int spell_index);
-extern expression_base_value_f spell_value_base_by_name(const char *name);
 

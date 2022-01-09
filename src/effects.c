@@ -20,7 +20,9 @@
 #include "effects.h"
 #include "effect-handler.h"
 #include "game-input.h"
+#include "init.h"
 #include "mon-summon.h"
+#include "obj-gear.h"
 #include "player-history.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -273,6 +275,85 @@ int effect_subtype(int index, const char *type)
 	}
 
 	return val;
+}
+
+static int effect_value_base_spell_power(void)
+{
+	int power = 0;
+
+	/* Check the reference race first */
+	if (ref_race)
+	   power = ref_race->spell_power;
+	/* Otherwise the current monster if there is one */
+	else if (cave->mon_current > 0)
+		power = cave_monster(cave, cave->mon_current)->race->spell_power;
+
+	return power;
+}
+
+static int effect_value_base_player_level(void)
+{
+	return player->lev;
+}
+
+static int effect_value_base_dungeon_level(void)
+{
+	return cave->depth;
+}
+
+static int effect_value_base_max_sight(void)
+{
+	return z_info->max_sight;
+}
+
+static int effect_value_base_weapon_damage(void)
+{
+	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
+	if (!obj) {
+		return 0;
+	}
+	return (damroll(obj->dd, obj->ds) + obj->to_d);
+}
+
+static int effect_value_base_player_hp(void)
+{
+	return player->chp;
+}
+
+static int effect_value_base_monster_percent_hp_gone(void)
+{
+	/* Get the targeted monster, fail horribly if none */
+	struct monster *mon = target_get_monster();
+
+	return mon ? (((mon->maxhp - mon->hp) * 100) / mon->maxhp) : 0;
+}
+
+expression_base_value_f effect_value_base_by_name(const char *name)
+{
+	static const struct value_base_s {
+		const char *name;
+		expression_base_value_f function;
+	} value_bases[] = {
+		{ "SPELL_POWER", effect_value_base_spell_power },
+		{ "PLAYER_LEVEL", effect_value_base_player_level },
+		{ "DUNGEON_LEVEL", effect_value_base_dungeon_level },
+		{ "MAX_SIGHT", effect_value_base_max_sight },
+		{ "WEAPON_DAMAGE", effect_value_base_weapon_damage },
+		{ "PLAYER_HP", effect_value_base_player_hp },
+		{ "MONSTER_PERCENT_HP_GONE",
+		  effect_value_base_monster_percent_hp_gone },
+		{ NULL, NULL },
+	};
+	const struct value_base_s *current = value_bases;
+
+	while (current->name != NULL && current->function != NULL) {
+		if (my_stricmp(name, current->name) == 0)
+			return current->function;
+
+		current++;
+	}
+
+	return NULL;
 }
 
 /**

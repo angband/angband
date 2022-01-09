@@ -1385,7 +1385,7 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 	if (expression == NULL)
 		return PARSE_ERROR_INVALID_EXPRESSION;
 
-	function = spell_value_base_by_name(base);
+	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
@@ -1502,7 +1502,7 @@ static enum parser_error parse_trap_expr_xtra(struct parser *p) {
 	if (expression == NULL)
 		return PARSE_ERROR_INVALID_EXPRESSION;
 
-	function = spell_value_base_by_name(base);
+	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
@@ -2849,7 +2849,7 @@ static enum parser_error parse_shape_expr(struct parser *p) {
 	if (expression == NULL)
 		return PARSE_ERROR_INVALID_EXPRESSION;
 
-	function = spell_value_base_by_name(base);
+	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
@@ -3483,7 +3483,7 @@ static enum parser_error parse_class_expr(struct parser *p) {
 	if (expression == NULL)
 		return PARSE_ERROR_INVALID_EXPRESSION;
 
-	function = spell_value_base_by_name(base);
+	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
