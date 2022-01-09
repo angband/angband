@@ -656,8 +656,19 @@ static void quiver_absorb_num(const struct player *p, const struct object *obj,
 					displaces = true;
 					assert(quiver_obj->number * mult <=
 						z_info->quiver_slot_size);
-					space_free += z_info->quiver_slot_size -
-						quiver_obj->number * mult;
+					/*
+					 * Avoid double counting in the ammo
+					 * case since the empty slot, if any,
+					 * for the displaced stack is treated
+					 * as fully available.
+					 */
+					if (ammo) {
+						space_free += z_info->quiver_slot_size
+							- quiver_obj->number
+							* mult;
+					} else {
+						space_free += z_info->quiver_slot_size;
+					}
 				}
 			} else {
 				++n_empty;

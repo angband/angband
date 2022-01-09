@@ -25,6 +25,7 @@ struct carry_num_state {
 	struct object *shot;
 	struct object *flask;
 	struct object *inscribed_flask;
+	struct object *inscribed_flask_alt;
 	struct object *treasure;
 };
 
@@ -84,6 +85,13 @@ int setup_tests(void **state) {
 	cns->inscribed_flask->known = object_new();
 	object_set_base_known(cns->p, cns->inscribed_flask);
 	object_touch(cns->p, cns->inscribed_flask);
+	/* And another that prefers to go in the first quiver slot. */
+	cns->inscribed_flask_alt = object_new();
+	object_prep(cns->inscribed_flask_alt, cns->flask->kind, 0, RANDOMISE);
+	cns->inscribed_flask_alt->note = quark_add("@v0");
+	cns->inscribed_flask_alt->known = object_new();
+	object_set_base_known(cns->p, cns->inscribed_flask_alt);
+	object_touch(cns->p, cns->inscribed_flask_alt);
 	cns->treasure = make_gold(1, "any");
 	cns->treasure->known = object_new();
 	object_set_base_known(cns->p, cns->treasure);
@@ -116,6 +124,10 @@ int teardown_tests(void *state) {
 		object_free(cns->inscribed_flask->known);
 	}
 	object_free(cns->inscribed_flask);
+	if (cns->inscribed_flask_alt->known) {
+		object_free(cns->inscribed_flask_alt->known);
+	}
+	object_free(cns->inscribed_flask_alt);
 	if (cns->treasure->known) {
 		object_free(cns->treasure->known);
 	}
@@ -707,6 +719,22 @@ static int test_carry_num_full_pack_full_quiver(void *state) {
 	ok;
 }
 
+/*
+ * Check for the behavior that triggered this report from wobbly,
+ * http://angband.oook.cz/forum/showpost.php?p=156916&postcount=153
+ * :  failure for a thrown item inscribed for the quiver to displace a full
+ * stack of ammunition despite having an empty quiver slot.
+ */
+static int test_carry_num_wobbly_case_0(void *state) {
+	struct carry_num_state *cns = state;
+	require(fill_pack_quiver(cns, z_info->pack_size - 3,
+		z_info->quiver_slot_size + 5, 0, 0));
+	require(perform_one_test(cns, cns->inscribed_flask_alt,
+		z_info->quiver_slot_size,
+		z_info->quiver_slot_size / z_info->thrown_quiver_mult));
+	ok;
+}
+
 const char *suite_name = "player/inven-carry-num";
 struct test tests[] = {
 	{ "carry num empty/empty", test_carry_num_empty_pack_empty_quiver },
@@ -718,6 +746,7 @@ struct test tests[] = {
 	{ "carry num empty/full", test_carry_num_empty_pack_full_quiver },
 	{ "carry num partial/full", test_carry_num_partial_pack_full_quiver },
 	{ "carry num full/full", test_carry_num_full_pack_full_quiver },
+	{ "carry num wobbly's case 0", test_carry_num_wobbly_case_0 },
 	{ NULL, NULL }
 };
 
