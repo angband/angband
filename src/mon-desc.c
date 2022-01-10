@@ -187,7 +187,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 			 */
 			if ((mode & MDESC_POSS)
 					&& rf_has(mon->race->flags, RF_NAME_COMMA)
-					&& (comma_pos = strrchr(mon->race->name, ','))
+					&& (comma_pos = strchr(mon->race->name, ','))
 					&& comma_pos - mon->race->name < 1024) {
 				strnfmt(desc, max, "%.*s",
 					(int) (comma_pos - mon->race->name),
@@ -211,7 +211,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 			 */
 			if ((mode & MDESC_POSS)
 					&& rf_has(mon->race->flags, RF_NAME_COMMA)
-					&& (comma_pos = strrchr(mon->race->name, ','))
+					&& (comma_pos = strchr(mon->race->name, ','))
 					&& comma_pos - mon->race->name < 1024) {
 				my_strcat(desc, format("%.*s",
 					(int) (comma_pos - mon->race->name),
