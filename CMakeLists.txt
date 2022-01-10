@@ -659,9 +659,21 @@ IF(SC_INSTALL)
         INSTALL(DIRECTORY docs/ DESTINATION docs)
     ENDIF()
 
-    MESSAGE(STATUS "Copying needed files")
-
-    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+    # Set up a target to transfer the files in lib/ at build time.
+    ADD_CUSTOM_TARGET(TransferLib ALL)
+    ADD_CUSTOM_COMMAND(
+        TARGET TransferLib
+        PRE_BUILD
+        COMMAND "${CMAKE_COMMAND}" "-P"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/copy_with_exclude.cmake"
+        "--"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+        "Makefile"
+        ".deps"
+        COMMENT "Copying needed files"
+        VERBATIM
+    )
 
     IF(SUPPORT_WINDOWS_FRONTEND)
         # Transfer the packaged DLLs so there in the same directory as the
@@ -704,8 +716,14 @@ ADD_CUSTOM_TARGET(allunittests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 IF(SUPPORT_TEST_FRONTEND)
     ADD_DEPENDENCIES(alltests OurExecutable)
+    IF(SC_INSTALL)
+        ADD_DEPENDENCIES(alltests TransferLib)
+    ENDIF()
 ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
+IF(SC_INSTALL)
+    ADD_DEPENDENCIES(allunittests TransferLib)
+ENDIF()
 
 # Set up an object library with the shared code for unit tests.
 ADD_LIBRARY(OurUnitTestLib OBJECT EXCLUDE_FROM_ALL
