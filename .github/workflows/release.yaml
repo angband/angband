@@ -88,25 +88,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Need both Sphinx (Python documentation tool) and a 3rd party theme.
-      # Also install pip (to get theme), make (for make html), and git (so
-      # scripts/version.sh works).
+      # Also install pip (to get theme), gcc, automake, autoconf, make
+      # (those four are so configuration and "make manual" work), and git
+      # (so scripts/version.sh works).
       - name: Install Build Dependencies
         id: build_dep
         run: |
           sudo apt-get update
-          sudo apt-get install make sphinx-common git
+          sudo apt-get install autoconf automake gcc make sphinx-common git
           use_python3=`python --version 2>&1 | awk "/^Python 3\\./ { print \"YES\" ; exit 0 ; } ; { print \"NO\" ; exit 0; }"`
-          # On Debian and Arch, could just use sphinx-build since they put it
-          # in /usr/bin.  Ubuntu, however, does it differently.
           if test X$use_python3 == XYES ; then
             sudo apt-get install python3-pip
-            sphinxpath=/usr/share/sphinx/scripts/python3/sphinx-build
           else
             sudo apt-get install python-pip
-            sphinxpath=/usr/share/sphinx/scripts/python2/sphinx-build
           fi
-          echo "::set-output name=sphinxpath::$sphinxpath"
-          "$sphinxpath" --version
           pip install sphinx-better-theme
 
       # Need commit history and tags for scripts/version.sh to work as expected
@@ -118,8 +113,9 @@ jobs:
 
       - name: Convert
         run: |
-          cd docs
-          make SPHINXBUILD=${{ steps.build_dep.outputs.sphinxpath }} html
+          ./autogen.sh
+          ./configure --with-no-install
+          make manual
 
       - name: Archive
         run: |
