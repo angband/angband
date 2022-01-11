@@ -163,7 +163,6 @@ effect:SUMMON:MONSTER:0:5
 dice:1
 desc:A magical rune which calls a monster to attack you.
 msg:A new foe appears from nowhere!
-visibility:0
 
 # rune -- summon monsters
 
@@ -212,7 +211,6 @@ effect:SUMMON:DEMON
 dice:1+1d3
 desc:A magical rune which calls demons to attack you.
 msg:Demons appear!
-visibility:0
 
 ### 20
 
