@@ -489,7 +489,9 @@ dnl Test for ncursesw, and define NCURSES_CFLAGS and NCURSES_LIBS
 dnl
 AC_DEFUN([AM_PATH_NCURSESW],
 [dnl 
-dnl Get the cflags and libraries from the ncursesw5-config script
+dnl Get the cflags and libraries from the ncursesw6-config or ncursesw5-config
+dnl script; currently assumes ncursesw5-config with --with-ncurses-prefix
+dnl or --with-ncurses-exec-prefix
 dnl
 AC_ARG_WITH(ncurses-prefix,[AS_HELP_STRING([--with-ncurses-prefix=PFX], [set prefix where ncurses is installed (optional)])],
             ncurses_prefix="$withval", ncurses_prefix="")
@@ -511,8 +513,8 @@ AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try 
      fi
   fi
 
-  AC_PATH_PROG(NCURSES_CONFIG, ncursesw5-config, no)
-  AC_MSG_CHECKING(for ncurses - wide char support)
+  AC_PATH_PROGS([NCURSES_CONFIG], [ncursesw6-config ncursesw5-config], [no])
+  AC_MSG_CHECKING([for ncurses - wide char support])
   no_ncurses=""
   if test "$NCURSES_CONFIG" = "no" ; then
     no_ncurses=yes
@@ -526,7 +528,7 @@ AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try 
     LIBS="$LIBS $NCURSES_LIBS"
 dnl
 dnl Now check if the installed ncurses is installed OK. (Also sanity
-dnl checks the results of ncursesw5-config to some extent)
+dnl checks the results of ncursesw6-config/ncursesw5-config to some extent)
 dnl
     rm -f conf.ncursestest
     AC_RUN_IFELSE([AC_LANG_SOURCE([[
@@ -551,13 +553,14 @@ int main (int argc, char *argv[])
   else
      AC_MSG_RESULT(no)
      if test "$NCURSES_CONFIG" = "no" ; then
-       echo "*** The ncursesw5-config script installed by ncursesw could not be found"
-       echo "*** If ncursesw was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the NCURSES_CONFIG environment variable to the"
-       echo "*** full path to ncursesw5-config."
-	 else
-	   if test -f conf.ncursestest ; then
-        :
+       echo "*** The ncursesw6-config or ncursesw5-config script installed by"
+       echo "*** ncursesw could not be found.  If ncursesw was installed in"
+       echo "*** PREFIX, make sure PREFIX/bin is in your path, or set the"
+       echo "*** NCURSES_CONFIG environment variable to the full path to"
+       echo "*** ncursesw6-config or ncursesw5-config."
+     else
+       if test -f conf.ncursestest ; then
+         :
        else
           echo "*** Could not run ncurses test program, checking why..."
           CFLAGS="$CFLAGS $NCURSES_CFLAGS"
@@ -575,8 +578,8 @@ int main (int argc, char *argv[])
           echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means ncursesw was incorrectly"
           echo "*** installed or that you have moved ncursesw since it was installed. In the"
-          echo "*** latter case, you may want to edit the ncursesw5-config script:"
-          echo "*** $NCURSES_CONFIG" ])
+          echo "*** latter case, you may want to edit the ncursesw6-config or"
+          echo "*** ncursesw5-config script: $NCURSES_CONFIG" ])
           CFLAGS="$ac_save_CFLAGS"
           LIBS="$ac_save_LIBS"
        fi
