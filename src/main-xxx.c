@@ -655,8 +655,8 @@ errr init_xxx(int argc, char **argv)
  *
  * These systems usually have some form of "event loop", run forever
  * as the last step of "main()", which handles things like menus and
- * window movement, and calls "play_game(false)" to load a game after
- * initializing "savefile" to a filename, or "play_game(true)" to make
+ * window movement, and calls "play_game(GAME_LOAD)" to load a game after
+ * initializing "savefile" to a filename, or "play_game(GAME_NEW)" to make
  * a new game.  The event loop would also be triggered by "Term_xtra()"
  * (the TERM_XTRA_EVENT action), in which case the event loop would not
  * actually "loop", but would run once and return.

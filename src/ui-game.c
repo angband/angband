@@ -48,6 +48,7 @@
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"
+#include "ui-menu.h"
 #include "ui-object.h"
 #include "ui-output.h"
 #include "ui-player.h"
@@ -59,6 +60,20 @@
 #include "ui-store.h"
 #include "ui-target.h"
 #include "ui-wizard.h"
+#include "z-file.h"
+#include "z-util.h"
+#include "z-virt.h"
+
+
+struct savefile_getter_impl {
+	ang_dir *d;
+	struct savefile_details details;
+#ifdef SETGID
+	char uid_c[10];
+#endif
+	bool have_details;
+	bool have_savedir;
+};
 
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
@@ -632,7 +647,7 @@ static void pre_turn_refresh(void)
  * Start actually playing a game, either by loading a savefile or creating
  * a new character
  */
-static void start_game(bool new_game)
+static bool start_game(bool new_game)
 {
 	const char *loadpath = savefile;
 
@@ -653,8 +668,9 @@ static void start_game(bool new_game)
 			safe_setuid_drop();
 		}
 	}
-	if (file_exists(loadpath) && !savefile_load(loadpath, arg_wizard))
-		quit("Broken savefile");
+	if (file_exists(loadpath) && !savefile_load(loadpath, arg_wizard)) {
+		return false;
+	}
 
 	/* No living character loaded */
 	if (player->is_dead || new_game) {
@@ -681,18 +697,198 @@ static void start_game(bool new_game)
 		prepare_next_level(player);
 	}
 	on_new_level();
+
+	return true;
+}
+
+/**
+ * Help select_savefile():  clean up the array of strings
+ */
+static void cleanup_savefile_selection_strings(char **entries, int count)
+{
+	int i;
+
+	for (i = 0; i < count; ++i) {
+		string_free(entries[i]);
+	}
+	mem_free(entries);
+}
+
+/**
+ * Help play_game():  implement the savefile selection menu.
+ *
+ * \param retry flags that this is a repeated call because the savefile selected
+ * by an earlier one could not be loaded.
+ * \param new_game points to a boolean.  The pointed to value at entry is not
+ * used.  At exit *new_game will be true if the user selected to start a new
+ * game.  Otherwise, it will be false.
+ */
+static void select_savefile(bool retry, bool *new_game)
+{
+	/* Build the list of selections. */
+	savefile_getter g = NULL;
+	/*
+	 * Leave the first entry for selecting a new game.  Will fill in the
+	 * label later.
+	 */
+	int count = 1, allocated = 16;
+	char **entries = mem_zalloc(allocated * sizeof(*entries));
+	char **names = mem_zalloc(allocated * sizeof(*names));
+	int default_entry = 0;
+	struct region m_region = { 0, 3, 0, 0 };
+	bool allow_new_game = true;
+	bool failed;
+	struct menu *m;
+	ui_event selection;
+
+	while (got_savefile(&g)) {
+		const struct savefile_details *details =
+			get_savefile_details(g);
+
+		assert(details);
+		if (count == allocated) {
+			allocated *= 2;
+			entries = mem_realloc(entries,
+				allocated * sizeof(*entries));
+			names = mem_realloc(names, allocated * sizeof(*names));
+		}
+		if (details->desc) {
+			entries[count] = string_make(format("Use %s: %s",
+				details->fnam + details->foff, details->desc));
+		} else {
+			entries[count] = string_make(format("Use %s",
+				details->fnam + details->foff));
+		}
+		names[count] = string_make(details->fnam);
+		if (suffix(savefile, details->fnam)) {
+			/*
+			 * Matches what's in savefile; put it second in the
+			 * the list and mark it as the default entry.  If
+			 * not forcing the name, clear savefile and arg_name
+			 * so the new game option won't be set up to overwrite
+			 * an existing savefile.
+			 */
+			if (count != 1) {
+				char *hold_entry = entries[count];
+				char *hold_name = names[count];
+				int i;
+
+				for (i = count; i > 1; --i) {
+					entries[i] = entries[i - 1];
+					names[i] = names[i - 1];
+				}
+				entries[1] = hold_entry;
+				names[1] = hold_name;
+			}
+			default_entry = 1;
+			if (!arg_force_name) {
+				savefile[0] = '\0';
+				arg_name[0] = '\0';
+			}
+		}
+		++count;
+	}
+	if (got_savefile_dir(g)) {
+		assert(allocated > 0 && !entries[0]);
+		if (default_entry && arg_force_name) {
+			/*
+			 * Name set by front end is already in use and name's
+			 * are forced so don't allow the new game option.
+			 */
+			int i;
+
+			assert(!entries[0] && !names[0]);
+			for (i = 0; i < count - 1; ++i) {
+				entries[i] = entries[i + 1];
+				names[i] = names[i + 1];
+			}
+			--default_entry;
+			--count;
+			allow_new_game = false;
+		} else {
+			entries[0] = string_make("New game");
+		}
+		failed = false;
+	} else {
+		failed = true;
+	}
+	cleanup_savefile_getter(g);
+	if (failed) {
+		cleanup_savefile_selection_strings(names, count);
+		cleanup_savefile_selection_strings(entries, count);
+		quit("Cannot open the savefile directory");
+	}
+
+	m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
+	menu_setpriv(m, count, entries);
+	menu_layout(m, &m_region);
+	m->cursor = default_entry;
+	m->flags |= MN_DBL_TAP;
+
+	screen_save();
+	prt("Select the save to use (movement keys and enter or mouse) or quit",
+		0, 0);
+	prt("(escape or second mouse button).", 1, 0);
+	prt((retry) ? "The previously selected savefile was unusable." : "",
+		2, 0);
+	selection = menu_select(m, 0, false);
+	screen_load();
+
+	if (selection.type == EVT_SELECT) {
+		if (m->cursor == 0 && allow_new_game) {
+			*new_game = true;
+		} else {
+			*new_game = false;
+			assert(m->cursor > 0 && m->cursor < count);
+			path_build(savefile, sizeof(savefile),
+				ANGBAND_DIR_SAVE, names[m->cursor]);
+		}
+	}
+
+	menu_free(m);
+	cleanup_savefile_selection_strings(names, count);
+	cleanup_savefile_selection_strings(entries, count);
+
+	if (selection.type == EVT_ESCAPE) {
+		quit(NULL);
+	}
 }
 
 /**
  * Play Angband
  */
-void play_game(bool new_game)
+void play_game(enum game_mode_type mode)
 {
 	while (1) {
 		play_again = false;
 
 		/* Load a savefile or birth a character, or both */
-		start_game(new_game);
+		switch (mode) {
+		case GAME_LOAD:
+		case GAME_NEW:
+			if (!start_game(mode == GAME_NEW)) {
+				quit("Broken savefile");
+			}
+			break;
+
+		case GAME_SELECT:
+			{
+				bool new_game = false, retry = false;
+
+				while (1) {
+					select_savefile(retry, &new_game);
+					if (start_game(new_game)) {
+						break;
+					}
+					retry = true;
+				}
+			}
+			break;
+
+		default:
+			quit("Invalid game mode in play_game()");
+			break;
+		}
 
 		/* Get commands from the user, then process the game world
 		 * until the command queue is empty and a new player command
@@ -715,7 +911,9 @@ void play_game(bool new_game)
 		if (reinit_hook != NULL) {
 			(*reinit_hook)();
 		}
-		new_game = true;
+		if (mode == GAME_LOAD) {
+			mode = GAME_NEW;
+		}
 	}
 }
 
@@ -748,6 +946,22 @@ void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix)
 
 	/* Save the path */
 	path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, path);
+}
+
+/**
+ * Test whether savefile_set_name() generates a name that's already in use.
+ */
+bool savefile_name_already_used(const char *fname, bool make_safe,
+		bool strip_suffix)
+{
+	char *hold = string_make(savefile);
+	bool result;
+
+	savefile_set_name(fname, make_safe, strip_suffix);
+	result = file_exists(savefile);
+	my_strcpy(savefile, hold, sizeof(savefile));
+	string_free(hold);
+	return result;
 }
 
 /**
@@ -910,4 +1124,113 @@ void close_game(bool prompt_failed_save)
 
 	/* Allow suspending now */
 	signals_handle_tstp();
+}
+
+
+/**
+ * Enumerate savefiles in the savefile directory that are available to the
+ * current player.
+ *
+ * \param pg points to the state for the enumeration.  If *pg is NULL, the
+ * enumeration will start from scratch.  After enumerating, *pg should be
+ * passed to cleanup_savefile_getter() to release any allocated resources.
+ * \return true if another savefile useful for the player was found.  In
+ * that case calling get_savefile_details() on *pg will return a non-NULL
+ * result.  Otherwise, return false.
+ */
+bool got_savefile(savefile_getter *pg)
+{
+	char fname[256];
+
+	if (*pg == NULL) {
+		/* Initialize the enumeration. */
+		*pg = mem_zalloc(sizeof(**pg));
+		/* Need enhanced privileges to read from the save directory. */
+		safe_setuid_grab();
+		(*pg)->d = my_dopen(ANGBAND_DIR_SAVE);
+		safe_setuid_drop();
+		if (!(*pg)->d) {
+			return false;
+		}
+		(*pg)->have_savedir = true;
+		/*
+		 * Set up the user-specific prefix.  Mimics savefile_set_name().
+		 */
+#ifdef SETGID
+		strnfmt((*pg)->uid_c, sizeof((*pg)->uid_c), "%d.", player_uid);
+		(*pg)->details.foff = strlen((*pg)->uid_c);
+#else
+		(*pg)->details.foff = 0;
+#endif
+	} else {
+		if (!(*pg)->d) {
+			assert(!(*pg)->have_details);
+			return false;
+		}
+	}
+
+	while (my_dread((*pg)->d, fname, sizeof(fname))) {
+		char path[1024];
+		const char *desc;
+
+#ifdef SETGID
+		/* Check that the savefile name begins with the user's ID. */
+		if (!prefix(fname, (*pg)->uid_c)) {
+			continue;
+		}
+#endif
+
+		path_build(path, sizeof(path), ANGBAND_DIR_SAVE, fname);
+		desc = savefile_get_description(path);
+		string_free((*pg)->details.fnam);
+		(*pg)->details.fnam = string_make(fname);
+		string_free((*pg)->details.desc);
+		(*pg)->details.desc = string_make(desc);
+		(*pg)->have_details = true;
+		return true;
+	}
+
+	my_dclose((*pg)->d);
+	(*pg)->d = NULL;
+	(*pg)->have_details = false;
+
+	return false;
+}
+
+
+/**
+ * Return whether the savefile directory was at all readable.
+ */
+bool got_savefile_dir(const savefile_getter g)
+{
+	return g && g->have_savedir;
+}
+
+
+/**
+ * Return the details for a savefile enumerated by a prior call to
+ * got_savefile().
+ *
+ * \return is NULL if the prior call to get_savefile() failed.  Otherwise,
+ * returns a non-null pointer with the details about the enumerated savefile.
+ */
+const struct savefile_details *get_savefile_details(const savefile_getter g)
+{
+	return (g && g->have_details) ? &g->details : NULL;
+}
+
+
+/**
+ * Cleanup resources allocated by got_savefile().
+ */
+void cleanup_savefile_getter(savefile_getter g)
+{
+	if (g) {
+		string_free(g->details.desc);
+		string_free(g->details.fnam);
+		if (g->d) {
+			my_dclose(g->d);
+		}
+		mem_free(g);
+	}
 }

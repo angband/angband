@@ -23,6 +23,37 @@
 #include "cmd-core.h"
 #include "game-event.h"
 
+/* These are the allowed modes of operation for play_game(). */
+enum game_mode_type {
+	GAME_LOAD,	/* try to load the game from savefile; if it does not
+				exist or the character is dead, start a new
+				game that'll be stored in that savefile */
+	GAME_NEW,	/* always start a new game regardless of the state
+				of the character in savefile; new game will
+				be stored with the name in savefile unless it
+				is empty */
+	GAME_SELECT	/* have the player select with a menu what to do; if
+				savefile is set and exists that will be the
+				default option in the menu for loading; if
+				savefile is not empty and does not exist,
+				it'll be the file used if the player selects
+				the menu option for a new game */
+};
+
+/*
+ * This is an opaque pointer for enumerating the savefiles available to the
+ * current player from the savefile directory.
+ */
+typedef struct savefile_getter_impl *savefile_getter;
+
+/* Holds the information that can be gotten back from a savefile_getter. */
+struct savefile_details {
+	char *fnam;	/* holds the file name component of its path */
+	char *desc;	/* holds the result from savefile_get_description() */
+	size_t foff;	/* holds the offset in fnam to get past the
+				player-specific prefix */
+};
+
 extern bool arg_wizard;
 extern char savefile[1024];
 extern char panicfile[1024];
@@ -37,10 +68,17 @@ void textui_process_command(void);
 errr textui_get_cmd(cmd_context context);
 void check_for_player_interrupt(game_event_type type, game_event_data *data,
 								void *user);
-void play_game(bool new_game);
+void play_game(enum game_mode_type mode);
 void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix);
+bool savefile_name_already_used(const char *fname, bool make_safe,
+	bool strip_suffix);
 void save_game(void);
 bool save_game_checked(void);
 void close_game(bool prompt_failed_save);
+
+bool got_savefile(savefile_getter *pg);
+bool got_savefile_dir(const savefile_getter g);
+const struct savefile_details *get_savefile_details(const savefile_getter g);
+void cleanup_savefile_getter(savefile_getter g);
 
 #endif /* INCLUDED_UI_GAME_H */

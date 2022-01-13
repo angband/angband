@@ -736,7 +736,7 @@ int main(int argc, char *argv[])
 	pause_line(Term);
 
 	/* Play the game */
-	play_game(false);
+	play_game(GAME_LOAD);
 
 	/* Free resources */
 	textui_cleanup();
