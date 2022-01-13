@@ -266,51 +266,29 @@ static void user_name(char *buf, size_t len, int id)
  */
 static void list_saves(void)
 {
-	char fname[256];
-	ang_dir *d;
-	size_t len_uid = 0;
+	savefile_getter g = NULL;
 
-#ifdef SETGID
-	char uid[10];
-	strnfmt(uid, sizeof(uid), "%d.", player_uid);
-	len_uid = strlen(uid);
-#endif
-
-	/* Need enhanced privileges to read from the save directory. */
-	safe_setuid_grab();
-	d = my_dopen(ANGBAND_DIR_SAVE);
-	safe_setuid_drop();
-	if (!d) quit_fmt("Can't open savefile directory");
-
-	printf("Savefiles you can use are:\n");
-
-	while (my_dread(d, fname, sizeof fname)) {
-		char path[1024];
-		const char *desc;
-
-#ifdef SETGID
-		/* Check that the savefile name begins with the user'd ID */
-		if (strncmp(fname, uid, len_uid))
-			continue;
-#endif
-
-		path_build(path, sizeof path, ANGBAND_DIR_SAVE, fname);
-		desc = savefile_get_description(path);
-
-		if (desc)
-			printf(" %-15s  %s\n", fname + len_uid, desc);
-		else
-			printf(" %-15s\n", fname + len_uid);
+	if (!got_savefile(&g) && !got_savefile_dir(g)) {
+		cleanup_savefile_getter(g);
+		quit_fmt("Cannot open savefile directory");
 	}
 
-	my_dclose(d);
+	printf("Savefiles you can use are:\n");
+	do {
+		const struct savefile_details *details =
+			get_savefile_details(g);
 
+		if (details->desc) {
+			printf(" %-15s  %s\n", details->fnam + details->foff,
+				details->desc);
+		} else {
+			printf(" %-15s\n", details->fnam + details->foff);
+		}
+	} while (got_savefile(&g));
 	printf("\nUse angband -u<name> to use savefile <name>.\n");
+
+	cleanup_savefile_getter(g);
 }
-
-
-
-static bool new_game;
 
 
 static void debug_opt(const char *arg) {
@@ -336,7 +314,7 @@ static void debug_opt(const char *arg) {
 int main(int argc, char *argv[])
 {
 	int i;
-
+	bool new_game = false, select_game = false;
 	bool done = false;
 
 	const char *mstr = NULL;
@@ -381,6 +359,10 @@ int main(int argc, char *argv[])
 		/* Analyze option */
 		switch (*arg++)
 		{
+			case 'c':
+				select_game = true;
+				break;
+
 			case 'l':
 				list_saves();
 				exit(0);
@@ -454,6 +436,7 @@ int main(int argc, char *argv[])
 			default:
 			usage:
 				puts("Usage: angband [options] [-- subopts]");
+				puts("  -c             Select savefile with a menu; overrides -n");
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
@@ -561,7 +544,8 @@ int main(int argc, char *argv[])
 	pause_line(Term);
 
 	/* Play the game */
-	play_game(new_game);
+	play_game((select_game) ?
+		GAME_SELECT : ((new_game) ? GAME_NEW : GAME_LOAD));
 
 	/* Free resources */
 	textui_cleanup();

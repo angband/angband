@@ -3164,7 +3164,7 @@ static void check_for_save_file(LPSTR cmd_line)
 	/* Start game */
 	game_in_progress = true;
 	Term_fresh();
-	play_game(false);
+	play_game(GAME_LOAD);
 	quit(NULL);
 }
 
@@ -3240,7 +3240,7 @@ static void process_menus(WORD wCmd)
 				/* Start game */
 				game_in_progress = true;
 				Term_fresh();
-				play_game(true);
+				play_game(GAME_NEW);
 				quit(NULL);
 			}
 			break;
@@ -3272,7 +3272,7 @@ static void process_menus(WORD wCmd)
 						/* Start game */
 						game_in_progress = true;
 						Term_fresh();
-						play_game(false);
+						play_game(GAME_LOAD);
 						quit(NULL);
 					}
 				}

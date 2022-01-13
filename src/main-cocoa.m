@@ -6044,7 +6044,7 @@ static void cocoa_reinit(void)
      * even handler as appropriate
      */
     Term_fresh();
-    play_game(new_game);
+    play_game((new_game) ? GAME_NEW : GAME_LOAD);
 
     /* Free resources */
     textui_cleanup();

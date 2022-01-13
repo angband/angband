@@ -702,8 +702,23 @@ static void finish_with_random_choices(enum birth_stage current)
 	}
 
 	if (current <= BIRTH_NAME_CHOICE) {
-		player_random_name(name, sizeof(name));
+		int ntry = 0;
 
+		while (1) {
+			if (ntry > 100) {
+				quit("Likely bug:  could not generate a random name that was not in use for a savefile");
+			}
+			player_random_name(name, sizeof(name));
+			/*
+			 * We're good to go if the frontend specified a
+			 * savefile to use or the savefile name corresponding
+			 * to the random name is not already in use.
+			 */
+			if (savefile[0] || !savefile_name_already_used(name, true, true)) {
+				break;
+			}
+			++ntry;
+		}
 		assert(ncmd < (int)N_ELEMENTS(cmds));
 		cmds[ncmd].code = CMD_NAME_CHOICE;
 		cmds[ncmd].arg_name = "name";
@@ -1275,9 +1290,18 @@ static enum birth_stage get_name_command(void)
 		my_strcpy(player->full_name, arg_name, sizeof(player->full_name));
 	}
 
+	/*
+	 * If not forcing the character's name, the front end didn't set the
+	 * savefile to use, and the chosen name for the character would lead
+	 * to overwriting an existing savefile, confirm that's okay with the
+	 * player.
+	 */
 	if (arg_force_name) {
 		next = BIRTH_HISTORY_CHOICE;
-	} else if (get_character_name(name, sizeof(name))) {
+	} else if (get_character_name(name, sizeof(name))
+			&& (savefile[0]
+			|| !savefile_name_already_used(name, true, true)
+			|| get_check("A savefile for that name exists.  Overwrite it? "))) {
 		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), "name", name);
 		next = BIRTH_HISTORY_CHOICE;
