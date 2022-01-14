@@ -65,7 +65,7 @@ static void fill_fluff(char *buf, const char *lead, size_t sz) {
 			buf[i] = '\0';
 			++i;
 		}
-	}	
+	}
 
 	for (ind = i % sizeof(fluff); i < sz; ++i) {
 		buf[i] = fluff[ind];
@@ -461,8 +461,7 @@ static int test_monster_desc_seen_def_0(void *state) {
 			"the satyr", "the nymph", "the alligator" } },
 		{ MDESC_OBJE, 3, { "Gi", "In", "Wa", "Wo", "th", "th", "th" } },
 		{ MDESC_POSS, MY_SZ, { "Gilgamesh's", "Inanna's",
-			"Watcher in the Water's",
-			"Wormtongue, Agent of Saruman's", "the satyr's",
+			"Watcher in the Water's", "Wormtongue's", "the satyr's",
 			"the nymph's", "the alligator's" } },
 		{ MDESC_POSS, 4, { "Gil", "Ina", "Wat", "Wor", "the", "the",
 			"the" } },
@@ -586,9 +585,8 @@ static int test_monster_desc_seen_indef_0(void *state) {
 		{ MDESC_IND_VIS | MDESC_OBJE, 4, { "Gil", "Ina", "Wat", "Wor",
 			"a s", "a n", "an " } },
 		{ MDESC_IND_VIS | MDESC_POSS, MY_SZ, { "Gilgamesh's",
-			"Inanna's", "Watcher in the Water's",
-			"Wormtongue, Agent of Saruman's", "a satyr's",
-			"a nymph's", "an alligator's" } },
+			"Inanna's", "Watcher in the Water's", "Wormtongue's",
+			"a satyr's", "a nymph's", "an alligator's" } },
 		{ MDESC_IND_VIS | MDESC_POSS, 7, { "Gilgam", "Inanna",
 			"Watche", "Wormto", "a saty", "a nymp", "an all" } },
 		{ MDESC_IND_VIS | MDESC_OBJE | MDESC_POSS, MY_SZ, { "himself",

@@ -134,9 +134,8 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 					if (midx > 0) {
 						monster_desc(m_name,
 							sizeof(m_name), t_mon,
-							MDESC_TARG | MDESC_COMMA);
+							MDESC_TARG | MDESC_POSS);
 						strnfcat(buf, sizeof(buf), &end, m_name);
-						strnfcat(buf, sizeof(buf), &end, "'s");
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "your");
 					}
