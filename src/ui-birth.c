@@ -702,29 +702,43 @@ static void finish_with_random_choices(enum birth_stage current)
 	}
 
 	if (current <= BIRTH_NAME_CHOICE) {
-		int ntry = 0;
+		/*
+		 * Mimic what happens in get_name_command() for the
+		 * arg_force_name case.
+		 */
+		if (arg_force_name) {
+			if (arg_name[0]) {
+				my_strcpy(player->full_name, arg_name,
+					sizeof(player->full_name));
+			}
+		} else {
+			int ntry = 0;
 
-		while (1) {
-			if (ntry > 100) {
-				quit("Likely bug:  could not generate a random name that was not in use for a savefile");
+			while (1) {
+				if (ntry > 100) {
+					quit("Likely bug:  could not generate "
+						"a random name that was not "
+						"in use for a savefile");
+				}
+				player_random_name(name, sizeof(name));
+				/*
+				 * We're good to go if the frontend specified
+				 * a savefile to use or the savefile name
+				 * corresponding to the random name is not
+				 * already in use.
+				 */
+				if (savefile[0] || !savefile_name_already_used(name, true, true)) {
+					break;
+				}
+				++ntry;
 			}
-			player_random_name(name, sizeof(name));
-			/*
-			 * We're good to go if the frontend specified a
-			 * savefile to use or the savefile name corresponding
-			 * to the random name is not already in use.
-			 */
-			if (savefile[0] || !savefile_name_already_used(name, true, true)) {
-				break;
-			}
-			++ntry;
+			assert(ncmd < (int)N_ELEMENTS(cmds));
+			cmds[ncmd].code = CMD_NAME_CHOICE;
+			cmds[ncmd].arg_name = "name";
+			cmds[ncmd].arg_str = name;
+			cmds[ncmd].arg_is_choice = false;
+			++ncmd;
 		}
-		assert(ncmd < (int)N_ELEMENTS(cmds));
-		cmds[ncmd].code = CMD_NAME_CHOICE;
-		cmds[ncmd].arg_name = "name";
-		cmds[ncmd].arg_str = name;
-		cmds[ncmd].arg_is_choice = false;
-		++ncmd;
 	}
 
 	if (current <= BIRTH_HISTORY_CHOICE) {
