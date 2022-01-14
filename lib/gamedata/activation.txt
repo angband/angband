@@ -485,7 +485,7 @@ aim:0
 power:20
 effect:REMOVE_CURSE
 dice:50+d50
-desc:Makes a strong attempt to remove a curse from an item
+desc:makes a strong attempt to remove a curse from an item
 
 name:LIGHT
 aim:0
