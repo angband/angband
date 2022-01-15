@@ -650,14 +650,23 @@ static void pre_turn_refresh(void)
 static bool start_game(bool new_game)
 {
 	const char *loadpath = savefile;
+	bool exists;
 
 	/* Player will be resuscitated if living in the savefile */
 	player->is_dead = true;
 
 	/* Try loading */
 	savefile_get_panic_name(panicfile, sizeof(panicfile), loadpath);
-	if (loadpath[0] && file_exists(panicfile)) {
-		if (file_newer(panicfile, loadpath)) {
+	safe_setuid_grab();
+	exists = loadpath[0] && file_exists(panicfile);
+	safe_setuid_drop();
+	if (exists) {
+		bool newer;
+
+		safe_setuid_grab();
+		newer = file_newer(panicfile, loadpath);
+		safe_setuid_drop();
+		if (newer) {
 			if (get_check("A panic save exists.  Use it? ")) {
 				loadpath = panicfile;
 			}
@@ -668,7 +677,10 @@ static bool start_game(bool new_game)
 			safe_setuid_drop();
 		}
 	}
-	if (file_exists(loadpath) && !savefile_load(loadpath, arg_wizard)) {
+	safe_setuid_grab();
+	exists = file_exists(loadpath);
+	safe_setuid_drop();
+	if (exists && !savefile_load(loadpath, arg_wizard)) {
 		return false;
 	}
 
@@ -1169,9 +1181,21 @@ bool got_savefile(savefile_getter *pg)
 		}
 	}
 
-	while (my_dread((*pg)->d, fname, sizeof(fname))) {
+	while (1) {
 		char path[1024];
 		const char *desc;
+		bool no_entry;
+
+		/*
+		 * Also need elevated privileges for the file attribute queries
+		 * in my_dread().
+		 */
+		safe_setuid_grab();
+		no_entry = !my_dread((*pg)->d, fname, sizeof(fname));
+		safe_setuid_drop();
+		if (no_entry) {
+			break;
+		}
 
 #ifdef SETGID
 		/* Check that the savefile name begins with the user's ID. */

@@ -44,7 +44,9 @@ size_t highscore_read(struct high_score scores[], size_t sz)
 	memset(scores, 0, sz * sizeof(struct high_score));
 
 	path_build(fname, sizeof(fname), ANGBAND_DIR_SCORES, "scores.raw");
+	safe_setuid_grab();
 	scorefile = file_open(fname, MODE_READ, FTYPE_TEXT);
+	safe_setuid_drop();
 
 	if (!scorefile) return 0;
 
@@ -132,6 +134,7 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 	char cur_name[1024];
 	char new_name[1024];
 	char lok_name[1024];
+	bool exists;
 
 	path_build(old_name, sizeof(old_name), ANGBAND_DIR_SCORES, "scores.old");
 	path_build(cur_name, sizeof(cur_name), ANGBAND_DIR_SCORES, "scores.raw");
@@ -144,7 +147,10 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 
 
 	/* Lock scores */
-	if (file_exists(lok_name)) {
+	safe_setuid_grab();
+	exists = file_exists(lok_name);
+	safe_setuid_drop();
+	if (exists) {
 		msg("Lock file in place for scorefile; not writing.");
 		return;
 	}
