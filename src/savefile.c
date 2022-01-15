@@ -391,6 +391,7 @@ bool savefile_save(const char *path)
 	(void) save_charoutput();
 
 	/* New savefile */
+	safe_setuid_grab();
 	strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,
 			Rand_simple(1000000));
 	while (file_exists(old_savefile) && (count++ < 100))
@@ -400,7 +401,6 @@ bool savefile_save(const char *path)
 	count = 0;
 
 	/* Open the savefile */
-	safe_setuid_grab();
 	strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,
 			Rand_simple(1000000));
 	while (file_exists(new_savefile) && (count++ < 100))
@@ -604,8 +604,11 @@ static int get_desc(void) {
  */
 const char *savefile_get_description(const char *path) {
 	struct blockheader b;
+	ang_file *f;
 
-	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
+	safe_setuid_grab();
+	f = file_open(path, MODE_READ, FTYPE_TEXT);
+	safe_setuid_drop();
 	if (!f) return NULL;
 
 	/* Blank the description */
@@ -635,7 +638,11 @@ const char *savefile_get_description(const char *path) {
 bool savefile_load(const char *path, bool cheat_death)
 {
 	bool ok;
-	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
+	ang_file *f;
+
+	safe_setuid_grab();
+	f = file_open(path, MODE_READ, FTYPE_TEXT);
+	safe_setuid_drop();
 	if (!f) {
 		note("Couldn't open savefile.");
 		return false;
