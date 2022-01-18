@@ -539,7 +539,17 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 		if (message) {
 			uint16_t total;
 
-			if (object_is_equipped(p->body, obj)) {
+			/*
+			 * Don't show aggregate total in pack if equipped or
+			 * if the description could have a number of charges
+			 * or recharign notice specific to the stack (not
+			 * aggregating those quantities so there would be
+			 * confusion if aggregating the count).
+			 */
+			if (object_is_equipped(p->body, obj)
+					|| tval_can_have_charges(obj)
+					|| tval_is_rod(obj)
+					|| obj->timeout > 0) {
 				total = obj->number;
 			} else {
 				total = object_pack_total(p, obj, false,
@@ -559,9 +569,21 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 				object_desc(name, sizeof(name), obj,
 					ODESC_FULL | ODESC_SINGULAR, p);
 			} else {
-				uint16_t total = (object_is_equipped(p->body, obj)) ?
-					obj->number :
-					object_pack_total(p, obj, false, &first_remainder);
+				uint16_t total;
+
+				/*
+				 * Use same logic as above for showing an
+				 * aggregate total.
+				 */
+				if (object_is_equipped(p->body, obj)
+						|| tval_can_have_charges(obj)
+						|| tval_is_rod(obj)
+						|| obj->timeout > 0) {
+					total = obj->number;
+				} else {
+					total = object_pack_total(p, obj,
+						false, &first_remainder);
+				}
 
 				assert(total >= num);
 				total -= num;
@@ -866,9 +888,20 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	if (message) {
 		char o_name[80];
 		struct object *first;
-		uint16_t total = object_pack_total(p, obj, false, &first);
+		uint16_t total;
 		char label;
 
+		/*
+		 * Show an aggregate total if the description doesn't have
+		 * a charge/charging notice that's specific to the stack.
+		 */
+		if (tval_can_have_charges(obj) || tval_is_rod(obj)
+				|| obj->timeout > 0) {
+			total = obj->number;
+			first = obj;
+		} else {
+			total = object_pack_total(p, obj, false, &first);
+		}
 		assert(first && total >= first->number);
 		object_desc(o_name, sizeof(o_name), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
@@ -1087,19 +1120,36 @@ void inven_drop(struct object *obj, int amt)
 			ODESC_FULL | ODESC_SINGULAR, player);
 		msg("You no longer have the %s (%c).", name, label);
 	} else {
-		struct object *first = NULL;
-		uint16_t total = (equipped) ?
-			((none_left) ? 0 : obj->number) :
-			object_pack_total(player, obj, false, &first);
+		struct object *first;
+		struct object *desc_target;
+		uint16_t total;
 
-		object_desc(name, sizeof(name), dropped,
+		/*
+		 * Like gear_object_for_use(), don't show an aggregate total
+		 * if it was equipped or the item has charges/recharging
+		 * notice that is specific to the stack.
+		 */
+		if (equipped || tval_can_have_charges(obj) || tval_is_rod(obj)
+				|| obj->timeout > 0) {
+			first = NULL;
+			if (none_left) {
+				total = 0;
+				desc_target = dropped;
+			} else {
+				total = obj->number;
+				desc_target = obj;
+			}
+		} else {
+			total = object_pack_total(player, obj, false, &first);
+			desc_target = (total) ? obj : dropped;
+		}
+
+		object_desc(name, sizeof(name), desc_target,
 			ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
 			(total << 16), player);
-		if (equipped || total == 0) {
+		if (!first) {
 			msg("You have %s (%c).", name, label);
 		} else {
-			assert(first);
-
 			label = gear_to_label(player, first);
 			if (total > first->number) {
 				msg("You have %s (1st %c).", name, label);
