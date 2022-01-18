@@ -33,6 +33,17 @@
 #include "target.h"
 
 /**
+ * Used by get_spell_info() to pass information as it iterates through effects.
+ */
+struct spell_info_iteration_state {
+	const struct effect *pre;
+	char pre_special[40];
+	random_value pre_rv;
+	random_value shared_rv;
+	bool have_shared;
+};
+
+/**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
 static const int adj_mag_fail[STAT_RANGE] =
@@ -579,18 +590,18 @@ static size_t append_random_value_string(char *buffer, size_t size,
 }
 
 static void spell_effect_append_value_info(const struct effect *effect,
-		char *p, size_t len, bool *have_shared, random_value *shared_rv)
+		char *p, size_t len, struct spell_info_iteration_state *ist)
 {
 	random_value rv = { 0, 0, 0, 0 };
 	const char *type = NULL;
-	char special[40];
+	char special[40] = "";
 	size_t offset = strlen(p);
 
 	if (effect->index == EF_CLEAR_VALUE) {
-		*have_shared = false;
+		ist->have_shared = false;
 	} else if (effect->index == EF_SET_VALUE && effect->dice) {
-		*have_shared = true;
-		dice_roll(effect->dice, shared_rv);
+		ist->have_shared = true;
+		dice_roll(effect->dice, &ist->shared_rv);
 	}
 
 	type = effect_info(effect);
@@ -598,8 +609,8 @@ static void spell_effect_append_value_info(const struct effect *effect,
 
 	if (effect->dice != NULL) {
 		dice_roll(effect->dice, &rv);
-	} else if (*have_shared) {
-		rv = *shared_rv;
+	} else if (ist->have_shared) {
+		rv = ist->shared_rv;
 	}
 
 	/* Handle some special cases where we want to append some additional info */
@@ -659,36 +670,48 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			/* Append number of projectiles. */
 			my_strcpy(special, format("x%d", rv.m_bonus), sizeof(special));
 			break;
-		default:
-			my_strcpy(special, "", sizeof(special));
-			break;
 	}
 
-	if (offset) {
-		offset += strnfmt(p + offset, len - offset, ";");
-	}
+	/*
+	 * Only display if have dice and it isn't redundant with the
+	 * the previous one that was displayed.
+	 */
+	if ((rv.base > 0 || (rv.dice > 0 && rv.sides > 0))
+			&& (!ist->pre
+			|| ist->pre->index != effect->index
+			|| !streq(special, ist->pre_special)
+			|| ist->pre_rv.base != rv.base
+			|| (((ist->pre_rv.dice > 0 && ist->pre_rv.sides > 0)
+			|| (rv.dice > 0 && rv.sides > 0))
+			&& (ist->pre_rv.dice != rv.dice
+			|| ist->pre_rv.sides != rv.sides)))) {
+		if (offset) {
+			offset += strnfmt(p + offset, len - offset, ";");
+		}
 
-	if ((rv.base > 0) || (rv.dice > 0 && rv.sides > 0)) {
 		offset += strnfmt(p + offset, len - offset, " %s ", type);
 		offset += append_random_value_string(p + offset, len - offset, &rv);
 
 		if (strlen(special) > 1) {
 			strnfmt(p + offset, len - offset, "%s", special);
 		}
+
+		ist->pre = effect;
+		my_strcpy(ist->pre_special, special, sizeof(ist->pre_special));
+		ist->pre_rv = rv;
 	}
 }
 
 void get_spell_info(int spell_index, char *p, size_t len)
 {
 	struct effect *effect = spell_by_index(player, spell_index)->effect;
-	bool have_shared = false;
-	random_value shared_rv;
+	struct spell_info_iteration_state ist = {
+		NULL, "", { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, false };
 
 	p[0] = '\0';
 
 	while (effect) {
-		spell_effect_append_value_info(effect, p, len, &have_shared,
-			&shared_rv);
+		spell_effect_append_value_info(effect, p, len, &ist);
 		effect = effect->next;
 	}
 }
