@@ -19,6 +19,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "effects.h"
 #include "effects-info.h"
 #include "game-input.h"
 #include "obj-tval.h"
@@ -157,9 +158,16 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		if (num_damaging > 0
 			&& (player->spell_flags[spell_index] & PY_SPELL_WORKED)
 			&& !(player->spell_flags[spell_index] & PY_SPELL_FORGOTTEN)) {
-			text_out("  Inflicts an average of");
+			dice_t *shared_dice = NULL;
 			int i = 0;
+
+			text_out("  Inflicts an average of");
 			for (struct effect *e = spell->effect; e != NULL; e = effect_next(e)) {
+				if (e->index == EF_SET_VALUE) {
+					shared_dice = e->dice;
+				} else if (e->index == EF_CLEAR_VALUE) {
+					shared_dice = NULL;
+				}
 				if (effect_damages(e)) {
 					if (num_damaging > 2 && i > 0) {
 						text_out(",");
@@ -167,7 +175,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 					if (num_damaging > 1 && i == num_damaging - 1) {
 						text_out(" and");
 					}
-					text_out_c(COLOUR_L_GREEN, " %d", effect_avg_damage(e));
+					text_out_c(COLOUR_L_GREEN, " %d", effect_avg_damage(e, shared_dice));
 					const char *projection = effect_projection(e);
 					if (strlen(projection) > 0) {
 						text_out(" %s", projection);

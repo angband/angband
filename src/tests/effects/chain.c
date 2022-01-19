@@ -558,15 +558,15 @@ static int test_random_select_avg_damage(void *state)
 	int results[4] = { -1, -1, -1, -1 };
 
 	if (ec1) {
-		results[0] = effect_avg_damage(ec1);
+		results[0] = effect_avg_damage(ec1, NULL);
 		ec1->index = EF_SELECT;
-		results[1] = effect_avg_damage(ec1);
+		results[1] = effect_avg_damage(ec1, NULL);
 		free_effect(ec1);
 	}
 	if (ec2) {
-		results[2] = effect_avg_damage(ec2);
+		results[2] = effect_avg_damage(ec2, NULL);
 		ec2->index = EF_SELECT;
-		results[3] = effect_avg_damage(ec2);
+		results[3] = effect_avg_damage(ec2, NULL);
 		free_effect(ec2);
 	}
 	require(results[0] == expected[0] && results[1] == expected[1] &&
