@@ -528,11 +528,23 @@ IF(SHARED_INSTALL)
     TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D SETGID)
     TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D SETGID)
     SET(EXECUTABLE_PERMISSIONS ${EXECUTABLE_PERMISSIONS} SETGID)
-    # Override so only readily accessible by the group (i.e. the setgid
-    # executable).
-    SET(STRICT_VARDATADIR_PERMISSIONS OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_EXECUTE)
-    # As above, but allow general read access.
-    SET(LOOSE_VARDATADIR_PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_EXECUTE WORLD_READ)
+    # Override so the world has no access (read access for directory listing
+    # would be okay but leads to confusing messages, for instance from ls,
+    # when search access is not allowed; so disallow read access as well) and
+    # group can do anything.  Means the world has to use the elevated
+    # privileges of the setgid executatble to do stuff.
+    SET(
+        STRICT_VARDATADIR_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+    )
+    # As above, but allow the world read and search privileges.
+    SET(
+        LOOSE_VARDATADIR_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+    )
 ENDIF()
 
 IF(READONLY_INSTALL)
@@ -587,7 +599,7 @@ IF((SHARED_INSTALL) OR (READONLY_INSTALL))
     IF(SHARED_INSTALL)
         FOREACH(ANGBAND_DIR archive panic save scores)
             SET(ANGBAND_DEST ${CMAKE_INSTALL_SHAREDSTATEDIR}/${PROJECT_NAME})
-            IF((ANGBAND_DIR STREQUAL panic) OR (ANGBAND_DIR STREQUAL save))
+            IF(NOT (ANGBAND_DIR STREQUAL archive))
                 INSTALL(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${STRICT_VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
             ELSE()
                 INSTALL(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${LOOSE_VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
