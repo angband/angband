@@ -770,7 +770,7 @@ bool effect_damages(const struct effect *effect)
  * \param shared_dice is the dice set by a prior SET_VALUE effect.  Use
  * NULL if there wasn't a prior SET_VALUE effect to set the dice.
  */
-int effect_avg_damage(const struct effect *effect, dice_t *shared_dice)
+int effect_avg_damage(const struct effect *effect, const dice_t *shared_dice)
 {
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		// Random or select effect, check the sub-effects to

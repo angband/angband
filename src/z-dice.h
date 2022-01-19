@@ -31,12 +31,12 @@ void dice_free(dice_t *dice);
 bool dice_parse_string(dice_t *dice, const char *string);
 int dice_bind_expression(dice_t *dice, const char *name,
 						 const expression_t *expression);
-void dice_random_value(dice_t *dice, random_value *v);
-int dice_evaluate(dice_t *dice, int level, aspect asp, random_value *v);
-int dice_roll(dice_t *dice, random_value *v);
-bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
-					  int bonus);
-bool dice_test_variables(dice_t *dice, const char *base, const char *dice_name,
-						 const char *sides, const char *bonus);
+void dice_random_value(const dice_t *dice, random_value *v);
+int dice_evaluate(const dice_t *dice, int level, aspect asp, random_value *v);
+int dice_roll(const dice_t *dice, random_value *v);
+bool dice_test_values(const dice_t *dice, int base, int dice_count, int sides,
+		int bonus);
+bool dice_test_variables(const dice_t *dice, const char *base,
+		const char *dice_name, const char *sides, const char *bonus);
 
 #endif /* INCLUDED_Z_DICE_H */
