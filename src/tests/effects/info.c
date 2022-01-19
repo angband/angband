@@ -26,12 +26,14 @@ struct test_effects {
 	struct effect *inc_nores_blind;
 	struct effect *dec_fast;
 	struct effect *detect_gold;
+	struct effect *set_value;
 	int avgd_acid_bolt;
 	int avgd_fire_arc;
 	int avgd_cold_sphere;
 	int avgd_lightning_ball;
 	int avgd_drain_bolt;
 	int avgd_curse_mon;
+	int avg_set_value;
 };
 
 static struct effect *build_effect(int index, const char *st_str,
@@ -60,6 +62,7 @@ int teardown_tests(void *state) {
 	struct test_effects *te = state;
 
 	if (te) {
+		free_effect(te->set_value);
 		free_effect(te->detect_gold);
 		free_effect(te->dec_fast);
 		free_effect(te->inc_nores_blind);
@@ -126,6 +129,9 @@ int setup_tests(void **state) {
 	if (!te->dec_fast) failed = true;
 	te->detect_gold = build_effect(EF_DETECT_GOLD, "NONE", NULL, 0, 0);
 	if (!te->detect_gold) failed = true;
+	te->set_value = build_effect(EF_SET_VALUE, "NONE", "5+8d10", 0, 0);
+	if (!te->set_value) failed = true;
+	te->avg_set_value = 49;
 
 	if (failed) {
 		teardown_tests(te);
@@ -154,26 +160,28 @@ static int test_damages(void *state)
 	require(!effect_damages(te->inc_nores_blind));
 	require(!effect_damages(te->dec_fast));
 	require(!effect_damages(te->detect_gold));
+	require(!effect_damages(te->set_value));
 	ok;
 }
 
 static int test_avg_damage(void *state) {
 	struct test_effects *te = state;
 
-	eq(effect_avg_damage(te->acid_bolt), te->avgd_acid_bolt);
-	eq(effect_avg_damage(te->fire_arc), te->avgd_fire_arc);
-	eq(effect_avg_damage(te->cold_sphere), te->avgd_cold_sphere);
-	eq(effect_avg_damage(te->lightning_ball), te->avgd_lightning_ball);
-	eq(effect_avg_damage(te->drain_bolt), te->avgd_drain_bolt);
-	eq(effect_avg_damage(te->curse_mon), te->avgd_curse_mon);
-	eq(effect_avg_damage(te->slow_bolt), 0);
-	eq(effect_avg_damage(te->heal), 0);
-	eq(effect_avg_damage(te->food), 0);
-	eq(effect_avg_damage(te->cure_stun), 0);
-	eq(effect_avg_damage(te->inc_fear), 0);
-	eq(effect_avg_damage(te->inc_nores_blind), 0);
-	eq(effect_avg_damage(te->dec_fast), 0);
-	eq(effect_avg_damage(te->detect_gold), 0);
+	eq(effect_avg_damage(te->acid_bolt, NULL), te->avgd_acid_bolt);
+	eq(effect_avg_damage(te->fire_arc, NULL), te->avgd_fire_arc);
+	eq(effect_avg_damage(te->cold_sphere, NULL), te->avgd_cold_sphere);
+	eq(effect_avg_damage(te->lightning_ball, NULL), te->avgd_lightning_ball);
+	eq(effect_avg_damage(te->drain_bolt, NULL), te->avgd_drain_bolt);
+	eq(effect_avg_damage(te->curse_mon, NULL), te->avgd_curse_mon);
+	eq(effect_avg_damage(te->slow_bolt, NULL), 0);
+	eq(effect_avg_damage(te->heal, NULL), 0);
+	eq(effect_avg_damage(te->food, NULL), 0);
+	eq(effect_avg_damage(te->cure_stun, NULL), 0);
+	eq(effect_avg_damage(te->inc_fear, NULL), 0);
+	eq(effect_avg_damage(te->inc_nores_blind, NULL), 0);
+	eq(effect_avg_damage(te->dec_fast, NULL), 0);
+	eq(effect_avg_damage(te->detect_gold, NULL), 0);
+	eq(effect_avg_damage(te->lightning_ball, te->set_value->dice), te->avg_set_value);
 	ok;
 }
 

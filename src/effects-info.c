@@ -765,30 +765,35 @@ bool effect_damages(const struct effect *effect)
 /**
  * Calculates the average damage of the effect. Random effects and select
  * effects return an average of all sub-effect averages.
+ *
+ * \param effect is the effect to evaluate.
+ * \param shared_dice is the dice set by a prior SET_VALUE effect.  Use
+ * NULL if there wasn't a prior SET_VALUE effect to set the dice.
  */
-int effect_avg_damage(const struct effect *effect)
+int effect_avg_damage(const struct effect *effect, dice_t *shared_dice)
 {
 	if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {
 		// Random or select effect, check the sub-effects to
 		// accumulate damage
 		int total = 0;
 		struct effect *e = effect->next;
-		int n_stated = dice_evaluate(effect->dice, 0, AVERAGE, NULL);
+		int n_stated = dice_evaluate((shared_dice) ?
+			shared_dice : effect->dice, 0, AVERAGE, NULL);
 		int n_actual = 0;
 
 		for (int i = 0; e != NULL && i < n_stated; i++) {
-			total += effect_avg_damage(e);
+			total += effect_avg_damage(e, shared_dice);
 			++n_actual;
 			e = e->next;
 		}
 		// Return an average of the sub-effects' average damages
 		return (n_actual > 0) ? total / n_actual : 0;
-	} else {
+	} else if (effect_damages(effect)) {
 		// Non-random effect, calculate the average damage
-		return effect_damages(effect) ?
-			dice_evaluate(effect->dice, 0, AVERAGE, NULL)
-			: 0;
+		return dice_evaluate((shared_dice) ?
+			shared_dice : effect->dice, 0, AVERAGE, NULL);
 	}
+	return 0;
 }
 
 /**

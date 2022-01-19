@@ -6,6 +6,7 @@
 #ifndef EFFECTS_INFO_H
 #define EFFECTS_INFO_H
 
+#include "z-dice.h"
 #include "z-textblock.h"
 
 struct effect;
@@ -74,7 +75,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e);
 struct effect *effect_next(struct effect *effect);
 bool effect_damages(const struct effect *effect);
-int effect_avg_damage(const struct effect *effect);
+int effect_avg_damage(const struct effect *effect, dice_t *shared_dice);
 const char *effect_projection(const struct effect *effect);
 struct effect_object_property *effect_summarize_properties(
 	const struct effect *ef, int *unsummarized_count);
