@@ -386,17 +386,19 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	/* Build the path to the user info directory */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_INFO, ANGBAND_DIR_USER, "info");
 
+	/* Build the path to the archive directory. */
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, ANGBAND_DIR_USER, "archive");
+
 #ifdef USE_PRIVATE_PATHS
 	userpath = ANGBAND_DIR_USER;
 #else /* !USE_PRIVATE_PATHS */
 	userpath = (char *)datapath;
 #endif /* USE_PRIVATE_PATHS */
 
-	/* Build the path to the score, save and archive directories */
+	/* Build the path to the score and directories */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_PANIC, userpath, "panic");
-	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, userpath, "archive");
 
 #undef BUILD_DIRECTORY_PATH
 }
