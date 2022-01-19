@@ -1,6 +1,9 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-SUBDIRS = archive panic save scores info
+# Don't need to do anything with the archive directory.  It's here for the
+# with-no-install case; other installation modes will use a directory in
+# the user's directory and don't need to install anything for it.
+SUBDIRS = panic save scores info
 PACKAGE = user
 
