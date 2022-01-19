@@ -503,7 +503,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
  * \param dice is the object to get the random_value from.
  * \param v is the random_value to place the values into.
  */
-void dice_random_value(dice_t *dice, random_value *v)
+void dice_random_value(const dice_t *dice, random_value *v)
 {
 	if (v == NULL)
 		return;
@@ -554,7 +554,7 @@ void dice_random_value(dice_t *dice, random_value *v)
  * \param asp is the aspect that is passed to randcalc().
  * \param v is a pointer used to return the random_value used.
  */
-int dice_evaluate(dice_t *dice, int level, aspect asp, random_value *v)
+int dice_evaluate(const dice_t *dice, int level, aspect asp, random_value *v)
 {
 	random_value rv;
 	dice_random_value(dice, &rv);
@@ -576,7 +576,7 @@ int dice_evaluate(dice_t *dice, int level, aspect asp, random_value *v)
  * \param dice is the dice object to evaluate.
  * \param v is a pointer used to return the random_value used.
  */
-int dice_roll(dice_t *dice, random_value *v)
+int dice_roll(const dice_t *dice, random_value *v)
 {
 	random_value rv;
 	dice_random_value(dice, &rv);
@@ -594,8 +594,8 @@ int dice_roll(dice_t *dice, random_value *v)
 /**
  * Test the dice object against the given values.
  */
-bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
-					  int bonus)
+bool dice_test_values(const dice_t *dice, int base, int dice_count, int sides,
+		int bonus)
 {
 	bool success = true;
 	success &= dice->b == base;
@@ -608,8 +608,8 @@ bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
 /**
  * Check that the dice object has the given variables for the component.
  */
-bool dice_test_variables(dice_t *dice, const char *base, const char *dice_name,
-						 const char *sides, const char *bonus)
+bool dice_test_variables(const dice_t *dice, const char *base,
+		const char *dice_name, const char *sides, const char *bonus)
 {
 	bool success = true;
 
