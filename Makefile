@@ -14,6 +14,8 @@ tests:
 TAG = angband-`cd scripts && ./version.sh`
 OUT = $(TAG).tar.gz
 
+all: manual-optional
+
 manual: manual-optional
 	@if test x"$(SPHINXBUILD)" = x || test x"$(SPHINXBUILD)" = xNOTFOUND ; then \
 		echo "sphinx-build was not found during configuration.  If it is not installed, you will have to install it.  You can either rerun the configuration or set SPHINXBUILD on the command line when running make to inform make how to run sphinx-build.  You may also want to set DOC_HTML_THEME to a builtin Sphinx theme to use instead of what is configured in docs/conf.py.  For instance, 'DOC_HTML_THEME=classic'." ; \
@@ -36,7 +38,7 @@ dist:
 
 # If this isn't a --with-no-install build, build and install the documentation
 # if sphinx-build is available.
-install-extra: manual-optional
+install-extra:
 	@if test x"$(NOINSTALL)" != xyes && test ! x"$(SPHINXBUILD)" = x && test ! x"$(SPHINXBUILD)" = xNOTFOUND ; then \
 		for x in `find docs/_build/html -mindepth 1 \! -type d \! -name .buildinfo -print`; do \
 			i=`echo $$x | sed -e s%^docs/_build/html/%%`; \

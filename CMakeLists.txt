@@ -48,6 +48,10 @@ SET(INSTALL_GROUP_ID "games" CACHE STRING "Group ID (either name or number) to u
 OPTION(READONLY_INSTALL "Install for shared use with variable persistent data stored in the user's directories.  Conflicts with SC_INSTALL, SHARED_INSTALL, and SUPPORT_WINDOWS_FRONTEND." OFF)
 INCLUDE(GNUInstallDirs)
 
+# Allow building the documentation if sphinx-build is available.
+INCLUDE(CMakeDependentOption)
+find_package(Sphinx)
+CMAKE_DEPENDENT_OPTION(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
 SET(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
 
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
@@ -427,9 +431,8 @@ ENDIF()
 TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
-# Set up to generate documentation if sphinx-build is available.
-find_package(Sphinx)
-IF(Sphinx_FOUND)
+# Set up to generate documentation if requested.
+IF(BUILD_DOC)
     INCLUDE(src/cmake/modules/SphinxDocument.cmake)
 
     # Use a custom target to rewrite some of the configuration information
@@ -612,7 +615,7 @@ IF((SHARED_INSTALL) OR (READONLY_INSTALL))
         INSTALL(CODE "EXECUTE_PROCESS(COMMAND chmod g+s ${INSTALLED_EXECUTABLE} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL ERROR \"Resetting setgid bit on ${INSTALLED_EXECUTABLE} failed\")\nENDIF()")
     ENDIF()
 
-    IF(Sphinx_FOUND)
+    IF(BUILD_DOC)
         # Install the built documentation.
         SPHINX_DOCUMENT_GET_OUTPUT_DIRECTORY(_DOC OurManual)
         SPHINX_DOCUMENT_GET_OUTPUT_FORMATS(_FORMATS OurManual)
@@ -667,7 +670,7 @@ IF(SC_INSTALL)
         INSTALL(libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
-    IF(Sphinx_FOUND)
+    IF(BUILD_DOC)
         INSTALL(DIRECTORY docs/ DESTINATION docs)
     ENDIF()
 

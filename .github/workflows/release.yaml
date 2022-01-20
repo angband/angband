@@ -114,7 +114,7 @@ jobs:
       - name: Convert
         run: |
           ./autogen.sh
-          ./configure --with-no-install
+          ./configure --with-no-install --with-sphinx
           make manual
 
       - name: Archive
