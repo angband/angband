@@ -69,6 +69,22 @@ if test "x$with_no_install" = "x"; then
 "
 fi
 
+AC_ARG_WITH(sphinx,
+	[AS_HELP_STRING([--with-sphinx], [build the documentation with sphinx-build])])
+AC_PATH_PROGS([SPHINXBUILD],
+	[sphinx-build sphinx-build3 sphinx-build2],
+	[NOTFOUND],
+	[$PATH$PATH_SEPARATOR/usr/share/sphinx/scripts/python3$PATH_SEPARATOR/usr/share/sphinx/scripts/python2])
+AC_ARG_VAR([SPHINXBUILD], [full path to sphinx-build for building documentation; overrides auto-detected path])
+AC_ARG_VAR([DOC_HTML_THEME], [the builtin Sphinx HTML theme to use or, if not set or empty, use the theme configured in docs/conf.py (currently the better theme)])
+if test "x$with_sphinx" = "xyes"; then
+    if test x"$SPHINXBUILD" = x || test x"$SPHINXBUILD" = xNOTFOUND ; then
+        AC_MSG_ERROR([--with-sphinx specified but could not locate sphinx-build.  Set SPHINXBUILD to the full path to sphinx-build.])
+    fi
+else
+    SPHINXBUILD=
+fi
+
 # Prefer cc to gcc (default behavior is the opposite) for better compatibility
 # with OpenBSD and FreeBSD.
 AC_PROG_CC([cc gcc clang])
@@ -77,13 +93,6 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_CHECK_TOOL(RC, windres, no)
-AC_ARG_VAR([SPHINXBUILD], [command to invoke the documentation builder, Sphinx])
-AC_PATH_PROGS([SPHINXBUILD],
-	[sphinx-build sphinx-build3 sphinx-build2],
-	[NOTFOUND],
-	[$PATH$PATH_SEPARATOR/usr/share/sphinx/scripts/python3$PATH_SEPARATOR/usr/share/sphinx/scripts/python2])
-AC_ARG_VAR([DOC_HTML_THEME], [the builtin Sphinx HTML theme to use or, if not set or empty, use the theme configured in docs/conf.py (currently the better theme)])
-
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
@@ -568,11 +577,15 @@ if test "x$with_gamedata_in_lib" == "xyes"; then
 else
 	echo "  gamedata path:                          ${displayedconfigdir}"
 fi
-
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
 elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
 	echo "  (with private save and score files in ~/.angband/Angband/)"
+fi
+if test "x$with_sphinx" == "xyes"; then
+	echo "  documentation:                          Yes"
+else
+	echo "  documentation:                          No"
 fi
 
 echo
