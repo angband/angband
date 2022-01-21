@@ -46,14 +46,18 @@ include Makefile.inc
 APPNAME = $(NAME).app
 EXE = $(PROGNAME)
 
+# For CFBundleShortVersionString and CFBundleVersion in Info.plist, Apple wants
+# up to three integers separated by periods.  Versions given by version.sh
+# can have extra stuff beyond that so use VERSION as set by Makefile.inc
+# for the bundle identifiers.  Use the result of version.sh for the build ID
+# compiled into the rest of the code and in the package file name.
+BUNDLE_VERSION := ${VERSION}
 VERSION := $(shell ../scripts/version.sh)
 ifeq (${VERSION},)
 	VERSION := unknown
 else
 	CFLAGS += -DBUILD_ID=${VERSION}
 endif
-BUNDLE_VERSION := ${VERSION}
-
 
 OBJS = $(BASEOBJS)
 OSX_OBJS = main-cocoa.o cocoa/TileSetScaling.o
@@ -162,7 +166,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	cp cocoa/en.lproj/MainMenu.nib $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/en.lproj/TileSetScaling.nib $(APPRES)/en.lproj/TileSetScaling.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
-	sed -e 's/\$$VERSION\$$/$(VERSION)/' \
+	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
@@ -181,12 +185,12 @@ vars:
 # build a version that has separate prefs (different bundle ID) and directories (setting SAFE_DIRECTORY preprocessor flag)
 safe-install:
 	$(MAKE) -f Makefile.osx install CFLAGS="-DSAFE_DIRECTORY $(CFLAGS)"
-	sed -e 's/\$$VERSION\$$/$(VERSION)/' \
+	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \
-		-e 's/\$$BUNDLE_IDENTIFIER\$$/$(BUNDLE_IDENTIFIER).$(VERSION)/' \
+		-e 's/\$$BUNDLE_IDENTIFIER\$$/$(BUNDLE_IDENTIFIER).$(BUNDLE_VERSION)/' \
 		$(PLIST) > $(APPCONT)/Info.plist
 
 
