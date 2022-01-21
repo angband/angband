@@ -53,7 +53,7 @@ int (*text_iswprint_hook)(wint_t wc) = NULL;
  *
  * Taken from http://canonical.org/~kragen/strlen-utf8.html
  */
-size_t utf8_strlen(char *s)
+size_t utf8_strlen(const char *s)
 {
 	size_t i = 0, j = 0;
 	while (s[i]) {
@@ -828,7 +828,7 @@ void quit(const char *str)
 /**
  * Arithmetic mean of the first 'size' entries of the array 'nums'
  */
-int mean(int *nums, int size)
+int mean(const int *nums, int size)
 {
 	int i, total = 0;
 
@@ -840,7 +840,7 @@ int mean(int *nums, int size)
 /**
  * Variance of the first 'size' entries of the array 'nums'
  */
-int variance(int *nums, int size)
+int variance(const int *nums, int size)
 {
 	int i, avg, total = 0;
 

@@ -65,7 +65,7 @@ extern void (*quit_aux)(const char *);
 /**
  * Count the number of characters in a UTF-8 encoded string
  */
-size_t utf8_strlen(char *s);
+size_t utf8_strlen(const char *s);
 
 /**
  * Clip a null-terminated UTF-8 string 's' to 'n' unicode characters.
@@ -217,7 +217,7 @@ uint32_t djb2_hash(const char *str);
 /**
  * Mathematical functions
  */
-int mean(int *nums, int size);
-int variance(int *nums, int size);
+int mean(const int *nums, int size);
+int variance(const int *nums, int size);
 
 #endif /* INCLUDED_Z_UTIL_H */
