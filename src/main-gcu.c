@@ -183,6 +183,7 @@ static int same_colortable[BASIC_COLORS];
 /* Screen info: use one big Term 0, or other subwindows? */
 static bool bold_extended = false;
 static bool use_default_background = false;
+static bool keep_terminal_colors = false;
 static int term_count = 1;
 
 /**
@@ -328,7 +329,11 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
-const char help_gcu[] = "Text mode, subopts\n              -B     Use brighter bold characters\n              -D     Use terminal default background color\n              -nN    Use N terminals (up to 6)";
+const char help_gcu[] = "Text mode, subopts\n"
+	"              -B     Use brighter bold characters\n"
+	"              -D     Use terminal default background color\n"
+	"              -K     Keep terminal's color table when changing colors\n"
+	"              -nN    Use N terminals (up to 6)";
 
 /**
  * Usage:
@@ -733,27 +738,53 @@ static int create_color(int i, int scale) {
 static void handle_extended_color_tables(void) {
 #ifdef A_COLOR
 	if (COLORS == 256 || COLORS == 88) {
-		/* If we have more than 16 colors, find the best matches. These numbers
-		 * correspond to xterm/rxvt's builtin color numbers--they do not
-		 * correspond to curses' constants OR with curses' color pairs.
-		 *
-		 * XTerm has 216 (6*6*6) RGB colors, with each RGB setting 0-5.
-		 * RXVT has 64 (4*4*4) RGB colors, with each RGB setting 0-3.
-		 *
-		 * Both also have the basic 16 ANSI colors, plus some extra grayscale
-		 * colors which we do not use.
-		 */
+		int isbold = bold_extended ?  A_BRIGHT : A_NORMAL;
 		int i;
-		int scale = COLORS == 256 ? 6 : 4;
 
-		bg_color = create_color(COLOUR_DARK, scale);
-		for (i = 0; i < BASIC_COLORS; i++) {
-			int fg = create_color(i, scale);
-			int isbold = bold_extended ? A_BRIGHT : A_NORMAL;
-			init_pair(i + 1, fg, bg_color);
-			colortable[i] = COLOR_PAIR(i + 1) | isbold;
-			init_pair(BASIC_COLORS + i, fg, fg);
-			same_colortable[i] = COLOR_PAIR(BASIC_COLORS + i) | isbold;
+		if (keep_terminal_colors) {
+			/*
+			 * If we have more than 16 colors, find the best
+			 * matches in the terminal's default color table.
+			 * These numbers correspond to xterm/rxvt's builtin
+			 * color numbers--they do not correspond to curses'
+			 * constants OR with curses' color pairs.
+			 *
+			 * XTerm has 216 (6*6*6) RGB colors, with each RGB
+			 * setting 0-5.
+			 * RXVT has 64 (4*4*4) RGB colors, with each RGB
+			 * setting 0-3.
+			 *
+			 * Both also have the basic 16 ANSI colors, plus some
+			 * extra grayscale colors which we do not use.
+			 */
+			int scale = COLORS == 256 ? 6 : 4;
+
+			bg_color = create_color(COLOUR_DARK, scale);
+			for (i = 0; i < BASIC_COLORS; i++) {
+				int fg = create_color(i, scale);
+				init_pair(i + 1, fg, bg_color);
+				colortable[i] = COLOR_PAIR(i + 1) | isbold;
+				init_pair(BASIC_COLORS + i, fg, fg);
+				same_colortable[i] =
+					COLOR_PAIR(BASIC_COLORS + i) | isbold;
+			}
+		} else {
+			bg_color = 0;
+			for (i = 0; i < BASIC_COLORS; i++) {
+				/*
+				 * Scale components to a range of 0 - 1000 per
+				 * per init_color()'s documentation.
+				 */
+				init_color(i,
+					(angband_color_table[i][1] * 1001) / 256,
+					(angband_color_table[i][2] * 1001) / 256,
+					(angband_color_table[i][3] * 1001) / 256);
+				init_pair(i + 1, i, bg_color);
+				colortable[i] = COLOR_PAIR(i + 1) | isbold;
+				init_pair(BASIC_COLORS + i, i, i);
+				same_colortable[i] =
+					COLOR_PAIR(BASIC_COLORS + i) | isbold;
+			}
 		}
 
 		for (i = 0; i < term_count; ++i) {
@@ -1032,6 +1063,8 @@ errr init_gcu(int argc, char **argv) {
 			else if (term_count < 1) term_count = 1;
 		} else if (prefix(argv[i], "-D")) {
 			use_default_background = true;
+		} else if (streq(argv[i], "-K")) {
+			keep_terminal_colors = true;
 		}
 	}
 
@@ -1063,6 +1096,7 @@ errr init_gcu(int argc, char **argv) {
 	/* Do we have color, and enough color, available? */
 	can_use_color = ((start_color() != ERR) && has_colors() &&
 					 (COLORS >= 8) && (COLOR_PAIRS >= 8));
+	if (!can_change_color()) keep_terminal_colors = true;
 
 #ifdef HAVE_USE_DEFAULT_COLORS
 	/* Should we use curses' "default color" */
