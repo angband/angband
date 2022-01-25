@@ -400,6 +400,10 @@ extern uint8_t get_angle_to_grid[41][41];
 int grid_to_i(struct loc grid, int w);
 void i_to_grid(int i, int w, struct loc *grid);
 void shuffle(int *arr, int n);
+int *cave_find_init(struct loc top_left, struct loc bottom_right);
+void cave_find_reset(int *state);
+bool cave_find_get_grid(struct loc *grid, int *state);
+
 bool cave_find_in_range(struct chunk *c, struct loc *grid, struct loc top_left,
 	struct loc bottom_right, square_predicate pred);
 bool cave_find(struct chunk *c, struct loc *grid, square_predicate pred);

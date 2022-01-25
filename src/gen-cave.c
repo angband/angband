@@ -1372,6 +1372,7 @@ static struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool sof
 {
 	int i, j, k;
 	struct loc grid;
+	int *find_state;
 
 	/* This is the number of squares in the labyrinth */
 	int n = h * w;
@@ -1456,16 +1457,21 @@ static struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool sof
 		}
 	}
 
-	/* Generate a door for every 100 squares in the labyrinth */
-	for (i = n / 100; i > 0; i--) {
-		/* Try 10 times to find a useful place for a door, then place it */
-		for (j = 0; j < 10; j++) {
-			find_empty(c, &grid);
-			if (lab_is_tunnel(c, grid)) break;
+	/* Deallocate our lists */
+	mem_free(sets);
+	mem_free(walls);
 
+	/* Generate a door for every 100 squares in the labyrinth */
+	find_state = cave_find_init(loc(1, 1),
+		loc(c->width - 2, c->height - 2));
+	i = n / 100;
+	while (i > 0 && cave_find_get_grid(&grid, find_state)) {
+		if (square_isempty(c, grid) && lab_is_tunnel(c, grid)) {
+			place_closed_door(c, grid);
+			--i;
 		}
-		place_closed_door(c, grid);
 	}
+	mem_free(find_state);
 
 	/* Unlit labyrinths will have some good items */
 	if (!lit)
@@ -1476,10 +1482,6 @@ static struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool sof
 	if (!soft)
 		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1),
 			c->depth, ORIGIN_LABYRINTH);
-
-	/* Deallocate our lists */
-	mem_free(sets);
-	mem_free(walls);
 
 	return c;
 }
