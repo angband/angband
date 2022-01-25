@@ -1,1 +1,3 @@
-TESTPROGS += cave/scatter
+TESTPROGS += \
+	cave/find \
+	cave/scatter
