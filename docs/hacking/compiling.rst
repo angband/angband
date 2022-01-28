@@ -507,6 +507,54 @@ so, set your compiler options so that the USE_STATS preprocessor macro is set.
 When using mingw (either stand-alone or as part of Cygwin) and configure,
 include CFLAGS=-DUSE_STATS in the options to configure to do that.
 
+Nintendo DS / Nintendo 3DS
+--------------------------
+
+Builds for the Nintendo DS are made using devkitARM and libnds (or libctru for
+the Nintendo 3DS respectively). All required dependencies can be installed by
+selecting the appropriate package group while following the installation
+instructions for devkitPro ( https://devkitpro.org/wiki/Getting_Started ).
+
+The executable can then be built using::
+
+        cd src
+        make -f Makefile.nds
+
+This will generate ``angband.nds`` in the current directory. For the Nintendo
+3DS, replace the ``Makefile.nds`` part of the command with ``Makefile.3ds``,
+and ``angband.3dsx`` will be generated instead.
+
+Debugging
+~~~~~~~~~
+
+Homebrew can be debugged using a gdbstub-enabled emulator, such as a Windows Dev+ build
+of DeSmuMe (if you really dare to, note that it is very slow compared to real hardware)
+for the Nintendo DS or Citra for the Nintendo 3DS. A Nintendo 3DS that has been modified
+with custom firmware (such as Luma3DS) may also have the ability to debug homebrew on-device.
+
+It is recommended to set/export ``NDS_DEBUG=1`` and to do a clean build when debugging,
+as this disables some optimization and enables more debugging information.
+
+Once the GDB server has been set up (and the host and port noted), the GDB client
+can be loaded with the executable information::
+
+        /path/to/devkitARM/bin/arm-none-eabi-gdb angband.elf
+
+The ``angband.elf`` file is a byproduct from the build process, and it has to match
+the executable that is currently running in the emulator or on the device.
+It is always named ``angband.elf`` for the Nintendo 3DS, and it's always either
+``angband.arm7.elf`` or ``angband.arm9.elf`` for the Nintendo DS, depending on
+which processor should be debugged (as the main game runs on the ARM9 core exclusively,
+this will almost always be the core that should be debugged).
+
+Once the GDB command prompt is available, the following command can be used to
+connect to the target device::
+
+        target remote <host>:<port>
+
+Afterwards, the debugging target will pause automatically and it can be debugged as usual
+using GDB.
+
 Documentation
 -------------
 To convert the documentation from restructured text to the desired output
