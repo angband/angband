@@ -988,7 +988,7 @@ void do_cmd_wiz_curse_item(struct command *cmd)
 	struct object *obj;
 	int curse_index, power;
 	char s[80];
-	bool changed;
+	int update;
 
 	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
 		if (!get_item(&obj, "Change curse on which item? ",
@@ -1030,39 +1030,15 @@ void do_cmd_wiz_curse_item(struct command *cmd)
 	/* Apply. */
 	if (power) {
 		append_object_curse(obj, curse_index, power);
-		changed = true;
-	} else if (obj->curses) {
-		int i = 0;
-
-		changed = (obj->curses[curse_index].power > 0);
-		obj->curses[curse_index].power = 0;
-
-		/* Duplicates logic from non-public check_object_curses(). */
-		while (1) {
-			if (i >= z_info->curse_max) {
-				changed = true;
-				mem_free(obj->curses);
-				obj->curses = NULL;
-				break;
-			}
-			if (obj->curses[i].power) {
-				break;
-			}
-			++i;
-		}
-	} else {
-		changed = false;
+	} else if (!remove_object_curse(obj, curse_index, false)) {
+		return;
 	}
 
-	if (changed) {
-		int update = 0;
-
-		if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK ||
-				update) {
-			wiz_play_item_standard_upkeep(player, obj);
-		} else {
-			wiz_play_item_notify_changed();
-		}
+	update = 0;
+	if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK || update) {
+		wiz_play_item_standard_upkeep(player, obj);
+	} else {
+		wiz_play_item_notify_changed();
 	}
 }
 

@@ -201,6 +201,35 @@ bool append_object_curse(struct object *obj, int pick, int power)
 }
 
 /**
+ * Remove a curse from an object.
+ *
+ * \param obj is the object to manipulate
+ * \param pick is the index of the curse to be removed
+ * \param message if true, causes a message to be displayed if a curse was
+ * removed
+ * \return true if the object had the given curse; otherwise, return false
+ */
+bool remove_object_curse(struct object *obj, int pick, bool message)
+{
+	struct curse_data *c = &obj->curses[pick];
+	bool result;
+
+	if (c->power > 0) {
+		result = true;
+		c->power = 0;
+		c->timeout = 0;
+		/* Remove the curses array if that was the last curse. */
+		check_object_curses(obj);
+		if (message) {
+			msg("The %s curse is removed!", curses[pick].name);
+		}
+	} else {
+		result = false;
+	}
+	return result;
+}
+
+/**
  * Check an artifact template for active curses, remove conflicting curses, and
  * remove the "curses" field if no curses remain
  */

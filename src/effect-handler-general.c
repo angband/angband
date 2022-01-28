@@ -124,32 +124,6 @@ static bool item_tester_uncursable(const struct object *obj)
 }
 
 /**
- * Removes an individual curse from an object.
- */
-static void remove_object_curse(struct object *obj, int index, bool message)
-{
-	struct curse_data *c = &obj->curses[index];
-	char *name = curses[index].name;
-	int i;
-
-	c->power = 0;
-	c->timeout = 0;
-	if (message) {
-		msg("The %s curse is removed!", name);
-	}
-
-	/* Check to see if that was the last one */
-	for (i = 1; i < z_info->curse_max; i++) {
-		if (obj->curses[i].power) {
-			return;
-		}
-	}
-
-	mem_free(obj->curses);
-	obj->curses = NULL;
-}
-
-/**
  * Attempts to remove a curse from an object.
  */
 static bool uncurse_object(struct object *obj, int strength, char *dice_string)
