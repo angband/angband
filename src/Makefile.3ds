@@ -69,7 +69,7 @@ endif
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
 # Angband flags
-CFLAGS	+=	-DNDS
+CFLAGS	+=	-DNDS -DHAVE_DIRENT_H
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
