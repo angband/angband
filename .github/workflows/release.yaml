@@ -269,7 +269,7 @@ jobs:
   mac:
     needs: [setup, docconvert]
     name: Mac
-    runs-on: macos-10.15
+    runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v2
@@ -308,17 +308,18 @@ jobs:
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
-      # Currently, macos-latest defaults to using the 10.15 SDK which does not
-      # support creating arm64 objects.  Override the default using SDKROOT
-      # set to an SDK that can generate both x86_64 and arm64 objects.
-      # Override the default OPT (-O2) to get the equivalent of what
-      # --enable-release and --enable-skip-old-int-typedefs does for builds
-      # using configure.
+      # An SDK that supports building x86_64 and arm64 objects is currently
+      # necessary unless the default list of architectures, ARCHS, in
+      # Makefile.osx is overridden.  If the default SDK does not handle that,
+      # setting SDKROOT to point to an installed SDK that does would be one
+      # workaround.  Override the default OPT (-O2) to get the equivalent of
+      # what --enable-release and --enable-skip-old-int-typedefs does for
+      # builds using configure.
       - name: Create Mac Archive
         id: create_mac_archive
         run: |
           cd src
-          env SDKROOT=macosx11.1 OPT="-O2 -DNDEBUG -DSKIP_ANGBAND_OLD_INT_TYPEDEFS" make -f Makefile.osx dist
+          env OPT="-O2 -DNDEBUG -DSKIP_ANGBAND_OLD_INT_TYPEDEFS" make -f Makefile.osx dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
           echo "::set-output name=archive_file::${archive_prefix}.dmg"
           echo "::set-output name=archive_content_type::application/octet-stream"
