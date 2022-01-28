@@ -239,7 +239,7 @@ is on is also not supported and will cause cmake to exit with an error.  To
 customize where the shared and read-only installations place files, pass
 -DCMAKE_INSTALL_PREFIX=prefix to install all the files within the given prefix
 (i.e. using -DCMAKE_INSTALL_PREFIX=/opt/Angband-4.2.3 would place all the files
-within /opt/Angband-4.2.3 or it's subdirectories).  For finer-grained placement
+within /opt/Angband-4.2.3 or its subdirectories).  For finer-grained placement
 of the files within the given prefix, you could also set CMAKE_INSTALL_BINDIR
 (for the subdirectory of prefix where the executable will be placed; by
 default that is bin), CMAKE_INSTALL_DATAROOTDIR (for the subdirectory of
@@ -351,7 +351,7 @@ CMake, do the following::
     cmake -DSUPPORT_TEST_FRONTEND=ON ..
     make alltests
 
-If you only want the unit tests while using CMake, its a little simpler::
+If you only want the unit tests while using CMake, it's a little simpler::
 
     mkdir build && cd build
     cmake ..
