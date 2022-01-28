@@ -4,7 +4,7 @@
 #include "../h-basic.h"
 
 
-#ifdef _3DS
+#ifdef __3DS__
 
 /* RGBA8 */
 typedef uint32_t nds_pixel;

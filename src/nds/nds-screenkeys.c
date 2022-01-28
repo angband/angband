@@ -7,7 +7,7 @@
 #include "../z-util.h"
 #include "../z-virt.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds/types.h>
 #include <3ds/services/hid.h>
 #else

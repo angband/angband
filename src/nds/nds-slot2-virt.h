@@ -3,7 +3,7 @@
 
 #include "../h-basic.h"
 
-#ifndef _3DS
+#ifndef __3DS__
 void mem_init_alt(void);
 #endif
 

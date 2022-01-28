@@ -10,7 +10,7 @@ and GPLv2 (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt) licenses.
 #ifndef _NDS_SLOT2_RAM
 #define _NDS_SLOT2_RAM
 
-#ifndef _3DS
+#ifndef __3DS__
 
 #include <nds/ndstypes.h>
 

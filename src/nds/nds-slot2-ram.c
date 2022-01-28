@@ -1,4 +1,4 @@
-#ifndef _3DS
+#ifndef __3DS__
 
 /**********************************
   Copyright (C) Rick Wong (Lick)

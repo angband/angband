@@ -7,7 +7,7 @@
 #include "../z-util.h"
 #include "../z-virt.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds/types.h>
 #include <3ds/services/hid.h>
 #else
@@ -48,7 +48,7 @@ const nds_btn_cpad_zone nds_btn_cpad_map[] = {
 	{0, 0, 0},
 };
 
-#ifndef _3DS
+#ifndef __3DS__
 #define KEY_DUP KEY_UP
 #define KEY_DDOWN KEY_DOWN
 #define KEY_DLEFT KEY_LEFT
@@ -148,7 +148,7 @@ void nds_btn_add_mappings_from_file(ang_file *f) {
 				entry.keys |= KEY_L;
 			} else if (streq(button, "R")) {
 				entry.keys |= KEY_R;
-#ifdef _3DS
+#ifdef __3DS__
 			} else if (streq(button, "ZL")) {
 				entry.keys |= KEY_ZL;
 			} else if (streq(button, "ZR")) {
@@ -185,7 +185,7 @@ void nds_btn_init()
 
 void nds_btn_check_cpad()
 {
-#ifdef _3DS
+#ifdef __3DS__
 	static uint8_t input_cooldown = 0;
 
 	/* Skip if cooldown isn't expired yet */

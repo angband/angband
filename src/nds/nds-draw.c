@@ -1,19 +1,19 @@
 #include "nds-draw.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 # include <3ds.h>
 #else
 # include <nds.h>
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 const nds_font_handle *nds_font = &nds_font_5x8;
 #else
 const nds_font_handle *nds_font = &nds_font_3x8;
 #endif
 
 void nds_video_init() {
-#ifdef _3DS
+#ifdef __3DS__
 	gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
 	gfxSetDoubleBuffering(GFX_BOTTOM, false);
 	gfxSetDoubleBuffering(GFX_TOP, false);
@@ -48,7 +48,7 @@ void nds_video_init() {
 }
 
 void nds_video_vblank() {
-#ifdef _3DS
+#ifdef __3DS__
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 	gspWaitForVBlank();
@@ -58,7 +58,7 @@ void nds_video_vblank() {
 }
 
 static inline nds_pixel *nds_get_framebuffer(uint16_t *y) {
-#ifdef _3DS
+#ifdef __3DS__
 	nds_pixel *fb = (nds_pixel *) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL);
 #else
 	nds_pixel *fb = BG_GFX;
@@ -66,7 +66,7 @@ static inline nds_pixel *nds_get_framebuffer(uint16_t *y) {
 
 	/* Bottom screen? */
 	if (*y >= NDS_SCREEN_HEIGHT) {
-#ifdef _3DS
+#ifdef __3DS__
 		fb = (nds_pixel *) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
 #else
 		fb = &BG_GFX_SUB[16 * 1024];
@@ -80,7 +80,7 @@ static inline nds_pixel *nds_get_framebuffer(uint16_t *y) {
 void nds_draw_pixel(uint16_t x, uint16_t y, nds_pixel data) {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 
-#ifdef _3DS
+#ifdef __3DS__
 	fb[x * NDS_SCREEN_HEIGHT + (NDS_SCREEN_HEIGHT - y - 1)] = data;
 #else
 	fb[y * NDS_SCREEN_WIDTH + x] = data;
@@ -91,7 +91,7 @@ void nds_draw_char_px(uint16_t x, uint16_t y, char c, nds_pixel clr_fg, nds_pixe
 {
 	nds_pixel *fb = nds_get_framebuffer(&y);
 
-#ifdef _3DS
+#ifdef __3DS__
 	nds_font->draw_char(c, fb + (x * NDS_SCREEN_HEIGHT) + (NDS_SCREEN_HEIGHT - y - 1), clr_fg, clr_bg);
 #else
 	nds_font->draw_char(c, fb + (y * NDS_SCREEN_WIDTH) + x, clr_fg, clr_bg);
