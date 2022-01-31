@@ -1129,6 +1129,8 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 
 bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 {
+	/* Don't allow in single combat arenas. */
+	if (player->upkeep->arena_level) return true;
 	msg("The world changes!");
 	dungeon_change_level(player, player->depth);
 	context->ident = true;
