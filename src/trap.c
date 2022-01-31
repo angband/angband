@@ -349,16 +349,21 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 {
 	struct trap *new_trap;
 
-    /* We've been called with an illegal index; choose a random trap */
-    if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
+	/* We've been called with an illegal index; choose a random trap */
+	if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, grid)) return;
 
 		t_idx = pick_trap(c, square(c, grid)->feat, trap_level);
-    }
+	}
 
-    /* Failure */
-    if (t_idx < 0) return;
+	/* Failure */
+	if (t_idx < 0) return;
+	/* Don't allow trap doors in single combat arenas. */
+	if (player && player->upkeep && player->upkeep->arena_level
+			&& trf_has(trap_info[t_idx].flags, TRF_DOWN)) {
+		return;
+	}
 
 	/* Allocate a new trap for this grid (at the front of the list) */
 	new_trap = mem_zalloc(sizeof(*new_trap));
