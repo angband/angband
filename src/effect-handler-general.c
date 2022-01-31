@@ -1870,8 +1870,8 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Fails for persistent levels (for now) */
-	if (OPT(player, birth_levels_persist)) {
+	/* Fails for persistent levels (for now) and arenas */
+	if (OPT(player, birth_levels_persist) || player->upkeep->arena_level) {
 		msg("Nothing happens!");
 		return false;
 	}
