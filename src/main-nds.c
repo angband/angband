@@ -19,7 +19,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef _3DS
+#ifdef __3DS__
 /* We can't include 3ds.h because utf32_to_utf8 conflicts */
 #include <3ds/types.h>
 #include <3ds/services/apt.h>
@@ -51,7 +51,7 @@
 #include "nds/nds-screenkeys.h"
 #include "nds/nds-slot2-virt.h"
 
-#ifndef _3DS
+#ifndef __3DS__
 #define hidScanInput scanKeys
 #endif
 
@@ -164,7 +164,7 @@ void do_vblank()
 
 	nds_video_vblank();
 
-#ifdef _3DS
+#ifdef __3DS__
 	/* Handle home menu, poweroff, etc */
 	if (!aptMainLoop()) {
 		quit(NULL);
@@ -229,7 +229,7 @@ static void init_color_data(void)
 {
 	/* Initialize the "color_data" array */
 	for (int i = 0; i < MAX_COLORS; i++) {
-#ifdef _3DS
+#ifdef __3DS__
 		color_data[i] = angband_color_table[i][1] << 24 |
 		                angband_color_table[i][2] << 16 |
 		                angband_color_table[i][3] << 8;
@@ -394,7 +394,7 @@ static errr Term_xtra_nds(int n, int v)
 		/*
 		 * Delay for some milliseconds
 		 */
-#ifdef _3DS
+#ifdef __3DS__
 		if (v > 0) {
 			svcSleepThread(1e6 * v);
 		}
@@ -635,7 +635,7 @@ void nds_exit(int code)
 
 	/* Lock up so that the user can see potential errors */
 	while(1) {
-#ifdef _3DS
+#ifdef __3DS__
 		if (!aptMainLoop())
 			break;
 #endif
@@ -665,7 +665,7 @@ static void hook_quit(const char *str)
  */
 int main(int argc, char *argv[])
 {
-#ifdef _3DS
+#ifdef __3DS__
 	osSetSpeedupEnable(1);
 #endif
 
@@ -682,7 +682,7 @@ int main(int argc, char *argv[])
 
 	nds_video_vblank();
 
-#ifndef _3DS
+#ifndef __3DS__
 	mem_init_alt();
 
 	if (!fatInitDefault()) {
@@ -749,7 +749,7 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
-#ifndef _3DS
+#ifndef __3DS__
 double sqrt(double x) {
 	return f32tofloat(sqrtf32(floattof32(x)));
 }

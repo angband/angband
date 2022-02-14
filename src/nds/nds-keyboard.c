@@ -1,6 +1,6 @@
 #include "nds-keyboard.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds.h>
 #else
 #include <nds.h>
@@ -9,7 +9,7 @@
 #include "nds-draw.h"
 #include "nds-event.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 #define KBD_MARGIN	8
 #define KBD_UNIT	10
 #else

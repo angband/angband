@@ -35,7 +35,7 @@ endif
 CFLAGS	+=	$(INCLUDE) -DARM9
 
 # Angband flags
-CFLAGS	+=	-DNDS
+CFLAGS	+=	-DNDS -DHAVE_DIRENT_H
 
 CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 

@@ -28,7 +28,7 @@ void *mem_realloc(void *p, size_t len);
  * with additional restrictions (no 8-bit writes). These "alt" methods
  * provide this; on other platforms, they are aliased.
  */
-#if defined(NDS) && !defined(_3DS)
+#if defined(NDS) && !defined(__3DS__)
 void *mem_alloc_alt(size_t len);
 void *mem_zalloc_alt(size_t len);
 void mem_free_alt(void *p);

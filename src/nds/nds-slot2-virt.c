@@ -2,7 +2,7 @@
  * \file nds-slot2-virt.c
  */
 
-#ifndef _3DS
+#ifndef __3DS__
 
 #include <nds.h>
 #include "../z-virt.h"

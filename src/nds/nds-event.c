@@ -1,9 +1,5 @@
 #include "nds-event.h"
 
-#ifndef _3DS
-#include <nds.h>
-#endif
-
 #define MAX_EBUF	64
 
 /* Event queue ring buffer */

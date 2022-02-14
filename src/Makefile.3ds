@@ -66,10 +66,10 @@ ifeq (,$(NDS_DEBUG))
 CFLAGS	+=	-O2 -fomit-frame-pointer -DNDEBUG
 endif
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -D__3DS__
 
 # Angband flags
-CFLAGS	+=	-DNDS
+CFLAGS	+=	-DNDS -DHAVE_DIRENT_H
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
