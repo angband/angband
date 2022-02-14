@@ -1103,6 +1103,8 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 
 bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 {
+	/* Don't allow in single combat arenas. */
+	if (player->upkeep->arena_level) return true;
 	msg("The world changes!");
 	dungeon_change_level(player, player->depth);
 	context->ident = true;
@@ -1842,8 +1844,8 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Fails for persistent levels (for now) */
-	if (OPT(player, birth_levels_persist)) {
+	/* Fails for persistent levels (for now) and arenas */
+	if (OPT(player, birth_levels_persist) || player->upkeep->arena_level) {
 		msg("Nothing happens!");
 		return false;
 	}
