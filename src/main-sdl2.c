@@ -5530,7 +5530,13 @@ static void init_colors(void)
 		g_windows[i].color = g_colors[DEFAULT_WINDOW_BG_COLOR];
 	}
 	for (i = 0; i < N_ELEMENTS(g_subwindows); i++) {
-		g_subwindows[i].color = g_colors[DEFAULT_SUBWINDOW_BG_COLOR];
+		/* Retain whatever customized alpha the subwindow has. */
+		g_subwindows[i].color.r =
+			g_colors[DEFAULT_SUBWINDOW_BG_COLOR].r;
+		g_subwindows[i].color.g =
+			g_colors[DEFAULT_SUBWINDOW_BG_COLOR].g;
+		g_subwindows[i].color.b =
+			g_colors[DEFAULT_SUBWINDOW_BG_COLOR].b;
 	}
 }
 
