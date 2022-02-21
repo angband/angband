@@ -1,6 +1,25 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.4
+=============
+
+This version contains a LOT of bug-fixing and code improvements, again
+mostly by backwardsEric.  The main changes were:
+
+ - use C99 types instead of the angband special types
+ - Single Combat maybe finally bug-free
+ - improvements to the birth process
+ - improvements to the NDS port
+ - many improvements to auto-building and all the front ends
+ - improvements to changing of background colours
+ - adding of a panic directory for panic saves
+ - new tests, and improvements to current ones
+ - re-organisation of effects code
+ - add a player argument to a lot of functions that needed it
+ - import a lot of historical documentation
+ - lots of tidying and neatening
+
 Angband 4.2.3
 =============
 

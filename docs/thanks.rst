@@ -10,7 +10,10 @@ Code contribution:
 * Adriankhl
 * Adrian Siekierka (asiekierka)
 * Alex Mooney
+* Andre Maroneze
+* Andrew York
 * Anna Sidwell (takkaria)
+* ArmiesAndCastles (v-chirkov)
 * bacchist
 * backwardsEric
 * Ben Semmler (molybdenum)
@@ -25,18 +28,23 @@ Code contribution:
 * Daniel Burgener
 * David Medley
 * Derakon
+* Diego Herrera
 * Eastwind921
 * Elly Fong-Jones (elly)
 * fizzix (Aaron Bader)
 * fruviad
+* jdholbrook81
+* jefetienne
 * Joan Andrés
 * John Weismiller (emar)
 * Kusunose Toru
+* Lars Haugseth
 * magnate (Chris Carr)
 * MarbleDice
 * Michael Courtney (wobbly)
 * Mikolaj Konarski
 * Paul Johnson
+* piels
 * PowerWyrm
 * pwinckles (moosferatu)
 * Rodent/Sideways/sulkasormi
@@ -128,6 +136,7 @@ you ought to be included:
 * kandrc
 * kaypy
 * khearn
+* kineahora
 * Kinematics
 * lanactoor
 * lonadar
@@ -163,6 +172,7 @@ you ought to be included:
 * Raerick
 * Raxmei
 * renato
+* robinjohnson
 * Rydel
 * Saru
 * Scatha
@@ -172,6 +182,7 @@ you ought to be included:
 * shirish
 * Sinquen
 * Sky
+* smbhax
 * spara
 * Sparrow the Dunadan
 * Sphara
@@ -185,6 +196,7 @@ you ought to be included:
 * TJS
 * topazg
 * Torr
+* Ugramoth
 * Vivit
 * Voovus
 * Vorczar

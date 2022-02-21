@@ -31,7 +31,7 @@
 #define VERSION_STRING XSTR(BUILD_ID)
 #endif
 #ifndef VERSION_STRING
-#define VERSION_STRING "4.2.3"
+#define VERSION_STRING "4.2.4"
 #endif
 
 const char *buildid = VERSION_NAME " " VERSION_STRING;
@@ -41,7 +41,7 @@ const char *buildver = VERSION_STRING;
  * Hack -- Link a copyright message into the executable
  */
 const char *copyright =
-	"Copyright (c) 1987-2021 Angband contributors.\n"
+	"Copyright (c) 1987-2022 Angband contributors.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"
