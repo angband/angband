@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>angband</id>
+  <launchable type="desktop-id">angband.desktop</launchable>
+  <name>Angband</name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0</project_license>
+  <summary>Angband is a free, single-player dungeon exploration game.</summary>
+  <description>
+    <p>
+      A roguelike game where you explore a very deep 
+      dungeon, kill monsters, try to equip yourself with 
+      the best weapons and armor you can find, and finally 
+      face Morgoth - "The Dark Enemy".
+    </p>
+  </description>
+  <url type="homepage">https://angband.github.io/angband/</url>
+  <url type="help">https://angband.readthedocs.io/en/latest/</url>
+  <url type="bugtracker">https://github.com/angband/angband/issues</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Title screen</caption>
+      <image>https://github.com/angband/angband/raw/master/screenshots/title.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Gameplay</caption>
+      <image>https://github.com/angband/angband/raw/master/screenshots/game.png</image>
+    </screenshot>
+  </screenshots>
+  <categories>
+    <category>Game</category>
+    <category>RolePlaying</category>
+  </categories>
+</component>
