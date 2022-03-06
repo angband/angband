@@ -201,6 +201,7 @@ ANGFILES = \
 	ui-object.o \
 	ui-options.o \
 	ui-output.o \
+	ui-player-properties.o \
 	ui-player.o \
 	ui-prefs.o \
 	ui-score.o \

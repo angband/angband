@@ -1,6 +1,6 @@
 /**
- * \file player-properties.h
- * \brief Class and race abilities
+ * \file ui-player-properties.c 
+ * \brief UI for lass and race abilities
  *
  * Copyright (c) 1997-2020 Ben Harrison, James E. Wilson, Robert A. Koeneke,
  * Leon Marrick, Bahman Rabii, Nick McConnell
@@ -17,20 +17,5 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifndef PLAYER_PROPS_H
-#define PLAYER_PROPS_H
-
-enum {
-    PLAYER_FLAG_NONE,
-    PLAYER_FLAG_SPECIAL,
-    PLAYER_FLAG_RACE,
-    PLAYER_FLAG_CLASS
-};
-
-bool class_has_ability(const struct player_class *class,
-					   struct player_ability *ability);
-bool race_has_ability(const struct player_race *race,
-					  struct player_ability *ability);
-void do_cmd_abilities(void);
-
-#endif /* !PLAYER_PROPS_H */
+void textui_view_ability_menu(struct player_ability *ability_list,
+							  int num_abilities);

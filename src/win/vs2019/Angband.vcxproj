@@ -286,6 +286,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-object.c" />
     <ClCompile Include="src\ui-options.c" />
     <ClCompile Include="src\ui-output.c" />
+    <ClCompile Include="src\ui-player-properties.c" />
     <ClCompile Include="src\ui-player.c" />
     <ClCompile Include="src\ui-prefs.c" />
     <ClCompile Include="src\ui-score.c" />
@@ -459,6 +460,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-object.h" />
     <ClInclude Include="src\ui-options.h" />
     <ClInclude Include="src\ui-output.h" />
+    <ClInclude Include="src\ui-player-properties.h" />
     <ClInclude Include="src\ui-player.h" />
     <ClInclude Include="src\ui-prefs.h" />
     <ClInclude Include="src\ui-score.h" />
