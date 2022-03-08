@@ -2491,6 +2491,9 @@ static struct parser *init_parse_lore(void) {
 	parser_reg(p, "spell-freq int freq", ignored);
 	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
+	parser_reg(p, "message-vis sym spell ?str message", ignored);
+	parser_reg(p, "message-invis sym spell ?str message", ignored);
+	parser_reg(p, "message-miss sym spell ?str message", ignored);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
 	parser_reg(p, "drop-base sym tval uint chance uint min uint max", parse_lore_drop_base);
 	parser_reg(p, "drop-artifact str name", ignored);
