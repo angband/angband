@@ -178,7 +178,6 @@ static const struct {
 	{ "gamedata", &ANGBAND_DIR_GAMEDATA, true },
 	{ "screens", &ANGBAND_DIR_SCREENS, true },
 	{ "help", &ANGBAND_DIR_HELP, true },
-	{ "info", &ANGBAND_DIR_INFO, true },
 	{ "pref", &ANGBAND_DIR_CUSTOMIZE, true },
 	{ "fonts", &ANGBAND_DIR_FONTS, true },
 	{ "tiles", &ANGBAND_DIR_TILES, true },

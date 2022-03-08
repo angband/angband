@@ -133,8 +133,3 @@ Holds the randart set files when they are not in use by a character loaded
 into the game.
 
 
-=== Directory "lib/user/info" ===
-
-Holds user-generated help files.  One use for it is to put spoiler files
-here so they be accessed through the in-game help system.
-

@@ -97,7 +97,6 @@ char *ANGBAND_DIR_USER;
 char *ANGBAND_DIR_SAVE;
 char *ANGBAND_DIR_PANIC;
 char *ANGBAND_DIR_SCORES;
-char *ANGBAND_DIR_INFO;
 char *ANGBAND_DIR_ARCHIVE;
 
 static const char *slots[] = {
@@ -328,7 +327,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_SAVE);
 	string_free(ANGBAND_DIR_PANIC);
 	string_free(ANGBAND_DIR_SCORES);
-	string_free(ANGBAND_DIR_INFO);
 	string_free(ANGBAND_DIR_ARCHIVE);
 
 	/*** Prepare the paths ***/
@@ -383,9 +381,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 #endif /* PRIVATE_USER_PATH */
 
-	/* Build the path to the user info directory */
-	BUILD_DIRECTORY_PATH(ANGBAND_DIR_INFO, ANGBAND_DIR_USER, "info");
-
 	/* Build the path to the archive directory. */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, ANGBAND_DIR_USER, "archive");
 
@@ -428,12 +423,8 @@ void create_needed_dirs(void)
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SCORES, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
-	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_INFO, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
-
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_ARCHIVE, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
-
 }
 
 /**
@@ -4007,6 +3998,5 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_SAVE);
 	string_free(ANGBAND_DIR_PANIC);
 	string_free(ANGBAND_DIR_SCORES);
-	string_free(ANGBAND_DIR_INFO);
 	string_free(ANGBAND_DIR_ARCHIVE);
 }
