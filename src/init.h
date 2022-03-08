@@ -150,7 +150,6 @@ extern char *ANGBAND_DIR_USER;
 extern char *ANGBAND_DIR_SAVE;
 extern char *ANGBAND_DIR_PANIC;
 extern char *ANGBAND_DIR_SCORES;
-extern char *ANGBAND_DIR_INFO;
 extern char *ANGBAND_DIR_ARCHIVE;
 
 extern struct parser *init_parse_artifact(void);

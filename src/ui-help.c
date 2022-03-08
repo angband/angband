@@ -144,14 +144,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		fff = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
-	/* Look in "info" */
-	if (!fff) {
-		strnfmt(caption, sizeof(caption), "User info file '%s'", name);
-
-		path_build(path, sizeof(path), ANGBAND_DIR_INFO, name);
-		fff = file_open(path, MODE_READ, FTYPE_TEXT);
-	}
-
 	/* Oops */
 	if (!fff) {
 		/* Message */

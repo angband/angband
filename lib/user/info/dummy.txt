@@ -1,5 +1,0 @@
-==============
-No information
-==============
-
-This file is purely to demonstrate how the user help works.
