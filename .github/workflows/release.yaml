@@ -391,7 +391,7 @@ jobs:
           echo "::set-output name=archive_file::${archive_prefix}-3ds.zip"
           echo "::set-output name=archive_content_type::application/zip"
           mkdir -v 3ds angband
-          cp -v src/angband.3dsx 3ds/${prefix}.3dsx
+          cp -v src/angband.3dsx 3ds/${archive_prefix}.3dsx
           cp -rv lib angband/
           zip -r ${archive_prefix}-3ds.zip 3ds/ angband/
           
@@ -402,8 +402,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_nintendo_3ds_archive.outputs.file }}
-          asset_name: ${{ steps.create_nintendo_3ds_archive.outputs.file }}
+          asset_path: ./${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
           asset_content_type: ${{ steps.create_nintendo_3ds_archive.outputs.archive_content_type }}
 
   nds:
@@ -459,10 +459,10 @@ jobs:
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-nds.zip"
           echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v _nds angband
-          cp -v src/angband.nds _nds/${prefix}.nds
+          mkdir -p -v roms/nds/ angband
+          cp -v src/angband.nds roms/nds/${archive_prefix}.nds
           cp -rv lib angband/
-          zip -r ${archive_prefix}-nds.zip _nds/ angband/
+          zip -r ${archive_prefix}-nds.zip roms/ angband/
 
       - name: Upload Nintendo DS Archive
         id: upload_nintendo_ds_archive
@@ -471,6 +471,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.upload_nintendo_ds_archive.outputs.file }}
-          asset_name: ${{ steps.upload_nintendo_ds_archive.outputs.file }}
-          asset_content_type: ${{ steps.upload_nintendo_ds_archive.outputs.archive_content_type }}
+          asset_path: ./${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_nintendo_ds_archive.outputs.archive_content_type }}
