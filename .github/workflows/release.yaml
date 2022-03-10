@@ -380,6 +380,7 @@ jobs:
 
       - name: Create Nintendo 3dsx
         id: create_nintendo_3dsx
+        shell: bash
         run: |
           pushd src/
           make -f Makefile.3ds
