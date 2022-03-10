@@ -387,6 +387,11 @@ jobs:
           popd
           test -e src/angband.3dsx
 
+          prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=file::${prefix}.3dsx"
+          cp -v src/angband.3dsx ${prefix}.3dsx
+          echo "::set-output name=archive_content_type::application/octet-stream"
+
       - name: Upload Nintendo 3dsx
         id: upload_nintendo_3dsx
         uses: actions/upload-release-asset@v1
@@ -394,4 +399,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./src/angband.3dsx
+          asset_path: ./${{ steps.create_nintendo_3dsx.outputs.file }}
+          asset_name: ${{ steps.create_nintendo_3dsx.outputs.file }}
+          asset_content_type: ${{ steps.create_nintendo_3dsx.outputs.archive_content_type }}
