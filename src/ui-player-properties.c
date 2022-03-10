@@ -21,6 +21,7 @@
 #include "player-properties.h"
 #include "ui-input.h"
 #include "ui-menu.h"
+#include "ui-player-properties.h"
 
 /**
  * ------------------------------------------------------------------------
