@@ -402,3 +402,69 @@ jobs:
           asset_path: ./${{ steps.create_nintendo_3dsx.outputs.file }}
           asset_name: ${{ steps.create_nintendo_3dsx.outputs.file }}
           asset_content_type: ${{ steps.create_nintendo_3dsx.outputs.archive_content_type }}
+
+  nds:
+    needs: [setup, docconvert]
+    name: Nintendo DS
+    runs-on: ubuntu-18.04
+    container: devkitpro/devkitarm
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Create Nintendo ds
+        id: create_nintendo_ds
+        shell: bash
+        run: |
+          pushd src/
+          make -f Makefile.nds
+          popd
+          test -e src/angband.nds
+
+          prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=file::${prefix}.nds"
+          cp -v src/angband.nds ${prefix}.nds
+          echo "::set-output name=archive_content_type::application/octet-stream"
+
+      - name: Upload Nintendo ds
+        id: upload_nintendo_ds
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_nintendo_ds.outputs.file }}
+          asset_name: ${{ steps.create_nintendo_ds.outputs.file }}
+          asset_content_type: ${{ steps.create_nintendo_ds.outputs.archive_content_type }}
