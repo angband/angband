@@ -1,0 +1,40 @@
+# based on https://angband.readthedocs.io/en/latest/hacking/compiling.html#nintendo-ds-nintendo-3ds
+name: Nintendo DS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  _3ds:
+    name: Nintendo 3DS
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        shell: bash
+        run: |
+          pushd src/
+          make -f Makefile.3ds
+          popd
+          test -e src/angband.3dsx
+
+  nds:
+    name: Nintendo DS
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        shell: bash
+        run: |
+          pushd src/
+          make -f Makefile.nds
+          popd
+          test -e src/angband.nds
