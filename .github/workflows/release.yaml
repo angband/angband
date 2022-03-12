@@ -390,10 +390,10 @@ jobs:
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-3ds.zip"
           echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v 3ds angband
-          cp -v src/angband.3dsx 3ds/${archive_prefix}.3dsx
+          mkdir -v angband
+          cp -v src/angband.3dsx ${archive_prefix}.3dsx
           cp -rv lib angband/
-          zip -r ${archive_prefix}-3ds.zip 3ds/ angband/
+          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx angband/
           
       - name: Upload Nintendo 3DS Archive
         id: upload_nintendo_3ds_archive
@@ -459,10 +459,10 @@ jobs:
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-nds.zip"
           echo "::set-output name=archive_content_type::application/zip"
-          mkdir -p -v roms/nds/ angband
-          cp -v src/angband.nds roms/nds/${archive_prefix}.nds
+          mkdir -v angband
+          cp -v src/angband.nds ${archive_prefix}.nds
           cp -rv lib angband/
-          zip -r ${archive_prefix}-nds.zip roms/ angband/
+          zip -r ${archive_prefix}-nds.zip ${archive_prefix}.nds angband/
 
       - name: Upload Nintendo DS Archive
         id: upload_nintendo_ds_archive
