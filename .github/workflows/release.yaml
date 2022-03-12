@@ -385,15 +385,15 @@ jobs:
           pushd src/
           make -f Makefile.3ds
           popd
-          test -e src/angband.3dsx
+          test -e src/${{ steps.store_config.outputs.progname }}.3dsx
 
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-3ds.zip"
           echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v angband
-          cp -v src/angband.3dsx ${archive_prefix}.3dsx
-          cp -rv lib angband/
-          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx angband/
+          mkdir -v ${{ steps.store_config.outputs.progname }}/
+          cp -v src/${{ steps.store_config.outputs.progname }}.3dsx ${archive_prefix}.3dsx
+          cp -rv lib ${{ steps.store_config.outputs.progname }}/
+          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${{ steps.store_config.outputs.progname }}/
           
       - name: Upload Nintendo 3DS Archive
         id: upload_nintendo_3ds_archive
@@ -454,15 +454,15 @@ jobs:
           pushd src/
           make -f Makefile.nds
           popd
-          test -e src/angband.nds
+          test -e src/${{ steps.store_config.outputs.progname }}.nds
 
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-nds.zip"
           echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v angband
-          cp -v src/angband.nds ${archive_prefix}.nds
-          cp -rv lib angband/
-          zip -r ${archive_prefix}-nds.zip ${archive_prefix}.nds angband/
+          mkdir -v ${{ steps.store_config.outputs.progname }}/
+          cp -v src/${{ steps.store_config.outputs.progname }}.nds ${archive_prefix}.nds
+          cp -rv lib ${{ steps.store_config.outputs.progname }}/
+          zip -r ${archive_prefix}-nds.zip ${archive_prefix}.nds ${{ steps.store_config.outputs.progname }}/
 
       - name: Upload Nintendo DS Archive
         id: upload_nintendo_ds_archive
