@@ -24,15 +24,11 @@ static errr run_parse_monster(struct parser *p) {
 }
 
 static int test_lore_parse_monster_text(void *state) {
+	struct file_parser test_lore_parser = lore_parser;
+	errr err;
 
-	struct file_parser test_lore_perser = lore_parser;
-	test_lore_perser.run = run_parse_monster;
-
-	ok;
-	/* Leaving this out for now because it's leading to double frees due to
-	 * calling finish_parse_lore() after run_parse_monster() instead of
-	 * run_parse_lore() */
-	errr err = run_parser(&test_lore_perser);
+	test_lore_parser.run = run_parse_monster;
+	err = run_parser(&test_lore_parser);
 
 	eq(err, PARSE_ERROR_NONE);
 
@@ -40,7 +36,7 @@ static int test_lore_parse_monster_text(void *state) {
 }
 
 
-const char *suite_name = "parse/lure";
+const char *suite_name = "parse/lore";
 struct test tests[] = {
 	{ "lore_parse_monster_text", test_lore_parse_monster_text },
 	{ NULL, NULL }
