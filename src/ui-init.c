@@ -45,11 +45,11 @@ void textui_init(void)
 {
 	uint32_t default_window_flag[ANGBAND_TERM_MAX];
 
-	if (!play_again) {
-		/* Initialize graphics info and basic pref data */
-		event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
-		(void)process_pref_file("pref.prf", false, false);
+	/* Initialize graphics info and basic pref data */
+	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
+	(void)process_pref_file("pref.prf", false, false);
 
+	if (!play_again) {
 		/* Sneakily init command list */
 		cmd_init();
 

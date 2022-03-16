@@ -919,10 +919,10 @@ void play_game(enum game_mode_type mode)
 		cleanup_angband();
 		init_display();
 		init_angband();
-		textui_init();
 		if (reinit_hook != NULL) {
 			(*reinit_hook)();
 		}
+		textui_init();
 		if (mode == GAME_LOAD) {
 			mode = GAME_NEW;
 		}
