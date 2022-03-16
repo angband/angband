@@ -28,14 +28,17 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 	$(shell sdl2-config --static-libs) \
 	-lSDL2_ttf -lSDL2_image \
 	-ltiff \
+	-ljbig \
+	-lLerc \
 	-lzstd \
 	-llzma \
 	-lwebp \
 	-lfreetype \
 	-lharfbuzz \
+	-lDwrite \
 	-lfreetype \
-	-lbrotlidec-static \
-	-lbrotlicommon-static \
+	-lbrotlidec \
+	-lbrotlicommon \
 	-lgraphite2 \
 	-lpng \
 	-ldeflate \
