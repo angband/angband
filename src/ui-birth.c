@@ -501,9 +501,10 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 	/* Initialise a basic menu */
 	menu_init(menu, MN_SKIN_SCROLL, &birth_iter);
 
-	/* A couple of behavioural flags - we want selections letters in
-	   lower case and a double tap to act as a selection. */
-	menu->selections = lower_case;
+	/* A couple of behavioural flags - we want selections as letters
+	   skipping the rogue-like cardinal direction movements and a
+	   double tap to act as a selection. */
+	menu->selections = all_letters_nohjkl;
 	menu->flags = MN_DBL_TAP;
 
 	/* Copy across the game's suggested initial selection, etc. */

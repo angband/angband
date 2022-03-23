@@ -234,7 +234,7 @@ static struct menu *spell_menu_new(const struct object *obj,
 	/* Set flags */
 	m->header = "Name                             Lv Mana Fail Info";
 	m->flags = MN_CASELESS_TAGS;
-	m->selections = lower_case;
+	m->selections = all_letters_nohjkl;
 	m->browse_hook = spell_menu_browser;
 	m->cmd_keys = "?";
 

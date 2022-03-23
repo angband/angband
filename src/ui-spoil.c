@@ -61,7 +61,7 @@ void do_cmd_spoilers(void)
 	if (!spoil_menu) {
 		spoil_menu = menu_new_action(spoil_actions,
 			N_ELEMENTS(spoil_actions));
-		spoil_menu->selections = lower_case;
+		spoil_menu->selections = all_letters_nohjkl;
 		spoil_menu->title = "Create spoilers";
 	}
 

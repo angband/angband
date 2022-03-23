@@ -442,11 +442,14 @@ bool minus_ac(struct player *p)
  */
 char gear_to_label(struct player *p, struct object *obj)
 {
+	/* Skip rogue-like cardinal direction movement keys. */
+	const char labels[] =
+		 "abcdefgimnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	int i;
 
 	/* Equipment is easy */
 	if (object_is_equipped(p->body, obj)) {
-		return I2A(equipped_item_slot(p->body, obj));
+		return labels[equipped_item_slot(p->body, obj)];
 	}
 
 	/* Check the quiver */
@@ -459,7 +462,7 @@ char gear_to_label(struct player *p, struct object *obj)
 	/* Check the inventory */
 	for (i = 0; i < z_info->pack_size; i++) {
 		if (p->upkeep->inven[i] == obj) {
-			return I2A(i);
+			return labels[i];
 		}
 	}
 
@@ -991,7 +994,7 @@ void inven_wield(struct object *obj, int slot)
 		ODESC_PREFIX | ODESC_FULL, player);
 
 	/* Message */
-	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
+	msgt(MSG_WIELD, fmt, o_name, gear_to_label(player, wielded));
 
 	/* Sticky flag geats a special mention */
 	if (of_has(wielded->flags, OF_STICKY)) {

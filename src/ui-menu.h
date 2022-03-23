@@ -55,6 +55,7 @@ extern const uint8_t curs_attrs[2][2];
 extern const char lower_case[];			/* abc..z */
 extern const char upper_case[];			/* ABC..Z */
 extern const char all_letters[];		/* abc..zABC..Z */
+extern const char all_letters_nohjkl[];		/* abc..gim..zABC..Z */
 
 
 /*

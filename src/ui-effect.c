@@ -40,7 +40,7 @@ static struct menu *effect_menu_new(struct effect *effect, int count,
 	char **ms;
 	char buf[80];
 
-	m->selections = lower_case;
+	m->selections = all_letters_nohjkl;
 
 	/* Collect a string for each effect. */
 	if (count > 0) {
