@@ -2,6 +2,12 @@
 Roguelike Keyset Command Summary
 ================================
 
+^ followed by a letter is an abbreviation for pressing and releasing
+the letter key with the control key also depressed.  You may also press
+and release ^ and then press and release the letter key to activate the
+same command in case your system intercepts the control plus key
+combination and does not pass it on.
+
   a    Zap a rod (Activate)            A    Activate an object
   b    (walk - south west)             B    (run - south west)
   c    Close a door                    C    Character description
@@ -28,32 +34,32 @@ Roguelike Keyset Command Summary
   x    Look around                     X    Use an item
   y    (walk - north west)             Y    (run - north west)
   z    Aim a wand (Zap)                Z    Use a staff (Zap)
-  !    -                               ^A   (special - debug command)
-  @    Center map                      ^B   (alter - south west)
-  #    -                               ^C   (special - break)
-  $    -                               ^D   Ignore an item
-  %    -                               ^E   Toggle inven/equip window
-  ^    (special - control key)         ^F   Repeat level feeling
-  &    -                               ^G   Do autopickup
-  *    Target monster or location      ^H   (alter - west)
-  (    -                               ^I   (special - tab)
-  )    Dump screen to a file           ^J   (alter - south)
-  {    Inscribe an object              ^K   (alter - north)
-  }    Uninscribe an object            ^L   (alter - east)
-  [    Display visible monster list    ^M   (special - return)
-  ]    Display visible object list     ^N   (alter - south east)
-  -    Walk into a trap                ^O   Show previous message
-  _    Enter store                     ^P   Show previous messages
-  +    Alter grid (steal for rogues)   ^Q   -
-  =    Set options                     ^R   Redraw the screen
-  ;    Walk (with pickup)              ^S   Save and don't quit
-  :    Take notes                      ^T   Dig a tunnel
-  '    Target closest monster          ^U   (alter - north east)
-  "    Enter a user pref command       ^V   Repeat previous command
-  ,    Run                             ^W   (special - wizard mode)
-  <    Go up staircase                 ^X   Save and quit
-  .    Stay still (with pickup)        ^Y   (alter - north west)
-  >    Go down staircase               ^Z   -
+  !    -                               ^a   (special - debug command)
+  @    Center map                      ^b   (alter - south west)
+  #    -                               ^c   (special - break)
+  $    -                               ^d   Ignore an item
+  %    -                               ^e   Toggle inven/equip window
+  ^    (special - control key)         ^f   Repeat level feeling
+  &    -                               ^g   Do autopickup
+  *    Target monster or location      ^h   (alter - west)
+  (    -                               ^i   (special - tab)
+  )    Dump screen to a file           ^j   (alter - south)
+  {    Inscribe an object              ^k   (alter - north)
+  }    Uninscribe an object            ^l   (alter - east)
+  [    Display visible monster list    ^m   (special - return)
+  ]    Display visible object list     ^n   (alter - south east)
+  -    Walk into a trap                ^o   Show previous message
+  _    Enter store                     ^p   Show previous messages
+  +    Alter grid (steal for rogues)   ^q   -
+  =    Set options                     ^r   Redraw the screen
+  ;    Walk (with pickup)              ^s   Save and don't quit
+  :    Take notes                      ^t   Dig a tunnel
+  '    Target closest monster          ^u   (alter - north east)
+  "    Enter a user pref command       ^v   Repeat previous command
+  ,    Run                             ^w   (special - wizard mode)
+  <    Go up staircase                 ^x   Save and quit
+  .    Stay still (with pickup)        ^y   (alter - north west)
+  >    Go down staircase               ^z   -
   \    (special - bypass keymap)       ~    Check knowledge
   `    (special - escape)              ?    Display help
   /    Identify symbol
