@@ -620,15 +620,6 @@ static struct object *make_artifact_special(int level, int tval)
 		/* Artifact "rarity roll" */
 		if (randint1(100) > art->alloc_prob) continue;
 
-		/* Enforce minimum "object" level (loosely) */
-		if (kind->level > level) {
-			/* Get the "out-of-depth factor" */
-			int d = (kind->level - level) * 5;
-
-			/* Roll for out-of-depth creation */
-			if (randint0(d) != 0) continue;
-		}
-
 		/* Assign the template */
 		new_obj = object_new();
 		object_prep(new_obj, kind, art->alloc_min, RANDOMISE);
