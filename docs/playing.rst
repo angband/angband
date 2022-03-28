@@ -112,32 +112,32 @@ Original Keyset Command Summary
 ``x``  (unused)                      ``X``  (unused)
 ``y``  (unused)                      ``Y``  (unused)
 ``z``  Zap a rod                     ``Z``  (unused)
-``!``  (unused)                      ``^A`` (special - debug command)
-``@``  (unused)                      ``^B`` (unused)
-``#``  (unused)                      ``^C`` (special - break)
-``$``  (unused)                      ``^D`` (unused)
-``%``  (unused)                      ``^E`` Toggle inven/equip window
-``^``  (special - control key)       ``^F`` Repeat level feeling
-``&``  (unused)                      ``^G`` Do autopickup
-``*``  Target monster or location    ``^H`` (unused)
-``(``  (unused)                      ``^I`` (special - tab)
-``)``  Dump screen to a file         ``^J`` (special - linefeed)
-``{``  Inscribe an object            ``^K`` (unused)
-``}``  Uninscribe an object          ``^L`` Center map
-``[``  Display visible monster list  ``^M`` (special - return)
-``]``  Display visible object list   ``^N`` (unused)
-``-``  (unused)                      ``^O`` Show previous message
-``_``  Enter store                   ``^P`` Show previous messages
-``+``  Alter grid                    ``^Q`` (unused)
-``=``  Set options                   ``^R`` Redraw the screen
-``;``  Walk (with pickup)            ``^S`` Save and don't quit
-``:``  Take notes                    ``^T`` (unused)
-``'``  Target closest monster        ``^U`` (unused)
-``"``  Enter a user pref command     ``^V`` (unused)
-``,``  Stay still (with pickup)      ``^W`` (special - wizard mode)
-``<``  Go up staircase               ``^X`` Save and quit
-``.``  Run                           ``^Y`` (unused)
-``>``  Go down staircase             ``^Z`` (unused)
+``!``  (unused)                      ``^a`` (special - debug command)
+``@``  (unused)                      ``^b`` (unused)
+``#``  (unused)                      ``^c`` (special - break)
+``$``  (unused)                      ``^d`` (unused)
+``%``  (unused)                      ``^e`` Toggle inven/equip window
+``^``  (special - control key)       ``^f`` Repeat level feeling
+``&``  (unused)                      ``^g`` Do autopickup
+``*``  Target monster or location    ``^h`` (unused)
+``(``  (unused)                      ``^i`` (special - tab)
+``)``  Dump screen to a file         ``^j`` (special - linefeed)
+``{``  Inscribe an object            ``^k`` (unused)
+``}``  Uninscribe an object          ``^l`` Center map
+``[``  Display visible monster list  ``^m`` (special - return)
+``]``  Display visible object list   ``^n`` (unused)
+``-``  (unused)                      ``^o`` Show previous message
+``_``  Enter store                   ``^p`` Show previous messages
+``+``  Alter grid                    ``^q`` (unused)
+``=``  Set options                   ``^r`` Redraw the screen
+``;``  Walk (with pickup)            ``^s`` Save and don't quit
+``:``  Take notes                    ``^t`` (unused)
+``'``  Target closest monster        ``^u`` (unused)
+``"``  Enter a user pref command     ``^v`` (unused)
+``,``  Stay still (with pickup)      ``^w`` (special - wizard mode)
+``<``  Go up staircase               ``^x`` Save and quit
+``.``  Run                           ``^y`` (unused)
+``>``  Go down staircase             ``^z`` (unused)
 ``\``  (special - bypass keymap)     ``~``  Check knowledge
  \`    (special - escape)            ``?``  Display help
 ``/``  Identify symbol
@@ -174,32 +174,32 @@ Roguelike Keyset Command Summary
  ``x``  Look around                   ``X``  Use an item
  ``y``  (walk - north west)           ``Y``  (run - north west)
  ``z``  Aim a wand (Zap)              ``Z``  Use a staff (Zap)
- ``!``  (unused)                      ``^A`` (special - debug command)
- ``@``  Center map                    ``^B`` (alter - south west)
- ``#``  (unused)                      ``^C`` (special - break)
- ``$``  (unused)                      ``^D`` Ignore an item
- ``%``  (unused)                      ``^E`` Toggle inven/equip window
- ``^``  (special - control key)       ``^F`` Repeat level feeling
- ``&``  (unused)                      ``^G`` Do autopickup
- ``*``  Target monster or location    ``^H`` (alter - west)
- ``(``  (unused)                      ``^I`` (special - tab)
- ``)``  Dump screen to a file         ``^J`` (alter - south)
- ``{``  Inscribe an object            ``^K`` (alter - north)
- ``}``  Uninscribe an object          ``^L`` (alter - east)
- ``[``  Display visible monster list  ``^M`` (special - return)
- ``]``  Display visible object list   ``^N`` (alter - south east)
- ``-``  Walk into a trap              ``^O`` Show previous message
- ``_``  Enter store                   ``^P`` Show previous messages
- ``+``  Alter grid                    ``^Q`` (unused)
- ``=``  Set options                   ``^R`` Redraw the screen
- ``;``  Walk (with pickup)            ``^S`` Save and don't quit
- ``:``  Take notes                    ``^T`` Dig a tunnel
- ``'``  Target closest monster        ``^U`` (alter - north east)
- ``"``  Enter a user pref command     ``^V`` Repeat previous command
- ``,``  Run                           ``^W`` (special - wizard mode)
- ``<``  Go up staircase               ``^X`` Save and quit
- ``.``  Stay still (with pickup)      ``^Y`` (alter - north west)
- ``>``  Go down staircase             ``^Z`` (unused)
+ ``!``  (unused)                      ``^a`` (special - debug command)
+ ``@``  Center map                    ``^b`` (alter - south west)
+ ``#``  (unused)                      ``^c`` (special - break)
+ ``$``  (unused)                      ``^d`` Ignore an item
+ ``%``  (unused)                      ``^e`` Toggle inven/equip window
+ ``^``  (special - control key)       ``^f`` Repeat level feeling
+ ``&``  (unused)                      ``^g`` Do autopickup
+ ``*``  Target monster or location    ``^h`` (alter - west)
+ ``(``  (unused)                      ``^i`` (special - tab)
+ ``)``  Dump screen to a file         ``^j`` (alter - south)
+ ``{``  Inscribe an object            ``^k`` (alter - north)
+ ``}``  Uninscribe an object          ``^l`` (alter - east)
+ ``[``  Display visible monster list  ``^m`` (special - return)
+ ``]``  Display visible object list   ``^n`` (alter - south east)
+ ``-``  Walk into a trap              ``^o`` Show previous message
+ ``_``  Enter store                   ``^p`` Show previous messages
+ ``+``  Alter grid                    ``^q`` (unused)
+ ``=``  Set options                   ``^r`` Redraw the screen
+ ``;``  Walk (with pickup)            ``^s`` Save and don't quit
+ ``:``  Take notes                    ``^t`` Dig a tunnel
+ ``'``  Target closest monster        ``^u`` (alter - north east)
+ ``"``  Enter a user pref command     ``^v`` Repeat previous command
+ ``,``  Run                           ``^w`` (special - wizard mode)
+ ``<``  Go up staircase               ``^x`` Save and quit
+ ``.``  Stay still (with pickup)      ``^y`` (alter - north west)
+ ``>``  Go down staircase             ``^z`` (unused)
  ``\``  (special - bypass keymap)     ``~``  Check knowledge
   \`    (special - escape)            ``?``  Display help
  ``/``  Identify symbol
@@ -214,14 +214,14 @@ Certain special keys may be intercepted by the operating system or the host
 machine, causing unexpected results. In general, these special keys are
 control keys, and often, you can disable their special effects.
 
-If you are playing on a UNIX or similar system, then 'Ctrl-C' will
+If you are playing on a UNIX or similar system, then 'Ctrl-c' will
 interrupt Angband. The second and third interrupt will induce a warning
 bell, and the fourth will induce both a warning bell and a special message,
 since the fifth will quit the game, after killing your character. Also,
-'Ctrl-Z' will suspend the game, and return you to the original command
+'Ctrl-z' will suspend the game, and return you to the original command
 shell, until you resume the game with the 'fg' command. There is now a
 compilation option to force the game to prevent the "double 'ctrl-z'
-escape death trick". The 'Ctrl-\\' and 'Ctrl-D' and 'Ctrl-S' keys
+escape death trick". The 'Ctrl-\\' and 'Ctrl-d' and 'Ctrl-s' keys
 should not be intercepted.
  
 It is often possible to specify "control-keys" without actually pressing

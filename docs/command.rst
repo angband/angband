@@ -63,7 +63,7 @@ Drop an item (``d``)
   traps are considered objects for the purpose of determining if the space 
   is occupied. This command may take a quantity, and takes some energy.
 
-Ignore an item (``k``) or Ignore an item ('^D')
+Ignore an item (``k``) or Ignore an item ('^d')
   This ignores an item in your inventory or on the dungeon floor. If the
   selected pile contains multiple objects, you may specify a quantity. When
   ignored, the game will sometimes prompt you whether to ignore only this
@@ -163,7 +163,7 @@ Rest (``R``)
 Alter Commands
 ==============
 
-Tunnel (``T``) or Tunnel ('^T')
+Tunnel (``T``) or Tunnel ('^t')
   Tunnelling or mining is a very useful art. There are many kinds of rock,
   with varying hardness, including permanent rock (permanent), granite
   (very hard), quartz veins (hard), magma veins (soft), and rubble (very
@@ -467,12 +467,12 @@ List visible items (``]``)
 Message Commands
 ================
 
-Repeat level feeling ('^F')
+Repeat level feeling ('^f')
   Repeats the feeling about the monsters in the dungeon level that you got
   when you first entered the level.  If you have explored enough of the 
   level, you will also get a feeling about how good the treasures are.
 
-View previous messages ('^P')
+View previous messages ('^p')
   This command shows you all the recent messages. You can scroll through
   them, or exit with ESCAPE.
 
@@ -509,13 +509,13 @@ Check knowledge (``~``)
 Saving and Exiting Commands
 ===========================
 
-Save and Quit ('Ctrl-X')
+Save and Quit ('Ctrl-x')
   To save your game so that you can return to it later, use this command.
   Save files will also be generated (hopefully) if the game crashes due to
   a system error. After you die, you can use your savefile to play again
   with the same options and such.
 
-Save ('Ctrl-S')
+Save ('Ctrl-s')
   This command saves the game but doesn't exit Angband. Use this frequently
   if you are paranoid about having your computer crash (or your power go
   out) while you are playing.
@@ -545,7 +545,7 @@ Interact with keymaps - option submenu
 Interact with visuals - option submenu
   Allow you to interact with visuals. You may load or save visuals from
   user pref files, or modify the attr/char mappings for the monsters,
-  objects, and terrain features. You must use the "redraw" command ('^R')
+  objects, and terrain features. You must use the "redraw" command ('^r')
   to redraw the map after changing attr/char mappings. NOTE: It is
   generally easier to modify visuals via the "knowledge" menus.
 
@@ -574,9 +574,9 @@ Identify Symbol (``/``)
 
   There are three special symbols you can use with the Identify Symbol
   command to access specific parts of your monster memory. Typing
-  'Ctrl-A' when asked for a symbol will recall details about all
-  monsters, typing 'Ctrl-U' will recall details about all unique
-  monsters, and typing 'Ctrl-N' will recall details about all non-unique
+  'Ctrl-a' when asked for a symbol will recall details about all
+  monsters, typing 'Ctrl-u' will recall details about all unique
+  monsters, and typing 'Ctrl-n' will recall details about all non-unique
   monsters.
 
   If the character stands for a creature, you are asked if you want to
@@ -594,11 +594,11 @@ Game Version (``V``)
 Extra Commands
 ==============
 
-Toggle Choice Window ('^E')
+Toggle Choice Window ('^e')
   Toggles the display in any sub-windows (if available) which are
   displaying your inventory or equipment.
 
-Redraw Screen ('^R')
+Redraw Screen ('^r')
   This command adapts to various changes in global options, and redraws all
   of the windows. It is normally only necessary in abnormal situations,
   such as after changing the visual attr/char mappings, or enabling
@@ -619,14 +619,14 @@ Certain special keys may be intercepted by the operating system or the host
 machine, causing unexpected results. In general, these special keys are
 control keys, and often, you can disable their special effects.
 
-If you are playing on a UNIX or similar system, then Ctrl-C will interrupt
+If you are playing on a UNIX or similar system, then Ctrl-c will interrupt
 Angband. The second and third interrupt will induce a warning bell, and the
 fourth will induce both a warning bell and a special message, since the
-fifth will quit the game, after killing your character. Also, 'Ctrl-Z'
+fifth will quit the game, after killing your character. Also, 'Ctrl-z'
 will suspend the game, and return you to the original command shell, until
 you resume the game with the 'fg' command. There is now a compilation
 option to force the game to prevent the "double 'ctrl-z' escape death
-trick". The 'Ctrl-\\' and 'Ctrl-D' and 'Ctrl-S' keys should not be
+trick". The 'Ctrl-\\' and 'Ctrl-d' and 'Ctrl-s' keys should not be
 intercepted.
 
 It is often possible to specify "control-keys" without actually pressing
