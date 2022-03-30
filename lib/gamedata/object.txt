@@ -2996,7 +2996,7 @@ alloc:10:1 to 70
 pile:70:1d3
 power:0
 effect:DARKEN_AREA
-effect:BALL:DARK_WEAK:3
+effect:SPOT:DARK_WEAK:3
 dice:10
 
 name:Trap Creation
@@ -4157,7 +4157,7 @@ armor:0:0
 charges:8+d8
 power:0
 effect:DARKEN_AREA
-effect:BALL:DARK_WEAK:3
+effect:SPOT:DARK_WEAK:3
 dice:10
 
 ### Destruction ###
