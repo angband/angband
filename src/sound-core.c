@@ -352,9 +352,6 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 	if (!hooks.open_audio_hook)
 		return 1;
 
-	if (!hooks.open_audio_hook())
-		return 1;
-
 	/* Enable sound */
 	event_add_handler(EVENT_SOUND, play_sound, NULL);
 
