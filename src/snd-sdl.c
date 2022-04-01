@@ -62,14 +62,11 @@ static const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUS
  */
 static bool open_audio_sdl(void)
 {
-	int audio_rate;
-	Uint16 audio_format;
-	int audio_channels;
-
 	/* Initialize variables */
-	audio_rate = 22050;
-	audio_format = AUDIO_S16;
-	audio_channels = 2;
+	int audio_rate = 22050;
+	Uint16 audio_format = AUDIO_S16;
+	int audio_channels = 2;
+	int formats = MIX_INIT_MP3;
 
 	/* Initialize the SDL library */
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -77,9 +74,18 @@ static bool open_audio_sdl(void)
 		return false;
 	}
 
+	/* Verify that the desired formats are supported. */
+	if ((Mix_Init(formats) & formats) != formats) {
+		plog("SDL: Does not support the required music formats");
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+		return false;
+	}
+
 	/* Try to open the audio */
 	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096) < 0) {
 		plog_fmt("SDL: Couldn't open mixer: %s", SDL_GetError());
+		Mix_Quit();
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
 
@@ -215,7 +221,7 @@ static bool close_audio_sdl(void)
 	 * calling unload_sound_sdl() for every sample that was loaded.
 	 */
 	Mix_CloseAudio();
-
+	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
 	return true;
