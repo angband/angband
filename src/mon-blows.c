@@ -227,8 +227,9 @@ static void steal_player_item(melee_effect_handler_context_t *context)
 				(split ? "one of your" : "your"), o_name);
 		} else {
 			/* Message */
-			msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
-				o_name, I2A(index));
+			msg("%s %s (%c) was stolen!",
+				(split ? "One of your" : "Your"), o_name,
+				gear_to_label(context->p, obj));
 
 			/* Steal and carry */
 			stolen = gear_object_for_use(context->p, obj, 1,
@@ -805,12 +806,13 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		if (obj->number == 1) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE,
 				context->p);
-			msg("Your %s (%c) was eaten!", o_name, I2A(index));
+			msg("Your %s (%c) was eaten!", o_name,
+				gear_to_label(context->p, obj));
 		} else {
 			object_desc(o_name, sizeof(o_name), obj,
 				ODESC_PREFIX | ODESC_BASE, context->p);
 			msg("One of your %s (%c) was eaten!", o_name,
-				I2A(index));
+				gear_to_label(context->p, obj));
 		}
 
 		/* Steal and eat */

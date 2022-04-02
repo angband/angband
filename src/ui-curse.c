@@ -122,7 +122,7 @@ static int curse_menu(struct object *obj, char *dice_string)
 			  format(" Remove which curse (spell strength %s)?", dice_string),
 			  sizeof(header));
 	m->header = header;
-	m->selections = lower_case;
+	m->selections = all_letters_nohjkl;
 	m->flags = (MN_PVT_TAGS);
 	m->browse_hook = curse_menu_browser;
 

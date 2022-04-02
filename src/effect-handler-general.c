@@ -1908,7 +1908,8 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	/* Artifacts have a 60% chance to resist */
 	if (obj->artifact && (randint0(100) < 60)) {
 		/* Message */
-		msg("Your %s (%c) resist%s disenchantment!", o_name, I2A(i),
+		msg("Your %s (%c) resist%s disenchantment!", o_name,
+			gear_to_label(player, obj),
 			((obj->number != 1) ? "" : "s"));
 
 		return true;
@@ -1934,7 +1935,8 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	}
 
 	/* Message */
-	msg("Your %s (%c) %s disenchanted!", o_name, I2A(i),
+	msg("Your %s (%c) %s disenchanted!", o_name,
+		gear_to_label(player, obj),
 		((obj->number != 1) ? "were" : "was"));
 
 	/* Recalculate bonuses */

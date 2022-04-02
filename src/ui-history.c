@@ -96,12 +96,14 @@ void history_display(void)
 				break;
 			}
 
+			case 'j':
 			case ARROW_DOWN: {
 				size_t scroll_to = first_item + 1;
 				first_item = (scroll_to < max_item ? scroll_to : max_item);
 				break;
 			}
 
+			case 'k':
 			case ARROW_UP: {
 				int scroll_to = first_item - 1;
 				first_item = (scroll_to >= 0 ? scroll_to : 0);

@@ -778,21 +778,21 @@ static void store_menu_set_selections(struct menu *menu, bool knowledge_menu)
 		if (OPT(player, rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "?|Ieilx";
-			menu->selections = "abcdfghjkmnopqrstuvwyz134567";
+			menu->selections = "abcdfghmnopqrstuvwyzABCDEFGHJKLMNOPQRSTUVWXYZ";
 		} else {
 			/* These two can't intersect! */
 			menu->cmd_keys = "?|Ieil";
-			menu->selections = "abcdfghjkmnopqrstuvwxyz13456";
+			menu->selections = "abcdfghjkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ";
 		}
 	} else {
 		if (OPT(player, rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "\x04\x05\x10?={|}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
-			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
+			menu->selections = "abcfmnoqrtuvyzABDFGHJKLMNOQRSUVWXYZ";
 		} else {
 			/* These two can't intersect! */
 			menu->cmd_keys = "\x05\x010?={|}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
-			menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
+			menu->selections = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 		}
 	}
 }

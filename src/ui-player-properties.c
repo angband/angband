@@ -30,7 +30,7 @@
 
 static char view_ability_tag(struct menu *menu, int oid)
 {
-	return I2A(oid);
+	return all_letters_nohjkl[oid];
 }
 
 /**
@@ -117,8 +117,8 @@ void textui_view_ability_menu(struct player_ability *ability_list,
 
 	/* Prompt choices */
 	strnfmt(buf, sizeof(buf),
-			"Race and class abilities (%c-%c, ESC=exit): ",
-			I2A(0), I2A(num_abilities - 1));
+		"Race and class abilities (%c-%c, ESC=exit): ",
+		all_letters_nohjkl[0], all_letters_nohjkl[num_abilities - 1]);
 
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);

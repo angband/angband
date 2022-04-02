@@ -311,16 +311,16 @@ void equip_cmp_display(void)
 		{ "Sorry, could not display.  Press any key.",
 			handle_input_bail, true, false },
 		/* EQUIP_CMP_MENU_NEW_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; ? for help; ESC to "
 			"exit]", handle_input_equip_cmp_general, true, true },
 		/* EQUIP_CMP_MENU_SAME_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; ? for help; ESC to "
 			"exit]", handle_input_equip_cmp_general, false, false },
 		/* EQUIP_CMP_MENU_SEL0 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; return to accept]",
 			handle_input_equip_cmp_select, true, true },
 		/* EQUIP_CMP_MENU_SEL1 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; return to accept]",
 			handle_input_equip_cmp_select, true, true },
 	};
 	int istate;
@@ -403,31 +403,31 @@ static void display_equip_cmp_help(void)
 	irow = 1;
 	prt("Movement/scrolling ---------------------------------", irow, 0);
 	++irow;
-	prt("Down arrow  one line down    Up arrow    one line up", irow, 0);
+	prt("j, down  one line down    k, up    one line up", irow, 0);
 	++irow;
-	prt("n, PgDn     one page down    p, PgUp     one page up", irow, 0);
+	prt("n, PgDn  one page down    p, PgUp  one page up", irow, 0);
 	++irow;
-	prt("space       one page down", irow, 0);
+	prt("space    one page down", irow, 0);
 	++irow;
 	prt("Filtering/searching/sorting ------------------------", irow, 0);
 	++irow;
-	prt("q           quick filter     !           use opposite quick", irow, 0);
+	prt("q        quick filter     !        use opposite quick", irow, 0);
 	++irow;
-	prt("c           cycle through sources of items", irow, 0);
+	prt("c        cycle through sources of items", irow, 0);
 	++irow;
-	prt("r           reverse", irow, 0);
+	prt("r        reverse", irow, 0);
 	++irow;
 	prt("Information ----------------------------------------", irow, 0);
 	++irow;
-	prt("v           cycle through attribute views", irow, 0);
+	prt("v        cycle through attribute views", irow, 0);
 	++irow;
-	prt("I, x        select one or two items for details", irow, 0);
+	prt("I, x     select one or two items for details", irow, 0);
 	++irow;
 	prt("Other ----------------------------------------------", irow, 0);
 	++irow;
-	prt("d           dump to file     R           reset display", irow, 0);
+	prt("d        dump to file     R        reset display", irow, 0);
 	++irow;
-	prt("ESC         exit", irow, 0);
+	prt("ESC      exit", irow, 0);
 	++irow;
 
 	Term_get_size(&wid, &hgt);
@@ -515,10 +515,12 @@ static int handle_input_equip_cmp_general(ui_event in, int istate,
 			action = ACT_CTX_EQUIPCMP_PREV_PAGE;
 			break;
 
+		case 'j':
 		case ARROW_DOWN:
 			action = ACT_CTX_EQUIPCMP_NEXT_LINE;
 			break;
 
+		case 'k':
 		case ARROW_UP:
 			action = ACT_CTX_EQUIPCMP_PREV_LINE;
 			break;
@@ -916,19 +918,19 @@ static void display_equip_cmp_sel_help(void)
 
 	Term_clear();
 	irow = 1;
-	prt("Down arrow  move selection one line down", irow, 0);
+	prt("j, down   move selection one line down", irow, 0);
 	++irow;
-	prt("Up arrow    move selection one line up", irow, 0);
+	prt("k, up     move selection one line up", irow, 0);
 	++irow;
-	prt("n, PgDn     move selection one page up", irow, 0);
+	prt("n, PgDn   move selection one page up", irow, 0);
 	++irow;
-	prt("p, PgUp     move selection one page up", irow, 0);
+	prt("p, PgUp   move selection one page up", irow, 0);
 	++irow;
-	prt("x           stop selection; if first item, escapes", irow, 0);
+	prt("x         stop selection; if first item, escapes", irow, 0);
 	++irow;
-	prt("return      select current item", irow, 0);
+	prt("return    select current item", irow, 0);
 	++irow;
-	prt("ESC         leave selection process", irow, 0);
+	prt("ESC       leave selection process", irow, 0);
 	++irow;
 
 	Term_get_size(&wid, &hgt);
@@ -971,10 +973,12 @@ static int handle_input_equip_cmp_select(ui_event in, int istate,
 			action = ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE;
 			break;
 
+		case 'j':
 		case ARROW_DOWN:
 			action = ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE;
 			break;
 
+		case 'k':
 		case ARROW_UP:
 			action = ACT_CTX_EQUIPCMP_SELECT_PREV_LINE;
 			break;

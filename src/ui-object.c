@@ -289,7 +289,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 		/* Acceptable items get a label */
 		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok))
 			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-					quiver ? I2D(i) : I2A(i));
+				quiver ? I2D(i) : all_letters_nohjkl[i]);
 
 		/* Unacceptable items are still sometimes shown */
 		else if ((!obj && show_empty) || in_term)
@@ -422,7 +422,7 @@ static void show_obj_list(olist_detail_t mode)
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
 			const char *fmt = "in Quiver: %d missile%s";
-			char letter = I2A(in_term ? i - 1 : i);
+			char letter = all_letters_nohjkl[in_term ? i - 1 : i];
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
@@ -765,7 +765,8 @@ static void menu_header(void)
 		/* List choices */
 		if (i1 <= i2) {
 			/* Build the header */
-			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(i1), I2A(i2));
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
+				all_letters_nohjkl[i1], all_letters_nohjkl[i2]);
 
 			/* Append */
 			my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -792,7 +793,8 @@ static void menu_header(void)
 		/* List choices */
 		if (e1 <= e2) {
 			/* Build the header */
-			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(e1), I2A(e2));
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
+				all_letters_nohjkl[e1], all_letters_nohjkl[e2]);
 
 			/* Append */
 			my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -844,7 +846,8 @@ static void menu_header(void)
 		/* List choices */
 		if (throwing_num) {
 			/* Build the header */
-			strnfmt(tmp_val, sizeof(tmp_val),  " a-%c,", I2A(throwing_num - 1));
+			strnfmt(tmp_val, sizeof(tmp_val),  " a-%c,",
+				all_letters_nohjkl[throwing_num - 1]);
 
 			/* Append */
 			my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -871,7 +874,8 @@ static void menu_header(void)
 		/* List choices */
 		if (f1 <= f2) {
 			/* Build the header */
-			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(f1), I2A(f2));
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
+				all_letters_nohjkl[f1], all_letters_nohjkl[f2]);
 
 			/* Append */
 			my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1007,7 +1011,7 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
 			const char *fmt = "in Quiver: %d missile%s\n";
-			char letter = I2A(i);
+			char letter = all_letters_nohjkl[i];
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
@@ -1058,7 +1062,7 @@ static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	if (player->upkeep->command_wrk == USE_QUIVER)
 		m->selections = "0123456789";
 	else
-		m->selections = lower_case;
+		m->selections = all_letters_nohjkl;
 	m->switch_keys = "/|-";
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
 	m->browse_hook = item_menu_browser;
@@ -1620,7 +1624,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 		return;
 
 	m = menu_dynamic_new();
-	m->selections = lower_case;
+	m->selections = all_letters_nohjkl;
 
 	/* Basic ignore option */
 	if (!(obj->known->notice & OBJ_NOTICE_IGNORE)) {
