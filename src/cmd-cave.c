@@ -339,6 +339,15 @@ static bool do_cmd_close_test(struct loc grid)
 		return (false);
 	}
 
+	/* Don't allow if player is in the way. */
+	if (square(cave, grid)->mon < 0) {
+		/* Message */
+		msg("You're standing in that doorway.");
+
+		/* Nope */
+		return (false);
+	}
+
 	/* Okay */
 	return (true);
 }
