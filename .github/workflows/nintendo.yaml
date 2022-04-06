@@ -21,7 +21,6 @@ jobs:
           pushd src/
           make -f Makefile.3ds
           popd
-          test -e src/angband.3dsx
 
   nds:
     name: Nintendo DS
@@ -37,4 +36,3 @@ jobs:
           pushd src/
           make -f Makefile.nds
           popd
-          test -e src/angband.nds
