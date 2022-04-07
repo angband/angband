@@ -566,8 +566,15 @@ extern void hit_trap(struct loc grid, int delayed)
 				player->depth, 1));
 
 		/* Some traps drop you onto them */
-		if (trf_has(trap->kind->flags, TRF_PIT))
+		if (trf_has(trap->kind->flags, TRF_PIT)
+				&& !loc_eq(player->grid, trap->grid)) {
 			monster_swap(player->grid, trap->grid);
+			/*
+			 * Don't retrigger the trap, but handle the
+			 * other side effects of moving the player.
+			 */
+			player_handle_post_move(player, false);
+		}
 
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
