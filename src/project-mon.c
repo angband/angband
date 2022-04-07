@@ -30,6 +30,7 @@
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "player-calcs.h"
+#include "player-util.h"
 #include "project.h"
 #include "source.h"
 
@@ -180,6 +181,10 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				if (square_ispassable(cave, next)) {
 					/* Travel down the path. */
 					monster_swap(grid, next);
+					if (square(cave, grid)->mon < 0) {
+						player_handle_post_move(
+							player, true);
+					}
 
 					/* Jump to new location. */
 					grid = next;
@@ -201,6 +206,9 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			} else {
 				/* Travel down the path. */
 				monster_swap(grid, next);
+				if (square(cave, grid)->mon < 0) {
+					player_handle_post_move(player, true);
+				}
 
 				/* Jump to new location. */
 				grid = next;
