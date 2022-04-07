@@ -1412,23 +1412,50 @@ int square_digging(struct chunk *c, struct loc grid) {
 	return 0;
 }
 
-const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
+/*
+ * Return the name for the terrain in a grid.  Accounts for the fact that
+ * some terrain mimics another terrain.
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ */
+const char *square_apparent_name(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
 	char *mimic_name = f_info[actual].mimic;
 	int f = mimic_name ? lookup_feat(mimic_name) : actual;
 	return f_info[f].name;
 }
 
-const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
+/*
+ * Return the prefix, appropriate for describing looking at the grid in
+ * question, for the name returned by square_name().
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ *
+ * The prefix is usually an indefinite article.  It may be an empty string.
+ */
+const char *square_apparent_look_prefix(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
 	char *mimic_name = f_info[actual].mimic;
 	int f = mimic_name ? lookup_feat(mimic_name) : actual;
 	return (f_info[f].look_prefix) ? f_info[f].look_prefix :
 		(is_a_vowel(f_info[f].name[0]) ? "an " : "a ");
 }
 
-const char *square_apparent_look_in_preposition(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
+/*
+ * Return a preposition, appropriate for describing the grid the viewer is on,
+ * for the name returned by square_name().  May return an empty string when
+ * the name doesn't require a preposition.
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ */
+const char *square_apparent_look_in_preposition(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
 	char *mimic_name = f_info[actual].mimic;
 	int f = mimic_name ? lookup_feat(mimic_name) : actual;
 	return (f_info[f].look_in_preposition) ?

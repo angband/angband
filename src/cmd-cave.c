@@ -587,7 +587,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You dig in the rubble.");
 		else
 			msg("You tunnel into the %s.",
-				square_apparent_name(cave, player, grid));
+				square_apparent_name(player->cave, grid));
 		more = true;
 	} else {
 		/* Don't automatically repeat if there's no hope. */
@@ -595,7 +595,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You dig in the rubble with little effect.");
 		} else {
 			msg("You chip away futilely at the %s.",
-				square_apparent_name(cave, player, grid));
+				square_apparent_name(player->cave, grid));
 		}
 	}
 
