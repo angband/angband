@@ -533,8 +533,8 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				   o_name), 0, 0);
 	} else {
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, player, grid);
-		const char *prefix = square_apparent_look_prefix(c, player, grid);
+		const char *name = square_apparent_name(player->cave, grid);
+		const char *prefix = square_apparent_look_prefix(player->cave, grid);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s%s:", prefix, name), 0, 0);
 	}
