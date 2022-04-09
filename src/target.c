@@ -342,7 +342,7 @@ bool target_accept(int y, int x)
 	}
 
 	/* Traps */
-	if (square_isvisibletrap(cave, grid)) return true;
+	if (square_isvisibletrap(player->cave, grid)) return true;
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {

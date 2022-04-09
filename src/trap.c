@@ -456,6 +456,7 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 
 	/* Clear current knowledge */
 	square_remove_all_traps(player->cave, grid);
+	sqinfo_off(square(player->cave, grid)->info, SQUARE_TRAP);
 
 	/* Copy all visible traps to the known cave */
 	while (trap) {
@@ -473,6 +474,9 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 			current->next = NULL;
 		}
 		trap = trap->next;
+	}
+	if (square(player->cave, grid)->trap) {
+		sqinfo_on(square(player->cave, grid)->info, SQUARE_TRAP);
 	}
 }
 

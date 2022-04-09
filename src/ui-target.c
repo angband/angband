@@ -600,10 +600,10 @@ static bool aux_trap(struct chunk *c, struct player *p,
 	char out_val[TARGET_OUT_VAL_SIZE];
 	const char *lphrase3;
 
-	if (!square_isvisibletrap(c, auxst->grid)) return false;
+	if (!square_isvisibletrap(p->cave, auxst->grid)) return false;
 
 	/* A trap */
-	trap = square(c, auxst->grid)->trap;
+	trap = square(p->cave, auxst->grid)->trap;
 
 	/* Not boring */
 	auxst->boring = false;
