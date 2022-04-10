@@ -447,11 +447,23 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (can_use) {
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
-		uint16_t number = 0;
-		bool ident = false, used;
+		uint16_t number;
+		bool ident = false, describe = false, used;
 		struct object *work_obj;
 		struct object *first_remainder = NULL;
-		char label = '\0';
+		char label = '\0';;
+
+		if (object_is_carried(player, obj)) {
+			label = gear_to_label(player, obj);
+			number = object_pack_total(player, obj, false,
+				&first_remainder);
+			if (first_remainder &&
+					first_remainder->number == number) {
+				first_remainder = NULL;
+			}
+		} else {
+			number = obj->number;
+		}
 
 		/* Get the level */
 		if (obj->artifact)
@@ -482,26 +494,14 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		 * object to use for propagating knowledge.
 		 */
 		if (use == USE_SINGLE) {
-			/*
-			 * In either case, record number for messages after
-			 * use.
-			 */
 			if (object_is_carried(player, obj)) {
-				label = gear_to_label(player, obj);
 				work_obj = gear_object_for_use(player, obj, 1,
 					false, &none_left);
 				from_floor = false;
-				number = object_pack_total(player, work_obj,
-					false, &first_remainder);
-				if (first_remainder
-						&& first_remainder->number == number) {
-					first_remainder = NULL;
-				}
 			} else {
 				work_obj = floor_object_for_use(player, obj, 1,
 					false, &none_left);
 				from_floor = true;
-				number = (none_left) ? 0 : obj->number;
 			}
 		} else  {
 			if (use == USE_CHARGE) {
@@ -581,16 +581,34 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 		/* Increase knowledge */
 		if (use == USE_SINGLE) {
-			char name[80];
-
 			/* Single use items are automatically learned */
 			if (!was_aware) {
 				object_learn_on_use(player, work_obj);
 			}
-			/* Get a description */
+			describe = true;
+		} else {
+			/* Wearables may need update, other things become known or tried */
+			if (tval_is_wearable(work_obj)) {
+				update_player_object_knowledge(player);
+			} else if (!was_aware && ident) {
+				object_learn_on_use(player, work_obj);
+				describe = true;
+			} else {
+				object_flavor_tried(work_obj);
+			}
+		}
+
+		if (describe) {
+			/*
+			 * Describe what's left of single use items or newly
+			 * identified items of all kinds.
+			 */
+			char name[80];
+
 			object_desc(name, sizeof(name), work_obj,
 				ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
-				((number + ((used) ? 0 : 1)) << 16), player);
+				((number + ((used && use == USE_SINGLE) ?
+				-1 : 0)) << 16), player);
 			if (from_floor) {
 				/* Print a message */
 				msg("You see %s.", name);
@@ -600,18 +618,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			} else {
 				msg("You have %s (%c).", name, label);
 			}
-		} else {
-			/* Wearables may need update, other things become known or tried */
-			if (tval_is_wearable(work_obj)) {
-				update_player_object_knowledge(player);
-			} else if (!was_aware && ident) {
-				object_learn_on_use(player, work_obj);
-			} else {
-				object_flavor_tried(work_obj);
-			}
-		}
-
-		if (used && use == USE_CHARGE) {
+		} else if (used && use == USE_CHARGE) {
 			/* Describe charges */
 			if (from_floor)
 				floor_item_charges(work_obj);
