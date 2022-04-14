@@ -371,9 +371,7 @@ if test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"; then
 	if test "$SDL2_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
-		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL2_LIBS}"
 		if test "$enable_sdl2" = "yes"; then
 			AC_CHECK_LIB(SDL2_image, IMG_LoadPNG_RW, with_sdl2=yes, with_sdl2=no)
@@ -418,9 +416,7 @@ if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 	if test "$SDL_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-		SDL_LIBS=`${SDL_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL_LIBS}"
 		if test "$enable_sdl" = "yes"; then
 			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)

@@ -184,14 +184,14 @@ AC_ARG_ENABLE(sdl2test, [AS_HELP_STRING([--disable-sdl2test], [do not try to com
   if test "$SDL2_CONFIG" = "no" ; then
     no_sdl2=yes
   else
-    SDL2_CFLAGS=`$SDL2_CONFIG $sdl2conf_args --cflags`
-    SDL2_LIBS=`$SDL2_CONFIG $sdl2conf_args --libs`
+    SDL2_CFLAGS=`$SDL2_CONFIG $sdl2_args --cflags`
+    SDL2_LIBS=`$SDL2_CONFIG $sdl2_args --libs`
 
     sdl2_major_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
     sdl2_minor_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-    sdl2_micro_version=`$SDL2_CONFIG $sdl2_config_args --version | \
+    sdl2_micro_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
     if test "x$enable_sdl2test" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
@@ -351,14 +351,14 @@ AC_ARG_ENABLE(sdltest, [AS_HELP_STRING([--disable-sdltest], [do not try to compi
   if test "$SDL_CONFIG" = "no" ; then
     no_sdl=yes
   else
-    SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
-    SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+    SDL_CFLAGS=`$SDL_CONFIG $sdl_args --cflags`
+    SDL_LIBS=`$SDL_CONFIG $sdl_args --libs`
 
     sdl_major_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
     sdl_minor_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-    sdl_micro_version=`$SDL_CONFIG $sdl_config_args --version | \
+    sdl_micro_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
     if test "x$enable_sdltest" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
