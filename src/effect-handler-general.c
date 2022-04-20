@@ -1340,8 +1340,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
-			/* Detect secret doors */
 			if (square_issecretdoor(cave, grid)) {
+				/* Detect secret doors */
 				/* Put an actual door */
 				place_closed_door(cave, grid);
 
@@ -1351,11 +1351,16 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 				/* Obvious */
 				doors = true;
-			}
-
-			/* Forget unknown doors in the mapping area */
-			if (square_isdoor(player->cave, grid) &&
-				square_isnotknown(cave, grid)) {
+			} else if (square_isdoor(cave, grid)) {
+				/* Detect other types of doors. */
+				if (square_isnotknown(cave, grid)) {
+					square_memorize(cave, grid);
+					square_light_spot(cave, grid);
+					doors = true;
+				}
+			} else if (square_isdoor(player->cave, grid)
+					&& square_isnotknown(cave, grid)) {
+				/* Forget unknown doors in the mapping area */
 				square_forget(cave, grid);
 			}
 		}
