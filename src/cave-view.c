@@ -894,6 +894,16 @@ void update_view(struct chunk *c, struct player *p)
 		sqinfo_on(square(c, p->grid)->info, SQUARE_SEEN);
 		sqinfo_on(square(c, p->grid)->info, SQUARE_CLOSE_PLAYER);
 	}
+	/*
+	 * If the player is blind and in terrain that was remembered to be
+	 * impassable, forget the remembered terrain.  This will have to be
+	 * modified in variants that have timed effects which allow a player
+	 * to move through impassable terrain.
+	 */
+	if (p->timed[TMD_BLIND] && square_isknown(c, p->grid)
+			&& !square_ispassable(p->cave, p->grid)) {
+		square_forget(c, p->grid);
+	}
 
 	/* Squares we have LOS to get marked as in the view, and perhaps seen */
 	for (y = 0; y < c->height; y++)
