@@ -1686,8 +1686,8 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	player_handle_post_move(player, true);
 
 	/* Now bite it */
-	drain = MIN(mon->hp, amount);
-	if (drain == 0) return true;
+	drain = MIN(mon->hp + 1, amount);
+	assert(drain > 0);
 	if (OPT(player, show_damage)) {
 		msg("You bite %s. (%d)", m_name, drain);
 	} else {
@@ -1698,7 +1698,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	/* Heal and nourish */
 	effect_simple(EF_HEAL_HP, context->origin, format("%d", drain), 0, 0, 0,
 				  0, 0, NULL);
-	player_inc_timed(player, TMD_FOOD, MAX(drain, 0), false, false);
+	player_inc_timed(player, TMD_FOOD, drain, false, false);
 
 	if (dead) {
 		/* Cancel the targeting of the dead creature. */
