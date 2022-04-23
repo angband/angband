@@ -348,12 +348,11 @@ fi
 AC_CHECK_FUNCS([mvwaddnwstr use_default_colors can_change_color])
 
 dnl X11 checking
+with_x11=no
 if test "$enable_x11" = "yes"; then
 	AC_PATH_XTRA
 
-	if test "x$have_x" != "xyes"; then
-		with_x11=no
-	else
+	if test "x$have_x" = "xyes"; then
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
 		CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 		LIBS="${LIBS} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS}"
@@ -361,12 +360,13 @@ if test "$enable_x11" = "yes"; then
 		with_x11=yes
 	fi
 fi
+ENABLEX11="$with_x11"; AC_SUBST(ENABLEX11)
 
+with_sdl2=no
 if test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"; then
 	dnl SDL2 checking
 	AM_PATH_SDL2(2.0.0,,)
 
-	with_sdl2=no
 	found_sdl2_mixer=no
 	if test "$SDL2_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
@@ -407,11 +407,12 @@ if test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"; then
 		fi
 	fi
 fi
+ENABLESDL2="$with_sdl2"; AC_SUBST(ENABLESDL2)
+with_sdl=no
 if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 	dnl SDL checking
 	AM_PATH_SDL(1.2.10,,)
 
-	with_sdl=no
 	found_sdl_mixer=no
 	if test "$SDL_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
@@ -443,6 +444,7 @@ if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 		fi
 	fi
 fi
+ENABLESDL="$with_sdl"; AC_SUBST(ENABLESDL)
 
 dnl Windows checking
 if test "$enable_win" = "yes"; then
@@ -457,9 +459,9 @@ if test "$enable_win" = "yes"; then
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
-	# Set up for Windows-specific behavior in the Makefiles.
-	ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 fi
+# Set up for Windows-specific behavior in the Makefiles.
+ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 
 
 LIBS="${LIBS} -lm"
