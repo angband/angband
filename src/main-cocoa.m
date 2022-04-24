@@ -3054,11 +3054,11 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	    graf_width * pcell->hscl / (1.0 * pcell->hoff_d),
 	    graf_height * pcell->vscl / (1.0 * pcell->voff_d));
 	int dbl_height_bck = overdraw_row &&
-	    irow >= self.firstTileRow + pcell->hoff_d &&
+	    irow >= self.firstTileRow + pcell->voff_d &&
 	    (pcell->v.ti.bckRow >= overdraw_row &&
 	     pcell->v.ti.bckRow <= overdraw_max);
 	int dbl_height_fgd = overdraw_row &&
-	    irow >= self.firstTileRow + pcell->hoff_d &&
+	    irow >= self.firstTileRow + pcell->voff_d &&
 	    (pcell->v.ti.fgdRow >= overdraw_row) &&
 	    (pcell->v.ti.fgdRow <= overdraw_max);
 	int aligned_row = 0, aligned_col = 0;
