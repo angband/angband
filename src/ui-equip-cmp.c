@@ -2719,7 +2719,7 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 {
 	struct ui_entry_details rdetails;
 	int color = (COLOUR_WHITE);
-	int i;
+	int i, ilab;
 
 	/* Try to handle terminal size changes while displaying the summary. */
 	if (allow_reconfig) {
@@ -2744,20 +2744,20 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 	rdetails.alternate_color_first = false;
 	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, L'@');
-	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
+	for (i = 0, ilab = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
 		int j;
 
 		if (!s->propcats[i].nvw[s->iview]) {
 			continue;
 		}
-		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j) {
+		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j, ++ilab) {
 			int joff = j + s->propcats[i].ivw[s->iview];
 			/*
 			 * As a hack, label colors are hardwired; it would be
 			 * better if they configurable so they'd be consistent
 			 * with the scheme for the symbol colors.
 			 */
-			int label_color = (j % 2 == 0) ?
+			int label_color = (ilab % 2 == 0) ?
 				COLOUR_WHITE : COLOUR_L_WHITE;
 			int k;
 
