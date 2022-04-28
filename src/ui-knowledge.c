@@ -697,8 +697,10 @@ static void display_group_member(struct menu *menu, int oid,
 	if (o_funcs->is_visual && o_funcs->xattr) {
 		wchar_t c = *o_funcs->xchar(oid);
 		uint8_t a = *o_funcs->xattr(oid);
+		char buf[12];
 
-		c_put_str(attr, format("%d/%d", a, c), row, 60);
+		strnfmt(buf, sizeof(buf), "%d/%d", a, c);
+		c_put_str(attr, buf, row, 64 - (int) strlen(buf));
 	}
 }
 
