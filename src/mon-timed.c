@@ -164,6 +164,12 @@ static bool mon_set_timed(struct monster *mon,
 		m_note = effect->message_end;
 		flag |= MON_TMD_FLG_NOTIFY;
 		check_resist = false;
+
+		/* When monster command by player (Necromancer power) expires,
+		* don't leave stale monster -> monster target */
+		if (effect_type == MON_TMD_COMMAND) {
+			mon->target.midx = 0;
+		}
 	} else if (old_timer == 0) {
 		/* Turning on, usually mention */
 		m_note = effect->message_begin;
