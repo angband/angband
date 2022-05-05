@@ -1630,6 +1630,12 @@ void do_cmd_mon_command(struct command *cmd)
 				return;
 			grid = loc_sum(mon->grid, ddgrid[dir]);
 
+			/* Don't let immobile monsters be moved */
+			if (rf_has(mon->race->flags, RF_NEVER_MOVE)) {
+				msg("The monster can not move.");
+				return;
+			}
+
 			/* Monster there - attack */
 			t_mon = square_monster(cave, grid);
 			if (t_mon) {
