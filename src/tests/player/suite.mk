@@ -5,4 +5,5 @@ TESTPROGS += player/birth \
              player/inven-carry-num \
              player/inven-wield \
              player/pathfind \
-             player/playerstat
+             player/playerstat \
+             player/util
