@@ -433,25 +433,39 @@ void player_regen_mana(struct player *p)
 
 void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
 {
-	int32_t new_chp;
-	int num, old_chp = p->chp;
-
-	/* Load it all into 4 byte format*/
-	new_chp = (int32_t)((p->chp << 16) + p->chp_frac) + hp_gain;
+	int16_t old_16 = p->chp;
+	/* Load it all into 4 byte format */
+	int32_t old_32 = (((int32_t) old_16) << 16) + p->chp_frac;
+	int32_t new_32 = old_32 + hp_gain;
 
 	/* Check for overflow */
-	/*     {new_chp = LONG_MIN;} DAVIDTODO*/
-	if ((new_chp < 0) && (old_chp > 0) && (hp_gain > 0)) {
-		new_chp = INT32_MAX;
-	} else if ((new_chp > 0) && (old_chp < 0) && (hp_gain < 0)) {
-		new_chp = INT32_MIN;
+	if (new_32 < old_32 && hp_gain > 0) {
+		new_32 = INT32_MAX;
+	} else if (new_32 > old_32 && hp_gain < 0) {
+		new_32 = INT32_MIN;
 	}
 
-	/* Break it back down*/
-	p->chp = (int16_t)(new_chp >> 16);   /* div 65536 */
-	p->chp_frac = (uint16_t)(new_chp & 0xFFFF); /* mod 65536 */
-	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative
-	 * new_chp will give -1 for chp and very high chp_frac.*/
+	/* Break it back down */
+	if (new_32 < 0) {
+		/*
+		 * Don't use right bitwise shift on negative values:  whether
+		 * the left bits are zero or one depends on the system.
+		 */
+		int32_t remainder = new_32 % 65536;
+
+		p->chp = (int16_t) (new_32 / 65536);
+		if (remainder) {
+			assert(remainder < 0);
+			p->chp_frac = (uint16_t) (65536 + remainder);
+			assert(p->chp > INT16_MIN);
+			p->chp -= 1;
+		} else {
+			p->chp_frac = 0;
+		}
+	} else {
+		p->chp = (int16_t)(new_32 >> 16);   /* div 65536 */
+		p->chp_frac = (uint16_t)(new_32 & 0xFFFF); /* mod 65536 */
+	}
 
 	/* Fully healed */
 	if (p->chp >= p->mhp) {
@@ -459,11 +473,9 @@ void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
 		p->chp_frac = 0;
 	}
 
-	num = p->chp - old_chp;
-	if (num == 0)
-		return;
-
-	p->upkeep->redraw |= (PR_HP);
+	if (p->chp != old_16) {
+		p->upkeep->redraw |= (PR_HP);
+	}
 }
 
 
@@ -473,29 +485,44 @@ void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
  */
 int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 {
-	int32_t old_csp_long, new_csp_long;
-	int old_csp_short = p->csp;
+	int16_t old_16 = p->csp;
+	/* Load it all into 4 byte format*/
+	int32_t old_32 = (((int32_t) p->csp) << 16) + p->csp_frac, new_32;
 
 	if (sp_gain == 0) return 0;
 
-	/* Load it all into 4 byte format*/
-	old_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
-	new_csp_long = old_csp_long + sp_gain;
+	new_32 = old_32 + sp_gain;
 
 	/* Check for overflow */
-
-	/* new_csp = LONG_MAX LONG_MIN;} DAVIDTODO produces warning*/
-	if ((new_csp_long < 0) && (old_csp_long > 0) && (sp_gain > 0)) {
-		new_csp_long = INT32_MAX;
+	if (new_32 < old_32 && sp_gain > 0) {
+		new_32 = INT32_MAX;
 		sp_gain = 0;
-	} else if ((new_csp_long > 0) && (old_csp_long < 0) && (sp_gain < 0)) {
-		new_csp_long = INT32_MIN;
+	} else if (new_32 > old_32 && sp_gain < 0) {
+		new_32 = INT32_MIN;
 		sp_gain = 0;
 	}
 
 	/* Break it back down*/
-	p->csp = (int16_t)(new_csp_long >> 16);   /* div 65536 */
-	p->csp_frac = (uint16_t)(new_csp_long & 0xFFFF);    /* mod 65536 */
+	if (new_32 < 0) {
+		/*
+		 * Don't use right bitwise shift on negative values:  whether
+		 * the left bits are zero or one depends on the system.
+		 */
+		int32_t remainder = new_32 % 65536;
+
+		p->csp = (int16_t) (new_32 / 65536);
+		if (remainder) {
+			assert(remainder < 0);
+			p->csp_frac = (uint16_t) (65536 + remainder);
+			assert(p->csp > INT16_MIN);
+			p->csp -= 1;
+		} else {
+			p->chp_frac = 0;
+		}
+	} else {
+		p->csp = (int16_t)(new_32 >> 16);   /* div 65536 */
+		p->csp_frac = (uint16_t)(new_32 & 0xFFFF);    /* mod 65536 */
+	}
 
 	/* Max/min SP */
 	if (p->csp >= p->msp) {
@@ -509,14 +536,14 @@ int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 	}
 
 	/* Notice changes */
-	if (old_csp_short != p->csp) {
+	if (old_16 != p->csp) {
 		p->upkeep->redraw |= (PR_MANA);
 	}
 
 	if (sp_gain == 0) {
 		/* Recalculate */
-		new_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
-		sp_gain = new_csp_long - old_csp_long;
+		new_32 = (((int32_t) p->csp) << 16) + p->csp_frac;
+		sp_gain = new_32 - old_32;
 	}
 
 	return sp_gain;
