@@ -566,7 +566,7 @@ Check knowledge (``~``)
     This displays a summary of the known properties of the equippable
     items your character has access to, whether they are currently equipped,
     in your character's pack, on the floor at your character's current
-    location, or in a store. Near the top of the display is line, beginning
+    location, or in a store. Near the top of the display is a line, beginning
     with "@", which summarizes the state of your character given his or her
     current equipment. Every line after that corresponds to an item, sorted
     by which equipment slot it can fill. The first character on each of those
