@@ -545,7 +545,7 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 			/*
 			 * Don't show aggregate total in pack if equipped or
 			 * if the description could have a number of charges
-			 * or recharign notice specific to the stack (not
+			 * or recharging notice specific to the stack (not
 			 * aggregating those quantities so there would be
 			 * confusion if aggregating the count).
 			 */
@@ -896,7 +896,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		/*
 		 * Show an aggregate total if the description doesn't have
-		 * a charge/charging notice that's specific to the stack.
+		 * a charge/recharging notice that's specific to the stack.
 		 */
 		if (tval_can_have_charges(obj) || tval_is_rod(obj)
 				|| obj->timeout > 0) {

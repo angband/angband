@@ -804,7 +804,7 @@ static void select_savefile(bool retry, bool *new_game)
 		assert(allocated > 0 && !entries[0]);
 		if (default_entry && arg_force_name) {
 			/*
-			 * Name set by front end is already in use and name's
+			 * Name set by front end is already in use and names
 			 * are forced so don't allow the new game option.
 			 */
 			int i;

@@ -390,7 +390,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	userpath = (char *)datapath;
 #endif /* USE_PRIVATE_PATHS */
 
-	/* Build the path to the score and directories */
+	/* Build the path to the score and save directories */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_PANIC, userpath, "panic");
