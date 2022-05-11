@@ -1123,7 +1123,7 @@ void player_know_object(struct player *p, struct object *obj)
 	}
 
 	if (object_non_curse_runes_known(obj) && tval_is_jewelry(obj)) {
-		seen = obj->kind->everseen;
+		seen = (obj->artifact) ? true : obj->kind->everseen;
 		object_flavor_aware(p, obj);
 	}
 
