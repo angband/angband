@@ -1550,7 +1550,7 @@ void do_cmd_mon_command(struct command *cmd)
 		case CMD_READ_SCROLL: {
 			/* Actually 'r'elease monster */
 			mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
-			player_clear_timed(player, TMD_COMMAND, true);
+			player_clear_timed(player, TMD_COMMAND, true, false);
 			break;
 		}
 		case CMD_CAST: {

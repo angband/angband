@@ -281,7 +281,7 @@ static bool set_temporary_brand(struct player *p, int idx)
 	int tmd_idx = brand_index_to_timed_index(idx);
 
 	if (tmd_idx < 0) return false;
-	(void) player_set_timed(player, tmd_idx, 100, false);
+	(void) player_set_timed(player, tmd_idx, 100, false, false);
 	return true;
 }
 
@@ -290,7 +290,7 @@ static bool clear_temporary_brand(struct player *p, int idx)
 	int tmd_idx = brand_index_to_timed_index(idx);
 
 	if (tmd_idx < 0) return false;
-	(void) player_clear_timed(player, tmd_idx, false);
+	(void) player_clear_timed(player, tmd_idx, false, false);
 	return true;
 }
 
@@ -310,7 +310,7 @@ static bool set_temporary_slay(struct player *p, int idx)
 	int tmd_idx = slay_index_to_timed_index(idx);
 
 	if (tmd_idx < 0) return false;
-	(void) player_set_timed(player, tmd_idx, 100, false);
+	(void) player_set_timed(player, tmd_idx, 100, false, false);
 	return true;
 }
 
@@ -319,7 +319,7 @@ static bool clear_temporary_slay(struct player *p, int idx)
 	int tmd_idx = slay_index_to_timed_index(idx);
 
 	if (tmd_idx < 0) return false;
-	(void) player_clear_timed(player, tmd_idx, false);
+	(void) player_clear_timed(player, tmd_idx, false, false);
 	return true;
 }
 

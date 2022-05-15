@@ -343,7 +343,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Hack -- remove any command status */
 	if (mon->m_timed[MON_TMD_COMMAND]) {
-		(void) player_clear_timed(player, TMD_COMMAND, true);
+		(void) player_clear_timed(player, TMD_COMMAND, true, true);
 	}
 
 	/* Monster is gone from square and group */

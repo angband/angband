@@ -465,7 +465,8 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 		context->obvious = true;
 	} else {
 		/* Increase timer for type. */
-		if (player_inc_timed(context->p, type, amount, true, true)) {
+		if (player_inc_timed(context->p, type, amount, true, true,
+				true)) {
 			context->obvious = true;
 		}
 
@@ -579,9 +580,10 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 		return;
 
 	/* Take "poison" effect */
-	if (player_inc_timed(context->p, TMD_POISONED, 5 + randint1(context->rlev),
-						 true, true))
+	if (player_inc_timed(context->p, TMD_POISONED,
+			5 + randint1(context->rlev), true, true, true)) {
 		context->obvious = true;
+	}
 
 	/* Learn about the player */
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_POIS);
@@ -1057,8 +1059,8 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 	if (monster_damage_target(context, true)) return;
 
 	/* Increase "image" */
-	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2),
-						 true, true))
+	if (player_inc_timed(context->p, TMD_IMAGE,
+			3 + randint1(context->rlev / 2), true, true, true))
 		context->obvious = true;
 
 	/* Learn about the player */
@@ -1077,8 +1079,9 @@ static void melee_effect_handler_BLACK_BREATH(melee_effect_handler_context_t *co
 
 	/* Increase Black Breath counter a *small* amount, maybe */
 	if (one_in_(5) && player_inc_timed(context->p, TMD_BLACKBREATH,
-									   context->damage / 10, true, false))
+			context->damage / 10, true, true, false)) {
 		context->obvious = true;
+	}
 }
 
 /**

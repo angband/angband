@@ -951,19 +951,19 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 	player->csp_frac = 0;
 
 	/* Cure stuff */
-	(void) player_clear_timed(player, TMD_BLIND, true);
-	(void) player_clear_timed(player, TMD_CONFUSED, true);
-	(void) player_clear_timed(player, TMD_POISONED, true);
-	(void) player_clear_timed(player, TMD_AFRAID, true);
-	(void) player_clear_timed(player, TMD_PARALYZED, true);
-	(void) player_clear_timed(player, TMD_IMAGE, true);
-	(void) player_clear_timed(player, TMD_STUN, true);
-	(void) player_clear_timed(player, TMD_CUT, true);
-	(void) player_clear_timed(player, TMD_SLOW, true);
-	(void) player_clear_timed(player, TMD_AMNESIA, true);
+	(void) player_clear_timed(player, TMD_BLIND, true, false);
+	(void) player_clear_timed(player, TMD_CONFUSED, true, false);
+	(void) player_clear_timed(player, TMD_POISONED, true, false);
+	(void) player_clear_timed(player, TMD_AFRAID, true, false);
+	(void) player_clear_timed(player, TMD_PARALYZED, true, false);
+	(void) player_clear_timed(player, TMD_IMAGE, true, false);
+	(void) player_clear_timed(player, TMD_STUN, true, false);
+	(void) player_clear_timed(player, TMD_CUT, true, false);
+	(void) player_clear_timed(player, TMD_SLOW, true, false);
+	(void) player_clear_timed(player, TMD_AMNESIA, true, false);
 
 	/* No longer hungry */
-	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false);
+	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false, false);
 
 	/* Flag what needs to be updated or redrawn */
 	player->upkeep->update |= PU_TORCH | PU_UPDATE_VIEW | PU_MONSTERS;

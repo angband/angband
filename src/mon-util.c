@@ -1110,7 +1110,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 
 	/* Bloodlust bonus */
 	if (p->timed[TMD_BLOODLUST]) {
-		player_inc_timed(p, TMD_BLOODLUST, 10, false, false);
+		player_inc_timed(p, TMD_BLOODLUST, 10, false, false, true);
 		player_over_exert(p, PY_EXERT_CONF, 5, 3);
 		player_over_exert(p, PY_EXERT_HALLU, 5, 10);
 	}
@@ -1529,7 +1529,8 @@ void steal_monster_item(struct monster *mon, int midx)
 			msg("You vanish into the shadows!");
 			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0,
 						  NULL);
-			(void) player_clear_timed(player, TMD_ATT_RUN, false);
+			(void) player_clear_timed(player, TMD_ATT_RUN, false,
+				false);
 		}
 	} else {
 		/* Get the thief details */
