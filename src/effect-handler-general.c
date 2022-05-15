@@ -1303,9 +1303,6 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 					/* Know the trap */
 					obj->known->pval = obj->pval;
 
-					/* Notice it */
-					disturb(player);
-
 					/* We found something to detect */
 					detect = true;
 				}
