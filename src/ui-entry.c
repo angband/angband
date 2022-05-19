@@ -76,7 +76,7 @@ struct bound_player_ability {
 enum {
 	ENTRY_FLAG_TIMED_AUX = 1,
 	/* Used internally; not set from within the configuration files. */
-	ENTRY_FLAG_TEMPLATE_ONLY = (1 << 20)
+	ENTRY_FLAG_TEMPLATE_ONLY = (1UL << 20)
 };
 struct entry_flag {
 	const char *name;

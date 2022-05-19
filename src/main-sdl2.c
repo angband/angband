@@ -2297,7 +2297,8 @@ static void handle_menu_purpose(struct window *window,
 	{
 		elems[num_elems].caption = window_flag_desc[num_elems];
 		elems[num_elems].data.value.term_flag_value.subwindow = subwindow;
-		elems[num_elems].data.value.term_flag_value.flag = 1L << num_elems;
+		elems[num_elems].data.value.term_flag_value.flag =
+			((uint32_t) 1) << num_elems;
 		elems[num_elems].data.type = BUTTON_DATA_TERM_FLAG;
 		elems[num_elems].on_render = render_button_menu_pw;
 		elems[num_elems].on_menu = handle_menu_pw;

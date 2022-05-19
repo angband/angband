@@ -1716,8 +1716,8 @@ static bool monster_check_active(struct monster *mon)
 static void monster_reduce_sleep(struct monster *mon)
 {
 	int stealth = player->state.skills[SKILL_STEALTH];
-	int player_noise = 1 << (30 - stealth);
-	int notice = randint0(1024);
+	uint32_t player_noise = ((uint32_t) 1) << (30 - stealth);
+	uint32_t notice = (uint32_t) randint0(1024);
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Aggravation */

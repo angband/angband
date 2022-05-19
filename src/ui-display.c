@@ -2314,10 +2314,15 @@ static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 	/* Deal with the changed flags by seeing what's changed */
 	for (i = 0; i < 32; i++)
 		/* Only process valid flags */
-		if (window_flag_desc[i])
-			if ((new_flags & (1L << i)) != (window_flag[win_idx] & (1L << i)))
-				subwindow_flag_changed(win_idx, (1L << i),
-									   (new_flags & (1L << i)) != 0);
+		if (window_flag_desc[i]) {
+			uint32_t flag = ((uint32_t) 1) << i;
+
+			if ((new_flags & flag) !=
+					(window_flag[win_idx] & flag)) {
+				subwindow_flag_changed(win_idx, flag,
+						(new_flags & flag) != 0);
+			}
+		}
 
 	/* Store the new flags */
 	window_flag[win_idx] = new_flags;
