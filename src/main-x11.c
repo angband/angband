@@ -597,7 +597,7 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 		modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
 		if (modStr) {
 			if (streq(name, modStr))
-				XkbVirtualModsToReal( xkb, 1 << i, &mask );
+				XkbVirtualModsToReal( xkb, 1U << i, &mask );
 
 			XFree(modStr);
 		}

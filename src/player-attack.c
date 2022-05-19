@@ -972,7 +972,7 @@ void py_attack(struct player *p, struct loc grid)
 
 	/* Reward BGs with 5% of max SPs, min 1/2 point */
 	if (player_has(p, PF_COMBAT_REGEN)) {
-		int32_t sp_gain = (int32_t)(MAX(p->msp, 10) << 16) / 20;
+		int32_t sp_gain = (((int32_t)MAX(p->msp, 10)) * 16384) / 5;
 		player_adjust_mana_precise(p, sp_gain);
 	}
 

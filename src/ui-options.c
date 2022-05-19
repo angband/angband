@@ -430,7 +430,7 @@ static void do_cmd_options_win(const char *name, int row)
 				if ((i == y) && (j == x)) a = COLOUR_L_BLUE;
 
 				/* Active flag */
-				if (new_flags[j] & (1L << i)) c = L'X';
+				if (new_flags[j] & ((uint32_t) 1 << i)) c = L'X';
 
 				/* Flag value */
 				Term_putch(35 + j * 5, i + 5, a, c);
@@ -455,12 +455,14 @@ static void do_cmd_options_win(const char *name, int row)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
 				&& !(ke.mouse.x % 5)) {
 				if ((choicey == y) && (choicex == x)) {
+					uint32_t flag = ((uint32_t) 1) << y;
+
 					/* Toggle flag (off) */
-					if (new_flags[x] & (1L << y))
-						new_flags[x] &= ~(1L << y);
+					if (new_flags[x] & flag)
+						new_flags[x] &= ~flag;
 					/* Toggle flag (on) */
 					else
-						new_flags[x] |= (1L << y);
+						new_flags[x] |= flag;
 				} else {
 					y = choicey;
 					x = (ke.mouse.x - 35)/5;
@@ -478,12 +480,12 @@ static void do_cmd_options_win(const char *name, int row)
 					bell();
 
 				/* Toggle flag (off) */
-				else if (new_flags[x] & (1L << y))
-					new_flags[x] &= ~(1L << y);
+				else if (new_flags[x] & (((uint32_t) 1) << y))
+					new_flags[x] &= ~(((uint32_t) 1) << y);
 
 				/* Toggle flag (on) */
 				else
-					new_flags[x] |= (1L << y);
+					new_flags[x] |= (((uint32_t) 1) << y);
 
 				/* Continue */
 				continue;

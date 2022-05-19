@@ -364,7 +364,7 @@ void option_dump(ang_file *fff)
 			if (!window_flag_desc[j]) continue;
 
 			/* Only dump the flag if true */
-			if (window_flag[i] & (1L << j)) {
+			if (window_flag[i] & (((uint32_t) 1) << j)) {
 				file_putf(fff, "# Window '%s', Flag '%s'\n",
 						  angband_term_name[i], window_flag_desc[j]);
 				file_putf(fff, "window:%d:%d:1\n", i, j);
@@ -1049,9 +1049,9 @@ static enum parser_error parse_prefs_window(struct parser *p)
 	{
 		int value = parser_getuint(p, "value");
 		if (value)
-			d->window_flags[window] |= (1L << flag);
+			d->window_flags[window] |= (((uint32_t) 1) << flag);
 		else
-			d->window_flags[window] &= ~(1L << flag);
+			d->window_flags[window] &= ~(((uint32_t) 1) << flag);
 	}
 
 	d->loaded_window_flag[window] = true;
