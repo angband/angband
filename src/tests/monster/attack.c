@@ -17,6 +17,7 @@ int setup_tests(void **state) {
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->mon_blows_max = 2;
 	projections = test_projections;
+	l_list = &test_lore;
 	m->race = r;
 	r_info = r;
 	*state = m;
