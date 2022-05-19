@@ -510,7 +510,7 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), edesc,
 				projections[e->subtype].player_desc,
 				e->radius +
-					(e->other ? e->other / player->lev : 0),
+					(e->other ? player->lev / e->other : 0),
 				dice_string);
 			break;
 
