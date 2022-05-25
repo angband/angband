@@ -342,6 +342,8 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 static bool aux_reinit(struct chunk *c, struct player *p,
 		struct target_aux_state *auxst)
 {
+	struct monster *mon;
+
 	/* Set the default event to focus on the player. */
 	auxst->press.type = EVT_KBRD;
 	auxst->press.key.code = 'p';
@@ -359,8 +361,17 @@ static bool aux_reinit(struct chunk *c, struct player *p,
 		auxst->phrase2 = "on ";
 	} else {
 		/* Default */
-		auxst->phrase1 = (square_isseen(c, auxst->grid)) ?
-			"You see " : "You recall ";
+		if (square_isseen(c, auxst->grid)) {
+			auxst->phrase1 = "You see ";
+		} else {
+			mon = square_monster(c, auxst->grid);
+			if (mon && monster_is_obvious(mon)) {
+				/* Monster is visible because of detection or telepathy */
+				auxst->phrase1 = "You sense ";
+			} else {
+				auxst->phrase1 = "You recall ";
+			}
+		}
 		auxst->phrase2 = "";
 	}
 
