@@ -1467,16 +1467,16 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 
 /**
  * Picks a monster race, makes a new monster of that race, then attempts to
- * place it in the dungeon at least `dis` away from the player. The monster
- * race chosen will be appropriate for dungeon level equal to `depth`.
+ * place it in the dungeon at least `dis` away from the grid, to_avoid. The
+ * monster race chosen will be appropriate for dungeon level equal to `depth`.
  *
  * If `sleep` is true, the monster is placed with its default sleep value,
  * which is given in monster.txt.
  *
  * Returns true if we successfully place a monster.
  */
-bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
-		bool sleep, int depth)
+bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
+		int dis, bool sleep, int depth)
 {
 	struct loc grid;
 	int	attempts_left = 10000;
@@ -1496,11 +1496,11 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 			continue;
 
 		/* Accept far away grids */
-		if (distance(grid, p->grid) > dis) break;
+		if (distance(grid, to_avoid) > dis) break;
 	}
 
 	if (!attempts_left) {
-		if (OPT(p, cheat_xtra) || OPT(p, cheat_hear))
+		if (OPT(player, cheat_xtra) || OPT(player, cheat_hear))
 			msg("Warning! Could not allocate a new monster.");
 
 		return false;

@@ -41,7 +41,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 	struct monster_group_info group_info, uint8_t origin);
 bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 	bool sleep, bool group_okay, uint8_t origin);
-bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
-									bool sleep, int depth);
+bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
+	int dis, bool sleep, int depth);
 
 #endif /* MONSTER_MAKE_H */
