@@ -8,7 +8,7 @@ on:
 
 jobs:
   _3ds:
-    name: Nintendo 3DS
+    name: Nintendo 3DS 3dsx
     runs-on: ubuntu-latest
     container: devkitpro/devkitarm
     steps:
