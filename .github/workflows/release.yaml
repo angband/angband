@@ -406,6 +406,100 @@ jobs:
           asset_name: ${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
           asset_content_type: ${{ steps.create_nintendo_3ds_archive.outputs.archive_content_type }}
 
+  _3ds-cia:
+    needs: [setup, docconvert]
+    name: Nintendo 3DS cia
+    runs-on: ubuntu-18.04
+    container: devkitpro/devkitarm
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=name::$name"
+          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=progname::$progname"
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=version::$version"
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=prerelease::$prerelease"
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=draft::$draft"
+          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
+          echo "::set-output name=upload_url::$upload_url"
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Setup cxitool and build
+        shell: bash
+        run: |
+          apt-get update && DEBIAN_FRONTEND=non-interactive apt-get install -y build-essential automake autoconf autotools-dev
+          git clone -b cxi-stuff https://github.com/devkitPro/3dstools/
+          pushd 3dstools/
+          ./autogen.sh
+          ./configure
+          make install
+          popd
+
+      - name: Setup makerom 
+        shell: bash
+        run: |
+          apt-get update && DEBIAN_FRONTEND=non-interactive apt-get install -y build-essential libmbedtls-dev liblzma-dev libyaml-dev
+          git clone https://github.com/3DSGuy/Project_CTR/
+          pushd Project_CTR/makerom
+          make deps
+          make
+          cp -rv bin/makerom /usr/local/bin
+          popd
+
+      - name: Create Nintendo 3DS cia Archive
+        id: create_nintendo_3ds_archive
+        shell: bash
+        run: |
+          pushd src/
+          make -f Makefile.3ds
+          test -e ${{ steps.store_config.outputs.progname }}.3dsx
+          cxitool --name ${{ steps.store_config.outputs.progname }} ${{ steps.store_config.outputs.progname }}.3dsx ${{ steps.store_config.outputs.progname }}.cxi
+          makerom -v -f cia -o ${{ steps.store_config.outputs.progname }}.cia -target t -i ${{ steps.store_config.outputs.progname }}.cxi:0:0 -ignoresign -icon icon.smdh
+          test -e ${{ steps.store_config.outputs.progname }}.cia
+          popd
+
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "::set-output name=archive_file::${archive_prefix}-3ds-cia.zip"
+          echo "::set-output name=archive_content_type::application/zip"
+          mkdir -v ${{ steps.store_config.outputs.progname }}/
+          cp -v src/${{ steps.store_config.outputs.progname }}.cia ${archive_prefix}.cia
+          cp -rv lib ${{ steps.store_config.outputs.progname }}/
+          zip -r ${archive_prefix}-3ds-cia.zip ${archive_prefix}.cia ${{ steps.store_config.outputs.progname }}/
+          
+      - name: Upload Nintendo 3DS cia Archive
+        id: upload_nintendo_3ds_cia_archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.store_config.outputs.upload_url }}
+          asset_path: ./${{ steps.create_nintendo_3ds_cia_archive.outputs.archive_file }}
+          asset_name: ${{ steps.create_nintendo_3ds_cia_archive.outputs.archive_file }}
+          asset_content_type: ${{ steps.create_nintendo_3ds_cia_archive.outputs.archive_content_type }}
+
   nds:
     needs: [setup, docconvert]
     name: Nintendo DS
