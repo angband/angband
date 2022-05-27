@@ -22,7 +22,6 @@ jobs:
           make -f Makefile.3ds
           popd
 
-  jobs:
   _3ds-cia:
     name: Nintendo 3DS cia
     runs-on: ubuntu-latest
