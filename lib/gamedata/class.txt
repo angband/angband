@@ -752,7 +752,8 @@ effect:TIMED_INC:BLESSED
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 10
 expr:S:PLAYER_LEVEL:+ 10
-desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
+desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for a
+desc: level-dependent number of turns.
 
 spell:Sense Invisible:3:4:25:4
 effect:TIMED_INC:SINVIS
@@ -1248,7 +1249,8 @@ effect:TIMED_INC:BLESSED
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 10
 expr:S:PLAYER_LEVEL:+ 10
-desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
+desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for a
+desc: level-dependent number of turns.
 
 spell:Detect Evil:3:2:10:4
 effect:DETECT_EVIL
@@ -1557,7 +1559,7 @@ desc: level-dependent duration.
 
 spell:Create Arrows:22:20:40:40
 effect:CREATE_ARROWS
-desc:Allows the player to turn a staff into a stack of arrow, with quality
+desc:Allows the player to turn a staff into a stack of arrows, with quality
 desc: depending on staff level and player level.
 
 spell:Haste Self:25:12:65:15
