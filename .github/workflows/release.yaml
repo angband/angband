@@ -339,7 +339,7 @@ jobs:
 
   _3ds:
     needs: [setup, docconvert]
-    name: Nintendo 3DS
+    name: Nintendo 3DS 3dsx
     runs-on: ubuntu-18.04
     container: devkitpro/devkitarm
     steps:
@@ -470,7 +470,7 @@ jobs:
           popd
 
       - name: Create Nintendo 3DS cia Archive
-        id: create_nintendo_3ds_archive
+        id: create_nintendo_3ds_cia_archive
         shell: bash
         run: |
           pushd src/
