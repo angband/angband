@@ -327,7 +327,8 @@ static void decrease_timeouts(void)
 				if (!los(cave, player->grid, mon->grid)) {
 					/* Out of sight is out of mind */
 					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
-					player_clear_timed(player, TMD_COMMAND, true);
+					player_clear_timed(player, TMD_COMMAND,
+						true, true);
 				} else {
 					/* Keep monster timer aligned */
 					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0);
@@ -336,7 +337,7 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		player_dec_timed(player, i, decr, false);
+		player_dec_timed(player, i, decr, false, true);
 	}
 
 	/* Curse effects always decrement by 1 */
@@ -658,19 +659,22 @@ void process_world(struct chunk *c)
 			if (i < 1) i = 1;
 
 			/* Digest some food */
-			player_dec_timed(player, TMD_FOOD, i, false);
+			player_dec_timed(player, TMD_FOOD, i, false, true);
 		}
 
 		/* Fast metabolism */
 		if (player->timed[TMD_HEAL]) {
-			player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
+			player_dec_timed(player, TMD_FOOD,
+				8 * z_info->food_value, false, true);
 			if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
-				player_set_timed(player, TMD_HEAL, 0, true);
+				player_set_timed(player, TMD_HEAL, 0, true,
+					true);
 			}
 		}
 	} else {
 		/* Digest quickly when gorged */
-		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value, false);
+		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value,
+			false, true);
 		player->upkeep->update |= PU_BONUS;
 	}
 
@@ -683,8 +687,8 @@ void process_world(struct chunk *c)
 			disturb(player);
 
 			/* Faint (bypass free action) */
-			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
-								   true, false);
+			(void)player_inc_timed(player, TMD_PARALYZED,
+				1 + randint0(5), true, true, false);
 		}
 	} else if (player_timed_grade_eq(player, TMD_FOOD, "Starving")) {
 		/* Calculate damage */
@@ -1011,7 +1015,7 @@ void on_new_level(void)
  */
 static void on_leave_level(void) {
 	/* Cancel any command */
-	player_clear_timed(player, TMD_COMMAND, false);
+	player_clear_timed(player, TMD_COMMAND, false, false);
 
 	/* Don't allow command repeat if moved away from item used. */
 	cmd_disable_repeat_floor_item();

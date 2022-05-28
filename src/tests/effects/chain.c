@@ -224,7 +224,7 @@ static int test_random2_execute(void *state) {
 
 	if (ec) {
 		restore_to_full_health();
-		player_clear_timed(player, TMD_BOLD, false);
+		player_clear_timed(player, TMD_BOLD, false, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
 			0, 0, false, NULL);
 		free_effect(ec);
@@ -279,7 +279,7 @@ static int test_random_stats(void *state) {
 
 			if (i >= nsim) break;
 			restore_to_full_health();
-			player_clear_timed(player, TMD_BOLD, false);
+			player_clear_timed(player, TMD_BOLD, false, false);
 			completed = effect_do(ec, source_player(), NULL,
 				&ident, true, 0, 0, false, NULL);
 			if (!completed) break;
@@ -324,7 +324,7 @@ static int test_nested_random_execute(void *state) {
 
 	if (ec) {
 		restore_to_full_health();
-		player_clear_timed(player, TMD_BOLD, false);
+		player_clear_timed(player, TMD_BOLD, false, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
 			0, 0, false, NULL);
 		free_effect(ec);
@@ -422,7 +422,7 @@ static int test_select2_execute(void *state) {
 		struct command cmd;
 
 		restore_to_full_health();
-		player_clear_timed(player, TMD_BOLD, false);
+		player_clear_timed(player, TMD_BOLD, false, false);
 		memset(&cmd, 0, sizeof(cmd));
 		cmd_set_arg_choice(&cmd, "list_index", choice);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
@@ -487,7 +487,7 @@ static int test_nested_select_execute(void *state) {
 
 	if (ec) {
 		restore_to_full_health();
-		player_clear_timed(player, TMD_BOLD, false);
+		player_clear_timed(player, TMD_BOLD, false, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
 			0, 0, false, NULL);
 		free_effect(ec);

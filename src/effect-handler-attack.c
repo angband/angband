@@ -1240,15 +1240,15 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		msg("There is a searing blast of light!");
 		equip_learn_element(player, ELEM_LIGHT);
 		if (!player_resists(player, ELEM_LIGHT)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	} else if (elem == ELEM_DARK) {
 		msg("Darkness seems to crush you!");
 		equip_learn_element(player, ELEM_DARK);
 		if (!player_resists(player, ELEM_DARK)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	}
 
@@ -1414,15 +1414,15 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				case 2: {
 					msg("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50),
-										   true, true);
+					(void)player_inc_timed(player, TMD_STUN,
+						randint1(50), true, true, true);
 					break;
 				}
 				case 3: {
 					msg("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50),
-										   true, true);
+					(void)player_inc_timed(player, TMD_STUN,
+						randint1(50), true, true, true);
 					break;
 				}
 			}
@@ -1698,7 +1698,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	/* Heal and nourish */
 	effect_simple(EF_HEAL_HP, context->origin, format("%d", drain), 0, 0, 0,
 				  0, 0, NULL);
-	player_inc_timed(player, TMD_FOOD, drain, false, false);
+	player_inc_timed(player, TMD_FOOD, drain, false, false, false);
 
 	if (dead) {
 		/* Cancel the targeting of the dead creature. */
