@@ -985,11 +985,13 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Get arguments */
 	if (cmd_get_spell(cmd, "spell", player, &spell_index,
-			/* Verb */   "cast",
-			/* Book */   obj_can_cast_from,
-			/* Error */  "There are no spells you can cast.",
-			/* Filter */ spell_okay_to_cast) != CMD_OK)
+			/* Verb */ "cast",
+			/* Book */ obj_can_cast_from,
+			/* Book error */ "There are no spells you can cast.",
+			/* Filter */ spell_okay_to_cast,
+			/* Spell error */ "That book has no spells that you can cast.") != CMD_OK) {
 		return;
+	}
 
 	/* Get the spell */
 	spell = spell_by_index(player, spell_index);
@@ -1041,10 +1043,11 @@ void do_cmd_study_spell(struct command *cmd)
 		return;
 
 	if (cmd_get_spell(cmd, "spell", player, &spell_index,
-			/* Verb */   "study",
-			/* Book */   obj_can_study,
-			/* Error  */ "You cannot learn any new spells from the books you have.",
-			/* Filter */ spell_okay_to_study) != CMD_OK)
+			/* Verb */ "study",
+			/* Book */ obj_can_study,
+			/* Book error */ "You cannot learn any new spells from the books you have.",
+			/* Filter */ spell_okay_to_study,
+			/* Spell error */ "That book has no spells that you can learn.") != CMD_OK)
 		return;
 
 	spell_learn(spell_index);

@@ -49,8 +49,9 @@ extern int (*get_spell_from_book_hook)(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
 extern int (*get_spell_hook)(struct player *p, const char *verb,
-	item_tester book_filter, cmd_code cmd, const char *error,
-	bool (*spell_filter)(const struct player *p, int spell));
+	item_tester book_filter, cmd_code cmd, const char *book_error,
+	bool (*spell_filter)(const struct player *p, int spell),
+	const char *spell_error, struct object **rtn_book);
 extern bool (*get_item_hook)(struct object **choice, const char *pmt,
 							 const char *str, cmd_code cmd, item_tester tester,
 							 int mode);
@@ -75,8 +76,9 @@ int get_spell_from_book(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
 int get_spell(struct player *p, const char *verb,
-	item_tester book_filter, cmd_code cmd, const char *error,
-	bool (*spell_filter)(const struct player *p, int spell));
+	item_tester book_filter, cmd_code cmd, const char *book_error,
+	bool (*spell_filter)(const struct player *p, int spell),
+	const char *spell_error, struct object **rtn_book);
 bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
 bool get_curse(int *choice, struct object *obj, char *dice_string);

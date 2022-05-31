@@ -352,6 +352,8 @@ int textui_get_spell_from_book(struct player *p, const char *verb,
 		int spell_index = spell_menu_select(m, noun, verb);
 		spell_menu_destroy(m);
 		return spell_index;
+	} else if (error) {
+		msg("%s", error);
 	}
 
 	return -1;
@@ -361,8 +363,9 @@ int textui_get_spell_from_book(struct player *p, const char *verb,
  * Get a spell from the player.
  */
 int textui_get_spell(struct player *p, const char *verb,
-		item_tester book_filter, cmd_code cmd, const char *error,
-		bool (*spell_filter)(const struct player *p, int spell_index))
+		item_tester book_filter, cmd_code cmd, const char *book_error,
+		bool (*spell_filter)(const struct player *p, int spell_index),
+		const char *spell_error, struct object **rtn_book)
 {
 	char prompt[1024];
 	struct object *book;
@@ -371,9 +374,14 @@ int textui_get_spell(struct player *p, const char *verb,
 	strnfmt(prompt, sizeof prompt, "%s which book?", verb);
 	my_strcap(prompt);
 
-	if (!get_item(&book, prompt, error,
+	if (!get_item(&book, prompt, book_error,
 				  cmd, book_filter, (USE_INVEN | USE_FLOOR)))
 		return -1;
 
-	return textui_get_spell_from_book(p, verb, book, error, spell_filter);
+	if (rtn_book) {
+		*rtn_book = book;
+	}
+
+	return textui_get_spell_from_book(p, verb, book, spell_error,
+		spell_filter);
 }
