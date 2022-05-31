@@ -438,11 +438,21 @@ void cmd_disable_repeat_floor_item(void)
 	cmd_prev = cmd_head - 1;
 	if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
 	if (cmd_queue[cmd_prev].code != CMD_NULL) {
-		struct object *obj;
+		struct command *cmd = &cmd_queue[cmd_prev];
+		int i = 0;
 
-		if (cmd_get_arg_item(&cmd_queue[cmd_prev], "item", &obj) == CMD_OK
-				&& (obj->grid.x != 0 || obj->grid.y != 0)) {
-			repeat_prev_allowed = false;
+		while (1) {
+			if (i >= CMD_MAX_ARGS) {
+				break;
+			}
+			if (cmd->arg[i].type == arg_ITEM
+					&& cmd->arg[i].data.obj
+					&& (cmd->arg[i].data.obj->grid.x != 0
+					|| cmd->arg[i].data.obj->grid.y != 0)) {
+				repeat_prev_allowed = false;
+				break;
+			}
+			++i;
 		}
 	}
 }
@@ -559,11 +569,31 @@ int cmd_get_arg_choice(struct command *cmd, const char *arg, int *choice)
 
 /**
  * Get a spell from the user, trying the command first but then prompting
+ *
+ * \param cmd is the command to use.
+ * \param arg is the name of the command's argument that stores the spell's
+ * index.
+ * \param p is the player.
+ * \param spell is dereferenced and set to the index of the spell selected.
+ * \param verb is the string describing the action for which the spell is
+ * requested.  It is typically "cast" or "study".
+ * \param book_filter is the function (if any) to test that an object is
+ * appropriate for use as a spellbook by the player.
+ * \param book_error is the message to display if no valid book is available.
+ * If NULL, no message will be displayed.
+ * \param spell_filter is the function to call to test if a spell is a valid
+ * selection for the request.
+ * \param spell_error is the message to display if no valid spell is available.
+ * If NULL, no message will be displayed.
+ * \return CMD_OK if a valid spell index was assigned to *spell or
+ * CMD_ARG_ABORTED if no valid spell index was assigned to *spell.
  */
 int cmd_get_spell(struct command *cmd, const char *arg, struct player *p,
 		int *spell,
-		const char *verb, item_tester book_filter, const char *error,
-		bool (*spell_filter)(const struct player *p, int spell))
+		const char *verb, item_tester book_filter,
+		const char *book_error,
+		bool (*spell_filter)(const struct player *p, int spell),
+		const char *spell_error)
 {
 	struct object *book;
 
@@ -576,14 +606,15 @@ int cmd_get_spell(struct command *cmd, const char *arg, struct player *p,
 
 	/* See if we've been given a book to look at */
 	if (cmd_get_arg_item(cmd, "book", &book) == CMD_OK) {
-		*spell = get_spell_from_book(p, verb, book, error,
+		*spell = get_spell_from_book(p, verb, book, spell_error,
 			spell_filter);
 	} else {
-		*spell = get_spell(p, verb, book_filter, cmd->code, error,
-			spell_filter);
+		*spell = get_spell(p, verb, book_filter, cmd->code, book_error,
+			spell_filter, spell_error, &book);
 	}
 
 	if (*spell >= 0) {
+		cmd_set_arg_item(cmd, "book", book);
 		cmd_set_arg_choice(cmd, arg, *spell);
 		return CMD_OK;
 	}
