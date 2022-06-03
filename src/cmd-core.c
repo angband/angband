@@ -209,6 +209,39 @@ static struct command cmd_queue[CMD_QUEUE_SIZE];
 static bool repeat_prev_allowed = false;
 static bool repeating = false;
 
+
+/**
+ * Locate and return the index of the first previous command that is an
+ * appropriate target for CMD_REPEAT.  If no such command is available,
+ * return a negative value.
+ */
+static int cmdq_find_repeat_target_index(void)
+{
+	int target = cmd_head - 1;
+
+	while (1) {
+		if (target < 0) target = CMD_QUEUE_SIZE - 1;
+
+		if (target == cmd_tail) {
+			break;
+		}
+		/*
+		 * Only repeat a command that has not been marked
+		 * as a background command (i.e. it is not a side
+		 * effect of something else).
+		 */
+		if (!cmd_queue[target].is_background_command) {
+			if (cmd_queue[target].code != CMD_NULL) {
+				return target;
+			}
+			break;
+		}
+		/* Keep looking. */
+		--target;
+	}
+	return -1;
+}
+
 struct command *cmdq_peek(void)
 {
 	return &cmd_queue[prev_cmd_idx(cmd_head)];
@@ -227,17 +260,19 @@ errr cmdq_push_copy(struct command *cmd)
 	/* Insert command into queue. */
 	if (cmd->code != CMD_REPEAT) {
 		cmd_queue[cmd_head] = *cmd;
+	} else if (!repeat_prev_allowed) {
+		return 1;
 	} else {
-		int cmd_prev = cmd_head - 1;
+		int idx_to_repeat = cmdq_find_repeat_target_index();
 
-		if (!repeat_prev_allowed) return 1;
-
-		/* If we're repeating a command, we duplicate the previous command 
-		   in the next command "slot". */
-		if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
-		
-		if (cmd_queue[cmd_prev].code != CMD_NULL)
-			cmd_queue[cmd_head] = cmd_queue[cmd_prev];
+		if (idx_to_repeat < 0) {
+			return 1;
+		}
+		/*
+		 * If we're repeating a command, we duplicate the previous
+		 * command in the next command "slot".
+		 */
+		cmd_queue[cmd_head] = cmd_queue[idx_to_repeat];
 	}
 
 	/* Advance point in queue, wrapping around at the end */
@@ -328,6 +363,7 @@ errr cmdq_push_repeat(cmd_code c, int nrepeats)
 		.context = CTX_INIT,
 		.code = CMD_NULL,
 		.nrepeats = 0,
+		.is_background_command = false,
 		.arg = { { 0 } }
 	};
 
