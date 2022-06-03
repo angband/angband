@@ -241,6 +241,12 @@ struct command {
 	/* Number of times to attempt to repeat command. */
 	int nrepeats;
 
+	/*
+	 * Whether this command should be skipped when looking for CMD_REPEAT's
+	 * target.
+	 */
+	bool is_background_command;
+
 	/* Arguments */
 	struct cmd_arg arg[CMD_MAX_ARGS];
 };

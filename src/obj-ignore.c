@@ -677,10 +677,22 @@ void ignore_drop(struct player *p)
 
 			/* We're allowed to drop it. */
 			if (!square_isshop(cave, p->grid)) {
+				struct command *drop_cmd;
+
 				p->upkeep->dropping = true;
 				cmdq_push(CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", obj);
-				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
+				drop_cmd = cmdq_peek();
+				assert(drop_cmd);
+				cmd_set_arg_item(drop_cmd, "item", obj);
+				cmd_set_arg_number(drop_cmd, "quantity",
+					obj->number);
+				/*
+				 * This drop is a side effect:  whatever
+				 * command triggered it will be the target
+				 * for CMD_REPEAT rather than repeating the
+				 * drop.
+				 */
+				drop_cmd->is_background_command = true;
 			}
 		}
 	}

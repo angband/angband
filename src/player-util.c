@@ -1484,6 +1484,12 @@ void player_handle_post_move(struct player *p, bool eval_trap)
 	} else {
 		square_know_pile(cave, p->grid);
 		cmdq_push(CMD_AUTOPICKUP);
+		/*
+		 * The autopickup is a side effect of the move:  whatever
+		 * command triggered the move will be the target for CMD_REPEAT
+		 * rather than repeating the autopickup.
+		 */
+		cmdq_peek()->is_background_command = true;
 	}
 
 	/* Discover invisible traps, set off visible ones */
