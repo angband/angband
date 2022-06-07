@@ -1884,7 +1884,7 @@ static char tag_options_item(struct menu *menu, int oid)
 	size_t line = (size_t) oid;
 
 	if (line < N_ELEMENTS(sval_dependent))
-		return I2A(oid);
+		return all_letters_nohjkl[oid];
 
 	/* Separator - blank line. */
 	if (line == N_ELEMENTS(sval_dependent))
@@ -1980,7 +1980,6 @@ void do_cmd_options_item(const char *title, int row)
 				 N_ELEMENTS(extra_item_options) + 1, NULL);
 
 	menu.title = title;
-	menu.selections = all_letters_nohjkl;
 	menu_layout(&menu, &SCREEN_REGION);
 
 	screen_save();
