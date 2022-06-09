@@ -120,6 +120,22 @@ bool file_exists(const char *fname);
 bool file_delete(const char *fname);
 
 /**
+ * Set filename to a new filename based on an existing filename, using
+ * the specified file extension.  Make it shorter than the specified
+ * maximum length.  Resulting filename doesn't usually exist yet.
+ */
+void file_get_savefile(char *filename, size_t max, const char *base,
+	const char *ext);
+
+/**
+ * Set filename to a new filename based on an existing filename, using
+ * the specified file extension.  Make it shorter than the specified
+ * maximum length.
+ */
+void file_get_tempfile(char *filename, size_t max, const char *base,
+	const char *ext);
+
+/**
  * Moves the file `fname` to `newname`.
  *
  * Returns true if successful, false otherwise.

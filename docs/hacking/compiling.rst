@@ -555,6 +555,31 @@ connect to the target device::
 Afterwards, the debugging target will pause automatically and it can be debugged as usual
 using GDB.
 
+Cross-building for DOS with DJGPP
+---------------------------------
+These instructions were written using a Slackware64-15.0 host.
+
+Install the following cross-compiler:
+https://github.com/andrewwutw/build-djgpp
+
+	git clone https://github.com/andrewwutw/build-djgpp.git
+	cd build-djgpp
+	DJGPP_PREFIX=$HOME/local/cross-djgpp ./build-djgpp.sh 10.3.0
+
+Then build angband using the cross-compiler:
+
+	cd angband/src
+	PATH=$PATH:$HOME/local/cross-djgpp/bin
+	make -f Makefile.ibm
+
+Optionally build the documentation (requires Sphinx):
+
+	make -f Makefile.ibm docs
+
+To create the angband.zip distribution
+
+	make -f Makefile.ibm dist
+
 Documentation
 -------------
 To convert the documentation from restructured text to the desired output

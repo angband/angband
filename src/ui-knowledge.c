@@ -61,6 +61,7 @@
 #include "ui-store.h"
 #include "ui-target.h"
 #include "wizard.h"
+#include "z-util.h"
 
 /**
  * The first part of this file contains the knowledge menus.  Generic display
@@ -1195,8 +1196,8 @@ static int m_cmp_race(const void *a, const void *b)
 	if (c && gid != 0) {
 		/* UNIQUE group is ordered by level & name only */
 		/* Others by order they appear in the group symbols */
-		return wcschr(monster_group[gid].chars, r_a->d_char)
-			- wcschr(monster_group[gid].chars, r_b->d_char);
+		return text_wcschr(monster_group[gid].chars, r_a->d_char)
+			- text_wcschr(monster_group[gid].chars, r_b->d_char);
 	}
 	c = r_a->level - r_b->level;
 	if (c)
@@ -1288,7 +1289,7 @@ static int count_known_monsters(void)
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (wcschr(pat, race->d_char)) m_count++;
+			if (text_wcschr(pat, race->d_char)) m_count++;
 		}
 	}
 
@@ -1323,7 +1324,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (wcschr(pat, race->d_char)) m_count++;
+			if (text_wcschr(pat, race->d_char)) m_count++;
 		}
 	}
 
@@ -1342,7 +1343,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
 			if (j == 0 && !rf_has(race->flags, RF_UNIQUE)) continue;
-			if (j > 0 && !wcschr(pat, race->d_char)) continue;
+			if (j > 0 && !text_wcschr(pat, race->d_char)) continue;
 
 			monsters[m_count] = m_count;
 			default_join[m_count].oid = i;

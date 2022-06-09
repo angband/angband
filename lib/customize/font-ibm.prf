@@ -1,0 +1,21 @@
+# File: font-ibm.prf
+
+#
+# This file is used by Angband (when it was compiled using "main-ibm.c")
+# to specify simple attr/char remappings using a standard font, allowing
+# the use of the IBM's built in pseudo-graphic pictures for walls and such.
+#
+
+
+
+### Terrain Features ###
+
+feat:open floor:*:1:250
+feat:pile of rubble:*:2:178
+feat:magma vein:*:2:178
+feat:quartz vein:*:9:176
+feat:magma vein with treasure:*:3:178
+feat:quartz vein with treasure:*:3:176
+feat:granite wall:*:1:177
+feat:permanent wall:*:1:177
+feat:lava:*:4:178

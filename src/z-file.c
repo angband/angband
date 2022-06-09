@@ -18,6 +18,7 @@
 #include "h-basic.h"
 #include "z-file.h"
 #include "z-form.h"
+#include "z-rand.h"
 #include "z-util.h"
 #include "z-virt.h"
 
@@ -343,6 +344,50 @@ bool file_exists(const char *fname)
 }
 
 #endif
+
+/**
+ * Set filename to a new filename based on an existing filename, using
+ * the specified file extension.  Make it shorter than the specified
+ * maximum length.  Resulting filename doesn't usually exist yet.
+ */
+void file_get_savefile(char *filename, size_t max, const char *base,
+	const char *ext)
+{
+	int count = 0;
+
+	count = 0;
+
+#ifdef DJGPP
+	/* DOS needs a shorter file name */
+	strnfmt(filename, max, "%s/temp.%s", dirname(base), ext);
+	while (file_exists(filename) && (count++ < 100))
+		strnfmt(filename, max, "%s/temp%u.%s", dirname(base), count,
+			ext);
+#else
+	strnfmt(filename, max, "%s%u.%s", base, Rand_simple(1000000), ext);
+	while (file_exists(filename) && (count++ < 100))
+		strnfmt(filename, max, "%s%u%u.%s", base,
+			Rand_simple(1000000), count, ext);
+#endif /* ! DJGPP */
+	return;
+}
+
+/**
+ * Set filename to a new filename based on an existing filename, using
+ * the specified file extension.  Make it shorter than the specified
+ * maximum length.
+ */
+void file_get_tempfile(char *filename, size_t max, const char *base,
+	const char *ext)
+{
+#ifdef DJGPP
+	/* DOS needs a shorter file name */
+        strnfmt(filename, max, "%s/temp.%s", dirname(base), ext);
+#else
+        strnfmt(filename, max, "%s.%s", base, ext);
+#endif
+	return;
+}
 
 /**
  * Return true if first is newer than second, false otherwise.
