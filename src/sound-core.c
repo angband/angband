@@ -147,8 +147,13 @@ static void load_sound(struct sound_data *sound_data)
 			my_strcpy(filename_buf, path, filename_buf_size);
 			filename_buf = string_append(filename_buf, supported_sound_files[i].extension);
 
-			if (file_exists(filename_buf))
-				load_success = hooks.load_sound_hook(filename_buf, supported_sound_files[i].type, sound_data);
+			if (file_exists(filename_buf)) {
+				sound_data->status = SOUND_ST_ERROR;
+				load_success = hooks.load_sound_hook(
+					filename_buf,
+					supported_sound_files[i].type,
+					sound_data);
+			}
 
 			mem_free(filename_buf);
 			i++;
@@ -315,11 +320,11 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 		assert((sound_id >= 0) && (sound_id < next_sound_id));
 
 		/* Ensure the sound is loaded before we play it */
-		if (!sounds[sound_id].loaded)
+		if (sounds[sound_id].status == SOUND_ST_UNKNOWN)
 			load_sound(&sounds[sound_id]);
 
 		/* Only bother playing it if the platform can */
-		if (sounds[sound_id].loaded)
+		if (sounds[sound_id].status == SOUND_ST_LOADED)
 			hooks.play_sound_hook(&sounds[sound_id]);
 	}
 }

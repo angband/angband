@@ -66,7 +66,6 @@ static bool open_audio_sdl(void)
 	int audio_rate = 22050;
 	Uint16 audio_format = AUDIO_S16;
 	int audio_channels = 2;
-	int formats = MIX_INIT_MP3;
 
 	/* Initialize the SDL library */
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -74,17 +73,9 @@ static bool open_audio_sdl(void)
 		return false;
 	}
 
-	/* Verify that the desired formats are supported. */
-	if ((Mix_Init(formats) & formats) != formats) {
-		plog("SDL: Does not support the required music formats");
-		SDL_QuitSubSystem(SDL_INIT_AUDIO);
-		return false;
-	}
-
 	/* Try to open the audio */
 	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096) < 0) {
 		plog_fmt("SDL: Couldn't open mixer: %s", SDL_GetError());
-		Mix_Quit();
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
@@ -135,9 +126,8 @@ static bool load_sound_sdl(const char *filename, int ft, struct sound_data *data
 		sample = mem_zalloc(sizeof(*sample));
 
 	/* Try and load the sample file */
-	data->loaded = load_sample_sdl(filename, ft, sample);
-
-	if (data->loaded) {
+	if (load_sample_sdl(filename, ft, sample)) {
+		data->status = SOUND_ST_LOADED;
 		sample->sample_type = ft;
 	} else {
 		mem_free(sample);
@@ -203,7 +193,7 @@ static bool unload_sound_sdl(struct sound_data *data)
 
 		mem_free(sample);
 		data->plat_data = NULL;
-		data->loaded = false;
+		data->status = SOUND_ST_UNKNOWN;
 	}
 
 	return true;
@@ -221,7 +211,6 @@ static bool close_audio_sdl(void)
 	 * calling unload_sound_sdl() for every sample that was loaded.
 	 */
 	Mix_CloseAudio();
-	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
 	return true;
