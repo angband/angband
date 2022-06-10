@@ -631,12 +631,8 @@ else
 fi
 
 if test "$enable_win" = "yes"; then
-	if test "$with_sdl" = "no"; then
-		echo "- Windows                                 No; missing libraries"
-	else
-		echo "- Windows                                 Yes"
-		local_player_frontends="$local_player_frontends"+
-	fi
+	echo "- Windows                                 Yes"
+	local_player_frontends="$local_player_frontends"+
 else
 	echo "- Windows                                 Disabled"
 fi
