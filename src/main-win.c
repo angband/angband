@@ -1156,9 +1156,9 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 				mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT, (size_t)(&sample->op));
 			}
 
-			data->loaded = (0 != sample->op.wDeviceID);
-
-			if (!data->loaded) {
+			if (0 != sample->op.wDeviceID) {
+				data->status = SOUND_ST_LOADED;
+			} else {
 				mem_free(sample);
 				sample = NULL;
 			}
@@ -1170,12 +1170,11 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 
 			sample->filename = mem_zalloc(strlen(filename) + 1);
 			my_strcpy(sample->filename, filename, strlen(filename) + 1);
-			data->loaded = true;
+			data->status = SOUND_ST_LOADED;
 			break;
 
 		default:
 			plog_fmt("Sound: Oops - Unsupported file type");
-			data->loaded = false;
 			break;
 	}
 
@@ -1247,7 +1246,7 @@ static bool unload_sound_win(struct sound_data *data)
 
 		mem_free(sample);
 		data->plat_data = NULL;
-		data->loaded = false;
+		data->status = SOUND_ST_UNKNOWN;
 	}
 
 	return true;

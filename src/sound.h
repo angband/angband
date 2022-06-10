@@ -24,13 +24,15 @@
  *
  *  hash :      Used to speed up searches
  *
- *  loaded :    The platform's sound module sets this flag if it has enough
- *              information to play the sound (this may mean the sound data
- *              is loaded into memory, or that the full filename has been
- *              stored in the platform data. It is up to the platform's
- *              sound module to determine what 'loaded' means. The core
- *              sound module uses this flag to check if the sound needs to
- *              be 'loaded' before attempting to play it.
+ *  status:     If nothing has yet been done with the sound, this will be
+ *              SOUND_ST_UNKNOWN.  If the sound file exists but the platform's
+ *              sound module did not have enough information to be able to play
+ *              the sound (that is up to the platform's module; it could mean
+ *              that the sound has been loaded into memory or that the full
+ *              file name has been stored in the platform's data), this will be
+ *              SOUND_ST_ERROR.  Otherwise, this will be SOUND_ST_LOADED.
+ *              The core sound module will check if status is SOUND_ST_LOADED
+ *              before attempting to play it.
 
  *  plat_data : Platform specific structure used to store any additional
  *              data the platform's sound module needs in order to play the
@@ -39,10 +41,16 @@
 
 #define SOUND_PRF_FORMAT	"sound sym type str sounds"
 
+enum sound_status {
+	SOUND_ST_UNKNOWN = 0,
+	SOUND_ST_ERROR,
+	SOUND_ST_LOADED
+};
+
 struct sound_data {
 	char *name;
 	uint32_t hash;
-	bool loaded;
+	enum sound_status status;
 	void *plat_data;
 };
 
