@@ -1003,7 +1003,19 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 	struct store *store = ctx->store;
 	
 	if (event->type == EVT_SELECT) {
-		/* Nothing for now, except "handle" the event */
+		msg_flag = false;
+		if (store->sidx != STORE_HOME) {
+			prt("Purchase which item? (ESC to cancel, Enter to select)",
+				0, 0);
+		} else {
+			prt("Get which item? (Esc to cancel, Enter to select)",
+				0, 0);
+			}
+		/* the oid should be maintained when using enter to purchase */
+		prt("", 0, 0);
+		if (oid >= 0) {
+			store_purchase(ctx, oid, false);
+		}
 		return true;
 		/* In future, maybe we want a display a list of what you can do. */
 	} else if (event->type == EVT_MOUSE) {
