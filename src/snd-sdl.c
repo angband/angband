@@ -26,12 +26,12 @@
 #ifdef SOUND_SDL
 #  include <SDL/SDL.h>
 #  include <SDL/SDL_mixer.h>
-#endif /* USE_SDL */
+#endif /* SOUND_SDL */
 
 #ifdef SOUND_SDL2
 #  include <SDL.h>
 #  include <SDL_mixer.h>
-#endif /* USE_SDL2 */
+#endif /* SOUND_SDL2 */
 
 /**
  * Struct representing all data about an event sample
