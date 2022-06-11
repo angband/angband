@@ -57,7 +57,7 @@ static const struct sound_module sound_modules[] =
 {
 #if defined(SOUND_SDL) || defined(SOUND_SDL2)
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
-#endif /* SOUND_SDL */
+#endif /* SOUND_SDL || SOUND_SDL2 */
 #if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(USE_SDL) && !defined(USE_SDL2))
 	{ "win", "Windows sound module", init_sound_win },
 #endif

@@ -1,5 +1,5 @@
 /**
- * \file snd-sdl.h
+ * \file snd-win.h
  * \brief Sound handling for Windows
  *
  * Copyright (c) 2016 Graeme Russ
