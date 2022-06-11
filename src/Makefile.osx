@@ -21,7 +21,7 @@ WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
 	-Wnested-externs -Wshadow -Wunused-macros
 JUST_C = -std=c99
 OBJ_CFLAGS = -std=c99 -x objective-c -fobjc-arc
-CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DSOUND -DHAVE_MKSTEMP \
 	-fno-stack-protector $(OSXVERSFLAGS) $(ARCHFLAGS)
 LIBS = -framework Cocoa
 # Fix for bug #1663: Set the deployment target via environment variable
@@ -59,7 +59,9 @@ else
 	CFLAGS += -DBUILD_ID=${VERSION}
 endif
 
-OBJS = $(BASEOBJS)
+# Include snd-cocoa.o in $(EXE).o rather than OSX_OBJS to avoid linking errors
+# with the unit test cases.
+OBJS = $(BASEOBJS) cocoa/snd-cocoa.o
 OSX_OBJS = main-cocoa.o cocoa/TileSetScaling.o
 
 
@@ -156,7 +158,6 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	-cp -R ../lib/tiles/ $(APPRES)/lib/tiles
 	-rm $(APPRES)/lib/tiles/Makefile $(APPRES)/lib/tiles/*/Makefile
 	-cp ../lib/sounds/*.mp3 $(APPRES)/lib/sounds
-	-cp ../lib/sounds/sound.cfg $(APPRES)/lib/sounds
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
