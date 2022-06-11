@@ -28,6 +28,10 @@
 #include "snd-win.h"
 #endif
 
+#if defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#include "cocoa/snd-cocoa.h"
+#endif
+
 #define MAX_SOUNDS_PER_MESSAGE	16
 
 struct sound_module
@@ -61,7 +65,9 @@ static const struct sound_module sound_modules[] =
 #if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(USE_SDL) && !defined(USE_SDL2))
 	{ "win", "Windows sound module", init_sound_win },
 #endif
-
+#if (defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
+	{ "cocoa", "Cocoa sound module", init_sound_cocoa },
+#endif
 	{ "", "", NULL },
 };
 
@@ -80,13 +86,11 @@ static struct sound_data *sounds;
 /* These are the hooks installed by the platform sound module */
 static struct sound_hooks hooks;
 
-#ifdef SOUND
 /*
  * If preload_sounds is true, sounds are loaded immediately when assigned to
  * a message. Otherwise, each sound is only loaded when first played.
  */
 static bool preload_sounds = false;
-#endif
 
 #ifdef SOUND
 static struct sound_data *grow_sound_list(void)
@@ -329,6 +333,22 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	}
 }
 
+/**
+ * Set whether all sounds are loaded when the sound preferences are loaded or
+ * a sound is loaded when it is needed.
+ *
+ * \param new_setting will, if true, causes all sounds to be preloaded when
+ * the sound preferences are loaded next.  If false, a sound will be loaded
+ * just before it is first played..
+ * \return the previous setting for whether sounds are preloaded.
+ */
+bool set_preloaded_sounds(bool new_setting)
+{
+	bool old_setting = preload_sounds;
+
+	preload_sounds = new_setting;
+	return old_setting;
+}
 
 /**
  * Init the sound "module".

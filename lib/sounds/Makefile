@@ -1,8 +1,7 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-DATA = sound.cfg \
-	amb_bell_metal1.mp3		mco_scurry_dry.mp3		plm_drop_boot.mp3 \
+DATA = amb_bell_metal1.mp3		mco_scurry_dry.mp3		plm_drop_boot.mp3 \
 	amb_bell_metal2.mp3		mco_shake_roll.mp3		plm_eat_bite.mp3 \
 	amb_bell_tibet1.mp3		mco_snarl_short.mp3		plm_floor_creak.mp3 \
 	amb_bell_tibet2.mp3		mco_spray_long.mp3		plm_floor_creak2.mp3 \

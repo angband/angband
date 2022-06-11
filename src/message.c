@@ -306,7 +306,7 @@ int message_lookup_by_name(const char *name)
 /**
  * Return the MSG_ flag that matches the given sound event name.
  *
- * \param name is the sound name from sound.cfg.
+ * \param name is the sound name from sound.prf.
  * \return The MSG_ flag for the corresponding sound.
  */
 int message_lookup_by_sound_name(const char *name)
@@ -331,7 +331,7 @@ int message_lookup_by_sound_name(const char *name)
  * Return the sound name for the given message.
  *
  * \param message is the MSG_ flag to find.
- * \return The sound.cfg sound name.
+ * \return The sound.prf sound name.
  */
 const char *message_sound_name(int message)
 {
