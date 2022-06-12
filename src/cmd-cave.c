@@ -832,12 +832,13 @@ void do_cmd_disarm(struct command *cmd)
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
 		struct loc grid1;
-		int n_traps, n_chests;
+		int n_traps, n_chests, n_unldoor;
 
-		n_traps = count_feats(&grid1, square_isdisarmabletrap, true);
+		n_traps = count_feats(&grid1, square_isdisarmabletrap, false);
 		n_chests = count_chests(&grid1, CHEST_TRAPPED);
+		n_unldoor = count_feats(&grid1, square_isunlockeddoor, false);
 
-		if (n_traps + n_chests == 1) {
+		if (n_traps + n_chests + n_unldoor == 1) {
 			dir = motion_dir(player->grid, grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
