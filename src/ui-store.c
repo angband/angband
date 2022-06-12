@@ -958,7 +958,7 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	menu_dynamic_add_label(m, "Examine", 'x', ACT_EXAMINE, labels);
 	if (!ctx->inspect_only) {
 		menu_dynamic_add_label(m, home ? "Take" : "Buy", 'd',
-			ACT_SELL, labels);
+			ACT_BUY, labels);
 		if (obj->number > 1) {
 			menu_dynamic_add_label(m, home ? "Take one" : "Buy one",
 				'o', ACT_BUY_ONE, labels);
@@ -1003,21 +1003,23 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 	struct store *store = ctx->store;
 	
 	if (event->type == EVT_SELECT) {
-		msg_flag = false;
-		if (store->sidx != STORE_HOME) {
-			prt("Purchase which item? (ESC to cancel, Enter to select)",
-				0, 0);
-		} else {
-			prt("Get which item? (Esc to cancel, Enter to select)",
-				0, 0);
-			}
-		/* the oid should be maintained when using enter to purchase */
-		prt("", 0, 0);
-		if (oid >= 0) {
-			store_purchase(ctx, oid, false);
-		}
+		/* Hack -- there's no mouse event coordinates to use for menu_store_item, so fake one */
+		context_menu_store_item(ctx, oid, 0, m->active.row + oid);
+		ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+
+		/* Let the game handle any core commands (equipping, etc) */
+		cmdq_pop(CTX_STORE);
+
+		/* Notice and handle stuff */
+		notice_stuff(player);
+		handle_stuff(player);
+
+		/* Display the store */
+		store_display_recalc(ctx);
+		store_menu_recalc(m);
+		store_redraw(ctx);
+
 		return true;
-		/* In future, maybe we want a display a list of what you can do. */
 	} else if (event->type == EVT_MOUSE) {
 		if (event->mouse.button == 2) {
 			/* exit the store? what already does this? menu_handle_mouse
