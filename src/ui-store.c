@@ -1003,8 +1003,8 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 	struct store *store = ctx->store;
 	
 	if (event->type == EVT_SELECT) {
-		/* Hack -- there's no mouse event coordinates to use for menu_store_item, so fake one */
-		context_menu_store_item(ctx, oid, 0, m->active.row + oid);
+		/* Hack -- there's no mouse event coordinates to use for menu_store_item, so fake one as if mouse clicked on letter */
+		context_menu_store_item(ctx, oid, 1, m->active.row + oid);
 		ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
 
 		/* Let the game handle any core commands (equipping, etc) */
