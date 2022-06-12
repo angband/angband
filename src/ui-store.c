@@ -958,7 +958,7 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	menu_dynamic_add_label(m, "Examine", 'x', ACT_EXAMINE, labels);
 	if (!ctx->inspect_only) {
 		menu_dynamic_add_label(m, home ? "Take" : "Buy", 'd',
-			ACT_SELL, labels);
+			ACT_BUY, labels);
 		if (obj->number > 1) {
 			menu_dynamic_add_label(m, home ? "Take one" : "Buy one",
 				'o', ACT_BUY_ONE, labels);
