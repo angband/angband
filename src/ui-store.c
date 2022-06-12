@@ -1003,9 +1003,24 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 	struct store *store = ctx->store;
 	
 	if (event->type == EVT_SELECT) {
-		/* Nothing for now, except "handle" the event */
+		/* Hack -- there's no mouse event coordinates to use for */
+		/* menu_store_item, so fake one as if mouse clicked on letter */
+		context_menu_store_item(ctx, oid, 1, m->active.row + oid);
+		ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+
+		/* Let the game handle any core commands (equipping, etc) */
+		cmdq_pop(CTX_STORE);
+
+		/* Notice and handle stuff */
+		notice_stuff(player);
+		handle_stuff(player);
+
+		/* Display the store */
+		store_display_recalc(ctx);
+		store_menu_recalc(m);
+		store_redraw(ctx);
+
 		return true;
-		/* In future, maybe we want a display a list of what you can do. */
 	} else if (event->type == EVT_MOUSE) {
 		if (event->mouse.button == 2) {
 			/* exit the store? what already does this? menu_handle_mouse
