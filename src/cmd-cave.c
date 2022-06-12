@@ -254,10 +254,14 @@ void do_cmd_open(struct command *cmd)
 		n_closed_doors = count_feats(&grid1, square_iscloseddoor, false);
 		n_locked_chests = count_chests(&grid1, CHEST_OPENABLE);
 
+		/*
+		 * If prompting for a direction, allow the player's square as
+		 * an option if there's a chest nearby.
+		 */
 		if (n_closed_doors + n_locked_chests == 1) {
 			dir = motion_dir(player->grid, grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
-		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
+		} else if (cmd_get_direction(cmd, "direction", &dir, n_locked_chests > 0)) {
 			return;
 		}
 	}
