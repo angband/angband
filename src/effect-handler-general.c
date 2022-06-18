@@ -1243,10 +1243,9 @@ bool effect_handler_READ_MINDS(effect_handler_context_t *context)
 	if (found) {
 		msg("Images form in your mind!");
 		context->ident = true;
-		return true;
 	}
 
-	return false;
+	return true;
 }
 
 /**
