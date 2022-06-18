@@ -113,7 +113,8 @@ bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);
-void player_handle_post_move(struct player *p, bool eval_trap);
+void player_handle_post_move(struct player *p, bool eval_trap,
+		bool is_involuntary);
 void disturb(struct player *p);
 void search(struct player *p);
 
