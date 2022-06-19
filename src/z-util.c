@@ -791,7 +791,7 @@ int text_iswprint(wint_t wc)
 }
 
 /**
- * Return pointer to the first occurrence of wx in the wide-character
+ * Return pointer to the first occurrence of wc in the wide-character
  * string pointed to by wcs, or NULL if wc does not occur in the
  * string.
  */
