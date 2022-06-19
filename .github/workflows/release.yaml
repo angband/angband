@@ -434,7 +434,7 @@ jobs:
           cp -rv lib ${{ steps.store_config.outputs.progname }}/
           zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${archive_prefix}.cia ${{ steps.store_config.outputs.progname }}/
           
-      - name: Upload Nintendo 3DS 3dsx Archive
+      - name: Upload Nintendo 3DS Archive
         id: upload_nintendo_3ds_archive
         uses: actions/upload-release-asset@v1
         env:
