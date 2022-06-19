@@ -773,7 +773,7 @@ static void handle_extended_color_tables(void) {
 			for (i = 0; i < BASIC_COLORS; i++) {
 				/*
 				 * Scale components to a range of 0 - 1000 per
-				 * per init_color()'s documentation.
+				 * init_color()'s documentation.
 				 */
 				init_color(i,
 					(angband_color_table[i][1] * 1001) / 256,
