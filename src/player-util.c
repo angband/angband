@@ -1518,10 +1518,6 @@ void player_handle_post_move(struct player *p, bool eval_trap)
 /*
  * Something has happened to disturb the player.
  *
- * The first arg indicates a major disturbance, which affects search.
- *
- * The second arg is currently unused, but could induce output flush.
- *
  * All disturbance cancels repeated commands, resting, and running.
  *
  * XXX-AS: Make callers either pass in a command
