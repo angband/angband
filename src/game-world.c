@@ -765,8 +765,12 @@ void process_world(struct chunk *c)
 
 		/* Activate the recall */
 		if (!player->word_recall) {
-			/* Disturbing! */
+			/*
+			 * Disturbing!  Also, flush the command queue to avoid
+			 * losing an action on the new level
+			 */
 			disturb(player);
+			cmdq_flush();
 
 			/* Determine the level */
 			if (player->depth) {

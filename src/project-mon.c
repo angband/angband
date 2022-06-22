@@ -183,7 +183,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 					monster_swap(grid, next);
 					if (square(cave, grid)->mon < 0) {
 						player_handle_post_move(
-							player, true);
+							player, true, true);
 					}
 
 					/* Jump to new location. */
@@ -207,7 +207,8 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* Travel down the path. */
 				monster_swap(grid, next);
 				if (square(cave, grid)->mon < 0) {
-					player_handle_post_move(player, true);
+					player_handle_post_move(player, true,
+						true);
 				}
 
 				/* Jump to new location. */

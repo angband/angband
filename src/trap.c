@@ -575,9 +575,10 @@ extern void hit_trap(struct loc grid, int delayed)
 			monster_swap(player->grid, trap->grid);
 			/*
 			 * Don't retrigger the trap, but handle the
-			 * other side effects of moving the player.
+			 * other side effects of an involuntary move of the
+			 * player.
 			 */
-			player_handle_post_move(player, false);
+			player_handle_post_move(player, false, true);
 		}
 
 		/* Some traps disappear after activating, all have a chance to */
