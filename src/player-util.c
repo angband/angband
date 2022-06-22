@@ -813,6 +813,7 @@ int player_check_terrain_damage(struct player *p, struct loc grid)
 		/* Feather fall makes one lightfooted. */
 		if (player_of_has(p, OF_FEATHER)) {
 			dam_taken /= 2;
+			equip_learn_flag(p, OF_FEATHER);
 		}
 	}
 
