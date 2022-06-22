@@ -1429,7 +1429,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 			/* Move player */
 			monster_swap(pgrid, safe_grid);
-			player_handle_post_move(player, true);
+			player_handle_post_move(player, true, true);
 		}
 
 		/* Take some damage */
@@ -1683,7 +1683,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 
 	/* Move player */
 	monster_swap(player->grid, grid);
-	player_handle_post_move(player, true);
+	player_handle_post_move(player, true, false);
 
 	/* Now bite it */
 	drain = MIN(mon->hp + 1, amount);

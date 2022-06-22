@@ -1115,7 +1115,15 @@ void move_player(int dir, bool disarm)
 		if (step) {
 			/* Move player */
 			monster_swap(player->grid, grid);
-			player_handle_post_move(player, true);
+			player_handle_post_move(player, true, false);
+			cmdq_push(CMD_AUTOPICKUP);
+			/*
+			 * The autopickup is a side effect of the move:
+			 * whatever command triggered the move will be the
+			 * target for CMD_REPEAT rather than repeating the
+			 * autopickup.
+			 */
+			cmdq_peek()->is_background_command = true;
 		}
 	}
 
