@@ -157,6 +157,11 @@ extern void strskip(char *s, const char c, const char e);
 extern void strescape(char *s, const char c);
 
 /**
+ * Get the integer value of a hex string
+ */
+extern int hex_str_to_int(const char *s);
+
+/**
  * Change escaped characters into their literal representation
  */
 extern void strunescape(char *s);

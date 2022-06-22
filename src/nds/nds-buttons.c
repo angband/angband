@@ -100,6 +100,7 @@ void nds_btn_add_mappings(const nds_btn_map_entry *new_entries, int num) {
  * The second part of the line is delimited by a ':', followed by a sequence of up to
  * NDS_BTN_SEQ_LEN character inputs that should be triggered.
  * Escaped characters are escaped using '\' (most notably "\r", "\b", "\e", "\t" and "\\").
+ * Arbitrary characters can be encoded in hexadecimal using "\x", in the format "\xa2".
  * Quotation marks and question marks are not escaped and can be used as-is.
  *
  * Encoding a null-byte will end the input sequence, even if more characters may follow.

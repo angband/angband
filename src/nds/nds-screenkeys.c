@@ -46,6 +46,7 @@ int nds_scrkeys_num = 0;
  *
  * Escaped characters in the input sequence are escaped using '\'
  * (most notably "\r", "\b", "\e", "\t" and "\\").
+ * Arbitrary characters can be encoded in hexadecimal using "\x", in the format "\xa2".
  * Quotation marks and question marks are not escaped and can be used as-is.
  *
  * Encoding a null-byte will end the input sequence, even if more characters may follow.
