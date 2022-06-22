@@ -644,7 +644,7 @@ void strescape(char *s, const char c) {
  * Gives the integer value of a hexadecimal character
  * Returns -1 if invalid
  */
-int hex_char_to_int(char c) {
+static int hex_char_to_int(char c) {
 	if ((c >= '0') && (c <= '9'))
 		return c - '0';
 	if ((c >= 'A') && (c <= 'F'))
