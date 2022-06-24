@@ -1515,7 +1515,6 @@ static bool textui_get_aim_dir(int *dp)
 {
 	/* Global direction */
 	int dir = 0;
-
 	ui_event ke;
 
 	const char *p;
@@ -1528,6 +1527,12 @@ static bool textui_get_aim_dir(int *dp)
 
 	/* Ask until satisfied */
 	while (!dir) {
+		/*
+		 * Whether to generate an audible warning about a targeting
+		 * failure.
+		 */
+		bool need_beep = false;
+
 		/* Choose a prompt */
 		if (!target_okay())
 			p = "Direction ('*' or <click> to target, \"'\" for closest, Escape to cancel)? ";
@@ -1552,12 +1557,18 @@ static bool textui_get_aim_dir(int *dp)
 					dir = 5;
 			} else if (ke.key.code == '\'') {
 				/* Set to closest target */
-				if (target_set_closest(TARGET_KILL, NULL))
+				if (target_set_closest(TARGET_KILL, NULL)) {
 					dir = 5;
+				} else {
+					need_beep = true;
+				}
 			} else if (ke.key.code == 't' || ke.key.code == '5' ||
 					   ke.key.code == '0' || ke.key.code == '.') {
-				if (target_okay())
+				if (target_okay()) {
 					dir = 5;
+				} else {
+					need_beep = true;
+				}
 			} else {
 				/* Possible direction */
 				int keypresses_handled = 0;
@@ -1569,10 +1580,12 @@ static bool textui_get_aim_dir(int *dp)
 					 * the currently "Pending" direction. XXX */
 					this_dir = target_dir(ke.key);
 
-					if (this_dir)
+					if (this_dir) {
 						dir = dir_transitions[dir][this_dir];
-					else
+					} else {
+						need_beep = true;
 						break;
+					}
 
 					if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 						break;
@@ -1586,7 +1599,7 @@ static bool textui_get_aim_dir(int *dp)
 		}
 
 		/* Error */
-		if (!dir) bell();
+		if (need_beep) bell();
 	}
 
 	/* No direction */
