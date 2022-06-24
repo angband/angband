@@ -100,7 +100,8 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 	next = strchr(in_cursor, '{');
 	while (next) {
 		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
+		strnfcat(buf, 1024, &end, "%.*s", (int) (next - in_cursor),
+			in_cursor);
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
@@ -123,7 +124,8 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 						monster_desc(m_name,
 							sizeof(m_name), t_mon,
 							mdesc_mode);
-						strnfcat(buf, sizeof(buf), &end, m_name);
+						strnfcat(buf, sizeof(buf),
+							&end, "%s", m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
 					}
@@ -161,7 +163,7 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 
 		next = strchr(in_cursor, '{');
 	}
-	strnfcat(buf, 1024, &end, in_cursor);
+	strnfcat(buf, 1024, &end, "%s", in_cursor);
 	return string_make(buf);
 }
 

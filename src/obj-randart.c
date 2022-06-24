@@ -1060,7 +1060,8 @@ static void collect_artifact_data(struct artifact_set_data *data)
 		struct object_kind *kind;
 		const struct artifact *art = &a_info[i];
 
-		file_putf(log_file, "Current artifact index is %d\n", i);
+		file_putf(log_file, "Current artifact index is %lu\n",
+			(unsigned long) i);
 
 		/* Don't parse cursed or null items */
 		if (data->base_power[i] < 0 || art->tval == 0) continue;
@@ -1286,8 +1287,8 @@ static void parse_frequencies(struct artifact_set_data *data)
 
 	/* Print out some of the abilities, to make sure that everything's fine */
 	for (i = 0; i < ART_IDX_TOTAL; i++)
-		file_putf(log_file, "Frequency of ability %d: %d\n", i,
-				  data->art_probs[i]);
+		file_putf(log_file, "Frequency of ability %lu: %d\n",
+			(unsigned long) i, data->art_probs[i]);
 
 	for (i = 0; i < TV_MAX; i++)
 		file_putf(log_file, "Frequency of %s: %d\n", tval_find_name(i),
@@ -1301,8 +1302,8 @@ static void parse_frequencies(struct artifact_set_data *data)
 
 	/* Log the final frequencies to check that everything's correct */
 	for (i = 0; i < ART_IDX_TOTAL; i++)
-		file_putf(log_file,  "Rescaled frequency of ability %d: %d\n", i,
-				  data->art_probs[i]);
+		file_putf(log_file,  "Rescaled frequency of ability %lu: %d\n",
+			(unsigned long) i, data->art_probs[i]);
 
 	/* Build a cumulative frequency table for tvals */
 	for (i = 0; i < TV_MAX; i++)

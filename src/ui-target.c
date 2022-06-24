@@ -178,7 +178,7 @@ void target_display_help(bool monster, bool object, bool free)
 			label[1] = '\0';
 		}
 		text_out(" '");
-		text_out_c(COLOUR_L_GREEN, label);
+		text_out_c(COLOUR_L_GREEN, "%s", label);
 		text_out("' ignores selection.");
 	}
 

@@ -161,8 +161,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 			full_width += strlen(line_buffer) - utf8_strlen(line_buffer);
 			line_attr = monster_list_entry_line_color(&list->entries[index]);
 			textblock_append_c(tb, line_attr, "%-*s%s\n",
-							   full_width,
-							   line_buffer, location);
+				(int) full_width, line_buffer, location);
 		}
 
 		line_count++;

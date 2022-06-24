@@ -1044,8 +1044,7 @@ static void do_cmd_delay(const char *name, int unused)
 	prt("", 19, 0);
 	prt("Command: Base Delay Factor", 20, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
-	prt(format("Current base delay factor: %d msec",
-		player->opts.delay_factor, msec), 22, 0);
+	prt(format("Current base delay factor: %d msec", msec), 22, 0);
 	prt("", 23, 0);
 
 	/* Ask for a numeric value */

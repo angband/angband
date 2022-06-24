@@ -1009,7 +1009,8 @@ void print_custom_message(struct object *obj, const char *string, int msg_type,
 	next = strchr(string, '{');
 	while (next) {
 		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - string, string); 
+		strnfcat(buf, 1024, &end, "%.*s", (int) (next - string),
+			string);
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;

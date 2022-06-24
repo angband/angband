@@ -1366,7 +1366,7 @@ static void post_process_stats(void)
 	file_putf(stats_log,"80\t\t\t85\t\t\t90\t\t\t95\t\t\t100\n");
 	
 	for (i = 1; i < ST_FF_END; i++) {
-			file_putf(stats_log, stat_ff_message[i].name);
+			file_putf(stats_log, "%s", stat_ff_message[i].name);
 			prob_of_find(stat_all[stat_ff_message[i].st][0]);
 			mean_and_stdv(stat_ff_all[i]);
 	}
@@ -2487,7 +2487,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	int i;
 
 	file_put(fo, "Number of Successful Levels::\n");
-	file_putf(fo, "%d\n\n", (unsigned long) gs->nsuccess);
+	file_putf(fo, "%d\n\n", gs->nsuccess);
 
 	file_put(fo, "Level Builder Success Count, Probability, and Failure Rate Per Successful Level::\n");
 	for (i = 0; i < z_info->profile_max; ++i) {
@@ -2678,7 +2678,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 
 		file_putf(fo, "\"%s\" Tunneling Total Number, Success Rate, Early Termination Rate::\n", name);
 		file_putf(fo, "%lu\t%.6f\t%.6f\t%.6f\t%.6f\n\n",
-			gs->ta[i].cv_all.count,
+			(unsigned long) gs->ta[i].cv_all.count,
 			gs->ta[i].success_frac.sum /
 			gs->level_counts[0][i], stddev_d_sum_sum2(
 			gs->ta[i].success_frac, gs->level_counts[0][i]),
