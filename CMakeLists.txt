@@ -54,6 +54,28 @@ find_package(Sphinx)
 CMAKE_DEPENDENT_OPTION(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
 SET(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
 
+# Provide option to trigger compiler warnings about the custom printf-style
+# varargs functions.
+INCLUDE(CheckCSourceCompiles)
+CHECK_C_SOURCE_COMPILES(
+	"
+		void f(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+		void f(const char *fmt, ...) {}
+		int main(int argc, char *argv[]) {
+			int i = 10;
+			f(\"%d\", i);
+			return 0;
+		}
+	"
+	HAVE_FUNC_ATTR_FORMAT
+)
+CMAKE_DEPENDENT_OPTION(USE_PRINTF_STYLE_CHECKS "Use extra compiler checks on custom printf-style functions" OFF "HAVE_FUNC_ATTR_FORMAT" OFF)
+IF(USE_PRINTF_STYLE_CHECKS)
+SET(ANGBAND_PRINTF_STYLE_CHECKS_OPTION "USE_FUNC_ATTR_FORMAT")
+ELSE()
+SET(ANGBAND_PRINTF_STYLE_CHECKS_OPTION "")
+ENDIF()
+
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
 ENDIF()
@@ -432,6 +454,11 @@ ENDIF()
 TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
+# Set the preprocessor directive to trigger extra checking of the printf-style
+# functions.
+TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_PRINTF_STYLE_CHECKS_OPTION}")
+TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_PRINTF_STYLE_CHECKS_OPTION}")
+
 # Set up to generate documentation if requested.
 IF(BUILD_DOC)
     INCLUDE(src/cmake/modules/SphinxDocument.cmake)
@@ -776,6 +803,7 @@ TARGET_INCLUDE_DIRECTORIES(OurUnitTestLib PRIVATE
     ${ANGBAND_CORE_INCLUDE_DIRS}
 )
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE "${ANGBAND_PRINTF_STYLE_CHECKS_OPTION}")
 # Use the same definitions for the hardwired paths as were used (or would
 # be used if it wasn't the Windows front end) for the executable.
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
@@ -814,6 +842,7 @@ FOREACH(ANGBAND_TEST_CASE ${ANGBAND_TEST_CASE_LIST})
         ${ANGBAND_UNIT_TEST_INCLUDE_DIRS}
     )
     TARGET_COMPILE_DEFINITIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+    TARGET_COMPILE_DEFINITIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_PRINTF_STYLE_CHECKS_OPTION}")
     TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
         ${ANGBAND_CORE_LINK_LIBRARIES}
     )

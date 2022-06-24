@@ -148,6 +148,25 @@ if test "$GCC" = "yes"; then
 	fi
 fi
 
+AC_ARG_ENABLE(printf-style-checks,
+	[AS_HELP_STRING([--enable-printf-style-checks], [enable compiler checks on custom functions that act like printf])],
+	[AS_CASE(${enableval},
+		[yes], [printf_style_checks=yes],
+		[no], [printf_style_checks=no],
+		[AC_MSG_ERROR([bad value ${enableval} for --enable-printf-style-checks])])],
+		[printf_style_checks=no])
+if test x"$printf_style_checks" = xyes ; then
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+void f(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void f(const char *fmt, ...) {}
+int main(int argc, char *argv[]) {
+	int i = 10;
+	f("%d", i);
+	return 0;
+}
+]])], [CPPFLAGS="$CPPFLAGS -DUSE_FUNC_ATTR_FORMAT"])
+fi
+
 AC_ARG_ENABLE(skip-old-int-typedefs,
 	[AS_HELP_STRING([--enable-skip-old-int-typedefs], [do not generate the u32b, s32b, ... typedefs in Angband's headers])],
 	[AS_CASE(${enableval},
