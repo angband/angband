@@ -21,7 +21,7 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install --enable-test --enable-skip-old-int-typedefs
+          ./configure --with-no-install --enable-test --enable-skip-old-int-typedefs --enable-printf-style-checks
           make
           make tests
           ./run-tests
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
+          env CFLAGS=-Wall cmake -DUSE_PRINTF_STYLE_CHECKS=ON ..
           make
 
   ncurses:
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSUPPORT_GCU_FRONTEND=ON ..
+          env CFLAGS=-Wall cmake -DSUPPORT_GCU_FRONTEND=ON -DUSE_PRINTF_STYLE_CHECKS=ON ..
           make
 
   sdl:
@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
+          env CFLAGS=-Wall cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON -DUSE_PRINTF_STYLE_CHECKS=ON ..
           make
 
   sdl2:
@@ -98,7 +98,7 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer --enable-skip-old-int-typedefs
+          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer --enable-skip-old-int-typedefs --enable-printf-style-checks
           make
 
   statbuild:
@@ -120,5 +120,5 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs
+          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs --enable-printf-style-checks
           make
