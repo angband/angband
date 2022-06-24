@@ -151,8 +151,8 @@ static void object_list_format_section(const object_list_t *list,
 			 */
 			full_width += strlen(line_buffer) - utf8_strlen(line_buffer);
 			line_attr = object_list_entry_line_attribute(&list->entries[entry_index]);
-			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width,
-							   line_buffer, location);
+			textblock_append_c(tb, line_attr, "%-*s%s\n",
+				(int) full_width, line_buffer, location);
 		}
 
 		line_count++;

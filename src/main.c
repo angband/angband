@@ -206,7 +206,7 @@ static void change_path(const char *info)
 	char dirpath[512];
 
 	if (!info || !info[0])
-		quit_fmt("Try '-d<dir>=<path>'.", info);
+		quit_fmt("Try '-d<dir>=<path>'.");
 
 	info_copy = string_make(info);
 	path = strtok(info_copy, "=");

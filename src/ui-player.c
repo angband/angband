@@ -973,7 +973,7 @@ void write_character_dump(ang_file *fff)
 	display_player(1);
 
 	/* Print a header */
-	file_putf(fff, format("%-20s%s\n", "Resistances", "Abilities"));
+	file_putf(fff, "%-20s%s\n", "Resistances", "Abilities");
 
 	/* Dump part of the screen */
 	ylim = ((cached_config->n_resist_by_region[0] >
@@ -1011,7 +1011,7 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, "\n");
 
 	/* Print a header */
-	file_putf(fff, format("%-20s%s\n", "Hindrances", "Modifiers"));
+	file_putf(fff, "%-20s%s\n", "Hindrances", "Modifiers");
 
 	/* Dump part of the screen */
 	ylim = ((cached_config->n_resist_by_region[2] >

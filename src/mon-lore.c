@@ -1136,9 +1136,9 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 					 (long)1000 / player->lev + 5) / 10);
 
 	/* Calculate textual representation */
-	strnfmt(buf, sizeof(buf), "%d", exp_integer);
+	strnfmt(buf, sizeof(buf), "%ld", exp_integer);
 	if (exp_fraction)
-		my_strcat(buf, format(".%02d", exp_fraction), sizeof(buf));
+		my_strcat(buf, format(".%02ld", exp_fraction), sizeof(buf));
 
 	/* Mention the experience */
 	textblock_append(tb, " is worth ");
@@ -1208,8 +1208,7 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 					" one or two ");
 			} else {
 				textblock_append(tb, " up to ");
-				textblock_append_c(tb, COLOUR_BLUE,
-					format("%d ", n));
+				textblock_append_c(tb, COLOUR_BLUE, "%d ", n);
 			}
 
 			/* Quality */
@@ -1251,8 +1250,8 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 				textblock_append(tb, " one or two");
 			} else {
 				textblock_append(tb, " up to");
-				textblock_append_c(tb, COLOUR_BLUE,
-					format(" %d", nspec));
+				textblock_append_c(tb, COLOUR_BLUE, " %d",
+					nspec);
 			}
 			textblock_append(tb, " specific items");
 		}
