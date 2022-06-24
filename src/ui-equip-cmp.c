@@ -759,7 +759,7 @@ static int handle_input_equip_cmp_general(ui_event in, int istate,
 			break;
 
 		case EQUIPPABLE_ONLY_CARRIED:
-			assert(s->easy_filt.simple = EQUIP_EXPR_AND
+			assert(s->easy_filt.simple == EQUIP_EXPR_AND
 				&& (s->easy_filt.nv == 3
 				|| s->easy_filt.nv == 4)
 				&& s->easy_filt.v[0].s.func == sel_exclude_src
