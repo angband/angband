@@ -1193,8 +1193,9 @@ static bool cmd_menu(struct command_list *list, void *selection_p)
 				return cmd_menu(&cmds_all[list->list[menu.cursor].nested_cached_idx], selection_p);
 			}
 		}
-	}
-
+	} else if (evt.type == EVT_ESCAPE) {
+		textui_action_menu_choose();
+	} 
 	return false;
 }
 
