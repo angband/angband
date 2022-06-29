@@ -43,5 +43,6 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 	bool sleep, bool group_okay, uint8_t origin);
 bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
 	int dis, bool sleep, int depth);
+void add_to_monster_rating(struct chunk *c, uint32_t part);
 
 #endif /* MONSTER_MAKE_H */
