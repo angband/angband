@@ -520,6 +520,8 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 		object_delete(c, NULL, &new_obj);
 		return;
 	} else {
+		uint32_t sqrating;
+
 		list_object(c, new_obj);
 		if (new_obj->artifact) {
 			c->good_item = true;
@@ -527,8 +529,15 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 		/* Avoid overflows */
 		if (rating > 2500000) {
 			rating = 2500000;
+		} else if (rating < -2500000) {
+			rating = -2500000;
 		}
-		c->obj_rating += (rating / 100) * (rating / 100);
+		sqrating = (rating / 100) * (rating / 100);
+		if (c->obj_rating < UINT32_MAX - sqrating) {
+			c->obj_rating += sqrating;
+		} else {
+			c->obj_rating = UINT32_MAX;
+		}
 	}
 }
 

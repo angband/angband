@@ -1106,7 +1106,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		return false;
 
 	/* Add to level feeling, note uniques for cheaters */
-	c->mon_rating += race->level * race->level;
+	add_to_monster_rating(c, race->level * race->level);
 
 	/* Check out-of-depth-ness */
 	if (race->level > c->depth) {
@@ -1118,7 +1118,8 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
-		c->mon_rating += (race->level - c->depth) * race->level * race->level;
+		add_to_monster_rating(c, (race->level - c->depth) * race->level
+			* race->level);
 	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(player, cheat_hear)) {
 		msg("Unique (%s).", race->name);
 	}
@@ -1512,6 +1513,20 @@ bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
 
 	/* Nope */
 	return (false);
+}
+
+/**
+ * Add to the monster rating for the given chunk.
+ *
+ * \param c is the chunk to manipulate
+ * \param part is the amount to add to the rating.
+ */
+void add_to_monster_rating(struct chunk *c, uint32_t part) {
+	if (c->mon_rating < UINT32_MAX - part) {
+		c->mon_rating += part;
+	} else {
+		c->mon_rating = UINT32_MAX;
+	}
 }
 
 struct init_module mon_make_module = {
