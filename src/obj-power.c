@@ -862,7 +862,15 @@ int object_value_real(const struct object *obj, int qty)
 	int value, total_value;
 
 	int power;
+	/*
+	 * This is the quadratic coefficient for power in the expression for
+	 * the real value.  Must be non-negative.
+	 */
 	int a = 1;
+	/*
+	 * This is the linear coefficient for power in the expression for
+	 * the real value.  Must be non-negative.
+	 */
 	int b = 5;
 
 	/* Wearables and ammo have prices that vary by individual item properties */
@@ -887,7 +895,54 @@ int object_value_real(const struct object *obj, int qty)
 #else /* PRICE_DEBUG */
 		power = object_power(obj, false, NULL);
 #endif /* PRICE_DEBUG */
-		value = SGN(power) * ((a * power * power) + (b * power));
+		/* Protect against overflow. */
+		if (power > 0) {
+			if (a > 0) {
+				if (power <= (INT_MAX / power - b) / a) {
+					value = power * (power * a + b);
+				} else {
+					value = INT_MAX;
+#ifdef PRICE_DEBUG
+					file_put(log_file, "Capped value to prevent overflow.\n");
+#endif
+				}
+			} else if (b > 0) {
+				if (power <= INT_MAX / b) {
+					value = power * b;
+				} else {
+					value = INT_MAX;
+#ifdef PRICE_DEBUG
+					file_put(log_file, "Capped value to prevent overflow.\n");
+#endif
+				}
+			} else {
+				value = 0;
+			}
+		} else if (power < 0) {
+			if (a > 0) {
+				if (power > INT_MIN && power >= (INT_MIN / (-power) + b) / a) {
+					value = -power * (power * a - b);
+				} else {
+					value = INT_MIN;
+#ifdef PRICE_DEBUG
+					file_put(log_file, "Capped value to prevent overflow.\n");
+#endif
+				}
+			} else if (b > 0) {
+				if (power >= INT_MIN / b) {
+					value = power * b;
+				} else {
+					value = INT_MIN;
+#ifdef PRICE_DEBUG
+					file_put(log_file, "Capped value to prevent overflow.\n");
+#endif
+				}
+			} else {
+				value = 0;
+			}
+		} else {
+			value = 0;
+		}
 
 		/* Rescale for expendables */
 		if ((tval_is_light(obj) && of_has(obj->flags, OF_BURNS_OUT)
