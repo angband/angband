@@ -1212,8 +1212,21 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 		*value = object_value_real(new_obj, new_obj->number);
 
 	/* Boost of 20% per level OOD for uncursed objects */
-	if ((!new_obj->curses) && (kind->alloc_min > c->depth)) {
-		if (value) *value += (kind->alloc_min - c->depth) * (*value / 5);
+	if ((!new_obj->curses) && (kind->alloc_min > c->depth) && value) {
+		int32_t ood = kind->alloc_min - c->depth;
+		int32_t frac = MAX(*value, 0) / 5;
+		int32_t adj;
+
+		if (frac <= INT32_MAX / ood) {
+			adj = ood * frac;
+		} else {
+			adj = INT32_MAX;
+		}
+		if (*value <= INT32_MAX - adj) {
+			*value += adj;
+		} else {
+			*value = INT32_MAX;
+		}
 	}
 
 	return new_obj;
