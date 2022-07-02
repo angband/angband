@@ -38,5 +38,8 @@
 ?:[EQU $SYS sdl2]
 %:font-sdl2.prf
 
+?:[EQU $SYS ibm]
+%:font-ibm.prf
+
 ?:1
 

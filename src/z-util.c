@@ -49,6 +49,16 @@ int (*text_wcsz_hook)(void) = NULL;
 int (*text_iswprint_hook)(wint_t wc) = NULL;
 
 /**
+ * Hook to search a wide character in a wide character string.
+ */
+wchar_t *(*text_wcschr_hook)(const wchar_t *wcs, wchar_t wc) = NULL;
+
+/**
+ * Hook to determine the length of a wide-character string.
+ */
+size_t (*text_wcslen_hook)(const wchar_t *s) = NULL;
+
+/**
  * Count the number of characters in a UTF-8 encoded string
  *
  * Taken from http://canonical.org/~kragen/strlen-utf8.html
@@ -778,6 +788,25 @@ int text_wcsz(void)
 int text_iswprint(wint_t wc)
 {
 	return (text_iswprint_hook) ? (*text_iswprint_hook)(wc) : iswprint(wc);
+}
+
+/**
+ * Return pointer to the first occurrence of wc in the wide-character
+ * string pointed to by wcs, or NULL if wc does not occur in the
+ * string.
+ */
+wchar_t *text_wcschr(const wchar_t *wcs, wchar_t wc)
+{
+	return (text_wcschr_hook) ?
+		(*text_wcschr_hook)(wcs, wc) : wcschr(wcs, wc);
+}
+
+/**
+ * Return the number of wide characters in s.
+ */
+size_t text_wcslen(const wchar_t *s)
+{
+	return (text_wcslen_hook) ? (*text_wcslen_hook)(s) : wcslen(s);
 }
 
 /**

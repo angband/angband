@@ -1,0 +1,155 @@
+# File: Makefile.ibm
+#
+# This makefile probably requires GNU make.
+#
+# You can also place your alterations to a file in the src/ directory called
+# "config", in which case that file will override what is specified here.
+#
+
+#### Things you should, or could, change ####
+
+# Basic compiler stuff
+CC = i586-pc-msdosdjgpp-gcc
+WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
+CFLAGS = -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNINGS)
+
+# Add additional search directives here
+INCLUDES = -I.
+LIBS = -lm -lpc
+
+
+
+
+#### Things you probably shouldn't change, unless there is a problem ####
+
+# Import user prefs
+# If you don't want to edit this file, put your module redefinitions
+# and build flags in "./config"
+-include config
+
+
+# Extract CFLAGS and LIBS from the system definitions
+CFLAGS += $(INCLUDES) -DUSE_IBM
+
+# Object definitions
+MAINOBJS = main-ibm.o main.o
+OBJS = $(BASEOBJS) main-ibm.o main-stats.o main.o
+
+
+
+
+#### Targets and objects #####
+
+# By default, copy the executable to ../ so that you don't find
+# yourself debugging a stale copy.
+default: edit install
+
+# Makefile.inc contains an up-to-date set of object files to compile, so
+# we include it
+include Makefile.inc
+
+# Version info
+EXE = angband.exe
+
+
+#
+# Targets
+#
+
+# Build the "Angband" program
+$(EXE): $(OBJS)
+	@printf "%10s %-20s\n" LINK $@
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+
+
+# Install the game.
+install: ../$(EXE)
+
+docs:
+	cd ../docs && DOC_HTML_THEME=alabaster sphinx-build -M text . _build
+
+edit:
+	@touch langinfo.h
+	@sed -i generate.c -e 's/"dungeon_profile"/"dungeon_"/' -e 's/"room_template"/"room_tem"/'
+	@sed -i init.c -e 's/"constants"/"constant"/' -e 's/"customize"/"customiz"/' -e 's/"player_property"/"player_p"/'
+	@sed -i mon-init.c -e 's/"blow_effects"/"blow_eff"/' -e 's/"blow_methods"/"blow_met"/' -e 's/"monster_base"/"monster_"/' -e 's/"monster_spell"/"monster2"/'
+	@sed -i obj-chest.c -e 's/"chest_trap"/"chest_tr"/'
+	@sed -i obj-init.c -e 's/"activation"/"activati"/' -e 's/"object_base"/"object_b"/' -e 's/"object_property"/"object_p"/' -e 's/"projection"/"projecti"/'
+	@sed -i player-timed.c -e 's/"player_timed"/"player_t"/' -e 's/"player timed effects"/"player_t"/'
+	@sed -i ui-entry.c -e 's/"ui_entry_base"/"uientryb"/'
+	@sed -i ui-entry-renderers.c -e 's/"ui_entry_renderer"/"uientryr"/'
+
+../$(EXE): $(EXE)
+	cp $(EXE) ..
+
+# Clean up old junk
+clean:
+	-rm -f $(OBJS) $(EXE)
+	-rm -f ../lib/data/*.raw
+
+# make a distribution
+DIRS = lib/gamedata lib/customiz lib/help lib/screens lib/fonts lib/tiles/old \
+       lib/sounds lib/icons lib/user lib/save lib/scores lib/info lib/archive \
+       docs
+
+TMPDIR = ./angband
+dist:
+	@-rm -rf $(TMPDIR)
+	@echo making directories...
+	@for i in $(DIRS) ; do mkdir -p $(TMPDIR)/$$i ; done
+	@echo copying files...
+	@cp ../docs/_build/text/*.txt $(TMPDIR)/docs 2>/dev/null || true
+	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customiz
+	@cp ../lib/gamedata/*.txt $(TMPDIR)/lib/gamedata
+	@cd $(TMPDIR)/lib/gamedata ; for i in *.txt ; do iconv -f UTF-8 -t CP437//TRANSLIT $$i -o $$i.new ; mv $$i.new $$i ; done
+	@mv $(TMPDIR)/lib/gamedata/activation.txt $(TMPDIR)/lib/gamedata/activati.txt
+	@mv $(TMPDIR)/lib/gamedata/blow_effects.txt $(TMPDIR)/lib/gamedata/blow_eff.txt
+	@mv $(TMPDIR)/lib/gamedata/blow_methods.txt $(TMPDIR)/lib/gamedata/blow_met.txt
+	@mv $(TMPDIR)/lib/gamedata/chest_trap.txt $(TMPDIR)/lib/gamedata/chest_tr.txt
+	@mv $(TMPDIR)/lib/gamedata/constants.txt $(TMPDIR)/lib/gamedata/constant.txt
+	@mv $(TMPDIR)/lib/gamedata/dungeon_profile.txt $(TMPDIR)/lib/gamedata/dungeon_.txt
+	@mv $(TMPDIR)/lib/gamedata/monster_base.txt $(TMPDIR)/lib/gamedata/monster_.txt
+	@mv $(TMPDIR)/lib/gamedata/monster_spell.txt $(TMPDIR)/lib/gamedata/monster2.txt
+	@mv $(TMPDIR)/lib/gamedata/old_class.txt $(TMPDIR)/lib/gamedata/old_clas.txt
+	@mv $(TMPDIR)/lib/gamedata/object_base.txt $(TMPDIR)/lib/gamedata/object_b.txt
+	@mv $(TMPDIR)/lib/gamedata/object_property.txt $(TMPDIR)/lib/gamedata/object_p.txt
+	@mv $(TMPDIR)/lib/gamedata/player_property.txt $(TMPDIR)/lib/gamedata/player_p.txt
+	@mv $(TMPDIR)/lib/gamedata/player_timed.txt $(TMPDIR)/lib/gamedata/player_t.txt
+	@mv $(TMPDIR)/lib/gamedata/projection.txt $(TMPDIR)/lib/gamedata/projecti.txt
+	@mv $(TMPDIR)/lib/gamedata/room_template.txt $(TMPDIR)/lib/gamedata/room_tem.txt
+	@mv $(TMPDIR)/lib/gamedata/ui_entry_base.txt $(TMPDIR)/lib/gamedata/uientryb.txt
+	@mv $(TMPDIR)/lib/gamedata/ui_entry_renderer.txt $(TMPDIR)/lib/gamedata/uientryr.txt
+	@cp ../lib/help/*.txt $(TMPDIR)/lib/help
+	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
+	@echo attempting to install sound and graphics
+	@cp ../lib/tiles/old/*.prf $(TMPDIR)/lib/tiles/old
+	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
+	@cp ../README.md $(TMPDIR)
+	@cp $(EXE) $(TMPDIR)
+	zip -r ../angband.zip $(TMPDIR)
+	rm -rf $(TMPDIR)
+
+
+#  Verify module arguments
+args:
+	@echo CFLAGS = $(CFLAGS)
+	@echo LIBS = $(LIBS)
+
+
+# Generate dependencies automatically
+depend:
+	makedepend -D__MAKEDEPEND__ $(SRCS)
+
+
+# Some file dependencies
+%.o: %.c
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
+
+
+# Basic dependencies for main-xxx.c, main.c
+$(MAINOBJS) : main.h $(HEADERS)
+
+# fake Dependency
+doc/index.html: $(HEADERS)
+	doxygen doc/doxygen.conf

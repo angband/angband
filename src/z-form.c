@@ -457,7 +457,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 					/* Prevent buffer overflows and convert string to char */
 					/* this really should use a wcstombs type function */
-					len = wcslen(arg);
+					len = text_wcslen(arg);
 					if (len >= 768) {
 						len = 767;
 					}

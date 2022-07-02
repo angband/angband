@@ -21,6 +21,7 @@
 #include "init.h"
 #include "savefile.h"
 #include "save-charoutput.h"
+#include "z-file.h"
 
 /**
  * The savefile code.
@@ -383,7 +384,6 @@ static bool try_save(ang_file *file)
 bool savefile_save(const char *path)
 {
 	ang_file *file;
-	int count = 0;
 	char new_savefile[1024];
 	char old_savefile[1024];
 
@@ -392,20 +392,10 @@ bool savefile_save(const char *path)
 
 	/* New savefile */
 	safe_setuid_grab();
-	strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,
-			Rand_simple(1000000));
-	while (file_exists(old_savefile) && (count++ < 100))
-		strnfmt(old_savefile, sizeof(old_savefile), "%s%u%u.old", path,
-				Rand_simple(1000000),count);
-
-	count = 0;
+	file_get_savefile(old_savefile, sizeof(old_savefile), path, "old");
 
 	/* Open the savefile */
-	strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,
-			Rand_simple(1000000));
-	while (file_exists(new_savefile) && (count++ < 100))
-		strnfmt(new_savefile, sizeof(new_savefile), "%s%u%u.new", path,
-				Rand_simple(1000000),count);
+        file_get_savefile(new_savefile, sizeof(new_savefile), path, "new");
 
 	file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
 	safe_setuid_drop();

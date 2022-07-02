@@ -26,6 +26,7 @@
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-form.h"
+#include "z-file.h"
 
 #define TEXTBLOCK_LEN_INITIAL		128
 #define TEXTBLOCK_LEN_INCR(x)		((x) + 128)
@@ -697,8 +698,8 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	ang_file *new_file;
 
 	/* Format filenames */
-	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
-	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+	file_get_tempfile(new_fname, sizeof(new_fname), path, "new");
+	file_get_tempfile(old_fname, sizeof(old_fname), path, "old");
 
 	/* Write new file */
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
@@ -713,7 +714,6 @@ errr text_lines_to_file(const char *path, text_writer writer)
 	file_close(new_file);
 
 	/* Move files around */
-	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
 	if (!file_exists(path)) {
 		file_move(new_fname, path);
 	} else if (file_move(path, old_fname)) {

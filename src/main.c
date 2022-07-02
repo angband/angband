@@ -81,6 +81,10 @@ static const struct module modules[] =
 #ifdef USE_SPOIL
 	{ "spoil", help_spoil, init_spoil },
 #endif
+
+#ifdef USE_IBM
+	{ "ibm", help_ibm, init_ibm },
+#endif /* USE_IBM */
 };
 
 /**
@@ -479,7 +483,7 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
-#if !defined(WINDOWS)
+#if !defined(WINDOWS) && !defined(DJGPP)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
 		if (!streq(nl_langinfo(CODESET), "UTF-8"))
