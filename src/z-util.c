@@ -651,9 +651,41 @@ void strescape(char *s, const char c) {
 }
 
 /**
+ * Gives the integer value of a hexadecimal character
+ * Returns -1 if invalid
+ */
+static int hex_char_to_int(char c) {
+	if ((c >= '0') && (c <= '9'))
+		return c - '0';
+	if ((c >= 'A') && (c <= 'F'))
+		return c - 'A' + 10;
+	if ((c >= 'a') && (c <= 'f'))
+		return c - 'a' + 10;
+	return -1;
+}
+
+/**
+ * Gives the integer value of a hexadecimal string
+ * hex_str_to_int("4A") returns 74 == 0x4A
+ * Returns -1 if invalid
+ */
+int hex_str_to_int(const char *s) {
+	int result = 0;
+	while (*s) {
+		int current = hex_char_to_int(*s);
+		if (current == -1)
+			return -1;
+		result *= 16;
+		result += current;
+		++s;
+	}
+	return result;
+}
+
+/**
  * Rewrite string s in-place, replacing encoded representations of escaped characters
  * ("\\r", etc.) with their literal character counterparts.
- * This does only handle escape sequences visible on the ascii manpage (and "\e").
+ * This does only handle escape sequences visible on the ascii manpage (and "\e" and "\x").
  */
 void strunescape(char *s) {
 	char *in = s;
@@ -695,6 +727,35 @@ void strunescape(char *s) {
 			case 'e':
 				*out++ = '\x1B';
 				break;
+			case 'x': {
+				char hex[3];
+				if (*++in == 0) {
+					/* Add back the unmodified sequence */
+					*out++ = '\\';
+					*out++ = 'x';
+					continue;
+				}
+				hex[0] = *in;
+				if (*++in == 0) {
+					/* Add back the unmodified sequence */
+					*out++ = '\\';
+					*out++ = 'x';
+					*out++ = hex[0];
+					continue;
+				}
+				hex[1] = *in;
+				hex[2] = 0;
+				int result = hex_str_to_int(hex);
+				if (result == -1) {
+					/* Add back the unmodified sequence */
+					*out++ = '\\';
+					*out++ = 'x';
+					*out++ = hex[0];
+					*out++ = hex[1];
+				}
+				*out++ = result;
+				break;
+				}
 			default:
 				/* Add back the unmodified sequence */
 				*out++ = '\\';
