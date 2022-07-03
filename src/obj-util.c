@@ -1058,7 +1058,7 @@ void print_custom_message(struct object *obj, const char *string, int msg_type,
 
 		next = strchr(string, '{');
 	}
-	strnfcat(buf, 1024, &end, string);
+	strnfcat(buf, 1024, &end, "%s", string);
 
 	msgt(msg_type, "%s", buf);
 }
