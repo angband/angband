@@ -242,7 +242,7 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src,
 		const char *desc = keycode_find_desc(i);
 
 		/* un-ktrl control characters if they don't have a description */
-		/* this is so that Tab (^I) doesn't get turned into ^I but gets
+		/* this is so that Tab (^i) doesn't get turned into ^i but gets
 		 * displayed as [Tab] */
 		if (i < 0x20 && !desc) {
 			mods |= KC_MOD_CONTROL;
@@ -307,7 +307,7 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src)
 	const char *desc = keycode_find_desc(i);
 
 	/* un-ktrl control characters if they don't have a description */
-	/* this is so that Tab (^I) doesn't get turned into ^I but gets
+	/* this is so that Tab (^i) doesn't get turned into ^i but gets
 	 * displayed as [Tab] */
 	if (i < 0x20 && !desc) {
 		mods |= KC_MOD_CONTROL;

@@ -58,7 +58,8 @@ typedef enum
  * If the character has come from the keypad:
  *   Include all mods
  * Else if the character is in the range 0x01-0x1F, and the keypress was
- * from a key that without modifiers would be in the range 0x40-0x5F:
+ * from a key that without modifiers would be in the range 0x40-0x5F or
+ * 0x61-0x7A:
  *   CONTROL is encoded in the keycode, and should not be in mods
  * Else if the character is in the range 0x21-0x2F, 0x3A-0x60 or 0x7B-0x7E:
  *   SHIFT is often used to produce these should not be encoded in mods
@@ -78,14 +79,14 @@ typedef enum
 
 /**
  * If keycode you're trying to apply control to is between 0x40-0x5F
- * inclusive, then you should take 0x40 from the keycode and leave
- * KC_MOD_CONTROL unset.  Otherwise, leave the keycode alone and set
- * KC_MOD_CONTROL in mods.
+ * inclusive or 0x61-0x7A inclusive, then you should bitwise-and the keycode
+ * with 0x1f and leave KC_MOD_CONTROL unset.  Otherwise, leave the keycode
+ * alone and set KC_MOD_CONTROL in mods.
  *
  * This macro returns true in the former case and false in the latter.
  */
 #define ENCODE_KTRL(v) \
-	(((v) >= 0x40 && (v) <= 0x5F) ? true : false)
+	((((v) >= 0x40 && (v) <= 0x5F) || ((v) >= 0x61 && (v) <= 0x7A)) ? true : false)
 
 
 /**
@@ -96,10 +97,30 @@ typedef enum
 
 
 /**
- * Given a control character X, turn it into its uppercase ASCII equivalent.
+ * Given a control character X, turn it into its lowercase ASCII equivalent
+ * unless it is 0x00 or 0x1B to 0x1F, then use the punctuation characters
+ * that flank the uppercase ASCII letters.  The lowercase representation is
+ * preferred because:
+ *   1) Some front ends can distinguish between ctrl-lowercase_letter and
+ *      ctrl-uppercase_letter, but others do not (GCU, for instance).
+ *   2) The current command lookup only looks at the keycode and not whether
+ *      any modifiers are set.  So, ctrl-lowercase_letter and
+ *      ctrl-uppercase_letter to invoke a builtin command have the same effect
+ *      in most cases because the same keycode is passed to the core and, with
+ *      the front ends that set the shift modifier for ctrl-uppercase_letter,
+ *      that modifier is ignored.
+ *   3) A handful of platforms don't respond to at least some instances of
+ *      ctrl-uppercase_letter.  The known ones are the GCU front end running
+ *      on Cygwin and the GCU front end running in Apple's Terminal for macOS.
+ *      In the latter case, the keystroke for ctrl-O never makes it the front
+ *      end.  On Cygwin, I don't know what the cause of the problem is.
+ * The punctuation characters flanking the uppercase letters are preferred
+ * because that's what was used in the past and, on many keyboards, it's not
+ * true that shift + a key giving the keycode for 0x60 or 0x7B to 0x7F results
+ * in a keycode that is 0x40 or 0x5B to 0x5F.
  */
 #define UN_KTRL(X) \
-	((X) + 64)
+	(((X) < 0x01 || (X) > 0x1B) ? (X) + 64 : (X) + 96)
 
 
 /**
