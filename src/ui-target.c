@@ -308,7 +308,7 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 				ODESC_PREFIX | ODESC_FULL, p);
 
 			/* Describe the object */
-			if (player->wizard) {
+			if (p->wizard) {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
 						o_name, coords, y, x, (int)cave->noise.grids[y][x],
