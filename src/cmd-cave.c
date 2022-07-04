@@ -1093,8 +1093,8 @@ void move_player(int dir, bool disarm)
 		if (square_isdamaging(cave, grid)) {
 			/* Some terrain can damage the player */
 			struct feature *feat = square_feat(cave, grid);
-			int dam_taken =
-				player_check_terrain_damage(player, grid);
+			int dam_taken = player_check_terrain_damage(player,
+				grid, false);
 
 			/*
 			 * Check if running, or going to cost more than a
