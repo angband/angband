@@ -387,9 +387,9 @@ static void player_embody(struct player *p)
 /**
  * Get the player's starting money
  */
-static void get_money(void)
+static void get_money(struct player *p)
 {
-	player->au = player->au_birth = z_info->start_gold;
+	p->au = p->au_birth = z_info->start_gold;
 }
 
 void player_init(struct player *p)
@@ -500,8 +500,8 @@ void wield_all(struct player *p)
 
 	/* Now add the unwielded split objects to the gear */
 	if (new_pile) {
-		pile_insert_end(&player->gear, new_pile);
-		pile_insert_end(&player->gear_k, new_known_pile);
+		pile_insert_end(&p->gear, new_pile);
+		pile_insert_end(&p->gear_k, new_known_pile);
 	}
 	return;
 }
@@ -1255,7 +1255,7 @@ void do_cmd_accept_character(struct command *cmd)
 	player_embody(player);
 
 	/* Give the player some money */
-	get_money();
+	get_money(player);
 
 	/* Initialise the spells */
 	player_spells_init(player);
