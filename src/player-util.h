@@ -77,7 +77,7 @@ void player_update_light(struct player *p);
 void player_over_exert(struct player *p, int flag, int chance, int amount);
 struct object *player_best_digger(struct player *p, bool forbid_stack);
 bool player_attack_random_monster(struct player *p);
-int player_check_terrain_damage(struct player *p, struct loc grid);
+int player_check_terrain_damage(struct player *p, struct loc grid, bool actual);
 void player_take_terrain_damage(struct player *p, struct loc grid);
 struct player_shape *lookup_player_shape(const char *name);
 int shape_name_to_idx(const char *name);
