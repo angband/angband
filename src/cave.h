@@ -257,7 +257,7 @@ extern uint16_t chunk_list_max;
 int distance(struct loc grid1, struct loc grid2);
 bool los(struct chunk *c, struct loc grid1, struct loc grid2);
 void update_view(struct chunk *c, struct player *p);
-bool no_light(struct player *p);
+bool no_light(const struct player *p);
 
 /* cave-map.c */
 void map_info(struct loc grid, struct grid_data *g);
