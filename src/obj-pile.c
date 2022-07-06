@@ -1000,7 +1000,7 @@ static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 		object_delete(player->cave, NULL, &known);
 	}
 	delist_object(c, drop);
-	object_delete(cave, player->cave, &drop);
+	object_delete(c, player->cave, &drop);
 }
 
 /**

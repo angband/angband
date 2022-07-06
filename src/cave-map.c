@@ -498,7 +498,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 					struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 
 					/* Perma-darken the grid */
-					sqinfo_off(square(cave, a_grid)->info, SQUARE_GLOW);
+					sqinfo_off(square(c, a_grid)->info, SQUARE_GLOW);
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, a_grid) || 

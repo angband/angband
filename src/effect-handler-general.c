@@ -1573,7 +1573,7 @@ static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, str
 			object_delete(player->cave, NULL, &obj);
 			original->known = NULL;
 			delist_object(c, original);
-			object_delete(cave, player->cave, &original);
+			object_delete(c, player->cave, &original);
 		}
 		obj = next;
 	}

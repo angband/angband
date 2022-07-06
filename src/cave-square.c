@@ -1415,7 +1415,7 @@ int square_shopnum(struct chunk *c, struct loc grid) {
 }
 
 int square_digging(struct chunk *c, struct loc grid) {
-	if (square_isdiggable(c, grid) || square_iscloseddoor(cave, grid))
+	if (square_isdiggable(c, grid) || square_iscloseddoor(c, grid))
 		return f_info[square(c, grid)->feat].dig;
 	return 0;
 }
