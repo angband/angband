@@ -81,7 +81,7 @@
 
 #define uint unsigned int
 
-#if (defined(WINDOWS) && !defined(USE_SDL)) && !defined(USE_SDL2)
+#if defined(WINDOWS) && !defined(USE_SDL) && !defined(USE_SDL2)
 
 #include "sound.h"
 #include "snd-win.h"
@@ -1111,7 +1111,7 @@ static bool init_graphics(void)
 	return (can_use_graphics);
 }
 
-#ifdef SOUND
+#if defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
 
 /* Supported file types */
 enum {
@@ -1282,7 +1282,7 @@ errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 	/* Success */
 	return (0);
 }
-#endif /* SOUND */
+#endif /* SOUND && !SOUND_SDL && !SOUND_SDL2 */
 
 
 /**
@@ -5025,8 +5025,14 @@ static void init_stuff(void)
  */
 static void win_reinit(void)
 {
-	/* Initialise sound. */
+/* Initialise sound. */
+#ifdef SOUND
+#if defined(SOUND_SDL) || defined(SOUND_SOUND_SDL2)
+	init_sound("sdl", 0, NULL);
+#else
 	init_sound("win", 0, NULL);
+#endif /* else SOUND_SDL || SOUND_SDL2 */
+#endif /* SOUND */
 
 	/*
 	 * Watch for these events to set up and tear down protection against
