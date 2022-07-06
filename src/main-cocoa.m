@@ -5500,10 +5500,14 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
  */
 static void cocoa_reinit(void)
 {
-#if defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
 	/* Initialize sound. */
+#ifdef SOUND
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
+	init_sound("sdl", 0, NULL);
+#else
 	init_sound("cocoa", 0, NULL);
-#endif
+#endif /* else SOUND_SDL || SOUND_SDL2 */
+#endif /* SOUND */
 }
 
 /**
