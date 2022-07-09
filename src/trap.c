@@ -489,9 +489,6 @@ extern void hit_trap(struct loc grid, int delayed)
 	struct trap *trap;
 	struct effect *effect;
 
-	/* The player is safe from all traps */
-	if (player_is_trapsafe(player)) return;
-
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
 		int flag;
@@ -505,14 +502,18 @@ extern void hit_trap(struct loc grid, int delayed)
 		    delayed != -1)
 			continue;
 
+		if (player_is_trapsafe(player)) {
+			/* Trap immune player learns the rune */
+			if (player_of_has(player, OF_TRAP_IMMUNE)) {
+				equip_learn_flag(player, OF_TRAP_IMMUNE);
+			}
+			/* Trap becomes visible. */
+			trf_on(trap->flags, TRF_VISIBLE);
+			continue;
+		}
+
 		/* Disturb the player */
 		disturb(player);
-
-		/* Trap immune player learns the rune */
-		if (player_of_has(player, OF_TRAP_IMMUNE)) {
-			equip_learn_flag(player, OF_TRAP_IMMUNE);
-			break;
-		}
 
 		/* Give a message */
 		if (trap->kind->msg)

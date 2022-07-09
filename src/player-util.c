@@ -1496,21 +1496,9 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	}
 
 	/* Discover invisible traps, set off visible ones */
-	if (eval_trap) {
-		if (square_issecrettrap(cave, p->grid)) {
-			disturb(p);
-			hit_trap(p->grid, 0);
-		} else if (square_isdisarmabletrap(cave, p->grid)) {
-			if (player_is_trapsafe(p)) {
-				/* Trap immune player learns that they are */
-				if (player_of_has(p, OF_TRAP_IMMUNE)) {
-					equip_learn_flag(p, OF_TRAP_IMMUNE);
-				}
-			} else {
-				disturb(p);
-				hit_trap(p->grid, 0);
-			}
-		}
+	if (eval_trap && square_isplayertrap(cave, p->grid)
+			&& !square_isdisabledtrap(cave, p->grid)) {
+		hit_trap(p->grid, 0);
 	}
 
 	/* Update view and search */
