@@ -643,10 +643,6 @@ bool savefile_load(const char *path, bool cheat_death)
 	ok = try_load(f, loaders);
 	file_close(f);
 
-	if (player->chp < 0) {
-		player->is_dead = true;
-	}
-
 	if (player->is_dead && cheat_death) {
 			player->is_dead = false;
 			player->chp = player->mhp;
