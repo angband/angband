@@ -958,8 +958,6 @@ void textui_target_closest(void)
 		Term_get_cursor(&visibility);
 		(void)Term_set_cursor(true);
 		move_cursor_relative(target.y, target.x);
-		Term_redraw_section(target.y, target.x, target.y, target.x);
-
 		/* TODO: what's an appropriate amount of time to spend highlighting */
 		Term_xtra(TERM_XTRA_DELAY, 150);
 		(void)Term_set_cursor(visibility);
