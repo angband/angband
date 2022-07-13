@@ -387,7 +387,7 @@ jobs:
           popd
           test -e src/${{ steps.store_config.outputs.progname }}.3dsx
 
-      - name: Setup cxitool and build
+      - name: Setup cxitool
         shell: bash
         run: |
           apt-get update && apt-get install -y build-essential automake autoconf autotools-dev
