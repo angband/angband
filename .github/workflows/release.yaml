@@ -414,7 +414,6 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          make -f Makefile.3ds
           test -e ${{ steps.store_config.outputs.progname }}.3dsx
           cxitool --name ${{ steps.store_config.outputs.progname }} ${{ steps.store_config.outputs.progname }}.3dsx ${{ steps.store_config.outputs.progname }}.cxi
           makerom -v -f cia -o ${{ steps.store_config.outputs.progname }}.cia -target t -i ${{ steps.store_config.outputs.progname }}.cxi:0:0 -ignoresign -icon icon.smdh
