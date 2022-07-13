@@ -88,6 +88,7 @@ fi
 # Prefer cc to gcc (default behavior is the opposite) for better compatibility
 # with OpenBSD and FreeBSD.
 AC_PROG_CC([cc gcc clang])
+AC_PROG_CPP
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 AC_PROG_INSTALL

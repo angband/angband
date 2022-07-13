@@ -26,6 +26,9 @@ AC_DEFUN([BUILDSYS_INIT], [
 	AC_REQUIRE([AC_CANONICAL_BUILD])
 	AC_REQUIRE([AC_CANONICAL_HOST])
 
+	AC_ARG_ENABLE(rpath,
+		AS_HELP_STRING([--disable-rpath], [do not use rpath]))
+
 	case "$build_os" in
 	darwin*)
 		case "$host_os" in
@@ -182,7 +185,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_LDFLAGS_INSTALL_NAME='-Wl,-install_name,${libdir}/$${out%.dylib}.${LIB_MAJOR}.dylib'
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.dylib'
-		LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-bundle ${PLUGIN_LDFLAGS_BUNDLE_LOADER}'
 		PLUGIN_SUFFIX='.bundle'
@@ -200,17 +205,17 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 	*-*-mingw* | *-*-cygwin*)
 		AC_MSG_RESULT(MinGW / Cygwin)
 		LIB_CFLAGS=''
-		LIB_LDFLAGS='-shared -Wl,--export-all-symbols,--out-implib,lib$${out%${LIB_SUFFIX}}.a'
+		LIB_LDFLAGS='-shared -Wl,--export-all-symbols'
 		LIB_LDFLAGS_INSTALL_NAME=''
 		LIB_PREFIX=''
 		LIB_SUFFIX='${LIB_MAJOR}.dll'
-		LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		LINK_LIB='&& ${LN_S} $$out lib$${out%${LIB_SUFFIX}}.dll.a'
 		PLUGIN_CFLAGS=''
-		PLUGIN_LDFLAGS='-shared'
+		PLUGIN_LDFLAGS='-shared -Wl,--export-all-symbols'
 		PLUGIN_SUFFIX='.dll'
 		LINK_PLUGIN='${LD} -o $$out ${PLUGIN_OBJS} ${PLUGIN_OBJS_EXTRA} ${PLUGIN_LDFLAGS} ${LDFLAGS} ${LIBS}'
-		INSTALL_LIB='&& ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i && ${INSTALL} -m 755 lib$${i%${LIB_SUFFIX}}.a ${DESTDIR}${libdir}/lib$${i%${LIB_SUFFIX}}.a'
-		UNINSTALL_LIB='&& rm -f ${DESTDIR}${bindir}/$$i ${DESTDIR}${libdir}/lib$$i.a'
+		INSTALL_LIB='&& ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i && ${INSTALL} -m 755 lib$${i%${LIB_SUFFIX}}.dll.a ${DESTDIR}${libdir}/lib$${i%${LIB_SUFFIX}}.dll.a'
+		UNINSTALL_LIB='&& rm -f ${DESTDIR}${bindir}/$$i ${DESTDIR}${libdir}/lib$${i%${LIB_SUFFIX}}.dll.a'
 		INSTALL_PLUGIN='&& ${INSTALL} -m 755 $$i ${DESTDIR}${plugindir}/$$i'
 		UNINSTALL_PLUGIN='&& rm -f ${DESTDIR}${plugindir}/$$i'
 		CLEAN_LIB='${SHARED_LIB}.a ${SHARED_LIB_NOINST}.a'
@@ -222,7 +227,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_LDFLAGS_INSTALL_NAME=''
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.so.${LIB_MAJOR}.${LIB_MINOR}'
-		LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.so'
@@ -240,7 +247,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_LDFLAGS_INSTALL_NAME=''
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.so'
-		LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.so'
@@ -258,7 +267,6 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_LDFLAGS_INSTALL_NAME=''
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.so'
-		LDFLAGS_RPATH=''
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.so'
@@ -277,7 +285,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.${LIB_MAJOR}'
 		LINK_LIB='&& rm -f $${out%%.*}.sl && ${LN_S} $$out $${out%%.*}.sl'
-		LDFLAGS_RPATH='-Wl,+b,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,+b,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.sl'
@@ -296,7 +306,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.${LIB_MAJOR}'
 		LINK_LIB='&& rm -f $${out%%.*}.so && ${LN_S} $$out $${out%%.*}.so'
-		LDFLAGS_RPATH='-Wl,+b,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,+b,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.so'
@@ -314,7 +326,9 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		LIB_LDFLAGS_INSTALL_NAME=''
 		LIB_PREFIX='lib'
 		LIB_SUFFIX='.so'
-		LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		AS_IF([test x"$enable_rpath" != x"no"], [
+			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
+		])
 		PLUGIN_CFLAGS='-fPIC -DPIC'
 		PLUGIN_LDFLAGS='-shared'
 		PLUGIN_SUFFIX='.so'
