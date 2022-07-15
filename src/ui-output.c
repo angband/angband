@@ -136,7 +136,8 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 
 	if (header != NULL) {
 		area.page_rows--;
-		c_prt(COLOUR_L_BLUE, header, area.row, area.col);
+		Term_erase(area.col, area.row, area.width);
+		c_put_str(COLOUR_L_BLUE, header, area.row, area.col);
 		area.row++;
 	}
 
@@ -173,15 +174,17 @@ struct keypress textui_textblock_show(textblock *tb, region orig_area, const cha
 
 	if (header != NULL) {
 		area.page_rows--;
-		c_prt(COLOUR_L_BLUE, header, area.row, area.col);
+		Term_erase(area.col, area.row, area.width);
+		c_put_str(COLOUR_L_BLUE, header, area.row, area.col);
 		area.row++;
 	}
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;
 
-		c_prt(COLOUR_WHITE, "", area.row + area.page_rows, area.col);
-		c_prt(COLOUR_L_BLUE, "(Up/down or ESCAPE to exit.)",
+		Term_erase(area.col, area.row + area.page_rows, area.width);
+		Term_erase(area.col, area.row + area.page_rows + 1, area.width);
+		c_put_str(COLOUR_L_BLUE, "(Up/down or ESCAPE to exit.)",
 				area.row + area.page_rows + 1, area.col);
 
 		/* Pager mode */
@@ -213,8 +216,9 @@ struct keypress textui_textblock_show(textblock *tb, region orig_area, const cha
 		display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
 				line_lengths, n_lines, area, 0);
 
-		c_prt(COLOUR_WHITE, "", area.row + n_lines, area.col);
-		c_prt(COLOUR_L_BLUE, "(Press any key to continue.)",
+		Term_erase(area.col, area.row + n_lines, area.width);
+		Term_erase(area.col, area.row + n_lines + 1, area.width);
+		c_put_str(COLOUR_L_BLUE, "(Press any key to continue.)",
 				area.row + n_lines + 1, area.col);
 		ch = inkey();
 	}
