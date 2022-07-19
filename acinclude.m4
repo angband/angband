@@ -490,8 +490,7 @@ dnl
 AC_DEFUN([AM_PATH_NCURSESW],
 [dnl 
 dnl Get the cflags and libraries from the ncursesw6-config or ncursesw5-config
-dnl script; currently assumes ncursesw5-config with --with-ncurses-prefix
-dnl or --with-ncurses-exec-prefix
+dnl script.
 dnl
 AC_ARG_WITH(ncurses-prefix,[AS_HELP_STRING([--with-ncurses-prefix=PFX], [set prefix where ncurses is installed (optional)])],
             ncurses_prefix="$withval", ncurses_prefix="")
@@ -499,28 +498,29 @@ AC_ARG_WITH(ncurses-exec-prefix,[AS_HELP_STRING([--with-ncurses-exec-prefix=PFX]
             ncurses_exec_prefix="$withval", ncurses_exec_prefix="")
 AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try to compile and run a test ncurses program])],
 		    , enable_ncursestest=yes)
+AC_ARG_VAR([NCURSES_CONFIG], [full path to the script for querying details about how to compile and link with an installed ncurses library])
+
+# Holds variations of the name of the script used to query the ncurses
+# installation.
+ncurses_config_progs="ncursesw6-config ncursesw5-config"
 
   if test x$ncurses_exec_prefix != x ; then
-     ncurses_args="$ncurses_args --exec-prefix=$ncurses_exec_prefix"
-     if test x${NCURSES_CONFIG+set} != xset ; then
-        NCURSES_CONFIG=$ncurses_exec_prefix/bin/ncursesw5-config
-     fi
+     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
+        [$ncurses_exec_prefix/bin])
   fi
   if test x$ncurses_prefix != x ; then
-     ncurses_args="$ncurses_args --prefix=$ncurses_prefix"
-     if test x${NCURSES_CONFIG+set} != xset ; then
-        NCURSES_CONFIG=$ncurses_prefix/bin/ncursesw5-config
-     fi
+     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
+        [$ncurses_prefix/bin])
   fi
 
-  AC_PATH_PROGS([NCURSES_CONFIG], [ncursesw6-config ncursesw5-config], [no])
+  AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no])
   AC_MSG_CHECKING([for ncurses - wide char support])
   no_ncurses=""
   if test "$NCURSES_CONFIG" = "no" ; then
     no_ncurses=yes
   else
-    NCURSES_CFLAGS=`$NCURSES_CONFIG $ncurses_args --cflags`
-    NCURSES_LIBS=`$NCURSES_CONFIG $ncurses_args --libs`
+    NCURSES_CFLAGS=`$NCURSES_CONFIG --cflags`
+    NCURSES_LIBS=`$NCURSES_CONFIG --libs`
 
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
