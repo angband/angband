@@ -1187,9 +1187,6 @@
     <None Include="lib\fonts\16x24x.fon">
       <Filter>Resource Files\fonts</Filter>
     </None>
-    <None Include="lib\sounds\sound.cfg">
-      <Filter>Resource Files\sounds</Filter>
-    </None>
     <None Include="lib\tiles\adam-bolt\flvr-new.prf">
       <Filter>Resource Files\tiles\adam-bolt</Filter>
     </None>

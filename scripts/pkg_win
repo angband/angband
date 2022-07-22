@@ -119,7 +119,6 @@ cp ../lib/tiles/nomad/*.png lib/tiles/nomad
 cp ../lib/tiles/old/*.png lib/tiles/old
 cp ../lib/tiles/shockbolt/*.png lib/tiles/shockbolt
 
-cp_unix2dos ../lib/sounds/sound.cfg lib/sounds/sound.cfg
 cp ../lib/sounds/*.mp3 lib/sounds
 
 for f in `find ../lib/user/info \( -name '*.txt' -o -name '*.hlp' \) \

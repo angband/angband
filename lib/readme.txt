@@ -75,8 +75,7 @@ correctly.
 
 === Directory "lib/sounds" ===
 
-The "lib/sounds" directory contains the .mp3 sound files, plus the file
-sound.cfg which tells the game which sound files to use for which game events.
+The "lib/sounds" directory contains the .mp3 sound files.
 
 
 === Directory "lib/icons" ===

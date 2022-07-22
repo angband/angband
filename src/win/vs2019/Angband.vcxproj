@@ -547,7 +547,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <None Include="lib\fonts\8x8xb.fon" />
     <None Include="lib\fonts\9x15x.fon" />
     <None Include="lib\fonts\9x15xb.fon" />
-    <None Include="lib\sounds\sound.cfg" />
     <None Include="lib\tiles\adam-bolt\flvr-new.prf" />
     <None Include="lib\tiles\adam-bolt\graf-new.prf" />
     <None Include="lib\tiles\adam-bolt\xtra-new.prf" />
