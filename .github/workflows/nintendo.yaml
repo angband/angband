@@ -15,11 +15,41 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v2
 
-      - name: Build
+      - name: Build Nintendo 3DS (3dsx)
         shell: bash
         run: |
           pushd src/
           make -f Makefile.3ds
+          popd
+
+      - name: Setup cxitool
+        shell: bash
+        run: |
+          apt-get update && apt-get install -y build-essential automake autoconf autotools-dev
+          git clone -b cxi-stuff https://github.com/devkitPro/3dstools/
+          pushd 3dstools/
+          ./autogen.sh
+          ./configure
+          make install
+          popd
+
+      - name: Setup makerom 
+        shell: bash
+        run: |
+          apt-get update && apt-get install -y build-essential libmbedtls-dev liblzma-dev libyaml-dev
+          git clone https://github.com/3DSGuy/Project_CTR/
+          pushd Project_CTR/makerom
+          make deps
+          make
+          cp -rv bin/makerom /usr/local/bin
+          popd
+
+      - name: Build Nintendo 3DS (cia)
+        shell: bash
+        run: |
+          pushd src/
+          cxitool --name angband angband.3dsx angband.cxi
+          makerom -v -f cia -o angband.cia -target t -i angband.cxi:0:0 -ignoresign -icon src/nds/icon.smdh
           popd
 
   nds:

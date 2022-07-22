@@ -378,8 +378,8 @@ jobs:
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
-      - name: Create Nintendo 3DS Archive
-        id: create_nintendo_3ds_archive
+      - name: Build Nintendo 3DS (3dsx)
+        id: create_nintendo_3ds_3dsx
         shell: bash
         run: |
           pushd src/
@@ -387,13 +387,51 @@ jobs:
           popd
           test -e src/${{ steps.store_config.outputs.progname }}.3dsx
 
+      - name: Setup cxitool
+        shell: bash
+        run: |
+          apt-get update && apt-get install -y build-essential automake autoconf autotools-dev
+          git clone -b cxi-stuff https://github.com/devkitPro/3dstools/
+          pushd 3dstools/
+          ./autogen.sh
+          ./configure
+          make install
+          popd
+
+      - name: Setup makerom 
+        shell: bash
+        run: |
+          apt-get update && apt-get install -y build-essential libmbedtls-dev liblzma-dev libyaml-dev
+          git clone https://github.com/3DSGuy/Project_CTR/
+          pushd Project_CTR/makerom
+          make deps
+          make
+          cp -rv bin/makerom /usr/local/bin
+          popd
+
+      - name: Build Nintendo 3DS (cia)
+        id: create_nintendo_3ds_cia
+        shell: bash
+        run: |
+          pushd src/
+          test -e ${{ steps.store_config.outputs.progname }}.3dsx
+          cxitool --name ${{ steps.store_config.outputs.progname }} ${{ steps.store_config.outputs.progname }}.3dsx ${{ steps.store_config.outputs.progname }}.cxi
+          makerom -v -f cia -o ${{ steps.store_config.outputs.progname }}.cia -target t -i ${{ steps.store_config.outputs.progname }}.cxi:0:0 -ignoresign -icon icon.smdh
+          test -e ${{ steps.store_config.outputs.progname }}.cia
+          popd
+
+      - name: Create Nintendo 3DS Archive
+        id: create_nintendo_3ds_archive
+        shell: bash
+        run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "::set-output name=archive_file::${archive_prefix}-3ds.zip"
           echo "::set-output name=archive_content_type::application/zip"
           mkdir -v ${{ steps.store_config.outputs.progname }}/
           cp -v src/${{ steps.store_config.outputs.progname }}.3dsx ${archive_prefix}.3dsx
+          cp -v src/${{ steps.store_config.outputs.progname }}.cia ${archive_prefix}.cia
           cp -rv lib ${{ steps.store_config.outputs.progname }}/
-          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${{ steps.store_config.outputs.progname }}/
+          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${archive_prefix}.cia ${{ steps.store_config.outputs.progname }}/
           
       - name: Upload Nintendo 3DS Archive
         id: upload_nintendo_3ds_archive
@@ -474,3 +512,4 @@ jobs:
           asset_path: ./${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
           asset_name: ${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
           asset_content_type: ${{ steps.create_nintendo_ds_archive.outputs.archive_content_type }}
+ 
