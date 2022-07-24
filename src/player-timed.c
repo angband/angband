@@ -84,7 +84,6 @@ static const char *list_timed_effect_names[] = {
 	#include "list-player-timed.h"
 	#undef TMD
 	"MAX",
-	NULL
 };
 
 static enum parser_error parse_player_timed_name(struct parser *p)
@@ -251,18 +250,20 @@ static enum parser_error parse_player_timed_grade(struct parser *p)
 	/* Set food constants and deal with percentages */
 	if (streq(t->name, "FOOD")) {
 		l->max *= z_info->food_value;
-		if (streq(l->name, "Starving")) {
-			PY_FOOD_STARVE = l->max;
-		} else if (streq(l->name, "Faint")) {
-			PY_FOOD_FAINT = l->max;
-		} else if (streq(l->name, "Weak")) {
-			PY_FOOD_WEAK = l->max;
-		} else if (streq(l->name, "Hungry")) {
-			PY_FOOD_HUNGRY = l->max;
-		} else if (streq(l->name, "Fed")) {
-			PY_FOOD_FULL = l->max;
-		} else if (streq(l->name, "Full")) {
-			PY_FOOD_MAX = l->max;
+		if (l->name) {
+			if (streq(l->name, "Starving")) {
+				PY_FOOD_STARVE = l->max;
+			} else if (streq(l->name, "Faint")) {
+				PY_FOOD_FAINT = l->max;
+			} else if (streq(l->name, "Weak")) {
+				PY_FOOD_WEAK = l->max;
+			} else if (streq(l->name, "Hungry")) {
+				PY_FOOD_HUNGRY = l->max;
+			} else if (streq(l->name, "Fed")) {
+				PY_FOOD_FULL = l->max;
+			} else if (streq(l->name, "Full")) {
+				PY_FOOD_MAX = l->max;
+			}
 		}
 	}
 
@@ -541,7 +542,16 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify,
 	}
 
 	/* Upper bound */
-	v = MIN(v, new_grade->max);
+	if (v > new_grade->max) {
+		if (p->timed[idx] == new_grade->max) {
+			/*
+			 * No change:  tried to exceed the maximum possible and
+			 * already there
+			 */
+			return false;
+		}
+		v = new_grade->max;
+	}
 
 	/* Don't mention effects which already match the known player state. */
 	if (timed_effects[idx].temp_resist != -1 &&
