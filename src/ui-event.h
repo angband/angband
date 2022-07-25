@@ -124,6 +124,16 @@ typedef enum
 
 
 /**
+ * Given a control character X, turn it into its uppercase ASCII equivalent.
+ * Prefer using UN_KTRL() over this except for inscription testing and menu
+ * shortcuts where there are clashes for the rogue-like keyset (UN_KTRL()
+ * for the rogue-like ignore command, '^d', gives 'd' which clashes with the
+ * drop command).
+ */
+#define UN_KTRL_CAP(X) \
+	((X) + 64)
+
+/**
  * Keyset mappings for various keys.
  */
 #define ARROW_DOWN    0x80
