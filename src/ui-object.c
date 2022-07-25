@@ -624,9 +624,13 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 	unsigned n;
 
-	/* Hack - Only shift the command key if it actually needs to be shifted. */
+	/*
+	 * Hack - Only shift the command key if it actually needs to be shifted.
+	 * Because UN_KTRL('ctrl-d') (i.e. rogue-like ignore command) gives 'd'
+	 * which is the drop command in both keysets, use UN_KTRL_CAP().
+	 */
 	if (ch < 0x20)
-		ch = UN_KTRL(ch);
+		ch = UN_KTRL_CAP(ch);
 
 	/* The inscription to look for */
 	verify_inscrip[1] = ch;
@@ -714,11 +718,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				return true;
 			}
 
-			cmdkey = cmd_lookup_key(cmd, mode);
-
-			/* Hack - Only shift the command key if it actually needs to be. */
-			if (cmdkey < 0x20)
-				cmdkey = UN_KTRL(cmdkey);
+			cmdkey = cmd_lookup_key_unktrl(cmd, mode);
 
 			/* Check the special tags */
 			if ((s[1] == cmdkey) && (s[2] == tag)) {

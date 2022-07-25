@@ -454,8 +454,12 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode)
 {
 	unsigned char c = cmd_lookup_key(lookup_cmd, mode);
 
+	/*
+	 * Because UN_KTRL('ctrl-d') (i.e. rogue-like ignore command) gives 'd'
+	 * which is the drop command in both keysets, use UN_KTRL_CAP().
+	 */
 	if (c < 0x20)
-		c = UN_KTRL(c);
+		c = UN_KTRL_CAP(c);
 
 	return c;
 }
