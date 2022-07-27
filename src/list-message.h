@@ -2,7 +2,7 @@
  * \file list-message.h
  * \brief List of message types
  *
- * sound - the name of the entry in sound.cfg (redundant)
+ * sound - the name, case-insensitive, of the entry in sound.prf (redundant)
  */
 
 /* id					sound */
