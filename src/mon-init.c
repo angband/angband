@@ -584,7 +584,7 @@ static enum parser_error parse_mon_spell_name(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	int index;
 	s->next = h;
-	if (grab_name("monster spell", name, r_info_spell_flags, N_ELEMENTS(r_info_spell_flags), &index))
+	if (grab_name("monster spell", name, r_info_spell_flags, N_ELEMENTS(r_info_spell_flags) - 1, &index))
 		return PARSE_ERROR_INVALID_SPELL_NAME;
 	s->index = index;
 	s->level = mem_zalloc(sizeof(*(s->level)));
@@ -1422,7 +1422,7 @@ static enum parser_error parse_monster_msg_vis(struct parser *p) {
 
 	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (grab_name("monster spell", spell, r_info_spell_flags,
-			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			N_ELEMENTS(r_info_spell_flags) - 1, &s_idx))
 			return PARSE_ERROR_INVALID_SPELL_NAME;
 	add_alternate_spell_message(r, s_idx, MON_ALTMSG_SEEN, msg);
 
@@ -1438,7 +1438,7 @@ static enum parser_error parse_monster_msg_invis(struct parser *p) {
 
 	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (grab_name("monster spell", spell, r_info_spell_flags,
-			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			N_ELEMENTS(r_info_spell_flags) - 1, &s_idx))
 			return PARSE_ERROR_INVALID_SPELL_NAME;
 	add_alternate_spell_message(r, s_idx, MON_ALTMSG_UNSEEN, msg);
 
@@ -1454,7 +1454,7 @@ static enum parser_error parse_monster_msg_miss(struct parser *p) {
 
 	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (grab_name("monster spell", spell, r_info_spell_flags,
-			N_ELEMENTS(r_info_spell_flags), &s_idx))
+			N_ELEMENTS(r_info_spell_flags) - 1, &s_idx))
 			return PARSE_ERROR_INVALID_SPELL_NAME;
 	add_alternate_spell_message(r, s_idx, MON_ALTMSG_MISS, msg);
 
