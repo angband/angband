@@ -6,4 +6,5 @@ TESTPROGS += player/birth \
              player/inven-wield \
              player/pathfind \
              player/playerstat \
+             player/timed \
              player/util

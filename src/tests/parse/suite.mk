@@ -12,6 +12,7 @@ TESTPROGS += parse/a-info \
 	parse/names \
 	parse/p-info \
 	parse/parse \
+	parse/ptimed \
 	parse/r-info \
 	parse/readstore \
 	parse/v-info \
