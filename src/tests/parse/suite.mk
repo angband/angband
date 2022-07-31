@@ -14,6 +14,7 @@ TESTPROGS += parse/a-info \
 	parse/k-info \
 	parse/lore \
 	parse/mbase \
+	parse/mspell \
 	parse/names \
 	parse/objact \
 	parse/objbase \
