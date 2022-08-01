@@ -294,11 +294,11 @@ void do_cmd_open(struct command *cmd)
 	/* Monster */
 	mon = square_monster(cave, grid);
 	if (mon) {
-		/* Mimics surprise the player */
-		if (monster_is_mimicking(mon)) {
+		/* Camouflaged monsters surprise the player */
+		if (monster_is_camouflaged(mon)) {
 			become_aware(cave, mon);
 
-			/* Mimic wakes up and becomes aware*/
+			/* Camouflaged monster wakes up and becomes aware */
 			monster_wake(mon, false, 100);
 		} else {
 			/* Message */
@@ -1028,10 +1028,10 @@ void move_player(int dir, bool disarm)
 	/* Many things can happen on movement */
 	if (m_idx > 0) {
 		/* Attack monsters */
-		if (monster_is_mimicking(mon)) {
+		if (monster_is_camouflaged(mon)) {
 			become_aware(cave, mon);
 
-			/* Mimic wakes up and becomes aware*/
+			/* Camouflaged monster wakes up and becomes aware */
 			monster_wake(mon, false, 100);
 		} else {
 			py_attack(player, grid);
@@ -1138,8 +1138,8 @@ static bool do_cmd_walk_test(struct loc grid)
 	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	/* Allow attack on visible monsters if unafraid */
-	if (m_idx > 0 && monster_is_visible(mon) &&	!monster_is_mimicking(mon)) {
+	/* Allow attack on obvious monsters if unafraid */
+	if (m_idx > 0 && monster_is_obvious(mon)) {
 		/* Handle player fear */
 		if (player_of_has(player, OF_AFRAID)) {
 			/* Extract monster name (or "it") */

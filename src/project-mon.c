@@ -1074,7 +1074,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		delete_monster_idx(m_idx);
 
 		mon_died = true;
-	} else if (!monster_is_mimicking(mon)) {
+	} else if (!monster_is_camouflaged(mon)) {
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
 			add_monster_message(mon, hurt_msg, false);
@@ -1360,7 +1360,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	context.lore = lore;
 
 	/* See visible monsters */
-	if (monster_is_mimicking(mon)) {
+	if (monster_is_camouflaged(mon)) {
 		if (monster_is_in_view(mon)) {
 			seen = true;
 			context.seen = true;
