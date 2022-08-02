@@ -306,21 +306,44 @@ static int test_color(void *state) {
 	color = message_type_color(MSG_HIT);
 	eq(color, (COLOUR_RED));
 
+	message_color_define(MSG_MISS, (COLOUR_GREEN));
+	color = message_type_color(MSG_MISS);
+	eq(color, (COLOUR_GREEN));
+
+	message_add("msg0", MSG_MISS);
+	color = message_color(0);
+	eq(color, (COLOUR_GREEN));
+
 	message_add("msg1", MSG_HIT);
 	color = message_color(0);
 	eq(color, (COLOUR_RED));
+	color = message_color(1);
+	eq(color, (COLOUR_GREEN));
 
 	message_add("msg2", MSG_GENERIC);
 	color = message_color(0);
 	eq(color, (COLOUR_WHITE));
 	color = message_color(1);
 	eq(color, (COLOUR_RED));
+	color = message_color(2);
+	eq(color, (COLOUR_GREEN));
 
 	message_color_define(MSG_HIT, (COLOUR_L_BLUE));
 	color = message_color(0);
 	eq(color, (COLOUR_WHITE));
 	color = message_color(1);
 	eq(color, (COLOUR_L_BLUE));
+	color = message_color(2);
+	eq(color, (COLOUR_GREEN));
+
+	message_color_define(MSG_MISS, (COLOUR_VIOLET));
+	color = message_color(0);
+	eq(color, (COLOUR_WHITE));
+	color = message_color(1);
+	eq(color, (COLOUR_L_BLUE));
+	color = message_color(2);
+	eq(color, (COLOUR_VIOLET));
+
 
 	ok;
 }
