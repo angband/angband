@@ -47,7 +47,7 @@ effect:CURE:AFRAID
 effect:CURE:IMAGE
 effect:TIMED_INC:OPP_CONF
 dice:12+6d10
-desc:restores 10SP, cures confusion and hallucination, removes fear and grants you temporary resistance to confusion
+desc:restores 20SP, cures confusion and hallucination, removes fear and grants you temporary resistance to confusion
 
 name:CURE_BODY
 aim:0
@@ -755,8 +755,8 @@ msg:{name} glow{s} many colors...
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
-dice:50+1d50
 effect:SET_VALUE
+dice:50+1d50
 effect:TIMED_INC:SHERO
 effect:TIMED_INC:BLESSED
 effect:TIMED_INC:OPP_ACID
