@@ -5,9 +5,9 @@
 
 # Descriptions, messages and message types can be edited without bad effects.
 # Changing fail may have unpredictable results.
-# Changing the name, reordering, or adding whole new entries will severely
-# disrupt the game, and should only be done when list-player-timed.h
-# (and other code) is also  being changed, and the game recompiled.
+# Changing the name or adding whole new entries will severely disrupt the game.
+# It should only be done when list-player-timed.h (and other code) is also being
+# changed, and the game recompiled.
 # Changing a resist line will have to match to one of the hard-coded elements
 # from list-elements.h; currently, those resist lines are used to filter out
 # unnecessary messages when timed effects lapse and to affect selection of
@@ -21,15 +21,41 @@
 # activations.
 
 # Fields:
-# name - the effect name
+# name - the effect name; the name must match the first argument to one of the
+#        TMD() macros in list-player-timed.h
 # desc - the effect description
-# grade - the message on increasing a grade of the effect.  Note that most
-#         effects only have two grades (on and off); for these, the message
-#         is just the message on beginning the effect
+# grade - specify a grade for this effect; most effects only have two grades:
+#         off (implicit for all effects, maximum of 0, no transition messages)
+#         and on (the one grade specified for the effect in this file)
+#         param one: color used on the status line for this effect when in this
+#             grade; may be a one letter color code or the full color name
+#             (case insensitive)
+#         param two: is the maximum for this grade; to work properly must be
+#             greater than zero, less than 32768, and greater than the maximum
+#             for any previous grades specified for this effect
+#         param three: is the name of the grade and will be shown in the status
+#             line; use a one character long name for the grade to suppress
+#             showing the timed effect in the status line when in that grade
+#         param four: is the message to display when the effect enters this
+#             grade from a lower grade; no message will be displayed if the
+#             message is one character long
+#         param five (optional): is the message to display when the effect
+#             enters this grade from a higher grade; no message will be
+#             displayed if this parameter is omitted
 # on-end - the message on ending the effect
 # on-increase - the message on the effect increasing
 # on-decrease - the message on the effect decreasing
-# msgt - the message type for this effect
+# msgt - the message type to use for the change of grade, on-increase, and
+#        on-decrease messages for this effect; the type must either match
+#        (case-insensitive) the first argument to one of the MSG() macros in
+#        list-message.h or be an unsigned integer less than MSG_MAX which is
+#        the index of the message type to use within list-message.h; on-end
+#        messages always use the RECOVER message type; for the textui user
+#        interface, the message type affects the message color (configured
+#        globally by lib/customize/message.prf; also configurable by
+#        preferences in the user's files) and the sound played when the
+#        message is displayed (configured globally by lib/customize/sound.prf;
+#        also configurable by preferences in the user's files)
 # fail - determines what makes the effect fail.
 #        param one:
 #          1 - object flag
@@ -37,9 +63,14 @@
 #          3 - vulnerability
 #          4 - player flag
 #        param two:
-#          the actual flag that causes the failure
+#          the actual flag that causes the failure; for an object flag, the
+#          flag must match the first argument to one of the OF() macros in
+#          list-object-flags.h; for a player flag, the flag must match the
+#          first argument to one of the PF() macros in list-player-flags.h; for
+#          a resist or vulnerability, the flag must match the argument to one
+#          of the ELEM() macros in list-elements.h
 # resist - (optional) when this timed property is active, the recipient gains
-#         a temporary resistance to the named element
+#          a temporary resistance to the named element
 # brand - (optional) when this timed property is active, the recipient gains
 #         the given brand (by its code in brand.txt) on equipped weapons; when
 #         there's no brand line, the timed property does not induce a brand
@@ -47,12 +78,12 @@
 #        the given slay (by its code in slay.txt) on equipped weapons; when
 #        there's no slay line, the timed property does not induce a slay
 # flag-synonym - (optional) indicate that this timed property is (largely)
-#         synonymous to the object property of type flag in
-#         object_property.txt with the code given by the first parameter; if
-#         the second parameter is not zero, this timed property is an exact
-#         synonym, except for duration; if the second parameter is zero, the
-#         timed property has other effects that are not implied by the named
-#         object property
+#                synonymous to the object property of type flag in
+#                object_property.txt with the code given by the first parameter;
+#                if the second parameter is not zero, this timed property is an
+#                exact synonym, except for duration; if the second parameter is
+#                zero, the timed property has other effects that are not
+#                implied by the named object property
 
 name:FAST
 desc:haste
