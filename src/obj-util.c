@@ -234,8 +234,13 @@ void flavor_init(void)
 		/* Skip "empty" objects */
 		if (!kind->name) continue;
 
-		/* No flavor yields aware */
-		if (!kind->flavor) kind->aware = true;
+		/*
+		 * No flavor and not kind that that only has one instance,
+		 * an artifact, yields aware
+		 */
+		if (!kind->flavor && kind->kidx < z_info->ordinary_kind_max) {
+			kind->aware = true;
+		}
 	}
 }
 
