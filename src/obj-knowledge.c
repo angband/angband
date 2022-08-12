@@ -1122,8 +1122,17 @@ void player_know_object(struct player *p, struct object *obj)
 		obj->known->ego = obj->ego;
 	}
 
-	if (object_non_curse_runes_known(obj) && tval_is_jewelry(obj)) {
-		seen = (obj->artifact) ? true : obj->kind->everseen;
+	if (tval_is_jewelry(obj)) {
+		if (object_non_curse_runes_known(obj)) {
+			seen = (obj->artifact) ? true : obj->kind->everseen;
+			object_flavor_aware(p, obj);
+		}
+	} else if (obj->kind->kidx >= z_info->ordinary_kind_max) {
+		/*
+		 * Become aware if it is a special artifact that isn't
+		 * jewelry.
+		 */
+		seen = true;
 		object_flavor_aware(p, obj);
 	}
 
