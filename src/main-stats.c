@@ -744,10 +744,6 @@ static int stats_dump_monsters(void)
 	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
 	if (err) return err;
 
-	strnfmt(sql_buf, 256, "INSERT INTO monster_base_spell_flags_map VALUES (?,?);");
-	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
-	if (err) return err;
-
 	for (base = rb_info, idx = 0; base; base = base->next, idx++) {
 		for (flag = rf_next(base->flags, FLAG_START);
 			flag != FLAG_END;
@@ -760,22 +756,9 @@ static int stats_dump_monsters(void)
 			STATS_DB_STEP_RESET(flags_stmt)
 		}
 
-		for (flag = rsf_next(base->spell_flags, FLAG_START);
-			flag != FLAG_END;
-			flag = rsf_next(base->spell_flags, flag + 1)) {
-			err = sqlite3_bind_text(spell_flags_stmt, 1, 
-				base->name, strlen(base->name), 
-				SQLITE_STATIC);
-			if (err) return err;
-			err = sqlite3_bind_int(spell_flags_stmt, 2, flag);
-			if (err) return err;
-			STATS_DB_STEP_RESET(spell_flags_stmt)
-		}
-		
 	}
 
 	STATS_DB_FINALIZE(flags_stmt)
-	STATS_DB_FINALIZE(spell_flags_stmt)
 
 	return SQLITE_OK;
 }
@@ -976,7 +959,6 @@ static int stats_dump_info(void)
  *     ego_mods_map -- map between egos and modifiers, with minima
  *     ego_type_map -- map between egos and tvals/svals
  *     monster_base_flags_map -- map between monster bases and monster flags
- *     monster_base_spell_flags_map -- map between monster bases and monster spell flags
  *     monster_info -- dump of monsters.txt
  *     monster_flags_map -- map between monsters and monster flags
  *     monster_spell_flags_map -- map between monsters and monster spell flags
@@ -1041,9 +1023,6 @@ static bool stats_prep_db(void)
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_base_flags_map(rb_idx INT, r_flag INT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE monster_base_spell_flags_map(rb_idx INT, rs_flag INT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, ac INT, sleep INT, speed INT, mexp INT, hp INT, freq_innate INT, freq_spell INT, level INT, rarity INT, name TEXT, base TEXT);");

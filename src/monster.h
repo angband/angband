@@ -220,15 +220,11 @@ struct monster_altmsg {
 struct monster_base {
 	struct monster_base *next;
 
-	char *name;						/* Name for recognition in code */
-	char *text;						/* In-game name */
-
+	char *name;			/* Name for recognition in code */
+	char *text;			/* In-game name */
 	bitflag flags[RF_SIZE];         /* Flags */
-	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
-	
-	wchar_t d_char;					/* Default monster character */
-
-	struct monster_pain *pain;				/* Pain messages */
+	wchar_t d_char;			/* Default monster character */
+	struct monster_pain *pain;	/* Pain messages */
 };
 
 
