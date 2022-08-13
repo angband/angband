@@ -63,7 +63,6 @@ static void fill_in_monster_base(struct monster_base *base)
 	base->name = name;
 	base->text = text;
 	rf_wipe(base->flags);
-	rsf_wipe(base->spell_flags);
 	base->d_char = L'b';
 	base->pain = NULL;
 }

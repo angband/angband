@@ -754,7 +754,6 @@ static struct monster_base TEST_DATA test_rb_info = {
 	.name = "townsfolk",
 	.text = "Townsfolk",
 	.flags = "\0\0\0\0\0\0\0\0\0\0\0",
-	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
 	.d_char = 116,
 	.pain = NULL,
 	
