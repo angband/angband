@@ -500,14 +500,13 @@ int lookup_sval(int tval, const char *name)
 		struct object_kind *kind = &k_info[k];
 		char cmp_name[1024];
 
-		if (!kind || !kind->name) continue;
+		if (!kind || !kind->name || kind->tval != tval) continue;
 
 		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, kind->name, 0,
 							 false);
 
 		/* Found a match */
-		if (kind->tval == tval && !my_stricmp(cmp_name, name))
-			return kind->sval;
+		if (!my_stricmp(cmp_name, name)) return kind->sval;
 	}
 
 	return -1;
