@@ -401,8 +401,8 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 /**
  * Create any missing directories. We create only those dirs which may be
- * empty (user/, save/, scores/, info/, help/). The others are assumed 
- * to contain required files and therefore must exist at startup 
+ * empty (user/, save/, scores/, info/, help/). The others are assumed
+ * to contain required files and therefore must exist at startup
  * (edit/, pref/, file/, xtra/).
  *
  * ToDo: Only create the directories when actually writing files.
@@ -923,9 +923,11 @@ static enum parser_error parse_player_prop_desc(struct parser *p) {
 static enum parser_error parse_player_prop_name(struct parser *p) {
 	const char *desc = parser_getstr(p, "desc");
 	struct embryo_player_ability *embryo = parser_priv(p);
-	if (!embryo)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	if (!embryo) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	string_free(embryo->ability.name);
 	embryo->ability.name = string_make(desc);
 	return PARSE_ERROR_NONE;
 }
@@ -1102,10 +1104,12 @@ struct names_parse {
 };
 
 static enum parser_error parse_names_section(struct parser *p) {
-	unsigned int section = parser_getint(p, "section");
+	unsigned int section = parser_getuint(p, "section");
 	struct names_parse *s = parser_priv(p);
-	if (s->section >= RANDNAME_NUM_TYPES)
+
+	if (section >= RANDNAME_NUM_TYPES) {
 		return PARSE_ERROR_OUT_OF_BOUNDS;
+	}
 	s->section = section;
 	return PARSE_ERROR_NONE;
 }
@@ -1127,7 +1131,7 @@ struct parser *init_parse_names(void) {
 	struct names_parse *n = mem_zalloc(sizeof *n);
 	n->section = 0;
 	parser_setpriv(p, n);
-	parser_reg(p, "section int section", parse_names_section);
+	parser_reg(p, "section uint section", parse_names_section);
 	parser_reg(p, "word str name", parse_names_word);
 	return p;
 }
@@ -1228,86 +1232,76 @@ static enum parser_error parse_trap_appear(struct parser *p) {
 }
 
 static enum parser_error parse_trap_visibility(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-	char *s;
+	struct trap_kind *t = parser_priv(p);
 	dice_t *dice;
 
-    if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* Get a rewritable string */
-	s = string_make(parser_getstr(p, "visibility"));
-
+	}
 	dice = dice_new();
-	if (!dice_parse_string(dice, s)) {
-		string_free(s);
+	if (!dice_parse_string(dice, parser_getstr(p, "visibility"))) {
 		dice_free(dice);
 		return PARSE_ERROR_NOT_RANDOM;
 	}
 	dice_random_value(dice, &t->power);
-
-	string_free(s);
 	dice_free(dice);
-    return PARSE_ERROR_NONE;
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_flags(struct parser *p) {
-    char *flags;
-    struct trap_kind *t = parser_priv(p);
-    char *s;
+	struct trap_kind *t = parser_priv(p);
+	char *flags, *s;
 
-    if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-    if (!parser_hasval(p, "flags"))
+	}
+	if (!parser_hasval(p, "flags")) {
 		return PARSE_ERROR_NONE;
-    flags = string_make(parser_getstr(p, "flags"));
-
-    s = strtok(flags, " |");
-    while (s) {
+	}
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
 		if (grab_flag(t->flags, TRF_SIZE, trap_flags, s)) {
-			mem_free(flags);
-			return PARSE_ERROR_INVALID_FLAG;
+			break;
 		}
 		s = strtok(NULL, " |");
-    }
-
-    mem_free(flags);
-    return PARSE_ERROR_NONE;
+	}
+	string_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_effect(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect, *new_effect;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* Go to the next vacant effect and set it to the new one  */
+	new_effect = mem_zalloc(sizeof(*new_effect));
 	if (t->effect) {
 		effect = t->effect;
-		while (effect->next)
-			effect = effect->next;
+		while (effect->next) effect = effect->next;
 		effect->next = new_effect;
-	} else
+	} else {
 		t->effect = new_effect;
-
+	}
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
 }
 
 static enum parser_error parse_trap_effect_yx(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	struct effect *effect = t->effect;
+	struct effect *effect;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 	effect->y = parser_getint(p, "y");
 	effect->x = parser_getint(p, "x");
@@ -1317,30 +1311,30 @@ static enum parser_error parse_trap_effect_yx(struct parser *p) {
 
 static enum parser_error parse_trap_dice(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	dice_t *dice = NULL;
-	struct effect *effect = t->effect;
-	const char *string = NULL;
+	struct effect *effect;
+	dice_t *dice;
+	const char *string;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
-
-	if (dice == NULL)
+	if (dice == NULL) {
 		return PARSE_ERROR_INVALID_DICE;
+	}
 
 	string = parser_getstr(p, "dice");
-
 	if (dice_parse_string(dice, string)) {
+		dice_free(effect->dice);
 		effect->dice = dice;
-	}
-	else {
+	} else {
 		dice_free(dice);
 		return PARSE_ERROR_INVALID_DICE;
 	}
@@ -1350,81 +1344,84 @@ static enum parser_error parse_trap_dice(struct parser *p) {
 
 static enum parser_error parse_trap_expr(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	struct effect *effect = t->effect;
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
+	struct effect *effect;
+	expression_t *expression;
+	expression_base_value_f function;
 	const char *name;
 	const char *base;
 	const char *expr;
+	enum parser_error result;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (effect->dice == NULL)
+	if (effect->dice == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	name = parser_getsym(p, "name");
 	base = parser_getsym(p, "base");
 	expr = parser_getstr(p, "expr");
 	expression = expression_new();
 
-	if (expression == NULL)
+	if (expression == NULL) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
-
+	}
 	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_BAD_EXPRESSION_STRING;
-
-	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_UNBOUND_EXPRESSION;
-
+	if (expression_add_operations_string(expression, expr) < 0) {
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	} else if (dice_bind_expression(effect->dice, name, expression) < 0) {
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	} else {
+		result = PARSE_ERROR_NONE;
+	}
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
 
-	return PARSE_ERROR_NONE;
+	return result;
 }
 
 static enum parser_error parse_trap_effect_xtra(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect, *new_effect;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* Go to the next vacant effect and set it to the new one  */
+	new_effect = mem_zalloc(sizeof(*new_effect));
 	if (t->effect_xtra) {
 		effect = t->effect_xtra;
-		while (effect->next)
-			effect = effect->next;
+		while (effect->next) effect = effect->next;
 		effect->next = new_effect;
-	} else
+	} else {
 		t->effect_xtra = new_effect;
-
+	}
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
 }
 
 static enum parser_error parse_trap_effect_yx_xtra(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	struct effect *effect = t->effect;
+	struct effect *effect;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect_xtra;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 	effect->y = parser_getint(p, "y");
 	effect->x = parser_getint(p, "x");
@@ -1434,30 +1431,30 @@ static enum parser_error parse_trap_effect_yx_xtra(struct parser *p) {
 
 static enum parser_error parse_trap_dice_xtra(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	dice_t *dice = NULL;
-	struct effect *effect = t->effect_xtra;
-	const char *string = NULL;
+	struct effect *effect;
+	dice_t *dice;
+	const char *string;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect_xtra;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
-
-	if (dice == NULL)
+	if (dice == NULL) {
 		return PARSE_ERROR_INVALID_DICE;
+	}
 
 	string = parser_getstr(p, "dice");
-
 	if (dice_parse_string(dice, string)) {
+		dice_free(effect->dice);
 		effect->dice = dice;
-	}
-	else {
+	} else {
 		dice_free(dice);
 		return PARSE_ERROR_INVALID_DICE;
 	}
@@ -1467,106 +1464,120 @@ static enum parser_error parse_trap_dice_xtra(struct parser *p) {
 
 static enum parser_error parse_trap_expr_xtra(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
-	struct effect *effect = t->effect_xtra;
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
+	struct effect *effect;
+	expression_t *expression;
+	expression_base_value_f function;
 	const char *name;
 	const char *base;
 	const char *expr;
+	enum parser_error result;
 
-	if (!t)
+	if (!t) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = t->effect_xtra;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (effect->dice == NULL)
+	if (effect->dice == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	name = parser_getsym(p, "name");
 	base = parser_getsym(p, "base");
 	expr = parser_getstr(p, "expr");
 	expression = expression_new();
 
-	if (expression == NULL)
+	if (expression == NULL) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
-
+	}
 	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_BAD_EXPRESSION_STRING;
-
-	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_UNBOUND_EXPRESSION;
+	if (expression_add_operations_string(expression, expr) < 0) {
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	} else if (dice_bind_expression(effect->dice, name, expression) < 0) {
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	} else {
+		result = PARSE_ERROR_NONE;
+	}
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
 
-	return PARSE_ERROR_NONE;
+	return result;
 }
 
 static enum parser_error parse_trap_save_flags(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-	char *s = string_make(parser_getstr(p, "flags"));
-	char *u;
-	assert(t);
+	struct trap_kind *t = parser_priv(p);
+	char *s, *u;
 
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	s = string_make(parser_getstr(p, "flags"));
 	u = strtok(s, " |");
 	while (u) {
-		bool found = false;
-		if (!grab_flag(t->save_flags, OF_SIZE, list_obj_flag_names, u))
-			found = true;
-		if (!found)
+		if (grab_flag(t->save_flags, OF_SIZE, list_obj_flag_names, u)) {
 			break;
+		}
 		u = strtok(NULL, " |");
 	}
-	mem_free(s);
+	string_free(s);
 	return u ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_desc(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-    assert(t);
+	struct trap_kind *t = parser_priv(p);
 
-    t->text = string_append(t->text, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	t->text = string_append(t->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_msg(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-    assert(t);
+	struct trap_kind *t = parser_priv(p);
 
-    t->msg = string_append(t->msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	t->msg = string_append(t->msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_msg_good(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-    assert(t);
+	struct trap_kind *t = parser_priv(p);
 
-    t->msg_good = string_append(t->msg_good, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	t->msg_good = string_append(t->msg_good, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_msg_bad(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-    assert(t);
+	struct trap_kind *t = parser_priv(p);
 
-    t->msg_bad = string_append(t->msg_bad, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	t->msg_bad = string_append(t->msg_bad, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_msg_xtra(struct parser *p) {
-    struct trap_kind *t = parser_priv(p);
-    assert(t);
+	struct trap_kind *t = parser_priv(p);
 
-    t->msg_xtra = string_append(t->msg_xtra, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	t->msg_xtra = string_append(t->msg_xtra, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_trap(void) {
@@ -1601,7 +1612,7 @@ static errr run_parse_trap(struct parser *p) {
 static errr finish_parse_trap(struct parser *p) {
 	struct trap_kind *t, *n;
 	int tidx;
-	
+
 	/* Scan the list for the max id */
 	z_info->trap_max = 0;
 	t = parser_priv(p);
@@ -1698,8 +1709,10 @@ static enum parser_error parse_feat_mimic(struct parser *p) {
 	const char *mimic_feat = parser_getstr(p, "feat");
 	struct feature *f = parser_priv(p);
 
-	if (!f)
+	if (!f) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	string_free(f->mimic);
 	f->mimic = string_make(mimic_feat);
 	return PARSE_ERROR_NONE;
 }
@@ -1715,29 +1728,25 @@ static enum parser_error parse_feat_priority(struct parser *p) {
 }
 
 static enum parser_error parse_feat_flags(struct parser *p) {
-	char *flags;
 	struct feature *f = parser_priv(p);
-	char *s;
+	char *flags, *s;
 
-	if (!f)
+	if (!f) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	if (!parser_hasval(p, "flags"))
+	}
+	if (!parser_hasval(p, "flags")) {
 		return PARSE_ERROR_NONE;
+	}
 	flags = string_make(parser_getstr(p, "flags"));
-
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(f->flags, TF_SIZE, terrain_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad f-flag: %s", s);
-			return PARSE_ERROR_INVALID_FLAG;
+			break;
 		}
 		s = strtok(NULL, " |");
 	}
-
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
+	string_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_info(struct parser *p) {
@@ -1751,49 +1760,61 @@ static enum parser_error parse_feat_info(struct parser *p) {
 }
 
 static enum parser_error parse_feat_desc(struct parser *p) {
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
 
-    f->desc = string_append(f->desc, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	f->desc = string_append(f->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_walk_msg(struct parser *p) {
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
 
-    f->walk_msg = string_append(f->walk_msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	f->walk_msg = string_append(f->walk_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_run_msg(struct parser *p) {
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
 
-    f->run_msg = string_append(f->run_msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	f->run_msg = string_append(f->run_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_hurt_msg(struct parser *p) {
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
 
-    f->hurt_msg = string_append(f->hurt_msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	f->hurt_msg = string_append(f->hurt_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_die_msg(struct parser *p) {
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
 
-    f->die_msg = string_append(f->die_msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	f->die_msg = string_append(f->die_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_confused_msg(struct parser *p) {
 	struct feature *f = parser_priv(p);
-	assert(f);
 
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
 	f->confused_msg =
 		string_append(f->confused_msg, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
@@ -1801,8 +1822,10 @@ static enum parser_error parse_feat_confused_msg(struct parser *p) {
 
 static enum parser_error parse_feat_look_prefix(struct parser *p) {
 	struct feature *f = parser_priv(p);
-	assert(f);
 
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
 	f->look_prefix =
 		string_append(f->look_prefix, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
@@ -1810,26 +1833,26 @@ static enum parser_error parse_feat_look_prefix(struct parser *p) {
 
 static enum parser_error parse_feat_look_in_preposition(struct parser *p) {
 	struct feature *f = parser_priv(p);
-	assert(f);
 
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
 	f->look_in_preposition =
 		string_append(f->look_in_preposition, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_feat_resist_flag(struct parser *p) {
-	int flag;
-    struct feature *f = parser_priv(p);
-    assert(f);
+	struct feature *f = parser_priv(p);
+	int flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
 
-	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
-
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
 	if (flag == FLAG_END) {
 		return PARSE_ERROR_INVALID_FLAG;
-	} else {
-		f->resist_flag = flag;
 	}
-
+	f->resist_flag = flag;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1842,11 +1865,11 @@ struct parser *init_parse_feat(void) {
 	parser_reg(p, "priority uint priority", parse_feat_priority);
 	parser_reg(p, "flags ?str flags", parse_feat_flags);
 	parser_reg(p, "info int shopnum int dig", parse_feat_info);
-    parser_reg(p, "desc str text", parse_feat_desc);
-    parser_reg(p, "walk-msg str text", parse_feat_walk_msg);
-    parser_reg(p, "run-msg str text", parse_feat_run_msg);
-    parser_reg(p, "hurt-msg str text", parse_feat_hurt_msg);
-    parser_reg(p, "die-msg str text", parse_feat_die_msg);
+	parser_reg(p, "desc str text", parse_feat_desc);
+	parser_reg(p, "walk-msg str text", parse_feat_walk_msg);
+	parser_reg(p, "run-msg str text", parse_feat_run_msg);
+	parser_reg(p, "hurt-msg str text", parse_feat_hurt_msg);
+	parser_reg(p, "die-msg str text", parse_feat_die_msg);
 	parser_reg(p, "confused-msg str text", parse_feat_confused_msg);
 	parser_reg(p, "look-prefix str text", parse_feat_look_prefix);
 	parser_reg(p, "look-in-preposition str text", parse_feat_look_in_preposition);
@@ -1944,32 +1967,30 @@ static enum parser_error parse_body_body(struct parser *p) {
 
 static enum parser_error parse_body_slot(struct parser *p) {
 	struct player_body *b = parser_priv(p);
-	struct equip_slot *slot = b->slots;
-	char *slot_type;
+	struct equip_slot *slot;
 	int n;
 
-	if (!b)
+	if (!b) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* Go to the last valid slot, then allocate a new one */
+	slot = b->slots;
 	if (!slot) {
 		b->slots = mem_zalloc(sizeof(struct equip_slot));
 		slot = b->slots;
 	} else {
-		while (slot->next)
-			slot = slot->next;
+		while (slot->next) slot = slot->next;
 		slot->next = mem_zalloc(sizeof(struct equip_slot));
 		slot = slot->next;
 	}
 
-	slot_type = string_make(parser_getsym(p, "slot"));
-	n = lookup_flag(slots, slot_type);
-	if (!n)
+	n = lookup_flag(slots, parser_getsym(p, "slot"));
+	if (!n) {
 		return PARSE_ERROR_INVALID_FLAG;
+	}
 	slot->type = n;
 	slot->name = string_make(parser_getsym(p, "name"));
 	b->count++;
-	mem_free(slot_type);
 	return PARSE_ERROR_NONE;
 }
 
@@ -2077,7 +2098,7 @@ static enum parser_error parse_history_chart(struct parser *p) {
 	struct history_chart *c;
 	struct history_entry *e = mem_zalloc(sizeof *e);
 	unsigned int idx = parser_getuint(p, "chart");
-	
+
 	if (!(c = findchart(oc, idx))) {
 		c = mem_zalloc(sizeof *c);
 		c->next = oc;
@@ -2361,7 +2382,7 @@ static enum parser_error parse_p_race_obj_flags(struct parser *p) {
 			break;
 		s = strtok(NULL, " |");
 	}
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -2381,7 +2402,7 @@ static enum parser_error parse_p_race_play_flags(struct parser *p) {
 			break;
 		s = strtok(NULL, " |");
 	}
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -2409,7 +2430,7 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 		t = strtok(NULL, " |");
 	}
 
-	mem_free(s);
+	string_free(s);
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
@@ -2497,19 +2518,24 @@ static enum parser_error parse_realm_name(struct parser *p) {
 static enum parser_error parse_realm_stat(struct parser *p) {
 	struct magic_realm *realm = parser_priv(p);
 
+	if (!realm) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
 	realm->stat = stat_name_to_idx(parser_getsym(p, "stat"));
-	if (realm->stat < 0)
+	if (realm->stat < 0) {
 		return PARSE_ERROR_INVALID_SPELL_STAT;
-
+	}
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_realm_verb(struct parser *p) {
 	const char *verb = parser_getstr(p, "verb");
 	struct magic_realm *realm = parser_priv(p);
-	if (!realm)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	if (!realm) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	string_free(realm->verb);
 	realm->verb = string_make(verb);
 	return PARSE_ERROR_NONE;
 }
@@ -2517,9 +2543,11 @@ static enum parser_error parse_realm_verb(struct parser *p) {
 static enum parser_error parse_realm_spell_noun(struct parser *p) {
 	const char *spell = parser_getstr(p, "spell");
 	struct magic_realm *realm = parser_priv(p);
-	if (!realm)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	if (!realm) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	string_free(realm->spell_noun);
 	realm->spell_noun = string_make(spell);
 	return PARSE_ERROR_NONE;
 }
@@ -2527,9 +2555,11 @@ static enum parser_error parse_realm_spell_noun(struct parser *p) {
 static enum parser_error parse_realm_book_noun(struct parser *p) {
 	const char *book = parser_getstr(p, "book");
 	struct magic_realm *realm = parser_priv(p);
-	if (!realm)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	if (!realm) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	string_free(realm->book_noun);
 	realm->book_noun = string_make(book);
 	return PARSE_ERROR_NONE;
 }
@@ -2686,7 +2716,7 @@ static enum parser_error parse_shape_obj_flags(struct parser *p) {
 			break;
 		s = strtok(NULL, " |");
 	}
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -2706,7 +2736,7 @@ static enum parser_error parse_shape_play_flags(struct parser *p) {
 			break;
 		s = strtok(NULL, " |");
 	}
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -2736,42 +2766,42 @@ static enum parser_error parse_shape_values(struct parser *p) {
 		t = strtok(NULL, " |");
 	}
 
-	mem_free(s);
+	string_free(s);
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_shape_effect(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*effect));
+	struct effect *effect, *new_effect;
 
-	if (!shape)
+	if (!shape) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* Go to the next vacant effect and set it to the new one  */
+	new_effect = mem_zalloc(sizeof(*effect));
 	if (shape->effect) {
 		effect = shape->effect;
-		while (effect->next)
-			effect = effect->next;
+		while (effect->next) effect = effect->next;
 		effect->next = new_effect;
-	} else
+	} else {
 		shape->effect = new_effect;
-
+	}
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
 }
 
 static enum parser_error parse_shape_effect_yx(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
-	struct effect *effect = shape->effect;
+	struct effect *effect;
 
-	if (!shape)
+	if (!shape) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = shape->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 	effect->y = parser_getint(p, "y");
 	effect->x = parser_getint(p, "x");
@@ -2781,30 +2811,30 @@ static enum parser_error parse_shape_effect_yx(struct parser *p) {
 
 static enum parser_error parse_shape_dice(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
-	struct effect *effect = shape->effect;
-	dice_t *dice = NULL;
-	const char *string = NULL;
+	struct effect *effect;
+	dice_t *dice;
+	const char *string;
 
-	if (!shape)
+	if (!shape) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = shape->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
-
-	if (dice == NULL)
+	if (dice == NULL) {
 		return PARSE_ERROR_INVALID_DICE;
+	}
 
 	string = parser_getstr(p, "dice");
-
 	if (dice_parse_string(dice, string)) {
+		dice_free(effect->dice);
 		effect->dice = dice;
-	}
-	else {
+	} else {
 		dice_free(dice);
 		return PARSE_ERROR_INVALID_DICE;
 	}
@@ -2814,60 +2844,64 @@ static enum parser_error parse_shape_dice(struct parser *p) {
 
 static enum parser_error parse_shape_expr(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
-	struct effect *effect = shape->effect;
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
+	struct effect *effect;
+	expression_t *expression;
+	expression_base_value_f function;
 	const char *name;
 	const char *base;
 	const char *expr;
+	enum parser_error result;
 
-	if (!shape)
+	if (!shape) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = shape->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (effect->dice == NULL)
+	if (effect->dice == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	name = parser_getsym(p, "name");
 	base = parser_getsym(p, "base");
 	expr = parser_getstr(p, "expr");
 	expression = expression_new();
 
-	if (expression == NULL)
+	if (expression == NULL) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
-
+	}
 	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_BAD_EXPRESSION_STRING;
-
-	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_UNBOUND_EXPRESSION;
-
+	if (expression_add_operations_string(expression, expr) < 0) {
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	} else if (dice_bind_expression(effect->dice, name, expression) < 0) {
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	} else {
+		result = PARSE_ERROR_NONE;
+	}
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
 
-	return PARSE_ERROR_NONE;
+	return result;
 }
 
 static enum parser_error parse_shape_effect_msg(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
-	struct effect *effect = shape->effect;
+	struct effect *effect;
 
-	if (!shape)
+	if (!shape) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = shape->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
@@ -2875,13 +2909,14 @@ static enum parser_error parse_shape_effect_msg(struct parser *p) {
 }
 
 static enum parser_error parse_shape_blow(struct parser *p) {
-	const char *verb = parser_getstr(p, "blow");
-	struct player_blow *blow = mem_zalloc(sizeof(*blow));
 	struct player_shape *shape = parser_priv(p);
-	if (!shape)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	struct player_blow *blow;
 
-	blow->name = string_make(verb);
+	if (!shape) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	blow = mem_zalloc(sizeof(*blow));
+	blow->name = string_make(parser_getstr(p, "blow"));
 	blow->next = shape->blows;
 	shape->blows = blow;
 	shape->num_blows++;
@@ -2957,6 +2992,14 @@ static struct file_parser shape_parser = {
  * ------------------------------------------------------------------------
  * Initialize player classes
  * ------------------------------------------------------------------------ */
+
+/*
+ * Used to remember the maximum number of books for the current class and the
+ * maximum number of spells in the current book while parsing so bounds
+ * checking can be done.
+ */
+static int class_max_books = 0;
+static int book_max_spells = 0;
 
 static enum parser_error parse_class_name(struct parser *p) {
 	struct player_class *h = parser_priv(p);
@@ -3118,20 +3161,19 @@ static enum parser_error parse_class_str_mult(struct parser *p) {
 
 static enum parser_error parse_class_title(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	int i;
+	int n, i;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+	n = (int) N_ELEMENTS(c->title);
+	for (i = 0; i < n; i++) {
 		if (!c->title[i]) {
 			c->title[i] = string_make(parser_getstr(p, "title"));
 			break;
 		}
 	}
 
-	if (i >= PY_MAX_LEVEL / 5)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	return PARSE_ERROR_NONE;
+	return (i >= n) ? PARSE_ERROR_TOO_MANY_ENTRIES : PARSE_ERROR_NONE;
 }
 
 static int lookup_option(const char *name)
@@ -3198,13 +3240,12 @@ static enum parser_error parse_class_equip(struct parser *p) {
 			++nind;
 		} else if (!streq(s, "none")) {
 			mem_free(einds);
-			mem_free(eopts);
-			quit_fmt("bad option name: %s", s);
-			return PARSE_ERROR_INVALID_FLAG;
+			string_free(eopts);
+			return PARSE_ERROR_INVALID_OPTION;
 		}
 		s = strtok(NULL, " |");
 	}
-	mem_free(eopts);
+	string_free(eopts);
 
 	si = mem_zalloc(sizeof *si);
 	si->tval = tval;
@@ -3242,7 +3283,7 @@ static enum parser_error parse_class_obj_flags(struct parser *p) {
 		s = strtok(NULL, " |");
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -3263,7 +3304,7 @@ static enum parser_error parse_class_play_flags(struct parser *p) {
 		s = strtok(NULL, " |");
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
@@ -3271,12 +3312,18 @@ static enum parser_error parse_class_magic(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int num_books;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	if (c->magic.books) {
+		/* There's more than one magic directive for this class. */
+		return PARSE_ERROR_REPEATED_DIRECTIVE;
+	}
 	c->magic.spell_first = parser_getuint(p, "first");
 	c->magic.spell_weight = parser_getuint(p, "weight");
 	num_books = parser_getuint(p, "books");
 	c->magic.books = mem_zalloc(num_books * sizeof(struct class_book));
+	class_max_books = num_books;
 	return PARSE_ERROR_NONE;
 }
 
@@ -3284,38 +3331,65 @@ static enum parser_error parse_class_book(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int tval, spells;
 	const char *name, *quality;
+	struct class_book *b;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
 	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval < 0)
+	if (tval < 0) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	c->magic.books[c->magic.num_books].tval = tval;
+	}
+	if (!c->magic.books || c->magic.num_books >= class_max_books) {
+		/*
+		 * This isn't the best description for the !c->magic.books
+		 * case (no magic directive for the class before the book
+		 * directive), but it's better than
+		 * PARSE_ERROR_MISSING_RECORD_HEADER (already used above).
+		 */
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	}
+	assert(c->magic.num_books >= 0);
+	b = &c->magic.books[c->magic.num_books];
+	b->tval = tval;
 
 	quality = parser_getsym(p, "quality");
 	if (streq(quality, "dungeon")) {
-		c->magic.books[c->magic.num_books].dungeon = true;
+		b->dungeon = true;
 	}
 	name = parser_getsym(p, "name");
-	write_book_kind(&c->magic.books[c->magic.num_books], name);
+	write_book_kind(b, name);
 
 	spells = parser_getuint(p, "spells");
-	c->magic.books[c->magic.num_books].spells =
-		mem_zalloc(spells * sizeof(struct class_spell));
-	c->magic.books[c->magic.num_books++].realm =
-		lookup_realm(parser_getstr(p, "realm"));
+	b->spells = mem_zalloc(spells * sizeof(struct class_spell));
+	book_max_spells = spells;
+	b->realm = lookup_realm(parser_getstr(p, "realm"));
+	++c->magic.num_books;
 
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_class_book_graphics(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *b = &c->magic.books[c->magic.num_books - 1];
-	struct object_kind *k = lookup_kind(b->tval, b->sval);
 	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
+	struct class_book *b;
+	struct object_kind *k;
 
+	if (!c) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	b = &c->magic.books[c->magic.num_books - 1];
+	k = lookup_kind(b->tval, b->sval);
+	assert(k);
 	k->d_char = glyph;
 	if (strlen(color) > 1) {
 		k->d_attr = color_text_to_attr(color);
@@ -3328,11 +3402,24 @@ static enum parser_error parse_class_book_graphics(struct parser *p) {
 
 static enum parser_error parse_class_book_properties(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *b = &c->magic.books[c->magic.num_books - 1];
-	struct object_kind *k = lookup_kind(b->tval, b->sval);
+	struct class_book *b;
+	struct object_kind *k;
 	const char *tmp;
 	int amin, amax;
 
+	if (!c) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	b = &c->magic.books[c->magic.num_books - 1];
+	k = lookup_kind(b->tval, b->sval);
 	assert(k);
 	k->cost = parser_getint(p, "cost");
 	k->alloc_prob = parser_getint(p, "common");
@@ -3349,59 +3436,107 @@ static enum parser_error parse_class_book_properties(struct parser *p) {
 
 static enum parser_error parse_class_spell(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
+	struct class_book *book;
+	struct class_spell *spell;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	book->spells[book->num_spells].realm = book->realm;
-
-	book->spells[book->num_spells].name = string_make(parser_getsym(p, "name"));
-	book->spells[book->num_spells].sidx = c->magic.total_spells;
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.  Use
+		 * this under the assumption that without those, the maximum
+		 * number of spells is zero.
+		 */
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells >= book_max_spells) {
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	}
+	assert(book->spells && book->num_spells >= 0);
+	spell = &book->spells[book->num_spells];
+	spell->realm = book->realm;
+	spell->name = string_make(parser_getsym(p, "name"));
+	spell->sidx = c->magic.total_spells;
 	c->magic.total_spells++;
-	book->spells[book->num_spells].bidx = c->magic.num_books - 1;
-	book->spells[book->num_spells].slevel = parser_getint(p, "level");
-	book->spells[book->num_spells].smana = parser_getint(p, "mana");
-	book->spells[book->num_spells].sfail = parser_getint(p, "fail");
-	book->spells[book->num_spells++].sexp = parser_getint(p, "exp");
+	spell->bidx = c->magic.num_books - 1;
+	spell->slevel = parser_getint(p, "level");
+	spell->smana = parser_getint(p, "mana");
+	spell->sfail = parser_getint(p, "fail");
+	spell->sexp = parser_getint(p, "exp");
+	++book->num_spells;
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_class_effect(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*effect));
+	struct class_book *book;
+	struct class_spell *spell;
+	struct effect *effect, *new_effect;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	/* Go to the next vacant effect and set it to the new one  */
+	new_effect = mem_zalloc(sizeof(*effect));
 	if (spell->effect) {
 		effect = spell->effect;
-		while (effect->next)
-			effect = effect->next;
+		while (effect->next) effect = effect->next;
 		effect->next = new_effect;
-	} else
+	} else {
 		spell->effect = new_effect;
-
+	}
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
 }
 
 static enum parser_error parse_class_effect_yx(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
-	struct effect *effect = spell->effect;
+	struct class_book *book;
+	struct class_spell *spell;
+	struct effect *effect;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = spell->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 	effect->y = parser_getint(p, "y");
 	effect->x = parser_getint(p, "x");
@@ -3411,32 +3546,47 @@ static enum parser_error parse_class_effect_yx(struct parser *p) {
 
 static enum parser_error parse_class_dice(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
-	struct effect *effect = spell->effect;
-	dice_t *dice = NULL;
-	const char *string = NULL;
+	struct class_book *book;
+	struct class_spell *spell;
+	struct effect *effect;
+	dice_t *dice;
+	const char *string;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = spell->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
-
-	if (dice == NULL)
+	if (dice == NULL) {
 		return PARSE_ERROR_INVALID_DICE;
+	}
 
 	string = parser_getstr(p, "dice");
-
 	if (dice_parse_string(dice, string)) {
+		dice_free(effect->dice);
 		effect->dice = dice;
-	}
-	else {
+	} else {
 		dice_free(dice);
 		return PARSE_ERROR_INVALID_DICE;
 	}
@@ -3446,64 +3596,99 @@ static enum parser_error parse_class_dice(struct parser *p) {
 
 static enum parser_error parse_class_expr(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
-	struct effect *effect = spell->effect;
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
+	struct class_book *book;
+	struct class_spell *spell;
+	struct effect *effect;
+	expression_t *expression;
+	expression_base_value_f function;
 	const char *name;
 	const char *base;
 	const char *expr;
+	enum parser_error result;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = spell->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (effect->dice == NULL)
+	if (effect->dice == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	name = parser_getsym(p, "name");
 	base = parser_getsym(p, "base");
 	expr = parser_getstr(p, "expr");
 	expression = expression_new();
 
-	if (expression == NULL)
+	if (expression == NULL) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
-
+	}
 	function = effect_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_BAD_EXPRESSION_STRING;
-
-	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_UNBOUND_EXPRESSION;
+	if (expression_add_operations_string(expression, expr) < 0) {
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	} else if (dice_bind_expression(effect->dice, name, expression) < 0) {
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	} else {
+		result = PARSE_ERROR_NONE;
+	}
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
 
-	return PARSE_ERROR_NONE;
+	return result;
 }
 
 static enum parser_error parse_class_effect_msg(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
-	struct effect *effect = spell->effect;
+	struct class_book *book;
+	struct class_spell *spell;
+	struct effect *effect;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
+	effect = spell->effect;
+	if (effect == NULL) {
 		return PARSE_ERROR_NONE;
-
+	}
 	while (effect->next) effect = effect->next;
 
 	effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
@@ -3512,12 +3697,27 @@ static enum parser_error parse_class_effect_msg(struct parser *p) {
 
 static enum parser_error parse_class_desc(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
-	struct class_spell *spell = &book->spells[book->num_spells - 1];
+	struct class_book *book;
+	struct class_spell *spell;
 
-	if (!c)
+	if (!c) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
+	}
+	if (c->magic.num_books < 1) {
+		/*
+		 * Either missing a magic directive for the class or didn't
+		 * have a book directive after the magic directive.
+		 */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(c->magic.books && c->magic.num_books <= class_max_books);
+	book = &c->magic.books[c->magic.num_books - 1];
+	if (book->num_spells < 1) {
+		/* Missing a spell directive after the book directive. */
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	assert(book->spells && book->num_spells <= book_max_spells);
+	spell = &book->spells[book->num_spells - 1];
 	spell->text = string_append(spell->text, parser_getstr(p, "desc"));
 	return PARSE_ERROR_NONE;
 }
@@ -3614,10 +3814,10 @@ static void cleanup_class(void)
 			mem_free(book->spells);
 		}
 		mem_free(c->magic.books);
-		for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+		for (i = (int) N_ELEMENTS(c->title) - 1; i >= 0; --i) {
 			string_free((char *)c->title[i]);
 		}
-		mem_free((char *)c->name);
+		string_free((char *)c->name);
 		mem_free(c);
 		c = next;
 	}
@@ -3676,11 +3876,13 @@ static enum parser_error parse_flavor_flavor(struct parser *p) {
 }
 
 static enum parser_error parse_flavor_kind(struct parser *p) {
-	flavor_glyph = parser_getchar(p, "glyph");
-	flavor_tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (!flavor_tval)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
 
+	if (tval <= 0) {
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	}
+	flavor_glyph = parser_getchar(p, "glyph");
+	flavor_tval = (unsigned int) tval;
 	return PARSE_ERROR_NONE;
 }
 
@@ -3912,7 +4114,7 @@ static struct init_module *modules[] = {
  * The only input/output in this file should be via event_signal_string().
  * We cannot rely on any particular UI as this part should be UI-agnostic.
  * We also cannot rely on anything else having being initialised into any
- * particlar state.  Which is why you'd be calling this function in the 
+ * particlar state.  Which is why you'd be calling this function in the
  * first place.
  *
  * Old comment, not sure if still accurate:
