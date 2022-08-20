@@ -1011,12 +1011,13 @@ static errr finish_parse_player_prop(struct parser *p) {
 			assert(N_ELEMENTS(list_element_names) < 65536);
 			n = (uint16_t) N_ELEMENTS(list_element_names);
 			for (i = 0; i < n - 1; i++) {
-				char *name = projections[i].name;
+				char *name = string_make(projections[i].name);
 				new->index = i;
 				new->type = string_make(embryo->ability.type);
 				new->desc = string_make(format("%s %s.", embryo->ability.desc, name));
 				my_strcap(name);
 				new->name = string_make(format("%s %s", name, embryo->ability.name));
+				string_free(name);
 				new->value = embryo->ability.value;
 				boundui_cursor = embryo->boundui;
 				while (boundui_cursor) {
