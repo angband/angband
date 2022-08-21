@@ -135,7 +135,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	dummy->base = &kb_info[dummy->tval];
 
 	/* Make the name and index */
-	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
+	strnfmt(mod_name, sizeof(mod_name), "& %s~", name);
 	dummy->name = string_make(mod_name);
 	dummy->kidx = z_info->k_max - 1;
 	dummy->level = art->level;

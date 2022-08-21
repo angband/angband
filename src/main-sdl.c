@@ -1090,7 +1090,7 @@ static void draw_statusbar(sdl_Window *window)
 	button->pos.x = x;
 	x += button->pos.w + 10;
 
-	my_strcpy(buf, format("(%dx%d)", win->cols, win->rows), sizeof(buf));
+	strnfmt(buf, sizeof(buf), "(%dx%d)", win->cols, win->rows);
 	sdl_WindowText(&StatusBar, c, x, 1, buf);
 	x += strlen(buf) * fw + 20;
 
