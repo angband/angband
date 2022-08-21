@@ -37,7 +37,7 @@
  * mon_select().
  */
 static bool allow_unique;
-static char base_d_char[15];
+static wchar_t base_d_char;
 static int select_current_level;
 
 /**
@@ -71,9 +71,8 @@ static struct pit_profile *lookup_pit_profile(const char *name)
 static bool mon_select(struct monster_race *race)
 {
 	/* Require that the monster symbol be correct. */
-	if (base_d_char[0] != '\0') {
-		if (strchr(base_d_char, race->base->d_char) == 0)
-			return (false);
+	if (base_d_char != 0 && base_d_char != race->base->d_char) {
+		return false;
 	}
 
 	/* No invisible undead until deep. */
@@ -121,8 +120,7 @@ bool mon_restrict(const char *monster_type, int depth, int current_depth,
 
 	/* Clear global monster restriction variables. */
 	allow_unique = unique_ok;
-	for (i = 0; i < 10; i++)
-		base_d_char[i] = '\0';
+	base_d_char = 0;
         select_current_level = current_depth;
 
 	/* No monster type specified, no restrictions. */
@@ -156,8 +154,7 @@ bool mon_restrict(const char *monster_type, int depth, int current_depth,
 		/* We've found a monster. */
 		if (i < 2499) {
 			/* Use that monster's base type for all monsters. */
-			my_strcpy(base_d_char, format("%c", r_info[j].base->d_char),
-				sizeof(base_d_char));
+			base_d_char = r_info[j].base->d_char;
 
 			/* Prepare allocation table */
 			get_mon_num_prep(mon_select);
@@ -282,13 +279,22 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 						const char *data, int y1, int y2, int x1, int x2)
 {
 	int i, y, x, depth;
+	char stmp[2] = { '\0', '\0' };
+	wchar_t wtmp[2];
 	const char *t;
 
 	for (i = 0; racial_symbol[i] != '\0'; i++) {
 		/* Require correct race, allow uniques. */
 		allow_unique = true;
-		my_strcpy(base_d_char, format("%c", racial_symbol[i]),
-			sizeof(base_d_char));
+		stmp[0] = racial_symbol[i];
+		if (text_mbstowcs(wtmp, stmp, N_ELEMENTS(wtmp)) != 1) {
+			/*
+			 * Skip if could not convert the character to one
+			 * wide character.
+			 */
+			continue;
+		}
+		base_d_char = wtmp[0];
 		select_current_level = c->depth;
 
 		/* Determine level of monster */
