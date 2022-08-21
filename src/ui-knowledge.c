@@ -2211,7 +2211,7 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 		runes[count++] = i;
 	}
 
-	my_strcpy(buf, format("runes (%d unknown)", rune_max - count), sizeof(buf));
+	strnfmt(buf, sizeof(buf), "runes (%d unknown)", rune_max - count);
 
 	display_knowledge(buf, runes, count, rune_var_f, rune_f, "Inscribed");
 	mem_free(runes);
