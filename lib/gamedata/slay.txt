@@ -1,17 +1,32 @@
 # File: slay.txt
 
-# code: code for slay to use in object data files
-# name: name of slain creatures for use in object descriptions
-# race-flag: monster race flag which this slay affects
-# base: monster base which this flag affects
+# This file the slays that can appear on objects.
+
+# The name and verbs can generally be edited without bad effects though slays
+# for the same type of creature should all use the same name.  Changes to the
+# code will require changes to the other data files (artifact.txt, ego_item.txt,
+# object.txt, and player_timed.txt) that may have used the code.  Changes to
+# the base, race-flag, multiplier, and o-multiplier can affect balance.  The
+# base has to match one of those in monster_base.txt while a race flag has
+# to match one in list-mon-race-flags.h.
+
+# Fields:
+# code: code for slay to use in other data files (artifact.txt, ego_item.txt,
+#     object.txt, and player_timed.txt)
+# name: name of slain creatures for use in object descriptions; also used for
+#     detection of slays that are redundant
+# race-flag: monster race flag which this slay affects; has to be different
+#     than NONE and match the first argument to one of the RF() macros in
+#     list-mon-race-flags.h; can not be used with another race-flag directive
+#     or a base directive for the same slay
+# base: monster base which this flag affects; has to match the name of a base
+#     in monster_base.txt; can not be used with another base directive or
+#     or a race-flag directive for the same slay
 # multiplier: slay multiplier applied to damage dice
 # o-multiplier: slay multiplier applied to damage dice (O-combat)
 # power: weighting in object power calculations (100 is neutral)
 # melee-verb: verb used when a susceptible monster is hit in melee
 # range-verb: verb used when a susceptible monster is hit at range
-
-# This file encodes the slays that can appear on object.  Each slay should
-# have exactly one of a race flag or a base.
 
 code:EVIL_2
 name:evil creatures
