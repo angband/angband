@@ -1343,7 +1343,6 @@ void pack_overflow(struct object *obj)
 {
 	int i;
 	char o_name[80];
-	bool artifact = false;
 
 	if (!pack_is_overfull()) return;
 
@@ -1369,9 +1368,6 @@ void pack_overflow(struct object *obj)
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL,
 		player);
-	if (obj->artifact) {
-		artifact = true;
-	}
 
 	/* Message */
 	msg("You drop %s.", o_name);
@@ -1381,10 +1377,7 @@ void pack_overflow(struct object *obj)
 	drop_near(cave, &obj, 0, player->grid, false, true);
 
 	/* Describe */
-	if (artifact)
-		msg("You no longer have the %s.", o_name);
-	else
-		msg("You no longer have %s.", o_name);
+	msg("You no longer have %s.", o_name);
 
 	/* Notice, update, redraw */
 	if (player->upkeep->notice) notice_stuff(player);
