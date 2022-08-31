@@ -19,6 +19,8 @@
 #include "angband.h"
 #include "cave.h"
 #include "datafile.h"
+#include "game-world.h"
+#include "init.h"
 #include "mon-group.h"
 #include "mon-make.h"
 #include "mon-summon.h"
@@ -455,11 +457,25 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including holding faster monsters for the required number of turns */
 	if (delay) {
-		int turns = (mon->race->speed + 9 - player->state.speed) / 10;
+		int p_e_per_turn = turn_energy(player->state.speed);
+		int m_e_per_turn = turn_energy(mon->mspeed);
+		/*
+		 * Number of turns for player to move from zero energy, tp, is
+		 * z_info->move_energy / p_e_per_turn.  Number of turns for
+		 * monster to move from zero energy, tm, is
+		 * z_info->move_energy / m_e_per_turn.  The number of turns to
+		 * hold the monster is tp - tm.  That's this, rounding up to be
+		 * safe.
+		 */
+		int turns = (z_info->move_energy
+			 * (m_e_per_turn - p_e_per_turn)
+			 + m_e_per_turn * p_e_per_turn - 1)
+			 / (m_e_per_turn * p_e_per_turn);
+
 		mon->energy = 0;
-		if (turns) {
+		if (turns > 0) {
 			/* Set timer directly to avoid resistance */
-			mon->m_timed[MON_TMD_HOLD] = turns;
+			mon->m_timed[MON_TMD_HOLD] = MIN(turns, 32767);
 		}
 	}
 
