@@ -32,6 +32,8 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 	-lLerc \
 	-lzstd \
 	-llzma \
+	-ljxl \
+	-lhwy \
 	-lwebp \
 	-lfreetype \
 	-lharfbuzz \
