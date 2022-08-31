@@ -1,0 +1,61 @@
+name: msys2
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  stock:
+    name: Stock
+    runs-on: windows-latest
+    defaults:
+      # Reduce verbosity and always run with msys2 as the default shell.
+      # See https://github.com/marketplace/actions/setup-msys2 .
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-ncurses
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd src
+          make -f Makefile.msys2
+
+  sdl:
+    name: SDL2
+    runs-on: windows-latest
+    defaults:
+      # Reduce verbosity and always run with msys2 as the default shell.
+      # See https://github.com/marketplace/actions/setup-msys2 .
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_ttf
+            mingw-w64-x86_64-SDL2_image
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd src
+          make -f Makefile.msys2.sdl2
