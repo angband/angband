@@ -1,5 +1,19 @@
 # projection.txt
 
+# Descriptions, colors, message types, and obvious can be edited without
+# bad effects.
+# Changing the name will affect links with any brands in brand.txt that used
+# the old name.
+# Changing the maximum damage, relation of damage to the breather's HP,
+# reductions due to resistance and whether the projection wakes will have
+# implications for balance.
+# Changing the codes or their ordering has to be done with care and in
+# conjunction with recompiling the game.  The projections of type element
+# have to appear first in the same order and with the same codes as the
+# listing of elements in list-elements.h.  The projections of other types
+# have to appear after those of type element and in the same order as they
+# are listed in list-projections.h.
+
 # === Understanding projection.txt ===
 
 # Format:
@@ -19,43 +33,66 @@
 # wake: 0/1
 # color: color
 
-# 'code' is the computer code for this projection used by the game
+# 'code' is the computer code for this projection used by the game.  For
+# projections of type element, the code must match the argument to one of the
+# ELEM() macros in list-elements.h, and those projections must appear first
+# and in the order they are listed in list-elements.h.  For projections of
+# other types, the code must match the argument to one of the PROJ()
+# macros in list-projections.h, and those projections must appear in the
+# order they are listed in list-projections.h.
 
-# 'name' is the human readable name for this projection
+# 'name' is the human readable name for this projection.  A brand in brand.txt
+# is linked to a projection through the name.
 
 # 'type' can be 'element' for an elemental attack type, 'environs' for
 # something that affects terrain or dungeon features, or 'monster' for
-# direct effects on monsters
+# direct effects on monsters.
 
 # 'desc' is the descriptive name for the projection, usually used in object
-# descriptions
+# descriptions.
 
-# 'player-desc' is similar to desc
+# 'player-desc' is similar to desc and is used primarily when describing
+# ball, breath, arc, short beam, spot, or sphere effects.
 
 # 'blind-desc' is how the projection is described to the player when they
-# cannot see the monster using it
+# cannot see the monster using it.
 
 # 'lash-desc' is the description for the "lash" effect used for spitting or
-# whipping monsters
+# whipping monsters.
 
 # 'numerator' and 'denominator' define the fraction of damage allowed through
-# player resistance to an element
+# player resistance to an element.  The numerator is a simple non-negative
+# integer.  The denominator is a dice expression (i.e. "3" or "5+1d4") without
+# a bonus.  If the denominator evaluates to zero, there will be no reduction
+# of damage due to the player having a resistance.
 
 # 'divisor' is used to divide the attacking creature's hitpoints by to determine
-# breath damage
+# breath damage.
 
 # 'damage-cap' is the maximum breath damage, regardless of monster hitpoints,
-# before resistance is applied
+# before resistance is applied.
 
-# 'msgt' is the message type code used by the message system
+# 'msgt' is the message type code used by the message system.  The type must
+# either match (case-insensitve) the first argument to one of the MSG() macros
+# in list-message.h or ben an unsigned integer less than MSG_MAX which is the
+# index of the message type to use within list-message.h.  For the textui
+# user interface, the message type affects the message color (configured
+# globally by lib/customize/message.prf; also configurable by preferences
+# in the user's files) and the sound played when the message is displayed
+# (configured globally by lib/customize/sound.prf; also configurable by
+# preferences in the user's files).
 
-# 'obvious' is set to 1 if the nature of the projection effect is obvious to the
-# player, 0 otherwise
+# 'obvious' indicates whether the nature of the projection effect is obvious
+# to the player.  Use 1 if it is; any other non-negative integer value (best
+# to use 0) indicates that it is not obvious.
 
-# 'wake' is set to 1 if the projection effect will automatically wake monsters,
-# 0 otherwise
+# 'wake' indicates whether the projection will automatically wake affected
+# monsters.  Use 1 if it will wake; any other non-negative integer value (best
+# to use 0) indicates that the projection is not forced to wake an affected
+# monster.
 
-# 'color' is the colour of the projection
+# 'color' is the colour of the projection.  You may use the one letter code
+# for the color or the full color name (case insensitive).
 
 code:ACID
 name:acid
