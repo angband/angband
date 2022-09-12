@@ -409,14 +409,20 @@ jobs:
           cp -rv bin/makerom /usr/local/bin
           popd
 
+      # The quoting to get progname may be too simple-minded:  what if there
+      # are single quotes in the steps.*.outputs.* stuff.  Restrict what's
+      # passed to cxitool's --name option to at most 8 characters since that
+      # is a limitation of that tool.
       - name: Build Nintendo 3DS (cia)
         id: create_nintendo_3ds_cia
         shell: bash
         run: |
           pushd src/
-          test -e ${{ steps.store_config.outputs.progname }}.3dsx
-          cxitool --name ${{ steps.store_config.outputs.progname }} ${{ steps.store_config.outputs.progname }}.3dsx ${{ steps.store_config.outputs.progname }}.cxi
-          makerom -v -f cia -o ${{ steps.store_config.outputs.progname }}.cia -target t -i ${{ steps.store_config.outputs.progname }}.cxi:0:0 -ignoresign -icon icon.smdh
+          progname='${{ steps.store_config.outputs.progname }}'
+          procname=`echo "$progname" | head -c 8`
+          test -e "$progname".3dsx
+          cxitool --name "$procname" "$progname".3dsx "$progname".cxi
+          makerom -v -f cia -o "$progname".cia -target t -i "$progname".cxi:0:0 -ignoresign -icon icon.smdh
           test -e ${{ steps.store_config.outputs.progname }}.cia
           popd
 
