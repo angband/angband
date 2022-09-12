@@ -277,7 +277,7 @@ int effect_subtype(int index, const char *type)
 	return val;
 }
 
-static int effect_value_base_spell_power(void)
+static int32_t effect_value_base_spell_power(void)
 {
 	int power = 0;
 
@@ -291,22 +291,22 @@ static int effect_value_base_spell_power(void)
 	return power;
 }
 
-static int effect_value_base_player_level(void)
+static int32_t effect_value_base_player_level(void)
 {
 	return player->lev;
 }
 
-static int effect_value_base_dungeon_level(void)
+static int32_t effect_value_base_dungeon_level(void)
 {
 	return cave->depth;
 }
 
-static int effect_value_base_max_sight(void)
+static int32_t effect_value_base_max_sight(void)
 {
 	return z_info->max_sight;
 }
 
-static int effect_value_base_weapon_damage(void)
+static int32_t effect_value_base_weapon_damage(void)
 {
 	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
 	if (!obj) {
@@ -315,12 +315,12 @@ static int effect_value_base_weapon_damage(void)
 	return (damroll(obj->dd, obj->ds) + obj->to_d);
 }
 
-static int effect_value_base_player_hp(void)
+static int32_t effect_value_base_player_hp(void)
 {
 	return player->chp;
 }
 
-static int effect_value_base_monster_percent_hp_gone(void)
+static int32_t effect_value_base_monster_percent_hp_gone(void)
 {
 	/* Get the targeted monster, fail horribly if none */
 	struct monster *mon = target_get_monster();
