@@ -15,6 +15,12 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v2
 
+      - name: Extract Names from Makefile
+        id: get_names
+        run: |
+            progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+            echo "::set-output name=progname::$progname"
+
       - name: Build Nintendo 3DS (3dsx)
         shell: bash
         run: |
@@ -44,12 +50,18 @@ jobs:
           cp -rv bin/makerom /usr/local/bin
           popd
 
+      # The quoting to get progname may be too simple-minded:  what if there
+      # are single quotes in the steps.*.outputs.* stuff.  Restrict what's
+      # passed to cxitool's --name option to at most 8 characters since that
+      # is a limitation of that tool.
       - name: Build Nintendo 3DS (cia)
         shell: bash
         run: |
+          progname='${{ steps.get_names.outputs.progname }}'
+          procname=`echo "$progname" | head -c 8`
           pushd src/
-          cxitool --name angband angband.3dsx angband.cxi
-          makerom -v -f cia -o angband.cia -target t -i angband.cxi:0:0 -ignoresign -icon src/nds/icon.smdh
+          cxitool --name "$procname" "$progname".3dsx "$progname".cxi
+          makerom -v -f cia -o $"progname".cia -target t -i "$progname".cxi:0:0 -ignoresign -icon src/nds/icon.smdh
           popd
 
   nds:
