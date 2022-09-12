@@ -340,7 +340,7 @@ jobs:
   _3ds:
     needs: [setup, docconvert]
     name: Nintendo 3DS
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
@@ -453,7 +453,7 @@ jobs:
   nds:
     needs: [setup, docconvert]
     name: Nintendo DS
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
