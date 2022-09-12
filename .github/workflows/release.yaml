@@ -192,7 +192,7 @@ jobs:
   windows:
     needs: [setup, docconvert]
     name: Windows
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v2
