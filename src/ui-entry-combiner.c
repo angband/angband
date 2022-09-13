@@ -549,7 +549,7 @@ static void resist_0_combine_init(int v, int a,
 		st->accum = 0;
 		work[0] = v;
 	}
-	if (a == UI_ENTRY_UNKNOWN_VALUE || v == UI_ENTRY_VALUE_NOT_PRESENT) {
+	if (a == UI_ENTRY_UNKNOWN_VALUE || a == UI_ENTRY_VALUE_NOT_PRESENT) {
 		st->accum_aux = a;
 		work[1] = a;
 	} else if (a > 0) {
