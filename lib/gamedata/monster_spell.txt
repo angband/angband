@@ -1,30 +1,135 @@
 # Monster spells
+# Used in conjunction with list-mon-spells.h.
 
-# name - spell name
-# msgt - message type
-# lore-color-resist - color for lore when the spell is resisted
-# lore-color-immune - color for lore when the spell is resisted strongly
-# message-save - Message printed when player saves if the spell allows a save.
-#                Note that this message must be present for the player to get a 
-#                save.
-# message-miss - Message printed when a known/visible monster misses the spell
-#                attack against the player.
-# hit - to-hit chance (100 = always, 0 = never)
-# effect - effect
-# dice - damage dice of effect, if any
-# expr - expression for dice, if needed
-# power-cutoff - monster spell power at which we move to a new set of lore,
-#                lore-color-base, message-vis and message-invis
-# lore - Description printed in monster recall after "It can",
-#        e.g. cause critical wounds
-# lore-color-base - base color for lore
-# message-vis - Message printed when spell is cast by a visible monster,
-#               e.g. {name} points at you, incanting terribly!
-# message-invis - Message printed when spell is cast by an unseen monster,
-#                 e.g. Something utters a terrible incantation!
+# name - sets the spell name; must match the first argument (other than NONE or
+#        MAX) to one of the RSF() macros in list-mon-spells.h
+# msgt - sets the message type to use for message-vis, message-invis, and
+#        message-miss messages of the current spell; the type must be either
+#        match (case-insensitive) the first argument to one of the MSG()
+#        macros in list-message.h or be an unsigned integer less than MSG_MAX
+#        which is the index of the message type to use within list-message.h;
+#        for the textui interface, the message type affects the message color
+#        (configured globally by lib/customize/message.prf; also configurable
+#        by preferences in the user's files) and the sound played when the
+#        message is displayed (configured globally by lib/customize/sound.prf;
+#        also configurable by preferences in the user's files)
+# hit - sets the base to-hit chance (100 = always, 0 = never) for the current
+#       spell; the base chance  will be adjusted by the monster level and by
+#       timed effects affecting the monster
+# effect - adds an effect to the current spell; may be specified multiple
+#          times to apply multiple effects from the same spell; when the spell
+#          is cast, the effects are applied in the order they are given
+#          param one: is the name of the builtin effect to use; the name
+#              must match the first argument to one of the EFFECT() macros in
+#              list-effects.h
+#          param two: is the subtype of the given effect to use; can be
+#              omitted (along with the third and fourth parameters) if not
+#              needed by the effect
+#          param three: is the value to use for the effect's radius parameter;
+#              must be an integer; can be omitted (along with the fourth
+#              parameter) if not needed by the effect
+#          param four: is the value to use for the effect's "other" parameter;
+#              must be an integer; can be omitted if not needed by the effect
+# effect-yx sets the y and x parameters for the previous effect in the
+#           current spell; can be omitted if the effect does not use those
+#           parameters
+#           param one: is the value for the y parameter of the effect
+#           param two: is the value for the x parameter of the effect
+# dice - sets damage dice string for the previous effect in the current spell;
+#        can be omitted if the effect does not need it
+# expr - defines an expression for the dice tied to the previous effect in
+#        the current spell; will be ignored if the previous effect in the
+#        current spell has not had a dice string specified
+#        param one: is the name of the variable in the dice string to
+#            substitute with the value of the expression; variable names
+#            must be all capital letters and a reference to a variable in
+#            a dice string starts with a $; if the dice string does not contain
+#            a reference to the given variable, parsing of the game's data
+#            files will stop with an error
+#        param two: set the name of the base value to modify with the operations
+#            in the third parameter; the name can be one of those listed below;
+#            if it does not match any in the list, the base value will be zero
+#              SPELL_POWER - the monster's spell power
+#              PLAYER_LEVEL - the player's level
+#              DUNGEON_LEVEL - the dungeon's level
+#              MAX_SIGHT - the maximum sight range, in grids
+#              WEAPON_DAMAGE - a random roll for the base damage (only the
+#                  weapon's dice and damage modifier are included; no damage
+#                  modifiers from the player or equipment other than the
+#                  weapon are used) of the player's equipped weapon; if the
+#                  player has no equipped weapon, the value of this is zero
+#              PLAYER_HP - the player's current number of hit points
+#              MONSTER_PERCENT_HP_GONE - ((maximum hit points for the player's
+#                  targeted monster - current hit points for the player's
+#                  targeted monster) * 100) / maximum hit points for the
+#                  player's targeted monster or 0 if the player doesn't
+#                  currently have a targeted monster
+#        param three: sets the operations to perform on the base value to
+#            get the value substituted into the dice expression; for instance,
+#            "* 2 / 3" would multiply the base value by 2 then divide that
+#            result by three, discarding any remainder; operators that are
+#            allowed are '+' (addition), '-' (subtraction), '*'
+#            (multiplication), '/' (integer division; discards remainder),
+#            and 'n' or 'N' (either negate the result from before the operator);
+#            integer constants in the operations must be between -32768 and
+#            32767; operators and integer constants in the operations should be
+#            separated by single spaces
+# power-cutoff - sets a monster spell power at which we move to a new set of
+#                lore, lore-color-base, lore-color-resist, lore-color-immune,
+#                message-save, message-vis, message-invis and message-miss
+#                settings for the current spell; to work properly, the cutoff
+#                specified must be greater than zero and greater than any
+#                previously specified power cutoffs for the same spell; a
+#                monster's spell power is, by default, equal to its depth
+#                (i.e. the value for the "depth:" directive for the monster
+#                in monster.txt) but that can be overridden by a
+#                "spell-power:" directive for the monster in monster.txt
+# lore - set the description printed in monster recall after "It can" for the
+#        current spell, e.g. "cause critical wounds"; the descriptions from
+#        multiple lore lines in the same spell without an intervening
+#        power-cutoff line will be concatenated
+# lore-color-base - set the base color for lore; may be a single character color
+#                   code or the full name (case-insensitive) for the color
+# lore-color-resist - set the color for lore when the spell is resisted; may
+#                     be a single character color code or the full name (case-
+#                     insensitive) for the color
+# lore-color-immune - set the color for lore when the spell is resisted
+#                     strongly; may be a single character color code or the
+#                     full name (case-insensitive for the color)
+# message-save - sets the message displayed if the player makes a successful
+#                save against the spell; must be supplied to allow the player
+#                a save against the spell; the messages from multiple
+#                message-save lines in the same spell without an intervening
+#                power-cutoff line will be concatenated
+# message-vis - sets the message printed when the spell is cast by a visible
+#               monster, e.g. "{name} points at you, incanting terribly!"; the
+#               messages from multiple message-vis lines in the same spell
+#               without an intervening power-cutoff line will be concatenated
+# message-invis - sets the message printed when the spell is cast by an unseen
+#                 monster, e.g. "Something utters a terrible incantation!";
+#                 the messages from multiple message-invis lines in the same
+#                 spell without an intervening power-cutoff line will be
+#                 concatenated
+# message-miss - sets the message printed when a known/visible monster misses
+#                the spell attack against the player; the messages from
+#                multiple message-miss lines in the same spell without an
+#                intervening power-cutoff line will be concatenated
 
-# Text in braces {} will be replaced with the appropriate word when the message
-# is displayed :
+# Remember that lore, lore-color-base, lore-color-resist, lore-color-immune,
+# message-save, message-vis, message-invis, message-miss apply to a specific
+# range of monster spell powers.  The lower limit for the spell powers a
+# given line will affect is either -infinity (if the line in question does not
+# have a power-cutoff line before it in the same spell) or one more
+# than the cutoff specified in the last power-cutoff line in the same spell
+# before the line in question.  The upper limit for the spell powers a given
+# line will affect is either +infinity (if the line in question does not have
+# a power-cutoff line after it in the same spell) or the cutoff specified in
+# the first power-cutoff line in the same spell after the line in question.
+
+# Text in braces {} will be replaced with the appropriate word when the
+# messages supplied by message-vis, message-invis, or message-miss are
+# displayed; no replacements are made in the message supplied by message-save.
+# The strings that will be replaced are:
 # - {name} is the acting monster's name
 # - {pronoun} is his/her/its
 # - {type} is the projection type being used
