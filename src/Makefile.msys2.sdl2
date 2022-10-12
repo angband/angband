@@ -1,11 +1,20 @@
-# File: Makefile.sdl2
+# File: Makefile.msys2.sdl2
 # Makefile for compiling Angband with SDL2.
 #
 # This makefile requires GNU make.
 #
-# This makefile is intended for use with Unix machines that have SDL2 library.
-# The video subsystem requires libsdl2, libsdl2-ttf and libsdl2-image.
-# The sound subsystem requires libsdl2 and libsdl2-mixer.
+# This makefile is intended for use with GNU make and mingw in the msys2
+# environment for Windows (within msys2 run "pacman -S mingw-w64-x86_64-gcc ;
+# pacman -S make" to install those).
+#
+# The video subsystem requires libsdl2, libsdl2-ttf and libsdl2-image
+# (within msys2 run "pacman -S mingw-w64-x86_64-SDL2 ;
+# pacman -S mingw-w64-x86_64-SDL2_ttf ; pacman -S mingw-w64-x86_64-SDL2_image"
+# to install those).
+#
+# The sound subsystem requires libsdl2 and libsdl2-mixer (libsdl2 is already
+# installed for the video subsystem; to install libsdl2-mixer run
+# "pacman -S mingw-w64-x86_64-SDL2_mixer" in msys2).
 #
 # If you want only video (but not sound), use it like this:
 # (from angband directory)
@@ -13,7 +22,8 @@
 # cd src
 # make -f Makefile.msys2.sdl
 #
-# TODO: sound is not working for windows build
+# To also have SDL2 sound, change the second of those commands to:
+# make -f Makefile.msys2.sdl2 SOUND=yes
 #
 
 # By default, copy the executable to ../ so that
@@ -58,10 +68,18 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 	-loleaut32 \
 	-lwinmm \
 
-## Support SDL_mixer for sound, doesn't work yet
-#SOUND_sdl2 := -DSOUND_SDL -DSOUND \
-#	$(shell sdl2-config --cflags) \
-#	$(shell sdl2-config --libs) -lSDL2_mixer
+## Support SDL_mixer for sound
+ifdef SOUND
+SOUND_sdl2 := -DSOUND_SDL2 -DSOUND \
+	$(shell sdl2-config --cflags) \
+	$(shell sdl2-config --libs) -lSDL2_mixer \
+	-lmpg123 \
+	-lopusfile \
+	-lopus \
+	-logg \
+	-lshlwapi \
+	-lwinmm
+endif
 
 # Compiler to use
 CC := gcc
@@ -84,10 +102,9 @@ LDFLAGS := -lm
 
 # Frontends to compile
 MODULES := $(VIDEO_sdl2)
-
-#ifdef SOUND
-#	MODULES += $(SOUND_sdl2)
-#endif
+ifdef SOUND
+MODULES += $(SOUND_sdl2)
+endif
 
 # Extract CFLAGS and LDFLAGS from the module definitions
 CFLAGS += $(patsubst -l%,,$(MODULES))
@@ -105,7 +122,7 @@ EXE := $(PROGNAME)
 OBJS := main.o main-sdl2.o $(BASEOBJS)
 
 ifdef SOUND
-	OBJS += snd-sdl.o
+OBJS += snd-sdl.o
 endif
 
 # Build the "Angband" program
