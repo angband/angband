@@ -301,6 +301,7 @@ static int test_redundant_separators(void *state) {
 }
 
 static int test_working_directory(void *state) {
+#if defined(WINDOWS) || defined(UNIX)
 	struct {
 		const char *path, *fmt_out;
 		size_t exp_root_sz;
@@ -343,7 +344,7 @@ static int test_working_directory(void *state) {
 		{ "../..hidden2", "%s..hidden2", 1, true, true },
 		{ "..", "%s", 1, false, true },
 		{ "../", "%s", 1, true, true },
-#endif
+#endif /* else defined(WINDOWS) */
 	};
 	char wd[1024], wd_trunc_1[1024], buf[1024], expected[1024];
 	char *p;
@@ -372,7 +373,7 @@ static int test_working_directory(void *state) {
 	lwd = strlen(wd);
 	require(lwd > 0 && wd[0] == PATH_SEPC);
 	lroot = 1;
-#endif
+#endif /* else defined(WINDOWS) */
 	if (wd[lwd - 1] != PATH_SEPC) {
 		require(lwd < sizeof(wd) - 1);
 		wd[lwd] = PATH_SEPC;
@@ -460,6 +461,7 @@ static int test_working_directory(void *state) {
 			eq(buf[j], '*');
 		}
 	}
+#endif /* defined(WINDOWS) || defined(UNIX) */
 	ok;
 }
 

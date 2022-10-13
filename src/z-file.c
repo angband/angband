@@ -432,8 +432,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 		oidx = oidx_high - 1;
 		iidx = 0;
 	}
-#else
-	/* Assume Unix-like behavior. */
+#elif defined(UNIX)
 	if (path_in[0] != PATH_SEPC) {
 		/*
 		 * Input path is relative to the current working directory
@@ -566,6 +565,21 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 		oidx = 1;
 		iidx = 1;
 	}
+	root_size = 1;
+#else
+	/*
+	 * It's neither Windows nor Unix and don't know how to get the working
+	 * directory so reject any paths that aren't absolute.
+	 */
+	if (path_in[0] != PATH_SEPC) {
+		goto ABNORMAL_RETURN;
+	}
+	/* Copy the leading path separator. */
+	if (len) {
+		buf[0] = PATH_SEPC;
+	}
+	oidx = 1;
+	iidx = 1;
 	root_size = 1;
 #endif /* ifdef WINDOWS else block */
 
