@@ -14,5 +14,12 @@
 
 ### Terrain features ###
 
+# This works with the .fon files bundled with the game, but doesn't work
+# well with fonts like LiberationMono.
 # Floors (white : centered dot)
-feat:open floor:*:1:7
+#feat:open floor:*:1:7
+
+# This works with Unicode fonts that have the centered dot (U+00B7, UTF-8
+# C2 B7), but not with the .fon files bundled with the game.
+# Floors (white : centered dot)
+#feat:open floor:*:1:0xb7
