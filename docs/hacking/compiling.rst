@@ -273,11 +273,17 @@ a .tar.gz file, for a release.
 
 Then configure the cross-comilation and perform the compilation itself::
 
-	./configure --enable-win --build=i686-pc-linux-gnu --host=i586-mingw32msvc
+	./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
 	make install
 
-The last step only works with very recent versions.  For older ones, use this
-instead of the last step::
+You may need to change the --build and --host options there to match your
+system. Mingw installs commands like 'i686-w64-mingw32-gcc'. The value of --host
+should be that same command with the '-gcc' removed. Instead of i686 you may
+see i686, amd64, etc. The value of --build should be the host you're building
+on (see http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
+gory details of how these triplets are arrived at).  The 'make install' step
+only works with very recent version.  For older ones, use this instead of the
+last step::
 
 	make
 	cp src/angband.exe .
@@ -286,12 +292,6 @@ instead of the last step::
 To run the result, you can use wine like this::
 
 	wine angband.exe
-
-Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
-should be that same command with the '-gcc' removed. Instead of i586 you may
-see i686, amd64, etc. The value of --build should be the host you're building
-on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
-gory details of how these triplets are arrived at)
 
 TODO: except for recent versions (after Angband 4.2.3) you likely need to
 manually disable curses (add --disable-curses to the options passed to
