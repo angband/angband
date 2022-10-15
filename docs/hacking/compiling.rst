@@ -446,10 +446,10 @@ Install the dependencies by::
 
 Additional dependencies for SDL2 client::
 
-	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx \
-		  mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf
+	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
+		mingw-w64-x86_64-SDL2_ttf
 
-Then run the following to compile with ncurse::
+Then run the following to compile with ncurses::
 
 	cd src
 	make -f Makefile.msys2
@@ -459,11 +459,22 @@ For SDL2, do::
 	cd src
 	make -f Makefile.msys2.sdl2
 
-Go to the root of the source directory and start angband by::
+Very recent versions of Makefile.msys2.sdl2 allow use of SDL2 sound; to build
+with that you'll need SDL2_mixer installed in addtion to the other SDL2
+libraries mentioned above::
+
+	pacman -S mingw-w64-x86_64-SDL2_mixer
+
+Then the executable with SDL2 sound support can be built with::
+
+	cd src
+	make -f Makefile.msys2.sdl2 SOUND=yes
+
+Once built, go to the root of the source directory and start angband by::
 
 	./angband.exe -uPLAYER
 
-The ncurse client may not be able to start properly from msys2 shell, try::
+The ncurses client may not be able to start properly from msys2 shell, try::
 
 	start bash
 
