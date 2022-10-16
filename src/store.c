@@ -1212,6 +1212,7 @@ static bool store_create_random(struct store *store)
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(obj, level, false, false, false, false);
+		assert(!obj->artifact);
 
 		/* Reject if item is 'damaged' (negative combat mods, curses) */
 		if ((tval_is_weapon(obj) && ((obj->to_h < 0) || (obj->to_d < 0)))
@@ -1277,9 +1278,11 @@ static struct object *store_create_item(struct store *store,
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
+	struct object *carried;
 
 	/* Create a new object of the chosen kind */
 	object_prep(obj, kind, 0, RANDOMISE);
+	assert(!obj->artifact);
 
 	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
@@ -1290,7 +1293,13 @@ static struct object *store_create_item(struct store *store,
 	obj->origin = ORIGIN_NONE;
 
 	/* Attempt to carry the object */
-	return store_carry(store, obj);
+	carried = store_carry(store, obj);
+	if (!carried) {
+		object_delete(NULL, NULL, &known_obj);
+		obj->known = NULL;
+		object_delete(NULL, NULL, &obj);
+	}
+	return carried;
 }
 
 /**
@@ -1307,8 +1316,13 @@ static void store_maint(struct store *s)
 		struct object *obj = s->stock;
 		while (obj) {
 			struct object *next = obj->next;
-			if (!black_market_ok(obj))
+			if (!black_market_ok(obj)) {
+				if (obj->artifact) {
+					history_lose_artifact(player,
+						obj->artifact);
+				}
 				store_delete(s, obj, obj->number);
+			}
 			obj = next;
 		}
 	}
@@ -1373,8 +1387,10 @@ static void store_maint(struct store *s)
 				store_sale_should_reduce_stock);
 
 			/* Create the item if it doesn't exist */
-			if (!obj)
+			if (!obj) {
 				obj = store_create_item(s, kind);
+				if (!obj) continue;
+			}
 
 			/* Ensure a full stack */
 			obj->number = obj->kind->base->max_stack;
@@ -1963,6 +1979,9 @@ void do_cmd_sell(struct command *cmd)
 	/* The store gets that (known) object */
 	if (!store_carry(store, sold_item)) {
 		/* The store rejected it; delete. */
+		if (sold_item->artifact) {
+			history_lose_artifact(player, sold_item->artifact);
+		}
 		if (sold_item->known) {
 			object_delete(NULL, NULL, &sold_item->known);
 			sold_item->known = NULL;
