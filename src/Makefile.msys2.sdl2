@@ -96,6 +96,7 @@ CFLAGS := -std=c99 \
 	-static \
 	-DUSE_PRIVATE_PATHS \
 	-DHAVE_DIRENT_H \
+	-DMSYS2_ENCODING_WORKAROUND
 
 # Linker flags
 LDFLAGS := -lm
