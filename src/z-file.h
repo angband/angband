@@ -65,6 +65,31 @@ void safe_setuid_drop(void);
 size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
 /**
+ * Converts path_in to an absolute path without redundant path separators.
+ *
+ * \param buf is the buffer to hold the result.  If len is greater than zero,
+ * it will always be null terminated.  buf may be NULL if len is zero.
+ * \param len is the size of the buffer.
+ * \param path_in is the null-terminated string with the path to normalize.
+ * \param trailing_sep will, if true, cause the normalized path to have a
+ * trailing path separator if it does not already have one.
+ * \param req_len if not NULL, will be dereferenced and set to the required
+ * buffer size needed to compute the normalized result or to zero
+ * if it was not possible to compute the normalized result.
+ * \param root_len if not NULL, will be dereferenced and set to the length
+ * of the root portion (the part that will always remain after repeatedly
+ * going up the directory tree) of the path or to zero if it was not possible
+ * to compute the normalized result.
+ * \return zero if the normalization operation succeeded and the untruncated
+ * result was stored in buf.  Returns 1 if the normalized result was
+ * truncated.  Returns 2 if the normalized result could not be determined.
+ *
+ * On Unixes, deals with a leading tilde to represent a home directory.
+ */
+int path_normalize(char *buf, size_t len, const char *path_in,
+		bool trailing_sep, size_t *req_len, size_t *root_len);
+
+/**
  * Return the index of the filename in a path, using PATH_SEPC. If no path
  * separator is found, return 0.
  */
@@ -301,6 +326,20 @@ typedef struct ang_dir ang_dir;
  * Returns a valid directory handle on success, NULL otherwise.
  */
 ang_dir *my_dopen(const char *dirname);
+
+/**
+ * Alter whether a directory handle will return directories from my_dread().
+ *
+ * \param dir is the handle to change.
+ * \param newval is the new value for whether or not to skip directories
+ * in the results from my_dread().
+ * \return the old value for whether or not to skip directories in the results
+ * from my_dread().
+ *
+ * Calls to my_dread() on a directory handle which has not been modified with
+ * this function will not return directories.
+ */
+bool alter_ang_dir_only_files(ang_dir *dir, bool newval);
 
 /**
  * Reads a directory entry.

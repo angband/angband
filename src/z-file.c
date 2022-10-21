@@ -219,6 +219,560 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 }
 
 /**
+ * Converts path_in to an absolute path without redundant path separators.
+ *
+ * \param buf is the buffer to hold the result.  If len is greater than zero,
+ * it will always be null terminated.  buf may be NULL if len is zero.
+ * \param len is the size of the buffer.
+ * \param path_in is the null-terminated string with the path to normalize.
+ * \param trailing_sep will, if true, cause the normalized path to have a
+ * trailing path separator if it does not already have one.
+ * \param req_len if not NULL, will be dereferenced and set to the required
+ * buffer size needed to hold the normalized result or to zero if it was not
+ * possible to compute the normalized result.
+ * \param root_len if not NULL, will be dereferenced and set to the length
+ * of the root portion (the part that will always remain after repeatedly
+ * going up the directory tree) of the path or to zero if it was not possible
+ * to compute the normalized result.
+ * \return zero if the normalization operation succeeded and the untruncated
+ * result was stored in buf.  Returns 1 if the normalized result was
+ * truncated.  Returns 2 if the normalized result could not be determined.
+ *
+ * On Unixes, deals with the tilde as representing home directories.
+ */
+int path_normalize(char *buf, size_t len, const char *path_in,
+		bool trailing_sep, size_t *req_len, size_t *root_len)
+{
+	size_t oidx_high = 0, oidx, iidx, root_size;
+	int result;
+
+#ifdef WINDOWS
+	/*
+	 * See https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats
+	 * for a primer on path formats used by Windows systems.
+	 *
+	 * The use of GetCurrentDirectory() below assumes the code is
+	 * compiled without the _UNICODE and _MBCS preprocessor directives
+	 * set.
+	 */
+	if (path_in[0] == PATH_SEPC) {
+		if (path_in[1] == PATH_SEPC) {
+			/*
+			 * It's an UNC path ("\\<server_name>\<sharename>\...".
+			 */
+			const char *s = strchr(path_in + 2, PATH_SEPC);
+
+			if (!s || !(s = strchr(s + 1, PATH_SEPC))) {
+				/*
+				 * It's an incomplete UNC path:  missing a
+				 * share name or the path separator to terminate
+				 * the share name.  Give up.
+				 */
+				goto ABNORMAL_RETURN;
+			}
+			iidx = (s - path_in) + 1;
+			if (len > 0) {
+				(void) memcpy(buf, path_in, (iidx < len) ?
+					iidx : len);
+			}
+			root_size = iidx;
+			oidx = iidx;
+		} else {
+			/*
+			 * It's a path from the root of the current drive
+			 * ("\my_path_here").  Get the current working
+			 * directory, but only the root portion is needed.
+			 */
+			DWORD lwd = GetCurrentDirectory(0, NULL);
+			LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+
+			/*
+			 * The working directory changed to a longer name
+			 * (presumably from another thread) or is not long
+			 * enough to be an UNC path or absolute DOS path.
+			 * Give up.
+			 */
+			if (GetCurrentDirectory(lwd, work) > lwd || lwd < 3) {
+				free(work);
+				goto ABNORMAL_RETURN;
+			}
+			if (work[0] == PATH_SEPC) {
+				/* Root part should look like an UNC PATH. */
+				char *s;
+
+				if (work[1] != PATH_SEPC
+						|| !(s = strchr(work + 2, PATH_SEPC))
+						|| !(s = strchr(s + 1, PATH_SEPC))) {
+					/*
+					 * It doesn't look like an UNC path.
+					 * Give up.
+					 */
+					free(work);
+					goto ABNORMAL_RETURN;
+				}
+				lwd = (s + 1) - work;
+			} else if (work[1] == ':' && work[2] == PATH_SEPC) {
+				/* Root part looks like an absolute DOS path. */
+				lwd = 3;
+			} else {
+				/*
+				 * It's neither an UNC path nor an absolute
+				 * DOS path.  Give up.
+				 */
+				free(work);
+				goto ABNORMAL_RETURN;
+			}
+			if (len > 0) {
+				(void) memcpy(buf, work, (lwd < len) ?
+					lwd : len);
+			}
+			free(work);
+			oidx = lwd;
+			iidx = 1;
+			root_size = lwd;
+		}
+	} else if (path_in[0] && path_in[1] == ':') {
+		/* It's a DOS path with a drive letter. */
+		if (path_in[2] == PATH_SEPC) {
+			/* It's absolute. */
+			if (len > 0) {
+				(void) memcpy(buf, path_in, (3 < len) ?
+					3 : len);
+			}
+			oidx = 3;
+			iidx = 3;
+		} else {
+			/*
+			 * It's relative to the current directory on that drive.
+			 */
+			DWORD lwd = GetCurrentDirectory(0, NULL);
+			LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+
+			/*
+			 * Either the working directory changed to a longer
+			 * name (presumably from another thread) or the working
+			 * directory does not start with the given drive
+			 * letter + ':' + PATH_SEPC which is what's expected
+			 * for an absolute DOS path on that drive.  Give up.
+			 */
+			if (GetCurrentDirectory(lwd, work) > lwd
+					|| lwd < 3 || work[0] != path_in[0]
+					|| work[1] != ':'
+					|| work[2] != PATH_SEPC) {
+				free(work);
+				goto ABNORMAL_RETURN;
+			}
+			/*
+			 * Process it through path_normalize() so any
+			 * redundant path separators or interstitial relative
+			 * parts in the working directory are handled.
+			 */
+			result = path_normalize(buf, len, work,
+				(path_in[3]) ? true : false, &oidx_high,
+				&root_size);
+			free(work);
+			assert(root_size == 3);
+			if ((result != 0 && result != 1)
+					|| oidx_high <= root_size) {
+				goto ABNORMAL_RETURN;
+			}
+			/* Backup over the trailing null. */
+			oidx = oidx_high - 1;
+			iidx = 2;
+		}
+		root_size = 3;
+	} else {
+		/* It's a path relative to the current working directory. */
+		DWORD lwd = GetCurrentDirectory(0, NULL);
+		LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+
+		/*
+		 * Either the working directory changed to a longer
+		 * name (presumably from another thread) or is not long
+		 * enough to be an UNC path or an absoloute DOS path.  Give up.
+		 */
+		if (GetCurrentDirectory(lwd, work) > lwd || lwd < 3) {
+			free(work);
+			goto ABNORMAL_RETURN;
+		}
+		if (work[0] == PATH_SEPC) {
+			/* Root part should look like an UNC PATH. */
+			char *s;
+
+			if (work[1] != PATH_SEPC
+					|| !(s = strchr(work + 2, PATH_SEPC))
+					|| !(s = strchr(s + 1, PATH_SEPC))) {
+				/*
+				 * It doesn't look like an UNC path.  Give up.
+				 */
+				free(work);
+				goto ABNORMAL_RETURN;
+			}
+		} else if (work[1] != ':' || work[2] != PATH_SEPC) {
+			/*
+			 * It's neither an UNC path nor an absolute DOS path.
+			 * Give up.
+			 */
+			free(work);
+			goto ABNORMAL_RETURN;
+		}
+		/*
+		 * Process it through path_normalize() so any redundant path
+		 * separators or interstitial relative parts in the working
+		 * directory are handled.
+		 */
+		result = path_normalize(buf, len, work,
+			(path_in[0]) ? true : false, &oidx_high, &root_size);
+		free(work);
+		assert(root_size >= 3);
+		if ((result != 0 && result != 1) || oidx_high <= root_size) {
+			goto ABNORMAL_RETURN;
+		}
+		/* Backup over the trailing null. */
+		oidx = oidx_high - 1;
+		iidx = 0;
+	}
+#elif defined(UNIX)
+	if (path_in[0] != PATH_SEPC) {
+		/*
+		 * Input path is relative to the current working directory
+		 * or in a user's home directory.
+		 */
+		if (path_in[0] == '~') {
+			/* It's in a user's home directory. */
+			struct passwd *pw;
+
+			if (!path_in[1] || path_in[1] == PATH_SEPC) {
+				/*
+				 * It's not qualified by a user name, use
+				 * the current user.
+				 */
+				pw = getpwuid(getuid());
+				iidx = 1;
+			} else {
+				const char *s = strchr(path_in + 1, PATH_SEPC);
+
+				if (s) {
+					size_t nlen = s - path_in;
+					char *work = mem_alloc(nlen);
+
+					(void) memcpy(work, path_in + 1,
+						nlen - 1);
+					work[nlen - 1] = '\0';
+					pw = getpwnam(work);
+					mem_free(work);
+					iidx = nlen;
+				} else {
+					pw = getpwnam(path_in + 1);
+					iidx = strlen(path_in);
+				}
+			}
+			/*
+			 * If that user's directory isn't available or it
+			 * begins with '~', give up.
+			 */
+			if (!pw || !pw->pw_dir || pw->pw_dir[0] == '~') {
+				goto ABNORMAL_RETURN;
+			}
+			/*
+			 * Process the user's directory through path_normalize()
+			 * to guarantee that it is normalized.
+			 */
+			result = path_normalize(buf, len, pw->pw_dir,
+				(path_in[iidx]) ? true : false, &oidx_high,
+				NULL);
+			if ((result != 0 && result != 1) || oidx_high <= 1) {
+				goto ABNORMAL_RETURN;
+			}
+			/* Backup over the trailing null. */
+			oidx = oidx_high - 1;
+			/*
+			 * Skip the '/' in the input since it's already been
+			 * passed to the output.
+			 */
+			if (path_in[iidx]) {
+				assert(path_in[iidx] == PATH_SEPC);
+				++iidx;
+			}
+		} else {
+			/*
+			 * It's relative to the current working directory.
+			 * Put the current working directory at the start
+			 * of the output.
+			 */
+			size_t work_sz = 1024;
+			char *work = mem_alloc(work_sz);
+
+			/*
+			 * Determine what size of buffer is necessary to
+			 * hold the working directory.
+			 */
+			while (1) {
+				if (getcwd(work, work_sz)) {
+					/*
+					 * getcwd() is supposed to return an
+					 * absolute path name.  Process it
+					 * through path_normalize() in case
+					 * doesn't exclude having redundant
+					 * path separators or things like "/./"
+					 * or "/../" in it.
+					 */
+					if (work[0] != PATH_SEPC) {
+						/*
+						 * Got a relative path.  Give
+						 * up.
+						 */
+						mem_free(work);
+						goto ABNORMAL_RETURN;
+					}
+					result = path_normalize(buf, len, work,
+						(path_in[0]) ? true : false,
+						&oidx_high, NULL);
+					mem_free(work);
+					if ((result != 0 && result != 1)
+							|| oidx_high <= 1) {
+						goto ABNORMAL_RETURN;
+					}
+					/* Backup over the trailing null. */
+					oidx = oidx_high - 1;
+					break;
+				} else if (errno != ERANGE) {
+					/*
+					 * Increasing the buffer size won't
+					 * help resolve the error so give up.
+					 */
+					mem_free(work);
+					goto ABNORMAL_RETURN;
+				}
+				if (work_sz < ((size_t) -1) / 2) {
+					work_sz *= 2;
+				} else if (work_sz < (size_t) -1) {
+					work_sz = (size_t) -1;
+				} else {
+					/* Give up. */
+					mem_free(work);
+					goto ABNORMAL_RETURN;
+				}
+				work = mem_realloc(work, work_sz);
+			}
+			iidx = 0;
+		}
+	} else {
+		/* Copy the leading path separator. */
+		if (len) {
+			buf[0] = PATH_SEPC;
+		}
+		oidx = 1;
+		iidx = 1;
+	}
+	root_size = 1;
+#else
+	/*
+	 * It's neither Windows nor Unix and don't know how to get the working
+	 * directory so reject any paths that aren't absolute.
+	 */
+	if (path_in[0] != PATH_SEPC) {
+		goto ABNORMAL_RETURN;
+	}
+	/* Copy the leading path separator. */
+	if (len) {
+		buf[0] = PATH_SEPC;
+	}
+	oidx = 1;
+	iidx = 1;
+	root_size = 1;
+#endif /* ifdef WINDOWS else block */
+
+	while (1) {
+		if (!path_in[iidx]) {
+			break;
+		}
+		/*
+		 * The output path generated so for should end with a path
+		 * separator, unless it was necessary to truncate the result.
+		 */
+		assert((oidx <= len && oidx > 0 && buf[oidx - 1] == PATH_SEPC)
+			|| (oidx >= len));
+		if (path_in[iidx] == PATH_SEPC) {
+			/* Strip redundant path separator. */
+			++iidx;
+			continue;
+		}
+		if (path_in[iidx] == '.') {
+			if (!path_in[iidx + 1]) {
+				/*
+				 * Trailing, PATH_SEPC + "." strips off the
+				 * PATH_SEPC, if possible.
+				 */
+				if (oidx > root_size) {
+					/*
+					 * Remember what the size was before
+					 * removing the path separator since
+					 * that can affect the length of the
+					 * buffer needed to for the
+					 * normalization.
+					 */
+					oidx_high = MAX(oidx, oidx_high);
+					--oidx;
+					++iidx;
+				}
+				break;
+			}
+			if (path_in[iidx + 1] == PATH_SEPC) {
+				/*
+				 * Interstitial PATH_SEPC + "." + PATH_SEPC
+				 * turns into PATH_SEPC which has already been
+				 * transferred to the output.
+				 */
+				iidx += 2;
+				continue;
+			}
+			if (path_in[iidx + 1] == '.') {
+				if (!path_in[iidx + 2] || path_in[iidx + 2]
+						== PATH_SEPC) {
+					/*
+					 * Trailing or interstitial PATH_SEPC +
+					 * ".." + PATH_SEPC removes the last
+					 * path component (if already at the
+					 * root of the path, remain there).  In
+					 * this implementation, don't try to
+					 * remove that component if have already
+					 * exceeded the size of the output
+					 * buffer.
+					 */
+					if (oidx > root_size && oidx <= len) {
+						/*
+						 * Remember what the size was
+						 * before removing the last
+						 * component since that can
+						 * influence what buffer
+						 * size is needed to do the
+						 * normalization with this
+						 * implementation.
+						 */
+						oidx_high = MAX(oidx,
+							oidx_high);
+						/*
+						 * Back over the trailing path
+						 * separator already in the
+						 * output buffer.
+						 */
+						--oidx;
+						/*
+						 * Remove the last path
+						 * component.  Leaving a
+						 * trailing separator.
+						 */
+						while (1) {
+							assert(oidx > 0);
+							if (buf[oidx - 1] == PATH_SEPC) {
+								break;
+							}
+							--oidx;
+						}
+					}
+					if (!path_in[iidx + 2]) {
+						/*
+						 * Since ".." is at the end of
+						 * the path, remove the trailing
+						 * separator, unless that
+						 * would cut into the root
+						 * portion.
+						 */
+						if (oidx > root_size) {
+							--oidx;
+							/*
+							 * Leave at the end
+							 * of the string for
+							 * handling of
+							 * trailing_sep.
+							 */
+							iidx += 2;
+						}
+						break;
+					}
+					/* Skip over the ".." + PATH_SEPC. */
+					iidx += 3;
+					continue;
+				}
+			}
+		}
+
+		/*
+		 * Copy up to and including the next path separator or the
+		 * end, whichever comes first.
+		 */
+		while (1) {
+			if (!path_in[iidx]) {
+				break;
+			}
+			if (path_in[iidx] == PATH_SEPC) {
+				if (oidx < len) {
+					buf[oidx] = path_in[iidx];
+				}
+				++oidx;
+				++iidx;
+				break;
+			}
+			if (oidx < len) {
+				buf[oidx] = path_in[iidx];
+			}
+			++oidx;
+			++iidx;
+		}
+	}
+
+	/*
+	 * Add trailing path separator if requested, needed, and there's room.
+	 */
+	if (trailing_sep) {
+		/*
+		 * The input doesn't end in a path separator so the output
+		 * so far won't have one at the end as well.
+		 */
+		if (iidx == 0 || path_in[iidx - 1] != PATH_SEPC) {
+			if (oidx < len) {
+				buf[oidx] = PATH_SEPC;
+			}
+			++oidx;
+		}
+	}
+
+	/* Guarantee null termination if len is greater than zero. */
+	if (oidx < len) {
+		buf[oidx] = '\0';
+		result = 0;
+	} else {
+		if (len > 0) {
+			buf[len - 1] = '\0';
+		}
+		result = 1;
+	}
+	++oidx;
+
+	if (req_len) {
+		*req_len = MAX(oidx, oidx_high);
+	}
+	if (root_len) {
+		*root_len = root_size;
+	}
+
+	return result;
+
+ABNORMAL_RETURN:
+	if (len > 0) {
+		buf[0] = '\0';
+	}
+	if (req_len) {
+		*req_len = 0;
+	}
+	if (root_len) {
+		*root_len = 0;
+	}
+	return 2;
+}
+
+/**
  * Return the index of the filename in a path, using PATH_SEPC. If no path
  * separator is found, return 0.
  */
@@ -774,6 +1328,7 @@ struct ang_dir
 {
 	HANDLE h;
 	char *first_file;
+	bool first_is_dir, only_files;
 };
 
 ang_dir *my_dopen(const char *dirname)
@@ -793,9 +1348,20 @@ ang_dir *my_dopen(const char *dirname)
 	dir = mem_zalloc(sizeof(ang_dir));
 	dir->h = h;
 	dir->first_file = string_make(fd.cFileName);
+	dir->first_is_dir = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		|| streq(dir->first_file, ".") || streq(dir->first_file, "..");
+	dir->only_files = true;
 
 	/* Success */
 	return dir;
+}
+
+bool alter_ang_dir_only_files(ang_dir *dir, bool newval)
+{
+	bool oldval = dir->only_files;
+
+	dir->only_files = newval;
+	return oldval;
 }
 
 bool my_dread(ang_dir *dir, char *fname, size_t len)
@@ -805,13 +1371,18 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 
 	/* Try the first file */
 	if (dir->first_file) {
-		/* Copy the string across, then free it */
-		my_strcpy(fname, dir->first_file, len);
-		mem_free(dir->first_file);
-		dir->first_file = NULL;
+		if (!dir->first_is_dir || !dir->only_files) {
+			/* Copy the string across, then free it */
+			my_strcpy(fname, dir->first_file, len);
+			mem_free(dir->first_file);
+			dir->first_file = NULL;
 
-		/* Wild success */
-		return true;
+			/* Wild success */
+			return true;
+		} else {
+			mem_free(dir->first_file);
+			dir->first_file = NULL;
+		}
 	}
 
 	/* Try the next file */
@@ -819,11 +1390,14 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 		ok = FindNextFile(dir->h, &fd);
 		if (!ok) return false;
 
-		/* Skip directories */
-		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ||
-		    streq(fd.cFileName, ".") || streq(fd.cFileName, ".."))
+		/* Skip directories if requested. */
+		if (dir->only_files
+				&& (fd.dwFileAttributes
+				& FILE_ATTRIBUTE_DIRECTORY
+				|| streq(fd.cFileName, ".")
+				|| streq(fd.cFileName, ".."))) {
 			continue;
-
+		}
 		/* Take this one */
 		break;
 	}
@@ -854,6 +1428,7 @@ struct ang_dir
 {
 	DIR *d;
 	char *dirname;
+	bool only_files;
 };
 
 ang_dir *my_dopen(const char *dirname)
@@ -875,9 +1450,18 @@ ang_dir *my_dopen(const char *dirname)
 	/* Set up the handle */
 	dir->d = d;
 	dir->dirname = string_make(dirname);
+	dir->only_files = true;
 
 	/* Success */
 	return dir;
+}
+
+bool alter_ang_dir_only_files(ang_dir *dir, bool newval)
+{
+	bool oldval = dir->only_files;
+
+	dir->only_files = newval;
+	return oldval;
 }
 
 bool my_dread(ang_dir *dir, char *fname, size_t len)
@@ -900,7 +1484,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 			continue;
 
 		/* Check to see if it's a directory */
-		if (S_ISDIR(filedata.st_mode))
+		if (dir->only_files && S_ISDIR(filedata.st_mode))
 			continue;
 
 		/* We've found something worth returning */
