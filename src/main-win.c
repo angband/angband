@@ -568,51 +568,123 @@ static void term_getsize(term_data *td)
 	if (td->rows < 1) td->rows = 1;
 
 	if (use_graphics_nice) {
+		/*
+		 * This is the gamut of multipliers available in the
+		 * IDM_OPTIONS_TILE_* constants, sorted in increasing order
+		 * of the area of the scaled up block.
+		 */
+		const struct { int w, h; } multipliers[] = {
+			{ 1, 1 },
+			{ 2, 1 },
+			{ 3, 1 },
+			{ 2, 2 },
+			{ 4, 2 },
+			{ 3, 3 },
+			{ 4, 4 },
+			{ 6, 3 },
+			{ 8, 4 },
+			{ 6, 6 },
+			{ 8, 8 },
+			{ 16, 8 },
+			{ 16, 16 },
+		};
+		long best;
+		int ibest, i;
+
 		if (current_graphics_mode && current_graphics_mode->grafID) {
 			if (current_graphics_mode->file[0]) {
-                char *end;
-                td->tile_wid = strtol(current_graphics_mode->file,&end,10);
-                td->tile_hgt = strtol(end+1,NULL,10);
+				char *end;
+				td->tile_wid = strtol(
+					current_graphics_mode->file,&end,10);
+				td->tile_hgt = strtol(end+1,NULL,10);
 			} else {
-                td->tile_wid = current_graphics_mode->cell_width;
-                td->tile_hgt = current_graphics_mode->cell_height;
+				td->tile_wid =
+					current_graphics_mode->cell_width;
+				td->tile_hgt =
+					current_graphics_mode->cell_height;
 			}
 			if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
-                td->tile_wid = current_graphics_mode->cell_width;
-                td->tile_hgt = current_graphics_mode->cell_height;
+				td->tile_wid =
+					current_graphics_mode->cell_width;
+				td->tile_hgt =
+					current_graphics_mode->cell_height;
 			}
 			if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
-                td->tile_wid = td->font_wid;
-                td->tile_hgt = td->font_hgt;
+				td->tile_wid = td->font_wid;
+				td->tile_hgt = td->font_hgt;
 			}
 		} else {
 			/* Reset the tile info */
 			td->tile_wid = td->font_wid;
 			td->tile_hgt = td->font_hgt;
 		}
-		
-	    tile_width = 1;
-	    tile_height = 1;
-		
-		if ((td->tile_hgt >= td->font_hgt * 3) &&
-			(td->tile_wid >= td->font_wid * 3)) {
-			tile_width = 3;
-			tile_height = 3;
-			td->tile_wid /= 3;
-			td->tile_hgt /= 3;
-		} else if ((td->tile_hgt >= td->font_hgt * 2) &&
-				   (td->tile_wid >= td->font_wid * 2)) {
-			tile_width = 2;
-			tile_height = 2;
-			td->tile_wid /= 2;
-			td->tile_hgt /= 2;
+
+		/*
+		 * If the tile is enough smaller than the font in either
+		 * dimension, consider using a scaled up version (preserving
+		 * the aspect ratio) of the tile as the target size.
+		 */
+		if (td->tile_wid <= (2 * td->font_wid) / 3
+				|| td->tile_hgt <= (2 * td->font_wid) / 3) {
+			int area_ratio = (int) (((long) td->font_wid
+				* (long) td->font_hgt + ((long) td->tile_wid
+				* (long) td->tile_hgt) / 2)
+				/ ((long) td->tile_wid * (long) td->tile_hgt));
+
+			best = abs((long) td->font_wid * (long) td->font_hgt
+				 - (long) td->tile_wid * (long) td->tile_hgt);
+			ibest = 1;
+			i = 2;
+			while (!best && (i - 1) * (i - 1) <= area_ratio) {
+				int try_best = abs((long) td->font_wid
+					* (long) td->font_hgt
+					- ((long) td->tile_wid * i)
+					* ((long) td->tile_hgt * i));
+
+				if (best > try_best) {
+					best = try_best;
+					ibest = i;
+				}
+				++i;
+			}
+			td->tile_wid *= i;
+			td->tile_hgt *= i;
 		}
-		
-		if (td->tile_wid >= td->font_wid * 2) {
-			tile_width *= 2;
-			td->tile_wid /= 2;
+
+		/*
+		 * Find the best multiplier (size of the scaled up font does
+		 * not exceed the tile size in either dimension, and the area
+		 * of the scaled up font is closest to the area of the tile).
+		 */
+		ibest = -1;
+		best = (long) td->tile_wid * (long) td->tile_hgt;
+		for (i = 0; i < (int) N_ELEMENTS(multipliers) && best; ++i) {
+			uint sclw = td->font_wid * multipliers[i].w;
+			uint sclh = td->font_hgt * multipliers[i].h;
+
+			if (sclw <= td->tile_wid && sclh <= td->tile_hgt) {
+				int try_best = abs(
+					(long) td->tile_wid
+					* (long) td->tile_hgt
+					- (long) sclw * (long) sclh);
+
+				if (best > try_best) {
+					best = try_best;
+					ibest = i;
+				}
+			}
 		}
-		
+
+		if (ibest >= 0) {
+			tile_width = multipliers[ibest].w;
+			tile_height = multipliers[ibest].h;
+			td->tile_wid /= tile_width;
+			td->tile_hgt /= tile_height;
+		} else {
+			tile_width = 1;
+			tile_height = 1;
+		}
+
 		if (td->tile_wid < td->font_wid) td->tile_wid = td->font_wid;
 		if (td->tile_hgt < td->font_hgt) td->tile_hgt = td->font_hgt;
 	}
