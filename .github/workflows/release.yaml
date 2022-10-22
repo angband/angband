@@ -16,6 +16,48 @@ env:
     DOC_ARTIFACT: release-docs
     # Used as the path for the file with the converted document files.
     DOC_ARTIFACT_PATH: release-docs.tar
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the source archive.
+    SRC_ARTIFACT: release-src
+    # Used as the path for the file with the name of the source archive in it.
+    SRC_ARTIFACT_PATH: release-src.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the source archive.
+    SRC_ARCHIVE_ARTIFACT: release-src-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Windows archive.
+    WIN_ARTIFACT: release-win
+    # Used as the path for the file with the name of the Windows archive in it.
+    WIN_ARTIFACT_PATH: release-win.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Windows archive.
+    WIN_ARCHIVE_ARTIFACT: release-win-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Mac archive.
+    MAC_ARTIFACT: release-mac
+    # Used as the path for the file with the name of the Mac archive in it.
+    MAC_ARTIFACT_PATH: release-mac.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Mac archive.
+    MAC_ARCHIVE_ARTIFACT: release-mac-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Nintendo NDS archive.
+    NIN_DS_ARTIFACT: release-ds
+    # Used as the path for the file with the name of the Nintendo NDS archive
+    # in it.
+    NIN_DS_ARTIFACT_PATH: release-ds.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Nintendo DS archive.
+    NIN_DS_ARCHIVE_ARTIFACT: release-ds-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Nintendo 3DS archive.
+    NIN_3DS_ARTIFACT: release-3ds
+    # Used as the path for the file with the name of the Nintendo 3DS archive
+    # in it.
+    NIN_3DS_ARTIFACT_PATH: release-3ds.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Nintendo 3DS archive.
+    NIN_3DS_ARCHIVE_ARTIFACT: release-3ds-archive
 
 jobs:
   setup:
@@ -25,7 +67,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -33,51 +75,36 @@ jobs:
         id: get_names
         run: |
           name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
 
       - name: Set Release Version
         id: get_release_vars
         run: |
           version=`scripts/version.sh`
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
           prerelease=`echo $version | awk '/^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
-          echo "::set-output name=prerelease::$prerelease"
+          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
           # Mark anything that isn't a prerelease as a draft.
           draft=true
           if test x$prerelease = xtrue ; then
               draft=false
           fi
-          echo "::set-output name=draft::$draft"
-
-      # Largely cribbed from the example in README.md at
-      # https://github.com/actions/upload-release-asset .
-      - name: Create Bare Release
-        id: create_bare_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token provided by Actions
-        with:
-          tag_name: ${{ steps.get_release_vars.outputs.version }}
-          release_name: Release ${{ steps.get_release_vars.outputs.version }}
-          commitish: ${{ github.sha }}
-          prerelease: ${{ steps.get_release_vars.outputs.prerelease }}
-          draft: ${{ steps.get_release_vars.outputs.draft }}
+          echo "draft=$draft" >> $GITHUB_OUTPUT
 
       # The quoting here may be too simple-minded:  what if there are single
       # quotes in the steps.*.outputs.* stuff.
       - name: Create Artifact with Configuration Details
         run: |
           echo name= '${{ steps.get_names.outputs.name }}' > $CONFIG_ARTIFACT_PATH
-          echo progname= '${{ steps.get_names.outputs.progname }}' >> $CONFIG_ARTIFACT_PATH
+          echo prog= '${{ steps.get_names.outputs.prog }}' >> $CONFIG_ARTIFACT_PATH
           echo version= '${{ steps.get_release_vars.outputs.version }}' >> $CONFIG_ARTIFACT_PATH
           echo prerelease= '${{ steps.get_release_vars.outputs.prerelease }}' >> $CONFIG_ARTIFACT_PATH
           echo draft= '${{ steps.get_release_vars.outputs.draft }}' >> $CONFIG_ARTIFACT_PATH
-          echo upload_url= '${{ steps.create_bare_release.outputs.upload_url }}' >> $CONFIG_ARTIFACT_PATH
 
       - name: Upload Artifact for Use by Dependent Steps
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
           path: ${{ env.CONFIG_ARTIFACT_PATH }}
@@ -107,7 +134,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -122,7 +149,7 @@ jobs:
           tar -cf ${{ env.DOC_ARTIFACT_PATH }} docs/_build/html
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.DOC_ARTIFACT }}
           path: ${{ env.DOC_ARTIFACT_PATH }}
@@ -134,7 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -142,17 +169,11 @@ jobs:
         id: store_config
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=version::$version"
-          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=prerelease::$prerelease"
-          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=draft::$draft"
-          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=upload_url::$upload_url"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Install Build Dependencies
         run: |
@@ -162,7 +183,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -172,22 +193,26 @@ jobs:
           ./autogen.sh
           ./configure
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          echo "::set-output name=archive_file::${archive_prefix}.tar.gz"
-          echo "::set-output name=archive_content_type::application/gzip"
+          echo "archive_file=${archive_prefix}.tar.gz" >> $GITHUB_OUTPUT
           make TAG="$archive_prefix" OUT="$archive_prefix".tar.gz dist
 
-      # Largely cribbed from the example in README.md at
-      # https://github.com/actions/upload-release-asset .
-      - name: Upload Source Archive
-        id: upload_source_archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Artifact with Source Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_source_archive.outputs.archive_file }}' > $SRC_ARTIFACT_PATH
+
+      - name: Upload Artifact with Source Archive Path
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_source_archive.outputs.archive_file }}
-          asset_name: ${{ steps.create_source_archive.outputs.archive_file }}
-          asset_content_type: ${{ steps.create_source_archive.outputs.archive_content_type }}
+          name: ${{ env.SRC_ARTIFACT }}
+          path: ${{ env.SRC_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Source Archive as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_source_archive.outputs.archive_file }}
+          retention-days: 1
 
   windows:
     needs: [setup, docconvert]
@@ -195,7 +220,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -203,17 +228,11 @@ jobs:
         id: store_config
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=version::$version"
-          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=prerelease::$prerelease"
-          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=draft::$draft"
-          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=upload_url::$upload_url"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Install Build Dependencies
         run: |
@@ -223,12 +242,12 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -247,24 +266,28 @@ jobs:
           ./autogen.sh
           env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32 --enable-skip-old-int-typedefs
           make
-          cp src/${{ steps.store_config.outputs.progname }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
+          cp src/${{ steps.store_config.outputs.prog }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          echo "::set-output name=archive_file::${archive_prefix}-win.zip"
-          echo "::set-output name=archive_content_type::application/zip"
+          echo "archive_file=${archive_prefix}-win.zip" >> $GITHUB_OUTPUT
           scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
 
-      # Largely cribbed from the example in README.md at
-      # https://github.com/actions/upload-release-asset .
-      - name: Upload Windows Archive
-        id: upload_windows_archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Artifact with Windows Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN_ARTIFACT_PATH
+
+      - name: Upload Artifact with Windows Archive Path
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_windows_archive.outputs.archive_file }}
-          asset_name: ${{ steps.create_windows_archive.outputs.archive_file }}
-          asset_content_type: ${{ steps.create_windows_archive.outputs.archive_content_type }}
+          name: ${{ env.WIN_ARTIFACT }}
+          path: ${{ env.WIN_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Windows Archive as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_windows_archive.outputs.archive_file }}
+          retention-days: 1
 
   mac:
     needs: [setup, docconvert]
@@ -272,7 +295,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -280,27 +303,21 @@ jobs:
         id: store_config
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=version::$version"
-          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=prerelease::$prerelease"
-          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=draft::$draft"
-          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=upload_url::$upload_url"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -321,21 +338,25 @@ jobs:
           cd src
           env OPT="-O2 -DNDEBUG -DSKIP_ANGBAND_OLD_INT_TYPEDEFS" make -f Makefile.osx dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
-          echo "::set-output name=archive_file::${archive_prefix}.dmg"
-          echo "::set-output name=archive_content_type::application/octet-stream"
+          echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
 
-      # Largely cribbed from the example in README.md at
-      # https://github.com/actions/upload-release-asset .
-      - name: Upload Mac Archive
-        id: upload_mac_archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Artifact with Mac Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_mac_archive.outputs.archive_file }}' > $MAC_ARTIFACT_PATH
+
+      - name: Upload Artifact with Mac Archive Path
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_mac_archive.outputs.archive_file }}
-          asset_name: ${{ steps.create_mac_archive.outputs.archive_file }}
-          asset_content_type: ${{ steps.create_mac_archive.outputs.archive_content_type }}
+          name: ${{ env.MAC_ARTIFACT }}
+          path: ${{ env.MAC_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Mac Archive as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_mac_archive.outputs.archive_file }}
+          retention-days: 1
 
   _3ds:
     needs: [setup, docconvert]
@@ -344,7 +365,7 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -352,25 +373,19 @@ jobs:
         id: store_config
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=version::$version"
-          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=prerelease::$prerelease"
-          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=draft::$draft"
-          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=upload_url::$upload_url"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -385,7 +400,7 @@ jobs:
           pushd src/
           make -f Makefile.3ds
           popd
-          test -e src/${{ steps.store_config.outputs.progname }}.3dsx
+          test -e src/${{ steps.store_config.outputs.prog }}.3dsx
 
       - name: Setup cxitool
         shell: bash
@@ -409,7 +424,7 @@ jobs:
           cp -rv bin/makerom /usr/local/bin
           popd
 
-      # The quoting to get progname may be too simple-minded:  what if there
+      # The quoting to get prog may be too simple-minded:  what if there
       # are single quotes in the steps.*.outputs.* stuff.  Restrict what's
       # passed to cxitool's --name option to at most 8 characters since that
       # is a limitation of that tool.
@@ -418,12 +433,12 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          progname='${{ steps.store_config.outputs.progname }}'
-          procname=`echo "$progname" | head -c 8`
-          test -e "$progname".3dsx
-          cxitool --name "$procname" "$progname".3dsx "$progname".cxi
-          makerom -v -f cia -o "$progname".cia -target t -i "$progname".cxi:0:0 -ignoresign -icon icon.smdh
-          test -e ${{ steps.store_config.outputs.progname }}.cia
+          prog='${{ steps.store_config.outputs.prog }}'
+          procname=`echo "$prog" | head -c 8`
+          test -e "$prog".3dsx
+          cxitool --name "$procname" "$prog".3dsx "$prog".cxi
+          makerom -v -f cia -o "$prog".cia -target t -i "$prog".cxi:0:0 -ignoresign -icon icon.smdh
+          test -e "$prog".cia
           popd
 
       - name: Create Nintendo 3DS Archive
@@ -431,24 +446,30 @@ jobs:
         shell: bash
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          echo "::set-output name=archive_file::${archive_prefix}-3ds.zip"
-          echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v ${{ steps.store_config.outputs.progname }}/
-          cp -v src/${{ steps.store_config.outputs.progname }}.3dsx ${archive_prefix}.3dsx
-          cp -v src/${{ steps.store_config.outputs.progname }}.cia ${archive_prefix}.cia
-          cp -rv lib ${{ steps.store_config.outputs.progname }}/
-          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${archive_prefix}.cia ${{ steps.store_config.outputs.progname }}/
+          echo "archive_file=${archive_prefix}-3ds.zip" >> $GITHUB_OUTPUT
+          mkdir -v ${{ steps.store_config.outputs.prog }}/
+          cp -v src/${{ steps.store_config.outputs.prog }}.3dsx ${archive_prefix}.3dsx
+          cp -v src/${{ steps.store_config.outputs.prog }}.cia ${archive_prefix}.cia
+          cp -rv lib ${{ steps.store_config.outputs.prog }}/
+          zip -r ${archive_prefix}-3ds.zip ${archive_prefix}.3dsx ${archive_prefix}.cia ${{ steps.store_config.outputs.prog }}/
           
-      - name: Upload Nintendo 3DS Archive
-        id: upload_nintendo_3ds_archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Artifact with Nintendo 3DS Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}' > $NIN_3DS_ARTIFACT_PATH
+
+      - name: Upload Artifact with Nintendo 3DS Archive Path
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
-          asset_name: ${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
-          asset_content_type: ${{ steps.create_nintendo_3ds_archive.outputs.archive_content_type }}
+          name: ${{ env.NIN_3DS_ARTIFACT }}
+          path: ${{ env.NIN_3DS_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Nintendo 3DS Archive as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
+          retention-days: 1
 
   nds:
     needs: [setup, docconvert]
@@ -457,7 +478,7 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -465,25 +486,19 @@ jobs:
         id: store_config
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=name::$name"
-          progname=`sed -E -n -e 's/progname= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=progname::$progname"
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=version::$version"
-          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=prerelease::$prerelease"
-          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=draft::$draft"
-          upload_url=`sed -E -n -e 's/upload_url= //p' $CONFIG_ARTIFACT_PATH`
-          echo "::set-output name=upload_url::$upload_url"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -498,24 +513,145 @@ jobs:
           pushd src/
           make -f Makefile.nds
           popd
-          test -e src/${{ steps.store_config.outputs.progname }}.nds
+          test -e src/${{ steps.store_config.outputs.prog }}.nds
 
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          echo "::set-output name=archive_file::${archive_prefix}-nds.zip"
-          echo "::set-output name=archive_content_type::application/zip"
-          mkdir -v ${{ steps.store_config.outputs.progname }}/
-          cp -v src/${{ steps.store_config.outputs.progname }}.nds ${archive_prefix}.nds
-          cp -rv lib ${{ steps.store_config.outputs.progname }}/
-          zip -r ${archive_prefix}-nds.zip ${archive_prefix}.nds ${{ steps.store_config.outputs.progname }}/
+          echo "archive_file=${archive_prefix}-nds.zip" >> $GITHUB_OUTPUT
+          mkdir -v ${{ steps.store_config.outputs.prog }}/
+          cp -v src/${{ steps.store_config.outputs.prog }}.nds ${archive_prefix}.nds
+          cp -rv lib ${{ steps.store_config.outputs.prog }}/
+          zip -r ${archive_prefix}-nds.zip ${archive_prefix}.nds ${{ steps.store_config.outputs.prog }}/
 
-      - name: Upload Nintendo DS Archive
-        id: upload_nintendo_ds_archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Artifact with Nintendo DS Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_nintendo_ds_archive.outputs.archive_file }}' > $NIN_DS_ARTIFACT_PATH
+
+      - name: Upload Artifact with Nintendo DS Archive Path
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.store_config.outputs.upload_url }}
-          asset_path: ./${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
-          asset_name: ${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
-          asset_content_type: ${{ steps.create_nintendo_ds_archive.outputs.archive_content_type }}
- 
+          name: ${{ env.NIN_DS_ARTIFACT }}
+          path: ${{ env.NIN_DS_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Nintendo DS Archive as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
+          retention-days: 1
+
+  release:
+    needs: [ setup, source, windows, mac, _3ds, nds ]
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+          prerelease=`sed -E -n -e 's/prerelease= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
+          draft=`sed -E -n -e 's/draft= //p' $CONFIG_ARTIFACT_PATH`
+          echo "draft=$draft" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Source Archive Path
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.SRC_ARTIFACT }}
+
+      - name: Extract Source Archive Path and Store in Step Outputs
+        id: store_src
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $SRC_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Source Archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Windows Archive Path
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.WIN_ARTIFACT }}
+
+      - name: Extract Windows Archive Path and Store in Step Outputs
+        id: store_win
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $WIN_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Windows Archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Mac Archive Path
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.MAC_ARTIFACT }}
+
+      - name: Extract Mac Archive Path and Store in Step Outputs
+        id: store_mac
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $MAC_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Mac Archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Nintendo 3DS Archive Path
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.NIN_3DS_ARTIFACT }}
+
+      - name: Extract Nintendo 3DS Archive Path and Store in Step Outputs
+        id: store_3ds
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_3DS_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Nintendo 3DS Archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Nintendo DS Archive Path
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.NIN_DS_ARTIFACT }}
+
+      - name: Extract Nintendo DS Archive Path and Store in Step Outputs
+        id: store_ds
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_DS_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Nintendo DS Archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
+
+      - name: Populate Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.store_config.outputs.version }}
+          name: ${{ steps.store_config.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          draft: ${{ steps.store_config.outputs.draft }}
+          prerelease: ${{ steps.store_config.outputs.prerelease }}
+          files: |
+            ${{ steps.store_src.outputs.archive_path }}
+            ${{ steps.store_win.outputs.archive_path }}
+            ${{ steps.store_mac.outputs.archive_path }}
+            ${{ steps.store_3ds.outputs.archive_path }}
+            ${{ steps.store_ds.outputs.archive_path }}
+          token: ${{ secrets.GITHUB_TOKEN }}
