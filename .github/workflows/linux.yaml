@@ -16,7 +16,7 @@ jobs:
           sudo apt-get install gcc automake autoconf make libx11-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -36,7 +36,7 @@ jobs:
           sudo apt-get install gcc make cmake libx11-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -55,7 +55,7 @@ jobs:
           sudo apt-get install gcc make cmake libncursesw5-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -74,7 +74,7 @@ jobs:
           sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -93,7 +93,7 @@ jobs:
           sudo apt-get install gcc autoconf automake make libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -111,7 +111,7 @@ jobs:
           sudo apt-get install gcc autoconf automake make libsqlite3-dev libsdl1.2-dev libsdl-mixer1.2-dev
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Build with some extra warnings.  Add some that are only supported in
       # more recent versions of GCC that the configure script won't enable.
