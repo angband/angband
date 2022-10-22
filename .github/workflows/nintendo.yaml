@@ -13,13 +13,13 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Extract Names from Makefile
         id: get_names
         run: |
             progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
-            echo "::set-output name=progname::$progname"
+            echo "progname=$progname" >> $GITHUB_OUTPUT
 
       - name: Build Nintendo 3DS (3dsx)
         shell: bash
@@ -70,7 +70,7 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         shell: bash
