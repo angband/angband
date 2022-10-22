@@ -51,6 +51,7 @@ jobs:
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-SDL2_ttf
             mingw-w64-x86_64-SDL2_image
+            mingw-w64-x86_64-SDL2_mixer
 
       - name: Clone Project
         uses: actions/checkout@v2
@@ -58,4 +59,4 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2.sdl2
+          make -f Makefile.msys2.sdl2 SOUND=yes
