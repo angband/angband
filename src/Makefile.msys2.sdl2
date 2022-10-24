@@ -33,8 +33,11 @@ default: install
 
 # Support SDL2 frontend, link all dependencies statically
 # freetype and harfbuzz has Circular dependency
-VIDEO_sdl2 := -DUSE_SDL2 \
+VIDEO_sdl2_cflags := \
+	-DUSE_SDL2 \
 	$(shell sdl2-config --cflags) \
+
+VIDEO_sdl2_ldflags := \
 	$(shell sdl2-config --static-libs) \
 	-lSDL2_ttf -lSDL2_image \
 	-ltiff \
@@ -70,9 +73,14 @@ VIDEO_sdl2 := -DUSE_SDL2 \
 
 ## Support SDL_mixer for sound
 ifdef SOUND
-SOUND_sdl2 := -DSOUND_SDL2 -DSOUND \
+SOUND_sdl2_cflags := \
+	-DSOUND_SDL2 \
+	-DSOUND \
 	$(shell sdl2-config --cflags) \
-	$(shell sdl2-config --libs) -lSDL2_mixer \
+
+SOUND_sdl2_ldflags := \
+	$(shell sdl2-config --libs) \
+	-lSDL2_mixer \
 	-lmpg123 \
 	-lopusfile \
 	-lopus \
@@ -102,14 +110,15 @@ CFLAGS := -std=c99 \
 LDFLAGS := -lm
 
 # Frontends to compile
-MODULES := $(VIDEO_sdl2)
+MODULES_cflags := $(VIDEO_sdl2_cflags)
+MODULES_ldflags := $(VIDEO_sdl2_ldflags)
 ifdef SOUND
-MODULES += $(SOUND_sdl2)
+MODULES_cflags += $(SOUND_sdl2_cflags)
+MODULES_ldflags += $(SOUND_sdl2_ldflags)
 endif
 
-# Extract CFLAGS and LDFLAGS from the module definitions
-CFLAGS += $(patsubst -l%,,$(MODULES))
-LDFLAGS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
+CFLAGS += $(MODULES_cflags)
+LDFLAGS += $(MODULES_ldflags)
 
 # Makefile.inc contains an up-to-date set of object files to compile
 include Makefile.inc
