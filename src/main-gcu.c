@@ -27,6 +27,16 @@
 
 #ifdef USE_GCU
 #include "main.h"
+#ifdef _WIN32
+/*
+ * Microsoft puts write() in io.h and marks it with a deprecation warning.
+ * Use the equivalent _write() instead.
+ */
+#include <io.h>
+#define PLATFORM_WRITE _write
+#else
+#define PLATFORM_WRITE write
+#endif
 
 /**
  * Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX
@@ -1050,7 +1060,7 @@ static errr Term_xtra_gcu(int n, int v) {
 		case TERM_XTRA_CLEAR: touchwin(td->win); wclear(td->win); return 0;
 
 		/* Make a noise */
-		case TERM_XTRA_NOISE: write(1, "\007", 1); return 0;
+		case TERM_XTRA_NOISE: PLATFORM_WRITE(1, "\007", 1); return 0;
 
 		/* Flush the Curses buffer */
 		case TERM_XTRA_FRESH: wrefresh(td->win); return 0;
