@@ -475,10 +475,56 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 			/* Now others with resisted effects */
 			while (effect) {
 				/* Timed effects */
-				if ((smart || !one_in_(3)) &&
-						effect->index == EF_TIMED_INC &&
-						of_has(flags, timed_effects[effect->subtype].fail))
-					break;
+				if ((smart || !one_in_(3))
+						&& effect->index == EF_TIMED_INC) {
+					const struct timed_failure *f;
+					bool resisted = false;
+
+					assert(effect->subtype >= 0
+						&& effect->subtype < TMD_MAX);
+					for (f = timed_effects[effect->subtype].fail;
+							f && !resisted;
+							f = f->next) {
+						switch (f->code) {
+						case TMD_FAIL_FLAG_OBJECT:
+							if (of_has(flags, f->idx)) {
+								resisted = true;
+							}
+							break;
+
+						case TMD_FAIL_FLAG_RESIST:
+							if (el[f->idx].res_level > 0) {
+								resisted = true;
+							}
+							break;
+
+						case TMD_FAIL_FLAG_VULN:
+							if (el[f->idx].res_level < 0) {
+								resisted = true;
+							}
+							break;
+
+						case TMD_FAIL_FLAG_PLAYER:
+							if (pf_has(pflags, f->idx)) {
+								resisted = true;
+							}
+							break;
+
+						/*
+						 * The monster doesn't track
+						 * the timed effects present
+						 * on the player so do
+						 * nothing with resistances
+						 * due to those.
+						 */
+						case TMD_FAIL_FLAG_TIMED_EFFECT:
+							break;
+						}
+					}
+					if (resisted) {
+						break;
+					}
+				}
 
 				/* Mana drain */
 				if ((smart || one_in_(2)) &&

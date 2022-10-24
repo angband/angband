@@ -333,6 +333,68 @@ int16_t modify_stat_value(int value, int amount)
 }
 
 /**
+ * Swap player's stats at random, retaining information so they can be
+ * reverted to their original state.
+ */
+void player_scramble_stats(struct player *p)
+{
+	int max1, cur1, max2, cur2, i, j, swap;
+
+	/* Fisher-Yates shuffling algorithm */
+	for (i = STAT_MAX - 1; i > 0; --i) {
+		j = randint0(i);
+
+		max1 = p->stat_max[i];
+		cur1 = p->stat_cur[i];
+		max2 = p->stat_max[j];
+		cur2 = p->stat_cur[j];
+
+		p->stat_max[i] = max2;
+		p->stat_cur[i] = cur2;
+		p->stat_max[j] = max1;
+		p->stat_cur[j] = cur1;
+
+		/* Record what we did */
+		swap = p->stat_map[i];
+		assert(swap >= 0 && swap < STAT_MAX);
+		p->stat_map[i] = p->stat_map[j];
+		assert(p->stat_map[i] >= 0 && p->stat_map[i] < STAT_MAX);
+		p->stat_map[j] = swap;
+	}
+
+	/* Mark what else needs to be updated */
+	p->upkeep->update |= (PU_BONUS);
+}
+
+/**
+ * Revert all prior swaps to the player's stats.  Has no effect if the
+ * stats have not been swapped.
+ */
+void player_fix_scramble(struct player *p)
+{
+	/* Figure out what stats should be */
+	int new_cur[STAT_MAX];
+	int new_max[STAT_MAX];
+	int i;
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		assert(p->stat_map[i] >= 0 && p->stat_map[i] < STAT_MAX);
+		new_cur[p->stat_map[i]] = p->stat_cur[i];
+		new_max[p->stat_map[i]] = p->stat_max[i];
+	}
+
+	/* Apply new stats and reset stat_map */
+	for (i = 0; i < STAT_MAX; ++i) {
+		p->stat_cur[i] = new_cur[i];
+		p->stat_max[i] = new_max[i];
+		p->stat_map[i] = i;
+	}
+
+	/* Mark what else needs to be updated */
+	p->upkeep->update |= (PU_BONUS);
+}
+
+/**
  * Regenerate one turn's worth of hit points
  */
 void player_regen_hp(struct player *p)

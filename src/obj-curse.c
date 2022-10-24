@@ -157,26 +157,33 @@ bool append_object_curse(struct object *obj, int pick, int power)
 	}
 
 	/* Reject curses with effects foiled by an existing object property */
-	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
+	if (c->obj->effect && c->obj->effect->index
+			== effect_lookup("TIMED_INC")) {
 		int idx = c->obj->effect->subtype;
-		struct timed_effect_data *status;
-		assert(idx < TMD_MAX);
-		status = &timed_effects[idx];
-		if (status->fail_code == TMD_FAIL_FLAG_OBJECT) {
-			if (of_has(obj->flags, status->fail)) {
-				check_object_curses(obj);
-				return false;
+		const struct timed_failure *f;
+
+		assert(idx >= 0 && idx < TMD_MAX);
+		f = timed_effects[idx].fail;
+		while (f) {
+			if (f->code == TMD_FAIL_FLAG_OBJECT) {
+				if (of_has(obj->flags, f->idx)) {
+					check_object_curses(obj);
+					return false;
+				}
+			} else if (f->code == TMD_FAIL_FLAG_RESIST) {
+				assert(f->idx >= 0 && f->idx < ELEM_MAX);
+				if (obj->el_info[f->idx].res_level > 0) {
+					check_object_curses(obj);
+					return false;
+				}
+			} else if (f->code == TMD_FAIL_FLAG_VULN) {
+				assert(f->idx >= 0 && f->idx < ELEM_MAX);
+				if (obj->el_info[f->idx].res_level < 0) {
+					check_object_curses(obj);
+					return false;
+				}
 			}
-		} else if (status->fail_code == TMD_FAIL_FLAG_RESIST) {
-			if (obj->el_info[status->fail].res_level > 0) {
-				check_object_curses(obj);
-				return false;
-			}
-		} else if (status->fail_code == TMD_FAIL_FLAG_VULN) {
-			if (obj->el_info[status->fail].res_level < 0) {
-				check_object_curses(obj);
-				return false;
-			}
+			f = f->next;
 		}
 	}
 
@@ -258,26 +265,33 @@ bool artifact_curse_conflicts(struct artifact *art, int pick)
 	int i;
 
 	/* Reject curses with effects foiled by an existing artifact property */
-	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
+	if (c->obj->effect && c->obj->effect->index
+			== effect_lookup("TIMED_INC")) {
 		int idx = c->obj->effect->subtype;
-		struct timed_effect_data *status;
-		assert(idx < TMD_MAX);
-		status = &timed_effects[idx];
-		if (status->fail_code == TMD_FAIL_FLAG_OBJECT) {
-			if (of_has(art->flags, status->fail)) {
-				check_artifact_curses(art);
-				return true;
+		const struct timed_failure *f;
+
+		assert(idx >= 0 && idx < TMD_MAX);
+		f = timed_effects[idx].fail;
+		while (f) {
+			if (f->code == TMD_FAIL_FLAG_OBJECT) {
+				if (of_has(art->flags, f->idx)) {
+					check_artifact_curses(art);
+					return true;
+				}
+			} else if (f->code == TMD_FAIL_FLAG_RESIST) {
+				assert(f->idx >= 0 && f->idx < ELEM_MAX);
+				if (art->el_info[f->idx].res_level > 0) {
+					check_artifact_curses(art);
+					return true;
+				}
+			} else if (f->code == TMD_FAIL_FLAG_VULN) {
+				assert(f->idx >= 0 && f->idx < ELEM_MAX);
+				if (art->el_info[f->idx].res_level < 0) {
+					check_artifact_curses(art);
+					return true;
+				}
 			}
-		} else if (status->fail_code == TMD_FAIL_FLAG_RESIST) {
-			if (art->el_info[status->fail].res_level > 0) {
-				check_artifact_curses(art);
-				return true;
-			}
-		} else if (status->fail_code == TMD_FAIL_FLAG_VULN) {
-			if (art->el_info[status->fail].res_level < 0) {
-				check_artifact_curses(art);
-				return true;
-			}
+			f = f->next;
 		}
 	}
 

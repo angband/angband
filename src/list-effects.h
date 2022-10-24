@@ -121,3 +121,5 @@ EFFECT(WONDER,						true,	NULL,		0,		EFINFO_NONE,	"creates random and unpredicta
 EFFECT(SELECT,						false,	NULL,		0,		EFINFO_NONE,	"selects one of ",	"")
 EFFECT(SET_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"",					"")
 EFFECT(CLEAR_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"",					"")
+EFFECT(SCRAMBLE_STATS,					false,  NULL,		0,		EFINFO_NONE,	"", 					"")
+EFFECT(UNSCRAMBLE_STATS,				false,	NULL,		0,		EFINFO_NONE,	"",					"")
