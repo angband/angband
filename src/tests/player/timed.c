@@ -1853,17 +1853,19 @@ static int test_set_timed6(void *state) {
 static int test_inc_check0(void *state) {
 	struct test_timed_state *st = (struct test_timed_state *) state;
 	int weapon_slot = wield_slot(st->weapon);
+	const struct timed_failure *f;
+	int flag_idx;
 	bool result;
 
 	require(weapon_slot >= 0 && weapon_slot < player->body.count);
 
 	/* Test for effect that has no protection. */
-	eq(timed_effects[TMD_FOOD].fail_code, 0);
+	null(timed_effects[TMD_FOOD].fail);
 	result = player_inc_check(player, TMD_FOOD, false);
 	eq(result, true);
 	result = player_inc_check(player, TMD_FOOD, true);
 	eq(result, true);
-	eq(timed_effects[TMD_SINVIS].fail_code, 0);
+	null(timed_effects[TMD_SINVIS].fail);
 	result = player_inc_check(player, TMD_SINVIS, false);
 	eq(result, true);
 	result = player_inc_check(player, TMD_SINVIS, true);
@@ -1873,170 +1875,217 @@ static int test_inc_check0(void *state) {
 	 * Test for effect that has object flag protection.  First without
 	 * the object flag set and then with it set.
 	 */
-	eq(timed_effects[TMD_SLOW].fail_code, TMD_FAIL_FLAG_OBJECT);
-	of_off(player->state.flags, timed_effects[TMD_SLOW].fail);
-	of_off(player->known_state.flags, timed_effects[TMD_SLOW].fail);
-	of_off(player->obj_k->flags, timed_effects[TMD_SLOW].fail);
+	f = timed_effects[TMD_SLOW].fail;
+	flag_idx = -1;
+	while (1) {
+		if (!f) {
+			notnull(f);
+		}
+		if (f->code == TMD_FAIL_FLAG_OBJECT) {
+			flag_idx = f->idx;
+			break;
+		}
+		f = f->next;
+	}
+	of_off(player->state.flags, flag_idx);
+	of_off(player->known_state.flags, flag_idx);
+	of_off(player->obj_k->flags, flag_idx);
 	player->body.slots[weapon_slot].obj = NULL;
 	result = player_inc_check(player, TMD_SLOW, false);
 	eq(result, true);
-	require(!of_has(player->obj_k->flags, timed_effects[TMD_SLOW].fail));
+	require(!of_has(player->obj_k->flags, flag_idx));
 	result = player_inc_check(player, TMD_SLOW, true);
 	eq(result, true);
-	require(!of_has(player->obj_k->flags, timed_effects[TMD_SLOW].fail));
-	of_on(player->state.flags, timed_effects[TMD_SLOW].fail);
+	require(!of_has(player->obj_k->flags, flag_idx));
+	of_on(player->state.flags, flag_idx);
 	of_wipe(st->weapon->flags);
-	of_on(st->weapon->flags, timed_effects[TMD_SLOW].fail);
+	of_on(st->weapon->flags, flag_idx);
 	player->body.slots[weapon_slot].obj = st->weapon;
 	result = player_inc_check(player, TMD_SLOW, false);
 	eq(result, false);
-	require(of_has(player->obj_k->flags, timed_effects[TMD_SLOW].fail));
+	require(of_has(player->obj_k->flags, flag_idx));
 
 	/*
 	 * Lore checks use the known state, so this will say an increase is
 	 * possible.  They should not cause learning to happen.
 	 */
-	of_off(player->obj_k->flags, timed_effects[TMD_SLOW].fail);
+	of_off(player->obj_k->flags, flag_idx);
 	result = player_inc_check(player, TMD_SLOW, true);
 	eq(result, true);
-	require(!of_has(player->obj_k->flags,
-		timed_effects[TMD_SLOW].fail));
-	of_on(player->known_state.flags, timed_effects[TMD_SLOW].fail);
+	require(!of_has(player->obj_k->flags, flag_idx));
+	of_on(player->known_state.flags, flag_idx);
 	result = player_inc_check(player, TMD_SLOW, false);
 	eq(result, false);
-	require(of_has(player->obj_k->flags, timed_effects[TMD_SLOW].fail));
-	of_off(player->obj_k->flags, timed_effects[TMD_SLOW].fail);
+	require(of_has(player->obj_k->flags, flag_idx));
+	of_off(player->obj_k->flags, flag_idx);
 	result = player_inc_check(player, TMD_SLOW, true);
 	eq(result, false);
-	require(!of_has(player->obj_k->flags,
-		timed_effects[TMD_SLOW].fail));
+	require(!of_has(player->obj_k->flags, flag_idx));
 
 	/*
 	 * Test for effect that has elemental resist protection.  First
 	 * without the resist set and then with it set.
 	 */
-	eq(timed_effects[TMD_POISONED].fail_code, TMD_FAIL_FLAG_RESIST);
-	player->state.el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
-	player->known_state.el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
-	player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
+	f = timed_effects[TMD_POISONED].fail;
+	flag_idx = -1;
+	while (f) {
+		if (!f) {
+			notnull(f);
+		}
+		if (f->code == TMD_FAIL_FLAG_RESIST) {
+			flag_idx = f->idx;
+			break;
+		}
+		f = f->next;
+	}
+	player->state.el_info[flag_idx].res_level = 0;
+	player->known_state.el_info[flag_idx].res_level = 0;
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	player->body.slots[weapon_slot].obj = NULL;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level == 0);
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
 	result = player_inc_check(player, TMD_POISONED, true);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level == 0);
-	player->state.el_info[timed_effects[TMD_POISONED].fail].res_level = 1;
-	st->weapon->el_info[timed_effects[TMD_POISONED].fail].res_level = 1;
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
+	player->state.el_info[flag_idx].res_level = 1;
+	st->weapon->el_info[flag_idx].res_level = 1;
 	player->body.slots[weapon_slot].obj = st->weapon;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level != 0);
-	player->state.el_info[timed_effects[TMD_POISONED].fail].res_level = 3;
-	player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
+	require(player->obj_k->el_info[flag_idx].res_level != 0);
+	player->state.el_info[flag_idx].res_level = 3;
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level != 0);
+	require(player->obj_k->el_info[flag_idx].res_level != 0);
 	/*
 	 * Lore checks use the known state, so this will say an increase is
 	 * possible.  They should not cause learning to happen.
 	 */
-	player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	result = player_inc_check(player, TMD_POISONED, true);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level == 0);
-	player->known_state.el_info[timed_effects[TMD_POISONED].fail].res_level = 1;
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
+	player->known_state.el_info[flag_idx].res_level = 1;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level != 0);
-	player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level = 0;
+	require(player->obj_k->el_info[flag_idx].res_level != 0);
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	result = player_inc_check(player, TMD_POISONED, true);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_POISONED].fail].res_level == 0);
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
 
 	/*
 	 * Test for effect that has elemental vulnerability protection.
 	 * First without the resist set and then with it set.
 	 */
-	eq(timed_effects[TMD_OPP_ACID].fail_code, TMD_FAIL_FLAG_VULN);
-	player->state.el_info[timed_effects[TMD_OPP_ACID].fail].res_level = 0;
-	player->known_state.el_info[timed_effects[TMD_OPP_ACID].fail].res_level = 0;
-	player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level = 0;
+	f = timed_effects[TMD_OPP_ACID].fail;
+	flag_idx = -1;
+	while (f) {
+		if (!f) {
+			notnull(f);
+		}
+		if (f->code == TMD_FAIL_FLAG_VULN) {
+			flag_idx = f->idx;
+			break;
+		}
+		f = f->next;
+	}
+	player->state.el_info[flag_idx].res_level = 0;
+	player->known_state.el_info[flag_idx].res_level = 0;
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	player->body.slots[weapon_slot].obj = NULL;
 	result = player_inc_check(player, TMD_OPP_ACID, false);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level == 0);
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
 	result = player_inc_check(player, TMD_OPP_ACID, true);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level == 0);
-	player->state.el_info[timed_effects[TMD_OPP_ACID].fail].res_level = -1;
-	st->weapon->el_info[timed_effects[TMD_OPP_ACID].fail].res_level = 1;
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
+	player->state.el_info[flag_idx].res_level = -1;
+	st->weapon->el_info[flag_idx].res_level = -1;
 	player->body.slots[weapon_slot].obj = st->weapon;
 	result = player_inc_check(player, TMD_OPP_ACID, false);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level != 0);
+	require(player->obj_k->el_info[flag_idx].res_level != 0);
 
 	/*
 	 * Lore checks use the known state, so this will say an increase is
 	 * possible.  They should not cause learning to happen.
 	 */
-	player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level = 0;
+	player->obj_k->el_info[flag_idx].res_level = 0;
 	result = player_inc_check(player, TMD_OPP_ACID, true);
 	eq(result, true);
-	require(player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level == 0);
-	player->known_state.el_info[timed_effects[TMD_OPP_ACID].fail].res_level = -1;
+	require(player->obj_k->el_info[flag_idx].res_level == 0);
+	player->known_state.el_info[flag_idx].res_level = -1;
 	result = player_inc_check(player, TMD_OPP_ACID, false);
 	eq(result, false);
-	require(player->obj_k->el_info[timed_effects[TMD_OPP_ACID].fail].res_level != 0);
+	require(player->obj_k->el_info[flag_idx].res_level != 0);
 	result = player_inc_check(player, TMD_OPP_ACID, true);
 	eq(result, false);
 
 	/*
 	 * Test for effect that has player flag protection.
 	 * First without the flag set and then with it set.
-	 * At the time this test was written (between 4.2.4 and 4.2.5),
-	 * a lore check with player_inc_check() and timed effect protected by
-	 * player flag would always return true.  See
-	 * https://github.com/angband/angband/issues/5431 .
 	 */
-	eq(timed_effects[TMD_CUT].fail_code, TMD_FAIL_FLAG_PLAYER);
-	pf_off(player->state.pflags, timed_effects[TMD_CUT].fail);
-	pf_off(player->known_state.pflags, timed_effects[TMD_CUT].fail);
+	f = timed_effects[TMD_CUT].fail;
+	flag_idx = -1;
+	while (f) {
+		if (!f) {
+			notnull(f);
+		}
+		if (f->code == TMD_FAIL_FLAG_PLAYER) {
+			flag_idx = f->idx;
+			break;
+		}
+		f = f->next;
+	}
+	pf_off(player->state.pflags, flag_idx);
+	pf_off(player->known_state.pflags, flag_idx);
 	player->body.slots[weapon_slot].obj = NULL;
 	result = player_inc_check(player, TMD_CUT, false);
 	eq(result, true);
 	result = player_inc_check(player, TMD_CUT, true);
 	eq(result, true);
-	pf_on(player->state.pflags, timed_effects[TMD_CUT].fail);
+	pf_on(player->state.pflags, flag_idx);
 	result = player_inc_check(player, TMD_CUT, false);
 	eq(result, false);
 	result = player_inc_check(player, TMD_CUT, true);
 	eq(result, true);
-	pf_on(player->known_state.pflags, timed_effects[TMD_CUT].fail);
+	pf_on(player->known_state.pflags, flag_idx);
 	result = player_inc_check(player, TMD_CUT, false);
 	eq(result, false);
 	result = player_inc_check(player, TMD_CUT, true);
-	eq(result, true);
+	eq(result, false);
 
-	/* Check special cases. */
-	/* TMD_POISONED is protected against by TMD_OPP_POIS.  First check
-	 * with TMD_OPP_POIS off, then with it on.  At the time this
-	 * test was written (between 4.2.4 and 4.2.5), a lore check with
-	 * player_inc_check() and TMD_OPP_POIS on would always return true.
-	 * See https://github.com/angband/angband/issues/5431 .
+	/*
+	 * Test for effect protected by a timed effect.
+	 * First without the timed effect active and then with it active.
 	 */
+	f = timed_effects[TMD_POISONED].fail;
+	flag_idx = -1;
+	while (f) {
+		if (!f) {
+			notnull(f);
+		}
+		if (f->code == TMD_FAIL_FLAG_TIMED_EFFECT) {
+			flag_idx = f->idx;
+			break;
+		}
+		f = f->next;
+	}
 	player->state.el_info[ELEM_POIS].res_level = 0;
 	player->known_state.el_info[ELEM_POIS].res_level = 0;
-	player->timed[TMD_OPP_POIS] = 0;
+	player->timed[flag_idx] = 0;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, true);
 	result = player_inc_check(player, TMD_POISONED, true);
 	eq(result, true);
-	player->timed[TMD_OPP_POIS] = 1;
+	player->timed[flag_idx] = 1;
 	result = player_inc_check(player, TMD_POISONED, false);
 	eq(result, false);
 	result = player_inc_check(player, TMD_POISONED, true);
-	eq(result, true);
+	eq(result, false);
 
 	ok;
 }
