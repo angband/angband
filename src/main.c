@@ -49,6 +49,14 @@
 
 #include "main.h"
 
+/*
+ * On some platforms, SDL2 uses a macro to replace main() with another name
+ * to hook into the platform-specific initialization.  Account for that here.
+ */
+#ifdef USE_SDL2
+#include "SDL_main.h"
+#endif
+
 /**
  * List of the available modules in the order they are tried.
  */
