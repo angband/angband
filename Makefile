@@ -8,6 +8,7 @@ DISTCLEAN = config.status config.log docs/.deps \
 REPOCLEAN = aclocal.m4 autom4te.cache configure src/autoconf.h.in version
 
 .PHONY: tests manual manual-optional dist
+check: tests
 tests:
 	$(MAKE) -C src tests
 

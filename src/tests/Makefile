@@ -1,6 +1,6 @@
 # Makefile for tests - builds unit-test binaries
 
-CFLAGS+=-I../ -I. -g
+CFLAGS+=-I../ -I. -g -DSRCROOT=\"$(realpath ../..)\"
 LDFLAGS+=-lm
 
 all : run
