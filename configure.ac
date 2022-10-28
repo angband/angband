@@ -168,18 +168,6 @@ int main(int argc, char *argv[]) {
 ]])], [CPPFLAGS="$CPPFLAGS -DUSE_FUNC_ATTR_FORMAT"])
 fi
 
-AC_ARG_ENABLE(skip-old-int-typedefs,
-	[AS_HELP_STRING([--enable-skip-old-int-typedefs], [do not generate the u32b, s32b, ... typedefs in Angband's headers])],
-	[AS_CASE(${enableval},
-		[yes], [skip_old_int_typedefs=yes],
-		[no], [skip_old_int_typedefs=no],
-		[AC_MSG_ERROR([bad value ${enableval} for --enable-skip-old-int-typedefs])])],
-	[skip_old_int_typedefs=no])
-
-if test x"$skip_old_int_typedefs" = xyes ; then
-	AC_DEFINE(SKIP_ANGBAND_OLD_INT_TYPEDEFS, 1, [Define to skip generating the u32b, s32b, ... typedefs])
-fi
-
 MY_PROG_MAKE_SYSVINC
 MY_PROG_MAKE_SINCLUDE
 
