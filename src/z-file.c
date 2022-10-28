@@ -1277,7 +1277,7 @@ bool dir_create(const char *path)
 	if (isalpha(path[0]) && path[1] == ':') path += 2;
 	#endif
 
-	/* Iterate through the path looking for path segements. At each step,
+	/* Iterate through the path looking for path segments. At each step,
 	 * create the path segment if it doesn't already exist. */
 	for (ptr = path; *ptr; ptr++) {
 		if (*ptr == PATH_SEPC) {
