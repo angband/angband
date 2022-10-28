@@ -27,8 +27,8 @@ struct ui_entry_combiner_state {
 
 struct ui_entry_combiner_funcs {
 	/*
-	 * There's two ways to use the combiner.  With one, you pass
-	 * declare a struct ui_entry_combiner_state, pass it and the initial
+	 * There's two ways to use the combiner.  With one, you declare
+	 * a struct ui_entry_combiner_state, pass it and the initial
 	 * value and initial auxiliary value to *init_func, pass each
 	 * subsequent value and auxiliary value along with the combiner state
 	 * structure to *accum_func, and then call *finish_func to complete
