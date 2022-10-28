@@ -8,8 +8,8 @@
 #include "z-color.h"
 #include "z-form.h"
 
-static const int default_break_chance = 15;
-static const int default_max_stack = 35;
+#define DEFAULT_BREAK_CHANCE (15)
+#define DEFAULT_MAX_STACK (35)
 static const struct object_base test_tv1 = {
 	.name = "Chest~",
 	.tval = TV_CHEST,
@@ -22,8 +22,8 @@ static const struct object_base test_tv2 = {
 	.name = NULL,
 	.tval = TV_LIGHT,
 	.attr = 0,
-	.break_perc = default_break_chance,
-	.max_stack = default_max_stack,
+	.break_perc = DEFAULT_BREAK_CHANCE,
+	.max_stack = DEFAULT_MAX_STACK,
 	.num_svals = 0
 };
 static const char *tv_names[] = {
@@ -227,11 +227,11 @@ static int test_default0(void *state) {
 	enum parser_error r;
 
 	require(strnfmt(buffer, sizeof(buffer), "default:break-chance:%d",
-		default_break_chance) < sizeof(buffer));
+		DEFAULT_BREAK_CHANCE) < sizeof(buffer));
 	r = parser_parse(p, buffer);
 	eq(r, PARSE_ERROR_NONE);
 	require(strnfmt(buffer, sizeof(buffer), "default:max-stack:%d",
-		default_max_stack) < sizeof(buffer));
+		DEFAULT_MAX_STACK) < sizeof(buffer));
 	r = parser_parse(p, buffer);
 	eq(r, PARSE_ERROR_NONE);
 	ok;
