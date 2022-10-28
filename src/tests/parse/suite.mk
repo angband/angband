@@ -11,12 +11,15 @@ TESTPROGS += parse/a-info \
 	parse/h-info \
 	parse/k-info \
 	parse/lore \
+	parse/mbase \
 	parse/names \
 	parse/objact \
 	parse/objbase \
 	parse/objprop \
 	parse/p-info \
+	parse/pain \
 	parse/parse \
+	parse/pit \
 	parse/proj \
 	parse/ptimed \
 	parse/r-info \
