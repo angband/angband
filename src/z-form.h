@@ -42,14 +42,7 @@ extern size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp);
  * Simple interface to "vstrnfmt()"
  */
 extern size_t strnfmt(char *buf, size_t max, const char *fmt, ...)
-/*
- * This and further instances below are to automate format string checking
- * with gcc and clang:  see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes .
- */
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 3, 4)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 3, 4)));
 
 /**
  * Format arguments into a static resizing buffer
@@ -65,36 +58,24 @@ extern void vformat_kill(void);
  * Append a formatted string to another string
  */
 extern void strnfcat(char *str, size_t max, size_t *end, const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute__ ((format (printf, 4, 5)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 4, 5)));
 
 /**
  * Simple interface to "vformat()"
  */
 extern char *format(const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute__ ((format (printf, 1, 2)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 1, 2)));
 
 /**
  * Vararg interface to "plog()", using "format()"
  */
 extern void plog_fmt(const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute__ ((format (printf, 1, 2)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 1, 2)));
 
 /**
  * Vararg interface to "quit()", using "format()"
  */
 extern void quit_fmt(const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute__ ((format (printf, 1, 2)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 1, 2)));
 
 #endif /* INCLUDED_Z_FORM_H */
