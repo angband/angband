@@ -46,11 +46,4 @@ char *string_make(const char *str);
 void string_free(char *str);
 char *string_append(char *s1, const char *s2);
 
-enum {
-	MEM_POISON_ALLOC = 0x00000001,
-	MEM_POISON_FREE  = 0x00000002
-};
-
-extern unsigned int mem_flags;
-
 #endif /* INCLUDED_Z_VIRT_H */
