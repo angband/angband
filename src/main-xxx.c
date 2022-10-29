@@ -564,9 +564,6 @@ static void term_data_link(int i)
 	/* moved whenever text is drawn on the screen.  See "ui-term.c". */
 	/* t->soft_cursor = true; */
 
-	/* Avoid the "corner" of the window XXX XXX XXX */
-	/* t->icky_corner = true; */
-
 	/* Use "Term_pict()" for all attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
 	/* t->always_pict = true; */

@@ -86,9 +86,6 @@ struct term_win
  *	- Flag "fixed_shape"
  *	  This "term" is not allowed to resize
  *
- *	- Flag "icky_corner"
- *	  This "term" has an "icky" corner grid
- *
  *	- Flag "soft_cursor"
  *	  This "term" uses a "software" cursor
  *
@@ -176,7 +173,6 @@ struct term
 	bool mapped_flag;
 	bool total_erase;
 	bool fixed_shape;
-	bool icky_corner;
 	bool soft_cursor;
 	bool always_pict;
 	bool higher_pict;

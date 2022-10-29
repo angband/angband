@@ -1191,9 +1191,6 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	/* Initialize the term */
 	term_init(t, cols, rows, 256);
 
-	/* Avoid bottom right corner */
-	t->icky_corner = true;
-
 	/* Erase with "white space" */
 	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';

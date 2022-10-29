@@ -179,12 +179,6 @@
  * any characters are drawn on top of it.  This flag is used for all
  * "graphic" systems which handle the cursor by "drawing" it.
  *
- * The "icky_corner" flag indicates that the bottom right "corner"
- * of the windows are "icky", and "printing" anything there may
- * induce "messy" behavior, such as "scrolling".  This flag is used
- * for most old "dumb terminal" systems.
- *
- *
  * The "term" structure contains the following function "hooks":
  *
  *   Term->init_hook = Init the term
@@ -1702,15 +1696,6 @@ bool smlcurs = true;
  * flushing the output, if needed, to avoid a "flickery" refresh.  It
  * would be nice to *always* hide the cursor during the refresh, but
  * this might be expensive (and/or ugly) on some machines.
- *
- * The "Term->icky_corner" flag is used to avoid calling "Term_wipe()"
- * or "Term_pict()" or "Term_text()" on the bottom right corner of the
- * window, which might induce "scrolling" or other nasty stuff on old
- * dumb terminals.  This flag is handled very efficiently.  We assume
- * that the "Term_curs()" call will prevent placing the cursor in the
- * corner, if needed, though I doubt such placement is ever a problem.
- * Currently, the use of "Term->icky_corner" and "Term->soft_cursor"
- * together may result in undefined behavior.
  */
 errr Term_fresh(void)
 {
@@ -1860,11 +1845,6 @@ errr Term_fresh(void)
 		} else {
 			pr_drw = NULL;
 		}
-
-		/* Handle "icky corner" */
-		if ((Term->icky_corner) && (y2 >= h - 1) && (Term->x2[h - 1] > w - 2))
-			Term->x2[h - 1] = w - 2;
-
 
 		/*
 		 * Make the stored y bounds for the modified region empty.
