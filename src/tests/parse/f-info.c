@@ -11,7 +11,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_feat();
+	*state = feat_parser.init();
 	return !*state;
 }
 
@@ -49,6 +49,24 @@ static int test_missing_header_record0(void *state) {
 	r = parser_parse(p, "flags:LOS | PASSABLE");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "info:8:0");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "desc:A door that is already open.");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "walk-msg:It looks dangerous.  Really enter? ");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "run-msg:Lava blocks your path.  Step into it? ");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "hurt-msg:The lava burns you!");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "die-msg:burning to a cinder in lava");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "confused-msg:bangs into a door");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "look-prefix:the entrance to the");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "look-in-preposition:at");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "resist-flag:IM_FIRE");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
@@ -173,6 +191,15 @@ static int test_flags0(void *state) {
 	flag_on_dbg(eflags, TF_SIZE, TF_PERMANENT, "eflags", "TF_PERMANENT");
 	flag_on_dbg(eflags, TF_SIZE, TF_DOWNSTAIR, "eflags", "TF_DOWNSTAIR");
 	require(flag_is_equal(f->flags, eflags, TF_SIZE));
+	ok;
+}
+
+static int test_flags_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Try an unrecognized flag. */
+	enum parser_error r = parser_parse(p, "flags:XYZZY");
+
+	eq(r, PARSE_ERROR_INVALID_FLAG);
 	ok;
 }
 
@@ -350,6 +377,7 @@ struct test tests[] = {
 	{ "mimic0", test_mimic0 },
 	{ "priority0", test_priority0 },
 	{ "flags0", test_flags0 },
+	{ "flags_bad0", test_flags_bad0 },
 	{ "info0", test_info0 },
 	{ "desc0", test_desc0 },
 	{ "walk_msg0", test_walk_msg0 },

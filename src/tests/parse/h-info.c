@@ -7,7 +7,7 @@
 #include "player.h"
 
 int setup_tests(void **state) {
-	*state = init_parse_history();
+	*state = history_parser.init();
 	return !*state;
 }
 

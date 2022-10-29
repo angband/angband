@@ -153,26 +153,31 @@ extern char *ANGBAND_DIR_SCORES;
 extern char *ANGBAND_DIR_ARCHIVE;
 
 extern struct parser *init_parse_artifact(void);
-extern struct parser *init_parse_class(void);
 extern struct parser *init_parse_ego(void);
-extern struct parser *init_parse_feat(void);
-extern struct parser *init_parse_history(void);
 extern struct parser *init_parse_object(void);
 extern struct parser *init_parse_object_base(void);
 extern struct parser *init_parse_pain(void);
-extern struct parser *init_parse_p_race(void);
 extern struct parser *init_parse_pit(void);
 extern struct parser *init_parse_monster(void);
 extern struct parser *init_parse_vault(void);
-extern struct parser *init_parse_constants(void);
-extern struct parser *init_parse_flavor(void);
-extern struct parser *init_parse_names(void);
-extern struct parser *init_parse_hints(void);
-extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_chest_trap(void);
 extern struct parser *init_parse_quest(void);
 
+/* These are public primarily to facilitate writing test cases */
+extern struct file_parser body_parser;
+extern struct file_parser class_parser;
+extern struct file_parser constants_parser;
+extern struct file_parser feat_parser;
 extern struct file_parser flavor_parser;
+extern struct file_parser hints_parser;
+extern struct file_parser history_parser;
+extern struct file_parser names_parser;
+extern struct file_parser player_property_parser;
+extern struct file_parser p_race_parser;
+extern struct file_parser realm_parser;
+extern struct file_parser shape_parser;
+extern struct file_parser trap_parser;
+extern struct file_parser world_parser;
 
 errr grab_effect_data(struct parser *p, struct effect *effect);
 extern void init_file_paths(const char *config, const char *lib, const char *data);

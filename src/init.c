@@ -698,7 +698,7 @@ static enum parser_error parse_constants_player(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_constants(void) {
+static struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
 
@@ -730,7 +730,7 @@ static void cleanup_constants(void)
 	mem_free(z_info);
 }
 
-static struct file_parser constants_parser = {
+struct file_parser constants_parser = {
 	"constants",
 	init_parse_constants,
 	run_parse_constants,
@@ -841,7 +841,7 @@ static void cleanup_world(void)
 	}
 }
 
-static struct file_parser world_parser = {
+struct file_parser world_parser = {
 	"world",
 	init_parse_world,
 	run_parse_world,
@@ -1080,7 +1080,7 @@ static void cleanup_player_prop(void)
 	}
 }
 
-static struct file_parser player_property_parser = {
+struct file_parser player_property_parser = {
 	"player_property",
 	init_parse_player_prop,
 	run_parse_player_prop,
@@ -1127,7 +1127,7 @@ static enum parser_error parse_names_word(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_names(void) {
+static struct parser *init_parse_names(void) {
 	struct parser *p = parser_new();
 	struct names_parse *n = mem_zalloc(sizeof *n);
 	n->section = 0;
@@ -1176,7 +1176,7 @@ static void cleanup_names(void)
 	mem_free(name_sections);
 }
 
-static struct file_parser names_parser = {
+struct file_parser names_parser = {
 	"names",
 	init_parse_names,
 	run_parse_names,
@@ -1581,7 +1581,7 @@ static enum parser_error parse_trap_msg_xtra(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_trap(void) {
+static struct parser *init_parse_trap(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
     parser_reg(p, "name sym name str desc", parse_trap_name);
@@ -1663,7 +1663,7 @@ static void cleanup_trap(void)
 	mem_free(trap_info);
 }
 
-static struct file_parser trap_parser = {
+struct file_parser trap_parser = {
     "trap",
     init_parse_trap,
     run_parse_trap,
@@ -1857,7 +1857,7 @@ static enum parser_error parse_feat_resist_flag(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_feat(void) {
+static struct parser *init_parse_feat(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_feat_name);
@@ -1943,7 +1943,7 @@ static void cleanup_feat(void) {
 	mem_free(f_info);
 }
 
-static struct file_parser feat_parser = {
+struct file_parser feat_parser = {
 	"terrain",
 	init_parse_feat,
 	run_parse_feat,
@@ -2071,7 +2071,7 @@ static void cleanup_body(void)
 	}
 }
 
-static struct file_parser body_parser = {
+struct file_parser body_parser = {
 	"body",
 	init_parse_body,
 	run_parse_body,
@@ -2125,7 +2125,7 @@ static enum parser_error parse_history_phrase(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_history(void) {
+static struct parser *init_parse_history(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "chart uint chart int next int roll", parse_history_chart);
@@ -2191,7 +2191,7 @@ static void cleanup_history(void)
 	}
 }
 
-static struct file_parser history_parser = {
+struct file_parser history_parser = {
 	"history",
 	init_parse_history,
 	run_parse_history,
@@ -2435,7 +2435,7 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_p_race(void) {
+static struct parser *init_parse_p_race(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_p_race_name);
@@ -2493,7 +2493,7 @@ static void cleanup_p_race(void)
 	}
 }
 
-static struct file_parser p_race_parser = {
+struct file_parser p_race_parser = {
 	"p_race",
 	init_parse_p_race,
 	run_parse_p_race,
@@ -2602,7 +2602,7 @@ static void cleanup_realm(void)
 	}
 }
 
-static struct file_parser realm_parser = {
+struct file_parser realm_parser = {
 	"realm",
 	init_parse_realm,
 	run_parse_realm,
@@ -2981,7 +2981,7 @@ static void cleanup_shape(void)
 	}
 }
 
-static struct file_parser shape_parser = {
+struct file_parser shape_parser = {
 	"shape",
 	init_parse_shape,
 	run_parse_shape,
@@ -3723,7 +3723,7 @@ static enum parser_error parse_class_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_class(void) {
+static struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_class_name);
@@ -3824,7 +3824,7 @@ static void cleanup_class(void)
 	}
 }
 
-static struct file_parser class_parser = {
+struct file_parser class_parser = {
 	"class",
 	init_parse_class,
 	run_parse_class,
@@ -3887,7 +3887,7 @@ static enum parser_error parse_flavor_kind(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_flavor(void) {
+static struct parser *init_parse_flavor(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -3948,7 +3948,7 @@ static enum parser_error parse_hint(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_hints(void) {
+static struct parser *init_parse_hints(void) {
 	struct parser *p = parser_new();
 	parser_reg(p, "H str text", parse_hint);
 	return p;
@@ -3977,7 +3977,7 @@ static void cleanup_hints(void)
 	}
 }
 
-static struct file_parser hints_parser = {
+struct file_parser hints_parser = {
 	"hints",
 	init_parse_hints,
 	run_parse_hints,
