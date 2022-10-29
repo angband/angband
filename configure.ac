@@ -124,29 +124,10 @@ if test x"$release" = xyes ; then
 	AC_DEFINE(RELEASE_BUILD, 1, [Define to mark as a release build with extra optimizations.])
 fi
 
-AC_ARG_ENABLE(more-gcc-warnings,
-	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
-	[AS_CASE(${enableval},
-		[yes], [more_gcc_warnings=yes],
-		[no], [more_gcc_warnings=no],
-		[AC_MSG_ERROR([bad value ${enableval} for --enable-more-gcc-warnings])])],
-	[more_gcc_warnings=no])
-
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
-	if test x"$more_gcc_warnings" = xyes ; then
-		CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings -Wbad-function-cast -Wnested-externs -Wshadow"
-	else
-		AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
-		_gcc_cflags_save=$CFLAGS
-		CFLAGS="-Wno-missing-field-initializers"
-		AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],_gcc_wopt=yes,_gcc_wopt=no)
-		AC_MSG_RESULT($_gcc_wopt)
-		CFLAGS=$_gcc_cflags_save;
-		if test x"$_gcc_wopt" = xyes ; then
-			CFLAGS="$CFLAGS -Wno-missing-field-initializers"
-		fi
-	fi
+	CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings"
+	CFLAGS="$CFLAGS -Wbad-function-cast -Wnested-externs -Wshadow"
 fi
 
 AC_ARG_ENABLE(printf-style-checks,
