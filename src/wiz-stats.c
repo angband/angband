@@ -427,7 +427,7 @@ static bool first_find(stat_first_find st)
 }
 
 /*
- * Add the number of drops for a specifci stat
+ * Add the number of drops for a specific stat
  */
 static void add_stats(stat_code st, bool vault, bool mon, int number)
 {

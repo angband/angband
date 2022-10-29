@@ -1417,7 +1417,7 @@ static enum parser_error parse_monster_spells(struct parser *p) {
 		r->freq_innate = 4;
 	}
 
-	/* Make sure innate frequency is set if necessary */
+	/* Make sure non-innate frequency is set if necessary */
 	rsf_copy(current_flags, r->spell_flags);
 	create_mon_spell_mask(test_flags, RST_BREATH, RST_INNATE, RST_NONE);
 	rsf_diff(current_flags, test_flags);

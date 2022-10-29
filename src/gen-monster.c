@@ -332,7 +332,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 }
 
 /**
- * Funtion for placing appropriate monsters in a room of chambers
+ * Function for placing appropriate monsters in a room of chambers
  *
  * \param c the current chunk being generated
  * \param y1 the limits of the vault

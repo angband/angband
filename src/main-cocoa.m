@@ -4520,7 +4520,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 
     /*
      * At least with 4.2.0 Angband, there's cases where Term_pict is called
-     * for the overhead view subwindow and y + tile_width is greater than the
+     * for the overhead view subwindow and y + tile_height is greater than the
      * number of rows.  Protect both dimensions.
      */
     if (y + tile_height > angbandContext.rows) {

@@ -235,7 +235,7 @@ void flavor_init(void)
 		if (!kind->name) continue;
 
 		/*
-		 * No flavor and not kind that that only has one instance,
+		 * No flavor and not kind that only has one instance,
 		 * an artifact, yields aware
 		 */
 		if (!kind->flavor && kind->kidx < z_info->ordinary_kind_max) {
