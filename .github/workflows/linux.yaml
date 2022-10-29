@@ -21,7 +21,7 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install --enable-test --enable-skip-old-int-typedefs --enable-printf-style-checks
+          ./configure --with-no-install --enable-test --enable-skip-old-int-typedefs
           make
           make tests
           ./run-tests
@@ -98,7 +98,7 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer --enable-skip-old-int-typedefs --enable-printf-style-checks
+          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer --enable-skip-old-int-typedefs
           make
 
   statbuild:
@@ -120,5 +120,5 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs --enable-printf-style-checks
+          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs
           make
