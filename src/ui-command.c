@@ -282,8 +282,8 @@ static void screenshot_term_query(int wid, int hgt, int x, int y, int *a, wchar_
 		if (srcx < wid && srcy < hgt - ROW_BOTTOM_MAP) {
 			(void) Term_what(srcx, srcy, a, c);
 		} else {
-			*a = Term->attr_blank;
-			*c = Term->char_blank;
+			*a = COLOUR_WHITE;
+			*c = ' ';
 		}
 	}
 }
@@ -387,8 +387,8 @@ void html_screenshot(const char *path, int mode, term *other_term)
 					Term_activate(main_term);
 				}
 			} else {
-				a = main_term->attr_blank;
-				c = main_term->char_blank;
+				a = COLOUR_WHITE;
+				c = ' ';
 			}
 
 			/* Set the foreground and background */
