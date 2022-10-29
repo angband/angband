@@ -101,7 +101,6 @@ AC_PATH_PROG(CP, cp)
 AC_HEADER_DIRENT
 AC_CHECK_HEADERS([fcntl.h])
 AC_HEADER_STDBOOL
-AC_C_CONST
 AC_CHECK_FUNCS([mkdir setresgid setegid stat])
 
 dnl needed because h-basic.h checks for this define for autoconf support.
