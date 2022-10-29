@@ -1581,10 +1581,6 @@ errr init_ibm(int argc, char **argv)
 
 #endif /* USE_CONIO */
 
-	/* Use "white space" to erase */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
-
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_ibm;
 	t->nuke_hook = Term_nuke_ibm;

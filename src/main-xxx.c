@@ -469,10 +469,6 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * default "spaces", and all other colors should be drawn in
  * the "normal" color in a monochrome environment.
  *
- * Note that if you have changed the "attr_blank" to something
- * which is not black, then this function must be able to draw
- * the resulting "blank" correctly.
- *
  * Note that this function must correctly handle "black" text if
  * the "always_text" flag is set, if this flag is not set, all the
  * "black" text will be handled by the "Term_wipe_xxx()" hook.
@@ -586,10 +582,6 @@ static void term_data_link(int i)
 	/* Ignore the "TERM_XTRA_FROSH" action XXX XXX XXX */
 	/* This may make things slightly more efficient. */
 	/* t->never_frosh = true; */
-
-	/* Erase with "white space" XXX XXX XXX */
-	/* t->attr_blank = COLOUR_WHITE; */
-	/* t->char_blank = ' '; */
 
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_xxx;

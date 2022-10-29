@@ -1194,10 +1194,6 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	/* Avoid bottom right corner */
 	t->icky_corner = true;
 
-	/* Erase with "white space" */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
-
 	/* Differentiate between BS/^h, Tab/^i, etc. */
 	t->complex_input = true;
 

@@ -60,10 +60,6 @@
 #define SUBWINDOW_KEYQ_SIZE(subwindow_ptr) \
 	((subwindow_ptr)->index == MAIN_SUBWINDOW ? 1024 : 32)
 
-#define DEFAULT_ATTR_BLANK \
-	COLOUR_WHITE
-#define DEFAULT_CHAR_BLANK ' '
-
 #define DEFAULT_DISPLAY 0
 
 #define DEFAULT_CONFIG_FILE "sdl2init.txt"
@@ -876,7 +872,7 @@ static void render_glyph_mono(const struct window *window,
 		const struct font *font, SDL_Texture *dst_texture,
 		int x, int y, const SDL_Color *fg, uint32_t codepoint)
 {
-	if (codepoint == DEFAULT_CHAR_BLANK) {
+	if (codepoint == ' ') {
 		return;
 	}
 
@@ -5443,9 +5439,6 @@ static void link_term(struct subwindow *subwindow)
 	subwindow->term->soft_cursor = true;
 	subwindow->term->complex_input = true;
 	subwindow->term->never_frosh = true;
-
-	subwindow->term->attr_blank = DEFAULT_ATTR_BLANK;
-	subwindow->term->char_blank = DEFAULT_CHAR_BLANK;
 
 	subwindow->term->xtra_hook = term_xtra_hook;
 	subwindow->term->curs_hook = term_curs_hook;

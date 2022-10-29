@@ -2644,10 +2644,6 @@ static void term_data_link(term_data *td)
 	/* Use "Term_pict" for "graphic" data */
 	t->higher_pict = true;
 
-	/* Erase with "white space" */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
-
 #if 0
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_win;

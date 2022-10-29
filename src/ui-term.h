@@ -110,13 +110,6 @@ struct term_win
  *	- Flag "never_frosh"
  *	  Never call the "TERM_XTRA_FROSH" action
  *
- *
- *	- Value "attr_blank"
- *	  Use this "attr" value for "blank" grids
- *
- *	- Value "char_blank"
- *	  Use this "char" value for "blank" grids
- *
  *	- Flag "complex_input"
  *	  Distinguish between Enter/^m/^j, Tab/^i, etc.
  *
@@ -185,9 +178,6 @@ struct term
 	bool never_bored;
 	bool never_frosh;
 	int sidebar_mode;
-
-	int attr_blank;
-	wchar_t char_blank;
 
 	bool complex_input;
 
