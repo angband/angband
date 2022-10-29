@@ -18,10 +18,6 @@
 #include "z-virt.h"
 #include "z-util.h"
 
-unsigned int mem_flags = 0;
-
-#define SZ(uptr)	*((size_t *)((char *)(uptr) - sizeof(size_t)))
-
 /**
  * Allocate `len` bytes of memory.
  *
@@ -33,55 +29,42 @@ unsigned int mem_flags = 0;
  */
 void *mem_alloc(size_t len)
 {
-	char *mem;
+	/* Note: standard malloc(3) returns a non-null pointer if passed
+	 * a length of 0. Not quite sure why Angband's wrapper has this
+	 * behavior. */
+	if (!len)
+		return NULL;
 
-	/* Allow allocation of "zero bytes" */
-	if (len == 0) return (NULL);
-
-	mem = malloc(len + sizeof(size_t));
-	if (!mem)
-		quit("Out of Memory!");
-	mem += sizeof(size_t);
-	if (mem_flags & MEM_POISON_ALLOC)
-		memset(mem, 0xCC, len);
-	SZ(mem) = len;
-
-	return mem;
+	void *p = malloc(len);
+	if (!p)
+		quit("Out of memory!");
+	return p;
 }
 
 void *mem_zalloc(size_t len)
 {
 	void *mem = mem_alloc(len);
-	if (len) {
+	if (len)
 		memset(mem, 0, len);
-	}
 	return mem;
 }
 
 void mem_free(void *p)
 {
-	if (!p) return;
-
-	if (mem_flags & MEM_POISON_FREE)
-		memset(p, 0xCD, SZ(p));
-	free((char *)p - sizeof(size_t));
+	free(p);
 }
 
 void *mem_realloc(void *p, size_t len)
 {
-	char *m = p;
+	/* Note: standard realloc(3) frees if passed a size of 0, so this
+	 * wrapper has different behavior. */
+	if (!len)
+		return NULL;
 
-	/* Fail gracefully */
-	if (len == 0) return (NULL);
-
-	m = realloc(m ? m - sizeof(size_t) : NULL, len + sizeof(size_t));
-	m += sizeof(size_t);
-
-	/* Handle OOM */
-	if (!m) quit("Out of Memory!");
-	SZ(m) = len;
-
-	return m;
+	p = realloc(p, len);
+	if (!p)
+		quit("Out of Memory!");
+	return p;
 }
 
 /**
