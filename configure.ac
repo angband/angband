@@ -127,7 +127,7 @@ fi
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
 	CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings"
-	CFLAGS="$CFLAGS -Wbad-function-cast -Wnested-externs -Wshadow"
+	CFLAGS="$CFLAGS -Wnested-externs -Wshadow"
 fi
 
 AC_ARG_ENABLE(printf-style-checks,
