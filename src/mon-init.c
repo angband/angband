@@ -174,10 +174,12 @@ static enum parser_error parse_meth_message_type(struct parser *p)
 static enum parser_error parse_meth_act_msg(struct parser *p) {
 	const char *message = parser_getstr(p, "act");
 	struct blow_method *meth = parser_priv(p);
-	struct blow_message *msg = mem_zalloc(sizeof(*msg));
-	if (!meth)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	struct blow_message *msg;
 
+	if (!meth) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	msg = mem_zalloc(sizeof(*msg));
 	msg->act_msg = string_make(message);
 	msg->next = meth->messages;
 	meth->messages = msg;
@@ -1563,7 +1565,6 @@ static enum parser_error parse_monster_friends(struct parser *p) {
 	f->number_dice = number.dice;
 	f->number_side = number.sides;
 	f->percent_chance = parser_getuint(p, "chance");
-	f->name = string_make(parser_getsym(p, "name"));
 	if (parser_hasval(p, "role")) {
 		const char *role_name = parser_getsym(p, "role");
 		if (streq(role_name, "servant")) {
@@ -1571,11 +1572,13 @@ static enum parser_error parse_monster_friends(struct parser *p) {
 		} else if (streq(role_name, "bodyguard")) {
 			f->role = MON_GROUP_BODYGUARD;
 		} else {
+			mem_free(f);
 			return PARSE_ERROR_INVALID_MONSTER_ROLE;
 		}
 	} else {
 		f->role = MON_GROUP_MEMBER;
 	}
+	f->name = string_make(parser_getsym(p, "name"));
 	f->next = r->friends;
 	r->friends = f;
 
@@ -1595,7 +1598,10 @@ static enum parser_error parse_monster_friends_base(struct parser *p) {
 	f->number_side = number.sides;
 	f->percent_chance = parser_getuint(p, "chance");
 	f->base = lookup_monster_base(parser_getsym(p, "name"));
-	if (!f->base) return PARSE_ERROR_UNRECOGNISED_TVAL;
+	if (!f->base) {
+		mem_free(f);
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	}
 	if (parser_hasval(p, "role")) {
 		const char *role_name = parser_getsym(p, "role");
 		if (streq(role_name, "servant")) {
@@ -1603,6 +1609,7 @@ static enum parser_error parse_monster_friends_base(struct parser *p) {
 		} else if (streq(role_name, "bodyguard")) {
 			f->role = MON_GROUP_BODYGUARD;
 		} else {
+			mem_free(f);
 			return PARSE_ERROR_INVALID_MONSTER_ROLE;
 		}
 	} else {
