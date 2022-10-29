@@ -1600,7 +1600,7 @@ static enum parser_error parse_monster_friends_base(struct parser *p) {
 	f->base = lookup_monster_base(parser_getsym(p, "name"));
 	if (!f->base) {
 		mem_free(f);
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
+		return PARSE_ERROR_INVALID_MONSTER_BASE;
 	}
 	if (parser_hasval(p, "role")) {
 		const char *role_name = parser_getsym(p, "role");
