@@ -122,9 +122,11 @@ clean:
 	-rm -f $(OBJS) $(EXE)
 
 # make a distribution
+TILESET_DIRS = lib/tiles/adam-bolt lib/tiles/gervais lib/tiles/nomad \
+       lib/tiles/old lib/tiles/shockbolt
 DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
-       lib/sounds lib/icons lib/user lib/user/save lib/user/scores \
-       lib/user/info lib/user/archive
+       $(TILESET_DIRS) lib/sounds lib/icons lib/user lib/user/panic \
+       lib/user/save lib/user/scores
 
 TMPDIR = ./$(EXE)-$(VERSION)
 dist:
@@ -136,11 +138,13 @@ dist:
 	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
 	@cp ../lib/help/*.txt $(TMPDIR)/lib/help
 	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customize
-	@cp ../lib/fonts/*.txt $(TMPDIR)/lib/fonts
+	@cp ../lib/fonts/*.fon $(TMPDIR)/lib/fonts
+	@cp ../lib/icons/*.png $(TMPDIR)/lib/icons
 	@echo attempting to install sound and graphics
 	@-cp ../lib/sounds/*.mp3 $(TMPDIR)/lib/sounds
-	@-cp ../lib/tiles/*.png $(TMPDIR)/lib/tiles
-	@cp ../changes.txt ../readme.txt $(TMPDIR)
+	@-cp ../lib/tiles/list.txt $(TMPDIR)/lib/tiles
+	@for i in $(TILESET_DIRS) ; do cp ../$$i/*.png ../$$i/*.prf $(TMPDIR)/$$i ; done
+	@cp ../changes.txt ../README.md $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)
