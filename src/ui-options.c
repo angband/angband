@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-calcs.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-keymap.h"

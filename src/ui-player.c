@@ -30,6 +30,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"

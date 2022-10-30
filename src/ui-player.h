@@ -6,8 +6,6 @@
 #ifndef UI_PLAYER_H
 #define UI_PLAYER_H
 
-extern bool arg_force_name;
-
 void display_player_stat_info(void);
 void display_player_xtra_info(void);
 void display_player(int mode);
