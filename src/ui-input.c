@@ -28,6 +28,7 @@
 #include "player-path.h"
 #include "savefile.h"
 #include "target.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-context.h"
 #include "ui-curse.h"

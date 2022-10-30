@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "init.h"
 #include "savefile.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"

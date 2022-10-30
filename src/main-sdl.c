@@ -524,11 +524,6 @@ static size_t FontBrowserFileCount = 0;
 /* Number of entries allocated in the FontBrowserFileEntries array */
 static size_t FontBrowserFileAlloc = 0;
 /*
- * Array of the unabbreviated files to show for the current directory being
- * browsed by the 'Font Browser' panel
- */
-static char **FontBrowserFileEntries;
-/*
  * Current page (each with FONT_BROWSER_PAGE_ENTRIES) of files viewed
  * by the 'Font Browser' panel
  */
