@@ -120,3 +120,21 @@ jobs:
           ./autogen.sh
           env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs
           make
+
+  makefilestd:
+    name: Makefile.std
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc make libncursesw5-dev libx11-dev libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev libsqlite3-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          cd src
+          sed -e 's/^# SYS_x11 =/SYS_x11 =/' -e 's/^# SYS_sdl =/SYS_sdl=/' -e 's/^# SYS_stats =/SYS_stats =/' -e 's/^# SYS_stats_objs =/SYS_stats_objs =/' -e 's/^#SOUND_sdl =/SOUND_sdl =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
+          make -f Makefile.std.modified
