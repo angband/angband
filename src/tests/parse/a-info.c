@@ -330,19 +330,35 @@ static int test_armor0(void *state) {
 
 static int test_flags0(void *state) {
 	struct parser *p = (struct parser*) state;
-	enum parser_error r = parser_parse(p, "flags:SEE_INVIS | HOLD_LIFE");
-	struct artifact *a;
+	struct artifact *a = (struct artifact*) parser_priv(p);
+	bitflag expflags[OF_SIZE];
+	enum parser_error r;
+	int i;
 
+	/* Wipe the slate. */
+	a = (struct artifact*) parser_priv(p);
+	notnull(a);
+	of_wipe(a->flags);
+	for (i = 0; i < ELEM_MAX; ++i) {
+		a->el_info[i].flags = 0;
+	}
+	/* Try nothing at all. */
+	r = parser_parse(p, "flags:");
+	eq(r, PARSE_ERROR_NONE);
+	/* Try two object flags. */
+	r = parser_parse(p, "flags:SEE_INVIS | HOLD_LIFE");
 	eq(r, PARSE_ERROR_NONE);
 	/* Try adding a single element flag. */
 	r = parser_parse(p, "flags:HATES_FIRE");
 	eq(r, PARSE_ERROR_NONE);
 	/* Check that state is correct. */
-	a = (struct artifact*) parser_priv(p);
-	notnull(a);
-	require(of_has(a->flags, OF_SEE_INVIS));
-	require(of_has(a->flags, OF_HOLD_LIFE));
-	require((a->el_info[ELEM_FIRE].flags & EL_INFO_HATES));
+	of_wipe(expflags);
+	of_on(expflags, OF_SEE_INVIS);
+	of_on(expflags, OF_HOLD_LIFE);
+	require(of_is_equal(a->flags, expflags));
+	for (i = 0; i < ELEM_MAX; ++i) {
+		eq(a->el_info[i].flags, ((i == ELEM_FIRE) ? EL_INFO_HATES : 0));
+	}
 	ok;
 }
 
