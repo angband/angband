@@ -502,19 +502,37 @@ static int test_time0(void *state) {
 
 static int test_flags0(void *state) {
 	struct parser *p = (struct parser*) state;
-	/* Try an object flag. */
-	enum parser_error r = parser_parse(p, "flags:SEE_INVIS");
-	struct ego_item *e;
+	struct ego_item *e = (struct ego_item*) parser_priv(p);
+	enum parser_error r;
+	int i;
 
-	eq(r, PARSE_ERROR_NONE);
-	e = (struct ego_item*) parser_priv(p);
+	/* Wipe the slate. */
 	notnull(e);
-	of_has(e->flags, OF_FEATHER);
+	of_wipe(e->flags);
+	kf_wipe(e->kind_flags);
+	for (i = 0; i < ELEM_MAX; ++i) {
+		e->el_info[i].flags = 0;
+	}
+	/* Verify that an empty set of flags works. */
+	r = parser_parse(p, "flags:");
+	eq(r, PARSE_ERROR_NONE);
+	/* Try an object flag. */
+	r = parser_parse(p, "flags:SEE_INVIS");
+	eq(r, PARSE_ERROR_NONE);
 	/* Try a kind flag and an element flag. */
 	r = parser_parse(p, "flags:RAND_POWER | IGNORE_ACID");
 	eq(r, PARSE_ERROR_NONE);
-	kf_has(e->kind_flags, KF_RAND_POWER);
-	require((e->el_info[ELEM_ACID].flags & EL_INFO_IGNORE));
+	/* Verify that the state is correct. */
+	require(of_has(e->flags, OF_SEE_INVIS));
+	of_off(e->flags, OF_SEE_INVIS);
+	require(of_is_empty(e->flags));
+	require(kf_has(e->kind_flags, KF_RAND_POWER));
+	kf_off(e->kind_flags, KF_RAND_POWER);
+	require(kf_is_empty(e->kind_flags));
+	for (i = 0; i < ELEM_MAX; ++i) {
+		eq(e->el_info[i].flags,
+			((i == ELEM_ACID) ? EL_INFO_IGNORE : 0));
+	}
 	ok;
 }
 
