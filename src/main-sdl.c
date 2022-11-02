@@ -695,6 +695,7 @@ static void sdl_FontFree(sdl_Font *font)
 {
 	/* Finished with the font */
 	TTF_CloseFont(font->sdl_font);
+	font->sdl_font = NULL;
 }
 
 
