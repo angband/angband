@@ -5106,7 +5106,6 @@ static void start_window(struct window *window)
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		if (window->subwindows[i] != NULL) {
 			load_subwindow(window, window->subwindows[i]);
-			window->subwindows[i]->visible = true;
 		}
 	}
 
@@ -5212,7 +5211,8 @@ static void dump_subwindow(const struct subwindow *subwindow, ang_file *config)
 {
 #define DUMP_SUBWINDOW(sym, fmt, ...) \
 	file_putf(config, "subwindow-" sym ":%u:" fmt "\n", subwindow->index, __VA_ARGS__)
-	DUMP_SUBWINDOW("window", "%u", subwindow->window->index);
+	DUMP_SUBWINDOW("window", "%u:%d", subwindow->window->index,
+			(subwindow->visible) ? 1 : 0);
 	DUMP_SUBWINDOW("full-rect", "%d:%d:%d:%d",
 			subwindow->full_rect.x, subwindow->full_rect.y,
 			subwindow->full_rect.w, subwindow->full_rect.h);
@@ -5270,7 +5270,7 @@ static void dump_window(const struct window *window, ang_file *config)
 
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		struct subwindow *subwindow = window->subwindows[i];
-		if (subwindow != NULL && subwindow->visible) {
+		if (subwindow != NULL) {
 			dump_subwindow(subwindow, config);
 		}
 	}
@@ -6240,7 +6240,14 @@ static enum parser_error config_subwindow_window(struct parser *parser)
 		return PARSE_ERROR_GENERIC;
 	}
 	subwindow->config = mem_zalloc(sizeof(*subwindow->config));
-
+	/*
+	 * Old versions only wrote visible subwindows to the configuration
+	 * file and did not append the visibility status to the subwindow-window
+	 * directive.
+	 */
+	if (parser_hasval(parser, "vis")) {
+		subwindow->visible = (parser_getint(parser, "vis") != 0);
+	}
 	subwindow->window = window;
 	attach_subwindow_to_window(window, subwindow);
 
@@ -6371,7 +6378,7 @@ static struct parser *init_parse_config(void)
 	parser_reg(parser, "window-tile-scale uint index sym which int scale",
 			config_window_tile_scale);
 
-	parser_reg(parser, "subwindow-window uint index uint windex",
+	parser_reg(parser, "subwindow-window uint index uint windex ?int vis",
 			config_subwindow_window);
 	parser_reg(parser, "subwindow-full-rect uint index int x int y int w int h",
 			config_subwindow_rect);
