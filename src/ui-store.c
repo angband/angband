@@ -394,26 +394,34 @@ static void store_display_help(struct store_context *ctx)
 	if (!ctx->inspect_only) {
 		text_out(" and ");
 		text_out_c(COLOUR_L_GREEN, "p");
+		text_out(" (or ");
+		text_out_c(COLOUR_L_GREEN, "g");
+		text_out(")");
 
 		if (is_home) text_out(" picks up");
 		else text_out(" purchases");
 	}
-	text_out(" the selected item. ");
+	text_out(" an item. ");
 
 	if (!ctx->inspect_only) {
-		if (OPT(player, birth_no_selling)) {
+		if (OPT(player, birth_no_selling) && !is_home) {
 			text_out_c(COLOUR_L_GREEN, "d");
+			text_out(" (or ");
+			text_out_c(COLOUR_L_GREEN, "s");
+			text_out(")");
 			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
 		} else {
 			text_out_c(COLOUR_L_GREEN, "d");
+			text_out(" (or ");
+			text_out_c(COLOUR_L_GREEN, "s");
+			text_out(")");
 			if (is_home) text_out(" drops");
 			else text_out(" sells");
 			text_out(" an item from your inventory. ");
 		}
-	} else {
-		text_out_c(COLOUR_L_GREEN, "I");
-		text_out(" inspects an item from your inventory. ");
 	}
+	text_out_c(COLOUR_L_GREEN, "I");
+	text_out(" inspects an item from your inventory. ");
 
 	text_out_c(COLOUR_L_GREEN, "ESC");
 	if (!ctx->inspect_only)
@@ -936,6 +944,20 @@ static int context_menu_store(struct store_context *ctx, const int oid, int mx, 
 	return true;
 }
 
+/* Make 'g' a synonym of 'p' for an item's context menu in the store. */
+static bool handle_g_context_store_item(struct menu *menu,
+		const ui_event *event, int oid)
+{
+	if (event->type == EVT_KBRD && event->key.code == 'g') {
+		ui_event mod_event, out_event;
+
+		mod_event = *event;
+		mod_event.key.code = 'p';
+		return menu_handle_keypress(menu, &mod_event, &out_event);
+	}
+	return false;
+}
+
 /* pick the context menu options appropiate for an item available in a store */
 static void context_menu_store_item(struct store_context *ctx, const int oid, int mx, int my)
 {
@@ -944,7 +966,7 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 
 	struct menu *m = menu_dynamic_new();
 	struct object *obj = ctx->list[oid];
-
+	menu_iter mod_iter;
 	int selected;
 	char *labels;
 	char header[120];
@@ -955,14 +977,24 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	menu_dynamic_add_label(m, "Examine", 'x', ACT_EXAMINE, labels);
+	menu_dynamic_add_label(m, "Examine", (OPT(player, rogue_like_commands))
+		? 'x' : 'l', ACT_EXAMINE, labels);
 	if (!ctx->inspect_only) {
-		menu_dynamic_add_label(m, home ? "Take" : "Buy", 'd',
+		menu_dynamic_add_label(m, home ? "Take" : "Buy", 'p',
 			ACT_BUY, labels);
 		if (obj->number > 1) {
 			menu_dynamic_add_label(m, home ? "Take one" : "Buy one",
 				'o', ACT_BUY_ONE, labels);
 		}
+		/*
+		 * This a bit of a hack so 'g' acts like 'p' (as it does when
+		 * there isn't a selected item). Has to be done after all the
+		 * labels have been added to avoid assertion failures.
+		 */
+		mod_iter = *m->row_funcs;
+		mod_iter.row_handler = handle_g_context_store_item;
+		m->row_funcs = &mod_iter;
+		m->switch_keys = "g";
 	}
 
 	/* Hack -- no flush needed */
