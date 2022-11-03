@@ -448,9 +448,9 @@ void ego_apply_magic(struct object *obj, int level)
 		obj->el_info[i].flags |= obj->ego->el_info[i].flags;
 	}
 
-	/* Add effect (ego effect will trump object effect, when there are any) */
-	if (obj->ego->effect) {
-		obj->effect = obj->ego->effect;
+	/* Add activation (ego's activation will trump object's, if any). */
+	if (obj->ego->activation) {
+		obj->activation = obj->ego->activation;
 		obj->time = obj->ego->time;
 	}
 

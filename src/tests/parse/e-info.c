@@ -22,6 +22,12 @@ static struct object_kind dummy_kinds[] = {
 	{ .name = "& Skullcap~", .kidx = 4, .tval = TV_HELM, .sval = 1 },
 	{ .name = "& Steel Helm~", .kidx = 5, .tval = TV_HELM, .sval = 2 },
 };
+static struct activation dummy_activations[] = {
+	{ .name = NULL, .index = 0 },
+	{ .name = "CURE_POISON", .index = 1 },
+	{ .name = "RESTORE_MANA", .index = 2 },
+	{ .name = "ILLUMINATION", .index = 3 },
+};
 static struct slay dummy_slays[] = {
 	{ .code = NULL },
 	{ .code = "ORC_3" },
@@ -41,12 +47,25 @@ static struct curse dummy_curses[] = {
 int setup_tests(void **state) {
 	*state = ego_parser.init();
 	/*
-	 * Do minimal setup for adding of slays, brands, and curses and for
-	 * kind lookup.  z_info is also used by ego_parser.finish.
+	 * Do minimal setup for adding of activations, slays, brands, and
+	 * curses and for kind lookup.  z_info is also used by
+	 * ego_parser.finish.
 	 */
 	z_info = mem_zalloc(sizeof(*z_info));
 	z_info->k_max = (uint16_t) N_ELEMENTS(dummy_kinds);
 	k_info = dummy_kinds;
+	z_info->act_max = (uint16_t) N_ELEMENTS(dummy_activations);
+	activations = dummy_activations;
+	if (z_info->act_max > 1) {
+		size_t i;
+
+		for (i = 0; i < (size_t) z_info->act_max - 1; ++i) {
+			activations[i].next = activations + i + 1;
+		}
+	}
+	if (z_info->act_max > 0) {
+		activations[z_info->act_max - 1].next = NULL;
+	}
 	z_info->slay_max = (uint8_t) N_ELEMENTS(dummy_slays);
 	slays = dummy_slays;
 	z_info->brand_max = (uint8_t) N_ELEMENTS(dummy_brands);
@@ -86,9 +105,7 @@ static int test_missing_record_header0(void *state) {
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "min-combat:15:255:0");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "effect:CURE:POISONED");
-	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "dice:10+5d4");
+	r = parser_parse(p, "act:ILLUMINATION");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "time:30+1d30");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -170,8 +187,7 @@ static int test_name0(void *state) {
 	eq(e->min_to_h, NO_MINIMUM);
 	eq(e->min_to_d, NO_MINIMUM);
 	eq(e->min_to_a, NO_MINIMUM);
-	null(e->effect);
-	null(e->effect_msg);
+	null(e->activation);
 	eq(e->time.base, 0);
 	eq(e->time.dice, 0);
 	eq(e->time.sides, 0);
@@ -348,140 +364,29 @@ static int test_min0(void *state) {
 	ok;
 }
 
-static int test_missing_effect(void *state) {
+static int test_act0(void *state) {
 	struct parser *p = (struct parser*) state;
-	struct ego_item *e = (struct ego_item*) parser_priv(p);
-	enum parser_error r;
-
-	notnull(e);
-	null(e->effect);
-	/*
-	 * Specifying dice without an effect should do nothing and not flag an
-	 * an error.
-	 */
-	r = parser_parse(p, "dice:d12");
-	eq(r, PARSE_ERROR_NONE);
-	null(e->effect);
-	ok;
-}
-
-static int test_effect0(void *state) {
-	struct parser *p = (struct parser*) state;
-	/* Try an effect without a subtype, radius or other. */
-	enum parser_error r = parser_parse(p, "effect:LIGHT_LEVEL");
+	enum parser_error r = parser_parse(p, "act:ILLUMINATION");
 	struct ego_item *e;
-	struct effect *eff;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = (struct ego_item*) parser_priv(p);
 	notnull(e);
-	notnull(e->effect);
-	eff = e->effect;
-	while (eff->next) eff = eff->next;
-	eq(eff->index, EF_LIGHT_LEVEL);
-	null(eff->dice);
-	eq(eff->y, 0);
-	eq(eff->x, 0);
-	eq(eff->subtype, 0);
-	eq(eff->radius, 0);
-	eq(eff->other, 0);
-	null(eff->msg);
-	/* Try an effect with a subtype but no radius or other. */
-	r = parser_parse(p, "effect:BOLT:ACID");
-	eq(r, PARSE_ERROR_NONE);
-	e = (struct ego_item*) parser_priv(p);
-	notnull(e);
-	notnull(e->effect);
-	eff = e->effect;
-	while (eff->next) eff = eff->next;
-	eq(eff->index, EF_BOLT);
-	null(eff->dice);
-	eq(eff->y, 0);
-	eq(eff->x, 0);
-	eq(eff->subtype, PROJ_ACID);
-	eq(eff->radius, 0);
-	eq(eff->other, 0);
-	null(eff->msg);
-	/* Try an effect with a subtype and radius but no other. */
-	r = parser_parse(p, "effect:BALL:COLD:2");
-	eq(r, PARSE_ERROR_NONE);
-	e = (struct ego_item*) parser_priv(p);
-	notnull(e);
-	notnull(e->effect);
-	eff = e->effect;
-	while (eff->next) eff = eff->next;
-	eq(eff->index, EF_BALL);
-	null(eff->dice);
-	eq(eff->y, 0);
-	eq(eff->x, 0);
-	eq(eff->subtype, PROJ_COLD);
-	eq(eff->radius, 2);
-	eq(eff->other, 0);
-	null(eff->msg);
-	/* Try an effect with a subtype, radius, and other. */
-	r = parser_parse(p, "effect:SPOT:FIRE:1:10");
-	eq(r, PARSE_ERROR_NONE);
-	e = (struct ego_item*) parser_priv(p);
-	notnull(e);
-	notnull(e->effect);
-	eff = e->effect;
-	while (eff->next) eff = eff->next;
-	eq(eff->index, EF_SPOT);
-	null(eff->dice);
-	eq(eff->y, 0);
-	eq(eff->x, 0);
-	eq(eff->subtype, PROJ_FIRE);
-	eq(eff->radius, 1);
-	eq(eff->other, 10);
-	null(eff->msg);
+	notnull(e->activation);
+	notnull(e->activation->name);
+	require(streq(e->activation->name, "ILLUMINATION"));
 	ok;
 }
 
-static int test_effect_bad0(void *state) {
+static int test_act_bad0(void *state) {
 	struct parser *p = (struct parser*) state;
-	/* Try an unrecognized effect. */
-	enum parser_error r = parser_parse(p, "effect:XYZZY");
-
-	eq(r, PARSE_ERROR_INVALID_EFFECT);
-	/* Try with an unrecognized subtype. */
-	r = parser_parse(p, "effect:BOLT:XYZZY");
-	eq(r, PARSE_ERROR_INVALID_VALUE);
-	ok;
-}
-
-static int test_dice0(void *state) {
-	struct parser *p = (struct parser*) state;
-	/* Set up effect. */
-	enum parser_error r = parser_parse(p, "effect:BOLT:ACID");
+	enum parser_error r = parser_parse(p, "act:XYZZY");
 	struct ego_item *e;
-	struct effect *eff;
 
-	eq(r, PARSE_ERROR_NONE);
-	r = parser_parse(p, "dice:5+3d4");
 	eq(r, PARSE_ERROR_NONE);
 	e = (struct ego_item*) parser_priv(p);
 	notnull(e);
-	notnull(e->effect);
-	eff = e->effect;
-	while (eff->next) eff = eff->next;
-	notnull(eff->dice);
-	eq(dice_test_values(eff->dice, 5, 3, 4, 0), true);
-	/* Try setting again to see if memory is leaked. */
-	r = parser_parse(p, "dice:10+5d8");
-	eq(r, PARSE_ERROR_NONE);
-	notnull(eff->dice);
-	eq(dice_test_values(eff->dice, 10, 5, 8, 0), true);
-	ok;
-}
-
-static int test_dice_bad0(void *state) {
-	struct parser *p = (struct parser*) state;
-	/* Set up effect. */
-	enum parser_error r = parser_parse(p, "effect:BALL:ELEC:2");
-
-	eq(r, PARSE_ERROR_NONE);
-	r = parser_parse(p, "dice:d5+1+d8");
-	eq(r, PARSE_ERROR_INVALID_DICE);
+	null(e->activation);
 	ok;
 }
 
@@ -786,8 +691,6 @@ static int test_curse_bad0(void *state) {
 const char *suite_name = "parse/e-info";
 /*
  * test_missing_record_header0() has to be before test_name0().
- * test_missing_effect0() has to be before test_effect0(), test_effect_bad0(),
- * test_dice0(), and test_dice_bad0().
  */
 struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
@@ -802,11 +705,8 @@ struct test tests[] = {
 	{ "item_bad0", test_item_bad0 },
 	{ "combat0", test_combat0 },
 	{ "min_combat0", test_min0 },
-	{ "missing_effect0", test_missing_effect },
-	{ "effect0", test_effect0 },
-	{ "effect_bad0", test_effect_bad0 },
-	{ "dice0", test_dice0 },
-	{ "dice_bad0", test_dice_bad0 },
+	{ "act0", test_act0 },
+	{ "act_bad0", test_act_bad0 },
 	{ "time0", test_time0 },
 	{ "flags0", test_flags0 },
 	{ "flags_bad0", test_flags_bad0 },

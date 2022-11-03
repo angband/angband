@@ -245,10 +245,7 @@ static struct object *rd_item(void)
 	}
 
 	/* Set effect */
-	if (effect && obj->ego)
-		obj->effect = obj->ego->effect;
-
-	if (effect && !obj->effect)
+	if (effect)
 		obj->effect = obj->kind->effect;
 
 	/* Success */
