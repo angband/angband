@@ -2326,54 +2326,14 @@ static enum parser_error parse_ego_min(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_ego_effect(struct parser *p) {
+static enum parser_error parse_ego_act(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
-	struct effect *effect, *new_effect;
+	const char *name = parser_getstr(p, "name");
 
 	if (!e) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
-	/* Go to the next vacant effect and set it to the new one  */
-	new_effect = mem_zalloc(sizeof(*new_effect));
-	if (e->effect) {
-		effect = e->effect;
-		while (effect->next) effect = effect->next;
-		effect->next = new_effect;
-	} else {
-		e->effect = new_effect;
-	}
-	/* Fill in the detail */
-	return grab_effect_data(p, new_effect);
-}
-
-static enum parser_error parse_ego_dice(struct parser *p) {
-	struct ego_item *e = parser_priv(p);
-	struct effect *effect;
-	dice_t *dice;
-	const char *string;
-
-	if (!e) {
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	}
-	/* If there is no effect, assume that this is human and not parser error. */
-	effect = e->effect;
-	if (effect == NULL) {
-		return PARSE_ERROR_NONE;
-	}
-	/* Go to the correct effect */
-	while (effect->next) effect = effect->next;
-	dice = dice_new();
-	if (dice == NULL) {
-		return PARSE_ERROR_INVALID_DICE;
-	}
-	string = parser_getstr(p, "dice");
-	if (dice_parse_string(dice, string)) {
-		dice_free(effect->dice);
-		effect->dice = dice;
-	} else {
-		dice_free(dice);
-		return PARSE_ERROR_INVALID_DICE;
-	}
+	e->activation = findact(name);
 	return PARSE_ERROR_NONE;
 }
 
@@ -2594,8 +2554,7 @@ struct parser *init_parse_ego(void) {
 	parser_reg(p, "item sym tval sym sval", parse_ego_item);
 	parser_reg(p, "combat rand th rand td rand ta", parse_ego_combat);
 	parser_reg(p, "min-combat int th int td int ta", parse_ego_min);
-	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other", parse_ego_effect);
-	parser_reg(p, "dice str dice", parse_ego_dice);
+	parser_reg(p, "act str name", parse_ego_act);
 	parser_reg(p, "time rand time", parse_ego_time);
 	parser_reg(p, "flags ?str flags", parse_ego_flags);
 	parser_reg(p, "flags-off ?str flags", parse_ego_flags_off);
@@ -2658,7 +2617,6 @@ static void cleanup_ego(void)
 		mem_free(ego->brands);
 		mem_free(ego->slays);
 		mem_free(ego->curses);
-		free_effect(ego->effect);
 
 		poss = ego->poss_items;
 		while (poss) {

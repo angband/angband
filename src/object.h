@@ -366,9 +366,8 @@ struct ego_item {
 	int min_to_d;			/* Minimum to-dam value */
 	int min_to_a;			/* Minimum to-ac value */
 
-	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;
-	random_value time;		/**< Recharge time (rods/activation) */
+	struct activation *activation;	/**< Activation */
+	random_value time;		/**< Recharge time for activation */
 
 	bool everseen;			/* Do not spoil ignore menus */
 };

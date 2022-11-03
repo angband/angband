@@ -22,6 +22,8 @@
 # flags-off: flag | flag | etc
 # values: label[value] | label[value] | etc.
 # min-values: label[value] | label[value] | etc.
+# act: name
+# time: timeout random value
 # brand: code
 # slay: code
 # curse: name : power
@@ -68,15 +70,6 @@
 # One or more 'item' lines are used when we don't want all object kinds of
 # this tval to be possible for this ego-item.
 
-# 'effect' is for the effect when an item is activated.  Fields are the
-# name of the effect (as found in src/list-effects.h) and possibly one or
-# two parameters to the effect.
-
-# 'dice' provides a random value to be used by an activation effect
-
-# 'time' gives a random value to be used as the time to recharge for an
-# activatable item.
-
 # 'flags' is for flags, which can be either object flags (as found in
 # src/list-object-flags.h) or kind flags (src/list-kind-flags.h).  As many
 # flags: lines may be used as are needed to specify all the flags, and
@@ -101,6 +94,12 @@
 # While resistances can be specified on a 'values' line, they can not appear
 # in a 'min-values' line.  Also, unlike the 'values' line, all the values must
 # be plain integers:  full random expressions are not allowed.
+
+# 'act' is any activation that the ego might have - most have none.  The
+# activation is specified by its name, as found in activation.txt.
+
+# 'time' gives a random value to be used as the time to recharge for the
+# activation.
 
 # 'brand' adds a brand to the ego.  It should be omitted for egos without
 # brands and may appear more than once for egos with multiple brands.  Specify
