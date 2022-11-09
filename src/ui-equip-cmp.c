@@ -2793,8 +2793,14 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 		assert(isort >= 0 && isort < s->nitems);
 		e = s->items + isort;
 
-		Term_putch(s->icol_name - 4, rdetails.value_position.y,
-			e->at, e->ch);
+		if (tile_width == 1 && tile_height == 1) {
+			Term_putch(s->icol_name - 4, rdetails.value_position.y,
+				e->at, e->ch);
+		} else {
+			/* No equippy chars with big tiles. */
+			Term_putch(s->icol_name - 4, rdetails.value_position.y,
+				COLOUR_WHITE, L' ');
+		}
 		Term_putch(s->icol_name - 2, rdetails.value_position.y, color,
 			source_to_char(e->src));
 		if (isort == s->isel0 || isort == s->isel1 ||
