@@ -3048,7 +3048,7 @@ static void setup_menus(void)
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
-	for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
+	for (i = IDM_OPTIONS_TILE_1x1; i <= IDM_OPTIONS_TILE_16x16; i++) {
 		EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	}
 	for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
@@ -3181,8 +3181,12 @@ static void setup_menus(void)
 
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 
-		for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
-			EnableMenuItem(hm, i, MF_ENABLED);
+		/* Only enable the multiplier entries if using a tile set. */
+		if (current_graphics_mode && current_graphics_mode->grafID) {
+			for (i = IDM_OPTIONS_TILE_1x1;
+					i <= IDM_OPTIONS_TILE_16x16; i++) {
+				EnableMenuItem(hm, i, MF_ENABLED);
+			}
 		}
 		for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
 			EnableMenuItem(hm, i, MF_ENABLED);
