@@ -413,6 +413,7 @@ struct menu_elem {
 	struct button_data data;
 	button_render on_render;
 	button_menu on_menu;
+	bool disabled;
 };
 
 struct button_callbacks {
@@ -426,6 +427,10 @@ struct button_callbacks {
 };
 
 struct button {
+	/* disabled, if true, means that the on_event or on_menu callbacks
+	 * won't be invoked and the button will be drawn with an altered
+	 * appearance to indicate that it currently doesn't do anything. */
+	bool disabled;
 	/* selected means the user pointed at button and
 	 * pressed mouse button (but not released yet) */
 	bool selected;
@@ -503,6 +508,11 @@ struct wallpaper {
 	enum wallpaper_mode mode;
 };
 
+struct stipple {
+	int w, h;
+	SDL_Texture *texture;
+};
+
 /* struct window is a real window on screen, it has one or more
  * subwindows (terms) in it */
 struct window {
@@ -544,6 +554,7 @@ struct window {
 	int pixelformat;
 
 	struct wallpaper wallpaper;
+	struct stipple stipple;
 	struct move_state move_state;
 	struct size_state size_state;
 	struct status_bar status_bar;
@@ -705,6 +716,39 @@ static void render_background(const struct window *window)
 	}
 }
 
+static void stipple_button(const struct window *window,
+		const struct button *button, SDL_Texture *dst_texture)
+{
+	SDL_Rect srect = { 0, 0, 0, 0 }, drect;
+	int ylim = button->full_rect.y + button->full_rect.h;
+	int xlim = button->full_rect.x + button->full_rect.w;
+
+	if (!window->stipple.texture) {
+		return;
+	}
+	SDL_SetRenderTarget(window->renderer, dst_texture);
+	for (drect.y = button->full_rect.y; drect.y < ylim;
+			drect.y += window->stipple.h) {
+		if (drect.y + window->stipple.h > ylim) {
+			drect.h = ylim - drect.y;
+		} else {
+			drect.h = window->stipple.h;
+		}
+		srect.h = drect.h;
+		for (drect.x = button->full_rect.x; drect.x < xlim;
+				drect.x += window->stipple.w) {
+			if (drect.x + window->stipple.w > xlim) {
+				drect.w = xlim - drect.x;
+			} else {
+				drect.w = window->stipple.w;
+			}
+			srect.w = drect.w;
+			SDL_RenderCopy(window->renderer,
+				window->stipple.texture, &srect, &drect);
+		}
+	}
+}
+
 static void render_all(const struct window *window)
 {
 	render_background(window);
@@ -730,6 +774,10 @@ static void render_status_bar(const struct window *window)
 		struct button *button = &window->status_bar.button_bank.buttons[i];
 		if (button->callbacks.on_render != NULL) {
 			button->callbacks.on_render(window, button);
+		}
+		if (button->disabled) {
+			stipple_button(window, button,
+				window->status_bar.texture);
 		}
 	}
 }
@@ -1127,6 +1175,9 @@ static void render_menu_panel(const struct window *window, struct menu_panel *me
 
 		assert(button->callbacks.on_render != NULL);
 		button->callbacks.on_render(window, button);
+		if (button->disabled) {
+			stipple_button(window, button, NULL);
+		}
 	}
 	render_outline_rect(window,
 			NULL, &menu_panel->rect, &g_colors[DEFAULT_MENU_PANEL_OUTLINE_COLOR]);
@@ -1695,7 +1746,7 @@ static bool handle_button_movesize(struct window *window,
 }
 
 static void push_button(struct button_bank *bank, struct font *font,
-		const char *caption, struct button_data data, struct button_callbacks callbacks,
+		const char *caption, bool disabled, struct button_data data, struct button_callbacks callbacks,
 		const SDL_Rect *rect, enum button_caption_position position)
 {
 	assert(bank->number < bank->size);
@@ -1737,6 +1788,7 @@ static void push_button(struct button_bank *bank, struct font *font,
 
 	button->callbacks = callbacks;
 	button->data = data;
+	button->disabled = disabled;
 	button->highlighted = false;
 	button->selected = false;
 
@@ -1794,6 +1846,7 @@ static struct menu_panel *make_menu_panel(const struct button *origin,
 		push_button(&menu_panel->button_bank,
 				font,
 				elems[i].caption,
+				elems[i].disabled,
 				elems[i].data,
 				callbacks,
 				&rect,
@@ -1908,6 +1961,7 @@ static void handle_menu_windows(struct window *window,
 		elems[i].data.value.unsigned_value = i;
 		elems[i].on_render = render_button_menu_window;
 		elems[i].on_menu = handle_menu_window;
+		elems[i].disabled = false;
 	}
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2046,7 +2100,8 @@ static void handle_menu_tile_sizes(struct window *window,
 				{.int_value = BUTTON_TILE_SIZE_WIDTH},
 			},
 			render_button_menu_tile_size,
-			handle_menu_tile_size
+			handle_menu_tile_size,
+			false
 		},
 		{
 			"< Tile height %d >",
@@ -2055,7 +2110,8 @@ static void handle_menu_tile_sizes(struct window *window,
 				{.int_value = BUTTON_TILE_SIZE_HEIGHT},
 			},
 			render_button_menu_tile_size,
-			handle_menu_tile_size
+			handle_menu_tile_size,
+			false
 		}
 	};
 
@@ -2073,6 +2129,15 @@ static void handle_menu_tile_sets(struct window *window,
 	}
 
 	size_t num_elems = 0;
+	/*
+	 * Only allow changes to the graphics mode when at a command prompt
+	 * in game.  Could also allow while at the splash screen, but that
+	 * isn't possible to test for with character_generated and
+	 * character_dungeon.  In other situations, the saved screens for
+	 * overlayed menus could have tile references that become outdated
+	 * when the graphics mode is changed.
+	 */
+	bool disabled = !character_generated || !inkey_flag;
 	struct menu_elem *elems;
 
 	graphics_mode *mode = graphics_modes;
@@ -2090,7 +2155,7 @@ static void handle_menu_tile_sets(struct window *window,
 		elems[i].data.value.int_value = mode->grafID;
 		elems[i].on_render = render_button_menu_tile_set;
 		elems[i].on_menu = handle_menu_tile_set;
-
+		elems[i].disabled = disabled;
 		mode = mode->pNext;
 	}
 
@@ -2114,8 +2179,20 @@ static void handle_menu_tiles(struct window *window,
 	};
 
 	struct menu_elem elems[] = {
-		{"Set", data, render_button_menu_simple, handle_menu_tile_sets},
-		{"Size", data, render_button_menu_simple, handle_menu_tile_sizes}
+		{
+			"Set",
+			data,
+			render_button_menu_simple,
+			handle_menu_tile_sets,
+			false
+		},
+		{
+			"Size",
+			data,
+			render_button_menu_simple,
+			handle_menu_tile_sizes,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2241,7 +2318,13 @@ static void handle_menu_font_sizes(struct window *window,
 			{.subwindow = subwindow, .index = subwindow->font->index, .size_ok = true}},
 	};
 	struct menu_elem elems[] = {
-		{"< %2d points >", data, render_button_menu_font_size, handle_menu_font_size}
+		{
+			"< %2d points >",
+			data,
+			render_button_menu_font_size,
+			handle_menu_font_size,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2269,6 +2352,7 @@ static void handle_menu_font_names(struct window *window,
 			elems[num_elems].data.value.font_value.index = i;
 			elems[num_elems].on_render = render_button_menu_font_name;
 			elems[num_elems].on_menu = handle_menu_font_name;
+			elems[num_elems].disabled = false;
 			num_elems++;
 		}
 	}
@@ -2302,6 +2386,7 @@ static void handle_menu_purpose(struct window *window,
 		elems[num_elems].data.type = BUTTON_DATA_TERM_FLAG;
 		elems[num_elems].on_render = render_button_menu_pw;
 		elems[num_elems].on_menu = handle_menu_pw;
+		elems[num_elems].disabled = false;
 		num_elems++;
 	}
 
@@ -2323,8 +2408,20 @@ static void handle_menu_font(struct window *window,
 	};
 
 	struct menu_elem elems[] = {
-		{"Name", data, render_button_menu_simple, handle_menu_font_names},
-		{"Size", data, render_button_menu_simple, handle_menu_font_sizes}
+		{
+			"Name",
+			data,
+			render_button_menu_simple,
+			handle_menu_font_names,
+			false
+		},
+		{
+			"Size",
+			data,
+			render_button_menu_simple,
+			handle_menu_font_sizes,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2390,6 +2487,7 @@ static void handle_menu_alpha(struct window *window,
 		elems[i].data.value.alpha_value.show_value = i * DEFAULT_ALPHA_STEP;
 		elems[i].on_render = render_button_menu_alpha;
 		elems[i].on_menu = handle_menu_subwindow_alpha;
+		elems[i].disabled = false;
 	}
 	elems[N_ELEMENTS(elems) - 1].data.value.alpha_value.real_value =
 		DEFAULT_ALPHA_FULL;
@@ -2432,25 +2530,46 @@ static void handle_menu_terms(struct window *window,
 
 	struct menu_elem elems[] = {
 		{
-			"Font", data, render_button_menu_simple, handle_menu_font
+			"Font",
+			data,
+			render_button_menu_simple,
+			handle_menu_font,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? "Tiles" : NULL,
-			data, render_button_menu_simple, handle_menu_tiles
+			data,
+			render_button_menu_simple,
+			handle_menu_tiles,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? NULL: "Purpose",
-			data, render_button_menu_simple, handle_menu_purpose
+			data,
+			render_button_menu_simple,
+			handle_menu_purpose,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? NULL : "Alpha",
-			data, render_button_menu_simple, handle_menu_alpha
+			data,
+			render_button_menu_simple,
+			handle_menu_alpha,
+			false
 		},
 		{
-			"Borders", data, render_button_menu_borders, handle_menu_borders
+			"Borders",
+			data,
+			render_button_menu_borders,
+			handle_menu_borders,
+			false
 		},
 		{
-			"Top", data, render_button_menu_top, handle_menu_top
+			"Top",
+			data,
+			render_button_menu_top,
+			handle_menu_top,
+			false
 		}
 	};
 
@@ -2476,6 +2595,7 @@ static void load_main_menu_panel(struct status_bar *status_bar)
 		term_elems[n_terms].data.value.subwindow_value = subwindow;
 		term_elems[n_terms].on_render = render_button_menu_terms;
 		term_elems[n_terms].on_menu = handle_menu_terms;
+		term_elems[n_terms].disabled = false;
 		n_terms++;
 	}
 
@@ -2483,23 +2603,40 @@ static void load_main_menu_panel(struct status_bar *status_bar)
 	struct menu_elem other_elems[] = {
 		{
 			"Fullscreen",
-			data, render_button_menu_fullscreen, handle_menu_fullscreen
+			data,
+			render_button_menu_fullscreen,
+			handle_menu_fullscreen,
+			false,
 		},
 		{
-			status_bar->window->index == MAIN_WINDOW ? "Send Keypad Modifier" : NULL,
-			data, render_button_menu_kp_mod, handle_menu_kp_mod
+			status_bar->window->index == MAIN_WINDOW ?
+				"Send Keypad Modifier" : NULL,
+			data,
+			render_button_menu_kp_mod,
+			handle_menu_kp_mod,
+			false
 		},
 		{
-			status_bar->window->index == MAIN_WINDOW ? "Windows" : NULL,
-			data, render_button_menu_simple, handle_menu_windows
+			status_bar->window->index == MAIN_WINDOW ?
+				"Windows" : NULL,
+			data,
+			render_button_menu_simple,
+			handle_menu_windows,
+			false
 		},
 		{
 			"About",
-			data, render_button_menu_simple, handle_menu_about
+			data,
+			render_button_menu_simple,
+			handle_menu_about,
+			false
 		},
 		{
 			"Quit", 
-			data, render_button_menu_simple, handle_menu_quit
+			data,
+			render_button_menu_simple,
+			handle_menu_quit,
+			false
 		}
 	};
 
@@ -2570,10 +2707,11 @@ static bool handle_menu_event(struct window *window, const SDL_Event *event)
 			button->highlighted = true;
 
 			assert(button->callbacks.on_menu != NULL);
-			button->callbacks.on_menu(window, button, event, menu_panel);
-
-			handled = true;
-
+			if (!button->disabled) {
+				button->callbacks.on_menu(window, button,
+					event, menu_panel);
+				handled = true;
+			}
 		} else {
 			button->highlighted = false;
 			/* but we do unset selected */
@@ -3079,7 +3217,10 @@ static bool handle_status_bar_buttons(struct window *window,
 	for (size_t i = 0; i < window->status_bar.button_bank.number; i++) {
 		struct button *button = &window->status_bar.button_bank.buttons[i];
 		assert(button->callbacks.on_event != NULL);
-		handled |= button->callbacks.on_event(window, button, event);
+		if (!button->disabled) {
+			handled |= button->callbacks.on_event(window, button,
+				event);
+		}
 	}
 
 	return handled;
@@ -4333,6 +4474,65 @@ static void load_default_wallpaper(struct window *window)
 	load_wallpaper(window, path);
 }
 
+static void load_stipple(struct window *window)
+{
+	SDL_Surface *s;
+	Uint32 *pixels;
+	Uint32 rmask, gmask, bmask, amask, on_pixel, off_pixel;
+	int y, x;
+
+	/*
+	 * on_pixel is black and completely transparent.  off_pixel is gray
+	 * (0x40, 0x40, 0x40) and slightly opaque.
+	 */
+#if SDL_BYTE_ORDER == SDL_BIGENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+	on_pixel = 0x000000ff;
+	off_pixel = 0x40404040;
+#else
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+	on_pixel = 0xff000000;
+	off_pixel = 0x40404040;
+#endif
+
+	/*
+	 * These dimensions must be multiple of two:  see the loop logic below.
+	 */
+	window->stipple.h = 16;
+	window->stipple.w = 16;
+	pixels = mem_alloc(window->stipple.h * window->stipple.w *
+		sizeof(*pixels));
+	for (y = 0; y < window->stipple.h; y += 2) {
+		uint32_t *row = pixels + y * window->stipple.w;
+
+		for (x = 0; x < window->stipple.w; x += 2) {
+			row[x] = on_pixel;
+			row[x + 1] = off_pixel;
+			row[x + window->stipple.w] = off_pixel;
+			row[x + window->stipple.w + 1] = on_pixel;
+		}
+	}
+
+	s = SDL_CreateRGBSurfaceFrom(pixels, window->stipple.w,
+		window->stipple.h, 32, 4 * window->stipple.w, rmask, gmask,
+		bmask, amask);
+	window->stipple.texture = SDL_CreateTextureFromSurface(window->renderer,
+		s);
+	if (window->stipple.texture == NULL) {
+		(void) fprintf(stderr, "could not create stipple texture: %s\n",
+			SDL_GetError());
+	}
+
+	SDL_FreeSurface(s);
+	mem_free(pixels);
+}
+
 static void load_default_window_icon(const struct window *window)
 {
 	char path[4096];
@@ -4827,7 +5027,7 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 	get_string_metrics(status_bar->font, (cap), &rect.w, NULL); \
 	rect.w += DEFAULT_BUTTON_BORDER * 2; \
 	push_button(&status_bar->button_bank, status_bar->font, \
-			(cap), data, callbacks, &rect, CAPTION_POSITION_CENTER); \
+			(cap), false, data, callbacks, &rect, CAPTION_POSITION_CENTER); \
 	rect.x += rect.w; \
 
 	rect.x = status_bar->full_rect.x;
@@ -4866,7 +5066,7 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 	rect.w += DEFAULT_BUTTON_BORDER * 2; \
 	rect.x -= rect.w; \
 	push_button(&status_bar->button_bank, status_bar->font, \
-			(cap), data, callbacks, &rect, CAPTION_POSITION_CENTER); \
+			(cap), false, data, callbacks, &rect, CAPTION_POSITION_CENTER); \
 
 	rect.x = status_bar->full_rect.x + status_bar->full_rect.w;
 	rect.y = status_bar->full_rect.y;
@@ -5035,6 +5235,7 @@ static void load_window(struct window *window)
 			load_wallpaper(window, window->config->wallpaper_path);
 		}
 	}
+	load_stipple(window);
 	load_default_window_icon(window);
 	if (window->graphics.id != GRAPHICS_NONE) {
 		load_graphics(window, get_graphics_mode(window->graphics.id));
@@ -5196,6 +5397,8 @@ static void wipe_window(struct window *window, int display)
 
 	window->wallpaper.texture = NULL;
 	window->wallpaper.mode = WALLPAPER_TILED;
+
+	window->stipple.texture = NULL;
 
 	window->status_bar.font = NULL;
 	window->status_bar.color = g_colors[DEFAULT_STATUS_BAR_BG_COLOR];
@@ -5709,6 +5912,11 @@ static void free_window(struct window *window)
 	if (window->wallpaper.texture != NULL) {
 		SDL_DestroyTexture(window->wallpaper.texture);
 		window->wallpaper.texture = NULL;
+	}
+
+	if (window->stipple.texture != NULL) {
+		SDL_DestroyTexture(window->stipple.texture);
+		window->stipple.texture = NULL;
 	}
 
 	free_graphics(&window->graphics);

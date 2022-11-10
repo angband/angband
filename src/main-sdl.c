@@ -3509,8 +3509,18 @@ static void MoreDraw(sdl_Window *win)
 	}
 	y += 20;
 
-	sdl_WindowText(win, AltUnselColour, 20, y, "Available Graphics:");
-
+	/*
+	 * Only allow changes to the graphics mode when at a command prompt
+	 * in game.  Could also allow while at the splash screen, but that
+	 * isn't possible to test for with character_generated and
+	 * character_dungeon.  In other situations, the saved screens for
+	 * overlayed menus could have tile references that become outdated
+	 * when the graphics mode is changed.
+	 */
+	if (character_generated && inkey_flag) {
+		sdl_WindowText(win, AltUnselColour, 20, y,
+			"Available Graphics:");
+	}
 	mode = graphics_modes;
 	while (mode) {
 		if (!mode->menuname[0]) {
@@ -3518,8 +3528,13 @@ static void MoreDraw(sdl_Window *win)
 			continue;
 		}
 		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[mode->grafID]);
-		sdl_ButtonMove(button, 200, y);
-		y += 20;
+		if (character_generated && inkey_flag) {
+			sdl_ButtonMove(button, 200, y);
+			sdl_ButtonVisible(button, true);
+			y += 20;
+		} else {
+			sdl_ButtonVisible(button, false);
+		}
 		mode = mode->pNext;
 	} 
 
