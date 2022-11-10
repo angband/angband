@@ -275,15 +275,13 @@ static void prt_equippy(int row, int col)
 
 	struct object *obj;
 
-	/* No equippy chars in bigtile mode */
-	if (tile_width > 1 || tile_height > 1) return;
-
 	/* Dump equippy chars */
 	for (i = 0; i < player->body.count; i++) {
 		/* Object */
 		obj = slot_object(player, i);
 
-		if (obj) {
+		/* Get attr/char for display; clear if big tiles or no object */
+		if (obj && tile_width == 1 && tile_height == 1) {
 			c = object_char(obj);
 			a = object_attr(obj);
 		} else {
