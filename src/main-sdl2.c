@@ -1341,11 +1341,7 @@ static void render_button_menu_tile_size(const struct window *window,
 	SDL_Color fg;
 	SDL_Color *bg;
 
-	if (window->graphics.id != GRAPHICS_NONE) {
-		fg = g_colors[DEFAULT_MENU_TOGGLE_FG_ACTIVE_COLOR];
-	} else {
-		fg = g_colors[DEFAULT_MENU_TOGGLE_FG_INACTIVE_COLOR];
-	}
+	fg = g_colors[DEFAULT_MENU_TOGGLE_FG_ACTIVE_COLOR];
 	if (button->highlighted) {
 		bg = &g_colors[DEFAULT_MENU_BG_ACTIVE_COLOR];
 	} else {
@@ -2092,6 +2088,13 @@ static void handle_menu_tile_sizes(struct window *window,
 		return;
 	}
 
+	/*
+	 * Disable the menu entries to change the tile multipliers if not
+	 * using tiles or if not at a command prompt in game (the latter
+	 * avoids multiplier changes causing blank screens in in-game menus
+	 * or display artifacts when the in-game menu is dismissed sometime
+	 * after the multiplier change).
+	 */
 	struct menu_elem elems[] = {
 		{
 			"< Tile width  %d >",
@@ -2101,7 +2104,8 @@ static void handle_menu_tile_sizes(struct window *window,
 			},
 			render_button_menu_tile_size,
 			handle_menu_tile_size,
-			false
+			window->graphics.id == GRAPHICS_NONE
+				|| !character_generated || !inkey_flag
 		},
 		{
 			"< Tile height %d >",
@@ -2111,7 +2115,8 @@ static void handle_menu_tile_sizes(struct window *window,
 			},
 			render_button_menu_tile_size,
 			handle_menu_tile_size,
-			false
+			window->graphics.id == GRAPHICS_NONE
+				|| !character_generated || !inkey_flag
 		}
 	};
 

@@ -62,7 +62,7 @@ endif
 # Include snd-cocoa.o in $(EXE).o rather than OSX_OBJS to avoid linking errors
 # with the unit test cases.
 OBJS = $(BASEOBJS) cocoa/snd-cocoa.o
-OSX_OBJS = main-cocoa.o cocoa/TileSetScaling.o
+OSX_OBJS = main-cocoa.o
 
 
 
@@ -165,7 +165,6 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	# was a directory.
 	-test -d $(APPRES)/en.lproj/MainMenu.nib && rm -r $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/en.lproj/MainMenu.nib $(APPRES)/en.lproj/MainMenu.nib
-	cp cocoa/en.lproj/TileSetScaling.nib $(APPRES)/en.lproj/TileSetScaling.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \

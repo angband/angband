@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="21507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="8000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21507"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -105,11 +104,13 @@
                                     </connections>
                                 </menu>
                             </menuItem>
-                            <menuItem title="Change Tile Set Scaling..." id="Hei-5G-cgA">
+                            <menuItem title="Tile Size" id="kPo-QG-No0">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="showTileSetScalingPanel:" target="Voe-Tx-rLC" id="GfT-pq-lC6"/>
-                                </connections>
+                                <menu key="submenu" title="Tile Size" id="gSW-p9-gyj">
+                                    <connections>
+                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="X7C-KR-4X4"/>
+                                    </connections>
+                                </menu>
                             </menuItem>
                         </items>
                     </menu>
