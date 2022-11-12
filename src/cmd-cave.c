@@ -1044,6 +1044,8 @@ void move_player(int dir, bool disarm)
 	} else if (trap && player->upkeep->running && !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player);
+		/* No move made so no energy spent. */
+		player->upkeep->energy_use = 0;
 	} else if (!square_ispassable(cave, grid)) {
 		disturb(player);
 
@@ -1072,6 +1074,10 @@ void move_player(int dir, bool disarm)
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
+		/*
+		 * No move but do not refund energy:  primarily so that
+		 * confused moves while blind or without light take energy.
+		 */
 	} else {
 		/* See if trap detection status will change */
 		bool old_dtrap = square_isdtrap(cave, player->grid);
@@ -1087,6 +1093,8 @@ void move_player(int dir, bool disarm)
 				&& !player->upkeep->running_firststep
 				&& old_dtrap && !new_dtrap) {
 			disturb(player);
+			/* No move made so no energy spent. */
+			player->upkeep->energy_use = 0;
 			return;
 		}
 
@@ -1124,6 +1132,9 @@ void move_player(int dir, bool disarm)
 			 * autopickup.
 			 */
 			cmdq_peek()->is_background_command = true;
+		} else {
+			/* No move made so no energy spent. */
+			player->upkeep->energy_use = 0;
 		}
 	}
 
