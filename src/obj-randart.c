@@ -2545,11 +2545,11 @@ static void add_ability(struct artifact *art, int32_t target_power, int *freq,
 /**
  * Randomly select a curse and added it to the artifact in question.
  */
-static void add_curse(struct artifact *art, int level)
+static bool add_curse(struct artifact *art, int level)
 {
 	int max_tries = 5;
 
-	if (of_has(art->flags, OF_BLESSED)) return;
+	if (of_has(art->flags, OF_BLESSED)) return false;
 
 	while (max_tries) {
 		int pick = randint1(z_info->curse_max - 1);
@@ -2558,9 +2558,9 @@ static void add_curse(struct artifact *art, int level)
 			max_tries--;
 			continue;
 		}
-		append_artifact_curse(art, pick, power);
-		return;
+		return append_artifact_curse(art, pick, power);
 	}
+	return false;
 }
 
 
@@ -2571,30 +2571,59 @@ static void make_bad(struct artifact *art, int level)
 {
 	int i;
 	int num = randint1(2);
+	int count1, count2;
 
-	if (one_in_(7))
+	file_putf(log_file, "Make it bad:\n");
+	file_putf(log_file, "   ");
+
+	if (one_in_(7)) {
 		of_on(art->flags, OF_AGGRAVATE);
-	if (one_in_(4))
+		file_putf(log_file, " aggravate,");
+	}
+	if (one_in_(4)) {
 		of_on(art->flags, OF_DRAIN_EXP);
-	if (one_in_(7))
+		file_putf(log_file, " drain xp,");
+	}
+	if (one_in_(7)) {
 		of_on(art->flags, OF_NO_TELEPORT);
+		file_putf(log_file, " no tele,");
+	}
 
+	count1 = 0;
+	count2 = 0;
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if ((art->modifiers[i] > 0) && one_in_(2) && (i != OBJ_MOD_MIGHT)) {
-			art->modifiers[i] = -art->modifiers[i];
+		if (art->modifiers[i] > 0) {
+			++count1;
+			if (one_in_(2) && (i != OBJ_MOD_MIGHT)) {
+				art->modifiers[i] = -art->modifiers[i];
+				++count2;
+			}
 		}
 	}
-	if ((art->to_a > 0) && one_in_(2))
-		art->to_a = -art->to_a;
-	if ((art->to_h > 0) && one_in_(2))
-		art->to_h = -art->to_h;
-	if ((art->to_d > 0) && one_in_(4))
-		art->to_d = -art->to_d;
+	file_putf(log_file, " flip %d of %d modifiers,", count2, count1);
 
+	if ((art->to_a > 0) && one_in_(2)) {
+		art->to_a = -art->to_a;
+		file_putf(log_file, " flip ac,");
+	}
+	if ((art->to_h > 0) && one_in_(2)) {
+		art->to_h = -art->to_h;
+		file_putf(log_file, " flip to-hit,");
+	}
+	if ((art->to_d > 0) && one_in_(4)) {
+		art->to_d = -art->to_d;
+		file_putf(log_file, " flip to-dam,");
+	}
+
+	count1 = num;
+	count2 = 0;
 	while (num) {
-		add_curse(art, level);
+		if (add_curse(art, level)) {
+			++count2;
+		}
 		num--;
 	}
+	file_putf(log_file, " %d of %d curses applied\n", count2, count1);
 }
 
 /**
