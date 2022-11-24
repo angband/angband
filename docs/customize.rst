@@ -171,24 +171,24 @@ There are a variety of subwindow choices and you should experiment to see which 
 Keymaps
 =======
 
-You can set up keymaps in Angband, which allow you to map a single keypress to a series of keypresses.  For example you might map the key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster). This can speed up access to commonly-used features.
+You can set up keymaps in Angband, which allow you to map a single keypress, the trigger, to a series of keypresses, the action.  For example you might map the key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster).  This can speed up access to commonly-used features.  To bypass a keymap that's been assigned to a key, press ``\`` before pressing the key.
 
-To set up keymaps, go to the options menu (``=``) and select "Edit keymaps" (``k``).
+To set up keymaps, go to the options menu (``=``) and select "Edit keymaps" (``e``).  There, you can check if a key triggers a keymap:  select "Query a keymap" (``c``) and then press the key to check.  You can also remove an existing keymap:  select "Remove a keymap" (``e``) and then press the key that trigger the keymap to be removed.  To add a new keymap (or overwrite an existing one), select "Create a keymap" (``d``), it will then prompt you for the key that triggers the keymap.  After pressing the trigger key, you'll be prompted for the keymap's action, the series of keypresses that'll be generated when the trigger key is pressed.  If you make a mistake while entering the keypresses for the action, press ``Control-u`` to erase the keypresses already entered for the action.  Once you've finished entering the keypresses for the action, press ``=`` to end the sequence; you'll then be prompted for whether to keep the newly entered keymap.
 
-Keymaps have two parts: the trigger key and the action.  These are written where possible just as ordinary characters.  However, if modifier keys (shift, control, etc.) are used then they are encoded as special characters within curly braces {}.
+Within the action for a keymap, it is frequently useful to temporarily suppress -more- prompts since they can swallow keypresses from the keymap.  To disable those prompts from within the action, include ``(``.  To reenable the prompts, include ``)``.  So, a typical action where -more- prompts could happen would look like this: ``(`` your keypresses here ``)``.
 
-Possible modifiers are::
+The keypresses in the action will be interpreted relative to the keyset you are currently using (original or roguelike).  The game will remember what keyset was in effect when the keymap was created.  So if you change keysets, the keymaps which were only defined for the other keyset won't be visible.  You can have two keymaps, one for the original keyset and another for the roguelike keyset, bound to the same trigger.
 
-	K = Keypad (for numbers)
-	M = Meta (Cmd-key on OS X, alt on most other platforms)
-	^ = Control
-	S = Shift
+Keymaps are not recursive.  If you have F1 as the trigger for a keymap, including F1 as a keypress in the action for that or another keymap won't invoke that keymap.
 
-If the only modifier is the control key, the curly braces {} aren't included.
-For example::
+Any changes you make to keymaps from the options menu only last as long as the game is running.  To have them affect future sessions, save the keymaps to a file.  There's an option to do that from the menu for editing keymaps.  See `User Pref Files`_ for how the name of the file affects whether the file is loaded when the game reloads your character.
+
+Note that the game accounts for the modifier keys (Shift, Control, Alt, Meta) that are pressed along with a key.  On most platforms, the game also distinguishes between the keys on the numeric keypad that have equivalents on the main keyboard.  When a keypress is displayed or saved to the preference file, the modifiers, if any, for the keypress are displayed by code letters (S for Shift, ^ for Control, A for Alt, M for Meta, and K for the numeric keypad) within curly braces prior to the keypress.  There are two exceptions to that:  if Control is the only modifier it will displayed as ^ before the keypress without any curly braces and if Shift is the only modifier it will often be folded into the keypress itself.  For example::
 
 	{^S}& = Control-Shift-&
-	^D    = Control-D
+	{AK}0 = Alt-0 from the numeric keypad
+	^d    = Control-d
+	A     = Shift-a
 
 Special keys, like F1, F2, or Tab, are all written within square brackets [].
 For example::
@@ -198,23 +198,26 @@ For example::
 
 Special keys include [Escape].
 
-The game will run keymaps in whatever keyset you use (original or roguelike). So if you write keymaps for roguelike keys and switch to original keys, they may not work as you expect!  Keymap actions aren't recursive either, so if you had a keymap whose trigger was F1, including F1 inside the action wouldn't run the keymap action again.
+You may find it easier to edit the preference files directly to change a keymap.  Keymaps are written in pref files as::
 
-When you're running a keymap, you might want to automatically skip any -more- prompts.  To do this, place whatever commands you want to skip -more- prompts within between brackets: ``(`` and ``)``.
-
-Keymaps are written in pref files as::
-
-	A:<action>
-	C:<type>:<trigger>
+	keymap-act:<action>
+	keymap-input:<type>:<trigger>
 
 The action must always come first,  ```<type>``` means 'keyset type', which is either 0 for the original keyset or 1 for the roguelike keyset.  For example::
 
-	A:maa
-	C:0:[F1]
+	keymap-act:maa
+	keymap-input:0:[F1]
 
-Angband uses a few built-in keymaps.  These are for the movement keys (they are mapped to ``;`` plus the number, e.g. ``5`` -> ``;5``), amongst others.  You can see the full list in pref.prf but they shouldn't impact on you in any way.
+An action can have more than one trigger bound to it by having more than
+one keymap-input line after it and before the next keymap-act line.  One
+reason to do that would be to have the keymap work with either keyset.  For
+example::
 
-To avoid triggering a keymap for a given key, you can type the backslash (``\``) command before pressing that key.
+	keymap-act:maa
+	keymap-input:0:[F1]
+	keymap-input:1:[F1]
+
+Angband uses a few built-in keymaps.  These are for the movement keys (they are mapped to ``;`` plus the number, e.g. ``5`` -> ``;5``), amongst others.  You can see the full list in pref.prf, but they shouldn't impact you in any way.
 
 
 Colours
