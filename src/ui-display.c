@@ -1179,16 +1179,17 @@ static size_t prt_terrain(int row, int col)
 	struct feature *feat = square_feat(cave, player->grid);
 	struct trap *trap = square_trap(cave, player->grid);
 	char buf[30];
+	uint8_t attr;
 
 	if (trap && !square_isinvis(cave, player->grid)) {
-		my_strcpy(buf, trap->kind->name, strlen(trap->kind->name) + 1);
-		my_strcap(buf);
-		c_put_str(trap->kind->d_attr, format("%s ", buf), row, col);
+		my_strcpy(buf, trap->kind->name, sizeof(buf));
+		attr = trap->kind->d_attr;
 	} else {
-		my_strcpy(buf, feat->name, strlen(feat->name) + 1);
-		my_strcap(buf);
-		c_put_str(feat->d_attr, format("%s ", buf), row, col);
+		my_strcpy(buf, feat->name, sizeof(buf));
+		attr = feat->d_attr;
 	}
+	my_strcap(buf);
+	c_put_str(attr, format("%s ", buf), row, col);
 
 	return longest_terrain_name() + 1;
 }
