@@ -2302,20 +2302,20 @@ static wchar_t *f_xchar(int oid)
 static void feat_lore(int oid)
 {
 	struct feature *feat = &f_info[oid];
-	textblock *tb = textblock_new();
-	char *title = string_make(feat->name);
 
 	if (feat->desc) {
+		textblock *tb = textblock_new();
+		char *title = string_make(feat->name);
+
 		my_strcap(title);
 		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
+		string_free(title);
 		textblock_append(tb, "\n");
 		textblock_append(tb, "%s", feat->desc);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
 	}
-
-	string_free(title);
 }
 static const char *feat_prompt(int oid)
 {
@@ -2487,20 +2487,20 @@ static wchar_t *t_xchar(int oid)
 static void trap_lore(int oid)
 {
 	struct trap_kind *trap = &trap_info[oid];
-	textblock *tb = textblock_new();
-	char *title = string_make(trap->desc);
 
 	if (trap->text) {
+		textblock *tb = textblock_new();
+		char *title = string_make(trap->desc);
+
 		my_strcap(title);
 		textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
+		string_free(title);
 		textblock_append(tb, "\n");
 		textblock_append(tb, "%s", trap->text);
 		textblock_append(tb, "\n");
 		textui_textblock_show(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
 	}
-
-	string_free(title);
 }
 
 static const char *trap_prompt(int oid)
