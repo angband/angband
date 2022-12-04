@@ -291,7 +291,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/z-quark.c
         src/z-queue.c
         src/z-rand.c
-        src/z-set.c
         src/z-textblock.c
         src/z-type.c
         src/z-util.c
