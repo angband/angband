@@ -733,7 +733,7 @@ int context_menu_object(struct object *obj)
 				menu_dynamic_add_label(m, "Drop All", cmdkey,
 									   MENU_VALUE_DROP_ALL, labels);
 			}
-		} else if (square_shopnum(cave, player->grid) == STORE_HOME) {
+		} else if (square(cave, player->grid)->feat == FEAT_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -879,7 +879,7 @@ int context_menu_object(struct object *obj)
 		if (selected == CMD_DROP &&
 			square_isshop(cave, player->grid)) {
 			struct command *gc = cmdq_peek();
-			if (square_shopnum(cave, player->grid) == STORE_HOME)
+			if (square(cave, player->grid)->feat == FEAT_HOME)
 				gc->code = CMD_STASH;
 			else
 				gc->code = CMD_SELL;

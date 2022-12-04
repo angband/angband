@@ -2,18 +2,23 @@
 
 # Syntax for this file:
 
-# store: store number : store name
-# owner: max purse : name			- as many or few as you like >1
-# turnover: turnover				- how many items the store turns over
-# slots: min : max					- number of 'normal' slots to keep stocked
-# normal: type name : item name		- for the normal stocking list
-# always: type name : ?item name	- for things to always stock
-# buy: type name					- base types the store will buy
-# buy-flag: flag : type name		- types to buy if the flag is present
+# store: feature code                  - feature code is from list-terrain.h.
+#                                        store's name is name for that feature
+#                                        from terrain.txt.  Will raise an error
+#                                        if the feature in terrain.txt does not
+#                                        have the SHOP flag.
+# owner: max purse : name              - must be specfied at least once, may
+#                                        appear multiple times
+# turnover: turnover                   - how many items the store turns over
+# slots: min : max                     - number of 'normal' slots to keep stocked
+# normal: type name : item name        - for the normal stocking list
+# always: type name : ?item name       - for things to always stock
+# buy: type name                       - base types the store will buy
+# buy-flag: flag : type name           - types to buy if the flag is present
 
 
 # General store
-store:1:General Store
+store:STORE_GENERAL
 owner:5000:Bilbo the Friendly (Hobbit)
 owner:10000:Rincewind the Chicken (Human)
 owner:20000:Snafu the Midget (Gnome)
@@ -46,7 +51,7 @@ buy:bolt
 buy:arrow
 
 # Armoury
-store:2:Armoury
+store:STORE_ARMOR
 owner:5000:Kon-Dar the Ugly (Half-Orc)
 owner:10000:Darg-Low the Grim (Human)
 owner:25000:Decado the Handsome (Dunadan)
@@ -82,7 +87,7 @@ buy:hard armor
 buy:dragon armor
 
 # Weaponsmith
-store:3:Weapon Smiths
+store:STORE_WEAPON
 owner:5000:Ithyl-Mak the Beastly (Half-Troll)
 owner:10000:Arndal Beast-Slayer (Half-Elf)
 owner:25000:Tarl Beast-Master (Hobbit)
@@ -128,7 +133,7 @@ buy:hafted
 
 
 # Bookseller
-store:4:Bookseller
+store:STORE_BOOK
 owner:15000:Ludwig the Humble (Human)
 owner:20000:Gunnar the Paladin (Human)
 owner:25000:Delilah the Pure (Elf)
@@ -145,7 +150,7 @@ buy:nature book
 buy:shadow book
 
 # Alchemist
-store:5:Alchemy Shop
+store:STORE_ALCHEMY
 owner:10000:Mauser the Chemist (Half-Elf)
 owner:10000:Wizzle the Chaotic (Hobbit)
 owner:15000:Ga-nat the Greedy (Gnome)
@@ -175,7 +180,7 @@ buy:scroll
 buy:potion
 
 # Magic-user's
-store:6:Magic Shop
+store:STORE_MAGIC
 owner:15000:Ariel the Sorceress (Half-Elf)
 owner:20000:Buggerby the Great (Gnome)
 owner:25000:Inglorian the Mage (Human)
@@ -207,7 +212,7 @@ buy:wand
 buy:rod
 
 # Black Market - no stock given but we still need slot/turnover info
-store:7:Black Market
+store:STORE_BLACK
 owner:15000:Lo-Hak the Awful (Half-Troll)
 owner:20000:Histor the Goblin (Kobold)
 owner:25000:Durwin the Shifty (Half-Orc)
@@ -215,7 +220,7 @@ owner:30000:Drago the Fair (Elf)
 slots:6:18
 turnover:9
 
-store:8:Home
+store:HOME
 owner:0:Your home
 owner:0:Your home
 owner:0:Your home

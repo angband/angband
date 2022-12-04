@@ -662,6 +662,9 @@
     <ClInclude Include="src\list-stats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\list-terrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\list-terrain-flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>

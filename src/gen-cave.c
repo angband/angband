@@ -2414,7 +2414,7 @@ static void build_store(struct chunk *c, int n, struct loc xroads,
 	fill_rectangle(c, build_n, build_w, build_s, build_e, FEAT_PERM, SQUARE_NONE);
 
 	/* Clear previous contents, add a store door */
-	for (feat = 0; feat < z_info->f_max; feat++)
+	for (feat = 0; feat < FEAT_MAX; feat++)
 		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1))
 			square_set_feat(c, door, feat);
 }
@@ -2550,7 +2550,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 		/* place stores along the streets */
 		num_attempts = 0;
-		for (n = 0; n < MAX_STORES; n++) {
+		for (n = 0; n < z_info->store_max; n++) {
 			struct loc store_lot;
 			bool found_spot = false;
 			while (!found_spot && num_attempts < max_attempts) {

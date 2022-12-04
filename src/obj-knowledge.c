@@ -560,9 +560,9 @@ bool object_is_in_store(const struct object *obj)
 	struct object *obj1;
 
 	/* Check all the store objects */
-	for (i = 0; i < MAX_STORES; i++) {
+	for (i = 0; i < z_info->store_max; i++) {
 		struct store *s = &stores[i];
-		if (s->sidx == STORE_HOME) continue;
+		if (s->feat == FEAT_HOME) continue;
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
 			if (obj1 == obj) return true;
 	}
@@ -1192,7 +1192,7 @@ void update_player_object_knowledge(struct player *p)
 		player_know_object(p, obj);
 
 	/* Store objects */
-	for (i = 0; i < MAX_STORES; i++) {
+	for (i = 0; i < z_info->store_max; i++) {
 		struct store *s = &stores[i];
 		for (obj = s->stock; obj; obj = obj->next)
 			player_know_object(p, obj);
@@ -2247,7 +2247,7 @@ void object_flavor_aware(struct player *p, struct object *obj)
 		object_set_base_known(p, obj1);
 
 	/* Store objects */
-	for (i = 0; i < MAX_STORES; i++) {
+	for (i = 0; i < z_info->store_max; i++) {
 		struct store *s = &stores[i];
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
 			object_set_base_known(p, obj1);
