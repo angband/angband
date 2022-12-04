@@ -221,14 +221,14 @@ static void wiz_display_item(const struct object *obj, bool all,
 		obj->dd, obj->ds, obj->to_h, obj->to_d, obj->ac, obj->to_a),
 		4, j);
 
-	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
-		obj->kind->kidx, obj->tval, obj->sval, obj->weight,
-		obj->timeout), 5, j);
+	prt(format("kind = %-5lu  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
+		(unsigned long)obj->kind->kidx, obj->tval, obj->sval,
+		obj->weight, obj->timeout), 5, j);
 
-	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
+	prt(format("number = %-3d  pval = %-5d  name1 = %-4ld  egoidx = %-4ld  cost = %ld",
 		obj->number, obj->pval,
-		obj->artifact ? obj->artifact->aidx : 0,
-		obj->ego ? (int) obj->ego->eidx : -1,
+		obj->artifact ? (long)obj->artifact->aidx : 0L,
+		obj->ego ? (long)obj->ego->eidx : -1L,
 		(long)object_value(obj, 1)), 6, j);
 
 	nflg = MIN(OF_MAX - FLAG_START, 80);
@@ -1115,8 +1115,8 @@ void do_cmd_wiz_display_keylog(struct command *cmd)
 			keypress_to_text(buf2, sizeof(buf2), keys, true);
 
 			/* format this line of output */
-			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)",
-				buf2, k.code, k.mods);
+			strnfmt(buf, sizeof(buf), "    %-12s (code=%lu mods=%u)",
+				buf2, (unsigned long)k.code, k.mods);
 		} else {
 			/* create a blank line of output */
 			strnfmt(buf, sizeof(buf), "%40s", "");

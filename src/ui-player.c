@@ -637,7 +637,7 @@ static const char *show_adv_exp(void)
 		static char buffer[30];
 		int32_t advance = (player_exp[player->lev - 1]
 			* player->expfact / 100L);
-		strnfmt(buffer, sizeof(buffer), "%d", advance);
+		strnfmt(buffer, sizeof(buffer), "%ld", (long)advance);
 		return buffer;
 	}
 	else {
@@ -1161,7 +1161,7 @@ void write_character_dump(ang_file *fff)
 	 */
 	if (OPT(player, birth_randarts)) {
 		file_putf(fff, "  [Randart seed]\n\n");
-		file_putf(fff, "%08x\n\n", seed_randart);
+		file_putf(fff, "%08lx\n\n", (unsigned long)seed_randart);
 	}
 
 	mem_free(home_list);

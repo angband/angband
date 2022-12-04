@@ -1677,8 +1677,8 @@ static void do_cmd_knowledge_artifacts(const char *name, int row)
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
 	if (OPT(player, birth_randarts)) {
-		strnfmt(title, sizeof(title), "artifacts (seed %08x)",
-			seed_randart);
+		strnfmt(title, sizeof(title), "artifacts (seed %08lx)",
+			(unsigned long)seed_randart);
 	} else {
 		strnfmt(title, sizeof(title), "artifacts");
 	}
