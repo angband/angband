@@ -7,8 +7,11 @@
  */
 
 #include "h-basic.h"
+#include "cave.h"
 #include "config.h"
 #include "init.h"
+#include "mon-make.h"
+#include "mon-util.h"
 #include "test-utils.h"
 #include "z-util.h"
 
@@ -53,4 +56,37 @@ void read_edit_files(void) {
 	set_file_paths();
 	init_game_constants();
 	init_arrays();
+}
+
+struct chunk *t_build_arena(int height, int width) {
+	if (!height)
+		height = z_info->dungeon_hgt;
+	if (!width)
+		width = z_info->dungeon_wid;
+	struct chunk *c = cave_new(height, width);
+
+	for (int y = 0; y < height; y++)
+		for (int x = 0; x < width; x++)
+			square_set_feat(c, loc(x, y), FEAT_FLOOR);
+
+	for (int y = 0; y < height; y++) {
+		square_set_feat(c, loc(0, y), FEAT_PERM);
+		square_set_feat(c, loc(width - 1, y), FEAT_PERM);
+	}
+
+	for (int x = 0; x < width; x++) {
+		square_set_feat(c, loc(x, 0), FEAT_PERM);
+		square_set_feat(c, loc(x, height - 1), FEAT_PERM);
+	}
+
+	return c;
+}
+
+struct monster *t_add_monster(struct chunk *c, struct loc g, const char *race) {
+	struct monster_race *r = lookup_monster(race);
+	struct monster_group_info info = { 0, 0 };
+	place_new_monster(c, g, r, false, false, info, ORIGIN_DROP);
+	struct monster *m = square_monster(c, g);
+	assert(m);
+	return m;
 }

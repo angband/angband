@@ -35,7 +35,6 @@ HEADERS = \
 	z-quark.h \
 	z-queue.h \
 	z-rand.h \
-	z-set.h \
 	z-type.h \
 	z-util.h \
 	z-virt.h
@@ -50,7 +49,6 @@ ZFILES = \
 	z-quark.o \
 	z-queue.o \
 	z-rand.o \
-	z-set.o \
 	z-textblock.o \
 	z-type.o \
 	z-util.o \
