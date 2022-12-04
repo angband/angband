@@ -121,7 +121,11 @@
 # include <unistd.h>
 #endif
 
-
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTRIBUTE __attribute__
+#else
+#define ATTRIBUTE(x)
+#endif
 
 /**
  * ------------------------------------------------------------------------
