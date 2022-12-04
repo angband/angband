@@ -94,7 +94,7 @@ static void player_pickup_gold(struct player *p)
 
 		/* Build a message */
 		(void)strnfmt(buf, sizeof(buf),
-					  "You have found %d gold pieces worth of ", total_gold);
+			"You have found %ld gold pieces worth of ", (long)total_gold);
 
 		/* One treasure type.. */
 		if (at_most_one)

@@ -550,8 +550,9 @@ bool randart_file_exists(void)
 
 	/* Get the randart filename and path */
 	path_build(path, sizeof(path), ANGBAND_DIR_ARCHIVE,
-			   format("%srandart_%08x.txt", (archive_user_pfx) ?
-					  archive_user_pfx : "", seed_randart));
+			   format("%srandart_%08lx.txt", (archive_user_pfx) ?
+					archive_user_pfx : "",
+					(unsigned long)seed_randart));
 	return file_exists(path);
 }
 
@@ -565,8 +566,9 @@ void activate_randart_file(void)
 
 	/* Get the randart filename and path */
 	path_build(old, sizeof(old), ANGBAND_DIR_ARCHIVE,
-		format("%srandart_%08x.txt",
-		(archive_user_pfx) ? archive_user_pfx : "", seed_randart));
+		format("%srandart_%08lx.txt",
+		(archive_user_pfx) ? archive_user_pfx : "",
+		(unsigned long)seed_randart));
 
 	/* Move it into place */
 	path_build(new, sizeof(new), ANGBAND_DIR_USER, "randart.txt");
@@ -581,6 +583,6 @@ void activate_randart_file(void)
 void deactivate_randart_file(void)
 {
 	char buf[10];
-	strnfmt(buf, 9, "%08x", seed_randart);
+	strnfmt(buf, 9, "%08lx", (unsigned long)seed_randart);
 	file_archive("randart", buf);
 }

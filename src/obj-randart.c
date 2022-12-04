@@ -1076,7 +1076,8 @@ static void collect_artifact_data(struct artifact_set_data *data)
 
 		/* Add the base item tval to the tv_probs array */
 		data->tv_probs[kind->tval]++;
-		file_putf(log_file, "Base item is %d\n", kind->kidx);
+		file_putf(log_file, "Base item is %lu\n",
+			(unsigned long)kind->kidx);
 
 		/* Count combat abilities broken up by type */
 		if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
@@ -3140,8 +3141,8 @@ void do_randart(uint32_t randart_seed, bool create_file)
 		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.txt");
 		log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
 		file_putf(log_file,
-				  "# Artifact file for random artifacts with seed %08x\n\n\n",
-				  randart_seed);
+			"# Artifact file for random artifacts with seed %08lx\n\n\n",
+			(unsigned long)randart_seed);
 
 		/* Write individual entries */
 		for (i = 1; i < z_info->a_max; i++) {
