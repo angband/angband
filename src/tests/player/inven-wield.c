@@ -133,7 +133,7 @@ static bool fill_pack(void) {
 
 		if (!obj) return false;
 		/* Inscribe it so it doesn't stack. */
-		obj->note = quark_add(format("%d", slots_used));
+		obj->note = string_make(format("%d", slots_used));
 		gear_insert_end(player, obj);
 		if (!object_is_carried(player, obj)) return false;
 		player->upkeep->total_weight += obj->weight;

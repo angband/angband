@@ -296,6 +296,7 @@ void object_free(struct object *obj)
 	mem_free(obj->slays);
 	mem_free(obj->brands);
 	mem_free(obj->curses);
+	string_free(obj->note);
 	mem_free(obj);
 }
 
@@ -498,7 +499,7 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 {
 	if (object_similar(obj1, obj2, mode)) {
 		/* Require compatible inscriptions */
-		return !obj1->note || !obj2->note || obj1->note == obj2->note;
+		return !obj1->note || !obj2->note || streq(obj1->note, obj2->note);
 	}
 	return false;
 }
@@ -586,7 +587,7 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 
 	/* Merge inscriptions */
 	if (obj2->note)
-		obj1->note = obj2->note;
+		obj1->note = string_make(obj2->note);
 
 	/* Combine timeouts for rod stacking */
 	if (tval_can_have_timeout(obj1))
@@ -742,7 +743,7 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
 
 	/* Modify quantity */
 	dest->number = amt;
-	dest->note = src->note;
+	dest->note = string_make(src->note);
 
 	/*
 	 * If the item has charges/timeouts, set them to the correct level
@@ -799,11 +800,11 @@ struct object *object_split(struct object *src, int amt)
 	dest->number = amt;
 	src->number -= amt;
 	if (src->note)
-		dest->note = src->note;
+		dest->note = string_make(src->note);
 	if (src->known) {
 		dest->known->number = dest->number;
 		src->known->number = src->number;
-		dest->known->note = src->known->note;
+		dest->known->note = string_make(src->known->note);
 	}
 
 	/* Remove any index */

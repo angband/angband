@@ -156,7 +156,7 @@ static void recharged_notice(const struct object *obj, bool all)
 		notify = true;
 	} else if (obj->note) {
 		/* Find a '!' */
-		s = strchr(quark_str(obj->note), '!');
+		s = strchr(obj->note, '!');
 
 		/* Process notification request */
 		while (s) {

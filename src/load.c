@@ -233,7 +233,7 @@ static struct object *rd_item(void)
 
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
-	if (buf[0]) obj->note = quark_add(buf);
+	if (buf[0]) obj->note = string_make(buf);
 
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
@@ -910,7 +910,7 @@ int rd_ignore(void)
 		if (!k)
 			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
-		k->note_aware = quark_add(tmp);
+		k->note_aware = string_make(tmp);
 	}
 
 	/* Read the current number of unaware object auto-inscriptions */
@@ -930,7 +930,7 @@ int rd_ignore(void)
 		if (!k)
 			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
-		k->note_unaware = quark_add(tmp);
+		k->note_unaware = string_make(tmp);
 	}
 
 	/* Read the current number of rune auto-inscriptions */

@@ -41,7 +41,7 @@ enum combat_runes {
 struct rune {
 	enum rune_variety variety;
 	int index;
-	const char *note;
+	char *note;
 	const char *name;
 };
 

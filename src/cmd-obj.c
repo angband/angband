@@ -196,11 +196,11 @@ void do_cmd_inscribe(struct command *cmd)
 	strnfmt(prompt, sizeof prompt, "Inscribing %s.", o_name);
 
 	if (cmd_get_string(cmd, "inscription", &str,
-			quark_str(obj->note) /* Default */,
+			obj->note /* Default */,
 			prompt, "Inscribe with what? ") != CMD_OK)
 		return;
 
-	obj->note = quark_add(str);
+	obj->note = string_make(str);
 	string_free((char *)str);
 
 	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);

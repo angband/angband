@@ -192,7 +192,7 @@ static void wr_item(const struct object *obj)
 
 	/* Save the inscription (if any) */
 	if (obj->note)
-		wr_string(quark_str(obj->note));
+		wr_string(obj->note);
 	else
 		wr_string("");
 }
@@ -560,7 +560,7 @@ void wr_ignore(void)
 			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
 								 false);
 			wr_string(name);
-			wr_string(quark_str(k_info[i].note_aware));
+			wr_string(k_info[i].note_aware);
 		}
 	}
 
@@ -580,7 +580,7 @@ void wr_ignore(void)
 			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
 								 false);
 			wr_string(name);
-			wr_string(quark_str(k_info[i].note_unaware));
+			wr_string(k_info[i].note_unaware);
 		}
 	}
 
@@ -599,7 +599,7 @@ void wr_ignore(void)
 	for (k = 0; k < n; k++) {
 		if (rune_note(k)) {
 			wr_s16b(k);
-			wr_string(quark_str(rune_note(k)));
+			wr_string(rune_note(k));
 		}
 	}
 

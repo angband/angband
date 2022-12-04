@@ -81,14 +81,14 @@ int setup_tests(void **state) {
 	cns->inscribed_flask = object_new();
 	object_prep(cns->inscribed_flask, cns->flask->kind, 0, RANDOMISE);
 	cns->inscribed_flask->note =
-		quark_add(format("@v%d", z_info->quiver_size - 1));
+		string_make(format("@v%d", z_info->quiver_size - 1));
 	cns->inscribed_flask->known = object_new();
 	object_set_base_known(cns->p, cns->inscribed_flask);
 	object_touch(cns->p, cns->inscribed_flask);
 	/* And another that prefers to go in the first quiver slot. */
 	cns->inscribed_flask_alt = object_new();
 	object_prep(cns->inscribed_flask_alt, cns->flask->kind, 0, RANDOMISE);
-	cns->inscribed_flask_alt->note = quark_add("@v0");
+	cns->inscribed_flask_alt->note = string_make("@v0");
 	cns->inscribed_flask_alt->known = object_new();
 	object_set_base_known(cns->p, cns->inscribed_flask_alt);
 	object_touch(cns->p, cns->inscribed_flask_alt);
@@ -174,7 +174,7 @@ static bool fill_pack_quiver(struct carry_num_state *cns, int n_pack,
 		curr = object_new();
 		object_copy(curr, cns->torch);
 		/* Vary inscriptions so they won't stack. */
-		curr->note = quark_add(format("dummy%d", i));
+		curr->note = string_make(format("dummy%d", i));
 		if (cns->torch->known) {
 			curr->known = object_new();
 			object_copy(curr->known, cns->torch->known);
@@ -262,7 +262,7 @@ static bool fill_pack_quiver(struct carry_num_state *cns, int n_pack,
 		curr->number = n;
 		/* Inscribe so it goes into the quiver. */
 		if (qslot >= 0 && qslot < z_info->quiver_size) {
-			curr->note = quark_add(format("@v%d", qslot));
+			curr->note = string_make(format("@v%d", qslot));
 		} else {
 			if (curr->known) {
 				object_free(curr->known);
@@ -274,7 +274,7 @@ static bool fill_pack_quiver(struct carry_num_state *cns, int n_pack,
 			curr->known = object_new();
 			object_copy(curr->known, cns->flask->known);
 			curr->known->number = n;
-			curr->known->note = curr->note;
+			curr->known->note = string_make(curr->note);
 		}
 		inven_carry(cns->p, curr, false, false);
 		calc_inventory(cns->p);

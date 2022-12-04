@@ -513,7 +513,7 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 	/* Get inscription */
 	if (obj->note)
-		u[n++] = quark_str(obj->note);
+		u[n++] = obj->note;
 
 	/* Use special inscription, if any */
 	if (!object_flavor_is_aware(obj)) {
