@@ -73,7 +73,7 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 
 	int attr;
 	const char *illegible = NULL;
-	const char *comment = NULL;
+	const char *comment = "";
 
 	if (!spell) return;
 
