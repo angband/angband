@@ -2566,9 +2566,10 @@ static int initialize_summary(struct player *p,
 	}
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(stores[STORE_HOME].stock, &visitor);
-	for (i = 0; i < MAX_STORES; ++i) {
-		if (i == STORE_HOME) {
+	apply_visitor_to_pile(stores[f_info[FEAT_HOME].shopnum - 1].stock,
+		&visitor);
+	for (i = 0; i < z_info->store_max; ++i) {
+		if (stores[i].feat == FEAT_HOME) {
 			continue;
 		}
 		apply_visitor_to_pile(stores[i].stock, &visitor);
@@ -2606,10 +2607,11 @@ static int initialize_summary(struct player *p,
 	add_obj_data.src = EQUIP_SOURCE_HOME;
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(stores[STORE_HOME].stock, &visitor);
+	apply_visitor_to_pile(stores[f_info[FEAT_HOME].shopnum - 1].stock,
+		&visitor);
 	add_obj_data.src = EQUIP_SOURCE_STORE;
-	for (i = 0; i < MAX_STORES; ++i) {
-		if (i == STORE_HOME) {
+	for (i = 0; i < z_info->store_max; ++i) {
+		if (stores[i].feat == FEAT_HOME) {
 			continue;
 		}
 		apply_visitor_to_pile(stores[i].stock, &visitor);

@@ -1199,9 +1199,14 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 
 	/* Read the stores */
 	rd_u16b(&tmp16u);
+	if (tmp16u != z_info->store_max) {
+		note(format("The number of stores in the savefile (%u) is "
+			"different than expected (%u).", tmp16u,
+			z_info->store_max));
+	}
 	for (i = 0; i < tmp16u; i++) {
-		struct store *store = &stores[i];
-
+		struct store *store = (i < z_info->store_max) ?
+			 &stores[i] : NULL;
 		uint8_t own, num;
 
 		/* Read the basic info */
@@ -1209,7 +1214,9 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 		rd_byte(&num);
 
 		/* XXX: refactor into store.c */
-		store->owner = store_ownerbyidx(store, own);
+		if (store) {
+			store->owner = store_ownerbyidx(store, own);
+		}
 
 		/* Read the items */
 		for (; num; num--) {
@@ -1229,11 +1236,19 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 			obj->known = known_obj;
 
 			/* Accept any valid items */
-			if (store->stock_num < z_info->store_inven_max && obj->kind) {
-				if (store->sidx == STORE_HOME)
+			if (store && store->stock_num
+					< z_info->store_inven_max
+					&& obj->kind) {
+				if (store->feat == FEAT_HOME) {
 					home_carry(obj);
-				else
+				} else {
 					store_carry(store, obj);
+				}
+			} else {
+				if (obj->known) {
+					object_delete(NULL, NULL, &obj->known);
+				}
+				object_delete(NULL, NULL, &obj);
 			}
 		}
 	}
@@ -1652,7 +1667,7 @@ int rd_chunks(void)
 			rd_u16b(&tmp16u);
 			c->width = tmp16u;
 			rd_u16b(&c->feeling_squares);
-			for (i = 0; i < z_info->f_max + 1; i++) {
+			for (i = 0; i < FEAT_MAX + 1; i++) {
 				rd_u16b(&tmp16u);
 				c->feat_count[i] = tmp16u;
 			}

@@ -15,22 +15,26 @@
 #   level generation algorithms to include them, so adding new terrain
 #   features to this file will by itself have no effect.
 
-#   2. The game uses the names of the standard terrain features
-#   ("granite wall", etc) in terrain placement.  Changing the name of a terrain
-#   feature can thus stop the game from running; changing its properties will
-#   change game behaviour; and any changes during the playing of an individual
-#   game are likely to mess it up.
+#   2. Changing the properties (especially flags but also mimicry, digging,
+#   and resist flag) can significantly change game behavior, and any changes
+#   will likely mess up a game which was started before the changes took place
+#   and is reloaded when the changes are in effect.
 
+# You may more freely alter the graphics, names, messages, and descriptions.
+# There is an implicit linkage between the symbols for the stores and the
+# shortcut keys in the main knowledge menu to display a store's contents
+# (those keys are set by the ordering of the stores within list-terrain.h).
 # Note that terrain feature zero contains the "darkness" picture.
 
 # === Understanding terrain.txt ===
 
-# name : serial number : terrain name
+# code : code name from list-terrain.h
+# name : terrain printable name
 # graphics : symbol : color
-# mimic : feature to mimic
+# mimic : code name for the feature to mimic
 # priority : display priority on mini-map
 # flags : terrain flags
-# info : shop number : digging
+# digging : digging index
 # walk-msg: warning message - walking
 # run-msg: warning message - running
 # hurt-msg: damage message
@@ -40,8 +44,11 @@
 # look-in-preposition: preposition used when looking at one's own position
 # resist-flag: monster race flag for resist
 
-# 'name' indicates the beginning of an entry. The serial number must
-# increase for each new feature.
+# 'code' indicates the start of an entry.  The value used for the code
+# must match the argument to one of the FEAT() macros in list-terrain.h.
+
+# 'name' specifies the printable name for the terrain.  As this is displayed
+# in the status bar and various menus, a short name is preferable.
 
 # 'graphics' is for graphics - symbol and color. There are 27 colors:
 
@@ -53,7 +60,8 @@
 # i - Magenta-Pink T - Light Teal     V - Light Violet  I - Light Pink
 # M - Mustard      z - Blue Slate     Z - Deep Light Blue
 
-# 'mimic' is the index of a feature to mimic; some features look like another
+# 'mimic' is the code name (one of the arguments to the FEAT() macros in
+# list-terrain.h) of a feature to mimic; some features look like another
 # feature until they are discovered by the player.
 
 # 'priority' is for display priority on the minimap, where only a selection
@@ -62,9 +70,13 @@
 
 # 'flags' is for terrain flags.
 
-# 'info' is for other terrain information;  Shop number is the index of the
-# shop if the terrain is a shop entrance, and 0 otherwise.  Digging is an
-# index used to get the difficulty of digging through this type of terrain.
+# 'digging' is to specify the difficulty of digging through the terrain.  This
+# is optional and, if the terrain, based on its flags, is not diggable, setting
+# the index has no substantial effect besides error checking during parsing.
+# The difficuly is specified as an integer from one to five (i.e. one plus one
+# of the DIGGING_* constants from player.h) where one is like rubble, two is
+# like a magma vein, three is like a quartz vein, four is like granite, and
+# five is like a closed door.
 
 # 'walk-msg' is the warning message for the player on stepping into damaging
 # terrain
@@ -95,11 +107,13 @@
 # ends or the beginning of the next line to prevent words from running
 # together.
 
+code:NONE
 name:unknown grid
 graphics: :w
 priority:2
 
 
+code:FLOOR
 name:open floor
 graphics:.:w
 priority:5
@@ -107,11 +121,12 @@ flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 desc:An open floor or bare ground.  Can be walked across by anything, and can
 desc: hold traps or items.  Does not break line of sight.
 
+code:CLOSED
 name:closed door
 graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
-info:0:5
+digging:5
 confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your
 desc: disarming skill makes all the difference to your ability to handle locks,
@@ -119,6 +134,7 @@ desc: but you can also take a pickaxe to them, or blast them open
 desc: with magic.  Monsters are also slowed down by doors; you can earn yourself
 desc: valuable time by locking them.
 
+code:OPEN
 name:open door
 graphics:':U
 priority:15
@@ -127,6 +143,7 @@ look-in-preposition:in
 desc:A door that is already open.  Player, monster, spell and missile can pass
 desc: through as long as it stays open.
 
+code:BROKEN
 name:broken door
 graphics:':u
 priority:15
@@ -134,6 +151,7 @@ flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
 look-in-preposition:in
 desc:A door so broken that it cannot be shut.
 
+code:LESS
 name:up staircase
 graphics:<:w
 priority:25
@@ -141,6 +159,7 @@ flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR
 flags:EASY | TORCH
 desc:A staircase up to a shallower part of the dungeon.
 
+code:MORE
 name:down staircase
 graphics:>:w
 priority:25
@@ -148,150 +167,159 @@ flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
 flags:EASY | TORCH
 desc:A staircase down to a deeper part of the dungeon.
 
+code:STORE_GENERAL
 name:General Store
 graphics:1:U
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:1:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:The General Store sells food, ammunition and lighting supplies.
 
+code:STORE_ARMOR
 name:Armoury
 graphics:2:s
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:2:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:The armour sold here will give you some protection against the blows of
 desc: your enemies.
 
+code:STORE_WEAPON
 name:Weapon Smiths
 graphics:3:w
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:3:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid
 desc: backroom of this enticing shop.
 
+code:STORE_BOOK
 name:Bookseller
 graphics:4:g
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:4:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:A quiet, reflective place of refuge, lined with shelves of
 desc: mystical tomes.
 
+code:STORE_ALCHEMY
 name:Alchemy Shop
 graphics:5:b
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:5:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:A dim, scented room where potions and scrolls are traded.
 
+code:STORE_MAGIC
 name:Magic Shop
 graphics:6:r
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:6:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:A shop for devices and adornments with magic trapped within.
 
+code:STORE_BLACK
 name:Black Market
 graphics:7:D
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:7:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:Watch your back and hold onto your purse as you enter this disreputable
 desc: haunt - and do not expect friendly service or good bargains.
 
+code:HOME
 name:Home
 graphics:8:y
 priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:8:0
 look-prefix:the entrance to the
 look-in-preposition:at
 desc:Your safe piece of Middle Earth, and the only place you can store goods
 desc: apart from on your person.
 
+code:SECRET
 name:secret door
 graphics:#:w
 priority:10
-mimic:granite wall
+mimic:GRANITE
 flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
+digging:5
 confused-msg:bashes into a wall
 desc:A door that appears like a granite wall to untrained eyes.
 
+code:RUBBLE
 name:pile of rubble
 graphics:::W
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
-info:0:1
+digging:1
 confused-msg:bumps into some rocks
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled
 desc: to normal floor.
 
+code:MAGMA
 name:magma vein
 graphics:%:D
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
-info:0:2
+digging:2
 confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.
 
+code:QUARTZ
 name:quartz vein
 graphics:%:s
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
-info:0:3
+digging:3
 confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.
 
+code:MAGMA_K
 name:magma vein with treasure
 graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
-info:0:2
+digging:2
 confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.  It contains visible treasure.
 
+code:QUARTZ_K
 name:quartz vein with treasure
 graphics:*:y
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
-info:0:3
+digging:3
 confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.  It contains visible treasure.
 
+code:GRANITE
 name:granite wall
 graphics:#:W
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
-info:0:4
+digging:4
 confused-msg:bashes into a wall
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.
 
+code:PERM
 name:permanent wall
 graphics:#:z
 priority:10
@@ -302,6 +330,7 @@ desc: surrounded by these kinds of walls and some special rooms are made of them
 
 ## New terrain
 
+code:LAVA
 name:lava
 graphics:#:r
 priority:10
@@ -314,11 +343,12 @@ hurt-msg:The lava burns you!
 die-msg:burning to a cinder in lava
 resist-flag:IM_FIRE
 
+code:PASS_RUBBLE
 name:pile of passable rubble
 graphics:::u
 priority:13
 flags:ROCK | PASSABLE | INTERESTING | TORCH
-info:0:1
+digging:1
 desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
 desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
 desc: through by the player and monsters.

@@ -244,7 +244,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
  */
 void death_knowledge(struct player *p)
 {
-	struct store *home = &stores[STORE_HOME];
+	struct store *home = &stores[f_info[FEAT_HOME].shopnum - 1];
 	struct object *obj;
 	time_t death_time = (time_t)0;
 
@@ -1543,7 +1543,7 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	/* Handle store doors, or notice objects */
 	if (square_isshop(cave, p->grid)) {
 		if (player_is_shapechanged(p)) {
-			if (store_at(cave, p->grid)->sidx != STORE_HOME) {
+			if (square(cave, p->grid)->feat != FEAT_HOME) {
 				msg("There is a scream and the door slams shut!");
 			}
 			return;

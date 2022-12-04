@@ -6,6 +6,8 @@
 #include "cave.h"
 #include "init.h"
 #include "monster.h"
+#include "player.h"
+#include "z-form.h"
 #include <locale.h>
 #include <langinfo.h>
 
@@ -26,10 +28,9 @@ int teardown_tests(void *state) {
 	string_free(f->hurt_msg);
 	string_free(f->run_msg);
 	string_free(f->walk_msg);
-	string_free(f->mimic);
 	string_free(f->desc);
 	string_free(f->name);
-	mem_free(f);
+	mem_free(f_info);
 	parser_destroy(p);
 	return 0;
 }
@@ -40,15 +41,17 @@ static int test_missing_header_record0(void *state) {
 	enum parser_error r;
 
 	null(f);
+	r = parser_parse(p, "name:Test Feature");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "graphics: :w");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "priority:2");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "mimic:granite wall");
+	r = parser_parse(p, "mimic:GRANITE");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "flags:LOS | PASSABLE");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "info:8:0");
+	r = parser_parse(p, "digging:1");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "desc:A door that is already open.");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -71,17 +74,26 @@ static int test_missing_header_record0(void *state) {
 	ok;
 }
 
-static int test_name0(void *state) {
+static int test_code_bad0(void *state) {
 	struct parser *p = (struct parser*) state;
-	enum parser_error r = parser_parse(p, "name:Test Feature");
+	enum parser_error r = parser_parse(p, "code:XYZZY");
+
+	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
+	ok;
+}
+
+static int test_code0(void *state) {
+	struct parser *p = (struct parser*) state;
+	enum parser_error r = parser_parse(p, "code:FLOOR");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = (struct feature*) parser_priv(p);
-	notnull(f);
-	require(streq(f->name, "Test Feature"));
+	ptreq(f, &f_info[FEAT_FLOOR]);
+	null(f->name);
 	null(f->desc);
 	null(f->mimic);
+	eq(f->fidx, FEAT_FLOOR);
 	eq(f->priority, 0);
 	eq(f->shopnum, 0);
 	eq(f->dig, 0);
@@ -96,6 +108,28 @@ static int test_name0(void *state) {
 	null(f->look_prefix);
 	null(f->look_in_preposition);
 	eq(f->resist_flag, 0);
+	ok;
+}
+
+static int test_name0(void *state) {
+	struct parser *p = (struct parser*) state;
+	enum parser_error r = parser_parse(p, "name:Test Feature");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = (struct feature*) parser_priv(p);
+	notnull(f);
+	notnull(f->name);
+	require(streq(f->name, "Test Feature"));
+	ok;
+}
+
+static int test_name_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Specifying a name when there is another one should raise an error. */
+	enum parser_error r = parser_parse(p, "name:Another Name");
+
+	eq(r, PARSE_ERROR_REPEATED_DIRECTIVE);
 	ok;
 }
 
@@ -143,13 +177,20 @@ static int test_graphics0(void *state) {
 }
 
 static int test_mimic0(void *state) {
-	enum parser_error r = parser_parse(state, "mimic:marshmallow");
+	enum parser_error r = parser_parse(state, "mimic:FLOOR");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	require(streq(f->mimic, "marshmallow"));
+	ptreq(f->mimic, &f_info[FEAT_FLOOR]);
+	ok;
+}
+
+static int test_mimic_bad0(void *state) {
+	enum parser_error r = parser_parse(state, "mimic:XYZZY");
+
+	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
 	ok;
 }
 
@@ -203,15 +244,31 @@ static int test_flags_bad0(void *state) {
 	ok;
 }
 
-static int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:9:2");
+static int test_digging0(void *state) {
+	struct parser *p = (struct parser*) state;
+	enum parser_error r = parser_parse(p, "digging:2");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
-	f = parser_priv(state);
+	f = parser_priv(p);
 	require(f);
-	eq(f->shopnum, 9);
 	eq(f->dig, 2);
+	ok;
+}
+
+static int test_digging_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	char entry[32];
+	enum parser_error r;
+
+	require(strnfmt(entry, sizeof(entry), "digging:%d", DIGGING_RUBBLE)
+		< sizeof(entry));
+	r = parser_parse(p, entry);
+	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
+	require(strnfmt(entry, sizeof(entry), "digging:%d", DIGGING_MAX + 1)
+		< sizeof(entry));
+	r = parser_parse(p, entry);
+	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
 	ok;
 }
 
@@ -369,16 +426,24 @@ static int test_resist_flag_bad0(void *state) {
 }
 
 const char *suite_name = "parse/f-info";
-/* test_missing_header_record0() has to be before test_name0(). */
+/*
+ * test_missing_header_record0() and test_code_bad0() have to be before
+ * test_code0().  test_name_bad0() has to be after test_name0().
+ */
 struct test tests[] = {
 	{ "missing_header_record0", test_missing_header_record0 },
+	{ "code_bad0", test_code_bad0 },
+	{ "code0", test_code0 },
 	{ "name0", test_name0 },
+	{ "name_bad0", test_name_bad0 },
 	{ "graphics0", test_graphics0 },
 	{ "mimic0", test_mimic0 },
+	{ "mimic_bad0", test_mimic_bad0 },
 	{ "priority0", test_priority0 },
 	{ "flags0", test_flags0 },
 	{ "flags_bad0", test_flags_bad0 },
-	{ "info0", test_info0 },
+	{ "digging0", test_digging0 },
+	{ "digging_bad0", test_digging_bad0 },
 	{ "desc0", test_desc0 },
 	{ "walk_msg0", test_walk_msg0 },
 	{ "run_msg0", test_run_msg0 },

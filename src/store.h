@@ -25,22 +25,6 @@
 #include "datafile.h"
 #include "object.h"
 
-/**
- * List of store indices
- */
-enum {
-	STORE_NONE      = -1,
-	STORE_GENERAL	= 0,
-	STORE_ARMOR	= 1,
-	STORE_WEAPON	= 2,
-	STORE_TEMPLE	= 3,
-	STORE_ALCHEMY	= 4,
-	STORE_MAGIC	= 5,
-	STORE_B_MARKET	= 6,
-	STORE_HOME	= 7,
-	MAX_STORES	= 8
-};
-
 struct object_buy {
 	struct object_buy *next;
 	size_t tval;
@@ -55,11 +39,9 @@ struct owner {
 };
 
 struct store {
-	struct store *next;
 	struct owner *owners;
 	struct owner *owner;
-	unsigned int sidx;
-	const char *name;
+	int feat;			/* index for entrance's terrain */
 
 	uint8_t stock_num;		/* Stock -- Number of entries */
 	int16_t stock_size;		/* Stock -- Total Size of Array */

@@ -182,7 +182,7 @@ static void death_file(const char *title, int row)
  */
 static void death_info(const char *title, int row)
 {
-	struct store *home = &stores[STORE_HOME];
+	struct store *home = &stores[f_info[FEAT_HOME].shopnum - 1];
 
 	screen_save();
 
