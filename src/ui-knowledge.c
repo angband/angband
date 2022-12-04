@@ -1107,7 +1107,7 @@ static struct
 	{ L"k",        "Kobolds" },
 	{ L"L",        "Lichs" },
 	{ L"tp",       "Men" },
-	{ L".$!?=~_",  "Mimics" },
+	{ L"x$!?=~_",  "Mimics" },
 	{ L"m",        "Molds" },
 	{ L",",        "Mushroom Patches" },
 	{ L"n",        "Nagas" },
