@@ -1363,6 +1363,9 @@
     <Text Include="lib\gamedata\ui_entry_renderer.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
+    <Text Include="lib\gamedata\ui_knowledge.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
     <Text Include="lib\gamedata\vault.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>

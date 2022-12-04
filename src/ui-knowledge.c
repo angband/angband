@@ -26,6 +26,7 @@
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-init.h"
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -131,6 +132,19 @@ typedef struct join {
 		int oid;
 		int gid;
 } join_t;
+
+static struct parser *init_ui_knowledge_parser(void);
+static errr run_ui_knowledge_parser(struct parser *p);
+static errr finish_ui_knowledge_parser(struct parser *p);
+static void cleanup_ui_knowledge_parsed_data(void);
+
+struct file_parser ui_knowledge_parser = {
+	"ui_knowledge",
+	init_ui_knowledge_parser,
+	run_ui_knowledge_parser,
+	finish_ui_knowledge_parser,
+	cleanup_ui_knowledge_parsed_data
+};
 
 /**
  * A default group-by
@@ -1071,62 +1085,18 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
  * ------------------------------------------------------------------------ */
 
 /**
- * Description of each monster group.
+ * Is a flat array describing each monster group.  Configured by
+ * ui_knowledge.txt.  The last element receives special treatment and is
+ * used to catch any type of monster not caught by the other categories.
+ * That's intended as a debugging tool while modding the game.
  */
-static struct
-{
-	const wchar_t *chars;
-	const char *name;
-} monster_group[] = {
-	{ (const wchar_t *)-1,   "Uniques" },
-	{ L"A",        "Ainur" },
-	{ L"a",        "Ants" },
-	{ L"b",        "Bats" },
-	{ L"B",        "Birds" },
-	{ L"C",        "Canines" },
-	{ L"c",        "Centipedes" },
-	{ L"uU",       "Demons" },
-	{ L"dD",       "Dragons" },
-	{ L"vE",       "Elementals/Vortices" },
-	{ L"e",        "Eyes/Beholders" },
-	{ L"f",        "Felines" },
-	{ L"G",        "Ghosts" },
-	{ L"OP",       "Giants/Ogres" },
-	{ L"g",        "Golems" },
-	{ L"H",        "Harpies/Hybrids" },
-	{ L"h",        "Hominids (Elves, Dwarves)" },
-	{ L"M",        "Hydras" },
-	{ L"i",        "Icky Things" },
-	{ L"FI",       "Insects" },
-	{ L"j",        "Jellies" },
-	{ L"K",        "Killer Beetles" },
-	{ L"k",        "Kobolds" },
-	{ L"L",        "Lichs" },
-	{ L"tp",       "Men" },
-	{ L"x$!?=~_",  "Mimics" },
-	{ L"m",        "Molds" },
-	{ L",",        "Mushroom Patches" },
-	{ L"n",        "Nagas" },
-	{ L"o",        "Orcs" },
-	{ L"q",        "Quadrupeds" },
-	{ L"Q",        "Quylthulgs" },
-	{ L"R",        "Reptiles/Amphibians" },
-	{ L"r",        "Rodents" },
-	{ L"S",        "Scorpions/Spiders" },
-	{ L"s",        "Skeletons/Drujs" },
-	{ L"J",        "Snakes" },
-	{ L"l",        "Trees/Ents" },
-	{ L"T",        "Trolls" },
-	{ L"V",        "Vampires" },
-	{ L"W",        "Wights/Wraiths" },
-	{ L"w",        "Worms/Worm Masses" },
-	{ L"X",        "Xorns/Xarens" },
-	{ L"y",        "Yeeks" },
-	{ L"Y",        "Yeti" },
-	{ L"Z",        "Zephyr Hounds" },
-	{ L"z",        "Zombies" },
-	{ NULL,       NULL }
-};
+static struct ui_monster_category *monster_group = NULL;
+
+/**
+ * Is the number of entries, including the last one receiving special
+ * treatment, in monster_group.
+ */
+static int n_monster_group = 0;
 
 /**
  * Display a monster
@@ -1187,14 +1157,35 @@ static int m_cmp_race(const void *a, const void *b)
 	if (c)
 		return c;
 
-	/* Order results */
-	c = r_a->d_char - r_b->d_char;
-	if (c && gid != 0) {
-		/* UNIQUE group is ordered by level & name only */
-		/* Others by order they appear in the group symbols */
-		return text_wcschr(monster_group[gid].chars, r_a->d_char)
-			- text_wcschr(monster_group[gid].chars, r_b->d_char);
+	/*
+	 * If the group specifies monster bases, order those that are included
+	 * by the base by those bases.  Those that aren't in any of the bases
+	 * appear last.
+	 */
+	assert(gid >= 0 && gid < n_monster_group);
+	if (monster_group[gid].n_inc_bases) {
+		int base_a = monster_group[gid].n_inc_bases;
+		int base_b = monster_group[gid].n_inc_bases;
+		int i;
+
+		for (i = 0; i < monster_group[gid].n_inc_bases; ++i) {
+			if (r_a->base == monster_group[gid].inc_bases[i]) {
+				base_a = i;
+			}
+			if (r_b->base == monster_group[gid].inc_bases[i]) {
+				base_b = i;
+			}
+		}
+		c = base_a - base_b;
+		if (c) {
+			return c;
+		}
 	}
+
+	/*
+	 * Within the same base or outside of a specified base, order by level
+	 * and then by name.
+	 */
 	c = r_a->level - r_b->level;
 	if (c)
 		return c;
@@ -1269,23 +1260,43 @@ static void mon_summary(int gid, const int *item_list, int n, int top,
 
 static int count_known_monsters(void)
 {
-	int m_count = 0;
-	int i;
-	size_t j;
+	int m_count = 0, i;
 
-	for (i = 0; i < z_info->r_max; i++) {
+	for (i = 0; i < z_info->r_max; ++i) {
 		struct monster_race *race = &r_info[i];
+		bool classified = false;
+		int j;
+
 		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
-
 		if (!race->name) continue;
 
-		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
+		for (j = 0; j < n_monster_group - 1; ++j) {
+			bool has_base = false;
 
-		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
-			const wchar_t *pat = monster_group[j].chars;
-			if (text_wcschr(pat, race->d_char)) m_count++;
+			if (monster_group[j].n_inc_bases) {
+				int k;
+
+				for (k = 0; k < monster_group[j].n_inc_bases;
+						++k) {
+					if (race->base == monster_group[j].inc_bases[k]) {
+						++m_count;
+						has_base = true;
+						classified = true;
+						break;
+					}
+				}
+			}
+			if (!has_base && rf_is_inter(race->flags,
+					monster_group[j].inc_flags)) {
+				++m_count;
+				classified = true;
+			}
+		}
+
+		if (!classified) {
+			++m_count;
 		}
 	}
 
@@ -1297,53 +1308,66 @@ static int count_known_monsters(void)
  */
 static void do_cmd_knowledge_monsters(const char *name, int row)
 {
-	group_funcs r_funcs = {race_name, m_cmp_race, default_group_id, mon_summary,
-						   N_ELEMENTS(monster_group), false};
+	group_funcs r_funcs = {race_name, m_cmp_race, default_group_id,
+		mon_summary, n_monster_group, false };
 
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr,
-							recall_prompt, 0, 0};
+		recall_prompt, 0, 0};
 
 	int *monsters;
-	int m_count = 0;
-	int i;
-	size_t j;
-
-	for (i = 0; i < z_info->r_max; i++) {
-		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].sights) {
-			continue;
-		}
-
-		if (!race->name) continue;
-
-		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
-
-		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
-			const wchar_t *pat = monster_group[j].chars;
-			if (text_wcschr(pat, race->d_char)) m_count++;
-		}
-	}
+	int m_count = count_known_monsters(), i, ind;
 
 	default_join = mem_zalloc(m_count * sizeof(join_t));
 	monsters = mem_zalloc(m_count * sizeof(int));
 
-	m_count = 0;
-	for (i = 0; i < z_info->r_max; i++) {
+	ind = 0;
+	for (i = 0; i < z_info->r_max; ++i) {
 		struct monster_race *race = &r_info[i];
+		bool classified = false;
+		int j;
+
 		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
-
 		if (!race->name) continue;
 
-		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
-			const wchar_t *pat = monster_group[j].chars;
-			if (j == 0 && !rf_has(race->flags, RF_UNIQUE)) continue;
-			if (j > 0 && !text_wcschr(pat, race->d_char)) continue;
+		for (j = 0; j < n_monster_group - 1; ++j) {
+			bool has_base = false;
 
-			monsters[m_count] = m_count;
-			default_join[m_count].oid = i;
-			default_join[m_count++].gid = j;
+			if (monster_group[j].n_inc_bases) {
+				int k;
+
+				for (k = 0; k < monster_group[j].n_inc_bases;
+						++k) {
+					if (race->base == monster_group[j].inc_bases[k]) {
+						assert(ind < m_count);
+						monsters[ind] = ind;
+						default_join[ind].oid = i;
+						default_join[ind].gid = j;
+						++ind;
+						has_base = true;
+						classified = true;
+						break;
+					}
+				}
+			}
+			if (!has_base && rf_is_inter(race->flags,
+					monster_group[j].inc_flags)) {
+				assert(ind < m_count);
+				monsters[ind] = ind;
+				default_join[ind].oid = i;
+				default_join[ind].gid = j;
+				++ind;
+				classified = true;
+			}
+		}
+
+		if (!classified) {
+			assert(ind < m_count);
+			monsters[ind] = ind;
+			default_join[ind].oid = i;
+			default_join[ind].gid = n_monster_group - 1;
+			++ind;
 		}
 	}
 
@@ -3166,6 +3190,190 @@ static void do_cmd_knowledge_shapechange(const char *name, int row)
 
 /**
  * ------------------------------------------------------------------------
+ * ui_knowledge.txt parsing
+ * ------------------------------------------------------------------------
+ */
+static enum parser_error parse_monster_category(struct parser *p)
+{
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	struct ui_monster_category *c;
+
+	assert(s);
+	c = mem_zalloc(sizeof(*c));
+	c->next = s->categories;
+	c->name = string_make(parser_getstr(p, "name"));
+	s->categories = c;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mcat_include_base(struct parser *p)
+{
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	struct monster_base *b;
+
+	assert(s);
+	if (!s->categories) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	b = lookup_monster_base(parser_getstr(p, "name"));
+	if (!b) {
+		return PARSE_ERROR_INVALID_MONSTER_BASE;
+	}
+	assert(s->categories->n_inc_bases >= 0
+		&& s->categories->n_inc_bases <= s->categories->max_inc_bases);
+	if (s->categories->n_inc_bases == s->categories->max_inc_bases) {
+		if (s->categories->max_inc_bases > INT_MAX
+				/ (2 * (int) sizeof(struct monster_base*))) {
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
+		}
+		s->categories->max_inc_bases = (s->categories->max_inc_bases)
+			? 2 * s->categories->max_inc_bases : 2;
+		s->categories->inc_bases = mem_realloc(
+			s->categories->inc_bases,
+			s->categories->max_inc_bases
+			* sizeof(struct monster_base*));
+	}
+	s->categories->inc_bases[s->categories->n_inc_bases] = b;
+	++s->categories->n_inc_bases;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mcat_include_flag(struct parser *p)
+{
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	char *flags, *next_flag;
+
+	assert(s);
+	if (!s->categories) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+
+	if (!parser_hasval(p, "flags")) {
+		return PARSE_ERROR_NONE;
+	}
+	flags = string_make(parser_getstr(p, "flags"));
+	next_flag = strtok(flags, " |");
+	while (next_flag) {
+		if (grab_flag(s->categories->inc_flags, RF_SIZE, r_info_flags,
+				next_flag)) {
+			string_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		next_flag = strtok(NULL, " |");
+	}
+	string_free(flags);
+
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_ui_knowledge_parser(void)
+{
+	struct ui_knowledge_parse_state *s = mem_zalloc(sizeof(*s));
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, s);
+	parser_reg(p, "monster-category str name", parse_monster_category);
+	parser_reg(p, "mcat-include-base str name", parse_mcat_include_base);
+	parser_reg(p, "mcat-include-flag ?str flags", parse_mcat_include_flag);
+
+	return p;
+}
+
+static errr run_ui_knowledge_parser(struct parser *p)
+{
+	return parse_file_quit_not_found(p, "ui_knowledge");
+}
+
+static errr finish_ui_knowledge_parser(struct parser *p)
+{
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	struct ui_monster_category *cursor;
+	size_t count;
+
+	assert(s);
+
+	/* Count the number of categories and allocate a flat array for them. */
+	count = 0;
+	for (cursor = s->categories; cursor; cursor = cursor->next) {
+		++count;
+	}
+	if (count > INT_MAX - 1) {
+		/*
+		 * The sorting and display logic for monster groups assumes
+		 * the number of categories fits in an int.
+		 */
+		cursor = s->categories;
+		while (cursor) {
+			struct ui_monster_category *tgt = cursor;
+
+			cursor = cursor->next;
+			string_free((char*) tgt->name);
+			mem_free(tgt->inc_bases);
+			mem_free(tgt);
+		}
+		mem_free(s);
+		parser_destroy(p);
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	}
+	if (monster_group) {
+		cleanup_ui_knowledge_parsed_data();
+	}
+	monster_group = mem_alloc((count + 1) * sizeof(*monster_group));
+	n_monster_group = (int) (count + 1);
+
+	/* Set the element at the end which receives special treatment. */
+	monster_group[count].next = NULL;
+	monster_group[count].name = string_make("***Unclassified***");
+	monster_group[count].inc_bases = NULL;
+	rf_wipe(monster_group[count].inc_flags);
+	monster_group[count].n_inc_bases = 0;
+	monster_group[count].max_inc_bases = 0;
+
+	/*
+	 * Set the others, restoring the order they had in the data file.
+	 * Release the memory for the linked list (but not pointed to data
+	 * as ownership for that is transferred to the flat array).
+	 */
+	cursor = s->categories;
+	while (cursor) {
+		struct ui_monster_category *src = cursor;
+
+		cursor = cursor->next;
+		--count;
+		monster_group[count].next = monster_group + count + 1;
+		monster_group[count].name = src->name;
+		monster_group[count].inc_bases = src->inc_bases;
+		rf_copy(monster_group[count].inc_flags, src->inc_flags);
+		monster_group[count].n_inc_bases = src->n_inc_bases;
+		monster_group[count].max_inc_bases = src->max_inc_bases;
+		mem_free(src);
+	}
+
+	mem_free(s);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_ui_knowledge_parsed_data(void)
+{
+	int i;
+
+	for (i = 0; i < n_monster_group; ++i) {
+		string_free((char*) monster_group[i].name);
+		mem_free(monster_group[i].inc_bases);
+	}
+	mem_free(monster_group);
+	monster_group = NULL;
+	n_monster_group = 0;
+}
+
+/**
+ * ------------------------------------------------------------------------
  * Main knowledge menus
  * ------------------------------------------------------------------------ */
 
@@ -3391,6 +3599,10 @@ void textui_knowledge_init(void)
 	reset_main_knowledge_menu();
 
 	/* initialize other static variables */
+	if (run_parser(&ui_knowledge_parser) != PARSE_ERROR_NONE) {
+		quit_fmt("Encountered error parsing ui_knowledge.txt");
+	}
+
 	if (!obj_group_order) {
 		int i;
 		int gid = -1;
@@ -3414,6 +3626,7 @@ void textui_knowledge_cleanup(void)
 {
 	mem_free(obj_group_order);
 	obj_group_order = NULL;
+	cleanup_parser(&ui_knowledge_parser);
 }
 
 

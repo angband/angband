@@ -225,6 +225,10 @@ ui_entry_renderer.txt
   one of the current renderers, the basic rendering techniques are hard-coded
   in list-ui-entry-renderers.h.
 
+ui_knowledge.txt
+  Handles some configuration of the knowledge menus, namely the layout of
+  the monster categories.
+
 Making Graphical Tilesets
 =========================
 

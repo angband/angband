@@ -19,6 +19,9 @@
 #ifndef UI_KNOWLEDGE_H
 #define UI_KNOWLEDGE_H
 
+#include "datafile.h"
+#include "monster.h"
+
 void textui_browse_object_knowledge(const char *name, int row);
 void textui_knowledge_init(void);
 void textui_knowledge_cleanup(void);
@@ -35,5 +38,18 @@ void do_cmd_query_symbol(void);
 void do_cmd_center_map(void);
 void do_cmd_monlist(void);
 void do_cmd_itemlist(void);
+
+/* Exposed for use by test cases. */
+struct ui_monster_category {
+	struct ui_monster_category *next;
+	const char *name;
+	const struct monster_base **inc_bases;
+	bitflag inc_flags[RF_SIZE];
+	int n_inc_bases, max_inc_bases;
+};
+struct ui_knowledge_parse_state {
+	struct ui_monster_category *categories;
+};
+extern struct file_parser ui_knowledge_parser;
 
 #endif /* UI_KNOWLEDGE_H */
