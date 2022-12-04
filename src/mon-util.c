@@ -46,7 +46,6 @@
 #include "player-util.h"
 #include "project.h"
 #include "trap.h"
-#include "z-set.h"
 
 /**
  * ------------------------------------------------------------------------
@@ -903,27 +902,27 @@ bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon)
  * Choose one injured monster of the same base in LOS of the provided monster.
  *
  * Scan MAX_KIN_RADIUS grids around the monster to find potential grids,
- * make a list of kin, and choose a random one.
+ * using reservoir sampling with k = 1 to find a random one.
  */
 struct monster *choose_nearby_injured_kin(struct chunk *c,
-										  const struct monster *mon)
+                                          const struct monster *mon)
 {
-	struct set *set = set_new();
 	struct loc grid;
+	int nseen = 0;
+	struct monster *found = NULL;
 
 	for (grid.y = mon->grid.y - MAX_KIN_RADIUS;
 		 grid.y <= mon->grid.y + MAX_KIN_RADIUS; grid.y++) {
 		for (grid.x = mon->grid.x - MAX_KIN_RADIUS;
 			 grid.x <= mon->grid.x + MAX_KIN_RADIUS; grid.x++) {
 			struct monster *kin = get_injured_kin(c, mon, grid);
-			if (kin != NULL) {
-				set_add(set, kin);
+			if (kin) {
+				nseen++;
+				if (!randint0(nseen))
+					found = kin;
 			}
 		}
 	}
-
-	struct monster *found = set_choose(set);
-	set_free(set);
 
 	return found;
 }
