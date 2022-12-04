@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-calcs.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
@@ -633,7 +634,7 @@ static void ui_keymap_create(const char *title, int row)
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
 		c_prt(COLOUR_L_BLUE, "  Press '=' when finished.", 17, 0);
-		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
+		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-u' to reset.", 18, 0);
 		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)",
 									KEYMAP_ACTION_MAX), 19, 0);
 

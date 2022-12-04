@@ -1087,7 +1087,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 	int fx = 0;
 
 	/* Pending attr */
-	int fa = Term->attr_blank;
+	int fa = COLOUR_WHITE;
 
 	int oa;
 	wchar_t oc;
@@ -1254,7 +1254,7 @@ static void Term_fresh_row_both_dblh(int y, int x1, int x2, int *pr_drw)
 	int fx = 0;
 
 	/* Pending attr */
-	int fa = Term->attr_blank;
+	int fa = COLOUR_WHITE;
 
 	if (y < Term->hgt - tile_height) {
 		scr_aa_nr = Term->scr->a[y + tile_height];
@@ -1487,7 +1487,7 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	int fx = 0;
 
 	/* Pending attr */
-	int fa = Term->attr_blank;
+	int fa = COLOUR_WHITE;
 
 	int oa;
 	wchar_t oc;
@@ -1670,12 +1670,10 @@ bool smlcurs = true;
  * high-bit set) to be sent (one pair at a time) to the "Term->pict_hook"
  * hook, which can draw these pairs in whatever way it would like.
  *
- * Normally, the "Term_wipe()" function is used only to display "blanks"
- * that were induced by "Term_clear()" or "Term_erase()", and then only
- * if the "attr_blank" and "char_blank" fields have not been redefined
- * to use "white space" instead of the default "black space".  Actually,
- * the "Term_wipe()" function is used to display all "black" text, such
- * as the default "spaces" created by "Term_clear()" and "Term_erase()".
+ * Normally, the "Term_wipe()" function is used only to display "blanks" that
+ * were induced by "Term_clear()" or "Term_erase()". Actually, the
+ * "Term_wipe()" function is used to display all "black" text, such as the
+ * default "spaces" created by "Term_clear()" and "Term_erase()".
  *
  * Note that the "Term->always_text" flag will disable the use of the
  * "Term_wipe()" function hook entirely, and force all text, even text
@@ -1685,10 +1683,6 @@ bool smlcurs = true;
  * Note that the "Term->always_pict" flag will disable the use of the
  * "Term_wipe()" function entirely, and force everything, even text
  * drawn in the attr "black", to be explicitly drawn.
- *
- * Note that if no "black" text is ever drawn, and if "attr_blank" is
- * not "zero", then the "Term_wipe" hook will never be used, even if
- * the "Term->always_text" flag is not set.
  *
  * This function does nothing unless the "Term" is "mapped", which allows
  * certain systems to optimize the handling of "closed" windows.
@@ -1754,9 +1748,6 @@ errr Term_fresh(void)
 
 	/* Handle "total erase" */
 	if (Term->total_erase) {
-		int na = Term->attr_blank;
-		wchar_t nc = Term->char_blank;
-
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
 
@@ -1775,11 +1766,11 @@ errr Term_fresh(void)
 			/* Wipe each column */
 			for (x = 0; x < w; x++) {
 				/* Wipe each grid */
-				*aa++ = na;
-				*cc++ = nc;
+				*aa++ = COLOUR_WHITE;
+				*cc++ = ' ';
 
-				*taa++ = na;
-				*tcc++ = nc;
+				*taa++ = COLOUR_WHITE;
+				*tcc++ = ' ';
 			}
 		}
 
@@ -2263,9 +2254,6 @@ errr Term_erase(int x, int y, int n)
 	int x1 = -1;
 	int x2 = -1;
 
-	int na = Term->attr_blank;
-	wchar_t nc = Term->char_blank;
-
 	int *scr_aa;
 	wchar_t *scr_cc;
 
@@ -2291,11 +2279,11 @@ errr Term_erase(int x, int y, int n)
 		wchar_t oc = scr_cc[x];
 
 		/* Hack -- Ignore "non-changes" */
-		if ((oa == na) && (oc == nc)) continue;
+		if ((oa == COLOUR_WHITE) && (oc == ' ')) continue;
 
 		/* Save the "literal" information */
-		scr_aa[x] = na;
-		scr_cc[x] = nc;
+		scr_aa[x] = COLOUR_WHITE;
+		scr_cc[x] = ' ';
 
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;
@@ -2335,9 +2323,6 @@ errr Term_clear(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
-	int na = Term->attr_blank;
-	wchar_t nc = Term->char_blank;
-
 	/* Cursor usable */
 	Term->scr->cu = 0;
 
@@ -2353,8 +2338,8 @@ errr Term_clear(void)
 
 		/* Wipe each column */
 		for (x = 0; x < w; x++) {
-			scr_aa[x] = na;
-			scr_cc[x] = nc;
+			scr_aa[x] = COLOUR_WHITE;
+			scr_cc[x] = ' ';
 
 			scr_taa[x] = 0;
 			scr_tcc[x] = 0;
@@ -3139,10 +3124,6 @@ errr term_init(term *t, int w, int h, int k)
 
 	/* Force "total erase" */
 	t->total_erase = true;
-
-	/* Default "blank" */
-	t->attr_blank = 0;
-	t->char_blank = L' ';
 
 	/* No saves yet */
 	t->saved = 0;

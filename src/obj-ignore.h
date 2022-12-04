@@ -117,7 +117,4 @@ const char *ignore_name_for_type(ignore_type_t type);
 extern uint8_t ignore_level[];
 extern const size_t ignore_size;
 
-/* ui-options.c */
-int ego_item_name(char *buf, size_t buf_size, struct ego_desc *desc);
-
 #endif /* !OBJ_IGNORE_H */

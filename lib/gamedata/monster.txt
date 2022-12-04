@@ -8698,7 +8698,7 @@ desc: power.
 
 name:trapper
 base:lurker
-color:w
+color:W
 speed:120
 hit-points:528
 hearing:30

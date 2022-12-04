@@ -271,10 +271,6 @@ keymap-input:0:{MK}5
 keymap-input:0:{K}[Begin]
 keymap-input:0:{MK}[Begin]
 
-# Hack -- Commit suicide
-keymap-act:Q
-keymap-input:0:^C
-
 # Hack -- Swap equipment
 keymap-act:w0
 keymap-input:0:x
@@ -342,10 +338,6 @@ keymap-act:+8
 keymap-input:1:^K
 keymap-act:+9
 keymap-input:1:^U
-
-# Hack -- Commit suicide
-keymap-act:Q
-keymap-input:1:^C
 
 # Message colors
 %:message.prf

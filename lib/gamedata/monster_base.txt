@@ -253,12 +253,11 @@ desc:Lich
 
 # Weird monsters tha look like floor.
 name:lurker
-glyph:.
+glyph:x
 pain:1
 flags:COLD_BLOOD | EMPTY_MIND | INVISIBLE | UNAWARE
 flags:NEVER_MOVE
 flags:NO_FEAR | NO_CONF | NO_SLEEP
-flags:CHAR_CLEAR | ATTR_CLEAR
 desc:Lurker
 
 # Demons are evil and tend to be fire-based.  Major demons frequently summon,

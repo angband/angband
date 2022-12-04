@@ -1,0 +1,30 @@
+name: DOS Cross-compiler
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Stock
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        id: install_depend
+        run: |
+          sudo apt-get update
+          sudo apt-get install make
+
+      - name: Clone Project
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          archive=djgpp-linux64-gcc1210.tar.bz2
+          wget --no-verbose "https://github.com/andrewwutw/build-djgpp/releases/download/v3.3/$archive"
+          bunzip2 -c "$archive"| tar -xBf -
+          rm "$archive"
+          PATH="$PATH":"`pwd`/djgpp/bin"
+          cd src
+          make -f Makefile.ibm

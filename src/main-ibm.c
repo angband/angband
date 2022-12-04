@@ -180,9 +180,9 @@ static int cols = 80;
  * Physical Screen
  */
 #ifdef USE_286
-# define PhysicalScreen ((byte *)MK_FP(0xB800,0x0000))
+# define PhysicalScreen ((uint8_t *)MK_FP(0xB800,0x0000))
 #else
-# define PhysicalScreen ((byte *)(0xB800 << 4))
+# define PhysicalScreen ((uint8_t *)(0xB800 << 4))
 #endif
 
 
@@ -191,7 +191,7 @@ static int cols = 80;
 /*
  * Virtual Screen Contents
  */
-static byte *VirtualScreen;
+static uint8_t *VirtualScreen;
 
 #else
 
@@ -217,7 +217,7 @@ static int saved_cur_low;
 /*
  * This array is used for "wiping" the screen
  */
-static byte wiper[160];
+static uint8_t wiper[160];
 
 #endif /* USE_CONIO */
 
@@ -231,7 +231,7 @@ static term term_screen_body;
 /*
  * Choose between the "complex" and "simple" color methods
  */
-static byte use_color_complex = false;
+static uint8_t use_color_complex = false;
 
 
 /*
@@ -255,7 +255,7 @@ static long ibm_color_complex[16];
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte ibm_color_simple[16] =
+static uint8_t ibm_color_simple[16] =
 {
 	VID_BLACK,			/* Dark */
 	VID_WHITE,			/* White */
@@ -276,7 +276,7 @@ static byte ibm_color_simple[16] =
 };
 
 
-static byte ext_color_map[32] = {
+static uint8_t ext_color_map[32] = {
 	0,
 	1,
 	2,
@@ -593,7 +593,7 @@ static errr Term_xtra_ibm_event(int v)
 	bool ma = false;
 	bool kp = false;
 
-	byte mods = 0;
+	uint8_t mods = 0;
 
 	/* Hack -- Check for a keypress */
 	if (!v && !bioskey(1)) return (1);
@@ -975,14 +975,14 @@ static errr Term_wipe_ibm(int x, int y, int n)
 static errr Term_text_ibm(int x, int y, int n, int a, const wchar_t *cp)
 {
 	register int i;
-	register byte attr;
-	register byte *dest;
+	register uint8_t attr;
+	register uint8_t *dest;
 
 	/* Handle "complex" color */
 	if (use_color_complex)
 	{
 		/* Extract a color index */
-		attr = (byte)(get_ext_color(a));
+		attr = (uint8_t)(get_ext_color(a));
 	}
 
 	/* Handle "simple" color */
@@ -1036,8 +1036,8 @@ static errr Term_pict_ibm(int x, int y, int n, const int *ap,
 			  const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
 	register int i;
-	register byte attr;
-	register byte *dest;
+	register uint8_t attr;
+	register uint8_t *dest;
 
 	/* Unused parameters */
 	(void)tap;
@@ -1055,7 +1055,7 @@ static errr Term_pict_ibm(int x, int y, int n, const int *ap,
 		if (use_color_complex)
 		{
 			/* Extract a color index */
-			attr = (byte)(get_ext_color(ap[i]));
+			attr = (uint8_t)(get_ext_color(ap[i]));
 		}
 
 		/* Handle "simple" color */
@@ -1086,7 +1086,7 @@ static errr Term_pict_ibm(int x, int y, int n, const int *ap,
 		if (use_color_complex)
 		{
 			/* Extract a color index */
-			attr = (byte)(get_ext_color(ap[i]));
+			attr = (uint8_t)(get_ext_color(ap[i]));
 		}
 
 		/* Handle "simple" color */
@@ -1544,7 +1544,7 @@ errr init_ibm(int argc, char **argv)
 #ifdef USE_VIRTUAL
 
 	/* Make the virtual screen */
-	VirtualScreen = mem_zalloc(rows * cols * 2 * sizeof(byte));
+	VirtualScreen = mem_zalloc(rows * cols * 2 * sizeof(uint8_t));
 
 #endif /* USE_VIRTUAL */
 
@@ -1580,10 +1580,6 @@ errr init_ibm(int argc, char **argv)
 	t->always_pict = true;
 
 #endif /* USE_CONIO */
-
-	/* Use "white space" to erase */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
 
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_ibm;

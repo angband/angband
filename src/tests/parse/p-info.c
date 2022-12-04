@@ -8,7 +8,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_p_race();
+	*state = p_race_parser.init();
 	return !*state;
 }
 

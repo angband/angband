@@ -401,8 +401,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
 	struct effect *effect = object_effect(obj);
+	bool from_floor = !object_is_carried(player, obj);
 	bool can_use = true;
-	bool was_aware, from_floor;
+	bool was_aware;
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
@@ -448,21 +449,30 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
 		uint16_t number;
-		bool ident = false, describe = false, used;
+		bool ident = false, describe = false, deduct_before, used;
 		struct object *work_obj;
 		struct object *first_remainder = NULL;
-		char label = '\0';;
+		char label = '\0';
 
-		if (object_is_carried(player, obj)) {
-			label = gear_to_label(player, obj);
-			number = object_pack_total(player, obj, false,
-				&first_remainder);
-			if (first_remainder &&
-					first_remainder->number == number) {
-				first_remainder = NULL;
-			}
-		} else {
+		if (from_floor) {
 			number = obj->number;
+		} else {
+			label = gear_to_label(player, obj);
+			/*
+			 * Show an aggregate total if the description doesn't
+			 * have a charge/recharging notice specific to the
+			 * stack.
+			 */
+			if (use != USE_CHARGE && use != USE_TIMEOUT) {
+				number = object_pack_total(player, obj, false,
+					&first_remainder);
+				if (first_remainder && first_remainder->number
+						== number) {
+					first_remainder = NULL;
+				}
+			} else {
+				number = obj->number;
+			}
 		}
 
 		/* Get the level */
@@ -488,30 +498,51 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		boost = MAX((player->state.skills[SKILL_DEVICE] - level) / 2, 0);
 
 		/*
-		 * Tentatively deduct the amount used - the effect could leave
-		 * the object inaccessible making it difficult to do after a
-		 * successful use.  For the same reason, get a copy of the
-		 * object to use for propagating knowledge.
+		 * If the object is on the floor, tentatively deduct the
+		 * amount used - the effect could leave the object inaccessible
+		 * making it difficult to do after a successful use.  For the
+		 * the same reason, get a copy of the object to use for
+		 * propagating knowledge and messaging (also do so for items in
+		 * the pack to keep later logic simpler).  Don't do the
+		 * deduction for an object in the pack because the
+		 * rearrangement of the pack, if using a stack of one single
+		 * use item, can distract the player, see
+		 * https://github.com/angband/angband/issues/5543 .
+		 * If effects change so that the originating object can be
+		 * destroyed even if in the pack, the deduction would have to
+		 * be done here if the item is in the pack as well.
 		 */
-		if (use == USE_SINGLE) {
-			if (object_is_carried(player, obj)) {
-				work_obj = gear_object_for_use(player, obj, 1,
-					false, &none_left);
-				from_floor = false;
-			} else {
+		if (from_floor) {
+			if (use == USE_SINGLE) {
+				deduct_before = true;
 				work_obj = floor_object_for_use(player, obj, 1,
 					false, &none_left);
-				from_floor = true;
+			} else {
+				if (use == USE_CHARGE) {
+					deduct_before = true;
+					charges = obj->pval;
+					/* Use a single charge */
+					obj->pval--;
+				} else if (use == USE_TIMEOUT) {
+					deduct_before = true;
+					charges = obj->timeout;
+					obj->timeout += randcalc(obj->time, 0,
+						RANDOMISE);
+				} else {
+					deduct_before = false;
+				}
+				work_obj = object_new();
+				object_copy(work_obj, obj);
+				work_obj->oidx = 0;
+				if (obj->known) {
+					work_obj->known = object_new();
+					object_copy(work_obj->known,
+						obj->known);
+					work_obj->known->oidx = 0;
+				}
 			}
-		} else  {
-			if (use == USE_CHARGE) {
-				charges = obj->pval;
-				/* Use a single charge */
-				obj->pval--;
-			} else if (use == USE_TIMEOUT) {
-				charges = obj->timeout;
-				obj->timeout += randcalc(obj->time, 0, RANDOMISE);
-			}
+		} else {
+			deduct_before = false;
 			work_obj = object_new();
 			object_copy(work_obj, obj);
 			work_obj->oidx = 0;
@@ -520,7 +551,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				object_copy(work_obj->known, obj->known);
 				work_obj->known->oidx = 0;
 			}
-			from_floor = !object_is_carried(player, obj);
 		}
 
 		/* Do effect; use original not copy (proj. effect handling) */
@@ -537,25 +567,34 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		target_release();
 
 		if (!used) {
-			/* Restore the tentative deduction. */
-			if (use == USE_SINGLE) {
-				/* Drop copy to simplify subsequent logic */
-				struct object *dropped = object_new();
+			if (deduct_before) {
+				/* Restore the tentative deduction. */
+				if (use == USE_SINGLE) {
+					/*
+					 * Drop/stash copy to simplify
+					 * subsequent logic.
+					 */
+					struct object *wcopy = object_new();
 
-				object_copy(dropped, work_obj);
-				if (work_obj->known) {
-					dropped->known = object_new();
-					object_copy(dropped->known, work_obj->known);
+					object_copy(wcopy, work_obj);
+					if (work_obj->known) {
+						wcopy->known = object_new();
+						object_copy(wcopy->known,
+							work_obj->known);
+					}
+					if (from_floor) {
+						drop_near(cave, &wcopy, 0,
+							player->grid, false,
+							true);
+					} else {
+						inven_carry(player, wcopy,
+							true, false);
+					}
+				} else if (use == USE_CHARGE) {
+					obj->pval = charges;
+				} else if (use == USE_TIMEOUT) {
+					obj->timeout = charges;
 				}
-				if (from_floor) {
-					drop_near(cave, &dropped, 0, player->grid, false, true);
-				} else {
-					inven_carry(player, dropped, true, false);
-				}
-			} else if (use == USE_CHARGE) {
-				obj->pval = charges;
-			} else if (use == USE_TIMEOUT) {
-				obj->timeout = charges;
 			}
 
 			/*
@@ -569,12 +608,14 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				object_delete(cave, player->cave, &work_obj);
 				/*
 				 * Selection of effect's target may have
-				 * triggered update to windows while tentative
-				 * deduction was in effect; signal another
-				 * update to remedy that.
+				 * triggered an update to windows while the
+				 * tentative deduction was in effect; signal
+				 * another update to remedy that.
 				 */
-				player->upkeep->redraw |= (from_floor) ?
-					(PR_OBJECT) : (PR_INVEN | PR_EQUIP);
+				if (deduct_before) {
+					assert(from_floor);
+					player->upkeep->redraw |= (PR_OBJECT);
+				}
 				return;
 			}
 		}
@@ -595,6 +636,35 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				describe = true;
 			} else {
 				object_flavor_tried(work_obj);
+			}
+		}
+
+		/*
+		 * Use up, deduct charge, or apply timeout if it wasn't
+		 * done before.  For charges or timeouts, also have to change
+		 * work_obj since it is used for messaging (for single use
+		 * items, ODESC_ALTNUM means that the work_obj's number doesn't
+		 * need to be adjusted).
+		 */
+		if (!deduct_before) {
+			assert(!from_floor);
+			if (use == USE_CHARGE) {
+				obj->pval--;
+				work_obj->pval--;
+			} else if (use == USE_TIMEOUT) {
+				int adj = randcalc(obj->time, 0, RANDOMISE);
+
+				obj->timeout += adj;
+				work_obj->timeout += adj;
+			} else if (use == USE_SINGLE) {
+				struct object *used_obj = gear_object_for_use(
+					player, obj, 1, false, &none_left);
+
+				if (used_obj->known) {
+					object_delete(cave, player->cave,
+						&used_obj->known);
+				}
+				object_delete(cave, player->cave, &used_obj);
 			}
 		}
 
@@ -630,8 +700,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (work_obj->known)
 			object_delete(player->cave, NULL, &work_obj->known);
 		object_delete(cave, player->cave, &work_obj);
-	} else {
-		from_floor = !object_is_carried(player, obj);
 	}
 
 	/* Use the turn */

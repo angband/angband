@@ -1945,6 +1945,12 @@ void process_monsters(int minimum_energy)
 			/* The monster takes its turn */
 			monster_turn(mon);
 
+			/*
+			 * For symmetry with the player, monster can take
+			 * terrain damage after its turn.
+			 */
+			monster_take_terrain_damage(mon);
+
 			/* Monster is no longer current */
 			cave->mon_current = -1;
 		}
@@ -1969,9 +1975,6 @@ void reset_monsters(void)
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		/* Access the monster */
 		mon = cave_monster(cave, i);
-
-		/* Dungeon hurts monsters */
-		monster_take_terrain_damage(mon);
 
 		/* Monster is ready to go again */
 		mflag_off(mon->mflag, MFLAG_HANDLED);

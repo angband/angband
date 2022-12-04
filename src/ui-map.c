@@ -660,12 +660,11 @@ static void prt_map_aux(void)
 				/* Check bounds */
 				if (!square_in_bounds(cave, loc(x, y))) {
 					Term_queue_char(t, vx, vy,
-						t->attr_blank, t->char_blank,
+						COLOUR_WHITE, ' ',
 						0, 0);
 					if (tile_width > 1 || tile_height > 1) {
 						Term_big_queue_char(t, vx, vy,
-							clipy, t->attr_blank,
-							t->char_blank, 0, 0);
+							clipy, COLOUR_WHITE, ' ', 0, 0);
 					}
 					continue;
 				}
@@ -681,15 +680,15 @@ static void prt_map_aux(void)
 			}
 			/* Clear partial tile at the end of each line. */
 			for (; vx < t->wid; ++vx) {
-				Term_queue_char(t, vx, vy, t->attr_blank,
-					t->char_blank, 0, 0);
+				Term_queue_char(t, vx, vy, COLOUR_WHITE,
+					' ', 0, 0);
 			}
 		}
 		/* Clear row of partial tiles at the bottom. */
 		for (; vy < t->hgt; ++vy) {
 			for (vx = 0; vx < t->wid; ++vx) {
-				Term_queue_char(t, vx, vy, t->attr_blank,
-					t->char_blank, 0, 0);
+				Term_queue_char(t, vx, vy, COLOUR_WHITE,
+					' ', 0, 0);
 			}
 		}
 	}

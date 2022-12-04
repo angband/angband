@@ -30,7 +30,7 @@ int setup_tests(void **state) {
 	int i;
 	bool last;
 
-	*state = init_parse_class();
+	*state = class_parser.init();
 	/*
 	 * Set up a minimal set of kinds so tests for starting equipment and
 	 * spell books work.  The kinds need to reallocatable so kinds of books
@@ -158,6 +158,25 @@ static int test_missing_record_header0(void *state) {
 	r = parser_parse(p, "magic:3:400:9");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "book:magic book:town:[First Spells]:2:arcane");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "book-graphics:?:R");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "book-properties:25:40:1 to 100");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "spell:Light Room:1:2:26:4");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect:LIGHT_AREA");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-yx:22:40");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "dice:10");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "expr:D:PLAYER_LEVEL:- 1 / 5 + 3");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-msg:shadow shifting");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "desc:Detects all traps, doors, and stairs in "
+		"the immediate area.");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
@@ -527,6 +546,17 @@ static int test_equip_bad0(void *state) {
 	eq(r, PARSE_ERROR_INVALID_ITEM_NUMBER);
 	r = parser_parse(p, "equip:light:wooden torch:100:105:none");
 	eq(r, PARSE_ERROR_INVALID_ITEM_NUMBER);
+	/* Try tying it to an option that's not a birth option. */
+	r = parser_parse(p, "equip:light:wooden torch:1:2:rogue_like_commands");
+	eq(r, PARSE_ERROR_INVALID_OPTION);
+	r = parser_parse(p, "equip:light:wooden torch:1:2:"
+		"NOT-rogue_like_commands");
+	eq(r, PARSE_ERROR_INVALID_OPTION);
+	/* Try tying it to an invalid option. */
+	r = parser_parse(p, "equip:light:wooden torch:1:2:xyzzy");
+	eq(r, PARSE_ERROR_INVALID_OPTION);
+	r = parser_parse(p, "equip:light:wooden torch:1:2:NOT-xyzzy");
+	eq(r, PARSE_ERROR_INVALID_OPTION);
 	ok;
 }
 
@@ -608,17 +638,79 @@ static int test_obj_flags_bad0(void *state) {
 	ok;
 }
 
+static int test_missing_magic0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/*
+	 * Specify anything about a book, spell, or spell's effect when there
+	 * hasn't been a magic directive for the class should signal an error.
+	 */
+	enum parser_error r = parser_parse(p,
+		"book:magic book:town:[First Spells]:7:arcane");
+
+	eq(r, PARSE_ERROR_TOO_MANY_ENTRIES);
+	r = parser_parse(p, "book-graphics:?:R");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "book-properties:25:40:1 to 100");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "spell:Light Room:1:2:26:4");
+	eq(r, PARSE_ERROR_TOO_MANY_ENTRIES);
+	r = parser_parse(p, "effect:LIGHT_AREA");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-yx:22:40");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "dice:10");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "expr:D:PLAYER_LEVEL:- 1 / 5 + 3");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-msg:shadow shifting");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "desc:Detects all traps, doors, and stairs in "
+		"the immediate area.");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	ok;
+}
+
 static int test_magic0(void *state) {
 	struct parser *p = (struct parser*) state;
-	enum parser_error r = parser_parse(p, "magic:3:400:9");
+	enum parser_error r = parser_parse(p, "magic:4:400:3");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = (struct player_class*) parser_priv(p);
 	notnull(c);
-	eq(c->magic.spell_first, 3);
+	eq(c->magic.spell_first, 4);
 	eq(c->magic.spell_weight, 400);
 	notnull(c->magic.books);
+	ok;
+}
+
+static int test_missing_book0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/*
+	 * Specifying the book graphics, the book properties, a spell, or
+	 * anything about a spell's effect without a prior book directive for
+	 * the class should signal an error.
+	 */
+	enum parser_error r = parser_parse(p, "book-graphics:?:R");
+
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "book-properties:25:40:1 to 100");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "spell:Light Room:1:2:26:4");
+	eq(r, PARSE_ERROR_TOO_MANY_ENTRIES);
+	r = parser_parse(p, "effect:LIGHT_AREA");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-yx:22:40");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "dice:$Dd4");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "expr:D:PLAYER_LEVEL:- 1 / 5 + 3");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-msg:shadow shifting");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p,
+		"desc:Teleports you randomly up to 10 squares away.");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
 
@@ -728,6 +820,29 @@ static int test_book_properties_bad0(void *state) {
 	enum parser_error r = parser_parse(p, "book-properties:25:40:1 100");
 
 	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	ok;
+}
+
+static int test_missing_spell0(void * state) {
+	struct parser *p = (struct parser*) state;
+	/*
+	 * Specifying anything about a spell's effect without a spell directive
+	 * for the current book should signal an error.
+	 */
+	enum parser_error r = parser_parse(p, "effect:LIGHT_AREA");
+
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-yx:22:40");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "dice:$Dd4");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "expr:D:PLAYER_LEVEL:- 1 / 5 + 3");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "effect-msg:shadow shifting");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p,
+		"desc:Teleports you randomly up to 10 squares away.");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
 
@@ -937,6 +1052,11 @@ static int test_dice0(void *state) {
 	while (e->next) e = e->next;
 	notnull(e->dice);
 	require(dice_test_values(e->dice, 8, 1, 10, 5));
+	/* Check that repeated dice directive doesn't trigger a memory leak. */
+	r = parser_parse(p, "dice:6+2d4");
+	eq(r, PARSE_ERROR_NONE);
+	notnull(e->dice);
+	require(dice_test_values(e->dice, 6, 2, 4, 0));
 	ok;
 }
 
@@ -1092,6 +1212,21 @@ static int test_desc0(void *state) {
 	ok;
 }
 
+static int test_spell_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/*
+	 * test_book0() specified a maximum of two spells.  One was used in
+	 * test_spell0().  Use up the other here.  The one after that should
+	 * trigger an error.
+	 */
+	enum parser_error r = parser_parse(p, "spell:Test Spell 1:2:2:22:4");
+
+	eq(r, PARSE_ERROR_NONE);
+	r = parser_parse(p, "spell:Bad Spell:3:2:24:4");
+	eq(r, PARSE_ERROR_TOO_MANY_ENTRIES);
+	ok;
+}
+
 static int test_book_bad0(void *state) {
 	struct parser *p = (struct parser*) state;
 	/* Try a book with an unrecognized tval. */
@@ -1099,6 +1234,31 @@ static int test_book_bad0(void *state) {
 		"book:xyzzy:town:[Nothing]:6:arcane");
 
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
+
+	/*
+	 * test_magic0() specified a maximum of three books.  One was used up
+	 * by test_book0(); the above bad tval shouldn't have used up one.  Use
+	 * up the other two here.  The next book after that should trigger an
+	 * error.
+	 */
+	r = parser_parse(p, "book:magic book:dungeon:[Test Book 1]:5:arcane");
+	eq(r, PARSE_ERROR_NONE);
+	r = parser_parse(p, "book:magic book:dungeon:[Test Book 2]:6:arcane");
+	eq(r, PARSE_ERROR_NONE);
+	r = parser_parse(p, "book:magic book:dungeon:[Bad Book 1]:4:arcane");
+	eq(r, PARSE_ERROR_TOO_MANY_ENTRIES);
+	ok;
+}
+
+static int test_magic_repeated0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/*
+	 * Having more than one magic directive for the same class should signal
+	 * an error.
+	 */
+	enum parser_error r = parser_parse(p, "magic:1:350:5");
+
+	eq(r, PARSE_ERROR_REPEATED_DIRECTIVE);
 	ok;
 }
 
@@ -1106,15 +1266,19 @@ const char *suite_name = "parse/c-info";
 /*
  * test_missing_record_header0() has to be before test_name0().  All others,
  * except test_name0(), have to be after test_name0().  test_title_bad0() has
- * to be after test_title0().  test_book0() has to be after test_magic0().
+ * to be after test_title0().  test_missing_magic0() has to be before
+ * test_magic0().  test_missing_book0() has to be after test_magic0() and
+ * before test_book0().  test_book0() has to be after test_magic0().
  * test_book_graphics0(), test_book_properties0(), test_book_properties_bad0(),
- * and test_spell0() have to be after test_book0().  test_missing_effect0()
- * has to be after test_spell0() and before test_effect0(), test_bad_dice0(),
- * test_missing_dice0(), test_expr0(), and test_expr_bad0().  test_effect0(),
- * test_desc0(), test_bad_dice0(), test_missing_dice0(), test_expr0(), and
- * test_expr_bad0() have to after test_spell0().  test_effect_yx0(),
- * test_dice0(), and test_effect_msg0() have to be after test_effect0().
- * Run test_book_bad0() last in case it would interfere with the other
+ * and test_spell0() have to be after test_book0().  test_missing_spell0()
+ * has to be after test_book0() and before test_spell0().
+ * test_missing_effect0() has to be after test_spell0() and before
+ * test_effect0(), test_bad_dice0(), test_missing_dice0(), test_expr0(), and
+ * test_expr_bad0().  test_effect0(), test_desc0(), test_bad_dice0(),
+ * test_missing_dice0(), test_expr0(), and test_expr_bad0() have to after
+ * test_spell0().  test_effect_yx0(), test_dice0(), and test_effect_msg0()
+ * have to be after test_effect0().  Run test_spell_bad0(), test_book_bad0(),
+ * test_magic_repeated0() last in case they would interfere with the other
  * book and spell tests.
  */
 struct test tests[] = {
@@ -1144,11 +1308,14 @@ struct test tests[] = {
 	{ "player_flags_bad0", test_player_flags_bad0 },
 	{ "obj_flags0", test_obj_flags0 },
 	{ "obj_flags_bad0", test_obj_flags_bad0 },
+	{ "missing_magic0", test_missing_magic0 },
 	{ "magic0", test_magic0 },
+	{ "missing_book0", test_missing_book0 },
 	{ "book0", test_book0 },
 	{ "book_graphics0", test_book_graphics0 },
 	{ "book_properties0", test_book_properties0 },
 	{ "book_properties_bad0", test_book_properties_bad0 },
+	{ "missing_spell0", test_missing_spell0 },
 	{ "spell0", test_spell0 },
 	{ "missing_effect0", test_missing_effect0 },
 	{ "effect0", test_effect0 },
@@ -1160,6 +1327,8 @@ struct test tests[] = {
 	{ "expr_bad0", test_expr_bad0 },
 	{ "effect_msg0", test_effect_msg0 },
 	{ "desc0", test_desc0 },
+	{ "spell_bad0", test_spell_bad0 },
 	{ "book_bad0", test_book_bad0 },
+	{ "magic_repeated0", test_magic_repeated0 },
 	{ NULL, NULL }
 };

@@ -2558,10 +2558,6 @@ static errr term_data_init(term_data *td, int i)
 	/* Use a "soft" cursor */
 	t->soft_cursor = true;
 
-	/* Erase with "white space" */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
-
 	/* Differentiate between BS/^h, Tab/^i, etc. */
 	t->complex_input = true;
 

@@ -17,7 +17,7 @@ struct object_kind dummy_kinds[] = {
 };
 
 int setup_tests(void **state) {
-	*state = init_parse_flavor();
+	*state = flavor_parser.init();
 	/*
 	 * Do minimal setup so sval lookups work for the tests of fixed flavors.
 	 */
@@ -110,13 +110,24 @@ static int test_fixed0(void *state) {
 	ok;
 }
 
+static int test_kind_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Try an invalid tval. */
+	enum parser_error r = parser_parse(p, "kind:xyzzy:'");
+
+	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
+	ok;
+}
+
 const char *suite_name = "parse/flavor";
 /*
- * test_flavor0() and test_fixed0() have to be after test_kind0().
+ * test_flavor0() and test_fixed0() have to be after test_kind0().  Run
+ * test_kind_bad0() to avoid potential effects on the other tests.
  */
 struct test tests[] = {
 	{ "kind0", test_kind0 },
 	{ "flavor0", test_flavor0 },
 	{ "fixed0", test_fixed0 },
+	{ "kind_bad0", test_kind_bad0 },
 	{ NULL, NULL }
 };

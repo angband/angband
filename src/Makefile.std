@@ -21,26 +21,35 @@
 
 # Recent, known-to-work ports
 
-# Support X11 (main-x11.c)
+# Support X11 (main-x11.c) if SYS_x11 is set
 # You may have to add various X11 include/library directories to the
 # "CFLAGS", if your machine places files in a weird location, for example
 # " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
 # SYS_x11 = -DUSE_X11 -lX11
 
-# Support curses console mode (main-gcu.c)
+# Support curses console mode (main-gcu.c) if SYS_gcu is set
 # If this fails, try the alternate below
 SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
-# Support SDL frontend
+# Support SDL frontend (main-sdl.c) if SYS_sdl is set
 # SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
 
-# Stats pseudo-frontend
-# SYS_stats = -DUSE_STATS
+# Support stats pseudo-frontend if SYS_stats and SYS_stats_objs are set
+# If sqlite3's header, sqlite3.h, isn't in the compiler's default path for
+# include files, you'll have to change CFLAGS so directory which has the header
+# is searched (i.e. if it's in /some/nonstandard/path/include then you'd add
+# -I/some/nonstandard/path/include to CFLAGS for most compilers).  If sqlite3's
+# library, libsqlite3.so or libsqlite3.a, isn't in the compiler's default path
+# for libraries, you'll have to change LIBS so that directory with the library
+# is searched (i.e. if it's in /some/nonstandarad/path/lib then you'd add
+# -L/some/nonstandard/path/lib to LIBS for most compilers).
+# SYS_stats = -DUSE_STATS -lsqlite3
+# SYS_stats_objs = $(STATSMAINFILES)
 
-## Support SDL_mixer for sound
-#SOUND_sdl = -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
-
+# Support SDL_mixer for sound if SOUND_sdl and SOUND_sdl_objs are set
+#SOUND_sdl = -DSOUND -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
+#SOUND_sdl_objs = $(SNDSDLFILES)
 
 
 # Basic compiler stuff
@@ -67,12 +76,12 @@ LIBS = -lm
 
 # Extract CFLAGS and LIBS from the system definitions
 MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
-CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES) -DPRIVATE_USER_PATH="~/.angband"
+CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES) -DPRIVATE_USER_PATH="\"~/.angband\""
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o
+OBJS = $(BASEOBJS) main.o $(SYS_stats_objs) main-gcu.o main-x11.o main-sdl.o $(SOUND_sdl_objs)
 
 
 
@@ -113,9 +122,11 @@ clean:
 	-rm -f $(OBJS) $(EXE)
 
 # make a distribution
+TILESET_DIRS = lib/tiles/adam-bolt lib/tiles/gervais lib/tiles/nomad \
+       lib/tiles/old lib/tiles/shockbolt
 DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
-       lib/sounds lib/icons lib/user lib/user/save lib/user/scores \
-       lib/user/info lib/user/archive
+       $(TILESET_DIRS) lib/sounds lib/icons lib/user lib/user/panic \
+       lib/user/save lib/user/scores
 
 TMPDIR = ./$(EXE)-$(VERSION)
 dist:
@@ -127,11 +138,13 @@ dist:
 	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
 	@cp ../lib/help/*.txt $(TMPDIR)/lib/help
 	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customize
-	@cp ../lib/fonts/*.txt $(TMPDIR)/lib/fonts
+	@cp ../lib/fonts/*.fon $(TMPDIR)/lib/fonts
+	@cp ../lib/icons/*.png $(TMPDIR)/lib/icons
 	@echo attempting to install sound and graphics
 	@-cp ../lib/sounds/*.mp3 $(TMPDIR)/lib/sounds
-	@-cp ../lib/tiles/*.png $(TMPDIR)/lib/tiles
-	@cp ../changes.txt ../readme.txt $(TMPDIR)
+	@-cp ../lib/tiles/list.txt $(TMPDIR)/lib/tiles
+	@for i in $(TILESET_DIRS) ; do cp ../$$i/*.png ../$$i/*.prf $(TMPDIR)/$$i ; done
+	@cp ../changes.txt ../README.md $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)

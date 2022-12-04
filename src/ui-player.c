@@ -30,6 +30,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"
@@ -358,16 +359,17 @@ static void display_player_equippy(int y, int x)
 		/* Object */
 		obj = slot_object(player, i);
 
-		/* Skip empty objects */
-		if (!obj) continue;
-
-		/* Get attr/char for display */
-		a = object_attr(obj);
-		c = object_char(obj);
+		/* Get attr/char for display; clear if big tiles or no object */
+		if (obj && tile_width == 1 && tile_height == 1) {
+			a = object_attr(obj);
+			c = object_char(obj);
+		} else {
+			a = COLOUR_WHITE;
+			c = L' ';
+		}
 
 		/* Dump */
-		if ((tile_width == 1) && (tile_height == 1))
-		        Term_putch(x + i, y, a, c);
+		Term_putch(x + i, y, a, c);
 	}
 }
 

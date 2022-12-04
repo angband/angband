@@ -224,9 +224,6 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 	if (square_isfiery(cave, grid)) {
 		if (square(cave, grid)->mon < 0) {
 			msg("You are thrown into molten lava!");
-		} else if (square(cave, grid)->mon > 0) {
-			struct monster *mon = square_monster(cave, grid);
-			monster_take_terrain_damage(mon);
 		}
 	}
 

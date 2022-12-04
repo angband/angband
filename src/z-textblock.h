@@ -30,19 +30,9 @@ void textblock_free(textblock *tb);
 
 
 void textblock_append(textblock *tb, const char *fmt, ...)
-/*
- * This and further instances below are to automate format string checking
- * with gcc and clang:  see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes .
- */
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 2, 3)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 2, 3)));
 void textblock_append_c(textblock *tb, uint8_t attr, const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 3, 4)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 3, 4)));
 void textblock_append_pict(textblock *tb, uint8_t attr, int c);
 void textblock_append_textblock(textblock *tb, const textblock *tba);
 
@@ -62,20 +52,11 @@ extern int text_out_pad;
 
 extern void text_out_to_file(uint8_t attr, const char *str);
 extern void text_out(const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 1, 2)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 1, 2)));
 extern void text_out_c(uint8_t a, const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 2, 3)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 2, 3)));
 extern void text_out_e(const char *fmt, ...)
-#ifdef USE_FUNC_ATTR_FORMAT
-	__attribute ((format (printf, 1, 2)))
-#endif
-;
+	ATTRIBUTE ((format (printf, 1, 2)));
 
 typedef void (*text_writer)(ang_file *f);
 errr text_lines_to_file(const char *path, text_writer writer);
