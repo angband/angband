@@ -471,9 +471,6 @@
     <ClCompile Include="src\z-rand.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\z-set.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\z-textblock.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -990,9 +987,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\z-rand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\z-set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\z-textblock.h">
