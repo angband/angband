@@ -255,7 +255,7 @@ void dump_features(ang_file *fff)
 			uint8_t attr = feat_x_attr[j][i];
 			wint_t chr = feat_x_char[j][i];
 
-			const char *light = NULL;
+			const char *light = "";
 			if (j == LIGHTING_TORCH)
 				light = "torch";
 			if (j == LIGHTING_LOS)
@@ -265,7 +265,7 @@ void dump_features(ang_file *fff)
 			else if (j == LIGHTING_DARK)
 				light = "dark";
 
-			assert(light);
+			assert(light[0]);
 
 			file_putf(fff, "feat:%s:%s:%d:%d\n", feat->name, light, attr, chr);
 		}
