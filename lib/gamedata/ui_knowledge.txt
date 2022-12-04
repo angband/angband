@@ -1,0 +1,189 @@
+# File: ui_knowledge.txt
+
+# Configure some behavior of the knowledge menus.
+
+# === Understanding ui_knowledge.txt ===
+
+# monster-category:name
+# mcat-include-base:name
+# mcat-include-flag:flag | ...
+
+# 'monster-category' introduces a set of directives to define a category of
+# monsters in the monster knowledge menu.  It takes one parameter:  the name
+# that will be shown in the menu for the category.  One name,
+# "***Unclassified***" is reserved for internal use to catch any types of
+# monsters that do not fall into any of the categories specified in this file.
+# In the menu, the categories will appear in the same order that they are
+# defined in this file.
+
+# 'mcat-include-base' adds a monster base to be included in the most recent
+# category specified by a 'monster-category' directive.  It takes one
+# parameter:  the name of the monster base from monster_base.txt.  If that
+# base does not exist or there is no prior 'monster-category' directive,
+# that will trigger a parser error.  This directive may be used more than
+# once for the same category.  If a category includes multiple monster bases,
+# the knowledge menu will display those from a base specified earlier in this
+# file before those from a base that appear later in this file.  Within the
+# same monster base, the knowledge menu will sort the monster types by level
+# and then by name.
+
+# 'mcat-include-flag' adds one or more monster flags to be included in the most
+# recent category specified by a 'monster-category' directive.  It takes
+# one parameter:  a list of zero or more monster flags, separated by spaces
+# or '|'.  Each flag must match one of the first arguments (except 'NONE') to
+# a RF() macro in list-mon-race-flags.h.  All types of monsters that have a
+# flag specified by 'mcat-include-flag' will be included in the category.
+# This directive may be used more than once for the same category.  Monster
+# types which only appear in a category because they possess a flag will
+# appear, when displayed in the monster knowledge menu, after those that are
+# included  because of a monster base and will be sorted by level and then
+# by name.
+
+monster-category:Uniques
+mcat-include-flag:UNIQUE
+
+monster-category:Ainur
+mcat-include-base:ainu
+
+monster-category:Ants
+mcat-include-base:ant
+
+monster-category:Bats
+mcat-include-base:bat
+
+monster-category:Birds
+mcat-include-base:bird
+
+monster-category:Canines
+mcat-include-base:canine
+
+monster-category:Centipede
+mcat-include-base:centipede
+
+monster-category:Demons
+mcat-include-base:minor demon
+mcat-include-base:major demon
+
+monster-category:Dragons
+mcat-include-base:dragon
+mcat-include-base:ancient dragon
+
+monster-category:Elementals/Vortices
+mcat-include-base:vortex
+mcat-include-base:elemental
+
+monster-category:Eyes/Beholders
+mcat-include-base:eye
+
+monster-category:Felines
+mcat-include-base:feline
+
+monster-category:Ghosts
+mcat-include-base:ghost
+
+monster-category:Giants/Ogres
+mcat-include-base:ogre
+mcat-include-base:giant
+
+monster-category:Golems
+mcat-include-base:golem
+
+monster-category:Harpies/Hybrids
+mcat-include-base:hybrid
+
+monster-category:Hominids (Elves, Dwarves)
+mcat-include-base:humanoid
+
+monster-category:Hydras
+mcat-include-base:hydra
+
+monster-category:Icky Things
+mcat-include-base:icky thing
+
+monster-category:Insects
+mcat-include-base:dragon fly
+mcat-include-base:insect
+
+monster-category:Jellies
+mcat-include-base:jelly
+
+monster-category:Killer Beetles
+mcat-include-base:killer beetle
+
+monster-category:Kobolds
+mcat-include-base:kobold
+
+monster-category:Lichs
+mcat-include-base:lich
+
+monster-category:Men
+mcat-include-base:townsfolk
+mcat-include-base:person
+
+monster-category:Mimics
+mcat-include-base:lurker
+mcat-include-base:creeping coins
+mcat-include-base:mimic
+
+monster-category:Molds
+mcat-include-base:mold
+
+monster-category:Mushroom Patches
+mcat-include-base:mushroom
+
+monster-category:Nagas
+mcat-include-base:naga
+
+monster-category:Orcs
+mcat-include-base:orc
+
+monster-category:Quadrupeds
+mcat-include-base:quadruped
+
+monster-category:Quylthulgs
+mcat-include-base:quylthulg
+
+monster-category:Reptiles/Amphibians
+mcat-include-base:reptile
+
+monster-category:Rodents
+mcat-include-base:rodent
+
+monster-category:Scorpions/Spiders
+mcat-include-base:spider
+
+monster-category:Skeletons/Drujs
+mcat-include-base:skeleton
+
+monster-category:Snakes
+mcat-include-base:snake
+
+monster-category:Trees/Ents
+mcat-include-base:tree
+
+monster-category:Trolls
+mcat-include-base:troll
+
+monster-category:Vampires
+mcat-include-base:vampire
+
+monster-category:Wights/Wraiths
+mcat-include-base:wraith
+
+monster-category:Worms/Worm Masses
+mcat-include-base:worm
+
+monster-category:Xorns/Xarens
+mcat-include-base:xorn
+
+monster-category:Yeeks
+mcat-include-base:yeek
+
+monster-category:Yeti
+mcat-include-base:yeti
+
+monster-category:Zephyr Hounds
+mcat-include-base:zephyr hound
+
+monster-category:Zombies
+mcat-include-base:zombie
