@@ -3458,42 +3458,54 @@ static void MoreDraw(sdl_Window *win)
 	/* Draw a nice box */
 	sdl_DrawBox(win->surface, &rc, AltUnselColour, 5);
 
-	button = sdl_ButtonBankGet(&win->buttons, MoreWidthMinus);
+	/*
+	 * Only allow tile multiplier changes when a tile set is used and
+	 * the game is at a command prompt.  The latter avoids a multiplier
+	 * change causing blank screens for in-game menus or display artifacts
+	 * sometime later when the in-game menu is dismissed.
+	 */
 	if (SelectedGfx) {
 		sdl_WindowText(win, AltUnselColour, 20, y,
 			format("Tile width is %d.", tile_width));
+	}
+	button = sdl_ButtonBankGet(&win->buttons, MoreWidthMinus);
+	if (SelectedGfx && character_generated && inkey_flag) {
 		sdl_ButtonMove(button, 200, y);
 		sdl_ButtonVisible(button, true);
 	} else {
 		sdl_ButtonVisible(button, false);
 	}
-
 	button = sdl_ButtonBankGet(&win->buttons, MoreWidthPlus);
-	if (SelectedGfx) {
+	if (SelectedGfx && character_generated && inkey_flag) {
 		sdl_ButtonMove(button, 230, y);
 		sdl_ButtonVisible(button, true);
-		y += 20;
 	} else {
 		sdl_ButtonVisible(button, false);
 	}
+	if (SelectedGfx) {
+		y += 20;
+	}
 
-	button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
 	if (SelectedGfx) {
 		sdl_WindowText(win, AltUnselColour, 20, y,
 			format("Tile height is %d.", tile_height));
+	}
+	button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
+	if (SelectedGfx && character_generated && inkey_flag) {
 		sdl_ButtonMove(button, 200, y);
 		sdl_ButtonVisible(button, true);
 	} else {
 		sdl_ButtonVisible(button, false);
 	}
-
 	button = sdl_ButtonBankGet(&win->buttons, MoreHeightPlus);
-	if (SelectedGfx) {
+	if (SelectedGfx && character_generated && inkey_flag) {
 		sdl_ButtonMove(button, 230, y);
 		sdl_ButtonVisible(button, true);
-		y += 20;
 	} else {
 		sdl_ButtonVisible(button, false);
+	}
+	if (SelectedGfx) {
+		y += 20;
 	}
 
 	sdl_WindowText(win, AltUnselColour, 20, y, "Selected Graphics:");
@@ -3505,8 +3517,18 @@ static void MoreDraw(sdl_Window *win)
 	}
 	y += 20;
 
-	sdl_WindowText(win, AltUnselColour, 20, y, "Available Graphics:");
-
+	/*
+	 * Only allow changes to the graphics mode when at a command prompt
+	 * in game.  Could also allow while at the splash screen, but that
+	 * isn't possible to test for with character_generated and
+	 * character_dungeon.  In other situations, the saved screens for
+	 * overlayed menus could have tile references that become outdated
+	 * when the graphics mode is changed.
+	 */
+	if (character_generated && inkey_flag) {
+		sdl_WindowText(win, AltUnselColour, 20, y,
+			"Available Graphics:");
+	}
 	mode = graphics_modes;
 	while (mode) {
 		if (!mode->menuname[0]) {
@@ -3514,8 +3536,13 @@ static void MoreDraw(sdl_Window *win)
 			continue;
 		}
 		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[mode->grafID]);
-		sdl_ButtonMove(button, 200, y);
-		y += 20;
+		if (character_generated && inkey_flag) {
+			sdl_ButtonMove(button, 200, y);
+			sdl_ButtonVisible(button, true);
+			y += 20;
+		} else {
+			sdl_ButtonVisible(button, false);
+		}
 		mode = mode->pNext;
 	} 
 
