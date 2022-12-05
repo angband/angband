@@ -1619,7 +1619,7 @@ depgen:
  z-util.h
 ./z-expression.o: z-expression.c z-expression.h h-basic.h z-virt.h z-util.h
 ./z-file.o: z-file.c h-basic.h z-file.h z-form.h z-util.h z-virt.h
-./z-form.o: z-form.c z-form.h h-basic.h z-type.h z-util.h z-virt.h
+./z-form.o: z-form.c z-form.h h-basic.h z-type.h z-util.h z-virt.h \
  z-bitflag.h z-form.h z-file.h z-rand.h datafile.h object.h z-type.h \
  z-dice.h z-expression.h obj-properties.h list-tvals.h \
  list-object-flags.h list-kind-flags.h list-stats.h \
