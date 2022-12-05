@@ -1098,8 +1098,12 @@ void move_player(int dir, bool disarm)
 			return;
 		}
 
-		if (square_isdamaging(cave, grid)) {
-			/* Some terrain can damage the player */
+		/*
+		 * If not confused, allow check before moving into damaging
+		 * terrain.
+		 */
+		if (square_isdamaging(cave, grid)
+				&& !player->timed[TMD_CONFUSED]) {
 			struct feature *feat = square_feat(cave, grid);
 			int dam_taken = player_check_terrain_damage(player,
 				grid, false);
