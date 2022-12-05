@@ -5626,7 +5626,7 @@ static int cmp_font(const void *f1, const void *f2)
 			 * Neither match the expected pattern.  Sort
 			 * alphabetically.
 			 */
-			return strcmp(f1, f2);
+			return strcmp(font1, font2);
 		}
 		/*
 		 * Put f2 first, since it matches the expected pattern.
