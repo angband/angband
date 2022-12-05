@@ -17,7 +17,6 @@
 #include "obj-util.h"
 #include "player-birth.h"
 #include "player-calcs.h"
-#include "z-quark.h"
 
 /*
  * This is the maximum number of things (one of which will be a sentinel

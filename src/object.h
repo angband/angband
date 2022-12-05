@@ -6,7 +6,6 @@
 #define INCLUDED_OBJECT_H
 
 #include "z-type.h"
-#include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"

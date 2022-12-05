@@ -17,7 +17,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-birth.h"
-#include "z-quark.h"
 
 static bool find_empty_spot(struct chunk *c, struct player *p)
 {

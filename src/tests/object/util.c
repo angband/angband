@@ -16,13 +16,10 @@ int setup_tests(void **state) {
 	z_info->fuel_torch = 5000;
 	z_info->fuel_lamp = 15000;
 	z_info->default_lamp = 7500;
-
-	quarks_init();
     return 0;
 }
 
 int teardown_tests(void *state) {
-	quarks_free();
 	mem_free(z_info);
 	return 0;
 }

@@ -4077,7 +4077,6 @@ static struct init_module arrays_module = {
 };
 
 
-extern struct init_module z_quark_module;
 extern struct init_module generate_module;
 extern struct init_module rune_module;
 extern struct init_module obj_make_module;
@@ -4091,7 +4090,6 @@ extern struct init_module ui_player_module;
 extern struct init_module ui_equip_cmp_module;
 
 static struct init_module *modules[] = {
-	&z_quark_module,
 	&messages_module,
 	&ui_visuals_module, /* This needs to load before monsters and objects. */
 	&arrays_module,
