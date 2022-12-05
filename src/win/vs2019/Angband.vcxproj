@@ -311,7 +311,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\z-expression.c" />
     <ClCompile Include="src\z-file.c" />
     <ClCompile Include="src\z-form.c" />
-    <ClCompile Include="src\z-quark.c" />
     <ClCompile Include="src\z-queue.c" />
     <ClCompile Include="src\z-rand.c" />
     <ClCompile Include="src\z-set.c" />
@@ -487,7 +486,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\z-expression.h" />
     <ClInclude Include="src\z-file.h" />
     <ClInclude Include="src\z-form.h" />
-    <ClInclude Include="src\z-quark.h" />
     <ClInclude Include="src\z-queue.h" />
     <ClInclude Include="src\z-rand.h" />
     <ClInclude Include="src\z-set.h" />

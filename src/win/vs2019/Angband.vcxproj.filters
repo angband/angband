@@ -462,9 +462,6 @@
     <ClCompile Include="src\z-form.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\z-quark.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\z-queue.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -978,9 +975,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\z-form.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\z-quark.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\z-queue.h">
