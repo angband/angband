@@ -49,6 +49,7 @@ static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
 static Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
 
 
+#ifdef SIGTSTP
 /**
  * Handle signals -- suspend
  *
@@ -90,6 +91,7 @@ static void handle_signal_suspend(int sig)
 	/* Restore errno */
 	errno = save_errno;
 }
+#endif /* ifdef SIGTSTP */
 
 
 /**
