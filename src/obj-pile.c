@@ -586,8 +586,11 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 	}
 
 	/* Merge inscriptions */
-	if (obj2->note)
+	if (obj2->note) {
+		if (obj1->note)
+			string_free(obj1->note);
 		obj1->note = string_make(obj2->note);
+	}
 
 	/* Combine timeouts for rod stacking */
 	if (tval_can_have_timeout(obj1))
@@ -696,6 +699,8 @@ void object_wipe(struct object *obj)
 	mem_free(obj->brands);
 	mem_free(obj->curses);
 
+	string_free(obj->note);
+
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
 }
@@ -708,6 +713,8 @@ void object_copy(struct object *dest, const struct object *src)
 {
 	/* Copy the structure */
 	memcpy(dest, src, sizeof(struct object));
+
+	dest->note = src->note ? string_make(src->note) : NULL;
 
 	if (src->slays) {
 		dest->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
@@ -743,7 +750,6 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
 
 	/* Modify quantity */
 	dest->number = amt;
-	dest->note = string_make(src->note);
 
 	/*
 	 * If the item has charges/timeouts, set them to the correct level
@@ -799,8 +805,6 @@ struct object *object_split(struct object *src, int amt)
 	/* Modify quantity */
 	dest->number = amt;
 	src->number -= amt;
-	if (src->note)
-		dest->note = string_make(src->note);
 	if (src->known) {
 		dest->known->number = dest->number;
 		src->known->number = src->number;
