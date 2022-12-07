@@ -1275,7 +1275,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	ix = randint0(c->width - 1) + 1;
 	iy = randint0(c->height - 1) + 1;
 	ty = iy;
-	tx = tx + 1;
+	tx = ix + 1;
 	if (tx >= c->width - 1) {
 		tx = 1;
 		ty = ty + 1;
