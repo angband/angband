@@ -1,5 +1,5 @@
 # Use msbuild on Windows to test if building with the Visual Studio project
-# file (win/vs2019/Angband.vcxproj) works.
+# file (win/VisualStudio/Angband.vcxproj) works.
 
 name: msbuild
 
@@ -24,7 +24,7 @@ jobs:
           # Copy the project file so that the project directory inferred by
           # msbuild matches up with the location of the source files as
           # specified in the project file.
-          xcopy src\win\vs2019\Angband.vcxproj .\
-          xcopy src\win\vs2019\Angband.vcxproj.filters .\
-          xcopy src\win\vs2019\Angband.vcxproj.user .\
+          xcopy src\win\VisualStudio\Angband.vcxproj .\
+          xcopy src\win\VisualStudio\Angband.vcxproj.filters .\
+          xcopy src\win\VisualStudio\Angband.vcxproj.user .\
           msbuild Angband.vcxproj
