@@ -200,6 +200,7 @@ struct magic_realm *class_magic_realms(const struct player_class *c, int *count)
 
 		/* Add it */
 		r_test = mem_zalloc(sizeof(struct magic_realm));
+		memcpy(r_test, book->realm, sizeof(struct magic_realm));
 		r_test->next = r;
 		r = r_test;
 		(*count)++;
