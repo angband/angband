@@ -19,7 +19,7 @@
  */
 
 #include <windows.h>
-#include "png.h"
+#include "include/png.h"
 
 #include "readdib.h"
 

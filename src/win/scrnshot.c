@@ -18,7 +18,7 @@
 
 #include <windows.h>
 #include <stdbool.h>
-#include "png.h"
+#include "include/png.h"
 
 /**
  * Extract the "WIN32" flag from the compiler
