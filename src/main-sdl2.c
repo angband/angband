@@ -5990,7 +5990,7 @@ static void init_font_info(const char *directory)
 			g_font_info[i].name = string_make(name);
 			g_font_info[i].path = string_make(path);
 			g_font_info[i].loaded = true;
-			if (suffix(path, ".fon")) {
+			if (suffix_i(path, ".fon")) {
 				g_font_info[i].type = FONT_TYPE_RASTER;
 				g_font_info[i].size = 0;
 			} else {

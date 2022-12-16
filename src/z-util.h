@@ -149,6 +149,7 @@ extern bool streq(const char *s, const char *t);
 extern bool prefix(const char *s, const char *t);
 extern bool prefix_i(const char *s, const char *t);
 extern bool suffix(const char *s, const char *t);
+extern bool suffix_i(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
