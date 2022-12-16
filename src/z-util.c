@@ -560,6 +560,22 @@ bool suffix(const char *s, const char *t)
 
 
 /**
+ * Determine if string "t" is a suffix of string "s" - case insensitive
+ */
+bool suffix_i(const char *s, const char *t)
+{
+	size_t tlen = strlen(t);
+	size_t slen = strlen(s);
+
+	/* Check for incompatible lengths */
+	if (tlen > slen) return (false);
+
+	/* Compare "t" to the end of "s" */
+	return !my_stricmp(s + slen - tlen, t);
+}
+
+
+/**
  * Determine if string "t" is a prefix of string "s"
  */
 bool prefix(const char *s, const char *t)

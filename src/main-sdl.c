@@ -165,8 +165,8 @@ struct term_font
 				bitmapped fonts */
 	bool preset;	/* true if this is a font included in the lib/fonts
 				directory for the game */
-	bool bitmapped;	/* true if this is a bitmapped (.fon) font that can't
-				be scaled */
+	bool bitmapped;	/* true if this is a bitmapped (.fon; case-insensitive)
+				font that can't be scaled */
 };
 
 /**
@@ -2503,7 +2503,7 @@ static void SelectFileFontBrowser(sdl_Button *sender)
 		new_font.name = work;
 		new_font.preset = false;
 	}
-	if (suffix(new_font.name, ".fon")) {
+	if (suffix_i(new_font.name, ".fon")) {
 		new_font.size = 0;
 		new_font.bitmapped = true;
 	} else {
@@ -3299,7 +3299,7 @@ static void FontActivate(sdl_Button *sender)
 		}
 		sdl_ButtonCaption(button, FontList[i]);
 		sdl_ButtonVisible(button, true);
-		button->activate = (suffix(FontList[i], ".fon")) ?
+		button->activate = (suffix_i(FontList[i], ".fon")) ?
 			SelectPresetBitmappedFont : SelectPresetScalableFont;
 	}
 
