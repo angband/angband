@@ -44,8 +44,12 @@
 	ANGBAND_TERM_MAX
 /* that should be plenty... */
 #define MAX_WINDOWS 4
-#define MAX_FONTS 128
 #define MAX_BUTTONS 32
+/*
+ * Since font selection goes through a menu panel with MAX_BUTTONS, there's
+ * no point to having any more than can be selected with that menu.
+ */
+#define MAX_FONTS (MAX_BUTTONS)
 
 #define INIT_SDL_FLAGS \
 	(SDL_INIT_VIDEO)
