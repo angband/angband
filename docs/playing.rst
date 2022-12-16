@@ -1,3 +1,5 @@
+.. _Playing the Game:
+
 ================
 Playing the Game
 ================
