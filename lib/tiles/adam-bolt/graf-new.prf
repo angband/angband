@@ -6,7 +6,7 @@
 #
 # By Robert Ruehlmann < rr9@thangorodrim.net >
 #
-# See "lib/help/command.txt" and "src/files.c" for more information.
+# See "docs/customize.rst" and "src/ui-prefs.c" for more information.
 #
 
 

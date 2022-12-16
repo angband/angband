@@ -1269,9 +1269,10 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user,
  *
  * Because of the way this function works, there might be some unexpected
  * effects when a pref file triggers another pref file to be loaded.
- * For example, pref/pref.prf causes message.prf to load. This means that the
- * game will load pref/pref.prf, then pref/message.prf, then user/message.prf,
- * and finally user/pref.prf.
+ * For example, lib/customize/pref.prf causes message.prf to load. This means
+ * that the game will load lib/customize/pref.prf, then
+ * lib/customize/message.prf, then message.prf from the user location, and
+ * finally pref.prf from the user location.
  *
  * \param name is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
@@ -1285,8 +1286,8 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 	bool user_success = false;
 	bool used_fallback = false;
 
-	/* This supports the old behavior: look for a file first in 'pref/', and
-	 * if not found there, then 'user/'. */
+	/* This supports the old behavior: first load from lib/customize then
+         * from the user location. */
 	root_success = process_pref_file_layered(name, quiet, user,
 											 ANGBAND_DIR_CUSTOMIZE,
 											 ANGBAND_DIR_USER,
@@ -1298,7 +1299,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 												 current_graphics_mode->path,
 												 NULL, NULL);
 
-	/* Next, we want to force a check for the file in the user/ directory.
+	/* Next, we want to force a check for the file in the user location.
 	 * However, since we used the user directory as a fallback in the previous
 	 * check, we only want to do this if the fallback wasn't used. This cuts
 	 * down on unnecessary parsing. */

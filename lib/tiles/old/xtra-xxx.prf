@@ -3,7 +3,7 @@
 #
 # This file defines special attr/char mappings for use in "graphics" mode
 #
-# See "lib/help/command.txt" and "src/files.c" for more information.
+# See "docs/customize.rst" and "src/ui-prefs.c" for more information.
 #
 
 

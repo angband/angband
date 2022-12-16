@@ -1,7 +1,7 @@
 #
 # This file defines special attr/char mappings for use in "graphics" mode
 #
-# See "lib/help/command.txt" and "src/files.c" for more information.
+# See "docs/customize.rst" and "src/ui-prefs.c" for more information.
 #
 # This file is included by any platform which uses the "standard" Angband
 # bitmap file, including "pref-ami.prf", "pref-mac.prf", "pref-win.prf",

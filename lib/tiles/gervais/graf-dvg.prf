@@ -11,7 +11,7 @@
 # Converted by Mogami from the dg32-assign of AngbandTK
 # Additional work by Ivan Jekic (the.edge@Net.yu)
 #
-# See "lib/help/command.txt" and "src/files.c" for more information.
+# See "docs/customize.rst" and "src/ui-prefs.c" for more information.
 #
 #
 

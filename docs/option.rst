@@ -31,7 +31,10 @@ current selections to the Angband maintainer's defaults for the user
 interface options.
 
 Rogue-like commands ``rogue_like_commands``
-  Selects the "roguelike" command set (see "command.txt" for info).
+  Selects the "roguelike" command set.  See :ref:`Playing the Game` for
+  some description of the command sets.  The "roguelike" command set may
+  work better for you if use a keyboard which doesn't have a numeric
+  keypad.
 
 Use sound ``use_sound``
   Turns on sound effects, if your system supports them.
