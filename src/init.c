@@ -965,7 +965,12 @@ static enum parser_error parse_player_prop_bindui(struct parser *p) {
 			mem_free(boundui);
 			return PARSE_ERROR_NOT_NUMBER;
 		}
-		if (v < INT_MIN || v > INT_MAX) {
+		/*
+		 * Also reject INT_MIN and INT_MAX so we don't have to check
+		 * errno to detect out of range values on platforms where
+		 * sizeof(int) == sizeof(long).
+		 */
+		if (v <= INT_MIN || v >= INT_MAX) {
 			string_free(boundui->name);
 			mem_free(boundui);
 			return PARSE_ERROR_INVALID_VALUE;
