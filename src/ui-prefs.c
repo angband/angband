@@ -1018,8 +1018,17 @@ static enum parser_error parse_prefs_color(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	idx = parser_getuint(p, "idx");
-	if (idx > MAX_COLORS)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	if (idx >= MAX_COLORS) {
+		/*
+		 * Silently ignore indices that would have been in bounds for
+		 * Angband 4.2.4 or earlier (color table was 256 then) for
+		 * backwards compatibility with existing preference files.
+		 * Flag indices that would be out of bounds even with 4.2.4's
+		 * bigger color table.
+		 */
+		return (idx < 256) ?
+			PARSE_ERROR_NONE : PARSE_ERROR_OUT_OF_BOUNDS;
+	}
 
 	angband_color_table[idx][0] = parser_getint(p, "k");
 	angband_color_table[idx][1] = parser_getint(p, "r");

@@ -919,10 +919,18 @@ static void colors_modify(const char *title, int row)
 		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx.code == 'n')
+		if (cx.code == 'n') {
 			a = (uint8_t)(a + 1);
-		if (cx.code == 'N')
+			if (a >= MAX_COLORS) {
+				a = 0;
+			}
+		}
+		if (cx.code == 'N') {
 			a = (uint8_t)(a - 1);
+			if (a >= MAX_COLORS) {
+				a = MAX_COLORS - 1;
+			}
+		}
 		if (cx.code == 'k')
 			angband_color_table[a][0] =
 				(uint8_t)(angband_color_table[a][0] + 1);

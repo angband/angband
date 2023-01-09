@@ -70,9 +70,20 @@
 
 /**
  * Maximum number of colours, and number of "basic" Angband colours
+ * Limit the maximum to be less than or equal to 128 since the 7th bit (i.e.
+ * 128 or 0x80) in color indices is used to trigger tile rendering with the
+ * front ends that set higher_pict to true in struct term.
  */ 
-#define MAX_COLORS        256
+#define MAX_COLORS      32
 #define BASIC_COLORS    29
+/**
+ * This is the multiplier for the BG_* constants.  Must be a multiple of
+ * MAX_COLORS (so (c + MULT_BG * BG_x) % MAX_COLORS is equal to c for 0 <= c
+ * < MAX_COLORS) and (MULT_BG * BG_x) & 0x80 must be zero to avoid triggering
+ * tile rendering with the front ends that set higher_pict to true in
+ * struct term.
+ */
+#define MULT_BG 256
 #define BG_BLACK 0	/* The set number for the black-background glyphs */
 #define BG_SAME  1	/* The set number for the same-background glyphs */
 #define BG_DARK  2	/* The set number for the dark-background glyphs */

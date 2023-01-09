@@ -988,7 +988,7 @@ static void render_grid_cell_text(const struct subwindow *subwindow,
 	SDL_Color fg = g_colors[a % MAX_COLORS];
 	SDL_Color bg;
 
-	switch (ta / MAX_COLORS) {
+	switch (ta / MULT_BG) {
 		case BG_BLACK:
 			bg = subwindow->color;
 			break;
@@ -3973,7 +3973,7 @@ static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 	SDL_Color fg = g_colors[a % MAX_COLORS];
 	SDL_Color bg;
 
-	switch (a / MAX_COLORS) {
+	switch (a / MULT_BG) {
 		case BG_BLACK:
 			bg = subwindow->color;
 			break;

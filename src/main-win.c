@@ -2112,7 +2112,7 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 			SetTextColor(hdc, win_clr[a % MAX_COLORS]);
 
 		/* Determine the background colour - from Sil */
-		switch (a / MAX_COLORS)
+		switch (a / MULT_BG)
 		{
 			case BG_SAME:
 				/* Background same as foreground*/
