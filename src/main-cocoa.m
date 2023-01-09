@@ -3959,7 +3959,7 @@ static int get_background_color_index(int idx)
 {
     int ibkg = COLOUR_DARK;
 
-    switch (idx / MAX_COLORS) {
+    switch (idx / MULT_BG) {
     case BG_BLACK:
 	/* There's nothing to do. */
 	break;

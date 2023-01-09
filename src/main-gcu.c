@@ -1146,7 +1146,7 @@ static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
 		int color;
 
 		/* Set bg and fg to the same color when drawing solid walls */
-		if (a / MAX_COLORS == BG_SAME) {
+		if (a / MULT_BG == BG_SAME) {
 			color = same_colortable[attr];
 		} else {
 			color = colortable[attr];

@@ -131,9 +131,9 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	/* Hybrid or block walls */
 	if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
 		if (OPT(player, hybrid_walls))
-			*a = *a + (MAX_COLORS * BG_DARK);
+			*a = *a + (MULT_BG * BG_DARK);
 		else if (OPT(player, solid_walls))
-			*a = *a + (MAX_COLORS * BG_SAME);
+			*a = *a + (MULT_BG * BG_SAME);
 	}
 }
 

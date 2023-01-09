@@ -4905,7 +4905,7 @@ static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 	mbstr[len] = '\0';
 
 	/* Handle background */
-	switch (a / MAX_COLORS)
+	switch (a / MULT_BG)
 	{
 		case BG_BLACK:
 			/* Default Background */
