@@ -753,7 +753,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
 			} else if ((strstr(obj->kind->name, "Life")) ||
 					   (strstr(obj->kind->name, "*Healing*"))) {
-				add_stats(ST_ELVEN_RINGS, vault, mon, number);
+				add_stats(ST_BIGHEAL_POTIONS, vault, mon, number);
 			} else if (strstr(obj->kind->name, "Healing")) {
 				add_stats(ST_HEALING_POTIONS, vault, mon, number);
 			}
