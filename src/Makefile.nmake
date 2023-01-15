@@ -4,9 +4,7 @@
 # Release build: NMAKE /F Makefile.nmake RELEASE=1
 
 
-EXE = Angband.exe
-default: ..\$(EXE)
-exe: $(EXE)
+default: executables
 
 
 # tools and config
@@ -16,32 +14,37 @@ RC = rc
 CFLAGS = /DWINDOWS /W3 /GF /GA /nologo
 LFLAGS = /nologo
 RCFLAGS =
-LIBS = Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib
+LIBS = Msimg32.lib Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib \
+	win\lib\libpng.lib win\lib\zlib.lib
 
 !if defined(RELEASE)
-CFLAGS = $(CFLAGS) /O2 /Os /Gs /I. /I..
+CFLAGS = $(CFLAGS) /O2 /Os /Gs /I. /I.. /Iwin\include
 !else
-CFLAGS = $(CFLAGS) /Od /Zi /I. /I..
+CFLAGS = $(CFLAGS) /Od /Zi /I. /I.. /Iwin\include
 LFLAGS = $(LFLAGS) /debug
 !endif
 
 
 # files
 include Makefile.src
-OBJS = $(ANGFILES) $(ZFILES) main-win.o win\readdib.o
-RES = win\angband.res
+EXE = $(NAME).exe
+OBJS = $(ANGFILES) $(ZFILES) $(WINMAINFILES)
+RES = win\$(PROGNAME).res
 
 
 # rules
 .c.o:
 	$(CC) /c /Fo$@ $(CFLAGS) $?
-
-$(RES) : win\angband.rc
+# Handle as a special case to avoid warnings about the .o files it depends upon.
+buildid.o:
+	$(CC) /c /Fo$@ $(CFLAGS) $*.c
+$(RES) : win\$(PROGNAME).rc
 	$(RC) $(RCFLAGS) $**
 
-$(EXE) : $(OBJS) $(RES)
+$(EXE) : $(OBJS)
 	$(LINK) /out:$@ $(LFLAGS) $** $(LIBS)
 
+executables: ..\$(EXE)
 ..\$(EXE) : $(EXE)
 	copy $** $@
 
