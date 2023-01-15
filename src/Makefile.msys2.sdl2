@@ -48,6 +48,7 @@ VIDEO_sdl2_ldflags := \
 	-ljxl \
 	-lhwy \
 	-lwebp \
+	-lsharpyuv \
 	-lfreetype \
 	-lharfbuzz \
 	-lDwrite \
