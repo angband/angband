@@ -1229,6 +1229,12 @@ static void print_stats(int lvl)
 	file_putf(stats_log,"******** LEVEL %d , %d tries********* \n",lvl, tries);
 	file_putf(stats_log,"\n");
 
+	/* print gold info */
+	file_putf(stats_log," GOLD INFO \n");
+	file_putf(stats_log," Gold total: %f\n", gold_total[lvl]);
+	file_putf(stats_log," Gold monster: %f\n", gold_mon[lvl]);
+	file_putf(stats_log," Gold floor: %f\n", gold_floor[lvl]);
+
 	/* print monster heading */
 	file_putf(stats_log," MONSTER INFO \n");
 	file_putf(stats_log," Total monsters: %f OOD: %f Deadly: %f \n",
