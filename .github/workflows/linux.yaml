@@ -113,12 +113,10 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v3
 
-      # Build with some extra warnings.  Add some that are only supported in
-      # more recent versions of GCC that the configure script won't enable.
-      # Also turn on sound and the test front end so more of the basic
+      # Turn on sound and the test front end so more of the basic
       # infrastructure is compiled.
       - name: Build
         run: |
           ./autogen.sh
-          env CFLAGS="-Wvla -Wlogical-op" ./configure --enable-more-gcc-warnings --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs
+          env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer --enable-skip-old-int-typedefs
           make

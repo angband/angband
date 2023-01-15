@@ -43,7 +43,8 @@ struct source source_monster(int who)
 
 struct source source_player(void)
 {
-	struct source src = { SRC_PLAYER };
+	struct source src;
+	src.what = SRC_PLAYER;
 	return src;
 }
 
