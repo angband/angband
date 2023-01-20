@@ -1,0 +1,26 @@
+# Exercise src/Makefile.nmake.
+
+name: nmake
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Stock
+    runs-on: windows-latest
+    steps:
+      - name: Add nmake and compiler to PATH
+        uses: TheMrMilchmann/setup-msvc-dev@v2
+        with:
+          arch: x86
+
+      - name: Clone Project
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          cd src
+          nmake /f Makefile.nmake
