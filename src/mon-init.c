@@ -1045,14 +1045,14 @@ static enum parser_error parse_mon_base_flags(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(rb->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad f-flag: %s", s);
+			plog(format("bad monster base flag: %s", s));
+			string_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1312,14 +1312,14 @@ static enum parser_error parse_monster_flags(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(r->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad f2-flag: %s", s);
+			plog(format("bad monster race flag: %s", s));
+			string_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1336,14 +1336,14 @@ static enum parser_error parse_monster_flags_off(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (remove_flag(r->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad mf-flag: %s", s);
+			plog(format("bad monster race flag: %s", s));
+			string_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1404,7 +1404,7 @@ static enum parser_error parse_monster_spells(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-			quit_fmt("bad spell flag: %s", s);
+			plog(format("bad monster spell flag: %s", s));
 			ret = PARSE_ERROR_INVALID_FLAG;
 			break;
 		}
@@ -1428,7 +1428,7 @@ static enum parser_error parse_monster_spells(struct parser *p) {
 		r->freq_spell = 4;
 	}
 
-	mem_free(flags);
+	string_free(flags);
 	return ret;
 }
 
