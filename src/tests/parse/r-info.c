@@ -10,11 +10,14 @@
 #include <locale.h>
 #include <langinfo.h>
 
+static char dummy_chest_1[24] = "& Small wooden chest~";
+static char dummy_chest_2[24] = "& Small iron chest~";
+static char dummy_torch[24] = "& Wooden Torch~";
 static struct object_kind dummy_kinds[] = {
 	{ .name = NULL, .kidx = 0, .tval = 0 },
-	{ .name = "& Small wooden chest~", .kidx = 1, .tval = TV_CHEST, .sval = 1 },
-	{ .name = "& Small iron chest~", .kidx = 2, .tval = TV_CHEST, .sval = 2 },
-	{ .name = "& Wooden Torch~", .kidx = 3, .tval = TV_LIGHT, .sval = 1, .next = NULL }
+	{ .name = dummy_chest_1, .kidx = 1, .tval = TV_CHEST, .sval = 1 },
+	{ .name = dummy_chest_2, .kidx = 2, .tval = TV_CHEST, .sval = 2 },
+	{ .name = dummy_torch, .kidx = 3, .tval = TV_LIGHT, .sval = 1, .next = NULL }
 };
 
 int setup_tests(void **state) {

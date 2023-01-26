@@ -11,17 +11,23 @@
 #include "z-color.h"
 #include "z-virt.h"
 
+static char dummy_dragon[16] = "ancient dragon";
+static char dummy_ainu[16] = "ainu";
+static char dummy_ant[16] = "ant";
 static struct monster_base dummy_bases[] = {
-	{ .name = "ancient dragon" },
-	{ .name = "ainu" },
-	{ .name = "ant", .next = NULL }
+	{ .name = dummy_dragon },
+	{ .name = dummy_ainu },
+	{ .name = dummy_ant, .next = NULL }
 };
 
+static char dummy_cutpurse[16] = "cutpurse";
+static char dummy_gremlin_1[16] = "wimpy gremlin";
+static char dummy_gremlin_2[16] = "ubergremlin";
 static struct monster_race dummy_races[] = {
 	{ .name = NULL, .ridx = 0 },
-	{ .name = "cutpurse", .ridx = 1 },
-	{ .name = "wimpy gremlin", .ridx = 2 },
-	{ .name = "ubergremlin", .ridx = 3, .next = NULL }
+	{ .name = dummy_cutpurse, .ridx = 1 },
+	{ .name = dummy_gremlin_1, .ridx = 2 },
+	{ .name = dummy_gremlin_2, .ridx = 3, .next = NULL }
 };
 
 int setup_tests(void **state) {

@@ -14,34 +14,49 @@
 #include "z-virt.h"
 
 
+static char dummy_cloak_name[16] = "& Cloak~";
+static char dummy_fur_cloak_name[16] = "& Fur Cloak~";
+static char dummy_dagger_name[16] = "& Dagger~";
+static char dummy_rapier_name[16] = "& Rapier~";
+static char dummy_skullcap_name[16] = "& Skullcap~";
+static char dummy_helm_name[16] = "& Steel Helm~";
 static struct object_kind dummy_kinds[] = {
-	{ .name = "& Cloak~", .kidx = 0, .tval = TV_CLOAK, .sval = 1 },
-	{ .name = "& Fur Cloak~", .kidx = 1, .tval = TV_CLOAK, .sval = 2 },
-	{ .name = "& Dagger~", .kidx = 2, .tval = TV_SWORD, .sval = 1 },
-	{ .name = "& Rapier~", .kidx = 3, .tval = TV_SWORD, .sval = 2 },
-	{ .name = "& Skullcap~", .kidx = 4, .tval = TV_HELM, .sval = 1 },
-	{ .name = "& Steel Helm~", .kidx = 5, .tval = TV_HELM, .sval = 2 },
+	{ .name = dummy_cloak_name, .kidx = 0, .tval = TV_CLOAK, .sval = 1 },
+	{ .name = dummy_fur_cloak_name, .kidx = 1, .tval = TV_CLOAK, .sval = 2 },
+	{ .name = dummy_dagger_name, .kidx = 2, .tval = TV_SWORD, .sval = 1 },
+	{ .name = dummy_rapier_name, .kidx = 3, .tval = TV_SWORD, .sval = 2 },
+	{ .name = dummy_skullcap_name, .kidx = 4, .tval = TV_HELM, .sval = 1 },
+	{ .name = dummy_helm_name, .kidx = 5, .tval = TV_HELM, .sval = 2 },
 };
+static char dummy_cure_pois_act[16] = "CURE_POISON";
+static char dummy_restore_mana_act[16] = "RESTORE_MANA";
+static char dummy_illum_act[16] = "ILLUMINATION";
 static struct activation dummy_activations[] = {
 	{ .name = NULL, .index = 0 },
-	{ .name = "CURE_POISON", .index = 1 },
-	{ .name = "RESTORE_MANA", .index = 2 },
-	{ .name = "ILLUMINATION", .index = 3 },
+	{ .name = dummy_cure_pois_act, .index = 1 },
+	{ .name = dummy_restore_mana_act, .index = 2 },
+	{ .name = dummy_illum_act, .index = 3 },
 };
+static char dummy_orc_slay[16] = "ORC_3";
+static char dummy_animal_slay[16] = "ANIMAL_2";
 static struct slay dummy_slays[] = {
 	{ .code = NULL },
-	{ .code = "ORC_3" },
-	{ .code = "ANIMAL_2" },
+	{ .code = dummy_orc_slay },
+	{ .code = dummy_animal_slay },
 };
+static char dummy_cold_brand[16] = "COLD_2";
+static char dummy_acid_brand[16] = "ACID_3";
 static struct brand dummy_brands[] = {
 	{ .code = NULL },
-	{ .code = "COLD_2" },
-	{ .code = "ACID_3" },
+	{ .code = dummy_cold_brand },
+	{ .code = dummy_acid_brand },
 };
+static char dummy_vuln_curse[16] = "vulnerability";
+static char dummy_tele_curse[16] = "teleportation";
 static struct curse dummy_curses[] = {
 	{ .name = NULL },
-	{ .name = "vulnerability" },
-	{ .name = "teleportation" },
+	{ .name = dummy_vuln_curse },
+	{ .name = dummy_tele_curse },
 };
 
 int setup_tests(void **state) {

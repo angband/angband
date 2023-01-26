@@ -41,13 +41,14 @@ const char **p[] = { names, names };
 
 static int test_names(void *state) {
 	struct artifact a;
+	char name[16] = "of Prometheus";
 	char *n;
 	int i;
 
 	a.aidx = 1;
 	a.tval = TV_LIGHT;
 	a.sval = 1;
-	a.name = "of Prometheus";
+	a.name = name;
 
 	for (i = 0; i < NAMES_TRIES; i++) {
 		n = artifact_gen_name(&a, p);

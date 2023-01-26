@@ -14,18 +14,22 @@
 #include "z-dice.h"
 
 
+static char dummy_orc_slay[16] = "ORC_3";
 static struct slay dummy_slays[] = {
 	{ .code = NULL },
-	{ .code = "ORC_3" },
+	{ .code = dummy_orc_slay },
 };
+static char dummy_cold_brand[16] = "COLD_2";
 static struct brand dummy_brands[] = {
 	{ .code = NULL },
-	{ .code = "COLD_2" },
+	{ .code = dummy_cold_brand },
 };
+static char dummy_vuln_curse[16] = "vulnerability";
+static char dummy_tele_curse[16] = "teleportation";
 static struct curse dummy_curses[] = {
 	{ .name = NULL },
-	{ .name = "vulnerability" },
-	{ .name = "teleportation" },
+	{ .name = dummy_vuln_curse },
+	{ .name = dummy_tele_curse },
 };
 
 
