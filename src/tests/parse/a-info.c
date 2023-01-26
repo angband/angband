@@ -12,26 +12,35 @@
 #include "z-color.h"
 #include "z-virt.h"
 
+static char orc_slay_name[16] = "ORC_3";
+static char animal_slay_name[16] = "ANIMAL_2";
 static struct slay dummy_slays[] = {
 	{ .code = NULL },
-	{ .code = "ORC_3" },
-	{ .code = "ANIMAL_2" },
+	{ .code = orc_slay_name },
+	{ .code = animal_slay_name },
 };
+static char cold_brand_name[16] = "COLD_2";
+static char acid_brand_name[16] = "ACID_3";
 static struct brand dummy_brands[] = {
 	{ .code = NULL },
-	{ .code = "COLD_2" },
-	{ .code = "ACID_3" },
+	{ .code = cold_brand_name },
+	{ .code = acid_brand_name },
 };
+static char vuln_curse_name[16] = "vulnerability";
+static char tele_curse_name[16] = "teleportation";
 static struct curse dummy_curses[] = {
 	{ .name = NULL },
-	{ .name = "vulnerability" },
-	{ .name = "teleportation" },
+	{ .name = vuln_curse_name },
+	{ .name = tele_curse_name },
 };
+static char recall_act_name[16] = "RECALL";
+static char clairvoyance_act_name[16] = "CLAIRVOYANCE";
+static char haste_act_name[16] = "HASTE";
 static struct activation dummy_activations[] = {
 	{ .name = NULL, .index = 0 },
-	{ .name = "RECALL", .index = 1 },
-	{ .name = "CLAIRVOYANCE", .index = 2 },
-	{ .name = "HASTE", .index = 3 },
+	{ .name = recall_act_name, .index = 1 },
+	{ .name = clairvoyance_act_name, .index = 2 },
+	{ .name = haste_act_name, .index = 3 },
 };
 
 int setup_tests(void **state) {

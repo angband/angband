@@ -4,10 +4,13 @@
 #include "unit-test.h"
 #include "ui-knowledge.h"
 
+static char dummy_bat[16] = "bat";
+static char dummy_lizard[16] = "lizard";
+static char dummy_horror[16] = "winged horror";
 static struct monster_base dummy_mon_bases[] = {
-	{ .name = "bat", .next = NULL },
-	{ .name = "lizard", .next = NULL },
-	{ .name = "winged horror", .next = NULL },
+	{ .name = dummy_bat, .next = NULL },
+	{ .name = dummy_lizard, .next = NULL },
+	{ .name = dummy_horror, .next = NULL },
 };
 
 int setup_tests(void **state) {

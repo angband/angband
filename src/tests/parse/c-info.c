@@ -16,14 +16,18 @@
 #include <locale.h>
 #include <langinfo.h>
 
+static char dummy_torch_name[16] = "& Wooden Torch~";
+static char dummy_lantern_name[16] = "& Lantern~";
+static char dummy_rapier_name[16] = "& Rapier~";
 static struct object_kind dummy_kinds[] = {
 	{ .name = NULL, .tval = 0, .sval = 0 },
-	{ .name = "& Wooden Torch~", .tval = TV_LIGHT, .sval = 1 },
-	{ .name = "& Lantern~", .tval = TV_LIGHT, .sval = 2 },
-	{ .name = "& Rapier~", .tval = TV_SWORD, .sval = 1 },
+	{ .name = dummy_torch_name, .tval = TV_LIGHT, .sval = 1 },
+	{ .name = dummy_lantern_name, .tval = TV_LIGHT, .sval = 2 },
+	{ .name = dummy_rapier_name, .tval = TV_SWORD, .sval = 1 },
 };
+static char dummy_realm_name[16] = "arcane";
 static struct magic_realm dummy_realms[] = {
-	{ .next = NULL, .name = "arcane" },
+	{ .next = NULL, .name = dummy_realm_name },
 };
 
 int setup_tests(void **state) {

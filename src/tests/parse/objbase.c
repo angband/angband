@@ -10,8 +10,9 @@
 
 #define DEFAULT_BREAK_CHANCE (15)
 #define DEFAULT_MAX_STACK (35)
+static char dummy_chest_name[16] = "Chest~";
 static const struct object_base test_tv1 = {
-	.name = "Chest~",
+	.name = dummy_chest_name,
 	.tval = TV_CHEST,
 	.attr = COLOUR_GREEN,
 	.break_perc = 8,

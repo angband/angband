@@ -8,12 +8,16 @@
 #include "object.h"
 #include "z-color.h"
 
+static char dummy_light_1[16] = "Test Light 1";
+static char dummy_light_2[16] = "Test Light 2";
+static char dummy_art_light_1[24] = "Test Art. Light 1";
+static char dummy_art_light_2[24] = "Test Art. Light 2";
 struct object_kind dummy_kinds[] = {
 	{ .name = NULL, .kidx = 0, .tval = 0, .sval = 0 },
-	{ .name = "Test Light 1", .kidx = 1, .tval = TV_LIGHT, .sval = 1 },
-	{ .name = "Test Light 2", .kidx = 2, .tval = TV_LIGHT, .sval = 2 },
-	{ .name = "Test Art. Light 1", .kidx = 3, .tval = TV_LIGHT, .sval = 3 },
-	{ .name = "Test Art. Light 2", .kidx = 4, .tval = TV_LIGHT, .sval = 4 }
+	{ .name = dummy_light_1, .kidx = 1, .tval = TV_LIGHT, .sval = 1 },
+	{ .name = dummy_light_2, .kidx = 2, .tval = TV_LIGHT, .sval = 2 },
+	{ .name = dummy_art_light_1, .kidx = 3, .tval = TV_LIGHT, .sval = 3 },
+	{ .name = dummy_art_light_2, .kidx = 4, .tval = TV_LIGHT, .sval = 4 }
 };
 
 int setup_tests(void **state) {

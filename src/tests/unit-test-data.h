@@ -32,36 +32,42 @@ static int16_t TEST_DATA test_timed[53] = {
 	0, 0, 0
 };
 
+static char tv_sword_name[16] = "Test Sword";
 static struct object_base TEST_DATA sword_base = {
-	.name = "Test Sword",
+	.name = tv_sword_name,
 	.tval = TV_SWORD,
 	.next = NULL,
 	.break_perc = 50,
 };
 
+static char tv_light_name[16] = "Test Light~";
 static struct object_base TEST_DATA light_base = {
-	.name = "Test Light~",
+	.name = tv_light_name,
 	.tval = TV_LIGHT,
 	.next = NULL,
 	.break_perc = 50,
 };
 
+static char tv_flask_name[16] = "Test Flask~";
 static struct object_base TEST_DATA flask_base = {
-	.name = "Test Flask~",
+	.name = tv_flask_name,
 	.tval = TV_FLASK,
 	.next = NULL,
 	.break_perc = 100,
 };
 
+static char tv_rod_name[16] = "Test Rod~";
 static struct object_base TEST_DATA rod_base = {
-	.name = "Test Rod~",
+	.name = tv_rod_name,
 	.tval = TV_ROD,
 	.next = NULL,
 };
 
+static char artifact_sword_name[16] = "Test Artifact";
+static char artifact_sword_desc[24] = "A test artifact.";
 static struct artifact TEST_DATA test_artifact_sword = {
-	.name = "Test Artifact",
-	.text = "A test artifact.",
+	.name = artifact_sword_name,
+	.text = artifact_sword_desc,
 	.aidx = 0,
 	.next = NULL,
 	.tval = TV_SWORD,
@@ -76,9 +82,11 @@ static struct artifact TEST_DATA test_artifact_sword = {
 	.cost = 40,
 };
 
+static char longsword_name[16] = "Test Longsword";
+static char longsword_desc[24] = "A test longsword [0].";
 static struct object_kind TEST_DATA test_longsword = {
-	.name = "Test Longsword",
-	.text = "A test longsword [0].",
+	.name = longsword_name,
+	.text = longsword_desc,
 	.base = &sword_base,
 	.kidx = 0,
 	.tval = TV_SWORD,
@@ -146,9 +154,11 @@ static struct object_kind TEST_DATA test_longsword = {
 	.flavor = NULL,
 };
 
+static char torch_name[16] = "Test Torch";
+static char torch_desc[24] = "A test torch [1].";
 static struct object_kind TEST_DATA test_torch = {
-	.name = "Test Torch",
-	.text = "A test torch [1].",
+	.name = torch_name,
+	.text = torch_desc,
 	.base = &light_base,
 	.next = NULL,
 	.kidx = 2,
@@ -273,9 +283,11 @@ static struct object_kind TEST_DATA test_torch = {
 	.flavor = NULL,
 };
 
+static char lantern_name[16] = "Test Lantern";
+static char lantern_desc[24] = "A test lantern.";
 static struct object_kind TEST_DATA test_lantern = {
-	.name = "Test Lantern",
-	.text = "A test lantern.",
+	.name = lantern_name,
+	.text = lantern_desc,
 	.base = &light_base,
 	.next = NULL,
  	.kidx = 3,
@@ -400,9 +412,11 @@ static struct object_kind TEST_DATA test_lantern = {
 	.flavor = NULL,
 };
 
+static char flask_name[16] = "Text Flask";
+static char flask_desc[24] = "A text flask.";
 static struct object_kind TEST_DATA test_flask = {
-	.name = "Test Flask",
-	.text = "A test flask.",
+	.name = flask_name,
+	.text = flask_desc,
 	.base = &flask_base,
 	.kidx = 1,
 	.tval = TV_FLASK,
@@ -471,9 +485,11 @@ static struct object_kind TEST_DATA test_flask = {
 	.flavor = NULL,
 };
 
+static char rod_tl_name[32] = "Test Rod of Treasure Location";
+static char rod_tl_desc[40] = "A test rod of treasure location.";
 static struct object_kind TEST_DATA test_rod_treasure_location = {
-	.name = "Test Rod of Treasure Location",
-	.text = "A test rod of treasure location.",
+	.name = rod_tl_name,
+	.text = rod_tl_desc,
 	.base = &rod_base,
 	.kidx = 1,
 	.tval = TV_ROD,
@@ -542,9 +558,11 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 	.flavor = NULL,
 };
 
+static char gold_name[16] = "Test Gold";
+static char gold_desc[24] = "Test gold [2].";
 static struct object_kind TEST_DATA test_gold = {
-	.name = "Test Gold",
-	.text = "Test gold [2].",
+	.name = gold_name,
+	.text = gold_desc,
 	.kidx = 2,
 	.tval = TV_GOLD,
 	.sval = 0,
@@ -666,13 +684,17 @@ static struct start_item TEST_DATA start_longsword = {
 	.next = &start_torch,
 };
 
+static char realm_name[16] = "realm";
+static char realm_spell_verb[16] = "spell_verb";
+static char realm_spell_noun[16] = "spell_noun";
+static char realm_spell_book[16] = "spell_book";
 static struct magic_realm TEST_DATA test_realm = {
 	.next = NULL,
-	.name = "realm",
+	.name = realm_name,
 	.stat = 1,
-	.verb = "spell_verb",
-	.spell_noun = "spell_noun",
-	.book_noun = "book_noun",
+	.verb = realm_spell_verb,
+	.spell_noun = realm_spell_noun,
+	.book_noun = realm_spell_book,
 };
 
 static struct class_book TEST_DATA test_book = {
@@ -749,23 +771,28 @@ static struct player_class TEST_DATA test_class = {
 	},
 };
 
+static char townsfolk_name[16] = "townsfolk";
+static char townsfolk_desc[16] = "Townsfolk";
 static struct monster_base TEST_DATA test_rb_info = {
 	.next = NULL,
-	.name = "townsfolk",
-	.text = "Townsfolk",
+	.name = townsfolk_name,
+	.text = townsfolk_desc,
 	.flags = "\0\0\0\0\0\0\0\0\0\0\0",
 	.d_char = 116,
 	.pain = NULL,
 	
 };
 
+static char blow_act_msg[16] = "hits {target}";
 static struct blow_message TEST_DATA test_blow_message = {
-	.act_msg = "hits {target}",
+	.act_msg = blow_act_msg,
 	.next = NULL
 };
 
+static char blow_method_hit_name[16] = "HIT";
+static char blow_method_hit_desc[16] = "hit";
 static struct blow_method TEST_DATA test_blow_method = {
-	.name = "HIT",
+	.name = blow_method_hit_name,
 	.cut = true,
 	.stun = true,
 	.miss = false,
@@ -773,63 +800,77 @@ static struct blow_method TEST_DATA test_blow_method = {
 	.msgt = 34,
 	.messages = &test_blow_message,
 	.num_messages = 1,
-	.desc = "hit",
+	.desc = blow_method_hit_desc,
 	.next = NULL
 };
 
+static char blow_effect_hurt_name[16] = "HURT";
+static char blow_effect_hurt_desc[16] = "attack";
 static struct blow_effect TEST_DATA test_blow_effect_hurt = {
-	.name = "HURT",
+	.name = blow_effect_hurt_name,
 	.power = 40,
 	.eval = 0,
-	.desc = "attack",
+	.desc = blow_effect_hurt_desc,
 	.next = NULL
 };
 
+static char blow_effect_pois_name[16] = "POISON";
+static char blow_effect_pois_desc[16] = "poison";
 static struct blow_effect TEST_DATA test_blow_effect_poison = {
-	.name = "POISON",
+	.name = blow_effect_pois_name,
 	.power = 20,
 	.eval = 10,
-	.desc = "poison",
+	.desc = blow_effect_pois_desc,
 	.next = NULL
 };
 
+static char blow_effect_acid_name[16] = "ACID";
+static char blow_effect_acid_desc[16] = "shoot acid";
 static struct blow_effect TEST_DATA test_blow_effect_acid = {
-	.name = "ACID",
+	.name = blow_effect_acid_name,
 	.power = 20,
 	.eval = 20,
-	.desc = "shoot acid",
+	.desc = blow_effect_acid_desc,
 	.next = NULL
 };
 
+static char blow_effect_elec_name[16] = "ELEC";
+static char blow_effect_elec_desc[16] = "electrify";
 static struct blow_effect TEST_DATA test_blow_effect_elec = {
-	.name = "ELEC",
+	.name = blow_effect_elec_name,
 	.power = 40,
 	.eval = 10,
-	.desc = "electrify",
+	.desc = blow_effect_elec_desc, 
 	.next = NULL
 };
 
+static char blow_effect_fire_name[16] = "FIRE";
+static char blow_effect_fire_desc[16] = "burn";
 static struct blow_effect TEST_DATA test_blow_effect_fire = {
-	.name = "FIRE",
+	.name = blow_effect_fire_name,
 	.power = 40,
 	.eval = 10,
-	.desc = "burn",
+	.desc = blow_effect_fire_desc,
 	.next = NULL
 };
 
+static char blow_effect_cold_name[16] = "COLD";
+static char blow_effect_cold_desc[16] = "freeze";
 static struct blow_effect TEST_DATA test_blow_effect_cold = {
-	.name = "COLD",
+	.name = blow_effect_cold_name,
 	.power = 40,
 	.eval = 10,
-	.desc = "freeze",
+	.desc = blow_effect_cold_desc,
 	.next = NULL
 };
 
+static char blow_effect_blind_name[16] = "BLIND";
+static char blow_effect_blind_desc[16] = "blind";
 static struct blow_effect TEST_DATA test_blow_effect_blind = {
-	.name = "BLIND",
+	.name = blow_effect_blind_name,
 	.power = 0,
 	.eval = 20,
-	.desc = "blind",
+	.desc = blow_effect_blind_desc,
 	.next = NULL
 };
 
@@ -887,11 +928,13 @@ static bool TEST_DATA test_blows_known[4] = {
 	false,
 };
 
+static char human_name[16] = "Human";
+static char human_desc[24] = "A random test human.";
 static struct monster_race TEST_DATA test_r_human = {
 	.next = NULL,
 	.ridx = 0,
-	.name = "Human",
-	.text = "A random test human",
+	.name = human_name,
+	.text = human_desc,
 
 	.base = &test_rb_info,
 
@@ -962,25 +1005,28 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.level_monster_max = 2,
 };
 
+static char light_slot_name[16] = "light";
 static struct equip_slot TEST_DATA test_slot_light = {
 	.type = 5,
-	.name = "light",
+	.name = light_slot_name,
 	.obj = NULL,
 };
 
+static char quest_name[16] = "Test";
 static struct quest TEST_DATA test_quest = {
 	.next = NULL,
 	.index = 0,
-	.name = "Test",
+	.name = quest_name,
 	.level = 1,
 	.race = &test_r_human,
 	.cur_num = 0,
 	.max_num = 4,
 };
 
+static char body_name[16] = "Humanoid";
 static struct player_body TEST_DATA test_player_body = {
 	.next    = NULL,
-	.name    = "Humanoid",
+	.name    = body_name,
 	.count   = 12,
 };
 
@@ -1092,7 +1138,7 @@ static struct player_shape TEST_DATA test_player_shape = {
 	.name = "normal",
 };
 
-
+static char test_history[24] = "no history";
 static struct player TEST_DATA test_player = {
 	.grid = { 1, 1 },
 	.race = &test_race,
@@ -1137,7 +1183,7 @@ static struct player TEST_DATA test_player = {
 		155, 160, 165, 170, 175, 180, 185, 190, 195, 200,
 		205, 210, 215, 220, 225, 230, 235, 240, 245, 250
 	},
-	.history = "no history",
+	.history = test_history,
 	.is_dead = 0,
 	.wizard = 0,
 	.upkeep = &test_player_upkeep,
@@ -1146,8 +1192,9 @@ static struct player TEST_DATA test_player = {
 	.obj_k = &test_player_knowledge,
 };
 
+static char cave_name[16] = "Test";
 static struct chunk TEST_DATA test_cave = {
-	.name = "Test",
+	.name = cave_name,
 	.turn = 1,
 	.depth = 1,
 
@@ -1170,14 +1217,23 @@ static struct chunk TEST_DATA test_cave = {
 	.mon_current = -1,
 };
 
+static char proj_element[16] = "element";
+static char acid_proj_name[16] = "acid";
+static char acid_proj_desc[24] = "acid";
+static char elec_proj_name[16] = "electricity";
+static char elec_proj_desc[24] = "electricity";
+static char fire_proj_name[16] = "fire";
+static char fire_proj_desc[24] = "fire";
+static char cold_proj_name[16] = "cold";
+static char cold_proj_desc[24] = "cold";
 static struct projection TEST_DATA test_projections[4] = {
 	{
 		.index = 0,
-		.name = "acid",
-		.type = "element",
-		.desc = "acid",
-		.player_desc = "acid",
-		.blind_desc = "acid",
+		.name = acid_proj_name,
+		.type = proj_element,
+		.desc = acid_proj_desc,
+		.player_desc = acid_proj_desc,
+		.blind_desc = acid_proj_desc,
 		.numerator = 1,
 		.denominator = {3, 0, 0, 0},
 		.divisor = 3,
@@ -1189,11 +1245,11 @@ static struct projection TEST_DATA test_projections[4] = {
 	},
 	{
 		.index = 1,
-		.name = "electricity",
-		.type = "element",
-		.desc = "electricity",
-		.player_desc = "electricity",
-		.blind_desc = "electricity",
+		.name = elec_proj_name,
+		.type = proj_element,
+		.desc = elec_proj_desc,
+		.player_desc = elec_proj_desc,
+		.blind_desc = elec_proj_desc,
 		.numerator = 1,
 		.denominator = {3, 0, 0, 0},
 		.divisor = 3,
@@ -1205,11 +1261,11 @@ static struct projection TEST_DATA test_projections[4] = {
 	},
 	{
 		.index = 2,
-		.name = "fire",
-		.type = "element",
-		.desc = "fire",
-		.player_desc = "fire",
-		.blind_desc = "fire",
+		.name = fire_proj_name,
+		.type = proj_element,
+		.desc = fire_proj_desc,
+		.player_desc = fire_proj_desc,
+		.blind_desc = fire_proj_desc,
 		.numerator = 1,
 		.denominator = {3, 0, 0, 0},
 		.divisor = 3,
@@ -1221,11 +1277,11 @@ static struct projection TEST_DATA test_projections[4] = {
 	},
 	{
 		.index = 3,
-		.name = "cold",
-		.type = "element",
-		.desc = "cold",
-		.player_desc = "cold",
-		.blind_desc = "cold",
+		.name = cold_proj_name,
+		.type = proj_element,
+		.desc = cold_proj_desc,
+		.player_desc = cold_proj_desc,
+		.blind_desc = cold_proj_desc,
 		.numerator = 1,
 		.denominator = {3, 0, 0, 0},
 		.divisor = 3,
