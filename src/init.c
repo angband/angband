@@ -4207,6 +4207,7 @@ void cleanup_angband(void)
 	if (cave) {
 		cave_free(cave);
 		cave = NULL;
+		character_dungeon = false;
 	}
 
 	monster_list_finalize();
