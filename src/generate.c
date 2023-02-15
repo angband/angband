@@ -223,75 +223,66 @@ static errr run_parse_profile(struct parser *p) {
 
 static errr finish_parse_profile(struct parser *p) {
 	struct cave_profile *n, *c = parser_priv(p);
-	int i, num;
+	int num;
 
-	z_info->profile_max = 0;
 	/* Count the list */
+	z_info->profile_max = 0;
 	while (c) {
-		struct room_profile *r = c->room_profiles;
-		c->n_room_profiles = 0;
-
 		z_info->profile_max++;
 		c = c->next;
-		while (r) {
-			c->n_room_profiles++;
-			r = r->next;
-		}
 	}
 
 	/* Allocate the array and copy the records to it */
 	cave_profiles = mem_zalloc(z_info->profile_max * sizeof(*c));
 	num = z_info->profile_max - 1;
 	for (c = parser_priv(p); c; c = n) {
-		struct room_profile *r_new = NULL;
-
 		/* Main record */
 		memcpy(&cave_profiles[num], c, sizeof(*c));
 		n = c->next;
-		if (num < z_info->profile_max - 1)
+		if (num < z_info->profile_max - 1) {
 			cave_profiles[num].next = &cave_profiles[num + 1];
-		else
+		} else {
 			cave_profiles[num].next = NULL;
-
-		/* Count the room profiles */
-		if (c->room_profiles) {
-			struct room_profile *r = c->room_profiles;
-			c->n_room_profiles = 0;
-
-			while (r) {
-				c->n_room_profiles++;
-				r = r->next;
-			}
 		}
 
-		/* Now allocate the room profile array */
 		if (c->room_profiles) {
-			struct room_profile *r_temp, *r_old = c->room_profiles;
+			struct room_profile *r_old = c->room_profiles;
+			struct room_profile *r_new;
+			int i;
 
-			/* Allocate space and copy */
-			r_new = mem_zalloc(c->n_room_profiles * sizeof(*r_new));
-			for (i = 0; i < c->n_room_profiles; i++) {
-				memcpy(&r_new[i], r_old, sizeof(*r_old));
+			/* Count the room profiles */
+			cave_profiles[num].n_room_profiles = 0;
+			while (r_old) {
+				++cave_profiles[num].n_room_profiles;
 				r_old = r_old->next;
-				if (!r_old) break;
 			}
 
-			/* Make next point correctly */
-			for (i = 0; i < c->n_room_profiles; i++)
-				if (r_new[i].next)
-					r_new[i].next = &r_new[i + 1];
+			/* Now allocate the room profile array */
+			r_new = mem_zalloc(cave_profiles[num].n_room_profiles
+				* sizeof(*r_new));
 
-			/* Tidy up */
 			r_old = c->room_profiles;
-			r_temp = r_old;
-			while (r_temp) {
-				r_temp = r_old->next;
-				mem_free(r_old);
-				r_old = r_temp;
+			for (i = 0; i < cave_profiles[num].n_room_profiles; i++) {
+				struct room_profile *r_temp = r_old;
+
+				/* Copy from the linked list to the array */
+				memcpy(&r_new[i], r_old, sizeof(*r_old));
+
+				/* Set the next profile pointer correctly. */
+				if (r_new[i].next) {
+					r_new[i].next = &r_new[i + 1];
+				}
+
+				/* Tidy up and advance to the next profile. */
+				r_old = r_old->next;
+				mem_free(r_temp);
 			}
+
+			cave_profiles[num].room_profiles = r_new;
+		} else {
+			cave_profiles[num].n_room_profiles = 0;
+			cave_profiles[num].room_profiles = NULL;
 		}
-		cave_profiles[num].room_profiles = r_new;
-		cave_profiles[num].n_room_profiles = c->n_room_profiles;
 
 		mem_free(c);
 		num--;
