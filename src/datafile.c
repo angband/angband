@@ -63,8 +63,13 @@ errr run_parser(struct file_parser *fp) {
 		return r;
 	}
 	r = fp->finish(p);
-	if (r)
-		print_error(fp, p);
+	if (r) {
+		msg("Parser finish error in %s: %s", fp->name,
+			(r > 0 && r < PARSE_ERROR_MAX) ?
+			parser_error_str[r] : "unspecified error");
+		event_signal(EVENT_MESSAGE_FLUSH);
+		quit_fmt("Parser finish error in %s.", fp->name);
+	}
 	return r;
 }
 

@@ -2275,7 +2275,7 @@ static errr finish_parse_ui_entry(struct parser *p)
 	int i;
 
 	if (hatch_last_embryo(p)) {
-		result = 1;
+		result = -1;
 	}
 	for (i = 0; i < n_entry; ++i) {
 		int j;
@@ -2296,10 +2296,10 @@ static errr finish_parse_ui_entry(struct parser *p)
 				if (n2 != (size_t)-1) {
 					entries[i]->nlabel = n;
 				} else {
-					result = 1;
+					result = -1;
 				}
 			} else {
-				result = 1;
+				result = -1;
 			}
 		}
 		fill_out_shortened(entries[i]);
