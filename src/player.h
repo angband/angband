@@ -552,6 +552,14 @@ struct player {
 
 	uint8_t unignoring;			/* Unignoring */
 
+	uint8_t skip_cmd_coercion;		/* True if bloodlust check
+							should be skipped on
+							the next command
+							(previous command
+							successfully passed
+							the bloodlust check
+							but then was canceled
+							by the user) */
 	uint8_t *spell_flags;			/* Spell flags */
 	uint8_t *spell_order;			/* Spell order */
 

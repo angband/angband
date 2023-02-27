@@ -798,7 +798,8 @@ int rd_player(void)
 	player->old_grid.y = tmp8u;
 	rd_byte(&tmp8u);
 	player->old_grid.x = tmp8u;
-	strip_bytes(5);
+	strip_bytes(4);
+	rd_byte(&player->skip_cmd_coercion);
 	rd_byte(&player->unignoring);
 	rd_s16b(&player->deep_descent);
 
