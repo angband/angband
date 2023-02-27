@@ -839,6 +839,18 @@ static void process_player_cleanup(void)
 		/* Increment the total energy counter */
 		player->total_energy += player->upkeep->energy_use;
 
+		/*
+		 * Since the player used energy, the command wasn't
+		 * canceled.  Therefore allow the bloodlust check on
+		 * the player's next command unless this was a background
+		 * command and the last player-issued command passed the
+		 * bloodlust check but was canceled (skip_cmd_coercion is two
+		 * in that case).
+		 */
+		if (player->skip_cmd_coercion) {
+			--player->skip_cmd_coercion;
+		}
+
 		/* Player can be damaged by terrain */
 		player_take_terrain_damage(player, player->grid);
 
@@ -870,6 +882,14 @@ static void process_player_cleanup(void)
 				}
 			}
 		}
+	} else if (player->skip_cmd_coercion > 1) {
+		/*
+		 * The last command was a backround command executing while
+		 * skipping the bloodlust check on the player's next command.
+		 * Set skip_cmd_coercion back to one in preparation for the
+		 * player's next turn.
+		 */
+		player->skip_cmd_coercion = 1;
 	}
 
 	/* Clear SHOW flag and player drop status */

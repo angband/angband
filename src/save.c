@@ -487,7 +487,7 @@ void wr_player(void)
 	wr_byte(player->old_grid.x);
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
-	wr_byte(0);
+	wr_byte(player->skip_cmd_coercion);
 	wr_byte(player->unignoring);
 	wr_s16b(player->deep_descent);
 
