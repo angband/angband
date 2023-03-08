@@ -386,12 +386,13 @@ static char *de_armour(const char *name)
  */
 int tval_find_idx(const char *name)
 {
-	size_t i = 0;
-	unsigned int r;
-	char *mod_name;
+	size_t i;
+	char *mod_name, *pe;
+	unsigned long r = strtoul(name, &pe, 10);
 
-	if (sscanf(name, "%u", &r) == 1)
-		return r;
+	if (pe != name) {
+		return (contains_only_spaces(pe) && r < TV_MAX) ? (int)r : -1;
+	}
 
 	mod_name = de_armour(name);
 

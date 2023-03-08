@@ -246,22 +246,90 @@ static int test_baddir(void *state) {
 }
 
 static enum parser_error helper_rand0(struct parser *p) {
-	struct random v = parser_getrand(p, "r0");
-	int *wasok = parser_priv(p);
-	if (v.dice != 2 || v.sides != 3)
-		return PARSE_ERROR_GENERIC;
-	*wasok = 1;
+	struct random *v = (struct random*)parser_priv(p);
+
+	*v = parser_getrand(p, "r0");
 	return PARSE_ERROR_NONE;
 }
 
 static int test_rand0(void *state) {
-	int wasok = 0;
 	errr r = parser_reg(state, "test-rand0 rand r0", helper_rand0);
+	struct random v;
+
 	eq(r, 0);
-	parser_setpriv(state, &wasok);
+	parser_setpriv(state, &v);
 	r = parser_parse(state, "test-rand0:2d3");
-	eq(r, 0);
-	eq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 0);
+	eq(v.dice, 2);
+	eq(v.sides, 3);
+	eq(v.m_bonus, 0);
+	r = parser_parse(state, "test-rand0:7");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 7);
+	eq(v.dice, 0);
+	eq(v.sides, 0);
+	eq(v.m_bonus, 0);
+	r = parser_parse(state, "test-rand0:d8");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 0);
+	eq(v.dice, 1);
+	eq(v.sides, 8);
+	eq(v.m_bonus, 0);
+	r = parser_parse(state, "test-rand0:M9");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 0);
+	eq(v.dice, 0);
+	eq(v.sides, 0);
+	eq(v.m_bonus, 9);
+	r = parser_parse(state, "test-rand0:3+d10");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 3);
+	eq(v.dice, 1);
+	eq(v.sides, 10);
+	eq(v.m_bonus, 0);
+	r = parser_parse(state, "test-rand0:6+M4");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 6);
+	eq(v.dice, 0);
+	eq(v.sides, 0);
+	eq(v.m_bonus, 4);
+	r = parser_parse(state, "test-rand0:d8M2");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 0);
+	eq(v.dice, 1);
+	eq(v.sides, 8);
+	eq(v.m_bonus, 2);
+	r = parser_parse(state, "test-rand0:4d6M3");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 0);
+	eq(v.dice, 4);
+	eq(v.sides, 6);
+	eq(v.m_bonus, 3);
+	r = parser_parse(state, "test-rand0:9+2d12");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 9);
+	eq(v.dice, 2);
+	eq(v.sides, 12);
+	eq(v.m_bonus, 0);
+	r = parser_parse(state, "test-rand0:7+d2M4");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 7);
+	eq(v.dice, 1);
+	eq(v.sides, 2);
+	eq(v.m_bonus, 4);
+	r = parser_parse(state, "test-rand0:5+3d20M1");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, 5);
+	eq(v.dice, 3);
+	eq(v.sides, 20);
+	eq(v.m_bonus, 1);
+	r = parser_parse(state, "test-rand0:-10+4d8M2");
+	eq(r, PARSE_ERROR_NONE);
+	eq(v.base, -48);
+	eq(v.dice, 4);
+	eq(v.sides, 8);
+	eq(v.m_bonus, 2);
 	ok;
 }
 
@@ -283,6 +351,60 @@ static int test_rand1(void *state) {
 	r = parser_parse(state, "test-rand1:2d3:4d5");
 	eq(r, 0);
 	eq(wasok, 1);
+	ok;
+}
+
+static int test_rand_bad0(void *state) {
+	errr r = parser_reg(state, "test-rand-bad0 rand r0", helper_rand0);
+	struct random v;
+
+	eq(r, 0);
+	parser_setpriv(state, &v);
+	/* Empty strings are invalid. */
+	r = parser_parse(state, "test-rand-bad0: ");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* Non-integers are invalid. */
+	r = parser_parse(state, "test-rand-bad0:a");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:ad10");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8dc");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:Ma");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* Overflow of any component is invalid. */
+	r = parser_parse(state, "test-rand-bad0:829683929682968396829683928");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8+1924726926926829462782936363d1");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:5d2938626926810682748296287296823962");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:M728468357283683793784367389463839483373");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* While a leading '-' is okay, any where else it is invalid. */
+	r = parser_parse(state, "test-rand-bad0:8-3d7M4");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8+-3d4");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8+7d-6");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8+3d6M-1");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* Missing values are invalid. */
+	r = parser_parse(state, "test-rand-bad0:8+4d");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:10+M");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* 'd' or 'M' in the wrong place is invalid. */
+	r = parser_parse(state, "test-rand-bad0:8dM1");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8M3");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	r = parser_parse(state, "test-rand-bad0:8+Md3");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
+	/* Too many values is invalid. */
+	r = parser_parse(state, "test-rand-bad0:8+7d4M3+8");
+	eq(r, PARSE_ERROR_NOT_RANDOM);
 	ok;
 }
 
@@ -426,6 +548,7 @@ struct test tests[] = {
 
 	{ "rand0", test_rand0 },
 	{ "rand1", test_rand1 },
+	{ "rand_bad0", test_rand_bad0 },
 
 	{ "opt0", test_opt0 },
 

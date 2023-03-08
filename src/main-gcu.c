@@ -1500,10 +1500,32 @@ errr init_gcu(int argc, char **argv) {
         {
             if (streq(argv[i], "-spacer"))
             {
+                char *pe, *ystr;
+                long lv;
+
                 i++;
                 if (i >= argc)
                     quit("Missing size specifier for -spacer");
-                sscanf(argv[i], "%dx%d", &spacer_cx, &spacer_cy);
+                lv = strtol(argv[i], &pe, 10);
+                /*
+                 * Also reject INT_MIN and INT_MAX so do not have to check
+                 * errno to detect overflow on platforms where sizeof(int) ==
+                 * sizeof(long).
+                 */
+                if (pe == argv[i] || *pe != 'x' || lv <= INT_MIN ||
+                        lv >= INT_MAX) {
+                    quit_fmt("Invalid specification for -spacer; got %s",
+                        argv[i]);
+                }
+                spacer_cx = (int)lv;
+                ystr = pe + 1;
+                lv = strtol(ystr, &pe, 10);
+                if (pe == ystr || !contains_only_spaces(pe) ||
+                        lv <= INT_MIN || lv >= INT_MAX) {
+                    quit_fmt("Invalid specification for -spacer; got %s",
+                        argv[i]);
+                }
+                spacer_cy = (int)lv;
             }
             else if (streq(argv[i], "-right") || streq(argv[i], "-left"))
             {

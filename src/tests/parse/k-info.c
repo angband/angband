@@ -238,6 +238,29 @@ static int test_alloc_bad0(void *state) {
 	enum parser_error r = parser_parse(p, "alloc:2:7");
 
 	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	/* Check missing whitespace. */
+	r = parser_parse(p, "alloc:1:2to 7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:2 to7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	/* Check when either integer is invalid or out of range. */
+	r = parser_parse(p, "alloc:1:a to 7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:2 to b");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:-8989999988989898889389 to 1");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:1 to 3892867393957396729696739023");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:1119392572692029396720296 to 3399268202846826927928487928482968283293");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	/* Check an invalid separating string. */
+	r = parser_parse(p, "alloc:1:2 x 7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:2 sto 7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
+	r = parser_parse(p, "alloc:1:2 top 7");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
 	ok;
 }
 
@@ -667,6 +690,19 @@ static int test_values_bad0(void *state) {
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	/* Check for invalid resistance. */
 	r = parser_parse(p, "values:RES_XYZZY[-1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of missing opening bracket. */
+	r = parser_parse(p, "values:STEALTH1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	r = parser_parse(p, "values:RES_ELEC1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of missing closing bracket. */
+	r = parser_parse(p, "values:STEALTH[1");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	r = parser_parse(p, "values:RES_ELEC[1");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of a long dice string. */
+	r = parser_parse(p, "values:STEALTH[-1+0000000000000000000000000001d000000000000000000000001M0000000000000000000001]");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }

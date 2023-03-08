@@ -290,10 +290,13 @@ int message_lookup_by_name(const char *name)
 		#undef MSG
 	};
 	size_t i;
-	unsigned int number;
+	char *pe;
+	unsigned long number = strtoul(name, &pe, 10);
 
-	if (sscanf(name, "%u", &number) == 1)
-		return (number < MSG_MAX) ? (int)number : -1;
+	if (pe != name) {
+		return (contains_only_spaces(pe) && number < MSG_MAX) ?
+			(int)number : -1;
+	}
 
 	for (i = 0; i < N_ELEMENTS(message_names); i++) {
 		if (my_stricmp(name, message_names[i]) == 0)

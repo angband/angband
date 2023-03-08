@@ -156,29 +156,53 @@ int code_index_in_array(const char *code_name[], const char *code)
  * Gets a name and argument for a value expression of the form NAME[arg]
  * \param name_and_value is the expression
  * \param string is the random value string to return (NULL if not required)
+ * \param nstring is the maximum number of bytes to write to string; not used
+ * if string is NULL
  * \param num is the integer to return (NULL if not required)
  */
-static bool find_value_arg(char *value_name, char *string, int *num)
+static bool find_value_arg(char *value_name, char *string, size_t nstring,
+		int *num)
 {
-	char *t;
-
 	/* Find the first bracket */
-	for (t = value_name; *t && (*t != '['); ++t)
-		;
+	char *to = strchr(value_name, '[');
+
+	if (!to) {
+		return false;
+	}
 
 	/* Choose random_value value or int or fail */
 	if (string) {
-		/* Get the dice */
-		if (1 != sscanf(t + 1, "%s", string))
+		/* Find the closing bracket. */
+		char *tc = strchr(to + 1, ']');
+
+		if (!tc || (size_t)(tc - to) > nstring) {
 			return false;
+		}
+		/* Get the dice */
+		memcpy(string, to + 1, tc - (to + 1));
+		string[tc - (to + 1)] = '\0';
 	} else if (num) {
 		/* Get the value */
-		if (1 != sscanf(t + 1, "%d", num))
-			return false;
-	} else return false;
+		char *tc;
+		long lv = strtol(to + 1, &tc, 10);
 
-	/* Terminate the string */
-	*t = '\0';
+		/*
+		 * Also reject INT_MIN and INT_MAX so don't have to check errno
+		 * to detect overflow when sizeof(long) == sizeof(int).
+		 */
+		if (*tc != ']' || lv <= INT_MIN || lv >= INT_MAX) {
+			return false;
+		}
+		*num = (int)lv;
+	} else {
+		return false;
+	}
+
+	/*
+	 * Put a null where the opening bracket is; make it easier for the
+	 * caller to handle the name.
+	 */
+	*to = '\0';
 
 	/* Success */
 	return true;
@@ -196,22 +220,23 @@ errr grab_rand_value(random_value *value, const char **value_type,
 					 const char *name_and_value)
 {
 	int i = 0;
-	char value_name[80];
+	/* Get a rewritable string */
+	char *value_name = string_make(name_and_value);
 	char dice_string[40];
 	dice_t *dice;
 
-	/* Get a rewritable string */
-	my_strcpy(value_name, name_and_value, strlen(name_and_value));
-
 	/* Parse the value expression */
-	if (!find_value_arg(value_name, dice_string, NULL))
+	if (!find_value_arg(value_name, dice_string, sizeof(dice_string), NULL)) {
+		string_free(value_name);
 		return PARSE_ERROR_INVALID_VALUE;
+	}
 
 	dice = dice_new();
 
 	while (value_type[i] && !streq(value_type[i], value_name))
 		i++;
 
+	string_free(value_name);
 	if (value_type[i]) {
 		if (!dice_parse_string(dice, dice_string)) {
 			dice_free(dice);
@@ -237,22 +262,75 @@ errr grab_int_value(int *value, const char **value_type,
 					const char *name_and_value)
 {
 	int val, i = 0;
-	char value_name[80];
-
 	/* Get a rewritable string */
-	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+	char *value_name = string_make(name_and_value);
 
 	/* Parse the value expression */
-	if (!find_value_arg(value_name, NULL, &val))
+	if (!find_value_arg(value_name, NULL, 0, &val)) {
+		string_free(value_name);
 		return PARSE_ERROR_INVALID_VALUE;
+	}
 
 	while (value_type[i] && !streq(value_type[i], value_name))
 		i++;
 
+	string_free(value_name);
 	if (value_type[i])
 		value[i] = val;
 
 	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
+}
+
+/**
+ * Parse a string expected to be of the form "<int><whitespace>
+ * <optional fixed string><whitespace><int>".
+ *
+ * \param lo will be dereferenced and set to the first integer in the string
+ * if the return value is PARSE_ERROR_NONE.
+ * \param hi will be dereferenced and set to the second integer in the string
+ * if the return value is PARSE_ERROR_NONE.
+ * \param range is the string to parse.
+ * \param sep is the optional string separating the two integers.  It may be
+ * NULL.  If not NULL, it must neither start nor end with whitespace.
+ * \return PARSE_ERROR_NONE if successful, otherwise an error value.
+ */
+errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
+{
+	char *pe;
+	long lv1 = strtol(range, &pe, 10), lv2;
+
+	/*
+	 * Reject INT_MIN and INT_MAX as well so don't have to check errno in
+	 * order to recognize overflow when sizeof(int) == sizeof(long).
+	 */
+	if (pe == range || !isspace(*pe) || lv1 <= INT_MIN || lv1 >= INT_MAX) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	range = pe;
+	if (sep) {
+		size_t nonwhite_offset;
+
+		pe = strstr(range, sep);
+		if (!pe) {
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+		nonwhite_offset = strspn(range, " \t");
+		if (range + nonwhite_offset != pe) {
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+		range = pe + strlen(sep);
+		if (!isspace(*range)) {
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+	}
+	lv2 = strtol(range, &pe, 10);
+	if (pe == range || !contains_only_spaces(pe) || lv2 <= INT_MIN
+			|| lv2 >= INT_MAX) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	*lo = (int)lv1;
+	*hi = (int)lv2;
+	return PARSE_ERROR_NONE;
 }
 
 /**
@@ -269,24 +347,26 @@ errr grab_index_and_int(int *value, int *index, const char **value_type,
 						const char *prefix, const char *name_and_value)
 {
 	int i;
-	char value_name[80];
-	char value_string[80];
-
 	/* Get a rewritable string */
-	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+	char *value_name = string_make(name_and_value);
+	char *value_string = string_make(prefix);
 
 	/* Parse the value expression */
-	if (!find_value_arg(value_name, NULL, value))
+	if (!find_value_arg(value_name, NULL, 0, value)) {
+		string_free(value_string);
+		string_free(value_name);
 		return PARSE_ERROR_INVALID_VALUE;
+	}
 
 	/* Compose the value string and look for it */
 	for (i = 0; value_type[i]; i++) {
-		my_strcpy(value_string, prefix, sizeof(value_string));
-		my_strcat(value_string, value_type[i],
-				  sizeof(value_string) - strlen(value_string));
+		value_string = string_append(value_string, value_type[i]);
 		if (streq(value_string, value_name)) break;
+		my_strcpy(value_string, prefix, strlen(prefix) + 1);
 	}
 
+	free(value_string);
+	free(value_name);
 	if (value_type[i])
 		*index = i;
 
@@ -303,20 +383,22 @@ errr grab_index_and_int(int *value, int *index, const char **value_type,
  */
 errr grab_base_and_int(int *value, char **base, const char *name_and_value)
 {
-	char value_name[80];
-
 	/* Get a rewritable string */
-	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+	char *value_name = string_make(name_and_value);
 
 	/* Parse the value expression */
-	if (!find_value_arg(value_name, NULL, value))
+	if (!find_value_arg(value_name, NULL, 0, value)) {
+		string_free(value_name);
 		return PARSE_ERROR_INVALID_VALUE;
+	}
 
 	/* Must be a slay */
-	if (strncmp(value_name, "SLAY_", 5))
+	if (strncmp(value_name, "SLAY_", 5)) {
+		string_free(value_name);
 		return PARSE_ERROR_INVALID_VALUE;
-	else
-		*base = string_make(value_name + 5);
+	}
+	*base = string_make(value_name + 5);
+	string_free(value_name);
 
 	/* If we've got this far, assume it's a valid monster base name */
 	return PARSE_ERROR_NONE;

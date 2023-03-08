@@ -116,10 +116,14 @@ static uint32_t parse_seed(const char *src)
 		char *s;
 
 		if (file_getl(fin, buf, sizeof(buf)) &&
-				(s = my_stristr(buf, "seed"))) {
+				(s = my_stristr(buf, "seed "))) {
+			char *pe;
 			unsigned long ulv;
 
-			if (sscanf(s, "seed %lx", &ulv) == 1) {
+			errno = 0;
+			ulv = strtoul(s + 5, &pe, 16);
+			if (pe != s + 5 && (ulv < ULONG_MAX || errno == 0)
+					&& ulv <= 4294967295) {
 				result = (uint32_t)ulv;
 			}
 		}
