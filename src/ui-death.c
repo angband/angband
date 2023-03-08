@@ -116,8 +116,6 @@ static void display_winner(void)
 
 	int wid, hgt;
 	int i = 2;
-	int width = 0;
-
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "crown.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
@@ -126,15 +124,20 @@ static void display_winner(void)
 	Term_get_size(&wid, &hgt);
 
 	if (fp) {
+		char *pe;
+		long lw;
+		int width;
+
 		/* Get us the first line of file, which tells us how long the */
 		/* longest line is */
 		file_getl(fp, buf, sizeof(buf));
-		sscanf(buf, "%d", &width);
-		if (!width) width = 25;
+		lw = strtol(buf, &pe, 10);
+		width = (pe != buf && lw > 0 && lw < INT_MAX) ? (int)lw : 25;
 
 		/* Dump the file to the screen */
-		while (file_getl(fp, buf, sizeof(buf)))
-			put_str(buf, i++, (wid/2) - (width/2));
+		while (file_getl(fp, buf, sizeof(buf))) {
+			put_str(buf, i++, (wid / 2) - (width / 2));
+		}
 
 		file_close(fp);
 	}

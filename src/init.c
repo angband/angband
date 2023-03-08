@@ -3459,8 +3459,9 @@ static enum parser_error parse_class_book_properties(struct parser *p) {
 	k->alloc_prob = parser_getint(p, "common");
 
 	tmp = parser_getstr(p, "minmax");
-	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+	if (grab_int_range(&amin, &amax, tmp, "to")) {
 		return PARSE_ERROR_INVALID_ALLOCATION;
+	}
 	k->level = amin;
 	k->alloc_min = amin;
 	k->alloc_max = amax;

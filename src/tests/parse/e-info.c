@@ -565,6 +565,16 @@ static int test_values_bad0(void *state) {
 	/* Try an unrecognized element. */
 	r = parser_parse(p, "values:RES_XYZZY[3]");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of a missing opening bracket. */
+	r = parser_parse(p, "values:STEALTH1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	r = parser_parse(p, "values:RES_POIS1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* CHeck handling of a missing closing bracket. */
+	r = parser_parse(p, "values:STEALTH[1");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	r = parser_parse(p, "values:RES_POIS[1");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
@@ -604,6 +614,12 @@ static int test_min_values_bad0(void *state) {
 	/* Try an unrecognized object modifier. */
 	enum parser_error r = parser_parse(p, "min-values:XYZZY[3]");
 
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of a missing opening bracket. */
+	r = parser_parse(p, "min-values:STEALTH1]");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	/* Check handling of a missing closing bracket. */
+	r = parser_parse(p, "min-values:STEALTH[1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }

@@ -87,22 +87,21 @@ static const char *element_names[] = {
 
 static bool grab_element_flag(struct element_info *info, const char *flag_name)
 {
-	char prefix[20];
-	char suffix[20];
+	char *under = strchr(flag_name, '_');
 	size_t i;
 
-	if (2 != sscanf(flag_name, "%[^_]_%s", prefix, suffix)) {
+	if (!under) {
 		return false;
 	}
 
 	/* Ignore or hate */
 	for (i = 0; i < ELEM_MAX; i++) {
-		if (streq(suffix, element_names[i])) {
-			if (streq(prefix, "IGNORE")) {
+		if (streq(under + 1, element_names[i])) {
+			if (!strncmp(flag_name, "IGNORE", under - flag_name)) {
 				info[i].flags |= EL_INFO_IGNORE;
 				return true;
 			}
-			if (streq(prefix, "HATES")) {
+			if (!strncmp(flag_name, "HATES", under - flag_name)) {
 				info[i].flags |= EL_INFO_HATES;
 				return true;
 			}
@@ -1735,7 +1734,7 @@ static enum parser_error parse_object_alloc(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	k->alloc_prob = parser_getint(p, "common");
-	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2) {
+	if (grab_int_range(&amin, &amax, tmp, "to")) {
 		return PARSE_ERROR_INVALID_ALLOCATION;
 	}
 	k->alloc_min = amin;
@@ -2233,7 +2232,7 @@ static enum parser_error parse_ego_alloc(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	e->alloc_prob = parser_getint(p, "common");
-	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2) {
+	if (grab_int_range(&amin, &amax, tmp, "to")) {
 		return PARSE_ERROR_INVALID_ALLOCATION;
 	}
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0) {
@@ -2760,7 +2759,7 @@ static enum parser_error parse_artifact_alloc(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	a->alloc_prob = parser_getint(p, "common");
-	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2) {
+	if (grab_int_range(&amin, &amax, tmp, "to")) {
 		return PARSE_ERROR_INVALID_ALLOCATION;
 	}
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0) {

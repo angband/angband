@@ -136,145 +136,144 @@ effect_index effect_lookup(const char *name)
  */
 int effect_subtype(int index, const char *type)
 {
-	int val = -1;
+	char *pe;
+	long lv;
 
+	lv = strtol(type, &pe, 10);
+	if (pe != type) {
+		/*
+		 * Got a plain numeric value.  Verify that there isn't garbage
+		 * after it and that it doesn't overflow.  Also reject INT_MIN
+		 * and INT_MAX so don't have to check errno to detect overflow
+		 * when sizeof(long) == sizeof(int).
+		 */
+		return (contains_only_spaces(pe) && lv < INT_MAX
+			&& lv > INT_MIN) ? (int)lv : -1;
+	}
 	/* If not a numerical value, assign according to effect index */
-	if (sscanf(type, "%d", &val) != 1) {
-		switch (index) {
-				/* Projection name */
-			case EF_PROJECT_LOS:
-			case EF_PROJECT_LOS_AWARE:
-			case EF_DESTRUCTION:
-			case EF_SPOT:
-			case EF_SPHERE:
-			case EF_BALL:
-			case EF_BREATH:
-			case EF_ARC:
-			case EF_SHORT_BEAM:
-			case EF_LASH:
-			case EF_SWARM:
-			case EF_STRIKE:
-			case EF_STAR:
-			case EF_STAR_BALL:
-			case EF_BOLT:
-			case EF_BEAM:
-			case EF_BOLT_OR_BEAM:
-			case EF_LINE:
-			case EF_ALTER:
-			case EF_BOLT_STATUS:
-			case EF_BOLT_STATUS_DAM:
-			case EF_BOLT_AWARE:
-			case EF_MELEE_BLOWS:
-			case EF_TOUCH:
-			case EF_TOUCH_AWARE: {
-				val = proj_name_to_idx(type);
-				break;
-			}
+	switch (index) {
+		/* Projection name */
+		case EF_PROJECT_LOS:
+		case EF_PROJECT_LOS_AWARE:
+		case EF_DESTRUCTION:
+		case EF_SPOT:
+		case EF_SPHERE:
+		case EF_BALL:
+		case EF_BREATH:
+		case EF_ARC:
+		case EF_SHORT_BEAM:
+		case EF_LASH:
+		case EF_SWARM:
+		case EF_STRIKE:
+		case EF_STAR:
+		case EF_STAR_BALL:
+		case EF_BOLT:
+		case EF_BEAM:
+		case EF_BOLT_OR_BEAM:
+		case EF_LINE:
+		case EF_ALTER:
+		case EF_BOLT_STATUS:
+		case EF_BOLT_STATUS_DAM:
+		case EF_BOLT_AWARE:
+		case EF_MELEE_BLOWS:
+		case EF_TOUCH:
+		case EF_TOUCH_AWARE:
+			return proj_name_to_idx(type);
 
-				/* Timed effect name */
-			case EF_CURE:
-			case EF_TIMED_SET:
-			case EF_TIMED_INC:
-			case EF_TIMED_INC_NO_RES:
-			case EF_TIMED_DEC: {
-				val = timed_name_to_idx(type);
-				break;
-			}
+		/* Timed effect name */
+		case EF_CURE:
+		case EF_TIMED_SET:
+		case EF_TIMED_INC:
+		case EF_TIMED_INC_NO_RES:
+		case EF_TIMED_DEC:
+			return timed_name_to_idx(type);
 
-				/* Nourishment types */
-			case EF_NOURISH: {
-				if (streq(type, "INC_BY"))
-					val = 0;
-				else if (streq(type, "DEC_BY"))
-					val = 1;
-				else if (streq(type, "SET_TO"))
-					val = 2;
-				else if (streq(type, "INC_TO"))
-					val = 3;
-				break;
+		/* Nourishment types */
+		case EF_NOURISH:
+			if (streq(type, "INC_BY")) {
+				return 0;
+			} else if (streq(type, "DEC_BY")) {
+				return 1;
+			} else if (streq(type, "SET_TO")) {
+				return 2;
+			} else if (streq(type, "INC_TO")) {
+				return 3;
 			}
+			break;
 
-				/* Monster timed effect name */
-			case EF_MON_TIMED_INC: {
-				val = mon_timed_name_to_idx(type);
-				break;
-			}
+		/* Monster timed effect name */
+		case EF_MON_TIMED_INC:
+			return mon_timed_name_to_idx(type);
 
-				/* Summon name */
-			case EF_SUMMON: {
-				val = summon_name_to_idx(type);
-				break;
-			}
+		/* Summon name */
+		case EF_SUMMON:
+			return summon_name_to_idx(type);
 
-				/* Stat name */
-			case EF_RESTORE_STAT:
-			case EF_DRAIN_STAT:
-			case EF_LOSE_RANDOM_STAT:
-			case EF_GAIN_STAT: {
-				val = stat_name_to_idx(type);
-				break;
-			}
+		/* Stat name */
+		case EF_RESTORE_STAT:
+		case EF_DRAIN_STAT:
+		case EF_LOSE_RANDOM_STAT:
+		case EF_GAIN_STAT:
+			return stat_name_to_idx(type);
 
-				/* Enchant type name - not worth a separate function */
-			case EF_ENCHANT: {
-				if (streq(type, "TOBOTH"))
-					val = ENCH_TOBOTH;
-				else if (streq(type, "TOHIT"))
-					val = ENCH_TOHIT;
-				else if (streq(type, "TODAM"))
-					val = ENCH_TODAM;
-				else if (streq(type, "TOAC"))
-					val = ENCH_TOAC;
-				break;
+		/* Enchant type name - not worth a separate function */
+		case EF_ENCHANT:
+			if (streq(type, "TOBOTH")) {
+				return ENCH_TOBOTH;
+			} else if (streq(type, "TOHIT")) {
+				return ENCH_TOHIT;
+			} else if (streq(type, "TODAM")) {
+				return ENCH_TODAM;
+			} else if (streq(type, "TOAC")) {
+				return ENCH_TOAC;
 			}
+			break;
 
-				/* Player shape name */
-			case EF_SHAPECHANGE: {
-				val = shape_name_to_idx(type);
-				break;
-			}
+		/* Player shape name */
+		case EF_SHAPECHANGE:
+			return shape_name_to_idx(type);
 
-				/* Targeted earthquake */
-			case EF_EARTHQUAKE: {
-				if (streq(type, "TARGETED"))
-					val = 1;
-				else if (streq(type, "NONE"))
-					val = 0;
-				break;
+		/* Targeted earthquake */
+		case EF_EARTHQUAKE:
+			if (streq(type, "TARGETED")) {
+				return 1;
+			} else if (streq(type, "NONE")) {
+				return 0;
 			}
+			break;
 
-				/* Inscribe a glyph */
-			case EF_GLYPH: {
-				if (streq(type, "WARDING"))
-					val = GLYPH_WARDING;
-				else if (streq(type, "DECOY"))
-					val = GLYPH_DECOY;
-				break;
+		/* Inscribe a glyph */
+		case EF_GLYPH:
+			if (streq(type, "WARDING")) {
+				return GLYPH_WARDING;
+			} else if (streq(type, "DECOY")) {
+				return GLYPH_DECOY;
 			}
+			break;
 
-				/* Allow teleport away */
-			case EF_TELEPORT: {
-				if (streq(type, "AWAY"))
-					val = 1;
-				break;
+		/* Allow teleport away */
+		case EF_TELEPORT:
+			if (streq(type, "AWAY")) {
+				return 1;
 			}
+			break;
 
-				/* Allow monster teleport toward */
-			case EF_TELEPORT_TO: {
-				if (streq(type, "SELF"))
-					val = 1;
-				break;
+		/* Allow monster teleport toward */
+		case EF_TELEPORT_TO:
+			if (streq(type, "SELF")) {
+				return 1;
 			}
+			break;
 
-				/* Some effects only want a radius, so this is a dummy */
-			default: {
-				if (streq(type, "NONE"))
-					val = 0;
+		/* Some effects only want a radius, so this is a dummy */
+		default:
+			if (streq(type, "NONE")) {
+				return 0;
 			}
-		}
+			break;
 	}
 
-	return val;
+	return -1;
 }
 
 static int32_t effect_value_base_spell_power(void)

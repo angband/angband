@@ -495,10 +495,12 @@ struct ego_item *lookup_ego_item(const char *name, int tval, int sval)
 int lookup_sval(int tval, const char *name)
 {
 	int k;
-	unsigned int r;
+	char *pe;
+	unsigned long r = strtoul(name, &pe, 10);
 
-	if (sscanf(name, "%u", &r) == 1)
-		return r;
+	if (pe != name) {
+		return (contains_only_spaces(pe) && r < INT_MAX) ? (int)r : -1;
+	}
 
 	/* Look for it */
 	for (k = 0; k < z_info->k_max; k++) {

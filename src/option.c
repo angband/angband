@@ -225,76 +225,110 @@ bool options_save_custom(struct player_options *opts, int page)
 bool options_restore_custom(struct player_options *opts, int page)
 {
 	const char *page_name = option_type_name(page);
-	bool success = true;
-	char path[1024], file_name[80];
+	char path[1024], buf[1024], file_name[80];
+	ang_file *f;
+	int linenum;
 
 	strnfmt(file_name, sizeof(file_name), "customized_%s_options.txt",
 		page_name);
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, file_name);
-	if (file_exists(path)) {
-		/*
-		 * Could use run_parser(), but that exits the application if
-		 * there are syntax errors.  Therefore, use our own parsing.
-		 */
-		ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
-
-		if (f) {
-			int linenum = 1;
-			char buf[1024];
-
-			while (file_getl(f, buf, sizeof(buf))) {
-				int offset = 0;
-
-				if (sscanf(buf, "option:%n%*s", &offset) == 0 &&
-						offset > 0) {
-					int opt = 0;
-
-					while (1) {
-						size_t lname;
-
-						if (opt >= OPT_MAX) {
-							msg("Unrecognized option at line %d of the customized %s options.", linenum, page_name);
-							break;
-						}
-						if (options[opt].type != page ||
-								!options[opt].name) {
-							++opt;
-							continue;
-						}
-						lname = strlen(
-							options[opt].name);
-						if (strncmp(options[opt].name,
-							buf + offset, lname) == 0 &&
-							buf[offset + lname] == ':') {
-							if (strncmp("yes", buf + offset + lname + 1, 3) == 0 && contains_only_spaces(buf + offset + lname + 4)) {
-								(*opts).opt[opt] = true;
-							} else if (strncmp("no", buf + offset + lname + 1, 2) == 0 && contains_only_spaces(buf + offset + lname + 3)) {
-								(*opts).opt[opt] = false;
-							} else {
-								msg("Value at line %d of the customized %s options is not yes or no.", linenum, page_name);
-							}
-							break;
-						}
-						++opt;
-					}
-				} else {
-					offset = 0;
-					if (sscanf(buf, "#%n*s", &offset) == 0 && offset == 0 && ! contains_only_spaces(buf)) {
-						msg("Line %d of the customized %s options is not parseable.", linenum, page_name);
-					}
-				}
-				++linenum;
-			}
-			if (!file_close(f)) {
-				success = false;
-			}
-		} else {
-			success = false;
-		}
-	} else {
+	if (!file_exists(path)) {
 		options_restore_maintainer(opts, page);
+		return true;
 	}
-	return success;
+
+	/*
+	 * Could use run_parser(), but that exits the application if
+	 * there are syntax errors.  Therefore, use our own parsing.
+	 */
+	f = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!f) {
+		return false;
+	}
+	linenum = 1;
+	while (file_getl(f, buf, sizeof(buf))) {
+		char *sub = strstr(buf, "option:"), *com;
+		int opt;
+
+		if (!sub) {
+			/*
+			 * If it isn't an option, it should be a comment or
+			 * whitespace.
+			 */
+			sub = strchr(buf, '#');
+
+			if (sub) {
+				*sub = '\0';
+			}
+			if (!contains_only_spaces(buf)) {
+				msg("Line %d of the customized %s options is "
+					"not parseable.", linenum, page_name);
+			}
+			++linenum;
+			continue;
+		}
+
+		*sub = '\0';
+		/* Ignore if the "option:" is embedded in a comment. */
+		com = strchr(buf, '#');
+		if (com) {
+			*com = '\0';
+			if (!contains_only_spaces(buf)) {
+				msg("Line %d of the customized %s options is "
+					"not parseable.", linenum, page_name);
+			}
+			++linenum;
+			continue;
+		}
+		if (!contains_only_spaces(buf)) {
+			msg("Line %d of the customized %s options is not "
+					"parseable.", linenum, page_name);
+			++linenum;
+			continue;
+		}
+
+		/* Try to find the option. */
+		sub += 7;
+		opt = 0;
+		while (1) {
+			size_t lname;
+
+			if (opt >= OPT_MAX) {
+				msg("Unrecognized option at line %d of the "
+					"customized %s options.", linenum,
+					page_name);
+				break;
+			}
+			if (options[opt].type != page || !options[opt].name) {
+				++opt;
+				continue;
+			}
+			lname = strlen(options[opt].name);
+			if (strncmp(options[opt].name, sub, lname) == 0
+					&& sub[lname] == ':') {
+				if (strncmp("yes", sub + lname + 1, 3) == 0
+						&& contains_only_spaces(sub + lname + 4)) {
+					(*opts).opt[opt] = true;
+				} else if (strncmp("no", sub + lname + 1, 2) == 0
+						&& contains_only_spaces(sub + lname + 3)) {
+					(*opts).opt[opt] = false;
+				} else {
+					msg("Value at line %d of the "
+						"customized %s options is not "
+						"yes or no.", linenum,
+						page_name);
+				}
+				break;
+			}
+			++opt;
+		}
+	}
+
+	if (!file_close(f)) {
+		return false;
+	}
+
+	return true;
 }
 
 /**
