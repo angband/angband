@@ -866,7 +866,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		/* Include bonus damage and brand in stated average */
 		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
 			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
 		if (weapon) {
@@ -895,7 +895,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		/* Include bonus damage and slay in stated average */
 		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
 			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
 		if (weapon) {
@@ -910,7 +910,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Include bonus damage in stated average */
 	total_dam = dam * multiplier + xtra_precrit;
-	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+	total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 	total_dam += xtra_postcrit;
 
 	/* Normal damage, not considering brands or slays */
