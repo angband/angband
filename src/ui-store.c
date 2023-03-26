@@ -959,7 +959,7 @@ static bool handle_g_context_store_item(struct menu *menu,
 }
 
 /* pick the context menu options appropiate for an item available in a store */
-static void context_menu_store_item(struct store_context *ctx, const int oid, int mx, int my)
+static bool context_menu_store_item(struct store_context *ctx, const int oid, int mx, int my)
 {
 	struct store *store = ctx->store;
 	bool home = (store->feat == FEAT_HOME) ? true : false;
@@ -1015,14 +1015,13 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	switch (selected) {
 		case ACT_EXAMINE:
 			store_examine(ctx, oid);
-			break;
+			return false;
 		case ACT_BUY:
-			store_purchase(ctx, oid, false);
-			break;
+			return store_purchase(ctx, oid, false);
 		case ACT_BUY_ONE:
-			store_purchase(ctx, oid, true);
-			break;
+			return store_purchase(ctx, oid, true);
 	}
+	return false;
 }
 
 /**
@@ -1037,7 +1036,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 	if (event->type == EVT_SELECT) {
 		/* Hack -- there's no mouse event coordinates to use for */
 		/* menu_store_item, so fake one as if mouse clicked on letter */
-		context_menu_store_item(ctx, oid, 1, m->active.row + oid);
+		bool purchased = context_menu_store_item(ctx, oid, 1, m->active.row + oid);
 		ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
 
 		/* Let the game handle any core commands (equipping, etc) */
@@ -1047,10 +1046,12 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 		notice_stuff(player);
 		handle_stuff(player);
 
-		/* Display the store */
-		store_display_recalc(ctx);
-		store_menu_recalc(m);
-		store_redraw(ctx);
+		if (purchased) {
+			/* Display the store */
+			store_display_recalc(ctx);
+			store_menu_recalc(m);
+			store_redraw(ctx);
+		}
 
 		return true;
 	} else if (event->type == EVT_MOUSE) {
