@@ -16,8 +16,30 @@
 #include "z-bitflag.h"
 #include "z-file.h"
 #include "z-rand.h"
+#include "z-util.h"
 #include "datafile.h"
 #include "object.h"
+
+/* Define a level of severity for a non-O critical */
+struct critical_level {
+	struct critical_level *next;
+	int cutoff;		/* powers less than this are included;
+					ignored for last level */
+	int mult;		/* damage multiplier for this level */
+	int add;		/* additive damage for this level */
+	int msgt;		/* message type to use for this level */
+};
+
+/* Define a level of severity for an O critical */
+struct o_critical_level {
+	struct o_critical_level *next;
+	unsigned int chance;		/* one in chance of this level unless
+						this is the last level; the rest
+						go to the next level */
+	unsigned int added_dice;	/* number of dice added for this
+						level */
+	int msgt;			/* message type to use for this level */
+};
 
 /**
  * Information about maximal indices of certain arrays.
@@ -121,6 +143,72 @@ struct angband_constants
 	uint16_t max_range;	/* Maximum missile and spell range */
 	uint16_t start_gold;	/* Amount of gold the player starts with */
 	uint16_t food_value;	/* Number of turns 1% of food lasts */
+
+	/*
+	 * Constants for non-O melee critical calculations; read from
+	 * constants.txt
+	 */
+	int m_crit_debuff_toh;
+	int m_crit_chance_weight_scl;
+	int m_crit_chance_toh_scl;
+	int m_crit_chance_level_scl;
+	int m_crit_chance_toh_skill_scl;
+	int m_crit_chance_offset;
+	int m_crit_chance_range;
+	int m_crit_power_weight_scl;
+	int m_crit_power_random;
+	struct critical_level *m_crit_level_head;
+
+	/*
+	 * Constants for non-O ranged critical calculations; read from
+	 * constants.txt
+	 */
+	int r_crit_debuff_toh;
+	int r_crit_chance_weight_scl;
+	int r_crit_chance_toh_scl;
+	int r_crit_chance_level_scl;
+	int r_crit_chance_launched_toh_skill_scl;
+	int r_crit_chance_thrown_toh_skill_scl;
+	int r_crit_chance_offset;
+	int r_crit_chance_range;
+	int r_crit_power_weight_scl;
+	int r_crit_power_random;
+	struct critical_level *r_crit_level_head;
+
+	/*
+	 * Constants for O melee critical calculations; read from
+	 * constants.txt
+	 */
+	int o_m_crit_debuff_toh;
+	int o_m_crit_power_toh_scl_num;
+	int o_m_crit_power_toh_scl_den;
+	int o_m_crit_chance_power_scl_num;
+	int o_m_crit_chance_power_scl_den;
+	int o_m_crit_chance_add_den;
+	struct o_critical_level *o_m_crit_level_head;
+	/*
+	 * For object information, O critical levels do not depend on the
+	 * properties of the player or weapon so they can be summed over once
+	 * after loading the constants file and stored here.
+	 * The sums are done in obj-info.c.
+	 */
+	struct my_rational o_m_max_added;
+
+	/*
+	 * Constants for O ranged critical calculations; read from
+	 * constants.txt
+	 */
+	int o_r_crit_debuff_toh;
+	int o_r_crit_power_launched_toh_scl_num;
+	int o_r_crit_power_launched_toh_scl_den;
+	int o_r_crit_power_thrown_toh_scl_num;
+	int o_r_crit_power_thrown_toh_scl_den;
+	int o_r_crit_chance_power_scl_num;
+	int o_r_crit_chance_power_scl_den;
+	int o_r_crit_chance_add_den;
+	struct o_critical_level *o_r_crit_level_head;
+	/* See comment for o_m_max_added above. */
+	struct my_rational o_r_max_added;
 };
 
 struct init_module {

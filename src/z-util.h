@@ -22,6 +22,9 @@
 #include "h-basic.h"
 
 
+struct my_rational { unsigned int n, d; }; /* numerator and denominator */
+
+
 /**
  * ------------------------------------------------------------------------
  * Available variables
@@ -239,5 +242,14 @@ uint32_t djb2_hash(const char *str);
  */
 int mean(const int *nums, int size);
 int variance(const int *nums, int size);
+unsigned int gcd(unsigned int a, unsigned int b);
+struct my_rational my_rational_construct(unsigned int numerator,
+		unsigned int denominator);
+unsigned int my_rational_to_uint(const struct my_rational *a,
+		unsigned int scale, unsigned int *remainder);
+struct my_rational my_rational_product(const struct my_rational *a,
+		const struct my_rational *b);
+struct my_rational my_rational_sum(const struct my_rational *a,
+		const struct my_rational *b);
 
 #endif /* INCLUDED_Z_UTIL_H */

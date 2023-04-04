@@ -117,7 +117,7 @@ static int chance_of_melee_hit(const struct player *p,
  * \param missile The missile to launch
  * \param launcher The launcher to use (optional)
  */
-static int chance_of_missile_hit_base(const struct player *p,
+int chance_of_missile_hit_base(const struct player *p,
 								 const struct object *missile,
 								 const struct object *launcher)
 {
@@ -305,24 +305,40 @@ static bool is_debuffed(const struct monster *monster)
 static int critical_shot(const struct player *p,
 		const struct monster *monster,
 		int weight, int plus,
-		int dam, uint32_t *msg_type)
+		int dam, bool launched, uint32_t *msg_type)
 {
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 4 + p->lev * 2;
-	int power = weight + randint1(500);
-	int new_dam = dam;
+	int to_h = p->state.to_h + plus;
+	int chance, new_dam;
 
-	if (randint1(5000) > chance) {
-		*msg_type = MSG_SHOOT_HIT;
-	} else if (power < 500) {
-		*msg_type = MSG_HIT_GOOD;
-		new_dam = 2 * dam + 5;
-	} else if (power < 1000) {
-		*msg_type = MSG_HIT_GREAT;
-		new_dam = 2 * dam + 10;
+	if (is_debuffed(monster)) {
+		to_h += z_info->r_crit_debuff_toh;
+	}
+	chance = z_info->r_crit_chance_weight_scl * weight
+		+ z_info->r_crit_chance_toh_scl * to_h
+		+ z_info->r_crit_chance_level_scl * p->lev
+		+ z_info->r_crit_chance_offset;
+	if (launched) {
+		chance += z_info->r_crit_chance_launched_toh_skill_scl
+			* p->state.skills[SKILL_TO_HIT_BOW];
 	} else {
-		*msg_type = MSG_HIT_SUPERB;
-		new_dam = 3 * dam + 15;
+		chance += z_info->r_crit_chance_thrown_toh_skill_scl
+			* p->state.skills[SKILL_TO_HIT_THROW];
+	}
+
+	if (randint1(z_info->r_crit_chance_range) > chance
+			|| !z_info->r_crit_level_head) {
+		*msg_type = MSG_SHOOT_HIT;
+		new_dam = dam;
+	} else {
+		int power = z_info->r_crit_power_weight_scl * weight
+			+ randint1(z_info->r_crit_power_random);
+		const struct critical_level *this_l = z_info->r_crit_level_head;
+
+		while (power >= this_l->cutoff && this_l->next) {
+			this_l = this_l->next;
+		}
+		*msg_type = this_l->msgt;
+		new_dam = this_l->add + this_l->mult * dam;
 	}
 
 	return new_dam;
@@ -330,8 +346,6 @@ static int critical_shot(const struct player *p,
 
 /**
  * Determine O-combat damage for critical hits from shooting.
- *
- * Factor in item weight, total plusses, and player level.
  */
 static int o_critical_shot(const struct player *p,
 		const struct monster *monster,
@@ -339,30 +353,37 @@ static int o_critical_shot(const struct player *p,
 		const struct object *launcher,
 		uint32_t *msg_type)
 {
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = chance_of_missile_hit_base(p, missile, launcher)
-		+ debuff_to_hit;
-	int add_dice = 0;
+	int power = chance_of_missile_hit_base(p, missile, launcher);
+	int chance_num, chance_den, add_dice;
 
-	/* Thrown weapons get lots of critical hits. */
-	if (!launcher) {
-		power = power * 3 / 2;
+	if (is_debuffed(monster)) {
+		power += z_info->o_r_crit_debuff_toh;
+	}
+	/* Apply a rational scale factor. */
+	if (launcher) {
+		power = (power * z_info->o_r_crit_power_launched_toh_scl_num)
+			/ z_info->o_r_crit_power_launched_toh_scl_den;
+	} else {
+		power = (power * z_info->o_r_crit_power_thrown_toh_scl_num)
+			/ z_info->o_r_crit_power_thrown_toh_scl_den;
 	}
 
-	/* Test for critical hit - chance power / (power + 360) */
-	if (randint1(power + 360) <= power) {
+	/* Test for critical hit:  chance is a * power / (b * power + c) */
+	chance_num = power * z_info->o_r_crit_chance_power_scl_num;
+	chance_den = power * z_info->o_r_crit_chance_power_scl_den
+		+ z_info->o_r_crit_chance_add_den;
+	if (randint1(chance_den) <= chance_num && z_info->o_r_crit_level_head) {
 		/* Determine level of critical hit. */
-		if (one_in_(50)) {
-			*msg_type = MSG_HIT_SUPERB;
-			add_dice = 3;
-		} else if (one_in_(10)) {
-			*msg_type = MSG_HIT_GREAT;
-			add_dice = 2;
-		} else {
-			*msg_type = MSG_HIT_GOOD;
-			add_dice = 1;
+		const struct o_critical_level *this_l =
+			z_info->o_r_crit_level_head;
+
+		while (this_l->next && !one_in_(this_l->chance)) {
+			this_l = this_l->next;
 		}
+		add_dice = this_l->added_dice;
+		*msg_type = this_l->msgt;
 	} else {
+		add_dice = 0;
 		*msg_type = MSG_SHOOT_HIT;
 	}
 
@@ -379,29 +400,33 @@ static int critical_melee(const struct player *p,
 		int weight, int plus,
 		int dam, uint32_t *msg_type)
 {
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5
-		+ (p->state.skills[SKILL_TO_HIT_MELEE] - 60);
-	int new_dam = dam;
+	int to_h = p->state.to_h + plus;
+	int chance, new_dam;
 
-	if (randint1(5000) > chance) {
+	if (is_debuffed(monster)) {
+		to_h += z_info->m_crit_debuff_toh;
+	}
+	chance = z_info->m_crit_chance_weight_scl * weight
+		+ z_info->m_crit_chance_toh_scl * to_h
+		+ z_info->m_crit_chance_level_scl * p->lev
+		+ z_info->m_crit_chance_toh_skill_scl
+			* p->state.skills[SKILL_TO_HIT_MELEE]
+		+ z_info->m_crit_chance_offset;
+
+	if (randint1(z_info->m_crit_chance_range) > chance
+			|| !z_info->m_crit_level_head) {
 		*msg_type = MSG_HIT;
-	} else if (power < 400) {
-		*msg_type = MSG_HIT_GOOD;
-		new_dam = 2 * dam + 5;
-	} else if (power < 700) {
-		*msg_type = MSG_HIT_GREAT;
-		new_dam = 2 * dam + 10;
-	} else if (power < 900) {
-		*msg_type = MSG_HIT_SUPERB;
-		new_dam = 3 * dam + 15;
-	} else if (power < 1300) {
-		*msg_type = MSG_HIT_HI_GREAT;
-		new_dam = 3 * dam + 20;
+		new_dam = dam;
 	} else {
-		*msg_type = MSG_HIT_HI_SUPERB;
-		new_dam = 4 * dam + 20;
+		int power = z_info->m_crit_power_weight_scl * weight
+			+ randint1(z_info->m_crit_power_random);
+		const struct critical_level *this_l = z_info->m_crit_level_head;
+
+		while (power >= this_l->cutoff && this_l->next) {
+			this_l = this_l->next;
+		}
+		*msg_type = this_l->msgt;
+		new_dam = this_l->add + this_l->mult * dam;
 	}
 
 	return new_dam;
@@ -409,38 +434,38 @@ static int critical_melee(const struct player *p,
 
 /**
  * Determine O-combat damage for critical hits from melee.
- *
- * Factor in weapon weight, total plusses, player level.
  */
 static int o_critical_melee(const struct player *p,
 		const struct monster *monster,
 		const struct object *obj, uint32_t *msg_type)
 {
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = (chance_of_melee_hit_base(p, obj) + debuff_to_hit) / 3;
-	int add_dice = 0;
+	int power = chance_of_melee_hit_base(p, obj);
+	int chance_num, chance_den, add_dice;
 
-	/* Test for critical hit - chance power / (power + 240) */
-	if (randint1(power + 240) <= power) {
+	if (is_debuffed(monster)) {
+		power += z_info->o_m_crit_debuff_toh;
+	}
+	/* Apply a rational scale factor. */
+	power = (power * z_info->o_m_crit_power_toh_scl_num)
+		/ z_info->o_m_crit_power_toh_scl_den;
+
+	/* Test for critical hit:  chance is a * power / (b * power + c) */
+	chance_num = power * z_info->o_m_crit_chance_power_scl_num;
+	chance_den = power * z_info->o_m_crit_chance_power_scl_den
+		+ z_info->o_m_crit_chance_add_den;
+	if (randint1(chance_den) <= chance_num && z_info->o_m_crit_level_head) {
 		/* Determine level of critical hit. */
-		if (one_in_(40)) {
-			*msg_type = MSG_HIT_HI_SUPERB;
-			add_dice = 5;
-		} else if (one_in_(12)) {
-			*msg_type = MSG_HIT_HI_GREAT;
-			add_dice = 4;
-		} else if (one_in_(3)) {
-			*msg_type = MSG_HIT_SUPERB;
-			add_dice = 3;
-		} else if (one_in_(2)) {
-			*msg_type = MSG_HIT_GREAT;
-			add_dice = 2;
-		} else {
-			*msg_type = MSG_HIT_GOOD;
-			add_dice = 1;
+		const struct o_critical_level *this_l =
+			z_info->o_m_crit_level_head;
+
+		while (this_l->next && !one_in_(this_l->chance)) {
+			this_l = this_l->next;
 		}
+		add_dice = this_l->added_dice;
+		*msg_type = this_l->msgt;
 	} else {
-		*msg_type = MSG_HIT;
+		add_dice = 0;
+		*msg_type = MSG_SHOOT_HIT;
 	}
 
 	return add_dice;
@@ -1221,7 +1246,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
 		result.dmg = critical_shot(p, mon, ammo->weight, ammo->to_h,
-								   result.dmg, &result.msg_type);
+			result.dmg, true, &result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, ammo, bow, b, s, &result.msg_type);
 	}
@@ -1257,7 +1282,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
 		result.dmg = critical_shot(p, mon, obj->weight, obj->to_h,
-								   result.dmg, &result.msg_type);
+			result.dmg, false, &result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, obj, NULL, b, s, &result.msg_type);
 	}

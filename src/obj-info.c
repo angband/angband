@@ -429,40 +429,114 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 }
 
 /**
+ * Sum over the critical levels for O-combat to get the expected number of
+ * dice added when a critical happens.
+ */
+static struct my_rational sum_o_criticals(const struct o_critical_level *head)
+{
+	struct my_rational remaining_chance = my_rational_construct(1, 1);
+	struct my_rational added_dice = my_rational_construct(0, 1);
+
+	while (head) {
+		/* The last level of criticals takes all the remainder. */
+		struct my_rational level_added_dice = my_rational_construct(
+			head->added_dice, (head->next) ? head->chance : 1);
+
+		level_added_dice = my_rational_product(&level_added_dice,
+			&remaining_chance);
+		added_dice = my_rational_sum(&added_dice, &level_added_dice);
+		if (head->next) {
+			struct my_rational pr_not_this = my_rational_construct(
+				head->chance - 1, head->chance);
+
+			remaining_chance = my_rational_product(
+				&remaining_chance, &pr_not_this);
+		}
+		head = head->next;
+	}
+
+	return added_dice;
+}
+
+/**
  * Account for criticals in the calculation of melee prowess
  *
  * Note -- This relies on the criticals being an affine function
  * of previous damage, since we are used to transform the mean
  * of a roll.
- *
- * Also note -- rounding error makes this not completely accurate
- * (but for the big crit weapons like Grond an odd point of damage
- * won't be missed)
- *
- * This code written according to the KISS principle.  650 adds
- * are cheaper than a FOV call and get the job done fine.
  */
 static void calculate_melee_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 5 * (state->to_h + plus) +
-		3 * state->skills[SKILL_TO_HIT_MELEE] - 60;
-	to_crit = MIN(5000, MAX(0, to_crit));
+	/*
+	 * Pessimistically assume that the target is not debuffed; otherwise
+	 * this must agree with the calculations in player-attack.c's
+	 * critical_melee().
+	 */
+	int crit_chance = z_info->m_crit_chance_weight_scl * weight
+		+ z_info->m_crit_chance_toh_scl * (state->to_h + plus)
+		+ z_info->m_crit_chance_level_scl * player->lev
+		+ z_info->m_crit_chance_toh_skill_scl
+			* state->skills[SKILL_TO_HIT_MELEE];
+	crit_chance = MIN(z_info->m_crit_chance_range, MAX(0, crit_chance));
 
-	*mult = *add = 0;
+	/* Reported results (*mult and *add) are scaled up by 100. */
+	*div = 100;
 
-	for (k = weight; k < weight + 650; k++) {
-		if (k <  400) { *mult += 4; *add += 10; continue; }
-		if (k <  700) { *mult += 4; *add += 20; continue; }
-		if (k <  900) { *mult += 6; *add += 30; continue; }
-		if (k < 1300) { *mult += 6; *add += 40; continue; }
-		                *mult += 8; *add += 40;
+	if (crit_chance > 0 && z_info->m_crit_level_head) {
+		/*
+		 * Now sum over the possible values of the critical power.
+		 */
+		const struct critical_level *this_l = z_info->m_crit_level_head;
+		int min_power = z_info->m_crit_power_weight_scl * weight + 1;
+		int max_power = min_power - 1 + z_info->m_crit_power_random;
+		int mult_sum = 0;
+		int add_sum = 0;
+		int scale;
+
+		while (min_power <= max_power) {
+			int w;
+
+			if (max_power < this_l->cutoff || !this_l->next) {
+				/*
+				 * All the remaining possible critical powers
+				 * fall in this band.
+				 */
+				w = max_power - min_power + 1;
+				min_power = max_power + 1;
+			} else  {
+				if (min_power >= this_l->cutoff) {
+					/*
+					 * This band doesn't overlap the
+					 * the possible powers.
+					 */
+					this_l = this_l->next;
+					continue;
+				}
+				/*
+				 * This band is either fully covered or has its
+				 * upper part covered by the possible powers.
+				 */
+				w = this_l->cutoff - min_power;
+				min_power = this_l->cutoff;
+			}
+			mult_sum += w * (this_l->mult - 1);
+			add_sum += w * this_l->add;
+			this_l = this_l->next;
+		}
+		/*
+		 * In other words, the result of no critical (multipler of 1
+		 * and no additive term) plus the scaled result of summing over
+		 * the possible criticals rounded to the nearest integer.
+		 */
+		scale = (z_info->m_crit_chance_range / *div)
+			* z_info->m_crit_power_random;
+		*mult = *div + (crit_chance * mult_sum + scale / 2) / scale;
+		*add = (crit_chance * add_sum + scale / 2) / scale;
+	} else {
+		*mult = 100;
+		*add = 0;
 	}
-
-	/* Scale the output to a reasonable size to prevent integer overflow. */
-	*mult = 100 + to_crit * (*mult - 1300) / (50 * 1300);
-	*add  = *add * to_crit / (500 * 50);
-	*div  = 100;
 }
 
 /**
@@ -471,14 +545,71 @@ static void calculate_melee_crits(struct player_state *state, int weight,
  *
  * Return value is 100x number of dice
  */
-static int o_calculate_melee_crits(struct player_state state,
-								   const struct object *obj)
+static unsigned int o_calculate_melee_crits(struct player_state *state,
+		const struct object *obj)
 {
-	int dice = 0;
-	int chance = BTH_PLUS_ADJ * (state.to_h + obj->known->to_h) +
-		state.skills[SKILL_TO_HIT_MELEE];
-	chance = (100 * chance) / (chance + 240);
-	dice = (537 * chance) / 240;
+	unsigned int dice;
+
+	if (z_info->o_m_crit_level_head) {
+		/*
+		 * Pessimistically assume that the target is not debuffed.
+		 * Otherwise, these calculations must agree with those in
+		 * player-attack.c's o_critical_melee().
+		 */
+		struct player_state old_state = player->state;
+		int power, chance_num, chance_den;
+
+		if (z_info->o_m_max_added.n == 0) {
+			z_info->o_m_max_added =
+				sum_o_criticals(z_info->o_m_crit_level_head);
+		}
+
+		player->state = *state;
+		power = chance_of_melee_hit_base(player, obj);
+		player->state = old_state;
+		power = (power * z_info->o_m_crit_power_toh_scl_num)
+			/ z_info->o_m_crit_power_toh_scl_den;
+		chance_num = power * z_info->o_m_crit_chance_power_scl_num;
+		chance_den = power * z_info->o_m_crit_chance_power_scl_den
+			+ z_info->o_m_crit_chance_add_den;
+		if (chance_den > 0 && chance_num > 0) {
+			unsigned int tr;
+
+			if (chance_num < chance_den) {
+				/*
+				 * Critical only happens some of the time.
+				 * Scale by the chance and 100.  Round to the
+				 * nearest integer.
+				 */
+				struct my_rational t = my_rational_construct(
+					chance_num, chance_den);
+
+				t = my_rational_product(&t,
+					&z_info->o_m_max_added);
+				dice = my_rational_to_uint(&t, 100, &tr);
+				if (dice < UINT_MAX && tr >= t.d / 2) {
+					++dice;
+				}
+			} else {
+				/*
+				 * Critical always happens.  Scale by 100 and
+				 * round to the nearest integer.
+				 */
+				dice = my_rational_to_uint(
+					&z_info->o_m_max_added, 100, &tr);
+				if (dice < UINT_MAX && tr >=
+						z_info->o_m_max_added.d / 2) {
+					++dice;
+				}
+			}
+		} else {
+			/* No chance of happening so no additional damage. */
+			dice = 0;
+		}
+	} else {
+		/* No critical levels defined so no additional damage. */
+		dice = 0;
+	}
 
 	return dice;
 }
@@ -487,43 +618,162 @@ static int o_calculate_melee_crits(struct player_state state,
  * Missile crits follow the same approach as melee crits.
  */
 static void calculate_missile_crits(struct player_state *state, int weight,
-		int plus, int *mult, int *add, int *div)
+		int plus, bool launched, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 4 * (state->to_h + plus) + 2 * player->lev;
-	to_crit = MIN(5000, MAX(0, to_crit));
+	/*
+	 * Pessimistically assume that the target is not debuffed; otherwise
+	 * this must agree with the calculations in player-attack.c's
+	 * critical_shot().
+	 */
+	int crit_chance = z_info->r_crit_chance_weight_scl * weight
+		+ z_info->r_crit_chance_toh_scl * (state->to_h + plus)
+		+ z_info->r_crit_chance_level_scl * player->lev;
 
-	*mult = *add = 0;
-
-	for (k = weight; k < weight + 500; k++) {
-		if (k <  500) { *mult += 2; *add +=  5; continue; }
-		if (k < 1000) { *mult += 2; *add += 10; continue; }
-		                *mult += 3; *add += 15;
+	if (launched) {
+		crit_chance += z_info->r_crit_chance_launched_toh_skill_scl
+			* player->state.skills[SKILL_TO_HIT_BOW];
+	} else {
+		crit_chance += z_info->r_crit_chance_thrown_toh_skill_scl
+			* player->state.skills[SKILL_TO_HIT_THROW];
 	}
+	crit_chance = MIN(z_info->r_crit_chance_range, MAX(0, crit_chance));
 
-	*mult = 100 + to_crit * (*mult - 500) / (500 * 50);
-	*add  = *add * to_crit / (500 * 50);
-	*div  = 100;
+	/* Reported results (*mult and *add) are scaled up by 100. */
+	*div = 100;
+
+	if (crit_chance > 0 && z_info->r_crit_level_head) {
+		/*
+		 * Now sum over the possible values of the critical power.
+		 */
+		const struct critical_level *this_l = z_info->r_crit_level_head;
+		int min_power = z_info->r_crit_power_weight_scl * weight + 1;
+		int max_power = min_power - 1 + z_info->r_crit_power_random;
+		int mult_sum = 0;
+		int add_sum = 0;
+		int scale;
+
+		while (min_power <= max_power) {
+			int w;
+
+			if (max_power < this_l->cutoff || !this_l->next) {
+				/*
+				 * All the remaining possible critical powers
+				 * fall in this band.
+				 */
+				w = max_power - min_power + 1;
+				min_power = max_power + 1;
+			} else  {
+				if (min_power >= this_l->cutoff) {
+					/*
+					 * This band doesn't overlap the
+					 * the possible powers.
+					 */
+					this_l = this_l->next;
+					continue;
+				}
+				/*
+				 * This band is either fully covered or has its
+				 * upper part covered by the possible powers.
+				 */
+				w = this_l->cutoff - min_power;
+				min_power = this_l->cutoff;
+			}
+			mult_sum += w * (this_l->mult - 1);
+			add_sum += w * this_l->add;
+			this_l = this_l->next;
+		}
+		/*
+		 * In other words, the result of no critical (multipler of 1
+		 * and no additive term) plus the scaled result of summing over
+		 * the possible criticals rounded to the nearest integer.
+		 */
+		scale = (z_info->r_crit_chance_range / *div)
+			* z_info->r_crit_power_random;
+		*mult = *div + (crit_chance * mult_sum + scale / 2) / scale;
+		*add = (crit_chance * add_sum + scale / 2) / scale;
+	} else {
+		*mult = 100;
+		*add = 0;
+	}
 }
 
 /**
  * Missile crits follow the same approach as melee crits.
  */
-static int o_calculate_missile_crits(struct player_state state,
-									 const struct object *obj,
-									 const struct object *launcher)
+static unsigned int o_calculate_missile_crits(struct player_state *state,
+		const struct object *obj,
+		const struct object *launcher)
 {
-	int dice = 0;
-	int bonus = state.to_h + obj->known->to_h
-		+ (launcher ? launcher->known->to_h : 0);
-	int chance = BTH_PLUS_ADJ * bonus;
-	if (launcher) {
-		chance += state.skills[SKILL_TO_HIT_BOW];
+	unsigned int dice;
+
+	if (z_info->o_r_crit_level_head) {
+		/*
+		 * Pessimistically assume that the target is not debuffed.
+		 * Otherwise, these calculations must agree with those in
+		 * player-attack.c's o_critical_shot().
+		 */
+		struct player_state old_state = player->state;
+		int power, chance_num, chance_den;
+
+		if (z_info->o_r_max_added.n == 0) {
+			z_info->o_r_max_added =
+				sum_o_criticals(z_info->o_r_crit_level_head);
+		}
+
+		player->state = *state;
+		power = chance_of_missile_hit_base(player, obj, launcher);
+		player->state = old_state;
+		if (launcher) {
+			power = (power
+				* z_info->o_r_crit_power_launched_toh_scl_num)
+				/ z_info->o_r_crit_power_launched_toh_scl_den;
+		} else {
+			power = (power
+				* z_info->o_r_crit_power_thrown_toh_scl_num)
+				/ z_info->o_r_crit_power_thrown_toh_scl_den;
+		}
+		chance_num = power * z_info->o_r_crit_chance_power_scl_num;
+		chance_den = power * z_info->o_r_crit_chance_power_scl_den
+			+ z_info->o_r_crit_chance_add_den;
+		if (chance_den > 0 && chance_num > 0) {
+			unsigned int tr;
+
+			if (chance_num < chance_den) {
+				/*
+				 * Critical only happens some of the time.
+				 * Scale by the chance and 100.  Round to the
+				 * nearest integer.
+				 */
+				struct my_rational t = my_rational_construct(
+					chance_num, chance_den);
+
+				t = my_rational_product(&t,
+					&z_info->o_r_max_added);
+				dice = my_rational_to_uint(&t, 100, &tr);
+				if (dice < UINT_MAX && tr >= t.d / 2) {
+					++dice;
+				}
+			} else {
+				/*
+				 * Critical always happens.  Scale by 100
+				 * and round to the nearest integer.
+				 */
+				dice = my_rational_to_uint(
+					&z_info->o_r_max_added, 100,
+					&tr);
+				if (dice < UINT_MAX && tr >=
+						z_info->o_r_max_added.d / 2) {
+					++dice;
+				}
+			}
+		} else {
+			/* No chance of happening so no additional damage. */
+			dice = 0;
+		}
 	} else {
-		chance += state.skills[SKILL_TO_HIT_THROW];
-		chance *= 3 / 2;
+		/* No critical levels defined so no additional damage. */
+		dice = 0;
 	}
-	chance = (100 * chance) / (chance + 360);
-	dice = (569 * chance) / 500;
 
 	return dice;
 }
@@ -802,16 +1052,16 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	} else if (ammo) {
 		plus += obj->known->to_h;
 
-		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
-								&crit_add, &crit_div);
+		calculate_missile_crits(&player->state, obj->weight, plus,
+			true, &crit_mult, &crit_add, &crit_div);
 
 		dam += (obj->known->to_d * 10);
 		dam += (bow->known->to_d * 10);
 	} else {
 		plus += obj->known->to_h;
 
-		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
-								&crit_add, &crit_div);
+		calculate_missile_crits(&player->state, obj->weight, plus,
+			false, &crit_mult, &crit_add, &crit_div);
 
 		dam += (obj->known->to_d * 10);
 		dam *= 2 + obj->weight / 12;
@@ -985,12 +1235,12 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get the number of additional dice from criticals (x100) */
 	if (weapon)	{
-		dice += o_calculate_melee_crits(state, obj);
+		dice += o_calculate_melee_crits(&state, obj);
 		old_blows = state.num_blows;
 	} else if (ammo) {
-		dice += o_calculate_missile_crits(player->state, obj, bow);
+		dice += o_calculate_missile_crits(&player->state, obj, bow);
 	} else {
-		dice += o_calculate_missile_crits(player->state, obj, NULL);
+		dice += o_calculate_missile_crits(&player->state, obj, NULL);
 		dice *= 2 + obj->weight / 12;
 	}
 
