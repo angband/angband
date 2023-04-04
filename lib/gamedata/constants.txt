@@ -202,3 +202,216 @@ player:start-gold:600
 
 # Number of turns that 1% of player food capacity feeds them for
 player:food-value:100
+
+#---------------------------------------------------------------------
+# Constants for non-O critical calculations
+# In general, those calculations compute the chance for a critical
+# from a linear combination of the to-hit bonuses, the player's
+# to-hit skill, the player's level, and the weapon or missile's
+# weight.  If a critical happens, they then compute the power (i.e.
+# severity of the critical) from a random term and the weapon or
+# missile's weight.  For more details see critical_melee() and
+# critical_shot() in player-attack.c.
+#---------------------------------------------------------------------
+
+# Amount added to the to-hit value for calculating the chance of a melee
+# critical when the target is debuffed
+melee-critical:debuff-toh:10
+
+# Scale factor for the weapon's weight in the chance for a melee critical
+melee-critical:chance-weight-scale:1
+
+# Scale factor for the overall to-hit value when calculating the chance
+# for a melee critical
+melee-critical:chance-toh-scale:5
+
+# Scale factor for player level when calculating the chance for a melee critical
+melee-critical:chance-level-scale:0
+
+# Scale factor for the to-hit skill when calculating the chance for a melee
+# critical
+melee-critical:chance-toh-skill-scale:1
+
+# Value added to the chance for a melee critical
+melee-critical:chance-offset:-60
+
+# Maximum range for melee critical chance; if the chance is N and the maximum
+# range is M, then the probability a critical will happen is
+# min(max(0, N), M) / M; to avoid extra inaccuracies for the damage shown
+# within object descriptions, this should be a multiple of 100
+melee-critical:chance-range:5000
+
+# Scale factor for the weapon weight in the power of a melee critical
+melee-critical:power-weight-scale:1
+
+# The maximum of the random part of the power for a melee critical
+melee-critical:power-random:650
+
+# Define each of the levels for melee criticals.  If no critical levels are
+# defined, then there's no extra damage due to critical hits.
+# The first value is the cutoff for the power.  Any critical which has a power
+# less than that cutoff and is not covered by a lower power level will fall
+# in that level.  The cutoff for the last level is not used and that level
+# will catch any criticals not caught by the previous levels.  To be valid,
+# the cutoffs for all levels but the last must be in scrictly ascending order.
+# The second value is the damage multiplier for that power level.
+# The third value is the amount added to the damage for that power level.
+# The fourth value is the name of the message, from list-messages.h, to use when
+# a critical happens for that power level.
+melee-critical-level:400:2:5:HIT_GOOD
+melee-critical-level:700:2:10:HIT_GREAT
+melee-critical-level:900:3:15:HIT_SUPERB
+melee-critical-level:1300:3:20:HIT_HI_GREAT
+melee-critical-level:-1:4:20:HIT_HI_SUPERB
+
+# Amount added to the to-hit value for calculating the chance of a ranged
+# critical when the target is debuffed
+ranged-critical:debuff-toh:10
+
+# Scale factor for the missile's weight in the chance for a ranged critical
+ranged-critical:chance-weight-scale:1
+
+# Scale factor for the overall to-hit value when calculating the chance
+# for a ranged critical
+ranged-critical:chance-toh-scale:4
+
+# Scale factor for player level when calculating the chance for a ranged
+# critical
+ranged-critical:chance-level-scale:2
+
+# Scale factor for the launched to-hit skill when calculating the chance for
+# a ranged critical when using a launcher
+ranged-critical:chance-launched-toh-skill-scale:0
+
+# Scale factor for the thrown to-hit skill when calculating the chance for
+# a ranged critical for a thrown object
+ranged-critical:chance-thrown-toh-skill-scale:0
+
+# Value added to the chance for a ranged critical
+ranged-critical:chance-offset:0
+
+# Maximum range for ranged critical chance; if the chance is N and the maximum
+# range is M, then the probability a critical will happen is
+# min(max(0, N), M) / M; to avoid extra inaccuracies for the damage shown
+# within object descriptions, this should be a multiple of 100
+ranged-critical:chance-range:5000
+
+# Scale factor for the missle weight in the power of a ranged critical
+ranged-critical:power-weight-scale:1
+
+# The maximum of the random part of the power for a ranged critical
+ranged-critical:power-random:500
+
+# Define each of the levels for ranged criticals.  If no critical levels are
+# defined, then there's no extra damage due to critical hits.
+# The first value is the cutoff for the power.  Any critical which has a power
+# less than that cutoff and is not covered by a lower power level will fall
+# in that level.  The cutoff for the last level is not used and that level
+# will catch any criticals not caught by the previous levels.  To be valid,
+# the cutoffs for all levels but the last must be in scrictly ascending order.
+# The second value is the damage multiplier for that power level.
+# The third value is the amount added to the damage for that power level.
+# The fourth value is the name of the message, from list-messages.h, to use
+# when a critical happens for that power level.
+ranged-critical-level:500:2:5:HIT_GOOD
+ranged-critical-level:1000:2:10:HIT_GREAT
+ranged-critical-level:-1:3:15:HIT_SUPERB
+
+#---------------------------------------------------------------------
+# Constants for O critical calculations
+# In general, those calculations compute a "power" of the critical
+# by scaling the chance of a hit.  The "power" is then converted to
+# a chance of a critical using (a * power) / (b + power + c) as the
+# chance where a, b, and c are constants specified here.  For more
+# details, see o_critical_melee() and o_critical_shot() in
+# player-attack.c.
+#---------------------------------------------------------------------
+
+# Amount added to the to-hit value for calculating the power of a melee critical
+# when the target is debuffed
+o-melee-critical:debuff-toh:10
+
+# The numerator for the scale factor applied to the combined to-hit value to
+# get the power of the critical
+o-melee-critical:power-toh-scale-numerator:1
+
+# The denominator for the scale factor applied to the combined to-hit value to
+# get the power of the critical
+o-melee-critical:power-toh-scale-denominator:3
+
+# The scale factor for the critical's power in the numerator for the chance
+# of the critical
+o-melee-critical:chance-power-scale-numerator:1
+
+# The scale factor for the critical's power in the denominator for the chance
+# of the critical
+o-melee-critical:chance-power-scale-denominator:1
+
+# Value of an added term in the denominator for the chance of a critical
+o-melee-critical:chance-add-denominator:240
+
+# Define each of the levels for melee criticals.  They are considered in the
+# order appear so it's convenient to put the least likely first.  If not
+# critical levels are defined, then there's no extra damage due to critical
+# hits.
+# Except for the last level, one over the first value is the probability that
+# this level occurs when none of the prior levels have been selected; the last
+# level will always be used if none of the prior levels have been selected.
+# The first value must be positive.
+# The second value is the number of dice to add for the critical.  It must be
+# non-negative.
+# The third value is the name of the message, from list-messages.h, to use
+# when a critical happens for that power level.
+o-melee-critical-level:40:5:HIT_HI_SUPERB
+o-melee-critical-level:12:4:HIT_HI_GREAT
+o-melee-critical-level:3:3:HIT_SUPERB
+o-melee-critical-level:2:2:HIT_GREAT
+o-melee-critical-level:1:1:HIT_GOOD
+
+# Amount added to the to-hit value for calculating the power of a ranged
+# critical when the target is debuffed
+o-ranged-critical:debuff-toh:10
+
+# The numerator for the scale factor applied to the combined to-hit value to
+# get the power of the critical with a launched missile
+o-ranged-critical:power-launched-toh-scale-numerator:1
+
+# The denominator for the scale factor applied to the combined to-hit value to
+# get the power of the critical with a launched missile
+o-ranged-critical:power-launched-toh-scale-denominator:1
+
+# The numerator for the scale factor applied to the combined to-hit value to
+# get the power of the critical with a thrown missile; this and the
+# denominator are currently set so thrown missiles get more criticals
+o-ranged-critical:power-thrown-toh-scale-numerator:3
+
+# The denominator for the scale factor applied to the combined to-hit value to
+# get the power of the critical with a thrown missile
+o-ranged-critical:power-thrown-toh-scale-denominator:2
+
+# The scale factor for the critical's power in the numerator for the chance
+# of the critical
+o-ranged-critical:chance-power-scale-numerator:1
+
+# The scale factor for the critical's power in the denominator for the chance
+# of the critical
+o-ranged-critical:chance-power-scale-denominator:1
+
+# Value of an added term in the denominator for the chance of a critical
+o-ranged-critical:chance-add-denominator:360
+
+# Define each of the levels for ranged criticals.  They are considered in the
+# order appear so it's convenient to put the least likely first.  If not
+# critical levels are defined, then there's no extra damage due to critical
+# hits.
+# Except for the last level, one over the first value is the probability that
+# this level occurs when none of the prior levels have been selected; the last
+# level will always be used if none of the prior levels have been selected.
+# The first value must be positive.
+# The second value is the number of dice to add for the critical.  It must be
+# non-negative.
+# The third value is the name of the message, from list-messages.h, to use
+# when a critical happens for that power level.
+o-ranged-critical-level:50:3:HIT_SUPERB
+o-ranged-critical-level:10:2:HIT_GREAT
+o-ranged-critical-level:1:1:HIT_GOOD

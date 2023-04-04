@@ -30,8 +30,6 @@
 #define CONF_HIT_REDUCTION		20  /* Percentage reduction in accuracy for spells */
 #define CONF_RANDOM_CHANCE		40  /* Percentage chance of an aimed spell going in random direction */
 
-#define DEBUFF_CRITICAL_HIT		10  /* Effective increase in to-hit for critical hit calcs */
-
 /**
  * Monster Timed Effects
  */

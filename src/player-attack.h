@@ -55,6 +55,8 @@ extern void do_cmd_throw(struct command *cmd);
 
 
 extern int breakage_chance(const struct object *obj, bool hit_target);
+int chance_of_missile_hit_base(const struct player *p,
+	const struct object *missile, const struct object *launcher);
 int chance_of_melee_hit_base(const struct player *p,
 	const struct object *weapon);
 extern bool test_hit(int to_hit, int ac);

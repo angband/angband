@@ -1,1 +1,3 @@
-TESTPROGS += z-util/util
+TESTPROGS += \
+	z-util/rational \
+	z-util/util
