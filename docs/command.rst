@@ -124,9 +124,10 @@ Go up staircase (``<``)
   case you will return to the town level. Note that whenever you leave a
   level (not the town), you will never find it again. This means that for
   all intents and purposes, any objects on that level are destroyed. This
-  includes artifacts unless the "Create characters in preserve mode" option
-  was set when your character was created, in which case the artifacts may
-  show up again later. This command takes some energy.
+  includes artifacts unless the "Lose artifacts when leaving level" option
+  was turned off when your character was created, in which case the artifacts
+  may show up again later. The option to lose artifacts is off in the default
+  configuration. This command takes some energy.
 
 Go down staircase (``>``)
   Descends a down staircase you are standing on. There are always at least
@@ -516,10 +517,10 @@ Check knowledge (``~``)
   artifacts
     Will display all artifacts that your character has encountered. Normally,
     once an artifact is "generated" and "lost", it can never again be found,
-    and will become "known" to the player. With "preserve" mode, an artifact
-    can never be "lost" until it is "known" to the player. In either case,
-    any "known" artifacts not in the possession of the player will never
-    again be "generated".
+    and will become "known" to the player. With the "Lose artifacts when
+    leaving level" option turned off, an artifact can never be "lost" until
+    it is "known" to the player. In either case, any "known" artifacts not
+    in the possession of the player will never again be "generated".
 
   ego items
     Will display the "egos" your character has encountered.  Each "ego" is
