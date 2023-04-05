@@ -489,8 +489,8 @@ The possible messages are :
 ===   ========================================= 
 
 The last message indicates an artifact is present and is only possible
-if the preserve option is disabled (if preserve is enabled, an artifact will
-guarantee a feeling of 5 or better).
+if the option to lose artifacts is on (if that option is off, an
+artifact will guarantee a feeling of 5 or better).
 
 You may review your level feeling any time by using the ^K command.
 You may also consult it by checking the LF: indicator at the bottom
