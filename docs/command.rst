@@ -77,9 +77,7 @@ Wear/Wield equipment (``w``)
   only one object can be in each slot at a time, if you wear or wield an
   item into a slot which is already occupied, the old item will be first be
   taken off, and may in fact be dropped if there is no room for it in your
-  inventory. Wielding ammunition will add it to an empty slot in your
-  quiver and prompt you to replace a type of ammunition if your quiver is
-  already full. This command takes some energy.
+  inventory. This command takes some energy.
 
 Take off equipment (``t``) or Take off equipment (``T``)
   Use this command to take off a piece of equipment and return it to your
