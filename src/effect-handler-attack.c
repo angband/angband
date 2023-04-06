@@ -1293,6 +1293,17 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* Sometimes ask for a target */
+	if (targeted) {
+		int dir = DIR_TARGET;
+		if (!get_aim_dir(&dir)) {
+			return false;
+		}
+		if ((dir == DIR_TARGET) && target_okay()) {
+			target_get(&centre);
+		}
+	}
+
 	if ((player->depth) && ((!player->upkeep->arena_level)
 							|| (context->origin.what == SRC_MONSTER))) {
 		msg("The ground shakes! The ceiling caves in!");
@@ -1300,15 +1311,6 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		/* No effect in town or arena */
 		msg("The ground shakes for a moment.");
 		return true;
-	}
-
-	/* Sometimes ask for a target */
-	if (targeted) {
-		int dir = DIR_TARGET;
-		get_aim_dir(&dir);
-		if ((dir == DIR_TARGET) && target_okay()) {
-			target_get(&centre);
-		}
 	}
 
 	/* Paranoia -- Enforce maximum range */
