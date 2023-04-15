@@ -196,7 +196,7 @@ graphics:~:u
 level:1
 weight:22
 cost:2
-alloc:70:1 to 40
+alloc:70:1 to 100
 attack:1d1:0:0
 armor:0:0
 flags:BURNS_OUT | LIGHT_2 | EASY_KNOW
