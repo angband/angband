@@ -492,7 +492,7 @@ The last message indicates an artifact is present and is only possible
 if the preserve option is disabled (if preserve is enabled, an artifact will
 guarantee a feeling of 5 or better).
 
-You may review your level feeling any time by using the ^K command.
+You may review your level feeling any time by using the ^f command.
 You may also consult it by checking the LF: indicator at the bottom
 left of the screen. The first number after it is the level feeling
 and the second one is the object feeling. The second one will be ?
