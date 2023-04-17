@@ -65,9 +65,9 @@ static bool load_sound_cocoa(const char *filename, int file_type, struct sound_d
 	switch (file_type) {
 	case COCOA_SOUND_BRIDGED_NSSOUND:
 		{
-			NSSound *sound = [[NSSound alloc]
-				initWithContentsOfFile:[NSString stringWithUTF8String:filename]
-				byReference:YES];
+			NSData *fileData = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String:filename]];
+			NSSound *sound =
+				[[NSSound alloc] initWithData:fileData];
 
 			if (sound) {
 				sample->sample_data.bridged_nssound =
