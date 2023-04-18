@@ -706,12 +706,12 @@ control keys, and often, you can disable their special effects.
 If you are playing on a UNIX or similar system, then Ctrl-c will interrupt
 Angband. The second and third interrupt will induce a warning bell, and the
 fourth will induce both a warning bell and a special message, since the
-fifth will quit the game, after killing your character. Also, 'Ctrl-z'
-will suspend the game, and return you to the original command shell, until
-you resume the game with the 'fg' command. There is now a compilation
-option to force the game to prevent the "double 'ctrl-z' escape death
-trick". The 'Ctrl-\\' and 'Ctrl-d' and 'Ctrl-s' keys should not be
-intercepted.
+fifth will either quit without saving (if Angband was compiled without the
+SETGID option which puts the save files in a shared location for all users)
+or kill your character (if Angband was compiled with the SETGID option).
+Also, 'Ctrl-z' will suspend the game, and return you to the original command
+shell, until you resume the game with the 'fg' command. The 'Ctrl-\\' and
+'Ctrl-d' and 'Ctrl-s' keys should not be intercepted.
 
 It is often possible to specify "control-keys" without actually pressing
 the control key, by typing a caret (``^``) followed by the key. This is
