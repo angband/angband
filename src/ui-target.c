@@ -807,7 +807,7 @@ static bool aux_terrain(struct chunk *c, struct player *p,
 	const char *name, *lphrase2, *lphrase3;
 	char out_val[TARGET_OUT_VAL_SIZE];
 
-	if (!auxst->boring && !square_isinteresting(c, auxst->grid))
+	if (!auxst->boring && !square_isinteresting(p->cave, auxst->grid))
 		return false;
 
 	/* Terrain feature if needed */
