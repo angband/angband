@@ -4452,7 +4452,7 @@ experience:80
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 flags:DROP_2
-flags:OPEN_DOOR | MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 spell-freq:11
 spells:SCARE
 desc:A strange reptilian hybrid with two heads, guarding its hoard.
@@ -4975,7 +4975,7 @@ blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:BITE:POISON:2d6
 flags:DROP_3
-flags:OPEN_DOOR | MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS
 spell-freq:9
 spells:SCARE
@@ -5769,7 +5769,7 @@ blow:BITE:HURT:2d6
 blow:BITE:POISON:2d6
 blow:BITE:FIRE:2d6
 flags:DROP_3
-flags:OPEN_DOOR | MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE
 spell-freq:7
 spells:SCARE
@@ -6568,7 +6568,7 @@ blow:BITE:POISON:2d6
 blow:BITE:FIRE:2d6
 blow:BITE:ACID:2d6
 flags:DROP_4
-flags:MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE | IM_ACID
 spell-freq:5
 spells:SCARE
@@ -9415,7 +9415,7 @@ blow:BITE:FIRE:2d6
 blow:BITE:ACID:2d6
 blow:BITE:BLIND:1d2
 flags:DROP_4
-flags:MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE | IM_ACID
 innate-freq:10
 spell-freq:8
@@ -9560,7 +9560,7 @@ blow:BITE:ACID:2d6
 blow:BITE:BLIND:2d6
 blow:BITE:CONFUSE:2d6
 flags:DROP_4
-flags:OPEN_DOOR | MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE | IM_ACID | NO_CONF
 innate-freq:8
 spell-freq:6
@@ -10386,7 +10386,7 @@ blow:BITE:BLIND:2d6
 blow:BITE:CONFUSE:2d6
 blow:BITE:EXP_10:2d6
 flags:DROP_4
-flags:OPEN_DOOR | MOVE_BODY
+flags:BASH_DOOR | MOVE_BODY
 flags:IM_FIRE | IM_POIS | IM_ACID
 innate-freq:7
 spell-freq:5
@@ -11928,7 +11928,7 @@ blow:BITE:EXP_10:2d6
 blow:BITE:HURT:10d6
 flags:SMART | POWERFUL | REGENERATE
 flags:DROP_3
-flags:OPEN_DOOR | KILL_BODY
+flags:BASH_DOOR | KILL_BODY
 flags:IM_FIRE | IM_POIS | IM_ACID | IM_NETHER | NO_CONF | NO_SLEEP | NO_HOLD
 innate-freq:4
 spell-freq:9
