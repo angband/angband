@@ -617,7 +617,7 @@ static bool run_test(const struct player *p)
 
 		/* Check memorized grids */
 		if (square_isknown(cave, grid)) {
-			bool notice = square_isinteresting(cave, grid);
+			bool notice = square_isinteresting(p->cave, grid);
 
 			/* Interesting feature */
 			if (notice) return true;

@@ -354,7 +354,8 @@ bool target_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (square_isknown(cave, grid) && square_isinteresting(cave, grid)) {
+	if (square_isknown(cave, grid)
+			&& square_isinteresting(player->cave, grid)) {
 		return true;
 	}
 
