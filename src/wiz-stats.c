@@ -1461,7 +1461,7 @@ static void stats_collect_level(void)
  * This code will go through the artifact list and make each artifact
  * uncreated so that our sim player can find them again!
  */
-static void uncreate_artifacts(void)
+static void uncreate_all_artifacts(void)
 {
 	int i;
 
@@ -1524,7 +1524,7 @@ static void clearing_stats(void)
 	/* Do many iterations of the game */
 	for (iter = 0; iter < tries; iter++) {
 		/* Move all artifacts to uncreated */
-		uncreate_artifacts();
+		uncreate_all_artifacts();
 
 		/* Move all uniques to alive */
 		revive_uniques();

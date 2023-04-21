@@ -1131,9 +1131,14 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
 		event_signal_string(EVENT_GEN_LEVEL_START, dun->profile->name);
-		chunk = dun->profile->builder(p, height, width);
+		chunk = dun->profile->builder(p, height, width, &error);
 		if (!chunk) {
-			error = "Failed to find builder";
+			if (!error) {
+				error = "unspecified level builder failure";
+			}
+			if (OPT(p, cheat_room)) {
+				msg("Generation restarted: %s.", error);
+			}
 			cleanup_dun_data(dun);
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 			continue;
@@ -1192,6 +1197,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			if (OPT(p, cheat_room)) {
 				msg("Generation restarted: %s.", error);
 			}
+			uncreate_artifacts(chunk);
 			cave_clear(chunk, p);
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 		}
