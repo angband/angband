@@ -917,6 +917,27 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 	}
 }
 
+/**
+ * Mark artifacts in a failed chunk as not created
+ */
+void uncreate_artifacts(struct chunk *c)
+{
+	int y, x;
+
+	/* Also mark created artifacts as not created ... */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			struct loc grid = loc(x, y);
+			struct object *obj = square_object(c, grid);
+			while (obj) {
+				if (obj->artifact) {
+					mark_artifact_created(obj->artifact, false);
+				}
+				obj = obj->next;
+			}
+		}
+	}
+}
 
 /**
  * Dump the given level for post-mortem analysis; handle all I/O.
