@@ -200,11 +200,7 @@ bool effect_handler_ALTER(effect_handler_context_t *context)
  */
 bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 {
-	int num;
-
-	/* Paranoia */
-	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
-		return (true);
+	int num, minh;
 
 	/* Always ID */
 	context->ident = true;
@@ -216,7 +212,16 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 	num = ((player->mhp - player->chp) * context->value.m_bonus) / 100;
 
 	/* Enforce minimum */
-	if (num < context->value.base) num = context->value.base;
+	minh = context->value.base
+		+ damroll(context->value.dice, context->value.sides);
+	if (num < minh) num = minh;
+	if (num <= 0) {
+		/*
+		 * There's no healing: either because not damaged enough for the
+		 * the bonus amount to matter or the effect was misconfigured.
+		 */
+		return true;
+	}
 
 	/* Gain hitpoints */
 	player->chp += num;
