@@ -78,7 +78,6 @@ layer provides:
 ``z-quark``         String interning
 ``z-queue``         Queues
 ``z-rand``          Randomness
-``z-set``           Sets
 ``z-textblock``     Wrapped text
 ``z-type``          Basic types
 ``z-util``          Random utility macros
