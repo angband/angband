@@ -74,9 +74,9 @@ jobs:
       - name: Extract Names from Makefile
         id: get_names
         run: |
-          name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src | tr ' #' '\t\t' | tail -1 | cut -f 1`
           echo "name=$name" >> $GITHUB_OUTPUT
-          prog=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+          prog=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src | tr ' #' '\t\t' | tail -1 | cut -f 1`
           echo "prog=$prog" >> $GITHUB_OUTPUT
 
       - name: Set Release Version
