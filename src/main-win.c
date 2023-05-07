@@ -168,9 +168,10 @@
 #include <shellapi.h>
 
 /**
- * Include the support for loading bitmaps
+ * Include the support for loading bitmaps and saving screenshots
  */
 #include "win/readdib.h"
+#include "win/scrnshot.h"
 
 #include <wingdi.h>
 
@@ -254,11 +255,6 @@ static term_data data[MAX_TERM_DATA];
  * Hack -- global "window creation" pointer
  */
 static term_data *my_td;
-
-/**
- * Default window layout function
- */
-int default_layout_win(term_data *data, int maxterms);
 
 
 /**
@@ -1210,13 +1206,14 @@ typedef struct
 /**
  * Load a sound
  */
-static bool load_sound_win(const char *filename, int file_type, struct sound_data *data)
+static bool load_sound_win(const char *filename, int ftyp,
+		struct sound_data *sd)
 {
 	win_sample *sample = NULL;
 
-	sample = (win_sample *)(data->plat_data);
+	sample = (win_sample *)(sd->plat_data);
 
-	switch (file_type) {
+	switch (ftyp) {
 		case WIN_MP3:
 			if (!sample)
 				sample = mem_zalloc(sizeof(*sample));
@@ -1233,7 +1230,7 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 			}
 
 			if (0 != sample->op.wDeviceID) {
-				data->status = SOUND_ST_LOADED;
+				sd->status = SOUND_ST_LOADED;
 			} else {
 				mem_free(sample);
 				sample = NULL;
@@ -1246,7 +1243,7 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 
 			sample->filename = mem_zalloc(strlen(filename) + 1);
 			my_strcpy(sample->filename, filename, strlen(filename) + 1);
-			data->status = SOUND_ST_LOADED;
+			sd->status = SOUND_ST_LOADED;
 			break;
 
 		default:
@@ -1255,9 +1252,9 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 	}
 
 	if (sample) {
-		sample->type = file_type;
+		sample->type = ftyp;
 	}
-	data->plat_data = (void *)sample;
+	sd->plat_data = (void *)sample;
 
 	return (NULL != sample);
 }
@@ -1265,11 +1262,11 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 /**
  * Play a sound
  */
-static bool play_sound_win(struct sound_data *data)
+static bool play_sound_win(struct sound_data *sd)
 {
 	MCI_PLAY_PARMS pp;
 
-	win_sample *sample = (win_sample *)(data->plat_data);
+	win_sample *sample = (win_sample *)(sd->plat_data);
 
 	if (sample) {
 		switch (sample->type) {
@@ -1300,9 +1297,9 @@ static bool play_sound_win(struct sound_data *data)
 	return true;
 }
 
-static bool unload_sound_win(struct sound_data *data)
+static bool unload_sound_win(struct sound_data *sd)
 {
-	win_sample *sample = (win_sample *)(data->plat_data);
+	win_sample *sample = (win_sample *)(sd->plat_data);
 
 	if (sample) {
 		switch (sample->type) {
@@ -1321,8 +1318,8 @@ static bool unload_sound_win(struct sound_data *data)
 		}
 
 		mem_free(sample);
-		data->plat_data = NULL;
-		data->status = SOUND_ST_UNKNOWN;
+		sd->plat_data = NULL;
+		sd->status = SOUND_ST_UNKNOWN;
 	}
 
 	return true;
@@ -1338,7 +1335,7 @@ static bool close_audio_win(void)
 	return true;
 }
 
-const struct sound_file_type *supported_files_win(void)
+static const struct sound_file_type *supported_files_win(void)
 {
 	return supported_sound_files;
 }
@@ -1781,7 +1778,7 @@ static errr Term_xtra_win_react(void)
 	for (i = 0; i < MAX_TERM_DATA; i++) {
 		term *old = Term;
 
-		term_data *td = &data[i];
+		td = &data[i];
 
 		/* Update resized windows */
 		if ((td->cols != td->t.wid) || (td->rows != td->t.hgt)) {
@@ -3173,7 +3170,7 @@ static void setup_menus(void)
 		/* Menu "Options", Item "Graphics" */
 		mode = graphics_modes;
 		while (mode) {
-			if ((mode->grafID == 0) || (mode->file && mode->file[0])) {
+			if ((mode->grafID == 0) || (mode->file[0])) {
 				EnableMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
 			}
 			mode = mode->pNext;
@@ -3597,7 +3594,6 @@ static void process_menus(WORD wCmd)
 					"This will reset the size and layout of the angband windows\n based on your screen size. Do you want to continue?",
 					VERSION_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
 				term *old = Term;
-				int i;
 				RECT rc;
 
 				(void)default_layout_win(data,MAX_TERM_DATA);
@@ -3983,7 +3979,6 @@ static void process_menus(WORD wCmd)
 			time_t ltime;
 			struct tm *today;
 			int len;
-			bool SaveWindow_PNG(HWND hWnd, LPSTR lpFileName);
 
 			time( &ltime );
 			today = localtime( &ltime );
@@ -4088,7 +4083,7 @@ static void handle_wm_paint(HWND hWnd)
 }
 
 
-int extract_modifiers(keycode_t ch, bool kp) {
+static int extract_modifiers(keycode_t ch, bool kp) {
 	bool mc = false;
 	bool ms = false;
 	bool ma = false;

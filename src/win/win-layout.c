@@ -46,8 +46,8 @@ int default_layout_win(term_data *data, int maxterms)
 	int fx,fy,tx,ty, fx2,fy2;
 	int i,mode;
 	RECT r;
-	char *main_font;
-	char *sub_font;
+	const char *main_font;
+	const char *sub_font;
 
 	/* Make sure the numbers used in this fuction are valid */
 	if (maxterms < 5) {
