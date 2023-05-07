@@ -1004,6 +1004,9 @@
     <ClInclude Include="src\win\readdib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\win\scrnshot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\win\win-menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -17,6 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#ifndef INCLUDED_WIN_TERM_H
+#define INCLUDED_WIN_TERM_H
+
 /**
  * Initial framework (and most code) by Ben Harrison (benh@phial.com).
  *
@@ -101,3 +104,7 @@ struct _term_data
  */
 #define MAX_TERM_DATA 8
 
+/* From win-layout.c */
+int default_layout_win(term_data *data, int maxterms);
+
+#endif /* INCLUDED_WIN_TERM_H */

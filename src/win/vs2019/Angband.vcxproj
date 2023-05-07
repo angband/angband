@@ -477,6 +477,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\win\include\zconf.h" />
     <ClInclude Include="src\win\include\zlib.h" />
     <ClInclude Include="src\win\readdib.h" />
+    <ClInclude Include="src\win\scrnshot.h" />
     <ClInclude Include="src\win\win-menu.h" />
     <ClInclude Include="src\win\win-term.h" />
     <ClInclude Include="src\wizard.h" />

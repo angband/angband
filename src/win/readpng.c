@@ -37,7 +37,7 @@
  * Forces libpng to use the version of fread() from the run time library
  * that this program was compiled with.
  */
-void ReadFileFunc(png_structp png_ptr, png_bytep data, png_size_t length) {
+static void ReadFileFunc(png_structp png_ptr, png_bytep data, png_size_t length) {
 	FILE *file = (FILE *)png_get_io_ptr(png_ptr);
 	fread(data, sizeof(png_byte), length, file);
 }
