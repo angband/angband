@@ -10520,6 +10520,7 @@ base:quylthulg
 color:r
 speed:120
 hit-points:420
+light:1
 hearing:20
 armor-class:1
 sleepiness:0
@@ -13084,6 +13085,7 @@ base:quylthulg
 color:R
 speed:120
 hit-points:1320
+light:1
 hearing:20
 armor-class:1
 sleepiness:0
