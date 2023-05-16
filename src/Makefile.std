@@ -3,10 +3,10 @@
 #
 # This makefile probably requires GNU make.
 #
-# This makefile is intended for use with Unix machines running X11, gtk or 
+# This makefile is intended for use with Unix machines running X11, SDL or
 # (n)curses.  You can choose which you want to compile for below.
 #
-# You can also place your alterations to a file in the src/ directory called 
+# You can also place your alterations to a file in the src/ directory called
 # "config", in which case that file will override what is specified here.
 #
 
