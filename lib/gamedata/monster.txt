@@ -3960,6 +3960,9 @@ flags:NEVER_MOVE
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLINK | DARKNESS | SCARE | SLOW
+message-invis:BLINK:Something hums softly.
+message-invis:DARKNESS:Something hums softly.
+message-invis:SLOW:Something hums softly.
 desc:Yum!  It looks quite tasty.  It seems to glow with an unusual light.
 
 name:guardian naga
@@ -5473,6 +5476,7 @@ flags:IM_COLD | IM_FIRE | IM_POIS
 flags:FORCE_SLEEP
 spell-freq:7
 spells:SLOW
+message-invis:SLOW:Something rumbles.
 desc:It is a massive metal statue that moves steadily towards you.
 
 name:giant yellow scorpion
@@ -6001,6 +6005,8 @@ flags:FORCE_SLEEP
 spell-freq:4
 spells:CONF | SLOW
 spells:BO_ACID
+message-invis:SLOW:Something rumbles.
+message-invis:BO_ACID:Something rumbles.
 desc:A stumpy figure carved from stone, with glittering eyes, this sentinel
 desc: strides towards you with deadly intent.
 
@@ -8512,6 +8518,10 @@ innate-freq:10
 spell-freq:6
 spells:CONF | DRAIN_MANA | HOLD | MIND_BLAST | SHRIEK
 spells:S_MONSTER | S_MONSTERS
+message-vis:SHRIEK:The baleful presence of ${name} inspires your enemies.
+message-invis:DRAIN_MANA:Something drains your mana away.
+message-invis:HOLD:Your muscles lock up for no apparent reason.
+message-invis:SHRIEK:Something inspires your enemies.
 desc:A figure carved from stone, with three vulture faces whose eyes glow with a
 desc: malevolent light.
 
@@ -8559,6 +8569,8 @@ flags:FORCE_SLEEP
 spell-freq:3
 spell-power:20
 spells:BO_ELEC | BE_ELEC | TELE_SELF_TO
+message-invis:BO_ELEC:The constant crackling subsides briefly and then resumes.
+message-invis:TELE_SELF_TO:The constant crackling subsides briefly and then resumes.
 desc:A man-shaped form of living lightning.  Sparks and shocks crackle all over
 desc: this madly capering figure, as it leaps and whirls around and about you.
 
@@ -9123,6 +9135,9 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLINK | WOUND | CONF | TPORT
+message-vis:WOUND:{name} crackles softly.
+message-invis:BLINK:Something crackles softly.
+message-invis:WOUND:Something crackles softly.
 desc:A strange ball of glowing light.  It disappears and reappears and seems to
 desc: draw you to it.  You seem somehow compelled to stand still and watch its
 desc: strange dancing motion.
@@ -9291,6 +9306,8 @@ spell-freq:5
 spells:WEAVE | CONF | SLOW | BLIND
 spells:BR_POIS | BR_DARK
 spell-power:10
+message-invis:SLOW:Something chitters.
+message-invis:BLIND:Something chitters.
 desc:A massive spider, heaving the bloated bag of its body between great
 desc: spined legs.
 
@@ -11602,6 +11619,8 @@ innate-freq:8
 spell-freq:8
 spells:ARROW | BLIND | CONF | SLOW
 spells:BR_POIS
+message-invis:BLIND:Something rumbles.
+message-invis:SLOW:Something rumbles.
 desc:A constructed dragon, the drolem has massive strength.  Powerful spells
 desc: weaved during its creation make it a fearsome adversary.  Its eyes show
 desc: little intelligence, but it has been instructed to destroy all it meets.
@@ -12800,6 +12819,9 @@ spell-freq:8
 spells:BRAIN_SMASH | WOUND | DRAIN_MANA | TELE_TO
 spells:BA_NETH
 spells:S_UNDEAD
+message-invis:WOUND:Something clatters.
+message-invis:DRAIN_MANA:Something clatters.
+message-invis:BA_NETH:Something clatters.
 desc:A skeletal form, black as night, constructed from the bones of its previous
 desc: victims.
 
@@ -13545,6 +13567,9 @@ spells:BA_ELEC | BA_FIRE
 spells:BO_PLAS
 spells:BR_FIRE
 spells:S_DEMON
+message-invis:BA_ELEC:Something rumbles.
+message-invis:BA_FIRE:Something rumbles.
+message-invis:BO_PLAS:Something rumbles.
 desc:A gigantic four-armed animated bronze statue of demonic shape, glowing with
 desc: great heat.
 
