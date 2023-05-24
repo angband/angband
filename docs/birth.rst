@@ -57,16 +57,18 @@ as the level rises, certain other abilities and characteristics rise as
 well. All characters start at 0 experience and at the first level.
 
 Each character has some gold, which can be used to buy items from the shops
-in the town, and which can be obtained not only from selling items to the
-shops, but also by taking it from dead monsters and by finding it in the
-dungeon. Each character starts out with some gold, the amount of which is
-based on the character's social class (higher is better) and stats (less
-powerful characters start with more gold). Each character also starts out
-with a few useful items, which may be kept, or sold to a shop-keeper for
-more gold.  However, especially valuable items will never sell for the full
-price, as each shopkeeper has a maximum that they are prepared to pay for any
-item. The more generous shopkeepers may buy your items for up to 30,000
-gold pieces: but some are really stingy, and will pay no more than 5,000.
+in the town. A character starts with a fixed amount of gold and some items.
+If you play with the starting kit option on (it is on by default), your
+character will have a few more useful items but less gold. A character can
+find more gold by taking it from dead monsters, finding it on the floors of
+the dungeon or by digging out veins of treasure from the walls of the dungeon.
+If you play with the no selling option off (it is on by default), you can
+sell items to the shopkeepers for gold. A shopkeeper will usually only buy
+certain classes of items, refuse to buy an item the shopkeeper believes is
+worthless and offer less gold for an item than she or he would sell it for.
+A shopkeeper also has an upper limit for the amount of gold offered for an
+item. The more generous shop-keepers will buy an item for up to 30,000 gold
+pieces, but some of the stingy ones will only pay 5,000.
 
 Each character has an "armour class", abbreviated to AC, representing how
 well the character can avoid damage. The armour class is affected by
