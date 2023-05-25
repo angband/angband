@@ -10547,8 +10547,8 @@ spell-freq:2
 spells:BLINK | TPORT
 spells:S_DEMON
 message-invis:BLINK:Something slurps.
-desc:A pile of pulsing flesh that glows with an inner hellish fire.  The world
-desc: itself seems to cry out against it.
+desc:A pile of pulsing flesh that reeks of sulfur.  The world itself seems to
+desc: cry out against it.
 
 name:draconic quylthulg
 base:quylthulg
@@ -13117,7 +13117,7 @@ spell-freq:2
 spells:BLINK | TELE_TO
 spells:S_HI_DEMON
 message-invis:BLINK:Something slurps.
-desc:A massive pulsating mound of flesh, glowing with a hellish light.
+desc:A massive pulsating mound of flesh, strongly reeking of sulfur.
 
 name:greater draconic quylthulg
 base:quylthulg
@@ -13135,8 +13135,7 @@ spell-freq:2
 spells:BLINK | TELE_TO
 spells:S_HI_DRAGON
 message-invis:BLINK:Something slurps.
-desc:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
-desc: light.
+desc:A massive mound of multi-hued scaled flesh, throbbing and pulsating.
 
 name:greater rotting quylthulg
 base:quylthulg
