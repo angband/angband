@@ -14,7 +14,6 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  */
-#include "math.h"
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
@@ -31,6 +30,7 @@
 #include "object.h"
 #include "ui-command.h"
 #include "wizard.h"
+#include <math.h>
 
 /**
  * The stats programs here will provide information on the dungeon, the monsters
