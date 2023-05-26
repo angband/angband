@@ -397,6 +397,7 @@ extern errr Term_inkey(ui_event *ch, bool wait, bool take);
 
 extern errr Term_save(void);
 extern errr Term_load(void);
+extern errr Term_load_all(void);
 
 extern errr Term_resize(int w, int h);
 
