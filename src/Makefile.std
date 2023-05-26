@@ -44,7 +44,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 # for libraries, you'll have to change LIBS so that directory with the library
 # is searched (i.e. if it's in /some/nonstandarad/path/lib then you'd add
 # -L/some/nonstandard/path/lib to LIBS for most compilers).
-# SYS_stats = -DUSE_STATS -lsqlite3
+# SYS_stats = -DUSE_STATS -lsqlite3 -lm
 # SYS_stats_objs = $(STATSMAINFILES)
 
 # Support SDL_mixer for sound if SOUND_sdl and SOUND_sdl_objs are set
@@ -61,7 +61,7 @@ CFLAGS = -O0 -g $(WARNINGS)
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
 INCLUDES = -I.
 # Example: -L/usr/X11R6/lib 
-LIBS = -lm
+LIBS =
 
 
 
