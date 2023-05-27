@@ -7736,7 +7736,7 @@ blow:CLAW:HURT:2d4
 blow:BITE:EXP_10:3d6
 flags:INVISIBLE
 flags:DROP_3 | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | PASS_WALL
+flags:PASS_WALL
 flags:NO_CONF | NO_SLEEP | IM_NETHER
 innate-freq:25
 spell-freq:10
@@ -9353,7 +9353,7 @@ blow:CLAW:HURT:3d8
 blow:CLAW:HURT:3d8
 blow:BITE:HURT:4d8
 flags:DROP_4
-flags:OPEN_DOOR | BASH_DOOR
+flags:BASH_DOOR
 flags:IM_COLD | NO_CONF | NO_SLEEP
 innate-freq:12
 spell-freq:20
@@ -10032,7 +10032,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:UNIQUE | MALE | POWERFUL
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR
+flags:BASH_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | NO_CONF
 flags:NO_SLEEP | NO_STUN | NO_HOLD
 innate-freq:4
@@ -10223,7 +10223,7 @@ blow:CLAW:HURT:3d12
 blow:CLAW:HURT:3d12
 blow:BITE:HURT:4d12
 flags:DROP_4
-flags:OPEN_DOOR | BASH_DOOR
+flags:BASH_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP
 flags:ATTR_MULTI
