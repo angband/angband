@@ -5033,7 +5033,7 @@ static void init_stuff(void)
 
 #endif /* USE_SAVER */
 
-	/* Save the the name of the ini-file */
+	/* Save the name of the ini-file */
 	ini_file = string_make(path);
 
 	/* Analyze the path */

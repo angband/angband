@@ -1185,7 +1185,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 
 /**
- * Print heading infor for the file
+ * Print heading info for the file
  */
 static void print_heading(void)
 {
@@ -1999,7 +1999,7 @@ static double stddev_d_sum_sum2(struct d_sum_sum2 s, int count)
 
 struct tunnel_aggregate {
 	/*
-	 * Hold the sums for for the normalized number of steps, number of
+	 * Hold the sums for the normalized number of steps, number of
 	 * wall piercings, normalized number of grids excavated, normalized
 	 * starting distance, and normalized final distance.  The first
 	 * includes all tunnels, the second only those that had early

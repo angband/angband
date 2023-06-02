@@ -228,7 +228,7 @@ static void store_display_recalc(struct store_context *ctx)
 	ctx->scr_places_x[LOC_OWNER] = wid - 2;
 	ctx->scr_places_x[LOC_WEIGHT] = wid - 14;
 
-	/* Add space for for prices */
+	/* Add space for prices */
 	if (store->feat != FEAT_HOME)
 		ctx->scr_places_x[LOC_WEIGHT] -= 10;
 
