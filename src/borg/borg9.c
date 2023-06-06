@@ -4172,7 +4172,7 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
     if (!suffix)
     {
         /* no variables, use message as is */
-        read_message->message_p1 = borg_trim_lead_space(message);
+        read_message->message_p1 = string_make(borg_trim_lead_space(message));
         return;
     }
     /* skip leading variable, if there is one */
@@ -4184,7 +4184,7 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
     if (!var)
     {
         /* one variable, use message post variable */
-        read_message->message_p1 = borg_trim_lead_space(suffix);
+        read_message->message_p1 = string_make(borg_trim_lead_space(suffix));
         return;
     }
     while (suffix[0] == ' ') suffix++;
@@ -4204,15 +4204,17 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
 
         /* two variables, ignore if last part is just . */
         if (strlen(suffix) && !streq(suffix, "."))
-            read_message->message_p2 = suffix;
+            read_message->message_p2 = string_make(suffix);
         return;
     }
     while (suffix[0] == ' ') suffix++;
     part_len = strlen(suffix) - strlen(var);
-    char* part2 = mem_zalloc(part_len + 1);
-    strncpy(part2, suffix, part_len);
-    read_message->message_p2 = borg_trim_lead_space(part2);
-
+    if (part_len)
+    {
+        char* part2 = mem_zalloc(part_len + 1);
+        strncpy(part2, suffix, part_len);
+        read_message->message_p2 = borg_trim_lead_space(part2);
+    }
     suffix += part_len;
     suffix = strchr(var, '}');
     if (!suffix)
@@ -4224,14 +4226,21 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
         while (suffix[0] == ' ') suffix++;
         /* three variables, ignore if last part is just . */
         if (strlen(suffix) && !streq(suffix, "."))
-            read_message->message_p3 = borg_trim_lead_space(suffix);
+            if (read_message->message_p2)
+                read_message->message_p3 = string_make(borg_trim_lead_space(suffix));
+            else
+                read_message->message_p2 = string_make(borg_trim_lead_space(suffix));
         return;
     }
     while (suffix[0] == ' ') suffix++;
     part_len = strlen(suffix) - strlen(var);
     char* part3 = mem_zalloc(part_len + 1);
     strncpy(part3, suffix, part_len);
-    read_message->message_p3 = borg_trim_lead_space(part3);
+    if (read_message->message_p2)
+        read_message->message_p3 = borg_trim_lead_space(part3);
+    else
+        read_message->message_p2 = borg_trim_lead_space(part3);
+
     return;
 }
 
@@ -4405,7 +4414,6 @@ void borg_init_9(void)
     /* Mega-Hack -- verify memory */
     test = mem_zalloc(400 * 1024L * sizeof(byte));
     mem_free(test);
-
 
     /*** Hack -- initialize some stuff ***/
     borg_required_item = mem_zalloc(MAX_CLASSES * sizeof(req_item*));
@@ -5766,6 +5774,7 @@ void do_cmd_borg(void)
             return;
         }
     }
+
     switch (cmd)
     {
         /* Command: Nothing */

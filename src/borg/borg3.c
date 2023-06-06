@@ -50,7 +50,7 @@ borg_shop* safe_shops;      /* Safety "shops" */
  * Spell info
  */
 
-borg_magic* borg_magics;   /* Spell info, individualized for class by spell number */
+borg_magic* borg_magics = NULL;   /* Spell info, individualized for class by spell number */
 
 
 /* Food Names */
