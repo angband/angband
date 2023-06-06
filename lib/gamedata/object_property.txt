@@ -459,6 +459,7 @@ id-type:on wield
 code:BLESSED
 power:1
 type-mult:bow:0
+type-mult:hafted:0
 type-mult:ring:0
 type-mult:amulet:0
 type-mult:light:0
