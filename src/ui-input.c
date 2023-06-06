@@ -117,6 +117,17 @@ struct keypress *inkey_next = NULL;
  */
 static bool keymap_auto_more;
 
+#ifdef ALLOW_BORG
+
+/*
+ * Mega-Hack -- special "inkey_hack" hook.  XXX XXX XXX
+ *
+ * This special function hook allows the "Borg" (see elsewhere) to take
+ * control of the "inkey()" function, and substitute in fake keypresses.
+ */
+struct keypress(*inkey_hack)(int flush_first) = NULL;
+
+#endif /* ALLOW_BORG */
 
 /**
  * Get a keypress from the user.
@@ -209,6 +220,24 @@ ui_event inkey_ex(void)
 
 	/* Forget pointer */
 	inkey_next = NULL;
+
+#ifdef ALLOW_BORG
+	/* Mega-Hack -- Use the special hook */
+	if (inkey_hack)
+	{
+		ke.key = (*inkey_hack)(inkey_xtra);
+		if (ke.key.type != EVT_NONE)
+		{
+			/* Cancel the various "global parameters" */
+			inkey_flag = false;
+			inkey_scan = 0;
+			ke.type = EVT_KBRD;
+
+			/* Accept result */
+			return (ke);
+		}
+	}
+#endif /* ALLOW_BORG */
 
 	/* Get the cursor state */
 	(void)Term_get_cursor(&cursor_state);
