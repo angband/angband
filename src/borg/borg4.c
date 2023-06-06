@@ -6,6 +6,7 @@
 #include "game-world.h"
 #include "mon-spell.h"
 #include "player-calcs.h"
+#include "cmd-core.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -666,7 +667,7 @@ int borg_calc_blows(int extra_blows);
 /*
 * Helper function -- notice one slot of ammo
 */
-void borg_notice_aux_ammo(int slot)
+static void borg_notice_aux_ammo(int slot)
 {
     const borg_item * item = &borg_items[slot];
 
@@ -802,8 +803,6 @@ static void borg_notice_aux1(void)
 
     int         extra_shots = 0;
     int         extra_might = 0;
-    int         mod_moves = 0;
-    int         dam_red = 0;
     int         my_num_fire;
 
     bitflag f[OF_SIZE];
@@ -1492,10 +1491,16 @@ static void borg_notice_aux1(void)
     if (item->tval == TV_LIGHT)
     {
         if (item->timeout)
+        {
             if (of_has(item->flags, OF_LIGHT_2))
+            {
                 borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 1;
+            }
             else if (of_has(item->flags, OF_LIGHT_3))
+            {
                 borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
+            }
+        }
     }
 
     borg_skill[BI_CURLITE] += item->modifiers[OBJ_MOD_LIGHT];
@@ -1659,7 +1664,7 @@ static void borg_notice_aux2(void)
             {
                 borg_skill[BI_ASHROOM] += item->iqty;
             }
-        /* fall into food analysis */
+        /* fall through */
         case TV_FOOD:
         /* Analyze */
 
@@ -2287,7 +2292,7 @@ int borg_calc_blows(int extra_blows)
 /*
  * for swap items for now lump all curses together as "bad"
  */
-bool borg_has_bad_curse(borg_item* item)
+static bool borg_has_bad_curse(borg_item* item)
 {
     if (item->curses[BORG_CURSE_TELEPORTATION] ||
         item->curses[BORG_CURSE_POISON] ||
@@ -2308,7 +2313,7 @@ bool borg_has_bad_curse(borg_item* item)
 /*
  * Helper function -- notice the player swap weapon
  */
-void borg_notice_weapon_swap(void)
+static void borg_notice_weapon_swap(void)
 {
     int i;
     int b_i = 0;
@@ -2771,7 +2776,7 @@ void borg_notice_weapon_swap(void)
 /*
  * Helper function -- notice the player swap armour
  */
-void borg_notice_armour_swap(void)
+static void borg_notice_armour_swap(void)
 {
     int i;
     int b_i = 0;
@@ -4157,7 +4162,7 @@ void borg_notice_home(borg_item* in_item, bool no_items)
 }
 
 
-bool borg_feature_protected(borg_grid* ag)
+static bool borg_feature_protected(borg_grid* ag)
 {
     if (ag->glyph || ag->kill ||
         ((ag->feat >= FEAT_CLOSED) && (ag->feat <= FEAT_PERM)))
@@ -4863,17 +4868,17 @@ static s32b borg_power_aux1(void)
             value += 10000L;
 
         /* Good to have one item with multiple high resists */
-        multibonus = (item->el_info[ELEM_POIS].res_level > 0 +
-            item->el_info[ELEM_SOUND].res_level > 0 +
-            item->el_info[ELEM_SHARD].res_level > 0 +
-            item->el_info[ELEM_NEXUS].res_level > 0 +
-            item->el_info[ELEM_NETHER].res_level > 0 +
-            item->el_info[ELEM_CHAOS].res_level > 0 +
-            item->el_info[ELEM_DISEN].res_level > 0 +
-            (item->el_info[ELEM_FIRE].res_level > 0 &&
-                item->el_info[ELEM_COLD].res_level > 0 &&
-                item->el_info[ELEM_ELEC].res_level > 0 &&
-                item->el_info[ELEM_ACID].res_level > 0) +
+        multibonus = ((item->el_info[ELEM_POIS].res_level > 0) +
+            (item->el_info[ELEM_SOUND].res_level > 0) +
+            (item->el_info[ELEM_SHARD].res_level > 0) +
+            (item->el_info[ELEM_NEXUS].res_level > 0) +
+            (item->el_info[ELEM_NETHER].res_level > 0) +
+            (item->el_info[ELEM_CHAOS].res_level > 0) +
+            (item->el_info[ELEM_DISEN].res_level > 0) +
+            ((item->el_info[ELEM_FIRE].res_level > 0) &&
+                (item->el_info[ELEM_COLD].res_level > 0) &&
+                (item->el_info[ELEM_ELEC].res_level > 0) &&
+                (item->el_info[ELEM_ACID].res_level > 0)) +
             (of_has(item->flags, OF_SUST_STR) &&
                 of_has(item->flags, OF_SUST_INT) &&
                 of_has(item->flags, OF_SUST_WIS) &&
@@ -5676,7 +5681,6 @@ static s32b borg_power_aux2(void)
         else
         {
             int what, when = 99;
-            int mana = 999;
 
             /* Scan the spells */
             for (what = 0; what < 9; what++)
@@ -6419,9 +6423,9 @@ s32b borg_power_home(void)
 /* *HACK* must match code in mon-blows.c */
 int borg_mon_blow_effect(const char* name)
 {
-    const static struct {
+    static const struct {
         const char* name;
-        enum MONBLOW	val;
+        enum BORG_MONBLOW	val;
     } monblow[] = {
     { "NONE", MONBLOW_NONE },
     { "HURT", MONBLOW_HURT },
@@ -6454,7 +6458,7 @@ int borg_mon_blow_effect(const char* name)
     { "HALLU", MONBLOW_HALLU },
     { "BLACK_BREATH", MONBLOW_BLACK_BREATH },
     { NULL, MONBLOW_NONE } };
-    int i;
+    unsigned long i;
     for (i = 0; i < sizeof(monblow) / sizeof(monblow[0]); ++i)
         if (!strcmp(name, monblow[i].name))
             return monblow[i].val;
