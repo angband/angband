@@ -1,0 +1,208 @@
+
+Greetings my friends and welcome to the world of mindless dribble.
+This source code will enable you to spend countless hours staring
+at your computer when you should be doing something more productive,
+anything more productive.
+
+You have a couple of options on how to get the borg running.  Be sure
+to copy the file borg.txt into the angband\lib\user  directory.  On
+my system, borg.txt is in c:\games\ang309\lib\user.
+
+For those using Unix, you need to put it in a different directory.
+The borg.txt file ought to be placed in the directory ~/.angband/Angband/ on Unix systems. 
+
+Option one:  
+Use the precompiled executable files and replace your
+angband.exe or angband.scr files with the ones with this package.
+1. copy the angband.exe and replace the existing one in your angband
+   directory.  If using the screensaver, copy and replace the
+   angband.scr in your windows directory.
+2. If using screensaver, copy the angband.ini included with the screensaver
+   zip file and put that in your windows directory as well.  Be sure to 
+   edit it so it points to the correct location of your angband files.
+   (See the notes below)
+   
+
+Option two:  Compile your own executable file using the borg source
+     code provided in this package.  Follow the instructions below.
+
+To install and compile this borg, you will need to do the following:
+1.  Modify the config.h to uncomment:
+        a. the allow_borg line
+        b. the score_borg line
+        c. the allow_borg_graphics line
+2.  Modify the makefile to include the borg1.o (or borg1.obj if windows)
+    though borg9.o
+3.  Make sure the file borg.txt is located in the \lib\user\ directory.
+    Unless you are using unix.  Unix users must have it in a specially 
+    named directory, but I don't remember what it is.
+4.  Modify your borg.txt file if you want to run the borg in a particular
+    fashion, including continuous play borgs.
+5.  Compile
+6.  Start the game, load up a character or make new one.
+7.  Hit control z, read and ignore the messages, hit z again.
+8.  Grab some popcorn and a soda, and watch your mind go numb.
+
+The borg may get stuck in certain situations.  He may have a Clock Overflow.
+He may loop buying and selling the same stuff over and over.  Believe me
+when I say that these have been addressed.  His loops are greatly reduced.
+
+Continuous Play Mode: (option)
+Upon the death of a borg, he will automatically reroll a random character,
+with a random name and start fresh from clevel 1.  To enable the Continuous
+Play Mode, turn the game option cheat_live on.  To do that enter the
+options by pressing the equal sign (=) then Cheat Options (6).
+
+If you want, you can tell the borg to select a certain race and or class for
+the next one rolled up.  You can make these selections from the borg.txt file.
+
+The Continual Play Mode is NOT turned on by default, you will need to
+select it.
+
+This borg is updated frequently.  You can get the lastest source
+as well as executables at http://innovapain.com/borg
+
+Have Fun,
+Dr. Andrew White
+
+
+
+===========================
+ Angband Borg Screen Saver
+===========================
+
+by Robert Ruehlmann < rr9@angband.org >
+   Andrew White     < andrew@innovapain.com >
+   
+Uses Andrew P. White's APWBorg.
+(see http://innovapain.com/borg).
+
+
+Description:
+------------
+
+A screensaver that runs the vanilla Angband Windows version with the
+APW Borg and automatically restarts the Borg when the character dies
+(continuous play mode).
+
+The borg engine is updated frequently, so visit Dr. White's page and
+obtain the most recent version of the borg.  You may also down-load
+an up to date executable of the screensaver from that page.
+
+Note that the Angband display is not always dynamic and may not
+protect your monitor from burning-in of images.  While this is highly
+unlikely with modern monitors you might want to configure the energy
+saving settings for your monitor so that it turns itself off after
+some time of inactivity.  The screensaver will also keep the
+processor and hard-disk busy.  Power-saving features that depend on
+inactivity of these parts won't be effective while the screensaver
+is running.  You have been warned.
+
+
+Installation:
+-------------
+
+Copy angband.scr and the included angband.ini into your Windows directory.
+
+Make sure you have the Windows version of Angband installed.
+If you don't have it yet, then download it from
+http://rephial.org/ and install it.  You will need all the supporting files
+found in the Lib directory.
+
+Open angband.ini with a text-editor and modify "AngbandPath" so that
+it points to the directory where Angband for Windows is
+installed. Note that the path has to end with a backslash ('\').
+
+The "SaverFile" variable should contain the name of the character you
+want to use for the screensaver.  A random character will be
+automatically created if the character doesn't exist yet.  Note that
+the savefile will be marked as cheater and won't get an highscore
+entry!  
+
+With the changes to the 3.0.9 game code, there is a slight flaw
+in how the borg rolls up the first character for the screensaver.  The
+character is rolled but the borg won't engage until the next time the
+screensaver is activated.
+
+It is recommended that you create a normal character using the regular
+version of Angband and setup your term windows the way you like them.
+Then save that file and use that file name as the "SaverFile" for your
+screensaver.
+
+For example, I have these three lines in my angband.ini file.
+[Angband]
+AngbandPath="c:\games\angband-3.0.9\"
+SaverFile="Saver"
+
+Test the screen saver in windows.  Select the screensaver in the 
+Windows Display Properties and test it!
+
+
+Technical stuff:
+----------------
+
+The screensaver is basically just a renamed Windows Angband
+executable.  The main-win.c file has been heavily modified to allow
+the game to act as screensaver.
+
+"SCORE_BORGS" has been turned on so that normal Borgs (but not Borgs
+used with the continuous play mode turned on like in the
+screensaver!) will get highscore entries.
+
+The screensaver uses the angband.ini of the normal Angband
+installation to determine the screen-layout, as well as the graphics
+and sound settings.
+
+My "ALLOW_BORG_GRAPHICS" code that is included in the APW Borg has
+been turned on, so the Borg runs nicely with the various graphics
+and "view_foo_lite" lighting settings.
+
+The screensaver can be used as normal Angband executable by renaming
+it to angband.exe and replacing the old exe in the Angband 
+installation directory with it.
+
+The screensaver tries to be "nice" and only uses processor cycles
+when the processor would be idle otherwise.  It shouldn't slow down
+other processes that might be running.
+
+The user can also switch that feature on with the "Options/Low
+priority" menu-entry when using the screensaver as normal Angband
+executable (very useful for running Borgs in the background).
+
+Known problems:
+---------------
+
+- No preview of the screensaver when in the Windows display
+  properties.
+- Password protection doesn't work yet (note that Windows NT seems
+  to handle password protection itself, so this might be no problem
+  on NT and maybe Windows 2000 machines).
+- Configuration of the screenserver should be possible with a dialog
+  instead of an ini-file.
+- Selecting "Show scores" while the Borg is running will probably
+  crash the Borg since it can't parse the score-screen.
+- The screensaver probably won't work correctly with other Borgs that
+  don't provide a continuous play mode compatible with the APW code.
+- Running the same savefile twice at the same time (for example by
+  running a normal game and the screensaver with the same savefile)
+  might lead to problems.
+- The size of some info windows can increase when exiting the "pseudo-
+  screensaver" mode started from the options menu.
+- The Borg is a very complicated piece of code and contains lots of bugs.
+  Expect slowdowns, loops, crashes, and other problems.  If you encounter
+  a suspect bug, first consult the APWBorg Webpage for a updated screen-
+  saver, and check the Daily Log of Changes to see if your bug has been
+  fixed.  If not, then send the bug and savefile to Dr. White at
+  andrew@innovapain.com
+
+
+Links:
+------
+
+APW-Borg homepage:
+http://innovapain.com/borg
+
+Angband homepage:
+http://rephial.org/
+
+
