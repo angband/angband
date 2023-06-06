@@ -491,7 +491,7 @@ bool borg_needs_quick_shopping = false; /* Needs to buy without browsing all sho
 s16b borg_best_fit_item = -1;	/* Item to be worn.  Index used to note which item not to sell */
 int borg_best_item = -1;  /* Attempting to wear a best fit item */
 
-char* shop_menu_items = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
+const char* shop_menu_items = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 
 byte borg_nasties_num = 7;	/* Current size of the list */
 byte borg_nasties_count[7];
@@ -2847,13 +2847,13 @@ static int borg_lookup_sval_fail(int tval, const char* name)
     int sval = lookup_sval(tval, name);
     if (sval == -1)
     {
-        borg_note(format("**STARTUP FAILURE** sval lookup failure ", name));
+        borg_note(format("**STARTUP FAILURE** sval lookup failure - %s ", name));
         borg_init_failure = true;
     }
     return sval;
 }
 
-void borg_init_svs_and_kvs(void)
+static void borg_init_svs_and_kvs(void)
 {
     int tval = tval_find_idx("food");
     sv_food_ration = borg_lookup_sval_fail(tval, "Ration of Food");

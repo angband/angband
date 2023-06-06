@@ -705,7 +705,7 @@ extern int bought_item_store[10];
 extern int bought_item_num;
 extern int bought_item_nxt;
 
-extern char * shop_menu_items;
+extern const char * shop_menu_items;
 extern byte borg_nasties_num;
 extern byte borg_nasties_count[7];
 extern char borg_nasties[7];
