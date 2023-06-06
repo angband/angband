@@ -422,9 +422,10 @@ extern enum borg_need borg_maintain_light(void);
 extern bool borg_refuel_lantern(void);
 
 /*
- * Item usage functions (by sval)
+ * Item usage functions
  */
-extern bool borg_eat_food(int sval);
+extern bool borg_obj_has_effect(u32b kind, int index, int subtype);
+extern bool borg_eat_food(int tval, int sval);
 extern bool borg_quaff_crit(bool no_check);
 extern bool borg_quaff_potion(int sval);
 extern bool borg_eat_unknown(void);

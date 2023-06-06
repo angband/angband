@@ -705,7 +705,7 @@ static bool borg_eat_food_any(void)
         if (item->tval != TV_FOOD) continue;
 
         /* Eat something of that type */
-        if (borg_eat_food(item->sval)) return (true);
+        if (borg_eat_food(item->tval, item->sval)) return (true);
     }
 
     /* Scan the inventory for "okay" food */
@@ -720,10 +720,16 @@ static bool borg_eat_food_any(void)
         if (!item->kind) continue;
 
         /* Skip non-food */
-        if (item->tval != TV_FOOD) continue;
+        if (item->tval != TV_FOOD && item->tval != TV_MUSHROOM) continue;
+
+        /* Skip non-food */
+        if (!borg_obj_has_effect(item->kind, EF_NOURISH, 0) &&
+            !borg_obj_has_effect(item->kind, EF_NOURISH, 2) &&
+            !borg_obj_has_effect(item->kind, EF_NOURISH, 3))
+            continue;
 
         /* Eat something of that type */
-        if (borg_eat_food(item->sval)) return (true);
+        if (borg_eat_food(item->tval, item->sval)) return (true);
     }
 
     /* Scan the inventory for "potions" food */
@@ -2679,7 +2685,7 @@ static bool borg_heal(int danger)
             return (true);
         }
         if (danger < borg_skill[BI_CURHP] + csw_heal &&
-            (borg_eat_food(sv_mush_cure_mind) ||
+            (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
                 borg_quaff_potion(sv_potion_cure_serious) ||
                 borg_quaff_crit(false) ||
                 borg_quaff_potion(sv_potion_healing) ||
@@ -2749,7 +2755,7 @@ static bool borg_heal(int danger)
         if (!(borg_class == CLASS_WARRIOR && borg_skill[BI_CURHP] > borg_skill[BI_MAXHP] / 4 &&
             borg_skill[BI_ESP]))
         {
-            if (borg_eat_food(sv_mush_fast_recovery) ||
+            if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
                 borg_quaff_potion(sv_potion_cure_light) ||
                 borg_quaff_potion(sv_potion_cure_serious) ||
                 borg_quaff_crit(true) ||
@@ -2838,7 +2844,7 @@ static bool borg_heal(int danger)
     /* Restoring while fighting Morgoth */
     if (stats_needing_fix >= 5 && borg_fighting_unique >= 10 &&
         borg_skill[BI_CURHP] > 650 &&
-        borg_eat_food(sv_mush_restoring))
+        borg_eat_food(TV_MUSHROOM, sv_mush_restoring))
     {
         borg_note("# Trying to fix stats in combat.");
         return(true);
@@ -3062,8 +3068,8 @@ static bool borg_heal(int danger)
             borg_activate_artifact("CURE_FULL2") ||
             borg_activate_artifact("CURE_NONORLYBIG") ||
             borg_use_staff(sv_staff_curing) ||
-            borg_eat_food(sv_mush_fast_recovery) ||
-            borg_eat_food(sv_mush_purging) ||
+            borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
+            borg_eat_food(TV_MUSHROOM, sv_mush_purging) ||
             /* buy time */
             borg_quaff_crit(true) ||
             borg_spell_fail(HEALING, 60) ||
@@ -4504,7 +4510,7 @@ bool borg_caution(void)
             borg_note("# Healing.  Confusion.");
             return (true);
         }
-        if (borg_eat_food(sv_mush_cure_mind) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
             borg_quaff_potion(sv_potion_healing) ||
@@ -4520,7 +4526,7 @@ bool borg_caution(void)
         (randint0(100) < 70 ||
             (borg_class == CLASS_WARRIOR && borg_skill[BI_AMISSILES] <= 0)))
     {
-        if (borg_eat_food(sv_mush_cure_mind) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_boldness) ||
             borg_quaff_potion(sv_potion_heroism) ||
             borg_quaff_potion(sv_potion_berserk) ||
@@ -11600,7 +11606,7 @@ static int borg_defend_aux_shield(int p1)
         borg_note("# Attempting to eat a stone skin");
 
         /* do it! */
-        if (borg_eat_food(sv_mush_stoneskin))
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_stoneskin))
         {
             /* No resting to recoop mana */
             borg_no_rest_prep = 2000;
@@ -14942,7 +14948,7 @@ bool borg_recover(void)
     /* Hack -- cure stun */
     if (borg_skill[BI_ISHEAVYSTUN])
     {
-        if (borg_eat_food(sv_mush_fast_recovery) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
             borg_activate_artifact("CURE_BODY") ||
             borg_activate_artifact("CURE_CRITICAL") ||
             borg_activate_artifact("CURE_FULL") ||
@@ -14980,7 +14986,7 @@ bool borg_recover(void)
     /* Hack -- cure poison */
     if (borg_skill[BI_ISPOISONED] && (q < 75))
     {
-        if (borg_eat_food(sv_mush_fast_recovery) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
             borg_activate_artifact("REM_FEAR_POIS") ||
             borg_spell(HERBAL_CURING) ||
             borg_spell(CURE_POISON))
@@ -14995,7 +15001,7 @@ bool borg_recover(void)
     /* Hack -- cure fear */
     if (borg_skill[BI_ISAFRAID] && !borg_skill[BI_CRSFEAR] && (q < 75))
     {
-        if (borg_eat_food(sv_mush_cure_mind) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_activate_artifact("REM_FEAR_POIS") ||
             borg_spell(HEROISM) ||
             borg_spell(BERSERK_STRENGTH) ||
@@ -15021,7 +15027,7 @@ bool borg_recover(void)
     /* Hack -- hallucination */
     if (borg_skill[BI_ISIMAGE] && (q < 75))
     {
-        if (borg_eat_food(sv_mush_cure_mind))
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind))
         {
             return (true);
         }
@@ -15115,10 +15121,10 @@ bool borg_recover(void)
     /* Hack -- cure poison */
     if (borg_skill[BI_ISPOISONED] && (q < 25))
     {
-        if (borg_eat_food(sv_mush_fast_recovery) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
             borg_quaff_potion(sv_potion_cure_poison) ||
-            borg_eat_food(sv_food_waybread) ||
-            borg_eat_food(sv_mush_fast_recovery) ||
+            borg_eat_food(TV_FOOD, sv_food_waybread) ||
+            borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
             borg_quaff_crit(borg_skill[BI_CURHP] < 10) ||
             borg_use_staff_fail(sv_staff_curing) ||
             borg_zap_rod(sv_rod_curing) ||
@@ -15131,8 +15137,8 @@ bool borg_recover(void)
     /* Hack -- cure blindness */
     if (borg_skill[BI_ISBLIND] && (q < 25))
     {
-        if (borg_eat_food(sv_mush_fast_recovery) ||
-            borg_eat_food(sv_mush_fast_recovery) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
+            borg_eat_food(TV_FOOD, sv_food_waybread) ||
             borg_quaff_potion(sv_potion_cure_light) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
@@ -15146,7 +15152,7 @@ bool borg_recover(void)
     /* Hack -- cure confusion */
     if (borg_skill[BI_ISCONFUSED] && (q < 25))
     {
-        if (borg_eat_food(sv_mush_cure_mind) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
             borg_use_staff_fail(sv_staff_curing) ||
@@ -15159,7 +15165,7 @@ bool borg_recover(void)
     /* Hack -- cure fear */
     if (borg_skill[BI_ISAFRAID] && !borg_skill[BI_CRSFEAR] && (q < 25))
     {
-        if (borg_eat_food(sv_mush_cure_mind) ||
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_boldness) ||
             borg_quaff_potion(sv_potion_heroism) ||
             borg_quaff_potion(sv_potion_berserk) ||

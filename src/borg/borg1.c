@@ -2847,7 +2847,7 @@ static int borg_lookup_sval_fail(int tval, const char* name)
     int sval = lookup_sval(tval, name);
     if (sval == -1)
     {
-        borg_note(format("**STARTUP FAILURE** sval lookup failure ", name));
+        borg_note(format("**STARTUP FAILURE** sval lookup failure - %s ", name));
         borg_init_failure = true;
     }
     return sval;

@@ -623,17 +623,6 @@ extern const int adj_str_blow[STAT_RANGE];
 int borg_calc_blows(int extra_blows);
 
 
-static bool borg_obj_has_effect(struct effect* e, int index, int subtype)
-{
-    if (e)
-    {
-        if (e->index == index && (e->subtype == subtype || subtype == -1))
-            return true;
-        return borg_obj_has_effect(e->next, index, subtype);
-    }
-    return false;
-}
-
 /*
  * Note that we assume that any item with quantity zero does not exist,
  * thus, when simulating possible worlds, we do not actually have to
@@ -1679,19 +1668,19 @@ static void borg_notice_aux2(void)
             break;
 
         /* check for food that won't hurt us and gives nutrition */
-        if (borg_obj_has_effect(k_info[item->kind].effect, EF_NOURISH, 0) ||
-            borg_obj_has_effect(k_info[item->kind].effect, EF_NOURISH, 2) ||
-            borg_obj_has_effect(k_info[item->kind].effect, EF_NOURISH, 3))
+        if (borg_obj_has_effect(item->kind, EF_NOURISH, 0) ||
+            borg_obj_has_effect(item->kind, EF_NOURISH, 2) ||
+            borg_obj_has_effect(item->kind, EF_NOURISH, 3))
         {
-            if (borg_obj_has_effect(k_info[item->kind].effect, EF_CRUNCH, -1) ||
-                borg_obj_has_effect(k_info[item->kind].effect, EF_TIMED_INC, TMD_CONFUSED))
+            if (borg_obj_has_effect(item->kind, EF_CRUNCH, -1) ||
+                borg_obj_has_effect(item->kind, EF_TIMED_INC, TMD_CONFUSED))
                 break;
             amt_food_hical += item->iqty;
-            if (borg_obj_has_effect(k_info[item->kind].effect, EF_CURE, TMD_POISONED))
+            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_POISONED))
                 borg_skill[BI_ACUREPOIS] += item->iqty;
-            if (borg_obj_has_effect(k_info[item->kind].effect, EF_CURE, TMD_CONFUSED))
+            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_CONFUSED))
                 amt_cure_confusion += item->iqty;
-            if (borg_obj_has_effect(k_info[item->kind].effect, EF_CURE, TMD_BLIND))
+            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_BLIND))
                 amt_cure_blind += item->iqty;
 
         }

@@ -167,21 +167,21 @@ bool borg_use_things(void)
     /* Quaff potions of "restore" stat if needed */
     if ( (borg_skill[BI_ISFIXSTR] &&
          (borg_quaff_potion(sv_potion_inc_str) ||
-          borg_eat_food(sv_mush_purging)||
-          borg_eat_food(sv_mush_restoring))) ||
+          borg_eat_food(TV_MUSHROOM, sv_mush_purging)||
+          borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXINT] &&
          (borg_quaff_potion(sv_potion_inc_int) ||
-          borg_eat_food(sv_mush_restoring))) ||
+          borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXWIS] &&
          (borg_quaff_potion(sv_potion_inc_wis) ||
-          borg_eat_food(sv_mush_restoring))) ||
+          borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXDEX] &&
          (borg_quaff_potion(sv_potion_inc_dex) ||
-          borg_eat_food(sv_mush_restoring))) ||
+          borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXCON] &&
          (borg_quaff_potion(sv_potion_inc_con) ||
-          borg_eat_food(sv_mush_purging) ||
-          borg_eat_food(sv_mush_restoring))))
+          borg_eat_food(TV_MUSHROOM, sv_mush_purging) ||
+          borg_eat_food(TV_MUSHROOM, sv_mush_restoring))))
     {
         return (true);
     }
@@ -242,9 +242,9 @@ bool borg_use_things(void)
         /* Attempt to satisfy hunger */
         if (borg_spell(REMOVE_HUNGER) ||
             borg_spell(HERBAL_CURING)||
-            borg_eat_food(sv_food_slime_mold)||
-            borg_eat_food(sv_food_waybread) ||
-            borg_eat_food(sv_food_ration))
+            borg_eat_food(TV_FOOD, sv_food_slime_mold)||
+            borg_eat_food(TV_FOOD, sv_food_waybread) ||
+            borg_eat_food(TV_FOOD, sv_food_ration))
         {
             return (true);
         }
@@ -1567,6 +1567,17 @@ static bool borg_consume(int i)
 	        break;
 
         case TV_FOOD:
+        /* Check the grub */
+        if (item->sval == sv_food_ration ||
+            item->sval == sv_food_slime_mold ||
+            item->sval == sv_food_waybread)
+
+            /* Try eating the food (unless Bloated) */
+            if (!borg_skill[BI_ISFULL] && borg_eat_food(item->tval, item->sval)) return (true);
+
+        break;
+
+        case TV_MUSHROOM:
 
         /* Check the grub */
 		if (item->sval == sv_mush_second_sight ||
@@ -1578,15 +1589,12 @@ static bool borg_consume(int i)
 			item->sval == sv_mush_stoneskin ||
 			item->sval == sv_mush_debility ||
 			item->sval == sv_mush_sprinting ||
-			item->sval == sv_mush_purging ||
-			item->sval == sv_food_ration ||
-			item->sval == sv_food_slime_mold ||
-			item->sval == sv_food_waybread)
+			item->sval == sv_mush_purging)
 
             /* Try eating the food (unless Bloated) */
-            if (!borg_skill[BI_ISFULL] && borg_eat_food(item->sval)) return (true);
+            if (!borg_skill[BI_ISFULL] && borg_eat_food(item->tval, item->sval)) return (true);
 
-	        break;
+        break;
     }
 
 

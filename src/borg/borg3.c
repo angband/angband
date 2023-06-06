@@ -1185,18 +1185,35 @@ bool borg_refuel_lantern(void)
     return (true);
 }
 
-
+/*
+ * Helper to see if an object does a certain thing 
+ * 
+ * kind     - kind index
+ * index    - index of the effect
+ * subtype  - subtype of the effect 
+ */
+bool borg_obj_has_effect(u32b kind, int index, int subtype)
+{
+    struct effect* ke = k_info[kind].effect;
+    while (ke)
+    {
+        if (ke->index == index && (ke->subtype == subtype || subtype == -1))
+            return true;
+        ke = ke->next;
+    }
+    return false;
+}
 
 
 /*
  * Hack -- attempt to eat the given food (by sval)
  */
-bool borg_eat_food(int sval)
+bool borg_eat_food(int tval, int sval)
 {
     int i;
 
     /* Look for that food */
-    i = borg_slot(TV_FOOD, sval);
+    i = borg_slot(tval, sval);
 
     /* None available */
     if (i < 0) return (false);
@@ -3278,7 +3295,6 @@ const char* borg_prt_item(int item)
         z_info->a_max]);
 
 }
-
 
 
 #ifdef MACINTOSH
