@@ -199,7 +199,7 @@ projection.txt
   src/project-obj.c for effects on objects, and other similarly-named files.
 
 realm.txt
-  This contains a small amount of information about the two current magic
+  This contains a small amount of information about the four current magic
   realms.
 
 summon.txt

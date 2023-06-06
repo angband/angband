@@ -770,7 +770,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 /**
  * Cast an arc-shaped spell.  This is nothing more than a sphere spell
  * centered on the caster with a value for degrees_of_arc (how many degrees
- * wide the the arc is) that is not 360, essentially the same as a breath.
+ * wide the arc is) that is not 360, essentially the same as a breath.
  * The direction given will be the center of the arc, which travels outwards
  * from the caster to a distance given by rad. -LM-
  *

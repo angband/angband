@@ -67,7 +67,6 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
-#include "math.h"
 #include "mon-group.h"
 #include "mon-make.h"
 #include "mon-spell.h"

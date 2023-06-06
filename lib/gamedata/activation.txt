@@ -1160,7 +1160,7 @@ dice:75
 effect:CURE:POISONED
 effect:HEAL_HP
 dice:4d8
-desc:restores 4d8 hit points and neutralizes poison
+desc:restores 4d8 hit points, neutralizes poison and leaves you very well fed
 
 name:SHROOM_EMERGENCY
 aim:0

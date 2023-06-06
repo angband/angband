@@ -740,7 +740,7 @@ static errr sdl_FontCreate(sdl_Font *font, const term_font *req_font,
 /**
  * Draw some text onto a surface, allowing shaded backgrounds
  * The surface is first checked to see if it is compatible with
- * this font, if it isn't the the font will be 're-precalculated'
+ * this font, if it isn't the font will be 're-precalculated'
  *
  * You can, I suppose, use one font on many surfaces, but it is
  * definitely not recommended. One font per surface is good enough.
@@ -780,7 +780,7 @@ static errr sdl_mapFontDraw(sdl_Font *font, SDL_Surface *surface,
 /**
  * Draw some text onto a surface
  * The surface is first checked to see if it is compatible with
- * this font, if it isn't the the font will be 're-precalculated'
+ * this font, if it isn't the font will be 're-precalculated'
  *
  * You can, I suppose, use one font on many surfaces, but it is
  * definitely not recommended. One font per surface is good enough.

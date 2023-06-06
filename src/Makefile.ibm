@@ -15,7 +15,7 @@ CFLAGS = -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNIN
 
 # Add additional search directives here
 INCLUDES = -I.
-LIBS = -lm -lpc
+LIBS = -lpc
 
 
 

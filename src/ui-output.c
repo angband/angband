@@ -407,11 +407,12 @@ void prt(const char *str, int row, int col) {
 /**
  * Screen loading and saving can be done to an arbitrary depth but it's
  * important that every call to screen_save() is balanced by a call to
- * screen_load() later on.  'screen_save_depth' is used by the game to keep
- * track of whether it should try to update the map and sidebar or not,
- * so if you miss out a screen_load you will not get proper game updates.
+ * screen_load() or screen_load_all() later on.  'screen_save_depth' is used
+ * by the game to keep track of whether it should try to update the map and
+ * sidebar or not, so if you miss out a screen_load or screen_load_all you will
+ * not get proper game updates.
  *
- * Term_save() / Term_load() do all the heavy lifting here.
+ * Term_save() / Term_load() / Term_load_all() do all the heavy lifting here.
  */
 
 /**
@@ -438,6 +439,17 @@ void screen_load(void)
 {
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_load();
+	screen_save_depth--;
+}
+
+/**
+ * Load the screen by replaying all the saves in reverse order with a redraw
+ * for each and decrease the "icky" depth.
+ */
+void screen_load_all(void)
+{
+	event_signal(EVENT_MESSAGE_FLUSH);
+	Term_load_all();
 	screen_save_depth--;
 }
 

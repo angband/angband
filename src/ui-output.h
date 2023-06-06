@@ -96,6 +96,7 @@ void prt(const char *str, int row, int col);
 extern int16_t screen_save_depth;
 void screen_save(void);
 void screen_load(void);
+void screen_load_all(void);
 bool textui_map_is_visible(void);
 
 

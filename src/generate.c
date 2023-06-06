@@ -35,7 +35,6 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
-#include "math.h"
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-spell.h"

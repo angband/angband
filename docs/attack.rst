@@ -430,16 +430,14 @@ Ego Melee Weapons:
   will increase your wisdom and your armour class. This weapon will do
   extra damage when used against evil, demonic and undead creatures, and
   will also give you the ability to see invisible creatures. These weapons
-  are basically extremely powerful versions of Blessed Blades and can be
-  wielded by priests with no penalty. These weapons, like (Defender)
+  are basically extremely powerful versions of Blessed Blades and give
+  melee bonuses to priests and paladins. These weapons, like (Defender)
   weapons, also will sustain one random stat.
 
 (Blessed)
-  A blessed blade will increase your wisdom. If you are a priest, wielding
-  a non-blessed sword or polearm causes a small penalty while attacking and
-  may infuriate your god, decreasing the chances that she will accept your
-  prayers: a blessed blade may be wielded without this penalty. Blessed
-  blades also have one extra, random, power.
+  A blessed blade will increase your wisdom. If you are a priest or paladin,
+  wielding one gives you bonuses for melee combat. Blessed blades also have
+  one extra, random, power.
 
 Weapon of Westernesse
   A Weapon of Westernesse is one of the more powerful weapons. It does

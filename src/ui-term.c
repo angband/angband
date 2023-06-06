@@ -1039,7 +1039,7 @@ static int is_padding_changed(term *t, int y, int x)
 	}
 	for (ys = y + 1; ys < ysl; ++ys) {
 		for (xs = x; xs < xsl; ++xs) {
-			if (t->scr->a[y][xs] == 255 &&
+			if (t->scr->a[ys][xs] == 255 &&
 					(t->scr->a[ys][xs] != t->old->a[ys][xs] ||
 					t->scr->c[ys][xs] != t->old->c[ys][xs] ||
 					t->scr->ta[ys][xs] != t->old->ta[ys][xs] ||
@@ -2710,7 +2710,8 @@ errr Term_inkey(ui_event *ch, bool wait, bool take)
 /**
  * Save the "requested" screen into the "memorized" screen
  *
- * Every "Term_save()" should match exactly one "Term_load()"
+ * Every "Term_save()" should match exactly one "Term_load()" or
+ * "Term_load_all()"
  */
 errr Term_save(void)
 {
@@ -2743,7 +2744,8 @@ errr Term_save(void)
 /**
  * Restore the "requested" contents (see above).
  *
- * Every "Term_save()" should match exactly one "Term_load()"
+ * Every "Term_save()" should match exactly one "Term_load()" or
+ * "Term_load_all()"
  */
 errr Term_load(void)
 {
@@ -2790,6 +2792,66 @@ errr Term_load(void)
 	return (0);
 }
 
+
+/**
+ * Restore the "requested" contents (see above).  Differs from Term_load() in
+ * that all the previous saves are replayed from earliest to latest with a
+ * redraw for each.  That is useful for accurately restoring the display if
+ * the saves include partially overwritten big tiles.
+ *
+ * Every "Term_save()" should match exactly one "Term_load()" or
+ * "Term_load_all()"
+ */
+errr Term_load_all(void)
+{
+	int w = Term->wid;
+	int h = Term->hgt;
+	struct reversed_save {
+		term_win *saved_mem; struct reversed_save *next;
+	} *reversed_list = NULL;
+	struct term_win *cursor;
+
+	for (cursor = Term->mem; cursor; cursor = cursor->next) {
+		struct reversed_save *new_head = mem_alloc(sizeof(*new_head));
+
+		new_head->saved_mem = cursor;
+		new_head->next = reversed_list;
+		reversed_list = new_head;
+	}
+
+	while (reversed_list) {
+		struct reversed_save *tgt = reversed_list;
+		int y;
+
+		reversed_list = reversed_list->next;
+		term_win_copy(Term->scr, tgt->saved_mem, w, h);
+		mem_free(tgt);
+
+		/* Assume change */
+		for (y = 0; y < h; y++) {
+			/* Assume change */
+			Term->x1[y] = 0;
+			Term->x2[y] = w - 1;
+		}
+		Term->y1 = 0;
+		Term->y2 = h - 1;
+
+		/* Force a redraw with those contents. */
+		Term_fresh();
+	}
+
+	/* Drop the most recent save. */
+	if (Term->mem) {
+		cursor = Term->mem;
+		Term->mem = Term->mem->next;
+		term_win_nuke(cursor);
+		mem_free(cursor);
+	}
+	Term->saved--;
+
+	/* Success */
+	return (0);
+}
 
 
 /**
