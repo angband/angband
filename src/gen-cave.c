@@ -953,9 +953,12 @@ static void handle_level_stairs(struct chunk *c, bool persistent, bool quest,
 	 * the walls; the buffer space could be one - shared by the
 	 * staircases - but the reservations in the room map don't allow for
 	 * that) so the staircase rooms in the connecting level won't overlap.
-	 * For non-persistent levels, don't constrain the stair placement.
+	 * For both the persistent and non-persistent case, also require that
+	 * the stairs be at least 1/4th of the level's diameter (PowerDiver's
+	 * suggestion) apart to prevent them from all appearing in certain
+	 * rooms.
 	 */
-	int minsep = (persistent) ? 4 : 0;
+	int minsep = MAX(MIN(c->width, c->height) / 4, (persistent) ? 4 : 0);
 
 	if (!persistent || !chunk_find_adjacent(c->depth, false)) {
 		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
