@@ -381,10 +381,13 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
             if (sneak && bad_sneak && !borg_desperate && !twitchy) continue;
 
             /* Avoid "wall" grids (not doors) unless tunneling*/
-            if (!tunneling && ag->feat >= FEAT_SECRET) continue;
+            if (!tunneling && (ag->feat >= FEAT_SECRET && ag->feat != FEAT_PASS_RUBBLE)) continue;
 
             /* Avoid "perma-wall" grids */
-            if (ag->feat >= FEAT_PERM) continue;
+            if (ag->feat == FEAT_PERM) continue;
+
+            /* Avoid "Lava" grids (for now) */
+            if (ag->feat == FEAT_LAVA) continue;
 
             /* Avoid unknown grids (if requested or retreating)
              * unless twitchy.  In which case, expore it
@@ -17572,7 +17575,7 @@ bool borg_flow_kill_corridor_2(bool viewable)
 
             /* Can't tunnel a non wall or permawall*/
             if (ag->feat != FEAT_NONE && ag->feat < FEAT_MAGMA) continue;
-            if (ag->feat >= FEAT_PERM)
+            if (ag->feat == FEAT_PERM)
             {
                 perma_grids++;
                 continue;
@@ -17718,9 +17721,11 @@ bool borg_flow_recover(bool viewable, int dist)
             if (borg_grids[y][x].feat == FEAT_PERM ||
                 borg_grids[y][x].feat == FEAT_CLOSED ||
                 borg_grids[y][x].feat == FEAT_RUBBLE ||
+                borg_grids[y][x].feat == FEAT_QUARTZ ||
+                borg_grids[y][x].feat == FEAT_QUARTZ_K ||
                 borg_grids[y][x].feat == FEAT_MAGMA ||
                 borg_grids[y][x].feat == FEAT_MAGMA_K ||
-                borg_grids[y][x].feat == FEAT_PERM ||
+                borg_grids[y][x].feat == FEAT_PASS_RUBBLE ||
                 borg_grids[y][x].feat == FEAT_GRANITE) continue;
 
             /* Can I rest on that one? */

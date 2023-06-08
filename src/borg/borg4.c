@@ -8851,7 +8851,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
             if (borg_grids[y_temp][x_temp].feat == FEAT_CLOSED) continue;
 
             /* Cannot occupy a perma-wall */
-            if (borg_grids[y_temp][x_temp].feat >= FEAT_PERM) continue;
+            if (borg_grids[y_temp][x_temp].feat == FEAT_PERM) continue;
 
             /* Cannot occupy a wall/seam grid (unless pass_wall or kill_wall) */
             if (borg_grids[y_temp][x_temp].feat == FEAT_GRANITE ||
@@ -8962,7 +8962,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
             if (borg_grids[y_temp][x_temp].feat == FEAT_CLOSED) continue;
 
             /* Cannot occupy a perma-wall */
-            if (borg_grids[y_temp][x_temp].feat >= FEAT_PERM) continue;
+            if (borg_grids[y_temp][x_temp].feat == FEAT_PERM) continue;
 
             /* Cannot occupy a wall/seam grid (unless pass_wall or kill_wall) */
             if (borg_grids[y_temp][x_temp].feat >= FEAT_GRANITE ||
