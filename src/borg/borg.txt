@@ -27,18 +27,13 @@
 # This option has no effect after clevel 20.  One other downside of this is
 # that the borg will spend more time in town and may have to evade Vets more.
 
-
 # To modify, simply set it to TRUE or FALSE.
-
-# NOTE: THERE MUST BE A SPACE AFTER THE =
-# option = TRUE   is acceptable
-# option =TRUE    is NOT acceptable and will result in a default value.
 
 # Worships
 
-borg_worships_damage = FALSE
-borg_worships_speed = FALSE
-borg_worships_hp = FALSE
+borg_worships_damage= FALSE
+borg_worships_speed =FALSE
+borg_worships_hp=FALSE
 borg_worships_mana = FALSE
 borg_worships_ac = FALSE
 borg_worships_gold = FALSE
@@ -72,7 +67,6 @@ borg_uses_dynamic_calcs = FALSE
 # of finding 3 or 4 uniques on one level.  That can be a bit scary.
 
 borg_plays_risky = FALSE
-borg_scums_uniques = TRUE
 borg_kills_uniques = FALSE
 
 # Swap Items
@@ -121,15 +115,15 @@ borg_slow_optimizehome = FALSE
 # RACE:-1 Random Race          CLASS:  -1 Random Class
 #       0 Human                         0 Warrior
 #       1 Half Elf                      1 Mage
-#       2 Elf                           2 Priest
-#       3 Hobbit                        3 Rogue
-#       4 Gnome                         4 Ranger
+#       2 Elf                           2 Druid
+#       3 Hobbit                        3 Priest
+#       4 Gnome                         4 Necromancer
 #       5 Dwarf                         5 Paladin
-#       6 Half Orc
-#       7 Half Troll
-#       8 Dunadan
+#       6 Half Orc                      6 Rogue
+#       7 Half Troll                    7 Ranger
+#       8 Dunadan                       8 Blackguard
 #       9 High Elf
-#	10 Kobold
+#	   10 Kobold
 #
 # With regards to the stats.  The minimal stats are rolled by the
 # borg.  CON will be 16, the secondary stat (usually DEX) will be 17,

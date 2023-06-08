@@ -38,10 +38,10 @@ bool borg_money_scum(void)
     borg_grid* ag;
 
     /* Just a quick check to make sure we are supposed to do this */
-    if (borg_money_scum_amount == 0) return (false);
+    if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] == 0) return (false);
 
     /* Take note */
-    borg_note(format("# Waiting for towns people to breed.  I need %d...", borg_money_scum_amount - borg_gold));
+    borg_note(format("# Waiting for towns people to breed.  I need %d...", borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg_gold));
 
     /* I'm not in a store */
     borg_in_shop = false;
@@ -782,7 +782,7 @@ static bool borg_think_home_sell_aux(bool save_best)
     *b_home_power = -1;
 
     /* find best combo for home. */
-    if (borg_slow_optimizehome)
+    if (borg_cfg[BORG_SLOW_OPTIMIZEHOME])
     {
         borg_think_home_sell_aux2_slow(0, 0);
     }
@@ -914,8 +914,9 @@ static bool borg_good_sell(borg_item* item, int who)
 
     /* Worshipping gold or scumming will allow the sale */
     if (item->value > 0 &&
-        ((borg_worships_gold || borg_skill[BI_MAXCLEVEL] < 10) ||
-            ((borg_money_scum_amount < borg_gold) && borg_money_scum_amount != 0)))
+        ((borg_cfg[BORG_WORSHIPS_GOLD] || borg_skill[BI_MAXCLEVEL] < 10) ||
+            ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg_gold) && 
+                borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0)))
     {
         /* Borg is allowed to continue in this routine to sell non-ID items */
     }
@@ -1340,7 +1341,7 @@ static bool borg_good_buy(borg_item* item, int who, int ware)
                     item->sval == sv_scroll_teleport)))
         {
             /* Hack-- Allow the borg to scum for this Item */
-            if (borg_self_scum &&  /* borg is allowed to scum */
+            if (borg_cfg[BORG_SELF_SCUM] &&  /* borg is allowed to scum */
                 borg_skill[BI_CLEVEL] >= 10 && /* Be of sufficient level */
                 borg_skill[BI_LIGHT] &&   /* Have some Perma lite source */
                 borg_skill[BI_FOOD] + num_food >= 100 && /* Have plenty of food */
@@ -1349,7 +1350,7 @@ static bool borg_good_buy(borg_item* item, int who, int ware)
                 if (adj_dex_safe[borg_skill[BI_DEX]] + borg_skill[BI_CLEVEL] > 90) /* Good chance to thwart mugging */
                 {
                     /* Record the amount that I need to make purchase */
-                    borg_money_scum_amount = item->cost;
+                    borg_cfg[BORG_MONEY_SCUM_AMOUNT] = item->cost;
                     borg_money_scum_who = who;
                     borg_money_scum_ware = ware;
                 }
@@ -1373,7 +1374,8 @@ static bool borg_good_buy(borg_item* item, int who, int ware)
 
         if (sold_item_tval[p] == item->tval && sold_item_sval[p] == item->sval && sold_item_store[p] == who)
         {
-            if (borg_verbose) borg_note(format("# Choosing not to buy back %s", item->desc));
+            if (borg_cfg[BORG_VERBOSE]) 
+                borg_note(format("# Choosing not to buy back %s", item->desc));
             return (false);
         }
     }
@@ -1474,7 +1476,7 @@ static bool borg_think_shop_buy_aux(void)
             if (!borg_good_buy(item, k, n)) continue;
 
             /* Attempting to scum money, don't buy other stuff unless it is our home or food-store */
-            if (borg_money_scum_amount && (k != borg_money_scum_who || n != borg_money_scum_ware)) continue;
+            if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] && (k != borg_money_scum_who || n != borg_money_scum_ware)) continue;
 
             /* Hack -- Require "sufficient" cash */
             if (borg_gold < item->cost) continue;
@@ -1659,7 +1661,8 @@ static bool borg_think_home_buy_aux(void)
         {
             if (sold_item_tval[i] == item->tval && sold_item_sval[i] == item->sval)
             {
-                if (borg_verbose) borg_note(format("# Choosing not to buy back '%s' from home.", item->desc));
+                if (borg_cfg[BORG_VERBOSE]) 
+                    borg_note(format("# Choosing not to buy back '%s' from home.", item->desc));
                 skip_it = true;
             }
         }
@@ -2421,8 +2424,10 @@ static bool borg_choose_shop(void)
     /* if the borg is scumming for cash for the human player and not himself,
      * we dont want him messing with the home inventory
      */
-    if (borg_gold < borg_money_scum_amount && borg_money_scum_amount != 0 &&
-        !borg_skill[BI_CDEPTH] && borg_skill[BI_LIGHT] && !borg_self_scum)
+    if (borg_gold < borg_cfg[BORG_MONEY_SCUM_AMOUNT] && 
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 &&
+        !borg_skill[BI_CDEPTH] && borg_skill[BI_LIGHT] && 
+        !borg_cfg[BORG_SELF_SCUM])
     {
         /* Step 0 -- Buy items from the shops (for the player while scumming) */
         if (borg_think_shop_buy_aux())
@@ -2508,7 +2513,7 @@ static bool borg_choose_shop(void)
     }
 
     /* Do not Stock Up the home while money scumming */
-    if (borg_money_scum_amount) return (false);
+    if (borg_cfg[BORG_MONEY_SCUM_AMOUNT]) return (false);
 
     /* Step 6 -- Buy items from the shops (for the home) */
     if (borg_think_shop_grab_aux())
@@ -2523,7 +2528,7 @@ static bool borg_choose_shop(void)
     }
 
     /* Step 7A -- Buy weapons from the home (as a backup item) */
-    if (borg_uses_swaps && borg_think_home_buy_swap_weapon())
+    if (borg_cfg[BORG_USES_SWAPS] && borg_think_home_buy_swap_weapon())
     {
         /* Message */
         borg_note(format("# Buying '%s' from the home as a backup",
@@ -2533,7 +2538,7 @@ static bool borg_choose_shop(void)
         return (true);
     }
     /* Step 7B -- Buy armour from the home (as a backup item) */
-    if (borg_uses_swaps && borg_think_home_buy_swap_armour())
+    if (borg_cfg[BORG_USES_SWAPS] && borg_think_home_buy_swap_armour())
     {
         /* Message */
         borg_note(format("# Buying '%s' from the home as a backup",
@@ -2679,13 +2684,13 @@ static bool borg_think_shop_buy(void)
         /* if the borg is scumming and bought it.,
          * reset the scum amount.
          */
-        if (borg_money_scum_amount &&
-            (item->cost >= borg_money_scum_amount * 9 / 10))
+        if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] &&
+            (item->cost >= borg_cfg[BORG_MONEY_SCUM_AMOUNT] * 9 / 10))
         {
-            borg_money_scum_amount = 0;
+            borg_cfg[BORG_MONEY_SCUM_AMOUNT] = 0;
 
             /* Log */
-            borg_note(format("# Setting Money Scum to %s.", borg_money_scum_amount));
+            borg_note(format("# Setting Money Scum to %s.", borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
 
         }
 
@@ -3293,7 +3298,7 @@ bool borg_think_dungeon_lunal(void)
     }
 
     /* If self scumming and getting closer to zone, act normal */
-    if (borg_self_lunal)
+    if (borg_cfg[BORG_SELF_LUNAL])
     {
         if (borg_skill[BI_MAXDEPTH] <= borg_skill[BI_CDEPTH] + 15 ||
             (char*)NULL != borg_prepared(borg_skill[BI_CDEPTH] - 5) ||
@@ -3808,7 +3813,8 @@ bool borg_think_dungeon_munchkin(void)
     }
 
     /* Too deep. trying to gradually move shallow.  Going up */
-    if ((track_less_num && borg_skill[BI_CDEPTH] > borg_munchkin_depth) && (safe_place || ag->feat == FEAT_LESS))
+    if ((track_less_num && borg_skill[BI_CDEPTH] > borg_cfg[BORG_MUNCHKIN_DEPTH]) && 
+        (safe_place || ag->feat == FEAT_LESS))
     {
 
         borg_grid* ag = &borg_grids[c_y][c_x];
@@ -3871,7 +3877,7 @@ bool borg_think_dungeon_munchkin(void)
     }
 
     /* Going down */
-    if ((track_more_num && borg_skill[BI_CDEPTH] < borg_munchkin_depth) &&
+    if ((track_more_num && borg_skill[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH]) &&
         (safe_place || ag->feat == FEAT_MORE))
     {
         int y, x;
@@ -4309,25 +4315,30 @@ bool borg_think_dungeon(void)
 
     /* Delay Factor */
     int msec = ((player->opts.delay_factor * player->opts.delay_factor) +
-        (borg_delay_factor * borg_delay_factor));
+        (borg_cfg[BORG_DELAY_FACTOR] * borg_cfg[BORG_DELAY_FACTOR]));
 
     /* HACK allows user to stop the borg on certain levels */
-    if (borg_skill[BI_CDEPTH] == borg_stop_dlevel) borg_oops("Auto-stop for user DLevel.");
-    if (borg_skill[BI_CLEVEL] == borg_stop_clevel) borg_oops("Auto-stop for user CLevel.");
+    if (borg_skill[BI_CDEPTH] == borg_cfg[BORG_STOP_DLEVEL]) 
+        borg_oops("Auto-stop for user DLevel.");
+
+    if (borg_skill[BI_CLEVEL] == borg_cfg[BORG_STOP_CLEVEL]) 
+        borg_oops("Auto-stop for user CLevel.");
 
     /* HACK to end all hacks,,, allow the borg to stop if money scumming */
-    if (borg_gold > borg_money_scum_amount && borg_money_scum_amount != 0 &&
-        !borg_skill[BI_CDEPTH] && !borg_self_scum)
+    if (borg_gold > borg_cfg[BORG_MONEY_SCUM_AMOUNT] && 
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 &&
+        !borg_skill[BI_CDEPTH] && 
+        !borg_cfg[BORG_SELF_SCUM])
     {
         borg_oops("Money Scum complete.");
     }
 
     /* Hack -- Stop the borg if money scumming and the shops are out of food. */
-    if (!borg_skill[BI_CDEPTH] && borg_money_scum_amount != 0 &&
+    if (!borg_skill[BI_CDEPTH] && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 &&
         (borg_food_onsale == 0 && borg_skill[BI_FOOD] < 5))
     {
         /* Town out of food.  If player initiated borg, stop here */
-        if (borg_self_scum == false)
+        if (borg_cfg[BORG_SELF_SCUM] == false)
         {
             borg_oops("Money Scum stopped.  No more food in shop.");
             return (true);
@@ -4336,7 +4347,7 @@ bool borg_think_dungeon(void)
             /* Borg doing it himself */
         {
             /* move money goal to 0 and leave the level */
-            borg_money_scum_amount = 0;
+            borg_cfg[BORG_MONEY_SCUM_AMOUNT] = 0;
         }
     }
 
@@ -4641,7 +4652,8 @@ bool borg_think_dungeon(void)
     }
 
     /* Quick check to see if borg needs to engage his lunal mode */
-    if (borg_self_lunal && !borg_plays_risky)  /* Risky borg in a hurry */
+    if (borg_cfg[BORG_SELF_LUNAL] && 
+       !borg_cfg[BORG_PLAYS_RISKY])  /* Risky borg in a hurry */
     {
         if ((char*)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 15) && /* Prepared */
             borg_skill[BI_MAXDEPTH] >= borg_skill[BI_CDEPTH] + 15 && /* Right zone */
@@ -4656,7 +4668,7 @@ bool borg_think_dungeon(void)
     }
 
     /* Quick check to see if borg needs to engage his lunal mode for munchkin_start */
-    if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < 12)
+    if (borg_cfg[BORG_MUNCHKIN_START] && borg_skill[BI_MAXCLEVEL] < 12)
     {
         if (borg_skill[BI_CDEPTH] >= 1)
         {
@@ -5142,7 +5154,8 @@ bool borg_think_dungeon(void)
     if (borg_flow_dark(true)) return (true);
 
     /* Leave the level (if needed) */
-    if (borg_gold < borg_money_scum_amount && borg_money_scum_amount != 0 &&
+    if (borg_gold < borg_cfg[BORG_MONEY_SCUM_AMOUNT] && 
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 &&
         !borg_skill[BI_CDEPTH] && borg_skill[BI_LIGHT])
     {
         /* Stay in town and scum for money after shopping */
@@ -5191,9 +5204,10 @@ bool borg_think_dungeon(void)
     if (borg_wear_recharge()) return (true);
 
     /* Leave the level (if possible) */
-    if (borg_gold < borg_money_scum_amount && borg_money_scum_amount != 0 &&
+    if (borg_gold < borg_cfg[BORG_MONEY_SCUM_AMOUNT] && 
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 &&
         !borg_skill[BI_CDEPTH] && borg_skill[BI_LIGHT] &&
-        !borg_plays_risky) /* risky borgs are in a hurry */
+        !borg_cfg[BORG_PLAYS_RISKY]) /* risky borgs are in a hurry */
     {
         /* Stay in town, scum for money now that shopping is done. */
         if (borg_money_scum()) return (true);

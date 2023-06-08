@@ -1423,15 +1423,15 @@ static void borg_notice_aux1(void)
         if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
             amt_enchant_weapon >= 1))
         {
-            if (item->to_h < borg_enchant_limit)
+            if (item->to_h < borg_cfg[BORG_ENCHANT_LIMIT])
             {
-                my_need_enchant_to_h += (borg_enchant_limit - item->to_h);
+                my_need_enchant_to_h += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_h);
             }
 
             /* Enchant all weapons (to damage) */
-            if (item->to_d < borg_enchant_limit)
+            if (item->to_d < borg_cfg[BORG_ENCHANT_LIMIT])
             {
-                my_need_enchant_to_d += (borg_enchant_limit - item->to_d);
+                my_need_enchant_to_d += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_d);
             }
         }
         else /* I dont have the spell or *enchant* */
@@ -1464,9 +1464,9 @@ static void borg_notice_aux1(void)
         if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65) ||
             amt_enchant_armor >= 1)
         {
-            if (item->to_a < borg_enchant_limit)
+            if (item->to_a < borg_cfg[BORG_ENCHANT_LIMIT])
             {
-                my_need_enchant_to_a += (borg_enchant_limit - item->to_a);
+                my_need_enchant_to_a += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_a);
             }
         }
         else
@@ -1649,7 +1649,8 @@ static void borg_notice_aux2(void)
             item->sval == sv_mush_restoring ||
             item->sval == sv_mush_cure_mind)
         {
-            if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+            if (borg_cfg[BORG_MUNCHKIN_START] && 
+                borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
             {
                 break;
             }
@@ -1660,7 +1661,8 @@ static void borg_notice_aux2(void)
             item->sval == sv_mush_stoneskin ||
             item->sval == sv_mush_debility ||
             item->sval == sv_mush_sprinting)
-            if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] >= borg_munchkin_level)
+            if (borg_cfg[BORG_MUNCHKIN_START] && 
+                borg_skill[BI_MAXCLEVEL] >= borg_cfg[BORG_MUNCHKIN_LEVEL])
             {
                 borg_skill[BI_ASHROOM] += item->iqty;
             }
@@ -2789,7 +2791,7 @@ static void borg_notice_armour_swap(void)
     armour_swap = 0;
 
     /* borg option to not use them */
-    if (!borg_uses_swaps) return;
+    if (!borg_cfg[BORG_USES_SWAPS]) return;
 
     /*** Process the inventory ***/
     for (i = 0; i < z_info->pack_size; i++)
@@ -4218,7 +4220,7 @@ static s32b borg_power_aux1(void)
     value += ((borg_skill[BI_TODAM] + item->to_d) * 30L);
 
     /* extra damage for some */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += ((borg_skill[BI_TOHIT] + item->to_h) * 15L);
     }
@@ -4239,7 +4241,7 @@ static s32b borg_power_aux1(void)
     if (borg_skill[BI_WS_EVIL])   value += (dam * 7) / 2;
 
     /* extra damage for some */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += (dam);
     }
@@ -4262,7 +4264,7 @@ static s32b borg_power_aux1(void)
     if (borg_skill[BI_WS_TROLL] && !borg_skill[BI_WS_EVIL])  value += (dam * 1) / 2;
 
     /* extra damage for some */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += (dam);
     }
@@ -4273,7 +4275,7 @@ static s32b borg_power_aux1(void)
     if (borg_skill[BI_WK_DEMON]) value += (dam * 5) / 2;
     if (borg_skill[BI_WK_DRAGON]) value += (dam * 5) / 2;
     /* extra damage for some */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += (dam);
     }
@@ -4311,7 +4313,7 @@ static s32b borg_power_aux1(void)
         damage = (borg_skill[BI_AMMO_SIDES] + 8) * borg_skill[BI_AMMO_POWER];
 
     /* Reward "damage" */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += (borg_skill[BI_SHOTS] * damage * 11L);
     }
@@ -4340,7 +4342,7 @@ static s32b borg_power_aux1(void)
     value += ((borg_skill[BI_TOHIT] + item->to_h) * 100L);;
 
     /* extra damage for some */
-    if (borg_worships_damage)
+    if (borg_cfg[BORG_WORSHIPS_DAMAGE])
     {
         value += ((borg_skill[BI_TOHIT] + item->to_h) * 25L);
     }
@@ -4405,7 +4407,7 @@ static s32b borg_power_aux1(void)
      * see if speed can be a bonus if good speed; not +3.
      * reward higher for +10 than +50 speed (decreased return).
      */
-    if (borg_worships_speed)
+    if (borg_cfg[BORG_WORSHIPS_SPEED])
     {
         if (borg_skill[BI_SPEED] >= 150)
             value += (((borg_skill[BI_SPEED] - 120) * 1500L) + 185000L);
@@ -4475,7 +4477,7 @@ static s32b borg_power_aux1(void)
             value += (my_stat_ind[spell_stat] * 500L);
 
             /* Bonus for sp. */
-            if (borg_worships_mana)
+            if (borg_cfg[BORG_WORSHIPS_MANA])
             {
                 value += ((borg_adj_mag_mana[my_stat_ind[spell_stat]] * borg_skill[BI_CLEVEL]) / 2) * 255L;
             }
@@ -4509,7 +4511,7 @@ static s32b borg_power_aux1(void)
     {
         int bonus_hp = player->player_hp[player->lev - 1] + borg_adj_con_mhp[my_stat_ind[STAT_CON]] * borg_skill[BI_CLEVEL] / 100;
 
-        if (borg_worships_hp)
+        if (borg_cfg[BORG_WORSHIPS_HP])
         {
             value += (my_stat_ind[STAT_CON] * 250L);
             /* Hack -- Reward hp bonus */
@@ -4716,7 +4718,7 @@ static s32b borg_power_aux1(void)
     /*** Reward powerful armor ***/
 
     /* Reward armor */
-    if (borg_worships_ac)
+    if (borg_cfg[BORG_WORSHIPS_AC])
     {
         if (borg_skill[BI_ARMOR] < 15) value += ((borg_skill[BI_ARMOR]) * 2500L);
         if (borg_skill[BI_ARMOR] >= 15 && borg_skill[BI_ARMOR] < 75) value += ((borg_skill[BI_ARMOR]) * 2000L) + 28250L;
@@ -5083,7 +5085,8 @@ static s32b borg_power_aux2(void)
     if (!borg_skill[BI_IPOIS] && borg_skill[BI_ACUREPOIS] <= 20)
     {
         /* Not if munchkin starting */
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+        if (borg_cfg[BORG_MUNCHKIN_START] && 
+            borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
         {
             /* Do not carry these until later */
         }
@@ -5098,7 +5101,8 @@ static s32b borg_power_aux2(void)
     {
         k = 0;
         /* Not if munchkin starting */
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+        if (borg_cfg[BORG_MUNCHKIN_START] && 
+            borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
         {
             /* Do not carry these until later */
         }
@@ -5143,7 +5147,8 @@ static s32b borg_power_aux2(void)
     /*  Reward PFE  carry lots of these*/
     k = 0;
     /* Not if munchkin starting */
-    if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+    if (borg_cfg[BORG_MUNCHKIN_START] && 
+        borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
     {
         /* Do not carry these until later */
     }
@@ -5175,7 +5180,8 @@ static s32b borg_power_aux2(void)
     if (borg_skill[BI_CLEVEL] > 7)
     {
         /* Not if munchkin starting */
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+        if (borg_cfg[BORG_MUNCHKIN_START] && 
+            borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
         {
             /* Do not carry these until later */
         }
@@ -5196,7 +5202,8 @@ static s32b borg_power_aux2(void)
     /* first phase door is very important */
     if (borg_skill[BI_APHASE]) value += 50000;
     /* Not if munchkin starting */
-    if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+    if (borg_cfg[BORG_MUNCHKIN_START] && 
+        borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
     {
         /* Do not carry these until later */
     }
@@ -5211,7 +5218,8 @@ static s32b borg_power_aux2(void)
 
     /* Reward escape (staff of teleport or artifact */
     k = 0;
-    if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+    if (borg_cfg[BORG_MUNCHKIN_START] && 
+        borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
     {
         /* Do not carry these until later */
     }
@@ -5449,7 +5457,7 @@ static s32b borg_power_aux2(void)
     /* Reward Cures */
     if (!borg_skill[BI_RCONF])
     {
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < 10)
+        if (borg_cfg[BORG_MUNCHKIN_START] && borg_skill[BI_MAXCLEVEL] < 10)
         {
             /* Do not carry these until later */
         }
@@ -5462,7 +5470,8 @@ static s32b borg_power_aux2(void)
     if (!borg_skill[BI_RBLIND])
     {
         k = 0;
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+        if (borg_cfg[BORG_MUNCHKIN_START] && 
+            borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
         {
             /* Do not carry these until later */
         }
@@ -5474,7 +5483,8 @@ static s32b borg_power_aux2(void)
     if (!borg_skill[BI_RPOIS])
     {
         k = 0;
-        if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+        if (borg_cfg[BORG_MUNCHKIN_START] && 
+            borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
         {
             /* Do not carry these until later */
         }
@@ -5518,7 +5528,8 @@ static s32b borg_power_aux2(void)
 
     /* Reward speed potions/rods/staves (but no staves deeper than depth 95) */
     k = 0;
-    if (borg_munchkin_start && borg_skill[BI_MAXCLEVEL] < borg_munchkin_level)
+    if (borg_cfg[BORG_MUNCHKIN_START] && 
+        borg_skill[BI_MAXCLEVEL] < borg_cfg[BORG_MUNCHKIN_LEVEL])
     {
         /* Do not carry these until later */
     }
@@ -9333,7 +9344,7 @@ static const char* borg_prepared_aux(int depth)
     /* Require recall */
     /* if (borg_skill[BI_RECALL] < 1) return ("1 recall"); */
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* Require 30 hp */
         if (borg_skill[BI_MAXHP] < 30) return ("30 hp");
@@ -9344,7 +9355,7 @@ static const char* borg_prepared_aux(int depth)
 
     /*** Essential Items for Level 3 and 4 ***/
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* class specific requirement */
         switch (borg_class)
@@ -9388,7 +9399,7 @@ static const char* borg_prepared_aux(int depth)
 
     /*** Essential Items for Level 5 to 9 ***/
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* class specific requirement */
         if (borg_skill[BI_CDEPTH])
@@ -9444,7 +9455,7 @@ static const char* borg_prepared_aux(int depth)
     /* Escape or Teleport */
     if (borg_skill[BI_ATELEPORT] + borg_skill[BI_AESCAPE] < 2) return ("2 tele&esc");
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* class specific requirement */
         switch (borg_class)
@@ -9517,7 +9528,7 @@ static const char* borg_prepared_aux(int depth)
     if (borg_stat[STAT_DEX] < 7) return ("low DEX");
     if (borg_stat[STAT_CON] < 7) return ("low CON");
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* class specific requirement */
         switch (borg_class)
@@ -9577,7 +9588,7 @@ static const char* borg_prepared_aux(int depth)
     if (depth <= 33) return ((char*)NULL);
 
     /* Minimal level */
-    if (borg_skill[BI_MAXCLEVEL] < 40 && !borg_plays_risky) return ("level 40");
+    if (borg_skill[BI_MAXCLEVEL] < 40 && !borg_cfg[BORG_PLAYS_RISKY]) return ("level 40");
 
     /* Usually ready for level 20 to 39 */
     if (depth <= 39) return ((char*)NULL);
@@ -9612,7 +9623,7 @@ static const char* borg_prepared_aux(int depth)
     /* Potions of heal */
     if (borg_skill[BI_AHEAL] < 1 && (borg_skill[BI_AEZHEAL] < 1)) return ("1heal");
 
-    if (!borg_plays_risky)
+    if (!borg_cfg[BORG_PLAYS_RISKY])
     {
         /* Minimal hitpoints */
         if (borg_skill[BI_MAXHP] < 500) return ("HP 500");
@@ -9644,7 +9655,7 @@ static const char* borg_prepared_aux(int depth)
     if (!borg_skill[BI_SRBLIND]) return ("RBlind");
 
     /* Must have resist nether */
-/*    if (!borg_plays_risky && !borg_skill[BI_SRNTHR]) return ("RNeth"); */
+/*    if (!borg_settings[BORG_PLAYS_RISKY] && !borg_skill[BI_SRNTHR]) return ("RNeth"); */
 
 
     /* Telepathy, better have it by now */
@@ -9744,9 +9755,9 @@ const char* borg_prepared(int depth)
     }
 
     /* Not if No_Deeper is set */
-    if (depth >= borg_no_deeper)
+    if (depth >= borg_cfg[BORG_NO_DEEPER])
     {
-        strnfmt(borg_prepared_buffer, MAX_REASON, "No deeper %d.", borg_no_deeper);
+        strnfmt(borg_prepared_buffer, MAX_REASON, "No deeper %d.", borg_cfg[BORG_NO_DEEPER]);
         return (borg_prepared_buffer);
     }
 
@@ -9800,8 +9811,11 @@ const char* borg_prepared(int depth)
         struct monster_race* r_ptr = &r_info[borg_living_unique_index];
 
         /* are too many uniques alive */
-        if (borg_numb_live_unique < 3 || borg_plays_risky ||
-            borg_skill[BI_CLEVEL] == 50 || borg_kills_uniques == false) return ((char*)NULL);
+        if (borg_numb_live_unique < 3 || 
+            borg_cfg[BORG_PLAYS_RISKY] ||
+            borg_skill[BI_CLEVEL] == 50 || 
+            borg_cfg[BORG_KILLS_UNIQUES] == false)
+            return ((char*)NULL);
 
         /* Check for the dlevel of the unique */
         if (depth < borg_unique_depth) return ((char*)NULL);

@@ -11,51 +11,18 @@
 
  /* Date of the last change */
 char borg_engine_date[] = __DATE__;
+bool borg_init_failure = false;
 
+bool borg_lunal_mode;
+bool borg_munchkin_mode;
 
-/*
- * Borg information, ScreenSaver or continual play mode;
- */
-int borg_respawn_race;
-int borg_respawn_class;
-int borg_respawn_str;
-int borg_respawn_int;
-int borg_respawn_wis;
-int borg_respawn_dex;
-int borg_respawn_con;
-int borg_dump_level;
-int borg_save_death;
-bool borg_respawn_winners;
-int borg_delay_factor;
-
-
-/* dynamic borg stuff */
-bool borg_init_failure;
-bool borg_uses_swaps;
-bool borg_uses_calcs = true;
-bool borg_worships_damage;
-bool borg_worships_speed;
-bool borg_worships_hp;
-bool borg_worships_mana;
-bool borg_worships_ac;
-bool borg_worships_gold;
-bool borg_plays_risky;
-bool borg_slow_optimizehome;
-bool borg_scums_uniques;
-bool borg_kills_uniques;
-int borg_chest_fail_tolerance;
-s32b borg_money_scum_amount;
 int borg_money_scum_who;
 int borg_money_scum_ware;
-bool borg_self_scum; 	/* borg scums on his own */
-bool borg_lunal_mode;  /* see borg.txt */
-bool borg_self_lunal;  /* borg allowed to do this himself */
-bool borg_verbose;
-bool borg_munchkin_start;
-bool borg_munchkin_mode;
-int borg_munchkin_level;
-int borg_munchkin_depth;
-int borg_enchant_limit;
+
+/*
+ * Borg settings information, ScreenSaver or continual play mode;
+ */
+int *borg_cfg; 
 
 req_item** borg_required_item;
 int* n_req;
@@ -316,10 +283,6 @@ bool borg_cancel;       /* Being cancelled */
 char genocide_target;   /* identity of the poor unsuspecting soul */
 int zap_slot;                  /* slot of a wand/staff---to avoid a game bug*/
 bool borg_casted_glyph;        /* because we dont have a launch anymore */
-int borg_stop_dlevel = -1;
-int borg_stop_clevel = -1;
-int borg_no_deeper = 127;
-bool borg_stop_king = true;
 bool borg_dont_react = false;
 int successful_target = 0;
 int sold_item_tval[10];

@@ -686,10 +686,6 @@ extern bool borg_scumming_pots; /* Borg will quickly store pots in home */
 extern char genocide_target;    /* Identity of the poor unsuspecting soul */
 extern int zap_slot;            /* to avoid a nasty game bug with amnesia */
 extern bool borg_casted_glyph;  /* we dont have a launch messages anymore */
-extern int borg_stop_dlevel;
-extern int borg_stop_clevel;
-extern int borg_no_deeper;
-extern bool borg_stop_king;
 extern bool borg_dont_react;
 extern int successful_target;
 extern int sold_item_tval[10];
@@ -711,46 +707,53 @@ extern byte borg_nasties_count[7];
 extern char borg_nasties[7];
 extern byte borg_nasties_limit[7];
 
-/* options from the borg.txt file */
-extern int borg_respawn_race;
-extern int borg_respawn_class;
-extern int borg_respawn_str;
-extern int borg_respawn_int;
-extern int borg_respawn_wis;
-extern int borg_respawn_dex;
-extern int borg_respawn_con;
-extern int borg_dump_level;
-extern int borg_save_death;
-extern bool borg_respawn_winners;
-extern int borg_delay_factor;
-
-extern bool borg_worships_damage;
-extern bool borg_worships_speed;
-extern bool borg_worships_hp;
-extern bool borg_worships_mana;
-extern bool borg_worships_ac;
-extern bool borg_worships_gold;
-extern bool borg_plays_risky;
 extern bool borg_init_failure;
-extern bool borg_uses_swaps;
-extern bool borg_uses_calcs;
-extern bool borg_slow_optimizehome;
-extern bool borg_scums_uniques;
-extern bool borg_kills_uniques;
-extern int borg_chest_fail_tolerance;
-extern s32b borg_money_scum_amount;
+extern bool borg_lunal_mode;
+extern bool borg_munchkin_mode;
+
 extern int borg_money_scum_who;
 extern int borg_money_scum_ware;
-extern bool borg_self_scum;
-extern bool borg_lunal_mode;
-extern bool borg_self_lunal;
-extern bool borg_verbose;
-extern bool borg_munchkin_start;
-extern bool borg_munchkin_mode;
-extern int borg_munchkin_level;
-extern int borg_munchkin_depth;
-extern int borg_enchant_limit; /* how high to enchant items */
 
+
+/* options from the borg.txt file */
+/* IMPORTANT keep these in sync with borg_settings in borg9.c */
+enum
+{
+    BORG_VERBOSE,
+    BORG_MUNCHKIN_START,
+    BORG_MUNCHKIN_LEVEL,
+    BORG_MUNCHKIN_DEPTH,
+    BORG_WORSHIPS_DAMAGE,
+    BORG_WORSHIPS_SPEED,
+    BORG_WORSHIPS_HP,
+    BORG_WORSHIPS_MANA,
+    BORG_WORSHIPS_AC,
+    BORG_WORSHIPS_GOLD,
+    BORG_PLAYS_RISKY,
+    BORG_KILLS_UNIQUES,
+    BORG_USES_SWAPS,
+    BORG_USES_DYNAMIC_CALCS,
+    BORG_SLOW_OPTIMIZEHOME,
+    BORG_STOP_DLEVEL,
+    BORG_STOP_CLEVEL,
+    BORG_NO_DEEPER,
+    BORG_STOP_KING,
+    BORG_RESPAWN_WINNERS,
+    BORG_RESPAWN_CLASS,
+    BORG_RESPAWN_RACE,
+    BORG_CHEST_FAIL_TOLERANCE,
+    BORG_DELAY_FACTOR,
+    BORG_MONEY_SCUM_AMOUNT,
+    BORG_SELF_SCUM,
+    BORG_LUNAL_MODE,
+    BORG_SELF_LUNAL,
+    BORG_ENCHANT_LIMIT,
+    BORG_DUMP_LEVEL,
+    BORG_SAVE_DEATH,
+    BORG_MAX_SETTINGS
+};
+
+extern int *borg_cfg;
 
 /* dynamic required items */
 /* dynamic required items */

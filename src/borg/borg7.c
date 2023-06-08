@@ -775,7 +775,7 @@ static bool borg_enchant_to_a(void)
         if (borg_spell_okay_fail(ENCHANT_ARMOUR, 65) ||
            amt_enchant_armor >=1)
         {
-            if (a >= borg_enchant_limit) continue;
+            if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
         else
         {
@@ -848,7 +848,7 @@ static bool borg_enchant_to_h(void)
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
             amt_enchant_weapon >= 1 )
         {
-            if (a >= borg_enchant_limit) continue;
+            if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
         else
         {
@@ -895,7 +895,7 @@ static bool borg_enchant_to_h(void)
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
             amt_enchant_weapon >= 1 )
         {
-            if (s_a >= borg_enchant_limit) continue;
+            if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
         else
         {
@@ -1012,7 +1012,7 @@ static bool borg_enchant_to_d(void)
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
             amt_enchant_weapon >= 1 )
         {
-            if (a >= borg_enchant_limit) continue;
+            if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
         else
         {
@@ -1061,7 +1061,7 @@ static bool borg_enchant_to_d(void)
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
             amt_enchant_weapon >= 1 )
         {
-            if (s_a >= borg_enchant_limit) continue;
+            if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
         else
         {
@@ -1208,7 +1208,7 @@ static bool borg_brand_weapon(void)
 static bool borg_decurse_armour(void)
 {
     /* Nothing to decurse */
-    if (borg_uses_swaps && !decurse_armour_swap) return (false);
+    if (borg_cfg[BORG_USES_SWAPS] && !decurse_armour_swap) return (false);
 
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse) &&
         !borg_equips_staff_fail(sv_staff_remove_curse) &&
@@ -1244,10 +1244,10 @@ static bool borg_decurse_armour(void)
 static bool borg_decurse_weapon(void)
 {
     /* Nothing to decurse */
-    if (borg_uses_swaps && !decurse_weapon_swap) return (false);
+    if (borg_cfg[BORG_USES_SWAPS] && !decurse_weapon_swap) return (false);
 
     /* Ability for curses */
-    if (borg_uses_swaps && decurse_weapon_swap)
+    if (borg_cfg[BORG_USES_SWAPS] && decurse_weapon_swap)
     {
         if (-1 == borg_slot(TV_SCROLL,sv_scroll_remove_curse) &&
             !borg_equips_staff_fail(sv_staff_remove_curse) &&
@@ -1738,8 +1738,9 @@ bool borg_crush_junk(void)
              * except {cursed} is junk
              */
             if (item->value > 0 &&
-                ((borg_worships_gold || borg_skill[BI_MAXCLEVEL] < 10) ||
-                 ((borg_money_scum_amount < borg_gold) && borg_money_scum_amount != 0)) &&
+                ((borg_cfg[BORG_WORSHIPS_GOLD] || borg_skill[BI_MAXCLEVEL] < 10) ||
+                 ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg_gold) && 
+                     borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0)) &&
                 borg_skill[BI_MAXCLEVEL] <= 20 &&
                 !item->cursed) continue;
 
@@ -3396,7 +3397,7 @@ bool borg_remove_stuff(void)
         /* Get the item */
         item = &borg_items[b_i];
 
-        if (borg_verbose)
+        if (borg_cfg[BORG_VERBOSE])
         {
             /* dump list and power...  for debugging */
             borg_note(format("Equip Item %d %s.", i, safe_items[i].desc));
@@ -3575,7 +3576,7 @@ bool borg_wear_stuff(void)
             /* Evaluate local danger */
             d = borg_danger(c_y,c_x,1, true, false);
 
-			if (borg_verbose)
+			if (borg_cfg[BORG_VERBOSE])
 			{
 				/* dump list and power...  for debugging */
 				borg_note(format("Trying  Item %s (best power %ld)",borg_items[slot].desc, p));
@@ -3903,7 +3904,7 @@ static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
         /* Track best */
         if (p > *vp)
         {
-            if (borg_verbose)
+            if (borg_cfg[BORG_VERBOSE])
             {
                 /* dump list and power...  for debugging */
                 borg_note(format("Trying Combo (best power %ld)", *vp));
@@ -4558,7 +4559,8 @@ bool borg_leave_level(bool bored)
         if (!bored) return (false);
 
         /* Case for those who cannot Teleport Level */
-        if (borg_skill[BI_MAXDEPTH] == 100 && !borg_plays_risky)
+        if (borg_skill[BI_MAXDEPTH] == 100 && 
+           !borg_cfg[BORG_PLAYS_RISKY])
         {
 	        if (borg_skill[BI_ATELEPORTLVL] == 0)
             {
@@ -4580,10 +4582,10 @@ bool borg_leave_level(bool bored)
 
 
         /* Hack -- Recall into dungeon */
-        if ((borg_skill[BI_MAXDEPTH] >= (borg_worships_gold ? 10 : 8)) &&
+        if ((borg_skill[BI_MAXDEPTH] >= (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8)) &&
              (borg_skill[BI_RECALL] >= 3) &&
              (((char *)NULL == borg_prepared(borg_skill[BI_MAXDEPTH]*6/10))||
-                borg_plays_risky) &&
+                borg_cfg[BORG_PLAYS_RISKY]) &&
             borg_recall())
         {
             /* Note */
@@ -4595,7 +4597,7 @@ bool borg_leave_level(bool bored)
         else
         {
             /* note why we didn't recall. */
-            if (borg_skill[BI_MAXDEPTH] < (borg_worships_gold ? 10 : 8))
+            if (borg_skill[BI_MAXDEPTH] < (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8))
             {
 				borg_note("# Not deep enough to recall");
 			}
@@ -4744,7 +4746,7 @@ bool borg_leave_level(bool bored)
 
 
     /* Return to town to sell stuff -- No recall allowed.*/
-    if (((borg_worships_gold || borg_skill[BI_MAXCLEVEL] < 15) &&
+    if (((borg_cfg[BORG_WORSHIPS_GOLD] || borg_skill[BI_MAXCLEVEL] < 15) &&
          borg_skill[BI_MAXCLEVEL] <= 25) && 
         (sellable_item_count >= 12))
     {
@@ -4821,9 +4823,9 @@ bool borg_leave_level(bool bored)
         g = 1;
 
     /* Climb if deeper than I want to be */
-    if (!g && borg_skill[BI_CDEPTH] > borg_no_deeper)
+    if (!g && borg_skill[BI_CDEPTH] > borg_cfg[BORG_NO_DEEPER])
     {
-        borg_note(format("# Going up a bit (No Deeper than %d).", borg_no_deeper));
+        borg_note(format("# Going up a bit (No Deeper than %d).", borg_cfg[BORG_NO_DEEPER]));
         g = -1;
     }
 

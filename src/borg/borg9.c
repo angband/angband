@@ -46,6 +46,7 @@ extern bool keep_playing;
 #endif /* bablos */
 bool borg_cheat_death;
 
+
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
@@ -280,7 +281,7 @@ static bool borg_think(void)
         borg_save = false;
 
         /* Create a scum file */
-        if (borg_skill[BI_CLEVEL] >= borg_dump_level ||
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
             strstr(player->died_from, "starvation"))
         {
             memcpy(svSavefile, savefile, sizeof(savefile));
@@ -438,7 +439,7 @@ static bool borg_think(void)
     if (borg_skill[BI_KING])
     {
         /* Prepare to retire */
-        if (borg_stop_king)
+        if (borg_cfg[BORG_STOP_KING])
         {
 #ifndef BABLOS
             borg_write_map(false);
@@ -446,7 +447,7 @@ static bool borg_think(void)
             borg_oops("retire");
         }
         /* Borg will be respawning */
-        if (borg_respawn_winners)
+        if (borg_cfg[BORG_RESPAWN_WINNERS])
         {
 #ifndef BABLOS
             borg_write_map(false);
@@ -803,7 +804,8 @@ static void borg_parse_aux(char* msg, int len)
     borg_grid* ag = &borg_grids[g_y][g_x];
 
     /* Log (if needed) */
-    if (borg_verbose) borg_note(format("# Parse Msg bite <%s>", msg));
+    if (borg_cfg[BORG_VERBOSE]) 
+        borg_note(format("# Parse Msg bite <%s>", msg));
 
     /* Hack -- Notice death */
     if (prefix(msg, "You die."))
@@ -1869,7 +1871,7 @@ static void borg_parse_aux(char* msg, int len)
         prefix(msg, "gestures at your feet."))
     {
         /* If in Lunal mode better shut that off, he is not on the stairs anymore */
-        if (borg_lunal_mode) borg_lunal_mode = false;
+        borg_lunal_mode = false;
         borg_note("# Disconnecting Lunal Mode due to monster spell.");
     }
 
@@ -1919,7 +1921,8 @@ static void borg_parse(char* msg)
     static char buf[1024];
 
     /* Note the long message */
-    if (borg_verbose && msg) borg_note(format("# Parsing msg <%s>", msg));
+    if (borg_cfg[BORG_VERBOSE] && msg) 
+        borg_note(format("# Parsing msg <%s>", msg));
 
     /* Flush messages */
     if (len && (!msg || (msg[0] != ' ')))
@@ -2581,26 +2584,14 @@ void resurrect_borg(void)
 
     flavor_init();
 
-
     /** Roll up a new character **/
-
-    /* Full Random */
-    if (borg_respawn_class == -1 && borg_respawn_race == -1)
-    {
-        player_generate(player, NULL, NULL, false);
-    }
-
-    /* Selected Race, random Class */
-    if (borg_respawn_race != -1 && borg_respawn_class == -1)
-    {
-        player_generate(player, player_id2race(borg_respawn_race), NULL, false);
-    }
-
-    /* Random Race, Selected Class */
-    if (borg_respawn_race == -1 && borg_respawn_class != -1)
-    {
-        player_generate(player, NULL, player_id2class(borg_respawn_class), false);
-    }
+    struct player_race* p_race = NULL;
+    struct player_class* p_class = NULL;
+    if (borg_cfg[BORG_RESPAWN_RACE] != -1)
+        p_race = player_id2race(borg_cfg[BORG_RESPAWN_RACE]);
+    if (borg_cfg[BORG_RESPAWN_CLASS] != -1)
+        p_class = player_id2class(borg_cfg[BORG_RESPAWN_CLASS]);
+    player_generate(player, p_race, p_class, false);
 
     /* The dungeon is not ready */
     character_dungeon = false;
@@ -2859,7 +2850,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 
 #ifndef BABLOS
         /* Dump the Character Map*/
-        if (borg_skill[BI_CLEVEL] >= borg_dump_level ||
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
             strstr(player->died_from, "starvation")) borg_write_map(false);
 
         /* Log the death */
@@ -2928,7 +2919,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     {
 #ifndef BABLOS
         /* Print the map */
-        if (borg_skill[BI_CLEVEL] >= borg_dump_level ||
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
             strstr(player->died_from, "starvation"))  borg_write_map(false);
 
         /* Log death */
@@ -3685,12 +3676,119 @@ int borg_item_cmp(const void* item1, const void* item2)
     return ((req_item*)item1)->number - ((req_item*)item2)->number;
 }
 
+/*
+* read a line from the config file and parse the setting value, if there is one.
+*/
+static bool borg_proc_setting(int setting, const char * setting_string, char type, const char* line)
+{
+    bool negative = false;
+
+    /* skip leading space */
+    while (*line == ' ') line++;
+    if (!prefix_i(line, setting_string))
+        return false;
+
+    line += strlen(setting_string);
+
+    /* accept either */
+    /* value true or */
+    /* value=true or */
+    /* value=1 or */
+    /* value y */
+    while (*line)
+    {
+        char ch = *line;
+        if (ch == ' ' || ch == '=')
+        {
+            line++;
+            continue;
+        }
+
+        if (type == 'b')
+        {
+            if (ch == 'T' ||
+                ch == 't' ||
+                ch == '1' ||
+                ch == 'Y' ||
+                ch == 'y')
+                borg_cfg[setting] = true;
+            else
+                borg_cfg[setting] = false;
+
+            break;
+        }
+        if (type == 'i')
+        {
+            if (ch == '-')
+            {
+                negative = true;
+                line++;
+                continue;
+            }
+            if (isdigit(ch))
+            {
+                borg_cfg[setting] = atoi(line);
+                break;
+            }
+        }
+    }
+
+    if (negative)
+        borg_cfg[setting] *= -1;
+
+    return true;
+}
 
 /*
  * Initialize borg.txt
  */
-void init_borg_txt_file(void)
+static void init_borg_txt_file(void)
 {
+    struct borg_setting
+    {
+        const char* setting_string;
+        const char  setting_type;  /* b (bool) or i (int) */
+        int         default_value;
+    };
+
+    /*
+     * Borg settings information, ScreenSaver or continual play mode;
+     */
+    struct borg_setting borg_settings[] =
+    {
+        { "borg_verbose", 'b', false},
+        { "borg_munchkin_start", 'b', false},
+        { "borg_munchkin_level", 'i', 12},
+        { "borg_munchkin_depth", 'i', 16},
+        { "borg_worships_damage", 'b', false},
+        { "borg_worships_speed", 'b', false},
+        { "borg_worships_hp", 'b', false},
+        { "borg_worships_mana", 'b', false},
+        { "borg_worships_ac", 'b', false},
+        { "borg_worships_gold", 'b', false},
+        { "borg_plays_risky", 'b', false},
+        { "borg_kills_uniques", 'b', false},
+        { "borg_uses_swaps", 'b', true},
+        { "borg_uses_dynamic_calcs", 'b', false},
+        { "borg_slow_optimizehome", 'b', false},
+        { "borg_stop_dlevel", 'i', 128},
+        { "borg_stop_clevel", 'i', 51},
+        { "borg_no_deeper", 'i', 127},
+        { "borg_stop_king", 'b', true},
+        { "borg_respawn_winners", 'b', false},
+        { "borg_respawn_class", 'i', -1},
+        { "borg_respawn_race", 'i', -1},
+        { "borg_chest_fail_tolerance", 'i', 7},
+        { "borg_delay_factor", 'i', 0},
+        { "borg_money_scum_amount", 'i', 0},
+        { "borg_self_scum", 'b', true},
+        { "borg_lunal_mode", 'b', false},
+        { "borg_self_lunal", 'b', false},
+        { "borg_enchant_limit", 'i', 12},
+        { "borg_dump_level", 'i', 1},
+        { "borg_save_death", 'i', 1},
+        NULL
+    };
 
     ang_file* fp;
 
@@ -3699,9 +3797,7 @@ void init_borg_txt_file(void)
 
     /* Array of borg variables is stored as */
     /* 0 to k_max = items in inventory */
-    /* k_max to 2*k_max  = items being worn */
-    /* 2*k_max to a_max  = artifacts worn */
-    /* 2*k_max + a_max to end of array = Other skills/possessions */
+    /* k_max to end of array = Other skills/possessions */
     size_obj = z_info->k_max + BI_MAX;
 
     /* note: C_MAKE automaticly 0 inits things */
@@ -3720,57 +3816,60 @@ void init_borg_txt_file(void)
     borg_has = mem_zalloc(size_obj * sizeof(int));
     borg_skill = borg_has + z_info->k_max;
 
+    /* a couple of spot checks on settings definitiosn */
+    if (!streq(borg_settings[BORG_MUNCHKIN_LEVEL].setting_string, "borg_munchkin_level") ||
+        !streq(borg_settings[BORG_RESPAWN_RACE].setting_string, "borg_respawn_race"))
+    {
+        msg("borg settings structures not correct.  aborting. ");
+        borg_init_failure = true;
+    }
+
     path_build(buf, 1024, ANGBAND_DIR_USER, "borg.txt");
 
     /* Open the file */
     fp = file_open(buf, MODE_READ, -1);
-
-/* setup default values, in case any are missing */
-    borg_worships_damage = false;
-    borg_worships_speed = false;
-    borg_worships_hp = false;
-    borg_worships_mana = false;
-    borg_worships_ac = false;
-    borg_worships_gold = false;
-    borg_plays_risky = false;
-    borg_scums_uniques = true;
-    borg_kills_uniques = false;
-    borg_uses_swaps = true;
-    borg_slow_optimizehome = false;
-    borg_stop_dlevel = 128;
-    borg_stop_clevel = 55;
-    borg_no_deeper = 127;
-    borg_stop_king = true;
-    borg_uses_calcs = false;
-    borg_respawn_winners = false;
-    borg_respawn_class = -1;
-    borg_respawn_race = -1;
-    borg_chest_fail_tolerance = 7;
-    borg_delay_factor = 1;
-    borg_money_scum_amount = 0;
-    borg_self_scum = true;
-    borg_lunal_mode = false;
-    borg_self_lunal = true;
-    borg_verbose = false;
-    borg_munchkin_start = false;
-    borg_munchkin_level = 12;
-    borg_munchkin_depth = 16;
-    borg_enchant_limit = 10;
 
     /* No file, use defaults*/
     if (!fp)
     {
         /* Complain */
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
-        msg("Make sure BORG.TXT is located in the \\user\\ subdirectory!");
+        msg("writing borg.txt to the \\user\\ subdirectory with default values");
         msg("Which is: %s", buf);
         event_signal(EVENT_MESSAGE_FLUSH);
-        return; 
+
+        fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+        if (!fp)
+        {
+            msg("*****WARNING***** unable to write default BORG.TXT file!");
+            return;
+        }
+        file_putf(fp, "# BORG.txt default settings \n");
+        file_putf(fp, "# A more descriptive version of this file is delivered. \n");
+        file_putf(fp, "# Check your original install for borg.txt and \n");
+        file_putf(fp, "# replace this one with the delivered version. \n\n");
+
+        for (i = 0; i < BORG_MAX_SETTINGS; i++)
+        {
+            if (borg_settings[i].setting_type == 'b')
+                file_putf(fp, "%s = %s\n", borg_settings[i].setting_string,
+                    borg_settings[i].default_value ? "TRUE" : "FALSE");
+            if (borg_settings[i].setting_type == 'i')
+                file_putf(fp, "%s = %d\n", borg_settings[i].setting_string, 
+                    borg_settings[i].default_value);
+        }
+        file_close(fp);
+        fp = file_open(buf, MODE_READ, -1);
     }
 
+    /* allocate the config data */
+    borg_cfg = mem_alloc(sizeof(int) * BORG_MAX_SETTINGS);
+
+    /* start the config with the default values */
+    for (i = 0; i < BORG_MAX_SETTINGS; i++)
+        borg_cfg[i] = borg_settings[i].default_value;
 
     /* Parse the file */
-/* AJG needed to make this wider so I could read long formulas */
     while (file_getl(fp, buf, sizeof(buf) - 1))
     {
         /* Skip comments and blank lines */
@@ -3779,268 +3878,21 @@ void init_borg_txt_file(void)
         /* Chop the buffer */
         buf[sizeof(buf) - 1] = '\0';
 
-        /* Extract the true/false */
-        if (prefix(buf, "borg_worships_damage ="))
+        for (i = 0; i < BORG_MAX_SETTINGS; i++)
         {
-            if (buf[strlen("borg_worships_damage =") + 1] == 'T' ||
-                buf[strlen("borg_worships_damage =") + 1] == '1' ||
-                buf[strlen("borg_worships_damage =") + 1] == 't')
-                borg_worships_damage = true;
-            else
-                borg_worships_damage = false;
-            continue;
+            if (borg_proc_setting(i, borg_settings[i].setting_string,
+                borg_settings[i].setting_type, buf))
+                break;
         }
 
-        if (prefix(buf, "borg_worships_speed ="))
-        {
-            if (buf[strlen("borg_worships_speed =") + 1] == 'T' ||
-                buf[strlen("borg_worships_speed =") + 1] == '1' ||
-                buf[strlen("borg_worships_speed =") + 1] == 't') borg_worships_speed = true;
-            else borg_worships_speed = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_worships_hp ="))
-        {
-            if (buf[strlen("borg_worships_hp =") + 1] == 'T' ||
-                buf[strlen("borg_worships_hp =") + 1] == '1' ||
-                buf[strlen("borg_worships_hp =") + 1] == 't') borg_worships_hp = true;
-            else borg_worships_hp = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_worships_mana ="))
-        {
-            if (buf[strlen("borg_worships_mana =") + 1] == 'T' ||
-                buf[strlen("borg_worships_mana =") + 1] == '1' ||
-                buf[strlen("borg_worships_mana =") + 1] == 't') borg_worships_mana = true;
-            else borg_worships_mana = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_worships_ac ="))
-        {
-            if (buf[strlen("borg_worships_ac =") + 1] == 'T' ||
-                buf[strlen("borg_worships_ac =") + 1] == '1' ||
-                buf[strlen("borg_worships_ac =") + 1] == 't') borg_worships_ac = true;
-            else borg_worships_ac = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_worships_gold ="))
-        {
-            if (buf[strlen("borg_worships_gold =") + 1] == 'T' ||
-                buf[strlen("borg_worships_gold =") + 1] == '1' ||
-                buf[strlen("borg_worships_gold =") + 1] == 't') borg_worships_gold = true;
-            else borg_worships_gold = false;
-            continue;
-        }
-
-
-        if (prefix(buf, "borg_plays_risky ="))
-        {
-            if (buf[strlen("borg_plays_risky =") + 1] == 'T' ||
-                buf[strlen("borg_plays_risky =") + 1] == '1' ||
-                buf[strlen("borg_plays_risky =") + 1] == 't') borg_plays_risky = true;
-            else borg_plays_risky = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_scums_uniques ="))
-        {
-            if (buf[strlen("borg_scums_uniques =") + 1] == 'T' ||
-                buf[strlen("borg_scums_uniques =") + 1] == '1' ||
-                buf[strlen("borg_scums_uniques =") + 1] == 't') borg_scums_uniques = true;
-            else borg_scums_uniques = false;
-            continue;
-        }
-        if (prefix(buf, "borg_kills_uniques ="))
-        {
-            if (buf[strlen("borg_kills_uniques =") + 1] == 'T' ||
-                buf[strlen("borg_kills_uniques =") + 1] == '1' ||
-                buf[strlen("borg_kills_uniques =") + 1] == 't') borg_kills_uniques = true;
-            else borg_kills_uniques = false;
-            continue;
-        }
-        if (prefix(buf, "borg_uses_swaps ="))
-        {
-            if (buf[strlen("borg_uses_swaps =") + 1] == 'T' ||
-                buf[strlen("borg_uses_swaps =") + 1] == '1' ||
-                buf[strlen("borg_uses_swaps =") + 1] == 't') borg_uses_swaps = true;
-            else borg_uses_swaps = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_slow_optimizehome ="))
-        {
-            if (buf[strlen("borg_slow_optimizehome =") + 1] == 'T' ||
-                buf[strlen("borg_slow_optimizehome =") + 1] == '1' ||
-                buf[strlen("borg_slow_optimizehome =") + 1] == 't') borg_slow_optimizehome = true;
-            else borg_slow_optimizehome = false;
-
-            /* for now always leave as false since its broken */
-            borg_slow_optimizehome = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_stop_king ="))
-        {
-            if (buf[strlen("borg_stop_king =") + 1] == 'T' ||
-                buf[strlen("borg_stop_king =") + 1] == '1' ||
-                buf[strlen("borg_stop_king =") + 1] == 't') borg_stop_king = true;
-            else borg_stop_king = false;
-            continue;
-        }
-
-
-        if (prefix(buf, "borg_uses_dynamic_calcs ="))
-        {
-            if (buf[strlen("borg_uses_dynamic_calcs =") + 1] == 'T' ||
-                buf[strlen("borg_uses_dynamic_calcs =") + 1] == '1' ||
-                buf[strlen("borg_uses_dynamic_calcs =") + 1] == 't') borg_uses_calcs = true;
-            else borg_uses_calcs = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_respawn_winners ="))
-        {
-            if (buf[strlen("borg_respawn_winners =") + 1] == 'T' ||
-                buf[strlen("borg_respawn_winners =") + 1] == '1' ||
-                buf[strlen("borg_respawn_winners =") + 1] == 't') borg_respawn_winners = true;
-            else borg_respawn_winners = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_lunal_mode ="))
-        {
-            if (buf[strlen("borg_lunal_mode =") + 1] == 'T' ||
-                buf[strlen("borg_lunal_mode =") + 1] == '1' ||
-                buf[strlen("borg_lunal_mode =") + 1] == 't') borg_lunal_mode = true;
-            else borg_lunal_mode = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_self_lunal ="))
-        {
-            if (buf[strlen("borg_self_lunal =") + 1] == 'T' ||
-                buf[strlen("borg_self_lunal =") + 1] == '1' ||
-                buf[strlen("borg_self_lunal =") + 1] == 't') borg_self_lunal = true;
-            else borg_self_lunal = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_self_scum ="))
-        {
-            if (buf[strlen("borg_self_scum =") + 1] == 'T' ||
-                buf[strlen("borg_self_scum =") + 1] == '1' ||
-                buf[strlen("borg_self_scum =") + 1] == 't') borg_self_scum = true;
-            else borg_self_scum = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_verbose ="))
-        {
-            if (buf[strlen("borg_verbose =") + 1] == 'T' ||
-                buf[strlen("borg_verbose =") + 1] == '1' ||
-                buf[strlen("borg_verbose =") + 1] == 't') borg_verbose = true;
-            else borg_verbose = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_munchkin_start ="))
-        {
-            if (buf[strlen("borg_munchkin_start =") + 1] == 'T' ||
-                buf[strlen("borg_munchkin_start =") + 1] == '1' ||
-                buf[strlen("borg_munchkin_start =") + 1] == 't') borg_munchkin_start = true;
-            else borg_munchkin_start = false;
-            continue;
-        }
-
-        if (prefix(buf, "borg_munchkin_level ="))
-        {
-            sscanf(buf + strlen("borg_munchkin_level =") + 1, "%d", &borg_munchkin_level);
-            if (borg_munchkin_level <= 1) borg_munchkin_level = 1;
-            if (borg_munchkin_level >= 50) borg_munchkin_level = 50;
-            continue;
-        }
-
-        if (prefix(buf, "borg_munchkin_depth ="))
-        {
-            sscanf(buf + strlen("borg_munchkin_depth =") + 1, "%d", &borg_munchkin_depth);
-            if (borg_munchkin_depth <= 1) borg_munchkin_depth = 8;
-            if (borg_munchkin_depth >= 100) borg_munchkin_depth = 100;
-            continue;
-        }
-
-        if (prefix(buf, "borg_enchant_limit ="))
-        {
-            sscanf(buf + strlen("borg_enchant_limit =") + 1, "%d", &borg_enchant_limit);
-            if (borg_enchant_limit <= 8) borg_enchant_limit = 8;
-            if (borg_enchant_limit >= 15) borg_enchant_limit = 15;
-            continue;
-        }
-
-        /* Extract the integers */
-        if (prefix(buf, "borg_respawn_race ="))
-        {
-            sscanf(buf + strlen("borg_respawn_race =") + 1, "%d", &borg_respawn_race);
-            continue;
-        }
-        if (prefix(buf, "borg_respawn_class ="))
-        {
-            sscanf(buf + strlen("borg_respawn_class =") + 1, "%d", &borg_respawn_class);
-            continue;
-        }
-        if (prefix(buf, "borg_dump_level ="))
-        {
-            sscanf(buf + strlen("borg_dump_level =") + 1, "%d", &borg_dump_level);
-            continue;
-        }
-
-        if (prefix(buf, "borg_save_death ="))
-        {
-            sscanf(buf + strlen("borg_save_death =") + 1, "%d", &borg_save_death);
-            continue;
-        }
-
-        if (prefix(buf, "borg_stop_clevel ="))
-        {
-            sscanf(buf + strlen("borg_stop_clevel =") + 1, "%d", &borg_stop_clevel);
-            continue;
-        }
-        if (prefix(buf, "borg_stop_dlevel ="))
-        {
-            sscanf(buf + strlen("borg_stop_dlevel =") + 1, "%d", &borg_stop_dlevel);
-            continue;
-        }
-        if (prefix(buf, "borg_no_deeper ="))
-        {
-            sscanf(buf + strlen("borg_no_deeper =") + 1, "%d", &borg_no_deeper);
-            continue;
-        }
-        if (prefix(buf, "borg_chest_fail_tolerance ="))
-        {
-            sscanf(buf + strlen("borg_chest_fail_tolerance =") + 1, "%d", &borg_chest_fail_tolerance);
-            continue;
-        }
-        if (prefix(buf, "borg_delay_factor ="))
-        {
-            sscanf(buf + strlen("borg_delay_factor =") + 1, "%d", &borg_delay_factor);
-            if (borg_delay_factor >= 9) borg_delay_factor = 9;
-            continue;
-        }
-        if (prefix(buf, "borg_money_scum_amount ="))
-        {
-            sscanf(buf + strlen("borg_money_scum_amount =") + 1, "%d", &borg_money_scum_amount);
-            continue;
-        }
-        if (prefix(buf, "REQ"))
+        /* other settings */
+        if (prefix_i(buf, "REQ"))
         {
             if (!borg_load_requirement(buf + strlen("REQ")))
                 borg_note(buf);
             continue;
         }
-        if (prefix(buf, "FORMULA"))
+        if (prefix_i(buf, "FORMULA"))
         {
 #if false
 // For now ignore the dynamic formulas in borg.txt ... they are waaaay out of date !FIX !TODO !AJG
@@ -4049,7 +3901,7 @@ void init_borg_txt_file(void)
 #endif 
             continue;
         }
-        if (prefix(buf, "CND"))
+        if (prefix_i(buf, "CND"))
         {
 #if false
             if (!borg_load_formula(buf + strlen("CND")))
@@ -4057,7 +3909,7 @@ void init_borg_txt_file(void)
 #endif 
             continue;
         }
-        if (prefix(buf, "POWER"))
+        if (prefix_i(buf, "POWER"))
         {
             if (!borg_load_power(buf + strlen("POWER")))
                 borg_note(buf);
@@ -4069,11 +3921,46 @@ void init_borg_txt_file(void)
     /* Close it */
     file_close(fp);
 
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS])
+    {
+        msg("Dynamic calcs (borg_uses_dynamic-calcs) is configured on but currently ignored.");
+        borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
+    }
+
+    /* lunal mode is a default rather than a setting */
+    borg_lunal_mode = borg_cfg[BORG_LUNAL_MODE];
+
+    /* a few sanity range checks */
+    if (borg_cfg[BORG_MUNCHKIN_LEVEL] <= 1) 
+        borg_cfg[BORG_MUNCHKIN_LEVEL] = 1;
+    if (borg_cfg[BORG_MUNCHKIN_LEVEL] >= 50) 
+        borg_cfg[BORG_MUNCHKIN_LEVEL] = 50;
+
+    if (borg_cfg[BORG_MUNCHKIN_DEPTH] <= 1)
+        borg_cfg[BORG_MUNCHKIN_DEPTH] = 8;
+    if (borg_cfg[BORG_MUNCHKIN_DEPTH] >= 100)
+        borg_cfg[BORG_MUNCHKIN_DEPTH] = 100;
+
+    if (borg_cfg[BORG_ENCHANT_LIMIT] <= 8)
+        borg_cfg[BORG_ENCHANT_LIMIT] = 8;
+    if (borg_cfg[BORG_ENCHANT_LIMIT] >= 15)
+        borg_cfg[BORG_ENCHANT_LIMIT] = 15;
+
+    if (borg_cfg[BORG_RESPAWN_RACE] >= MAX_RACES ||
+        borg_cfg[BORG_RESPAWN_RACE] < -1)
+        borg_cfg[BORG_RESPAWN_RACE] = 0;
+
+    if (borg_cfg[BORG_RESPAWN_CLASS] >= MAX_CLASSES ||
+        borg_cfg[BORG_RESPAWN_CLASS] < -1)
+        borg_cfg[BORG_RESPAWN_CLASS] = 0;
+
+
     for (i = 0; i < MAX_CLASSES; i++)
         qsort(borg_required_item[i], n_req[i], sizeof(req_item), borg_item_cmp);
 
     /* make sure it continues to run if reset */
-    if (borg_respawn_winners) borg_stop_king = false;
+    if (borg_cfg[BORG_RESPAWN_WINNERS]) 
+        borg_cfg[BORG_STOP_KING] = false;
 
     /* Success */
     return;
@@ -4468,32 +4355,11 @@ void borg_init_9(void)
     /* Pile symbol '&' confuse the borg */
     option_set("show_piles", false);
 
-    /* We repeat by hand */
-    /* always_repeat = false; */
-
-    /* We do not haggle */
-    /* auto_haggle = true; */
-
     /* We need space */
     option_set("show_labels", false);
 
     /* show_weights = false; */
     option_set("show_flavors", false);
-
-
-    /* Allow items to stack */
-    /* stack_force_notes = true; */
-    /* stack_force_costs = true; */
-
-
-    /* Ignore discounts */
-    /* stack_force_costs = true; */
-
-    /* Ignore inscriptions */
-    /* stack_force_notes = true; */
-
-    /* Efficiency */
-    /* avoid_abort = true; */
 
     /* Efficiency */
     player->opts.hitpoint_warn = 0;
@@ -4882,7 +4748,7 @@ void borg_write_map(bool ask)
     mem_free(list);
 
     /* Write swap info */
-    if (borg_uses_swaps)
+    if (borg_cfg[BORG_USES_SWAPS])
     {
         file_putf(borg_map_file, "  [Swap info]\n\n");
         item = &borg_items[weapon_swap];
@@ -4996,15 +4862,15 @@ void borg_write_map(bool ask)
     else file_putf(borg_map_file, "It is night-time in town.\n");
     file_putf(borg_map_file, "\n\n");
 
-    file_putf(borg_map_file, "borg_uses_swaps; %d\n", borg_uses_swaps);
-    file_putf(borg_map_file, "borg_worships_damage; %d\n", borg_worships_damage);
-    file_putf(borg_map_file, "borg_worships_speed; %d\n", borg_worships_speed);
-    file_putf(borg_map_file, "borg_worships_hp; %d\n", borg_worships_hp);
-    file_putf(borg_map_file, "borg_worships_mana; %d\n", borg_worships_mana);
-    file_putf(borg_map_file, "borg_worships_ac; %d\n", borg_worships_ac);
-    file_putf(borg_map_file, "borg_worships_gold; %d\n", borg_worships_gold);
-    file_putf(borg_map_file, "borg_plays_risky; %d\n", borg_plays_risky);
-    file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n", borg_slow_optimizehome);
+    file_putf(borg_map_file, "borg_uses_swaps; %d\n", borg_cfg[BORG_USES_SWAPS]);
+    file_putf(borg_map_file, "borg_worships_damage; %d\n", borg_cfg[BORG_WORSHIPS_DAMAGE]);
+    file_putf(borg_map_file, "borg_worships_speed; %d\n", borg_cfg[BORG_WORSHIPS_SPEED]);
+    file_putf(borg_map_file, "borg_worships_hp; %d\n", borg_cfg[BORG_WORSHIPS_HP]);
+    file_putf(borg_map_file, "borg_worships_mana; %d\n", borg_cfg[BORG_WORSHIPS_MANA]);
+    file_putf(borg_map_file, "borg_worships_ac; %d\n", borg_cfg[BORG_WORSHIPS_AC]);
+    file_putf(borg_map_file, "borg_worships_gold; %d\n", borg_cfg[BORG_WORSHIPS_GOLD]);
+    file_putf(borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
+    file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n", borg_cfg[BORG_SLOW_OPTIMIZEHOME]);
     file_putf(borg_map_file, "borg_scumming_pots; %d\n\n", borg_scumming_pots);
     file_putf(borg_map_file, "\n\n");
 
@@ -5219,8 +5085,8 @@ void borg_save_scumfile(void)
     int i;
 
     /* Create a scum file */
-    if (borg_save_death &&
-        (borg_skill[BI_CLEVEL] >= borg_dump_level ||
+    if (borg_cfg[BORG_SAVE_DEATH] &&
+        (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
             strstr(player->died_from, "starvation")))
     {
         memcpy(svSavefile, savefile, sizeof(savefile));
@@ -5578,10 +5444,10 @@ void borg_status(void)
 
             attr = COLOUR_SLATE;
             Term_putstr(42, 7, -1, attr, "Scumming: not active                          ");
-            if (borg_money_scum_amount != 0)
+            if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0)
             {
                 attr = COLOUR_WHITE;
-                Term_putstr(42, 7, -1, attr, format("Scumming: $%d                  ", borg_money_scum_amount));
+                Term_putstr(42, 7, -1, attr, format("Scumming: $%d                  ", borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
             }
             attr = COLOUR_SLATE;
             Term_putstr(42, 8, -1, attr, "Maximal Depth:");
@@ -6779,9 +6645,9 @@ void do_cmd_borg(void)
         new_borg_stop_clevel = get_quantity("Enter new auto-stop clevel: ", 51);
         get_com("Stop when Morgoth Dies? (y or n)? ", &cmd);
 
-        borg_stop_dlevel = new_borg_stop_dlevel;
-        borg_stop_clevel = new_borg_stop_clevel;
-        if (cmd == 'n' || cmd == 'N') borg_stop_king = false;
+        borg_cfg[BORG_STOP_DLEVEL] = new_borg_stop_dlevel;
+        borg_cfg[BORG_STOP_CLEVEL] = new_borg_stop_clevel;
+        if (cmd == 'n' || cmd == 'N') borg_cfg[BORG_STOP_KING] = false;
 
         break;
     }
@@ -6792,13 +6658,13 @@ void do_cmd_borg(void)
         int new_borg_money_scum_amount = 0;
 
         /* report current status */
-        msg("money Scumming for %d, I need %d more.", borg_money_scum_amount,
-            borg_money_scum_amount - borg_gold);
+        msg("money Scumming for %d, I need %d more.", borg_cfg[BORG_MONEY_SCUM_AMOUNT],
+            borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg_gold);
 
         /* Get the new amount */
         new_borg_money_scum_amount = get_quantity("Enter new dollar amount for money scumming (0 for no scumming):", INT_MAX);
 
-        borg_money_scum_amount = new_borg_money_scum_amount;
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] = new_borg_money_scum_amount;
 
         break;
     }

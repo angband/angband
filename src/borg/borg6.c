@@ -2082,7 +2082,7 @@ bool borg_escape(int b_q)
     }
 
     /* Risky borgs are more likely to stay in a fight */
-    if (borg_plays_risky) risky_boost = 3;
+    if (borg_cfg[BORG_PLAYS_RISKY]) risky_boost = 3;
 
     /* 1. really scary, I'm about to die */
     /* Try an emergency teleport, or phase door as last resort */
@@ -2876,7 +2876,7 @@ static bool borg_heal(int danger)
 
 
     /* Risky Borgs are less likely to heal in the fight */
-    if (borg_plays_risky) chance += 5;
+    if (borg_cfg[BORG_PLAYS_RISKY]) chance += 5;
 
     if (((pct_down <= 15 && chance < 98) ||
         (pct_down >= 16 && pct_down <= 25 && chance < 95) ||
@@ -3682,7 +3682,7 @@ bool borg_caution(void)
     }
 
 
-    if (borg_uses_swaps)
+    if (borg_cfg[BORG_USES_SWAPS])
     {
         /* do some swapping before running away! */
         if (pos_danger > (avoidance / 3))
@@ -8171,7 +8171,7 @@ static int borg_attack_aux_spell_bolt(const enum borg_spells spell, int rad, int
         (randint0(100) < 1)) return (0);
 
     /* Not if money scumming in town */
-    if (borg_money_scum_amount && borg_skill[BI_CDEPTH] == 0) return (0);
+    if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] && borg_skill[BI_CDEPTH] == 0) return (0);
 
     /* Not if low on food */
     if (borg_skill[BI_FOOD] == 0 &&
@@ -11548,7 +11548,7 @@ static int borg_defend_aux_prot_evil(int p1)
     if ((p1 > p2 &&
         p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3) : (avoidance / 2)) &&
         p1 > (avoidance / 7)) ||
-        (borg_money_scum_amount >= 1 && borg_skill[BI_CDEPTH] == 0))
+        (borg_cfg[BORG_MONEY_SCUM_AMOUNT] >= 1 && borg_skill[BI_CDEPTH] == 0))
     {
         /* Simulation */
         if (borg_simulate) return (p1 - p2);
@@ -15524,11 +15524,10 @@ static bool borg_play_step(int y2, int x2)
 
             /* Traps. Disarm it w/ fail check */
             if (o_ptr->pval >= 1 && o_ptr->known &&
-                borg_skill[BI_DEV] - o_ptr->pval >= borg_chest_fail_tolerance)
+                borg_skill[BI_DEV] - o_ptr->pval >= borg_cfg[BORG_CHEST_FAIL_TOLERANCE])
             {
                 borg_note(format("# Disarming a '%s' at (%d,%d)",
-                    take->kind->name,
-                    take->y, take->x));
+                    take->kind->name, take->y, take->x));
 
                 /* Open it */
                 borg_keypress('D');
@@ -18552,7 +18551,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                 }
 
                 /* if scumming the start of the game, take all items to sell them */
-                if (borg_munchkin_start)
+                if (borg_cfg[BORG_MUNCHKIN_START])
                 {
                     /* Certain known items are junky and should be ignored.  Grab only
                      * things of value

@@ -275,9 +275,9 @@ void borg_delete_take(int i)
     if (!take->kind) return;
 
     /* Note */
-    if (borg_verbose) borg_note(format("# Forgetting an object '%s' at (%d,%d)",
-        (take->kind->name),
-        take->y, take->x));
+    if (borg_cfg[BORG_VERBOSE]) 
+        borg_note(format("# Forgetting an object '%s' at (%d,%d)",
+            (take->kind->name), take->y, take->x));
 
     /* Access the grid */
     ag = &borg_grids[take->y][take->x];
@@ -2557,9 +2557,9 @@ static int borg_locate_kill(char* who, int y, int x, int r)
     r_ptr = &r_info[r_idx];
 
     /* Note */
-    if (borg_verbose) borg_note(format("# There is a monster '%s' within %d grids of %d,%d",
-        (r_ptr->name),
-        r, y, x));
+    if (borg_cfg[BORG_VERBOSE]) 
+        borg_note(format("# There is a monster '%s' within %d grids of %d,%d",
+            (r_ptr->name), r, y, x));
 
     /* Hack -- count racial appearances */
     if (borg_race_count[r_idx] < SHRT_MAX) borg_race_count[r_idx]++;
@@ -2812,9 +2812,9 @@ static int borg_locate_kill(char* who, int y, int x, int r)
         kill = &borg_kills[b_i];
 
         /* Note */
-        if (borg_verbose) borg_note(format("# Matched a monster '%s' at (%d,%d) for the parsed msg.",
-            (r_info[kill->r_idx].name),
-            kill->y, kill->x));
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note(format("# Matched a monster '%s' at (%d,%d) for the parsed msg.",
+                (r_info[kill->r_idx].name), kill->y, kill->x));
 
         /* Known identity */
         if (!r) kill->known = true;
@@ -2828,9 +2828,9 @@ static int borg_locate_kill(char* who, int y, int x, int r)
     /*** Oops ***/
 
     /* Note */
-    if (borg_verbose) borg_note(format("# Unable to locate monster '%s' near (%d,%d), which generated the msg (%s).",
-        (r_ptr->name),
-        y, x, who));
+    if (borg_cfg[BORG_VERBOSE]) 
+        borg_note(format("# Unable to locate monster '%s' near (%d,%d), which generated the msg (%s).",
+            (r_ptr->name), y, x, who));
 
     /* Oops */
     /* this is the case where we know the name of the monster */
@@ -5210,7 +5210,8 @@ void borg_react(char* msg, char* buf)
     }
 
     /* Note actual message */
-    if (borg_verbose) borg_note(format("> Reacting Msg (%s)", msg));
+    if (borg_cfg[BORG_VERBOSE]) 
+        borg_note(format("> Reacting Msg (%s)", msg));
 
     /* Extract length of parsed message */
     len = strlen(buf);
