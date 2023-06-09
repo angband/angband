@@ -45,6 +45,8 @@ extern void borg_update(void);
 extern void borg_react(char* msg, char* buf);
 extern void borg_delete_kill(int i);
 extern void borg_delete_take(int i);
+extern void borg_clear_reactions(void);
+
 
 
 /*

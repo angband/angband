@@ -486,7 +486,7 @@ extern void borg_cheat_spell(int book);
 /*
  * Hack -- prepare stuff based on the race/class
  */
-extern void prepare_race_class_info(void);
+extern void borg_prepare_race_class_info(void);
 
 /*
  * check special note for item needs id

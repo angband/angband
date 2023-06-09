@@ -3020,7 +3020,7 @@ static void prepare_book_info(void)
 /*
  * Hack -- prepare some stuff based on the player race and class
  */
-void prepare_race_class_info(void)
+void borg_prepare_race_class_info(void)
 {
     /* Initialize the various spell arrays by book */
     prepare_book_info();

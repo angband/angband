@@ -5250,6 +5250,11 @@ void borg_react(char* msg, char* buf)
     borg_msg_num++;
 }
 
+void borg_clear_reactions(void)
+{
+    borg_msg_len = 0;
+    borg_msg_num = 0;
+}
 
 /*
  * Initialize this file

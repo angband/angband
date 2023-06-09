@@ -8,8 +8,10 @@
 #include "cave.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
+#include "obj-init.h"
 #include "obj-make.h"
 #include "obj-knowledge.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
@@ -17,6 +19,7 @@
 #include "game-world.h"
 #include "player-birth.h"
 #include "player-calcs.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -45,6 +48,7 @@ extern bool auto_play;
 extern bool keep_playing;
 #endif /* bablos */
 bool borg_cheat_death;
+bool borg_cheating_death = false;
 
 
 /*
@@ -461,6 +465,8 @@ static bool borg_think(void)
 
             /* respawn */
             resurrect_borg();
+
+            borg_flush();
 #endif /* bablos */
         }
 
@@ -811,7 +817,7 @@ static void borg_parse_aux(char* msg, int len)
     if (prefix(msg, "You die."))
     {
         /* Abort (unless cheating) */
-        if (!(player->wizard || OPT(player, cheat_live)))
+        if (!(player->wizard || OPT(player, cheat_live) || borg_cheat_death))
         {
             /* Abort */
             borg_oops("death");
@@ -2493,31 +2499,79 @@ static void create_random_name(int race, char* name)
  */
 static void player_outfit_borg(struct player* p)
 {
+    int i;
     const struct start_item* si;
-    struct object object_type_body;
+    struct object* obj, * known_obj;
+
+    /* Currently carrying nothing */
+    p->upkeep->total_weight = 0;
+
+    /* Give the player obvious object knowledge */
+    p->obj_k->dd = 1;
+    p->obj_k->ds = 1;
+    p->obj_k->ac = 1;
+    for (i = 1; i < OF_MAX; i++) {
+        struct obj_property* prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+        if (prop->subtype == OFT_LIGHT) of_on(p->obj_k->flags, i);
+        if (prop->subtype == OFT_DIG) of_on(p->obj_k->flags, i);
+        if (prop->subtype == OFT_THROW) of_on(p->obj_k->flags, i);
+    }
 
     /* Give the player starting equipment */
-    for (si = player->class->start_items; si; si = si->next)
-    {
-        /* Get local object */
-        struct object* i_ptr = &object_type_body;
+    for (si = p->class->start_items; si; si = si->next) {
+        int num = rand_range(si->min, si->max);
         struct object_kind* kind = lookup_kind(si->tval, si->sval);
+        assert(kind);
 
-        /* Prepare the item */
-        object_prep(i_ptr, kind, 0, MINIMISE);
-        i_ptr->number = (byte)rand_range(si->min, si->max);
-        i_ptr->origin = ORIGIN_BIRTH;
+        /* Without start_kit, only start with 1 food and 1 light */
+        if (!OPT(p, birth_start_kit)) {
+            if (!tval_is_food_k(kind) && !tval_is_light_k(kind))
+                continue;
 
-        object_flavor_aware(player, i_ptr);
-        i_ptr->known->pval = i_ptr->pval;
-        i_ptr->known->effect = i_ptr->effect;
-        i_ptr->known->notice |= OBJ_NOTICE_ASSESSED;
+            num = 1;
+        }
 
-        inven_carry(p, i_ptr, true, false);
-        kind->everseen = true;
+        /* Exclude if configured to do so based on birth options. */
+        if (si->eopts) {
+            bool included = true;
+            int eind = 0;
+
+            while (si->eopts[eind] && included) {
+                if (si->eopts[eind] > 0) {
+                    if (p->opts.opt[si->eopts[eind]]) {
+                        included = false;
+                    }
+                }
+                else {
+                    if (!p->opts.opt[-si->eopts[eind]]) {
+                        included = false;
+                    }
+                }
+                ++eind;
+            }
+            if (!included) continue;
+        }
+
+        /* Prepare a new item */
+        obj = object_new();
+        object_prep(obj, kind, 0, MINIMISE);
+        obj->number = num;
+        obj->origin = ORIGIN_BIRTH;
+
+        known_obj = object_new();
+        obj->known = known_obj;
+        object_set_base_known(p, obj);
+        object_flavor_aware(p, obj);
+        obj->known->pval = obj->pval;
+        obj->known->effect = obj->effect;
+        obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
         /* Deduct the cost of the item from starting cash */
-        p->au -= object_value(i_ptr, i_ptr->number);
+        p->au -= object_value_real(obj, obj->number);
+
+        /* Carry the item */
+        inven_carry(p, obj, true, false);
+        kind->everseen = true;
     }
 
     /* Sanity check */
@@ -2526,13 +2580,18 @@ static void player_outfit_borg(struct player* p)
 
     /* Now try wielding everything */
     wield_all(p);
+
+    /* Update knowledge */
+    update_player_object_knowledge(p);
 }
 
 
 /* Allow the borg to play continously.  Reset all values, */
 void resurrect_borg(void)
 {
+    char buf[80];
     int i;
+    struct player* p = player;
 
     /* Cheat death */
     player->is_dead = false;
@@ -2541,6 +2600,7 @@ void resurrect_borg(void)
 
     /* Flush message buffer */
     borg_parse(NULL);
+    borg_clear_reactions();
 
     /* flush the commands */
     borg_flush();
@@ -2589,8 +2649,12 @@ void resurrect_borg(void)
     struct player_class* p_class = NULL;
     if (borg_cfg[BORG_RESPAWN_RACE] != -1)
         p_race = player_id2race(borg_cfg[BORG_RESPAWN_RACE]);
+    else
+        p_race = player_id2race(randint0(MAX_RACES));
     if (borg_cfg[BORG_RESPAWN_CLASS] != -1)
         p_class = player_id2class(borg_cfg[BORG_RESPAWN_CLASS]);
+    else
+        p_class = player_id2class(randint0(MAX_CLASSES));
     player_generate(player, p_race, p_class, false);
 
     /* The dungeon is not ready */
@@ -2602,49 +2666,62 @@ void resurrect_borg(void)
     /* Hack -- seed for flavors */
     seed_flavor = randint0(0x10000000);
 
-#if false
-    // !FIX !TODO !AJG not sure what is right here.
-            /* Roll up a new character. Quickstart is allowed if ht_birth is set */
-    player_birth(true);
-
-    /* Seed for random artifacts */
-    if (!seed_randart || !OPT(player, birth_keep_randarts))
-        seed_randart = randint0(0x10000000);
-#endif
-
-    /* Randomize the artifacts if required */
-    if (OPT(player, birth_randarts))
-        do_randart(seed_randart, true);
-
-#if 0
-    int stats[A_MAX];
-    /* Borrow commands from birth.c */
-    get_stats(stats);
-    get_bonuses();
-    get_ahw(player);
-    player->history = get_history(player->race->history, &player->sc);
-    player->sc_birth = player->sc;
-    roll_hp();
-    get_money();
-    store_reset();
-#endif
-#if 0
-    /* Some Extra things */
-    get_stats_borg();
-    get_extra_borg();
-    get_ahw_borg();
-    get_history_borg();
-    get_money_borg();
-#endif
+    /* Embody */
+    memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
+    my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
+    p->body.name = string_make(buf);
+    p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
+    for (i = 0; i < p->body.count; i++) {
+        p->body.slots[i].type = bodies[p->race->body].slots[i].type;
+        my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
+        p->body.slots[i].name = string_make(buf);
+    }
 
     /* Get a random name */
     create_random_name(player->race->ridx, player->full_name);
 
+    /* Give the player some money */
+    player->au = player->au_birth = z_info->start_gold;
+
+    /* Hack - player knows all combat runes.  Maybe make them not runes? NRM */
+    player->obj_k->to_a = 1;
+    player->obj_k->to_h = 1;
+    player->obj_k->to_d = 1;
+
+    /* Player learns innate runes */
+    player_learn_innate(player);
+
+    /* Initialise the spells */
+    player_spells_init(player);
 
     /* outfit the player */
-   // !FIX !TODO !AJG no clue if this is right.  I would have thought player_init would handle this.
-//    player->upkeep->inven = mem_zalloc(z_info->pack_size * sizeof(struct object));
-    (void)player_outfit_borg(player);
+    player_outfit_borg(player);
+
+    /* generate town */
+    player->upkeep->generate_level = true;
+    player->upkeep->playing = true;
+
+    struct command fake_cmd;
+    /* fake up a command */
+    strcpy(fake_cmd.arg[0].name, "choice");
+    fake_cmd.arg[0].data.choice = 1;
+    do_cmd_reset_stats(&fake_cmd);
+
+    /* Initialise the stores, dungeon */
+    store_reset();
+    chunk_list_max = 0;
+
+    /* Restore the standard artifacts (randarts may have been loaded) */
+    cleanup_parser(&randart_parser);
+    deactivate_randart_file();
+    run_parser(&artifact_parser);
+
+    /* Now only randomize the artifacts if required */
+    if (OPT(player, birth_randarts)) {
+        seed_randart = randint0(0x10000000);
+        do_randart(seed_randart, true);
+        deactivate_randart_file();
+    }
 
     /* Hack -- flush it */
     Term_fresh();
@@ -2660,8 +2737,7 @@ void resurrect_borg(void)
     /*** Hack -- react to race and class ***/
 
     /* Notice the new race and class */
-    prepare_race_class_info();
-
+    borg_prepare_race_class_info();
 
     /* need to check all stats */
     for (int i = 0; i < STAT_MAX; i++)
@@ -2697,7 +2773,7 @@ void resurrect_borg(void)
 
 
     /* Mark savefile as borg cheater */
-    if (!(player->noscore & 0x0010)) player->noscore |= 0x0010;
+    if (!(player->noscore & NOSCORE_BORG)) player->noscore |= NOSCORE_BORG;
 
     /* Done.  Play on */
 }
@@ -2862,14 +2938,35 @@ static struct keypress borg_inkey_hack(int flush_first)
         borg_enter_score();
 #endif
         /* Reset the player game data then resurrect a new player */
-        resurrect_borg();
+//        resurrect_borg();
 
 #endif /* BABLOS */
 
         /* Cheat death */
+        borg_cheating_death = true;
+
         key.code = 'n';
         return key;
     }
+
+
+    /* do the actual resurrection in town */
+    if (borg_cheating_death && player->depth == 0)
+    {
+        borg_cheating_death = false;
+
+        /* Reset death flag */
+        player->is_dead = false;
+#ifndef BABLOS
+        /* Reset the player game data then resurrect a new player */
+        resurrect_borg();
+#endif /* bablos */
+
+        /* Clear the message */
+        key.code = ' ';
+        return key;
+    }
+
 
     /* with 292, there is a flush(0, 0, 0) introduced as it asks for confirmation.
      * This flush is messing up the borg.  This will allow the borg to
@@ -2933,24 +3030,12 @@ static struct keypress borg_inkey_hack(int flush_first)
         /* flush the buffer */
         borg_flush();
 
-        if (borg_cheat_death)
-        {
-            /* Reset death flag */
-            player->is_dead = false;
-#ifndef BABLOS
-            /* Reset the player game data then resurrect a new player */
-            resurrect_borg();
-#endif /* bablos */
-        }
-        else
-        {
-            /* Oops  */
-            borg_oops("player died");
+        /* Oops  */
+        borg_oops("player died");
 
-            /* Useless keypress */
-            key.code = KTRL('C');
-            return key;
-        }
+        /* Useless keypress */
+        key.code = KTRL('C');
+        return key;
     }
 
 
@@ -4493,7 +4578,7 @@ void borg_init_9(void)
     /*** Hack -- react to race and class ***/
 
     /* Notice the new race and class */
-    prepare_race_class_info();
+    borg_prepare_race_class_info();
 
     /*** All done ***/
 
@@ -4898,12 +4983,12 @@ void borg_write_map(bool ask)
     }
 
     /* Dump the borg_skill[] information */
-    itemm = z_info->k_max + z_info->k_max + z_info->a_max;
-    to = z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX;
+    itemm = z_info->k_max;
+    to = z_info->k_max + BI_MAX;
     for (; itemm < to; itemm++)
     {
         file_putf(borg_map_file, "skill %d (%s) value= %d.\n", itemm,
-            prefix_pref[itemm - z_info->k_max - z_info->k_max - z_info->a_max], borg_has[itemm]);
+            prefix_pref[itemm - z_info->k_max], borg_has[itemm]);
     }
 
 #if 0
@@ -5889,7 +5974,7 @@ void do_cmd_borg(void)
     case 'c':
     {
         /* Get a "Borg command", or abort */
-        if (!get_com("Borg command: Toggle Cheat: (d/i/e/s/p)", &cmd))
+        if (!get_com("Borg command: Toggle Cheat: (d)", &cmd))
             return;
 
         switch (cmd)
