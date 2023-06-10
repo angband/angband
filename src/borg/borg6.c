@@ -2,16 +2,16 @@
 /* File: borg6.c */
 /* Purpose: Medium level stuff for the Borg -BEN- */
 
-#include "angband.h"
+#include "../angband.h"
 #ifdef ALLOW_BORG
 
-#include "cave.h"
-#include "game-input.h"
-#include "mon-spell.h"
-#include "obj-knowledge.h"
-#include "player-timed.h"
-#include "project.h"
-#include "trap.h"
+#include "../cave.h"
+#include "../game-input.h"
+#include "../mon-spell.h"
+#include "../obj-knowledge.h"
+#include "../player-timed.h"
+#include "../project.h"
+#include "../trap.h"
 
 #include "borg1.h"
 #include "borg2.h"
@@ -1455,7 +1455,8 @@ void borg_near_monster_type(int dist)
     }
 }
 
-int borg_damage_and_power(int ag_kill, int x, int y)
+#ifdef INCLUDE_UNUSED_FUNCTIONS
+static int borg_damage_and_power(int ag_kill, int x, int y)
 {
     borg_kill* kill;
     int d, p;
@@ -1492,7 +1493,7 @@ int borg_damage_and_power(int ag_kill, int x, int y)
 
     return d;
 }
-
+#endif
 
 /*
  * Help determine if PHASE_DOOR seems like a good idea
@@ -1604,7 +1605,7 @@ bool borg_caution_phase(int emergency, int turns)
  * 5. Borg phases away.
  * 6. Go back to #1
  */
-bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
+static bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 {
     int n, k, i, d, x, y, p, u;
 
@@ -1814,7 +1815,7 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 /*
  * Help determine if "Teleport" seems like a good idea
  */
-bool borg_caution_teleport(int emergency, int turns)
+static bool borg_caution_teleport(int emergency, int turns)
 {
     int n, k, i, d, x, y, p;
 
@@ -1910,7 +1911,7 @@ bool borg_caution_teleport(int emergency, int turns)
  * Hack -- If the borg is standing on a stair and is in some danger, just leave the level.
  * No need to hang around on that level, try conserving the teleport scrolls
  */
-bool borg_escape_stair(void)
+static bool borg_escape_stair(void)
 {
     /* Current grid */
     borg_grid* ag = &borg_grids[c_y][c_x];
@@ -2014,7 +2015,7 @@ bool borg_dimension_door(int allow_fail)
  * Try to phase door or teleport
  * b_q is the danger of the least dangerious square around us.
  */
-bool borg_escape(int b_q)
+static bool borg_escape(int b_q)
 {
 
     int risky_boost = 0;
@@ -2098,34 +2099,34 @@ bool borg_escape(int b_q)
         ((b_q > avoidance * (15 + risky_boost) / 10) && !borg_fighting_unique))
     {
 
-        int allow_fail = 15;
+        int tmp_allow_fail = 15;
 
 
         if (borg_escape_stair() ||
             (borg_allow_teleport() &&
-                (borg_dimension_door(allow_fail - 10) ||
-                    borg_spell_fail(TELEPORT_SELF, allow_fail - 10) ||
-                    borg_spell_fail(PORTAL, allow_fail - 10) ||
-                    borg_shadow_shift(allow_fail - 10) ||
+                (borg_dimension_door(tmp_allow_fail - 10) ||
+                    borg_spell_fail(TELEPORT_SELF, tmp_allow_fail - 10) ||
+                    borg_spell_fail(PORTAL, tmp_allow_fail - 10) ||
+                    borg_shadow_shift(tmp_allow_fail - 10) ||
                     borg_read_scroll(sv_scroll_teleport) ||
                     borg_read_scroll(sv_scroll_teleport_level) ||
                     borg_use_staff_fail(sv_staff_teleportation) ||
                     borg_activate_artifact("TELE_LONG") ||
                     /* revisit spells, increased fail rate */
-                    borg_dimension_door(allow_fail + 9) ||
-                    borg_spell_fail(TELEPORT_SELF, allow_fail + 9) ||
-                    borg_spell_fail(PORTAL, allow_fail + 9) ||
-                    borg_shadow_shift(allow_fail + 9) ||
+                    borg_dimension_door(tmp_allow_fail + 9) ||
+                    borg_spell_fail(TELEPORT_SELF, tmp_allow_fail + 9) ||
+                    borg_spell_fail(PORTAL, tmp_allow_fail + 9) ||
+                    borg_shadow_shift(tmp_allow_fail + 9) ||
                     /* revisit teleport, increased fail rate */
                     borg_use_staff(sv_staff_teleportation) ||
                     /* Attempt Teleport Level */
-                    borg_spell_fail(TELEPORT_LEVEL, allow_fail + 9) ||
+                    borg_spell_fail(TELEPORT_LEVEL, tmp_allow_fail + 9) ||
                     /* try phase at least, with some hedging of the safety of landing zone */
                     (borg_caution_phase(75, 2) &&
                         (borg_read_scroll(sv_scroll_phase_door) ||
                             borg_activate_artifact("TELE_PHASE") ||
-                            borg_spell_fail(PHASE_DOOR, allow_fail) ||
-                            borg_spell_fail(PORTAL, allow_fail))))))
+                            borg_spell_fail(PHASE_DOOR, tmp_allow_fail) ||
+                            borg_spell_fail(PORTAL, tmp_allow_fail))))))
         {
             /* Flee! */
             borg_note("# Danger Level 1.");
@@ -3215,7 +3216,7 @@ static bool borg_heal(int danger)
 
 }
 
-static bool borg_prep_leave_level_spells()
+static bool borg_prep_leave_level_spells(void)
 {
     /* if we are running away, just run. */
     if (goal_fleeing)
@@ -6332,9 +6333,9 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
     borg_grid* ag;
     struct monster_race* r_ptr;
     borg_kill* kill;
-    borg_grid* ag_path;
-    struct monster_race* r_ptr_path;
-    borg_kill* kill_path;
+    /* borg_grid* ag_path; */
+    /* struct monster_race* r_ptr_path; */
+    /* borg_kill* kill_path; */
 
     int q_x, q_y;
 
@@ -6366,9 +6367,9 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
         r_ptr = &r_info[kill->r_idx];
 
         /* Get the grid of the pathway monster, if any */
-        ag_path = &borg_grids[y][x];
-        kill_path = &borg_kills[ag_path->kill];
-        r_ptr_path = &r_info[kill_path->r_idx];
+        /* ag_path = &borg_grids[y][x]; */
+        /* kill_path = &borg_kills[ag_path->kill]; */
+        /* r_ptr_path = &r_info[kill_path->r_idx]; */
 
         ag = &borg_grids[y][x];
 
@@ -8870,7 +8871,7 @@ static int borg_attack_aux_whirlwind_attack(void)
     if (!borg_spell_okay_fail(WHIRLWIND_ATTACK, (borg_fighting_unique ? 40 : 25)))
         return (0);
 
-    int original_danger = borg_danger(c_y, c_x, 1, false, false);
+    /* int original_danger = borg_danger(c_y, c_x, 1, false, false); */
     int blows = (borg_skill[BI_CLEVEL] + 10) / 15;
 
     /* Examine possible destinations */
@@ -9157,7 +9158,7 @@ static int borg_attack_aux_vampire_strike(void)
 {
     int p;
 
-    int i, b_i = -1;
+    int i /* , b_i */ = -1;
     int d, b_d = -1;
     int dist, best_dist = 99;
     bool abort_attack = false;
@@ -12247,15 +12248,15 @@ static int borg_defend_aux_mass_genocide(int p1)
             /* Remove monsters from the borg_kill */
             for (i = 1; i < borg_kills_nxt; i++)
             {
-                borg_kill* kill;
-                struct monster_race* r_ptr;
+                borg_kill* tmp_kill;
+                struct monster_race* tmp_r_ptr;
 
                 /* Monster */
-                kill = &borg_kills[i];
-                r_ptr = &r_info[kill->r_idx];
+                tmp_kill = &borg_kills[i];
+                tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
                 /* Cant kill uniques like this */
-                if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+                if (rf_has(tmp_r_ptr->flags, RF_UNIQUE)) continue;
 
                 /* remove this monster */
                 borg_delete_kill(i);
@@ -12293,7 +12294,7 @@ static int borg_defend_aux_genocide(int p1)
 
     int total_danger_to_me = 0;
 
-    char genocide_target = (char)0;
+    char tmp_genocide_target = (char)0;
     unsigned char b_threat_id = (char)0;
 
     bool genocide_spell = false;
@@ -12454,7 +12455,7 @@ static int borg_defend_aux_genocide(int p1)
         }
 
         /* Genociding this race would reduce the danger of the level */
-        genocide_target = b_threat_id;
+        tmp_genocide_target = b_threat_id;
 
     }
 
@@ -12474,12 +12475,12 @@ static int borg_defend_aux_genocide(int p1)
         if (p2 <= (avoidance / 2)) b_i = 0;
 
         /* Genociding this race would help me immediately */
-        genocide_target = b_i;
+        tmp_genocide_target = b_i;
 
     }
 
     /* Complete the genocide routine */
-    if (genocide_target)
+    if (tmp_genocide_target)
     {
         if (borg_simulate)
         {
@@ -12490,8 +12491,8 @@ static int borg_defend_aux_genocide(int p1)
             if (b_threat_id) return (b_threat[b_threat_id]);
         }
 
-        if (b_i) borg_note(format("# Banishing race '%c' (qty:%d).  Danger after spell:%d", genocide_target, b_num[b_i], p2));
-        if (b_threat_id) borg_note(format("# Banishing race '%c' (qty:%d).  Danger from them:%d", genocide_target, b_threat_num[b_threat_id], b_threat[b_threat_id]));
+        if (b_i) borg_note(format("# Banishing race '%c' (qty:%d).  Danger after spell:%d", tmp_genocide_target, b_num[b_i], p2));
+        if (b_threat_id) borg_note(format("# Banishing race '%c' (qty:%d).  Danger from them:%d", tmp_genocide_target, b_threat_num[b_threat_id], b_threat[b_threat_id]));
 
         /* do it! ---use scrolls first since they clutter inventory */
         if (borg_read_scroll(sv_scroll_banishment) ||
@@ -12500,7 +12501,7 @@ static int borg_defend_aux_genocide(int p1)
             borg_use_staff(sv_staff_banishment))
         {
             /* and the winner is.....*/
-            borg_keypress((genocide_target));
+            borg_keypress((tmp_genocide_target));
         }
 
         /* Remove this race from the borg_kill */
@@ -12514,7 +12515,7 @@ static int borg_defend_aux_genocide(int p1)
             r_ptr = &r_info[kill->r_idx];
 
             /* Our char of the monster */
-            if (r_ptr->d_char != genocide_target) continue;
+            if (r_ptr->d_char != tmp_genocide_target) continue;
 
             /* we do not genocide uniques */
             if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
@@ -13366,7 +13367,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
     borg_grid* ag;
 
     /* Only if on level 100 */
-    if (!borg_skill[BI_CDEPTH] == 100) return (0);
+    if (!(borg_skill[BI_CDEPTH] == 100)) return (0);
 
     /* Not if Morgoth is not on this level */
     if (!morgoth_on_level) return (0);
@@ -13595,15 +13596,15 @@ static int borg_defend_aux_banishment_morgoth(void)
         /* Remove this race from the borg_kill */
         for (i = 0; i < borg_kills_nxt; i++)
         {
-            borg_kill* kill;
-            struct monster_race* r_ptr;
+            borg_kill* tmp_kill;
+            struct monster_race* tmp_r_ptr;
 
             /* Monster */
-            kill = &borg_kills[i];
-            r_ptr = &r_info[kill->r_idx];
+            tmp_kill = &borg_kills[i];
+            tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
             /* Cant kill uniques like this */
-            if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+            if (rf_has(tmp_r_ptr->flags, RF_UNIQUE)) continue;
 
             /* remove this monster */
             borg_delete_kill(i);
@@ -14045,10 +14046,11 @@ static int borg_perma_aux_resist_colluin(void)
     if (borg_simulate) return (2);
 
     /* do it! */
-    borg_activate_artifact("RESIST_ALL") || borg_activate_artifact("RAGE_BLESS_RESIST");
-
-    /* No resting to recoop mana */
-    borg_no_rest_prep = 3000;
+    if (borg_activate_artifact("RESIST_ALL") || borg_activate_artifact("RAGE_BLESS_RESIST"))
+    {
+        /* No resting to recoop mana */
+        borg_no_rest_prep = 3000;
+    }
 
     /* Value */
     return (2);
@@ -14901,7 +14903,7 @@ bool borg_recover(void)
     if (need == BORG_MET_NEED)
         return true;
     else if (need == BORG_UNMET_NEED)
-        borg_note(format("# Need to refuel but cant!", p));
+        borg_note(format("# Need to refuel but cant!"));
 
     /*** Do not recover when in danger ***/
 
@@ -14942,7 +14944,7 @@ bool borg_recover(void)
 
         {
             /* Take note */
-            borg_note(format("# Cure Stun", p));
+            borg_note(format("# Cure Stun - danger %d", p));
 
             return (true);
         }
@@ -14964,7 +14966,7 @@ bool borg_recover(void)
             borg_spell(HOLY_WORD))
         {
             /* Take note */
-            borg_note(format("# Cure Heavy Stun", p));
+            borg_note(format("# Cure Heavy Stun - danger %d", p));
 
             return (true);
         }
@@ -14980,7 +14982,7 @@ bool borg_recover(void)
             borg_spell(HOLY_WORD))
         {
             /* Take note */
-            borg_note(format("# Cure Cuts", p));
+            borg_note(format("# Cure Cuts - danger %d", p));
 
             return (true);
         }
@@ -14995,7 +14997,7 @@ bool borg_recover(void)
             borg_spell(CURE_POISON))
         {
             /* Take note */
-            borg_note(format("# Cure poison", p));
+            borg_note(format("# Cure poison - danger %d", p));
 
             return (true);
         }
@@ -15011,7 +15013,7 @@ bool borg_recover(void)
             borg_spell(HOLY_WORD))
         {
             /* Take note */
-            borg_note(format("# Cure fear", p));
+            borg_note(format("# Cure fear - danger %d", p));
 
             return (true);
         }
@@ -16347,7 +16349,7 @@ bool borg_flow_glyph(int why)
             borg_grid* ag_ptr[24];
 
             int floor = 0;
-            int glyph = 0;
+            int tmp_glyph = 0;
 
 
             /* Acquire the grid */
@@ -16401,21 +16403,21 @@ bool borg_flow_glyph(int why)
                     /* Glyphs */
                     if (ag->glyph)
                     {
-                        glyph++;
+                        tmp_glyph++;
                     }
                 }
 
                 /* Tweak -- Reward certain floors, punish distance */
-                v = 100 + (glyph * 500) - (cost * 1);
+                v = 100 + (tmp_glyph * 500) - (cost * 1);
                 if (borg_grids[y][x].feat == FEAT_FLOOR) v += 3000;
 
                 /* If this grid is surrounded by glyphs, select it */
-                if (glyph == goal_glyph) v += 5000;
+                if (tmp_glyph == goal_glyph) v += 5000;
 
                 /* If this grid is already glyphed but not
                  * surrounded by glyphs, then choose another.
                  */
-                if (glyph != goal_glyph && borg_grids[y][x].glyph)
+                if (tmp_glyph != goal_glyph && borg_grids[y][x].glyph)
                     v = -1;
 
                 /* The grid is not searchable */
@@ -16441,7 +16443,7 @@ bool borg_flow_glyph(int why)
                     if (borg_grids[y][x].glyph) continue;
 
                     /* Tweak -- Reward certain floors, punish distance */
-                    v = 500 + (glyph * 500) - (cost * 1);
+                    v = 500 + (tmp_glyph * 500) - (cost * 1);
 
                     /* The grid is not searchable */
                     if (v <= 0) continue;

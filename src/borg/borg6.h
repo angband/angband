@@ -72,9 +72,6 @@ extern bool borg_perma_spell(void);
 extern bool borg_check_rest(int y, int x);
 extern void borg_near_monster_type(int dist);
 
-extern int borg_panel_wid();
-extern int borg_panel_hgt();
-
 /*
  * Twitchy goals
  */
@@ -148,7 +145,7 @@ extern void borg_log_event(char* event);
  */
 extern void borg_init_6(void);
 
-
+extern bool borg_caution_phase(int emergency, int turns);
 
 #endif
 

@@ -1,6 +1,6 @@
 /* File: borg1.c */
 /* Purpose: Low level stuff for the Borg -BEN- */
-#include "angband.h"
+#include "../angband.h"
 
 #ifdef ALLOW_BORG
 #include "borg1.h"

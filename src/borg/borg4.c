@@ -1,17 +1,17 @@
 /* File: borg4.c */
 /*  Purpose: Notice and Power code for the Borg -BEN- */
 
-#include "angband.h"
-#include "cave.h"
-#include "game-world.h"
-#include "mon-spell.h"
-#include "player-calcs.h"
-#include "cmd-core.h"
-#include "player-spell.h"
-#include "player-timed.h"
-#include "player-util.h"
-#include "project.h"
-#include "trap.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../game-world.h"
+#include "../mon-spell.h"
+#include "../player-calcs.h"
+#include "../cmd-core.h"
+#include "../player-spell.h"
+#include "../player-timed.h"
+#include "../player-util.h"
+#include "../project.h"
+#include "../trap.h"
 
 
 #ifdef ALLOW_BORG

@@ -1,8 +1,8 @@
 /* File: borg2.c */
 /* Purpose: Low level dungeon mapping skills -BEN- */
 
-#include "angband.h"
-#include "cave.h"
+#include "../angband.h"
+#include "../cave.h"
 
 
 #ifdef ALLOW_BORG

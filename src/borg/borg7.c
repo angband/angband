@@ -1,13 +1,13 @@
 /* File: borg7.c */
 /* Purpose: High level functions for the Borg -BEN- */
 
-#include "angband.h"
+#include "../angband.h"
 
 #ifdef ALLOW_BORG
 
-#include "cave.h"
-#include "effect-handler.h"
-#include "obj-ignore.h"
+#include "../cave.h"
+#include "../effect-handler.h"
+#include "../obj-ignore.h"
 
 #include "borg1.h"
 #include "borg2.h"

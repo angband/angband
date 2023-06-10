@@ -2,16 +2,16 @@
 
 /* Purpose: Object and Spell routines for the Borg -BEN- */
 
-#include "angband.h"
-#include "cave.h"
-#include "cmd-core.h"
-#include "obj-curse.h"
-#include "obj-desc.h"
-#include "obj-knowledge.h"
-#include "obj-make.h"
-#include "obj-power.h"
-#include "obj-slays.h"
-#include "player-spell.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../cmd-core.h"
+#include "../obj-curse.h"
+#include "../obj-desc.h"
+#include "../obj-knowledge.h"
+#include "../obj-make.h"
+#include "../obj-power.h"
+#include "../obj-slays.h"
+#include "../player-spell.h"
 
 #ifdef ALLOW_BORG
 #include "borg1.h"

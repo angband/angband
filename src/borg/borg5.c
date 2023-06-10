@@ -1,15 +1,15 @@
 /* File: borg5.c */
 /* Purpose: Medium level stuff for the Borg -BEN- */
 
-#include "angband.h"
+#include "../angband.h"
 
 #ifdef ALLOW_BORG
 
-#include "cave.h"
-#include "game-world.h"
-#include "mon-spell.h"
-#include "obj-knowledge.h"
-#include "trap.h"
+#include "../cave.h"
+#include "../game-world.h"
+#include "../mon-spell.h"
+#include "../obj-knowledge.h"
+#include "../trap.h"
 
 #include "borg1.h"
 #include "borg2.h"
@@ -130,7 +130,7 @@ static borg_wank* borg_wanks;
 
 
 
-int borg_panel_hgt()
+int borg_panel_hgt(void)
 {
     int panel_hgt;
 
@@ -145,7 +145,7 @@ int borg_panel_hgt()
     return MAX(panel_hgt, 1);
 }
 
-int borg_panel_wid()
+int borg_panel_wid(void)
 {
     int panel_wid;
 
@@ -2921,11 +2921,11 @@ static bool borg_handle_self(char* str)
         /* Hack -- convert torch-lit grids to perma-lit grids */
         for (i = 0; i < borg_LIGHT_n; i++)
         {
-            int x = borg_LIGHT_x[i];
-            int y = borg_LIGHT_y[i];
+            int tmp_x = borg_LIGHT_x[i];
+            int tmp_y = borg_LIGHT_y[i];
 
             /* Get the grid */
-            borg_grid* ag = &borg_grids[y][x];
+            borg_grid* ag = &borg_grids[tmp_y][tmp_x];
 
             /* Mark as perma-lit */
             ag->info |= BORG_GLOW;
@@ -4692,11 +4692,11 @@ void borg_update(void)
             /* Scan neighbors */
             for (j = 0; j < 24; j++)
             {
-                int y = c_y + borg_ddy_ddd[j];
-                int x = c_x + borg_ddx_ddd[j];
+                int tmp_y = c_y + borg_ddy_ddd[j];
+                int tmp_x = c_x + borg_ddx_ddd[j];
 
                 /* Get the grid */
-                ag = &borg_grids[y][x];
+                ag = &borg_grids[tmp_y][tmp_x];
 
                 /* Skip unknown grids (important) */
                 if (ag->glyph) floor_glyphed++;
@@ -4735,22 +4735,22 @@ void borg_update(void)
      */
     for (j = 0; j <= 24; j++)
     {
-        int y = c_y + borg_ddy_ddd[j];
-        int x = c_x + borg_ddx_ddd[j];
+        int tmp_y = c_y + borg_ddy_ddd[j];
+        int tmp_x = c_x + borg_ddx_ddd[j];
 
         /* Stay in the bounds */
-        if (!square_in_bounds(cave, loc(x, y)))
+        if (!square_in_bounds(cave, loc(tmp_x, tmp_y)))
         {
             floor_grid++;
             continue;
         }
 
         /* Get the grid */
-        ag = &borg_grids[y][x];
+        ag = &borg_grids[tmp_y][tmp_x];
 
         /* Skip unknown grids (important to make sure next one in line is not LOS floor) */
         if (j <= 7 && ag->feat <= FEAT_MORE) floor_grid++;
-        if (j >= 8 && ag->feat <= FEAT_MORE && borg_los(c_y, c_x, y, x)) floor_grid++;
+        if (j >= 8 && ag->feat <= FEAT_MORE && borg_los(c_y, c_x, tmp_y, tmp_x)) floor_grid++;
     }
 
     /* Number of perfect grids */

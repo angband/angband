@@ -1,14 +1,14 @@
 /* File: borg8.c */
 /* Purpose: High level functions for the Borg -BEN- */
 
-#include "angband.h"
+#include "../angband.h"
 
 #ifdef ALLOW_BORG
 
-#include "game-world.h"
-#include "player-calcs.h"
-#include "ui-command.h"
-#include "cave.h"
+#include "../game-world.h"
+#include "../player-calcs.h"
+#include "../ui-command.h"
+#include "../cave.h"
 
 #include "borg1.h"
 #include "borg2.h"

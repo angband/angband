@@ -57,7 +57,8 @@ extern void borg_init_5(void);
 /* forward declare from borg6.c */
 extern bool borg_target_unknown_wall(int g_y, int g_x);
 
-
+extern int borg_panel_hgt(void);
+extern int borg_panel_wid(void);
 
 #endif
 
