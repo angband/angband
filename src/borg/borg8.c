@@ -29,7 +29,7 @@ s32b* b_home_power;
 
 
 /* money Scumming is a type of town scumming for money */
-bool borg_money_scum(void)
+static bool borg_money_scum(void)
 {
 
     int dir = -1;
@@ -220,13 +220,9 @@ static bool borg_object_similar(borg_item* o_ptr, borg_item* j_ptr)
     case TV_RING:
     case TV_AMULET:
     case TV_LIGHT:
-    {
         /* Require full knowledge of both items */
         if ((!o_ptr->aware) || (!j_ptr->aware)) return (0);
-
-        /* Fall through */
-    }
-
+        /* fall through */
     /* Missiles */
     case TV_BOLT:
     case TV_ARROW:
@@ -642,7 +638,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 }
 
 /* locate useless item */
-static void borg_think_home_sell_aux3()
+static void borg_think_home_sell_aux3(void)
 {
     int     i;
     s32b    borg_empty_home_power;
@@ -2690,7 +2686,7 @@ static bool borg_think_shop_buy(void)
             borg_cfg[BORG_MONEY_SCUM_AMOUNT] = 0;
 
             /* Log */
-            borg_note(format("# Setting Money Scum to %s.", borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
+            borg_note(format("# Setting Money Scum to %d.", borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
 
         }
 
@@ -2800,7 +2796,7 @@ bool borg_think_store(void)
 }
 
 /* Attempt a series of maneuvers to stay alive when you run out of light */
-bool borg_think_dungeon_light(void)
+static bool borg_think_dungeon_light(void)
 {
     int ii, x, y;
     bool not_safe = false;
@@ -2970,7 +2966,7 @@ bool borg_think_dungeon_light(void)
 /* This is an exploitation function.  The borg will stair scum
  * in the dungeon to grab items close to the stair.
  */
-bool borg_think_stair_scum(bool from_town)
+static bool borg_think_stair_scum(bool from_town)
 {
     int j, b_j = -1;
     int i;
@@ -3126,7 +3122,7 @@ bool borg_think_stair_scum(bool from_town)
     {
         int y, x;
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
@@ -3146,7 +3142,7 @@ bool borg_think_stair_scum(bool from_town)
 
         /* if the upstair is close and safe path, continue */
         if (b_j < 8 ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3167,7 +3163,7 @@ bool borg_think_stair_scum(bool from_town)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -3208,7 +3204,7 @@ bool borg_think_stair_scum(bool from_town)
  * Eat food
  * Call light.  might be dangerous because monster get a chance to hit us.
  */
-bool borg_think_dungeon_lunal(void)
+static bool borg_think_dungeon_lunal(void)
 {
     bool safe_place = false;
 
@@ -3372,7 +3368,7 @@ bool borg_think_dungeon_lunal(void)
         int y, x;
         int closeness = 8;
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
@@ -3401,7 +3397,7 @@ bool borg_think_dungeon_lunal(void)
 
         /* if the upstair is close and safe path, continue */
         if ((b_j < closeness && safe_place) ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3422,7 +3418,7 @@ bool borg_think_dungeon_lunal(void)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -3493,7 +3489,7 @@ bool borg_think_dungeon_lunal(void)
     {
         int y, x;
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
@@ -3513,7 +3509,7 @@ bool borg_think_dungeon_lunal(void)
 
         /* if the upstair is close and safe path, continue */
         if ((b_j < 8 && safe_place) ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3534,7 +3530,7 @@ bool borg_think_dungeon_lunal(void)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -3590,7 +3586,7 @@ bool borg_think_dungeon_lunal(void)
  * Eat food
  * Call light.  might be dangerous because monster get a chance to hit us.
  */
-bool borg_think_dungeon_munchkin(void)
+static bool borg_think_dungeon_munchkin(void)
 {
     bool safe_place = false;
     int bb_j = z_info->max_range;
@@ -3746,21 +3742,21 @@ bool borg_think_dungeon_munchkin(void)
     if (track_less_num && (borg_items[PACK_SLOTS - 2].iqty) &&
         (safe_place || ag->feat == FEAT_LESS || borg_skill[BI_CURLITE] == 0))
     {
-        int y, x;
+        int tmp_y, tmp_x;
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            tmp_x = track_less_x[i];
+            tmp_y = track_less_y[i];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(y, x, c_y, c_x)) continue;
+            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
@@ -3780,7 +3776,7 @@ bool borg_think_dungeon_munchkin(void)
 
         /* if the upstair is close and safe path, continue */
         if ((b_j < closeness && safe_place) ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3801,7 +3797,7 @@ bool borg_think_dungeon_munchkin(void)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -3817,7 +3813,7 @@ bool borg_think_dungeon_munchkin(void)
         (safe_place || ag->feat == FEAT_LESS))
     {
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Reset */
         b_j = -1;
@@ -3844,7 +3840,7 @@ bool borg_think_dungeon_munchkin(void)
 
         /* if the upstair is close and safe path, continue */
         if ((b_j < closeness && safe_place) ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3865,7 +3861,7 @@ bool borg_think_dungeon_munchkin(void)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -3880,7 +3876,7 @@ bool borg_think_dungeon_munchkin(void)
     if ((track_more_num && borg_skill[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH]) &&
         (safe_place || ag->feat == FEAT_MORE))
     {
-        int y, x;
+        int tmp_y, tmp_x;
 
         /* Reset */
         b_j = -1;
@@ -3890,14 +3886,14 @@ bool borg_think_dungeon_munchkin(void)
         /* Check for an existing "down stairs" */
         for (i = 0; i < track_more_num; i++)
         {
-            x = track_more_x[i];
-            y = track_more_y[i];
+            tmp_x = track_more_x[i];
+            tmp_y = track_more_y[i];
 
             /* How far is the nearest down stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(y, x, c_y, c_x)) continue;
+            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
@@ -3935,21 +3931,21 @@ bool borg_think_dungeon_munchkin(void)
     if ((track_less_num && borg_skill[BI_CDEPTH] != 1 &&
         safe_place) || ag->feat == FEAT_LESS)
     {
-        int y, x;
+        int tmp_y, tmp_x;
 
-        borg_grid* ag = &borg_grids[c_y][c_x];
+        borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            tmp_x = track_less_x[i];
+            tmp_y = track_less_y[i];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(y, x, c_y, c_x)) continue;
+            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
@@ -3960,7 +3956,7 @@ bool borg_think_dungeon_munchkin(void)
 
         /* if the upstair is close and safe path, continue */
         if ((b_j < closeness && safe_place) ||
-            ag->feat == FEAT_LESS)
+            tmp_ag->feat == FEAT_LESS)
         {
 
             /* Note */
@@ -3981,7 +3977,7 @@ bool borg_think_dungeon_munchkin(void)
                 return (true);
             }
 
-            if (ag->feat == FEAT_LESS)
+            if (tmp_ag->feat == FEAT_LESS)
             {
                 /* Take the Up Stair */
                 borg_on_dnstairs = true;
@@ -4825,13 +4821,13 @@ bool borg_think_dungeon(void)
     {
         if (borg_skill[BI_CDEPTH])
         {
-            int i, y, x;
+            int tmp_i, y, x;
 
             /* Check for an existing "up stairs" */
-            for (i = 0; i < track_less_num; i++)
+            for (tmp_i = 0; tmp_i < track_less_num; tmp_i++)
             {
-                x = track_less_x[i];
-                y = track_less_y[i];
+                x = track_less_x[tmp_i];
+                y = track_less_y[tmp_i];
 
                 /* Not on a stair */
                 if (c_y != y || c_x != x) continue;
@@ -4853,13 +4849,13 @@ bool borg_think_dungeon(void)
         }
         else /* in town */
         {
-            int i, y, x;
+            int tmp_i, y, x;
 
             /* Check for an existing "dn stairs" */
-            for (i = 0; i < track_more_num; i++)
+            for (tmp_i = 0; tmp_i < track_more_num; tmp_i++)
             {
-                x = track_more_x[i];
-                y = track_more_y[i];
+                x = track_more_x[tmp_i];
+                y = track_more_y[tmp_i];
 
                 /* Not on a stair */
                 if (c_y != y || c_x != x) continue;

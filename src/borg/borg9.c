@@ -128,7 +128,7 @@ static bool initialized;    /* Hack -- Initialized */
 
 #ifndef BABLOS
 
-void borg_log_death(void)
+static void borg_log_death(void)
 {
     char buf[1024];
     ang_file* borg_log_file;
@@ -149,7 +149,7 @@ void borg_log_death(void)
     /* Save the date */
     strftime(buf, 80, "%Y/%m/%d %H:%M\n", localtime(&death_time));
 
-    file_putf(borg_log_file, buf);
+    file_putf(borg_log_file, "%s", buf);
 
     file_putf(borg_log_file, "%s the %s %s, Level %d/%d\n",
         player->full_name,
@@ -169,7 +169,7 @@ void borg_log_death(void)
 
 #endif /* BABLOS */
 
-void borg_log_death_data(void)
+static void borg_log_death_data(void)
 {
     char buf[1024];
     ang_file* borg_log_file;
@@ -644,7 +644,7 @@ static char** suffix_pain;
  *
  * See "mon_take_hit()" for details.
  */
-static char* prefix_kill[] =
+static const char* prefix_kill[] =
 {
     "You have killed ",
     "You have slain ",
@@ -658,13 +658,13 @@ static char* prefix_kill[] =
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
  */
-static char* suffix_died[] =
+static const char* suffix_died[] =
 {
     " dies.",
     " is destroyed.",
     NULL
 };
-static char* suffix_blink[] =
+static const char* suffix_blink[] =
 {
     " disappears!",      /* from teleport other */
     " intones strange words.",         /* from polymorph spell */
@@ -705,7 +705,7 @@ static struct borg_read_messages suffix_hit_by;
 static struct borg_read_messages spell_msgs;
 static struct borg_read_messages spell_invis_msgs;
 
-bool borg_message_contains(const char* value, struct borg_read_message* message)
+static bool borg_message_contains(const char* value, struct borg_read_message* message)
 {
     if (strstr(value, message->message_p1) &&
         (!message->message_p2 || strstr(value, message->message_p2)) &&
@@ -728,7 +728,7 @@ msg("%s looks REALLY healthy!", m_name);
  *
  * See "do_cmd_feeling()" for details.
  */
-static char* prefix_feeling_danger[] =
+static const char* prefix_feeling_danger[] =
 {
     "You are still uncertain about this place",
     "Omens of death haunt this place",
@@ -742,7 +742,7 @@ static char* prefix_feeling_danger[] =
     "This seems a quiet, peaceful place",
     NULL
 };
-static char* suffix_feeling_stuff[] =
+static const char* suffix_feeling_stuff[] =
 {
     "Looks like any other level.",
     "you sense an item of wondrous power!",
@@ -969,18 +969,18 @@ static void borg_parse_aux(char* msg, int len)
     /* time attacks, just do all stats. */
     if (prefix(msg, "You're not as"))
     {
-        for (int i = 0; i < STAT_MAX; i++)
-            my_need_stat_check[i] = true;
+        for (int tmp_i = 0; tmp_i < STAT_MAX; tmp_i++)
+            my_need_stat_check[tmp_i] = true;
     }
 
     /* Nexus attacks, need to check everything! */
     if (prefix(msg, "Your body starts to scramble..."))
     {
-        for (int i = 0; i < STAT_MAX; i++)
+        for (int tmp_i = 0; tmp_i < STAT_MAX; tmp_i++)
         {
-            my_need_stat_check[i] = true;
+            my_need_stat_check[tmp_i] = true;
             /* max stats may have lowered */
-            my_stat_max[i] = true;
+            my_stat_max[tmp_i] = true;
         }
     }
 
@@ -1837,22 +1837,22 @@ static void borg_parse_aux(char* msg, int len)
         {
             borg_kill* kill = &borg_kills[i];
 
-            int x9 = kill->x;
-            int y9 = kill->y;
-            int ax, ay, d;
+            int tmp_x9 = kill->x;
+            int tmp_y9 = kill->y;
+            int tmp_ax, tmp_ay, tmp_d;
 
             /* Skip dead monsters */
             if (!kill->r_idx) continue;
 
             /* Distance components */
-            ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
-            ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
+            tmp_ax = (tmp_x9 > c_x) ? (tmp_x9 - c_x) : (c_x - tmp_x9);
+            tmp_ay = (tmp_y9 > c_y) ? (tmp_y9 - c_y) : (c_y - tmp_y9);
 
             /* Distance */
-            d = MAX(ax, ay);
+            tmp_d = MAX(tmp_ax, tmp_ay);
 
             /* Minimal distance */
-            if (d > 12) continue;
+            if (tmp_d > 12) continue;
 
             /* Hack -- kill em */
             borg_delete_kill(i);
@@ -2337,97 +2337,97 @@ static void get_money_borg(void)
  */
 
  /* Dwarves */
-static char* dwarf_syllable1[] =
+static const char* dwarf_syllable1[] =
 {
     "B", "D", "F", "G", "Gl", "H", "K", "L", "M", "N", "R", "S", "T", "Th", "V",
 };
 
-static char* dwarf_syllable2[] =
+static const char* dwarf_syllable2[] =
 {
     "a", "e", "i", "o", "oi", "u",
 };
 
-static char* dwarf_syllable3[] =
+static const char* dwarf_syllable3[] =
 {
     "bur", "fur", "gan", "gnus", "gnar", "li", "lin", "lir", "mli", "nar", "nus", "rin", "ran", "sin", "sil", "sur",
 };
 
 /* Elves */
-static char* elf_syllable1[] =
+static const char* elf_syllable1[] =
 {
     "Al", "An", "Bal", "Bel", "Cal", "Cel", "El", "Elr", "Elv", "Eow", "Ear", "F", "Fal", "Fel", "Fin", "G", "Gal", "Gel", "Gl", "Is", "Lan", "Leg", "Lom", "N", "Nal", "Nel",  "S", "Sal", "Sel", "T", "Tal", "Tel", "Thr", "Tin",
 };
 
-static char* elf_syllable2[] =
+static const char* elf_syllable2[] =
 {
     "a", "adrie", "ara", "e", "ebri", "ele", "ere", "i", "io", "ithra", "ilma", "il-Ga", "ili", "o", "orfi", "u", "y",
 };
 
-static char* elf_syllable3[] =
+static const char* elf_syllable3[] =
 {
     "l", "las", "lad", "ldor", "ldur", "linde", "lith", "mir", "n", "nd", "ndel", "ndil", "ndir", "nduil", "ng", "mbor", "r", "rith", "ril", "riand", "rion", "s", "thien", "viel", "wen", "wyn",
 };
 
 /* Gnomes */
-static char* gnome_syllable1[] =
+static const char* gnome_syllable1[] =
 {
     "Aar", "An", "Ar", "As", "C", "H", "Han", "Har", "Hel", "Iir", "J", "Jan", "Jar", "K", "L", "M", "Mar", "N", "Nik", "Os", "Ol", "P", "R", "S", "Sam", "San", "T", "Ter", "Tom", "Ul", "V", "W", "Y",
 };
 
-static char* gnome_syllable2[] =
+static const char* gnome_syllable2[] =
 {
     "a", "aa",  "ai", "e", "ei", "i", "o", "uo", "u", "uu",
 };
 
-static char* gnome_syllable3[] =
+static const char* gnome_syllable3[] =
 {
     "ron", "re", "la", "ki", "kseli", "ksi", "ku", "ja", "ta", "na", "namari", "neli", "nika", "nikki", "nu", "nukka", "ka", "ko", "li", "kki", "rik", "po", "to", "pekka", "rjaana", "rjatta", "rjukka", "la", "lla", "lli", "mo", "nni",
 };
 
 /* Hobbit */
-static char* hobbit_syllable1[] =
+static const char* hobbit_syllable1[] =
 {
     "B", "Ber", "Br", "D", "Der", "Dr", "F", "Fr", "G", "H", "L", "Ler", "M", "Mer", "N", "P", "Pr", "Per", "R", "S", "T", "W",
 };
 
-static char* hobbit_syllable2[] =
+static const char* hobbit_syllable2[] =
 {
     "a", "e", "i", "ia", "o", "oi", "u",
 };
 
-static char* hobbit_syllable3[] =
+static const char* hobbit_syllable3[] =
 {
     "bo", "ck", "decan", "degar", "do", "doc", "go", "grin", "lba", "lbo", "lda", "ldo", "lla", "ll", "lo", "m", "mwise", "nac", "noc", "nwise", "p", "ppin", "pper", "tho", "to",
 };
 
 /* Human */
-static char* human_syllable1[] =
+static const char* human_syllable1[] =
 {
     "Ab", "Ac", "Ad", "Af", "Agr", "Ast", "As", "Al", "Adw", "Adr", "Ar", "B", "Br", "C", "Cr", "Ch", "Cad", "D", "Dr", "Dw", "Ed", "Eth", "Et", "Er", "El", "Eow", "F", "Fr", "G", "Gr", "Gw", "Gal", "Gl", "H", "Ha", "Ib", "Jer", "K", "Ka", "Ked", "L", "Loth", "Lar", "Leg", "M", "Mir", "N", "Nyd", "Ol", "Oc", "On", "P", "Pr", "R", "Rh", "S", "Sev", "T", "Tr", "Th", "V", "Y", "Z", "W", "Wic",
 };
 
-static char* human_syllable2[] =
+static const char* human_syllable2[] =
 {
     "a", "ae", "au", "ao", "are", "ale", "ali", "ay", "ardo", "e", "ei", "ea", "eri", "era", "ela", "eli", "enda", "erra", "i", "ia", "ie", "ire", "ira", "ila", "ili", "ira", "igo", "o", "oa", "oi", "oe", "ore", "u", "y",
 };
 
-static char* human_syllable3[] =
+static const char* human_syllable3[] =
 {
     "a", "and", "b", "bwyn", "baen", "bard", "c", "ctred", "cred", "ch", "can", "d", "dan", "don", "der", "dric", "dfrid", "dus", "f", "g", "gord", "gan", "l", "li", "lgrin", "lin", "lith", "lath", "loth", "ld", "ldric", "ldan", "m", "mas", "mos", "mar", "mond", "n", "nydd", "nidd", "nnon", "nwan", "nyth", "nad", "nn", "nnor", "nd", "p", "r", "ron", "rd", "s", "sh", "seth", "sean", "t", "th", "tha", "tlan", "trem", "tram", "v", "vudd", "w", "wan", "win", "wyn", "wyr", "wyr", "wyth",
 };
 
 /* Orc */
-static char* orc_syllable1[] =
+static const char* orc_syllable1[] =
 {
     "B", "Er", "G", "Gr", "H", "P", "Pr", "R", "V", "Vr", "T", "Tr", "M", "Dr",
 };
 
-static char* orc_syllable2[] =
+static const char* orc_syllable2[] =
 {
     "a", "i", "o", "oo", "u", "ui",
 };
 
-static char* orc_syllable3[] =
+static const char* orc_syllable3[] =
 {
     "dash", "dish", "dush", "gar", "gor", "gdush", "lo", "gdish", "k", "lg", "nak", "rag", "rbag", "rg", "rk", "ng", "nk", "rt", "ol", "urk", "shnak", "mog", "mak", "rak",
 };
@@ -2740,8 +2740,8 @@ void resurrect_borg(void)
     borg_prepare_race_class_info();
 
     /* need to check all stats */
-    for (int i = 0; i < STAT_MAX; i++)
-        my_need_stat_check[i] = true;
+    for (int tmp_i = 0; tmp_i < STAT_MAX; tmp_i++)
+        my_need_stat_check[tmp_i] = true;
 
     /* Allowable Cheat -- Obtain "recall" flag */
     goal_recalling = player->word_recall * 1000;
@@ -3235,7 +3235,7 @@ static void borg_display_item(struct object* item2, int n)
     prt(format("pval = %-5d  toac = %-5d  tohit = %-4d  todam = %-4d",
         item->pval, item->to_a, item->to_h, item->to_d), 6, j);
 
-    prt(format("name1 = %-4d  name2 = %-4d  value = %d   cursed = %ld   can uncurse",
+    prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can uncurse",
         item->art_idx, item->ego_idx, (long)item->value, item->cursed, item->uncursable), 7, j);
 
     prt(format("ident = %d      timeout = %-d",
@@ -3273,7 +3273,7 @@ static void borg_display_item(struct object* item2, int n)
 }
 
 static int
-borg_getval(char** string, char* val)
+borg_getval(char** string, const char* val)
 {
     char    string2[4];
     int     retval;
@@ -3290,6 +3290,7 @@ borg_getval(char** string, char* val)
     return retval;
 }
 
+#if false
 static bool borg_load_formula(char* string)
 {
     int formula_num;
@@ -3486,7 +3487,7 @@ static bool borg_load_formula(char* string)
     }
     return true;
 }
-
+#endif
 
 static bool add_power_item(int class_num,
     int depth_num,
@@ -3752,7 +3753,7 @@ static bool borg_load_requirement(char* string)
 }
 
 /* just used to do a quick sort on the required items array */
-int borg_item_cmp(const void* item1, const void* item2)
+static int borg_item_cmp(const void* item1, const void* item2)
 {
     if (((req_item*)item1)->depth != ((req_item*)item2)->depth)
         return ((req_item*)item1)->depth - ((req_item*)item2)->depth;
@@ -3872,7 +3873,7 @@ static void init_borg_txt_file(void)
         { "borg_enchant_limit", 'i', 12},
         { "borg_dump_level", 'i', 1},
         { "borg_save_death", 'i', 1},
-        NULL
+        { 0, 0, 0 }
     };
 
     ang_file* fp;
@@ -4114,7 +4115,7 @@ static void insert_msg(struct borg_read_messages* msgs, struct borg_read_message
 }
 
 /* get rid of leading spaces */
-char* borg_trim_lead_space(char* orig)
+static char* borg_trim_lead_space(char* orig)
 {
     if (!orig || orig[0] != ' ')
         return orig;
@@ -4134,7 +4135,7 @@ char* borg_trim_lead_space(char* orig)
  * " hits ", " followers with ", " ax and "
  * hopefully this is enough to keep the messages as unique as possible
  */
-void borg_load_read_message(char* message, struct borg_read_message* read_message)
+static void borg_load_read_message(char* message, struct borg_read_message* read_message)
 {
     read_message->message_p1 = NULL;
     read_message->message_p2 = NULL;
@@ -4198,10 +4199,16 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
         while (suffix[0] == ' ') suffix++;
         /* three variables, ignore if last part is just . */
         if (strlen(suffix) && !streq(suffix, "."))
+        {
             if (read_message->message_p2)
+            {
                 read_message->message_p3 = string_make(borg_trim_lead_space(suffix));
+            }
             else
+            {
                 read_message->message_p2 = string_make(borg_trim_lead_space(suffix));
+            }
+        }
         return;
     }
     while (suffix[0] == ' ') suffix++;
@@ -4217,7 +4224,7 @@ void borg_load_read_message(char* message, struct borg_read_message* read_messag
 }
 
 
-void borg_init_spell_messages(void)
+static void borg_init_spell_messages(void)
 {
     const struct monster_spell* spell = monster_spells;
     const struct monster_spell_level* spell_level;
@@ -4258,7 +4265,7 @@ void borg_init_spell_messages(void)
 #define MSG_PARSE_SINGLE	1
 #define MSG_PARSE_PLURAL	2
 
-char* borg_get_parsed_pain(const char* pain, bool do_plural)
+static char* borg_get_parsed_pain(const char* pain, bool do_plural)
 {
     size_t buflen = strlen(pain) + 1;
     char* buf = mem_zalloc(buflen);
@@ -4298,7 +4305,7 @@ char* borg_get_parsed_pain(const char* pain, bool do_plural)
     return buf;
 }
 
-void borg_insert_pain(const char* pain, int* capacity, int* count)
+static void borg_insert_pain(const char* pain, int* capacity, int* count)
 {
     char* new_message;
     if (*capacity <= (*count) + 2)
@@ -4313,7 +4320,7 @@ void borg_insert_pain(const char* pain, int* capacity, int* count)
     suffix_pain[(*count)++] = new_message;
 }
 
-void borg_init_pain_messages(void)
+static void borg_init_pain_messages(void)
 {
     int capacity = 1;
     int count = 0;
@@ -4338,7 +4345,7 @@ void borg_init_pain_messages(void)
     suffix_pain[count] = NULL;
 }
 
-void borg_init_hit_by_messages(void)
+static void borg_init_hit_by_messages(void)
 {
     struct borg_read_message read_message;
 
@@ -4360,7 +4367,7 @@ void borg_init_hit_by_messages(void)
     insert_msg(&suffix_hit_by, NULL, 0);
 }
 
-void borg_init_messages(void)
+static void borg_init_messages(void)
 {
     borg_init_spell_messages();
     borg_init_pain_messages();
@@ -4604,7 +4611,7 @@ void borg_init_9(void)
  *
  * Note that the label does NOT distinguish inven/equip.
  */
-char borg_index_to_label(int i)
+static char borg_index_to_label(int i)
 {
     /* Indexes for "inven" are easy */
     if (i < INVEN_WIELD) 
@@ -4803,10 +4810,10 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "  [Character Inventory]\n\n");
     for (i = 0; i < z_info->pack_size; i++)
     {
-        borg_item* item = &borg_items[i];
+        borg_item* tmp_item = &borg_items[i];
 
         file_putf(borg_map_file, "%c) %s\n",
-            borg_index_to_label(i), item->desc);
+            borg_index_to_label(i), tmp_item->desc);
     }
     file_putf(borg_map_file, "\n\n");
 
@@ -4845,7 +4852,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "   [Player State at Death] \n\n");
 
     /* Dump the player state */
-    file_putf(borg_map_file, format("Current speed: %d. \n", borg_skill[BI_SPEED]));
+    file_putf(borg_map_file, "Current speed: %d. \n", borg_skill[BI_SPEED]);
 
     if (player->timed[TMD_BLIND])
     {
@@ -4909,27 +4916,27 @@ void borg_write_map(bool ask)
     }
     if (player->word_recall)
     {
-        file_putf(borg_map_file, format("You will soon be recalled.  (%d turns)\n", player->word_recall));
+        file_putf(borg_map_file, "You will soon be recalled.  (%d turns)\n", player->word_recall);
     }
     if (player->timed[TMD_OPP_FIRE])
     {
-        file_putf(borg_map_file, format("You resist fire exceptionally well.\n"));
+        file_putf(borg_map_file, "You resist fire exceptionally well.\n");
     }
     if (player->timed[TMD_OPP_ACID])
     {
-        file_putf(borg_map_file, format("You resist acid exceptionally well.\n"));
+        file_putf(borg_map_file, "You resist acid exceptionally well.\n");
     }
     if (player->timed[TMD_OPP_ELEC])
     {
-        file_putf(borg_map_file, format("You resist elec exceptionally well.\n"));
+        file_putf(borg_map_file, "You resist elec exceptionally well.\n");
     }
     if (player->timed[TMD_OPP_COLD])
     {
-        file_putf(borg_map_file, format("You resist cold exceptionally well.\n"));
+        file_putf(borg_map_file, "You resist cold exceptionally well.\n");
     }
     if (player->timed[TMD_OPP_POIS])
     {
-        file_putf(borg_map_file, format("You resist poison exceptionally well.\n"));
+        file_putf(borg_map_file, "You resist poison exceptionally well.\n");
     }
     file_putf(borg_map_file, "\n\n");
 
@@ -4968,12 +4975,11 @@ void borg_write_map(bool ask)
         for (i = 0; i < player->class->magic.total_spells; i++)
         {
             borg_magic* as = &borg_magics[i];
-            char* legal;
             int failpercent = 0;
 
             if (as->level < 99)
             {
-                legal = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
+                const char *legal = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
                 failpercent = (borg_spell_fail_rate(as->spell_enum));
 
                 file_putf(borg_map_file, "%-30s   %s   %d   fail:%d \n", as->name, legal, (long)as->times, failpercent);
@@ -6097,7 +6103,7 @@ void do_cmd_borg(void)
                 }
                 else
                 {
-                    if (!(ag->glyph && glyph || ag->trap && trap)) continue;
+                    if (!((ag->glyph && glyph) || (ag->trap && trap))) continue;
                 }
 
                 /* Color */
@@ -6867,12 +6873,11 @@ void do_cmd_borg(void)
                 ii = 2;
                 Term_putstr(1, ii, -1, COLOUR_WHITE, "[ Spells ].");
                 borg_magic* as = &borg_magics[i];
-                char* legal;
                 int failpercent = 0;
 
                 if (as->level < 99)
                 {
-                    legal = (borg_spell_legal(as->spell_enum) ? "legal" : "Not Legal ");
+                    const char *legal = (borg_spell_legal(as->spell_enum) ? "legal" : "Not Legal ");
                     failpercent = (borg_spell_fail_rate(as->spell_enum));
 
                     Term_putstr(1, ii++, -1, COLOUR_WHITE, format("%s, %s, attempted %d times, fail rate:%d", as->name, legal, as->times, failpercent));
@@ -7080,6 +7085,7 @@ void do_cmd_borg(void)
 
         /* Get keypress */
     }
+    break;
     /* Oops */
     default:
     {

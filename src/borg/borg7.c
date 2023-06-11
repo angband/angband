@@ -75,7 +75,7 @@
  * Hack -- importance of the various "level feelings"
  * Try to explore the level for at least this many turns
  */
-static s16b borg_stuff_feeling[] =
+static int borg_stuff_feeling[] =
 {
     50000, /* 0 is no feeling yet given, stick around to get one */
     8000,
@@ -1451,8 +1451,6 @@ static bool borg_consume(int i)
         case TV_POTION:
 
         /* Check the potion */
-        switch (item->sval)
-        {
             if (item->sval == sv_potion_slime_mold ||
 				item->sval ==  sv_potion_cure_light ||
 				item->sval ==  sv_potion_cure_serious ||
@@ -1542,7 +1540,6 @@ static bool borg_consume(int i)
 				if (borg_quaff_potion(item->sval)) return (true);
 				break;
 			}
-        }
 
         break;
 
@@ -1672,7 +1669,7 @@ bool borg_crush_junk(void)
 		 * Only 2 charges in 5 staves means top 3 are empty.
 		 */
 		if ((item->tval == TV_STAFF || item->tval == TV_WAND) &&
-			(item->ident || item->note && strstr(item->note, "empty")))
+			(item->ident || (item->note && strstr(item->note, "empty"))))
 		{
 			if (item->iqty > item->pval) value = 0L;
 		}
@@ -1692,7 +1689,7 @@ bool borg_crush_junk(void)
 				item->modifiers[OBJ_MOD_INT] > 0 ||
 				item->modifiers[OBJ_MOD_WIS] > 0 ||
 				item->modifiers[OBJ_MOD_DEX] > 0 ||
-				item->modifiers[OBJ_MOD_CON] > 0 && value > 0)
+				(item->modifiers[OBJ_MOD_CON] > 0 && value > 0))
             {
                 value += 2000L;
             }
@@ -2048,6 +2045,8 @@ bool borg_crush_hole(void)
                 p -= (item->iqty * (300000L));  /* value at 30k */
             else
                 p -= (item->iqty * (value / 2));
+            break;
+
             case TV_WAND:
             /* BIG HACK! don't crush cool stuff. */
             if ((item->sval != sv_wand_drain_life) ||
@@ -2197,7 +2196,7 @@ bool borg_crush_hole(void)
         borg_item *item = &borg_items[b_i];
 
         /* Debug */
-        borg_note(format("# Junking %ld gold (full)", my_power*100 - b_p));
+        borg_note(format("# Junking %ld gold (full)", (long int) my_power*100 - b_p));
 
         /* Try to consume the junk */
         if (borg_consume(b_i)) return (true);
@@ -2355,7 +2354,7 @@ bool borg_crush_slow(void)
         borg_item *item = &borg_items[b_i];
 
         /* Message */
-        borg_note(format("# Junking %ld gold (slow)", (my_power) - b_p));
+        borg_note(format("# Junking %ld gold (slow)", (long int) my_power - b_p));
 
         /* Attempt to consume it */
         if (borg_consume(b_i)) return (true);
@@ -2438,7 +2437,7 @@ bool borg_test_stuff(void)
     int i;
     int b_i = -1, b_v = -1;
     bool inv_item_needs_id = false;
-    bool equ_item_needs_id = false;
+    /* bool equ_item_needs_id = false; */
     bool free_id = borg_spell_legal(IDENTIFY_RUNE);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
@@ -2459,7 +2458,7 @@ bool borg_test_stuff(void)
         if (!item->iqty) continue;
         if (!item->needs_ident) continue;
 
-        equ_item_needs_id = true;
+        /* equ_item_needs_id = true; */
 
 		/* Preferentially ID egos and artifacts */
 		if (item->art_idx)
@@ -3401,13 +3400,13 @@ bool borg_remove_stuff(void)
         {
             /* dump list and power...  for debugging */
             borg_note(format("Equip Item %d %s.", i, safe_items[i].desc));
-            borg_note(format("With Item     (borg_power %ld)", b_p));
-            borg_note(format("Removed Item  (best power %ld)", p));
+            borg_note(format("With Item     (borg_power %ld)", (long int) b_p));
+            borg_note(format("Removed Item  (best power %ld)", (long int) p));
         }
 
         /* Log */
         borg_note(format("# Removing %s.  Power with: (%ld) Power w/o (%ld)",
-            item->desc, b_p, w_p));
+            item->desc, (long int) b_p, (long int) w_p));
 
         /* Wear it */
         borg_keypress('t');
@@ -3579,8 +3578,8 @@ bool borg_wear_stuff(void)
 			if (borg_cfg[BORG_VERBOSE])
 			{
 				/* dump list and power...  for debugging */
-				borg_note(format("Trying  Item %s (best power %ld)",borg_items[slot].desc, p));
-				borg_note(format("Against Item %s (borg_power %ld)",safe_items[slot].desc, b_p));
+				borg_note(format("Trying  Item %s (best power %ld)",borg_items[slot].desc, (long int) p));
+				borg_note(format("Against Item %s (borg_power %ld)",safe_items[slot].desc, (long int) b_p));
 			}
 
             /* Restore the old item */
@@ -3702,7 +3701,7 @@ bool borg_wear_stuff(void)
         if (b_ii >= INVEN_RIGHT && item->tval == TV_RING)
         {
             /* Log */
-            borg_note(format("# Removing %s to make room for %s.", &borg_items[b_ii].desc, item->desc));
+            borg_note(format("# Removing %s to make room for %s.", (char *) &borg_items[b_ii].desc, item->desc));
 
             /* Make room */
             borg_keypress('t');
@@ -3874,7 +3873,7 @@ static uint16_t borg_best_stuff_order(int n)
 	default:
 		return 255;
 	}
-};
+}
 
 
 /*
@@ -3907,8 +3906,8 @@ static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
             if (borg_cfg[BORG_VERBOSE])
             {
                 /* dump list and power...  for debugging */
-                borg_note(format("Trying Combo (best power %ld)", *vp));
-                borg_note(format("             (borg_power %ld)", p));
+                borg_note(format("Trying Combo (best power %ld)", (long int) *vp));
+                borg_note(format("             (borg_power %ld)", (long int) p));
                 for (i = 0; i < z_info->pack_size; i++)
                     borg_note(format("inv %d %s.", i, borg_items[i].desc));
                 for (i = 0; borg_best_stuff_order(i) != 255; i++)
@@ -4167,10 +4166,16 @@ static const struct effect_kind effects[] =
 static bool borg_can_play_spell(borg_magic* as)
 {
     if (as->effect_index == EF_BRAND_AMMO)
+    {
         if (borg_items[QUIVER_START].iqty)
+        {
             return true;
+        }
         else
+        {
             return false;
+        }
+    }
     if (as->effect_index == EF_BRAND_BOLTS)
         return false; // !FIX !TODO !AJG check for a bolt
     if (as->effect_index == EF_ENCHANT)
@@ -4489,7 +4494,7 @@ bool borg_wear_recharge(void)
 /*
  * how long should the borg explore?
  */
-int borg_time_to_stay_on_level(bool bored)
+static int borg_time_to_stay_on_level(bool bored)
 {
     /* at low level, don't stay too long, */
     /* but long enough to hope for a feeling */

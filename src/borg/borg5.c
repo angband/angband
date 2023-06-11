@@ -5198,7 +5198,7 @@ void borg_update(void)
  *
  * Actually, we simply "queue" them for later analysis
  */
-void borg_react(char* msg, char* buf)
+void borg_react(const char* msg, const char* buf)
 {
     int len;
 
@@ -5218,7 +5218,10 @@ void borg_react(char* msg, char* buf)
 
     /* trim off trailing , if there is one, seems to have been introduced to some uniques messages */
     if (len && buf[len - 1] == ',')
-        buf[--len] = 0;
+    {
+        char *tmp = (char *) buf; /* cast away const */
+        tmp[--len] = 0;
+    }
 
     /* Verify space */
     if (borg_msg_num + 1 > borg_msg_max)
