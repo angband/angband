@@ -1013,7 +1013,7 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_IMPAIR_HP)) borg_skill[BI_CRSHPIMP] = true;
         if (of_has(item->flags, OF_IMPAIR_MANA)) borg_skill[BI_CRSMPIMP] = true;
         if (of_has(item->flags, OF_AFRAID)) borg_skill[BI_CRSFEAR] = true;
-        if (rf_has(item->flags, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
+        if (of_has(item->flags, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
 
         /* curses that don't have flags or stat changes that are tracked elsewhere */
         if (item->curses[BORG_CURSE_TELEPORTATION]) borg_skill[BI_CRSTELE] = true;

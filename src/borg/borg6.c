@@ -8047,6 +8047,21 @@ static int borg_attack_aux_rest(void)
     return (1);
 }
 
+/* look for a throwable item */
+static bool borg_has_throwable(void)
+{
+    int i;
+    for (i = 0; i < QUIVER_END; i++)
+    {
+        if (!borg_items[i].iqty)
+            continue;
+
+        if (of_has(borg_items[i].flags, OF_THROWING))
+            return true;
+    }
+    return false;
+}
+
 /*
  * Simulate/Apply the optimal result of throwing an object
  *
@@ -8077,11 +8092,11 @@ static int borg_attack_aux_object(void)
         /* Skip "equipment" items (not ammo) */
         if (borg_wield_slot(item) >= 0) continue;
 
-        /* Skip wands, they are worth money */
-        if (item->tval == TV_WAND) continue;
-
         /* Determine average damage from object */
         d = (k_info[item->kind].dd * (k_info[item->kind].ds + 1) / 2);
+
+        /* Skip things that are worth money unless they do a lot of damage */
+        if (item->value > 100 && d < 5) continue;
 
         /* Skip useless stuff */
         if (d <= 0) continue;
@@ -8138,7 +8153,7 @@ static int borg_attack_aux_object(void)
     /* Fire */
     borg_keypress('v');
 
-    if (borg_items[INVEN_WIELD].iqty)
+    if (borg_has_throwable())
         borg_keypress('/');
 
     /* Use the object */
@@ -8153,8 +8168,6 @@ static int borg_attack_aux_object(void)
     /* Value */
     return (b_n);
 }
-
-
 
 
 /*
