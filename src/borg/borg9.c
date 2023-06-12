@@ -149,7 +149,7 @@ static void borg_log_death(void)
     /* Save the date */
     strftime(buf, 80, "%Y/%m/%d %H:%M\n", localtime(&death_time));
 
-    file_putf(borg_log_file, "%s", buf);
+    file_put(borg_log_file, buf);
 
     file_putf(borg_log_file, "%s the %s %s, Level %d/%d\n",
         player->full_name,
@@ -162,7 +162,7 @@ static void borg_log_death(void)
 
     file_putf(borg_log_file, "Borg Compile Date: %s\n", borg_engine_date);
 
-    file_putf(borg_log_file, "----------\n\n");
+    file_put(borg_log_file, "----------\n\n");
 
     file_close(borg_log_file);
 }
@@ -969,18 +969,18 @@ static void borg_parse_aux(char* msg, int len)
     /* time attacks, just do all stats. */
     if (prefix(msg, "You're not as"))
     {
-        for (int tmp_i = 0; tmp_i < STAT_MAX; tmp_i++)
-            my_need_stat_check[tmp_i] = true;
+        for (i = 0; i < STAT_MAX; i++)
+            my_need_stat_check[i] = true;
     }
 
     /* Nexus attacks, need to check everything! */
     if (prefix(msg, "Your body starts to scramble..."))
     {
-        for (int tmp_i = 0; tmp_i < STAT_MAX; tmp_i++)
+        for (i = 0; i < STAT_MAX; i++)
         {
-            my_need_stat_check[tmp_i] = true;
+            my_need_stat_check[i] = true;
             /* max stats may have lowered */
-            my_stat_max[tmp_i] = true;
+            my_stat_max[i] = true;
         }
     }
 
@@ -1837,22 +1837,21 @@ static void borg_parse_aux(char* msg, int len)
         {
             borg_kill* kill = &borg_kills[i];
 
-            int tmp_x9 = kill->x;
-            int tmp_y9 = kill->y;
-            int tmp_ax, tmp_ay, tmp_d;
+            x9 = kill->x;
+            y9 = kill->y;
 
             /* Skip dead monsters */
             if (!kill->r_idx) continue;
 
             /* Distance components */
-            tmp_ax = (tmp_x9 > c_x) ? (tmp_x9 - c_x) : (c_x - tmp_x9);
-            tmp_ay = (tmp_y9 > c_y) ? (tmp_y9 - c_y) : (c_y - tmp_y9);
+            ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
+            ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
 
             /* Distance */
-            tmp_d = MAX(tmp_ax, tmp_ay);
+            d = MAX(ax, ay);
 
             /* Minimal distance */
-            if (tmp_d > 12) continue;
+            if (d > 12) continue;
 
             /* Hack -- kill em */
             borg_delete_kill(i);
@@ -3235,7 +3234,7 @@ static void borg_display_item(struct object* item2, int n)
     prt(format("pval = %-5d  toac = %-5d  tohit = %-4d  todam = %-4d",
         item->pval, item->to_a, item->to_h, item->to_d), 6, j);
 
-    prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can uncurse",
+    prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can uncurse = %d",
         item->art_idx, item->ego_idx, (long)item->value, item->cursed, item->uncursable), 7, j);
 
     prt(format("ident = %d      timeout = %-d",
@@ -4417,14 +4416,11 @@ void borg_init_9(void)
     Term_fresh();
 
     /* Make sure it rolls up a new guy at death */
-#if false
-    // !TODO !AJG !FIX ignoring screensaver for now.
     if (screensaver)
     {
         /* We need the borg to keep playing after he dies */
         option_set("cheat_live", true);
     }
-#endif 
 
     /* We use the original keypress codes */
     option_set("rogue_like_commands", false);
@@ -4634,6 +4630,7 @@ void borg_write_map(bool ask)
     char buf[80];
     ang_file* borg_map_file = NULL;
     wchar_t* line;
+    char* ch_line;
 
     borg_item* item;
     int i, j;
@@ -4694,6 +4691,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "Borg Compile Date: %s\n", borg_engine_date);
 
     line = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
+    ch_line = mem_zalloc((DUNGEON_WID + 1) * sizeof(char));
     for (i = 0; i < DUNGEON_HGT; i++)
     {
         for (j = 0; j < DUNGEON_WID; j++)
@@ -4749,9 +4747,12 @@ void borg_write_map(bool ask)
         /* terminate the line */
         line[j++] = '\0';
 
-        file_putf(borg_map_file, "%s\n", line);
+        wcstombs(ch_line, line, wcslen(line) + 1);
+
+        file_putf(borg_map_file, "%s\n", ch_line);
     }
     mem_free(line);
+    mem_free(ch_line);
 
     /* Known/Seen monsters */
     for (i = 1; i < borg_kills_nxt; i++)
@@ -4810,10 +4811,10 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "  [Character Inventory]\n\n");
     for (i = 0; i < z_info->pack_size; i++)
     {
-        borg_item* tmp_item = &borg_items[i];
+        item = &borg_items[i];
 
         file_putf(borg_map_file, "%c) %s\n",
-            borg_index_to_label(i), tmp_item->desc);
+            borg_index_to_label(i), item->desc);
     }
     file_putf(borg_map_file, "\n\n");
 
@@ -5590,22 +5591,22 @@ void borg_status(void)
                 attr = COLOUR_SLATE;
                 Term_putstr(1, 16, -1, attr, "                    ");
                 attr = COLOUR_WHITE;
-                Term_putstr(10, 16, -1, attr, format("       ", num_ezheal));
+                Term_putstr(10, 16, -1, attr, format("%d       ", num_ezheal));
 
                 attr = COLOUR_SLATE;
                 Term_putstr(1, 17, -1, attr, "                    ");
                 attr = COLOUR_WHITE;
-                Term_putstr(10, 17, -1, attr, format("       ", num_life));
+                Term_putstr(10, 17, -1, attr, format("%d       ", num_life));
 
                 attr = COLOUR_SLATE;
                 Term_putstr(1, 18, -1, attr, "                    ");
                 attr = COLOUR_WHITE;
-                Term_putstr(11, 18, -1, attr, format("       ", num_heal));
+                Term_putstr(11, 18, -1, attr, format("%d       ", num_heal));
 
                 attr = COLOUR_SLATE;
                 Term_putstr(1, 19, -1, attr, "                   ");
                 attr = COLOUR_WHITE;
-                Term_putstr(11, 19, -1, attr, format("       ", num_mana));
+                Term_putstr(11, 19, -1, attr, format("%d       ", num_mana));
             }
 
 

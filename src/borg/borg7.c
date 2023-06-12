@@ -2437,7 +2437,6 @@ bool borg_test_stuff(void)
     int i;
     int b_i = -1, b_v = -1;
     bool inv_item_needs_id = false;
-    /* bool equ_item_needs_id = false; */
     bool free_id = borg_spell_legal(IDENTIFY_RUNE);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
@@ -2457,8 +2456,6 @@ bool borg_test_stuff(void)
         /* Skip empty items */
         if (!item->iqty) continue;
         if (!item->needs_ident) continue;
-
-        /* equ_item_needs_id = true; */
 
 		/* Preferentially ID egos and artifacts */
 		if (item->art_idx)
@@ -3701,7 +3698,7 @@ bool borg_wear_stuff(void)
         if (b_ii >= INVEN_RIGHT && item->tval == TV_RING)
         {
             /* Log */
-            borg_note(format("# Removing %s to make room for %s.", (char *) &borg_items[b_ii].desc, item->desc));
+            borg_note(format("# Removing %s to make room for %s.", borg_items[b_ii].desc, item->desc));
 
             /* Make room */
             borg_keypress('t');

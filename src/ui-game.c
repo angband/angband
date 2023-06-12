@@ -78,6 +78,10 @@ struct savefile_getter_impl {
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 
+#ifdef ALLOW_BORG
+bool screensaver = false;
+#endif /* ALLOW_BORG */
+
 /**
  * Buffer to hold the current savefile name
  */

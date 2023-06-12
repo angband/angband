@@ -3742,21 +3742,19 @@ static bool borg_think_dungeon_munchkin(void)
     if (track_less_num && (borg_items[PACK_SLOTS - 2].iqty) &&
         (safe_place || ag->feat == FEAT_LESS || borg_skill[BI_CURLITE] == 0))
     {
-        int tmp_y, tmp_x;
-
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
         {
-            tmp_x = track_less_x[i];
-            tmp_y = track_less_y[i];
+            x = track_less_x[i];
+            y = track_less_y[i];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
+            j = borg_distance(c_y, c_x, y, x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
+            if (!borg_projectable(y, x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
@@ -3876,8 +3874,6 @@ static bool borg_think_dungeon_munchkin(void)
     if ((track_more_num && borg_skill[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH]) &&
         (safe_place || ag->feat == FEAT_MORE))
     {
-        int tmp_y, tmp_x;
-
         /* Reset */
         b_j = -1;
 
@@ -3886,14 +3882,14 @@ static bool borg_think_dungeon_munchkin(void)
         /* Check for an existing "down stairs" */
         for (i = 0; i < track_more_num; i++)
         {
-            tmp_x = track_more_x[i];
-            tmp_y = track_more_y[i];
+            x = track_more_x[i];
+            y = track_more_y[i];
 
             /* How far is the nearest down stairs */
-            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
+            j = borg_distance(c_y, c_x, y, x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
+            if (!borg_projectable(y, x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
@@ -3931,21 +3927,19 @@ static bool borg_think_dungeon_munchkin(void)
     if ((track_less_num && borg_skill[BI_CDEPTH] != 1 &&
         safe_place) || ag->feat == FEAT_LESS)
     {
-        int tmp_y, tmp_x;
-
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less_num; i++)
         {
-            tmp_x = track_less_x[i];
-            tmp_y = track_less_y[i];
+            x = track_less_x[i];
+            y = track_less_y[i];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, tmp_y, tmp_x);
+            j = borg_distance(c_y, c_x, y, x);
 
             /* Is it reachable or behind a wall? */
-            if (!borg_projectable(tmp_y, tmp_x, c_y, c_x)) continue;
+            if (!borg_projectable(y, x, c_y, c_x)) continue;
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1) continue;
