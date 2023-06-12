@@ -15669,13 +15669,21 @@ static bool borg_play_step(int y2, int x2)
 
         /* NOTE: If a scary guy is on the level, we allow the borg to run over the
          * trap in order to escape this level.
-         */
+        */
 
-         /* allow "destroy doors" */
-        if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS))
+        /* allow "destroy doors" */
+        /* don't bother unless we are near full mana */
+        if (borg_skill[BI_CURSP] > ((borg_skill[BI_MAXSP] * 4) / 5))
         {
-            borg_note("# Disable Traps, Destroy Doors");
-            return (true);
+            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS))
+            {
+                borg_note("# Disable Traps, Destroy Doors");
+                ag->trap = 0;
+                /* since this just disables the trap and doesn't remove it, */
+                /* don't rest next to it */
+                borg_no_rest_prep = 3000;
+                return (true);
+            }
         }
 
         /* Disarm */

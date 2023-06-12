@@ -3267,7 +3267,7 @@ static void borg_update_map(void)
                 /* Shop type */
                 ag->feat = g.f_idx;
 
-                i = square_shopnum(cave, loc(x, y));
+                i = square_shopnum(cave, l);
                 ag->store = i;
 
                 /* Save new information */
@@ -3275,14 +3275,15 @@ static void borg_update_map(void)
                 track_shop_y[i] = y;
 
             }
-            else if (square_isvisibletrap(cave, loc(x, y)))
+            else if (square_isvisibletrap(cave, l) && !square_isdisabledtrap(cave, l))
             {
+                struct trap* t = square(cave, l)->trap;
                 /* Minor cheat for the borg.  If the borg is running
                 * in the graphics mode (not the AdamBolt Tiles) he will
                 * mis-id the glyph of warding as a trap
                 */
                 ag->trap = true;
-                uint8_t t_idx = square(cave, loc(x, y))->trap->t_idx;
+                uint8_t t_idx = square(cave, l)->trap->t_idx;
                 if (trf_has(trap_info[t_idx].flags, TRF_GLYPH))
                 {
                     ag->glyph = true;
