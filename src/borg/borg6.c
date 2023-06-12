@@ -8138,7 +8138,8 @@ static int borg_attack_aux_object(void)
     /* Fire */
     borg_keypress('v');
 
-    borg_keypress('/');
+    if (borg_items[INVEN_WIELD].iqty)
+        borg_keypress('/');
 
     /* Use the object */
     borg_keypress(all_letters_nohjkl[b_k]);
@@ -16937,9 +16938,22 @@ bool borg_flow_shop_entry(int i)
  */
 static bool borg_has_distance_attack(void)
 {
-    /* XXX For now only line up Magic Missle shots */
-    if (borg_launch_bolt(0, 100, BORG_ATTACK_MISSILE, z_info->max_range, 0) > 0)
+
+    /* line up Magic Missle shots (covers Mages) */
+    if (borg_attack_aux_spell_bolt(MAGIC_MISSILE, 0, 10, BORG_ATTACK_MISSILE))
         return true;
+
+    /* line up Nether Bolt shots (covers Necromancers) */
+    if (borg_attack_aux_spell_bolt(NETHER_BOLT, 0, 10, BORG_ATTACK_NETHER))
+        return true;
+
+    /* or arrows (covers warrior/ranger/paladins/rogues) */
+    if (borg_attack_aux_launch() > 0)
+        return true;
+
+    /* not lining up Priests (OOD has area of effect, will line up more naturally) */
+    /* or Druids (Stinking cloud is area of effect again) */
+    /* Blackguards should be doing HTH */
 
     return false;
 }
@@ -16967,7 +16981,7 @@ bool borg_flow_kill_aim(bool viewable)
     if (borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] == 0) return (false);
 
     /* If you can shoot from where you are, don't bother reaiming */
-    if (!borg_has_distance_attack()) return (false);
+    if (borg_has_distance_attack()) return (false);
 
     /* Consider each adjacent spot */
     for (o_x = -2; o_x <= 2; o_x++)
@@ -17002,7 +17016,7 @@ bool borg_flow_kill_aim(bool viewable)
                 continue;
 
             /* Check for a distance attack from here */
-            if (!borg_has_distance_attack())
+            if (borg_has_distance_attack())
             {
                 /* Clear the flow codes */
                 borg_flow_clear();
