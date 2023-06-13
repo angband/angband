@@ -58,6 +58,9 @@ ICON		:=	nds/att-48.png
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
+#---------------------------------------------------------------------------------
+# add -DALLOW_BORG to allow the borg to run
+#---------------------------------------------------------------------------------
 CFLAGS	:=	-g -Wall -mword-relocations -ffunction-sections \
 			$(ARCH)
 
@@ -200,6 +203,8 @@ endif
 ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):
 	@mkdir -p $@
+$(DEPSDIR)/borg:
+     @mkdir -p $@/borg
 endif
 
 #---------------------------------------------------------------------------------

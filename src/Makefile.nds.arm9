@@ -105,10 +105,11 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
  
 .PHONY: $(BUILD) clean
- 
+
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
+	@[ -d $@/borg] || mkdir -p $@/borg
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.nds.arm9
  
 #---------------------------------------------------------------------------------
