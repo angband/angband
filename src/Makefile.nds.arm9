@@ -15,7 +15,7 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	nds-build
-SOURCES		:=	nds
+SOURCES		:=	nds borg
 INCLUDES	:=	nds
 DATA		:=
 
@@ -25,6 +25,9 @@ DATA		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
+#---------------------------------------------------------------------------------
+# add -DALLOW_BORG to allow the borg to run
+#---------------------------------------------------------------------------------
 CFLAGS	:=	-g -Wall -march=armv5te -mtune=arm946e-s $(ARCH)
 
 # Omit some flags for easier debugging
