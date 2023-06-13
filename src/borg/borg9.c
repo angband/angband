@@ -4983,7 +4983,7 @@ void borg_write_map(bool ask)
                 const char *legal = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
                 failpercent = (borg_spell_fail_rate(as->spell_enum));
 
-                file_putf(borg_map_file, "%-30s   %s   %d   fail:%d \n", as->name, legal, (long)as->times, failpercent);
+                file_putf(borg_map_file, "%-30s   %s   %ld   fail:%d \n", as->name, legal, (long)as->times, failpercent);
             }
             file_putf(borg_map_file, "\n");
         }
