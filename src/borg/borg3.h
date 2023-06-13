@@ -78,55 +78,55 @@ enum {
  */
 struct borg_item
 {
-    char desc[80];  /* Actual Description */
+    char    desc[80];  /* Actual Description */
 
-    char* note;      /* Pointer to tail of 'desc' */
+    char*   note;      /* Pointer to tail of 'desc' */
 
-    u32b kind;      /* Kind index */
+    uint32_t kind;      /* Kind index */
 
-    bool ident;      /* True if item is identified */
-    bool needs_ident; /* True if item needs to be identified (not all items have runes that can be identified) */
-    bool aware;		/* Player is aware of the effects */
+    bool    ident;      /* True if item is identified */
+    bool    needs_ident; /* True if item needs to be identified (not all items have runes that can be identified) */
+    bool    aware;		/* Player is aware of the effects */
 
-    bool xxxx;      /* Unused */
+    bool    xxxx;      /* Unused */
 
-    byte tval;      /* Item type */
-    byte sval;      /* Item sub-type */
-    s16b pval;      /* Item extra-info */
+    uint8_t tval;      /* Item type */
+    uint8_t sval;      /* Item sub-type */
+    int16_t pval;      /* Item extra-info */
 
-    byte iqty;      /* Number of items */
+    uint8_t iqty;      /* Number of items */
 
-    s16b weight;    /* Probable weight */
+    int16_t weight;    /* Probable weight */
 
-    byte art_idx;     /* Artifact index (if any) */
-    byte ego_idx;     /* Ego-item index (if any) */
-    bool one_ring;  /* is this the one ring */
+    uint8_t art_idx;     /* Artifact index (if any) */
+    uint8_t ego_idx;     /* Ego-item index (if any) */
+    bool    one_ring;  /* is this the one ring */
 
-    s16b timeout;   /* Timeout counter */
+    int16_t timeout;   /* Timeout counter */
 
-    s16b to_h;      /* Bonus to hit */
-    s16b to_d;      /* Bonus to dam */
-    s16b to_a;      /* Bonus to ac */
-    s16b ac;        /* Armor class */
-    byte dd;        /* Damage dice */
-    byte ds;        /* Damage sides */
+    int16_t to_h;      /* Bonus to hit */
+    int16_t to_d;      /* Bonus to dam */
+    int16_t to_a;      /* Bonus to ac */
+    int16_t ac;        /* Armor class */
+    uint8_t dd;        /* Damage dice */
+    uint8_t ds;        /* Damage sides */
 
-    byte level;     /* Level  */
+    uint8_t level;     /* Level  */
 
-    s32b cost;      /* Cost (in stores) */
+    int32_t cost;      /* Cost (in stores) */
 
-    s32b value;     /* Value (estimated) */
+    int32_t value;     /* Value (estimated) */
 
-    bool cursed;     /* Item is cursed */
-    bool uncursable; /* Item can be uncursed */
-    bool curses[BORG_CURSE_MAX];
+    bool    cursed;     /* Item is cursed */
+    bool    uncursable; /* Item can be uncursed */
+    bool    curses[BORG_CURSE_MAX];
 
     bitflag flags[OF_SIZE];	/**< Object flags */
     int16_t modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
     struct element_info el_info[ELEM_MAX];	/**< Object element info */
-    bool brands[254];			/**< Flag absence/presence of each brand */
+    bool    brands[254];			/**< Flag absence/presence of each brand */
     /* HACK this should be dynamic but we don't know when borg_item's go away */
-    int slays[RF_MAX];			/**< power of slays based on race flag */
+    int     slays[RF_MAX];			/**< power of slays based on race flag */
 };
 
 
@@ -135,14 +135,14 @@ struct borg_item
  */
 struct borg_shop
 {
-    /*    s16b when; */      /* Time stamp */
+    /*    int16_t when; */      /* Time stamp */
 
-    s16b xtra;      /* Something unused */
+    int16_t     xtra;      /* Something unused */
 
-    s16b page;      /* Current page */
-    s16b more;      /* Number of pages */
+    int16_t     page;      /* Current page */
+    int16_t     more;      /* Number of pages */
 
-    borg_item ware[24]; /* Store contents */
+    borg_item   ware[24]; /* Store contents */
 };
 
 
@@ -314,7 +314,7 @@ typedef struct borg_spell_rating borg_spell_rating;
 struct borg_spell_rating
 {
     const char*      name;       /* Textual name */
-    byte             rating;     /* Usefulness */
+    uint8_t          rating;     /* Usefulness */
     enum borg_spells spell_enum; /* an enum for quick lookup */
 };
 
@@ -330,25 +330,15 @@ typedef struct borg_magic borg_magic;
 struct borg_magic
 {
     const char* name;      /* Textual name */
-
-    byte status;    /* Status (see above) */
-
-    uint16_t effect_index; /* effect index */
-
-    byte rating;    /* Usefulness */
-
-    byte level;     /* Required level */
-
-    byte power;     /* Required power */
-
-    byte sfail;     /* Minimum chance of failure */
-
-    int  book_offset;  /* offset of this spell in the book it is in */
-
-    int  book;      /* book index */
-
-    s32b times;     /* Times this spell was cast */
-
+    uint8_t     status;    /* Status (see above) */
+    uint16_t    effect_index; /* effect index */
+    uint8_t     rating;    /* Usefulness */
+    uint8_t     level;     /* Required level */
+    uint8_t     power;     /* Required power */
+    uint8_t     sfail;     /* Minimum chance of failure */
+    int         book_offset;  /* offset of this spell in the book it is in */
+    int         book;      /* book index */
+    int32_t     times;     /* Times this spell was cast */
     enum borg_spells spell_enum;
 };
 
@@ -359,7 +349,6 @@ struct borg_magic
  */
 
 extern borg_item* borg_items;       /* Current "inventory" */
-
 extern borg_shop* borg_shops;       /* Current "shops" */
 
 
@@ -424,7 +413,7 @@ extern bool borg_refuel_lantern(void);
 /*
  * Item usage functions
  */
-extern bool borg_obj_has_effect(u32b kind, int index, int subtype);
+extern bool borg_obj_has_effect(uint32_t kind, int index, int subtype);
 extern bool borg_eat_food(int tval, int sval);
 extern bool borg_quaff_crit(bool no_check);
 extern bool borg_quaff_potion(int sval);

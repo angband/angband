@@ -23,9 +23,9 @@
 extern bool borg_clock_over;
 #endif /* bablos */
 
-byte* test;
-byte* best;
-s32b* b_home_power;
+uint8_t* test;
+uint8_t* best;
+int32_t* b_home_power;
 
 
 /* money Scumming is a type of town scumming for money */
@@ -383,7 +383,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
     /* All done */
     if (n == z_info->store_inven_max)
     {
-        s32b home_power;
+        int32_t home_power;
 
         /* Examine the home  */
         borg_notice_home(NULL, false);
@@ -513,7 +513,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 {
     borg_item* item;
     borg_item* item2;
-    s32b home_power;
+    int32_t home_power;
     int i, k, p;
     bool skip_it = false;
 
@@ -641,8 +641,8 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 static void borg_think_home_sell_aux3(void)
 {
     int     i;
-    s32b    borg_empty_home_power;
-    s32b    power;
+    int32_t    borg_empty_home_power;
+    int32_t    power;
 
     /* get the starting power */
     borg_notice(true);
@@ -710,7 +710,7 @@ static bool borg_think_home_sell_aux(bool save_best)
 {
     int icky = z_info->store_inven_max - 1;
 
-    s32b home_power = -1L;
+    int32_t home_power = -1L;
 
     int p, i = -1;
 
@@ -720,8 +720,8 @@ static bool borg_think_home_sell_aux(bool save_best)
         b_home_power = &home_power;
 
     /* clear out our initial best/test objects */
-    memset(test, 0, sizeof(z_info->store_inven_max * sizeof(byte)));
-    memset(best, 0, sizeof(z_info->store_inven_max * sizeof(byte)));
+    memset(test, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
+    memset(best, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
 
 #if 0
     /* if I have not been to home, do not try this yet. */
@@ -766,7 +766,7 @@ static bool borg_think_home_sell_aux(bool save_best)
     /* swap quantities (this should be all that is different) */
     for (i = 0; i < z_info->pack_size; i++)
     {
-        byte save_qty;
+        uint8_t save_qty;
         if (i == weapon_swap && weapon_swap != 0) continue;
         if (i == armour_swap && armour_swap != 0) continue;
 
@@ -1129,9 +1129,9 @@ static bool borg_think_shop_sell_aux(void)
     int k, b_k = -1;
     int i, b_i = -1;
     int qty = 1;
-    s32b p, b_p = 0L;
-    s32b c = 0L;
-    s32b b_c = 30001L;
+    int32_t p, b_p = 0L;
+    int32_t c = 0L;
+    int32_t b_c = 30001L;
 
     bool fix = false;
 
@@ -1435,8 +1435,8 @@ static bool borg_think_shop_buy_aux(void)
 
     int k, b_k = -1;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
-    s32b c, b_c = 0L;
+    int32_t p, b_p = 0L;
+    int32_t c, b_c = 0L;
 
     bool fix = false;
 
@@ -1633,9 +1633,9 @@ static bool borg_think_home_buy_aux(void)
     int stack;
     int qty = 1;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
-    s32b p_left = 0;
-    s32b p_right = 0;
+    int32_t p, b_p = 0L;
+    int32_t p_left = 0;
+    int32_t p_right = 0;
 
     bool fix = false;
     bool skip_it = false;
@@ -1888,9 +1888,9 @@ static bool borg_think_shop_grab_aux(void)
     int n, b_n = -1;
     int qty = 1;
 
-    s32b s, b_s = 0L;
-    s32b c, b_c = 0L;
-    s32b borg_empty_home_power;
+    int32_t s, b_s = 0L;
+    int32_t c, b_c = 0L;
+    int32_t borg_empty_home_power;
     int hole;
 
     /* Dont do this if Sauron is dead */
@@ -2007,7 +2007,7 @@ static bool borg_think_shop_grab_aux(void)
 static bool borg_think_home_grab_aux(void)
 {
     int p, n, b_n = -1;
-    s32b s, b_s = 0L;
+    int32_t s, b_s = 0L;
     int qty = 1;
     bool skip_it = false;
     int hole = borg_first_empty_inventory_slot();
@@ -2097,11 +2097,11 @@ static bool borg_think_home_buy_swap_weapon(void)
 
     int slot;
     int old_weapon_swap;
-    s32b old_weapon_swap_value;
+    int32_t old_weapon_swap_value;
     int old_armour_swap;
-    s32b old_armour_swap_value;
+    int32_t old_armour_swap_value;
     int n, b_n = -1;
-    s32b p = 0L, b_p = 0L;
+    int32_t p = 0L, b_p = 0L;
 
     bool fix = false;
 
@@ -2220,12 +2220,12 @@ static bool borg_think_home_buy_swap_armour(void)
     int hole;
 
     int n, b_n = -1;
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
     bool fix = false;
     int old_weapon_swap;
-    s32b old_weapon_swap_value;
+    int32_t old_weapon_swap_value;
     int old_armour_swap;
-    s32b old_armour_swap_value;
+    int32_t old_armour_swap_value;
 
     /* save the current values */
     old_weapon_swap = weapon_swap;
@@ -2973,7 +2973,7 @@ static bool borg_think_stair_scum(bool from_town)
 
     borg_grid* ag = &borg_grids[c_y][c_x];
 
-    byte feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -3213,7 +3213,7 @@ static bool borg_think_dungeon_lunal(void)
 
     borg_grid* ag = &borg_grids[c_y][c_x];
 
-    byte feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -3596,7 +3596,7 @@ static bool borg_think_dungeon_munchkin(void)
 
     borg_grid* ag = &borg_grids[c_y][c_x];
 
-    byte feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -4435,7 +4435,7 @@ bool borg_think_dungeon(void)
      * he saw a scaryguy (BSV, SER, Maggot).  Since he is here on depth 1, do a quick
      * check for items near the stairs that I can pick up before I return to town.
      */
-    if (borg_skill[BI_CDEPTH] == 1 && borg_fleeing_town)
+    if (borg_skill[BI_CDEPTH] == 1 && goal_fleeing_to_town)
     {
 
         /* Try to grab a close item while I'm down here */
@@ -5472,8 +5472,8 @@ bool borg_think_dungeon(void)
  */
 void borg_init_8(void)
 {
-    test = mem_zalloc(z_info->store_inven_max * sizeof(byte));
-    best = mem_zalloc(z_info->store_inven_max * sizeof(byte));
+    test = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
+    best = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
 }
 
 

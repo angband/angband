@@ -3556,7 +3556,7 @@ bool borg_caution(void)
         }
 
         /* Return to town quickly after leaving town */
-        if (borg_skill[BI_CDEPTH] == 0) borg_fleeing_town = true;
+        if (borg_skill[BI_CDEPTH] == 0) goal_fleeing_to_town = true;
     }
 
     /* Make a note if Ignoring monsters (no fighting) */
@@ -4629,7 +4629,7 @@ bool borg_caution(void)
     }
 
     /* Hack -- use "recall" to flee if possible */
-    if (goal_fleeing && !goal_fleeing_munchkin && !borg_fleeing_town && borg_skill[BI_CDEPTH] >= 1 && (borg_recall()))
+    if (goal_fleeing && !goal_fleeing_munchkin && !goal_fleeing_to_town && borg_skill[BI_CDEPTH] >= 1 && (borg_recall()))
     {
         /* Note */
         borg_note("# Fleeing the level (recall)");
@@ -8666,7 +8666,7 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
     borg_note(format("# Aiming unknown wand '%s.'", borg_items[b_i].desc));
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = b_i;
+    borg_zap_slot = b_i;
 
     /* Perform the action */
     borg_keypress('a');
@@ -8732,7 +8732,7 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
     borg_note(format("# Aiming unknown rod '%s.'", borg_items[b_i].desc));
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = b_i;
+    borg_zap_slot = b_i;
 
     /* Perform the action */
     borg_keypress('z');
@@ -16258,10 +16258,10 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
  * Hack -- Glyph creating
  */
 
-static byte glyph_x;
-static byte glyph_y;
-static byte glyph_y_center = 0;
-static byte glyph_x_center = 0;
+static uint8_t glyph_x;
+static uint8_t glyph_y;
+static uint8_t glyph_y_center = 0;
+static uint8_t glyph_x_center = 0;
 
 /*
  * Prepare to flow towards a location and create a
@@ -16788,7 +16788,7 @@ bool borg_excavate_vault(int range)
              * like a wall and the borg_update routine will redefine it as a wall
              */
             borg_do_update_view = true;
-            borg_do_update_LIGHT = true;
+            borg_do_update_lite = true;
 
             /* Not Lit */
             borg_grids[borg_temp_y[i]][borg_temp_x[i]].info &= ~BORG_GLOW;
@@ -19911,8 +19911,8 @@ bool borg_flow_dark(bool neer)
  * Hack -- spastic searching
  */
 
-static byte spastic_x;
-static byte spastic_y;
+static uint8_t spastic_x;
+static uint8_t spastic_y;
 
 
 

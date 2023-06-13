@@ -43,12 +43,12 @@ extern int borg_mon_blow_effect(const char* name);
 /*
  * Calculate the basic "power"
  */
-extern s32b borg_power(void);
+extern int32_t borg_power(void);
 
 /*
  * Calculate the basic "power" of the home
  */
-extern s32b borg_power_home(void);
+extern int32_t borg_power_home(void);
 
 
 

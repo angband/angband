@@ -1609,8 +1609,8 @@ bool borg_crush_junk(void)
 {
     int i;
     bool fix = false;
-    s32b p;
-    s32b value;
+    int32_t p;
+    int32_t value;
 
 	/* Hack -- no need */
     if (!borg_do_crush_junk) return (false);
@@ -1861,9 +1861,9 @@ bool borg_crush_junk(void)
 bool borg_crush_hole(void)
 {
     int i, b_i = -1;
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
 
-    s32b value;
+    int32_t value;
 
     bool fix = false;
 
@@ -2235,11 +2235,11 @@ bool borg_crush_hole(void)
 bool borg_crush_slow(void)
 {
     int i, b_i = -1;
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
 
-    s32b temp;
+    int32_t temp;
 
-    s32b greed;
+    int32_t greed;
 
     bool fix = false;
 
@@ -2628,7 +2628,7 @@ bool borg_swap_rings(void)
 {
     int hole = borg_first_empty_inventory_slot();
 
-    s32b v1, v2;
+    int32_t v1, v2;
 
 	char current_right_ring[80];
 	char current_left_ring[80];
@@ -2791,7 +2791,7 @@ bool borg_wear_rings(void)
     int slot;
     int hole = borg_first_empty_inventory_slot();
 
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
 
     int i, b_i = -1;
 
@@ -2937,9 +2937,9 @@ bool borg_backup_swap(int p)
     int slot;
     int swap;
 
-    s32b b_p = 0L;
-    s32b b_p1 = 0L;
-    s32b b_p2 = 0L;
+    int32_t b_p = 0L;
+    int32_t b_p1 = 0L;
+    int32_t b_p2 = 0L;
 
     int i;
 
@@ -3305,7 +3305,7 @@ bool borg_remove_stuff(void)
 {
     int hole = borg_first_empty_inventory_slot();
 
-    s32b p, b_p = 0L, w_p= 0L;
+    int32_t p, b_p = 0L, w_p= 0L;
 
     int i, b_i = -1;
 
@@ -3443,7 +3443,7 @@ bool borg_wear_stuff(void)
 	int o;
 	bool recently_worn = false;
 
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
 
     int i, b_i = -1;
     int ii, b_ii =  -1;
@@ -3876,7 +3876,7 @@ static uint16_t borg_best_stuff_order(int n)
 /*
  * Helper function (see below)
  */
-static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
+static void borg_best_stuff_aux(int n, uint8_t *test, uint8_t *best, int32_t *vp)
 {
     int i;
 
@@ -3889,7 +3889,7 @@ static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
     /* All done */
     if (slot == 255)
     {
-        s32b p;
+        int32_t p;
 
         /* Examine */
         borg_notice(false);
@@ -3996,16 +3996,16 @@ bool borg_best_stuff(void)
     int hole;
 	char purchase_target[1];
     int k;
-	byte t_a;
+	uint8_t t_a;
     char buf[1024];
 	int p;
 
-    s32b value;
+    int32_t value;
 
     int i;
 
-    byte test[12];
-    byte best[12];
+    uint8_t test[12];
+    uint8_t best[12];
 
 	/* Hack -- Anti-loop */
     if (time_this_panel >= 300) return (false);
@@ -4330,8 +4330,8 @@ int borg_count_sell(void)
 {
     int i, k = 0;
 
-    s32b price;
-    s32b greed;
+    int32_t price;
+    int32_t greed;
     int p, sv_qty;
 
 

@@ -44,11 +44,11 @@
 #include "borg9.h"
 
 #ifdef BABLOS
-extern bool auto_play;
-extern bool keep_playing;
+extern bool     auto_play;
+extern bool     keep_playing;
 #endif /* bablos */
-bool borg_cheat_death;
-bool borg_cheating_death = false;
+bool            borg_cheat_death;
+bool            borg_cheating_death = false;
 
 
 /*
@@ -102,7 +102,7 @@ bool borg_cheating_death = false;
  * the Borg performs a "repeated" command (rest, open, tunnel, or search),
  * which may actually take longer than a single turn.  This has the effect
  * that the "borg_t" variable is slightly lacking in "precision".  Note that
- * we can store every time-stamp in a 's16b', since we reset the clock to
+ * we can store every time-stamp in a 'int16_t', since we reset the clock to
  * 1000 on each new level, and we refuse to stay on any level longer than
  * 30000 turns, unless we are totally stuck, in which case we abort.
  *
@@ -237,7 +237,7 @@ static bool borg_think(void)
 {
     int i;
 
-    byte t_a;
+    uint8_t t_a;
 
     char buf[128];
     static char svSavefile[1024];
@@ -1996,7 +1996,7 @@ static void borg_parse(char* msg)
 #ifndef BABLOS
 
 #if 0
-static s16b stat_use[6];
+static int16_t stat_use[6];
 
 static int adjust_stat_borg(int value, int amount, int borg_roll)
 {
@@ -2059,7 +2059,7 @@ static void get_stats_borg(void)
 
     int stat_limit[6];
 
-    s32b borg_round = 0L;
+    int32_t borg_round = 0L;
 
     /* load up min. stats */
     stat_limit[0] = 14; /* Str */
@@ -2636,7 +2636,7 @@ void resurrect_borg(void)
     goal_fleeing = false;
 
     /* Assume not fleeing the level */
-    borg_fleeing_town = false;
+    goal_fleeing_to_town = false;
 
     /* Assume not ignoring monsters */
     goal_ignoring = false;
@@ -2828,7 +2828,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     int y = 0;
     int x = ((Term->wid /* - (COL_MAP)*/ - 1) / (tile_width));
 
-    byte t_a;
+    uint8_t t_a;
 
     char buf[1024];
 
@@ -2894,7 +2894,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* are not all spaces (ascii value 0x20)... */
     if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) &&
         (t_a != COLOUR_DARK) &&
-        (*((u32b*)(buf)) != 0x20202020))
+        (*((uint32_t*)(buf)) != 0x20202020))
     {
         /* Assume a prompt/message is available */
         borg_prompt = true;
@@ -3178,10 +3178,10 @@ static struct keypress borg_inkey_hack(int flush_first)
 /*
  * Output a long int in binary format.
  */
-static void borg_prt_binary(u32b flags, int row, int col)
+static void borg_prt_binary(uint32_t flags, int row, int col)
 {
     int        	i;
-    u32b        bitmask;
+    uint32_t        bitmask;
 
     /* Scan the flags */
     for (i = bitmask = 1; i <= 32; i++, bitmask *= 2)
@@ -4378,7 +4378,7 @@ static void borg_init_messages(void)
  */
 void borg_init_9(void)
 {
-    byte* test;
+    uint8_t* test;
 
     /*** Hack -- verify system ***/
 
@@ -4390,7 +4390,7 @@ void borg_init_9(void)
     Term_fresh();
 
     /* Mega-Hack -- verify memory */
-    test = mem_zalloc(400 * 1024L * sizeof(byte));
+    test = mem_zalloc(400 * 1024L * sizeof(uint8_t));
     mem_free(test);
 
     /*** Hack -- initialize some stuff ***/
@@ -4636,7 +4636,7 @@ void borg_write_map(bool ask)
     int i, j;
     int to, itemm;
 
-    s16b m_idx;
+    int16_t m_idx;
 
     struct store* st_ptr = &stores[7];
 
@@ -4774,7 +4774,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n  [Last Messages]\n\n");
     while (i-- > 0)
     {
-        const char* msg = message_str((s16b)i);
+        const char* msg = message_str((int16_t)i);
 
         /* Eliminate some lines */
         if (prefix(msg, "# Matched")
@@ -4983,7 +4983,7 @@ void borg_write_map(bool ask)
                 const char *legal = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
                 failpercent = (borg_spell_fail_rate(as->spell_enum));
 
-                file_putf(borg_map_file, "%-30s   %s   %ld   fail:%d \n", as->name, legal, (long)as->times, failpercent);
+                file_putf(borg_map_file, "%-30s   %s   %d   fail:%d \n", as->name, legal, (long)as->times, failpercent);
             }
             file_putf(borg_map_file, "\n");
         }
@@ -5027,7 +5027,7 @@ void borg_write_map(bool ask)
     {
         for (x = 0; x < DUNGEON_WID; x++)
         {
-            s16b this_o_idx, next_o_idx = 0;
+            int16_t this_o_idx, next_o_idx = 0;
 
             /* Scan all objects in the grid */
             for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -5122,7 +5122,7 @@ void borg_write_map(bool ask)
      * Note that the player ghosts are ignored.  XXX XXX XXX
      */
      /* Allocate the "who" array */
-    C_MAKE(who, z_info->r_max, u16b);
+    C_MAKE(who, z_info->r_max, uint16_t);
 
     /* Collect matching monsters */
     for (i = 1, n = 0; i < z_info->r_max; i++)
@@ -5225,7 +5225,7 @@ void borg_status(void)
         /* Check for borg status term */
         if (window_flag[j] & (PW_BORG_2))
         {
-            byte attr;
+            uint8_t attr;
 
             /* Activate */
             Term_activate(angband_term[j]);
@@ -6040,7 +6040,7 @@ void do_cmd_borg(void)
     {
         int x, y;
 
-        u16b low, high = 0;
+        uint16_t low, high = 0;
         bool trap = false;
         bool glyph = false;
 
@@ -6093,7 +6093,7 @@ void do_cmd_borg(void)
         {
             for (x = 1; x <= AUTO_MAX_X - 1; x++)
             {
-                byte a = COLOUR_RED;
+                uint8_t a = COLOUR_RED;
 
                 borg_grid* ag = &borg_grids[y][x];
 
@@ -6130,7 +6130,7 @@ void do_cmd_borg(void)
         int y = 1;
         int x = 1;
 
-        u16b mask;
+        uint16_t mask;
 
         mask = borg_grids[y][x].feat;
 
@@ -6140,7 +6140,7 @@ void do_cmd_borg(void)
         y = l.y;
         x = l.x;
 
-        byte feat = square(cave, loc(c_x, c_y))->feat;
+        uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
         borg_note(format("Borg's Feat for grid (%d, %d) is %d, game Feat is %d", y, x, mask, feat));
         prt_map();
@@ -6152,7 +6152,7 @@ void do_cmd_borg(void)
     {
         int x, y;
 
-        u16b mask;
+        uint16_t mask;
 
         /* Get a "Borg command", or abort */
         if (!get_com("Borg command: Show grids: ", &cmd)) return;
@@ -6186,7 +6186,7 @@ void do_cmd_borg(void)
         {
             for (x = 1; x <= AUTO_MAX_X - 1; x++)
             {
-                byte a = COLOUR_RED;
+                uint8_t a = COLOUR_RED;
 
                 borg_grid* ag = &borg_grids[y][x];
 
@@ -6253,7 +6253,7 @@ void do_cmd_borg(void)
         {
             for (x = 1; x <= AUTO_MAX_X - 1; x++)
             {
-                byte a = COLOUR_RED;
+                uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
                 p = borg_danger(y, x, 1, true, false);
@@ -6288,7 +6288,7 @@ void do_cmd_borg(void)
         int i;
 
         /* Scan map */
-        byte a = COLOUR_RED;
+        uint8_t a = COLOUR_RED;
         /* Check for an existing step */
         for (i = 0; i < track_step_num; i++)
         {
@@ -6526,7 +6526,7 @@ void do_cmd_borg(void)
         {
             for (x = 1; x <= AUTO_MAX_X - 1; x++)
             {
-                byte a = COLOUR_RED;
+                uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
                 p = borg_fear_region[y / 11][x / 11];
@@ -6557,7 +6557,7 @@ void do_cmd_borg(void)
         {
             for (x = 1; x <= AUTO_MAX_X; x++)
             {
-                byte a = COLOUR_BLUE;
+                uint8_t a = COLOUR_BLUE;
 
                 /* Obtain danger */
                 p = borg_fear_monsters[y][x];
@@ -6605,7 +6605,7 @@ void do_cmd_borg(void)
     case 'p':
     case 'P':
     {
-        s32b p;
+        int32_t p;
 
         /* Examine the screen */
         borg_update_frame();
@@ -6637,7 +6637,7 @@ void do_cmd_borg(void)
     /* Command: Show time */
     case '!':
     {
-        s32b time = borg_t - borg_began;
+        int32_t time = borg_t - borg_began;
         msg("time: (%d) ", time);
         time = (borg_time_town + (borg_t - borg_began));
         msg("; from town (%d)", time);
@@ -6656,7 +6656,7 @@ void do_cmd_borg(void)
         {
             for (x = w_x; x < w_x + SCREEN_WID; x++)
             {
-                byte a = COLOUR_RED;
+                uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
                 if (!borg_los(c_y, c_x, y, x)) continue;
@@ -6675,7 +6675,7 @@ void do_cmd_borg(void)
         {
             for (x = w_x; x < w_x + SCREEN_WID; x++)
             {
-                byte a = COLOUR_YELLOW;
+                uint8_t a = COLOUR_YELLOW;
 
                 if (!square_in_bounds(cave, loc(x, y)))
                     continue;
@@ -6695,7 +6695,7 @@ void do_cmd_borg(void)
         {
             for (x = w_x; x < w_x + SCREEN_WID; x++)
             {
-                byte a = COLOUR_GREEN;
+                uint8_t a = COLOUR_GREEN;
 
                 /* Obtain danger */
                 if (!borg_los(c_y, c_x, y, x)) continue;
@@ -7074,7 +7074,7 @@ void do_cmd_borg(void)
     {
         int glyph_check;
 
-        byte a = COLOUR_RED;
+        uint8_t a = COLOUR_RED;
 
         for (glyph_check = 0; glyph_check < track_glyph_num; glyph_check++)
         {

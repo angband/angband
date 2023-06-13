@@ -2320,8 +2320,8 @@ static void borg_notice_weapon_swap(void)
     int i;
     int b_i = 0;
 
-    s32b v = -1L;
-    s32b b_v = 0L;
+    int32_t v = -1L;
+    int32_t b_v = 0L;
 
     int dam, damage;
     borg_item* item;
@@ -2782,8 +2782,8 @@ static void borg_notice_armour_swap(void)
 {
     int i;
     int b_i = 0;
-    s32b v = -1L;
-    s32b b_v = 0L;
+    int32_t v = -1L;
+    int32_t b_v = 0L;
     int dam, damage;
 
     borg_item* item;
@@ -3768,7 +3768,7 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
         case TV_HAFTED:
         /* case TV_DIGGING: */
         {
-            s16b num_blow;
+            int16_t num_blow;
 
             num_weapons += item->iqty;
             /*  most edged weapons hurt magic for priests */
@@ -4175,7 +4175,7 @@ static bool borg_feature_protected(borg_grid* ag)
 /*
  * Helper function -- calculate "power" of equipment
  */
-static s32b borg_power_aux1(void)
+static int32_t borg_power_aux1(void)
 {
     int         hold;
     int         damage, dam;
@@ -4185,7 +4185,7 @@ static s32b borg_power_aux1(void)
     int         cur_wgt = 0;
     int         max_wgt = 0;
 
-    s32b        value = 0L;
+    int32_t        value = 0L;
 
     borg_item* item;
 
@@ -5027,11 +5027,11 @@ static s32b borg_power_aux1(void)
 /*
  * Helper function -- calculate power of inventory
  */
-static s32b borg_power_aux2(void)
+static int32_t borg_power_aux2(void)
 {
     int         k, carry_capacity, book;
 
-    s32b        value = 0L;
+    int32_t        value = 0L;
 
 
     /*** Basic abilities ***/
@@ -5740,7 +5740,7 @@ static s32b borg_power_aux2(void)
         }
 
         /* Some items will be used immediately and should not contribute to encumbrance */
-        if (item->iqty &&
+        if (item && item->iqty &&
             ((item->tval == TV_SCROLL &&
                 ((item->sval == sv_scroll_enchant_armor && amt_enchant_to_a < 1000 && my_need_enchant_to_a) ||
                     (item->sval == sv_scroll_enchant_weapon_to_hit && amt_enchant_to_h < 1000 && my_need_enchant_to_h) ||
@@ -5775,10 +5775,10 @@ static s32b borg_power_aux2(void)
 /*
  * Calculate the "power" of the Borg
  */
-s32b borg_power(void)
+int32_t borg_power(void)
 {
     int i = 1;
-    s32b value = 0L;
+    int32_t value = 0L;
 
     /* Process the equipment */
     value += borg_power_aux1();
@@ -5807,9 +5807,9 @@ s32b borg_power(void)
 /*
  * Helper function -- calculate power of equipment in the home
  */
-static s32b borg_power_home_aux1(void)
+static int32_t borg_power_home_aux1(void)
 {
-    s32b        value = 0L;
+    int32_t        value = 0L;
 
     /* This would be better seperated by item type (so 1 bonus for resist cold armor */
     /*   1 bonus for resist cold shield... but that would take a bunch more code. */
@@ -6211,11 +6211,11 @@ static s32b borg_power_home_aux1(void)
  *
  * The weird calculations help spread out the purchase order
  */
-static s32b borg_power_home_aux2(void)
+static int32_t borg_power_home_aux2(void)
 {
     int         k, book;
 
-    s32b        value = 0L;
+    int32_t        value = 0L;
 
 
     /*** Basic abilities ***/
@@ -6416,9 +6416,9 @@ static s32b borg_power_home_aux2(void)
 /*
  * Calculate the "power" of the home
  */
-s32b borg_power_home(void)
+int32_t borg_power_home(void)
 {
-    s32b value = 0L;
+    int32_t value = 0L;
 
     /* Process the home equipment */
     value += borg_power_home_aux1();
@@ -6493,7 +6493,7 @@ static int borg_danger_aux1(int i, bool full_damage)
     int pfe = 0;
     int power, chance;
 
-    s16b ac = borg_skill[BI_ARMOR];
+    int16_t ac = borg_skill[BI_ARMOR];
 
     borg_kill* kill = &borg_kills[i];
 

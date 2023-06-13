@@ -280,25 +280,25 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
 /*
  * Constant "item description parsers" (singles)
  */
-static int borg_single_size;        /* Number of "singles" */
-static s16b* borg_single_what;      /* Kind indexes for "singles" */
-static char** borg_single_text;      /* Textual prefixes for "singles" */
+static int      borg_single_size;        /* Number of "singles" */
+static int16_t* borg_single_what;      /* Kind indexes for "singles" */
+static char**   borg_single_text;      /* Textual prefixes for "singles" */
 
 /*
  * Constant "item description parsers" (plurals)
  */
-static int borg_plural_size;        /* Number of "plurals" */
-static s16b* borg_plural_what;      /* Kind index for "plurals" */
-static char** borg_plural_text;      /* Textual prefixes for "plurals" */
-static char** borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in kind order) */
+static int      borg_plural_size;        /* Number of "plurals" */
+static int16_t* borg_plural_what;      /* Kind index for "plurals" */
+static char**   borg_plural_text;      /* Textual prefixes for "plurals" */
+static char**   borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in kind order) */
 
 /*
  * Constant "item description parsers" (suffixes)
  */
-static int borg_artego_size;        /* Number of "artegos" */
-static s16b* borg_artego_what;      /* Indexes for "artegos" */
-static char** borg_artego_text;      /* Textual prefixes for "artegos" */
-static char** borg_sv_art_text;      /* Save textual prefixes for "artifacts" (in kind order) */
+static int      borg_artego_size;        /* Number of "artegos" */
+static int16_t* borg_artego_what;      /* Indexes for "artegos" */
+static char**   borg_artego_text;      /* Textual prefixes for "artegos" */
+static char**   borg_sv_art_text;      /* Save textual prefixes for "artifacts" (in kind order) */
 
 /*
  * Return the slot that items of the given type are wielded into
@@ -520,9 +520,9 @@ bool borg_object_fully_id(void)
  * uses this function to guess at the "value" of an item, if it
  * was to be sold to a store, with perfect "charisma" modifiers.
  */
-static s32b borg_object_value_known(borg_item* item)
+static int32_t borg_object_value_known(borg_item* item)
 {
-    s32b value;
+    int32_t value;
 
 
     struct object_kind* k_ptr = &k_info[item->kind];
@@ -1192,7 +1192,7 @@ bool borg_refuel_lantern(void)
  * index    - index of the effect
  * subtype  - subtype of the effect 
  */
-bool borg_obj_has_effect(u32b kind, int index, int subtype)
+bool borg_obj_has_effect(uint32_t kind, int index, int subtype)
 {
     struct effect* ke = k_info[kind].effect;
     while (ke)
@@ -1243,7 +1243,7 @@ bool borg_eat_food(int tval, int sval)
   */
 bool borg_quaff_crit(bool no_check)
 {
-    static s16b when_last_quaff = 0;
+    static int16_t when_last_quaff = 0;
 
     if (no_check)
     {
@@ -1472,7 +1472,7 @@ bool borg_use_unknown(void)
     borg_note(format("# Using unknown Staff %s.", borg_items[n].desc));
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = n;
+    borg_zap_slot = n;
 
     /* Perform the action */
     borg_keypress('u');
@@ -1662,7 +1662,7 @@ bool borg_aim_wand(int sval)
     if (!borg_items[i].pval) return (false);
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = i;
+    borg_zap_slot = i;
 
     /* Log the message */
     borg_note(format("# Aiming %s.", borg_items[i].desc));
@@ -1693,7 +1693,7 @@ bool borg_use_staff(int sval)
     if (!borg_items[i].pval) return (false);
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = i;
+    borg_zap_slot = i;
 
     /* Log the message */
     borg_note(format("# Using %s.", borg_items[i].desc));
@@ -1725,7 +1725,7 @@ bool borg_use_staff_fail(int sval)
     if (!borg_items[i].pval) return (false);
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = i;
+    borg_zap_slot = i;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -1758,7 +1758,7 @@ bool borg_use_staff_fail(int sval)
 
 
     /* record the address to avoid certain bugs with inscriptions&amnesia */
-    zap_slot = i;
+    borg_zap_slot = i;
 
     /* Log the message */
     borg_note(format("# Using %s.", borg_items[i].desc));
@@ -1852,8 +1852,12 @@ bool borg_activate_artifact(const char* activation)
             !(k_info[item->kind].activation))
             continue;
 
+        struct activation* activ = a_ptr->activation;
+        if (!activ)
+            activ = k_info[item->kind].activation;
+
         /* Skip wrong activation*/
-        if (strcmp(activation, a_ptr->activation->name))
+        if (strcmp(activation, activ->name))
             continue;
 
         /* Check charge */
@@ -2572,7 +2576,7 @@ void borg_send_deinscribe(int i)
  *
  * Hack -- the black market always charges twice as much as it should.
  */
-static s32b borg_price_item(const struct object* obj, bool store_buying, int qty, int this_store)
+static int32_t borg_price_item(const struct object* obj, bool store_buying, int qty, int this_store)
 {
     int adjust = 100;
     int price;
@@ -3043,7 +3047,7 @@ void borg_init_3(void)
 
     int size;
 
-    s16b what[514];
+    int16_t what[514];
     char* text[514];
 
     char buf[256];
@@ -3119,7 +3123,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     borg_plural_text = mem_zalloc(borg_plural_size * sizeof(char*));
-    borg_plural_what = mem_zalloc(borg_plural_size * sizeof(s16b));
+    borg_plural_what = mem_zalloc(borg_plural_size * sizeof(int16_t));
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_plural_text[i] = text[i];
@@ -3212,7 +3216,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     borg_single_text = mem_zalloc(borg_single_size * sizeof(char*));
-    borg_single_what = mem_zalloc(borg_single_size * sizeof(s16b));
+    borg_single_what = mem_zalloc(borg_single_size * sizeof(int16_t));
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_single_text[i] = text[i];
@@ -3272,7 +3276,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     borg_artego_text = mem_zalloc(borg_artego_size * sizeof(char*));
-    borg_artego_what = mem_zalloc(borg_artego_size * sizeof(s16b));
+    borg_artego_what = mem_zalloc(borg_artego_size * sizeof(int16_t));
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_artego_text[i] = text[i];
