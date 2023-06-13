@@ -3028,6 +3028,8 @@ static struct keypress borg_inkey_hack(int flush_first)
 #endif /* bablos */
         /* flush the buffer */
         borg_flush();
+        borg_parse(NULL);
+        borg_clear_reactions();
 
         /* Oops  */
         borg_oops("player died");

@@ -387,7 +387,7 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
             if (ag->feat == FEAT_PERM) continue;
 
             /* Avoid "Lava" grids (for now) */
-            if (ag->feat == FEAT_LAVA) continue;
+            if (ag->feat == FEAT_LAVA && !borg_skill[BI_IFIRE]) continue;
 
             /* Avoid unknown grids (if requested or retreating)
              * unless twitchy.  In which case, expore it

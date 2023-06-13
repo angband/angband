@@ -3278,21 +3278,10 @@ char* borg_massage_special_chars(char* name, char* memory)
     wchar_t wide_name[1024];
 
     if (memory == NULL)
-    {
-        allocated = true;
         memory = mem_zalloc((strlen(name) + 1) * sizeof(char));
-    }
+
     text_mbstowcs(wide_name, name, strlen(name) + 1);
     wcstombs(memory, wide_name, strlen(name) + 1);
-
-    /* free up the memory if the name didn't contain special chars */
-    /* otherwise it is assumed the caller will free it. */
-    /* note: the borg doesn't bother since this is init processing */
-    if (allocated && streq(memory, name))
-    {
-        mem_free(memory);
-        return name;
-    }
 
     return memory;
 }
