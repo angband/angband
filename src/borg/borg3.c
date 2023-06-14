@@ -883,7 +883,7 @@ void borg_item_analyze(borg_item* item, const struct object* real_item,
     item->sval = real_item->sval;
     item->iqty = real_item->number;
     item->weight = real_item->weight;
-    item->timeout = real_item->timeout;
+    item->timeout = real_item->known->timeout;
     item->level = real_item->kind->level;
     item->aware = object_flavor_is_aware(real_item);
 
@@ -1086,6 +1086,9 @@ enum borg_need borg_maintain_light(void)
 {
     int i;
     borg_item* current_light = &borg_items[INVEN_LIGHT];
+
+    if (of_has(current_light->flags, OF_NO_FUEL))
+        return BORG_NO_NEED;
 
     /*  current torch */
     if (current_light->tval == TV_LIGHT)

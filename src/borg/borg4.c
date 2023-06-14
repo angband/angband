@@ -1490,7 +1490,7 @@ static void borg_notice_aux1(void)
     /* Lite */
     if (item->tval == TV_LIGHT)
     {
-        if (item->timeout)
+        if (item->timeout || of_has(item->flags, OF_NO_FUEL))
         {
             if (of_has(item->flags, OF_LIGHT_2))
             {
@@ -9250,7 +9250,7 @@ const char* borg_restock(int depth)
     /*** Level 10 - 19  ***/
 
     /* Must have good light */
-    if (borg_skill[BI_CURLITE] < 2) return "rs light+1";
+    if (borg_skill[BI_CURLITE] < 2) return "2 Light";
 
     /* Must have "cure" */
     if ((borg_skill[BI_MAXCLEVEL] < 30) && borg_skill[BI_ACLW] + borg_skill[BI_ACSW] + borg_skill[BI_ACCW] < 2) return ("rs cure");
