@@ -4288,6 +4288,10 @@ bool borg_play_magic(bool bored)
 				as->spell_enum == BLESS) continue;
 		}
 
+        /* don't test lighting strike.  It requires aiming at something */
+        /* it can just be used when the borg is ready to use it. */
+        if (as->spell_enum == LIGHTNING_STRIKE) continue;
+
 		/* Note */
 		borg_note("# Testing untried spell/prayer");
 
