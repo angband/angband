@@ -5329,7 +5329,7 @@ void borg_init_5(void)
         text[size] = borg_massage_special_chars(r_ptr->name, NULL);
         what[size] = i;
 
-        if (streq(r_ptr->name, "Morgoth"))
+        if (streq(r_ptr->name, "Morgoth, Lord of Darkness"))
             borg_morgoth_id = r_ptr->ridx;
 
         size++;
