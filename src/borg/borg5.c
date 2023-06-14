@@ -1043,7 +1043,9 @@ static void borg_update_kill_new(int i)
 
     borg_kill* kill = &borg_kills[i];
 
-    struct monster* m_ptr = square_monster(cave, loc(kill->x, kill->y));
+// Not sure about this !FIX !TODO !AJG
+//    struct monster* m_ptr = square_monster(cave, loc(kill->x, kill->y));
+    struct monster* m_ptr = &cave->monsters[kill->m_idx];
     struct monster_race* r_ptr = &r_info[kill->r_idx];
 
     /* Extract the monster speed */
@@ -2672,6 +2674,11 @@ static int borg_locate_kill(char* who, int y, int x, int r)
 
         /* Skip "matching" monsters */
         if (kill->r_idx == r_idx) continue;
+
+        /* check the position is the same */
+        struct monster* m_ptr = &cave->monsters[kill->m_idx];
+        if (m_ptr->grid.x != kill->x || m_ptr->grid.y != kill->y)
+            continue;
 
         /* Verify char */
         if (r_info[kill->r_idx].d_char != r_ptr->d_char) continue;
