@@ -3274,7 +3274,6 @@ bool borg_is_ammo(int tval)
 /* and it is up to the caller to detect that memory was allocated and free it. */
 char* borg_massage_special_chars(char* name, char* memory)
 {
-    bool allocated = false;
     wchar_t wide_name[1024];
 
     if (memory == NULL)
