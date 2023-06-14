@@ -189,10 +189,10 @@ endif
 .PHONY: all clean
 
 #---------------------------------------------------------------------------------
-all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+all: $(BUILD) $(BUILD)/borg $(GFXBUILD) $(DEPSDIR) $(DEPSDIR)/borg $(ROMFS_T3XFILES) $(T3XHFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds $(PROGNAME).3dsx
 
-$(BUILD):
+$(BUILD) $(BUILD)/borg:
 	@mkdir -p $@
 
 ifneq ($(GFXBUILD),$(BUILD))
@@ -200,11 +200,9 @@ $(GFXBUILD):
 	@mkdir -p $@
 endif
 
-ifneq ($(DEPSDIR),$(BUILD))
-$(DEPSDIR):
+ifneq ($(DEPSDIR),$(BUILD))     
+$(DEPSDIR) $(DEPSDIR)/borg:
 	@mkdir -p $@
-$(DEPSDIR)/borg:
-	@mkdir -p $@/borg
 endif
 
 #---------------------------------------------------------------------------------
