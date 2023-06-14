@@ -2554,19 +2554,10 @@ bool borg_test_stuff(void)
         borg_item *item = &borg_items[b_i];
 
 		/* Use an item to identify */
-        bool did_spell = borg_spell(IDENTIFY_RUNE);
-        bool shift_up = false;
-		if (did_spell || borg_read_scroll(sv_scroll_identify))
+		if (borg_spell(IDENTIFY_RUNE) || borg_read_scroll(sv_scroll_identify))
 		{
 			/* Log -- may be cancelled */
 			borg_note(format("# Identifying %s.", item->desc));
-
-            if (!did_spell)
-            {
-                int scroll_pos = borg_slot(TV_SCROLL, sv_scroll_identify);
-                if (scroll_pos < b_i && borg_items[scroll_pos].iqty == 1)
-                    shift_up = true;
-            }
 
 			/* Equipment */
 			if (b_i >= INVEN_WIELD && b_i < QUIVER_START)
@@ -2596,10 +2587,7 @@ bool borg_test_stuff(void)
 			else
 			{
                 /* Select the item */
-                if (shift_up)
-                    borg_keypress(all_letters_nohjkl[b_i - 1]);
-                else
-                    borg_keypress(all_letters_nohjkl[b_i]);
+                borg_keypress(all_letters_nohjkl[b_i]);
 			}
 		
 			borg_keypress(ESCAPE);
