@@ -200,8 +200,8 @@ $(GFXBUILD):
 	@mkdir -p $@
 endif
 
-ifneq ($(DEPSDIR),$(BUILD))
-$(DEPSDIR):
+ifneq ($(DEPSDIR),$(BUILD))     
+$(DEPSDIR) $(DEPSDIR)/borg:
 	@mkdir -p $@
 endif
 
