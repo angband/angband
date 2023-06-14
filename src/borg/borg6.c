@@ -381,7 +381,10 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
             if (sneak && bad_sneak && !borg_desperate && !twitchy) continue;
 
             /* Avoid "wall" grids (not doors) unless tunneling*/
-            if (!tunneling && (ag->feat >= FEAT_SECRET && ag->feat != FEAT_PASS_RUBBLE)) continue;
+            /* HACK depends on FEAT order, kinda evil */
+            if (!tunneling && (ag->feat >= FEAT_SECRET && 
+                               ag->feat != FEAT_PASS_RUBBLE && 
+                               ag->feat != FEAT_LAVA)) continue;
 
             /* Avoid "perma-wall" grids */
             if (ag->feat == FEAT_PERM) continue;
@@ -975,6 +978,7 @@ static bool borg_happy_grid_bold(int y, int x)
     if (ag->feat == FEAT_LESS) return (true);
     if (ag->feat == FEAT_MORE) return (true);
     if (ag->glyph) return (true);
+    if (ag->feat == FEAT_LAVA && !borg_skill[BI_IFIRE]) return (false);
 
     /* Hack -- weak/dark is very unhappy */
     if (borg_skill[BI_ISWEAK] || borg_skill[BI_CURLITE] == 0) return (false);
@@ -14804,6 +14808,9 @@ bool borg_check_rest(int y, int x)
     if (borg_no_rest_prep >= 1 && !borg_munchkin_mode && borg_skill[BI_CURSP] > borg_skill[BI_MAXSP] / 2 &&
         borg_skill[BI_CDEPTH] < 85) return (false);
 
+    /* Don't rest on lava unless we are immune to fire */
+    if (borg_grids[y][x].feat == FEAT_LAVA && !borg_skill[BI_IFIRE]) return (false);
+
     /* Dont worry about fears if in a vault */
     if (!borg_in_vault)
     {
@@ -15779,9 +15786,8 @@ static bool borg_play_step(int y2, int x2)
         return (true);
     }
 
-
-
     /* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
+    /* HACK depends on FEAT order, kinda evil. */
     if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_GRANITE)
     {
         /* No digging when hungry */
@@ -17754,16 +17760,10 @@ bool borg_flow_recover(bool viewable, int dist)
             /* Is this grid a happy grid? */
             if (!borg_happy_grid_bold(y, x)) continue;
 
-            /* Cant rest on a wall grid. */
-            if (borg_grids[y][x].feat == FEAT_PERM ||
-                borg_grids[y][x].feat == FEAT_CLOSED ||
-                borg_grids[y][x].feat == FEAT_RUBBLE ||
-                borg_grids[y][x].feat == FEAT_QUARTZ ||
-                borg_grids[y][x].feat == FEAT_QUARTZ_K ||
-                borg_grids[y][x].feat == FEAT_MAGMA ||
-                borg_grids[y][x].feat == FEAT_MAGMA_K ||
-                borg_grids[y][x].feat == FEAT_PASS_RUBBLE ||
-                borg_grids[y][x].feat == FEAT_GRANITE) continue;
+            /* Can't rest on a wall grid. */
+            /* HACK depends on FEAT order, kinda evil */
+            if (borg_grids[y][x].feat >= FEAT_SECRET && borg_grids[y][x].feat != FEAT_PASS_RUBBLE)
+                continue;
 
             /* Can I rest on that one? */
             if (!borg_check_rest(y, x)) continue;
