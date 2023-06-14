@@ -9839,7 +9839,7 @@ const char* borg_prepared(int depth)
         borg_ready_morgoth = -1;
 
         if (borg_numb_live_unique < 1 ||
-            borg_living_unique_index == 547) /* Morgoth */
+            borg_living_unique_index == borg_morgoth_id) /* Morgoth */
         {
             if (depth >= 99) borg_ready_morgoth = 1;
             return ((char*)NULL);

@@ -327,6 +327,7 @@ uint32_t borg_rand_local;       /* Save personal setting */
 
 int16_t borg_t = 0L;          /* Current "time" */
 int16_t borg_t_morgoth = 0L;  /* Last time I saw Morgoth */
+unsigned int borg_morgoth_id = 0;
 int16_t need_see_inviso = 0;    /* cast this when required */
 int16_t borg_see_inv = 0;
 bool    need_shift_panel = false;    /* to spot offscreens */

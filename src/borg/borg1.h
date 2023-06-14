@@ -1073,6 +1073,7 @@ extern uint32_t borg_rand_local;        /* Save personal setting */
 
 extern int16_t  borg_t;        /* Current "time" */
 extern int16_t  borg_t_morgoth;
+extern unsigned int borg_morgoth_id;
 extern int16_t  need_see_inviso;        /* To tell me to cast it */
 extern int16_t  borg_see_inv;
 extern bool     need_shift_panel;        /* to spot offscreeners */

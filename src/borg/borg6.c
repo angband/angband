@@ -13350,7 +13350,7 @@ static int borg_defend_aux_rest(void)
 
         /* If I can see Morgoth or a guy with Ranged Attacks, don't rest. */
         if (borg_los(c_y, c_x, kill->y, kill->x) &&
-            (kill->r_idx == 547 || kill->ranged_attack) &&
+            (kill->r_idx == borg_morgoth_id || kill->ranged_attack) &&
             avoidance <= borg_skill[BI_CURHP])
         {
             borg_note("# Not resting. I can see Morgoth or a shooter.");
@@ -13677,7 +13677,7 @@ static int borg_defend_aux_light_morgoth(void)
         if (!kill->r_idx) continue;
 
         /* Skip non- Morgoth monsters */
-        if (kill->r_idx != 547) continue;
+        if (kill->r_idx != borg_morgoth_id) continue;
 
         /* Require current knowledge */
         if (kill->when < borg_t - 2) continue;

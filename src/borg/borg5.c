@@ -1132,7 +1132,7 @@ static void borg_update_kill_new(int i)
     kill->ranged_attack = num;
 
     /* We want to remember Morgy's panel */
-    if (kill->r_idx == 547)
+    if (kill->r_idx == borg_morgoth_id)
     {
         j = ((kill->y - borg_panel_hgt() / 2) / borg_panel_hgt()) * borg_panel_hgt();
         if (j < 0) j = 0;
@@ -1647,6 +1647,8 @@ static int borg_new_kill(int r_idx, int y, int x)
     borg_kill* kill;
     borg_grid* ag;
     struct monster_race* r_ptr;
+    struct monster* m_ptr;
+
 
     /* Look for a "dead" monster */
     for (i = 1; (n < 0) && (i < borg_kills_nxt); i++)
@@ -1675,6 +1677,10 @@ static int borg_new_kill(int r_idx, int y, int x)
         borg_delete_kill(n);
     }
 
+    /* it might be that it can't be found */
+    m_ptr = square_monster(cave, loc(x, y));
+    if (!m_ptr)
+        return -1;
 
     /* Count the monsters */
     borg_kills_cnt++;
@@ -1692,7 +1698,7 @@ static int borg_new_kill(int r_idx, int y, int x)
     kill->oy = kill->y = y;
 
     /* Games Index of the monster */
-    kill->m_idx = square_monster(cave, loc(x, y))->midx;
+    kill->m_idx = m_ptr->midx;
 
     /* Update the grids */
     borg_grids[kill->y][kill->x].kill = n;
@@ -1701,7 +1707,7 @@ static int borg_new_kill(int r_idx, int y, int x)
     kill->when = borg_t;
 
     /* Mark the Morgoth time stamp if needed */
-    if (kill->r_idx == 547) borg_t_morgoth = borg_t;
+    if (kill->r_idx == borg_morgoth_id) borg_t_morgoth = borg_t;
 
     /* Update the monster */
     borg_update_kill_new(n);
@@ -1809,7 +1815,7 @@ static bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
     kill->when = borg_t;
 
     /* Mark the Morgoth time stamp if needed */
-    if (kill->r_idx == 547) borg_t_morgoth = borg_t;
+    if (kill->r_idx == borg_morgoth_id) borg_t_morgoth = borg_t;
 
     /* Done */
     return (true);
@@ -1946,7 +1952,7 @@ static bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool fl
         kill->when = borg_t;
 
         /* Mark the Morgoth time stamp if needed */
-        if (kill->r_idx == 547) borg_t_morgoth = borg_t;
+        if (kill->r_idx == borg_morgoth_id) borg_t_morgoth = borg_t;
 
         /* Monster flickered */
         if (flicker)
@@ -2630,6 +2636,8 @@ static int borg_locate_kill(char* who, int y, int x, int r)
 
         /* Make a new monster */
         b_i = borg_new_kill(r_idx, y, x);
+        if (b_i < 0)
+            return b_i;
 
         /* Get the monster */
         kill = &borg_kills[b_i];
@@ -2638,7 +2646,7 @@ static int borg_locate_kill(char* who, int y, int x, int r)
         kill->when = borg_t;
 
         /* Mark the Morgoth time stamp if needed */
-        if (kill->r_idx == 547) borg_t_morgoth = borg_t;
+        if (kill->r_idx == borg_morgoth_id) borg_t_morgoth = borg_t;
 
         /* Known identity */
         if (!r) kill->known = true;
@@ -4309,7 +4317,7 @@ void borg_update(void)
          */
         morgoth_on_level = false;
         if ((borg_skill[BI_CDEPTH] >= 100 && !borg_skill[BI_KING]) ||
-            (unique_on_level == 547))
+            (unique_on_level == borg_morgoth_id))
         {
             /* We assume Morgoth is on this level */
             morgoth_on_level = true;
@@ -4435,7 +4443,7 @@ void borg_update(void)
          */
         morgoth_on_level = false;
         if ((borg_skill[BI_CDEPTH] >= 100 && !borg_skill[BI_KING]) ||
-            (unique_on_level == 547))
+            (unique_on_level == borg_morgoth_id))
         {
             /* We assume Morgoth is on this level */
             morgoth_on_level = true;
@@ -4451,10 +4459,10 @@ void borg_update(void)
         if (morgoth_on_level && borg_t - borg_began >= 500)
         {
             /* Morgoth is a no show */
-            if (unique_on_level != 547)	morgoth_on_level = false;
+            if (unique_on_level != borg_morgoth_id)	morgoth_on_level = false;
 
             /* Morgoth has not been seen in a long time */
-            if (unique_on_level == 547 && (borg_t - borg_t_morgoth > 500))
+            if (unique_on_level == borg_morgoth_id && (borg_t - borg_t_morgoth > 500))
             {
                 borg_note(format("# Morgoth has not been seen in %d turns.  Going to hunt him.", borg_t - borg_t_morgoth));
                 morgoth_on_level = false;
@@ -5320,6 +5328,10 @@ void borg_init_5(void)
 
         text[size] = borg_massage_special_chars(r_ptr->name, NULL);
         what[size] = i;
+
+        if (streq(r_ptr->name, "Morgoth"))
+            borg_morgoth_id = r_ptr->ridx;
+
         size++;
     }
 
