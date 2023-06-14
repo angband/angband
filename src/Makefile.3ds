@@ -204,7 +204,7 @@ ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):
 	@mkdir -p $@
 $(DEPSDIR)/borg:
-     @mkdir -p $@/borg
+	@mkdir -p $@/borg
 endif
 
 #---------------------------------------------------------------------------------
