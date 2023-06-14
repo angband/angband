@@ -39,7 +39,7 @@ include $(TOPDIR)/Makefile.src
 #---------------------------------------------------------------------------------
 TARGET		:=	$(PROGNAME)
 BUILD		:=	3ds-build
-SOURCES		:=	nds borg
+SOURCES		:=	nds
 DATA		:=
 INCLUDES	:=
 GRAPHICS	:=
