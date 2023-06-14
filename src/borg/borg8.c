@@ -664,7 +664,7 @@ static void borg_think_home_sell_aux3(void)
         if (!borg_items[i].iqty) continue;
 
         /* Dont sell back our Best Fit item (avoid loops) */
-        if (borg_best_fit_item == borg_items[i].art_idx) continue;
+        if (borg_best_fit_item && borg_best_fit_item == borg_items[i].art_idx) continue;
 
 
         /* 1) eliminate garbage items (items that add nothing to an */
@@ -751,7 +751,7 @@ static bool borg_think_home_sell_aux(bool save_best)
         if (i == weapon_swap && weapon_swap != 0) continue;
         if (i == armour_swap && armour_swap != 0) continue;
         /* dont consider the item i just found to be my best fit (4-6-07) */
-        if (borg_best_fit_item == borg_items[i].art_idx) continue;
+        if (borg_best_fit_item && borg_best_fit_item == borg_items[i].art_idx) continue;
 
         memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
     }
