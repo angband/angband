@@ -751,7 +751,10 @@ int context_menu_object(struct object *obj)
 		ADD_LABEL("Pick up", CMD_PICKUP, valid);
 	}
 
-	ADD_LABEL("Throw", CMD_THROW, MN_ROW_VALID);
+	if (obj_can_throw(obj)) {
+		ADD_LABEL("Throw", CMD_THROW, MN_ROW_VALID);
+	}
+
 	ADD_LABEL("Inscribe", CMD_INSCRIBE, MN_ROW_VALID);
 
 	if (obj_has_inscrip(obj))

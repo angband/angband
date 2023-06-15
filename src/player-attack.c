@@ -1298,16 +1298,6 @@ static struct attack_result make_ranged_throw(struct player *p,
 
 
 /**
- * Help do_cmd_throw():  restrict which equipment can be thrown.
- */
-static bool restrict_for_throwing(const struct object *obj)
-{
-	return !object_is_equipped(player->body, obj) ||
-			(tval_is_melee_weapon(obj) && obj_can_takeoff(obj));
-}
-
-
-/**
  * Fire an object from the quiver, pack or floor at a target.
  */
 void do_cmd_fire(struct command *cmd) {
@@ -1389,7 +1379,7 @@ void do_cmd_throw(struct command *cmd) {
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
-			/* Filter */ restrict_for_throwing,
+			/* Filter */ obj_can_throw,
 			/* Choice */ USE_EQUIP | USE_QUIVER | USE_INVEN | USE_FLOOR | SHOW_THROWING)
 		!= CMD_OK)
 		return;
