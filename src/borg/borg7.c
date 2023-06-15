@@ -1617,6 +1617,7 @@ bool borg_crush_junk(void)
 
     /* don't crush stuff unless we are on a floor */
     if (borg_grids[c_y][c_x].feat != FEAT_FLOOR) return (false);
+    if (borg_grids[c_y][c_x].trap) return (false);
 
     /* **HACK** don't drop on top of a previously ignored item */
     /* this is because if you drop something then ignore it then drop another */
@@ -4276,9 +4277,14 @@ bool borg_play_magic(bool bored)
 				as->spell_enum == BLESS) continue;
 		}
 
-        /* don't test lighting strike.  It requires aiming at something */
-        /* it can just be used when the borg is ready to use it. */
-        if (as->spell_enum == LIGHTNING_STRIKE) continue;
+        /* There are some spells not worth testing */
+        /* they can just be used when the borg is ready to use it. */
+        switch (as->spell_enum)
+        {
+        case LIGHTNING_STRIKE:
+        case TAP_UNLIFE:
+        continue;
+        }
 
 		/* Note */
 		borg_note("# Testing untried spell/prayer");

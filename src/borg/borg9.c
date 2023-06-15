@@ -379,13 +379,19 @@ static bool borg_think(void)
         /* Scan the pack */
         for (i = 0; i < z_info->pack_size; i++)
         {
+            int book_num;
             borg_item* item = &borg_items[i];
 
-            /* Skip non-books */
-            if (!obj_kind_can_browse(&k_info[item->kind])) continue;
-
-            /* Note book locations */
-            borg_book[item->sval - 1] = i;
+            for (book_num = 0; book_num < player->class->magic.num_books; book_num++)
+            {
+                struct class_book book = player->class->magic.books[book_num];
+                if (item->tval == book.tval && item->sval == book.sval)
+                {
+                    /* Note book locations */
+                    borg_book[book_num] = i;
+                    break;
+                }
+            }
         }
     }
 

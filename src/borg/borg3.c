@@ -2271,8 +2271,10 @@ bool borg_spell_legal(const enum borg_spells spell)
     int spell_num = borg_get_spell_number(spell);
     if (spell_num < 0) return false;
 
+    borg_magic* as = &borg_magics[spell_num];
+
     /* The book must be possessed */
-    if (amt_book[borg_magics[spell_num].book] <= 0) return (false);
+    if (borg_book[as->book] < 0) return (false);
 
     /* The spell must be "known" */
     if (borg_magics[spell_num].status < BORG_MAGIC_TEST) return (false);
