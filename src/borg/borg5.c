@@ -3490,7 +3490,7 @@ static void borg_update_map(void)
             }
 
             /* Now do non-feature stuff */
-            if (g.first_kind || g.m_idx)
+            if ((g.first_kind || g.m_idx) && !borg_skill[BI_ISIMAGE])
             {
                 /* Monsters/Objects */
                 borg_wank* wank;
