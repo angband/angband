@@ -4359,7 +4359,7 @@ void borg_update(void)
         borg_unique_depth = 127;
 
         /*Extract dead uniques and set some Prep code numbers */
-        for (u_i = 1; u_i < z_info->r_max - 1; u_i++)
+        for (u_i = 1; u_i < (unsigned int)(z_info->r_max - 1); u_i++)
         {
             struct monster_race* r_ptr = &r_info[u_i];
 
