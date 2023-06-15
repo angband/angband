@@ -4431,7 +4431,10 @@ bool borg_wear_recharge(void)
 		slot = borg_wield_slot(item);
 
 		/* skip non-ego lights, No need to rest to recharge a torch, which uses fuels turns in o_ptr->timeout */
-		if (item->tval == TV_LIGHT && !of_has(item->flags, OF_NO_FUEL)) continue;
+		if (item->tval == TV_LIGHT && 
+            (item->sval == sv_light_torch || 
+             item->sval == sv_light_lantern)) 
+            continue;
 
         /* note this one */
         b_i = i;
