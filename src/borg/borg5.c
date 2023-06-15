@@ -3606,6 +3606,7 @@ static void borg_update_map(void)
 void borg_update(void)
 {
     int i, ii, k, x, y, dx, dy;
+    unsigned int u_i;
 
     int hit_dist;
 
@@ -4358,9 +4359,9 @@ void borg_update(void)
         borg_unique_depth = 127;
 
         /*Extract dead uniques and set some Prep code numbers */
-        for (i = 1; i < z_info->r_max - 1; i++)
+        for (u_i = 1; u_i < z_info->r_max - 1; u_i++)
         {
-            struct monster_race* r_ptr = &r_info[i];
+            struct monster_race* r_ptr = &r_info[u_i];
 
             /* Skip non-monsters */
             if (!r_ptr->name) continue;
@@ -4369,10 +4370,10 @@ void borg_update(void)
             if (!(rf_has(r_ptr->flags, RF_UNIQUE))) continue;
 
             /* Mega-Hack -- Access "dead unique" list */
-            if (r_ptr->max_num == 0) borg_race_death[i] = 1;
+            if (r_ptr->max_num == 0) borg_race_death[u_i] = 1;
 
             /* If any have been killed it is not a live unique */
-            if (borg_race_death[i] != 0) continue;
+            if (borg_race_death[u_i] != 0) continue;
 
             /* skip if deeper than max dlevel */
             if (r_ptr->level > borg_skill[BI_MAXDEPTH]) continue;
@@ -4386,8 +4387,8 @@ void borg_update(void)
             /* Its important to know the depth of the most shallow guy */
             if (r_ptr->level < borg_unique_depth) borg_unique_depth = r_ptr->level;
 
-            if (i < borg_living_unique_index ||
-                borg_living_unique_index == 0) borg_living_unique_index = i;
+            if (u_i < borg_living_unique_index || borg_living_unique_index == 0) 
+                borg_living_unique_index = u_i;
         }
 
 

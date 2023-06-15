@@ -1486,7 +1486,7 @@ extern int16_t  num_boots;
  * Deal with knowing which uniques are alive
  */
 extern int      borg_numb_live_unique;
-extern int      borg_living_unique_index;
+extern unsigned int borg_living_unique_index;
 extern int      borg_unique_depth;
 
 /*

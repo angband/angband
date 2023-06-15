@@ -298,7 +298,7 @@ int     bought_item_store[10];
 int     bought_item_num = -1;
 int     bought_item_nxt = 0;
 int     borg_numb_live_unique;
-int     borg_living_unique_index;
+unsigned int borg_living_unique_index;
 int     borg_unique_depth;
 
 /*
