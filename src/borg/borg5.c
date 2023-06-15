@@ -81,7 +81,7 @@ static int16_t* borg_msg_use;
  */
 
 static int      borg_unique_size;        /* Number of uniques */
-static int16_t* borg_unique_what;      /* Indexes of uniques */
+static unsigned int * borg_unique_what;      /* Indexes of uniques */
 static const char** borg_unique_text;      /* Names of uniques */
 
 /*
@@ -632,7 +632,7 @@ static bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
  *
  * Hack -- try not to choose "unique" monsters, or we will flee a lot.
  */
-static int borg_guess_race(uint8_t a, wchar_t c, bool multi, int y, int x)
+static unsigned int borg_guess_race(uint8_t a, wchar_t c, bool multi, int y, int x)
 {
     /*  ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the monster.  but i am passing that up for
@@ -647,7 +647,7 @@ static int borg_guess_race(uint8_t a, wchar_t c, bool multi, int y, int x)
     m_ptr = square_monster(cave, loc(x, y));
 
     if (!m_ptr)
-        return -1;
+        return 0;
 
     /* Actual monsters */
     return (m_ptr->race->ridx);
@@ -770,7 +770,7 @@ static int borg_guess_race(uint8_t a, wchar_t c, bool multi, int y, int x)
  * as noted above is impossible), which is a hack, but may prevent
  * crashes, even if it does induce strange behavior.
  */
-static int borg_guess_race_name(char* who)
+static unsigned int borg_guess_race_name(char* who)
 {
     int k, m, n;
 
@@ -887,7 +887,7 @@ static int borg_guess_race_name(char* who)
     }
 
     /* Success */
-    if (b_i) return (b_i);
+    if (b_i) return ((unsigned int)b_i);
 
 
     /* No match found */
@@ -1642,7 +1642,7 @@ static void borg_follow_kill(int i)
 /*
  * Obtain a new "kill" index
  */
-static int borg_new_kill(int r_idx, int y, int x)
+static int borg_new_kill(unsigned int r_idx, int y, int x)
 {
     int i, n = -1;
 
@@ -1794,7 +1794,8 @@ static int borg_new_kill(int r_idx, int y, int x)
  */
 static bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
 {
-    int i, r_idx;
+    int i;
+    unsigned int r_idx;
 
     borg_kill* kill;
 
@@ -1802,7 +1803,7 @@ static bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
     r_idx = borg_guess_race(a, c, false, y, x);
 
     /* Oops */
-    if (!r_idx || r_idx < 0) return (false);
+    if (!r_idx) return (false);
 
     /* no new monsters if hallucinations */
     if (borg_skill[BI_ISIMAGE]) return (false);
@@ -1832,7 +1833,7 @@ static bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
 static bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
 {
     int i, z, ox, oy;
-    int r_idx;
+    unsigned int r_idx;
     borg_kill* kill;
     struct monster_race* r_ptr;
 
@@ -1893,7 +1894,7 @@ static bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool fl
                 r_idx = borg_guess_race(a, c, true, y, x);
 
                 /* Handle failure */
-                if (r_idx == z_info->r_max - 1) continue;
+                if (!r_idx) continue;
 
                 /* Note */
                 borg_note(format("# Flickering monster '%s' at (%d,%d)",
@@ -2507,7 +2508,8 @@ static int borg_fear_spell(int i)
  */
 static int borg_locate_kill(char* who, int y, int x, int r)
 {
-    int i, d, r_idx;
+    int i, d;
+    unsigned int r_idx;
 
     int b_i, b_d;
 
@@ -2855,19 +2857,16 @@ static int borg_locate_kill(char* who, int y, int x, int r)
  */
 static void borg_count_death(int i)
 {
-    int r_idx;
-
     borg_kill* kill = &borg_kills[i];
 
-    /* Access race */
-    r_idx = kill->r_idx;
+    if (kill->r_idx)
+    {
+        /* Hack -- count racial deaths */
+        if (borg_race_death[kill->r_idx] < SHRT_MAX) borg_race_death[kill->r_idx]++;
 
-    /* Hack -- count racial deaths */
-    if (borg_race_death[r_idx] < SHRT_MAX) borg_race_death[r_idx]++;
-
-    /* if it was a unique then remove the unique_on_level flag */
-    if (rf_has(r_info[kill->r_idx].flags, RF_UNIQUE)) unique_on_level = 0;
-
+        /* if it was a unique then remove the unique_on_level flag */
+        if (rf_has(r_info[kill->r_idx].flags, RF_UNIQUE)) unique_on_level = 0;
+    }
 }
 
 
@@ -5273,11 +5272,10 @@ void borg_clear_reactions(void)
  */
 void borg_init_5(void)
 {
-    int i;
+    unsigned int i, size; 
+    unsigned int r_max = z_info->r_max - 1;
 
-    int size;
-
-    int16_t what[1024];
+    unsigned int what[1024];
     char* text[1024];
 
 
@@ -5323,7 +5321,7 @@ void borg_init_5(void)
     size = 0;
 
     /* Collect "unique" monsters */
-    for (i = 1; i < z_info->r_max - 1; i++)
+    for (i = 1; i < r_max; i++)
     {
         struct monster_race* r_ptr = &r_info[i];
 
@@ -5353,7 +5351,7 @@ void borg_init_5(void)
 
     /* Allocate the arrays */
     borg_unique_text = mem_zalloc(borg_unique_size * sizeof(const char*));
-    borg_unique_what = mem_zalloc(borg_unique_size * sizeof(int16_t));
+    borg_unique_what = mem_zalloc(borg_unique_size * sizeof(unsigned int));
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_unique_text[i] = text[i];
@@ -5366,7 +5364,7 @@ void borg_init_5(void)
     size = 0;
 
     /* Collect "normal" monsters */
-    for (i = 1; i < z_info->r_max - 1; i++)
+    for (i = 1; i < r_max; i++)
     {
         struct monster_race* r_ptr = &r_info[i];
 

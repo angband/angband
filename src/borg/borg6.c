@@ -10967,13 +10967,13 @@ static int borg_defend_aux_speed(int p1)
     }
 
     /* if the unique is a rather nasty one. */
-    if (borg_fighting_unique &&
-        (unique_on_level == 76 ||
-            unique_on_level == 110 ||
-            unique_on_level == 111 ||
-            unique_on_level == 112 ||
-            unique_on_level == 133 ||
-            unique_on_level == 137))
+    if (borg_fighting_unique && 
+        (streq(r_info[unique_on_level].name, "Bullroarer the Hobbit") ||
+         streq(r_info[unique_on_level].name, "Mughash the Kobold Lord") ||
+         streq(r_info[unique_on_level].name, "Wormtongue, Agent of Saruman") ||
+         streq(r_info[unique_on_level].name, "Lagduf, the Snaga") ||
+         streq(r_info[unique_on_level].name, "Brodda, the Easterling") ||
+         streq(r_info[unique_on_level].name, "Orfax, Son of Boldor")))
     {
         p2 = p2 * 6 / 10;
     }
@@ -11153,11 +11153,8 @@ static int borg_defend_aux_resist_fecap(int p1)
      * benefit of the spell.
      */
     if (borg_fighting_unique &&
-        (unique_on_level == 539) /* Tarresque */
-        /* ||
-         * (unique_on_level == XX) ||
-         */
-        ) p2 = p2 * 8 / 10;
+        (streq(r_info[unique_on_level].name, "The Tarrasque"))) 
+        p2 = p2 * 8 / 10;
 
     /* Hack -
      * If borg is high enough level, he does not need to worry
@@ -11241,11 +11238,8 @@ static int borg_defend_aux_resist_f(int p1)
      * benefit of the spell.
      */
     if (borg_fighting_unique &&
-        (unique_on_level == 539) /* Tarresque */
-        /* ||
-         * (unique_on_level == XX) ||
-         */
-        ) p2 = p2 * 8 / 10;
+        (streq(r_info[unique_on_level].name, "The Tarrasque")))
+        p2 = p2 * 8 / 10;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -11328,11 +11322,8 @@ static int borg_defend_aux_resist_c(int p1)
      * benefit of the spell.
      */
     if (borg_fighting_unique &&
-        (unique_on_level == 539) /* Tarresque */
-        /* ||
-         * (unique_on_level == XX) ||
-         */
-        ) p2 = p2 * 8 / 10;
+        (streq(r_info[unique_on_level].name, "The Tarrasque")))
+        p2 = p2 * 8 / 10;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -13566,10 +13557,11 @@ static int borg_defend_aux_banishment_morgoth(void)
     {
         /* Monster */
         kill = &borg_kills[i];
-        r_ptr = &r_info[kill->r_idx];
 
         /* Skip dead monsters */
         if (!kill->r_idx) continue;
+
+        r_ptr = &r_info[kill->r_idx];
 
         /* Require current knowledge */
         if (kill->when < borg_t - 2) continue;

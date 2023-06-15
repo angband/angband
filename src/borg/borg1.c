@@ -334,7 +334,7 @@ bool    need_shift_panel = false;    /* to spot offscreens */
 int16_t when_shift_panel = 0L;
 int16_t time_this_panel = 0L;   /* Current "time" on current panel*/
 bool    vault_on_level;         /* Borg will search for a vault */
-int     unique_on_level;
+unsigned int unique_on_level;
 bool    scaryguy_on_level;     /* flee from certain guys */
 bool    morgoth_on_level;
 bool    borg_morgoth_position;
@@ -452,7 +452,7 @@ const char* shop_menu_items = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 
 uint8_t borg_nasties_num = 7;	/* Current size of the list */
 uint8_t borg_nasties_count[7];
-char    borg_nasties[7] = "ZAVULWD"; /* Order of Nastiness.  Hounds < Demons < Wyrms */
+char    borg_nasties[7] = {'Z','A','V','U','L','W','D'}; /* Order of Nastiness.  Hounds < Demons < Wyrms */
 uint8_t borg_nasties_limit[7] = { 20, 20, 10, 10, 10, 10, 10 };
 
 /*

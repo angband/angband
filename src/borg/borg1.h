@@ -556,7 +556,7 @@ typedef struct borg_kill borg_kill;
 
 struct borg_kill
 {
-    int16_t r_idx;      /* Race index */
+    unsigned int r_idx;      /* Race index */
 
     bool    known;      /* Verified race */
     bool    awake;      /* Probably awake */
@@ -1073,14 +1073,14 @@ extern uint32_t borg_rand_local;        /* Save personal setting */
 
 extern int16_t  borg_t;        /* Current "time" */
 extern int16_t  borg_t_morgoth;
-extern unsigned int borg_morgoth_id;
+extern unsigned int  borg_morgoth_id;
 extern int16_t  need_see_inviso;        /* To tell me to cast it */
 extern int16_t  borg_see_inv;
 extern bool     need_shift_panel;        /* to spot offscreeners */
 extern int16_t  when_shift_panel;
 extern int16_t  time_this_panel;        /* Current "time" for current panel*/
 extern bool     vault_on_level;     /* borg will search for a vault */
-extern int      unique_on_level;
+extern unsigned int unique_on_level;
 extern bool     scaryguy_on_level;
 extern bool     morgoth_on_level;
 extern bool     borg_morgoth_position;

@@ -6512,8 +6512,8 @@ static int borg_danger_aux1(int i, bool full_damage)
         pfe = 1;
     }
 
-
     /* Mega-Hack -- unknown monsters */
+    if (kill->r_idx == 0) return (1000);
     if (kill->r_idx >= z_info->r_max) return (1000);
 
     /* Analyze each physical attack */
@@ -6954,6 +6954,7 @@ static int borg_danger_aux2(int i, int y, int x, int d, bool average, bool full_
     }
 
     /* Mega-Hack -- unknown monsters */
+    if (kill->r_idx == 0) return (1000);
     if (kill->r_idx >= z_info->r_max) return (1000);
 
 
