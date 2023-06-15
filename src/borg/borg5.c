@@ -89,7 +89,7 @@ static const char** borg_unique_text;      /* Names of uniques */
  */
 
 static int      borg_normal_size;        /* Number of normals */
-static int16_t* borg_normal_what;      /* Indexes of normals */
+static unsigned int* borg_normal_what;      /* Indexes of normals */
 static const char** borg_normal_text;      /* Names of normals */
 
 
@@ -868,7 +868,7 @@ static unsigned int borg_guess_race_name(char* who)
         if (!streq(who, borg_normal_text[k])) break;
 
         /* Extract the monster */
-        i = borg_normal_what[k];
+        i = (int)borg_normal_what[k];
 
         /* Access the monster */
         r_ptr = &r_info[i];
@@ -5273,10 +5273,10 @@ void borg_clear_reactions(void)
  */
 void borg_init_5(void)
 {
-    unsigned int i, size; 
-    unsigned int r_max = z_info->r_max - 1;
+    int i, size;
+    uint16_t r_max = z_info->r_max - 1;
 
-    unsigned int what[1024];
+    int16_t what[1024];
     char* text[1024];
 
 
@@ -5356,7 +5356,7 @@ void borg_init_5(void)
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_unique_text[i] = text[i];
-    for (i = 0; i < size; i++) borg_unique_what[i] = what[i];
+    for (i = 0; i < size; i++) borg_unique_what[i] = (unsigned int)what[i];
 
 
     /*** Parse "normal" monster names ***/
@@ -5397,11 +5397,11 @@ void borg_init_5(void)
 
     /* Allocate the arrays */
     borg_normal_text = mem_zalloc(borg_normal_size * sizeof(const char*));
-    borg_normal_what = mem_zalloc(borg_normal_size * sizeof(int16_t));
+    borg_normal_what = mem_zalloc(borg_normal_size * sizeof(unsigned int));
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_normal_text[i] = text[i];
-    for (i = 0; i < size; i++) borg_normal_what[i] = what[i];
+    for (i = 0; i < size; i++) borg_normal_what[i] = (unsigned int)what[i];
 }
 
 
