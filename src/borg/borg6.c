@@ -15803,23 +15803,13 @@ static bool borg_play_step(int y2, int x2)
             return true;
         }
 
-        /* If we don't have a digger, don't bother digging certain walls
-         * (without sufficient character level) */
-        if (borg_items[weapon_swap].tval != TV_DIGGING &&
-            borg_items[INVEN_WIELD].tval != TV_DIGGING) {
-            int clev = 0;
-
-            if (ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K)
-                clev = 30;
-            if (ag->feat == FEAT_GRANITE ||
-                ag->feat == FEAT_SECRET)
-                clev = 40;
-
-            if (borg_skill[BI_CLEVEL] <= clev) {
-                /* Clear flow grids */
-                goal = 0;
-                return false;
-            }
+        /* If we don't have a digger, don't bother digging without sufficient dig ability */
+        /* AJG I made this match borg_flow_kill_direct because otherwise it causes stuckness */
+        if ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
+            (borg_skill[BI_DIG] < BORG_DIG + 20))
+        {
+            goal = 0;
+            return false;
         }
 
         /* Mega-Hack -- prevent infinite loops */
@@ -15899,6 +15889,7 @@ static bool borg_play_step(int y2, int x2)
 bool borg_twitchy(void)
 {
     int dir = 5;
+    int count;
 
     /* This is a bad thing */
     borg_note("# Twitchy!");
@@ -15920,14 +15911,26 @@ bool borg_twitchy(void)
     }
 
     /* Pick a random direction */
-    while (dir == 5 || dir == 0)
+    count = 100;
+    while (true)
     {
         dir = randint0(9);
-    }
+        if (dir == 5 || dir == 0)
+            continue;
+        if (!(count--))
+            break;
+        /* Hack -- set goal */
+        g_x = c_x + ddx[dir];
+        g_y = c_y + ddy[dir];
 
-    /* Hack -- set goal */
-    g_x = c_x + ddx[dir];
-    g_y = c_y + ddy[dir];
+        if (!square_in_bounds_fully(cave, loc(g_x, g_y))) 
+            continue;
+
+        if (borg_grids[g_y][g_x].feat >= FEAT_SECRET &&
+            borg_grids[g_y][g_x].feat <= FEAT_PERM)
+            continue;
+        break;
+    }
 
     /* Normally move */
     /* Send direction */
@@ -18887,8 +18890,8 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
 
     /* Do not dig when weak. It takes too long */
-    if (!twitchy && ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-        (borg_skill[BI_DIG] < BORG_DIG + 20))) return (false);
+    if ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
+        (borg_skill[BI_DIG] < BORG_DIG + 20)) return (false);
 
     /* Not if Weak from hunger or no food */
     if (!twitchy && (borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] == 0)) return (false);
