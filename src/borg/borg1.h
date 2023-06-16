@@ -67,9 +67,11 @@
 
 
 /* s_val's now dynamically loaded */
+extern int sv_food_apple;
 extern int sv_food_ration;
 extern int sv_food_slime_mold;
 extern int sv_food_draught;
+extern int sv_food_pint;
 extern int sv_food_sip;
 extern int sv_food_waybread;
 extern int sv_food_honey_cake;

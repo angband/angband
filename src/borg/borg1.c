@@ -2576,9 +2576,11 @@ void borg_sort_swap_hook(void* u, void* v, int a, int b)
     what[b] = whattmp;
 }
 
+int sv_food_apple;
 int sv_food_ration;
 int sv_food_slime_mold;
 int sv_food_draught;
+int sv_food_pint;
 int sv_food_sip;
 int sv_food_waybread;
 int sv_food_honey_cake;
@@ -2806,9 +2808,11 @@ static int borg_lookup_sval_fail(int tval, const char* name)
 static void borg_init_svs_and_kvs(void)
 {
     int tval = tval_find_idx("food");
+    sv_food_apple = borg_lookup_sval_fail(tval, "Apple");
     sv_food_ration = borg_lookup_sval_fail(tval, "Ration of Food");
     sv_food_slime_mold = borg_lookup_sval_fail(tval, "Slime Mold");
     sv_food_draught = borg_lookup_sval_fail(tval, "Draught of the Ents");
+    sv_food_pint = borg_lookup_sval_fail(tval, "Pint of Fine Wine");
     sv_food_sip = borg_lookup_sval_fail(tval, "Sip of Miruvor");
     sv_food_waybread = borg_lookup_sval_fail(tval, "Piece of Elvish Waybread");
     sv_food_honey_cake = borg_lookup_sval_fail(tval, "Honey-cake");

@@ -4284,6 +4284,8 @@ bool borg_play_magic(bool bored)
         case LIGHTNING_STRIKE:
         case TAP_UNLIFE:
         continue;
+        default:
+        break;
         }
 
 		/* Note */

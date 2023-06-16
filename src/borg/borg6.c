@@ -12111,7 +12111,7 @@ static int borg_defend_aux_create_door(int p1)
             ag = &borg_grids[y][x];
 
             /* track spaces already protected */
-            if ((ag->trap == TRF_GLYPH) || ag->kill ||
+            if ((ag->glyph) || ag->kill ||
                 ((ag->feat == FEAT_GRANITE) || (ag->feat == FEAT_PERM) || (ag->feat == FEAT_CLOSED)))
             {
                 door_bad++;

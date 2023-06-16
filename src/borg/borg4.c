@@ -1669,27 +1669,48 @@ static void borg_notice_aux2(void)
         /* fall through */
         case TV_FOOD:
         /* Analyze */
-
-        /* unknown types */
-        if (!item->kind)
-            break;
-
-        /* check for food that won't hurt us and gives nutrition */
-        if (borg_obj_has_effect(item->kind, EF_NOURISH, 0) ||
-            borg_obj_has_effect(item->kind, EF_NOURISH, 2) ||
-            borg_obj_has_effect(item->kind, EF_NOURISH, 3))
         {
+            /* unknown types */
+            if (!item->kind)
+                break;
+
+            /* check for food that hurts us */
             if (borg_obj_has_effect(item->kind, EF_CRUNCH, -1) ||
                 borg_obj_has_effect(item->kind, EF_TIMED_INC, TMD_CONFUSED))
                 break;
-            amt_food_hical += item->iqty;
+
+            /* check for food that gives nutrition */
+            if (item->tval == TV_MUSHROOM)
+            {
+                /* mushrooms that increase nutrition are low effect */
+                if (borg_obj_has_effect(item->kind, EF_NOURISH, 0))
+                    amt_food_lowcal += item->iqty;
+            }
+            else /* TV_FOOD */
+            {
+                if (item->sval == sv_food_apple ||
+                    item->sval == sv_food_handful ||
+                    item->sval == sv_food_slime_mold ||
+                    item->sval == sv_food_pint ||
+                    item->sval == sv_food_sip)
+                {
+                    amt_food_lowcal += item->iqty;
+                } 
+                else if (item->sval == sv_food_ration ||
+                    item->sval == sv_food_slice ||
+                    item->sval == sv_food_honey_cake ||
+                    item->sval == sv_food_waybread ||
+                    item->sval == sv_food_draught )
+                    amt_food_hical += item->iqty;
+            }
+
+            /* check for food that does stuff */
             if (borg_obj_has_effect(item->kind, EF_CURE, TMD_POISONED))
                 borg_skill[BI_ACUREPOIS] += item->iqty;
             if (borg_obj_has_effect(item->kind, EF_CURE, TMD_CONFUSED))
                 amt_cure_confusion += item->iqty;
             if (borg_obj_has_effect(item->kind, EF_CURE, TMD_BLIND))
                 amt_cure_blind += item->iqty;
-
         }
         break;
 

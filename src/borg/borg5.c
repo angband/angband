@@ -3283,7 +3283,7 @@ static void borg_update_map(void)
                 track_shop_y[i] = y;
 
             }
-            else if (square_isvisibletrap(cave, l) && !square_isdisabledtrap(cave, l))
+            else if (square_isdisarmabletrap(cave, l))
             {
                 /* Minor cheat for the borg.  If the borg is running
                 * in the graphics mode (not the AdamBolt Tiles) he will
