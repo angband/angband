@@ -4283,6 +4283,10 @@ bool borg_play_magic(bool bored)
         {
         case LIGHTNING_STRIKE:
         case TAP_UNLIFE:
+        case REMOVE_CURSE:
+        case TREMOR:
+        case WORD_OF_DESTRUCTION:
+        case GRONDS_BLOW:
         continue;
         default:
         break;
