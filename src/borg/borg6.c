@@ -15931,6 +15931,35 @@ bool borg_twitchy(void)
             continue;
         break;
     }
+    if (!count)
+    {
+        bool all_walls = true;
+        for (dir = 1; dir < 10; dir++)
+        {
+            if (dir == 5)
+                continue;
+
+            if (!square_in_bounds_fully(cave, loc(g_x, g_y)))
+                continue;
+
+            if (borg_grids[g_y][g_x].feat >= FEAT_SECRET &&
+                borg_grids[g_y][g_x].feat <= FEAT_PERM)
+                continue;
+            all_walls = false;
+            break;
+        }
+        if (all_walls)
+        {
+            /* Rest until done */
+            borg_keypress('R');
+            borg_keypress('1');
+            borg_keypress('0');
+            borg_keypress('0');
+            borg_keypress(KC_ENTER);
+            /* We did something */
+            return (true);
+        }
+    }
 
     /* Normally move */
     /* Send direction */

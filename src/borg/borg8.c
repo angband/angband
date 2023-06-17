@@ -4790,8 +4790,7 @@ bool borg_think_dungeon(void)
     /* Remove stuff that is useless or detrimental */
     if (borg_remove_stuff()) return (true);
     if (borg_dump_quiver()) return (true);
-    if (borg_stack_quiver()) return (true);
-
+ 
     /* Check the light */
     if (borg_check_LIGHT()) return (true);
 

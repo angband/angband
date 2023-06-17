@@ -788,6 +788,13 @@ extern int*     borg_skill;
 extern int      size_depth;
 extern int      size_obj;
 
+enum
+{
+    BORG_INVEN = 1,
+    BORG_EQUIP = 2,
+    BORG_QUILL = 4
+} borg_item_pos;
+
 /* NOTE: This must exactly match the prefix_pref enums in BORG1.c */
 enum
 {
@@ -936,6 +943,7 @@ enum
     BI_AMISSILES,
     BI_QUIVER_SLOTS,
     BI_FIRST_CURSED,
+    BI_WHERE_CURSED,
 
     BI_CRSTELE,
     BI_CRSPOIS,

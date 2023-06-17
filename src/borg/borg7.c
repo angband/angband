@@ -881,33 +881,33 @@ static bool borg_enchant_to_h(void)
     }
     if (weapon_swap > 1)
     {
-    for (i=weapon_swap; i <= weapon_swap; i++)
-    {
-        borg_item *item = &borg_items[weapon_swap];
-
-        /* Obtain the bonus */
-        s_a = item->to_h;
-
-		/* Skip my swap digger */
-		if (item->tval == TV_DIGGING) continue;
-
-		/* Skip "boring" items */
-        if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1 )
+        for (i = weapon_swap; i <= weapon_swap; i++)
         {
-            if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
-        }
-        else
-        {
-            if (s_a >= 8) continue;
-        }
+            borg_item* item = &borg_items[weapon_swap];
 
-        /* Find the least enchanted item */
-        if ((b_i >= 0) && (b_a < s_a)) continue;
+            /* Obtain the bonus */
+            s_a = item->to_h;
 
-        /* Save the info */
-        b_i = weapon_swap; b_a = s_a;
-    }
+            /* Skip my swap digger */
+            if (item->tval == TV_DIGGING) continue;
+
+            /* Skip "boring" items */
+            if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
+                amt_enchant_weapon >= 1)
+            {
+                if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
+            }
+            else
+            {
+                if (s_a >= 8) continue;
+            }
+
+            /* Find the least enchanted item */
+            if ((b_i >= 0) && (b_a < s_a)) continue;
+
+            /* Save the info */
+            b_i = weapon_swap; b_a = s_a;
+        }
     }
     /* Nothing, check ammo */
     if (b_i < 0)
@@ -1298,10 +1298,22 @@ static bool borg_decurse_any(void)
         {
             /* pick the item */
             if (borg_skill[BI_FIRST_CURSED] < INVEN_WIELD)
+            {
                 borg_keypress(all_letters_nohjkl[borg_skill[BI_FIRST_CURSED] - 1]);
-            else 
-                borg_keypress(all_letters_nohjkl[borg_skill[BI_FIRST_CURSED] - INVEN_WIELD - 1]);
+            }
+            else if (borg_skill[BI_FIRST_CURSED] < QUIVER_START)
+            {
+                if (borg_skill[BI_WHERE_CURSED] & BORG_INVEN)
+                    borg_keypress('/');
 
+                borg_keypress(all_letters_nohjkl[borg_skill[BI_FIRST_CURSED] - INVEN_WIELD - 1]);
+            }
+            else
+            {
+                if (borg_skill[BI_WHERE_CURSED] & 1 || borg_skill[BI_WHERE_CURSED] & BORG_EQUIP)
+                    borg_keypress('|');
+                borg_keypress('0' + (borg_skill[BI_FIRST_CURSED] - QUIVER_START));
+            }
             /* pick first curse */
             borg_keypress(KC_ENTER);
 
@@ -3117,85 +3129,6 @@ bool borg_backup_swap(int p)
 
     /* Nope */
     return (false);
-}
-/*
- * Examine the quiver and unwield any quiver slots that ought to stack
- *
- * Borg will scan the quiver slots for items which match exactly to another
- * slot.  Then unwield that slot.  On his next round, he will enter borg_wear()
- * and wield that stack of missiles, they should then stack into an exisiting
- * quiver slot.
- */
-bool borg_stack_quiver(void)
-{
-	int i;
-	int p;
-
-    borg_item *item;
-	borg_item *slot;
-
-    /* hack to prevent the swap till you drop loop */
-    if (borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK]) return (false);
-
-    /* Forbid if been sitting on level forever */
-    /*    Just come back and work through the loop later */
-    if (borg_t - borg_began > 2000) return (false);
-    if (time_this_panel > 150) return (false);
-
-	/* Not if full, we need a free inventory slot */
-	if (borg_items[z_info->pack_size].iqty) return (false);
-
-    /* Scan equip */
-    for (i = QUIVER_END-1; i >= QUIVER_START; i--)
-    {
-        item = &borg_items[i];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-		/* Skip the non_ID ones */
-		if (item->ident == false) continue;
-
-		/* compare this slot to the other known slots. */
-		for (p = QUIVER_END-1; p >= QUIVER_START; p--)
-		{
-			slot = &borg_items[p];
-
-			/* Skip empty items */
-			if (!slot->iqty) continue;
-
-			/* Skip the non_ID ones */
-			if (item->ident == false) continue;
-
-			/* Dont compare this slot to itself */
-			if (p == i) continue;
-
-			/* Compare the slots */
-			if (item->ego_idx == slot->ego_idx &&
-				item->to_d == slot->to_d &&
-				item->to_h == slot->to_h &&
-				item->dd == slot->dd &&
-				item->ds == slot->ds &&
-				(item->iqty + slot->iqty <= (z_info->quiver_slot_size -1)))
-            {
-				/* These are essentially the same */
-				borg_note(format("# Unwielding %s.  Combining quiver slots %c & %c.",
-					item->desc, i+73, p+73));
-
-				/* Wear it */
-				borg_keypress('t');
-				borg_keypress(i + 73);
-
-				/* Did something */
-				time_this_panel ++;
-				return (true);
-			}
-		}
-	}
-
-    /* Nope */
-    return (false);
-
 }
 
 /*

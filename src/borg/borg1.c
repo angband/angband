@@ -188,6 +188,7 @@ const char* prefix_pref[] =
     "_AMISSILES",  /* only ones for your current bow count */
     "_QUIVER_SLOTS", /* number of inven slots the quivered items take */
     "_FIRST_CURSED", /* first cursed item */
+    "_WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
 
     /* curses */
     "_CRSTELE",

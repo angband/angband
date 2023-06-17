@@ -685,6 +685,14 @@ static void borg_notice_aux_ammo(int slot)
     /* Count plain missiles that fit your bow */
     if (!item->ego_idx) borg_skill[BI_AMISSILES] += item->iqty;
 
+    /* track first cursed item */
+    if (item->uncursable)
+    {
+        borg_skill[BI_WHERE_CURSED] &= BORG_QUILL;
+        if (!borg_skill[BI_FIRST_CURSED])
+            borg_skill[BI_FIRST_CURSED] = slot + 1;
+    }
+
     /* Only enchant ammo if we have a good shooter,
      * otherwise, store the enchants in the home.
      */
@@ -940,7 +948,10 @@ static void borg_notice_aux1(void)
 
         /* track first cursed item */
         if (!borg_skill[BI_FIRST_CURSED] && item->uncursable)
+        {
             borg_skill[BI_FIRST_CURSED] = i + 1;
+            borg_skill[BI_WHERE_CURSED] &= BORG_INVEN;
+        }
 
         /* Affect stats */
         my_stat_add[STAT_STR] += item->modifiers[OBJ_MOD_STR] * player->obj_k->modifiers[OBJ_MOD_STR];
@@ -1624,8 +1635,12 @@ static void borg_notice_aux2(void)
         borg_has[item->kind] += item->iqty;
 
         /* track first cursed item */
-        if (!borg_skill[BI_FIRST_CURSED] && item->uncursable)
-            borg_skill[BI_FIRST_CURSED] = i + 1;
+        if (item->uncursable)
+        {
+            borg_skill[BI_WHERE_CURSED] &= BORG_EQUIP;
+            if (!borg_skill[BI_FIRST_CURSED])
+                borg_skill[BI_FIRST_CURSED] = i + 1;
+        }
 
         /* Analyze the item */
         switch (item->tval)
