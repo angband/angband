@@ -3008,6 +3008,13 @@ static void borg_init_svs_and_kvs(void)
     sv_dragon_power = borg_lookup_sval_fail(tval, "Power Dragon Scale Mail");
 }
 
+static void borg_init_track(struct borg_track* track, int size)
+{
+    track->num = 0;
+    track->size = size;
+    track->x = mem_zalloc(size * sizeof(int));
+    track->y = mem_zalloc(size * sizeof(int));
+}
 
 /*
  * Initialize this file
@@ -3076,22 +3083,13 @@ void borg_init_1(void)
     /*** Special "tracking" arrays ***/
 
     /* Track "up" stairs */
-    track_less.num = 0;
-    track_less.size = 16;
-    track_less.x = mem_zalloc(track_less.size * sizeof(int));
-    track_less.y = mem_zalloc(track_less.size * sizeof(int));
+    borg_init_track(&track_less, 16);
 
     /* Track "down" stairs */
-    track_more.num = 0;
-    track_more.size = 16;
-    track_more.x = mem_zalloc(track_more.size * sizeof(int));
-    track_more.y = mem_zalloc(track_more.size * sizeof(int));
+    borg_init_track(&track_more, 16);
 
     /* Track glyphs */
-    track_glyph.num = 0;
-    track_glyph.size = 200;
-    track_glyph.x = mem_zalloc(track_glyph.size * sizeof(int));
-    track_glyph.y = mem_zalloc(track_glyph.size * sizeof(int));
+    borg_init_track(&track_glyph, 200);
 
     /* Track the worn items to avoid loops */
     track_worn_num = 0;
@@ -3100,28 +3098,16 @@ void borg_init_1(void)
     track_worn_name1 = mem_zalloc(track_worn_size * sizeof(uint8_t));
 
     /* Track Steps */
-    track_step.num = 0;
-    track_step.size = 100;
-    track_step.x = mem_zalloc(track_step.size * sizeof(int));
-    track_step.y = mem_zalloc(track_step.size * sizeof(int));
+    borg_init_track(&track_step, 100);
 
     /* Track doors closed by borg */
-    track_door.num = 0;
-    track_door.size = 100;
-    track_door.x = mem_zalloc(track_door.size * sizeof(int));
-    track_door.y = mem_zalloc(track_door.size * sizeof(int));
+    borg_init_track(&track_door, 100);
 
     /* Track closed doors on map */
-    track_closed.num = 0;
-    track_closed.size = 100;
-    track_closed.x = mem_zalloc(track_closed.size * sizeof(int));
-    track_closed.y = mem_zalloc(track_closed.size * sizeof(int));
+    borg_init_track(&track_closed, 100);
 
     /* Track mineral veins with treasure. */
-    track_vein.num = 0;
-    track_vein.size = 100;
-    track_vein.x = mem_zalloc(track_vein.size * sizeof(int));
-    track_vein.y = mem_zalloc(track_vein.size * sizeof(int));
+    borg_init_vein(&track_vein, 100);
 
     /*** Object tracking ***/
 
