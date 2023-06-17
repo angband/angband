@@ -688,7 +688,7 @@ static void borg_notice_aux_ammo(int slot)
     /* track first cursed item */
     if (item->uncursable)
     {
-        borg_skill[BI_WHERE_CURSED] &= BORG_QUILL;
+        borg_skill[BI_WHERE_CURSED] |= BORG_QUILL;
         if (!borg_skill[BI_FIRST_CURSED])
             borg_skill[BI_FIRST_CURSED] = slot + 1;
     }
@@ -949,8 +949,8 @@ static void borg_notice_aux1(void)
         /* track first cursed item */
         if (!borg_skill[BI_FIRST_CURSED] && item->uncursable)
         {
+            borg_skill[BI_WHERE_CURSED] |= BORG_INVEN;
             borg_skill[BI_FIRST_CURSED] = i + 1;
-            borg_skill[BI_WHERE_CURSED] &= BORG_INVEN;
         }
 
         /* Affect stats */
@@ -1637,7 +1637,7 @@ static void borg_notice_aux2(void)
         /* track first cursed item */
         if (item->uncursable)
         {
-            borg_skill[BI_WHERE_CURSED] &= BORG_EQUIP;
+            borg_skill[BI_WHERE_CURSED] |= BORG_EQUIP;
             if (!borg_skill[BI_FIRST_CURSED])
                 borg_skill[BI_FIRST_CURSED] = i + 1;
         }
