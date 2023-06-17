@@ -3107,7 +3107,7 @@ void borg_init_1(void)
     borg_init_track(&track_closed, 100);
 
     /* Track mineral veins with treasure. */
-    borg_init_vein(&track_vein, 100);
+    borg_init_track(&track_vein, 100);
 
     /*** Object tracking ***/
 
