@@ -1416,17 +1416,6 @@ extern int16_t  num_life;
 extern int16_t  num_life_true;
 extern int16_t  num_pfe;
 extern int16_t  num_glyph;
-extern int16_t  num_detonate;
-extern int16_t  num_mush_second_sight;		/* esp */
-extern int16_t  num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
-extern int16_t  num_mush_restoring;			/* Restore All */
-extern int16_t  num_mush_cure_mind;			/* Cure confustion, Halluc, fear, tmp resist Conf */
-extern int16_t  num_mush_emergency;			/* Hallucinate, Oppose Fire, Oppose Cold, Heal 200 */
-extern int16_t  num_mush_terror;			/* Terror --give +5 speed boost */
-extern int16_t  num_mush_stoneskin;			/* StoneSkin */
-extern int16_t  num_mush_debility;			/* Mana Restore, temp loss of a stat (str/con) */
-extern int16_t  num_mush_sprinting;			/* Sprinting (speed +10) */
-extern int16_t  num_mush_purging;			/* Purging --Makes hungry, restore Str/Con, Cure Pois */
 
 extern int16_t  num_enchant_to_a;
 extern int16_t  num_enchant_to_d;
@@ -1584,33 +1573,32 @@ extern bool     borg_detect_obj[6][18];
 extern int*     track_shop_x;
 extern int*     track_shop_y;
 
+/*
+* track where some things are
+*/
+struct borg_track
+{
+    int16_t num;
+    int16_t size;
+    int*    x;
+    int*    y;
+
+};
+
 
 /*
  * Track "stairs up"
  */
-
-extern int16_t  track_less_num;
-extern int16_t  track_less_size;
-extern int*     track_less_x;
-extern int*     track_less_y;
-
-
+extern struct borg_track track_less;
 /*
  * Track "stairs down"
  */
-
-extern int16_t  track_more_num;
-extern int16_t  track_more_size;
-extern int*     track_more_x;
-extern int*     track_more_y;
+extern struct borg_track track_more;
 
 /*
  * Track glyphs
  */
-extern int16_t  track_glyph_num;
-extern int16_t  track_glyph_size;
-extern int*     track_glyph_x;
-extern int*     track_glyph_y;
+extern struct borg_track track_glyph;
 
 extern bool     borg_needs_new_sea;
 
@@ -1628,35 +1616,23 @@ extern const int16_t borg_ddy_ddd[24];
 /*
  * Track steps
  */
-extern int16_t  track_step_num;
-extern int16_t  track_step_size;
-extern int*     track_step_x;
-extern int*     track_step_y;
+extern struct borg_track track_step;
 
 /*
  * Track closed doors
  */
-extern int16_t  track_door_num;
-extern int16_t  track_door_size;
-extern int*     track_door_x;
-extern int*     track_door_y;
+extern struct borg_track track_door;
 
 /*
  * Track closed doors which started closed
  */
-extern int16_t  track_closed_num;
-extern int16_t  track_closed_size;
-extern int*     track_closed_x;
-extern int*     track_closed_y;
+extern struct borg_track track_closed;
 
 /*
  * Track the mineral veins with treasure
  *
  */
-extern int16_t  track_vein_num;
-extern int16_t  track_vein_size;
-extern int*     track_vein_x;
-extern int*     track_vein_y;
+extern struct borg_track track_vein;
 
 /*
  * The object list.  This list is used to "track" objects.

@@ -3399,7 +3399,6 @@ static void borg_notice_home_aux1(borg_item* in_item, bool no_items)
     num_pot_rheat = 0;
     num_pot_rcold = 0;
     num_speed = 0;
-    num_detonate = 0;
 
     num_slow_digest = 0;
     num_regenerate = 0;
@@ -3467,18 +3466,6 @@ static void borg_notice_home_aux1(borg_item* in_item, bool no_items)
     if (!in_item && !no_items) num_ezheal_true = 0;
     if (!in_item && !no_items) num_heal_true = 0;
     if (!in_item && !no_items) num_life_true = 0;
-
-    /* Mushrooms */
-    num_mush_second_sight = 0;		/* esp */
-    num_mush_fast_recovery = 0;		/* cure stun, cut, pois, blind */
-    num_mush_restoring = 0;			/* Restore All */
-    num_mush_cure_mind = 0;			/* Cure confustion, Halluc, fear, tmp resist Conf */
-    num_mush_emergency = 0;			/* Hallucinate, Oppose Fire, Oppose Cold, Heal 200 */
-    num_mush_terror = 0;			/* Terror --give +5 speed boost */
-    num_mush_stoneskin = 0;			/* StoneSkin */
-    num_mush_debility = 0;			/* Mana Restore, temp loss of a stat (str/con) */
-    num_mush_sprinting = 0;			/* Sprinting (speed +10) */
-    num_mush_purging = 0;			/* Purging --Makes hungry, restore Str/Con, Cure Pois */
 
     /* Reset missiles */
     num_missile = 0;
@@ -3922,7 +3909,6 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
         {
             num_fix_stat[STAT_CON] += item->iqty;
             num_fix_stat[STAT_STR] += item->iqty;
-            num_mush_purging += item->iqty;
         }
         else if (item->sval == sv_mush_restoring)
         {
@@ -3932,22 +3918,6 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
             num_fix_stat[STAT_DEX] += item->iqty;
             num_fix_stat[STAT_CON] += item->iqty;
         }
-        else if (item->sval == sv_mush_restoring)
-            num_mush_second_sight += item->iqty;
-        else if (item->sval == sv_mush_emergency)
-            num_mush_emergency += item->iqty;
-        else if (item->sval == sv_mush_terror)
-            num_mush_terror += item->iqty;
-        else if (item->sval == sv_mush_stoneskin)
-            num_mush_stoneskin += item->iqty;
-        else if (item->sval == sv_mush_debility)
-            num_mush_debility += item->iqty;
-        else if (item->sval == sv_mush_sprinting)
-            num_mush_sprinting += item->iqty;
-        else if (item->sval == sv_mush_fast_recovery)
-            num_mush_fast_recovery += item->iqty;
-        else if (item->sval == sv_mush_cure_mind)
-            num_mush_cure_mind += item->iqty;
         break;
 
 
@@ -6371,9 +6341,6 @@ static int32_t borg_power_home_aux2(void)
     /* Collect Speed */
     /* for (k = 0; k < 85 && k < num_speed; k++) value += 5000L - k*10L; */
 
-    /* Collect Potions of Detonations */
-    for (k = 0; k < 85 && k < num_detonate; k++) value += 5000L;
-
     /* collect mana/ */
     if (borg_skill[BI_MAXSP] > 1)
     {
@@ -6412,20 +6379,6 @@ static int32_t borg_power_home_aux2(void)
         for (k = 0; k < 70 && k < num_fix_exp; k++) value += 1000L - k * 10L;
     else if (borg_skill[BI_CLEVEL] <= 35)
         for (k = 0; k < 5 && k < num_fix_exp; k++) value += 1000L - k * 10L;
-
-    /* Keep shrooms in the house */
-#if 0
-    for (k = 0; k < 90 && k < num_fix_stat[6]; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_second_sight; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_fast_recovery; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_cure_mind; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_emergency; k++) value += 5000L;
-    /* for (k = 0; k < 90 && k < num_mush_terror; k++) value += 5000L; */
-    for (k = 0; k < 90 && k < num_mush_stoneskin; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_debility; k++) value += 5000L;
-    for (k = 0; k < 90 && k < num_mush_sprinting; k++) value += 5000L;
-    /* for (k = 0; k < 90 && k < num_mush_purging; k++) value += 5000L; */
-#endif
 
     /*** Hack -- books ***/
 
@@ -6987,12 +6940,12 @@ static int borg_danger_aux2(int i, int y, int x, int d, bool average, bool full_
     {
         glyph = 1;
     }
-    else if (track_glyph_num)
+    else if (track_glyph.num)
     {
         /* Check all existing glyphs */
-        for (glyph_check = 0; glyph_check < track_glyph_num; glyph_check++)
+        for (glyph_check = 0; glyph_check < track_glyph.num; glyph_check++)
         {
-            if ((track_glyph_y[glyph_check] == y) && (track_glyph_x[glyph_check] == x))
+            if ((track_glyph.y[glyph_check] == y) && (track_glyph.x[glyph_check] == x))
             {
                 /* Reduce the danger */
                 glyph = 1;

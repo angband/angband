@@ -861,9 +861,9 @@ static void borg_parse_aux(char* msg, int len)
         if (borg_casted_glyph)
         {
             /* Forget the newly created-though-failed  glyph */
-            track_glyph_num--;
-            track_glyph_x[track_glyph_num] = 0;
-            track_glyph_y[track_glyph_num] = 0;
+            track_glyph.num--;
+            track_glyph.x[track_glyph.num] = 0;
+            track_glyph.y[track_glyph.num] = 0;
             borg_note("# Removing glyph from array,");
             borg_casted_glyph = false;
         }
@@ -1167,7 +1167,7 @@ static void borg_parse_aux(char* msg, int len)
                     borg_react(msg, buf);
 
                     /* If I was hit, then I am not on a glyph */
-                    if (track_glyph_num)
+                    if (track_glyph.num)
                     {
                         /* erase them all and
                          * allow the borg to scan the screen and rebuild the array.
@@ -1175,20 +1175,20 @@ static void borg_parse_aux(char* msg, int len)
                          * must be made.
                          */
                          /* Remove the entire array */
-                        for (i = 0; i < track_glyph_num; i++)
+                        for (i = 0; i < track_glyph.num; i++)
                         {
                             /* Stop if we already new about this glyph */
-                            track_glyph_x[i] = 0;
-                            track_glyph_y[i] = 0;
+                            track_glyph.x[i] = 0;
+                            track_glyph.y[i] = 0;
                         }
-                        track_glyph_num = 0;
+                        track_glyph.num = 0;
 
                         /* Check for glyphs under player -- Cheat*/
                         if (square_iswarded(cave, loc(c_x, c_y)))
                         {
-                            track_glyph_x[track_glyph_num] = c_x;
-                            track_glyph_y[track_glyph_num] = c_y;
-                            track_glyph_num++;
+                            track_glyph.x[track_glyph.num] = c_x;
+                            track_glyph.y[track_glyph.num] = c_y;
+                            track_glyph.num++;
                         }
                     }
                     return;
@@ -1589,8 +1589,8 @@ static void borg_parse_aux(char* msg, int len)
 
         /* make sure the borg does not think he's on one */
         /* Remove all stairs from the array. */
-        track_less_num = 0;
-        track_more_num = 0;
+        track_less.num = 0;
+        track_more.num = 0;
         borg_on_dnstairs = false;
         borg_on_upstairs = false;
         borg_grids[c_y][c_x].feat = FEAT_BROKEN;
@@ -1742,19 +1742,19 @@ static void borg_parse_aux(char* msg, int len)
     if (prefix(msg, "You inscribe a mystic symbol on the ground!"))
     {
         /* Check for an existing glyph */
-        for (i = 0; i < track_glyph_num; i++)
+        for (i = 0; i < track_glyph.num; i++)
         {
             /* Stop if we already new about this glyph */
-            if ((track_glyph_x[i] == c_x) && (track_glyph_y[i] == c_y)) break;
+            if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) break;
         }
 
         /* Track the newly discovered glyph */
-        if ((i == track_glyph_num) && (i < track_glyph_size))
+        if ((i == track_glyph.num) && (i < track_glyph.size))
         {
             borg_note("# Noting the creation of a glyph.");
-            track_glyph_x[i] = c_x;
-            track_glyph_y[i] = c_y;
-            track_glyph_num++;
+            track_glyph.x[i] = c_x;
+            track_glyph.y[i] = c_y;
+            track_glyph.num++;
         }
 
         return;
@@ -1768,22 +1768,22 @@ static void borg_parse_aux(char* msg, int len)
          */
 
          /* Remove the entire array */
-        for (i = 0; i < track_glyph_num; i++)
+        for (i = 0; i < track_glyph.num; i++)
         {
             /* Stop if we already new about this glyph */
-            track_glyph_x[i] = 0;
-            track_glyph_y[i] = 0;
+            track_glyph.x[i] = 0;
+            track_glyph.y[i] = 0;
 
         }
         /* no known glyphs */
-        track_glyph_num = 0;
+        track_glyph.num = 0;
 
         /* Check for glyphs under player -- Cheat*/
         if (square_iswarded(cave, loc(c_x, c_y)))
         {
-            track_glyph_x[track_glyph_num] = c_x;
-            track_glyph_y[track_glyph_num] = c_y;
-            track_glyph_num++;
+            track_glyph.x[track_glyph.num] = c_x;
+            track_glyph.y[track_glyph.num] = c_y;
+            track_glyph.num++;
         }
         return;
     }
@@ -1793,9 +1793,9 @@ static void borg_parse_aux(char* msg, int len)
     {
 
         /* Forget the newly created-though-failed  glyph */
-        track_glyph_x[track_glyph_num] = 0;
-        track_glyph_y[track_glyph_num] = 0;
-        track_glyph_num--;
+        track_glyph.x[track_glyph.num] = 0;
+        track_glyph.y[track_glyph.num] = 0;
+        track_glyph.num--;
 
         /* note it */
         borg_note("# Removing the Glyph under me, placing with broken door.");
@@ -6300,13 +6300,13 @@ void do_cmd_borg(void)
         /* Scan map */
         uint8_t a = COLOUR_RED;
         /* Check for an existing step */
-        for (i = 0; i < track_step_num; i++)
+        for (i = 0; i < track_step.num; i++)
         {
             /* Display */
-            print_rel('*', a, track_step_y[track_step_num - i], track_step_x[track_step_num - i]);
-            msg("(-%d) Steps noted %d,%d", i, track_step_y[track_step_num - i], track_step_x[track_step_num - i]);
+            print_rel('*', a, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
+            msg("(-%d) Steps noted %d,%d", i, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
             event_signal(EVENT_MESSAGE_FLUSH);
-            print_rel('*', COLOUR_ORANGE, track_step_y[track_step_num - i], track_step_x[track_step_num - i]);
+            print_rel('*', COLOUR_ORANGE, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
         }
         /* Redraw map */
         prt_map();
@@ -7086,10 +7086,10 @@ void do_cmd_borg(void)
 
         uint8_t a = COLOUR_RED;
 
-        for (glyph_check = 0; glyph_check < track_glyph_num; glyph_check++)
+        for (glyph_check = 0; glyph_check < track_glyph.num; glyph_check++)
         {
             /* Display */
-            print_rel('*', a, track_glyph_y[glyph_check], track_glyph_x[glyph_check]);
+            print_rel('*', a, track_glyph.y[glyph_check], track_glyph.x[glyph_check]);
             msg("Borg has Glyph (%d)noted.", glyph_check);
             event_signal(EVENT_MESSAGE_FLUSH);
         }

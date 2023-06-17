@@ -676,19 +676,6 @@ int16_t num_pfe;
 int16_t num_glyph;
 int16_t num_mass_genocide;
 int16_t num_speed;
-int16_t num_detonate;
-
-/* Mushrooms */
-int16_t num_mush_second_sight;		/* esp */
-int16_t num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
-int16_t num_mush_restoring;			/* Restore All */
-int16_t num_mush_cure_mind;			/* Cure confustion, Halluc, fear, tmp resist Conf */
-int16_t num_mush_emergency;			/* Hallucinate, Oppose Fire, Oppose Cold, Heal 200 */
-int16_t num_mush_terror;			/* Terror --give +5 speed boost */
-int16_t num_mush_stoneskin;			/* StoneSkin */
-int16_t num_mush_debility;			/* Mana Restore, temp loss of a stat (str/con) */
-int16_t num_mush_sprinting;			/* Sprinting (speed +10) */
-int16_t num_mush_purging;			/* Purging --Makes hungry, restore Str/Con, Cure Pois */
 
 int16_t num_enchant_to_a;
 int16_t num_enchant_to_d;
@@ -825,33 +812,20 @@ bool    borg_detect_obj[6][18];
 int*    track_shop_x;
 int*    track_shop_y;
 
-
 /*
  * Track "stairs up"
  */
-
-int16_t track_less_num;
-int16_t track_less_size;
-int*    track_less_x;
-int*    track_less_y;
-
+struct borg_track track_less;
 
 /*
  * Track "stairs down"
  */
-
-int16_t track_more_num;
-int16_t track_more_size;
-int*    track_more_x;
-int*    track_more_y;
+struct borg_track track_more;
 
 /*
  * Track glyphs
  */
-int16_t track_glyph_num;
-int16_t track_glyph_size;
-int*    track_glyph_x;
-int*    track_glyph_y;
+struct borg_track track_glyph;
 
 bool    borg_needs_new_sea; /* Environment changed.  Need to make a new Sea of Runes for Morgy */
 
@@ -879,35 +853,23 @@ const int16_t borg_ddy_ddd[24] =
 /*
  * Track Steps
  */
-int16_t track_step_num;
-int16_t track_step_size;
-int*    track_step_x;
-int*    track_step_y;
+struct borg_track track_step;
 
 /*
  * Track closed doors which I have closed
  */
-int16_t track_door_num;
-int16_t track_door_size;
-int*    track_door_x;
-int*    track_door_y;
+struct borg_track track_door;
 
 /*
  * Track closed doors which started closed
  */
-int16_t track_closed_num;
-int16_t track_closed_size;
-int*    track_closed_x;
-int*    track_closed_y;
+struct borg_track track_closed;
 
 /*
  * Track the mineral veins with treasure
  *
  */
-int16_t track_vein_num;
-int16_t track_vein_size;
-int*    track_vein_x;
-int*    track_vein_y;
+struct borg_track track_vein;
 
 /*
  * The object list.  This list is used to "track" objects.
@@ -3114,22 +3076,22 @@ void borg_init_1(void)
     /*** Special "tracking" arrays ***/
 
     /* Track "up" stairs */
-    track_less_num = 0;
-    track_less_size = 16;
-    track_less_x = mem_zalloc(track_less_size * sizeof(int));
-    track_less_y = mem_zalloc(track_less_size * sizeof(int));
+    track_less.num = 0;
+    track_less.size = 16;
+    track_less.x = mem_zalloc(track_less.size * sizeof(int));
+    track_less.y = mem_zalloc(track_less.size * sizeof(int));
 
     /* Track "down" stairs */
-    track_more_num = 0;
-    track_more_size = 16;
-    track_more_x = mem_zalloc(track_more_size * sizeof(int));
-    track_more_y = mem_zalloc(track_more_size * sizeof(int));
+    track_more.num = 0;
+    track_more.size = 16;
+    track_more.x = mem_zalloc(track_more.size * sizeof(int));
+    track_more.y = mem_zalloc(track_more.size * sizeof(int));
 
     /* Track glyphs */
-    track_glyph_num = 0;
-    track_glyph_size = 200;
-    track_glyph_x = mem_zalloc(track_glyph_size * sizeof(int));
-    track_glyph_y = mem_zalloc(track_glyph_size * sizeof(int));
+    track_glyph.num = 0;
+    track_glyph.size = 200;
+    track_glyph.x = mem_zalloc(track_glyph.size * sizeof(int));
+    track_glyph.y = mem_zalloc(track_glyph.size * sizeof(int));
 
     /* Track the worn items to avoid loops */
     track_worn_num = 0;
@@ -3138,28 +3100,28 @@ void borg_init_1(void)
     track_worn_name1 = mem_zalloc(track_worn_size * sizeof(uint8_t));
 
     /* Track Steps */
-    track_step_num = 0;
-    track_step_size = 100;
-    track_step_x = mem_zalloc(track_step_size * sizeof(int));
-    track_step_y = mem_zalloc(track_step_size * sizeof(int));
+    track_step.num = 0;
+    track_step.size = 100;
+    track_step.x = mem_zalloc(track_step.size * sizeof(int));
+    track_step.y = mem_zalloc(track_step.size * sizeof(int));
 
     /* Track doors closed by borg */
-    track_door_num = 0;
-    track_door_size = 100;
-    track_door_x = mem_zalloc(track_door_size * sizeof(int));
-    track_door_y = mem_zalloc(track_door_size * sizeof(int));
+    track_door.num = 0;
+    track_door.size = 100;
+    track_door.x = mem_zalloc(track_door.size * sizeof(int));
+    track_door.y = mem_zalloc(track_door.size * sizeof(int));
 
     /* Track closed doors on map */
-    track_closed_num = 0;
-    track_closed_size = 100;
-    track_closed_x = mem_zalloc(track_closed_size * sizeof(int));
-    track_closed_y = mem_zalloc(track_closed_size * sizeof(int));
+    track_closed.num = 0;
+    track_closed.size = 100;
+    track_closed.x = mem_zalloc(track_closed.size * sizeof(int));
+    track_closed.y = mem_zalloc(track_closed.size * sizeof(int));
 
     /* Track mineral veins with treasure. */
-    track_vein_num = 0;
-    track_vein_size = 100;
-    track_vein_x = mem_zalloc(track_vein_size * sizeof(int));
-    track_vein_y = mem_zalloc(track_vein_size * sizeof(int));
+    track_vein.num = 0;
+    track_vein.size = 100;
+    track_vein.x = mem_zalloc(track_vein.size * sizeof(int));
+    track_vein.y = mem_zalloc(track_vein.size * sizeof(int));
 
     /*** Object tracking ***/
 

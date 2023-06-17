@@ -295,8 +295,8 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
     /* Use the closest stair for calculation distance (cost) from the stair to the goal */
     if (stair_idx >= 0 && borg_skill[BI_CLEVEL] < 15)
     {
-        origin_y = track_less_y[stair_idx];
-        origin_x = track_less_x[stair_idx];
+        origin_y = track_less.y[stair_idx];
+        origin_x = track_less.x[stair_idx];
         optimize = false;
     }
 
@@ -585,7 +585,7 @@ static int borg_flow_cost_stair(int y, int x, int b_stair)
     if (b_stair == -1) return (0);
 
     /* Enqueue the player's grid */
-    borg_flow_enqueue_grid(track_less_y[b_stair], track_less_x[b_stair]);
+    borg_flow_enqueue_grid(track_less.y[b_stair], track_less.x[b_stair]);
 
     /* Spread, but do NOT optimize */
     borg_flow_spread(250, false, false, false, b_stair, false);
@@ -919,10 +919,10 @@ static int borg_freedom(int y, int x)
     int d, f = 0;
 
     /* Hack -- chase down stairs in town */
-    if (!borg_skill[BI_CDEPTH] && track_more_num)
+    if (!borg_skill[BI_CDEPTH] && track_more.num)
     {
         /* Love the stairs! */
-        d = double_distance(y, x, track_more_y[0], track_more_x[0]);
+        d = double_distance(y, x, track_more.y[0], track_more.x[0]);
 
         /* Proximity is good */
         f += (1000 - d);
@@ -932,10 +932,10 @@ static int borg_freedom(int y, int x)
     }
 
     /* Hack -- chase Up Stairs in dungeon */
-    if (borg_skill[BI_CDEPTH] && track_less_num)
+    if (borg_skill[BI_CDEPTH] && track_less.num)
     {
         /* Love the stairs! */
-        d = double_distance(y, x, track_less_y[0], track_less_x[0]);
+        d = double_distance(y, x, track_less.y[0], track_less.x[0]);
 
         /* Proximity is good */
         f += (1000 - d);
@@ -1064,11 +1064,11 @@ static bool borg_happy_grid_bold(int y, int x)
     }
 
     /* check for grids that have been stepped on before */
-    for (i = 0; i < track_step_num; i++)
+    for (i = 0; i < track_step.num; i++)
     {
         /* Enqueue the grid */
-        if ((track_step_y[i] == y) &&
-            (track_step_x[i] == x))
+        if ((track_step.y[i] == y) &&
+            (track_step.x[i] == x))
         {
             /* Recent step is good */
             if (i < 25)
@@ -3615,14 +3615,14 @@ bool borg_caution(void)
         }
     }
     /* Comment on glyph */
-    if (track_glyph_num)
+    if (track_glyph.num)
     {
         int i;
-        for (i = 0; i < track_glyph_num; i++)
+        for (i = 0; i < track_glyph.num; i++)
         {
             /* Enqueue the grid */
-            if ((track_glyph_y[i] == c_y) &&
-                (track_glyph_x[i] == c_x))
+            if ((track_glyph.y[i] == c_y) &&
+                (track_glyph.x[i] == c_x))
             {
                 /* if standing on one */
                 borg_note(format("# Standing on Glyph"));
@@ -3630,14 +3630,14 @@ bool borg_caution(void)
         }
     }
     /* Comment on stair */
-    if (track_less_num)
+    if (track_less.num)
     {
         int i;
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
             /* Enqueue the grid */
-            if ((track_less_y[i] == c_y) &&
-                (track_less_x[i] == c_x))
+            if ((track_less.y[i] == c_y) &&
+                (track_less.x[i] == c_x))
             {
                 /* if standing on one */
                 borg_note(format("# Standing on up-stairs"));
@@ -3646,14 +3646,14 @@ bool borg_caution(void)
         }
     }
     /* Comment on stair */
-    if (track_more_num)
+    if (track_more.num)
     {
         int i;
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
             /* Enqueue the grid */
-            if ((track_more_y[i] == c_y) &&
-                (track_more_x[i] == c_x))
+            if ((track_more.y[i] == c_y) &&
+                (track_more.x[i] == c_x))
             {
                 /* if standing on one */
                 borg_note(format("# Standing on dn-stairs"));
@@ -3811,7 +3811,7 @@ bool borg_caution(void)
         if ((char*)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 1))
             stair_more = true;
 
-        if (!track_less_num && (borg_skill[BI_CURLITE] == 0 || borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] < 2))
+        if (!track_less.num && (borg_skill[BI_CURLITE] == 0 || borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] < 2))
             stair_more = false;
 
         /* If I need to sell crap, then don't go down */
@@ -3957,7 +3957,7 @@ bool borg_caution(void)
     /* If you are low level and near the stairs and you can */
     /* hop onto them in very few steps, try to head to them */
     /* out of desperation */
-    if ((track_less_num || track_more_num) &&
+    if ((track_less.num || track_more.num) &&
         (goal_fleeing || scaryguy_on_level || (pos_danger > avoidance && borg_skill[BI_CLEVEL] < 35)))
     {
         int y, x, i;
@@ -3970,10 +3970,10 @@ bool borg_caution(void)
         borg_grid* ag;
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             ag = &borg_grids[y][x];
 
@@ -3991,10 +3991,10 @@ bool borg_caution(void)
         }
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
-            x = track_more_x[i];
-            y = track_more_y[i];
+            x = track_more.x[i];
+            y = track_more.y[i];
 
             ag = &borg_grids[y][x];
 
@@ -4143,10 +4143,10 @@ bool borg_caution(void)
 
             /* Try to avoid pillar dancing if at good health */
             if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                ((track_step_y[track_step_num - 2] == y2 &&
-                    track_step_x[track_step_num - 2] == x2 &&
-                    track_step_y[track_step_num - 3] == c_y &&
-                    track_step_x[track_step_num - 3] == c_x) ||
+                ((track_step.y[track_step.num - 2] == y2 &&
+                    track_step.x[track_step.num - 2] == x2 &&
+                    track_step.y[track_step.num - 3] == c_y &&
+                    track_step.x[track_step.num - 3] == c_x) ||
                     time_this_panel >= 300)) continue;
 
             /* XXX -- Borgs in an unexplored hall (& with only a torch)
@@ -4208,10 +4208,10 @@ bool borg_caution(void)
 
                 /* Lets make one more check that we are not bouncing */
                 if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                    ((track_step_y[track_step_num - 2] == y1 &&
-                        track_step_x[track_step_num - 2] == x1 &&
-                        track_step_y[track_step_num - 3] == c_y &&
-                        track_step_x[track_step_num - 3] == c_x) ||
+                    ((track_step.y[track_step.num - 2] == y1 &&
+                        track_step.x[track_step.num - 2] == x1 &&
+                        track_step.y[track_step.num - 3] == c_y &&
+                        track_step.x[track_step.num - 3] == c_x) ||
                         time_this_panel >= 300)) break;
 
                 /* Require floor */
@@ -4392,10 +4392,10 @@ bool borg_caution(void)
 
             /* If i was here last round and 3 rounds ago, suggesting a "bounce" */
             if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                ((track_step_y[track_step_num - 2] == y &&
-                    track_step_x[track_step_num - 2] == x &&
-                    track_step_y[track_step_num - 3] == c_y &&
-                    track_step_x[track_step_num - 3] == c_x) ||
+                ((track_step.y[track_step.num - 2] == y &&
+                    track_step.x[track_step.num - 2] == x &&
+                    track_step.y[track_step.num - 3] == c_y &&
+                    track_step.x[track_step.num - 3] == c_x) ||
                     time_this_panel >= 300)) continue;
 
             /*
@@ -12042,19 +12042,19 @@ static int borg_defend_aux_glyph(int p1)
             borg_read_scroll(sv_scroll_rune_of_protection))
         {
             /* Check for an existing glyph */
-            for (i = 0; i < track_glyph_num; i++)
+            for (i = 0; i < track_glyph.num; i++)
             {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph_x[i] == c_x) && (track_glyph_y[i] == c_y)) return (p1 - p2);
+                if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) return (p1 - p2);
             }
 
             /* Track the newly discovered glyph */
-            if (track_glyph_num < track_glyph_size)
+            if (track_glyph.num < track_glyph.size)
             {
                 borg_note("# Noting the creation of a glyph.");
-                track_glyph_x[track_glyph_num] = c_x;
-                track_glyph_y[track_glyph_num] = c_y;
-                track_glyph_num++;
+                track_glyph.x[track_glyph.num] = c_x;
+                track_glyph.y[track_glyph.num] = c_y;
+                track_glyph.num++;
             }
             return (p1 - p2);
         }
@@ -13235,7 +13235,7 @@ static int borg_defend_aux_panel_shift(void)
         else
             /* shift up? only if a north corridor */
             if (dir == 8 && borg_projectable_pure(c_y, c_x, c_y - 2, c_x) &&
-                track_step_y[track_step_num - 1] != c_y - 1)
+                track_step.y[track_step.num - 1] != c_y - 1)
             {
                 /* Send action (view panel info) */
                 borg_keypress('L');
@@ -13248,7 +13248,7 @@ static int borg_defend_aux_panel_shift(void)
             }
             else /* shift down? only if a south corridor */
                 if (dir == 2 && borg_projectable_pure(c_y, c_x, c_y + 2, c_x) &&
-                    track_step_y[track_step_num - 1] != c_y + 1)
+                    track_step.y[track_step.num - 1] != c_y + 1)
                 {
                     /* Send action (view panel info) */
                     borg_keypress('L');
@@ -13261,7 +13261,7 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 else /* shift Left? only if a west corridor */
                     if (dir == 4 && borg_projectable_pure(c_y, c_x, c_y, c_x - 2) &&
-                        track_step_x[track_step_num - 1] != c_x - 1)
+                        track_step.x[track_step.num - 1] != c_x - 1)
                     {
                         /* Send action (view panel info) */
                         borg_keypress('L');
@@ -13274,7 +13274,7 @@ static int borg_defend_aux_panel_shift(void)
                     }
                     else /* shift Right? only if a east corridor */
                         if (dir == 6 && borg_projectable_pure(c_y, c_x, c_y, c_x + 2) &&
-                            track_step_x[track_step_num - 1] != c_x + 1)
+                            track_step.x[track_step.num - 1] != c_x + 1)
                         {
                             /* Send action (view panel info) */
                             borg_keypress('L');
@@ -14507,10 +14507,10 @@ static int borg_perma_aux_glyph(void)
     }
 
     /* Check for an existing glyph that is not found in the auto_grid */
-    for (i = 0; i < track_glyph_num; i++)
+    for (i = 0; i < track_glyph.num; i++)
     {
         /* Stop if we are on a glyph */
-        if ((track_glyph_x[i] == c_x) && (track_glyph_y[i] == c_y)) return (0);
+        if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) return (0);
     }
 
     /* This spell is cast while he is digging and AS Corridor */
@@ -14546,19 +14546,19 @@ static int borg_perma_aux_glyph(void)
         borg_read_scroll(sv_scroll_rune_of_protection))
     {
         /* Check for an existing glyph */
-        for (i = 0; i < track_glyph_num; i++)
+        for (i = 0; i < track_glyph.num; i++)
         {
             /* Stop if we already new about this glyph */
-            if ((track_glyph_x[i] == c_x) && (track_glyph_y[i] == c_y)) return (p1 - p2);
+            if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) return (p1 - p2);
         }
 
         /* Track the newly discovered glyph */
-        if (track_glyph_num < track_glyph_size)
+        if (track_glyph.num < track_glyph.size)
         {
             borg_note("# Noting the creation of a corridor glyph.");
-            track_glyph_x[track_glyph_num] = c_x;
-            track_glyph_y[track_glyph_num] = c_y;
-            track_glyph_num++;
+            track_glyph.x[track_glyph.num] = c_x;
+            track_glyph.y[track_glyph.num] = c_y;
+            track_glyph.num++;
         }
         return (p1 - p2);
     }
@@ -15395,7 +15395,7 @@ static bool borg_play_step(int y2, int x2)
                 if (ag->kill) continue;
 
                 /* Skip repeatedly closed doors */
-                if (track_door_num >= 255) continue;
+                if (track_door.num >= 255) continue;
 
                 /* skip our orignal goal */
                 if ((oy + c_y == y2) && (ox + c_x == x2)) continue;
@@ -15427,20 +15427,20 @@ static bool borg_play_step(int y2, int x2)
             borg_queue_direction(I2D(dir));
 
             /* Check for an existing flag */
-            for (i = 0; i < track_door_num; i++)
+            for (i = 0; i < track_door.num; i++)
             {
                 /* Stop if we already new about this door */
-                if ((track_door_x[i] == x) && (track_door_y[i] == y)) return (true);
+                if ((track_door.x[i] == x) && (track_door.y[i] == y)) return (true);
             }
 
             /* Track the newly closed door */
-            if (i == track_door_num && i < track_door_size)
+            if (i == track_door.num && i < track_door.size)
             {
 
                 borg_note("# Noting the closing of a door.");
-                track_door_num++;
-                track_door_x[i] = x;
-                track_door_y[i] = y;
+                track_door.num++;
+                track_door.x[i] = x;
+                track_door.y[i] = y;
             }
             return (true);
 
@@ -15745,9 +15745,9 @@ static bool borg_play_step(int y2, int x2)
                 * Its faster to clear all doors from the list
                 * then rebuild the list.
                 */
-                if (track_closed_num)
+                if (track_closed.num)
                 {
-                    track_closed_num = 0;
+                    track_closed.num = 0;
                 }
                 return (true);
             }
@@ -15770,9 +15770,9 @@ static bool borg_play_step(int y2, int x2)
          * Its faster to clear all doors from the list
          * then rebuild the list.
          */
-        if (track_closed_num)
+        if (track_closed.num)
         {
-            track_closed_num = 0;
+            track_closed.num = 0;
         }
 
         return (true);
@@ -15798,7 +15798,7 @@ static bool borg_play_step(int y2, int x2)
             borg_keypress(I2D(dir));
 
             /* Forget number of mineral veins to force rebuild of vein list */
-            track_vein_num = 0;
+            track_vein.num = 0;
 
             return true;
         }
@@ -15833,7 +15833,7 @@ static bool borg_play_step(int y2, int x2)
 
         /* Forget number of mineral veins to force rebuild of vein list */
         /* XXX Maybe only do this if successful? */
-        track_vein_num = 0;
+        track_vein.num = 0;
 
         return true;
     }
@@ -16120,11 +16120,11 @@ bool borg_flow_stair_both(int why, bool sneak)
     int i;
 
     /* None to flow to */
-    if (!track_less_num && !track_more_num) return (false);
+    if (!track_less.num && !track_more.num) return (false);
 
 
     /* dont go down if hungry or low on food, unless fleeing a scary town */
-    if (!goal_fleeing && !scaryguy_on_level && !track_less_num && (avoidance <= borg_skill[BI_CURHP] * 15 / 10) &&
+    if (!goal_fleeing && !scaryguy_on_level && !track_less.num && (avoidance <= borg_skill[BI_CURHP] * 15 / 10) &&
         (borg_skill[BI_ISWEAK] ||
             borg_skill[BI_ISHUNGRY] || borg_skill[BI_FOOD] < 2))
         return (false);
@@ -16139,23 +16139,23 @@ bool borg_flow_stair_both(int why, bool sneak)
     borg_flow_clear();
 
     /* Enqueue useful grids */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
         /* Not if a monster is parked on the stiar */
-        if (borg_grids[track_less_y[i]][track_less_x[i]].kill) continue;
+        if (borg_grids[track_less.y[i]][track_less.x[i]].kill) continue;
 
         /* Enqueue the grid */
-        borg_flow_enqueue_grid(track_less_y[i], track_less_x[i]);
+        borg_flow_enqueue_grid(track_less.y[i], track_less.x[i]);
     }
 
     /* Enqueue useful grids */
-    for (i = 0; i < track_more_num; i++)
+    for (i = 0; i < track_more.num; i++)
     {
         /* Not if a monster is parked on the stiar */
-        if (borg_grids[track_more_y[i]][track_more_x[i]].kill) continue;
+        if (borg_grids[track_more.y[i]][track_more.x[i]].kill) continue;
 
         /* Enqueue the grid */
-        borg_flow_enqueue_grid(track_more_y[i], track_more_x[i]);
+        borg_flow_enqueue_grid(track_more.y[i], track_more.x[i]);
     }
 
 
@@ -16185,7 +16185,7 @@ bool borg_flow_stair_less(int why, bool sneak)
     int i;
 
     /* None to flow to */
-    if (!track_less_num) return (false);
+    if (!track_less.num) return (false);
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -16194,13 +16194,13 @@ bool borg_flow_stair_less(int why, bool sneak)
     borg_needs_searching = false;
 
     /* Enqueue useful grids */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
         /* Not if a monster is parked on the stiar */
-        if (borg_grids[track_less_y[i]][track_less_x[i]].kill) continue;
+        if (borg_grids[track_less.y[i]][track_less.x[i]].kill) continue;
 
         /* Enqueue the grid */
-        borg_flow_enqueue_grid(track_less_y[i], track_less_x[i]);
+        borg_flow_enqueue_grid(track_less.y[i], track_less.x[i]);
     }
 
     if (borg_skill[BI_CLEVEL] > 35 || borg_skill[BI_CURLITE] == 0)
@@ -16233,7 +16233,7 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
     int i;
 
     /* None to flow to */
-    if (!track_more_num) return (false);
+    if (!track_more.num) return (false);
 
     /* not unless safe or munchkin/Lunal Mode or brave */
     if (!borg_lunal_mode && !borg_munchkin_mode && !brave && (char*)NULL != borg_prepared(borg_skill[BI_CDEPTH] + 1))
@@ -16262,13 +16262,13 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
     borg_flow_clear();
 
     /* Enqueue useful grids */
-    for (i = 0; i < track_more_num; i++)
+    for (i = 0; i < track_more.num; i++)
     {
         /* Not if a monster is parked on the stiar */
-        if (borg_grids[track_more_y[i]][track_more_x[i]].kill) continue;
+        if (borg_grids[track_more.y[i]][track_more.x[i]].kill) continue;
 
         /* Enqueue the grid */
-        borg_flow_enqueue_grid(track_more_y[i], track_more_x[i]);
+        borg_flow_enqueue_grid(track_more.y[i], track_more.x[i]);
     }
 
     /* Spread the flow */
@@ -16367,19 +16367,19 @@ bool borg_flow_glyph(int why)
             borg_read_scroll(sv_scroll_rune_of_protection))
         {
             /* Check for an existing glyph */
-            for (i = 0; i < track_glyph_num; i++)
+            for (i = 0; i < track_glyph.num; i++)
             {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph_x[i] == c_x) && (track_glyph_y[i] == c_y)) return (false);
+                if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) return (false);
             }
 
             /* Track the newly discovered glyph */
-            if (track_glyph_num < track_glyph_size)
+            if (track_glyph.num < track_glyph.size)
             {
                 borg_note("# Noting the creation of a glyph.");
-                track_glyph_x[track_glyph_num] = c_x;
-                track_glyph_y[track_glyph_num] = c_y;
-                track_glyph_num++;
+                track_glyph.x[track_glyph.num] = c_x;
+                track_glyph.y[track_glyph.num] = c_y;
+                track_glyph.num++;
             }
 
             /* Success */
@@ -17888,10 +17888,10 @@ bool borg_flow_kill(bool viewable, int nearness)
     /* Check distance away from stairs, used later */
 
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -17969,7 +17969,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         if (b_stair != -1 && borg_skill[BI_CLEVEL] < 10)
         {
             /* Check the distance of this monster to the stair */
-            j = borg_distance(track_less_y[b_stair], track_less_x[b_stair],
+            j = borg_distance(track_less.y[b_stair], track_less.x[b_stair],
                 y, x);
             /* skip far away monsters while I am close to stair */
             if (b_j <= borg_skill[BI_CLEVEL] * 5 + 9 &&
@@ -18102,7 +18102,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 
 
     /* Efficiency -- Nothing to take */
-    if (!track_vein_num) return (false);
+    if (!track_vein.num) return (false);
 
     /* Increase leash */
     if (borg_skill[BI_CLEVEL] >= 20) leash = 250;
@@ -18123,10 +18123,10 @@ bool borg_flow_vein(bool viewable, int nearness)
 
     /* Check distance away from stairs, used later */
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -18140,11 +18140,11 @@ bool borg_flow_vein(bool viewable, int nearness)
     }
 
     /* Scan the vein list */
-    for (i = 0; i < track_vein_num; i++)
+    for (i = 0; i < track_vein.num; i++)
     {
         /* Access the location */
-        x = track_vein_x[i];
-        y = track_vein_y[i];
+        x = track_vein.x[i];
+        y = track_vein.y[i];
 
         /* Get the grid */
         ag = &borg_grids[y][x];
@@ -18251,10 +18251,10 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Check distance away from stairs, used later */
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -18283,7 +18283,7 @@ bool borg_flow_take(bool viewable, int nearness)
         if (b_stair != -1 && borg_skill[BI_CLEVEL] < 10)
         {
             /* Check the distance of this 'take' to the stair */
-            j = borg_distance(track_less_y[b_stair], track_less_x[b_stair],
+            j = borg_distance(track_less.y[b_stair], track_less.x[b_stair],
                 y, x);
             /* skip far away takes while I am close to stair*/
             if (b_j <= leash &&
@@ -18394,10 +18394,10 @@ bool borg_flow_take_scum(bool viewable, int nearness)
     /* Check distance away from stairs, used later */
 
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -18492,10 +18492,10 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
     if (!borg_takes_cnt) return (false);
 
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -18816,10 +18816,10 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         if (breeder_level)
         {
             /* Did I close this one */
-            for (i = 0; i < track_door_num; i++)
+            for (i = 0; i < track_door.num; i++)
             {
                 /* mark as icky if I closed this one */
-                if ((track_door_x[i] == x) && (track_door_y[i] == y))
+                if ((track_door.x[i] == x) && (track_door.y[i] == y))
                 {
                     /* not interesting */
                     return (false);
@@ -19887,10 +19887,10 @@ bool borg_flow_dark(bool neer)
 
     /* Check distance away from stairs, used later */
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -19979,10 +19979,10 @@ bool borg_flow_spastic(bool bored)
 
     /* Check distance away from stairs, used later */
     /* Check for an existing "up stairs" */
-    for (i = 0; i < track_less_num; i++)
+    for (i = 0; i < track_less.num; i++)
     {
-        x = track_less_x[i];
-        y = track_less_y[i];
+        x = track_less.x[i];
+        y = track_less.y[i];
 
         /* How far is the nearest up stairs */
         j = borg_distance(c_y, c_x, y, x);
@@ -20080,10 +20080,10 @@ bool borg_flow_spastic(bool bored)
                 avoidance <= borg_skill[BI_CURHP])
             {
                 /* Check the distance of this grid to the stair */
-                j = borg_distance(track_less_y[b_stair], track_less_x[b_stair],
+                j = borg_distance(track_less.y[b_stair], track_less.x[b_stair],
                     y, x);
                 /* Distance of me to the stairs */
-                b_j = borg_distance(c_y, c_x, track_less_y[b_stair], track_less_x[b_stair]);
+                b_j = borg_distance(c_y, c_x, track_less.y[b_stair], track_less.x[b_stair]);
 
                 /* skip far away grids while I am close to stair*/
                 if (b_j <= borg_skill[BI_CLEVEL] * 3 + 9 &&

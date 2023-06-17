@@ -4843,7 +4843,7 @@ bool borg_leave_level(bool bored)
         }
 
 		/* No up stairs found. do down then back up */
-		if (track_less_num == 0) g = 1;
+		if (track_less.num == 0) g = 1;
     }
 
 

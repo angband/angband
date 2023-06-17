@@ -3000,18 +3000,18 @@ static bool borg_think_stair_scum(bool from_town)
     {
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
             /* We already knew about that one */
-            if ((track_more_x[i] == c_x) && (track_more_y[i] == c_y)) break;
+            if ((track_more.x[i] == c_x) && (track_more.y[i] == c_y)) break;
         }
 
         /* Track the newly discovered "down stairs" */
-        if ((i == track_more_num) && (i < track_more_size))
+        if ((i == track_more.num) && (i < track_more.size))
         {
-            track_more_x[i] = c_x;
-            track_more_y[i] = c_y;
-            track_more_num++;
+            track_more.x[i] = c_x;
+            track_more.y[i] = c_y;
+            track_more.num++;
         }
         /* tell the array */
         ag->feat = FEAT_MORE;
@@ -3022,18 +3022,18 @@ static bool borg_think_stair_scum(bool from_town)
     {
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
             /* We already knew about this one */
-            if ((track_less_x[i] == c_x) && (track_less_y[i] == c_y)) continue;
+            if ((track_less.x[i] == c_x) && (track_less.y[i] == c_y)) continue;
         }
 
         /* Track the newly discovered "up stairs" */
-        if ((i == track_less_num) && (i < track_less_size))
+        if ((i == track_less.num) && (i < track_less.size))
         {
-            track_less_x[i] = c_x;
-            track_less_y[i] = c_y;
-            track_less_num++;
+            track_less.x[i] = c_x;
+            track_less.y[i] = c_y;
+            track_less.num++;
         }
 
         /* Tell the array */
@@ -3063,20 +3063,20 @@ static bool borg_think_stair_scum(bool from_town)
     goal_fleeing = true;
 
     /* Scumming Mode - Going down */
-    if (track_more_num &&
+    if (track_more.num &&
         (ag->feat == FEAT_MORE ||
             ag->feat == FEAT_LESS ||
             borg_skill[BI_CDEPTH] < 30))
     {
         int y, x;
 
-        if (track_more_num >= 2) borg_note("# Scumming Mode: I know of a down stair.");
+        if (track_more.num >= 2) borg_note("# Scumming Mode: I know of a down stair.");
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
-            x = track_more_x[i];
-            y = track_more_y[i];
+            x = track_more.x[i];
+            y = track_more.y[i];
 
             /* How far is the nearest down stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3116,7 +3116,7 @@ static bool borg_think_stair_scum(bool from_town)
     }
 
     /* Scumming Mode - Going up */
-    if (track_less_num && borg_skill[BI_CDEPTH] != 1 &&
+    if (track_less.num && borg_skill[BI_CDEPTH] != 1 &&
         (ag->feat == FEAT_MORE ||
             ag->feat == FEAT_LESS))
     {
@@ -3125,10 +3125,10 @@ static bool borg_think_stair_scum(bool from_town)
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3237,18 +3237,18 @@ static bool borg_think_dungeon_lunal(void)
     {
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
             /* We already knew about that one */
-            if ((track_more_x[i] == c_x) && (track_more_y[i] == c_y)) break;
+            if ((track_more.x[i] == c_x) && (track_more.y[i] == c_y)) break;
         }
 
         /* Track the newly discovered "down stairs" */
-        if ((i == track_more_num) && (i < track_more_size))
+        if ((i == track_more.num) && (i < track_more.size))
         {
-            track_more_x[i] = c_x;
-            track_more_y[i] = c_y;
-            track_more_num++;
+            track_more.x[i] = c_x;
+            track_more.y[i] = c_y;
+            track_more.num++;
         }
         /* tell the array */
         ag->feat = FEAT_MORE;
@@ -3259,18 +3259,18 @@ static bool borg_think_dungeon_lunal(void)
     {
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
             /* We already knew about this one */
-            if ((track_less_x[i] == c_x) && (track_less_y[i] == c_y)) continue;
+            if ((track_less.x[i] == c_x) && (track_less.y[i] == c_y)) continue;
         }
 
         /* Track the newly discovered "up stairs" */
-        if ((i == track_less_num) && (i < track_less_size))
+        if ((i == track_less.num) && (i < track_less.size))
         {
-            track_less_x[i] = c_x;
-            track_less_y[i] = c_y;
-            track_less_num++;
+            track_less.x[i] = c_x;
+            track_less.y[i] = c_y;
+            track_less.num++;
         }
 
         /* Tell the array */
@@ -3279,14 +3279,14 @@ static bool borg_think_dungeon_lunal(void)
     }
 
     /* Act normal on 1 unless stairs are seen*/
-    if (borg_skill[BI_CDEPTH] == 1 && track_more_num == 0)
+    if (borg_skill[BI_CDEPTH] == 1 && track_more.num == 0)
     {
         borg_lunal_mode = false;
         return (false);
     }
 
     /* If no down stair is known, act normal */
-    if (track_more_num == 0 && track_less_num == 0)
+    if (track_more.num == 0 && track_less.num == 0)
     {
         borg_note("# Leaving Lunal Mode. (No Stairs seen)");
         borg_lunal_mode = false;
@@ -3362,7 +3362,7 @@ static bool borg_think_dungeon_lunal(void)
     goal_fleeing = true;
 
     /* Full of Items - Going up */
-    if (track_less_num && borg_items[PACK_SLOTS - 2].iqty &&
+    if (track_less.num && borg_items[PACK_SLOTS - 2].iqty &&
         (safe_place || ag->feat == FEAT_MORE || ag->feat == FEAT_LESS))
     {
         int y, x;
@@ -3371,10 +3371,10 @@ static bool borg_think_dungeon_lunal(void)
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3389,7 +3389,7 @@ static bool borg_think_dungeon_lunal(void)
         /* if on depth 1, try to venture more to get back to town */
         if (borg_skill[BI_CDEPTH] == 1)
         {
-            if (track_less_num)
+            if (track_less.num)
             {
                 closeness = 20;
             }
@@ -3430,20 +3430,20 @@ static bool borg_think_dungeon_lunal(void)
     }
 
     /* Lunal Mode - Going down */
-    if (track_more_num &&
+    if (track_more.num &&
         (safe_place || ag->feat == FEAT_MORE ||
             ag->feat == FEAT_LESS ||
             borg_skill[BI_CDEPTH] < 30))
     {
         int y, x;
 
-        if (track_more_num >= 2) borg_note("# Lunal Mode: I know of a down stair.");
+        if (track_more.num >= 2) borg_note("# Lunal Mode: I know of a down stair.");
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
-            x = track_more_x[i];
-            y = track_more_y[i];
+            x = track_more.x[i];
+            y = track_more.y[i];
 
             /* How far is the nearest down stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3483,7 +3483,7 @@ static bool borg_think_dungeon_lunal(void)
     }
 
     /* Lunal Mode - Going up */
-    if (track_less_num && borg_skill[BI_CDEPTH] != 1 &&
+    if (track_less.num && borg_skill[BI_CDEPTH] != 1 &&
         (safe_place || ag->feat == FEAT_MORE ||
             ag->feat == FEAT_LESS))
     {
@@ -3492,10 +3492,10 @@ static bool borg_think_dungeon_lunal(void)
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3620,18 +3620,18 @@ static bool borg_think_dungeon_munchkin(void)
     {
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
             /* We already knew about that one */
-            if ((track_more_x[i] == c_x) && (track_more_y[i] == c_y)) break;
+            if ((track_more.x[i] == c_x) && (track_more.y[i] == c_y)) break;
         }
 
         /* Track the newly discovered "down stairs" */
-        if ((i == track_more_num) && (i < track_more_size))
+        if ((i == track_more.num) && (i < track_more.size))
         {
-            track_more_x[i] = c_x;
-            track_more_y[i] = c_y;
-            track_more_num++;
+            track_more.x[i] = c_x;
+            track_more.y[i] = c_y;
+            track_more.num++;
         }
         /* tell the array */
         ag->feat = FEAT_MORE;
@@ -3642,18 +3642,18 @@ static bool borg_think_dungeon_munchkin(void)
     {
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
             /* We already knew about this one */
-            if ((track_less_x[i] == c_x) && (track_less_y[i] == c_y)) continue;
+            if ((track_less.x[i] == c_x) && (track_less.y[i] == c_y)) continue;
         }
 
         /* Track the newly discovered "up stairs" */
-        if ((i == track_less_num) && (i < track_less_size))
+        if ((i == track_less.num) && (i < track_less.size))
         {
-            track_less_x[i] = c_x;
-            track_less_y[i] = c_y;
-            track_less_num++;
+            track_less.x[i] = c_x;
+            track_less.y[i] = c_y;
+            track_less.num++;
         }
 
         /* Tell the array */
@@ -3662,14 +3662,14 @@ static bool borg_think_dungeon_munchkin(void)
     }
 
     /* Act normal on 1 unless stairs are seen*/
-    if (borg_skill[BI_CDEPTH] == 1 && track_more_num == 0)
+    if (borg_skill[BI_CDEPTH] == 1 && track_more.num == 0)
     {
         borg_munchkin_mode = false;
         return (false);
     }
 
     /* If no down stair is known, act normal */
-    if (track_more_num == 0 && track_less_num == 0)
+    if (track_more.num == 0 && track_less.num == 0)
     {
         borg_note("# Leaving Munchkin Mode. (No Stairs seen)");
         borg_munchkin_mode = false;
@@ -3739,16 +3739,16 @@ static bool borg_think_dungeon_munchkin(void)
         (10 - borg_skill[BI_CDEPTH]);
 
     /* Full of Items - Going up */
-    if (track_less_num && (borg_items[PACK_SLOTS - 2].iqty) &&
+    if (track_less.num && (borg_items[PACK_SLOTS - 2].iqty) &&
         (safe_place || ag->feat == FEAT_LESS || borg_skill[BI_CURLITE] == 0))
     {
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3766,7 +3766,7 @@ static bool borg_think_dungeon_munchkin(void)
         /* if on depth 1, try to venture more to get back to town */
         if (borg_skill[BI_CDEPTH] == 1)
         {
-            if (track_less_num)
+            if (track_less.num)
             {
                 closeness = 20;
             }
@@ -3807,7 +3807,7 @@ static bool borg_think_dungeon_munchkin(void)
     }
 
     /* Too deep. trying to gradually move shallow.  Going up */
-    if ((track_less_num && borg_skill[BI_CDEPTH] > borg_cfg[BORG_MUNCHKIN_DEPTH]) && 
+    if ((track_less.num && borg_skill[BI_CDEPTH] > borg_cfg[BORG_MUNCHKIN_DEPTH]) && 
         (safe_place || ag->feat == FEAT_LESS))
     {
 
@@ -3817,10 +3817,10 @@ static bool borg_think_dungeon_munchkin(void)
         b_j = -1;
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3871,19 +3871,19 @@ static bool borg_think_dungeon_munchkin(void)
     }
 
     /* Going down */
-    if ((track_more_num && borg_skill[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH]) &&
+    if ((track_more.num && borg_skill[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH]) &&
         (safe_place || ag->feat == FEAT_MORE))
     {
         /* Reset */
         b_j = -1;
 
-        if (track_more_num >= 1) borg_note("# Munchkin Mode: I know of a down stair.");
+        if (track_more.num >= 1) borg_note("# Munchkin Mode: I know of a down stair.");
 
         /* Check for an existing "down stairs" */
-        for (i = 0; i < track_more_num; i++)
+        for (i = 0; i < track_more.num; i++)
         {
-            x = track_more_x[i];
-            y = track_more_y[i];
+            x = track_more.x[i];
+            y = track_more.y[i];
 
             /* How far is the nearest down stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -3924,16 +3924,16 @@ static bool borg_think_dungeon_munchkin(void)
     }
 
     /* Going up */
-    if ((track_less_num && borg_skill[BI_CDEPTH] != 1 &&
+    if ((track_less.num && borg_skill[BI_CDEPTH] != 1 &&
         safe_place) || ag->feat == FEAT_LESS)
     {
         borg_grid* tmp_ag = &borg_grids[c_y][c_x];
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -4011,10 +4011,10 @@ static bool borg_think_dungeon_munchkin(void)
             if (ag->kill)
             {
                 /* Check for an existing "up stairs" */
-                for (ii = 0; ii < track_less_num; ii++)
+                for (ii = 0; ii < track_less.num; ii++)
                 {
-                    x = track_less_x[ii];
-                    y = track_less_y[ii];
+                    x = track_less.x[ii];
+                    y = track_less.y[ii];
 
                     /* How far is the nearest up stairs */
                     j = borg_distance(c_y, c_x, y, x);
@@ -4030,10 +4030,10 @@ static bool borg_think_dungeon_munchkin(void)
                 }
 
                 /* Check for an existing "down stairs" */
-                for (ii = 0; ii < track_more_num; ii++)
+                for (ii = 0; ii < track_more.num; ii++)
                 {
-                    x = track_more_x[ii];
-                    y = track_more_y[ii];
+                    x = track_more.x[ii];
+                    y = track_more.y[ii];
 
                     /* How far is the nearest down stairs */
                     j = borg_distance(c_y, c_x, y, x);
@@ -4591,17 +4591,17 @@ bool borg_think_dungeon(void)
     }
 
     /* Keep borg on a short leash */
-    if (track_less_num &&
+    if (track_less.num &&
         (borg_skill[BI_MAXHP] < 30 || borg_skill[BI_CLEVEL] < 15) &&
         borg_skill[BI_CDEPTH] >= borg_skill[BI_CLEVEL] - 5)
     {
         int y, x;
 
         /* Check for an existing "up stairs" */
-        for (i = 0; i < track_less_num; i++)
+        for (i = 0; i < track_less.num; i++)
         {
-            x = track_less_x[i];
-            y = track_less_y[i];
+            x = track_less.x[i];
+            y = track_less.y[i];
 
             /* How far is the nearest up stairs */
             j = borg_distance(c_y, c_x, y, x);
@@ -4673,7 +4673,7 @@ bool borg_think_dungeon(void)
     }
 
     /* Keep borg on a suitable level */
-    if (track_less_num && borg_skill[BI_CLEVEL] < 10 &&
+    if (track_less.num && borg_skill[BI_CLEVEL] < 10 &&
         !goal_less && (char*)NULL != borg_prepared(borg_skill[BI_CDEPTH]))
     {
         /* Note */
@@ -4817,10 +4817,10 @@ bool borg_think_dungeon(void)
             int tmp_i, y, x;
 
             /* Check for an existing "up stairs" */
-            for (tmp_i = 0; tmp_i < track_less_num; tmp_i++)
+            for (tmp_i = 0; tmp_i < track_less.num; tmp_i++)
             {
-                x = track_less_x[tmp_i];
-                y = track_less_y[tmp_i];
+                x = track_less.x[tmp_i];
+                y = track_less.y[tmp_i];
 
                 /* Not on a stair */
                 if (c_y != y || c_x != x) continue;
@@ -4845,10 +4845,10 @@ bool borg_think_dungeon(void)
             int tmp_i, y, x;
 
             /* Check for an existing "dn stairs" */
-            for (tmp_i = 0; tmp_i < track_more_num; tmp_i++)
+            for (tmp_i = 0; tmp_i < track_more.num; tmp_i++)
             {
-                x = track_more_x[tmp_i];
-                y = track_more_y[tmp_i];
+                x = track_more.x[tmp_i];
+                y = track_more.y[tmp_i];
 
                 /* Not on a stair */
                 if (c_y != y || c_x != x) continue;
@@ -5368,23 +5368,23 @@ bool borg_think_dungeon(void)
         goal_ignoring = false;
 
         /* No known stairs */
-        track_less_num = 0;
-        track_more_num = 0;
+        track_less.num = 0;
+        track_more.num = 0;
 
         /* No known glyph */
-        track_glyph_num = 0;
+        track_glyph.num = 0;
 
         /* No known steps */
-        track_step_num = 0;
+        track_step.num = 0;
 
         /* No known doors */
-        track_door_num = 0;
+        track_door.num = 0;
 
         /* No known doors */
-        track_closed_num = 0;
+        track_closed.num = 0;
 
         /* No mineral veins */
-        track_vein_num = 0;
+        track_vein.num = 0;
 
         /* No objects here */
         borg_takes_cnt = 0;

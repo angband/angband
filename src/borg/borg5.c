@@ -3295,18 +3295,18 @@ static void borg_update_map(void)
                 {
                     ag->glyph = true;
                     /* Check for an existing glyph */
-                    for (i = 0; i < track_glyph_num; i++)
+                    for (i = 0; i < track_glyph.num; i++)
                     {
                         /* Stop if we already new about this glyph */
-                        if ((track_glyph_x[i] == x) && (track_glyph_y[i] == y)) break;
+                        if ((track_glyph.x[i] == x) && (track_glyph.y[i] == y)) break;
                     }
 
                     /* Track the newly discovered glyph */
-                    if ((i == track_glyph_num) && (i < track_glyph_size))
+                    if ((i == track_glyph.num) && (i < track_glyph.size))
                     {
-                        track_glyph_x[i] = x;
-                        track_glyph_y[i] = y;
-                        track_glyph_num++;
+                        track_glyph.x[i] = x;
+                        track_glyph.y[i] = y;
+                        track_glyph.num++;
                     }
                 }
             }
@@ -3405,21 +3405,21 @@ static void borg_update_map(void)
             else if (g.f_idx == FEAT_MAGMA_K || g.f_idx == FEAT_QUARTZ_K)
             {
                 /* Check for an existing vein */
-                for (i = 0; i < track_vein_num; i++)
+                for (i = 0; i < track_vein.num; i++)
                 {
                     /* Stop if we already new about this */
-                    if ((track_vein_x[i] == x) && (track_vein_y[i] == y)) break;
+                    if ((track_vein.x[i] == x) && (track_vein.y[i] == y)) break;
                 }
 
                 /* Track the newly discovered vein */
-                if ((i == track_vein_num) && (i < track_vein_size))
+                if ((i == track_vein.num) && (i < track_vein.size))
                 {
-                    track_vein_x[i] = x;
-                    track_vein_y[i] = y;
-                    track_vein_num++;
+                    track_vein.x[i] = x;
+                    track_vein.y[i] = y;
+                    track_vein.num++;
 
                     /* do not overflow */
-                    if (track_vein_num > 99) track_vein_num = 99;
+                    if (track_vein.num > 99) track_vein.num = 99;
                 }
             }
             /* Rubble */
@@ -3434,21 +3434,21 @@ static void borg_update_map(void)
                 if (borg_skill[BI_CLEVEL] <= 5)
                 {
                     /* Check for an existing door */
-                    for (i = 0; i < track_closed_num; i++)
+                    for (i = 0; i < track_closed.num; i++)
                     {
                         /* Stop if we already new about this door */
-                        if ((track_closed_x[i] == x) && (track_closed_y[i] == y)) break;
+                        if ((track_closed.x[i] == x) && (track_closed.y[i] == y)) break;
                     }
 
                     /* Track the newly discovered door */
-                    if ((i == track_closed_num) && (i < track_closed_size))
+                    if ((i == track_closed.num) && (i < track_closed.size))
                     {
-                        track_closed_x[i] = x;
-                        track_closed_y[i] = y;
-                        track_closed_num++;
+                        track_closed.x[i] = x;
+                        track_closed.y[i] = y;
+                        track_closed.num++;
 
                         /* do not overflow */
-                        if (track_closed_num > 254) track_closed_num = 254;
+                        if (track_closed.num > 254) track_closed.num = 254;
                     }
                 }
             }
@@ -3456,36 +3456,36 @@ static void borg_update_map(void)
             else if (g.f_idx == FEAT_LESS)
             {
                 /* Check for an existing "up stairs" */
-                for (i = 0; i < track_less_num; i++)
+                for (i = 0; i < track_less.num; i++)
                 {
                     /* Stop if we already new about these stairs */
-                    if ((track_less_x[i] == x) && (track_less_y[i] == y)) break;
+                    if ((track_less.x[i] == x) && (track_less.y[i] == y)) break;
                 }
 
                 /* Track the newly discovered "up stairs" */
-                if ((i == track_less_num) && (i < track_less_size))
+                if ((i == track_less.num) && (i < track_less.size))
                 {
-                    track_less_x[i] = x;
-                    track_less_y[i] = y;
-                    track_less_num++;
+                    track_less.x[i] = x;
+                    track_less.y[i] = y;
+                    track_less.num++;
                 }
             }
             /* Down stairs */
             else if (g.f_idx == FEAT_MORE)
             {
                 /* Check for an existing "down stairs" */
-                for (i = 0; i < track_more_num; i++)
+                for (i = 0; i < track_more.num; i++)
                 {
                     /* We already knew about that one */
-                    if ((track_more_x[i] == x) && (track_more_y[i] == y)) break;
+                    if ((track_more.x[i] == x) && (track_more.y[i] == y)) break;
                 }
 
                 /* Track the newly discovered "down stairs" */
-                if ((i == track_more_num) && (i < track_more_size))
+                if ((i == track_more.num) && (i < track_more.size))
                 {
-                    track_more_x[i] = x;
-                    track_more_y[i] = y;
-                    track_more_num++;
+                    track_more.x[i] = x;
+                    track_more.y[i] = y;
+                    track_more.num++;
                 }
             }
 
@@ -4287,23 +4287,23 @@ void borg_update(void)
         if (borg_skill[BI_CDEPTH] >= 2) goal_fleeing_to_town = false;
 
         /* No known stairs */
-        track_less_num = 0;
-        track_more_num = 0;
+        track_less.num = 0;
+        track_more.num = 0;
 
         /* No known glyph */
-        track_glyph_num = 0;
+        track_glyph.num = 0;
 
         /* No known steps */
-        track_step_num = 0;
+        track_step.num = 0;
 
         /* No known doors */
-        track_door_num = 0;
+        track_door.num = 0;
 
         /* No known doors */
-        track_closed_num = 0;
+        track_closed.num = 0;
 
         /* No known veins*/
-        track_vein_num = 0;
+        track_vein.num = 0;
 
         /* No artifacts swapping in and out */
         track_worn_num = 0;
@@ -4573,21 +4573,21 @@ void borg_update(void)
     borg_update_map();
 
     /* Mark this grid as having been stepped on */
-    track_step_x[track_step_num] = player->grid.x;
-    track_step_y[track_step_num] = player->grid.y;
-    track_step_num++;
+    track_step.x[track_step.num] = player->grid.x;
+    track_step.y[track_step.num] = player->grid.y;
+    track_step.num++;
 
     /* Hack - Clean the steps every so often */
-    if (track_step_num >= 75)
+    if (track_step.num >= 75)
     {
         for (i = 0; i <= 75; i++)
         {
             /* Move each step down one position */
-            track_step_x[i] = track_step_x[i + 1];
-            track_step_y[i] = track_step_y[i + 1];
+            track_step.x[i] = track_step.x[i + 1];
+            track_step.y[i] = track_step.y[i + 1];
         }
         /* reset the count */
-        track_step_num = 75;
+        track_step.num = 75;
     }
 
     /* Reset */
@@ -4768,14 +4768,14 @@ void borg_update(void)
 
     /* Examine changing doors while shallow */
     if (borg_skill[BI_CLEVEL] <= 5 && borg_skill[BI_CDEPTH] &&
-        track_closed_num)
+        track_closed.num)
     {
         /* Scan all known closed doors */
-        for (i = 0; i < track_closed_num; i++)
+        for (i = 0; i < track_closed.num; i++)
         {
             /* Get location */
-            x = track_closed_x[i];
-            y = track_closed_y[i];
+            x = track_closed.x[i];
+            y = track_closed.y[i];
 
             /* Get the borg_grid */
             ag = &borg_grids[y][x];
