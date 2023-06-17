@@ -46,7 +46,6 @@ extern bool borg_best_stuff(void);
 extern bool borg_play_magic(bool bored);
 extern bool borg_remove_stuff(void);
 extern bool borg_dump_quiver(void);
-extern bool borg_stack_quiver(void);
 extern bool borg_wear_recharge(void);
 extern int borg_count_sell(void);
 /*
