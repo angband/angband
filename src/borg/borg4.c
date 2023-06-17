@@ -5592,6 +5592,12 @@ static int32_t borg_power_aux2(void)
         {
             for (; k < 180 && k < borg_skill[BI_AMISSILES]; k++) value += 80L;
         }
+        /* peanalize use of too many quiver slots */
+        for (k = QUIVER_START + 4; k < QUIVER_END; k++)
+        {
+            if (borg_items[k].iqty) value -= 1000L;
+        }
+
     }
     else
     {
@@ -5603,6 +5609,11 @@ static int32_t borg_power_aux2(void)
         }
         /* Don't carry too many */
         if (borg_skill[BI_STR] <= 15 && borg_skill[BI_AMISSILES] > 20) value -= 1000L;
+        /* peanalize use of too many quiver slots */
+        for (k = QUIVER_START + 2; k < QUIVER_END; k++)
+        {
+            if (borg_items[k].iqty) value -= 10000L;
+        }
     }
 
     /*** Various ***/

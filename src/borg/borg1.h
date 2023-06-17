@@ -788,12 +788,12 @@ extern int*     borg_skill;
 extern int      size_depth;
 extern int      size_obj;
 
-enum
+enum borg_item_pos
 {
     BORG_INVEN = 1,
     BORG_EQUIP = 2,
     BORG_QUILL = 4
-} borg_item_pos;
+};
 
 /* NOTE: This must exactly match the prefix_pref enums in BORG1.c */
 enum

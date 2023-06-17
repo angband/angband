@@ -5891,6 +5891,8 @@ void do_cmd_borg(void)
 
         /* Step N times */
         borg_step = get_quantity("Step how many times? ", 1000);
+        if (borg_step < 1)
+            borg_step = 1;
 
         /* need to check all stats */
         for (int i = 0; i < STAT_MAX; i++)
