@@ -291,6 +291,14 @@ static void monitor_new_savefile(game_event_type ev_type,
 static void finish_monitoring_savefile(game_event_type ev_type,
 	game_event_data *ev_data, void *user);
 
+/* prototype functions passed to windows */
+size_t Term_mbstowcs_win(wchar_t* dest, const char* src, int n);
+int Term_wcsz_win(void);
+int Term_wctomb_win(char* s, wchar_t wchar);
+int Term_iswprint_win(wint_t wc);
+LRESULT FAR PASCAL AngbandSaverProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+
 /**
  * screen paletted, i.e. 256 colors
  */
@@ -2317,6 +2325,7 @@ static errr Term_pict_win(int x, int y, int n,
 	return 0;
 }
 
+
 /**
  * Windows cannot naturally handle UTF-8 using the standard locale and
  * C library routines, such as mbstowcs().
@@ -2361,7 +2370,6 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 											src, -1, NULL, 0) - 1);
 	}
 }
-
 
 int Term_wcsz_win(void)
 {
