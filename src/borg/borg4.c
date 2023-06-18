@@ -949,7 +949,7 @@ static void borg_notice_aux1(void)
         /* track first cursed item */
         if (!borg_skill[BI_FIRST_CURSED] && item->uncursable)
         {
-            borg_skill[BI_WHERE_CURSED] |= BORG_INVEN;
+            borg_skill[BI_WHERE_CURSED] |= BORG_EQUIP;
             borg_skill[BI_FIRST_CURSED] = i + 1;
         }
 
@@ -1637,7 +1637,7 @@ static void borg_notice_aux2(void)
         /* track first cursed item */
         if (item->uncursable)
         {
-            borg_skill[BI_WHERE_CURSED] |= BORG_EQUIP;
+            borg_skill[BI_WHERE_CURSED] |= BORG_INVEN;
             if (!borg_skill[BI_FIRST_CURSED])
                 borg_skill[BI_FIRST_CURSED] = i + 1;
         }
