@@ -1558,10 +1558,8 @@ static bool borg_consume(int i)
         case TV_SCROLL:
 
         /* Check the scroll */
-            if (item->sval == sv_scroll_remove_curse ||
-				item->sval == sv_scroll_light ||
+            if (item->sval == sv_scroll_light ||
 				item->sval == sv_scroll_monster_confusion ||
-				item->sval == sv_scroll_star_remove_curse ||
 				item->sval == sv_scroll_trap_door_destruction ||
 				item->sval == sv_scroll_satisfy_hunger ||
 				item->sval == sv_scroll_dispel_undead ||
@@ -2270,6 +2268,7 @@ bool borg_crush_slow(void)
 
     /* don't crush stuff unless we are on a floor */
     if (borg_grids[c_y][c_x].feat != FEAT_FLOOR) return (false);
+    if (borg_grids[c_y][c_x].trap) return (false);
 
     /* Calculate "greed" factor */
     greed = (borg_gold / 100L) + 100L;
@@ -4084,17 +4083,22 @@ static const struct effect_kind effects[] =
 
 static bool borg_can_play_spell(borg_magic* as)
 {
-    if (as->effect_index == EF_BRAND_AMMO)
+    /* There are some spells not worth testing */
+/* they can just be used when the borg is ready to use it. */
+    switch (as->spell_enum)
     {
-        if (borg_items[QUIVER_START].iqty)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+    case LIGHTNING_STRIKE:
+    case TAP_UNLIFE:
+    case TAP_MAGICAL_ENERGY:
+    case REMOVE_CURSE:
+    case TREMOR:
+    case WORD_OF_DESTRUCTION:
+    case GRONDS_BLOW:
+    return false;
+    default:
+    break;
     }
+
     if (as->effect_index == EF_BRAND_BOLTS)
         return false; // !FIX !TODO !AJG check for a bolt
     if (as->effect_index == EF_ENCHANT)
@@ -4195,7 +4199,7 @@ bool borg_play_magic(bool bored)
 		/* Only try "untried" spells/prayers */
 		if (as->status != BORG_MAGIC_TEST) continue;
 
-        /* don't play with spells that require an object because we might not have one */
+        /* some spells can't be "played with" in town */
         if (!borg_can_play_spell(as)) continue;
 
 		/* Some spells should not be tested in munchkin mode */
@@ -4209,21 +4213,6 @@ bool borg_play_magic(bool bored)
 			if (!player_has(player, PF_CHOOSE_SPELLS) &&
 				as->spell_enum == BLESS) continue;
 		}
-
-        /* There are some spells not worth testing */
-        /* they can just be used when the borg is ready to use it. */
-        switch (as->spell_enum)
-        {
-        case LIGHTNING_STRIKE:
-        case TAP_UNLIFE:
-        case REMOVE_CURSE:
-        case TREMOR:
-        case WORD_OF_DESTRUCTION:
-        case GRONDS_BLOW:
-        continue;
-        default:
-        break;
-        }
 
 		/* Note */
 		borg_note("# Testing untried spell/prayer");
