@@ -15362,6 +15362,34 @@ bool borg_recover(void)
     return (false);
 }
 
+static bool borg_can_dig(bool check_fail)
+{
+
+    if ((borg_skill[BI_DIG] >= BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
+        (borg_skill[BI_DIG] >= BORG_DIG + 20))
+        return true;
+        
+    if (check_fail)
+    {
+        if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40) ||
+            borg_spell_legal_fail(SHATTER_STONE, 40) ||
+            borg_equips_artifact("STONE_TO_MUD", true) ||
+            borg_equips_ring(sv_ring_digging))
+            return true;
+    }
+    else
+    {
+        if (borg_spell_legal(TURN_STONE_TO_MUD) ||
+            borg_spell_legal(SHATTER_STONE) ||
+            borg_equips_artifact("STONE_TO_MUD", false) ||
+            borg_equips_ring(sv_ring_digging))
+            return true;
+    }
+
+    return false;
+}
+
+
 /*
  * Take one "step" towards the given location, return true if possible
  */
@@ -15789,6 +15817,13 @@ static bool borg_play_step(int y2, int x2)
         /* Don't dig walls and seams when exploring (do dig rubble) */
         if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return false;
 
+        /* Don't bother digging without sufficient dig ability */
+        if (!borg_can_dig(false))
+        {
+            goal = 0;
+            return false;
+        }
+
         /* Use Stone to Mud when available */
         if (borg_spell(TURN_STONE_TO_MUD) ||
             borg_spell(SHATTER_STONE) ||
@@ -15801,15 +15836,6 @@ static bool borg_play_step(int y2, int x2)
             track_vein.num = 0;
 
             return true;
-        }
-
-        /* If we don't have a digger, don't bother digging without sufficient dig ability */
-        /* AJG I made this match borg_flow_kill_direct because otherwise it causes stuckness */
-        if ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-            (borg_skill[BI_DIG] < BORG_DIG + 20))
-        {
-            goal = 0;
-            return false;
         }
 
         /* Mega-Hack -- prevent infinite loops */
@@ -17649,18 +17675,8 @@ bool borg_flow_kill_corridor_2(bool viewable)
             }
 
             /* Do not dig unless we appear strong enough to succeed or we have a digger */
-            if (borg_spell_legal(TURN_STONE_TO_MUD) ||
-                borg_spell_legal(SHATTER_STONE) ||
-                (borg_skill[BI_DIG] > BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-                (borg_skill[BI_DIG] > BORG_DIG + 20))
-            {
-                /* digging ought to work */
-            }
-            else
-            {
-                /* do not try digging */
+            if (!borg_can_dig(false))
                 continue;
-            }
 
             /* reset floors counter */
             floors = 0;
@@ -18111,9 +18127,7 @@ bool borg_flow_vein(bool viewable, int nearness)
     if (borg_gold >= 100000) return (false);
 
     /* Require digger, capacity, or skill */
-    if (!borg_spell_okay_fail(TURN_STONE_TO_MUD, 35) &&
-        !borg_spell_okay_fail(SHATTER_STONE, 35) &&
-        borg_items[weapon_swap].tval != TV_DIGGING) return (false);
+    if (!borg_can_dig(true)) return (false);
 
     /* Nothing yet */
     borg_temp_n = 0;
@@ -18723,22 +18737,8 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         /* Not when darkened */
         if (borg_skill[BI_CURLITE] == 0) return (false);
 
-        /* Allow "stone to mud" ability */
-        if (borg_spell_legal(TURN_STONE_TO_MUD) ||
-            borg_spell_legal(SHATTER_STONE) ||
-            borg_equips_ring(sv_ring_digging) ||
-            borg_equips_artifact("STONE_TO_MUD", true)) return (true);
-
-        /* Do not dig unless we appear strong enough to succeed or we have a digger */
-        if ((borg_skill[BI_DIG] > BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-            (borg_skill[BI_DIG] > BORG_DIG + 20))
-        {
-            /* digging ought to work */
-        }
-        else
-        {
-            return (false);
-        }
+        /* don't try to dig if we can't */
+        if (!borg_can_dig(false)) return (false);
 
         /* Okay */
         return (true);
@@ -18772,26 +18772,8 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                     /* skip non perma grids wall */
                     if (ag->feat != FEAT_PERM) continue;
 
-                    /* Allow "stone to mud" ability */
-                    if (borg_spell_legal(TURN_STONE_TO_MUD) ||
-                        borg_spell_legal(SHATTER_STONE) ||
-                        borg_equips_ring(sv_ring_digging) ||
-                        borg_equips_artifact("STONE_TO_MUD", true)) return (true);
-
-                    /* Do not dig unless we appear strong enough to succeed or we have a digger */
-                    if ((borg_skill[BI_DIG] > BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-                        (borg_skill[BI_DIG] > BORG_DIG + 20))
-                    {
-                        /* digging ought to work, proceed */
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    /* Final check on ability */
-                    if ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-                        (borg_skill[BI_DIG] < BORG_DIG + 20)) return (false);
+                    /* make sure we can dig */
+                    if (!borg_can_dig(false)) return (false);
 
                     /* Glove up and dig in */
                     return (true);
