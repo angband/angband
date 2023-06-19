@@ -511,20 +511,21 @@ enum
 
 
 
-  /*
-   * Enable the "borg_note()" usage of the Recall Window
-   * Also specify the number of "rolling rows" to use
-   */
+/*
+ * Enable the "borg_note()" usage of the Recall Window
+ * Also specify the number of "rolling rows" to use
+ */
 #define BORG_NOTE_ROWS      12
 
-   /*
-    * Threshold where the borg will start to carry / use Digger items
-    */
-#define BORG_DIG			14
+/*
+* Threshold where the borg will attempt to dig things
+*/
+#define BORG_DIG			20
+#define BORG_DIG_HARD		40
 
-    /*
-     * Size of Keypress buffer
-     */
+/*
+ * Size of Keypress buffer
+ */
 #define KEY_SIZE 8192
 
 

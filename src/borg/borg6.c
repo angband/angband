@@ -15362,11 +15362,16 @@ bool borg_recover(void)
     return (false);
 }
 
-static bool borg_can_dig(bool check_fail)
+/*
+ * Check if the borg can dig.  
+ *   check_fail = check if the spell failure rate is too high
+ *   hard = check if hard things, like granite, can be dug
+ */
+static bool borg_can_dig(bool check_fail, bool hard)
 {
-
-    if ((borg_skill[BI_DIG] >= BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-        (borg_skill[BI_DIG] >= BORG_DIG + 20))
+    int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
+    if ((borg_skill[BI_DIG] >= dig_check && borg_items[weapon_swap].tval == TV_DIGGING) ||
+        (borg_skill[BI_DIG] >= dig_check + 20))
         return true;
         
     if (check_fail)
@@ -15818,7 +15823,12 @@ static bool borg_play_step(int y2, int x2)
         if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return false;
 
         /* Don't bother digging without sufficient dig ability */
-        if (!borg_can_dig(false))
+        if (!borg_can_dig(false, false))
+        {
+            goal = 0;
+            return false;
+        }
+        if (ag->feat == FEAT_GRANITE && !borg_can_dig(false, true))
         {
             goal = 0;
             return false;
@@ -16658,6 +16668,7 @@ bool borg_flow_vault(int nearness)
 {
     int y, x, i;
     int b_y, b_x;
+    bool can_dig_hard;
 
     borg_grid* ag;
 
@@ -16667,6 +16678,11 @@ bool borg_flow_vault(int nearness)
 
     /* no need if no vault on level */
     if (!vault_on_level) return (false);
+
+    /* no need if we can't dig */
+    if (!borg_can_dig(false, false)) return (false);
+
+    can_dig_hard = borg_can_dig(false, true);
 
     /* build the array -- Scan screen */
     for (y = w_y; y < w_y + SCREEN_HGT; y++)
@@ -16678,15 +16694,29 @@ bool borg_flow_vault(int nearness)
             if (borg_distance(c_y, c_x, y, x) > nearness) continue;
 
             /* only deal with excavatable walls */
-            if (borg_grids[y][x].feat != FEAT_FLOOR &&
-                borg_grids[y][x].feat != FEAT_LAVA &&
-                borg_grids[y][x].feat != FEAT_GRANITE &&
-                borg_grids[y][x].feat != FEAT_RUBBLE &&
-                borg_grids[y][x].feat != FEAT_QUARTZ &&
-                borg_grids[y][x].feat != FEAT_MAGMA &&
-                borg_grids[y][x].feat != FEAT_QUARTZ_K &&
-                borg_grids[y][x].feat != FEAT_MAGMA_K)
-                continue;
+            if (can_dig_hard)
+            {
+                if (borg_grids[y][x].feat != FEAT_FLOOR &&
+                    borg_grids[y][x].feat != FEAT_LAVA &&
+                    borg_grids[y][x].feat != FEAT_GRANITE &&
+                    borg_grids[y][x].feat != FEAT_RUBBLE &&
+                    borg_grids[y][x].feat != FEAT_QUARTZ &&
+                    borg_grids[y][x].feat != FEAT_MAGMA &&
+                    borg_grids[y][x].feat != FEAT_QUARTZ_K &&
+                    borg_grids[y][x].feat != FEAT_MAGMA_K)
+                    continue;
+            }
+            else
+            {
+                if (borg_grids[y][x].feat != FEAT_FLOOR &&
+                    borg_grids[y][x].feat != FEAT_LAVA &&
+                    borg_grids[y][x].feat != FEAT_RUBBLE &&
+                    borg_grids[y][x].feat != FEAT_QUARTZ &&
+                    borg_grids[y][x].feat != FEAT_MAGMA &&
+                    borg_grids[y][x].feat != FEAT_QUARTZ_K &&
+                    borg_grids[y][x].feat != FEAT_MAGMA_K)
+                    continue;
+            }
 
             /* Examine grids adjacent to this grid to see if there is a perma wall adjacent */
             for (i = 0; i < 8; i++)
@@ -16758,7 +16788,7 @@ bool borg_excavate_vault(int range)
     if (!vault_on_level) return (false);
 
     /* only if you can cast the spell */
-    if (!borg_spell_okay_fail(TURN_STONE_TO_MUD, 30) || borg_spell_okay_fail(SHATTER_STONE, 30)) return (false);
+    if (!borg_spell_okay_fail(TURN_STONE_TO_MUD, 30) && !borg_spell_okay_fail(SHATTER_STONE, 30)) return (false);
 
     /* Danger/bad idea checks */
 
@@ -17675,7 +17705,7 @@ bool borg_flow_kill_corridor_2(bool viewable)
             }
 
             /* Do not dig unless we appear strong enough to succeed or we have a digger */
-            if (!borg_can_dig(false))
+            if (!borg_can_dig(false, false))
                 continue;
 
             /* reset floors counter */
@@ -18127,7 +18157,7 @@ bool borg_flow_vein(bool viewable, int nearness)
     if (borg_gold >= 100000) return (false);
 
     /* Require digger, capacity, or skill */
-    if (!borg_can_dig(true)) return (false);
+    if (!borg_can_dig(true, false)) return (false);
 
     /* Nothing yet */
     borg_temp_n = 0;
@@ -18738,7 +18768,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         if (borg_skill[BI_CURLITE] == 0) return (false);
 
         /* don't try to dig if we can't */
-        if (!borg_can_dig(false)) return (false);
+        if (!borg_can_dig(false, false)) return (false);
 
         /* Okay */
         return (true);
@@ -18773,7 +18803,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                     if (ag->feat != FEAT_PERM) continue;
 
                     /* make sure we can dig */
-                    if (!borg_can_dig(false)) return (false);
+                    if (!borg_can_dig(false, false)) return (false);
 
                     /* Glove up and dig in */
                     return (true);

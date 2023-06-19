@@ -879,6 +879,13 @@ static void borg_parse_aux(char* msg, int len)
 
     }
 
+    /* Mega-Hack -- Check against the search string */
+    if (borg_match[0] && strstr(msg, borg_match))
+    {
+        /* Clean cancel */
+        borg_cancel = true;
+    }
+
 
     /* Ignore teleport trap */
     if (prefix(msg, "You hit a teleport")) return;

@@ -1520,13 +1520,6 @@ void borg_note(const char* what)
     borg_info(what);
 
 
-    /* Mega-Hack -- Check against the search string */
-    if (borg_match[0] && strstr(what, borg_match))
-    {
-        /* Clean cancel */
-        borg_cancel = true;
-    }
-
     /* Mega-Hack -- Check against the swap loops */
     if (strstr(what, "Best Combo") ||
         strstr(what, "Taking off "))
