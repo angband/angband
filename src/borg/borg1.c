@@ -186,6 +186,8 @@ const char* prefix_pref[] =
     "_AMMO_SIDES",
     "_AMMO_POWER",
     "_AMISSILES",  /* only ones for your current bow count */
+    "_AMISSILES_SPECIAL",/* and are ego */
+    "_AMISSILES_CURSED",  /* and are cursed */
     "_QUIVER_SLOTS", /* number of inven slots the quivered items take */
     "_FIRST_CURSED", /* first cursed item */
     "_WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
@@ -490,8 +492,8 @@ int16_t my_stat_add[STAT_MAX];  /* additions to stats  This will allow upgrading
 
 int16_t home_stat_add[STAT_MAX];
 
-int     weapon_swap;    /* location of my swap weapon */
-int     armour_swap;    /* my swap of armour */
+int     weapon_swap;    /* location of my swap weapon (+1 so zero is none) */
+int     armour_swap;    /* my swap of armour (+1 so zero is none) */
 
 bool    decurse_weapon_swap;  /* my swap is great, except its cursed */
 int     enchant_weapon_swap_to_h;  /* my swap is great, except its cursed */

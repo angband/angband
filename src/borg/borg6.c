@@ -6384,7 +6384,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
             /* Stop at walls */
             /* note if beam, this is the end of the beam */
             /* dispel spells act like beams (sort of) */
-            if (!borg_cave_floor_grid(ag))
+            if (!borg_cave_floor_grid(ag) || ag->feat == FEAT_PASS_RUBBLE)
             {
                 if (rad != -1 && rad != 10)
                     return (0);
@@ -8179,7 +8179,7 @@ static int borg_attack_aux_object(void)
  *
  * Take into account the failure rate of spells/objects/etc.  XXX XXX XXX
  */
-static int borg_attack_aux_spell_bolt(const enum borg_spells spell, int rad, int dam, int typ)
+static int borg_attack_aux_spell_bolt(const enum borg_spells spell, int rad, int dam, int typ, int max_range)
 {
     int b_n;
     int penalty = 0;
@@ -8204,7 +8204,7 @@ static int borg_attack_aux_spell_bolt(const enum borg_spells spell, int rad, int
 
 
     /* Choose optimal location */
-    b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
+    b_n = borg_launch_bolt(rad, dam, typ, max_range, 0);
 
     enum borg_spells primary_spell_for_class = MAGIC_MISSILE;
     switch (borg_class)
@@ -8285,7 +8285,7 @@ static int borg_attack_aux_spell_bolt(const enum borg_spells spell, int rad, int
 /* This routine is the same as the one above only in an emergency case.
  * The borg will enter negative mana casting this
  */
-static int borg_attack_aux_spell_bolt_reserve(const enum borg_spells spell, int rad, int dam, int typ)
+static int borg_attack_aux_spell_bolt_reserve(const enum borg_spells spell, int rad, int dam, int typ, int max_range)
 {
     int b_n;
     int i;
@@ -8366,7 +8366,7 @@ static int borg_attack_aux_spell_bolt_reserve(const enum borg_spells spell, int 
     }
 
     /* Choose optimal location */
-    b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
+    b_n = borg_launch_bolt(rad, dam, typ, max_range, 0);
 
     /* return the value */
     if (borg_simulate)
@@ -9489,13 +9489,13 @@ static int borg_attack_aux(int what)
     /* Spell -- slow monster */
     case BF_SPELL_SLOW_MONSTER:
     dam = 10;
-    return (borg_attack_aux_spell_bolt(SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW));
+    return (borg_attack_aux_spell_bolt(SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW, z_info->max_range));
 
     /* Spell -- confuse monster */
     case BF_SPELL_CONFUSE_MONSTER:
     rad = 0;
     dam = 10;
-    return (borg_attack_aux_spell_bolt(CONFUSE_MONSTER, rad, dam, BORG_ATTACK_OLD_CONF));
+    return (borg_attack_aux_spell_bolt(CONFUSE_MONSTER, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range));
 
     case BF_SPELL_SLEEP_III:
     dam = 10;
@@ -9505,91 +9505,91 @@ static int borg_attack_aux(int what)
     case BF_SPELL_MAGIC_MISSILE:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE));
+    return (borg_attack_aux_spell_bolt(MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
 
     /* Spell -- magic missile EMERGENCY*/
     case BF_SPELL_MAGIC_MISSILE_RESERVE:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1));
-    return (borg_attack_aux_spell_bolt_reserve(MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE));
+    return (borg_attack_aux_spell_bolt_reserve(MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
 
     /* Spell -- cold bolt */
     case BF_SPELL_COLD_BOLT:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] - 5) / 3) + 6) * (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(FROST_BOLT, rad, dam, BORG_ATTACK_COLD));
+    return (borg_attack_aux_spell_bolt(FROST_BOLT, rad, dam, BORG_ATTACK_COLD, z_info->max_range));
 
     /* Spell -- kill wall */
     case BF_SPELL_STONE_TO_MUD:
     rad = 0;
     dam = (20 + (30 / 2));
-    return (borg_attack_aux_spell_bolt(TURN_STONE_TO_MUD, rad, dam, BORG_ATTACK_KILL_WALL));
+    return (borg_attack_aux_spell_bolt(TURN_STONE_TO_MUD, rad, dam, BORG_ATTACK_KILL_WALL, z_info->max_range));
 
     /* Spell -- light beam */
     case BF_SPELL_LIGHT_BEAM:
     rad = -1;
     dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(SPEAR_OF_LIGHT, rad, dam, BORG_ATTACK_LIGHT_WEAK));
+    return (borg_attack_aux_spell_bolt(SPEAR_OF_LIGHT, rad, dam, BORG_ATTACK_LIGHT_WEAK, z_info->max_range));
 
     /* Spell -- stinking cloud */
     case BF_SPELL_STINK_CLOUD:
     rad = 2;
     dam = (10 + (borg_skill[BI_CLEVEL] / 2));
-    return (borg_attack_aux_spell_bolt(STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS));
+    return (borg_attack_aux_spell_bolt(STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS, z_info->max_range));
 
     /* Spell -- fire ball */
     case BF_SPELL_FIRE_BALL:
     rad = 2;
     dam = (borg_skill[BI_CLEVEL] * 2);
-    return (borg_attack_aux_spell_bolt(FIRE_BALL, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_spell_bolt(FIRE_BALL, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
 
     /* Spell -- Ice Storm */
     case BF_SPELL_COLD_STORM:
     rad = 3;
     dam = (3 * ((borg_skill[BI_CLEVEL] * 3) + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ICE_STORM, rad, dam, BORG_ATTACK_ICE));
+    return (borg_attack_aux_spell_bolt(ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range));
 
     /* Spell -- Meteor Swarm */
     case BF_SPELL_METEOR_SWARM:
     rad = 3;
     dam = (30 + borg_skill[BI_CLEVEL] / 2) + (borg_skill[BI_CLEVEL] / 20) + 2;
-    return (borg_attack_aux_spell_bolt(METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR));
+    return (borg_attack_aux_spell_bolt(METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR, z_info->max_range));
 
     /* Spell -- Rift */
     case BF_SPELL_RIFT:
     rad = -1;
     dam = ((borg_skill[BI_CLEVEL] * 3) + 40);
-    return (borg_attack_aux_spell_bolt(RIFT, rad, dam, BORG_ATTACK_GRAVITY));
+    return (borg_attack_aux_spell_bolt(RIFT, rad, dam, BORG_ATTACK_GRAVITY, z_info->max_range));
 
     /* Spell -- mana storm */
     case BF_SPELL_MANA_STORM:
     rad = 3;
     dam = (300 + (borg_skill[BI_CLEVEL] * 2));
-    return (borg_attack_aux_spell_bolt(MANA_STORM, rad, dam, BORG_ATTACK_MANA));
+    return (borg_attack_aux_spell_bolt(MANA_STORM, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
 
     /* Spell -- Shock Wave */
     case BF_SPELL_SHOCK_WAVE:
     dam = (borg_skill[BI_CLEVEL] * 2);
     rad = 2;
-    return (borg_attack_aux_spell_bolt(SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND));
+    return (borg_attack_aux_spell_bolt(SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND, z_info->max_range));
 
     /* Spell -- Explosion */
     case BF_SPELL_EXPLOSION:
     dam = ((borg_skill[BI_CLEVEL] * 2) + (borg_skill[BI_CLEVEL] / 5)); /* hack pretend it is all shards */
     rad = 2;
-    return (borg_attack_aux_spell_bolt(EXPLOSION, rad, dam, BORG_ATTACK_SHARD));
+    return (borg_attack_aux_spell_bolt(EXPLOSION, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
 
     /* Prayer -- orb of draining */
     case BF_PRAYER_HOLY_ORB_BALL:
     rad = ((borg_skill[BI_CLEVEL] >= 30) ? 3 : 2);
     dam = ((borg_skill[BI_CLEVEL] * 3) / 2) + (3 * (6 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ORB_OF_DRAINING, rad, dam, BORG_ATTACK_HOLY_ORB));
+    return (borg_attack_aux_spell_bolt(ORB_OF_DRAINING, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range));
 
     /* Prayer -- blind creature */
     case BF_SPELL_BLIND_CREATURE:
     rad = 0;
     dam = 10;
-    return (borg_attack_aux_spell_bolt(FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF));
+    return (borg_attack_aux_spell_bolt(FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range));
 
     /* Druid - Trance */
     case BF_SPELL_TRANCE:
@@ -9633,73 +9633,73 @@ static int borg_attack_aux(int what)
     case BF_SPELL_ANNIHILATE:
     rad = 0;
     dam = (borg_skill[BI_CLEVEL] * 4);
-    return (borg_attack_aux_spell_bolt(ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN));
+    return (borg_attack_aux_spell_bolt(ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN, z_info->max_range));
 
     /* Spell -- Electric Arc */
     case BF_SPELL_ELECTRIC_ARC:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] - 1) / 5) + 3) * (6 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC));
+    return (borg_attack_aux_spell_bolt(ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
 
     case BF_SPELL_ACID_SPRAY:
     rad = 3; /* HACK just pretend it is wide. */
     dam = ((borg_skill[BI_CLEVEL] / 2) * (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ACID_SPRAY, rad, dam, BORG_ATTACK_ACID));
+    return (borg_attack_aux_spell_bolt(ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10));
 
     /* Spell -- mana bolt */
     case BF_SPELL_MANA_BOLT:
     rad = 0;
     dam = ((borg_skill[BI_CLEVEL] - 10) * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(MANA_BOLT, rad, dam, BORG_ATTACK_MANA));
+    return (borg_attack_aux_spell_bolt(MANA_BOLT, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
 
     /* Spell -- thrust away */
     case BF_SPELL_THRUST_AWAY:
     rad = 0;
     dam = (borg_skill[BI_CLEVEL] * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam, BORG_ATTACK_FORCE));
+    return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam, BORG_ATTACK_FORCE, z_info->max_range));
 
     /* Spell -- Lightning Strike */
     case BF_SPELL_LIGHTNING_STRIKE:
     rad = 0;
     dam = ((borg_skill[BI_CLEVEL] / 4) * (4 + 1) / 2) + borg_skill[BI_CLEVEL] + 5;  /* HACK pretend it is all elec */
-    return (borg_attack_aux_spell_bolt(LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC));
+    return (borg_attack_aux_spell_bolt(LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
 
     /* Spell -- Earth Rising */
     case BF_SPELL_EARTH_RISING:
     rad = 0;
     dam = (((borg_skill[BI_CLEVEL] / 3) + 2) * (6 + 1) / 2) + borg_skill[BI_CLEVEL] + 5;
-    return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam, BORG_ATTACK_SHARD));
+    return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
 
     /* Spell -- Volcanic Eruption */
     /* just count the damage.  The earthquake defence is a side bennie, perhaps... */
     case BF_SPELL_VOLCANIC_ERUPTION:
     rad = 0;
     dam = (((borg_skill[BI_CLEVEL] * 3) / 2) * ((borg_skill[BI_CLEVEL] * 3) + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_spell_bolt(VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
 
     /* Spell -- River of Lightning */
     case BF_SPELL_RIVER_OF_LIGHTNING:
     rad = 2;
     dam = (borg_skill[BI_CLEVEL] + 10) * (8 + 1) / 2;
-    return (borg_attack_aux_spell_bolt(RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA));
+    return (borg_attack_aux_spell_bolt(RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20));
 
     /* spell -- Spear of Oromë */
     case BF_SPELL_SPEAR_OF_OROME:
     rad = 0;
     dam = ((borg_skill[BI_CLEVEL] / 2) + (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB));
+    return (borg_attack_aux_spell_bolt(SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range));
 
     /* spell -- Light of Manwë */
     case BF_SPELL_LIGHT_OF_MANWE:
     rad = 0;
     dam = borg_skill[BI_CLEVEL] * 5 + 100;
-    return (borg_attack_aux_spell_bolt(LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT));
+    return (borg_attack_aux_spell_bolt(LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT, z_info->max_range));
 
     /* spell -- Nether Bolt */
     case BF_SPELL_NETHER_BOLT:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
-    return (borg_attack_aux_spell_bolt(NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER));
+    return (borg_attack_aux_spell_bolt(NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER, z_info->max_range));
 
     /* spell -- Tap Unlife */
     case BF_SPELL_TAP_UNLIFE:
@@ -9718,13 +9718,13 @@ static int borg_attack_aux(int what)
     case BF_SPELL_DISENCHANT:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] * 2) + 10) + 1) / 2) * 2;
-    return (borg_attack_aux_spell_bolt(DISENCHANT, rad, dam, BORG_ATTACK_DISEN));
+    return (borg_attack_aux_spell_bolt(DISENCHANT, rad, dam, BORG_ATTACK_DISEN, z_info->max_range));
 
     /* spell -- Frighten */
     case BF_SPELL_FRIGHTEN:
     rad = 0;
     dam = borg_skill[BI_CLEVEL];
-    return (borg_attack_aux_spell_bolt(FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL));
+    return (borg_attack_aux_spell_bolt(FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL, z_info->max_range));
 
     /* Spell - Vampire Strike*/
     case BF_SPELL_VAMPIRE_STRIKE:
@@ -9734,25 +9734,25 @@ static int borg_attack_aux(int what)
     case BF_PRAYER_DISPEL_LIFE:
     rad = 0;
     dam = ((borg_skill[BI_CLEVEL] * 3) + 1) / 2;
-    return (borg_attack_aux_spell_bolt(DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE));
+    return (borg_attack_aux_spell_bolt(DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE, z_info->max_range));
 
     /* spell -- Dark Spear */
     case BF_SPELL_DARK_SPEAR:
     rad = 0;
     dam = (((borg_skill[BI_CLEVEL] * 2) + 1) / 2) * 2;
-    return (borg_attack_aux_spell_bolt(DARK_SPEAR, rad, dam, BORG_ATTACK_DARK));
+    return (borg_attack_aux_spell_bolt(DARK_SPEAR, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
 
     /* spell -- Unleash Chaos */
     case BF_SPELL_UNLEASH_CHAOS:
     rad = 0;
     dam = ((borg_skill[BI_CLEVEL] + 1) / 2) * 8;
-    return (borg_attack_aux_spell_bolt(UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS));
+    return (borg_attack_aux_spell_bolt(UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS, z_info->max_range));
 
     /* Spell -- Storm of Darkness */
     case BF_SPELL_STORM_OF_DARKNESS:
     rad = 4;
     dam = (((borg_skill[BI_CLEVEL] * 2) + 1) / 2) * 4;
-    return (borg_attack_aux_spell_bolt(STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK));
+    return (borg_attack_aux_spell_bolt(STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
 
     /* Spell - Curse */
     case BF_SPELL_CURSE:
@@ -15370,7 +15370,7 @@ bool borg_recover(void)
 static bool borg_can_dig(bool check_fail, bool hard)
 {
     int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
-    if ((borg_skill[BI_DIG] >= dig_check && borg_items[weapon_swap].tval == TV_DIGGING) ||
+    if ((weapon_swap && borg_skill[BI_DIG] >= dig_check && borg_items[weapon_swap -1].tval == TV_DIGGING) ||
         (borg_skill[BI_DIG] >= dig_check + 20))
         return true;
         
@@ -15853,11 +15853,11 @@ static bool borg_play_step(int y2, int x2)
             return false;
 
         /* Switch to a digger if we have one */
-        if (borg_items[weapon_swap].tval == TV_DIGGING) {
+        if (weapon_swap && borg_items[weapon_swap-1].tval == TV_DIGGING) {
             borg_note("# Swapping Digger");
             borg_keypress(ESCAPE);
             borg_keypress('w');
-            borg_keypress(all_letters_nohjkl[weapon_swap]);
+            borg_keypress(all_letters_nohjkl[weapon_swap-1]);
             borg_keypress(' ');
             borg_keypress(' ');
         }
@@ -17047,11 +17047,11 @@ static bool borg_has_distance_attack(void)
 {
 
     /* line up Magic Missle shots (covers Mages) */
-    if (borg_attack_aux_spell_bolt(MAGIC_MISSILE, 0, 10, BORG_ATTACK_MISSILE))
+    if (borg_attack_aux_spell_bolt(MAGIC_MISSILE, 0, 10, BORG_ATTACK_MISSILE, z_info->max_range))
         return true;
 
     /* line up Nether Bolt shots (covers Necromancers) */
-    if (borg_attack_aux_spell_bolt(NETHER_BOLT, 0, 10, BORG_ATTACK_NETHER))
+    if (borg_attack_aux_spell_bolt(NETHER_BOLT, 0, 10, BORG_ATTACK_NETHER, z_info->max_range))
         return true;
 
     /* or arrows (covers warrior/ranger/paladins/rogues) */
@@ -18931,8 +18931,7 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
 
     /* Do not dig when weak. It takes too long */
-    if ((borg_skill[BI_DIG] < BORG_DIG && borg_items[weapon_swap].tval == TV_DIGGING) ||
-        (borg_skill[BI_DIG] < BORG_DIG + 20)) return (false);
+    if (!borg_can_dig(false, false)) return (false);
 
     /* Not if Weak from hunger or no food */
     if (!twitchy && (borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] == 0)) return (false);

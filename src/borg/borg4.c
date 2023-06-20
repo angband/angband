@@ -682,8 +682,10 @@ static void borg_notice_aux_ammo(int slot)
 
     if (item->tval != borg_skill[BI_AMMO_TVAL]) return;
 
-    /* Count plain missiles that fit your bow */
-    if (!item->ego_idx) borg_skill[BI_AMISSILES] += item->iqty;
+    /* Count missiles that fit your bow */
+    borg_skill[BI_AMISSILES] += item->iqty;
+
+
 
     /* track first cursed item */
     if (item->uncursable)
@@ -691,7 +693,18 @@ static void borg_notice_aux_ammo(int slot)
         borg_skill[BI_WHERE_CURSED] |= BORG_QUILL;
         if (!borg_skill[BI_FIRST_CURSED])
             borg_skill[BI_FIRST_CURSED] = slot + 1;
+
+        borg_skill[BI_AMISSILES_CURSED] += item->iqty;
+        return;
     }
+
+    if (item->ego_idx)
+        borg_skill[BI_AMISSILES_SPECIAL] += item->iqty;
+
+    /* check for ammo to enchant */
+
+    /* Hack -- ignore worthless missiles */
+    if (item->value <= 0) return;
 
     /* Only enchant ammo if we have a good shooter,
      * otherwise, store the enchants in the home.
@@ -743,11 +756,6 @@ static void borg_notice_aux_ammo(int slot)
         }
     } /* Ammo Power > 3 */
 
-    /* check for ammo to enchant */
-
-    /* Hack -- ignore worthless missiles */
-    if (item->value <= 0) return;
-
     /* Only enchant ammo if we have a good shooter,
      * otherwise, store the enchants in the home.
      */
@@ -763,37 +771,6 @@ static void borg_notice_aux_ammo(int slot)
         item->tval == borg_skill[BI_AMMO_TVAL])
     {
         my_need_brand_weapon += 10L;
-    }
-
-    /* if we have loads of cash (as we will at level 35),  */
-    /* enchant missiles */
-    if (borg_skill[BI_CLEVEL] > 35)
-    {
-        if (borg_spell_legal_fail(ENCHANT_WEAPON, 65)
-            && item->iqty >= 5)
-        {
-            if (item->to_h < 10)
-            {
-                my_need_enchant_to_h += (10 - item->to_h);
-            }
-
-            if (item->to_d < 10)
-            {
-                my_need_enchant_to_d += (10 - item->to_d);
-            }
-        }
-        else
-        {
-            if (item->to_h < 8)
-            {
-                my_need_enchant_to_h += (8 - item->to_h);
-            }
-
-            if (item->to_d < 8)
-            {
-                my_need_enchant_to_d += (8 - item->to_d);
-            }
-        }
     }
 }
 
@@ -2659,7 +2636,7 @@ static void borg_notice_weapon_swap(void)
     }
     /* mark the swap item and its value */
     weapon_swap_value = b_v;
-    weapon_swap = b_i;
+    weapon_swap = b_i + 1;
 
     /* Now that we know who the best swap is lets set our swap
      * flags and get a move on
@@ -3105,7 +3082,7 @@ static void borg_notice_armour_swap(void)
         b_i = i;
         b_v = v;
         armour_swap_value = v;
-        armour_swap = i;
+        armour_swap = i-1;
         }
     }
 
@@ -5562,10 +5539,11 @@ static int32_t borg_power_aux2(void)
         {
             for (; k < 180 && k < borg_skill[BI_AMISSILES]; k++) value += 80L;
         }
+
         /* peanalize use of too many quiver slots */
         for (k = QUIVER_START + 4; k < QUIVER_END; k++)
         {
-            if (borg_items[k].iqty) value -= 1000L;
+            if (borg_items[k].iqty) value -= 10000L;
         }
 
     }
@@ -5585,6 +5563,12 @@ static int32_t borg_power_aux2(void)
             if (borg_items[k].iqty) value -= 10000L;
         }
     }
+
+    /* cursed arrows are "bad" */
+    value -= 1000L * borg_skill[BI_AMISSILES_CURSED];
+
+    /* ego arrows are worth a bonus */
+    value += 100L * borg_skill[BI_AMISSILES_SPECIAL];
 
     /*** Various ***/
 

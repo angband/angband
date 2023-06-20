@@ -452,8 +452,8 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
         /* Hack -- ignore "worthless" items */
         if (!item->value) continue;
 
-        if (i == weapon_swap && weapon_swap != 0) continue;
-        if (i == armour_swap && armour_swap != 0) continue;
+        if (weapon_swap && i == weapon_swap - 1) continue;
+        if (armour_swap && i == armour_swap - 1) continue;
 
         /* stacking? */
         if (borg_object_similar(item2, item))
@@ -538,8 +538,8 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 
             if (!item->iqty || (!item->kind && !item->aware))
                 continue;
-            if (i == weapon_swap && weapon_swap != 0) continue;
-            if (i == armour_swap && armour_swap != 0) continue;
+            if (weapon_swap && i == weapon_swap - 1) continue;
+            if (armour_swap && i == armour_swap - 1) continue;
 
             /* Do not dump stuff at home that is not fully id'd and should be  */
             /* this is good with random artifacts. */
@@ -748,8 +748,9 @@ static bool borg_think_home_sell_aux(bool save_best)
     for (i = 0; i < z_info->pack_size; i++)
     {
         /* Save the item -- do not consider these */
-        if (i == weapon_swap && weapon_swap != 0) continue;
-        if (i == armour_swap && armour_swap != 0) continue;
+        if (weapon_swap && i == weapon_swap - 1) continue;
+        if (armour_swap && i == armour_swap - 1) continue;
+
         /* dont consider the item i just found to be my best fit (4-6-07) */
         if (borg_best_fit_item && borg_best_fit_item == borg_items[i].art_idx) continue;
 
@@ -767,8 +768,8 @@ static bool borg_think_home_sell_aux(bool save_best)
     for (i = 0; i < z_info->pack_size; i++)
     {
         uint8_t save_qty;
-        if (i == weapon_swap && weapon_swap != 0) continue;
-        if (i == armour_swap && armour_swap != 0) continue;
+        if (weapon_swap && i == weapon_swap - 1) continue;
+        if (armour_swap && i == armour_swap - 1) continue;
 
         save_qty = safe_items[i].iqty;
         safe_items[i].iqty = borg_items[i].iqty;
@@ -795,8 +796,10 @@ static bool borg_think_home_sell_aux(bool save_best)
 
     for (i = 0; i < INVEN_TOTAL; i++)
     {
-        if (i == weapon_swap && weapon_swap != 0) continue;
-        if (i == armour_swap && armour_swap != 0) continue;
+        // !FIX !TODO !AJG not sure this is right...  we should probably be 
+        // restoring the item anyway and just not considering it at another point
+        if (weapon_swap && i == weapon_swap - 1) continue;
+        if (armour_swap && i == armour_swap - 1) continue;
         memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
     }
 
@@ -1175,8 +1178,8 @@ static bool borg_think_shop_sell_aux(void)
                     item->sval == sv_wand_annihilation) && item->pval != 0) continue;
 
             /* dont sell our swap items */
-            if (i == weapon_swap && weapon_swap != 0) continue;
-            if (i == armour_swap && armour_swap != 0) continue;
+            if (weapon_swap && i == weapon_swap - 1) continue;
+            if (armour_swap && i == armour_swap - 1) continue;
 
             /* Skip "bad" sales */
             if (!borg_good_sell(item, k)) continue;
@@ -2119,7 +2122,7 @@ static bool borg_think_home_buy_swap_weapon(void)
     }
     else
     {
-        hole = weapon_swap;
+        hole = weapon_swap-1;
     }
     if (hole == -1)
         return (false);
@@ -2233,14 +2236,14 @@ static bool borg_think_home_buy_swap_armour(void)
     old_armour_swap = armour_swap;
     old_armour_swap_value = armour_swap_value;
 
-    if (armour_swap <= 1 || armour_swap_value <= 0)
+    if (armour_swap <= 0 || armour_swap_value <= 0)
     {
         hole = borg_first_empty_inventory_slot();
         armour_swap_value = -1L;
     }
     else
     {
-        hole = armour_swap;
+        hole = armour_swap-1;
     }
 
     if (hole == -1)

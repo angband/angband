@@ -4859,10 +4859,24 @@ void borg_write_map(bool ask)
     if (borg_cfg[BORG_USES_SWAPS])
     {
         file_putf(borg_map_file, "  [Swap info]\n\n");
-        item = &borg_items[weapon_swap];
-        file_putf(borg_map_file, "Swap Weapon:  %s\n", item->desc);
-        item = &borg_items[armour_swap];
-        file_putf(borg_map_file, "Swap Armour:  %s", item->desc);
+        if (weapon_swap)
+        {
+            item = &borg_items[weapon_swap - 1];
+            file_putf(borg_map_file, "Swap Weapon:  %s\n", item->desc);
+        }
+        else
+        {
+            file_put(borg_map_file, "Swap Weapon:  NONE\n");
+        }
+        if (armour_swap)
+        {
+            item = &borg_items[armour_swap - 1];
+            file_putf(borg_map_file, "Swap Armour:  %s\n", item->desc);
+        }
+        else
+        {
+            file_put(borg_map_file, "Swap Armour:  NONE\n");
+        }
         file_putf(borg_map_file, "\n\n");
     }
     file_putf(borg_map_file, "   [Player State at Death] \n\n");
@@ -6864,10 +6878,25 @@ void do_cmd_borg(void)
         borg_update_frame();
 
         /* note the swap items */
-        item = &borg_items[weapon_swap];
-        msg("Swap Weapon:  %s, value= %d", item->desc, weapon_swap_value);
-        item = &borg_items[armour_swap];
-        msg("Swap Armour:  %s, value= %d", item->desc, armour_swap_value);
+        if (weapon_swap)
+        {
+            item = &borg_items[weapon_swap - 1];
+            msg("Swap Weapon:  %s, value= %d", item->desc, weapon_swap_value);
+        }
+        else
+        {
+            msg("Swap Weapon:  NONE");
+        }
+
+        if (armour_swap)
+        {
+            item = &borg_items[armour_swap - 1];
+            msg("Swap Armour:  %s, value= %d", item->desc, armour_swap_value);
+        }
+        else
+        {
+            msg("Swap Armour:  NONE");
+        }
         break;
     }
     case 'd':
