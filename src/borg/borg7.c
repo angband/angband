@@ -1297,11 +1297,11 @@ static bool borg_decurse_any(void)
             borg_read_scroll(sv_scroll_star_remove_curse))
         {
             /* pick the item */
-            if (borg_skill[BI_FIRST_CURSED] < INVEN_WIELD)
+            if (borg_skill[BI_FIRST_CURSED] <= INVEN_WIELD)
             {
                 borg_keypress(all_letters_nohjkl[borg_skill[BI_FIRST_CURSED] - 1]);
             }
-            else if (borg_skill[BI_FIRST_CURSED] < QUIVER_START)
+            else if (borg_skill[BI_FIRST_CURSED] <= QUIVER_START)
             {
                 if (borg_skill[BI_WHERE_CURSED] & BORG_INVEN)
                     borg_keypress('/');
