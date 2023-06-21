@@ -3550,7 +3550,7 @@ bool borg_wear_stuff(void)
         if (slot == INVEN_LEFT &&
             borg_items[INVEN_LEFT].tval && borg_items[INVEN_RIGHT].tval)
         {
-                for (ii = INVEN_LEFT; ii <= INVEN_RIGHT; ii++)
+                for (ii = INVEN_RIGHT; ii <= INVEN_LEFT; ii++)
                 {
                     slot = ii;
 

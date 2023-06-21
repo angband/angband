@@ -1681,11 +1681,14 @@ errr borg_keypress(keycode_t k)
     }
 
     /* Hack -- note the keypress */
-    if (k >= 32 && k <= 126) {
-        borg_note(format("& Key <%c> (0x%02X)", k, k));
-    }
-    else {
-        borg_note(format("& Key <0x%02X>", k));
+    if (borg_cfg[BORG_VERBOSE])
+    {
+        if (k >= 32 && k <= 126) {
+            borg_note(format("& Key <%c> (0x%02X)", k, k));
+        }
+        else {
+            borg_note(format("& Key <0x%02X>", k));
+        }
     }
 
     /* Store the char, advance the queue */

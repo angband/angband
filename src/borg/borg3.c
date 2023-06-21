@@ -2126,7 +2126,7 @@ bool borg_equips_ring(int ring_sval)
     int lev, fail, i;
     int skill;
 
-    for (i = INVEN_LEFT; i < INVEN_RIGHT; i++)
+    for (i = INVEN_RIGHT; i < INVEN_LEFT; i++)
     {
         borg_item* item = &borg_items[i];
 
@@ -2175,7 +2175,7 @@ bool borg_activate_ring(int ring_sval)
     int i;
 
     /* Check the equipment */
-    for (i = INVEN_LEFT; i < INVEN_RIGHT; i++)
+    for (i = INVEN_RIGHT; i < INVEN_LEFT; i++)
     {
         borg_item* item = &borg_items[i];
 
@@ -2368,9 +2368,6 @@ int borg_spell_fail_rate(const enum borg_spells spell)
 
     borg_magic* as = &borg_magics[spell_num];
 
-    /* get the system spell definition */
-    const struct class_spell* c_spell = spell_by_index(player, spell_num);
-
     /* Access the spell  */
     chance = as->sfail;
 
@@ -2378,14 +2375,13 @@ int borg_spell_fail_rate(const enum borg_spells spell)
     chance -= 3 * (borg_skill[BI_CLEVEL] - as->level);
 
     /* Reduce failure rate by stat adjustment */
-    int spell_stat = player->known_state.stat_ind[c_spell->realm->stat];
-    chance -= borg_adj_mag_stat[spell_stat];
+    chance -= borg_skill[BI_FAIL1];
 
     /* Fear makes the failrate higher */
     if (borg_skill[BI_ISAFRAID]) chance += 20;
 
     /* Extract the minimum failure rate */
-    minfail = borg_adj_mag_fail[my_stat_ind[spell_stat]];
+    minfail = borg_skill[BI_FAIL2];
 
     /* Non mage characters never get too good */
     if (!player_has(player, PF_ZERO_FAIL))

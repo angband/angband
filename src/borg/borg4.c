@@ -843,8 +843,7 @@ static void borg_notice_aux1(void)
     borg_skill[BI_THT] = rb_ptr->r_skills[SKILL_TO_HIT_THROW] + cb_ptr->c_skills[SKILL_TO_HIT_THROW];
 
     /* Affect Skill -- digging (STR) */
-    borg_skill[BI_DIG] = rb_ptr->r_skills[SKILL_DIGGING];
-    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
+    borg_skill[BI_DIG] = rb_ptr->r_skills[SKILL_DIGGING] + cb_ptr->c_skills[SKILL_DIGGING];
 
     /** Racial Skills **/
 
@@ -968,9 +967,21 @@ static void borg_notice_aux1(void)
         /* Affect searching ability (factor of five) */
         borg_skill[BI_SRCH] += (item->modifiers[OBJ_MOD_SEARCH] * 5);
 
-        /* Affect digging (factor of 20) (unless it is wielded, taken care of later) */
-        if (i != INVEN_WIELD)
-            borg_skill[BI_DIG] += (item->modifiers[OBJ_MOD_TUNNEL] * 20);
+        /* weapons of digging type get a special bonus */
+        int dig = 0;
+        if (item->tval == TV_DIGGING)
+        {
+            if (of_has(item->flags, OF_DIG_1))
+                dig = 1;
+            else if (of_has(item->flags, OF_DIG_2))
+                dig = 2;
+            else if (of_has(item->flags, OF_DIG_3))
+                dig = 3;
+        }
+        dig += item->modifiers[OBJ_MOD_TUNNEL];
+
+        /* Affect digging (factor of 20) */
+        borg_skill[BI_DIG] += (dig * 20);
 
         /* Affect speed */
         borg_skill[BI_SPEED] += item->modifiers[OBJ_MOD_SPEED];
@@ -1120,6 +1131,63 @@ static void borg_notice_aux1(void)
         borg_skill[BI_TODAM] += item->to_d;
     }
 
+
+    /* The borg needs to update his base stat points */
+    for (i = 0; i < STAT_MAX; i++)
+    {
+        /* Cheat the exact number from the game.  This number is available to the player
+         * on the extra term window.
+         */
+        my_stat_cur[i] = player->stat_cur[i];
+
+        /* Max stat is the max that the cur stat ever is. */
+        if (my_stat_cur[i] > my_stat_max[i])
+            my_stat_max[i] = my_stat_cur[i];
+    }
+
+
+    /* Update "stats" */
+    for (i = 0; i < STAT_MAX; i++)
+    {
+        int add, use, ind;
+
+        add = my_stat_add[i];
+
+        /* Modify the stats for race/class */
+        add += (player->race->r_adj[i] + player->class->c_adj[i]);
+
+        /* Extract the new "use_stat" value for the stat */
+        use = modify_stat_value(my_stat_cur[i], add);
+
+        /* Values: 3, ..., 17 */
+        if (use <= 18) ind = (use - 3);
+
+        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+        else if (use <= 18 + 219) ind = (15 + (use - 18) / 10);
+
+        /* Range: 18/220+ */
+        else ind = (37);
+
+        /* Save the index */
+        if (ind > 37)
+            my_stat_ind[i] = 37;
+        else
+            my_stat_ind[i] = ind;
+        borg_skill[BI_STR + i] = my_stat_ind[i];
+        borg_skill[BI_CSTR + i] = borg_stat[i];
+    }
+
+    /* 'Mana' is actually the 'mana adjustment' */
+    int spell_stat = borg_spell_stat();
+    if (spell_stat >= 0)
+    {
+        borg_skill[BI_SP_ADJ] =
+            ((borg_adj_mag_mana[my_stat_ind[spell_stat]] * borg_skill[BI_CLEVEL]) / 2);
+        borg_skill[BI_FAIL1] = borg_adj_mag_stat[my_stat_ind[spell_stat]];
+        borg_skill[BI_FAIL2] = borg_adj_mag_fail[my_stat_ind[spell_stat]];
+    }
+
+
     /* Bloating slows the player down (a little) */
     if (borg_skill[BI_ISGORGED]) borg_skill[BI_SPEED] -= 10;
 
@@ -1255,20 +1323,6 @@ static void borg_notice_aux1(void)
         borg_skill[BI_DIG] += (item->weight / 10);
 
     }
-    /* weapons of digging type get a special bonus */
-    int dig = 0;
-    if (item->tval == TV_DIGGING) 
-    {
-        if (of_has(item->flags, OF_DIG_1))
-            dig = 1;
-        else if (of_has(item->flags, OF_DIG_2))
-            dig = 2;
-        else if (of_has(item->flags, OF_DIG_3))
-            dig = 3;
-    }
-
-    dig += item->modifiers[OBJ_MOD_TUNNEL];
-    borg_skill[BI_DIG] += (dig * 20);
 
     /* Calculate "max" damage per "normal" blow  */
     /* and assume we can enchant up to +8 if borg_skill[BI_CLEVEL] > 25 */
@@ -1519,15 +1573,7 @@ static void borg_notice_aux2(void)
     for (i = 0; i < 6; i++) amt_inc_stat[i] = 0;
 
     /* Reset books */
-    amt_book[0] = 0;
-    amt_book[1] = 0;
-    amt_book[2] = 0;
-    amt_book[3] = 0;
-    amt_book[4] = 0;
-    amt_book[5] = 0;
-    amt_book[6] = 0;
-    amt_book[7] = 0;
-    amt_book[8] = 0;
+    for (i = 0; i < 9; i++) amt_book[i] = 0;
 
     /* Reset various */
     amt_add_stat[STAT_STR] = 0;
@@ -3213,7 +3259,6 @@ void borg_notice(bool notice_swap)
 {
     int inven_weight;
     int carry_capacity;
-    int i;
 
     /* Clear out 'has' array */
     memset(borg_has, 0, size_obj * sizeof(int));
@@ -3223,62 +3268,6 @@ void borg_notice(bool notice_swap)
      * all the non inventory skills.
      */
     borg_update_frame();
-
-    /* The borg needs to update his base stat points */
-    for (i = 0; i < STAT_MAX; i++)
-    {
-        /* Cheat the exact number from the game.  This number is available to the player
-         * on the extra term window.
-         */
-        my_stat_cur[i] = player->stat_cur[i];
-
-        /* Max stat is the max that the cur stat ever is. */
-        if (my_stat_cur[i] > my_stat_max[i])
-            my_stat_max[i] = my_stat_cur[i];
-    }
-
-
-    /* Update "stats" */
-    for (i = 0; i < STAT_MAX; i++)
-    {
-        int add, use, ind;
-
-        add = my_stat_add[i];
-
-        /* Modify the stats for race/class */
-        add += (player->race->r_adj[i] + player->class->c_adj[i]);
-
-        /* Extract the new "use_stat" value for the stat */
-        use = modify_stat_value(my_stat_cur[i], add);
-
-        /* Values: 3, ..., 17 */
-        if (use <= 18) ind = (use - 3);
-
-        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
-        else if (use <= 18 + 219) ind = (15 + (use - 18) / 10);
-
-        /* Range: 18/220+ */
-        else ind = (37);
-
-        /* Save the index */
-        if (ind > 37)
-            my_stat_ind[i] = 37;
-        else
-            my_stat_ind[i] = ind;
-        borg_skill[BI_STR + i] = my_stat_ind[i];
-        borg_skill[BI_CSTR + i] = borg_stat[i];
-    }
-
-
-    /* 'Mana' is actually the 'mana adjustment' */
-    int spell_stat = borg_spell_stat();
-    if (spell_stat >= 0)
-    {
-        borg_skill[BI_SP_ADJ] =
-            ((borg_adj_mag_mana[my_stat_ind[spell_stat]] * borg_skill[BI_CLEVEL]) / 2);
-        borg_skill[BI_FAIL1] = borg_adj_mag_stat[my_stat_ind[spell_stat]];
-        borg_skill[BI_FAIL2] = borg_adj_mag_fail[my_stat_ind[spell_stat]];
-    }
 
     /* Notice the equipment */
     borg_notice_aux1();
@@ -4390,7 +4379,7 @@ static int32_t borg_power_aux1(void)
     }
 
     /*** Examine the Rings for special types ***/
-    for (i = INVEN_LEFT; i <= INVEN_RIGHT; i++)
+    for (i = INVEN_RIGHT; i <= INVEN_LEFT; i++)
     {
         /* Obtain the item */
         item = &borg_items[i];
@@ -4546,8 +4535,6 @@ static int32_t borg_power_aux1(void)
 
     }
 
-
-
     /* HACK - a small bonus for adding to stats even above max. */
     /*        This will allow us to swap a ring of int +6 for */
     /*        our ring of int +2 even though we are at max int because */
@@ -4556,8 +4543,8 @@ static int32_t borg_power_aux1(void)
     /*        have an int bonus */
     for (i = 0; i < STAT_MAX; i++) value += my_stat_add[i];
 
-
     /*** Reward current skills ***/
+    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
 
     /* Hack -- tiny rewards */
     value += (borg_skill[BI_DISP] * 2L);
@@ -4867,6 +4854,8 @@ static int32_t borg_power_aux1(void)
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
         int multibonus = 0;
+        struct artifact* a_ptr;
+
         item = &borg_items[i];
 
         /* Skip empty items */
@@ -4897,126 +4886,132 @@ static int32_t borg_power_aux1(void)
 
         if (multibonus >= 2) value += 3000 * multibonus;
 
+        if (!item->art_idx) continue;
+        a_ptr = &a_info[item->art_idx];
+
         /* an extra bonus for activations */
-        if (item->art_idx && a_info[item->art_idx].activation)
+        if (a_ptr->activation || k_info[item->kind].activation)
         {
-            if (borg_equips_artifact("ILLUMINATION", false))
+            struct activation* item_activation = a_ptr->activation ? a_ptr->activation : k_info[item->kind].activation;
+            char* name = item_activation->name;
+
+            if (streq("ILLUMINATION", name))
                 value += 500;
-            else if (borg_equips_artifact("MAPPING", false))
+            else if (streq("MAPPING", name))
                 value += 550;
-            else if (borg_equips_artifact("CLAIRVOYANCE", false))
+            else if (streq("CLAIRVOYANCE", name))
                 value += 600;
-            else if (borg_equips_artifact("FIRE_BOLT", false))
+            else if (streq("FIRE_BOLT", name))
                 value += (500 + (9 * (8 + 1) / 2));
-            else if (borg_equips_artifact("COLD_BOLT", false))
+            else if (streq("COLD_BOLT", name))
                 value += (500 + (6 * (8 + 1) / 2));
-            else if (borg_equips_artifact("ELEC_BOLT", false))
+            else if (streq("ELEC_BOLT", name))
                 value += (500 + (4 * (8 + 1) / 2));
-            else if (borg_equips_artifact("ACID_BOLT", false))
+            else if (streq("ACID_BOLT", name))
                 value += (500 + (5 * (8 + 1) / 2));
-            else if (borg_equips_artifact("MANA_BOLT", false))
+            else if (streq("MANA_BOLT", name))
                 value += (500 + (12 * (8 + 1) / 2));
-            else if (borg_equips_artifact("STINKING_CLOUD", false))
+            else if (streq("STINKING_CLOUD", name))
                 value += (500 + (24));
-            else if (borg_equips_artifact("COLD_BALL50", false))
+            else if (streq("COLD_BALL50", name))
                 value += (500 + (96));
-            else if (borg_equips_artifact("COLD_BALL100", false))
+            else if (streq("COLD_BALL100", name))
                 value += (500 + (200));
-            else if (borg_equips_artifact("FIRE_BOLT72", false))
+            else if (streq("FIRE_BOLT72", name))
                 value += (500 + (72));
-            else if (borg_equips_artifact("COLD_BOLT2", false))
+            else if (streq("COLD_BOLT2", name))
                 value += (500 + (12 * (8 + 1) / 2));
-            else if (borg_equips_artifact("FIRE_BALL", false))
+            else if (streq("FIRE_BALL", name))
                 value += (500 + (144));
-            else if (borg_equips_artifact("DISPEL_EVIL", false))
+            else if (streq("DISPEL_EVIL", name))
                 value += (500 + (10 + (borg_skill[BI_CLEVEL] * 5) / 2));
-            else if (borg_equips_artifact("CONFUSE2", false))
+            else if (streq("CONFUSE2", name))
                 value += 0; /* no code to handle this activation */
-            else if (borg_equips_artifact("HASTE1", false))
+            else if (streq("HASTE1", name))
                 value += 0; /* handled by adding to speed available */
-            else if (borg_equips_artifact("HASTE2", false))
+            else if (streq("HASTE2", name))
                 value += 0; /* handled by adding to speed available */
-            else if (borg_equips_artifact("DETECT_OBJECTS", false))
+            else if (streq("DETECT_OBJECTS", name))
                 value += 10;
-            else if (borg_equips_artifact("PROBING", false))
+            else if (streq("PROBING", name))
                 value += 0; /* no code to handle this activation */
-            else if (borg_equips_artifact("STONE_TO_MUD", false))
+            else if (streq("STONE_TO_MUD", name))
                 value += 0; /* handled by adding to digger available */
-            else if (borg_equips_artifact("TELE_OTHER", false))
+            else if (streq("TELE_OTHER", name))
             {
                 if (borg_class == CLASS_MAGE)
                     value += 500;
                 else
                     value += (500 + (500));
             }
-            else if (borg_equips_artifact("DRAIN_LIFE1", false))
+            else if (streq("DRAIN_LIFE1", name))
                 value += (500 + 90);
-            else if (borg_equips_artifact("DRAIN_LIFE2", false))
+            else if (streq("DRAIN_LIFE2", name))
                 value += (500 + 120);
-            else if (borg_equips_artifact("BERSERKER", false))
+            else if (streq("BERSERKER", name))
                 value += (500);
-            else if (borg_equips_artifact("CURE_SERIOUS", false))
+            else if (streq("CURE_SERIOUS", name))
                 value += 0; /* handled by adding to healing available */
-            else if (borg_equips_artifact("LOSKILL", false))
+            else if (streq("LOSKILL", name))
                 value += (500 + 200);
-            else if (borg_equips_artifact("RECALL", false))
+            else if (streq("RECALL", name))
                 value += 0; /* handled by adding to recall available */
-            else if (borg_equips_artifact("ARROW", false))
+            else if (streq("ARROW", name))
                 value += (500 + (150));
-            else if (borg_equips_artifact("REM_FEAR_POIS", false))
+            else if (streq("REM_FEAR_POIS", name))
             {
                 if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST || borg_class == CLASS_DRUID)
                     value += 500;
                 else
                     value += (500 + (200));
             }
-            else if (borg_equips_artifact("TELE_PHASE", false))
+            else if (streq("TELE_PHASE", name))
                 value += 500;
-            else if (borg_equips_artifact("DETECT_ALL", false))
+            else if (streq("DETECT_ALL", name))
                 value += 0; /* handled by adding to detects available */
-            else if (borg_equips_artifact("HEAL1", false))
+            else if (streq("HEAL1", name))
                 value += 0; /* handled by adding to healing available */
-            else if (borg_equips_artifact("HEAL2", false))
+            else if (streq("HEAL2", name))
                 value += 0; /* handled by adding to healing available */
-            else if (borg_equips_artifact("PROTEVIL", false))
+            else if (streq("PROTEVIL", name))
                 value += 0; /* handled by adding to PFE available */
-            else if (borg_equips_artifact("DESTROY_DOORS", false))
+            else if (streq("DESTROY_DOORS", name))
                 value += 0; /* no code to handle this activation */
-            else if (borg_equips_artifact("BANISHMENT", false))
+            else if (streq("BANISHMENT", name))
                 value += 1000;
-            else if (borg_equips_artifact("RESIST_ALL", false))
+            else if (streq("RESIST_ALL", name))
             {
                 value += (500 + (150));
                 /* extra bonus if you can't cast RESISTANCE */
                 if (borg_class != CLASS_MAGE) value += 25000;
             }
-            else if (borg_equips_artifact("SLEEPII", false))
+            else if (streq("SLEEPII", name))
             {
                 value += 500;
                 /* extra bonus if you can't cast a sleep type spell */
                 if ((borg_class != CLASS_DRUID) && (borg_class != CLASS_NECROMANCER))
                     value += 200;
             }
-            else if (borg_equips_artifact("RECHARGE", false))
+            else if (streq("RECHARGE", name))
             {
                 value += 500;
                 /* extra bonus if you can't cast a charge type spell */
                 if ((borg_class != CLASS_MAGE) && (borg_class != CLASS_ROGUE))
                     value += 100;
             }
-            else if (borg_equips_artifact("TELE_LONG", false))
+            else if (streq("TELE_LONG", name))
                 value += 300;
-            else if (borg_equips_artifact("MISSILE", false))
+            else if (streq("MISSILE", name))
                 value += (500 + (2 * (6 + 1) / 2));
-            else if (borg_equips_artifact("CURE_TEMP", false))
+            else if (streq("CURE_TEMP", name))
                 value += 500;
-            else if (borg_equips_artifact("STARLIGHT2", false))
+            else if (streq("STARLIGHT2", name))
                 value += 100 + (10 * (8 + 1)) / 2;
-            else if (borg_equips_artifact("BIZARRE", false))
+            else if (streq("BIZARRE", name))
                 value += (999999); /* HACK this is the one ring */
-            else if (borg_equips_artifact("STAR_BALL", false))
+            else if (streq("STAR_BALL", name))
                 value += (500 + (300));
-            else if (borg_equips_artifact("RAGE_BLESS_RESIST", false))
+            else if (streq("RAGE_BLESS_RESIST", name))
             {
                 value += (500 + (150));
                 /* extra bonus if you can't cast RESISTANCE */

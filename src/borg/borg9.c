@@ -993,7 +993,7 @@ static void borg_parse_aux(char* msg, int len)
         {
             my_need_stat_check[i] = true;
             /* max stats may have lowered */
-            my_stat_max[i] = true;
+            my_stat_max[i] = 0;
         }
     }
 

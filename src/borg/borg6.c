@@ -3234,7 +3234,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_speed && borg_spell_fail(HASTE_SELF, 15))
     {
         borg_note("# Casting speed spell before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 5000;
         return (true);
     }
 
@@ -3243,7 +3243,7 @@ static bool borg_prep_leave_level_spells(void)
         borg_skill[BI_TRELEC] + borg_skill[BI_TRPOIS] < 3 && borg_spell_fail(RESISTANCE, 15))
     {
         borg_note("# Casting Resistance spell before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 21000;
         return (true);
     }
 
@@ -3251,7 +3251,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_fastcast && borg_spell_fail(MANA_CHANNEL, 15))
     {
         borg_note("# Casting Mana Channel spell before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 6000;
         return (true);
     }
 
@@ -3259,7 +3259,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_berserk && borg_spell_fail(BERSERK_STRENGTH, 15))
     {
         borg_note("# Casting Berserk Strength spell before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 10000;
         return (true);
     }
 
@@ -3275,7 +3275,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_regen && borg_spell_fail(RAPID_REGENERATION, 15))
     {
         borg_note("# Casting Regen before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 6000;
         return (true);
     }
 
@@ -3283,7 +3283,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_smite_evil && !borg_skill[BI_WS_EVIL] && borg_spell_fail(SMITE_EVIL, 15))
     {
         borg_note("# Casting Smite Evil before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 21000;
         return (true);
     }
 
@@ -3291,7 +3291,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_venom && !borg_skill[BI_WB_POIS] && borg_spell_fail(VENOM, 15))
     {
         borg_note("# Casting Venom before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 18000;
         return (true);
     }
 
@@ -3299,7 +3299,7 @@ static bool borg_prep_leave_level_spells(void)
     if (!borg_prot_from_evil && borg_spell_fail(PROTECTION_FROM_EVIL, 15))
     {
         borg_note("# Casting PFE before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = borg_skill[BI_CLEVEL] * 1000;
         return (true);
     }
 
@@ -3308,7 +3308,7 @@ static bool borg_prep_leave_level_spells(void)
         borg_spell_fail(DEMON_BANE, 15))))
     {
         borg_note("# Casting blessing before leaving level.");
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 11000;
         return (true);
     }
     return (false);
@@ -10862,7 +10862,7 @@ static int borg_defend_aux_bless(int p1)
         borg_note("# Attempting to cast Bless");
 
         /* No resting to recoop mana */
-        borg_no_rest_prep = 10000;
+        borg_no_rest_prep = 11000;
 
         /* do it! */
         if (borg_spell(BLESS) ||
@@ -11003,7 +11003,7 @@ static int borg_defend_aux_speed(int p1)
         borg_note("# Attempting to cast Speed");
 
         /* No resting to recoop mana */
-        borg_no_rest_prep = 10000;
+        borg_no_rest_prep = borg_skill[BI_CLEVEL] * 1000;
 
         /* do it! */
         if (borg_zap_rod(sv_rod_speed) ||
@@ -11079,7 +11079,7 @@ static int borg_defend_aux_grim_purpose(int p1)
         /* do it! */
         if (borg_spell(GRIM_PURPOSE))
             /* No resting to recoop mana */
-            borg_no_rest_prep = 10000;
+            borg_no_rest_prep = 13000;
 
         /* Value */
         return (p1 - p2 + 2);
@@ -11122,8 +11122,7 @@ static int borg_defend_aux_resist_fecap(int p1)
             if (p1 < avoidance / 3)
                 fail_allowed += 10;
 
-    if (!borg_spell_okay_fail(RESISTANCE, fail_allowed) &&
-        !borg_equips_artifact("RESIST_ALL", true) &&
+    if (!borg_equips_artifact("RESIST_ALL", true) &&
         !borg_equips_artifact("RAGE_BLESS_RESIST", true))
         return (0);
 
@@ -11176,11 +11175,10 @@ static int borg_defend_aux_resist_fecap(int p1)
 
         /* do it! */
         if (borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
-            borg_spell_fail(RESISTANCE, fail_allowed))
+            borg_activate_artifact("RAGE_BLESS_RESIST"))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 10000;
+            borg_no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2 + 2);
@@ -11265,7 +11263,7 @@ static int borg_defend_aux_resist_f(int p1)
             borg_quaff_potion(sv_potion_resist_heat))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg_no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -11350,7 +11348,7 @@ static int borg_defend_aux_resist_c(int p1)
             borg_quaff_potion(sv_potion_resist_cold))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg_no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -11430,7 +11428,7 @@ static int borg_defend_aux_resist_a(int p1)
             borg_activate_artifact("RAGE_BLESS_RESIST"))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg_no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -11497,7 +11495,7 @@ static int borg_defend_aux_resist_p(int p1)
             borg_spell_fail(RESISTANCE, fail_allowed))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg_no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -11574,7 +11572,7 @@ static int borg_defend_aux_prot_evil(int p1)
             borg_read_scroll(sv_scroll_protection_from_evil))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg_no_rest_prep = borg_skill[BI_CLEVEL] * 1000;
 
         /* Value */
         return (p1 - p2);
@@ -11849,7 +11847,7 @@ static int borg_defend_aux_hero(int p1)
         {
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 1000;
+            borg_no_rest_prep = 10000;
             return 1;
         }
     }
@@ -14032,7 +14030,7 @@ static int borg_perma_aux_resist(void)
     borg_spell_fail(RESISTANCE, fail_allowed);
 
     /* No resting to recoop mana */
-    borg_no_rest_prep = 3000;
+    borg_no_rest_prep = 21000;
 
     /* default to can't do it. */
     return (2);
@@ -14059,7 +14057,7 @@ static int borg_perma_aux_resist_colluin(void)
     if (borg_activate_artifact("RESIST_ALL") || borg_activate_artifact("RAGE_BLESS_RESIST"))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 21000;
     }
 
     /* Value */
@@ -14099,7 +14097,7 @@ static int borg_perma_aux_resist_p(void)
     if (borg_spell_fail(RESIST_POISON, fail_allowed))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 21000;
 
         /* Value */
         return (1);
@@ -14143,7 +14141,7 @@ static int borg_perma_aux_speed(void)
     if (borg_spell_fail(HASTE_SELF, fail_allowed))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = borg_skill[BI_CLEVEL] * 1000;
         return (5);
     }
 
@@ -14180,7 +14178,7 @@ static int borg_perma_aux_prot_evil(void)
     if (borg_spell_fail(PROTECTION_FROM_EVIL, fail_allowed))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = borg_skill[BI_CLEVEL] * 1000;
 
         /* Value */
         return (3);
@@ -14225,7 +14223,7 @@ static int borg_perma_aux_fastcast(void)
     if (borg_spell(MANA_CHANNEL))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 6000;
         return 1;
     }
 
@@ -14311,7 +14309,7 @@ static int borg_perma_aux_regen(void)
     if (borg_spell(RAPID_REGENERATION))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 6000;
         return 1;
     }
 
@@ -14353,7 +14351,7 @@ static int borg_perma_aux_smite_evil(void)
     if (borg_spell(SMITE_EVIL))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 21000;
         return 3;
     }
 
@@ -14395,7 +14393,7 @@ static int borg_perma_aux_venom(void)
     if (borg_spell(VENOM))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 19000;
         return 3;
     }
 
@@ -14436,7 +14434,7 @@ static int borg_perma_aux_berserk(void)
     if (borg_spell(BERSERK_STRENGTH))
     {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg_no_rest_prep = 11000;
         return 2;
     }
 
