@@ -15823,7 +15823,7 @@ static bool borg_play_step(int y2, int x2)
         if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return false;
 
         /* Don't bother digging without sufficient dig ability */
-        if (!borg_can_dig(false, false))
+        if (!borg_can_dig(false, false) && ag->feat != FEAT_RUBBLE)
         {
             goal = 0;
             return false;
@@ -16711,8 +16711,6 @@ bool borg_flow_vault(int nearness)
                 if (borg_grids[y][x].feat != FEAT_FLOOR &&
                     borg_grids[y][x].feat != FEAT_LAVA &&
                     borg_grids[y][x].feat != FEAT_RUBBLE &&
-                    borg_grids[y][x].feat != FEAT_QUARTZ &&
-                    borg_grids[y][x].feat != FEAT_MAGMA &&
                     borg_grids[y][x].feat != FEAT_QUARTZ_K &&
                     borg_grids[y][x].feat != FEAT_MAGMA_K)
                     continue;

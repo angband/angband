@@ -3010,7 +3010,7 @@ static void borg_init_track(struct borg_track* track, int size)
     track->x = mem_zalloc(size * sizeof(int));
     track->y = mem_zalloc(size * sizeof(int));
 }
-
+struct player* borg_p;
 /*
  * Initialize this file
  */
@@ -3018,6 +3018,8 @@ void borg_init_1(void)
 {
     int i, x, y;
 
+    /* AJG for debugging around an MSVC issue */
+    borg_p = player;
 
     /* Allocate the "keypress queue" */
     borg_key_queue = mem_zalloc(KEY_SIZE * sizeof(keycode_t));

@@ -520,7 +520,7 @@ enum
 /*
 * Threshold where the borg will attempt to dig things
 */
-#define BORG_DIG			20
+#define BORG_DIG			13
 #define BORG_DIG_HARD		40
 
 /*
@@ -1810,8 +1810,12 @@ extern bool     borg_fighting_evil_unique;
 /* am I fighting a summoner */
 extern bool     borg_fighting_summoner;
 
+
 extern const int borg_adj_mag_fail[STAT_RANGE];
 extern const int borg_adj_mag_stat[STAT_RANGE];
+
+extern struct player *borg_p;
+
 
 /*** Some functions ***/
 

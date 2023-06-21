@@ -842,6 +842,10 @@ static void borg_notice_aux1(void)
     /* Base skill -- combat (throwing) */
     borg_skill[BI_THT] = rb_ptr->r_skills[SKILL_TO_HIT_THROW] + cb_ptr->c_skills[SKILL_TO_HIT_THROW];
 
+    /* Affect Skill -- digging (STR) */
+    borg_skill[BI_DIG] = rb_ptr->r_skills[SKILL_DIGGING];
+    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
+
     /** Racial Skills **/
 
     /* Extract the player flags */
@@ -964,8 +968,9 @@ static void borg_notice_aux1(void)
         /* Affect searching ability (factor of five) */
         borg_skill[BI_SRCH] += (item->modifiers[OBJ_MOD_SEARCH] * 5);
 
-        /* Affect digging (factor of 20) */
-        borg_skill[BI_DIG] += (item->modifiers[OBJ_MOD_TUNNEL] * 20);
+        /* Affect digging (factor of 20) (unless it is wielded, taken care of later) */
+        if (i != INVEN_WIELD)
+            borg_skill[BI_DIG] += (item->modifiers[OBJ_MOD_TUNNEL] * 20);
 
         /* Affect speed */
         borg_skill[BI_SPEED] += item->modifiers[OBJ_MOD_SPEED];
@@ -1115,48 +1120,6 @@ static void borg_notice_aux1(void)
         borg_skill[BI_TODAM] += item->to_d;
     }
 
-    /* Update "stats" */
-    for (i = 0; i < STAT_MAX; i++)
-    {
-        int add, use, ind;
-
-        add = my_stat_add[i];
-
-        /* Modify the stats for race/class */
-        add += (player->race->r_adj[i] + player->class->c_adj[i]);
-
-        /* Extract the new "use_stat" value for the stat */
-        use = modify_stat_value(my_stat_cur[i], add);
-
-        /* Values: 3, ..., 17 */
-        if (use <= 18) ind = (use - 3);
-
-        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
-        else if (use <= 18 + 219) ind = (15 + (use - 18) / 10);
-
-        /* Range: 18/220+ */
-        else ind = (37);
-
-        /* Save the index */
-        if (ind > 37)
-            my_stat_ind[i] = 37;
-        else
-            my_stat_ind[i] = ind;
-        borg_skill[BI_STR + i] = my_stat_ind[i];
-        borg_skill[BI_CSTR + i] = borg_stat[i];
-    }
-
-
-    /* 'Mana' is actually the 'mana adjustment' */
-    int spell_stat = borg_spell_stat();
-    if (spell_stat >= 0)
-    {
-        borg_skill[BI_SP_ADJ] =
-            ((borg_adj_mag_mana[my_stat_ind[spell_stat]] * borg_skill[BI_CLEVEL]) / 2);
-        borg_skill[BI_FAIL1] = borg_adj_mag_stat[my_stat_ind[spell_stat]];
-        borg_skill[BI_FAIL2] = borg_adj_mag_fail[my_stat_ind[spell_stat]];
-    }
-
     /* Bloating slows the player down (a little) */
     if (borg_skill[BI_ISGORGED]) borg_skill[BI_SPEED] -= 10;
 
@@ -1292,6 +1255,20 @@ static void borg_notice_aux1(void)
         borg_skill[BI_DIG] += (item->weight / 10);
 
     }
+    /* weapons of digging type get a special bonus */
+    int dig = 0;
+    if (item->tval == TV_DIGGING) 
+    {
+        if (of_has(item->flags, OF_DIG_1))
+            dig = 1;
+        else if (of_has(item->flags, OF_DIG_2))
+            dig = 2;
+        else if (of_has(item->flags, OF_DIG_3))
+            dig = 3;
+    }
+
+    dig += item->modifiers[OBJ_MOD_TUNNEL];
+    borg_skill[BI_DIG] += (dig * 20);
 
     /* Calculate "max" damage per "normal" blow  */
     /* and assume we can enchant up to +8 if borg_skill[BI_CLEVEL] > 25 */
@@ -1320,9 +1297,6 @@ static void borg_notice_aux1(void)
 
     /* Affect Skill -- saving throw (WIS) */
     borg_skill[BI_SAV] += borg_adj_wis_sav[my_stat_ind[STAT_WIS]];
-
-    /* Affect Skill -- digging (STR) */
-    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
 
 
     /* Affect Skill -- disarming (Level, by Class) */
@@ -2331,10 +2305,10 @@ static bool borg_has_bad_curse(borg_item* item)
 static void borg_notice_weapon_swap(void)
 {
     int i;
-    int b_i = 0;
+    int b_i = -1;
 
-    int32_t v = -1L;
-    int32_t b_v = 0L;
+    int32_t v = -1;
+    int32_t b_v = -1;
 
     int dam, damage;
     borg_item* item;
@@ -2634,18 +2608,8 @@ static void borg_notice_weapon_swap(void)
 
         }
     }
-    /* mark the swap item and its value */
-    weapon_swap_value = b_v;
-    weapon_swap = b_i + 1;
 
-    /* Now that we know who the best swap is lets set our swap
-     * flags and get a move on
-     */
-     /*** Process the best inven item ***/
-
-    item = &borg_items[b_i];
-
-    /* Clear all the swap weapon flags as I look at each one. */
+    /* Clear all the swap weapon flags. */
     weapon_swap_slay_animal = 0;
     weapon_swap_slay_evil = 0;
     weapon_swap_slay_undead = 0;
@@ -2695,6 +2659,20 @@ static void borg_notice_weapon_swap(void)
     /* Assume no enchantment needed */
     enchant_weapon_swap_to_h = 0;
     enchant_weapon_swap_to_d = 0;
+
+    if (b_i == -1)
+        return;
+
+    /* mark the swap item and its value */
+    weapon_swap_value = b_v;
+    weapon_swap = b_i + 1;
+
+    /* Now that we know who the best swap is lets set our swap
+     * flags and get a move on
+     */
+     /*** Process the best inven item ***/
+
+    item = &borg_items[b_i];
 
     /* Enchant swap weapons (to hit) */
     if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
@@ -2794,7 +2772,7 @@ static void borg_notice_weapon_swap(void)
 static void borg_notice_armour_swap(void)
 {
     int i;
-    int b_i = 0;
+    int b_i = -1;
     int32_t v = -1L;
     int32_t b_v = 0L;
     int dam, damage;
@@ -3082,16 +3060,13 @@ static void borg_notice_armour_swap(void)
         b_i = i;
         b_v = v;
         armour_swap_value = v;
-        armour_swap = i-1;
+        armour_swap = i - 1;
         }
     }
 
     /* Now that we know who the best swap is lets set our swap
      * flags and get a move on
      */
-     /*** Process the best inven item ***/
-
-    item = &borg_items[b_i];
 
     /* Clear all the swap weapon flags as I look at each one. */
     armour_swap_slay_animal = 0;
@@ -3139,6 +3114,12 @@ static void borg_notice_armour_swap(void)
     armour_swap_resist_blind = false;
     armour_swap_resist_neth = false;
     decurse_armour_swap = false;
+
+    if (b_i == -1)
+        return;
+
+    /*** Process the best inven item ***/
+    item = &borg_items[b_i];
 
     /* various slays */
     armour_swap_slay_animal = item->slays[RF_ANIMAL];
@@ -3255,6 +3236,50 @@ void borg_notice(bool notice_swap)
         if (my_stat_cur[i] > my_stat_max[i])
             my_stat_max[i] = my_stat_cur[i];
     }
+
+
+    /* Update "stats" */
+    for (i = 0; i < STAT_MAX; i++)
+    {
+        int add, use, ind;
+
+        add = my_stat_add[i];
+
+        /* Modify the stats for race/class */
+        add += (player->race->r_adj[i] + player->class->c_adj[i]);
+
+        /* Extract the new "use_stat" value for the stat */
+        use = modify_stat_value(my_stat_cur[i], add);
+
+        /* Values: 3, ..., 17 */
+        if (use <= 18) ind = (use - 3);
+
+        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+        else if (use <= 18 + 219) ind = (15 + (use - 18) / 10);
+
+        /* Range: 18/220+ */
+        else ind = (37);
+
+        /* Save the index */
+        if (ind > 37)
+            my_stat_ind[i] = 37;
+        else
+            my_stat_ind[i] = ind;
+        borg_skill[BI_STR + i] = my_stat_ind[i];
+        borg_skill[BI_CSTR + i] = borg_stat[i];
+    }
+
+
+    /* 'Mana' is actually the 'mana adjustment' */
+    int spell_stat = borg_spell_stat();
+    if (spell_stat >= 0)
+    {
+        borg_skill[BI_SP_ADJ] =
+            ((borg_adj_mag_mana[my_stat_ind[spell_stat]] * borg_skill[BI_CLEVEL]) / 2);
+        borg_skill[BI_FAIL1] = borg_adj_mag_stat[my_stat_ind[spell_stat]];
+        borg_skill[BI_FAIL2] = borg_adj_mag_fail[my_stat_ind[spell_stat]];
+    }
+
     /* Notice the equipment */
     borg_notice_aux1();
 
