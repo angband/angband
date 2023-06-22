@@ -1510,11 +1510,11 @@ static void borg_notice_aux1(void)
         {
             if (of_has(item->flags, OF_LIGHT_2))
             {
-                borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 1;
+                borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
             }
             else if (of_has(item->flags, OF_LIGHT_3))
             {
-                borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
+                borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 3;
             }
         }
     }

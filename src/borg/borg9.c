@@ -2949,8 +2949,6 @@ static struct keypress borg_inkey_hack(int flush_first)
         /* Note the score */
         borg_enter_score();
 #endif
-        /* Reset the player game data then resurrect a new player */
-//        resurrect_borg();
 
 #endif /* BABLOS */
 
@@ -3020,6 +3018,19 @@ static struct keypress borg_inkey_hack(int flush_first)
     {
         /* Left hand */
         key.code = 'c';
+        return key;
+    }
+
+    /* prompt for stepping in lava.  This should be avoided but */
+    /* if the borg is stuck, give him a pass */
+    if (borg_prompt && !inkey_flag &&
+        (y == 0) && (x >= 12) &&
+        (0 == borg_what_text(0, y, 13, &t_a, buf)) &&
+        (streq(buf, "The lava will") || 
+         streq(buf, "Lava blocks y")))
+    {
+        /* yes step in */
+        key.code = 'y';
         return key;
     }
 
