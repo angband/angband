@@ -1701,11 +1701,11 @@ bool borg_crush_junk(void)
             /* try to make the borg junk +1,+1 dagger at level 40 */
 
 			/* if the item gives a bonus to a stat, boost its value */
-            if (item->modifiers[OBJ_MOD_STR] > 0 ||
+            if ((item->modifiers[OBJ_MOD_STR] > 0 ||
 				item->modifiers[OBJ_MOD_INT] > 0 ||
 				item->modifiers[OBJ_MOD_WIS] > 0 ||
 				item->modifiers[OBJ_MOD_DEX] > 0 ||
-				(item->modifiers[OBJ_MOD_CON] > 0 && value > 0))
+				item->modifiers[OBJ_MOD_CON] > 0) && value > 0)
             {
                 value += 2000L;
             }
