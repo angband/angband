@@ -1431,6 +1431,7 @@ extern int16_t  num_artifact;
 extern int16_t  num_ego;
 
 extern int16_t  home_slot_free;
+extern int16_t  home_un_id;
 extern int16_t  home_damage;
 extern int16_t  num_duplicate_items;
 extern int16_t  num_slow_digest;

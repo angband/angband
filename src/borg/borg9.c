@@ -6658,6 +6658,9 @@ void do_cmd_borg(void)
         /* Cheat the "inven" screen */
         borg_cheat_inven();
 
+        /* Cheat the "inven" screen */
+        borg_cheat_store();
+
         /* Examine the screen */
         borg_update();
 
@@ -6958,28 +6961,33 @@ void do_cmd_borg(void)
         int item, to;
 
         /* Get a "Borg command", or abort */
-        if (!get_com("Dynamic Borg Has What: ((i)nv/(w)orn/(a)rtifact/(s)kill) ", &cmd)) return;
+        if (!get_com("Dynamic Borg Has What: ((a)ny/(i)nv/(w)orn/a(r)tifact/(s)kill) ", &cmd)) return;
 
         switch (cmd)
         {
-        case 'i':
-        case 'I':
+        case 'a':
+        case 'A':
         item = 0;
         to = z_info->k_max;
         break;
+        case 'i':
+        case 'I':
+        item = 0;
+        to = z_info->pack_size;
+        break;
         case 'w':
         case 'W':
-        item = z_info->k_max;
-        to = z_info->k_max + z_info->k_max;
+        item = INVEN_WIELD;
+        to = QUIVER_END;
         break;
-        case 'a':
-        case 'A':
-        item = z_info->k_max + z_info->k_max;
-        to = z_info->k_max + z_info->k_max + z_info->a_max;
+        case 'r':
+        case 'R':
+        item = 0;
+        to = QUIVER_END;
         break;
         default:
-        item = z_info->k_max + z_info->k_max + z_info->a_max;
-        to = z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX;
+        item = 0;
+        to = BI_MAX;
         break;
         }
         /* Cheat the "equip" screen */
@@ -7003,25 +7011,42 @@ void do_cmd_borg(void)
         {
             switch (cmd)
             {
+            case 'a':
+            case 'A':
+            if (borg_has[item])
+            {
+                borg_note(format("Item-Kind:%03d name=%s value= %d.", item, 
+                    k_info[item].name, borg_has[item]));
+            }
+            break;
             case 'i':
             case 'I':
-            borg_note(format("Item%03d value= %d.", item, borg_has[item]));
+            if (borg_items[item].iqty)
+            {
+                borg_note(format("Item-Invn:%03d desc= %s qty %d.", item,
+                    borg_items[item].desc, borg_items[item].iqty));
+            }
             break;
             case 'w':
             case 'W':
-            borg_note(format("WItem%03d value= %d.", item - z_info->k_max, borg_has[item]));
+            if (borg_items[item].iqty)
+            {
+                borg_note(format("Item-Worn:%03d desc= %s qty %d.", item,
+                    borg_items[item].desc, borg_items[item].iqty));
+            }
             break;
-            case 'a':
-            case 'A':
-            borg_note(format("Artifact%03d value= %d.", item - z_info->k_max - z_info->k_max, borg_has[item]));
+            case 'r':
+            case 'R':
+            if (borg_items[item].iqty && borg_items[item].art_idx)
+                borg_note(format("Item-Arti:%03d name= %s.", item, 
+                    a_info[borg_items[item].art_idx].name));
             break;
             default:
-            borg_note(format("skill %d (%s) value= %d.", item,
-                prefix_pref[item -
-                z_info->k_max -
-                z_info->k_max -
-                z_info->a_max], borg_has[item]));
-            break;
+            {
+                borg_note(format("skill %d (%s) value= %d.", item, 
+                    prefix_pref[item], borg_skill[item]));
+                break;
+            }
             }
         }
 

@@ -689,6 +689,7 @@ int16_t num_artifact;
 int16_t num_ego;
 
 int16_t home_slot_free;
+int16_t home_un_id;
 int16_t home_damage;
 int16_t num_duplicate_items;
 int16_t num_slow_digest;

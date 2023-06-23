@@ -723,11 +723,6 @@ static bool borg_think_home_sell_aux(bool save_best)
     memset(test, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
     memset(best, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
 
-#if 0
-    /* if I have not been to home, do not try this yet. */
-    if (!borg_shops[7].when) return false;
-#endif
-
     /* Hack -- the home is full */
     /* and pack is full */
     if (borg_shops[7].ware[icky].iqty &&
@@ -2571,18 +2566,13 @@ static bool borg_think_shop_sell(void)
 
         qty = borg_min_item_quantity(item);
 
-        /* Remove the inscription */
-        /* 309 does not allow for } while in the store */
-        /* if (item->tval == TV_FOOD) borg_send_deinscribe(goal_item); */
-
-
         /* Log */
         borg_note(format("# Selling %s", item->desc));
 
-        /* Buy an item */
+        /* Sell an item */
         borg_keypress('s');
 
-        /* Buy the desired item */
+        /* Sell the desired item */
         borg_keypress(all_letters_nohjkl[goal_item]);
 
         /* Hack -- Sell a single item */
