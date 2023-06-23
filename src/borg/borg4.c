@@ -1201,6 +1201,9 @@ static void borg_notice_aux1(void)
     /* Obtain the "hold" value */
     hold = adj_str_hold[my_stat_ind[STAT_STR]];
 
+    /* digging */
+    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
+
 
     /** Examine the "current bow" **/
     item = &borg_items[INVEN_BOW];
@@ -3358,9 +3361,9 @@ void borg_notice(bool notice_swap)
 }
 
 /*
- * Helper function -- notice the home equipment
+ * Helper function -- clear counters for home equipment
  */
-static void borg_notice_home_aux1(borg_item* in_item, bool no_items)
+static void borg_notice_home_clear(borg_item* in_item, bool no_items)
 {
 
     /*** Reset counters ***/
@@ -3487,6 +3490,7 @@ static void borg_notice_home_aux1(borg_item* in_item, bool no_items)
 
     home_slot_free = 0;
     home_damage = 0;
+    home_un_id = 0;
 
     num_duplicate_items = 0;
 }
@@ -3517,6 +3521,9 @@ static void borg_notice_home_dupe(borg_item* item, bool check_sval, int i)
     /* check for a duplicate.  */
     /* be carefull about extra powers (elvenkind/magi) */
     if (borg_ego_has_random_power(e_ptr)) return;
+
+    /* if it isn't identified, it isn't duplicate */
+    if (item->needs_ident) return;
 
     /* if this is a stack of items then all after the first are a */
     /* duplicate */
@@ -3557,7 +3564,7 @@ static void borg_notice_home_dupe(borg_item* item, bool check_sval, int i)
 /*
  * Helper function -- notice the home inventory
  */
-static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
+static void borg_notice_home_aux(borg_item* in_item, bool no_items)
 {
     int i;
 
@@ -3582,14 +3589,14 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
             item = in_item;
 
         /* Skip empty items */
-        if (!item->iqty)
+        if (!item->iqty && (i < z_info->store_inven_max))
         {
             home_slot_free++;
             continue;
         }
 
         /* Hack -- skip un-aware items */
-        if (!item->kind)
+        if (!item->kind && (i < z_info->store_inven_max))
         {
             home_slot_free++;
             continue;
@@ -3689,9 +3696,15 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
         }
         /* count egos that need *ID* */
         if (borg_ego_has_random_power(&e_info[item->ego_idx]) &&
-            !item->ident)
+            item->needs_ident)
         {
             num_ego += item->iqty;
+        }
+
+        /* count up unidetified stuff */
+        if (item->needs_ident && (i < z_info->store_inven_max))
+        {
+            home_un_id++;
         }
 
         /* Analyze the item */
@@ -4154,10 +4167,10 @@ static void borg_notice_home_aux2(borg_item* in_item, bool no_items)
 void borg_notice_home(borg_item* in_item, bool no_items)
 {
     /* Notice the home equipment */
-    borg_notice_home_aux1(in_item, no_items);
+    borg_notice_home_clear(in_item, no_items);
 
     /* Notice the home inventory */
-    borg_notice_home_aux2(in_item, no_items);
+    borg_notice_home_aux(in_item, no_items);
 }
 
 
@@ -4542,9 +4555,6 @@ static int32_t borg_power_aux1(void)
     /*        later it might be nice to swap to a weapon that does not */
     /*        have an int bonus */
     for (i = 0; i < STAT_MAX; i++) value += my_stat_add[i];
-
-    /*** Reward current skills ***/
-    borg_skill[BI_DIG] += borg_adj_str_dig[my_stat_ind[STAT_STR]];
 
     /* Hack -- tiny rewards */
     value += (borg_skill[BI_DISP] * 2L);
@@ -6411,6 +6421,10 @@ static int32_t borg_power_home_aux2(void)
 
     /* Reward certain types of egos in the home */
     value += num_ego * 5000L;
+
+    /* Only allow unid'd stuff if we can't id them */
+    if (home_un_id)
+        value += (home_un_id - borg_skill[BI_AID]) * 1005L;
 
     /* Return the value */
     return (value);
