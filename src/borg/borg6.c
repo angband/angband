@@ -9639,7 +9639,7 @@ static int borg_attack_aux(int what)
     case BF_SPELL_ELECTRIC_ARC:
     rad = 0;
     dam = ((((borg_skill[BI_CLEVEL] - 1) / 5) + 3) * (6 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
+    return (borg_attack_aux_spell_bolt(ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg_skill[BI_CLEVEL]));
 
     case BF_SPELL_ACID_SPRAY:
     rad = 3; /* HACK just pretend it is wide. */
@@ -9656,7 +9656,7 @@ static int borg_attack_aux(int what)
     case BF_SPELL_THRUST_AWAY:
     rad = 0;
     dam = (borg_skill[BI_CLEVEL] * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam, BORG_ATTACK_FORCE, z_info->max_range));
+    return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam, BORG_ATTACK_FORCE, (borg_skill[BI_CLEVEL] / 10) + 1));
 
     /* Spell -- Lightning Strike */
     case BF_SPELL_LIGHTNING_STRIKE:
@@ -9668,7 +9668,7 @@ static int borg_attack_aux(int what)
     case BF_SPELL_EARTH_RISING:
     rad = 0;
     dam = (((borg_skill[BI_CLEVEL] / 3) + 2) * (6 + 1) / 2) + borg_skill[BI_CLEVEL] + 5;
-    return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
+    return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam, BORG_ATTACK_SHARD, (borg_skill[BI_CLEVEL] / 5) + 4));
 
     /* Spell -- Volcanic Eruption */
     /* just count the damage.  The earthquake defence is a side bennie, perhaps... */
