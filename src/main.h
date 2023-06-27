@@ -47,7 +47,6 @@ extern const char help_lfb[];
 extern const char help_xpj[];
 extern const char help_x11[];
 extern const char help_vcs[];
-extern const char help_gtk[];
 extern const char help_gcu[];
 extern const char help_cap[];
 extern const char help_vme[];
