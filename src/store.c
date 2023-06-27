@@ -591,14 +591,26 @@ int price_item(struct store *store, const struct object *obj,
 
 	/* Get the value of the stack of wands, or a single item */
 	if (tval_can_have_charges(obj)) {
-		price = MIN(object_value_real(obj, qty), object_value(obj, qty));
+		if (store_buying) {
+			price = MIN(object_value_real(obj, qty),
+				object_value(obj, qty));
+		} else {
+			price = MAX(object_value_real(obj, qty),
+				object_value(obj, qty));
+		}
 	} else {
-		price = MIN(object_value_real(obj, 1), object_value(obj, 1));
+		if (store_buying) {
+			price = MIN(object_value_real(obj, 1),
+				object_value(obj, 1));
+		} else {
+			price = MAX(object_value_real(obj, 1),
+				object_value(obj, 1));
+		}
 	}
 
 	/* Worthless items */
 	if (price <= 0) {
-		return 0;
+		return (store_buying) ? 0 : qty;
 	}
 
 	/* The black market is always a worse deal */
