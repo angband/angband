@@ -918,7 +918,7 @@ static void render_utf8_string(const struct window *window,
 	SDL_DestroyTexture(src_texture);
 }
 
-/* this function is typically called in a loop, so for efficiency it doesnt
+/* this function is typically called in a loop, so for efficiency it doesn't
  * SetRenderTarget; caller must do it (but it does SetTextureColorMod) */
 static void render_glyph_mono(const struct window *window,
 		const struct font *font, SDL_Texture *dst_texture,
@@ -4574,7 +4574,7 @@ static void load_graphics(struct window *window, graphics_mode *mode)
 		char path[4096];
 		path_build(path, sizeof(path), mode->path, mode->file);
 		if (!file_exists(path)) {
-			quit_fmt("cannot load graphics: file '%s' doesnt exist", path);
+			quit_fmt("cannot load graphics: file '%s' doesn't exist", path);
 		}
 
 		window->graphics.texture = load_image(window, path);
