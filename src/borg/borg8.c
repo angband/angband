@@ -1686,12 +1686,12 @@ static bool borg_think_home_buy_aux(void)
         stack = borg_slot(item->tval, item->sval);
 
         /* Consider new equipment-- Must check both ring slots */
+        p = 0;
         if (slot >= 0)
         {
-            int empty_slot = borg_first_empty_inventory_slot();
             /* Require two empty slots */
-            if (empty_slot == -1) continue;
-            if ((empty_slot + 1) >= PACK_SLOTS) continue;
+            if (hole == -1) continue;
+            if ((hole + 1) >= PACK_SLOTS) continue;
 
             /* Check Rings */
             if (slot == INVEN_LEFT)
@@ -1768,6 +1768,8 @@ static bool borg_think_home_buy_aux(void)
                 /* Is this ring better than one of mine? */
                 p = MAX(p_right, p_left);
 
+                /* Restore hole */
+                memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
             }
 
             else /* non rings */
@@ -1802,16 +1804,19 @@ static bool borg_think_home_buy_aux(void)
             } /* non rings */
         } /* equip */
 
-        /* Consider new inventory */
-        else
+        /* Consider new inventory.*/
+        /* note, we may grab an equipable if, for example, we want to ID it */
+        if (p <= b_p)
         {
-            int empty_slot = borg_first_empty_inventory_slot();
+            /* Restore hole if we are trying an item in inventory that didn't work equipped */
+            if (slot >= 0)
+                memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
 
             if (stack != -1) hole = stack;
 
-            /* Require one empty slot */
-            if (stack == -1 && empty_slot == -1) continue;
-            if (stack == -1 && (empty_slot + 1) >= PACK_SLOTS) continue;
+            /* Require two empty slots */
+            if (stack == -1 && hole == -1) continue;
+            if (stack == -1 && (hole + 1) >= PACK_SLOTS) continue;
 
             /* Save hole (could be either empty slot or stack */
             memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));

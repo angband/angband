@@ -373,6 +373,10 @@ bool borg_item_note_needs_id(const borg_item* item)
     if (item->ident)
         return false;
 
+    /* save a string check */
+    if (item->needs_ident)
+        return true;
+
     return strstr(borg_get_note(item), "{??}");
 }
 
@@ -653,13 +657,11 @@ static int32_t borg_object_value_known(borg_item* item)
     {
         /* Rings/Amulets */
     case TV_RING:
-    {
         /* HACK special case */
         if (item->sval == sv_ring_dog)
             return (0L);
 
         /* Fall through */
-    }
     case TV_AMULET:
     {
         /* Hack -- negative bonuses are bad */
@@ -2838,7 +2840,7 @@ void borg_cheat_store(void)
             if (streq(buf, "(nothing)")) break;
 
             /* Analyze the item */
-            borg_item_analyze(b_item, o_ptr, buf, true);
+            borg_item_analyze(b_item, o_ptr, buf, store_num == 7 ? false : true);
 
             /* Check if the general store has certain items */
             if (store_num == 0)

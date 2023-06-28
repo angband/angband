@@ -4742,7 +4742,7 @@ void borg_update(void)
      * ###              # #
      *
      */
-    for (j = 0; j <= 24; j++)
+    for (j = 0; j < 24; j++)
     {
         y = c_y + borg_ddy_ddd[j];
         x = c_x + borg_ddx_ddd[j];
