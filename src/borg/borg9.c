@@ -4448,9 +4448,6 @@ void borg_init_9(void)
         option_set("cheat_live", true);
     }
 
-    /* We use the original keypress codes */
-    option_set("rogue_like_commands", false);
-
     /* No auto_more */
     option_set("auto_more", false);
 
@@ -5817,6 +5814,9 @@ void do_cmd_borg(void)
     case 'z':
     case 'Z':
     {
+        /* The Borg uses the original keypress codes */
+        option_set("rogue_like_commands", false);
+
         /* Activate */
         borg_active = true;
 
@@ -5872,6 +5872,9 @@ void do_cmd_borg(void)
     case 'u':
     case 'U':
     {
+        /* The Borg uses the original keypress codes */
+        option_set("rogue_like_commands", false);
+
         /* Activate */
         borg_active = true;
 
@@ -5915,6 +5918,9 @@ void do_cmd_borg(void)
     case 'x':
     case 'X':
     {
+        /* The Borg uses the original keypress codes */
+        option_set("rogue_like_commands", false);
+
         /* Activate */
         borg_active = true;
 
