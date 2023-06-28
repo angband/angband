@@ -3247,7 +3247,7 @@ void borg_init_3(void)
         if (!a_ptr->name) continue;
 
         /* Extract a string */
-        sprintf(buf, " %s", (a_ptr->name));
+        strnfmt(buf, sizeof(buf), " %s", (a_ptr->name));
 
         /* Save an entry */
         text[size] = string_make(buf);
@@ -3267,7 +3267,7 @@ void borg_init_3(void)
         if (!e_ptr->name) continue;
 
         /* Extract a string */
-        sprintf(buf, " %s", (e_ptr->name));
+        strnfmt(buf, sizeof(buf), " %s", (e_ptr->name));
 
         /* Save an entry */
         text[size] = string_make(buf);

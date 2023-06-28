@@ -2211,7 +2211,7 @@ char* borg_prt_formula(int* arg_formula)
             /* Number */
         case BFO_NUMBER:
 
-        sprintf(tmpStr, "%d ", *++arg_formula);
+        strnfmt(tmpStr, sizeof(tmpStr), "%d ", *++arg_formula);
         strcat(FormulaStr, tmpStr);
         break;
 
