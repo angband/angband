@@ -2649,6 +2649,7 @@ int sv_ring_lightning;
 int sv_ring_digging;
 int sv_ring_speed;
 int sv_ring_damage;
+int sv_ring_dog;
 
 int sv_amulet_teleportation;
 
@@ -2887,6 +2888,7 @@ static void borg_init_svs_and_kvs(void)
     sv_ring_digging = borg_lookup_sval_fail(tval, "Digging");
     sv_ring_speed = borg_lookup_sval_fail(tval, "Speed");
     sv_ring_damage = borg_lookup_sval_fail(tval, "Damage");
+    sv_ring_dog = borg_lookup_sval_fail(tval, "the Dog");
 
     tval = tval_find_idx("amulet");
     sv_amulet_teleportation = borg_lookup_sval_fail(tval, "Teleportation");

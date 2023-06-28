@@ -653,6 +653,13 @@ static int32_t borg_object_value_known(borg_item* item)
     {
         /* Rings/Amulets */
     case TV_RING:
+    {
+        /* HACK special case */
+        if (item->sval == sv_ring_dog)
+            return (0L);
+
+        /* Fall through */
+    }
     case TV_AMULET:
     {
         /* Hack -- negative bonuses are bad */

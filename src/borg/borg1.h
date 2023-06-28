@@ -178,6 +178,7 @@ extern int sv_ring_lightning;
 extern int sv_ring_digging;
 extern int sv_ring_speed;
 extern int sv_ring_damage;
+extern int sv_ring_dog;
 
 extern int sv_amulet_teleportation;
 
