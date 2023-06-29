@@ -712,33 +712,44 @@ static void borg_pick_armor(int i)
 static void borg_pick_weapon(int i)
 {
     /* Choose from equipment */
-    if (i >= INVEN_WIELD)
+    if (i < INVEN_WIELD)
+    {
+        borg_keypress(all_letters_nohjkl[i]);
+    }
+    else
     {
         /* if there is a weapon in inventory, you have to press */
-        /* '/' to get to equipment */
+        /* '/' to get to equipment or '|' to go to quiver */
         bool found = false;
         for (int e = 0; e < z_info->pack_size; e++)
         {
             if (borg_items[e].iqty &&
                 (borg_items[e].tval == TV_BOW ||
-                 borg_items[e].tval == TV_DIGGING ||
-                 borg_items[e].tval == TV_HAFTED ||
-                 borg_items[e].tval == TV_POLEARM ||
-                 borg_items[e].tval == TV_SWORD))
+                    borg_items[e].tval == TV_DIGGING ||
+                    borg_items[e].tval == TV_HAFTED ||
+                    borg_items[e].tval == TV_POLEARM ||
+                    borg_items[e].tval == TV_SWORD))
             {
                 found = true;
                 break;
             }
         }
-        if (found)
-            borg_keypress('/');
 
-        /* Choose that item */
-        borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
+        if (i < QUIVER_START)
+        {
+            if (found)
+                borg_keypress('/');
+
+            borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
+        }
+        else
+        {
+            /* Quiver Slot */
+            if (found || borg_items[INVEN_WIELD].iqty != 0 || borg_items[INVEN_BOW].iqty != 0)
+                borg_keypress('|');
+            borg_keypress('0' + (i - QUIVER_START));
+        }
     }
-    else
-        /* Choose that item */
-        borg_keypress(all_letters_nohjkl[i]);
 }
 
 /*
