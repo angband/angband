@@ -4143,7 +4143,8 @@ bool borg_caution(void)
 
             /* Try to avoid pillar dancing if at good health */
             if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                ((track_step.y[track_step.num - 2] == y2 &&
+                (track_step.num > 2 && 
+                    (track_step.y[track_step.num - 2] == y2 &&
                     track_step.x[track_step.num - 2] == x2 &&
                     track_step.y[track_step.num - 3] == c_y &&
                     track_step.x[track_step.num - 3] == c_x) ||
@@ -4208,7 +4209,8 @@ bool borg_caution(void)
 
                 /* Lets make one more check that we are not bouncing */
                 if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                    ((track_step.y[track_step.num - 2] == y1 &&
+                    (track_step.num > 2 &&
+                        (track_step.y[track_step.num - 2] == y1 &&
                         track_step.x[track_step.num - 2] == x1 &&
                         track_step.y[track_step.num - 3] == c_y &&
                         track_step.x[track_step.num - 3] == c_x) ||
@@ -4392,11 +4394,12 @@ bool borg_caution(void)
 
             /* If i was here last round and 3 rounds ago, suggesting a "bounce" */
             if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                ((track_step.y[track_step.num - 2] == y &&
-                    track_step.x[track_step.num - 2] == x &&
-                    track_step.y[track_step.num - 3] == c_y &&
-                    track_step.x[track_step.num - 3] == c_x) ||
-                    time_this_panel >= 300)) continue;
+                (track_step.num > 2 &&
+                 (track_step.y[track_step.num - 2] == y &&
+                  track_step.x[track_step.num - 2] == x &&
+                  track_step.y[track_step.num - 3] == c_y &&
+                  track_step.x[track_step.num - 3] == c_x) ||
+                time_this_panel >= 300)) continue;
 
             /*
              * Skip this grid if it is adjacent to a monster.  He will just hit me
@@ -11093,12 +11096,11 @@ static int borg_defend_aux_grim_purpose(int p1)
 static int borg_defend_aux_resist_fecap(int p1)
 {
     int p2 = 0;
-    int fail_allowed = 25;
     bool    save_fire = false,
-        save_acid = false,
-        save_poison = false,
-        save_elec = false,
-        save_cold = false;
+            save_acid = false,
+            save_poison = false,
+            save_elec = false,
+            save_cold = false;
 
     if (borg_skill[BI_TRFIRE] &&
         borg_skill[BI_TRACID] &&
@@ -11109,18 +11111,6 @@ static int borg_defend_aux_resist_fecap(int p1)
 
     /* Cant when screwed */
     if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISFORGET]) return (0);
-
-    /* if very scary, do not allow for much chance of fail */
-    if (p1 > avoidance)
-        fail_allowed -= 19;
-    else
-        /* a little scary */
-        if (p1 > (avoidance * 2) / 3)
-            fail_allowed -= 10;
-        else
-            /* not very scary, allow lots of fail */
-            if (p1 < avoidance / 3)
-                fail_allowed += 10;
 
     if (!borg_equips_artifact("RESIST_ALL", true) &&
         !borg_equips_artifact("RAGE_BLESS_RESIST", true))
@@ -13231,21 +13221,25 @@ static int borg_defend_aux_panel_shift(void)
             /* do nothing */
         }
         else
-            /* shift up? only if a north corridor */
-            if (dir == 8 && borg_projectable_pure(c_y, c_x, c_y - 2, c_x) &&
-                track_step.y[track_step.num - 1] != c_y - 1)
+        {
+            /* if not the first step */
+            if (track_step.num)
             {
-                /* Send action (view panel info) */
-                borg_keypress('L');
-                if (dir) borg_keypress(I2D(dir));
-                borg_note("# Shifted panel as a precaution.");
-                /* Mark the time to avoid loops */
-                when_shift_panel = borg_t;
-                /* Leave the panel shift mode */
-                borg_keypress(ESCAPE);
-            }
-            else /* shift down? only if a south corridor */
-                if (dir == 2 && borg_projectable_pure(c_y, c_x, c_y + 2, c_x) &&
+                /* shift up? only if a north corridor */
+                if (dir == 8 && borg_projectable_pure(c_y, c_x, c_y - 2, c_x) &&
+                    track_step.y[track_step.num - 1] != c_y - 1)
+                {
+                    /* Send action (view panel info) */
+                    borg_keypress('L');
+                    if (dir) borg_keypress(I2D(dir));
+                    borg_note("# Shifted panel as a precaution.");
+                    /* Mark the time to avoid loops */
+                    when_shift_panel = borg_t;
+                    /* Leave the panel shift mode */
+                    borg_keypress(ESCAPE);
+                }
+                /* shift down? only if a south corridor */
+                else if (dir == 2 && borg_projectable_pure(c_y, c_x, c_y + 2, c_x) &&
                     track_step.y[track_step.num - 1] != c_y + 1)
                 {
                     /* Send action (view panel info) */
@@ -13257,34 +13251,34 @@ static int borg_defend_aux_panel_shift(void)
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
                 }
-                else /* shift Left? only if a west corridor */
-                    if (dir == 4 && borg_projectable_pure(c_y, c_x, c_y, c_x - 2) &&
-                        track_step.x[track_step.num - 1] != c_x - 1)
-                    {
-                        /* Send action (view panel info) */
-                        borg_keypress('L');
-                        if (dir) borg_keypress(I2D(dir));
-                        borg_note("# Shifted panel as a precaution.");
-                        /* Mark the time to avoid loops */
-                        when_shift_panel = borg_t;
-                        /* Leave the panel shift mode */
-                        borg_keypress(ESCAPE);
-                    }
-                    else /* shift Right? only if a east corridor */
-                        if (dir == 6 && borg_projectable_pure(c_y, c_x, c_y, c_x + 2) &&
-                            track_step.x[track_step.num - 1] != c_x + 1)
-                        {
-                            /* Send action (view panel info) */
-                            borg_keypress('L');
-                            if (dir) borg_keypress(I2D(dir));
-                            borg_note("# Shifted panel as a precaution.");
-                            /* Mark the time to avoid loops */
-                            when_shift_panel = borg_t;
-                            /* Leave the panel shift mode */
-                            borg_keypress(ESCAPE);
-                        }
-
-
+                /* shift Left? only if a west corridor */
+                else if (dir == 4 && borg_projectable_pure(c_y, c_x, c_y, c_x - 2) &&
+                    track_step.x[track_step.num - 1] != c_x - 1)
+                {
+                    /* Send action (view panel info) */
+                    borg_keypress('L');
+                    if (dir) borg_keypress(I2D(dir));
+                    borg_note("# Shifted panel as a precaution.");
+                    /* Mark the time to avoid loops */
+                    when_shift_panel = borg_t;
+                    /* Leave the panel shift mode */
+                    borg_keypress(ESCAPE);
+                }
+                /* shift Right? only if a east corridor */
+                else if (dir == 6 && borg_projectable_pure(c_y, c_x, c_y, c_x + 2) &&
+                    track_step.x[track_step.num - 1] != c_x + 1)
+                {
+                    /* Send action (view panel info) */
+                    borg_keypress('L');
+                    if (dir) borg_keypress(I2D(dir));
+                    borg_note("# Shifted panel as a precaution.");
+                    /* Mark the time to avoid loops */
+                    when_shift_panel = borg_t;
+                    /* Leave the panel shift mode */
+                    borg_keypress(ESCAPE);
+                }
+            }
+        }
     }
     /* This uses no energy */
     return (0);

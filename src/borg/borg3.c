@@ -931,6 +931,10 @@ void borg_item_analyze(borg_item* item, const struct object* real_item,
     if (o->activation)
         item->one_ring = (o->activation->effect->index == EF_BIZARRE);
 
+    /* default the pval */
+    if (item->ident)
+        item->pval = o->pval;
+
     /* Rods are considered pval 1 if charged */
     if (item->tval == TV_ROD) {
         /* XXX There should be an obj_rod_charging() function for this logic */
@@ -978,10 +982,8 @@ void borg_item_analyze(borg_item* item, const struct object* real_item,
     if (o->ego)
         item->ego_idx = o->ego->eidx;
 
-    /* Notice various things if ID'd */
-    if (item->ident)
-    {
-        item->pval = o->pval;
+    /* Notice values */
+    if (item->ident) {
         item->value = borg_object_value_known(item);
     }
     else if (item->aware) {

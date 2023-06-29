@@ -4359,7 +4359,7 @@ static void borg_init_pain_messages(void)
         pain = &pain_messages[idx];
         for (i = 0; i < 7; i++)
         {
-            if (pain == NULL || pain->messages == NULL || pain->messages[i] == NULL)
+            if (pain == NULL || pain->messages[i] == NULL)
                 break;
             borg_insert_pain(pain->messages[i], &capacity, &count);
         }
