@@ -292,7 +292,7 @@ static bool borg_object_similar(borg_item* o_ptr, borg_item* j_ptr)
     }
 
     /* Maximal "stacking" limit */
-    if (total >= kb_info[o_ptr->kind].max_stack) return (0);
+    if (total >= k_info[o_ptr->kind].base->max_stack) return (0);
 
     /* They match, so they must be similar */
     return (true);

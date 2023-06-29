@@ -4111,48 +4111,48 @@ static void borg_notice_home_aux(borg_item* in_item, bool no_items)
     player_flags(player, f);
 
     /* Good flags */
-    if (rf_has(f, OF_SLOW_DIGEST)) num_slow_digest = true;
-    if (rf_has(f, OF_FEATHER)) num_ffall = true;
-    if (rf_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT = true;
-    if (rf_has(f, OF_REGEN)) num_regenerate = true;
-    if (rf_has(f, OF_TELEPATHY)) num_telepathy = true;
-    if (rf_has(f, OF_SEE_INVIS)) num_see_inv = true;
-    if (rf_has(f, OF_FREE_ACT)) num_free_act = true;
-    if (rf_has(f, OF_HOLD_LIFE)) num_hold_life = true;
-    if (rf_has(f, OF_PROT_CONF)) num_resist_conf = true;
-    if (rf_has(f, OF_PROT_BLIND)) num_resist_blind = true;
+    if (rf_has(f, OF_SLOW_DIGEST)) num_slow_digest++;
+    if (rf_has(f, OF_FEATHER)) num_ffall++;
+    if (rf_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT++;
+    if (rf_has(f, OF_REGEN)) num_regenerate++;
+    if (rf_has(f, OF_TELEPATHY)) num_telepathy++;
+    if (rf_has(f, OF_SEE_INVIS)) num_see_inv++;
+    if (rf_has(f, OF_FREE_ACT)) num_free_act++;
+    if (rf_has(f, OF_HOLD_LIFE)) num_hold_life++;
+    if (rf_has(f, OF_PROT_CONF)) num_resist_conf++;
+    if (rf_has(f, OF_PROT_BLIND)) num_resist_blind++;
 
     /* Weird flags */
 
     /* Bad flags */
 
     /* Immunity flags */
-    if (player->race->el_info[ELEM_FIRE].res_level == 3) num_immune_fire = true;
-    if (player->race->el_info[ELEM_ACID].res_level == 3) num_immune_acid = true;
-    if (player->race->el_info[ELEM_COLD].res_level == 3) num_immune_cold = true;
-    if (player->race->el_info[ELEM_ELEC].res_level == 3) num_immune_elec = true;
+    if (player->race->el_info[ELEM_FIRE].res_level == 3) num_immune_fire++;
+    if (player->race->el_info[ELEM_ACID].res_level == 3) num_immune_acid++;
+    if (player->race->el_info[ELEM_COLD].res_level == 3) num_immune_cold++;
+    if (player->race->el_info[ELEM_ELEC].res_level == 3) num_immune_elec++;
 
     /* Resistance flags */
-    if (player->race->el_info[ELEM_ACID].res_level > 0) num_resist_acid = true;
-    if (player->race->el_info[ELEM_ELEC].res_level > 0) num_resist_elec = true;
-    if (player->race->el_info[ELEM_FIRE].res_level > 0) num_resist_fire = true;
-    if (player->race->el_info[ELEM_COLD].res_level > 0) num_resist_cold = true;
-    if (player->race->el_info[ELEM_POIS].res_level > 0) num_resist_pois = true;
-    if (player->race->el_info[ELEM_LIGHT].res_level > 0) num_resist_LIGHT = true;
-    if (player->race->el_info[ELEM_DARK].res_level > 0) num_resist_dark = true;
-    if (player->race->el_info[ELEM_SOUND].res_level > 0) num_resist_sound = true;
-    if (player->race->el_info[ELEM_SHARD].res_level > 0) num_resist_shard = true;
-    if (player->race->el_info[ELEM_NEXUS].res_level > 0) num_resist_nexus = true;
-    if (player->race->el_info[ELEM_NETHER].res_level > 0) num_resist_neth = true;
-    if (player->race->el_info[ELEM_CHAOS].res_level > 0) num_resist_chaos = true;
-    if (player->race->el_info[ELEM_DISEN].res_level > 0) num_resist_disen = true;
+    if (player->race->el_info[ELEM_ACID].res_level > 0) num_resist_acid++;
+    if (player->race->el_info[ELEM_ELEC].res_level > 0) num_resist_elec++;
+    if (player->race->el_info[ELEM_FIRE].res_level > 0) num_resist_fire++;
+    if (player->race->el_info[ELEM_COLD].res_level > 0) num_resist_cold++;
+    if (player->race->el_info[ELEM_POIS].res_level > 0) num_resist_pois++;
+    if (player->race->el_info[ELEM_LIGHT].res_level > 0) num_resist_LIGHT++;
+    if (player->race->el_info[ELEM_DARK].res_level > 0) num_resist_dark++;
+    if (player->race->el_info[ELEM_SOUND].res_level > 0) num_resist_sound++;
+    if (player->race->el_info[ELEM_SHARD].res_level > 0) num_resist_shard++;
+    if (player->race->el_info[ELEM_NEXUS].res_level > 0) num_resist_nexus++;
+    if (player->race->el_info[ELEM_NETHER].res_level > 0) num_resist_neth++;
+    if (player->race->el_info[ELEM_CHAOS].res_level > 0) num_resist_chaos++;
+    if (player->race->el_info[ELEM_DISEN].res_level > 0) num_resist_disen++;
 
     /* Sustain flags */
-    if (rf_has(f, OF_SUST_STR)) num_sustain_str = true;
-    if (rf_has(f, OF_SUST_INT)) num_sustain_int = true;
-    if (rf_has(f, OF_SUST_WIS)) num_sustain_wis = true;
-    if (rf_has(f, OF_SUST_DEX)) num_sustain_dex = true;
-    if (rf_has(f, OF_SUST_CON)) num_sustain_con = true;
+    if (rf_has(f, OF_SUST_STR)) num_sustain_str++;
+    if (rf_has(f, OF_SUST_INT)) num_sustain_int++;
+    if (rf_has(f, OF_SUST_WIS)) num_sustain_wis++;
+    if (rf_has(f, OF_SUST_DEX)) num_sustain_dex++;
+    if (rf_has(f, OF_SUST_CON)) num_sustain_con++;
 
 }
 
