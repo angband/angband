@@ -711,6 +711,16 @@ bool obj_can_takeoff(const struct object *obj)
 	return !obj_has_flag(obj, OF_STICKY);
 }
 
+/*
+ * Can only throw an item that is not equipped or the equipped weapon if it
+ * can be taken off.
+ */
+bool obj_can_throw(const struct object *obj)
+{
+	return !object_is_equipped(player->body, obj)
+		|| (tval_is_melee_weapon(obj) && obj_can_takeoff(obj));
+}
+
 /* Can only put on wieldable items */
 bool obj_can_wear(const struct object *obj)
 {

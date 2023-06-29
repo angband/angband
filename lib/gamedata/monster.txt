@@ -208,21 +208,21 @@
 
 # CHAR_CLEAR monsters are totally invisible: the symbol shown on the screen is
 # the same as the floor (or other terrain feature) below it, or the item that
-# is lying on that floor. These monsters can currently be targetted as normal
+# is lying on that floor. These monsters can currently be targeted as normal
 # monsters: perhaps this can be changed so that the player must KNOW the
 # monster is there (by bumping into it, or having the monster wake up and
 # attack the player?)
 
 # CHAR_MULTI monsters are those which look like objects, and use the symbols of
 # objects. They are in plain sight, but the character should not know that a
-# monster is there. At the moment, such monsters can be targetted normally
+# monster is there. At the moment, such monsters can be targeted normally
 # (which means that this flag currently has no effect), but this may change
 # in the future, as with CHAR_CLEAR monsters.
 
 # (Note that currently both CHAR_CLEAR and CHAR_MULTI monsters are treated as
 # normal monsters that are just hard to see... if you (l)ook for them, you will
 # find them unless they are invisible and you cannot see invisible, and if you
-# use the * command for targetting mode you can pick them as a target.)
+# use the * command for targeting mode you can pick them as a target.)
 
 # TODO: Explain the other monster and spell flags. But maybe in another file.
 
