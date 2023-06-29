@@ -4142,12 +4142,12 @@ bool borg_caution(void)
             if (!borg_cave_floor_bold(y2, x2)) continue;
 
             /* Try to avoid pillar dancing if at good health */
-            if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                (track_step.num > 2 && 
+            if ((borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
+                ((track_step.num > 2 && 
                     (track_step.y[track_step.num - 2] == y2 &&
                     track_step.x[track_step.num - 2] == x2 &&
                     track_step.y[track_step.num - 3] == c_y &&
-                    track_step.x[track_step.num - 3] == c_x) ||
+                    track_step.x[track_step.num - 3] == c_x))) ||
                     time_this_panel >= 300)) continue;
 
             /* XXX -- Borgs in an unexplored hall (& with only a torch)
@@ -4208,12 +4208,12 @@ bool borg_caution(void)
                 ag = &borg_grids[y1][x1];
 
                 /* Lets make one more check that we are not bouncing */
-                if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                    (track_step.num > 2 &&
+                if ((borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
+                    ((track_step.num > 2 &&
                         (track_step.y[track_step.num - 2] == y1 &&
                         track_step.x[track_step.num - 2] == x1 &&
                         track_step.y[track_step.num - 3] == c_y &&
-                        track_step.x[track_step.num - 3] == c_x) ||
+                        track_step.x[track_step.num - 3] == c_x))) ||
                         time_this_panel >= 300)) break;
 
                 /* Require floor */
@@ -4393,12 +4393,12 @@ bool borg_caution(void)
             if (ag->trap && !ag->glyph) break;
 
             /* If i was here last round and 3 rounds ago, suggesting a "bounce" */
-            if (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
-                (track_step.num > 2 &&
+            if ((borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 7 / 10 &&
+                ((track_step.num > 2 &&
                  (track_step.y[track_step.num - 2] == y &&
                   track_step.x[track_step.num - 2] == x &&
                   track_step.y[track_step.num - 3] == c_y &&
-                  track_step.x[track_step.num - 3] == c_x) ||
+                  track_step.x[track_step.num - 3] == c_x))) ||
                 time_this_panel >= 300)) continue;
 
             /*
