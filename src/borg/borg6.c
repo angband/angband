@@ -4147,8 +4147,8 @@ bool borg_caution(void)
                     (track_step.y[track_step.num - 2] == y2 &&
                     track_step.x[track_step.num - 2] == x2 &&
                     track_step.y[track_step.num - 3] == c_y &&
-                    track_step.x[track_step.num - 3] == c_x))) ||
-                    time_this_panel >= 300)) continue;
+                    track_step.x[track_step.num - 3] == c_x)))) ||
+                    time_this_panel >= 300) continue;
 
             /* XXX -- Borgs in an unexplored hall (& with only a torch)
              * will always return false for Happy Grids:
@@ -4213,8 +4213,8 @@ bool borg_caution(void)
                         (track_step.y[track_step.num - 2] == y1 &&
                         track_step.x[track_step.num - 2] == x1 &&
                         track_step.y[track_step.num - 3] == c_y &&
-                        track_step.x[track_step.num - 3] == c_x))) ||
-                        time_this_panel >= 300)) break;
+                        track_step.x[track_step.num - 3] == c_x)))) ||
+                        time_this_panel >= 300) break;
 
                 /* Require floor */
                 if (!borg_cave_floor_grid(ag)) break;
@@ -4398,8 +4398,8 @@ bool borg_caution(void)
                  (track_step.y[track_step.num - 2] == y &&
                   track_step.x[track_step.num - 2] == x &&
                   track_step.y[track_step.num - 3] == c_y &&
-                  track_step.x[track_step.num - 3] == c_x))) ||
-                time_this_panel >= 300)) continue;
+                  track_step.x[track_step.num - 3] == c_x)))) ||
+                time_this_panel >= 300) continue;
 
             /*
              * Skip this grid if it is adjacent to a monster.  He will just hit me
