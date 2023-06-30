@@ -2881,9 +2881,9 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* Enforce minimum dimensions */
-	y_size = MAX(y_size, min_height);
-	x_size = MAX(x_size, min_width);
+	/* Enforce dimension limits */
+	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
+	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
 
 	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -3119,9 +3119,9 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* Enforce minimum dimensions */
-	y_size = MAX(y_size, min_height);
-	x_size = MAX(x_size, min_width);
+	/* Enforce dimension limits */
+	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
+	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
 
 	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -3548,9 +3548,9 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* Enforce minimum dimensions */
-	y_size = MAX(y_size, min_height);
-	x_size = MAX(x_size, min_width);
+	/* Enforce dimension limits */
+	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
+	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
 
 	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -3736,7 +3736,11 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width,
 	int gauntlet_hgt = 2 * randint1(5) + 3;
 	int gauntlet_wid = 2 * randint1(10) + 19;
 	int y_size = z_info->dungeon_hgt - randint0(25 - gauntlet_hgt);
-	int x_size = (z_info->dungeon_wid - gauntlet_wid) / 2 -
+	/*
+	 * labyrinth_gen() generates something that's two grids wider than
+	 * the argument passed, thus the extra "- 2" below.
+	 */
+	int x_size = (z_info->dungeon_wid - gauntlet_wid - 2) / 2 -
 		randint0(45 - gauntlet_wid);
 	struct loc p_loc_in_r, p_loc_in_l;
 	int line1, line2;
