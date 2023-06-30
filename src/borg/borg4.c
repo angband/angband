@@ -6254,20 +6254,9 @@ static int32_t borg_power_home_aux2(void)
     /* Collect food */
     if (borg_skill[BI_MAXCLEVEL] < 10)
     {
-        for (k = 0; k < 25 && k < num_food; k++) value += 8000L - k * 10L;
+        for (k = 0; k < kb_info[TV_FOOD].max_stack && k < num_food; k++) value += 8000L - k * 10L;
     }
-    else if (borg_skill[BI_MAXCLEVEL] < 35)
-    {
-        for (k = 0; k < 90 && k < num_food; k++) value += 8000L - k * 10L;
-    }
-    else
-    {
-        for (k = 0; k < 90 && k < num_food; k++) value += 8000L - k * 10L;
-    }
-    if (borg_skill[BI_MAXCLEVEL] > 35 && borg_class == CLASS_WARRIOR)
-    {
-        for (k = 0; k < 89 && k < num_food; k++) value += 8000L - k * 2L;
-    }
+
 #if 0
     /* Collect fuel */
     if (borg_skill[BI_MAXCLEVEL] < 10)
@@ -6286,50 +6275,51 @@ static int32_t borg_power_home_aux2(void)
     /* Collect Molds as pets */
     for (k = 0; k < 10 && k < num_mold; k++) value += 10L - k;
 #endif
+
     /* Collect ident */
-    for (k = 0; k < 50 && k < num_ident; k++) value += 2000L - k * 10L;
+    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_ident; k++) value += 2000L - k * 10L;
 
     /* Collect enchantments armour */
     if (borg_skill[BI_CLEVEL] < 45)
     {
-        for (k = 0; k < 90 && k < num_enchant_to_a; k++) value += 500L - k * 10L;
+        for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_a; k++) value += 500L - k * 10L;
     }
     /* Collect enchantments to hit */
     if (borg_skill[BI_CLEVEL] < 45)
     {
-        for (k = 0; k < 90 && k < num_enchant_to_h; k++) value += 500L - k * 10L;
+        for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_h; k++) value += 500L - k * 10L;
     }
     /* Collect enchantments to dam */
     if (borg_skill[BI_CLEVEL] < 45)
     {
-        for (k = 0; k < 90 && k < num_enchant_to_d; k++) value += 500L - k * 10L;
+        for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_d; k++) value += 500L - k * 10L;
     }
 
     /* Collect pfe */
-    for (k = 0; k < 90 && k < num_pfe; k++) value += 500L - k * 10L;
+    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_pfe; k++) value += 500L - k * 10L;
 
     /* Collect glyphs */
-    for (k = 0; k < 90 && k < num_glyph; k++) value += 500L - k * 10L;
+    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_glyph; k++) value += 500L - k * 10L;
 
     /* Reward Genocide scrolls. Just scrolls, mainly used for Morgoth */
-    for (k = 0; k < 90 && k < num_genocide; k++) value += 500L - k * 10L;
+    for (k = 0; k < (kb_info[TV_SCROLL].max_stack * 2) && k < num_genocide; k++) value += 500L - k * 10L;
 
     /* Reward Mass Genocide scrolls. Just scrolls, mainly used for Morgoth */
-    for (k = 0; k < 90 && k < num_mass_genocide; k++) value += 500L;
+    for (k = 0; k < (kb_info[TV_SCROLL].max_stack * 2) && k < num_mass_genocide; k++) value += 500L;
 
     /* Collect Recharge ability */
-    for (k = 0; k < 90 && k < num_recharge; k++) value += 500L - k * 10L;
+    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_recharge; k++) value += 500L - k * 10L;
 
     /* Reward Resistance Potions for Warriors */
     if (borg_class == CLASS_WARRIOR && borg_skill[BI_MAXDEPTH] > 20 && borg_skill[BI_MAXDEPTH] < 80)
     {
         k = 0;
-        for (; k < 90 && k < num_pot_rheat; k++) value += 100L - k * 10L;
-        for (; k < 90 && k < num_pot_rcold; k++) value += 100L - k * 10L;
+        for (; k < kb_info[TV_POTION].max_stack && k < num_pot_rheat; k++) value += 100L - k * 10L;
+        for (; k < kb_info[TV_POTION].max_stack && k < num_pot_rcold; k++) value += 100L - k * 10L;
     }
 
     /* Collect recall */
-    for (k = 0; k < 90 && k < num_recall; k++) value += 1000L;
+    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_recall; k++) value += 1000L;
 
     /* Collect escape  (staff of teleport) */
     if (borg_skill[BI_MAXCLEVEL] < 40)
@@ -6338,7 +6328,7 @@ static int32_t borg_power_home_aux2(void)
     }
 
     /* Collect a maximal number of staves in the home */
-    for (k = 0; k < 90 && k < num_tele_staves; k++) value -= 50000L;
+    for (k = 0; k < kb_info[TV_STAFF].max_stack && k < num_tele_staves; k++) value -= 50000L;
 
     /* Collect teleport */
     for (k = 0; k < 85 && k < num_teleport; k++) value += 5000L;
@@ -6346,7 +6336,7 @@ static int32_t borg_power_home_aux2(void)
     /* Collect phase */
     if (borg_skill[BI_MAXCLEVEL] < 10)
     {
-        for (k = 0; k < 90 && k < num_phase; k++) value += 5000L;
+        for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_phase; k++) value += 5000L;
     }
 
     /* Collect teleport level scrolls*/
@@ -6358,7 +6348,7 @@ static int32_t borg_power_home_aux2(void)
     /* collect mana/ */
     if (borg_skill[BI_MAXSP] > 1)
     {
-        for (k = 0; k < 90 && k < num_mana; k++) value += 6000L - k * 8L;
+        for (k = 0; k < kb_info[TV_POTION].max_stack && k < num_mana; k++) value += 6000L - k * 8L;
     }
 
     /* Level 1 priests are given a Potion of Healing.  It is better
@@ -6374,7 +6364,7 @@ static int32_t borg_power_home_aux2(void)
     /*** Healing ***/
 
     /* Collect cure critical */
-    for (k = 0; k < 90 && k < num_cure_critical; k++) value += 1500L - k * 10L;
+    for (k = 0; k < kb_info[TV_POTION].max_stack && k < num_cure_critical; k++) value += 1500L - k * 10L;
 
     /* Collect heal, *Heal*, Life */
     for (k = 0; k < 90 && k < num_heal; k++) value += 3000L;
@@ -6399,21 +6389,17 @@ static int32_t borg_power_home_aux2(void)
     /* Reward books */
     for (book = 0; book < 4; book++)
     {
-
-        if (borg_skill[BI_CLEVEL] > 35)
-            /* Collect up to 20 copies of each normal book */
-            for (k = 0; k < 20 && k < num_book[book]; k++)
-            {
-                /* Hack -- only stockpile useful books */
-                if (num_book[book]) value += 5000L - k * 10L;
-            }
-        else
+        /* only collect books up to level 14.  */ 
+        /* After that, just buy them, they are always in stock*/
+        if (borg_skill[BI_CLEVEL] < 15)
+        {
             /* Collect up to 5 copies of each normal book */
             for (k = 0; k < 5 && k < num_book[book]; k++)
             {
                 /* Hack -- only stockpile useful books */
                 if (num_book[book]) value += 5000L - k * 10L;
             }
+        }
     }
 
     /* Reward artifacts in the home */

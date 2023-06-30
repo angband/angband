@@ -54,6 +54,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\borg\borg1.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg2.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg3.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg4.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg5.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg6.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg7.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg8.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg9.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\buildid.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -523,6 +550,33 @@
     </ClInclude>
     <ClInclude Include="src\angband.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg1.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg2.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg3.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg4.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg5.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg6.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg7.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg8.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg9.h">
+        <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\buildid.h">
       <Filter>Header Files</Filter>

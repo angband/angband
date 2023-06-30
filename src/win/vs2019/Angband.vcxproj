@@ -93,7 +93,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SOUND;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOUND;ALLOW_BORG;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -117,7 +117,7 @@ xcopy  "$(MSBuildProjectDirectory)\lib" "$(OutDir)lib" /DEISY </Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SOUND;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOUND;ALLOW_BORG;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -132,7 +132,7 @@ xcopy  "$(MSBuildProjectDirectory)\lib" "$(OutDir)lib" /DEISY </Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SOUND;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOUND;ALLOW_BORG;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -153,7 +153,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SOUND;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOUND;ALLOW_BORG;USE_PRIVATE_PATHS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -164,6 +164,15 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\borg\borg1.c" />
+    <ClCompile Include="src\borg\borg2.c" />
+    <ClCompile Include="src\borg\borg3.c" />
+    <ClCompile Include="src\borg\borg4.c" />
+    <ClCompile Include="src\borg\borg5.c" />
+    <ClCompile Include="src\borg\borg6.c" />
+    <ClCompile Include="src\borg\borg7.c" />
+    <ClCompile Include="src\borg\borg8.c" />
+    <ClCompile Include="src\borg\borg9.c" />
     <ClCompile Include="src\buildid.c" />
     <ClCompile Include="src\cave-map.c" />
     <ClCompile Include="src\cave-square.c" />
@@ -322,6 +331,15 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
   <ItemGroup>
     <ClInclude Include="src\alloc.h" />
     <ClInclude Include="src\angband.h" />
+    <ClInclude Include="src\borg\borg1.h" />
+    <ClInclude Include="src\borg\borg2.h" />
+    <ClInclude Include="src\borg\borg3.h" />
+    <ClInclude Include="src\borg\borg4.h" />
+    <ClInclude Include="src\borg\borg5.h" />
+    <ClInclude Include="src\borg\borg6.h" />
+    <ClInclude Include="src\borg\borg7.h" />
+    <ClInclude Include="src\borg\borg8.h" />
+    <ClInclude Include="src\borg\borg9.h" />
     <ClInclude Include="src\buildid.h" />
     <ClInclude Include="src\cave.h" />
     <ClInclude Include="src\cmd-core.h" />
