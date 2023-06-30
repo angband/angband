@@ -898,7 +898,7 @@ static void borg_parse_aux(char* msg, int len)
 
     if (prefix(msg, "The cave "))
     {
-        borg_react(msg, "QUAKE");
+        borg_react(msg, "QUAKE:Somebody");
         borg_needs_new_sea = true;
         return;
     }

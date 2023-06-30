@@ -3887,7 +3887,7 @@ void borg_update(void)
         }
 
         /* monsters move from earthquake */
-        if (prefix(msg, "QUAKE"))
+        if (prefix(msg, "QUAKE:"))
         {
             hit_dist = 3;
             break;
