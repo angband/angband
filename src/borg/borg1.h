@@ -1667,7 +1667,7 @@ extern int      borg_ready_morgoth;
  * Hack -- extra fear per "region"
  */
 
-extern uint16_t borg_fear_region[6][18];
+extern uint16_t borg_fear_region[(AUTO_MAX_Y / 11) + 1][(AUTO_MAX_X / 11) + 1];
 extern uint16_t borg_fear_monsters[AUTO_MAX_Y + 1][AUTO_MAX_X + 1];
 
 

@@ -904,7 +904,7 @@ int     borg_ready_morgoth;
 /*
  * Hack -- extra fear per "region"
  */
-uint16_t borg_fear_region[6][18];
+uint16_t borg_fear_region[(AUTO_MAX_Y/11)+1][(AUTO_MAX_X/11)+1];
 
 /*
  * Hack -- extra fear per "region" induced from extra monsters.
