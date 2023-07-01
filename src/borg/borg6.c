@@ -6450,7 +6450,8 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
             {
                 /* Stop at unknown grids (see above) */
                 /* note if beam, dispel, this is the end of the beam */
-                if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5)
+//                if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5)  !FIX !AJG !TODO why level check?
+                if (ag->feat == FEAT_NONE)
                 {
                     if (rad != -1 && rad != 10)
                         return (0);
@@ -6506,7 +6507,8 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
 
                     /* Stop at unknown grids (see above) */
                     /* note if beam, dispel, this is the end of the beam */
-                    if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5)
+//                    if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5) !FIX !TODO !AJG why level?
+                    if (ag->feat == FEAT_NONE)
                     {
                         if (rad != -1 && rad != 10)
                             return (0);
@@ -9198,6 +9200,9 @@ static int borg_attack_aux_vampire_strike(void)
         int x = borg_temp_x[i];
         int y = borg_temp_y[i];
 
+        /* Check the projectable, assume unknown grids are walls */
+        if (!borg_offset_projectable(c_y, c_x, y, x)) continue;
+
         /* closest distance */
         dist = borg_distance(c_y, c_x, y, x);
         if (dist > best_dist) continue;
@@ -9216,6 +9221,9 @@ static int borg_attack_aux_vampire_strike(void)
 
         /* Obtain the monster */
         kill = &borg_kills[ag->kill];
+
+        struct monster_race* r_ptr = &r_info[kill->r_idx];
+        if (rf_has(r_ptr->flags, RF_NONLIVING) || rf_has(r_ptr->flags, RF_UNDEAD)) continue;
 
         /* Hack -- avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg_munchkin_mode)
