@@ -4803,14 +4803,18 @@ static int32_t borg_power_aux1(void)
     /* Hack -- heavy armor hurts magic */
     if (player->class->magic.total_spells && ((cur_wgt - max_wgt) / 10) > 0)
     {
+        /* max sp must be calculated in case it changed with the armor */
+        int lvl = borg_skill[BI_CLEVEL] - player->class->magic.spell_first + 1;
+        int max_sp = borg_adj_mag_mana[my_stat_ind[borg_spell_stat()]] * lvl / 100 + 1;
+        max_sp -= ((cur_wgt - max_wgt) / 10);
         /* Mega-Hack -- Penalize heavy armor which hurts mana */
-        if (borg_skill[BI_MAXSP] >= 300 && borg_skill[BI_MAXSP] <= 350)
+        if (max_sp >= 300 && max_sp <= 350)
             value -= (((cur_wgt - max_wgt) / 10) * 400L);
-        if (borg_skill[BI_MAXSP] >= 200 && borg_skill[BI_MAXSP] <= 299)
+        if (max_sp >= 200 && max_sp <= 299)
             value -= (((cur_wgt - max_wgt) / 10) * 800L);
-        if (borg_skill[BI_MAXSP] >= 100 && borg_skill[BI_MAXSP] <= 199)
+        if (max_sp >= 100 && max_sp <= 199)
             value -= (((cur_wgt - max_wgt) / 10) * 1600L);
-        if (borg_skill[BI_MAXSP] >= 1 && borg_skill[BI_MAXSP] <= 99)
+        if (max_sp >= 1 && max_sp <= 99)
             value -= (((cur_wgt - max_wgt) / 10) * 3200L);
     }
 
