@@ -9199,6 +9199,31 @@ static int borg_attack_aux_vampire_strike(void)
         bool new_low = false;
         int x = borg_temp_x[i];
         int y = borg_temp_y[i];
+        int o_x, o_y, x2, y2;
+
+        /* Consider each adjacent spot to the monster */
+        /* there must be an empty spot */
+        bool found = false;
+        for (o_x = -1; o_x <= 1 && !found; o_x++)
+        {
+            for (o_y = -1; o_y <= 1 && !found; o_y++)
+            {
+                /* but not the monsters location */
+                if (!o_x && !o_y) continue;
+
+                /* Acquire location */
+                x2 = borg_temp_x[i] + o_x;
+                y2 = borg_temp_y[i] + o_y;
+
+                ag = &borg_grids[y2][x2];
+                if (!ag->kill && 
+                    ag->feat == FEAT_FLOOR &&
+                    (y2 != c_y || x2 != c_x))
+                    found = true;
+            }
+        }
+        /* must have an empty square next to the monster */
+        if (!found) continue;
 
         /* Check the projectable, assume unknown grids are walls */
         if (!borg_offset_projectable(c_y, c_x, y, x)) continue;
