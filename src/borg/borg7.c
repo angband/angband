@@ -361,7 +361,6 @@ bool borg_check_LIGHT_only(void)
 				/* Must be a floor grid lit by torchlight, not by magic */
 				if (borg_cave_floor_grid(ag) &&
 						(ag->info & BORG_LIGHT) &&
-//						!(cave->info[y][x] & CAVE_GLOW)) 
 						!square_isglow(cave, loc(x,y)))
 				{
 					floors++;

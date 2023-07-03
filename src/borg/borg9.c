@@ -50,6 +50,7 @@ extern bool     keep_playing;
 bool            borg_cheat_death;
 bool            borg_cheating_death = false;
 
+static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
 
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
@@ -668,7 +669,6 @@ static const char* suffix_died[] =
 {
     " dies.",
     " is destroyed.",
-    " is drained dry!",
     NULL
 };
 static const char* suffix_blink[] =
@@ -899,7 +899,7 @@ static void borg_parse_aux(char* msg, int len)
 
     if (prefix(msg, "The cave "))
     {
-        borg_react(msg, "QUAKE:Somebody");
+        borg_react(msg, "QUAKE");
         borg_needs_new_sea = true;
         return;
     }
@@ -1036,14 +1036,6 @@ static void borg_parse_aux(char* msg, int len)
 
     /* Hit somebody */
     if (prefix(msg, "You hit "))
-    {
-        tmp = strlen("You hit ");
-        strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
-        strnfmt(buf, 256, "HIT:%s", who);
-        borg_react(msg, buf);
-        return;
-    }
-    if (prefix(msg, "You bite "))
     {
         tmp = strlen("You hit ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
@@ -2878,8 +2870,20 @@ static struct keypress borg_inkey_hack(int flush_first)
         /* Flush */
         flush(0, 0, 0);
 
+        /* Restore user key mode */
+        if (key_mode == KEYMAP_MODE_ROGUE)
+        {
+            option_set("rogue_like_commands", true);
+        }
+        else if (key_mode == KEYMAP_MODE_ORIG)
+        {
+            option_set("rogue_like_commands", false);
+        }
+
         /* Done */
-        key.type = EVT_NONE;
+        /* HACK need to flush the key buffer to change modes */
+        key.type = EVT_KBRD;
+        key.code = ESCAPE;
         return key;
     }
 
@@ -4408,6 +4412,46 @@ static void borg_init_messages(void)
     borg_init_hit_by_messages();
 }
 
+static void borg_reinit_options()
+{
+    /* Save current key mode */
+    key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+    /* The Borg uses the original keypress codes */
+    option_set("rogue_like_commands", false);
+
+    /* No auto_more */
+    option_set("auto_more", false);
+
+    /* We pick up items when we step on them */
+    option_set("pickup_always", true);
+
+    /* We do not want verbose messages */
+    option_set("pickup_detail", false);
+
+    /* We specify targets by hand */
+    option_set("use_old_target", false);
+
+    /* We must pick items up without verification */
+    option_set("pickup_inven", true);
+
+    /* Pile symbol '&' confuse the borg */
+    option_set("show_piles", false);
+
+    /* We need space */
+    option_set("show_labels", false);
+
+    /* flavors are confusing */
+    option_set("show_flavors", false);
+
+    /* The "easy" options confuse the Borg */
+    option_set("easy_open", false);
+    option_set("easy_alter", false);
+
+    /* Efficiency */
+    player->opts.hitpoint_warn = 0;
+}
+
 /*
  * Initialize the Borg
  */
@@ -4456,39 +4500,6 @@ void borg_init_9(void)
         /* We need the borg to keep playing after he dies */
         option_set("cheat_live", true);
     }
-
-    /* No auto_more */
-    option_set("auto_more", false);
-
-    /* We pick up items when we step on them */
-    option_set("pickup_always", true);
-
-    /* We do not want verbose messages */
-    option_set("pickup_detail", false);
-
-    /* We specify targets by hand */
-    option_set("use_old_target", false);
-
-    /* We must pick items up without verification */
-    option_set("pickup_inven", true);
-
-    /* Pile symbol '&' confuse the borg */
-    option_set("show_piles", false);
-
-    /* We need space */
-    option_set("show_labels", false);
-
-    /* show_weights = false; */
-    option_set("show_flavors", false);
-
-    /* Efficiency */
-    player->opts.hitpoint_warn = 0;
-
-
-    /* The "easy" options confuse the Borg */
-    option_set("easy_open", false);
-    option_set("easy_alter", false);
-    /* easy_floor = false; */
 
 #ifndef ALLOW_BORG_GRAPHICS
     if (!borg_graphics)
@@ -5666,8 +5677,6 @@ void borg_status(void)
 }
 
 
-
-
 /*
  * Hack -- forward declare
  */
@@ -5823,8 +5832,8 @@ void do_cmd_borg(void)
     case 'z':
     case 'Z':
     {
-        /* The Borg uses the original keypress codes */
-        option_set("rogue_like_commands", false);
+        /* make sure the important game options are set correctly */
+        borg_reinit_options();
 
         /* Activate */
         borg_active = true;
@@ -5881,8 +5890,8 @@ void do_cmd_borg(void)
     case 'u':
     case 'U':
     {
-        /* The Borg uses the original keypress codes */
-        option_set("rogue_like_commands", false);
+        /* make sure the important game options are set correctly */
+        borg_reinit_options();
 
         /* Activate */
         borg_active = true;
@@ -5927,8 +5936,8 @@ void do_cmd_borg(void)
     case 'x':
     case 'X':
     {
-        /* The Borg uses the original keypress codes */
-        option_set("rogue_like_commands", false);
+        /* make sure the important game options are set correctly */
+        borg_reinit_options();
 
         /* Activate */
         borg_active = true;

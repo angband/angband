@@ -395,6 +395,9 @@ bool borg_offset_projectable(int y1, int x1, int y2, int x2)
         /* Assume all unknown grids are walls. */
         if ((dist) && (ag->feat == FEAT_NONE)) break;
 
+        /* Never pass through rubble */
+        if (ag->feat == FEAT_PASS_RUBBLE) break;
+
         /* Never pass through walls/doors */
         if (dist && (!borg_cave_floor_grid(ag))) break;
 

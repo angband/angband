@@ -9183,7 +9183,7 @@ static int borg_attack_aux_vampire_strike(void)
 
     int i /* , b_i */ = -1;
     int d, b_d = -1;
-    int dist, best_dist = 99;
+    int dist, best_dist = z_info->max_range;
     bool abort_attack = false;
 
     borg_grid* ag;
