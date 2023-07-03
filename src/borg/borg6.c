@@ -15204,7 +15204,9 @@ bool borg_recover(void)
         borg_skill[BI_ISFIXDEX] ||
         borg_skill[BI_ISFIXCON] ||
         borg_skill[BI_ISFIXALL]) &&
-        borg_spell(RESTORATION))
+        (borg_spell(RESTORATION) ||
+         borg_spell(REVITALIZE) || 
+         borg_spell(UNHOLY_REPRIEVE)))
     {
         return (true);
     }

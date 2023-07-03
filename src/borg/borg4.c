@@ -6747,6 +6747,7 @@ static int borg_danger_aux1(int i, bool full_damage)
         if (borg_stat[STAT_DEX] <= 3) break;
         if (borg_spell_legal(RESTORATION)) break;
         if (borg_spell_legal(REVITALIZE)) break;
+        if (borg_spell_legal(UNHOLY_REPRIEVE)) break;
         z += 150;
         /* extra scary to have drain below 10 */
         if (borg_stat[STAT_DEX] < 10)
@@ -6792,6 +6793,7 @@ static int borg_danger_aux1(int i, bool full_damage)
         if (borg_stat[STAT_WIS] <= 3) break;
         if (borg_spell_legal(RESTORATION)) break;
         if (borg_spell_legal(REVITALIZE)) break;
+        if (borg_spell_legal(UNHOLY_REPRIEVE)) break;
         z += 150;
         /* extra scary for pray'er */
         if (borg_spell_stat() == STAT_WIS)
