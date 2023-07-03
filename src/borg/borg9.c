@@ -4412,7 +4412,7 @@ static void borg_init_messages(void)
     borg_init_hit_by_messages();
 }
 
-static void borg_reinit_options()
+static void borg_reinit_options(void)
 {
     /* Save current key mode */
     key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
