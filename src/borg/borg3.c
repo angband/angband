@@ -2233,6 +2233,19 @@ int borg_spell_stat(void)
     return -1;
 }
 
+int borg_get_book_num(int sval)
+{
+    if (!player->class->magic.total_spells)
+        return -1;
+
+    for (int book_num = 0; book_num < player->class->magic.num_books; book_num++)
+    {
+        if (player->class->magic.books[book_num].sval == sval)
+            return book_num;
+    }
+    return -1;
+}
+
 borg_magic* borg_get_spell_entry(int book, int what)
 {
     int entry_in_book = 0;

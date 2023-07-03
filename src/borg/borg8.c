@@ -1329,7 +1329,7 @@ static bool borg_good_buy(borg_item* item, int who, int ware)
                     /* mage and rogue can cast teleport away */
                     (item->sval == sv_rod_teleport_other && borg_class != CLASS_MAGE && borg_class == CLASS_ROGUE) ||
                     (item->sval == sv_rod_illumination && (!borg_skill[BI_ALITE])))) ||
-            (obj_kind_can_browse(&k_info[item->kind]) && (amt_book[item->sval-1] == 0 && dungeon_book)) ||
+            (obj_kind_can_browse(&k_info[item->kind]) && amt_book[borg_get_book_num(item->sval)] == 0 && dungeon_book) ||
             (item->tval == TV_SCROLL &&
                 (item->sval == sv_scroll_teleport_level ||
                     item->sval == sv_scroll_teleport)))

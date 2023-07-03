@@ -1654,7 +1654,7 @@ static void borg_notice_aux2(void)
         /* Skip incorrect books (if we can browse this book, it is good) */
         if (!obj_kind_can_browse(&k_info[item->kind])) break;
         /* Count the books */
-        amt_book[item->sval - 1] += item->iqty;
+        amt_book[borg_get_book_num(item->sval)] += item->iqty;
         break;
 
 
@@ -5695,14 +5695,14 @@ static int32_t borg_power_aux2(void)
 
 
     /*** Hack -- books ***/
-        /* Reward books */
+    /*   Reward books    */
     for (book = 0; book < 9; book++)
     {
         /* No copies */
         if (!amt_book[book]) continue;
 
         /* The "hard" books */
-        if (book >= 4)
+        if (player->class->magic.books[book].dungeon)
         {
             int what;
 
