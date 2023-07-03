@@ -9050,13 +9050,19 @@ static int borg_attack_aux_leap_into_battle(void)
     kill = &borg_kills[ag->kill];
 
     /* Note */
-    borg_note(format("# Leaping at %s at (%d,%d) who has %d Hit Points.", (r_info[kill->r_idx].name), g_y, g_x, kill->power));
-    borg_note(format("# Attacking with weapon '%s'",
-        borg_items[INVEN_WIELD].desc));
+    borg_note(format("# Leaping at %s at (%d,%d dist %d) who has %d Hit Points.", 
+        (r_info[kill->r_idx].name), g_y, g_x, borg_distance(c_y, c_x, g_y, g_x), kill->power));
+    borg_note(format("# Attacking with weapon '%s'", borg_items[INVEN_WIELD].desc));
 
     /* Attack the grid */
     borg_target(g_y, g_x);
     borg_spell(LEAP_INTO_BATTLE);
+
+    /* Use target */
+    borg_keypress('5');
+
+    /* Set our shooting flag */
+    successful_target = -1;
 
     /* Success */
     return (b_d);
@@ -9068,17 +9074,97 @@ static int borg_attack_aux_leap_into_battle(void)
 /* it also has a chance to stun but ignoring that for now. */
 static int borg_attack_aux_maim_foe(void)
 {
+    int blows;
+    int p, dir;
+
+    int i, b_i = -1;
+    int d, b_d = -1;
+
+    borg_grid* ag;
+
+    borg_kill* kill;
+
+    /* Too afraid to attack */
+    if (borg_skill[BI_ISAFRAID] || borg_skill[BI_CRSFEAR]) return (0);
+
     /* Can I do it */
     if (!borg_spell_okay_fail(MAIM_FOE, (borg_fighting_unique ? 40 : 25)))
         return (0);
 
-    int blows = borg_skill[BI_CLEVEL] / 15;
-    int d = borg_attack_aux_thrust() * blows;
+    blows = borg_skill[BI_CLEVEL] / 15;
+
+    /* Examine possible destinations */
+    for (i = 0; i < borg_temp_n; i++)
+    {
+        int x = borg_temp_x[i];
+        int y = borg_temp_y[i];
+
+        /* Require "adjacent" */
+        if (borg_distance(c_y, c_x, y, x) > 1) continue;
+
+        /* Acquire grid */
+        ag = &borg_grids[y][x];
+
+        /* Calculate "average" damage */
+        d = borg_thrust_damage_one(ag->kill) * blows;
+
+        /* No damage */
+        if (d <= 0) continue;
+
+        /* Obtain the monster */
+        kill = &borg_kills[ag->kill];
+
+        /* Hack -- avoid waking most "hard" sleeping monsters */
+        if (!kill->awake && (d <= kill->power) && !borg_munchkin_mode)
+        {
+            /* Calculate danger */
+            p = borg_danger_aux(y, x, 1, ag->kill, true, true);
+
+            if (p > avoidance * 2)
+                continue;
+        }
+
+        /* Hack -- ignore sleeping town monsters */
+        if (!borg_skill[BI_CDEPTH] && !kill->awake) continue;
+
+        /* Calculate "danger" to player */
+        p = borg_danger_aux(c_y, c_x, 2, ag->kill, true, true);
+
+        /* Reduce "bonus" of partial kills when higher level */
+        if (d <= kill->power && borg_skill[BI_MAXCLEVEL] > 15) p = p / 10;
+
+        /* Add the danger-bonus to the damage */
+        d += p;
+
+        /* Ignore lower damage */
+        if ((b_i >= 0) && (d < b_d)) continue;
+
+        /* Save the info */
+        b_i = i;
+        b_d = d;
+    }
+
+    /* Nothing to attack */
+    if (b_i < 0) return (0);
+
+    /* Simulation */
+    if (borg_simulate) return (b_d);
+
+    /* Save the location */
+    g_x = borg_temp_x[b_i];
+    g_y = borg_temp_y[b_i];
+
+    ag = &borg_grids[g_y][g_x];
+    kill = &borg_kills[ag->kill];
+
+    /* Get a direction for attacking */
+    dir = borg_extract_dir(c_y, c_x, g_y, g_x);
 
     /* Simulation */
     if (borg_simulate) return (d);
 
     borg_spell(MAIM_FOE);
+    borg_keypress(I2D(dir));
 
     return (d);
 }
@@ -9171,6 +9257,12 @@ static int borg_attack_aux_curse(void)
     /* Attack the grid */
     borg_target(g_y, g_x);
     borg_spell(CURSE);
+
+    /* Use target */
+    borg_keypress('5');
+
+    /* Set our shooting flag */
+    successful_target = -1;
 
     /* Success */
     return (b_d);
