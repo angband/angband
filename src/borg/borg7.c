@@ -146,7 +146,7 @@ bool borg_use_things(void)
     if (borg_skill[BI_ISFIXEXP] &&
        (borg_spell(REVITALIZE) ||
 		borg_spell(REMEMBRANCE) ||
-		borg_spell(UNHOLY_REPRIEVE) ||
+		(borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) ||
         borg_activate_artifact("RESTORE_EXP") ||
         borg_activate_artifact("RESTORE_LIFE") ||
         borg_quaff_potion(sv_potion_restore_life)))

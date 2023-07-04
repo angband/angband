@@ -15192,7 +15192,7 @@ bool borg_recover(void)
         borg_activate_artifact("RESTORE_LIFE") ||
         borg_spell(REVITALIZE) ||
         borg_spell(REMEMBRANCE) ||
-        borg_spell(UNHOLY_REPRIEVE)))
+        (borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE))))
     {
         return (true);
     }
@@ -15205,8 +15205,17 @@ bool borg_recover(void)
         borg_skill[BI_ISFIXCON] ||
         borg_skill[BI_ISFIXALL]) &&
         (borg_spell(RESTORATION) ||
-         borg_spell(REVITALIZE) || 
-         borg_spell(UNHOLY_REPRIEVE)))
+         borg_spell(REVITALIZE)))
+    {
+        return (true);
+    }
+
+    /* cure stat drain with prayer */
+    if ((borg_skill[BI_ISFIXSTR] ||
+        borg_skill[BI_ISFIXINT] ||
+        borg_skill[BI_ISFIXCON]) &&
+        borg_skill[BI_CURHP] > 90 &&
+        borg_spell(UNHOLY_REPRIEVE))
     {
         return (true);
     }
