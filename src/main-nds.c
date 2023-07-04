@@ -232,7 +232,8 @@ static void init_color_data(void)
 #ifdef __3DS__
 		color_data[i] = angband_color_table[i][1] << 24 |
 		                angband_color_table[i][2] << 16 |
-		                angband_color_table[i][3] << 8;
+		                angband_color_table[i][3] << 8 |
+		                0xFF;
 #else
 		color_data[i] = RGB15(angband_color_table[i][1] >> 3,
 		                      angband_color_table[i][2] >> 3,
