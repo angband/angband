@@ -669,6 +669,7 @@ static const char* suffix_died[] =
 {
     " dies.",
     " is destroyed.",
+    " is drained dry!",
     NULL
 };
 static const char* suffix_blink[] =
@@ -899,7 +900,7 @@ static void borg_parse_aux(char* msg, int len)
 
     if (prefix(msg, "The cave "))
     {
-        borg_react(msg, "QUAKE");
+        borg_react(msg, "QUAKE:Somebody");
         borg_needs_new_sea = true;
         return;
     }
@@ -1036,6 +1037,14 @@ static void borg_parse_aux(char* msg, int len)
 
     /* Hit somebody */
     if (prefix(msg, "You hit "))
+    {
+        tmp = strlen("You hit ");
+        strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
+        strnfmt(buf, 256, "HIT:%s", who);
+        borg_react(msg, buf);
+        return;
+    }
+    if (prefix(msg, "You bite "))
     {
         tmp = strlen("You hit ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
