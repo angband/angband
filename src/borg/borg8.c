@@ -740,7 +740,7 @@ static bool borg_think_home_sell_aux(bool save_best)
     }
 
     /* Hack -- Copy all the slots */
-    for (i = 0; i < z_info->pack_size; i++)
+    for (i = 0; i < INVEN_TOTAL; i++)
     {
         /* Save the item -- do not consider these */
         if (weapon_swap && i == weapon_swap - 1) continue;

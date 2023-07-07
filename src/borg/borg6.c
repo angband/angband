@@ -4217,7 +4217,9 @@ bool borg_caution(void)
                         time_this_panel >= 300) break;
 
                 /* Require floor */
-                if (!borg_cave_floor_grid(ag)) break;
+                if (!borg_cave_floor_grid(ag) || 
+                    (ag->feat == FEAT_LAVA && !borg_skill[BI_IFIRE]))
+                    break;
 
                 /* Require it to be somewhat close */
                 if (r >= 10) break;
