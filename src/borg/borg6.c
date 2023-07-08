@@ -8064,6 +8064,10 @@ static bool borg_has_throwable(void)
     int i;
     for (i = 0; i < QUIVER_END; i++)
     {
+        /* it will show wield in the list */ 
+        /* but not if that is the only thing */
+        if (i == INVEN_WIELD) continue;
+
         if (!borg_items[i].iqty)
             continue;
 
