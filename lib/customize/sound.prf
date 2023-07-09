@@ -3,7 +3,7 @@
 # Configuration file for the Angband sound events
 #
 # The format is:
-# <event name>:<sample-names seperated by spaces>
+# <event name>:<sample-names separated by spaces>
 #
 # Example:
 # hit:hit hit1

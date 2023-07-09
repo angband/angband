@@ -862,7 +862,7 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* Parse the type, which is a | seperated list of PROJ_ constants */
+	/* Parse the type, which is a | separated list of PROJ_ constants */
 	s = string_make(parser_getsym(p, "type"));
 	t = strtok(s, "| ");
 	while (t) {
