@@ -488,7 +488,25 @@ Character Description (``C``)
   From this screen, you can change your name or use the file character
   description command to save your character status to a file. That command
   saves additional information, including your background, your inventory,
-  and the contents of your house.
+  and the contents of your house. The command to change the mode switches
+  what's displayed back and forth from the original view to one that shows
+  how your current equipment and the player's innate characteristics affect
+  certain attributes. The default symbols used within that view are '.' for
+  nothing equipped or no known effect on the attribute, '?' if your character
+  does not know if there's an effect on the attribute, '+' if your character
+  knows that there is a positive effect on the attribute, '-' if your character
+  knows that there is a negative effect on the attribute, '!' if a timed effect
+  positively affects the attribute, or '=' if a timed effect negatively affects
+  the attribute.  For elemental resistances (the block of attributes on the
+  far left), '*', to indicate an immunity, and '~' to indicate that something
+  provides both a '+' and '-', are also possible.  The color of the label for
+  the attribute will indicate the sum of the different sources for your
+  character. Those colors default to be: slate for when your character does
+  not know the rune associated with that attribute, white if there is no
+  combined effect (excluding timed effects) known to the character, light
+  blue if the known combined effect (excluding timed effects) is positive, red
+  if the known combined effect (excluding timed effects) is negative, and
+  green if the known combined effect is an elemental immunity.
 
 Check knowledge (``~``)
   This command allows you to ask about the knowledge possessed by your
