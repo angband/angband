@@ -24,7 +24,7 @@
 # values to symbols (some of the rendering functions won't use the symbols
 # field).  How indices into the palette are used depends on the backend the
 # renderer is bound to.  Changes to symbols can affect usability.  It is
-# optional.  If not set, defaults values from the backend are used.
+# optional.  If not set, default values from the backend are used.
 # ndigit is the number of digits to display for a numeric value.  That is
 # only used by some renders and does not need to be set.  If set it must be a
 # positive integer.  If not set, the default value from the backend will be
@@ -48,14 +48,19 @@
 # COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX renders one or more resistance
 # values with the label colored by the combined resistance.  The auxiliary
 # values are treated as timed resistances.  The default combiner is RESIST_0.
-# One of fourteen symbols (unknown, not present, none, resist, vulnerable,
+# One of twenty-two symbols (unknown, not present, none, resist, vulnerable,
 # immune, timed resist + none, timed resist + resist, timed resist +
 # vulnerable, timed vulnerability + none, timed vulnerability + resist,
 # timed immunity + none, timed immunity + resist, timed immunity +
-# vulnerability) are used for each resistance value.  Each of those symbols
-# has a corresponding color (from the first 14 colors) and alternate color
-# (from the second 14 colors).  The alternate color is used for every other
-# resist.  A palette of 13 colors is used for the label.  They are:
+# vulnerable, resist + vulnerable, timed resist + resist + vulnerable,
+# timed vulnerability + resist + vulnerable, timed immunity + resist +
+# vulnerable, timed resist + timed vulnerability + none, timed resist +
+# timed vulnerability + resist, timed resist + timed vulnerability + vulnerable,
+# timed resist + timed vulnerability + resist + vulnerability) are used for
+# each resistance value.  Each of those symbols has a corresponding color
+# (from the first 22 colors) and alternate color (from the second 22 colors).
+# The alternate color is used for every other resist.  A palette of 13 colors
+# is used for the label.  They are:
 # unknown rune
 # no net permanent resistance or immunity and no net timed effects
 # net permanent resistance and no net timed effects
@@ -195,9 +200,9 @@
 
 name:char_screen1_resist_renderer
 code:COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX
-colors:wwwwwwGGGrrGGGWWWWWWGGGrrGGG
+colors:wwwwwwGGGrrGGGwGrGwwrwWWWWWWGGGrrGGGWGrGWWrW
 labelcolors:swBrgwBrwBwBr
-symbols:?..+-*!^.=.%%%
+symbols:?..+-*!^.=.%%%~!=%~+=~
 
 name:char_screen1_flag_renderer
 code:COMPACT_FLAG_RENDERER_WITH_COMBINED_AUX
