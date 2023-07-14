@@ -1769,7 +1769,7 @@ static void adjust_skill_scale(int *v, int num, int den, int minv)
 /**
  * Calculate the effect of a shapechange on player state
  */
-static void calc_shapechange(struct player_state *state,
+static void calc_shapechange(struct player_state *state, bool vuln[ELEM_MAX],
 							 struct player_shape *shape,
 							 int *blows, int *shots, int *might, int *moves)
 {
@@ -1810,28 +1810,20 @@ static void calc_shapechange(struct player_state *state,
 
 	/* Resists and vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
-		if (state->el_info[i].res_level == 0) {
-			/* Simple, just apply shape res/vuln */
-			state->el_info[i].res_level = shape->el_info[i].res_level;
-		} else if (state->el_info[i].res_level == -1) {
-			/* Shape resists cancel, immunities trump, vulnerabilities */
-			if (shape->el_info[i].res_level == 1) {
-				state->el_info[i].res_level = 0;
-			} else if (shape->el_info[i].res_level == 3) {
-				state->el_info[i].res_level = 3;
-			}
-		} else if (state->el_info[i].res_level == 1) {
-			/* Shape vulnerabilities cancel, immunities enhance, resists */
-			if (shape->el_info[i].res_level == -1) {
-				state->el_info[i].res_level = 0;
-			} else if (shape->el_info[i].res_level == 3) {
-				state->el_info[i].res_level = 3;
-			}
-		} else if (state->el_info[i].res_level == 3) {
-			/* Immmunity, shape has no effect */
+		if (shape->el_info[i].res_level == -1) {
+			/* Remember vulnerabilities for application later. */
+			vuln[i] = true;
+		} else if (shape->el_info[i].res_level
+				> state->el_info[i].res_level) {
+			/*
+			 * Otherwise apply the shape's resistance level if it
+			 * is better; this is okay because any vulnerabilities
+			 * have not been included in the state's res_level yet.
+			 */
+			state->el_info[i].res_level =
+				shape->el_info[i].res_level;
 		}
 	}
-
 }
 
 /**
@@ -2009,15 +2001,15 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Apply the collected flags */
 	of_union(state->flags, collect_f);
 
+	/* Add shapechange info */
+	calc_shapechange(state, vuln, p->shape, &extra_blows, &extra_shots,
+		&extra_might, &extra_moves);
+
 	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (vuln[i] && (state->el_info[i].res_level < 3))
 			state->el_info[i].res_level--;
 	}
-
-	/* Add shapechange info */
-	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might,
-		&extra_moves);
 
 	/* Calculate light */
 	calc_light(p, state, update);
