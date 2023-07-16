@@ -1012,7 +1012,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj) && !throw;
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow) && !throw;
-	int melee_adj_mult = ammo ? 0 : 1;
+	int melee_adj_mult = (ammo || throw) ? 0 : 1;
 	int multiplier = 1;
 
 	struct player_state state;
