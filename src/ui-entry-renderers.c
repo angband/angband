@@ -1,6 +1,6 @@
 /**
  * \file ui-entry-renderers.c
- * \brief Define backend handling for some parts of the second character screen
+ * \brief Define backend handling for character screen and equippable comparison
  *
  * Copyright (c) 2020 Eric Branlund
  *
@@ -512,7 +512,7 @@ static void show_combined_generic(const struct renderer_info *info,
 
 /**
  * Result is  0 (no resistance)), 1 (resistance), 2 (vulnerable), 3 (immune),
- * 4 (unknown), 5 (not present).
+ * 4 (unknown), 5 (not present), 6 (resistance and vulnerable).
  */
 static int convert_vanilla_res_level(int i)
 {
@@ -522,6 +522,8 @@ static int convert_vanilla_res_level(int i)
 		result = 4;
 	} else if (i == UI_ENTRY_VALUE_NOT_PRESENT) {
 		result = 5;
+	} else if (i == UI_ENTRY_RESIST0_RES_VUL) {
+		result = 6;
 	} else if (i >= 3) {
 		result = 3;
 	} else if (i >= 1) {
@@ -547,46 +549,48 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	/*
 	 * Fastest varying is no timed effect, timed resistance,
 	 * timed vulnerability, timed immunity, unknown timed effect,
-	 * no value for timed effect
+	 * no value for timed effect, timed resistance + timed vulnerability
 	 */
-	const int combined_effect_tbl[6][6] = {
+	const int combined_effect_tbl[7][7] = {
 		/* No permanent effect */
-		{ 2, 6,  9, 11, 2, 2 },
+		{  2,  6,  9, 11,  2,  2, 18 },
 		/* Permanent resistance */
-		{ 3, 7, 10, 12, 3, 3 },
+		{  3,  7, 10, 12,  3,  3, 19 },
 		/* Permanent vulnerability */
-		{ 4, 8,  4, 13, 4, 4 },
+		{  4,  8,  4, 13,  4,  4, 20 },
 		/* Permanent immunity */
-		{ 5, 5,  5,  5, 5, 5 },
+		{  5,  5,  5,  5,  5,  5,  5 },
 		/* Unknown permanent effect */
-		{ 0, 0,  0,  0, 0, 0 },
+		{  0,  0,  0,  0,  0,  0,  0 },
 		/* No value for permanent effect */
-		{ 1, 1,  1,  1, 1, 1 }
+		{  1,  1,  1,  1,  1,  1,  1 },
+		/* Permanent resistance + permanent vulnerability */
+		{ 14, 15, 16, 17, 14, 14, 21 }
 	};
 	struct loc p = details->value_position;
-	int color_offset = (details->alternate_color_first) ? 14 : 0;
+	int color_offset = (details->alternate_color_first) ? 22 : 0;
 	struct ui_entry_combiner_funcs combiner;
 	int vc, ac;
 	int i;
 
 	/* Check for defaults that are too short in list-ui-entry-renders.h. */
-	assert(info->ncolors >= 28 && info->nlabcolors >= 13 &&
-		info->nsym >= 14);
+	assert(info->ncolors >= 44 && info->nlabcolors >= 13 &&
+		info->nsym >= 22);
 
 	for (i = 0; i < n; ++i) {
 		int untimed_effect = convert_vanilla_res_level(vals[i]);
 		int timed_effect = convert_vanilla_res_level(auxvals[i]);
 		int palette_index;
 
-		assert(untimed_effect >= 0 && untimed_effect < 6 &&
-			timed_effect >= 0 && timed_effect < 6);
+		assert(untimed_effect >= 0 && untimed_effect < 7 &&
+			timed_effect >= 0 && timed_effect < 7);
 		palette_index =
 			combined_effect_tbl[untimed_effect][timed_effect];
 		Term_putch(p.x, p.y,
 			info->colors[palette_index + color_offset],
 			info->symbols[palette_index]);
 		p = loc_sum(p, details->position_step);
-		color_offset ^= 14;
+		color_offset ^= 22;
 	}
 
 	if (nlabel <= 0 && !details->show_combined) {
@@ -599,19 +603,21 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 	(*combiner.vec_func)(n, vals, auxvals, &vc, &ac);
 
 	if (nlabel > 0) {
-		const int combined_label_tbl[6][6] = {
+		const int combined_label_tbl[7][7] = {
 			/* No permanent effect */
-			{ 1, 5, 8, 10, 1, 1 },
+			{ 1, 5, 8, 10, 1, 1, 1 },
 			/* Permanent resistance */
-			{ 2, 6, 9, 11, 2, 2 },
+			{ 2, 6, 9, 11, 2, 2, 2 },
 			/* Permanent vulnerability */
-			{ 3, 7, 3, 12, 3, 3 },
+			{ 3, 7, 3, 12, 3, 3, 3 },
 			/* Permanent immunity */
-			{ 4, 4, 4,  4, 4, 4 },
+			{ 4, 4, 4,  4, 4, 4, 4 },
 			/* Unknown permanent effect */
-			{ 1, 5, 8, 10, 1, 1 },
+			{ 1, 5, 8, 10, 1, 1, 1 },
 			/* No value for permanent effect */
-			{ 1, 5, 8, 10, 1, 1 }
+			{ 1, 5, 8, 10, 1, 1, 1 },
+			/* Permanent resistance + permanent vulnerability */
+			{ 1, 5, 8, 10, 1, 1, 1 }
 		};
 		int palette_index;
 
@@ -619,8 +625,8 @@ static void renderer_COMPACT_RESIST_RENDERER_WITH_COMBINED_AUX(
 			int untimed_effect = convert_vanilla_res_level(vc);
 			int timed_effect = convert_vanilla_res_level(ac);
 
-			assert(untimed_effect >= 0 && untimed_effect < 6 &&
-				timed_effect >= 0 && timed_effect < 6);
+			assert(untimed_effect >= 0 && untimed_effect < 7 &&
+				timed_effect >= 0 && timed_effect < 7);
 			palette_index =
 				combined_label_tbl[untimed_effect][timed_effect];
 		} else {

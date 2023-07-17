@@ -5060,7 +5060,7 @@ static errr sdl_BuildTileset(term_window *win)
 		}
 	}
 
-	/* see if we need to make a seperate surface for the map view */
+	/* see if we need to make a separate surface for the map view */
 	if (!((tile_width == 1) && (tile_height == 1))) {
 		/* Calculate the size of the new surface */
 		x = ta * win->tile_wid;

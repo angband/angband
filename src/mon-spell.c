@@ -125,6 +125,14 @@ static void spell_message(struct monster *mon,
 				spell->index, MON_ALTMSG_UNSEEN);
 			if (in_cursor == NULL) {
 				in_cursor = level->blind_message;
+				if (in_cursor == NULL) {
+					msg("No message-invis for monster "
+						"spell %d cast by %s.  "
+						"Please report this bug.",
+						(int)spell->index,
+						mon->race->name);
+					return;
+				}
 			} else if (in_cursor[0] == '\0') {
 				return;
 			}
@@ -134,6 +142,12 @@ static void spell_message(struct monster *mon,
 			spell->index, MON_ALTMSG_MISS);
 		if (in_cursor == NULL) {
 			in_cursor = level->miss_message;
+			if (in_cursor == NULL) {
+				msg("No message-miss for monster spell %d "
+					"cast by %s.  Please report this bug.",
+					(int)spell->index, mon->race->name);
+				return;
+			}
 		} else if (in_cursor[0] == '\0') {
 			return;
 		}
@@ -142,6 +156,12 @@ static void spell_message(struct monster *mon,
 			spell->index, MON_ALTMSG_SEEN);
 		if (in_cursor == NULL) {
 			in_cursor = level->message;
+			if (in_cursor == NULL) {
+				msg("No message-vis for monster spell %d "
+					"cast by %s.  Please report this bug.",
+					(int)spell->index, mon->race->name);
+				return;
+			}
 		} else if (in_cursor[0] == '\0') {
 			return;
 		}

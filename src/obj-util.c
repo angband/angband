@@ -811,9 +811,9 @@ struct effect *object_effect(const struct object *obj)
 /**
  * Does the given object need to be aimed?
  */ 
-bool obj_needs_aim(struct object *obj)
+bool obj_needs_aim(const struct object *obj)
 {
-	struct effect *effect = object_effect(obj);
+	const struct effect *effect = object_effect(obj);
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
@@ -1010,8 +1010,8 @@ static msg_tag_t msg_tag_lookup(const char *tag)
 /**
  * Print a message from a string, customised to include details about an object
  */
-void print_custom_message(struct object *obj, const char *string, int msg_type,
-		const struct player *p)
+void print_custom_message(const struct object *obj, const char *string,
+		int msg_type, const struct player *p)
 {
 	char buf[1024] = "\0";
 	const char *next;

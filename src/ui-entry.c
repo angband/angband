@@ -579,8 +579,10 @@ bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
  * the non-auxiliary object properties bound to entry.  It will be
  *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
  *   b) 0 if all the properties bound to entry are auxiliary properties
- *   c) UI_ENTRY_UNKNOWN_VALUE if there's at least one non-auxiliary property
- *   bound to entry but all such properties are unknown to p
+ *   c) UI_ENTRY_UNKNOWN_VALUE if the object has a property unknown to p and
+ *   there's at least one non-auxiliary property bound to entry and of those
+ *   properties, at least one is unknown to p and any of the known ones are not
+ *   present on the object
  *   d) the combined value of the known non-auxiliary properties if there's at
  *   least one non-auxiliary property bound to entry and at least one such
  *   property is known to p
@@ -592,8 +594,10 @@ bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
  * across the auxiliary object properties bound to entry.  It will be
  *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
  *   b) 0 if all the properties bound to entry are non-auxiliary properties
- *   c) UI_ENTRY_UNKNOWN_VALUE if there's at least one auxiliary property
- *   bound to entry but all such properties are unknown to p
+ *   c) UI_ENTRY_UNKNOWN_VALUE if the object has a property unknown to p and
+ *   there's at least one auxiliary property bound to entry and of those
+ *   properties, at least one is unknown to p and any of the known ones are not
+ *   present on the object
  *   d) the combined value of the known auxiliary properties if there's at
  *   least one auxiliary property bound to entry and at least one such
  *   property is known to p
@@ -607,8 +611,7 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	struct ui_entry_combiner_funcs combiner;
 	const struct curse_data *curse;
 	struct cached_object_data *cache2;
-	bool first, all_unknown, all_aux_unknown, any_aux, all_aux;
-	bool any_curse_unknown;
+	bool first, any_aux, all_aux;
 	int curse_ind;
 
 	if (!obj || !entry->n_obj_prop) {
@@ -626,8 +629,6 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 		}
 	}
 	first = true;
-	all_unknown = true;
-	all_aux_unknown = true;
 	any_aux = false;
 	all_aux = true;
 	if (ui_entry_combiner_get_funcs(entry->combiner_index, &combiner)) {
@@ -635,13 +636,13 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 	}
 	cache2 = *cache;
 	curse = obj->curses;
-	any_curse_unknown = false;
 	curse_ind = 0;
 	while (obj) {
 		int i;
 
 		for (i = 0; i < entry->n_obj_prop; ++i) {
 			int ind = entry->obj_props[i].index;
+			int v, a = 0;
 
 			if (entry->obj_props[i].isaux) {
 				if (entry->flags & ENTRY_FLAG_TIMED_AUX) {
@@ -655,88 +656,40 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			switch (entry->obj_props[i].type) {
 			case OBJ_PROPERTY_STAT:
 			case OBJ_PROPERTY_MOD:
-				if (!p || p->obj_k->modifiers[ind] != 0 ||
-					obj->modifiers[ind] == 0) {
-					int v = obj->modifiers[ind];
-					int a = 0;
-
+				if (!p || p->obj_k->modifiers[ind] != 0
+						|| obj->modifiers[ind] == 0) {
+					v = obj->modifiers[ind];
 					if (v && entry->obj_props[i].have_value) {
 						v = entry->obj_props[i].value;
 					}
-					if (entry->obj_props[i].isaux) {
-						int t = a;
-
-						a = v;
-						v = t;
-						all_aux_unknown = false;
-					} else {
-						all_unknown = false;
-					}
-					if (first) {
-						(*combiner.init_func)(v, a, &cst);
-						first = false;
-					} else {
-						(*combiner.accum_func)(v, a, &cst);
-					}
-				} else if (curse_ind > 0) {
-					any_curse_unknown = true;
+				} else {
+					v = UI_ENTRY_UNKNOWN_VALUE;
+					a = UI_ENTRY_UNKNOWN_VALUE;
 				}
 				break;
 
 			case OBJ_PROPERTY_FLAG:
 				if (!p || object_flag_is_known(p, obj, ind)) {
-					int v = of_has(cache2->f, ind) ? 1 : 0;
-					int a = 0;
-
+					v = of_has(cache2->f, ind) ? 1 : 0;
 					if (v && entry->obj_props[i].have_value) {
 						v = entry->obj_props[i].value;
 					}
-					if (entry->obj_props[i].isaux) {
-						int t = a;
-
-						a = v;
-						v = t;
-						all_aux_unknown = false;
-					} else {
-						all_unknown = false;
-					}
-					if (first) {
-						(*combiner.init_func)(v, a, &cst);
-						first = false;
-					} else {
-						(*combiner.accum_func)(v, a, &cst);
-					}
-				} else if (curse_ind > 0) {
-					any_curse_unknown = true;
+				} else {
+					v = UI_ENTRY_UNKNOWN_VALUE;
+					a = UI_ENTRY_UNKNOWN_VALUE;
 				}
 				break;
 
 			case OBJ_PROPERTY_IGNORE:
 				if (!p || object_element_is_known(p, obj, ind)) {
-					int v = (obj->el_info[ind].flags &
+					v = (obj->el_info[ind].flags &
 						EL_INFO_IGNORE) ? 1 : 0;
-					int a = 0;
-
 					if (v && entry->obj_props[i].have_value) {
 						v = entry->obj_props[i].value;
 					}
-					if (entry->obj_props[i].isaux) {
-						int t = a;
-
-						a = v;
-						v = t;
-						all_aux_unknown = false;
-					} else {
-						all_unknown = false;
-					}
-					if (first) {
-						(*combiner.init_func)(v, a, &cst);
-						first = false;
-					} else {
-						(*combiner.accum_func)(v, a, &cst);
-					}
-				} else if (curse_ind > 0) {
-					any_curse_unknown = true;
+				} else {
+					v = UI_ENTRY_UNKNOWN_VALUE;
+					a = UI_ENTRY_UNKNOWN_VALUE;
 				}
 				break;
 
@@ -744,34 +697,34 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			case OBJ_PROPERTY_VULN:
 			case OBJ_PROPERTY_IMM:
 				if (!p || object_element_is_known(p, obj, ind)) {
-					int v = obj->el_info[ind].res_level;
-					int a = 0;
-
+					v = obj->el_info[ind].res_level;
 					if (v && entry->obj_props[i].have_value) {
 						v = entry->obj_props[i].value;
 					}
-					if (entry->obj_props[i].isaux) {
-						int t = a;
-
-						a = v;
-						v = t;
-						all_aux_unknown = false;
-					} else {
-						all_unknown = false;
-					}
-					if (first) {
-						(*combiner.init_func)(v, a, &cst);
-						first = false;
-					} else {
-						(*combiner.accum_func)(v, a, &cst);
-					}
-				} else if (curse_ind > 0) {
-					any_curse_unknown = true;
+				} else {
+					v = UI_ENTRY_UNKNOWN_VALUE;
+					a = UI_ENTRY_UNKNOWN_VALUE;
 				}
 				break;
 
 			default:
+				v = 0;
 				break;
+			}
+
+			if (v) {
+				if (entry->obj_props[i].isaux) {
+					int t = a;
+
+					a = v;
+					v = t;
+				}
+				if (first) {
+					(*combiner.init_func)(v, a, &cst);
+					first = false;
+				} else {
+					(*combiner.accum_func)(v, a, &cst);
+				}
 			}
 		}
 
@@ -807,23 +760,12 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 			obj = NULL;
 		}
 	}
-	if (all_unknown && all_aux_unknown) {
-		*val = (all_aux) ? 0 : UI_ENTRY_UNKNOWN_VALUE;
-		*auxval = (any_aux) ? UI_ENTRY_UNKNOWN_VALUE : 0;
-	} else {
+
+	if (!first) {
 		(*combiner.finish_func)(&cst);
-		if (all_unknown || (cst.accum == 0 && any_curse_unknown)) {
-			*val = (all_aux) ? 0 : UI_ENTRY_UNKNOWN_VALUE;
-		} else {
-			*val = cst.accum;
-		}
-		if (all_aux_unknown
-				|| (cst.accum_aux == 0 && any_curse_unknown)) {
-			*auxval = (any_aux) ? UI_ENTRY_UNKNOWN_VALUE : 0;
-		} else {
-			*auxval = cst.accum_aux;
-		}
 	}
+	*val = (all_aux) ? 0 : cst.accum;
+	*auxval = (any_aux) ? cst.accum_aux : 0;
 }
 
 
