@@ -103,15 +103,13 @@ ASFLAGS		+= -x assembler-with-cpp $(DEFINES) $(ARCH) \
 		   -ffunction-sections -fdata-sections
 
 CFLAGS		+= -std=gnu11 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) -Os \
-		   -ffunction-sections -fdata-sections \
-		   -fomit-frame-pointer
+		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) \
+		   -ffunction-sections -fdata-sections
 
 CXXFLAGS	+= -std=gnu++14 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) -Os \
+		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) \
 		   -ffunction-sections -fdata-sections \
-		   -fno-exceptions -fno-rtti \
-		   -fomit-frame-pointer
+		   -fno-exceptions -fno-rtti
 
 LDFLAGS		:= -mthumb -mthumb-interwork $(LIBDIRSFLAGS) \
 		   -Wl,-Map,$(MAP) -Wl,--gc-sections -nostdlib \
@@ -119,6 +117,14 @@ LDFLAGS		:= -mthumb -mthumb-interwork $(LIBDIRSFLAGS) \
 		   -T$(BLOCKSDS)/sys/crts/ds_arm9.ld \
 		   -Wl,--no-warn-rwx-segments \
 		   -Wl,--start-group $(LIBS) -lgcc -Wl,--end-group
+
+ifeq (,$(NDS_DEBUG))
+CFLAGS		+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
+CXXFLAGS	+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
+else
+CFLAGS		+= -Og
+CXXFLAGS	+= -Og
+endif
 
 # Intermediate build files
 # ------------------------
