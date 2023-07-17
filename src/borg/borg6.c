@@ -6342,9 +6342,6 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
     borg_grid* ag;
     struct monster_race* r_ptr;
     borg_kill* kill;
-    /* borg_grid* ag_path; */
-    /* struct monster_race* r_ptr_path; */
-    /* borg_kill* kill_path; */
 
     int q_x, q_y;
 
@@ -6361,6 +6358,10 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
     /* Final location */
     x2 = x; y2 = y;
 
+    /* Bounds Check */
+    if (!square_in_bounds_fully(cave, loc(x, y)))
+        return 0;
+
     /* Start over */
     x = x1; y = y1;
 
@@ -6368,18 +6369,14 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
     for (dist = 0; dist < max; dist++)
     {
         /* Bounds Check */
-        if (!square_in_bounds_fully(cave, loc(x2, y2))) break;
+        if (dist && !square_in_bounds_fully(cave, loc(x, y))) break;
 
         /* Get the grid of the targetted monster */
         ag = &borg_grids[y2][x2];
         kill = &borg_kills[ag->kill];
         r_ptr = &r_info[kill->r_idx];
 
-        /* Get the grid of the pathway monster, if any */
-        /* ag_path = &borg_grids[y][x]; */
-        /* kill_path = &borg_kills[ag_path->kill]; */
-        /* r_ptr_path = &r_info[kill_path->r_idx]; */
-
+        /* Get the grid of the pathway */
         ag = &borg_grids[y][x];
 
         /* Stop at walls */
@@ -9417,10 +9414,14 @@ static int borg_attack_aux_crush(void)
     p2 = borg_danger(c_y, c_x, 4, true, false);
     borg_crush_spell = false;
 
-    /* value is d, enhance the value for rogues and rangers so that
-     * they can use their critical hits.
-     */
+    /* damage is reduction in danger */
     d = (p1 - p2);
+
+    /* if there is still danger afterward, make sure the reductioning in HP */
+    /* doesn't make this put us in danger */
+    int new_hp = (borg_skill[BI_CURHP] - (borg_skill[BI_CLEVEL] * 2));
+    if (borg_simulate && (p2 >= new_hp || new_hp <= 5))
+        return 0;
 
     int spell_power = borg_get_spell_power(CRUSH);
 

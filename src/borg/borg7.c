@@ -4252,11 +4252,11 @@ bool borg_play_magic(bool bored)
 		if (borg_spell(as->spell_enum))
 		{
 			/* Hack -- Allow attack spells */
-			if (effects[as->effect_index].aim)
+            /* MEGAHACK -- assume "Random" is shooting.  */
+			if (effects[as->effect_index].aim || as->effect_index == EF_RANDOM)
 			{
 				/* Hack -- target self */
 				borg_keypress('*');
-				borg_keypress('p');
 				borg_keypress('t');
 			}
 
