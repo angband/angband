@@ -141,7 +141,7 @@ static void fill_in_object_base(struct object_base *base)
 	base->next = NULL;
 	base->attr = COLOUR_WHITE;
 	of_wipe(base->flags);
-	kf_wipe(base->flags);
+	kf_wipe(base->kind_flags);
 	memset(base->el_info, 0, ELEM_MAX * sizeof(base->el_info[0]));
 	base->break_perc = 0;
 	base->max_stack = 40;
