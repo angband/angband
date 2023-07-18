@@ -6261,25 +6261,6 @@ static int32_t borg_power_home_aux2(void)
         for (k = 0; k < kb_info[TV_FOOD].max_stack && k < num_food; k++) value += 8000L - k * 10L;
     }
 
-#if 0
-    /* Collect fuel */
-    if (borg_skill[BI_MAXCLEVEL] < 10)
-    {
-        for (k = 0; k < 25 && k < num_fuel; k++) value += 8000L - k * 10L;
-    }
-    else if (borg_skill[BI_MAXCLEVEL] < 35)
-    {
-        for (k = 0; k < 50 && k < num_fuel; k++) value += 8000L - k * 10L;
-    }
-    else
-    {
-        for (k = 0; k < 90 && k < num_fuel; k++) value += 8000L - k * 10L;
-    }
-
-    /* Collect Molds as pets */
-    for (k = 0; k < 10 && k < num_mold; k++) value += 10L - k;
-#endif
-
     /* Collect ident */
     for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_ident; k++) value += 2000L - k * 10L;
 
@@ -6322,8 +6303,8 @@ static int32_t borg_power_home_aux2(void)
         for (; k < kb_info[TV_POTION].max_stack && k < num_pot_rcold; k++) value += 100L - k * 10L;
     }
 
-    /* Collect recall */
-    for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_recall; k++) value += 1000L;
+    /* Collect recall - stick to 5 spare, for if you run out of money */
+    for (k = 0; k < 5 && k < num_recall; k++) value += 100L;
 
     /* Collect escape  (staff of teleport) */
     if (borg_skill[BI_MAXCLEVEL] < 40)
@@ -6342,9 +6323,6 @@ static int32_t borg_power_home_aux2(void)
     {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_phase; k++) value += 5000L;
     }
-
-    /* Collect teleport level scrolls*/
-    /* for (k = 0; k < 85 && k < num_teleport_level; k++) value += 5000L - k*8L; */
 
     /* Collect Speed */
     /* for (k = 0; k < 85 && k < num_speed; k++) value += 5000L - k*10L; */
