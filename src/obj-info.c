@@ -1317,14 +1317,17 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 		if (weapon) {
 			total_dam *= old_blows;
 			total_dam /= 10000;
+			total_dam += (add * old_blows) / 10;
 		} else if (ammo) {
 			total_dam *= player->state.num_shots;
 			total_dam /= 1000;
+			total_dam += add * player->state.num_shots;
 		} else {
 			total_dam /= 100;
+			total_dam += add * 10;
 		}
 
-		brand_damage[i] = total_dam + add;
+		brand_damage[i] = total_dam;
 	}
 
 	/* Get damage for each slay on the objects */
@@ -1353,14 +1356,17 @@ static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 		if (weapon) {
 			total_dam *= old_blows;
 			total_dam /= 10000;
+			total_dam += (add * old_blows) / 10;
 		} else if (ammo) {
 			total_dam *= player->state.num_shots;
 			total_dam /= 1000;
+			total_dam += add * player->state.num_shots;
 		} else {
 			total_dam /= 100;
+			total_dam += add * 10;
 		}
 
-		slay_damage[i] = total_dam + add;
+		slay_damage[i] = total_dam;
 	}
 
 	/* Normal damage, not considering brands or slays */
