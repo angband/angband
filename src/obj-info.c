@@ -983,20 +983,34 @@ static bool describe_blows(textblock *tb, const struct object *obj)
 
 /**
  * Gets information about the average damage/turn that can be inflicted if
- * the player wields the given weapon.
+ * the player uses the given weapon.  Uses the standard (not O) damage
+ * calculations.
  *
- * Fills in the damage against normal adversaries in `normal_damage`, as well
- * as the slays on the weapon in slay_list[] and corresponding damages in 
- * slay_damage[].  These must both be at least SL_MAX long to be safe.
- * `nonweap_slay` is set to whether other items being worn could add to the
- * damage done by branding attacks.
- *
- * Returns the number of slays populated in slay_list[] and slay_damage[].
+ * \param obj is the melee weapon or launched/thrown missile to evaluate.
+ * \param normal_damage is dereferenced and set to the average damage per
+ * turn times ten if no brands or slays are effective.
+ * \param brand_damage must point to z_info->brand_max ints.  brand_damage[i]
+ * is set to the average damage per turn times ten with the ith brand from the
+ * global brands array if that brand is present and is not overridden by a
+ * more powerful brand that is also present for the same element; otherwise,
+ * brand_damage[i] is not modified.
+ * \param slay_damage must point to z_info->slay_max ints.  slay_damage[i]
+ * is set to the average damage per turn times ten with the ith slay from the
+ * global slays array if that slay is present and is not overridden by a
+ * more powerful slay that is also present for the same monsters; otherwise,
+ * slay_damage[i] is not modified.
+ * \param nonweap_slay is dereferenced and set to true if an off-weapon slay
+ * or brand affects the damage or to false if no off-weapon slay or brand
+ * affects the damage.
+ * \param throw causes, if true, the damage to be calculated as if obj is
+ * thrown.
+ * \return true if there is at least one known brand or slay that could
+ * affect the damage; otherwise, return false.
  *
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static bool obj_known_damage(const struct object *obj, int *normal_damage,
+bool obj_known_damage(const struct object *obj, int *normal_damage,
 							 int *brand_damage, int *slay_damage,
 							 bool *nonweap_slay, bool throw)
 {
@@ -1181,20 +1195,33 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 /**
  * Gets information about the average damage/turn that can be inflicted if
- * the player wields the given weapon.
+ * the player uses the given weapon.  Uses the OAngband damage calculations.
  *
- * Fills in the damage against normal adversaries in `normal_damage`, as well
- * as the slays on the weapon in slay_list[] and corresponding damages in 
- * slay_damage[].  These must both be at least SL_MAX long to be safe.
- * `nonweap_slay` is set to whether other items being worn could add to the
- * damage done by branding attacks.
- *
- * Returns the number of slays populated in slay_list[] and slay_damage[].
+ * \param obj is the melee weapon or launched/thrown missile to evaluate.
+ * \param normal_damage is dereferenced and set to the average damage per
+ * turn times ten if no brands or slays are effective.
+ * \param brand_damage must point to z_info->brand_max ints.  brand_damage[i]
+ * is set to the average damage per turn times ten with the ith brand from the
+ * global brands array if that brand is present and is not overridden by a
+ * more power brand that is also present for the same element; otherwise,
+ * brand_damage[i] is not modified.
+ * \param slay_damage must point to z_info->slay_max ints.  slay_damage[i]
+ * is set to the average damage times ten per turn with the ith slay from the
+ * global slays array if that slay is present and is not overridden by a
+ * more powerful slay that is also present for the same monsters; otherwise,
+ * slay_damage[i] is not modified.
+ * \param nonweap_slay is dereferenced and set to true if an off-weapon slay
+ * or brand affects the damage or to false if no off-weapon slay or brand
+ * affects the damage.
+ * \param throw causes, if true, the damage to be calculated as if obj is
+ * thrown.
+ * \return true if there is at least one known brand or slay that could
+ * affect the damage; otherwise, return false.
  *
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static bool o_obj_known_damage(const struct object *obj, int *normal_damage,
+bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 								 int *brand_damage, int *slay_damage,
 							   bool *nonweap_slay, bool throw)
 {

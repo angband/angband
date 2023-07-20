@@ -1223,7 +1223,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 /**
  * Helper function used with ranged_helper by do_cmd_fire.
  */
-static struct attack_result make_ranged_shot(struct player *p,
+struct attack_result make_ranged_shot(struct player *p,
 		struct object *ammo, struct loc grid)
 {
 	char *hit_verb = mem_alloc(20 * sizeof(char));
@@ -1261,7 +1261,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 /**
  * Helper function used with ranged_helper by do_cmd_throw.
  */
-static struct attack_result make_ranged_throw(struct player *p,
+struct attack_result make_ranged_throw(struct player *p,
 	struct object *obj, struct loc grid)
 {
 	char *hit_verb = mem_alloc(20 * sizeof(char));

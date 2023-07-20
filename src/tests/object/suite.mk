@@ -1,1 +1,7 @@
-TESTPROGS += object/alloc object/attack object/util object/pile object/slays
+TESTPROGS += \
+	object/alloc \
+	object/attack \
+	object/info \
+	object/pile \
+	object/slays \
+	object/util

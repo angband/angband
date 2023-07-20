@@ -40,4 +40,12 @@ textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const struct object *obj, int wrap);
 void object_info_chardump(ang_file *f, const struct object *obj, int indent, int wrap);
 
+/* These are public so unit test cases can use them. */
+bool obj_known_damage(const struct object *obj, int *normal_damage,
+		int *brand_damage, int *slay_damage, bool *nonweap_slay,
+		bool throw);
+bool o_obj_known_damage(const struct object *obj, int *normal_damage,
+		int *brand_damage, int *slay_damage, bool *nonweap_slay,
+		bool throw);
+
 #endif /* OBJECT_INFO_H */
