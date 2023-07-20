@@ -318,11 +318,11 @@ bool options_restore_custom(struct player_options *opts, int page)
 						"yes or no.", linenum,
 						page_name);
 				}
-				++linenum;
 				break;
 			}
 			++opt;
 		}
+		++linenum;
 	}
 
 	if (!file_close(f)) {
