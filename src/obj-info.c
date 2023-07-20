@@ -477,7 +477,8 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 		+ z_info->m_crit_chance_toh_scl * (state->to_h + plus)
 		+ z_info->m_crit_chance_level_scl * player->lev
 		+ z_info->m_crit_chance_toh_skill_scl
-			* state->skills[SKILL_TO_HIT_MELEE];
+			* state->skills[SKILL_TO_HIT_MELEE]
+		+ z_info->m_crit_chance_offset;
 	crit_chance = MIN(z_info->m_crit_chance_range, MAX(0, crit_chance));
 
 	/* Reported results (*mult and *add) are scaled up by 100. */
@@ -627,7 +628,8 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 	 */
 	int crit_chance = z_info->r_crit_chance_weight_scl * weight
 		+ z_info->r_crit_chance_toh_scl * (state->to_h + plus)
-		+ z_info->r_crit_chance_level_scl * player->lev;
+		+ z_info->r_crit_chance_level_scl * player->lev
+		+ z_info->r_crit_chance_offset;
 
 	if (launched) {
 		crit_chance += z_info->r_crit_chance_launched_toh_skill_scl
