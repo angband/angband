@@ -466,7 +466,8 @@ static struct my_rational sum_o_criticals(const struct o_critical_level *head)
  * of a roll.
  */
 static void calculate_melee_crits(struct player_state *state, int weight,
-		int plus, int *mult, int *add, int *div)
+		int plus, int *mult, int *add, int *div, int *mult_round,
+		int *add_round, int *scl_round)
 {
 	/*
 	 * Pessimistically assume that the target is not debuffed; otherwise
@@ -528,15 +529,21 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 		/*
 		 * In other words, the result of no critical (multipler of 1
 		 * and no additive term) plus the scaled result of summing over
-		 * the possible criticals rounded to the nearest integer.
+		 * the possible criticals truncated to the nearest integer.
 		 */
 		scale = (z_info->m_crit_chance_range / *div)
 			* z_info->m_crit_power_random;
-		*mult = *div + (crit_chance * mult_sum + scale / 2) / scale;
-		*add = (crit_chance * add_sum + scale / 2) / scale;
+		*mult = *div + (crit_chance * mult_sum) / scale;
+		*add = (crit_chance * add_sum) / scale;
+		*mult_round = (crit_chance * mult_sum) % scale;
+		*add_round = (crit_chance * add_sum) % scale;
+		*scl_round = scale;
 	} else {
 		*mult = 100;
 		*add = 0;
+		*mult_round = 0;
+		*add_round = 0;
+		*scl_round = 1;
 	}
 }
 
@@ -544,13 +551,17 @@ static void calculate_melee_crits(struct player_state *state, int weight,
  * Account for criticals in the calculation of melee prowess for O-combat;
  * crit chance * average number of dice added
  *
- * Return value is 100x number of dice
+ * \param state points to the state for the player of interest.
+ * \param obj is the melee weapon of interest.
+ * \param dice is dereferenced and set to 100 * crit chance * average number
+ * of dice added.
+ * \param frac_dice is dereferenced and set to the fractional part truncted
+ * from *dice when converted to an integer.
  */
-static unsigned int o_calculate_melee_crits(struct player_state *state,
-		const struct object *obj)
+static void o_calculate_melee_crits(struct player_state *state,
+		const struct object *obj, unsigned int *dice,
+		struct my_rational *frac_dice)
 {
-	unsigned int dice;
-
 	if (z_info->o_m_crit_level_head) {
 		/*
 		 * Pessimistically assume that the target is not debuffed.
@@ -579,47 +590,40 @@ static unsigned int o_calculate_melee_crits(struct player_state *state,
 			if (chance_num < chance_den) {
 				/*
 				 * Critical only happens some of the time.
-				 * Scale by the chance and 100.  Round to the
-				 * nearest integer.
+				 * Scale by the chance and 100.
 				 */
 				struct my_rational t = my_rational_construct(
 					chance_num, chance_den);
 
 				t = my_rational_product(&t,
 					&z_info->o_m_max_added);
-				dice = my_rational_to_uint(&t, 100, &tr);
-				if (dice < UINT_MAX && tr >= t.d / 2) {
-					++dice;
-				}
+				*dice = my_rational_to_uint(&t, 100, &tr);
+				*frac_dice = my_rational_construct(tr, t.d);
 			} else {
-				/*
-				 * Critical always happens.  Scale by 100 and
-				 * round to the nearest integer.
-				 */
-				dice = my_rational_to_uint(
+				/* Critical always happens.  Scale by 100. */
+				*dice = my_rational_to_uint(
 					&z_info->o_m_max_added, 100, &tr);
-				if (dice < UINT_MAX && tr >=
-						z_info->o_m_max_added.d / 2) {
-					++dice;
-				}
+				*frac_dice = my_rational_construct(tr,
+					z_info->o_m_max_added.d);
 			}
 		} else {
 			/* No chance of happening so no additional damage. */
-			dice = 0;
+			*dice = 0;
+			*frac_dice = my_rational_construct(0, 1);
 		}
 	} else {
 		/* No critical levels defined so no additional damage. */
-		dice = 0;
+		*dice = 0;
+		*frac_dice = my_rational_construct(0, 1);
 	}
-
-	return dice;
 }
 
 /**
  * Missile crits follow the same approach as melee crits.
  */
 static void calculate_missile_crits(struct player_state *state, int weight,
-		int plus, bool launched, int *mult, int *add, int *div)
+		int plus, bool launched, int *mult, int *add, int *div,
+		int *mult_round, int *add_round, int *scl_round)
 {
 	/*
 	 * Pessimistically assume that the target is not debuffed; otherwise
@@ -687,27 +691,39 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 		/*
 		 * In other words, the result of no critical (multipler of 1
 		 * and no additive term) plus the scaled result of summing over
-		 * the possible criticals rounded to the nearest integer.
+		 * the possible criticals truncated to the nearest integer.
 		 */
 		scale = (z_info->r_crit_chance_range / *div)
 			* z_info->r_crit_power_random;
-		*mult = *div + (crit_chance * mult_sum + scale / 2) / scale;
-		*add = (crit_chance * add_sum + scale / 2) / scale;
+		*mult = *div + (crit_chance * mult_sum) / scale;
+		*add = (crit_chance * add_sum) / scale;
+		*mult_round = (crit_chance * mult_sum) % scale;
+		*add_round = (crit_chance * add_sum) % scale;
+		*scl_round = scale;
 	} else {
 		*mult = 100;
 		*add = 0;
+		*mult_round = 0;
+		*add_round = 0;
+		*scl_round = 1;
 	}
 }
 
 /**
  * Missile crits follow the same approach as melee crits.
+ *
+ * \param state points to the state for the player of interest.
+ * \param obj is the missile of interest.
+ * \param launcher is the launcher of interest or NULL for a thrown missile.
+ * \param dice is dereferenced and set to 100 * crit chance * average number
+ * of dice added.
+ * \param frac_dice is dereferenced and set to the fractional part truncted
+ * from *dice when converted to an integer.
  */
-static unsigned int o_calculate_missile_crits(struct player_state *state,
-		const struct object *obj,
-		const struct object *launcher)
+static void o_calculate_missile_crits(struct player_state *state,
+		const struct object *obj, const struct object *launcher,
+		unsigned int *dice, struct my_rational *frac_dice)
 {
-	unsigned int dice;
-
 	if (z_info->o_r_crit_level_head) {
 		/*
 		 * Pessimistically assume that the target is not debuffed.
@@ -751,33 +767,29 @@ static unsigned int o_calculate_missile_crits(struct player_state *state,
 
 				t = my_rational_product(&t,
 					&z_info->o_r_max_added);
-				dice = my_rational_to_uint(&t, 100, &tr);
-				if (dice < UINT_MAX && tr >= t.d / 2) {
-					++dice;
-				}
+				*dice = my_rational_to_uint(&t, 100, &tr);
+				*frac_dice = my_rational_construct(tr, t.d);
 			} else {
 				/*
 				 * Critical always happens.  Scale by 100
 				 * and round to the nearest integer.
 				 */
-				dice = my_rational_to_uint(
+				*dice = my_rational_to_uint(
 					&z_info->o_r_max_added, 100,
 					&tr);
-				if (dice < UINT_MAX && tr >=
-						z_info->o_r_max_added.d / 2) {
-					++dice;
-				}
+				*frac_dice = my_rational_construct(tr,
+					z_info->o_r_max_added.d);
 			}
 		} else {
 			/* No chance of happening so no additional damage. */
-			dice = 0;
+			*dice = 0;
+			*frac_dice = my_rational_construct(0, 1);
 		}
 	} else {
 		/* No critical levels defined so no additional damage. */
-		dice = 0;
+		*dice = 0;
+		*frac_dice = my_rational_construct(0, 1);
 	}
-
-	return dice;
 }
 
 /**
@@ -1020,6 +1032,8 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 	int dice, sides, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
+	int crit_round_mult, crit_round_add, crit_scl_round;
+	int temp0, temp1, round;
 	int old_blows = 0;
 	bool *total_brands;
 	bool *total_slays;
@@ -1061,15 +1075,17 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		xtra_precrit += obj->known->to_d * 10;
 		plus += obj->known->to_h;
 
-		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
-							  &crit_div);
+		calculate_melee_crits(&state, obj->weight, plus,
+			&crit_mult, &crit_add, &crit_div,
+			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		old_blows = state.num_blows;
 	} else if (ammo) {
 		plus += obj->known->to_h;
 
 		calculate_missile_crits(&player->state, obj->weight, plus,
-			true, &crit_mult, &crit_add, &crit_div);
+			true, &crit_mult, &crit_add, &crit_div,
+			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		dam += (obj->known->to_d * 10);
 		dam += (bow->known->to_d * 10);
@@ -1077,7 +1093,8 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		plus += obj->known->to_h;
 
 		calculate_missile_crits(&player->state, obj->weight, plus,
-			false, &crit_mult, &crit_add, &crit_div);
+			false, &crit_mult, &crit_add, &crit_div,
+			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		dam += (obj->known->to_d * 10);
 		dam *= 2 + obj->weight / 12;
@@ -1130,16 +1147,24 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		has_brands_or_slays = true;
 
 		/* Include bonus damage and brand in stated average */
-		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
-			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
-		total_dam += xtra_postcrit;
+		temp0 = dam * (multiplier + brands[i].multiplier
+			- melee_adj_mult) + xtra_precrit;
+		temp1 = temp0 * crit_mult + 10 * crit_add
+			+ (temp0 * crit_round_mult + 10 * crit_round_add)
+			/ crit_scl_round;
+		total_dam = temp1 / crit_div + xtra_postcrit;
+		round = temp1 % crit_div;
 
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
+			temp0 = total_dam * old_blows
+				+ (round * old_blows) / crit_div;
+			total_dam = temp0 / 100 + ((temp0 % 100 >= 50) ? 1 : 0);
 		} else if (ammo) {
-			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			temp0 = total_dam * player->state.num_shots
+				+ (round * player->state.num_shots) / crit_div;
+			total_dam = temp0 / 10 + ((temp0 % 10 >= 5) ? 1 : 0);
+		} else {
+			total_dam += (round > (crit_div + 1) / 2) ? 1 : 0;
 		}
 
 		brand_damage[i] = total_dam;
@@ -1159,32 +1184,48 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		has_brands_or_slays = true;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
-			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
-		total_dam += xtra_postcrit;
+		temp0 = dam * (multiplier + slays[i].multiplier
+			- melee_adj_mult) + xtra_precrit;
+		temp1 = temp0 * crit_mult + 10 * crit_add
+			+ (temp0 * crit_round_mult + 10 * crit_round_add)
+			/ crit_scl_round;
+		total_dam = temp1 / crit_div + xtra_postcrit;
+		round = temp1 % crit_div;
 
 		if (weapon) {
-			total_dam = (total_dam * old_blows) / 100;
+			temp0 = total_dam * old_blows
+				+ (round * old_blows) / crit_div;
+			total_dam = temp0 / 100 + ((temp0 % 100 >= 50) ? 1 : 0);
 		} else if (ammo) {
-			total_dam *= player->state.num_shots;
-			total_dam /= 10;
+			temp0 = total_dam * player->state.num_shots
+				+ (round * player->state.num_shots) / crit_div;
+			total_dam = temp0 / 10 + ((temp0 % 10 >= 5) ? 1 : 0);
+		} else {
+			total_dam += (round >= (crit_div + 1) / 2) ? 1 : 0;
 		}
 
 		slay_damage[i] = total_dam;
 	}
 
 	/* Include bonus damage in stated average */
-	total_dam = dam * multiplier + xtra_precrit;
-	total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
-	total_dam += xtra_postcrit;
+	temp0 = dam * multiplier + xtra_precrit;
+	temp1 = temp0 * crit_mult + 10 * crit_add
+		+ (temp0 * crit_round_mult + 10 * crit_round_add)
+		/ crit_scl_round;
+	total_dam = temp1 / crit_div + xtra_postcrit;
+	round = temp1 % crit_div;
 
 	/* Normal damage, not considering brands or slays */
 	if (weapon) {
-		total_dam = (total_dam * old_blows) / 100;
+		temp0 = total_dam * old_blows
+			+ (round * old_blows) / crit_div;
+		total_dam = temp0 / 100 + ((temp0 % 100 >= 50) ? 1 : 0);
 	} else if (ammo) {
-		total_dam *= player->state.num_shots;
-		total_dam /= 10;
+		temp0 = total_dam * player->state.num_shots
+			+ (round * player->state.num_shots) / crit_div;
+		total_dam = temp0 / 10 + ((temp0 % 10 >= 5) ? 1 : 0);
+	} else {
+		total_dam += (round > (crit_div + 1) / 2) ? 1 : 0;
 	}
 
 	*normal_damage = total_dam;
@@ -1229,6 +1270,9 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 {
 	int i;
 	int dice, sides, die_average, total_dam;
+	unsigned int added_dice, remainder;
+	struct my_rational frac_dice, frac_temp;
+	int temp0, round;
 	int deadliness = obj->known->to_d;
 	int old_blows = 0;
 	bool *total_brands;
@@ -1264,13 +1308,22 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get the number of additional dice from criticals (x100) */
 	if (weapon)	{
-		dice += o_calculate_melee_crits(&state, obj);
+		o_calculate_melee_crits(&state, obj, &added_dice, &frac_dice);
+		dice += added_dice;
 		old_blows = state.num_blows;
 	} else if (ammo) {
-		dice += o_calculate_missile_crits(&player->state, obj, bow);
+		o_calculate_missile_crits(&player->state, obj, bow,
+			&added_dice, &frac_dice);
+		dice += added_dice;
 	} else {
-		dice += o_calculate_missile_crits(&player->state, obj, NULL);
-		dice *= 2 + obj->weight / 12;
+		unsigned int thrown_scl = 2 + obj->weight / 12;
+
+		o_calculate_missile_crits(&player->state, obj, NULL,
+			&added_dice, &frac_dice);
+		dice += added_dice;
+		dice *= thrown_scl;
+		dice += my_rational_to_uint(&frac_dice, thrown_scl, &remainder);
+		frac_dice = my_rational_construct(remainder, frac_dice.d);
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
@@ -1337,23 +1390,38 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 		/* Include brand in stated average (x10), deflate (/1000) */
 		brand_average = die_average * brands[i].o_multiplier;
+		round = brand_average % 1000;
 		brand_average /= 1000;
 
 		/* Damage per hit is now dice * die average, (still x1000) */
-		total_dam = (dice * brand_average);
+		temp0 = dice * brand_average + (dice * round) / 1000
+			+ my_rational_to_uint(&frac_dice, brand_average,
+			&remainder);
+		frac_temp = my_rational_construct(remainder, frac_dice.d);
+		round = (dice * round) % 1000
+			+ my_rational_to_uint(&frac_temp, 1000, &remainder);
+		if (remainder >= (frac_temp.d + 1) / 2) {
+			++round;
+		}
 
 		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam *= old_blows;
+			total_dam = old_blows * temp0
+				+ (old_blows * round) / 1000;
+			round = total_dam % 10000;
 			total_dam /= 10000;
-			total_dam += (add * old_blows) / 10;
+			total_dam += (add * old_blows) / 10
+				+ ((round >= 5000) ? 1 : 0);
 		} else if (ammo) {
-			total_dam *= player->state.num_shots;
+			total_dam = player->state.num_shots * temp0
+				+ (player->state.num_shots * round) / 1000;
+			round = total_dam % 1000;
 			total_dam /= 1000;
-			total_dam += add * player->state.num_shots;
+			total_dam += add * player->state.num_shots
+				+ ((round >= 500) ? 1 : 0);
 		} else {
-			total_dam /= 100;
-			total_dam += add * 10;
+			total_dam = temp0 / 100 + add * 10
+				+ ((temp0 % 100 >= 50) ? 1 : 0);
 		}
 
 		brand_damage[i] = total_dam;
@@ -1376,38 +1444,64 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 		/* Include slay in stated average (x10), deflate (/1000) */
 		slay_average = die_average * slays[i].o_multiplier;
+		round = slay_average % 1000;
 		slay_average /= 1000;
 
 		/* Damage per hit is now dice * die average, (still x1000) */
-		total_dam = (dice * slay_average);
+		temp0 = dice * slay_average + (dice * round) / 1000
+			+ my_rational_to_uint(&frac_dice, slay_average,
+			&remainder);
+		frac_temp = my_rational_construct(remainder, frac_dice.d);
+		round = (dice * round) % 1000
+			+ my_rational_to_uint(&frac_temp, 1000, &remainder);
+		if (remainder >= (frac_temp.d + 1) / 2) {
+			++round;
+		}
 
 		/* Now adjust for blows and shots and deflate again */
 		if (weapon) {
-			total_dam *= old_blows;
+			total_dam = old_blows * temp0
+				+ (old_blows * round) / 1000;
+			round = total_dam % 10000;
 			total_dam /= 10000;
-			total_dam += (add * old_blows) / 10;
+			total_dam += (add * old_blows) / 10
+				+ ((round >= 5000) ? 1 : 0);
 		} else if (ammo) {
-			total_dam *= player->state.num_shots;
+			total_dam = player->state.num_shots * temp0
+				+ (player->state.num_shots * round) / 1000;
+			round = total_dam % 1000;
 			total_dam /= 1000;
-			total_dam += add * player->state.num_shots;
+			total_dam += add * player->state.num_shots
+				+ ((round >= 500) ? 1 : 0);
 		} else {
-			total_dam /= 100;
-			total_dam += add * 10;
+			total_dam = temp0 / 100 + add * 10
+				+ ((temp0 % 100 >= 50) ? 1 : 0);
 		}
 
 		slay_damage[i] = total_dam;
 	}
 
 	/* Normal damage, not considering brands or slays */
-	total_dam = (dice * die_average) / 1000;
+	temp0 = dice * die_average +
+		my_rational_to_uint(&frac_dice, die_average, &remainder);
+	if (remainder >= (frac_dice.d + 1) / 2) {
+		++temp0;
+	}
+	round = temp0 % 1000;
+	temp0 /= 1000;
 	if (weapon) {
-		total_dam *= old_blows;
+		total_dam = old_blows * temp0 + (old_blows * round) / 1000;
+		round = total_dam % 1000;
 		total_dam /= 1000;
+		total_dam += (round >= 500) ? 1 : 0;
 	} else if (ammo) {
-		total_dam *= player->state.num_shots;
+		total_dam = player->state.num_shots * temp0
+			+ (player->state.num_shots * round) / 1000;
+		round = total_dam % 100;
 		total_dam /= 100;
+		total_dam += (round >= 50) ? 1 : 0;
 	} else {
-		total_dam /= 10;
+		total_dam = temp0 / 10 + ((temp0 % 10 >= 5) ? 1 : 0);
 	}
 	*normal_damage = total_dam;
 

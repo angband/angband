@@ -40,11 +40,9 @@ struct info_test_state {
 /*
  * This is the number of standard deviations of the mean an average from the
  * Monte Carlo simulation has to be from the object information result to
- * declare a test failure.  That it has to be this large to avoid frequent
- * test failures suggests that more careful rounding of the damage results
- * should be done in obj-info.c.
+ * declare a test failure.
  */
-#define STDFAIL (8.0)
+#define STDFAIL (5.0)
 
 /*
  * Set up a macro so details about the averages that are too far apart are
@@ -53,7 +51,7 @@ struct info_test_state {
 #define check_averages(desc, oi, mca, mcv) \
 	{ \
 		double dev = 0.1 * oi - mca; \
-		if ((dev < -0.1 || dev > 0.1) \
+		if ((dev < -0.05 || dev > 0.05) \
 				&& dev * dev > STDFAIL * STDFAIL * mc_var) { \
 			if (verbose) { \
 				showfail(); \
