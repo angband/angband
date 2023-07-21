@@ -627,6 +627,13 @@ static int test_melee_weapon_damage_info(void *state)
 
 	remove_all_temporary_brands_and_slays(player);
 	weapon_kind = get_obj_num(1, false, TV_SWORD);
+	if (!weapon_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		weapon_kind = lookup_kind(TV_SWORD, 1);
+	}
 	notnull(weapon_kind);
 	weapon = object_new();
 	object_prep(weapon, weapon_kind, 1, MINIMISE);
@@ -642,6 +649,13 @@ static int test_melee_weapon_damage_info(void *state)
 	object_learn_on_wield(player, weapon);
 
 	gloves_kind = get_obj_num(1, false, TV_GLOVES);
+	if (!gloves_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		gloves_kind = lookup_kind(TV_GLOVES, 1);
+	}
 	notnull(gloves_kind);
 	gloves = object_new();
 	object_prep(gloves, gloves_kind, 1, MINIMISE);
@@ -1376,6 +1390,13 @@ static int test_launched_weapon_damage_info(void *state)
 
 	/* Set up the launcher. */
 	launcher_kind = get_obj_num(1, false, TV_BOW);
+	if (!launcher_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		launcher_kind = lookup_kind(TV_BOW, 1);
+	}
 	notnull(launcher_kind);
 	launcher = object_new();
 	object_prep(launcher, launcher_kind, 1, MINIMISE);
@@ -1412,6 +1433,13 @@ static int test_launched_weapon_damage_info(void *state)
 	}
 	require(ammo_tval > 0);
 	ammo_kind = get_obj_num(1, false, ammo_tval);
+	if (!ammo_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		ammo_kind = lookup_kind(ammo_tval, 1);
+	}
 	notnull(ammo_kind);
 	ammo = object_new();
 	object_prep(ammo, ammo_kind, 1, MINIMISE);
@@ -1427,6 +1455,13 @@ static int test_launched_weapon_damage_info(void *state)
 	object_learn_on_wield(player, ammo);
 
 	gloves_kind = get_obj_num(1, false, TV_GLOVES);
+	if (!gloves_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		gloves_kind = lookup_kind(TV_GLOVES, 1);
+	}
 	notnull(gloves_kind);
 	gloves = object_new();
 	object_prep(gloves, gloves_kind, 1, MINIMISE);
@@ -2489,6 +2524,13 @@ static int test_thrown_weapon_damage_info(void *state)
 	object_learn_on_wield(player, weapon);
 
 	gloves_kind = get_obj_num(1, false, TV_GLOVES);
+	if (!gloves_kind) {
+		/*
+		 * The depth-dependent lookup did not work so try using the
+		 * first kind.
+		 */
+		gloves_kind = lookup_kind(TV_GLOVES, 1);
+	}
 	notnull(gloves_kind);
 	gloves = object_new();
 	object_prep(gloves, gloves_kind, 1, MINIMISE);
