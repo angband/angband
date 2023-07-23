@@ -351,7 +351,7 @@ o-melee-critical:chance-power-scale-denominator:1
 o-melee-critical:chance-add-denominator:240
 
 # Define each of the levels for melee criticals.  They are considered in the
-# order appear so it's convenient to put the least likely first.  If not
+# order they appear so it's convenient to put the least likely first.  If no
 # critical levels are defined, then there's no extra damage due to critical
 # hits.
 # Except for the last level, one over the first value is the probability that
@@ -401,7 +401,7 @@ o-ranged-critical:chance-power-scale-denominator:1
 o-ranged-critical:chance-add-denominator:360
 
 # Define each of the levels for ranged criticals.  They are considered in the
-# order appear so it's convenient to put the least likely first.  If not
+# order they appear so it's convenient to put the least likely first.  If no
 # critical levels are defined, then there's no extra damage due to critical
 # hits.
 # Except for the last level, one over the first value is the probability that
