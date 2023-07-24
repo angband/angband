@@ -9,6 +9,7 @@
 #include "../game-input.h"
 #include "../mon-spell.h"
 #include "../obj-knowledge.h"
+#include "../obj-slays.h"
 #include "../player-timed.h"
 #include "../project.h"
 #include "../trap.h"
@@ -4758,21 +4759,7 @@ enum
     BF_REST,
     BF_THRUST,
     BF_OBJECT,
-    BF_LAUNCH_NORMAL,
-    BF_LAUNCH_SEEKER,
-    BF_LAUNCH_MITHRIL,
-    BF_LAUNCH_FLAME,
-    BF_LAUNCH_FROST,
-    BF_LAUNCH_ANIMAL,
-    BF_LAUNCH_UNDEAD,
-    BF_LAUNCH_DEMON,
-    BF_LAUNCH_ORC,
-    BF_LAUNCH_GIANT,
-    BF_LAUNCH_TROLL, /* 10 */
-    BF_LAUNCH_DRAGON,
-    BF_LAUNCH_EVIL,
-    BF_LAUNCH_VENOM,
-    BF_LAUNCH_HOLY,
+    BF_LAUNCH,
     BF_SPELL_MAGIC_MISSILE,
     BF_SPELL_MAGIC_MISSILE_RESERVE, /* 20 */
     BF_SPELL_STINK_CLOUD,
@@ -5327,6 +5314,61 @@ bool borg_target_unknown_wall(int y, int x)
     }
 }
 
+/* adapted from player_attack.c make_ranged_shot() */
+static int borg_best_mult(borg_item* obj, struct monster_race* r_ptr)
+{
+    int i;
+    int max_mult = 1;
+
+    /* Brands */
+    for (i = 1; i < z_info->brand_max; i++)
+    {
+        struct brand* brand = &brands[i];
+        if (obj) 
+        {
+            /* Brand is on an object */
+            if (!obj->brands[i]) continue;
+        }
+        else 
+        {
+            /* Temporary brand */
+            if (!player_has_temporary_brand(player, i)) continue;
+        }
+
+        /* Is the monster vulnerable? */
+        if (!rf_has(r_ptr->flags, brand->resist_flag))
+        {
+            int mult = brand->multiplier;
+            if (brand->vuln_flag && rf_has(r_ptr->flags, brand->vuln_flag))
+            {
+                mult *= 2;
+            }
+            max_mult = MAX(mult, max_mult);
+        }
+    }
+
+    /* Slays */
+    for (i = 1; i < z_info->slay_max; i++)
+    {
+        struct slay* slay = &slays[i];
+        if (obj) 
+        {
+            /* Slay is on an object */
+            if (!obj->slays || !obj->slays[i]) continue;
+        }
+        else {
+            /* Temporary slay */
+            if (!player_has_temporary_slay(player, i)) continue;
+        }
+
+        if (rf_has(r_ptr->flags, slay->race_flag))
+        {
+            max_mult = MAX(slay->multiplier, max_mult);
+        }
+    }
+    return max_mult;
+}
+
 
 /*
  * Guess how much damage a spell attack will do to a monster
@@ -5391,151 +5433,19 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     case BORG_ATTACK_MISSILE:
     break;
 
-    /* Standard Arrow */
     case BORG_ATTACK_ARROW:
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
+    {
+        borg_item* bow = &borg_items[INVEN_BOW];
+        borg_item* ammo = &borg_items[ammo_location];
+        int mult = borg_best_mult(bow, r_ptr);
+        mult = MAX(mult, borg_best_mult(ammo, r_ptr));
+        dam *= mult;
+        /* don't point blank non-uniques */
+        if (cur_dis == 1 && !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
+        /* Do I hit regularly? (80%)*/
+        if (chance < armor * 8 / 10) dam = 0;
+    }
     break;
-
-    /* Seeker Arrow/Bolt */
-    case BORG_ATTACK_ARROW_SEEKER:
-    if (!(rf_has(r_ptr->flags, RF_UNIQUE)) &&
-        (kill->level < borg_skill[BI_CLEVEL])) dam /= 3;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Silver Arrow/Bolt */
-    case BORG_ATTACK_ARROW_SILVER:
-    /* No code in 3.0 for this
-     *      if (rf_has(r_ptr->flags, RF_EVIL)) dam *= 3;
-     *      if (borg_distance(c_y, c_x,kill->y, kill->x) == 1 &&
-     *          !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-     */
-    break;
-
-    /* Arrow of Flame*/
-    case BORG_ATTACK_ARROW_FLAME:
-    if (!(rf_has(r_ptr->flags, RF_IM_FIRE))) dam *= 3;
-    if ((rf_has(r_ptr->flags, RF_HURT_FIRE))) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of Frost*/
-    case BORG_ATTACK_ARROW_FROST:
-    if (!rf_has(r_ptr->flags, RF_IM_COLD)) dam *= 3;
-    if (rf_has(r_ptr->flags, RF_HURT_COLD)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of Hurt Animal*/
-    case BORG_ATTACK_ARROW_ANIMAL:
-    if (rf_has(r_ptr->flags, RF_ANIMAL)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of hurt evil */
-    case BORG_ATTACK_ARROW_EVIL:
-    if (rf_has(r_ptr->flags, RF_EVIL)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay undead*/
-    case BORG_ATTACK_ARROW_UNDEAD:
-    if (rf_has(r_ptr->flags, RF_UNDEAD)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay demon*/
-    case BORG_ATTACK_ARROW_DEMON:
-    if (rf_has(r_ptr->flags, RF_DEMON)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay orc*/
-    case BORG_ATTACK_ARROW_ORC:
-    if (rf_has(r_ptr->flags, RF_ORC)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay troll*/
-    case BORG_ATTACK_ARROW_TROLL:
-    if (rf_has(r_ptr->flags, RF_TROLL)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay giant*/
-    case BORG_ATTACK_ARROW_GIANT:
-    if (rf_has(r_ptr->flags, RF_GIANT)) dam *= 2;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of slay dragon*/
-    case BORG_ATTACK_ARROW_DRAGON:
-    if (rf_has(r_ptr->flags, RF_DRAGON)) dam *= 3;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of Wounding*/
-    case BORG_ATTACK_ARROW_WOUNDING:
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of Poison Branding*/
-    case BORG_ATTACK_ARROW_POISON:
-    if (!(rf_has(r_ptr->flags, RF_IM_POIS))) dam *= 3;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
-    /* Arrow of Holy Might*/
-    case BORG_ATTACK_ARROW_HOLY:
-    if (rf_has(r_ptr->flags, RF_EVIL)) dam *= 3;
-    if (cur_dis == 1 &&
-        !(rf_has(r_ptr->flags, RF_UNIQUE))) dam /= 5;
-    /* Do I hit regularly? (80%)*/
-    if (chance < armor * 8 / 10) dam = 0;
-    break;
-
 
     /* Pure damage */
     case BORG_ATTACK_MANA:
@@ -6179,9 +6089,7 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
     /*  Try to conserve missiles.
      */
-    if (typ == BORG_ATTACK_ARROW ||
-        (typ >= BORG_ATTACK_ARROW_FLAME &&
-            typ <= BORG_ATTACK_ARROW_HOLY))
+    if (typ == BORG_ATTACK_ARROW)
     {
         if (!borg_use_missile)
             /* set damage to zero, force borg to melee attack */
@@ -6449,7 +6357,6 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
             {
                 /* Stop at unknown grids (see above) */
                 /* note if beam, dispel, this is the end of the beam */
-//                if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5)  !FIX !AJG !TODO why level check?
                 if (ag->feat == FEAT_NONE)
                 {
                     if (rad != -1 && rad != 10)
@@ -6506,7 +6413,6 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
 
                     /* Stop at unknown grids (see above) */
                     /* note if beam, dispel, this is the end of the beam */
-//                    if (ag->feat == FEAT_NONE && borg_skill[BI_CLEVEL] < 5) !FIX !TODO !AJG why level?
                     if (ag->feat == FEAT_NONE)
                     {
                         if (rad != -1 && rad != 10)
@@ -6786,25 +6692,26 @@ static int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_locatio
     return (b_n);
 }
 
-
-
-
 /*
- * Simulate/Apply the optimal result of launching a normal missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
+ * Simulate/Apply the optimal result of launching a missile
  */
 static int borg_attack_aux_launch(void)
 {
-    int b_n = 0;
+    int n, b_n = 0;
 
     int k, b_k = -1;
     int d, b_d = -1;
-
+    int v, b_v = -1;
 
     borg_item* bow = &borg_items[INVEN_BOW];
 
-    /* Scan the pack */
+    /* skip if we don't have a bow */
+    if (!bow || bow->iqty == 0) return 0;
+
+    /* No firing while blind, confused, or hallucinating */
+    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
+
+    /* Scan the quiver */
     for (k = QUIVER_START; k < QUIVER_END; k++)
     {
 
@@ -6813,11 +6720,8 @@ static int borg_attack_aux_launch(void)
         /* Skip empty items */
         if (!item->iqty) break;
 
-        /* Skip Ego branded items--they are looked at later */
-        if (item->ego_idx) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
+        /* Skip missiles that don't match the bow */
+        if (item->tval != borg_skill[BI_AMMO_TVAL]) continue;
 
         /* Skip worthless missiles */
         if (item->value <= 0) continue;
@@ -6826,6 +6730,8 @@ static int borg_attack_aux_launch(void)
         d = (item->dd * (item->ds + 1) / 2);
         d = d + item->to_d + bow->to_d;
         d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
+
+        v = item->value;
 
         /* Boost the perceived damage on unID'd ones so he can get a quick pseudoID on it */
         if (borg_item_note_needs_id(item)) d = d * 99;
@@ -6833,1140 +6739,35 @@ static int borg_attack_aux_launch(void)
         /* Paranoia */
         if (d <= 0) continue;
 
-        if ((b_k >= 0) && (d <= b_d)) continue;
+        /* Choose optimal target of bolt */
+        n = borg_launch_bolt(0, d, BORG_ATTACK_ARROW, 6 + 2 * borg_skill[BI_AMMO_POWER], k);
 
-        b_k = k;
-        b_d = d;
+        /* if two attacks are equal, pick the cheaper ammo */
+        if (n == b_n && v >= b_v)
+            continue;
+
+        if (n >= b_n)
+        {
+            b_d = d;
+            b_n = n;
+            b_v = v;
+            b_k = k;
+        }
     }
 
     /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
+    if (b_n < 0) return (0);
 
     /* Simulation */
     if (borg_simulate) return (b_n);
 
-
     /* Do it */
-    borg_note(format("# Firing standard missile '%s'",
-        borg_items[b_k].desc));
+    borg_note(format("# Firing missile '%s'", borg_items[b_k].desc));
 
     /* Fire */
     borg_keypress('f');
 
     /* Use the missile from the quiver */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a SEEKER missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_seeker(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        /* Skip non-seekers items--they are looked at later */
-        if (item->sval != sv_arrow_seeker && item->sval != sv_bolt_seeker) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_SEEKER, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-    /* Do it */
-    borg_note(format("# Firing seeker missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a MITHRIL missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_mithril(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        /* Skip non-seekers items--they are looked at later */
-        if (item->sval != sv_arrow_mithril && item->sval != sv_bolt_mithril) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_SILVER, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-    /* Do it */
-    borg_note(format("# Firing silver missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_flame(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->brands[ELEM_FIRE]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_FLAME, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing flame branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_frost(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->brands[ELEM_COLD]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_FROST, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing frost branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_venom(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->brands[ELEM_POIS]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_POISON, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing venom branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_holy(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_EVIL]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_HOLY, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing holy branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_animal(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_ANIMAL]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Skip un-identified, non-average, missiles */
-        if (borg_item_note_needs_id(item)) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_ANIMAL, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing animal missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_undead(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_UNDEAD]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_UNDEAD, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing undead missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_demon(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_DEMON]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_DEMON, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing demon missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_orc(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_ORC]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_ORC, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing orc missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_troll(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_TROLL]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_TROLL, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing troll missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_giant(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_GIANT]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_GIANT, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing giant missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_dragon(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_DRAGON]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_DRAGON, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing dragon branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
-    borg_keypress(((b_k - QUIVER_START) + '0'));
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -2;
-
-    /* Value */
-    return (b_n);
-}
-
-/*
- * Simulate/Apply the optimal result of launching a branded missile
- *
- * First, pick the "optimal" ammo, then pick the optimal target
- */
-static int borg_attack_aux_launch_evil(void)
-{
-    int b_n = 0;
-
-    int k, b_k = -1;
-    int d, b_d = -1;
-
-    borg_item* bow = &borg_items[INVEN_BOW];
-
-    /* Scan the pack */
-    for (k = QUIVER_START; k < QUIVER_END; k++)
-    {
-        borg_item* item = &borg_items[k];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        if (!item->slays[RF_EVIL]) continue;
-
-        /* Skip bad missiles */
-        if (item->tval != borg_skill[BI_AMMO_TVAL] ) continue;
-
-        /* Skip worthless missiles */
-        if (item->value <= 0) continue;
-
-        /* Determine average damage */
-        d = (item->dd * (item->ds + 1) / 2);
-        d = d + item->to_d + bow->to_d;
-        d = d * borg_skill[BI_AMMO_POWER] * borg_skill[BI_SHOTS];
-
-
-        /* Paranoia */
-        if (d <= 0) continue;
-
-        if ((b_k >= 0) && (d <= b_d)) continue;
-
-        b_k = k;
-        b_d = d;
-    }
-
-    /* Nothing to use */
-    if (b_k < 0) return (0);
-
-
-    /* No firing while blind, confused, or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISIMAGE]) return (0);
-
-    /* Choose optimal type of bolt */
-    b_n = borg_launch_bolt(0, b_d, BORG_ATTACK_ARROW_EVIL, 6 + 2 * borg_skill[BI_AMMO_POWER], b_k);
-
-    /* Simulation */
-    if (borg_simulate) return (b_n);
-
-
-    /* Do it */
-    borg_note(format("# Firing evil branded missile '%s'",
-        borg_items[b_k].desc));
-
-    /* Fire */
-    borg_keypress('f');
-
-    /* Use the missile */
     borg_keypress(((b_k - QUIVER_START) + '0'));
 
     /* Use target */
@@ -9556,65 +8357,9 @@ static int borg_attack_aux(int what)
     case BF_THRUST:
     return (borg_attack_aux_thrust());
 
-    /* Missile attack */
-    case BF_LAUNCH_NORMAL:
+    /* Fired missile attack */
+    case BF_LAUNCH:
     return (borg_attack_aux_launch());
-
-    /* Missile attack */
-    case BF_LAUNCH_SEEKER:
-    return (borg_attack_aux_launch_seeker());
-
-    /* Missile attack */
-    case BF_LAUNCH_MITHRIL:
-    return (borg_attack_aux_launch_mithril());
-
-    /* Missile attack */
-    case BF_LAUNCH_FLAME:
-    return (borg_attack_aux_launch_flame());
-
-    /* Missile attack */
-    case BF_LAUNCH_FROST:
-    return (borg_attack_aux_launch_frost());
-
-    /* Missile attack */
-    case BF_LAUNCH_ANIMAL:
-    return (borg_attack_aux_launch_animal());
-
-    /* Missile attack */
-    case BF_LAUNCH_UNDEAD:
-    return (borg_attack_aux_launch_undead());
-
-    /* Missile attack */
-    case BF_LAUNCH_DEMON:
-    return (borg_attack_aux_launch_demon());
-
-    /* Missile attack */
-    case BF_LAUNCH_ORC:
-    return (borg_attack_aux_launch_orc());
-
-    /* Missile attack */
-    case BF_LAUNCH_TROLL:
-    return (borg_attack_aux_launch_troll());
-
-    /* Missile attack */
-    case BF_LAUNCH_GIANT:
-    return (borg_attack_aux_launch_giant());
-
-    /* Missile attack */
-    case BF_LAUNCH_DRAGON:
-    return (borg_attack_aux_launch_dragon());
-
-    /* Missile attack */
-    case BF_LAUNCH_EVIL:
-    return (borg_attack_aux_launch_evil());
-
-    /* Missile attack */
-    case BF_LAUNCH_VENOM:
-    return (borg_attack_aux_launch_venom());
-
-    /* Missile attack */
-    case BF_LAUNCH_HOLY:
-    return (borg_attack_aux_launch_holy());
 
     /* Object attack */
     case BF_OBJECT:
@@ -12988,7 +11733,7 @@ static int borg_defend_aux_banishment(int p1)
     using_artifact = borg_equips_artifact("LOSKILL", true) && borg_has[BI_CURHP] > 100;
 
     if (!using_artifact &&
-        !borg_spell_okay_fail(BANISHMENT, fail_allowed))
+        !borg_spell_okay_fail(BANISH_EVIL, fail_allowed))
         return (0);
 
     /* reset initial danger */
@@ -13111,7 +11856,7 @@ static int borg_defend_aux_banishment(int p1)
         if (using_artifact)
             if (borg_activate_artifact("LOSKILL"))
                 return (p1 - p2);
-        if (borg_spell(BANISHMENT))
+        if (borg_spell(BANISH_EVIL))
             return (p1 - p2);
     }
 

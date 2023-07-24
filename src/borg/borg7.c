@@ -1169,8 +1169,8 @@ static bool borg_brand_weapon(void)
         {
             borg_item *item = &borg_items[i];
 
-            /* Only enchant if qty >= 5 */
-            if (item->iqty < 5) continue;
+            /* Only enchant if qty >= 20 */
+            if (item->iqty < 20) continue;
 
             /* Skip non-identified items  */
             if (!item->ident) continue;
