@@ -64,6 +64,21 @@ jobs:
           makerom -v -f cia -o $"progname".cia -target t -i "$progname".cxi:0:0 -ignoresign -icon src/nds/icon.smdh
           popd
 
+  blocksds:
+    name: Nintendo DS (BlocksDS)
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v3
+
+      - name: Build
+        shell: bash
+        run: |
+          pushd src/
+          make -f Makefile.blocksds
+          popd
+
   nds:
     name: Nintendo DS
     runs-on: ubuntu-latest

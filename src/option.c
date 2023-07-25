@@ -322,6 +322,7 @@ bool options_restore_custom(struct player_options *opts, int page)
 			}
 			++opt;
 		}
+		++linenum;
 	}
 
 	if (!file_close(f)) {

@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: CC0-1.0
+#
+# SPDX-FileContributor: Antonio Niño Díaz, 2023
+
+BLOCKSDS	?= /opt/blocksds/core
+BLOCKSDSEXT	?= /opt/blocksds/external
+
+# Use Makefile.src to not include any of the dependencies or rules
+include Makefile.src
+
+# Set default goal to be "all", because Makefile.src messes that up
+.DEFAULT_GOAL           :=      all
+
+export TARGET           :=      $(PROGNAME)
+export TOPDIR           :=      $(CURDIR)
+
+# Export object lists for access in arm9 Makefile
+# (directly including Makefile.src there messes up our default targets)
+export ANGFILES         :=      $(ANGFILES)
+export ZFILES           :=      $(ZFILES)
+
+# User config
+# ===========
+
+NAME			:= angband
+
+GAME_TITLE		:= Angband
+GAME_DESCRIPTION	:= Dungeon exploration
+GAME_AUTHOR		:= The Angband team
+GAME_ICON		:= nds/att-32.png
+
+# Source code paths
+# -----------------
+
+NITROFATDIR	:=
+
+# Tools
+# -----
+
+MAKE		:= make
+RM		:= rm -rf
+
+# Verbose flag
+# ------------
+
+ifeq ($(VERBOSE),1)
+V		:=
+else
+V		:= @
+endif
+
+# Build artfacts
+# --------------
+
+NITROFAT_IMG	:= build/nitrofat.bin
+ROM		:= $(NAME).nds
+
+# Targets
+# -------
+
+.PHONY: all clean arm9 arm7
+
+all: $(ROM)
+
+clean:
+	@echo "  CLEAN"
+	$(V)$(MAKE) -f Makefile.blocksds.arm9 clean --no-print-directory
+	$(V)$(MAKE) -f Makefile.blocksds.arm7 clean --no-print-directory
+	$(V)$(RM) $(ROM) build
+
+arm9:
+	$(V)+$(MAKE) -f Makefile.blocksds.arm9 --no-print-directory
+
+arm7:
+	$(V)+$(MAKE) -f Makefile.blocksds.arm7 --no-print-directory
+
+ifneq ($(strip $(NITROFATDIR)),)
+# Additional arguments for ndstool
+NDSTOOL_FAT	:= -F $(NITROFAT_IMG)
+
+$(NITROFAT_IMG): $(NITROFATDIR)
+	@echo "  MKFATIMG $@ $(NITROFATDIR)"
+	$(V)$(BLOCKSDS)/tools/mkfatimg/mkfatimg -t $(NITROFATDIR) $@ 0
+
+# Make the NDS ROM depend on the filesystem image only if it is needed
+$(ROM): $(NITROFAT_IMG)
+endif
+
+# Combine the title strings
+ifeq ($(strip $(GAME_SUBTITLE)),)
+    GAME_FULL_TITLE := $(GAME_TITLE);$(GAME_AUTHOR)
+else
+    GAME_FULL_TITLE := $(GAME_TITLE);$(GAME_SUBTITLE);$(GAME_AUTHOR)
+endif
+
+$(ROM): arm9 arm7
+	@echo "  NDSTOOL $@"
+	$(V)$(BLOCKSDS)/tools/ndstool/ndstool -c $@ \
+		-7 blocksds-build/arm7.elf -9 blocksds-build/arm9.elf \
+		-b $(GAME_ICON) "$(GAME_FULL_TITLE)" \
+		$(NDSTOOL_FAT)
