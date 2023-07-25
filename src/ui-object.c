@@ -1251,7 +1251,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		z_info->floor_size;
 
 	floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
-	throwing_list = mem_zalloc(throwing_max * sizeof(*floor_list));
+	throwing_list = mem_zalloc(throwing_max * sizeof(*throwing_list));
 	olist_mode = 0;
 	item_mode = mode;
 	item_cmd = cmd;
