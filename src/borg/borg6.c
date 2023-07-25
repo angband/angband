@@ -6700,7 +6700,7 @@ static int borg_attack_aux_launch(void)
     int n, b_n = 0;
 
     int k, b_k = -1;
-    int d, b_d = -1;
+    int d = -1;
     int v, b_v = -1;
 
     borg_item* bow = &borg_items[INVEN_BOW];
@@ -6748,7 +6748,6 @@ static int borg_attack_aux_launch(void)
 
         if (n >= b_n)
         {
-            b_d = d;
             b_n = n;
             b_v = v;
             b_k = k;
