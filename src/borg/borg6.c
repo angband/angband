@@ -14451,6 +14451,13 @@ static bool borg_play_step(int y2, int x2)
         {
             struct object* o_ptr = square_object(cave, loc(x2, y2));
 
+            /* this should only happen when something picks up the chest */
+            /* outside the borgs view.  */
+            if (!o_ptr)
+            {
+                borg_delete_take(ag->take);
+                return false;
+            }
 
             /* Traps. Disarm it w/ fail check */
             if (o_ptr->pval > 1 && o_ptr->known &&
