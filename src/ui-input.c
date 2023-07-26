@@ -1429,7 +1429,8 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
 		inkey_scan = SCAN_OFF;
 
 		if (ke.type == EVT_NONE ||
-			(ke.type == EVT_KBRD && target_dir(ke.key) == 0)) {
+				(ke.type == EVT_KBRD
+				&& !target_dir_allow(ke.key, allow_5))) {
 			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
 			ke = inkey_ex();
 		}
