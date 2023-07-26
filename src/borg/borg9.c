@@ -48,7 +48,6 @@ extern bool     auto_play;
 extern bool     keep_playing;
 #endif /* bablos */
 bool            borg_cheat_death;
-bool            borg_cheating_death = false;
 
 static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
 
@@ -2615,6 +2614,11 @@ void resurrect_borg(void)
     int i;
     struct player* p = player;
 
+    /* save the existing dungeon.  It is cleared later but needs to */
+    /* be blank when  creating the new player */
+    struct chunk* sv_cave = cave;
+    cave = NULL;
+
     /* Cheat death */
     player->is_dead = false;
     borg_skill[BI_MAXDEPTH] = 0;
@@ -2679,8 +2683,9 @@ void resurrect_borg(void)
         p_class = player_id2class(randint0(MAX_CLASSES));
     player_generate(player, p_race, p_class, false);
 
-    /* The dungeon is not ready */
+    /* The dungeon is not ready nor is the player */
     character_dungeon = false;
+    character_generated = false;
 
     /* Start in town */
     player->depth = 0;
@@ -2793,6 +2798,11 @@ void resurrect_borg(void)
     player->chp = player->mhp;
     player->csp = player->msp;
 
+    /* restore the cave */
+    cave = sv_cave;
+
+    /* the new player is now ready */
+    character_generated = true;
 
     /* Mark savefile as borg cheater */
     if (!(player->noscore & NOSCORE_BORG)) player->noscore |= NOSCORE_BORG;
@@ -2972,33 +2982,12 @@ static struct keypress borg_inkey_hack(int flush_first)
         borg_enter_score();
 #endif
 
+        resurrect_borg();
 #endif /* BABLOS */
-
-        /* Cheat death */
-        borg_cheating_death = true;
 
         key.code = 'n';
         return key;
     }
-
-
-    /* do the actual resurrection in town */
-    if (borg_cheating_death && player->depth == 0)
-    {
-        borg_cheating_death = false;
-
-        /* Reset death flag */
-        player->is_dead = false;
-#ifndef BABLOS
-        /* Reset the player game data then resurrect a new player */
-        resurrect_borg();
-#endif /* bablos */
-
-        /* Clear the message */
-        key.code = ' ';
-        return key;
-    }
-
 
     /* with 292, there is a flush(0, 0, 0) introduced as it asks for confirmation.
      * This flush is messing up the borg.  This will allow the borg to
