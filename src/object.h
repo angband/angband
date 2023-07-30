@@ -6,7 +6,6 @@
 #define INCLUDED_OBJECT_H
 
 #include "z-type.h"
-#include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"
@@ -237,8 +236,8 @@ struct object_kind {
 
 	/** Also saved in savefile **/
 
-	quark_t note_aware; 	/**< Autoinscription quark number */
-	quark_t note_unaware; 	/**< Autoinscription quark number */
+	char *note_aware; 	/**< Autoinscription */
+	char *note_unaware; 	/**< Autoinscription */
 
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */
@@ -468,7 +467,7 @@ struct object {
 	uint8_t origin_depth;		/**< What depth the item was found at */
 	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
-	quark_t note; 			/**< Inscription index */
+	char *note; 			/**< Inscription */
 };
 
 /**

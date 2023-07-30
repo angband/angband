@@ -2112,7 +2112,7 @@ static const char *rune_group_text[] =
 static void display_rune(int col, int row, bool cursor, int oid )
 {
 	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	const char *inscrip = quark_str(rune_note(oid));
+	const char *inscrip = rune_note(oid);
 
 	c_prt(attr, rune_name(oid), row, col);
 
@@ -2181,7 +2181,7 @@ static void rune_xtra_act(struct keypress ch, int oid)
 		/* Default note */
 		if (rune_note(oid))
 			strnfmt(note_text, sizeof(note_text), "%s",
-					quark_str(rune_note(oid)));
+					rune_note(oid));
 
 		/* Get an inscription */
 		if (askfor_aux(note_text, sizeof(note_text), NULL)) {

@@ -20,7 +20,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -34,7 +34,7 @@ depgen:
 ./cave/scatter.o: cave/scatter.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../cave.h ../z-type.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \
- ../init.h ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-quark.h \
+ ../init.h ../z-file.h ../z-rand.h ../datafile.h ../object.h \
  ../z-dice.h ../z-expression.h ../obj-properties.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
  ../list-object-modifiers.h ../list-elements.h ../list-origins.h \
@@ -43,7 +43,7 @@ depgen:
  ../h-basic.h ../obj-properties.h ../z-file.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../z-dice.h ../z-rand.h ../z-expression.h \
  ../obj-properties.h ../list-elements.h ../list-origins.h ../cmds.h \
  ../cave.h ../list-square-flags.h ../list-terrain-flags.h ../cmd-core.h \
  ../object.h ../ui-keymap.h ../ui-event.h ../ui-game.h ../game-event.h \
@@ -51,7 +51,7 @@ depgen:
 ./effects/chain.o: effects/chain.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../cave.h ../z-type.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \
- ../effects.h ../source.h ../object.h ../z-quark.h ../z-dice.h \
+ ../effects.h ../source.h ../object.h ../z-dice.h \
  ../z-rand.h ../z-expression.h ../obj-properties.h ../z-file.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
@@ -68,7 +68,7 @@ depgen:
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
  ../list-terrain-flags.h ../effects.h ../source.h ../object.h \
- ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../z-dice.h ../z-rand.h ../z-expression.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../player-attack.h ../cmd-core.h \
@@ -82,7 +82,7 @@ depgen:
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
  ../list-terrain-flags.h ../effects.h ../source.h ../object.h \
- ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../z-dice.h ../z-rand.h ../z-expression.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../player-attack.h ../cmd-core.h \
@@ -94,7 +94,7 @@ depgen:
  ../obj-util.h ../player-birth.h ../player-util.h
 ./effects/info.o: effects/info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../effects.h ../source.h ../object.h \
- ../z-type.h ../z-quark.h ../z-bitflag.h ../z-form.h ../z-virt.h \
+ ../z-type.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-dice.h ../z-rand.h ../z-expression.h ../obj-properties.h \
  ../z-file.h ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
@@ -108,7 +108,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -126,7 +126,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -144,7 +144,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -160,7 +160,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -177,7 +177,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -193,7 +193,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -209,7 +209,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -225,7 +225,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -241,7 +241,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -257,7 +257,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -275,7 +275,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -289,7 +289,7 @@ depgen:
 ./parse/c-info.o: parse/c-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h \
@@ -301,7 +301,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -317,7 +317,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -329,7 +329,7 @@ depgen:
 ./parse/flavor.o: parse/flavor.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../obj-tval.h \
@@ -337,7 +337,7 @@ depgen:
 ./parse/graphics.o: parse/graphics.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../game-event.h ../z-type.h ../init.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../z-file.h ../z-rand.h \
- ../datafile.h ../object.h ../z-quark.h ../z-dice.h ../z-expression.h \
+ ../datafile.h ../object.h ../z-dice.h ../z-expression.h \
  ../obj-properties.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../parser.h ../list-parser-errors.h \
@@ -352,7 +352,7 @@ depgen:
 ./parse/h-info.o: parse/h-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../player.h \
@@ -363,7 +363,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -375,7 +375,7 @@ depgen:
 ./parse/lore.o: parse/lore.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../init.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../z-file.h ../z-rand.h ../datafile.h ../object.h \
- ../z-type.h ../z-quark.h ../z-dice.h ../z-expression.h \
+ ../z-type.h ../z-dice.h ../z-expression.h \
  ../obj-properties.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../parser.h ../list-parser-errors.h \
@@ -383,14 +383,14 @@ depgen:
 ./parse/names.o: parse/names.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../randname.h
 ./parse/p-info.o: parse/p-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../player.h \
@@ -404,7 +404,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -414,7 +414,7 @@ depgen:
  ../list-mon-spells.h ../monster.h ../obj-tval.h ../player.h \
  ../player-calcs.h ../project.h ../source.h ../list-projections.h
 ./parse/readstore.o: parse/readstore.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h ../object.h ../z-type.h ../z-quark.h ../z-bitflag.h \
+ ../h-basic.h ../object.h ../z-type.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../z-dice.h ../z-rand.h ../z-expression.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
@@ -424,7 +424,7 @@ depgen:
 ./parse/v-info.o: parse/v-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-expression.h ../obj-properties.h \
+ ../z-dice.h ../z-expression.h ../obj-properties.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../cave.h \
@@ -439,7 +439,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -454,7 +454,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -472,7 +472,7 @@ depgen:
  ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
- ../object.h ../z-quark.h ../z-dice.h ../z-expression.h \
+ ../object.h ../z-dice.h ../z-expression.h \
  ../list-elements.h ../list-origins.h ../option.h ../list-options.h \
  ../list-player-flags.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
  ../list-mon-spells.h ../list-room-flags.h ../init.h ../datafile.h \
@@ -480,8 +480,7 @@ depgen:
  ../list-equip-slots.h ../obj-knowledge.h ../angband.h ../z-color.h \
  ../z-util.h ../config.h ../game-event.h ../message.h ../list-message.h \
  ../obj-make.h ../obj-pile.h ../obj-properties.h ../obj-tval.h \
- ../obj-util.h ../player-birth.h ../cmd-core.h ../player-calcs.h \
- ../z-quark.h
+ ../obj-util.h ../player-birth.h ../cmd-core.h ../player-calcs.h
 ./player/combine-pack.o: player/combine-pack.c unit-test.h unit-test-types.h \
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
@@ -490,7 +489,7 @@ depgen:
  ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
- ../object.h ../z-quark.h ../z-dice.h ../z-expression.h \
+ ../object.h ../z-dice.h ../z-expression.h \
  ../list-elements.h ../list-origins.h ../option.h ../list-options.h \
  ../list-player-flags.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
  ../list-mon-spells.h ../list-room-flags.h ../init.h ../datafile.h \
@@ -498,19 +497,19 @@ depgen:
  ../list-equip-slots.h ../obj-knowledge.h ../angband.h ../z-color.h \
  ../z-util.h ../config.h ../game-event.h ../message.h ../list-message.h \
  ../obj-make.h ../obj-pile.h ../obj-tval.h ../obj-util.h \
- ../player-birth.h ../cmd-core.h ../player-calcs.h ../z-quark.h
+ ../player-birth.h ../cmd-core.h ../player-calcs.h
 ./player/history.o: player/history.c ../player.h ../guid.h ../obj-properties.h \
  ../z-file.h ../h-basic.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../object.h ../z-type.h \
- ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../z-dice.h ../z-rand.h ../z-expression.h \
  ../list-elements.h ../list-origins.h ../option.h ../list-options.h \
  ../list-player-flags.h ../player-birth.h ../cmd-core.h unit-test.h \
  unit-test-types.h ../z-util.h
 ./player/inven-carry-num.o: player/inven-carry-num.c test-utils.h unit-test.h \
  unit-test-types.h ../z-util.h ../h-basic.h ../init.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../z-file.h ../z-rand.h ../datafile.h \
- ../object.h ../z-type.h ../z-quark.h ../z-dice.h ../z-expression.h \
+ ../object.h ../z-type.h ../z-dice.h ../z-expression.h \
  ../obj-properties.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../parser.h ../list-parser-errors.h \
@@ -524,7 +523,7 @@ depgen:
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
  ../list-terrain-flags.h ../effects.h ../source.h ../object.h \
- ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../z-dice.h ../z-rand.h ../z-expression.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../player-attack.h ../cmd-core.h \
@@ -537,7 +536,7 @@ depgen:
  ../mon-make.h ../obj-curse.h ../obj-gear.h ../list-equip-slots.h \
  ../obj-knowledge.h ../angband.h ../z-color.h ../z-util.h ../config.h \
  ../game-event.h ../message.h ../list-message.h ../obj-make.h \
- ../obj-pile.h ../obj-tval.h ../obj-util.h ../player-birth.h ../z-quark.h
+ ../obj-pile.h ../obj-tval.h ../obj-util.h ../player-birth.h
 ./player/pathfind.o: player/pathfind.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../cave.h ../z-type.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \
@@ -548,7 +547,7 @@ depgen:
  ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
  ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
+ ../list-object-modifiers.h ../object.h ../z-dice.h \
  ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
  ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
  ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
@@ -564,19 +563,17 @@ depgen:
  ../h-basic.h ../z-dice.h ../z-rand.h ../z-expression.h
 ./z-expression/expression.o: z-expression/expression.c unit-test.h unit-test-types.h \
  ../z-util.h ../h-basic.h ../z-expression.h
-./z-quark/quark.o: z-quark/quark.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h ../z-quark.h
 ./z-textblock/textblock.o: z-textblock/textblock.c unit-test.h unit-test-types.h \
  ../z-util.h ../h-basic.h ../z-color.h ../z-textblock.h ../z-file.h
 ./z-util/util.o: z-util/util.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h ../z-quark.h
+ ../h-basic.h
 ./z-virt/mem.o: z-virt/mem.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../z-virt.h
 ./z-virt/string.o: z-virt/string.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../z-virt.h
 ./test-utils.o: test-utils.c ../h-basic.h ../config.h ../init.h \
  ../h-basic.h ../z-bitflag.h ../z-form.h ../z-virt.h ../z-file.h \
- ../z-rand.h ../datafile.h ../object.h ../z-type.h ../z-quark.h \
+ ../z-rand.h ../datafile.h ../object.h ../z-type.h \
  ../z-dice.h ../z-expression.h ../obj-properties.h ../list-tvals.h \
  ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
  ../list-object-modifiers.h ../list-elements.h ../list-origins.h \

@@ -75,7 +75,6 @@ layer provides:
 ``z-form``          String formatting
 ``z-msg``           Rich messages
 ``z-msg``           Message buffering -lis
-``z-quark``         String interning
 ``z-queue``         Queues
 ``z-rand``          Randomness
 ``z-textblock``     Wrapped text

@@ -16,7 +16,6 @@
 #include "obj-util.h"
 #include "player-birth.h"
 #include "player-calcs.h"
-#include "z-quark.h"
 
 /*
  * This is the maximum number of things (one of which will be a sentinel
@@ -108,7 +107,7 @@ static bool populate_gear(const struct in_slot_desc *slots) {
 		obj->origin = slots->origin;
 		obj->origin_depth = slots->origin_depth;
 		if (slots->inscrip && slots->inscrip[0] != '\0') {
-			obj->note = quark_add(slots->inscrip);
+			obj->note = string_make(slots->inscrip);
 		}
 		obj->known = object_new();
 		object_set_base_known(player, obj);

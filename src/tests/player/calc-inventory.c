@@ -17,7 +17,6 @@
 #include "obj-util.h"
 #include "player-birth.h"
 #include "player-calcs.h"
-#include "z-quark.h"
 
 /*
  * This is the maximum number of things (one of which will be a sentinel
@@ -377,7 +376,7 @@ static int test_calc_inventory_only_quiver(void *state) {
 	while (obj) {
 		if (obj->tval == TV_POLEARM) {
 			require(of_has(obj->flags, OF_THROWING));
-			obj->note = quark_add("@v1");
+			obj->note = string_make("@v1");
 			quiver_size += z_info->thrown_quiver_mult * obj->number;
 		} else {
 			quiver_size += obj->number;
@@ -463,7 +462,7 @@ static int test_calc_inventory_equipped_pack_quiver(void *state) {
 	while (obj) {
 		if (obj->tval == TV_SWORD) {
 			require(of_has(obj->flags, OF_THROWING));
-			obj->note = quark_add("@v2");
+			obj->note = string_make("@v2");
 			quiver_size += z_info->thrown_quiver_mult * obj->number;
 		} else if (tval_is_ammo(obj)) {
 			quiver_size += obj->number;
@@ -587,10 +586,10 @@ static int test_calc_inventory_oversubscribed_quiver_slot(void *state) {
 	quiver_size = 0;
 	while (obj) {
 		if (tval_is_ammo(obj)) {
-			obj->note = quark_add(format("@f%d", i / 2));
+			obj->note = string_make(format("@f%d", i / 2));
 			quiver_size += obj->number;
 		} else {
-			obj->note = quark_add(format("@v%d", i / 2));
+			obj->note = string_make(format("@v%d", i / 2));
 			if (i % 2 == 0) {
 				quiver_size += z_info->thrown_quiver_mult *
 					obj->number;
@@ -628,7 +627,7 @@ static int test_calc_inventory_quiver_split_pile(void *state) {
 	require(flush_gear());
 	require(populate_gear(this_test_case.gear_in));
 	/* Inscribe the flasks so they want to go to the quiver. */
-	player->gear->note = quark_add("@v1");
+	player->gear->note = string_make("@v1");
 	calc_inventory(player);
 	require(verify_pack(player, this_test_case.pack_out, 1));
 	require(verify_quiver(player, this_test_case.quiv_out));
@@ -653,7 +652,7 @@ static int test_calc_inventory_equipped_throwing_inscribed(void *state) {
 	require(flush_gear());
 	require(populate_gear(this_test_case.gear_in));
 	/* Inscribe the dagger so it would go to the quiver if not equipped. */
-	player->gear->note = quark_add("@v1");
+	player->gear->note = string_make("@v1");
 	calc_inventory(player);
 	require(verify_pack(player, this_test_case.pack_out, 0));
 	require(verify_quiver(player, this_test_case.quiv_out));

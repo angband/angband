@@ -1,4 +1,4 @@
-/* z-quark/quark.c */
+/* z-textblock/textblock.c */
 
 #include "unit-test.h"
 #include "z-color.h"

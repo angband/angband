@@ -1,7 +1,6 @@
-/* z-quark/quark.c */
+/* z-util/util.c */
 
 #include "unit-test.h"
-#include "z-quark.h"
 
 int setup_tests(void **state) {
 	return 0;

@@ -703,7 +703,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 		if (!obj->note) continue;
 
 		/* Find a '@' */
-		s = strchr(quark_str(obj->note), '@');
+		s = strchr(obj->note, '@');
 
 		/* Process all tags */
 		while (s) {

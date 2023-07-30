@@ -1396,7 +1396,7 @@ int preferred_quiver_slot(const struct object *obj)
 
 	if (obj->note && (tval_is_ammo(obj) ||
 			of_has(obj->flags, OF_THROWING))) {
-		const char *s = strchr(quark_str(obj->note), '@');
+		const char *s = strchr(obj->note, '@');
 		char fire_key, throw_key;
 
 		/*

@@ -175,16 +175,16 @@ static void rune_add_autoinscription(struct object *obj, int i)
 
 	/* No autoinscription, or already there, don't bother */
 	if (!rune_note(i)) return;
-	if (obj->note && strstr(quark_str(obj->note), quark_str(rune_note(i))))
+	if (obj->note && strstr(obj->note, rune_note(i)))
 		return;
 
 	/* Extend any current note */
 	if (obj->note)
-		my_strcpy(current_note, quark_str(obj->note), sizeof(current_note));
-	my_strcat(current_note, quark_str(rune_note(i)), sizeof(current_note));
+		my_strcpy(current_note, obj->note, sizeof(current_note));
+	my_strcat(current_note, rune_note(i), sizeof(current_note));
 
 	/* Add the inscription */
-	obj->note = quark_add(current_note);
+	obj->note = string_make(current_note);
 }
 
 /**
@@ -231,9 +231,9 @@ const char *get_autoinscription(struct object_kind *kind, bool aware)
 	if (!kind)
 		return NULL;
 	else if (aware)
-		return quark_str(kind->note_aware);
+		return kind->note_aware;
 	else 
-		return quark_str(kind->note_unaware);
+		return kind->note_unaware;
 }
 
 /**
@@ -246,9 +246,10 @@ int apply_autoinscription(struct player *p, struct object *obj)
 	const char *note = obj ? get_autoinscription(obj->kind, aware) : NULL;
 
 	/* Remove unaware inscription if aware */
-	if (aware && quark_str(obj->note) && quark_str(obj->kind->note_unaware) &&
-		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
-		obj->note = 0;
+	if (aware && obj->note && obj->kind->note_unaware &&
+		streq(obj->note, obj->kind->note_unaware)) {
+		string_free(obj->note);
+	}
 
 	/* Make rune autoinscription go first, for now */
 	runes_autoinscribe(p, obj);
@@ -273,9 +274,11 @@ int apply_autoinscription(struct player *p, struct object *obj)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL, p);
 
 	if (note[0] != 0)
-		obj->note = quark_add(note);
-	else
-		obj->note = 0;
+		obj->note = string_make(note);
+	else {
+		string_free(obj->note);
+		obj->note = NULL;
+	}
 
 	msg("You autoinscribe %s.", o_name);
 
@@ -322,9 +325,9 @@ int add_autoinscription(int16_t kind, const char *inscription, bool aware)
 	if (!inscription)
 		return remove_autoinscription(kind);
 	if (aware)
-		k->note_aware = quark_add(inscription);
+		k->note_aware = string_make(inscription);
 	else
-		k->note_unaware = quark_add(inscription);
+		k->note_unaware = string_make(inscription);
 	return 1;
 }
 
@@ -660,15 +663,15 @@ void ignore_drop(struct player *p)
 				if (!verify_object("Really take off and drop", obj, p)) {
 					/* Hack - inscribe the item with !d to prevent repeated
 					 * confirmations. */
-					const char *inscription = quark_str(obj->note);
+					const char *inscription = obj->note;
 
 					if (inscription == NULL) {
-						obj->note = quark_add("!d");
+						obj->note = string_make("!d");
 					} else {
 						char buffer[1024];
 						my_strcpy(buffer, inscription, sizeof(buffer));
 						my_strcat(buffer, "!d", sizeof(buffer));
-						obj->note = quark_add(buffer);
+						obj->note = string_make(buffer);
 					}
 
 					continue;

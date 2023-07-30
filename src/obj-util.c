@@ -343,14 +343,10 @@ unsigned check_for_inscrip(const struct object *obj, const char *inscrip)
 	unsigned i = 0;
 	const char *s;
 
-	if (!obj->note) return 0;
+	if (!obj->note)
+		return 0;
 
-	s = quark_str(obj->note);
-
-	/* Needing this implies there are bad instances of obj->note around,
-	 * but I haven't been able to track down their origins - NRM */
-	if (!s) return 0;
-
+	s = obj->note;
 	do {
 		s = strstr(s, inscrip);
 		if (!s) break;
@@ -375,13 +371,10 @@ unsigned check_for_inscrip_with_int(const struct object *obj, const char *inscri
 	size_t inlen = strlen(inscrip);
 	const char *s;
 
-	if (!obj->note) return 0;
+	if (!obj->note)
+		return 0;
 
-	s = quark_str(obj->note);
-
-	/* Needing this implies there are bad instances of obj->note around,
-	 * but I haven't been able to track down their origins - NRM */
-	if (!s) return 0;
+	s = obj->note;
 
 	do {
 		s = strstr(s, inscrip);

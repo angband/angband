@@ -288,7 +288,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/z-expression.c
         src/z-file.c
         src/z-form.c
-        src/z-quark.c
         src/z-queue.c
         src/z-rand.c
         src/z-textblock.c

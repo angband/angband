@@ -131,14 +131,14 @@ static void init_rune(void)
 	rune_list = mem_zalloc(rune_max * sizeof(struct rune));
 	count = 0;
 	for (i = 0; i < COMBAT_RUNE_MAX; i++) {
-		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, 0, c_rune[i] };
+		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, NULL, c_rune[i] };
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_MOD, i);
-		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, prop->name };
+		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, NULL, prop->name };
 	}
 	for (i = 0; i < ELEM_HIGH_MAX; i++) {
-		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, projections[i].name };
+		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, NULL, projections[i].name };
 	}
 	for (i = 1; i < z_info->brand_max; i++) {
 		bool counted = false;
@@ -150,7 +150,7 @@ static void init_rune(void)
 			}
 			if (!counted) {
 				rune_list[count++] =
-					(struct rune) { RUNE_VAR_BRAND, i, 0, brands[i].name };
+					(struct rune) { RUNE_VAR_BRAND, i, NULL, brands[i].name };
 			}
 		}
 	}
@@ -164,14 +164,14 @@ static void init_rune(void)
 			}
 			if (!counted) {
 				rune_list[count++] =
-					(struct rune) { RUNE_VAR_SLAY, i, 0, slays[i].name };
+					(struct rune) { RUNE_VAR_SLAY, i, NULL, slays[i].name };
 			}
 		}
 	}
 	for (i = 1; i < z_info->curse_max; i++) {
 		if (curses[i].name) {
 			rune_list[count++] =
-				(struct rune) { RUNE_VAR_CURSE, i, 0, curses[i].name };
+				(struct rune) { RUNE_VAR_CURSE, i, NULL, curses[i].name };
 		}
 	}
 	for (i = 1; i < OF_MAX; i++) {
@@ -182,7 +182,7 @@ static void init_rune(void)
 		if (prop->subtype == OFT_THROW) continue;
 
 		rune_list[count++] = (struct rune)
-			{ RUNE_VAR_FLAG, i, 0, prop->name };
+			{ RUNE_VAR_FLAG, i, NULL, prop->name };
 	}
 }
 
@@ -397,7 +397,7 @@ const char *rune_desc(size_t i)
 /**
  * The autoinscription index (if any) of a rune
  */
-quark_t rune_note(size_t i)
+const char *rune_note(size_t i)
 {
 	return rune_list[i].note;
 }
@@ -409,10 +409,8 @@ void rune_set_note(size_t i, const char *inscription)
 {
 	struct rune *r = &rune_list[i];
 
-	if (!inscription)
-		r->note = 0;
-	else
-		r->note = quark_add(inscription);
+	string_free(r->note);
+	r->note = string_make(inscription);
 }
 
 /**
