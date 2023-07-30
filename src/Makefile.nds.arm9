@@ -25,6 +25,9 @@ DATA		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
+#---------------------------------------------------------------------------------
+# add -DALLOW_BORG to allow the borg to run
+#---------------------------------------------------------------------------------
 CFLAGS	:=	-g -Wall -march=armv5te -mtune=arm946e-s $(ARCH)
 
 # Omit some flags for easier debugging
@@ -102,10 +105,11 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
  
 .PHONY: $(BUILD) clean
- 
+
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
+	@[ -d $@/borg ] || mkdir -p $@/borg
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.nds.arm9
  
 #---------------------------------------------------------------------------------

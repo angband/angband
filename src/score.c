@@ -291,6 +291,13 @@ void enter_score(const struct player *p, const time_t *death_time)
 	if (p->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG)) {
 		msg("Score not registered for wizards.");
 		event_signal(EVENT_MESSAGE_FLUSH);
+#ifdef ALLOW_BORG
+#ifndef SCORE_BORGS
+	}	else if (p->noscore & (NOSCORE_BORG)) {
+		msg("Score not registered for borgs.");
+		event_signal(EVENT_MESSAGE_FLUSH);
+#endif
+#endif
 	} else if (!p->total_winner && streq(p->died_from, "Interrupting")) {
 		msg("Score not registered due to interruption.");
 		event_signal(EVENT_MESSAGE_FLUSH);

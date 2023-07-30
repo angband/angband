@@ -13,7 +13,7 @@ LINK = link
 RC = rc
 # _CRT_SECURE_NO_WARNINGS is to disable deprecation warnings about strtok(),
 # localtime(), ctime(), _open(), fopen(), mbstowcs(), and wctomb().
-CFLAGS = /DWINDOWS /D_CRT_SECURE_NO_WARNINGS /W3 /GF /GA /nologo
+CFLAGS = /DWINDOWS /D_CRT_SECURE_NO_WARNINGS /W3 /GF /GA /nologo /DALLOW_BORG
 LFLAGS = /nologo
 RCFLAGS =
 LIBS = Msimg32.lib Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib \

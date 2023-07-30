@@ -295,11 +295,24 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/z-type.c
         src/z-util.c
         src/z-virt.c
+        src/borg/borg1.c
+        src/borg/borg2.c
+        src/borg/borg3.c
+        src/borg/borg4.c
+        src/borg/borg5.c
+        src/borg/borg6.c
+        src/borg/borg7.c
+        src/borg/borg8.c
+        src/borg/borg9.c
 )
 
 SET_TARGET_PROPERTIES(OurCoreLib PROPERTIES C_STANDARD 99)
 SET(ANGBAND_CORE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 SET(ANGBAND_CORE_LINK_LIBRARIES "")
+
+TARGET_INCLUDE_DIRECTORIES(OurCoreLib PRIVATE
+    ${ANGBAND_CORE_INCLUDE_DIRS}
+)
 
 IF(SUPPORT_SDL_SOUND OR SUPPORT_SDL2_SOUND)
     ADD_LIBRARY(OurSoundSupportLib OBJECT

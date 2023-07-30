@@ -78,6 +78,10 @@ struct savefile_getter_impl {
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 
+#ifdef ALLOW_BORG
+bool screensaver = false;
+#endif /* ALLOW_BORG */
+
 /**
  * Buffer to hold the current savefile name
  */
@@ -218,6 +222,9 @@ struct cmd_info cmd_hidden[] =
 	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, NULL, NULL, 1, "Debug Command: ", "That is not a valid debug command.", "Debug", -1 },
+#ifdef ALLOW_BORG
+	{ "Borg commands", { KTRL('Z') }, CMD_NULL, do_cmd_try_borg, NULL, 0, NULL, NULL, NULL, 0 },
+#endif
 };
 
 /**

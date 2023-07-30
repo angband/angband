@@ -130,4 +130,8 @@ void do_cmd_wiz_tweak_item(struct command *cmd);
 void do_cmd_wiz_wipe_recall(struct command *cmd);
 void do_cmd_wiz_wizard_light(struct command *cmd);
 
+#ifdef ALLOW_BORG
+void do_cmd_try_borg(void);
+#endif
+
 #endif

@@ -37,7 +37,16 @@ HEADERS = \
 	z-rand.h \
 	z-type.h \
 	z-util.h \
-	z-virt.h
+	z-virt.h \
+	borg/borg1.h \
+	borg/borg2.h \
+	borg/borg3.h \
+	borg/borg4.h \
+	borg/borg5.h \
+	borg/borg6.h \
+	borg/borg7.h \
+	borg/borg8.h \
+	borg/borg9.h
 
 ZFILES = \
 	z-bitflag.o \
@@ -214,6 +223,15 @@ ANGFILES0 = \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \
+	borg/borg1.o \
+	borg/borg2.o \
+	borg/borg3.o \
+	borg/borg4.o \
+	borg/borg5.o \
+	borg/borg6.o \
+	borg/borg7.o \
+	borg/borg8.o \
+	borg/borg9.o
 
 STATSMAINFILES = main-stats.o \
         stats/db.o

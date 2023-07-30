@@ -58,6 +58,9 @@ ICON		:=	nds/att-48.png
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
+#---------------------------------------------------------------------------------
+# add -DALLOW_BORG to allow the borg to run
+#---------------------------------------------------------------------------------
 CFLAGS	:=	-g -Wall -mword-relocations -ffunction-sections \
 			$(ARCH)
 
@@ -186,10 +189,10 @@ endif
 .PHONY: all clean
 
 #---------------------------------------------------------------------------------
-all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+all: $(BUILD) $(BUILD)/borg $(GFXBUILD) $(DEPSDIR) $(DEPSDIR)/borg $(ROMFS_T3XFILES) $(T3XHFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds $(PROGNAME).3dsx
 
-$(BUILD):
+$(BUILD) $(BUILD)/borg:
 	@mkdir -p $@
 
 ifneq ($(GFXBUILD),$(BUILD))
@@ -197,8 +200,8 @@ $(GFXBUILD):
 	@mkdir -p $@
 endif
 
-ifneq ($(DEPSDIR),$(BUILD))
-$(DEPSDIR):
+ifneq ($(DEPSDIR),$(BUILD))     
+$(DEPSDIR) $(DEPSDIR)/borg:
 	@mkdir -p $@
 endif
 

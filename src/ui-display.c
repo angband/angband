@@ -2139,8 +2139,13 @@ const char *window_flag_desc[32] =
 	"Display status",
 	"Display item list",
 	"Display player (topbar)",
+#ifdef ALLOW_BORG
+	"Display borg messages",
+	"Display borg status",
+#else
 	NULL,
 	NULL,
+#endif
 	NULL,
 	NULL,
 	NULL,
