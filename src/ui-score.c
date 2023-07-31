@@ -119,7 +119,6 @@ static void display_scores_aux(const struct high_score scores[], int from,
 {
 	struct keypress ch;
 	int k, count;
-	bool done = false;
 
 	/* Assume we will show the first 10 */
 	if (from < 0) from = 0;
@@ -134,45 +133,55 @@ static void display_scores_aux(const struct high_score scores[], int from,
 	/* Forget about the last entries */
 	if ((count > to) && !allow_scrolling) count = to;
 
-	/* Show 5 per page, until "done" */
-	while (!done) {
-		for (k = from; k < count; k += 5) {
-			/* Clear screen */
-			Term_clear();
+	/*
+	 * Move 5 entries at a time.  Unless scrolling is allowed, only
+	 * move forward and stop once the end is reached.
+	 */
+	k = from;
+	while (1) {
+		/* Clear screen */
+		Term_clear();
 
-			/* Title */
-			if (k > 0) {
-				put_str(format("%s Hall of Fame (from position %d)",
-							   VERSION_NAME, k + 1), 0, 21);
+		/* Title */
+		if (k > 0) {
+			put_str(format("%s Hall of Fame (from position %d)",
+				VERSION_NAME, k + 1), 0, 21);
+		} else {
+			put_str(format("%s Hall of Fame", VERSION_NAME), 0, 30);
+		}
+
+		display_score_page(scores, k, count, highlight);
+
+		/* Wait for response; prompt centered on 80 character line */
+		if (allow_scrolling) {
+			prt("[Press ESC to exit, up for prior page, any other key for next page.]", 23, 6);
+		} else {
+			prt("[Press ESC to exit, any other key to page forward till done.]", 23, 9);
+		}
+		ch = inkey();
+		prt("", 23, 0);
+
+		if (ch.code == ESCAPE) {
+			break;
+		} else if (ch.code == ARROW_UP && allow_scrolling) {
+			if (k == 0) {
+				k = count - 5;
+				while (k % 5) k++;
+			} else if (k < 5) {
+				k = 0;
 			} else {
-				put_str(format("%s Hall of Fame", VERSION_NAME), 0, 30);
+				k = k - 5;
 			}
-
-			display_score_page(scores, k, count, highlight);
-
-			/* Wait for response */
-			prt("[Press ESC to exit, up/down to scroll, any other key to continue.]", 23, 17);
-			ch = inkey();
-			if ((ch.code == ARROW_UP) && allow_scrolling) {
-				if (k == 0) {
-					k = count - 10;
-					while (k % 5) k++;
-				} else if (k < 5) {
-					k = -5;
+		} else {
+			k += 5;
+			if (k >= count) {
+				if (allow_scrolling) {
+					k = 0;
 				} else {
-					k = k - 10;
+					break;
 				}
 			}
-			prt("", 23, 0);
-
-			/* Notice Escape */
-			if (ch.code == ESCAPE) {
-				done = true;
-				break;
-			}
 		}
-		if (!allow_scrolling) done = true;
-		from = 0;
 	}
 
 	return;
