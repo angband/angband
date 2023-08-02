@@ -52,6 +52,7 @@ mk/sinclude.mk
 Release/
 src/**/*.d
 src/**/*.o
+src/**/*.dep
 src/*.d
 src/*.dep
 src/*.o
