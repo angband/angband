@@ -739,33 +739,31 @@ static bool borg_eat_food_any(void)
         if (borg_eat_food(item->tval, item->sval)) return (true);
     }
 
-    /* Scan the inventory for "potions" food */
-    for (i = 0; i < z_info->pack_size; i++)
+    /*
+     * Try potions that can provide nutrition.  First try ones that are
+     * pure nutrition without additional effects.
+     */
+    if (borg_quaff_potion(sv_potion_slime_mold)) return (true);
+    /*
+     * Then try those that, besides the nourishment, only have negative
+     * effects.  But only try if there's protection against the negative effect.
+     */
+    if (((borg_skill[BI_FRACT]) && (borg_quaff_potion(sv_potion_sleep) ||
+            borg_quaff_potion(sv_potion_slowness))) ||
+            ((borg_skill[BI_RBLIND]) && (borg_quaff_potion(sv_potion_blindness))) ||
+            ((borg_skill[BI_RCONF]) && (borg_quaff_potion(sv_potion_confusion))))
     {
-        borg_item* item = &borg_items[i];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-
-        /* Skip unknown food */
-        if (!item->kind) continue;
-
-        /* Skip non-food */
-        if (item->tval != TV_POTION) continue;
-
-        /* Consume in order, when hurting */
-        if ((borg_skill[BI_CURHP] < 4 ||
-            (borg_skill[BI_CURHP] <= borg_skill[BI_MAXHP])) &&
-            (borg_quaff_potion(sv_potion_cure_light) ||
-                borg_quaff_potion(sv_potion_cure_serious) ||
-                borg_quaff_potion(sv_potion_cure_critical) ||
-                borg_quaff_potion(sv_potion_restore_mana) ||
-                borg_quaff_potion(sv_potion_healing) ||
-                borg_quaff_potion(sv_potion_star_healing) ||
-                borg_quaff_potion(sv_potion_life)))
-        {
-            return (true);
-        }
+        return (true);
+    }
+    /* Consume in order, when hurting */
+    if ((borg_skill[BI_CURHP] < 4 ||
+        (borg_skill[BI_CURHP] <= borg_skill[BI_MAXHP])) &&
+        (borg_quaff_potion(sv_potion_cure_light) ||
+            borg_quaff_potion(sv_potion_cure_serious) ||
+            borg_quaff_potion(sv_potion_cure_critical) ||
+            borg_quaff_potion(sv_potion_healing)))
+    {
+        return (true);
     }
 
     /* Nothing */
