@@ -4121,6 +4121,7 @@ static bool borg_can_play_spell(borg_magic* as)
     case WORD_OF_DESTRUCTION:
     case GRONDS_BLOW:
     case DECOY:
+    case GLYPH_OF_WARDING:
     return false;
     default:
     break;
