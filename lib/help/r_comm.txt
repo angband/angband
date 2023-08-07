@@ -59,7 +59,7 @@ combination and does not pass it on.
   ,    Run                             ^w   (special - wizard mode)
   <    Go up staircase                 ^x   Save and quit
   .    Stay still (with pickup)        ^y   (alter - north west)
-  >    Go down staircase               ^z   -
+  >    Go down staircase               ^z   (special - borg command)
   \    (special - bypass keymap)       ~    Check knowledge
   `    (special - escape)              ?    Display help
   /    Identify symbol
