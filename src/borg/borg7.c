@@ -246,7 +246,8 @@ bool borg_use_things(void)
             borg_eat_food(TV_FOOD, sv_food_slime_mold) ||
             borg_eat_food(TV_FOOD, sv_food_slice) ||
             borg_eat_food(TV_FOOD, sv_food_apple) ||
-            borg_eat_food(TV_FOOD, sv_food_pint) ||
+            borg_eat_food(TV_FOOD, sv_food_pint) ||            
+            borg_eat_food(TV_FOOD, sv_food_handful) ||
             borg_eat_food(TV_FOOD, sv_food_honey_cake) ||
             borg_eat_food(TV_FOOD, sv_food_ration) ||
             borg_eat_food(TV_FOOD, sv_food_waybread) ||
