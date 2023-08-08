@@ -34,6 +34,7 @@ int     size_depth;
 int     size_obj;
 int*    formula[1000];
 
+/* NOTE: This must exactly match the enum in BORG1.h */
 const char* prefix_pref[] =
 {
     /* personal attributes */
@@ -270,7 +271,8 @@ const char* prefix_pref[] =
     "_AROD1",		/* Attack rods */
     "_AROD2",		/* Attack rods */
     "_DINV",        /* See Inv Spell is Legal */
-    "_WEIGHT",
+    "_WEIGHT",      /* weight of all inventory and equipment */
+    "_EMPTY",       /* number of empty slots */
     NULL
 };
 

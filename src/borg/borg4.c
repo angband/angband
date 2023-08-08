@@ -1610,7 +1610,11 @@ static void borg_notice_aux2(void)
         item = &borg_items[i];
 
         /* Skip empty items */
-        if (!item->iqty) continue;
+        if (!item->iqty)
+        {
+            borg_skill[BI_EMPTY]++;
+            continue;
+        }
 
         /* special case for ammo outside the quiver. */
         /* this happens when we are deciding what to buy so items */
@@ -5798,9 +5802,10 @@ static int32_t borg_power_aux2(void)
         }
     }
     /* Reward empty slots (up to 5) */
-    for (k = 1; k < 6; k++)
-        if (!borg_items[PACK_SLOTS - k].iqty)
-            value += 40L;
+    if (borg_skill[BI_EMPTY] < 6)
+        value += 40L * borg_skill[BI_EMPTY];
+    else
+        value += 40L * 5;
 
     /* Return the value */
     return (value);

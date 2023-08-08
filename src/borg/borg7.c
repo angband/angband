@@ -1895,6 +1895,7 @@ bool borg_crush_hole(void)
 {
     int i, b_i = -1;
     int32_t p, b_p = 0L;
+    int32_t w, b_w = 0L;
 
     int32_t value;
 
@@ -1972,6 +1973,9 @@ bool borg_crush_hole(void)
         /* save the items value */
         value = item->value;
 
+        /* save the items wieght */
+        w = item->weight * item->iqty;
+
         /* Save the item */
         memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
 
@@ -1987,15 +1991,6 @@ bool borg_crush_hole(void)
         /* Evaluate the inventory */
         p = borg_power();
 
-        /* power is much more important than gold. */
-        p *= 100;
-
-		/* If I have no food, and in town, I must have a free spot to buy food */
-		if (borg_skill[BI_CDEPTH] == 0 && borg_skill[BI_FOOD] ==0)
-		{
-			/* Power is way more important than gold */
-			p *= 500;
-		}
         /* Restore the item */
         memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
@@ -2029,7 +2024,7 @@ bool borg_crush_hole(void)
             {
                 /* rings are under valued. */
             case TV_RING:
-            p -= (item->iqty * value * 10);
+            value = (item->iqty * value * 10);
             break;
 
             case TV_AMULET:
@@ -2045,14 +2040,14 @@ bool borg_crush_hole(void)
             case TV_SOFT_ARMOR:
             case TV_HARD_ARMOR:
             case TV_DRAG_ARMOR:
-            p -= (item->iqty * value * 5);
+            value = (item->iqty * value * 5);
             break;
 
             case TV_CLOAK:
             if (item->ego_idx && borg_ego_has_random_power(&e_info[item->ego_idx]))
-                p -= (item->iqty * (300000L));
+                value = (item->iqty * (300000L));
             else
-                p -= (item->iqty * value);
+                value = (item->iqty * value);
             break;
 
             case TV_ROD:
@@ -2062,9 +2057,9 @@ bool borg_crush_hole(void)
                 (item->sval != sv_rod_elec_ball) ||
                 (item->sval != sv_rod_fire_ball) ||
                 (item->sval != sv_rod_cold_ball))
-                p -= (item->iqty * (300000L));  /* value at 30k */
+                value = (item->iqty * (300000L));  /* value at 30k */
             else
-                p -= (item->iqty * value);
+                value = (item->iqty * value);
             break;
 
             case TV_STAFF:
@@ -2075,9 +2070,9 @@ bool borg_crush_hole(void)
                     amt_cool_staff < 2) ||
                 (item->sval != sv_staff_destruction &&
                     borg_skill[BI_ASTFDEST] < 2))
-                p -= (item->iqty * (300000L));  /* value at 30k */
+                value = (item->iqty * (300000L));  /* value at 30k */
             else
-                p -= (item->iqty * (value / 2));
+                value = (item->iqty * (value / 2));
             break;
 
             case TV_WAND:
@@ -2091,18 +2086,18 @@ bool borg_crush_hole(void)
                 (item->sval != sv_wand_annihilation) ||
                 (item->sval != sv_wand_dragon_fire) ||
                 (item->sval != sv_wand_dragon_cold))
-                p -= (item->iqty * (300000L));  /* value at 30k */
+                value = (item->iqty * (300000L));  /* value at 30k */
             else
-                p -= (item->iqty * (value / 2));
+                value = (item->iqty * (value / 2));
             break;
 
             /* scrolls and potions crush easy */
             case TV_SCROLL:
             if ((item->sval != sv_scroll_protection_from_evil) ||
                 (item->sval != sv_scroll_rune_of_protection))
-                p -= (item->iqty * (30000L));
+                value = (item->iqty * (30000L));
             else
-                p -= (item->iqty * (value / 10));
+                value = (item->iqty * (value / 10));
             break;
 
             case TV_POTION:
@@ -2112,19 +2107,19 @@ bool borg_crush_hole(void)
                 (item->sval != sv_potion_star_healing) ||
                 (item->sval != sv_potion_life) ||
                 (item->sval != sv_potion_restore_mana))
-                p -= (item->iqty * (300000L));  /* value at 30k */
+                value = (item->iqty * (300000L));  /* value at 30k */
             else
-                p -= (item->iqty * (value / 10));
+                value = (item->iqty * (value / 10));
             break;
 
             default:
-            p -= (item->iqty * (value / 3));
+            value = (item->iqty * (value / 3));
             break;
             }
         }
         else
         {
-            p -= (item->iqty * value);
+            value = (item->iqty * value);
         }
 
         /* Hack -- try not to destroy "unaware" items
@@ -2137,25 +2132,25 @@ bool borg_crush_hole(void)
             {
                 case TV_RING:
                 case TV_AMULET:
-                p -= (borg_skill[BI_MAXDEPTH] * 5000L);
+                value = (borg_skill[BI_MAXDEPTH] * 5000L);
                 break;
 
                 case TV_ROD:
-                p -= (borg_skill[BI_MAXDEPTH] * 3000L);
+                value = (borg_skill[BI_MAXDEPTH] * 3000L);
                 break;
 
                 case TV_STAFF:
                 case TV_WAND:
-                p -= (borg_skill[BI_MAXDEPTH] * 2000L);
+                value = (borg_skill[BI_MAXDEPTH] * 2000L);
                 break;
 
                 case TV_SCROLL:
                 case TV_POTION:
-                p -= (borg_skill[BI_MAXDEPTH] * 500L);
+                value = (borg_skill[BI_MAXDEPTH] * 500L);
                 break;
 
                 case TV_FOOD:
-                p -= (borg_skill[BI_MAXDEPTH] * 10L);
+                value = (borg_skill[BI_MAXDEPTH] * 10L);
                 break;
             }
         }
@@ -2169,21 +2164,21 @@ bool borg_crush_hole(void)
                 case TV_SHOT:
                 case TV_ARROW:
                 case TV_BOLT:
-                p -= 100L;
+                value += 100L;
                 break;
 
                 case TV_BOW:
-                p -= 20000L;
+                value += 20000L;
                 break;
 
                 case TV_DIGGING:
-                p -= 10L;
+                value += 10L;
                 break;
 
                 case TV_HAFTED:
                 case TV_POLEARM:
                 case TV_SWORD:
-                p -= 10000L;
+                value += 10000L;
                 break;
 
                 case TV_BOOTS:
@@ -2192,32 +2187,47 @@ bool borg_crush_hole(void)
                 case TV_CROWN:
                 case TV_SHIELD:
                 case TV_CLOAK:
-                p -= 15000L;
+                value += 15000L;
                 break;
 
                 case TV_SOFT_ARMOR:
                 case TV_HARD_ARMOR:
                 case TV_DRAG_ARMOR:
-                p -= 15000L;
+                value += 15000L;
                 break;
 
                 case TV_AMULET:
                 case TV_RING:
-                p -= 5000L;
+                value += 5000L;
                 break;
 
                 case TV_STAFF:
                 case TV_WAND:
-                p -= 1000L;
+                value += 1000L;
                 break;
             }
         }
 
+        /* power is much more important than gold. */
+        value = value / 100;
+
+        /* If I have no food, and in town, I must have a free spot to buy food */
+        if (borg_skill[BI_CDEPTH] == 0 && borg_skill[BI_FOOD] == 0)
+        {
+            /* Power is way more important than gold */
+            value = value / 500;
+        }
+
+        p -= value;
+
         /* Ignore "bad" swaps */
         if ((b_i >= 0) && (p < b_p)) continue;
 
+        /* all things being equal, get rid of heavy stuff first */
+        if (b_p == p && w < b_w) continue;
+
         /* Maintain the "best" */
-        b_i = i; b_p = p;
+        b_i = i; b_p = p; b_w = w;
     }
 
     /* Examine the inventory */

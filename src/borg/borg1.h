@@ -1006,7 +1006,8 @@ enum
     BI_AROD1,		/* Attack rods */
     BI_AROD2,		/* Attack rods */
     BI_DINV,	/* See Inv Spell Legal */
-    BI_WEIGHT,
+    BI_WEIGHT,  /* weight of all inventory and equipment */
+    BI_EMPTY,   /* number of empty slots */
 
     BI_MAX
 };
