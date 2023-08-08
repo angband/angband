@@ -5057,14 +5057,6 @@ static int32_t borg_power_aux2(void)
 
     /*** Basic abilities ***/
 
-    /*
-     * In here, we must subtract out the bonus granted from certain
-     * Artifacts.  They grant amt_x = 1000 then the power is increased
-     * by 1000 times whatever bonus.  In the case of Gondor.  This is
-     * 1000 heals times 4000 points per heal.
-     *
-     */
-
      /* Reward fuel */
     k = 0;
     for (; k < 6 && k < borg_skill[BI_AFUEL]; k++) value += 60000L;
