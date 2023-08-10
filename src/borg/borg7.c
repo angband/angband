@@ -4271,8 +4271,10 @@ bool borg_play_magic(bool bored)
 		{
 			/* Hack -- Allow attack spells */
             /* MEGAHACK -- assume "Random" is shooting.  */
-			if (effects[as->effect_index].aim || as->effect_index == EF_RANDOM)
-			{
+			if (effects[as->effect_index].aim || 
+                as->effect_index == EF_RANDOM ||
+                as->effect_index == EF_TELEPORT_TO)
+            {
 				/* Hack -- target self */
 				borg_keypress('*');
 				borg_keypress('t');
