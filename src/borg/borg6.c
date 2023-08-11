@@ -6490,7 +6490,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
             /* probable damage int was just changed by b_l_b_a_h*/
 
             /* check destroyed stuff. */
-            if (ag->take)
+            if (ag->take && borg_takes[ag->take].kind)
             {
                 struct borg_take* take = &borg_takes[ag->take];
                 struct object_kind* k_ptr = take->kind;
@@ -6499,13 +6499,8 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
                 {
                 case BORG_ATTACK_ACID:
                 {
-                    /* unknown objects should be avoided */
-                    if (!k_ptr)
-                    {
-                        n -= 20;
-                    }
                     /* rings/boots cost extra (might be speed!) */
-                    else if (k_ptr->tval == TV_BOOTS && !k_ptr->aware)
+                    if (k_ptr->tval == TV_BOOTS && !k_ptr->aware)
                     {
                         n -= 20;
                     }
@@ -6513,17 +6508,12 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
                 }
                 case BORG_ATTACK_ELEC:
                 {
-                    /* unknown objects should be avoided */
-                    if (!k_ptr)
+                    /* rings/boots cost extra (might be speed!) */
+                    if (k_ptr->tval == TV_RING && !k_ptr->aware)
                     {
                         n -= 20;
                     }
-                    /* rings cost extra (might be speed!) */
-                    else if (k_ptr->tval == TV_RING && !k_ptr->aware)
-                    {
-                        n -= 20;
-                    }
-                    else if (k_ptr->tval == TV_RING && k_ptr->sval == sv_ring_speed)
+                    if (k_ptr->tval == TV_RING && k_ptr->sval == sv_ring_speed)
                     {
                         n -= 2000;
                     }
@@ -6532,13 +6522,8 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
 
                 case BORG_ATTACK_FIRE:
                 {
-                    /* unknown objects should be avoided */
-                    if (!k_ptr)
-                    {
-                        n -= 20;
-                    }
-                    /* boots cost extra (might be speed!) */
-                    else if (k_ptr->tval == TV_BOOTS && !k_ptr->aware)
+                    /* rings/boots cost extra (might be speed!) */
+                    if (k_ptr->tval == TV_BOOTS && !k_ptr->aware)
                     {
                         n -= 20;
                     }
@@ -6546,13 +6531,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
                 }
                 case BORG_ATTACK_COLD:
                 {
-                    /* unknown objects should be avoided */
-                    if (!k_ptr)
-                    {
-                        n -= 20;
-                    }
-                    /* don't break potions */
-                    else if (k_ptr->tval == TV_POTION)
+                    if (k_ptr->tval == TV_POTION)
                     {
                         n -= 20;
 
