@@ -3,6 +3,9 @@ the broader role of release management, please see the ReleaseManager page.
 
 Before release:
 
+* Check that the dependencies in src/Makefile.inc are up to date;  on Linux/Unix
+  run "cd src; make -f Makefile.std depgen" and then merge the generated
+  src/Makefile.new into src/Makefile.inc
 * Check it compiles on:
    * Linux with and without autoconf: ncurses, x11, sdl (ask d_m or magnate to confirm)
    * OpenBSD + FreeBSD (ask Aerdan to confirm; nudge Edd to build the OpenBSD package)
