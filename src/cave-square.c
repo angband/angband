@@ -1018,6 +1018,45 @@ void square_excise_pile(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * Remove all imagined objects from a floor pile.
+ *
+ * \param p_c is the chunk for a player's point of view which will be tested
+ * for the imagined objects.
+ * \param c is the chunk (typically cave) which holds the orphaned objects
+ * corresponding to the imagined objects in p_c.
+ * \param grid is the grid to check for imagined objects.
+ *
+ * If calling square_excise_pile() on p_c it will necessary to call this
+ * function first to avoid leaving dangling references (via the known pointer
+ * in orphaned objects within c's object list).
+ */
+void square_excise_all_imagined(struct chunk *p_c, struct chunk *c,
+		struct loc grid)
+{
+	struct object *obj;
+
+	assert(square_in_bounds(p_c, grid));
+	obj = square_object(p_c, grid);
+	while (obj) {
+		struct object *next = obj->next;
+
+		if (obj->notice & OBJ_NOTICE_IMAGINED) {
+			struct object *original;
+
+			assert(c->objects && c->objects[obj->oidx]);
+			original = c->objects[obj->oidx];
+			square_excise_object(p_c, grid, obj);
+			delist_object(p_c, obj);
+			object_delete(p_c, NULL, &obj);
+			original->known = NULL;
+			delist_object(c, original);
+			object_delete(c, p_c, &original);
+		}
+		obj = next;
+	}
+}
+
+/**
  * Excise an object from a floor pile and delete it while doing the other
  * necessary bookkeeping.  Normally, this is only called for the chunk
  * representing the true nature of the environment and not the one
