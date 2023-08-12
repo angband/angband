@@ -3097,6 +3097,14 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
+    /* in the odd case where a we get here before the message */
+    /* about cheating death comes up.  */
+    if (!character_dungeon)
+    {
+        /* do nothing */
+        key.code = ' ';
+        return key;
+    }
 
     /* Mega-Hack -- catch normal messages */
     /* If there is text on the first line... */
