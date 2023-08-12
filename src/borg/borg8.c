@@ -4476,20 +4476,23 @@ bool borg_think_dungeon(void)
     if (borg_skill[BI_CDEPTH] &&
         (time_this_panel >= 500 && time_this_panel <= 503))
     {
+        /* Forget old objects */
+        for (i = 1; i < borg_takes_nxt; i++)
+            borg_delete_take(i);
+
         /* No objects here */
         borg_takes_cnt = 0;
         borg_takes_nxt = 1;
 
-        /* Forget old objects */
-        memset(borg_takes, 0, 256 * sizeof(borg_take));
+        /* Forget old monsters */
+        for (i = 1; i < borg_kills_nxt; i++)
+            borg_delete_kill(i);
 
         /* No monsters here */
         borg_kills_cnt = 0;
         borg_kills_nxt = 1;
-
-        /* Forget old monsters */
-        memset(borg_kills, 0, 256 * sizeof(borg_kill));
     }
+
     if (borg_skill[BI_CDEPTH] &&
         (time_this_panel >= 700))
     {

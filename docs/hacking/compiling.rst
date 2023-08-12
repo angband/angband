@@ -301,7 +301,7 @@ process to fail when linking angband.exe (the error message will likely be
 --enable options for configure are not appropriate when using --enable-win.
 The ones that are okay are --with-private-dirs (on by default),
 --with-gamedata-in-lib (has no effect), --enable-release,
---enable-more-gcc-warnings, and --enable-skip-old-int-typedefs.
+and --enable-skip-old-int-typedefs.
 
 Debug build
 ~~~~~~~~~~~

@@ -1554,6 +1554,12 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
  * This is a helper for effect_handler_SENSE_OBJECTS and
  * effect_handler_DETECT_OBJECTS to remove remembered objects at locations
  * sensed or detected as empty.
+ *
+ * When compatibility with old savefiles is no longer needed (those which
+ * have objects in the known cave which need to be relocated; 4.3 can drop
+ * support for them) calls to this function can be replaced by:
+ *     square_excise_all_imagined(player->cave, cave, grid);
+ *     square_excise_pile(player->cave, grid);
  */
 static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, struct loc grid)
 {

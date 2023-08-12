@@ -144,6 +144,17 @@ static int test_obj_pile_simple(void *state) {
 	generate_piles(cave, player);
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
+	/*
+	 * This is a way to trigger use after free notices from the address
+	 * sanitizer if there is dangling references to the known versions of
+	 * objects (for instance, before
+	 * https://github.com/angband/angband/issues/5723 was resolved).
+	 */
+	update_player_object_knowledge(player);
+	/*
+	 * This is a convenient way to trigger pile integrity checks on every
+	 * grid.
+	 */
 	wiz_light(cave, player, true);
 	cave_free(player->cave);
 	player->cave = NULL;
@@ -165,6 +176,17 @@ static int test_obj_pile_orphan(void *state) {
 	orphan_piles(cave);
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
+	/*
+	 * This is a way to trigger use after free notices from the address
+	 * sanitizer if there is dangling references to the known versions of
+	 * objects (for instance, before
+	 * https://github.com/angband/angband/issues/5723 was resolved).
+	 */
+	update_player_object_knowledge(player);
+	/*
+	 * This is a convenient way to trigger pile integrity checks on every
+	 * grid.
+	 */
 	wiz_light(cave, player, true);
 	cave_free(player->cave);
 	player->cave = NULL;

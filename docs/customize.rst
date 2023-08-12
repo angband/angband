@@ -60,13 +60,13 @@ So, you can save some settings - for example, keymaps - to the ``Mage.prf`` file
 
 You may also enter single user pref commands directly, using the special "Enter a user pref command" command, activated by pressing ``"``.
 
-You may have to use the redraw command (``^R``) after changing certain of the aspects of the game to allow Angband to adapt to your changes.
+You may have to use the redraw command (``^r``) after changing certain of the aspects of the game to allow Angband to adapt to your changes.
 
 
 Ignoring items
 ==============
 
-Angband allows you to ignore specific items that you don't want to see anymore. These items are marked 'ignored' and any similar items are hidden from view. The easiest way to ignore an item is with the ``k`` (or ``^D``) command; the object is dropped and then hidden from view.  When ignoring an object, you will be given a choice of ignoring just that object, or all objects like it in some way.
+Angband allows you to ignore specific items that you don't want to see anymore. These items are marked 'ignored' and any similar items are hidden from view. The easiest way to ignore an item is with the ``k`` (or ``^d``) command; the object is dropped and then hidden from view.  When ignoring an object, you will be given a choice of ignoring just that object, or all objects like it in some way. If you accidentally ignore an item or find yourself in a situation where you want to see if a previously ignored item is available nearby, one way to handle that is to turn off ignoring for all items with the ``K`` (or ``O``) command, go to the item you want, unignore it with the ``k`` (or ``^d``) command, and then turn on ignoring again with the ``K`` (or ``O``) command. When ignoring has been turned off for all items, you will see ``Unignoring`` in the status line at the bottom of the screen.
 
 The entire ignoring system can also be accessed from the options menu (``=``) by choosing ``i`` for ``Item ignoring setup``.  This allows ignore settings for non-wearable items, and quality and ego ignore settings (described below) for wearable items, to be viewed or changed.
 

@@ -1233,6 +1233,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				}
 
 				/* Delete objects */
+				square_excise_all_imagined(player->cave, cave,
+					grid);
 				square_excise_pile(player->cave, grid);
 				square_excise_pile(cave, grid);
 				square_destroy(cave, grid);
