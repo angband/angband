@@ -6490,7 +6490,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
             /* probable damage int was just changed by b_l_b_a_h*/
 
             /* check destroyed stuff. */
-            if (ag->take)
+            if (ag->take && borg_takes[ag->take].kind)
             {
                 struct borg_take* take = &borg_takes[ag->take];
                 struct object_kind* k_ptr = take->kind;
