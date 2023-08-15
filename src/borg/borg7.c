@@ -975,8 +975,8 @@ static bool borg_enchant_to_h(void)
     if (b_i < 0) return (false);
 
     /* Enchant it */
-    if (borg_read_scroll(sv_scroll_star_enchant_armor) ||
-        borg_read_scroll(sv_scroll_enchant_armor) ||
+    if (borg_read_scroll(sv_scroll_star_enchant_weapon) ||
+        borg_read_scroll(sv_scroll_enchant_weapon_to_hit) ||
         borg_spell_fail(ENCHANT_WEAPON, 65))
     {
         borg_pick_weapon(b_i);
