@@ -5535,27 +5535,27 @@ void borg_status(void)
 
             if (borg_hero) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 2, -1, attr, "Heroism");
+            Term_putstr(28, 3, -1, attr, "Heroism");
 
             if (borg_berserk) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 3, -1, attr, "Berserk");
+            Term_putstr(28, 4, -1, attr, "Berserk");
 
             if (borg_shield) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 4, -1, attr, "Shielded");
+            Term_putstr(28, 5, -1, attr, "Shielded");
 
             if (borg_bless) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 5, -1, attr, "Blessed");
+            Term_putstr(28, 6, -1, attr, "Blessed");
 
             if (borg_speed) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 6, -1, attr, "Fast");
+            Term_putstr(28, 7, -1, attr, "Fast");
 
             if (borg_see_inv >= 1) attr = COLOUR_WHITE;
             else attr = COLOUR_SLATE;
-            Term_putstr(28, 6, -1, attr, "See Inv");
+            Term_putstr(28, 8, -1, attr, "See Inv");
 
             /* Temporary effects */
             Term_putstr(42, 0, -1, COLOUR_WHITE, "Level Information");
