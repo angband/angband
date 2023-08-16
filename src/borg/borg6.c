@@ -14736,15 +14736,7 @@ static bool borg_play_step(int y2, int x2)
         if (randint0(500) <= 5 && !vault_on_level)
             return false;
 
-        /* Switch to a digger if we have one */
-        if (weapon_swap && borg_items[weapon_swap-1].tval == TV_DIGGING) {
-            borg_note("# Swapping Digger");
-            borg_keypress(ESCAPE);
-            borg_keypress('w');
-            borg_keypress(all_letters_nohjkl[weapon_swap-1]);
-            borg_keypress(' ');
-            borg_keypress(' ');
-        }
+        /* Switch to a digger if we have one is automatic */
 
         /* Dig */
         borg_note("# Digging through wall/etc");
