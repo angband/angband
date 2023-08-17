@@ -3032,6 +3032,19 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
+    /* ***MEGA-HACK***  */
+    /* this needs to be removed when the activation code is reworked */
+    /* always pick "one of the following at random" */
+    if (borg_prompt && !inkey_flag &&
+        (y == 1) &&
+        (0 == borg_what_text(0, 0, 13, &t_a, buf)) &&
+        streq(buf, "Which effect?"))
+    {
+        /* the first selection (a) is random */
+        key.code = 'a';
+        return key;
+    }
+
     /* prompt for stepping in lava.  This should be avoided but */
     /* if the borg is stuck, give him a pass */
     if (borg_prompt && !inkey_flag &&

@@ -4280,7 +4280,7 @@ bool borg_play_magic(bool bored)
 				borg_keypress('t');
 			}
 
-			/* Hack -- Allow genocide spells */
+			/* Hack -- Allow spells that require selection of a monster type */
 			if (as->effect_index == EF_SELECT)
 			{
 				/* Hack -- target Maggot */
