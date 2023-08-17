@@ -4281,7 +4281,7 @@ bool borg_play_magic(bool bored)
 			}
 
 			/* Hack -- Allow spells that require selection of a monster type */
-			if (as->effect_index == EF_SELECT)
+			if (as->effect_index == EF_BANISH)
 			{
 				/* Hack -- target Maggot */
 				borg_keypress('h');
