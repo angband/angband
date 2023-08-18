@@ -628,7 +628,7 @@ bool borg_recall(void)
     {
         /* Try to "recall" */
         if (borg_zap_rod(sv_rod_recall) ||
-            borg_activate_artifact("RECALL") ||
+            borg_activate_item(act_recall) ||
             borg_spell_fail(WORD_OF_RECALL, 60) ||
             borg_read_scroll(sv_scroll_word_of_recall))
         {
@@ -2114,7 +2114,7 @@ static bool borg_escape(int b_q)
                     borg_read_scroll(sv_scroll_teleport) ||
                     borg_read_scroll(sv_scroll_teleport_level) ||
                     borg_use_staff_fail(sv_staff_teleportation) ||
-                    borg_activate_artifact("TELE_LONG") ||
+                    borg_activate_item(act_tele_long) ||
                     /* revisit spells, increased fail rate */
                     borg_dimension_door(tmp_allow_fail + 9) ||
                     borg_spell_fail(TELEPORT_SELF, tmp_allow_fail + 9) ||
@@ -2127,7 +2127,7 @@ static bool borg_escape(int b_q)
                     /* try phase at least, with some hedging of the safety of landing zone */
                     (borg_caution_phase(75, 2) &&
                         (borg_read_scroll(sv_scroll_phase_door) ||
-                            borg_activate_artifact("TELE_PHASE") ||
+                            borg_activate_item(act_tele_phase) ||
                             borg_spell_fail(PHASE_DOOR, tmp_allow_fail) ||
                             borg_spell_fail(PORTAL, tmp_allow_fail))))))
         {
@@ -2162,7 +2162,7 @@ static bool borg_escape(int b_q)
         if (borg_skill[BI_CDEPTH] &&
             ((borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] * 1 / 10 ||
                 b_q > avoidance * (45 + risky_boost) / 10) &&
-                (borg_activate_artifact("TELE_PHASE") ||
+                (borg_activate_item(act_tele_phase) ||
                     borg_read_scroll(sv_scroll_phase_door))))
         {
             /* Flee! */
@@ -2220,7 +2220,7 @@ static bool borg_escape(int b_q)
                     borg_spell_fail(PORTAL, allow_fail - 10) ||
                     borg_shadow_shift(allow_fail - 10) ||
                     borg_use_staff_fail(sv_staff_teleportation) ||
-                    borg_activate_artifact("TELE_LONG") ||
+                    borg_activate_item(act_tele_long) ||
                     borg_read_scroll(sv_scroll_teleport) ||
                     borg_read_scroll(sv_scroll_teleport_level) ||
                     borg_dimension_door(allow_fail) ||
@@ -2243,7 +2243,7 @@ static bool borg_escape(int b_q)
             (borg_spell(PHASE_DOOR) ||
                 borg_spell(PORTAL) ||
                 borg_read_scroll(sv_scroll_phase_door) ||
-                borg_activate_artifact("TELE_PHASE")))
+                borg_activate_item(act_tele_phase)))
         {
             /* Flee! */
             borg_note("# Danger Level 2.2");
@@ -2269,7 +2269,7 @@ static bool borg_escape(int b_q)
             borg_t - borg_t_antisummon > 50 &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
             /* Flee! */
@@ -2289,10 +2289,10 @@ static bool borg_escape(int b_q)
                 borg_spell_fail(TELEPORT_SELF, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
                 borg_shadow_shift(allow_fail) ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_long) ||
                 borg_use_staff_fail(sv_staff_teleportation) ||
                 borg_read_scroll(sv_scroll_teleport) ||
-                borg_activate_artifact("TELE_PHASE")))
+                borg_activate_item(act_tele_phase)))
         {
             /* Flee! */
             borg_note("# Danger Level 3.2");
@@ -2309,7 +2309,7 @@ static bool borg_escape(int b_q)
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
                 borg_shadow_shift(allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
             /* Flee! */
@@ -2372,7 +2372,7 @@ static bool borg_escape(int b_q)
             borg_t - borg_t_antisummon > 50 &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_shadow_shift(allow_fail) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
@@ -2392,7 +2392,7 @@ static bool borg_escape(int b_q)
             (borg_dimension_door(allow_fail) ||
                 borg_spell_fail(TELEPORT_SELF, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_long) ||
                 borg_shadow_shift(allow_fail) ||
                 borg_read_scroll(sv_scroll_teleport) ||
                 borg_use_staff_fail(sv_staff_teleportation)))
@@ -2432,8 +2432,8 @@ static bool borg_escape(int b_q)
             borg_caution_phase(65, 2) &&
             borg_t - borg_t_antisummon > 50 &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_phase) ||
+                borg_activate_item(act_tele_long) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
             /* Flee! */
@@ -2458,7 +2458,7 @@ static bool borg_escape(int b_q)
             borg_caution_phase(20, 2)) &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_shadow_shift(allow_fail) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
@@ -2477,7 +2477,7 @@ static bool borg_escape(int b_q)
                 borg_spell_fail(TELEPORT_SELF, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
                 borg_shadow_shift(allow_fail) ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_long) ||
                 borg_read_scroll(sv_scroll_teleport) ||
                 borg_use_staff_fail(sv_staff_teleportation)))
         {
@@ -2515,9 +2515,9 @@ static bool borg_escape(int b_q)
         if (((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER) && borg_skill[BI_CLEVEL] <= 8) &&
             borg_caution_phase(65, 2) &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_read_scroll(sv_scroll_phase_door) ||
-                borg_activate_artifact("TELE_LONG")))
+                borg_activate_item(act_tele_long)))
         {
             /* Flee! */
             borg_escapes--; /* a phase isn't really an escape */
@@ -2543,7 +2543,7 @@ static bool borg_escape(int b_q)
             borg_t - borg_t_antisummon > 50 &&
             (borg_spell_fail(PHASE_DOOR, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
             /* Flee! */
@@ -2560,7 +2560,7 @@ static bool borg_escape(int b_q)
             (borg_dimension_door(allow_fail) ||
                 borg_spell_fail(TELEPORT_SELF, allow_fail) ||
                 borg_spell_fail(PORTAL, allow_fail) ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_long) ||
                 borg_read_scroll(sv_scroll_teleport) ||
                 borg_use_staff_fail(sv_staff_teleportation)))
         {
@@ -2797,9 +2797,9 @@ static bool borg_heal(int danger)
                 (hp_down > 500 && borg_has[borg_lookup_kind(TV_POTION, sv_potion_star_healing)] <= 0 && borg_quaff_potion(sv_potion_life)) ||
                 borg_quaff_potion(sv_potion_star_healing) ||
                 borg_quaff_potion(sv_potion_healing) ||
-                borg_activate_artifact("HEAL1") ||
-                borg_activate_artifact("HEAL2") ||
-                borg_activate_artifact("HEAL3") ||
+                borg_activate_item(act_heal1) ||
+                borg_activate_item(act_heal2) ||
+                borg_activate_item(act_heal3) ||
                 (borg_skill[BI_CURHP] < 250 && borg_spell_fail(HOLY_WORD, 5)) ||  /* Holy Word */
                 (borg_skill[BI_CURHP] > 550 && borg_spell_fail(HOLY_WORD, 15)) ||  /* Holy Word */
                 borg_spell_fail(HEALING, 15) ||
@@ -2901,7 +2901,7 @@ static bool borg_heal(int danger)
         (clw_heal > danger / 3) &&  /* No rope-a-doping */
         (borg_spell_fail(MINOR_HEALING, allow_fail) ||
             borg_quaff_potion(sv_potion_cure_light) ||
-            borg_activate_artifact("CURE_LIGHT")))
+            borg_activate_item(act_cure_light)))
     {
         borg_note("# Healing Level 1.");
         return (true);
@@ -2911,7 +2911,7 @@ static bool borg_heal(int danger)
         ((danger) < borg_skill[BI_CURHP] + csw_heal) &&
         (csw_heal > danger / 3) &&  /* No rope-a-doping */
         (borg_quaff_potion(sv_potion_cure_serious) ||
-            borg_activate_artifact("CURE_SERIOUS")))
+            borg_activate_item(act_cure_serious)))
     {
         borg_note("# Healing Level 2.");
         return (true);
@@ -2921,7 +2921,7 @@ static bool borg_heal(int danger)
     if (pct_down >= 50 && pct_down <= 55 &&
         ((danger) < borg_skill[BI_CURHP] + ccw_heal) &&
         (ccw_heal > danger / 3) &&  /* No rope-a-doping */
-        (borg_activate_artifact("CURE_CRITICAL") ||
+        (borg_activate_item(act_cure_critical) ||
             borg_quaff_crit(false)))
     {
         borg_note("# Healing Level 3.");
@@ -2954,12 +2954,12 @@ static bool borg_heal(int danger)
         danger < borg_skill[BI_CURHP] + heal_heal &&
         ((((!borg_skill[BI_ATELEPORT] && !borg_skill[BI_AESCAPE]) || rod_good) &&
             borg_zap_rod(sv_rod_healing)) ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_NONORLYBIG") ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
-            borg_activate_artifact("HEAL3") ||
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_nonorlybig) ||
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
+            borg_activate_item(act_heal3) ||
             borg_use_staff_fail(sv_staff_healing) ||
             borg_spell_fail(HEALING, allow_fail)))
     {
@@ -3003,12 +3003,12 @@ static bool borg_heal(int danger)
             borg_spell_fail(HEALING, allow_fail) ||
             borg_use_staff_fail(sv_staff_healing) ||
             borg_quaff_potion(sv_potion_healing) ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_NONORLYBIG") ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
-            borg_activate_artifact("HEAL3")))
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_nonorlybig) ||
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
+            borg_activate_item(act_heal3)))
     {
         borg_note("# Healing Level 8.");
         return (true);
@@ -3023,12 +3023,12 @@ static bool borg_heal(int danger)
             (((!borg_skill[BI_ATELEPORT] && !borg_skill[BI_AESCAPE]) || rod_good) &&
                 borg_zap_rod(sv_rod_healing)) ||
             borg_quaff_potion(sv_potion_healing) ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_NONORLYBIG") ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
-            borg_activate_artifact("HEAL3") ||
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_nonorlybig) ||
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
+            borg_activate_item(act_heal3) ||
             (borg_fighting_unique &&
                 (borg_quaff_potion(sv_potion_star_healing) ||
                     borg_quaff_potion(sv_potion_healing) ||
@@ -3066,14 +3066,13 @@ static bool borg_heal(int danger)
         if (borg_spell_fail(CURE_POISON, 60) ||
             borg_spell_fail(HERBAL_CURING, 60) ||
             borg_quaff_potion(sv_potion_cure_poison) ||
-            borg_activate_artifact("CURE_POISON") ||
-            borg_activate_artifact("CURE_BODY") ||
-            borg_activate_artifact("CURE_CRITICAL") ||
-            borg_activate_artifact("CURE_TEMP") ||
-            borg_activate_artifact("REM_FEAR_POIS") ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_NONORLYBIG") ||
+            borg_activate_item(act_cure_body) ||
+            borg_activate_item(act_cure_critical) ||
+            borg_activate_item(act_cure_temp) ||
+            borg_activate_item(act_rem_fear_pois) ||
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_nonorlybig) ||
             borg_use_staff(sv_staff_curing) ||
             borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
             borg_eat_food(TV_MUSHROOM, sv_mush_purging) ||
@@ -4544,12 +4543,12 @@ bool borg_caution(void)
             borg_quaff_potion(sv_potion_berserk) ||
             borg_spell_fail(BERSERK_STRENGTH, 25) || /* berserk */
             borg_spell_fail(HEROISM, 25) || /* hero */
-            borg_activate_artifact("CURE_PARANOIA") ||
-            borg_activate_artifact("HERO") ||
-            borg_activate_artifact("SHERO") ||
-            borg_activate_artifact("CURE_MIND") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
-            borg_activate_artifact("REM_FEAR_POIS") ||
+            borg_activate_item(act_cure_paranoia) ||
+            borg_activate_item(act_hero) ||
+            borg_activate_item(act_shero) ||
+            borg_activate_item(act_cure_mind) ||
+            borg_activate_item(act_rage_bless_resist) ||
+            borg_activate_item(act_rem_fear_pois) ||
             borg_spell_fail(HOLY_WORD, 25))
         {
             return (true);
@@ -4662,7 +4661,7 @@ bool borg_caution(void)
             (borg_read_scroll(sv_scroll_phase_door) ||
                 borg_spell_fail(PHASE_DOOR, 30) ||
                 borg_spell_fail(PORTAL, 30) ||
-                borg_activate_artifact("TELE_PHASE")))
+                borg_activate_item(act_tele_phase)))
         {
             borg_note("# Buying time waiting for Recall.(2)");
             return (true);
@@ -4870,6 +4869,7 @@ enum
     BF_EF_MANA_BOLT,
     BF_EF_STAR_BALL, /* Razorback and Mediator */
     BF_EF_STARLIGHT2,
+    BF_EF_STARLIGHT,
     BF_RING_ACID,
     BF_RING_FIRE,
     BF_RING_ICE,
@@ -7353,7 +7353,7 @@ static int borg_attack_aux_rod_bolt(int sval, int rad, int dam, int typ)
 /*
  * Simulate/Apply the optimal result of using a "normal" attack wand
  */
-static int borg_attack_aux_wand_bolt(int sval, int rad, int dam, int typ)
+static int borg_attack_aux_wand_bolt(int sval, int rad, int dam, int typ, int selection)
 {
     int i;
 
@@ -7423,6 +7423,10 @@ static int borg_attack_aux_wand_bolt(int sval, int rad, int dam, int typ)
 
     /* Set our shooting flag */
     successful_target = -1;
+
+    /*  select the correct effect */
+    if (selection != -1)
+        borg_keypress('b' + selection);
 
     /* Value */
     return (b_n);
@@ -7562,7 +7566,7 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
  * Simulate/Apply the optimal result of ACTIVATING an attack artifact
  *
  */
-static int borg_attack_aux_artifact(const char* activation, int rad, int dam, int typ, bool aim)
+static int borg_attack_aux_activation(int activation, int rad, int dam, int typ, bool aim, int selection)
 {
     int b_n;
 
@@ -7574,8 +7578,8 @@ static int borg_attack_aux_artifact(const char* activation, int rad, int dam, in
     if (borg_simulate && (randint0(100) < 2)) return (0);
 
 
-    /* Look for that artifact and to see if it is charged */
-    if (!borg_equips_artifact(activation, true)) return (0);
+    /* Look for and item with that activation and to see if it is charged */
+    if (!borg_equips_item(activation, true)) return (0);
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
@@ -7584,7 +7588,7 @@ static int borg_attack_aux_artifact(const char* activation, int rad, int dam, in
     if (borg_simulate) return (b_n);
 
     /* Activate the artifact */
-    (void)borg_activate_artifact(activation);
+    (void)borg_activate_item(activation);
 
     /* Use target */
     if (aim)
@@ -7594,6 +7598,10 @@ static int borg_attack_aux_artifact(const char* activation, int rad, int dam, in
         /* Set our shooting flag */
         successful_target = -1;
     }
+
+    /*  select the correct effect */
+    if (selection != -1)
+        borg_keypress('b' + selection);
 
     /* Value */
     return (b_n);
@@ -7639,7 +7647,7 @@ static int borg_attack_aux_ring(int ring_name, int rad, int dam, int typ)
  * Simulate/Apply the optimal result of ACTIVATING a DRAGON ARMOUR
  *
  */
-static int borg_attack_aux_dragon(int sval, int rad, int dam, int typ)
+static int borg_attack_aux_dragon(int sval, int rad, int dam, int typ, int selection)
 {
     int b_n;
 
@@ -7671,6 +7679,10 @@ static int borg_attack_aux_dragon(int sval, int rad, int dam, int typ)
 
     /* Set our shooting flag */
     successful_target = -1;
+
+    /*  select the correct effect */
+    if (selection != -1)
+        borg_keypress('b' + selection);
 
     /* Value */
     return (b_n);
@@ -8299,7 +8311,7 @@ static int borg_attack_aux_artifact_holcolleth(void)
     int p2 = 0;
     int d = 0;
 
-    if (!borg_equips_artifact("SLEEPII", true))
+    if (!borg_equips_item(act_sleepii, true))
         return (0);
 
     /* Obtain initial danger */
@@ -8321,7 +8333,7 @@ static int borg_attack_aux_artifact_holcolleth(void)
     if (borg_simulate) return (d);
 
     /* Cast the spell */
-    if (borg_activate_artifact("SLEEPII"))
+    if (borg_activate_item(act_sleepii))
     {
         /* Value */
         return (d);
@@ -8340,7 +8352,6 @@ static int borg_attack_aux_artifact_holcolleth(void)
 static int borg_attack_aux(int what)
 {
     int dam = 0;
-    int chance;
     int rad = 0;
 
     /* Analyze */
@@ -8740,118 +8751,118 @@ static int borg_attack_aux(int what)
     case BF_WAND_MAGIC_MISSILE:
     rad = 0;
     dam = 3 * (4 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(sv_wand_magic_missile, rad, dam, BORG_ATTACK_MISSILE));
+    return (borg_attack_aux_wand_bolt(sv_wand_magic_missile, rad, dam, BORG_ATTACK_MISSILE, -1));
 
     /* Wand -- slow monster */
     case BF_WAND_SLOW_MONSTER:
     rad = 0;
     dam = 10;
-    return (borg_attack_aux_wand_bolt(sv_wand_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW));
+    return (borg_attack_aux_wand_bolt(sv_wand_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW, -1));
 
     /* Wand -- sleep monster */
     case BF_WAND_HOLD_MONSTER:
     rad = 0;
     dam = 10;
-    return (borg_attack_aux_wand_bolt(sv_wand_hold_monster, rad, dam, BORG_ATTACK_OLD_SLEEP));
+    return (borg_attack_aux_wand_bolt(sv_wand_hold_monster, rad, dam, BORG_ATTACK_OLD_SLEEP, -1));
 
     /* Wand -- fear monster */
     case BF_WAND_FEAR_MONSTER:
     rad = 0;
     dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(sv_wand_fear_monster, rad, dam, BORG_ATTACK_TURN_ALL));
+    return (borg_attack_aux_wand_bolt(sv_wand_fear_monster, rad, dam, BORG_ATTACK_TURN_ALL, -1));
 
     /* Wand -- conf monster */
     case BF_WAND_CONFUSE_MONSTER:
     rad = 0;
     dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(sv_wand_confuse_monster, rad, dam, BORG_ATTACK_OLD_CONF));
+    return (borg_attack_aux_wand_bolt(sv_wand_confuse_monster, rad, dam, BORG_ATTACK_OLD_CONF, -1));
 
     /* Wand -- elec bolt */
     case BF_WAND_ELEC_BOLT:
     dam = 6 * (6 + 1) / 2;
     rad = -1;
-    return (borg_attack_aux_wand_bolt(sv_wand_elec_bolt, rad, dam, BORG_ATTACK_ELEC));
+    return (borg_attack_aux_wand_bolt(sv_wand_elec_bolt, rad, dam, BORG_ATTACK_ELEC, -1));
 
     /* Wand -- cold bolt */
     case BF_WAND_COLD_BOLT:
     dam = 12 * (8 + 1) / 2;
     rad = 0;
-    return (borg_attack_aux_wand_bolt(sv_wand_cold_bolt, rad, dam, BORG_ATTACK_COLD));
+    return (borg_attack_aux_wand_bolt(sv_wand_cold_bolt, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- acid bolt */
     case BF_WAND_ACID_BOLT:
     rad = 0;
     dam = 5 * (8 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(sv_wand_acid_bolt, rad, dam, BORG_ATTACK_ACID));
+    return (borg_attack_aux_wand_bolt(sv_wand_acid_bolt, rad, dam, BORG_ATTACK_ACID, -1));
 
     /* Wand -- fire bolt */
     case BF_WAND_FIRE_BOLT:
     rad = 0;
     dam = 12 * (8 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(sv_wand_fire_bolt, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_wand_bolt(sv_wand_fire_bolt, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Spell -- light beam */
     case BF_WAND_LIGHT_BEAM:
     rad = -1;
     dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_wand_bolt(sv_wand_light, rad, dam, BORG_ATTACK_LIGHT_WEAK));
+    return (borg_attack_aux_wand_bolt(sv_wand_light, rad, dam, BORG_ATTACK_LIGHT_WEAK, -1));
 
     /* Wand -- stinking cloud */
     case BF_WAND_STINKING_CLOUD:
     rad = 2;
     dam = 12;
-    return (borg_attack_aux_wand_bolt(sv_wand_stinking_cloud, rad, dam, BORG_ATTACK_POIS));
+    return (borg_attack_aux_wand_bolt(sv_wand_stinking_cloud, rad, dam, BORG_ATTACK_POIS, -1));
 
     /* Wand -- elec ball */
     case BF_WAND_ELEC_BALL:
     rad = 2;
     dam = 64;
-    return (borg_attack_aux_wand_bolt(sv_wand_elec_ball, rad, dam, BORG_ATTACK_ELEC));
+    return (borg_attack_aux_wand_bolt(sv_wand_elec_ball, rad, dam, BORG_ATTACK_ELEC, -1));
 
     /* Wand -- acid ball */
     case BF_WAND_COLD_BALL:
     rad = 2;
     dam = 100;
-    return (borg_attack_aux_wand_bolt(sv_wand_cold_ball, rad, dam, BORG_ATTACK_COLD));
+    return (borg_attack_aux_wand_bolt(sv_wand_cold_ball, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- acid ball */
     case BF_WAND_ACID_BALL:
     rad = 2;
     dam = 120;
-    return (borg_attack_aux_wand_bolt(sv_wand_acid_ball, rad, dam, BORG_ATTACK_ACID));
+    return (borg_attack_aux_wand_bolt(sv_wand_acid_ball, rad, dam, BORG_ATTACK_ACID, -1));
 
     /* Wand -- fire ball */
     case BF_WAND_FIRE_BALL:
     rad = 2;
     dam = 144;
-    return (borg_attack_aux_wand_bolt(sv_wand_fire_ball, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_wand_bolt(sv_wand_fire_ball, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Wand -- dragon cold */
     case BF_WAND_DRAGON_COLD:
     rad = 3;
     dam = 160;
-    return (borg_attack_aux_wand_bolt(sv_wand_dragon_cold, rad, dam, BORG_ATTACK_COLD));
+    return (borg_attack_aux_wand_bolt(sv_wand_dragon_cold, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- dragon fire */
     case BF_WAND_DRAGON_FIRE:
     rad = 3;
     dam = 200;
-    return (borg_attack_aux_wand_bolt(sv_wand_dragon_fire, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_wand_bolt(sv_wand_dragon_fire, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Wand -- annihilation */
     case BF_WAND_ANNIHILATION:
     dam = 250;
-    return (borg_attack_aux_wand_bolt(sv_wand_annihilation, rad, dam, BORG_ATTACK_OLD_DRAIN));
+    return (borg_attack_aux_wand_bolt(sv_wand_annihilation, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
 
     /* Wand -- drain life */
     case BF_WAND_DRAIN_LIFE:
     dam = 150;
-    return (borg_attack_aux_wand_bolt(sv_wand_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN));
+    return (borg_attack_aux_wand_bolt(sv_wand_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
 
     /* Wand -- wand of wonder */
     case BF_WAND_WONDER:
     dam = 35;
-    return (borg_attack_aux_wand_bolt(sv_wand_wonder, rad, dam, BORG_ATTACK_MISSILE));
+    return (borg_attack_aux_wand_bolt(sv_wand_wonder, rad, dam, BORG_ATTACK_MISSILE, -1));
 
     /* Staff -- Sleep Monsters */
     case BF_STAFF_SLEEP_MONSTERS:
@@ -8885,67 +8896,67 @@ static int borg_attack_aux(int what)
     case BF_EF_FIRE1:
     rad = 0;
     dam = (9 * (8 + 1) / 2);
-    return (borg_attack_aux_artifact("FIRE_BOLT", rad, dam, BORG_ATTACK_FIRE, true));
+    return (borg_attack_aux_activation(act_fire_bolt, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Anduril & Firestar- fire bolt 72*/
     case BF_EF_FIRE2:
     rad = 2;
     dam = 72;
-    return (borg_attack_aux_artifact("FIRE_BOLT72", rad, dam, BORG_ATTACK_FIRE, true));
+    return (borg_attack_aux_activation(act_fire_bolt72, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Gothmog- FIRE BALL 144 */
     case BF_EF_FIRE3:
     rad = 2;
     dam = 144;
-    return (borg_attack_aux_artifact("FIRE_BALL", rad, dam, BORG_ATTACK_FIRE, true));
+    return (borg_attack_aux_activation(act_fire_ball, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Nimthanc & Paurnimmen- frost bolt 6d8*/
     case BF_EF_FROST1:
     rad = 0;
     dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_artifact("COLD_BOLT", rad, dam, BORG_ATTACK_COLD, true));
+    return (borg_attack_aux_activation(act_cold_bolt, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Belangil- frost ball 50 */
     case BF_EF_FROST2:
     rad = 2;
     dam = 50;
-    return (borg_attack_aux_artifact("COLD_BALL50", rad, dam, BORG_ATTACK_COLD, true));
+    return (borg_attack_aux_activation(act_cold_ball50, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Aranrúth- frost bolt 12d8*/
     case BF_EF_FROST4:
     rad = 0;
     dam = (12 * (8 + 1) / 2);
-    return (borg_attack_aux_artifact("COLD_BOLT2", rad, dam, BORG_ATTACK_COLD, true));
+    return (borg_attack_aux_activation(act_cold_bolt2, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Ringil- frost ball 100*/
     case BF_EF_FROST3:
     rad = 2;
     dam = 100;
-    return (borg_attack_aux_artifact("COLD_BALL100", rad, dam, BORG_ATTACK_COLD, true));
+    return (borg_attack_aux_activation(act_cold_ball100, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Dethanc- electric bolt 6d6*/
     case BF_EF_LIGHTNING_BOLT:
     rad = -1;
     dam = (6 * (6 + 1) / 2);
-    return (borg_attack_aux_artifact("ELEC_BOLT", rad, dam, BORG_ATTACK_ELEC, true));
+    return (borg_attack_aux_activation(act_elec_bolt, rad, dam, BORG_ATTACK_ELEC, true, -1));
 
     /* Artifact -- Rilia- poison gas 12*/
     case BF_EF_STINKING_CLOUD:
     rad = 2;
     dam = 12;
-    return (borg_attack_aux_artifact("STINKING_CLOUD", rad, dam, BORG_ATTACK_POIS, true));
+    return (borg_attack_aux_activation(act_stinking_cloud, rad, dam, BORG_ATTACK_POIS, true, -1));
 
     /* Artifact -- Theoden- drain Life 120*/
     case BF_EF_DRAIN_LIFE2:
     rad = 0;
     dam = 120;
-    return (borg_attack_aux_artifact("DRAIN_LIFE2", rad, dam, BORG_ATTACK_OLD_DRAIN, true));
+    return (borg_attack_aux_activation(act_drain_life2, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     /* Artifact -- Totila- confustion */
     case BF_EF_CONFUSE:
     rad = 0;
     dam = 20;
-    return (borg_attack_aux_artifact("CONFUSE2", rad, dam, BORG_ATTACK_OLD_CONF, true));
+    return (borg_attack_aux_activation(act_confuse2, rad, dam, BORG_ATTACK_OLD_CONF, true, -1));
 
     /* Artifact -- Holcolleth -- sleep ii and sanctuary */
     case BF_EF_SLEEP:
@@ -8956,49 +8967,56 @@ static int borg_attack_aux(int what)
     case BF_EF_DRAIN_LIFE1:
     rad = 0;
     dam = 90;
-    return (borg_attack_aux_artifact("DRAIN_LIFE1", rad, dam, BORG_ATTACK_OLD_DRAIN, true));
+    return (borg_attack_aux_activation(act_drain_life1, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     /* Artifact -- Fingolfin- spikes 150 */
     case BF_EF_ARROW:
     rad = 0;
     dam = 150;
-    return (borg_attack_aux_artifact("ARROW", rad, dam, BORG_ATTACK_MISSILE, true));
+    return (borg_attack_aux_activation(act_arrow, rad, dam, BORG_ATTACK_MISSILE, true, -1));
 
     /* Artifact -- Cammithrim- Magic Missile 3d4 */
     case BF_EF_MISSILE:
     rad = 0;
     dam = (3 * (4 + 1) / 2);
-    return (borg_attack_aux_artifact("MISSILE", rad, dam, BORG_ATTACK_MISSILE, true));
+    return (borg_attack_aux_activation(act_missile, rad, dam, BORG_ATTACK_MISSILE, true, -1));
 
     /* Artifact -- Paurnen- ACID bolt 5d8 */
     case BF_EF_ACID1:
     rad = 0;
     dam = (5 * (8 + 1) / 2);
-    return (borg_attack_aux_artifact("ACID_BOLT", rad, dam, BORG_ATTACK_ACID, true));
+    return (borg_attack_aux_activation(act_acid_bolt, rad, dam, BORG_ATTACK_ACID, true, -1));
 
     /* Artifact -- INGWE- DISPEL EVIL X5 */
     case BF_EF_DISP_EVIL:
     rad = 10;
     dam = (10 + (borg_skill[BI_CLEVEL] * 5) / 2);
-    return (borg_attack_aux_artifact("DISPEL_EVIL", rad, dam, BORG_ATTACK_DISP_EVIL, true));
+    return (borg_attack_aux_activation(act_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL, true, -1));
 
     /* Artifact -- Eöl -- Mana Bolt 12d8 */
     case BF_EF_MANA_BOLT:
     rad = 0;
     dam = (12 * (8 + 1)) / 2;
-    return (borg_attack_aux_artifact("MANA_BOLT", rad, dam, BORG_ATTACK_MANA, true));
+    return (borg_attack_aux_activation(act_mana_bolt, rad, dam, BORG_ATTACK_MANA, true, -1));
 
     /* Artifact -- Razorback and Mediator */
     case BF_EF_STAR_BALL:
     rad = 3;
     dam = 150;
-    return (borg_attack_aux_artifact("STAR_BALL", rad, dam, BORG_ATTACK_ELEC, true));
+    return (borg_attack_aux_activation(act_star_ball, rad, dam, BORG_ATTACK_ELEC, true, -1));
 
     /* Artifact -- Gil-galad */
     case BF_EF_STARLIGHT2:
     rad = 7;
     dam = (10 * (8 + 1)) / 2;
-    return (borg_attack_aux_artifact("STARLIGHT2", rad, dam, BORG_ATTACK_LIGHT, false));
+    return (borg_attack_aux_activation(act_starlight2, rad, dam, BORG_ATTACK_LIGHT, false, -1));
+
+    /* Artifact -- randart */
+    case BF_EF_STARLIGHT:
+    rad = 7;
+    dam = (6 * (8 + 1)) / 2;
+    return (borg_attack_aux_activation(act_starlight, rad, dam, BORG_ATTACK_LIGHT, false, -1));
+
 
     /* Ring of ACID */
     case BF_RING_ACID:
@@ -9029,77 +9047,175 @@ static int borg_attack_aux(int what)
     case BF_DRAGON_BLUE:
     rad = 2;
     dam = 150;
-    return (borg_attack_aux_dragon(sv_dragon_blue, rad, dam, BORG_ATTACK_ELEC));
+    return (borg_attack_aux_dragon(sv_dragon_blue, rad, dam, BORG_ATTACK_ELEC, -1));
 
     case BF_DRAGON_WHITE:
     rad = 2;
     dam = 100;
-    return (borg_attack_aux_dragon(sv_dragon_white, rad, dam, BORG_ATTACK_COLD));
+    return (borg_attack_aux_dragon(sv_dragon_white, rad, dam, BORG_ATTACK_COLD, -1));
 
     case BF_DRAGON_BLACK:
     rad = 2;
     dam = 120;
-    return (borg_attack_aux_dragon(sv_dragon_black, rad, dam, BORG_ATTACK_ACID));
+    return (borg_attack_aux_dragon(sv_dragon_black, rad, dam, BORG_ATTACK_ACID, -1));
 
     case BF_DRAGON_GREEN:
     rad = 2;
     dam = 150;
-    return (borg_attack_aux_dragon(sv_dragon_green, rad, dam, BORG_ATTACK_POIS));
+    return (borg_attack_aux_dragon(sv_dragon_green, rad, dam, BORG_ATTACK_POIS, -1));
 
     case BF_DRAGON_RED:
     rad = 2;
     dam = 200;
-    return (borg_attack_aux_dragon(sv_dragon_red, rad, dam, BORG_ATTACK_FIRE));
+    return (borg_attack_aux_dragon(sv_dragon_red, rad, dam, BORG_ATTACK_FIRE, -1));
 
     case BF_DRAGON_MULTIHUED:
-    chance = randint0(5);
-    rad = 2;
-    dam = 250;
-    return (borg_attack_aux_dragon(sv_dragon_multihued, rad, dam,
-        (((chance == 1) ? BORG_ATTACK_ELEC :
-            ((chance == 2) ? BORG_ATTACK_COLD :
-                ((chance == 3) ? BORG_ATTACK_ACID :
-                    ((chance == 4) ? BORG_ATTACK_POIS : BORG_ATTACK_FIRE)))))));
+    {
+        int     value[5];
+        int     type[5] =
+            {BORG_ATTACK_ELEC, 
+             BORG_ATTACK_COLD, 
+             BORG_ATTACK_ACID, 
+             BORG_ATTACK_POIS, 
+             BORG_ATTACK_FIRE};
+        int     biggest = 0;
+        bool    tmp_simulate = borg_simulate;
+
+        rad = 2;
+        dam = 250;
+        if (!borg_simulate)
+            borg_simulate = true;
+        for (int x = 0; x < 5; x++)
+            value[x] = borg_attack_aux_dragon(sv_dragon_multihued, rad, dam, type[x], x);
+
+        for (int x = 1; x < 5; x++)
+            if (value[x] > value[biggest])
+                biggest = x;
+
+        borg_simulate = tmp_simulate;
+        if (!borg_simulate)
+            value[biggest] = borg_attack_aux_dragon(sv_dragon_multihued, rad, dam, type[biggest], biggest);
+
+        return value[biggest];
+    }
 
     case BF_DRAGON_GOLD:
     rad = 2;
     dam = 150;
-    return (borg_attack_aux_dragon(sv_dragon_gold, rad, dam, BORG_ATTACK_SOUND));
+    return (borg_attack_aux_dragon(sv_dragon_gold, rad, dam, BORG_ATTACK_SOUND, -1));
 
     case BF_DRAGON_CHAOS:
-    chance = randint0(2);
-    rad = 2;
-    dam = 220;
-    return (borg_attack_aux_dragon(sv_dragon_chaos, rad, dam,
-        (chance == 1 ? BORG_ATTACK_CHAOS : BORG_ATTACK_DISEN)));
+    {
+        int     value[2];
+        int     type[2] = { BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN };
+        int     biggest = 0;
+        bool    tmp_simulate = borg_simulate;
+
+        rad = 2;
+        dam = 220;
+
+        if (!borg_simulate)
+            borg_simulate = true;
+        for (int x = 0; x < 2; x++)
+            value[x] = borg_attack_aux_dragon(sv_dragon_chaos, rad, dam, type[x], x);
+
+        for (int x = 1; x < 2; x++)
+            if (value[x] > value[biggest])
+                biggest = x;
+
+        borg_simulate = tmp_simulate;
+        if (!borg_simulate)
+            value[biggest] = borg_attack_aux_dragon(sv_dragon_chaos, rad, dam, type[biggest], biggest);
+
+        return value[biggest];
+    }
 
     case BF_DRAGON_LAW:
-    chance = randint0(2);
-    rad = 2;
-    dam = 230;
-    return (borg_attack_aux_dragon(sv_dragon_law, rad, dam,
-        (chance == 1 ? BORG_ATTACK_SOUND : BORG_ATTACK_SHARD)));
+    {
+        int     value[2];
+        int     type[2] ={ BORG_ATTACK_SOUND, BORG_ATTACK_SHARD };
+            int     biggest = 0;
+        bool    tmp_simulate = borg_simulate;
+
+        rad = 2;
+        dam = 220;
+
+        if (!borg_simulate)
+            borg_simulate = true;
+        for (int x = 0; x < 2; x++)
+            value[x] = borg_attack_aux_dragon(sv_dragon_law, rad, dam, type[x], x);
+
+        for (int x = 1; x < 2; x++)
+            if (value[x] > value[biggest])
+                biggest = x;
+
+        borg_simulate = tmp_simulate;
+        if (!borg_simulate)
+            value[biggest] = borg_attack_aux_dragon(sv_dragon_law, rad, dam, type[biggest], biggest);
+
+        return value[biggest];
+    }
 
     case BF_DRAGON_BALANCE:
-    chance = randint0(4);
-    rad = 2;
-    dam = 250;
-    return (borg_attack_aux_dragon(sv_dragon_balance, rad, dam,
-        (((chance == 1) ? BORG_ATTACK_CHAOS :
-            ((chance == 2) ? BORG_ATTACK_DISEN :
-                ((chance == 3) ? BORG_ATTACK_SOUND : BORG_ATTACK_SHARD))))));
+    {
+        int     value[4];
+        int     type[4] =
+            {BORG_ATTACK_CHAOS,
+             BORG_ATTACK_DISEN,
+             BORG_ATTACK_SOUND,
+             BORG_ATTACK_SHARD};
+        int     biggest = 0;
+        bool    tmp_simulate = borg_simulate;
+
+        rad = 2;
+        dam = 250;
+
+        if (!borg_simulate)
+            borg_simulate = true;
+        for (int x = 0; x < 4; x++)
+            value[x] = borg_attack_aux_dragon(sv_dragon_balance, rad, dam, type[x], x);
+
+        for (int x = 1; x < 4; x++)
+            if (value[x] > value[biggest])
+                biggest = x;
+
+        borg_simulate = tmp_simulate;
+        if (!borg_simulate)
+            value[biggest] = borg_attack_aux_dragon(sv_dragon_balance, rad, dam, type[biggest], biggest);
+
+        return value[biggest];
+    }
 
     case BF_DRAGON_SHINING:
-    chance = randint0(2);
-    rad = 2;
-    dam = 200;
-    return (borg_attack_aux_dragon(sv_dragon_shining, rad, dam,
-        (chance == 0 ? BORG_ATTACK_LIGHT : BORG_ATTACK_DARK)));
+    {
+        int     value[2];
+        int     type[2] = { BORG_ATTACK_LIGHT, BORG_ATTACK_DARK };
+        int     biggest = 0;
+        bool    tmp_simulate = borg_simulate;
+
+        rad = 2;
+        dam = 200;
+
+        if (!borg_simulate)
+            borg_simulate = true;
+        for (int x = 0; x < 2; x++)
+            value[x] = borg_attack_aux_dragon(sv_dragon_shining, rad, dam, type[x], x);
+
+        for (int x = 1; x < 2; x++)
+            if (value[x] > value[biggest])
+                biggest = x;
+
+        borg_simulate = tmp_simulate;
+        if (!borg_simulate)
+            value[biggest] = borg_attack_aux_dragon(sv_dragon_shining, rad, dam, type[biggest], biggest);
+
+        return value[biggest];
+    }
 
     case BF_DRAGON_POWER:
     rad = 2;
     dam = 300;
-    return (borg_attack_aux_dragon(sv_dragon_power, rad, dam, BORG_ATTACK_MISSILE));
+    return (borg_attack_aux_dragon(sv_dragon_power, rad, dam, BORG_ATTACK_MISSILE, -1));
     }
 
     /* Oops */
@@ -9800,17 +9916,17 @@ static int borg_defend_aux_speed(int p1)
         !speed_staff &&
         !speed_rod &&
         !speed_spell &&
-        !borg_equips_artifact("HASTE", true) &&
-        !borg_equips_artifact("HASTE1", true) &&
-        !borg_equips_artifact("HASTE2", true))
+        !borg_equips_item(act_haste, true) &&
+        !borg_equips_item(act_haste1, true) &&
+        !borg_equips_item(act_haste2, true))
         return (0);
 
     /* if we have an infinite/large suppy of speed we can */
     /* be generious with our use */
     if (speed_rod || speed_spell || speed_staff ||
-        borg_equips_artifact("HASTE", true) ||
-        borg_equips_artifact("HASTE1", true) ||
-        borg_equips_artifact("HASTE2", true))
+        borg_equips_item(act_haste, true) ||
+        borg_equips_item(act_haste1, true) ||
+        borg_equips_item(act_haste2, true))
         good_speed = true;
 
     /* pretend we are protected and look again */
@@ -9884,9 +10000,9 @@ static int borg_defend_aux_speed(int p1)
 
         /* do it! */
         if (borg_zap_rod(sv_rod_speed) ||
-            borg_activate_artifact("HASTE") ||
-            borg_activate_artifact("HASTE1") ||
-            borg_activate_artifact("HASTE2") ||
+            borg_activate_item(act_haste) ||
+            borg_activate_item(act_haste1) ||
+            borg_activate_item(act_haste2) ||
             borg_use_staff(sv_staff_speed) ||
             borg_quaff_potion(sv_potion_speed))
             /* Value */
@@ -9986,8 +10102,8 @@ static int borg_defend_aux_resist_fecap(int p1)
     /* Cant when screwed */
     if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISFORGET]) return (0);
 
-    if (!borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true))
+    if (!borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true))
         return (0);
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as such. */
@@ -10038,8 +10154,8 @@ static int borg_defend_aux_resist_fecap(int p1)
         borg_note("# Attempting to cast FECAP");
 
         /* do it! */
-        if (borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST"))
+        if (borg_activate_item(act_resist_all) ||
+            borg_activate_item(act_rage_bless_resist))
 
             /* No resting to recoop mana */
             borg_no_rest_prep = 21000;
@@ -10081,8 +10197,8 @@ static int borg_defend_aux_resist_f(int p1)
                 fail_allowed += 10;
 
     if (!borg_spell_okay_fail(RESISTANCE, fail_allowed) &&
-        !borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true) &&
+        !borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true) &&
         !borg_equips_ring(sv_ring_flames) &&
         -1 == borg_slot(TV_POTION, sv_potion_resist_heat))
         return (0);
@@ -10121,8 +10237,8 @@ static int borg_defend_aux_resist_f(int p1)
             borg_keypress('5');
             return (p1 - p2);
         }
-        if (borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
+        if (borg_activate_item(act_resist_all) ||
+            borg_activate_item(act_rage_bless_resist) ||
             borg_spell_fail(RESISTANCE, fail_allowed) ||
             borg_quaff_potion(sv_potion_resist_heat))
 
@@ -10164,8 +10280,8 @@ static int borg_defend_aux_resist_c(int p1)
                 fail_allowed += 10;
 
     if (!borg_spell_okay_fail(RESISTANCE, fail_allowed) &&
-        !borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true) &&
+        !borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true) &&
         !borg_equips_ring(sv_ring_ice) &&
         -1 == borg_slot(TV_POTION, sv_potion_resist_cold))
         return (0);
@@ -10206,8 +10322,8 @@ static int borg_defend_aux_resist_c(int p1)
             borg_keypress('5');
             return (p1 - p2);
         }
-        if (borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
+        if (borg_activate_item(act_resist_all) ||
+            borg_activate_item(act_rage_bless_resist) ||
             borg_spell_fail(RESISTANCE, fail_allowed) ||
             borg_quaff_potion(sv_potion_resist_cold))
 
@@ -10249,8 +10365,8 @@ static int borg_defend_aux_resist_a(int p1)
                 fail_allowed += 10;
 
     if (!borg_spell_okay_fail(RESISTANCE, fail_allowed) &&
-        !borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true) &&
+        !borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true) &&
         !borg_equips_ring(sv_ring_acid))
         return (0);
 
@@ -10288,8 +10404,8 @@ static int borg_defend_aux_resist_a(int p1)
             return (p1 - p2);
         }
 
-        if (borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST"))
+        if (borg_activate_item(act_resist_all) ||
+            borg_activate_item(act_rage_bless_resist))
 
             /* No resting to recoop mana */
             borg_no_rest_prep = 21000;
@@ -10327,8 +10443,8 @@ static int borg_defend_aux_resist_p(int p1)
                 fail_allowed += 10;
 
     if (!borg_spell_okay_fail(RESIST_POISON, fail_allowed) &&
-        !borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true) &&
+        !borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true) &&
         !borg_spell_okay_fail(RESISTANCE, fail_allowed))
         return (0);
 
@@ -10354,8 +10470,8 @@ static int borg_defend_aux_resist_p(int p1)
 
         /* do it! */
         if (borg_spell_fail(RESIST_POISON, fail_allowed) ||
-            borg_activate_artifact("RESIST_ALL") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
+            borg_activate_item(act_resist_all) ||
+            borg_activate_item(act_rage_bless_resist) ||
             borg_spell_fail(RESISTANCE, fail_allowed))
 
             /* No resting to recoop mana */
@@ -10405,7 +10521,7 @@ static int borg_defend_aux_prot_evil(int p1)
 
     if (!(ag->info & BORG_GLOW) && borg_skill[BI_CURLITE] == 0) pfe_spell = false;
 
-    if (borg_equips_artifact("PROTEVIL", true)) pfe_spell = true;
+    if (borg_equips_item(act_protevil, true)) pfe_spell = true;
 
     if (pfe_spell == false) return (0);
 
@@ -10432,7 +10548,7 @@ static int borg_defend_aux_prot_evil(int p1)
 
         /* do it! */
         if (borg_spell_fail(PROTECTION_FROM_EVIL, fail_allowed) ||
-            borg_activate_artifact("PROTEVIL") ||
+            borg_activate_item(act_protevil) ||
             borg_read_scroll(sv_scroll_protection_from_evil))
 
             /* No resting to recoop mana */
@@ -10544,7 +10660,7 @@ static int borg_defend_aux_tele_away(int p1)
 
     /* do I have the ability? */
     if (borg_spell_okay_fail(TELEPORT_OTHER, fail_allowed) ||
-        borg_equips_artifact("TELE_OTHER", true) ||
+        borg_equips_item(act_tele_other, true) ||
         (-1 != borg_slot(TV_WAND, sv_wand_teleport_away) &&
             borg_items[borg_slot(TV_WAND, sv_wand_teleport_away)].pval))
         spell_ok = true;
@@ -10661,7 +10777,7 @@ static int borg_defend_aux_tele_away(int p1)
 
     /* Cast the spell */
     if (borg_spell(TELEPORT_OTHER) ||
-        borg_activate_artifact("TELE_OTHER") ||
+        borg_activate_item(act_tele_other) ||
         borg_aim_wand(sv_wand_teleport_away))
     {
         /* Use target */
@@ -10771,9 +10887,9 @@ static int borg_defend_aux_berserk(int p1)
 
     if (!borg_spell_okay_fail(BERSERK_STRENGTH, fail_allowed) &&
         -1 == borg_slot(TV_POTION, sv_potion_berserk) &&
-        !borg_equips_artifact("BERSERKER", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true) &&
-        !borg_equips_artifact("SHERO", true))
+        !borg_equips_item(act_berserker, true) &&
+        !borg_equips_item(act_rage_bless_resist, true) &&
+        !borg_equips_item(act_shero, true))
         return (0);
 
     /* if we are in some danger but not much, go for a quick bless */
@@ -10786,9 +10902,9 @@ static int borg_defend_aux_berserk(int p1)
 
         /* do it! */
         if (borg_spell(BERSERK_STRENGTH) ||
-            borg_activate_artifact("BERSERKER") ||
-            borg_activate_artifact("RAGE_BLESS_RESIST") ||
-            borg_activate_artifact("SHERO") ||
+            borg_activate_item(act_berserker) ||
+            borg_activate_item(act_rage_bless_resist) ||
+            borg_activate_item(act_shero) ||
             borg_quaff_potion(sv_potion_berserk))
             return (5);
     }
@@ -11051,7 +11167,7 @@ static int borg_defend_aux_mass_genocide(int p1)
 
     /* see if prayer is legal */
     if (!borg_spell_okay_fail(MASS_BANISHMENT, 40) &&
-        !borg_equips_artifact("BANISHMENT", true) &&
+        !borg_equips_item(act_banishment, true) &&
         (borg_skill[BI_AMASSBAN] == 0))/* Mass Banishment scroll */
         return (0);
 
@@ -11112,7 +11228,7 @@ static int borg_defend_aux_mass_genocide(int p1)
 
         /* Cast the spell */
         if (borg_read_scroll(sv_scroll_mass_banishment) ||
-            borg_activate_artifact("BANISHMENT") ||
+            borg_activate_item(act_banishment) ||
             borg_spell(MASS_BANISHMENT))
         {
 
@@ -11196,7 +11312,7 @@ static int borg_defend_aux_genocide(int p1)
 
     /* Make sure I have the spell */
     if (borg_spell_okay_fail(BANISHMENT, fail_allowed) ||
-        borg_equips_artifact("BANISHMENT", true) ||
+        borg_equips_item(act_banishment, true) ||
         borg_equips_staff_fail(sv_staff_banishment) ||
         (-1 != borg_slot(TV_SCROLL, sv_scroll_banishment)))
     {
@@ -11368,7 +11484,7 @@ static int borg_defend_aux_genocide(int p1)
         /* do it! ---use scrolls first since they clutter inventory */
         if (borg_read_scroll(sv_scroll_banishment) ||
             borg_spell(BANISHMENT) ||
-            borg_activate_artifact("BANISHMENT") ||
+            borg_activate_item(act_banishment) ||
             borg_use_staff(sv_staff_banishment))
         {
             /* and the winner is.....*/
@@ -11432,7 +11548,7 @@ static int borg_defend_aux_genocide_nasties(int p1)
         return (0);
 
     if (borg_spell_okay_fail(BANISHMENT, 35) ||
-        borg_equips_artifact("BANISHMENT", true) ||
+        borg_equips_item(act_banishment, true) ||
         borg_equips_staff_fail(sv_staff_banishment))
     {
         genocide_spell = true;
@@ -11456,7 +11572,7 @@ static int borg_defend_aux_genocide_nasties(int p1)
         borg_nasties_count[b_i]));
 
     /* Execute -- Nice pun*/
-    if (borg_activate_artifact("BANISHMENT") ||
+    if (borg_activate_item(act_banishment) ||
         borg_use_staff(sv_staff_banishment) ||
         borg_spell(BANISHMENT))
     {
@@ -11727,7 +11843,7 @@ static int borg_defend_aux_banishment(int p1)
     /* Cant when screwed */
     if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISFORGET]) return (0);
 
-    using_artifact = borg_equips_artifact("LOSKILL", true) && borg_has[BI_CURHP] > 100;
+    using_artifact = borg_equips_item(act_loskill, true) && borg_has[BI_CURHP] > 100;
 
     if (!using_artifact &&
         !borg_spell_okay_fail(BANISH_EVIL, fail_allowed))
@@ -11851,7 +11967,7 @@ static int borg_defend_aux_banishment(int p1)
     {
         /* attempt the banish */
         if (using_artifact)
-            if (borg_activate_artifact("LOSKILL"))
+            if (borg_activate_item(act_loskill))
                 return (p1 - p2);
         if (borg_spell(BANISH_EVIL))
             return (p1 - p2);
@@ -12353,7 +12469,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
 
     /* Cast the spell */
     if (borg_spell(TELEPORT_OTHER) ||
-        borg_activate_artifact("TELE_OTHER") ||
+        borg_activate_item(act_tele_other) ||
         borg_aim_wand(sv_wand_teleport_away))
     {
         /* Use target */
@@ -12914,15 +13030,15 @@ static int borg_perma_aux_resist_colluin(void)
     /* Only use it when Unique is close */
     if (!borg_fighting_unique) return (0);
 
-    if (!borg_equips_artifact("RESIST_ALL", true) &&
-        !borg_equips_artifact("RAGE_BLESS_RESIST", true))
+    if (!borg_equips_item(act_resist_all, true) &&
+        !borg_equips_item(act_rage_bless_resist, true))
         return (0);
 
     /* Simulation */
     if (borg_simulate) return (2);
 
     /* do it! */
-    if (borg_activate_artifact("RESIST_ALL") || borg_activate_artifact("RAGE_BLESS_RESIST"))
+    if (borg_activate_item(act_resist_all) || borg_activate_item(act_rage_bless_resist))
     {
         /* No resting to recoop mana */
         borg_no_rest_prep = 21000;
@@ -13810,12 +13926,12 @@ bool borg_recover(void)
     /* Hack -- cure stun */
     if (borg_skill[BI_ISSTUN] && (q < 75))
     {
-        if (borg_activate_artifact("CURE_BODY") ||
-            borg_activate_artifact("CURE_CRITICAL") ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_TEMP") ||
-            borg_activate_artifact("HEAL3") ||
+        if (borg_activate_item(act_cure_body) ||
+            borg_activate_item(act_cure_critical) ||
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_temp) ||
+            borg_activate_item(act_heal3) ||
             borg_spell(MINOR_HEALING) ||
             borg_spell(HEALING) ||
             borg_spell(HERBAL_CURING) ||
@@ -13833,12 +13949,12 @@ bool borg_recover(void)
     if (borg_skill[BI_ISHEAVYSTUN])
     {
         if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
-            borg_activate_artifact("CURE_BODY") ||
-            borg_activate_artifact("CURE_CRITICAL") ||
-            borg_activate_artifact("CURE_FULL") ||
-            borg_activate_artifact("CURE_FULL2") ||
-            borg_activate_artifact("CURE_TEMP") ||
-            borg_activate_artifact("HEAL3") ||
+            borg_activate_item(act_cure_body) ||
+            borg_activate_item(act_cure_critical) ||
+            borg_activate_item(act_cure_full) ||
+            borg_activate_item(act_cure_full2) ||
+            borg_activate_item(act_cure_temp) ||
+            borg_activate_item(act_heal3) ||
             borg_spell(MINOR_HEALING) ||
             borg_spell(HEALING) ||
             borg_spell(HERBAL_CURING) ||
@@ -13854,7 +13970,7 @@ bool borg_recover(void)
     /* Hack -- cure cuts */
     if (borg_skill[BI_ISCUT] && (q < 75))
     {
-        if (borg_activate_artifact("CURE_LIGHT") ||
+        if (borg_activate_item(act_cure_light) ||
             borg_spell(MINOR_HEALING) ||
             borg_spell(HEALING) ||
             borg_spell(HERBAL_CURING) ||
@@ -13871,7 +13987,7 @@ bool borg_recover(void)
     if (borg_skill[BI_ISPOISONED] && (q < 75))
     {
         if (borg_eat_food(TV_MUSHROOM, sv_mush_fast_recovery) ||
-            borg_activate_artifact("REM_FEAR_POIS") ||
+            borg_activate_item(act_rem_fear_pois) ||
             borg_spell(HERBAL_CURING) ||
             borg_spell(CURE_POISON))
         {
@@ -13886,7 +14002,7 @@ bool borg_recover(void)
     if (borg_skill[BI_ISAFRAID] && !borg_skill[BI_CRSFEAR] && (q < 75))
     {
         if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
-            borg_activate_artifact("REM_FEAR_POIS") ||
+            borg_activate_item(act_rem_fear_pois) ||
             borg_spell(HEROISM) ||
             borg_spell(BERSERK_STRENGTH) ||
             borg_spell(HOLY_WORD))
@@ -13921,9 +14037,9 @@ bool borg_recover(void)
     if ((borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 2) && (q < 75) && p == 0 &&
         (borg_skill[BI_CURSP] > borg_skill[BI_MAXSP] / 4))
     {
-        if (borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
-            borg_activate_artifact("HEAL3") ||
+        if (borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
+            borg_activate_item(act_heal3) ||
             borg_spell(HEALING) ||
             borg_spell(HOLY_WORD) ||
             borg_spell(MINOR_HEALING) ||
@@ -13937,8 +14053,8 @@ bool borg_recover(void)
     }
 
     /* cure experience loss with prayer */
-    if (borg_skill[BI_ISFIXEXP] && (borg_activate_artifact("RESTORE_EXP") ||
-        borg_activate_artifact("RESTORE_LIFE") ||
+    if (borg_skill[BI_ISFIXEXP] && (borg_activate_item(act_restore_exp) ||
+        borg_activate_item(act_restore_life) ||
         borg_spell(REVITALIZE) ||
         borg_spell(REMEMBRANCE) ||
         (borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE))))
@@ -13977,8 +14093,8 @@ bool borg_recover(void)
         if (borg_use_staff_fail(sv_staff_curing) ||
             borg_zap_rod(sv_rod_curing) ||
             borg_zap_rod(sv_rod_healing) ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
             borg_quaff_crit(false))
         {
             return (true);
@@ -13992,8 +14108,8 @@ bool borg_recover(void)
             borg_use_staff_fail(sv_staff_curing) ||
             borg_zap_rod(sv_rod_curing) ||
             borg_zap_rod(sv_rod_healing) ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2"))
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2))
         {
             return (true);
         }
@@ -14005,8 +14121,8 @@ bool borg_recover(void)
         if (borg_use_staff_fail(sv_staff_curing) ||
             borg_zap_rod(sv_rod_curing) ||
             borg_zap_rod(sv_rod_healing) ||
-            borg_activate_artifact("HEAL1") ||
-            borg_activate_artifact("HEAL2") ||
+            borg_activate_item(act_heal1) ||
+            borg_activate_item(act_heal2) ||
             borg_quaff_crit(borg_skill[BI_CURHP] < 10))
         {
             return (true);
@@ -14023,7 +14139,7 @@ bool borg_recover(void)
             borg_quaff_crit(borg_skill[BI_CURHP] < 10) ||
             borg_use_staff_fail(sv_staff_curing) ||
             borg_zap_rod(sv_rod_curing) ||
-            borg_activate_artifact("REM_FEAR_POIS"))
+            borg_activate_item(act_rem_fear_pois))
         {
             return (true);
         }
@@ -14064,7 +14180,7 @@ bool borg_recover(void)
             borg_quaff_potion(sv_potion_boldness) ||
             borg_quaff_potion(sv_potion_heroism) ||
             borg_quaff_potion(sv_potion_berserk) ||
-            borg_activate_artifact("REM_FEAR_POIS"))
+            borg_activate_item(act_rem_fear_pois))
         {
             return (true);
         }
@@ -14085,7 +14201,7 @@ bool borg_recover(void)
         if (borg_zap_rod(sv_rod_healing) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
-            borg_activate_artifact("CURE_SERIOUS"))
+            borg_activate_item(act_cure_serious))
         {
             return (true);
         }
@@ -14255,7 +14371,7 @@ static bool borg_can_dig(bool check_fail, bool hard)
     {
         if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40) ||
             borg_spell_legal_fail(SHATTER_STONE, 40) ||
-            borg_equips_artifact("STONE_TO_MUD", true) ||
+            borg_equips_item(act_stone_to_mud, true) ||
             borg_equips_ring(sv_ring_digging))
             return true;
     }
@@ -14263,7 +14379,7 @@ static bool borg_can_dig(bool check_fail, bool hard)
     {
         if (borg_spell_legal(TURN_STONE_TO_MUD) ||
             borg_spell_legal(SHATTER_STONE) ||
-            borg_equips_artifact("STONE_TO_MUD", false) ||
+            borg_equips_item(act_stone_to_mud, false) ||
             borg_equips_ring(sv_ring_digging))
             return true;
     }
@@ -14653,7 +14769,7 @@ static bool borg_play_step(int y2, int x2)
             if (borg_spell(TURN_STONE_TO_MUD) ||
                 borg_spell(SHATTER_STONE) ||
                 borg_activate_ring(sv_ring_digging) ||
-                borg_activate_artifact("STONE_TO_MUD"))
+                borg_activate_item(act_stone_to_mud))
             {
                 borg_note("# Melting a door");
                 borg_keypress(I2D(dir));
@@ -14722,7 +14838,7 @@ static bool borg_play_step(int y2, int x2)
         if (borg_spell(TURN_STONE_TO_MUD) ||
             borg_spell(SHATTER_STONE) ||
             borg_activate_ring(sv_ring_digging) ||
-            borg_activate_artifact("STONE_TO_MUD")) {
+            borg_activate_item(act_stone_to_mud)) {
             borg_note("# Melting a wall/etc");
             borg_keypress(I2D(dir));
 
@@ -14813,8 +14929,8 @@ bool borg_twitchy(void)
             (borg_spell_fail(PHASE_DOOR, 40) ||
                 borg_spell_fail(PORTAL, 40) ||
                 borg_shadow_shift(40) ||
-                borg_activate_artifact("TELE_PHASE") ||
-                borg_activate_artifact("TELE_LONG") ||
+                borg_activate_item(act_tele_phase) ||
+                borg_activate_item(act_tele_long) ||
                 borg_read_scroll(sv_scroll_phase_door)))
         {
             /* We did something */
@@ -15739,7 +15855,7 @@ bool borg_excavate_vault(int range)
         if (borg_spell(TURN_STONE_TO_MUD) ||
             borg_spell(SHATTER_STONE) ||
             borg_activate_ring(sv_ring_digging) ||
-            borg_activate_artifact("STONE_TO_MUD"))
+            borg_activate_item(act_stone_to_mud))
         {
             borg_note("# Excavation of vault");
             borg_keypress('5');
@@ -16152,7 +16268,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
     if (!borg_spell_okay(TURN_STONE_TO_MUD) &&
         !borg_spell_okay(SHATTER_STONE) &&
         !borg_equips_ring(sv_ring_digging) &&
-        !borg_equips_artifact("STONE_TO_MUD", true)) return (false);
+        !borg_equips_item(act_stone_to_mud, true)) return (false);
 
     /* Summoner needs to be able to follow me.
      * So I either need to be able to
