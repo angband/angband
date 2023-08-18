@@ -100,6 +100,7 @@ struct borg_item
 
     uint8_t art_idx;     /* Artifact index (if any) */
     uint8_t ego_idx;     /* Ego-item index (if any) */
+    int     activ_idx;   /* Activation index (if any) */
     bool    one_ring;  /* is this the one ring */
 
     int16_t timeout;   /* Timeout counter */
@@ -435,12 +436,10 @@ extern int borg_activate_failure(int tval, int sval);
 /*
  * Artifact usage function (by index)
  */
-extern bool borg_activate_artifact(const char* activation); /*  */
-extern bool borg_equips_artifact(const char* activation, bool check_charge);  /*  */
+extern bool borg_activate_item(int activation); /*  */
+extern bool borg_equips_item(int activation, bool check_charge);  /*  */
 extern bool borg_activate_dragon(int drag_sval); /*  */
 extern bool borg_equips_dragon(int drag_sval);  /*  */
-extern bool borg_activate_item(int tval, int sval, bool target);
-extern bool borg_equips_item(int tval, int sval);
 extern bool borg_activate_ring(int ring_sval); /*  */
 extern bool borg_equips_ring(int ring_sval);  /*  */
 

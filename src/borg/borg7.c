@@ -147,8 +147,8 @@ bool borg_use_things(void)
        (borg_spell(REVITALIZE) ||
 		borg_spell(REMEMBRANCE) ||
 		(borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) ||
-        borg_activate_artifact("RESTORE_EXP") ||
-        borg_activate_artifact("RESTORE_LIFE") ||
+        borg_activate_item(act_restore_exp) ||
+        borg_activate_item(act_restore_life) ||
         borg_quaff_potion(sv_potion_restore_life)))
     {
         return (true);
@@ -284,8 +284,8 @@ bool borg_check_LIGHT_only(void)
 	/** Use wizard light sometimes **/
 
 	if (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)) {
-		if (borg_activate_artifact("CLAIRVOYANCE") ||
-			borg_activate_artifact("ENLIGHTENMENT") ||
+		if (borg_activate_item(act_clairvoyance) ||
+			borg_activate_item(act_enlightenment) ||
             borg_spell_fail(FUME_OF_MORDOR, 40) ||
 			borg_spell_fail(CLAIRVOYANCE, 40)) {
 			borg_note("# Wizard lighting the dungeon");
@@ -381,8 +381,8 @@ bool borg_check_LIGHT_only(void)
 	}
 
 	/* Light it up! */
-	if (borg_activate_artifact("ILLUMINATION") ||
-		borg_activate_artifact("LIGHT") ||
+	if (borg_activate_item(act_illumination) ||
+		borg_activate_item(act_light) ||
 		borg_zap_rod(sv_rod_illumination) ||
 		borg_use_staff(sv_staff_light) ||
 		borg_read_scroll(sv_scroll_light) ||
@@ -529,8 +529,8 @@ bool borg_check_LIGHT(void)
 
 
         /* Check for traps and doors and evil*/
-        if (borg_activate_artifact("DETECT_ALL") ||
-			borg_activate_artifact("MAPPING") ||
+        if (borg_activate_item(act_detect_all) ||
+			borg_activate_item(act_mapping) ||
 			borg_zap_rod(sv_rod_detection) ||
             borg_spell_fail(SENSE_SURROUNDINGS, 40))
         {
@@ -574,8 +574,8 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps and doors */
-        if (borg_activate_artifact("DETECT_ALL") ||
-			borg_activate_artifact("MAPPING") ||
+        if (borg_activate_item(act_detect_all) ||
+			borg_activate_item(act_mapping) ||
 			borg_spell_fail(DETECTION, 40) ||
 			borg_spell_fail(FIND_TRAPS_DOORS_STAIRS, 40) ||
 			borg_spell_fail(DETECT_STAIRS, 40))
@@ -618,8 +618,8 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact("DETECT_ALL") ||
-			borg_activate_artifact("MAPPING") ||
+        if (borg_activate_item(act_detect_all) ||
+			borg_activate_item(act_mapping) ||
 			borg_spell_fail(DETECTION, 40) ||
 			borg_spell_fail(FIND_TRAPS_DOORS_STAIRS, 40))
         {
@@ -640,7 +640,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for walls */
-        if (borg_activate_artifact("MAPPING") ||
+        if (borg_activate_item(act_mapping) ||
             borg_read_scroll(sv_scroll_mapping) ||
             borg_use_staff(sv_staff_mapping) ||
             borg_zap_rod(sv_rod_mapping) ||
@@ -661,7 +661,7 @@ bool borg_check_LIGHT(void)
         (!when_detect_obj || (borg_t - when_detect_obj >= 20)))
     {
         /* Check for objects */
-        if (borg_activate_artifact("DETECT_OBJECTS") ||
+        if (borg_activate_item(act_detect_objects) ||
             borg_spell_fail(OBJECT_DETECTION, 40))
         {
             borg_note("# Checking for objects.");
@@ -1203,7 +1203,7 @@ static bool borg_brand_weapon(void)
 	if (b_i == -1) return (false);
 
     /* Enchant it */
-    if (borg_activate_artifact("FIREBRAND") ||
+    if (borg_activate_item(act_firebrand) ||
         borg_spell_fail(BRAND_AMMUNITION, 65))
     {
         borg_pick_weapon(b_i);
@@ -1439,7 +1439,7 @@ bool borg_recharging(void)
         /* Attempt to recharge */
         if (borg_read_scroll(sv_scroll_recharging) ||
             borg_spell_fail(RECHARGING, 96) ||
-            borg_activate_artifact("RECHARGE"))
+            borg_activate_item(act_recharge))
         {
             /* Message */
             borg_note(format("Recharging %s with current charge of %d", item->desc, item->pval));

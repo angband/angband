@@ -2921,8 +2921,8 @@ static bool borg_think_dungeon_light(void)
                 !(ag->info & BORG_GLOW))   /* not glowing */
             {
                 /* Attempt to Call Light */
-                if (borg_activate_artifact("ILLUMINATION") ||
-                    borg_activate_artifact("LIGHT") ||
+                if (borg_activate_item(act_illumination) ||
+                    borg_activate_item(act_light) ||
                     borg_zap_rod(sv_rod_illumination) ||
                     borg_use_staff(sv_staff_light) ||
                     borg_read_scroll(sv_scroll_light) ||
@@ -5290,7 +5290,7 @@ bool borg_think_dungeon(void)
         /* Phase */
         if (borg_allow_teleport() &&
             (borg_spell(PHASE_DOOR) ||
-                borg_activate_artifact("TELE_PHASE") ||
+                borg_activate_item(act_tele_phase) ||
                 borg_read_scroll(sv_scroll_phase_door) ||
                 borg_dimension_door(90) ||
                 borg_spell(TELEPORT_SELF) ||

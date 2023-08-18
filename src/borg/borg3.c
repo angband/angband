@@ -483,8 +483,7 @@ bool borg_object_fully_id(void)
                 borg_keypresses("Disn");
             }
             /* TR2_activate was removed */
-            if ((item->art_idx && a_info[item->art_idx].activation) ||
-                (k_info[item->kind].activation))
+            if (item->activ_idx)
             {
                 borg_keypresses("Actv");
             }
@@ -926,9 +925,13 @@ void borg_item_analyze(borg_item* item, const struct object* real_item,
     }
 
     /* check if we know this is the one ring */
-    /* HACK we assume The One Ring is the only artifact that does EF_BIZARRE */
+    /* HACK we assume The One Ring is the only artifact that does BIZARRE */
     if (o->activation)
-        item->one_ring = (o->activation->effect->index == EF_BIZARRE);
+    {
+        if (o->activation->index == act_bizarre)
+            item->one_ring = true;
+        item->activ_idx = o->activation->index;
+    }
 
     /* default the pval */
     if (item->ident)
@@ -1556,6 +1559,9 @@ int borg_activate_failure(int tval, int sval)
     /* No charges */
     if (!borg_items[i].pval) return (100);
 
+    /* no known activation */
+    if (!borg_items[i].activ_idx) return (100);
+
     /* Extract the item level */
     lev = (borg_items[i].level);
 
@@ -1847,7 +1853,7 @@ bool borg_equips_staff_fail(int sval)
 /*
  * Attempt to use the given artifact
  */
-bool borg_activate_artifact(const char* activation)
+bool borg_activate_item(int activation)
 {
     int i;
 
@@ -1855,49 +1861,16 @@ bool borg_activate_artifact(const char* activation)
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
         borg_item* item = &borg_items[i];
-        /* get the item */
-        struct artifact* a_ptr = &a_info[item->art_idx];
-
-        if (!a_ptr) continue;
-
-        /* Skip artifacts w/o activations */
-        if (!(item->art_idx && a_ptr->activation) &&
-            !(k_info[item->kind].activation))
-            continue;
-
-        struct activation* activ = a_ptr->activation;
-        if (!activ)
-            activ = k_info[item->kind].activation;
 
         /* Skip wrong activation*/
-        if (strcmp(activation, activ->name))
+        if (item->activ_idx != activation)
             continue;
 
         /* Check charge */
         if (item->timeout) continue;
 
-        /*
-         * Random Artifact must be *ID* to know the activation power.
-         * The borg will cheat with random artifacts to know if the
-         * artifact number is activatable, but artifact names and
-         * types will be scrambled.  So he must first *ID* the artifact
-         * he must play with the artifact to learn its power, just as
-         * he plays with magic to gain experience.  But I am not about
-         * to undertake that coding.  He needs to *ID* it anyway to learn
-         * of the resists that go with the artifact.
-         * Lights dont need *id* just regular id.
-         */
-        if (OPT(player, birth_randarts) && (strcmp(activation, "RECALL") &&
-            strcmp(activation, "TELE_PHASE") &&
-            strcmp(activation, "TELE_LONG")) &&
-            !item->ident)
-        {
-            borg_note(format("# %s must be ID'd before activation.", item->desc));
-            return (false);
-        }
-
         /* Log the message */
-        borg_note(format("# Activating artifact %s.", item->desc));
+        borg_note(format("# Activating item %s.", item->desc));
 
         /* Perform the action */
         borg_keypress('A');
@@ -1913,9 +1886,9 @@ bool borg_activate_artifact(const char* activation)
 
 
 /*
- * Hack -- check and see if borg is wielding an artifact
+ * Hack -- check and see if borg is wielding an item with this activation
  */
-bool borg_equips_artifact(const char* activation, bool check_charge)
+bool borg_equips_item(int activation, bool check_charge)
 {
     int i;
 
@@ -1923,23 +1896,9 @@ bool borg_equips_artifact(const char* activation, bool check_charge)
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
         borg_item* item = &borg_items[i];
-        struct artifact* a_ptr;
-
-        /* Skip non artifacts */
-        if (!item->art_idx) continue;
-
-        /* get the item */
-        a_ptr = &a_info[item->art_idx];
-
-        /* Skip artifacts w/o activation */
-        /* TR2_activate was removed */
-        if (!a_ptr->activation &&
-            !k_info[item->kind].activation) continue;
-
-        struct activation* item_activation = a_ptr->activation ? a_ptr->activation : k_info[item->kind].activation;
 
         /* Skip wrong activation */
-        if (strcmp(item_activation->name, activation)) continue;
+        if (item->activ_idx != activation) continue;
 
         /* Check charge.  */
         if (check_charge && (item->timeout >= 1)) continue;
@@ -1949,91 +1908,6 @@ bool borg_equips_artifact(const char* activation, bool check_charge)
     }
 
     /* I do not have it or it is not charged */
-    return (false);
-}
-
-/*
- * Check and see if borg is wielding an artifact
- */
-bool borg_equips_item(int tval, int sval)
-{
-    int i;
-    int lev, fail;
-    int skill;
-
-    /* Check the equipment-- */
-    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-    {
-        borg_item* item = &borg_items[i];
-
-        /* Skip incorrect artifacts */
-        if (item->tval != tval) continue;
-        if (item->sval != sval) continue;
-
-        /* Check charge. */
-        if (item->timeout) continue;
-
-        /* Extract the item level for fail rate check*/
-        lev = item->level;
-
-        /* Base chance of success */
-        skill = borg_skill[BI_DEV];
-
-        /* Confusion hurts skill */
-        if (borg_skill[BI_ISCONFUSED]) skill = skill * 75 / 100;
-
-        /* High level objects are harder */
-        fail = 100 * ((skill - lev) - (141 - 1)) / ((lev - skill) - (100 - 10));
-
-        /* Roll for usage.  Return Fail if greater than 50% fail.  Must beat 500 to succeed. */
-        if (fail > 500) continue;
-
-        /* Success */
-        return (true);
-
-    }
-
-    /* I guess I dont have it, or it is not ready, or too hard to activate. */
-    return (false);
-}
-
-/*
- * Attempt to use the given equipment item.
- */
-bool borg_activate_item(int tval, int sval, bool target)
-{
-    int i;
-
-    /* Check the equipment */
-    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-    {
-        borg_item* item = &borg_items[i];
-
-        /* Skip incorrect items */
-        if (item->tval != tval) continue;
-        if (item->sval != sval) continue;
-
-        /* Check charge */
-        if (item->timeout) return (false);
-
-        /* Log the message */
-        borg_note(format("# Activating item %s.", item->desc));
-
-        /* Perform the action */
-        borg_keypress('A');
-        borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
-
-        /* Some items require a target */
-        if (target)
-        {
-            borg_keypress('5');
-        }
-
-        /* Success */
-        return (true);
-    }
-
-    /* Oops */
     return (false);
 }
 

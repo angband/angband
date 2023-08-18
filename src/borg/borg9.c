@@ -3033,9 +3033,10 @@ static struct keypress borg_inkey_hack(int flush_first)
     }
 
     /* ***MEGA-HACK***  */
-    /* this needs to be removed when the activation code is reworked */
-    /* always pick "one of the following at random" */
-    if (borg_prompt && !inkey_flag &&
+    /* This will be hit if the borg uses an unidentified effect that has */
+    /* EF_SELECT/multiple effects. Always pick "one of the following at random" */
+    /* when the item is used post ID, an effect will be selected */
+    if (borg_prompt && !inkey_flag && !borg_inkey(false) &&
         (y == 1) &&
         (0 == borg_what_text(0, 0, 13, &t_a, buf)) &&
         streq(buf, "Which effect?"))
