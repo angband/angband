@@ -2606,6 +2606,36 @@ static void player_outfit_borg(struct player* p)
     update_player_object_knowledge(p);
 }
 
+static void borg_roll_hp(void)
+{
+    int i, j, min_value, max_value;
+
+    /* Minimum hitpoints at highest level */
+    min_value = (PY_MAX_LEVEL * (player->hitdie - 1) * 3) / 8;
+    min_value += PY_MAX_LEVEL;
+
+    /* Maximum hitpoints at highest level */
+    max_value = (PY_MAX_LEVEL * (player->hitdie - 1) * 5) / 8;
+    max_value += PY_MAX_LEVEL;
+
+    /* Roll out the hitpoints */
+    while (true) {
+        /* Roll the hitpoint values */
+        for (i = 1; i < PY_MAX_LEVEL; i++) {
+            j = randint1(player->hitdie);
+            player->player_hp[i] = player->player_hp[i - 1] + j;
+        }
+
+        /* XXX Could also require acceptable "mid-level" hitpoints */
+
+        /* Require "valid" hitpoints at highest level */
+        if (player->player_hp[PY_MAX_LEVEL - 1] < min_value) continue;
+        if (player->player_hp[PY_MAX_LEVEL - 1] > max_value) continue;
+
+        /* Acceptable */
+        break;
+    }
+}
 
 /* Allow the borg to play continously.  Reset all values, */
 void resurrect_borg(void)
@@ -2709,6 +2739,9 @@ void resurrect_borg(void)
 
     /* Give the player some money */
     player->au = player->au_birth = z_info->start_gold;
+
+    /* Hack - need some HP */
+    borg_roll_hp();
 
     /* Hack - player knows all combat runes.  Maybe make them not runes? NRM */
     player->obj_k->to_a = 1;
