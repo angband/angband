@@ -1,6 +1,22 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.5
+=============
+
+This version sees the return of the borg automatic player, removed in the major
+restructure leading up to version 4.0.0, resurrected by Adam Goodman.  In now
+standard fashion, it also contains a great many bug fixes and code improvements
+by backwardsEric.  Headline changes are:
+ - return of the borg
+ - fix problems caused by some necromancer spells
+ - hydras now bash rather than open doors
+ - clarification of symbols on the character sheet
+ - torch random artifacts can drop deeper in the dungeon
+ - improvements to stats and debug commands
+ - autobuild for NDS, DOS, msys2 and nmake
+ - too many areas of code improvement to mention individually
+
 Angband 4.2.4
 =============
 

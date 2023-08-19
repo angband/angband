@@ -20,12 +20,12 @@ Before release:
      330.txt for example)
    * check that all docs in lib/help are up-to-date with gameplay changes
    * check copyrights and licences are correct and up-to-date
-   * don't forget the top-level readme.txt!
+   * don't forget the top-level README.md!
 * Check all version strings
    * configure.ac
    * src/Makefile.src
    * src/angband.man
-   * src/buildid.h
+   * src/buildid.c
 * git tag -a version; git push official tag version
 
 Release:

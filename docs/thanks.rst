@@ -7,15 +7,17 @@ Version 4.2.x
 
 Code contribution:
 
+* Adam Goodman (agoodman)
 * Adriankhl
 * Adrian Siekierka (asiekierka)
 * Alex Mooney
+* Alexandre Detiste
 * Andre Maroneze
 * Andrew York
 * Anna Sidwell (takkaria)
 * ArmiesAndCastles (v-chirkov)
 * bacchist
-* backwardsEric
+* Ben Collver
 * Ben Semmler (molybdenum)
 * Bardur Arantsson
 * Bill Peterson
@@ -31,18 +33,24 @@ Code contribution:
 * Diego Herrera
 * Eastwind921
 * Elly Fong-Jones (elly)
+* Eric Branlund (backwardsEric)
+* Erik Osheim (d_m)
 * fizzix (Aaron Bader)
+* floyza
 * fruviad
 * jdholbrook81
 * jefetienne
 * Joan Andrés
 * John Weismiller (emar)
+* Justin Chua
+* kleo
 * Kusunose Toru
 * Lars Haugseth
 * magnate (Chris Carr)
 * MarbleDice
 * Michael Courtney (wobbly)
 * Mikolaj Konarski
+* Nima Hoda
 * Paul Johnson
 * piels
 * PowerWyrm
@@ -54,6 +62,7 @@ Code contribution:
 * Stefan Strogin
 * tangar
 * Tim Schumacher (timschumi)
+* Tom Morton (tom)
 * Vic K
 * wkmanire
 * wobbly
@@ -141,6 +150,7 @@ you ought to be included:
 * lanactoor
 * lonadar
 * luneya
+* malcontent
 * Mark
 * MattB
 * Mike
@@ -153,6 +163,7 @@ you ought to be included:
 * mrfy
 * Muscleguy
 * MWGE
+* Naranathu Bhranthan
 * Narry
 * NCountr
 * Netbrian
