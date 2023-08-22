@@ -8,7 +8,7 @@ OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 PROG    = $(PROGNAME)$(PROG_SUFFIX)
 # Will dynamically generate version.h with the build number.
-CFLAGS += -DHAVE_VERSION_H -DALLOW_BORG
+CFLAGS += -DHAVE_VERSION_H
 
 CFLAGS += -I. -fPIC -std=c99 -O0
 # Replace above line with the two below and then look at gmon.out

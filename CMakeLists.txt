@@ -22,6 +22,8 @@ OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite
 OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
 OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
+OPTION(SUPPORT_BORG "Support for Borg." ON)
+OPTION(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
 
 # By default, generate a self-contained build left where the build was run.
 # If not using the Windows front end, the executable will have hardwired
@@ -310,9 +312,15 @@ SET_TARGET_PROPERTIES(OurCoreLib PROPERTIES C_STANDARD 99)
 SET(ANGBAND_CORE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 SET(ANGBAND_CORE_LINK_LIBRARIES "")
 
-TARGET_INCLUDE_DIRECTORIES(OurCoreLib PRIVATE
-    ${ANGBAND_CORE_INCLUDE_DIRS}
-)
+IF(SUPPORT_BORG)
+    TARGET_INCLUDE_DIRECTORIES(OurCoreLib PRIVATE
+        ${ANGBAND_CORE_INCLUDE_DIRS}
+    )
+    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D ALLOW_BORG)
+    IF(SUPPORT_BORG_HIGH_SCORES)
+        TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D SCORE_BORGS)
+    ENDIF()
+ENDIF()
 
 IF(SUPPORT_SDL_SOUND OR SUPPORT_SDL2_SOUND)
     ADD_LIBRARY(OurSoundSupportLib OBJECT
@@ -372,6 +380,9 @@ IF(SUPPORT_WINDOWS_FRONTEND)
     INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
     CONFIGURE_WINDOWS_FRONTEND(OurExecutable NO)
     CONFIGURE_WINDOWS_FRONTEND(OurCoreLib YES)
+    IF(SUPPORT_BORG)
+        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D ALLOW_BORG)
+    ENDIF()
 ENDIF()
 
 IF(SUPPORT_SDL_SOUND)

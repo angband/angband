@@ -241,6 +241,23 @@ if test "x$wsetgid" == "xyes"; then
 	AC_DEFINE(SETGID, 1, [Define if running as a central install on a multiuser system that has setresgid or setegid support.])
 fi
 
+dnl Borg
+AC_ARG_ENABLE(borg,
+	[AS_HELP_STRING([--enable-borg], [enable Borg (default enabled)])],
+	[enable_borg=$enableval],
+	[enable_borg=yes])
+AC_ARG_ENABLE(borg_high_scores,
+	[AS_HELP_STRING([--enable-borg-high-scores], [allow Borg characters to appear in the high scores (default: disabled)])],
+	[enable_borg_high_scores=$enableval],
+	[enable_borg_high_scores=no])
+
+if test x"$enable_borg" = xyes ; then
+	AC_DEFINE(ALLOW_BORG, 1, [Define if you want Borg support compiled.])
+fi
+if test x"$enable_borg_high_scores" = xyes; then
+	AC_DEFINE(SCORE_BORGS, 1, [Define if you Borg characters to appear in the high scores.])
+fi
+
 dnl Frontends
 AC_ARG_ENABLE(curses,
 	[AS_HELP_STRING([--enable-curses], [enable Curses frontend (default: enabled)])],
