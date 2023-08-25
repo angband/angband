@@ -817,7 +817,7 @@ static unsigned int borg_guess_race_name(char* who)
     if (suffix(who, " (offscreen)"))
     {
         /* Remove the suffix */
-        strcpy(partial, who);
+        my_strcpy(partial, who, sizeof(partial));
         partial[len - 12] = '\0';
         who = partial;
 
@@ -5253,7 +5253,7 @@ void borg_react(const char* msg, const char* buf)
     borg_msg_pos[borg_msg_num] = borg_msg_len;
 
     /* Save the message text */
-    strcpy(borg_msg_buf + borg_msg_len, buf);
+    my_strcpy(borg_msg_buf + borg_msg_len, buf, borg_msg_siz - borg_msg_len);
 
     /* Advance the buf */
     borg_msg_len += len + 1;
