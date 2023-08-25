@@ -51,11 +51,18 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 #SOUND_sdl = -DSOUND -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
 #SOUND_sdl_objs = $(SNDSDLFILES)
 
+# Compile in support for the Borg but do not include Borg players in the
+# high scores.  If you want Borg players in the high scores as well, use the
+# second line below.  If you do not want the Borg at all, comment out both of
+# these lines.
+BORG_FLAGS = -DALLOW_BORG
+#BORG_FLAGS = -DALLOW_BORG -DSCORE_BORGS
+
 
 # Basic compiler stuff
 CC = gcc
 WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
-CFLAGS = -O0 -g $(WARNINGS)
+CFLAGS = -O0 -g $(WARNINGS) $(BORG_FLAGS)
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
