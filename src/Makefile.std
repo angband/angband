@@ -170,7 +170,7 @@ depend:
 
 
 # Some file dependencies
-%.o: %.c
+.c.o:
 	@printf "%10s %-20s\n" CC $<
 	@$(CC) $(CFLAGS) -o $@ -c $<
 
