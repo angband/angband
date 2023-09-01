@@ -5478,7 +5478,7 @@ static void monitor_new_savefile(game_event_type ev_type,
 }
 
 /**
- * Respond to EVENT_LEAVE_WORLD events by ceasing to monitor the savefile.
+ * Respond to EVENT_LEAVE_GAME events by ceasing to monitor the savefile.
  */
 static void finish_monitoring_savefile(game_event_type ev_type,
 		game_event_data *ev_data, void *user)
