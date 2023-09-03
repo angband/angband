@@ -3002,6 +3002,9 @@ void borg_init_3(void)
 
         size++;
 
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Set the sort hooks */
@@ -3059,6 +3062,10 @@ void borg_init_3(void)
         text[size] = string_make(buf);
         what[size] = k;
         size++;
+
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Analyze the "INSTA_ART" items */
@@ -3079,7 +3086,12 @@ void borg_init_3(void)
         /* Hack -- make an item */
         object_prep(&hack, &k_info[k], 10, MINIMISE);
 
-        if (!hack.known) continue;
+        if (!hack.known) {
+        	mem_free(hack.brands);
+        	mem_free(hack.slays);
+        	mem_free(hack.curses);
+		continue;
+	}
 
         /* Save the index */
         /* hack.name1 = i; */
@@ -3098,6 +3110,10 @@ void borg_init_3(void)
         text[size] = string_make(buf);
         what[size] = k;
         size++;
+
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Set the sort hooks */
