@@ -58,6 +58,7 @@ extern bool borg_leave_level(bool bored);
  * Initialize this file
  */
 extern void borg_init_7(void);
+extern void borg_clean_7(void);
 
 
 #endif

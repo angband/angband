@@ -2090,6 +2090,7 @@ extern bool borg_is_ammo(int tval);
  * Initialize this file
  */
 extern void borg_init_1(void);
+extern void borg_clean_1(void);
 
 #endif
 

@@ -492,6 +492,7 @@ extern int borg_first_empty_inventory_slot(void);
  * Initialize this file
  */
 extern void borg_init_3(void);
+extern void borg_clean_3(void);
 
 
 #endif

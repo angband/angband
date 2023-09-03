@@ -38,6 +38,7 @@ extern bool borg_think_dungeon(void);
  * Initialize this file
  */
 extern void borg_init_8(void);
+extern void borg_clean_8(void);
 
 
 #endif

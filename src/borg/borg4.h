@@ -78,6 +78,7 @@ extern const char* borg_prepared(int depth);
  * Initialize this file
  */
 extern void borg_init_4(void);
+extern void borg_clean_4(void);
 
 
 #endif

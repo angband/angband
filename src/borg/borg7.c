@@ -4914,7 +4914,13 @@ void borg_init_7(void)
     /* Nothing */
 }
 
-
+/*
+ * Release resources allocated by borg_init_7().
+ */
+void borg_clean_7(void)
+{
+    /* Nothing */
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;
