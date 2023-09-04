@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DUSE_PRINTF_STYLE_CHECKS=ON ..
+          env CFLAGS=-Wall cmake ..
           make
 
   ncurses:
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DSUPPORT_GCU_FRONTEND=ON -DUSE_PRINTF_STYLE_CHECKS=ON ..
+          env CFLAGS=-Wall cmake -DSUPPORT_GCU_FRONTEND=ON ..
           make
 
   sdl:
@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON -DUSE_PRINTF_STYLE_CHECKS=ON ..
+          env CFLAGS=-Wall cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
           make
 
   sdl2:
