@@ -782,7 +782,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 }
 
 /**
- * Attack the another monster via physical attacks.
+ * Attack another monster via physical attacks.
  */
 bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 {
