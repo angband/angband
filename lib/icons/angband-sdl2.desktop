@@ -2,7 +2,7 @@
 Name=Angband (SDL2)
 Type=Application
 Comment=A roguelike dungeon exploration game based on the books of J.R.R.Tolkien
-Exec=sh -c "if [ \\$XDG_SESSION_TYPE == \"wayland\" ]; then env SDL_VIDEODRIVER=wayland angband -msdl2; else angband -msdl2; fi"
+Exec=angband -msdl2
 TryExec=angband
 Icon=angband
 Categories=Game;RolePlaying;
