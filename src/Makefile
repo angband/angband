@@ -20,7 +20,8 @@ CFLAGS += -I. -fPIC -std=c99 -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-CLEAN = angband.o $(OBJECTS) win/angband.res version.h
+# buildsys's default clean will take care of any .o from SRCS.
+CLEAN = $(PROGNAME).o $(ALLMAINFILES) ${ALLMAINFILES:.o=.dep} version.h
 DISTCLEAN = autoconf.h tests/.deps
 
 $(PROG): $(PROGNAME).o $(MAINFILES)
