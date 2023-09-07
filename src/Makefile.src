@@ -87,6 +87,25 @@ WINMAINFILES = \
 
 X11MAINFILES = main-x11.o
 
+STATSMAINFILES = main-stats.o \
+        stats/db.o
+
+SPOILMAINFILES = main-spoil.o
+
+# Remember all optional intermediates so "make clean" will get all of them
+# even if the configuration has changed since a build was done.
+ALLMAINFILES = \
+	$(BASEMAINFILES) \
+	$(GCUMAINFILES) \
+	$(SDL2MAINFILES) \
+	$(SDLMAINFILES) \
+	$(SNDSDLFILES) \
+	$(TESTMAINFILES) \
+	$(WINMAINFILES) \
+	$(X11MAINFILES) \
+	$(STATSMAINFILES) \
+	$(SPOILMAINFILES)
+
 ANGFILES0 = \
 	cave.o \
 	cave-map.o \
@@ -232,11 +251,6 @@ ANGFILES0 = \
 	borg/borg7.o \
 	borg/borg8.o \
 	borg/borg9.o
-
-STATSMAINFILES = main-stats.o \
-        stats/db.o
-
-SPOILMAINFILES = main-spoil.o
 
 buildid.o: $(ANGFILES0)
 ANGFILES = $(ANGFILES0) buildid.o
