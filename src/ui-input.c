@@ -1786,10 +1786,16 @@ ui_event textui_get_command(int *count)
 				}
 
 				case '^': {
-					char ch;
 					/* Allow "control chars" to be entered */
-					if (get_com("Control: ", &ch))
-						ke.key.code = KTRL(ch);
+					if (!get_com_ex("Control: ", &ke)
+							|| ke.type != EVT_KBRD) {
+						continue;
+					}
+					if (ENCODE_KTRL(ke.key.code)) {
+						ke.key.code = KTRL(ke.key.code);
+					} else {
+						ke.key.mods |= KC_MOD_CONTROL;
+					}
 					break;
 				}
 			}
