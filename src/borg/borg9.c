@@ -2974,7 +2974,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* are not all spaces (ascii value 0x20)... */
     if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) &&
         (t_a != COLOUR_DARK) &&
-        (*((uint32_t*)(buf)) != 0x20202020))
+        (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' '))
     {
         /* Assume a prompt/message is available */
         borg_prompt = true;
