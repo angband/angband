@@ -2214,80 +2214,79 @@ char* borg_prt_formula(int* arg_formula)
         case BFO_NUMBER:
 
         strnfmt(tmpStr, sizeof(tmpStr), "%d ", *++arg_formula);
-        strcat(FormulaStr, tmpStr);
+        my_strcat(FormulaStr, tmpStr, sizeof(FormulaStr));
         break;
 
         /* Variable */
         case BFO_VARIABLE:
-        strcat(FormulaStr, "'");
-        strcat(FormulaStr, borg_prt_item(*++arg_formula));
-        strcat(FormulaStr, "'");
-        strcat(FormulaStr, " ");
+        my_strcat(FormulaStr, "'", sizeof(FormulaStr));
+        my_strcat(FormulaStr, borg_prt_item(*++arg_formula), sizeof(FormulaStr));
+        my_strcat(FormulaStr, "' ", sizeof(FormulaStr));
         break;
 
         /* Equal */
         case BFO_EQ:
-        strcat(FormulaStr, "== ");
+        my_strcat(FormulaStr, "== ", sizeof(FormulaStr));
         break;
 
         /* Not Equal */
         case BFO_NEQ:
-        strcat(FormulaStr, "!= ");
+        my_strcat(FormulaStr, "!= ", sizeof(FormulaStr));
         break;
 
         /* Less Than */
         case BFO_LT:
-        strcat(FormulaStr, "< ");
+        my_strcat(FormulaStr, "< ", sizeof(FormulaStr));
         break;
 
         /* Less Than Or Equal */
         case BFO_LTE:
-        strcat(FormulaStr, "<= ");
+        my_strcat(FormulaStr, "<= ", sizeof(FormulaStr));
         break;
 
         /* Greater Than */
         case BFO_GT:
-        strcat(FormulaStr, "> ");
+        my_strcat(FormulaStr, "> ", sizeof(FormulaStr));
         break;
 
         /* Greater Than Or Equal */
         case BFO_GTE:
-        strcat(FormulaStr, ">= ");
+        my_strcat(FormulaStr, ">= ", sizeof(FormulaStr));
         break;
 
         /* Logical And */
         case BFO_AND:
-        strcat(FormulaStr, "&& ");
+        my_strcat(FormulaStr, "&& ", sizeof(FormulaStr));
         break;
 
         /* Logical Or */
         case BFO_OR:
-        strcat(FormulaStr, "|| ");
+        my_strcat(FormulaStr, "|| ", sizeof(FormulaStr));
         break;
 
         /* Plus */
         case BFO_PLUS:
-        strcat(FormulaStr, "+ ");
+        my_strcat(FormulaStr, "+ ", sizeof(FormulaStr));
         break;
 
         /* Minus */
         case BFO_MINUS:
-        strcat(FormulaStr, "- ");
+        my_strcat(FormulaStr, "- ", sizeof(FormulaStr));
         break;
 
         /* Divide */
         case BFO_DIVIDE:
-        strcat(FormulaStr, "/ ");
+        my_strcat(FormulaStr, "/ ", sizeof(FormulaStr));
         break;
 
         /* Multiply */
         case BFO_MULT:
-        strcat(FormulaStr, "* ");
+        my_strcat(FormulaStr, "* ", sizeof(FormulaStr));
         break;
 
         /* Logical Not */
         case BFO_NOT:
-        strcat(FormulaStr, "! ");
+        my_strcat(FormulaStr, "! ", sizeof(FormulaStr));
         break;
         }
     }

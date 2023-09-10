@@ -2401,8 +2401,8 @@ extern bool borg_inscribe_food(void)
             if (item->sval == sv_food_ration)
             {
                 /* get a name */
-                strcpy(name, food_syllable1[randint0(sizeof(food_syllable1) / sizeof(char*))]);
-                strcat(name, food_syllable2[randint0(sizeof(food_syllable2) / sizeof(char*))]);
+                my_strcpy(name, food_syllable1[randint0(sizeof(food_syllable1) / sizeof(char*))], sizeof(name));
+                my_strcat(name, food_syllable2[randint0(sizeof(food_syllable2) / sizeof(char*))], sizeof(name));
 
                 borg_send_inscribe(ii, name);
                 return (true);
@@ -2411,9 +2411,9 @@ extern bool borg_inscribe_food(void)
             if (item->sval == sv_food_slime_mold)
             {
                 /* get a name */
-                strcpy(name, mold_syllable1[randint0(sizeof(mold_syllable1) / sizeof(char*))]);
-                strcat(name, mold_syllable2[randint0(sizeof(mold_syllable2) / sizeof(char*))]);
-                strcat(name, mold_syllable3[randint0(sizeof(mold_syllable3) / sizeof(char*))]);
+                my_strcpy(name, mold_syllable1[randint0(sizeof(mold_syllable1) / sizeof(char*))], sizeof(name));
+                my_strcat(name, mold_syllable2[randint0(sizeof(mold_syllable2) / sizeof(char*))], sizeof(name));
+                my_strcat(name, mold_syllable3[randint0(sizeof(mold_syllable3) / sizeof(char*))], sizeof(name));
 
                 borg_send_inscribe(ii, name);
                 return (true);

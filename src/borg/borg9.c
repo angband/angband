@@ -2461,7 +2461,7 @@ static const char* orc_syllable3[] =
  * Copied from Cth by DvE
  * Copied from borgband by APW
  */
-static void create_random_name(int race, char* name)
+static void create_random_name(int race, char* name, size_t name_len)
 {
     /* Paranoia */
     if (!name) return;
@@ -2471,39 +2471,39 @@ static void create_random_name(int race, char* name)
     {
         /* Create the monster name */
     case RACE_DWARF:
-    strcpy(name, dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))]);
-    strcat(name, dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))]);
-    strcat(name, dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))]);
+    my_strcpy(name, dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_ELF:
     case RACE_HALF_ELF:
     case RACE_HIGH_ELF:
-    strcpy(name, elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))]);
-    strcat(name, elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))]);
-    strcat(name, elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))]);
+    my_strcpy(name, elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_GNOME:
-    strcpy(name, gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))]);
-    strcat(name, gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))]);
-    strcat(name, gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))]);
+    my_strcpy(name, gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HOBBIT:
-    strcpy(name, hobbit_syllable1[randint0(sizeof(hobbit_syllable1) / sizeof(char*))]);
-    strcat(name, hobbit_syllable2[randint0(sizeof(hobbit_syllable2) / sizeof(char*))]);
-    strcat(name, hobbit_syllable3[randint0(sizeof(hobbit_syllable3) / sizeof(char*))]);
+    my_strcpy(name, hobbit_syllable1[randint0(sizeof(hobbit_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, hobbit_syllable2[randint0(sizeof(hobbit_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, hobbit_syllable3[randint0(sizeof(hobbit_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HUMAN:
     case RACE_DUNADAN:
-    strcpy(name, human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))]);
-    strcat(name, human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))]);
-    strcat(name, human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))]);
+    my_strcpy(name, human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HALF_ORC:
     case RACE_HALF_TROLL:
     case RACE_KOBOLD:
-    strcpy(name, orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))]);
-    strcat(name, orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))]);
-    strcat(name, orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))]);
+    my_strcpy(name, orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))], name_len);
     break;
     /* Create an empty name */
     default:
@@ -2735,7 +2735,7 @@ void resurrect_borg(void)
     }
 
     /* Get a random name */
-    create_random_name(player->race->ridx, player->full_name);
+    create_random_name(player->race->ridx, player->full_name, sizeof(player->full_name));
 
     /* Give the player some money */
     player->au = player->au_birth = z_info->start_gold;
@@ -2763,7 +2763,7 @@ void resurrect_borg(void)
 
     struct command fake_cmd;
     /* fake up a command */
-    strcpy(fake_cmd.arg[0].name, "choice");
+    my_strcpy(fake_cmd.arg[0].name, "choice", sizeof(fake_cmd.arg[0].name));
     fake_cmd.arg[0].data.choice = 1;
     do_cmd_reset_stats(&fake_cmd);
 
@@ -5195,7 +5195,7 @@ void borg_write_map(bool ask)
         if (!okay[k]) continue;
 
         /* Paranoia */
-        strcpy(o_name, "Unknown Artifact");
+        my_strcpy(o_name, "Unknown Artifact", sizeof(o_name));
 
         /* Obtain the base object type */
         z = borg_lookup_kind(a_ptr->tval, a_ptr->sval);
@@ -6146,7 +6146,7 @@ void do_cmd_borg(void)
         if (!get_string("Borg Match String: ", borg_match, 70))
         {
             /* Cancel it */
-            strcpy(borg_match, "");
+            my_strcpy(borg_match, "", sizeof(borg_match));
 
             /* Message */
             msg("Borg Match String de-activated.");
