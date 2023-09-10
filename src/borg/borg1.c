@@ -2607,7 +2607,6 @@ int sv_potion_boldness;
 int sv_potion_detect_invis;
 int sv_potion_enlightenment;
 int sv_potion_slime_mold;
-int sv_potion_berserk;
 int sv_potion_infravision;
 int sv_potion_inc_exp;
 

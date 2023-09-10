@@ -619,8 +619,6 @@ static const int borg_adj_con_mhp[STAT_RANGE] =
 };
 
 
-extern const int adj_str_hold[STAT_RANGE];
-extern const int adj_str_blow[STAT_RANGE];
 int borg_calc_blows(int extra_blows);
 
 
