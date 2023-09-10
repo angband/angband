@@ -1313,7 +1313,13 @@ void borg_init_2(void)
     /* Nothing */
 }
 
-
+/*
+ * Release any resources allocated by borg_init_2().
+ */
+void borg_clean_2(void)
+{
+    /* Nothing */
+}
 
 #else
 

@@ -19239,7 +19239,13 @@ void borg_init_6(void)
     /* Nothing */
 }
 
-
+/*
+ * Release resources allocated by borg_init_6().
+ */
+void borg_clean_6(void)
+{
+    /* Nothing */
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;

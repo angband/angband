@@ -143,6 +143,7 @@ extern void borg_log_event(char* event);
  * Initialize this file
  */
 extern void borg_init_6(void);
+extern void borg_clean_6(void);
 
 extern bool borg_caution_phase(int emergency, int turns);
 

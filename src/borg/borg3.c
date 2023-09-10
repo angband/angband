@@ -3179,6 +3179,59 @@ void borg_init_3(void)
     for (i = 0; i < size; i++) borg_artego_what[i] = what[i];
 }
 
+/*
+ * Release resources allocated by borg_init_3().
+ */
+void borg_clean_3(void)
+{
+    int i;
+
+    mem_free(borg_artego_what);
+    borg_artego_what = NULL;
+    if (borg_artego_text) {
+        for (i = 0; i < borg_artego_size; ++i) {
+            string_free(borg_artego_text[i]);
+        }
+        mem_free(borg_artego_text);
+        borg_artego_text = NULL;
+    }
+    borg_artego_size = 0;
+    mem_free(borg_sv_art_text);
+    borg_sv_art_text = NULL;
+    mem_free(borg_single_what);
+    borg_single_what = NULL;
+    if (borg_single_text) {
+        for (i = 0; i < borg_single_size; ++i) {
+            string_free(borg_single_text[i]);
+        }
+        mem_free(borg_single_text);
+        borg_single_text = NULL;
+    }
+    borg_single_size = 0;
+    mem_free(borg_plural_what);
+    borg_plural_what = NULL;
+    if (borg_plural_text) {
+        for (i = 0; i < borg_plural_size; ++i) {
+            string_free(borg_plural_text[i]);
+        }
+        mem_free(borg_plural_text);
+        borg_plural_text = NULL;
+    }
+    borg_plural_size = 0;
+    mem_free(borg_sv_plural_text);
+    borg_sv_plural_text = NULL;
+    mem_free(safe_shops);
+    safe_shops = NULL;
+    mem_free(safe_home);
+    safe_home = NULL;
+    mem_free(safe_items);
+    safe_items = NULL;
+    mem_free(borg_shops);
+    borg_shops = NULL;
+    mem_free(borg_items);
+    borg_items = NULL;
+}
+
 const char* borg_prt_item(int item)
 {
     if (item < z_info->k_max)

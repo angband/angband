@@ -10083,7 +10083,13 @@ void borg_init_4(void)
     /* Do nothing? */
 }
 
-
+/*
+ * Release resources allocated by borg_init_4().
+ */
+void borg_clean_4(void)
+{
+    /* Nothing */
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;

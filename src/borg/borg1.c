@@ -3363,6 +3363,17 @@ static void borg_init_track(struct borg_track* track, int size)
     track->x = mem_zalloc(size * sizeof(int));
     track->y = mem_zalloc(size * sizeof(int));
 }
+
+static void borg_clean_track(struct borg_track* track)
+{
+    track->num = 0;
+    track->size = 0;
+    mem_free(track->x);
+    track->x = NULL;
+    mem_free(track->y);
+    track->y = NULL;
+}
+
 struct player* borg_p;
 /*
  * Initialize this file
@@ -3528,6 +3539,52 @@ void borg_init_1(void)
         borg_note("**STARTUP FAILURE** classes do not match");
         borg_init_failure = true;
     }
+}
+
+/*
+ * Release the resources allocated by borg_init_1().
+ */
+void borg_clean_1(void)
+{
+    int y;
+
+    mem_free(borg_race_death);
+    borg_race_death = NULL;
+    mem_free(borg_race_count);
+    borg_race_count = NULL;
+    mem_free(borg_kills);
+    borg_kills = NULL;
+    mem_free(borg_takes);
+    borg_takes = NULL;
+    borg_clean_track(&track_vein);
+    borg_clean_track(&track_closed);
+    borg_clean_track(&track_door);
+    borg_clean_track(&track_step);
+    borg_clean_track(&track_glyph);
+    borg_clean_track(&track_more);
+    borg_clean_track(&track_less);
+    mem_free(track_worn_name1);
+    track_worn_name1 = NULL;
+    mem_free(track_shop_y);
+    track_shop_y = NULL;
+    mem_free(track_shop_x);
+    track_shop_x = NULL;
+    mem_free(borg_data_icky);
+    borg_data_icky = NULL;
+    mem_free(borg_data_know);
+    borg_data_know = NULL;
+    mem_free(borg_data_hard);
+    borg_data_hard = NULL;
+    mem_free(borg_data_cost);
+    borg_data_cost = NULL;
+    mem_free(borg_data_flow);
+    borg_data_flow = NULL;
+    for (y = 0; y < AUTO_MAX_Y; ++y) {
+        mem_free(borg_grids[y]);
+        borg_grids[y] = NULL;
+    }
+    mem_free(borg_key_queue);
+    borg_key_queue = NULL;
 }
 
 /*** Object kind lookup functions ***/

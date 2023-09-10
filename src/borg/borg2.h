@@ -74,6 +74,7 @@ extern void borg_update_view(void);
  * Initialize this file
  */
 extern void borg_init_2(void);
+extern void borg_clean_2(void);
 
 
 #endif

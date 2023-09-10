@@ -5476,7 +5476,16 @@ void borg_init_8(void)
     best = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
 }
 
-
+/*
+ * Release resources allocated by borg_init_8().
+ */
+void borg_clean_8(void)
+{
+    mem_free(best);
+    best = NULL;
+    mem_free(test);
+    test = NULL;
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;
