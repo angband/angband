@@ -13672,7 +13672,7 @@ static int borg_perma_aux(int what)
 /*
  * Walk around with certain spells on if you can afford to do so.
  */
-bool borg_perma_spell()
+bool borg_perma_spell(void)
 {
     int n, b_n = 0;
     int g, b_g = -1;
