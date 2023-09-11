@@ -2401,8 +2401,8 @@ extern bool borg_inscribe_food(void)
             if (item->sval == sv_food_ration)
             {
                 /* get a name */
-                strcpy(name, food_syllable1[randint0(sizeof(food_syllable1) / sizeof(char*))]);
-                strcat(name, food_syllable2[randint0(sizeof(food_syllable2) / sizeof(char*))]);
+                my_strcpy(name, food_syllable1[randint0(sizeof(food_syllable1) / sizeof(char*))], sizeof(name));
+                my_strcat(name, food_syllable2[randint0(sizeof(food_syllable2) / sizeof(char*))], sizeof(name));
 
                 borg_send_inscribe(ii, name);
                 return (true);
@@ -2411,9 +2411,9 @@ extern bool borg_inscribe_food(void)
             if (item->sval == sv_food_slime_mold)
             {
                 /* get a name */
-                strcpy(name, mold_syllable1[randint0(sizeof(mold_syllable1) / sizeof(char*))]);
-                strcat(name, mold_syllable2[randint0(sizeof(mold_syllable2) / sizeof(char*))]);
-                strcat(name, mold_syllable3[randint0(sizeof(mold_syllable3) / sizeof(char*))]);
+                my_strcpy(name, mold_syllable1[randint0(sizeof(mold_syllable1) / sizeof(char*))], sizeof(name));
+                my_strcat(name, mold_syllable2[randint0(sizeof(mold_syllable2) / sizeof(char*))], sizeof(name));
+                my_strcat(name, mold_syllable3[randint0(sizeof(mold_syllable3) / sizeof(char*))], sizeof(name));
 
                 borg_send_inscribe(ii, name);
                 return (true);
@@ -3002,6 +3002,9 @@ void borg_init_3(void)
 
         size++;
 
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Set the sort hooks */
@@ -3059,6 +3062,10 @@ void borg_init_3(void)
         text[size] = string_make(buf);
         what[size] = k;
         size++;
+
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Analyze the "INSTA_ART" items */
@@ -3079,7 +3086,12 @@ void borg_init_3(void)
         /* Hack -- make an item */
         object_prep(&hack, &k_info[k], 10, MINIMISE);
 
-        if (!hack.known) continue;
+        if (!hack.known) {
+        	mem_free(hack.brands);
+        	mem_free(hack.slays);
+        	mem_free(hack.curses);
+		continue;
+	}
 
         /* Save the index */
         /* hack.name1 = i; */
@@ -3098,6 +3110,10 @@ void borg_init_3(void)
         text[size] = string_make(buf);
         what[size] = k;
         size++;
+
+        mem_free(hack.brands);
+        mem_free(hack.slays);
+        mem_free(hack.curses);
     }
 
     /* Set the sort hooks */
@@ -3177,6 +3193,59 @@ void borg_init_3(void)
     /* Save the entries */
     for (i = 0; i < size; i++) borg_artego_text[i] = text[i];
     for (i = 0; i < size; i++) borg_artego_what[i] = what[i];
+}
+
+/*
+ * Release resources allocated by borg_init_3().
+ */
+void borg_clean_3(void)
+{
+    int i;
+
+    mem_free(borg_artego_what);
+    borg_artego_what = NULL;
+    if (borg_artego_text) {
+        for (i = 0; i < borg_artego_size; ++i) {
+            string_free(borg_artego_text[i]);
+        }
+        mem_free(borg_artego_text);
+        borg_artego_text = NULL;
+    }
+    borg_artego_size = 0;
+    mem_free(borg_sv_art_text);
+    borg_sv_art_text = NULL;
+    mem_free(borg_single_what);
+    borg_single_what = NULL;
+    if (borg_single_text) {
+        for (i = 0; i < borg_single_size; ++i) {
+            string_free(borg_single_text[i]);
+        }
+        mem_free(borg_single_text);
+        borg_single_text = NULL;
+    }
+    borg_single_size = 0;
+    mem_free(borg_plural_what);
+    borg_plural_what = NULL;
+    if (borg_plural_text) {
+        for (i = 0; i < borg_plural_size; ++i) {
+            string_free(borg_plural_text[i]);
+        }
+        mem_free(borg_plural_text);
+        borg_plural_text = NULL;
+    }
+    borg_plural_size = 0;
+    mem_free(borg_sv_plural_text);
+    borg_sv_plural_text = NULL;
+    mem_free(safe_shops);
+    safe_shops = NULL;
+    mem_free(safe_home);
+    safe_home = NULL;
+    mem_free(safe_items);
+    safe_items = NULL;
+    mem_free(borg_shops);
+    borg_shops = NULL;
+    mem_free(borg_items);
+    borg_items = NULL;
 }
 
 const char* borg_prt_item(int item)

@@ -619,8 +619,6 @@ static const int borg_adj_con_mhp[STAT_RANGE] =
 };
 
 
-extern const int adj_str_hold[STAT_RANGE];
-extern const int adj_str_blow[STAT_RANGE];
 int borg_calc_blows(int extra_blows);
 
 
@@ -10085,7 +10083,13 @@ void borg_init_4(void)
     /* Do nothing? */
 }
 
-
+/*
+ * Release resources allocated by borg_init_4().
+ */
+void borg_clean_4(void)
+{
+    /* Nothing */
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;

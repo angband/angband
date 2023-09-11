@@ -2769,8 +2769,8 @@ bool borg_swap_rings(void)
     /*** Swap rings if necessary ***/
 
 	/* Define the rings and descriptions.  */
-	strcpy(current_right_ring, borg_items[INVEN_RIGHT].desc);
-	strcpy(current_left_ring, borg_items[INVEN_LEFT].desc);
+	my_strcpy(current_right_ring, borg_items[INVEN_RIGHT].desc, sizeof(current_right_ring));
+	my_strcpy(current_left_ring, borg_items[INVEN_LEFT].desc, sizeof(current_left_ring));
 
     /* Remove "useless" ring */
     if (v2 > v1)
@@ -3656,7 +3656,7 @@ bool borg_wear_stuff(void)
         item = &borg_items[b_i];
 
 		/* Define the desc of the nice ring */
-		strcpy(target_ring_desc, item->desc);
+		my_strcpy(target_ring_desc, item->desc, sizeof(target_ring_desc ));
 
         /* Remove old ring to make room for good one */
         if (b_ii >= INVEN_RIGHT && item->tval == TV_RING)
@@ -3774,7 +3774,7 @@ bool borg_wear_quiver(void)
         item = &borg_items[b_i];
 
 		/* Define the desc of the nice ring */
-		strcpy(target_desc, item->desc);
+		my_strcpy(target_desc, item->desc, sizeof(target_desc));
 
         /* Log */
         borg_note(format("# Loading Quiver %s.", item->desc));
@@ -4914,7 +4914,13 @@ void borg_init_7(void)
     /* Nothing */
 }
 
-
+/*
+ * Release resources allocated by borg_init_7().
+ */
+void borg_clean_7(void)
+{
+    /* Nothing */
+}
 
 #ifdef MACINTOSH
 static int HACK = 0;

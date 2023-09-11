@@ -26,8 +26,6 @@
   */
 extern bool borg_think_store(void);
 
-extern bool borg_caution_phase(int, int);
-extern bool borg_LIGHT_beam(bool simulation);
 /*
  * Think about the dungeon
  */
@@ -38,6 +36,7 @@ extern bool borg_think_dungeon(void);
  * Initialize this file
  */
 extern void borg_init_8(void);
+extern void borg_clean_8(void);
 
 
 #endif

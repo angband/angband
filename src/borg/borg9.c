@@ -124,6 +124,8 @@ static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
   */
 
 static bool initialized;    /* Hack -- Initialized */
+static bool game_closed;    /* Has the game been closed since the borg was
+                               initialized */
 
 
 #ifndef BABLOS
@@ -2461,7 +2463,7 @@ static const char* orc_syllable3[] =
  * Copied from Cth by DvE
  * Copied from borgband by APW
  */
-static void create_random_name(int race, char* name)
+static void create_random_name(int race, char* name, size_t name_len)
 {
     /* Paranoia */
     if (!name) return;
@@ -2471,39 +2473,39 @@ static void create_random_name(int race, char* name)
     {
         /* Create the monster name */
     case RACE_DWARF:
-    strcpy(name, dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))]);
-    strcat(name, dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))]);
-    strcat(name, dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))]);
+    my_strcpy(name, dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_ELF:
     case RACE_HALF_ELF:
     case RACE_HIGH_ELF:
-    strcpy(name, elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))]);
-    strcat(name, elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))]);
-    strcat(name, elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))]);
+    my_strcpy(name, elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_GNOME:
-    strcpy(name, gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))]);
-    strcat(name, gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))]);
-    strcat(name, gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))]);
+    my_strcpy(name, gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HOBBIT:
-    strcpy(name, hobbit_syllable1[randint0(sizeof(hobbit_syllable1) / sizeof(char*))]);
-    strcat(name, hobbit_syllable2[randint0(sizeof(hobbit_syllable2) / sizeof(char*))]);
-    strcat(name, hobbit_syllable3[randint0(sizeof(hobbit_syllable3) / sizeof(char*))]);
+    my_strcpy(name, hobbit_syllable1[randint0(sizeof(hobbit_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, hobbit_syllable2[randint0(sizeof(hobbit_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, hobbit_syllable3[randint0(sizeof(hobbit_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HUMAN:
     case RACE_DUNADAN:
-    strcpy(name, human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))]);
-    strcat(name, human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))]);
-    strcat(name, human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))]);
+    my_strcpy(name, human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))], name_len);
     break;
     case RACE_HALF_ORC:
     case RACE_HALF_TROLL:
     case RACE_KOBOLD:
-    strcpy(name, orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))]);
-    strcat(name, orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))]);
-    strcat(name, orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))]);
+    my_strcpy(name, orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))], name_len);
+    my_strcat(name, orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))], name_len);
+    my_strcat(name, orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))], name_len);
     break;
     /* Create an empty name */
     default:
@@ -2735,7 +2737,7 @@ void resurrect_borg(void)
     }
 
     /* Get a random name */
-    create_random_name(player->race->ridx, player->full_name);
+    create_random_name(player->race->ridx, player->full_name, sizeof(player->full_name));
 
     /* Give the player some money */
     player->au = player->au_birth = z_info->start_gold;
@@ -2763,7 +2765,7 @@ void resurrect_borg(void)
 
     struct command fake_cmd;
     /* fake up a command */
-    strcpy(fake_cmd.arg[0].name, "choice");
+    my_strcpy(fake_cmd.arg[0].name, "choice", sizeof(fake_cmd.arg[0].name));
     fake_cmd.arg[0].data.choice = 1;
     do_cmd_reset_stats(&fake_cmd);
 
@@ -2972,7 +2974,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* are not all spaces (ascii value 0x20)... */
     if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) &&
         (t_a != COLOUR_DARK) &&
-        (*((uint32_t*)(buf)) != 0x20202020))
+        (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' '))
     {
         /* Assume a prompt/message is available */
         borg_prompt = true;
@@ -4143,6 +4145,28 @@ static void init_borg_txt_file(void)
     return;
 }
 
+/*
+ * Release resources allocated by init_borg_txt_file().
+ */
+static void clean_borg_txt_file(void)
+{
+    int i;
+
+    mem_free(borg_cfg);
+    borg_cfg = NULL;
+    mem_free(borg_has);
+    borg_has = NULL;
+    borg_skill = NULL;
+    for (i = 0; i < MAX_CLASSES; ++i) {
+        mem_free(borg_power_item[i]);
+        borg_power_item[i] = NULL;
+        n_pwr[i] = 0;
+        mem_free(borg_required_item[i]);
+        borg_required_item[i] = NULL;
+        n_req[i] = 0;
+    }
+}
+
 /* all parts equal or same nullness */
 static bool borg_read_message_equal(struct borg_read_message* msg1, struct borg_read_message* msg2)
 {
@@ -4201,8 +4225,28 @@ static void insert_msg(struct borg_read_messages* msgs, struct borg_read_message
             msgs->messages = mem_realloc(msgs->messages, sizeof(struct borg_read_message) * msgs->allocated);
             msgs->index = mem_realloc(msgs->index, sizeof(int) * msgs->allocated);
         }
+    } else {
+        string_free(msg->message_p1);
+        string_free(msg->message_p2);
+        string_free(msg->message_p3);
     }
+}
 
+static void clean_msgs(struct borg_read_messages *msgs)
+{
+    int i;
+
+    for (i = 0; i < msgs->count; ++i) {
+        string_free(msgs->messages[i].message_p1);
+        string_free(msgs->messages[i].message_p2);
+        string_free(msgs->messages[i].message_p3);
+    }
+    mem_free(msgs->messages);
+    msgs->messages = NULL;
+    mem_free(msgs->index);
+    msgs->index = NULL;
+    msgs->count = 0;
+    msgs->allocated = 0;
 }
 
 /* get rid of leading spaces */
@@ -4253,9 +4297,7 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
     }
     while (suffix[0] == ' ') suffix++;
     int part_len = strlen(suffix) - strlen(var);
-    char* part1 = mem_zalloc(part_len + 1);
-    strncpy(part1, suffix, part_len);
-    read_message->message_p1 = part1;
+    read_message->message_p1 = string_make(format("%.*s", part_len, suffix));
     suffix += part_len;
     suffix = strchr(var, '}');
     if (!suffix)
@@ -4275,9 +4317,8 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
     part_len = strlen(suffix) - strlen(var);
     if (part_len)
     {
-        char* part2 = mem_zalloc(part_len + 1);
-        strncpy(part2, suffix, part_len);
-        read_message->message_p2 = borg_trim_lead_space(part2);
+        read_message->message_p2 = string_make(borg_trim_lead_space(
+            format("%.*s", part_len, suffix)));
     }
     suffix += part_len;
     suffix = strchr(var, '}');
@@ -4304,12 +4345,12 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
     }
     while (suffix[0] == ' ') suffix++;
     part_len = strlen(suffix) - strlen(var);
-    char* part3 = mem_zalloc(part_len + 1);
-    strncpy(part3, suffix, part_len);
     if (read_message->message_p2)
-        read_message->message_p3 = borg_trim_lead_space(part3);
+        read_message->message_p3 = string_make(borg_trim_lead_space(
+            format("%.*s", part_len, suffix)));
     else
-        read_message->message_p2 = borg_trim_lead_space(part3);
+        read_message->message_p2 = string_make(borg_trim_lead_space(
+            format("%.*s", part_len, suffix)));
 
     return;
 }
@@ -4465,6 +4506,22 @@ static void borg_init_messages(void)
     borg_init_hit_by_messages();
 }
 
+static void borg_clean_messages(void)
+{
+    int i;
+
+    if (suffix_pain) {
+        for (i = 0; suffix_pain[i]; ++i) {
+            mem_free(suffix_pain[i]);
+        }
+        mem_free(suffix_pain);
+        suffix_pain = NULL;
+    }
+    clean_msgs(&suffix_hit_by);
+    clean_msgs(&spell_invis_msgs);
+    clean_msgs(&spell_msgs);
+}
+
 static void borg_reinit_options(void)
 {
     /* Save current key mode */
@@ -4503,6 +4560,16 @@ static void borg_reinit_options(void)
 
     /* Efficiency */
     player->opts.hitpoint_warn = 0;
+}
+
+/*
+ * Tell the borg that the game was closed.
+ */
+static void borg_leave_game(game_event_type ev_type, game_event_data *ev_data,
+        void *user)
+{
+    assert(ev_type == EVENT_LEAVE_GAME && ev_data == NULL && user == NULL);
+    game_closed = true;
 }
 
 /*
@@ -4679,6 +4746,13 @@ void borg_init_9(void)
     /* Notice the new race and class */
     borg_prepare_race_class_info();
 
+    /*
+     * Notice if the game is closed so a reinitialization can be done if the
+     * game is restarted without exiting.
+     */
+    game_closed = false;
+    event_add_handler(EVENT_LEAVE_GAME, borg_leave_game, NULL);
+
     /*** All done ***/
 
     /* Done initialization */
@@ -4696,6 +4770,33 @@ void borg_init_9(void)
 
     /* Now it is ready */
     initialized = true;
+}
+
+/*
+ * Clean up resources allocated for the borg.
+ */
+void borg_clean_9(void)
+{
+    /* Undo the allocations in reverse order from what borg_init_9() does. */
+    event_remove_handler(EVENT_LEAVE_GAME, borg_leave_game, NULL);
+    borg_clean_8();
+    borg_clean_7();
+    borg_clean_6();
+    borg_clean_5();
+    borg_clean_4();
+    borg_clean_3();
+    borg_clean_2();
+    borg_clean_1();
+    borg_clean_messages();
+    clean_borg_txt_file();
+    mem_free(n_pwr);
+    n_pwr = NULL;
+    mem_free(borg_power_item);
+    borg_power_item = NULL;
+    mem_free(n_req);
+    n_req = NULL;
+    mem_free(borg_required_item);
+    borg_required_item = NULL;
 }
 
 /* 
@@ -5195,7 +5296,7 @@ void borg_write_map(bool ask)
         if (!okay[k]) continue;
 
         /* Paranoia */
-        strcpy(o_name, "Unknown Artifact");
+        my_strcpy(o_name, "Unknown Artifact", sizeof(o_name));
 
         /* Obtain the base object type */
         z = borg_lookup_kind(a_ptr->tval, a_ptr->sval);
@@ -5827,9 +5928,15 @@ void do_cmd_borg(void)
     }
 
 
-    /* Hack -- force initialization */
-    if (!initialized)
+    /*
+     * Hack -- force initialization or reinitialize if the game was closed
+     * and restarted without exiting since the last initialization
+     */
+    if (!initialized || game_closed)
     {
+        if (initialized) {
+            borg_clean_9();
+        }
         borg_init_9();
 
         if (borg_init_failure)
@@ -6146,7 +6253,7 @@ void do_cmd_borg(void)
         if (!get_string("Borg Match String: ", borg_match, 70))
         {
             /* Cancel it */
-            strcpy(borg_match, "");
+            my_strcpy(borg_match, "", sizeof(borg_match));
 
             /* Message */
             msg("Borg Match String de-activated.");

@@ -817,7 +817,7 @@ static unsigned int borg_guess_race_name(char* who)
     if (suffix(who, " (offscreen)"))
     {
         /* Remove the suffix */
-        strcpy(partial, who);
+        my_strcpy(partial, who, sizeof(partial));
         partial[len - 12] = '\0';
         who = partial;
 
@@ -5253,7 +5253,7 @@ void borg_react(const char* msg, const char* buf)
     borg_msg_pos[borg_msg_num] = borg_msg_len;
 
     /* Save the message text */
-    strcpy(borg_msg_buf + borg_msg_len, buf);
+    my_strcpy(borg_msg_buf + borg_msg_len, buf, borg_msg_siz - borg_msg_len);
 
     /* Advance the buf */
     borg_msg_len += len + 1;
@@ -5404,7 +5404,44 @@ void borg_init_5(void)
     for (i = 0; i < size; i++) borg_normal_what[i] = (unsigned int)what[i];
 }
 
+/*
+ * Release resources allocated by borg_init_5().
+ */
+void borg_clean_5(void)
+{
+    int i;
 
+    mem_free(borg_normal_what);
+    borg_normal_what = NULL;
+    if (borg_normal_text) {
+        for (i = 0; i < borg_normal_size; ++i) {
+            string_free((char*)borg_normal_text[i]);
+        }
+        mem_free(borg_normal_text);
+        borg_normal_text = NULL;
+    }
+    borg_normal_size = 0;
+    mem_free(borg_unique_what);
+    borg_unique_what = NULL;
+    if (borg_unique_text) {
+        for (i = 0; i < borg_unique_size; ++i) {
+            string_free((char*)borg_unique_text[i]);
+        }
+        mem_free(borg_unique_text);
+        borg_unique_text = NULL;
+    }
+    borg_unique_size = 0;
+    mem_free(borg_wanks);
+    borg_wanks = NULL;
+    mem_free(borg_msg_use);
+    borg_msg_use = NULL;
+    mem_free(borg_msg_pos);
+    borg_msg_pos = NULL;
+    borg_msg_num = 0;
+    mem_free(borg_msg_buf);
+    borg_msg_buf = NULL;
+    borg_msg_siz = 0;
+}
 
 
 #ifdef MACINTOSH

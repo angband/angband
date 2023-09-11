@@ -53,6 +53,7 @@ extern void borg_clear_reactions(void);
  * Initialize this file
  */
 extern void borg_init_5(void);
+extern void borg_clean_5(void);
 
 /* forward declare from borg6.c */
 extern bool borg_target_unknown_wall(int g_y, int g_x);

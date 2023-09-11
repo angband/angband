@@ -134,7 +134,6 @@ extern int sv_potion_boldness;
 extern int sv_potion_detect_invis;
 extern int sv_potion_enlightenment;
 extern int sv_potion_slime_mold;
-extern int sv_potion_berserk;
 extern int sv_potion_infravision;
 extern int sv_potion_inc_exp;
 
@@ -252,7 +251,6 @@ extern int sv_wand_drain_life;
 
 extern int sv_dagger;
 
-extern int sv_sling;
 extern int sv_sling;
 extern int sv_short_bow;
 extern int sv_long_bow;
@@ -2090,6 +2088,7 @@ extern bool borg_is_ammo(int tval);
  * Initialize this file
  */
 extern void borg_init_1(void);
+extern void borg_clean_1(void);
 
 #endif
 

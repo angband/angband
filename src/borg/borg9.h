@@ -25,7 +25,7 @@ extern void borg_status(void);
  * Initialize this file
  */
 extern void borg_init_9(void);
-
+extern void borg_clean_9(void);
 
 #endif
 

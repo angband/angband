@@ -96,7 +96,6 @@ extern bool borg_flow_stair_more(int why, bool sneak, bool brave);
 
 extern bool borg_flow_glyph(int why);
 extern bool borg_flow_light(int why);
-extern bool borg_check_LIGHT_only(void);
 extern bool borg_backup_swap(int p);
 extern bool borg_flow_recover(bool viewable, int dist);
 
@@ -144,6 +143,7 @@ extern void borg_log_event(char* event);
  * Initialize this file
  */
 extern void borg_init_6(void);
+extern void borg_clean_6(void);
 
 extern bool borg_caution_phase(int emergency, int turns);
 

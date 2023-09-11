@@ -2214,80 +2214,79 @@ char* borg_prt_formula(int* arg_formula)
         case BFO_NUMBER:
 
         strnfmt(tmpStr, sizeof(tmpStr), "%d ", *++arg_formula);
-        strcat(FormulaStr, tmpStr);
+        my_strcat(FormulaStr, tmpStr, sizeof(FormulaStr));
         break;
 
         /* Variable */
         case BFO_VARIABLE:
-        strcat(FormulaStr, "'");
-        strcat(FormulaStr, borg_prt_item(*++arg_formula));
-        strcat(FormulaStr, "'");
-        strcat(FormulaStr, " ");
+        my_strcat(FormulaStr, "'", sizeof(FormulaStr));
+        my_strcat(FormulaStr, borg_prt_item(*++arg_formula), sizeof(FormulaStr));
+        my_strcat(FormulaStr, "' ", sizeof(FormulaStr));
         break;
 
         /* Equal */
         case BFO_EQ:
-        strcat(FormulaStr, "== ");
+        my_strcat(FormulaStr, "== ", sizeof(FormulaStr));
         break;
 
         /* Not Equal */
         case BFO_NEQ:
-        strcat(FormulaStr, "!= ");
+        my_strcat(FormulaStr, "!= ", sizeof(FormulaStr));
         break;
 
         /* Less Than */
         case BFO_LT:
-        strcat(FormulaStr, "< ");
+        my_strcat(FormulaStr, "< ", sizeof(FormulaStr));
         break;
 
         /* Less Than Or Equal */
         case BFO_LTE:
-        strcat(FormulaStr, "<= ");
+        my_strcat(FormulaStr, "<= ", sizeof(FormulaStr));
         break;
 
         /* Greater Than */
         case BFO_GT:
-        strcat(FormulaStr, "> ");
+        my_strcat(FormulaStr, "> ", sizeof(FormulaStr));
         break;
 
         /* Greater Than Or Equal */
         case BFO_GTE:
-        strcat(FormulaStr, ">= ");
+        my_strcat(FormulaStr, ">= ", sizeof(FormulaStr));
         break;
 
         /* Logical And */
         case BFO_AND:
-        strcat(FormulaStr, "&& ");
+        my_strcat(FormulaStr, "&& ", sizeof(FormulaStr));
         break;
 
         /* Logical Or */
         case BFO_OR:
-        strcat(FormulaStr, "|| ");
+        my_strcat(FormulaStr, "|| ", sizeof(FormulaStr));
         break;
 
         /* Plus */
         case BFO_PLUS:
-        strcat(FormulaStr, "+ ");
+        my_strcat(FormulaStr, "+ ", sizeof(FormulaStr));
         break;
 
         /* Minus */
         case BFO_MINUS:
-        strcat(FormulaStr, "- ");
+        my_strcat(FormulaStr, "- ", sizeof(FormulaStr));
         break;
 
         /* Divide */
         case BFO_DIVIDE:
-        strcat(FormulaStr, "/ ");
+        my_strcat(FormulaStr, "/ ", sizeof(FormulaStr));
         break;
 
         /* Multiply */
         case BFO_MULT:
-        strcat(FormulaStr, "* ");
+        my_strcat(FormulaStr, "* ", sizeof(FormulaStr));
         break;
 
         /* Logical Not */
         case BFO_NOT:
-        strcat(FormulaStr, "! ");
+        my_strcat(FormulaStr, "! ", sizeof(FormulaStr));
         break;
         }
     }
@@ -2607,7 +2606,6 @@ int sv_potion_boldness;
 int sv_potion_detect_invis;
 int sv_potion_enlightenment;
 int sv_potion_slime_mold;
-int sv_potion_berserk;
 int sv_potion_infravision;
 int sv_potion_inc_exp;
 
@@ -3365,6 +3363,17 @@ static void borg_init_track(struct borg_track* track, int size)
     track->x = mem_zalloc(size * sizeof(int));
     track->y = mem_zalloc(size * sizeof(int));
 }
+
+static void borg_clean_track(struct borg_track* track)
+{
+    track->num = 0;
+    track->size = 0;
+    mem_free(track->x);
+    track->x = NULL;
+    mem_free(track->y);
+    track->y = NULL;
+}
+
 struct player* borg_p;
 /*
  * Initialize this file
@@ -3530,6 +3539,52 @@ void borg_init_1(void)
         borg_note("**STARTUP FAILURE** classes do not match");
         borg_init_failure = true;
     }
+}
+
+/*
+ * Release the resources allocated by borg_init_1().
+ */
+void borg_clean_1(void)
+{
+    int y;
+
+    mem_free(borg_race_death);
+    borg_race_death = NULL;
+    mem_free(borg_race_count);
+    borg_race_count = NULL;
+    mem_free(borg_kills);
+    borg_kills = NULL;
+    mem_free(borg_takes);
+    borg_takes = NULL;
+    borg_clean_track(&track_vein);
+    borg_clean_track(&track_closed);
+    borg_clean_track(&track_door);
+    borg_clean_track(&track_step);
+    borg_clean_track(&track_glyph);
+    borg_clean_track(&track_more);
+    borg_clean_track(&track_less);
+    mem_free(track_worn_name1);
+    track_worn_name1 = NULL;
+    mem_free(track_shop_y);
+    track_shop_y = NULL;
+    mem_free(track_shop_x);
+    track_shop_x = NULL;
+    mem_free(borg_data_icky);
+    borg_data_icky = NULL;
+    mem_free(borg_data_know);
+    borg_data_know = NULL;
+    mem_free(borg_data_hard);
+    borg_data_hard = NULL;
+    mem_free(borg_data_cost);
+    borg_data_cost = NULL;
+    mem_free(borg_data_flow);
+    borg_data_flow = NULL;
+    for (y = 0; y < AUTO_MAX_Y; ++y) {
+        mem_free(borg_grids[y]);
+        borg_grids[y] = NULL;
+    }
+    mem_free(borg_key_queue);
+    borg_key_queue = NULL;
 }
 
 /*** Object kind lookup functions ***/
