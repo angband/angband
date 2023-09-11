@@ -14362,6 +14362,10 @@ bool borg_recover(void)
  */
 static bool borg_can_dig(bool check_fail, bool hard)
 {
+    /* No digging when hungry */
+    if (borg_skill[BI_ISHUNGRY])
+        return false;
+
     int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
     if ((weapon_swap && borg_skill[BI_DIG] >= dig_check && borg_items[weapon_swap -1].tval == TV_DIGGING) ||
         (borg_skill[BI_DIG] >= dig_check + 20))
@@ -14815,20 +14819,11 @@ static bool borg_play_step(int y2, int x2)
     /* HACK depends on FEAT order, kinda evil. */
     if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_GRANITE)
     {
-        /* No digging when hungry */
-        if (borg_skill[BI_ISHUNGRY])
-            return false;
-
         /* Don't dig walls and seams when exploring (do dig rubble) */
         if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return false;
 
         /* Don't bother digging without sufficient dig ability */
-        if (!borg_can_dig(false, false) && ag->feat != FEAT_RUBBLE)
-        {
-            goal = 0;
-            return false;
-        }
-        if (ag->feat == FEAT_GRANITE && !borg_can_dig(false, true))
+        if (!borg_can_dig(false, ag->feat == FEAT_GRANITE))
         {
             goal = 0;
             return false;
@@ -16695,7 +16690,8 @@ bool borg_flow_kill_corridor_2(bool viewable)
             }
 
             /* Do not dig unless we appear strong enough to succeed or we have a digger */
-            if (!borg_can_dig(false, false))
+            bool hard = ag->feat == FEAT_GRANITE || ag->feat == FEAT_QUARTZ || ag->feat == FEAT_MAGMA;
+            if (!borg_can_dig(false, hard))
                 continue;
 
             /* reset floors counter */
@@ -17793,7 +17789,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                     if (ag->feat != FEAT_PERM) continue;
 
                     /* make sure we can dig */
-                    if (!borg_can_dig(false, false)) return (false);
+                    if (!borg_can_dig(false, true)) return (false);
 
                     /* Glove up and dig in */
                     return (true);
