@@ -3087,10 +3087,10 @@ void borg_init_3(void)
         object_prep(&hack, &k_info[k], 10, MINIMISE);
 
         if (!hack.known) {
-        	mem_free(hack.brands);
-        	mem_free(hack.slays);
-        	mem_free(hack.curses);
-		continue;
+            mem_free(hack.brands);
+            mem_free(hack.slays);
+            mem_free(hack.curses);
+            continue;
 	}
 
         /* Save the index */
