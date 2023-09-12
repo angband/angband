@@ -10825,7 +10825,6 @@ static int borg_defend_aux_hero(int p1)
         if (borg_spell(HEROISM) ||
             borg_quaff_potion(sv_potion_heroism))
         {
-
             /* No resting to recoop mana */
             borg_no_rest_prep = 10000;
             return 1;
@@ -10865,7 +10864,11 @@ static int borg_defend_aux_regen(int p1)
 
         /* do it! */
         if (borg_spell(RAPID_REGENERATION))
+        {
+            /* No resting to recoop mana */
+            borg_no_rest_prep = 10000;
             return 1;
+        }
     }
 
     return (0);
@@ -13752,7 +13755,7 @@ bool borg_check_rest(int y, int x)
 
     /* No resting if Blessed and good HP and good SP */
     /* don't rest for SP if you do combat regen */
-    if ((borg_bless || borg_hero || borg_berserk || borg_fastcast) &&
+    if ((borg_bless || borg_hero || borg_berserk || borg_fastcast || borg_regen || borg_smite_evil) &&
         !borg_munchkin_mode &&
         (borg_skill[BI_CURHP] >= borg_skill[BI_MAXHP] * 8 / 10) &&
         (borg_skill[BI_CURSP] >= borg_skill[BI_MAXSP] * 7 / 10)) return (false);
@@ -13777,9 +13780,9 @@ bool borg_check_rest(int y, int x)
 
     /* No resting to recover if I just cast a prepatory spell
      * which is what I like to do right before I take a stair,
-     * Unless I am down by half my SP.
+     * Unless I am down by three quarters of my SP.
      */
-    if (borg_no_rest_prep >= 1 && !borg_munchkin_mode && borg_skill[BI_CURSP] > borg_skill[BI_MAXSP] / 2 &&
+    if (borg_no_rest_prep >= 1 && !borg_munchkin_mode && borg_skill[BI_CURSP] > borg_skill[BI_MAXSP] / 4 &&
         borg_skill[BI_CDEPTH] < 85) return (false);
 
     /* Don't rest on lava unless we are immune to fire */
@@ -14362,6 +14365,10 @@ bool borg_recover(void)
  */
 static bool borg_can_dig(bool check_fail, bool hard)
 {
+    /* No digging when hungry */
+    if (borg_skill[BI_ISHUNGRY])
+        return false;
+
     int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
     if ((weapon_swap && borg_skill[BI_DIG] >= dig_check && borg_items[weapon_swap -1].tval == TV_DIGGING) ||
         (borg_skill[BI_DIG] >= dig_check + 20))
@@ -14815,20 +14822,11 @@ static bool borg_play_step(int y2, int x2)
     /* HACK depends on FEAT order, kinda evil. */
     if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_GRANITE)
     {
-        /* No digging when hungry */
-        if (borg_skill[BI_ISHUNGRY])
-            return false;
-
         /* Don't dig walls and seams when exploring (do dig rubble) */
         if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return false;
 
         /* Don't bother digging without sufficient dig ability */
-        if (!borg_can_dig(false, false) && ag->feat != FEAT_RUBBLE)
-        {
-            goal = 0;
-            return false;
-        }
-        if (ag->feat == FEAT_GRANITE && !borg_can_dig(false, true))
+        if (!borg_can_dig(false, ag->feat == FEAT_GRANITE))
         {
             goal = 0;
             return false;
@@ -15756,9 +15754,9 @@ bool borg_flow_vault(int nearness)
 }
 
 /* Excavate an existing vault using ranged spells.
- * Stand where you are, use stone to mud to excavate the vault.  This will allow the mage
- * borgs to get a few more attack spells on the monster.  Without this routine, he would
- * approach the vault and use Stone to Mud when he was adjacent to the wall, giving him
+ * Stand where you are, use stone to mud to excavate the vault.  This will allow the druid
+ * or blackgaurd borgs to get a few more attack spells on the monster.  Without this routine, 
+ * he would approach the vault and use Stone to Mud when he was adjacent to the wall, giving him
  * only 1 or 2 shots before the monster is next to the borg.
  *
  */
@@ -15801,7 +15799,6 @@ bool borg_excavate_vault(int range)
                 borg_grids[y][x].feat != FEAT_QUARTZ_K &&
                 borg_grids[y][x].feat != FEAT_MAGMA_K)
                 continue;
-            continue;
 
             /* Examine grids adjacent to this grid to see if there is a perma wall adjacent */
             for (i = 0; i < 8; i++)
@@ -16695,7 +16692,8 @@ bool borg_flow_kill_corridor_2(bool viewable)
             }
 
             /* Do not dig unless we appear strong enough to succeed or we have a digger */
-            if (!borg_can_dig(false, false))
+            bool hard = ag->feat == FEAT_GRANITE || ag->feat == FEAT_QUARTZ || ag->feat == FEAT_MAGMA;
+            if (!borg_can_dig(false, hard))
                 continue;
 
             /* reset floors counter */
@@ -17793,7 +17791,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                     if (ag->feat != FEAT_PERM) continue;
 
                     /* make sure we can dig */
-                    if (!borg_can_dig(false, false)) return (false);
+                    if (!borg_can_dig(false, true)) return (false);
 
                     /* Glove up and dig in */
                     return (true);

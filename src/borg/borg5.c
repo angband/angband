@@ -3385,8 +3385,13 @@ static void borg_update_map(void)
                  * the level is perma grids are found.
                 */
                 /* is it a perma grid?  Only counts for being a vault if not in town */
+                /* and not on edge of map */
                 if (ag->feat == FEAT_PERM &&
-                    borg_skill[BI_CDEPTH])
+                    borg_skill[BI_CDEPTH] &&
+                    x && 
+                    y &&
+                    x != (cave->width - 1) &&
+                    y != (cave->height - 1))
                 {
                     vault_on_level = true;
                 }
