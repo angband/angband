@@ -1498,8 +1498,13 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	const char *initial_pronoun;
 	bool know_hp;
 	bitflag current_flags[RSF_SIZE], test_flags[RSF_SIZE];
+	const struct monster_race *old_ref;
 
 	assert(tb && race && lore);
+
+	/* Set the race for expressions in the spells. */
+	old_ref = ref_race;
+	ref_race = race;
 
 	know_hp = lore->armour_known;
 
@@ -1597,6 +1602,9 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 
 		textblock_append(tb, ".  ");
 	}
+
+	/* Restore the previous reference. */
+	ref_race = old_ref;
 }
 
 /**
