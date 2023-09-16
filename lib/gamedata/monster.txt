@@ -8518,7 +8518,7 @@ innate-freq:10
 spell-freq:6
 spells:CONF | DRAIN_MANA | HOLD | MIND_BLAST | SHRIEK
 spells:S_MONSTER | S_MONSTERS
-message-vis:SHRIEK:The baleful presence of ${name} inspires your enemies.
+message-vis:SHRIEK:The baleful presence of {name} inspires your enemies.
 message-invis:DRAIN_MANA:Something drains your mana away.
 message-invis:HOLD:Your muscles lock up for no apparent reason.
 message-invis:SHRIEK:Something inspires your enemies.
