@@ -849,23 +849,21 @@ static void borg_notice_aux1(void)
     player_flags(player, f);
 
     /* Good flags */
-    if (rf_has(f, OF_SLOW_DIGEST)) borg_skill[BI_SDIG] = true;
-    if (rf_has(f, OF_FEATHER)) borg_skill[BI_FEATH] = true;
-    if (rf_has(f, OF_REGEN)) borg_skill[BI_REG] = true;
-    if (rf_has(f, OF_TELEPATHY)) borg_skill[BI_ESP] = true;
-    if (rf_has(f, OF_SEE_INVIS)) borg_skill[BI_SINV] = true;
-    if (rf_has(f, OF_FREE_ACT)) borg_skill[BI_FRACT] = true;
-    if (rf_has(f, OF_HOLD_LIFE)) borg_skill[BI_HLIFE] = true;
+    if (of_has(f, OF_SLOW_DIGEST)) borg_skill[BI_SDIG] = true;
+    if (of_has(f, OF_FEATHER)) borg_skill[BI_FEATH] = true;
+    if (of_has(f, OF_REGEN)) borg_skill[BI_REG] = true;
+    if (of_has(f, OF_TELEPATHY)) borg_skill[BI_ESP] = true;
+    if (of_has(f, OF_SEE_INVIS)) borg_skill[BI_SINV] = true;
+    if (of_has(f, OF_FREE_ACT)) borg_skill[BI_FRACT] = true;
+    if (of_has(f, OF_HOLD_LIFE)) borg_skill[BI_HLIFE] = true;
 
     /* Weird flags */
 
     /* Bad flags */
-    if (rf_has(f, OF_IMPACT)) borg_skill[BI_W_IMPACT] = true;
-    if (rf_has(f, OF_AGGRAVATE)) borg_skill[BI_CRSAGRV] = true;
-    if (rf_has(f, OF_IMPAIR_HP)) borg_skill[BI_CRSHPIMP] = true;
-    if (rf_has(f, OF_IMPAIR_MANA)) borg_skill[BI_CRSMPIMP] = true;
-    if (rf_has(f, OF_AFRAID)) borg_skill[BI_CRSFEAR] = true;
-    if (rf_has(f, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
+    if (of_has(f, OF_IMPACT)) borg_skill[BI_W_IMPACT] = true;
+    if (of_has(f, OF_AGGRAVATE)) borg_skill[BI_CRSAGRV] = true;
+    if (of_has(f, OF_AFRAID)) borg_skill[BI_CRSFEAR] = true;
+    if (of_has(f, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
     
 
     if (rb_ptr->el_info[ELEM_FIRE].res_level == -1) borg_skill[BI_CRSFVULN] = true;
@@ -1018,7 +1016,39 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
 
         /* curses that don't have flags or stat changes that are tracked elsewhere */
+        if (item->curses[BORG_CURSE_VULNERABILITY]) {
+            borg_skill[BI_CRSAGRV] = true;
+            borg_skill[BI_ARMOR] -= 50;
+        }
         if (item->curses[BORG_CURSE_TELEPORTATION]) borg_skill[BI_CRSTELE] = true;
+        if (item->curses[BORG_CURSE_DULLNESS]) {
+            borg_skill[BI_CINT] -= 5;
+            borg_skill[BI_CWIS] -= 5;
+        }
+        if (item->curses[BORG_CURSE_SICKLINESS]) {
+            borg_skill[BI_CSTR] -= 5;
+            borg_skill[BI_CDEX] -= 5;
+            borg_skill[BI_CCON] -= 5;
+        }
+        if (item->curses[BORG_CURSE_ENVELOPING]) borg_skill[BI_CRSENVELOPING] = true;
+        if (item->curses[BORG_CURSE_IRRITATION]) {
+            borg_skill[BI_CRSAGRV] = true;
+            borg_skill[BI_CRSIRRITATION] = true;
+        }
+        if (item->curses[BORG_CURSE_WEAKNESS]) {
+            borg_skill[BI_CSTR] -= 10;
+        }
+        if (item->curses[BORG_CURSE_CLUMSINESS]) {
+            borg_skill[BI_CSTR] -= 10;
+        }
+        if (item->curses[BORG_CURSE_SLOWNESS]) {
+            borg_skill[BI_SPEED] = -5;
+        }
+        if (item->curses[BORG_CURSE_ANNOYANCE]) {
+            borg_skill[BI_SPEED] = -10;
+            borg_skill[BI_STL] = -10;
+            borg_skill[BI_CRSAGRV] = true;
+        }
         if (item->curses[BORG_CURSE_POISON]) borg_skill[BI_CRSPOIS] = true;
         if (item->curses[BORG_CURSE_SIREN]) borg_skill[BI_CRSSIREN] = true;
         if (item->curses[BORG_CURSE_HALLUCINATION]) borg_skill[BI_CRSHALU] = true;
@@ -1026,9 +1056,22 @@ static void borg_notice_aux1(void)
         if (item->curses[BORG_CURSE_DEMON_SUMMON]) borg_skill[BI_CRSSDEM] = true;
         if (item->curses[BORG_CURSE_DRAGON_SUMMON]) borg_skill[BI_CRSSDRA] = true;
         if (item->curses[BORG_CURSE_UNDEAD_SUMMON]) borg_skill[BI_CRSSUND] = true;
+        if (item->curses[BORG_CURSE_IMPAIR_MANA_RECOVERY]) borg_skill[BI_CRSMPIMP] = true;
+        if (item->curses[BORG_CURSE_IMPAIR_HITPOINT_RECOVERY]) borg_skill[BI_CRSHPIMP] = true;
+        if (item->curses[BORG_CURSE_COWARDICE]) borg_skill[BI_CRSFEAR] = true;
         if (item->curses[BORG_CURSE_STONE]) borg_skill[BI_CRSSTONE] = true;
         if (item->curses[BORG_CURSE_ANTI_TELEPORTATION]) borg_skill[BI_CRSNOTEL] = true;
         if (item->curses[BORG_CURSE_TREACHEROUS_WEAPON]) borg_skill[BI_CRSTWEP] = true;
+        if (item->curses[BORG_CURSE_BURNING_UP]) {
+            borg_skill[BI_CRSFVULN] = true;
+            borg_skill[BI_RCOLD] = true;
+        }
+        if (item->curses[BORG_CURSE_CHILLED_TO_THE_BONE]) {
+            borg_skill[BI_CRSCVULN] = true;
+            borg_skill[BI_RFIRE] = true;
+        }
+        if (item->curses[BORG_CURSE_STEELSKIN]) borg_skill[BI_CRSSTEELSKIN] = true;
+        if (item->curses[BORG_CURSE_AIR_SWING]) borg_skill[BI_CRSAIRSWING] = true;
         if (item->curses[BORG_CURSE_UNKNOWN]) borg_skill[BI_CRSUNKNO] = true;
 
         if (item->el_info[ELEM_FIRE].res_level == -1) borg_skill[BI_CRSFVULN] = true;
@@ -4119,16 +4162,16 @@ static void borg_notice_home_aux(borg_item* in_item, bool no_items)
     player_flags(player, f);
 
     /* Good flags */
-    if (rf_has(f, OF_SLOW_DIGEST)) num_slow_digest++;
-    if (rf_has(f, OF_FEATHER)) num_ffall++;
-    if (rf_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT++;
-    if (rf_has(f, OF_REGEN)) num_regenerate++;
-    if (rf_has(f, OF_TELEPATHY)) num_telepathy++;
-    if (rf_has(f, OF_SEE_INVIS)) num_see_inv++;
-    if (rf_has(f, OF_FREE_ACT)) num_free_act++;
-    if (rf_has(f, OF_HOLD_LIFE)) num_hold_life++;
-    if (rf_has(f, OF_PROT_CONF)) num_resist_conf++;
-    if (rf_has(f, OF_PROT_BLIND)) num_resist_blind++;
+    if (of_has(f, OF_SLOW_DIGEST)) num_slow_digest++;
+    if (of_has(f, OF_FEATHER)) num_ffall++;
+    if (of_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT++;
+    if (of_has(f, OF_REGEN)) num_regenerate++;
+    if (of_has(f, OF_TELEPATHY)) num_telepathy++;
+    if (of_has(f, OF_SEE_INVIS)) num_see_inv++;
+    if (of_has(f, OF_FREE_ACT)) num_free_act++;
+    if (of_has(f, OF_HOLD_LIFE)) num_hold_life++;
+    if (of_has(f, OF_PROT_CONF)) num_resist_conf++;
+    if (of_has(f, OF_PROT_BLIND)) num_resist_blind++;
 
     /* Weird flags */
 
@@ -4771,6 +4814,8 @@ static int32_t borg_power_aux1(void)
     if (borg_skill[BI_CRSAVULN]) value -= 30000;
 
     if (borg_skill[BI_CRSTELE]) value -= 100000L;
+    if (borg_skill[BI_CRSENVELOPING]) value -= 50000L;
+    if (borg_skill[BI_CRSIRRITATION]) value -= 20000L;
     if (borg_skill[BI_CRSPOIS]) value -= 10000L;
     if (borg_skill[BI_CRSSIREN]) value -= 800000L;
     if (borg_skill[BI_CRSHALU]) value -= 100000L;
@@ -4778,9 +4823,11 @@ static int32_t borg_power_aux1(void)
     if (borg_skill[BI_CRSSDEM]) value -= 100000L;
     if (borg_skill[BI_CRSSDRA]) value -= 100000L;
     if (borg_skill[BI_CRSSUND]) value -= 100000L;
-    if (borg_skill[BI_CRSSTONE] && borg_skill[BI_SPEED]) value -= 10000L;
+    if (borg_skill[BI_CRSSTONE] && borg_skill[BI_SPEED] < 20) value -= 10000L;
+    if (borg_skill[BI_CRSSTEELSKIN] && borg_skill[BI_SPEED] < 20) value -= 10000L;
     if (borg_skill[BI_CRSNOTEL]) value -= 700000L;
     if (borg_skill[BI_CRSTWEP]) value -= 100000L;
+    if (borg_skill[BI_CRSAIRSWING]) value -= 10000L;
     if (borg_skill[BI_CRSUNKNO]) value -= 9999999L;
 
     /*** Penalize armor weight ***/
