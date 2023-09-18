@@ -2138,13 +2138,15 @@ static void borg_notice_aux2(void)
     /* Handle PROTECTION_FROM_EVIL */
     if (borg_spell_legal(PROTECTION_FROM_EVIL) ||
         borg_equips_item(act_protevil, false) ||
-        borg_has[kv_staff_holiness])
+        borg_has[kv_staff_holiness] ||
+        borg_equips_item(act_staff_holy, false))
     {
         borg_skill[BI_APFE] += 1000;
     }
 
     /* Handle "rune of protection" glyph" */
-    if (borg_spell_legal(GLYPH_OF_WARDING))
+    if (borg_spell_legal(GLYPH_OF_WARDING) ||
+        borg_equips_item(act_glyph, false))
     {
         borg_skill[BI_AGLYPH] += 1000;
     }
@@ -4124,7 +4126,8 @@ static void borg_notice_home_aux(borg_item* in_item, bool no_items)
     }
 
     /*  Handle "rune of protection" glyph */
-    if (borg_spell_legal(GLYPH_OF_WARDING))
+    if (borg_spell_legal(GLYPH_OF_WARDING) ||
+        borg_equips_item(act_glyph, false))
     {
         num_glyph += 1000;
     }
@@ -5110,7 +5113,6 @@ static int32_t borg_power_aux1(void)
                 value += 0;  /* handled by adding to the rll available */
             else if (act_restore_st_lev == activation)
                 value += 0;  /* handled by adding to the rll available */
-                // !FIX no code to handle
             else if (act_enlightenment == activation)
                 value += 500;
             else if (act_hero == activation)
@@ -5120,77 +5122,77 @@ static int32_t borg_power_aux1(void)
             else if (act_cure_paranoia == activation)
                 value += 100;
             else if (act_cure_mind == activation)
-                value += 100;
+                value += 1000;
             else if (act_cure_body == activation)
-                value += 100;
+                value += 1000;
             else if (act_mon_slow == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500; //!FIX recalc  
             else if (act_mon_confuse == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500; //!FIX recalc  
             else if (act_sleep_all == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500; //!FIX recalc  
             else if (act_mon_scare == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500; //!FIX recalc 
             else if (act_light_line == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  //!FIX recalc 
             else if (act_disable_traps == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_drain_life3 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + 150);
             else if (act_drain_life4 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + 250);
             else if (act_elec_ball == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 64;  
             else if (act_elec_ball2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 250;  
             else if (act_acid_bolt2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + (10 * (8 + 1) / 2));
             else if (act_acid_bolt3 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + (12 * (8 + 1) / 2));
             else if (act_acid_ball == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 120; 
             else if (act_cold_ball160 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 160; 
             else if (act_cold_ball2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 200;
             else if (act_fire_ball2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 120;
             else if (act_fire_ball200 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 200;
             else if (act_fire_bolt2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + (12 * (8 + 1) / 2));
             else if (act_fire_bolt3 == activation)
-                value += 0;  // !FIX no code to handle
+                value += (500 + (16 * (8 + 1) / 2));
             else if (act_dispel_evil60 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 60;
             else if (act_dispel_undead == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 60;
             else if (act_dispel_all == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500 + 60 * 2;
             else if (act_deep_descent == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_earthquakes == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_destruction2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 500;  
             else if (act_losslow == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;
             else if (act_lossleep == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;
             else if (act_losconf == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;
             else if (act_satisfy == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_blessing == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;
             else if (act_blessing2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;
             else if (act_blessing3 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;
             else if (act_glyph == activation)
-                value += 0;  // !FIX no code to handle
+                value += 0;  /* handled by adding to skill */
             else if (act_tele_level == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5000L;
             else if (act_confusing == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_enchant_tohit == activation)
@@ -5204,9 +5206,9 @@ static int32_t borg_power_aux1(void)
             else if (act_enchant_armor2 == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_remove_curse == activation)
-                value += 0;  // !FIX no code to handle
+                value += 9000;  
             else if (act_remove_curse2 == activation)
-                value += 0;  // !FIX no code to handle
+                value += 10000;
             else if (act_detect_treasure == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_detect_invis == activation)
@@ -5214,7 +5216,7 @@ static int32_t borg_power_aux1(void)
             else if (act_detect_evil == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_restore_mana == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5000;
             else if (act_brawn == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_intellect == activation)
@@ -5226,17 +5228,17 @@ static int32_t borg_power_aux1(void)
             else if (act_nimbleness == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_restore_str == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_restore_int == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_restore_wis == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_restore_dex == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_restore_con == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_restore_all == activation)
-                value += 0;  // !FIX no code to handle
+                value += 150;
             else if (act_tmd_free_act == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_tmd_infra == activation)
@@ -5246,29 +5248,29 @@ static int32_t borg_power_aux1(void)
             else if (act_tmd_esp == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_resist_acid == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;
             else if (act_resist_elec == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;
             else if (act_resist_fire == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;  
             else if (act_resist_cold == activation)
-                value += 0;  // !FIX no code to handle
+                value += 100;
             else if (act_resist_pois == activation)
-                value += 0;  // !FIX no code to handle
+                value += 150;
             else if (act_cure_confusion == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_wonder == activation)
-                value += 0;  // !FIX no code to handle
+                value += 300;
             else if (act_wand_breath == activation)
-                value += 0;  // !FIX no code to handle
+                value += 0;  // !FIX no code to handle (currently no code for wands of drag breath)
             else if (act_staff_magi == activation)
-                value += 0;  // !FIX no code to handle
+                borg_skill[BI_ASTFMAGI] += 10;
             else if (act_staff_holy == activation)
-                value += 0;  // !FIX no code to handle
+                value += 1000;
             else if (act_drink_breath == activation)
-                value += 0;  // !FIX no code to handle
+                value += 0;  // !FIX no code to handle (nor for the potion)
             else if (act_food_waybread == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;  
             else if (act_shroom_emergency == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_shroom_terror == activation)
@@ -5280,35 +5282,35 @@ static int32_t borg_power_aux1(void)
             else if (act_shroom_sprinting == activation)
                 value += 0;  // !FIX no code to handle
             else if (act_shroom_purging == activation)
-                value += 0;  // !FIX no code to handle
+                value += 50;
             else if (act_ring_acid == activation)
-                value += 0;  // !FIX no code to handle
+                value += 10000;
             else if (act_ring_flames == activation)
-                value += 0;  // !FIX no code to handle
+                value += 25000;
             else if (act_ring_ice == activation)
-                value += 0;  // !FIX no code to handle
+                value += 15000;
             else if (act_ring_lightning == activation)
-                value += 0;  // !FIX no code to handle
+                value += 10000;
             else if (act_dragon_blue == activation)
-                value += 0;  // !FIX no code to handle
+                value += 1100;
             else if (act_dragon_green == activation)
-                value += 0;  // !FIX no code to handle
+                value += 2750;
             else if (act_dragon_red == activation)
-                value += 0;  // !FIX no code to handle
+                value += 1100;
             else if (act_dragon_multihued == activation)
-                value += 0;  // !FIX no code to handle
+                value += 3250;
             else if (act_dragon_gold == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
             else if (act_dragon_chaos == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
             else if (act_dragon_law == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
             else if (act_dragon_balance == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
             else if (act_dragon_shining == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
             else if (act_dragon_power == activation)
-                value += 0;  // !FIX no code to handle
+                value += 5150;
 
         }
     }

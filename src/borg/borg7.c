@@ -148,6 +148,7 @@ bool borg_use_things(void)
 		borg_spell(REMEMBRANCE) ||
 		(borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) ||
         borg_activate_item(act_restore_exp) ||
+        borg_activate_item(act_restore_st_lev) ||
         borg_activate_item(act_restore_life) ||
         borg_quaff_potion(sv_potion_restore_life)))
     {
@@ -168,19 +169,31 @@ bool borg_use_things(void)
     if ( (borg_skill[BI_ISFIXSTR] &&
          (borg_quaff_potion(sv_potion_inc_str) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_purging)||
+          borg_activate_item(act_shroom_purging) ||
+          borg_activate_item(act_restore_str) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXINT] &&
          (borg_quaff_potion(sv_potion_inc_int) ||
+          borg_activate_item(act_restore_int) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXWIS] &&
          (borg_quaff_potion(sv_potion_inc_wis) ||
+          borg_activate_item(act_restore_wis) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXDEX] &&
          (borg_quaff_potion(sv_potion_inc_dex) ||
+           borg_activate_item(act_restore_dex) ||
+         borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXCON] &&
          (borg_quaff_potion(sv_potion_inc_con) ||
+          borg_activate_item(act_restore_con) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_purging) ||
+          borg_activate_item(act_shroom_purging) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))))
     {
         return (true);
@@ -251,7 +264,8 @@ bool borg_use_things(void)
             borg_eat_food(TV_FOOD, sv_food_honey_cake) ||
             borg_eat_food(TV_FOOD, sv_food_ration) ||
             borg_eat_food(TV_FOOD, sv_food_waybread) ||
-            borg_eat_food(TV_FOOD, sv_food_draught))
+            borg_eat_food(TV_FOOD, sv_food_draught) ||
+            borg_activate_item(act_food_waybread))
         {
             return (true);
         }
@@ -1227,7 +1241,9 @@ static bool borg_decurse_armour(void)
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse) &&
         !borg_equips_staff_fail(sv_staff_remove_curse) &&
         !borg_spell_okay_fail(REMOVE_CURSE, 40) &&
-        -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+        -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+        !borg_equips_item(act_remove_curse, true) && 
+        !borg_equips_item(act_remove_curse2, true))
     {
         return (false);
     }
@@ -1236,7 +1252,9 @@ static bool borg_decurse_armour(void)
     if (borg_read_scroll(sv_scroll_remove_curse) ||
         borg_use_staff(sv_staff_remove_curse) ||
         borg_spell(REMOVE_CURSE) ||
-        borg_read_scroll(sv_scroll_star_remove_curse))
+        borg_read_scroll(sv_scroll_star_remove_curse) || 
+        borg_activate_item(act_remove_curse) || 
+        borg_activate_item(act_remove_curse2))
     {
         /* pick the item */
         borg_keypress(all_letters_nohjkl[armour_swap-1]);
@@ -1266,7 +1284,9 @@ static bool borg_decurse_weapon(void)
         if (-1 == borg_slot(TV_SCROLL,sv_scroll_remove_curse) &&
             !borg_equips_staff_fail(sv_staff_remove_curse) &&
             !borg_spell_okay_fail(REMOVE_CURSE,40) &&
-            - 1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+            - 1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+            !borg_equips_item(act_remove_curse, true) &&
+            !borg_equips_item(act_remove_curse2, true))
         {
             return (false);
         }
@@ -1275,7 +1295,9 @@ static bool borg_decurse_weapon(void)
 		if (borg_read_scroll(sv_scroll_remove_curse) ||
 			borg_use_staff(sv_staff_remove_curse)||
 			borg_spell(REMOVE_CURSE) ||
-            borg_read_scroll(sv_scroll_star_remove_curse))
+            borg_read_scroll(sv_scroll_star_remove_curse) ||
+            borg_activate_item(act_remove_curse) ||
+            borg_activate_item(act_remove_curse2))
 		{
             borg_keypress(all_letters_nohjkl[weapon_swap-1]);
             /* pick first curse */
@@ -1299,7 +1321,9 @@ static bool borg_decurse_any(void)
         if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse) &&
             !borg_equips_staff_fail(sv_staff_remove_curse) &&
             !borg_spell_okay_fail(REMOVE_CURSE, 40) &&
-            -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+            -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+            !borg_equips_item(act_remove_curse, true) &&
+            !borg_equips_item(act_remove_curse2, true))
         {
             return (false);
         }
@@ -1308,7 +1332,9 @@ static bool borg_decurse_any(void)
         if (borg_read_scroll(sv_scroll_remove_curse) ||
             borg_use_staff(sv_staff_remove_curse) ||
             borg_spell(REMOVE_CURSE) ||
-            borg_read_scroll(sv_scroll_star_remove_curse))
+            borg_read_scroll(sv_scroll_star_remove_curse) ||
+            borg_activate_item(act_remove_curse) ||
+            borg_activate_item(act_remove_curse2))
         {
             /* pick the item */
             if (borg_skill[BI_FIRST_CURSED] <= INVEN_WIELD)
