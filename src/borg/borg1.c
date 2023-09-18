@@ -194,6 +194,8 @@ const char* prefix_pref[] =
     "_WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
 
     /* curses */
+    "_CRSENVELOPING",
+    "_CRSIRRITATION",
     "_CRSTELE",
     "_CRSPOIS",
     "_CRSSIREN",
@@ -205,16 +207,18 @@ const char* prefix_pref[] =
     "_CRSSTONE",
     "_CRSNOTEL",
     "_CRSTWEP",
-    "_CRSUNKNO",
     "_CRSAGRV",
     "_CRSHPIMP",	/* Impaired HP recovery */
     "_CRSMPIMP",	/* Impaired MP recovery */
+    "_CRSSTEELSKIN",
+    "_CRSAIRSWING",
     "_CRSFEAR",		/* Fear curse flag */
     "_CRSDRAIN_XP", /* drain XP flag */
     "_CRSFVULN",	/* Vulnerable to fire */
     "_CRSEVULN",	/* Vulnerable to elec */
     "_CRSCVULN",	/* Vulnerable to Cold */
     "_CRSAVULN",	/* Vulnerable to Acid */
+    "_CRSUNKNO",
 
     /* weapon attributes */
     "_WSANIMAL",  /* WS = weapon slays */
