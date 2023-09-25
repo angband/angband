@@ -691,16 +691,16 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		return false;
 	}
 
-	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), dummy,
-		ODESC_PREFIX | ODESC_FULL | ODESC_STORE, player);
-
 	/* Attempt to buy it */
 	if (store->feat != FEAT_HOME) {
 		bool response;
 
 		bool obj_is_book = tval_is_book_k(obj->kind);
 		bool obj_can_use = !obj_is_book || obj_can_browse(obj);
+
+		/* Describe the object (fully) */
+		object_desc(o_name, sizeof(o_name), dummy,
+			ODESC_PREFIX | ODESC_FULL | ODESC_STORE, player);
 
 		/* Extract the price for the entire stack */
 		price = price_item(store, dummy, false, dummy->number);
@@ -972,7 +972,7 @@ static bool context_menu_store_item(struct store_context *ctx, const int oid, in
 	char header[120];
 
 	object_desc(header, sizeof(header), obj,
-		ODESC_PREFIX | ODESC_FULL | ODESC_STORE, player);
+		ODESC_PREFIX | ODESC_FULL | ((home) ? 0 : ODESC_STORE), player);
 
 	labels = string_make(lower_case);
 	m->selections = labels;
