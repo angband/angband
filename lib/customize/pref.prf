@@ -363,7 +363,3 @@ keymap-input:1:^U
 
 ##### System Specific Subfiles #####
 
-?:[EQU $SYS gcu]
-%:keys-gcu.prf
-
-?:1
