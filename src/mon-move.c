@@ -987,9 +987,15 @@ bool multiply_monster(const struct monster *mon)
 	bool result;
 	struct monster_group_info info = { 0, 0 };
 
-	/* Pick an empty location. */
-	if (scatter_ext(cave, &grid, 1, mon->grid, 1, true,
-			square_isempty) > 0) {
+	/*
+	 * Pick an empty location except for uniques:  they can never
+	 * multiply (need a check here as the ones in place_new_monster()
+	 * are not sufficient for a unique shape of a shapechanged monster
+	 * since it may have zero for cur_num in the race structure for the
+	 * shape).
+	 */
+	if (!rf_has(mon->race->flags, RF_UNIQUE) && scatter_ext(cave, &grid,
+			1, mon->grid, 1, true, square_isempty) > 0) {
 		/* Create a new monster (awake, no groups) */
 		result = place_new_monster(cave, grid, mon->race, false, false,
 			info, ORIGIN_DROP_BREED);
