@@ -2700,7 +2700,8 @@ static bool borg_heal(int danger)
                 borg_quaff_potion(sv_potion_cure_serious) ||
                 borg_quaff_crit(false) ||
                 borg_quaff_potion(sv_potion_healing) ||
-                borg_use_staff_fail(sv_staff_healing) ||
+                borg_use_staff_fail(sv_staff_healing) || 
+                borg_activate_item(act_cure_confusion) ||
                 borg_use_staff_fail(sv_staff_curing)))
         {
             borg_note("# Fixing Confusion. Level 2");
@@ -4538,7 +4539,8 @@ bool borg_caution(void)
         if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
-            borg_quaff_potion(sv_potion_healing) ||
+            borg_quaff_potion(sv_potion_healing) || 
+            borg_activate_item(act_cure_confusion) ||
             borg_use_staff_fail(sv_staff_healing))
         {
             borg_note("# Healing.  Confusion.");
@@ -11062,7 +11064,8 @@ static int borg_defend_aux_shield(int p1)
     /* Cant when screwed */
     if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED] || borg_skill[BI_ISFORGET]) return (0);
 
-    if (borg_has[kv_mush_stoneskin] <= 0)
+    if (borg_has[kv_mush_stoneskin] <= 0 && 
+        !borg_equips_item(act_shroom_stone, true))
         return (0);
 
     /* pretend we are protected and look again */
@@ -11086,7 +11089,8 @@ static int borg_defend_aux_shield(int p1)
         borg_note("# Attempting to eat a stone skin");
 
         /* do it! */
-        if (borg_eat_food(TV_MUSHROOM, sv_mush_stoneskin))
+        if (borg_eat_food(TV_MUSHROOM, sv_mush_stoneskin) ||
+            borg_activate_item(act_shroom_stone))
         {
             /* No resting to recoop mana */
             borg_no_rest_prep = 2000;
@@ -12115,8 +12119,9 @@ static int borg_defend_aux_earthquake(int p1)
     /* Cast the spell */
     if (!borg_simulate &&
         (borg_spell(TREMOR) ||
-            borg_spell(QUAKE) ||
-            borg_spell(GRONDS_BLOW)))
+         borg_spell(QUAKE) ||
+         borg_spell(GRONDS_BLOW) || 
+         borg_activate_item(act_earthquakes)))
     {
         /* Must make a new Sea too */
         borg_needs_new_sea = true;
@@ -12129,7 +12134,8 @@ static int borg_defend_aux_earthquake(int p1)
     /* Can I cast the spell? */
     if (!borg_spell_okay_fail(TREMOR, 35) &&
         !borg_spell_okay_fail(QUAKE, 35) &&
-        !borg_spell_okay_fail(GRONDS_BLOW, 35))
+        !borg_spell_okay_fail(GRONDS_BLOW, 35) &&
+        !borg_equips_item(act_earthquakes, true))
         return (0);
 
     /* See if he is in real danger or fighting summoner*/
@@ -12521,7 +12527,11 @@ static int borg_defend_aux_inviso(int p1)
         !borg_equips_staff_fail(sv_staff_detect_invis) &&
         !borg_equips_staff_fail(sv_staff_detect_evil) &&
         !borg_spell_okay_fail(SENSE_INVISIBLE, fail_allowed) &&
-        !borg_spell_okay_fail(DETECTION, fail_allowed))
+        !borg_spell_okay_fail(DETECTION, fail_allowed) &&
+        !borg_equips_item(act_detect_invis, true) && 
+        !borg_equips_item(act_tmd_sinvis, true) && 
+        !borg_equips_item(act_tmd_esp, true) && 
+        !borg_equips_item(act_detect_evil, true))
         return (0);
 
     /* Darkness */
@@ -12537,7 +12547,11 @@ static int borg_defend_aux_inviso(int p1)
     if (borg_spell_fail(REVEAL_MONSTERS, fail_allowed) ||
         borg_read_scroll(sv_scroll_detect_invis) ||
         borg_use_staff(sv_staff_detect_invis) ||
-        borg_use_staff(sv_staff_detect_evil))
+        borg_use_staff(sv_staff_detect_evil) ||
+        borg_activate_item(act_detect_invis) || 
+        borg_activate_item(act_tmd_sinvis) || 
+        borg_activate_item(act_tmd_esp) ||
+        borg_activate_item(act_detect_evil))
     {
         borg_see_inv = 3000; /* hack, actually a snap shot, no ignition message */
         return (10);
@@ -14670,7 +14684,8 @@ bool borg_recover(void)
         if (borg_eat_food(TV_MUSHROOM, sv_mush_cure_mind) ||
             borg_quaff_potion(sv_potion_cure_serious) ||
             borg_quaff_crit(false) ||
-            borg_use_staff_fail(sv_staff_curing) ||
+            borg_use_staff_fail(sv_staff_curing) || 
+            borg_activate_item(act_cure_confusion) || 
             borg_zap_rod(sv_rod_curing))
         {
             return (true);
@@ -14693,7 +14708,8 @@ bool borg_recover(void)
     /* Hack -- satisfy hunger */
     if ((borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK]) && (q < 25))
     {
-        if (borg_read_scroll(sv_scroll_satisfy_hunger))
+        if (borg_read_scroll(sv_scroll_satisfy_hunger) || 
+            borg_activate_item(act_satisfy))
         {
             return (true);
         }
@@ -15215,7 +15231,8 @@ static bool borg_play_step(int y2, int x2)
         /* don't bother unless we are near full mana */
         if (borg_skill[BI_CURSP] > ((borg_skill[BI_MAXSP] * 4) / 5))
         {
-            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS))
+            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS) ||
+                borg_activate_item(act_disable_traps))
             {
                 borg_note("# Disable Traps, Destroy Doors");
                 ag->trap = 0;
@@ -15267,7 +15284,8 @@ static bool borg_play_step(int y2, int x2)
         if (!randint0(100) || time_this_panel >= 500)
         {
             /* Mega-Hack -- allow "destroy doors" */
-            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS))
+            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS) ||
+                borg_activate_item(act_destroy_doors))
             {
                 borg_note("# Disable Traps, Destroy Doors");
                 return (true);

@@ -30,6 +30,7 @@ power_item** borg_power_item;
 int*    n_pwr;
 int*    borg_has;
 int*    borg_skill;
+int*    borg_activation;
 int     size_depth;
 int     size_obj;
 int*    formula[1000];
@@ -265,6 +266,12 @@ const char* prefix_pref[] =
     "_ACCW",     /* CCW potions (just because we use it so often) */
     "_ACSW",     /* CSW potions (+ CLW if cut) */
     "_ACLW",
+    "_AENCH_TOH", /* enchant weapons and armor (+spells) */
+    "_AENCH_TOD",
+    "_AENCH_SWEP",
+    "_AENCH_ARM",
+    "_AENCH_SARM",
+    "_ABRAND",
     "_ARESHEAT", /* potions of res heat */
     "_ARESCOLD", /* pot of res cold */
     "_ARESPOIS", /* Potions of Res Poison */
@@ -274,6 +281,8 @@ const char* prefix_pref[] =
     "_ASHROOM",		/* Number of cool mushrooms */
     "_AROD1",		/* Attack rods */
     "_AROD2",		/* Attack rods */
+    "_ANEED_ID",    /* a wielded item that needs ID */
+    "_MULTI_BONUSES", /* Items with multiple useful bonuses */
     "_DINV",        /* See Inv Spell is Legal */
     "_WEIGHT",      /* weight of all inventory and equipment */
     "_EMPTY",       /* number of empty slots */
@@ -634,12 +643,6 @@ int16_t amt_fix_exp;
 
 int16_t amt_cool_staff;   /* holiness - power staff */
 int16_t amt_cool_wand;	/* # of charges on Wands which can be useful for attacks */
-int16_t amt_enchant_to_a;
-int16_t amt_enchant_to_d;
-int16_t amt_enchant_to_h;
-int16_t amt_brand_weapon;  /*  brand bolts */
-int16_t amt_enchant_weapon;
-int16_t amt_enchant_armor;
 int16_t amt_digger;
 int16_t amt_ego;
 
