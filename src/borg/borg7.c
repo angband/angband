@@ -784,8 +784,8 @@ static bool borg_enchant_to_a(void)
     if (!my_need_enchant_to_a) return (false);
 
     /* Need "enchantment" ability */
-    if ((!amt_enchant_to_a) &&
-        (!amt_enchant_armor)) return (false);
+    if ((!borg_skill[BI_AENCH_ARM]) &&
+        (!borg_skill[BI_AENCH_SARM])) return (false);
 
 
     /* Look for armor that needs enchanting */
@@ -804,7 +804,7 @@ static bool borg_enchant_to_a(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_ARMOUR, 65) ||
-           amt_enchant_armor >=1)
+           borg_skill[BI_AENCH_SARM] >=1)
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -854,8 +854,8 @@ static bool borg_enchant_to_h(void)
         !enchant_weapon_swap_to_h) return (false);
 
     /* Need "enchantment" ability */
-    if ( (!amt_enchant_to_h) &&
-         (!amt_enchant_weapon) ) return (false);
+    if ( (!borg_skill[BI_AENCH_TOH]) &&
+         (!borg_skill[BI_AENCH_SWEP]) ) return (false);
 
 
     /* Look for a weapon that needs enchanting */
@@ -877,7 +877,7 @@ static bool borg_enchant_to_h(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1 )
+            borg_skill[BI_AENCH_SWEP] >= 1 )
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -923,7 +923,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1)
+                borg_skill[BI_AENCH_SWEP] >= 1)
             {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) skip = true;
             }
@@ -967,7 +967,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1 )
+                borg_skill[BI_AENCH_SWEP] >= 1 )
             {
                 if (a >= 10) continue;
             }
@@ -1018,8 +1018,8 @@ static bool borg_enchant_to_d(void)
         !enchant_weapon_swap_to_d) return (false);
 
     /* Need "enchantment" ability */
-    if ( (!amt_enchant_to_d) &&
-         (!amt_enchant_weapon) ) return (false);
+    if ( (!borg_skill[BI_AENCH_TOD]) &&
+         (!borg_skill[BI_AENCH_SWEP]) ) return (false);
 
 
     /* Look for a weapon that needs enchanting */
@@ -1041,7 +1041,7 @@ static bool borg_enchant_to_d(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1 )
+            borg_skill[BI_AENCH_SWEP] >= 1 )
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -1086,7 +1086,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip "boring" items */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1)
+                borg_skill[BI_AENCH_SWEP] >= 1)
             {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) skip = true;
             }
@@ -1135,7 +1135,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1 )
+                borg_skill[BI_AENCH_SWEP] >= 1 )
             {
                 if (a >= 10) continue;
             }
@@ -1183,7 +1183,7 @@ static bool borg_brand_weapon(void)
     if (!my_need_brand_weapon) return (false);
 
     /* Need "brand" ability */
-    if (!amt_brand_weapon) return (false);
+    if (!borg_skill[BI_ABRAND]) return (false);
 
     /* look through inventory for ammo */
         for (i = QUIVER_START; i < QUIVER_END; i++)
