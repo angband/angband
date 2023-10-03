@@ -1857,6 +1857,9 @@ bool borg_activate_item(int activation)
 {
     int i;
 
+    /* a quick check of the array */
+    if (!borg_activation[activation]) return (false);
+
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
@@ -1891,6 +1894,10 @@ bool borg_activate_item(int activation)
 bool borg_equips_item(int activation, bool check_charge)
 {
     int i;
+
+    /* a quick check of the array */
+    if (!borg_activation[activation]) return (false);
+    else if (!check_charge) return (true);
 
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
