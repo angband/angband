@@ -10933,7 +10933,6 @@ static int borg_defend_aux_resist_p(int p1)
         !borg_equips_item(act_resist_pois, true) &&
         !borg_equips_item(act_resist_all, true) &&
         !borg_equips_item(act_rage_bless_resist, true) &&
-        !borg_spell_okay_fail(RESISTANCE, fail_allowed) &&
         -1 == borg_slot(TV_POTION, sv_potion_resist_pois))
         return (0);
 
@@ -10962,7 +10961,6 @@ static int borg_defend_aux_resist_p(int p1)
             borg_activate_item(act_resist_pois) ||
             borg_activate_item(act_resist_all) ||
             borg_activate_item(act_rage_bless_resist) ||
-            borg_spell_fail(RESISTANCE, fail_allowed) ||
             borg_quaff_potion(sv_potion_resist_pois))
 
             /* No resting to recoop mana */
@@ -13509,7 +13507,7 @@ static int borg_perma_aux_resist(void)
     if (unique_on_level) fail_allowed = 10;
     if (borg_fighting_unique) fail_allowed = 15;
 
-    if (borg_skill[BI_TRFIRE] + borg_skill[BI_TRACID] + borg_skill[BI_TRPOIS] +
+    if (borg_skill[BI_TRFIRE] + borg_skill[BI_TRACID] +
         borg_skill[BI_TRELEC] + borg_skill[BI_TRCOLD] >= 3)
         return (0);
 
@@ -13579,9 +13577,6 @@ static int borg_perma_aux_resist_p(void)
 
     if (!borg_spell_okay_fail(RESIST_POISON, fail_allowed))
         return (0);
-
-    /* Skip it if I can do the big spell */
-    if (borg_spell_okay_fail(RESISTANCE, fail_allowed)) return (0);
 
     /* Obtain the cost of the spell */
     cost = borg_get_spell_power(RESIST_POISON);

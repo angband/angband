@@ -909,6 +909,17 @@ static void borg_notice_aux1(void)
      /* Clear the stat modifiers */
     for (i = 0; i < STAT_MAX; i++) my_stat_add[i] = 0;
 
+
+    /* track activations */
+    /* note this is done first so that it we can use this */
+    /* array in borg_equips_item */
+    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+        if (borg_items[i].activ_idx) {
+            borg_activation[borg_items[i].activ_idx] += 1;
+        }
+    }
+
+
     /* Scan the usable inventory */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
@@ -1167,10 +1178,6 @@ static void borg_notice_aux1(void)
 
         if (bonuses > 2)
             borg_skill[BI_MULTIPLE_BONUSES] += bonuses;
-
-        /* track activations */
-        if (item->activ_idx)
-            borg_activation[item->activ_idx] += 1;
 
         /* Hack -- Net-zero The borg will miss read acid damaged items such as
          * Leather Gloves [2,-2] and falsely assume they help his power.
@@ -2179,11 +2186,18 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle ENCHANT_WEAPON */
-    if (borg_spell_legal_fail(ENCHANT_WEAPON, 65))
+    if (borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
+        borg_equips_item(act_enchant_weapon, false))
     {
         borg_skill[BI_AENCH_TOH] += 1000;
         borg_skill[BI_AENCH_TOD] += 1000;
         borg_skill[BI_AENCH_SWEP] += 1000;
+    }
+    if (borg_equips_item(act_enchant_tohit, false)) {
+        borg_skill[BI_AENCH_TOH] += 1000;
+    }
+    if (borg_equips_item(act_enchant_todam, false)) {
+        borg_skill[BI_AENCH_TOD] += 1000;
     }
 
     /* Handle "Brand Weapon (bolts)" */
@@ -2194,7 +2208,9 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle "enchant armor" */
-    if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65))
+    if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65) ||
+        borg_equips_item(act_enchant_armor, false) ||
+        borg_equips_item(act_enchant_armor2, false))
     {
         borg_skill[BI_AENCH_ARM] += 1000;
         borg_skill[BI_AENCH_SARM] += 1000;
@@ -3380,7 +3396,6 @@ void borg_notice(bool notice_swap)
     borg_skill[BI_SRPOIS] = borg_skill[BI_RPOIS]
         || armour_swap_resist_pois
         || weapon_swap_resist_pois
-        || borg_spell_legal_fail(RESISTANCE, 15) /* Res FECAP */
         || borg_spell_legal_fail(RESIST_POISON, 15); /* Res P */
     borg_skill[BI_SRFEAR] = borg_skill[BI_RFEAR]
         || armour_swap_resist_fear
@@ -5177,15 +5192,15 @@ static int32_t borg_power_aux1(void)
         else if (act_confusing == act)
             activation_bonus += 0; /* scroll only ever read to get rid of it */
         else if (act_enchant_tohit == act)
-            activation_bonus += 0; // !FIX no code to handle
+            activation_bonus += 0; // handled by adding to "amount of bonus available"
         else if (act_enchant_todam == act)
-            activation_bonus += 0; // !FIX no code to handle
+            activation_bonus += 0; // handled by adding to "amount of bonus available"
         else if (act_enchant_weapon == act)
-            activation_bonus += 0; // !FIX no code to handle
+            activation_bonus += 0; // handled by adding to "amount of bonus available"
         else if (act_enchant_armor == act)
-            activation_bonus += 0; // !FIX no code to handle
+            activation_bonus += 0; // handled by adding to "amount of bonus available"
         else if (act_enchant_armor2 == act)
-            activation_bonus += 0; // !FIX no code to handle
+            activation_bonus += 0; // handled by adding to "amount of bonus available"
         else if (act_remove_curse == act)
             activation_bonus += 9000;
         else if (act_remove_curse2 == act)
