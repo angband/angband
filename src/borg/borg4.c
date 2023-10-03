@@ -5192,15 +5192,15 @@ static int32_t borg_power_aux1(void)
         else if (act_confusing == act)
             activation_bonus += 0; /* scroll only ever read to get rid of it */
         else if (act_enchant_tohit == act)
-            activation_bonus += 0; // handled by adding to "amount of bonus available"
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_todam == act)
-            activation_bonus += 0; // handled by adding to "amount of bonus available"
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_weapon == act)
-            activation_bonus += 0; // handled by adding to "amount of bonus available"
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_armor == act)
-            activation_bonus += 0; // handled by adding to "amount of bonus available"
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_armor2 == act)
-            activation_bonus += 0; // handled by adding to "amount of bonus available"
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
         else if (act_remove_curse == act)
             activation_bonus += 9000;
         else if (act_remove_curse2 == act)
