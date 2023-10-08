@@ -78,6 +78,7 @@ edit:
 	@sed -i player-timed.c -e 's/"player_timed"/"player_t"/' -e 's/"player timed effects"/"player_t"/'
 	@sed -i ui-entry.c -e 's/"ui_entry_base"/"uientryb"/'
 	@sed -i ui-entry-renderers.c -e 's/"ui_entry_renderer"/"uientryr"/'
+	@sed -i ui-knowledge.c -e 's/"ui_knowledge"/"ui_knowl"/'
 
 ../$(EXE): $(EXE)
 	cp $(EXE) ..
@@ -119,6 +120,7 @@ dist:
 	@mv $(TMPDIR)/lib/gamedata/room_template.txt $(TMPDIR)/lib/gamedata/room_tem.txt
 	@mv $(TMPDIR)/lib/gamedata/ui_entry_base.txt $(TMPDIR)/lib/gamedata/uientryb.txt
 	@mv $(TMPDIR)/lib/gamedata/ui_entry_renderer.txt $(TMPDIR)/lib/gamedata/uientryr.txt
+	@mv $(TMPDIR)/lib/gamedata/ui_knowledge.txt $(TMPDIR)/lib/gamedata/ui_knowl.txt
 	@cp ../lib/help/*.txt $(TMPDIR)/lib/help
 	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
 	@echo attempting to install sound and graphics
