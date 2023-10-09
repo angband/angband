@@ -148,6 +148,7 @@ bool borg_use_things(void)
 		borg_spell(REMEMBRANCE) ||
 		(borg_skill[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) ||
         borg_activate_item(act_restore_exp) ||
+        borg_activate_item(act_restore_st_lev) ||
         borg_activate_item(act_restore_life) ||
         borg_quaff_potion(sv_potion_restore_life)))
     {
@@ -168,19 +169,31 @@ bool borg_use_things(void)
     if ( (borg_skill[BI_ISFIXSTR] &&
          (borg_quaff_potion(sv_potion_inc_str) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_purging)||
+          borg_activate_item(act_shroom_purging) ||
+          borg_activate_item(act_restore_str) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXINT] &&
          (borg_quaff_potion(sv_potion_inc_int) ||
+          borg_activate_item(act_restore_int) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXWIS] &&
          (borg_quaff_potion(sv_potion_inc_wis) ||
+          borg_activate_item(act_restore_wis) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXDEX] &&
          (borg_quaff_potion(sv_potion_inc_dex) ||
+           borg_activate_item(act_restore_dex) ||
+         borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))) ||
         (borg_skill[BI_ISFIXCON] &&
          (borg_quaff_potion(sv_potion_inc_con) ||
+          borg_activate_item(act_restore_con) ||
+          borg_activate_item(act_restore_all) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_purging) ||
+          borg_activate_item(act_shroom_purging) ||
           borg_eat_food(TV_MUSHROOM, sv_mush_restoring))))
     {
         return (true);
@@ -251,7 +264,8 @@ bool borg_use_things(void)
             borg_eat_food(TV_FOOD, sv_food_honey_cake) ||
             borg_eat_food(TV_FOOD, sv_food_ration) ||
             borg_eat_food(TV_FOOD, sv_food_waybread) ||
-            borg_eat_food(TV_FOOD, sv_food_draught))
+            borg_eat_food(TV_FOOD, sv_food_draught) ||
+            borg_activate_item(act_food_waybread))
         {
             return (true);
         }
@@ -770,8 +784,8 @@ static bool borg_enchant_to_a(void)
     if (!my_need_enchant_to_a) return (false);
 
     /* Need "enchantment" ability */
-    if ((!amt_enchant_to_a) &&
-        (!amt_enchant_armor)) return (false);
+    if ((!borg_skill[BI_AENCH_ARM]) &&
+        (!borg_skill[BI_AENCH_SARM])) return (false);
 
 
     /* Look for armor that needs enchanting */
@@ -790,7 +804,7 @@ static bool borg_enchant_to_a(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_ARMOUR, 65) ||
-           amt_enchant_armor >=1)
+           borg_skill[BI_AENCH_SARM] >=1)
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -840,8 +854,8 @@ static bool borg_enchant_to_h(void)
         !enchant_weapon_swap_to_h) return (false);
 
     /* Need "enchantment" ability */
-    if ( (!amt_enchant_to_h) &&
-         (!amt_enchant_weapon) ) return (false);
+    if ( (!borg_skill[BI_AENCH_TOH]) &&
+         (!borg_skill[BI_AENCH_SWEP]) ) return (false);
 
 
     /* Look for a weapon that needs enchanting */
@@ -863,7 +877,7 @@ static bool borg_enchant_to_h(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1 )
+            borg_skill[BI_AENCH_SWEP] >= 1 )
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -909,7 +923,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1)
+                borg_skill[BI_AENCH_SWEP] >= 1)
             {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) skip = true;
             }
@@ -953,7 +967,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1 )
+                borg_skill[BI_AENCH_SWEP] >= 1 )
             {
                 if (a >= 10) continue;
             }
@@ -1004,8 +1018,8 @@ static bool borg_enchant_to_d(void)
         !enchant_weapon_swap_to_d) return (false);
 
     /* Need "enchantment" ability */
-    if ( (!amt_enchant_to_d) &&
-         (!amt_enchant_weapon) ) return (false);
+    if ( (!borg_skill[BI_AENCH_TOD]) &&
+         (!borg_skill[BI_AENCH_SWEP]) ) return (false);
 
 
     /* Look for a weapon that needs enchanting */
@@ -1027,7 +1041,7 @@ static bool borg_enchant_to_d(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1 )
+            borg_skill[BI_AENCH_SWEP] >= 1 )
         {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT]) continue;
         }
@@ -1072,7 +1086,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip "boring" items */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1)
+                borg_skill[BI_AENCH_SWEP] >= 1)
             {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT]) skip = true;
             }
@@ -1121,7 +1135,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65) ||
-                amt_enchant_weapon >= 1 )
+                borg_skill[BI_AENCH_SWEP] >= 1 )
             {
                 if (a >= 10) continue;
             }
@@ -1169,7 +1183,7 @@ static bool borg_brand_weapon(void)
     if (!my_need_brand_weapon) return (false);
 
     /* Need "brand" ability */
-    if (!amt_brand_weapon) return (false);
+    if (!borg_skill[BI_ABRAND]) return (false);
 
     /* look through inventory for ammo */
         for (i = QUIVER_START; i < QUIVER_END; i++)
@@ -1227,7 +1241,9 @@ static bool borg_decurse_armour(void)
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse) &&
         !borg_equips_staff_fail(sv_staff_remove_curse) &&
         !borg_spell_okay_fail(REMOVE_CURSE, 40) &&
-        -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+        -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+        !borg_equips_item(act_remove_curse, true) && 
+        !borg_equips_item(act_remove_curse2, true))
     {
         return (false);
     }
@@ -1236,7 +1252,9 @@ static bool borg_decurse_armour(void)
     if (borg_read_scroll(sv_scroll_remove_curse) ||
         borg_use_staff(sv_staff_remove_curse) ||
         borg_spell(REMOVE_CURSE) ||
-        borg_read_scroll(sv_scroll_star_remove_curse))
+        borg_read_scroll(sv_scroll_star_remove_curse) || 
+        borg_activate_item(act_remove_curse) || 
+        borg_activate_item(act_remove_curse2))
     {
         /* pick the item */
         borg_keypress(all_letters_nohjkl[armour_swap-1]);
@@ -1266,7 +1284,9 @@ static bool borg_decurse_weapon(void)
         if (-1 == borg_slot(TV_SCROLL,sv_scroll_remove_curse) &&
             !borg_equips_staff_fail(sv_staff_remove_curse) &&
             !borg_spell_okay_fail(REMOVE_CURSE,40) &&
-            - 1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+            - 1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+            !borg_equips_item(act_remove_curse, true) &&
+            !borg_equips_item(act_remove_curse2, true))
         {
             return (false);
         }
@@ -1275,7 +1295,9 @@ static bool borg_decurse_weapon(void)
 		if (borg_read_scroll(sv_scroll_remove_curse) ||
 			borg_use_staff(sv_staff_remove_curse)||
 			borg_spell(REMOVE_CURSE) ||
-            borg_read_scroll(sv_scroll_star_remove_curse))
+            borg_read_scroll(sv_scroll_star_remove_curse) ||
+            borg_activate_item(act_remove_curse) ||
+            borg_activate_item(act_remove_curse2))
 		{
             borg_keypress(all_letters_nohjkl[weapon_swap-1]);
             /* pick first curse */
@@ -1299,7 +1321,9 @@ static bool borg_decurse_any(void)
         if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse) &&
             !borg_equips_staff_fail(sv_staff_remove_curse) &&
             !borg_spell_okay_fail(REMOVE_CURSE, 40) &&
-            -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse))
+            -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse) &&
+            !borg_equips_item(act_remove_curse, true) &&
+            !borg_equips_item(act_remove_curse2, true))
         {
             return (false);
         }
@@ -1308,7 +1332,9 @@ static bool borg_decurse_any(void)
         if (borg_read_scroll(sv_scroll_remove_curse) ||
             borg_use_staff(sv_staff_remove_curse) ||
             borg_spell(REMOVE_CURSE) ||
-            borg_read_scroll(sv_scroll_star_remove_curse))
+            borg_read_scroll(sv_scroll_star_remove_curse) ||
+            borg_activate_item(act_remove_curse) ||
+            borg_activate_item(act_remove_curse2))
         {
             /* pick the item */
             if (borg_skill[BI_FIRST_CURSED] <= INVEN_WIELD)

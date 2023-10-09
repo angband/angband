@@ -5418,7 +5418,8 @@ bool borg_think_dungeon(void)
                 borg_shadow_shift(90) ||
                 borg_use_staff(sv_staff_teleportation) ||
                 borg_read_scroll(sv_scroll_teleport) ||
-                borg_read_scroll(sv_scroll_teleport_level)))
+                borg_read_scroll(sv_scroll_teleport_level) ||
+                borg_activate_item(act_tele_level)))
         {
             /* Success */
             borg_note("# Teleport (twitchy)");

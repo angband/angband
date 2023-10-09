@@ -3994,6 +3994,7 @@ static void init_borg_txt_file(void)
     }
     borg_has = mem_zalloc(size_obj * sizeof(int));
     borg_skill = borg_has + z_info->k_max;
+    borg_activation = mem_zalloc(z_info->act_max * sizeof(int));
 
     /* a couple of spot checks on settings definitiosn */
     if (!streq(borg_settings[BORG_MUNCHKIN_LEVEL].setting_string, "borg_munchkin_level") ||
@@ -4156,6 +4157,8 @@ static void clean_borg_txt_file(void)
     borg_cfg = NULL;
     mem_free(borg_has);
     borg_has = NULL;
+    mem_free(borg_activation);
+    borg_activation = NULL;
     borg_skill = NULL;
     for (i = 0; i < MAX_CLASSES; ++i) {
         mem_free(borg_power_item[i]);
@@ -5968,6 +5971,7 @@ void do_cmd_borg(void)
         mem_free(borg_required_item); /* externalize the 400 later */
         mem_free(borg_power_item); /* externalize the 400 later */
         mem_free(borg_has);
+        mem_free(borg_activation);
         for (j = 0; j < 1000; j++)
         {
             if (formula[j])

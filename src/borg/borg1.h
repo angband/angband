@@ -932,6 +932,7 @@ typedef struct power_item
 extern power_item** borg_power_item;
 extern int*     n_pwr;
 extern int*     borg_has;
+extern int*     borg_activation;
 extern int*     borg_skill;
 extern int      size_depth;
 extern int      size_obj;
@@ -1095,6 +1096,8 @@ enum
     BI_FIRST_CURSED,
     BI_WHERE_CURSED,
 
+    BI_CRSENVELOPING,
+    BI_CRSIRRITATION,
     BI_CRSTELE,
     BI_CRSPOIS,
     BI_CRSSIREN,
@@ -1106,16 +1109,19 @@ enum
     BI_CRSSTONE,
     BI_CRSNOTEL,
     BI_CRSTWEP,
-    BI_CRSUNKNO,
     BI_CRSAGRV,
     BI_CRSHPIMP,
     BI_CRSMPIMP,
+    BI_CRSSTEELSKIN,
+    BI_CRSAIRSWING,
     BI_CRSFEAR,
     BI_CRSDRAIN_XP,
     BI_CRSFVULN,
     BI_CRSEVULN,
     BI_CRSCVULN,
     BI_CRSAVULN,
+    BI_CRSUNKNO,
+
     BI_WS_ANIMAL,
     BI_WS_EVIL,
     BI_WS_UNDEAD,
@@ -1157,6 +1163,12 @@ enum
     BI_ACCW,
     BI_ACSW,
     BI_ACLW,
+    BI_AENCH_TOH,
+    BI_AENCH_TOD,
+    BI_AENCH_SWEP,
+    BI_AENCH_ARM,
+    BI_AENCH_SARM,
+    BI_ABRAND,
     BI_ARESHEAT,
     BI_ARESCOLD,
     BI_ARESPOIS,
@@ -1166,6 +1178,8 @@ enum
     BI_ASHROOM,
     BI_AROD1,		/* Attack rods */
     BI_AROD2,		/* Attack rods */
+    BI_ANEED_ID,
+    BI_MULTIPLE_BONUSES,
     BI_DINV,	/* See Inv Spell Legal */
     BI_WEIGHT,  /* weight of all inventory and equipment */
     BI_EMPTY,   /* number of empty slots */
@@ -1501,6 +1515,7 @@ extern int32_t  my_power;
 
 /*
  * Various "amounts" (for the player)
+ * !FIX should probably be BORG_SKILL values 
  */
 
 extern int16_t  amt_food_lowcal;
@@ -1519,12 +1534,6 @@ extern int16_t  amt_inc_stat[6];
 
 extern int16_t  amt_fix_exp;
 
-extern int16_t  amt_enchant_to_a;
-extern int16_t  amt_enchant_to_d;
-extern int16_t  amt_enchant_to_h;
-extern int16_t  amt_brand_weapon;  /* cubragol and bolts */
-extern int16_t  amt_enchant_weapon;
-extern int16_t  amt_enchant_armor;
 extern int16_t  amt_digger;
 extern int16_t  amt_ego;
 

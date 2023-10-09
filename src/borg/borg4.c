@@ -849,23 +849,21 @@ static void borg_notice_aux1(void)
     player_flags(player, f);
 
     /* Good flags */
-    if (rf_has(f, OF_SLOW_DIGEST)) borg_skill[BI_SDIG] = true;
-    if (rf_has(f, OF_FEATHER)) borg_skill[BI_FEATH] = true;
-    if (rf_has(f, OF_REGEN)) borg_skill[BI_REG] = true;
-    if (rf_has(f, OF_TELEPATHY)) borg_skill[BI_ESP] = true;
-    if (rf_has(f, OF_SEE_INVIS)) borg_skill[BI_SINV] = true;
-    if (rf_has(f, OF_FREE_ACT)) borg_skill[BI_FRACT] = true;
-    if (rf_has(f, OF_HOLD_LIFE)) borg_skill[BI_HLIFE] = true;
+    if (of_has(f, OF_SLOW_DIGEST)) borg_skill[BI_SDIG] = true;
+    if (of_has(f, OF_FEATHER)) borg_skill[BI_FEATH] = true;
+    if (of_has(f, OF_REGEN)) borg_skill[BI_REG] = true;
+    if (of_has(f, OF_TELEPATHY)) borg_skill[BI_ESP] = true;
+    if (of_has(f, OF_SEE_INVIS)) borg_skill[BI_SINV] = true;
+    if (of_has(f, OF_FREE_ACT)) borg_skill[BI_FRACT] = true;
+    if (of_has(f, OF_HOLD_LIFE)) borg_skill[BI_HLIFE] = true;
 
     /* Weird flags */
 
     /* Bad flags */
-    if (rf_has(f, OF_IMPACT)) borg_skill[BI_W_IMPACT] = true;
-    if (rf_has(f, OF_AGGRAVATE)) borg_skill[BI_CRSAGRV] = true;
-    if (rf_has(f, OF_IMPAIR_HP)) borg_skill[BI_CRSHPIMP] = true;
-    if (rf_has(f, OF_IMPAIR_MANA)) borg_skill[BI_CRSMPIMP] = true;
-    if (rf_has(f, OF_AFRAID)) borg_skill[BI_CRSFEAR] = true;
-    if (rf_has(f, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
+    if (of_has(f, OF_IMPACT)) borg_skill[BI_W_IMPACT] = true;
+    if (of_has(f, OF_AGGRAVATE)) borg_skill[BI_CRSAGRV] = true;
+    if (of_has(f, OF_AFRAID)) borg_skill[BI_CRSFEAR] = true;
+    if (of_has(f, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
     
 
     if (rb_ptr->el_info[ELEM_FIRE].res_level == -1) borg_skill[BI_CRSFVULN] = true;
@@ -911,6 +909,17 @@ static void borg_notice_aux1(void)
      /* Clear the stat modifiers */
     for (i = 0; i < STAT_MAX; i++) my_stat_add[i] = 0;
 
+
+    /* track activations */
+    /* note this is done first so that it we can use this */
+    /* array in borg_equips_item */
+    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+        if (borg_items[i].activ_idx) {
+            borg_activation[borg_items[i].activ_idx] += 1;
+        }
+    }
+
+
     /* Scan the usable inventory */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
@@ -922,7 +931,10 @@ static void borg_notice_aux1(void)
         /* total up the weight of the items */
         borg_skill[BI_WEIGHT] += item->weight * item->iqty;
 
-        if (borg_item_note_needs_id(item)) my_need_id++;
+        if (borg_item_note_needs_id(item)) {
+            my_need_id++;
+            borg_skill[BI_ANEED_ID] += 1;
+        }
 
         /* track first cursed item */
         if (!borg_skill[BI_FIRST_CURSED] && item->uncursable)
@@ -1018,7 +1030,39 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_DRAIN_EXP)) borg_skill[BI_CRSDRAIN_XP] = true;
 
         /* curses that don't have flags or stat changes that are tracked elsewhere */
+        if (item->curses[BORG_CURSE_VULNERABILITY]) {
+            borg_skill[BI_CRSAGRV] = true;
+            borg_skill[BI_ARMOR] -= 50;
+        }
         if (item->curses[BORG_CURSE_TELEPORTATION]) borg_skill[BI_CRSTELE] = true;
+        if (item->curses[BORG_CURSE_DULLNESS]) {
+            borg_skill[BI_CINT] -= 5;
+            borg_skill[BI_CWIS] -= 5;
+        }
+        if (item->curses[BORG_CURSE_SICKLINESS]) {
+            borg_skill[BI_CSTR] -= 5;
+            borg_skill[BI_CDEX] -= 5;
+            borg_skill[BI_CCON] -= 5;
+        }
+        if (item->curses[BORG_CURSE_ENVELOPING]) borg_skill[BI_CRSENVELOPING] = true;
+        if (item->curses[BORG_CURSE_IRRITATION]) {
+            borg_skill[BI_CRSAGRV] = true;
+            borg_skill[BI_CRSIRRITATION] = true;
+        }
+        if (item->curses[BORG_CURSE_WEAKNESS]) {
+            borg_skill[BI_CSTR] -= 10;
+        }
+        if (item->curses[BORG_CURSE_CLUMSINESS]) {
+            borg_skill[BI_CSTR] -= 10;
+        }
+        if (item->curses[BORG_CURSE_SLOWNESS]) {
+            borg_skill[BI_SPEED] = -5;
+        }
+        if (item->curses[BORG_CURSE_ANNOYANCE]) {
+            borg_skill[BI_SPEED] = -10;
+            borg_skill[BI_STL] = -10;
+            borg_skill[BI_CRSAGRV] = true;
+        }
         if (item->curses[BORG_CURSE_POISON]) borg_skill[BI_CRSPOIS] = true;
         if (item->curses[BORG_CURSE_SIREN]) borg_skill[BI_CRSSIREN] = true;
         if (item->curses[BORG_CURSE_HALLUCINATION]) borg_skill[BI_CRSHALU] = true;
@@ -1026,9 +1070,22 @@ static void borg_notice_aux1(void)
         if (item->curses[BORG_CURSE_DEMON_SUMMON]) borg_skill[BI_CRSSDEM] = true;
         if (item->curses[BORG_CURSE_DRAGON_SUMMON]) borg_skill[BI_CRSSDRA] = true;
         if (item->curses[BORG_CURSE_UNDEAD_SUMMON]) borg_skill[BI_CRSSUND] = true;
+        if (item->curses[BORG_CURSE_IMPAIR_MANA_RECOVERY]) borg_skill[BI_CRSMPIMP] = true;
+        if (item->curses[BORG_CURSE_IMPAIR_HITPOINT_RECOVERY]) borg_skill[BI_CRSHPIMP] = true;
+        if (item->curses[BORG_CURSE_COWARDICE]) borg_skill[BI_CRSFEAR] = true;
         if (item->curses[BORG_CURSE_STONE]) borg_skill[BI_CRSSTONE] = true;
         if (item->curses[BORG_CURSE_ANTI_TELEPORTATION]) borg_skill[BI_CRSNOTEL] = true;
         if (item->curses[BORG_CURSE_TREACHEROUS_WEAPON]) borg_skill[BI_CRSTWEP] = true;
+        if (item->curses[BORG_CURSE_BURNING_UP]) {
+            borg_skill[BI_CRSFVULN] = true;
+            borg_skill[BI_RCOLD] = true;
+        }
+        if (item->curses[BORG_CURSE_CHILLED_TO_THE_BONE]) {
+            borg_skill[BI_CRSCVULN] = true;
+            borg_skill[BI_RFIRE] = true;
+        }
+        if (item->curses[BORG_CURSE_STEELSKIN]) borg_skill[BI_CRSSTEELSKIN] = true;
+        if (item->curses[BORG_CURSE_AIR_SWING]) borg_skill[BI_CRSAIRSWING] = true;
         if (item->curses[BORG_CURSE_UNKNOWN]) borg_skill[BI_CRSUNKNO] = true;
 
         if (item->el_info[ELEM_FIRE].res_level == -1) borg_skill[BI_CRSFVULN] = true;
@@ -1099,6 +1156,28 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_SUST_DEX)) borg_skill[BI_SDEX] = true;
         if (of_has(item->flags, OF_SUST_CON)) borg_skill[BI_SCON] = true;
 
+        /* Good to have one item with multiple high resists */
+        int bonuses = ((item->el_info[ELEM_POIS].res_level > 0) +
+            (item->el_info[ELEM_SOUND].res_level > 0) +
+            (item->el_info[ELEM_SHARD].res_level > 0) +
+            (item->el_info[ELEM_NEXUS].res_level > 0) +
+            (item->el_info[ELEM_NETHER].res_level > 0) +
+            (item->el_info[ELEM_CHAOS].res_level > 0) +
+            (item->el_info[ELEM_DISEN].res_level > 0) +
+            /* resist base 4 */
+            ((item->el_info[ELEM_FIRE].res_level > 0) &&
+                (item->el_info[ELEM_COLD].res_level > 0) &&
+                (item->el_info[ELEM_ELEC].res_level > 0) &&
+                (item->el_info[ELEM_ACID].res_level > 0)) +
+            /* sustains all stats  */
+            (of_has(item->flags, OF_SUST_STR) &&
+                of_has(item->flags, OF_SUST_INT) &&
+                of_has(item->flags, OF_SUST_WIS) &&
+                of_has(item->flags, OF_SUST_DEX) &&
+                of_has(item->flags, OF_SUST_CON)));
+
+        if (bonuses > 2)
+            borg_skill[BI_MULTIPLE_BONUSES] += bonuses;
 
         /* Hack -- Net-zero The borg will miss read acid damaged items such as
          * Leather Gloves [2,-2] and falsely assume they help his power.
@@ -1438,7 +1517,7 @@ static void borg_notice_aux1(void)
 
         /* Enchant all weapons (to hit) */
         if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
-            amt_enchant_weapon >= 1))
+            borg_skill[BI_AENCH_SWEP] >= 1))
         {
             if (item->to_h < borg_cfg[BORG_ENCHANT_LIMIT])
             {
@@ -1479,7 +1558,7 @@ static void borg_notice_aux1(void)
 
         /* Note need for enchantment */
         if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65) ||
-            amt_enchant_armor >= 1)
+            borg_skill[BI_AENCH_SARM] >= 1)
         {
             if (item->to_a < borg_cfg[BORG_ENCHANT_LIMIT])
             {
@@ -1587,15 +1666,6 @@ static void borg_notice_aux2(void)
     amt_cool_staff = 0;
     amt_cool_wand = 0;
     amt_digger = 0;
-
-    /* Reset enchantment */
-    amt_enchant_to_a = 0;
-    amt_enchant_to_d = 0;
-    amt_enchant_to_h = 0;
-
-    amt_brand_weapon = 0;
-    amt_enchant_weapon = 0;
-    amt_enchant_armor = 0;
 
     /* Reset number of Ego items needing *ID* */
     amt_ego = 0;
@@ -1795,17 +1865,17 @@ static void borg_notice_aux2(void)
         else if (item->sval == sv_scroll_word_of_recall)
             borg_skill[BI_RECALL] += item->iqty;
         else if (item->sval == sv_scroll_enchant_armor)
-            amt_enchant_to_a += item->iqty;
+            borg_skill[BI_AENCH_ARM] += item->iqty;
+        else if (item->sval == sv_scroll_star_enchant_armor)
+            borg_skill[BI_AENCH_SARM] += item->iqty;
         else if (item->sval == sv_scroll_enchant_weapon_to_hit)
-            amt_enchant_to_h += item->iqty;
+            borg_skill[BI_AENCH_TOH] += item->iqty;
         else if (item->sval == sv_scroll_enchant_weapon_to_dam)
-            amt_enchant_to_d += item->iqty;
+            borg_skill[BI_AENCH_TOD] += item->iqty;
         else if (item->sval == sv_scroll_star_enchant_weapon)
-            amt_enchant_weapon += item->iqty;
+            borg_skill[BI_AENCH_SWEP] += item->iqty;
         else if (item->sval == sv_scroll_protection_from_evil)
             borg_skill[BI_APFE] += item->iqty;
-        else if (item->sval == sv_scroll_star_enchant_armor)
-            amt_enchant_armor += item->iqty;
         else if (item->sval == sv_scroll_rune_of_protection)
             borg_skill[BI_AGLYPH] += item->iqty;
         else if (item->sval == sv_scroll_teleport_level)
@@ -2095,13 +2165,15 @@ static void borg_notice_aux2(void)
     /* Handle PROTECTION_FROM_EVIL */
     if (borg_spell_legal(PROTECTION_FROM_EVIL) ||
         borg_equips_item(act_protevil, false) ||
-        borg_has[kv_staff_holiness])
+        borg_has[kv_staff_holiness] ||
+        borg_equips_item(act_staff_holy, false))
     {
         borg_skill[BI_APFE] += 1000;
     }
 
     /* Handle "rune of protection" glyph" */
-    if (borg_spell_legal(GLYPH_OF_WARDING))
+    if (borg_spell_legal(GLYPH_OF_WARDING) ||
+        borg_equips_item(act_glyph, false))
     {
         borg_skill[BI_AGLYPH] += 1000;
     }
@@ -2114,25 +2186,34 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle ENCHANT_WEAPON */
-    if (borg_spell_legal_fail(ENCHANT_WEAPON, 65))
+    if (borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
+        borg_equips_item(act_enchant_weapon, false))
     {
-        amt_enchant_to_h += 1000;
-        amt_enchant_to_d += 1000;
-        amt_enchant_weapon += 1000;
+        borg_skill[BI_AENCH_TOH] += 1000;
+        borg_skill[BI_AENCH_TOD] += 1000;
+        borg_skill[BI_AENCH_SWEP] += 1000;
+    }
+    if (borg_equips_item(act_enchant_tohit, false)) {
+        borg_skill[BI_AENCH_TOH] += 1000;
+    }
+    if (borg_equips_item(act_enchant_todam, false)) {
+        borg_skill[BI_AENCH_TOD] += 1000;
     }
 
     /* Handle "Brand Weapon (bolts)" */
     if (borg_equips_item(act_firebrand, false) ||
         borg_spell_legal_fail(BRAND_AMMUNITION, 65))
     {
-        amt_brand_weapon += 1000;
+        borg_skill[BI_ABRAND] += 1000;
     }
 
     /* Handle "enchant armor" */
-    if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65))
+    if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65) ||
+        borg_equips_item(act_enchant_armor, false) ||
+        borg_equips_item(act_enchant_armor2, false))
     {
-        amt_enchant_to_a += 1000;
-        amt_enchant_armor += 1000;
+        borg_skill[BI_AENCH_ARM] += 1000;
+        borg_skill[BI_AENCH_SARM] += 1000;
     }
 
     /* Handle Diggers (stone to mud) */
@@ -2733,7 +2814,7 @@ static void borg_notice_weapon_swap(void)
 
     /* Enchant swap weapons (to hit) */
     if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65) ||
-        amt_enchant_weapon >= 1) && item->tval != TV_DIGGING)
+        borg_skill[BI_AENCH_SWEP] >= 1) && item->tval != TV_DIGGING)
     {
         if (item->to_h < 10)
         {
@@ -3246,7 +3327,7 @@ static void borg_notice_armour_swap(void)
     /* Hack -- enchant the swap equipment (armor) */
     /* Note need for enchantment */
     if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65) ||
-        amt_enchant_armor >= 1)
+        borg_skill[BI_AENCH_SARM] >= 1)
     {
         if (item->to_a < 10)
         {
@@ -3273,6 +3354,7 @@ void borg_notice(bool notice_swap)
 
     /* Clear out 'has' array */
     memset(borg_has, 0, size_obj * sizeof(int));
+    memset(borg_activation, 0, z_info->act_max * sizeof(int));
 
     /* Many of our variables are tied to borg_skill[], which is erased at the
      * the start of borg_notice().  So we must update the frame the cheat in
@@ -3314,7 +3396,6 @@ void borg_notice(bool notice_swap)
     borg_skill[BI_SRPOIS] = borg_skill[BI_RPOIS]
         || armour_swap_resist_pois
         || weapon_swap_resist_pois
-        || borg_spell_legal_fail(RESISTANCE, 15) /* Res FECAP */
         || borg_spell_legal_fail(RESIST_POISON, 15); /* Res P */
     borg_skill[BI_SRFEAR] = borg_skill[BI_RFEAR]
         || armour_swap_resist_fear
@@ -4081,7 +4162,8 @@ static void borg_notice_home_aux(borg_item* in_item, bool no_items)
     }
 
     /*  Handle "rune of protection" glyph */
-    if (borg_spell_legal(GLYPH_OF_WARDING))
+    if (borg_spell_legal(GLYPH_OF_WARDING) ||
+        borg_equips_item(act_glyph, false))
     {
         num_glyph += 1000;
     }
@@ -4119,16 +4201,16 @@ static void borg_notice_home_aux(borg_item* in_item, bool no_items)
     player_flags(player, f);
 
     /* Good flags */
-    if (rf_has(f, OF_SLOW_DIGEST)) num_slow_digest++;
-    if (rf_has(f, OF_FEATHER)) num_ffall++;
-    if (rf_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT++;
-    if (rf_has(f, OF_REGEN)) num_regenerate++;
-    if (rf_has(f, OF_TELEPATHY)) num_telepathy++;
-    if (rf_has(f, OF_SEE_INVIS)) num_see_inv++;
-    if (rf_has(f, OF_FREE_ACT)) num_free_act++;
-    if (rf_has(f, OF_HOLD_LIFE)) num_hold_life++;
-    if (rf_has(f, OF_PROT_CONF)) num_resist_conf++;
-    if (rf_has(f, OF_PROT_BLIND)) num_resist_blind++;
+    if (of_has(f, OF_SLOW_DIGEST)) num_slow_digest++;
+    if (of_has(f, OF_FEATHER)) num_ffall++;
+    if (of_has(f, OF_LIGHT_2) || rf_has(f, OF_LIGHT_3)) num_LIGHT++;
+    if (of_has(f, OF_REGEN)) num_regenerate++;
+    if (of_has(f, OF_TELEPATHY)) num_telepathy++;
+    if (of_has(f, OF_SEE_INVIS)) num_see_inv++;
+    if (of_has(f, OF_FREE_ACT)) num_free_act++;
+    if (of_has(f, OF_HOLD_LIFE)) num_hold_life++;
+    if (of_has(f, OF_PROT_CONF)) num_resist_conf++;
+    if (of_has(f, OF_PROT_BLIND)) num_resist_blind++;
 
     /* Weird flags */
 
@@ -4771,6 +4853,8 @@ static int32_t borg_power_aux1(void)
     if (borg_skill[BI_CRSAVULN]) value -= 30000;
 
     if (borg_skill[BI_CRSTELE]) value -= 100000L;
+    if (borg_skill[BI_CRSENVELOPING]) value -= 50000L;
+    if (borg_skill[BI_CRSIRRITATION]) value -= 20000L;
     if (borg_skill[BI_CRSPOIS]) value -= 10000L;
     if (borg_skill[BI_CRSSIREN]) value -= 800000L;
     if (borg_skill[BI_CRSHALU]) value -= 100000L;
@@ -4778,9 +4862,11 @@ static int32_t borg_power_aux1(void)
     if (borg_skill[BI_CRSSDEM]) value -= 100000L;
     if (borg_skill[BI_CRSSDRA]) value -= 100000L;
     if (borg_skill[BI_CRSSUND]) value -= 100000L;
-    if (borg_skill[BI_CRSSTONE] && borg_skill[BI_SPEED]) value -= 10000L;
+    if (borg_skill[BI_CRSSTONE] && borg_skill[BI_SPEED] < 20) value -= 10000L;
+    if (borg_skill[BI_CRSSTEELSKIN] && borg_skill[BI_SPEED] < 20) value -= 10000L;
     if (borg_skill[BI_CRSNOTEL]) value -= 700000L;
     if (borg_skill[BI_CRSTWEP]) value -= 100000L;
+    if (borg_skill[BI_CRSAIRSWING]) value -= 10000L;
     if (borg_skill[BI_CRSUNKNO]) value -= 9999999L;
 
     /*** Penalize armor weight ***/
@@ -4871,401 +4957,362 @@ static int32_t borg_power_aux1(void)
     }
 #endif
 
-    /* Reward for activatable items in inventory */
-    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-    {
-        int multibonus = 0;
+    /* bonus for something with multiple useful bonuses */
+    value += 3000L * borg_skill[BI_MULTIPLE_BONUSES];
 
-        item = &borg_items[i];
+    /* bonus for wearing something that needs an ID */
+    value += 10000L * borg_skill[BI_ANEED_ID];
 
-        /* Skip empty items */
-        if (!item->iqty) continue;
+    int activation_bonus = 0;
+    int act;
+    for (act = 1; act < z_info->act_max; act++) {
+        if (!borg_activation[act])
+            continue;
+        /* an extra bonus for activations */
+        if (act_illumination == act)
+            activation_bonus += 500;
+        else if (act_mapping == act)
+            activation_bonus += 550;
+        else if (act_clairvoyance == act)
+            activation_bonus += 600;
+        else if (act_fire_bolt == act)
+            activation_bonus += (500 + (9 * (8 + 1) / 2));
+        else if (act_cold_bolt == act)
+            activation_bonus += (500 + (6 * (8 + 1) / 2));
+        else if (act_elec_bolt == act)
+            activation_bonus += (500 + (4 * (8 + 1) / 2));
+        else if (act_acid_bolt == act)
+            activation_bonus += (500 + (5 * (8 + 1) / 2));
+        else if (act_mana_bolt == act)
+            activation_bonus += (500 + (12 * (8 + 1) / 2));
+        else if (act_stinking_cloud == act)
+            activation_bonus += (500 + (24));
+        else if (act_cold_ball50 == act)
+            activation_bonus += (500 + (96));
+        else if (act_cold_ball100 == act)
+            activation_bonus += (500 + (200));
+        else if (act_fire_bolt72 == act)
+            activation_bonus += (500 + (72));
+        else if (act_cold_bolt2 == act)
+            activation_bonus += (500 + (12 * (8 + 1) / 2));
+        else if (act_fire_ball == act)
+            activation_bonus += (500 + (144));
+        else if (act_dispel_evil == act)
+            activation_bonus += (500 + (10 + (borg_skill[BI_CLEVEL] * 5) / 2));
+        else if (act_confuse2 == act)
+            activation_bonus += 0; /* no code to handle this activation */
+        else if (act_haste == act)
+            activation_bonus += 0; /* handled by adding to speed available */
+        else if (act_haste1 == act)
+            activation_bonus += 0; /* handled by adding to speed available */
+        else if (act_haste2 == act)
+            activation_bonus += 0; /* handled by adding to speed available */
+        else if (act_detect_objects == act)
+            activation_bonus += 10;
+        else if (act_probing == act)
+            activation_bonus += 0; /* no code to handle this activation */
+        else if (act_stone_to_mud == act)
+            activation_bonus += 0; /* handled by adding to digger available */
+        else if (act_tele_other == act) {
+            if (borg_class == CLASS_MAGE)
+                activation_bonus += 500;
+            else
+                activation_bonus += (500 + (500));
+        } else if (act_drain_life1 == act)
+            activation_bonus += (500 + 90);
+        else if (act_drain_life2 == act)
+            activation_bonus += (500 + 120);
+        else if (act_berserker == act)
+            activation_bonus += (500);
+        else if (act_cure_light == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_cure_serious == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_cure_critical == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_cure_full2 == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_loskill == act)
+            activation_bonus += (500 + 200);
+        else if (act_recall == act)
+            activation_bonus += 0; /* handled by adding to recall available */
+        else if (act_arrow == act)
+            activation_bonus += (500 + (150));
+        else if (act_rem_fear_pois == act) {
+            if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST || borg_class == CLASS_DRUID)
+                activation_bonus += 500;
+            else
+                activation_bonus += (500 + (200));
+        } else if (act_tele_phase == act)
+            activation_bonus += 500;
+        else if (act_detect_all == act)
+            activation_bonus += 0; /* handled by adding to detects available */
+        else if (act_cure_full == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_heal1 == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_heal2 == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_heal3 == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_cure_nonorlybig == act)
+            activation_bonus += 0; /* handled by adding to healing available */
+        else if (act_protevil == act)
+            activation_bonus += 0; /* handled by adding to PFE available */
+        else if (act_destroy_doors == act)
+            activation_bonus += 50;
+        else if (act_banishment == act)
+            activation_bonus += 1000;
+        else if (act_resist_all == act) {
+            activation_bonus += (500 + (150));
+            /* extra bonus if you can't cast RESISTANCE */
+            if (borg_class != CLASS_MAGE)
+                activation_bonus += 25000;
+        } else if (act_sleepii == act) {
+            activation_bonus += 500;
+            /* extra bonus if you can't cast a sleep type spell */
+            if ((borg_class != CLASS_DRUID) && (borg_class != CLASS_NECROMANCER))
+                activation_bonus += 200;
+        } else if (act_recharge == act) {
+            activation_bonus += 500;
+            /* extra bonus if you can't cast a charge type spell */
+            if ((borg_class != CLASS_MAGE) && (borg_class != CLASS_ROGUE))
+                activation_bonus += 100;
+        } else if (act_tele_long == act)
+            activation_bonus += 300;
+        else if (act_missile == act)
+            activation_bonus += (500 + (2 * (6 + 1) / 2));
+        else if (act_cure_temp == act)
+            activation_bonus += 500;
+        else if (act_starlight2 == act)
+            activation_bonus += 100 + (10 * (8 + 1)) / 2;
+        else if (act_bizarre == act)
+            activation_bonus += (999999); /* HACK this is the one ring */
+        else if (act_star_ball == act)
+            activation_bonus += (500 + (300));
+        else if (act_rage_bless_resist == act) {
+            activation_bonus += (500 + (150));
+            /* extra bonus if you can't cast RESISTANCE */
+            if (borg_class != CLASS_MAGE)
+                activation_bonus += 25000;
+        } else if (act_polymorph == act) {
+            activation_bonus += 0; /* no activation_bonus, borg doesn't use polymorph */
+        } else if (act_starlight == act)
+            activation_bonus += 100 + (6 * (8 + 1)) / 2;
+        else if (act_light == act)
+            activation_bonus += 0; /* handled by adding to ALITE */
+        else if (act_firebrand == act)
+            activation_bonus += 500;
+        else if (act_restore_life == act)
+            activation_bonus += 0; /* handled by adding to the rll available */
+        else if (act_restore_exp == act)
+            activation_bonus += 0; /* handled by adding to the rll available */
+        else if (act_restore_st_lev == act)
+            activation_bonus += 0; /* handled by adding to the rll available */
+        else if (act_enlightenment == act)
+            activation_bonus += 500;
+        else if (act_hero == act)
+            activation_bonus += 500;
+        else if (act_shero == act)
+            activation_bonus += 500;
+        else if (act_cure_paranoia == act)
+            activation_bonus += 100;
+        else if (act_cure_mind == act)
+            activation_bonus += 1000;
+        else if (act_cure_body == act)
+            activation_bonus += 1000;
+        else if (act_mon_slow == act)
+            activation_bonus += 500;
+        else if (act_mon_confuse == act)
+            activation_bonus += 500;
+        else if (act_sleep_all == act)
+            activation_bonus += 500;
+        else if (act_mon_scare == act)
+            activation_bonus += 500;
+        else if (act_light_line == act)
+            activation_bonus += 50;
+        else if (act_disable_traps == act)
+            activation_bonus += 50;
+        else if (act_drain_life3 == act)
+            activation_bonus += (500 + 150);
+        else if (act_drain_life4 == act)
+            activation_bonus += (500 + 250);
+        else if (act_elec_ball == act)
+            activation_bonus += 500 + 64;
+        else if (act_elec_ball2 == act)
+            activation_bonus += 500 + 250;
+        else if (act_acid_bolt2 == act)
+            activation_bonus += (500 + (10 * (8 + 1) / 2));
+        else if (act_acid_bolt3 == act)
+            activation_bonus += (500 + (12 * (8 + 1) / 2));
+        else if (act_acid_ball == act)
+            activation_bonus += 500 + 120;
+        else if (act_cold_ball160 == act)
+            activation_bonus += 500 + 160;
+        else if (act_cold_ball2 == act)
+            activation_bonus += 500 + 200;
+        else if (act_fire_ball2 == act)
+            activation_bonus += 500 + 120;
+        else if (act_fire_ball200 == act)
+            activation_bonus += 500 + 200;
+        else if (act_fire_bolt2 == act)
+            activation_bonus += (500 + (12 * (8 + 1) / 2));
+        else if (act_fire_bolt3 == act)
+            activation_bonus += (500 + (16 * (8 + 1) / 2));
+        else if (act_dispel_evil60 == act)
+            activation_bonus += 500 + 60;
+        else if (act_dispel_undead == act)
+            activation_bonus += 500 + 60;
+        else if (act_dispel_all == act)
+            activation_bonus += 500 + 60 * 2;
+        else if (act_deep_descent == act)
+            activation_bonus += 0; // !FIX no code to handle
+        else if (act_earthquakes == act)
+            activation_bonus += 500;
+        else if (act_destruction2 == act)
+            activation_bonus += 500;
+        else if (act_losslow == act)
+            activation_bonus += 50;
+        else if (act_lossleep == act)
+            activation_bonus += 100;
+        else if (act_losconf == act)
+            activation_bonus += 100;
+        else if (act_satisfy == act)
+            activation_bonus += 50;
+        else if (act_blessing == act)
+            activation_bonus += 50;
+        else if (act_blessing2 == act)
+            activation_bonus += 50;
+        else if (act_blessing3 == act)
+            activation_bonus += 50;
+        else if (act_glyph == act)
+            activation_bonus += 0; /* handled by adding to skill */
+        else if (act_tele_level == act)
+            activation_bonus += 5000L;
+        else if (act_confusing == act)
+            activation_bonus += 0; /* scroll only ever read to get rid of it */
+        else if (act_enchant_tohit == act)
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
+        else if (act_enchant_todam == act)
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
+        else if (act_enchant_weapon == act)
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
+        else if (act_enchant_armor == act)
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
+        else if (act_enchant_armor2 == act)
+            activation_bonus += 0; /* handled by adding to "amount of bonus available" */
+        else if (act_remove_curse == act)
+            activation_bonus += 9000;
+        else if (act_remove_curse2 == act)
+            activation_bonus += 10000;
+        else if (act_detect_treasure == act)
+            activation_bonus += 0; /* borg never uses this */
+        else if (act_detect_invis == act)
+            activation_bonus += 50;
+        else if (act_detect_evil == act)
+            activation_bonus += 50;
+        else if (act_restore_mana == act)
+            activation_bonus += 5000;
+        /* the potion equivilant of increase stat with dec */
+        /*  are only consumed to get rid of them */
+        else if (act_brawn == act)
+            activation_bonus += 0;
+        else if (act_intellect == act)
+            activation_bonus += 0;
+        else if (act_contemplation == act)
+            activation_bonus += 0;
+        else if (act_toughness == act)
+            activation_bonus += 0;
+        else if (act_nimbleness == act)
+            activation_bonus += 0;
+        else if (act_restore_str == act)
+            activation_bonus += 50;
+        else if (act_restore_int == act)
+            activation_bonus += 50;
+        else if (act_restore_wis == act)
+            activation_bonus += 50;
+        else if (act_restore_dex == act)
+            activation_bonus += 50;
+        else if (act_restore_con == act)
+            activation_bonus += 50;
+        else if (act_restore_all == act)
+            activation_bonus += 150;
+        else if (act_tmd_free_act == act)
+            activation_bonus += 0; /* !FIX no code to handle */
+        else if (act_tmd_infra == act)
+            activation_bonus += 0; /* potion only consumed to get rid of it */
+        else if (act_tmd_sinvis == act)
+            activation_bonus += 50;
+        else if (act_tmd_esp == act)
+            activation_bonus += 50;
+        else if (act_resist_acid == act)
+            activation_bonus += 100;
+        else if (act_resist_elec == act)
+            activation_bonus += 100;
+        else if (act_resist_fire == act)
+            activation_bonus += 100;
+        else if (act_resist_cold == act)
+            activation_bonus += 100;
+        else if (act_resist_pois == act)
+            activation_bonus += 150;
+        else if (act_cure_confusion == act)
+            activation_bonus += 50;
+        else if (act_wonder == act)
+            activation_bonus += 300;
+        else if (act_wand_breath == act)
+            activation_bonus += 0; /* !FIX no code to handle (currently no code for wands of drag breath) */
+        else if (act_staff_magi == act)
+            borg_skill[BI_ASTFMAGI] += 10;
+        else if (act_staff_holy == act)
+            activation_bonus += 1000;
+        else if (act_drink_breath == act)
+            activation_bonus += 0; /* !FIX no code to handle (nor for the potion) */
+        else if (act_food_waybread == act)
+            activation_bonus += 50;
+        else if (act_shroom_emergency == act)
+            activation_bonus += 0; /* mushroom only consumed to get rid of it */
+        else if (act_shroom_terror == act)
+            activation_bonus += 0;
+        else if (act_shroom_stone == act)
+            activation_bonus += 50;
+        else if (act_shroom_debility == act)
+            activation_bonus += 0;
+        else if (act_shroom_sprinting == act)
+            activation_bonus += 0; /* mushroom only consumed to get rid of it */
+        else if (act_shroom_purging == act)
+            activation_bonus += 50;
+        else if (act_ring_acid == act)
+            activation_bonus += 10000;
+        else if (act_ring_flames == act)
+            activation_bonus += 25000;
+        else if (act_ring_ice == act)
+            activation_bonus += 15000;
+        else if (act_ring_lightning == act)
+            activation_bonus += 10000;
+        else if (act_dragon_blue == act)
+            activation_bonus += 1100;
+        else if (act_dragon_green == act)
+            activation_bonus += 2750;
+        else if (act_dragon_red == act)
+            activation_bonus += 1100;
+        else if (act_dragon_multihued == act)
+            activation_bonus += 3250;
+        else if (act_dragon_gold == act)
+            activation_bonus += 5150;
+        else if (act_dragon_chaos == act)
+            activation_bonus += 5150;
+        else if (act_dragon_law == act)
+            activation_bonus += 5150;
+        else if (act_dragon_balance == act)
+            activation_bonus += 5150;
+        else if (act_dragon_shining == act)
+            activation_bonus += 5150;
+        else if (act_dragon_power == act)
+            activation_bonus += 5150;
 
-        /* a small bonus for wearing things that are not IDd*/
-        /* unless you know the ID spell*/
-        if (!item->ident && !borg_spell_legal(IDENTIFY_RUNE))
-            value += 10000L;
-
-        /* Good to have one item with multiple high resists */
-        multibonus = ((item->el_info[ELEM_POIS].res_level > 0) +
-            (item->el_info[ELEM_SOUND].res_level > 0) +
-            (item->el_info[ELEM_SHARD].res_level > 0) +
-            (item->el_info[ELEM_NEXUS].res_level > 0) +
-            (item->el_info[ELEM_NETHER].res_level > 0) +
-            (item->el_info[ELEM_CHAOS].res_level > 0) +
-            (item->el_info[ELEM_DISEN].res_level > 0) +
-            ((item->el_info[ELEM_FIRE].res_level > 0) &&
-                (item->el_info[ELEM_COLD].res_level > 0) &&
-                (item->el_info[ELEM_ELEC].res_level > 0) &&
-                (item->el_info[ELEM_ACID].res_level > 0)) +
-            (of_has(item->flags, OF_SUST_STR) &&
-                of_has(item->flags, OF_SUST_INT) &&
-                of_has(item->flags, OF_SUST_WIS) &&
-                of_has(item->flags, OF_SUST_DEX) &&
-                of_has(item->flags, OF_SUST_CON)));
-
-        if (multibonus >= 2) value += 3000 * multibonus;
-
-        int activation = item->activ_idx;
-
-            /* an extra bonus for activations */
-        if (activation)
-        {
-            if (act_illumination == activation)
-                value += 500;
-            else if (act_mapping == activation)
-                value += 550;
-            else if (act_clairvoyance == activation)
-                value += 600;
-            else if (act_fire_bolt == activation)
-                value += (500 + (9 * (8 + 1) / 2));
-            else if (act_cold_bolt == activation)
-                value += (500 + (6 * (8 + 1) / 2));
-            else if (act_elec_bolt == activation)
-                value += (500 + (4 * (8 + 1) / 2));
-            else if (act_acid_bolt == activation)
-                value += (500 + (5 * (8 + 1) / 2));
-            else if (act_mana_bolt == activation)
-                value += (500 + (12 * (8 + 1) / 2));
-            else if (act_stinking_cloud == activation)
-                value += (500 + (24));
-            else if (act_cold_ball50 == activation)
-                value += (500 + (96));
-            else if (act_cold_ball100 == activation)
-                value += (500 + (200));
-            else if (act_fire_bolt72 == activation)
-                value += (500 + (72));
-            else if (act_cold_bolt2 == activation)
-                value += (500 + (12 * (8 + 1) / 2));
-            else if (act_fire_ball == activation)
-                value += (500 + (144));
-            else if (act_dispel_evil == activation)
-                value += (500 + (10 + (borg_skill[BI_CLEVEL] * 5) / 2));
-            else if (act_confuse2 == activation)
-                value += 0; /* no code to handle this activation */
-            else if (act_haste == activation)
-                value += 0;  /* handled by adding to speed available */
-            else if (act_haste1 == activation)
-                value += 0; /* handled by adding to speed available */
-            else if (act_haste2 == activation)
-                value += 0; /* handled by adding to speed available */
-            else if (act_detect_objects ==activation)
-                value += 10;
-            else if (act_probing == activation)
-                value += 0; /* no code to handle this activation */
-            else if (act_stone_to_mud == activation)
-                value += 0; /* handled by adding to digger available */
-            else if (act_tele_other == activation)
-            {
-                if (borg_class == CLASS_MAGE)
-                    value += 500;
-                else
-                    value += (500 + (500));
-            }
-            else if (act_drain_life1 == activation)
-                value += (500 + 90);
-            else if (act_drain_life2 == activation)
-                value += (500 + 120);
-            else if (act_berserker == activation)
-                value += (500);
-            else if (act_cure_light == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_cure_serious == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_cure_critical == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_cure_full2 == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_loskill == activation)
-                value += (500 + 200);
-            else if (act_recall == activation)
-                value += 0; /* handled by adding to recall available */
-            else if (act_arrow == activation)
-                value += (500 + (150));
-            else if (act_rem_fear_pois == activation)
-            {
-                if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST || borg_class == CLASS_DRUID)
-                    value += 500;
-                else
-                    value += (500 + (200));
-            }
-            else if (act_tele_phase == activation)
-                value += 500;
-            else if (act_detect_all == activation)
-                value += 0; /* handled by adding to detects available */
-            else if (act_cure_full == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_heal1 == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_heal2 == activation)
-                value += 0; /* handled by adding to healing available */
-            else if (act_heal3 == activation)
-                value += 0;  /* handled by adding to healing available */
-            else if (act_cure_nonorlybig == activation)
-                value += 0;  /* handled by adding to healing available */
-            else if (act_protevil == activation)
-                value += 0; /* handled by adding to PFE available */
-            else if (act_destroy_doors == activation)
-                value += 0; /* no code to handle this activation */
-            else if (act_banishment == activation)
-                value += 1000;
-            else if (act_resist_all == activation)
-            {
-                value += (500 + (150));
-                /* extra bonus if you can't cast RESISTANCE */
-                if (borg_class != CLASS_MAGE) value += 25000;
-            }
-            else if (act_sleepii == activation)
-            {
-                value += 500;
-                /* extra bonus if you can't cast a sleep type spell */
-                if ((borg_class != CLASS_DRUID) && (borg_class != CLASS_NECROMANCER))
-                    value += 200;
-            }
-            else if (act_recharge == activation)
-            {
-                value += 500;
-                /* extra bonus if you can't cast a charge type spell */
-                if ((borg_class != CLASS_MAGE) && (borg_class != CLASS_ROGUE))
-                    value += 100;
-            }
-            else if (act_tele_long == activation)
-                value += 300;
-            else if (act_missile == activation)
-                value += (500 + (2 * (6 + 1) / 2));
-            else if (act_cure_temp == activation)
-                value += 500;
-            else if (act_starlight2 == activation)
-                value += 100 + (10 * (8 + 1)) / 2;
-            else if (act_bizarre == activation)
-                value += (999999); /* HACK this is the one ring */
-            else if (act_star_ball == activation)
-                value += (500 + (300));
-            else if (act_rage_bless_resist == activation)
-            {
-                value += (500 + (150));
-                /* extra bonus if you can't cast RESISTANCE */
-                if (borg_class != CLASS_MAGE) value += 25000;
-            }
-            else if (act_polymorph == activation)
-            {
-                value += 0;  /* no value, borg doesn't use polymorph */
-            }
-            else if (act_starlight == activation)
-                value += 100 + (6 * (8 + 1)) / 2;
-            else if (act_light == activation)
-                value += 0;  /* handled by adding to ALITE */
-            else if (act_firebrand == activation)
-                value += 500;
-            else if (act_restore_life == activation)
-                value += 0;  /* handled by adding to the rll available */
-            else if (act_restore_exp == activation)
-                value += 0;  /* handled by adding to the rll available */
-            else if (act_restore_st_lev == activation)
-                value += 0;  /* handled by adding to the rll available */
-                // !FIX no code to handle
-            else if (act_enlightenment == activation)
-                value += 500;
-            else if (act_hero == activation)
-                value += 500;  
-            else if (act_shero == activation)
-                value += 500;
-            else if (act_cure_paranoia == activation)
-                value += 100;
-            else if (act_cure_mind == activation)
-                value += 100;
-            else if (act_cure_body == activation)
-                value += 100;
-            else if (act_mon_slow == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_mon_confuse == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_sleep_all == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_mon_scare == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_light_line == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_disable_traps == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_drain_life3 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_drain_life4 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_elec_ball == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_elec_ball2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_acid_bolt2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_acid_bolt3 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_acid_ball == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_cold_ball160 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_cold_ball2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_fire_ball2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_fire_ball200 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_fire_bolt2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_fire_bolt3 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dispel_evil60 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dispel_undead == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dispel_all == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_deep_descent == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_earthquakes == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_destruction2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_losslow == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_lossleep == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_losconf == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_satisfy == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_blessing == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_blessing2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_blessing3 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_glyph == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_tele_level == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_confusing == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_enchant_tohit == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_enchant_todam == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_enchant_weapon == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_enchant_armor == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_enchant_armor2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_remove_curse == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_remove_curse2 == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_detect_treasure == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_detect_invis == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_detect_evil == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_mana == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_brawn == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_intellect == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_contemplation == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_toughness == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_nimbleness == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_str == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_int == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_wis == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_dex == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_con == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_restore_all == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_tmd_free_act == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_tmd_infra == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_tmd_sinvis == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_tmd_esp == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_resist_acid == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_resist_elec == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_resist_fire == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_resist_cold == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_resist_pois == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_cure_confusion == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_wonder == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_wand_breath == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_staff_magi == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_staff_holy == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_drink_breath == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_food_waybread == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_emergency == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_terror == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_stone == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_debility == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_sprinting == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_shroom_purging == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_ring_acid == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_ring_flames == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_ring_ice == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_ring_lightning == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_blue == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_green == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_red == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_multihued == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_gold == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_chaos == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_law == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_balance == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_shining == activation)
-                value += 0;  // !FIX no code to handle
-            else if (act_dragon_power == activation)
-                value += 0;  // !FIX no code to handle
-
-        }
+        /* bonus is per item that has this activation */
+        value += activation_bonus * borg_activation[act];
     }
-
 
     /* Result */
     return (value);
@@ -5899,19 +5946,19 @@ static int32_t borg_power_aux2(void)
     /*** Enchantment ***/
 
     /* Reward enchant armor */
-    if (amt_enchant_to_a < 1000 && my_need_enchant_to_a) value += 540L;
+    if (borg_skill[BI_AENCH_ARM] < 1000 && my_need_enchant_to_a) value += 540L;
 
     /* Reward enchant weapon to hit */
-    if (amt_enchant_to_h < 1000 && my_need_enchant_to_h) value += 540L;
+    if (borg_skill[BI_AENCH_TOH] < 1000 && my_need_enchant_to_h) value += 540L;
 
     /* Reward enchant weapon to damage */
-    if (amt_enchant_to_d < 1000 && my_need_enchant_to_d) value += 500L;
+    if (borg_skill[BI_AENCH_TOD] < 1000 && my_need_enchant_to_d) value += 500L;
 
     /* Reward *enchant weapon* to damage */
-    if (amt_enchant_weapon) value += 5000L;
+    if (borg_skill[BI_AENCH_SWEP]) value += 5000L;
 
     /* Reward *enchant armour*  */
-    if (amt_enchant_armor) value += 5000L;
+    if (borg_skill[BI_AENCH_SARM]) value += 5000L;
 
     /* Reward carrying a shovel if low level */
     if (borg_skill[BI_MAXDEPTH] <= 40 && borg_skill[BI_MAXDEPTH] >= 25 && borg_gold < 100000 && borg_items[INVEN_WIELD].tval != TV_DIGGING &&
@@ -6001,9 +6048,9 @@ static int32_t borg_power_aux2(void)
         /* Some items will be used immediately and should not contribute to encumbrance */
         if (item && item->iqty &&
             ((item->tval == TV_SCROLL &&
-                ((item->sval == sv_scroll_enchant_armor && amt_enchant_to_a < 1000 && my_need_enchant_to_a) ||
-                    (item->sval == sv_scroll_enchant_weapon_to_hit && amt_enchant_to_h < 1000 && my_need_enchant_to_h) ||
-                    (item->sval == sv_scroll_enchant_weapon_to_dam && amt_enchant_to_d < 1000 && my_need_enchant_to_d) ||
+                ((item->sval == sv_scroll_enchant_armor && borg_skill[BI_AENCH_ARM] < 1000 && my_need_enchant_to_a) ||
+                    (item->sval == sv_scroll_enchant_weapon_to_hit && borg_skill[BI_AENCH_TOH] < 1000 && my_need_enchant_to_h) ||
+                    (item->sval == sv_scroll_enchant_weapon_to_dam && borg_skill[BI_AENCH_TOD] < 1000 && my_need_enchant_to_d) ||
                     item->sval == sv_scroll_star_enchant_weapon ||
                     item->sval == sv_scroll_star_enchant_armor)) ||
                 (item->tval == TV_POTION &&
