@@ -5,9 +5,9 @@
 #ifndef INCLUDED_BORG7_H
 #define INCLUDED_BORG7_H
 
-#include "angband.h"
-#include "obj-tval.h"
-#include "cave.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../obj-tval.h"
 
 #ifdef ALLOW_BORG
 
@@ -19,10 +19,9 @@
 #include "borg2.h"
 #include "borg3.h"
 
-
- /*
-  * Determine if an item is likely to be worthless
-  */
+/*
+ * Determine if an item is likely to be worthless
+ */
 extern bool borg_item_worth_id(const borg_item* item);
 
 /*
@@ -47,12 +46,11 @@ extern bool borg_play_magic(bool bored);
 extern bool borg_remove_stuff(void);
 extern bool borg_dump_quiver(void);
 extern bool borg_wear_recharge(void);
-extern int borg_count_sell(void);
+extern int  borg_count_sell(void);
 /*
  * Attempt to leave the level
  */
 extern bool borg_leave_level(bool bored);
-
 
 /*
  * Initialize this file
@@ -60,8 +58,6 @@ extern bool borg_leave_level(bool bored);
 extern void borg_init_7(void);
 extern void borg_clean_7(void);
 
-
 #endif
 
 #endif
-
