@@ -1,6 +1,6 @@
 /**
  * \file ui-player-properties.c 
- * \brief UI for lass and race abilities
+ * \brief UI for class and race abilities
  *
  * Copyright (c) 1997-2020 Ben Harrison, James E. Wilson, Robert A. Koeneke,
  * Leon Marrick, Bahman Rabii, Nick McConnell
