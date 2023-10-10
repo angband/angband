@@ -5,9 +5,9 @@
 #ifndef INCLUDED_BORG8_H
 #define INCLUDED_BORG8_H
 
-#include "angband.h"
-#include "obj-tval.h"
-#include "cave.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../obj-tval.h"
 
 #ifdef ALLOW_BORG
 
@@ -21,9 +21,9 @@
 #include "borg6.h"
 #include "cmds.h"
 
- /*
-  * Think about the stores
-  */
+/*
+ * Think about the stores
+ */
 extern bool borg_think_store(void);
 
 /*
@@ -31,15 +31,12 @@ extern bool borg_think_store(void);
  */
 extern bool borg_think_dungeon(void);
 
-
 /*
  * Initialize this file
  */
 extern void borg_init_8(void);
 extern void borg_clean_8(void);
 
-
 #endif
 
 #endif
-

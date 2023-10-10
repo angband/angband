@@ -6,17 +6,17 @@
 #ifdef ALLOW_BORG
 
 #include "../cave.h"
+#include "../game-input.h"
+#include "../game-world.h"
 #include "../obj-desc.h"
 #include "../obj-gear.h"
 #include "../obj-init.h"
-#include "../obj-make.h"
 #include "../obj-knowledge.h"
+#include "../obj-make.h"
 #include "../obj-pile.h"
 #include "../obj-power.h"
 #include "../obj-randart.h"
 #include "../obj-tval.h"
-#include "../game-input.h"
-#include "../game-world.h"
 #include "../player-birth.h"
 #include "../player-calcs.h"
 #include "../player-spell.h"
@@ -25,13 +25,13 @@
 #include "../project.h"
 #include "../store.h"
 #include "../target.h"
+#include "../trap.h"
 #include "../ui-command.h"
 #include "../ui-game.h"
-#include "../ui-map.h"
-#include "../ui-prefs.h"
 #include "../ui-input.h"
+#include "../ui-map.h"
 #include "../ui-output.h"
-#include "../trap.h"
+#include "../ui-prefs.h"
 
 #include "borg1.h"
 #include "borg2.h"
@@ -44,10 +44,10 @@
 #include "borg9.h"
 
 #ifdef BABLOS
-extern bool     auto_play;
-extern bool     keep_playing;
+extern bool auto_play;
+extern bool keep_playing;
 #endif /* bablos */
-bool            borg_cheat_death;
+bool borg_cheat_death;
 
 static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
 
@@ -81,7 +81,7 @@ static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
  * The Ben Borg is only supposed to "send" keypresses when the "COLOUR_inkey()"
  * function asks for a keypress, which is accomplished by using a special
  * function hook in the "z-term.c" file, which allows the Borg to "steal"
- * control from the "COLOUR_inkey()" and "COLOUR_flush(0, 0, 0)" functions.  This
+ * control from the "COLOUR_inkey()" and "COLOUR_flush(0, 0, 0)" functions. This
  * allows the Ben Borg to pretend to be a normal user.
  *
  * The Borg is thus allowed to examine the screen directly (by efficient
@@ -112,21 +112,13 @@ static int key_mode; /* KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG */
  * If the "preserve" flag is off, the Borg may miss artifacts.
  */
 
+/*
+ * Some variables
+ */
 
-
-
-
-
-
-
- /*
-  * Some variables
-  */
-
-static bool initialized;    /* Hack -- Initialized */
-static bool game_closed;    /* Has the game been closed since the borg was
-                               initialized */
-
+static bool initialized; /* Hack -- Initialized */
+static bool game_closed; /* Has the game been closed since the borg was
+                            initialized */
 
 #ifndef BABLOS
 
@@ -143,7 +135,8 @@ static void borg_log_death(void)
     borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
 
     /* Failure */
-    if (!borg_log_file) return;
+    if (!borg_log_file)
+        return;
 
     /* Get time of death */
     (void)time(&death_time);
@@ -153,14 +146,14 @@ static void borg_log_death(void)
 
     file_put(borg_log_file, buf);
 
-    file_putf(borg_log_file, "%s the %s %s, Level %d/%d\n",
-        player->full_name,
-        player->race->name,
-        player->class->name,
-        player->lev, player->max_lev);
+    file_putf(borg_log_file, "%s the %s %s, Level %d/%d\n", player->full_name,
+        player->race->name, player->class->name, player->lev, player->max_lev);
 
-    file_putf(borg_log_file, "Exp: %lu  Gold: %lu  Turn: %lu\n", (long)player->max_exp + (100 * player->max_depth), (long)player->au, (long)turn);
-    file_putf(borg_log_file, "Killed on level: %d (max. %d) by %s\n", player->depth, player->max_depth, player->died_from);
+    file_putf(borg_log_file, "Exp: %lu  Gold: %lu  Turn: %lu\n",
+        (long)player->max_exp + (100 * player->max_depth), (long)player->au,
+        (long)turn);
+    file_putf(borg_log_file, "Killed on level: %d (max. %d) by %s\n",
+        player->depth, player->max_depth, player->died_from);
 
     file_putf(borg_log_file, "Borg Compile Date: %s\n", borg_engine_date);
 
@@ -183,15 +176,16 @@ static void borg_log_death_data(void)
     borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
 
     /* Failure */
-    if (!borg_log_file) return;
+    if (!borg_log_file)
+        return;
 
     /* Get time of death */
     (void)time(&death_time);
 
     /* dump stuff for easy import to database */
-    file_putf(borg_log_file, "%s, %s, %s, %d, %d, %s\n", borg_engine_date, player->race->name,
-        player->class->name, player->lev, player->depth, player->died_from);
-
+    file_putf(borg_log_file, "%s, %s, %s, %d, %d, %s\n", borg_engine_date,
+        player->race->name, player->class->name, player->lev, player->depth,
+        player->died_from);
 
     file_close(borg_log_file);
 }
@@ -246,15 +240,13 @@ static bool borg_think(void)
     static char svSavefile2[1024];
     static bool justSaved = false;
 
-
     /* Fill up the borg_skill[] array */
     (void)borg_update_frame();
 
     /*** Process inventory/equipment ***/
 
     /* Cheat */
-    if (borg_do_equip)
-    {
+    if (borg_do_equip) {
         /* Only do it once */
         borg_do_equip = false;
 
@@ -266,8 +258,7 @@ static bool borg_think(void)
     }
 
     /* Cheat */
-    if (borg_do_inven)
-    {
+    if (borg_do_inven) {
         /* Only do it once */
         borg_do_inven = false;
 
@@ -279,32 +270,29 @@ static bool borg_think(void)
     }
 
     /* save now */
-    if (borg_save && borg_save_game())
-    {
+    if (borg_save && borg_save_game()) {
         /* Log */
         borg_note("# Auto Save!");
 
         borg_save = false;
 
         /* Create a scum file */
-        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
-            strstr(player->died_from, "starvation"))
-        {
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+            || strstr(player->died_from, "starvation")) {
             memcpy(svSavefile, savefile, sizeof(savefile));
             /* Process the player name */
-            for (i = 0; player->full_name[i]; i++)
-            {
+            for (i = 0; player->full_name[i]; i++) {
                 char c = player->full_name[i];
 
                 /* No control characters */
-                if (iscntrl(c))
-                {
+                if (iscntrl(c)) {
                     /* Illegal characters */
                     quit_fmt("Illegal control char (0x%02X) in player name", c);
                 }
 
                 /* Convert all non-alphanumeric symbols */
-                if (!isalpha(c) && !isdigit(c)) c = '_';
+                if (!isalpha(c) && !isdigit(c))
+                    c = '_';
 
                 /* Build "file_name" */
                 svSavefile2[i] = c;
@@ -313,13 +301,11 @@ static bool borg_think(void)
 
             path_build(savefile, 1024, ANGBAND_DIR_USER, svSavefile2);
 
-
             justSaved = true;
         }
         return (true);
     }
-    if (justSaved)
-    {
+    if (justSaved) {
         memcpy(savefile, svSavefile, sizeof(savefile));
         borg_save_game();
         justSaved = false;
@@ -327,9 +313,8 @@ static bool borg_think(void)
     }
 
     /* Parse "equip" mode */
-    if ((0 == borg_what_text(0, 0, 10, &t_a, buf)) &&
-        (streq(buf, "(Equipment) ")))
-    {
+    if ((0 == borg_what_text(0, 0, 10, &t_a, buf))
+        && (streq(buf, "(Equipment) "))) {
         /* Parse the "equip" screen */
         /* borg_parse_equip(); */
 
@@ -340,11 +325,9 @@ static bool borg_think(void)
         return (true);
     }
 
-
     /* Parse "inven" mode */
-    if ((0 == borg_what_text(0, 0, 10, &t_a, buf)) &&
-        (streq(buf, "(Inventory) ")))
-    {
+    if ((0 == borg_what_text(0, 0, 10, &t_a, buf))
+        && (streq(buf, "(Inventory) "))) {
         /* Parse the "inven" screen */
         /* borg_parse_inven(); */
 
@@ -356,9 +339,7 @@ static bool borg_think(void)
     }
 
     /* Parse "inven" mode */
-    if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) &&
-        (streq(buf, "(Inven")))
-    {
+    if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) && (streq(buf, "(Inven"))) {
         if (borg_best_item != -1)
             borg_keypress(all_letters_nohjkl[borg_best_item]);
 
@@ -373,22 +354,20 @@ static bool borg_think(void)
     /*** Find books ***/
 
     /* Only if needed */
-    if (borg_do_spell && (borg_do_spell_aux == 0))
-    {
+    if (borg_do_spell && (borg_do_spell_aux == 0)) {
         /* Assume no books */
-        for (i = 0; i < 9; i++) borg_book[i] = -1;
+        for (i = 0; i < 9; i++)
+            borg_book[i] = -1;
 
         /* Scan the pack */
-        for (i = 0; i < z_info->pack_size; i++)
-        {
+        for (i = 0; i < z_info->pack_size; i++) {
             int book_num;
             borg_item* item = &borg_items[i];
 
-            for (book_num = 0; book_num < player->class->magic.num_books; book_num++)
-            {
+            for (book_num = 0; book_num < player->class->magic.num_books;
+                 book_num++) {
                 struct class_book book = player->class->magic.books[book_num];
-                if (item->tval == book.tval && item->sval == book.sval)
-                {
+                if (item->tval == book.tval && item->sval == book.sval) {
                     /* Note book locations */
                     borg_book[book_num] = i;
                     break;
@@ -397,28 +376,28 @@ static bool borg_think(void)
         }
     }
 
-
     /*** Process books ***/
     /* Hack -- Warriors never browse */
-    if (borg_class == CLASS_WARRIOR) borg_do_spell = false;
+    if (borg_class == CLASS_WARRIOR)
+        borg_do_spell = false;
 
     /* Hack -- Blind or Confused prevents browsing */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED]) borg_do_spell = false;
+    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISCONFUSED])
+        borg_do_spell = false;
 
     /* XXX XXX XXX Dark */
 
     /* Hack -- Stop doing spells when done */
-    if (borg_do_spell_aux > 8) borg_do_spell = false;
+    if (borg_do_spell_aux > 8)
+        borg_do_spell = false;
 
     /* Cheat */
-    if (borg_do_spell)
-    {
+    if (borg_do_spell) {
         /* Look for the book */
         i = borg_book[borg_do_spell_aux];
 
         /* Cheat the "spell" screens (all of them) */
-        if (i >= 0)
-        {
+        if (i >= 0) {
             /* Cheat that page */
             borg_cheat_spell(borg_do_spell_aux);
         }
@@ -431,9 +410,8 @@ static bool borg_think(void)
     }
 
     /* Check for "browse" mode */
-    if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf)) &&
-        (streq(buf, "Lv Mana Fail")))
-    {
+    if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf))
+        && (streq(buf, "Lv Mana Fail"))) {
         /* Parse the "spell" screen */
         /* borg_parse_spell(borg_do_spell_aux); */
 
@@ -448,19 +426,16 @@ static bool borg_think(void)
     }
 
     /* If king, maybe retire. */
-    if (borg_skill[BI_KING])
-    {
+    if (borg_skill[BI_KING]) {
         /* Prepare to retire */
-        if (borg_cfg[BORG_STOP_KING])
-        {
+        if (borg_cfg[BORG_STOP_KING]) {
 #ifndef BABLOS
             borg_write_map(false);
 #endif /* bablos */
             borg_oops("retire");
         }
         /* Borg will be respawning */
-        if (borg_cfg[BORG_RESPAWN_WINNERS])
-        {
+        if (borg_cfg[BORG_RESPAWN_WINNERS]) {
 #ifndef BABLOS
             borg_write_map(false);
 #if 0
@@ -477,12 +452,10 @@ static bool borg_think(void)
             borg_flush();
 #endif /* bablos */
         }
-
     }
 
     /* Hack -- always revert shapechanged players to normal form */
-    if (player_is_shapechanged(player))
-    {
+    if (player_is_shapechanged(player)) {
         borg_keypress('m');
         borg_keypress('r');
         return true;
@@ -491,10 +464,8 @@ static bool borg_think(void)
     /*** Handle stores ***/
 
     /* Hack -- Check for being in a store CHEAT*/
-    if ((0 == borg_what_text(1, 3, 4, &t_a, buf)) &&
-        (streq(buf, "Stor") ||
-            streq(buf, "Home")))
-    {
+    if ((0 == borg_what_text(1, 3, 4, &t_a, buf))
+        && (streq(buf, "Stor") || streq(buf, "Home"))) {
         /* Cheat the store number */
         shop_num = square_shopnum(cave, player->grid);
 
@@ -502,10 +473,12 @@ static bool borg_think(void)
         goal = 0;
 
         /* Hack -- Reset food counter for money scumming */
-        if (shop_num == 0) borg_food_onsale = 0;
+        if (shop_num == 0)
+            borg_food_onsale = 0;
 
         /* Hack -- Reset fuel counter for money scumming */
-        if (shop_num == 0) borg_fuel_onsale = 0;
+        if (shop_num == 0)
+            borg_fuel_onsale = 0;
 
         /* Extract the current gold (unless in home) */
         borg_gold = (long)player->au;
@@ -532,7 +505,8 @@ static bool borg_think(void)
         my_power = borg_power();
 
         /* Hack -- allow user abort */
-        if (borg_cancel) return (true);
+        if (borg_cancel)
+            return (true);
 
         /* Do not allow a user key to interrupt the borg while in a store */
         borg_in_shop = true;
@@ -540,7 +514,6 @@ static bool borg_think(void)
         /* Think until done */
         return (borg_think_store());
     }
-
 
     /*** Determine panel ***/
 
@@ -552,9 +525,8 @@ static bool borg_think(void)
     borg_do_panel = false;
 
     /* Hack -- Check for "sector" mode */
-    if ((0 == borg_what_text(0, 0, 16, &t_a, buf)) &&
-        (prefix(buf, "Map sector ")))
-    {
+    if ((0 == borg_what_text(0, 0, 16, &t_a, buf))
+        && (prefix(buf, "Map sector "))) {
         /* Hack -- get the panel info */
         w_y = (buf[12] - '0') * (SCREEN_HGT / 2);
         w_x = (buf[14] - '0') * (SCREEN_WID / 2);
@@ -567,8 +539,7 @@ static bool borg_think(void)
     }
 
     /* Check panel */
-    if (borg_do_panel)
-    {
+    if (borg_do_panel) {
         /* Only do it once */
         borg_do_panel = false;
 
@@ -582,8 +553,7 @@ static bool borg_think(void)
     /*** Analyze the Frame ***/
 
     /* Analyze the frame */
-    if (borg_do_frame)
-    {
+    if (borg_do_frame) {
         /* Only once */
         borg_do_frame = false;
 
@@ -611,13 +581,12 @@ static bool borg_think(void)
     /* Hack -- Start the books over */
     borg_do_spell_aux = 0;
 
-
     /*** Analyze status ***/
 
     /* Track best level */
-    if (borg_skill[BI_CLEVEL] > borg_skill[BI_MAXCLEVEL]) borg_skill[BI_MAXCLEVEL] = borg_skill[BI_CLEVEL];
-    if (borg_skill[BI_CDEPTH] > borg_skill[BI_MAXDEPTH])
-    {
+    if (borg_skill[BI_CLEVEL] > borg_skill[BI_MAXCLEVEL])
+        borg_skill[BI_MAXCLEVEL] = borg_skill[BI_CLEVEL];
+    if (borg_skill[BI_CDEPTH] > borg_skill[BI_MAXDEPTH]) {
         borg_skill[BI_MAXDEPTH] = borg_skill[BI_CDEPTH];
     }
 
@@ -639,7 +608,8 @@ static bool borg_think(void)
     my_power = borg_power();
 
     /* Hack -- allow user abort */
-    if (borg_cancel) return (true);
+    if (borg_cancel)
+        return (true);
 
     /* Do something */
     return (borg_think_dungeon());
@@ -652,37 +622,25 @@ static char** suffix_pain;
  *
  * See "mon_take_hit()" for details.
  */
-static const char* prefix_kill[] =
-{
-    "You have killed ",
-    "You have slain ",
-    "You have destroyed ",
-    NULL
-};
-
+static const char* prefix_kill[] = { "You have killed ", 
+                                     "You have slain ", 
+                                     "You have destroyed ", 
+                                     NULL };
 
 /*
  * Hack -- methods of monster death (order not important).
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
  */
-static const char* suffix_died[] =
-{
-    " dies.",
-    " is destroyed.",
-    " is drained dry!",
-    NULL
-};
-static const char* suffix_blink[] =
-{
-    " disappears!",      /* from teleport other */
-    " intones strange words.",         /* from polymorph spell */
-    " teleports away.",  /* RF6_TPORT */
-    " blinks.",                /* RF6_BLINK */
-    " makes a soft 'pop'.",
-    NULL
-};
-
+static const char* suffix_died[] = { " dies.", 
+                                     " is destroyed.", 
+                                     " is drained dry!", 
+                                     NULL };
+static const char* suffix_blink[] = { " disappears!", /* from teleport other */
+                                      " intones strange words.", /* from polymorph spell */
+                                      " teleports away.", /* RF6_TPORT */
+                                      " blinks.", /* RF6_BLINK */
+                                      " makes a soft 'pop'.", NULL };
 
 /* a message can have up to three parts broken up by variables */
 /* ex: "{name} hits {pronoun} followers with {type} ax." */
@@ -692,15 +650,13 @@ static const char* suffix_blink[] =
 /* would end up as */
 /* " hits ", " followers with ", " ax and " */
 /* hopefully this is enough to keep the messages as unique as possible */
-struct borg_read_message
-{
+struct borg_read_message {
     char* message_p1;
     char* message_p2;
     char* message_p3;
 };
 
-struct borg_read_messages
-{
+struct borg_read_messages {
     int count;
     int allocated;
     struct borg_read_message* messages;
@@ -714,15 +670,15 @@ static struct borg_read_messages suffix_hit_by;
 static struct borg_read_messages spell_msgs;
 static struct borg_read_messages spell_invis_msgs;
 
-static bool borg_message_contains(const char* value, struct borg_read_message* message)
+static bool borg_message_contains(
+    const char* value, struct borg_read_message* message)
 {
-    if (strstr(value, message->message_p1) &&
-        (!message->message_p2 || strstr(value, message->message_p2)) &&
-        (!message->message_p3 || strstr(value, message->message_p3)))
+    if (strstr(value, message->message_p1)
+        && (!message->message_p2 || strstr(value, message->message_p2))
+        && (!message->message_p3 || strstr(value, message->message_p3)))
         return true;
     return false;
 }
-
 
 #if 0
 /* XXX XXX XXX */
@@ -730,43 +686,35 @@ msg("%s looks healthier.", m_name);
 msg("%s looks REALLY healthy!", m_name);
 #endif
 
-
-
 /*
  * Hack -- Spontaneous level feelings (order important).
  *
  * See "do_cmd_feeling()" for details.
  */
-static const char* prefix_feeling_danger[] =
-{
+static const char* prefix_feeling_danger[] = {
     "You are still uncertain about this place",
-    "Omens of death haunt this place",
+    "Omens of death haunt this place", 
     "This place seems murderous",
-    "This place seems terribly dangerous",
+    "This place seems terribly dangerous", 
     "You feel anxious about this place",
-    "You feel nervous about this place",
+    "You feel nervous about this place", 
     "This place does not seem too risky",
-    "This place seems reasonably safe",
+    "This place seems reasonably safe", 
     "This seems a tame, sheltered place",
-    "This seems a quiet, peaceful place",
-    NULL
+    "This seems a quiet, peaceful place", NULL
 };
-static const char* suffix_feeling_stuff[] =
-{
+static const char* suffix_feeling_stuff[] = { 
     "Looks like any other level.",
-    "you sense an item of wondrous power!",
+    "you sense an item of wondrous power!", 
     "there are superb treasures here.",
     "there are excellent treasures here.",
-    "there are very good treasures here.",
+    "there are very good treasures here.", 
     "there are good treasures here.",
     "there may be something worthwhile here.",
     "there may not be much interesting here.",
-    "there aren't many treasures here.",
+    "there aren't many treasures here.", 
     "there are only scraps of junk here.",
-    "there is naught but cobwebs here.",
-    NULL
-};
-
+    "there is naught but cobwebs here.", NULL };
 
 /*
  * Hack -- Parse a message from the world
@@ -819,15 +767,13 @@ static void borg_parse_aux(char* msg, int len)
     borg_grid* ag = &borg_grids[g_y][g_x];
 
     /* Log (if needed) */
-    if (borg_cfg[BORG_VERBOSE]) 
+    if (borg_cfg[BORG_VERBOSE])
         borg_note(format("# Parse Msg bite <%s>", msg));
 
     /* Hack -- Notice death */
-    if (prefix(msg, "You die."))
-    {
+    if (prefix(msg, "You die.")) {
         /* Abort (unless cheating) */
-        if (!(player->wizard || OPT(player, cheat_live) || borg_cheat_death))
-        {
+        if (!(player->wizard || OPT(player, cheat_live) || borg_cheat_death)) {
             /* Abort */
             borg_oops("death");
 
@@ -842,8 +788,7 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Hack -- Notice "failure" */
-    if (prefix(msg, "You failed "))
-    {
+    if (prefix(msg, "You failed ")) {
         /* Hack -- store the keypress */
         borg_note("# Normal failure.");
 
@@ -861,8 +806,7 @@ static void borg_parse_aux(char* msg, int len)
         borg_confirm_target = false;
 
         /* check for glyphs since we no longer have a launch message */
-        if (borg_casted_glyph)
-        {
+        if (borg_casted_glyph) {
             /* Forget the newly created-though-failed  glyph */
             track_glyph.num--;
             track_glyph.x[track_glyph.num] = 0;
@@ -872,128 +816,107 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* Incase it was a Resistance refresh */
-        if (borg_attempting_refresh_resist)
-        {
-            if (borg_resistance > 1) borg_resistance -= 25000;
+        if (borg_attempting_refresh_resist) {
+            if (borg_resistance > 1)
+                borg_resistance -= 25000;
             borg_attempting_refresh_resist = false;
         }
 
         return;
-
     }
 
     /* Mega-Hack -- Check against the search string */
-    if (borg_match[0] && strstr(msg, borg_match))
-    {
+    if (borg_match[0] && strstr(msg, borg_match)) {
         /* Clean cancel */
         borg_cancel = true;
     }
 
-
     /* Ignore teleport trap */
-    if (prefix(msg, "You hit a teleport")) return;
+    if (prefix(msg, "You hit a teleport"))
+        return;
 
     /* Ignore arrow traps */
-    if (prefix(msg, "An arrow ")) return;
+    if (prefix(msg, "An arrow "))
+        return;
 
     /* Ignore dart traps */
-    if (prefix(msg, "A small dart ")) return;
+    if (prefix(msg, "A small dart "))
+        return;
 
-    if (prefix(msg, "The cave "))
-    {
+    if (prefix(msg, "The cave ")) {
         borg_react(msg, "QUAKE:Somebody");
         borg_needs_new_sea = true;
         return;
     }
 
     /* need to check stat */
-    if (prefix(msg, "You feel very") ||
-        prefix(msg, "You feel less") ||
-        prefix(msg, "Wow!  You feel very"))
-    {
+    if (prefix(msg, "You feel very") || prefix(msg, "You feel less")
+        || prefix(msg, "Wow!  You feel very")) {
         /* need to check str */
-        if (prefix(msg, "You feel very weak"))
-        {
+        if (prefix(msg, "You feel very weak")) {
             my_need_stat_check[STAT_STR] = true;
         }
-        if (prefix(msg, "You feel less weak"))
-        {
+        if (prefix(msg, "You feel less weak")) {
             my_need_stat_check[STAT_STR] = true;
         }
-        if (prefix(msg, "Wow!  You feel very strong"))
-        {
+        if (prefix(msg, "Wow!  You feel very strong")) {
             my_need_stat_check[STAT_STR] = true;
         }
 
         /* need to check int */
-        if (prefix(msg, "You feel very stupid"))
-        {
+        if (prefix(msg, "You feel very stupid")) {
             my_need_stat_check[STAT_INT] = true;
         }
-        if (prefix(msg, "You feel less stupid"))
-        {
+        if (prefix(msg, "You feel less stupid")) {
             my_need_stat_check[STAT_INT] = true;
         }
-        if (prefix(msg, "Wow!  You feel very smart"))
-        {
+        if (prefix(msg, "Wow!  You feel very smart")) {
             my_need_stat_check[STAT_INT] = true;
         }
 
         /* need to check wis */
-        if (prefix(msg, "You feel very naive"))
-        {
+        if (prefix(msg, "You feel very naive")) {
             my_need_stat_check[STAT_WIS] = true;
         }
-        if (prefix(msg, "You feel less naive"))
-        {
+        if (prefix(msg, "You feel less naive")) {
             my_need_stat_check[STAT_WIS] = true;
         }
-        if (prefix(msg, "Wow!  You feel very wise"))
-        {
+        if (prefix(msg, "Wow!  You feel very wise")) {
             my_need_stat_check[STAT_WIS] = true;
         }
 
         /* need to check dex */
-        if (prefix(msg, "You feel very clumsy"))
-        {
+        if (prefix(msg, "You feel very clumsy")) {
             my_need_stat_check[STAT_DEX] = true;
         }
-        if (prefix(msg, "You feel less clumsy"))
-        {
+        if (prefix(msg, "You feel less clumsy")) {
             my_need_stat_check[STAT_DEX] = true;
         }
-        if (prefix(msg, "Wow!  You feel very dextrous"))
-        {
+        if (prefix(msg, "Wow!  You feel very dextrous")) {
             my_need_stat_check[STAT_DEX] = true;
         }
 
         /* need to check con */
-        if (prefix(msg, "You feel very sickly"))
-        {
+        if (prefix(msg, "You feel very sickly")) {
             my_need_stat_check[STAT_CON] = true;
         }
-        if (prefix(msg, "You feel less sickly"))
-        {
+        if (prefix(msg, "You feel less sickly")) {
             my_need_stat_check[STAT_CON] = true;
         }
-        if (prefix(msg, "Wow!  You feel very healthy"))
-        {
+        if (prefix(msg, "Wow!  You feel very healthy")) {
             my_need_stat_check[STAT_CON] = true;
         }
     }
 
     /* time attacks, just do all stats. */
-    if (prefix(msg, "You're not as"))
-    {
+    if (prefix(msg, "You're not as")) {
         for (i = 0; i < STAT_MAX; i++)
             my_need_stat_check[i] = true;
     }
 
     /* Nexus attacks, need to check everything! */
-    if (prefix(msg, "Your body starts to scramble..."))
-    {
-        for (i = 0; i < STAT_MAX; i++)
-        {
+    if (prefix(msg, "Your body starts to scramble...")) {
+        for (i = 0; i < STAT_MAX; i++) {
             my_need_stat_check[i] = true;
             /* max stats may have lowered */
             my_stat_max[i] = 0;
@@ -1001,52 +924,44 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* amnesia attacks, re-id wands, staves, equipment. */
-    if (prefix(msg, "You feel your memories fade."))
-    {
+    if (prefix(msg, "You feel your memories fade.")) {
         /* Set the borg flag */
         borg_skill[BI_ISFORGET] = true;
     }
-    if (streq(msg, "Your memories come flooding back."))
-    {
+    if (streq(msg, "Your memories come flooding back.")) {
         borg_skill[BI_ISFORGET] = false;
     }
 
-    if (streq(msg, "You have been knocked out."))
-    {
+    if (streq(msg, "You have been knocked out.")) {
         borg_note("Ignoring Messages While KO'd");
         borg_dont_react = true;
     }
-    if (streq(msg, "You are paralyzed"))
-    {
+    if (streq(msg, "You are paralyzed")) {
         borg_note("Ignoring Messages While Paralyzed");
         borg_dont_react = true;
     }
 
     /* Hallucination -- Open */
-    if (streq(msg, "You feel drugged!"))
-    {
+    if (streq(msg, "You feel drugged!")) {
         borg_note("# Hallucinating.  Special control of wanks.");
         borg_skill[BI_ISIMAGE] = true;
     }
 
     /* Hallucination -- Close */
-    if (streq(msg, "You can see clearly again."))
-    {
+    if (streq(msg, "You can see clearly again.")) {
         borg_note("# Hallucination ended.  Normal control of wanks.");
         borg_skill[BI_ISIMAGE] = false;
     }
 
     /* Hit somebody */
-    if (prefix(msg, "You hit "))
-    {
+    if (prefix(msg, "You hit ")) {
         tmp = strlen("You hit ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "HIT:%s", who);
         borg_react(msg, buf);
         return;
     }
-    if (prefix(msg, "You bite "))
-    {
+    if (prefix(msg, "You bite ")) {
         tmp = strlen("You hit ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "HIT:%s", who);
@@ -1055,8 +970,7 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Miss somebody */
-    if (prefix(msg, "You miss "))
-    {
+    if (prefix(msg, "You miss ")) {
         tmp = strlen("You miss ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "MISS:%s", who);
@@ -1065,8 +979,7 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Miss somebody (because of fear) */
-    if (prefix(msg, "You are too afraid to attack "))
-    {
+    if (prefix(msg, "You are too afraid to attack ")) {
         tmp = strlen("You are too afraid to attack ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "MISS:%s", who);
@@ -1080,24 +993,18 @@ static void borg_parse_aux(char* msg, int len)
      * assume it is talking about a monster which in turn will
      * yeild to the Player Ghost being created.
      */
-    if (prefix(msg, "Your "))
-    {
-        if (suffix(msg, " is unaffected!"))
-        {
+    if (prefix(msg, "Your ")) {
+        if (suffix(msg, " is unaffected!")) {
             /* Your equipment ignored the attack.
              * Ignore the message
              */
             return;
         }
-    }
-    else
-    {
+    } else {
         /* "It screams in pain." (etc) */
-        for (i = 0; suffix_pain[i]; i++)
-        {
+        for (i = 0; suffix_pain[i]; i++) {
             /* "It screams in pain." (etc) */
-            if (suffix(msg, suffix_pain[i]))
-            {
+            if (suffix(msg, suffix_pain[i])) {
                 tmp = strlen(suffix_pain[i]);
                 strnfmt(who, 1 + len - tmp, "%s", msg);
                 strnfmt(buf, 256, "PAIN:%s", who);
@@ -1106,13 +1013,10 @@ static void borg_parse_aux(char* msg, int len)
             }
         }
 
-
         /* "You have killed it." (etc) */
-        for (i = 0; prefix_kill[i]; i++)
-        {
+        for (i = 0; prefix_kill[i]; i++) {
             /* "You have killed it." (etc) */
-            if (prefix(msg, prefix_kill[i]))
-            {
+            if (prefix(msg, prefix_kill[i])) {
                 tmp = strlen(prefix_kill[i]);
                 strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
                 strnfmt(buf, 256, "KILL:%s", who);
@@ -1121,13 +1025,10 @@ static void borg_parse_aux(char* msg, int len)
             }
         }
 
-
         /* "It dies." (etc) */
-        for (i = 0; suffix_died[i]; i++)
-        {
+        for (i = 0; suffix_died[i]; i++) {
             /* "It dies." (etc) */
-            if (suffix(msg, suffix_died[i]))
-            {
+            if (suffix(msg, suffix_died[i])) {
                 tmp = strlen(suffix_died[i]);
                 strnfmt(who, 1 + len - tmp, "%s", msg);
                 strnfmt(buf, 256, "DIED:%s", who);
@@ -1137,11 +1038,9 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* "It blinks or telports." (etc) */
-        for (i = 0; suffix_blink[i]; i++)
-        {
+        for (i = 0; suffix_blink[i]; i++) {
             /* "It teleports." (etc) */
-            if (suffix(msg, suffix_blink[i]))
-            {
+            if (suffix(msg, suffix_blink[i])) {
                 tmp = strlen(suffix_blink[i]);
                 strnfmt(who, 1 + len - tmp, "%s", msg);
                 strnfmt(buf, 256, "BLINK:%s", who);
@@ -1151,8 +1050,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* "It misses you." */
-        if (suffix(msg, " misses you."))
-        {
+        if (suffix(msg, " misses you.")) {
             tmp = strlen(" misses you.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "MISS_BY:%s", who);
@@ -1162,8 +1060,7 @@ static void borg_parse_aux(char* msg, int len)
 
         /* "It is repelled.." */
         /* treat as a miss */
-        if (suffix(msg, " is repelled."))
-        {
+        if (suffix(msg, " is repelled.")) {
             tmp = strlen(" is repelled.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "MISS_BY:%s", who);
@@ -1172,29 +1069,24 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* "It hits you." (etc) */
-        for (i = 0; suffix_hit_by.messages[i].message_p1; i++)
-        {
+        for (i = 0; suffix_hit_by.messages[i].message_p1; i++) {
             /* "It hits you." (etc) */
-            if (borg_message_contains(msg, &suffix_hit_by.messages[i]))
-            {
+            if (borg_message_contains(msg, &suffix_hit_by.messages[i])) {
                 char* start = strstr(msg, suffix_hit_by.messages[i].message_p1);
-                if (start)
-                {
+                if (start) {
                     strnfmt(who, (start - msg), "%s", msg);
                     strnfmt(buf, 256, "HIT_BY:%s", who);
                     borg_react(msg, buf);
 
                     /* If I was hit, then I am not on a glyph */
-                    if (track_glyph.num)
-                    {
+                    if (track_glyph.num) {
                         /* erase them all and
-                         * allow the borg to scan the screen and rebuild the array.
-                         * He won't see the one under him though.  So a special check
-                         * must be made.
+                         * allow the borg to scan the screen and rebuild the
+                         * array. He won't see the one under him though.  So a
+                         * special check must be made.
                          */
-                         /* Remove the entire array */
-                        for (i = 0; i < track_glyph.num; i++)
-                        {
+                        /* Remove the entire array */
+                        for (i = 0; i < track_glyph.num; i++) {
                             /* Stop if we already new about this glyph */
                             track_glyph.x[i] = 0;
                             track_glyph.y[i] = 0;
@@ -1202,8 +1094,7 @@ static void borg_parse_aux(char* msg, int len)
                         track_glyph.num = 0;
 
                         /* Check for glyphs under player -- Cheat*/
-                        if (square_iswarded(cave, loc(c_x, c_y)))
-                        {
+                        if (square_iswarded(cave, loc(c_x, c_y))) {
                             track_glyph.x[track_glyph.num] = c_x;
                             track_glyph.y[track_glyph.num] = c_y;
                             track_glyph.num++;
@@ -1214,37 +1105,32 @@ static void borg_parse_aux(char* msg, int len)
             }
         }
 
-        for (i = 0; spell_invis_msgs.messages[i].message_p1; i++)
-        {
+        for (i = 0; spell_invis_msgs.messages[i].message_p1; i++) {
             /* get rid of the messages that aren't for invisible spells */
             if (!prefix(msg, "Something ") && !prefix(msg, "You "))
                 break;
-            if (borg_message_contains(msg, &spell_invis_msgs.messages[i]))
-            {
-                strnfmt(buf, 256, "SPELL_%03d:%s", spell_invis_msgs.index[i], "Something");
+            if (borg_message_contains(msg, &spell_invis_msgs.messages[i])) {
+                strnfmt(buf, 256, "SPELL_%03d:%s", spell_invis_msgs.index[i],
+                    "Something");
                 borg_react(msg, buf);
                 return;
             }
         }
-        for (i = 0; spell_msgs.messages[i].message_p1; i++)
-        {
-            if (borg_message_contains(msg, &spell_msgs.messages[i]))
-            {
+        for (i = 0; spell_msgs.messages[i].message_p1; i++) {
+            if (borg_message_contains(msg, &spell_msgs.messages[i])) {
                 char* start = strstr(msg, spell_msgs.messages[i].message_p1);
-                if (start)
-                {
+                if (start) {
                     strnfmt(who, (start - msg), "%s", msg);
-                    strnfmt(buf, 256, "SPELL_%03d:%s", spell_msgs.index[i], who);
+                    strnfmt(
+                        buf, 256, "SPELL_%03d:%s", spell_msgs.index[i], who);
                     borg_react(msg, buf);
                     return;
                 }
             }
         }
 
-
         /* State -- Asleep */
-        if (suffix(msg, " falls asleep!"))
-        {
+        if (suffix(msg, " falls asleep!")) {
             tmp = strlen(" falls asleep!");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE_SLEEP:%s", who);
@@ -1253,8 +1139,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- confused */
-        if (suffix(msg, " looks confused."))
-        {
+        if (suffix(msg, " looks confused.")) {
             tmp = strlen(" looks confused.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE_CONFUSED:%s", who);
@@ -1263,8 +1148,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- confused */
-        if (suffix(msg, " looks more confused."))
-        {
+        if (suffix(msg, " looks more confused.")) {
             tmp = strlen(" looks more confused.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE_CONFUSED:%s", who);
@@ -1273,8 +1157,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- Not Asleep */
-        if (suffix(msg, " wakes up."))
-        {
+        if (suffix(msg, " wakes up.")) {
             tmp = strlen(" wakes up.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE_AWAKE:%s", who);
@@ -1283,8 +1166,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- Afraid */
-        if (suffix(msg, " flees in terror!"))
-        {
+        if (suffix(msg, " flees in terror!")) {
             tmp = strlen(" flees in terror!");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE__FEAR:%s", who);
@@ -1293,8 +1175,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- Not Afraid */
-        if (suffix(msg, " recovers his courage."))
-        {
+        if (suffix(msg, " recovers his courage.")) {
             tmp = strlen(" recovers his courage.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE__BOLD:%s", who);
@@ -1303,8 +1184,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- Not Afraid */
-        if (suffix(msg, " recovers her courage."))
-        {
+        if (suffix(msg, " recovers her courage.")) {
             tmp = strlen(" recovers her courage.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE__BOLD:%s", who);
@@ -1313,8 +1193,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* State -- Not Afraid */
-        if (suffix(msg, " recovers its courage."))
-        {
+        if (suffix(msg, " recovers its courage.")) {
             tmp = strlen(" recovers its courage.");
             strnfmt(who, 1 + len - tmp, "%s", msg);
             strnfmt(buf, 256, "STATE__BOLD:%s", who);
@@ -1324,11 +1203,9 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Feature XXX XXX XXX */
-    if (streq(msg, "The door appears to be broken."))
-    {
+    if (streq(msg, "The door appears to be broken.")) {
         /* Only process open doors */
-        if (ag->feat == FEAT_OPEN)
-        {
+        if (ag->feat == FEAT_OPEN) {
             /* Mark as broken */
             ag->feat = FEAT_BROKEN;
 
@@ -1339,11 +1216,9 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Feature XXX XXX XXX */
-    if (streq(msg, "This seems to be permanent rock."))
-    {
+    if (streq(msg, "This seems to be permanent rock.")) {
         /* Only process walls */
-        if ((ag->feat >= FEAT_GRANITE) && (ag->feat <= FEAT_PERM))
-        {
+        if ((ag->feat >= FEAT_GRANITE) && (ag->feat <= FEAT_PERM)) {
             /* Mark the wall as permanent */
             ag->feat = FEAT_PERM;
 
@@ -1355,14 +1230,12 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Feature XXX XXX XXX */
-    if (streq(msg, "You tunnel into the granite wall."))
-    {
+    if (streq(msg, "You tunnel into the granite wall.")) {
         /* reseting my panel clock */
         time_this_panel = 1;
 
         /* Only process walls */
-        if ((ag->feat >= FEAT_GRANITE) && (ag->feat <= FEAT_PERM))
-        {
+        if ((ag->feat >= FEAT_GRANITE) && (ag->feat <= FEAT_PERM)) {
             /* Mark the wall as granite */
             ag->feat = FEAT_GRANITE;
 
@@ -1373,13 +1246,10 @@ static void borg_parse_aux(char* msg, int len)
         return;
     }
 
-
     /* Feature XXX XXX XXX */
-    if (streq(msg, "You tunnel into the quartz vein."))
-    {
+    if (streq(msg, "You tunnel into the quartz vein.")) {
         /* Process magma veins with treasure */
-        if (ag->feat == FEAT_MAGMA_K)
-        {
+        if (ag->feat == FEAT_MAGMA_K) {
             /* Mark the vein */
             ag->feat = FEAT_QUARTZ_K;
 
@@ -1388,8 +1258,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* Process magma veins */
-        else if (ag->feat == FEAT_MAGMA)
-        {
+        else if (ag->feat == FEAT_MAGMA) {
             /* Mark the vein */
             ag->feat = FEAT_QUARTZ;
 
@@ -1401,11 +1270,9 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Feature XXX XXX XXX */
-    if (streq(msg, "You tunnel into the magma vein."))
-    {
+    if (streq(msg, "You tunnel into the magma vein.")) {
         /* Process quartz veins with treasure */
-        if (ag->feat == FEAT_QUARTZ_K)
-        {
+        if (ag->feat == FEAT_QUARTZ_K) {
             /* Mark the vein */
             ag->feat = FEAT_MAGMA_K;
 
@@ -1414,8 +1281,7 @@ static void borg_parse_aux(char* msg, int len)
         }
 
         /* Process quartz veins */
-        else if (ag->feat == FEAT_QUARTZ)
-        {
+        else if (ag->feat == FEAT_QUARTZ) {
             /* Mark the vein */
             ag->feat = FEAT_MAGMA;
 
@@ -1427,154 +1293,131 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Word of Recall -- Ignition */
-    if (prefix(msg, "The air about you becomes "))
-    {
+    if (prefix(msg, "The air about you becomes ")) {
         /* Initiate recall */
         /* Guess how long it will take to lift off */
-        goal_recalling = 15000 + 5000; /* Guess. game turns x 1000 ( 15+rand(20))*/
+        goal_recalling
+            = 15000 + 5000; /* Guess. game turns x 1000 ( 15+rand(20))*/
         return;
     }
 
     /* Word of Recall -- Lift off */
-    if (prefix(msg, "You feel yourself yanked "))
-    {
+    if (prefix(msg, "You feel yourself yanked ")) {
         /* Recall complete */
         goal_recalling = 0;
         return;
     }
 
     /* Word of Recall -- Cancelled */
-    if (prefix(msg, "A tension leaves "))
-    {
+    if (prefix(msg, "A tension leaves ")) {
         /* Hack -- Oops */
         goal_recalling = 0;
         return;
     }
 
     /* Wearing Cursed Item */
-    if (prefix(msg, "Oops! It feels deathly cold!"))
-    {
-        /* this should only happen with STICKY items, The Crown of Morgoth or The One Ring */
-/* !FIX !TODO !AJG handle crown eventually */
+    if (prefix(msg, "Oops! It feels deathly cold!")) {
+        /* this should only happen with STICKY items, The Crown of Morgoth or
+         * The One Ring */
+        /* !FIX !TODO !AJG handle crown eventually */
         return;
     }
 
     /* protect from evil */
-    if (prefix(msg, "You feel safe from evil!"))
-    {
+    if (prefix(msg, "You feel safe from evil!")) {
         borg_prot_from_evil = true;
         return;
     }
-    if (prefix(msg, "You no longer feel safe from evil."))
-    {
+    if (prefix(msg, "You no longer feel safe from evil.")) {
         borg_prot_from_evil = false;
         return;
     }
     /* haste self */
-    if (prefix(msg, "You feel yourself moving faster!"))
-    {
+    if (prefix(msg, "You feel yourself moving faster!")) {
         borg_speed = true;
         return;
     }
-    if (prefix(msg, "You feel yourself slow down."))
-    {
+    if (prefix(msg, "You feel yourself slow down.")) {
         borg_speed = false;
         return;
     }
     /* Bless */
-    if (prefix(msg, "You feel righteous"))
-    {
+    if (prefix(msg, "You feel righteous")) {
         borg_bless = true;
         return;
     }
-    if (prefix(msg, "The prayer has expired."))
-    {
+    if (prefix(msg, "The prayer has expired.")) {
         borg_bless = false;
         return;
     }
 
     /* fastcast */
-    if (prefix(msg, "You feel your mind accelerate."))
-    {
+    if (prefix(msg, "You feel your mind accelerate.")) {
         borg_fastcast = true;
         return;
     }
-    if (prefix(msg, "You feel your mind slow again."))
-    {
+    if (prefix(msg, "You feel your mind slow again.")) {
         borg_fastcast = false;
         return;
     }
 
     /* hero */
-    if (prefix(msg, "You feel like a hero!"))
-    {
+    if (prefix(msg, "You feel like a hero!")) {
         borg_hero = true;
         return;
     }
-    if (prefix(msg, "You no longer feel heroic."))
-    {
+    if (prefix(msg, "You no longer feel heroic.")) {
         borg_hero = false;
         return;
     }
 
     /* berserk */
-    if (prefix(msg, "You feel like a killing machine!"))
-    {
+    if (prefix(msg, "You feel like a killing machine!")) {
         borg_berserk = true;
         return;
     }
-    if (prefix(msg, "You no longer feel berserk."))
-    {
+    if (prefix(msg, "You no longer feel berserk.")) {
         borg_berserk = false;
         return;
     }
 
     /* Sense Invisible */
-    if (prefix(msg, "Your eyes feel very sensitive!"))
-    {
+    if (prefix(msg, "Your eyes feel very sensitive!")) {
         borg_see_inv = 30000;
         return;
     }
-    if (prefix(msg, "Your eyes no longer feel so sensitive."))
-    {
+    if (prefix(msg, "Your eyes no longer feel so sensitive.")) {
         borg_see_inv = 0;
         return;
     }
 
     /* check for wall blocking but not when confused*/
-    if ((prefix(msg, "There is a wall ") &&
-        (!borg_skill[BI_ISCONFUSED])))
-    {
+    if ((prefix(msg, "There is a wall ") && (!borg_skill[BI_ISCONFUSED]))) {
         my_need_redraw = true;
-        my_need_alter = true;
-        goal = 0;
+        my_need_alter  = true;
+        goal           = 0;
         return;
     }
 
-
     /* check for closed door but not when confused*/
-    if ((prefix(msg, "There is a closed door blocking your way.") &&
-        (!borg_skill[BI_ISCONFUSED] &&
-            !borg_skill[BI_ISIMAGE])))
-    {
+    if ((prefix(msg, "There is a closed door blocking your way.")
+            && (!borg_skill[BI_ISCONFUSED] && !borg_skill[BI_ISIMAGE]))) {
         my_need_redraw = true;
-        my_need_alter = true;
-        goal = 0;
+        my_need_alter  = true;
+        goal           = 0;
         return;
     }
 
     /* check for mis-alter command.  Sometime induced by never_move guys*/
-    if (prefix(msg, "You spin around.") &&
-        !borg_skill[BI_ISCONFUSED])
-    {
+    if (prefix(msg, "You spin around.") && !borg_skill[BI_ISCONFUSED]) {
         /* Examine all the monsters */
-        for (i = 1; i < borg_kills_nxt; i++)
-        {
+        for (i = 1; i < borg_kills_nxt; i++) {
 
             borg_kill* kill = &borg_kills[i];
 
             /* Skip dead monsters */
-            if (!kill->r_idx) continue;
+            if (!kill->r_idx)
+                continue;
 
             /* Now do distance considerations */
             x9 = kill->x;
@@ -1588,49 +1431,44 @@ static void borg_parse_aux(char* msg, int len)
             d = MAX(ax, ay);
 
             /* if the guy is too close then delete him. */
-            if (d < 4)
-            {
+            if (d < 4) {
                 /* Hack -- kill em */
                 borg_delete_kill(i);
             }
         }
 
         my_no_alter = true;
-        goal = 0;
+        goal        = 0;
         return;
     }
 
     /* Check for the missing staircase */
-    if (suffix(msg, " staircase here."))
-    {
+    if (suffix(msg, " staircase here.")) {
         /* make sure the aligned dungeon is on */
 
         /* make sure the borg does not think he's on one */
         /* Remove all stairs from the array. */
-        track_less.num = 0;
-        track_more.num = 0;
-        borg_on_dnstairs = false;
-        borg_on_upstairs = false;
+        track_less.num            = 0;
+        track_more.num            = 0;
+        borg_on_dnstairs          = false;
+        borg_on_upstairs          = false;
         borg_grids[c_y][c_x].feat = FEAT_BROKEN;
 
         return;
     }
 
     /* Feature XXX XXX XXX */
-    if (prefix(msg, "You see nothing there "))
-    {
-        ag->feat = FEAT_BROKEN;
+    if (prefix(msg, "You see nothing there ")) {
+        ag->feat    = FEAT_BROKEN;
 
         my_no_alter = true;
         /* Clear goals */
         goal = 0;
         return;
-
     }
 
     /* Hack to protect against clock overflows and errors */
-    if (prefix(msg, "Illegal "))
-    {
+    if (prefix(msg, "Illegal ")) {
         /* Hack -- Oops */
         borg_respawning = 7;
         borg_keypress(ESCAPE);
@@ -1640,31 +1478,30 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Hack to protect against clock overflows and errors */
-    if (prefix(msg, "You have nothing to identify"))
-    {
+    if (prefix(msg, "You have nothing to identify")) {
         /* Hack -- Oops */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
         time_this_panel += 100;
 
         /* ID all items (equipment) */
-        for (i = INVEN_WIELD; i <= INVEN_FEET; i++)
-        {
+        for (i = INVEN_WIELD; i <= INVEN_FEET; i++) {
             borg_item* item = &borg_items[i];
 
             /* Skip empty items */
-            if (!item->iqty) continue;
+            if (!item->iqty)
+                continue;
 
             item->ident = true;
         }
 
         /* ID all items  (inventory) */
-        for (i = 0; i <= z_info->pack_size; i++)
-        {
+        for (i = 0; i <= z_info->pack_size; i++) {
             borg_item* item = &borg_items[i];
 
             /* Skip empty items */
-            if (!item->iqty) continue;
+            if (!item->iqty)
+                continue;
 
             item->ident = true;
         }
@@ -1672,12 +1509,11 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Hack to protect against clock overflows and errors */
-    if (prefix(msg, "Identifying The Phial"))
-    {
+    if (prefix(msg, "Identifying The Phial")) {
 
         /* ID item (equipment) */
         borg_item* item = &borg_items[INVEN_LIGHT];
-        item->ident = true;
+        item->ident     = true;
 
         /* Hack -- Oops */
         borg_keypress(ESCAPE);
@@ -1686,89 +1522,75 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* resist acid */
-    if (prefix(msg, "You feel resistant to acid!"))
-    {
+    if (prefix(msg, "You feel resistant to acid!")) {
         borg_skill[BI_TRACID] = true;
         return;
     }
-    if (prefix(msg, "You are no longer resistant to acid."))
-    {
+    if (prefix(msg, "You are no longer resistant to acid.")) {
         borg_skill[BI_TRACID] = false;
         return;
     }
     /* resist electricity */
-    if (prefix(msg, "You feel resistant to electricity!"))
-    {
+    if (prefix(msg, "You feel resistant to electricity!")) {
         borg_skill[BI_TRELEC] = true;
         return;
     }
-    if (prefix(msg, "You are no longer resistant to electricity."))
-    {
+    if (prefix(msg, "You are no longer resistant to electricity.")) {
         borg_skill[BI_TRELEC] = false;
         return;
     }
     /* resist fire */
-    if (prefix(msg, "You feel resistant to fire!"))
-    {
+    if (prefix(msg, "You feel resistant to fire!")) {
         borg_skill[BI_TRFIRE] = true;
         return;
     }
-    if (prefix(msg, "You are no longer resistant to fire."))
-    {
+    if (prefix(msg, "You are no longer resistant to fire.")) {
         borg_skill[BI_TRFIRE] = false;
         return;
     }
     /* resist cold */
-    if (prefix(msg, "You feel resistant to cold!"))
-    {
+    if (prefix(msg, "You feel resistant to cold!")) {
         borg_skill[BI_TRCOLD] = true;
         return;
     }
-    if (prefix(msg, "You are no longer resistant to cold."))
-    {
+    if (prefix(msg, "You are no longer resistant to cold.")) {
         borg_skill[BI_TRCOLD] = false;
         return;
     }
     /* resist poison */
-    if (prefix(msg, "You feel resistant to poison!"))
-    {
+    if (prefix(msg, "You feel resistant to poison!")) {
         borg_skill[BI_TRPOIS] = true;
         return;
     }
-    if (prefix(msg, "You are no longer resistant to poison."))
-    {
+    if (prefix(msg, "You are no longer resistant to poison.")) {
         borg_skill[BI_TRPOIS] = false;
         return;
     }
 
     /* Shield */
-    if (prefix(msg, "A mystic shield forms around your body!") ||
-        prefix(msg, "Your skin turns to stone."))
-    {
+    if (prefix(msg, "A mystic shield forms around your body!")
+        || prefix(msg, "Your skin turns to stone.")) {
         borg_shield = true;
         return;
     }
-    if (prefix(msg, "Your mystic shield crumbles away.") ||
-        prefix(msg, "A fleshy shade returns to your skin."))
-    {
+    if (prefix(msg, "Your mystic shield crumbles away.")
+        || prefix(msg, "A fleshy shade returns to your skin.")) {
         borg_shield = false;
         return;
     }
 
     /* Glyph of Warding (the spell no longer gives a report)*/
     /* Sadly  Rune of Protection has no message */
-    if (prefix(msg, "You inscribe a mystic symbol on the ground!"))
-    {
+    if (prefix(msg, "You inscribe a mystic symbol on the ground!")) {
         /* Check for an existing glyph */
-        for (i = 0; i < track_glyph.num; i++)
-        {
+        for (i = 0; i < track_glyph.num; i++) {
             /* Stop if we already new about this glyph */
-            if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y)) break;
+            if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y))
+                break;
         }
 
         /* Track the newly discovered glyph */
-        if ((i == track_glyph.num) && (i < track_glyph.size))
-        {
+        if ((i == track_glyph.num) && (i < track_glyph.size)) {
             borg_note("# Noting the creation of a glyph.");
             track_glyph.x[i] = c_x;
             track_glyph.y[i] = c_y;
@@ -1777,28 +1599,24 @@ static void borg_parse_aux(char* msg, int len)
 
         return;
     }
-    if (prefix(msg, "The rune of protection is broken!"))
-    {
+    if (prefix(msg, "The rune of protection is broken!")) {
         /* we won't know which is broken so erase them all and
          * allow the borg to scan the screen and rebuild the array.
          * He won't see the one under him though.  So a special check
          * must be made.
          */
 
-         /* Remove the entire array */
-        for (i = 0; i < track_glyph.num; i++)
-        {
+        /* Remove the entire array */
+        for (i = 0; i < track_glyph.num; i++) {
             /* Stop if we already new about this glyph */
             track_glyph.x[i] = 0;
             track_glyph.y[i] = 0;
-
         }
         /* no known glyphs */
         track_glyph.num = 0;
 
         /* Check for glyphs under player -- Cheat*/
-        if (square_iswarded(cave, loc(c_x, c_y)))
-        {
+        if (square_iswarded(cave, loc(c_x, c_y))) {
             track_glyph.x[track_glyph.num] = c_x;
             track_glyph.y[track_glyph.num] = c_y;
             track_glyph.num++;
@@ -1806,9 +1624,8 @@ static void borg_parse_aux(char* msg, int len)
         return;
     }
     /* failed glyph spell message */
-    if (prefix(msg, "The object resists the spell") ||
-        prefix(msg, "There is no clear floor"))
-    {
+    if (prefix(msg, "The object resists the spell")
+        || prefix(msg, "There is no clear floor")) {
 
         /* Forget the newly created-though-failed  glyph */
         track_glyph.x[track_glyph.num] = 0;
@@ -1826,46 +1643,43 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Removed rubble.  Important when out of lite */
-    if (prefix(msg, "You have removed the "))
-    {
+    if (prefix(msg, "You have removed the ")) {
         int x, y;
         /* remove rubbles from array */
-        for (y = c_y - 1; y < c_y + 1; y++)
-        {
-            for (x = c_x - 1; x < c_x + 1; x++)
-            {
+        for (y = c_y - 1; y < c_y + 1; y++) {
+            for (x = c_x - 1; x < c_x + 1; x++) {
                 /* replace all rubble with broken doors, the borg ignores
                  * broken doors.  This routine is only needed if the borg
                  * is out of lite and searching in the dark.
                  */
-                if (borg_skill[BI_CURLITE]) continue;
+                if (borg_skill[BI_CURLITE])
+                    continue;
 
-                if (ag->feat == FEAT_RUBBLE) ag->feat = FEAT_BROKEN;
+                if (ag->feat == FEAT_RUBBLE)
+                    ag->feat = FEAT_BROKEN;
             }
         }
         return;
     }
 
-    if (prefix(msg, "The enchantment failed"))
-    {
+    if (prefix(msg, "The enchantment failed")) {
         /* reset our panel clock for this */
         time_this_panel = 1;
         return;
     }
 
     /* need to kill monsters when WoD is used */
-    if (prefix(msg, "There is a searing blast of light!"))
-    {
+    if (prefix(msg, "There is a searing blast of light!")) {
         /* Examine all the monsters */
-        for (i = 1; i < borg_kills_nxt; i++)
-        {
+        for (i = 1; i < borg_kills_nxt; i++) {
             borg_kill* kill = &borg_kills[i];
 
-            x9 = kill->x;
-            y9 = kill->y;
+            x9              = kill->x;
+            y9              = kill->y;
 
             /* Skip dead monsters */
-            if (!kill->r_idx) continue;
+            if (!kill->r_idx)
+                continue;
 
             /* Distance components */
             ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
@@ -1875,7 +1689,8 @@ static void borg_parse_aux(char* msg, int len)
             d = MAX(ax, ay);
 
             /* Minimal distance */
-            if (d > 12) continue;
+            if (d > 12)
+                continue;
 
             /* Hack -- kill em */
             borg_delete_kill(i);
@@ -1888,54 +1703,47 @@ static void borg_parse_aux(char* msg, int len)
     }
 
     /* Be aware and concerned of busted doors */
-    if (prefix(msg, "You hear a door burst open!"))
-    {
+    if (prefix(msg, "You hear a door burst open!")) {
         /* on level 1 and 2 be concerned.  Could be Grip or Fang */
-        if (borg_skill[BI_CDEPTH] <= 3 && borg_skill[BI_CLEVEL] <= 5) scaryguy_on_level = true;
+        if (borg_skill[BI_CDEPTH] <= 3 && borg_skill[BI_CLEVEL] <= 5)
+            scaryguy_on_level = true;
     }
 
     /* Some spells move the borg from his grid */
-    if (prefix(msg, "commands you to return.") ||
-        prefix(msg, "teleports you away.") ||
-        prefix(msg, "gestures at your feet."))
-    {
-        /* If in Lunal mode better shut that off, he is not on the stairs anymore */
+    if (prefix(msg, "commands you to return.")
+        || prefix(msg, "teleports you away.")
+        || prefix(msg, "gestures at your feet.")) {
+        /* If in Lunal mode better shut that off, he is not on the stairs
+         * anymore */
         borg_lunal_mode = false;
         borg_note("# Disconnecting Lunal Mode due to monster spell.");
     }
 
     /* Sometimes the borg will overshoot the range limit of his shooter */
-    if (prefix(msg, "Target out of range."))
-    {
+    if (prefix(msg, "Target out of range.")) {
         /* Fire Anyway? [Y/N] */
         borg_keypress('y');
     }
 
     /* Feelings about the level */
-    for (i = 0; prefix_feeling_danger[i]; i++)
-    {
+    for (i = 0; prefix_feeling_danger[i]; i++) {
         /* "You feel..." (etc) */
-        if (prefix(msg, prefix_feeling_danger[i]))
-        {
+        if (prefix(msg, prefix_feeling_danger[i])) {
             strnfmt(buf, 256, "FEELING_DANGER:%d", i);
             borg_react(msg, buf);
             return;
         }
     }
 
-    for (i = 0; suffix_feeling_stuff[i]; i++)
-    {
+    for (i = 0; suffix_feeling_stuff[i]; i++) {
         /* "You feel..." (etc) */
-        if (suffix(msg, suffix_feeling_stuff[i]))
-        {
+        if (suffix(msg, suffix_feeling_stuff[i])) {
             strnfmt(buf, 256, "FEELING_STUFF:%d", i);
             borg_react(msg, buf);
             return;
         }
     }
 }
-
-
 
 /*
  * Parse a message, piece of a message, or set of messages.
@@ -1950,26 +1758,20 @@ static void borg_parse(char* msg)
     static char buf[1024];
 
     /* Note the long message */
-    if (borg_cfg[BORG_VERBOSE] && msg) 
+    if (borg_cfg[BORG_VERBOSE] && msg)
         borg_note(format("# Parsing msg <%s>", msg));
 
     /* Flush messages */
-    if (len && (!msg || (msg[0] != ' ')))
-    {
+    if (len && (!msg || (msg[0] != ' '))) {
         int i, j;
 
         /* Split out punctuation */
-        for (j = i = 0; i < len - 1; i++)
-        {
+        for (j = i = 0; i < len - 1; i++) {
             /* Check for punctuation */
-            if ((buf[i] == '.') ||
-                (buf[i] == '!') ||
-                (buf[i] == '?') ||
-                (buf[i] == '"'))
-            {
+            if ((buf[i] == '.') || (buf[i] == '!') || (buf[i] == '?')
+                || (buf[i] == '"')) {
                 /* Require space */
-                if (buf[i + 1] == ' ')
-                {
+                if (buf[i + 1] == ' ') {
                     /* Terminate */
                     buf[i + 1] = '\0';
 
@@ -1980,7 +1782,8 @@ static void borg_parse(char* msg)
                     buf[i + 1] = ' ';
 
                     /* Advance past spaces */
-                    for (j = i + 2; buf[j] == ' '; j++) /* loop */;
+                    for (j = i + 2; buf[j] == ' '; j++) /* loop */
+                        ;
                 }
             }
         }
@@ -1992,30 +1795,24 @@ static void borg_parse(char* msg)
         len = 0;
     }
 
-
     /* No message */
-    if (!msg)
-    {
+    if (!msg) {
         /* Start over */
         len = 0;
     }
 
     /* Continued message */
-    else if (msg[0] == ' ')
-    {
+    else if (msg[0] == ' ') {
         /* Collect, verify, and grow */
         len += strnfmt(buf + len, 1024 - len, "%s", msg + 1);
     }
 
     /* New message */
-    else
-    {
+    else {
         /* Collect, verify, and grow */
         len = strnfmt(buf, 1024, "%s", msg);
     }
 }
-
-
 
 #ifndef BABLOS
 
@@ -2359,102 +2156,133 @@ static void get_money_borg(void)
  * Copied from borgband by APW
  */
 
- /* Dwarves */
-static const char* dwarf_syllable1[] =
+/* Dwarves */
+/* Dwarves */
+static const char *dwarf_syllable1[] =
 {
-    "B", "D", "F", "G", "Gl", "H", "K", "L", "M", "N", "R", "S", "T", "Th", "V",
+    "B", "D", "F", "G", "Gl", "H", "K", "L", 
+    "M", "N", "R", "S", "T", "Th", "V",
 };
 
-static const char* dwarf_syllable2[] =
+static const char *dwarf_syllable2[] =
 {
     "a", "e", "i", "o", "oi", "u",
 };
 
-static const char* dwarf_syllable3[] =
+static const char *dwarf_syllable3[] =
 {
-    "bur", "fur", "gan", "gnus", "gnar", "li", "lin", "lir", "mli", "nar", "nus", "rin", "ran", "sin", "sil", "sur",
+    "bur", "fur", "gan", "gnus", "gnar", "li", "lin", "lir", "mli", "nar", 
+    "nus", "rin", "ran", "sin", "sil", "sur",
 };
 
 /* Elves */
-static const char* elf_syllable1[] =
+static const char *elf_syllable1[] =
 {
-    "Al", "An", "Bal", "Bel", "Cal", "Cel", "El", "Elr", "Elv", "Eow", "Ear", "F", "Fal", "Fel", "Fin", "G", "Gal", "Gel", "Gl", "Is", "Lan", "Leg", "Lom", "N", "Nal", "Nel",  "S", "Sal", "Sel", "T", "Tal", "Tel", "Thr", "Tin",
+    "Al", "An", "Bal", "Bel", "Cal", "Cel", "El", "Elr", "Elv", "Eow", "Ear", 
+    "F", "Fal", "Fel", "Fin", "G", "Gal", "Gel", "Gl", "Is", "Lan", "Leg", 
+    "Lom", "N", "Nal", "Nel",  "S", "Sal", "Sel", "T", "Tal", "Tel", "Thr", 
+    "Tin",
 };
 
-static const char* elf_syllable2[] =
+static const char *elf_syllable2[] =
 {
-    "a", "adrie", "ara", "e", "ebri", "ele", "ere", "i", "io", "ithra", "ilma", "il-Ga", "ili", "o", "orfi", "u", "y",
+    "a", "adrie", "ara", "e", "ebri", "ele", "ere", "i", "io", "ithra", "ilma",
+    "il-Ga", "ili", "o", "orfi", "u", "y",
 };
 
-static const char* elf_syllable3[] =
+static const char *elf_syllable3[] =
 {
-    "l", "las", "lad", "ldor", "ldur", "linde", "lith", "mir", "n", "nd", "ndel", "ndil", "ndir", "nduil", "ng", "mbor", "r", "rith", "ril", "riand", "rion", "s", "thien", "viel", "wen", "wyn",
+    "l", "las", "lad", "ldor", "ldur", "linde", "lith", "mir", "n", "nd", 
+    "ndel", "ndil", "ndir", "nduil", "ng", "mbor", "r", "rith", "ril", "riand",
+    "rion", "s", "thien", "viel", "wen", "wyn",
 };
 
 /* Gnomes */
-static const char* gnome_syllable1[] =
+static const char *gnome_syllable1[] =
 {
-    "Aar", "An", "Ar", "As", "C", "H", "Han", "Har", "Hel", "Iir", "J", "Jan", "Jar", "K", "L", "M", "Mar", "N", "Nik", "Os", "Ol", "P", "R", "S", "Sam", "San", "T", "Ter", "Tom", "Ul", "V", "W", "Y",
+    "Aar", "An", "Ar", "As", "C", "H", "Han", "Har", "Hel", "Iir", "J", "Jan", 
+    "Jar", "K", "L", "M", "Mar", "N", "Nik", "Os", "Ol", "P", "R", "S", "Sam", 
+    "San", "T", "Ter", "Tom", "Ul", "V", "W", "Y",
 };
 
-static const char* gnome_syllable2[] =
+static const char *gnome_syllable2[] =
 {
     "a", "aa",  "ai", "e", "ei", "i", "o", "uo", "u", "uu",
 };
 
-static const char* gnome_syllable3[] =
+static const char *gnome_syllable3[] =
 {
-    "ron", "re", "la", "ki", "kseli", "ksi", "ku", "ja", "ta", "na", "namari", "neli", "nika", "nikki", "nu", "nukka", "ka", "ko", "li", "kki", "rik", "po", "to", "pekka", "rjaana", "rjatta", "rjukka", "la", "lla", "lli", "mo", "nni",
+    "ron", "re", "la", "ki", "kseli", "ksi", "ku", "ja", "ta", "na", "namari", 
+    "neli", "nika", "nikki", "nu", "nukka", "ka", "ko", "li", "kki", "rik", 
+    "po", "to", "pekka", "rjaana", "rjatta", "rjukka", "la", "lla", "lli", 
+    "mo", "nni",
 };
 
 /* Hobbit */
-static const char* hobbit_syllable1[] =
+static const char *hobbit_syllable1[] =
 {
-    "B", "Ber", "Br", "D", "Der", "Dr", "F", "Fr", "G", "H", "L", "Ler", "M", "Mer", "N", "P", "Pr", "Per", "R", "S", "T", "W",
+    "B", "Ber", "Br", "D", "Der", "Dr", "F", "Fr", "G", "H", "L", "Ler", "M", 
+    "Mer", "N", "P", "Pr", "Per", "R", "S", "T", "W",
 };
 
-static const char* hobbit_syllable2[] =
+static const char *hobbit_syllable2[] =
 {
     "a", "e", "i", "ia", "o", "oi", "u",
 };
 
-static const char* hobbit_syllable3[] =
+static const char *hobbit_syllable3[] =
 {
-    "bo", "ck", "decan", "degar", "do", "doc", "go", "grin", "lba", "lbo", "lda", "ldo", "lla", "ll", "lo", "m", "mwise", "nac", "noc", "nwise", "p", "ppin", "pper", "tho", "to",
+    "bo", "ck", "decan", "degar", "do", "doc", "go", "grin", "lba", "lbo", 
+    "lda", "ldo", "lla", "ll", "lo", "m", "mwise", "nac", "noc", "nwise", "p", 
+    "ppin", "pper", "tho", "to",
 };
 
 /* Human */
-static const char* human_syllable1[] =
+static const char *human_syllable1[] =
 {
-    "Ab", "Ac", "Ad", "Af", "Agr", "Ast", "As", "Al", "Adw", "Adr", "Ar", "B", "Br", "C", "Cr", "Ch", "Cad", "D", "Dr", "Dw", "Ed", "Eth", "Et", "Er", "El", "Eow", "F", "Fr", "G", "Gr", "Gw", "Gal", "Gl", "H", "Ha", "Ib", "Jer", "K", "Ka", "Ked", "L", "Loth", "Lar", "Leg", "M", "Mir", "N", "Nyd", "Ol", "Oc", "On", "P", "Pr", "R", "Rh", "S", "Sev", "T", "Tr", "Th", "V", "Y", "Z", "W", "Wic",
+    "Ab", "Ac", "Ad", "Af", "Agr", "Ast", "As", "Al", "Adw", "Adr", "Ar", "B", 
+    "Br", "C", "Cr", "Ch", "Cad", "D", "Dr", "Dw", "Ed", "Eth", "Et", "Er", 
+    "El", "Eow", "F", "Fr", "G", "Gr", "Gw", "Gal", "Gl", "H", "Ha", "Ib", 
+    "Jer", "K", "Ka", "Ked", "L", "Loth", "Lar", "Leg", "M", "Mir", "N", "Nyd", 
+    "Ol", "Oc", "On", "P", "Pr", "R", "Rh", "S", "Sev", "T", "Tr", "Th", "V", 
+    "Y", "Z", "W", "Wic",
 };
 
-static const char* human_syllable2[] =
+static const char *human_syllable2[] =
 {
-    "a", "ae", "au", "ao", "are", "ale", "ali", "ay", "ardo", "e", "ei", "ea", "eri", "era", "ela", "eli", "enda", "erra", "i", "ia", "ie", "ire", "ira", "ila", "ili", "ira", "igo", "o", "oa", "oi", "oe", "ore", "u", "y",
+    "a", "ae", "au", "ao", "are", "ale", "ali", "ay", "ardo", "e", "ei", "ea", 
+    "eri", "era", "ela", "eli", "enda", "erra", "i", "ia", "ie", "ire", "ira", 
+    "ila", "ili", "ira", "igo", "o", "oa", "oi", "oe", "ore", "u", "y",
 };
 
-static const char* human_syllable3[] =
+static const char *human_syllable3[] =
 {
-    "a", "and", "b", "bwyn", "baen", "bard", "c", "ctred", "cred", "ch", "can", "d", "dan", "don", "der", "dric", "dfrid", "dus", "f", "g", "gord", "gan", "l", "li", "lgrin", "lin", "lith", "lath", "loth", "ld", "ldric", "ldan", "m", "mas", "mos", "mar", "mond", "n", "nydd", "nidd", "nnon", "nwan", "nyth", "nad", "nn", "nnor", "nd", "p", "r", "ron", "rd", "s", "sh", "seth", "sean", "t", "th", "tha", "tlan", "trem", "tram", "v", "vudd", "w", "wan", "win", "wyn", "wyr", "wyr", "wyth",
+    "a", "and", "b", "bwyn", "baen", "bard", "c", "ctred", "cred", "ch", "can", 
+    "d", "dan", "don", "der", "dric", "dfrid", "dus", "f", "g", "gord", "gan", 
+    "l", "li", "lgrin", "lin", "lith", "lath", "loth", "ld", "ldric", "ldan", 
+    "m", "mas", "mos", "mar", "mond", "n", "nydd", "nidd", "nnon", "nwan", 
+    "nyth", "nad", "nn", "nnor", "nd", "p", "r", "ron", "rd", "s", "sh", 
+    "seth", "sean", "t", "th", "tha", "tlan", "trem", "tram", "v", "vudd", 
+    "w", "wan", "win", "wyn", "wyr", "wyr", "wyth",
 };
 
 /* Orc */
-static const char* orc_syllable1[] =
+static const char *orc_syllable1[] =
 {
     "B", "Er", "G", "Gr", "H", "P", "Pr", "R", "V", "Vr", "T", "Tr", "M", "Dr",
 };
 
-static const char* orc_syllable2[] =
+static const char *orc_syllable2[] =
 {
     "a", "i", "o", "oo", "u", "ui",
 };
 
-static const char* orc_syllable3[] =
+static const char *orc_syllable3[] =
 {
-    "dash", "dish", "dush", "gar", "gor", "gdush", "lo", "gdish", "k", "lg", "nak", "rag", "rbag", "rg", "rk", "ng", "nk", "rt", "ol", "urk", "shnak", "mog", "mak", "rak",
+    "dash", "dish", "dush", "gar", "gor", "gdush", "lo", "gdish", "k", "lg", 
+    "nak", "rag", "rbag", "rg", "rk", "ng", "nk", "rt", "ol", "urk", "shnak", 
+    "mog", "mak", "rak",
 };
-
 
 /*
  * Random Name Generator
@@ -2466,54 +2294,92 @@ static const char* orc_syllable3[] =
 static void create_random_name(int race, char* name, size_t name_len)
 {
     /* Paranoia */
-    if (!name) return;
+    if (!name)
+        return;
 
     /* Select the monster type */
-    switch (race)
-    {
+    switch (race) {
         /* Create the monster name */
     case RACE_DWARF:
-    my_strcpy(name, dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     case RACE_ELF:
     case RACE_HALF_ELF:
     case RACE_HIGH_ELF:
-    my_strcpy(name, elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     case RACE_GNOME:
-    my_strcpy(name, gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     case RACE_HOBBIT:
-    my_strcpy(name, hobbit_syllable1[randint0(sizeof(hobbit_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, hobbit_syllable2[randint0(sizeof(hobbit_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, hobbit_syllable3[randint0(sizeof(hobbit_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            hobbit_syllable1[randint0(
+                sizeof(hobbit_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            hobbit_syllable2[randint0(
+                sizeof(hobbit_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            hobbit_syllable3[randint0(
+                sizeof(hobbit_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     case RACE_HUMAN:
     case RACE_DUNADAN:
-    my_strcpy(name, human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     case RACE_HALF_ORC:
     case RACE_HALF_TROLL:
     case RACE_KOBOLD:
-    my_strcpy(name, orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))], name_len);
-    my_strcat(name, orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))], name_len);
-    my_strcat(name, orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))], name_len);
-    break;
+        my_strcpy(name,
+            orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char*))],
+            name_len);
+        my_strcat(name,
+            orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char*))],
+            name_len);
+        break;
     /* Create an empty name */
     default:
-    name[0] = '\0';
-    break;
+        name[0] = '\0';
+        break;
     }
 }
-
 
 /*
  * Init players with some belongings
@@ -2524,7 +2390,7 @@ static void player_outfit_borg(struct player* p)
 {
     int i;
     const struct start_item* si;
-    struct object* obj, * known_obj;
+    struct object *obj, *known_obj;
 
     /* Currently carrying nothing */
     p->upkeep->total_weight = 0;
@@ -2535,14 +2401,17 @@ static void player_outfit_borg(struct player* p)
     p->obj_k->ac = 1;
     for (i = 1; i < OF_MAX; i++) {
         struct obj_property* prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
-        if (prop->subtype == OFT_LIGHT) of_on(p->obj_k->flags, i);
-        if (prop->subtype == OFT_DIG) of_on(p->obj_k->flags, i);
-        if (prop->subtype == OFT_THROW) of_on(p->obj_k->flags, i);
+        if (prop->subtype == OFT_LIGHT)
+            of_on(p->obj_k->flags, i);
+        if (prop->subtype == OFT_DIG)
+            of_on(p->obj_k->flags, i);
+        if (prop->subtype == OFT_THROW)
+            of_on(p->obj_k->flags, i);
     }
 
     /* Give the player starting equipment */
     for (si = p->class->start_items; si; si = si->next) {
-        int num = rand_range(si->min, si->max);
+        int num                  = rand_range(si->min, si->max);
         struct object_kind* kind = lookup_kind(si->tval, si->sval);
         assert(kind);
 
@@ -2557,22 +2426,22 @@ static void player_outfit_borg(struct player* p)
         /* Exclude if configured to do so based on birth options. */
         if (si->eopts) {
             bool included = true;
-            int eind = 0;
+            int eind      = 0;
 
             while (si->eopts[eind] && included) {
                 if (si->eopts[eind] > 0) {
                     if (p->opts.opt[si->eopts[eind]]) {
                         included = false;
                     }
-                }
-                else {
+                } else {
                     if (!p->opts.opt[-si->eopts[eind]]) {
                         included = false;
                     }
                 }
                 ++eind;
             }
-            if (!included) continue;
+            if (!included)
+                continue;
         }
 
         /* Prepare a new item */
@@ -2581,11 +2450,11 @@ static void player_outfit_borg(struct player* p)
         obj->number = num;
         obj->origin = ORIGIN_BIRTH;
 
-        known_obj = object_new();
-        obj->known = known_obj;
+        known_obj   = object_new();
+        obj->known  = known_obj;
         object_set_base_known(p, obj);
         object_flavor_aware(p, obj);
-        obj->known->pval = obj->pval;
+        obj->known->pval   = obj->pval;
         obj->known->effect = obj->effect;
         obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
@@ -2624,15 +2493,17 @@ static void borg_roll_hp(void)
     while (true) {
         /* Roll the hitpoint values */
         for (i = 1; i < PY_MAX_LEVEL; i++) {
-            j = randint1(player->hitdie);
+            j                    = randint1(player->hitdie);
             player->player_hp[i] = player->player_hp[i - 1] + j;
         }
 
         /* XXX Could also require acceptable "mid-level" hitpoints */
 
         /* Require "valid" hitpoints at highest level */
-        if (player->player_hp[PY_MAX_LEVEL - 1] < min_value) continue;
-        if (player->player_hp[PY_MAX_LEVEL - 1] > max_value) continue;
+        if (player->player_hp[PY_MAX_LEVEL - 1] < min_value)
+            continue;
+        if (player->player_hp[PY_MAX_LEVEL - 1] > max_value)
+            continue;
 
         /* Acceptable */
         break;
@@ -2649,11 +2520,11 @@ void resurrect_borg(void)
     /* save the existing dungeon.  It is cleared later but needs to */
     /* be blank when  creating the new player */
     struct chunk* sv_cave = cave;
-    cave = NULL;
+    cave                  = NULL;
 
     /* Cheat death */
-    player->is_dead = false;
-    borg_skill[BI_MAXDEPTH] = 0;
+    player->is_dead          = false;
+    borg_skill[BI_MAXDEPTH]  = 0;
     borg_skill[BI_MAXCLEVEL] = 1;
 
     /* Flush message buffer */
@@ -2664,8 +2535,7 @@ void resurrect_borg(void)
     borg_flush();
 
     /* remove the spell counters */
-    for (i = 0; i < player->class->magic.total_spells; i++)
-    {
+    for (i = 0; i < player->class->magic.total_spells; i++) {
         /* get the magics */
         borg_magic* as = &borg_magics[i];
         /* reset the counter */
@@ -2675,14 +2545,15 @@ void resurrect_borg(void)
     /*** Wipe the player ***/
     player_init(player);
 
-    borg_skill[BI_ISCUT] = borg_skill[BI_ISSTUN] = borg_skill[BI_ISHEAVYSTUN] = borg_skill[BI_ISIMAGE] = borg_skill[BI_ISSTUDY] = false;
+    borg_skill[BI_ISCUT] = borg_skill[BI_ISSTUN] = borg_skill[BI_ISHEAVYSTUN]
+        = borg_skill[BI_ISIMAGE] = borg_skill[BI_ISSTUDY] = false;
 
     /* reset our panel clock */
     time_this_panel = 1;
 
     /* reset our vault/unique check */
-    vault_on_level = false;
-    unique_on_level = 0;
+    vault_on_level    = false;
+    unique_on_level   = 0;
     scaryguy_on_level = false;
 
     /* reset our breeder flag */
@@ -2703,7 +2574,7 @@ void resurrect_borg(void)
     flavor_init();
 
     /** Roll up a new character **/
-    struct player_race* p_race = NULL;
+    struct player_race* p_race   = NULL;
     struct player_class* p_class = NULL;
     if (borg_cfg[BORG_RESPAWN_RACE] != -1)
         p_race = player_id2race(borg_cfg[BORG_RESPAWN_RACE]);
@@ -2716,7 +2587,7 @@ void resurrect_borg(void)
     player_generate(player, p_race, p_class, false);
 
     /* The dungeon is not ready nor is the player */
-    character_dungeon = false;
+    character_dungeon   = false;
     character_generated = false;
 
     /* Start in town */
@@ -2728,7 +2599,7 @@ void resurrect_borg(void)
     /* Embody */
     memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
     my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
-    p->body.name = string_make(buf);
+    p->body.name  = string_make(buf);
     p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
     for (i = 0; i < p->body.count; i++) {
         p->body.slots[i].type = bodies[p->race->body].slots[i].type;
@@ -2737,7 +2608,8 @@ void resurrect_borg(void)
     }
 
     /* Get a random name */
-    create_random_name(player->race->ridx, player->full_name, sizeof(player->full_name));
+    create_random_name(
+        player->race->ridx, player->full_name, sizeof(player->full_name));
 
     /* Give the player some money */
     player->au = player->au_birth = z_info->start_gold;
@@ -2761,7 +2633,7 @@ void resurrect_borg(void)
 
     /* generate town */
     player->upkeep->generate_level = true;
-    player->upkeep->playing = true;
+    player->upkeep->playing        = true;
 
     struct command fake_cmd;
     /* fake up a command */
@@ -2818,12 +2690,13 @@ void resurrect_borg(void)
     borg_skill[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
     borg_skill[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
     borg_skill[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-    borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-    borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-    borg_hero = (player->timed[TMD_HERO] ? true : false);
-    borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-    borg_berserk = (player->timed[TMD_SHERO] ? true : false);
-    if (player->timed[TMD_SINVIS]) borg_see_inv = 10000;
+    borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+    borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+    borg_hero             = (player->timed[TMD_HERO] ? true : false);
+    borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+    borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
+    if (player->timed[TMD_SINVIS])
+        borg_see_inv = 10000;
 
     /* Message */
     borg_note("# Respawning");
@@ -2840,7 +2713,8 @@ void resurrect_borg(void)
     character_generated = true;
 
     /* Mark savefile as borg cheater */
-    if (!(player->noscore & NOSCORE_BORG)) player->noscore |= NOSCORE_BORG;
+    if (!(player->noscore & NOSCORE_BORG))
+        player->noscore |= NOSCORE_BORG;
 
     /* Done.  Play on */
 }
@@ -2852,7 +2726,7 @@ void resurrect_borg(void)
  * A special function hook (see "util.c") which allows the Borg to take
  * control of the "inkey()" function, and substitute in fake keypresses.
  */
-extern struct keypress(*inkey_hack)(int flush_first);
+extern struct keypress (*inkey_hack)(int flush_first);
 
 /*
  * This function lets the Borg "steal" control from the user.
@@ -2900,18 +2774,17 @@ static struct keypress borg_inkey_hack(int flush_first)
 
     char buf[1024];
 
-    bool borg_prompt;  /* ajg  For now we can just use this locally.
-                           in the 283 borg he uses this to optimize knowing if
-                           we are waiting at a prompt for info */
-                           /* Locate the cursor */
+    bool borg_prompt; /* ajg  For now we can just use this locally.
+                          in the 283 borg he uses this to optimize knowing if
+                          we are waiting at a prompt for info */
+    /* Locate the cursor */
     (void)Term_locate(&x, &y);
 
     /* Refresh the screen */
     Term_fresh();
 
     /* Deactivate */
-    if (!borg_active)
-    {
+    if (!borg_active) {
         /* Message */
         borg_note("# Removing keypress hook");
 
@@ -2925,12 +2798,9 @@ static struct keypress borg_inkey_hack(int flush_first)
         flush(0, 0, 0);
 
         /* Restore user key mode */
-        if (key_mode == KEYMAP_MODE_ROGUE)
-        {
+        if (key_mode == KEYMAP_MODE_ROGUE) {
             option_set("rogue_like_commands", true);
-        }
-        else if (key_mode == KEYMAP_MODE_ORIG)
-        {
+        } else if (key_mode == KEYMAP_MODE_ORIG) {
             option_set("rogue_like_commands", false);
         }
 
@@ -2941,13 +2811,10 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
-
     /* Mega-Hack -- flush keys */
-    if (flush_first)
-    {
+    if (flush_first) {
         /* Only flush if needed */
-        if (borg_inkey(false) != 0)
-        {
+        if (borg_inkey(false) != 0) {
             /* Message */
             borg_note("# Flushing keypress buffer");
 
@@ -2955,32 +2822,25 @@ static struct keypress borg_inkey_hack(int flush_first)
             borg_flush();
 
             /* Cycle a few times to catch up if needed */
-            if (time_this_panel > 250)
-            {
+            if (time_this_panel > 250) {
                 borg_respawning = 3;
             }
         }
     }
 
-
-
     /* Assume no prompt/message is available */
     borg_prompt = false;
-
 
     /* Mega-Hack -- check for possible prompts/messages */
     /* If the first four characters on the message line all */
     /* have the same attribute (or are all spaces), and they */
     /* are not all spaces (ascii value 0x20)... */
-    if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) &&
-        (t_a != COLOUR_DARK) &&
-        (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' '))
-    {
+    if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) && (t_a != COLOUR_DARK)
+        && (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' ')) {
         /* Assume a prompt/message is available */
         borg_prompt = true;
     }
-    if (borg_prompt && streq(buf, "Type"))
-    {
+    if (borg_prompt && streq(buf, "Type")) {
         borg_prompt = false;
     }
 
@@ -2989,11 +2849,8 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* And the game does not want a command... */
     /* And the cursor is on the top line... */
     /* And the text acquired above is "Die?" */
-    if (borg_prompt && !inkey_flag &&
-        (y == 0) && (x >= 4) &&
-        streq(buf, "Die?") &&
-        borg_cheat_death)
-    {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 4) && streq(buf, "Die?")
+        && borg_cheat_death) {
         /* Flush messages */
         borg_parse(NULL);
 
@@ -3005,8 +2862,9 @@ static struct keypress borg_inkey_hack(int flush_first)
 
 #ifndef BABLOS
         /* Dump the Character Map*/
-        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
-            strstr(player->died_from, "starvation")) borg_write_map(false);
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+            || strstr(player->died_from, "starvation"))
+            borg_write_map(false);
 
         /* Log the death */
         borg_log_death();
@@ -3024,31 +2882,25 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
-    /* with 292, there is a flush(0, 0, 0) introduced as it asks for confirmation.
-     * This flush is messing up the borg.  This will allow the borg to
-     * work around the flush
-     * Attempt to catch "Attempt it anyway? [y/n]"
+    /* with 292, there is a flush(0, 0, 0) introduced as it asks for
+     * confirmation. This flush is messing up the borg.  This will allow the
+     * borg to work around the flush Attempt to catch "Attempt it anyway? [y/n]"
      */
-    if (borg_prompt && !inkey_flag &&
-        (y == 0) && (x >= 4) &&
-        streq(buf, "Atte"))
-    {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 4)
+        && streq(buf, "Atte")) {
         /* Return the confirmation */
         borg_note("# Confirming use of Spell/Prayer.");
         key.code = 'y';
         return key;
     }
 
-    /* with 292, there is a flush(0, 0, 0) introduced as it asks for confirmation.
-     * This flush is messing up the borg.  This will allow the borg to
-     * work around the flush
-     * This is used only with emergency use of spells like Magic Missile
-     * Attempt to catch "Direction (5 old target"
+    /* with 292, there is a flush(0, 0, 0) introduced as it asks for
+     * confirmation. This flush is messing up the borg.  This will allow the
+     * borg to work around the flush This is used only with emergency use of
+     * spells like Magic Missile Attempt to catch "Direction (5 old target"
      */
-    if (borg_prompt && !inkey_flag && borg_confirm_target &&
-        (y == 0) && (x >= 4) &&
-        streq(buf, "Dire"))
-    {
+    if (borg_prompt && !inkey_flag && borg_confirm_target && (y == 0)
+        && (x >= 4) && streq(buf, "Dire")) {
         /* reset the flag */
         borg_confirm_target = false;
         /* Return queued target */
@@ -3057,11 +2909,9 @@ static struct keypress borg_inkey_hack(int flush_first)
     }
 
     /* Wearing two rings.  Place this on the left hand */
-    if (borg_prompt && !inkey_flag &&
-        (y == 0) && (x >= 12) &&
-        (0 == borg_what_text(0, y, 12, &t_a, buf)) &&
-        (streq(buf, "(Equip: c-d,")))
-    {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
+        && (0 == borg_what_text(0, y, 12, &t_a, buf))
+        && (streq(buf, "(Equip: c-d,"))) {
         /* Left hand */
         key.code = 'c';
         return key;
@@ -3069,13 +2919,12 @@ static struct keypress borg_inkey_hack(int flush_first)
 
     /* ***MEGA-HACK***  */
     /* This will be hit if the borg uses an unidentified effect that has */
-    /* EF_SELECT/multiple effects. Always pick "one of the following at random" */
+    /* EF_SELECT/multiple effects. Always pick "one of the following at random"
+     */
     /* when the item is used post ID, an effect will be selected */
-    if (borg_prompt && !inkey_flag && !borg_inkey(false) &&
-        (y == 1) &&
-        (0 == borg_what_text(0, 0, 13, &t_a, buf)) &&
-        streq(buf, "Which effect?"))
-    {
+    if (borg_prompt && !inkey_flag && !borg_inkey(false) && (y == 1)
+        && (0 == borg_what_text(0, 0, 13, &t_a, buf))
+        && streq(buf, "Which effect?")) {
         /* the first selection (a) is random */
         key.code = 'a';
         return key;
@@ -3083,24 +2932,21 @@ static struct keypress borg_inkey_hack(int flush_first)
 
     /* prompt for stepping in lava.  This should be avoided but */
     /* if the borg is stuck, give him a pass */
-    if (borg_prompt && !inkey_flag &&
-        (y == 0) && (x >= 12) &&
-        (0 == borg_what_text(0, y, 13, &t_a, buf)) &&
-        (streq(buf, "The lava will") || 
-         streq(buf, "Lava blocks y")))
-    {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
+        && (0 == borg_what_text(0, y, 13, &t_a, buf))
+        && (streq(buf, "The lava will") || streq(buf, "Lava blocks y"))) {
         /* yes step in */
         key.code = 'y';
         return key;
     }
 
     /* Mega-Hack -- Handle death */
-    if (player->is_dead)
-    {
+    if (player->is_dead) {
 #ifndef BABLOS
         /* Print the map */
-        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
-            strstr(player->died_from, "starvation"))  borg_write_map(false);
+        if (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+            || strstr(player->died_from, "starvation"))
+            borg_write_map(false);
 
         /* Log death */
         borg_log_death();
@@ -3123,21 +2969,17 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
-
     /* Mega-Hack -- Catch "-more-" messages */
     /* If there is text on the first line... */
     /* And the game does not want a command... */
     /* And the cursor is on the top line... */
     /* And there is text before the cursor... */
     /* And that text is "-more-" */
-    if (borg_prompt && !inkey_flag &&
-        (y == 0) && (x >= 7) &&
-        (0 == borg_what_text(x - 7, y, 7, &t_a, buf)) &&
-        (streq(buf, " -more-")))
-    {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 7)
+        && (0 == borg_what_text(x - 7, y, 7, &t_a, buf))
+        && (streq(buf, " -more-"))) {
         /* Get the message */
-        if (0 == borg_what_text(0, 0, x - 7, &t_a, buf))
-        {
+        if (0 == borg_what_text(0, 0, x - 7, &t_a, buf)) {
             /* Parse it */
             borg_parse(buf);
         }
@@ -3148,8 +2990,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 
     /* in the odd case where a we get here before the message */
     /* about cheating death comes up.  */
-    if (!character_dungeon)
-    {
+    if (!character_dungeon) {
         /* do nothing */
         key.code = ' ';
         return key;
@@ -3158,15 +2999,16 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* Mega-Hack -- catch normal messages */
     /* If there is text on the first line... */
     /* And the game wants a command */
-    if (borg_prompt && inkey_flag)
-    {
+    if (borg_prompt && inkey_flag) {
         /* Get the message(s) */
-        if (0 == borg_what_text(0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buf))
-        {
+        if (0
+            == borg_what_text(
+                0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buf)) {
             int k = strlen(buf);
 
             /* Strip trailing spaces */
-            while ((k > 0) && (buf[k - 1] == ' ')) k--;
+            while ((k > 0) && (buf[k - 1] == ' '))
+                k--;
 
             /* Terminate */
             buf[k] = '\0';
@@ -3178,7 +3020,6 @@ static struct keypress borg_inkey_hack(int flush_first)
         /* Clear the message */
         key.code = ' ';
         return key;
-
     }
     /* Flush messages */
     borg_parse(NULL);
@@ -3193,19 +3034,18 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
-
     /* Check for user abort */
     (void)Term_inkey(&ch_evt, false, true);
 
     /* Hack to keep him active in town. */
-    if (borg_skill[BI_CDEPTH] >= 1) borg_in_shop = false;
+    if (borg_skill[BI_CDEPTH] >= 1)
+        borg_in_shop = false;
 
-
-    if (!borg_in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0 &&
-        ch_evt.key.code != 10)
-    {
+    if (!borg_in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
+        && ch_evt.key.code != 10) {
         /* Oops */
-        borg_note(format("# User key press <%d><%c>", ch_evt.key.code, ch_evt.key.code));
+        borg_note(format(
+            "# User key press <%d><%c>", ch_evt.key.code, ch_evt.key.code));
         borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
         borg_oops("user abort");
 
@@ -3214,9 +3054,12 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
-    /* for some reason, selling and buying in the store sets the event handler to Select. */
-    if (ch_evt.type & EVT_SELECT) ch_evt.type = EVT_KBRD;
-    if (ch_evt.type & EVT_MOVE) ch_evt.type = EVT_KBRD;
+    /* for some reason, selling and buying in the store sets the event handler
+     * to Select. */
+    if (ch_evt.type & EVT_SELECT)
+        ch_evt.type = EVT_KBRD;
+    if (ch_evt.type & EVT_MOVE)
+        ch_evt.type = EVT_KBRD;
 
     /* Save the system random info */
     borg_rand_quick = Rand_quick;
@@ -3227,14 +3070,14 @@ static struct keypress borg_inkey_hack(int flush_first)
     Rand_value = borg_rand_local;
 
     /* Don't interrupt our own resting or a repeating command */
-    if (player->upkeep->resting || cmd_get_nrepeats() > 0)
-    {
+    if (player->upkeep->resting || cmd_get_nrepeats() > 0) {
         key.type = EVT_NONE;
         return key;
     }
 
     /* Think */
-    while (!borg_think()) /* loop */;
+    while (!borg_think()) /* loop */
+        ;
 
     /* DVE- Update the status screen */
     borg_status();
@@ -3250,7 +3093,6 @@ static struct keypress borg_inkey_hack(int flush_first)
     if (borg_step && (!--borg_step))
         borg_cancel = true;
 
-
     /* Check for key */
     borg_ch = borg_inkey(true);
 
@@ -3259,7 +3101,6 @@ static struct keypress borg_inkey_hack(int flush_first)
         key.code = borg_ch;
         return key;
     }
-
 
     /* Oops */
     borg_oops("normal abort");
@@ -3274,21 +3115,18 @@ static struct keypress borg_inkey_hack(int flush_first)
  */
 static void borg_prt_binary(uint32_t flags, int row, int col)
 {
-    int        	i;
-    uint32_t        bitmask;
+    int i;
+    uint32_t bitmask;
 
     /* Scan the flags */
-    for (i = bitmask = 1; i <= 32; i++, bitmask *= 2)
-    {
+    for (i = bitmask = 1; i <= 32; i++, bitmask *= 2) {
         /* Dump set bits */
-        if (flags & bitmask)
-        {
+        if (flags & bitmask) {
             Term_putch(col++, row, COLOUR_BLUE, '*');
         }
 
         /* Dump unset bits */
-        else
-        {
+        else {
             Term_putch(col++, row, COLOUR_WHITE, '-');
         }
     }
@@ -3318,24 +3156,30 @@ static void borg_display_item(struct object* item2, int n)
     prt(item->desc, 2, j);
 
     prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
-        item->kind, item->level,
-        item->tval, item->sval), 4, j);
+            item->kind, item->level, item->tval, item->sval),
+        4, j);
 
     prt(format("number = %-3d  wgt = %-6d  ac = %-5d    damage = %dd%d",
-        item->iqty, item->weight,
-        item->ac, item->dd, item->ds), 5, j);
+            item->iqty, item->weight, item->ac, item->dd, item->ds),
+        5, j);
 
     prt(format("pval = %-5d  toac = %-5d  tohit = %-4d  todam = %-4d",
-        item->pval, item->to_a, item->to_h, item->to_d), 6, j);
+            item->pval, item->to_a, item->to_h, item->to_d),
+        6, j);
 
-    prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can uncurse = %d",
-        item->art_idx, item->ego_idx, (long)item->value, item->cursed, item->uncursable), 7, j);
+    prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can "
+               "uncurse = %d",
+            item->art_idx, item->ego_idx, (long)item->value, item->cursed,
+            item->uncursable),
+        7, j);
 
-    prt(format("ident = %d      timeout = %-d",
-        item->ident, item->timeout), 8, j);
+    prt(format("ident = %d      timeout = %-d", item->ident, item->timeout), 8,
+        j);
 
     /* maybe print the inscription */
-    prt(format("Inscription: %s, chance: %d", borg_get_note(item), borg_skill[BI_DEV] - item->level), 9, j);
+    prt(format("Inscription: %s, chance: %d", borg_get_note(item),
+            borg_skill[BI_DEV] - item->level),
+        9, j);
 
     prt("+------------FLAGS1------------+", 10, j);
     prt("AFFECT..........SLAY.......BRAND", 11, j);
@@ -3343,7 +3187,8 @@ static void borg_display_item(struct object* item2, int n)
     prt("siwdcc  ssidsasmnvudotgddduoclio", 13, j);
     prt("tnieoh  trnipthgiinmrrnrrmniierl", 14, j);
     prt("rtsxna..lcfgdkttmldncltggndsdced", 15, j);
-    if (item->ident) borg_prt_binary(f[0], 16, j);
+    if (item->ident)
+        borg_prt_binary(f[0], 16, j);
 
     prt("+------------FLAGS2------------+", 17, j);
     prt("SUST........IMM.RESIST.........", 18, j);
@@ -3351,7 +3196,8 @@ static void borg_display_item(struct object* item2, int n)
     prt("siwdcc      cilocliooeialoshnecd", 20, j);
     prt("tnieoh      irelierliatrnnnrethi", 21, j);
     prt("rtsxna......decddcedsrekdfddxhss", 22, j);
-    if (item->ident) borg_prt_binary(f[1], 23, j);
+    if (item->ident)
+        borg_prt_binary(f[1], 23, j);
 
     prt("+------------FLAGS3------------+", 10, j + 32);
     prt("s   ts h     tadiiii   aiehs  hp", 11, j + 32);
@@ -3362,17 +3208,16 @@ static void borg_display_item(struct object* item2, int n)
     prt("ghigavaiu   aoveclio  saanyo rrr", 16, j + 32);
     prt("seteticfe   craxierl  etropd sss", 17, j + 32);
     prt("trenhstel   tttpdced  detwes eee", 18, j + 32);
-    if (item->ident) borg_prt_binary(f[2], 19, j + 32);
+    if (item->ident)
+        borg_prt_binary(f[2], 19, j + 32);
 }
 
-static int
-borg_getval(char** string, const char* val)
+static int borg_getval(char** string, const char* val)
 {
-    char    string2[4];
-    int     retval;
+    char string2[4];
+    int retval;
 
-    if (!prefix(*string, val))
-    {
+    if (!prefix(*string, val)) {
         return -1000;
     }
     (*string) += strlen(val);
@@ -3582,48 +3427,36 @@ static bool borg_load_formula(char* string)
 }
 #endif
 
-static bool add_power_item(int class_num,
-    int depth_num,
-    int cnd_num,
-    int range_to,
-    int range_from,
-    bool each,
-    int item_num,
-    int power)
+static bool add_power_item(int class_num, int depth_num, int cnd_num,
+    int range_to, int range_from, bool each, int item_num, int power)
 {
-    if ((class_num > MAX_CLASSES &&
-        class_num != 999) ||
-        depth_num >= z_info->max_depth ||
-        item_num >= (z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX) ||
-        range_to < range_from)
-    {
+    if ((class_num > MAX_CLASSES && class_num != 999)
+        || depth_num >= z_info->max_depth
+        || item_num >= (z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX)
+        || range_to < range_from) {
         borg_note("Malformed item power in borg.txt: values out of range");
         return false;
     }
     /* The class 999 is for all classes */
-    if (class_num == 999)
-    {
-        for (class_num = 0; class_num < MAX_CLASSES; class_num++)
-        {
+    if (class_num == 999) {
+        for (class_num = 0; class_num < MAX_CLASSES; class_num++) {
             borg_power_item[class_num][n_pwr[class_num]].depth = depth_num;
-            borg_power_item[class_num][n_pwr[class_num]].cnd = cnd_num;
-            borg_power_item[class_num][n_pwr[class_num]].item = item_num;
+            borg_power_item[class_num][n_pwr[class_num]].cnd   = cnd_num;
+            borg_power_item[class_num][n_pwr[class_num]].item  = item_num;
             borg_power_item[class_num][n_pwr[class_num]].power = power;
-            borg_power_item[class_num][n_pwr[class_num]].from = range_from;
-            borg_power_item[class_num][n_pwr[class_num]].to = range_to;
-            borg_power_item[class_num][n_pwr[class_num]].each = each;
+            borg_power_item[class_num][n_pwr[class_num]].from  = range_from;
+            borg_power_item[class_num][n_pwr[class_num]].to    = range_to;
+            borg_power_item[class_num][n_pwr[class_num]].each  = each;
             n_pwr[class_num]++;
         }
-    }
-    else
-    {
+    } else {
         borg_power_item[class_num][n_pwr[class_num]].depth = depth_num;
-        borg_power_item[class_num][n_pwr[class_num]].cnd = cnd_num;
-        borg_power_item[class_num][n_pwr[class_num]].item = item_num;
+        borg_power_item[class_num][n_pwr[class_num]].cnd   = cnd_num;
+        borg_power_item[class_num][n_pwr[class_num]].item  = item_num;
         borg_power_item[class_num][n_pwr[class_num]].power = power;
-        borg_power_item[class_num][n_pwr[class_num]].from = range_from;
-        borg_power_item[class_num][n_pwr[class_num]].to = range_to;
-        borg_power_item[class_num][n_pwr[class_num]].each = each;
+        borg_power_item[class_num][n_pwr[class_num]].from  = range_from;
+        borg_power_item[class_num][n_pwr[class_num]].to    = range_to;
+        borg_power_item[class_num][n_pwr[class_num]].each  = each;
         n_pwr[class_num]++;
     }
     return true;
@@ -3631,157 +3464,112 @@ static bool add_power_item(int class_num,
 
 static bool borg_load_power(char* string)
 {
-    int class_num = -1;
-    int depth_num = -1;
-    int cnd_num = -1;
-    int range_to = -1;
+    int class_num  = -1;
+    int depth_num  = -1;
+    int cnd_num    = -1;
+    int range_to   = -1;
     int range_from = -1;
-    bool each = false;
-    int item_num = -1;
-    int power = -1;
+    bool each      = false;
+    int item_num   = -1;
+    int power      = -1;
     int x;
 
-
-    if (-1000 == (class_num = borg_getval(&string, "_CLASS")))
-    {
+    if (-1000 == (class_num = borg_getval(&string, "_CLASS"))) {
         borg_note("Malformed item power in borg.txt: missing _CLASS");
         return false;
     }
-    if (-1000 == (depth_num = borg_getval(&string, "_DEPTH")))
-    {
+    if (-1000 == (depth_num = borg_getval(&string, "_DEPTH"))) {
         borg_note("Malformed item power in borg.txt: missing _DEPTH");
         return false;
     }
-    if (-1000 == (cnd_num = borg_getval(&string, "_CND")))
-    {
+    if (-1000 == (cnd_num = borg_getval(&string, "_CND"))) {
         /* condition is optional */
         cnd_num = -1;
     }
-    if (-1000 == (range_from = borg_getval(&string, "_RANGE")))
-    {
+    if (-1000 == (range_from = borg_getval(&string, "_RANGE"))) {
         borg_note("Malformed item power in borg.txt: missing _RANGE");
         return false;
     }
-    if (-1000 == (range_to = borg_getval(&string, "TO")))
-    {
+    if (-1000 == (range_to = borg_getval(&string, "TO"))) {
         borg_note("Malformed item power in borg.txt: messed up _RANGE");
         return false;
     }
 
-    if (-1000 != (item_num = borg_getval(&string, "_FORMULA")))
-    {
-        if (range_to != 999 || range_from != 0)
-        {
-            borg_note("Malformed item power in borg.txt: range must be 0-999 formulas");
+    if (-1000 != (item_num = borg_getval(&string, "_FORMULA"))) {
+        if (range_to != 999 || range_from != 0) {
+            borg_note("Malformed item power in borg.txt: range must be 0-999 "
+                      "formulas");
             return false;
         }
-        return add_power_item(class_num,
-            depth_num,
-            cnd_num,
-            range_to,
-            range_from,
-            each,
-            -1,
-            item_num);
+        return add_power_item(class_num, depth_num, cnd_num, range_to,
+            range_from, each, -1, item_num);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_ITEM")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_ITEM"))) {
         string++;
         sscanf(string, "%d", &power);
         if (strstr(string, "EACH"))
             each = true;
 
-        return add_power_item(class_num,
-            depth_num,
-            cnd_num,
-            range_to,
-            range_from,
-            each,
-            item_num,
-            power);
+        return add_power_item(class_num, depth_num, cnd_num, range_to,
+            range_from, each, item_num, power);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_WITEM")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_WITEM"))) {
         string++;
         sscanf(string, "%d", &power);
         if (strstr(string, "EACH"))
             each = true;
 
-        return add_power_item(class_num,
-            depth_num,
-            cnd_num,
-            range_to,
-            range_from,
-            each,
-            z_info->k_max + item_num,
-            power);
+        return add_power_item(class_num, depth_num, cnd_num, range_to,
+            range_from, each, z_info->k_max + item_num, power);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_ARTIFACT")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_ARTIFACT"))) {
         string++;
         sscanf(string, "%d", &power);
         if (strstr(string, "EACH"))
             each = true;
         item_num += z_info->k_max + z_info->k_max;
-        return add_power_item(class_num,
-            depth_num,
-            cnd_num,
-            range_to,
-            range_from,
-            each,
-            item_num,
-            power);
+        return add_power_item(class_num, depth_num, cnd_num, range_to,
+            range_from, each, item_num, power);
     }
 
-    for (x = 0; x < BI_MAX; x++)
-    {
+    for (x = 0; x < BI_MAX; x++) {
 
-        if (prefix(string, prefix_pref[x]))
-        {
+        if (prefix(string, prefix_pref[x])) {
             string += strlen(prefix_pref[x]);
             item_num = z_info->k_max + z_info->k_max + z_info->a_max + x;
             string++;
             sscanf(string, "%d", &power);
             if (strstr(string, "EACH"))
                 each = true;
-            return add_power_item(class_num,
-                depth_num,
-                cnd_num,
-                range_to,
-                range_from,
-                each,
-                item_num,
-                power);
+            return add_power_item(class_num, depth_num, cnd_num, range_to,
+                range_from, each, item_num, power);
         }
     }
     borg_note("Malformed item power in borg.txt");
     return false;
 }
-static bool add_required_item(int class_num, int depth_num, int item_num, int number_items)
+static bool add_required_item(
+    int class_num, int depth_num, int item_num, int number_items)
 {
-    if ((class_num > MAX_CLASSES &&
-        class_num != 999) ||
-        depth_num >= z_info->max_depth ||
-        item_num >= (z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX))
-    {
+    if ((class_num > MAX_CLASSES && class_num != 999)
+        || depth_num >= z_info->max_depth
+        || item_num
+               >= (z_info->k_max + z_info->k_max + z_info->a_max + BI_MAX)) {
         borg_note("Malformed item requirment in borg.txt: value out of range");
         return false;
     }
     /* The class 999 is for all classes */
-    if (class_num == 999)
-    {
-        for (class_num = 0; class_num < MAX_CLASSES; class_num++)
-        {
+    if (class_num == 999) {
+        for (class_num = 0; class_num < MAX_CLASSES; class_num++) {
             borg_required_item[class_num][n_req[class_num]].depth = depth_num;
-            borg_required_item[class_num][n_req[class_num]].item = item_num;
-            borg_required_item[class_num][n_req[class_num]].number = number_items;
+            borg_required_item[class_num][n_req[class_num]].item  = item_num;
+            borg_required_item[class_num][n_req[class_num]].number
+                = number_items;
             n_req[class_num]++;
         }
-    }
-    else
-    {
-        borg_required_item[class_num][n_req[class_num]].depth = depth_num;
-        borg_required_item[class_num][n_req[class_num]].item = item_num;
+    } else {
+        borg_required_item[class_num][n_req[class_num]].depth  = depth_num;
+        borg_required_item[class_num][n_req[class_num]].item   = item_num;
         borg_required_item[class_num][n_req[class_num]].number = number_items;
         n_req[class_num]++;
     }
@@ -3790,55 +3578,50 @@ static bool add_required_item(int class_num, int depth_num, int item_num, int nu
 
 static bool borg_load_requirement(char* string)
 {
-    int class_num = -1;
-    int depth_num = -1;
-    int item_num = -1;
+    int class_num    = -1;
+    int depth_num    = -1;
+    int item_num     = -1;
     int number_items = -1;
-    int x = -1;
+    int x            = -1;
 
-    if (-1000 == (class_num = borg_getval(&string, "_CLASS")))
-    {
+    if (-1000 == (class_num = borg_getval(&string, "_CLASS"))) {
         borg_note("Malformed item requirment in borg.txt");
         return false;
     }
-    if (-1000 == (depth_num = borg_getval(&string, "_DEPTH")))
-    {
+    if (-1000 == (depth_num = borg_getval(&string, "_DEPTH"))) {
         borg_note("Malformed item requirment in borg.txt");
         return false;
     }
-    if (-1000 != (item_num = borg_getval(&string, "_FORMULA")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_FORMULA"))) {
         return add_required_item(class_num, depth_num, -1, item_num);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_ITEM")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_ITEM"))) {
         string++;
         sscanf(string, "%d", &number_items);
         return add_required_item(class_num, depth_num, item_num, number_items);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_WITEM")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_WITEM"))) {
         string++;
         sscanf(string, "%d", &number_items);
-        return add_required_item(class_num, depth_num, z_info->k_max + item_num, number_items);
+        return add_required_item(
+            class_num, depth_num, z_info->k_max + item_num, number_items);
     }
-    if (-1000 != (item_num = borg_getval(&string, "_ARTIFACT")))
-    {
+    if (-1000 != (item_num = borg_getval(&string, "_ARTIFACT"))) {
         string++;
         sscanf(string, "%d", &number_items);
-        return add_required_item(class_num, depth_num, z_info->k_max + z_info->k_max + item_num, number_items);
+        return add_required_item(class_num, depth_num,
+            z_info->k_max + z_info->k_max + item_num, number_items);
     }
 
-    for (x = 0; x < BI_MAX; x++)
-    {
+    for (x = 0; x < BI_MAX; x++) {
 
-        if (prefix(string, prefix_pref[x]))
-        {
+        if (prefix(string, prefix_pref[x])) {
             string += strlen(prefix_pref[x]);
             item_num = z_info->k_max + z_info->k_max + z_info->a_max + x;
             string++;
             sscanf(string, "%d", &number_items);
-            return add_required_item(class_num, depth_num, item_num, number_items);
+            return add_required_item(
+                class_num, depth_num, item_num, number_items);
         }
     }
     borg_note("Malformed item requirment in borg.txt");
@@ -3856,14 +3639,17 @@ static int borg_item_cmp(const void* item1, const void* item2)
 }
 
 /*
-* read a line from the config file and parse the setting value, if there is one.
-*/
-static bool borg_proc_setting(int setting, const char * setting_string, char type, const char* line)
+ * read a line from the config file and parse the setting value, if there is
+ * one.
+ */
+static bool borg_proc_setting(
+    int setting, const char* setting_string, char type, const char* line)
 {
     bool negative = false;
 
     /* skip leading space */
-    while (*line == ' ') line++;
+    while (*line == ' ')
+        line++;
     if (!prefix_i(line, setting_string))
         return false;
 
@@ -3874,38 +3660,28 @@ static bool borg_proc_setting(int setting, const char * setting_string, char typ
     /* value=true or */
     /* value=1 or */
     /* value y */
-    while (*line)
-    {
+    while (*line) {
         char ch = *line;
-        if (ch == ' ' || ch == '=')
-        {
+        if (ch == ' ' || ch == '=') {
             line++;
             continue;
         }
 
-        if (type == 'b')
-        {
-            if (ch == 'T' ||
-                ch == 't' ||
-                ch == '1' ||
-                ch == 'Y' ||
-                ch == 'y')
+        if (type == 'b') {
+            if (ch == 'T' || ch == 't' || ch == '1' || ch == 'Y' || ch == 'y')
                 borg_cfg[setting] = true;
             else
                 borg_cfg[setting] = false;
 
             break;
         }
-        if (type == 'i')
-        {
-            if (ch == '-')
-            {
+        if (type == 'i') {
+            if (ch == '-') {
                 negative = true;
                 line++;
                 continue;
             }
-            if (isdigit(ch))
-            {
+            if (isdigit(ch)) {
                 borg_cfg[setting] = atoi(line);
                 break;
             }
@@ -3923,51 +3699,48 @@ static bool borg_proc_setting(int setting, const char * setting_string, char typ
  */
 static void init_borg_txt_file(void)
 {
-    struct borg_setting
-    {
+    struct borg_setting {
         const char* setting_string;
-        const char  setting_type;  /* b (bool) or i (int) */
-        int         default_value;
+        const char setting_type; /* b (bool) or i (int) */
+        int default_value;
     };
 
     /*
      * Borg settings information, ScreenSaver or continual play mode;
      */
-    struct borg_setting borg_settings[] =
-    {
-        { "borg_verbose", 'b', false},
-        { "borg_munchkin_start", 'b', false},
-        { "borg_munchkin_level", 'i', 12},
-        { "borg_munchkin_depth", 'i', 16},
-        { "borg_worships_damage", 'b', false},
-        { "borg_worships_speed", 'b', false},
-        { "borg_worships_hp", 'b', false},
-        { "borg_worships_mana", 'b', false},
-        { "borg_worships_ac", 'b', false},
-        { "borg_worships_gold", 'b', false},
-        { "borg_plays_risky", 'b', false},
-        { "borg_kills_uniques", 'b', false},
-        { "borg_uses_swaps", 'b', true},
-        { "borg_uses_dynamic_calcs", 'b', false},
-        { "borg_slow_optimizehome", 'b', false},
-        { "borg_stop_dlevel", 'i', 128},
-        { "borg_stop_clevel", 'i', 51},
-        { "borg_no_deeper", 'i', 127},
-        { "borg_stop_king", 'b', true},
-        { "borg_respawn_winners", 'b', false},
-        { "borg_respawn_class", 'i', -1},
-        { "borg_respawn_race", 'i', -1},
-        { "borg_chest_fail_tolerance", 'i', 7},
-        { "borg_delay_factor", 'i', 0},
-        { "borg_money_scum_amount", 'i', 0},
-        { "borg_self_scum", 'b', true},
-        { "borg_lunal_mode", 'b', false},
-        { "borg_self_lunal", 'b', false},
-        { "borg_enchant_limit", 'i', 12},
-        { "borg_dump_level", 'i', 1},
-        { "borg_save_death", 'i', 1},
-        { 0, 0, 0 }
-    };
+    struct borg_setting borg_settings[] = { 
+        { "borg_verbose", 'b', false },
+        { "borg_munchkin_start", 'b', false },
+        { "borg_munchkin_level", 'i', 12 }, 
+        { "borg_munchkin_depth", 'i', 16 },
+        { "borg_worships_damage", 'b', false },
+        { "borg_worships_speed", 'b', false },
+        { "borg_worships_hp", 'b', false },
+        { "borg_worships_mana", 'b', false },
+        { "borg_worships_ac", 'b', false },
+        { "borg_worships_gold", 'b', false },
+        { "borg_plays_risky", 'b', false },
+        { "borg_kills_uniques", 'b', false }, 
+        { "borg_uses_swaps", 'b', true },
+        { "borg_uses_dynamic_calcs", 'b', false },
+        { "borg_slow_optimizehome", 'b', false },
+        { "borg_stop_dlevel", 'i', 128 }, 
+        { "borg_stop_clevel", 'i', 51 },
+        { "borg_no_deeper", 'i', 127 }, 
+        { "borg_stop_king", 'b', true },
+        { "borg_respawn_winners", 'b', false },
+        { "borg_respawn_class", 'i', -1 }, 
+        { "borg_respawn_race", 'i', -1 },
+        { "borg_chest_fail_tolerance", 'i', 7 },
+        { "borg_delay_factor", 'i', 0 }, 
+        { "borg_money_scum_amount", 'i', 0 },
+        { "borg_self_scum", 'b', true }, 
+        { "borg_lunal_mode", 'b', false },
+        { "borg_self_lunal", 'b', false }, 
+        { "borg_enchant_limit", 'i', 12 },
+        { "borg_dump_level", 'i', 1 }, 
+        { "borg_save_death", 'i', 1 },
+        { 0, 0, 0 } };
 
     ang_file* fp;
 
@@ -3981,25 +3754,26 @@ static void init_borg_txt_file(void)
 
     /* note: C_MAKE automaticly 0 inits things */
 
-    for (i = 0; i < MAX_CLASSES; i++)
-    {
-        borg_required_item[i] = mem_zalloc(400 * sizeof(req_item)); /* externalize the 400 later */
-        n_req[i] = 0;
-        borg_power_item[i] = mem_zalloc(400 * sizeof(power_item)); /* externalize the 400 later */
+    for (i = 0; i < MAX_CLASSES; i++) {
+        borg_required_item[i] = mem_zalloc(
+            400 * sizeof(req_item)); /* externalize the 400 later */
+        n_req[i]           = 0;
+        borg_power_item[i] = mem_zalloc(
+            400 * sizeof(power_item)); /* externalize the 400 later */
         n_pwr[i] = 0;
     }
-    for (i = 0; i < 999; i++)
-    {
+    for (i = 0; i < 999; i++) {
         formula[i] = 0;
     }
-    borg_has = mem_zalloc(size_obj * sizeof(int));
-    borg_skill = borg_has + z_info->k_max;
+    borg_has        = mem_zalloc(size_obj * sizeof(int));
+    borg_skill      = borg_has + z_info->k_max;
     borg_activation = mem_zalloc(z_info->act_max * sizeof(int));
 
     /* a couple of spot checks on settings definitiosn */
-    if (!streq(borg_settings[BORG_MUNCHKIN_LEVEL].setting_string, "borg_munchkin_level") ||
-        !streq(borg_settings[BORG_RESPAWN_RACE].setting_string, "borg_respawn_race"))
-    {
+    if (!streq(borg_settings[BORG_MUNCHKIN_LEVEL].setting_string,
+            "borg_munchkin_level")
+        || !streq(borg_settings[BORG_RESPAWN_RACE].setting_string,
+            "borg_respawn_race")) {
         msg("borg settings structures not correct.  aborting. ");
         borg_init_failure = true;
     }
@@ -4010,32 +3784,31 @@ static void init_borg_txt_file(void)
     fp = file_open(buf, MODE_READ, -1);
 
     /* No file, use defaults*/
-    if (!fp)
-    {
+    if (!fp) {
         /* Complain */
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
-        msg("writing borg.txt to the \\user\\ subdirectory with default values");
+        msg("writing borg.txt to the \\user\\ subdirectory with default "
+            "values");
         msg("Which is: %s", buf);
         event_signal(EVENT_MESSAGE_FLUSH);
 
         fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-        if (!fp)
-        {
+        if (!fp) {
             msg("*****WARNING***** unable to write default BORG.TXT file!");
             return;
         }
         file_putf(fp, "# BORG.txt default settings \n");
-        file_putf(fp, "# A more descriptive version of this file is delivered. \n");
+        file_putf(
+            fp, "# A more descriptive version of this file is delivered. \n");
         file_putf(fp, "# Check your original install for borg.txt and \n");
         file_putf(fp, "# replace this one with the delivered version. \n\n");
 
-        for (i = 0; i < BORG_MAX_SETTINGS; i++)
-        {
+        for (i = 0; i < BORG_MAX_SETTINGS; i++) {
             if (borg_settings[i].setting_type == 'b')
                 file_putf(fp, "%s = %s\n", borg_settings[i].setting_string,
                     borg_settings[i].default_value ? "TRUE" : "FALSE");
             if (borg_settings[i].setting_type == 'i')
-                file_putf(fp, "%s = %d\n", borg_settings[i].setting_string, 
+                file_putf(fp, "%s = %d\n", borg_settings[i].setting_string,
                     borg_settings[i].default_value);
         }
         file_close(fp);
@@ -4050,47 +3823,42 @@ static void init_borg_txt_file(void)
         borg_cfg[i] = borg_settings[i].default_value;
 
     /* Parse the file */
-    while (file_getl(fp, buf, sizeof(buf) - 1))
-    {
+    while (file_getl(fp, buf, sizeof(buf) - 1)) {
         /* Skip comments and blank lines */
-        if (!buf[0] || (buf[0] == '#')) continue;
+        if (!buf[0] || (buf[0] == '#'))
+            continue;
 
         /* Chop the buffer */
         buf[sizeof(buf) - 1] = '\0';
 
-        for (i = 0; i < BORG_MAX_SETTINGS; i++)
-        {
+        for (i = 0; i < BORG_MAX_SETTINGS; i++) {
             if (borg_proc_setting(i, borg_settings[i].setting_string,
-                borg_settings[i].setting_type, buf))
+                    borg_settings[i].setting_type, buf))
                 break;
         }
 
         /* other settings */
-        if (prefix_i(buf, "REQ"))
-        {
+        if (prefix_i(buf, "REQ")) {
             if (!borg_load_requirement(buf + strlen("REQ")))
                 borg_note(buf);
             continue;
         }
-        if (prefix_i(buf, "FORMULA"))
-        {
+        if (prefix_i(buf, "FORMULA")) {
 #if false
 // For now ignore the dynamic formulas in borg.txt ... they are waaaay out of date !FIX !TODO !AJG
             if (!borg_load_formula(buf + strlen("FORMULA")))
                 borg_note(buf);
-#endif 
+#endif
             continue;
         }
-        if (prefix_i(buf, "CND"))
-        {
+        if (prefix_i(buf, "CND")) {
 #if false
             if (!borg_load_formula(buf + strlen("CND")))
                 borg_note(buf);
-#endif 
+#endif
             continue;
         }
-        if (prefix_i(buf, "POWER"))
-        {
+        if (prefix_i(buf, "POWER")) {
             if (!borg_load_power(buf + strlen("POWER")))
                 borg_note(buf);
 
@@ -4101,9 +3869,9 @@ static void init_borg_txt_file(void)
     /* Close it */
     file_close(fp);
 
-    if (borg_cfg[BORG_USES_DYNAMIC_CALCS])
-    {
-        msg("Dynamic calcs (borg_uses_dynamic-calcs) is configured on but currently ignored.");
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
+        msg("Dynamic calcs (borg_uses_dynamic-calcs) is configured on but "
+            "currently ignored.");
         borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
     }
 
@@ -4111,9 +3879,9 @@ static void init_borg_txt_file(void)
     borg_lunal_mode = borg_cfg[BORG_LUNAL_MODE];
 
     /* a few sanity range checks */
-    if (borg_cfg[BORG_MUNCHKIN_LEVEL] <= 1) 
+    if (borg_cfg[BORG_MUNCHKIN_LEVEL] <= 1)
         borg_cfg[BORG_MUNCHKIN_LEVEL] = 1;
-    if (borg_cfg[BORG_MUNCHKIN_LEVEL] >= 50) 
+    if (borg_cfg[BORG_MUNCHKIN_LEVEL] >= 50)
         borg_cfg[BORG_MUNCHKIN_LEVEL] = 50;
 
     if (borg_cfg[BORG_MUNCHKIN_DEPTH] <= 1)
@@ -4126,20 +3894,19 @@ static void init_borg_txt_file(void)
     if (borg_cfg[BORG_ENCHANT_LIMIT] >= 15)
         borg_cfg[BORG_ENCHANT_LIMIT] = 15;
 
-    if (borg_cfg[BORG_RESPAWN_RACE] >= MAX_RACES ||
-        borg_cfg[BORG_RESPAWN_RACE] < -1)
+    if (borg_cfg[BORG_RESPAWN_RACE] >= MAX_RACES
+        || borg_cfg[BORG_RESPAWN_RACE] < -1)
         borg_cfg[BORG_RESPAWN_RACE] = 0;
 
-    if (borg_cfg[BORG_RESPAWN_CLASS] >= MAX_CLASSES ||
-        borg_cfg[BORG_RESPAWN_CLASS] < -1)
+    if (borg_cfg[BORG_RESPAWN_CLASS] >= MAX_CLASSES
+        || borg_cfg[BORG_RESPAWN_CLASS] < -1)
         borg_cfg[BORG_RESPAWN_CLASS] = 0;
-
 
     for (i = 0; i < MAX_CLASSES; i++)
         qsort(borg_required_item[i], n_req[i], sizeof(req_item), borg_item_cmp);
 
     /* make sure it continues to run if reset */
-    if (borg_cfg[BORG_RESPAWN_WINNERS]) 
+    if (borg_cfg[BORG_RESPAWN_WINNERS])
         borg_cfg[BORG_STOP_KING] = false;
 
     /* Success */
@@ -4159,74 +3926,78 @@ static void clean_borg_txt_file(void)
     borg_has = NULL;
     mem_free(borg_activation);
     borg_activation = NULL;
-    borg_skill = NULL;
+    borg_skill      = NULL;
     for (i = 0; i < MAX_CLASSES; ++i) {
         mem_free(borg_power_item[i]);
         borg_power_item[i] = NULL;
-        n_pwr[i] = 0;
+        n_pwr[i]           = 0;
         mem_free(borg_required_item[i]);
         borg_required_item[i] = NULL;
-        n_req[i] = 0;
+        n_req[i]              = 0;
     }
 }
 
 /* all parts equal or same nullness */
-static bool borg_read_message_equal(struct borg_read_message* msg1, struct borg_read_message* msg2)
+static bool borg_read_message_equal(
+    struct borg_read_message* msg1, struct borg_read_message* msg2)
 {
-    if (((msg1->message_p1 && msg2->message_p1 && streq(msg1->message_p1, msg2->message_p1)) ||
-        (!msg1->message_p1 && !msg2->message_p1)) &&
-        ((msg1->message_p2 && msg2->message_p2 && streq(msg1->message_p2, msg2->message_p2)) ||
-            (!msg1->message_p2 && !msg2->message_p2)) &&
-        ((msg1->message_p3 && msg2->message_p3 && streq(msg1->message_p3, msg2->message_p3)) ||
-            (!msg1->message_p3 && !msg2->message_p3)))
+    if (((msg1->message_p1 && msg2->message_p1
+             && streq(msg1->message_p1, msg2->message_p1))
+            || (!msg1->message_p1 && !msg2->message_p1))
+        && ((msg1->message_p2 && msg2->message_p2
+                && streq(msg1->message_p2, msg2->message_p2))
+            || (!msg1->message_p2 && !msg2->message_p2))
+        && ((msg1->message_p3 && msg2->message_p3
+                && streq(msg1->message_p3, msg2->message_p3))
+            || (!msg1->message_p3 && !msg2->message_p3)))
         return true;
     return false;
 }
 
-static void insert_msg(struct borg_read_messages* msgs, struct borg_read_message* msg, int spell_number)
+static void insert_msg(struct borg_read_messages* msgs,
+    struct borg_read_message* msg, int spell_number)
 {
     int i;
     bool found_dup = false;
 
     /* this way we don't have to pre-create the array */
-    if (msgs->messages == NULL)
-    {
+    if (msgs->messages == NULL) {
         msgs->allocated = 10;
-        msgs->messages = mem_alloc(sizeof(struct borg_read_message) * msgs->allocated);
+        msgs->messages
+            = mem_alloc(sizeof(struct borg_read_message) * msgs->allocated);
         msgs->index = mem_alloc(sizeof(int) * msgs->allocated);
     }
 
-    if (msg == NULL)
-    {
+    if (msg == NULL) {
         msgs->messages[msgs->count].message_p1 = NULL;
         msgs->messages[msgs->count].message_p2 = NULL;
         msgs->messages[msgs->count].message_p3 = NULL;
         msgs->count++;
         /* shrink array down, we are done*/
-        msgs->messages = mem_realloc(msgs->messages, sizeof(struct borg_read_message) * msgs->count);
-        msgs->index = mem_realloc(msgs->index, sizeof(int) * msgs->count);
+        msgs->messages = mem_realloc(
+            msgs->messages, sizeof(struct borg_read_message) * msgs->count);
+        msgs->index     = mem_realloc(msgs->index, sizeof(int) * msgs->count);
         msgs->allocated = msgs->count;
         return;
     }
 
-    for (i = 0; i < msgs->count; i++)
-    {
-        if (borg_read_message_equal(&msgs->messages[i], msg))
-        {
+    for (i = 0; i < msgs->count; i++) {
+        if (borg_read_message_equal(&msgs->messages[i], msg)) {
             found_dup = true;
             break;
         }
     }
-    if (!found_dup)
-    {
-        memcpy(&(msgs->messages[msgs->count]), msg, sizeof(struct borg_read_message));
+    if (!found_dup) {
+        memcpy(&(msgs->messages[msgs->count]), msg,
+            sizeof(struct borg_read_message));
         msgs->index[msgs->count] = spell_number;
         msgs->count++;
-        if (msgs->count == msgs->allocated)
-        {
+        if (msgs->count == msgs->allocated) {
             msgs->allocated += 10;
-            msgs->messages = mem_realloc(msgs->messages, sizeof(struct borg_read_message) * msgs->allocated);
-            msgs->index = mem_realloc(msgs->index, sizeof(int) * msgs->allocated);
+            msgs->messages = mem_realloc(msgs->messages,
+                sizeof(struct borg_read_message) * msgs->allocated);
+            msgs->index
+                = mem_realloc(msgs->index, sizeof(int) * msgs->allocated);
         }
     } else {
         string_free(msg->message_p1);
@@ -4235,7 +4006,7 @@ static void insert_msg(struct borg_read_messages* msgs, struct borg_read_message
     }
 }
 
-static void clean_msgs(struct borg_read_messages *msgs)
+static void clean_msgs(struct borg_read_messages* msgs)
 {
     int i;
 
@@ -4247,8 +4018,8 @@ static void clean_msgs(struct borg_read_messages *msgs)
     mem_free(msgs->messages);
     msgs->messages = NULL;
     mem_free(msgs->index);
-    msgs->index = NULL;
-    msgs->count = 0;
+    msgs->index     = NULL;
+    msgs->count     = 0;
     msgs->allocated = 0;
 }
 
@@ -4273,15 +4044,15 @@ static char* borg_trim_lead_space(char* orig)
  * " hits ", " followers with ", " ax and "
  * hopefully this is enough to keep the messages as unique as possible
  */
-static void borg_load_read_message(char* message, struct borg_read_message* read_message)
+static void borg_load_read_message(
+    char* message, struct borg_read_message* read_message)
 {
     read_message->message_p1 = NULL;
     read_message->message_p2 = NULL;
     read_message->message_p3 = NULL;
 
-    char* suffix = strchr(message, '}');
-    if (!suffix)
-    {
+    char* suffix             = strchr(message, '}');
+    if (!suffix) {
         /* no variables, use message as is */
         read_message->message_p1 = string_make(borg_trim_lead_space(message));
         return;
@@ -4292,14 +4063,14 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
     else
         suffix = message;
     char* var = strchr(suffix, '{');
-    if (!var)
-    {
+    if (!var) {
         /* one variable, use message post variable */
         read_message->message_p1 = string_make(borg_trim_lead_space(suffix));
         return;
     }
-    while (suffix[0] == ' ') suffix++;
-    int part_len = strlen(suffix) - strlen(var);
+    while (suffix[0] == ' ')
+        suffix++;
+    int part_len             = strlen(suffix) - strlen(var);
     read_message->message_p1 = string_make(format("%.*s", part_len, suffix));
     suffix += part_len;
     suffix = strchr(var, '}');
@@ -4307,21 +4078,21 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
         return; /* this should never happen but ... if a string is { with no }*/
     suffix++;
     var = strchr(suffix, '{');
-    if (!var)
-    {
-        while (suffix[0] == ' ') suffix++;
+    if (!var) {
+        while (suffix[0] == ' ')
+            suffix++;
 
         /* two variables, ignore if last part is just . */
         if (strlen(suffix) && !streq(suffix, "."))
             read_message->message_p2 = string_make(suffix);
         return;
     }
-    while (suffix[0] == ' ') suffix++;
+    while (suffix[0] == ' ')
+        suffix++;
     part_len = strlen(suffix) - strlen(var);
-    if (part_len)
-    {
-        read_message->message_p2 = string_make(borg_trim_lead_space(
-            format("%.*s", part_len, suffix)));
+    if (part_len) {
+        read_message->message_p2 = string_make(
+            borg_trim_lead_space(format("%.*s", part_len, suffix)));
     }
     suffix += part_len;
     suffix = strchr(var, '}');
@@ -4329,35 +4100,33 @@ static void borg_load_read_message(char* message, struct borg_read_message* read
         return; /* this should never happen but ... if a string is { with no }*/
     suffix++;
     var = strchr(suffix, '{');
-    if (!var)
-    {
-        while (suffix[0] == ' ') suffix++;
+    if (!var) {
+        while (suffix[0] == ' ')
+            suffix++;
         /* three variables, ignore if last part is just . */
-        if (strlen(suffix) && !streq(suffix, "."))
-        {
-            if (read_message->message_p2)
-            {
-                read_message->message_p3 = string_make(borg_trim_lead_space(suffix));
-            }
-            else
-            {
-                read_message->message_p2 = string_make(borg_trim_lead_space(suffix));
+        if (strlen(suffix) && !streq(suffix, ".")) {
+            if (read_message->message_p2) {
+                read_message->message_p3
+                    = string_make(borg_trim_lead_space(suffix));
+            } else {
+                read_message->message_p2
+                    = string_make(borg_trim_lead_space(suffix));
             }
         }
         return;
     }
-    while (suffix[0] == ' ') suffix++;
+    while (suffix[0] == ' ')
+        suffix++;
     part_len = strlen(suffix) - strlen(var);
     if (read_message->message_p2)
-        read_message->message_p3 = string_make(borg_trim_lead_space(
-            format("%.*s", part_len, suffix)));
+        read_message->message_p3 = string_make(
+            borg_trim_lead_space(format("%.*s", part_len, suffix)));
     else
-        read_message->message_p2 = string_make(borg_trim_lead_space(
-            format("%.*s", part_len, suffix)));
+        read_message->message_p2 = string_make(
+            borg_trim_lead_space(format("%.*s", part_len, suffix)));
 
     return;
 }
-
 
 static void borg_init_spell_messages(void)
 {
@@ -4365,24 +4134,21 @@ static void borg_init_spell_messages(void)
     const struct monster_spell_level* spell_level;
     struct borg_read_message read_message;
 
-    while (spell)
-    {
+    while (spell) {
         spell_level = spell->level;
-        while (spell_level)
-        {
-            if (spell_level->blind_message)
-            {
-                borg_load_read_message(spell_level->blind_message, &read_message);
+        while (spell_level) {
+            if (spell_level->blind_message) {
+                borg_load_read_message(
+                    spell_level->blind_message, &read_message);
                 insert_msg(&spell_invis_msgs, &read_message, spell->index);
             }
-            if (spell_level->message)
-            {
+            if (spell_level->message) {
                 borg_load_read_message(spell_level->message, &read_message);
                 insert_msg(&spell_msgs, &read_message, spell->index);
             }
-            if (spell_level->miss_message)
-            {
-                borg_load_read_message(spell_level->miss_message, &read_message);
+            if (spell_level->miss_message) {
+                borg_load_read_message(
+                    spell_level->miss_message, &read_message);
                 insert_msg(&spell_msgs, &read_message, spell->index);
             }
             spell_level = spell_level->next;
@@ -4396,18 +4162,18 @@ static void borg_init_spell_messages(void)
 
 /* HACK pluralize ([|] parsing) code stolen from mon-msg.c */
 /* State machine constants for get_message_text() */
-#define MSG_PARSE_NORMAL	0
-#define MSG_PARSE_SINGLE	1
-#define MSG_PARSE_PLURAL	2
+#define MSG_PARSE_NORMAL 0
+#define MSG_PARSE_SINGLE 1
+#define MSG_PARSE_PLURAL 2
 
 static char* borg_get_parsed_pain(const char* pain, bool do_plural)
 {
     size_t buflen = strlen(pain) + 1;
-    char* buf = mem_zalloc(buflen);
+    char* buf     = mem_zalloc(buflen);
 
-    int state = MSG_PARSE_NORMAL;
+    int state     = MSG_PARSE_NORMAL;
     size_t maxlen = strlen(pain);
-    size_t pos = 1;
+    size_t pos    = 1;
 
     /* for the borg, always start with a space */
     buf[0] = ' ';
@@ -4423,16 +4189,13 @@ static char* borg_get_parsed_pain(const char* pain, bool do_plural)
          */
         if (state == MSG_PARSE_NORMAL && cur == '[') {
             state = MSG_PARSE_SINGLE;
-        }
-        else if (state == MSG_PARSE_SINGLE && cur == '|') {
+        } else if (state == MSG_PARSE_SINGLE && cur == '|') {
             state = MSG_PARSE_PLURAL;
-        }
-        else if (state != MSG_PARSE_NORMAL && cur == ']') {
+        } else if (state != MSG_PARSE_NORMAL && cur == ']') {
             state = MSG_PARSE_NORMAL;
-        }
-        else if (state == MSG_PARSE_NORMAL ||
-            (state == MSG_PARSE_SINGLE && do_plural == false) ||
-            (state == MSG_PARSE_PLURAL && do_plural == true)) {
+        } else if (state == MSG_PARSE_NORMAL
+                   || (state == MSG_PARSE_SINGLE && do_plural == false)
+                   || (state == MSG_PARSE_PLURAL && do_plural == true)) {
             /* Copy the characters according to the mode */
             buf[pos++] = cur;
         }
@@ -4443,32 +4206,29 @@ static char* borg_get_parsed_pain(const char* pain, bool do_plural)
 static void borg_insert_pain(const char* pain, int* capacity, int* count)
 {
     char* new_message;
-    if (*capacity <= (*count) + 2)
-    {
+    if (*capacity <= (*count) + 2) {
         *capacity += 14;
         suffix_pain = mem_realloc(suffix_pain, sizeof(char*) * (*capacity));
     }
 
-    new_message = borg_get_parsed_pain(pain, false);
+    new_message             = borg_get_parsed_pain(pain, false);
     suffix_pain[(*count)++] = new_message;
-    new_message = borg_get_parsed_pain(pain, true);
+    new_message             = borg_get_parsed_pain(pain, true);
     suffix_pain[(*count)++] = new_message;
 }
 
 static void borg_init_pain_messages(void)
 {
     int capacity = 1;
-    int count = 0;
+    int count    = 0;
     int idx, i;
     struct monster_pain* pain;
 
     suffix_pain = mem_alloc(sizeof(char*) * capacity);
 
-    for (idx = 0; idx < z_info->mp_max; idx++)
-    {
+    for (idx = 0; idx < z_info->mp_max; idx++) {
         pain = &pain_messages[idx];
-        for (i = 0; i < 7; i++)
-        {
+        for (i = 0; i < 7; i++) {
             if (pain == NULL || pain->messages[i] == NULL)
                 break;
             borg_insert_pain(pain->messages[i], &capacity, &count);
@@ -4484,14 +4244,11 @@ static void borg_init_hit_by_messages(void)
 {
     struct borg_read_message read_message;
 
-    for (int i = 0; i < z_info->blow_methods_max; i++)
-    {
+    for (int i = 0; i < z_info->blow_methods_max; i++) {
         struct blow_message* messages = blow_methods[i].messages;
 
-        while (messages)
-        {
-            if (messages->act_msg)
-            {
+        while (messages) {
+            if (messages->act_msg) {
                 borg_load_read_message(messages->act_msg, &read_message);
                 insert_msg(&suffix_hit_by, &read_message, blow_methods[i].msgt);
             }
@@ -4528,7 +4285,8 @@ static void borg_clean_messages(void)
 static void borg_reinit_options(void)
 {
     /* Save current key mode */
-    key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+    key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE
+                                                : KEYMAP_MODE_ORIG;
 
     /* The Borg uses the original keypress codes */
     option_set("rogue_like_commands", false);
@@ -4568,8 +4326,8 @@ static void borg_reinit_options(void)
 /*
  * Tell the borg that the game was closed.
  */
-static void borg_leave_game(game_event_type ev_type, game_event_data *ev_data,
-        void *user)
+static void borg_leave_game(
+    game_event_type ev_type, game_event_data* ev_data, void* user)
 {
     assert(ev_type == EVENT_LEAVE_GAME && ev_data == NULL && user == NULL);
     game_closed = true;
@@ -4597,17 +4355,15 @@ void borg_init_9(void)
 
     /*** Hack -- initialize some stuff ***/
     borg_required_item = mem_zalloc(MAX_CLASSES * sizeof(req_item*));
-    n_req = mem_zalloc(MAX_CLASSES * sizeof(int));
-    borg_power_item = mem_zalloc(MAX_CLASSES * sizeof(power_item*));
-    n_pwr = mem_zalloc(MAX_CLASSES * sizeof(int));
-
+    n_req              = mem_zalloc(MAX_CLASSES * sizeof(int));
+    borg_power_item    = mem_zalloc(MAX_CLASSES * sizeof(power_item*));
+    n_pwr              = mem_zalloc(MAX_CLASSES * sizeof(int));
 
     /*** Hack -- initialize borg.ini options ***/
 
     /* Message */
     prt("Initializing the Borg... (borg.txt)", 0, 0);
     init_borg_txt_file();
-
 
     /*** Hack -- initialize game options ***/
 
@@ -4618,19 +4374,16 @@ void borg_init_9(void)
     Term_fresh();
 
     /* Make sure it rolls up a new guy at death */
-    if (screensaver)
-    {
+    if (screensaver) {
         /* We need the borg to keep playing after he dies */
         option_set("cheat_live", true);
     }
 
 #ifndef ALLOW_BORG_GRAPHICS
-    if (!borg_graphics)
-    {
+    if (!borg_graphics) {
         int i, j;
         /* Reset the # and % -- Scan the features */
-        for (i = 1; i < FEAT_MAX; i++)
-        {
+        for (i = 1; i < FEAT_MAX; i++) {
             struct feature* f_ptr = &f_info[i];
 #if false
             /* Skip non-features */
@@ -4646,15 +4399,13 @@ void borg_init_9(void)
                 feat_x_attr[j][i] = f_ptr->d_attr;
                 feat_x_char[j][i] = f_ptr->d_char;
             }
-
         }
     }
 #endif
 
 #ifdef USE_GRAPHICS
     /* The Borg can't work with graphics on, so switch it off */
-    if (use_graphics)
-    {
+    if (use_graphics) {
         /* Reset to ASCII mode */
         use_graphics = false;
         arg_graphics = false;
@@ -4678,14 +4429,14 @@ void borg_init_9(void)
     /* Hack -- flush it */
     Term_fresh();
 
-
     /*** Cheat / Panic ***/
 
     /* more cheating */
     borg_cheat_death = false;
 
     /* set the continous play mode if the game cheat death is on */
-    if (OPT(player, cheat_live)) borg_cheat_death = true;
+    if (OPT(player, cheat_live))
+        borg_cheat_death = true;
 
     /*** Initialize ***/
 
@@ -4802,7 +4553,7 @@ void borg_clean_9(void)
     borg_required_item = NULL;
 }
 
-/* 
+/*
  * Convert an inventory index into a one character label.
  *
  * Note that the label does NOT distinguish inven/equip.
@@ -4810,7 +4561,7 @@ void borg_clean_9(void)
 static char borg_index_to_label(int i)
 {
     /* Indexes for "inven" are easy */
-    if (i < INVEN_WIELD) 
+    if (i < INVEN_WIELD)
         return all_letters_nohjkl[i];
 
     /* Indexes for "equip" are offset */
@@ -4843,19 +4594,18 @@ void borg_write_map(bool ask)
     char o_name[80];
 
     /* Process the player name */
-    for (i = 0; player->full_name[i]; i++)
-    {
+    for (i = 0; player->full_name[i]; i++) {
         char c = player->full_name[i];
 
         /* No control characters */
-        if (iscntrl(c))
-        {
+        if (iscntrl(c)) {
             /* Illegal characters */
             quit_fmt("Illegal control char (0x%02X) in player name", c);
         }
 
         /* Convert all non-alphanumeric symbols */
-        if (!isalpha(c) && !isdigit(c)) c = '_';
+        if (!isalpha(c) && !isdigit(c))
+            c = '_';
 
         /* Build "file_name" */
         buf[i] = c;
@@ -4871,31 +4621,30 @@ void borg_write_map(bool ask)
     path_build(buf2, 1024, ANGBAND_DIR_USER, buf);
 
     /* XXX XXX XXX Get the name and open the map file */
-    if (ask && get_string("Borg map File: ", buf2, 70))
-    {
+    if (ask && get_string("Borg map File: ", buf2, 70)) {
         /* Open a new file */
         borg_map_file = file_open(buf2, MODE_WRITE, FTYPE_TEXT);
 
         /* Failure */
-        if (!borg_map_file) msg("Cannot open that file.");
-    }
-    else if (!ask) borg_map_file = file_open(buf2, MODE_WRITE, FTYPE_TEXT);
+        if (!borg_map_file)
+            msg("Cannot open that file.");
+    } else if (!ask)
+        borg_map_file = file_open(buf2, MODE_WRITE, FTYPE_TEXT);
 
     file_putf(borg_map_file, "%s the %s %s, Level %d/%d\n", player->full_name,
-        player->race->name,
-        player->class->name,
-        player->lev, player->max_lev);
+        player->race->name, player->class->name, player->lev, player->max_lev);
 
-    file_putf(borg_map_file, "Exp: %lu  Gold: %lu  Turn: %lu\n", (long)(player->max_exp + (100 * player->max_depth)), (long)player->au, (long)turn);
-    file_putf(borg_map_file, "Killed on level: %d (max. %d) by %s\n\n", player->depth, player->max_depth, player->died_from);
+    file_putf(borg_map_file, "Exp: %lu  Gold: %lu  Turn: %lu\n",
+        (long)(player->max_exp + (100 * player->max_depth)), (long)player->au,
+        (long)turn);
+    file_putf(borg_map_file, "Killed on level: %d (max. %d) by %s\n\n",
+        player->depth, player->max_depth, player->died_from);
     file_putf(borg_map_file, "Borg Compile Date: %s\n", borg_engine_date);
 
-    line = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
+    line    = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
     ch_line = mem_zalloc((DUNGEON_WID + 1) * sizeof(char));
-    for (i = 0; i < DUNGEON_HGT; i++)
-    {
-        for (j = 0; j < DUNGEON_WID; j++)
-        {
+    for (i = 0; i < DUNGEON_HGT; i++) {
+        for (j = 0; j < DUNGEON_WID; j++) {
             wchar_t ch;
 
             borg_grid* ag = &borg_grids[i][j];
@@ -4908,39 +4657,34 @@ void borg_write_map(bool ask)
             ch = ' ';
 
             /* Known grids */
-            if (ag->feat)
-            {
+            if (ag->feat) {
                 ch = f_info[ag->feat].d_char;
             }
 
             /* Known Items */
-            if (ag->take)
-            {
+            if (ag->take) {
                 borg_take* take = &borg_takes[ag->take];
-                if (take->kind)
-                {
+                if (take->kind) {
                     struct object_kind* k_ptr = take->kind;
-                    ch = k_ptr->d_char;
+                    ch                        = k_ptr->d_char;
                 }
             }
 
             /* UnKnown Monsters */
-            if (m_idx)
-            {
+            if (m_idx) {
                 ch = '&';
             }
 
             /* Known Monsters */
-            if (ag->kill)
-            {
-                borg_kill* kill = &borg_kills[ag->kill];
+            if (ag->kill) {
+                borg_kill* kill            = &borg_kills[ag->kill];
                 struct monster_race* r_ptr = &r_info[kill->r_idx];
-                ch = r_ptr->d_char;
+                ch                         = r_ptr->d_char;
             }
 
-
             /* The Player */
-            if ((i == c_y) && (j == c_x)) ch = '@';
+            if ((i == c_y) && (j == c_x))
+                ch = '@';
 
             line[j] = ch;
         }
@@ -4955,34 +4699,31 @@ void borg_write_map(bool ask)
     mem_free(ch_line);
 
     /* Known/Seen monsters */
-    for (i = 1; i < borg_kills_nxt; i++)
-    {
+    for (i = 1; i < borg_kills_nxt; i++) {
         borg_kill* kill = &borg_kills[i];
 
         /* Skip dead monsters */
-        if (!kill->r_idx) continue;
+        if (!kill->r_idx)
+            continue;
 
         /* Note */
         file_putf(borg_map_file, "monster '%s' (%d) at (%d,%d) speed:%d \n",
-            (r_info[kill->r_idx].name), kill->r_idx,
-            kill->y, kill->x, kill->speed);
+            (r_info[kill->r_idx].name), kill->r_idx, kill->y, kill->x,
+            kill->speed);
     }
 
     /*** Dump the last few messages ***/
     i = messages_num();
-    if (i > 250) i = 250;
+    if (i > 250)
+        i = 250;
     file_putf(borg_map_file, "\n\n  [Last Messages]\n\n");
-    while (i-- > 0)
-    {
+    while (i-- > 0) {
         const char* msg = message_str((int16_t)i);
 
         /* Eliminate some lines */
-        if (prefix(msg, "# Matched")
-            || prefix(msg, "# There is")
-            || prefix(msg, "# Tracking")
-            || prefix(msg, "# MISS_BY:")
-            || prefix(msg, "# HIT_BY:")
-            || prefix(msg, "> "))
+        if (prefix(msg, "# Matched") || prefix(msg, "# There is")
+            || prefix(msg, "# Tracking") || prefix(msg, "# MISS_BY:")
+            || prefix(msg, "# HIT_BY:") || prefix(msg, "> "))
             continue;
 
         file_putf(borg_map_file, "%s\n", msg);
@@ -4990,15 +4731,13 @@ void borg_write_map(bool ask)
 
     /*** Player Equipment ***/
     file_putf(borg_map_file, "\n\n  [Character Equipment]\n\n");
-    for (i = 0; i < player->body.count; i++)
-    {
+    for (i = 0; i < player->body.count; i++) {
         struct object* obj = player->body.slots[i].obj;
         object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
         file_putf(borg_map_file, "%c) %s\n", borg_index_to_label(i), o_name);
     }
     file_putf(borg_map_file, "\n\n  [Character Quiver]\n\n");
-    for (i = 0; i < z_info->quiver_size; i++)
-    {
+    for (i = 0; i < z_info->quiver_size; i++) {
         struct object* obj = player->upkeep->quiver[i];
         object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
         file_putf(borg_map_file, "%c) %s\n", borg_index_to_label(i), o_name);
@@ -5006,60 +4745,51 @@ void borg_write_map(bool ask)
 
     file_putf(borg_map_file, "\n\n");
 
-
     /* Dump the inventory */
     file_putf(borg_map_file, "  [Character Inventory]\n\n");
-    for (i = 0; i < z_info->pack_size; i++)
-    {
+    for (i = 0; i < z_info->pack_size; i++) {
         item = &borg_items[i];
 
-        file_putf(borg_map_file, "%c) %s\n",
-            borg_index_to_label(i), item->desc);
+        file_putf(
+            borg_map_file, "%c) %s\n", borg_index_to_label(i), item->desc);
     }
     file_putf(borg_map_file, "\n\n");
 
-
     /* Dump the Home (page 1) */
     file_putf(borg_map_file, "  [Home Inventory (page 1)]\n\n");
-    struct object** list = mem_zalloc(sizeof(struct object*) * z_info->store_inven_max);
+    struct object** list
+        = mem_zalloc(sizeof(struct object*) * z_info->store_inven_max);
     store_stock_list(st_ptr, list, z_info->store_inven_max);
-    for (i = 0; i < z_info->store_inven_max / 2; i++)
-    {
+    for (i = 0; i < z_info->store_inven_max / 2; i++) {
         object_desc(o_name, sizeof(o_name), list[i], ODESC_FULL, player);
-        file_putf(borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
+        file_putf(
+            borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
     }
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the Home (page 2) */
     file_putf(borg_map_file, "  [Home Inventory (page 2)]\n\n");
-    for (i = z_info->store_inven_max / 2; i < z_info->store_inven_max; i++)
-    {
+    for (i = z_info->store_inven_max / 2; i < z_info->store_inven_max; i++) {
         object_desc(o_name, sizeof(o_name), list[i], ODESC_FULL, player);
-        file_putf(borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
+        file_putf(
+            borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
     }
     file_putf(borg_map_file, "\n\n");
     mem_free(list);
 
     /* Write swap info */
-    if (borg_cfg[BORG_USES_SWAPS])
-    {
+    if (borg_cfg[BORG_USES_SWAPS]) {
         file_putf(borg_map_file, "  [Swap info]\n\n");
-        if (weapon_swap)
-        {
+        if (weapon_swap) {
             item = &borg_items[weapon_swap - 1];
             file_putf(borg_map_file, "Swap Weapon:  %s\n", item->desc);
-        }
-        else
-        {
+        } else {
             file_put(borg_map_file, "Swap Weapon:  NONE\n");
         }
-        if (armour_swap)
-        {
+        if (armour_swap) {
             item = &borg_items[armour_swap - 1];
             file_putf(borg_map_file, "Swap Armour:  %s\n", item->desc);
-        }
-        else
-        {
+        } else {
             file_put(borg_map_file, "Swap Armour:  NONE\n");
         }
         file_putf(borg_map_file, "\n\n");
@@ -5069,88 +4799,68 @@ void borg_write_map(bool ask)
     /* Dump the player state */
     file_putf(borg_map_file, "Current speed: %d. \n", borg_skill[BI_SPEED]);
 
-    if (player->timed[TMD_BLIND])
-    {
+    if (player->timed[TMD_BLIND]) {
         file_putf(borg_map_file, "You cannot see.\n");
     }
-    if (player->timed[TMD_CONFUSED])
-    {
+    if (player->timed[TMD_CONFUSED]) {
         file_putf(borg_map_file, "You are confused.\n");
     }
-    if (player->timed[TMD_AFRAID])
-    {
+    if (player->timed[TMD_AFRAID]) {
         file_putf(borg_map_file, "You are terrified.\n");
     }
-    if (player->timed[TMD_CUT])
-    {
+    if (player->timed[TMD_CUT]) {
         file_putf(borg_map_file, "You are bleeding.\n");
     }
-    if (player->timed[TMD_STUN])
-    {
+    if (player->timed[TMD_STUN]) {
         file_putf(borg_map_file, "You are stunned.\n");
     }
-    if (player->timed[TMD_POISONED])
-    {
+    if (player->timed[TMD_POISONED]) {
         file_putf(borg_map_file, "You are poisoned.\n");
     }
-    if (player->timed[TMD_IMAGE])
-    {
+    if (player->timed[TMD_IMAGE]) {
         file_putf(borg_map_file, "You are hallucinating.\n");
     }
-    if (player_of_has(player, OF_AGGRAVATE))
-    {
+    if (player_of_has(player, OF_AGGRAVATE)) {
         file_putf(borg_map_file, "You aggravate monsters.\n");
     }
-    if (player->timed[TMD_BLESSED])
-    {
+    if (player->timed[TMD_BLESSED]) {
         file_putf(borg_map_file, "You feel rightous.\n");
     }
-    if (player->timed[TMD_HERO])
-    {
+    if (player->timed[TMD_HERO]) {
         file_putf(borg_map_file, "You feel heroic.\n");
     }
-    if (player->timed[TMD_SHERO])
-    {
+    if (player->timed[TMD_SHERO]) {
         file_putf(borg_map_file, "You are in a battle rage.\n");
     }
-    if (player->timed[TMD_PROTEVIL])
-    {
+    if (player->timed[TMD_PROTEVIL]) {
         file_putf(borg_map_file, "You are protected from evil.\n");
     }
-    if (player->timed[TMD_SHIELD])
-    {
+    if (player->timed[TMD_SHIELD]) {
         file_putf(borg_map_file, "You are protected by a mystic shield.\n");
     }
-    if (player->timed[TMD_INVULN])
-    {
+    if (player->timed[TMD_INVULN]) {
         file_putf(borg_map_file, "You are temporarily invulnerable.\n");
     }
-    if (player->timed[TMD_CONFUSED])
-    {
+    if (player->timed[TMD_CONFUSED]) {
         file_putf(borg_map_file, "Your hands are glowing dull red.\n");
     }
-    if (player->word_recall)
-    {
-        file_putf(borg_map_file, "You will soon be recalled.  (%d turns)\n", player->word_recall);
+    if (player->word_recall) {
+        file_putf(borg_map_file, "You will soon be recalled.  (%d turns)\n",
+            player->word_recall);
     }
-    if (player->timed[TMD_OPP_FIRE])
-    {
+    if (player->timed[TMD_OPP_FIRE]) {
         file_putf(borg_map_file, "You resist fire exceptionally well.\n");
     }
-    if (player->timed[TMD_OPP_ACID])
-    {
+    if (player->timed[TMD_OPP_ACID]) {
         file_putf(borg_map_file, "You resist acid exceptionally well.\n");
     }
-    if (player->timed[TMD_OPP_ELEC])
-    {
+    if (player->timed[TMD_OPP_ELEC]) {
         file_putf(borg_map_file, "You resist elec exceptionally well.\n");
     }
-    if (player->timed[TMD_OPP_COLD])
-    {
+    if (player->timed[TMD_OPP_COLD]) {
         file_putf(borg_map_file, "You resist cold exceptionally well.\n");
     }
-    if (player->timed[TMD_OPP_POIS])
-    {
+    if (player->timed[TMD_OPP_POIS]) {
         file_putf(borg_map_file, "You resist poison exceptionally well.\n");
     }
     file_putf(borg_map_file, "\n\n");
@@ -5158,7 +4868,8 @@ void borg_write_map(bool ask)
     /* Dump the Time Variables */
     file_putf(borg_map_file, "Time on this panel; %d\n", time_this_panel);
     file_putf(borg_map_file, "Time on this level; %d\n", borg_t - borg_began);
-    file_putf(borg_map_file, "Time since left town; %d\n", borg_time_town + (borg_t - borg_began));
+    file_putf(borg_map_file, "Time since left town; %d\n",
+        borg_time_town + (borg_t - borg_began));
     file_putf(borg_map_file, "Food in town; %d\n", borg_food_onsale);
     file_putf(borg_map_file, "Fuel in town; %d\n", borg_fuel_onsale);
     file_putf(borg_map_file, "Borg_no_retreat; %d\n", borg_no_retreat);
@@ -5166,38 +4877,47 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "Unique_on_level; %d\n", unique_on_level);
     if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2))
         file_putf(borg_map_file, "It is daytime in town.\n");
-    else file_putf(borg_map_file, "It is night-time in town.\n");
+    else
+        file_putf(borg_map_file, "It is night-time in town.\n");
     file_putf(borg_map_file, "\n\n");
 
-    file_putf(borg_map_file, "borg_uses_swaps; %d\n", borg_cfg[BORG_USES_SWAPS]);
-    file_putf(borg_map_file, "borg_worships_damage; %d\n", borg_cfg[BORG_WORSHIPS_DAMAGE]);
-    file_putf(borg_map_file, "borg_worships_speed; %d\n", borg_cfg[BORG_WORSHIPS_SPEED]);
-    file_putf(borg_map_file, "borg_worships_hp; %d\n", borg_cfg[BORG_WORSHIPS_HP]);
-    file_putf(borg_map_file, "borg_worships_mana; %d\n", borg_cfg[BORG_WORSHIPS_MANA]);
-    file_putf(borg_map_file, "borg_worships_ac; %d\n", borg_cfg[BORG_WORSHIPS_AC]);
-    file_putf(borg_map_file, "borg_worships_gold; %d\n", borg_cfg[BORG_WORSHIPS_GOLD]);
-    file_putf(borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
-    file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n", borg_cfg[BORG_SLOW_OPTIMIZEHOME]);
+    file_putf(
+        borg_map_file, "borg_uses_swaps; %d\n", borg_cfg[BORG_USES_SWAPS]);
+    file_putf(borg_map_file, "borg_worships_damage; %d\n",
+        borg_cfg[BORG_WORSHIPS_DAMAGE]);
+    file_putf(borg_map_file, "borg_worships_speed; %d\n",
+        borg_cfg[BORG_WORSHIPS_SPEED]);
+    file_putf(
+        borg_map_file, "borg_worships_hp; %d\n", borg_cfg[BORG_WORSHIPS_HP]);
+    file_putf(borg_map_file, "borg_worships_mana; %d\n",
+        borg_cfg[BORG_WORSHIPS_MANA]);
+    file_putf(
+        borg_map_file, "borg_worships_ac; %d\n", borg_cfg[BORG_WORSHIPS_AC]);
+    file_putf(borg_map_file, "borg_worships_gold; %d\n",
+        borg_cfg[BORG_WORSHIPS_GOLD]);
+    file_putf(
+        borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
+    file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n",
+        borg_cfg[BORG_SLOW_OPTIMIZEHOME]);
     file_putf(borg_map_file, "borg_scumming_pots; %d\n\n", borg_scumming_pots);
     file_putf(borg_map_file, "\n\n");
 
-
     /* Dump the spells */
-    if (player->class->magic.total_spells)
-    {
+    if (player->class->magic.total_spells) {
         file_putf(borg_map_file, "\n\n   [ Spells ] \n\n");
-        file_putf(borg_map_file, "Name                           Legal Times cast\n");
-        for (i = 0; i < player->class->magic.total_spells; i++)
-        {
-            borg_magic* as = &borg_magics[i];
+        file_putf(
+            borg_map_file, "Name                           Legal Times cast\n");
+        for (i = 0; i < player->class->magic.total_spells; i++) {
+            borg_magic* as  = &borg_magics[i];
             int failpercent = 0;
 
-            if (as->level < 99)
-            {
-                const char *legal = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
+            if (as->level < 99) {
+                const char* legal
+                    = (borg_spell_legal(as->spell_enum) ? "Yes" : "No ");
                 failpercent = (borg_spell_fail_rate(as->spell_enum));
 
-                file_putf(borg_map_file, "%-30s   %s   %ld   fail:%d \n", as->name, legal, (long)as->times, failpercent);
+                file_putf(borg_map_file, "%-30s   %s   %ld   fail:%d \n",
+                    as->name, legal, (long)as->times, failpercent);
             }
             file_putf(borg_map_file, "\n");
         }
@@ -5205,9 +4925,8 @@ void borg_write_map(bool ask)
 
     /* Dump the borg_skill[] information */
     itemm = z_info->k_max;
-    to = z_info->k_max + BI_MAX;
-    for (; itemm < to; itemm++)
-    {
+    to    = z_info->k_max + BI_MAX;
+    for (; itemm < to; itemm++) {
         file_putf(borg_map_file, "skill %d (%s) value= %d.\n", itemm,
             prefix_pref[itemm - z_info->k_max], borg_has[itemm]);
     }
@@ -5378,7 +5097,7 @@ void borg_write_map(bool ask)
     /* Free the "who" array */
     mem_free(who);
 
-#endif  /* extra dump stuff */
+#endif /* extra dump stuff */
 
     file_close(borg_map_file);
 }
@@ -5391,25 +5110,23 @@ void borg_save_scumfile(void)
     int i;
 
     /* Create a scum file */
-    if (borg_cfg[BORG_SAVE_DEATH] &&
-        (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL] ||
-            strstr(player->died_from, "starvation")))
-    {
+    if (borg_cfg[BORG_SAVE_DEATH]
+        && (borg_skill[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+            || strstr(player->died_from, "starvation"))) {
         memcpy(svSavefile, savefile, sizeof(savefile));
         /* Process the player name */
-        for (i = 0; player->full_name[i]; i++)
-        {
+        for (i = 0; player->full_name[i]; i++) {
             char c = player->full_name[i];
 
             /* No control characters */
-            if (iscntrl(c))
-            {
+            if (iscntrl(c)) {
                 /* Illegal characters */
                 quit_fmt("Illegal control char (0x%02X) in player name", c);
             }
 
             /* Convert all non-alphanumeric symbols */
-            if (!isalpha(c) && !isdigit(c)) c = '_';
+            if (!isalpha(c) && !isdigit(c))
+                c = '_';
 
             /* Build "file_name" */
             svSavefile2[i] = c;
@@ -5418,7 +5135,6 @@ void borg_save_scumfile(void)
 
         path_build(savefile, 1024, ANGBAND_DIR_USER, svSavefile2);
     }
-
 }
 #endif /* BABLOS */
 
@@ -5429,16 +5145,15 @@ void borg_status(void)
     int j;
 
     /* Scan windows */
-    for (j = 0; j < 8; j++)
-    {
+    for (j = 0; j < 8; j++) {
         term* old = Term;
 
         /* Unused */
-        if (!angband_term[j]) continue;
+        if (!angband_term[j])
+            continue;
 
         /* Check for borg status term */
-        if (window_flag[j] & (PW_BORG_2))
-        {
+        if (window_flag[j] & (PW_BORG_2)) {
             uint8_t attr;
 
             /* Activate */
@@ -5449,316 +5164,454 @@ void borg_status(void)
 
             /* Basic four */
             attr = COLOUR_SLATE;
-            if (borg_skill[BI_RACID]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_TRACID]) attr = COLOUR_GREEN;
-            if (borg_skill[BI_IACID]) attr = COLOUR_WHITE;
+            if (borg_skill[BI_RACID])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_TRACID])
+                attr = COLOUR_GREEN;
+            if (borg_skill[BI_IACID])
+                attr = COLOUR_WHITE;
             Term_putstr(1, 1, -1, attr, "Acid");
 
             attr = COLOUR_SLATE;
-            if (borg_skill[BI_RELEC]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_TRELEC]) attr = COLOUR_GREEN;
-            if (borg_skill[BI_IELEC]) attr = COLOUR_WHITE;
+            if (borg_skill[BI_RELEC])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_TRELEC])
+                attr = COLOUR_GREEN;
+            if (borg_skill[BI_IELEC])
+                attr = COLOUR_WHITE;
             Term_putstr(1, 2, -1, attr, "Elec");
 
             attr = COLOUR_SLATE;
-            if (borg_skill[BI_RFIRE]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_TRFIRE]) attr = COLOUR_GREEN;
-            if (borg_skill[BI_IFIRE]) attr = COLOUR_WHITE;
+            if (borg_skill[BI_RFIRE])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_TRFIRE])
+                attr = COLOUR_GREEN;
+            if (borg_skill[BI_IFIRE])
+                attr = COLOUR_WHITE;
             Term_putstr(1, 3, -1, attr, "Fire");
 
             attr = COLOUR_SLATE;
-            if (borg_skill[BI_RCOLD]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_TRCOLD]) attr = COLOUR_GREEN;
-            if (borg_skill[BI_ICOLD]) attr = COLOUR_WHITE;
+            if (borg_skill[BI_RCOLD])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_TRCOLD])
+                attr = COLOUR_GREEN;
+            if (borg_skill[BI_ICOLD])
+                attr = COLOUR_WHITE;
             Term_putstr(1, 4, -1, attr, "Cold");
 
             /* High resists */
             attr = COLOUR_SLATE;
-            if (borg_skill[BI_RPOIS]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_TRPOIS]) attr = COLOUR_GREEN;
+            if (borg_skill[BI_RPOIS])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_TRPOIS])
+                attr = COLOUR_GREEN;
             Term_putstr(1, 5, -1, attr, "Pois");
 
-            if (borg_skill[BI_RFEAR]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RFEAR])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 6, -1, attr, "Fear");
 
-            if (borg_skill[BI_RLITE]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RLITE])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 7, -1, attr, "Lite");
 
-            if (borg_skill[BI_RDARK]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RDARK])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 8, -1, attr, "Dark");
 
-            if (borg_skill[BI_RBLIND]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RBLIND])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 1, -1, attr, "Blind");
 
-            if (borg_skill[BI_RCONF]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RCONF])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 2, -1, attr, "Confu");
 
-            if (borg_skill[BI_RSND]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RSND])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 3, -1, attr, "Sound");
 
-            if (borg_skill[BI_RSHRD]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RSHRD])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 4, -1, attr, "Shard");
 
-            if (borg_skill[BI_RNXUS]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RNXUS])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 5, -1, attr, "Nexus");
 
-            if (borg_skill[BI_RNTHR]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RNTHR])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 6, -1, attr, "Nethr");
 
-            if (borg_skill[BI_RKAOS]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RKAOS])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 7, -1, attr, "Chaos");
 
-            if (borg_skill[BI_RDIS]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_RDIS])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(6, 8, -1, attr, "Disen");
 
             /* Other abilities */
-            if (borg_skill[BI_SDIG]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SDIG])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 1, -1, attr, "S.Dig");
 
-            if (borg_skill[BI_FEATH]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_FEATH])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 2, -1, attr, "Feath");
 
-            if (borg_skill[BI_LIGHT]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_LIGHT])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 3, -1, attr, "PLite");
 
-            if (borg_skill[BI_REG]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_REG])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 4, -1, attr, "Regen");
 
-            if (borg_skill[BI_ESP]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ESP])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 5, -1, attr, "Telep");
 
-            if (borg_skill[BI_SINV]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SINV])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 6, -1, attr, "Invis");
 
-            if (borg_skill[BI_FRACT]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_FRACT])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 7, -1, attr, "FrAct");
 
-            if (borg_skill[BI_HLIFE]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_HLIFE])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(12, 8, -1, attr, "HLife");
 
             /* Display the slays */
             Term_putstr(5, 10, -1, COLOUR_WHITE, "Weapon Slays:");
 
-            if (borg_skill[BI_WS_ANIMAL]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_ANIMAL])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 11, -1, attr, "Animal");
 
-            if (borg_skill[BI_WS_EVIL]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_EVIL])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(8, 11, -1, attr, "Evil");
 
-            if (borg_skill[BI_WS_UNDEAD]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_UNDEAD])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(15, 11, -1, attr, "Undead");
 
-            if (borg_skill[BI_WS_DEMON]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_WK_DEMON]) attr = COLOUR_GREEN;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_DEMON])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_WK_DEMON])
+                attr = COLOUR_GREEN;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(22, 11, -1, attr, "Demon");
 
-            if (borg_skill[BI_WS_ORC]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_ORC])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 12, -1, attr, "Orc");
 
-            if (borg_skill[BI_WS_TROLL]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_TROLL])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(8, 12, -1, attr, "Troll");
 
-            if (borg_skill[BI_WS_GIANT]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_GIANT])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(15, 12, -1, attr, "Giant");
 
-            if (borg_skill[BI_WS_DRAGON]) attr = COLOUR_BLUE;
-            if (borg_skill[BI_WK_DRAGON]) attr = COLOUR_GREEN;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WS_DRAGON])
+                attr = COLOUR_BLUE;
+            if (borg_skill[BI_WK_DRAGON])
+                attr = COLOUR_GREEN;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(22, 12, -1, attr, "Dragon");
 
-            if (borg_skill[BI_WB_ACID]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WB_ACID])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(1, 13, -1, attr, "Acid");
 
-            if (borg_skill[BI_WB_COLD]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WB_COLD])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(8, 13, -1, attr, "Cold");
 
-            if (borg_skill[BI_WB_ELEC]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WB_ELEC])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(15, 13, -1, attr, "Elec");
 
-            if (borg_skill[BI_WB_FIRE]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_WB_FIRE])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(22, 13, -1, attr, "Fire");
-
 
             /* Display the Concerns */
             Term_putstr(36, 10, -1, COLOUR_WHITE, "Concerns:");
 
-            if (borg_skill[BI_FIRST_CURSED]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_FIRST_CURSED])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(29, 11, -1, attr, "Cursed");
 
-            if (borg_skill[BI_ISWEAK]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ISWEAK])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(36, 11, -1, attr, "Weak");
 
-            if (borg_skill[BI_ISPOISONED]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ISPOISONED])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(43, 11, -1, attr, "Poison");
 
-            if (borg_skill[BI_ISCUT]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ISCUT])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(29, 12, -1, attr, "Cut");
 
-            if (borg_skill[BI_ISSTUN]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ISSTUN])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(36, 12, -1, attr, "Stun");
 
-            if (borg_skill[BI_ISCONFUSED]) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_ISCONFUSED])
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(43, 12, -1, attr, "Confused");
 
-            if (goal_fleeing) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (goal_fleeing)
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(29, 13, -1, attr, "Goal Fleeing");
 
-            if (borg_no_rest_prep > 0) attr = COLOUR_BLUE;
-            else attr = COLOUR_SLATE;
+            if (borg_no_rest_prep > 0)
+                attr = COLOUR_BLUE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(43, 13, -1, attr, "No Resting");
 
             /* Display the Time */
             Term_putstr(60, 10, -1, COLOUR_WHITE, "Time:");
 
             Term_putstr(54, 11, -1, COLOUR_SLATE, "This Level         ");
-            Term_putstr(65, 11, -1, COLOUR_WHITE, format("%d", borg_t - borg_began));
+            Term_putstr(
+                65, 11, -1, COLOUR_WHITE, format("%d", borg_t - borg_began));
 
             Term_putstr(54, 12, -1, COLOUR_SLATE, "Since Town         ");
-            Term_putstr(65, 12, -1, COLOUR_WHITE, format("%d", borg_time_town + (borg_t - borg_began)));
+            Term_putstr(65, 12, -1, COLOUR_WHITE,
+                format("%d", borg_time_town + (borg_t - borg_began)));
 
             Term_putstr(54, 13, -1, COLOUR_SLATE, "This Panel         ");
-            Term_putstr(65, 13, -1, COLOUR_WHITE, format("%d", time_this_panel));
-
+            Term_putstr(
+                65, 13, -1, COLOUR_WHITE, format("%d", time_this_panel));
 
             /* Sustains */
             Term_putstr(19, 0, -1, COLOUR_WHITE, "Sustains");
 
-            if (borg_skill[BI_SSTR]) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SSTR])
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(21, 1, -1, attr, "STR");
 
-            if (borg_skill[BI_SINT]) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SINT])
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(21, 2, -1, attr, "INT");
 
-            if (borg_skill[BI_SWIS]) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SWIS])
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(21, 3, -1, attr, "WIS");
 
-            if (borg_skill[BI_SDEX]) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SDEX])
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(21, 4, -1, attr, "DEX");
 
-            if (borg_skill[BI_SCON]) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_skill[BI_SCON])
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(21, 5, -1, attr, "CON");
-
 
             /* Temporary effects */
             Term_putstr(28, 0, -1, COLOUR_WHITE, "Temp Effects");
 
-            if (borg_prot_from_evil) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_prot_from_evil)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 1, -1, attr, "Prot. Evil");
 
-            if (borg_fastcast) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_fastcast)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 2, -1, attr, "Fastcast");
 
-            if (borg_hero) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_hero)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 3, -1, attr, "Heroism");
 
-            if (borg_berserk) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_berserk)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 4, -1, attr, "Berserk");
 
-            if (borg_shield) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_shield)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 5, -1, attr, "Shielded");
 
-            if (borg_bless) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_bless)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 6, -1, attr, "Blessed");
 
-            if (borg_speed) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_speed)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 7, -1, attr, "Fast");
 
-            if (borg_see_inv >= 1) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_see_inv >= 1)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(28, 8, -1, attr, "See Inv");
 
             /* Temporary effects */
             Term_putstr(42, 0, -1, COLOUR_WHITE, "Level Information");
 
-            if (vault_on_level) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (vault_on_level)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(42, 1, -1, attr, "Vault on level");
 
-            if (unique_on_level) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (unique_on_level)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(42, 2, -1, attr, "Unique on level");
-            if (unique_on_level) Term_putstr(58, 2, -1, attr, format("(%s)",
-                r_info[unique_on_level].name));
-            else Term_putstr(58, 2, -1, attr, "                                                ");
+            if (unique_on_level)
+                Term_putstr(58, 2, -1, attr,
+                    format("(%s)", r_info[unique_on_level].name));
+            else
+                Term_putstr(58, 2, -1, attr,
+                    "                                                ");
 
-            if (scaryguy_on_level) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (scaryguy_on_level)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(42, 3, -1, attr, "Scary Guy on level");
 
-            if (breeder_level) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (breeder_level)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(42, 4, -1, attr, "Breeder level (closing doors)");
 
-            if (borg_kills_summoner != -1) attr = COLOUR_WHITE;
-            else attr = COLOUR_SLATE;
+            if (borg_kills_summoner != -1)
+                attr = COLOUR_WHITE;
+            else
+                attr = COLOUR_SLATE;
             Term_putstr(42, 5, -1, attr, "Summoner very close (AS-Corridor)");
 
             /* level preparedness */
             attr = COLOUR_SLATE;
             Term_putstr(42, 6, -1, attr, "Reason for not diving:");
             attr = COLOUR_WHITE;
-            Term_putstr(64, 6, -1, attr, format("%s                              ", borg_prepared(borg_skill[BI_MAXDEPTH] + 1)));
+            Term_putstr(64, 6, -1, attr,
+                format("%s                              ",
+                    borg_prepared(borg_skill[BI_MAXDEPTH] + 1)));
 
             attr = COLOUR_SLATE;
-            Term_putstr(42, 7, -1, attr, "Scumming: not active                          ");
-            if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0)
-            {
+            Term_putstr(42, 7, -1, attr,
+                "Scumming: not active                          ");
+            if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0) {
                 attr = COLOUR_WHITE;
-                Term_putstr(42, 7, -1, attr, format("Scumming: $%d                  ", borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
+                Term_putstr(42, 7, -1, attr,
+                    format("Scumming: $%d                  ",
+                        borg_cfg[BORG_MONEY_SCUM_AMOUNT]));
             }
             attr = COLOUR_SLATE;
             Term_putstr(42, 8, -1, attr, "Maximal Depth:");
             attr = COLOUR_WHITE;
-            Term_putstr(56, 8, -1, attr, format("%d    ", borg_skill[BI_MAXDEPTH]));
+            Term_putstr(
+                56, 8, -1, attr, format("%d    ", borg_skill[BI_MAXDEPTH]));
 
             /* Important endgame information */
             if (borg_skill[BI_MAXDEPTH] >= 50) /* 85 */
@@ -5785,22 +5638,30 @@ void borg_status(void)
                 attr = COLOUR_WHITE;
                 Term_putstr(11, 19, -1, attr, format("%d   ", num_mana));
 
-                if (morgoth_on_level)  attr = COLOUR_BLUE;
-                else attr = COLOUR_SLATE;
-                Term_putstr(1, 20, -1, attr, format("Morgoth on Level.  Last seen:%d       ", borg_t - borg_t_morgoth));
+                if (morgoth_on_level)
+                    attr = COLOUR_BLUE;
+                else
+                    attr = COLOUR_SLATE;
+                Term_putstr(1, 20, -1, attr,
+                    format("Morgoth on Level.  Last seen:%d       ",
+                        borg_t - borg_t_morgoth));
 
-                if (borg_morgoth_position)  attr = COLOUR_BLUE;
-                else attr = COLOUR_SLATE;
-                if (borg_needs_new_sea) attr = COLOUR_WHITE;
+                if (borg_morgoth_position)
+                    attr = COLOUR_BLUE;
+                else
+                    attr = COLOUR_SLATE;
+                if (borg_needs_new_sea)
+                    attr = COLOUR_WHITE;
                 Term_putstr(1, 21, -1, attr, "Sea of Runes.");
 
-                if (borg_ready_morgoth)  attr = COLOUR_BLUE;
-                else attr = COLOUR_SLATE;
+                if (borg_ready_morgoth)
+                    attr = COLOUR_BLUE;
+                else
+                    attr = COLOUR_SLATE;
                 Term_putstr(1, 22, -1, attr, "Ready for Morgoth.");
-            }
-            else
-            {
-                Term_putstr(5, 15, -1, COLOUR_WHITE, "                        ");
+            } else {
+                Term_putstr(
+                    5, 15, -1, COLOUR_WHITE, "                        ");
 
                 attr = COLOUR_SLATE;
                 Term_putstr(1, 16, -1, attr, "                    ");
@@ -5823,7 +5684,6 @@ void borg_status(void)
                 Term_putstr(11, 19, -1, attr, format("%d       ", num_mana));
             }
 
-
             /* Fresh */
             Term_fresh();
 
@@ -5833,12 +5693,10 @@ void borg_status(void)
     }
 }
 
-
 /*
  * Hack -- forward declare
  */
 void do_cmd_borg(void);
-
 
 /*
  * Hack -- interact with the "Ben Borg".
@@ -5848,14 +5706,11 @@ void do_cmd_borg(void)
     char cmd;
 
 #ifdef BABLOS
-    if (auto_play)
-    {
-        auto_play = false;
+    if (auto_play) {
+        auto_play    = false;
         keep_playing = true;
-        cmd.code = 'z';
-    }
-    else
-    {
+        cmd.code     = 'z';
+    } else {
 
 #endif /* BABLOS */
 
@@ -5864,18 +5719,17 @@ void do_cmd_borg(void)
         if (auto_start_borg == false)
 #endif
         {
-            if (!get_com("Borg command: ", &cmd)) return;
+            if (!get_com("Borg command: ", &cmd))
+                return;
         }
 
 #ifdef BABLOS
-
     }
 
 #endif /* BABLOS */
 
     /* Simple help */
-    if (cmd == '?')
-    {
+    if (cmd == '?') {
         int i = 2;
 
         /* Save the screen */
@@ -5888,18 +5742,29 @@ void do_cmd_borg(void)
         Term_putstr(2, i, -1, COLOUR_WHITE, "Command 'z' activates the Borg.");
         Term_putstr(42, i++, -1, COLOUR_WHITE, "Command 'u' updates the Borg.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'x' steps the Borg.");
-        Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'f' modifies the normal flags.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'c' modifies the cheat flags.");
-        Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'l' activates a log file.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 's' activates search mode.");
+        Term_putstr(
+            42, i, -1, COLOUR_WHITE, "Command 'f' modifies the normal flags.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command 'c' modifies the cheat flags.");
+        Term_putstr(
+            42, i, -1, COLOUR_WHITE, "Command 'l' activates a log file.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command 's' activates search mode.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'i' displays grid info.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'g' displays grid feature.");
-        Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'a' displays avoidances.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'k' displays monster info.");
-        Term_putstr(42, i, -1, COLOUR_WHITE, "Command 't' displays object info.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command '%' displays targetting flow.");
-        Term_putstr(42, i, -1, COLOUR_WHITE, "Command '#' displays danger grid.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command '_' Regional Fear info.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command 'g' displays grid feature.");
+        Term_putstr(
+            42, i, -1, COLOUR_WHITE, "Command 'a' displays avoidances.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command 'k' displays monster info.");
+        Term_putstr(
+            42, i, -1, COLOUR_WHITE, "Command 't' displays object info.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command '%' displays targetting flow.");
+        Term_putstr(
+            42, i, -1, COLOUR_WHITE, "Command '#' displays danger grid.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command '_' Regional Fear info.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'p' Borg Power.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command '1' change max depth.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command '2' level prep info.");
@@ -5907,7 +5772,8 @@ void do_cmd_borg(void)
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command '!' Time.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command '@' Borg LOS.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'w' My Swap Weapon.");
-        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'q' Auto stop on level.");
+        Term_putstr(
+            2, i++, -1, COLOUR_WHITE, "Command 'q' Auto stop on level.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'v' Version stamp.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'd' Dump spell info.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'h' Borg_Has function.");
@@ -5930,20 +5796,17 @@ void do_cmd_borg(void)
         return;
     }
 
-
     /*
      * Hack -- force initialization or reinitialize if the game was closed
      * and restarted without exiting since the last initialization
      */
-    if (!initialized || game_closed)
-    {
+    if (!initialized || game_closed) {
         if (initialized) {
             borg_clean_9();
         }
         borg_init_9();
 
-        if (borg_init_failure)
-        {
+        if (borg_init_failure) {
             initialized = false;
             borg_note("** startup failure borg cannot run ** ");
             Term_fresh();
@@ -5951,11 +5814,9 @@ void do_cmd_borg(void)
         }
     }
 
-    switch (cmd)
-    {
+    switch (cmd) {
         /* Command: Nothing */
-    case '$':
-    {
+    case '$': {
         int j;
 
         /*** Hack -- initialize borg.ini options ***/
@@ -5963,8 +5824,7 @@ void do_cmd_borg(void)
         /* Message */
         borg_note("Reloading the Borg rules... (borg.txt)");
 
-        for (j = 0; j < MAX_CLASSES; j++)
-        {
+        for (j = 0; j < MAX_CLASSES; j++) {
             mem_free(borg_required_item[j]); /* externalize the 400 later */
             mem_free(borg_power_item[j]); /* externalize the 400 later */
         }
@@ -5972,10 +5832,8 @@ void do_cmd_borg(void)
         mem_free(borg_power_item); /* externalize the 400 later */
         mem_free(borg_has);
         mem_free(borg_activation);
-        for (j = 0; j < 1000; j++)
-        {
-            if (formula[j])
-            {
+        for (j = 0; j < 1000; j++) {
+            if (formula[j]) {
                 mem_free(formula[j]);
                 formula[j] = 0;
             }
@@ -5984,9 +5842,9 @@ void do_cmd_borg(void)
         mem_free(n_pwr);
 
         borg_required_item = mem_zalloc(MAX_CLASSES * sizeof(req_item*));
-        n_req = mem_zalloc(MAX_CLASSES * sizeof(int));
-        borg_power_item = mem_zalloc(MAX_CLASSES * sizeof(power_item*));
-        n_pwr = mem_zalloc(MAX_CLASSES * sizeof(int));
+        n_req              = mem_zalloc(MAX_CLASSES * sizeof(int));
+        borg_power_item    = mem_zalloc(MAX_CLASSES * sizeof(power_item*));
+        n_pwr              = mem_zalloc(MAX_CLASSES * sizeof(int));
 
         init_borg_txt_file();
         borg_note("# Ready...");
@@ -5994,8 +5852,7 @@ void do_cmd_borg(void)
     }
     /* Command: Activate */
     case 'z':
-    case 'Z':
-    {
+    case 'Z': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -6025,12 +5882,13 @@ void do_cmd_borg(void)
         borg_skill[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_skill[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_skill[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS]) borg_see_inv = 10000;
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
+        if (player->timed[TMD_SINVIS])
+            borg_see_inv = 10000;
 
         if (player->opts.lazymove_delay != 0) {
             borg_note("# Turning off lazy movement controls");
@@ -6052,8 +5910,7 @@ void do_cmd_borg(void)
 
     /* Command: Update */
     case 'u':
-    case 'U':
-    {
+    case 'U': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -6079,12 +5936,13 @@ void do_cmd_borg(void)
         borg_skill[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_skill[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_skill[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS]) borg_see_inv = 10000;
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
+        if (player->timed[TMD_SINVIS])
+            borg_see_inv = 10000;
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -6095,11 +5953,9 @@ void do_cmd_borg(void)
         break;
     }
 
-
     /* Command: Step */
     case 'x':
-    case 'X':
-    {
+    case 'X': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -6128,11 +5984,12 @@ void do_cmd_borg(void)
         borg_skill[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_skill[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_skill[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS]) borg_see_inv = 10000;
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
+        if (player->timed[TMD_SINVIS])
+            borg_see_inv = 10000;
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -6150,54 +6007,45 @@ void do_cmd_borg(void)
 
     /* Command: toggle "flags" */
     case 'f':
-    case 'F':
-    {
+    case 'F': {
         /* Get a "Borg command", or abort */
-        if (!get_com("Borg command: Toggle Flag: (m/d/s/f/g) ", &cmd)) return;
+        if (!get_com("Borg command: Toggle Flag: (m/d/s/f/g) ", &cmd))
+            return;
 
-        switch (cmd)
-        {
+        switch (cmd) {
             /* Give borg thought messages in window */
         case 'm':
-        case 'M':
-        {
+        case 'M': {
             break;
         }
 
         /* Give borg the ability to use graphics ----broken */
         case 'g':
-        case 'G':
-        {
+        case 'G': {
             borg_graphics = !borg_graphics;
-            msg("Borg -- borg_graphics is now %d.",
-                borg_graphics);
+            msg("Borg -- borg_graphics is now %d.", borg_graphics);
             break;
         }
 
         /* Dump savefile at each death */
         case 'd':
-        case 'D':
-        {
+        case 'D': {
             borg_flag_dump = !borg_flag_dump;
-            msg("Borg -- borg_flag_dump is now %d.",
-                borg_flag_dump);
+            msg("Borg -- borg_flag_dump is now %d.", borg_flag_dump);
             break;
         }
 
         /* Dump savefile at each level */
         case 's':
-        case 'S':
-        {
+        case 'S': {
             borg_flag_save = !borg_flag_save;
-            msg("Borg -- borg_flag_save is now %d.",
-                borg_flag_save);
+            msg("Borg -- borg_flag_save is now %d.", borg_flag_save);
             break;
         }
 
         /* clear 'fear' levels */
         case 'f':
-        case 'F':
-        {
+        case 'F': {
             msg("Command No Longer Usefull");
             break;
         }
@@ -6205,43 +6053,34 @@ void do_cmd_borg(void)
         break;
     }
 
-
-
     /* Command: toggle "cheat" flags */
-    case 'c':
-    {
+    case 'c': {
         /* Get a "Borg command", or abort */
         if (!get_com("Borg command: Toggle Cheat: (d)", &cmd))
             return;
 
-        switch (cmd)
-        {
+        switch (cmd) {
         case 'd':
-        case 'D':
-        {
+        case 'D': {
             borg_cheat_death = !borg_cheat_death;
-            msg("Borg -- borg_cheat_death is now %d.",
-                borg_cheat_death);
+            msg("Borg -- borg_cheat_death is now %d.", borg_cheat_death);
             break;
         }
         }
         break;
-
     }
 
     /* List the Nasties on the level */
-    case 'C':
-    {
+    case 'C': {
         int i;
 
         /* Log Header */
         borg_note("Borg Nasties Count");
 
         /* Find the numerous nasty in order of nastiness */
-        for (i = 0; i < borg_nasties_num; i++)
-        {
-            borg_note(format("Nasty: [%c] Count: %d, limited: %d", borg_nasties[i],
-                borg_nasties_count[i], borg_nasties_limit[i]));
+        for (i = 0; i < borg_nasties_num; i++) {
+            borg_note(format("Nasty: [%c] Count: %d, limited: %d",
+                borg_nasties[i], borg_nasties_count[i], borg_nasties_limit[i]));
         }
 
         /* Done */
@@ -6251,11 +6090,9 @@ void do_cmd_borg(void)
 
     /* Activate a search string */
     case 's':
-    case 'S':
-    {
+    case 'S': {
         /* Get the new search string (or cancel the matching) */
-        if (!get_string("Borg Match String: ", borg_match, 70))
-        {
+        if (!get_string("Borg Match String: ", borg_match, 70)) {
             /* Cancel it */
             my_strcpy(borg_match, "", sizeof(borg_match));
 
@@ -6266,79 +6103,129 @@ void do_cmd_borg(void)
     }
 
     /* Command: check Grid "feature" flags */
-    case 'g':
-    {
+    case 'g': {
         int x, y;
 
         uint16_t low, high = 0;
-        bool trap = false;
+        bool trap  = false;
         bool glyph = false;
 
         /* Get a "Borg command", or abort */
-        if (!get_com("Borg command: Show grids: ", &cmd)) return;
+        if (!get_com("Borg command: Show grids: ", &cmd))
+            return;
 
         /* Extract a flag */
-        switch (cmd)
-        {
-        case '0': low = high = 1 << 0; break;
-        case '1': low = high = 1 << 1; break;
-        case '2': low = high = 1 << 2; break;
-        case '3': low = high = 1 << 3; break;
-        case '4': low = high = 1 << 4; break;
-        case '5': low = high = 1 << 5; break;
-        case '6': low = high = 1 << 6; break;
-        case '7': low = high = 1 << 7; break;
+        switch (cmd) {
+        case '0':
+            low = high = 1 << 0;
+            break;
+        case '1':
+            low = high = 1 << 1;
+            break;
+        case '2':
+            low = high = 1 << 2;
+            break;
+        case '3':
+            low = high = 1 << 3;
+            break;
+        case '4':
+            low = high = 1 << 4;
+            break;
+        case '5':
+            low = high = 1 << 5;
+            break;
+        case '6':
+            low = high = 1 << 6;
+            break;
+        case '7':
+            low = high = 1 << 7;
+            break;
 
-        case '.': low = high = FEAT_FLOOR; break;
-        case ' ': low = high = FEAT_NONE; break;
-        case ';': low = high = -1; glyph = true;  break;
-        case ',': low = high = FEAT_OPEN; break;
-        case 'x': low = high = FEAT_BROKEN; break;
-        case '<': low = high = FEAT_LESS; break;
-        case '>': low = high = FEAT_MORE; break;
-        case '@': low = FEAT_STORE_GENERAL;
+        case '.':
+            low = high = FEAT_FLOOR;
+            break;
+        case ' ':
+            low = high = FEAT_NONE;
+            break;
+        case ';':
+            low = high = -1;
+            glyph      = true;
+            break;
+        case ',':
+            low = high = FEAT_OPEN;
+            break;
+        case 'x':
+            low = high = FEAT_BROKEN;
+            break;
+        case '<':
+            low = high = FEAT_LESS;
+            break;
+        case '>':
+            low = high = FEAT_MORE;
+            break;
+        case '@':
+            low  = FEAT_STORE_GENERAL;
             high = FEAT_HOME;
             break;
-        case '^': low = high = -1; glyph = true;  break;
-        case '+': low = FEAT_CLOSED;
-            high = FEAT_CLOSED; break;
-        case 's': low = high = FEAT_SECRET; break;
-        case ':': low = high = FEAT_RUBBLE; break;
-        case 'm': low = high = FEAT_MAGMA; break;
-        case 'q': low = high = FEAT_QUARTZ; break;
-        case 'k': low = high = FEAT_MAGMA_K; break;
-        case '&': low = high = FEAT_QUARTZ_K; break;
-        case 'w': low = FEAT_GRANITE;
+        case '^':
+            low = high = -1;
+            glyph      = true;
+            break;
+        case '+':
+            low  = FEAT_CLOSED;
+            high = FEAT_CLOSED;
+            break;
+        case 's':
+            low = high = FEAT_SECRET;
+            break;
+        case ':':
+            low = high = FEAT_RUBBLE;
+            break;
+        case 'm':
+            low = high = FEAT_MAGMA;
+            break;
+        case 'q':
+            low = high = FEAT_QUARTZ;
+            break;
+        case 'k':
+            low = high = FEAT_MAGMA_K;
+            break;
+        case '&':
+            low = high = FEAT_QUARTZ_K;
+            break;
+        case 'w':
+            low  = FEAT_GRANITE;
             high = FEAT_GRANITE;
             break;
-        case 'p': low = FEAT_PERM;
+        case 'p':
+            low  = FEAT_PERM;
             high = FEAT_PERM;
             break;
 
-        default: low = high = 0x00; break;
+        default:
+            low = high = 0x00;
+            break;
         }
 
         /* Scan map */
-        for (y = 1; y <= AUTO_MAX_Y - 1; y++)
-        {
-            for (x = 1; x <= AUTO_MAX_X - 1; x++)
-            {
-                uint8_t a = COLOUR_RED;
+        for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
+            for (x = 1; x <= AUTO_MAX_X - 1; x++) {
+                uint8_t a     = COLOUR_RED;
 
                 borg_grid* ag = &borg_grids[y][x];
 
                 /* show only those grids */
-                if (!trap && !glyph)
-                {
-                    if (!(ag->feat >= low && ag->feat <= high)) continue;
-                }
-                else
-                {
-                    if (!((ag->glyph && glyph) || (ag->trap && trap))) continue;
+                if (!trap && !glyph) {
+                    if (!(ag->feat >= low && ag->feat <= high))
+                        continue;
+                } else {
+                    if (!((ag->glyph && glyph) || (ag->trap && trap)))
+                        continue;
                 }
 
                 /* Color */
-                if (borg_cave_floor_bold(y, x)) a = COLOUR_YELLOW;
+                if (borg_cave_floor_bold(y, x))
+                    a = COLOUR_YELLOW;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6355,8 +6242,7 @@ void do_cmd_borg(void)
     }
 
     /* Display Feature of a targetted grid */
-    case 'G':
-    {
+    case 'G': {
         int y = 1;
         int x = 1;
 
@@ -6367,67 +6253,102 @@ void do_cmd_borg(void)
         struct loc l;
 
         target_get(&l);
-        y = l.y;
-        x = l.x;
+        y            = l.y;
+        x            = l.x;
 
         uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
-        borg_note(format("Borg's Feat for grid (%d, %d) is %d, game Feat is %d", y, x, mask, feat));
+        borg_note(format("Borg's Feat for grid (%d, %d) is %d, game Feat is %d",
+            y, x, mask, feat));
         prt_map();
         break;
     }
 
     /* Command: check "info" flags */
-    case 'i':
-    {
+    case 'i': {
         int x, y;
 
         uint16_t mask;
 
         /* Get a "Borg command", or abort */
-        if (!get_com("Borg command: Show grids: ", &cmd)) return;
+        if (!get_com("Borg command: Show grids: ", &cmd))
+            return;
 
         /* Extract a flag */
-        switch (cmd)
-        {
-        case '0': mask = 1 << 0; break; /* Mark */
-        case '1': mask = 1 << 1; break; /* Glow */
-        case '2': mask = 1 << 2; break; /* Dark */
-        case '3': mask = 1 << 3; break; /* Okay */
-        case '4': mask = 1 << 4; break; /* Lite */
-        case '5': mask = 1 << 5; break; /* View */
-        case '6': mask = 1 << 6; break; /* Temp */
-        case '7': mask = 1 << 7; break; /* Xtra */
+        switch (cmd) {
+        case '0':
+            mask = 1 << 0;
+            break; /* Mark */
+        case '1':
+            mask = 1 << 1;
+            break; /* Glow */
+        case '2':
+            mask = 1 << 2;
+            break; /* Dark */
+        case '3':
+            mask = 1 << 3;
+            break; /* Okay */
+        case '4':
+            mask = 1 << 4;
+            break; /* Lite */
+        case '5':
+            mask = 1 << 5;
+            break; /* View */
+        case '6':
+            mask = 1 << 6;
+            break; /* Temp */
+        case '7':
+            mask = 1 << 7;
+            break; /* Xtra */
 
-        case 'm': mask = BORG_MARK; break;
-        case 'g': mask = BORG_GLOW; break;
-        case 'd': mask = BORG_DARK; break;
-        case 'o': mask = BORG_OKAY; break;
-        case 'l': mask = BORG_LIGHT; break;
-        case 'v': mask = BORG_VIEW; break;
-        case 't': mask = BORG_TEMP; break;
-        case 'x': mask = BORG_XTRA; break;
+        case 'm':
+            mask = BORG_MARK;
+            break;
+        case 'g':
+            mask = BORG_GLOW;
+            break;
+        case 'd':
+            mask = BORG_DARK;
+            break;
+        case 'o':
+            mask = BORG_OKAY;
+            break;
+        case 'l':
+            mask = BORG_LIGHT;
+            break;
+        case 'v':
+            mask = BORG_VIEW;
+            break;
+        case 't':
+            mask = BORG_TEMP;
+            break;
+        case 'x':
+            mask = BORG_XTRA;
+            break;
 
-        default: mask = 0x000; break;
+        default:
+            mask = 0x000;
+            break;
         }
 
         /* Scan map */
-        for (y = 1; y <= AUTO_MAX_Y - 1; y++)
-        {
-            for (x = 1; x <= AUTO_MAX_X - 1; x++)
-            {
-                uint8_t a = COLOUR_RED;
+        for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
+            for (x = 1; x <= AUTO_MAX_X - 1; x++) {
+                uint8_t a     = COLOUR_RED;
 
                 borg_grid* ag = &borg_grids[y][x];
 
                 /* Given mask, show only those grids */
-                if (mask && !(ag->info & mask)) continue;
+                if (mask && !(ag->info & mask))
+                    continue;
 
                 /* Given no mask, show unknown grids */
-                if (!mask && (ag->info & BORG_MARK)) continue;
+                if (!mask && (ag->info & BORG_MARK))
+                    continue;
 
                 /* Color */
-                if (borg_cave_floor_bold(y, x)) a = COLOUR_YELLOW;
+                if (borg_cave_floor_bold(y, x))
+                    a = COLOUR_YELLOW;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6443,10 +6364,8 @@ void do_cmd_borg(void)
         break;
     }
 
-
     /* Display Info of a targetted grid */
-    case 'I':
-    {
+    case 'I': {
         int i;
         int y = 1;
         int x = 1;
@@ -6456,14 +6375,22 @@ void do_cmd_borg(void)
         y = l.y;
         x = l.x;
 
-        if (borg_grids[y][x].info & BORG_MARK) msg("Borg Info for grid (%d, %d) is MARK", y, x);
-        if (borg_grids[y][x].info & BORG_GLOW) msg("Borg Info for grid (%d, %d) is GLOW", y, x);
-        if (borg_grids[y][x].info & BORG_DARK) msg("Borg Info for grid (%d, %d) is DARK", y, x);
-        if (borg_grids[y][x].info & BORG_OKAY)	msg("Borg Info for grid (%d, %d) is OKAY", y, x);
-        if (borg_grids[y][x].info & BORG_LIGHT)	msg("Borg Info for grid (%d, %d) is LITE", y, x);
-        if (borg_grids[y][x].info & BORG_VIEW)	msg("Borg Info for grid (%d, %d) is VIEW", y, x);
-        if (borg_grids[y][x].info & BORG_TEMP)	msg("Borg Info for grid (%d, %d) is TEMP", y, x);
-        if (borg_grids[y][x].info & BORG_XTRA)	msg("Borg Info for grid (%d, %d) is XTRA", y, x);
+        if (borg_grids[y][x].info & BORG_MARK)
+            msg("Borg Info for grid (%d, %d) is MARK", y, x);
+        if (borg_grids[y][x].info & BORG_GLOW)
+            msg("Borg Info for grid (%d, %d) is GLOW", y, x);
+        if (borg_grids[y][x].info & BORG_DARK)
+            msg("Borg Info for grid (%d, %d) is DARK", y, x);
+        if (borg_grids[y][x].info & BORG_OKAY)
+            msg("Borg Info for grid (%d, %d) is OKAY", y, x);
+        if (borg_grids[y][x].info & BORG_LIGHT)
+            msg("Borg Info for grid (%d, %d) is LITE", y, x);
+        if (borg_grids[y][x].info & BORG_VIEW)
+            msg("Borg Info for grid (%d, %d) is VIEW", y, x);
+        if (borg_grids[y][x].info & BORG_TEMP)
+            msg("Borg Info for grid (%d, %d) is TEMP", y, x);
+        if (borg_grids[y][x].info & BORG_XTRA)
+            msg("Borg Info for grid (%d, %d) is XTRA", y, x);
 
         for (i = 0; i < SQUARE_MAX; i++)
             if (sqinfo_has(square(cave, l)->info, i))
@@ -6474,28 +6401,30 @@ void do_cmd_borg(void)
 
     /* Command: check "avoidances" */
     case 'a':
-    case 'A':
-    {
+    case 'A': {
         int x, y, p;
 
         /* Scan map */
-        for (y = 1; y <= AUTO_MAX_Y - 1; y++)
-        {
-            for (x = 1; x <= AUTO_MAX_X - 1; x++)
-            {
+        for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
+            for (x = 1; x <= AUTO_MAX_X - 1; x++) {
                 uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
                 p = borg_danger(y, x, 1, true, false);
 
                 /* Skip non-avoidances */
-                if (p < avoidance / 10) continue;
+                if (p < avoidance / 10)
+                    continue;
 
                 /* Use colors for less painful */
-                if (p < avoidance / 2) a = COLOUR_ORANGE;
-                if (p < avoidance / 4) a = COLOUR_YELLOW;
-                if (p < avoidance / 6) a = COLOUR_GREEN;
-                if (p < avoidance / 8) a = COLOUR_BLUE;
+                if (p < avoidance / 2)
+                    a = COLOUR_ORANGE;
+                if (p < avoidance / 4)
+                    a = COLOUR_YELLOW;
+                if (p < avoidance / 6)
+                    a = COLOUR_GREEN;
+                if (p < avoidance / 8)
+                    a = COLOUR_BLUE;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6503,7 +6432,9 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Avoidance value %d.", c_y, c_x, Term->offset_y / borg_panel_hgt(), Term->offset_x / borg_panel_wid(), avoidance);
+        msg("(%d,%d of %d,%d) Avoidance value %d.", c_y, c_x,
+            Term->offset_y / borg_panel_hgt(),
+            Term->offset_x / borg_panel_wid(), avoidance);
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Redraw map */
@@ -6511,22 +6442,22 @@ void do_cmd_borg(void)
         break;
     }
 
-
     /* Command: check previous steps */
-    case 'y':
-    {
+    case 'y': {
         int i;
 
         /* Scan map */
         uint8_t a = COLOUR_RED;
         /* Check for an existing step */
-        for (i = 0; i < track_step.num; i++)
-        {
+        for (i = 0; i < track_step.num; i++) {
             /* Display */
-            print_rel('*', a, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
-            msg("(-%d) Steps noted %d,%d", i, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
+            print_rel('*', a, track_step.y[track_step.num - i],
+                track_step.x[track_step.num - i]);
+            msg("(-%d) Steps noted %d,%d", i, track_step.y[track_step.num - i],
+                track_step.x[track_step.num - i]);
             event_signal(EVENT_MESSAGE_FLUSH);
-            print_rel('*', COLOUR_ORANGE, track_step.y[track_step.num - i], track_step.x[track_step.num - i]);
+            print_rel('*', COLOUR_ORANGE, track_step.y[track_step.num - i],
+                track_step.x[track_step.num - i]);
         }
         /* Redraw map */
         prt_map();
@@ -6535,18 +6466,15 @@ void do_cmd_borg(void)
 
     /* Command: show "monsters" */
     case 'k':
-    case 'K':
-    {
+    case 'K': {
         int i, n = 0;
 
         /* Scan the monsters */
-        for (i = 1; i < borg_kills_nxt; i++)
-        {
+        for (i = 1; i < borg_kills_nxt; i++) {
             borg_kill* kill = &borg_kills[i];
 
             /* Still alive */
-            if (kill->r_idx)
-            {
+            if (kill->r_idx) {
                 int x = kill->x;
                 int y = kill->y;
 
@@ -6567,21 +6495,17 @@ void do_cmd_borg(void)
         break;
     }
 
-
     /* Command: show "objects" */
     case 't':
-    case 'T':
-    {
+    case 'T': {
         int i, n = 0;
 
         /* Scan the objects */
-        for (i = 1; i < borg_takes_nxt; i++)
-        {
+        for (i = 1; i < borg_takes_nxt; i++) {
             borg_take* take = &borg_takes[i];
 
             /* Still alive */
-            if (take->kind)
-            {
+            if (take->kind) {
                 int x = take->x;
                 int y = take->y;
 
@@ -6602,10 +6526,8 @@ void do_cmd_borg(void)
         break;
     }
 
-
     /* Command: debug -- current target flow */
-    case '%':
-    {
+    case '%': {
         int x, y;
         int n_x;
         int n_y;
@@ -6619,17 +6541,16 @@ void do_cmd_borg(void)
         y = l.y;
 
         /* Borg's pathway */
-        while (1)
-        {
+        while (1) {
 
             /* Display */
             print_rel('*', COLOUR_RED, n_y, n_x);
 
-            if (n_x == x && n_y == y) break;
+            if (n_x == x && n_y == y)
+                break;
 
             /* Calculate the new location */
             mmove2(&n_y, &n_x, player->grid.y, player->grid.x, y, x);
-
         }
 
         msg("Borg's Targetting Path");
@@ -6638,11 +6559,12 @@ void do_cmd_borg(void)
         /* Determine "path" */
         n_x = player->grid.x;
         n_y = player->grid.y;
-        x = l.x;
-        y = l.y;
+        x   = l.x;
+        y   = l.y;
 
         /* Real LOS */
-        project(source_player(), 0, loc(x, y), 1, PROJ_MISSILE, PROJECT_BEAM, 0, 0, NULL);
+        project(source_player(), 0, loc(x, y), 1, PROJ_MISSILE, PROJECT_BEAM, 0,
+            0, NULL);
 
         msg("Actual Targetting Path");
         event_signal(EVENT_MESSAGE_FLUSH);
@@ -6653,8 +6575,7 @@ void do_cmd_borg(void)
         break;
     }
     /* Display the intended path to the flow */
-    case '^':
-    {
+    case '^': {
         int x, y;
         int o;
         int false_y, false_x;
@@ -6663,14 +6584,12 @@ void do_cmd_borg(void)
         false_x = c_x;
 
         /* Continue */
-        for (o = 0; o < 250; o++)
-        {
+        for (o = 0; o < 250; o++) {
             int b_n = 0;
 
             int i, b_i = -1;
 
             int c, b_c;
-
 
             /* Flow cost of current grid */
             b_c = borg_data_flow->data[c_y][c_x] * 10;
@@ -6679,8 +6598,7 @@ void do_cmd_borg(void)
             b_c = b_c - 5;
 
             /* Look around */
-            for (i = 0; i < 8; i++)
-            {
+            for (i = 0; i < 8; i++) {
                 /* Grid in that direction */
                 x = false_x + ddx_ddd[i];
                 y = false_y + ddy_ddd[i];
@@ -6689,21 +6607,24 @@ void do_cmd_borg(void)
                 c = borg_data_flow->data[y][x] * 10;
 
                 /* Never backtrack */
-                if (c > b_c) continue;
+                if (c > b_c)
+                    continue;
 
                 /* Notice new best value */
-                if (c < b_c) b_n = 0;
+                if (c < b_c)
+                    b_n = 0;
 
                 /* Apply the randomizer to equivalent values */
-                if ((++b_n >= 2) && (randint0(b_n) != 0)) continue;
+                if ((++b_n >= 2) && (randint0(b_n) != 0))
+                    continue;
 
                 /* Track it */
-                b_i = i; b_c = c;
+                b_i = i;
+                b_c = c;
             }
 
             /* Try it */
-            if (b_i >= 0)
-            {
+            if (b_i >= 0) {
                 /* Access the location */
                 x = false_x + ddx_ddd[b_i];
                 y = false_y + ddy_ddd[b_i];
@@ -6715,7 +6636,6 @@ void do_cmd_borg(void)
                 false_y = y;
                 false_x = x;
             }
-
         }
         print_rel('*', COLOUR_YELLOW, borg_flow_y[0], borg_flow_x[0]);
         msg("Probable Flow Path");
@@ -6726,11 +6646,8 @@ void do_cmd_borg(void)
         break;
     }
 
-
-
     /* Command: debug -- danger of grid */
-    case '#':
-    {
+    case '#': {
         int n;
         struct loc l;
 
@@ -6740,35 +6657,36 @@ void do_cmd_borg(void)
         n = get_quantity("Quantity: ", 10);
 
         /* Danger of grid */
-        msg("Danger(%d,%d,%d) is %d",
-            l.x, l.y, n,
+        msg("Danger(%d,%d,%d) is %d", l.x, l.y, n,
             borg_danger(l.y, l.x, n, true, false));
         break;
     }
 
     /* Command: Regional Fear Info*/
-    case '_':
-    {
+    case '_': {
         int x, y, p;
 
         /* Scan map */
-        for (y = 1; y <= AUTO_MAX_Y - 1; y++)
-        {
-            for (x = 1; x <= AUTO_MAX_X - 1; x++)
-            {
+        for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
+            for (x = 1; x <= AUTO_MAX_X - 1; x++) {
                 uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
                 p = borg_fear_region[y / 11][x / 11];
 
                 /* Skip non-fears */
-                if (p < avoidance / 10) continue;
+                if (p < avoidance / 10)
+                    continue;
 
                 /* Use colors = less painful */
-                if (p < avoidance / 2) a = COLOUR_ORANGE;
-                if (p < avoidance / 4) a = COLOUR_YELLOW;
-                if (p < avoidance / 6) a = COLOUR_GREEN;
-                if (p < avoidance / 8) a = COLOUR_BLUE;
+                if (p < avoidance / 2)
+                    a = COLOUR_ORANGE;
+                if (p < avoidance / 4)
+                    a = COLOUR_YELLOW;
+                if (p < avoidance / 6)
+                    a = COLOUR_GREEN;
+                if (p < avoidance / 8)
+                    a = COLOUR_BLUE;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6776,46 +6694,49 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Regional Fear.", c_y, c_x, Term->offset_y / borg_panel_hgt(), Term->offset_x / borg_panel_wid());
+        msg("(%d,%d of %d,%d) Regional Fear.", c_y, c_x,
+            Term->offset_y / borg_panel_hgt(),
+            Term->offset_x / borg_panel_wid());
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Redraw map */
         prt_map();
 
         /* Scan map */
-        for (y = 1; y <= AUTO_MAX_Y; y++)
-        {
-            for (x = 1; x <= AUTO_MAX_X; x++)
-            {
+        for (y = 1; y <= AUTO_MAX_Y; y++) {
+            for (x = 1; x <= AUTO_MAX_X; x++) {
                 uint8_t a = COLOUR_BLUE;
 
                 /* Obtain danger */
                 p = borg_fear_monsters[y][x];
 
                 /* Skip non-fears */
-                if (p <= 0) continue;
+                if (p <= 0)
+                    continue;
 
                 /* Color Defines */
-                if (p == 1)  a = COLOUR_L_BLUE;
+                if (p == 1)
+                    a = COLOUR_L_BLUE;
 
                 /* Color Defines */
-                if (p < avoidance / 20 &&
-                    p > 1) a = COLOUR_BLUE;
+                if (p < avoidance / 20 && p > 1)
+                    a = COLOUR_BLUE;
 
                 /* Color Defines */
-                if (p < avoidance / 10 &&
-                    p > avoidance / 20) a = COLOUR_GREEN;
+                if (p < avoidance / 10 && p > avoidance / 20)
+                    a = COLOUR_GREEN;
 
                 /* Color Defines */
-                if (p < avoidance / 4 &&
-                    p > avoidance / 10) a = COLOUR_YELLOW;
+                if (p < avoidance / 4 && p > avoidance / 10)
+                    a = COLOUR_YELLOW;
 
                 /* Color Defines */
-                if (p < avoidance / 2 &&
-                    p > avoidance / 4) a = COLOUR_ORANGE;
+                if (p < avoidance / 2 && p > avoidance / 4)
+                    a = COLOUR_ORANGE;
 
                 /* Color Defines */
-                if (p > avoidance / 2)  a = COLOUR_RED;
+                if (p > avoidance / 2)
+                    a = COLOUR_RED;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6823,7 +6744,9 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Monster Fear.", c_y, c_x, Term->offset_y / borg_panel_hgt(), Term->offset_x / borg_panel_wid());
+        msg("(%d,%d of %d,%d) Monster Fear.", c_y, c_x,
+            Term->offset_y / borg_panel_hgt(),
+            Term->offset_x / borg_panel_wid());
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Redraw map */
@@ -6833,8 +6756,7 @@ void do_cmd_borg(void)
 
     /* Command: debug -- Power */
     case 'p':
-    case 'P':
-    {
+    case 'P': {
         int32_t p;
 
         /* Examine the screen */
@@ -6868,8 +6790,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: Show time */
-    case '!':
-    {
+    case '!': {
         int32_t time = borg_t - borg_began;
         msg("time: (%d) ", time);
         time = (borg_time_town + (borg_t - borg_began));
@@ -6880,19 +6801,17 @@ void do_cmd_borg(void)
     }
 
     /* Command: LOS */
-    case '@':
-    {
+    case '@': {
         int x, y;
 
         /* Scan map */
-        for (y = w_y; y < w_y + SCREEN_HGT; y++)
-        {
-            for (x = w_x; x < w_x + SCREEN_WID; x++)
-            {
+        for (y = w_y; y < w_y + SCREEN_HGT; y++) {
+            for (x = w_x; x < w_x + SCREEN_WID; x++) {
                 uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
-                if (!borg_los(c_y, c_x, y, x)) continue;
+                if (!borg_los(c_y, c_x, y, x))
+                    continue;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6904,17 +6823,16 @@ void do_cmd_borg(void)
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Scan map */
-        for (y = w_y; y < w_y + SCREEN_HGT; y++)
-        {
-            for (x = w_x; x < w_x + SCREEN_WID; x++)
-            {
+        for (y = w_y; y < w_y + SCREEN_HGT; y++) {
+            for (x = w_x; x < w_x + SCREEN_WID; x++) {
                 uint8_t a = COLOUR_YELLOW;
 
                 if (!square_in_bounds(cave, loc(x, y)))
                     continue;
 
                 /* Obtain danger */
-                if (!borg_projectable_dark(c_y, c_x, y, x)) continue;
+                if (!borg_projectable_dark(c_y, c_x, y, x))
+                    continue;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6924,14 +6842,13 @@ void do_cmd_borg(void)
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Scan map */
-        for (y = w_y; y < w_y + SCREEN_HGT; y++)
-        {
-            for (x = w_x; x < w_x + SCREEN_WID; x++)
-            {
+        for (y = w_y; y < w_y + SCREEN_HGT; y++) {
+            for (x = w_x; x < w_x + SCREEN_WID; x++) {
                 uint8_t a = COLOUR_GREEN;
 
                 /* Obtain danger */
-                if (!borg_los(c_y, c_x, y, x)) continue;
+                if (!borg_los(c_y, c_x, y, x))
+                    continue;
 
                 /* Display */
                 print_rel('*', a, y, x);
@@ -6944,58 +6861,60 @@ void do_cmd_borg(void)
         break;
     }
     /*  command: debug -- change max depth */
-    case '1':
-    {
+    case '1': {
         int new_borg_skill;
         /* Get the new max depth */
-        new_borg_skill = get_quantity("Enter new Max Depth: ", z_info->max_depth - 1);
+        new_borg_skill
+            = get_quantity("Enter new Max Depth: ", z_info->max_depth - 1);
 
         /* Allow user abort */
-        if (new_borg_skill >= 0)
-        {
-            player->max_depth = new_borg_skill;
+        if (new_borg_skill >= 0) {
+            player->max_depth       = new_borg_skill;
             borg_skill[BI_MAXDEPTH] = new_borg_skill;
         }
 
         break;
     }
     /*  command: debug -- allow borg to stop */
-    case 'q':
-    {
+    case 'q': {
         int new_borg_stop_dlevel = 127;
         int new_borg_stop_clevel = 51;
 
         /* Get the new max depth */
-        new_borg_stop_dlevel = get_quantity("Enter new auto-stop dlevel: ", z_info->max_depth - 1);
+        new_borg_stop_dlevel = get_quantity(
+            "Enter new auto-stop dlevel: ", z_info->max_depth - 1);
         new_borg_stop_clevel = get_quantity("Enter new auto-stop clevel: ", 51);
         get_com("Stop when Morgoth Dies? (y or n)? ", &cmd);
 
         borg_cfg[BORG_STOP_DLEVEL] = new_borg_stop_dlevel;
         borg_cfg[BORG_STOP_CLEVEL] = new_borg_stop_clevel;
-        if (cmd == 'n' || cmd == 'N') borg_cfg[BORG_STOP_KING] = false;
+        if (cmd == 'n' || cmd == 'N')
+            borg_cfg[BORG_STOP_KING] = false;
 
         break;
     }
 
-    /* command: money Scum-- allow borg to stop when he gets a certain amount of money*/
-    case 'm':
-    {
+    /* command: money Scum-- allow borg to stop when he gets a certain amount of
+     * money*/
+    case 'm': {
         int new_borg_money_scum_amount = 0;
 
         /* report current status */
-        msg("money Scumming for %d, I need %d more.", borg_cfg[BORG_MONEY_SCUM_AMOUNT],
+        msg("money Scumming for %d, I need %d more.",
+            borg_cfg[BORG_MONEY_SCUM_AMOUNT],
             borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg_gold);
 
         /* Get the new amount */
-        new_borg_money_scum_amount = get_quantity("Enter new dollar amount for money scumming (0 for no scumming):", INT_MAX);
+        new_borg_money_scum_amount = get_quantity(
+            "Enter new dollar amount for money scumming (0 for no scumming):",
+            INT_MAX);
 
         borg_cfg[BORG_MONEY_SCUM_AMOUNT] = new_borg_money_scum_amount;
 
         break;
     }
     /* Command:  HACK debug -- preparation for level */
-    case '2':
-    {
+    case '2': {
         int i = 0;
 
         /* Extract some "hidden" variables */
@@ -7006,41 +6925,34 @@ void do_cmd_borg(void)
         borg_update_frame();
         borg_update();
 
-
         /* Examine the inventory */
         borg_object_fully_id();
         borg_notice(true);
         borg_notice_home(NULL, false);
 
         /* Dump prep codes */
-        for (i = 1; i <= 101; i++)
-        {
+        for (i = 1; i <= 101; i++) {
             /* Dump fear code*/
-            if ((char*)NULL != borg_prepared(i)) break;
+            if ((char*)NULL != borg_prepared(i))
+                break;
         }
-        msg("Max Level: %d  Prep'd For: %d  Reason: %s", borg_skill[BI_MAXDEPTH], i - 1, borg_prepared(i));
-        if (borg_ready_morgoth == 1)
-        {
+        msg("Max Level: %d  Prep'd For: %d  Reason: %s",
+            borg_skill[BI_MAXDEPTH], i - 1, borg_prepared(i));
+        if (borg_ready_morgoth == 1) {
             msg("You are ready for the big fight!!");
-        }
-        else if (borg_ready_morgoth == 0)
-        {
+        } else if (borg_ready_morgoth == 0) {
             msg("You are NOT ready for the big fight!!");
-        }
-        else if (borg_ready_morgoth == -1)
-        {
+        } else if (borg_ready_morgoth == -1) {
             msg("No readiness check done.");
         }
 
         break;
     }
     /* Command: debug -- stat information */
-    case '3':
-    {
+    case '3': {
 
         int i;
-        for (i = 0; i < STAT_MAX; i++)
-        {
+        for (i = 0; i < STAT_MAX; i++) {
             borg_note(format("stat # %d, is: %d", i, my_stat_cur[i]));
         }
 #if 0
@@ -7058,10 +6970,8 @@ void do_cmd_borg(void)
 
     /* Command: List the swap weapon and armour */
     case 'w':
-    case 'W':
-    {
+    case 'W': {
         borg_item* item;
-
 
         /* Cheat the "equip" screen */
         borg_cheat_equip();
@@ -7080,62 +6990,57 @@ void do_cmd_borg(void)
         borg_update_frame();
 
         /* note the swap items */
-        if (weapon_swap)
-        {
+        if (weapon_swap) {
             item = &borg_items[weapon_swap - 1];
             msg("Swap Weapon:  %s, value= %d", item->desc, weapon_swap_value);
-        }
-        else
-        {
+        } else {
             msg("Swap Weapon:  NONE");
         }
 
-        if (armour_swap)
-        {
+        if (armour_swap) {
             item = &borg_items[armour_swap - 1];
             msg("Swap Armour:  %s, value= %d", item->desc, armour_swap_value);
-        }
-        else
-        {
+        } else {
             msg("Swap Armour:  NONE");
         }
         break;
     }
-    case 'd':
-    {
+    case 'd': {
         int ii = 1;
 
         /* Save the screen */
         Term_save();
 
         /* Dump the spells */
-        if (player->class->magic.total_spells)
-        {
+        if (player->class->magic.total_spells) {
 
             int i;
 
-            for (i = 0; i < player->class->magic.total_spells; i++)
-            {
+            for (i = 0; i < player->class->magic.total_spells; i++) {
                 /* Clear the screen */
                 Term_clear();
 
                 ii = 2;
                 Term_putstr(1, ii, -1, COLOUR_WHITE, "[ Spells ].");
-                borg_magic* as = &borg_magics[i];
+                borg_magic* as  = &borg_magics[i];
                 int failpercent = 0;
 
-                if (as->level < 99)
-                {
-                    const char *legal = (borg_spell_legal(as->spell_enum) ? "legal" : "Not Legal ");
+                if (as->level < 99) {
+                    const char* legal
+                        = (borg_spell_legal(as->spell_enum) ? "legal"
+                                                            : "Not Legal ");
                     failpercent = (borg_spell_fail_rate(as->spell_enum));
 
-                    Term_putstr(1, ii++, -1, COLOUR_WHITE, format("%s, %s, attempted %d times, fail rate:%d", as->name, legal, as->times, failpercent));
+                    Term_putstr(1, ii++, -1, COLOUR_WHITE,
+                        format("%s, %s, attempted %d times, fail rate:%d",
+                            as->name, legal, as->times, failpercent));
                 }
-                get_com("Exam spell books.  Press any key for next book.", &cmd);
+                get_com(
+                    "Exam spell books.  Press any key for next book.", &cmd);
             } /* dumps */
         } /* spells */
 
-       /* Restore the screen */
+        /* Restore the screen */
         Term_load();
 
         /* Done */
@@ -7144,39 +7049,40 @@ void do_cmd_borg(void)
 
     /* dump borg 'has' information */
     case 'h':
-    case 'H':
-    {
+    case 'H': {
         int item, to;
 
         /* Get a "Borg command", or abort */
-        if (!get_com("Dynamic Borg Has What: ((a)ny/(i)nv/(w)orn/a(r)tifact/(s)kill) ", &cmd)) return;
+        if (!get_com("Dynamic Borg Has What: "
+                     "((a)ny/(i)nv/(w)orn/a(r)tifact/(s)kill) ",
+                &cmd))
+            return;
 
-        switch (cmd)
-        {
+        switch (cmd) {
         case 'a':
         case 'A':
-        item = 0;
-        to = z_info->k_max;
-        break;
+            item = 0;
+            to   = z_info->k_max;
+            break;
         case 'i':
         case 'I':
-        item = 0;
-        to = z_info->pack_size;
-        break;
+            item = 0;
+            to   = z_info->pack_size;
+            break;
         case 'w':
         case 'W':
-        item = INVEN_WIELD;
-        to = QUIVER_END;
-        break;
+            item = INVEN_WIELD;
+            to   = QUIVER_END;
+            break;
         case 'r':
         case 'R':
-        item = 0;
-        to = QUIVER_END;
-        break;
+            item = 0;
+            to   = QUIVER_END;
+            break;
         default:
-        item = 0;
-        to = BI_MAX;
-        break;
+            item = 0;
+            to   = BI_MAX;
+            break;
         }
         /* Cheat the "equip" screen */
         borg_cheat_equip();
@@ -7190,48 +7096,41 @@ void do_cmd_borg(void)
         /* Examine the screen */
         borg_update();
 
-
         /* Examine the inventory */
         borg_object_fully_id();
         borg_notice(true);
         borg_notice_home(NULL, false);
-        for (; item < to; item++)
-        {
-            switch (cmd)
-            {
+        for (; item < to; item++) {
+            switch (cmd) {
             case 'a':
             case 'A':
-            if (borg_has[item])
-            {
-                borg_note(format("Item-Kind:%03d name=%s value= %d.", item, 
-                    k_info[item].name, borg_has[item]));
-            }
-            break;
+                if (borg_has[item]) {
+                    borg_note(format("Item-Kind:%03d name=%s value= %d.", item,
+                        k_info[item].name, borg_has[item]));
+                }
+                break;
             case 'i':
             case 'I':
-            if (borg_items[item].iqty)
-            {
-                borg_note(format("Item-Invn:%03d desc= %s qty %d.", item,
-                    borg_items[item].desc, borg_items[item].iqty));
-            }
-            break;
+                if (borg_items[item].iqty) {
+                    borg_note(format("Item-Invn:%03d desc= %s qty %d.", item,
+                        borg_items[item].desc, borg_items[item].iqty));
+                }
+                break;
             case 'w':
             case 'W':
-            if (borg_items[item].iqty)
-            {
-                borg_note(format("Item-Worn:%03d desc= %s qty %d.", item,
-                    borg_items[item].desc, borg_items[item].iqty));
-            }
-            break;
+                if (borg_items[item].iqty) {
+                    borg_note(format("Item-Worn:%03d desc= %s qty %d.", item,
+                        borg_items[item].desc, borg_items[item].iqty));
+                }
+                break;
             case 'r':
             case 'R':
-            if (borg_items[item].iqty && borg_items[item].art_idx)
-                borg_note(format("Item-Arti:%03d name= %s.", item, 
-                    a_info[borg_items[item].art_idx].name));
-            break;
-            default:
-            {
-                borg_note(format("skill %d (%s) value= %d.", item, 
+                if (borg_items[item].iqty && borg_items[item].art_idx)
+                    borg_note(format("Item-Arti:%03d name= %s.", item,
+                        a_info[borg_items[item].art_idx].name));
+                break;
+            default: {
+                borg_note(format("skill %d (%s) value= %d.", item,
                     prefix_pref[item], borg_skill[item]));
                 break;
             }
@@ -7245,15 +7144,13 @@ void do_cmd_borg(void)
 
     /* Version of the game */
     case 'v':
-    case 'V':
-    {
+    case 'V': {
         msg("APWBorg Version: %s", borg_engine_date);
         break;
     }
     /* Command: Display all known info on item */
     case 'o':
-    case 'O':
-    {
+    case 'O': {
         int n = 0;
 
         struct object* item2;
@@ -7294,31 +7191,27 @@ void do_cmd_borg(void)
         /* Restore the screen */
         Term_load();
 
-
         break;
     }
 
     /* Command: Resurrect Borg */
-    case 'R':
-    {
+    case 'R': {
         /* Confirm it */
         get_com("Are you sure you want to Respawn this borg? (y or n)? ", &cmd);
 
-        if (cmd == 'y' || cmd == 'Y')
-        {
+        if (cmd == 'y' || cmd == 'Y') {
             resurrect_borg();
         }
         break;
     }
 
     /* Command: Restock the Stores */
-    case 'r':
-    {
+    case 'r': {
         /* Confirm it */
-        get_com("Are you sure you want to Restock the stores? (y or n)? ", &cmd);
+        get_com(
+            "Are you sure you want to Restock the stores? (y or n)? ", &cmd);
 
-        if (cmd == 'y' || cmd == 'Y')
-        {
+        if (cmd == 'y' || cmd == 'Y') {
             /* Message */
             msg("Updating Shops... currently not allowed");
 #if false
@@ -7340,34 +7233,29 @@ void do_cmd_borg(void)
         break;
     }
 
-    case ';':
-    {
+    case ';': {
         int glyph_check;
 
         uint8_t a = COLOUR_RED;
 
-        for (glyph_check = 0; glyph_check < track_glyph.num; glyph_check++)
-        {
+        for (glyph_check = 0; glyph_check < track_glyph.num; glyph_check++) {
             /* Display */
-            print_rel('*', a, track_glyph.y[glyph_check], track_glyph.x[glyph_check]);
+            print_rel(
+                '*', a, track_glyph.y[glyph_check], track_glyph.x[glyph_check]);
             msg("Borg has Glyph (%d)noted.", glyph_check);
             event_signal(EVENT_MESSAGE_FLUSH);
         }
 
         /* Get keypress */
-    }
-    break;
+    } break;
     /* Oops */
-    default:
-    {
+    default: {
         /* Message */
         msg("That is not a legal Borg command.");
         break;
     }
     }
 }
-
-
 
 #ifdef MACINTOSH
 static int HACK = 0;

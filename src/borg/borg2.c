@@ -4,12 +4,10 @@
 #include "../angband.h"
 #include "../cave.h"
 
-
 #ifdef ALLOW_BORG
 
 #include "borg1.h"
 #include "borg2.h"
-
 
 /*
  * This file helps the Borg understand mapping the dungeon.
@@ -30,16 +28,15 @@
  * flow calculations that penalize grids by variable amounts.
  */
 
- /* Is this grid a grid which can be stepped on or can I see through it */
+/* Is this grid a grid which can be stepped on or can I see through it */
 bool borg_cave_floor_bold(int Y, int X)
 {
-    if (square_in_bounds_fully(cave, loc(X, Y)))
-    {
-        if ((borg_grids[Y][X].feat == FEAT_FLOOR) ||
-            (borg_grids[Y][X].trap) ||
-            (borg_grids[Y][X].feat == FEAT_LESS) ||
-            (borg_grids[Y][X].feat == FEAT_MORE) ||
-            (borg_grids[Y][X].feat == FEAT_BROKEN) ||
+    if (square_in_bounds_fully(cave, loc(X, Y))) {
+        if ((borg_grids[Y][X].feat == FEAT_FLOOR) || 
+            (borg_grids[Y][X].trap) || 
+            (borg_grids[Y][X].feat == FEAT_LESS) || 
+            (borg_grids[Y][X].feat == FEAT_MORE) || 
+            (borg_grids[Y][X].feat == FEAT_BROKEN) || 
             (borg_grids[Y][X].feat == FEAT_OPEN))
             return (true);
     }
@@ -49,13 +46,13 @@ bool borg_cave_floor_bold(int Y, int X)
 /* is this a floor grid */
 bool borg_cave_floor_grid(borg_grid* ag)
 {
-    if (ag->feat == FEAT_NONE ||
-        ag->feat == FEAT_FLOOR ||
-        ag->feat == FEAT_OPEN ||
-        ag->feat == FEAT_MORE ||
-        ag->feat == FEAT_LESS ||
-        ag->feat == FEAT_BROKEN ||
-        ag->feat == FEAT_PASS_RUBBLE ||
+    if (ag->feat == FEAT_NONE || 
+        ag->feat == FEAT_FLOOR || 
+        ag->feat == FEAT_OPEN || 
+        ag->feat == FEAT_MORE || 
+        ag->feat == FEAT_LESS || 
+        ag->feat == FEAT_BROKEN || 
+        ag->feat == FEAT_PASS_RUBBLE || 
         ag->feat == FEAT_LAVA)
         return true;
     return false;
@@ -90,7 +87,6 @@ bool borg_los(int y1, int x1, int y2, int x2)
     /* Slope, or 1/Slope, of LOS */
     int m;
 
-
     /* Extract the offset */
     dy = y2 - y1;
     dx = x2 - x1;
@@ -99,33 +95,29 @@ bool borg_los(int y1, int x1, int y2, int x2)
     ay = ABS(dy);
     ax = ABS(dx);
 
-
     /* Handle adjacent (or identical) grids */
-    if ((ax < 2) && (ay < 2)) return (true);
-
+    if ((ax < 2) && (ay < 2))
+        return (true);
 
     /* Paranoia -- require "safe" origin */
-    if (!square_in_bounds_fully(cave, loc(x1, y1))) return (false);
-
+    if (!square_in_bounds_fully(cave, loc(x1, y1)))
+        return (false);
 
     /* Directly South/North */
-    if (!dx)
-    {
+    if (!dx) {
         /* South -- check for walls */
-        if (dy > 0)
-        {
-            for (ty = y1 + 1; ty < y2; ty++)
-            {
-                if (!borg_cave_floor_bold(ty, x1)) return (false);
+        if (dy > 0) {
+            for (ty = y1 + 1; ty < y2; ty++) {
+                if (!borg_cave_floor_bold(ty, x1))
+                    return (false);
             }
         }
 
         /* North -- check for walls */
-        else
-        {
-            for (ty = y1 - 1; ty > y2; ty--)
-            {
-                if (!borg_cave_floor_bold(ty, x1)) return (false);
+        else {
+            for (ty = y1 - 1; ty > y2; ty--) {
+                if (!borg_cave_floor_bold(ty, x1))
+                    return (false);
             }
         }
 
@@ -134,23 +126,20 @@ bool borg_los(int y1, int x1, int y2, int x2)
     }
 
     /* Directly East/West */
-    if (!dy)
-    {
+    if (!dy) {
         /* East -- check for walls */
-        if (dx > 0)
-        {
-            for (tx = x1 + 1; tx < x2; tx++)
-            {
-                if (!borg_cave_floor_bold(y1, tx)) return (false);
+        if (dx > 0) {
+            for (tx = x1 + 1; tx < x2; tx++) {
+                if (!borg_cave_floor_bold(y1, tx))
+                    return (false);
             }
         }
 
         /* West -- check for walls */
-        else
-        {
-            for (tx = x1 - 1; tx > x2; tx--)
-            {
-                if (!borg_cave_floor_bold(y1, tx)) return (false);
+        else {
+            for (tx = x1 - 1; tx > x2; tx--) {
+                if (!borg_cave_floor_bold(y1, tx))
+                    return (false);
             }
         }
 
@@ -158,30 +147,25 @@ bool borg_los(int y1, int x1, int y2, int x2)
         return (true);
     }
 
-
     /* Extract some signs */
     sx = (dx < 0) ? -1 : 1;
     sy = (dy < 0) ? -1 : 1;
 
-
     /* Vertical "knights" */
-    if (ax == 1)
-    {
-        if (ay == 2)
-        {
-            if (borg_cave_floor_bold(y1 + sy, x1)) return (true);
+    if (ax == 1) {
+        if (ay == 2) {
+            if (borg_cave_floor_bold(y1 + sy, x1))
+                return (true);
         }
     }
 
     /* Horizontal "knights" */
-    else if (ay == 1)
-    {
-        if (ax == 2)
-        {
-            if (borg_cave_floor_bold(y1, x1 + sx)) return (true);
+    else if (ay == 1) {
+        if (ax == 2) {
+            if (borg_cave_floor_bold(y1, x1 + sx))
+                return (true);
         }
     }
-
 
     /* Calculate scale factor div 2 */
     f2 = (ax * ay);
@@ -189,48 +173,39 @@ bool borg_los(int y1, int x1, int y2, int x2)
     /* Calculate scale factor */
     f1 = f2 << 1;
 
-
     /* Travel horizontally */
-    if (ax >= ay)
-    {
+    if (ax >= ay) {
         /* Let m = dy / dx * 2 * (dy * dx) = 2 * dy * dy */
         qy = ay * ay;
-        m = qy << 1;
+        m  = qy << 1;
 
         tx = x1 + sx;
 
         /* Consider the special case where slope == 1. */
-        if (qy == f2)
-        {
+        if (qy == f2) {
             ty = y1 + sy;
             qy -= f1;
-        }
-        else
-        {
+        } else {
             ty = y1;
         }
 
         /* Note (below) the case (qy == f2), where */
         /* the LOS exactly meets the corner of a tile. */
-        while (x2 - tx)
-        {
-            if (!borg_cave_floor_bold(ty, tx)) return (false);
+        while (x2 - tx) {
+            if (!borg_cave_floor_bold(ty, tx))
+                return (false);
 
             qy += m;
 
-            if (qy < f2)
-            {
+            if (qy < f2) {
                 tx += sx;
-            }
-            else if (qy > f2)
-            {
+            } else if (qy > f2) {
                 ty += sy;
-                if (!borg_cave_floor_bold(ty, tx)) return (false);
+                if (!borg_cave_floor_bold(ty, tx))
+                    return (false);
                 qy -= f1;
                 tx += sx;
-            }
-            else
-            {
+            } else {
                 ty += sy;
                 qy -= f1;
                 tx += sx;
@@ -239,45 +214,37 @@ bool borg_los(int y1, int x1, int y2, int x2)
     }
 
     /* Travel vertically */
-    else
-    {
+    else {
         /* Let m = dx / dy * 2 * (dx * dy) = 2 * dx * dx */
         qx = ax * ax;
-        m = qx << 1;
+        m  = qx << 1;
 
         ty = y1 + sy;
 
-        if (qx == f2)
-        {
+        if (qx == f2) {
             tx = x1 + sx;
             qx -= f1;
-        }
-        else
-        {
+        } else {
             tx = x1;
         }
 
         /* Note (below) the case (qx == f2), where */
         /* the LOS exactly meets the corner of a tile. */
-        while (y2 - ty)
-        {
-            if (!borg_cave_floor_bold(ty, tx)) return (false);
+        while (y2 - ty) {
+            if (!borg_cave_floor_bold(ty, tx))
+                return (false);
 
             qx += m;
 
-            if (qx < f2)
-            {
+            if (qx < f2) {
                 ty += sy;
-            }
-            else if (qx > f2)
-            {
+            } else if (qx > f2) {
                 tx += sx;
-                if (!borg_cave_floor_bold(ty, tx)) return (false);
+                if (!borg_cave_floor_bold(ty, tx))
+                    return (false);
                 qx -= f1;
                 ty += sy;
-            }
-            else
-            {
+            } else {
                 tx += sx;
                 qx -= f1;
                 ty += sy;
@@ -287,8 +254,6 @@ bool borg_los(int y1, int x1, int y2, int x2)
 
     /* Assume los */
     return (true);
-
-
 }
 
 /*
@@ -299,41 +264,38 @@ bool borg_los(int y1, int x1, int y2, int x2)
  */
 bool borg_projectable(int y1, int x1, int y2, int x2)
 {
-    int dist, y, x;
+    int        dist, y, x;
 
     borg_grid* ag;
 
     /* Start at the initial location */
-    y = y1; x = x1;
+    y = y1;
+    x = x1;
 
     /* Simulate the spell/missile path */
-    for (dist = 0; dist <= z_info->max_range; dist++)
-    {
+    for (dist = 0; dist <= z_info->max_range; dist++) {
         /* Get the grid */
         ag = &borg_grids[y][x];
 
-        if ((borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 3 ||
-            borg_morgoth_position || scaryguy_on_level))
-        {
+        if ((borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 3 || 
+            borg_morgoth_position || scaryguy_on_level)) {
             /* Assume all unknown grids more than distance 20 from you
              * are walls--when I am wounded. This will make me more fearful
              * of the grids that are up to 19 spaces away.  I treat them as
              * regular floor grids.  Which means monsters are assumed to have
              * LOS on me.  I am also more likely to shoot into the dark grids.
              */
-            if ((dist > 20) && (ag->feat == FEAT_NONE)) break;
-        }
-        else if (borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 2)
-        {
+            if ((dist > 20) && (ag->feat == FEAT_NONE))
+                break;
+        } else if (borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 2) {
             /* Assume all unknow grids more than distance 10 from you
              * are walls--when I am wounded. This will make me more fearful
              * of the grids that are up to 9 spaces away.  I treat them as
              * regular floor grids.
              */
-            if ((dist > 10) && (ag->feat == FEAT_NONE)) break;
-        }
-        else if (borg_fear_region[c_y / 11][c_x / 11] >= avoidance / 20)
-        {
+            if ((dist > 10) && (ag->feat == FEAT_NONE))
+                break;
+        } else if (borg_fear_region[c_y / 11][c_x / 11] >= avoidance / 20) {
             /* If a non-LOS monster is attacking me, then it is probably has
              * LOS to me, so do not place walls on unknown grids.  This will allow
              * me the chance to attack monsters.
@@ -346,20 +308,22 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
              *								4.  Borg has created regional fear from non-LOS priest.
              *
              */
-            if ((dist > z_info->max_range) && (ag->feat == FEAT_NONE)) break;
-        }
-        else
-        {
+            if ((dist > z_info->max_range) && (ag->feat == FEAT_NONE))
+                break;
+        } else {
             /* Assume all unknow grids more than distance 3 from you
              * are walls.  This makes me brave and chancey.
              */
-            if ((dist > 2) && (ag->feat == FEAT_NONE)) break;
+            if ((dist > 2) && (ag->feat == FEAT_NONE))
+                break;
         }
         /* Never pass through walls/doors */
-        if (dist && (!borg_cave_floor_grid(ag))) break;
+        if (dist && (!borg_cave_floor_grid(ag)))
+            break;
 
         /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2)) return (true);
+        if ((x == x2) && (y == y2))
+            return (true);
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -368,7 +332,6 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
     /* Assume obstruction */
     return (false);
 }
-
 
 /*
  * Check the projection from (x1,y1) to (x2,y2).
@@ -379,30 +342,34 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
  */
 bool borg_offset_projectable(int y1, int x1, int y2, int x2)
 {
-    int dist, y, x;
+    int        dist, y, x;
 
     borg_grid* ag;
 
     /* Start at the initial location */
-    y = y1; x = x1;
+    y = y1;
+    x = x1;
 
     /* Simulate the spell/missile path */
-    for (dist = 0; dist <= z_info->max_range; dist++)
-    {
+    for (dist = 0; dist <= z_info->max_range; dist++) {
         /* Get the grid */
         ag = &borg_grids[y][x];
 
         /* Assume all unknown grids are walls. */
-        if ((dist) && (ag->feat == FEAT_NONE)) break;
+        if ((dist) && (ag->feat == FEAT_NONE))
+            break;
 
         /* Never pass through rubble */
-        if (ag->feat == FEAT_PASS_RUBBLE) break;
+        if (ag->feat == FEAT_PASS_RUBBLE)
+            break;
 
         /* Never pass through walls/doors */
-        if (dist && (!borg_cave_floor_grid(ag))) break;
+        if (dist && (!borg_cave_floor_grid(ag)))
+            break;
 
         /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2)) return (true);
+        if ((x == x2) && (y == y2))
+            return (true);
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -411,7 +378,6 @@ bool borg_offset_projectable(int y1, int x1, int y2, int x2)
     /* Assume obstruction */
     return (false);
 }
-
 
 /*
  * Check the projection from (x1,y1) to (x2,y2).
@@ -422,29 +388,33 @@ bool borg_offset_projectable(int y1, int x1, int y2, int x2)
  */
 bool borg_projectable_pure(int y1, int x1, int y2, int x2)
 {
-    int dist, y, x;
+    int        dist, y, x;
     borg_grid* ag;
 
     /* Start at the initial location */
-    y = y1; x = x1;
+    y = y1;
+    x = x1;
 
     /* Simulate the spell/missile path */
-    for (dist = 0; dist <= z_info->max_range; dist++)
-    {
+    for (dist = 0; dist <= z_info->max_range; dist++) {
         /* Get the grid */
         ag = &borg_grids[y][x];
 
         /* Hack -- assume unknown grids are walls */
-        if (dist && (ag->feat == FEAT_NONE)) break;
+        if (dist && (ag->feat == FEAT_NONE))
+            break;
 
         /* Never pass through walls/doors */
-        if (dist && (!borg_cave_floor_grid(ag))) break;
+        if (dist && (!borg_cave_floor_grid(ag)))
+            break;
 
         /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2)) return (true);
+        if ((x == x2) && (y == y2))
+            return (true);
 
         /* Stop at monsters */
-        if (ag->kill) break;
+        if (ag->kill)
+            break;
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -466,30 +436,34 @@ bool borg_projectable_pure(int y1, int x1, int y2, int x2)
  */
 bool borg_projectable_dark(int y1, int x1, int y2, int x2)
 {
-    int dist, y, x;
-    int unknown = 0;
+    int        dist, y, x;
+    int        unknown = 0;
     borg_grid* ag;
 
     /* Start at the initial location */
-    y = y1; x = x1;
+    y = y1;
+    x = x1;
 
     /* Simulate the spell/missile path */
-    for (dist = 0; dist <= z_info->max_range; dist++)
-    {
+    for (dist = 0; dist <= z_info->max_range; dist++) {
         /* Get the grid */
         ag = &borg_grids[y][x];
 
         /* We want at least 1 unknown grid */
-        if (dist && (ag->feat == FEAT_NONE)) unknown++;
+        if (dist && (ag->feat == FEAT_NONE))
+            unknown++;
 
         /* Never pass through walls/doors */
-        if (dist && (!borg_cave_floor_grid(ag))) break;
+        if (dist && (!borg_cave_floor_grid(ag)))
+            break;
 
         /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2) && unknown >= 1) return (true);
+        if ((x == x2) && (y == y2) && unknown >= 1)
+            return (true);
 
         /* Stop at monsters */
-        if (ag->kill) break;
+        if (ag->kill)
+            break;
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -499,21 +473,19 @@ bool borg_projectable_dark(int y1, int x1, int y2, int x2)
     return (false);
 }
 
-
-
 /*
  * Clear the lite grids
  */
-void borg_forget_LIGHT(void)
+void borg_forget_light(void)
 {
     int i;
 
     /* None to forget */
-    if (!borg_LIGHT_n) return;
+    if (!borg_LIGHT_n)
+        return;
 
     /* Clear them all */
-    for (i = 0; i < borg_LIGHT_n; i++)
-    {
+    for (i = 0; i < borg_LIGHT_n; i++) {
         int y = borg_LIGHT_y[i];
         int x = borg_LIGHT_x[i];
 
@@ -525,8 +497,6 @@ void borg_forget_LIGHT(void)
     borg_LIGHT_n = 0;
 }
 
-
-
 /*
  * XXX XXX XXX
  *
@@ -535,32 +505,28 @@ void borg_forget_LIGHT(void)
  * have already been placed into the "lite" array, and we are never
  * called when the "lite" array is full.
  */
-#define borg_cave_LIGHT_hack(Y,X) \
+#define borg_cave_LIGHT_hack(Y, X)       \
     borg_grids[Y][X].info |= BORG_LIGHT; \
-    borg_LIGHT_y[borg_LIGHT_n] = (Y); \
-    borg_LIGHT_x[borg_LIGHT_n] = (X); \
+    borg_LIGHT_y[borg_LIGHT_n] = (Y);    \
+    borg_LIGHT_x[borg_LIGHT_n] = (X);    \
     borg_LIGHT_n++
 
-
-
- /*
-  * Update the set of grids "illuminated" by the player's lite.
-  *
-  * See "update_LIGHT" in "cave.c" for complete documentation
-  *
-  * It is very important that the "player grid" be the first grid in the
-  * array of "BORG_LIGHT" grids, since this is assumed in several places.
-  */
-void borg_update_LIGHT(void)
+/*
+ * Update the set of grids "illuminated" by the player's lite.
+ *
+ * See "update_LIGHT" in "cave.c" for complete documentation
+ *
+ * It is very important that the "player grid" be the first grid in the
+ * array of "BORG_LIGHT" grids, since this is assumed in several places.
+ */
+void borg_update_light(void)
 {
     int i, x, y, min_x, max_x, min_y, max_y;
-
 
     /*** Clear old grids ***/
 
     /* Clear them all */
-    for (i = 0; i < borg_LIGHT_n; i++)
-    {
+    for (i = 0; i < borg_LIGHT_n; i++) {
         y = borg_LIGHT_y[i];
         x = borg_LIGHT_x[i];
 
@@ -572,8 +538,8 @@ void borg_update_LIGHT(void)
     borg_LIGHT_n = 0;
 
     /* Hack -- Player has no lite */
-    if (borg_skill[BI_CURLITE] <= 0) return;
-
+    if (borg_skill[BI_CURLITE] <= 0)
+        return;
 
     /*** Collect the new "lite" grids ***/
 
@@ -581,8 +547,7 @@ void borg_update_LIGHT(void)
     borg_cave_LIGHT_hack(c_y, c_x);
 
     /* Radius 1 -- torch radius */
-    if (borg_skill[BI_CURLITE] >= 1)
-    {
+    if (borg_skill[BI_CURLITE] >= 1) {
         /* Adjacent grid */
         borg_cave_LIGHT_hack(c_y + 1, c_x);
         borg_cave_LIGHT_hack(c_y - 1, c_x);
@@ -597,39 +562,34 @@ void borg_update_LIGHT(void)
     }
 
     /* Radius 2 -- lantern radius */
-    if (borg_skill[BI_CURLITE] >= 2 &&
-        c_y + 2 < AUTO_MAX_Y &&
-        c_y - 2 > 0 &&
-        c_x + 2 < AUTO_MAX_X &&
-        c_x - 2 > 0)
-    {
+    if (borg_skill[BI_CURLITE] >= 2 && 
+        c_y + 2 < AUTO_MAX_Y && 
+        c_y - 2 > 0 && 
+        c_x + 2 < AUTO_MAX_X && 
+        c_x - 2 > 0) {
         /* South of the player */
-        if (borg_cave_floor_bold(c_y + 2, c_x))
-        {
+        if (borg_cave_floor_bold(c_y + 2, c_x)) {
             borg_cave_LIGHT_hack(c_y + 2, c_x);
             borg_cave_LIGHT_hack(c_y + 2, c_x + 2);
             borg_cave_LIGHT_hack(c_y + 2, c_x - 2);
         }
 
         /* North of the player */
-        if (borg_cave_floor_bold(c_y - 2, c_x))
-        {
+        if (borg_cave_floor_bold(c_y - 2, c_x)) {
             borg_cave_LIGHT_hack(c_y - 2, c_x);
             borg_cave_LIGHT_hack(c_y - 2, c_x + 2);
             borg_cave_LIGHT_hack(c_y - 2, c_x - 2);
         }
 
         /* East of the player */
-        if (borg_cave_floor_bold(c_y, c_x + 2))
-        {
+        if (borg_cave_floor_bold(c_y, c_x + 2)) {
             borg_cave_LIGHT_hack(c_y, c_x + 2);
             borg_cave_LIGHT_hack(c_y + 1, c_x + 2);
             borg_cave_LIGHT_hack(c_y - 1, c_x + 2);
         }
 
         /* West of the player */
-        if (borg_cave_floor_bold(c_y, c_x - 2))
-        {
+        if (borg_cave_floor_bold(c_y, c_x - 2)) {
             borg_cave_LIGHT_hack(c_y, c_x - 2);
             borg_cave_LIGHT_hack(c_y + 2, c_x - 2);
             borg_cave_LIGHT_hack(c_y - 2, c_x - 2);
@@ -637,80 +597,79 @@ void borg_update_LIGHT(void)
     }
 
     /* Radius 3+ -- artifact radius */
-    if (borg_skill[BI_CURLITE] >= 3 &&
-        c_y + 3 < AUTO_MAX_Y &&
-        c_y - 3 > 0 &&
-        c_x + 3 < AUTO_MAX_X &&
-        c_x - 3 > 0)
-    {
+    if (borg_skill[BI_CURLITE] >= 3 && 
+        c_y + 3 < AUTO_MAX_Y && 
+        c_y - 3 > 0 && 
+        c_x + 3 < AUTO_MAX_X && 
+        c_x - 3 > 0) {
         int d, p;
 
         /* Maximal radius */
         p = borg_skill[BI_CURLITE];
 
         /* Paranoia -- see "LITE_MAX" */
-        if (p > 5) p = 5;
+        if (p > 5)
+            p = 5;
 
         /* South-East of the player */
-        if (borg_cave_floor_bold(c_y + 3, c_x + 3))
-        {
+        if (borg_cave_floor_bold(c_y + 3, c_x + 3)) {
             borg_cave_LIGHT_hack(c_y + 3, c_x + 3);
         }
 
         /* South-West of the player */
-        if (borg_cave_floor_bold(c_y + 3, c_x - 3))
-        {
+        if (borg_cave_floor_bold(c_y + 3, c_x - 3)) {
             borg_cave_LIGHT_hack(c_y + 3, c_x - 3);
         }
 
         /* North-East of the player */
-        if (borg_cave_floor_bold(c_y - 3, c_x + 3))
-        {
+        if (borg_cave_floor_bold(c_y - 3, c_x + 3)) {
             borg_cave_LIGHT_hack(c_y - 3, c_x + 3);
         }
 
         /* North-West of the player */
-        if (borg_cave_floor_bold(c_y - 3, c_x - 3))
-        {
+        if (borg_cave_floor_bold(c_y - 3, c_x - 3)) {
             borg_cave_LIGHT_hack(c_y - 3, c_x - 3);
         }
 
         /* Maximal north */
         min_y = c_y - p;
-        if (min_y < 0) min_y = 0;
+        if (min_y < 0)
+            min_y = 0;
 
         /* Maximal south */
         max_y = c_y + p;
-        if (max_y > AUTO_MAX_Y - 1) max_y = AUTO_MAX_Y - 1;
+        if (max_y > AUTO_MAX_Y - 1)
+            max_y = AUTO_MAX_Y - 1;
 
         /* Maximal west */
         min_x = c_x - p;
-        if (min_x < 0) min_x = 0;
+        if (min_x < 0)
+            min_x = 0;
 
         /* Maximal east */
         max_x = c_x + p;
-        if (max_x > AUTO_MAX_X - 1) max_x = AUTO_MAX_X - 1;
+        if (max_x > AUTO_MAX_X - 1)
+            max_x = AUTO_MAX_X - 1;
 
         /* Scan the maximal box */
-        for (y = min_y; y <= max_y; y++)
-        {
-            for (x = min_x; x <= max_x; x++)
-            {
+        for (y = min_y; y <= max_y; y++) {
+            for (x = min_x; x <= max_x; x++) {
                 int dy = (c_y > y) ? (c_y - y) : (y - c_y);
                 int dx = (c_x > x) ? (c_x - x) : (x - c_x);
 
                 /* Skip the "central" grids (above) */
-                if ((dy <= 2) && (dx <= 2)) continue;
+                if ((dy <= 2) && (dx <= 2))
+                    continue;
 
                 /* Hack -- approximate the distance */
                 d = (dy > dx) ? (dy + (dx >> 1)) : (dx + (dy >> 1));
 
                 /* Skip distant grids */
-                if (d > p) continue;
+                if (d > p)
+                    continue;
 
                 /* Viewable, nearby, grids get "torch lit" */
-                if (borg_grids[y][x].info & BORG_VIEW)
-                {
+                if (borg_grids[y][x].info & BORG_VIEW) {
                     /* This grid is "torch lit" */
                     borg_cave_LIGHT_hack(y, x);
                 }
@@ -719,25 +678,21 @@ void borg_update_LIGHT(void)
     }
 }
 
-
-
-
-
 /*
  * Clear the viewable space
  */
 void borg_forget_view(void)
 {
-    int i;
+    int        i;
 
     borg_grid* ag;
 
     /* None to forget */
-    if (!borg_view_n) return;
+    if (!borg_view_n)
+        return;
 
     /* Clear them all */
-    for (i = 0; i < borg_view_n; i++)
-    {
+    for (i = 0; i < borg_view_n; i++) {
         int y = borg_view_y[i];
         int x = borg_view_x[i];
 
@@ -752,73 +707,64 @@ void borg_forget_view(void)
     borg_view_n = 0;
 }
 
-
-
 /*
  * This macro allows us to efficiently add a grid to the "view" array,
  * note that we are never called for illegal grids, or for grids which
  * have already been placed into the "view" array, and we are never
  * called when the "view" array is full.
  */
-#define borg_cave_view_hack(A,Y,X) \
-    (A)->info |= BORG_VIEW; \
-    borg_view_y[borg_view_n] = (Y); \
-    borg_view_x[borg_view_n] = (X); \
+#define borg_cave_view_hack(A, Y, X) \
+    (A)->info |= BORG_VIEW;          \
+    borg_view_y[borg_view_n] = (Y);  \
+    borg_view_x[borg_view_n] = (X);  \
     borg_view_n++
 
-
-
- /*
-  * Helper function for "borg_update_view()" below
-  *
-  * See "update_view_aux()" in "cave.c" for complete documentation.
-  */
+/*
+ * Helper function for "borg_update_view()" below
+ *
+ * See "update_view_aux()" in "cave.c" for complete documentation.
+ */
 static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 {
-    bool f1, f2, v1, v2, vis1, vis2, wall;
+    bool       f1, f2, v1, v2, vis1, vis2, wall;
 
     borg_grid* ag;
 
     borg_grid* g1_ag;
     borg_grid* g2_ag;
 
-
     /* Access the grids */
     g1_ag = &borg_grids[y1][x1];
     g2_ag = &borg_grids[y2][x2];
-
 
     /* Check for walls */
     f1 = (borg_cave_floor_grid(g1_ag));
     f2 = (borg_cave_floor_grid(g2_ag));
 
     /* Totally blocked by physical walls */
-    if (!f1 && !f2) return (true);
-
+    if (!f1 && !f2)
+        return (true);
 
     /* Check for visibility */
     v1 = (f1 && (g1_ag->info & BORG_VIEW));
     v2 = (f2 && (g2_ag->info & BORG_VIEW));
 
     /* Totally blocked by "unviewable neighbors" */
-    if (!v1 && !v2) return (true);
-
+    if (!v1 && !v2)
+        return (true);
 
     /* Access the grid */
     ag = &borg_grids[y][x];
 
-
     /* Check for walls */
     wall = (!borg_cave_floor_grid(ag));
-
 
     /* Check the "ease" of visibility */
     vis1 = (v1 && (g1_ag->info & BORG_XTRA));
     vis2 = (v2 && (g2_ag->info & BORG_XTRA));
 
     /* Hack -- "easy" plus "easy" yields "easy" */
-    if (vis1 && vis2)
-    {
+    if (vis1 && vis2) {
         ag->info |= BORG_XTRA;
 
         borg_cave_view_hack(ag, y, x);
@@ -827,17 +773,14 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
     }
 
     /* Hack -- primary "easy" yields "viewed" */
-    if (vis1)
-    {
+    if (vis1) {
         borg_cave_view_hack(ag, y, x);
 
         return (wall);
     }
 
-
     /* Hack -- "view" plus "view" yields "view" */
-    if (v1 && v2)
-    {
+    if (v1 && v2) {
         /* ag->info |= BORG_XTRA; */
 
         borg_cave_view_hack(ag, y, x);
@@ -845,30 +788,23 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
         return (wall);
     }
 
-
     /* Mega-Hack -- the "borg_los()" function works poorly on walls */
-    if (wall)
-    {
+    if (wall) {
         borg_cave_view_hack(ag, y, x);
 
         return (wall);
     }
-
 
     /* Hack -- check line of sight */
-    if (borg_los(c_y, c_x, y, x))
-    {
+    if (borg_los(c_y, c_x, y, x)) {
         borg_cave_view_hack(ag, y, x);
 
         return (wall);
     }
-
 
     /* Assume no line of sight. */
     return (true);
 }
-
-
 
 /*
  * Calculate the region currently "viewable" by the player
@@ -880,14 +816,13 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
  */
 void borg_update_view(void)
 {
-    int n, m, d, k, y, x, z;
+    int        n, m, d, k, y, x, z;
 
-    int se, sw, ne, nw, es, en, ws, wn;
+    int        se, sw, ne, nw, es, en, ws, wn;
 
-    int full, over;
+    int        full, over;
 
     borg_grid* ag;
-
 
     /*** Initialize ***/
 
@@ -897,12 +832,10 @@ void borg_update_view(void)
     /* Octagon factor (30) */
     over = z_info->max_sight * 3 / 2;
 
-
     /*** Step 0 -- Begin ***/
 
     /* Save the old "view" grids for later */
-    for (n = 0; n < borg_view_n; n++)
-    {
+    for (n = 0; n < borg_view_n; n++) {
         y = borg_view_y[n];
         x = borg_view_x[n];
 
@@ -915,7 +848,6 @@ void borg_update_view(void)
 
     /* Start over with the "view" array */
     borg_view_n = 0;
-
 
     /*** Step 1 -- adjacent grids ***/
 
@@ -932,134 +864,138 @@ void borg_update_view(void)
     /* Assume the player grid is viewable */
     borg_cave_view_hack(ag, y, x);
 
-
     /*** Step 2 -- Major Diagonals ***/
 
     /* Hack -- Limit */
     z = full * 2 / 3;
 
     /* Scan south-east */
-    for (d = 1; d <= z; d++)
-    {
-        if (!square_in_bounds_fully(cave, loc(x + d, y + d))) continue;
+    for (d = 1; d <= z; d++) {
+        if (!square_in_bounds_fully(cave, loc(x + d, y + d)))
+            continue;
 
         ag = &borg_grids[y + d][x + d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y + d, x + d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Scan south-west */
-    for (d = 1; d <= z; d++)
-    {
+    for (d = 1; d <= z; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x - d, y + d))) continue;
+        if (!square_in_bounds_fully(cave, loc(x - d, y + d)))
+            continue;
 
         ag = &borg_grids[y + d][x - d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y + d, x - d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Scan north-east */
-    for (d = 1; d <= z; d++)
-    {
+    for (d = 1; d <= z; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x + d, y - d))) continue;
+        if (!square_in_bounds_fully(cave, loc(x + d, y - d)))
+            continue;
 
         ag = &borg_grids[y - d][x + d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y - d, x + d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Scan north-west */
-    for (d = 1; d <= z; d++)
-    {
+    for (d = 1; d <= z; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x - d, y - d))) continue;
+        if (!square_in_bounds_fully(cave, loc(x - d, y - d)))
+            continue;
 
         ag = &borg_grids[y - d][x - d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y - d, x - d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
-
 
     /*** Step 3 -- major axes ***/
 
     /* Scan south */
-    for (d = 1; d <= full; d++)
-    {
+    for (d = 1; d <= full; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x, y + d))) continue;
+        if (!square_in_bounds_fully(cave, loc(x, y + d)))
+            continue;
         ag = &borg_grids[y + d][x];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y + d, x);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Initialize the "south strips" */
     se = sw = d;
 
     /* Scan north */
-    for (d = 1; d <= full; d++)
-    {
+    for (d = 1; d <= full; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x, y - d))) continue;
+        if (!square_in_bounds_fully(cave, loc(x, y - d)))
+            continue;
 
         ag = &borg_grids[y - d][x];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y - d, x);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Initialize the "north strips" */
     ne = nw = d;
 
     /* Scan east */
-    for (d = 1; d <= full; d++)
-    {
+    for (d = 1; d <= full; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x + d, y))) continue;
+        if (!square_in_bounds_fully(cave, loc(x + d, y)))
+            continue;
         ag = &borg_grids[y][x + d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y, x + d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Initialize the "east strips" */
     es = en = d;
 
     /* Scan west */
-    for (d = 1; d <= full; d++)
-    {
+    for (d = 1; d <= full; d++) {
         /* Caution */
-        if (!square_in_bounds_fully(cave, loc(x - d, y))) continue;
+        if (!square_in_bounds_fully(cave, loc(x - d, y)))
+            continue;
 
         ag = &borg_grids[y][x - d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y, x - d);
-        if (!borg_cave_floor_grid(ag)) break;
+        if (!borg_cave_floor_grid(ag))
+            break;
     }
 
     /* Initialize the "west strips" */
     ws = wn = d;
 
-
     /*** Step 4 -- Divide each "octant" into "strips" ***/
 
     /* Now check each "diagonal" (in parallel) */
-    for (n = 1; n <= over / 2; n++)
-    {
+    for (n = 1; n <= over / 2; n++) {
         int ypn, ymn, xpn, xmn;
-
 
         /* Acquire the "bounds" of the maximal circle */
         z = over - n - n;
-        if (z > full - n) z = full - n;
-        while ((z + n + (n >> 1)) > full) z--;
-
+        if (z > full - n)
+            z = full - n;
+        while ((z + n + (n >> 1)) > full)
+            z--;
 
         /* Access the four diagonal grids */
         ypn = y + n;
@@ -1067,28 +1003,23 @@ void borg_update_view(void)
         xpn = x + n;
         xmn = x - n;
 
-
         /* South strip */
-        if (ypn < AUTO_MAX_Y - 1)
-        {
+        if (ypn < AUTO_MAX_Y - 1) {
             /* Maximum distance */
             m = MIN(z, (AUTO_MAX_Y - 1) - ypn);
 
             /* East side */
-            if ((xpn <= AUTO_MAX_X - 1) && (n < se))
-            {
+            if ((xpn <= AUTO_MAX_X - 1) && (n < se)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn + d, xpn, ypn + d - 1, xpn - 1, ypn + d - 1, xpn))
-                    {
-                        if (n + d >= se) break;
+                    if (borg_update_view_aux(ypn + d, xpn, ypn + d - 1, xpn - 1, ypn + d - 1, xpn)) {
+                        if (n + d >= se)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1098,20 +1029,17 @@ void borg_update_view(void)
             }
 
             /* West side */
-            if ((xmn >= 0) && (n < sw))
-            {
+            if ((xmn >= 0) && (n < sw)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn + d, xmn, ypn + d - 1, xmn + 1, ypn + d - 1, xmn))
-                    {
-                        if (n + d >= sw) break;
+                    if (borg_update_view_aux(ypn + d, xmn, ypn + d - 1, xmn + 1, ypn + d - 1, xmn)) {
+                        if (n + d >= sw)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1121,28 +1049,23 @@ void borg_update_view(void)
             }
         }
 
-
         /* North strip */
-        if (ymn > 0)
-        {
+        if (ymn > 0) {
             /* Maximum distance */
             m = MIN(z, ymn);
 
             /* East side */
-            if ((xpn <= AUTO_MAX_X - 1) && (n < ne))
-            {
+            if ((xpn <= AUTO_MAX_X - 1) && (n < ne)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn - d, xpn, ymn - d + 1, xpn - 1, ymn - d + 1, xpn))
-                    {
-                        if (n + d >= ne) break;
+                    if (borg_update_view_aux(ymn - d, xpn, ymn - d + 1, xpn - 1, ymn - d + 1, xpn)) {
+                        if (n + d >= ne)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1152,20 +1075,17 @@ void borg_update_view(void)
             }
 
             /* West side */
-            if ((xmn >= 0) && (n < nw))
-            {
+            if ((xmn >= 0) && (n < nw)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn - d, xmn, ymn - d + 1, xmn + 1, ymn - d + 1, xmn))
-                    {
-                        if (n + d >= nw) break;
+                    if (borg_update_view_aux(ymn - d, xmn, ymn - d + 1, xmn + 1, ymn - d + 1, xmn)) {
+                        if (n + d >= nw)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1175,28 +1095,23 @@ void borg_update_view(void)
             }
         }
 
-
         /* East strip */
-        if (xpn < AUTO_MAX_X - 1)
-        {
+        if (xpn < AUTO_MAX_X - 1) {
             /* Maximum distance */
             m = MIN(z, (AUTO_MAX_X - 1) - xpn);
 
             /* South side */
-            if ((ypn <= AUTO_MAX_Y - 1) && (n < es))
-            {
+            if ((ypn <= AUTO_MAX_Y - 1) && (n < es)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn, xpn + d, ypn - 1, xpn + d - 1, ypn, xpn + d - 1))
-                    {
-                        if (n + d >= es) break;
+                    if (borg_update_view_aux(ypn, xpn + d, ypn - 1, xpn + d - 1, ypn, xpn + d - 1)) {
+                        if (n + d >= es)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1206,20 +1121,17 @@ void borg_update_view(void)
             }
 
             /* North side */
-            if ((ymn >= 0) && (n < en))
-            {
+            if ((ymn >= 0) && (n < en)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn, xpn + d, ymn + 1, xpn + d - 1, ymn, xpn + d - 1))
-                    {
-                        if (n + d >= en) break;
+                    if (borg_update_view_aux(ymn, xpn + d, ymn + 1, xpn + d - 1, ymn, xpn + d - 1)) {
+                        if (n + d >= en)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1229,28 +1141,23 @@ void borg_update_view(void)
             }
         }
 
-
         /* West strip */
-        if (xmn > 0)
-        {
+        if (xmn > 0) {
             /* Maximum distance */
             m = MIN(z, xmn);
 
             /* South side */
-            if ((ypn <= AUTO_MAX_Y - 1) && (n < ws))
-            {
+            if ((ypn <= AUTO_MAX_Y - 1) && (n < ws)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn, xmn - d, ypn - 1, xmn - d + 1, ypn, xmn - d + 1))
-                    {
-                        if (n + d >= ws) break;
+                    if (borg_update_view_aux(ypn, xmn - d, ypn - 1, xmn - d + 1, ypn, xmn - d + 1)) {
+                        if (n + d >= ws)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1260,20 +1167,17 @@ void borg_update_view(void)
             }
 
             /* North side */
-            if ((ymn >= 0) && (n < wn))
-            {
+            if ((ymn >= 0) && (n < wn)) {
                 /* Scan */
-                for (k = n, d = 1; d <= m; d++)
-                {
+                for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn, xmn - d, ymn + 1, xmn - d + 1, ymn, xmn - d + 1))
-                    {
-                        if (n + d >= wn) break;
+                    if (borg_update_view_aux(ymn, xmn - d, ymn + 1, xmn - d + 1, ymn, xmn - d + 1)) {
+                        if (n + d >= wn)
+                            break;
                     }
 
                     /* Track most distant "non-blockage" */
-                    else
-                    {
+                    else {
                         k = n + d;
                     }
                 }
@@ -1284,12 +1188,10 @@ void borg_update_view(void)
         }
     }
 
-
     /*** Step 5 -- Complete the algorithm ***/
 
     /* Update all the new grids */
-    for (n = 0; n < borg_view_n; n++)
-    {
+    for (n = 0; n < borg_view_n; n++) {
         y = borg_view_y[n];
         x = borg_view_x[n];
 
@@ -1300,10 +1202,6 @@ void borg_update_view(void)
         ag->info &= ~BORG_XTRA;
     }
 }
-
-
-
-
 
 /*
  * Init this file.

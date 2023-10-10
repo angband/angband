@@ -4,9 +4,9 @@
 #ifndef INCLUDED_BORG9_H
 #define INCLUDED_BORG9_H
 
-#include "angband.h"
-#include "obj-tval.h"
-#include "cave.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../obj-tval.h"
 
 #ifdef ALLOW_BORG
 
@@ -30,4 +30,3 @@ extern void borg_clean_9(void);
 #endif
 
 #endif
-
