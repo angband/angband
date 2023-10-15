@@ -16,7 +16,7 @@ include $(DEVKITARM)/ds_rules
 #---------------------------------------------------------------------------------
 BUILD		:=	nds-build
 SOURCES		:=	nds
-INCLUDES	:=	nds
+INCLUDES	:=	. nds
 DATA		:=
 
 
@@ -25,9 +25,6 @@ DATA		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
-#---------------------------------------------------------------------------------
-# add -DALLOW_BORG to allow the borg to run
-#---------------------------------------------------------------------------------
 CFLAGS	:=	-g -Wall -march=armv5te -mtune=arm946e-s $(ARCH)
 
 # Omit some flags for easier debugging
@@ -38,6 +35,8 @@ endif
 CFLAGS	+=	$(INCLUDE) -DARM9
 
 # Angband flags
+# NDS hardware is too weak to handle the additional 400KB of RAM for the Borg.
+# If you really want to enable it, you'd add -DALLOW_BORG here.
 CFLAGS	+=	-DNDS -DHAVE_DIRENT_H
 
 CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
