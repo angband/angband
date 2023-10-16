@@ -6077,7 +6077,18 @@ static void quit_systems(void)
 
 static void quit_hook(const char *s)
 {
-	dump_config_file();
+	if (s) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error",
+			s, NULL);
+	}
+
+	/*
+	 * If at least the main window was successfully set up, remember the
+	 * configuration.
+	 */
+	if (g_windows[0].loaded) {
+		dump_config_file();
+	}
 
 	free_globals();
 	quit_systems();
@@ -6113,12 +6124,13 @@ static void init_systems(void)
 
 errr init_sdl2(int argc, char **argv)
 {
+	quit_aux = quit_hook;
+
 	init_systems();
 	init_globals();
 
 	if (!init_graphics_modes()) {
-		quit_systems();
-		return 1;
+		quit("Graphics list load failed");
 	}
 
 	if (!read_config_file()) {
@@ -6149,8 +6161,6 @@ errr init_sdl2(int argc, char **argv)
 	text_iswprint_hook = term_iswprint_sdl2_msys2;
 #endif /* MSYS2_ENCODING_WORKAROUND */
 
-	quit_aux = quit_hook;
-
 	return 0;
 }
 
@@ -6160,6 +6170,9 @@ static char g_config_file[4096];
 
 static void init_globals(void)
 {
+	path_build(g_config_file, sizeof(g_config_file),
+			DEFAULT_CONFIG_FILE_DIR, DEFAULT_CONFIG_FILE);
+
 	for (size_t i = 0; i < N_ELEMENTS(g_subwindows); i++) {
 		g_subwindows[i].index = i;
 	}
@@ -6169,9 +6182,6 @@ static void init_globals(void)
 
 	init_font_info(ANGBAND_DIR_FONTS);
 	init_colors();
-
-	path_build(g_config_file, sizeof(g_config_file),
-			DEFAULT_CONFIG_FILE_DIR, DEFAULT_CONFIG_FILE);
 }
 
 static bool is_subwindow_loaded(unsigned index)
