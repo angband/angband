@@ -5119,14 +5119,47 @@ static void reload_status_bar(struct status_bar *status_bar)
 static void load_status_bar(struct window *window)
 {
 	if (window->status_bar.font == NULL) {
-		if (window->config != NULL) {
-			window->status_bar.font = make_font(window,
-					window->config->font_name,
-					window->config->font_size);
-		} else {
-			window->status_bar.font = make_font(window, DEFAULT_STATUS_BAR_FONT, 0);
+		const char *try_names[3];
+		int try_sizes[3];
+		int n_tries = 0, i = 0;
+
+		if (window->config && window->config->font_name) {
+			try_names[n_tries] = window->config->font_name;
+			try_sizes[n_tries] = window->config->font_size;
+			++n_tries;
 		}
-		assert(window->status_bar.font != NULL);
+		try_names[n_tries] = DEFAULT_STATUS_BAR_FONT;
+		try_sizes[n_tries] = 0;
+		++n_tries;
+		if (g_font_info[0].loaded && g_font_info[0].name) {
+			try_names[n_tries] = g_font_info[0].name;
+			try_sizes[n_tries] = g_font_info[0].size;
+			++n_tries;
+		}
+
+		while (1) {
+			if (i >= n_tries) {
+				quit_fmt("No usable status bar font for "
+					"window %u; configured to use '%s'",
+					window->index, try_names[0]);
+			}
+			window->status_bar.font =
+				make_font(window, try_names[i], try_sizes[i]);
+			if (window->status_bar.font) {
+				if (i > 0) {
+					plog_fmt("Font '%s' unusable; "
+						"substituting '%s'",
+						try_names[0], try_names[i]);
+					if (window->config) {
+						string_free(window->config->font_name);
+						window->config->font_name =
+							string_make(try_names[i]);
+					}
+				}
+				break;
+			}
+			++i;
+		}
 	} else {
 		quit_fmt("font '%s' already loaded in status bar in window %u",
 				window->status_bar.font->name, window->index);
@@ -5578,13 +5611,47 @@ static void load_subwindow(struct window *window, struct subwindow *subwindow)
 	assert(!subwindow->loaded);
 
 	if (subwindow->font == NULL) {
-		if (subwindow->config != NULL) {
-			subwindow->font = make_font(window,
-					subwindow->config->font_name, subwindow->config->font_size);
-		} else {
-			subwindow->font = make_font(window, DEFAULT_FONT, 0);
+		const char *try_names[3];
+		int try_sizes[3];
+		int n_tries = 0, i = 0;
+
+		if (subwindow->config && subwindow->config->font_name) {
+			try_names[n_tries] = subwindow->config->font_name;
+			try_sizes[n_tries] = subwindow->config->font_size;
+			++n_tries;
 		}
-		assert(subwindow->font != NULL);
+		try_names[n_tries] = DEFAULT_FONT;
+		try_sizes[n_tries] = 0;
+		++n_tries;
+		if (g_font_info[0].loaded && g_font_info[0].name) {
+			try_names[n_tries] = g_font_info[0].name;
+			try_sizes[n_tries] = g_font_info[0].size;
+			++n_tries;
+		}
+
+		while (1) {
+			if (i >= n_tries) {
+				quit_fmt("No usable font for subwindow %u;"
+					" configured to use '%s'",
+					subwindow->index, try_names[0]);
+			}
+			subwindow->font = make_font(window, try_names[i],
+				try_sizes[i]);
+			if (subwindow->font) {
+				if (i > 0) {
+					plog_fmt("Font '%s' unusable "
+						"substituting '%s'",
+						try_names[0], try_names[i]);
+					if (subwindow->config) {
+						string_free(subwindow->config->font_name);
+						subwindow->config->font_name =
+							string_make(try_names[i]);
+					}
+				}
+				break;
+			}
+			++i;
+		}
 	}
 	if (!adjust_subwindow_geometry(window, subwindow)) {
 		quit_fmt("cannot adjust geometry of subwindow %u in window %u",
@@ -6021,7 +6088,9 @@ static void init_font_info(const char *directory)
 	}
 
 	ang_dir *dir = my_dopen(directory);
-	assert(dir != NULL);
+	if (!dir) {
+		quit_fmt("Font directory '%s' is unreadable", directory);
+	}
 
 	char name[1024];
 	char path[4096];
@@ -6044,7 +6113,9 @@ static void init_font_info(const char *directory)
 			i++;
 		}
 	}
-	assert(i > 0);
+	if (!i) {
+		quit_fmt("No usable fonts found in '%s'", directory);
+	}
 
 	sort(g_font_info, i, sizeof(g_font_info[0]), sort_cb_font_info);
 
@@ -6442,9 +6513,10 @@ static enum parser_error config_window_font(struct parser *parser)
 	const char *name = parser_getstr(parser, "name");
 	int size = parser_getint(parser, "size");
 
-	if (find_font_info(name) == NULL) {
-		return PARSE_ERROR_INVALID_VALUE;
-	}
+	/*
+	 * Checking whether the font is usable will be done in
+	 * load_status_bar().
+	 */
 	window->config->font_name = string_make(name);
 	window->config->font_size = size;
 
@@ -6536,11 +6608,9 @@ static enum parser_error config_subwindow_font(struct parser *parser)
 	const char *name = parser_getstr(parser, "name");
 	int size = parser_getint(parser, "size");
 
-	if (find_font_info(name) == NULL) {
-		/* TODO maybe its not really an error? the font file was
-		 * probably just deleted and now the ui wont event start... */
-		return PARSE_ERROR_INVALID_VALUE;
-	}
+	/*
+	 * Checking whether the font is usable will be done in load_subwindow().
+	 */
 	subwindow->config->font_name = string_make(name);
 	subwindow->config->font_size = size;
 
