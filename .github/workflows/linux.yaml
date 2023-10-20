@@ -128,7 +128,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make libncursesw5-dev libx11-dev libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev libsqlite3-dev
+          sudo apt-get install gcc make libncursesw5-dev libx11-dev libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev libsqlite3-dev
 
       - name: Clone Project
         uses: actions/checkout@v3
@@ -137,4 +137,7 @@ jobs:
         run: |
           cd src
           sed -e 's/^# SYS_x11 =/SYS_x11 =/' -e 's/^# SYS_sdl =/SYS_sdl=/' -e 's/^# SYS_stats =/SYS_stats =/' -e 's/^# SYS_stats_objs =/SYS_stats_objs =/' -e 's/^#SOUND_sdl =/SOUND_sdl =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
+          make -f Makefile.std.modified
+          make -f Makefile.std.modified clean
+          sed -e 's/^# SYS_sdl2 =/SYS_sdl2 =/' -e 's/^# SYS_sdl2_objs =/SYS_sdl2_objs =/' -e 's/^#SOUND_sdl2 =/SOUND_sdl2 =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
           make -f Makefile.std.modified
