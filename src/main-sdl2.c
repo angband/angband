@@ -4498,7 +4498,7 @@ static void load_stipple(struct window *window)
 	 * on_pixel is black and completely transparent.  off_pixel is gray
 	 * (0x40, 0x40, 0x40) and slightly opaque.
 	 */
-#if SDL_BYTE_ORDER == SDL_BIGENDIAN
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	rmask = 0xff000000;
 	gmask = 0x00ff0000;
 	bmask = 0x0000ff00;
