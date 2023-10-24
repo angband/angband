@@ -527,6 +527,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	struct player_state local_state;
 	struct player_state *used_state = &player->state;
 	int oldn = 1, dig_idx;
+	const char *with_clause = current_weapon == NULL ? "with your hands" : "with your weapon";
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
@@ -535,6 +536,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	best_digger = player_best_digger(player, false);
 	if (best_digger != current_weapon &&
 			(!current_weapon || obj_can_takeoff(current_weapon))) {
+		with_clause = "with your swap digger";
 		/* Use only one without the overhead of gear_obj_for_use(). */
 		if (best_digger) {
 			oldn = best_digger->number;
@@ -573,7 +575,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		/* Rubble is a special case - could be handled more generally NRM */
 		if (rubble) {
 			/* Message */
-			msg("You have removed the rubble.");
+			msg("You have removed the rubble %s.", with_clause);
 
 			/* Place an object (except in town) */
 			if ((randint0(100) < 10) && player->depth) {
@@ -592,9 +594,9 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		} else if (gold) {
 			/* Found treasure */
 			place_gold(cave, grid, player->depth, ORIGIN_FLOOR);
-			msg("You have found something!");
+			msg("You have found something digging %s!", with_clause);
 		} else {
-			msg("You have finished the tunnel.");
+			msg("You have finished the tunnel %s.", with_clause);
 		}
 		/* On the surface, new terrain may be exposed to the sun. */
 		if (cave->depth == 0) expose_to_sun(cave, grid, is_daytime());
@@ -605,17 +607,17 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	} else if (chance > 0) {
 		/* Failure, continue digging */
 		if (rubble)
-			msg("You dig in the rubble.");
+			msg("You dig in the rubble %s.", with_clause);
 		else
-			msg("You tunnel into the %s.",
-				square_apparent_name(player->cave, grid));
+			msg("You tunnel into the %s %s.",
+				square_apparent_name(player->cave, grid), with_clause);
 		more = true;
 	} else {
 		/* Don't automatically repeat if there's no hope. */
 		if (rubble) {
-			msg("You dig in the rubble with little effect.");
+			msg("You dig in the rubble %s with little effect.", with_clause);
 		} else {
-			msg("You chip away futilely at the %s.",
+			msg("You chip away futilely %s at the %s.", with_clause,
 				square_apparent_name(player->cave, grid));
 		}
 	}
