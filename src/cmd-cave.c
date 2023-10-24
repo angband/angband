@@ -527,7 +527,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	struct player_state local_state;
 	struct player_state *used_state = &player->state;
 	int oldn = 1, dig_idx;
-	char *with_clause = current_weapon == NULL ? "with your hands" : "with your weapon";
+	const char *with_clause = current_weapon == NULL ? "with your hands" : "with your weapon";
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
