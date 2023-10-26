@@ -147,20 +147,6 @@
 
 typedef int errr;
 
-#ifndef SKIP_ANGBAND_OLD_INT_TYPEDEFS
-/* Use guaranteed-size types */
-typedef uint8_t byte;
-
-typedef uint16_t u16b;
-typedef int16_t s16b;
-
-typedef uint32_t u32b;
-typedef int32_t s32b;
-
-typedef uint64_t u64b;
-typedef int64_t s64b;
-#endif
-
 /** Debugging macros ***/
 
 #define DSTRINGIFY(x) #x
