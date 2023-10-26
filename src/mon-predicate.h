@@ -34,6 +34,7 @@ bool monster_passes_walls(const struct monster *mon);
 bool monster_is_invisible(const struct monster *mon);
 bool monster_is_not_invisible(const struct monster *mon);
 bool monster_is_unique(const struct monster *mon);
+bool monster_is_shape_unique(const struct monster *mon);
 bool monster_is_stupid(const struct monster *mon);
 bool monster_is_smart(const struct monster *mon);
 bool monster_is_esp_detectable(const struct monster *mon);

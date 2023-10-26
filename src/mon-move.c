@@ -151,9 +151,7 @@ static bool monster_can_kill(struct monster *mon, struct loc grid)
 	if (!mon1) return true;
 
 	/* No trampling uniques */
-	if (rf_has(mon1->race->flags, RF_UNIQUE) ||
-			(mon1->original_race &&
-			rf_has(mon1->original_race->flags, RF_UNIQUE))) {
+	if (monster_is_unique(mon1)) {
 		return false;
 	}
 
@@ -994,7 +992,7 @@ bool multiply_monster(const struct monster *mon)
 	 * since it may have zero for cur_num in the race structure for the
 	 * shape).
 	 */
-	if (!rf_has(mon->race->flags, RF_UNIQUE) && scatter_ext(cave, &grid,
+	if (!monster_is_shape_unique(mon) && scatter_ext(cave, &grid,
 			1, mon->grid, 1, true, square_isempty) > 0) {
 		/* Create a new monster (awake, no groups) */
 		result = place_new_monster(cave, grid, mon->race, false, false,
