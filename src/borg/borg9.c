@@ -3061,6 +3061,12 @@ static struct keypress borg_inkey_hack(int flush_first)
     if (ch_evt.type & EVT_MOVE)
         ch_evt.type = EVT_KBRD;
 
+    /* Don't interrupt our own resting or a repeating command */
+    if (player->upkeep->resting || cmd_get_nrepeats() > 0) {
+        key.type = EVT_NONE;
+        return key;
+    }
+
     /* Save the system random info */
     borg_rand_quick = Rand_quick;
     borg_rand_value = Rand_value;
@@ -3068,12 +3074,6 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* Use the local random info */
     Rand_quick = true;
     Rand_value = borg_rand_local;
-
-    /* Don't interrupt our own resting or a repeating command */
-    if (player->upkeep->resting || cmd_get_nrepeats() > 0) {
-        key.type = EVT_NONE;
-        return key;
-    }
 
     /* Think */
     while (!borg_think()) /* loop */
