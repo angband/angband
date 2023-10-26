@@ -31,6 +31,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "monster.h"
 #include "obj-init.h"
 #include "obj-pile.h"
@@ -1102,8 +1103,7 @@ static void monster_death_stats(int m_idx)
 	assert(m_idx > 0);
 	mon = cave_monster(cave, m_idx);
 
-	/* Check if monster is UNIQUE */
-	uniq = rf_has(mon->race->flags,RF_UNIQUE);
+	uniq = monster_is_unique(mon);
 
 	/* Mimicked objects will have already been counted as floor objects */
 	mon->mimicked_obj = NULL;
@@ -1149,7 +1149,7 @@ static bool stats_monster(struct monster *mon, int i)
 	mon_total[lvl] += addval;
 
 	/* Increment unique count if appropriate */
-	if (rf_has(mon->race->flags, RF_UNIQUE)){
+	if (monster_is_unique(mon)) {
 
 		/* add to total */
 		uniq_total[lvl] += addval;
@@ -1167,8 +1167,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 			mon_ood[lvl] += addval;
 
-			/* Is it a unique */
-			if (rf_has(mon->race->flags, RF_UNIQUE))
+			if (monster_is_unique(mon))
 				uniq_ood[lvl] += addval;
 	}
 
@@ -1178,8 +1177,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 		mon_deadly[lvl] += addval;
 
-		/* Is it a unique? */
-		if (rf_has(mon->race->flags, RF_UNIQUE))
+		if (monster_is_unique(mon))
 			uniq_deadly[lvl] += addval;
 	}
 

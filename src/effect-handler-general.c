@@ -2297,8 +2297,16 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		/* Hack -- Skip Unique Monsters */
 		if (monster_is_unique(mon)) continue;
 
-		/* Skip "wrong" monsters (see warning above) */
-		if ((char) mon->race->d_char != typ) continue;
+		/*
+		 * Skip "wrong" monsters (see warning above); for shape shifters
+		 * it is the original race that matters not whatever shape the
+		 * the monster has now.
+		 */
+		if (mon->original_race) {
+			if ((char) mon->original_race->d_char != typ) continue;
+		} else {
+			if ((char) mon->race->d_char != typ) continue;
+		}
 
 		/* Delete the monster */
 		delete_monster_idx(i);

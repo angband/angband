@@ -26,6 +26,7 @@
 #include "init.h"
 #include "main.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-gear.h"
@@ -276,7 +277,7 @@ static void kill_all_monsters(int level)
 
 		monster_death(mon, player, true);
 
-		if (rf_has(mon->race->flags, RF_UNIQUE))
+		if (monster_is_unique(mon))
 			mon->race->max_num = 0;
 	}
 }
