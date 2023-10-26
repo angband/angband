@@ -300,8 +300,7 @@ process to fail when linking angband.exe (the error message will likely be
 "cannot find -lncursesw" and "cannot find -ltinfo").  Most of the --with or
 --enable options for configure are not appropriate when using --enable-win.
 The ones that are okay are --with-private-dirs (on by default),
---with-gamedata-in-lib (has no effect), --enable-release,
-and --enable-skip-old-int-typedefs.
+--with-gamedata-in-lib (has no effect), and --enable-release.
 
 Debug build
 ~~~~~~~~~~~
