@@ -159,8 +159,11 @@ static int num_fonts = 0;
 typedef struct term_font term_font;
 struct term_font
 {
-	char *name;	/* final component of path if one of the preset fonts;
-				full path if not a preset font */
+	const char *name;	/* final component of path if one of the
+					preset fonts; full path if not a
+					preset font */
+	char *alloc_name;	/* same as name if dynamically allocated;
+					otherwise, it is NULL */
 	int size;	/* requested point size for the file; zero for
 				bitmapped fonts */
 	bool preset;	/* true if this is a font included in the lib/fonts
@@ -172,13 +175,13 @@ struct term_font
 /**
  * Used as 'system' font.
  */
-static const term_font default_term_font = { "6x10x.fon", 0, true, true };
+static const term_font default_term_font = { "6x10x.fon", NULL, 0, true, true };
 
 /**
  * Used by the 'Point Size' and 'Font Browser' panels to accumulate
  * information about a new requested font.
  */
-static term_font new_font = { NULL, 0, false, false };
+static term_font new_font = { NULL, NULL, 0, false, false };
 
 /**
  * A font structure
@@ -1207,7 +1210,7 @@ static void hook_quit(const char *str)
 	/* Free the surfaces of the windows */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
 		term_windowFree(&windows[i]);
-		string_free(windows[i].req_font.name);
+		string_free(windows[i].req_font.alloc_name);
 	}
 
 	/* Free the graphics surface */
@@ -1577,8 +1580,9 @@ static void SelectPresetBitmappedFont(sdl_Button *sender)
 	term_window *window = &windows[SelectedTerm];
 
 	sdl_FontFree(&window->font);
-	string_free(window->req_font.name);
-	window->req_font.name = string_make(sender->caption);
+	string_free(window->req_font.alloc_name);
+	window->req_font.alloc_name = string_make(sender->caption);
+	window->req_font.name = window->req_font.alloc_name;
 	window->req_font.size = 0;
 	window->req_font.preset = true;
 	window->req_font.bitmapped = true;
@@ -1648,8 +1652,9 @@ static void AcceptPointSize(sdl_Button *sender)
 	term_window *window = &windows[SelectedTerm];
 
 	sdl_FontFree(&window->font);
-	string_free(window->req_font.name);
-	window->req_font.name = string_make(new_font.name);
+	string_free(window->req_font.alloc_name);
+	window->req_font.alloc_name = string_make(new_font.name);
+	window->req_font.name = window->req_font.alloc_name;
 	window->req_font.size = new_font.size;
 	window->req_font.preset = new_font.preset;
 	assert(!new_font.bitmapped);
@@ -1661,8 +1666,9 @@ static void AcceptPointSize(sdl_Button *sender)
 
 static void CancelPointSize(sdl_Button *sender)
 {
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	new_font.name = NULL;
+	new_font.alloc_name = NULL;
 	new_font.size = 0;
 	new_font.preset = false;
 	new_font.bitmapped = false;
@@ -1819,8 +1825,9 @@ static void SelectPresetScalableFont(sdl_Button *sender)
 	term_window *window = &windows[SelectedTerm];
 
 	RemovePopUp();
-	string_free(new_font.name);
-	new_font.name = string_make(sender->caption);
+	string_free(new_font.alloc_name);
+	new_font.alloc_name = string_make(sender->caption);
+	new_font.name = new_font.alloc_name;
 	new_font.size = (window->req_font.size > 0) ?
 		window->req_font.size : DEFAULT_POINT_SIZE;
 	new_font.preset = true;
@@ -1837,8 +1844,9 @@ static void AlterNonPresetFontSize(sdl_Button *sender)
 	if (!window->req_font.bitmapped) {
 		assert(window->req_font.size >= MIN_POINT_SIZE
 			&& window->req_font.size <= MAX_POINT_SIZE);
-		string_free(new_font.name);
-		new_font.name = string_make(window->req_font.name);
+		string_free(new_font.alloc_name);
+		new_font.alloc_name = string_make(window->req_font.name);
+		new_font.name = new_font.alloc_name;
 		new_font.size = window->req_font.size;
 		new_font.preset = false;
 		new_font.bitmapped = false;
@@ -1882,8 +1890,9 @@ static void HelpFontBrowserClose(void)
 		mem_free(FontBrowserPreviewFont);
 		FontBrowserPreviewFont = NULL;
 	}
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	new_font.name = NULL;
+	new_font.alloc_name = NULL;
 	new_font.size = 0;
 	new_font.preset = false;
 	new_font.bitmapped = false;
@@ -1895,9 +1904,10 @@ static void AcceptFontBrowser(sdl_Button *sender)
 		term_window *window = &windows[SelectedTerm];
 
 		sdl_FontFree(&window->font);
-		string_free(window->req_font.name);
+		string_free(window->req_font.alloc_name);
 		assert(new_font.name);
-		window->req_font.name = string_make(new_font.name);
+		window->req_font.alloc_name = string_make(new_font.name);
+		window->req_font.name = window->req_font.alloc_name;
 		window->req_font.size = new_font.size;
 		window->req_font.preset = new_font.preset;
 		window->req_font.bitmapped = new_font.bitmapped;
@@ -2243,8 +2253,9 @@ static void RefreshFontBrowser(sdl_Button *sender)
 				 * new_font and grey out the point size
 				 * controls.
 				 */
-				string_free(new_font.name);
+				string_free(new_font.alloc_name);
 				new_font.name = NULL;
+				new_font.alloc_name = NULL;
 				new_font.size = 0;
 				new_font.preset = false;
 				new_font.bitmapped = false;
@@ -2321,8 +2332,9 @@ static void GoUpFontBrowser(sdl_Button *sender)
 		mem_free(FontBrowserPreviewFont);
 		FontBrowserPreviewFont = NULL;
 	}
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	new_font.name = NULL;
+	new_font.alloc_name = NULL;
 	new_font.size = 0;
 	new_font.preset = false;
 	new_font.bitmapped = false;
@@ -2400,8 +2412,9 @@ static void SelectDirFontBrowser(sdl_Button *sender)
 		mem_free(FontBrowserPreviewFont);
 		FontBrowserPreviewFont = NULL;
 	}
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	new_font.name = NULL;
+	new_font.alloc_name = NULL;
 	new_font.size = 0;
 	new_font.preset = false;
 	new_font.bitmapped = false;
@@ -2478,7 +2491,7 @@ static void SelectFileFontBrowser(sdl_Button *sender)
 	/* Fill in some details about the new font to preview. */
 	assert(FontBrowserFileEntries
 		&& FontBrowserFileEntries[page_start + sender->tag]);
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	/* If the font is in ANGBAND_DIR_FONTS, it is a preset font. */
 	sz1 = strlen(FontBrowserCurDir)
 		+ strlen(FontBrowserFileEntries[page_start + sender->tag]) + 2;
@@ -2493,16 +2506,17 @@ static void SelectFileFontBrowser(sdl_Button *sender)
 			NULL, NULL);
 	}
 	if (nresult == 0 && streq(FontBrowserCurDir, work)) {
-		new_font.name = string_make(
+		new_font.alloc_name = string_make(
 			FontBrowserFileEntries[page_start + sender->tag]);
 		new_font.preset = true;
 		mem_free(work);
 	} else {
 		path_build(work, sz1, FontBrowserCurDir,
 			FontBrowserFileEntries[page_start + sender->tag]);
-		new_font.name = work;
+		new_font.alloc_name = work;
 		new_font.preset = false;
 	}
+	new_font.name = new_font.alloc_name;
 	if (suffix_i(new_font.name, ".fon")) {
 		new_font.size = 0;
 		new_font.bitmapped = true;
@@ -2848,8 +2862,9 @@ static void ActivateFontBrowser(sdl_Button *sender)
 		mem_free(FontBrowserPreviewFont);
 		FontBrowserPreviewFont = NULL;
 	}
-	string_free(new_font.name);
+	string_free(new_font.alloc_name);
 	new_font.name = NULL;
+	new_font.alloc_name = NULL;
 	new_font.size = 0;
 	new_font.preset = false;
 	new_font.bitmapped = false;
@@ -3819,7 +3834,8 @@ static errr load_prefs(void)
 		/* Who? */
 		win->Term_idx = i;
 		
-		win->req_font.name = string_make(default_term_font.name);
+		win->req_font.alloc_name = string_make(default_term_font.name);
+		win->req_font.name = win->req_font.alloc_name;
 		win->req_font.size = default_term_font.size;
 		win->req_font.preset = default_term_font.preset;
 		win->req_font.bitmapped = default_term_font.bitmapped;
@@ -3904,7 +3920,7 @@ static errr load_prefs(void)
 			char *se;
 			int w, h;
 
-			string_free(win->req_font.name);
+			string_free(win->req_font.alloc_name);
 			if (prefix(s, "NOTPRESET,")) {
 				win->req_font.preset = false;
 				fsz = strtol(s + 10, &se, 10);
@@ -3918,14 +3934,14 @@ static errr load_prefs(void)
 							"instead\n", fsz);
 						fsz = DEFAULT_POINT_SIZE;
 					}
-					win->req_font.name =
+					win->req_font.alloc_name =
 						string_make(se + 1);
 				} else {
 					(void) fprintf(stderr, "%s",
 						garbled_msg);
 					win->req_font.preset =
 						default_term_font.preset;
-					win->req_font.name = string_make(
+					win->req_font.alloc_name = string_make(
 						default_term_font.name);
 					fsz = (default_term_font.bitmapped) ?
 						0 : default_term_font.size;
@@ -3939,23 +3955,26 @@ static errr load_prefs(void)
 								|| fsz > MAX_POINT_SIZE) {
 							fsz = DEFAULT_POINT_SIZE;
 						}
-						win->req_font.name =
+						win->req_font.alloc_name =
 							string_make(se + 1);
 					} else {
 						(void) fprintf(stderr, "%s",
 							garbled_msg);
 						win->req_font.preset =
 							default_term_font.preset;
-						win->req_font.name = string_make(
+						win->req_font.alloc_name =
+							string_make(
 							default_term_font.name);
 						fsz = (default_term_font.bitmapped) ?
 							0 : default_term_font.size;
 					}
 				} else {
-					win->req_font.name = string_make(s);
+					win->req_font.alloc_name =
+						string_make(s);
 					fsz = 0;
 				}
 			}
+			win->req_font.name = win->req_font.alloc_name;
 			win->req_font.size = fsz;
 			win->req_font.bitmapped = (fsz == 0);
 			if (sdl_CheckFont(&win->req_font, &w, &h)) {
@@ -3967,9 +3986,10 @@ static errr load_prefs(void)
 				(void) fprintf(stderr, "unusable font "
 					"file, %s, from pref file; using the "
 					"default font\n", win->req_font.name);
-				string_free(win->req_font.name);
-				win->req_font.name = string_make(
+				string_free(win->req_font.alloc_name);
+				win->req_font.alloc_name = string_make(
 					default_term_font.name);
+				win->req_font.name = win->req_font.alloc_name;
 				win->req_font.size = default_term_font.size;
 				win->req_font.preset = default_term_font.preset;
 				win->req_font.bitmapped =
