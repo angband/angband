@@ -11,6 +11,7 @@ and GPLv2 (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt) licenses.
 #define _NDS_SLOT2_RAM
 
 #ifndef __3DS__
+#ifndef BLOCKSDS
 
 #include <nds/ndstypes.h>
 
@@ -38,6 +39,7 @@ void  ram_lock (void);
 //  enable = set lowest waitstates, disable = set default waitstates
 void  ram_turbo (bool enable);
 
+#endif
 #endif
 
 #endif

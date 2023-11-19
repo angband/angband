@@ -82,7 +82,7 @@ SOURCES_CPP	:= $(shell find -L $(SOURCEDIRS) -name "*.cpp")
 # Compiler and linker flags
 # -------------------------
 
-DEFINES		+= -DNDS -D__NDS__ -DARM9 -DHAVE_DIRENT_H
+DEFINES		+= -DNDS -D__NDS__ -DBLOCKSDS -DARM9 -DHAVE_DIRENT_H
 
 ARCH		:= -march=armv5te -mtune=arm946e-s
 
@@ -125,8 +125,8 @@ ifeq (,$(NDS_DEBUG))
 CFLAGS		+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
 CXXFLAGS	+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
 else
-CFLAGS		+= -Og
-CXXFLAGS	+= -Og
+CFLAGS		+= -Og -g
+CXXFLAGS	+= -Og -g
 endif
 
 # Intermediate build files

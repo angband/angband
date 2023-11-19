@@ -1,4 +1,5 @@
 #ifndef __3DS__
+#ifndef BLOCKSDS
 
 /**********************************
   Copyright (C) Rick Wong (Lick)
@@ -439,4 +440,5 @@ void  ram_turbo (bool enable)
         REG_EXMEMCNT &= ~0x001A;
 }
 
+#endif
 #endif
