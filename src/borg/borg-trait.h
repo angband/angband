@@ -311,8 +311,8 @@ extern int* borg_trait;
 extern int* borg_has;
 extern int* borg_activation;
 
-int borg_race; /* Player race */
-int borg_class; /* Player class */
+extern int borg_race; /* Player race */
+extern int borg_class; /* Player class */
 
 extern int32_t my_power;
 

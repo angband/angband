@@ -31,7 +31,6 @@
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
-#include "borg-item-use.h"
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-messages-react.h"

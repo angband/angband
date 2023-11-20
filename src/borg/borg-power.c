@@ -22,6 +22,7 @@
 
 #include "borg-power.h"
 
+#include "../cmd-core.h"
 #include "../player-calcs.h"
 #include "../player-spell.h"
 

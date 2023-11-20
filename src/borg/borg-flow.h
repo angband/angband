@@ -109,7 +109,7 @@ extern struct borg_track track_door;
 /*
  * Track closed doors which started closed
  */
-struct borg_track track_closed;
+extern struct borg_track track_closed;
 
 extern bool borg_desperate;
 extern bool vault_on_level;

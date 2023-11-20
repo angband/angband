@@ -35,9 +35,6 @@ const char *SHOP_MENU_ITEMS = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 borg_shop *borg_shops; /* Current "shops" */
 borg_shop *safe_shops; /* Safety (save) "shops" */
 
-uint8_t *test;
-uint8_t *best;
-
 int         borg_food_onsale = -1; /* Are shops selling food? */
 int         borg_fuel_onsale = -1; /* Are shops selling fuel? */
 
@@ -212,16 +209,12 @@ void borg_init_store(void)
     /* Make the "safe" stores in the town */
     safe_shops = mem_zalloc(8 * sizeof(borg_shop));
 
-    test = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
-    best = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
+    borg_init_store_sell();
 }
 
 void borg_free_store(void)
 {
-    mem_free(best);
-    best = NULL;
-    mem_free(test);
-    test = NULL;
+    borg_free_store_sell();
 
     mem_free(safe_shops);
     safe_shops = NULL;

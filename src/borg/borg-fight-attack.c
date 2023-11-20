@@ -431,7 +431,7 @@ static int borg_best_mult(borg_item *obj, struct monster_race *r_ptr)
  * We will also decrease the value of the missile attack on breeders or
  * high clevel borgs town scumming.
  */
-int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
+static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 {
     int p1, p2 = 0;
     int j;

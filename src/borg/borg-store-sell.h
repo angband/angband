@@ -59,5 +59,9 @@ extern bool borg_think_shop_sell(void);
  */
 extern int borg_count_sell(void);
 
+extern void borg_init_store_sell(void);
+extern void borg_free_store_sell(void);
+
+
 #endif
 #endif

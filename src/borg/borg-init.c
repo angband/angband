@@ -307,7 +307,7 @@ void borg_init_txt_file(void)
 /*
  * Release resources allocated by borg_init_txt_file().
  */
-void borg_free_txt_file(void)
+static void borg_free_txt_file(void)
 {
     borg_trait_free();
 

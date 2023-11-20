@@ -50,6 +50,10 @@ int sold_item_store[10];
 int sold_item_num = -1;
 int sold_item_nxt = 0;
 
+uint8_t *test_item;
+uint8_t *best_item;
+
+
 /*
  * Determine if an item can "absorb" a second item
  *
@@ -344,7 +348,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
         if (home_power > *b_home_power) {
             /* Save the results */
             for (i = 0; i < z_info->store_inven_max; i++)
-                best[i] = test[i];
+                best_item[i] = test_item[i];
 
 #if 0
             /* dump, for debugging */
@@ -371,7 +375,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
     }
 
     /* Note the attempt */
-    test[n] = n;
+    test_item[n] = n;
 
     /* Evaluate the default item */
     borg_think_home_sell_aux2_slow(n + 1, start_i);
@@ -435,7 +439,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
         }
 
         /* Note the attempt */
-        test[n] = i + z_info->store_inven_max;
+        test_item[n] = i + z_info->store_inven_max;
 
         /* Evaluate the possible item */
         borg_think_home_sell_aux2_slow(n + 1, i + 1);
@@ -534,7 +538,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
             item->iqty--;
 
             /* Note the attempt */
-            test[n] = i + z_info->store_inven_max;
+            test_item[n] = i + z_info->store_inven_max;
 
             /* Test to see if this is a good substitution. */
             /* Examine the home  */
@@ -547,7 +551,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
             if (home_power > *b_home_power) {
                 /* Save the results */
                 for (k = 0; k < z_info->store_inven_max; k++)
-                    best[k] = test[k];
+                    best_item[k] = test_item[k];
 
 #if 0
                 /* dump, for debugging */
@@ -577,7 +581,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
             item->iqty++;
 
             /* put the item back in the test array */
-            test[n] = n;
+            test_item[n] = n;
         }
     }
 }
@@ -662,8 +666,8 @@ bool borg_think_home_sell_useful(bool save_best)
         b_home_power = &home_power;
 
     /* clear out our initial best/test objects */
-    memset(test, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
-    memset(best, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
+    memset(test_item, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
+    memset(best_item, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
 
     /* Hack -- the home is full */
     /* and pack is full */
@@ -676,7 +680,7 @@ bool borg_think_home_sell_useful(bool save_best)
         memcpy(&safe_home[i], &borg_shops[7].ware[i], sizeof(borg_item));
 
         /* clear test arrays (test[i] == i is no change) */
-        best[i] = test[i] = i;
+        best_item[i] = test_item[i] = i;
     }
 
     /* Hack -- Copy all the slots */
@@ -746,8 +750,8 @@ bool borg_think_home_sell_useful(bool save_best)
     for (i = 0; i < z_info->store_inven_max; i++) {
         /* if this is not the item that was there, */
         /* drop off the item that replaces it. */
-        if (best[i] != i && best[i] != 255) {
-            borg_item *item = &borg_items[best[i] - z_info->store_inven_max];
+        if (best_item[i] != i && best_item[i] != 255) {
+            borg_item *item = &borg_items[best_item[i] - z_info->store_inven_max];
             borg_item *item2 = &borg_shops[7].ware[i];
 
             /* if this item is not the same as what was */
@@ -760,7 +764,7 @@ bool borg_think_home_sell_useful(bool save_best)
                 continue;
 
             goal_shop = 7;
-            goal_item = best[i] - z_info->store_inven_max;
+            goal_item = best_item[i] - z_info->store_inven_max;
 
             return (true);
         }
@@ -772,9 +776,9 @@ bool borg_think_home_sell_useful(bool save_best)
         for (i = 0; i < z_info->store_inven_max; i++) {
             /* if this is not the item that was there, */
             /* get rid of the item that was there */
-            if ((best[i] != i) && (borg_shops[7].ware[i].iqty)) {
+            if ((best_item[i] != i) && (borg_shops[7].ware[i].iqty)) {
                 borg_item *item
-                    = &borg_items[best[i] - z_info->store_inven_max];
+                    = &borg_items[best_item[i] - z_info->store_inven_max];
                 borg_item *item2 = &borg_shops[7].ware[i];
 
                 /* if this item is not the same as what was */
@@ -803,13 +807,13 @@ bool borg_think_home_sell_useful(bool save_best)
     for (i = 0; i < z_info->store_inven_max; i++) {
         /* if this is not the item that was there,  */
         /* drop off the item that replaces it. */
-        if (best[i] != i && best[i] != 255) {
+        if (best_item[i] != i && best_item[i] != 255) {
             /* hack dont sell DVE */
-            if (!borg_items[best[i] - z_info->store_inven_max].iqty)
+            if (!borg_items[best_item[i] - z_info->store_inven_max].iqty)
                 return (false);
 
             goal_shop = 7;
-            goal_item = best[i] - z_info->store_inven_max;
+            goal_item = best_item[i] - z_info->store_inven_max;
 
             return (true);
         }
@@ -1362,4 +1366,19 @@ int borg_count_sell(void)
     /* Result */
     return (k);
 }
+
+void borg_init_store_sell(void)
+{
+    test_item = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
+    best_item = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
+}
+
+void borg_free_store_sell(void)
+{
+    mem_free(best_item);
+    best_item = NULL;
+    mem_free(test_item);
+    test_item = NULL;
+}
+
 #endif

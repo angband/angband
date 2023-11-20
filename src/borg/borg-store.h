@@ -49,12 +49,6 @@ extern borg_shop *borg_shops;
  */
 extern borg_shop *safe_shops;
 
-/*
- * Testing inventory changes when shopping
- */
-extern uint8_t *test;
-extern uint8_t *best;
-
 extern int     borg_food_onsale; /* Are shops selling food? */
 extern int     borg_fuel_onsale; /* Are shops selling fuel? */
 

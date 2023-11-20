@@ -22,6 +22,8 @@
 
 #include "../angband.h"
 
+#include "borg-item-use.h"
+
 /*
  * Check to see if the surrounding dungeon should be illuminated, and if
  * it should, do it.

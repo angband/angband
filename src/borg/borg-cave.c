@@ -26,6 +26,8 @@
 #include "borg-init.h"
 #include "borg-io.h"
 
+borg_grid *borg_grids[AUTO_MAX_Y]; /* The grids */
+
 void borg_init_cave(void)
 {
     /* sanity check  */
