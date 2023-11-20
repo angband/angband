@@ -86,9 +86,18 @@ bool monster_is_not_invisible(const struct monster *mon)
 }
 
 /**
- * Monster is unique
+ * Monster's unshifted form is unique
  */
 bool monster_is_unique(const struct monster *mon)
+{
+	return rf_has((mon->original_race) ?
+		mon->original_race->flags : mon->race->flags, RF_UNIQUE);
+}
+
+/**
+ * Monster's current form is unique
+ */
+bool monster_is_shape_unique(const struct monster *mon)
 {
 	return rf_has(mon->race->flags, RF_UNIQUE);
 }

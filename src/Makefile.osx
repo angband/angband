@@ -155,8 +155,13 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/customize/*.prf $(APPRES)/lib/customize
 
 	# 'optionally' install sound and graphics tiles, if present
-	-cp -R ../lib/tiles/ $(APPRES)/lib/tiles
-	-rm $(APPRES)/lib/tiles/Makefile $(APPRES)/lib/tiles/*/Makefile
+	@if test -d ../lib/tiles && test -r ../lib/tiles/list.txt ; then \
+		cp ../lib/tiles/list.txt $(APPRES)/lib/tiles ; \
+		for dir in `find ../lib/tiles -type d -depth 1 -print`; do \
+			subdir=$(APPRES)/lib/tiles/`basename "$$dir"` ; \
+			mkdir -p "$$subdir" && cp "$$dir"/*.{png,prf} "$$subdir" ; \
+		done ; \
+	fi
 	-cp ../lib/sounds/*.mp3 $(APPRES)/lib/sounds
 
 	install -m 755 $(EXE) $(APPBIN)

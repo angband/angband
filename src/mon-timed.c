@@ -79,8 +79,7 @@ static bool saving_throw(const struct monster *mon, int effect_type, int timer, 
 						   );
 
 	/* Give unique monsters a double check */
-	if (rf_has(mon->race->flags, RF_UNIQUE) &&
-			(randint0(100) < resist_chance)) {
+	if (monster_is_unique(mon) && (randint0(100) < resist_chance)) {
 		return true;
 	}
 

@@ -6,9 +6,9 @@
 #ifndef INCLUDED_BORG4_H
 #define INCLUDED_BORG4_H
 
-#include "angband.h"
-#include "obj-tval.h"
-#include "cave.h"
+#include "../angband.h"
+#include "../cave.h"
+#include "../obj-tval.h"
 
 #ifdef ALLOW_BORG
 
@@ -20,11 +20,9 @@
 #include "borg2.h"
 #include "borg3.h"
 
-
-
- /*
-  * Extract various bonuses
-  */
+/*
+ * Extract various bonuses
+ */
 extern void borg_notice(bool notice_swap);
 
 /*
@@ -37,8 +35,7 @@ extern void borg_notice(bool notice_swap);
  */
 extern void borg_notice_home(borg_item* in_item, bool no_items);
 
-extern int borg_mon_blow_effect(const char* name);
-
+extern int  borg_mon_blow_effect(const char* name);
 
 /*
  * Calculate the basic "power"
@@ -50,8 +47,6 @@ extern int32_t borg_power(void);
  */
 extern int32_t borg_power_home(void);
 
-
-
 /*
  * Calculate danger to a grid from a monster
  */
@@ -61,7 +56,6 @@ extern int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_d
  * Hack -- Calculate the "danger" of the given grid.
  */
 extern int borg_danger(int y, int x, int c, bool average, bool full_damage);
-
 
 /*
  * Determine if the Borg is out of "crucial" supplies.
@@ -73,15 +67,12 @@ extern const char* borg_restock(int depth);
  */
 extern const char* borg_prepared(int depth);
 
-
 /*
  * Initialize this file
  */
 extern void borg_init_4(void);
 extern void borg_clean_4(void);
 
-
 #endif
 
 #endif
-

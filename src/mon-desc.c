@@ -179,7 +179,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		const char *comma_pos;
 
 		/* Unique, indefinite or definite */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		if (monster_is_shape_unique(mon)) {
 			/* Start with the name (thus nominative and objective) */
 			/*
 			 * Strip off descriptive phrase if a possessive will be

@@ -246,7 +246,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				a = da;
 				c = dc;
 			} else if (OPT(player, purple_uniques) && 
-					   rf_has(mon->race->flags, RF_UNIQUE)) {
+					monster_is_shape_unique(mon)) {
 				/* Turn uniques purple if desired (violet, actually) */
 				a = COLOUR_VIOLET;
 				c = dc;

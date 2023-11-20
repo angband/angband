@@ -13,6 +13,16 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "angband.h"
 #include "cave.h"
@@ -21,6 +31,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "monster.h"
 #include "obj-init.h"
 #include "obj-pile.h"
@@ -1092,8 +1103,7 @@ static void monster_death_stats(int m_idx)
 	assert(m_idx > 0);
 	mon = cave_monster(cave, m_idx);
 
-	/* Check if monster is UNIQUE */
-	uniq = rf_has(mon->race->flags,RF_UNIQUE);
+	uniq = monster_is_unique(mon);
 
 	/* Mimicked objects will have already been counted as floor objects */
 	mon->mimicked_obj = NULL;
@@ -1139,7 +1149,7 @@ static bool stats_monster(struct monster *mon, int i)
 	mon_total[lvl] += addval;
 
 	/* Increment unique count if appropriate */
-	if (rf_has(mon->race->flags, RF_UNIQUE)){
+	if (monster_is_unique(mon)) {
 
 		/* add to total */
 		uniq_total[lvl] += addval;
@@ -1157,8 +1167,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 			mon_ood[lvl] += addval;
 
-			/* Is it a unique */
-			if (rf_has(mon->race->flags, RF_UNIQUE))
+			if (monster_is_unique(mon))
 				uniq_ood[lvl] += addval;
 	}
 
@@ -1168,8 +1177,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 		mon_deadly[lvl] += addval;
 
-		/* Is it a unique? */
-		if (rf_has(mon->race->flags, RF_UNIQUE))
+		if (monster_is_unique(mon))
 			uniq_deadly[lvl] += addval;
 	}
 

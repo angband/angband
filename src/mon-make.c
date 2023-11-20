@@ -519,7 +519,7 @@ void compact_monsters(struct chunk *c, int num_to_compact)
 				chance = 100;
 
 			/* Try not to compact Unique Monsters */
-			if (rf_has(mon->race->flags, RF_UNIQUE)) chance = 99;
+			if (monster_is_unique(mon)) chance = 99;
 
 			/* All monsters get a saving throw */
 			if (randint0(100) < chance) continue;
@@ -750,9 +750,10 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
 static bool mon_create_drop(struct chunk *c, struct monster *mon,
 		uint8_t origin)
 {
-	struct monster_drop *drop;
+	const struct monster_drop *drop;
 	struct monster_lore *lore = get_lore(mon->race);
-
+	const struct monster_race *effective_race = (mon->original_race) ?
+		mon->original_race : mon->race;
 	bool great, good, gold_ok, item_ok;
 	bool extra_roll = false;
 	bool any = false;
@@ -763,22 +764,22 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 
 	assert(mon);
 
-	great = (rf_has(mon->race->flags, RF_DROP_GREAT));
-	good = great || (rf_has(mon->race->flags, RF_DROP_GOOD));
-	gold_ok = (!rf_has(mon->race->flags, RF_ONLY_ITEM));
-	item_ok = (!rf_has(mon->race->flags, RF_ONLY_GOLD));
+	great = (rf_has(effective_race->flags, RF_DROP_GREAT));
+	good = great || (rf_has(effective_race->flags, RF_DROP_GOOD));
+	gold_ok = (!rf_has(effective_race->flags, RF_ONLY_ITEM));
+	item_ok = (!rf_has(effective_race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	number = mon_create_drop_count(mon->race, false, false, NULL);
+	number = mon_create_drop_count(effective_race, false, false, NULL);
 
 	/* Uniques that have been stolen from get their quantity reduced */
-	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+	if (monster_is_unique(mon)) {
 		number = MAX(0, number - lore->thefts);
 	}
 
 	/* Give added bonus for unique monsters */
-	monlevel = mon->race->level;
-	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+	monlevel = effective_race->level;
+	if (monster_is_unique(mon)) {
 		monlevel = MIN(monlevel + 15, monlevel * 2);
 		extra_roll = true;
 	}
@@ -789,7 +790,8 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	level = MIN(level, 100);
 
 	/* Morgoth currently drops all artifacts with the QUEST_ART flag */
-	if (rf_has(mon->race->flags, RF_QUESTOR) && (mon->race->level == 100)) {
+	if (rf_has(effective_race->flags, RF_QUESTOR)
+			&& (effective_race->level == 100)) {
 		/* Search all the artifacts */
 		for (j = 1; j < z_info->a_max; j++) {
 			const struct artifact *art = &a_info[j];
@@ -823,7 +825,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	}
 
 	/* Specified drops */
-	for (drop = mon->race->drops; drop; drop = drop->next) {
+	for (drop = effective_race->drops; drop; drop = drop->next) {
 		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
 
@@ -846,7 +848,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 		/* Set origin details */
 		obj->origin = origin;
 		obj->origin_depth = convert_depth_to_origin(c->depth);
-		obj->origin_race = mon->race;
+		obj->origin_race = effective_race;
 		obj->number = (obj->artifact) ?
 			1 : randint0(drop->max - drop->min) + drop->min;
 
@@ -871,7 +873,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 		/* Set origin details */
 		obj->origin = origin;
 		obj->origin_depth = convert_depth_to_origin(c->depth);
-		obj->origin_race = mon->race;
+		obj->origin_race = effective_race;
 
 		/* Try to carry */
 		if (monster_carry(c, mon, obj)) {

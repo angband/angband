@@ -264,7 +264,7 @@ jobs:
         id: create_windows_archive
         run: |
           ./autogen.sh
-          env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32 --enable-skip-old-int-typedefs
+          env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
           make
           cp src/${{ steps.store_config.outputs.prog }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
@@ -330,13 +330,12 @@ jobs:
       # Makefile.osx is overridden.  If the default SDK does not handle that,
       # setting SDKROOT to point to an installed SDK that does would be one
       # workaround.  Override the default OPT (-O2) to get the equivalent of
-      # what --enable-release and --enable-skip-old-int-typedefs does for
-      # builds using configure.
+      # what --enable-release does for builds using configure.
       - name: Create Mac Archive
         id: create_mac_archive
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG -DSKIP_ANGBAND_OLD_INT_TYPEDEFS" make -f Makefile.osx dist
+          env OPT="-O2 -DNDEBUG" make -f Makefile.osx dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
           echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
 

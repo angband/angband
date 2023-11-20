@@ -1031,7 +1031,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	}
 
 	/* Play a special sound if the monster was unique */
-	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+	if (monster_is_unique(mon)) {
 		if (mon->race->base == lookup_monster_base("Morgoth"))
 			soundfx = MSG_KILL_KING;
 		else
@@ -1084,7 +1084,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	}
 
 	/* When the player kills a Unique, it stays dead */
-	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+	if (monster_is_unique(mon)) {
 		char unique_name[80];
 		assert(mon->original_race == NULL);
 		mon->race->max_num = 0;
@@ -1195,8 +1195,7 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 	assert(t_mon);
 
 	/* "Unique" or arena monsters can only be "killed" by the player */
-	if (rf_has(t_mon->race->flags, RF_UNIQUE)
-			|| player->upkeep->arena_level) {
+	if (monster_is_unique(t_mon) || player->upkeep->arena_level) {
 		/* Reduce monster hp to zero, but don't kill it. */
 		if (dam > t_mon->hp) dam = t_mon->hp;
 	}
@@ -1433,7 +1432,7 @@ void steal_monster_item(struct monster *mon, int midx)
 
 	if (midx < 0) {
 		/* Base monster protection and player stealing skill */
-		bool unique = rf_has(mon->race->flags, RF_UNIQUE);
+		bool unique = monster_is_unique(mon);
 		int guard = (mon->race->level * (unique ? 4 : 3)) / 4 +
 			mon->mspeed - player->state.speed;
 		int steal_skill = player->state.skills[SKILL_STEALTH] +

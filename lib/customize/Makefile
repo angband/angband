@@ -8,7 +8,6 @@ CONFIG = \
 	font-win.prf \
 	font-x11.prf \
 	font.prf \
-	keys-gcu.prf \
 	message.prf \
 	pref.prf \
 	user.prf \
