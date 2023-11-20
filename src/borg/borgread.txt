@@ -31,8 +31,7 @@ To install and compile this borg, you will need to do the following:
         a. the allow_borg line
         b. the score_borg line
         c. the allow_borg_graphics line
-2.  Modify the makefile to include the borg1.o (or borg1.obj if windows)
-    though borg9.o
+2.  Modify the makefile to include the borg source files
 3.  Make sure the file borg.txt is located in the \lib\user\ directory.
     Unless you are using unix.  Unix users must have it in a specially 
     named directory, but I don't remember what it is.
