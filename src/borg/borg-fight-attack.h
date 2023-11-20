@@ -22,6 +22,8 @@
 
 #include "../angband.h"
 
+#include "borg-magic.h"
+
 /*
  * All of the various attacks or projections the borg can do.
  !FIX !TODO !AJG probably want to externalize this somehow.

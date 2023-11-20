@@ -39,7 +39,6 @@
 #include "borg-item-id.h"
 #include "borg-item-use.h"
 #include "borg-item-val.h"
-#include "borg-magic.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
 #include "borg-update.h"
