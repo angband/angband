@@ -31,9 +31,6 @@ extern int sold_item_store[10];
 extern int sold_item_num;
 extern int sold_item_nxt;
 
-// !FIX !TODO !AJG this just looks WRONG.  I have to debug to see what it is doing.  address of a stack variable?  eek!  
-extern int32_t *b_home_power;
-
 /*
  * Find the mininum amount of some item to buy/sell.
  */

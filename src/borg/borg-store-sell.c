@@ -39,10 +39,6 @@
 #include "borg-think.h"
 #include "borg-trait.h"
 
-
-// !FIX !TODO !AJG this just looks WRONG.  I have to debug to see what it is doing.  address of a stack variable?  eek!  
-int32_t* b_home_power;
-
 int sold_item_tval[10];
 int sold_item_sval[10];
 int sold_item_pval[10];
@@ -53,6 +49,7 @@ int sold_item_nxt = 0;
 uint8_t *test_item;
 uint8_t *best_item;
 
+int32_t *b_home_power;
 
 /*
  * Determine if an item can "absorb" a second item
@@ -295,37 +292,6 @@ int borg_min_item_quantity(borg_item *item)
     }
 }
 
-/*
- * This file handles the highest level goals, and store interaction.
- *
- * Store interaction strategy
- *
- *   (1) Sell items to the home (for later use)
- ** optimize the stuff in the home... this involves buying and selling stuff
- ** not in the 'best' list.
- *       We sell anything we may need later (see step 4)
- *
- *   (2) Sell items to the shops (for money)
- *       We sell anything we do not actually need
- *
- *   (3) Buy items from the shops (for the player)
- *       We buy things that we actually need
- *
- *   (4) Buy items from the home (for the player)
- *       We buy things that we actually need (see step 1)
- *
- *   (5) Buy items from the shops (for the home)
- *       We buy things we may need later (see step 1)
- *
- *   (6) Buy items from the home (for the stores)
- *       We buy things we no longer need (see step 2)
- *
- *   The basic principle is that we should always act to improve our
- *   "status", and we should sometimes act to "maintain" our status,
- *   especially if there is a monetary reward.  But first we should
- *   attempt to use the home as a "stockpile", even though that is
- *   not worth any money, since it may save us money eventually.
- */
 
  /* this optimized the home storage by trying every combination... it was too
   * slow.*/

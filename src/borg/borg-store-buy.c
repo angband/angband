@@ -723,7 +723,7 @@ bool borg_think_shop_grab_interesting(void)
     int n, b_n = -1;
     int qty = 1;
 
-    int32_t s, b_s = 0L;
+    int32_t s = 0L, b_s = 0L;
     int32_t c, b_c = 0L;
     int32_t borg_empty_home_power;
     int hole;
@@ -739,8 +739,6 @@ bool borg_think_shop_grab_interesting(void)
     /* get what an empty home would have for power */
     borg_notice_home(NULL, true);
     borg_empty_home_power = borg_power_home();
-
-    b_home_power = &s;
 
     hole = borg_first_empty_inventory_slot();
 
