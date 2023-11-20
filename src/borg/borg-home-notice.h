@@ -49,7 +49,7 @@ extern int16_t num_missile;
 
 extern int16_t num_book[9];
 
-extern int16_t num_fix_stat[7];
+extern int16_t num_fix_stat[STAT_MAX];
 extern int16_t home_stat_add[STAT_MAX];
 
 extern int16_t num_fix_exp;

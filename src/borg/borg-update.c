@@ -2003,8 +2003,6 @@ void borg_update(void)
 
         /* Enable some functions */
         borg_do_crush_junk = true;
-//!FIX        borg_do_crush_hole = true;
-//!FIX        borg_do_crush_slow = true;
 
         /* Mega-Hack -- Clear "call lite" stamp */
         when_call_light = 0;
@@ -2362,7 +2360,6 @@ void borg_update(void)
     /*** Update the map ***/
 
     /* Track floors and items */
-//!FIX    borg_temp_lit_n = 0;
     borg_wank_num = 0;
 
     /* Update the map */
@@ -2428,26 +2425,7 @@ void borg_update(void)
         /* Take note */
         borg_do_update_lite = false;
     }
-#if 0
-    /* Examine "lit" grids */
-    for (i = 0; i < borg_temp_lit_n; i++) {
-        /* Get location */
-        x = borg_temp_lit_x[i];
-        y = borg_temp_lit_y[i];
 
-        /* Get the borg_grid */
-        ag = &borg_grids[y][x];
-
-        /* Skip torch-lit grids */
-        if (ag->info & BORG_LIGHT) continue;
-
-        /* Assume not dark */
-        ag->info &= ~BORG_DARK;
-
-        /* Assume perma-lit */
-        if (y != c_y && x != c_x) ag->info |= BORG_GLOW;
-    }
-#endif
     /* make sure features that have monsters on them that can't passwall are marked FEAT_FLOOR */
     for (i = 1; i < borg_kills_nxt; i++) {
         borg_kill *kill;

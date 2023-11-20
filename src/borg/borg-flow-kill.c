@@ -83,6 +83,9 @@ static const char  **borg_normal_text; /* Names of normals */
  * Monsters or Uniques on this level
  */
 unsigned int borg_morgoth_id = 0;
+unsigned int borg_sauron_id = 0;
+unsigned int borg_tarrasque_id = 0;
+unsigned int borg_t_id = 0;
 unsigned int unique_on_level;
 bool         scaryguy_on_level; /* flee from certain guys */
 bool         morgoth_on_level;
@@ -116,8 +119,6 @@ static void borg_update_kill_new(int i)
 
     borg_kill *kill = &borg_kills[i];
 
-    // Not sure about this !FIX !TODO !AJG
-    //    struct monster* m_ptr = square_monster(cave, loc(kill->x, kill->y));
     struct monster *m_ptr = &cave->monsters[kill->m_idx];
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
@@ -3146,8 +3147,13 @@ static void borg_init_monster_names(void)
         text[size] = borg_massage_special_chars(r_ptr->name, NULL);
         what[size] = i;
 
+        /* a few special uniques to look out for */
         if (streq(r_ptr->name, "Morgoth, Lord of Darkness"))
             borg_morgoth_id = r_ptr->ridx;
+        if (streq(r_ptr->name, "Sauron, the Sorcerer"))
+            borg_sauron_id = r_ptr->ridx;
+        if (streq(r_ptr->name, "The Tarrasque"))
+            borg_tarrasque_id = r_ptr->ridx;
 
         size++;
     }

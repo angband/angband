@@ -170,9 +170,6 @@ bool borg_think_dungeon_light(void)
         /* wear stuff and see if it glows */
         if (borg_wear_stuff())
             return (true);
-        // Things are now automatically put in the quiver !FIX !TODO !AJG double
-        // check
-        //        if (borg_wear_quiver()) return (true);
 
         /* attempt to refuel/swap */
         need = borg_maintain_light();
@@ -819,7 +816,8 @@ bool borg_leave_level(bool bored)
      * Check to see if depth 99, if Sauron is dead and Im not read to fight
      * the final battle
      */
-    if (borg_trait[BI_CDEPTH] == 99 && borg_race_death[546] == 1
+    if (borg_trait[BI_CDEPTH] == 99 
+        && borg_race_death[borg_sauron_id] == 1
         && borg_ready_morgoth != 1) {
         borg_note("# Returning to level 98 to scum for items.");
         g = -1;

@@ -42,7 +42,7 @@
 #include "borg-store.h"
 #include "borg-update.h"
 
-bool initialized; /* Hack -- Initialized */
+bool borg_initialized; /* Hack -- Initialized */
 bool game_closed; /* Has the game been closed since the borg was
                       initialized */
 
@@ -555,7 +555,7 @@ void borg_init(void)
         borg_note("# Ready...");
 
     /* Now it is ready */
-    initialized = true;
+    borg_initialized = true;
 }
 
 /*

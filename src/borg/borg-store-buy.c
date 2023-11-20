@@ -729,7 +729,7 @@ bool borg_think_shop_grab_interesting(void)
     int hole;
 
     /* Dont do this if Sauron is dead */
-    if (borg_race_death[546] != 0)
+    if (borg_race_death[borg_sauron_id] != 0)
         return (false);
 
     /* not until later-- use that money for better equipment */

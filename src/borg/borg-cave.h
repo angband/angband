@@ -41,20 +41,14 @@ typedef struct borg_grid borg_grid;
 /*
  * A grid in the dungeon.  
  *
- * !FIX !TODO !AJG this description is out of date
- * 
- * There is a set of eight bit flags (see below) called "info".
- *
  * There is a terrain feature type, which may be incorrect.  It is
  * more or less based on the standard "feature" values, but some of
  * the legal values are never used, such as "secret door", and others
  * are used in bizarre ways, such as "invisible trap".
  *
- * There is an object index into the "object tracking" array.
+ * There is an object (take) index into the "object tracking" array.
  *
- * There is a monster index into the "monster tracking" array.
- *
- * There is a byte "hmmm" which is currently unused.
+ * There is a monster (kill) index into the "monster tracking" array.
  *
  * There is a byte "xtra" which tracks how much "searching" has been done
  * in the grid or in any grid next to the grid.
@@ -68,6 +62,8 @@ typedef struct borg_grid borg_grid;
  * that the Borg never needs to follow a path longer than 250 grids long.
  * Note that the "cost" fields have been moved into external arrays.
  *
+ * traps and glyphs are now separate flags 
+ * 
  * Hack -- note that the "char" zero will often crash the system!
  */
 struct borg_grid
@@ -80,8 +76,6 @@ struct borg_grid
 
     uint8_t take; /* Object index */
     uint8_t kill; /* Monster index */
-
-    uint8_t hmmm; /* Extra field (unused) */
 
     uint8_t xtra; /* Extra field (search count) */
 };

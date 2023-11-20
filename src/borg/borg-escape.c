@@ -70,7 +70,7 @@ bool borg_recall(void)
                 /* Special check on deep levels */
                 if (borg_trait[BI_CDEPTH] >= 80 && borg_trait[BI_CDEPTH] < 100
                     && /* Deep */
-                    borg_race_death[546] != 0) /* Sauron is Dead */
+                    borg_race_death[borg_sauron_id] != 0) /* Sauron is Dead */
                 {
                     /* Do reset Depth */
                     borg_note("# Resetting recall depth.");

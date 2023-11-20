@@ -1458,7 +1458,7 @@ static int32_t borg_power_inventory(void)
     /* Collecting Potions, prepping for Morgoth/Sauron fight */
     if (borg_trait[BI_MAXDEPTH] >= 99) {
         /* Sauron is alive -- carry them all*/
-        if (borg_race_death[546] == 0) {
+        if (borg_race_death[borg_sauron_id] == 0) {
             k = 0;
             for (; k < 99 && k < borg_has[kv_potion_healing]; k++)
                 value += 8000L;
@@ -1484,7 +1484,7 @@ static int32_t borg_power_inventory(void)
             borg_scumming_pots = false;
         }
         /* Sauron is dead -- store them unless I have enough */
-        if (borg_race_death[546] != 0) {
+        if (borg_race_death[borg_sauron_id] != 0) {
             /* Must scum for more pots */
             if ((num_heal_true + borg_has[kv_potion_healing] + num_ezheal_true
                 + borg_trait[BI_AEZHEAL]

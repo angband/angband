@@ -500,7 +500,7 @@ static int32_t borg_power_home_aux2(void)
     /*** Hack -- books ***/
 
     /* Reward books */
-    for (book = 0; book < 4; book++) {
+    for (book = 0; book < 9; book++) {
         /* only collect books up to level 14.  */
         /* After that, just buy them, they are always in stock*/
         if (borg_trait[BI_CLEVEL] < 15) {

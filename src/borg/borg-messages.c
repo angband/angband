@@ -242,16 +242,6 @@ static void borg_parse_aux(char *msg, int len)
         /* Incase we failed our emergency use of MM */
         borg_confirm_target = false;
 
-        /* check for glyphs since we no longer have a launch message */
-//!FIX        if (borg_casted_glyph) {
-            /* Forget the newly created-though-failed  glyph */
-//!FIX            track_glyph.num--;
-//!FIX            track_glyph.x[track_glyph.num] = 0;
-//!FIX            track_glyph.y[track_glyph.num] = 0;
-//!FIX            borg_note("# Removing glyph from array,");
-//!FIX            borg_casted_glyph = false;
-//!FIX        }
-
         /* Incase it was a Resistance refresh */
         if (borg_attempting_refresh_resist) {
             if (borg_resistance > 1)

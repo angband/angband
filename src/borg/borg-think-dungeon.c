@@ -1562,9 +1562,6 @@ bool borg_think_dungeon(void)
             /* wear stuff and see if it glows */
             if (borg_wear_stuff())
                 return (true);
-            // Things are now automatically put in the quiver !FIX !TODO !AJG
-            // double check
-            //            if (borg_wear_quiver()) return (true);
         }
 
         /* Recover from damage */
@@ -1600,12 +1597,6 @@ bool borg_think_dungeon(void)
      */
     if (!borg_items[INVEN_WIELD].tval && borg_wear_stuff())
         return (true);
-
-    /* If not wielding any missiles, load up the quiver */
-    // Things are now automatically put in the quiver !FIX !TODO !AJG double
-    // check
-    //    if (borg_items[INVEN_BOW].iqty && !borg_items[QUIVER_START].tval &&
-    //    borg_wear_quiver()) return (true);
 
     /* Dig an anti-summon corridor */
     if (borg_flow_kill_corridor(true))
@@ -2040,6 +2031,14 @@ bool borg_think_dungeon(void)
     if (borg_flow_dark(false))
         return (true);
 
+    /*** Deal with shops ***/
+
+    /* Hack -- Visit the shops */
+    if (borg_choose_shop()) {
+        /* Try and visit a shop, if so desired */
+        if (borg_flow_shop_entry(goal_shop))
+            return (true);
+    }
 
     /*** Leave the Level ***/
 

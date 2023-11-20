@@ -24,7 +24,7 @@
 
 extern bool borg_init_failure;
 
-extern bool initialized; /* Hack -- Initialized */
+extern bool borg_initialized; /* Hack -- Initialized */
 extern bool game_closed; /* Has the game been closed */
 
 /*

@@ -58,9 +58,9 @@ int16_t num_pot_rcold;
 
 int16_t num_missile;
 
-int16_t num_book[9]; // !FIX !TODO !AJG magic numbers bleh.
+int16_t num_book[9];
 
-int16_t num_fix_stat[7]; /* #7 is to fix all stats */ // !FIX !TODO !AJG check now that cha is gone
+int16_t num_fix_stat[STAT_MAX];
 int16_t home_stat_add[STAT_MAX];
 
 int16_t num_fix_exp;
@@ -265,7 +265,6 @@ static void borg_notice_home_clear(borg_item *in_item, bool no_items)
     num_fix_stat[STAT_WIS] = 0;
     num_fix_stat[STAT_DEX] = 0;
     num_fix_stat[STAT_CON] = 0;
-    num_fix_stat[6] = 0;
 
     /* Reset enchantment */
     num_enchant_to_a = 0;
@@ -644,6 +643,10 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
         /* Skip incorrect books (if we can browse this book, it is good) */
         if (!obj_kind_can_browse(&k_info[item->kind]))
+            break;
+
+        /* only ever store non-dungeon books */
+        if (kf_has(k_info[item->kind].kind_flags, KF_GOOD))
             break;
 
         /* Count the books */

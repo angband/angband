@@ -661,14 +661,14 @@ void do_cmd_borg(void)
      * Hack -- force initialization or reinitialize if the game was closed
      * and restarted without exiting since the last initialization
      */
-    if (!initialized || game_closed) {
-        if (initialized) {
+    if (!borg_initialized || game_closed) {
+        if (borg_initialized) {
             borg_free();
         }
         borg_init();
 
         if (borg_init_failure) {
-            initialized = false;
+            borg_initialized = false;
             borg_note("** startup failure borg cannot run ** ");
             Term_fresh();
             return;
@@ -702,10 +702,6 @@ void do_cmd_borg(void)
 
         /* Step forever */
         borg_step = 0;
-
-        /* need to check all stats */
-//!FIX        for (int i = 0; i < STAT_MAX; i++)
-//!FIX            my_need_stat_check[i] = true;
 
         /* Allowable Cheat -- Obtain "recall" flag */
         goal_recalling = player->word_recall * 1000;
@@ -809,10 +805,6 @@ void do_cmd_borg(void)
         borg_step = get_quantity("Step how many times? ", 1000);
         if (borg_step < 1)
             borg_step = 1;
-
-        /* need to check all stats */
-//!FIX        for (int i = 0; i < STAT_MAX; i++)
-//!FIX            my_need_stat_check[i] = true;
 
         /* Allowable Cheat -- Obtain "prot_from_evil" flag */
         borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);

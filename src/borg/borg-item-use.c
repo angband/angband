@@ -507,9 +507,6 @@ bool borg_use_staff(int sval)
     if (!borg_items[i].pval)
         return (false);
 
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
- //!FIX   borg_zap_slot = i;
-
     /* Log the message */
     borg_note(format("# Using %s.", borg_items[i].desc));
 
@@ -554,9 +551,6 @@ bool borg_use_unknown(void)
 
     /* Log the message */
     borg_note(format("# Using unknown Staff %s.", borg_items[n].desc));
-
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
- //!FIX   borg_zap_slot = n;
 
     /* Perform the action */
     borg_keypress('u');
@@ -617,9 +611,6 @@ bool borg_use_staff_fail(int sval)
         }
         /* We might have a slight chance, or we cannot not read */
     }
-
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
-//!FIX    borg_zap_slot = i;
 
     /* Log the message */
     borg_note(format("# Using %s.", borg_items[i].desc));
@@ -709,9 +700,6 @@ bool borg_aim_wand(int sval)
     /* No charges */
     if (!borg_items[i].pval)
         return (false);
-
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
-//!FIX    borg_zap_slot = i;
 
     /* Log the message */
     borg_note(format("# Aiming %s.", borg_items[i].desc));

@@ -2,8 +2,6 @@
  * \file borg-fight-attack.c
  * \brief Find the best attack  
  * 
- * !FIX !TODO !AJG probably break this up.
- *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
@@ -2645,9 +2643,6 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
     /* Log the message */
     borg_note(format("# Aiming unknown wand '%s.'", borg_items[b_i].desc));
 
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
-//!FIX    borg_zap_slot = b_i;
-
     /* Perform the action */
     borg_keypress('a');
     borg_keypress(all_letters_nohjkl[b_i]);
@@ -2714,9 +2709,6 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
 
     /* Log the message */
     borg_note(format("# Aiming unknown rod '%s.'", borg_items[b_i].desc));
-
-    /* record the address to avoid certain bugs with inscriptions&amnesia */
-//!FIX    borg_zap_slot = b_i;
 
     /* Perform the action */
     borg_keypress('z');

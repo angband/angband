@@ -3024,9 +3024,6 @@ void borg_notice(bool notice_swap)
  * Update the Borg based on the current "frame"
  *
  * Assumes the Borg is actually in the dungeon.
- * 
- * !FIX !TODO !AJG I think this is wrong.  This should be part of borg_notice since 
- * borg_notice clears the borg_trait array.
  */
 void borg_update_frame(void)
 {
