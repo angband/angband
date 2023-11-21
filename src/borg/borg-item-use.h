@@ -18,14 +18,17 @@
 #ifndef INCLUDED_BORG_ITEM_USE_H
 #define INCLUDED_BORG_ITEM_USE_H
 
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
+#include "../angband.h"
+
 #ifdef ALLOW_BORG
 
-#include "../angband.h"
-/*
+ /*
  * Item usage functions
  */
-enum borg_need
-{
+enum borg_need {
     BORG_NO_NEED,
     BORG_MET_NEED,
     BORG_UNMET_NEED,
@@ -72,7 +75,7 @@ extern bool borg_eat_unknown(void);
 extern bool borg_eat_food_any(void);
 
 /*
- * Checks for rod (by sval) 
+ * Checks for rod (by sval)
  */
 extern bool borg_equips_rod(int sval);
 
@@ -137,7 +140,7 @@ extern bool borg_activate_item(int activation);
  */
 extern bool borg_equips_item(int activation, bool check_charge);
 
-/* 
+/*
  * Return the relative chance for failure to activate an item.
  */
 extern int borg_activate_failure(int tval, int sval);
@@ -151,7 +154,6 @@ extern bool borg_use_things(void);
  * Recharge things
  */
 extern bool borg_recharging(void);
-
 
 #endif
 #endif

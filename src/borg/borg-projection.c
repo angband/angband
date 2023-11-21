@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-projection.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cave.h"
 

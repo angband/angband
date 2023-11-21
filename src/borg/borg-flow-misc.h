@@ -18,15 +18,18 @@
 #ifndef INCLUDED_BORG_FLOW_MISC_H
 #define INCLUDED_BORG_FLOW_MISC_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
- /*
+#ifdef ALLOW_BORG
+
+/*
  * Locate the store doors
  */
-extern int *track_shop_x;
-extern int *track_shop_y;
+extern int* track_shop_x;
+extern int* track_shop_y;
 
 /*
  * Track the mineral veins with treasure
@@ -43,7 +46,7 @@ extern bool borg_check_rest(int y, int x);
  * Do a "reverse" flow from the player outwards
  */
 extern void borg_flow_reverse(int depth, bool optimize, bool avoid,
-	bool tunneling, int stair_idx, bool sneak);
+    bool tunneling, int stair_idx, bool sneak);
 
 /*
  * Check a floor grid for "happy" status

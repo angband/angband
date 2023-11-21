@@ -17,14 +17,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-use.h"
+
+#ifdef ALLOW_BORG
 
 #include "../effects.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
@@ -32,16 +31,17 @@
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
+#include "borg.h"
 
- /*
-  * Quaff a potion of cure critical wounds.  This is a special case
-  *   for several reasons.
-  *   1) it is usually the only healing potion we have on us
-  *   2) we should try to conserve a couple for when we really need them
-  *   3) if we are burning through them fast we should probably teleport out of
-  *      the fight.
-  *   4) When it is the only/best way out of danger, drink away
-  */
+/*
+ * Quaff a potion of cure critical wounds.  This is a special case
+ *   for several reasons.
+ *   1) it is usually the only healing potion we have on us
+ *   2) we should try to conserve a couple for when we really need them
+ *   3) if we are burning through them fast we should probably teleport out of
+ *      the fight.
+ *   4) When it is the only/best way out of danger, drink away
+ */
 bool borg_quaff_crit(bool no_check)
 {
     static int16_t when_last_quaff = 0;
@@ -378,8 +378,8 @@ bool borg_eat_food_any(void)
      * effects.  But only try if there's protection against the negative effect.
      */
     if (((borg_trait[BI_FRACT])
-        && (borg_quaff_potion(sv_potion_sleep)
-            || borg_quaff_potion(sv_potion_slowness)))
+            && (borg_quaff_potion(sv_potion_sleep)
+                || borg_quaff_potion(sv_potion_slowness)))
         || ((borg_trait[BI_RBLIND]) && (borg_quaff_potion(sv_potion_blindness)))
         || ((borg_trait[BI_RCONF])
             && (borg_quaff_potion(sv_potion_confusion)))) {
@@ -387,7 +387,7 @@ bool borg_eat_food_any(void)
     }
     /* Consume in order, when hurting */
     if ((borg_trait[BI_CURHP] < 4
-        || (borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP]))
+            || (borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP]))
         && (borg_quaff_potion(sv_potion_cure_light)
             || borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_potion(sv_potion_cure_critical)
@@ -487,7 +487,6 @@ bool borg_zap_rod(int sval)
     /* Success */
     return (true);
 }
-
 
 /*
  * Hack -- attempt to use the given (charged) staff (by sval)
@@ -602,7 +601,7 @@ bool borg_use_staff_fail(int sval)
             return (false);
         }
 
-        /* We need to give some "desparation attempt to teleport staff" */
+        /* We need to give some "desperation attempt to teleport staff" */
         if (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISBLIND]) /* Dark? */
         {
             /* We really have no chance, return false, attempt the scroll */
@@ -668,7 +667,7 @@ bool borg_equips_staff_fail(int sval)
             return (false);
         }
 
-        /* We need to give some "desparation attempt to teleport staff" */
+        /* We need to give some "desperation attempt to teleport staff" */
         if (sval == sv_staff_teleportation && !borg_trait[BI_ISCONFUSED]) {
             /* We really have no chance, return false, attempt the scroll */
             if (fail < 650)
@@ -681,7 +680,6 @@ bool borg_equips_staff_fail(int sval)
     /* Yep we got one */
     return (true);
 }
-
 
 /*
  * Hack -- attempt to aim the given (charged) wand (by sval)
@@ -712,7 +710,6 @@ bool borg_aim_wand(int sval)
     return (true);
 }
 
-
 /*
  * Hack -- check and see if borg is wielding a ring and if
  * he will pass a fail check.
@@ -742,7 +739,7 @@ bool borg_equips_ring(int ring_sval)
         /* check on fail rate
          */
 
-         /* Extract the item level */
+        /* Extract the item level */
         lev = borg_items[i].level;
 
         /* Base chance of success */
@@ -805,7 +802,6 @@ bool borg_activate_ring(int ring_sval)
     return (false);
 }
 
-
 /*
  * Hack -- check and see if borg is wielding a dragon armor and if
  * he will pass a fail check.
@@ -843,7 +839,7 @@ bool borg_equips_dragon(int drag_sval)
      * and fail.  But he will not even try if he has negative chance or
      * less than twice the USE_DEVICE variable
      */
-     /* Extract the item level */
+    /* Extract the item level */
     lev = borg_items[INVEN_BODY].level;
 
     /* Base chance of success */
@@ -854,7 +850,7 @@ bool borg_equips_dragon(int drag_sval)
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
-    numerator = (skill - lev) - (141 - 1);
+    numerator   = (skill - lev) - (141 - 1);
     denominator = (lev - skill) - (100 - 10);
 
     /* Make sure that we don't divide by zero */
@@ -1049,12 +1045,12 @@ bool borg_use_things(void)
 
     /* Quaff potions of "restore" stat if needed */
     if ((borg_trait[BI_ISFIXSTR]
-        && (borg_quaff_potion(sv_potion_inc_str)
-            || borg_eat(TV_MUSHROOM, sv_mush_purging)
-            || borg_activate_item(act_shroom_purging)
-            || borg_activate_item(act_restore_str)
-            || borg_activate_item(act_restore_all)
-            || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
+            && (borg_quaff_potion(sv_potion_inc_str)
+                || borg_eat(TV_MUSHROOM, sv_mush_purging)
+                || borg_activate_item(act_shroom_purging)
+                || borg_activate_item(act_restore_str)
+                || borg_activate_item(act_restore_all)
+                || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
         || (borg_trait[BI_ISFIXINT]
             && (borg_quaff_potion(sv_potion_inc_int)
                 || borg_activate_item(act_restore_int)
@@ -1090,8 +1086,7 @@ bool borg_use_things(void)
 
         /* Process "force" items */
         switch (item->tval) {
-        case TV_POTION:
-        {
+        case TV_POTION: {
             /* Check the scroll */
             if (item->sval == sv_potion_enlightenment) {
                 /* Never quaff these in town */
@@ -1104,8 +1099,7 @@ bool borg_use_things(void)
 
             break;
         }
-        case TV_SCROLL:
-        {
+        case TV_SCROLL: {
             /* Hack -- check Blind/Confused */
             if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
                 break;
@@ -1160,7 +1154,7 @@ bool borg_use_things(void)
  */
 bool borg_recharging(void)
 {
-    int i = -1;
+    int  i      = -1;
     bool charge = false;
 
     /* Forbid blind/confused */

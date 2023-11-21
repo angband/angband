@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_TRAIT_H
 #define INCLUDED_BORG_TRAIT_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-item.h"
 #include "borg-trait-swap.h"
@@ -26,16 +29,16 @@
 /*
  * Possible values of "goal"
  */
-#define GOAL_KILL   1       /* Monsters */
-#define GOAL_TAKE   2       /* Objects */
-#define GOAL_MISC   3       /* Stores */
-#define GOAL_DARK   4       /* Exploring */
-#define GOAL_XTRA   5       /* Searching */
-#define GOAL_BORE   6       /* Leaving */
-#define GOAL_FLEE   7       /* Fleeing */
-#define GOAL_VAULT  8		/* Vaults */
-#define GOAL_RECOVER 9		/* Resting safely */
-#define GOAL_DIGGING 10		/* Anti-summon Corridor */
+#define GOAL_KILL    1 /* Monsters */
+#define GOAL_TAKE    2 /* Objects */
+#define GOAL_MISC    3 /* Stores */
+#define GOAL_DARK    4 /* Exploring */
+#define GOAL_XTRA    5 /* Searching */
+#define GOAL_BORE    6 /* Leaving */
+#define GOAL_FLEE    7 /* Fleeing */
+#define GOAL_VAULT   8 /* Vaults */
+#define GOAL_RECOVER 9 /* Resting safely */
+#define GOAL_DIGGING 10 /* Anti-summon Corridor */
 
 /*
  * Player race constants (hard-coded by save-files, arrays, etc)
@@ -51,14 +54,9 @@
 #define RACE_DUNADAN    8
 #define RACE_HIGH_ELF   9
 #define RACE_KOBOLD     10
-#define MAX_RACES	    11
+#define MAX_RACES       11
 
-enum borg_item_pos
-{
-    BORG_INVEN = 1,
-    BORG_EQUIP = 2,
-    BORG_QUILL = 4
-};
+enum borg_item_pos { BORG_INVEN = 1, BORG_EQUIP = 2, BORG_QUILL = 4 };
 
 /* NOTE: This must exactly match the prefix_pref enums in borg-trait.c */
 enum {
@@ -307,24 +305,24 @@ enum {
 
 // !FIX !TODO !AJG probably wrap all this up in a "borg" structure which can
 // contain all the things the borg thinks of itself
-extern int* borg_trait;
-extern int* borg_has;
-extern int* borg_activation;
+extern int*    borg_trait;
+extern int*    borg_has;
+extern int*    borg_activation;
 
-extern int borg_race; /* Player race */
-extern int borg_class; /* Player class */
+extern int     borg_race; /* Player race */
+extern int     borg_class; /* Player class */
 
 extern int32_t my_power;
 
-extern bool borg_lunal_mode;
-extern bool borg_munchkin_mode;
-extern bool borg_scumming_pots;
+extern bool    borg_lunal_mode;
+extern bool    borg_munchkin_mode;
+extern bool    borg_scumming_pots;
 extern int16_t borg_need_see_invis;
 extern int16_t borg_see_inv;
-extern bool need_shift_panel; /* to spot offscreens */
+extern bool    need_shift_panel; /* to spot offscreens */
 extern int16_t when_shift_panel;
 extern int16_t time_this_panel; /* Current "time" on current panel*/
-extern int16_t      borg_no_retreat;
+extern int16_t borg_no_retreat;
 
 extern int16_t when_call_light; /* When we last did call light */
 extern int16_t when_wizard_light; /* When we last did wizard light */
@@ -336,22 +334,24 @@ extern int16_t when_detect_evil;
 extern int16_t when_detect_obj;
 extern int16_t when_last_kill_mult; /* When a multiplier was last killed */
 
-extern int c_x; /* Current location (X) */
-extern int c_y; /* Current location (Y) */
+extern int     c_x; /* Current location (X) */
+extern int     c_y; /* Current location (Y) */
 
 extern int16_t goal; /* Flowing (goal type) */
 
-extern int g_x; /* Goal location (X) */
-extern int g_y; /* Goal location (Y) */
+extern int     g_x; /* Goal location (X) */
+extern int     g_y; /* Goal location (Y) */
 
 extern bool    goal_rising; /* Currently returning to town */
 extern bool    goal_leaving; /* Currently leaving the level */
 extern bool    goal_fleeing; /* Currently fleeing the level */
 extern bool    goal_fleeing_lunal; /* Currently fleeing the level in lunal*/
 extern bool    goal_fleeing_munchkin; /* Fleeing level while in munchkin Mode */
-extern bool    goal_fleeing_to_town; /* Currently fleeing the level to return to town */
-extern bool    goal_ignoring; /* Currently ignoring monsters */
-extern int     goal_recalling; /* Currently waiting for recall, guessing turns left */
+extern bool
+    goal_fleeing_to_town; /* Currently fleeing the level to return to town */
+extern bool goal_ignoring; /* Currently ignoring monsters */
+extern int
+    goal_recalling; /* Currently waiting for recall, guessing turns left */
 extern bool    goal_less; /* return to, but dont use, the next up stairs */
 
 extern int16_t goal_shop; /* Next shop to visit */
@@ -372,7 +372,7 @@ extern bool    borg_on_dnstairs; /* used when leaving a level */
 
 extern int16_t borg_oldchp; /* hit points last game turn */
 
-/* defence flags */
+/* defense flags */
 extern bool    borg_prot_from_evil;
 extern bool    borg_speed;
 extern bool    borg_bless;
@@ -426,14 +426,15 @@ extern int16_t amt_inc_stat[6]; /* Stat potions */
 extern int16_t amt_fix_exp;
 
 extern int16_t amt_cool_staff; /* holiness - power staff */
-extern int16_t amt_cool_wand; /* # of charges on Wands which can be useful for attacks */
+extern int16_t
+    amt_cool_wand; /* # of charges on Wands which can be useful for attacks */
 extern int16_t amt_digger;
 
 /* a 3 state boolean */
 /*-1 = not checked yet */
 /* 0 = not ready */
 /* 1 = ready */
-extern int     borg_ready_morgoth;
+extern int borg_ready_morgoth;
 
 /* array of the strings that match the BI_* values */
 extern const char* prefix_pref[];

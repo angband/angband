@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-cave.h"
+
+#ifdef ALLOW_BORG
 
 #include "../init.h"
 
@@ -31,7 +31,8 @@ borg_grid *borg_grids[AUTO_MAX_Y]; /* The grids */
 void borg_init_cave(void)
 {
     /* sanity check  */
-    if (DUNGEON_WID != z_info->dungeon_wid || DUNGEON_HGT != z_info->dungeon_hgt) {
+    if (DUNGEON_WID != z_info->dungeon_wid
+        || DUNGEON_HGT != z_info->dungeon_hgt) {
         borg_note("**STARTUP FAILURE** dungeon size miss match");
         borg_init_failure = true;
     }

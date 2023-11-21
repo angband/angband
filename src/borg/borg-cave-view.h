@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_CAVE_VIEW_H
 #define INCLUDED_BORG_CAVE_VIEW_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Maximum size of the "view" array
@@ -67,10 +70,9 @@
 #define BORG_TEMP  0x40 /* temporary flag */
 #define BORG_XTRA  0x80 /* extra flag */
 
-
- /*
-  * Maintain a set of grids (viewable grids)
-  */
+/*
+ * Maintain a set of grids (viewable grids)
+ */
 
 extern int16_t borg_view_n;
 extern uint8_t borg_view_y[AUTO_VIEW_MAX];

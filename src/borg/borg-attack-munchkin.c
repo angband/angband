@@ -1,6 +1,6 @@
 /**
  * \file borg-attack-munchkin.c
- * \brief attacks while in "munchkin mode" which is super cautious 
+ * \brief attacks while in "munchkin mode" which is super cautious
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,36 +17,35 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-attack-munchkin.h"
 
-#include "borg.h"
-#include "borg-cave.h"
+#ifdef ALLOW_BORG
+
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-danger.h"
-#include "borg-flow.h"
-#include "borg-flow-kill.h"
 #include "borg-fight-attack.h"
+#include "borg-flow-kill.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
- /* Munchkin Attack - Magic
-  *
-  * The early mages have a very difficult time surviving until they level up
-  * some. This routine will allow the mage to do some very limited attacking
-  * while he is doing the munchking start (stair scumming for items).
-  *
-  * Basically, he will rest on stairs to recuperate mana, then use MM to attack
-  * some easy to kill monsters.  If the monster gets too close, he will flee via
-  * the stairs. He hope to be able to kill the monster in two shots from the MM.
-  * A perfect scenario would be a mold which does not move, then he could
-  * rest/shoot/rest.
-  */
+/* Munchkin Attack - Magic
+ *
+ * The early mages have a very difficult time surviving until they level up
+ * some. This routine will allow the mage to do some very limited attacking
+ * while he is doing the munchkin start (stair scumming for items).
+ *
+ * Basically, he will rest on stairs to recuperate mana, then use MM to attack
+ * some easy to kill monsters.  If the monster gets too close, he will flee via
+ * the stairs. He hope to be able to kill the monster in two shots from the MM.
+ * A perfect scenario would be a mold which does not move, then he could
+ * rest/shoot/rest.
+ */
 bool borg_munchkin_mage(void)
 {
-
     int i, x, y;
     int a_y, a_x;
 
@@ -104,7 +103,7 @@ bool borg_munchkin_mage(void)
 
         /* Check if there is a monster adjacent to me or he's close and fast. */
         if ((kill->speed > borg_trait[BI_SPEED]
-            && borg_distance(c_y, c_x, a_y, a_x) <= 2)
+                && borg_distance(c_y, c_x, a_y, a_x) <= 2)
             || borg_distance(c_y, c_x, a_y, a_x) <= 1)
             return (false);
 
@@ -157,7 +156,7 @@ bool borg_munchkin_mage(void)
         /* Track the best attack method */
         if (dam >= b_dam && dam > 0) {
             b_dam = dam;
-            b_n = i;
+            b_n   = i;
         }
     }
 
@@ -193,7 +192,6 @@ bool borg_munchkin_mage(void)
  */
 bool borg_munchkin_melee(void)
 {
-
     int i, x, y;
 
     int n = 0;

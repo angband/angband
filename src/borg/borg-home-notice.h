@@ -16,16 +16,18 @@
 #ifndef INCLUDED_BORG_HOME_NOTICE_H
 #define INCLUDED_BORG_HOME_NOTICE_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-item.h"
 
 /*
  * Various "amounts" (for the home)
  */
-
 extern int16_t num_food;
 extern int16_t num_fuel;
 extern int16_t num_mold;
@@ -83,7 +85,7 @@ extern int16_t num_telepathy;
 extern int16_t num_LIGHT;
 extern int16_t num_see_inv;
 
-extern int16_t num_invisible; /**/
+extern int16_t num_invisible;
 
 extern int16_t num_ffall;
 extern int16_t num_free_act;
@@ -130,13 +132,8 @@ extern int16_t num_boots;
 
 /*
  * Extract the bonuses for items in the home.
- *
- * in_item is passed in if you want to pretent that in_item is
- *          the only item in the home.
- * no_items is passed in as true if you want to pretend that the
- *          home is empty.
  */
-extern void borg_notice_home(borg_item *in_item, bool no_items);
+extern void borg_notice_home(borg_item* in_item, bool no_items);
 
 #endif
 #endif

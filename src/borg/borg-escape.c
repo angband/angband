@@ -17,13 +17,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-escape.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-event.h"
 
-#include "borg.h"
 #include "borg-cave-util.h"
 #include "borg-danger.h"
 #include "borg-flow-kill.h"
@@ -36,14 +35,16 @@
 #include "borg-projection.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
 /*
  * Determine "twice" the distance between two points
  * This results in "diagonals" being "correctly" ranged,
  * that is, a diagonal appears "further" than an adjacent.
  */
-#define double_distance(Y1,X1,Y2,X2) \
-    (borg_distance(((int)(Y1))<<1,((int)(X1))<<1,((int)(Y2))<<1,((int)(X2))<<1))
+#define double_distance(Y1, X1, Y2, X2)                                        \
+    (borg_distance(((int)(Y1)) << 1, ((int)(X1)) << 1, ((int)(Y2)) << 1,       \
+        ((int)(X2)) << 1))
 
 /*
  * Attempt to induce WORD_OF_RECALL
@@ -60,13 +61,13 @@ bool borg_recall(void)
             /* Do reset depth at certain times. */
             if (borg_trait[BI_CDEPTH] < borg_trait[BI_MAXDEPTH]
                 && ((borg_trait[BI_MAXDEPTH] >= 60
-                    && borg_trait[BI_CDEPTH] >= 40)
+                        && borg_trait[BI_CDEPTH] >= 40)
                     || (borg_trait[BI_CLEVEL] < 48
                         && borg_trait[BI_CDEPTH] >= borg_trait[BI_MAXDEPTH] - 3)
                     || (borg_trait[BI_CLEVEL] < 48
                         && borg_trait[BI_CDEPTH] >= 15
                         && borg_trait[BI_MAXDEPTH] - borg_trait[BI_CDEPTH]
-                    > 10))) {
+                               > 10))) {
                 /* Special check on deep levels */
                 if (borg_trait[BI_CDEPTH] >= 80 && borg_trait[BI_CDEPTH] < 100
                     && /* Deep */
@@ -80,7 +81,7 @@ bool borg_recall(void)
                     borg_note("# Resetting recall depth during munchkin mode.");
                     borg_keypress('y');
                 } else if (borg_trait[BI_CDEPTH] >= 100
-                    && !borg_trait[BI_KING]) {
+                           && !borg_trait[BI_KING]) {
                     /* Do reset Depth */
                     borg_note("# Not Resetting recall depth.");
                     borg_keypress('n');
@@ -93,7 +94,7 @@ bool borg_recall(void)
 
             /* reset recall depth in dungeon? */
             else if (borg_trait[BI_CDEPTH] < borg_trait[BI_MAXDEPTH]
-                && borg_trait[BI_CDEPTH] != 0) {
+                     && borg_trait[BI_CDEPTH] != 0) {
                 /* Do not reset Depth */
                 borg_note("# Not resetting recall depth.");
                 borg_keypress('n');
@@ -115,17 +116,17 @@ bool borg_recall(void)
  * by a bunch of monsters.  This is called from borg_danger() when
  * he looking for a strategic retreat.  It is hopeful that the borg
  * will see that several monsters are approaching him and he may
- * become surrouned then die.  This routine looks at near-by monsters
- * and determines the likelihood of him getting surrouned.
+ * become surrounded then die.  This routine looks at near-by monsters
+ * and determines the likelihood of him getting surrounded.
  */
 bool borg_surrounded(void)
 {
-    borg_kill *kill;
+    borg_kill           *kill;
     struct monster_race *r_ptr;
 
-    int safe_grids = 8;
-    int non_safe_grids = 0;
-    int monsters = 0;
+    int safe_grids        = 8;
+    int non_safe_grids    = 0;
+    int monsters          = 0;
     int adjacent_monsters = 0;
 
     int x9, y9, ax, ay, d;
@@ -133,7 +134,7 @@ bool borg_surrounded(void)
 
     /* Evaluate the local monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
-        kill = &borg_kills[i];
+        kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
         /* Skip dead monsters */
@@ -222,7 +223,7 @@ bool borg_surrounded(void)
     if (safe_grids == 1 && adjacent_monsters == 1)
         return (false);
 
-    /* I am likely to get surrouned */
+    /* I am likely to get surrounded */
     if (monsters > safe_grids) {
         borg_note(format(
             "# Possibility of being surrounded (monsters/safegrids)(%d/%d)",
@@ -240,7 +241,7 @@ bool borg_surrounded(void)
             return (true);
     }
 
-    /* Probably will not be surrouned */
+    /* Probably will not be surrounded */
     return (false);
 }
 
@@ -304,8 +305,8 @@ bool borg_caution_phase(int emergency, int turns)
 {
     int n, k, i, d, x, y, p;
 
-    int dis = 10;
-    int min = dis / 2;
+    int dis       = 10;
+    int min       = dis / 2;
 
     borg_grid *ag = &borg_grids[c_y][c_x];
 
@@ -360,7 +361,7 @@ bool borg_caution_phase(int emergency, int turns)
         /* No location */
         /* in the real code it would keep trying but here we should */
         /* assume that there is unknown spots that you would be able */
-        /* to go but may be dangerious. */
+        /* to go but may be dangerous. */
         if (i >= 100) {
             n++;
             continue;
@@ -433,9 +434,9 @@ bool borg_caution_teleport(int emergency, int turns)
              * otherwise, consider ok*/
             if (ag->feat == FEAT_NONE
                 && ((borg_detect_wall[q_y + 0][q_x + 0] == true
-                    && borg_detect_wall[q_y + 0][q_x + 1] == true
-                    && borg_detect_wall[q_y + 1][q_x + 0] == true
-                    && borg_detect_wall[q_y + 1][q_x + 1] == true)
+                        && borg_detect_wall[q_y + 0][q_x + 1] == true
+                        && borg_detect_wall[q_y + 1][q_x + 0] == true
+                        && borg_detect_wall[q_y + 1][q_x + 1] == true)
                     || borg_t > 2000))
                 continue;
 
@@ -460,7 +461,7 @@ bool borg_caution_teleport(int emergency, int turns)
         /* No location */
         /* in the real code it would keep trying but here we should */
         /* assume that there is unknown spots that you would be able */
-        /* to go but may be dangerious. */
+        /* to go but may be dangerous. */
         if (i >= 100) {
             n++;
             continue;
@@ -540,10 +541,10 @@ bool borg_shadow_shift(int allow_fail)
 /* medium range teleport */
 bool borg_dimension_door(int allow_fail)
 {
-    int x_off, y_off;
-    int t_x, t_y;
-    int best_t_x, best_t_y;
-    int d, best_d = 0;
+    int        x_off, y_off;
+    int        t_x, t_y;
+    int        best_t_x, best_t_y;
+    int        d, best_d = 0;
     struct loc target;
 
     /* for now keep the range at under 50, for performance */
@@ -573,7 +574,7 @@ bool borg_dimension_door(int allow_fail)
 
             d = borg_danger(t_y, t_x, 2, true, false);
             if (d < best_d) {
-                best_d = d;
+                best_d   = d;
                 best_t_x = t_x;
                 best_t_y = t_y;
             }
@@ -594,7 +595,7 @@ bool borg_dimension_door(int allow_fail)
 
 /*
  * Try to phase door or teleport
- * b_q is the danger of the least dangerious square around us.
+ * b_q is the danger of the least dangerous square around us.
  */
 bool borg_escape(int b_q)
 {
@@ -755,7 +756,7 @@ bool borg_escape(int b_q)
         /* emergency phase activation no concern for safety of landing zone. */
         if (borg_trait[BI_CDEPTH]
             && ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] * 1 / 10
-                || b_q > avoidance * (45 + risky_boost) / 10)
+                    || b_q > avoidance * (45 + risky_boost) / 10)
                 && (borg_activate_item(act_tele_phase)
                     || borg_read_scroll(sv_scroll_phase_door)))) {
             /* Flee! */
@@ -954,10 +955,10 @@ bool borg_escape(int b_q)
             goal_leaving = true;
         }
     }
-    /* 4- not too scary but I'm comprimized */
+    /* 4- not too scary but I'm compromised */
     if ((b_q > avoidance * (8 + risky_boost) / 10
-        && (borg_trait[BI_CLEVEL] < 35
-            || borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP] / 3))
+            && (borg_trait[BI_CLEVEL] < 35
+                || borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP] / 3))
         || ((b_q > avoidance * (9 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
             && (borg_trait[BI_CLEVEL] < 35
@@ -1027,7 +1028,7 @@ bool borg_escape(int b_q)
         }
         /* Emergency Phase door if a weak mage */
         if (((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER)
-            && borg_trait[BI_CLEVEL] <= 35)
+                && borg_trait[BI_CLEVEL] <= 35)
             && borg_caution_phase(65, 2) && borg_t - borg_t_antisummon > 50
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
                 || borg_activate_item(act_tele_phase)
@@ -1107,7 +1108,7 @@ bool borg_escape(int b_q)
         }
         /* Emergency Phase door if a weak mage */
         if (((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER)
-            && borg_trait[BI_CLEVEL] <= 8)
+                && borg_trait[BI_CLEVEL] <= 8)
             && borg_caution_phase(65, 2)
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
                 || borg_activate_item(act_tele_phase)
@@ -1127,7 +1128,7 @@ bool borg_escape(int b_q)
 
     /* 6- not too scary but I'm out of mana  */
     if ((borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
-        || borg_class == CLASS_NECROMANCER)
+            || borg_class == CLASS_NECROMANCER)
         && (b_q > avoidance * (6 + risky_boost) / 10
             || (b_q > avoidance * (8 + risky_boost) / 10
                 && borg_fighting_unique >= 1 && borg_fighting_unique <= 8))
@@ -1172,7 +1173,7 @@ bool borg_escape(int b_q)
 
     /* 7- Shoot N Scoot */
     if ((borg_spell_okay_fail(PHASE_DOOR, allow_fail)
-        || borg_spell_okay_fail(PORTAL, allow_fail))
+            || borg_spell_okay_fail(PORTAL, allow_fail))
         && borg_shoot_scoot_safe(20, 2, b_q)) {
         /* Phase door */
         if (borg_spell_fail(PHASE_DOOR, allow_fail)

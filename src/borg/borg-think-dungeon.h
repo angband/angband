@@ -18,15 +18,18 @@
 #ifndef INCLUDED_BORG_THINK_DUNGEON_H
 #define INCLUDED_BORG_THINK_DUNGEON_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
- * Current level "feeling" 
+#ifdef ALLOW_BORG
+
+/*
+ * Current level "feeling"
  */
-extern int borg_feeling_danger;
-extern int borg_feeling_stuff; 
+extern int  borg_feeling_danger;
+extern int  borg_feeling_stuff;
 
 extern bool borg_think_dungeon(void);
 

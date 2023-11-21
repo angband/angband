@@ -18,14 +18,16 @@
 #ifndef INCLUDED_BORG_DANGER_H
 #define INCLUDED_BORG_DANGER_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-cave.h"
 
-enum BORG_MONBLOW
-{
+enum BORG_MONBLOW {
     MONBLOW_NONE,
     MONBLOW_HURT,
     MONBLOW_POISON,
@@ -77,7 +79,8 @@ extern bool borg_danger_wipe;
 /*
  * Calculate danger to a grid from a monster
  */
-extern int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_damage);
+extern int borg_danger_one_kill(
+    int y, int x, int c, int i, bool average, bool full_damage);
 
 /*
  * Hack -- Calculate the "danger" of the given grid.

@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_FIGHT_ATTACK_H
 #define INCLUDED_BORG_FIGHT_ATTACK_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-magic.h"
 
@@ -28,8 +31,7 @@
  * All of the various attacks or projections the borg can do.
  !FIX !TODO !AJG probably want to externalize this somehow.
  */
-enum
-{
+enum {
     BORG_ATTACK_MISSILE,
     BORG_ATTACK_ARROW,
     BORG_ATTACK_MANA,
@@ -131,8 +133,7 @@ enum
  *   Activating Artifacts
  *   Activate Dragon Armour
  */
-enum
-{
+enum {
     BF_REST,
     BF_THRUST,
     BF_OBJECT,
@@ -326,12 +327,13 @@ extern int     borg_tp_other_index[255];
  * What effect does a blow from a monster have?
  *
  */
-extern int  borg_mon_blow_effect(const char *name);
+extern int borg_mon_blow_effect(const char* name);
 
 /*
  * Simulate/Apply the optimal result of launching a beam/bolt/ball
  */
-extern int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location);
+extern int borg_launch_bolt(
+    int rad, int dam, int typ, int max, int ammo_location);
 
 /*
  * Simulate/Apply the optimal result of launching a missile

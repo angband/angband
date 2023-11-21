@@ -1,7 +1,7 @@
 /**
  * \file borg-fight-attack.c
- * \brief Find the best attack  
- * 
+ * \brief Find the best attack
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
@@ -17,15 +17,14 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-fight-attack.h"
+
+#ifdef ALLOW_BORG
 
 #include "../obj-slays.h"
 #include "../obj-util.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
 #include "borg-danger.h"
@@ -34,14 +33,15 @@
 #include "borg-flow-take.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
-#include "borg-item.h"
 #include "borg-item-activation.h"
 #include "borg-item-id.h"
 #include "borg-item-use.h"
 #include "borg-item-val.h"
+#include "borg-item.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
 int successful_target = 0;
 
@@ -55,47 +55,30 @@ int     borg_tp_other_index[255];
 
 /*
  * What effect does a blow from a monster have?
- * 
- * *HACK* must match code in mon-blows.c 
+ *
+ * *HACK* must match code in mon-blows.c
  */
 int borg_mon_blow_effect(const char *name)
 {
-    static const struct
-    {
-        const char *name;
+    static const struct {
+        const char       *name;
         enum BORG_MONBLOW val;
-    } monblow[] = {
-        { "NONE", MONBLOW_NONE },
-        { "HURT", MONBLOW_HURT },
-        { "POISON", MONBLOW_POISON },
-        { "DISENCHANT", MONBLOW_DISENCHANT },
+    } monblow[] = { { "NONE", MONBLOW_NONE }, { "HURT", MONBLOW_HURT },
+        { "POISON", MONBLOW_POISON }, { "DISENCHANT", MONBLOW_DISENCHANT },
         { "DRAIN_CHARGES", MONBLOW_DRAIN_CHARGES },
-        { "EAT_GOLD", MONBLOW_EAT_GOLD },
-        { "EAT_ITEM", MONBLOW_EAT_ITEM },
-        { "EAT_FOOD", MONBLOW_EAT_FOOD },
-        { "EAT_LIGHT", MONBLOW_EAT_LIGHT },
-        { "ACID", MONBLOW_ACID },
-        { "ELEC", MONBLOW_ELEC },
-        { "FIRE", MONBLOW_FIRE },
-        { "COLD", MONBLOW_COLD },
-        { "BLIND", MONBLOW_BLIND },
-        { "CONFUSE", MONBLOW_CONFUSE },
-        { "TERRIFY", MONBLOW_TERRIFY },
-        { "PARALYZE", MONBLOW_PARALYZE },
-        { "LOSE_STR", MONBLOW_LOSE_STR },
-        { "LOSE_INT", MONBLOW_LOSE_INT },
-        { "LOSE_WIS", MONBLOW_LOSE_WIS },
-        { "LOSE_DEX", MONBLOW_LOSE_DEX },
-        { "LOSE_CON", MONBLOW_LOSE_CON },
-        { "LOSE_ALL", MONBLOW_LOSE_ALL },
-        { "SHATTER", MONBLOW_SHATTER },
-        { "EXP_10", MONBLOW_EXP_10 },
-        { "EXP_20", MONBLOW_EXP_20 },
-        { "EXP_40", MONBLOW_EXP_40 },
-        { "EXP_80", MONBLOW_EXP_80 },
-        { "HALLU", MONBLOW_HALLU },
-        { "BLACK_BREATH", MONBLOW_BLACK_BREATH },
-        { NULL, MONBLOW_NONE }};
+        { "EAT_GOLD", MONBLOW_EAT_GOLD }, { "EAT_ITEM", MONBLOW_EAT_ITEM },
+        { "EAT_FOOD", MONBLOW_EAT_FOOD }, { "EAT_LIGHT", MONBLOW_EAT_LIGHT },
+        { "ACID", MONBLOW_ACID }, { "ELEC", MONBLOW_ELEC },
+        { "FIRE", MONBLOW_FIRE }, { "COLD", MONBLOW_COLD },
+        { "BLIND", MONBLOW_BLIND }, { "CONFUSE", MONBLOW_CONFUSE },
+        { "TERRIFY", MONBLOW_TERRIFY }, { "PARALYZE", MONBLOW_PARALYZE },
+        { "LOSE_STR", MONBLOW_LOSE_STR }, { "LOSE_INT", MONBLOW_LOSE_INT },
+        { "LOSE_WIS", MONBLOW_LOSE_WIS }, { "LOSE_DEX", MONBLOW_LOSE_DEX },
+        { "LOSE_CON", MONBLOW_LOSE_CON }, { "LOSE_ALL", MONBLOW_LOSE_ALL },
+        { "SHATTER", MONBLOW_SHATTER }, { "EXP_10", MONBLOW_EXP_10 },
+        { "EXP_20", MONBLOW_EXP_20 }, { "EXP_40", MONBLOW_EXP_40 },
+        { "EXP_80", MONBLOW_EXP_80 }, { "HALLU", MONBLOW_HALLU },
+        { "BLACK_BREATH", MONBLOW_BLACK_BREATH }, { NULL, MONBLOW_NONE } };
     unsigned long i;
     for (i = 0; i < sizeof(monblow) / sizeof(monblow[0]); ++i)
         if (!strcmp(name, monblow[i].name))
@@ -179,7 +162,7 @@ static int borg_thrust_damage_one(int i)
     if (chance < 5)
         chance = 5;
 
-    /* add 10% to chance to give a bit more wieght to weapons */
+    /* add 10% to chance to give a bit more weight to weapons */
     if (borg_trait[BI_CLEVEL] > 15)
         chance += 10;
 
@@ -206,10 +189,10 @@ static int borg_thrust_damage_one(int i)
         dam = (dam * 8 / 10) + 1;
 
     /*
-     * Enhance the preceived damage on Uniques.  This way we target them
+     * Enhance the perceived damage on Uniques.  This way we target them
      * Keep in mind that he should hit the uniques but if he has a
      * x5 great bane of dragons, he will tend attack the dragon since the
-     * precieved (and actual) damage is higher.  But don't select
+     * perceived (and actual) damage is higher.  But don't select
      * the town uniques (maggot does no damage)
      *
      */
@@ -217,8 +200,8 @@ static int borg_thrust_damage_one(int i)
         dam += (dam * 5);
 
     /* Hack -- ignore Maggot until later.  Player will chase Maggot
-     * down all accross the screen waking up all the monsters.  Then
-     * he is stuck in a comprimised situation.
+     * down all across the screen waking up all the monsters.  Then
+     * he is stuck in a compromised situation.
      */
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg_trait[BI_CDEPTH] == 0) {
         dam = dam * 2 / 3;
@@ -344,10 +327,10 @@ static int borg_attack_aux_thrust(void)
         return (b_d);
 
     /* Save the location */
-    g_x = borg_temp_x[b_i];
-    g_y = borg_temp_y[b_i];
+    g_x  = borg_temp_x[b_i];
+    g_y  = borg_temp_y[b_i];
 
-    ag = &borg_grids[g_y][g_x];
+    ag   = &borg_grids[g_y][g_x];
     kill = &borg_kills[ag->kill];
 
     /* Note */
@@ -433,18 +416,18 @@ static int borg_best_mult(borg_item *obj, struct monster_race *r_ptr)
  */
 static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 {
-    int p1, p2 = 0;
-    int j;
+    int  p1, p2 = 0;
+    int  j;
     bool borg_use_missile = false;
-    int ii;
-    int vault_grids = 0;
-    int x, y;
-    int k;
+    int  ii;
+    int  vault_grids = 0;
+    int  x, y;
+    int  k;
     bool gold_eater = false;
-    int chance = 0;
-    int bonus = 0;
-    int cur_dis = 0;
-    int armor = 0;
+    int  chance     = 0;
+    int  bonus      = 0;
+    int  cur_dis    = 0;
+    int  armor      = 0;
 
     borg_kill *kill;
     borg_grid *ag;
@@ -462,17 +445,17 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
     /* Calculation our chance of hitting.  Player bonuses, Bow bonuses, Ammo
      * Bonuses */
-    bonus = (borg_trait[BI_TOHIT] + borg_items[INVEN_BOW].to_h
-        + borg_items[ammo_location].to_h);
+    bonus  = (borg_trait[BI_TOHIT] + borg_items[INVEN_BOW].to_h
+             + borg_items[ammo_location].to_h);
     chance = (borg_trait[BI_THB] + (bonus * BTH_PLUS_ADJ));
-    armor = r_ptr->ac + cur_dis;
+    armor  = r_ptr->ac + cur_dis;
 
     /* Very quickly look for gold eating monsters */
     for (k = 0; k < 4; k++) {
         /* gold eater */
         if (r_ptr->blow[k].effect
             && borg_mon_blow_effect(r_ptr->blow[k].effect->name)
-            == MONBLOW_EAT_GOLD)
+                   == MONBLOW_EAT_GOLD)
             gold_eater = true;
     }
 
@@ -480,14 +463,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     switch (typ) {
         /* Magic Missile */
     case BORG_ATTACK_MISSILE:
-    break;
+        break;
 
-    case BORG_ATTACK_ARROW:
-    {
-        borg_item *bow = &borg_items[INVEN_BOW];
+    case BORG_ATTACK_ARROW: {
+        borg_item *bow  = &borg_items[INVEN_BOW];
         borg_item *ammo = &borg_items[ammo_location];
-        int mult = borg_best_mult(bow, r_ptr);
-        mult = MAX(mult, borg_best_mult(ammo, r_ptr));
+        int        mult = borg_best_mult(bow, r_ptr);
+        mult            = MAX(mult, borg_best_mult(ammo, r_ptr));
         dam *= mult;
         /* don't point blank non-uniques */
         if (cur_dis == 1 && !(rf_has(r_ptr->flags, RF_UNIQUE)))
@@ -499,118 +481,117 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
     /* Pure damage */
     case BORG_ATTACK_MANA:
-    if (borg_fighting_unique && borg_has[kv_potion_restore_mana] > 3)
-        dam *= 2;
-    break;
+        if (borg_fighting_unique && borg_has[kv_potion_restore_mana] > 3)
+            dam *= 2;
+        break;
 
     /* Meteor -- powerful magic missile */
     case BORG_ATTACK_METEOR:
-    break;
+        break;
 
     /* Acid */
     case BORG_ATTACK_ACID:
-    if (rf_has(r_ptr->flags, RF_IM_ACID))
-        dam = 0;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_ACID))
+            dam = 0;
+        break;
 
     /* Electricity */
     case BORG_ATTACK_ELEC:
-    if (rf_has(r_ptr->flags, RF_IM_ELEC))
-        dam = 0;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_ELEC))
+            dam = 0;
+        break;
 
     /* Fire damage */
     case BORG_ATTACK_FIRE:
-    if (rf_has(r_ptr->flags, RF_IM_FIRE))
-        dam = 0;
-    if ((rf_has(r_ptr->flags, RF_HURT_FIRE)))
-        dam *= 2;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_FIRE))
+            dam = 0;
+        if ((rf_has(r_ptr->flags, RF_HURT_FIRE)))
+            dam *= 2;
+        break;
 
     /* Cold */
     case BORG_ATTACK_COLD:
-    if (rf_has(r_ptr->flags, RF_IM_COLD))
-        dam = 0;
-    if (rf_has(r_ptr->flags, RF_HURT_COLD))
-        dam *= 2;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_COLD))
+            dam = 0;
+        if (rf_has(r_ptr->flags, RF_HURT_COLD))
+            dam *= 2;
+        break;
 
     /* Poison */
     case BORG_ATTACK_POIS:
-    if (rf_has(r_ptr->flags, RF_IM_POIS))
-        dam = 0;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_POIS))
+            dam = 0;
+        break;
 
     /* Ice */
     case BORG_ATTACK_ICE:
-    if (rf_has(r_ptr->flags, RF_IM_COLD))
-        dam = 0;
-    break;
+        if (rf_has(r_ptr->flags, RF_IM_COLD))
+            dam = 0;
+        break;
 
     /* Holy Orb */
     case BORG_ATTACK_HOLY_ORB:
-    if (rf_has(r_ptr->flags, RF_EVIL))
-        dam *= 2;
-    break;
+        if (rf_has(r_ptr->flags, RF_EVIL))
+            dam *= 2;
+        break;
 
     /* dispel undead */
     case BORG_ATTACK_DISP_UNDEAD:
-    if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
+            dam = 0;
+        break;
 
     /* dispel spirits */
     case BORG_ATTACK_DISP_SPIRITS:
-    if (!(rf_has(r_ptr->flags, RF_SPIRIT)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_SPIRIT)))
+            dam = 0;
+        break;
 
     /*  Dispel Evil */
     case BORG_ATTACK_DISP_EVIL:
-    if (!(rf_has(r_ptr->flags, RF_EVIL)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_EVIL)))
+            dam = 0;
+        break;
 
     /*  Dispel life */
     case BORG_ATTACK_DRAIN_LIFE:
-    if (!(rf_has(r_ptr->flags, RF_NONLIVING)))
-        dam = 0;
-    if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_NONLIVING)))
+            dam = 0;
+        if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
+            dam = 0;
+        break;
 
     /*  Holy Word */
     case BORG_ATTACK_HOLY_WORD:
-    if (!(rf_has(r_ptr->flags, RF_EVIL)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_EVIL)))
+            dam = 0;
+        break;
 
     /* Weak Lite */
     case BORG_ATTACK_LIGHT_WEAK:
-    if (!(rf_has(r_ptr->flags, RF_HURT_LIGHT)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_HURT_LIGHT)))
+            dam = 0;
+        break;
 
     /* Drain Life */
     case BORG_ATTACK_OLD_DRAIN:
-    if (borg_distance(c_y, c_x, kill->y, kill->x) == 1)
-        dam /= 5;
-    if ((rf_has(r_ptr->flags, RF_UNDEAD))
-        || (rf_has(r_ptr->flags, RF_DEMON))
-        || (strchr("Egv", r_ptr->d_char))) {
-        dam = 0;
-    }
-    break;
+        if (borg_distance(c_y, c_x, kill->y, kill->x) == 1)
+            dam /= 5;
+        if ((rf_has(r_ptr->flags, RF_UNDEAD))
+            || (rf_has(r_ptr->flags, RF_DEMON))
+            || (strchr("Egv", r_ptr->d_char))) {
+            dam = 0;
+        }
+        break;
 
     /* Stone to Mud */
     case BORG_ATTACK_KILL_WALL:
-    if (!(rf_has(r_ptr->flags, RF_HURT_ROCK)))
-        dam = 0;
-    break;
+        if (!(rf_has(r_ptr->flags, RF_HURT_ROCK)))
+            dam = 0;
+        break;
 
     /* New mage spell */
-    case BORG_ATTACK_NETHER:
-    {
+    case BORG_ATTACK_NETHER: {
         if (rf_has(r_ptr->flags, RF_UNDEAD)) {
             dam = 0;
         } else if (rsf_has(r_ptr->spell_flags, RSF_BR_NETH)) {
@@ -623,111 +604,111 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
     /* New mage spell */
     case BORG_ATTACK_CHAOS:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    /* If the monster is Unique full damage ok.
-     * Otherwise, polymorphing will reset HP
-     */
-    if (!(rf_has(r_ptr->flags, RF_UNIQUE)))
-        dam = -999;
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        /* If the monster is Unique full damage ok.
+         * Otherwise, polymorphing will reset HP
+         */
+        if (!(rf_has(r_ptr->flags, RF_UNIQUE)))
+            dam = -999;
+        break;
 
     /* New mage spell */
     case BORG_ATTACK_GRAVITY:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     /* New mage spell */
     case BORG_ATTACK_SHARD:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     /* New mage spell */
     case BORG_ATTACK_SOUND:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     /* Weird attacks */
     case BORG_ATTACK_PLASMA:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_PLAS)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_PLAS)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_CONFU:
-    if (rf_has(r_ptr->flags, RF_NO_CONF)) {
-        dam = 0;
-    }
-    break;
+        if (rf_has(r_ptr->flags, RF_NO_CONF)) {
+            dam = 0;
+        }
+        break;
 
     case BORG_ATTACK_DISEN:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_DISE)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_DISE)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_NEXUS:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_NEXU)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_NEXU)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_FORCE:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_INERTIA:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_INER)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_INER)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_TIME:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_LIGHT:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_DARK:
-    if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        break;
 
     case BORG_ATTACK_WATER:
-    if (rsf_has(r_ptr->spell_flags, RSF_BA_WATE)) {
-        dam *= 3;
-        dam /= 9;
-    }
-    dam /= 2;
-    break;
+        if (rsf_has(r_ptr->spell_flags, RSF_BA_WATE)) {
+            dam *= 3;
+            dam /= 9;
+        }
+        dam /= 2;
+        break;
 
     /* Various */
     case BORG_ATTACK_OLD_HEAL:
@@ -741,370 +722,370 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     case BORG_ATTACK_MAKE_TRAP:
     case BORG_ATTACK_AWAY_UNDEAD:
     case BORG_ATTACK_TURN_EVIL:
-    dam = 0;
-    break;
+        dam = 0;
+        break;
 
-    /* These spells which put the monster out of commission, we
-     * look at the danger of the monster prior to and after being
-     * put out of commission.  The difference is the damage.
-     * The following factors are considered when we
-     * consider the spell:
-     *
-     * 1. Is it already comprised by that spell?
-     * 2. Is it comprimised by another spell?
-     * 3. Does it resist the modality?
-     * 4. Will it make it's savings throw better than half the time?
-     * 5. We generally ignore these spells for breeders.
-     *
-     * The spell sleep II and sanctuary have a special consideration
-     * since the monsters must be adjacent to the player.
-     */
+        /* These spells which put the monster out of commission, we
+         * look at the danger of the monster prior to and after being
+         * put out of commission.  The difference is the damage.
+         * The following factors are considered when we
+         * consider the spell:
+         *
+         * 1. Is it already comprised by that spell?
+         * 2. Is it compromised by another spell?
+         * 3. Does it resist the modality?
+         * 4. Will it make it's savings throw better than half the time?
+         * 5. We generally ignore these spells for breeders.
+         *
+         * The spell sleep II and sanctuary have a special consideration
+         * since the monsters must be adjacent to the player.
+         */
 
     case BORG_ATTACK_AWAY_ALL:
-    /* Teleport Other works differently.  Basically the borg
-     * will keep a list of all the monsters in the line of
-     * fire.  Then when he checks the danger, he will not
-     * include those monsters.
-     */
+        /* Teleport Other works differently.  Basically the borg
+         * will keep a list of all the monsters in the line of
+         * fire.  Then when he checks the danger, he will not
+         * include those monsters.
+         */
 
-     /* try not to teleport away uniques. These are the guys you are trying
-      */
-      /* to kill! */
-    if (rf_has(r_ptr->flags, RF_UNIQUE)) {
-        /* This unique is low on HP, finish it off */
-        if (kill->injury >= 60)
-            dam = -9999;
+        /* try not to teleport away uniques. These are the guys you are trying
+         */
+        /* to kill! */
+        if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+            /* This unique is low on HP, finish it off */
+            if (kill->injury >= 60)
+                dam = -9999;
 
-        /* I am sitting pretty in an AS-Corridor */
-        else if (borg_as_position)
-            dam = -9999;
+            /* I am sitting pretty in an AS-Corridor */
+            else if (borg_as_position)
+                dam = -9999;
 
-        /* If this unique is causing the danger, get rid of it */
-        else if (dam > avoidance * 13 / 10 && borg_trait[BI_CDEPTH] <= 98) {
-            /* get rid of this unique by storing his info */
-            borg_tp_other_index[borg_tp_other_n] = i;
-            borg_tp_other_y[borg_tp_other_n] = kill->y;
-            borg_tp_other_x[borg_tp_other_n] = kill->x;
-            borg_tp_other_n++;
-        }
-
-        /* If fighting multiple uniques, get rid of one */
-        else if (borg_fighting_unique >= 2 && borg_fighting_unique <= 8) {
-            /* get rid of one unique or both if they are in a beam-line */
-            borg_tp_other_index[borg_tp_other_n] = i;
-            borg_tp_other_y[borg_tp_other_n] = kill->y;
-            borg_tp_other_x[borg_tp_other_n] = kill->x;
-            borg_tp_other_n++;
-        }
-        /* Unique is adjacent to Borg */
-        else if (borg_class == CLASS_MAGE
-            && borg_distance(c_y, c_x, kill->y, kill->x) <= 2) {
-            /* get rid of unique next to me */
-            borg_tp_other_index[borg_tp_other_n] = i;
-            borg_tp_other_y[borg_tp_other_n] = kill->y;
-            borg_tp_other_x[borg_tp_other_n] = kill->x;
-            borg_tp_other_n++;
-
-        }
-        /* Unique in a vault, get rid of it, clean vault */
-        else if (vault_on_level) {
-            /* Scan grids adjacent to monster */
-            for (ii = 0; ii < 8; ii++) {
-                x = kill->x + ddx_ddd[ii];
-                y = kill->y + ddy_ddd[ii];
-
-                /* Access the grid */
-                ag = &borg_grids[y][x];
-
-                /* Skip unknown grids (important) */
-                if (ag->feat == FEAT_NONE)
-                    continue;
-
-                /* Count adjacent Permas */
-                if (ag->feat == FEAT_PERM)
-                    vault_grids++;
-            }
-
-            /* Near enough perma grids? */
-            if (vault_grids >= 2) {
-                /* get rid of unique next to perma grids */
+            /* If this unique is causing the danger, get rid of it */
+            else if (dam > avoidance * 13 / 10 && borg_trait[BI_CDEPTH] <= 98) {
+                /* get rid of this unique by storing his info */
                 borg_tp_other_index[borg_tp_other_n] = i;
-                borg_tp_other_y[borg_tp_other_n] = kill->y;
-                borg_tp_other_x[borg_tp_other_n] = kill->x;
+                borg_tp_other_y[borg_tp_other_n]     = kill->y;
+                borg_tp_other_x[borg_tp_other_n]     = kill->x;
                 borg_tp_other_n++;
             }
 
-        } else
-            dam = -999;
-    } else /* not a unique */
-    {
-        /* get rid of this non-unique by storing his info */
-        borg_tp_other_index[borg_tp_other_n] = i;
-        borg_tp_other_y[borg_tp_other_n] = kill->y;
-        borg_tp_other_x[borg_tp_other_n] = kill->x;
-        borg_tp_other_n++;
-    }
-    break;
+            /* If fighting multiple uniques, get rid of one */
+            else if (borg_fighting_unique >= 2 && borg_fighting_unique <= 8) {
+                /* get rid of one unique or both if they are in a beam-line */
+                borg_tp_other_index[borg_tp_other_n] = i;
+                borg_tp_other_y[borg_tp_other_n]     = kill->y;
+                borg_tp_other_x[borg_tp_other_n]     = kill->x;
+                borg_tp_other_n++;
+            }
+            /* Unique is adjacent to Borg */
+            else if (borg_class == CLASS_MAGE
+                     && borg_distance(c_y, c_x, kill->y, kill->x) <= 2) {
+                /* get rid of unique next to me */
+                borg_tp_other_index[borg_tp_other_n] = i;
+                borg_tp_other_y[borg_tp_other_n]     = kill->y;
+                borg_tp_other_x[borg_tp_other_n]     = kill->x;
+                borg_tp_other_n++;
+
+            }
+            /* Unique in a vault, get rid of it, clean vault */
+            else if (vault_on_level) {
+                /* Scan grids adjacent to monster */
+                for (ii = 0; ii < 8; ii++) {
+                    x = kill->x + ddx_ddd[ii];
+                    y = kill->y + ddy_ddd[ii];
+
+                    /* Access the grid */
+                    ag = &borg_grids[y][x];
+
+                    /* Skip unknown grids (important) */
+                    if (ag->feat == FEAT_NONE)
+                        continue;
+
+                    /* Count adjacent Permas */
+                    if (ag->feat == FEAT_PERM)
+                        vault_grids++;
+                }
+
+                /* Near enough perma grids? */
+                if (vault_grids >= 2) {
+                    /* get rid of unique next to perma grids */
+                    borg_tp_other_index[borg_tp_other_n] = i;
+                    borg_tp_other_y[borg_tp_other_n]     = kill->y;
+                    borg_tp_other_x[borg_tp_other_n]     = kill->x;
+                    borg_tp_other_n++;
+                }
+
+            } else
+                dam = -999;
+        } else /* not a unique */
+        {
+            /* get rid of this non-unique by storing his info */
+            borg_tp_other_index[borg_tp_other_n] = i;
+            borg_tp_other_y[borg_tp_other_n]     = kill->y;
+            borg_tp_other_x[borg_tp_other_n]     = kill->x;
+            borg_tp_other_n++;
+        }
+        break;
 
     /* This teleport away is used to teleport away all monsters
      * as the borg goes through his special attacks.
      */
     case BORG_ATTACK_AWAY_ALL_MORGOTH:
-    /* Mostly no damage */
-    dam = 0;
-
-    /* If its touching a glyph grid, nail it. */
-    for (j = 0; j < 8; j++) {
-        int y2 = kill->y + ddy_ddd[j];
-        int x2 = kill->x + ddx_ddd[j];
-
-        /* Get the grid */
-        ag = &borg_grids[y2][x2];
+        /* Mostly no damage */
+        dam = 0;
 
         /* If its touching a glyph grid, nail it. */
-        if (ag->glyph) {
+        for (j = 0; j < 8; j++) {
+            int y2 = kill->y + ddy_ddd[j];
+            int x2 = kill->x + ddx_ddd[j];
+
+            /* Get the grid */
+            ag = &borg_grids[y2][x2];
+
+            /* If its touching a glyph grid, nail it. */
+            if (ag->glyph) {
+                /* get rid of this one by storing his info */
+                borg_tp_other_index[borg_tp_other_n] = i;
+                borg_tp_other_y[borg_tp_other_n]     = kill->y;
+                borg_tp_other_x[borg_tp_other_n]     = kill->x;
+                borg_tp_other_n++;
+                dam = 300;
+            }
+        }
+
+        /* If the borg is not in a good position, do it */
+        if (morgoth_on_level && !borg_morgoth_position) {
             /* get rid of this one by storing his info */
             borg_tp_other_index[borg_tp_other_n] = i;
-            borg_tp_other_y[borg_tp_other_n] = kill->y;
-            borg_tp_other_x[borg_tp_other_n] = kill->x;
+            borg_tp_other_y[borg_tp_other_n]     = kill->y;
+            borg_tp_other_x[borg_tp_other_n]     = kill->x;
             borg_tp_other_n++;
-            dam = 300;
+            dam = 100;
         }
-    }
 
-    /* If the borg is not in a good position, do it */
-    if (morgoth_on_level && !borg_morgoth_position) {
-        /* get rid of this one by storing his info */
-        borg_tp_other_index[borg_tp_other_n] = i;
-        borg_tp_other_y[borg_tp_other_n] = kill->y;
-        borg_tp_other_x[borg_tp_other_n] = kill->x;
-        borg_tp_other_n++;
-        dam = 100;
-    }
-
-    /* If the borg does not have enough Mana to attack this
-     * round and cast Teleport Away next round, then do it now.
-     */
-    if (borg_trait[BI_CURSP] <= 35) {
-        /* get rid of this unique by storing his info */
-        borg_tp_other_index[borg_tp_other_n] = i;
-        borg_tp_other_y[borg_tp_other_n] = kill->y;
-        borg_tp_other_x[borg_tp_other_n] = kill->x;
-        borg_tp_other_n++;
-        dam = 150;
-    }
-    break;
+        /* If the borg does not have enough Mana to attack this
+         * round and cast Teleport Away next round, then do it now.
+         */
+        if (borg_trait[BI_CURSP] <= 35) {
+            /* get rid of this unique by storing his info */
+            borg_tp_other_index[borg_tp_other_n] = i;
+            borg_tp_other_y[borg_tp_other_n]     = kill->y;
+            borg_tp_other_x[borg_tp_other_n]     = kill->x;
+            borg_tp_other_n++;
+            dam = 150;
+        }
+        break;
 
     /* This BORG_ATTACK_ is hacked to work for Mass Genocide.  Since
      * we cannot mass gen uniques.
      */
     case BORG_ATTACK_DISP_ALL:
-    if (rf_has(r_ptr->flags, RF_UNIQUE)) {
-        dam = 0;
+        if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+            dam = 0;
+            break;
+        }
+        dam = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
         break;
-    }
-    dam = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    break;
 
     case BORG_ATTACK_OLD_CONF:
-    dam = 0;
-    if (rf_has(r_ptr->flags, RF_NO_CONF))
-        break;
-    if (rf_has(r_ptr->flags, RF_MULTIPLY))
-        break;
-    if (kill->speed < r_ptr->speed - 5)
-        break;
-    if (kill->confused)
-        break;
-    if (!kill->awake)
-        break;
-    if ((kill->level
-    > (borg_trait[BI_CLEVEL] < 13
-        ? 10
-        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
-        break;
-    dam = -999;
-    if (rf_has(r_ptr->flags, RF_UNIQUE))
-        break;
-    borg_confuse_spell = false;
-    p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    /* Make certain monsters appear to have more danger so the borg is more
-     * likely to use this attack */
-    if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
-        p1 = p1 + 20;
-    borg_confuse_spell = true;
-    p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    borg_confuse_spell = false;
-    dam = (p1 - p2);
-    break;
-
-    case BORG_ATTACK_TURN_ALL:
-    dam = 0;
-    if (kill->speed < r_ptr->speed - 5)
-        break;
-    if (rf_has(r_ptr->flags, RF_NO_FEAR))
-        break;
-    if (kill->confused)
-        break;
-    if (!kill->awake)
-        break;
-    if ((kill->level
-    > (borg_trait[BI_CLEVEL] < 13
-        ? 10
-        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
-        break;
-    dam = -999;
-    if (rf_has(r_ptr->flags, RF_UNIQUE))
-        break;
-    borg_fear_mon_spell = false;
-    p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    /* Make certain monsters appear to have more danger so the borg is more
-     * likely to use this attack */
-    if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
-        p1 = p1 + 20;
-    borg_fear_mon_spell = true;
-    p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    borg_fear_mon_spell = false;
-    dam = (p1 - p2);
-    break;
-
-    case BORG_ATTACK_OLD_SLOW:
-    dam = 0;
-    if (kill->speed < r_ptr->speed - 5)
-        break;
-    if (kill->confused)
-        break;
-    if (!kill->awake)
-        break;
-    if ((kill->level
-    > (borg_trait[BI_CLEVEL] < 13
-        ? 10
-        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
-        break;
-    dam = -999;
-    if (rf_has(r_ptr->flags, RF_UNIQUE))
-        break;
-    borg_slow_spell = false;
-    p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    /* Make certain monsters appear to have more danger so the borg is more
-     * likely to use this attack */
-    if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
-        p1 = p1 + 20;
-    borg_slow_spell = true;
-    p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    borg_slow_spell = false;
-    dam = (p1 - p2);
-    break;
-
-    case BORG_ATTACK_OLD_SLEEP:
-    case BORG_ATTACK_SLEEP_EVIL:
-    dam = 0;
-    if (rf_has(r_ptr->flags, RF_NO_SLEEP))
-        break;
-    if (!rf_has(r_ptr->flags, RF_EVIL) && typ == BORG_ATTACK_SLEEP_EVIL)
-        break;
-    if (kill->speed < r_ptr->speed - 5)
-        break;
-    if (kill->confused)
-        break;
-    if (!kill->awake)
-        break;
-    if ((kill->level
-    > (borg_trait[BI_CLEVEL] < 13
-        ? 10
-        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
-        break;
-    dam = -999;
-    if (rf_has(r_ptr->flags, RF_UNIQUE))
-        break;
-    borg_sleep_spell = false;
-    p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    /* Make certain monsters appear to have more danger so the borg is more
-     * likely to use this attack */
-    if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
-        p1 = p1 + 20;
-    borg_sleep_spell = true;
-    p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
-    borg_sleep_spell = false;
-    dam = (p1 - p2);
-    break;
-
-    case BORG_ATTACK_OLD_POLY:
-    dam = 0;
-    if ((kill->level
-    > (borg_trait[BI_CLEVEL] < 13
-        ? 10
-        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
-        break;
-    dam = -999;
-    if (rf_has(r_ptr->flags, RF_UNIQUE))
-        break;
-    dam = borg_danger_one_kill(c_y, c_x, 2, i, true, true);
-    /* dont bother unless he is a scary monster */
-    if ((dam < avoidance * 2) && !kill->afraid)
         dam = 0;
-    break;
-
-    case BORG_ATTACK_TURN_UNDEAD:
-    if (rf_has(r_ptr->flags, RF_UNDEAD)) {
-        dam = 0;
-        if (kill->confused)
+        if (rf_has(r_ptr->flags, RF_NO_CONF))
+            break;
+        if (rf_has(r_ptr->flags, RF_MULTIPLY))
             break;
         if (kill->speed < r_ptr->speed - 5)
             break;
+        if (kill->confused)
+            break;
         if (!kill->awake)
             break;
-        if (kill->level > borg_trait[BI_CLEVEL] - 5)
+        if ((kill->level
+                > (borg_trait[BI_CLEVEL] < 13
+                        ? 10
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
+            break;
+        dam = -999;
+        if (rf_has(r_ptr->flags, RF_UNIQUE))
+            break;
+        borg_confuse_spell = false;
+        p1                 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        /* Make certain monsters appear to have more danger so the borg is more
+         * likely to use this attack */
+        if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
+            p1 = p1 + 20;
+        borg_confuse_spell = true;
+        p2                 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        borg_confuse_spell = false;
+        dam                = (p1 - p2);
+        break;
+
+    case BORG_ATTACK_TURN_ALL:
+        dam = 0;
+        if (kill->speed < r_ptr->speed - 5)
+            break;
+        if (rf_has(r_ptr->flags, RF_NO_FEAR))
+            break;
+        if (kill->confused)
+            break;
+        if (!kill->awake)
+            break;
+        if ((kill->level
+                > (borg_trait[BI_CLEVEL] < 13
+                        ? 10
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
+            break;
+        dam = -999;
+        if (rf_has(r_ptr->flags, RF_UNIQUE))
             break;
         borg_fear_mon_spell = false;
-        p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p1                  = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        /* Make certain monsters appear to have more danger so the borg is more
+         * likely to use this attack */
+        if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
+            p1 = p1 + 20;
         borg_fear_mon_spell = true;
-        p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p2                  = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
         borg_fear_mon_spell = false;
-        dam = (p1 - p2);
-    } else {
+        dam                 = (p1 - p2);
+        break;
+
+    case BORG_ATTACK_OLD_SLOW:
         dam = 0;
-    }
-    break;
+        if (kill->speed < r_ptr->speed - 5)
+            break;
+        if (kill->confused)
+            break;
+        if (!kill->awake)
+            break;
+        if ((kill->level
+                > (borg_trait[BI_CLEVEL] < 13
+                        ? 10
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
+            break;
+        dam = -999;
+        if (rf_has(r_ptr->flags, RF_UNIQUE))
+            break;
+        borg_slow_spell = false;
+        p1              = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        /* Make certain monsters appear to have more danger so the borg is more
+         * likely to use this attack */
+        if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
+            p1 = p1 + 20;
+        borg_slow_spell = true;
+        p2              = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        borg_slow_spell = false;
+        dam             = (p1 - p2);
+        break;
+
+    case BORG_ATTACK_OLD_SLEEP:
+    case BORG_ATTACK_SLEEP_EVIL:
+        dam = 0;
+        if (rf_has(r_ptr->flags, RF_NO_SLEEP))
+            break;
+        if (!rf_has(r_ptr->flags, RF_EVIL) && typ == BORG_ATTACK_SLEEP_EVIL)
+            break;
+        if (kill->speed < r_ptr->speed - 5)
+            break;
+        if (kill->confused)
+            break;
+        if (!kill->awake)
+            break;
+        if ((kill->level
+                > (borg_trait[BI_CLEVEL] < 13
+                        ? 10
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
+            break;
+        dam = -999;
+        if (rf_has(r_ptr->flags, RF_UNIQUE))
+            break;
+        borg_sleep_spell = false;
+        p1               = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        /* Make certain monsters appear to have more danger so the borg is more
+         * likely to use this attack */
+        if (kill->afraid && borg_trait[BI_CLEVEL] <= 10)
+            p1 = p1 + 20;
+        borg_sleep_spell = true;
+        p2               = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        borg_sleep_spell = false;
+        dam              = (p1 - p2);
+        break;
+
+    case BORG_ATTACK_OLD_POLY:
+        dam = 0;
+        if ((kill->level
+                > (borg_trait[BI_CLEVEL] < 13
+                        ? 10
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10)))
+            break;
+        dam = -999;
+        if (rf_has(r_ptr->flags, RF_UNIQUE))
+            break;
+        dam = borg_danger_one_kill(c_y, c_x, 2, i, true, true);
+        /* don't bother unless he is a scary monster */
+        if ((dam < avoidance * 2) && !kill->afraid)
+            dam = 0;
+        break;
+
+    case BORG_ATTACK_TURN_UNDEAD:
+        if (rf_has(r_ptr->flags, RF_UNDEAD)) {
+            dam = 0;
+            if (kill->confused)
+                break;
+            if (kill->speed < r_ptr->speed - 5)
+                break;
+            if (!kill->awake)
+                break;
+            if (kill->level > borg_trait[BI_CLEVEL] - 5)
+                break;
+            borg_fear_mon_spell = false;
+            p1 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+            borg_fear_mon_spell = true;
+            p2 = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+            borg_fear_mon_spell = false;
+            dam                 = (p1 - p2);
+        } else {
+            dam = 0;
+        }
+        break;
 
     /* Banishment-- cast when in extreme danger (checked in borg_defense). */
     case BORG_ATTACK_AWAY_EVIL:
-    if (rf_has(r_ptr->flags, RF_EVIL)) {
-        /* try not teleport away uniques. */
-        if (rf_has(r_ptr->flags, RF_UNIQUE)) {
-            /* Banish ones with escorts */
-            if (r_ptr->friends || r_ptr->friends_base) {
-                dam = 0;
-            } else {
-                /* try not Banish non escorted uniques */
-                dam = -500;
-            }
+        if (rf_has(r_ptr->flags, RF_EVIL)) {
+            /* try not teleport away uniques. */
+            if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+                /* Banish ones with escorts */
+                if (r_ptr->friends || r_ptr->friends_base) {
+                    dam = 0;
+                } else {
+                    /* try not Banish non escorted uniques */
+                    dam = -500;
+                }
 
+            } else {
+                /* damage is the danger of the baddie */
+                dam = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+            }
         } else {
-            /* damage is the danger of the baddie */
-            dam = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+            dam = 0;
         }
-    } else {
-        dam = 0;
-    }
-    break;
+        break;
 
     case BORG_ATTACK_TAP_UNLIFE:
-    /* for now ignore the gain in sp */
-    if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
-        dam = 0;
-    else {
-        int sp_drain = borg_trait[BI_CURSP] - borg_trait[BI_CURSP];
-        if (sp_drain < kill->power)
-            dam = kill->power - sp_drain;
-    }
-    break;
+        /* for now ignore the gain in sp */
+        if (!(rf_has(r_ptr->flags, RF_UNDEAD)))
+            dam = 0;
+        else {
+            int sp_drain = borg_trait[BI_CURSP] - borg_trait[BI_CURSP];
+            if (sp_drain < kill->power)
+                dam = kill->power - sp_drain;
+        }
+        break;
     }
 
     /* use Missiles on certain types of monsters */
     if ((borg_trait[BI_CDEPTH] >= 1)
         && (borg_danger_one_kill(kill->y, kill->x, 1, i, true, true)
-        > avoidance * 2 / 10
+                > avoidance * 2 / 10
             || ((r_ptr->friends || r_ptr->friends_base) /* monster has friends*/
                 && kill->level >= borg_trait[BI_CLEVEL] - 5 /* close levels */)
             || kill->ranged_attack /* monster has a ranged attack */
@@ -1126,18 +1107,18 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         dam = kill->power * 2;
 
     /* give a small bonus for whacking a unique */
-    /* this should be just enough to give prefrence to wacking uniques */
+    /* this should be just enough to give preference to whacking uniques */
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg_trait[BI_CDEPTH] >= 1)
         dam = (dam * 3);
 
     /* Hack -- ignore Maggot until later.  Player will chase Maggot
-     * down all accross the screen waking up all the monsters.  Then
+     * down all across the screen waking up all the monsters.  Then
      * he is stuck in a compromised situation.
      */
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg_trait[BI_CDEPTH] == 0) {
         dam = dam * 2 / 3;
 
-        /* Dont hunt maggot until later */
+        /* Don't hunt maggot until later */
         if (borg_trait[BI_CLEVEL] < 5)
             dam = 0;
     }
@@ -1185,15 +1166,16 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     /* Damage */
     return (dam);
 }
+
 /*
  * Simulate / Invoke the launching of a bolt at a monster
  */
 static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
 {
     int d, p2, p1, x, y;
-    int o_y = 0;
-    int o_x = 0;
-    int walls = 0;
+    int o_y     = 0;
+    int o_x     = 0;
+    int walls   = 0;
     int unknown = 0;
 
     borg_grid *ag;
@@ -1244,8 +1226,8 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
         for (o_x = -1; o_x <= 1; o_x++) {
             for (o_y = -1; o_y <= 1; o_y++) {
                 /* Acquire location */
-                x = kill->x + o_x;
-                y = kill->y + o_y;
+                x  = kill->x + o_x;
+                y  = kill->y + o_y;
 
                 ag = &borg_grids[y][x];
 
@@ -1332,9 +1314,9 @@ static int borg_launch_bolt_aux(
 
     int r, n;
 
-    borg_grid *ag;
+    borg_grid           *ag;
     struct monster_race *r_ptr;
-    borg_kill *kill;
+    borg_kill           *kill;
 
     int q_x, q_y;
 
@@ -1368,8 +1350,8 @@ static int borg_launch_bolt_aux(
             break;
 
         /* Get the grid of the targetted monster */
-        ag = &borg_grids[y2][x2];
-        kill = &borg_kills[ag->kill];
+        ag    = &borg_grids[y2][x2];
+        kill  = &borg_kills[ag->kill];
         r_ptr = &r_info[kill->r_idx];
 
         /* Get the grid of the pathway */
@@ -1403,7 +1385,7 @@ static int borg_launch_bolt_aux(
             return (n);
 
         /* The missile path can be complicated.  There are several checks
-         * which need to be made.  First we assume that we targetting
+         * which need to be made.  First we assume that we targeting
          * a monster.  That monster could be known from either sight or
          * ESP.  If the entire pathway from us to the monster is known,
          * then there is no concern.  But if the borg is shooting through
@@ -1428,7 +1410,7 @@ static int borg_launch_bolt_aux(
          *
          * Low level borgs will not take the shot unless they have
          * a clean and known pathway.  Borgs over a certain clevel,
-         * will attempt the shot and listen for the 'ouch' repsonse
+         * will attempt the shot and listen for the 'ouch' response
          * to know that the clear.  If no 'Ouch' is heard, then the
          * borg will assume there is a wall in the way.  Exception to
          * this is with arrows.  Arrows can miss the target or fall
@@ -1436,7 +1418,7 @@ static int borg_launch_bolt_aux(
          * allowed to miss two shots with arrows/bolts/thrown objects.
          */
 
-         /* dont do the check if esp */
+        /* dont do the check if esp */
         if (!borg_trait[BI_ESP]) {
             /* Check the missile path--no Infra, no HAS_LIGHT */
             if (dist && (borg_trait[BI_INFRA] <= 0) && !(r_ptr->light > 0)) {
@@ -1574,20 +1556,18 @@ static int borg_launch_bolt_aux(
 
             /* check destroyed stuff. */
             if (ag->take && borg_takes[ag->take].kind) {
-                struct borg_take *take = &borg_takes[ag->take];
+                struct borg_take   *take  = &borg_takes[ag->take];
                 struct object_kind *k_ptr = take->kind;
 
                 switch (typ) {
-                case BORG_ATTACK_ACID:
-                {
+                case BORG_ATTACK_ACID: {
                     /* rings/boots cost extra (might be speed!) */
                     if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
                         n -= 20;
                     }
                     break;
                 }
-                case BORG_ATTACK_ELEC:
-                {
+                case BORG_ATTACK_ELEC: {
                     /* rings/boots cost extra (might be speed!) */
                     if (k_ptr->tval == TV_RING && !k_ptr->aware) {
                         n -= 20;
@@ -1599,16 +1579,14 @@ static int borg_launch_bolt_aux(
                     break;
                 }
 
-                case BORG_ATTACK_FIRE:
-                {
+                case BORG_ATTACK_FIRE: {
                     /* rings/boots cost extra (might be speed!) */
                     if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
                         n -= 20;
                     }
                     break;
                 }
-                case BORG_ATTACK_COLD:
-                {
+                case BORG_ATTACK_COLD: {
                     if (k_ptr->tval == TV_POTION) {
                         n -= 20;
 
@@ -1630,8 +1608,7 @@ static int borg_launch_bolt_aux(
                     }
                     break;
                 }
-                case BORG_ATTACK_MANA:
-                {
+                case BORG_ATTACK_MANA: {
                     /* Used against uniques, allow the stuff to burn */
                     break;
                 }
@@ -1653,13 +1630,13 @@ static int borg_launch_bolt_aux(
  */
 int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
 {
-    int i = 0;
-    int b_i = -1;
-    int n = 0;
-    int b_n = -1;
+    int i     = 0;
+    int b_i   = -1;
+    int n     = 0;
+    int b_n   = -1;
     int b_o_y = 0, b_o_x = 0;
     int o_y = 0, o_x = 0;
-    int d, b_d = z_info->max_range;
+    int d, b_d       = z_info->max_range;
 
     /* Examine possible destinations */
 
@@ -1688,7 +1665,7 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
 
                 /* Reset Teleport Other variables */
                 borg_tp_other_n = 0;
-                n = 0;
+                n               = 0;
 
                 /* Bounds check */
                 if (!square_in_bounds(cave, loc(x, y)))
@@ -1746,11 +1723,11 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
                     continue;
 
                 /* Track it */
-                b_i = i;
-                b_n = n;
+                b_i   = i;
+                b_n   = n;
                 b_o_y = o_y;
                 b_o_x = o_x;
-                b_d = d;
+                b_d   = d;
             }
         }
     }
@@ -1878,17 +1855,17 @@ int borg_attack_aux_launch(void)
  */
 static int borg_attack_aux_rest(void)
 {
-    int i;
+    int  i;
     bool resting_is_good = false;
 
-    int my_danger = borg_danger(c_y, c_x, 1, false, false);
+    int my_danger        = borg_danger(c_y, c_x, 1, false, false);
 
     /* Examine all the monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
         borg_kill *kill = &borg_kills[i];
 
-        int x9 = kill->x;
-        int y9 = kill->y;
+        int x9          = kill->x;
+        int y9          = kill->y;
         int ax, ay, d;
 
         /* Skip dead monsters */
@@ -2140,25 +2117,25 @@ int borg_attack_aux_spell_bolt(
     enum borg_spells primary_spell_for_class = MAGIC_MISSILE;
     switch (borg_class) {
     case CLASS_MAGE:
-    primary_spell_for_class = MAGIC_MISSILE;
-    break;
+        primary_spell_for_class = MAGIC_MISSILE;
+        break;
     case CLASS_DRUID:
-    primary_spell_for_class = STINKING_CLOUD;
-    break;
+        primary_spell_for_class = STINKING_CLOUD;
+        break;
     case CLASS_PRIEST:
-    primary_spell_for_class = ORB_OF_DRAINING;
-    break;
+        primary_spell_for_class = ORB_OF_DRAINING;
+        break;
     case CLASS_NECROMANCER:
-    primary_spell_for_class = NETHER_BOLT;
-    break;
+        primary_spell_for_class = NETHER_BOLT;
+        break;
     case CLASS_PALADIN:
     case CLASS_ROGUE:
     case CLASS_RANGER:
     case CLASS_BLACKGUARD:
-    break;
+        break;
     }
 
-    /* weak mages need that spell, they dont get penalized */
+    /* weak mages need that spell, they don't get penalized */
     /* weak == those that can't teleport reliably anyway */
     if (spell == primary_spell_for_class
         && (!borg_spell_legal_fail(TELEPORT_SELF, 15)
@@ -2375,7 +2352,7 @@ static int borg_attack_aux_spell_dispel(
         return (0);
 
     /* Choose optimal location--radius defined as 10 */
-    b_n = borg_launch_bolt(10, dam, typ, z_info->max_range, 0);
+    b_n             = borg_launch_bolt(10, dam, typ, z_info->max_range, 0);
 
     int spell_power = borg_get_spell_power(spell);
 
@@ -2425,7 +2402,7 @@ static int borg_attack_aux_spell_dispel(
 
 /*
  *  Simulate/Apply the optimal result of using a "dispel" staff
- * Which would be dispel evil, power, holiness.  Genocide handeled later.
+ * Which would be dispel evil, power, holiness.  Genocide handled later.
  */
 static int borg_attack_aux_staff_dispel(int sval, int rad, int dam, int typ)
 {
@@ -2876,7 +2853,7 @@ static int borg_attack_aux_whirlwind_attack(void)
 
     /* Can I do it */
     if (!borg_spell_okay_fail(
-        WHIRLWIND_ATTACK, (borg_fighting_unique ? 40 : 25)))
+            WHIRLWIND_ATTACK, (borg_fighting_unique ? 40 : 25)))
         return (0);
 
     /* int original_danger = borg_danger(c_y, c_x, 1, false, false); */
@@ -2961,7 +2938,7 @@ static int borg_attack_aux_leap_into_battle(void)
 
     /* Can I do it */
     if (!borg_spell_okay_fail(
-        LEAP_INTO_BATTLE, (borg_fighting_unique ? 40 : 25)))
+            LEAP_INTO_BATTLE, (borg_fighting_unique ? 40 : 25)))
         return (0);
 
     /* Too afraid to attack */
@@ -2983,7 +2960,7 @@ static int borg_attack_aux_leap_into_battle(void)
         ag = &borg_grids[y][x];
 
         /* Calculate "average" damage */
-        d = borg_thrust_damage_one(ag->kill);
+        d     = borg_thrust_damage_one(ag->kill);
         blows = (borg_trait[BI_CLEVEL] + 5) / 15;
         blows = ((blows * m_dist + 2) / 4) + 1;
         d *= blows;
@@ -3036,10 +3013,10 @@ static int borg_attack_aux_leap_into_battle(void)
         return (b_d);
 
     /* Save the location */
-    g_x = borg_temp_x[b_i];
-    g_y = borg_temp_y[b_i];
+    g_x  = borg_temp_x[b_i];
+    g_y  = borg_temp_y[b_i];
 
-    ag = &borg_grids[g_y][g_x];
+    ag   = &borg_grids[g_y][g_x];
     kill = &borg_kills[ag->kill];
 
     /* Note */
@@ -3152,10 +3129,10 @@ static int borg_attack_aux_maim_foe(void)
         return (b_d);
 
     /* Save the location */
-    g_x = borg_temp_x[b_i];
-    g_y = borg_temp_y[b_i];
+    g_x  = borg_temp_x[b_i];
+    g_y  = borg_temp_y[b_i];
 
-    ag = &borg_grids[g_y][g_x];
+    ag   = &borg_grids[g_y][g_x];
     kill = &borg_kills[ag->kill];
 
     /* Get a direction for attacking */
@@ -3255,10 +3232,10 @@ static int borg_attack_aux_curse(void)
         return (b_d);
 
     /* Save the location */
-    g_x = borg_temp_x[b_i];
-    g_y = borg_temp_y[b_i];
+    g_x  = borg_temp_x[b_i];
+    g_y  = borg_temp_y[b_i];
 
-    ag = &borg_grids[g_y][g_x];
+    ag   = &borg_grids[g_y][g_x];
     kill = &borg_kills[ag->kill];
 
     /* Attack the grid */
@@ -3280,9 +3257,9 @@ static int borg_attack_aux_vampire_strike(void)
 {
     int p;
 
-    int i /* , b_i */ = -1;
-    int d, b_d = -1;
-    int dist, best_dist = z_info->max_range;
+    int  i /* , b_i */ = -1;
+    int  d, b_d          = -1;
+    int  dist, best_dist = z_info->max_range;
     bool abort_attack = false;
 
     borg_grid *ag;
@@ -3295,9 +3272,9 @@ static int borg_attack_aux_vampire_strike(void)
     /* Examine possible destinations */
     for (i = 0; i < borg_temp_n; i++) {
         bool new_low = false;
-        int x = borg_temp_x[i];
-        int y = borg_temp_y[i];
-        int o_x, o_y, x2, y2;
+        int  x       = borg_temp_x[i];
+        int  y       = borg_temp_y[i];
+        int  o_x, o_y, x2, y2;
 
         /* Consider each adjacent spot to the monster */
         /* there must be an empty spot */
@@ -3331,8 +3308,8 @@ static int borg_attack_aux_vampire_strike(void)
         if (dist > best_dist)
             continue;
         if (dist < best_dist) {
-            best_dist = dist;
-            new_low = true;
+            best_dist    = dist;
+            new_low      = true;
             abort_attack = false;
         }
 
@@ -3343,7 +3320,7 @@ static int borg_attack_aux_vampire_strike(void)
         d = borg_trait[BI_CLEVEL] * 2;
 
         /* Obtain the monster */
-        kill = &borg_kills[ag->kill];
+        kill                       = &borg_kills[ag->kill];
 
         struct monster_race *r_ptr = &r_info[kill->r_idx];
         if (rf_has(r_ptr->flags, RF_NONLIVING)
@@ -3401,7 +3378,7 @@ static int borg_attack_aux_crush(void)
 {
     int p1 = 0;
     int p2 = 0;
-    int d = 0;
+    int d  = 0;
 
     /* Can I do it */
     if (!borg_spell_okay(CRUSH))
@@ -3413,11 +3390,11 @@ static int borg_attack_aux_crush(void)
 
     /* Obtain initial danger */
     borg_crush_spell = false;
-    p1 = borg_danger(c_y, c_x, 4, true, false);
+    p1               = borg_danger(c_y, c_x, 4, true, false);
 
     /* What effect is there? */
     borg_crush_spell = true;
-    p2 = borg_danger(c_y, c_x, 4, true, false);
+    p2               = borg_danger(c_y, c_x, 4, true, false);
     borg_crush_spell = false;
 
     /* damage is reduction in danger */
@@ -3451,7 +3428,7 @@ static int borg_attack_aux_crush(void)
 
 /*
  * Try to sleep an adjacent bad guy
- * This had been a defence maneuver, which explains the format.
+ * This had been a defense maneuver, which explains the format.
  * This is used for the sleep ii spell and the sanctuary prayer,
  * also the holcolleth activation.
  *
@@ -3465,7 +3442,7 @@ static int borg_attack_aux_trance(void)
 {
     int p1 = 0;
     int p2 = 0;
-    int d = 0;
+    int d  = 0;
 
     /* Can I do it */
     if (!borg_spell_okay(TRANCE))
@@ -3473,17 +3450,17 @@ static int borg_attack_aux_trance(void)
 
     /* Obtain initial danger */
     borg_sleep_spell_ii = false;
-    p1 = borg_danger(c_y, c_x, 4, true, false);
+    p1                  = borg_danger(c_y, c_x, 4, true, false);
 
     /* What effect is there? */
     borg_sleep_spell_ii = true;
-    p2 = borg_danger(c_y, c_x, 4, true, false);
+    p2                  = borg_danger(c_y, c_x, 4, true, false);
     borg_sleep_spell_ii = false;
 
     /* value is d, enhance the value for rogues and rangers so that
      * they can use their critical hits.
      */
-    d = (p1 - p2);
+    d               = (p1 - p2);
 
     int spell_power = borg_get_spell_power(TRANCE);
 
@@ -3509,18 +3486,18 @@ static int borg_attack_aux_artifact_holcolleth(void)
 {
     int p1 = 0;
     int p2 = 0;
-    int d = 0;
+    int d  = 0;
 
     if (!borg_equips_item(act_sleepii, true))
         return (0);
 
     /* Obtain initial danger */
     borg_sleep_spell_ii = false;
-    p1 = borg_danger(c_y, c_x, 4, true, false);
+    p1                  = borg_danger(c_y, c_x, 4, true, false);
 
     /* What effect is there? */
     borg_sleep_spell_ii = true;
-    p2 = borg_danger(c_y, c_x, 4, true, false);
+    p2                  = borg_danger(c_y, c_x, 4, true, false);
     borg_sleep_spell_ii = false;
 
     /* value is d, enhance the value for rogues and rangers so that
@@ -3554,167 +3531,167 @@ int borg_calculate_attack_effectiveness(int attack_type)
     switch (attack_type) {
         /* Wait on grid for monster to approach me */
     case BF_REST:
-    return (borg_attack_aux_rest());
+        return (borg_attack_aux_rest());
 
     /* Physical attack */
     case BF_THRUST:
-    return (borg_attack_aux_thrust());
+        return (borg_attack_aux_thrust());
 
     /* Fired missile attack */
     case BF_LAUNCH:
-    return (borg_attack_aux_launch());
+        return (borg_attack_aux_launch());
 
     /* Object attack */
     case BF_OBJECT:
-    return (borg_attack_aux_object());
+        return (borg_attack_aux_object());
 
     /* Spell -- slow monster */
     case BF_SPELL_SLOW_MONSTER:
-    dam = 10;
-    return (borg_attack_aux_spell_bolt(
-        SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW, z_info->max_range));
+        dam = 10;
+        return (borg_attack_aux_spell_bolt(
+            SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW, z_info->max_range));
 
     /* Spell -- confuse monster */
     case BF_SPELL_CONFUSE_MONSTER:
-    rad = 0;
-    dam = 10;
-    return (borg_attack_aux_spell_bolt(CONFUSE_MONSTER, rad, dam,
-        BORG_ATTACK_OLD_CONF, z_info->max_range));
+        rad = 0;
+        dam = 10;
+        return (borg_attack_aux_spell_bolt(CONFUSE_MONSTER, rad, dam,
+            BORG_ATTACK_OLD_CONF, z_info->max_range));
 
     case BF_SPELL_SLEEP_III:
-    dam = 10;
-    return (borg_attack_aux_spell_dispel(
-        MASS_SLEEP, dam, BORG_ATTACK_OLD_SLEEP));
+        dam = 10;
+        return (borg_attack_aux_spell_dispel(
+            MASS_SLEEP, dam, BORG_ATTACK_OLD_SLEEP));
 
     /* Spell -- magic missile */
     case BF_SPELL_MAGIC_MISSILE:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
 
     /* Spell -- magic missile EMERGENCY*/
     case BF_SPELL_MAGIC_MISSILE_RESERVE:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1));
-    return (borg_attack_aux_spell_bolt_reserve(
-        MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1));
+        return (borg_attack_aux_spell_bolt_reserve(
+            MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
 
     /* Spell -- cold bolt */
     case BF_SPELL_COLD_BOLT:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] - 5) / 3) + 6) * (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        FROST_BOLT, rad, dam, BORG_ATTACK_COLD, z_info->max_range));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] - 5) / 3) + 6) * (8 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            FROST_BOLT, rad, dam, BORG_ATTACK_COLD, z_info->max_range));
 
     /* Spell -- kill wall */
     case BF_SPELL_STONE_TO_MUD:
-    rad = 0;
-    dam = (20 + (30 / 2));
-    return (borg_attack_aux_spell_bolt(TURN_STONE_TO_MUD, rad, dam,
-        BORG_ATTACK_KILL_WALL, z_info->max_range));
+        rad = 0;
+        dam = (20 + (30 / 2));
+        return (borg_attack_aux_spell_bolt(TURN_STONE_TO_MUD, rad, dam,
+            BORG_ATTACK_KILL_WALL, z_info->max_range));
 
     /* Spell -- light beam */
     case BF_SPELL_LIGHT_BEAM:
-    rad = -1;
-    dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(SPEAR_OF_LIGHT, rad, dam,
-        BORG_ATTACK_LIGHT_WEAK, z_info->max_range));
+        rad = -1;
+        dam = (6 * (8 + 1) / 2);
+        return (borg_attack_aux_spell_bolt(SPEAR_OF_LIGHT, rad, dam,
+            BORG_ATTACK_LIGHT_WEAK, z_info->max_range));
 
     /* Spell -- stinking cloud */
     case BF_SPELL_STINK_CLOUD:
-    rad = 2;
-    dam = (10 + (borg_trait[BI_CLEVEL] / 2));
-    return (borg_attack_aux_spell_bolt(
-        STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS, z_info->max_range));
+        rad = 2;
+        dam = (10 + (borg_trait[BI_CLEVEL] / 2));
+        return (borg_attack_aux_spell_bolt(
+            STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS, z_info->max_range));
 
     /* Spell -- fire ball */
     case BF_SPELL_FIRE_BALL:
-    rad = 2;
-    dam = (borg_trait[BI_CLEVEL] * 2);
-    return (borg_attack_aux_spell_bolt(
-        FIRE_BALL, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
+        rad = 2;
+        dam = (borg_trait[BI_CLEVEL] * 2);
+        return (borg_attack_aux_spell_bolt(
+            FIRE_BALL, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
 
     /* Spell -- Ice Storm */
     case BF_SPELL_COLD_STORM:
-    rad = 3;
-    dam = (3 * ((borg_trait[BI_CLEVEL] * 3) + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range));
+        rad = 3;
+        dam = (3 * ((borg_trait[BI_CLEVEL] * 3) + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range));
 
     /* Spell -- Meteor Swarm */
     case BF_SPELL_METEOR_SWARM:
-    rad = 3;
-    dam = (30 + borg_trait[BI_CLEVEL] / 2) + (borg_trait[BI_CLEVEL] / 20)
-        + 2;
-    return (borg_attack_aux_spell_bolt(
-        METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR, z_info->max_range));
+        rad = 3;
+        dam = (30 + borg_trait[BI_CLEVEL] / 2) + (borg_trait[BI_CLEVEL] / 20)
+              + 2;
+        return (borg_attack_aux_spell_bolt(
+            METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR, z_info->max_range));
 
     /* Spell -- Rift */
     case BF_SPELL_RIFT:
-    rad = -1;
-    dam = ((borg_trait[BI_CLEVEL] * 3) + 40);
-    return (borg_attack_aux_spell_bolt(
-        RIFT, rad, dam, BORG_ATTACK_GRAVITY, z_info->max_range));
+        rad = -1;
+        dam = ((borg_trait[BI_CLEVEL] * 3) + 40);
+        return (borg_attack_aux_spell_bolt(
+            RIFT, rad, dam, BORG_ATTACK_GRAVITY, z_info->max_range));
 
     /* Spell -- mana storm */
     case BF_SPELL_MANA_STORM:
-    rad = 3;
-    dam = (300 + (borg_trait[BI_CLEVEL] * 2));
-    return (borg_attack_aux_spell_bolt(
-        MANA_STORM, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
+        rad = 3;
+        dam = (300 + (borg_trait[BI_CLEVEL] * 2));
+        return (borg_attack_aux_spell_bolt(
+            MANA_STORM, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
 
     /* Spell -- Shock Wave */
     case BF_SPELL_SHOCK_WAVE:
-    dam = (borg_trait[BI_CLEVEL] * 2);
-    rad = 2;
-    return (borg_attack_aux_spell_bolt(
-        SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND, z_info->max_range));
+        dam = (borg_trait[BI_CLEVEL] * 2);
+        rad = 2;
+        return (borg_attack_aux_spell_bolt(
+            SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND, z_info->max_range));
 
     /* Spell -- Explosion */
     case BF_SPELL_EXPLOSION:
-    dam = ((borg_trait[BI_CLEVEL] * 2)
-        + (borg_trait[BI_CLEVEL]
-            / 5)); /* hack pretend it is all shards */
-    rad = 2;
-    return (borg_attack_aux_spell_bolt(
-        EXPLOSION, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
+        dam = ((borg_trait[BI_CLEVEL] * 2)
+               + (borg_trait[BI_CLEVEL]
+                   / 5)); /* hack pretend it is all shards */
+        rad = 2;
+        return (borg_attack_aux_spell_bolt(
+            EXPLOSION, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
 
     /* Prayer -- orb of draining */
     case BF_PRAYER_HOLY_ORB_BALL:
-    rad = ((borg_trait[BI_CLEVEL] >= 30) ? 3 : 2);
-    dam = ((borg_trait[BI_CLEVEL] * 3) / 2) + (3 * (6 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(ORB_OF_DRAINING, rad, dam,
-        BORG_ATTACK_HOLY_ORB, z_info->max_range));
+        rad = ((borg_trait[BI_CLEVEL] >= 30) ? 3 : 2);
+        dam = ((borg_trait[BI_CLEVEL] * 3) / 2) + (3 * (6 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(ORB_OF_DRAINING, rad, dam,
+            BORG_ATTACK_HOLY_ORB, z_info->max_range));
 
     /* Prayer -- blind creature */
     case BF_SPELL_BLIND_CREATURE:
-    rad = 0;
-    dam = 10;
-    return (borg_attack_aux_spell_bolt(
-        FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range));
+        rad = 0;
+        dam = 10;
+        return (borg_attack_aux_spell_bolt(
+            FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range));
 
     /* Druid - Trance */
     case BF_SPELL_TRANCE:
-    return (borg_attack_aux_trance());
+        return (borg_attack_aux_trance());
 
     /* Prayer -- Dispel Undead */
     case BF_PRAYER_DISP_UNDEAD:
-    dam = (((borg_trait[BI_CLEVEL] * 5) + 1) / 2);
-    return (borg_attack_aux_spell_dispel(
-        DISPEL_UNDEAD, dam, BORG_ATTACK_DISP_UNDEAD));
+        dam = (((borg_trait[BI_CLEVEL] * 5) + 1) / 2);
+        return (borg_attack_aux_spell_dispel(
+            DISPEL_UNDEAD, dam, BORG_ATTACK_DISP_UNDEAD));
 
     /* Prayer -- Dispel Evil */
     case BF_PRAYER_DISP_EVIL:
-    dam = (((borg_trait[BI_CLEVEL] * 5) + 1) / 2);
-    return (borg_attack_aux_spell_dispel(
-        DISPEL_EVIL, dam, BORG_ATTACK_DISP_EVIL));
+        dam = (((borg_trait[BI_CLEVEL] * 5) + 1) / 2);
+        return (borg_attack_aux_spell_dispel(
+            DISPEL_EVIL, dam, BORG_ATTACK_DISP_EVIL));
 
     /* Prayer -- Dispel Undead */
     case BF_PRAYER_DISP_SPIRITS:
-    dam = (100);
-    return (borg_attack_aux_spell_dispel(
-        BANISH_SPIRITS, dam, BORG_ATTACK_DISP_SPIRITS));
+        dam = (100);
+        return (borg_attack_aux_spell_dispel(
+            BANISH_SPIRITS, dam, BORG_ATTACK_DISP_SPIRITS));
 
     /* Prayer -- Banishment (teleport evil away)*/
     /* This is a defense spell:  done in borg_defense() */
@@ -3722,814 +3699,813 @@ int borg_calculate_attack_effectiveness(int attack_type)
     /* Prayer -- Holy Word also has heal effect and is considered in borg_heal
      */
     case BF_PRAYER_HOLY_WORD:
-    if (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 300)
+        if (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 300)
         /* force him to think the spell is more deadly to get him to
          * cast it.  This will provide some healing for him.
          */
-    {
-        dam = ((borg_trait[BI_CLEVEL] * 10));
-        return (borg_attack_aux_spell_dispel(
-            HOLY_WORD, dam, BORG_ATTACK_DISP_EVIL));
-    } else /* If he is not wounded dont cast this, use Disp Evil instead. */
-    {
-        dam = ((borg_trait[BI_CLEVEL] * 3) / 2) - 50;
-        return (borg_attack_aux_spell_dispel(
-            DISPEL_EVIL, dam, BORG_ATTACK_DISP_EVIL));
-    }
+        {
+            dam = ((borg_trait[BI_CLEVEL] * 10));
+            return (borg_attack_aux_spell_dispel(
+                HOLY_WORD, dam, BORG_ATTACK_DISP_EVIL));
+        } else /* If he is not wounded don't cast this, use Disp Evil instead. */
+        {
+            dam = ((borg_trait[BI_CLEVEL] * 3) / 2) - 50;
+            return (borg_attack_aux_spell_dispel(
+                DISPEL_EVIL, dam, BORG_ATTACK_DISP_EVIL));
+        }
 
     /* Prayer -- Annihilate */
     case BF_SPELL_ANNIHILATE:
-    rad = 0;
-    dam = (borg_trait[BI_CLEVEL] * 4);
-    return (borg_attack_aux_spell_bolt(
-        ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN, z_info->max_range));
+        rad = 0;
+        dam = (borg_trait[BI_CLEVEL] * 4);
+        return (borg_attack_aux_spell_bolt(
+            ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN, z_info->max_range));
 
     /* Spell -- Electric Arc */
     case BF_SPELL_ELECTRIC_ARC:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (6 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg_trait[BI_CLEVEL]));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] - 1) / 5) + 3) * (6 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg_trait[BI_CLEVEL]));
 
     case BF_SPELL_ACID_SPRAY:
-    rad = 3; /* HACK just pretend it is wide. */
-    dam = ((borg_trait[BI_CLEVEL] / 2) * (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10));
+        rad = 3; /* HACK just pretend it is wide. */
+        dam = ((borg_trait[BI_CLEVEL] / 2) * (8 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10));
 
     /* Spell -- mana bolt */
     case BF_SPELL_MANA_BOLT:
-    rad = 0;
-    dam = ((borg_trait[BI_CLEVEL] - 10) * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(
-        MANA_BOLT, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
+        rad = 0;
+        dam = ((borg_trait[BI_CLEVEL] - 10) * (8 + 1) / 2);
+        return (borg_attack_aux_spell_bolt(
+            MANA_BOLT, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
 
     /* Spell -- thrust away */
     case BF_SPELL_THRUST_AWAY:
-    rad = 0;
-    dam = (borg_trait[BI_CLEVEL] * (8 + 1) / 2);
-    return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam,
-        BORG_ATTACK_FORCE, (borg_trait[BI_CLEVEL] / 10) + 1));
+        rad = 0;
+        dam = (borg_trait[BI_CLEVEL] * (8 + 1) / 2);
+        return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam,
+            BORG_ATTACK_FORCE, (borg_trait[BI_CLEVEL] / 10) + 1));
 
     /* Spell -- Lightning Strike */
     case BF_SPELL_LIGHTNING_STRIKE:
-    rad = 0;
-    dam = ((borg_trait[BI_CLEVEL] / 4) * (4 + 1) / 2)
-        + borg_trait[BI_CLEVEL] + 5; /* HACK pretend it is all elec */
-    return (borg_attack_aux_spell_bolt(
-        LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
+        rad = 0;
+        dam = ((borg_trait[BI_CLEVEL] / 4) * (4 + 1) / 2)
+              + borg_trait[BI_CLEVEL] + 5; /* HACK pretend it is all elec */
+        return (borg_attack_aux_spell_bolt(
+            LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
 
     /* Spell -- Earth Rising */
     case BF_SPELL_EARTH_RISING:
-    rad = 0;
-    dam = (((borg_trait[BI_CLEVEL] / 3) + 2) * (6 + 1) / 2)
-        + borg_trait[BI_CLEVEL] + 5;
-    return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam,
-        BORG_ATTACK_SHARD, (borg_trait[BI_CLEVEL] / 5) + 4));
+        rad = 0;
+        dam = (((borg_trait[BI_CLEVEL] / 3) + 2) * (6 + 1) / 2)
+              + borg_trait[BI_CLEVEL] + 5;
+        return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam,
+            BORG_ATTACK_SHARD, (borg_trait[BI_CLEVEL] / 5) + 4));
 
     /* Spell -- Volcanic Eruption */
-    /* just count the damage.  The earthquake defence is a side bennie,
+    /* just count the damage.  The earthquake defense is a side bennie,
      * perhaps... */
     case BF_SPELL_VOLCANIC_ERUPTION:
-    rad = 0;
-    dam = (((borg_trait[BI_CLEVEL] * 3) / 2)
-        * ((borg_trait[BI_CLEVEL] * 3) + 1))
-        / 2;
-    return (borg_attack_aux_spell_bolt(
-        VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
+        rad = 0;
+        dam = (((borg_trait[BI_CLEVEL] * 3) / 2)
+                  * ((borg_trait[BI_CLEVEL] * 3) + 1))
+              / 2;
+        return (borg_attack_aux_spell_bolt(
+            VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
 
     /* Spell -- River of Lightning */
     case BF_SPELL_RIVER_OF_LIGHTNING:
-    rad = 2;
-    dam = (borg_trait[BI_CLEVEL] + 10) * (8 + 1) / 2;
-    return (borg_attack_aux_spell_bolt(
-        RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20));
+        rad = 2;
+        dam = (borg_trait[BI_CLEVEL] + 10) * (8 + 1) / 2;
+        return (borg_attack_aux_spell_bolt(
+            RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20));
 
     /* spell -- Spear of Oromë */
     case BF_SPELL_SPEAR_OF_OROME:
-    rad = 0;
-    dam = ((borg_trait[BI_CLEVEL] / 2) + (8 + 1)) / 2;
-    return (borg_attack_aux_spell_bolt(
-        SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range));
+        rad = 0;
+        dam = ((borg_trait[BI_CLEVEL] / 2) + (8 + 1)) / 2;
+        return (borg_attack_aux_spell_bolt(
+            SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range));
 
     /* spell -- Light of Manwë */
     case BF_SPELL_LIGHT_OF_MANWE:
-    rad = 0;
-    dam = borg_trait[BI_CLEVEL] * 5 + 100;
-    return (borg_attack_aux_spell_bolt(
-        LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT, z_info->max_range));
+        rad = 0;
+        dam = borg_trait[BI_CLEVEL] * 5 + 100;
+        return (borg_attack_aux_spell_bolt(
+            LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT, z_info->max_range));
 
     /* spell -- Nether Bolt */
     case BF_SPELL_NETHER_BOLT:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
-    return (borg_attack_aux_spell_bolt(
-        NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER, z_info->max_range));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
+        return (borg_attack_aux_spell_bolt(
+            NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER, z_info->max_range));
 
     /* spell -- Tap Unlife */
     case BF_SPELL_TAP_UNLIFE:
-    dam = ((((borg_trait[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
-    return (borg_attack_aux_spell_dispel(
-        TAP_UNLIFE, dam, BORG_ATTACK_TAP_UNLIFE));
+        dam = ((((borg_trait[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
+        return (borg_attack_aux_spell_dispel(
+            TAP_UNLIFE, dam, BORG_ATTACK_TAP_UNLIFE));
 
     /* Spell - Crush */
     case BF_SPELL_CRUSH:
-    return (borg_attack_aux_crush());
+        return (borg_attack_aux_crush());
 
     case BF_SPELL_SLEEP_EVIL:
-    dam = borg_trait[BI_CLEVEL] * 10 + 500;
-    return (borg_attack_aux_spell_dispel(
-        SLEEP_EVIL, dam, BORG_ATTACK_SLEEP_EVIL));
+        dam = borg_trait[BI_CLEVEL] * 10 + 500;
+        return (borg_attack_aux_spell_dispel(
+            SLEEP_EVIL, dam, BORG_ATTACK_SLEEP_EVIL));
 
     /* spell -- Disenchant */
     case BF_SPELL_DISENCHANT:
-    rad = 0;
-    dam = ((((borg_trait[BI_CLEVEL] * 2) + 10) + 1) / 2) * 2;
-    return (borg_attack_aux_spell_bolt(
-        DISENCHANT, rad, dam, BORG_ATTACK_DISEN, z_info->max_range));
+        rad = 0;
+        dam = ((((borg_trait[BI_CLEVEL] * 2) + 10) + 1) / 2) * 2;
+        return (borg_attack_aux_spell_bolt(
+            DISENCHANT, rad, dam, BORG_ATTACK_DISEN, z_info->max_range));
 
     /* spell -- Frighten */
     case BF_SPELL_FRIGHTEN:
-    rad = 0;
-    dam = borg_trait[BI_CLEVEL];
-    return (borg_attack_aux_spell_bolt(
-        FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL, z_info->max_range));
+        rad = 0;
+        dam = borg_trait[BI_CLEVEL];
+        return (borg_attack_aux_spell_bolt(
+            FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL, z_info->max_range));
 
     /* Spell - Vampire Strike*/
     case BF_SPELL_VAMPIRE_STRIKE:
-    return (borg_attack_aux_vampire_strike());
+        return (borg_attack_aux_vampire_strike());
 
     /* Spell - Dispel Life */
     case BF_PRAYER_DISPEL_LIFE:
-    rad = 0;
-    dam = ((borg_trait[BI_CLEVEL] * 3) + 1) / 2;
-    return (borg_attack_aux_spell_bolt(
-        DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE, z_info->max_range));
+        rad = 0;
+        dam = ((borg_trait[BI_CLEVEL] * 3) + 1) / 2;
+        return (borg_attack_aux_spell_bolt(
+            DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE, z_info->max_range));
 
     /* spell -- Dark Spear */
     case BF_SPELL_DARK_SPEAR:
-    rad = 0;
-    dam = (((borg_trait[BI_CLEVEL] * 2) + 1) / 2) * 2;
-    return (borg_attack_aux_spell_bolt(
-        DARK_SPEAR, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
+        rad = 0;
+        dam = (((borg_trait[BI_CLEVEL] * 2) + 1) / 2) * 2;
+        return (borg_attack_aux_spell_bolt(
+            DARK_SPEAR, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
 
     /* spell -- Unleash Chaos */
     case BF_SPELL_UNLEASH_CHAOS:
-    rad = 0;
-    dam = ((borg_trait[BI_CLEVEL] + 1) / 2) * 8;
-    return (borg_attack_aux_spell_bolt(
-        UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS, z_info->max_range));
+        rad = 0;
+        dam = ((borg_trait[BI_CLEVEL] + 1) / 2) * 8;
+        return (borg_attack_aux_spell_bolt(
+            UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS, z_info->max_range));
 
     /* Spell -- Storm of Darkness */
     case BF_SPELL_STORM_OF_DARKNESS:
-    rad = 4;
-    dam = (((borg_trait[BI_CLEVEL] * 2) + 1) / 2) * 4;
-    return (borg_attack_aux_spell_bolt(
-        STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
+        rad = 4;
+        dam = (((borg_trait[BI_CLEVEL] * 2) + 1) / 2) * 4;
+        return (borg_attack_aux_spell_bolt(
+            STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
 
     /* Spell - Curse */
     case BF_SPELL_CURSE:
-    return (borg_attack_aux_curse());
+        return (borg_attack_aux_curse());
 
     /* spell - Whirlwind Attack */
     case BF_SPELL_WHIRLWIND_ATTACK:
-    return (borg_attack_aux_whirlwind_attack());
+        return (borg_attack_aux_whirlwind_attack());
 
     /* spell - Leap into Battle */
     case BF_SPELL_LEAP_INTO_BATTLE:
-    return (borg_attack_aux_leap_into_battle());
+        return (borg_attack_aux_leap_into_battle());
 
     /* spell - Leap into Battle */
     case BF_SPELL_MAIM_FOE:
-    return (borg_attack_aux_maim_foe());
+        return (borg_attack_aux_maim_foe());
 
     /* spell - Howl of the Damned */
     case BF_SPELL_HOWL_OF_THE_DAMNED:
-    dam = borg_trait[BI_CLEVEL];
-    return (borg_attack_aux_spell_dispel(
-        HOWL_OF_THE_DAMNED, dam, BORG_ATTACK_TURN_ALL));
+        dam = borg_trait[BI_CLEVEL];
+        return (borg_attack_aux_spell_dispel(
+            HOWL_OF_THE_DAMNED, dam, BORG_ATTACK_TURN_ALL));
 
     /* ROD -- slow monster */
     case BF_ROD_SLOW_MONSTER:
-    dam = 10;
-    rad = 0;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW));
+        dam = 10;
+        rad = 0;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW));
 
     /* ROD -- sleep monster */
     case BF_ROD_SLEEP_MONSTER:
-    dam = 10;
-    rad = 0;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_sleep_monster, rad, dam, BORG_ATTACK_OLD_SLEEP));
+        dam = 10;
+        rad = 0;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_sleep_monster, rad, dam, BORG_ATTACK_OLD_SLEEP));
 
     /* Rod -- elec bolt */
     case BF_ROD_ELEC_BOLT:
-    rad = -1;
-    dam = 6 * (6 + 1) / 2;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_elec_bolt, rad, dam, BORG_ATTACK_ELEC));
+        rad = -1;
+        dam = 6 * (6 + 1) / 2;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_elec_bolt, rad, dam, BORG_ATTACK_ELEC));
 
     /* Rod -- cold bolt */
     case BF_ROD_COLD_BOLT:
-    rad = 0;
-    dam = 12 * (8 + 1) / 2;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_cold_bolt, rad, dam, BORG_ATTACK_COLD));
+        rad = 0;
+        dam = 12 * (8 + 1) / 2;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_cold_bolt, rad, dam, BORG_ATTACK_COLD));
 
     /* Rod -- acid bolt */
     case BF_ROD_ACID_BOLT:
-    rad = 0;
-    dam = 12 * (8 + 1) / 2;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_acid_bolt, rad, dam, BORG_ATTACK_ACID));
+        rad = 0;
+        dam = 12 * (8 + 1) / 2;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_acid_bolt, rad, dam, BORG_ATTACK_ACID));
 
     /* Rod -- fire bolt */
     case BF_ROD_FIRE_BOLT:
-    rad = 0;
-    dam = 12 * (8 + 1) / 2;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_fire_bolt, rad, dam, BORG_ATTACK_FIRE));
+        rad = 0;
+        dam = 12 * (8 + 1) / 2;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_fire_bolt, rad, dam, BORG_ATTACK_FIRE));
 
     /* Rod -- light beam */
     case BF_ROD_LIGHT_BEAM:
-    rad = -1;
-    dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_light, rad, dam, BORG_ATTACK_LIGHT_WEAK));
+        rad = -1;
+        dam = (6 * (8 + 1) / 2);
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_light, rad, dam, BORG_ATTACK_LIGHT_WEAK));
 
     /* Rod -- drain life */
     case BF_ROD_DRAIN_LIFE:
-    rad = 0;
-    dam = (150);
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN));
+        rad = 0;
+        dam = (150);
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN));
 
     /* Rod -- elec ball */
     case BF_ROD_ELEC_BALL:
-    rad = 2;
-    dam = 64;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_elec_ball, rad, dam, BORG_ATTACK_ELEC));
+        rad = 2;
+        dam = 64;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_elec_ball, rad, dam, BORG_ATTACK_ELEC));
 
     /* Rod -- acid ball */
     case BF_ROD_COLD_BALL:
-    rad = 2;
-    dam = 100;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_cold_ball, rad, dam, BORG_ATTACK_COLD));
+        rad = 2;
+        dam = 100;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_cold_ball, rad, dam, BORG_ATTACK_COLD));
 
     /* Rod -- acid ball */
     case BF_ROD_ACID_BALL:
-    rad = 2;
-    dam = 120;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_acid_ball, rad, dam, BORG_ATTACK_ACID));
+        rad = 2;
+        dam = 120;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_acid_ball, rad, dam, BORG_ATTACK_ACID));
 
     /* Rod -- fire ball */
     case BF_ROD_FIRE_BALL:
-    rad = 2;
-    dam = 144;
-    return (borg_attack_aux_rod_bolt(
-        sv_rod_fire_ball, rad, dam, BORG_ATTACK_FIRE));
+        rad = 2;
+        dam = 144;
+        return (borg_attack_aux_rod_bolt(
+            sv_rod_fire_ball, rad, dam, BORG_ATTACK_FIRE));
 
     /* Rod -- unid'd rod */
     case BF_ROD_UNKNOWN:
-    rad = 0;
-    dam = 75;
-    return (borg_attack_aux_rod_bolt_unknown(dam, BORG_ATTACK_MISSILE));
+        rad = 0;
+        dam = 75;
+        return (borg_attack_aux_rod_bolt_unknown(dam, BORG_ATTACK_MISSILE));
 
     /* Wand -- unid'd wand */
     case BF_WAND_UNKNOWN:
-    rad = 0;
-    dam = 75;
-    return (borg_attack_aux_wand_bolt_unknown(dam, BORG_ATTACK_MISSILE));
+        rad = 0;
+        dam = 75;
+        return (borg_attack_aux_wand_bolt_unknown(dam, BORG_ATTACK_MISSILE));
 
     /* Wand -- magic missile */
     case BF_WAND_MAGIC_MISSILE:
-    rad = 0;
-    dam = 3 * (4 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_magic_missile, rad, dam, BORG_ATTACK_MISSILE, -1));
+        rad = 0;
+        dam = 3 * (4 + 1) / 2;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_magic_missile, rad, dam, BORG_ATTACK_MISSILE, -1));
 
     /* Wand -- slow monster */
     case BF_WAND_SLOW_MONSTER:
-    rad = 0;
-    dam = 10;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW, -1));
+        rad = 0;
+        dam = 10;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_slow_monster, rad, dam, BORG_ATTACK_OLD_SLOW, -1));
 
     /* Wand -- sleep monster */
     case BF_WAND_HOLD_MONSTER:
-    rad = 0;
-    dam = 10;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_hold_monster, rad, dam, BORG_ATTACK_OLD_SLEEP, -1));
+        rad = 0;
+        dam = 10;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_hold_monster, rad, dam, BORG_ATTACK_OLD_SLEEP, -1));
 
     /* Wand -- fear monster */
     case BF_WAND_FEAR_MONSTER:
-    rad = 0;
-    dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_fear_monster, rad, dam, BORG_ATTACK_TURN_ALL, -1));
+        rad = 0;
+        dam = 2 * (6 + 1) / 2;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_fear_monster, rad, dam, BORG_ATTACK_TURN_ALL, -1));
 
     /* Wand -- conf monster */
     case BF_WAND_CONFUSE_MONSTER:
-    rad = 0;
-    dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_confuse_monster, rad, dam, BORG_ATTACK_OLD_CONF, -1));
+        rad = 0;
+        dam = 2 * (6 + 1) / 2;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_confuse_monster, rad, dam, BORG_ATTACK_OLD_CONF, -1));
 
     /* Wand -- elec bolt */
     case BF_WAND_ELEC_BOLT:
-    dam = 6 * (6 + 1) / 2;
-    rad = -1;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_elec_bolt, rad, dam, BORG_ATTACK_ELEC, -1));
+        dam = 6 * (6 + 1) / 2;
+        rad = -1;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_elec_bolt, rad, dam, BORG_ATTACK_ELEC, -1));
 
     /* Wand -- cold bolt */
     case BF_WAND_COLD_BOLT:
-    dam = 12 * (8 + 1) / 2;
-    rad = 0;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_cold_bolt, rad, dam, BORG_ATTACK_COLD, -1));
+        dam = 12 * (8 + 1) / 2;
+        rad = 0;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_cold_bolt, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- acid bolt */
     case BF_WAND_ACID_BOLT:
-    rad = 0;
-    dam = 5 * (8 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_acid_bolt, rad, dam, BORG_ATTACK_ACID, -1));
+        rad = 0;
+        dam = 5 * (8 + 1) / 2;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_acid_bolt, rad, dam, BORG_ATTACK_ACID, -1));
 
     /* Wand -- fire bolt */
     case BF_WAND_FIRE_BOLT:
-    rad = 0;
-    dam = 12 * (8 + 1) / 2;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_fire_bolt, rad, dam, BORG_ATTACK_FIRE, -1));
+        rad = 0;
+        dam = 12 * (8 + 1) / 2;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_fire_bolt, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Wand -- light beam */
     case BF_WAND_LIGHT_BEAM:
-    rad = -1;
-    dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_light, rad, dam, BORG_ATTACK_LIGHT_WEAK, -1));
+        rad = -1;
+        dam = (6 * (8 + 1) / 2);
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_light, rad, dam, BORG_ATTACK_LIGHT_WEAK, -1));
 
     /* Wand -- stinking cloud */
     case BF_WAND_STINKING_CLOUD:
-    rad = 2;
-    dam = 12;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_stinking_cloud, rad, dam, BORG_ATTACK_POIS, -1));
+        rad = 2;
+        dam = 12;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_stinking_cloud, rad, dam, BORG_ATTACK_POIS, -1));
 
     /* Wand -- elec ball */
     case BF_WAND_ELEC_BALL:
-    rad = 2;
-    dam = 64;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_elec_ball, rad, dam, BORG_ATTACK_ELEC, -1));
+        rad = 2;
+        dam = 64;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_elec_ball, rad, dam, BORG_ATTACK_ELEC, -1));
 
     /* Wand -- acid ball */
     case BF_WAND_COLD_BALL:
-    rad = 2;
-    dam = 100;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_cold_ball, rad, dam, BORG_ATTACK_COLD, -1));
+        rad = 2;
+        dam = 100;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_cold_ball, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- acid ball */
     case BF_WAND_ACID_BALL:
-    rad = 2;
-    dam = 120;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_acid_ball, rad, dam, BORG_ATTACK_ACID, -1));
+        rad = 2;
+        dam = 120;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_acid_ball, rad, dam, BORG_ATTACK_ACID, -1));
 
     /* Wand -- fire ball */
     case BF_WAND_FIRE_BALL:
-    rad = 2;
-    dam = 144;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_fire_ball, rad, dam, BORG_ATTACK_FIRE, -1));
+        rad = 2;
+        dam = 144;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_fire_ball, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Wand -- dragon cold */
     case BF_WAND_DRAGON_COLD:
-    rad = 3;
-    dam = 160;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_dragon_cold, rad, dam, BORG_ATTACK_COLD, -1));
+        rad = 3;
+        dam = 160;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_dragon_cold, rad, dam, BORG_ATTACK_COLD, -1));
 
     /* Wand -- dragon fire */
     case BF_WAND_DRAGON_FIRE:
-    rad = 3;
-    dam = 200;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_dragon_fire, rad, dam, BORG_ATTACK_FIRE, -1));
+        rad = 3;
+        dam = 200;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_dragon_fire, rad, dam, BORG_ATTACK_FIRE, -1));
 
     /* Wand -- annihilation */
     case BF_WAND_ANNIHILATION:
-    dam = 250;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_annihilation, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
+        dam = 250;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_annihilation, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
 
     /* Wand -- drain life */
     case BF_WAND_DRAIN_LIFE:
-    dam = 150;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
+        dam = 150;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_drain_life, rad, dam, BORG_ATTACK_OLD_DRAIN, -1));
 
     /* Wand -- wand of wonder */
     case BF_WAND_WONDER:
-    dam = 35;
-    return (borg_attack_aux_wand_bolt(
-        sv_wand_wonder, rad, dam, BORG_ATTACK_MISSILE, -1));
+        dam = 35;
+        return (borg_attack_aux_wand_bolt(
+            sv_wand_wonder, rad, dam, BORG_ATTACK_MISSILE, -1));
 
     /* Staff -- Sleep Monsters */
     case BF_STAFF_SLEEP_MONSTERS:
-    dam = 60;
-    return (borg_attack_aux_staff_dispel(
-        sv_staff_sleep_monsters, rad, dam, BORG_ATTACK_OLD_SLEEP));
+        dam = 60;
+        return (borg_attack_aux_staff_dispel(
+            sv_staff_sleep_monsters, rad, dam, BORG_ATTACK_OLD_SLEEP));
 
     /* Staff -- Slow Monsters */
     case BF_STAFF_SLOW_MONSTERS:
-    dam = 60;
-    rad = 10;
-    return (borg_attack_aux_staff_dispel(
-        sv_staff_slow_monsters, rad, dam, BORG_ATTACK_OLD_SLOW));
+        dam = 60;
+        rad = 10;
+        return (borg_attack_aux_staff_dispel(
+            sv_staff_slow_monsters, rad, dam, BORG_ATTACK_OLD_SLOW));
 
     /* Staff -- Dispel Evil */
     case BF_STAFF_DISPEL_EVIL:
-    dam = 60;
-    return (borg_attack_aux_staff_dispel(
-        sv_staff_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL));
+        dam = 60;
+        return (borg_attack_aux_staff_dispel(
+            sv_staff_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL));
 
     /* Staff -- Power */
     case BF_STAFF_POWER:
-    dam = 120;
-    return (borg_attack_aux_staff_dispel(
-        sv_staff_power, rad, dam, BORG_ATTACK_TURN_ALL));
+        dam = 120;
+        return (borg_attack_aux_staff_dispel(
+            sv_staff_power, rad, dam, BORG_ATTACK_TURN_ALL));
 
     /* Staff -- holiness */
     case BF_STAFF_HOLINESS:
-    if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
-        dam = 500;
-    else
-        dam = 120;
-    return (borg_attack_aux_staff_dispel(
-        sv_staff_holiness, rad, dam, BORG_ATTACK_DISP_EVIL));
+        if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
+            dam = 500;
+        else
+            dam = 120;
+        return (borg_attack_aux_staff_dispel(
+            sv_staff_holiness, rad, dam, BORG_ATTACK_DISP_EVIL));
 
     /* Artifact -- Narthanc- fire bolt 9d8*/
     case BF_ACT_FIRE_BOLT:
-    rad = 0;
-    dam = (9 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_fire_bolt, rad, dam, BORG_ATTACK_FIRE, true, -1));
+        rad = 0;
+        dam = (9 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_fire_bolt, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Anduril & Firestar- fire bolt 72*/
     case BF_ACT_FIRE_BOLT72:
-    rad = 0;
-    dam = 72;
-    return (borg_attack_aux_activation(
-        act_fire_bolt72, rad, dam, BORG_ATTACK_FIRE, true, -1));
+        rad = 0;
+        dam = 72;
+        return (borg_attack_aux_activation(
+            act_fire_bolt72, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Gothmog- FIRE BALL 144 */
     case BF_ACT_FIRE_BALL:
-    rad = 2;
-    dam = 144;
-    return (borg_attack_aux_activation(
-        act_fire_ball, rad, dam, BORG_ATTACK_FIRE, true, -1));
+        rad = 2;
+        dam = 144;
+        return (borg_attack_aux_activation(
+            act_fire_ball, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Nimthanc & Paurnimmen- frost bolt 6d8*/
     case BF_ACT_COLD_BOLT:
-    rad = 0;
-    dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_cold_bolt, rad, dam, BORG_ATTACK_COLD, true, -1));
+        rad = 0;
+        dam = (6 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_cold_bolt, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Belangil- frost ball 50 */
     case BF_ACT_COLD_BALL50:
-    rad = 2;
-    dam = 50;
-    return (borg_attack_aux_activation(
-        act_cold_ball50, rad, dam, BORG_ATTACK_COLD, true, -1));
+        rad = 2;
+        dam = 50;
+        return (borg_attack_aux_activation(
+            act_cold_ball50, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Aranrúth- frost bolt 12d8*/
     case BF_ACT_COLD_BOLT2:
-    rad = 0;
-    dam = (12 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_cold_bolt2, rad, dam, BORG_ATTACK_COLD, true, -1));
+        rad = 0;
+        dam = (12 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_cold_bolt2, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Ringil- frost ball 100*/
     case BF_ACT_COLD_BALL100:
-    rad = 2;
-    dam = 100;
-    return (borg_attack_aux_activation(
-        act_cold_ball100, rad, dam, BORG_ATTACK_COLD, true, -1));
+        rad = 2;
+        dam = 100;
+        return (borg_attack_aux_activation(
+            act_cold_ball100, rad, dam, BORG_ATTACK_COLD, true, -1));
 
     /* Artifact -- Dethanc- electric bolt 6d6*/
     case BF_ACT_ELEC_BOLT:
-    rad = -1;
-    dam = (6 * (6 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_elec_bolt, rad, dam, BORG_ATTACK_ELEC, true, -1));
+        rad = -1;
+        dam = (6 * (6 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_elec_bolt, rad, dam, BORG_ATTACK_ELEC, true, -1));
 
     /* Artifact -- Rilia- poison gas 12*/
     case BF_ACT_STINKING_CLOUD:
-    rad = 2;
-    dam = 12;
-    return (borg_attack_aux_activation(
-        act_stinking_cloud, rad, dam, BORG_ATTACK_POIS, true, -1));
+        rad = 2;
+        dam = 12;
+        return (borg_attack_aux_activation(
+            act_stinking_cloud, rad, dam, BORG_ATTACK_POIS, true, -1));
 
     /* Artifact -- Theoden- drain Life 120*/
     case BF_ACT_DRAIN_LIFE2:
-    rad = 0;
-    dam = 120;
-    return (borg_attack_aux_activation(
-        act_drain_life2, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
+        rad = 0;
+        dam = 120;
+        return (borg_attack_aux_activation(
+            act_drain_life2, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     /* Artifact -- Totila- confustion */
     case BF_ACT_CONFUSE2:
-    rad = 0;
-    dam = 20;
-    return (borg_attack_aux_activation(
-        act_confuse2, rad, dam, BORG_ATTACK_OLD_CONF, true, -1));
+        rad = 0;
+        dam = 20;
+        return (borg_attack_aux_activation(
+            act_confuse2, rad, dam, BORG_ATTACK_OLD_CONF, true, -1));
 
     /* Artifact -- Holcolleth -- sleep ii and sanctuary */
     case BF_ACT_SLEEPII:
-    dam = 10;
-    return (borg_attack_aux_artifact_holcolleth());
+        dam = 10;
+        return (borg_attack_aux_artifact_holcolleth());
 
     /* Artifact -- TURMIL- drain life 90 */
     case BF_ACT_DRAIN_LIFE1:
-    rad = 0;
-    dam = 90;
-    return (borg_attack_aux_activation(
-        act_drain_life1, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
+        rad = 0;
+        dam = 90;
+        return (borg_attack_aux_activation(
+            act_drain_life1, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     /* Artifact -- Fingolfin- spikes 150 */
     case BF_ACT_ARROW:
-    rad = 0;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_arrow, rad, dam, BORG_ATTACK_MISSILE, true, -1));
+        rad = 0;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_arrow, rad, dam, BORG_ATTACK_MISSILE, true, -1));
 
     /* Artifact -- Cammithrim- Magic Missile 3d4 */
     case BF_ACT_MISSILE:
-    rad = 0;
-    dam = (3 * (4 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_missile, rad, dam, BORG_ATTACK_MISSILE, true, -1));
+        rad = 0;
+        dam = (3 * (4 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_missile, rad, dam, BORG_ATTACK_MISSILE, true, -1));
 
     /* Artifact -- Paurnen- ACID bolt 5d8 */
     case BF_ACT_ACID_BOLT:
-    rad = 0;
-    dam = (5 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_acid_bolt, rad, dam, BORG_ATTACK_ACID, true, -1));
+        rad = 0;
+        dam = (5 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_acid_bolt, rad, dam, BORG_ATTACK_ACID, true, -1));
 
     /* Artifact -- INGWE- DISPEL EVIL X5 */
     case BF_ACT_DISPEL_EVIL:
-    rad = 10;
-    dam = (10 + (borg_trait[BI_CLEVEL] * 5) / 2);
-    return (borg_attack_aux_activation(
-        act_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL, true, -1));
+        rad = 10;
+        dam = (10 + (borg_trait[BI_CLEVEL] * 5) / 2);
+        return (borg_attack_aux_activation(
+            act_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL, true, -1));
 
     /* Artifact -- Eöl -- Mana Bolt 12d8 */
     case BF_ACT_MANA_BOLT:
-    rad = 0;
-    dam = (12 * (8 + 1)) / 2;
-    return (borg_attack_aux_activation(
-        act_mana_bolt, rad, dam, BORG_ATTACK_MANA, true, -1));
+        rad = 0;
+        dam = (12 * (8 + 1)) / 2;
+        return (borg_attack_aux_activation(
+            act_mana_bolt, rad, dam, BORG_ATTACK_MANA, true, -1));
 
     /* Artifact -- Razorback and Mediator */
     case BF_ACT_STAR_BALL:
-    rad = 3;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_star_ball, rad, dam, BORG_ATTACK_ELEC, true, -1));
+        rad = 3;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_star_ball, rad, dam, BORG_ATTACK_ELEC, true, -1));
 
     /* Artifact -- Gil-galad */
     case BF_ACT_STARLIGHT2:
-    rad = 7;
-    dam = (10 * (8 + 1)) / 2;
-    return (borg_attack_aux_activation(
-        act_starlight2, rad, dam, BORG_ATTACK_LIGHT, false, -1));
+        rad = 7;
+        dam = (10 * (8 + 1)) / 2;
+        return (borg_attack_aux_activation(
+            act_starlight2, rad, dam, BORG_ATTACK_LIGHT, false, -1));
 
     /* Artifact -- randarts */
     case BF_ACT_STARLIGHT:
-    rad = 7;
-    dam = (6 * (8 + 1)) / 2;
-    return (borg_attack_aux_activation(
-        act_starlight, rad, dam, BORG_ATTACK_LIGHT, false, -1));
+        rad = 7;
+        dam = (6 * (8 + 1)) / 2;
+        return (borg_attack_aux_activation(
+            act_starlight, rad, dam, BORG_ATTACK_LIGHT, false, -1));
 
     case BF_ACT_MON_SLOW:
-    rad = 0;
-    dam = 20;
-    return (borg_attack_aux_activation(
-        act_mon_slow, rad, dam, BORG_ATTACK_OLD_SLOW, true, -1));
+        rad = 0;
+        dam = 20;
+        return (borg_attack_aux_activation(
+            act_mon_slow, rad, dam, BORG_ATTACK_OLD_SLOW, true, -1));
 
     case BF_ACT_MON_CONFUSE:
-    rad = 0;
-    dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_activation(
-        act_mon_confuse, rad, dam, BORG_ATTACK_OLD_CONF, true, -1));
+        rad = 0;
+        dam = 2 * (6 + 1) / 2;
+        return (borg_attack_aux_activation(
+            act_mon_confuse, rad, dam, BORG_ATTACK_OLD_CONF, true, -1));
 
     case BF_ACT_SLEEP_ALL:
-    rad = 0;
-    dam = 60;
-    return (borg_attack_aux_activation(
-        act_sleep_all, rad, dam, BORG_ATTACK_OLD_SLEEP, false, -1));
+        rad = 0;
+        dam = 60;
+        return (borg_attack_aux_activation(
+            act_sleep_all, rad, dam, BORG_ATTACK_OLD_SLEEP, false, -1));
 
     case BF_ACT_FEAR_MONSTER:
-    rad = 0;
-    dam = 2 * (6 + 1) / 2;
-    return (borg_attack_aux_activation(
-        act_mon_scare, rad, dam, BORG_ATTACK_TURN_ALL, true, -1));
+        rad = 0;
+        dam = 2 * (6 + 1) / 2;
+        return (borg_attack_aux_activation(
+            act_mon_scare, rad, dam, BORG_ATTACK_TURN_ALL, true, -1));
 
     case BF_ACT_LIGHT_BEAM:
-    rad = -1;
-    dam = (6 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_light_line, rad, dam, BORG_ATTACK_LIGHT_WEAK, true, -1));
+        rad = -1;
+        dam = (6 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_light_line, rad, dam, BORG_ATTACK_LIGHT_WEAK, true, -1));
 
     case BF_ACT_DRAIN_LIFE3:
-    rad = 0;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_drain_life3, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
+        rad = 0;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_drain_life3, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     case BF_ACT_DRAIN_LIFE4:
-    rad = 0;
-    dam = 250;
-    return (borg_attack_aux_activation(
-        act_drain_life4, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
+        rad = 0;
+        dam = 250;
+        return (borg_attack_aux_activation(
+            act_drain_life4, rad, dam, BORG_ATTACK_OLD_DRAIN, true, -1));
 
     case BF_ACT_ELEC_BALL:
-    rad = 2;
-    dam = 64;
-    return (borg_attack_aux_activation(
-        act_elec_ball, rad, dam, BORG_ATTACK_ELEC, true, -1));
+        rad = 2;
+        dam = 64;
+        return (borg_attack_aux_activation(
+            act_elec_ball, rad, dam, BORG_ATTACK_ELEC, true, -1));
 
     case BF_ACT_ELEC_BALL2:
-    rad = 2;
-    dam = 250;
-    return (borg_attack_aux_activation(
-        act_elec_ball2, rad, dam, BORG_ATTACK_ELEC, true, -1));
-
-    case BF_ACT_ACID_BOLT2:
-    rad = 0;
-    dam = (10 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_acid_bolt2, rad, dam, BORG_ATTACK_ACID, true, -1));
-
-    case BF_ACT_ACID_BOLT3:
-    rad = 0;
-    dam = (12 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_acid_bolt2, rad, dam, BORG_ATTACK_ACID, true, -1));
-
-    case BF_ACT_ACID_BALL:
-    rad = 2;
-    dam = 120;
-    return (borg_attack_aux_activation(
-        act_acid_ball, rad, dam, BORG_ATTACK_ACID, true, -1));
-
-    case BF_ACT_COLD_BALL160:
-    rad = 2;
-    dam = 160;
-    return (borg_attack_aux_activation(
-        act_cold_ball160, rad, dam, BORG_ATTACK_COLD, true, -1));
-
-    case BF_ACT_COLD_BALL2:
-    rad = 2;
-    dam = 200;
-    return (borg_attack_aux_activation(
-        act_cold_ball2, rad, dam, BORG_ATTACK_COLD, true, -1));
-
-    case BF_ACT_FIRE_BALL2:
-    rad = 2;
-    dam = 120;
-    return (borg_attack_aux_activation(
-        act_fire_ball2, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_FIRE_BALL200:
-    rad = 2;
-    dam = 200;
-    return (borg_attack_aux_activation(
-        act_fire_ball200, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_FIRE_BOLT2:
-    rad = 0;
-    dam = (12 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_fire_bolt2, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_FIRE_BOLT3:
-    rad = 0;
-    dam = (16 * (8 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_fire_bolt3, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_DISPEL_EVIL60:
-    rad = 10;
-    dam = 60;
-    return (borg_attack_aux_activation(
-        act_dispel_evil60, rad, dam, BORG_ATTACK_DISP_EVIL, false, -1));
-
-    case BF_ACT_DISPEL_UNDEAD:
-    rad = 10;
-    dam = 60;
-    return (borg_attack_aux_activation(
-        act_dispel_undead, rad, dam, BORG_ATTACK_DISP_UNDEAD, false, -1));
-
-    case BF_ACT_DISPEL_ALL:
-    rad = 10;
-    dam = 60;
-    return (borg_attack_aux_activation(
-        act_dispel_undead, rad, dam, BORG_ATTACK_DISP_ALL, false, -1));
-
-    case BF_ACT_LOSSLOW:
-    rad = 10;
-    dam = 20;
-    return (borg_attack_aux_activation(
-        act_losslow, rad, dam, BORG_ATTACK_OLD_SLOW, false, -1));
-
-    case BF_ACT_LOSSLEEP:
-    rad = 10;
-    dam = 20;
-    return (borg_attack_aux_activation(
-        act_lossleep, rad, dam, BORG_ATTACK_OLD_SLEEP, false, -1));
-
-    case BF_ACT_LOSCONF:
-    rad = 10;
-    dam = 5 + ((5 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_losconf, rad, dam, BORG_ATTACK_OLD_CONF, false, -1));
-
-    case BF_ACT_WONDER:
-    dam = 5 + ((5 + 1) / 2);
-    return (borg_attack_aux_activation(
-        act_wonder, rad, dam, BORG_ATTACK_MISSILE, true, -1));
-
-    case BF_ACT_STAFF_HOLY:
-    if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
-        dam = 500;
-    else
-        dam = 120;
-    return (borg_attack_aux_activation(
-        act_staff_holy, rad, dam, BORG_ATTACK_DISP_EVIL, false, -1));
-
-    case BF_ACT_RING_ACID:
-    rad = 2;
-    dam = 70;
-    return (borg_attack_aux_activation(
-        act_ring_acid, rad, dam, BORG_ATTACK_ACID, true, -1));
-
-    case BF_ACT_RING_FIRE:
-    rad = 2;
-    dam = 80;
-    return (borg_attack_aux_activation(
-        act_ring_flames, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_RING_ICE:
-    rad = 2;
-    dam = 75;
-    return (borg_attack_aux_activation(
-        act_ring_ice, rad, dam, BORG_ATTACK_ICE, true, -1));
-
-    case BF_ACT_RING_LIGHTNING:
-    rad = 2;
-    dam = 85;
-    return (borg_attack_aux_activation(
-        act_ring_lightning, rad, dam, BORG_ATTACK_ELEC, true, -1));
-
-    case BF_ACT_DRAGON_BLUE:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_dragon_blue, rad, dam, BORG_ATTACK_ELEC, true, -1));
-
-    case BF_ACT_DRAGON_GREEN:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_dragon_green, rad, dam, BORG_ATTACK_POIS, true, -1));
-
-    case BF_ACT_DRAGON_RED:
-    rad = 2;
-    dam = 200;
-    return (borg_attack_aux_activation(
-        act_dragon_red, rad, dam, BORG_ATTACK_FIRE, true, -1));
-
-    case BF_ACT_DRAGON_MULTIHUED:
-    {
-        int value[5];
-        int type[5] = {BORG_ATTACK_ELEC, BORG_ATTACK_COLD, BORG_ATTACK_ACID,
-            BORG_ATTACK_POIS, BORG_ATTACK_FIRE};
-        int biggest = 0;
-        bool tmp_simulate = borg_simulate;
-
         rad = 2;
         dam = 250;
+        return (borg_attack_aux_activation(
+            act_elec_ball2, rad, dam, BORG_ATTACK_ELEC, true, -1));
+
+    case BF_ACT_ACID_BOLT2:
+        rad = 0;
+        dam = (10 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_acid_bolt2, rad, dam, BORG_ATTACK_ACID, true, -1));
+
+    case BF_ACT_ACID_BOLT3:
+        rad = 0;
+        dam = (12 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_acid_bolt2, rad, dam, BORG_ATTACK_ACID, true, -1));
+
+    case BF_ACT_ACID_BALL:
+        rad = 2;
+        dam = 120;
+        return (borg_attack_aux_activation(
+            act_acid_ball, rad, dam, BORG_ATTACK_ACID, true, -1));
+
+    case BF_ACT_COLD_BALL160:
+        rad = 2;
+        dam = 160;
+        return (borg_attack_aux_activation(
+            act_cold_ball160, rad, dam, BORG_ATTACK_COLD, true, -1));
+
+    case BF_ACT_COLD_BALL2:
+        rad = 2;
+        dam = 200;
+        return (borg_attack_aux_activation(
+            act_cold_ball2, rad, dam, BORG_ATTACK_COLD, true, -1));
+
+    case BF_ACT_FIRE_BALL2:
+        rad = 2;
+        dam = 120;
+        return (borg_attack_aux_activation(
+            act_fire_ball2, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_FIRE_BALL200:
+        rad = 2;
+        dam = 200;
+        return (borg_attack_aux_activation(
+            act_fire_ball200, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_FIRE_BOLT2:
+        rad = 0;
+        dam = (12 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_fire_bolt2, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_FIRE_BOLT3:
+        rad = 0;
+        dam = (16 * (8 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_fire_bolt3, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_DISPEL_EVIL60:
+        rad = 10;
+        dam = 60;
+        return (borg_attack_aux_activation(
+            act_dispel_evil60, rad, dam, BORG_ATTACK_DISP_EVIL, false, -1));
+
+    case BF_ACT_DISPEL_UNDEAD:
+        rad = 10;
+        dam = 60;
+        return (borg_attack_aux_activation(
+            act_dispel_undead, rad, dam, BORG_ATTACK_DISP_UNDEAD, false, -1));
+
+    case BF_ACT_DISPEL_ALL:
+        rad = 10;
+        dam = 60;
+        return (borg_attack_aux_activation(
+            act_dispel_undead, rad, dam, BORG_ATTACK_DISP_ALL, false, -1));
+
+    case BF_ACT_LOSSLOW:
+        rad = 10;
+        dam = 20;
+        return (borg_attack_aux_activation(
+            act_losslow, rad, dam, BORG_ATTACK_OLD_SLOW, false, -1));
+
+    case BF_ACT_LOSSLEEP:
+        rad = 10;
+        dam = 20;
+        return (borg_attack_aux_activation(
+            act_lossleep, rad, dam, BORG_ATTACK_OLD_SLEEP, false, -1));
+
+    case BF_ACT_LOSCONF:
+        rad = 10;
+        dam = 5 + ((5 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_losconf, rad, dam, BORG_ATTACK_OLD_CONF, false, -1));
+
+    case BF_ACT_WONDER:
+        dam = 5 + ((5 + 1) / 2);
+        return (borg_attack_aux_activation(
+            act_wonder, rad, dam, BORG_ATTACK_MISSILE, true, -1));
+
+    case BF_ACT_STAFF_HOLY:
+        if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
+            dam = 500;
+        else
+            dam = 120;
+        return (borg_attack_aux_activation(
+            act_staff_holy, rad, dam, BORG_ATTACK_DISP_EVIL, false, -1));
+
+    case BF_ACT_RING_ACID:
+        rad = 2;
+        dam = 70;
+        return (borg_attack_aux_activation(
+            act_ring_acid, rad, dam, BORG_ATTACK_ACID, true, -1));
+
+    case BF_ACT_RING_FIRE:
+        rad = 2;
+        dam = 80;
+        return (borg_attack_aux_activation(
+            act_ring_flames, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_RING_ICE:
+        rad = 2;
+        dam = 75;
+        return (borg_attack_aux_activation(
+            act_ring_ice, rad, dam, BORG_ATTACK_ICE, true, -1));
+
+    case BF_ACT_RING_LIGHTNING:
+        rad = 2;
+        dam = 85;
+        return (borg_attack_aux_activation(
+            act_ring_lightning, rad, dam, BORG_ATTACK_ELEC, true, -1));
+
+    case BF_ACT_DRAGON_BLUE:
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_dragon_blue, rad, dam, BORG_ATTACK_ELEC, true, -1));
+
+    case BF_ACT_DRAGON_GREEN:
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_dragon_green, rad, dam, BORG_ATTACK_POIS, true, -1));
+
+    case BF_ACT_DRAGON_RED:
+        rad = 2;
+        dam = 200;
+        return (borg_attack_aux_activation(
+            act_dragon_red, rad, dam, BORG_ATTACK_FIRE, true, -1));
+
+    case BF_ACT_DRAGON_MULTIHUED: {
+        int  value[5];
+        int  type[5] = { BORG_ATTACK_ELEC, BORG_ATTACK_COLD, BORG_ATTACK_ACID,
+             BORG_ATTACK_POIS, BORG_ATTACK_FIRE };
+        int  biggest = 0;
+        bool tmp_simulate = borg_simulate;
+
+        rad               = 2;
+        dam               = 250;
         if (!borg_simulate)
             borg_simulate = true;
         for (int x = 0; x < 5; x++)
@@ -4549,20 +4525,19 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_ACT_DRAGON_GOLD:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_activation(
-        act_dragon_gold, rad, dam, BORG_ATTACK_SOUND, true, -1));
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_activation(
+            act_dragon_gold, rad, dam, BORG_ATTACK_SOUND, true, -1));
 
-    case BF_ACT_DRAGON_CHAOS:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN};
-        int biggest = 0;
+    case BF_ACT_DRAGON_CHAOS: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 220;
+        rad               = 2;
+        dam               = 220;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4582,15 +4557,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_ACT_DRAGON_LAW:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_SOUND, BORG_ATTACK_SHARD};
-        int biggest = 0;
+    case BF_ACT_DRAGON_LAW: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_SOUND, BORG_ATTACK_SHARD };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 220;
+        rad               = 2;
+        dam               = 220;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4610,16 +4584,15 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_ACT_DRAGON_BALANCE:
-    {
+    case BF_ACT_DRAGON_BALANCE: {
         int value[4];
-        int type[4] = {BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN, BORG_ATTACK_SOUND,
-            BORG_ATTACK_SHARD};
+        int type[4] = { BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN, BORG_ATTACK_SOUND,
+            BORG_ATTACK_SHARD };
         int biggest = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 250;
+        rad               = 2;
+        dam               = 250;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4639,15 +4612,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_ACT_DRAGON_SHINING:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_LIGHT, BORG_ATTACK_DARK};
-        int biggest = 0;
+    case BF_ACT_DRAGON_SHINING: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_LIGHT, BORG_ATTACK_DARK };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 200;
+        rad               = 2;
+        dam               = 200;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4668,78 +4640,77 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_ACT_DRAGON_POWER:
-    rad = 2;
-    dam = 300;
-    return (borg_attack_aux_activation(
-        act_dragon_power, rad, dam, BORG_ATTACK_MISSILE, true, -1));
+        rad = 2;
+        dam = 300;
+        return (borg_attack_aux_activation(
+            act_dragon_power, rad, dam, BORG_ATTACK_MISSILE, true, -1));
 
     /* Ring of ACID */
     case BF_RING_ACID:
-    rad = 2;
-    dam = 70;
-    return (borg_attack_aux_ring(sv_ring_acid, rad, dam, BORG_ATTACK_ACID));
+        rad = 2;
+        dam = 70;
+        return (borg_attack_aux_ring(sv_ring_acid, rad, dam, BORG_ATTACK_ACID));
 
     /* Ring of FLAMES */
     case BF_RING_FIRE:
-    rad = 2;
-    dam = 80;
-    return (
-        borg_attack_aux_ring(sv_ring_flames, rad, dam, BORG_ATTACK_FIRE));
+        rad = 2;
+        dam = 80;
+        return (
+            borg_attack_aux_ring(sv_ring_flames, rad, dam, BORG_ATTACK_FIRE));
 
     /* Ring of ICE */
     case BF_RING_ICE:
-    rad = 2;
-    dam = 75;
-    return (borg_attack_aux_ring(sv_ring_ice, rad, dam, BORG_ATTACK_ICE));
+        rad = 2;
+        dam = 75;
+        return (borg_attack_aux_ring(sv_ring_ice, rad, dam, BORG_ATTACK_ICE));
 
     /* Ring of LIGHTNING */
     case BF_RING_LIGHTNING:
-    rad = 2;
-    dam = 85;
-    return (borg_attack_aux_ring(
-        sv_ring_lightning, rad, dam, BORG_ATTACK_ELEC));
+        rad = 2;
+        dam = 85;
+        return (borg_attack_aux_ring(
+            sv_ring_lightning, rad, dam, BORG_ATTACK_ELEC));
 
     /* Hack -- Dragon Scale Mail can be activated as well */
     case BF_DRAGON_BLUE:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_dragon(
-        sv_dragon_blue, rad, dam, BORG_ATTACK_ELEC, -1));
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_dragon(
+            sv_dragon_blue, rad, dam, BORG_ATTACK_ELEC, -1));
 
     case BF_DRAGON_WHITE:
-    rad = 2;
-    dam = 100;
-    return (borg_attack_aux_dragon(
-        sv_dragon_white, rad, dam, BORG_ATTACK_COLD, -1));
+        rad = 2;
+        dam = 100;
+        return (borg_attack_aux_dragon(
+            sv_dragon_white, rad, dam, BORG_ATTACK_COLD, -1));
 
     case BF_DRAGON_BLACK:
-    rad = 2;
-    dam = 120;
-    return (borg_attack_aux_dragon(
-        sv_dragon_black, rad, dam, BORG_ATTACK_ACID, -1));
+        rad = 2;
+        dam = 120;
+        return (borg_attack_aux_dragon(
+            sv_dragon_black, rad, dam, BORG_ATTACK_ACID, -1));
 
     case BF_DRAGON_GREEN:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_dragon(
-        sv_dragon_green, rad, dam, BORG_ATTACK_POIS, -1));
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_dragon(
+            sv_dragon_green, rad, dam, BORG_ATTACK_POIS, -1));
 
     case BF_DRAGON_RED:
-    rad = 2;
-    dam = 200;
-    return (borg_attack_aux_dragon(
-        sv_dragon_red, rad, dam, BORG_ATTACK_FIRE, -1));
+        rad = 2;
+        dam = 200;
+        return (borg_attack_aux_dragon(
+            sv_dragon_red, rad, dam, BORG_ATTACK_FIRE, -1));
 
-    case BF_DRAGON_MULTIHUED:
-    {
-        int value[5];
-        int type[5] = {BORG_ATTACK_ELEC, BORG_ATTACK_COLD, BORG_ATTACK_ACID,
-            BORG_ATTACK_POIS, BORG_ATTACK_FIRE};
-        int biggest = 0;
+    case BF_DRAGON_MULTIHUED: {
+        int  value[5];
+        int  type[5] = { BORG_ATTACK_ELEC, BORG_ATTACK_COLD, BORG_ATTACK_ACID,
+             BORG_ATTACK_POIS, BORG_ATTACK_FIRE };
+        int  biggest = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 250;
+        rad               = 2;
+        dam               = 250;
         if (!borg_simulate)
             borg_simulate = true;
         for (int x = 0; x < 5; x++)
@@ -4759,26 +4730,25 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_DRAGON_GOLD:
-    rad = 2;
-    dam = 150;
-    return (borg_attack_aux_dragon(
-        sv_dragon_gold, rad, dam, BORG_ATTACK_SOUND, -1));
+        rad = 2;
+        dam = 150;
+        return (borg_attack_aux_dragon(
+            sv_dragon_gold, rad, dam, BORG_ATTACK_SOUND, -1));
 
-    case BF_DRAGON_CHAOS:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN};
-        int biggest = 0;
+    case BF_DRAGON_CHAOS: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 220;
+        rad               = 2;
+        dam               = 220;
 
         if (!borg_simulate)
             borg_simulate = true;
         for (int x = 0; x < 2; x++)
             value[x]
-            = borg_attack_aux_dragon(sv_dragon_chaos, rad, dam, type[x], x);
+                = borg_attack_aux_dragon(sv_dragon_chaos, rad, dam, type[x], x);
 
         for (int x = 1; x < 2; x++)
             if (value[x] > value[biggest])
@@ -4792,21 +4762,20 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_DRAGON_LAW:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_SOUND, BORG_ATTACK_SHARD};
-        int biggest = 0;
+    case BF_DRAGON_LAW: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_SOUND, BORG_ATTACK_SHARD };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 220;
+        rad               = 2;
+        dam               = 220;
 
         if (!borg_simulate)
             borg_simulate = true;
         for (int x = 0; x < 2; x++)
             value[x]
-            = borg_attack_aux_dragon(sv_dragon_law, rad, dam, type[x], x);
+                = borg_attack_aux_dragon(sv_dragon_law, rad, dam, type[x], x);
 
         for (int x = 1; x < 2; x++)
             if (value[x] > value[biggest])
@@ -4820,16 +4789,15 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_DRAGON_BALANCE:
-    {
+    case BF_DRAGON_BALANCE: {
         int value[4];
-        int type[4] = {BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN, BORG_ATTACK_SOUND,
-            BORG_ATTACK_SHARD};
+        int type[4] = { BORG_ATTACK_CHAOS, BORG_ATTACK_DISEN, BORG_ATTACK_SOUND,
+            BORG_ATTACK_SHARD };
         int biggest = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 250;
+        rad               = 2;
+        dam               = 250;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4849,15 +4817,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return value[biggest];
     }
 
-    case BF_DRAGON_SHINING:
-    {
-        int value[2];
-        int type[2] = {BORG_ATTACK_LIGHT, BORG_ATTACK_DARK};
-        int biggest = 0;
+    case BF_DRAGON_SHINING: {
+        int  value[2];
+        int  type[2]      = { BORG_ATTACK_LIGHT, BORG_ATTACK_DARK };
+        int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad = 2;
-        dam = 200;
+        rad               = 2;
+        dam               = 200;
 
         if (!borg_simulate)
             borg_simulate = true;
@@ -4878,10 +4845,10 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_DRAGON_POWER:
-    rad = 2;
-    dam = 300;
-    return (borg_attack_aux_dragon(
-        sv_dragon_power, rad, dam, BORG_ATTACK_MISSILE, -1));
+        rad = 2;
+        dam = 300;
+        return (borg_attack_aux_dragon(
+            sv_dragon_power, rad, dam, BORG_ATTACK_MISSILE, -1));
     }
 
     /* Oops */
@@ -4915,11 +4882,11 @@ bool borg_attack(bool boosted_bravery)
     int i, x, y;
     int a_y, a_x;
 
-    int n, b_n = 0;
-    int g, b_g = -1;
+    int  n, b_n = 0;
+    int  g, b_g = -1;
     bool adjacent_monster = false;
 
-    borg_grid *ag;
+    borg_grid           *ag;
     struct monster_race *r_ptr;
 
     /* Nobody around */
@@ -4938,7 +4905,7 @@ bool borg_attack(bool boosted_bravery)
         borg_kill *kill;
 
         /* Monster */
-        kill = &borg_kills[i];
+        kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
         /* Skip dead monsters */
@@ -4972,7 +4939,7 @@ bool borg_attack(bool boosted_bravery)
 
         /* Check if there is a monster adjacent to me or he's close and fast. */
         if ((kill->speed > borg_trait[BI_SPEED]
-            && borg_distance(c_y, c_x, a_y, a_x) <= 2)
+                && borg_distance(c_y, c_x, a_y, a_x) <= 2)
             || borg_distance(c_y, c_x, a_y, a_x) <= 1)
             adjacent_monster = true;
 
@@ -4982,18 +4949,18 @@ bool borg_attack(bool boosted_bravery)
             if (strstr(r_ptr->name, "Grip") || strstr(r_ptr->name, "Fang")) {
                 /* Try to fight Grip and Fang. */
             } else if (borg_trait[BI_CDEPTH] <= 5 && borg_trait[BI_CDEPTH] != 0
-                && (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY))) {
+                       && (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY))) {
                 /* Try to fight single worms and mice. */
             } else if (borg_t - borg_began >= 2000
-                || borg_time_town + (borg_t - borg_began) >= 3000) {
+                       || borg_time_town + (borg_t - borg_began) >= 3000) {
                 /* Try to fight been there too long. */
             } else if (boosted_bravery || borg_no_retreat >= 1
-                || goal_recalling) {
+                       || goal_recalling) {
                 /* Try to fight if being Boosted or recall engaged. */
                 borg_note("# Bored, or recalling and fighting a monster on "
-                    "Scaryguy Level.");
+                          "Scaryguy Level.");
             } else if (borg_trait[BI_CDEPTH] * 4 <= borg_trait[BI_CLEVEL]
-                && borg_trait[BI_CLEVEL] > 10) {
+                       && borg_trait[BI_CLEVEL] > 10) {
                 /* Try to fight anyway. */
                 borg_note("# High clevel fighting monster on Scaryguy Level.");
             } else if (adjacent_monster) {

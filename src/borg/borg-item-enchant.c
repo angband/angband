@@ -17,13 +17,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-enchant.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-decurse.h"
@@ -31,9 +30,10 @@
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
+#include "borg.h"
 
-/* 
- * select the given armor 
+/*
+ * select the given armor
  */
 static void borg_pick_armor(int i)
 {
@@ -244,7 +244,7 @@ static bool borg_enchant_to_h(void)
         b_a = a;
     }
     if (weapon_swap) {
-        bool skip = false;
+        bool       skip = false;
         borg_item *item = &borg_items[weapon_swap - 1];
 
         /* Skip my swap digger and anything unid'd */
@@ -408,7 +408,7 @@ static bool borg_enchant_to_d(void)
         b_a = a;
     }
     if (weapon_swap) {
-        bool skip = false;
+        bool       skip = false;
         borg_item *item = &borg_items[weapon_swap - 1];
 
         /* Skip non-identified items and diggers */

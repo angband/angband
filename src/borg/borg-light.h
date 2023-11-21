@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_LIGHT_H
 #define INCLUDED_BORG_LIGHT_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-item-use.h"
 
@@ -44,7 +47,6 @@ extern enum borg_need borg_maintain_light(void);
  * This will look down a hallway and possibly light it up
  */
 extern bool borg_light_beam(bool simulation);
-
 
 #endif
 #endif

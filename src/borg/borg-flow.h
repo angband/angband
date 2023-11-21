@@ -18,27 +18,29 @@
 #ifndef INCLUDED_BORG_FLOW_H
 #define INCLUDED_BORG_FLOW_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-cave.h"
 
 /*
  * Threshold where the borg will attempt to dig things
  */
-#define BORG_DIG			13
-#define BORG_DIG_HARD		40
+#define BORG_DIG      13
+#define BORG_DIG_HARD 40
 
 /*
  * track where some things are
  */
-struct borg_track
-{
+struct borg_track {
     int16_t num;
     int16_t size;
-    int *x;
-    int *y;
+    int*    x;
+    int*    y;
 };
 
 /*
@@ -51,8 +53,7 @@ typedef struct borg_data borg_data;
  *
  * We use a structure to encapsulate the data into a "typed" form.
  */
-struct borg_data
-{
+struct borg_data {
     uint8_t data[AUTO_MAX_Y][AUTO_MAX_X];
 };
 
@@ -78,11 +79,11 @@ extern int flow_tail;
 /*
  * Some variables
  */
-extern borg_data *borg_data_flow; /* Current "flow" data */
-extern borg_data *borg_data_cost; /* Current "cost" data */
-extern borg_data *borg_data_hard; /* Constant "hard" data */
-extern borg_data *borg_data_know; /* Current "know" flags */
-extern borg_data *borg_data_icky; /* Current "icky" flags */
+extern borg_data* borg_data_flow; /* Current "flow" data */
+extern borg_data* borg_data_cost; /* Current "cost" data */
+extern borg_data* borg_data_hard; /* Constant "hard" data */
+extern borg_data* borg_data_know; /* Current "know" flags */
+extern borg_data* borg_data_icky; /* Current "icky" flags */
 
 /*
  * Number of grids in the "temp" array
@@ -117,15 +118,15 @@ extern bool vault_on_level;
 /*
  * Anti-Summon
  */
-extern int borg_t_antisummon;
+extern int  borg_t_antisummon;
 extern bool borg_as_position;
-extern bool borg_digging; 
+extern bool borg_digging;
 extern bool my_need_alter;
 extern bool my_no_alter;
 extern bool my_need_redraw;
 
-/* 
- * Current danger thresh-hold 
+/*
+ * Current danger thresh-hold
  */
 extern int16_t avoidance;
 
@@ -159,15 +160,15 @@ extern void borg_flow_enqueue_grid(int y, int x);
 /*
  * Commit the current "flow"
  */
-extern bool borg_flow_commit(const char *who, int why);
+extern bool borg_flow_commit(const char* who, int why);
 
 /*
  * Attempt to take an optimal step towards the current goal location
  */
 extern bool borg_flow_old(int why);
 
-extern void borg_init_track(struct borg_track *track, int size);
-extern void borg_free_track(struct borg_track *track);
+extern void borg_init_track(struct borg_track* track, int size);
+extern void borg_free_track(struct borg_track* track);
 
 extern void borg_init_flow(void);
 extern void borg_free_flow(void);

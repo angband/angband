@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-util.h"
+
+#ifdef ALLOW_BORG
 
 bool (*borg_sort_comp)(void *u, void *v, int a, int b);
 void (*borg_sort_swap)(void *u, void *v, int a, int b);
@@ -97,10 +97,10 @@ void borg_sort(void *u, void *v, int n)
  */
 bool borg_sort_comp_hook(void *u, void *v, int a, int b)
 {
-    char **text = (char **)(u);
+    char   **text = (char **)(u);
     int16_t *what = (int16_t *)(v);
 
-    int      cmp;
+    int cmp;
 
     /* Compare the two strings */
     cmp = (strcmp(text[a], text[b]));
@@ -125,11 +125,11 @@ bool borg_sort_comp_hook(void *u, void *v, int a, int b)
  */
 void borg_sort_swap_hook(void *u, void *v, int a, int b)
 {
-    char **text = (char **)(u);
+    char   **text = (char **)(u);
     int16_t *what = (int16_t *)(v);
 
-    char *texttmp;
-    int16_t  whattmp;
+    char   *texttmp;
+    int16_t whattmp;
 
     /* Swap "text" */
     texttmp = text[a];
@@ -141,6 +141,5 @@ void borg_sort_swap_hook(void *u, void *v, int a, int b)
     what[a] = what[b];
     what[b] = whattmp;
 }
-
 
 #endif

@@ -1,7 +1,7 @@
 /**
  * \file borg-flow-misc.c
- * \brief Misc movement (flow) routines 
- * 
+ * \brief Misc movement (flow) routines
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
@@ -17,24 +17,23 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow-misc.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cave.h"
 #include "../store.h"
 #include "../ui-term.h"
 
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-light.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-danger.h"
 #include "borg-escape.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-stairs.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-use.h"
@@ -43,10 +42,11 @@
 #include "borg-projection.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
- /*
-  * Locate the store doors
-  */
+/*
+ * Locate the store doors
+ */
 int *track_shop_x;
 int *track_shop_y;
 
@@ -58,8 +58,8 @@ struct borg_track track_vein;
 /*
  * Do a "reverse" flow from the player outwards
  */
-void borg_flow_reverse(int depth, bool optimize, bool avoid,
-    bool tunneling, int stair_idx, bool sneak)
+void borg_flow_reverse(int depth, bool optimize, bool avoid, bool tunneling,
+    int stair_idx, bool sneak)
 {
     /* Clear the flow codes */
     borg_flow_clear();
@@ -252,7 +252,7 @@ bool borg_flow_recover(bool viewable, int dist)
      * 1. Happy grids
      */
 
-     /* look at grids within 20 grids of me */
+    /* look at grids within 20 grids of me */
     for (y = c_y - 25; y < c_y + 25; y++) {
 
         for (x = c_x - 25; x < c_x + 25; x++) {
@@ -323,7 +323,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 {
     int i, x, y;
     int b_stair = -1, j, b_j = -1;
-    int cost = 0;
+    int cost  = 0;
     int leash = borg_trait[BI_CLEVEL] * 3 + 9;
 
     borg_grid *ag;
@@ -361,7 +361,7 @@ bool borg_flow_vein(bool viewable, int nearness)
             continue;
 
         /* track it */
-        b_j = j;
+        b_j     = j;
         b_stair = i;
     }
 
@@ -486,7 +486,7 @@ bool borg_flow_spastic(bool bored)
             continue;
 
         /* track it */
-        b_j = j;
+        b_j     = j;
         b_stair = i;
     }
 
@@ -496,7 +496,7 @@ bool borg_flow_spastic(bool bored)
         spastic_x = 0;
         spastic_y = 0;
 
-        ag = &borg_grids[c_y][c_x];
+        ag        = &borg_grids[c_y][c_x];
 
         /* Take note */
         borg_note(format(
@@ -528,9 +528,9 @@ bool borg_flow_spastic(bool bored)
         for (x = 1; x < AUTO_MAX_X - 1; x++) {
             borg_grid *ag_ptr[8];
 
-            int wall = 0;
-            int supp = 0;
-            int diag = 0;
+            int wall     = 0;
+            int supp     = 0;
+            int diag     = 0;
             int monsters = 0;
 
             /* Acquire the grid */
@@ -799,7 +799,7 @@ bool borg_flow_light(int why)
 
     /* reset counters */
     borg_glow_n = 0;
-    i = 0;
+    i           = 0;
 
     /* build the glow array */
     /* Scan map */
@@ -850,15 +850,15 @@ bool borg_flow_light(int why)
  */
 bool borg_flow_vault(int nearness)
 {
-    int y, x, i;
-    int b_y, b_x;
+    int  y, x, i;
+    int  b_y, b_x;
     bool can_dig_hard;
 
     borg_grid *ag;
 
     /* reset counters */
     borg_temp_n = 0;
-    i = 0;
+    i           = 0;
 
     /* no need if no vault on level */
     if (!vault_on_level)
@@ -1155,7 +1155,7 @@ int borg_goto_dir(int y1, int x1, int y2, int x2)
  */
 bool borg_check_rest(int y, int x)
 {
-    int i, ii;
+    int  i, ii;
     bool borg_in_vault = false;
 
     /* never rest to recover SP (if HP at max) if you only recover */
@@ -1173,7 +1173,7 @@ bool borg_check_rest(int y, int x)
     /* No resting if Blessed and good HP and good SP */
     /* don't rest for SP if you do combat regen */
     if ((borg_bless || borg_hero || borg_berserk || borg_fastcast || borg_regen
-        || borg_smite_evil)
+            || borg_smite_evil)
         && !borg_munchkin_mode
         && (borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 8 / 10)
         && (borg_trait[BI_CURSP] >= borg_trait[BI_MAXSP] * 7 / 10))
@@ -1228,18 +1228,18 @@ bool borg_check_rest(int y, int x)
 
         /* Be concerned if low on food */
         if ((borg_trait[BI_CURLITE] == 0 || borg_trait[BI_ISWEAK]
-            || borg_trait[BI_FOOD] < 2)
+                || borg_trait[BI_FOOD] < 2)
             && !borg_munchkin_mode)
             return (false);
     }
 
     /* Examine all the monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
-        borg_kill *kill = &borg_kills[i];
+        borg_kill           *kill  = &borg_kills[i];
         struct monster_race *r_ptr = &r_info[kill->r_idx];
 
-        int x9 = kill->x;
-        int y9 = kill->y;
+        int x9                     = kill->x;
+        int y9                     = kill->y;
         int ax, ay, d;
         int p = 0;
 

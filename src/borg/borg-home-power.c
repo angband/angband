@@ -1,6 +1,6 @@
 /**
  * \file  borg-home-power.c
- * \brief Determine the power value of the home 
+ * \brief Determine the power value of the home
  *           this is used to decide what items are best to keep at home
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -18,9 +18,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-home-power.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-home-notice.h"
 #include "borg-magic.h"
@@ -33,15 +33,15 @@ static int32_t borg_power_home_aux1(void)
 {
     int32_t value = 0L;
 
-    /* This would be better seperated by item type (so 1 bonus for resist cold
+    /* This would be better separated by item type (so 1 bonus for resist cold
      * armor */
-     /*   1 bonus for resist cold shield... but that would take a bunch more
-      * code. */
+    /*   1 bonus for resist cold shield... but that would take a bunch more
+     * code. */
 
-      /* try to collect at least 2 of each resist/power (for swapping) */
-      /* This can be used to get rid of extra artifacts... */
+    /* try to collect at least 2 of each resist/power (for swapping) */
+    /* This can be used to get rid of extra artifacts... */
 
-      /* spare lite sources.  Artifacts only */
+    /* spare lite sources.  Artifacts only */
     if (num_LIGHT == 1)
         value += 150L;
     else if (num_LIGHT == 2)
@@ -260,7 +260,7 @@ static int32_t borg_power_home_aux1(void)
             value += 20 * 400L + (home_stat_add[spell_stat] - 20) * 300L;
         else
             value
-            += 20 * 100L + 6 * 300L + (home_stat_add[spell_stat] - 26) * 5L;
+                += 20 * 100L + 6 * 300L + (home_stat_add[spell_stat] - 26) * 5L;
     }
 
     /* Sustains */
@@ -357,7 +357,7 @@ static int32_t borg_power_home_aux1(void)
  */
 static int32_t borg_power_home_aux2(void)
 {
-    int     k, book;
+    int k, book;
 
     int32_t value = 0L;
 
@@ -376,19 +376,19 @@ static int32_t borg_power_home_aux2(void)
     /* Collect enchantments armour */
     if (borg_trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_a;
-            k++)
+             k++)
             value += 500L - k * 10L;
     }
     /* Collect enchantments to hit */
     if (borg_trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_h;
-            k++)
+             k++)
             value += 500L - k * 10L;
     }
     /* Collect enchantments to dam */
     if (borg_trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_d;
-            k++)
+             k++)
             value += 500L - k * 10L;
     }
 
@@ -406,7 +406,7 @@ static int32_t borg_power_home_aux2(void)
 
     /* Reward Mass Genocide scrolls. Just scrolls, mainly used for Morgoth */
     for (k = 0; k < (kb_info[TV_SCROLL].max_stack * 2) && k < num_mass_genocide;
-        k++)
+         k++)
         value += 500L;
 
     /* Collect Recharge ability */
@@ -481,7 +481,8 @@ static int32_t borg_power_home_aux2(void)
         value += 9000L;
 
     /* junk cure serious if we have some in the home */
-    if (borg_trait[BI_CLEVEL] > 35) /* dont bother keeping them if high level */
+    /* don't bother keeping them if high level */
+    if (borg_trait[BI_CLEVEL] > 35)
         for (k = 0; k < 90 && k < num_cure_serious; k++)
             value -= 1500L - k * 10L;
 

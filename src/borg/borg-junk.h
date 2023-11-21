@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_JUNK_H
 #define INCLUDED_BORG_JUNK_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Destroy "junk" items
@@ -29,22 +32,22 @@ extern bool borg_crush_junk(void);
 
 /*
  * Destroy something to make a free inventory slot.
- */ 
+ */
 extern bool borg_crush_hole(void);
 
 /*
  * Destroy "junk" when slow (in the dungeon).
- */ 
+ */
 extern bool borg_crush_slow(void);
 
 /*
  * Examine the quiver and dump any worthless items
- */ 
+ */
 extern bool borg_dump_quiver(void);
 
 /*
  * Remove useless equipment.
- */ 
+ */
 extern bool borg_remove_stuff(void);
 
 #endif

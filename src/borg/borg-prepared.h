@@ -18,23 +18,26 @@
 #ifndef INCLUDED_BORG_PREPARED_H
 #define INCLUDED_BORG_PREPARED_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 extern int          borg_numb_live_unique;
 extern unsigned int borg_living_unique_index;
 extern int          borg_unique_depth;
 
- /*
-  * Determine what level the borg is prepared to dive to.
-  */
-extern const char *borg_prepared(int depth);
+/*
+ * Determine what level the borg is prepared to dive to.
+ */
+extern const char* borg_prepared(int depth);
 
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern const char *borg_restock(int depth);
+extern const char* borg_restock(int depth);
 
 #endif
 #endif

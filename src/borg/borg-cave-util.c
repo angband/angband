@@ -1,5 +1,5 @@
 /**
- * \file borg-cave-util.c 
+ * \file borg-cave-util.c
  * \brief Misc routines for cave or square analysis
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-cave-util.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cave.h"
 #include "../ui-term.h"
@@ -30,12 +30,12 @@
 bool borg_cave_floor_bold(int y, int X)
 {
     if (square_in_bounds_fully(cave, loc(X, y))) {
-        if ((borg_grids[y][X].feat == FEAT_FLOOR) ||
-            (borg_grids[y][X].trap) ||
-            (borg_grids[y][X].feat == FEAT_LESS) ||
-            (borg_grids[y][X].feat == FEAT_MORE) ||
-            (borg_grids[y][X].feat == FEAT_BROKEN) ||
-            (borg_grids[y][X].feat == FEAT_OPEN))
+        if ((borg_grids[y][X].feat == FEAT_FLOOR) 
+            || (borg_grids[y][X].trap)
+            || (borg_grids[y][X].feat == FEAT_LESS)
+            || (borg_grids[y][X].feat == FEAT_MORE)
+            || (borg_grids[y][X].feat == FEAT_BROKEN)
+            || (borg_grids[y][X].feat == FEAT_OPEN))
             return (true);
     }
     return (false);
@@ -44,14 +44,14 @@ bool borg_cave_floor_bold(int y, int X)
 /* is this a floor grid */
 bool borg_cave_floor_grid(borg_grid *ag)
 {
-    if (ag->feat == FEAT_NONE ||
-        ag->feat == FEAT_FLOOR ||
-        ag->feat == FEAT_OPEN ||
-        ag->feat == FEAT_MORE ||
-        ag->feat == FEAT_LESS ||
-        ag->feat == FEAT_BROKEN ||
-        ag->feat == FEAT_PASS_RUBBLE ||
-        ag->feat == FEAT_LAVA)
+    if (ag->feat == FEAT_NONE 
+        || ag->feat == FEAT_FLOOR 
+        || ag->feat == FEAT_OPEN
+        || ag->feat == FEAT_MORE 
+        || ag->feat == FEAT_LESS
+        || ag->feat == FEAT_BROKEN 
+        || ag->feat == FEAT_PASS_RUBBLE
+        || ag->feat == FEAT_LAVA)
         return true;
     return false;
 }
@@ -61,7 +61,8 @@ bool borg_cave_floor_grid(borg_grid *ag)
  */
 bool borg_feature_protected(borg_grid *ag)
 {
-    if (ag->glyph || ag->kill
+    if (ag->glyph 
+        || ag->kill
         || ((ag->feat >= FEAT_CLOSED) && (ag->feat <= FEAT_PERM)))
         return true;
     return false;

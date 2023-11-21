@@ -16,13 +16,16 @@
 #ifndef INCLUDED_BORG_STORE_H
 #define INCLUDED_BORG_STORE_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-item.h"
 
-extern const char *SHOP_MENU_ITEMS;
+extern const char* SHOP_MENU_ITEMS;
 
 /*
  * Forward declare
@@ -31,27 +34,25 @@ typedef struct borg_shop borg_shop;
 
 /*
  * A store
- * 
+ *
  * !FIX !AJG magic number 24 should be eliminated
  */
-struct borg_shop
-{
+struct borg_shop {
     borg_item ware[24]; /* Store contents */
 };
 
-/* 
- * Current "shops" 
+/*
+ * Current "shops"
  */
-extern borg_shop *borg_shops; 
+extern borg_shop* borg_shops;
 
 /*
  * Saved (Safety) "shops"
  */
-extern borg_shop *safe_shops;
+extern borg_shop* safe_shops;
 
-extern int     borg_food_onsale; /* Are shops selling food? */
-extern int     borg_fuel_onsale; /* Are shops selling fuel? */
-
+extern int        borg_food_onsale; /* Are shops selling food? */
+extern int        borg_fuel_onsale; /* Are shops selling fuel? */
 
 /* read store items rather than scraping the screen */
 extern void borg_cheat_store(void);

@@ -18,11 +18,14 @@
 #ifndef INCLUDED_BORG_FLOW_KILL_H
 #define INCLUDED_BORG_FLOW_KILL_H
 
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
+#include "../angband.h"
+
 #ifdef ALLOW_BORG
 
-#include "../angband.h"
 #include "../mon-spell.h"
-
 
 #include "borg-flow.h"
 
@@ -31,8 +34,7 @@
  */
 typedef struct borg_kill borg_kill;
 
-struct borg_kill
-{
+struct borg_kill {
     unsigned int r_idx; /* Race index */
 
     bool         known; /* Verified race */
@@ -70,17 +72,17 @@ struct borg_kill
 extern int16_t    borg_kills_cnt;
 extern int16_t    borg_kills_summoner; /* index of a summoning guy */
 extern int16_t    borg_kills_nxt;
-extern borg_kill *borg_kills;
+extern borg_kill* borg_kills;
 
 /*
  * Hack -- count racial appearances per level
  */
-extern int16_t *borg_race_count;
+extern int16_t* borg_race_count;
 
 /*
  * Hack -- count racial kills (for uniques)
  */
-extern int16_t *borg_race_death;
+extern int16_t* borg_race_death;
 
 /*
  * Monsters or Uniques on this level
@@ -93,19 +95,20 @@ extern unsigned int unique_on_level;
 extern bool         scaryguy_on_level;
 extern bool         morgoth_on_level;
 extern bool         borg_morgoth_position;
-extern bool         breeder_level; 
+extern bool         breeder_level;
 
 extern uint8_t      borg_nasties_num;
 extern uint8_t      borg_nasties_count[7];
 extern char         borg_nasties[7];
 extern uint8_t      borg_nasties_limit[7];
 
-extern int morgy_panel_y;
-extern int morgy_panel_x;
+extern int          morgy_panel_y;
+extern int          morgy_panel_x;
 
 /* am I fighting a unique? */
-extern int  borg_fighting_unique;
-extern bool borg_fighting_evil_unique; /* Need to know if evil for Priest Banishment */
+extern int borg_fighting_unique;
+extern bool
+    borg_fighting_evil_unique; /* Need to know if evil for Priest Banishment */
 
 /* am I fighting a summoner? */
 extern bool borg_fighting_summoner;
@@ -122,7 +125,7 @@ extern void borg_sleep_kill(int i);
 
 /*
  * Attempt to "follow" a missing monster
- */ 
+ */
 extern void borg_follow_kill(int i);
 
 /*
@@ -133,12 +136,13 @@ extern bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c);
 /*
  * Attempt to notice if a "kill" moved
  */
-extern bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag);
+extern bool observe_kill_move(
+    int y, int x, int d, uint8_t a, wchar_t c, bool flag);
 
 /*
  * Attempt to locate a monster which could explain a message
- */ 
-extern int borg_locate_kill(char *who, int y, int x, int r);
+ */
+extern int borg_locate_kill(char* who, int y, int x, int r);
 
 /*
  * Notice the "death" of a monster
@@ -160,8 +164,8 @@ extern bool borg_flow_kill_aim(bool viewable);
  */
 extern bool borg_flow_kill_corridor(bool viewable);
 
-/* 
- * Dig a straight Tunnel to a close monster 
+/*
+ * Dig a straight Tunnel to a close monster
  */
 extern bool borg_flow_kill_direct(bool viewable, bool twitchy);
 
@@ -170,8 +174,8 @@ extern bool borg_flow_kill_direct(bool viewable, bool twitchy);
  */
 extern void borg_near_monster_type(int dist);
 
-/* 
- * a bit of magic missile and phase 
+/*
+ * a bit of magic missile and phase
  */
 extern bool borg_shoot_scoot_safe(int emergency, int turns, int b_p);
 

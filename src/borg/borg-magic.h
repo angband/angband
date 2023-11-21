@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_MAGIC_H
 #define INCLUDED_BORG_MAGIC_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Spell method values
@@ -31,9 +34,9 @@
 #define BORG_MAGIC_OBJ 4 /* Spell requires a pack object */
 #define BORG_MAGIC_WHO 5 /* Spell requires a monster symbol */
 
- /*
-  * Spell status values
-  */
+/*
+ * Spell status values
+ */
 
 #define BORG_MAGIC_ICKY 0 /* Spell is illegible */
 #define BORG_MAGIC_LOST 1 /* Spell is forgotten */
@@ -42,8 +45,7 @@
 #define BORG_MAGIC_TEST 4 /* Spell is untried */
 #define BORG_MAGIC_KNOW 5 /* Spell is known */
 
-enum borg_spells
-{
+enum borg_spells {
     MAGIC_MISSILE,
     LIGHT_ROOM,
     FIND_TRAPS_DOORS_STAIRS,
@@ -183,9 +185,8 @@ enum borg_spells
  * The borgs "usefulness" rating of each spell.
  */
 typedef struct borg_spell_rating borg_spell_rating;
-struct borg_spell_rating
-{
-    const char *name; /* Textual name */
+struct borg_spell_rating {
+    const char*      name; /* Textual name */
     uint8_t          rating; /* Usefulness */
     enum borg_spells spell_enum; /* an enum for quick lookup */
 };
@@ -198,18 +199,17 @@ typedef struct borg_magic borg_magic;
 /*
  * A spell/prayer in a book
  */
-struct borg_magic
-{
-    const char *name; /* Textual name */
-    uint8_t          status; /* Status (see above) */
-    uint16_t         effect_index; /* effect index */
-    uint8_t          rating; /* Usefulness */
-    uint8_t          level; /* Required level */
-    uint8_t          power; /* Required power */
-    uint8_t          sfail; /* Minimum chance of failure */
-    int              book_offset; /* offset of this spell in the book it is in */
-    int              book; /* book index */
-    int32_t          times; /* Times this spell was cast */
+struct borg_magic {
+    const char* name; /* Textual name */
+    uint8_t     status; /* Status (see above) */
+    uint16_t    effect_index; /* effect index */
+    uint8_t     rating; /* Usefulness */
+    uint8_t     level; /* Required level */
+    uint8_t     power; /* Required power */
+    uint8_t     sfail; /* Minimum chance of failure */
+    int         book_offset; /* offset of this spell in the book it is in */
+    int         book; /* book index */
+    int32_t     times; /* Times this spell was cast */
     enum borg_spells spell_enum;
 };
 
@@ -217,8 +217,7 @@ struct borg_magic
  * Spell casting information
  */
 
-extern borg_magic *borg_magics; /* Spell info */
-
+extern borg_magic* borg_magics; /* Spell info */
 
 /*
  * Spell functions
@@ -228,19 +227,18 @@ extern bool        borg_spell_legal(const enum borg_spells spell);
 extern bool        borg_spell_okay(const enum borg_spells spell);
 extern int         borg_get_spell_power(const enum borg_spells spell);
 extern int         borg_get_book_num(int sval);
-extern borg_magic *borg_get_spell_entry(int book, int what);
+extern borg_magic* borg_get_spell_entry(int book, int what);
 extern bool        borg_spell(const enum borg_spells spell);
-extern bool        borg_spell_fail(const enum borg_spells spell, int allow_fail);
-extern bool        borg_spell_okay_fail(const enum borg_spells spell, int allow_fail);
-extern bool        borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);
-extern int         borg_spell_fail_rate(const enum borg_spells spell);
-extern void        borg_prepare_book_info(void);
+extern bool borg_spell_fail(const enum borg_spells spell, int allow_fail);
+extern bool borg_spell_okay_fail(const enum borg_spells spell, int allow_fail);
+extern bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);
+extern int  borg_spell_fail_rate(const enum borg_spells spell);
+extern void borg_prepare_book_info(void);
 
 /*
  * Cheat/Parse the "spell" screen
  */
 extern void borg_cheat_spell(int book);
-
 
 #endif
 

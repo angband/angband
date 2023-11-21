@@ -17,14 +17,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-junk.h"
+
+#ifdef ALLOW_BORG
 
 #include "../obj-util.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-cave.h"
 #include "borg-danger.h"
 #include "borg-inventory.h"
@@ -35,6 +34,7 @@
 #include "borg-item-val.h"
 #include "borg-power.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * Attempt to consume an item as a method of destroying it.
@@ -47,151 +47,155 @@ static bool borg_consume(int i)
     switch (item->tval) {
     case TV_POTION:
 
-    /* Check the potion */
-    if (item->sval == sv_potion_slime_mold
-        || item->sval == sv_potion_cure_light
-        || item->sval == sv_potion_cure_serious
-        || item->sval == sv_potion_cure_critical
-        || item->sval == sv_potion_healing
-        || item->sval == sv_potion_star_healing
-        || item->sval == sv_potion_life
-        || item->sval == sv_potion_restore_life
-        || item->sval == sv_potion_restore_mana
-        || item->sval == sv_potion_heroism
-        || item->sval == sv_potion_berserk
-        || item->sval == sv_potion_resist_heat
-        || item->sval == sv_potion_resist_cold
-        || item->sval == sv_potion_infravision
-        || item->sval == sv_potion_detect_invis
-        || item->sval == sv_potion_cure_poison
-        || item->sval == sv_potion_speed
-        || item->sval == sv_potion_inc_exp) {
-        /* Try quaffing the potion */
-        if (borg_quaff_potion(item->sval))
-            return (true);
+        /* Check the potion */
+        if (item->sval == sv_potion_slime_mold
+            || item->sval == sv_potion_cure_light
+            || item->sval == sv_potion_cure_serious
+            || item->sval == sv_potion_cure_critical
+            || item->sval == sv_potion_healing
+            || item->sval == sv_potion_star_healing
+            || item->sval == sv_potion_life
+            || item->sval == sv_potion_restore_life
+            || item->sval == sv_potion_restore_mana
+            || item->sval == sv_potion_heroism
+            || item->sval == sv_potion_berserk
+            || item->sval == sv_potion_resist_heat
+            || item->sval == sv_potion_resist_cold
+            || item->sval == sv_potion_infravision
+            || item->sval == sv_potion_detect_invis
+            || item->sval == sv_potion_cure_poison
+            || item->sval == sv_potion_speed
+            || item->sval == sv_potion_inc_exp) {
+            /* Try quaffing the potion */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+            break;
+        }
+
+        /* Gain one/lose one potions */
+        if (item->sval == sv_potion_inc_str2) {
+            /* Maxed out no need. Don't lose another stat */
+            if (borg_trait[BI_CSTR] >= 118)
+                return (false);
+
+            /* This class does not want to risk losing a different stat */
+            if (borg_class == CLASS_MAGE || borg_class == CLASS_DRUID
+                || borg_class == CLASS_NECROMANCER)
+                return (false);
+
+            /* Otherwise, it should be ok */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+        }
+
+        if (item->sval == sv_potion_inc_int2) {
+            /* Maxed out no need. Don't lose another stat */
+            if (borg_trait[BI_CINT] >= 118)
+                return (false);
+
+            /* This class does not want to risk losing a different stat */
+            if (borg_class != CLASS_MAGE && borg_class != CLASS_NECROMANCER)
+                return (false);
+
+            /* Otherwise, it should be ok */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+            break;
+        }
+
+        if (item->sval == sv_potion_inc_wis2) {
+            /* Maxed out no need. Don't lose another stat */
+            if (borg_trait[BI_CWIS] >= 118)
+                return (false);
+
+            /* This class does not want to risk losing a different stat */
+            if (borg_class != CLASS_PRIEST && borg_class != CLASS_DRUID)
+                return (false);
+
+            /* Otherwise, it should be ok */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+            break;
+        }
+
+        if (item->sval == sv_potion_inc_dex2) {
+            /* Maxed out no need. Don't lose another stat */
+            if (borg_trait[BI_CDEX] >= 118)
+                return (false);
+
+            /* This class does not want to risk losing a different stat */
+            if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
+                || borg_class == CLASS_DRUID || borg_class == CLASS_NECROMANCER)
+                return (false);
+
+            /* Otherwise, it should be ok */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+            break;
+        }
+
+        if (item->sval == sv_potion_inc_con2) {
+            /* Maxed out no need. Don't lose another stat */
+            if (borg_trait[BI_CCON] >= 118)
+                return (false);
+
+            /* Otherwise, it should be ok */
+            if (borg_quaff_potion(item->sval))
+                return (true);
+            break;
+        }
+
         break;
-    }
-
-    /* Gain one/lose one potions */
-    if (item->sval == sv_potion_inc_str2) {
-        /* Maxed out no need. Don't lose another stat */
-        if (borg_trait[BI_CSTR] >= 118)
-            return (false);
-
-        /* This class does not want to risk losing a different stat */
-        if (borg_class == CLASS_MAGE || borg_class == CLASS_DRUID
-            || borg_class == CLASS_NECROMANCER)
-            return (false);
-
-        /* Otherwise, it should be ok */
-        if (borg_quaff_potion(item->sval))
-            return (true);
-    }
-
-    if (item->sval == sv_potion_inc_int2) {
-        /* Maxed out no need. Don't lose another stat */
-        if (borg_trait[BI_CINT] >= 118)
-            return (false);
-
-        /* This class does not want to risk losing a different stat */
-        if (borg_class != CLASS_MAGE && borg_class != CLASS_NECROMANCER)
-            return (false);
-
-        /* Otherwise, it should be ok */
-        if (borg_quaff_potion(item->sval))
-            return (true);
-        break;
-    }
-
-    if (item->sval == sv_potion_inc_wis2) {
-        /* Maxed out no need. Don't lose another stat */
-        if (borg_trait[BI_CWIS] >= 118)
-            return (false);
-
-        /* This class does not want to risk losing a different stat */
-        if (borg_class != CLASS_PRIEST && borg_class != CLASS_DRUID)
-            return (false);
-
-        /* Otherwise, it should be ok */
-        if (borg_quaff_potion(item->sval))
-            return (true);
-        break;
-    }
-
-    if (item->sval == sv_potion_inc_dex2) {
-        /* Maxed out no need. Don't lose another stat */
-        if (borg_trait[BI_CDEX] >= 118)
-            return (false);
-
-        /* This class does not want to risk losing a different stat */
-        if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
-            || borg_class == CLASS_DRUID || borg_class == CLASS_NECROMANCER)
-            return (false);
-
-        /* Otherwise, it should be ok */
-        if (borg_quaff_potion(item->sval))
-            return (true);
-        break;
-    }
-
-    if (item->sval == sv_potion_inc_con2) {
-        /* Maxed out no need. Don't lose another stat */
-        if (borg_trait[BI_CCON] >= 118)
-            return (false);
-
-        /* Otherwise, it should be ok */
-        if (borg_quaff_potion(item->sval))
-            return (true);
-        break;
-    }
-
-    break;
 
     case TV_SCROLL:
 
-    /* Check the scroll */
-    if (item->sval == sv_scroll_light
-        || item->sval == sv_scroll_monster_confusion
-        || item->sval == sv_scroll_trap_door_destruction
-        || item->sval == sv_scroll_satisfy_hunger
-        || item->sval == sv_scroll_dispel_undead
-        || item->sval == sv_scroll_blessing
-        || item->sval == sv_scroll_holy_chant
-        || item->sval == sv_scroll_holy_prayer) {
-        /* Try reading the scroll */
-        if (borg_read_scroll(item->sval))
-            return (true);
-    }
+        /* Check the scroll */
+        if (item->sval == sv_scroll_light
+            || item->sval == sv_scroll_monster_confusion
+            || item->sval == sv_scroll_trap_door_destruction
+            || item->sval == sv_scroll_satisfy_hunger
+            || item->sval == sv_scroll_dispel_undead
+            || item->sval == sv_scroll_blessing
+            || item->sval == sv_scroll_holy_chant
+            || item->sval == sv_scroll_holy_prayer) {
+            /* Try reading the scroll */
+            if (borg_read_scroll(item->sval))
+                return (true);
+        }
 
-    break;
+        break;
 
     case TV_FOOD:
-    /* Check the grub */
-    if (item->sval == sv_food_ration || item->sval == sv_food_slime_mold
-        || item->sval == sv_food_waybread)
+        /* Check the grub */
+        if (item->sval == sv_food_ration 
+            || item->sval == sv_food_slime_mold
+            || item->sval == sv_food_waybread)
 
-        /* Try eating the food (unless Bloated) */
-        if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
-            return (true);
+            /* Try eating the food (unless Bloated) */
+            if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
+                return (true);
 
-    break;
+        break;
 
     case TV_MUSHROOM:
 
-    /* Check the grub */
-    if (item->sval == sv_mush_second_sight
-        || item->sval == sv_mush_fast_recovery
-        || item->sval == sv_mush_cure_mind
-        || item->sval == sv_mush_restoring
-        || item->sval == sv_mush_emergency || item->sval == sv_mush_terror
-        || item->sval == sv_mush_stoneskin || item->sval == sv_mush_debility
-        || item->sval == sv_mush_sprinting || item->sval == sv_mush_purging)
+        /* Check the grub */
+        if (item->sval == sv_mush_second_sight
+            || item->sval == sv_mush_fast_recovery
+            || item->sval == sv_mush_cure_mind
+            || item->sval == sv_mush_restoring
+            || item->sval == sv_mush_emergency 
+            || item->sval == sv_mush_terror
+            || item->sval == sv_mush_stoneskin 
+            || item->sval == sv_mush_debility
+            || item->sval == sv_mush_sprinting 
+            || item->sval == sv_mush_purging)
 
-        /* Try eating the food (unless Bloated) */
-        if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
-            return (true);
+            /* Try eating the food (unless Bloated) */
+            if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
+                return (true);
 
-    break;
+        break;
     }
 
     /* Nope */
@@ -229,8 +233,8 @@ static bool borg_safe_crush(void)
  */
 bool borg_crush_junk(void)
 {
-    int i;
-    bool fix = false;
+    int     i;
+    bool    fix = false;
     int32_t p;
     int32_t value;
 
@@ -260,7 +264,7 @@ bool borg_crush_junk(void)
         if (armour_swap && i == armour_swap - 1)
             continue;
 
-        /* Dont crush weapons if we are weilding a digger */
+            /* Dont crush weapons if we are weilding a digger */
 #if 0
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD &&
             borg_items[INVEN_WIELD].tval == TV_DIGGING) continue;
@@ -302,10 +306,10 @@ bool borg_crush_junk(void)
 
             /* if the item gives a bonus to a stat, boost its value */
             if ((item->modifiers[OBJ_MOD_STR] > 0
-                || item->modifiers[OBJ_MOD_INT] > 0
-                || item->modifiers[OBJ_MOD_WIS] > 0
-                || item->modifiers[OBJ_MOD_DEX] > 0
-                || item->modifiers[OBJ_MOD_CON] > 0)
+                    || item->modifiers[OBJ_MOD_INT] > 0
+                    || item->modifiers[OBJ_MOD_WIS] > 0
+                    || item->modifiers[OBJ_MOD_DEX] > 0
+                    || item->modifiers[OBJ_MOD_CON] > 0)
                 && value > 0) {
                 value += 2000L;
             }
@@ -313,7 +317,7 @@ bool borg_crush_junk(void)
             /* Keep some stuff */
             if ((item->tval == borg_trait[BI_AMMO_TVAL] && value > 0)
                 || ((item->tval == TV_POTION
-                    && item->sval == sv_potion_restore_mana)
+                        && item->sval == sv_potion_restore_mana)
                     && (borg_trait[BI_MAXSP] >= 1))
                 || (item->tval == TV_POTION && item->sval == sv_potion_healing)
                 || (item->tval == TV_POTION
@@ -360,7 +364,7 @@ bool borg_crush_junk(void)
              */
             if (item->value > 0
                 && ((borg_cfg[BORG_WORSHIPS_GOLD]
-                    || borg_trait[BI_MAXCLEVEL] < 10)
+                        || borg_trait[BI_MAXCLEVEL] < 10)
                     || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg_trait[BI_GOLD])
                         && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0))
                 && borg_trait[BI_MAXCLEVEL] <= 20 && !item->cursed)
@@ -486,7 +490,7 @@ bool borg_crush_junk(void)
  */
 bool borg_crush_hole(void)
 {
-    int i, b_i = -1;
+    int     i, b_i = -1;
     int32_t p, b_p = 0L;
     int32_t w, b_w = 0L;
 
@@ -503,7 +507,7 @@ bool borg_crush_hole(void)
         && (borg_danger(c_y, c_x, 1, true, false) > borg_trait[BI_CURHP] / 10
             && (borg_trait[BI_CURHP] != borg_trait[BI_MAXHP]
                 || borg_danger(c_y, c_x, 1, true, false)
-                    > (borg_trait[BI_CURHP] * 2) / 3)))
+                       > (borg_trait[BI_CURHP] * 2) / 3)))
         return (false);
 
     /* must be a good place to crush stuff */
@@ -526,13 +530,13 @@ bool borg_crush_hole(void)
         if (item->tval == TV_FOOD && borg_trait[BI_FOOD] < 5)
             continue;
 
-        /* dont crush the swap weapon */
+        /* don't crush the swap weapon */
         if (weapon_swap && i == weapon_swap - 1)
             continue;
         if (armour_swap && i == armour_swap - 1)
             continue;
 
-        /* dont crush our spell books */
+        /* don't crush our spell books */
         if (obj_kind_can_browse(&k_info[item->kind]))
             continue;
 
@@ -540,7 +544,7 @@ bool borg_crush_hole(void)
         if (item->tval == TV_BOOTS && !item->ident)
             continue;
 
-        /* Dont crush weapons if we are weilding a digger */
+        /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
             && borg_items[INVEN_WIELD].tval == TV_DIGGING)
             continue;
@@ -593,7 +597,7 @@ bool borg_crush_hole(void)
         /* save the items value */
         value = item->value;
 
-        /* save the items wieght */
+        /* save the items weight */
         w = item->weight * item->iqty;
 
         /* Save the item */
@@ -617,7 +621,8 @@ bool borg_crush_hole(void)
         /* Penalize loss of "gold" */
 
         /* if the item gives a bonus to a stat, boost its value */
-        if (item->modifiers[OBJ_MOD_STR] > 0 || item->modifiers[OBJ_MOD_INT] > 0
+        if (item->modifiers[OBJ_MOD_STR] > 0 
+            || item->modifiers[OBJ_MOD_INT] > 0
             || item->modifiers[OBJ_MOD_WIS] > 0
             || item->modifiers[OBJ_MOD_DEX] > 0
             || item->modifiers[OBJ_MOD_CON] > 0) {
@@ -633,14 +638,14 @@ bool borg_crush_hole(void)
             value += 5000L;
         }
 
-        /* Hack  show prefrence for destroying things we will not use */
+        /* Hack  show preference for destroying things we will not use */
         /* if we are high enough level not to worry about gold. */
         if (borg_trait[BI_CLEVEL] > 35) {
             switch (item->tval) {
                 /* rings are under valued. */
             case TV_RING:
-            value = (item->iqty * value * 10);
-            break;
+                value = (item->iqty * value * 10);
+                break;
 
             case TV_AMULET:
             case TV_BOW:
@@ -655,82 +660,82 @@ bool borg_crush_hole(void)
             case TV_SOFT_ARMOR:
             case TV_HARD_ARMOR:
             case TV_DRAG_ARMOR:
-            value = (item->iqty * value * 5);
-            break;
+                value = (item->iqty * value * 5);
+                break;
 
             case TV_CLOAK:
-            if (item->ego_idx
-                && borg_ego_has_random_power(&e_info[item->ego_idx]))
-                value = (item->iqty * (300000L));
-            else
-                value = (item->iqty * value);
-            break;
+                if (item->ego_idx
+                    && borg_ego_has_random_power(&e_info[item->ego_idx]))
+                    value = (item->iqty * (300000L));
+                else
+                    value = (item->iqty * value);
+                break;
 
             case TV_ROD:
-            /* BIG HACK! don't crush cool stuff. */
-            if ((item->sval != sv_rod_drain_life)
-                || (item->sval != sv_rod_acid_ball)
-                || (item->sval != sv_rod_elec_ball)
-                || (item->sval != sv_rod_fire_ball)
-                || (item->sval != sv_rod_cold_ball))
-                value = (item->iqty * (300000L)); /* value at 30k */
-            else
-                value = (item->iqty * value);
-            break;
+                /* BIG HACK! don't crush cool stuff. */
+                if ((item->sval != sv_rod_drain_life)
+                    || (item->sval != sv_rod_acid_ball)
+                    || (item->sval != sv_rod_elec_ball)
+                    || (item->sval != sv_rod_fire_ball)
+                    || (item->sval != sv_rod_cold_ball))
+                    value = (item->iqty * (300000L)); /* value at 30k */
+                else
+                    value = (item->iqty * value);
+                break;
 
             case TV_STAFF:
-            /* BIG HACK! don't crush cool stuff. */
-            if (item->sval != sv_staff_dispel_evil
-                || ((item->sval != sv_staff_power
-                    || item->sval != sv_staff_holiness)
-                    && amt_cool_staff < 2)
-                || (item->sval != sv_staff_destruction
-                    && borg_trait[BI_ASTFDEST] < 2))
-                value = (item->iqty * (300000L)); /* value at 30k */
-            else
-                value = (item->iqty * (value / 2));
-            break;
+                /* BIG HACK! don't crush cool stuff. */
+                if (item->sval != sv_staff_dispel_evil
+                    || ((item->sval != sv_staff_power
+                            || item->sval != sv_staff_holiness)
+                        && amt_cool_staff < 2)
+                    || (item->sval != sv_staff_destruction
+                        && borg_trait[BI_ASTFDEST] < 2))
+                    value = (item->iqty * (300000L)); /* value at 30k */
+                else
+                    value = (item->iqty * (value / 2));
+                break;
 
             case TV_WAND:
-            /* BIG HACK! don't crush cool stuff. */
-            if ((item->sval != sv_wand_drain_life)
-                || (item->sval != sv_wand_teleport_away)
-                || (item->sval != sv_wand_acid_ball)
-                || (item->sval != sv_wand_elec_ball)
-                || (item->sval != sv_wand_fire_ball)
-                || (item->sval != sv_wand_cold_ball)
-                || (item->sval != sv_wand_annihilation)
-                || (item->sval != sv_wand_dragon_fire)
-                || (item->sval != sv_wand_dragon_cold))
-                value = (item->iqty * (300000L)); /* value at 30k */
-            else
-                value = (item->iqty * (value / 2));
-            break;
+                /* BIG HACK! don't crush cool stuff. */
+                if ((item->sval != sv_wand_drain_life)
+                    || (item->sval != sv_wand_teleport_away)
+                    || (item->sval != sv_wand_acid_ball)
+                    || (item->sval != sv_wand_elec_ball)
+                    || (item->sval != sv_wand_fire_ball)
+                    || (item->sval != sv_wand_cold_ball)
+                    || (item->sval != sv_wand_annihilation)
+                    || (item->sval != sv_wand_dragon_fire)
+                    || (item->sval != sv_wand_dragon_cold))
+                    value = (item->iqty * (300000L)); /* value at 30k */
+                else
+                    value = (item->iqty * (value / 2));
+                break;
 
             /* scrolls and potions crush easy */
             case TV_SCROLL:
-            if ((item->sval != sv_scroll_protection_from_evil)
-                || (item->sval != sv_scroll_rune_of_protection))
-                value = (item->iqty * (30000L));
-            else
-                value = (item->iqty * (value / 10));
-            break;
+                if ((item->sval != sv_scroll_protection_from_evil)
+                    || (item->sval != sv_scroll_rune_of_protection))
+                    value = (item->iqty * (30000L));
+                else
+                    value = (item->iqty * (value / 10));
+                break;
 
             case TV_POTION:
-            /* BIG HACK! don't crush heal/mana potions.  It could be */
-            /* that we are in town and are collecting them. */
-            if ((item->sval != sv_potion_healing)
-                || (item->sval != sv_potion_star_healing)
-                || (item->sval != sv_potion_life)
-                || (item->sval != sv_potion_restore_mana))
-                value = (item->iqty * (300000L)); /* value at 30k */
-            else
-                value = (item->iqty * (value / 10));
-            break;
+                /* BIG HACK! don't crush heal/mana potions.  It could be */
+                /* that we are in town and are collecting them. */
+                if ((item->sval != sv_potion_healing)
+                    || (item->sval != sv_potion_star_healing)
+                    || (item->sval != sv_potion_life)
+                    || (item->sval != sv_potion_restore_mana))
+                    value = (item->iqty * (300000L)); /* value at 30k */
+                else
+                    value = (item->iqty * (value / 10));
+                break;
 
             default:
-            value = (item->iqty * (value / 3));
-            break;
+                value = (item->iqty * (value / 3));
+                break;
             }
         } else {
             value = (item->iqty * value);
@@ -744,26 +749,26 @@ bool borg_crush_hole(void)
             switch (item->tval) {
             case TV_RING:
             case TV_AMULET:
-            value = (borg_trait[BI_MAXDEPTH] * 5000L);
-            break;
+                value = (borg_trait[BI_MAXDEPTH] * 5000L);
+                break;
 
             case TV_ROD:
-            value = (borg_trait[BI_MAXDEPTH] * 3000L);
-            break;
+                value = (borg_trait[BI_MAXDEPTH] * 3000L);
+                break;
 
             case TV_STAFF:
             case TV_WAND:
-            value = (borg_trait[BI_MAXDEPTH] * 2000L);
-            break;
+                value = (borg_trait[BI_MAXDEPTH] * 2000L);
+                break;
 
             case TV_SCROLL:
             case TV_POTION:
-            value = (borg_trait[BI_MAXDEPTH] * 500L);
-            break;
+                value = (borg_trait[BI_MAXDEPTH] * 500L);
+                break;
 
             case TV_FOOD:
-            value = (borg_trait[BI_MAXDEPTH] * 10L);
-            break;
+                value = (borg_trait[BI_MAXDEPTH] * 10L);
+                break;
             }
         }
 
@@ -774,22 +779,22 @@ bool borg_crush_hole(void)
             case TV_SHOT:
             case TV_ARROW:
             case TV_BOLT:
-            value += 100L;
-            break;
+                value += 100L;
+                break;
 
             case TV_BOW:
-            value += 20000L;
-            break;
+                value += 20000L;
+                break;
 
             case TV_DIGGING:
-            value += 10L;
-            break;
+                value += 10L;
+                break;
 
             case TV_HAFTED:
             case TV_POLEARM:
             case TV_SWORD:
-            value += 10000L;
-            break;
+                value += 10000L;
+                break;
 
             case TV_BOOTS:
             case TV_GLOVES:
@@ -797,24 +802,24 @@ bool borg_crush_hole(void)
             case TV_CROWN:
             case TV_SHIELD:
             case TV_CLOAK:
-            value += 15000L;
-            break;
+                value += 15000L;
+                break;
 
             case TV_SOFT_ARMOR:
             case TV_HARD_ARMOR:
             case TV_DRAG_ARMOR:
-            value += 15000L;
-            break;
+                value += 15000L;
+                break;
 
             case TV_AMULET:
             case TV_RING:
-            value += 5000L;
-            break;
+                value += 5000L;
+                break;
 
             case TV_STAFF:
             case TV_WAND:
-            value += 1000L;
-            break;
+                value += 1000L;
+                break;
             }
         }
 
@@ -888,7 +893,7 @@ bool borg_crush_hole(void)
  */
 bool borg_crush_slow(void)
 {
-    int i, b_i = -1;
+    int     i, b_i = -1;
     int32_t p, b_p = 0L;
 
     int32_t temp;
@@ -943,7 +948,7 @@ bool borg_crush_slow(void)
         if (i >= z_info->pack_size && i <= INVEN_FEET)
             continue;
 
-        /* dont crush the swap weapon */
+        /* don't crush the swap weapon */
         if (weapon_swap && i == weapon_swap - 1)
             continue;
         if (armour_swap && i == armour_swap - 1)
@@ -963,12 +968,12 @@ bool borg_crush_slow(void)
         if (borg_item_note_needs_id(item))
             continue;
 
-        /* Dont crush weapons if we are weilding a digger */
+        /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
             && borg_items[INVEN_WIELD].tval == TV_DIGGING)
             continue;
 
-        /* Dont crush it if it is our only source of light */
+        /* Don't crush it if it is our only source of light */
         if (item->tval == TV_ROD
             && (item->sval == sv_rod_light && borg_trait[BI_CURLITE] <= 0))
             continue;

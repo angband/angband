@@ -17,15 +17,15 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-cave-light.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cave.h"
 
-#include "borg-cave.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
 
@@ -46,7 +46,6 @@ int16_t borg_glow_n = 0;
 uint8_t borg_glow_x[AUTO_LIGHT_MAX];
 uint8_t borg_glow_y[AUTO_LIGHT_MAX];
 
-
 /*
  * XXX XXX XXX
  *
@@ -55,20 +54,20 @@ uint8_t borg_glow_y[AUTO_LIGHT_MAX];
  * have already been placed into the "lite" array, and we are never
  * called when the "lite" array is full.
  */
-#define borg_cave_light_hack(y, x)       \
-    borg_grids[y][x].info |= BORG_LIGHT; \
-    borg_light_y[borg_light_n] = (y);    \
-    borg_light_x[borg_light_n] = (x);    \
+#define borg_cave_light_hack(y, x)                                             \
+    borg_grids[y][x].info |= BORG_LIGHT;                                       \
+    borg_light_y[borg_light_n] = (y);                                          \
+    borg_light_x[borg_light_n] = (x);                                          \
     borg_light_n++
 
- /*
-  * Update the set of grids "illuminated" by the player's lite.
-  *
-  * See "update_LIGHT" in "cave.c" for complete documentation
-  *
-  * It is very important that the "player grid" be the first grid in the
-  * array of "BORG_LIGHT" grids, since this is assumed in several places.
-  */
+/*
+ * Update the set of grids "illuminated" by the player's lite.
+ *
+ * See "update_LIGHT" in "cave.c" for complete documentation
+ *
+ * It is very important that the "player grid" be the first grid in the
+ * array of "BORG_LIGHT" grids, since this is assumed in several places.
+ */
 void borg_update_light(void)
 {
     int i, x, y, min_x, max_x, min_y, max_y;
@@ -112,11 +111,8 @@ void borg_update_light(void)
     }
 
     /* Radius 2 -- lantern radius */
-    if (borg_trait[BI_CURLITE] >= 2 &&
-        c_y + 2 < AUTO_MAX_Y &&
-        c_y - 2 > 0 &&
-        c_x + 2 < AUTO_MAX_X &&
-        c_x - 2 > 0) {
+    if (borg_trait[BI_CURLITE] >= 2 && c_y + 2 < AUTO_MAX_Y && c_y - 2 > 0
+        && c_x + 2 < AUTO_MAX_X && c_x - 2 > 0) {
         /* South of the player */
         if (borg_cave_floor_bold(c_y + 2, c_x)) {
             borg_cave_light_hack(c_y + 2, c_x);
@@ -147,11 +143,8 @@ void borg_update_light(void)
     }
 
     /* Radius 3+ -- artifact radius */
-    if (borg_trait[BI_CURLITE] >= 3 &&
-        c_y + 3 < AUTO_MAX_Y &&
-        c_y - 3 > 0 &&
-        c_x + 3 < AUTO_MAX_X &&
-        c_x - 3 > 0) {
+    if (borg_trait[BI_CURLITE] >= 3 && c_y + 3 < AUTO_MAX_Y && c_y - 3 > 0
+        && c_x + 3 < AUTO_MAX_X && c_x - 3 > 0) {
         int d, p;
 
         /* Maximal radius */
@@ -227,6 +220,5 @@ void borg_update_light(void)
         }
     }
 }
-
 
 #endif

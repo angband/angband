@@ -1,6 +1,6 @@
 /**
  * \file borg-flow.c
- * \brief The basic things used to flow (move) around 
+ * \brief The basic things used to flow (move) around
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,16 +17,15 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-input.h"
 
-#include "borg.h"
 #include "borg-danger.h"
-#include "borg-flow-kill.h"
 #include "borg-flow-glyph.h"
+#include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
 #include "borg-flow-stairs.h"
 #include "borg-flow-take.h"
@@ -37,6 +36,7 @@
 #include "borg-magic.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * Hack -- use "flow" array as a queue
@@ -90,12 +90,12 @@ struct borg_track track_closed;
 
 bool borg_desperate = false;
 
-/* 
+/*
  * HACK assume a permeant wall in the center is a part of a vault
  */
-bool vault_on_level; 
+bool vault_on_level;
 
-/* 
+/*
  * Anti-Summon
  */
 int  borg_t_antisummon; /* Timestamp when in a AS spot */
@@ -115,10 +115,10 @@ int16_t avoidance = 0; /* Current danger thresh-hold */
  * lmnop  24 grids
  *
  */
-const int16_t borg_ddx_ddd[24] =
-{0, 0, 1, -1, 1, -1, 1, -1, 2, 2, 2, -2, -2, -2, -2, -1, 0, 1, 2, -2, -1, 0, 1, 2};
-const int16_t borg_ddy_ddd[24] =
-{1, -1, 0, 0, 1, 1, -1, -1, -1, 0, 1, -1, 0, 1, -2, -2, -2, -2, -2, 2, 2, 2, 2, 2};
+const int16_t borg_ddx_ddd[24] = { 0, 0, 1, -1, 1, -1, 1, -1, 2, 2, 2, -2, -2,
+    -2, -2, -1, 0, 1, 2, -2, -1, 0, 1, 2 };
+const int16_t borg_ddy_ddd[24] = { 1, -1, 0, 0, 1, 1, -1, -1, -1, 0, 1, -1, 0,
+    1, -2, -2, -2, -2, -2, 2, 2, 2, 2, 2 };
 
 /*
  * Check if the borg can dig.
@@ -133,7 +133,7 @@ bool borg_can_dig(bool check_fail, bool hard)
 
     int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
     if ((weapon_swap && borg_trait[BI_DIG] >= dig_check
-        && borg_items[weapon_swap - 1].tval == TV_DIGGING)
+            && borg_items[weapon_swap - 1].tval == TV_DIGGING)
         || (borg_trait[BI_DIG] >= dig_check + 20))
         return true;
 
@@ -211,7 +211,7 @@ void borg_flow_clear(void)
  * done before the "ICKY" and "KNOW" flags must be reset.
  *
  * Note that the "borg_enqueue_grid()" function should refuse to
- * enqueue "dangeous" destination grids, but does not need to set
+ * enqueue "dangerous" destination grids, but does not need to set
  * the "KNOW" or "ICKY" flags, since having a "cost" field of zero
  * means that these grids will never be queued again.  In fact,
  * the "borg_enqueue_grid()" function can be used to enqueue grids
@@ -246,18 +246,18 @@ void borg_flow_clear(void)
  * "Sneak" will have the borg avoid grids which are adjacent to a monster.
  *
  */
-void borg_flow_spread(int depth, bool optimize, bool avoid,
-    bool tunneling, int stair_idx, bool sneak)
+void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
+    int stair_idx, bool sneak)
 {
-    int i;
-    int n, o = 0;
-    int x1, y1;
-    int x, y;
-    int fear = 0;
-    int ii;
-    int yy, xx;
+    int  i;
+    int  n, o = 0;
+    int  x1, y1;
+    int  x, y;
+    int  fear = 0;
+    int  ii;
+    int  yy, xx;
     bool bad_sneak = false;
-    int origin_y, origin_x;
+    int  origin_y, origin_x;
     bool twitchy = false;
 
     /* Default starting points */
@@ -368,13 +368,13 @@ void borg_flow_spread(int depth, bool optimize, bool avoid,
                 continue;
 
             /* Avoid unknown grids (if requested or retreating)
-             * unless twitchy.  In which case, expore it
+             * unless twitchy.  In which case, explore it
              */
             if ((avoid || borg_desperate) && (ag->feat == FEAT_NONE)
                 && !twitchy)
                 continue;
 
-            /* Avoid Monsters if Desprerate, lunal */
+            /* Avoid Monsters if Desperate, lunal */
             if ((ag->kill)
                 && (borg_desperate || borg_lunal_mode || borg_munchkin_mode))
                 continue;
@@ -601,8 +601,8 @@ static bool borg_play_step(int y2, int x2)
 {
     borg_grid *ag;
     borg_grid *ag2;
-    ui_event ch_evt = EVENT_EMPTY;
-    int dir, x, y, ox, oy, i;
+    ui_event   ch_evt = EVENT_EMPTY;
+    int        dir, x, y, ox, oy, i;
 
     int o_y = 0, o_x = 0, door_found = 0;
 
@@ -630,7 +630,7 @@ static bool borg_play_step(int y2, int x2)
                 if (track_door.num >= 255)
                     continue;
 
-                /* skip our orignal goal */
+                /* skip our original goal */
                 if ((oy + c_y == y2) && (ox + c_x == x2))
                     continue;
 
@@ -689,7 +689,7 @@ static bool borg_play_step(int y2, int x2)
         if (ag->feat == FEAT_LESS) {
             /* Stand on stairs */
             borg_on_dnstairs = true;
-            goal_less = false;
+            goal_less        = false;
 
             borg_keypress('<');
 
@@ -770,7 +770,7 @@ static bool borg_play_step(int y2, int x2)
             /* Traps. Disarm it w/ fail check */
             if (o_ptr->pval > 1 && o_ptr->known
                 && borg_trait[BI_DEV] - o_ptr->pval
-                >= borg_cfg[BORG_CHEST_FAIL_TOLERANCE]) {
+                       >= borg_cfg[BORG_CHEST_FAIL_TOLERANCE]) {
                 borg_note(format("# Disarming a '%s' at (%d,%d)",
                     take->kind->name, take->y, take->x));
 
@@ -879,8 +879,8 @@ static bool borg_play_step(int y2, int x2)
          * the trap in order to escape this level.
          */
 
-         /* allow "destroy doors" */
-         /* don't bother unless we are near full mana */
+        /* allow "destroy doors" */
+        /* don't bother unless we are near full mana */
         if (borg_trait[BI_CURSP] > ((borg_trait[BI_MAXSP] * 4) / 5)) {
             if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)
                 || borg_activate_item(act_disable_traps)) {
@@ -913,7 +913,7 @@ static bool borg_play_step(int y2, int x2)
          * is next to the borg beating on him
          */
 
-         /* scan the adjacent grids */
+        /* scan the adjacent grids */
         for (i = 0; i < 8; i++) {
             /* Grid in that direction */
             x = c_x + ddx_ddd[i];
@@ -922,7 +922,7 @@ static bool borg_play_step(int y2, int x2)
             /* Access the grid */
             ag2 = &borg_grids[y][x];
 
-            /* If monster adjacent to me and I'm weak, dont
+            /* If monster adjacent to me and I'm weak, don't
              * even try to open the door
              */
             if (ag2->kill && borg_trait[BI_CLEVEL] < 15
@@ -1116,7 +1116,7 @@ bool borg_flow_old(int why)
             if (c > b_c)
                 continue;
 
-            /* avoid screen edgeds */
+            /* avoid screen edges */
             if (x > AUTO_MAX_X - 1 || x < 1 || y > AUTO_MAX_Y - 1 || y < 1)
                 continue;
 
@@ -1173,10 +1173,10 @@ bool borg_flow_old(int why)
  */
 void borg_init_track(struct borg_track *track, int size)
 {
-    track->num = 0;
+    track->num  = 0;
     track->size = size;
-    track->x = mem_zalloc(size * sizeof(int));
-    track->y = mem_zalloc(size * sizeof(int));
+    track->x    = mem_zalloc(size * sizeof(int));
+    track->y    = mem_zalloc(size * sizeof(int));
 }
 
 /*
@@ -1184,14 +1184,13 @@ void borg_init_track(struct borg_track *track, int size)
  */
 void borg_free_track(struct borg_track *track)
 {
-    track->num = 0;
+    track->num  = 0;
     track->size = 0;
     mem_free(track->x);
     track->x = NULL;
     mem_free(track->y);
     track->y = NULL;
 }
-
 
 void borg_init_flow(void)
 {

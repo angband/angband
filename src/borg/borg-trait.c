@@ -18,9 +18,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-trait.h"
+
+#ifdef ALLOW_BORG
 
 #include "../effects.h"
 #include "../obj-util.h"
@@ -28,16 +28,16 @@
 #include "../player-timed.h"
 #include "../player-util.h"
 
-#include "borg.h"
 #include "borg-flow.h"
+#include "borg-item-activation.h"
 #include "borg-item-analyze.h"
 #include "borg-item-id.h"
 #include "borg-item-use.h"
+#include "borg-item-val.h"
 #include "borg-item-wear.h"
 #include "borg-magic.h"
-#include "borg-item-activation.h"
-#include "borg-item-val.h"
 #include "borg-trait-swap.h"
+#include "borg.h"
 
 /* MAJOR HACK copied in because it is static in the main code */
 /* I would just make them not static but trying not to change base code */
@@ -729,28 +729,29 @@ static const int borg_adj_mag_stat[STAT_RANGE] = {
     57 /* 18/220+ */
 };
 
-// !FIX !TODO !AJG probably wrap all this up in a "borg" structure which can contain all the things the borg thinks of itself
-int* borg_has;
-int* borg_trait;
-int* borg_activation;
+// !FIX !TODO !AJG probably wrap all this up in a "borg" structure which can
+// contain all the things the borg thinks of itself
+int *borg_has;
+int *borg_trait;
+int *borg_activation;
 
 int borg_race; /* Player race */
 int borg_class; /* Player class */
 
 int32_t my_power;
 
-/* 
- * temporary status 
+/*
+ * temporary status
  */
-bool borg_lunal_mode;
-bool borg_munchkin_mode;
-bool borg_scumming_pots = true; /* Borg will quickly store pots in home */
+bool    borg_lunal_mode;
+bool    borg_munchkin_mode;
+bool    borg_scumming_pots  = true; /* Borg will quickly store pots in home */
 int16_t borg_need_see_invis = 0;
 int16_t borg_see_inv        = 0;
-bool    need_shift_panel = false; /* to spot offscreens */
-int16_t when_shift_panel = 0L;
-int16_t time_this_panel = 0L; /* Current "time" on current panel*/
-int16_t borg_no_retreat = 0;
+bool    need_shift_panel    = false; /* to spot offscreens */
+int16_t when_shift_panel    = 0L;
+int16_t time_this_panel     = 0L; /* Current "time" on current panel*/
+int16_t borg_no_retreat     = 0;
 
 int16_t when_call_light; /* When we last did call light */
 int16_t when_wizard_light; /* When we last did wizard light */
@@ -772,71 +773,72 @@ int16_t goal; /* Goal type */
 int g_x; /* Goal location (X) */
 int g_y; /* Goal location (Y) */
 
-bool    goal_rising; /* Currently returning to town */
-bool    goal_leaving; /* Currently leaving the level */
-bool    goal_fleeing; /* Currently fleeing the level */
-bool    goal_fleeing_lunal; /* Fleeing level while in lunal Mode */
-bool    goal_fleeing_munchkin; /* Fleeing level while in munchkin Mode */
-bool    goal_fleeing_to_town; /* Currently fleeing the level to return to town */
-bool    goal_ignoring; /* Currently ignoring monsters */
-int     goal_recalling; /* Currently waiting for recall, guessing the turns left */
-bool    goal_less; /* return to, but dont use, the next up stairs */
+bool goal_rising; /* Currently returning to town */
+bool goal_leaving; /* Currently leaving the level */
+bool goal_fleeing; /* Currently fleeing the level */
+bool goal_fleeing_lunal; /* Fleeing level while in lunal Mode */
+bool goal_fleeing_munchkin; /* Fleeing level while in munchkin Mode */
+bool goal_fleeing_to_town; /* Currently fleeing the level to return to town */
+bool goal_ignoring; /* Currently ignoring monsters */
+int  goal_recalling; /* Currently waiting for recall, guessing the turns left */
+bool goal_less; /* return to, but dont use, the next up stairs */
 
-int16_t     goal_shop = -1; /* Next shop to visit */
-int16_t     goal_ware = -1; /* Next item to buy there */
-int16_t     goal_item = -1; /* Next item to sell there */
+int16_t goal_shop = -1; /* Next shop to visit */
+int16_t goal_ware = -1; /* Next item to buy there */
+int16_t goal_item = -1; /* Next item to sell there */
 
-bool    stair_less; /* Use the next "up" staircase */
-bool    stair_more; /* Use the next "down" staircase */
+bool stair_less; /* Use the next "up" staircase */
+bool stair_more; /* Use the next "down" staircase */
 
 int16_t borg_times_twitch; /* how often twitchy on this level */
 int16_t borg_escapes; /* how often teleported on this level */
 
-bool    borg_simulate; /* Simulation flag */
-bool    borg_attacking; /* Simulation flag */
+bool borg_simulate; /* Simulation flag */
+bool borg_attacking; /* Simulation flag */
 
-bool    borg_on_upstairs; /* used when leaving a level */
-bool    borg_on_dnstairs; /* used when leaving a level */
+bool borg_on_upstairs; /* used when leaving a level */
+bool borg_on_dnstairs; /* used when leaving a level */
 
 int16_t borg_oldchp; /* hit points last game turn */
 
-/* defence flags */
-bool    borg_prot_from_evil;
-bool    borg_speed;
-bool    borg_bless;
-bool    borg_hero;
-bool    borg_berserk;
-bool    borg_fastcast;
-bool    borg_regen;
-bool    borg_smite_evil;
-bool    borg_venom;
-bool    borg_shield;
-bool    borg_on_glyph; /* borg is standing on a glyph of warding */
-bool    borg_create_door; /* borg is going to create doors */
-bool    borg_sleep_spell;
-bool    borg_sleep_spell_ii;
-bool    borg_crush_spell;
-bool    borg_slow_spell; /* borg is about to cast the spell */
-bool    borg_confuse_spell;
-bool    borg_fear_mon_spell;
+/* defense flags */
+bool borg_prot_from_evil;
+bool borg_speed;
+bool borg_bless;
+bool borg_hero;
+bool borg_berserk;
+bool borg_fastcast;
+bool borg_regen;
+bool borg_smite_evil;
+bool borg_venom;
+bool borg_shield;
+bool borg_on_glyph; /* borg is standing on a glyph of warding */
+bool borg_create_door; /* borg is going to create doors */
+bool borg_sleep_spell;
+bool borg_sleep_spell_ii;
+bool borg_crush_spell;
+bool borg_slow_spell; /* borg is about to cast the spell */
+bool borg_confuse_spell;
+bool borg_fear_mon_spell;
 
 int16_t borg_game_ratio; /* the ratio of borg time to game time */
 int16_t borg_resistance; /* borg is Resistant to all elements */
 int16_t borg_no_rest_prep; /* borg wont rest for a few turns */
 
-bool    borg_in_shop = false; /* True if the borg is inside of a store */
+bool borg_in_shop = false; /* True if the borg is inside of a store */
 
-/* 
+/*
  * These values should likely be in borg_trait
  */
 int16_t my_stat_max[STAT_MAX]; /* Current "maximal" stat values */
 int16_t my_stat_cur[STAT_MAX]; /* Current "natural" stat values */
 int16_t my_stat_ind[STAT_MAX]; /* Current "additions" to stat values */
 
-int16_t my_stat_add[STAT_MAX]; /* additions to stats  This will allow upgrading of */
-                               /* equiptment to allow a ring of int +4 to be traded */
-                               /* for a ring of int +6 even if maximized to allow a */
-                               /* later swap to be better. */
+int16_t my_stat_add[STAT_MAX]; /* additions to stats  This will allow upgrading
+                                  of */
+/* equiptment to allow a ring of int +4 to be traded */
+/* for a ring of int +6 even if maximized to allow a */
+/* later swap to be better. */
 
 int16_t my_need_enchant_to_a; /* Need some enchantment */
 int16_t my_need_enchant_to_h; /* Need some enchantment */
@@ -853,15 +855,16 @@ int16_t amt_cure_blind;
 
 int16_t amt_book[9];
 
-int     borg_stat[6]; /* !FIX how does this differ from my_stat_cur */
-int     borg_book[9]; /* !FIX how does this differ from amt_book? */
+int borg_stat[6]; /* !FIX how does this differ from my_stat_cur */
+int borg_book[9]; /* !FIX how does this differ from amt_book? */
 
 int16_t amt_add_stat[6];
 int16_t amt_inc_stat[6]; /* Stat potions */
 int16_t amt_fix_exp;
 
 int16_t amt_cool_staff; /* holiness - power staff */
-int16_t amt_cool_wand; /* # of charges on Wands which can be useful for attacks */
+int16_t
+    amt_cool_wand; /* # of charges on Wands which can be useful for attacks */
 int16_t amt_digger;
 
 /* a 3 state boolean */
@@ -1128,16 +1131,16 @@ const char *prefix_pref[] = {
 /**
  * Calculate the blows a player would get.
  *
- * copied and ajusted from player-calcs.c
+ * copied and adjusted from player-calcs.c
  */
-int borg_calc_blows(borg_item * item)
+int borg_calc_blows(borg_item *item)
 {
     int blows;
     int str_index, dex_index;
     int div;
     int blow_energy;
 
-    int weight = item->weight;
+    int weight     = item->weight;
     int min_weight = player->class->min_weight;
 
     /* Enforce a minimum "weight" (tenth pounds) */
@@ -1145,7 +1148,7 @@ int borg_calc_blows(borg_item * item)
 
     /* Get the strength vs weight */
     str_index = adj_str_blow[my_stat_ind[STAT_STR]]
-        * player->class->att_multiply / div;
+                * player->class->att_multiply / div;
 
     /* Maximal value */
     if (str_index > 11)
@@ -1161,8 +1164,8 @@ int borg_calc_blows(borg_item * item)
 
     /* Require at least one blow, two for O-combat */
     return (MAX(blows + (100 * item->modifiers[OBJ_MOD_BLOWS]),
-        OPT(player, birth_percent_damage) ? 200 : 100))
-        / 100;
+               OPT(player, birth_percent_damage) ? 200 : 100))
+           / 100;
 }
 
 /*
@@ -1172,42 +1175,42 @@ int borg_calc_blows(borg_item * item)
  *
  */
 
- /*
-  * The "notice" functions examine various aspects of the player inventory,
-  * the player equipment, or the home contents, and extract various numerical
-  * quantities based on those aspects, adjusting them for various "abilities",
-  * such as the ability to cast certain spells, etc.
-  *
-  * The "power" functions use the numerical quantities described above, and
-  * use them to do two different things:  (1) rank the "value" of having
-  * various abilities relative to the possible "money" reward of carrying
-  * sellable items instead, and (2) rank the value of various abilities
-  * relative to each other, which is used to determine what to wear/buy,
-  * and in what order to wear/buy those items.
-  *
-  * These functions use some very heuristic values, by the way...
-  *
-  * We should probably take account of things like possible enchanting
-  * (especially when in town), and items which may be found soon.
-  *
-  * We consider several things:
-  *   (1) the actual "power" of the current weapon and bow
-  *   (2) the various "flags" imparted by the equipment
-  *   (3) the various abilities imparted by the equipment
-  *   (4) the penalties induced by heavy armor or gloves or edged weapons
-  *   (5) the abilities required to enter the "max_depth" dungeon level
-  *   (6) the various abilities of some useful inventory items
-  *
-  * Note the use of special "item counters" for evaluating the value of
-  * a collection of items of the given type.  Basically, the first item
-  * of the given type is always the most valuable, with subsequent items
-  * being worth less, until the "limit" is reached, after which point any
-  * extra items are only worth as much as they can be sold for.
-  */
+/*
+ * The "notice" functions examine various aspects of the player inventory,
+ * the player equipment, or the home contents, and extract various numerical
+ * quantities based on those aspects, adjusting them for various "abilities",
+ * such as the ability to cast certain spells, etc.
+ *
+ * The "power" functions use the numerical quantities described above, and
+ * use them to do two different things:  (1) rank the "value" of having
+ * various abilities relative to the possible "money" reward of carrying
+ * sellable items instead, and (2) rank the value of various abilities
+ * relative to each other, which is used to determine what to wear/buy,
+ * and in what order to wear/buy those items.
+ *
+ * These functions use some very heuristic values, by the way...
+ *
+ * We should probably take account of things like possible enchanting
+ * (especially when in town), and items which may be found soon.
+ *
+ * We consider several things:
+ *   (1) the actual "power" of the current weapon and bow
+ *   (2) the various "flags" imparted by the equipment
+ *   (3) the various abilities imparted by the equipment
+ *   (4) the penalties induced by heavy armor or gloves or edged weapons
+ *   (5) the abilities required to enter the "max_depth" dungeon level
+ *   (6) the various abilities of some useful inventory items
+ *
+ * Note the use of special "item counters" for evaluating the value of
+ * a collection of items of the given type.  Basically, the first item
+ * of the given type is always the most valuable, with subsequent items
+ * being worth less, until the "limit" is reached, after which point any
+ * extra items are only worth as much as they can be sold for.
+ */
 
-  /*
-   * Helper function -- notice one slot of ammo
-   */
+/*
+ * Helper function -- notice one slot of ammo
+ */
 static void borg_notice_ammo(int slot)
 {
     const borg_item *item = &borg_items[slot];
@@ -1253,7 +1256,7 @@ static void borg_notice_ammo(int slot)
     if (borg_trait[BI_AMMO_POWER] >= 3) {
 
         if ((borg_equips_item(act_firebrand, false)
-            || borg_spell_legal_fail(BRAND_AMMUNITION, 65))
+                || borg_spell_legal_fail(BRAND_AMMUNITION, 65))
             && item->iqty >= 5 &&
             /* Skip artifacts and ego-items */
             !item->ego_idx && !item->art_idx && item->ident
@@ -1291,7 +1294,7 @@ static void borg_notice_ammo(int slot)
         return;
 
     if ((borg_equips_item(act_firebrand, false)
-        || borg_spell_legal_fail(BRAND_AMMUNITION, 65))
+            || borg_spell_legal_fail(BRAND_AMMUNITION, 65))
         && item->iqty >= 5 &&
         /* Skip artifacts and ego-items */
         !item->art_idx && !item->ego_idx && item->ident
@@ -1306,22 +1309,22 @@ static void borg_notice_ammo(int slot)
 static void borg_notice_equipment(void)
 {
     int                        i, hold;
-    const struct player_race *rb_ptr = player->race;
+    const struct player_race  *rb_ptr = player->race;
     const struct player_class *cb_ptr = player->class;
 
-    int                        extra_blows = 0;
+    int extra_blows                   = 0;
 
-    int                        extra_shots = 0;
-    int                        extra_might = 0;
-    int                        my_num_fire;
+    int extra_shots                   = 0;
+    int extra_might                   = 0;
+    int my_num_fire;
 
-    bitflag                    f[OF_SIZE];
+    bitflag f[OF_SIZE];
 
     borg_item *item;
 
     /* Recalc some Variables */
-    borg_trait[BI_ARMOR] = 0;
-    borg_trait[BI_SPEED] = 110;
+    borg_trait[BI_ARMOR]  = 0;
+    borg_trait[BI_SPEED]  = 110;
     borg_trait[BI_WEIGHT] = 0;
 
     /* Start with a single blow per turn */
@@ -1332,7 +1335,7 @@ static void borg_notice_equipment(void)
 
     /* Reset the "ammo" attributes */
     borg_trait[BI_AMMO_COUNT] = 0;
-    borg_trait[BI_AMMO_TVAL] = -1;
+    borg_trait[BI_AMMO_TVAL]  = -1;
     borg_trait[BI_AMMO_SIDES] = 4;
     borg_trait[BI_AMMO_POWER] = 0;
 
@@ -1344,9 +1347,9 @@ static void borg_notice_equipment(void)
 
     /* Base skill -- disarming */
     borg_trait[BI_DISP] = rb_ptr->r_skills[SKILL_DISARM_PHYS]
-        + cb_ptr->c_skills[SKILL_DISARM_PHYS];
+                          + cb_ptr->c_skills[SKILL_DISARM_PHYS];
     borg_trait[BI_DISM] = rb_ptr->r_skills[SKILL_DISARM_MAGIC]
-        + cb_ptr->c_skills[SKILL_DISARM_MAGIC];
+                          + cb_ptr->c_skills[SKILL_DISARM_MAGIC];
 
     /* Base skill -- magic devices */
     borg_trait[BI_DEV]
@@ -1366,15 +1369,15 @@ static void borg_notice_equipment(void)
 
     /* Base skill -- combat (normal) */
     borg_trait[BI_THN] = rb_ptr->r_skills[SKILL_TO_HIT_MELEE]
-        + cb_ptr->c_skills[SKILL_TO_HIT_MELEE];
+                         + cb_ptr->c_skills[SKILL_TO_HIT_MELEE];
 
     /* Base skill -- combat (shooting) */
     borg_trait[BI_THB] = rb_ptr->r_skills[SKILL_TO_HIT_BOW]
-        + cb_ptr->c_skills[SKILL_TO_HIT_BOW];
+                         + cb_ptr->c_skills[SKILL_TO_HIT_BOW];
 
     /* Base skill -- combat (throwing) */
     borg_trait[BI_THT] = rb_ptr->r_skills[SKILL_TO_HIT_THROW]
-        + cb_ptr->c_skills[SKILL_TO_HIT_THROW];
+                         + cb_ptr->c_skills[SKILL_TO_HIT_THROW];
 
     /* Affect Skill -- digging (STR) */
     borg_trait[BI_DIG]
@@ -1482,7 +1485,7 @@ static void borg_notice_equipment(void)
      * code above when the player flags are checked
      */
 
-     /* Clear the stat modifiers */
+    /* Clear the stat modifiers */
     for (i = 0; i < STAT_MAX; i++)
         my_stat_add[i] = 0;
 
@@ -1519,24 +1522,24 @@ static void borg_notice_equipment(void)
 
         /* Affect stats */
         my_stat_add[STAT_STR] += item->modifiers[OBJ_MOD_STR]
-            * player->obj_k->modifiers[OBJ_MOD_STR];
+                                 * player->obj_k->modifiers[OBJ_MOD_STR];
         my_stat_add[STAT_INT] += item->modifiers[OBJ_MOD_INT]
-            * player->obj_k->modifiers[OBJ_MOD_INT];
+                                 * player->obj_k->modifiers[OBJ_MOD_INT];
         my_stat_add[STAT_WIS] += item->modifiers[OBJ_MOD_WIS]
-            * player->obj_k->modifiers[OBJ_MOD_WIS];
+                                 * player->obj_k->modifiers[OBJ_MOD_WIS];
         my_stat_add[STAT_DEX] += item->modifiers[OBJ_MOD_DEX]
-            * player->obj_k->modifiers[OBJ_MOD_DEX];
+                                 * player->obj_k->modifiers[OBJ_MOD_DEX];
         my_stat_add[STAT_CON] += item->modifiers[OBJ_MOD_CON]
-            * player->obj_k->modifiers[OBJ_MOD_CON];
+                                 * player->obj_k->modifiers[OBJ_MOD_CON];
 
         /* various slays */
         borg_trait[BI_WS_ANIMAL] = item->slays[RF_ANIMAL];
-        borg_trait[BI_WS_EVIL] = item->slays[RF_EVIL];
+        borg_trait[BI_WS_EVIL]   = item->slays[RF_EVIL];
         borg_trait[BI_WS_UNDEAD] = item->slays[RF_UNDEAD];
-        borg_trait[BI_WS_DEMON] = item->slays[RF_DEMON];
-        borg_trait[BI_WS_ORC] = item->slays[RF_ORC];
-        borg_trait[BI_WS_TROLL] = item->slays[RF_TROLL];
-        borg_trait[BI_WS_GIANT] = item->slays[RF_GIANT];
+        borg_trait[BI_WS_DEMON]  = item->slays[RF_DEMON];
+        borg_trait[BI_WS_ORC]    = item->slays[RF_ORC];
+        borg_trait[BI_WS_TROLL]  = item->slays[RF_TROLL];
+        borg_trait[BI_WS_GIANT]  = item->slays[RF_GIANT];
         borg_trait[BI_WS_DRAGON] = item->slays[RF_DRAGON];
 
         /* various brands */
@@ -1640,7 +1643,7 @@ static void borg_notice_equipment(void)
         if (item->curses[BORG_CURSE_ENVELOPING])
             borg_trait[BI_CRSENVELOPING] = true;
         if (item->curses[BORG_CURSE_IRRITATION]) {
-            borg_trait[BI_CRSAGRV] = true;
+            borg_trait[BI_CRSAGRV]       = true;
             borg_trait[BI_CRSIRRITATION] = true;
         }
         if (item->curses[BORG_CURSE_WEAKNESS]) {
@@ -1653,8 +1656,8 @@ static void borg_notice_equipment(void)
             borg_trait[BI_SPEED] = -5;
         }
         if (item->curses[BORG_CURSE_ANNOYANCE]) {
-            borg_trait[BI_SPEED] = -10;
-            borg_trait[BI_STL] = -10;
+            borg_trait[BI_SPEED]   = -10;
+            borg_trait[BI_STL]     = -10;
             borg_trait[BI_CRSAGRV] = true;
         }
         if (item->curses[BORG_CURSE_POISON])
@@ -1685,11 +1688,11 @@ static void borg_notice_equipment(void)
             borg_trait[BI_CRSTWEP] = true;
         if (item->curses[BORG_CURSE_BURNING_UP]) {
             borg_trait[BI_CRSFVULN] = true;
-            borg_trait[BI_RCOLD] = true;
+            borg_trait[BI_RCOLD]    = true;
         }
         if (item->curses[BORG_CURSE_CHILLED_TO_THE_BONE]) {
             borg_trait[BI_CRSCVULN] = true;
-            borg_trait[BI_RFIRE] = true;
+            borg_trait[BI_RFIRE]    = true;
         }
         if (item->curses[BORG_CURSE_STEELSKIN])
             borg_trait[BI_CRSSTEELSKIN] = true;
@@ -1729,25 +1732,25 @@ static void borg_notice_equipment(void)
             borg_trait[BI_LIGHT]++;
 
         /* Immunity flags */
-        /* if you are immune you automaticly resist */
+        /* if you are immune you automatically resist */
         if (item->el_info[ELEM_FIRE].res_level == 3) {
-            borg_trait[BI_IFIRE] = true;
-            borg_trait[BI_RFIRE] = true;
+            borg_trait[BI_IFIRE]  = true;
+            borg_trait[BI_RFIRE]  = true;
             borg_trait[BI_TRFIRE] = true;
         }
         if (item->el_info[ELEM_ACID].res_level == 3) {
-            borg_trait[BI_IACID] = true;
-            borg_trait[BI_RACID] = true;
+            borg_trait[BI_IACID]  = true;
+            borg_trait[BI_RACID]  = true;
             borg_trait[BI_TRACID] = true;
         }
         if (item->el_info[ELEM_COLD].res_level == 3) {
-            borg_trait[BI_ICOLD] = true;
-            borg_trait[BI_RCOLD] = true;
+            borg_trait[BI_ICOLD]  = true;
+            borg_trait[BI_RCOLD]  = true;
             borg_trait[BI_TRCOLD] = true;
         }
         if (item->el_info[ELEM_ELEC].res_level == 3) {
-            borg_trait[BI_IELEC] = true;
-            borg_trait[BI_RELEC] = true;
+            borg_trait[BI_IELEC]  = true;
+            borg_trait[BI_RELEC]  = true;
             borg_trait[BI_TRELEC] = true;
         }
 
@@ -1793,24 +1796,24 @@ static void borg_notice_equipment(void)
 
         /* Good to have one item with multiple high resists */
         int bonuses = ((item->el_info[ELEM_POIS].res_level > 0)
-            + (item->el_info[ELEM_SOUND].res_level > 0)
-            + (item->el_info[ELEM_SHARD].res_level > 0)
-            + (item->el_info[ELEM_NEXUS].res_level > 0)
-            + (item->el_info[ELEM_NETHER].res_level > 0)
-            + (item->el_info[ELEM_CHAOS].res_level > 0)
-            + (item->el_info[ELEM_DISEN].res_level > 0) +
-            /* resist base 4 */
-            ((item->el_info[ELEM_FIRE].res_level > 0)
-                && (item->el_info[ELEM_COLD].res_level > 0)
-                && (item->el_info[ELEM_ELEC].res_level > 0)
-                && (item->el_info[ELEM_ACID].res_level > 0))
-            +
-            /* sustains all stats  */
-            (of_has(item->flags, OF_SUST_STR)
-                && of_has(item->flags, OF_SUST_INT)
-                && of_has(item->flags, OF_SUST_WIS)
-                && of_has(item->flags, OF_SUST_DEX)
-                && of_has(item->flags, OF_SUST_CON)));
+                       + (item->el_info[ELEM_SOUND].res_level > 0)
+                       + (item->el_info[ELEM_SHARD].res_level > 0)
+                       + (item->el_info[ELEM_NEXUS].res_level > 0)
+                       + (item->el_info[ELEM_NETHER].res_level > 0)
+                       + (item->el_info[ELEM_CHAOS].res_level > 0)
+                       + (item->el_info[ELEM_DISEN].res_level > 0) +
+                       /* resist base 4 */
+                       ((item->el_info[ELEM_FIRE].res_level > 0)
+                           && (item->el_info[ELEM_COLD].res_level > 0)
+                           && (item->el_info[ELEM_ELEC].res_level > 0)
+                           && (item->el_info[ELEM_ACID].res_level > 0))
+                       +
+                       /* sustains all stats  */
+                       (of_has(item->flags, OF_SUST_STR)
+                           && of_has(item->flags, OF_SUST_INT)
+                           && of_has(item->flags, OF_SUST_WIS)
+                           && of_has(item->flags, OF_SUST_DEX)
+                           && of_has(item->flags, OF_SUST_CON)));
 
         if (bonuses > 2)
             borg_trait[BI_MULTIPLE_BONUSES] += bonuses;
@@ -1886,22 +1889,21 @@ static void borg_notice_equipment(void)
             my_stat_ind[i] = 37;
         else
             my_stat_ind[i] = ind;
-        borg_trait[BI_STR + i] = my_stat_ind[i];
+        borg_trait[BI_STR + i]  = my_stat_ind[i];
         borg_trait[BI_CSTR + i] = borg_stat[i];
     }
 
     borg_trait[BI_HP_ADJ] = player->player_hp[player->lev - 1]
-        + borg_adj_con_mhp[my_stat_ind[STAT_CON]] * borg_trait[BI_CLEVEL]
-        / 100;
-
+                            + borg_adj_con_mhp[my_stat_ind[STAT_CON]]
+                                  * borg_trait[BI_CLEVEL] / 100;
 
     /* 'Mana' is actually the 'mana adjustment' */
     int spell_stat = borg_spell_stat();
     if (spell_stat >= 0) {
         borg_trait[BI_SP_ADJ]
             = ((borg_adj_mag_mana[my_stat_ind[spell_stat]]
-                * (borg_trait[BI_CLEVEL] - player->class->magic.spell_first
-                    + 1))
+                   * (borg_trait[BI_CLEVEL] - player->class->magic.spell_first
+                       + 1))
                 / 2);
         borg_trait[BI_FAIL1] = borg_adj_mag_stat[my_stat_ind[spell_stat]];
         borg_trait[BI_FAIL2] = borg_adj_mag_fail[my_stat_ind[spell_stat]];
@@ -1928,10 +1930,10 @@ static void borg_notice_equipment(void)
 
     /* attacking with bare hands */
     if (item->iqty == 0) {
-        item->ds = 0;
-        item->dd = 0;
-        item->to_d = 0;
-        item->to_h = 0;
+        item->ds     = 0;
+        item->dd     = 0;
+        item->to_d   = 0;
+        item->to_h   = 0;
         item->weight = 0;
     }
 
@@ -1950,23 +1952,23 @@ static void borg_notice_equipment(void)
     if (item->iqty && (hold >= item->weight / 10)) {
         /* Take note of required "tval" for missiles */
         if (item->sval == sv_sling) {
-            borg_trait[BI_AMMO_TVAL] = TV_SHOT;
+            borg_trait[BI_AMMO_TVAL]  = TV_SHOT;
             borg_trait[BI_AMMO_SIDES] = 3;
             borg_trait[BI_AMMO_POWER] = 2;
         } else if (item->sval == sv_short_bow) {
-            borg_trait[BI_AMMO_TVAL] = TV_ARROW;
+            borg_trait[BI_AMMO_TVAL]  = TV_ARROW;
             borg_trait[BI_AMMO_SIDES] = 4;
             borg_trait[BI_AMMO_POWER] = 2;
         } else if (item->sval == sv_long_bow) {
-            borg_trait[BI_AMMO_TVAL] = TV_ARROW;
+            borg_trait[BI_AMMO_TVAL]  = TV_ARROW;
             borg_trait[BI_AMMO_SIDES] = 4;
             borg_trait[BI_AMMO_POWER] = 3;
         } else if (item->sval == sv_light_xbow) {
-            borg_trait[BI_AMMO_TVAL] = TV_BOLT;
+            borg_trait[BI_AMMO_TVAL]  = TV_BOLT;
             borg_trait[BI_AMMO_SIDES] = 5;
             borg_trait[BI_AMMO_POWER] = 3;
         } else if (item->sval == sv_heavy_xbow) {
-            borg_trait[BI_AMMO_TVAL] = TV_BOLT;
+            borg_trait[BI_AMMO_TVAL]  = TV_BOLT;
             borg_trait[BI_AMMO_SIDES] = 5;
             borg_trait[BI_AMMO_POWER] = 4;
         }
@@ -1997,7 +1999,7 @@ static void borg_notice_equipment(void)
 
     /* Calculate "average" damage per "normal" shot (times 2) */
     borg_trait[BI_BMAXDAM] = (borg_trait[BI_AMMO_SIDES] + borg_trait[BI_BTODAM])
-        * borg_trait[BI_AMMO_POWER];
+                             * borg_trait[BI_AMMO_POWER];
     borg_trait[BI_BMAXDAM] *= borg_trait[BI_SHOTS];
 
     /* Examine the "main weapon" */
@@ -2005,10 +2007,10 @@ static void borg_notice_equipment(void)
 
     /* attacking with bare hands */
     if (item->iqty == 0) {
-        item->ds = 0;
-        item->dd = 0;
-        item->to_d = 0;
-        item->to_h = 0;
+        item->ds     = 0;
+        item->dd     = 0;
+        item->to_d   = 0;
+        item->to_h   = 0;
         item->weight = 0;
     }
 
@@ -2062,9 +2064,9 @@ static void borg_notice_equipment(void)
 
     /* Affect Skill -- disarming (Level, by Class) */
     borg_trait[BI_DISP] += (cb_ptr->x_skills[SKILL_DISARM_PHYS]
-        * borg_trait[BI_MAXCLEVEL] / 10);
+                            * borg_trait[BI_MAXCLEVEL] / 10);
     borg_trait[BI_DISM] += (cb_ptr->x_skills[SKILL_DISARM_MAGIC]
-        * borg_trait[BI_MAXCLEVEL] / 10);
+                            * borg_trait[BI_MAXCLEVEL] / 10);
 
     /* Affect Skill -- magic devices (Level, by Class) */
     borg_trait[BI_DEV]
@@ -2084,7 +2086,7 @@ static void borg_notice_equipment(void)
 
     /* Affect Skill -- combat (normal) (Level, by Class) */
     borg_trait[BI_THN] += (cb_ptr->x_skills[SKILL_TO_HIT_MELEE]
-        * borg_trait[BI_MAXCLEVEL] / 10);
+                           * borg_trait[BI_MAXCLEVEL] / 10);
 
     /* Affect Skill -- combat (shooting) (Level, by Class) */
     borg_trait[BI_THB]
@@ -2092,7 +2094,7 @@ static void borg_notice_equipment(void)
 
     /* Affect Skill -- combat (throwing) (Level, by Class) */
     borg_trait[BI_THT] += (cb_ptr->x_skills[SKILL_TO_HIT_THROW]
-        * borg_trait[BI_MAXCLEVEL] / 10);
+                           * borg_trait[BI_MAXCLEVEL] / 10);
 
     /* Limit Skill -- stealth from 0 to 30 */
     if (borg_trait[BI_STL] > 30)
@@ -2154,7 +2156,7 @@ static void borg_notice_equipment(void)
 
         /* Enchant all weapons (to hit) */
         if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65)
-            || borg_trait[BI_AENCH_SWEP] >= 1)) {
+                || borg_trait[BI_AENCH_SWEP] >= 1)) {
             if (item->to_h < borg_cfg[BORG_ENCHANT_LIMIT]) {
                 my_need_enchant_to_h
                     += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_h);
@@ -2255,14 +2257,14 @@ static void borg_notice_equipment(void)
     /* Hack -- ignore invalid missiles */
     for (i = QUIVER_START; i < QUIVER_END; i++)
         borg_notice_ammo(i);
-    }
+}
 
 /*
  * Helper function -- notice the player inventory
  */
 static void borg_notice_inventory(void)
 {
-    int        i;
+    int i;
 
     borg_item *item;
 
@@ -2270,12 +2272,12 @@ static void borg_notice_inventory(void)
 
     /* Reset basic */
     amt_food_lowcal = 0;
-    amt_food_hical = 0;
+    amt_food_hical  = 0;
 
     /* Reset healing */
-    amt_slow_poison = 0;
+    amt_slow_poison    = 0;
     amt_cure_confusion = 0;
-    amt_cure_blind = 0;
+    amt_cure_blind     = 0;
 
     /* Reset stat potions */
     for (i = 0; i < 6; i++)
@@ -2292,10 +2294,10 @@ static void borg_notice_inventory(void)
     amt_add_stat[STAT_DEX] = 0;
     amt_add_stat[STAT_CON] = 0;
 
-    amt_fix_exp = 0;
-    amt_cool_staff = 0;
-    amt_cool_wand = 0;
-    amt_digger = 0;
+    amt_fix_exp            = 0;
+    amt_cool_staff         = 0;
+    amt_cool_wand          = 0;
+    amt_digger             = 0;
 
     /*** Process the inventory ***/
 
@@ -2347,304 +2349,304 @@ static void borg_notice_inventory(void)
         case TV_NATURE_BOOK:
         case TV_SHADOW_BOOK:
         case TV_OTHER_BOOK:
-        /* Skip incorrect books (if we can browse this book, it is good) */
-        if (!obj_kind_can_browse(&k_info[item->kind]))
+            /* Skip incorrect books (if we can browse this book, it is good) */
+            if (!obj_kind_can_browse(&k_info[item->kind]))
+                break;
+            /* Count the books */
+            amt_book[borg_get_book_num(item->sval)] += item->iqty;
             break;
-        /* Count the books */
-        amt_book[borg_get_book_num(item->sval)] += item->iqty;
-        break;
 
         /* Food */
         case TV_MUSHROOM:
-        if (item->sval == sv_mush_purging || item->sval == sv_mush_restoring
-            || item->sval == sv_mush_cure_mind) {
-            if (borg_cfg[BORG_MUNCHKIN_START]
-                && borg_trait[BI_MAXCLEVEL]
-                < borg_cfg[BORG_MUNCHKIN_LEVEL]) {
-                break;
+            if (item->sval == sv_mush_purging || item->sval == sv_mush_restoring
+                || item->sval == sv_mush_cure_mind) {
+                if (borg_cfg[BORG_MUNCHKIN_START]
+                    && borg_trait[BI_MAXCLEVEL]
+                           < borg_cfg[BORG_MUNCHKIN_LEVEL]) {
+                    break;
+                }
             }
-        }
-        if (item->sval == sv_mush_second_sight
-            || item->sval == sv_mush_emergency
-            || item->sval == sv_mush_terror
-            || item->sval == sv_mush_stoneskin
-            || item->sval == sv_mush_debility
-            || item->sval == sv_mush_sprinting)
-            if (borg_cfg[BORG_MUNCHKIN_START]
-                && borg_trait[BI_MAXCLEVEL]
-                >= borg_cfg[BORG_MUNCHKIN_LEVEL]) {
-                borg_trait[BI_ASHROOM] += item->iqty;
-            }
+            if (item->sval == sv_mush_second_sight
+                || item->sval == sv_mush_emergency
+                || item->sval == sv_mush_terror
+                || item->sval == sv_mush_stoneskin
+                || item->sval == sv_mush_debility
+                || item->sval == sv_mush_sprinting)
+                if (borg_cfg[BORG_MUNCHKIN_START]
+                    && borg_trait[BI_MAXCLEVEL]
+                           >= borg_cfg[BORG_MUNCHKIN_LEVEL]) {
+                    borg_trait[BI_ASHROOM] += item->iqty;
+                }
         /* fall through */
         case TV_FOOD:
-        /* Analyze */
-        {
-            /* unknown types */
-            if (!item->kind)
-                break;
-
-            /* check for food that hurts us */
-            if (borg_obj_has_effect(item->kind, EF_CRUNCH, -1)
-                || borg_obj_has_effect(
-                    item->kind, EF_TIMED_INC, TMD_CONFUSED))
-                break;
-
-            /* check for food that gives nutrition */
-            if (item->tval == TV_MUSHROOM) {
-                /* mushrooms that increase nutrition are low effect */
-                if (borg_obj_has_effect(item->kind, EF_NOURISH, 0))
-                    amt_food_lowcal += item->iqty;
-            } else /* TV_FOOD */
+            /* Analyze */
             {
-                if (item->sval == sv_food_apple
-                    || item->sval == sv_food_handful
-                    || item->sval == sv_food_slime_mold
-                    || item->sval == sv_food_pint
-                    || item->sval == sv_food_sip) {
-                    amt_food_lowcal += item->iqty;
-                } else if (item->sval == sv_food_ration
-                    || item->sval == sv_food_slice
-                    || item->sval == sv_food_honey_cake
-                    || item->sval == sv_food_waybread
-                    || item->sval == sv_food_draught)
-                    amt_food_hical += item->iqty;
-            }
+                /* unknown types */
+                if (!item->kind)
+                    break;
 
-            /* check for food that does stuff */
-            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_POISONED))
-                borg_trait[BI_ACUREPOIS] += item->iqty;
-            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_CONFUSED))
-                amt_cure_confusion += item->iqty;
-            if (borg_obj_has_effect(item->kind, EF_CURE, TMD_BLIND))
-                amt_cure_blind += item->iqty;
-        }
-        break;
+                /* check for food that hurts us */
+                if (borg_obj_has_effect(item->kind, EF_CRUNCH, -1)
+                    || borg_obj_has_effect(
+                        item->kind, EF_TIMED_INC, TMD_CONFUSED))
+                    break;
+
+                /* check for food that gives nutrition */
+                if (item->tval == TV_MUSHROOM) {
+                    /* mushrooms that increase nutrition are low effect */
+                    if (borg_obj_has_effect(item->kind, EF_NOURISH, 0))
+                        amt_food_lowcal += item->iqty;
+                } else /* TV_FOOD */
+                {
+                    if (item->sval == sv_food_apple
+                        || item->sval == sv_food_handful
+                        || item->sval == sv_food_slime_mold
+                        || item->sval == sv_food_pint
+                        || item->sval == sv_food_sip) {
+                        amt_food_lowcal += item->iqty;
+                    } else if (item->sval == sv_food_ration
+                               || item->sval == sv_food_slice
+                               || item->sval == sv_food_honey_cake
+                               || item->sval == sv_food_waybread
+                               || item->sval == sv_food_draught)
+                        amt_food_hical += item->iqty;
+                }
+
+                /* check for food that does stuff */
+                if (borg_obj_has_effect(item->kind, EF_CURE, TMD_POISONED))
+                    borg_trait[BI_ACUREPOIS] += item->iqty;
+                if (borg_obj_has_effect(item->kind, EF_CURE, TMD_CONFUSED))
+                    amt_cure_confusion += item->iqty;
+                if (borg_obj_has_effect(item->kind, EF_CURE, TMD_BLIND))
+                    amt_cure_blind += item->iqty;
+            }
+            break;
 
         /* Potions */
         case TV_POTION:
-        /* Analyze */
-        if (item->sval == sv_potion_healing)
-            borg_trait[BI_AHEAL] += item->iqty;
-        else if (item->sval == sv_potion_star_healing)
-            borg_trait[BI_AEZHEAL] += item->iqty;
-        else if (item->sval == sv_potion_life)
-            borg_trait[BI_ALIFE] += item->iqty;
-        else if (item->sval == sv_potion_cure_critical)
-            borg_trait[BI_ACCW] += item->iqty;
-        else if (item->sval == sv_potion_cure_serious)
-            borg_trait[BI_ACSW] += item->iqty;
-        else if (item->sval == sv_potion_cure_light)
-            borg_trait[BI_ACLW] += item->iqty;
-        else if (item->sval == sv_potion_cure_poison)
-            borg_trait[BI_ACUREPOIS] += item->iqty;
-        else if (item->sval == sv_potion_resist_heat)
-            borg_trait[BI_ARESHEAT] += item->iqty;
-        else if (item->sval == sv_potion_resist_cold)
-            borg_trait[BI_ARESCOLD] += item->iqty;
-        else if (item->sval == sv_potion_resist_pois)
-            borg_trait[BI_ARESPOIS] += item->iqty;
-        else if (item->sval == sv_potion_inc_str)
-            amt_inc_stat[STAT_STR] += item->iqty;
-        else if (item->sval == sv_potion_inc_int)
-            amt_inc_stat[STAT_INT] += item->iqty;
-        else if (item->sval == sv_potion_inc_wis)
-            amt_inc_stat[STAT_WIS] += item->iqty;
-        else if (item->sval == sv_potion_inc_dex)
-            amt_inc_stat[STAT_DEX] += item->iqty;
-        else if (item->sval == sv_potion_inc_con)
-            amt_inc_stat[STAT_CON] += item->iqty;
-        else if (item->sval == sv_potion_inc_all) {
-            amt_inc_stat[STAT_STR] += item->iqty;
-            amt_inc_stat[STAT_INT] += item->iqty;
-            amt_inc_stat[STAT_WIS] += item->iqty;
-            amt_inc_stat[STAT_DEX] += item->iqty;
-            amt_inc_stat[STAT_CON] += item->iqty;
-        } else if (item->sval == sv_potion_restore_life)
-            amt_fix_exp += item->iqty;
-        else if (item->sval == sv_potion_speed)
-            borg_trait[BI_ASPEED] += item->iqty;
-        break;
+            /* Analyze */
+            if (item->sval == sv_potion_healing)
+                borg_trait[BI_AHEAL] += item->iqty;
+            else if (item->sval == sv_potion_star_healing)
+                borg_trait[BI_AEZHEAL] += item->iqty;
+            else if (item->sval == sv_potion_life)
+                borg_trait[BI_ALIFE] += item->iqty;
+            else if (item->sval == sv_potion_cure_critical)
+                borg_trait[BI_ACCW] += item->iqty;
+            else if (item->sval == sv_potion_cure_serious)
+                borg_trait[BI_ACSW] += item->iqty;
+            else if (item->sval == sv_potion_cure_light)
+                borg_trait[BI_ACLW] += item->iqty;
+            else if (item->sval == sv_potion_cure_poison)
+                borg_trait[BI_ACUREPOIS] += item->iqty;
+            else if (item->sval == sv_potion_resist_heat)
+                borg_trait[BI_ARESHEAT] += item->iqty;
+            else if (item->sval == sv_potion_resist_cold)
+                borg_trait[BI_ARESCOLD] += item->iqty;
+            else if (item->sval == sv_potion_resist_pois)
+                borg_trait[BI_ARESPOIS] += item->iqty;
+            else if (item->sval == sv_potion_inc_str)
+                amt_inc_stat[STAT_STR] += item->iqty;
+            else if (item->sval == sv_potion_inc_int)
+                amt_inc_stat[STAT_INT] += item->iqty;
+            else if (item->sval == sv_potion_inc_wis)
+                amt_inc_stat[STAT_WIS] += item->iqty;
+            else if (item->sval == sv_potion_inc_dex)
+                amt_inc_stat[STAT_DEX] += item->iqty;
+            else if (item->sval == sv_potion_inc_con)
+                amt_inc_stat[STAT_CON] += item->iqty;
+            else if (item->sval == sv_potion_inc_all) {
+                amt_inc_stat[STAT_STR] += item->iqty;
+                amt_inc_stat[STAT_INT] += item->iqty;
+                amt_inc_stat[STAT_WIS] += item->iqty;
+                amt_inc_stat[STAT_DEX] += item->iqty;
+                amt_inc_stat[STAT_CON] += item->iqty;
+            } else if (item->sval == sv_potion_restore_life)
+                amt_fix_exp += item->iqty;
+            else if (item->sval == sv_potion_speed)
+                borg_trait[BI_ASPEED] += item->iqty;
+            break;
 
         /* Scrolls */
         case TV_SCROLL:
 
-        if (item->sval == sv_scroll_identify)
-            borg_trait[BI_AID] += item->iqty;
-        else if (item->sval == sv_scroll_recharging)
-            borg_trait[BI_ARECHARGE] += item->iqty;
-        else if (item->sval == sv_scroll_phase_door)
-            borg_trait[BI_APHASE] += item->iqty;
-        else if (item->sval == sv_scroll_teleport)
-            borg_trait[BI_ATELEPORT] += item->iqty;
-        else if (item->sval == sv_scroll_word_of_recall)
-            borg_trait[BI_RECALL] += item->iqty;
-        else if (item->sval == sv_scroll_enchant_armor)
-            borg_trait[BI_AENCH_ARM] += item->iqty;
-        else if (item->sval == sv_scroll_star_enchant_armor)
-            borg_trait[BI_AENCH_SARM] += item->iqty;
-        else if (item->sval == sv_scroll_enchant_weapon_to_hit)
-            borg_trait[BI_AENCH_TOH] += item->iqty;
-        else if (item->sval == sv_scroll_enchant_weapon_to_dam)
-            borg_trait[BI_AENCH_TOD] += item->iqty;
-        else if (item->sval == sv_scroll_star_enchant_weapon)
-            borg_trait[BI_AENCH_SWEP] += item->iqty;
-        else if (item->sval == sv_scroll_protection_from_evil)
-            borg_trait[BI_APFE] += item->iqty;
-        else if (item->sval == sv_scroll_rune_of_protection)
-            borg_trait[BI_AGLYPH] += item->iqty;
-        else if (item->sval == sv_scroll_teleport_level) {
-            borg_trait[BI_ATELEPORTLVL] += item->iqty;
-            borg_trait[BI_ATELEPORT] += 1;
-        } else if (item->sval == sv_scroll_mass_banishment)
-            borg_trait[BI_AMASSBAN] += item->iqty;
-        break;
+            if (item->sval == sv_scroll_identify)
+                borg_trait[BI_AID] += item->iqty;
+            else if (item->sval == sv_scroll_recharging)
+                borg_trait[BI_ARECHARGE] += item->iqty;
+            else if (item->sval == sv_scroll_phase_door)
+                borg_trait[BI_APHASE] += item->iqty;
+            else if (item->sval == sv_scroll_teleport)
+                borg_trait[BI_ATELEPORT] += item->iqty;
+            else if (item->sval == sv_scroll_word_of_recall)
+                borg_trait[BI_RECALL] += item->iqty;
+            else if (item->sval == sv_scroll_enchant_armor)
+                borg_trait[BI_AENCH_ARM] += item->iqty;
+            else if (item->sval == sv_scroll_star_enchant_armor)
+                borg_trait[BI_AENCH_SARM] += item->iqty;
+            else if (item->sval == sv_scroll_enchant_weapon_to_hit)
+                borg_trait[BI_AENCH_TOH] += item->iqty;
+            else if (item->sval == sv_scroll_enchant_weapon_to_dam)
+                borg_trait[BI_AENCH_TOD] += item->iqty;
+            else if (item->sval == sv_scroll_star_enchant_weapon)
+                borg_trait[BI_AENCH_SWEP] += item->iqty;
+            else if (item->sval == sv_scroll_protection_from_evil)
+                borg_trait[BI_APFE] += item->iqty;
+            else if (item->sval == sv_scroll_rune_of_protection)
+                borg_trait[BI_AGLYPH] += item->iqty;
+            else if (item->sval == sv_scroll_teleport_level) {
+                borg_trait[BI_ATELEPORTLVL] += item->iqty;
+                borg_trait[BI_ATELEPORT] += 1;
+            } else if (item->sval == sv_scroll_mass_banishment)
+                borg_trait[BI_AMASSBAN] += item->iqty;
+            break;
 
         /* Rods */
         case TV_ROD:
 
-        /* Analyze */
-        if (item->sval == sv_rod_recall) {
-            /* Don't count on it if I suck at activations */
-            if (borg_activate_failure(item->tval, item->sval) < 500) {
-                borg_trait[BI_RECALL] += item->iqty * 100;
-            } else {
-                borg_trait[BI_RECALL] += item->iqty;
+            /* Analyze */
+            if (item->sval == sv_rod_recall) {
+                /* Don't count on it if I suck at activations */
+                if (borg_activate_failure(item->tval, item->sval) < 500) {
+                    borg_trait[BI_RECALL] += item->iqty * 100;
+                } else {
+                    borg_trait[BI_RECALL] += item->iqty;
+                }
+            } else if (item->sval == sv_rod_detection) {
+                borg_trait[BI_ADETTRAP] += item->iqty * 100;
+                borg_trait[BI_ADETDOOR] += item->iqty * 100;
+                borg_trait[BI_ADETEVIL] += item->iqty * 100;
+            } else if (item->sval == sv_rod_illumination)
+                borg_trait[BI_ALITE] += item->iqty * 100;
+            else if (item->sval == sv_rod_speed) {
+                /* Don't count on it if I suck at activations */
+                if (borg_activate_failure(item->tval, item->sval) < 500) {
+                    borg_trait[BI_ASPEED] += item->iqty * 100;
+                } else {
+                    borg_trait[BI_ASPEED] += item->iqty;
+                }
+            } else if (item->sval == sv_rod_mapping)
+                borg_trait[BI_AMAGICMAP] += item->iqty * 100;
+            else if (item->sval == sv_rod_healing) {
+                /* only +2 per rod because of long charge time. */
+                /* Don't count on it if I suck at activations */
+                if (borg_activate_failure(item->tval, item->sval) < 500) {
+                    borg_trait[BI_AHEAL] += item->iqty * 3;
+                } else {
+                    borg_trait[BI_AHEAL] += item->iqty + 1;
+                }
+            } else if (item->sval == sv_rod_light
+                       || item->sval == sv_rod_fire_bolt
+                       || item->sval == sv_rod_elec_bolt
+                       || item->sval == sv_rod_cold_bolt
+                       || item->sval == sv_rod_acid_bolt) {
+                borg_trait[BI_AROD1] += item->iqty;
+            } else if (item->sval == sv_rod_drain_life
+                       || item->sval == sv_rod_fire_ball
+                       || item->sval == sv_rod_elec_ball
+                       || item->sval == sv_rod_cold_ball
+                       || item->sval == sv_rod_acid_ball) {
+                borg_trait[BI_AROD2] += item->iqty;
             }
-        } else if (item->sval == sv_rod_detection) {
-            borg_trait[BI_ADETTRAP] += item->iqty * 100;
-            borg_trait[BI_ADETDOOR] += item->iqty * 100;
-            borg_trait[BI_ADETEVIL] += item->iqty * 100;
-        } else if (item->sval == sv_rod_illumination)
-            borg_trait[BI_ALITE] += item->iqty * 100;
-        else if (item->sval == sv_rod_speed) {
-            /* Don't count on it if I suck at activations */
-            if (borg_activate_failure(item->tval, item->sval) < 500) {
-                borg_trait[BI_ASPEED] += item->iqty * 100;
-            } else {
-                borg_trait[BI_ASPEED] += item->iqty;
-            }
-        } else if (item->sval == sv_rod_mapping)
-            borg_trait[BI_AMAGICMAP] += item->iqty * 100;
-        else if (item->sval == sv_rod_healing) {
-            /* only +2 per rod because of long charge time. */
-            /* Don't count on it if I suck at activations */
-            if (borg_activate_failure(item->tval, item->sval) < 500) {
-                borg_trait[BI_AHEAL] += item->iqty * 3;
-            } else {
-                borg_trait[BI_AHEAL] += item->iqty + 1;
-            }
-        } else if (item->sval == sv_rod_light
-            || item->sval == sv_rod_fire_bolt
-            || item->sval == sv_rod_elec_bolt
-            || item->sval == sv_rod_cold_bolt
-            || item->sval == sv_rod_acid_bolt) {
-            borg_trait[BI_AROD1] += item->iqty;
-        } else if (item->sval == sv_rod_drain_life
-            || item->sval == sv_rod_fire_ball
-            || item->sval == sv_rod_elec_ball
-            || item->sval == sv_rod_cold_ball
-            || item->sval == sv_rod_acid_ball) {
-            borg_trait[BI_AROD2] += item->iqty;
-        }
-        break;
+            break;
 
         /* Wands */
         case TV_WAND:
 
-        /* Analyze each */
-        if (item->sval == sv_wand_teleport_away) {
-            borg_trait[BI_ATPORTOTHER] += item->pval;
-        }
+            /* Analyze each */
+            if (item->sval == sv_wand_teleport_away) {
+                borg_trait[BI_ATPORTOTHER] += item->pval;
+            }
 
-        if (item->sval == sv_wand_stinking_cloud
-            && borg_trait[BI_MAXDEPTH] < 30) {
-            amt_cool_wand += item->pval;
-        }
+            if (item->sval == sv_wand_stinking_cloud
+                && borg_trait[BI_MAXDEPTH] < 30) {
+                amt_cool_wand += item->pval;
+            }
 
-        if (item->sval == sv_wand_magic_missile
-            && borg_trait[BI_MAXDEPTH] < 30) {
-            amt_cool_wand += item->pval;
-        }
+            if (item->sval == sv_wand_magic_missile
+                && borg_trait[BI_MAXDEPTH] < 30) {
+                amt_cool_wand += item->pval;
+            }
 
-        if (item->sval == sv_wand_annihilation) {
-            amt_cool_wand += item->pval;
-        }
+            if (item->sval == sv_wand_annihilation) {
+                amt_cool_wand += item->pval;
+            }
 
-        break;
+            break;
 
         /* Staffs */
         case TV_STAFF:
-        /* Analyze */
-        if (item->sval == sv_staff_teleportation) {
-            if (borg_trait[BI_MAXDEPTH] <= 95) {
-                borg_trait[BI_AESCAPE] += (item->iqty);
-                if (borg_activate_failure(item->tval, item->sval) < 500) {
-                    borg_trait[BI_AESCAPE] += item->pval;
+            /* Analyze */
+            if (item->sval == sv_staff_teleportation) {
+                if (borg_trait[BI_MAXDEPTH] <= 95) {
+                    borg_trait[BI_AESCAPE] += (item->iqty);
+                    if (borg_activate_failure(item->tval, item->sval) < 500) {
+                        borg_trait[BI_AESCAPE] += item->pval;
+                    }
                 }
+            } else if (item->sval == sv_staff_speed) {
+                if (borg_trait[BI_MAXDEPTH] <= 95)
+                    borg_trait[BI_ASPEED] += item->pval;
+            } else if (item->sval == sv_staff_healing)
+                borg_trait[BI_AHEAL] += item->pval;
+            else if (item->sval == sv_staff_the_magi)
+                borg_trait[BI_ASTFMAGI] += item->pval;
+            else if (item->sval == sv_staff_destruction)
+                borg_trait[BI_ASTFDEST] += item->pval;
+            else if (item->sval == sv_staff_power)
+                amt_cool_staff += item->iqty;
+            else if (item->sval == sv_staff_holiness) {
+                amt_cool_staff += item->iqty;
+                borg_trait[BI_AHEAL] += item->pval;
             }
-        } else if (item->sval == sv_staff_speed) {
-            if (borg_trait[BI_MAXDEPTH] <= 95)
-                borg_trait[BI_ASPEED] += item->pval;
-        } else if (item->sval == sv_staff_healing)
-            borg_trait[BI_AHEAL] += item->pval;
-        else if (item->sval == sv_staff_the_magi)
-            borg_trait[BI_ASTFMAGI] += item->pval;
-        else if (item->sval == sv_staff_destruction)
-            borg_trait[BI_ASTFDEST] += item->pval;
-        else if (item->sval == sv_staff_power)
-            amt_cool_staff += item->iqty;
-        else if (item->sval == sv_staff_holiness) {
-            amt_cool_staff += item->iqty;
-            borg_trait[BI_AHEAL] += item->pval;
-        }
 
-        break;
+            break;
 
         /* Flasks */
         case TV_FLASK:
 
-        /* Use as fuel if we equip a lantern */
-        if (borg_items[INVEN_LIGHT].sval == sv_light_lantern)
-            borg_trait[BI_AFUEL] += item->iqty;
+            /* Use as fuel if we equip a lantern */
+            if (borg_items[INVEN_LIGHT].sval == sv_light_lantern)
+                borg_trait[BI_AFUEL] += item->iqty;
 
-        break;
+            break;
 
         /* Torches */
         case TV_LIGHT:
 
-        /* Use as fuel if it is a torch and we carry a torch */
-        if ((item->sval == sv_light_torch && item->timeout >= 1)
-            && (borg_items[INVEN_LIGHT].sval == sv_light_torch)
-            && borg_items[INVEN_LIGHT].iqty) {
-            borg_trait[BI_AFUEL] += item->iqty;
-        }
+            /* Use as fuel if it is a torch and we carry a torch */
+            if ((item->sval == sv_light_torch && item->timeout >= 1)
+                && (borg_items[INVEN_LIGHT].sval == sv_light_torch)
+                && borg_items[INVEN_LIGHT].iqty) {
+                borg_trait[BI_AFUEL] += item->iqty;
+            }
 
-        break;
+            break;
 
         /* Weapons */
         case TV_HAFTED:
         case TV_POLEARM:
         case TV_SWORD:
-        /* These items are checked a bit later in a sub routine
-         * to notice the flags.  It is done outside this switch.
-         */
-        break;
+            /* These items are checked a bit later in a sub routine
+             * to notice the flags.  It is done outside this switch.
+             */
+            break;
 
         /* Shovels and such */
         case TV_DIGGING:
 
-        /* Hack -- ignore worthless ones (including cursed) */
-        if (item->value <= 0)
-            break;
-        if (item->cursed)
-            break;
+            /* Hack -- ignore worthless ones (including cursed) */
+            if (item->value <= 0)
+                break;
+            if (item->cursed)
+                break;
 
-        /* Do not carry if weak, won't be able to dig anyway */
-        if (borg_trait[BI_DIG] < BORG_DIG)
-            break;
+            /* Do not carry if weak, won't be able to dig anyway */
+            if (borg_trait[BI_DIG] < BORG_DIG)
+                break;
 
-        amt_digger += item->iqty;
-        break;
+            amt_digger += item->iqty;
+            break;
         }
     }
 
@@ -2662,7 +2664,7 @@ static void borg_notice_inventory(void)
      *  But some artifacts are not counted for two reasons .
      *  1.  Some spells-powers are needed instantly and are considered in
      *  the borg preparation code.  An artifact maybe non-charged at the
-     *  moment he needes it.  Then he would need the spell and not be able
+     *  moment he needs it.  Then he would need the spell and not be able
      *  to cast it. (ie. teleport, phase)
      *  2.  An artifact may grant a power then he assumes he has infinite
      *  amounts.  He then sells off his scrolls with the duplicate power.
@@ -2676,7 +2678,7 @@ static void borg_notice_inventory(void)
      *  Whose powers are considered in borg_prep.
      */
 
-     /* Handle "satisfy hunger" -> infinite food */
+    /* Handle "satisfy hunger" -> infinite food */
     if (borg_spell_legal_fail(REMOVE_HUNGER, 80)
         || borg_spell_legal_fail(HERBAL_CURING, 80)) /* VAMPIRE_STRIKE? */
     {
@@ -2719,8 +2721,8 @@ static void borg_notice_inventory(void)
     if (borg_spell_legal(SENSE_SURROUNDINGS)
         || borg_equips_item(act_detect_all, false)
         || borg_equips_item(act_mapping, false)) {
-        borg_trait[BI_ADETDOOR] = 1000;
-        borg_trait[BI_ADETTRAP] = 1000;
+        borg_trait[BI_ADETDOOR]  = 1000;
+        borg_trait[BI_ADETTRAP]  = 1000;
         borg_trait[BI_AMAGICMAP] = 1000;
     }
 
@@ -2809,10 +2811,10 @@ static void borg_notice_inventory(void)
     }
 
     /* Handle teleport spell carefully */
-    if (borg_spell_legal_fail(TELEPORT_SELF, 1) ||
-        borg_spell_legal_fail(PORTAL, 1) ||
-        borg_spell_legal_fail(SHADOW_SHIFT, 1) ||
-        borg_spell_legal_fail(DIMENSION_DOOR, 1)) {
+    if (borg_spell_legal_fail(TELEPORT_SELF, 1)
+        || borg_spell_legal_fail(PORTAL, 1)
+        || borg_spell_legal_fail(SHADOW_SHIFT, 1)
+        || borg_spell_legal_fail(DIMENSION_DOOR, 1)) {
         borg_trait[BI_ATELEPORT] += 1000;
     }
     if (borg_equips_item(act_tele_long, false)) {
@@ -2891,29 +2893,29 @@ static void borg_notice_inventory(void)
         borg_trait[BI_AFUEL] += 1000;
 
     /* No need to *buy* stat increase potions */
-    if (my_stat_cur[STAT_STR] >= (18 + 100) +
-        (10 * (player->race->r_adj[STAT_STR]) +
-            player->class->c_adj[STAT_STR]))
+    if (my_stat_cur[STAT_STR] >= (18 + 100)
+                                     + (10 * (player->race->r_adj[STAT_STR])
+                                         + player->class->c_adj[STAT_STR]))
         amt_add_stat[STAT_STR] += 1000;
 
-    if (my_stat_cur[STAT_INT] >= (18 + 100) +
-        (10 * (player->race->r_adj[STAT_INT]) +
-            player->class->c_adj[STAT_INT]))
+    if (my_stat_cur[STAT_INT] >= (18 + 100)
+                                     + (10 * (player->race->r_adj[STAT_INT])
+                                         + player->class->c_adj[STAT_INT]))
         amt_add_stat[STAT_INT] += 1000;
 
-    if (my_stat_cur[STAT_WIS] >= (18 + 100) +
-        (10 * (player->race->r_adj[STAT_WIS]) +
-            player->class->c_adj[STAT_WIS]))
+    if (my_stat_cur[STAT_WIS] >= (18 + 100)
+                                     + (10 * (player->race->r_adj[STAT_WIS])
+                                         + player->class->c_adj[STAT_WIS]))
         amt_add_stat[STAT_WIS] += 1000;
 
-    if (my_stat_cur[STAT_DEX] >= (18 + 100) +
-        (10 * (player->race->r_adj[STAT_DEX]) +
-            player->class->c_adj[STAT_DEX]))
+    if (my_stat_cur[STAT_DEX] >= (18 + 100)
+                                     + (10 * (player->race->r_adj[STAT_DEX])
+                                         + player->class->c_adj[STAT_DEX]))
         amt_add_stat[STAT_DEX] += 1000;
 
-    if (my_stat_cur[STAT_CON] >= (18 + 100) +
-        (10 * (player->race->r_adj[STAT_CON]) +
-            player->class->c_adj[STAT_CON]))
+    if (my_stat_cur[STAT_CON] >= (18 + 100)
+                                     + (10 * (player->race->r_adj[STAT_CON])
+                                         + player->class->c_adj[STAT_CON]))
         amt_add_stat[STAT_CON] += 1000;
 
     /* No need for experience repair */
@@ -2961,45 +2963,50 @@ void borg_notice(bool notice_swap)
         borg_notice_weapon_swap();
         borg_notice_armour_swap();
     }
-    borg_trait[BI_SRACID] = borg_trait[BI_RACID] || armour_swap_resist_acid
-        || weapon_swap_resist_acid
-        || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
-    borg_trait[BI_SRELEC] = borg_trait[BI_RELEC] || armour_swap_resist_elec
-        || weapon_swap_resist_elec
-        || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
-    borg_trait[BI_SRFIRE] = borg_trait[BI_RFIRE] || armour_swap_resist_fire
-        || weapon_swap_resist_fire
-        || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
-    borg_trait[BI_SRCOLD] = borg_trait[BI_RCOLD] || armour_swap_resist_cold
-        || weapon_swap_resist_cold
-        || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
-    borg_trait[BI_SRPOIS] = borg_trait[BI_RPOIS] || armour_swap_resist_pois
-        || weapon_swap_resist_pois
-        || borg_spell_legal_fail(RESIST_POISON, 15); /* Res P */
+    borg_trait[BI_SRACID]
+        = borg_trait[BI_RACID] || armour_swap_resist_acid
+          || weapon_swap_resist_acid
+          || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
+    borg_trait[BI_SRELEC]
+        = borg_trait[BI_RELEC] || armour_swap_resist_elec
+          || weapon_swap_resist_elec
+          || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
+    borg_trait[BI_SRFIRE]
+        = borg_trait[BI_RFIRE] || armour_swap_resist_fire
+          || weapon_swap_resist_fire
+          || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
+    borg_trait[BI_SRCOLD]
+        = borg_trait[BI_RCOLD] || armour_swap_resist_cold
+          || weapon_swap_resist_cold
+          || borg_spell_legal_fail(RESISTANCE, 15); /* Res FECAP */
+    borg_trait[BI_SRPOIS]
+        = borg_trait[BI_RPOIS] || armour_swap_resist_pois
+          || weapon_swap_resist_pois
+          || borg_spell_legal_fail(RESIST_POISON, 15); /* Res P */
     borg_trait[BI_SRFEAR] = borg_trait[BI_RFEAR] || armour_swap_resist_fear
-        || weapon_swap_resist_fear;
+                            || weapon_swap_resist_fear;
     borg_trait[BI_SRLITE] = borg_trait[BI_RLITE] || armour_swap_resist_light
-        || weapon_swap_resist_light;
+                            || weapon_swap_resist_light;
     borg_trait[BI_SRDARK] = borg_trait[BI_RDARK] || armour_swap_resist_dark
-        || weapon_swap_resist_dark;
+                            || weapon_swap_resist_dark;
     borg_trait[BI_SRBLIND] = borg_trait[BI_RBLIND] || armour_swap_resist_blind
-        || weapon_swap_resist_blind;
+                             || weapon_swap_resist_blind;
     borg_trait[BI_SRCONF] = borg_trait[BI_RCONF] || armour_swap_resist_conf
-        || weapon_swap_resist_conf;
+                            || weapon_swap_resist_conf;
     borg_trait[BI_SRSND] = borg_trait[BI_RSND] || armour_swap_resist_sound
-        || weapon_swap_resist_sound;
+                           || weapon_swap_resist_sound;
     borg_trait[BI_SRSHRD] = borg_trait[BI_RSHRD] || armour_swap_resist_shard
-        || weapon_swap_resist_shard;
+                            || weapon_swap_resist_shard;
     borg_trait[BI_SRNXUS] = borg_trait[BI_RNXUS] || armour_swap_resist_nexus
-        || weapon_swap_resist_nexus;
+                            || weapon_swap_resist_nexus;
     borg_trait[BI_SRNTHR] = borg_trait[BI_RNTHR] || armour_swap_resist_neth
-        || weapon_swap_resist_neth;
+                            || weapon_swap_resist_neth;
     borg_trait[BI_SRKAOS] = borg_trait[BI_RKAOS] || armour_swap_resist_chaos
-        || weapon_swap_resist_chaos;
+                            || weapon_swap_resist_chaos;
     borg_trait[BI_SRDIS] = borg_trait[BI_RDIS] || armour_swap_resist_disen
-        || weapon_swap_resist_disen;
+                           || weapon_swap_resist_disen;
     borg_trait[BI_SHLIFE] = borg_trait[BI_HLIFE] || armour_swap_hold_life
-        || weapon_swap_hold_life;
+                            || weapon_swap_hold_life;
     borg_trait[BI_SFRACT]
         = borg_trait[BI_FRACT] || armour_swap_free_act || weapon_swap_free_act;
 
@@ -3010,10 +3017,9 @@ void borg_notice(bool notice_swap)
     /* Apply "encumbrance" from weight */
     if (borg_trait[BI_WEIGHT] > borg_trait[BI_CARRY] / 2)
         borg_trait[BI_SPEED]
-        -= ((borg_trait[BI_WEIGHT] - (borg_trait[BI_CARRY] / 2))
-            / (borg_trait[BI_CARRY] / 10));
+            -= ((borg_trait[BI_WEIGHT] - (borg_trait[BI_CARRY] / 2))
+                / (borg_trait[BI_CARRY] / 10));
 }
-
 
 /*
  * Update the Borg based on the current "frame"
@@ -3022,7 +3028,7 @@ void borg_notice(bool notice_swap)
  */
 void borg_update_frame(void)
 {
-    int                  i;
+    int i;
 
     struct player_state *state = &player->known_state;
 
@@ -3061,7 +3067,7 @@ void borg_update_frame(void)
     }
 
     /* Extract "AU xxxxxxxxx" */
-    borg_trait[BI_GOLD] = player->au;
+    borg_trait[BI_GOLD]   = player->au;
 
     borg_trait[BI_WEIGHT] = player->upkeep->total_weight;
 
@@ -3075,30 +3081,36 @@ void borg_update_frame(void)
         borg_game_ratio = 1000;
     }
 
-    /* A quick cheat to see if I missed a message about my status on some timed spells */
+    /* A quick cheat to see if I missed a message about my status on some timed
+     * spells */
     if (!goal_recalling && player->word_recall)
         goal_recalling = true;
     if (!borg_prot_from_evil && player->timed[TMD_PROTEVIL])
         borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
-    if (!borg_speed && (player->timed[TMD_FAST] || player->timed[TMD_SPRINT] || player->timed[TMD_TERROR]))
-        (borg_speed = (player->timed[TMD_FAST] || player->timed[TMD_SPRINT] || player->timed[TMD_TERROR]) ? true : false);
+    if (!borg_speed
+        && (player->timed[TMD_FAST] || player->timed[TMD_SPRINT]
+            || player->timed[TMD_TERROR]))
+        (borg_speed = (player->timed[TMD_FAST] || player->timed[TMD_SPRINT]
+                          || player->timed[TMD_TERROR])
+                          ? true
+                          : false);
     borg_trait[BI_TRACID] = (player->timed[TMD_OPP_ACID] ? true : false);
     borg_trait[BI_TRELEC] = (player->timed[TMD_OPP_ELEC] ? true : false);
     borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
     borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
     borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-    borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-    borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-    borg_shield = (player->timed[TMD_STONESKIN] ? true : false);
-    borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-    borg_hero = (player->timed[TMD_HERO] ? true : false);
-    borg_berserk = (player->timed[TMD_SHERO] ? true : false);
-    borg_regen = (player->timed[TMD_HEAL] ? true : false);
-    borg_venom = (player->timed[TMD_ATT_POIS] ? true : false);
-    borg_smite_evil = (player->timed[TMD_ATT_EVIL] ? true : false);
+    borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+    borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+    borg_shield           = (player->timed[TMD_STONESKIN] ? true : false);
+    borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+    borg_hero             = (player->timed[TMD_HERO] ? true : false);
+    borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
+    borg_regen            = (player->timed[TMD_HEAL] ? true : false);
+    borg_venom            = (player->timed[TMD_ATT_POIS] ? true : false);
+    borg_smite_evil       = (player->timed[TMD_ATT_EVIL] ? true : false);
 
     /* if hasting, it doesn't count as 'borg_speed'.  The speed */
-    /* gained from hasting is counted seperately. */
+    /* gained from hasting is counted separately. */
     if (borg_speed) {
         if (player->timed[TMD_FAST] || player->timed[TMD_SPRINT])
             borg_trait[BI_SPEED] -= 10;
@@ -3122,11 +3134,14 @@ void borg_update_frame(void)
     borg_trait[BI_MAXSP] = player->msp;
 
     /* Clear all the "state flags" */
-    borg_trait[BI_ISWEAK] = borg_trait[BI_ISHUNGRY] = borg_trait[BI_ISFULL] = borg_trait[BI_ISGORGED] = false;
-    borg_trait[BI_ISBLIND] = borg_trait[BI_ISCONFUSED] = borg_trait[BI_ISAFRAID] = borg_trait[BI_ISPOISONED] = false;
-    borg_trait[BI_ISCUT] = borg_trait[BI_ISSTUN] = borg_trait[BI_ISHEAVYSTUN] = borg_trait[BI_ISIMAGE] = borg_trait[BI_ISSTUDY] = false;
-    borg_trait[BI_ISPARALYZED] = false;
-    borg_trait[BI_ISFORGET] = false;
+    borg_trait[BI_ISWEAK] = borg_trait[BI_ISHUNGRY] = borg_trait[BI_ISFULL]
+        = borg_trait[BI_ISGORGED]                   = false;
+    borg_trait[BI_ISBLIND] = borg_trait[BI_ISCONFUSED] = borg_trait[BI_ISAFRAID]
+        = borg_trait[BI_ISPOISONED]                    = false;
+    borg_trait[BI_ISCUT] = borg_trait[BI_ISSTUN] = borg_trait[BI_ISHEAVYSTUN]
+        = borg_trait[BI_ISIMAGE] = borg_trait[BI_ISSTUDY] = false;
+    borg_trait[BI_ISPARALYZED]                            = false;
+    borg_trait[BI_ISFORGET]                               = false;
 
     /* Check for "Weak" */
     if (player->timed[TMD_FOOD] < PY_FOOD_WEAK)
@@ -3197,9 +3212,10 @@ void borg_update_frame(void)
 
     /* Parse stats */
     for (i = 0; i < 5; i++) {
-        borg_trait[BI_ISFIXSTR + i] = player->stat_cur[STAT_STR + i] < player->stat_max[STAT_STR + i];
+        borg_trait[BI_ISFIXSTR + i]
+            = player->stat_cur[STAT_STR + i] < player->stat_max[STAT_STR + i];
         borg_trait[BI_CSTR + i] = player->stat_cur[STAT_STR + i];
-        borg_stat[i] = player->stat_cur[i];
+        borg_stat[i]            = player->stat_cur[i];
     }
 
     /* Hack -- Access max depth */
@@ -3211,11 +3227,10 @@ void borg_update_frame(void)
 
 void borg_trait_init(void)
 {
-    borg_has = mem_zalloc(z_info->k_max * sizeof(int));
-    borg_trait = mem_zalloc(BI_MAX * sizeof(int));
+    borg_has        = mem_zalloc(z_info->k_max * sizeof(int));
+    borg_trait      = mem_zalloc(BI_MAX * sizeof(int));
     borg_activation = mem_zalloc(z_info->act_max * sizeof(int));
 }
-
 
 void borg_trait_free(void)
 {
@@ -3226,6 +3241,5 @@ void borg_trait_free(void)
     mem_free(borg_activation);
     borg_activation = NULL;
 }
-
 
 #endif

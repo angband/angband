@@ -17,16 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow-stairs.h"
 
-#include "borg-flow.h"
+#ifdef ALLOW_BORG
+
 #include "borg-flow-kill.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-magic.h"
-#include "borg-store-sell.h"
 #include "borg-prepared.h"
+#include "borg-store-sell.h"
 #include "borg-trait.h"
 
 /*
@@ -39,8 +39,8 @@ struct borg_track track_less;
  */
 struct borg_track track_more;
 
-/* 
- * Do a Stair-Flow.  Look at how far away this grid is to my closest stair 
+/*
+ * Do a Stair-Flow.  Look at how far away this grid is to my closest stair
  */
 int borg_flow_cost_stair(int y, int x, int b_stair)
 {
@@ -76,7 +76,7 @@ bool borg_flow_stair_both(int why, bool sneak)
     if (!track_less.num && !track_more.num)
         return (false);
 
-    /* dont go down if hungry or low on food, unless fleeing a scary town */
+    /* don't go down if hungry or low on food, unless fleeing a scary town */
     if (!goal_fleeing && !scaryguy_on_level && !track_less.num
         && (avoidance <= borg_trait[BI_CURHP] * 15 / 10)
         && (borg_trait[BI_ISWEAK] || borg_trait[BI_ISHUNGRY]
@@ -93,7 +93,7 @@ bool borg_flow_stair_both(int why, bool sneak)
 
     /* Enqueue useful grids */
     for (i = 0; i < track_less.num; i++) {
-        /* Not if a monster is parked on the stiar */
+        /* Not if a monster is parked on the stair */
         if (borg_grids[track_less.y[i]][track_less.x[i]].kill)
             continue;
 
@@ -103,7 +103,7 @@ bool borg_flow_stair_both(int why, bool sneak)
 
     /* Enqueue useful grids */
     for (i = 0; i < track_more.num; i++) {
-        /* Not if a monster is parked on the stiar */
+        /* Not if a monster is parked on the stair */
         if (borg_grids[track_more.y[i]][track_more.x[i]].kill)
             continue;
 
@@ -142,7 +142,7 @@ bool borg_flow_stair_less(int why, bool sneak)
 
     /* Enqueue useful grids */
     for (i = 0; i < track_less.num; i++) {
-        /* Not if a monster is parked on the stiar */
+        /* Not if a monster is parked on the stair */
         if (borg_grids[track_less.y[i]][track_less.x[i]].kill)
             continue;
 
@@ -212,7 +212,7 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
 
     /* Enqueue useful grids */
     for (i = 0; i < track_more.num; i++) {
-        /* Not if a monster is parked on the stiar */
+        /* Not if a monster is parked on the stair */
         if (borg_grids[track_more.y[i]][track_more.x[i]].kill)
             continue;
 
@@ -257,8 +257,8 @@ bool borg_prep_leave_level_spells(void)
 
     /* Cast resistance */
     if (borg_trait[BI_TRFIRE] + borg_trait[BI_TRCOLD] + borg_trait[BI_TRACID]
-        + borg_trait[BI_TRELEC] + borg_trait[BI_TRPOIS]
-        < 3
+                + borg_trait[BI_TRELEC] + borg_trait[BI_TRPOIS]
+            < 3
         && borg_spell_fail(RESISTANCE, 15)) {
         borg_note("# Casting Resistance spell before leaving level.");
         borg_no_rest_prep = 21000;
@@ -317,8 +317,8 @@ bool borg_prep_leave_level_spells(void)
 
     /* Cast bless prep things */
     if ((!borg_bless
-        && (borg_spell_fail(BLESS, 15)
-            || borg_spell_fail(DEMON_BANE, 15)))) {
+            && (borg_spell_fail(BLESS, 15)
+                || borg_spell_fail(DEMON_BANE, 15)))) {
         borg_note("# Casting blessing before leaving level.");
         borg_no_rest_prep = 11000;
         return (true);
@@ -333,7 +333,6 @@ void borg_init_flow_stairs(void)
 
     /* Track "down" stairs */
     borg_init_track(&track_more, 16);
-
 }
 
 void borg_free_flow_stairs(void)

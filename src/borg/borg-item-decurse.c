@@ -17,19 +17,19 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-decurse.h"
+
+#ifdef ALLOW_BORG
 
 #include "ui-menu.h"
 
-#include "borg.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-use.h"
 #include "borg-item-val.h"
 #include "borg-magic.h"
+#include "borg.h"
 
 /*
  * Remove Curse swap armour
@@ -137,7 +137,7 @@ bool borg_decurse_any(void)
                     borg_keypress('/');
 
                 borg_keypress(all_letters_nohjkl[borg_trait[BI_FIRST_CURSED]
-                    - INVEN_WIELD - 1]);
+                                                 - INVEN_WIELD - 1]);
             } else {
                 if (borg_trait[BI_WHERE_CURSED] & 1
                     || borg_trait[BI_WHERE_CURSED] & BORG_EQUIP)

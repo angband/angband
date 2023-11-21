@@ -17,33 +17,32 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow-dark.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cave.h"
 
-#include "borg.h"
 #include "borg-cave-light.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
 #include "borg-danger.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-stairs.h"
+#include "borg-flow.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
-
- /*
-  * Determine if a grid is "interesting" (and should be explored)
-  *
-  * A grid is "interesting" if it is a closed door, rubble, hidden treasure,
-  * or a visible trap, or an "unknown" grid.
-  * or a non-perma-wall adjacent to a perma-wall. (GCV)
-  *
-  * b_stair is the index to the closest upstairs.
-  */
+/*
+ * Determine if a grid is "interesting" (and should be explored)
+ *
+ * A grid is "interesting" if it is a closed door, rubble, hidden treasure,
+ * or a visible trap, or an "unknown" grid.
+ * or a non-perma-wall adjacent to a perma-wall. (GCV)
+ *
+ * b_stair is the index to the closest upstairs.
+ */
 static bool borg_flow_dark_interesting(int y, int x, int b_stair)
 {
     int oy;
@@ -190,7 +189,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
          * must also be made to borg_flow_spread() and borg_flow_direct()
          */
 
-         /* Okay */
+        /* Okay */
         return (true);
     }
 
@@ -966,7 +965,7 @@ static bool borg_flow_dark_5(int b_stair)
         /* Short Leash */
         borg_flow_spread(leash, true, true, false, -1, false);
     } else if (borg_trait[BI_CLEVEL] <= 30
-        && avoidance <= borg_trait[BI_CURHP]) {
+               && avoidance <= borg_trait[BI_CURHP]) {
         /* Short Leash */
         borg_flow_spread(leash, true, true, false, -1, false);
     } else {
@@ -1021,7 +1020,7 @@ bool borg_flow_dark(bool neer)
             continue;
 
         /* track it */
-        b_j = j;
+        b_j     = j;
         b_stair = i;
     }
 

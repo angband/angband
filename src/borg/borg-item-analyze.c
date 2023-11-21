@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-analyze.h"
+
+#ifdef ALLOW_BORG
 
 #include "../init.h"
 #include "../obj-curse.h"
@@ -42,7 +42,7 @@
  */
 static int32_t borg_object_value_known(borg_item *item)
 {
-    int32_t             value;
+    int32_t value;
 
     struct object_kind *k_ptr = &k_info[item->kind];
 
@@ -81,8 +81,7 @@ static int32_t borg_object_value_known(borg_item *item)
     switch (item->tval) {
         /* Wands/Staffs */
     case TV_WAND:
-    case TV_STAFF:
-    {
+    case TV_STAFF: {
         /* Pay extra for charges */
         value += ((value / 20) * item->pval);
 
@@ -109,8 +108,7 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_DRAG_ARMOR:
     case TV_LIGHT:
     case TV_AMULET:
-    case TV_RING:
-    {
+    case TV_RING: {
         /* Hack -- Negative "pval" is always bad */
         if (item->pval < 0)
             return (0L);
@@ -172,13 +170,12 @@ static int32_t borg_object_value_known(borg_item *item)
     switch (item->tval) {
         /* Rings/Amulets */
     case TV_RING:
-    /* HACK special case */
-    if (item->sval == sv_ring_dog)
-        return (0L);
+        /* HACK special case */
+        if (item->sval == sv_ring_dog)
+            return (0L);
 
     /* Fall through */
-    case TV_AMULET:
-    {
+    case TV_AMULET: {
         /* Hack -- negative bonuses are bad */
         if (item->to_a < 0)
             return (0L);
@@ -202,8 +199,7 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_SHIELD:
     case TV_SOFT_ARMOR:
     case TV_HARD_ARMOR:
-    case TV_DRAG_ARMOR:
-    {
+    case TV_DRAG_ARMOR: {
         /* Hack -- negative armor bonus */
         if (item->to_a < 0)
             return (0L);
@@ -224,8 +220,7 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_DIGGING:
     case TV_HAFTED:
     case TV_SWORD:
-    case TV_POLEARM:
-    {
+    case TV_POLEARM: {
         /* Hack -- negative hit/damage bonuses */
         if (item->to_h + item->to_d < 0)
             return (0L);
@@ -244,8 +239,7 @@ static int32_t borg_object_value_known(borg_item *item)
     /* Ammo */
     case TV_SHOT:
     case TV_ARROW:
-    case TV_BOLT:
-    {
+    case TV_BOLT: {
         /* Hack -- negative hit/damage bonuses */
         if (item->to_h + item->to_d < 0)
             return (0L);
@@ -284,7 +278,7 @@ static void borg_set_curses(borg_item *item, const struct object *o)
 {
     int   i;
     bool *item_curses = item->curses;
-    item->uncursable = true;
+    item->uncursable  = true;
     for (i = 0; i < z_info->curse_max; i++) {
         struct curse *c = &curses[i];
         if (o->curses[i].power > 0) {
@@ -368,7 +362,7 @@ static void borg_set_curses(borg_item *item, const struct object *o)
 void borg_item_analyze(
     borg_item *item, const struct object *real_item, char *desc, bool in_store)
 {
-    char *scan;
+    char                *scan;
     int                  i;
     const struct object *o;
 
@@ -404,18 +398,18 @@ void borg_item_analyze(
     item->note = scan;
 
     /* Get various info */
-    item->tval = real_item->tval;
-    item->sval = real_item->sval;
-    item->iqty = real_item->number;
-    item->weight = real_item->weight;
+    item->tval    = real_item->tval;
+    item->sval    = real_item->sval;
+    item->iqty    = real_item->number;
+    item->weight  = real_item->weight;
     item->timeout = real_item->timeout;
-    item->level = real_item->kind->level;
-    item->aware = object_flavor_is_aware(real_item);
+    item->level   = real_item->kind->level;
+    item->aware   = object_flavor_is_aware(real_item);
 
     /* get info from the known part of the object */
-    item->ac = o->ac;
-    item->dd = o->dd;
-    item->ds = o->ds;
+    item->ac   = o->ac;
+    item->dd   = o->dd;
+    item->ds   = o->ds;
     item->to_h = o->to_h;
     item->to_d = o->to_d;
     item->to_a = o->to_a;
@@ -426,7 +420,7 @@ void borg_item_analyze(
 
     for (i = 0; i < ELEM_MAX; i++) {
         item->el_info[i].res_level = o->el_info[i].res_level;
-        item->el_info[i].flags = o->el_info[i].flags;
+        item->el_info[i].flags     = o->el_info[i].flags;
     }
 
     if (o->curses != NULL)
@@ -470,7 +464,7 @@ void borg_item_analyze(
              * Ensure that any remainder is rounded up.  Display
              * very discharged stacks as merely fully discharged.
              */
-            power = (real_item->timeout + (time_base - 1)) / time_base;
+            power      = (real_item->timeout + (time_base - 1)) / time_base;
             item->pval = (power < item->iqty) ? 1 : 0;
         }
     } else if (item->tval == TV_STAFF || item->tval == TV_WAND) {
@@ -509,30 +503,30 @@ void borg_item_analyze(
         /* Guess at value */
         switch (item->tval) {
         case TV_FOOD:
-        item->value = 5L;
-        break;
+            item->value = 5L;
+            break;
         case TV_POTION:
-        item->value = 20L;
-        break;
+            item->value = 20L;
+            break;
         case TV_SCROLL:
-        item->value = 20L;
-        break;
+            item->value = 20L;
+            break;
         case TV_STAFF:
-        item->value = 70L;
-        break;
+            item->value = 70L;
+            break;
         case TV_WAND:
-        item->value = 50L;
-        break;
+            item->value = 50L;
+            break;
         case TV_ROD:
-        item->value = 90L;
-        break;
+            item->value = 90L;
+            break;
         case TV_RING:
         case TV_AMULET:
-        item->value = 45L;
-        break;
+            item->value = 45L;
+            break;
         default:
-        item->value = 20L;
-        break;
+            item->value = 20L;
+            break;
         }
     }
 
@@ -572,6 +566,5 @@ bool borg_ego_has_random_power(struct ego_item *e_ptr)
         return true;
     return false;
 }
-
 
 #endif

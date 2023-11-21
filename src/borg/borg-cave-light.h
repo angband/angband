@@ -14,13 +14,15 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-
 #ifndef INCLUDED_BORG_CAVE_LIGHT_H
 #define INCLUDED_BORG_CAVE_LIGHT_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Maximum size of the "lite" array
@@ -42,7 +44,6 @@ extern uint8_t borg_light_x[AUTO_LIGHT_MAX];
 extern int16_t borg_glow_n;
 extern uint8_t borg_glow_y[AUTO_LIGHT_MAX];
 extern uint8_t borg_glow_x[AUTO_LIGHT_MAX];
-
 
 /*
  * Update the "lite"

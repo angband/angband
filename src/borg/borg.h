@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_H
 #define INCLUDED_BORG_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-trait.h"
 
@@ -31,15 +34,14 @@ extern bool borg_cheat_death;
  */
 extern uint32_t borg_rand_local; /* Save personal setting */
 
-/* 
- * Date of the last change 
+/*
+ * Date of the last change
  */
 extern char borg_engine_date[];
 
 /* options from the borg.txt file */
 /* IMPORTANT keep these in sync with borg_settings in borg-init.c */
-enum
-{
+enum {
     BORG_VERBOSE,
     BORG_MUNCHKIN_START,
     BORG_MUNCHKIN_LEVEL,
@@ -73,7 +75,7 @@ enum
     BORG_SAVE_DEATH,
     BORG_MAX_SETTINGS
 };
-extern int *borg_cfg;
+extern int* borg_cfg;
 
 /*
  * Status variables
@@ -111,7 +113,7 @@ extern int key_mode;
 /*
  * Special "inkey_hack" hook.
  */
-extern struct keypress(*inkey_hack)(int flush_first);
+extern struct keypress (*inkey_hack)(int flush_first);
 
 /*
  * Entry point for borg commands.

@@ -1,6 +1,6 @@
 /**
  * \file borg-item-id.c
- * \brief Code around identification of items (objects) 
+ * \brief Code around identification of items (objects)
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,16 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-id.h"
+
+#ifdef ALLOW_BORG
 
 #include "../obj-util.h"
 #include "../ui-menu.h"
 
 #include "borg-io.h"
-#include "borg-item.h"
 #include "borg-item-analyze.h"
+#include "borg-item.h"
 #include "borg-trait.h"
 
 /*
@@ -63,7 +63,7 @@ bool borg_object_fully_id(void)
     /* look in inventory and equiptment for something to *id* */
     for (i = 0; i < QUIVER_END; i++) /* or INVEN_TOTAL */
     {
-        borg_item *item = &borg_items[i];
+        borg_item       *item  = &borg_items[i];
         struct ego_item *e_ptr = &e_info[item->ego_idx];
 
         /* inscribe certain objects */

@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-init.h"
+
+#ifdef ALLOW_BORG
 
 #include "../player-calcs.h"
 #include "../ui-command.h"
@@ -27,20 +27,20 @@
 #include "../ui-output.h"
 #include "../ui-prefs.h"
 
-#include "borg.h"
 #include "borg-cave.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-take.h"
-#include "borg-magic.h"
-#include "borg-messages.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-val.h"
 #include "borg-item-wear.h"
+#include "borg-magic.h"
+#include "borg-messages.h"
 #include "borg-power.h"
 #include "borg-store.h"
 #include "borg-update.h"
+#include "borg.h"
 
 bool borg_initialized; /* Hack -- Initialized */
 bool game_closed; /* Has the game been closed since the borg was
@@ -109,21 +109,18 @@ static bool borg_proc_setting(
  */
 void borg_init_txt_file(void)
 {
-    struct borg_setting
-    {
+    struct borg_setting {
         const char *setting_string;
-        const char setting_type; /* b (bool) or i (int) */
-        int default_value;
+        const char  setting_type; /* b (bool) or i (int) */
+        int         default_value;
     };
 
     /*
      * Borg settings information, ScreenSaver or continual play mode;
      */
-    struct borg_setting borg_settings[] = {
-        { "borg_verbose", 'b', false },
+    struct borg_setting borg_settings[] = { { "borg_verbose", 'b', false },
         { "borg_munchkin_start", 'b', false },
-        { "borg_munchkin_level", 'i', 12 },
-        { "borg_munchkin_depth", 'i', 16 },
+        { "borg_munchkin_level", 'i', 12 }, { "borg_munchkin_depth", 'i', 16 },
         { "borg_worships_damage", 'b', false },
         { "borg_worships_speed", 'b', false },
         { "borg_worships_hp", 'b', false },
@@ -131,27 +128,19 @@ void borg_init_txt_file(void)
         { "borg_worships_ac", 'b', false },
         { "borg_worships_gold", 'b', false },
         { "borg_plays_risky", 'b', false },
-        { "borg_kills_uniques", 'b', false },
-        { "borg_uses_swaps", 'b', true },
+        { "borg_kills_uniques", 'b', false }, { "borg_uses_swaps", 'b', true },
         { "borg_uses_dynamic_calcs", 'b', false },
         { "borg_slow_optimizehome", 'b', false },
-        { "borg_stop_dlevel", 'i', 128 },
-        { "borg_stop_clevel", 'i', 51 },
-        { "borg_no_deeper", 'i', 127 },
-        { "borg_stop_king", 'b', true },
+        { "borg_stop_dlevel", 'i', 128 }, { "borg_stop_clevel", 'i', 51 },
+        { "borg_no_deeper", 'i', 127 }, { "borg_stop_king", 'b', true },
         { "borg_respawn_winners", 'b', false },
-        { "borg_respawn_class", 'i', -1 },
-        { "borg_respawn_race", 'i', -1 },
+        { "borg_respawn_class", 'i', -1 }, { "borg_respawn_race", 'i', -1 },
         { "borg_chest_fail_tolerance", 'i', 7 },
-        { "borg_delay_factor", 'i', 0 },
-        { "borg_money_scum_amount", 'i', 0 },
-        { "borg_self_scum", 'b', true },
-        { "borg_lunal_mode", 'b', false },
-        { "borg_self_lunal", 'b', false },
-        { "borg_enchant_limit", 'i', 12 },
-        { "borg_dump_level", 'i', 1 },
-        { "borg_save_death", 'i', 1 },
-        { 0, 0, 0 }};
+        { "borg_delay_factor", 'i', 0 }, { "borg_money_scum_amount", 'i', 0 },
+        { "borg_self_scum", 'b', true }, { "borg_lunal_mode", 'b', false },
+        { "borg_self_lunal", 'b', false }, { "borg_enchant_limit", 'i', 12 },
+        { "borg_dump_level", 'i', 1 }, { "borg_save_death", 'i', 1 },
+        { 0, 0, 0 } };
 
     ang_file *fp;
 
@@ -159,9 +148,9 @@ void borg_init_txt_file(void)
 
     borg_trait_init();
 
-    /* a couple of spot checks on settings definitiosn */
+    /* a couple of spot checks on settings definitions */
     if (!streq(borg_settings[BORG_MUNCHKIN_LEVEL].setting_string,
-        "borg_munchkin_level")
+            "borg_munchkin_level")
         || !streq(borg_settings[BORG_RESPAWN_RACE].setting_string,
             "borg_respawn_race")) {
         msg("borg settings structures not correct.  aborting. ");
@@ -224,7 +213,7 @@ void borg_init_txt_file(void)
 
         for (i = 0; i < BORG_MAX_SETTINGS; i++) {
             if (borg_proc_setting(i, borg_settings[i].setting_string,
-                borg_settings[i].setting_type, buf))
+                    borg_settings[i].setting_type, buf))
                 break;
         }
 
@@ -315,15 +304,14 @@ static void borg_free_txt_file(void)
     borg_cfg = NULL;
 }
 
-
-/* 
- * Reset the required options when returning from user control 
+/*
+ * Reset the required options when returning from user control
  */
 void borg_reinit_options(void)
 {
     /* Save current key mode */
     key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE
-        : KEYMAP_MODE_ORIG;
+                                                : KEYMAP_MODE_ORIG;
 
     /* The Borg uses the original keypress codes */
     option_set("rogue_like_commands", false);
@@ -478,7 +466,7 @@ void borg_init(void)
     /* more cheating */
     borg_cheat_death = false;
 
-    /* set the continous play mode if the game cheat death is on */
+    /* set the continuous play mode if the game cheat death is on */
     if (OPT(player, cheat_live))
         borg_cheat_death = true;
 
@@ -537,15 +525,15 @@ void borg_init(void)
 
     /* note: I would check if player_id2class returns null but it */
     /* never does, even on a bad class */
-    if (!streq(player_id2class(CLASS_WARRIOR)->name, "Warrior") || 
-        !streq(player_id2class(CLASS_MAGE)->name, "Mage") || 
-        !streq(player_id2class(CLASS_DRUID)->name, "Druid") || 
-        !streq(player_id2class(CLASS_PRIEST)->name, "Priest") || 
-        !streq(player_id2class(CLASS_NECROMANCER)->name, "Necromancer") || 
-        !streq(player_id2class(CLASS_PALADIN)->name, "Paladin") || 
-        !streq(player_id2class(CLASS_ROGUE)->name, "Rogue") || 
-        !streq(player_id2class(CLASS_RANGER)->name, "Ranger") || 
-        !streq(player_id2class(CLASS_BLACKGUARD)->name, "Blackguard")) {
+    if (!streq(player_id2class(CLASS_WARRIOR)->name, "Warrior")
+        || !streq(player_id2class(CLASS_MAGE)->name, "Mage")
+        || !streq(player_id2class(CLASS_DRUID)->name, "Druid")
+        || !streq(player_id2class(CLASS_PRIEST)->name, "Priest")
+        || !streq(player_id2class(CLASS_NECROMANCER)->name, "Necromancer")
+        || !streq(player_id2class(CLASS_PALADIN)->name, "Paladin")
+        || !streq(player_id2class(CLASS_ROGUE)->name, "Rogue")
+        || !streq(player_id2class(CLASS_RANGER)->name, "Ranger")
+        || !streq(player_id2class(CLASS_BLACKGUARD)->name, "Blackguard")) {
         borg_note("**STARTUP FAILURE** classes do not match");
         borg_init_failure = true;
     }
@@ -580,6 +568,5 @@ void borg_free(void)
     borg_free_messages();
     borg_free_txt_file();
 }
-
 
 #endif

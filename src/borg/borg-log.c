@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-log.h"
+
+#ifdef ALLOW_BORG
 
 #include "../game-input.h"
 #include "../game-world.h"
@@ -31,24 +31,24 @@
 #include "../store.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-cave.h"
-#include "borg-flow-kill.h"
 #include "borg-flow-glyph.h"
+#include "borg-flow-kill.h"
 #include "borg-flow-take.h"
 #include "borg-home-notice.h"
 #include "borg-magic.h"
 #include "borg-prepared.h"
 #include "borg-store.h"
+#include "borg.h"
 
-/* 
- * write a death to borg-log.txt 
+/*
+ * write a death to borg-log.txt
  */
 void borg_log_death(void)
 {
-    char buf[1024];
-    ang_file* borg_log_file;
-    time_t death_time;
+    char      buf[1024];
+    ang_file *borg_log_file;
+    time_t    death_time;
 
     /* Build path to location of the definition file */
     path_build(buf, 1024, ANGBAND_DIR_USER, "borg-log.txt");
@@ -89,9 +89,9 @@ void borg_log_death(void)
  */
 void borg_log_death_data(void)
 {
-    char buf[1024];
-    ang_file* borg_log_file;
-    time_t death_time;
+    char      buf[1024];
+    ang_file *borg_log_file;
+    time_t    death_time;
 
     path_build(buf, 1024, ANGBAND_DIR_USER, "borg.dat");
 
@@ -112,7 +112,6 @@ void borg_log_death_data(void)
 
     file_close(borg_log_file);
 }
-
 
 /*
  * Convert an inventory index into a one character label.
@@ -137,15 +136,15 @@ static char borg_index_to_label(int i)
  */
 void borg_write_map(bool ask)
 {
-    char buf2[1024];
-    char buf[80];
+    char      buf2[1024];
+    char      buf[80];
     ang_file *borg_map_file = NULL;
-    wchar_t *line;
-    char *ch_line;
+    wchar_t  *line;
+    char     *ch_line;
 
     borg_item *item;
-    int i, j;
-    int to, itemm;
+    int        i, j;
+    int        to, itemm;
 
     int16_t m_idx;
 
@@ -201,7 +200,7 @@ void borg_write_map(bool ask)
         player->depth, player->max_depth, player->died_from);
     file_putf(borg_map_file, "Borg Compile Date: %s\n", borg_engine_date);
 
-    line = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
+    line    = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
     ch_line = mem_zalloc((DUNGEON_WID + 1) * sizeof(char));
     for (i = 0; i < DUNGEON_HGT; i++) {
         for (j = 0; j < DUNGEON_WID; j++) {
@@ -226,7 +225,7 @@ void borg_write_map(bool ask)
                 borg_take *take = &borg_takes[ag->take];
                 if (take->kind) {
                     struct object_kind *k_ptr = take->kind;
-                    ch = k_ptr->d_char;
+                    ch                        = k_ptr->d_char;
                 }
             }
 
@@ -237,9 +236,9 @@ void borg_write_map(bool ask)
 
             /* Known Monsters */
             if (ag->kill) {
-                borg_kill *kill = &borg_kills[ag->kill];
+                borg_kill           *kill  = &borg_kills[ag->kill];
                 struct monster_race *r_ptr = &r_info[kill->r_idx];
-                ch = r_ptr->d_char;
+                ch                         = r_ptr->d_char;
             }
 
             /* The Player */
@@ -468,8 +467,8 @@ void borg_write_map(bool ask)
         file_putf(
             borg_map_file, "Name                           Legal Times cast\n");
         for (i = 0; i < player->class->magic.total_spells; i++) {
-            borg_magic *as = &borg_magics[i];
-            int failpercent = 0;
+            borg_magic *as          = &borg_magics[i];
+            int         failpercent = 0;
 
             if (as->level < 99) {
                 const char *legal
@@ -485,7 +484,7 @@ void borg_write_map(bool ask)
 
     /* Dump the borg_trait[] information */
     itemm = z_info->k_max;
-    to = z_info->k_max + BI_MAX;
+    to    = z_info->k_max + BI_MAX;
     for (; itemm < to; itemm++) {
         file_putf(borg_map_file, "skill %d (%s) value= %d.\n", itemm,
             prefix_pref[itemm - z_info->k_max], borg_has[itemm]);
@@ -658,7 +657,7 @@ void borg_write_map(bool ask)
  */
 static void borg_prt_binary(uint32_t flags, int row, int col)
 {
-    int i;
+    int      i;
     uint32_t bitmask;
 
     /* Scan the flags */
@@ -699,21 +698,21 @@ void borg_display_item(struct object *item2, int n)
     prt(item->desc, 2, j);
 
     prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
-        item->kind, item->level, item->tval, item->sval),
+            item->kind, item->level, item->tval, item->sval),
         4, j);
 
     prt(format("number = %-3d  wgt = %-6d  ac = %-5d    damage = %dd%d",
-        item->iqty, item->weight, item->ac, item->dd, item->ds),
+            item->iqty, item->weight, item->ac, item->dd, item->ds),
         5, j);
 
     prt(format("pval = %-5d  toac = %-5d  tohit = %-4d  todam = %-4d",
-        item->pval, item->to_a, item->to_h, item->to_d),
+            item->pval, item->to_a, item->to_h, item->to_d),
         6, j);
 
     prt(format("name1 = %-4d  name2 = %-4d  value = %ld   cursed = %d   can "
-        "uncurse = %d",
-        item->art_idx, item->ego_idx, (long)item->value, item->cursed,
-        item->uncursable),
+               "uncurse = %d",
+            item->art_idx, item->ego_idx, (long)item->value, item->cursed,
+            item->uncursable),
         7, j);
 
     prt(format("ident = %d      timeout = %-d", item->ident, item->timeout), 8,
@@ -721,7 +720,7 @@ void borg_display_item(struct object *item2, int n)
 
     /* maybe print the inscription */
     prt(format("Inscription: %s, chance: %d", borg_get_note(item),
-        borg_trait[BI_DEV] - item->level),
+            borg_trait[BI_DEV] - item->level),
         9, j);
 
     prt("+------------FLAGS1------------+", 10, j);

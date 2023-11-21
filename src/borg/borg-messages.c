@@ -17,13 +17,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-messages.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-term.h"
 
-#include "borg.h"
 #include "borg-cave.h"
 #include "borg-danger.h"
 #include "borg-fight-attack.h"
@@ -36,6 +35,7 @@
 #include "borg-think.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
 /*
  * Hack -- message memory
@@ -47,7 +47,6 @@ int16_t  borg_msg_num;
 int16_t  borg_msg_max;
 int16_t *borg_msg_pos;
 int16_t *borg_msg_use;
-
 
 static char **suffix_pain;
 
@@ -61,26 +60,30 @@ char borg_match[128] = "plain gold ring";
  *
  * See "mon_take_hit()" for details.
  */
-static const char *prefix_kill[] = {"You have killed ",
-                                     "You have slain ",
-                                     "You have destroyed ",
-                                     NULL};
+static const char *prefix_kill[]
+    = { "You have killed ", 
+        "You have slain ", 
+        "You have destroyed ", 
+        NULL };
 
 /*
  * Hack -- methods of monster death (order not important).
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
  */
-static const char *suffix_died[] = {" dies.",
-                                     " is destroyed.",
-                                     " is drained dry!",
-                                     NULL};
+static const char *suffix_died[] = { 
+    " dies.", 
+    " is destroyed.", 
+    " is drained dry!", 
+    NULL };
 
-static const char *suffix_blink[] = {" disappears!", /* from teleport other */
-                                      " intones strange words.", /* from polymorph spell */
-                                      " teleports away.", /* RF6_TPORT */
-                                      " blinks.", /* RF6_BLINK */
-                                      " makes a soft 'pop'.", NULL};
+static const char *suffix_blink[] = { 
+    " disappears!", /* from teleport other */
+    " intones strange words.", /* from polymorph spell */
+    " teleports away.", /* RF6_TPORT */
+    " blinks.", /* RF6_BLINK */
+    " makes a soft 'pop'.", 
+    NULL };
 
 /* a message can have up to three parts broken up by variables */
 /* ex: "{name} hits {pronoun} followers with {type} ax." */
@@ -90,19 +93,17 @@ static const char *suffix_blink[] = {" disappears!", /* from teleport other */
 /* would end up as */
 /* " hits ", " followers with ", " ax and " */
 /* hopefully this is enough to keep the messages as unique as possible */
-struct borg_read_message
-{
+struct borg_read_message {
     char *message_p1;
     char *message_p2;
     char *message_p3;
 };
 
-struct borg_read_messages
-{
-    int count;
-    int allocated;
+struct borg_read_messages {
+    int                       count;
+    int                       allocated;
     struct borg_read_message *messages;
-    int *index;
+    int                      *index;
 };
 
 /*  methods of hitting the player */
@@ -130,29 +131,31 @@ static bool borg_message_contains(
  */
 static const char *prefix_feeling_danger[] = {
     "You are still uncertain about this place",
-    "Omens of death haunt this place",
+    "Omens of death haunt this place", 
     "This place seems murderous",
-    "This place seems terribly dangerous",
+    "This place seems terribly dangerous", 
     "You feel anxious about this place",
-    "You feel nervous about this place",
+    "You feel nervous about this place", 
     "This place does not seem too risky",
-    "This place seems reasonably safe",
+    "This place seems reasonably safe", 
     "This seems a tame, sheltered place",
-    "This seems a quiet, peaceful place", NULL
+    "This seems a quiet, peaceful place", 
+    NULL
 };
 
-static const char *suffix_feeling_stuff[] = {
+static const char *suffix_feeling_stuff[] = { 
     "Looks like any other level.",
-    "you sense an item of wondrous power!",
+    "you sense an item of wondrous power!", 
     "there are superb treasures here.",
     "there are excellent treasures here.",
-    "there are very good treasures here.",
+    "there are very good treasures here.", 
     "there are good treasures here.",
     "there may be something worthwhile here.",
     "there may not be much interesting here.",
-    "there aren't many treasures here.",
+    "there aren't many treasures here.", 
     "there are only scraps of junk here.",
-    "there is naught but cobwebs here.", NULL};
+    "there is naught but cobwebs here.", 
+    NULL };
 
 /*
  * Hack -- Parse a message from the world
@@ -169,7 +172,7 @@ static const char *suffix_feeling_stuff[] = {
  * assume the success of the prompt-inducing command, unless told
  * otherwise by a failure message.  Also, we need to detect failure
  * because some commands, such as detection spells, need to induce
- * furthur processing if they succeed, but messages are only given
+ * further processing if they succeed, but messages are only given
  * if the command fails.
  *
  * Note that certain other messages may contain useful information,
@@ -347,7 +350,7 @@ static void borg_parse_aux(char *msg, int len)
     /* Nexus attacks, need to check everything! */
     if (prefix(msg, "Your body starts to scramble...")) {
         for (i = 0; i < STAT_MAX; i++) {
-//            my_need_stat_check[i] = true;
+            //            my_need_stat_check[i] = true;
             /* max stats may have lowered */
             my_stat_max[i] = 0;
         }
@@ -421,7 +424,7 @@ static void borg_parse_aux(char *msg, int len)
      * Note that this check must be before the suffix_pain
      * because suffix_pain will look for 'is unaffected!' and
      * assume it is talking about a monster which in turn will
-     * yeild to the Player Ghost being created.
+     * yield to the Player Ghost being created.
      */
     if (prefix(msg, "Your ")) {
         if (suffix(msg, " is unaffected!")) {
@@ -515,7 +518,7 @@ static void borg_parse_aux(char *msg, int len)
                          * array. He won't see the one under him though.  So a
                          * special check must be made.
                          */
-                         /* Remove the entire array */
+                        /* Remove the entire array */
                         for (i = 0; i < track_glyph.num; i++) {
                             /* Stop if we already new about this glyph */
                             track_glyph.x[i] = 0;
@@ -749,7 +752,7 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "Oops! It feels deathly cold!")) {
         /* this should only happen with STICKY items, The Crown of Morgoth or
          * The One Ring */
-         /* !FIX !TODO !AJG handle crown eventually */
+        /* !FIX !TODO !AJG handle crown eventually */
         return;
     }
 
@@ -824,17 +827,17 @@ static void borg_parse_aux(char *msg, int len)
     /* check for wall blocking but not when confused*/
     if ((prefix(msg, "There is a wall ") && (!borg_trait[BI_ISCONFUSED]))) {
         my_need_redraw = true;
-        my_need_alter = true;
-        goal = 0;
+        my_need_alter  = true;
+        goal           = 0;
         return;
     }
 
     /* check for closed door but not when confused*/
     if ((prefix(msg, "There is a closed door blocking your way.")
-        && (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISIMAGE]))) {
+            && (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISIMAGE]))) {
         my_need_redraw = true;
-        my_need_alter = true;
-        goal = 0;
+        my_need_alter  = true;
+        goal           = 0;
         return;
     }
 
@@ -868,7 +871,7 @@ static void borg_parse_aux(char *msg, int len)
         }
 
         my_no_alter = true;
-        goal = 0;
+        goal        = 0;
         return;
     }
 
@@ -878,10 +881,10 @@ static void borg_parse_aux(char *msg, int len)
 
         /* make sure the borg does not think he's on one */
         /* Remove all stairs from the array. */
-        track_less.num = 0;
-        track_more.num = 0;
-        borg_on_dnstairs = false;
-        borg_on_upstairs = false;
+        track_less.num            = 0;
+        track_more.num            = 0;
+        borg_on_dnstairs          = false;
+        borg_on_upstairs          = false;
         borg_grids[c_y][c_x].feat = FEAT_BROKEN;
 
         return;
@@ -889,7 +892,7 @@ static void borg_parse_aux(char *msg, int len)
 
     /* Feature XXX XXX XXX */
     if (prefix(msg, "You see nothing there ")) {
-        ag->feat = FEAT_BROKEN;
+        ag->feat    = FEAT_BROKEN;
 
         my_no_alter = true;
         /* Clear goals */
@@ -943,7 +946,7 @@ static void borg_parse_aux(char *msg, int len)
 
         /* ID item (equipment) */
         borg_item *item = &borg_items[INVEN_LIGHT];
-        item->ident = true;
+        item->ident     = true;
 
         /* Hack -- Oops */
         borg_keypress(ESCAPE);
@@ -1036,7 +1039,7 @@ static void borg_parse_aux(char *msg, int len)
          * must be made.
          */
 
-         /* Remove the entire array */
+        /* Remove the entire array */
         for (i = 0; i < track_glyph.num; i++) {
             /* Stop if we already new about this glyph */
             track_glyph.x[i] = 0;
@@ -1104,8 +1107,8 @@ static void borg_parse_aux(char *msg, int len)
         for (i = 1; i < borg_kills_nxt; i++) {
             borg_kill *kill = &borg_kills[i];
 
-            x9 = kill->x;
-            y9 = kill->y;
+            x9              = kill->x;
+            y9              = kill->y;
 
             /* Skip dead monsters */
             if (!kill->r_idx)
@@ -1184,7 +1187,7 @@ static void borg_parse_aux(char *msg, int len)
  */
 void borg_parse(char *msg)
 {
-    static int len = 0;
+    static int  len = 0;
     static char buf[1024];
 
     /* Note the long message */
@@ -1249,13 +1252,13 @@ static bool borg_read_message_equal(
     struct borg_read_message *msg1, struct borg_read_message *msg2)
 {
     if (((msg1->message_p1 && msg2->message_p1
-        && streq(msg1->message_p1, msg2->message_p1))
-        || (!msg1->message_p1 && !msg2->message_p1))
+             && streq(msg1->message_p1, msg2->message_p1))
+            || (!msg1->message_p1 && !msg2->message_p1))
         && ((msg1->message_p2 && msg2->message_p2
-            && streq(msg1->message_p2, msg2->message_p2))
+                && streq(msg1->message_p2, msg2->message_p2))
             || (!msg1->message_p2 && !msg2->message_p2))
         && ((msg1->message_p3 && msg2->message_p3
-            && streq(msg1->message_p3, msg2->message_p3))
+                && streq(msg1->message_p3, msg2->message_p3))
             || (!msg1->message_p3 && !msg2->message_p3)))
         return true;
     return false;
@@ -1264,7 +1267,7 @@ static bool borg_read_message_equal(
 static void insert_msg(struct borg_read_messages *msgs,
     struct borg_read_message *msg, int spell_number)
 {
-    int i;
+    int  i;
     bool found_dup = false;
 
     /* this way we don't have to pre-create the array */
@@ -1283,7 +1286,7 @@ static void insert_msg(struct borg_read_messages *msgs,
         /* shrink array down, we are done*/
         msgs->messages = mem_realloc(
             msgs->messages, sizeof(struct borg_read_message) * msgs->count);
-        msgs->index = mem_realloc(msgs->index, sizeof(int) * msgs->count);
+        msgs->index     = mem_realloc(msgs->index, sizeof(int) * msgs->count);
         msgs->allocated = msgs->count;
         return;
     }
@@ -1325,8 +1328,8 @@ static void clean_msgs(struct borg_read_messages *msgs)
     mem_free(msgs->messages);
     msgs->messages = NULL;
     mem_free(msgs->index);
-    msgs->index = NULL;
-    msgs->count = 0;
+    msgs->index     = NULL;
+    msgs->count     = 0;
     msgs->allocated = 0;
 }
 
@@ -1358,7 +1361,7 @@ static void borg_load_read_message(
     read_message->message_p2 = NULL;
     read_message->message_p3 = NULL;
 
-    char *suffix = strchr(message, '}');
+    char *suffix             = strchr(message, '}');
     if (!suffix) {
         /* no variables, use message as is */
         read_message->message_p1 = string_make(borg_trim_lead_space(message));
@@ -1377,7 +1380,7 @@ static void borg_load_read_message(
     }
     while (suffix[0] == ' ')
         suffix++;
-    int part_len = strlen(suffix) - strlen(var);
+    int part_len             = strlen(suffix) - strlen(var);
     read_message->message_p1 = string_make(format("%.*s", part_len, suffix));
     suffix += part_len;
     suffix = strchr(var, '}');
@@ -1438,9 +1441,9 @@ static void borg_load_read_message(
 /* load monster spell messages */
 static void borg_init_spell_messages(void)
 {
-    const struct monster_spell *spell = monster_spells;
+    const struct monster_spell       *spell = monster_spells;
     const struct monster_spell_level *spell_level;
-    struct borg_read_message read_message;
+    struct borg_read_message          read_message;
 
     while (spell) {
         spell_level = spell->level;
@@ -1478,11 +1481,11 @@ static void borg_init_spell_messages(void)
 static char *borg_get_parsed_pain(const char *pain, bool do_plural)
 {
     size_t buflen = strlen(pain) + 1;
-    char *buf = mem_zalloc(buflen);
+    char  *buf    = mem_zalloc(buflen);
 
-    int state = MSG_PARSE_NORMAL;
+    int    state  = MSG_PARSE_NORMAL;
     size_t maxlen = strlen(pain);
-    size_t pos = 1;
+    size_t pos    = 1;
 
     /* for the borg, always start with a space */
     buf[0] = ' ';
@@ -1503,8 +1506,8 @@ static char *borg_get_parsed_pain(const char *pain, bool do_plural)
         } else if (state != MSG_PARSE_NORMAL && cur == ']') {
             state = MSG_PARSE_NORMAL;
         } else if (state == MSG_PARSE_NORMAL
-            || (state == MSG_PARSE_SINGLE && do_plural == false)
-            || (state == MSG_PARSE_PLURAL && do_plural == true)) {
+                   || (state == MSG_PARSE_SINGLE && do_plural == false)
+                   || (state == MSG_PARSE_PLURAL && do_plural == true)) {
             /* Copy the characters according to the mode */
             buf[pos++] = cur;
         }
@@ -1520,17 +1523,17 @@ static void borg_insert_pain(const char *pain, int *capacity, int *count)
         suffix_pain = mem_realloc(suffix_pain, sizeof(char *) * (*capacity));
     }
 
-    new_message = borg_get_parsed_pain(pain, false);
+    new_message             = borg_get_parsed_pain(pain, false);
     suffix_pain[(*count)++] = new_message;
-    new_message = borg_get_parsed_pain(pain, true);
+    new_message             = borg_get_parsed_pain(pain, true);
     suffix_pain[(*count)++] = new_message;
 }
 
 static void borg_init_pain_messages(void)
 {
-    int capacity = 1;
-    int count = 0;
-    int idx, i;
+    int                  capacity = 1;
+    int                  count    = 0;
+    int                  idx, i;
     struct monster_pain *pain;
 
     suffix_pain = mem_alloc(sizeof(char *) * capacity);

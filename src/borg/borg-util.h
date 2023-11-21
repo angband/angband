@@ -18,18 +18,21 @@
 #ifndef INCLUDED_BORG_UTIL_H
 #define INCLUDED_BORG_UTIL_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * sort functions
  */
-extern void borg_sort(void *u, void *v, int n);
-extern bool borg_sort_comp_hook(void *u, void *v, int a, int b);
-extern void borg_sort_swap_hook(void *u, void *v, int a, int b);
-extern bool (*borg_sort_comp)(void *u, void *v, int a, int b);
-extern void (*borg_sort_swap)(void *u, void *v, int a, int b);
+extern void borg_sort(void* u, void* v, int n);
+extern bool borg_sort_comp_hook(void* u, void* v, int a, int b);
+extern void borg_sort_swap_hook(void* u, void* v, int a, int b);
+extern bool (*borg_sort_comp)(void* u, void* v, int a, int b);
+extern void (*borg_sort_swap)(void* u, void* v, int a, int b);
 
 #endif
 #endif

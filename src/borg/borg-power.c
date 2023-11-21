@@ -18,15 +18,14 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-power.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cmd-core.h"
 #include "../player-calcs.h"
 #include "../player-spell.h"
 
-#include "borg.h"
 #include "borg-flow-kill.h"
 #include "borg-home-notice.h"
 #include "borg-item-activation.h"
@@ -35,21 +34,22 @@
 #include "borg-magic.h"
 #include "borg-prepared.h"
 #include "borg-trait.h"
- 
+#include "borg.h"
+
 /*
  * Helper function -- calculate "power" of equipment
  */
 static int32_t borg_power_equipment(void)
 {
-    int        hold;
-    int        damage, dam;
+    int hold;
+    int damage, dam;
 
-    int        i;
+    int i;
 
-    int        cur_wgt = 0;
-    int        max_wgt = 0;
+    int cur_wgt   = 0;
+    int max_wgt   = 0;
 
-    int32_t    value = 0L;
+    int32_t value = 0L;
 
     borg_item *item;
 
@@ -167,7 +167,7 @@ static int32_t borg_power_equipment(void)
     /* if (item->kind == 47 || item->kind == 30 ||item->kind == 390 ) value
      * -=90000L; */
 
-     /* We want low level borgs to have high blows (dagger, whips) */
+    /* We want low level borgs to have high blows (dagger, whips) */
     if (borg_trait[BI_CLEVEL] <= 10)
         value += borg_trait[BI_BLOWS] * 45000L;
 
@@ -188,7 +188,7 @@ static int32_t borg_power_equipment(void)
     /* Calculate "average" damage per "normal" shot (times 2) */
     if (item->to_d > 8 || borg_trait[BI_CLEVEL] < 25)
         damage = ((borg_trait[BI_AMMO_SIDES]) + (item->to_d))
-        * borg_trait[BI_AMMO_POWER];
+                 * borg_trait[BI_AMMO_POWER];
     else
         damage = (borg_trait[BI_AMMO_SIDES] + 8) * borg_trait[BI_AMMO_POWER];
 
@@ -199,11 +199,11 @@ static int32_t borg_power_equipment(void)
         value += (borg_trait[BI_SHOTS] * damage * 9L);
     }
 
-    /* Extra bonus for low levels, they need a ranged weap */
+    /* Extra bonus for low levels, they need a ranged weapon */
     if (borg_trait[BI_CLEVEL] < 15)
         value += (borg_trait[BI_SHOTS] * damage * 200L);
 
-    /* slings force you to carry heavy ammo.  Penalty for that unles you have
+    /* slings force you to carry heavy ammo.  Penalty for that unless you have
      * lots of str  */
     if (item->sval == sv_sling && !item->art_idx && my_stat_ind[STAT_STR] < 9) {
         value -= 5000L;
@@ -238,16 +238,21 @@ static int32_t borg_power_equipment(void)
     item = &borg_items[INVEN_BODY];
 
     if (item->tval == TV_DRAG_ARMOR && !item->art_idx) {
-        if (item->sval == sv_dragon_black || item->sval == sv_dragon_blue
-            || item->sval == sv_dragon_white || item->sval == sv_dragon_red)
+        if (item->sval == sv_dragon_black 
+            || item->sval == sv_dragon_blue
+            || item->sval == sv_dragon_white 
+            || item->sval == sv_dragon_red)
             value += 1100;
         else if (item->sval == sv_dragon_green)
             value += 2750;
         else if (item->sval == sv_dragon_multihued)
             value += 3250;
-        else if (item->sval == sv_dragon_shining || item->sval == sv_dragon_law
-            || item->sval == sv_dragon_gold || item->sval == sv_dragon_chaos
-            || item->sval == sv_dragon_balance || item->sval == sv_dragon_power)
+        else if (item->sval == sv_dragon_shining 
+                 || item->sval == sv_dragon_law
+                 || item->sval == sv_dragon_gold
+                 || item->sval == sv_dragon_chaos
+                 || item->sval == sv_dragon_balance
+                 || item->sval == sv_dragon_power)
             value += 5150;
     }
 
@@ -372,12 +377,11 @@ static int32_t borg_power_equipment(void)
 
     /* Constitution Bonus */
     if (my_stat_ind[STAT_CON] <= 37) {
-        
 
         if (borg_cfg[BORG_WORSHIPS_HP]) {
             value += (my_stat_ind[STAT_CON] * 250L);
             /* Hack -- Reward hp bonus */
-            /*         This is a bit wierd because we are not really giving */
+            /*         This is a bit weird because we are not really giving */
             /*         a bonus for what hp you have, but the 'bonus' */
             /*         hp you get getting over 800hp is very important. */
             if (borg_trait[BI_HP_ADJ] < 800)
@@ -388,7 +392,7 @@ static int32_t borg_power_equipment(void)
         {
             value += (my_stat_ind[STAT_CON] * 150L);
             /* Hack -- Reward hp bonus */
-            /*         This is a bit wierd because we are not really giving */
+            /*         This is a bit weird because we are not really giving */
             /*         a bonus for what hp you have, but the 'bonus' */
             /*         hp you get getting over 500hp is very important. */
             if (borg_trait[BI_HP_ADJ] < 500)
@@ -490,7 +494,9 @@ static int32_t borg_power_equipment(void)
     if (borg_trait[BI_RFIRE])
         value += 8000L;
     /* extra bonus for getting all basic resist */
-    if (borg_trait[BI_RFIRE] && borg_trait[BI_RACID] && borg_trait[BI_RELEC]
+    if (borg_trait[BI_RFIRE] 
+        && borg_trait[BI_RACID] 
+        && borg_trait[BI_RELEC]
         && borg_trait[BI_RCOLD])
         value += 10000L;
     if (borg_trait[BI_RPOIS])
@@ -536,8 +542,11 @@ static int32_t borg_power_equipment(void)
     if (borg_trait[BI_SDEX])
         value += 50L;
     /* boost for getting them all */
-    if (borg_trait[BI_SSTR] && borg_trait[BI_SINT] && borg_trait[BI_SWIS]
-        && borg_trait[BI_SDEX] && borg_trait[BI_SCON])
+    if (borg_trait[BI_SSTR] 
+        && borg_trait[BI_SINT] 
+        && borg_trait[BI_SWIS]
+        && borg_trait[BI_SDEX] 
+        && borg_trait[BI_SCON])
         value += 1000L;
 
     /*** XXX XXX XXX Reward "necessary" flags ***/
@@ -567,7 +576,7 @@ static int32_t borg_power_equipment(void)
 
     /*  Mega-Hack -- Speed / Hold Life (level 46) and maxed out */
     if ((borg_trait[BI_HLIFE] && (borg_trait[BI_MAXDEPTH] + 1 >= 46)
-        && (borg_trait[BI_MAXCLEVEL] < 50)))
+            && (borg_trait[BI_MAXCLEVEL] < 50)))
         value += 100000L;
     if ((borg_trait[BI_SPEED] >= 115) && (borg_trait[BI_MAXDEPTH] + 1 >= 46))
         value += 100000L;
@@ -651,7 +660,7 @@ static int32_t borg_power_equipment(void)
     if (borg_class != CLASS_WARRIOR && borg_trait[BI_CRSMPIMP])
         value -= 15000;
     if ((borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
-        || borg_class == CLASS_DRUID || borg_class == CLASS_NECROMANCER)
+            || borg_class == CLASS_DRUID || borg_class == CLASS_NECROMANCER)
         && borg_trait[BI_CRSMPIMP])
         value -= 15000;
     if (borg_trait[BI_CRSFEAR])
@@ -1022,19 +1031,19 @@ static int32_t borg_power_equipment(void)
             activation_bonus += 0; /* scroll only ever read to get rid of it */
         else if (act_enchant_tohit == act)
             activation_bonus
-            += 0; /* handled by adding to "amount of bonus available" */
+                += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_todam == act)
             activation_bonus
-            += 0; /* handled by adding to "amount of bonus available" */
+                += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_weapon == act)
             activation_bonus
-            += 0; /* handled by adding to "amount of bonus available" */
+                += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_armor == act)
             activation_bonus
-            += 0; /* handled by adding to "amount of bonus available" */
+                += 0; /* handled by adding to "amount of bonus available" */
         else if (act_enchant_armor2 == act)
             activation_bonus
-            += 0; /* handled by adding to "amount of bonus available" */
+                += 0; /* handled by adding to "amount of bonus available" */
         else if (act_remove_curse == act)
             activation_bonus += 9000;
         else if (act_remove_curse2 == act)
@@ -1047,7 +1056,7 @@ static int32_t borg_power_equipment(void)
             activation_bonus += 50;
         else if (act_restore_mana == act)
             activation_bonus += 5000;
-        /* the potion equivilant of increase stat with dec */
+        /* the potion equivalent of increase stat with dec */
         /*  are only consumed to get rid of them */
         else if (act_brawn == act)
             activation_bonus += 0;
@@ -1102,7 +1111,7 @@ static int32_t borg_power_equipment(void)
             activation_bonus += 1000;
         else if (act_drink_breath == act)
             activation_bonus
-            += 0; /* !FIX no code to handle (nor for the potion) */
+                += 0; /* !FIX no code to handle (nor for the potion) */
         else if (act_food_waybread == act)
             activation_bonus += 50;
         else if (act_shroom_emergency == act)
@@ -1159,7 +1168,7 @@ static int32_t borg_power_equipment(void)
  */
 static int32_t borg_power_inventory(void)
 {
-    int     k, book;
+    int k, book;
 
     int32_t value = 0L;
 
@@ -1191,7 +1200,7 @@ static int32_t borg_power_inventory(void)
         for (; k < 15 && k < borg_trait[BI_FOOD]; k++)
             value += 700L;
     }
-    /* Prefere to buy HiCalorie foods over LowCalorie */
+    /* Prefer to buy HiCalorie foods over LowCalorie */
     if (amt_food_hical <= 5)
         value += amt_food_hical * 50;
 
@@ -1401,7 +1410,7 @@ static int32_t borg_power_inventory(void)
         for (; k < 6 && k < borg_has[kv_rod_healing]; k++)
             value += 20000L;
     } else if (borg_class == CLASS_RANGER || borg_class == CLASS_PALADIN
-        || borg_class == CLASS_NECROMANCER || borg_class == CLASS_MAGE) {
+               || borg_class == CLASS_NECROMANCER || borg_class == CLASS_MAGE) {
         k = 0;
         for (; k < 10 && k < borg_trait[BI_AHEAL]; k++)
             value += 4000L;
@@ -1488,11 +1497,11 @@ static int32_t borg_power_inventory(void)
         if (borg_race_death[borg_sauron_id] != 0) {
             /* Must scum for more pots */
             if ((num_heal_true + borg_has[kv_potion_healing] + num_ezheal_true
-                + borg_trait[BI_AEZHEAL]
-                < 30)
+                        + borg_trait[BI_AEZHEAL]
+                    < 30)
                 || (num_ezheal_true + borg_trait[BI_AEZHEAL] < 20)
                 || (num_speed + borg_trait[BI_ASPEED] < 15)) {
-                /* leave pots at home so they dont shatter */
+                /* leave pots at home so they don't shatter */
                 borg_scumming_pots = true;
             }
             /* I have enough, carry all pots, and other good stuff. */
@@ -1672,7 +1681,7 @@ static int32_t borg_power_inventory(void)
                 value += 80L;
         }
 
-        /* peanalize use of too many quiver slots */
+        /* penalize use of too many quiver slots */
         for (k = QUIVER_START + 4; k < QUIVER_END; k++) {
             if (borg_items[k].iqty)
                 value -= 10000L;
@@ -1689,7 +1698,7 @@ static int32_t borg_power_inventory(void)
         /* Don't carry too many */
         if (borg_trait[BI_STR] <= 15 && borg_trait[BI_AMISSILES] > 20)
             value -= 1000L;
-        /* peanalize use of too many quiver slots */
+        /* penalize use of too many quiver slots */
         for (k = QUIVER_START + 2; k < QUIVER_END; k++) {
             if (borg_items[k].iqty)
                 value -= 10000L;
@@ -1822,8 +1831,8 @@ static int32_t borg_power_inventory(void)
 
     /* Reward carrying a shovel if low level */
     if (borg_trait[BI_MAXDEPTH] <= 40 && borg_trait[BI_MAXDEPTH] >= 25
-        && borg_trait[BI_GOLD] < 100000 && borg_items[INVEN_WIELD].tval != TV_DIGGING
-        && amt_digger == 1)
+        && borg_trait[BI_GOLD] < 100000
+        && borg_items[INVEN_WIELD].tval != TV_DIGGING && amt_digger == 1)
         value += 5000L;
 
     /*** Hack -- books ***/
@@ -1907,17 +1916,17 @@ static int32_t borg_power_inventory(void)
          * encumbrance */
         if (item && item->iqty
             && ((item->tval == TV_SCROLL
-                && ((item->sval == sv_scroll_enchant_armor
-                    && borg_trait[BI_AENCH_ARM] < 1000
-                    && my_need_enchant_to_a)
-                    || (item->sval == sv_scroll_enchant_weapon_to_hit
-                        && borg_trait[BI_AENCH_TOH] < 1000
-                        && my_need_enchant_to_h)
-                    || (item->sval == sv_scroll_enchant_weapon_to_dam
-                        && borg_trait[BI_AENCH_TOD] < 1000
-                        && my_need_enchant_to_d)
-                    || item->sval == sv_scroll_star_enchant_weapon
-                    || item->sval == sv_scroll_star_enchant_armor))
+                    && ((item->sval == sv_scroll_enchant_armor
+                            && borg_trait[BI_AENCH_ARM] < 1000
+                            && my_need_enchant_to_a)
+                        || (item->sval == sv_scroll_enchant_weapon_to_hit
+                            && borg_trait[BI_AENCH_TOH] < 1000
+                            && my_need_enchant_to_h)
+                        || (item->sval == sv_scroll_enchant_weapon_to_dam
+                            && borg_trait[BI_AENCH_TOD] < 1000
+                            && my_need_enchant_to_d)
+                        || item->sval == sv_scroll_star_enchant_weapon
+                        || item->sval == sv_scroll_star_enchant_armor))
                 || (item->tval == TV_POTION
                     && (item->sval == sv_potion_inc_str
                         || item->sval == sv_potion_inc_int
@@ -1928,7 +1937,7 @@ static int32_t borg_power_inventory(void)
             /* No encumbrance penalty for purchasing these items */
         } else {
             value -= ((borg_trait[BI_WEIGHT] - (borg_trait[BI_CARRY] / 2))
-                / (borg_trait[BI_CARRY] / 10) * 1000L);
+                      / (borg_trait[BI_CARRY] / 10) * 1000L);
         }
     }
     /* Reward empty slots (up to 5) */
@@ -1946,7 +1955,7 @@ static int32_t borg_power_inventory(void)
  */
 int32_t borg_power(void)
 {
-    int     i = 1;
+    int     i     = 1;
     int32_t value = 0L;
 
     /* Process the equipment */

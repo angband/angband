@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_FLOW_TAKE_H
 #define INCLUDED_BORG_FLOW_TAKE_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-flow.h"
 
@@ -46,7 +49,7 @@ struct borg_take {
  */
 extern int16_t    borg_takes_cnt;
 extern int16_t    borg_takes_nxt;
-extern borg_take *borg_takes;
+extern borg_take* borg_takes;
 
 /*
  * Delete an old "object" record

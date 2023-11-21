@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_MAGIC_PLAY_H
 #define INCLUDED_BORG_MAGIC_PLAY_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Study and/or Test spells/prayers

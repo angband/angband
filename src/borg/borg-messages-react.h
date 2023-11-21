@@ -18,16 +18,19 @@
 #ifndef INCLUDED_BORG_MESSAGES_REACT_H
 #define INCLUDED_BORG_MESSAGES_REACT_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 extern bool borg_dont_react;
 
 /*
  * Handle various "important" messages
  */
-extern void borg_react(const char *msg, const char *buf);
+extern void borg_react(const char* msg, const char* buf);
 
 /*
  * Clear saved messsages

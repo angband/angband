@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_ITEM_WEAR_H
 #define INCLUDED_BORG_ITEM_WEAR_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Track the items worn to avoid loops
@@ -68,7 +71,7 @@ extern bool borg_wear_recharge(void);
 /*
  *  check an item for being ammo.
  */
-extern	bool borg_is_ammo(int tval);
+extern bool borg_is_ammo(int tval);
 
 extern void borg_init_item_wear(void);
 extern void borg_free_item_wear(void);

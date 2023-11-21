@@ -15,16 +15,16 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
-*/
-
-#ifdef ALLOW_BORG
+ */
 
 #include "borg-messages-react.h"
 
-#include "borg.h"
+#ifdef ALLOW_BORG
+
 #include "borg-io.h"
 #include "borg-messages.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 bool borg_dont_react = false;
 
@@ -49,9 +49,10 @@ void borg_react(const char *msg, const char *buf)
     /* Extract length of parsed message */
     len = strlen(buf);
 
-    /* trim off trailing , if there is one, seems to have been introduced to some uniques messages */
+    /* trim off trailing , if there is one, seems to have been introduced to
+     * some uniques messages */
     if (len && buf[len - 1] == ',') {
-        char *tmp = (char *)buf; /* cast away const */
+        char *tmp  = (char *)buf; /* cast away const */
         tmp[--len] = 0;
     }
 
@@ -84,7 +85,7 @@ void borg_react(const char *msg, const char *buf)
 }
 
 /*
- * Clear saved messsages
+ * Clear saved messages
  */
 void borg_clear_reactions(void)
 {

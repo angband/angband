@@ -17,14 +17,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-think-dungeon.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-command.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-attack-munchkin.h"
 #include "borg-caution.h"
 #include "borg-cave.h"
@@ -33,13 +32,13 @@
 #include "borg-fight-attack.h"
 #include "borg-fight-defend.h"
 #include "borg-fight-perm.h"
-#include "borg-flow.h"
 #include "borg-flow-dark.h"
 #include "borg-flow-glyph.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
 #include "borg-flow-stairs.h"
 #include "borg-flow-take.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-enchant.h"
@@ -48,17 +47,18 @@
 #include "borg-item-wear.h"
 #include "borg-junk.h"
 #include "borg-light.h"
-#include "borg-magic.h"
 #include "borg-magic-play.h"
+#include "borg-magic.h"
 #include "borg-prepared.h"
 #include "borg-projection.h"
 #include "borg-recover.h"
-#include "borg-store.h"
 #include "borg-store-sell.h"
-#include "borg-think.h"
+#include "borg-store.h"
 #include "borg-think-dungeon-util.h"
 #include "borg-think-store.h"
+#include "borg-think.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 #ifdef BABLOS
 extern bool borg_clock_over;
@@ -68,9 +68,9 @@ extern bool borg_clock_over;
  * Current level "feeling"
  */
 int borg_feeling_danger = 0;
-int borg_feeling_stuff = 0;
+int borg_feeling_stuff  = 0;
 
-/* 
+/*
  * This is an exploitation function.  The borg will stair scum
  * in the dungeon to get to the bottom of the dungeon asap.
  * Once down there, he can be told to do something.
@@ -90,7 +90,7 @@ static bool borg_think_dungeon_lunal(void)
 
     borg_grid *ag = &borg_grids[c_y][c_x];
 
-    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat  = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -166,8 +166,8 @@ static bool borg_think_dungeon_lunal(void)
             || (char *)NULL != borg_prepared(borg_trait[BI_CDEPTH] - 5)
             || borg_trait[BI_CDEPTH] >= 50 || borg_trait[BI_CDEPTH] == 0
             || borg_trait[BI_ISWEAK]) {
-            borg_lunal_mode = false;
-            goal_fleeing = false;
+            borg_lunal_mode    = false;
+            goal_fleeing       = false;
             goal_fleeing_lunal = false;
             borg_note("# Self Lunal mode disengaged normally.");
             return (false);
@@ -217,7 +217,7 @@ static bool borg_think_dungeon_lunal(void)
     /** Track down some interesting gear **/
     /* XXX Should we allow him great flexibility in retrieving loot? (not always
      * safe?)*/
-     /* Continue flowing towards objects */
+    /* Continue flowing towards objects */
     if (safe_place && borg_flow_old(GOAL_TAKE))
         return (true);
 
@@ -228,13 +228,13 @@ static bool borg_think_dungeon_lunal(void)
     /*leave level right away. */
     borg_note("# Fleeing level. Lunal Mode");
     goal_fleeing_lunal = true;
-    goal_fleeing = true;
+    goal_fleeing       = true;
 
     /* Full of Items - Going up */
     if (track_less.num && borg_items[PACK_SLOTS - 2].iqty
         && (safe_place || ag->feat == FEAT_MORE || ag->feat == FEAT_LESS)) {
         int y, x;
-        int closeness = 8;
+        int closeness     = 8;
 
         borg_grid *tmp_ag = &borg_grids[c_y][c_x];
 
@@ -441,14 +441,14 @@ static bool borg_think_dungeon_lunal(void)
 static bool borg_think_dungeon_munchkin(void)
 {
     bool safe_place = false;
-    int bb_j = z_info->max_range;
-    int j, b_j = -1;
-    int i, ii, x, y;
-    int closeness = 8;
+    int  bb_j       = z_info->max_range;
+    int  j, b_j = -1;
+    int  i, ii, x, y;
+    int  closeness = 8;
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag  = &borg_grids[c_y][c_x];
 
-    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat   = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -567,7 +567,7 @@ static bool borg_think_dungeon_munchkin(void)
     /** Track down some interesting gear **/
     /* XXX Should we allow him great flexibility in retrieving loot? (not always
      * safe?)*/
-     /* Continue flowing towards objects */
+    /* Continue flowing towards objects */
     if (borg_flow_old(GOAL_TAKE))
         return (true);
 
@@ -584,12 +584,12 @@ static bool borg_think_dungeon_munchkin(void)
     /*leave level right away. */
     borg_note("# Fleeing level. Munchkin Mode");
     goal_fleeing_munchkin = true;
-    goal_fleeing = true;
+    goal_fleeing          = true;
 
     /* Increase the range of the borg a bit */
     if (borg_trait[BI_CDEPTH] <= 10)
         closeness
-        += (borg_trait[BI_CLEVEL] - 10) + (10 - borg_trait[BI_CDEPTH]);
+            += (borg_trait[BI_CLEVEL] - 10) + (10 - borg_trait[BI_CDEPTH]);
 
     /* Full of Items - Going up */
     if (track_less.num && (borg_items[PACK_SLOTS - 2].iqty)
@@ -657,7 +657,7 @@ static bool borg_think_dungeon_munchkin(void)
 
     /* Too deep. trying to gradually move shallow.  Going up */
     if ((track_less.num
-        && borg_trait[BI_CDEPTH] > borg_cfg[BORG_MUNCHKIN_DEPTH])
+            && borg_trait[BI_CDEPTH] > borg_cfg[BORG_MUNCHKIN_DEPTH])
         && (safe_place || ag->feat == FEAT_LESS)) {
 
         borg_grid *tmp_ag = &borg_grids[c_y][c_x];
@@ -719,7 +719,7 @@ static bool borg_think_dungeon_munchkin(void)
 
     /* Going down */
     if ((track_more.num
-        && borg_trait[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH])
+            && borg_trait[BI_CDEPTH] < borg_cfg[BORG_MUNCHKIN_DEPTH])
         && (safe_place || ag->feat == FEAT_MORE)) {
         /* Reset */
         b_j = -1;
@@ -942,7 +942,7 @@ static bool borg_think_dungeon_brave(void)
     /*** Local stuff ***/
     int p1 = borg_danger(c_y, c_x, 1, true, false);
 
-    /* Try a defence manuever on 100 */
+    /* Try a defense maneuver on 100 */
     if (borg_trait[BI_CDEPTH] == 100 && borg_defend(p1))
         return true;
 
@@ -1166,7 +1166,7 @@ bool borg_think_dungeon(void)
 
     /* Delay Factor */
     int msec = ((player->opts.delay_factor * player->opts.delay_factor)
-        + (borg_cfg[BORG_DELAY_FACTOR] * borg_cfg[BORG_DELAY_FACTOR]));
+                + (borg_cfg[BORG_DELAY_FACTOR] * borg_cfg[BORG_DELAY_FACTOR]));
 
     /* HACK allows user to stop the borg on certain levels */
     if (borg_trait[BI_CDEPTH] == borg_cfg[BORG_STOP_DLEVEL])
@@ -1190,7 +1190,7 @@ bool borg_think_dungeon(void)
             borg_oops("Money Scum stopped.  No more food in shop.");
             return (true);
         } else
-            /* Borg doing it himself */
+        /* Borg doing it himself */
         {
             /* move money goal to 0 and leave the level */
             borg_cfg[BORG_MONEY_SCUM_AMOUNT] = 0;
@@ -1473,7 +1473,7 @@ bool borg_think_dungeon(void)
 
             /* Clear the flag */
             goal_less = false;
-            goal = 0;
+            goal      = 0;
         }
     }
 
@@ -1627,7 +1627,7 @@ bool borg_think_dungeon(void)
     /* Only do this in Stores to avoid loops     if (borg_swap_rings()) return
      * (true); */
 
-     /* Repair "backwards" rings */
+    /* Repair "backwards" rings */
     if (borg_wear_rings())
         return (true);
 
@@ -2223,7 +2223,7 @@ bool borg_think_dungeon(void)
         borg_danger_wipe = true;
 
         /* Reset multiple factors to jumpstart the borg */
-        unique_on_level = 0;
+        unique_on_level   = 0;
         scaryguy_on_level = false;
 
         /* reset our breeder flag */
@@ -2306,7 +2306,7 @@ bool borg_think_dungeon(void)
     }
 
     /* Reset multiple factors to jumpstart the borg */
-    unique_on_level = 0;
+    unique_on_level   = 0;
     scaryguy_on_level = false;
 
     /* reset our breeder flag */

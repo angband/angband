@@ -17,17 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow-take.h"
+
+#ifdef ALLOW_BORG
 
 #include "../monster.h"
 #include "../obj-knowledge.h"
 #include "../obj-util.h"
 
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-stairs.h"
 #include "borg-io.h"
@@ -36,6 +35,7 @@
 #include "borg-light.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * The object list.  This list is used to "track" objects.
@@ -57,7 +57,7 @@ static struct object_kind *borg_guess_kind(uint8_t a, wchar_t c, int y, int x)
      * the sake of speed and accuracy
      */
 
-     /* Cheat the Actual item */
+    /* Cheat the Actual item */
     struct object *o_ptr;
     o_ptr = square_object(cave, loc(x, y));
     if (!o_ptr)
@@ -130,21 +130,21 @@ static bool borg_follow_take_aux(int i, int y, int x)
  */
 void borg_follow_take(int i)
 {
-    int                  ox, oy;
+    int ox, oy;
 
-    borg_take *take = &borg_takes[i];
-    borg_grid *ag = &borg_grids[take->y][take->x];
-    borg_kill *kill = &borg_kills[ag->kill];
+    borg_take           *take  = &borg_takes[i];
+    borg_grid           *ag    = &borg_grids[take->y][take->x];
+    borg_kill           *kill  = &borg_kills[ag->kill];
     struct monster_race *r_ptr = &r_info[kill->r_idx];
-    struct object_kind *old_kind;
+    struct object_kind  *old_kind;
 
     /* Paranoia */
     if (!take->kind)
         return;
 
     /* Old location */
-    ox = take->x;
-    oy = take->y;
+    ox       = take->x;
+    oy       = take->y;
     old_kind = take->kind;
 
     /* delete them if they are under me */
@@ -157,12 +157,13 @@ void borg_follow_take(int i)
         return;
 
     /* Some monsters won't take or crush items */
-    if (ag->kill && !rf_has(r_ptr->flags, RF_TAKE_ITEM) && !rf_has(r_ptr->flags, RF_KILL_ITEM))
+    if (ag->kill && !rf_has(r_ptr->flags, RF_TAKE_ITEM)
+        && !rf_has(r_ptr->flags, RF_KILL_ITEM))
         return;
 
     /* Note */
-    borg_note(format("# There was an object '%s' at (%d,%d)",
-        (old_kind->name), ox, oy));
+    borg_note(format(
+        "# There was an object '%s' at (%d,%d)", (old_kind->name), ox, oy));
 
     /* Kill the object */
     borg_delete_take(i);
@@ -173,11 +174,11 @@ void borg_follow_take(int i)
  */
 static int borg_new_take(struct object_kind *kind, int y, int x)
 {
-    int            i, n = -1;
+    int i, n = -1;
 
     borg_take *take;
 
-    borg_grid *ag = &borg_grids[y][x];
+    borg_grid *ag        = &borg_grids[y][x];
 
     struct object *o_ptr = square_object(cave, loc(x, y));
 
@@ -245,12 +246,12 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
      * dumping an item which we know to be bad then turning around and picking
      * it up again.
      */
-    if (object_fully_known(o_ptr) && (o_ptr->to_a < 0 || o_ptr->to_d < 0 || o_ptr->to_h < 0))
+    if (object_fully_known(o_ptr)
+        && (o_ptr->to_a < 0 || o_ptr->to_d < 0 || o_ptr->to_h < 0))
         take->value = -10;
 
     /* Note */
-    borg_note(format("# Creating an object '%s' at (%d,%d)",
-        (take->kind->name),
+    borg_note(format("# Creating an object '%s' at (%d,%d)", (take->kind->name),
         take->x, take->y));
 
     /* Wipe goals only if I have some light source */
@@ -306,7 +307,7 @@ bool observe_take_diff(int y, int x, uint8_t a, wchar_t c)
  */
 bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
 {
-    int                 i, z, ox, oy;
+    int i, z, ox, oy;
 
     struct object_kind *k_ptr;
 
@@ -341,12 +342,11 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
             continue;
 
         /* Require matching attr if not hallucinating rr9*/
-        if (!borg_trait[BI_ISIMAGE] &&
-            a != k_ptr->d_attr &&
-            (k_ptr->d_attr != 11 &&
-                k_ptr->d_char == '!')
-            /* There are serious bugs with Flasks of Oil not having the attr set correctly */
-            ) {
+        if (!borg_trait[BI_ISIMAGE] && a != k_ptr->d_attr
+            && (k_ptr->d_attr != 11 && k_ptr->d_char == '!')
+            /* There are serious bugs with Flasks of Oil not having the attr set
+               correctly */
+        ) {
             /* Ignore "flavored" colors */
             if (!k_ptr->flavor)
                 continue;
@@ -365,9 +365,9 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
             borg_grids[take->y][take->x].take = i;
 
             /* Note */
-            borg_note(format("# Tracking an object '%s' at (%d,%d) from (%d,%d)",
-                (k_ptr->name),
-                take->y, take->x, ox, oy));
+            borg_note(
+                format("# Tracking an object '%s' at (%d,%d) from (%d,%d)",
+                    (k_ptr->name), take->y, take->x, ox, oy));
 
             /* Clear goals */
             if (goal == GOAL_TAKE)
@@ -403,7 +403,7 @@ bool borg_flow_take(bool viewable, int nearness)
     int leash = borg_trait[BI_CLEVEL] * 3 + 9;
     int full_quiver;
 
-    borg_grid* ag;
+    borg_grid *ag;
 
     /* Missile carry limit */
     /* allow shooters to two quiver slots full */
@@ -459,7 +459,7 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Scan the object list */
     for (i = 1; i < borg_takes_nxt; i++) {
-        borg_take* take = &borg_takes[i];
+        borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
         if (!take->kind)
@@ -571,7 +571,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
     int b_j     = -1;
     int b_stair = -1;
 
-    borg_grid* ag;
+    borg_grid *ag;
 
     /* Efficiency -- Nothing to take */
     if (!borg_takes_cnt)
@@ -605,7 +605,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
 
     /* Scan the object list -- set filter*/
     for (i = 1; i < borg_takes_nxt; i++) {
-        borg_take* take = &borg_takes[i];
+        borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
         if (!take->kind)
@@ -683,7 +683,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
     int b_j     = -1;
     int b_stair = -1;
 
-    borg_grid* ag;
+    borg_grid *ag;
 
     /* Efficiency -- Nothing to take */
     if (!borg_takes_cnt)
@@ -711,8 +711,8 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
     /* Scan the object list -- set filter*/
     for (i = 1; i < borg_takes_nxt; i++) {
-        borg_take* take           = &borg_takes[i];
-        struct object_kind* k_ptr = take->kind;
+        borg_take          *take  = &borg_takes[i];
+        struct object_kind *k_ptr = take->kind;
 
         bool item_bad;
 
@@ -743,7 +743,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                     if (!borg_items[ii].iqty)
                         continue;
 
-                    /* skip fullslots */
+                    /* skip full slots */
                     if (borg_items[ii].iqty == z_info->quiver_slot_size)
                         continue;
 

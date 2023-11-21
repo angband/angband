@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-magic.h"
+
+#ifdef ALLOW_BORG
 
 #include "../effects.h"
 #include "../player-spell.h"
@@ -75,7 +75,7 @@ static borg_spell_rating borg_spell_ratings_MAGE[] =
 static borg_spell_rating borg_spell_ratings_DRUID[] =
 {
     { "Detect Life", 95,  DETECT_LIFE },
-    { "Fox Form", 5, FOX_FORM }, // !FIX !TODO !AJG need to know when to cast any of the shapechages
+    { "Fox Form", 5, FOX_FORM }, // !FIX !TODO !AJG need to know when to cast any of the shapechanges
     { "Remove Hunger", 85, REMOVE_HUNGER },
     { "Stinking Cloud", 95, STINKING_CLOUD },
     { "Confuse Monster", 55, CONFUSE_MONSTER },
@@ -88,9 +88,9 @@ static borg_spell_rating borg_spell_ratings_DRUID[] =
     { "Earth Rising", 70, EARTH_RISING },
     { "Trance", 55, TRANCE },
     { "Mass Sleep", 80, MASS_SLEEP },
-    { "Become Pukel-man", 5, BECOME_PUKEL_MAN }, // !FIX !TODO !AJG shapechage
-    { "Eagle's Flight", 5, EAGLES_FLIGHT }, // !FIX !TODO !AJG shapechage
-    { "Bear Form", 5, BEAR_FORM }, // !FIX !TODO !AJG shapechage
+    { "Become Pukel-man", 5, BECOME_PUKEL_MAN }, // !FIX !TODO !AJG shapechange
+    { "Eagle's Flight", 5, EAGLES_FLIGHT }, // !FIX !TODO !AJG shapechange
+    { "Bear Form", 5, BEAR_FORM }, // !FIX !TODO !AJG shapechange
     { "Tremor", 80, TREMOR },
     { "Haste Self", 90, HASTE_SELF },
     { "Revitalize", 95, REVITALIZE },
@@ -139,7 +139,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Nether Bolt", 95, NETHER_BOLT },
     { "Sense Invisible", 85, SENSE_INVISIBLE },
     { "Create Darkness", 5, CREATE_DARKNESS }, /* not sure this is borg happy */
-    { "Bat Form", 5, BAT_FORM }, // !FIX !TODO !AJG shapechage
+    { "Bat Form", 5, BAT_FORM }, // !FIX !TODO !AJG shapechange
     { "Read Minds", 85, READ_MINDS },
     { "Tap Unlife", 85, TAP_UNLIFE },
     { "Crush", 95, CRUSH },
@@ -150,7 +150,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Vampire Strike", 75, VAMPIRE_STRIKE },
     { "Dispel Life", 65, DISPEL_LIFE },
     { "Dark Spear", 65, DARK_SPEAR },
-    { "Warg Form", 5, WARG_FORM }, // !FIX !TODO !AJG shapechage
+    { "Warg Form", 5, WARG_FORM }, // !FIX !TODO !AJG shapechange
     { "Banish Spirits", 65, BANISH_SPIRITS },
     { "Annihilate", 95, ANNIHILATE },
     { "Grond's Blow", 85, GRONDS_BLOW },
@@ -159,7 +159,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Storm of Darkness", 65, STORM_OF_DARKNESS },
     { "Power Sacrifice", 5, POWER_SACRIFICE },  /* not sure if this is borg happy. */
     { "Zone of Unmagic", 5, ZONE_OF_UNMAGIC },  // !FIX !TODO !AJG defense?  not sure how to code. 
-    { "Vampire Form", 5, VAMPIRE_FORM }, // !FIX !TODO !AJG shapechage
+    { "Vampire Form", 5, VAMPIRE_FORM }, // !FIX !TODO !AJG shapechange
     { "Curse", 65, CURSE },
     { "Command", 5, COMMAND } // !FIX !TODO !AJG defense?  not sure how to code. 
 };
@@ -221,7 +221,7 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
     { "Howl of the Damned", 55, HOWL_OF_THE_DAMNED },
     { "Relentless Taunting", 5, RELENTLESS_TAUNTING }, /* seems to dangerous for borg right now */
     { "Venom", 55, VENOM },
-    { "Werewolf Form", 5, WEREWOLF_FORM }, // !FIX !TODO !AJG shapechage
+    { "Werewolf Form", 5, WEREWOLF_FORM }, // !FIX !TODO !AJG shapechange
     { "Bloodlust", 5, BLOODLUST }, /* seems to dangerous for borg right now */
     { "Unholy Reprieve", 95, UNHOLY_REPRIEVE },
     { "Forceful Blow", 5, FORCEFUL_BLOW }, // !FIX !TODO !AJG need to code this 
@@ -231,7 +231,7 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
 /*
  * get the stat used for casting spells
  *
- * *HACK* assumes the first spell determins the relm thus stat for all spells
+ * *HACK* assumes the first spell determins the realm thus stat for all spells
  */
 int borg_spell_stat(void)
 {

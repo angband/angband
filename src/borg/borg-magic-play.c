@@ -17,29 +17,28 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-magic-play.h"
 
-#include "../effects.h"
+#ifdef ALLOW_BORG
+
 #include "../effect-handler.h"
+#include "../effects.h"
 #include "../ui-menu.h"
 
-#include "borg-cave.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-io.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
 
-
 static const struct effect_kind effects[]
-= {{ EF_NONE, false, NULL, NULL, NULL, NULL },
+    = { { EF_NONE, false, NULL, NULL, NULL, NULL },
 #define F(x)                        effect_handler_##x
 #define EFFECT(x, a, b, c, d, e, f) { EF_##x, a, b, F(x), e, f },
 #include "list-effects.h"
 #undef EFFECT
 #undef F
-          { EF_MAX, false, NULL, NULL, NULL, NULL }};
+          { EF_MAX, false, NULL, NULL, NULL, NULL } };
 
 /* Check if a spell can be cast just to test it */
 static bool borg_can_play_spell(borg_magic *as)
@@ -56,9 +55,9 @@ static bool borg_can_play_spell(borg_magic *as)
     case GRONDS_BLOW:
     case DECOY:
     case GLYPH_OF_WARDING:
-    return false;
+        return false;
     default:
-    break;
+        break;
     }
 
     if (as->effect_index == EF_BRAND_BOLTS)
@@ -100,7 +99,7 @@ bool borg_play_magic(bool bored)
 
     /* loop through spells backward */
     for (spell_num = player->class->magic.total_spells - 1; spell_num >= 0;
-        spell_num--) {
+         spell_num--) {
         borg_magic *as = &borg_magics[spell_num];
 
         /* Look for the book in inventory*/
@@ -127,7 +126,7 @@ bool borg_play_magic(bool bored)
             continue;
 
         /* Track it */
-        b_r = r;
+        b_r         = r;
         b_spell_num = spell_num;
     }
 
@@ -164,7 +163,7 @@ bool borg_play_magic(bool bored)
 
     /* Check each spell (backwards) */
     for (spell_num = player->class->magic.total_spells - 1; spell_num >= 0;
-        spell_num--) {
+         spell_num--) {
         borg_magic *as = &borg_magics[spell_num];
 
         /* No such book */

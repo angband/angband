@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_FLOW_STAIRS_H
 #define INCLUDED_BORG_FLOW_STAIRS_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-flow.h"
 
@@ -61,7 +64,6 @@ extern bool borg_prep_leave_level_spells(void);
 
 extern void borg_init_flow_stairs(void);
 extern void borg_free_flow_stairs(void);
-
 
 #endif
 #endif

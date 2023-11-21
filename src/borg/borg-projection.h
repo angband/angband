@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_PROJECTION_H
 #define INCLUDED_BORG_PROJECTION_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Current targetted location
@@ -44,9 +47,9 @@ extern bool borg_projectable_pure(int y1, int x1, int y2, int x2);
 extern bool borg_projectable_dark(int y1, int x1, int y2, int x2);
 
 /*
- * Calculate "incremental motion". 
+ * Calculate "incremental motion".
  */
-extern void borg_inc_motion(int *y, int *x, int y1, int x1, int y2, int x2);
+extern void borg_inc_motion(int* y, int* x, int y1, int x1, int y2, int x2);
 
 /*
  * Helper to change the old x/y/x2/y2 to loc/loc

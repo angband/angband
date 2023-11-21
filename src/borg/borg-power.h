@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_POWER_H
 #define INCLUDED_BORG_POWER_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 /*
  * Calculate the basic "power"

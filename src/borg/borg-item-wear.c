@@ -1,6 +1,6 @@
 /**
  * \file borg-item-wear.c
- * \brief Wear items 
+ * \brief Wear items
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,28 +17,28 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item-wear.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-danger.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
-#include "borg-io.h"
 #include "borg-inventory.h"
+#include "borg-io.h"
 #include "borg-item-analyze.h"
 #include "borg-item-id.h"
 #include "borg-item-use.h"
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-power.h"
-#include "borg-store.h"
 #include "borg-store-sell.h"
+#include "borg-store.h"
 #include "borg-think.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * Track the items worn to avoid loops
@@ -48,8 +48,9 @@ int16_t  track_worn_size;
 uint8_t *track_worn_name1;
 int16_t  track_worn_time;
 
-int16_t  borg_best_fit_item = -1; /* Item to be worn.  Index used to note which item not to sell */
-int      borg_best_item = -1; /* Attempting to wear a best fit item */
+int16_t borg_best_fit_item
+    = -1; /* Item to be worn.  Index used to note which item not to sell */
+int borg_best_item = -1; /* Attempting to wear a best fit item */
 
 /*
  * Identify items if possible
@@ -86,10 +87,10 @@ int      borg_best_item = -1; /* Attempting to wear a best fit item */
  */
 bool borg_test_stuff(void)
 {
-    int i;
-    int b_i = -1, b_v = -1;
+    int  i;
+    int  b_i = -1, b_v = -1;
     bool inv_item_needs_id = false;
-    bool free_id = borg_spell_legal(IDENTIFY_RUNE);
+    bool free_id           = borg_spell_legal(IDENTIFY_RUNE);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (borg_trait[BI_CURSP] < 50 && borg_spell_legal(IDENTIFY_RUNE)
@@ -102,7 +103,7 @@ bool borg_test_stuff(void)
 
     /* Look for an item to identify (equipment) */
     for (i = INVEN_WIELD; i < QUIVER_END; i++) {
-        int v = 0;
+        int        v    = 0;
         borg_item *item = &borg_items[i];
 
         /* Skip empty items */
@@ -138,7 +139,7 @@ bool borg_test_stuff(void)
 
     /* Look for an item to identify  */
     for (i = 0; i < QUIVER_END; i++) {
-        int v = 0;
+        int        v    = 0;
         borg_item *item = &borg_items[i];
 
         /* Skip empty and ID'd items */
@@ -166,31 +167,31 @@ bool borg_test_stuff(void)
             switch (item->tval) {
             case TV_RING:
             case TV_AMULET:
-            v += (borg_trait[BI_MAXDEPTH] * 5000L);
-            break;
+                v += (borg_trait[BI_MAXDEPTH] * 5000L);
+                break;
 
             case TV_ROD:
-            v += (borg_trait[BI_MAXDEPTH] * 3000L);
-            break;
+                v += (borg_trait[BI_MAXDEPTH] * 3000L);
+                break;
 
             case TV_WAND:
             case TV_STAFF:
-            v += (borg_trait[BI_MAXDEPTH] * 2000L);
-            break;
+                v += (borg_trait[BI_MAXDEPTH] * 2000L);
+                break;
 
             case TV_POTION:
             case TV_SCROLL:
-            /* Hack -- boring levels */
-            if (borg_trait[BI_MAXDEPTH] < 5)
+                /* Hack -- boring levels */
+                if (borg_trait[BI_MAXDEPTH] < 5)
+                    break;
+
+                /* Hack -- reward depth */
+                v += (borg_trait[BI_MAXDEPTH] * 500L);
                 break;
 
-            /* Hack -- reward depth */
-            v += (borg_trait[BI_MAXDEPTH] * 500L);
-            break;
-
             case TV_FOOD:
-            v += (borg_trait[BI_MAXDEPTH] * 10L);
-            break;
+                v += (borg_trait[BI_MAXDEPTH] * 10L);
+                break;
             }
         }
 
@@ -428,7 +429,7 @@ bool borg_wear_rings(void)
 
     int32_t p, b_p = 0L;
 
-    int i, b_i = -1;
+    int i, b_i     = -1;
 
     borg_item *item;
 
@@ -520,7 +521,7 @@ bool borg_wear_rings(void)
         /* Evaluate the inventory */
         p = borg_power();
 
-        /* the One Ring would be awsome */
+        /* the One Ring would be awesome */
         if (item->one_ring)
             p = my_power * 2;
 
@@ -584,15 +585,15 @@ bool borg_backup_swap(int p)
     int slot;
     int swap;
 
-    int32_t b_p = 0L;
+    int32_t b_p  = 0L;
     int32_t b_p1 = 0L;
     int32_t b_p2 = 0L;
 
     int i;
 
-    int save_rconf = 0;
+    int save_rconf  = 0;
     int save_rblind = 0;
-    int save_fract = 0;
+    int save_fract  = 0;
 
     borg_item *item;
 
@@ -613,9 +614,9 @@ bool borg_backup_swap(int p)
 
     if (armour_swap) {
         /* Save our normal condition */
-        save_rconf = borg_trait[BI_RCONF];
+        save_rconf  = borg_trait[BI_RCONF];
         save_rblind = borg_trait[BI_RBLIND];
-        save_fract = borg_trait[BI_FRACT];
+        save_fract  = borg_trait[BI_FRACT];
 
         /* Check the items, first armour then weapon */
         i = armour_swap - 1;
@@ -761,17 +762,17 @@ bool borg_backup_swap(int p)
 
     /* Pass on the swap which yields the best result */
     if (b_p1 <= b_p2) {
-        b_p = b_p2;
+        b_p  = b_p2;
         swap = weapon_swap - 1;
     } else {
-        b_p = b_p1;
+        b_p  = b_p1;
         swap = armour_swap - 1;
     }
 
     /* good swap.  Make sure it helps a significant amount */
     if (p > b_p
         && b_p <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))) {
+                                        : (avoidance / 2))) {
         /* Log */
         borg_note(format("# Swapping backup.  (%d < %d).", b_p, p));
 
@@ -806,15 +807,15 @@ bool borg_wear_stuff(void)
 {
     int hole = 0;
 
-    int slot;
-    int d;
-    int o;
+    int  slot;
+    int  d;
+    int  o;
     bool recently_worn = false;
 
     int32_t p, b_p = 0L;
 
-    int i, b_i = -1;
-    int ii, b_ii = -1;
+    int i, b_i     = -1;
+    int ii, b_ii   = -1;
     int danger;
 
     char target_ring_desc[80];
@@ -896,7 +897,7 @@ bool borg_wear_stuff(void)
         if (borg_trait[BI_ISENCUMB]) {
             /* Compare Str bonuses */
             if (borg_items[slot].modifiers[OBJ_MOD_STR]
-        > item->modifiers[OBJ_MOD_STR])
+                > item->modifiers[OBJ_MOD_STR])
                 continue;
         }
 
@@ -908,9 +909,9 @@ bool borg_wear_stuff(void)
          * the better ring placed there on.
          */
 
-         /*** Process regular items and non full rings ***/
+        /*** Process regular items and non full rings ***/
 
-         /* Non ring, non full hands */
+        /* Non ring, non full hands */
         if (slot != INVEN_LEFT
             || (!borg_items[INVEN_LEFT].tval
                 || !borg_items[INVEN_RIGHT].tval)) {
@@ -1057,8 +1058,8 @@ bool borg_wear_stuff(void)
                         continue;
 
                     /* Maintain the "best" */
-                    b_i = i;
-                    b_p = p;
+                    b_i  = i;
+                    b_p  = p;
                     b_ii = ii;
                 }
             } /* ring, looking at replacing each ring */
@@ -1105,7 +1106,7 @@ bool borg_wear_stuff(void)
         if (item->art_idx && (track_worn_num < track_worn_size)) {
             borg_note("# Noting the wearing of artifact.");
             track_worn_name1[track_worn_num] = item->art_idx;
-            track_worn_time = borg_t;
+            track_worn_time                  = borg_t;
             track_worn_num++;
         }
         return (true);
@@ -1129,29 +1130,29 @@ static uint16_t borg_best_stuff_order(int n)
 {
     switch (n) {
     case 0:
-    return INVEN_BOW;
+        return INVEN_BOW;
     case 1:
-    return INVEN_WIELD;
+        return INVEN_WIELD;
     case 2:
-    return INVEN_BODY;
+        return INVEN_BODY;
     case 3:
-    return INVEN_OUTER;
+        return INVEN_OUTER;
     case 4:
-    return INVEN_ARM;
+        return INVEN_ARM;
     case 5:
-    return INVEN_HEAD;
+        return INVEN_HEAD;
     case 6:
-    return INVEN_HANDS;
+        return INVEN_HANDS;
     case 7:
-    return INVEN_FEET;
+        return INVEN_FEET;
     case 8:
-    return INVEN_LEFT;
+        return INVEN_LEFT;
     case 9:
-    return INVEN_LIGHT;
+        return INVEN_LIGHT;
     case 10:
-    return INVEN_NECK;
+        return INVEN_NECK;
     default:
-    return 255;
+        return 255;
     }
 }
 
@@ -1211,9 +1212,9 @@ static void borg_best_stuff_aux(
 
     /* Try other possible objects */
     for (i = 0;
-        i < ((shop_num == 7) ? (z_info->pack_size + z_info->store_inven_max)
-            : z_info->pack_size);
-        i++) {
+         i < ((shop_num == 7) ? (z_info->pack_size + z_info->store_inven_max)
+                              : z_info->pack_size);
+         i++) {
         borg_item *item;
         if (i < z_info->pack_size)
             item = &borg_items[i];
@@ -1254,7 +1255,7 @@ static void borg_best_stuff_aux(
         if (borg_trait[BI_ISENCUMB]) {
             /* Compare Str bonuses */
             if (borg_items[slot].modifiers[OBJ_MOD_STR]
-        > item->modifiers[OBJ_MOD_STR])
+                > item->modifiers[OBJ_MOD_STR])
                 continue;
         }
 
@@ -1281,12 +1282,12 @@ static void borg_best_stuff_aux(
  */
 bool borg_best_stuff(void)
 {
-    int hole;
-    char purchase_target[1];
-    int k;
+    int     hole;
+    char    purchase_target[1];
+    int     k;
     uint8_t t_a;
-    char buf[1024];
-    int p;
+    char    buf[1024];
+    int     p;
 
     int32_t value;
 
@@ -1353,11 +1354,11 @@ bool borg_best_stuff(void)
                 if (item->art_idx && (track_worn_num < track_worn_size)) {
                     borg_note("# Noting the wearing of artifact.");
                     track_worn_name1[track_worn_num] = item->art_idx;
-                    track_worn_time = borg_t;
+                    track_worn_time                  = borg_t;
                     track_worn_num++;
                 }
             } else {
-                /* weild the item */
+                /* wield the item */
                 borg_note(format("# Best Combo %s.", item->desc));
                 borg_keypress('w');
                 borg_best_item = i;
@@ -1428,7 +1429,7 @@ bool borg_best_stuff(void)
 bool borg_wear_recharge(void)
 {
     int i, b_i = -1;
-    int slot = -1;
+    int slot   = -1;
     int b_slot = -1;
 
     /* No resting in danger */
@@ -1461,7 +1462,7 @@ bool borg_wear_recharge(void)
             continue;
 
         /* note this one */
-        b_i = i;
+        b_i    = i;
         b_slot = slot;
     }
 
@@ -1514,18 +1515,18 @@ bool borg_is_ammo(int tval)
     case TV_SHOT:
     case TV_ARROW:
     case TV_BOLT:
-    return true;
+        return true;
     default:
-    return false;
+        return false;
     }
 }
 
 void borg_init_item_wear(void)
 {
     /* Track the worn items to avoid loops */
-    track_worn_num = 0;
-    track_worn_size = 10;
-    track_worn_time = 0;
+    track_worn_num   = 0;
+    track_worn_size  = 10;
+    track_worn_time  = 0;
     track_worn_name1 = mem_zalloc(track_worn_size * sizeof(uint8_t));
 }
 
@@ -1534,6 +1535,5 @@ void borg_free_item_wear(void)
     mem_free(track_worn_name1);
     track_worn_name1 = NULL;
 }
-
 
 #endif

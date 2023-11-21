@@ -18,12 +18,15 @@
 #ifndef INCLUDED_BORG_REINCARNATE_H
 #define INCLUDED_BORG_REINCARNATE_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
- * Allow the borg to play continously.  Reset all values, 
+#ifdef ALLOW_BORG
+
+/*
+ * Allow the borg to play continously.  Reset all values,
  */
 extern void reincarnate_borg(void);
 

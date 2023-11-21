@@ -1,7 +1,7 @@
 /**
  * \file borg-trait-swap.c
  * \brief This is used to calculate the attributes of swap weapons and armor
- * 
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
@@ -17,28 +17,28 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-trait-swap.h"
 
-#include "borg.h"
+#ifdef ALLOW_BORG
+
+#include "borg-flow-kill.h"
 #include "borg-inventory.h"
 #include "borg-item.h"
-#include "borg-flow-kill.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
+#include "borg.h"
 
-int     weapon_swap; /* location of my swap weapon (+1 so zero is none) */
-int     armour_swap; /* my swap of armour (+1 so zero is none) */
+int weapon_swap; /* location of my swap weapon (+1 so zero is none) */
+int armour_swap; /* my swap of armour (+1 so zero is none) */
 
 int32_t weapon_swap_value;
 int32_t armour_swap_value;
 
-bool    decurse_weapon_swap; /* my swap is great, except its cursed */
-int     enchant_weapon_swap_to_h; /* my swap is great, except its cursed */
-int     enchant_weapon_swap_to_d; /* my swap is great, except its cursed */
-bool    decurse_armour_swap; /* my swap is great, except its cursed */
-int     enchant_armour_swap_to_a; /* my swap is great, except its cursed */
+bool decurse_weapon_swap; /* my swap is great, except its cursed */
+int  enchant_weapon_swap_to_h; /* my swap is great, except its cursed */
+int  enchant_weapon_swap_to_d; /* my swap is great, except its cursed */
+bool decurse_armour_swap; /* my swap is great, except its cursed */
+int  enchant_armour_swap_to_a; /* my swap is great, except its cursed */
 
 int16_t weapon_swap_digger;
 uint8_t weapon_swap_slay_animal;
@@ -132,10 +132,9 @@ uint8_t armour_swap_resist_blind;
 uint8_t armour_swap_resist_neth;
 uint8_t armour_swap_resist_fear;
 
-
- /*
-  * for swap items for now lump all curses together as "bad"
-  */
+/*
+ * for swap items for now lump all curses together as "bad"
+ */
 static bool borg_has_bad_curse(borg_item *item)
 {
     if (item->curses[BORG_CURSE_TELEPORTATION]
@@ -158,11 +157,11 @@ static bool borg_has_bad_curse(borg_item *item)
  */
 void borg_notice_weapon_swap(void)
 {
-    int        i;
-    int        b_i = -1;
+    int i;
+    int b_i     = -1;
 
-    int32_t    v = -1;
-    int32_t    b_v = -1;
+    int32_t v   = -1;
+    int32_t b_v = -1;
 
     int        dam, damage;
     borg_item *item;
@@ -174,8 +173,8 @@ void borg_notice_weapon_swap(void)
         item = &borg_items[i];
 
         /* reset counter */
-        v = -1L;
-        dam = 0;
+        v      = -1L;
+        dam    = 0;
         damage = 0;
 
         /* Skip empty items */
@@ -190,7 +189,7 @@ void borg_notice_weapon_swap(void)
         if (borg_slot(item->tval, item->sval) == -1)
             continue;
 
-        /* Dont carry swaps until dlevel 50.  They are heavy.
+        /* Don't carry swaps until dlevel 50.  They are heavy.
            Unless the item is a digger, then carry it */
         if (borg_trait[BI_MAXDEPTH] < 50 && item->tval != TV_DIGGING)
             continue;
@@ -202,52 +201,52 @@ void borg_notice_weapon_swap(void)
             continue;
 
         /* Clear all the swap weapon flags as I look at each one. */
-        weapon_swap_digger = 0;
-        weapon_swap_slay_animal = 0;
-        weapon_swap_slay_evil = 0;
-        weapon_swap_slay_undead = 0;
-        weapon_swap_slay_demon = 0;
-        weapon_swap_slay_orc = 0;
-        weapon_swap_slay_troll = 0;
-        weapon_swap_slay_giant = 0;
-        weapon_swap_slay_dragon = 0;
-        weapon_swap_impact = false;
-        weapon_swap_brand_acid = false;
-        weapon_swap_brand_elec = false;
-        weapon_swap_brand_fire = false;
-        weapon_swap_brand_cold = false;
-        weapon_swap_brand_pois = false;
-        weapon_swap_see_infra = false;
-        weapon_swap_slow_digest = false;
-        weapon_swap_aggravate = false;
-        weapon_swap_bad_curse = false;
-        weapon_swap_regenerate = false;
-        weapon_swap_telepathy = false;
-        weapon_swap_light = false;
-        weapon_swap_see_invis = false;
-        weapon_swap_ffall = false;
-        weapon_swap_free_act = false;
-        weapon_swap_hold_life = false;
-        weapon_swap_immune_fire = false;
-        weapon_swap_immune_acid = false;
-        weapon_swap_immune_cold = false;
-        weapon_swap_immune_elec = false;
-        weapon_swap_resist_acid = false;
-        weapon_swap_resist_elec = false;
-        weapon_swap_resist_fire = false;
-        weapon_swap_resist_cold = false;
-        weapon_swap_resist_pois = false;
-        weapon_swap_resist_conf = false;
+        weapon_swap_digger       = 0;
+        weapon_swap_slay_animal  = 0;
+        weapon_swap_slay_evil    = 0;
+        weapon_swap_slay_undead  = 0;
+        weapon_swap_slay_demon   = 0;
+        weapon_swap_slay_orc     = 0;
+        weapon_swap_slay_troll   = 0;
+        weapon_swap_slay_giant   = 0;
+        weapon_swap_slay_dragon  = 0;
+        weapon_swap_impact       = false;
+        weapon_swap_brand_acid   = false;
+        weapon_swap_brand_elec   = false;
+        weapon_swap_brand_fire   = false;
+        weapon_swap_brand_cold   = false;
+        weapon_swap_brand_pois   = false;
+        weapon_swap_see_infra    = false;
+        weapon_swap_slow_digest  = false;
+        weapon_swap_aggravate    = false;
+        weapon_swap_bad_curse    = false;
+        weapon_swap_regenerate   = false;
+        weapon_swap_telepathy    = false;
+        weapon_swap_light        = false;
+        weapon_swap_see_invis    = false;
+        weapon_swap_ffall        = false;
+        weapon_swap_free_act     = false;
+        weapon_swap_hold_life    = false;
+        weapon_swap_immune_fire  = false;
+        weapon_swap_immune_acid  = false;
+        weapon_swap_immune_cold  = false;
+        weapon_swap_immune_elec  = false;
+        weapon_swap_resist_acid  = false;
+        weapon_swap_resist_elec  = false;
+        weapon_swap_resist_fire  = false;
+        weapon_swap_resist_cold  = false;
+        weapon_swap_resist_pois  = false;
+        weapon_swap_resist_conf  = false;
         weapon_swap_resist_sound = false;
         weapon_swap_resist_light = false;
-        weapon_swap_resist_dark = false;
+        weapon_swap_resist_dark  = false;
         weapon_swap_resist_chaos = false;
         weapon_swap_resist_disen = false;
         weapon_swap_resist_shard = false;
         weapon_swap_resist_nexus = false;
         weapon_swap_resist_blind = false;
-        weapon_swap_resist_neth = false;
-        decurse_weapon_swap = false;
+        weapon_swap_resist_neth  = false;
+        decurse_weapon_swap      = false;
 
         /* Analyze the item */
         switch (item->tval) {
@@ -256,8 +255,7 @@ void borg_notice_weapon_swap(void)
         case TV_HAFTED:
         case TV_POLEARM:
         case TV_SWORD:
-        case TV_DIGGING:
-        {
+        case TV_DIGGING: {
 
             /* Digging */
             if (of_has(item->flags, OF_DIG_1) || of_has(item->flags, OF_DIG_2)
@@ -265,7 +263,7 @@ void borg_notice_weapon_swap(void)
                 /* Don't notice digger if we can turn stone to mud,
                  * or I am using one.
                  */
-                 /* Hack -- ignore worthless ones (including cursed) */
+                /* Hack -- ignore worthless ones (including cursed) */
                 if (item->value <= 0)
                     break;
                 if (item->cursed)
@@ -283,12 +281,12 @@ void borg_notice_weapon_swap(void)
                 weapon_swap_impact = true;
 
             weapon_swap_slay_animal = item->slays[RF_ANIMAL];
-            weapon_swap_slay_evil = item->slays[RF_EVIL];
+            weapon_swap_slay_evil   = item->slays[RF_EVIL];
             weapon_swap_slay_undead = item->slays[RF_UNDEAD];
-            weapon_swap_slay_demon = item->slays[RF_DEMON];
-            weapon_swap_slay_orc = item->slays[RF_ORC];
-            weapon_swap_slay_troll = item->slays[RF_TROLL];
-            weapon_swap_slay_giant = item->slays[RF_GIANT];
+            weapon_swap_slay_demon  = item->slays[RF_DEMON];
+            weapon_swap_slay_orc    = item->slays[RF_ORC];
+            weapon_swap_slay_troll  = item->slays[RF_TROLL];
+            weapon_swap_slay_giant  = item->slays[RF_GIANT];
             weapon_swap_slay_dragon = item->slays[RF_DRAGON];
 
             if (item->brands[ELEM_ACID])
@@ -394,7 +392,7 @@ void borg_notice_weapon_swap(void)
 
             /* assume 2x base damage for x% of creatures */
             dam = damage * 2 * borg_trait[BI_BLOWS];
-            /* rewared SAnimal if no electric brand */
+            /* reward SAnimal if no electric brand */
             if (!borg_trait[BI_WS_ANIMAL] && !borg_trait[BI_WB_ELEC]
                 && weapon_swap_slay_animal)
                 v += (dam * weapon_swap_slay_animal) / 2;
@@ -430,7 +428,7 @@ void borg_notice_weapon_swap(void)
             if (!borg_trait[BI_WB_POIS] && weapon_swap_brand_pois)
                 v += (dam * 3) / 2;
             /* Orcs and Trolls get the second half of the reward if SEvil is */
-            /* not possesed. */
+            /* not possessed. */
             if (!borg_trait[BI_WS_ORC] && !borg_trait[BI_WS_EVIL]
                 && weapon_swap_slay_orc)
                 v += (dam * weapon_swap_slay_orc) / 2;
@@ -543,7 +541,7 @@ void borg_notice_weapon_swap(void)
 
             /* some artifacts would make good back ups for their activation */
 
-            /* skip usless ones */
+            /* skip useless ones */
             if (v <= 1000)
                 continue;
 
@@ -559,51 +557,51 @@ void borg_notice_weapon_swap(void)
     }
 
     /* Clear all the swap weapon flags. */
-    weapon_swap_slay_animal = 0;
-    weapon_swap_slay_evil = 0;
-    weapon_swap_slay_undead = 0;
-    weapon_swap_slay_demon = 0;
-    weapon_swap_slay_orc = 0;
-    weapon_swap_slay_troll = 0;
-    weapon_swap_slay_giant = 0;
-    weapon_swap_slay_dragon = 0;
-    weapon_swap_impact = false;
-    weapon_swap_brand_acid = false;
-    weapon_swap_brand_elec = false;
-    weapon_swap_brand_fire = false;
-    weapon_swap_brand_cold = false;
-    weapon_swap_brand_pois = false;
-    weapon_swap_see_infra = false;
-    weapon_swap_slow_digest = false;
-    weapon_swap_aggravate = false;
-    weapon_swap_bad_curse = false;
-    weapon_swap_regenerate = false;
-    weapon_swap_telepathy = false;
-    weapon_swap_light = false;
-    weapon_swap_see_invis = false;
-    weapon_swap_ffall = false;
-    weapon_swap_free_act = false;
-    weapon_swap_hold_life = false;
-    weapon_swap_immune_fire = false;
-    weapon_swap_immune_acid = false;
-    weapon_swap_immune_cold = false;
-    weapon_swap_immune_elec = false;
-    weapon_swap_resist_acid = false;
-    weapon_swap_resist_elec = false;
-    weapon_swap_resist_fire = false;
-    weapon_swap_resist_cold = false;
-    weapon_swap_resist_pois = false;
-    weapon_swap_resist_conf = false;
+    weapon_swap_slay_animal  = 0;
+    weapon_swap_slay_evil    = 0;
+    weapon_swap_slay_undead  = 0;
+    weapon_swap_slay_demon   = 0;
+    weapon_swap_slay_orc     = 0;
+    weapon_swap_slay_troll   = 0;
+    weapon_swap_slay_giant   = 0;
+    weapon_swap_slay_dragon  = 0;
+    weapon_swap_impact       = false;
+    weapon_swap_brand_acid   = false;
+    weapon_swap_brand_elec   = false;
+    weapon_swap_brand_fire   = false;
+    weapon_swap_brand_cold   = false;
+    weapon_swap_brand_pois   = false;
+    weapon_swap_see_infra    = false;
+    weapon_swap_slow_digest  = false;
+    weapon_swap_aggravate    = false;
+    weapon_swap_bad_curse    = false;
+    weapon_swap_regenerate   = false;
+    weapon_swap_telepathy    = false;
+    weapon_swap_light        = false;
+    weapon_swap_see_invis    = false;
+    weapon_swap_ffall        = false;
+    weapon_swap_free_act     = false;
+    weapon_swap_hold_life    = false;
+    weapon_swap_immune_fire  = false;
+    weapon_swap_immune_acid  = false;
+    weapon_swap_immune_cold  = false;
+    weapon_swap_immune_elec  = false;
+    weapon_swap_resist_acid  = false;
+    weapon_swap_resist_elec  = false;
+    weapon_swap_resist_fire  = false;
+    weapon_swap_resist_cold  = false;
+    weapon_swap_resist_pois  = false;
+    weapon_swap_resist_conf  = false;
     weapon_swap_resist_sound = false;
     weapon_swap_resist_light = false;
-    weapon_swap_resist_dark = false;
+    weapon_swap_resist_dark  = false;
     weapon_swap_resist_chaos = false;
     weapon_swap_resist_disen = false;
     weapon_swap_resist_shard = false;
     weapon_swap_resist_nexus = false;
     weapon_swap_resist_blind = false;
-    weapon_swap_resist_neth = false;
-    decurse_weapon_swap = false;
+    weapon_swap_resist_neth  = false;
+    decurse_weapon_swap      = false;
 
     /* Assume no enchantment needed */
     enchant_weapon_swap_to_h = 0;
@@ -614,18 +612,18 @@ void borg_notice_weapon_swap(void)
 
     /* mark the swap item and its value */
     weapon_swap_value = b_v;
-    weapon_swap = b_i + 1;
+    weapon_swap       = b_i + 1;
 
     /* Now that we know who the best swap is lets set our swap
      * flags and get a move on
      */
-     /*** Process the best inven item ***/
+    /*** Process the best inven item ***/
 
     item = &borg_items[b_i];
 
     /* Enchant swap weapons (to hit) */
     if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65)
-        || borg_trait[BI_AENCH_SWEP] >= 1)
+            || borg_trait[BI_AENCH_SWEP] >= 1)
         && item->tval != TV_DIGGING) {
         if (item->to_h < 10) {
             enchant_weapon_swap_to_h += (10 - item->to_h);
@@ -648,15 +646,15 @@ void borg_notice_weapon_swap(void)
 
     /* various slays */
     weapon_swap_slay_animal = item->slays[RF_ANIMAL];
-    weapon_swap_slay_evil = item->slays[RF_EVIL];
+    weapon_swap_slay_evil   = item->slays[RF_EVIL];
     weapon_swap_slay_undead = item->slays[RF_UNDEAD];
-    weapon_swap_slay_demon = item->slays[RF_DEMON];
-    weapon_swap_slay_orc = item->slays[RF_ORC];
-    weapon_swap_slay_troll = item->slays[RF_TROLL];
-    weapon_swap_slay_giant = item->slays[RF_GIANT];
+    weapon_swap_slay_demon  = item->slays[RF_DEMON];
+    weapon_swap_slay_orc    = item->slays[RF_ORC];
+    weapon_swap_slay_troll  = item->slays[RF_TROLL];
+    weapon_swap_slay_giant  = item->slays[RF_GIANT];
     weapon_swap_slay_dragon = item->slays[RF_DRAGON];
     weapon_swap_slay_undead = item->slays[RF_UNDEAD];
-    weapon_swap_slay_demon = item->slays[RF_DEMON];
+    weapon_swap_slay_demon  = item->slays[RF_DEMON];
 
     if (item->brands[ELEM_ACID])
         weapon_swap_brand_acid = true;
@@ -750,11 +748,11 @@ void borg_notice_weapon_swap(void)
  */
 void borg_notice_armour_swap(void)
 {
-    int        i;
-    int        b_i = -1;
-    int32_t    v = -1L;
-    int32_t    b_v = 0L;
-    int        dam, damage;
+    int     i;
+    int     b_i = -1;
+    int32_t v   = -1L;
+    int32_t b_v = 0L;
+    int     dam, damage;
 
     borg_item *item;
 
@@ -769,8 +767,8 @@ void borg_notice_armour_swap(void)
         item = &borg_items[i];
 
         /* reset counter */
-        v = -1L;
-        dam = 0;
+        v      = -1L;
+        dam    = 0;
         damage = 0;
 
         /* Skip empty items */
@@ -798,51 +796,51 @@ void borg_notice_armour_swap(void)
             continue;
 
         /* Clear all the swap weapon flags as I look at each one. */
-        armour_swap_slay_animal = 0;
-        armour_swap_slay_evil = 0;
-        armour_swap_slay_undead = 0;
-        armour_swap_slay_demon = 0;
-        armour_swap_slay_orc = 0;
-        armour_swap_slay_troll = 0;
-        armour_swap_slay_giant = 0;
-        armour_swap_slay_dragon = 0;
-        armour_swap_impact = false;
-        armour_swap_brand_acid = false;
-        armour_swap_brand_elec = false;
-        armour_swap_brand_fire = false;
-        armour_swap_brand_cold = false;
-        armour_swap_brand_pois = false;
-        armour_swap_see_infra = false;
-        armour_swap_slow_digest = false;
-        armour_swap_aggravate = false;
-        armour_swap_bad_curse = false;
-        armour_swap_regenerate = false;
-        armour_swap_telepathy = false;
-        armour_swap_light = false;
-        armour_swap_see_invis = false;
-        armour_swap_ffall = false;
-        armour_swap_free_act = false;
-        armour_swap_hold_life = false;
-        armour_swap_immune_fire = false;
-        armour_swap_immune_acid = false;
-        armour_swap_immune_cold = false;
-        armour_swap_immune_elec = false;
-        armour_swap_resist_acid = false;
-        armour_swap_resist_elec = false;
-        armour_swap_resist_fire = false;
-        armour_swap_resist_cold = false;
-        armour_swap_resist_pois = false;
-        armour_swap_resist_conf = false;
+        armour_swap_slay_animal  = 0;
+        armour_swap_slay_evil    = 0;
+        armour_swap_slay_undead  = 0;
+        armour_swap_slay_demon   = 0;
+        armour_swap_slay_orc     = 0;
+        armour_swap_slay_troll   = 0;
+        armour_swap_slay_giant   = 0;
+        armour_swap_slay_dragon  = 0;
+        armour_swap_impact       = false;
+        armour_swap_brand_acid   = false;
+        armour_swap_brand_elec   = false;
+        armour_swap_brand_fire   = false;
+        armour_swap_brand_cold   = false;
+        armour_swap_brand_pois   = false;
+        armour_swap_see_infra    = false;
+        armour_swap_slow_digest  = false;
+        armour_swap_aggravate    = false;
+        armour_swap_bad_curse    = false;
+        armour_swap_regenerate   = false;
+        armour_swap_telepathy    = false;
+        armour_swap_light        = false;
+        armour_swap_see_invis    = false;
+        armour_swap_ffall        = false;
+        armour_swap_free_act     = false;
+        armour_swap_hold_life    = false;
+        armour_swap_immune_fire  = false;
+        armour_swap_immune_acid  = false;
+        armour_swap_immune_cold  = false;
+        armour_swap_immune_elec  = false;
+        armour_swap_resist_acid  = false;
+        armour_swap_resist_elec  = false;
+        armour_swap_resist_fire  = false;
+        armour_swap_resist_cold  = false;
+        armour_swap_resist_pois  = false;
+        armour_swap_resist_conf  = false;
         armour_swap_resist_sound = false;
         armour_swap_resist_light = false;
-        armour_swap_resist_dark = false;
+        armour_swap_resist_dark  = false;
         armour_swap_resist_chaos = false;
         armour_swap_resist_disen = false;
         armour_swap_resist_shard = false;
         armour_swap_resist_nexus = false;
         armour_swap_resist_blind = false;
-        armour_swap_resist_neth = false;
-        decurse_armour_swap = false;
+        armour_swap_resist_neth  = false;
+        decurse_armour_swap      = false;
 
         /* Analyze the item */
         switch (item->tval) {
@@ -856,18 +854,17 @@ void borg_notice_armour_swap(void)
         case TV_CLOAK:
         case TV_SOFT_ARMOR:
         case TV_HARD_ARMOR:
-        case TV_DRAG_ARMOR:
-        {
+        case TV_DRAG_ARMOR: {
             /* various slays */
-            /* as of 280, armours dont have slays but random artifacts might.
+            /* as of 280, armours don't have slays but random artifacts might.
              */
             armour_swap_slay_animal = item->slays[RF_ANIMAL];
-            armour_swap_slay_evil = item->slays[RF_EVIL];
+            armour_swap_slay_evil   = item->slays[RF_EVIL];
             armour_swap_slay_undead = item->slays[RF_UNDEAD];
-            armour_swap_slay_demon = item->slays[RF_DEMON];
-            armour_swap_slay_orc = item->slays[RF_ORC];
-            armour_swap_slay_troll = item->slays[RF_TROLL];
-            armour_swap_slay_giant = item->slays[RF_GIANT];
+            armour_swap_slay_demon  = item->slays[RF_DEMON];
+            armour_swap_slay_orc    = item->slays[RF_ORC];
+            armour_swap_slay_troll  = item->slays[RF_TROLL];
+            armour_swap_slay_giant  = item->slays[RF_GIANT];
             armour_swap_slay_dragon = item->slays[RF_DRAGON];
             if (of_has(item->flags, OF_IMPACT))
                 armour_swap_impact = true;
@@ -1008,7 +1005,7 @@ void borg_notice_armour_swap(void)
                 v += (dam * armour_swap_slay_orc) / 2;
             if (!borg_trait[BI_WS_TROLL] && armour_swap_slay_troll)
                 v += (dam * armour_swap_slay_troll) / 2;
-            /* SOrc and STroll get 2/2 reward if slay evil not possesed */
+            /* SOrc and STroll get 2/2 reward if slay evil not possessed */
             if (!borg_trait[BI_WS_ORC] && !borg_trait[BI_WS_EVIL]
                 && armour_swap_slay_orc)
                 v += (dam * armour_swap_slay_orc) / 2;
@@ -1114,19 +1111,19 @@ void borg_notice_armour_swap(void)
             /* some artifacts would make good back ups for their activation */
         }
 
-        /* skip usless ones */
-        if (v <= 1000)
-            continue;
+            /* skip useless ones */
+            if (v <= 1000)
+                continue;
 
-        /* collect the best one */
-        if ((b_i >= 0) && (v < b_v))
-            continue;
+            /* collect the best one */
+            if ((b_i >= 0) && (v < b_v))
+                continue;
 
-        /* track it */
-        b_i = i;
-        b_v = v;
-        armour_swap_value = v;
-        armour_swap = i - 1;
+            /* track it */
+            b_i               = i;
+            b_v               = v;
+            armour_swap_value = v;
+            armour_swap       = i - 1;
         }
     }
 
@@ -1134,52 +1131,52 @@ void borg_notice_armour_swap(void)
      * flags and get a move on
      */
 
-     /* Clear all the swap weapon flags as I look at each one. */
-    armour_swap_slay_animal = 0;
-    armour_swap_slay_evil = 0;
-    armour_swap_slay_undead = 0;
-    armour_swap_slay_demon = 0;
-    armour_swap_slay_orc = 0;
-    armour_swap_slay_troll = 0;
-    armour_swap_slay_giant = 0;
-    armour_swap_slay_dragon = 0;
-    armour_swap_impact = false;
-    armour_swap_brand_acid = false;
-    armour_swap_brand_elec = false;
-    armour_swap_brand_fire = false;
-    armour_swap_brand_cold = false;
-    armour_swap_brand_pois = false;
-    armour_swap_see_infra = false;
-    armour_swap_slow_digest = false;
-    armour_swap_aggravate = false;
-    armour_swap_bad_curse = false;
-    armour_swap_regenerate = false;
-    armour_swap_telepathy = false;
-    armour_swap_light = false;
-    armour_swap_see_invis = false;
-    armour_swap_ffall = false;
-    armour_swap_free_act = false;
-    armour_swap_hold_life = false;
-    armour_swap_immune_fire = false;
-    armour_swap_immune_acid = false;
-    armour_swap_immune_cold = false;
-    armour_swap_immune_elec = false;
-    armour_swap_resist_acid = false;
-    armour_swap_resist_elec = false;
-    armour_swap_resist_fire = false;
-    armour_swap_resist_cold = false;
-    armour_swap_resist_pois = false;
-    armour_swap_resist_conf = false;
+    /* Clear all the swap weapon flags as I look at each one. */
+    armour_swap_slay_animal  = 0;
+    armour_swap_slay_evil    = 0;
+    armour_swap_slay_undead  = 0;
+    armour_swap_slay_demon   = 0;
+    armour_swap_slay_orc     = 0;
+    armour_swap_slay_troll   = 0;
+    armour_swap_slay_giant   = 0;
+    armour_swap_slay_dragon  = 0;
+    armour_swap_impact       = false;
+    armour_swap_brand_acid   = false;
+    armour_swap_brand_elec   = false;
+    armour_swap_brand_fire   = false;
+    armour_swap_brand_cold   = false;
+    armour_swap_brand_pois   = false;
+    armour_swap_see_infra    = false;
+    armour_swap_slow_digest  = false;
+    armour_swap_aggravate    = false;
+    armour_swap_bad_curse    = false;
+    armour_swap_regenerate   = false;
+    armour_swap_telepathy    = false;
+    armour_swap_light        = false;
+    armour_swap_see_invis    = false;
+    armour_swap_ffall        = false;
+    armour_swap_free_act     = false;
+    armour_swap_hold_life    = false;
+    armour_swap_immune_fire  = false;
+    armour_swap_immune_acid  = false;
+    armour_swap_immune_cold  = false;
+    armour_swap_immune_elec  = false;
+    armour_swap_resist_acid  = false;
+    armour_swap_resist_elec  = false;
+    armour_swap_resist_fire  = false;
+    armour_swap_resist_cold  = false;
+    armour_swap_resist_pois  = false;
+    armour_swap_resist_conf  = false;
     armour_swap_resist_sound = false;
     armour_swap_resist_light = false;
-    armour_swap_resist_dark = false;
+    armour_swap_resist_dark  = false;
     armour_swap_resist_chaos = false;
     armour_swap_resist_disen = false;
     armour_swap_resist_shard = false;
     armour_swap_resist_nexus = false;
     armour_swap_resist_blind = false;
-    armour_swap_resist_neth = false;
-    decurse_armour_swap = false;
+    armour_swap_resist_neth  = false;
+    decurse_armour_swap      = false;
 
     if (b_i == -1)
         return;
@@ -1189,12 +1186,12 @@ void borg_notice_armour_swap(void)
 
     /* various slays */
     armour_swap_slay_animal = item->slays[RF_ANIMAL];
-    armour_swap_slay_evil = item->slays[RF_EVIL];
+    armour_swap_slay_evil   = item->slays[RF_EVIL];
     armour_swap_slay_undead = item->slays[RF_UNDEAD];
-    armour_swap_slay_demon = item->slays[RF_DEMON];
-    armour_swap_slay_orc = item->slays[RF_ORC];
-    armour_swap_slay_troll = item->slays[RF_TROLL];
-    armour_swap_slay_giant = item->slays[RF_GIANT];
+    armour_swap_slay_demon  = item->slays[RF_DEMON];
+    armour_swap_slay_orc    = item->slays[RF_ORC];
+    armour_swap_slay_troll  = item->slays[RF_TROLL];
+    armour_swap_slay_giant  = item->slays[RF_GIANT];
     armour_swap_slay_dragon = item->slays[RF_DRAGON];
 
     if (item->brands[ELEM_ACID])
@@ -1285,7 +1282,7 @@ void borg_notice_armour_swap(void)
 
     enchant_armour_swap_to_a = 0;
 
-    /* dont look for enchantment on non armours */
+    /* don't look for enchantment on non armours */
     if (item->tval >= TV_LIGHT)
         return;
 
@@ -1302,6 +1299,5 @@ void borg_notice_armour_swap(void)
         }
     }
 }
-
 
 #endif

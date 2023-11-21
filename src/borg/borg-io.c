@@ -1,6 +1,6 @@
 /**
  * \file borg-io.c
- * \brief Simple input (keypresses) and output (screen scraping) 
+ * \brief Simple input (keypresses) and output (screen scraping)
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,52 +17,52 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-io.h"
+
+#ifdef ALLOW_BORG
 
 #include "../ui-term.h"
 
-#include "borg.h"
 #include "borg-think.h"
+#include "borg.h"
 
 bool borg_confirm_target;
 
- /*
-  * Query the "attr/chars" at a given location on the screen
-  *
-  * Note that "a" points to a single "attr", and "s" to an array
-  * of "chars", into which the attribute and text at the given
-  * location are stored.
-  *
-  * We will not grab more than "ABS(n)" characters for the string.
-  * If "n" is "positive", we will grab exactly "n" chars, or fail.
-  * If "n" is "negative", we will grab until the attribute changes.
-  *
-  * We automatically convert all "blanks" and "invisible text" into
-  * spaces, and we ignore the attribute of such characters.
-  *
-  * We do not strip final spaces, so this function will very often
-  * read characters all the way to the end of the line.
-  *
-  * We succeed only if a string of some form existed, and all of
-  * the non-space characters in the string have the same attribute,
-  * and the string was long enough.
-  *
-  * XXX XXX XXX We assume the given location is legal
-  */
+/*
+ * Query the "attr/chars" at a given location on the screen
+ *
+ * Note that "a" points to a single "attr", and "s" to an array
+ * of "chars", into which the attribute and text at the given
+ * location are stored.
+ *
+ * We will not grab more than "ABS(n)" characters for the string.
+ * If "n" is "positive", we will grab exactly "n" chars, or fail.
+ * If "n" is "negative", we will grab until the attribute changes.
+ *
+ * We automatically convert all "blanks" and "invisible text" into
+ * spaces, and we ignore the attribute of such characters.
+ *
+ * We do not strip final spaces, so this function will very often
+ * read characters all the way to the end of the line.
+ *
+ * We succeed only if a string of some form existed, and all of
+ * the non-space characters in the string have the same attribute,
+ * and the string was long enough.
+ *
+ * XXX XXX XXX We assume the given location is legal
+ */
 errr borg_what_text(int x, int y, int n, uint8_t *a, char *s)
 {
-    int      i;
-    wchar_t  screen_str[1024];
+    int     i;
+    wchar_t screen_str[1024];
 
-    int      t_a;
-    wchar_t  t_c;
+    int     t_a;
+    wchar_t t_c;
 
-    int *aa;
+    int     *aa;
     wchar_t *cc;
 
-    int      w, h;
+    int w, h;
 
     /* Current attribute */
     int d_a = 0;
@@ -135,18 +135,16 @@ errr borg_what_text(int x, int y, int n, uint8_t *a, char *s)
 /*
  * Log a message to a file
  */
-static void borg_info(const char *what)
-{
-}
+static void borg_info(const char *what) { }
 
 /*
  * Memorize a message, Log it, Search it, and Display it in pieces
  */
 void borg_note(const char *what)
 {
-    int   j, n, i, k;
+    int j, n, i, k;
 
-    int   w, h, x, y;
+    int w, h, x, y;
 
     term *old = Term;
 
@@ -369,7 +367,7 @@ keycode_t borg_inkey(bool take)
 void borg_flush(void)
 {
     /* Simply forget old keys */
-    borg_key_tail = borg_key_head;
+    borg_key_tail         = borg_key_head;
 
     borg_queued_direction = 0;
 }
@@ -381,12 +379,12 @@ void borg_flush(void)
 void borg_queue_direction(keycode_t k)
 {
     borg_queued_direction = k;
-    borg_confirm_target = true;
+    borg_confirm_target   = true;
 }
 
 keycode_t borg_get_queued_direction(void)
 {
-    keycode_t k = borg_queued_direction;
+    keycode_t k           = borg_queued_direction;
     borg_queued_direction = 0;
     return k;
 }

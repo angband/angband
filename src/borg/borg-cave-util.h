@@ -16,9 +16,12 @@
 #ifndef INCLUDED_BORG_CAVE_UTIL_H
 #define INCLUDED_BORG_CAVE_UTIL_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-cave.h"
 
@@ -30,12 +33,12 @@ extern bool borg_cave_floor_bold(int y, int X);
 /*
  * Grid based version of "borg_cave_floor_bold()"
  */
-extern bool borg_cave_floor_grid(borg_grid *ag);
+extern bool borg_cave_floor_grid(borg_grid* ag);
 
 /*
  * A square is protected (doesn't need a glyph)
  */
-extern bool borg_feature_protected(borg_grid *ag);
+extern bool borg_feature_protected(borg_grid* ag);
 
 /*
  * get the panel height

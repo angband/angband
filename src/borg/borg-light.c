@@ -1,6 +1,6 @@
 /**
  * \file borg-light.c
- * \brief Handle light and lighting 
+ * \brief Handle light and lighting
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,17 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-light.h"
+
+#ifdef ALLOW_BORG
 
 #include "../game-input.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
@@ -36,6 +35,7 @@
 #include "borg-messages-react.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
 /*
  * Check to see if the surrounding dungeon should be illuminated, and if
@@ -125,8 +125,8 @@ bool borg_check_light_only(void)
         /*
          * Scan the surrounding 5x5 area for unlit tiles.
          *
-         * Radius two light misses out the four corners but otherwise illumates
-         * a 5x5 grid, which is 21 grids illumated incl player.
+         * Radius two light misses out the four corners but otherwise 
+         * illuminates a 5x5 grid, which is 21 grids illuminated incl player.
          *
          *  ...
          * .....
@@ -160,9 +160,12 @@ bool borg_check_light_only(void)
     }
 
     /* Light it up! */
-    if (borg_activate_item(act_illumination) || borg_activate_item(act_light)
-        || borg_zap_rod(sv_rod_illumination) || borg_use_staff(sv_staff_light)
-        || borg_read_scroll(sv_scroll_light) || borg_spell_fail(LIGHT_ROOM, 40)
+    if (borg_activate_item(act_illumination) 
+        || borg_activate_item(act_light)
+        || borg_zap_rod(sv_rod_illumination) 
+        || borg_use_staff(sv_staff_light)
+        || borg_read_scroll(sv_scroll_light) 
+        || borg_spell_fail(LIGHT_ROOM, 40)
         || borg_spell_fail(CALL_LIGHT, 40)) {
         borg_note("# Illuminating the dungeon");
         borg_react("SELF:lite", "SELF:lite");
@@ -199,10 +202,13 @@ bool borg_check_light(void)
     if (borg_trait[BI_MAXCLEVEL] > 10 && !borg_trait[BI_CDEPTH])
         return (false);
 
-    /* Never when comprimised, save your mana */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISIMAGE] || borg_trait[BI_ISPOISONED]
-        || borg_trait[BI_ISCUT] || borg_trait[BI_ISWEAK])
+    /* Never when compromised, save your mana */
+    if (borg_trait[BI_ISBLIND] 
+        || borg_trait[BI_ISCONFUSED]
+        || borg_trait[BI_ISIMAGE] 
+        || borg_trait[BI_ISPOISONED]
+        || borg_trait[BI_ISCUT] 
+        || borg_trait[BI_ISWEAK])
         return (false);
 
     /* XXX XXX XXX Dark */
@@ -228,7 +234,7 @@ bool borg_check_light(void)
     /* if (!when_detect_traps || (borg_t - when_detect_traps >= 183)) do_trap =
      * true; */
 
-     /* Start */
+    /* Start */
     do_door = false;
 
     /* Determine if we need to detect doors */
@@ -245,7 +251,7 @@ bool borg_check_light(void)
     /* if (!when_detect_doors || (borg_t - when_detect_doors >= 731)) do_door =
      * true; */
 
-     /* Start */
+    /* Start */
     do_wall = false;
 
     /* Determine if we need to detect walls */
@@ -262,7 +268,7 @@ bool borg_check_light(void)
     /* if (!when_detect_walls || (borg_t - when_detect_walls >= 937)) do_wall =
      * true; */
 
-     /* Start */
+    /* Start */
     do_evil = false;
 
     /* Determine if we need to detect evil */
@@ -293,17 +299,17 @@ bool borg_check_light(void)
        (borg_t - when_detect_evil  >= 183 - (80 - borg_trait[BI_MAXCLEVEL])))
        do_evil = true; */
 
-       /* Really low level */
-       /* if (borg_trait[BI_CLEVEL] <= 3 &&
-           (!when_detect_evil ||
-           (borg_t - when_detect_evil  >= 50))) do_evil = true; */
+    /* Really low level */
+    /* if (borg_trait[BI_CLEVEL] <= 3 &&
+        (!when_detect_evil ||
+        (borg_t - when_detect_evil  >= 50))) do_evil = true; */
 
-           /* Not too frequent in town */
-           /* if (borg_trait[BI_CDEPTH] == 0 &&
-               (!when_detect_evil ||
-               (borg_t - when_detect_evil  >= 250))) do_evil = true; */
+    /* Not too frequent in town */
+    /* if (borg_trait[BI_CDEPTH] == 0 &&
+        (!when_detect_evil ||
+        (borg_t - when_detect_evil  >= 250))) do_evil = true; */
 
-               /* Dont bother if I have ESP */
+    /* Dont bother if I have ESP */
     if (borg_trait[BI_ESP])
         do_evil = false;
 
@@ -318,7 +324,8 @@ bool borg_check_light(void)
 
     /* Hack -- find traps and doors and evil*/
     if ((do_trap || do_door || do_evil)
-        && ((!when_detect_traps || (borg_t - when_detect_traps >= 5))
+        && ((!when_detect_traps 
+            || (borg_t - when_detect_traps >= 5))
             || (!when_detect_evil || (borg_t - when_detect_evil >= 5))
             || (!when_detect_doors || (borg_t - when_detect_doors >= 5)))
         && borg_trait[BI_CDEPTH]) /* Never in town */
@@ -326,7 +333,8 @@ bool borg_check_light(void)
 
         /* Check for traps and doors and evil*/
         if (borg_activate_item(act_detect_all)
-            || borg_activate_item(act_mapping) || borg_zap_rod(sv_rod_detection)
+            || borg_activate_item(act_mapping) 
+            || borg_zap_rod(sv_rod_detection)
             || borg_spell_fail(SENSE_SURROUNDINGS, 40)) {
             borg_note("# Checking for traps, doors, and evil.");
 
@@ -334,8 +342,8 @@ bool borg_check_light(void)
 
             when_detect_traps = borg_t;
             when_detect_doors = borg_t;
-            when_detect_evil = borg_t;
-            when_detect_obj = borg_t;
+            when_detect_evil  = borg_t;
+            when_detect_obj   = borg_t;
 
             return (true);
         }
@@ -366,7 +374,8 @@ bool borg_check_light(void)
     {
         /* Check for traps and doors */
         if (borg_activate_item(act_detect_all)
-            || borg_activate_item(act_mapping) || borg_spell_fail(DETECTION, 40)
+            || borg_activate_item(act_mapping) 
+            || borg_spell_fail(DETECTION, 40)
             || borg_spell_fail(FIND_TRAPS_DOORS_STAIRS, 40)
             || borg_spell_fail(DETECT_STAIRS, 40)) {
             borg_note("# Checking for traps, doors & stairs.");
@@ -550,7 +559,7 @@ enum borg_need borg_maintain_light(void)
     }
 }
 
-/* 
+/*
  * This will look down a hallway and possibly light it up using
  * the Light Beam mage spell.  This spell is mostly used when
  * the borg is moving through the dungeon under boosted bravery.
@@ -566,10 +575,10 @@ enum borg_need borg_maintain_light(void)
  */
 bool borg_light_beam(bool simulation)
 {
-    int dir = 5;
+    int  dir      = 5;
     bool spell_ok = false;
-    int i;
-    bool blocked = false;
+    int  i;
+    bool blocked  = false;
 
     borg_grid *ag = &borg_grids[c_y][c_x];
 
@@ -602,7 +611,7 @@ bool borg_light_beam(bool simulation)
                     /* note the direction */
                     dir = 8;
                 } else {
-                    dir = 5;
+                    dir     = 5;
                     blocked = true;
                 }
             }
@@ -626,7 +635,7 @@ bool borg_light_beam(bool simulation)
                     /* note the direction */
                     dir = 2;
                 } else {
-                    dir = 5;
+                    dir     = 5;
                     blocked = true;
                 }
             }
@@ -650,7 +659,7 @@ bool borg_light_beam(bool simulation)
                     /* note the direction */
                     dir = 6;
                 } else {
-                    dir = 5;
+                    dir     = 5;
                     blocked = true;
                 }
             }
@@ -677,14 +686,14 @@ bool borg_light_beam(bool simulation)
                     /* note the direction */
                     dir = 4;
                 } else {
-                    dir = 5;
+                    dir     = 5;
                     blocked = true;
                 }
             }
         }
     }
 
-    /* Dont do it if on the edge of shifting the panel. */
+    /* Don't do it if on the edge of shifting the panel. */
     if (dir == 5 || spell_ok == false || blocked == true
         || (dir == 2
             && (c_y == 18 || c_y == 19 || c_y == 29 || c_y == 30 || c_y == 40

@@ -18,22 +18,25 @@
 #ifndef INCLUDED_BORG_MESSAGES_H
 #define INCLUDED_BORG_MESSAGES_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 extern int16_t  borg_msg_len;
 extern int16_t  borg_msg_siz;
-extern char	   *borg_msg_buf;
+extern char*    borg_msg_buf;
 extern int16_t  borg_msg_num;
 extern int16_t  borg_msg_max;
-extern int16_t *borg_msg_pos;
-extern int16_t *borg_msg_use;
+extern int16_t* borg_msg_pos;
+extern int16_t* borg_msg_use;
 
 /* Autostop search string */
 extern char borg_match[128];
 
-extern void borg_parse(char *msg);
+extern void borg_parse(char* msg);
 
 extern void borg_init_messages(void);
 

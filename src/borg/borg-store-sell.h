@@ -18,9 +18,12 @@
 #ifndef INCLUDED_BORG_STORE_SELL_H
 #define INCLUDED_BORG_STORE_SELL_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-item.h"
 
@@ -34,7 +37,7 @@ extern int sold_item_nxt;
 /*
  * Find the mininum amount of some item to buy/sell.
  */
-extern int borg_min_item_quantity(borg_item *item);
+extern int borg_min_item_quantity(borg_item* item);
 
 /*
  * Sell "useful" things to the home (for later)
@@ -54,11 +57,10 @@ extern bool borg_think_shop_sell(void);
 /*
  * Estimate the number of items worth "selling"
  */
-extern int borg_count_sell(void);
+extern int  borg_count_sell(void);
 
 extern void borg_init_store_sell(void);
 extern void borg_free_store_sell(void);
-
 
 #endif
 #endif

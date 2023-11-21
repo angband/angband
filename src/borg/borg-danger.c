@@ -17,22 +17,22 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-danger.h"
+
+#ifdef ALLOW_BORG
 
 #include "../game-world.h"
 #include "../player-calcs.h"
 
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-util.h"
+#include "borg-cave.h"
 #include "borg-fight-attack.h"
 #include "borg-flow-glyph.h"
 #include "borg-flow-kill.h"
 #include "borg-magic.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * Hack -- extra fear per "region"
@@ -44,10 +44,10 @@ uint16_t borg_fear_region[(AUTO_MAX_Y / 11) + 1][(AUTO_MAX_X / 11) + 1];
  */
 uint16_t borg_fear_monsters[AUTO_MAX_Y + 1][AUTO_MAX_X + 1];
 
-/* 
- * Recalculate danger 
+/*
+ * Recalculate danger
  */
-bool borg_danger_wipe = false; 
+bool borg_danger_wipe = false;
 
 /*
  * Calculate base danger from a monster's physical attacks
@@ -61,13 +61,13 @@ bool borg_danger_wipe = false;
  */
 static int borg_danger_physical(int i, bool full_damage)
 {
-    int                  k, n = 0;
-    int                  pfe = 0;
-    int                  power, chance;
+    int k, n = 0;
+    int pfe = 0;
+    int power, chance;
 
-    int16_t              ac = borg_trait[BI_ARMOR];
+    int16_t ac                 = borg_trait[BI_ARMOR];
 
-    borg_kill *kill = &borg_kills[i];
+    borg_kill *kill            = &borg_kills[i];
 
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
@@ -98,7 +98,7 @@ static int borg_danger_physical(int i, bool full_damage)
         int                 d_dice = r_ptr->blow[k].dice.dice;
         int                 d_side = r_ptr->blow[k].dice.sides;
 
-        power = 0;
+        power                      = 0;
 
         /* Done */
         if (!method)
@@ -107,404 +107,404 @@ static int borg_danger_physical(int i, bool full_damage)
         /* Analyze the attack */
         switch (borg_mon_blow_effect(effect->name)) {
         case MONBLOW_HURT:
-        z = (d_dice * d_side);
-        /* stun */
-        if ((d_side < 3) && (z > d_dice * d_side)) {
-            n += 200;
-        }
-        /* fudge- only mystics kick and they tend to KO.  Avoid close */
-        /* combat like the plauge */
-        if (method->stun) {
-            n += 400;
-        }
-        power = 60;
-        if ((pfe) && !borg_attacking) {
-            z /= 2;
-        }
-        break;
+            z = (d_dice * d_side);
+            /* stun */
+            if ((d_side < 3) && (z > d_dice * d_side)) {
+                n += 200;
+            }
+            /* fudge- only mystics kick and they tend to KO.  Avoid close */
+            /* combat like the plague */
+            if (method->stun) {
+                n += 400;
+            }
+            power = 60;
+            if ((pfe) && !borg_attacking) {
+                z /= 2;
+            }
+            break;
 
         case MONBLOW_POISON:
-        z = (d_dice * d_side);
-        power = 5;
-        if (borg_trait[BI_RPOIS])
+            z     = (d_dice * d_side);
+            power = 5;
+            if (borg_trait[BI_RPOIS])
+                break;
+            if (borg_trait[BI_TRPOIS])
+                break;
+            /* Add fear for the effect */
+            z += 10;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_trait[BI_TRPOIS])
-            break;
-        /* Add fear for the effect */
-        z += 10;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_DISENCHANT:
-        z = (d_dice * d_side);
-        power = 20;
-        if (borg_trait[BI_RDIS])
+            z     = (d_dice * d_side);
+            power = 20;
+            if (borg_trait[BI_RDIS])
+                break;
+            /* Add fear for the effect */
+            z += 500;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* Add fear for the effect */
-        z += 500;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_DRAIN_CHARGES:
-        z = (d_dice * d_side);
-        /* Add fear for the effect */
-        z += 20;
-        power = 15;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
+            z = (d_dice * d_side);
+            /* Add fear for the effect */
+            z += 20;
+            power = 15;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
+            break;
 
         case MONBLOW_EAT_GOLD:
-        z = (d_dice * d_side);
-        /* if in town and low level avoid them stupid urchins */
-        if (borg_trait[BI_CLEVEL] < 5)
-            z += 50;
-        power = 5;
-        if (100
-            <= adj_dex_safe[my_stat_ind[STAT_DEX]] + borg_trait[BI_CLEVEL])
+            z = (d_dice * d_side);
+            /* if in town and low level avoid them stupid urchins */
+            if (borg_trait[BI_CLEVEL] < 5)
+                z += 50;
+            power = 5;
+            if (100
+                <= adj_dex_safe[my_stat_ind[STAT_DEX]] + borg_trait[BI_CLEVEL])
+                break;
+            if (borg_trait[BI_GOLD] < 100)
+                break;
+            if (borg_trait[BI_GOLD] > 100000)
+                break;
+            /* Add fear for the effect */
+            z += 5;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_trait[BI_GOLD] < 100)
-            break;
-        if (borg_trait[BI_GOLD] > 100000)
-            break;
-        /* Add fear for the effect */
-        z += 5;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EAT_ITEM:
-        z = (d_dice * d_side);
-        power = 5;
-        if (100
-            <= adj_dex_safe[my_stat_ind[STAT_DEX]] + borg_trait[BI_CLEVEL])
+            z     = (d_dice * d_side);
+            power = 5;
+            if (100
+                <= adj_dex_safe[my_stat_ind[STAT_DEX]] + borg_trait[BI_CLEVEL])
+                break;
+            /* Add fear for the effect */
+            z += 5;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* Add fear for the effect */
-        z += 5;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EAT_FOOD:
-        z = (d_dice * d_side);
-        power = 5;
-        if (borg_trait[BI_FOOD] > 5)
+            z     = (d_dice * d_side);
+            power = 5;
+            if (borg_trait[BI_FOOD] > 5)
+                break;
+            /* Add fear for the effect */
+            z += 5;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* Add fear for the effect */
-        z += 5;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EAT_LIGHT:
-        z = (d_dice * d_side);
-        power = 5;
-        if (borg_trait[BI_CURLITE] == 0)
+            z     = (d_dice * d_side);
+            power = 5;
+            if (borg_trait[BI_CURLITE] == 0)
+                break;
+            if (borg_trait[BI_AFUEL] > 5)
+                break;
+            /* Add fear for the effect */
+            z += 5;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_trait[BI_AFUEL] > 5)
-            break;
-        /* Add fear for the effect */
-        z += 5;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_ACID:
-        if (borg_trait[BI_IACID])
+            if (borg_trait[BI_IACID])
+                break;
+            z = (d_dice * d_side);
+            if (borg_trait[BI_RACID])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRACID])
+                z = (z + 2) / 3;
+            /* Add fear for the effect */
+            z += 200; /* We don't want our armour corroded. */
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        z = (d_dice * d_side);
-        if (borg_trait[BI_RACID])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRACID])
-            z = (z + 2) / 3;
-        /* Add fear for the effect */
-        z += 200; /* We dont want our armour corroded. */
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_ELEC:
-        if (borg_trait[BI_IELEC])
+            if (borg_trait[BI_IELEC])
+                break;
+            z     = (d_dice * d_side);
+            power = 10;
+            if (borg_trait[BI_RELEC])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRELEC])
+                z = (z + 2) / 3;
+            /* Add fear for the effect */
+            z = z * 2;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        z = (d_dice * d_side);
-        power = 10;
-        if (borg_trait[BI_RELEC])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRELEC])
-            z = (z + 2) / 3;
-        /* Add fear for the effect */
-        z = z * 2;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_FIRE:
-        if (borg_trait[BI_IFIRE])
+            if (borg_trait[BI_IFIRE])
+                break;
+            z     = (d_dice * d_side);
+            power = 10;
+            if (borg_trait[BI_RFIRE])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRFIRE])
+                z = (z + 2) / 3;
+            /* Add fear for the effect */
+            z = z * 2;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        z = (d_dice * d_side);
-        power = 10;
-        if (borg_trait[BI_RFIRE])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRFIRE])
-            z = (z + 2) / 3;
-        /* Add fear for the effect */
-        z = z * 2;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_COLD:
-        if (borg_trait[BI_ICOLD])
+            if (borg_trait[BI_ICOLD])
+                break;
+            z     = (d_dice * d_side);
+            power = 10;
+            if (borg_trait[BI_RCOLD])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRCOLD])
+                z = (z + 2) / 3;
+            /* Add fear for the effect */
+            z = z * 2;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        z = (d_dice * d_side);
-        power = 10;
-        if (borg_trait[BI_RCOLD])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRCOLD])
-            z = (z + 2) / 3;
-        /* Add fear for the effect */
-        z = z * 2;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_BLIND:
-        z = (d_dice * d_side);
-        power = 2;
-        if (borg_trait[BI_RBLIND])
+            z     = (d_dice * d_side);
+            power = 2;
+            if (borg_trait[BI_RBLIND])
+                break;
+            /* Add fear for the effect */
+            z += 10;
+            if (borg_class == CLASS_MAGE)
+                z += 75;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* Add fear for the effect */
-        z += 10;
-        if (borg_class == CLASS_MAGE)
-            z += 75;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_CONFUSE:
-        z = (d_dice * d_side);
-        power = 10;
-        if (borg_trait[BI_RCONF])
-            break;
-        /* Add fear for the effect */
-        z += 200;
-        if (borg_class == CLASS_MAGE)
+            z     = (d_dice * d_side);
+            power = 10;
+            if (borg_trait[BI_RCONF])
+                break;
+            /* Add fear for the effect */
             z += 200;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
+            if (borg_class == CLASS_MAGE)
+                z += 200;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
+            break;
 
         case MONBLOW_TERRIFY:
-        z = (d_dice * d_side);
-        power = 10;
-        if (borg_trait[BI_RFEAR])
+            z     = (d_dice * d_side);
+            power = 10;
+            if (borg_trait[BI_RFEAR])
+                break;
+            /* Add fear for the effect */
+            z = z * 2;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* Add fear for the effect */
-        z = z * 2;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_PARALYZE:
-        z = (d_dice * d_side);
-        power = 2;
-        if (borg_trait[BI_FRACT])
+            z     = (d_dice * d_side);
+            power = 2;
+            if (borg_trait[BI_FRACT])
+                break;
+            z += 200;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        z += 200;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_STR:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_SSTR])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_SSTR])
+                break;
+            if (borg_stat[STAT_STR] <= 3)
+                break;
+            if (borg_spell_legal(RESTORATION))
+                break;
+            if (borg_spell_legal(REVITALIZE))
+                break;
+            if (borg_spell_legal(UNHOLY_REPRIEVE))
+                break;
+            z += 150;
+            /* extra scary to have str drain below 10 */
+            if (borg_stat[STAT_STR] < 10)
+                z += 100;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_stat[STAT_STR] <= 3)
-            break;
-        if (borg_spell_legal(RESTORATION))
-            break;
-        if (borg_spell_legal(REVITALIZE))
-            break;
-        if (borg_spell_legal(UNHOLY_REPRIEVE))
-            break;
-        z += 150;
-        /* extra scary to have str drain below 10 */
-        if (borg_stat[STAT_STR] < 10)
-            z += 100;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_DEX:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_SDEX])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_SDEX])
+                break;
+            if (borg_stat[STAT_DEX] <= 3)
+                break;
+            if (borg_spell_legal(RESTORATION))
+                break;
+            if (borg_spell_legal(REVITALIZE))
+                break;
+            z += 150;
+            /* extra scary to have drain below 10 */
+            if (borg_stat[STAT_DEX] < 10)
+                z += 100;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_stat[STAT_DEX] <= 3)
-            break;
-        if (borg_spell_legal(RESTORATION))
-            break;
-        if (borg_spell_legal(REVITALIZE))
-            break;
-        z += 150;
-        /* extra scary to have drain below 10 */
-        if (borg_stat[STAT_DEX] < 10)
-            z += 100;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_CON:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_SCON])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_SCON])
+                break;
+            if (borg_stat[STAT_CON] <= 3)
+                break;
+            if (borg_spell_legal(RESTORATION))
+                break;
+            if (borg_spell_legal(REVITALIZE))
+                break;
+            if (borg_spell_legal(UNHOLY_REPRIEVE))
+                break;
+            /* Add fear for the effect */
+            z += 150;
+            /* extra scary to have con drain below 8 */
+            if (borg_stat[STAT_STR] < 8)
+                z += 100;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_stat[STAT_CON] <= 3)
-            break;
-        if (borg_spell_legal(RESTORATION))
-            break;
-        if (borg_spell_legal(REVITALIZE))
-            break;
-        if (borg_spell_legal(UNHOLY_REPRIEVE))
-            break;
-        /* Add fear for the effect */
-        z += 150;
-        /* extra scary to have con drain below 8 */
-        if (borg_stat[STAT_STR] < 8)
-            z += 100;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_INT:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_SINT])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_SINT])
+                break;
+            if (borg_stat[STAT_INT] <= 3)
+                break;
+            if (borg_spell_legal(RESTORATION))
+                break;
+            if (borg_spell_legal(REVITALIZE))
+                break;
+            if (borg_spell_legal(UNHOLY_REPRIEVE))
+                break;
+            z += 150;
+            /* extra scary for spell caster */
+            if (borg_spell_stat() == STAT_INT)
+                z += 50;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_stat[STAT_INT] <= 3)
-            break;
-        if (borg_spell_legal(RESTORATION))
-            break;
-        if (borg_spell_legal(REVITALIZE))
-            break;
-        if (borg_spell_legal(UNHOLY_REPRIEVE))
-            break;
-        z += 150;
-        /* extra scary for spell caster */
-        if (borg_spell_stat() == STAT_INT)
-            z += 50;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_WIS:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_SWIS])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_SWIS])
+                break;
+            if (borg_stat[STAT_WIS] <= 3)
+                break;
+            if (borg_spell_legal(RESTORATION))
+                break;
+            if (borg_spell_legal(REVITALIZE))
+                break;
+            z += 150;
+            /* extra scary for pray'er */
+            if (borg_spell_stat() == STAT_WIS)
+                z += 50;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        if (borg_stat[STAT_WIS] <= 3)
-            break;
-        if (borg_spell_legal(RESTORATION))
-            break;
-        if (borg_spell_legal(REVITALIZE))
-            break;
-        z += 150;
-        /* extra scary for pray'er */
-        if (borg_spell_stat() == STAT_WIS)
-            z += 50;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_LOSE_ALL:
-        z = (d_dice * d_side);
-        power = 2;
-        /* only morgoth. HACK to make it easier to fight him */
-        break;
+            z     = (d_dice * d_side);
+            power = 2;
+            /* only morgoth. HACK to make it easier to fight him */
+            break;
 
         case MONBLOW_SHATTER:
-        z = (d_dice * d_side);
-        z -= (z * ((ac < 150) ? ac : 150) / 250);
-        power = 60;
-        /* Add fear for the effect */
-        z += 150;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
+            z = (d_dice * d_side);
+            z -= (z * ((ac < 150) ? ac : 150) / 250);
+            power = 60;
+            /* Add fear for the effect */
+            z += 150;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
+            break;
 
         case MONBLOW_EXP_10:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_HLIFE])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_HLIFE])
+                break;
+            /* do not worry about drain exp after level 50 */
+            if (borg_trait[BI_CLEVEL] == 50)
+                break;
+            if (borg_spell_legal(REMEMBRANCE)
+                || borg_spell_legal(UNHOLY_REPRIEVE)
+                || borg_spell_legal(REVITALIZE))
+                break;
+            /* Add fear for the effect */
+            z += 100;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* do not worry about drain exp after level 50 */
-        if (borg_trait[BI_CLEVEL] == 50)
-            break;
-        if (borg_spell_legal(REMEMBRANCE)
-            || borg_spell_legal(UNHOLY_REPRIEVE)
-            || borg_spell_legal(REVITALIZE))
-            break;
-        /* Add fear for the effect */
-        z += 100;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EXP_20:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_HLIFE])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_HLIFE])
+                break;
+            /* do not worry about drain exp after level 50 */
+            if (borg_trait[BI_CLEVEL] >= 50)
+                break;
+            if (borg_spell_legal(REMEMBRANCE)
+                || borg_spell_legal(UNHOLY_REPRIEVE)
+                || borg_spell_legal(REVITALIZE))
+                break;
+            /* Add fear for the effect */
+            z += 150;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* do not worry about drain exp after level 50 */
-        if (borg_trait[BI_CLEVEL] >= 50)
-            break;
-        if (borg_spell_legal(REMEMBRANCE)
-            || borg_spell_legal(UNHOLY_REPRIEVE)
-            || borg_spell_legal(REVITALIZE))
-            break;
-        /* Add fear for the effect */
-        z += 150;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EXP_40:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_HLIFE])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_HLIFE])
+                break;
+            /* do not worry about drain exp after level 50 */
+            if (borg_trait[BI_CLEVEL] >= 50)
+                break;
+            if (borg_spell_legal(REMEMBRANCE)
+                || borg_spell_legal(UNHOLY_REPRIEVE)
+                || borg_spell_legal(REVITALIZE))
+                break;
+            /* Add fear for the effect */
+            z += 200;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* do not worry about drain exp after level 50 */
-        if (borg_trait[BI_CLEVEL] >= 50)
-            break;
-        if (borg_spell_legal(REMEMBRANCE)
-            || borg_spell_legal(UNHOLY_REPRIEVE)
-            || borg_spell_legal(REVITALIZE))
-            break;
-        /* Add fear for the effect */
-        z += 200;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_EXP_80:
-        z = (d_dice * d_side);
-        if (borg_trait[BI_HLIFE])
+            z = (d_dice * d_side);
+            if (borg_trait[BI_HLIFE])
+                break;
+            /* do not worry about drain exp after level 50 */
+            if (borg_trait[BI_CLEVEL] >= 50)
+                break;
+            if (borg_spell_legal(REMEMBRANCE)
+                || borg_spell_legal(UNHOLY_REPRIEVE)
+                || borg_spell_legal(REVITALIZE))
+                break;
+            /* Add fear for the effect */
+            z += 250;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
             break;
-        /* do not worry about drain exp after level 50 */
-        if (borg_trait[BI_CLEVEL] >= 50)
-            break;
-        if (borg_spell_legal(REMEMBRANCE)
-            || borg_spell_legal(UNHOLY_REPRIEVE)
-            || borg_spell_legal(REVITALIZE))
-            break;
-        /* Add fear for the effect */
-        z += 250;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
 
         case MONBLOW_HALLU:
-        z = (d_dice * d_side);
-        /* Add fear for the effect */
-        z += 250;
-        if ((pfe) && !borg_attacking)
-            z /= 2;
-        break;
+            z = (d_dice * d_side);
+            /* Add fear for the effect */
+            z += 250;
+            if ((pfe) && !borg_attacking)
+                z /= 2;
+            break;
         }
 
         /* reduce by damage reduction */
@@ -518,8 +518,9 @@ static int borg_danger_physical(int i, bool full_damage)
             /* figure out chance that monster will hit you. */
             /* add a 50% bonus in to account for bad luck. */
             if (borg_fighting_unique || (r_ptr->level + power) > 0)
-                chance = 150
-                - (((ac * 300) / 4) / 1 + ((r_ptr->level + power) * 3));
+                chance
+                    = 150
+                      - (((ac * 300) / 4) / 1 + ((r_ptr->level + power) * 3));
             else
                 chance = -1;
 
@@ -552,13 +553,13 @@ static int borg_danger_physical(int i, bool full_damage)
 static int borg_danger_spell(
     int i, int y, int x, int d, bool average, bool full_damage)
 {
-    int                  q, n = 0, pfe = 0, glyph = 0, glyph_check = 0;
+    int q, n = 0, pfe = 0, glyph = 0, glyph_check = 0;
 
-    int                  spot_x, spot_y, spot_safe = 1;
+    int spot_x, spot_y, spot_safe = 1;
 
-    int                  hp, total_dam = 0, av;
+    int hp, total_dam = 0, av;
 
-    bool                 bolt = false;
+    bool bolt       = false;
 
     borg_kill *kill = &borg_kills[i];
 
@@ -613,1565 +614,1565 @@ static int borg_danger_spell(
         /* Cast the spell. */
         switch (kill->spell[q]) {
         case RSF_SHRIEK:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count.*/
-        /* Add fear for the effect */
-        p += 5;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count.*/
+            /* Add fear for the effect */
+            p += 5;
+            break;
 
         case RSF_WHIP:
-        if (d < 3) {
-            z = 100;
-        }
-        break;
+            if (d < 3) {
+                z = 100;
+            }
+            break;
 
         case RSF_SPIT:
-        if (d < 4) {
-            z = 100;
-        }
-        break;
+            if (d < 4) {
+                z = 100;
+            }
+            break;
 
         case RSF_SHOT:
-        z = ((r_ptr->spell_power / 8) + 1) * 5;
-        break;
+            z = ((r_ptr->spell_power / 8) + 1) * 5;
+            break;
 
         case RSF_ARROW:
-        z = ((r_ptr->spell_power / 8) + 1) * 6;
-        break;
+            z = ((r_ptr->spell_power / 8) + 1) * 6;
+            break;
 
         case RSF_BOLT:
-        z = ((r_ptr->spell_power / 8) + 1) * 7;
-        break;
+            z = ((r_ptr->spell_power / 8) + 1) * 7;
+            break;
 
         case RSF_BR_ACID:
-        if (borg_trait[BI_IACID])
+            if (borg_trait[BI_IACID])
+                break;
+            z = (hp / 3);
+            /* max damage */
+            if (z > 1600)
+                z = 1600;
+            if (borg_trait[BI_RACID])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRACID])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count.*/
+            /* Add fear for the effect */
+            p += 40;
             break;
-        z = (hp / 3);
-        /* max damage */
-        if (z > 1600)
-            z = 1600;
-        if (borg_trait[BI_RACID])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRACID])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count.*/
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BR_ELEC:
-        if (borg_trait[BI_IELEC])
+            if (borg_trait[BI_IELEC])
+                break;
+            z = (hp / 3);
+            /* max damage */
+            if (z > 1600)
+                z = 1600;
+            if (borg_trait[BI_RELEC])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRELEC])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count.*/
+            /* Add fear for the effect */
+            p += 20;
             break;
-        z = (hp / 3);
-        /* max damage */
-        if (z > 1600)
-            z = 1600;
-        if (borg_trait[BI_RELEC])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRELEC])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count.*/
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BR_FIRE:
-        if (borg_trait[BI_IFIRE])
+            if (borg_trait[BI_IFIRE])
+                break;
+            z = (hp / 3);
+            /* max damage */
+            if (z > 1600)
+                z = 1600;
+            if (borg_trait[BI_RFIRE])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRFIRE])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 40;
             break;
-        z = (hp / 3);
-        /* max damage */
-        if (z > 1600)
-            z = 1600;
-        if (borg_trait[BI_RFIRE])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRFIRE])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BR_COLD:
-        if (borg_trait[BI_ICOLD])
+            if (borg_trait[BI_ICOLD])
+                break;
+            z = (hp / 3);
+            /* max damage */
+            if (z > 1600)
+                z = 1600;
+            if (borg_trait[BI_RCOLD])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRCOLD])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        z = (hp / 3);
-        /* max damage */
-        if (z > 1600)
-            z = 1600;
-        if (borg_trait[BI_RCOLD])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRCOLD])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BR_POIS:
-        z = (hp / 3);
-        /* max damage */
-        if (z > 800)
-            z = 800;
-        if (borg_trait[BI_RPOIS])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRPOIS])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRPOIS])
+            z = (hp / 3);
+            /* max damage */
+            if (z > 800)
+                z = 800;
+            if (borg_trait[BI_RPOIS])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRPOIS])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRPOIS])
+                break;
+            if (borg_trait[BI_RPOIS])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        if (borg_trait[BI_RPOIS])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BR_NETH:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 600)
-            z = 600;
-        if (borg_trait[BI_RNTHR]) {
-            z = (z * 6) / 9;
+            z = (hp / 6);
+            /* max damage */
+            if (z > 600)
+                z = 600;
+            if (borg_trait[BI_RNTHR]) {
+                z = (z * 6) / 9;
+                break;
+            }
+            /* Add fear for the effect */
+            p += 125;
             break;
-        }
-        /* Add fear for the effect */
-        p += 125;
-        break;
 
         case RSF_BR_LIGHT:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 500)
-            z = 500;
-        if (borg_trait[BI_RLITE]) {
-            z = (z * 2) / 3;
-            break;
-        }
-        if (borg_trait[BI_RBLIND])
-            break;
-        p += 20;
-        if (borg_class == CLASS_MAGE)
+            z = (hp / 6);
+            /* max damage */
+            if (z > 500)
+                z = 500;
+            if (borg_trait[BI_RLITE]) {
+                z = (z * 2) / 3;
+                break;
+            }
+            if (borg_trait[BI_RBLIND])
+                break;
             p += 20;
-        break;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
+            break;
 
         case RSF_BR_DARK:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 500)
-            z = 500;
-        if (borg_trait[BI_RDARK])
-            z = (z * 2) / 3;
-        if (borg_trait[BI_RDARK])
-            break;
-        if (borg_trait[BI_RBLIND])
-            break;
-        p += 20;
-        if (borg_class == CLASS_MAGE)
+            z = (hp / 6);
+            /* max damage */
+            if (z > 500)
+                z = 500;
+            if (borg_trait[BI_RDARK])
+                z = (z * 2) / 3;
+            if (borg_trait[BI_RDARK])
+                break;
+            if (borg_trait[BI_RBLIND])
+                break;
             p += 20;
-        break;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
+            break;
 
         case RSF_BR_SOUN:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 500)
-            z = 500;
-        if (borg_trait[BI_RSND])
-            z = (z * 5) / 9;
-        if (borg_trait[BI_RSND])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 500)
+                z = 500;
+            if (borg_trait[BI_RSND])
+                z = (z * 5) / 9;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 1000;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 50;
             break;
-        /* if already stunned be REALLY nervous dangerousabout this */
-        if (borg_trait[BI_ISSTUN])
-            z += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 1000;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 50;
-        break;
 
         case RSF_BR_CHAO:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 600)
-            z = 600;
-        if (borg_trait[BI_RKAOS])
-            z = (z * 6) / 9;
-        /* Add fear for the effect */
-        p += 100;
-        if (borg_trait[BI_RKAOS])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 600)
+                z = 600;
+            if (borg_trait[BI_RKAOS])
+                z = (z * 6) / 9;
+            /* Add fear for the effect */
+            p += 100;
+            if (borg_trait[BI_RKAOS])
+                break;
+            p += 200;
             break;
-        p += 200;
-        break;
 
         case RSF_BR_DISE:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 500)
-            z = 500;
-        if (borg_trait[BI_RDIS])
-            z = (z * 6) / 10;
-        if (borg_trait[BI_RDIS])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 500)
+                z = 500;
+            if (borg_trait[BI_RDIS])
+                z = (z * 6) / 10;
+            if (borg_trait[BI_RDIS])
+                break;
+            p += 500;
             break;
-        p += 500;
-        break;
 
         case RSF_BR_NEXU:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 400)
-            z = 400;
-        if (borg_trait[BI_RNXUS])
-            z = (z * 6) / 10;
-        if (borg_trait[BI_RNXUS])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 400)
+                z = 400;
+            if (borg_trait[BI_RNXUS])
+                z = (z * 6) / 10;
+            if (borg_trait[BI_RNXUS])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 100;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 100;
-        break;
 
         case RSF_BR_TIME:
-        z = (hp / 3);
-        /* max damage */
-        if (z > 150)
-            z = 150;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 250;
-        break;
+            z = (hp / 3);
+            /* max damage */
+            if (z > 150)
+                z = 150;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 250;
+            break;
 
         case RSF_BR_INER:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 200)
-            z = 200;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 100;
-        break;
+            z = (hp / 6);
+            /* max damage */
+            if (z > 200)
+                z = 200;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 100;
+            break;
 
         case RSF_BR_GRAV:
-        z = (hp / 3);
-        /* max damage */
-        if (z > 200)
-            z = 200;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 100;
-        if (borg_trait[BI_RSND])
+            z = (hp / 3);
+            /* max damage */
+            if (z > 200)
+                z = 200;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 100;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 1000;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            z += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 1000;
-        break;
 
         case RSF_BR_SHAR:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 500)
-            z = 500;
-        if (borg_trait[BI_RSHRD])
-            z = (z * 6) / 9;
-        if (borg_trait[BI_RSHRD])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 500)
+                z = 500;
+            if (borg_trait[BI_RSHRD])
+                z = (z * 6) / 9;
+            if (borg_trait[BI_RSHRD])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 50;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 50;
-        break;
 
         case RSF_BR_PLAS:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 150)
-            z = 150;
-        if (borg_trait[BI_RSND])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 150)
+                z = 150;
+            if (borg_trait[BI_RSND])
+                break;
+            /* Pump this up if you have goi so that the borg is sure */
+            /* to be made nervous */
+            p += 100;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 1000;
             break;
-        /* Pump this up if you have goi so that the borg is sure */
-        /* to be made nervous */
-        p += 100;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            z += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 1000;
-        break;
 
         case RSF_BR_WALL:
-        z = (hp / 6);
-        /* max damage */
-        if (z > 200)
-            z = 200;
-        if (borg_trait[BI_RSND])
+            z = (hp / 6);
+            /* max damage */
+            if (z > 200)
+                z = 200;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 100;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 500;
+            /* Add fear for the effect */
+            p += 50;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            z += 100;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 500;
-        /* Add fear for the effect */
-        p += 50;
-        break;
 
         case RSF_BR_MANA:
-        /* Nothing currently breaths mana but best to have a check */
-        z = (hp / 3);
-        /* max damage */
-        if (z > 1600)
-            z = 1600;
-        break;
+            /* Nothing currently breaths mana but best to have a check */
+            z = (hp / 3);
+            /* max damage */
+            if (z > 1600)
+                z = 1600;
+            break;
 
         case RSF_BOULDER:
-        z = ((1 + r_ptr->spell_power / 7) * 12);
-        bolt = true;
-        break;
+            z    = ((1 + r_ptr->spell_power / 7) * 12);
+            bolt = true;
+            break;
 
         case RSF_WEAVE:
-        /* annoying creation of traps */
-        break;
+            /* annoying creation of traps */
+            break;
 
         case RSF_BA_ACID:
-        if (borg_trait[BI_IACID])
+            if (borg_trait[BI_IACID])
+                break;
+            z = (r_ptr->spell_power * 3) + 15;
+            if (borg_trait[BI_RACID])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRACID])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 40;
             break;
-        z = (r_ptr->spell_power * 3) + 15;
-        if (borg_trait[BI_RACID])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRACID])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BA_ELEC:
-        if (borg_trait[BI_IELEC])
+            if (borg_trait[BI_IELEC])
+                break;
+            z = (r_ptr->spell_power * 3) / 2 + 8;
+            if (borg_trait[BI_RELEC])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRELEC])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        z = (r_ptr->spell_power * 3) / 2 + 8;
-        if (borg_trait[BI_RELEC])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRELEC])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BA_FIRE:
-        if (borg_trait[BI_IFIRE])
+            if (borg_trait[BI_IFIRE])
+                break;
+            z = (r_ptr->spell_power * 7) / 2 + 10;
+            if (borg_trait[BI_RFIRE])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRFIRE])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 40;
             break;
-        z = (r_ptr->spell_power * 7) / 2 + 10;
-        if (borg_trait[BI_RFIRE])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRFIRE])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BA_COLD:
-        if (borg_trait[BI_ICOLD])
+            if (borg_trait[BI_ICOLD])
+                break;
+            z = (r_ptr->spell_power * 3 / 2) + 10;
+            if (borg_trait[BI_RCOLD])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRCOLD])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        z = (r_ptr->spell_power * 3 / 2) + 10;
-        if (borg_trait[BI_RCOLD])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRCOLD])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BA_POIS:
-        z = (r_ptr->spell_power / 2 + 3) * 4;
-        if (borg_trait[BI_RPOIS])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRPOIS])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRPOIS])
+            z = (r_ptr->spell_power / 2 + 3) * 4;
+            if (borg_trait[BI_RPOIS])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRPOIS])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRPOIS])
+                break;
+            if (borg_trait[BI_RPOIS])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        if (borg_trait[BI_RPOIS])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BA_SHAR:
-        z = ((r_ptr->spell_power * 3) / 2) + 10;
-        if (borg_trait[BI_RSHRD])
-            z = (z * 6) / 9;
-        if (borg_trait[BI_RSHRD])
+            z = ((r_ptr->spell_power * 3) / 2) + 10;
+            if (borg_trait[BI_RSHRD])
+                z = (z * 6) / 9;
+            if (borg_trait[BI_RSHRD])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BA_NETH:
-        z = (r_ptr->spell_power * 4) + (10 * 10);
-        if (borg_trait[BI_RNTHR])
-            z = (z * 6) / 8;
-        if (borg_trait[BI_RNTHR])
+            z = (r_ptr->spell_power * 4) + (10 * 10);
+            if (borg_trait[BI_RNTHR])
+                z = (z * 6) / 8;
+            if (borg_trait[BI_RNTHR])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 250;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 250;
-        break;
 
         case RSF_BA_WATE:
-        z = (r_ptr->spell_power * 5) / 2 + 50;
-        if (borg_trait[BI_RSND])
+            z = (r_ptr->spell_power * 5) / 2 + 50;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                p += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                p += 1000;
+            if (borg_trait[BI_RCONF])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 50;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            p += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            p += 1000;
-        if (borg_trait[BI_RCONF])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 50;
-        if (borg_class == CLASS_MAGE)
-            p += 20;
-        break;
 
         case RSF_BA_MANA:
-        z = ((r_ptr->spell_power * 5) + (10 * 10));
-        /* Add fear for the effect */
-        p += 50;
-        break;
+            z = ((r_ptr->spell_power * 5) + (10 * 10));
+            /* Add fear for the effect */
+            p += 50;
+            break;
 
         case RSF_BA_HOLY:
-        z = 10 + ((r_ptr->spell_power * 3) / 2 + 1) / 2;
-        /* Add fear for the effect */
-        p += 50;
-        break;
+            z = 10 + ((r_ptr->spell_power * 3) / 2 + 1) / 2;
+            /* Add fear for the effect */
+            p += 50;
+            break;
 
         case RSF_BA_DARK:
-        z = ((r_ptr->spell_power * 4) + (10 * 10));
-        if (borg_trait[BI_RDARK])
-            z = (z * 6) / 9;
-        if (borg_trait[BI_RDARK])
-            break;
-        if (borg_trait[BI_RBLIND])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        if (borg_class == CLASS_MAGE)
+            z = ((r_ptr->spell_power * 4) + (10 * 10));
+            if (borg_trait[BI_RDARK])
+                z = (z * 6) / 9;
+            if (borg_trait[BI_RDARK])
+                break;
+            if (borg_trait[BI_RBLIND])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
             p += 20;
-        break;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
+            break;
 
         case RSF_BA_LIGHT:
-        z = 10 + (r_ptr->spell_power * 3 / 2);
-        if (borg_trait[BI_RLITE])
-            z = (z * 6) / 9;
-        if (borg_trait[BI_RLITE])
-            break;
-        if (borg_trait[BI_RBLIND])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        if (borg_class == CLASS_MAGE)
+            z = 10 + (r_ptr->spell_power * 3 / 2);
+            if (borg_trait[BI_RLITE])
+                z = (z * 6) / 9;
+            if (borg_trait[BI_RLITE])
+                break;
+            if (borg_trait[BI_RBLIND])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
             p += 20;
-        break;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
+            break;
 
         case RSF_STORM:
-        z = 70 + (r_ptr->spell_power * 5);
-        if (borg_trait[BI_RSND])
+            z = 70 + (r_ptr->spell_power * 5);
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                p += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                p += 1000;
+            if (borg_trait[BI_RCONF])
+                break;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            p += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            p += 1000;
-        if (borg_trait[BI_RCONF])
-            break;
-        break;
 
         case RSF_DRAIN_MANA:
-        if (borg_trait[BI_MAXSP])
-            p += 100;
-        break;
+            if (borg_trait[BI_MAXSP])
+                p += 100;
+            break;
 
         case RSF_MIND_BLAST:
-        if (borg_trait[BI_SAV] < 100)
-            z = (r_ptr->spell_power / 2 + 1);
-        break;
+            if (borg_trait[BI_SAV] < 100)
+                z = (r_ptr->spell_power / 2 + 1);
+            break;
 
         case RSF_BRAIN_SMASH:
-        z = (12 * (15 + 1)) / 2;
-        p += 200 - 2 * borg_trait[BI_SAV];
-        if (p < 0)
-            p = 0;
-        break;
+            z = (12 * (15 + 1)) / 2;
+            p += 200 - 2 * borg_trait[BI_SAV];
+            if (p < 0)
+                p = 0;
+            break;
 
         case RSF_WOUND:
-        if (borg_trait[BI_SAV] >= 100)
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            z = ((r_ptr->spell_power / 3 * 2) * 5);
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            /* reduce by % chance of save  (add 20% for fudge) */
+            z = z * (120 - borg_trait[BI_SAV]) / 100;
             break;
-        z = ((r_ptr->spell_power / 3 * 2) * 5);
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        /* reduce by % chance of save  (add 20% for fudge) */
-        z = z * (120 - borg_trait[BI_SAV]) / 100;
-        break;
 
         case RSF_BO_ACID:
-        bolt = true;
-        if (borg_trait[BI_IACID])
+            bolt = true;
+            if (borg_trait[BI_IACID])
+                break;
+            z = ((7 * 8) + (r_ptr->spell_power / 3));
+            if (borg_trait[BI_RACID])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRACID])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 40;
             break;
-        z = ((7 * 8) + (r_ptr->spell_power / 3));
-        if (borg_trait[BI_RACID])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRACID])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BO_ELEC:
-        if (borg_trait[BI_IELEC])
+            if (borg_trait[BI_IELEC])
+                break;
+            bolt = true;
+            z    = ((4 * 8) + (r_ptr->spell_power / 3));
+            if (borg_trait[BI_RELEC])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRELEC])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        bolt = true;
-        z = ((4 * 8) + (r_ptr->spell_power / 3));
-        if (borg_trait[BI_RELEC])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRELEC])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BO_FIRE:
-        if (borg_trait[BI_IFIRE])
+            if (borg_trait[BI_IFIRE])
+                break;
+            bolt = true;
+            z    = ((9 * 8) + (r_ptr->spell_power / 3));
+            if (borg_trait[BI_RFIRE])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRFIRE])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 40;
             break;
-        bolt = true;
-        z = ((9 * 8) + (r_ptr->spell_power / 3));
-        if (borg_trait[BI_RFIRE])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRFIRE])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 40;
-        break;
 
         case RSF_BO_COLD:
-        if (borg_trait[BI_ICOLD])
+            if (borg_trait[BI_ICOLD])
+                break;
+            bolt = true;
+            z    = ((6 * 8) + (r_ptr->spell_power / 3));
+            if (borg_trait[BI_RCOLD])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRCOLD])
+                z = (z + 2) / 3;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
             break;
-        bolt = true;
-        z = ((6 * 8) + (r_ptr->spell_power / 3));
-        if (borg_trait[BI_RCOLD])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRCOLD])
-            z = (z + 2) / 3;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
 
         case RSF_BO_POIS:
-        if (borg_trait[BI_IPOIS])
+            if (borg_trait[BI_IPOIS])
+                break;
+            z = ((9 * 8) + (r_ptr->spell_power / 3));
+            if (borg_trait[BI_RPOIS])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRPOIS])
+                z = (z + 2) / 3;
+            bolt = true;
             break;
-        z = ((9 * 8) + (r_ptr->spell_power / 3));
-        if (borg_trait[BI_RPOIS])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRPOIS])
-            z = (z + 2) / 3;
-        bolt = true;
-        break;
 
         case RSF_BO_NETH:
-        bolt = true;
-        z = (5 * 5) + (r_ptr->spell_power * 3 / 2) + 50;
-        if (borg_trait[BI_RNTHR])
-            z = (z * 6) / 8;
-        if (borg_trait[BI_RNTHR])
+            bolt = true;
+            z    = (5 * 5) + (r_ptr->spell_power * 3 / 2) + 50;
+            if (borg_trait[BI_RNTHR])
+                z = (z * 6) / 8;
+            if (borg_trait[BI_RNTHR])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 200;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 200;
-        break;
 
         case RSF_BO_WATE:
-        z = (10 * 10) + (r_ptr->spell_power);
-        bolt = true;
-        if (borg_trait[BI_RSND])
-            break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            p += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            p += 1000;
-        if (borg_trait[BI_RCONF])
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        if (borg_class == CLASS_MAGE)
+            z    = (10 * 10) + (r_ptr->spell_power);
+            bolt = true;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                p += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                p += 1000;
+            if (borg_trait[BI_RCONF])
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
             p += 20;
-        break;
+            if (borg_class == CLASS_MAGE)
+                p += 20;
+            break;
 
         case RSF_BO_MANA:
-        z = (r_ptr->spell_power * 5) / 2 + 50;
-        bolt = true;
-        /* Add fear for the effect */
-        p += 50;
-        break;
+            z    = (r_ptr->spell_power * 5) / 2 + 50;
+            bolt = true;
+            /* Add fear for the effect */
+            p += 50;
+            break;
 
         case RSF_BO_PLAS:
-        z = (10 + (8 * 7) + (r_ptr->spell_power));
-        bolt = true;
-        if (borg_trait[BI_RSND])
+            z    = (10 + (8 * 7) + (r_ptr->spell_power));
+            bolt = true;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 500;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 1000;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            z += 500;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 1000;
-        break;
 
         case RSF_BO_ICE:
-        z = (6 * 6) + (r_ptr->spell_power);
-        bolt = true;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        if (borg_trait[BI_RSND])
+            z    = (6 * 6) + (r_ptr->spell_power);
+            bolt = true;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
+            if (borg_trait[BI_RSND])
+                break;
+            /* if already stunned be REALLY nervous about this */
+            if (borg_trait[BI_ISSTUN])
+                z += 50;
+            if (borg_trait[BI_ISHEAVYSTUN])
+                z += 1000;
             break;
-        /* if already stunned be REALLY nervous about this */
-        if (borg_trait[BI_ISSTUN])
-            z += 50;
-        if (borg_trait[BI_ISHEAVYSTUN])
-            z += 1000;
-        break;
 
         case RSF_MISSILE:
-        z = ((2 * 6) + (r_ptr->spell_power / 3));
-        bolt = true;
-        break;
+            z    = ((2 * 6) + (r_ptr->spell_power / 3));
+            bolt = true;
+            break;
 
         case RSF_BE_ELEC:
-        if (borg_trait[BI_IELEC])
+            if (borg_trait[BI_IELEC])
+                break;
+            z = ((5 * 5) + (r_ptr->spell_power * 2) + 30);
+            if (borg_trait[BI_RELEC])
+                z = (z + 2) / 3;
+            if (borg_trait[BI_TRELEC])
+                z = (z + 2) / 3;
+            bolt = true;
             break;
-        z = ((5 * 5) + (r_ptr->spell_power * 2) + 30);
-        if (borg_trait[BI_RELEC])
-            z = (z + 2) / 3;
-        if (borg_trait[BI_TRELEC])
-            z = (z + 2) / 3;
-        bolt = true;
-        break;
 
         case RSF_BE_NETH:
-        bolt = true;
-        z = ((5 * 5) + (r_ptr->spell_power * 2) + 30);
-        if (borg_trait[BI_RNTHR])
-            z = (z * 6) / 8;
-        if (borg_trait[BI_RNTHR])
+            bolt = true;
+            z    = ((5 * 5) + (r_ptr->spell_power * 2) + 30);
+            if (borg_trait[BI_RNTHR])
+                z = (z * 6) / 8;
+            if (borg_trait[BI_RNTHR])
+                break;
+            bolt = true;
             break;
-        bolt = true;
-        break;
 
         case RSF_SCARE:
-        if (borg_trait[BI_SAV] >= 100)
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
 
         case RSF_BLIND:
-        if (borg_trait[BI_RBLIND])
+            if (borg_trait[BI_RBLIND])
+                break;
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
             break;
-        if (borg_trait[BI_SAV] >= 100)
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
 
         case RSF_CONF:
-        if (borg_trait[BI_RCONF])
+            if (borg_trait[BI_RCONF])
+                break;
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
             break;
-        if (borg_trait[BI_SAV] >= 100)
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
 
         case RSF_SLOW:
-        if (borg_trait[BI_FRACT])
+            if (borg_trait[BI_FRACT])
+                break;
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 5;
             break;
-        if (borg_trait[BI_SAV] >= 100)
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 5;
-        break;
 
         case RSF_HOLD:
-        if (borg_trait[BI_FRACT])
+            if (borg_trait[BI_FRACT])
+                break;
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            p += 150;
             break;
-        if (borg_trait[BI_SAV] >= 100)
-            break;
-        p += 150;
-        break;
 
         case RSF_HASTE:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
+            break;
 
         case RSF_HEAL:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
+            break;
 
         case RSF_HEAL_KIN:
-        break;
+            break;
 
         case RSF_BLINK:
-        break;
+            break;
 
         case RSF_TPORT:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
+            break;
 
         case RSF_TELE_TO:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
+            break;
 
         case RSF_TELE_SELF_TO:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 20;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 20;
+            break;
 
         case RSF_TELE_AWAY:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 10;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 10;
+            break;
 
         case RSF_TELE_LEVEL:
-        if (borg_trait[BI_SAV] >= 100)
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 50;
             break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 50;
-        break;
 
         case RSF_DARKNESS:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 5;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 5;
+            break;
 
         case RSF_TRAPS:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 50;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 50;
+            break;
 
         case RSF_FORGET:
-        if (borg_trait[BI_SAV] >= 100)
-            break;
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        {
-            /* if you are a spell caster, this is a big issue */
-            if (borg_trait[BI_CURSP] < 15) {
-                p += 500;
-            } else {
-                p += 30;
+            if (borg_trait[BI_SAV] >= 100)
+                break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            {
+                /* if you are a spell caster, this is a big issue */
+                if (borg_trait[BI_CURSP] < 15) {
+                    p += 500;
+                } else {
+                    p += 30;
+                }
             }
-        }
-        break;
+            break;
 
         case RSF_SHAPECHANGE:
-        /* if looking at full damage, things that are just annoying */
-        /* do not count. */
-        /* Add fear for the effect */
-        p += 200;
-        break;
+            /* if looking at full damage, things that are just annoying */
+            /* do not count. */
+            /* Add fear for the effect */
+            p += 200;
+            break;
 
-        /* Summoning is only as dangerous as the monster that is
-         * actually summoned but the monsters that summon are a priority
-         * to kill.  PFE reduces danger from some evil summoned monsters
-         * One Problem with GOI and Create Door is that the GOI reduces
-         * the fear so much that the borg won't cast the Create Door,
-         * eventhough it would be a good idea.
-         */
+            /* Summoning is only as dangerous as the monster that is
+             * actually summoned but the monsters that summon are a priority
+             * to kill.  PFE reduces danger from some evil summoned monsters
+             * One Problem with GOI and Create Door is that the GOI reduces
+             * the fear so much that the borg won't cast the Create Door,
+             * even though it would be a good idea.
+             */
 
         case RSF_S_KIN:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(
-                    ag)) { /* track the safe areas for calculating
-                              danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(
+                            ag)) { /* track the safe areas for calculating
+                                      danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 3;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 3;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
 
-        break;
+            break;
 
         case RSF_S_HI_DEMON:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 6;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 12;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 6;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 12;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_MONSTER:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || glyph || borg_create_door || borg_fighting_unique)
-            p += 0;
-        else {
-            p += (r_ptr->spell_power) * 5;
-            p = p / spot_safe;
-        }
-        break;
+            if (pfe || glyph || borg_create_door || borg_fighting_unique)
+                p += 0;
+            else {
+                p += (r_ptr->spell_power) * 5;
+                p = p / spot_safe;
+            }
+            break;
 
         case RSF_S_MONSTERS:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || glyph || borg_create_door || borg_fighting_unique)
-            p += 0;
-        else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe || glyph || borg_create_door || borg_fighting_unique)
+                p += 0;
+            else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_ANIMAL:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || glyph || borg_create_door || borg_fighting_unique)
-            p += 0;
-        else {
-            p += (r_ptr->spell_power) * 5;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe || glyph || borg_create_door || borg_fighting_unique)
+                p += 0;
+            else {
+                p += (r_ptr->spell_power) * 5;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_SPIDER:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || glyph || borg_create_door || borg_fighting_unique)
-            p += 0;
-        else {
-            p += (r_ptr->spell_power) * 5;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe || glyph || borg_create_door || borg_fighting_unique)
+                p += 0;
+            else {
+                p += (r_ptr->spell_power) * 5;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_HOUND:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || glyph || borg_create_door || borg_fighting_unique)
-            p += 0;
-        else {
-            p += (r_ptr->spell_power) * 5;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe || glyph || borg_create_door || borg_fighting_unique)
+                p += 0;
+            else {
+                p += (r_ptr->spell_power) * 5;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_HYDRA:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 2;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 5;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 2;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 5;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_AINU:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe || borg_fighting_unique) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 3;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe || borg_fighting_unique) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 3;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_DEMON:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 3;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = (p * 75) / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 3;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = (p * 75) / 100;
+            break;
 
         case RSF_S_UNDEAD:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 3;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 3;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_DRAGON:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 3;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 7;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 3;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 7;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_HI_UNDEAD:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 6;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 12;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 6;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 12;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_HI_DRAGON:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 6;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 12;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 6;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 12;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_WRAITH:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door || borg_fighting_unique) {
-            p += (r_ptr->spell_power) * 6;
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 12;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door || borg_fighting_unique) {
+                p += (r_ptr->spell_power) * 6;
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 12;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
 
         case RSF_S_UNIQUE:
-        /* This is used to calculate the free squares next to us.
-         * This is important when dealing with summoners.
-         */
-        for (spot_x = -1; spot_x <= 1; spot_x++) {
-            for (spot_y = -1; spot_y <= 1; spot_y++) {
-                /* Acquire location */
-                x = spot_x + kill->x;
-                y = spot_y + kill->y;
+            /* This is used to calculate the free squares next to us.
+             * This is important when dealing with summoners.
+             */
+            for (spot_x = -1; spot_x <= 1; spot_x++) {
+                for (spot_y = -1; spot_y <= 1; spot_y++) {
+                    /* Acquire location */
+                    x  = spot_x + kill->x;
+                    y  = spot_y + kill->y;
 
-                ag = &borg_grids[y][x];
+                    ag = &borg_grids[y][x];
 
-                /* skip our own spot */
-                if (x == kill->x && y == kill->y)
-                    continue;
+                    /* skip our own spot */
+                    if (x == kill->x && y == kill->y)
+                        continue;
 
-                /* track spaces already protected */
-                if (borg_feature_protected(ag)) {
-                    /* track the safe areas for calculating danger */
-                    spot_safe++;
+                    /* track spaces already protected */
+                    if (borg_feature_protected(ag)) {
+                        /* track the safe areas for calculating danger */
+                        spot_safe++;
 
-                    /* Just in case */
-                    if (spot_safe == 0)
-                        spot_safe = 1;
-                    if (spot_safe == 8)
-                        spot_safe = 100;
-                    if (borg_morgoth_position || borg_as_position)
-                        spot_safe = 1000;
+                        /* Just in case */
+                        if (spot_safe == 0)
+                            spot_safe = 1;
+                        if (spot_safe == 8)
+                            spot_safe = 100;
+                        if (borg_morgoth_position || borg_as_position)
+                            spot_safe = 1000;
+                    }
                 }
             }
-        }
-        if (pfe) {
-            p += (r_ptr->spell_power);
-            p = p / spot_safe;
-        } else if (glyph || borg_create_door) {
-            p += (r_ptr->spell_power)
-                * 3; /* slightly reduced danger for unique */
-            p = p / spot_safe;
-        } else {
-            p += (r_ptr->spell_power) * 6;
-            p = p / spot_safe;
-        }
-        /* reduce the fear if it is a unique */
-        if (rf_has(r_info->flags, RF_UNIQUE))
-            p = p * 75 / 100;
-        break;
+            if (pfe) {
+                p += (r_ptr->spell_power);
+                p = p / spot_safe;
+            } else if (glyph || borg_create_door) {
+                p += (r_ptr->spell_power)
+                     * 3; /* slightly reduced danger for unique */
+                p = p / spot_safe;
+            } else {
+                p += (r_ptr->spell_power) * 6;
+                p = p / spot_safe;
+            }
+            /* reduce the fear if it is a unique */
+            if (rf_has(r_info->flags, RF_UNIQUE))
+                p = p * 75 / 100;
+            break;
         }
 
         /* A bolt spell cannot jump monsters to hit the borg. */
@@ -2213,14 +2214,14 @@ static int borg_danger_spell(
     /* If the most dangerous spell is alot bigger than the average,
      * then return the dangerous one.
      *
-     * There is a problem when dealing with defence manuevers.
+     * There is a problem when dealing with defense maneuvers.
      * If the borg is considering casting a spell like
      * Resistance and the monster also has a non
-     * resistable attack (like Disenchant) then the damage
+     * resistible attack (like Disenchant) then the damage
      * returned will be for that spell, since the danger of the
      * others (like fire, cold) will be greatly reduced by the
-     * proposed defence spell.  The result will be the borg will
-     * not cast the resistance spell eventhough it may be a very
+     * proposed defense spell.  The result will be the borg will
+     * not cast the resistance spell even though it may be a very
      * good idea.
      *
      * Example: a monster has three breath attacks (Fire, Ice,
@@ -2279,21 +2280,22 @@ static int borg_danger_spell(
  * We attempt to take into account things like monsters which sometimes
  * "stumble", and monsters which only "sometimes" use powerful spells.
  */
-int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_damage)
+int borg_danger_one_kill(
+    int y, int x, int c, int i, bool average, bool full_damage)
 {
-    borg_kill *kill = &borg_kills[i];
+    borg_kill *kill            = &borg_kills[i];
 
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
-    int x9 = kill->x;
-    int y9 = kill->y;
+    int x9                     = kill->x;
+    int y9                     = kill->y;
     int y_temp, x_temp;
 
     int ax, ay, d;
 
     int q = 0, r, p, v1 = 0, v2 = 0, b_v2 = 0, b_v1 = 0;
 
-    int fake_speed = borg_trait[BI_SPEED];
+    int fake_speed    = borg_trait[BI_SPEED];
     int monster_speed = kill->speed;
     int t, e;
 
@@ -2306,7 +2308,7 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
 
     /* Skip certain monster indexes.
      * These have been listed mainly in Teleport Other
-     * checks in borg6.c in the defence maneuvers.
+     * checks in borg6.c in the defense maneuvers.
      */
     if (borg_tp_other_n) {
         for (ii = 1; ii <= borg_tp_other_n; ii++) {
@@ -2358,13 +2360,13 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
     /* Monster moves */
     q = c * ((t * e) / 10);
 
-    /* allow partial hits when not caculating full possible damage */
+    /* allow partial hits when not calculating full possible damage */
     if (full_damage)
         q = (int)((q + 9) / 10) * 10;
 
     /* Minimal energy.  Monsters get at least some energy.
      * If the borg is very fast relative to a monster, then the
-     * monster danger is artifically low due to the way the borg
+     * monster danger is artificially low due to the way the borg
      * will calculate the danger and energy.  So the monsters must
      * be given some base energy to equate the borg's.
      * ie:  the borg with speed +40 (speed = 150) is attacking
@@ -2405,14 +2407,14 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
     }
 
     /* multipliers yeild some trouble when I am weak */
-    if ((rf_has(r_ptr->flags, RF_MULTIPLY)) &&
-        (borg_trait[BI_CLEVEL] < 20)) { /* extra 50% */
+    if ((rf_has(r_ptr->flags, RF_MULTIPLY))
+        && (borg_trait[BI_CLEVEL] < 20)) { /* extra 50% */
         v1 = v1 + (v1 * 15 / 10);
     }
 
     /* Friends yeild some trouble when I am weak */
-    if ((r_ptr->friends || r_ptr->friends_base) &&
-        (borg_trait[BI_CLEVEL] < 20)) {
+    if ((r_ptr->friends || r_ptr->friends_base)
+        && (borg_trait[BI_CLEVEL] < 20)) {
         if (borg_trait[BI_CLEVEL] < 15) {
             /* extra 80% */
             v1 = v1 + (v1 * 18 / 10);
@@ -2436,11 +2438,9 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
     }
     /* Reduce danger from sleeping monsters with the sleep 2 spell*/
     if (borg_sleep_spell_ii) {
-        if ((d == 1) &&
-            (kill->awake) &&
-            (!(rf_has(r_ptr->flags, RF_NO_SLEEP))) &&
-            (!(rf_has(r_ptr->flags, RF_UNIQUE))) &&
-            (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
+        if ((d == 1) && (kill->awake) && (!(rf_has(r_ptr->flags, RF_NO_SLEEP)))
+            && (!(rf_has(r_ptr->flags, RF_UNIQUE)))
+            && (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
             /* Under special circumstances force the damage to 0 */
             if (borg_trait[BI_CLEVEL] < 20
                 && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) {
@@ -2452,10 +2452,9 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
     }
     /* Reduce danger from sleeping monsters with the sleep 1,3 spell*/
     if (borg_sleep_spell) {
-        if (kill->awake &&
-            (!(rf_has(r_ptr->flags, RF_NO_SLEEP))) &&
-            (!(rf_has(r_ptr->flags, RF_UNIQUE))) &&
-            (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
+        if (kill->awake && (!(rf_has(r_ptr->flags, RF_NO_SLEEP)))
+            && (!(rf_has(r_ptr->flags, RF_UNIQUE)))
+            && (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
             /* Under special circumstances force the damage to 0 */
             if (borg_trait[BI_CLEVEL] < 20
                 && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) {
@@ -2480,10 +2479,10 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
         v1 = v1 * 10 / 13;
     }
     if (borg_confuse_spell) {
-        if (kill->awake && !kill->confused &&
-            (!(rf_has(r_ptr->flags, RF_NO_SLEEP))) &&
-            (!(rf_has(r_ptr->flags, RF_UNIQUE))) &&
-            (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
+        if (kill->awake && !kill->confused
+            && (!(rf_has(r_ptr->flags, RF_NO_SLEEP)))
+            && (!(rf_has(r_ptr->flags, RF_UNIQUE)))
+            && (kill->level <= (borg_trait[BI_CLEVEL] - 15))) {
             /* Under special circumstances force the damage to 0 */
             if (borg_trait[BI_CLEVEL] < 20
                 && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) {
@@ -2503,7 +2502,7 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
      * Note that we do try to consider a fast monster moving and attacking
      * in the same round.  We should consider monsters that have a speed 2 or 3
      * classes higher than ours, but most times, the borg will only encounter
-     * monsters with a single catagory higher speed.
+     * monsters with a single category higher speed.
      */
     if (q > 10 && d != 1 && !(rf_has(r_ptr->flags, RF_NEVER_MOVE))) {
         b_v1 = 0;
@@ -2609,8 +2608,8 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
      *
      * ##############
      * #.....#.#.1#D#   Grids marked 2 are threatened by the D currently.
-     * #####.#..##@##	Grids marked 1 are safe currently, but the fast D will be
-     *able
+     * #####.#..##@##	Grids marked 1 are safe currently, but the fast D will
+     *be able
      * #####.#..1221#	to move to the borg's grid after he moves and the D will
      *be able
      * ##############	to use a ranged attack to grids 1, all in the same
@@ -2618,7 +2617,7 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
      */
     if (q >= 20) {
         int b_q = q;
-        b_v2 = 0;
+        b_v2    = 0;
 
         /* Maximal speed check */
         if (q > 20)
@@ -2681,12 +2680,12 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
         v2 = v2 / 5;
     }
 
-    /* multipliers yeild some trouble when I am weak */
+    /* multipliers yield some trouble when I am weak */
     if ((rf_has(r_ptr->flags, RF_MULTIPLY)) && (borg_trait[BI_CLEVEL] < 20)) {
         v2 = v2 + (v2 * 12 / 10);
     }
 
-    /* Friends yeild some trouble when I am weak */
+    /* Friends yield some trouble when I am weak */
     if ((r_ptr->friends || r_ptr->friends_base)
         && (borg_trait[BI_CLEVEL] < 20)) {
         v2 = v2 + (v2 * 12 / 10);
@@ -2710,9 +2709,10 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
 
         if ((d == 1) && (kill->awake) && (!(rf_has(r_ptr->flags, RF_NO_SLEEP)))
             && (!(rf_has(r_ptr->flags, RF_UNIQUE)))
-            && (kill->level <= ((borg_trait[BI_CLEVEL] < 15)
-                ? borg_trait[BI_CLEVEL]
-                : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10))) {
+            && (kill->level
+                <= ((borg_trait[BI_CLEVEL] < 15)
+                        ? borg_trait[BI_CLEVEL]
+                        : (((borg_trait[BI_CLEVEL] - 10) / 4) * 3) + 10))) {
             v2 = v2 / 3;
         }
     }
@@ -2732,7 +2732,7 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
     if (kill->confused) {
         v2 = v2 / 2;
     }
-    /* Reduce danger from stunnned monsters  */
+    /* Reduce danger from stunned monsters  */
     if (kill->stunned) {
         v2 = v2 * 10 / 13;
     }
@@ -2801,7 +2801,7 @@ int borg_danger_one_kill(int y, int x, int c, int i, bool average, bool full_dam
  */
 int borg_danger(int y, int x, int c, bool average, bool full_damage)
 {
-    int        i, p = 0;
+    int i, p = 0;
 
     struct loc l = loc(x, y);
     if (!square_in_bounds(cave, l))
@@ -2842,6 +2842,5 @@ int borg_danger(int y, int x, int c, bool average, bool full_damage)
     /* Return the danger */
     return (p > 2000 ? 2000 : p);
 }
-
 
 #endif

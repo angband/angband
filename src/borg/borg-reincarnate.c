@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-reincarnate.h"
+
+#ifdef ALLOW_BORG
 
 #include "../cmd-core.h"
 #include "../game-world.h"
@@ -198,83 +198,83 @@ static void create_random_name(int race, char *name, size_t name_len)
     switch (race) {
         /* Create the monster name */
     case RACE_DWARF:
-    my_strcpy(name,
-        dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            dwarf_syllable1[randint0(sizeof(dwarf_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            dwarf_syllable2[randint0(sizeof(dwarf_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            dwarf_syllable3[randint0(sizeof(dwarf_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     case RACE_ELF:
     case RACE_HALF_ELF:
     case RACE_HIGH_ELF:
-    my_strcpy(name,
-        elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            elf_syllable1[randint0(sizeof(elf_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            elf_syllable2[randint0(sizeof(elf_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            elf_syllable3[randint0(sizeof(elf_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     case RACE_GNOME:
-    my_strcpy(name,
-        gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            gnome_syllable1[randint0(sizeof(gnome_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            gnome_syllable2[randint0(sizeof(gnome_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            gnome_syllable3[randint0(sizeof(gnome_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     case RACE_HOBBIT:
-    my_strcpy(name,
-        hobbit_syllable1[randint0(
-            sizeof(hobbit_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        hobbit_syllable2[randint0(
-            sizeof(hobbit_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        hobbit_syllable3[randint0(
-            sizeof(hobbit_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            hobbit_syllable1[randint0(
+                sizeof(hobbit_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            hobbit_syllable2[randint0(
+                sizeof(hobbit_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            hobbit_syllable3[randint0(
+                sizeof(hobbit_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     case RACE_HUMAN:
     case RACE_DUNADAN:
-    my_strcpy(name,
-        human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            human_syllable1[randint0(sizeof(human_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            human_syllable2[randint0(sizeof(human_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            human_syllable3[randint0(sizeof(human_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     case RACE_HALF_ORC:
     case RACE_HALF_TROLL:
     case RACE_KOBOLD:
-    my_strcpy(name,
-        orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char *))],
-        name_len);
-    my_strcat(name,
-        orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char *))],
-        name_len);
-    break;
+        my_strcpy(name,
+            orc_syllable1[randint0(sizeof(orc_syllable1) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            orc_syllable2[randint0(sizeof(orc_syllable2) / sizeof(char *))],
+            name_len);
+        my_strcat(name,
+            orc_syllable3[randint0(sizeof(orc_syllable3) / sizeof(char *))],
+            name_len);
+        break;
     /* Create an empty name */
     default:
-    name[0] = '\0';
-    break;
+        name[0] = '\0';
+        break;
     }
 }
 
@@ -285,9 +285,9 @@ static void create_random_name(int race, char *name, size_t name_len)
  */
 static void player_outfit_borg(struct player *p)
 {
-    int i;
+    int                      i;
     const struct start_item *si;
-    struct object *obj, *known_obj;
+    struct object           *obj, *known_obj;
 
     /* Currently carrying nothing */
     p->upkeep->total_weight = 0;
@@ -308,7 +308,7 @@ static void player_outfit_borg(struct player *p)
 
     /* Give the player starting equipment */
     for (si = p->class->start_items; si; si = si->next) {
-        int num = rand_range(si->min, si->max);
+        int                 num  = rand_range(si->min, si->max);
         struct object_kind *kind = lookup_kind(si->tval, si->sval);
         assert(kind);
 
@@ -323,7 +323,7 @@ static void player_outfit_borg(struct player *p)
         /* Exclude if configured to do so based on birth options. */
         if (si->eopts) {
             bool included = true;
-            int eind = 0;
+            int  eind     = 0;
 
             while (si->eopts[eind] && included) {
                 if (si->eopts[eind] > 0) {
@@ -347,11 +347,11 @@ static void player_outfit_borg(struct player *p)
         obj->number = num;
         obj->origin = ORIGIN_BIRTH;
 
-        known_obj = object_new();
-        obj->known = known_obj;
+        known_obj   = object_new();
+        obj->known  = known_obj;
         object_set_base_known(p, obj);
         object_flavor_aware(p, obj);
-        obj->known->pval = obj->pval;
+        obj->known->pval   = obj->pval;
         obj->known->effect = obj->effect;
         obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
@@ -393,7 +393,7 @@ static void borg_roll_hp(void)
     while (true) {
         /* Roll the hitpoint values */
         for (i = 1; i < PY_MAX_LEVEL; i++) {
-            j = randint1(player->hitdie);
+            j                    = randint1(player->hitdie);
             player->player_hp[i] = player->player_hp[i - 1] + j;
         }
 
@@ -410,23 +410,23 @@ static void borg_roll_hp(void)
     }
 }
 
-/* 
- * Allow the borg to play continously.  Reset all values, 
+/*
+ * Allow the borg to play continously.  Reset all values,
  */
 void reincarnate_borg(void)
 {
-    char buf[80];
-    int i;
+    char           buf[80];
+    int            i;
     struct player *p = player;
 
     /* save the existing dungeon.  It is cleared later but needs to */
     /* be blank when  creating the new player */
     struct chunk *sv_cave = cave;
-    cave = NULL;
+    cave                  = NULL;
 
     /* Cheat death */
-    player->is_dead = false;
-    borg_trait[BI_MAXDEPTH] = 0;
+    player->is_dead          = false;
+    borg_trait[BI_MAXDEPTH]  = 0;
     borg_trait[BI_MAXCLEVEL] = 1;
 
     /* Flush message buffer */
@@ -454,8 +454,8 @@ void reincarnate_borg(void)
     time_this_panel = 1;
 
     /* reset our vault/unique check */
-    vault_on_level = false;
-    unique_on_level = 0;
+    vault_on_level    = false;
+    unique_on_level   = 0;
     scaryguy_on_level = false;
 
     /* reset our breeder flag */
@@ -476,7 +476,7 @@ void reincarnate_borg(void)
     flavor_init();
 
     /** Roll up a new character **/
-    struct player_race *p_race = NULL;
+    struct player_race  *p_race  = NULL;
     struct player_class *p_class = NULL;
     if (borg_cfg[BORG_RESPAWN_RACE] != -1)
         p_race = player_id2race(borg_cfg[BORG_RESPAWN_RACE]);
@@ -489,7 +489,7 @@ void reincarnate_borg(void)
     player_generate(player, p_race, p_class, false);
 
     /* The dungeon is not ready nor is the player */
-    character_dungeon = false;
+    character_dungeon   = false;
     character_generated = false;
 
     /* Start in town */
@@ -501,7 +501,7 @@ void reincarnate_borg(void)
     /* Embody */
     memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
     my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
-    p->body.name = string_make(buf);
+    p->body.name  = string_make(buf);
     p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
     for (i = 0; i < p->body.count; i++) {
         p->body.slots[i].type = bodies[p->race->body].slots[i].type;
@@ -535,7 +535,7 @@ void reincarnate_borg(void)
 
     /* generate town */
     player->upkeep->generate_level = true;
-    player->upkeep->playing = true;
+    player->upkeep->playing        = true;
 
     struct command fake_cmd;
     /* fake up a command */
@@ -594,11 +594,11 @@ void reincarnate_borg(void)
     borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
     borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
     borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-    borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-    borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-    borg_hero = (player->timed[TMD_HERO] ? true : false);
-    borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-    borg_berserk = (player->timed[TMD_SHERO] ? true : false);
+    borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+    borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+    borg_hero             = (player->timed[TMD_HERO] ? true : false);
+    borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+    borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
     if (player->timed[TMD_SINVIS])
         borg_see_inv = 10000;
 

@@ -15,11 +15,11 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
-*/
-
-#ifdef ALLOW_BORG
+ */
 
 #include "borg.h"
+
+#ifdef ALLOW_BORG
 
 #include "../game-input.h"
 #include "../game-world.h"
@@ -32,28 +32,28 @@
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
 #include "borg-danger.h"
-#include "borg-flow.h"
 #include "borg-flow-glyph.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-take.h"
+#include "borg-flow.h"
 #include "borg-home-notice.h"
 #include "borg-home-power.h"
+#include "borg-init.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
-#include "borg-init.h"
 #include "borg-item-id.h"
 #include "borg-log.h"
 #include "borg-magic.h"
-#include "borg-messages.h"
 #include "borg-messages-react.h"
+#include "borg-messages.h"
 #include "borg-power.h"
 #include "borg-prepared.h"
 #include "borg-projection.h"
 #include "borg-reincarnate.h"
 #include "borg-store.h"
 #include "borg-think.h"
-#include "borg-trait.h"
 #include "borg-trait-swap.h"
+#include "borg-trait.h"
 #include "borg-update.h"
 
 bool borg_cheat_death;
@@ -61,7 +61,7 @@ bool borg_cheat_death;
 #ifdef BABLOS
 extern bool auto_play;
 extern bool keep_playing;
-#endif 
+#endif
 /* bablos */
 
 /*
@@ -71,8 +71,8 @@ bool     borg_rand_quick; /* Save system setting */
 uint32_t borg_rand_value; /* Save system setting */
 uint32_t borg_rand_local; /* Save personal setting */
 
-/* 
- * Date of the last change 
+/*
+ * Date of the last change
  */
 char borg_engine_date[] = __DATE__;
 
@@ -81,16 +81,16 @@ char borg_engine_date[] = __DATE__;
  */
 int *borg_cfg;
 
-/* 
- * Status variables 
+/*
+ * Status variables
  */
 bool borg_active; /* Actually active */
 bool borg_cancel; /* Being cancelled */
-bool borg_flag_save = false; /* Save savefile at each level */
-bool borg_save = false; /* do a save next level */
-bool borg_graphics = false; /* rr9's graphics */
+bool borg_flag_save     = false; /* Save savefile at each level */
+bool borg_save          = false; /* do a save next level */
+bool borg_graphics      = false; /* rr9's graphics */
 
-int16_t old_depth = 128;
+int16_t old_depth       = 128;
 int16_t borg_respawning = 0;
 
 int w_x; /* Current panel offset (X) */
@@ -171,11 +171,10 @@ uint16_t borg_step = 0;
  * If the "preserve" flag is off, the Borg may miss artifacts.
  */
 
-
-/* 
- * KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG 
+/*
+ * KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG
  */
-int key_mode; 
+int key_mode;
 
 /*
  * This function lets the Borg "steal" control from the user.
@@ -211,8 +210,8 @@ int key_mode;
  */
 static struct keypress borg_inkey_hack(int flush_first)
 {
-    keycode_t borg_ch;
-    struct keypress key = {EVT_KBRD, 0, 0};
+    keycode_t       borg_ch;
+    struct keypress key = { EVT_KBRD, 0, 0 };
 
     ui_event ch_evt;
 
@@ -226,7 +225,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     bool borg_prompt; /* ajg  For now we can just use this locally.
                           in the 283 borg he uses this to optimize knowing if
                           we are waiting at a prompt for info */
-                          /* Locate the cursor */
+    /* Locate the cursor */
     (void)Term_locate(&x, &y);
 
     /* Refresh the screen */
@@ -370,7 +369,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* This will be hit if the borg uses an unidentified effect that has */
     /* EF_SELECT/multiple effects. Always pick "one of the following at random"
      */
-     /* when the item is used post ID, an effect will be selected */
+    /* when the item is used post ID, an effect will be selected */
     if (borg_prompt && !inkey_flag && !borg_inkey(false) && (y == 1)
         && (0 == borg_what_text(0, 0, 13, &t_a, buf))
         && streq(buf, "Which effect?")) {
@@ -568,9 +567,9 @@ void do_cmd_borg(void)
 
 #ifdef BABLOS
     if (auto_play) {
-        auto_play = false;
+        auto_play    = false;
         keep_playing = true;
-        cmd.code = 'z';
+        cmd.code     = 'z';
     } else {
 
 #endif /* BABLOS */
@@ -621,7 +620,7 @@ void do_cmd_borg(void)
         Term_putstr(
             42, i, -1, COLOUR_WHITE, "Command 't' displays object info.");
         Term_putstr(
-            2, i++, -1, COLOUR_WHITE, "Command '%' displays targetting flow.");
+            2, i++, -1, COLOUR_WHITE, "Command '%' displays targeting flow.");
         Term_putstr(
             42, i, -1, COLOUR_WHITE, "Command '#' displays danger grid.");
         Term_putstr(
@@ -677,8 +676,7 @@ void do_cmd_borg(void)
 
     switch (cmd) {
         /* Command: Nothing */
-    case '$':
-    {
+    case '$': {
         /*** Hack -- initialize borg.ini options ***/
         mem_free(borg_has);
         mem_free(borg_activation);
@@ -689,8 +687,7 @@ void do_cmd_borg(void)
     }
     /* Command: Activate */
     case 'z':
-    case 'Z':
-    {
+    case 'Z': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -716,11 +713,11 @@ void do_cmd_borg(void)
         borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
         if (player->timed[TMD_SINVIS])
             borg_see_inv = 10000;
 
@@ -744,8 +741,7 @@ void do_cmd_borg(void)
 
     /* Command: Update */
     case 'u':
-    case 'U':
-    {
+    case 'U': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -771,11 +767,11 @@ void do_cmd_borg(void)
         borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_fastcast = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
         if (player->timed[TMD_SINVIS])
             borg_see_inv = 10000;
 
@@ -790,8 +786,7 @@ void do_cmd_borg(void)
 
     /* Command: Step */
     case 'x':
-    case 'X':
-    {
+    case 'X': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
@@ -816,10 +811,10 @@ void do_cmd_borg(void)
         borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
         borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
         borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk = (player->timed[TMD_SHERO] ? true : false);
+        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
+        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
+        borg_hero             = (player->timed[TMD_HERO] ? true : false);
+        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
         if (player->timed[TMD_SINVIS])
             borg_see_inv = 10000;
 
@@ -839,8 +834,7 @@ void do_cmd_borg(void)
 
     /* Command: toggle "flags" */
     case 'f':
-    case 'F':
-    {
+    case 'F': {
         /* Get a "Borg command", or abort */
         if (!get_com("Borg command: Toggle Flag: (m/d/s/f/g) ", &cmd))
             return;
@@ -848,15 +842,13 @@ void do_cmd_borg(void)
         switch (cmd) {
             /* Give borg thought messages in window */
         case 'm':
-        case 'M':
-        {
+        case 'M': {
             break;
         }
 
         /* Give borg the ability to use graphics ----broken */
         case 'g':
-        case 'G':
-        {
+        case 'G': {
             borg_graphics = !borg_graphics;
             msg("Borg -- borg_graphics is now %d.", borg_graphics);
             break;
@@ -864,8 +856,7 @@ void do_cmd_borg(void)
 
         /* Dump savefile at each level */
         case 's':
-        case 'S':
-        {
+        case 'S': {
             borg_flag_save = !borg_flag_save;
             msg("Borg -- borg_flag_save is now %d.", borg_flag_save);
             break;
@@ -873,8 +864,7 @@ void do_cmd_borg(void)
 
         /* clear 'fear' levels */
         case 'f':
-        case 'F':
-        {
+        case 'F': {
             msg("Command No Longer Usefull");
             break;
         }
@@ -883,16 +873,14 @@ void do_cmd_borg(void)
     }
 
     /* Command: toggle "cheat" flags */
-    case 'c':
-    {
+    case 'c': {
         /* Get a "Borg command", or abort */
         if (!get_com("Borg command: Toggle Cheat: (d)", &cmd))
             return;
 
         switch (cmd) {
         case 'd':
-        case 'D':
-        {
+        case 'D': {
             borg_cheat_death = !borg_cheat_death;
             msg("Borg -- borg_cheat_death is now %d.", borg_cheat_death);
             break;
@@ -902,8 +890,7 @@ void do_cmd_borg(void)
     }
 
     /* List the Nasties on the level */
-    case 'C':
-    {
+    case 'C': {
         int i;
 
         /* Log Header */
@@ -922,8 +909,7 @@ void do_cmd_borg(void)
 
     /* Activate a search string */
     case 's':
-    case 'S':
-    {
+    case 'S': {
         /* Get the new search string (or cancel the matching) */
         if (!get_string("Borg Match String: ", borg_match, 70)) {
             /* Cancel it */
@@ -936,13 +922,12 @@ void do_cmd_borg(void)
     }
 
     /* Command: check Grid "feature" flags */
-    case 'g':
-    {
+    case 'g': {
         int x, y;
 
         uint16_t low, high = 0;
-        bool trap = false;
-        bool glyph = false;
+        bool     trap  = false;
+        bool     glyph = false;
 
         /* Get a "Borg command", or abort */
         if (!get_com("Borg command: Show grids: ", &cmd))
@@ -951,100 +936,100 @@ void do_cmd_borg(void)
         /* Extract a flag */
         switch (cmd) {
         case '0':
-        low = high = 1 << 0;
-        break;
+            low = high = 1 << 0;
+            break;
         case '1':
-        low = high = 1 << 1;
-        break;
+            low = high = 1 << 1;
+            break;
         case '2':
-        low = high = 1 << 2;
-        break;
+            low = high = 1 << 2;
+            break;
         case '3':
-        low = high = 1 << 3;
-        break;
+            low = high = 1 << 3;
+            break;
         case '4':
-        low = high = 1 << 4;
-        break;
+            low = high = 1 << 4;
+            break;
         case '5':
-        low = high = 1 << 5;
-        break;
+            low = high = 1 << 5;
+            break;
         case '6':
-        low = high = 1 << 6;
-        break;
+            low = high = 1 << 6;
+            break;
         case '7':
-        low = high = 1 << 7;
-        break;
+            low = high = 1 << 7;
+            break;
 
         case '.':
-        low = high = FEAT_FLOOR;
-        break;
+            low = high = FEAT_FLOOR;
+            break;
         case ' ':
-        low = high = FEAT_NONE;
-        break;
+            low = high = FEAT_NONE;
+            break;
         case ';':
-        low = high = -1;
-        glyph = true;
-        break;
+            low = high = -1;
+            glyph      = true;
+            break;
         case ',':
-        low = high = FEAT_OPEN;
-        break;
+            low = high = FEAT_OPEN;
+            break;
         case 'x':
-        low = high = FEAT_BROKEN;
-        break;
+            low = high = FEAT_BROKEN;
+            break;
         case '<':
-        low = high = FEAT_LESS;
-        break;
+            low = high = FEAT_LESS;
+            break;
         case '>':
-        low = high = FEAT_MORE;
-        break;
+            low = high = FEAT_MORE;
+            break;
         case '@':
-        low = FEAT_STORE_GENERAL;
-        high = FEAT_HOME;
-        break;
+            low  = FEAT_STORE_GENERAL;
+            high = FEAT_HOME;
+            break;
         case '^':
-        low = high = -1;
-        glyph = true;
-        break;
+            low = high = -1;
+            glyph      = true;
+            break;
         case '+':
-        low = FEAT_CLOSED;
-        high = FEAT_CLOSED;
-        break;
+            low  = FEAT_CLOSED;
+            high = FEAT_CLOSED;
+            break;
         case 's':
-        low = high = FEAT_SECRET;
-        break;
+            low = high = FEAT_SECRET;
+            break;
         case ':':
-        low = high = FEAT_RUBBLE;
-        break;
+            low = high = FEAT_RUBBLE;
+            break;
         case 'm':
-        low = high = FEAT_MAGMA;
-        break;
+            low = high = FEAT_MAGMA;
+            break;
         case 'q':
-        low = high = FEAT_QUARTZ;
-        break;
+            low = high = FEAT_QUARTZ;
+            break;
         case 'k':
-        low = high = FEAT_MAGMA_K;
-        break;
+            low = high = FEAT_MAGMA_K;
+            break;
         case '&':
-        low = high = FEAT_QUARTZ_K;
-        break;
+            low = high = FEAT_QUARTZ_K;
+            break;
         case 'w':
-        low = FEAT_GRANITE;
-        high = FEAT_GRANITE;
-        break;
+            low  = FEAT_GRANITE;
+            high = FEAT_GRANITE;
+            break;
         case 'p':
-        low = FEAT_PERM;
-        high = FEAT_PERM;
-        break;
+            low  = FEAT_PERM;
+            high = FEAT_PERM;
+            break;
 
         default:
-        low = high = 0x00;
-        break;
+            low = high = 0x00;
+            break;
         }
 
         /* Scan map */
         for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
             for (x = 1; x <= AUTO_MAX_X - 1; x++) {
-                uint8_t a = COLOUR_RED;
+                uint8_t a     = COLOUR_RED;
 
                 borg_grid *ag = &borg_grids[y][x];
 
@@ -1076,8 +1061,7 @@ void do_cmd_borg(void)
     }
 
     /* Display Feature of a targetted grid */
-    case 'G':
-    {
+    case 'G': {
         int y = 1;
         int x = 1;
 
@@ -1088,8 +1072,8 @@ void do_cmd_borg(void)
         struct loc l;
 
         target_get(&l);
-        y = l.y;
-        x = l.x;
+        y            = l.y;
+        x            = l.x;
 
         uint8_t feat = square(cave, loc(c_x, c_y))->feat;
 
@@ -1100,8 +1084,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: check "info" flags */
-    case 'i':
-    {
+    case 'i': {
         int x, y;
 
         uint16_t mask;
@@ -1113,64 +1096,64 @@ void do_cmd_borg(void)
         /* Extract a flag */
         switch (cmd) {
         case '0':
-        mask = 1 << 0;
-        break; /* Mark */
+            mask = 1 << 0;
+            break; /* Mark */
         case '1':
-        mask = 1 << 1;
-        break; /* Glow */
+            mask = 1 << 1;
+            break; /* Glow */
         case '2':
-        mask = 1 << 2;
-        break; /* Dark */
+            mask = 1 << 2;
+            break; /* Dark */
         case '3':
-        mask = 1 << 3;
-        break; /* Okay */
+            mask = 1 << 3;
+            break; /* Okay */
         case '4':
-        mask = 1 << 4;
-        break; /* Lite */
+            mask = 1 << 4;
+            break; /* Lite */
         case '5':
-        mask = 1 << 5;
-        break; /* View */
+            mask = 1 << 5;
+            break; /* View */
         case '6':
-        mask = 1 << 6;
-        break; /* Temp */
+            mask = 1 << 6;
+            break; /* Temp */
         case '7':
-        mask = 1 << 7;
-        break; /* Xtra */
+            mask = 1 << 7;
+            break; /* Xtra */
 
         case 'm':
-        mask = BORG_MARK;
-        break;
+            mask = BORG_MARK;
+            break;
         case 'g':
-        mask = BORG_GLOW;
-        break;
+            mask = BORG_GLOW;
+            break;
         case 'd':
-        mask = BORG_DARK;
-        break;
+            mask = BORG_DARK;
+            break;
         case 'o':
-        mask = BORG_OKAY;
-        break;
+            mask = BORG_OKAY;
+            break;
         case 'l':
-        mask = BORG_LIGHT;
-        break;
+            mask = BORG_LIGHT;
+            break;
         case 'v':
-        mask = BORG_VIEW;
-        break;
+            mask = BORG_VIEW;
+            break;
         case 't':
-        mask = BORG_TEMP;
-        break;
+            mask = BORG_TEMP;
+            break;
         case 'x':
-        mask = BORG_XTRA;
-        break;
+            mask = BORG_XTRA;
+            break;
 
         default:
-        mask = 0x000;
-        break;
+            mask = 0x000;
+            break;
         }
 
         /* Scan map */
         for (y = 1; y <= AUTO_MAX_Y - 1; y++) {
             for (x = 1; x <= AUTO_MAX_X - 1; x++) {
-                uint8_t a = COLOUR_RED;
+                uint8_t a     = COLOUR_RED;
 
                 borg_grid *ag = &borg_grids[y][x];
 
@@ -1201,11 +1184,10 @@ void do_cmd_borg(void)
     }
 
     /* Display Info of a targetted grid */
-    case 'I':
-    {
-        int i;
-        int y = 1;
-        int x = 1;
+    case 'I': {
+        int        i;
+        int        y = 1;
+        int        x = 1;
         struct loc l;
 
         target_get(&l);
@@ -1238,8 +1220,7 @@ void do_cmd_borg(void)
 
     /* Command: check "avoidances" */
     case 'a':
-    case 'A':
-    {
+    case 'A': {
         int x, y, p;
 
         /* Scan map */
@@ -1281,8 +1262,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: check previous steps */
-    case 'y':
-    {
+    case 'y': {
         int i;
 
         /* Scan map */
@@ -1305,8 +1285,7 @@ void do_cmd_borg(void)
 
     /* Command: show "monsters" */
     case 'k':
-    case 'K':
-    {
+    case 'K': {
         int i, n = 0;
 
         /* Scan the monsters */
@@ -1337,8 +1316,7 @@ void do_cmd_borg(void)
 
     /* Command: show "objects" */
     case 't':
-    case 'T':
-    {
+    case 'T': {
         int i, n = 0;
 
         /* Scan the objects */
@@ -1368,11 +1346,10 @@ void do_cmd_borg(void)
     }
 
     /* Command: debug -- current target flow */
-    case '%':
-    {
-        int x, y;
-        int n_x;
-        int n_y;
+    case '%': {
+        int        x, y;
+        int        n_x;
+        int        n_y;
         struct loc l;
 
         /* Determine "path" */
@@ -1401,8 +1378,8 @@ void do_cmd_borg(void)
         /* Determine "path" */
         n_x = player->grid.x;
         n_y = player->grid.y;
-        x = l.x;
-        y = l.y;
+        x   = l.x;
+        y   = l.y;
 
         /* Real LOS */
         project(source_player(), 0, loc(x, y), 1, PROJ_MISSILE, PROJECT_BEAM, 0,
@@ -1417,8 +1394,7 @@ void do_cmd_borg(void)
         break;
     }
     /* Display the intended path to the flow */
-    case '^':
-    {
+    case '^': {
         int x, y;
         int o;
         int false_y, false_x;
@@ -1490,9 +1466,8 @@ void do_cmd_borg(void)
     }
 
     /* Command: debug -- danger of grid */
-    case '#':
-    {
-        int n;
+    case '#': {
+        int        n;
         struct loc l;
 
         target_get(&l);
@@ -1507,8 +1482,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: Regional Fear Info*/
-    case '_':
-    {
+    case '_': {
         int x, y, p;
 
         /* Scan map */
@@ -1601,8 +1575,7 @@ void do_cmd_borg(void)
 
     /* Command: debug -- Power */
     case 'p':
-    case 'P':
-    {
+    case 'P': {
         int32_t p;
 
         /* Examine the screen */
@@ -1636,8 +1609,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: Show time */
-    case '!':
-    {
+    case '!': {
         int32_t time = borg_t - borg_began;
         msg("time: (%d) ", time);
         time = (borg_time_town + (borg_t - borg_began));
@@ -1648,8 +1620,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: LOS */
-    case '@':
-    {
+    case '@': {
         int x, y;
 
         /* Scan map */
@@ -1709,8 +1680,7 @@ void do_cmd_borg(void)
         break;
     }
     /*  command: debug -- change max depth */
-    case '1':
-    {
+    case '1': {
         int new_borg_skill;
         /* Get the new max depth */
         new_borg_skill
@@ -1718,15 +1688,14 @@ void do_cmd_borg(void)
 
         /* Allow user abort */
         if (new_borg_skill >= 0) {
-            player->max_depth = new_borg_skill;
+            player->max_depth       = new_borg_skill;
             borg_trait[BI_MAXDEPTH] = new_borg_skill;
         }
 
         break;
     }
     /*  command: debug -- allow borg to stop */
-    case 'q':
-    {
+    case 'q': {
         int new_borg_stop_dlevel = 127;
         int new_borg_stop_clevel = 51;
 
@@ -1746,8 +1715,7 @@ void do_cmd_borg(void)
 
     /* command: money Scum-- allow borg to stop when he gets a certain amount of
      * money*/
-    case 'm':
-    {
+    case 'm': {
         int new_borg_money_scum_amount = 0;
 
         /* report current status */
@@ -1765,8 +1733,7 @@ void do_cmd_borg(void)
         break;
     }
     /* Command:  HACK debug -- preparation for level */
-    case '2':
-    {
+    case '2': {
         int i = 0;
 
         /* Extract some "hidden" variables */
@@ -1801,8 +1768,7 @@ void do_cmd_borg(void)
         break;
     }
     /* Command: debug -- stat information */
-    case '3':
-    {
+    case '3': {
 
         int i;
         for (i = 0; i < STAT_MAX; i++) {
@@ -1822,8 +1788,7 @@ void do_cmd_borg(void)
 
     /* Command: List the swap weapon and armour */
     case 'w':
-    case 'W':
-    {
+    case 'W': {
         borg_item *item;
 
         /* Cheat the "equip" screen */
@@ -1858,8 +1823,7 @@ void do_cmd_borg(void)
         }
         break;
     }
-    case 'd':
-    {
+    case 'd': {
         int ii = 1;
 
         /* Save the screen */
@@ -1876,13 +1840,13 @@ void do_cmd_borg(void)
 
                 ii = 2;
                 Term_putstr(1, ii, -1, COLOUR_WHITE, "[ Spells ].");
-                borg_magic *as = &borg_magics[i];
-                int failpercent = 0;
+                borg_magic *as          = &borg_magics[i];
+                int         failpercent = 0;
 
                 if (as->level < 99) {
                     const char *legal
                         = (borg_spell_legal(as->spell_enum) ? "legal"
-                            : "Not Legal ");
+                                                            : "Not Legal ");
                     failpercent = (borg_spell_fail_rate(as->spell_enum));
 
                     Term_putstr(1, ii++, -1, COLOUR_WHITE,
@@ -1903,41 +1867,40 @@ void do_cmd_borg(void)
 
     /* dump borg 'has' information */
     case 'h':
-    case 'H':
-    {
+    case 'H': {
         int item, to;
 
         /* Get a "Borg command", or abort */
         if (!get_com("Dynamic Borg Has What: "
-            "((a)ny/(i)nv/(w)orn/a(r)tifact/(s)kill) ",
-            &cmd))
+                     "((a)ny/(i)nv/(w)orn/a(r)tifact/(s)kill) ",
+                &cmd))
             return;
 
         switch (cmd) {
         case 'a':
         case 'A':
-        item = 0;
-        to = z_info->k_max;
-        break;
+            item = 0;
+            to   = z_info->k_max;
+            break;
         case 'i':
         case 'I':
-        item = 0;
-        to = z_info->pack_size;
-        break;
+            item = 0;
+            to   = z_info->pack_size;
+            break;
         case 'w':
         case 'W':
-        item = INVEN_WIELD;
-        to = QUIVER_END;
-        break;
+            item = INVEN_WIELD;
+            to   = QUIVER_END;
+            break;
         case 'r':
         case 'R':
-        item = 0;
-        to = QUIVER_END;
-        break;
+            item = 0;
+            to   = QUIVER_END;
+            break;
         default:
-        item = 0;
-        to = BI_MAX;
-        break;
+            item = 0;
+            to   = BI_MAX;
+            break;
         }
         /* Cheat the "equip" screen */
         borg_cheat_equip();
@@ -1959,33 +1922,32 @@ void do_cmd_borg(void)
             switch (cmd) {
             case 'a':
             case 'A':
-            if (borg_has[item]) {
-                borg_note(format("Item-Kind:%03d name=%s value= %d.", item,
-                    k_info[item].name, borg_has[item]));
-            }
-            break;
+                if (borg_has[item]) {
+                    borg_note(format("Item-Kind:%03d name=%s value= %d.", item,
+                        k_info[item].name, borg_has[item]));
+                }
+                break;
             case 'i':
             case 'I':
-            if (borg_items[item].iqty) {
-                borg_note(format("Item-Invn:%03d desc= %s qty %d.", item,
-                    borg_items[item].desc, borg_items[item].iqty));
-            }
-            break;
+                if (borg_items[item].iqty) {
+                    borg_note(format("Item-Invn:%03d desc= %s qty %d.", item,
+                        borg_items[item].desc, borg_items[item].iqty));
+                }
+                break;
             case 'w':
             case 'W':
-            if (borg_items[item].iqty) {
-                borg_note(format("Item-Worn:%03d desc= %s qty %d.", item,
-                    borg_items[item].desc, borg_items[item].iqty));
-            }
-            break;
+                if (borg_items[item].iqty) {
+                    borg_note(format("Item-Worn:%03d desc= %s qty %d.", item,
+                        borg_items[item].desc, borg_items[item].iqty));
+                }
+                break;
             case 'r':
             case 'R':
-            if (borg_items[item].iqty && borg_items[item].art_idx)
-                borg_note(format("Item-Arti:%03d name= %s.", item,
-                    a_info[borg_items[item].art_idx].name));
-            break;
-            default:
-            {
+                if (borg_items[item].iqty && borg_items[item].art_idx)
+                    borg_note(format("Item-Arti:%03d name= %s.", item,
+                        a_info[borg_items[item].art_idx].name));
+                break;
+            default: {
                 borg_note(format("skill %d (%s) value= %d.", item,
                     prefix_pref[item], borg_trait[item]));
                 break;
@@ -2000,15 +1962,13 @@ void do_cmd_borg(void)
 
     /* Version of the game */
     case 'v':
-    case 'V':
-    {
+    case 'V': {
         msg("APWBorg Version: %s", borg_engine_date);
         break;
     }
     /* Command: Display all known info on item */
     case 'o':
-    case 'O':
-    {
+    case 'O': {
         int n = 0;
 
         struct object *item2;
@@ -2053,8 +2013,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: Resurrect Borg */
-    case 'R':
-    {
+    case 'R': {
         /* Confirm it */
         get_com("Are you sure you want to Respawn this borg? (y or n)? ", &cmd);
 
@@ -2065,8 +2024,7 @@ void do_cmd_borg(void)
     }
 
     /* Command: Restock the Stores */
-    case 'r':
-    {
+    case 'r': {
         /* Confirm it */
         get_com(
             "Are you sure you want to Restock the stores? (y or n)? ", &cmd);
@@ -2092,8 +2050,7 @@ void do_cmd_borg(void)
         break;
     }
 
-    case ';':
-    {
+    case ';': {
         int glyph_check;
 
         uint8_t a = COLOUR_RED;
@@ -2109,8 +2066,7 @@ void do_cmd_borg(void)
         /* Get keypress */
     } break;
     /* Oops */
-    default:
-    {
+    default: {
         /* Message */
         msg("That is not a legal Borg command.");
         break;

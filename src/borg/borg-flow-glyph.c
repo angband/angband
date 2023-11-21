@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-flow-glyph.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-cave.h"
 #include "borg-flow-misc.h"
@@ -31,9 +31,9 @@
 #include "borg-projection.h"
 #include "borg-trait.h"
 
- /*
-  * Hack -- Glyph creating
-  */
+/*
+ * Hack -- Glyph creating
+ */
 
 static uint8_t glyph_x;
 static uint8_t glyph_y;
@@ -45,10 +45,10 @@ static uint8_t glyph_x_center = 0;
  */
 struct borg_track track_glyph;
 
-/* 
- * Environment changed.  Need to make a new Sea of Runes for Morgy 
+/*
+ * Environment changed.  Need to make a new Sea of Runes for Morgy
  */
-bool borg_needs_new_sea; 
+bool borg_needs_new_sea;
 
 /*
  * Prepare to flow towards a location and create a
@@ -70,27 +70,27 @@ bool borg_needs_new_sea;
  * 2. begin planting Runes in a pattern. When complete,
  * 3. move to the center of it.
  */
- /*
-  * ghijk  The borg will use the following ddx and ddy to search
-  * d827a  for a suitable grid in an open room.
-  * e4@3b
-  * f615c
-  * lmnop  24 grids
-  *
-  */
+/*
+ * ghijk  The borg will use the following ddx and ddy to search
+ * d827a  for a suitable grid in an open room.
+ * e4@3b
+ * f615c
+ * lmnop  24 grids
+ *
+ */
 bool borg_flow_glyph(int why)
 {
     int i;
     int cost;
 
     int x, y;
-    int v = 0;
+    int v          = 0;
 
-    int b_x = c_x;
-    int b_y = c_y;
-    int b_v = -1;
+    int b_x        = c_x;
+    int b_y        = c_y;
+    int b_v        = -1;
     int goal_glyph = 0;
-    int glyph = 0;
+    int glyph      = 0;
 
     borg_grid *ag;
 
@@ -151,7 +151,7 @@ bool borg_flow_glyph(int why)
         for (x = 50; x < AUTO_MAX_X - 50; x++) {
             borg_grid *ag_ptr[24];
 
-            int floor = 0;
+            int floor     = 0;
             int tmp_glyph = 0;
 
             /* Acquire the grid */
@@ -280,7 +280,7 @@ bool borg_flow_glyph(int why)
 
             /* Get the grid contents */
             ag_ptr[i] = &borg_grids[yy][xx];
-            ag = ag_ptr[i];
+            ag        = ag_ptr[i];
 
             /* If it is not a glyph, skip it */
             if (ag->glyph)
@@ -333,9 +333,6 @@ void borg_init_flow_glyph(void)
     borg_init_track(&track_glyph, 200);
 }
 
-void borg_free_flow_glyph(void)
-{
-    borg_free_track(&track_glyph);
-}
+void borg_free_flow_glyph(void) { borg_free_track(&track_glyph); }
 
 #endif

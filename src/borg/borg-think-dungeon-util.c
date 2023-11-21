@@ -17,17 +17,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-think-dungeon-util.h"
+
+#ifdef ALLOW_BORG
 
 #include "../game-world.h"
 #include "../ui-event.h"
 #include "../ui-term.h"
 
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-danger.h"
 #include "borg-escape.h"
 #include "borg-flow-kill.h"
@@ -42,28 +41,29 @@
 #include "borg-light.h"
 #include "borg-magic.h"
 #include "borg-messages-react.h"
-#include "borg-store-sell.h"
 #include "borg-prepared.h"
 #include "borg-projection.h"
+#include "borg-store-sell.h"
 #include "borg-think-dungeon.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
- /*
-  * Hack -- importance of the various "level feelings"
-  * Try to explore the level for at least this many turns
-  */
+/*
+ * Hack -- importance of the various "level feelings"
+ * Try to explore the level for at least this many turns
+ */
 static int borg_stuff_feeling[]
-    = {50000, /* 0 is no feeling yet given, stick around to get one */
-          8000, 8000, 6000, 4000, 2000, 1000, 800, 600, 400, 200, 0};
+    = { 50000, /* 0 is no feeling yet given, stick around to get one */
+          8000, 8000, 6000, 4000, 2000, 1000, 800, 600, 400, 200, 0 };
 
-/* 
- * money Scumming is a type of town scumming for money 
+/*
+ * money Scumming is a type of town scumming for money
  */
 bool borg_money_scum(void)
 {
 
-    int dir = -1;
+    int dir     = -1;
     int divisor = 2;
 
     borg_grid *ag;
@@ -105,7 +105,7 @@ bool borg_money_scum(void)
     /* Don't rest too long at night.  We tend to crash the game if too many
      * townsfolk are on the level
      */
-     /* Night or day up in town */
+    /* Night or day up in town */
     if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2))
         divisor = 5;
 
@@ -121,7 +121,7 @@ bool borg_money_scum(void)
             g_x = c_x + ddx[dir];
             g_y = c_y + ddy[dir];
 
-            ag = &borg_grids[g_y][g_x];
+            ag  = &borg_grids[g_y][g_x];
 
             /* Skip walls and shops */
             if (ag->feat != FEAT_FLOOR)
@@ -134,9 +134,9 @@ bool borg_money_scum(void)
     }
 
     /* reset the clocks */
-    borg_t = 10;
+    borg_t          = 10;
     time_this_panel = 1;
-    borg_began = 1;
+    borg_began      = 1;
 
     /* Done */
     return (true);
@@ -145,8 +145,8 @@ bool borg_money_scum(void)
 /* Attempt a series of maneuvers to stay alive when you run out of light */
 bool borg_think_dungeon_light(void)
 {
-    int ii, x, y;
-    bool not_safe = false;
+    int        ii, x, y;
+    bool       not_safe = false;
     borg_grid *ag;
 
     /* Consume needed things */
@@ -194,7 +194,7 @@ bool borg_think_dungeon_light(void)
 
         /* If on a glowing grid, got some food, and low mana, then rest here */
         if ((borg_trait[BI_CURSP] < borg_trait[BI_MAXSP]
-            && borg_trait[BI_MAXSP] > 0)
+                && borg_trait[BI_MAXSP] > 0)
             && (borg_grids[c_y][c_x].info & BORG_GLOW) && !borg_trait[BI_ISWEAK]
             && (borg_spell_legal(HERBAL_CURING)
                 || borg_spell_legal(REMOVE_HUNGER)
@@ -221,7 +221,7 @@ bool borg_think_dungeon_light(void)
 
             /* Be concerned about the Regional Fear. */
             if (borg_fear_region[c_y / 11][c_x / 11]
-            > borg_trait[BI_CURHP] / 10)
+                > borg_trait[BI_CURHP] / 10)
                 not_safe = true;
 
             /* Be concerned about the Monster Fear. */
@@ -241,7 +241,7 @@ bool borg_think_dungeon_light(void)
         /* If I have the capacity to Call Light, then do so if adjacent to a
          * dark grid. We can illuminate the entire dungeon, looking for stairs.
          */
-         /* Scan grids adjacent to me */
+        /* Scan grids adjacent to me */
         for (ii = 0; ii < 8; ii++) {
             x = c_x + ddx_ddd[ii];
             y = c_y + ddy_ddd[ii];
@@ -309,7 +309,7 @@ bool borg_think_dungeon_light(void)
     return (false);
 }
 
-/* 
+/*
  * This is an exploitation function.  The borg will stair scum
  * in the dungeon to grab items close to the stair.
  */
@@ -320,7 +320,7 @@ bool borg_think_stair_scum(bool from_town)
 
     borg_grid *ag = &borg_grids[c_y][c_x];
 
-    uint8_t feat = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat  = square(cave, loc(c_x, c_y))->feat;
 
     enum borg_need need;
 
@@ -391,9 +391,9 @@ bool borg_think_stair_scum(bool from_town)
         borg_note("# Scum. (need fuel)");
 
     /** Track down some interesting gear **/
-    /* XXX Should we allow him great flexibility in retreiving loot? (not always
+    /* XXX Should we allow him great flexibility in retrieving loot? (not always
      * safe?)*/
-     /* Continue flowing towards objects */
+    /* Continue flowing towards objects */
     if (borg_flow_old(GOAL_TAKE))
         return (true);
 
@@ -558,10 +558,10 @@ static int borg_time_to_stay_on_level(bool bored)
  */
 bool borg_leave_level(bool bored)
 {
-    int sellable_item_count, g = 0;
+    int  sellable_item_count, g = 0;
     bool try_not_to_descend = false;
 
-    bool need_restock = false;
+    bool need_restock       = false;
 
     /* Hack -- waiting for "recall" other than depth 1 */
     if (goal_recalling && borg_trait[BI_CDEPTH] > 1)
@@ -571,8 +571,8 @@ bool borg_leave_level(bool bored)
     if (borg_trait[BI_CDEPTH] == 100 && morgoth_on_level
         && (borg_t - borg_t_morgoth < 5000)) {
         goal_leaving = false;
-        goal_rising = false;
-        bored = false;
+        goal_rising  = false;
+        bored        = false;
     }
 
     /* There is a great concern about recalling back to level 100.
@@ -591,7 +591,7 @@ bool borg_leave_level(bool bored)
      * not crawl either.
      */
 
-     /* Town */
+    /* Town */
     if (!borg_trait[BI_CDEPTH]) {
         /* Cancel rising */
         goal_rising = false;
@@ -606,7 +606,7 @@ bool borg_leave_level(bool bored)
                 /* These pple must crawl down to 100, Sorry */
                 goal_fleeing = true;
                 goal_leaving = true;
-                stair_more = true;
+                stair_more   = true;
 
                 /* Note */
                 borg_note(
@@ -624,7 +624,8 @@ bool borg_leave_level(bool bored)
         /* Hack -- Recall into dungeon */
         if ((borg_trait[BI_MAXDEPTH] >= (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8))
             && (borg_trait[BI_RECALL] >= 3)
-            && (((char *)NULL == borg_prepared(borg_trait[BI_MAXDEPTH] * 6 / 10))
+            && (((char *)NULL
+                    == borg_prepared(borg_trait[BI_MAXDEPTH] * 6 / 10))
                 || borg_cfg[BORG_PLAYS_RISKY])
             && borg_recall()) {
             /* Note */
@@ -667,7 +668,7 @@ bool borg_leave_level(bool bored)
     }
 
     /** In the Dungeon **/
-    const char *prep_cur_depth = borg_prepared(borg_trait[BI_CDEPTH]);
+    const char *prep_cur_depth  = borg_prepared(borg_trait[BI_CDEPTH]);
     const char *prep_next_depth = borg_prepared(borg_trait[BI_CDEPTH] + 1);
 
     /* if not prepared for this level, head upward */
@@ -695,7 +696,7 @@ bool borg_leave_level(bool bored)
             "# heading up (bored and unable to dive: %s)", prep_next_depth));
     }
 
-    /* Rise a level if bored and stastic. */
+    /* Rise a level if bored and spastic. */
     else if (bored && avoidance > borg_trait[BI_CURHP]) {
         if (NULL != prep_next_depth) {
             g = -1;
@@ -708,15 +709,15 @@ bool borg_leave_level(bool bored)
 
     /* Power dive if I am playing too shallow*/
     else if (!try_not_to_descend
-        && NULL == borg_prepared(borg_trait[BI_CDEPTH] + 5)
-        && sellable_item_count < 13) {
+             && NULL == borg_prepared(borg_trait[BI_CDEPTH] + 5)
+             && sellable_item_count < 13) {
         g = 1;
         borg_note("# power dive, playing too shallow.");
     }
 
     /* Power dive if I am playing deep */
     else if (!try_not_to_descend && NULL == prep_next_depth
-        && borg_trait[BI_CDEPTH] >= 75 && borg_trait[BI_CDEPTH] < 100) {
+             && borg_trait[BI_CDEPTH] >= 75 && borg_trait[BI_CDEPTH] < 100) {
         g = 1;
         borg_note("# power dive, head deep.");
     }
@@ -741,14 +742,14 @@ bool borg_leave_level(bool bored)
         if (NULL != borg_restock(borg_trait[BI_CDEPTH])) {
             borg_note(format("# returning to town to restock(too deep: %s)",
                 borg_restock(borg_trait[BI_CDEPTH])));
-            goal_rising = true;
+            goal_rising  = true;
             need_restock = true;
         }
 
         /* I must return to collect stock from the house. */
         if (strstr(prep_cur_depth, "Collect from house")) {
             borg_note("# Returning to town to Collect stock.");
-            goal_rising = true;
+            goal_rising  = true;
             need_restock = true;
         }
     }
@@ -764,7 +765,7 @@ bool borg_leave_level(bool bored)
 
     /* Return to town to sell stuff -- No recall allowed.*/
     if (((borg_cfg[BORG_WORSHIPS_GOLD] || borg_trait[BI_MAXCLEVEL] < 15)
-        && borg_trait[BI_MAXCLEVEL] <= 25)
+            && borg_trait[BI_MAXCLEVEL] <= 25)
         && (sellable_item_count >= 12)) {
         borg_note("# Going to town (Sell Stuff, Worshipping Gold).");
         goal_rising = true;
@@ -791,7 +792,7 @@ bool borg_leave_level(bool bored)
 
     /* return to town if it has been a while */
     if ((!goal_rising && bored && !vault_on_level && !borg_fighting_unique
-        && borg_time_town + borg_t - borg_began > 8000)
+            && borg_time_town + borg_t - borg_began > 8000)
         || (borg_time_town + borg_t - borg_began > 12000)) {
         borg_note("# Going to town (I miss my home).");
         goal_rising = true;
@@ -816,8 +817,7 @@ bool borg_leave_level(bool bored)
      * Check to see if depth 99, if Sauron is dead and Im not read to fight
      * the final battle
      */
-    if (borg_trait[BI_CDEPTH] == 99 
-        && borg_race_death[borg_sauron_id] == 1
+    if (borg_trait[BI_CDEPTH] == 99 && borg_race_death[borg_sauron_id] == 1
         && borg_ready_morgoth != 1) {
         borg_note("# Returning to level 98 to scum for items.");
         g = -1;
@@ -915,7 +915,7 @@ bool borg_leave_level(bool bored)
     return (false);
 }
 
-/* 
+/*
  * Excavate an existing vault using ranged spells.
  * Stand where you are, use stone to mud to excavate the vault.  This will allow
  * the druid or blackgaurd borgs to get a few more attack spells on the monster.
@@ -933,8 +933,8 @@ bool borg_excavate_vault(int range)
 
     /* reset counters */
     borg_temp_n = 0;
-    i = 0;
-    ii = 0;
+    i           = 0;
+    ii          = 0;
 
     /* no need if no vault on level */
     if (!vault_on_level)

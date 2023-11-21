@@ -17,24 +17,23 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-caution.h"
+
+#ifdef ALLOW_BORG
 
 #include "../player-timed.h"
 #include "../ui-event.h"
 
-#include "borg.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
 #include "borg-danger.h"
+#include "borg-escape.h"
 #include "borg-fight-defend.h"
-#include "borg-flow.h"
 #include "borg-flow-glyph.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
 #include "borg-flow-stairs.h"
-#include "borg-escape.h"
+#include "borg-flow.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
@@ -48,6 +47,7 @@
 #include "borg-projection.h"
 #include "borg-store-sell.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * ** Try healing **
@@ -63,24 +63,24 @@ static bool borg_heal(int danger)
     int pct_down;
     int allow_fail = 15;
     int chance;
-    int clw_heal = 15;
-    int csw_heal = 25;
-    int ccw_heal = 30;
-    int cmw_heal = 50;
+    int clw_heal          = 15;
+    int csw_heal          = 25;
+    int ccw_heal          = 30;
+    int cmw_heal          = 50;
 
-    int heal_heal = 300;
+    int heal_heal         = 300;
 
     int stats_needing_fix = 0;
 
-    bool rod_good = false;
+    bool rod_good         = false;
 
-    hp_down = borg_trait[BI_MAXHP] - borg_trait[BI_CURHP];
-    pct_down = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 100
-        / borg_trait[BI_MAXHP]);
-    clw_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 15 / 100);
-    csw_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 20 / 100);
-    ccw_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 25 / 100);
-    cmw_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 30 / 100);
+    hp_down               = borg_trait[BI_MAXHP] - borg_trait[BI_CURHP];
+    pct_down              = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 100
+                / borg_trait[BI_MAXHP]);
+    clw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 15 / 100);
+    csw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 20 / 100);
+    ccw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 25 / 100);
+    cmw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 30 / 100);
     heal_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 35 / 100);
 
     if (clw_heal < 15)
@@ -168,7 +168,7 @@ static bool borg_heal(int danger)
         /* If my ability to use a teleport staff is really
          * bad, then I should heal up then use the staff.
          */
-         /* Check for a charged teleport staff */
+        /* Check for a charged teleport staff */
         if (borg_equips_staff_fail(sv_staff_teleportation)) {
             /* check my skill, drink a potion */
             if ((borg_activate_failure(TV_STAFF, sv_staff_teleportation) > 650)
@@ -192,8 +192,8 @@ static bool borg_heal(int danger)
              * and try to fix the confusion
              */
             if ((borg_quaff_crit(true)
-                || borg_quaff_potion(sv_potion_cure_serious)
-                || borg_quaff_potion(sv_potion_healing))) {
+                    || borg_quaff_potion(sv_potion_cure_serious)
+                    || borg_quaff_potion(sv_potion_healing))) {
                 borg_note("# Fixing Confusion. Level 5");
                 return (true);
             }
@@ -214,8 +214,8 @@ static bool borg_heal(int danger)
         }
         /* Warriors with ESP won't need it so quickly */
         if (!(borg_class == CLASS_WARRIOR
-            && borg_trait[BI_CURHP] > borg_trait[BI_MAXHP] / 4
-            && borg_trait[BI_ESP])) {
+                && borg_trait[BI_CURHP] > borg_trait[BI_MAXHP] / 4
+                && borg_trait[BI_ESP])) {
             if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
                 || borg_quaff_potion(sv_potion_cure_light)
                 || borg_quaff_potion(sv_potion_cure_serious)
@@ -248,8 +248,8 @@ static bool borg_heal(int danger)
                 /* Choose Life over Healing if way down on pts*/
                 (hp_down > 500
                     && borg_has[borg_lookup_kind(
-                        TV_POTION, sv_potion_star_healing)]
-                    <= 0
+                           TV_POTION, sv_potion_star_healing)]
+                           <= 0
                     && borg_quaff_potion(sv_potion_life))
                 || borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_healing)
@@ -340,11 +340,11 @@ static bool borg_heal(int danger)
         chance += 5;
 
     if (((pct_down <= 15 && chance < 98)
-        || (pct_down >= 16 && pct_down <= 25 && chance < 95)
-        || (pct_down >= 26 && pct_down <= 50 && chance < 80)
-        || (pct_down >= 51 && pct_down <= 65 && chance < 50)
-        || (pct_down >= 66 && pct_down <= 74 && chance < 25)
-        || (pct_down >= 75 && chance < 1))
+            || (pct_down >= 16 && pct_down <= 25 && chance < 95)
+            || (pct_down >= 26 && pct_down <= 50 && chance < 80)
+            || (pct_down >= 51 && pct_down <= 65 && chance < 50)
+            || (pct_down >= 66 && pct_down <= 74 && chance < 25)
+            || (pct_down >= 75 && chance < 1))
         && (!borg_trait[BI_ISHEAVYSTUN] && !borg_trait[BI_ISSTUN]
             && !borg_trait[BI_ISPOISONED] && !borg_trait[BI_ISCUT]))
         return false;
@@ -397,8 +397,8 @@ static bool borg_heal(int danger)
     /* Heal step one (200hp) */
     if (pct_down >= 55 && danger < borg_trait[BI_CURHP] + heal_heal
         && ((((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
-            || rod_good)
-            && borg_zap_rod(sv_rod_healing))
+                 || rod_good)
+                && borg_zap_rod(sv_rod_healing))
             || borg_activate_item(act_cure_full)
             || borg_activate_item(act_cure_full2)
             || borg_activate_item(act_cure_nonorlybig)
@@ -429,7 +429,7 @@ static bool borg_heal(int danger)
             || /* holy word */
             borg_spell_fail(HEALING, allow_fail)
             || (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
-                || rod_good)
+                    || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_zap_rod(sv_rod_healing)
             || borg_quaff_potion(sv_potion_healing))) {
@@ -440,10 +440,10 @@ static bool borg_heal(int danger)
     /* Healing step three (300hp).  */
     if (pct_down > 60 && danger < borg_trait[BI_CURHP] + heal_heal
         && ((borg_fighting_evil_unique
-            && borg_spell_fail(HOLY_WORD, allow_fail))
+                && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
             (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
-                || rod_good)
+                 || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_spell_fail(HEALING, allow_fail)
             || borg_use_staff_fail(sv_staff_healing)
@@ -461,12 +461,12 @@ static bool borg_heal(int danger)
      */
     if (pct_down > 65 && (danger < borg_trait[BI_CURHP] + heal_heal)
         && ((borg_fighting_evil_unique
-            && borg_spell_fail(HOLY_WORD, allow_fail))
+                && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
             borg_spell_fail(HEALING, allow_fail)
             || borg_use_staff_fail(sv_staff_healing)
             || (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
-                || rod_good)
+                    || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_quaff_potion(sv_potion_healing)
             || borg_activate_item(act_cure_full)
@@ -543,7 +543,7 @@ static bool borg_heal(int danger)
     if (borg_trait[BI_ISPOISONED]
         && (borg_trait[BI_CURHP] < 2
             || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20)) {
-        int sv_mana = borg_trait[BI_CURSP];
+        int sv_mana          = borg_trait[BI_CURSP];
 
         borg_trait[BI_CURSP] = borg_trait[BI_MAXSP];
 
@@ -610,7 +610,7 @@ static bool borg_heal(int danger)
     if (borg_trait[BI_ISCUT]
         && ((borg_trait[BI_CURHP] < 2)
             || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20)) {
-        int sv_mana = borg_trait[BI_CURSP];
+        int sv_mana          = borg_trait[BI_CURSP];
 
         borg_trait[BI_CURSP] = borg_trait[BI_MAXSP];
 
@@ -626,7 +626,7 @@ static bool borg_heal(int danger)
 
         /* Emergency check on healing.  Borg_heal has already been checked but
          * but we did not use our ez_heal potions.  All other attempts to save
-         * ourself have failed.  Use the ez_heal if I have it.
+         * ourselves have failed.  Use the ez_heal if I have it.
          */
         if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20
             && (borg_quaff_potion(sv_potion_healing)
@@ -673,7 +673,7 @@ static bool borg_heal(int danger)
  *   (1) Caution
  *   (1a) Analyze the situation
  *   (1a1) try to heal
- *   (1a2) try a defence
+ *   (1a2) try a defense
  *   (1b) Teleport from danger
  *   (1c) Handle critical stuff
  *   (1d) Retreat to happy grids
@@ -797,11 +797,11 @@ static bool borg_heal(int danger)
  */
 bool borg_caution(void)
 {
-    int j, pos_danger;
+    int  j, pos_danger;
     bool borg_surround = false;
-    bool nasty = false;
-    bool on_dnstair = false;
-    bool on_upstair = false;
+    bool nasty         = false;
+    bool on_dnstair    = false;
+    bool on_upstair    = false;
 
     /*** Notice "nasty" situations ***/
 
@@ -924,9 +924,9 @@ bool borg_caution(void)
     /* Describe (briefly) the current situation */
     /* Danger (ignore stupid "fear" danger) */
     if ((((pos_danger > avoidance / 10)
-        || (pos_danger > borg_fear_region[c_y / 11][c_x / 11])
-        || borg_morgoth_position || borg_trait[BI_ISWEAK])
-        || borg_trait[BI_CDEPTH] == 100)
+             || (pos_danger > borg_fear_region[c_y / 11][c_x / 11])
+             || borg_morgoth_position || borg_trait[BI_ISWEAK])
+            || borg_trait[BI_CDEPTH] == 100)
         && !borg_trait[BI_KING]) {
         /* Describe (briefly) the current situation */
         borg_note(
@@ -998,7 +998,7 @@ bool borg_caution(void)
             && !borg_as_position && !borg_trait[BI_ISBLIND]
             && !borg_trait[BI_ISCUT] && !borg_trait[BI_ISPOISONED]
             && !borg_trait[BI_ISCONFUSED]) {
-            /* do some defence before running away */
+            /* do some defense before running away */
             if (borg_defend(pos_danger))
                 return true;
 
@@ -1010,7 +1010,7 @@ bool borg_caution(void)
             if (borg_heal(pos_danger))
                 return true;
 
-            /* do some defence before running away! */
+            /* do some defense before running away! */
             if (borg_defend(pos_danger))
                 return true;
         }
@@ -1092,7 +1092,7 @@ bool borg_caution(void)
     }
     /* Potential danger (near death) in town */
     else if (!borg_trait[BI_CDEPTH] && (pos_danger > borg_trait[BI_CURHP])
-        && (borg_trait[BI_CLEVEL] < 50)) {
+             && (borg_trait[BI_CLEVEL] < 50)) {
         /* Flee now */
         if (!goal_leaving) {
             /* Flee! */
@@ -1109,9 +1109,9 @@ bool borg_caution(void)
     if (goal_leaving || goal_fleeing || scaryguy_on_level || goal_fleeing_lunal
         || goal_fleeing_munchkin
         || ((pos_danger > avoidance
-            || (borg_trait[BI_CLEVEL] < 5 && pos_danger > avoidance / 2))
+                || (borg_trait[BI_CLEVEL] < 5 && pos_danger > avoidance / 2))
             && borg_grids[c_y][c_x].feat
-            == FEAT_LESS)) /* danger and standing on stair */
+                   == FEAT_LESS)) /* danger and standing on stair */
     {
         if (borg_ready_morgoth == 0 && !borg_trait[BI_KING]) {
             stair_less = true;
@@ -1277,18 +1277,18 @@ bool borg_caution(void)
     if ((track_less.num || track_more.num)
         && (goal_fleeing || scaryguy_on_level
             || (pos_danger > avoidance && borg_trait[BI_CLEVEL] < 35))) {
-        int y, x, i;
-        int b_j = -1;
-        int m;
-        int b_m = -1;
+        int  y, x, i;
+        int  b_j = -1;
+        int  m;
+        int  b_m  = -1;
         bool safe = true;
 
         borg_grid *ag;
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less.num; i++) {
-            x = track_less.x[i];
-            y = track_less.y[i];
+            x  = track_less.x[i];
+            y  = track_less.y[i];
 
             ag = &borg_grids[y][x];
 
@@ -1309,8 +1309,8 @@ bool borg_caution(void)
 
         /* Check for an existing "down stairs" */
         for (i = 0; i < track_more.num; i++) {
-            x = track_more.x[i];
-            y = track_more.y[i];
+            x  = track_more.x[i];
+            y  = track_more.y[i];
 
             ag = &borg_grids[y][x];
 
@@ -1375,13 +1375,13 @@ bool borg_caution(void)
 
                 /* Access the monster and check it's speed */
                 if (borg_kills[borg_grids[y][x].kill].speed
-            > borg_trait[BI_SPEED])
+                    > borg_trait[BI_SPEED])
                     safe = false;
             }
 
-            /* Dont run from Grip or Fang */
+            /* Don't run from Grip or Fang */
             if ((borg_trait[BI_CDEPTH] <= 5 && borg_trait[BI_CDEPTH] != 0
-                && borg_fighting_unique)
+                    && borg_fighting_unique)
                 || !safe) {
                 /* try to take them on, you cant outrun them */
             } else {
@@ -1421,7 +1421,7 @@ bool borg_caution(void)
      * 4) we are not in a vault
      */
     if (((pos_danger > avoidance / 3 && !nasty && !borg_no_retreat)
-        || (borg_surround && pos_danger != 0))
+            || (borg_surround && pos_danger != 0))
         && !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50)
         && !borg_trait[BI_ISCONFUSED] && !square_isvault(cave, loc(c_x, c_y))
         && borg_trait[BI_CURHP] < 500) {
@@ -1450,11 +1450,11 @@ bool borg_caution(void)
 
             /* Try to avoid pillar dancing if at good health */
             if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
-                && ((track_step.num > 2
-                    && (track_step.y[track_step.num - 2] == y2
-                        && track_step.x[track_step.num - 2] == x2
-                        && track_step.y[track_step.num - 3] == c_y
-                        && track_step.x[track_step.num - 3] == c_x))))
+                    && ((track_step.num > 2
+                         && (track_step.y[track_step.num - 2] == y2
+                             && track_step.x[track_step.num - 2] == x2
+                             && track_step.y[track_step.num - 3] == c_y
+                             && track_step.x[track_step.num - 3] == c_x))))
                 || time_this_panel >= 300)
                 continue;
 
@@ -1478,7 +1478,7 @@ bool borg_caution(void)
              * tag for those grids.  Something like BORG_BEEN would work.
              */
 
-             /* Require "happy" grids (most of the time)*/
+            /* Require "happy" grids (most of the time)*/
             if (!borg_happy_grid_bold(y2, x2))
                 continue;
 
@@ -1518,11 +1518,11 @@ bool borg_caution(void)
 
                 /* Lets make one more check that we are not bouncing */
                 if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
-                    && ((track_step.num > 2
-                        && (track_step.y[track_step.num - 2] == y1
-                            && track_step.x[track_step.num - 2] == x1
-                            && track_step.y[track_step.num - 3] == c_y
-                            && track_step.x[track_step.num - 3] == c_x))))
+                        && ((track_step.num > 2
+                             && (track_step.y[track_step.num - 2] == y1
+                                 && track_step.x[track_step.num - 2] == x1
+                                 && track_step.y[track_step.num - 3] == c_y
+                                 && track_step.x[track_step.num - 3] == c_x))))
                     || time_this_panel >= 300)
                     break;
 
@@ -1552,11 +1552,11 @@ bool borg_caution(void)
                         if (p1 > pos_danger * 5 / 10)
                             break;
                     } else
-                        /* Surrounded, try to back-up */
+                    /* Surrounded, try to back-up */
                     {
                         if (borg_trait[BI_CLEVEL] >= 20) {
                             if (p1 >= (b_r <= 5 ? borg_trait[BI_CURHP] * 15 / 10
-                                : borg_trait[BI_CURHP]))
+                                                : borg_trait[BI_CURHP]))
                                 break;
                         } else {
                             if (p1 >= borg_trait[BI_CURHP] * 4)
@@ -1663,21 +1663,21 @@ bool borg_caution(void)
      * 6) loads of HP
      */
     if (((pos_danger > (avoidance * 4 / 10) && !nasty && !borg_no_retreat)
-        || (borg_surround && pos_danger != 0))
+            || (borg_surround && pos_danger != 0))
         && !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50)
         && !borg_trait[BI_ISCONFUSED] && !square_isvault(cave, loc(c_x, c_y))
         && borg_trait[BI_CURHP] < 500) {
-        int i = -1, b_i = -1;
-        int k = -1, b_k = -1;
-        int f = -1, b_f = -1;
-        int g_k = 0;
-        int ii;
+        int  i = -1, b_i = -1;
+        int  k = -1, b_k = -1;
+        int  f = -1, b_f = -1;
+        int  g_k = 0;
+        int  ii;
         bool adjacent_monster = false;
 
         /* Current danger */
         b_k = pos_danger;
 
-        /* Fake the danger down if surounded so that he can move. */
+        /* Fake the danger down if surrounded so that he can move. */
         if (borg_surround)
             b_k = (b_k * 12 / 10);
 
@@ -1715,11 +1715,11 @@ bool borg_caution(void)
             /* If i was here last round and 3 rounds ago, suggesting a "bounce"
              */
             if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
-                && ((track_step.num > 2
-                    && (track_step.y[track_step.num - 2] == y
-                        && track_step.x[track_step.num - 2] == x
-                        && track_step.y[track_step.num - 3] == c_y
-                        && track_step.x[track_step.num - 3] == c_x))))
+                    && ((track_step.num > 2
+                         && (track_step.y[track_step.num - 2] == y
+                             && track_step.x[track_step.num - 2] == x
+                             && track_step.y[track_step.num - 3] == c_y
+                             && track_step.x[track_step.num - 3] == c_x))))
                 || time_this_panel >= 300)
                 continue;
 
@@ -1790,7 +1790,7 @@ bool borg_caution(void)
             if (k > b_k)
                 continue;
 
-            /* Record the danger of this prefered grid */
+            /* Record the danger of this preferred grid */
             g_k = k;
 
             /* Check the freedom there */
@@ -1885,8 +1885,8 @@ bool borg_caution(void)
 
     /* Flee from low hit-points */
     if (((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3)
-        || ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
-            && borg_trait[BI_CURHP] < (borg_trait[BI_CLEVEL] * 3)))
+            || ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
+                && borg_trait[BI_CURHP] < (borg_trait[BI_CLEVEL] * 3)))
         && (borg_trait[BI_ACCW] < 3) && (borg_trait[BI_AHEAL] < 1)) {
         /* Flee from low hit-points */
         if (borg_trait[BI_CDEPTH] && (randint0(100) < 25)) {
@@ -1917,7 +1917,7 @@ bool borg_caution(void)
             /* Start leaving */
             if (!goal_leaving) {
                 /* Flee */
-                borg_note("# Leaving (bleeding/posion)");
+                borg_note("# Leaving (bleeding/poison)");
 
                 /* Start leaving */
                 goal_leaving = true;
@@ -1936,19 +1936,19 @@ bool borg_caution(void)
 
     /* Emergency check on healing.  Borg_heal has already been checked but
      * but we did not use our ez_heal potions.  All other attempts to save
-     * ourself have failed.  Use the ez_heal if I have it.
+     * ourselves have failed.  Use the ez_heal if I have it.
      */
     if ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 10
-        || /* dangerously low HP -OR-*/
-        (pos_danger > borg_trait[BI_CURHP] && /* extreme danger -AND-*/
-            (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] <= 2
-                && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4))
-        || /* low on escapes */
-        (borg_trait[BI_AEZHEAL] > 5
-            && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4)
-        || /* moderate danger, lots of heals */
-        (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 600
-            && borg_fighting_unique && borg_trait[BI_CDEPTH] >= 85))
+            || /* dangerously low HP -OR-*/
+            (pos_danger > borg_trait[BI_CURHP] && /* extreme danger -AND-*/
+                (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] <= 2
+                    && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4))
+            || /* low on escapes */
+            (borg_trait[BI_AEZHEAL] > 5
+                && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4)
+            || /* moderate danger, lots of heals */
+            (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 600
+                && borg_fighting_unique && borg_trait[BI_CDEPTH] >= 85))
         && /* moderate danger, unique, deep */
         (borg_quaff_potion(sv_potion_star_healing)
             || borg_quaff_potion(sv_potion_healing)

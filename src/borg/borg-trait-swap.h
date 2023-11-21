@@ -17,21 +17,24 @@
 #ifndef INCLUDED_BORG_TRAIT_SWAP_H
 #define INCLUDED_BORG_TRAIT_SWAP_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-extern int     weapon_swap; /* location of my swap weapon (+1 so zero is none) */
-extern int     armour_swap; /* my swap of armour (+1 so zero is none) */
+#ifdef ALLOW_BORG
+
+extern int weapon_swap; /* location of my swap weapon (+1 so zero is none) */
+extern int armour_swap; /* my swap of armour (+1 so zero is none) */
 
 extern int32_t weapon_swap_value;
 extern int32_t armour_swap_value;
 
-extern bool    decurse_weapon_swap; /* my swap is great, except its cursed */
-extern int     enchant_weapon_swap_to_h; /* my swap is great, except its cursed */
-extern int     enchant_weapon_swap_to_d; /* my swap is great, except its cursed */
-extern bool    decurse_armour_swap; /* my swap is great, except its cursed */
-extern int     enchant_armour_swap_to_a; /* my swap is great, except its cursed */
+extern bool decurse_weapon_swap; /* my swap is great, except its cursed */
+extern int  enchant_weapon_swap_to_h; /* my swap is great, except its cursed */
+extern int  enchant_weapon_swap_to_d; /* my swap is great, except its cursed */
+extern bool decurse_armour_swap; /* my swap is great, except its cursed */
+extern int  enchant_armour_swap_to_a; /* my swap is great, except its cursed */
 
 extern uint8_t weapon_swap_free_act;
 extern uint8_t weapon_swap_resist_acid;
@@ -71,9 +74,8 @@ extern uint8_t armour_swap_resist_neth;
 extern uint8_t armour_swap_resist_fear;
 extern uint8_t armour_swap_hold_life;
 
-extern void borg_notice_weapon_swap(void);
-extern void borg_notice_armour_swap(void);
-
+extern void    borg_notice_weapon_swap(void);
+extern void    borg_notice_armour_swap(void);
 
 #endif
 #endif

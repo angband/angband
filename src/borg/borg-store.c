@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-store.h"
+
+#ifdef ALLOW_BORG
 
 #include "../init.h"
 #include "../obj-desc.h"
@@ -36,9 +36,8 @@ const char *SHOP_MENU_ITEMS = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 borg_shop *borg_shops; /* Current "shops" */
 borg_shop *safe_shops; /* Safety (save) "shops" */
 
-int         borg_food_onsale = -1; /* Are shops selling food? */
-int         borg_fuel_onsale = -1; /* Are shops selling fuel? */
-
+int borg_food_onsale = -1; /* Are shops selling food? */
+int borg_fuel_onsale = -1; /* Are shops selling fuel? */
 
 /*
  * This processing handles the highest level goals, and store interaction.
@@ -178,7 +177,7 @@ void borg_cheat_store(void)
 {
     int             slot, i;
     int             store_num;
-    struct object *o_ptr;
+    struct object  *o_ptr;
     struct object **list
         = mem_zalloc(sizeof(struct object *) * z_info->store_inven_max);
 
@@ -196,7 +195,7 @@ void borg_cheat_store(void)
 
         /* Check each existing object in this store */
         for (slot = 0; slot < z_info->store_inven_max && list[slot]; slot++) {
-            o_ptr = list[slot];
+            o_ptr             = list[slot];
             borg_item *b_item = &borg_shops[store_num].ware[slot];
             char       buf[120];
 
@@ -234,7 +233,6 @@ void borg_cheat_store(void)
     mem_free(list);
 }
 
-
 void borg_init_store(void)
 {
     /* Make the stores in the town */
@@ -255,6 +253,5 @@ void borg_free_store(void)
     mem_free(borg_shops);
     borg_shops = NULL;
 }
-
 
 #endif

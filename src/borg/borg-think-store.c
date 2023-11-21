@@ -17,23 +17,22 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-think-store.h"
+
+#ifdef ALLOW_BORG
 
 #include "../store.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-io.h"
-#include "borg-item.h"
 #include "borg-item-wear.h"
-#include "borg-store.h"
+#include "borg-item.h"
 #include "borg-store-buy.h"
 #include "borg-store-sell.h"
+#include "borg-store.h"
 #include "borg-think.h"
 #include "borg-trait.h"
-
+#include "borg.h"
 
 /*
  * Choose a shop to visit
@@ -78,7 +77,7 @@ bool borg_choose_shop(void)
      * Buy items straight away, without having to see each shop
      */
     if ((borg_trait[BI_CURLITE] == 0 || borg_trait[BI_FOOD] == 0
-        || borg_trait[BI_ISCUT] || borg_trait[BI_ISPOISONED])
+            || borg_trait[BI_ISCUT] || borg_trait[BI_ISPOISONED])
         || (borg_trait[BI_CURLITE] == 1 && borg_trait[BI_GOLD] >= 100
             && borg_trait[BI_CLEVEL] < 10)) {
         if (borg_think_shop_buy_useful()) {
@@ -227,7 +226,6 @@ bool borg_choose_shop(void)
     return (false);
 }
 
-
 /*
  * Deal with being in a store
  */
@@ -277,7 +275,7 @@ bool borg_think_store(void)
                 shop_num + 1, goal_shop + 1));
         else
             borg_note(
-                format("# Currently in prefered store '%d'.", goal_shop + 1));
+                format("# Currently in preferred store '%d'.", goal_shop+1));
 
         /* Try to sell stuff */
         if (borg_think_shop_sell())

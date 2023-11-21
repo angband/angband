@@ -17,47 +17,47 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-think.h"
+
+#ifdef ALLOW_BORG
 
 #include "../player-util.h"
 #include "../ui-game.h"
 #include "../ui-menu.h"
 
-#include "borg.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-wear.h"
 #include "borg-log.h"
 #include "borg-magic.h"
-#include "borg-reincarnate.h"
 #include "borg-power.h"
+#include "borg-reincarnate.h"
 #include "borg-store.h"
 #include "borg-think-dungeon.h"
 #include "borg-think-store.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg.h"
 
 /*
  * Hack -- location of the "Lv Mana Fail" prompt
  */
-#define ROW_SPELL   1
-#define COL_SPELL   20+35
+#define ROW_SPELL 1
+#define COL_SPELL 20 + 35
 
-/* 
- * Current shop index 
+/*
+ * Current shop index
  */
 int16_t shop_num = -1;
 
 /*
  * Strategy flags -- examine the world
  */
-bool    borg_do_inven = true; /* Acquire "inven" info */
-bool    borg_do_equip = true; /* Acquire "equip" info */
-bool    borg_do_panel = true; /* Acquire "panel" info */
-bool    borg_do_frame = true; /* Acquire "frame" info */
-bool    borg_do_spell = true; /* Acquire "spell" info */
+bool    borg_do_inven     = true; /* Acquire "inven" info */
+bool    borg_do_equip     = true; /* Acquire "equip" info */
+bool    borg_do_panel     = true; /* Acquire "panel" info */
+bool    borg_do_frame     = true; /* Acquire "frame" info */
+bool    borg_do_spell     = true; /* Acquire "spell" info */
 uint8_t borg_do_spell_aux = 0; /* Hack -- book for "borg_do_spell" */
 
 /*
@@ -95,7 +95,6 @@ static bool borg_save_game(void)
     /* Success */
     return (true);
 }
-
 
 /*
  * Think about the world and perform an action
@@ -142,7 +141,7 @@ bool borg_think(void)
 
     uint8_t t_a;
 
-    char buf[128];
+    char        buf[128];
     static char svSavefile[1024];
     static char svSavefile2[1024];
     static bool justSaved = false;
@@ -268,11 +267,11 @@ bool borg_think(void)
 
         /* Scan the pack */
         for (i = 0; i < z_info->pack_size; i++) {
-            int book_num;
+            int        book_num;
             borg_item *item = &borg_items[i];
 
             for (book_num = 0; book_num < player->class->magic.num_books;
-                book_num++) {
+                 book_num++) {
                 struct class_book book = player->class->magic.books[book_num];
                 if (item->tval == book.tval && item->sval == book.sval) {
                     /* Note book locations */

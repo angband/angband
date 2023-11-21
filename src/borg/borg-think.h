@@ -18,28 +18,31 @@
 #ifndef INCLUDED_BORG_THINK_H
 #define INCLUDED_BORG_THINK_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
- * Current shop index 
+#ifdef ALLOW_BORG
+
+/*
+ * Current shop index
  */
 extern int16_t shop_num;
 
 /*
  * Strategy flags -- examine the world
  */
-extern bool    borg_do_inven; /* Acquire "inven" info */
-extern bool    borg_do_equip; /* Acquire "equip" info */
-extern bool    borg_do_panel; /* Acquire "panel" info */
-extern bool    borg_do_frame; /* Acquire "frame" info */
-extern bool    borg_do_spell; /* Acquire "spell" info */
+extern bool borg_do_inven; /* Acquire "inven" info */
+extern bool borg_do_equip; /* Acquire "equip" info */
+extern bool borg_do_panel; /* Acquire "panel" info */
+extern bool borg_do_frame; /* Acquire "frame" info */
+extern bool borg_do_spell; /* Acquire "spell" info */
 
 /*
  * Abort the Borg, noting the reason
  */
-extern void borg_oops(const char *what);
+extern void borg_oops(const char* what);
 
 /*
  * Think about the world and perform an action

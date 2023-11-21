@@ -18,17 +18,20 @@
 #ifndef INCLUDED_BORG_THINK_DUNGEON_UTIL_H
 #define INCLUDED_BORG_THINK_DUNGEON_UTIL_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
- * money Scumming is a type of town scumming for money 
+#ifdef ALLOW_BORG
+
+/*
+ * money Scumming is a type of town scumming for money
  */
 extern bool borg_money_scum(void);
 
-/* 
- * Attempt a series of maneuvers to stay alive when you run out of light 
+/*
+ * Attempt a series of maneuvers to stay alive when you run out of light
  */
 extern bool borg_think_dungeon_light(void);
 

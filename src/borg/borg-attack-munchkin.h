@@ -18,11 +18,14 @@
 #ifndef INCLUDED_BORG_ATTACK_MUNCHKIN_H
 #define INCLUDED_BORG_ATTACK_MUNCHKIN_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
+#ifdef ALLOW_BORG
+
+/*
  * Munchkin Attack - Magic
  */
 extern bool borg_munchkin_mage(void);

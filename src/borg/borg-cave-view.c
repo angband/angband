@@ -1,5 +1,5 @@
 /**
- * \file borg-cave-view.c 
+ * \file borg-cave-view.c
  * \brief Routines to update the cave view
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -16,6 +16,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
+#include "borg-cave-view.h"
+
 #ifdef ALLOW_BORG
 
 #include "borg-cave-view.h"
@@ -23,8 +26,8 @@
 #include "../cave.h"
 #include "../init.h"
 
-#include "borg-cave.h"
 #include "borg-cave-util.h"
+#include "borg-cave.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
 
@@ -42,7 +45,7 @@ uint8_t borg_view_y[AUTO_VIEW_MAX];
  */
 void borg_forget_view(void)
 {
-    int        i;
+    int i;
 
     borg_grid *ag;
 
@@ -78,14 +81,14 @@ void borg_forget_view(void)
     borg_view_x[borg_view_n] = (X);  \
     borg_view_n++
 
- /*
-  * Helper function for "borg_update_view()" below
-  *
-  * See "update_view_aux()" in "cave.c" for complete documentation.
-  */
+/*
+ * Helper function for "borg_update_view()" below
+ *
+ * See "update_view_aux()" in "cave.c" for complete documentation.
+ */
 static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 {
-    bool       f1, f2, v1, v2, vis1, vis2, wall;
+    bool f1, f2, v1, v2, vis1, vis2, wall;
 
     borg_grid *ag;
 
@@ -175,11 +178,11 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
  */
 void borg_update_view(void)
 {
-    int        n, m, d, k, y, x, z;
+    int n, m, d, k, y, x, z;
 
-    int        se, sw, ne, nw, es, en, ws, wn;
+    int se, sw, ne, nw, es, en, ws, wn;
 
-    int        full, over;
+    int full, over;
 
     borg_grid *ag;
 
@@ -372,7 +375,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn + d, xpn, ypn + d - 1, xpn - 1, ypn + d - 1, xpn)) {
+                    if (borg_update_view_aux(ypn + d, xpn, ypn + d - 1, xpn - 1,
+                            ypn + d - 1, xpn)) {
                         if (n + d >= se)
                             break;
                     }
@@ -392,7 +396,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn + d, xmn, ypn + d - 1, xmn + 1, ypn + d - 1, xmn)) {
+                    if (borg_update_view_aux(ypn + d, xmn, ypn + d - 1, xmn + 1,
+                            ypn + d - 1, xmn)) {
                         if (n + d >= sw)
                             break;
                     }
@@ -418,7 +423,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn - d, xpn, ymn - d + 1, xpn - 1, ymn - d + 1, xpn)) {
+                    if (borg_update_view_aux(ymn - d, xpn, ymn - d + 1, xpn - 1,
+                            ymn - d + 1, xpn)) {
                         if (n + d >= ne)
                             break;
                     }
@@ -438,7 +444,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn - d, xmn, ymn - d + 1, xmn + 1, ymn - d + 1, xmn)) {
+                    if (borg_update_view_aux(ymn - d, xmn, ymn - d + 1, xmn + 1,
+                            ymn - d + 1, xmn)) {
                         if (n + d >= nw)
                             break;
                     }
@@ -464,7 +471,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn, xpn + d, ypn - 1, xpn + d - 1, ypn, xpn + d - 1)) {
+                    if (borg_update_view_aux(ypn, xpn + d, ypn - 1, xpn + d - 1,
+                            ypn, xpn + d - 1)) {
                         if (n + d >= es)
                             break;
                     }
@@ -484,7 +492,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn, xpn + d, ymn + 1, xpn + d - 1, ymn, xpn + d - 1)) {
+                    if (borg_update_view_aux(ymn, xpn + d, ymn + 1, xpn + d - 1,
+                            ymn, xpn + d - 1)) {
                         if (n + d >= en)
                             break;
                     }
@@ -510,7 +519,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ypn, xmn - d, ypn - 1, xmn - d + 1, ypn, xmn - d + 1)) {
+                    if (borg_update_view_aux(ypn, xmn - d, ypn - 1, xmn - d + 1,
+                            ypn, xmn - d + 1)) {
                         if (n + d >= ws)
                             break;
                     }
@@ -530,7 +540,8 @@ void borg_update_view(void)
                 /* Scan */
                 for (k = n, d = 1; d <= m; d++) {
                     /* Check grid "d" in strip "n", notice "blockage" */
-                    if (borg_update_view_aux(ymn, xmn - d, ymn + 1, xmn - d + 1, ymn, xmn - d + 1)) {
+                    if (borg_update_view_aux(ymn, xmn - d, ymn + 1, xmn - d + 1,
+                            ymn, xmn - d + 1)) {
                         if (n + d >= wn)
                             break;
                     }
@@ -561,6 +572,5 @@ void borg_update_view(void)
         ag->info &= ~BORG_XTRA;
     }
 }
-
 
 #endif

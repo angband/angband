@@ -15,19 +15,18 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
-*/
-
-#ifdef ALLOW_BORG
+ */
 
 #include "borg-recover.h"
 
+#ifdef ALLOW_BORG
+
 #include "../ui-event.h"
 
-#include "borg.h"
 #include "borg-danger.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
+#include "borg-flow.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
@@ -36,6 +35,7 @@
 #include "borg-light.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 /*
  * Attempt to recover from damage and such after a battle
@@ -58,8 +58,8 @@
  */
 bool borg_recover(void)
 {
-    int p = 0;
-    int q;
+    int            p = 0;
+    int            q;
     enum borg_need need;
 
     /*** Handle annoying situations ***/
@@ -206,15 +206,15 @@ bool borg_recover(void)
 
     /* cure stat drain with prayer */
     if ((borg_trait[BI_ISFIXSTR] || borg_trait[BI_ISFIXINT]
-        || borg_trait[BI_ISFIXWIS] || borg_trait[BI_ISFIXDEX]
-        || borg_trait[BI_ISFIXCON] || borg_trait[BI_ISFIXALL])
+            || borg_trait[BI_ISFIXWIS] || borg_trait[BI_ISFIXDEX]
+            || borg_trait[BI_ISFIXCON] || borg_trait[BI_ISFIXALL])
         && (borg_spell(RESTORATION) || borg_spell(REVITALIZE))) {
         return (true);
     }
 
     /* cure stat drain with prayer */
     if ((borg_trait[BI_ISFIXSTR] || borg_trait[BI_ISFIXINT]
-        || borg_trait[BI_ISFIXCON])
+            || borg_trait[BI_ISFIXCON])
         && borg_trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) {
         return (true);
     }
@@ -320,7 +320,7 @@ bool borg_recover(void)
     if (borg_has[kv_rod_recall] || borg_has[kv_rod_healing]) {
         /* Step 1.  Recharge just 1 rod. */
         if ((borg_has[kv_rod_healing]
-            && !borg_items[borg_slot(TV_ROD, sv_rod_healing)].pval)
+                && !borg_items[borg_slot(TV_ROD, sv_rod_healing)].pval)
             || (borg_has[kv_rod_recall]
                 && !borg_items[borg_slot(TV_ROD, sv_rod_recall)].pval)) {
             /* Mages can cast the recharge spell */
@@ -362,8 +362,8 @@ bool borg_recover(void)
             || borg_trait[BI_ISHEAVYSTUN]
             || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP]
             || borg_trait[BI_CURSP] < borg_trait[BI_MAXSP]
-            * (borg_trait[BI_CDEPTH] > 85 ? 7 : 6)
-            / 10)) {
+                                          * (borg_trait[BI_CDEPTH] > 85 ? 7 : 6)
+                                          / 10)) {
         if (borg_check_rest(c_y, c_x) && !scaryguy_on_level
             && p <= borg_fear_region[c_y / 11][c_x / 11]
             && goal != GOAL_RECOVER) {

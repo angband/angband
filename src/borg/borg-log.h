@@ -18,12 +18,15 @@
 #ifndef INCLUDED_BORG_LOG_H
 #define INCLUDED_BORG_LOG_H
 
-#ifdef ALLOW_BORG
-
+/*
+ * must be included before ALLOW_BORG to avoid empty compilation unit
+ */
 #include "../angband.h"
 
-/* 
- * write a death to borg-log.txt 
+#ifdef ALLOW_BORG
+
+/*
+ * write a death to borg-log.txt
  */
 extern void borg_log_death(void);
 
@@ -32,8 +35,8 @@ extern void borg_log_death(void);
  */
 extern void borg_log_death_data(void);
 
-/* 
- * Display what the borg is thinking 
+/*
+ * Display what the borg is thinking
  */
 extern void borg_status(void);
 
@@ -42,10 +45,10 @@ extern void borg_status(void);
  */
 extern void borg_write_map(bool ask);
 
-/* 
+/*
  * Display the values which the borg believes an item has.
  */
-void borg_display_item(struct object *item2, int n);
+void borg_display_item(struct object* item2, int n);
 
 #endif
 #endif

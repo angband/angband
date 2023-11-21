@@ -17,20 +17,20 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-prepared.h"
 
-#include "borg.h"
-#include "borg-item-val.h"
+#ifdef ALLOW_BORG
+
 #include "borg-flow-kill.h"
 #include "borg-home-notice.h"
+#include "borg-item-val.h"
 #include "borg-magic.h"
-#include "borg-trait.h"
 #include "borg-trait-swap.h"
+#include "borg-trait.h"
+#include "borg.h"
 
- /* buffer for borg_prepared mesage
-  */
+/* buffer for borg_prepared message
+ */
 #define MAX_REASON 1024
 static char borg_prepared_buffer[MAX_REASON];
 
@@ -39,9 +39,9 @@ int          borg_numb_live_unique;
 unsigned int borg_living_unique_index;
 int          borg_unique_depth;
 
- /*
-  * Determine if the Borg meets the "minimum" requirements for a level
-  */
+/*
+ * Determine if the Borg meets the "minimum" requirements for a level
+ */
 static const char *borg_prepared_aux(int depth)
 {
     if (-1 == borg_ready_morgoth)
@@ -95,43 +95,43 @@ static const char *borg_prepared_aux(int depth)
         switch (borg_class) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-        if (borg_trait[BI_MAXHP] < 50)
-            return ("50 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 4)
-            return ("4 clevel");
-        break;
+            if (borg_trait[BI_MAXHP] < 50)
+                return ("50 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 4)
+                return ("4 clevel");
+            break;
         case CLASS_ROGUE:
-        if (borg_trait[BI_MAXHP] < 50)
-            return ("50 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 8)
-            return ("8 clevel");
-        break;
+            if (borg_trait[BI_MAXHP] < 50)
+                return ("50 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 8)
+                return ("8 clevel");
+            break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-        if (borg_trait[BI_MAXHP] < 40)
-            return ("40 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 9)
-            return ("9 level");
-        break;
+            if (borg_trait[BI_MAXHP] < 40)
+                return ("40 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 9)
+                return ("9 level");
+            break;
         case CLASS_PALADIN:
-        if (borg_trait[BI_MAXHP] < 50)
-            return ("50 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 4)
-            return ("4 clevel");
-        break;
+            if (borg_trait[BI_MAXHP] < 50)
+                return ("50 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 4)
+                return ("4 clevel");
+            break;
         case CLASS_RANGER:
-        if (borg_trait[BI_MAXHP] < 50)
-            return ("50 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 4)
-            return ("4 clevel");
-        break;
+            if (borg_trait[BI_MAXHP] < 50)
+                return ("50 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 4)
+                return ("4 clevel");
+            break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-        if (borg_trait[BI_MAXHP] < 60)
-            return ("60 hp");
-        if (borg_trait[BI_MAXCLEVEL] < 11)
-            return ("11 clevel");
-        break;
+            if (borg_trait[BI_MAXHP] < 60)
+                return ("60 hp");
+            if (borg_trait[BI_MAXCLEVEL] < 11)
+                return ("11 clevel");
+            break;
         }
     }
 
@@ -152,43 +152,43 @@ static const char *borg_prepared_aux(int depth)
             switch (borg_class) {
             case CLASS_WARRIOR:
             case CLASS_BLACKGUARD:
-            if (borg_trait[BI_MAXHP] < 60)
-                return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 6)
-                return ("6 clevel");
-            break;
+                if (borg_trait[BI_MAXHP] < 60)
+                    return ("60 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 6)
+                    return ("6 clevel");
+                break;
             case CLASS_ROGUE:
-            if (borg_trait[BI_MAXHP] < 60)
-                return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 10)
-                return ("10 clevel");
-            break;
+                if (borg_trait[BI_MAXHP] < 60)
+                    return ("60 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 10)
+                    return ("10 clevel");
+                break;
             case CLASS_PRIEST:
             case CLASS_DRUID:
-            if (borg_trait[BI_MAXHP] < 60)
-                return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 15)
-                return ("15 clevel");
-            break;
+                if (borg_trait[BI_MAXHP] < 60)
+                    return ("60 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 15)
+                    return ("15 clevel");
+                break;
             case CLASS_PALADIN:
-            if (borg_trait[BI_MAXHP] < 60)
-                return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 6)
-                return ("6 clevel");
-            break;
+                if (borg_trait[BI_MAXHP] < 60)
+                    return ("60 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 6)
+                    return ("6 clevel");
+                break;
             case CLASS_RANGER:
-            if (borg_trait[BI_MAXHP] < 60)
-                return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 6)
-                return ("6 clevel");
-            break;
+                if (borg_trait[BI_MAXHP] < 60)
+                    return ("60 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 6)
+                    return ("6 clevel");
+                break;
             case CLASS_MAGE:
             case CLASS_NECROMANCER:
-            if (borg_trait[BI_MAXHP] < 80)
-                return ("80 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 15)
-                return ("15 level");
-            break;
+                if (borg_trait[BI_MAXHP] < 80)
+                    return ("80 hp");
+                if (borg_trait[BI_MAXCLEVEL] < 15)
+                    return ("15 level");
+                break;
             }
         }
     }
@@ -221,32 +221,32 @@ static const char *borg_prepared_aux(int depth)
         switch (borg_class) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-        if (borg_trait[BI_MAXCLEVEL] < (depth - 4) && depth <= 19)
-            return ("dlevel - 4 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth - 4) && depth <= 19)
+                return ("dlevel - 4 >= clevel");
+            break;
         case CLASS_ROGUE:
-        if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
-            return ("dlevel >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+                return ("dlevel >= clevel");
+            break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-        if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
-            return ("dlevel >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+                return ("dlevel >= clevel");
+            break;
         case CLASS_PALADIN:
-        if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
-            return ("dlevel >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+                return ("dlevel >= clevel");
+            break;
         case CLASS_RANGER:
-        if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
-            return ("dlevel >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+                return ("dlevel >= clevel");
+            break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
-            && borg_trait[BI_MAXCLEVEL] <= 28)
-            return ("dlevel + 5 > = clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
+                && borg_trait[BI_MAXCLEVEL] <= 28)
+                return ("dlevel + 5 > = clevel");
+            break;
         }
     }
 
@@ -280,7 +280,7 @@ static const char *borg_prepared_aux(int depth)
         return ("RF");
     {
         int basics = borg_trait[BI_RACID] + borg_trait[BI_RCOLD]
-            + borg_trait[BI_RELEC];
+                     + borg_trait[BI_RELEC];
 
         if (basics < 2)
             return ("basic resist2");
@@ -304,42 +304,42 @@ static const char *borg_prepared_aux(int depth)
         switch (borg_class) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
-            && borg_trait[BI_MAXCLEVEL] <= 38)
-            return ("dlevel + 5 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
+                && borg_trait[BI_MAXCLEVEL] <= 38)
+                return ("dlevel + 5 >= clevel");
+            break;
         case CLASS_ROGUE:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 10)
-            && borg_trait[BI_MAXCLEVEL] <= 43)
-            return ("dlevel + 10 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 10)
+                && borg_trait[BI_MAXCLEVEL] <= 43)
+                return ("dlevel + 10 >= clevel");
+            break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 13)
-            && borg_trait[BI_MAXCLEVEL] <= 46)
-            return ("dlevel + 13 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 13)
+                && borg_trait[BI_MAXCLEVEL] <= 46)
+                return ("dlevel + 13 >= clevel");
+            break;
         case CLASS_PALADIN:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 7)
-            && borg_trait[BI_MAXCLEVEL] <= 40)
-            return ("dlevel + 7 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 7)
+                && borg_trait[BI_MAXCLEVEL] <= 40)
+                return ("dlevel + 7 >= clevel");
+            break;
         case CLASS_RANGER:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
-            && borg_trait[BI_MAXCLEVEL] <= 41
-            && borg_trait[BI_MAXCLEVEL] > 28)
-            return ("dlevel + 8 >= clevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
+                && borg_trait[BI_MAXCLEVEL] <= 41
+                && borg_trait[BI_MAXCLEVEL] > 28)
+                return ("dlevel + 8 >= clevel");
+            break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-        if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
-            && borg_trait[BI_MAXCLEVEL] <= 38)
-            return ("dlevel + 8 >= clevel");
-        if (((borg_trait[BI_MAXCLEVEL] - 38) * 2 + 30) < depth
-            && borg_trait[BI_MAXCLEVEL] <= 44
-            && borg_trait[BI_MAXCLEVEL] > 38)
-            return ("(clevel-38)*2+30 < dlevel");
-        break;
+            if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
+                && borg_trait[BI_MAXCLEVEL] <= 38)
+                return ("dlevel + 8 >= clevel");
+            if (((borg_trait[BI_MAXCLEVEL] - 38) * 2 + 30) < depth
+                && borg_trait[BI_MAXCLEVEL] <= 44
+                && borg_trait[BI_MAXCLEVEL] > 38)
+                return ("(clevel-38)*2+30 < dlevel");
+            break;
         }
     }
 
@@ -433,7 +433,7 @@ static const char *borg_prepared_aux(int depth)
 
     /* Hold Life */
     if ((!borg_trait[BI_HLIFE] && !weapon_swap_hold_life
-        && !armour_swap_hold_life)
+            && !armour_swap_hold_life)
         && (borg_trait[BI_MAXCLEVEL] < 50))
         return ("hold life");
 
@@ -455,7 +455,7 @@ static const char *borg_prepared_aux(int depth)
     /*    if (!borg_settings[BORG_PLAYS_RISKY] && !borg_trait[BI_SRNTHR]) return
      * ("RNeth"); */
 
-     /* Telepathy, better have it by now */
+    /* Telepathy, better have it by now */
     if (!borg_trait[BI_ESP])
         return ("ESP");
 
@@ -601,7 +601,7 @@ const char *borg_prepared(int depth)
             && /* Enough combined EZ_HEALS */
             num_ezheal_true >= 1
             && borg_trait[BI_MAXDEPTH]
-            >= 99) /* Still some sitting in the house */
+                   >= 99) /* Still some sitting in the house */
         {
             strnfmt(borg_prepared_buffer, MAX_REASON,
                 "Collect from house (%d potions).", num_ezheal_true);
@@ -630,8 +630,8 @@ const char *borg_prepared(int depth)
         return (borg_prepared_buffer);
 
     } else if (borg_trait[BI_MAXDEPTH] >= 98 || depth >= 98)
-        /* check to make sure the borg does not go to level 100 */
-        /* unless all the uniques are dead. */
+    /* check to make sure the borg does not go to level 100 */
+    /* unless all the uniques are dead. */
     {
         struct monster_race *r_ptr;
 

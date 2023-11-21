@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-home-notice.h"
+
+#ifdef ALLOW_BORG
 
 #include "../init.h"
 #include "../obj-util.h"
@@ -31,7 +31,6 @@
 #include "borg-magic.h"
 #include "borg-store.h"
 #include "borg-trait.h"
-
 
 /*
  * Various "amounts" (for the home)
@@ -138,10 +137,9 @@ int16_t num_hats;
 int16_t num_gloves;
 int16_t num_boots;
 
-
 /*
  * Helper function -- clear counters for home equipment
- * 
+ *
  * !FIX This needs to change into an array like borg_trait
  */
 static void borg_notice_home_clear(borg_item *in_item, bool no_items)
@@ -150,63 +148,63 @@ static void borg_notice_home_clear(borg_item *in_item, bool no_items)
     /*** Reset counters ***/
 
     /* Reset basic */
-    num_food = 0;
-    num_fuel = 0;
-    num_mold = 0;
-    num_ident = 0;
-    num_recall = 0;
-    num_phase = 0;
-    num_escape = 0;
-    num_tele_staves = 0;
-    num_teleport = 0;
-    num_teleport_level = 0;
-    num_recharge = 0;
+    num_food                = 0;
+    num_fuel                = 0;
+    num_mold                = 0;
+    num_ident               = 0;
+    num_recall              = 0;
+    num_phase               = 0;
+    num_escape              = 0;
+    num_tele_staves         = 0;
+    num_teleport            = 0;
+    num_teleport_level      = 0;
+    num_recharge            = 0;
 
-    num_artifact = 0;
-    num_ego = 0;
+    num_artifact            = 0;
+    num_ego                 = 0;
 
-    num_invisible = 0;
-    num_pfe = 0;
-    num_glyph = 0;
-    num_genocide = 0;
-    num_mass_genocide = 0;
-    num_berserk = 0;
-    num_pot_rheat = 0;
-    num_pot_rcold = 0;
-    num_speed = 0;
+    num_invisible           = 0;
+    num_pfe                 = 0;
+    num_glyph               = 0;
+    num_genocide            = 0;
+    num_mass_genocide       = 0;
+    num_berserk             = 0;
+    num_pot_rheat           = 0;
+    num_pot_rcold           = 0;
+    num_speed               = 0;
 
-    num_slow_digest = 0;
-    num_regenerate = 0;
-    num_telepathy = 0;
-    num_see_inv = 0;
-    num_ffall = 0;
-    num_free_act = 0;
-    num_hold_life = 0;
-    num_immune_acid = 0;
-    num_immune_elec = 0;
-    num_immune_fire = 0;
-    num_immune_cold = 0;
-    num_resist_acid = 0;
-    num_resist_elec = 0;
-    num_resist_fire = 0;
-    num_resist_cold = 0;
-    num_resist_pois = 0;
-    num_resist_conf = 0;
-    num_resist_sound = 0;
-    num_resist_LIGHT = 0;
-    num_resist_dark = 0;
-    num_resist_chaos = 0;
-    num_resist_disen = 0;
-    num_resist_shard = 0;
-    num_resist_nexus = 0;
-    num_resist_blind = 0;
-    num_resist_neth = 0;
-    num_sustain_str = 0;
-    num_sustain_int = 0;
-    num_sustain_wis = 0;
-    num_sustain_dex = 0;
-    num_sustain_con = 0;
-    num_sustain_all = 0;
+    num_slow_digest         = 0;
+    num_regenerate          = 0;
+    num_telepathy           = 0;
+    num_see_inv             = 0;
+    num_ffall               = 0;
+    num_free_act            = 0;
+    num_hold_life           = 0;
+    num_immune_acid         = 0;
+    num_immune_elec         = 0;
+    num_immune_fire         = 0;
+    num_immune_cold         = 0;
+    num_resist_acid         = 0;
+    num_resist_elec         = 0;
+    num_resist_fire         = 0;
+    num_resist_cold         = 0;
+    num_resist_pois         = 0;
+    num_resist_conf         = 0;
+    num_resist_sound        = 0;
+    num_resist_LIGHT        = 0;
+    num_resist_dark         = 0;
+    num_resist_chaos        = 0;
+    num_resist_disen        = 0;
+    num_resist_shard        = 0;
+    num_resist_nexus        = 0;
+    num_resist_blind        = 0;
+    num_resist_neth         = 0;
+    num_sustain_str         = 0;
+    num_sustain_int         = 0;
+    num_sustain_wis         = 0;
+    num_sustain_dex         = 0;
+    num_sustain_con         = 0;
+    num_sustain_all         = 0;
 
     home_stat_add[STAT_STR] = 0;
     home_stat_add[STAT_INT] = 0;
@@ -214,30 +212,30 @@ static void borg_notice_home_clear(borg_item *in_item, bool no_items)
     home_stat_add[STAT_DEX] = 0;
     home_stat_add[STAT_CON] = 0;
 
-    num_weapons = 0;
+    num_weapons             = 0;
 
-    num_bow = 0;
-    num_rings = 0;
-    num_neck = 0;
-    num_armor = 0;
-    num_cloaks = 0;
-    num_shields = 0;
-    num_hats = 0;
-    num_gloves = 0;
-    num_boots = 0;
-    num_LIGHT = 0;
-    num_speed = 0;
-    num_edged_weapon = 0;
-    num_bad_gloves = 0;
+    num_bow                 = 0;
+    num_rings               = 0;
+    num_neck                = 0;
+    num_armor               = 0;
+    num_cloaks              = 0;
+    num_shields             = 0;
+    num_hats                = 0;
+    num_gloves              = 0;
+    num_boots               = 0;
+    num_LIGHT               = 0;
+    num_speed               = 0;
+    num_edged_weapon        = 0;
+    num_bad_gloves          = 0;
 
     /* Reset healing */
     num_cure_critical = 0;
-    num_cure_serious = 0;
-    num_fix_exp = 0;
-    num_mana = 0;
-    num_heal = 0;
-    num_ezheal = 0;
-    num_life = 0;
+    num_cure_serious  = 0;
+    num_fix_exp       = 0;
+    num_mana          = 0;
+    num_heal          = 0;
+    num_ezheal        = 0;
+    num_life          = 0;
     if (!in_item && !no_items)
         num_ezheal_true = 0;
     if (!in_item && !no_items)
@@ -267,17 +265,16 @@ static void borg_notice_home_clear(borg_item *in_item, bool no_items)
     num_fix_stat[STAT_CON] = 0;
 
     /* Reset enchantment */
-    num_enchant_to_a = 0;
-    num_enchant_to_d = 0;
-    num_enchant_to_h = 0;
+    num_enchant_to_a    = 0;
+    num_enchant_to_d    = 0;
+    num_enchant_to_h    = 0;
 
-    home_slot_free = 0;
-    home_damage = 0;
-    home_un_id = 0;
+    home_slot_free      = 0;
+    home_damage         = 0;
+    home_un_id          = 0;
 
     num_duplicate_items = 0;
 }
-
 
 /*
  * This checks for duplicate items in the home
@@ -286,10 +283,10 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
 {
     /* eventually check for power overlap... armor of resistence is same as weak
      * elvenkind.*/
-     /*  two armors of elvenkind that resist poison is a dupe.  AJG*/
+    /*  two armors of elvenkind that resist poison is a dupe.  AJG*/
 
     int              dupe_count, x;
-    borg_item *item2;
+    borg_item       *item2;
     struct ego_item *e_ptr = &e_info[item->ego_idx];
 
     /* check for a duplicate.  */
@@ -316,7 +313,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
         /* if everything matches it is a duplicate item */
         /* Note that we only check sval on certain items.  This */
         /* is because, for example, two pairs of dragon armor */
-        /* are not the same unless thier subtype (color) matches */
+        /* are not the same unless their subtype (color) matches */
         /* but a defender is a defender even if one is a dagger and */
         /* one is a mace */
         if ((item->tval == item2->tval)
@@ -340,7 +337,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
  */
 static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 {
-    int        i;
+    int i;
 
     borg_item *item = NULL;
 
@@ -351,7 +348,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
     /* Scan the home */
     for (i = 0; i < (z_info->store_inven_max + (INVEN_TOTAL - INVEN_WIELD));
-        i++) {
+         i++) {
         if (no_items)
             break;
 
@@ -460,27 +457,27 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         if (item->modifiers[OBJ_MOD_STR]) {
             if (item->tval != TV_RING || item->modifiers[OBJ_MOD_STR] > 3)
                 home_stat_add[STAT_STR]
-                += item->modifiers[OBJ_MOD_STR] * item->iqty;
+                    += item->modifiers[OBJ_MOD_STR] * item->iqty;
         }
         if (item->modifiers[OBJ_MOD_INT]) {
             if (item->tval != TV_RING || item->modifiers[OBJ_MOD_INT] > 3)
                 home_stat_add[STAT_INT]
-                += item->modifiers[OBJ_MOD_INT] * item->iqty;
+                    += item->modifiers[OBJ_MOD_INT] * item->iqty;
         }
         if (item->modifiers[OBJ_MOD_WIS]) {
             if (item->tval != TV_RING || item->modifiers[OBJ_MOD_WIS] > 3)
                 home_stat_add[STAT_WIS]
-                += item->modifiers[OBJ_MOD_WIS] * item->iqty;
+                    += item->modifiers[OBJ_MOD_WIS] * item->iqty;
         }
         if (item->modifiers[OBJ_MOD_DEX]) {
             if (item->tval != TV_RING || item->modifiers[OBJ_MOD_DEX] > 3)
                 home_stat_add[STAT_DEX]
-                += item->modifiers[OBJ_MOD_DEX] * item->iqty;
+                    += item->modifiers[OBJ_MOD_DEX] * item->iqty;
         }
         if (item->modifiers[OBJ_MOD_CON]) {
             if (item->tval != TV_RING || item->modifiers[OBJ_MOD_CON] > 3)
                 home_stat_add[STAT_CON]
-                += item->modifiers[OBJ_MOD_CON] * item->iqty;
+                    += item->modifiers[OBJ_MOD_CON] * item->iqty;
         }
 
         /* count up bonus to speed */
@@ -496,7 +493,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
             num_ego += item->iqty;
         }
 
-        /* count up unidetified stuff */
+        /* count up unidentified stuff */
         if (item->needs_ident && (i < z_info->store_inven_max)) {
             home_un_id++;
         }
@@ -505,134 +502,135 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         switch (item->tval) {
         case TV_SOFT_ARMOR:
         case TV_HARD_ARMOR:
-        num_armor += item->iqty;
+            num_armor += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
-        break;
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
+            break;
 
         case TV_DRAG_ARMOR:
-        num_armor += item->iqty;
+            num_armor += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, true, i);
-        break;
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, true, i);
+            break;
 
         case TV_CLOAK:
-        num_cloaks += item->iqty;
+            num_cloaks += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
 
-        break;
+            break;
 
         case TV_SHIELD:
-        num_shields += item->iqty;
+            num_shields += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
-        break;
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
+            break;
 
         case TV_HELM:
         case TV_CROWN:
-        num_hats += item->iqty;
+            num_hats += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
 
-        break;
+            break;
 
         case TV_GLOVES:
-        num_gloves += item->iqty;
+            num_gloves += item->iqty;
 
-        /* gloves of slaying give a damage bonus */
-        home_damage += item->to_d * 3;
+            /* gloves of slaying give a damage bonus */
+            home_damage += item->to_d * 3;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
 
-        break;
+            break;
 
         case TV_FLASK:
-        /* Use as fuel if we equip a lantern */
-        if (borg_items[INVEN_LIGHT].sval == sv_light_lantern) {
-            num_fuel += item->iqty;
-            /* borg_note(format("1.num_fuel=%d",num_fuel)); */
-        }
-        break;
+            /* Use as fuel if we equip a lantern */
+            if (borg_items[INVEN_LIGHT].sval == sv_light_lantern) {
+                num_fuel += item->iqty;
+                /* borg_note(format("1.num_fuel=%d",num_fuel)); */
+            }
+            break;
 
         case TV_LIGHT:
-        /* Fuel */
-        if (borg_items[INVEN_LIGHT].sval == sv_light_torch) {
-            num_fuel += item->iqty;
-        }
+            /* Fuel */
+            if (borg_items[INVEN_LIGHT].sval == sv_light_torch) {
+                num_fuel += item->iqty;
+            }
 
-        /* Artifacts */
-        if (item->art_idx) {
-            num_LIGHT += item->iqty;
-        }
-        break;
+            /* Artifacts */
+            if (item->art_idx) {
+                num_LIGHT += item->iqty;
+            }
+            break;
 
         case TV_BOOTS:
-        num_boots += item->iqty;
+            num_boots += item->iqty;
 
-        /* see if this item is duplicated */
-        borg_notice_home_dupe(item, false, i);
-        break;
+            /* see if this item is duplicated */
+            borg_notice_home_dupe(item, false, i);
+            break;
 
         case TV_SWORD:
         case TV_POLEARM:
         case TV_HAFTED:
-        /* case TV_DIGGING: */
-        {
-            int16_t num_blow;
+            /* case TV_DIGGING: */
+            {
+                int16_t num_blow;
 
-            num_weapons += item->iqty;
-            /*  most edged weapons hurt magic for priests */
-            if (player_has(player, PF_BLESS_WEAPON)) {
-                /* Penalize non-blessed edged weapons */
-                if ((item->tval == TV_SWORD || item->tval == TV_POLEARM)
-                    && !of_has(item->flags, OF_BLESSED)) {
-                    num_edged_weapon += item->iqty;
+                num_weapons += item->iqty;
+                /*  most edged weapons hurt magic for priests */
+                if (player_has(player, PF_BLESS_WEAPON)) {
+                    /* Penalize non-blessed edged weapons */
+                    if ((item->tval == TV_SWORD || item->tval == TV_POLEARM)
+                        && !of_has(item->flags, OF_BLESSED)) {
+                        num_edged_weapon += item->iqty;
+                    }
                 }
+
+                num_blow = borg_calc_blows(item);
+                if (item->to_d > 8 || borg_trait[BI_CLEVEL] < 15) {
+                    home_damage += num_blow
+                                   * (item->dd * (item->ds)
+                                       + (borg_trait[BI_TODAM] + item->to_d));
+                } else {
+                    home_damage += num_blow
+                                   * (item->dd * (item->ds)
+                                       + (borg_trait[BI_TODAM] + 8));
+                }
+
+                /* see if this item is a duplicate */
+                borg_notice_home_dupe(item, false, i);
+                break;
             }
 
-            num_blow = borg_calc_blows(item);
-            if (item->to_d > 8 || borg_trait[BI_CLEVEL] < 15) {
-                home_damage += num_blow
-                    * (item->dd * (item->ds)
-                        + (borg_trait[BI_TODAM] + item->to_d));
-            } else {
-                home_damage += num_blow
-                    * (item->dd * (item->ds) + (borg_trait[BI_TODAM] + 8));
-            }
+        case TV_BOW:
+            num_bow += item->iqty;
 
             /* see if this item is a duplicate */
             borg_notice_home_dupe(item, false, i);
             break;
-        }
-
-        case TV_BOW:
-        num_bow += item->iqty;
-
-        /* see if this item is a duplicate */
-        borg_notice_home_dupe(item, false, i);
-        break;
 
         case TV_RING:
-        num_rings += item->iqty;
+            num_rings += item->iqty;
 
-        /* see if this item is a duplicate */
-        borg_notice_home_dupe(item, true, i);
+            /* see if this item is a duplicate */
+            borg_notice_home_dupe(item, true, i);
 
-        break;
+            break;
 
         case TV_AMULET:
-        num_neck += item->iqty;
+            num_neck += item->iqty;
 
-        /* see if this item is a duplicate */
-        borg_notice_home_dupe(item, true, i);
-        break;
+            /* see if this item is a duplicate */
+            borg_notice_home_dupe(item, true, i);
+            break;
 
         /* Books */
         case TV_MAGIC_BOOK:
@@ -641,145 +639,145 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         case TV_SHADOW_BOOK:
         case TV_OTHER_BOOK:
 
-        /* Skip incorrect books (if we can browse this book, it is good) */
-        if (!obj_kind_can_browse(&k_info[item->kind]))
+            /* Skip incorrect books (if we can browse this book, it is good) */
+            if (!obj_kind_can_browse(&k_info[item->kind]))
+                break;
+
+            /* only ever store non-dungeon books */
+            if (kf_has(k_info[item->kind].kind_flags, KF_GOOD))
+                break;
+
+            /* Count the books */
+            num_book[item->sval] += item->iqty;
+
             break;
-
-        /* only ever store non-dungeon books */
-        if (kf_has(k_info[item->kind].kind_flags, KF_GOOD))
-            break;
-
-        /* Count the books */
-        num_book[item->sval] += item->iqty;
-
-        break;
 
         /* Food */
         case TV_FOOD:
 
-        if (item->sval == sv_food_ration)
-            num_food += item->iqty;
-        else if (item->sval == sv_food_slime_mold)
-            num_mold += item->iqty;
-        else if (item->sval == sv_mush_purging) {
-            num_fix_stat[STAT_CON] += item->iqty;
-            num_fix_stat[STAT_STR] += item->iqty;
-        } else if (item->sval == sv_mush_restoring) {
-            num_fix_stat[STAT_STR] += item->iqty;
-            num_fix_stat[STAT_INT] += item->iqty;
-            num_fix_stat[STAT_WIS] += item->iqty;
-            num_fix_stat[STAT_DEX] += item->iqty;
-            num_fix_stat[STAT_CON] += item->iqty;
-        }
-        break;
+            if (item->sval == sv_food_ration)
+                num_food += item->iqty;
+            else if (item->sval == sv_food_slime_mold)
+                num_mold += item->iqty;
+            else if (item->sval == sv_mush_purging) {
+                num_fix_stat[STAT_CON] += item->iqty;
+                num_fix_stat[STAT_STR] += item->iqty;
+            } else if (item->sval == sv_mush_restoring) {
+                num_fix_stat[STAT_STR] += item->iqty;
+                num_fix_stat[STAT_INT] += item->iqty;
+                num_fix_stat[STAT_WIS] += item->iqty;
+                num_fix_stat[STAT_DEX] += item->iqty;
+                num_fix_stat[STAT_CON] += item->iqty;
+            }
+            break;
 
         /* Potions */
         case TV_POTION:
 
-        /* Analyze */
-        if (item->sval == sv_potion_cure_critical)
-            num_cure_critical += item->iqty;
-        else if (item->sval == sv_potion_cure_serious)
-            num_cure_serious += item->iqty;
-        else if (item->sval == sv_potion_resist_heat)
-            num_pot_rheat += item->iqty;
-        else if (item->sval == sv_potion_resist_cold)
-            num_pot_rcold += item->iqty;
-        else if (item->sval == sv_potion_restore_life)
-            num_fix_exp += item->iqty;
-        else if (item->sval == sv_potion_restore_mana)
-            num_mana += item->iqty;
-        else if (item->sval == sv_potion_healing) {
-            num_heal += item->iqty;
-            if (!in_item && !no_items)
-                num_heal_true += item->iqty;
-        } else if (item->sval == sv_potion_star_healing) {
-            num_ezheal += item->iqty;
-            if (!in_item && !no_items)
-                num_ezheal_true += item->iqty;
-        } else if (item->sval == sv_potion_life) {
-            num_life += item->iqty;
-            if (!in_item && !no_items)
-                num_life_true += item->iqty;
-        } else if (item->sval == sv_potion_berserk)
-            num_berserk += item->iqty;
-        else if (item->sval == sv_potion_speed)
-            num_speed += item->iqty;
+            /* Analyze */
+            if (item->sval == sv_potion_cure_critical)
+                num_cure_critical += item->iqty;
+            else if (item->sval == sv_potion_cure_serious)
+                num_cure_serious += item->iqty;
+            else if (item->sval == sv_potion_resist_heat)
+                num_pot_rheat += item->iqty;
+            else if (item->sval == sv_potion_resist_cold)
+                num_pot_rcold += item->iqty;
+            else if (item->sval == sv_potion_restore_life)
+                num_fix_exp += item->iqty;
+            else if (item->sval == sv_potion_restore_mana)
+                num_mana += item->iqty;
+            else if (item->sval == sv_potion_healing) {
+                num_heal += item->iqty;
+                if (!in_item && !no_items)
+                    num_heal_true += item->iqty;
+            } else if (item->sval == sv_potion_star_healing) {
+                num_ezheal += item->iqty;
+                if (!in_item && !no_items)
+                    num_ezheal_true += item->iqty;
+            } else if (item->sval == sv_potion_life) {
+                num_life += item->iqty;
+                if (!in_item && !no_items)
+                    num_life_true += item->iqty;
+            } else if (item->sval == sv_potion_berserk)
+                num_berserk += item->iqty;
+            else if (item->sval == sv_potion_speed)
+                num_speed += item->iqty;
 
-        break;
+            break;
 
         /* Scrolls */
         case TV_SCROLL:
 
-        /* Analyze the scroll */
-        if (item->sval == sv_scroll_identify)
-            num_ident += item->iqty;
-        else if (item->sval == sv_scroll_phase_door)
-            num_phase += item->iqty;
-        else if (item->sval == sv_scroll_teleport)
-            num_teleport += item->iqty;
-        else if (item->sval == sv_scroll_word_of_recall)
-            num_recall += item->iqty;
-        else if (item->sval == sv_scroll_enchant_armor)
-            num_enchant_to_a += item->iqty;
-        else if (item->sval == sv_scroll_enchant_weapon_to_hit)
-            num_enchant_to_h += item->iqty;
-        else if (item->sval == sv_scroll_enchant_weapon_to_dam)
-            num_enchant_to_d += item->iqty;
-        else if (item->sval == sv_scroll_protection_from_evil)
-            num_pfe += item->iqty;
-        else if (item->sval == sv_scroll_rune_of_protection)
-            num_glyph += item->iqty;
-        else if (item->sval == sv_scroll_teleport_level)
-            num_teleport_level += item->iqty;
-        else if (item->sval == sv_scroll_recharging)
-            num_recharge += item->iqty;
-        else if (item->sval == sv_scroll_mass_banishment)
-            num_mass_genocide += item->iqty;
+            /* Analyze the scroll */
+            if (item->sval == sv_scroll_identify)
+                num_ident += item->iqty;
+            else if (item->sval == sv_scroll_phase_door)
+                num_phase += item->iqty;
+            else if (item->sval == sv_scroll_teleport)
+                num_teleport += item->iqty;
+            else if (item->sval == sv_scroll_word_of_recall)
+                num_recall += item->iqty;
+            else if (item->sval == sv_scroll_enchant_armor)
+                num_enchant_to_a += item->iqty;
+            else if (item->sval == sv_scroll_enchant_weapon_to_hit)
+                num_enchant_to_h += item->iqty;
+            else if (item->sval == sv_scroll_enchant_weapon_to_dam)
+                num_enchant_to_d += item->iqty;
+            else if (item->sval == sv_scroll_protection_from_evil)
+                num_pfe += item->iqty;
+            else if (item->sval == sv_scroll_rune_of_protection)
+                num_glyph += item->iqty;
+            else if (item->sval == sv_scroll_teleport_level)
+                num_teleport_level += item->iqty;
+            else if (item->sval == sv_scroll_recharging)
+                num_recharge += item->iqty;
+            else if (item->sval == sv_scroll_mass_banishment)
+                num_mass_genocide += item->iqty;
 
-        break;
+            break;
 
         /* Rods */
         case TV_ROD:
 
-        /* Analyze */
-        if (item->sval == sv_rod_recall)
-            num_recall += item->iqty * 100;
+            /* Analyze */
+            if (item->sval == sv_rod_recall)
+                num_recall += item->iqty * 100;
 
-        break;
+            break;
 
         /* Staffs */
         case TV_STAFF:
 
-        /* only collect staves with more than 3 charges at high level */
-        if (item->pval <= 3 && borg_trait[BI_CLEVEL] > 30)
+            /* only collect staves with more than 3 charges at high level */
+            if (item->pval <= 3 && borg_trait[BI_CLEVEL] > 30)
+                break;
+
+            /* Analyze */
+            if (item->sval == sv_staff_teleportation) {
+                num_escape += item->pval * item->iqty;
+                num_tele_staves++;
+            }
+
             break;
-
-        /* Analyze */
-        if (item->sval == sv_staff_teleportation) {
-            num_escape += item->pval * item->iqty;
-            num_tele_staves++;
-        }
-
-        break;
 
         /* Missiles */
         case TV_SHOT:
         case TV_ARROW:
         case TV_BOLT:
 
-        /* Hack -- ignore invalid missiles */
-        if (item->tval != borg_trait[BI_AMMO_TVAL])
+            /* Hack -- ignore invalid missiles */
+            if (item->tval != borg_trait[BI_AMMO_TVAL])
+                break;
+
+            /* Hack -- ignore worthless missiles */
+            if (item->value <= 0)
+                break;
+
+            /* Count them */
+            num_missile += item->iqty;
+
             break;
-
-        /* Hack -- ignore worthless missiles */
-        if (item->value <= 0)
-            break;
-
-        /* Count them */
-        num_missile += item->iqty;
-
-        break;
         }
 
         /* if only doing one item, break. */
@@ -943,6 +941,5 @@ void borg_notice_home(borg_item *in_item, bool no_items)
     /* Notice the home inventory */
     borg_notice_home_aux(in_item, no_items);
 }
-
 
 #endif

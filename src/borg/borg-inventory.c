@@ -1,6 +1,6 @@
 /**
  * \file borg-inventory.c
- * \brief 
+ * \brief
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,15 +17,15 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-inventory.h"
+
+#ifdef ALLOW_BORG
 
 #include "../obj-desc.h"
 
-#include "borg-item.h"
 #include "borg-item-analyze.h"
 #include "borg-item-id.h"
+#include "borg-item.h"
 #include "borg-trait.h"
 
 /*
@@ -33,12 +33,12 @@
  */
 bool borg_do_crush_junk = false;
 
- /*
-  * Return the slot that items of the given type are wielded into
-  * XXX this just duplicates Angband's version and should use that instead
-  *
-  * Returns "-1" if the item cannot be wielded
-  */
+/*
+ * Return the slot that items of the given type are wielded into
+ * XXX this just duplicates Angband's version and should use that instead
+ *
+ * Returns "-1" if the item cannot be wielded
+ */
 int borg_wield_slot(const borg_item *item)
 {
     switch (item->tval) {
@@ -46,34 +46,34 @@ int borg_wield_slot(const borg_item *item)
     case TV_POLEARM:
     case TV_HAFTED:
     case TV_DIGGING:
-    return INVEN_WIELD;
+        return INVEN_WIELD;
 
     case TV_DRAG_ARMOR:
     case TV_HARD_ARMOR:
     case TV_SOFT_ARMOR:
-    return INVEN_BODY;
+        return INVEN_BODY;
 
     case TV_SHIELD:
-    return INVEN_ARM;
+        return INVEN_ARM;
 
     case TV_CROWN:
     case TV_HELM:
-    return INVEN_HEAD;
+        return INVEN_HEAD;
 
     case TV_BOW:
-    return INVEN_BOW;
+        return INVEN_BOW;
     case TV_RING:
-    return INVEN_LEFT;
+        return INVEN_LEFT;
     case TV_AMULET:
-    return INVEN_NECK;
+        return INVEN_NECK;
     case TV_LIGHT:
-    return INVEN_LIGHT;
+        return INVEN_LIGHT;
     case TV_CLOAK:
-    return INVEN_OUTER;
+        return INVEN_OUTER;
     case TV_GLOVES:
-    return INVEN_HANDS;
+        return INVEN_HANDS;
     case TV_BOOTS:
-    return INVEN_FEET;
+        return INVEN_FEET;
     }
 
     /* No slot available */
@@ -211,7 +211,7 @@ void borg_cheat_equip(void)
  */
 void borg_cheat_inven(void)
 {
-    int  i;
+    int i;
 
     char buf[256];
 
@@ -246,7 +246,6 @@ void borg_cheat_inven(void)
         }
     }
 }
-
 
 /*
  * helper to find an empty slot
@@ -295,14 +294,14 @@ bool borg_item_worth_id(const borg_item *item)
     case TV_HARD_ARMOR:
     case TV_DRAG_ARMOR:
 
-    /* Don't bother IDing unidentified items until they are pseudo'd */
-    if (!item->ident)
-        return false;
+        /* Don't bother IDing unidentified items until they are pseudo'd */
+        if (!item->ident)
+            return false;
     }
 
     /* Not worth IDing magical items if we have better ego/artifact stuff */
     if (borg_item_note_needs_id(item)) {
-        int slot;
+        int        slot;
         borg_item *inven_item;
 
         /* Obtain the slot of the suspect item */
@@ -318,6 +317,5 @@ bool borg_item_worth_id(const borg_item *item)
 
     return true;
 }
-
 
 #endif

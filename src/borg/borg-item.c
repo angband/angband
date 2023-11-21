@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-item.h"
+
+#ifdef ALLOW_BORG
 
 #include "../init.h"
 #include "../ui-menu.h"
@@ -27,10 +27,10 @@
 #include "borg-io.h"
 #include "borg-item-val.h"
 
-/* 
- * Current "inventory" 
+/*
+ * Current "inventory"
  */
-borg_item *borg_items; 
+borg_item *borg_items;
 
 /*
  * Safety arrays for simulating possible worlds
@@ -39,8 +39,8 @@ borg_item *borg_items;
 borg_item *safe_items; /* Safety "inventory" */
 borg_item *safe_home; /* Safety "home stuff" */
 
-/* 
- * get the items inscription (note) 
+/*
+ * get the items inscription (note)
  */
 const char *borg_get_note(const borg_item *item)
 {
@@ -83,7 +83,6 @@ void borg_deinscribe(int i)
     borg_keypress('y');
     borg_keypress('y');
 }
-
 
 /*
  * allocate the item arrays

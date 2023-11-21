@@ -17,34 +17,32 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-fight-defend.h"
+
+#ifdef ALLOW_BORG
 
 #include "../player-timed.h"
 #include "../ui-term.h"
 
-
-#include "borg.h"
-#include "borg-cave.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
+#include "borg-cave.h"
 #include "borg-danger.h"
 #include "borg-escape.h"
 #include "borg-fight-attack.h"
-#include "borg-io.h"
+#include "borg-flow-glyph.h"
+#include "borg-flow-kill.h"
 #include "borg-inventory.h"
-#include "borg-item.h"
+#include "borg-io.h"
 #include "borg-item-activation.h"
 #include "borg-item-use.h"
 #include "borg-item-val.h"
-#include "borg-fight-attack.h"
-#include "borg-flow-glyph.h"
-#include "borg-flow-kill.h"
+#include "borg-item.h"
 #include "borg-light.h"
 #include "borg-magic.h"
 #include "borg-projection.h"
 #include "borg-trait.h"
+#include "borg.h"
 
 bool borg_attempting_refresh_resist = false; /* for the Resistance spell */
 
@@ -64,8 +62,7 @@ bool borg_attempting_refresh_resist = false; /* for the Resistance spell */
  *
  * * and many others
  */
-enum
-{
+enum {
     BD_BLESS,
     BD_SPEED,
     BD_GRIM_PURPOSE,
@@ -114,13 +111,13 @@ static void borg_log_spellpath(bool beam)
     borg_grid *ag;
     borg_kill *kill;
 
-    y = borg_target_y;
-    x = borg_target_x;
+    y   = borg_target_y;
+    x   = borg_target_x;
     n_x = c_x;
     n_y = c_y;
 
     while (1) {
-        ag = &borg_grids[n_y][n_x];
+        ag   = &borg_grids[n_y][n_x];
         kill = &borg_kills[ag->kill];
 
         /* Note the Pathway */
@@ -158,8 +155,8 @@ static void borg_log_spellpath(bool beam)
  */
 static int borg_defend_aux_bless(int p1)
 {
-    int fail_allowed = 25;
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    int        fail_allowed = 25;
+    borg_grid *ag           = &borg_grids[c_y][c_x];
 
     int i;
 
@@ -243,12 +240,12 @@ static int borg_defend_aux_bless(int p1)
  */
 static int borg_defend_aux_speed(int p1)
 {
-    int p2 = 0;
-    bool good_speed = false;
-    bool speed_spell = false;
-    bool speed_staff = false;
-    bool speed_rod = false;
-    int fail_allowed = 25;
+    int  p2           = 0;
+    bool good_speed   = false;
+    bool speed_spell  = false;
+    bool speed_staff  = false;
+    bool speed_rod    = false;
+    int  fail_allowed = 25;
 
     /* already fast */
     if (borg_speed)
@@ -271,7 +268,7 @@ static int borg_defend_aux_speed(int p1)
             if (p1 < avoidance / 3)
                 fail_allowed += 10;
 
-    /* only cast defence spells if fail rate is not too high */
+    /* only cast defense spells if fail rate is not too high */
     if (borg_spell_okay_fail(HASTE_SELF, fail_allowed))
         speed_spell = true;
 
@@ -291,7 +288,7 @@ static int borg_defend_aux_speed(int p1)
         return (0);
 
     /* if we have an infinite/large suppy of speed we can */
-    /* be generious with our use */
+    /* be generous with our use */
     if (speed_rod || speed_spell || speed_staff
         || borg_equips_item(act_haste, true)
         || borg_equips_item(act_haste1, true)
@@ -300,7 +297,7 @@ static int borg_defend_aux_speed(int p1)
 
     /* pretend we are protected and look again */
     borg_speed = true;
-    p2 = borg_danger(c_y, c_x, 1, true, false);
+    p2         = borg_danger(c_y, c_x, 1, true, false);
     borg_speed = false;
 
     /* if scaryguy around cast it. */
@@ -348,12 +345,12 @@ static int borg_defend_aux_speed(int p1)
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (((p1 > p2)
-        && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
-        && (p1 > (avoidance / 5)) && good_speed)
+            && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
+                                           : (avoidance / 2))
+            && (p1 > (avoidance / 5)) && good_speed)
         || ((p1 > p2)
             && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-                : (avoidance / 3))
+                                           : (avoidance / 3))
             && (p1 > (avoidance / 7)))) {
 
         /* Simulation */
@@ -383,11 +380,11 @@ static int borg_defend_aux_speed(int p1)
 /* Grim Purpose */
 static int borg_defend_aux_grim_purpose(int p1)
 {
-    int p2 = 0;
+    int p2           = 0;
     int fail_allowed = 25;
 
-    bool save_conf = borg_trait[BI_RCONF];
-    bool save_fa = borg_trait[BI_FRACT];
+    bool save_conf   = borg_trait[BI_RCONF];
+    bool save_fa     = borg_trait[BI_FRACT];
 
     /* already protected */
     if (save_conf && save_fa)
@@ -420,7 +417,7 @@ static int borg_defend_aux_grim_purpose(int p1)
     /* pretend we are protected and look again */
     borg_trait[BI_RCONF] = true;
     borg_trait[BI_FRACT] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                   = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_RCONF] = save_conf;
     borg_trait[BI_FRACT] = save_fa;
 
@@ -428,7 +425,7 @@ static int borg_defend_aux_grim_purpose(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
 
         /* Simulation */
@@ -453,9 +450,9 @@ static int borg_defend_aux_grim_purpose(int p1)
 /* all resists */
 static int borg_defend_aux_resist_fecap(int p1)
 {
-    int p2 = 0;
+    int  p2        = 0;
     bool save_fire = false, save_acid = false, save_poison = false,
-        save_elec = false, save_cold = false;
+         save_elec = false, save_cold = false;
 
     if (borg_trait[BI_TRFIRE] && borg_trait[BI_TRACID] && borg_trait[BI_TRPOIS]
         && borg_trait[BI_TRELEC] && borg_trait[BI_TRCOLD])
@@ -475,17 +472,17 @@ static int borg_defend_aux_resist_fecap(int p1)
     p1 = borg_danger(c_y, c_x, 1, false, false);
 
     /* pretend we are protected and look again */
-    save_fire = borg_trait[BI_TRFIRE];
-    save_elec = borg_trait[BI_TRELEC];
-    save_cold = borg_trait[BI_TRCOLD];
-    save_acid = borg_trait[BI_TRACID];
-    save_poison = borg_trait[BI_TRPOIS];
+    save_fire             = borg_trait[BI_TRFIRE];
+    save_elec             = borg_trait[BI_TRELEC];
+    save_cold             = borg_trait[BI_TRCOLD];
+    save_acid             = borg_trait[BI_TRACID];
+    save_poison           = borg_trait[BI_TRPOIS];
     borg_trait[BI_TRFIRE] = true;
     borg_trait[BI_TRELEC] = true;
     borg_trait[BI_TRCOLD] = true;
     borg_trait[BI_TRACID] = true;
     borg_trait[BI_TRPOIS] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRFIRE] = save_fire;
     borg_trait[BI_TRELEC] = save_elec;
     borg_trait[BI_TRCOLD] = save_cold;
@@ -511,7 +508,7 @@ static int borg_defend_aux_resist_fecap(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
 
         /* Simulation */
@@ -539,11 +536,11 @@ static int borg_defend_aux_resist_fecap(int p1)
 static int borg_defend_aux_resist_f(int p1)
 {
 
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool save_fire = false;
+    int  p2           = 0;
+    int  fail_allowed = 25;
+    bool save_fire    = false;
 
-    save_fire = borg_trait[BI_TRFIRE];
+    save_fire         = borg_trait[BI_TRFIRE];
 
     if (borg_trait[BI_TRFIRE])
         return (0);
@@ -580,7 +577,7 @@ static int borg_defend_aux_resist_f(int p1)
 
     /* pretend we are protected and look again */
     borg_trait[BI_TRFIRE] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRFIRE] = save_fire;
 
     /* Hack -
@@ -595,7 +592,7 @@ static int borg_defend_aux_resist_f(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -630,10 +627,9 @@ static int borg_defend_aux_resist_f(int p1)
 /* cold */
 static int borg_defend_aux_resist_c(int p1)
 {
-
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool save_cold = false;
+    int  p2           = 0;
+    int  fail_allowed = 25;
+    bool save_cold    = false;
 
     if (borg_trait[BI_TRCOLD])
         return (0);
@@ -666,12 +662,12 @@ static int borg_defend_aux_resist_c(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(c_y, c_x, 1, false, false);
 
     save_cold = borg_trait[BI_TRCOLD];
     /* pretend we are protected and look again */
     borg_trait[BI_TRCOLD] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRCOLD] = save_cold;
 
     /* Hack -
@@ -686,7 +682,7 @@ static int borg_defend_aux_resist_c(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -722,10 +718,9 @@ static int borg_defend_aux_resist_c(int p1)
 /* acid */
 static int borg_defend_aux_resist_a(int p1)
 {
-
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool save_acid = false;
+    int  p2           = 0;
+    int  fail_allowed = 25;
+    bool save_acid    = false;
 
     if (borg_trait[BI_TRACID])
         return (0);
@@ -756,19 +751,19 @@ static int borg_defend_aux_resist_a(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(c_y, c_x, 1, false, false);
 
     save_acid = borg_trait[BI_TRACID];
     /* pretend we are protected and look again */
     borg_trait[BI_TRACID] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRACID] = save_acid;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -806,10 +801,9 @@ static int borg_defend_aux_resist_a(int p1)
 /* electricity */
 static int borg_defend_aux_resist_e(int p1)
 {
-
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool save_elec = false;
+    int  p2           = 0;
+    int  fail_allowed = 25;
+    bool save_elec    = false;
 
     if (borg_trait[BI_TRELEC])
         return (0);
@@ -841,19 +835,19 @@ static int borg_defend_aux_resist_e(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(c_y, c_x, 1, false, false);
 
     save_elec = borg_trait[BI_TRELEC];
     /* pretend we are protected and look again */
     borg_trait[BI_TRELEC] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRELEC] = save_elec;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -891,9 +885,9 @@ static int borg_defend_aux_resist_e(int p1)
 /* poison */
 static int borg_defend_aux_resist_p(int p1)
 {
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool save_poison = false;
+    int  p2           = 0;
+    int  fail_allowed = 25;
+    bool save_poison  = false;
 
     if (borg_trait[BI_TRPOIS])
         return (0);
@@ -924,19 +918,19 @@ static int borg_defend_aux_resist_p(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1          = borg_danger(c_y, c_x, 1, false, false);
 
     save_poison = borg_trait[BI_TRPOIS];
     /* pretend we are protected and look again */
     borg_trait[BI_TRPOIS] = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                    = borg_danger(c_y, c_x, 1, false, false);
     borg_trait[BI_TRPOIS] = save_poison;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -965,10 +959,10 @@ static int borg_defend_aux_resist_p(int p1)
 /* pfe */
 static int borg_defend_aux_prot_evil(int p1)
 {
-    int p2 = 0;
-    int fail_allowed = 25;
-    bool pfe_spell = false;
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    int        p2           = 0;
+    int        fail_allowed = 25;
+    bool       pfe_spell    = false;
+    borg_grid *ag           = &borg_grids[c_y][c_x];
 
     /* if already protected */
     if (borg_prot_from_evil)
@@ -1016,16 +1010,16 @@ static int borg_defend_aux_prot_evil(int p1)
 
     /* pretend we are protected and look again */
     borg_prot_from_evil = true;
-    p2 = borg_danger(c_y, c_x, 1, false, false);
+    p2                  = borg_danger(c_y, c_x, 1, false, false);
     borg_prot_from_evil = false;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
 
     if ((p1 > p2
-        && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
-        && p1 > (avoidance / 7))
+            && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
+                                           : (avoidance / 2))
+            && p1 > (avoidance / 7))
         || (borg_cfg[BORG_MONEY_SCUM_AMOUNT] >= 1
             && borg_trait[BI_CDEPTH] == 0)) {
         /* Simulation */
@@ -1070,7 +1064,7 @@ static int borg_defend_aux_shield(int p1)
 
     /* pretend we are protected and look again */
     borg_shield = true;
-    p2 = borg_danger(c_y, c_x, 1, true, false);
+    p2          = borg_danger(c_y, c_x, 1, true, false);
     borg_shield = false;
 
     /* slightly enhance the value if fighting a unique */
@@ -1081,7 +1075,7 @@ static int borg_defend_aux_shield(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -1108,10 +1102,10 @@ static int borg_defend_aux_shield(int p1)
  */
 static int borg_defend_aux_tele_away(int p1)
 {
-    int p2 = p1;
-    int fail_allowed = 50;
-    bool spell_ok = false;
-    int i, x, y;
+    int  p2           = p1;
+    int  fail_allowed = 50;
+    bool spell_ok     = false;
+    int  i, x, y;
 
     borg_grid *ag;
 
@@ -1168,7 +1162,7 @@ static int borg_defend_aux_tele_away(int p1)
     /* Borg_temp_n temporarily stores several things.
      * Some of the borg_attack() sub-routines use these numbers,
      * which would have been filled in borg_attack().
-     * Since this is a defence manuever which will move into
+     * Since this is a defense maneuver which will move into
      * and borrow some of the borg_attack() subroutines, we need
      * to make sure that the borg_temp_n arrays are properly
      * filled.  Otherwise, the borg will attempt to consider
@@ -1178,12 +1172,12 @@ static int borg_defend_aux_tele_away(int p1)
      * Any change in inclusion/exclusion criteria for filling this
      * array in borg_attack() should be included here also.
      */
-     /* Nobody around so dont worry */
+    /* Nobody around so don't worry */
     if (!borg_kills_cnt && borg_simulate)
         return (0);
 
     /* Reset list */
-    borg_temp_n = 0;
+    borg_temp_n     = 0;
     borg_tp_other_n = 0;
 
     /* Find "nearby" monsters */
@@ -1234,7 +1228,7 @@ static int borg_defend_aux_tele_away(int p1)
 
     /* choose, then target a bad guy.
      * Damage will be the danger to my grid which the monster creates.
-     * We are targetting the single most dangerous monster.
+     * We are targeting the single most dangerous monster.
      * p2 will be the original danger (p1) minus the danger from the most
      * dangerous monster eliminated. ie:  if we are fighting only a single
      * monster who is generating 500 danger and we target him, then p2 _should_
@@ -1242,12 +1236,12 @@ static int borg_defend_aux_tele_away(int p1)
      * each creating 500 danger, then p2 will be 500, since 1000-500 = 500.
      */
     p2 = p1
-        - borg_launch_bolt(-1, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
+         - borg_launch_bolt(-1, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
 
     /* check to see if I am left better off */
     if (borg_simulate) {
         /* Reset list */
-        borg_temp_n = 0;
+        borg_temp_n     = 0;
         borg_tp_other_n = 0;
 
         if (p1 > p2 && p2 < avoidance / 2) {
@@ -1267,7 +1261,7 @@ static int borg_defend_aux_tele_away(int p1)
     }
 
     /* Reset list */
-    borg_temp_n = 0;
+    borg_temp_n     = 0;
     borg_tp_other_n = 0;
 
     /* Cast the spell */
@@ -1452,11 +1446,11 @@ static int borg_defend_aux_smite_evil(int p1)
 /* Glyph of Warding and Rune of Protection */
 static int borg_defend_aux_glyph(int p1)
 {
-    int p2 = 0, i;
-    int fail_allowed = 25;
-    bool glyph_spell = false;
+    int  p2           = 0, i;
+    int  fail_allowed = 25;
+    bool glyph_spell  = false;
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag     = &borg_grids[c_y][c_x];
 
     /* Cant when screwed */
     if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
@@ -1502,7 +1496,7 @@ static int borg_defend_aux_glyph(int p1)
         glyph_spell = true;
 
     if ((borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISIMAGE])
+            || borg_trait[BI_ISIMAGE])
         && glyph_spell)
         glyph_spell = false;
 
@@ -1514,14 +1508,14 @@ static int borg_defend_aux_glyph(int p1)
 
     /* pretend we are protected and look again */
     borg_on_glyph = true;
-    p2 = borg_danger(c_y, c_x, 1, true, false);
+    p2            = borg_danger(c_y, c_x, 1, true, false);
     borg_on_glyph = false;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -1556,9 +1550,9 @@ static int borg_defend_aux_glyph(int p1)
 /* Create Door */
 static int borg_defend_aux_create_door(int p1)
 {
-    int p2 = 0;
+    int p2           = 0;
     int fail_allowed = 30;
-    int door_bad = 0;
+    int door_bad     = 0;
     int door_x = 0, door_y = 0, x = 0, y = 0;
 
     borg_grid *ag;
@@ -1592,8 +1586,8 @@ static int borg_defend_aux_create_door(int p1)
     for (door_x = -1; door_x <= 1; door_x++) {
         for (door_y = -1; door_y <= 1; door_y++) {
             /* Acquire location */
-            x = door_x + c_x;
-            y = door_y + c_y;
+            x  = door_x + c_x;
+            y  = door_y + c_y;
 
             ag = &borg_grids[y][x];
 
@@ -1622,14 +1616,14 @@ static int borg_defend_aux_create_door(int p1)
 
     /* pretend we are protected and look again */
     borg_create_door = true;
-    p2 = borg_danger(c_y, c_x, 1, true, false);
+    p2               = borg_danger(c_y, c_x, 1, true, false);
     borg_create_door = false;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 7)) {
         /* Simulation */
         if (borg_simulate)
@@ -1659,7 +1653,7 @@ static int borg_defend_aux_mass_genocide(int p1)
     int hit = 0, i = 0, p2;
     int b_p = 0, p;
 
-    borg_kill *kill;
+    borg_kill           *kill;
     struct monster_race *r_ptr;
 
     /* Cant when screwed */
@@ -1681,7 +1675,7 @@ static int borg_defend_aux_mass_genocide(int p1)
     for (i = 1; i < borg_kills_nxt; i++) {
 
         /* Monster */
-        kill = &borg_kills[i];
+        kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
         /* Skip dead monsters */
@@ -1727,7 +1721,7 @@ static int borg_defend_aux_mass_genocide(int p1)
     /* we may have before */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? (avoidance * 2 / 3)
-            : (avoidance / 2))) {
+                                       : (avoidance / 2))) {
         /* Simulation */
         if (borg_simulate)
             return (p1 - p2);
@@ -1739,11 +1733,11 @@ static int borg_defend_aux_mass_genocide(int p1)
 
             /* Remove monsters from the borg_kill */
             for (i = 1; i < borg_kills_nxt; i++) {
-                borg_kill *tmp_kill;
+                borg_kill           *tmp_kill;
                 struct monster_race *tmp_r_ptr;
 
                 /* Monster */
-                tmp_kill = &borg_kills[i];
+                tmp_kill  = &borg_kills[i];
                 tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
                 /* Cant kill uniques like this */
@@ -1775,22 +1769,22 @@ static int borg_defend_aux_mass_genocide(int p1)
 static int borg_defend_aux_genocide(int p1)
 {
     int i, p, u, b_i = 0;
-    int p2 = 0;
+    int p2     = 0;
     int threat = 0;
-    int max = 1;
+    int max    = 1;
 
     int b_p[256];
     int b_num[256];
     int b_threat[256];
     int b_threat_num[256];
 
-    int total_danger_to_me = 0;
+    int total_danger_to_me            = 0;
 
-    char tmp_genocide_target = (char)0;
-    unsigned char b_threat_id = (char)0;
+    char          tmp_genocide_target = (char)0;
+    unsigned char b_threat_id         = (char)0;
 
-    bool genocide_spell = false;
-    int fail_allowed = 25;
+    bool genocide_spell               = false;
+    int  fail_allowed                 = 25;
 
     /* if very scary, do not allow for much chance of fail */
     if (p1 > avoidance)
@@ -1842,21 +1836,21 @@ static int borg_defend_aux_genocide(int p1)
      * The borg uses method #1
      */
 
-     /* Clear previous dangers */
+    /* Clear previous dangers */
     for (i = 0; i < 256; i++) {
-        b_p[i] = 0;
-        b_num[i] = 0;
-        b_threat[i] = 0;
+        b_p[i]          = 0;
+        b_num[i]        = 0;
+        b_threat[i]     = 0;
         b_threat_num[i] = 0;
     }
 
     /* Find a monster and calculate its danger */
     for (i = 1; i < borg_kills_nxt; i++) {
-        borg_kill *kill;
+        borg_kill           *kill;
         struct monster_race *r_ptr;
 
         /* Monster */
-        kill = &borg_kills[i];
+        kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
         /* Our char of the monster */
@@ -1915,14 +1909,14 @@ static int borg_defend_aux_genocide(int p1)
         /* for this race on the whole level */
         if (b_threat[i] > max) {
             /* track the race */
-            max = b_threat[i];
+            max         = b_threat[i];
             b_threat_id = i;
         }
 
         /* Leave an interesting note for debugging */
         if (!borg_simulate)
             borg_note(format("# Race '%c' is a threat with total danger %d "
-                "from %d individuals.",
+                             "from %d individuals.",
                 i, b_threat[i], b_threat_num[i]));
     }
 
@@ -1954,7 +1948,7 @@ static int borg_defend_aux_genocide(int p1)
         /* report the danger and most dangerous race */
         if (b_threat_id) {
             borg_note(format("# Race '%c' is a real threat with total danger "
-                "%d from %d individuals.",
+                             "%d from %d individuals.",
                 b_threat_id, b_threat[b_threat_id], b_threat_num[b_threat_id]));
         }
 
@@ -2016,11 +2010,11 @@ static int borg_defend_aux_genocide(int p1)
 
         /* Remove this race from the borg_kill */
         for (i = 1; i < borg_kills_nxt; i++) {
-            borg_kill *kill;
+            borg_kill           *kill;
             struct monster_race *r_ptr;
 
             /* Monster */
-            kill = &borg_kills[i];
+            kill  = &borg_kills[i];
             r_ptr = &r_info[kill->r_idx];
 
             /* Our char of the monster */
@@ -2051,8 +2045,8 @@ static int borg_defend_aux_genocide(int p1)
  */
 static int borg_defend_aux_genocide_nasties(int p1)
 {
-    int i = 0;
-    int b_i = -1;
+    int i               = 0;
+    int b_i             = -1;
 
     bool genocide_spell = false;
 
@@ -2111,11 +2105,11 @@ static int borg_defend_aux_genocide_nasties(int p1)
 
         /* Remove this race from the borg_kill */
         for (i = 1; i < borg_kills_nxt; i++) {
-            borg_kill *kill;
+            borg_kill           *kill;
             struct monster_race *r_ptr;
 
             /* Monster */
-            kill = &borg_kills[i];
+            kill  = &borg_kills[i];
             r_ptr = &r_info[kill->r_idx];
 
             /* Our char of the monster */
@@ -2187,7 +2181,7 @@ static int borg_defend_aux_earthquake(int p1)
 
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))
+                                       : (avoidance / 2))
         && p1 > (avoidance / 5)) {
         /* Simulation */
         if (borg_simulate)
@@ -2201,9 +2195,9 @@ static int borg_defend_aux_earthquake(int p1)
  */
 static int borg_defend_aux_destruction(int p1)
 {
-    int p2 = 0;
-    int d = 0;
-    bool spell = false;
+    int  p2          = 0;
+    int  d           = 0;
+    bool spell       = false;
     bool real_danger = false;
 
     /* Cant when screwed */
@@ -2246,11 +2240,11 @@ static int borg_defend_aux_destruction(int p1)
      * of Destruction instead of using the scrolls.
      * Note that there will be some times when it is better for
      * the borg to use Destruction instead of Teleport;  too
-     * often he will die out-of-the-fryingpan-into-the-fire.
+     * often he will die out-of-the-frying-pan-into-the-fire.
      * So we have him to a quick check on safe landing zones.
      */
 
-     /* Examine landing zones from teleport scrolls instead of WoD */
+    /* Examine landing zones from teleport scrolls instead of WoD */
     if ((borg_trait[BI_ATELEPORT] || borg_trait[BI_ATELEPORTLVL])
         && !borg_trait[BI_ISBLIND] && !borg_trait[BI_ISCONFUSED]
         && borg_fighting_unique <= 4 && borg_trait[BI_CURHP] >= 275) {
@@ -2272,7 +2266,7 @@ static int borg_defend_aux_destruction(int p1)
 
     /* Special check for super danger--no fail check */
     if ((p1 > (avoidance * 4)
-        || (p1 > avoidance && borg_trait[BI_CURHP] <= 150))
+            || (p1 > avoidance && borg_trait[BI_CURHP] <= 150))
         && borg_equips_staff_fail(sv_staff_destruction))
         spell = true;
 
@@ -2326,11 +2320,11 @@ static int borg_defend_aux_teleportlevel(int p1)
      * of this spell instead of using the scrolls.
      * Note that there will be some times when it is better for
      * the borg to use this instead of Teleport;  too
-     * often he will die out-of-the-fryingpan-into-the-fire.
+     * often he will die out-of-the-frying-pan-into-the-fire.
      * So we have him to a quick check on safe landing zones.
      */
 
-     /* Use teleport scrolls instead if safe to land */
+    /* Use teleport scrolls instead if safe to land */
     if ((borg_trait[BI_ATELEPORT] || borg_trait[BI_ATELEPORTLVL])
         && !borg_trait[BI_ISBLIND] && !borg_trait[BI_ISCONFUSED]) {
         if (borg_caution_teleport(65, 2))
@@ -2361,10 +2355,10 @@ static int borg_defend_aux_teleportlevel(int p1)
 /* Remove Evil guys within LOS.  The Priest Spell */
 static int borg_defend_aux_banishment(int p1)
 {
-    int p2 = 0;
-    int fail_allowed = 15;
-    int i;
-    int banished_monsters = 0;
+    int  p2           = 0;
+    int  fail_allowed = 15;
+    int  i;
+    int  banished_monsters = 0;
     bool using_artifact;
 
     borg_grid *ag;
@@ -2398,7 +2392,7 @@ static int borg_defend_aux_banishment(int p1)
         /* Monster */
         kill = &borg_kills[i];
 
-        ag = &borg_grids[kill->y][kill->x];
+        ag   = &borg_grids[kill->y][kill->x];
 
         /* Skip dead monsters */
         if (!kill->r_idx)
@@ -2420,14 +2414,14 @@ static int borg_defend_aux_banishment(int p1)
 
     /* Pass two -- Find a monster and calculate its danger */
     for (i = 1; i < borg_kills_nxt; i++) {
-        borg_kill *kill;
+        borg_kill           *kill;
         struct monster_race *r_ptr;
 
         /* Monster */
-        kill = &borg_kills[i];
+        kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
-        ag = &borg_grids[kill->y][kill->x];
+        ag    = &borg_grids[kill->y][kill->x];
 
         /* Skip dead monsters */
         if (!kill->r_idx)
@@ -2450,7 +2444,7 @@ static int borg_defend_aux_banishment(int p1)
             /* Note who gets to stay */
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
-                    "Stays (not evil).",
+                                 "Stays (not evil).",
                     kill->y, kill->x, (r_info[kill->r_idx].name),
                     borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false)));
             }
@@ -2463,7 +2457,7 @@ static int borg_defend_aux_banishment(int p1)
             /* Note who gets to stay */
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
-                    "Unique not considered: Injury %d.",
+                                 "Unique not considered: Injury %d.",
                     kill->y, kill->x, (r_info[kill->r_idx].name),
                     borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false),
                     kill->injury));
@@ -2477,7 +2471,7 @@ static int borg_defend_aux_banishment(int p1)
             /* Note who gets banished */
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
-                    "Stays (in wall).",
+                                 "Stays (in wall).",
                     kill->y, kill->x, (r_info[kill->r_idx].name),
                     borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, true)));
             }
@@ -2529,7 +2523,7 @@ static int borg_defend_aux_banishment(int p1)
     /* check to see if I am left better off */
     if (p1 > p2
         && p2 <= (borg_fighting_unique ? ((avoidance * 2) / 3)
-            : (avoidance / 2))) {
+                                       : (avoidance / 2))) {
         /* Simulation */
         if (borg_simulate)
             return (p1 - p2);
@@ -2544,8 +2538,8 @@ static int borg_defend_aux_banishment(int p1)
  */
 static int borg_defend_aux_inviso(int p1)
 {
-    int fail_allowed = 25;
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    int        fail_allowed = 25;
+    borg_grid *ag           = &borg_grids[c_y][c_x];
 
     /* no need */
     if (borg_trait[BI_ISFORGET] || borg_trait[BI_ISBLIND]
@@ -2596,13 +2590,13 @@ static int borg_defend_aux_inviso(int p1)
         return (10);
     }
     if (borg_quaff_potion(sv_potion_detect_invis)) {
-        borg_see_inv = 18000;
+        borg_see_inv      = 18000;
         borg_no_rest_prep = 18000;
         return (10);
     }
     /* long time */
     if (borg_spell_fail(SENSE_INVISIBLE, fail_allowed)) {
-        borg_see_inv = 30000;
+        borg_see_inv      = 30000;
         borg_no_rest_prep = 16000;
         return (10);
     }
@@ -2619,8 +2613,8 @@ static int borg_defend_aux_inviso(int p1)
 static int borg_defend_aux_lbeam(void)
 {
     bool hallway = false;
-    int x = c_x;
-    int y = c_y;
+    int  x       = c_x;
+    int  y       = c_y;
 
     /* Cant when screwed */
     if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
@@ -2699,8 +2693,8 @@ static int borg_defend_aux_lbeam(void)
 static int borg_defend_aux_panel_shift(void)
 {
     int dir = 0;
-    int wx = Term->offset_x / borg_panel_wid();
-    int wy = Term->offset_y / borg_panel_hgt();
+    int wx  = Term->offset_x / borg_panel_wid();
+    int wy  = Term->offset_y / borg_panel_hgt();
 
     /* no need */
     if (!need_shift_panel && borg_trait[BI_CDEPTH] < 70)
@@ -2765,7 +2759,7 @@ static int borg_defend_aux_panel_shift(void)
         /* Leave the panel shift mode */
         borg_keypress(ESCAPE);
     } else
-        /* check to make sure its appropriate */
+    /* check to make sure its appropriate */
     {
 
         /* Hack Not if I just did one */
@@ -2791,8 +2785,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift down? only if a south corridor */
                 else if (dir == 2
-                    && borg_projectable_pure(c_y, c_x, c_y + 2, c_x)
-                    && track_step.y[track_step.num - 1] != c_y + 1) {
+                         && borg_projectable_pure(c_y, c_x, c_y + 2, c_x)
+                         && track_step.y[track_step.num - 1] != c_y + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     borg_keypress(I2D(dir));
@@ -2804,8 +2798,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift Left? only if a west corridor */
                 else if (dir == 4
-                    && borg_projectable_pure(c_y, c_x, c_y, c_x - 2)
-                    && track_step.x[track_step.num - 1] != c_x - 1) {
+                         && borg_projectable_pure(c_y, c_x, c_y, c_x - 2)
+                         && track_step.x[track_step.num - 1] != c_x - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     if (dir)
@@ -2818,8 +2812,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift Right? only if a east corridor */
                 else if (dir == 6
-                    && borg_projectable_pure(c_y, c_x, c_y, c_x + 2)
-                    && track_step.x[track_step.num - 1] != c_x + 1) {
+                         && borg_projectable_pure(c_y, c_x, c_y, c_x + 2)
+                         && track_step.x[track_step.num - 1] != c_x + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     if (dir)
@@ -2860,7 +2854,7 @@ static int borg_defend_aux_rest(void)
         && (!borg_as_position || borg_t - borg_t_antisummon >= 50))
         return (0);
 
-    /* Not if I can not teleport others away */
+        /* Not if I can not teleport others away */
 #if 0
     if (!borg_spell_okay_fail(3, 1, 30) &&
         !borg_spell_okay_fail(4, 2, 30)) return (0);
@@ -2870,8 +2864,8 @@ static int borg_defend_aux_rest(void)
     for (i = 1; i < borg_kills_nxt; i++) {
         borg_kill *kill = &borg_kills[i];
 
-        int x9 = kill->x;
-        int y9 = kill->y;
+        int x9          = kill->x;
+        int y9          = kill->y;
         int ax, ay, d;
 
         /* Skip dead monsters */
@@ -2921,7 +2915,7 @@ static int borg_defend_aux_rest(void)
  */
 static int borg_defend_aux_tele_away_morgoth(void)
 {
-    int p2 = 0;
+    int p2           = 0;
     int fail_allowed = 40;
     int i, x, y;
 
@@ -2956,7 +2950,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
     /* Borg_temp_n temporarily stores several things.
      * Some of the borg_attack() sub-routines use these numbers,
      * which would have been filled in borg_attack().
-     * Since this is a defence manuever which will move into
+     * Since this is a defense maneuver which will move into
      * and borrow some of the borg_attack() subroutines, we need
      * to make sure that the borg_temp_n arrays are properly
      * filled.  Otherwise, the borg will attempt to consider
@@ -2967,12 +2961,12 @@ static int borg_defend_aux_tele_away_morgoth(void)
      * array in borg_attack() should be included here also.
      */
 
-     /* Nobody around so dont worry */
+    /* Nobody around so dont worry */
     if (!borg_kills_cnt && borg_simulate)
         return (0);
 
     /* Reset list */
-    borg_temp_n = 0;
+    borg_temp_n     = 0;
     borg_tp_other_n = 0;
 
     /* Find "nearby" monsters */
@@ -3035,7 +3029,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
         p2 = 1000;
 
     /* Reset list */
-    borg_temp_n = 0;
+    borg_temp_n     = 0;
     borg_tp_other_n = 0;
 
     /* Return a good score to make him do it */
@@ -3077,11 +3071,11 @@ static int borg_defend_aux_banishment_morgoth(void)
 {
     int fail_allowed = 50;
     int i, x, y;
-    int count = 0;
+    int count  = 0;
     int glyphs = 0;
 
-    borg_grid *ag;
-    borg_kill *kill;
+    borg_grid           *ag;
+    borg_kill           *kill;
     struct monster_race *r_ptr;
 
     /* Not if Morgoth is not on this level */
@@ -3180,11 +3174,11 @@ static int borg_defend_aux_banishment_morgoth(void)
     if (borg_spell(MASS_BANISHMENT) || borg_spell(BANISH_EVIL)) {
         /* Remove this race from the borg_kill */
         for (i = 0; i < borg_kills_nxt; i++) {
-            borg_kill *tmp_kill;
+            borg_kill           *tmp_kill;
             struct monster_race *tmp_r_ptr;
 
             /* Monster */
-            tmp_kill = &borg_kills[i];
+            tmp_kill  = &borg_kills[i];
             tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
             /* Cant kill uniques like this */
@@ -3211,8 +3205,8 @@ static int borg_defend_aux_light_morgoth(void)
 {
     int fail_allowed = 50;
     int i, x, y;
-    int b_y = -1;
-    int b_x = -1;
+    int b_y   = -1;
+    int b_x   = -1;
     int count = 0;
 
     borg_kill *kill;
@@ -3305,139 +3299,107 @@ static int borg_defend_aux_light_morgoth(void)
 }
 
 /*
- * Simulate/Apply the optimal result of using the given "type" of defence
+ * Simulate/Apply the optimal result of using the given "type" of defense
  * p1 is the current danger level (passed in for effiency)
  */
 static int borg_defend_aux(int what, int p1)
 {
     /* Analyze */
     switch (what) {
-    case BD_SPEED:
-    {
+    case BD_SPEED: {
         return (borg_defend_aux_speed(p1));
     }
-    case BD_PROT_FROM_EVIL:
-    {
+    case BD_PROT_FROM_EVIL: {
         return (borg_defend_aux_prot_evil(p1));
     }
-    case BD_GRIM_PURPOSE:
-    {
+    case BD_GRIM_PURPOSE: {
         return (borg_defend_aux_grim_purpose(p1));
     }
-    case BD_RESIST_FECAP:
-    {
+    case BD_RESIST_FECAP: {
         return (borg_defend_aux_resist_fecap(p1));
     }
-    case BD_RESIST_F:
-    {
+    case BD_RESIST_F: {
         return (borg_defend_aux_resist_f(p1));
     }
-    case BD_RESIST_C:
-    {
+    case BD_RESIST_C: {
         return (borg_defend_aux_resist_c(p1));
     }
-    case BD_RESIST_A:
-    {
+    case BD_RESIST_A: {
         return (borg_defend_aux_resist_a(p1));
     }
-    case BD_RESIST_E:
-    {
+    case BD_RESIST_E: {
         return (borg_defend_aux_resist_e(p1));
     }
-    case BD_RESIST_P:
-    {
+    case BD_RESIST_P: {
         return (borg_defend_aux_resist_p(p1));
     }
-    case BD_BLESS:
-    {
+    case BD_BLESS: {
         return (borg_defend_aux_bless(p1));
     }
-    case BD_HERO:
-    {
+    case BD_HERO: {
         return (borg_defend_aux_hero(p1));
     }
-    case BD_BERSERK:
-    {
+    case BD_BERSERK: {
         return (borg_defend_aux_berserk(p1));
     }
-    case BD_SMITE_EVIL:
-    {
+    case BD_SMITE_EVIL: {
         return (borg_defend_aux_smite_evil(p1));
     }
-    case BD_REGEN:
-    {
+    case BD_REGEN: {
         return (borg_defend_aux_regen(p1));
     }
-    case BD_SHIELD:
-    {
+    case BD_SHIELD: {
         return (borg_defend_aux_shield(p1));
     }
-    case BD_TELE_AWAY:
-    {
+    case BD_TELE_AWAY: {
         return (borg_defend_aux_tele_away(p1));
     }
-    case BD_GLYPH:
-    {
+    case BD_GLYPH: {
         return (borg_defend_aux_glyph(p1));
     }
-    case BD_CREATE_DOOR:
-    {
+    case BD_CREATE_DOOR: {
         return (borg_defend_aux_create_door(p1));
     }
-    case BD_MASS_GENOCIDE:
-    {
+    case BD_MASS_GENOCIDE: {
         return (borg_defend_aux_mass_genocide(p1));
     }
-    case BD_GENOCIDE:
-    {
+    case BD_GENOCIDE: {
         return (borg_defend_aux_genocide(p1));
     }
-    case BD_GENOCIDE_NASTIES:
-    {
+    case BD_GENOCIDE_NASTIES: {
         return (borg_defend_aux_genocide_nasties(p1));
     }
-    case BD_EARTHQUAKE:
-    {
+    case BD_EARTHQUAKE: {
         return (borg_defend_aux_earthquake(p1));
     }
-    case BD_TPORTLEVEL:
-    {
+    case BD_TPORTLEVEL: {
         return (borg_defend_aux_teleportlevel(p1));
     }
-    case BD_DESTRUCTION:
-    {
+    case BD_DESTRUCTION: {
         return (borg_defend_aux_destruction(p1));
     }
-    case BD_BANISHMENT:
-    {
+    case BD_BANISHMENT: {
         return (borg_defend_aux_banishment(p1));
     }
-    case BD_DETECT_INVISO:
-    {
+    case BD_DETECT_INVISO: {
         return (borg_defend_aux_inviso(p1));
     }
-    case BD_LIGHT_BEAM:
-    {
+    case BD_LIGHT_BEAM: {
         return (borg_defend_aux_lbeam());
     }
-    case BD_SHIFT_PANEL:
-    {
+    case BD_SHIFT_PANEL: {
         return (borg_defend_aux_panel_shift());
     }
-    case BD_REST:
-    {
+    case BD_REST: {
         return (borg_defend_aux_rest());
     }
-    case BD_TELE_AWAY_MORGOTH:
-    {
+    case BD_TELE_AWAY_MORGOTH: {
         return (borg_defend_aux_tele_away_morgoth());
     }
-    case BD_BANISHMENT_MORGOTH:
-    {
+    case BD_BANISHMENT_MORGOTH: {
         return (borg_defend_aux_banishment_morgoth());
     }
-    case BD_LIGHT_MORGOTH:
-    {
+    case BD_LIGHT_MORGOTH: {
         return (borg_defend_aux_light_morgoth());
     }
     }
@@ -3463,17 +3425,17 @@ bool borg_defend(int p1)
         /* check 'true' danger. This will make sure we do not */
         /* refresh our Resistance if no-one is around */
         borg_attacking = true;
-        p = borg_danger(
+        p              = borg_danger(
             c_y, c_x, 1, false, false); /* Note false for danger!! */
         borg_attacking = false;
         if (p > borg_fear_region[c_y / 11][c_x / 11] || borg_fighting_unique) {
             if (borg_spell(RESISTANCE)) {
                 borg_note(format("# Refreshing Resistance.  "
-                    "borg_resistance=%d, player->=%d, (ratio=%d)",
+                                 "borg_resistance=%d, player->=%d, (ratio=%d)",
                     borg_resistance, player->timed[TMD_OPP_ACID],
                     borg_game_ratio));
                 borg_attempting_refresh_resist = true;
-                borg_resistance = 25000;
+                borg_resistance                = 25000;
                 return (true);
             }
         }
@@ -3499,7 +3461,7 @@ bool borg_defend(int p1)
     }
 
     /* Note */
-    borg_note(format("# Performing defence type %d with value %d", b_g, b_n));
+    borg_note(format("# Performing defense type %d with value %d", b_g, b_n));
 
     /* Instantiate */
     borg_simulate = false;

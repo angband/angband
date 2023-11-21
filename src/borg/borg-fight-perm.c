@@ -1,6 +1,6 @@
 /**
  * \file borg-fight-perm.c
- * \brief Do moves we want as persistent during a fight and beyond.  
+ * \brief Do moves we want as persistent during a fight and beyond.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -17,9 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifdef ALLOW_BORG
-
 #include "borg-fight-perm.h"
+
+#ifdef ALLOW_BORG
 
 #include "borg-cave-view.h"
 #include "borg-flow-kill.h"
@@ -42,8 +42,7 @@
  *   Temp Resist (either all or just cold/fire?)
  *   Shield
  */
-enum
-{
+enum {
     BP_SPEED,
     BP_PROT_FROM_EVIL,
     BP_BLESS,
@@ -99,7 +98,7 @@ static int borg_perma_aux_bless(void)
     /* If its cheap, go ahead */
     if (borg_trait[BI_CLEVEL] > 10
         && cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-            : borg_trait[BI_CURSP] / 10))
+                                      : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -119,7 +118,7 @@ static int borg_perma_aux_bless(void)
 /* all resists FECAP*/
 static int borg_perma_aux_resist(void)
 {
-    int cost = 0;
+    int cost         = 0;
     int fail_allowed = 5;
 
     /* increase the threshold */
@@ -129,7 +128,7 @@ static int borg_perma_aux_resist(void)
         fail_allowed = 15;
 
     if (borg_trait[BI_TRFIRE] + borg_trait[BI_TRACID] + borg_trait[BI_TRELEC]
-        + borg_trait[BI_TRCOLD]
+            + borg_trait[BI_TRCOLD]
         >= 3)
         return (0);
 
@@ -141,7 +140,7 @@ static int borg_perma_aux_resist(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -162,7 +161,7 @@ static int borg_perma_aux_resist(void)
 static int borg_perma_aux_resist_colluin(void)
 {
     if (borg_trait[BI_TRFIRE] + borg_trait[BI_TRACID] + borg_trait[BI_TRPOIS]
-        + borg_trait[BI_TRELEC] + borg_trait[BI_TRCOLD]
+            + borg_trait[BI_TRELEC] + borg_trait[BI_TRCOLD]
         >= 3)
         return (0);
 
@@ -192,7 +191,7 @@ static int borg_perma_aux_resist_colluin(void)
 /* resists--- Only bother if a Unique is on the level.*/
 static int borg_perma_aux_resist_p(void)
 {
-    int cost = 0;
+    int cost         = 0;
     int fail_allowed = 5;
 
     /* increase the threshold */
@@ -249,7 +248,7 @@ static int borg_perma_aux_speed(void)
     if (borg_speed)
         return (0);
 
-    /* only cast defence spells if fail rate is not too high */
+    /* only cast defense spells if fail rate is not too high */
     if (!borg_spell_okay_fail(HASTE_SELF, fail_allowed))
         return (0);
 
@@ -258,7 +257,7 @@ static int borg_perma_aux_speed(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -281,7 +280,7 @@ static int borg_perma_aux_speed(void)
  */
 static int borg_perma_aux_prot_evil(void)
 {
-    int cost = 0;
+    int cost         = 0;
     int fail_allowed = 5;
 
     /* if already protected */
@@ -302,7 +301,7 @@ static int borg_perma_aux_prot_evil(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -351,7 +350,7 @@ static int borg_perma_aux_fastcast(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -400,7 +399,7 @@ static int borg_perma_aux_hero(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -452,7 +451,7 @@ static int borg_perma_aux_regen(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* do it! */
@@ -478,7 +477,7 @@ static int borg_perma_aux_smite_evil(void)
     if (borg_fighting_unique)
         fail_allowed = 15;
 
-    /* already smoting */
+    /* already smiting */
     if (borg_smite_evil || borg_trait[BI_WS_EVIL])
         return (0);
 
@@ -494,7 +493,7 @@ static int borg_perma_aux_smite_evil(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -525,7 +524,7 @@ static int borg_perma_aux_venom(void)
     if (borg_fighting_unique)
         fail_allowed = 15;
 
-    /* already smoting */
+    /* already smiting */
     if (borg_venom || borg_trait[BI_WB_POIS])
         return (0);
 
@@ -541,7 +540,7 @@ static int borg_perma_aux_venom(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -588,7 +587,7 @@ static int borg_perma_aux_berserk(void)
 
     /* If its cheap, go ahead */
     if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-        : borg_trait[BI_CURSP] / 10))
+                                   : borg_trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -642,8 +641,8 @@ static int borg_perma_aux_berserk_potion(void)
  */
 static int borg_perma_aux_see_inv(void)
 {
-    int fail_allowed = 25;
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    int        fail_allowed = 25;
+    borg_grid* ag           = &borg_grids[c_y][c_x];
 
     /* no need */
     if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
@@ -653,7 +652,7 @@ static int borg_perma_aux_see_inv(void)
     /* Do I have anything that will work? */
     if (!borg_spell_okay_fail(SENSE_INVISIBLE, fail_allowed) /* &&
         !borg_spell_okay_fail(2, 6, fail_allowed) */
-        )
+    )
         return (0);
 
     /* Darkness */
@@ -667,8 +666,8 @@ static int borg_perma_aux_see_inv(void)
     /* long time */
     if (borg_spell_fail(SENSE_INVISIBLE, fail_allowed) /* ||
         borg_spell_fail(2, 6, fail_allowed) */
-        ) {
-        borg_see_inv = 32000;
+    ) {
+        borg_see_inv      = 32000;
         borg_no_rest_prep = 16000;
         return (10);
     }
@@ -685,67 +684,52 @@ static int borg_perma_aux(int what)
 
     /* Analyze */
     switch (what) {
-    case BP_SPEED:
-    {
+    case BP_SPEED: {
         return (borg_perma_aux_speed());
     }
 
-    case BP_PROT_FROM_EVIL:
-    {
+    case BP_PROT_FROM_EVIL: {
         return (borg_perma_aux_prot_evil());
     }
-    case BP_RESIST_ALL:
-    {
+    case BP_RESIST_ALL: {
         return (borg_perma_aux_resist());
     }
-    case BP_RESIST_ALL_COLLUIN:
-    {
+    case BP_RESIST_ALL_COLLUIN: {
         return (borg_perma_aux_resist_colluin());
     }
-    case BP_RESIST_P:
-    {
+    case BP_RESIST_P: {
         return (borg_perma_aux_resist_p());
     }
-    case BP_BLESS:
-    {
+    case BP_BLESS: {
         return (borg_perma_aux_bless());
     }
-    case BP_FASTCAST:
-    {
+    case BP_FASTCAST: {
         return (borg_perma_aux_fastcast());
     }
-    case BP_HERO:
-    {
+    case BP_HERO: {
         return (borg_perma_aux_hero());
     }
-    case BP_BERSERK:
-    {
+    case BP_BERSERK: {
         return (borg_perma_aux_berserk());
     }
-    case BP_BERSERK_POTION:
-    {
+    case BP_BERSERK_POTION: {
         return (borg_perma_aux_berserk_potion());
     }
-    case BP_SMITE_EVIL:
-    {
+    case BP_SMITE_EVIL: {
         return (borg_perma_aux_smite_evil());
     }
-    case BP_VENOM:
-    {
+    case BP_VENOM: {
         return (borg_perma_aux_venom());
     }
-    case BP_REGEN:
-    {
+    case BP_REGEN: {
         return (borg_perma_aux_regen());
     }
-    case BP_GLYPH:
-    {
+    case BP_GLYPH: {
         /* return (borg_perma_aux_glyph()); Tends to use too much mana doing
          * this */
         return (0);
     }
-    case BP_SEE_INV:
-    {
+    case BP_SEE_INV: {
         return (borg_perma_aux_see_inv());
     }
     }
@@ -772,7 +756,7 @@ bool borg_perma_spell(void)
         || borg_trait[BI_CDEPTH] < 7)
         return (false);
 
-    /* Low Level, save your mana, use the Defence maneuvers above */
+    /* Low Level, save your mana, use the defense maneuvers above */
     if (borg_trait[BI_CLEVEL] <= 10)
         return (false);
 
