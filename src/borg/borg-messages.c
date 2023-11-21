@@ -35,6 +35,7 @@
 #include "borg-messages-react.h"
 #include "borg-think.h"
 #include "borg-trait.h"
+#include "borg-update.h"
 
 /*
  * Hack -- message memory

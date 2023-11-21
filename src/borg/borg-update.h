@@ -23,6 +23,11 @@
 #include "../angband.h"
 
 /*
+ * Notice failure
+ */
+extern bool    borg_failure;
+
+/*
  * Hack -- the detection arrays
  */
 extern bool borg_detect_wall[6][18];

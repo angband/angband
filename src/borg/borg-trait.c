@@ -798,11 +798,6 @@ bool    borg_attacking; /* Simulation flag */
 bool    borg_on_upstairs; /* used when leaving a level */
 bool    borg_on_dnstairs; /* used when leaving a level */
 
-/*
- * Notice failure
- */
-bool    borg_failure;
-
 int16_t borg_oldchp; /* hit points last game turn */
 
 /* defence flags */

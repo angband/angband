@@ -435,11 +435,6 @@ extern int16_t amt_digger;
 /* 1 = ready */
 extern int     borg_ready_morgoth;
 
-/*
- * Notice failure
- */
-extern bool    borg_failure;
-
 /* array of the strings that match the BI_* values */
 extern const char* prefix_pref[];
 
