@@ -54,31 +54,172 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\borg\borg1.c">
+    <ClCompile Include="src\borg\borg-attack-munchkin.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg2.c">
+    <ClCompile Include="src\borg\borg-caution.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg3.c">
+    <ClCompile Include="src\borg\borg-cave-light.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg4.c">
+    <ClCompile Include="src\borg\borg-cave-util.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg5.c">
+    <ClCompile Include="src\borg\borg-cave-view.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg6.c">
+    <ClCompile Include="src\borg\borg-cave.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg7.c">
+    <ClCompile Include="src\borg\borg-danger.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg8.c">
+    <ClCompile Include="src\borg\borg-escape.c">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\borg\borg9.c">
+    <ClCompile Include="src\borg\borg-fight-attack.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-fight-defend.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-fight-perm.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-dark.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-glyph.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-kill.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-misc.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-stairs.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow-take.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-flow.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-home-notice.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-home-power.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-init.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-inventory.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-io.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-activation.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-analyze.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-decurse.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-enchant.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-id.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-use.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-val.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item-wear.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-item.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-junk.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-light.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-log.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-magic-play.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-magic.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-messages-react.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-messages.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-power.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-prepared.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-projection.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-recover.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-reincarnate.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-store-buy.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-store-sell.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-store.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-think-dungeon-util.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-think-dungeon.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-think-store.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-think.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-trait-swap.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-trait.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-update.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg-util.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borg\borg.c">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\buildid.c">
@@ -551,31 +692,172 @@
     <ClInclude Include="src\angband.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg1.h">
+    <ClInclude Include="src\borg\borg-attack-munchkin.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg2.h">
+    <ClInclude Include="src\borg\borg-caution.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg3.h">
+    <ClInclude Include="src\borg\borg-cave-light.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg4.h">
+    <ClInclude Include="src\borg\borg-cave-util.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg5.h">
+    <ClInclude Include="src\borg\borg-cave-view.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg6.h">
+    <ClInclude Include="src\borg\borg-cave.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg7.h">
+    <ClInclude Include="src\borg\borg-danger.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg8.h">
+    <ClInclude Include="src\borg\borg-escape.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\borg\borg9.h">
+    <ClInclude Include="src\borg\borg-fight-attack.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-fight-defend.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-fight-perm.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-dark.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-glyph.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-kill.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-misc.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-stairs.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow-take.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-flow.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-home-notice.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-home-power.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-init.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-inventory.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-io.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-activation.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-analyze.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-decurse.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-enchant.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-id.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-use.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-val.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item-wear.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-item.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-junk.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-light.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-log.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-magic-play.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-magic.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-messages-react.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-messages.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-power.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-prepared.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-projection.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-recover.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-reincarnate.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-store-buy.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-store-sell.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-store.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-think-dungeon-util.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-think-dungeon.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-think-store.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-think.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-trait-swap.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-trait.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-update.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg-util.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borg\borg.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\buildid.h">
