@@ -61,7 +61,7 @@ SOURCES_C	:= main-nds-arm7.c
 # Compiler and linker flags
 # -------------------------
 
-DEFINES		+= -DNDS -D__NDS__ -DARM7
+DEFINES		+= -DNDS -D__NDS__ -DBLOCKSDS -DARM7
 
 ARCH		:= -mcpu=arm7tdmi -mtune=arm7tdmi
 

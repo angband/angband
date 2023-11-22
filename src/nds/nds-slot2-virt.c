@@ -14,17 +14,27 @@ static uint32_t mem_alt_ptr_mask, mem_alt_ptr_value;
 static mspace mem_alt_mspace;
 
 void mem_init_alt(void) {
+#ifdef BLOCKSDS
+	if (peripheralSlot2Init(SLOT2_PERIPHERAL_EXTRAM) && peripheralSlot2RamStart()) {
+		peripheralSlot2Open(SLOT2_PERIPHERAL_EXTRAM);
+		peripheralSlot2EnableCache(true);
+		mem_alt_ptr_mask = 0xF8000000;
+		mem_alt_ptr_value = 0x08000000;
+
+		mem_alt_mspace = create_mspace_with_base(peripheralSlot2RamStart(), peripheralSlot2RamSize(), 0);
+#else
 	if (ram_init(DETECT_RAM)) {
 		mem_alt_ptr_mask = 0xFE000000;
 		mem_alt_ptr_value = 0x08000000;
 
 		mem_alt_mspace = create_mspace_with_base(ram_unlock(), ram_size(), 0);
+#endif
 	} else {
 		mem_alt_ptr_mask = 0xFF000000;
 		mem_alt_ptr_value = 0x06000000;
 
 		/* Update if VRAM allocation in nds-draw.c is changed! */
-		mem_alt_mspace = create_mspace_with_base(0x06860000, 0x068A4000 - 0x06860000, 0);
+		mem_alt_mspace = create_mspace_with_base((void *)0x06860000, 0x068A4000 - 0x06860000, 0);
 	}
 }
 

@@ -38,15 +38,62 @@ HEADERS = \
 	z-type.h \
 	z-util.h \
 	z-virt.h \
-	borg/borg1.h \
-	borg/borg2.h \
-	borg/borg3.h \
-	borg/borg4.h \
-	borg/borg5.h \
-	borg/borg6.h \
-	borg/borg7.h \
-	borg/borg8.h \
-	borg/borg9.h
+	borg/borg-attack-munchkin.h \
+	borg/borg-caution.h \
+	borg/borg-cave-light.h \
+	borg/borg-cave-util.h \
+	borg/borg-cave-view.h \
+	borg/borg-cave.h \
+	borg/borg-danger.h \
+	borg/borg-escape.h \
+	borg/borg-fight-attack.h \
+	borg/borg-fight-defend.h \
+	borg/borg-fight-perm.h \
+	borg/borg-flow-dark.h \
+	borg/borg-flow-glyph.h \
+	borg/borg-flow-kill.h \
+	borg/borg-flow-misc.h \
+	borg/borg-flow-stairs.h \
+	borg/borg-flow-take.h \
+	borg/borg-flow.h \
+	borg/borg-home-notice.h \
+	borg/borg-home-power.h \
+	borg/borg-init.h \
+	borg/borg-inventory.h \
+	borg/borg-io.h \
+	borg/borg-item-activation.h \
+	borg/borg-item-analyze.h \
+	borg/borg-item-decurse.h \
+	borg/borg-item-enchant.h \
+	borg/borg-item-id.h \
+	borg/borg-item-use.h \
+	borg/borg-item-val.h \
+	borg/borg-item-wear.h \
+	borg/borg-item.h \
+	borg/borg-junk.h \
+	borg/borg-light.h \
+	borg/borg-log.h \
+	borg/borg-magic-play.h \
+	borg/borg-magic.h \
+	borg/borg-messages-react.h \
+	borg/borg-messages.h \
+	borg/borg-power.h \
+	borg/borg-prepared.h \
+	borg/borg-projection.h \
+	borg/borg-recover.h \
+	borg/borg-reincarnate.h \
+	borg/borg-store-buy.h \
+	borg/borg-store-sell.h \
+	borg/borg-store.h \
+	borg/borg-think-dungeon-util.h \
+	borg/borg-think-dungeon.h \
+	borg/borg-think-store.h \
+	borg/borg-think.h \
+	borg/borg-trait-swap.h \
+	borg/borg-trait.h \
+	borg/borg-update.h \
+	borg/borg-util.h \
+	borg/borg.h
 
 ZFILES = \
 	z-bitflag.o \
@@ -242,15 +289,62 @@ ANGFILES0 = \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \
-	borg/borg1.o \
-	borg/borg2.o \
-	borg/borg3.o \
-	borg/borg4.o \
-	borg/borg5.o \
-	borg/borg6.o \
-	borg/borg7.o \
-	borg/borg8.o \
-	borg/borg9.o
+	borg/borg-attack-munchkin.o \
+	borg/borg-caution.o \
+	borg/borg-cave-light.o \
+	borg/borg-cave-util.o \
+	borg/borg-cave-view.o \
+	borg/borg-cave.o \
+	borg/borg-danger.o \
+	borg/borg-escape.o \
+	borg/borg-fight-attack.o \
+	borg/borg-fight-defend.o \
+	borg/borg-fight-perm.o \
+	borg/borg-flow-dark.o \
+	borg/borg-flow-glyph.o \
+	borg/borg-flow-kill.o \
+	borg/borg-flow-misc.o \
+	borg/borg-flow-stairs.o \
+	borg/borg-flow-take.o \
+	borg/borg-flow.o \
+	borg/borg-home-notice.o \
+	borg/borg-home-power.o \
+	borg/borg-init.o \
+	borg/borg-inventory.o \
+	borg/borg-io.o \
+	borg/borg-item-activation.o \
+	borg/borg-item-analyze.o \
+	borg/borg-item-decurse.o \
+	borg/borg-item-enchant.o \
+	borg/borg-item-id.o \
+	borg/borg-item-use.o \
+	borg/borg-item-val.o \
+	borg/borg-item-wear.o \
+	borg/borg-item.o \
+	borg/borg-junk.o \
+	borg/borg-light.o \
+	borg/borg-log.o \
+	borg/borg-magic-play.o \
+	borg/borg-magic.o \
+	borg/borg-messages-react.o \
+	borg/borg-messages.o \
+	borg/borg-power.o \
+	borg/borg-prepared.o \
+	borg/borg-projection.o \
+	borg/borg-recover.o \
+	borg/borg-reincarnate.o \
+	borg/borg-store-buy.o \
+	borg/borg-store-sell.o \
+	borg/borg-store.o \
+	borg/borg-think-dungeon-util.o \
+	borg/borg-think-dungeon.o \
+	borg/borg-think-store.o \
+	borg/borg-think.o \
+	borg/borg-trait-swap.o \
+	borg/borg-trait.o \
+	borg/borg-update.o \
+	borg/borg-util.o \
+	borg/borg.o 
 
 buildid.o: $(ANGFILES0)
 ANGFILES = $(ANGFILES0) buildid.o

@@ -12,7 +12,7 @@ depgen:
 	head -n 19 Makefile.inc > Makefile.new
 	@for i in $(BASEOBJS:.o=.c); do \
 		DIR=`echo ./$$i | sed 's|/[^/]*$$||'`; \
-			gcc -MM -I. $$i | \
+			gcc -DALLOW_BORG -MM -I. $$i | \
 			sed "s|^\\([^ ]\\)|$$DIR/\\1|" >> Makefile.new; \
 	done;
 
@@ -1651,7 +1651,8 @@ depgen:
  list-parser-errors.h mon-make.h obj-init.h obj-pile.h obj-randart.h \
  list-randart-properties.h obj-tval.h obj-util.h ui-command.h ui-term.h \
  ui-event.h wizard.h
-./borg/borg1.o: borg/borg1.c borg/../angband.h borg/../h-basic.h \
+./borg/borg-attack-munchkin.o: borg/borg-attack-munchkin.c \
+ borg/borg-attack-munchkin.h borg/../angband.h borg/../h-basic.h \
  borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
  borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
  borg/../z-type.h borg/../message.h borg/../list-message.h \
@@ -1661,39 +1662,507 @@ depgen:
  borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
  borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
  borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
-./borg/borg2.o: borg/borg2.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h borg/../cave.h borg/../list-square-flags.h \
- borg/../list-terrain-flags.h borg/../list-terrain.h
-./borg/borg3.o: borg/borg3.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h borg/../cave.h borg/../list-square-flags.h \
- borg/../list-terrain-flags.h borg/../list-terrain.h borg/../cmd-core.h \
- borg/../obj-curse.h borg/../obj-desc.h borg/../obj-knowledge.h \
- borg/../angband.h borg/../obj-make.h borg/../cave.h borg/../obj-power.h \
- borg/../obj-slays.h borg/../monster.h borg/../target.h \
+ borg/../list-player-flags.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-cave-view.h \
+ borg/borg-danger.h borg/borg-flow.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-fight-attack.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-projection.h
+./borg/borg-caution.o: borg/borg-caution.c borg/borg-caution.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h \
+ borg/../player-timed.h borg/../list-player-timed.h borg/../ui-event.h \
+ borg/borg.h borg/borg-trait.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave-util.h borg/borg-cave.h \
+ borg/borg-cave-view.h borg/borg-danger.h borg/borg-fight-defend.h \
+ borg/borg-flow.h borg/borg-flow-glyph.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow-misc.h borg/borg-flow-stairs.h \
+ borg/borg-escape.h borg/borg-inventory.h borg/borg-io.h \
+ borg/borg-item-activation.h borg/borg-item-use.h borg/borg-item-val.h \
+ borg/borg-item-wear.h borg/borg-light.h borg/borg-magic.h \
+ borg/borg-messages-react.h borg/borg-prepared.h borg/borg-projection.h \
+ borg/borg-store-sell.h
+./borg/borg-cave-light.o: borg/borg-cave-light.c borg/borg-cave-light.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/borg-cave.h borg/borg-cave-util.h \
+ borg/borg-cave-view.h borg/borg-projection.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../target.h borg/../mon-predicate.h borg/../mon-timed.h \
+ borg/../list-mon-timed.h borg/../mon-blows.h borg/../monster.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-trait-swap.h
+./borg/borg-cave-util.o: borg/borg-cave-util.c borg/borg-cave-util.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-cave.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../ui-term.h borg/../ui-event.h
+./borg/borg-cave-view.o: borg/borg-cave-view.c borg/borg-cave-view.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/borg-cave.h \
+ borg/borg-cave-util.h borg/borg-projection.h borg/borg-trait.h \
+ borg/borg-item.h borg/../monster.h borg/../cave.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h
+./borg/borg-cave.o: borg/borg-cave.c borg/borg-cave.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/borg-init.h borg/borg-io.h borg/../ui-event.h
+./borg/borg-danger.o: borg/borg-danger.c borg/borg-danger.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-cave.h \
+ borg/../game-world.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h \
+ borg/../player-calcs.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave-util.h borg/borg-fight-attack.h \
+ borg/borg-flow-glyph.h borg/borg-flow.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-magic.h borg/borg-projection.h
+./borg/borg-escape.o: borg/borg-escape.c borg/borg-escape.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-event.h \
+ borg/borg.h borg/borg-trait.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave-util.h borg/borg-cave.h \
+ borg/borg-danger.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow.h borg/borg-flow-stairs.h borg/borg-io.h \
+ borg/borg-item-activation.h borg/borg-item-use.h borg/borg-item-val.h \
+ borg/borg-magic.h borg/borg-projection.h borg/borg-update.h
+./borg/borg-fight-attack.o: borg/borg-fight-attack.c borg/borg-fight-attack.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../obj-slays.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
  borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
  borg/../mon-blows.h borg/../list-mon-temp-flags.h \
  borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
- borg/../player-spell.h
-./borg/borg4.o: borg/borg4.c borg/../angband.h borg/../h-basic.h \
+ borg/../obj-util.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../ui-event.h borg/../ui-term.h borg/../z-textblock.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/borg-trait-swap.h borg/borg-cave-util.h borg/borg-cave.h \
+ borg/borg-cave-view.h borg/borg-danger.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow.h borg/borg-flow-misc.h \
+ borg/borg-flow-take.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-id.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h \
+ borg/borg-projection.h borg/borg-update.h
+./borg/borg-fight-defend.o: borg/borg-fight-defend.c borg/borg-fight-defend.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h \
+ borg/../player-timed.h borg/../list-player-timed.h borg/../ui-term.h \
+ borg/../ui-event.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-cave-util.h \
+ borg/borg-cave-view.h borg/borg-danger.h borg/borg-escape.h \
+ borg/borg-fight-attack.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-inventory.h borg/borg-item-activation.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-flow-glyph.h borg/borg-flow.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/borg-light.h \
+ borg/borg-magic.h borg/borg-projection.h
+./borg/borg-fight-perm.o: borg/borg-fight-perm.c borg/borg-fight-perm.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-cave-view.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-flow.h borg/borg-cave.h \
+ borg/borg-inventory.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-item-activation.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h \
+ borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-flow-dark.o: borg/borg-flow-dark.c borg/borg-flow-dark.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-flow.h \
+ borg/borg-cave.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave-light.h borg/borg-cave-util.h \
+ borg/borg-cave-view.h borg/borg-danger.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow-stairs.h borg/borg-projection.h
+./borg/borg-flow-glyph.o: borg/borg-flow-glyph.c borg/borg-flow-glyph.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-flow.h \
+ borg/borg-cave.h borg/borg-flow-misc.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-activation.h borg/borg-item-use.h borg/borg-item-val.h \
+ borg/borg-magic.h borg/borg-projection.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h
+./borg/borg-flow-kill.o: borg/borg-flow-kill.c borg/borg-flow-kill.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../mon-spell.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h borg/borg-flow.h \
+ borg/borg-cave.h borg/../game-world.h borg/../monster.h \
+ borg/../ui-term.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/borg-trait-swap.h \
+ borg/borg-cave-util.h borg/borg-cave-view.h borg/borg-danger.h \
+ borg/borg-fight-attack.h borg/borg-flow-stairs.h borg/borg-flow-take.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-item-activation.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h \
+ borg/borg-projection.h borg/borg-update.h borg/borg-util.h
+./borg/borg-flow-misc.o: borg/borg-flow-misc.c borg/borg-flow-misc.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../store.h borg/../cave.h borg/../cmd-core.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../ui-term.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../monster.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-cave-light.h \
+ borg/borg-cave-util.h borg/borg-cave-view.h borg/borg-danger.h \
+ borg/borg-escape.h borg/borg-flow.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow-stairs.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-magic.h borg/borg-projection.h \
+ borg/borg-update.h
+./borg/borg-flow-stairs.o: borg/borg-flow-stairs.c borg/borg-flow-stairs.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-flow.h \
+ borg/borg-cave.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-magic.h borg/borg-store-sell.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/borg-prepared.h \
+ borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-flow-take.o: borg/borg-flow-take.c borg/borg-flow-take.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-flow.h \
+ borg/borg-cave.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-knowledge.h borg/../angband.h borg/../obj-util.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/borg-trait-swap.h \
+ borg/borg-cave-view.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow-stairs.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-val.h borg/borg-item-wear.h borg/borg-light.h \
+ borg/borg-projection.h
+./borg/borg-flow.o: borg/borg-flow.c borg/borg-flow.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-cave.h \
+ borg/../ui-input.h borg/../cmd-core.h borg/../ui-event.h \
+ borg/../ui-term.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-danger.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow-glyph.h borg/borg-flow-misc.h \
+ borg/borg-flow-stairs.h borg/borg-flow-take.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-magic.h borg/borg-projection.h
+./borg/borg-home-notice.o: borg/borg-home-notice.c borg/borg-home-notice.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-util.h borg/borg-item-activation.h borg/borg-item-analyze.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h \
+ borg/borg-store.h borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-home-power.o: borg/borg-home-power.c borg/borg-home-power.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h \
+ borg/borg-home-notice.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-magic.h borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-init.o: borg/borg-init.c borg/borg-init.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h \
+ borg/../player-calcs.h borg/../ui-command.h borg/../ui-term.h \
+ borg/../ui-event.h borg/../ui-keymap.h borg/../ui-output.h \
+ borg/../z-textblock.h borg/../ui-prefs.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../ui-keymap.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../monster.h \
+ borg/../target.h borg/../mon-predicate.h borg/../mon-timed.h \
+ borg/../list-mon-timed.h borg/../mon-blows.h borg/../monster.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-trait-swap.h borg/borg-cave.h \
+ borg/borg-flow.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow-take.h borg/borg-magic.h borg/borg-messages.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-item-activation.h \
+ borg/borg-item-val.h borg/borg-item-wear.h borg/borg-power.h \
+ borg/borg-store.h borg/borg-update.h
+./borg/borg-inventory.o: borg/borg-inventory.c borg/borg-inventory.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-desc.h borg/borg-item-analyze.h borg/borg-item-id.h \
+ borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-io.o: borg/borg-io.c borg/borg-io.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-event.h \
+ borg/../ui-term.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-think.h
+./borg/borg-item-activation.o: borg/borg-item-activation.c \
+ borg/borg-item-activation.h borg/../angband.h borg/../h-basic.h \
  borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
  borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
  borg/../z-type.h borg/../message.h borg/../list-message.h \
@@ -1703,17 +2172,732 @@ depgen:
  borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
  borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
  borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h borg/../cave.h borg/../list-square-flags.h \
- borg/../list-terrain-flags.h borg/../list-terrain.h borg/../game-world.h \
- borg/../cave.h borg/../mon-spell.h borg/../monster.h borg/../target.h \
+ borg/../list-player-flags.h borg/borg-init.h borg/borg-io.h \
+ borg/../ui-event.h
+./borg/borg-item-analyze.o: borg/borg-item-analyze.c borg/borg-item-analyze.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-curse.h borg/../obj-knowledge.h borg/../angband.h \
+ borg/../obj-power.h borg/../obj-slays.h borg/../obj-util.h \
+ borg/borg-item-activation.h borg/borg-item-val.h
+./borg/borg-item-decurse.o: borg/borg-item-decurse.c borg/borg-item-decurse.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h ui-menu.h ui-output.h \
+ ui-event.h ui-term.h h-basic.h z-textblock.h z-file.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-magic.h
+./borg/borg-item-enchant.o: borg/borg-item-enchant.c borg/borg-item-enchant.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-activation.h borg/borg-item-decurse.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h
+./borg/borg-item-id.o: borg/borg-item-id.c borg/borg-item-id.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-util.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../ui-event.h borg/../ui-term.h borg/../z-textblock.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-item-analyze.h \
+ borg/borg-trait.h borg/borg-trait-swap.h
+./borg/borg-item-use.o: borg/borg-item-use.c borg/borg-item-use.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../effects.h \
+ borg/../source.h borg/../player-attack.h borg/../cmd-core.h \
+ borg/../cmds.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h \
+ borg/../list-effects.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../ui-event.h borg/../ui-term.h borg/../z-textblock.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../target.h borg/../mon-predicate.h borg/../mon-timed.h \
+ borg/../list-mon-timed.h borg/../mon-blows.h borg/../monster.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-trait-swap.h borg/borg-inventory.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-item-activation.h \
+ borg/borg-item-analyze.h borg/borg-item-val.h borg/borg-magic.h
+./borg/borg-item-val.o: borg/borg-item-val.c borg/borg-item-val.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../obj-tval.h borg/../obj-util.h borg/borg-init.h borg/borg-io.h \
+ borg/../ui-event.h
+./borg/borg-item-wear.o: borg/borg-item-wear.c borg/borg-item-wear.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-danger.h borg/borg-cave.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/borg-flow.h \
+ borg/borg-flow-misc.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-inventory.h borg/borg-item-analyze.h borg/borg-item-id.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-magic.h \
+ borg/borg-power.h borg/borg-store.h borg/borg-store-sell.h \
+ borg/borg-think.h
+./borg/borg-item.o: borg/borg-item.c borg/borg-item.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../ui-menu.h borg/../ui-output.h borg/../ui-event.h \
+ borg/../ui-term.h borg/../z-textblock.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-val.h
+./borg/borg-junk.o: borg/borg-junk.c borg/borg-junk.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../obj-util.h \
+ borg/../ui-menu.h borg/../ui-output.h borg/../ui-event.h \
+ borg/../ui-term.h borg/../z-textblock.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-danger.h \
+ borg/borg-inventory.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-analyze.h borg/borg-item-id.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-power.h
+./borg/borg-light.o: borg/borg-light.c borg/borg-light.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../game-input.h \
+ borg/../cmd-core.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../ui-event.h borg/../ui-term.h borg/../z-textblock.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-cave-util.h \
+ borg/borg-cave-view.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-use.h \
+ borg/borg-item-val.h borg/borg-magic.h borg/borg-messages-react.h \
+ borg/borg-update.h
+./borg/borg-log.o: borg/borg-log.c borg/borg-log.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../game-input.h \
+ borg/../cmd-core.h borg/../game-world.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../obj-desc.h \
+ borg/../obj-util.h borg/../player-timed.h borg/../list-player-timed.h \
+ borg/../player-util.h borg/../store.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../monster.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow.h borg/borg-flow-glyph.h \
+ borg/borg-flow-take.h borg/borg-home-notice.h borg/borg-magic.h \
+ borg/borg-prepared.h borg/borg-store.h
+./borg/borg-magic-play.o: borg/borg-magic-play.c borg/borg-magic-play.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../effects.h \
+ borg/../source.h borg/../player-attack.h borg/../cmd-core.h \
+ borg/../cmds.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h \
+ borg/../list-effects.h borg/../effect-handler.h borg/../effects.h \
+ borg/../ui-menu.h borg/../ui-output.h borg/../ui-event.h \
+ borg/../ui-term.h borg/../z-textblock.h borg/borg-cave.h \
+ borg/borg-cave-view.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-magic.h borg/borg-trait.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h list-effects.h
+./borg/borg-magic.o: borg/borg-magic.c borg/borg-magic.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../effects.h \
+ borg/../source.h borg/../player-attack.h borg/../cmd-core.h \
+ borg/../cmds.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h \
+ borg/../list-effects.h borg/../player-spell.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg-init.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../target.h borg/../mon-predicate.h borg/../mon-timed.h \
+ borg/../list-mon-timed.h borg/../mon-blows.h borg/../monster.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-trait-swap.h
+./borg/borg-messages-react.o: borg/borg-messages-react.c \
+ borg/borg-messages-react.h borg/../angband.h borg/../h-basic.h \
+ borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
+ borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
+ borg/../z-type.h borg/../message.h borg/../list-message.h \
+ borg/../player.h borg/../guid.h borg/../obj-properties.h \
+ borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
+ borg/../list-kind-flags.h borg/../list-stats.h \
+ borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
+ borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
+ borg/../list-origins.h borg/../option.h borg/../list-options.h \
+ borg/../list-player-flags.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-messages.h
+./borg/borg-messages.o: borg/borg-messages.c borg/borg-messages.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-term.h \
+ borg/../ui-event.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-danger.h \
+ borg/borg-fight-attack.h borg/borg-fight-defend.h borg/borg-flow-glyph.h \
+ borg/borg-flow.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow-stairs.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-messages-react.h borg/borg-think.h
+./borg/borg-power.o: borg/borg-power.c borg/borg-power.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h \
+ borg/../player-calcs.h borg/../player-spell.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow.h borg/borg-cave.h borg/borg-home-notice.h \
+ borg/borg-item-activation.h borg/borg-item-analyze.h \
+ borg/borg-item-val.h borg/borg-magic.h borg/borg-prepared.h
+./borg/borg-prepared.o: borg/borg-prepared.c borg/borg-prepared.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-item-val.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow.h borg/borg-cave.h \
+ borg/borg-home-notice.h borg/borg-magic.h
+./borg/borg-projection.o: borg/borg-projection.c borg/borg-projection.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/borg-cave.h borg/borg-cave-util.h \
+ borg/borg-danger.h borg/borg-flow.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/../monster.h borg/../cave.h borg/../target.h \
  borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
  borg/../mon-blows.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-trait.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/borg-trait-swap.h
+./borg/borg-recover.o: borg/borg-recover.c borg/borg-recover.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-event.h \
+ borg/borg.h borg/borg-trait.h borg/borg-item.h borg/../init.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../monster.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
  borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
- borg/../player-calcs.h borg/../cmd-core.h borg/../player-spell.h \
+ borg/borg-trait-swap.h borg/borg-danger.h borg/borg-cave.h \
+ borg/borg-flow.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow-misc.h borg/borg-inventory.h borg/borg-io.h \
+ borg/borg-item-activation.h borg/borg-item-use.h borg/borg-item-val.h \
+ borg/borg-light.h borg/borg-magic.h
+./borg/borg-reincarnate.o: borg/borg-reincarnate.c borg/borg-reincarnate.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cmd-core.h \
+ borg/../game-world.h borg/../cave.h borg/../list-square-flags.h \
+ borg/../list-terrain-flags.h borg/../list-terrain.h borg/../obj-init.h \
+ borg/../obj-gear.h borg/../list-equip-slots.h borg/../obj-knowledge.h \
+ borg/../angband.h borg/../obj-make.h borg/../obj-pile.h \
+ borg/../obj-power.h borg/../obj-randart.h \
+ borg/../list-randart-properties.h borg/../obj-tval.h borg/../obj-util.h \
+ borg/../player-birth.h borg/../cmd-core.h borg/../player-spell.h \
+ borg/../player-timed.h borg/../list-player-timed.h borg/../store.h \
+ borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
+ borg/../ui-term.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../monster.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-flow.h borg/borg-cave.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/borg-init.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-magic.h borg/borg-messages.h \
+ borg/borg-messages-react.h
+./borg/borg-store-buy.o: borg/borg-store-buy.c borg/borg-store-buy.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../obj-util.h \
+ borg/../player-calcs.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow.h borg/borg-cave.h borg/borg-home-notice.h \
+ borg/borg-home-power.h borg/borg-inventory.h borg/borg-io.h \
+ borg/borg-item-val.h borg/borg-magic.h borg/borg-power.h \
+ borg/borg-store.h borg/borg-store-sell.h borg/borg-think.h
+./borg/borg-store-sell.o: borg/borg-store-sell.c borg/borg-store-sell.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-util.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../ui-event.h borg/../ui-term.h borg/../z-textblock.h borg/borg.h \
+ borg/borg-trait.h borg/borg-trait-swap.h borg/borg-home-notice.h \
+ borg/borg-home-power.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-analyze.h borg/borg-item-id.h \
+ borg/borg-item-val.h borg/borg-item-wear.h borg/borg-power.h \
+ borg/borg-store.h borg/borg-store-buy.h borg/borg-think.h
+./borg/borg-store.o: borg/borg-store.c borg/borg-store.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/../obj-desc.h borg/../obj-power.h borg/../obj-tval.h \
+ borg/../store.h borg/../cmd-core.h borg/borg-item-analyze.h \
+ borg/borg-item-val.h
+./borg/borg-think-dungeon-util.o: borg/borg-think-dungeon-util.c \
+ borg/borg-think-dungeon-util.h borg/../angband.h borg/../h-basic.h \
+ borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
+ borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
+ borg/../z-type.h borg/../message.h borg/../list-message.h \
+ borg/../player.h borg/../guid.h borg/../obj-properties.h \
+ borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
+ borg/../list-kind-flags.h borg/../list-stats.h \
+ borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
+ borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
+ borg/../list-origins.h borg/../option.h borg/../list-options.h \
+ borg/../list-player-flags.h borg/../game-world.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../ui-event.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-cave.h borg/borg-cave-view.h \
+ borg/borg-danger.h borg/borg-escape.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow.h borg/borg-flow-misc.h \
+ borg/borg-flow-stairs.h borg/borg-flow-take.h borg/borg-io.h \
+ borg/borg-item-activation.h borg/borg-item-use.h borg/borg-item-val.h \
+ borg/borg-item-wear.h borg/borg-light.h borg/borg-magic.h \
+ borg/borg-messages-react.h borg/borg-store-sell.h borg/borg-prepared.h \
+ borg/borg-projection.h borg/borg-think-dungeon.h borg/borg-update.h
+./borg/borg-think-dungeon.o: borg/borg-think-dungeon.c borg/borg-think-dungeon.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../ui-command.h \
+ borg/../ui-term.h borg/../ui-event.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../z-textblock.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-attack-munchkin.h borg/borg-caution.h \
+ borg/borg-cave.h borg/borg-danger.h borg/borg-escape.h \
+ borg/borg-fight-attack.h borg/borg-fight-defend.h borg/borg-fight-perm.h \
+ borg/borg-flow.h borg/borg-flow-dark.h borg/borg-flow-glyph.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/borg-flow-misc.h \
+ borg/borg-flow-stairs.h borg/borg-flow-take.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-activation.h borg/borg-item-enchant.h \
+ borg/borg-item-use.h borg/borg-item-val.h borg/borg-item-wear.h \
+ borg/borg-junk.h borg/borg-light.h borg/borg-magic.h \
+ borg/borg-magic-play.h borg/borg-prepared.h borg/borg-projection.h \
+ borg/borg-recover.h borg/borg-store.h borg/borg-store-sell.h \
+ borg/borg-think.h borg/borg-think-dungeon-util.h borg/borg-think-store.h
+./borg/borg-think-store.o: borg/borg-think-store.c borg/borg-think-store.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../store.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../cmd-core.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../monster.h borg/../target.h \
+ borg/../mon-predicate.h borg/../mon-timed.h borg/../list-mon-timed.h \
+ borg/../mon-blows.h borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-wear.h borg/borg-store.h borg/borg-store-buy.h \
+ borg/borg-store-sell.h borg/borg-think.h
+./borg/borg-think.o: borg/borg-think.c borg/borg-think.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../player-util.h \
+ borg/../cmd-core.h borg/../ui-game.h borg/../ui-menu.h \
+ borg/../ui-output.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../z-textblock.h borg/borg.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-item-wear.h borg/borg-log.h \
+ borg/borg-magic.h borg/borg-reincarnate.h borg/borg-power.h \
+ borg/borg-store.h borg/borg-think-dungeon.h borg/borg-think-store.h \
+ borg/borg-update.h
+./borg/borg-trait-swap.o: borg/borg-trait-swap.c borg/borg-trait-swap.h \
+ borg/../angband.h borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h \
+ borg/../z-virt.h borg/../z-color.h borg/../z-util.h borg/../z-rand.h \
+ borg/../config.h borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg.h \
+ borg/borg-trait.h borg/borg-item.h borg/../init.h borg/../datafile.h \
+ borg/../parser.h borg/../list-parser-errors.h borg/../monster.h \
+ borg/../cave.h borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-inventory.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow.h borg/borg-cave.h borg/borg-magic.h
+./borg/borg-trait.o: borg/borg-trait.c borg/borg-trait.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/../effects.h borg/../source.h \
+ borg/../player-attack.h borg/../cmd-core.h borg/../cmds.h \
+ borg/../list-effects.h borg/../obj-util.h borg/../player-calcs.h \
  borg/../player-timed.h borg/../list-player-timed.h borg/../player-util.h \
- borg/../cmd-core.h borg/../project.h borg/../source.h \
- borg/../list-projections.h borg/../trap.h borg/../list-trap-flags.h
-./borg/borg5.o: borg/borg5.c borg/../angband.h borg/../h-basic.h \
+ borg/borg.h borg/borg-flow.h borg/borg-cave.h borg/borg-item-analyze.h \
+ borg/borg-item-id.h borg/borg-item-use.h borg/borg-item-wear.h \
+ borg/borg-magic.h borg/borg-item-activation.h borg/borg-item-val.h
+./borg/borg-update.o: borg/borg-update.c borg/borg-update.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../trap.h borg/../list-trap-flags.h \
+ borg/../ui-term.h borg/../ui-event.h borg/borg.h borg/borg-trait.h \
+ borg/borg-item.h borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../target.h borg/../mon-predicate.h borg/../mon-timed.h \
+ borg/../list-mon-timed.h borg/../mon-blows.h borg/../monster.h \
+ borg/../list-mon-temp-flags.h borg/../list-mon-race-flags.h \
+ borg/../list-mon-spells.h borg/borg-trait-swap.h borg/borg-cave.h \
+ borg/borg-cave-light.h borg/borg-cave-util.h borg/borg-cave-view.h \
+ borg/borg-danger.h borg/borg-fight-attack.h borg/borg-flow.h \
+ borg/borg-flow-glyph.h borg/borg-flow-kill.h borg/../mon-spell.h \
+ borg/borg-flow-misc.h borg/borg-flow-stairs.h borg/borg-flow-take.h \
+ borg/borg-io.h borg/../ui-event.h borg/borg-inventory.h \
+ borg/borg-item-wear.h borg/borg-junk.h borg/borg-messages.h \
+ borg/borg-prepared.h borg/borg-projection.h borg/borg-store.h \
+ borg/borg-store-buy.h borg/borg-store-sell.h borg/borg-think.h \
+ borg/borg-think-dungeon.h
+./borg/borg-util.o: borg/borg-util.c borg/borg-util.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h
+./borg/borg.o: borg/borg.c borg/borg.h borg/../angband.h borg/../h-basic.h \
  borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
  borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
  borg/../z-type.h borg/../message.h borg/../list-message.h \
@@ -1723,51 +2907,28 @@ depgen:
  borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
  borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
  borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
-./borg/borg6.o: borg/borg6.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
-./borg/borg7.o: borg/borg7.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
-./borg/borg8.o: borg/borg8.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
-./borg/borg9.o: borg/borg9.c borg/../angband.h borg/../h-basic.h \
- borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h borg/../z-color.h \
- borg/../z-util.h borg/../z-rand.h borg/../config.h borg/../game-event.h \
- borg/../z-type.h borg/../message.h borg/../list-message.h \
- borg/../player.h borg/../guid.h borg/../obj-properties.h \
- borg/../z-file.h borg/../list-tvals.h borg/../list-object-flags.h \
- borg/../list-kind-flags.h borg/../list-stats.h \
- borg/../list-object-modifiers.h borg/../object.h borg/../z-quark.h \
- borg/../z-dice.h borg/../z-expression.h borg/../list-elements.h \
- borg/../list-origins.h borg/../option.h borg/../list-options.h \
- borg/../list-player-flags.h
+ borg/../list-player-flags.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/../game-input.h borg/../cmd-core.h \
+ borg/../game-world.h borg/../player-timed.h borg/../list-player-timed.h \
+ borg/../project.h borg/../source.h borg/../list-projections.h \
+ borg/../ui-input.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../ui-keymap.h borg/../ui-map.h borg/borg-cave-util.h \
+ borg/borg-cave.h borg/borg-cave-view.h borg/borg-danger.h \
+ borg/borg-flow.h borg/borg-flow-glyph.h borg/borg-flow-kill.h \
+ borg/../mon-spell.h borg/borg-flow-take.h borg/borg-home-notice.h \
+ borg/borg-home-power.h borg/borg-inventory.h borg/borg-io.h \
+ borg/../ui-event.h borg/borg-init.h borg/borg-item-id.h borg/borg-log.h \
+ borg/borg-magic.h borg/borg-messages.h borg/borg-messages-react.h \
+ borg/borg-power.h borg/borg-prepared.h borg/borg-projection.h \
+ borg/borg-reincarnate.h borg/borg-store.h borg/borg-think.h \
+ borg/borg-update.h
 ./buildid.o: buildid.c buildid.h
 ./z-bitflag.o: z-bitflag.c z-bitflag.h h-basic.h z-form.h z-virt.h
 ./z-color.o: z-color.c h-basic.h z-color.h z-util.h
