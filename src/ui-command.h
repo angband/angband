@@ -25,7 +25,7 @@ void do_cmd_redraw(void);
 void do_cmd_xxx_options(void);
 void do_cmd_unknown(void);
 void do_cmd_version(void);
-void textui_cmd_suicide(void);
+void textui_cmd_retire(void);
 void html_screenshot(const char *path, int mode, term *other_term);
 void do_cmd_save_screen(void);
 void textui_cmd_rest(void);

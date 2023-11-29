@@ -58,21 +58,22 @@ static void put_str_centred(int y, int x1, int x2, const char *fmt, ...)
 
 
 /**
- * Display the tombstone
+ * Display the tombstone/retirement screen
  */
-static void print_tomb(void)
+static void display_exit_screen(void)
 {
 	ang_file *fp;
 	char buf[1024];
 	int line = 0;
 	time_t death_time = (time_t)0;
-
+	bool retired = streq(player->died_from, "Retiring");
 
 	Term_clear();
 	(void)time(&death_time);
 
-	/* Open the death file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "dead.txt");
+	/* Open the background picture */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS,
+		(retired) ? "retire.txt" : "dead.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	if (fp) {
@@ -97,8 +98,14 @@ static void print_tomb(void)
 	put_str_centred(line++, 8, 8+31, "Level: %d", (int)player->lev);
 	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)player->exp);
 	put_str_centred(line++, 8, 8+31, "AU: %d", (int)player->au);
-	put_str_centred(line++, 8, 8+31, "Killed on Level %d", player->depth);
-	put_str_centred(line++, 8, 8+31, "by %s.", player->died_from);
+	if (retired) {
+		put_str_centred(line++, 8, 8+31, "Retired on Level %d",
+			player->depth);
+	} else {
+		put_str_centred(line++, 8, 8+31, "Killed on Level %d",
+			player->depth);
+		put_str_centred(line++, 8, 8+31, "by %s.", player->died_from);
+	}
 
 	line++;
 
@@ -376,8 +383,8 @@ void death_screen(void)
 		display_winner();
 	}
 
-	/* Tombstone */
-	print_tomb();
+	/* Tombstone/retiring */
+	display_exit_screen();
 
 	/* Flush all input and output */
 	event_signal(EVENT_INPUT_FLUSH);

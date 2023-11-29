@@ -197,7 +197,7 @@ struct cmd_info cmd_util[] =
 
 	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Kill character and quit", { 'Q' }, CMD_NULL, textui_cmd_suicide, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Retire character and quit", { 'Q' }, CMD_NULL, textui_cmd_retire, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw, NULL, 0, NULL, NULL, NULL, 0 },
 
 	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen, NULL, 0, NULL, NULL, NULL, 0 }

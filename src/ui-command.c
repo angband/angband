@@ -157,9 +157,9 @@ void do_cmd_version(void)
 }
 
 /**
- * Verify the suicide command
+ * Verify the retire command
  */
-void textui_cmd_suicide(void)
+void textui_cmd_retire(void)
 {
 	/* Flush input */
 	event_signal(EVENT_INPUT_FLUSH);
@@ -171,18 +171,18 @@ void textui_cmd_suicide(void)
 	} else {
 		struct keypress ch;
 
-		if (!get_check("Do you really want to kill this character? "))
+		if (!get_check("Do you really want to retire?"))
 			return;
 
-		/* Special Verification for suicide */
-		prt("Please verify KILLING THIS CHARACTER by typing the '@' sign: ", 0, 0);
+		/* Special Verification for retirement */
+		prt("Please verify RETIRING THIS CHARACTER by typing the '@' sign: ", 0, 0);
 		event_signal(EVENT_INPUT_FLUSH);
 		ch = inkey();
 		prt("", 0, 0);
 		if (ch.code != '@') return;
 	}
 
-	cmdq_push(CMD_SUICIDE);
+	cmdq_push(CMD_RETIRE);
 }
 
 /**
