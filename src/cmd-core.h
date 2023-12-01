@@ -159,7 +159,7 @@ typedef enum cmd_code {
 	CMD_WIZ_WIZARD_LIGHT,
 
 	/* Hors categorie Commands */
-	CMD_SUICIDE,
+	CMD_RETIRE,
 
 	CMD_HELP,
 	CMD_REPEAT,

@@ -1060,7 +1060,12 @@ void write_character_dump(ang_file *fff)
 		{
 			file_putf(fff, "> %s\n", message_str((int16_t)i));
 		}
-		file_putf(fff, "\nKilled by %s.\n\n", player->died_from);
+		if (streq(player->died_from, "Retiring")) {
+			file_putf(fff, "\nRetired.\n\n");
+		} else {
+			file_putf(fff, "\nKilled by %s.\n\n",
+				player->died_from);
+		}
 	}
 
 
