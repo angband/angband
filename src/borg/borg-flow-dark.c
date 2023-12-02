@@ -64,15 +64,15 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
     /* Explore "known treasure" */
     if ((ag->feat == FEAT_MAGMA_K) || (ag->feat == FEAT_QUARTZ_K)) {
         /* Do not dig when confused */
-        if (borg_trait[BI_ISCONFUSED])
+        if (borg.trait[BI_ISCONFUSED])
             return (false);
 
         /* Do not bother if super rich */
-        if (borg_trait[BI_GOLD] >= 100000)
+        if (borg.trait[BI_GOLD] >= 100000)
             return (false);
 
         /* Not when darkened */
-        if (borg_trait[BI_CURLITE] == 0)
+        if (borg.trait[BI_CURLITE] == 0)
             return (false);
 
         /* don't try to dig if we can't */
@@ -87,7 +87,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
     if (ag->feat == FEAT_GRANITE || ag->feat == FEAT_MAGMA
         || ag->feat == FEAT_QUARTZ) {
         /* Do not attempt when confused */
-        if (borg_trait[BI_ISCONFUSED])
+        if (borg.trait[BI_ISCONFUSED])
             return (false);
 
         /* hack and cheat.  No vaults  on this level */
@@ -122,7 +122,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
     }
 
     /* Explore "rubble" */
-    if (ag->feat == FEAT_RUBBLE && !borg_trait[BI_ISWEAK]) {
+    if (ag->feat == FEAT_RUBBLE && !borg.trait[BI_ISWEAK]) {
         return (true);
     }
 
@@ -146,37 +146,37 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
     /* Explore "visible traps" */
     if (feat_is_trap_holding(ag->feat)) {
         /* Do not disarm when blind */
-        if (borg_trait[BI_ISBLIND])
+        if (borg.trait[BI_ISBLIND])
             return (false);
 
         /* Do not disarm when confused */
-        if (borg_trait[BI_ISCONFUSED])
+        if (borg.trait[BI_ISCONFUSED])
             return (false);
 
         /* Do not disarm when hallucinating */
-        if (borg_trait[BI_ISIMAGE])
+        if (borg.trait[BI_ISIMAGE])
             return (false);
 
         /* Do not flow without lite */
-        if (borg_trait[BI_CURLITE] == 0)
+        if (borg.trait[BI_CURLITE] == 0)
             return (false);
 
         /* Do not disarm trap doors on level 99 */
-        if (borg_trait[BI_CDEPTH] == 99 && ag->trap && !ag->glyph)
+        if (borg.trait[BI_CDEPTH] == 99 && ag->trap && !ag->glyph)
             return (false);
 
         /* Do not disarm when you could end up dead */
-        if (borg_trait[BI_CURHP] < 60)
+        if (borg.trait[BI_CURHP] < 60)
             return (false);
 
         /* Do not disarm when clumsy */
-        if (borg_trait[BI_DISP] < 30 && borg_trait[BI_CLEVEL] < 20)
+        if (borg.trait[BI_DISP] < 30 && borg.trait[BI_CLEVEL] < 20)
             return (false);
-        if (borg_trait[BI_DISP] < 45 && borg_trait[BI_CLEVEL] < 10)
+        if (borg.trait[BI_DISP] < 45 && borg.trait[BI_CLEVEL] < 10)
             return (false);
-        if (borg_trait[BI_DISM] < 30 && borg_trait[BI_CLEVEL] < 20)
+        if (borg.trait[BI_DISM] < 30 && borg.trait[BI_CLEVEL] < 20)
             return (false);
-        if (borg_trait[BI_DISM] < 45 && borg_trait[BI_CLEVEL] < 10)
+        if (borg.trait[BI_DISM] < 45 && borg.trait[BI_CLEVEL] < 10)
             return (false);
 
         /* Do not explore if a Scaryguy on the Level */
@@ -266,25 +266,25 @@ static void borg_flow_direct(int y, int x)
         p = borg_danger(y, x, 1, true, false);
 
         /* Increase bravery */
-        if (borg_trait[BI_MAXCLEVEL] == 50)
+        if (borg.trait[BI_MAXCLEVEL] == 50)
             fear = avoidance * 5 / 10;
-        if (borg_trait[BI_MAXCLEVEL] != 50)
+        if (borg.trait[BI_MAXCLEVEL] != 50)
             fear = avoidance * 3 / 10;
         if (scaryguy_on_level)
             fear = avoidance * 2;
-        if (unique_on_level && vault_on_level && borg_trait[BI_MAXCLEVEL] == 50)
+        if (unique_on_level && vault_on_level && borg.trait[BI_MAXCLEVEL] == 50)
             fear = avoidance * 3;
-        if (scaryguy_on_level && borg_trait[BI_CLEVEL] <= 5)
+        if (scaryguy_on_level && borg.trait[BI_CLEVEL] <= 5)
             fear = avoidance * 3;
-        if (goal_ignoring)
+        if (borg.goal.ignoring)
             fear = avoidance * 5;
         if (borg_t - borg_began > 5000)
             fear = avoidance * 25;
-        if (borg_trait[BI_FOOD] == 0)
+        if (borg.trait[BI_FOOD] == 0)
             fear = avoidance * 100;
 
         /* Normal in town */
-        if (borg_trait[BI_CLEVEL] == 0)
+        if (borg.trait[BI_CLEVEL] == 0)
             fear = avoidance * 1 / 10;
 
         /* Mark dangerous grids as icky */
@@ -305,8 +305,8 @@ static void borg_flow_direct(int y, int x)
     x1 = x;
 
     /* Save "destination" */
-    y2 = c_y;
-    x2 = c_x;
+    y2 = borg.c.y;
+    x2 = borg.c.x;
 
     /* Calculate distance components */
     ay = (y2 < y1) ? (y1 - y2) : (y2 - y1);
@@ -353,20 +353,20 @@ static void borg_flow_direct(int y, int x)
             return;
 
         /* Avoid Traps if low level-- unless brave or scaryguy. */
-        if (ag->trap && avoidance <= borg_trait[BI_CURHP]
+        if (ag->trap && avoidance <= borg.trait[BI_CURHP]
             && !scaryguy_on_level) {
             /* Do not disarm when you could end up dead */
-            if (borg_trait[BI_CURHP] < 60)
+            if (borg.trait[BI_CURHP] < 60)
                 return;
 
             /* Do not disarm when clumsy */
-            if (borg_trait[BI_DISP] < 30 && borg_trait[BI_CLEVEL] < 20)
+            if (borg.trait[BI_DISP] < 30 && borg.trait[BI_CLEVEL] < 20)
                 return;
-            if (borg_trait[BI_DISP] < 45 && borg_trait[BI_CLEVEL] < 10)
+            if (borg.trait[BI_DISP] < 45 && borg.trait[BI_CLEVEL] < 10)
                 return;
-            if (borg_trait[BI_DISM] < 30 && borg_trait[BI_CLEVEL] < 20)
+            if (borg.trait[BI_DISM] < 30 && borg.trait[BI_CLEVEL] < 20)
                 return;
-            if (borg_trait[BI_DISM] < 45 && borg_trait[BI_CLEVEL] < 10)
+            if (borg.trait[BI_DISM] < 45 && borg.trait[BI_CLEVEL] < 10)
                 return;
         }
 
@@ -383,26 +383,26 @@ static void borg_flow_direct(int y, int x)
             p = borg_danger(y, x, 1, true, false);
 
             /* Increase bravery */
-            if (borg_trait[BI_MAXCLEVEL] == 50)
+            if (borg.trait[BI_MAXCLEVEL] == 50)
                 fear = avoidance * 5 / 10;
-            if (borg_trait[BI_MAXCLEVEL] != 50)
+            if (borg.trait[BI_MAXCLEVEL] != 50)
                 fear = avoidance * 3 / 10;
             if (scaryguy_on_level)
                 fear = avoidance * 2;
             if (unique_on_level && vault_on_level
-                && borg_trait[BI_MAXCLEVEL] == 50)
+                && borg.trait[BI_MAXCLEVEL] == 50)
                 fear = avoidance * 3;
-            if (scaryguy_on_level && borg_trait[BI_CLEVEL] <= 5)
+            if (scaryguy_on_level && borg.trait[BI_CLEVEL] <= 5)
                 fear = avoidance * 3;
-            if (goal_ignoring)
+            if (borg.goal.ignoring)
                 fear = avoidance * 5;
             if (borg_t - borg_began > 5000)
                 fear = avoidance * 25;
-            if (borg_trait[BI_FOOD] == 0)
+            if (borg.trait[BI_FOOD] == 0)
                 fear = avoidance * 100;
 
             /* Normal in town */
-            if (borg_trait[BI_CLEVEL] == 0)
+            if (borg.trait[BI_CLEVEL] == 0)
                 fear = avoidance * 1 / 10;
 
             /* Avoid dangerous grids (forever) */
@@ -466,7 +466,7 @@ static bool borg_flow_dark_1(int b_stair)
     int x, y;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Reset */
@@ -488,9 +488,9 @@ static bool borg_flow_dark_1(int b_stair)
         cost = borg_flow_cost_stair(y, x, b_stair);
 
         /* Check the distance to stair for this proposed grid if dangerous */
-        if (borg_trait[BI_CDEPTH] >= borg_trait[BI_CLEVEL] - 5
-            && cost > borg_trait[BI_CLEVEL] * 3 + 9
-            && borg_trait[BI_CLEVEL] < 20)
+        if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
+            && cost > borg.trait[BI_CLEVEL] * 3 + 9
+            && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */
@@ -504,7 +504,7 @@ static bool borg_flow_dark_1(int b_stair)
         return (false);
 
     /* Wipe icky codes from grids if needed */
-    if (goal_ignoring || scaryguy_on_level)
+    if (borg.goal.ignoring || scaryguy_on_level)
         borg_danger_wipe = true;
 
     /* Clear the flow codes */
@@ -552,19 +552,19 @@ static bool borg_flow_dark_2(int b_stair)
     borg_grid *ag;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Maximal radius */
-    r = borg_trait[BI_CURLITE] + 1;
+    r = borg.trait[BI_CURLITE] + 1;
 
     /* Reset */
     borg_temp_n = 0;
 
     /* Four directions */
     for (i = 0; i < 4; i++) {
-        y = c_y + ddy_ddd[i] * r;
-        x = c_x + ddx_ddd[i] * r;
+        y = borg.c.y + ddy_ddd[i] * r;
+        x = borg.c.x + ddx_ddd[i] * r;
 
         /* Check legality */
         if (y < 1)
@@ -596,9 +596,9 @@ static bool borg_flow_dark_2(int b_stair)
         cost = borg_flow_cost_stair(y, x, b_stair);
 
         /* Check the distance to stair for this proposed grid */
-        if (borg_trait[BI_CDEPTH] >= borg_trait[BI_CLEVEL] - 5
-            && cost > borg_trait[BI_CLEVEL] * 3 + 9
-            && borg_trait[BI_CLEVEL] < 20)
+        if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
+            && cost > borg.trait[BI_CLEVEL] * 3 + 9
+            && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */
@@ -612,7 +612,7 @@ static bool borg_flow_dark_2(int b_stair)
         return (false);
 
     /* Wipe icky codes from grids if needed */
-    if (goal_ignoring || scaryguy_on_level)
+    if (borg.goal.ignoring || scaryguy_on_level)
         borg_danger_wipe = true;
 
     /* Clear the flow codes */
@@ -660,14 +660,14 @@ static bool borg_flow_dark_3(int b_stair)
     int x1, y1, x2, y2;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Local region */
-    y1 = c_y - 4;
-    x1 = c_x - 4;
-    y2 = c_y + 4;
-    x2 = c_x + 4;
+    y1 = borg.c.y - 4;
+    x1 = borg.c.x - 4;
+    y2 = borg.c.y + 4;
+    x2 = borg.c.x + 4;
 
     /* Restrict to "legal" grids */
     if (y1 < 1)
@@ -701,9 +701,9 @@ static bool borg_flow_dark_3(int b_stair)
             cost = borg_flow_cost_stair(y, x, b_stair);
 
             /* Check the distance to stair for this proposed grid */
-            if (borg_trait[BI_CDEPTH] >= borg_trait[BI_CLEVEL] - 5
-                && cost > borg_trait[BI_CLEVEL] * 3 + 9
-                && borg_trait[BI_CLEVEL] < 20)
+            if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
+                && cost > borg.trait[BI_CLEVEL] * 3 + 9
+                && borg.trait[BI_CLEVEL] < 20)
                 continue;
 
             /* Careful -- Remember it */
@@ -718,7 +718,7 @@ static bool borg_flow_dark_3(int b_stair)
         return (false);
 
     /* Wipe icky codes from grids if needed */
-    if (goal_ignoring || scaryguy_on_level)
+    if (borg.goal.ignoring || scaryguy_on_level)
         borg_danger_wipe = true;
 
     /* Clear the flow codes */
@@ -770,7 +770,7 @@ static bool borg_flow_dark_4(int b_stair)
     int leash = 250;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Hack -- Not if a vault is on the level */
@@ -778,10 +778,10 @@ static bool borg_flow_dark_4(int b_stair)
         return (false);
 
     /* Local region */
-    y1 = c_y - 11;
-    x1 = c_x - 11;
-    y2 = c_y + 11;
-    x2 = c_x + 11;
+    y1 = borg.c.y - 11;
+    x1 = borg.c.x - 11;
+    y2 = borg.c.y + 11;
+    x2 = borg.c.x + 11;
 
     /* Restrict to "legal" grids */
     if (y1 < 1)
@@ -797,8 +797,8 @@ static bool borg_flow_dark_4(int b_stair)
     borg_temp_n = 0;
 
     /* check the leash length */
-    if (borg_trait[BI_CDEPTH] >= borg_trait[BI_CLEVEL] - 5)
-        leash = borg_trait[BI_CLEVEL] * 3 + 9;
+    if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5)
+        leash = borg.trait[BI_CLEVEL] * 3 + 9;
 
     /* Examine the panel */
     for (y = y1; y <= y2; y++) {
@@ -819,8 +819,8 @@ static bool borg_flow_dark_4(int b_stair)
             cost = borg_flow_cost_stair(y, x, b_stair);
 
             /* Check the distance to stair for this proposed grid */
-            if (cost > borg_trait[BI_CLEVEL] * 3 + 9
-                && borg_trait[BI_CLEVEL] < 20)
+            if (cost > borg.trait[BI_CLEVEL] * 3 + 9
+                && borg.trait[BI_CLEVEL] < 20)
                 continue;
 
             /* Careful -- Remember it */
@@ -835,7 +835,7 @@ static bool borg_flow_dark_4(int b_stair)
         return (false);
 
     /* Wipe icky codes from grids if needed */
-    if (goal_ignoring || scaryguy_on_level)
+    if (borg.goal.ignoring || scaryguy_on_level)
         borg_danger_wipe = true;
 
     /* Clear the flow codes */
@@ -860,7 +860,7 @@ static bool borg_flow_dark_4(int b_stair)
     borg_flow_border(y1, x1, y2, x2, true);
 
     /* Spread the flow (limit depth Leash) */
-    if (borg_trait[BI_CLEVEL] < 15) {
+    if (borg.trait[BI_CLEVEL] < 15) {
         /* Short Leash */
         borg_flow_spread(leash, true, true, false, -1, false);
     } else {
@@ -893,15 +893,15 @@ static bool borg_flow_dark_5(int b_stair)
     int leash = 250;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Nothing yet */
     borg_temp_n = 0;
 
     /* check the leash length */
-    if (borg_trait[BI_CDEPTH] >= borg_trait[BI_CLEVEL] - 5)
-        leash = borg_trait[BI_CLEVEL] * 3 + 9;
+    if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5)
+        leash = borg.trait[BI_CLEVEL] * 3 + 9;
 
     /* Examine every "legal" grid */
     for (y = 1; y < AUTO_MAX_Y - 1; y++) {
@@ -921,8 +921,8 @@ static bool borg_flow_dark_5(int b_stair)
             cost = borg_flow_cost_stair(y, x, b_stair);
 
             /* Check the distance to stair for this proposed grid */
-            if (cost > borg_trait[BI_CLEVEL] * 3 + 9
-                && borg_trait[BI_CLEVEL] < 20)
+            if (cost > borg.trait[BI_CLEVEL] * 3 + 9
+                && borg.trait[BI_CLEVEL] < 20)
                 continue;
 
             /* Careful -- Remember it */
@@ -945,7 +945,7 @@ static bool borg_flow_dark_5(int b_stair)
         return (false);
 
     /* Wipe icky codes from grids if needed */
-    if (goal_ignoring || scaryguy_on_level)
+    if (borg.goal.ignoring || scaryguy_on_level)
         borg_danger_wipe = true;
 
     /* Clear the flow codes */
@@ -961,11 +961,11 @@ static bool borg_flow_dark_5(int b_stair)
     }
 
     /* Spread the flow */
-    if (borg_trait[BI_CLEVEL] <= 5 && avoidance <= borg_trait[BI_CURHP]) {
+    if (borg.trait[BI_CLEVEL] <= 5 && avoidance <= borg.trait[BI_CURHP]) {
         /* Short Leash */
         borg_flow_spread(leash, true, true, false, -1, false);
-    } else if (borg_trait[BI_CLEVEL] <= 30
-               && avoidance <= borg_trait[BI_CURHP]) {
+    } else if (borg.trait[BI_CLEVEL] <= 30
+               && avoidance <= borg.trait[BI_CURHP]) {
         /* Short Leash */
         borg_flow_spread(leash, true, true, false, -1, false);
     } else {
@@ -1002,7 +1002,7 @@ bool borg_flow_dark(bool neer)
         return (false);
 
     /* Paranoia */
-    if (borg_flow_dark_interesting(c_y, c_x, -1)) {
+    if (borg_flow_dark_interesting(borg.c.y, borg.c.x, -1)) {
         return (false);
     }
 
@@ -1013,7 +1013,7 @@ bool borg_flow_dark(bool neer)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)

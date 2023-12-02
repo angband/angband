@@ -426,8 +426,8 @@ void reincarnate_borg(void)
 
     /* Cheat death */
     player->is_dead          = false;
-    borg_trait[BI_MAXDEPTH]  = 0;
-    borg_trait[BI_MAXCLEVEL] = 1;
+    borg.trait[BI_MAXDEPTH]  = 0;
+    borg.trait[BI_MAXCLEVEL] = 1;
 
     /* Flush message buffer */
     borg_parse(NULL);
@@ -447,11 +447,11 @@ void reincarnate_borg(void)
     /*** Wipe the player ***/
     player_init(player);
 
-    borg_trait[BI_ISCUT] = borg_trait[BI_ISSTUN] = borg_trait[BI_ISHEAVYSTUN]
-        = borg_trait[BI_ISIMAGE] = borg_trait[BI_ISSTUDY] = false;
+    borg.trait[BI_ISCUT] = borg.trait[BI_ISSTUN] = borg.trait[BI_ISHEAVYSTUN]
+        = borg.trait[BI_ISIMAGE] = borg.trait[BI_ISSTUDY] = false;
 
     /* reset our panel clock */
-    time_this_panel = 1;
+    borg.time_this_panel = 1;
 
     /* reset our vault/unique check */
     vault_on_level    = false;
@@ -462,16 +462,16 @@ void reincarnate_borg(void)
     breeder_level = false;
 
     /* Assume not leaving the level */
-    goal_leaving = false;
+    borg.goal.leaving = false;
 
     /* Assume not fleeing the level */
-    goal_fleeing = false;
+    borg.goal.fleeing = false;
 
     /* Assume not fleeing the level */
-    goal_fleeing_to_town = false;
+    borg.goal.fleeing_to_town = false;
 
     /* Assume not ignoring monsters */
-    goal_ignoring = false;
+    borg.goal.ignoring = false;
 
     flavor_init();
 
@@ -562,14 +562,6 @@ void reincarnate_borg(void)
     /* Hack -- flush it */
     Term_fresh();
 
-    /*** Hack -- Extract race ***/
-
-    /* Insert the player Race--cheat */
-    borg_race = player->race->ridx;
-
-    /* Cheat the class */
-    borg_class = player->class->cidx;
-
     /*** Hack -- react to race and class ***/
 
     /* Notice the new race and class */
@@ -581,26 +573,7 @@ void reincarnate_borg(void)
         my_need_stat_check[tmp_i] = true;
 #endif
 
-    /* Allowable Cheat -- Obtain "recall" flag */
-    goal_recalling = player->word_recall * 1000;
-
-    /* Allowable Cheat -- Obtain "prot_from_evil" flag */
-    borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
-    /* Allowable Cheat -- Obtain "speed" flag */
-    borg_speed = (player->timed[TMD_FAST] ? true : false);
-    /* Allowable Cheat -- Obtain "resist" flags */
-    borg_trait[BI_TRACID] = (player->timed[TMD_OPP_ACID] ? true : false);
-    borg_trait[BI_TRELEC] = (player->timed[TMD_OPP_ELEC] ? true : false);
-    borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
-    borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
-    borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-    borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
-    borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
-    borg_hero             = (player->timed[TMD_HERO] ? true : false);
-    borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
-    borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
-    if (player->timed[TMD_SINVIS])
-        borg_see_inv = 10000;
+    borg_notice_player();
 
     /* Message */
     borg_note("# Respawning");

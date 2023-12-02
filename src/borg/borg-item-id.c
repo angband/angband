@@ -68,7 +68,7 @@ bool borg_object_fully_id(void)
 
         /* inscribe certain objects */
         const char *note = borg_get_note(item);
-        if (borg_trait[BI_CDEPTH] && item->tval >= TV_BOW
+        if (borg.trait[BI_CDEPTH] && item->tval >= TV_BOW
             && item->tval <= TV_RING
             && (borg_ego_has_random_power(e_ptr) || item->art_idx)
             && (streq(note, "{ }") || streq(note, "")

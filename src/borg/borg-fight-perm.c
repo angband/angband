@@ -80,11 +80,11 @@ static int borg_perma_aux_bless(void)
         fail_allowed = 25;
 
     /* already blessed */
-    if (borg_bless)
+    if (borg.temp.bless)
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     /* XXX Dark */
@@ -96,9 +96,9 @@ static int borg_perma_aux_bless(void)
     cost = borg_get_spell_power(BLESS);
 
     /* If its cheap, go ahead */
-    if (borg_trait[BI_CLEVEL] > 10
-        && cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                      : borg_trait[BI_CURSP] / 10))
+    if (borg.trait[BI_CLEVEL] > 10
+        && cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                      : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -110,7 +110,7 @@ static int borg_perma_aux_bless(void)
     borg_spell(BLESS);
 
     /* No resting to recoop mana */
-    borg_no_rest_prep = 10000;
+    borg.no_rest_prep = 10000;
 
     return (1);
 }
@@ -127,8 +127,8 @@ static int borg_perma_aux_resist(void)
     if (borg_fighting_unique)
         fail_allowed = 15;
 
-    if (borg_trait[BI_TRFIRE] + borg_trait[BI_TRACID] + borg_trait[BI_TRELEC]
-            + borg_trait[BI_TRCOLD]
+    if (borg.temp.res_fire + borg.temp.res_acid + borg.temp.res_elec
+            + borg.temp.res_cold
         >= 3)
         return (0);
 
@@ -139,8 +139,8 @@ static int borg_perma_aux_resist(void)
     cost = borg_get_spell_power(RESISTANCE);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -151,7 +151,7 @@ static int borg_perma_aux_resist(void)
     borg_spell_fail(RESISTANCE, fail_allowed);
 
     /* No resting to recoop mana */
-    borg_no_rest_prep = 21000;
+    borg.no_rest_prep = 21000;
 
     /* default to can't do it. */
     return (2);
@@ -160,8 +160,8 @@ static int borg_perma_aux_resist(void)
 /* all resists from the cloak*/
 static int borg_perma_aux_resist_colluin(void)
 {
-    if (borg_trait[BI_TRFIRE] + borg_trait[BI_TRACID] + borg_trait[BI_TRPOIS]
-            + borg_trait[BI_TRELEC] + borg_trait[BI_TRCOLD]
+    if (borg.temp.res_fire + borg.temp.res_acid + borg.temp.res_pois
+            + borg.temp.res_elec + borg.temp.res_cold
         >= 3)
         return (0);
 
@@ -181,7 +181,7 @@ static int borg_perma_aux_resist_colluin(void)
     if (borg_activate_item(act_resist_all)
         || borg_activate_item(act_rage_bless_resist)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 21000;
+        borg.no_rest_prep = 21000;
     }
 
     /* Value */
@@ -200,7 +200,7 @@ static int borg_perma_aux_resist_p(void)
     if (borg_fighting_unique)
         fail_allowed = 15;
 
-    if (borg_trait[BI_TRPOIS] || !unique_on_level)
+    if (borg.temp.res_pois || !unique_on_level)
         return (0);
 
     if (!borg_spell_okay_fail(RESIST_POISON, fail_allowed))
@@ -210,7 +210,7 @@ static int borg_perma_aux_resist_p(void)
     cost = borg_get_spell_power(RESIST_POISON);
 
     /* If its cheap, go ahead */
-    if (cost >= borg_trait[BI_CURSP] / 20)
+    if (cost >= borg.trait[BI_CURSP] / 20)
         return (0);
 
     /* Simulation */
@@ -220,7 +220,7 @@ static int borg_perma_aux_resist_p(void)
     /* do it! */
     if (borg_spell_fail(RESIST_POISON, fail_allowed)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 21000;
+        borg.no_rest_prep = 21000;
 
         /* Value */
         return (1);
@@ -245,7 +245,7 @@ static int borg_perma_aux_speed(void)
         fail_allowed = 15;
 
     /* already fast */
-    if (borg_speed)
+    if (borg.temp.fast)
         return (0);
 
     /* only cast defense spells if fail rate is not too high */
@@ -256,8 +256,8 @@ static int borg_perma_aux_speed(void)
     cost = borg_get_spell_power(HASTE_SELF);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -267,7 +267,7 @@ static int borg_perma_aux_speed(void)
     /* do it! */
     if (borg_spell_fail(HASTE_SELF, fail_allowed)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = borg_trait[BI_CLEVEL] * 1000;
+        borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
         return (5);
     }
 
@@ -284,7 +284,7 @@ static int borg_perma_aux_prot_evil(void)
     int fail_allowed = 5;
 
     /* if already protected */
-    if (borg_prot_from_evil)
+    if (borg.temp.prot_from_evil)
         return (0);
 
     /* increase the threshold */
@@ -300,8 +300,8 @@ static int borg_perma_aux_prot_evil(void)
     cost = borg_get_spell_power(PROTECTION_FROM_EVIL);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -311,7 +311,7 @@ static int borg_perma_aux_prot_evil(void)
     /* do it! */
     if (borg_spell_fail(PROTECTION_FROM_EVIL, fail_allowed)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = borg_trait[BI_CLEVEL] * 1000;
+        borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* Value */
         return (3);
@@ -335,11 +335,11 @@ static int borg_perma_aux_fastcast(void)
         fail_allowed = 15;
 
     /* already fast */
-    if (borg_fastcast)
+    if (borg.temp.fastcast)
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     if (!borg_spell_okay_fail(MANA_CHANNEL, fail_allowed))
@@ -349,8 +349,8 @@ static int borg_perma_aux_fastcast(void)
     cost = borg_get_spell_power(MANA_CHANNEL);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -361,7 +361,7 @@ static int borg_perma_aux_fastcast(void)
     /* do it! */
     if (borg_spell(MANA_CHANNEL)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 6000;
+        borg.no_rest_prep = 6000;
         return 1;
     }
 
@@ -381,12 +381,12 @@ static int borg_perma_aux_hero(void)
     if (borg_fighting_unique)
         fail_allowed = 15;
 
-    /* already blessed */
-    if (borg_hero)
+    /* already heroism */
+    if (borg.temp.hero)
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     /* XXX Dark */
@@ -398,8 +398,8 @@ static int borg_perma_aux_hero(void)
     cost = borg_get_spell_power(HEROISM);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -410,7 +410,7 @@ static int borg_perma_aux_hero(void)
     /* do it! */
     if (borg_spell(HEROISM)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 3000;
+        borg.no_rest_prep = 3000;
         return 1;
     }
 
@@ -431,16 +431,16 @@ static int borg_perma_aux_regen(void)
         fail_allowed = 15;
 
     /* already regenerating */
-    if (borg_regen)
+    if (borg.temp.regen)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* don't bother if not much to regenerate */
-    if (borg_trait[BI_MAXHP] < 100)
+    if (borg.trait[BI_MAXHP] < 100)
         return (0);
 
     if (!borg_spell_okay_fail(RAPID_REGENERATION, fail_allowed))
@@ -450,14 +450,14 @@ static int borg_perma_aux_regen(void)
     cost = borg_get_spell_power(RAPID_REGENERATION);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* do it! */
     if (borg_spell(RAPID_REGENERATION)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 6000;
+        borg.no_rest_prep = 6000;
         return 1;
     }
 
@@ -478,11 +478,11 @@ static int borg_perma_aux_smite_evil(void)
         fail_allowed = 15;
 
     /* already smiting */
-    if (borg_smite_evil || borg_trait[BI_WS_EVIL])
+    if (borg.temp.smite_evil || borg.trait[BI_WS_EVIL])
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     if (!borg_spell_okay_fail(SMITE_EVIL, fail_allowed))
@@ -492,8 +492,8 @@ static int borg_perma_aux_smite_evil(void)
     cost = borg_get_spell_power(SMITE_EVIL);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -504,7 +504,7 @@ static int borg_perma_aux_smite_evil(void)
     /* do it! */
     if (borg_spell(SMITE_EVIL)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 21000;
+        borg.no_rest_prep = 21000;
         return 3;
     }
 
@@ -525,11 +525,11 @@ static int borg_perma_aux_venom(void)
         fail_allowed = 15;
 
     /* already smiting */
-    if (borg_venom || borg_trait[BI_WB_POIS])
+    if (borg.temp.venom || borg.trait[BI_WB_POIS])
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     if (!borg_spell_okay_fail(VENOM, fail_allowed))
@@ -539,8 +539,8 @@ static int borg_perma_aux_venom(void)
     cost = borg_get_spell_power(SMITE_EVIL);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -551,7 +551,7 @@ static int borg_perma_aux_venom(void)
     /* do it! */
     if (borg_spell(VENOM)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 19000;
+        borg.no_rest_prep = 19000;
         return 3;
     }
 
@@ -572,11 +572,11 @@ static int borg_perma_aux_berserk(void)
         fail_allowed = 15;
 
     /* already blessed */
-    if (borg_berserk)
+    if (borg.temp.berserk)
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
 
     if (!borg_spell_okay_fail(BERSERK_STRENGTH, fail_allowed))
@@ -586,8 +586,8 @@ static int borg_perma_aux_berserk(void)
     cost = borg_get_spell_power(BERSERK_STRENGTH);
 
     /* If its cheap, go ahead */
-    if (cost >= ((unique_on_level) ? borg_trait[BI_CURSP] / 7
-                                   : borg_trait[BI_CURSP] / 10))
+    if (cost >= ((unique_on_level) ? borg.trait[BI_CURSP] / 7
+                                   : borg.trait[BI_CURSP] / 10))
         return (0);
 
     /* Simulation */
@@ -598,7 +598,7 @@ static int borg_perma_aux_berserk(void)
     /* do it! */
     if (borg_spell(BERSERK_STRENGTH)) {
         /* No resting to recoop mana */
-        borg_no_rest_prep = 11000;
+        borg.no_rest_prep = 11000;
         return 2;
     }
 
@@ -616,7 +616,7 @@ static int borg_perma_aux_berserk_potion(void)
         return (0);
 
     /* already blessed */
-    if (borg_hero || borg_berserk)
+    if (borg.temp.hero || borg.temp.berserk)
         return (0);
 
     /* do I have any? */
@@ -642,11 +642,11 @@ static int borg_perma_aux_berserk_potion(void)
 static int borg_perma_aux_see_inv(void)
 {
     int        fail_allowed = 25;
-    borg_grid* ag           = &borg_grids[c_y][c_x];
+    borg_grid* ag           = &borg_grids[borg.c.y][borg.c.x];
 
     /* no need */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_SINV] || borg_see_inv)
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_SINV] || borg.see_inv)
         return (0);
 
     /* Do I have anything that will work? */
@@ -656,7 +656,7 @@ static int borg_perma_aux_see_inv(void)
         return (0);
 
     /* Darkness */
-    if (!(ag->info & BORG_GLOW) && !borg_trait[BI_CURLITE])
+    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_CURLITE])
         return (0);
 
     /* No real value known, but lets cast it to find the bad guys. */
@@ -667,8 +667,8 @@ static int borg_perma_aux_see_inv(void)
     if (borg_spell_fail(SENSE_INVISIBLE, fail_allowed) /* ||
         borg_spell_fail(2, 6, fail_allowed) */
     ) {
-        borg_see_inv      = 32000;
-        borg_no_rest_prep = 16000;
+        borg.see_inv      = 32000;
+        borg.no_rest_prep = 16000;
         return (10);
     }
 
@@ -748,20 +748,20 @@ bool borg_perma_spell(void)
     borg_simulate = true;
 
     /* Not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Not in shallow dungeon */
-    if (borg_trait[BI_CDEPTH] < borg_trait[BI_CLEVEL] / 3
-        || borg_trait[BI_CDEPTH] < 7)
+    if (borg.trait[BI_CDEPTH] < borg.trait[BI_CLEVEL] / 3
+        || borg.trait[BI_CDEPTH] < 7)
         return (false);
 
     /* Low Level, save your mana, use the defense maneuvers above */
-    if (borg_trait[BI_CLEVEL] <= 10)
+    if (borg.trait[BI_CLEVEL] <= 10)
         return (false);
 
     /* Only when lots of mana is on hand */
-    if (borg_trait[BI_CURSP] < borg_trait[BI_MAXSP] * 75 / 100)
+    if (borg.trait[BI_CURSP] < borg.trait[BI_MAXSP] * 75 / 100)
         return (false);
 
     /* Analyze the possible setup moves */

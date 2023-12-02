@@ -75,7 +75,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     case TV_SHOT:
     case TV_ARROW:
     case TV_BOLT:
-        if (borg_trait[BI_CLEVEL] < 35) {
+        if (borg.trait[BI_CLEVEL] < 35) {
             if (item->to_h)
                 return (false);
             if (item->to_d)
@@ -108,7 +108,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     if (who == 6) {
         /* buying Remove Curse scroll is acceptable */
         if (item->tval == TV_SCROLL && item->sval == sv_scroll_remove_curse
-            && borg_trait[BI_FIRST_CURSED])
+            && borg.trait[BI_FIRST_CURSED])
             return (true);
 
         /* Buying certain special items are acceptable */
@@ -117,45 +117,48 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
                     || (item->sval == sv_potion_life)
                     || (item->sval == sv_potion_healing)
                     || (item->sval == sv_potion_inc_str
-                        && my_stat_cur[STAT_STR] < (18 + 100))
+                        && borg.stat_cur[STAT_STR] < (18 + 100))
                     || (item->sval == sv_potion_inc_int
-                        && my_stat_cur[STAT_INT] < (18 + 100))
+                        && borg.stat_cur[STAT_INT] < (18 + 100))
                     || (item->sval == sv_potion_inc_wis
-                        && my_stat_cur[STAT_WIS] < (18 + 100))
+                        && borg.stat_cur[STAT_WIS] < (18 + 100))
                     || (item->sval == sv_potion_inc_dex
-                        && my_stat_cur[STAT_DEX] < (18 + 100))
+                        && borg.stat_cur[STAT_DEX] < (18 + 100))
                     || (item->sval == sv_potion_inc_con
-                        && my_stat_cur[STAT_CON] < (18 + 100))))
+                        && borg.stat_cur[STAT_CON] < (18 + 100))))
             || (item->tval == TV_ROD
                 && ((item->sval == sv_rod_healing) ||
                     /* priests and paladins can cast recall */
-                    (item->sval == sv_rod_recall && borg_class != CLASS_PRIEST
-                        && borg_class != CLASS_PALADIN)
+                    (item->sval == sv_rod_recall
+                        && borg.trait[BI_CLASS] != CLASS_PRIEST
+                        && borg.trait[BI_CLASS] != CLASS_PALADIN)
                     ||
                     /* druid and ranger can cast haste*/
-                    (item->sval == sv_rod_speed && borg_class != CLASS_DRUID
-                        && borg_class != CLASS_RANGER)
+                    (item->sval == sv_rod_speed
+                        && borg.trait[BI_CLASS] != CLASS_DRUID
+                        && borg.trait[BI_CLASS] != CLASS_RANGER)
                     ||
                     /* mage and rogue can cast teleport away */
                     (item->sval == sv_rod_teleport_other
-                        && borg_class != CLASS_MAGE
-                        && borg_class == CLASS_ROGUE)
+                        && borg.trait[BI_CLASS] != CLASS_MAGE
+                        && borg.trait[BI_CLASS] == CLASS_ROGUE)
                     || (item->sval == sv_rod_illumination
-                        && (!borg_trait[BI_ALITE]))))
+                        && (!borg.trait[BI_ALITE]))))
             || (obj_kind_can_browse(&k_info[item->kind])
-                && amt_book[borg_get_book_num(item->sval)] == 0 && dungeon_book)
+                && borg.amt_book[borg_get_book_num(item->sval)] == 0
+                && dungeon_book)
             || (item->tval == TV_SCROLL
                 && (item->sval == sv_scroll_teleport_level
                     || item->sval == sv_scroll_teleport))) {
             /* Hack-- Allow the borg to scum for this Item */
             if (borg_cfg[BORG_SELF_SCUM] && /* borg is allowed to scum */
-                borg_trait[BI_CLEVEL] >= 10 && /* Be of sufficient level */
-                borg_trait[BI_LIGHT] && /* Have some Perma lite source */
-                borg_trait[BI_FOOD] + num_food >= 100
+                borg.trait[BI_CLEVEL] >= 10 && /* Be of sufficient level */
+                borg.trait[BI_LIGHT] && /* Have some Perma lite source */
+                borg.trait[BI_FOOD] + num_food >= 100
                 && /* Have plenty of food */
                 item->cost <= 85000) /* Its not too expensive */
             {
-                if (adj_dex_safe[borg_trait[BI_DEX]] + borg_trait[BI_CLEVEL]
+                if (adj_dex_safe[borg.trait[BI_DEX]] + borg.trait[BI_CLEVEL]
                     > 90) /* Good chance to thwart mugging */
                 {
                     /* Record the amount that I need to make purchase */
@@ -169,11 +172,11 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
             return (true);
         }
 
-        if ((borg_trait[BI_CLEVEL] < 15) && (borg_trait[BI_GOLD] < 20000))
+        if ((borg.trait[BI_CLEVEL] < 15) && (borg.trait[BI_GOLD] < 20000))
             return (false);
-        if ((borg_trait[BI_CLEVEL] < 35) && (borg_trait[BI_GOLD] < 15000))
+        if ((borg.trait[BI_CLEVEL] < 35) && (borg.trait[BI_GOLD] < 15000))
             return (false);
-        if (borg_trait[BI_GOLD] < 10000)
+        if (borg.trait[BI_GOLD] < 10000)
             return (false);
     }
 
@@ -209,7 +212,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     }
 
     /* Low level borgs should not waste the money on certain things */
-    if (borg_trait[BI_MAXCLEVEL] < 5) {
+    if (borg.trait[BI_MAXCLEVEL] < 5) {
         /* next book, cant read it */
         if (obj_kind_can_browse(&k_info[item->kind]) && item->sval >= 1)
             return (false);
@@ -217,7 +220,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
 
     /* Not direct spell casters and the extra books */
     /* classes that are direct spell casters get more than 3 books */
-    if ((player->class->magic.num_books < 4) && borg_trait[BI_MAXCLEVEL] <= 8) {
+    if ((player->class->magic.num_books < 4) && borg.trait[BI_MAXCLEVEL] <= 8) {
         if (obj_kind_can_browse(&k_info[item->kind]) && item->sval >= 1)
             return (false);
     }
@@ -248,21 +251,21 @@ bool borg_think_shop_buy_useful(void)
         return false;
 
     /* Already have a target 9-4-05*/
-    if (goal_ware != -1)
+    if (borg.goal.ware != -1)
         return (false);
 
     /* Extract the "power" */
-    b_p = my_power;
+    b_p = borg.power;
     b_p = borg_power();
 
     /* Check the shops */
     for (k = 0; k < (z_info->store_max - 1); k++) {
 
         /* If I am bad shape up, only see certain stores */
-        if ((borg_trait[BI_CURLITE] == 0 || borg_trait[BI_FOOD] == 0) && k != 0
+        if ((borg.trait[BI_CURLITE] == 0 || borg.trait[BI_FOOD] == 0) && k != 0
             && k != 7)
             continue;
-        if ((borg_trait[BI_ISCUT] || borg_trait[BI_ISPOISONED]) && k != 3)
+        if ((borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED]) && k != 3)
             continue;
 
         /* Scan the wares */
@@ -284,13 +287,13 @@ bool borg_think_shop_buy_useful(void)
                 continue;
 
             /* Hack -- Require "sufficient" cash */
-            if (borg_trait[BI_GOLD] < item->cost)
+            if (borg.trait[BI_GOLD] < item->cost)
                 continue;
 
             /* Skip it if I just sold this item. XXX XXX*/
 
             /* Special check for 'immediate shopping' */
-            if (borg_trait[BI_FOOD] == 0
+            if (borg.trait[BI_FOOD] == 0
                 && (item->tval != TV_FOOD
                     && (item->tval != TV_SCROLL
                         && item->sval != sv_scroll_satisfy_hunger)))
@@ -300,14 +303,14 @@ bool borg_think_shop_buy_useful(void)
             if (item->tval == TV_WAND
                 && (item->sval == sv_wand_magic_missile
                     || item->sval == sv_wand_stinking_cloud)
-                && amt_cool_wand > 40)
+                && borg.trait[BI_GOOD_W_CHG] > 40)
                 continue;
 
             /* These wands are not useful later on, we need beefier attacks */
             if (item->tval == TV_WAND
                 && (item->sval == sv_wand_magic_missile
                     || item->sval == sv_wand_stinking_cloud)
-                && borg_trait[BI_MAXCLEVEL] > 30)
+                && borg.trait[BI_MAXCLEVEL] > 30)
                 continue;
 
             /* Save shop item */
@@ -429,10 +432,10 @@ bool borg_think_shop_buy_useful(void)
     /* Buy something */
     if ((b_k >= 0) && (b_n >= 0)) {
         /* Visit that shop */
-        goal_shop = b_k;
+        borg.goal.shop = b_k;
 
         /* Buy that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Success */
         return (true);
@@ -461,7 +464,7 @@ bool borg_think_home_buy_useful(void)
     bool skip_it    = false;
 
     /* Extract the "power" */
-    b_p = my_power;
+    b_p = borg.power;
 
     /* Scan the home */
     for (n = 0; n < z_info->store_inven_max; n++) {
@@ -551,7 +554,7 @@ bool borg_think_home_buy_useful(void)
 #if 0
                     /* dump list and power...  for debugging */
                     borg_note(format("Trying Item %s (best power %ld)", borg_items[slot].desc, p_left));
-                    borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[slot].desc, my_power));
+                    borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[slot].desc, borg.power));
 #endif
                     /* Restore old item */
                     memcpy(&borg_items[slot], &safe_items[slot],
@@ -588,7 +591,7 @@ bool borg_think_home_buy_useful(void)
 #if 0
                     /* dump list and power...  for debugging */
                     borg_note(format("Trying Item %s (best power %ld)", borg_items[INVEN_RIGHT].desc, p_right));
-                    borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[INVEN_RIGHT].desc, my_power));
+                    borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[INVEN_RIGHT].desc, borg.power));
 #endif
                     /* Restore old item */
                     memcpy(&borg_items[INVEN_RIGHT], &safe_items[INVEN_RIGHT],
@@ -628,7 +631,7 @@ bool borg_think_home_buy_useful(void)
 #if 0
                 /* dump list and power...  for debugging */
                 borg_note(format("Trying Item %s (best power %ld)", borg_items[slot].desc, p));
-                borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[slot].desc, my_power));
+                borg_note(format("   Against Item %s   (borg_power %ld)", safe_items[slot].desc, borg.power));
 #endif
                 /* Restore old item */
                 memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
@@ -699,12 +702,12 @@ bool borg_think_home_buy_useful(void)
         borg_notice(true);
 
     /* Buy something */
-    if ((b_n >= 0) && (b_p > my_power)) {
+    if ((b_n >= 0) && (b_p > borg.power)) {
         /* Go to the home */
-        goal_shop = 7;
+        borg.goal.shop = 7;
 
         /* Buy that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Success */
         return (true);
@@ -733,7 +736,7 @@ bool borg_think_shop_grab_interesting(void)
         return (false);
 
     /* not until later-- use that money for better equipment */
-    if (borg_trait[BI_CLEVEL] < 15)
+    if (borg.trait[BI_CLEVEL] < 15)
         return (false);
 
     /* get what an empty home would have for power */
@@ -770,7 +773,7 @@ bool borg_think_shop_grab_interesting(void)
 
             /* Don't buy easy spell books late in the game */
             /* Hack -- Require some "extra" cash */
-            if (borg_trait[BI_GOLD] < 1000L + item->cost * 5)
+            if (borg.trait[BI_GOLD] < 1000L + item->cost * 5)
                 continue;
 
             /* make this the next to last item that the player has */
@@ -798,7 +801,7 @@ bool borg_think_shop_grab_interesting(void)
             c = item->cost * qty;
 
             /* Penalize expensive items */
-            if (c > borg_trait[BI_GOLD] / 10)
+            if (c > borg.trait[BI_GOLD] / 10)
                 s -= c;
 
             /* Ignore "bad" sales */
@@ -828,15 +831,15 @@ bool borg_think_shop_grab_interesting(void)
     s = borg_power_home();
 
     /* remove the target that optimizing the home gave */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Buy something */
     if ((b_k >= 0) && (b_n >= 0)) {
         /* Visit that shop */
-        goal_shop = b_k;
+        borg.goal.shop = b_k;
 
         /* Buy that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Success */
         return (true);
@@ -924,10 +927,10 @@ bool borg_think_home_grab_useless(void)
     /* Stockpile */
     if (b_n >= 0) {
         /* Visit the home */
-        goal_shop = 7;
+        borg.goal.shop = 7;
 
         /* Grab that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Success */
         return (true);
@@ -1037,10 +1040,10 @@ bool borg_think_home_buy_swap_weapon(void)
     /* Buy something */
     if ((b_n >= 0) && (b_p > weapon_swap_value)) {
         /* Go to the home */
-        goal_shop = 7;
+        borg.goal.shop = 7;
 
         /* Buy that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Restore the values */
         weapon_swap       = old_weapon_swap;
@@ -1152,10 +1155,10 @@ bool borg_think_home_buy_swap_armour(void)
     /* Buy something */
     if ((b_n >= 0) && (b_p > armour_swap_value)) {
         /* Go to the home */
-        goal_shop = 7;
+        borg.goal.shop = 7;
 
         /* Buy that item */
-        goal_ware = b_n;
+        borg.goal.ware = b_n;
 
         /* Restore the values */
         weapon_swap       = old_weapon_swap;
@@ -1184,20 +1187,20 @@ bool borg_think_shop_buy(void)
     char purchase_target = '0';
 
     /* Buy something if requested */
-    if ((goal_shop == shop_num) && (goal_ware >= 0)) {
-        borg_shop *shop = &borg_shops[goal_shop];
+    if ((borg.goal.shop == shop_num) && (borg.goal.ware >= 0)) {
+        borg_shop *shop = &borg_shops[borg.goal.shop];
 
-        borg_item *item = &shop->ware[goal_ware];
+        borg_item *item = &shop->ware[borg.goal.ware];
 
-        purchase_target = SHOP_MENU_ITEMS[goal_ware];
+        purchase_target = SHOP_MENU_ITEMS[borg.goal.ware];
 
         /* Paranoid */
         if (item->tval == 0) {
             /* The purchase is complete */
-            goal_shop = goal_ware = goal_item = -1;
+            borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
             /* Increment our clock to avoid loops */
-            time_this_panel++;
+            borg.time_this_panel++;
 
             return (false);
         }
@@ -1236,22 +1239,22 @@ bool borg_think_shop_buy(void)
         bought_item_pval[bought_item_nxt]  = item->pval;
         bought_item_tval[bought_item_nxt]  = item->tval;
         bought_item_sval[bought_item_nxt]  = item->sval;
-        bought_item_store[bought_item_nxt] = goal_shop;
+        bought_item_store[bought_item_nxt] = borg.goal.shop;
         bought_item_num                    = bought_item_nxt;
         bought_item_nxt++;
 
         /* The purchase is complete */
-        goal_shop = goal_ware = goal_item = -1;
+        borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
         /* Increment our clock to avoid loops */
-        time_this_panel++;
+        borg.time_this_panel++;
 
         /* leave the store */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
 
         /* I'm not in a store */
-        borg_in_shop = false;
+        borg.in_shop = false;
 
         /* Success */
         return (true);

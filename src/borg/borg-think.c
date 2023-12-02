@@ -146,8 +146,8 @@ bool borg_think(void)
     static char svSavefile2[1024];
     static bool justSaved = false;
 
-    /* Fill up the borg_trait[] array */
-    (void)borg_update_frame();
+    /* Fill up part of the borg.trait[] array */
+    (void)borg_notice_player();
 
     /*** Process inventory/equipment ***/
 
@@ -183,7 +183,7 @@ bool borg_think(void)
         borg_save = false;
 
         /* Create a scum file */
-        if (borg_trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+        if (borg.trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
             || strstr(player->died_from, "starvation")) {
             memcpy(svSavefile, savefile, sizeof(savefile));
             /* Process the player name */
@@ -263,7 +263,7 @@ bool borg_think(void)
     if (borg_do_spell && (borg_do_spell_aux == 0)) {
         /* Assume no books */
         for (i = 0; i < 9; i++)
-            borg_book[i] = -1;
+            borg.book_idx[i] = -1;
 
         /* Scan the pack */
         for (i = 0; i < z_info->pack_size; i++) {
@@ -275,7 +275,7 @@ bool borg_think(void)
                 struct class_book book = player->class->magic.books[book_num];
                 if (item->tval == book.tval && item->sval == book.sval) {
                     /* Note book locations */
-                    borg_book[book_num] = i;
+                    borg.book_idx[book_num] = i;
                     break;
                 }
             }
@@ -284,11 +284,11 @@ bool borg_think(void)
 
     /*** Process books ***/
     /* Hack -- Warriors never browse */
-    if (borg_class == CLASS_WARRIOR)
+    if (borg.trait[BI_CLASS] == CLASS_WARRIOR)
         borg_do_spell = false;
 
     /* Hack -- Blind or Confused prevents browsing */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         borg_do_spell = false;
 
     /* XXX XXX XXX Dark */
@@ -300,7 +300,7 @@ bool borg_think(void)
     /* Cheat */
     if (borg_do_spell) {
         /* Look for the book */
-        i = borg_book[borg_do_spell_aux];
+        i = borg.book_idx[borg_do_spell_aux];
 
         /* Cheat the "spell" screens (all of them) */
         if (i >= 0) {
@@ -332,7 +332,7 @@ bool borg_think(void)
     }
 
     /* If king, maybe retire. */
-    if (borg_trait[BI_KING]) {
+    if (borg.trait[BI_KING]) {
         /* Prepare to retire */
         if (borg_cfg[BORG_STOP_KING]) {
 #ifndef BABLOS
@@ -376,7 +376,7 @@ bool borg_think(void)
         shop_num = square_shopnum(cave, player->grid);
 
         /* Clear the goal (the goal was probably going to a shop number) */
-        goal = 0;
+        borg.goal.type = 0;
 
         /* Hack -- Reset food counter for money scumming */
         if (shop_num == 0)
@@ -387,7 +387,7 @@ bool borg_think(void)
             borg_fuel_onsale = 0;
 
         /* Extract the current gold (unless in home) */
-        borg_trait[BI_GOLD] = (long)player->au;
+        borg.trait[BI_GOLD] = (long)player->au;
 
         /* Cheat the store (or home) inventory (all pages) */
         borg_cheat_store();
@@ -408,14 +408,14 @@ bool borg_think(void)
         borg_notice(true);
 
         /* Evaluate the current world */
-        my_power = borg_power();
+        borg.power = borg_power();
 
         /* Hack -- allow user abort */
         if (borg_cancel)
             return (true);
 
         /* Do not allow a user key to interrupt the borg while in a store */
-        borg_in_shop = true;
+        borg.in_shop = true;
 
         /* Think until done */
         return (borg_think_store());
@@ -464,7 +464,7 @@ bool borg_think(void)
         borg_do_frame = false;
 
         /* Analyze the "frame" */
-        borg_update_frame();
+        borg_notice_player();
     }
 
     /*** Re-activate Tests ***/
@@ -490,10 +490,10 @@ bool borg_think(void)
     /*** Analyze status ***/
 
     /* Track best level */
-    if (borg_trait[BI_CLEVEL] > borg_trait[BI_MAXCLEVEL])
-        borg_trait[BI_MAXCLEVEL] = borg_trait[BI_CLEVEL];
-    if (borg_trait[BI_CDEPTH] > borg_trait[BI_MAXDEPTH]) {
-        borg_trait[BI_MAXDEPTH] = borg_trait[BI_CDEPTH];
+    if (borg.trait[BI_CLEVEL] > borg.trait[BI_MAXCLEVEL])
+        borg.trait[BI_MAXCLEVEL] = borg.trait[BI_CLEVEL];
+    if (borg.trait[BI_CDEPTH] > borg.trait[BI_MAXDEPTH]) {
+        borg.trait[BI_MAXDEPTH] = borg.trait[BI_CDEPTH];
     }
 
     /*** Think about it ***/
@@ -502,7 +502,7 @@ bool borg_think(void)
     borg_t++;
 
     /* Increment the panel clock */
-    time_this_panel++;
+    borg.time_this_panel++;
 
     /* Examine the screen */
     borg_update();
@@ -511,7 +511,7 @@ bool borg_think(void)
     borg_notice(true);
 
     /* Evaluate the current world */
-    my_power = borg_power();
+    borg.power = borg_power();
 
     /* Hack -- allow user abort */
     if (borg_cancel)

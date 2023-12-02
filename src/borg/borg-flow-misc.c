@@ -65,7 +65,7 @@ void borg_flow_reverse(int depth, bool optimize, bool avoid, bool tunneling,
     borg_flow_clear();
 
     /* Enqueue the player's grid */
-    borg_flow_enqueue_grid(c_y, c_x);
+    borg_flow_enqueue_grid(borg.c.y, borg.c.x);
 
     /* Spread, but do NOT optimize */
     borg_flow_spread(depth, optimize, avoid, tunneling, stair_idx, sneak);
@@ -103,11 +103,11 @@ bool borg_happy_grid_bold(int y, int x)
         return (true);
     if (ag->glyph)
         return (true);
-    if (ag->feat == FEAT_LAVA && !borg_trait[BI_IFIRE])
+    if (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
         return (false);
 
     /* Hack -- weak/dark is very unhappy */
-    if (borg_trait[BI_ISWEAK] || borg_trait[BI_CURLITE] == 0)
+    if (borg.trait[BI_ISWEAK] || borg.trait[BI_CURLITE] == 0)
         return (false);
 
     /* Apply a control effect so that he does not get stuck in a loop */
@@ -208,40 +208,40 @@ bool borg_flow_recover(bool viewable, int dist)
     int i, x, y;
 
     /* Sometimes we loop on this */
-    if (time_this_panel > 500)
+    if (borg.time_this_panel > 500)
         return (false);
 
     /* No retreating and recovering when low level */
-    if (borg_trait[BI_CLEVEL] <= 5)
+    if (borg.trait[BI_CLEVEL] <= 5)
         return (false);
 
     /* Mana for spell casters */
     if (player->class->magic.num_books > 3) {
-        if (borg_trait[BI_CURHP] > borg_trait[BI_MAXHP] / 3
-            && borg_trait[BI_CURSP] > borg_trait[BI_MAXSP] / 4
+        if (borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 3
+            && borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4
             && /* Non spell casters? */
-            !borg_trait[BI_ISCUT] && !borg_trait[BI_ISSTUN]
-            && !borg_trait[BI_ISHEAVYSTUN] && !borg_trait[BI_ISAFRAID])
+            !borg.trait[BI_ISCUT] && !borg.trait[BI_ISSTUN]
+            && !borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISAFRAID])
             return (false);
     } else /* Non Spell Casters */
     {
         /* do I need to recover some? */
-        if (borg_trait[BI_CURHP] > borg_trait[BI_MAXHP] / 3
-            && !borg_trait[BI_ISCUT] && !borg_trait[BI_ISSTUN]
-            && !borg_trait[BI_ISHEAVYSTUN] && !borg_trait[BI_ISAFRAID])
+        if (borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 3
+            && !borg.trait[BI_ISCUT] && !borg.trait[BI_ISSTUN]
+            && !borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISAFRAID])
             return (false);
     }
 
     /* If Fleeing, then do not rest */
-    if (goal_fleeing)
+    if (borg.goal.fleeing)
         return (false);
 
     /* If Scumming, then do not rest */
-    if (borg_lunal_mode || borg_munchkin_mode)
+    if (borg.lunal_mode || borg.munchkin_mode)
         return (false);
 
     /* No need if hungry */
-    if (borg_trait[BI_ISHUNGRY])
+    if (borg.trait[BI_ISHUNGRY])
         return (false);
 
     /* Nothing found */
@@ -253,19 +253,19 @@ bool borg_flow_recover(bool viewable, int dist)
      */
 
     /* look at grids within 20 grids of me */
-    for (y = c_y - 25; y < c_y + 25; y++) {
+    for (y = borg.c.y - 25; y < borg.c.y + 25; y++) {
 
-        for (x = c_x - 25; x < c_x + 25; x++) {
+        for (x = borg.c.x - 25; x < borg.c.x + 25; x++) {
             /* Stay in bounds */
             if (!square_in_bounds(cave, loc(x, y)))
                 continue;
 
             /* Skip my own grid */
-            if (y == c_y && x == c_x)
+            if (y == borg.c.y && x == borg.c.x)
                 continue;
 
             /* Skip grids that are too close to me */
-            if (borg_distance(c_y, c_x, y, x) < 7)
+            if (distance(borg.c, loc(x ,y)) < 7)
                 continue;
 
             /* Is this grid a happy grid? */
@@ -324,7 +324,7 @@ bool borg_flow_vein(bool viewable, int nearness)
     int i, x, y;
     int b_stair = -1, j, b_j = -1;
     int cost  = 0;
-    int leash = borg_trait[BI_CLEVEL] * 3 + 9;
+    int leash = borg.trait[BI_CLEVEL] * 3 + 9;
 
     borg_grid *ag;
 
@@ -333,11 +333,11 @@ bool borg_flow_vein(bool viewable, int nearness)
         return (false);
 
     /* Increase leash */
-    if (borg_trait[BI_CLEVEL] >= 20)
+    if (borg.trait[BI_CLEVEL] >= 20)
         leash = 250;
 
     /* Not needed if rich */
-    if (borg_trait[BI_GOLD] >= 100000)
+    if (borg.trait[BI_GOLD] >= 100000)
         return (false);
 
     /* Require digger, capacity, or skill */
@@ -354,7 +354,7 @@ bool borg_flow_vein(bool viewable, int nearness)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)
@@ -386,7 +386,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 
         /* Check the distance to stair for this proposed grid, unless i am
          * looking for very close items (leash) */
-        if (nearness > 5 && cost > leash && borg_trait[BI_CLEVEL] < 20)
+        if (nearness > 5 && cost > leash && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */
@@ -442,8 +442,8 @@ bool borg_flow_spastic(bool bored)
 
     int i, x, y, v;
 
-    int b_x = c_x;
-    int b_y = c_y;
+    int b_x = borg.c.x;
+    int b_y = borg.c.y;
     int b_v = -1;
     int j, b_j = -1;
     int b_stair = -1;
@@ -451,21 +451,21 @@ bool borg_flow_spastic(bool bored)
     borg_grid *ag;
 
     /* Hack -- not in town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (false);
 
     /* Hack -- Not if starving */
-    if (borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISWEAK])
         return (false);
 
     /* Hack -- Not if hopeless unless twitchy */
-    if (borg_t - borg_began > 3000 && avoidance <= borg_trait[BI_CURHP])
+    if (borg_t - borg_began > 3000 && avoidance <= borg.trait[BI_CURHP])
         return (false);
 
     /* Not bored */
     if (!bored) {
         /* Look around for danger */
-        int p = borg_danger(c_y, c_x, 1, true, false);
+        int p = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
         /* Avoid searching when in danger */
         if (p > avoidance / 4)
@@ -479,7 +479,7 @@ bool borg_flow_spastic(bool bored)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)
@@ -491,22 +491,22 @@ bool borg_flow_spastic(bool bored)
     }
 
     /* We have arrived */
-    if ((spastic_x == c_x) && (spastic_y == c_y)) {
+    if ((spastic_x == borg.c.x) && (spastic_y == borg.c.y)) {
         /* Cancel */
         spastic_x = 0;
         spastic_y = 0;
 
-        ag        = &borg_grids[c_y][c_x];
+        ag        = &borg_grids[borg.c.y][borg.c.x];
 
         /* Take note */
         borg_note(format(
-            "# Spastic Searching at (%d,%d)...value:%d", c_x, c_y, ag->xtra));
+            "# Spastic Searching at (%d,%d)...value:%d", borg.c.x, borg.c.y, ag->xtra));
 
         /* Count searching */
         for (i = 0; i < 9; i++) {
             /* Extract the location */
-            int xx = c_x + ddx_ddd[i];
-            int yy = c_y + ddy_ddd[i];
+            int xx = borg.c.x + ddx_ddd[i];
+            int yy = borg.c.y + ddy_ddd[i];
 
             /* Current grid */
             ag = &borg_grids[yy][xx];
@@ -558,7 +558,7 @@ bool borg_flow_spastic(bool bored)
             /* Skip grids that are really far away.  He probably
              * won't find anything and it takes lots of turns
              */
-            if (cost >= 25 && borg_trait[BI_CLEVEL] < 30)
+            if (cost >= 25 && borg.trait[BI_CLEVEL] < 30)
                 continue;
             if (cost >= 50)
                 continue;
@@ -566,7 +566,7 @@ bool borg_flow_spastic(bool bored)
             /* Tweak -- Limit total searches */
             if (ag->xtra >= 50)
                 continue;
-            if (ag->xtra >= borg_trait[BI_CLEVEL])
+            if (ag->xtra >= borg.trait[BI_CLEVEL])
                 continue;
 
             /* Limit initial searches until bored */
@@ -578,34 +578,34 @@ bool borg_flow_spastic(bool bored)
                 continue;
 
             /* Skip ones that make me wander too far unless twitchy (Leash)*/
-            if (b_stair != -1 && borg_trait[BI_CLEVEL] < 15
-                && avoidance <= borg_trait[BI_CURHP]) {
+            if (b_stair != -1 && borg.trait[BI_CLEVEL] < 15
+                && avoidance <= borg.trait[BI_CURHP]) {
                 /* Check the distance of this grid to the stair */
                 j = borg_distance(
                     track_less.y[b_stair], track_less.x[b_stair], y, x);
                 /* Distance of me to the stairs */
                 b_j = borg_distance(
-                    c_y, c_x, track_less.y[b_stair], track_less.x[b_stair]);
+                    borg.c.y, borg.c.x, track_less.y[b_stair], track_less.x[b_stair]);
 
                 /* skip far away grids while I am close to stair*/
-                if (b_j <= borg_trait[BI_CLEVEL] * 3 + 9
-                    && j >= borg_trait[BI_CLEVEL] * 3 + 9)
+                if (b_j <= borg.trait[BI_CLEVEL] * 3 + 9
+                    && j >= borg.trait[BI_CLEVEL] * 3 + 9)
                     continue;
 
                 /* If really low level don't do this much */
-                if (borg_trait[BI_CLEVEL] <= 3
-                    && b_j <= borg_trait[BI_CLEVEL] + 9
-                    && j >= borg_trait[BI_CLEVEL] + 9)
+                if (borg.trait[BI_CLEVEL] <= 3
+                    && b_j <= borg.trait[BI_CLEVEL] + 9
+                    && j >= borg.trait[BI_CLEVEL] + 9)
                     continue;
 
                 /* Do not Venture too far from stair */
-                if (borg_trait[BI_CLEVEL] <= 3
-                    && j >= borg_trait[BI_CLEVEL] + 5)
+                if (borg.trait[BI_CLEVEL] <= 3
+                    && j >= borg.trait[BI_CLEVEL] + 5)
                     continue;
 
                 /* Do not Venture too far from stair */
-                if (borg_trait[BI_CLEVEL] <= 10
-                    && j >= borg_trait[BI_CLEVEL] + 9)
+                if (borg.trait[BI_CLEVEL] <= 10
+                    && j >= borg.trait[BI_CLEVEL] + 9)
                     continue;
             }
 
@@ -683,7 +683,7 @@ bool borg_flow_spastic(bool bored)
                 - (borg_t - borg_began);
 
             /* Punish low level and searching too much */
-            v -= (50 - borg_trait[BI_CLEVEL]) * 5;
+            v -= (50 - borg.trait[BI_CLEVEL]) * 5;
 
             /* The grid is not searchable */
             if (v <= 0)
@@ -746,7 +746,7 @@ bool borg_flow_shop_entry(int i)
     const char *name = (f_info[stores[i].feat].name);
 
     /* Must be in town */
-    if (borg_trait[BI_CDEPTH])
+    if (borg.trait[BI_CDEPTH])
         return (false);
 
     /* Obtain the location */
@@ -758,7 +758,7 @@ bool borg_flow_shop_entry(int i)
         return (false);
 
     /* Hack -- re-enter a shop if needed */
-    if ((x == c_x) && (y == c_y)) {
+    if ((x == borg.c.x) && (y == borg.c.y)) {
         /* Note */
         borg_note("# Re-entering a shop");
 
@@ -875,7 +875,7 @@ bool borg_flow_vault(int nearness)
         for (x = w_x; x < w_x + SCREEN_WID; x++) {
 
             /* only bother with near ones */
-            if (borg_distance(c_y, c_x, y, x) > nearness)
+            if (distance(borg.c, loc(x, y)) > nearness)
                 continue;
 
             /* only deal with excavatable walls */
@@ -980,14 +980,14 @@ bool borg_twitchy(void)
         if (!(count--))
             break;
         /* Hack -- set goal */
-        g_x = c_x + ddx[dir];
-        g_y = c_y + ddy[dir];
+        borg.goal.g.x = borg.c.x + ddx[dir];
+        borg.goal.g.y = borg.c.y + ddy[dir];
 
-        if (!square_in_bounds_fully(cave, loc(g_x, g_y)))
+        if (!square_in_bounds_fully(cave, borg.goal.g))
             continue;
 
-        if (borg_grids[g_y][g_x].feat >= FEAT_SECRET
-            && borg_grids[g_y][g_x].feat <= FEAT_PERM)
+        if (borg_grids[borg.goal.g.y][borg.goal.g.x].feat >= FEAT_SECRET
+            && borg_grids[borg.goal.g.y][borg.goal.g.x].feat <= FEAT_PERM)
             continue;
         break;
     }
@@ -997,11 +997,11 @@ bool borg_twitchy(void)
             if (dir == 5)
                 continue;
 
-            if (!square_in_bounds_fully(cave, loc(g_x, g_y)))
+            if (!square_in_bounds_fully(cave, borg.goal.g))
                 continue;
 
-            if (borg_grids[g_y][g_x].feat >= FEAT_SECRET
-                && borg_grids[g_y][g_x].feat <= FEAT_PERM)
+            if (borg_grids[borg.goal.g.y][borg.goal.g.x].feat >= FEAT_SECRET
+                && borg_grids[borg.goal.g.y][borg.goal.g.x].feat <= FEAT_PERM)
                 continue;
             all_walls = false;
             break;
@@ -1160,37 +1160,38 @@ bool borg_check_rest(int y, int x)
 
     /* never rest to recover SP (if HP at max) if you only recover */
     /* sp in combat */
-    if (borg_trait[BI_CURHP] == borg_trait[BI_MAXHP]
+    if (borg.trait[BI_CURHP] == borg.trait[BI_MAXHP]
         && player_has(player, PF_COMBAT_REGEN))
         return false;
 
     /* Do not rest recently after killing a multiplier */
     /* This will avoid the problem of resting next to */
     /* an unkown area full of breeders */
-    if (when_last_kill_mult > (borg_t - 4) && when_last_kill_mult <= borg_t)
+    if (borg.when_last_kill_mult > (borg_t - 4)
+        && borg.when_last_kill_mult <= borg_t)
         return (false);
 
     /* No resting if Blessed and good HP and good SP */
     /* don't rest for SP if you do combat regen */
-    if ((borg_bless || borg_hero || borg_berserk || borg_fastcast || borg_regen
-            || borg_smite_evil)
-        && !borg_munchkin_mode
-        && (borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 8 / 10)
-        && (borg_trait[BI_CURSP] >= borg_trait[BI_MAXSP] * 7 / 10))
+    if ((borg.temp.bless || borg.temp.hero || borg.temp.berserk
+            || borg.temp.fastcast || borg.temp.regen || borg.temp.smite_evil)
+        && !borg.munchkin_mode
+        && (borg.trait[BI_CURHP] >= borg.trait[BI_MAXHP] * 8 / 10)
+        && (borg.trait[BI_CURSP] >= borg.trait[BI_MAXSP] * 7 / 10))
         return (false);
 
     /* Set this to Zero */
-    when_last_kill_mult = 0;
+    borg.when_last_kill_mult = 0;
 
     /* Most of the time, its ok to rest in a vault */
     if (vault_on_level) {
         for (i = -1; i < 1; i++) {
             for (ii = -1; ii < 1; ii++) {
                 /* check bounds */
-                if (!square_in_bounds_fully(cave, loc(c_x + ii, c_y + i)))
+                if (!square_in_bounds_fully(cave, loc(borg.c.x + ii, borg.c.y + i)))
                     continue;
 
-                if (borg_grids[c_y + i][c_x + ii].feat == FEAT_PERM)
+                if (borg_grids[borg.c.y + i][borg.c.x + ii].feat == FEAT_PERM)
                     borg_in_vault = true;
             }
         }
@@ -1200,36 +1201,36 @@ bool borg_check_rest(int y, int x)
      * which is what I like to do right before I take a stair,
      * Unless I am down by three quarters of my SP.
      */
-    if (borg_no_rest_prep >= 1 && !borg_munchkin_mode
-        && borg_trait[BI_CURSP] > borg_trait[BI_MAXSP] / 4
-        && borg_trait[BI_CDEPTH] < 85)
+    if (borg.no_rest_prep >= 1 && !borg.munchkin_mode
+        && borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4
+        && borg.trait[BI_CDEPTH] < 85)
         return (false);
 
     /* Don't rest on lava unless we are immune to fire */
-    if (borg_grids[y][x].feat == FEAT_LAVA && !borg_trait[BI_IFIRE])
+    if (borg_grids[y][x].feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
         return (false);
 
     /* Dont worry about fears if in a vault */
     if (!borg_in_vault) {
         /* Be concerned about the Regional Fear. */
-        if (borg_fear_region[y / 11][x / 11] > borg_trait[BI_CURHP] / 20
-            && borg_trait[BI_CDEPTH] != 100)
+        if (borg_fear_region[y / 11][x / 11] > borg.trait[BI_CURHP] / 20
+            && borg.trait[BI_CDEPTH] != 100)
             return (false);
 
         /* Be concerned about the Monster Fear. */
-        if (borg_fear_monsters[y][x] > borg_trait[BI_CURHP] / 10
-            && borg_trait[BI_CDEPTH] != 100)
+        if (borg_fear_monsters[y][x] > borg.trait[BI_CURHP] / 10
+            && borg.trait[BI_CDEPTH] != 100)
             return (false);
 
         /* Be concerned about the Monster Danger. */
-        if (borg_danger(y, x, 1, true, false) > borg_trait[BI_CURHP] / 40
-            && borg_trait[BI_CDEPTH] >= 85)
+        if (borg_danger(y, x, 1, true, false) > borg.trait[BI_CURHP] / 40
+            && borg.trait[BI_CDEPTH] >= 85)
             return (false);
 
         /* Be concerned if low on food */
-        if ((borg_trait[BI_CURLITE] == 0 || borg_trait[BI_ISWEAK]
-                || borg_trait[BI_FOOD] < 2)
-            && !borg_munchkin_mode)
+        if ((borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISWEAK]
+                || borg.trait[BI_FOOD] < 2)
+            && !borg.munchkin_mode)
             return (false);
     }
 
@@ -1238,8 +1239,8 @@ bool borg_check_rest(int y, int x)
         borg_kill           *kill  = &borg_kills[i];
         struct monster_race *r_ptr = &r_info[kill->r_idx];
 
-        int x9                     = kill->x;
-        int y9                     = kill->y;
+        int x9                     = kill->pos.x;
+        int y9                     = kill->pos.y;
         int ax, ay, d;
         int p = 0;
 
@@ -1269,7 +1270,7 @@ bool borg_check_rest(int y, int x)
             return (false);
 
         /* If monster is asleep, dont worry */
-        if (!kill->awake && d > 8 && !borg_munchkin_mode)
+        if (!kill->awake && d > 8 && !borg.munchkin_mode)
             continue;
 
         /* one call for dangers */
@@ -1278,7 +1279,7 @@ bool borg_check_rest(int y, int x)
         /* Ignore proximity checks while inside a vault */
         if (!borg_in_vault) {
             /* Real scary guys pretty close */
-            if (d < 5 && (p > avoidance / 3) && !borg_munchkin_mode)
+            if (d < 5 && (p > avoidance / 3) && !borg.munchkin_mode)
                 return (false);
 
             /* scary guys far away */
@@ -1290,7 +1291,7 @@ bool borg_check_rest(int y, int x)
             return false;
 
         /* Special handling for the munchkin mode */
-        if (borg_munchkin_mode && borg_los(y9, x9, y, x)
+        if (borg.munchkin_mode && borg_los(y9, x9, y, x)
             && (kill->awake && !(rf_has(r_ptr->flags, RF_NEVER_MOVE))))
             return false;
 

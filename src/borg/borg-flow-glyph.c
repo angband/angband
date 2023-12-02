@@ -86,8 +86,8 @@ bool borg_flow_glyph(int why)
     int x, y;
     int v          = 0;
 
-    int b_x        = c_x;
-    int b_y        = c_y;
+    int b_x        = borg.c.x;
+    int b_y        = borg.c.y;
     int b_v        = -1;
     int goal_glyph = 0;
     int glyph      = 0;
@@ -95,26 +95,26 @@ bool borg_flow_glyph(int why)
     borg_grid *ag;
 
     if ((glyph_y_center == 0 && glyph_x_center == 0)
-        || borg_distance(c_y, c_x, glyph_y_center, glyph_x_center) >= 50) {
+        || distance(borg.c, loc(glyph_x_center, glyph_y_center)) >= 50) {
         borg_needs_new_sea = true;
     }
 
     /* We have arrived */
-    if ((glyph_x == c_x) && (glyph_y == c_y)) {
+    if ((glyph_x == borg.c.x) && (glyph_y == borg.c.y)) {
         /* Cancel */
         glyph_x = 0;
         glyph_y = 0;
 
         /* Store the center of the glyphs */
         if (borg_needs_new_sea) {
-            glyph_y_center = c_y;
-            glyph_x_center = c_x;
+            glyph_y_center = borg.c.y;
+            glyph_x_center = borg.c.x;
         }
 
         borg_needs_new_sea = false;
 
         /* Take note */
-        borg_note(format("# Glyph Creating at (%d,%d)", c_x, c_y));
+        borg_note(format("# Glyph Creating at (%d,%d)", borg.c.x, borg.c.y));
 
         /* Create the Glyph */
         if (borg_spell_fail(GLYPH_OF_WARDING, 30)
@@ -123,15 +123,15 @@ bool borg_flow_glyph(int why)
             /* Check for an existing glyph */
             for (i = 0; i < track_glyph.num; i++) {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y))
+                if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
                     return (false);
             }
 
             /* Track the newly discovered glyph */
             if (track_glyph.num < track_glyph.size) {
                 borg_note("# Noting the creation of a glyph.");
-                track_glyph.x[track_glyph.num] = c_x;
-                track_glyph.y[track_glyph.num] = c_y;
+                track_glyph.x[track_glyph.num] = borg.c.x;
+                track_glyph.y[track_glyph.num] = borg.c.y;
                 track_glyph.num++;
             }
 

@@ -20,14 +20,14 @@
  * must be included before ALLOW_BORG to avoid empty compilation unit
  */
 #include "../angband.h"
+#include "../z-type.h"
 
 #ifdef ALLOW_BORG
 
 /*
  * Current targetted location
  */
-extern int borg_target_y;
-extern int borg_target_x;
+extern struct loc borg_target_loc;
 
 /*
  * Check a path for line of sight
@@ -59,7 +59,7 @@ extern int borg_distance(int y, int x, int y2, int x2);
 /*
  * Target a location.  Can be used alone or at "Direction?" prompt.
  */
-extern bool borg_target(int y, int x);
+extern bool borg_target(struct loc target);
 
 /*
  * Find a wall to target.

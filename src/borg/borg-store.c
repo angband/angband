@@ -39,52 +39,6 @@ borg_shop *safe_shops; /* Safety (save) "shops" */
 int borg_food_onsale = -1; /* Are shops selling food? */
 int borg_fuel_onsale = -1; /* Are shops selling fuel? */
 
-/*
- * This processing handles the highest level goals, and store interaction.
- *
- * Store interaction strategy
- *
- *   (1) Sell items to the home (for later use)
- ** optimize the stuff in the home... this involves buying and selling stuff
- ** not in the 'best' list.
- *       We sell anything we may need later (see step 4)
- *
- *   (2) Sell items to the shops (for money)
- *       We sell anything we do not actually need
- *
- *   (3) Buy items from the shops (for the player)
- *       We buy things that we actually need
- *
- *   (4) Buy items from the home (for the player)
- *       We buy things that we actually need (see step 1)
- *
- *   (5) Buy items from the shops (for the home)
- *       We buy things we may need later (see step 1)
- *
- *   (6) Buy items from the home (for the stores)
- *       We buy things we no longer need (see step 2)
- *
- *   The basic principle is that we should always act to improve our
- *   "status", and we should sometimes act to "maintain" our status,
- *   especially if there is a monetary reward.  But first we should
- *   attempt to use the home as a "stockpile", even though that is
- *   not worth any money, since it may save us money eventually.
- */
-
-/* (This routine is copied from store.c
- * Determine the price of an object (qty one) in a store.
- *
- *  store_buying == true  means the shop is buying, player selling
- *               == false means the shop is selling, player buying
- *
- * This function takes into account the player's charisma, but
- * never lets a shop-keeper lose money in a transaction.
- *
- * The "greed" value should exceed 100 when the player is "buying" the
- * object, and should be less than 100 when the player is "selling" it.
- *
- * Hack -- the black market always charges twice as much as it should.
- */
 static int32_t borg_price_item(
     const struct object *obj, bool store_buying, int qty, int this_store)
 {

@@ -96,8 +96,8 @@ void borg_delete_take(int i)
     borg_takes_cnt--;
 
     /* Wipe goals */
-    if (goal == GOAL_TAKE)
-        goal = 0;
+    if (borg.goal.type == GOAL_TAKE)
+        borg.goal.type = 0;
 }
 
 /*
@@ -148,7 +148,7 @@ void borg_follow_take(int i)
     old_kind = take->kind;
 
     /* delete them if they are under me */
-    if (take->y == c_y && take->x == c_x) {
+    if (take->y == borg.c.y && take->x == borg.c.x) {
         borg_delete_take(i);
     }
 
@@ -255,8 +255,8 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
         take->x, take->y));
 
     /* Wipe goals only if I have some light source */
-    if (borg_trait[BI_CURLITE])
-        goal = 0;
+    if (borg.trait[BI_CURLITE])
+        borg.goal.type = 0;
 
     /* Hack -- Force the object to sit on a floor grid */
     ag->feat = FEAT_FLOOR;
@@ -283,7 +283,7 @@ bool observe_take_diff(int y, int x, uint8_t a, wchar_t c)
         return (false);
 
     /* no new takes if hallucinations */
-    if (borg_trait[BI_ISIMAGE])
+    if (borg.trait[BI_ISIMAGE])
         return (false);
 
     /* Make a new object */
@@ -338,11 +338,11 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
         k_ptr = take->kind;
 
         /* Require matching char if not hallucinating*/
-        if (!borg_trait[BI_ISIMAGE] && c != k_ptr->d_char)
+        if (!borg.trait[BI_ISIMAGE] && c != k_ptr->d_char)
             continue;
 
         /* Require matching attr if not hallucinating rr9*/
-        if (!borg_trait[BI_ISIMAGE] && a != k_ptr->d_attr
+        if (!borg.trait[BI_ISIMAGE] && a != k_ptr->d_attr
             && (k_ptr->d_attr != 11 && k_ptr->d_char == '!')
             /* There are serious bugs with Flasks of Oil not having the attr set
                correctly */
@@ -370,8 +370,8 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
                     (k_ptr->name), take->y, take->x, ox, oy));
 
             /* Clear goals */
-            if (goal == GOAL_TAKE)
-                goal = 0;
+            if (borg.goal.type == GOAL_TAKE)
+                borg.goal.type = 0;
         }
 
         /* Timestamp */
@@ -400,7 +400,7 @@ bool borg_flow_take(bool viewable, int nearness)
 {
     int i, x, y;
     int b_stair = -1, j, b_j = -1;
-    int leash = borg_trait[BI_CLEVEL] * 3 + 9;
+    int leash = borg.trait[BI_CLEVEL] * 3 + 9;
     int full_quiver;
 
     borg_grid *ag;
@@ -425,7 +425,7 @@ bool borg_flow_take(bool viewable, int nearness)
         return (false);
 
     /* If out of fuel, don't mess around */
-    if (!borg_trait[BI_CURLITE])
+    if (!borg.trait[BI_CURLITE])
         return (false);
 
     /* Not if sitting in a sea of runes */
@@ -433,7 +433,7 @@ bool borg_flow_take(bool viewable, int nearness)
         return (false);
 
     /* increase leash */
-    if (borg_trait[BI_CLEVEL] >= 20)
+    if (borg.trait[BI_CLEVEL] >= 20)
         leash = 250;
 
     /* Starting over on count */
@@ -446,7 +446,7 @@ bool borg_flow_take(bool viewable, int nearness)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)
@@ -470,7 +470,7 @@ bool borg_flow_take(bool viewable, int nearness)
         y = take->y;
 
         /* Skip ones that make me wander too far */
-        if (b_stair != -1 && borg_trait[BI_CLEVEL] < 10) {
+        if (b_stair != -1 && borg.trait[BI_CLEVEL] < 10) {
             /* Check the distance of this 'take' to the stair */
             j = borg_distance(
                 track_less.y[b_stair], track_less.x[b_stair], y, x);
@@ -492,20 +492,20 @@ bool borg_flow_take(bool viewable, int nearness)
 
         /* Don't bother with ammo if I am at capacity */
 
-        if (take->tval == borg_trait[BI_AMMO_TVAL]
-            && borg_trait[BI_AMISSILES] >= full_quiver)
+        if (take->tval == borg.trait[BI_AMMO_TVAL]
+            && borg.trait[BI_AMISSILES] >= full_quiver)
             continue;
         /* No need to chase certain things down after a certain amount.  Dont
          * chase: Money Other spell books Wrong ammo
          */
-        if (borg_trait[BI_GOLD] >= 500000) {
+        if (borg.trait[BI_GOLD] >= 500000) {
             if (take->tval == TV_GOLD)
                 continue;
             if (!obj_kind_can_browse(&k_info[take->kind->kidx]))
                 continue;
             if ((take->tval == TV_SHOT || take->tval == TV_ARROW
                     || take->tval == TV_BOLT)
-                && take->tval != borg_trait[BI_AMMO_TVAL])
+                && take->tval != borg.trait[BI_AMMO_TVAL])
                 continue;
             /*
             Restore Mana for warriors?
@@ -519,7 +519,7 @@ bool borg_flow_take(bool viewable, int nearness)
 
         /* Check the distance to stair for this proposed grid and leash*/
         if (nearness > 5 && borg_flow_cost_stair(y, x, b_stair) > leash
-            && borg_trait[BI_CLEVEL] < 20)
+            && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */
@@ -592,7 +592,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)
@@ -630,8 +630,8 @@ bool borg_flow_take_scum(bool viewable, int nearness)
         borg_flow_clear();
 
         /* Check the distance to stair for this proposed grid with leash */
-        if (borg_flow_cost_stair(y, x, b_stair) > borg_trait[BI_CLEVEL] * 3 + 9
-            && borg_trait[BI_CLEVEL] < 20)
+        if (borg_flow_cost_stair(y, x, b_stair) > borg.trait[BI_CLEVEL] * 3 + 9
+            && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */
@@ -695,7 +695,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
         y = track_less.y[i];
 
         /* How far is the nearest up stairs */
-        j = borg_distance(c_y, c_x, y, x);
+        j = distance(borg.c, loc(x, y));
 
         /* skip the closer ones */
         if (b_j >= j)
@@ -827,8 +827,8 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
         borg_flow_clear();
 
         /* Check the distance to stair for this proposed grid */
-        if (borg_flow_cost_stair(y, x, b_stair) > borg_trait[BI_CLEVEL] * 3 + 9
-            && borg_trait[BI_CLEVEL] < 20)
+        if (borg_flow_cost_stair(y, x, b_stair) > borg.trait[BI_CLEVEL] * 3 + 9
+            && borg.trait[BI_CLEVEL] < 20)
             continue;
 
         /* Careful -- Remember it */

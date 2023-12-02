@@ -364,7 +364,7 @@ static int32_t borg_power_home_aux2(void)
     /*** Basic abilities ***/
 
     /* Collect food */
-    if (borg_trait[BI_MAXCLEVEL] < 10) {
+    if (borg.trait[BI_MAXCLEVEL] < 10) {
         for (k = 0; k < kb_info[TV_FOOD].max_stack && k < num_food; k++)
             value += 8000L - k * 10L;
     }
@@ -374,19 +374,19 @@ static int32_t borg_power_home_aux2(void)
         value += 2000L - k * 10L;
 
     /* Collect enchantments armour */
-    if (borg_trait[BI_CLEVEL] < 45) {
+    if (borg.trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_a;
              k++)
             value += 500L - k * 10L;
     }
     /* Collect enchantments to hit */
-    if (borg_trait[BI_CLEVEL] < 45) {
+    if (borg.trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_h;
              k++)
             value += 500L - k * 10L;
     }
     /* Collect enchantments to dam */
-    if (borg_trait[BI_CLEVEL] < 45) {
+    if (borg.trait[BI_CLEVEL] < 45) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_enchant_to_d;
              k++)
             value += 500L - k * 10L;
@@ -414,8 +414,8 @@ static int32_t borg_power_home_aux2(void)
         value += 500L - k * 10L;
 
     /* Reward Resistance Potions for Warriors */
-    if (borg_class == CLASS_WARRIOR && borg_trait[BI_MAXDEPTH] > 20
-        && borg_trait[BI_MAXDEPTH] < 80) {
+    if (borg.trait[BI_CLASS] == CLASS_WARRIOR && borg.trait[BI_MAXDEPTH] > 20
+        && borg.trait[BI_MAXDEPTH] < 80) {
         k = 0;
         for (; k < kb_info[TV_POTION].max_stack && k < num_pot_rheat; k++)
             value += 100L - k * 10L;
@@ -428,7 +428,7 @@ static int32_t borg_power_home_aux2(void)
         value += 100L;
 
     /* Collect escape  (staff of teleport) */
-    if (borg_trait[BI_MAXCLEVEL] < 40) {
+    if (borg.trait[BI_MAXCLEVEL] < 40) {
         for (k = 0; k < 85 && k < num_escape; k++)
             value += 2000L - k * 10L;
     }
@@ -442,7 +442,7 @@ static int32_t borg_power_home_aux2(void)
         value += 5000L;
 
     /* Collect phase */
-    if (borg_trait[BI_MAXCLEVEL] < 10) {
+    if (borg.trait[BI_MAXCLEVEL] < 10) {
         for (k = 0; k < kb_info[TV_SCROLL].max_stack && k < num_phase; k++)
             value += 5000L;
     }
@@ -451,7 +451,7 @@ static int32_t borg_power_home_aux2(void)
     /* for (k = 0; k < 85 && k < num_speed; k++) value += 5000L - k*10L; */
 
     /* collect mana/ */
-    if (borg_trait[BI_MAXSP] > 1) {
+    if (borg.trait[BI_MAXSP] > 1) {
         for (k = 0; k < kb_info[TV_POTION].max_stack && k < num_mana; k++)
             value += 6000L - k * 8L;
     }
@@ -460,7 +460,7 @@ static int32_t borg_power_home_aux2(void)
      * for them to sell that potion and buy equipment or several
      * Cure Crits with it.
      */
-    if (borg_trait[BI_CLEVEL] == 1) {
+    if (borg.trait[BI_CLEVEL] == 1) {
         k = 0;
         for (; k < 10 && k < num_heal; k++)
             value -= 5000L;
@@ -482,19 +482,19 @@ static int32_t borg_power_home_aux2(void)
 
     /* junk cure serious if we have some in the home */
     /* don't bother keeping them if high level */
-    if (borg_trait[BI_CLEVEL] > 35)
+    if (borg.trait[BI_CLEVEL] > 35)
         for (k = 0; k < 90 && k < num_cure_serious; k++)
             value -= 1500L - k * 10L;
 
     /*** Various ***/
 
     /* Fixing Stats */
-    if (borg_trait[BI_CLEVEL] == 50 && num_fix_exp)
+    if (borg.trait[BI_CLEVEL] == 50 && num_fix_exp)
         value -= 7500L;
-    if (borg_trait[BI_CLEVEL] > 35 && borg_trait[BI_CLEVEL] <= 49)
+    if (borg.trait[BI_CLEVEL] > 35 && borg.trait[BI_CLEVEL] <= 49)
         for (k = 0; k < 70 && k < num_fix_exp; k++)
             value += 1000L - k * 10L;
-    else if (borg_trait[BI_CLEVEL] <= 35)
+    else if (borg.trait[BI_CLEVEL] <= 35)
         for (k = 0; k < 5 && k < num_fix_exp; k++)
             value += 1000L - k * 10L;
 
@@ -504,7 +504,7 @@ static int32_t borg_power_home_aux2(void)
     for (book = 0; book < 9; book++) {
         /* only collect books up to level 14.  */
         /* After that, just buy them, they are always in stock*/
-        if (borg_trait[BI_CLEVEL] < 15) {
+        if (borg.trait[BI_CLEVEL] < 15) {
             /* Collect up to 5 copies of each normal book */
             for (k = 0; k < 5 && k < num_book[book]; k++) {
                 /* Hack -- only stockpile useful books */
@@ -522,7 +522,7 @@ static int32_t borg_power_home_aux2(void)
 
     /* Only allow unid'd stuff if we can't id them */
     if (home_un_id)
-        value += (home_un_id - borg_trait[BI_AID]) * 1005L;
+        value += (home_un_id - borg.trait[BI_AID]) * 1005L;
 
     /* Return the value */
     return (value);

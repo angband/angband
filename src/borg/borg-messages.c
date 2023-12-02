@@ -205,7 +205,7 @@ static void borg_parse_aux(char *msg, int len)
     char who[256];
     char buf[256];
 
-    borg_grid *ag = &borg_grids[g_y][g_x];
+    borg_grid *ag = &borg_grids[borg.goal.g.y][borg.goal.g.x];
 
     /* Log (if needed) */
     if (borg_cfg[BORG_VERBOSE])
@@ -248,8 +248,8 @@ static void borg_parse_aux(char *msg, int len)
 
         /* Incase it was a Resistance refresh */
         if (borg_attempting_refresh_resist) {
-            if (borg_resistance > 1)
-                borg_resistance -= 25000;
+            if (borg.resistance > 1)
+                borg.resistance -= 25000;
             borg_attempting_refresh_resist = false;
         }
 
@@ -352,17 +352,17 @@ static void borg_parse_aux(char *msg, int len)
         for (i = 0; i < STAT_MAX; i++) {
             //            my_need_stat_check[i] = true;
             /* max stats may have lowered */
-            my_stat_max[i] = 0;
+            borg.stat_max[i] = 0;
         }
     }
 
     /* amnesia attacks, re-id wands, staves, equipment. */
     if (prefix(msg, "You feel your memories fade.")) {
         /* Set the borg flag */
-        borg_trait[BI_ISFORGET] = true;
+        borg.trait[BI_ISFORGET] = true;
     }
     if (streq(msg, "Your memories come flooding back.")) {
-        borg_trait[BI_ISFORGET] = false;
+        borg.trait[BI_ISFORGET] = false;
     }
 
     if (streq(msg, "You have been knocked out.")) {
@@ -377,13 +377,13 @@ static void borg_parse_aux(char *msg, int len)
     /* Hallucination -- Open */
     if (streq(msg, "You feel drugged!")) {
         borg_note("# Hallucinating.  Special control of wanks.");
-        borg_trait[BI_ISIMAGE] = true;
+        borg.trait[BI_ISIMAGE] = true;
     }
 
     /* Hallucination -- Close */
     if (streq(msg, "You can see clearly again.")) {
         borg_note("# Hallucination ended.  Normal control of wanks.");
-        borg_trait[BI_ISIMAGE] = false;
+        borg.trait[BI_ISIMAGE] = false;
     }
 
     /* Hit somebody */
@@ -527,9 +527,9 @@ static void borg_parse_aux(char *msg, int len)
                         track_glyph.num = 0;
 
                         /* Check for glyphs under player -- Cheat*/
-                        if (square_iswarded(cave, loc(c_x, c_y))) {
-                            track_glyph.x[track_glyph.num] = c_x;
-                            track_glyph.y[track_glyph.num] = c_y;
+                        if (square_iswarded(cave, borg.c)) {
+                            track_glyph.x[track_glyph.num] = borg.c.x;
+                            track_glyph.y[track_glyph.num] = borg.c.y;
                             track_glyph.num++;
                         }
                     }
@@ -643,7 +643,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_BROKEN;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
         return;
     }
@@ -656,7 +656,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_PERM;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         return;
@@ -665,7 +665,7 @@ static void borg_parse_aux(char *msg, int len)
     /* Feature XXX XXX XXX */
     if (streq(msg, "You tunnel into the granite wall.")) {
         /* reseting my panel clock */
-        time_this_panel = 1;
+        borg.time_this_panel = 1;
 
         /* Only process walls */
         if ((ag->feat >= FEAT_GRANITE) && (ag->feat <= FEAT_PERM)) {
@@ -673,7 +673,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_GRANITE;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         return;
@@ -687,7 +687,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_QUARTZ_K;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         /* Process magma veins */
@@ -696,7 +696,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_QUARTZ;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         return;
@@ -710,7 +710,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_MAGMA_K;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         /* Process quartz veins */
@@ -719,7 +719,7 @@ static void borg_parse_aux(char *msg, int len)
             ag->feat = FEAT_MAGMA;
 
             /* Clear goals */
-            goal = 0;
+            borg.goal.type = 0;
         }
 
         return;
@@ -729,22 +729,22 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "The air about you becomes ")) {
         /* Initiate recall */
         /* Guess how long it will take to lift off */
-        goal_recalling
-            = 15000 + 5000; /* Guess. game turns x 1000 ( 15+rand(20))*/
+        /* Guess. game turns x 1000 ( 15+rand(20))*/
+        borg.goal.recalling = 15000 + 5000;
         return;
     }
 
     /* Word of Recall -- Lift off */
     if (prefix(msg, "You feel yourself yanked ")) {
         /* Recall complete */
-        goal_recalling = 0;
+        borg.goal.recalling = 0;
         return;
     }
 
     /* Word of Recall -- Cancelled */
     if (prefix(msg, "A tension leaves ")) {
         /* Hack -- Oops */
-        goal_recalling = 0;
+        borg.goal.recalling = 0;
         return;
     }
 
@@ -758,91 +758,91 @@ static void borg_parse_aux(char *msg, int len)
 
     /* protect from evil */
     if (prefix(msg, "You feel safe from evil!")) {
-        borg_prot_from_evil = true;
+        borg.temp.prot_from_evil = true;
         return;
     }
     if (prefix(msg, "You no longer feel safe from evil.")) {
-        borg_prot_from_evil = false;
+        borg.temp.prot_from_evil = false;
         return;
     }
     /* haste self */
     if (prefix(msg, "You feel yourself moving faster!")) {
-        borg_speed = true;
+        borg.temp.fast = true;
         return;
     }
     if (prefix(msg, "You feel yourself slow down.")) {
-        borg_speed = false;
+        borg.temp.fast = false;
         return;
     }
     /* Bless */
     if (prefix(msg, "You feel righteous")) {
-        borg_bless = true;
+        borg.temp.bless = true;
         return;
     }
     if (prefix(msg, "The prayer has expired.")) {
-        borg_bless = false;
+        borg.temp.bless = false;
         return;
     }
 
     /* fastcast */
     if (prefix(msg, "You feel your mind accelerate.")) {
-        borg_fastcast = true;
+        borg.temp.fastcast = true;
         return;
     }
     if (prefix(msg, "You feel your mind slow again.")) {
-        borg_fastcast = false;
+        borg.temp.fastcast = false;
         return;
     }
 
     /* hero */
     if (prefix(msg, "You feel like a hero!")) {
-        borg_hero = true;
+        borg.temp.hero = true;
         return;
     }
     if (prefix(msg, "You no longer feel heroic.")) {
-        borg_hero = false;
+        borg.temp.hero = false;
         return;
     }
 
     /* berserk */
     if (prefix(msg, "You feel like a killing machine!")) {
-        borg_berserk = true;
+        borg.temp.berserk = true;
         return;
     }
     if (prefix(msg, "You no longer feel berserk.")) {
-        borg_berserk = false;
+        borg.temp.berserk = false;
         return;
     }
 
     /* Sense Invisible */
     if (prefix(msg, "Your eyes feel very sensitive!")) {
-        borg_see_inv = 30000;
+        borg.see_inv = 30000;
         return;
     }
     if (prefix(msg, "Your eyes no longer feel so sensitive.")) {
-        borg_see_inv = 0;
+        borg.see_inv = 0;
         return;
     }
 
     /* check for wall blocking but not when confused*/
-    if ((prefix(msg, "There is a wall ") && (!borg_trait[BI_ISCONFUSED]))) {
+    if ((prefix(msg, "There is a wall ") && (!borg.trait[BI_ISCONFUSED]))) {
         my_need_redraw = true;
         my_need_alter  = true;
-        goal           = 0;
+        borg.goal.type = 0;
         return;
     }
 
     /* check for closed door but not when confused*/
     if ((prefix(msg, "There is a closed door blocking your way.")
-            && (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISIMAGE]))) {
+            && (!borg.trait[BI_ISCONFUSED] && !borg.trait[BI_ISIMAGE]))) {
         my_need_redraw = true;
         my_need_alter  = true;
-        goal           = 0;
+        borg.goal.type = 0;
         return;
     }
 
     /* check for mis-alter command.  Sometime induced by never_move guys*/
-    if (prefix(msg, "You spin around.") && !borg_trait[BI_ISCONFUSED]) {
+    if (prefix(msg, "You spin around.") && !borg.trait[BI_ISCONFUSED]) {
         /* Examine all the monsters */
         for (i = 1; i < borg_kills_nxt; i++) {
 
@@ -853,12 +853,12 @@ static void borg_parse_aux(char *msg, int len)
                 continue;
 
             /* Now do distance considerations */
-            x9 = kill->x;
-            y9 = kill->y;
+            x9 = kill->pos.x;
+            y9 = kill->pos.y;
 
             /* Distance components */
-            ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
-            ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
+            ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
+            ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
 
             /* Distance */
             d = MAX(ax, ay);
@@ -871,7 +871,7 @@ static void borg_parse_aux(char *msg, int len)
         }
 
         my_no_alter = true;
-        goal        = 0;
+        borg.goal.type = 0;
         return;
     }
 
@@ -883,9 +883,9 @@ static void borg_parse_aux(char *msg, int len)
         /* Remove all stairs from the array. */
         track_less.num            = 0;
         track_more.num            = 0;
-        borg_on_dnstairs          = false;
-        borg_on_upstairs          = false;
-        borg_grids[c_y][c_x].feat = FEAT_BROKEN;
+        borg.on_dnstairs          = false;
+        borg.on_upstairs          = false;
+        borg_grids[borg.c.y][borg.c.x].feat = FEAT_BROKEN;
 
         return;
     }
@@ -896,7 +896,7 @@ static void borg_parse_aux(char *msg, int len)
 
         my_no_alter = true;
         /* Clear goals */
-        goal = 0;
+        borg.goal.type = 0;
         return;
     }
 
@@ -906,7 +906,7 @@ static void borg_parse_aux(char *msg, int len)
         borg_respawning = 7;
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
-        time_this_panel += 100;
+        borg.time_this_panel += 100;
         return;
     }
 
@@ -915,7 +915,7 @@ static void borg_parse_aux(char *msg, int len)
         /* Hack -- Oops */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
-        time_this_panel += 100;
+        borg.time_this_panel += 100;
 
         /* ID all items (equipment) */
         for (i = INVEN_WIELD; i <= INVEN_FEET; i++) {
@@ -951,64 +951,64 @@ static void borg_parse_aux(char *msg, int len)
         /* Hack -- Oops */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
-        time_this_panel += 100;
+        borg.time_this_panel += 100;
     }
 
     /* resist acid */
     if (prefix(msg, "You feel resistant to acid!")) {
-        borg_trait[BI_TRACID] = true;
+        borg.temp.res_acid = true;
         return;
     }
     if (prefix(msg, "You are no longer resistant to acid.")) {
-        borg_trait[BI_TRACID] = false;
+        borg.temp.res_acid = false;
         return;
     }
     /* resist electricity */
     if (prefix(msg, "You feel resistant to electricity!")) {
-        borg_trait[BI_TRELEC] = true;
+        borg.temp.res_elec = true;
         return;
     }
     if (prefix(msg, "You are no longer resistant to electricity.")) {
-        borg_trait[BI_TRELEC] = false;
+        borg.temp.res_elec = false;
         return;
     }
     /* resist fire */
     if (prefix(msg, "You feel resistant to fire!")) {
-        borg_trait[BI_TRFIRE] = true;
+        borg.temp.res_fire = true;
         return;
     }
     if (prefix(msg, "You are no longer resistant to fire.")) {
-        borg_trait[BI_TRFIRE] = false;
+        borg.temp.res_fire = false;
         return;
     }
     /* resist cold */
     if (prefix(msg, "You feel resistant to cold!")) {
-        borg_trait[BI_TRCOLD] = true;
+        borg.temp.res_cold = true;
         return;
     }
     if (prefix(msg, "You are no longer resistant to cold.")) {
-        borg_trait[BI_TRCOLD] = false;
+        borg.temp.res_cold = false;
         return;
     }
     /* resist poison */
     if (prefix(msg, "You feel resistant to poison!")) {
-        borg_trait[BI_TRPOIS] = true;
+        borg.temp.res_pois = true;
         return;
     }
     if (prefix(msg, "You are no longer resistant to poison.")) {
-        borg_trait[BI_TRPOIS] = false;
+        borg.temp.res_pois = false;
         return;
     }
 
     /* Shield */
     if (prefix(msg, "A mystic shield forms around your body!")
         || prefix(msg, "Your skin turns to stone.")) {
-        borg_shield = true;
+        borg.temp.shield = true;
         return;
     }
     if (prefix(msg, "Your mystic shield crumbles away.")
         || prefix(msg, "A fleshy shade returns to your skin.")) {
-        borg_shield = false;
+        borg.temp.shield = false;
         return;
     }
 
@@ -1018,15 +1018,15 @@ static void borg_parse_aux(char *msg, int len)
         /* Check for an existing glyph */
         for (i = 0; i < track_glyph.num; i++) {
             /* Stop if we already new about this glyph */
-            if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y))
+            if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
                 break;
         }
 
         /* Track the newly discovered glyph */
         if ((i == track_glyph.num) && (i < track_glyph.size)) {
             borg_note("# Noting the creation of a glyph.");
-            track_glyph.x[i] = c_x;
-            track_glyph.y[i] = c_y;
+            track_glyph.x[i] = borg.c.x;
+            track_glyph.y[i] = borg.c.y;
             track_glyph.num++;
         }
 
@@ -1049,9 +1049,9 @@ static void borg_parse_aux(char *msg, int len)
         track_glyph.num = 0;
 
         /* Check for glyphs under player -- Cheat*/
-        if (square_iswarded(cave, loc(c_x, c_y))) {
-            track_glyph.x[track_glyph.num] = c_x;
-            track_glyph.y[track_glyph.num] = c_y;
+        if (square_iswarded(cave, borg.c)) {
+            track_glyph.x[track_glyph.num] = borg.c.x;
+            track_glyph.y[track_glyph.num] = borg.c.y;
             track_glyph.num++;
         }
         return;
@@ -1079,13 +1079,13 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "You have removed the ")) {
         int x, y;
         /* remove rubbles from array */
-        for (y = c_y - 1; y < c_y + 1; y++) {
-            for (x = c_x - 1; x < c_x + 1; x++) {
+        for (y = borg.c.y - 1; y < borg.c.y + 1; y++) {
+            for (x = borg.c.x - 1; x < borg.c.x + 1; x++) {
                 /* replace all rubble with broken doors, the borg ignores
                  * broken doors.  This routine is only needed if the borg
                  * is out of lite and searching in the dark.
                  */
-                if (borg_trait[BI_CURLITE])
+                if (borg.trait[BI_CURLITE])
                     continue;
 
                 if (ag->feat == FEAT_RUBBLE)
@@ -1097,7 +1097,7 @@ static void borg_parse_aux(char *msg, int len)
 
     if (prefix(msg, "The enchantment failed")) {
         /* reset our panel clock for this */
-        time_this_panel = 1;
+        borg.time_this_panel = 1;
         return;
     }
 
@@ -1107,16 +1107,16 @@ static void borg_parse_aux(char *msg, int len)
         for (i = 1; i < borg_kills_nxt; i++) {
             borg_kill *kill = &borg_kills[i];
 
-            x9              = kill->x;
-            y9              = kill->y;
+            x9              = kill->pos.x;
+            y9              = kill->pos.y;
 
             /* Skip dead monsters */
             if (!kill->r_idx)
                 continue;
 
             /* Distance components */
-            ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
-            ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
+            ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
+            ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
 
             /* Distance */
             d = MAX(ax, ay);
@@ -1130,7 +1130,7 @@ static void borg_parse_aux(char *msg, int len)
         }
 
         /* Remove the region fear as well */
-        borg_fear_region[c_y / 11][c_x / 11] = 0;
+        borg_fear_region[borg.c.y / 11][borg.c.x / 11] = 0;
 
         return;
     }
@@ -1138,7 +1138,7 @@ static void borg_parse_aux(char *msg, int len)
     /* Be aware and concerned of busted doors */
     if (prefix(msg, "You hear a door burst open!")) {
         /* on level 1 and 2 be concerned.  Could be Grip or Fang */
-        if (borg_trait[BI_CDEPTH] <= 3 && borg_trait[BI_CLEVEL] <= 5)
+        if (borg.trait[BI_CDEPTH] <= 3 && borg.trait[BI_CLEVEL] <= 5)
             scaryguy_on_level = true;
     }
 
@@ -1148,7 +1148,7 @@ static void borg_parse_aux(char *msg, int len)
         || prefix(msg, "gestures at your feet.")) {
         /* If in Lunal mode better shut that off, he is not on the stairs
          * anymore */
-        borg_lunal_mode = false;
+        borg.lunal_mode = false;
         borg_note("# Disconnecting Lunal Mode due to monster spell.");
     }
 

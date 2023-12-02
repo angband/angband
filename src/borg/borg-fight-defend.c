@@ -111,10 +111,10 @@ static void borg_log_spellpath(bool beam)
     borg_grid *ag;
     borg_kill *kill;
 
-    y   = borg_target_y;
-    x   = borg_target_x;
-    n_x = c_x;
-    n_y = c_y;
+    y   = borg_target_loc.y;
+    x   = borg_target_loc.x;
+    n_x = borg.c.x;
+    n_y = borg.c.y;
 
     while (1) {
         ag   = &borg_grids[n_y][n_x];
@@ -128,8 +128,8 @@ static void borg_log_spellpath(bool beam)
         } else if (ag->kill) {
             borg_note(format("# Logging Spell pathway (%d,%d): %s, danger %d",
                 n_y, n_x, (r_info[kill->r_idx].name),
-                borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false)));
-        } else if (n_y == c_y && n_x == c_x) {
+                borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
+        } else if (n_y == borg.c.y && n_x == borg.c.x) {
             borg_note(
                 format("# Logging Spell pathway (%d,%d): My grid.", n_y, n_x));
         } else {
@@ -146,7 +146,7 @@ static void borg_log_spellpath(bool beam)
             break;
 
         /* Calculate the new location */
-        borg_inc_motion(&n_y, &n_x, c_y, c_x, y, x);
+        borg_inc_motion(&n_y, &n_x, borg.c.y, borg.c.x, y, x);
     }
 }
 
@@ -156,23 +156,23 @@ static void borg_log_spellpath(bool beam)
 static int borg_defend_aux_bless(int p1)
 {
     int        fail_allowed = 25;
-    borg_grid *ag           = &borg_grids[c_y][c_x];
+    borg_grid *ag           = &borg_grids[borg.c.y][borg.c.x];
 
     int i;
 
     bool borg_near_kill = false;
 
     /* already blessed */
-    if (borg_bless)
+    if (borg.temp.bless)
         return (0);
 
     /* Cant when Blind */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Dark */
-    if (!(ag->info & BORG_GLOW) && borg_trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
         return (0);
 
     /* no spell */
@@ -202,7 +202,7 @@ static int borg_defend_aux_bless(int p1)
             continue;
 
         /* Check the distance XXX XXX XXX */
-        if (borg_distance(c_y, c_x, kill->y, kill->x) > 3)
+        if (distance(borg.c, kill->pos) > 3)
             continue;
 
         /* kill near me */
@@ -210,7 +210,7 @@ static int borg_defend_aux_bless(int p1)
     }
 
     /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance / 12 || borg_trait[BI_CLEVEL] <= 15) && p1 > 0
+    if ((p1 > avoidance / 12 || borg.trait[BI_CLEVEL] <= 15) && p1 > 0
         && borg_near_kill && p1 < avoidance / 2) {
         /* Simulation */
         /* bless is a low priority */
@@ -220,7 +220,7 @@ static int borg_defend_aux_bless(int p1)
         borg_note("# Attempting to cast Bless");
 
         /* No resting to recoop mana */
-        borg_no_rest_prep = 11000;
+        borg.no_rest_prep = 11000;
 
         /* do it! */
         if (borg_spell(BLESS) || borg_activate_item(act_blessing)
@@ -248,12 +248,12 @@ static int borg_defend_aux_speed(int p1)
     int  fail_allowed = 25;
 
     /* already fast */
-    if (borg_speed)
+    if (borg.temp.fast)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -296,9 +296,9 @@ static int borg_defend_aux_speed(int p1)
         good_speed = true;
 
     /* pretend we are protected and look again */
-    borg_speed = true;
-    p2         = borg_danger(c_y, c_x, 1, true, false);
-    borg_speed = false;
+    borg.temp.fast = true;
+    p2              = borg_danger(borg.c.y, borg.c.x, 1, true, false);
+    borg.temp.fast = false;
 
     /* if scaryguy around cast it. */
     if (scaryguy_on_level) {
@@ -317,7 +317,7 @@ static int borg_defend_aux_speed(int p1)
         p2 = p2 * 7 / 10;
     }
     /* if the unique is Sauron cast it */
-    if (borg_trait[BI_CDEPTH] == 99 && borg_fighting_unique >= 10) {
+    if (borg.trait[BI_CDEPTH] == 99 && borg_fighting_unique >= 10) {
         p2 = p2 * 6 / 10;
     }
 
@@ -334,12 +334,12 @@ static int borg_defend_aux_speed(int p1)
     }
 
     /* if the unique is Morgoth cast it */
-    if (borg_trait[BI_CDEPTH] == 100 && borg_fighting_unique >= 10) {
+    if (borg.trait[BI_CDEPTH] == 100 && borg_fighting_unique >= 10) {
         p2 = p2 * 5 / 10;
     }
 
     /* Attempt to conserve Speed at end of game */
-    if (borg_trait[BI_CDEPTH] >= 97 && !borg_fighting_unique && !good_speed)
+    if (borg.trait[BI_CDEPTH] >= 97 && !borg_fighting_unique && !good_speed)
         p2 = 9999;
 
     /* if this is an improvement and we may not avoid monster now and */
@@ -360,7 +360,7 @@ static int borg_defend_aux_speed(int p1)
         borg_note("# Attempting to cast Speed");
 
         /* No resting to recoop mana */
-        borg_no_rest_prep = borg_trait[BI_CLEVEL] * 1000;
+        borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* do it! */
         if (borg_zap_rod(sv_rod_speed) || borg_activate_item(act_haste)
@@ -383,16 +383,16 @@ static int borg_defend_aux_grim_purpose(int p1)
     int p2           = 0;
     int fail_allowed = 25;
 
-    bool save_conf   = borg_trait[BI_RCONF];
-    bool save_fa     = borg_trait[BI_FRACT];
+    bool save_conf   = borg.trait[BI_RCONF];
+    bool save_fa     = borg.trait[BI_FRACT];
 
     /* already protected */
     if (save_conf && save_fa)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -412,14 +412,14 @@ static int borg_defend_aux_grim_purpose(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
     /* pretend we are protected and look again */
-    borg_trait[BI_RCONF] = true;
-    borg_trait[BI_FRACT] = true;
-    p2                   = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_RCONF] = save_conf;
-    borg_trait[BI_FRACT] = save_fa;
+    borg.trait[BI_RCONF] = true;
+    borg.trait[BI_FRACT] = true;
+    p2                   = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.trait[BI_RCONF] = save_conf;
+    borg.trait[BI_FRACT] = save_fa;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -437,7 +437,7 @@ static int borg_defend_aux_grim_purpose(int p1)
         /* do it! */
         if (borg_spell(GRIM_PURPOSE))
             /* No resting to recoop mana */
-            borg_no_rest_prep = 13000;
+            borg.no_rest_prep = 13000;
 
         /* Value */
         return (p1 - p2 + 2);
@@ -454,13 +454,13 @@ static int borg_defend_aux_resist_fecap(int p1)
     bool save_fire = false, save_acid = false, save_poison = false,
          save_elec = false, save_cold = false;
 
-    if (borg_trait[BI_TRFIRE] && borg_trait[BI_TRACID] && borg_trait[BI_TRPOIS]
-        && borg_trait[BI_TRELEC] && borg_trait[BI_TRCOLD])
+    if (borg.temp.res_fire && borg.temp.res_acid && borg.temp.res_pois
+        && borg.temp.res_elec && borg.temp.res_cold)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     if (!borg_equips_item(act_resist_all, true)
@@ -469,25 +469,25 @@ static int borg_defend_aux_resist_fecap(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
     /* pretend we are protected and look again */
-    save_fire             = borg_trait[BI_TRFIRE];
-    save_elec             = borg_trait[BI_TRELEC];
-    save_cold             = borg_trait[BI_TRCOLD];
-    save_acid             = borg_trait[BI_TRACID];
-    save_poison           = borg_trait[BI_TRPOIS];
-    borg_trait[BI_TRFIRE] = true;
-    borg_trait[BI_TRELEC] = true;
-    borg_trait[BI_TRCOLD] = true;
-    borg_trait[BI_TRACID] = true;
-    borg_trait[BI_TRPOIS] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRFIRE] = save_fire;
-    borg_trait[BI_TRELEC] = save_elec;
-    borg_trait[BI_TRCOLD] = save_cold;
-    borg_trait[BI_TRACID] = save_acid;
-    borg_trait[BI_TRPOIS] = save_poison;
+    save_fire          = borg.temp.res_fire;
+    save_elec          = borg.temp.res_elec;
+    save_cold          = borg.temp.res_cold;
+    save_acid          = borg.temp.res_acid;
+    save_poison        = borg.temp.res_pois;
+    borg.temp.res_fire = true;
+    borg.temp.res_elec = true;
+    borg.temp.res_cold = true;
+    borg.temp.res_acid = true;
+    borg.temp.res_pois = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_fire = save_fire;
+    borg.temp.res_elec = save_elec;
+    borg.temp.res_cold = save_cold;
+    borg.temp.res_acid = save_acid;
+    borg.temp.res_pois = save_poison;
 
     /* Hack -
      * If the borg is fighting a particular unique enhance the
@@ -501,7 +501,7 @@ static int borg_defend_aux_resist_fecap(int p1)
      * If borg is high enough level, he does not need to worry
      * about mana consumption.  Cast the good spell.
      */
-    if (borg_trait[BI_CLEVEL] >= 45)
+    if (borg.trait[BI_CLEVEL] >= 45)
         p2 = p2 * 8 / 10;
 
     /* if this is an improvement and we may not avoid monster now and */
@@ -521,8 +521,8 @@ static int borg_defend_aux_resist_fecap(int p1)
         if (borg_activate_item(act_resist_all)
             || borg_activate_item(act_rage_bless_resist))
 
-            /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            /* No resting to recoup mana */
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2 + 2);
@@ -540,14 +540,14 @@ static int borg_defend_aux_resist_f(int p1)
     int  fail_allowed = 25;
     bool save_fire    = false;
 
-    save_fire         = borg_trait[BI_TRFIRE];
+    save_fire         = borg.temp.res_fire;
 
-    if (borg_trait[BI_TRFIRE])
+    if (borg.temp.res_fire)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -573,12 +573,12 @@ static int borg_defend_aux_resist_f(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
     /* pretend we are protected and look again */
-    borg_trait[BI_TRFIRE] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRFIRE] = save_fire;
+    borg.temp.res_fire = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_fire = save_fire;
 
     /* Hack -
      * If the borg is fighting a particular unique enhance the
@@ -614,7 +614,7 @@ static int borg_defend_aux_resist_f(int p1)
             || borg_quaff_potion(sv_potion_resist_heat))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -631,12 +631,12 @@ static int borg_defend_aux_resist_c(int p1)
     int  fail_allowed = 25;
     bool save_cold    = false;
 
-    if (borg_trait[BI_TRCOLD])
+    if (borg.temp.res_cold)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -662,13 +662,13 @@ static int borg_defend_aux_resist_c(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1        = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
-    save_cold = borg_trait[BI_TRCOLD];
+    save_cold = borg.temp.res_cold;
     /* pretend we are protected and look again */
-    borg_trait[BI_TRCOLD] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRCOLD] = save_cold;
+    borg.temp.res_cold = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_cold = save_cold;
 
     /* Hack -
      * If the borg is fighting a particular unique enhance the
@@ -705,7 +705,7 @@ static int borg_defend_aux_resist_c(int p1)
             || borg_quaff_potion(sv_potion_resist_cold))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -722,12 +722,12 @@ static int borg_defend_aux_resist_a(int p1)
     int  fail_allowed = 25;
     bool save_acid    = false;
 
-    if (borg_trait[BI_TRACID])
+    if (borg.temp.res_acid)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -751,13 +751,13 @@ static int borg_defend_aux_resist_a(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1        = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
-    save_acid = borg_trait[BI_TRACID];
+    save_acid = borg.temp.res_acid;
     /* pretend we are protected and look again */
-    borg_trait[BI_TRACID] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRACID] = save_acid;
+    borg.temp.res_acid = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_acid = save_acid;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -789,7 +789,7 @@ static int borg_defend_aux_resist_a(int p1)
             || borg_activate_item(act_rage_bless_resist))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -805,12 +805,12 @@ static int borg_defend_aux_resist_e(int p1)
     int  fail_allowed = 25;
     bool save_elec    = false;
 
-    if (borg_trait[BI_TRELEC])
+    if (borg.temp.res_elec)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -835,13 +835,13 @@ static int borg_defend_aux_resist_e(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1        = borg_danger(c_y, c_x, 1, false, false);
+    p1        = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
-    save_elec = borg_trait[BI_TRELEC];
+    save_elec = borg.temp.res_elec;
     /* pretend we are protected and look again */
-    borg_trait[BI_TRELEC] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRELEC] = save_elec;
+    borg.temp.res_elec = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_elec = save_elec;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -873,7 +873,7 @@ static int borg_defend_aux_resist_e(int p1)
             || borg_activate_item(act_rage_bless_resist))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -889,12 +889,12 @@ static int borg_defend_aux_resist_p(int p1)
     int  fail_allowed = 25;
     bool save_poison  = false;
 
-    if (borg_trait[BI_TRPOIS])
+    if (borg.temp.res_pois)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -918,13 +918,13 @@ static int borg_defend_aux_resist_p(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1          = borg_danger(c_y, c_x, 1, false, false);
+    p1          = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
-    save_poison = borg_trait[BI_TRPOIS];
+    save_poison = borg.temp.res_pois;
     /* pretend we are protected and look again */
-    borg_trait[BI_TRPOIS] = true;
-    p2                    = borg_danger(c_y, c_x, 1, false, false);
-    borg_trait[BI_TRPOIS] = save_poison;
+    borg.temp.res_pois = true;
+    p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.res_pois = save_poison;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -946,7 +946,7 @@ static int borg_defend_aux_resist_p(int p1)
             || borg_quaff_potion(sv_potion_resist_pois))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = 21000;
+            borg.no_rest_prep = 21000;
 
         /* Value */
         return (p1 - p2);
@@ -962,15 +962,15 @@ static int borg_defend_aux_prot_evil(int p1)
     int        p2           = 0;
     int        fail_allowed = 25;
     bool       pfe_spell    = false;
-    borg_grid *ag           = &borg_grids[c_y][c_x];
+    borg_grid *ag           = &borg_grids[borg.c.y][borg.c.x];
 
     /* if already protected */
-    if (borg_prot_from_evil)
+    if (borg.temp.prot_from_evil)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* if very scary, do not allow for much chance of fail */
@@ -991,11 +991,11 @@ static int borg_defend_aux_prot_evil(int p1)
     if (0 <= borg_slot(TV_SCROLL, sv_scroll_protection_from_evil))
         pfe_spell = true;
 
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISIMAGE])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISIMAGE])
         pfe_spell = false;
 
-    if (!(ag->info & BORG_GLOW) && borg_trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
         pfe_spell = false;
 
     if (borg_equips_item(act_protevil, true))
@@ -1006,12 +1006,12 @@ static int borg_defend_aux_prot_evil(int p1)
 
     /* elemental and PFE use the 'averaging' method for danger.  Redefine p1 as
      * such. */
-    p1 = borg_danger(c_y, c_x, 1, false, false);
+    p1 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
     /* pretend we are protected and look again */
-    borg_prot_from_evil = true;
-    p2                  = borg_danger(c_y, c_x, 1, false, false);
-    borg_prot_from_evil = false;
+    borg.temp.prot_from_evil = true;
+    p2 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    borg.temp.prot_from_evil = false;
 
     /* if this is an improvement and we may not avoid monster now and */
     /* we may have before */
@@ -1021,7 +1021,7 @@ static int borg_defend_aux_prot_evil(int p1)
                                            : (avoidance / 2))
             && p1 > (avoidance / 7))
         || (borg_cfg[BORG_MONEY_SCUM_AMOUNT] >= 1
-            && borg_trait[BI_CDEPTH] == 0)) {
+            && borg.trait[BI_CDEPTH] == 0)) {
         /* Simulation */
         if (borg_simulate)
             return (p1 - p2);
@@ -1034,7 +1034,7 @@ static int borg_defend_aux_prot_evil(int p1)
             || borg_read_scroll(sv_scroll_protection_from_evil))
 
             /* No resting to recoop mana */
-            borg_no_rest_prep = borg_trait[BI_CLEVEL] * 1000;
+            borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* Value */
         return (p1 - p2);
@@ -1050,22 +1050,22 @@ static int borg_defend_aux_shield(int p1)
     int p2 = 0;
 
     /* if already protected */
-    if (borg_shield)
+    if (borg.temp.shield)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
-    if (borg_has[kv_mush_stoneskin] <= 0
+    if (borg.has[kv_mush_stoneskin] <= 0
         && !borg_equips_item(act_shroom_stone, true))
         return (0);
 
     /* pretend we are protected and look again */
-    borg_shield = true;
-    p2          = borg_danger(c_y, c_x, 1, true, false);
-    borg_shield = false;
+    borg.temp.shield = true;
+    p2               = borg_danger(borg.c.y, borg.c.x, 1, true, false);
+    borg.temp.shield = false;
 
     /* slightly enhance the value if fighting a unique */
     if (borg_fighting_unique)
@@ -1087,7 +1087,7 @@ static int borg_defend_aux_shield(int p1)
         if (borg_eat(TV_MUSHROOM, sv_mush_stoneskin)
             || borg_activate_item(act_shroom_stone)) {
             /* No resting to recoop mana */
-            borg_no_rest_prep = 2000;
+            borg.no_rest_prep = 2000;
             return (p1 - p2);
         }
     }
@@ -1105,24 +1105,24 @@ static int borg_defend_aux_tele_away(int p1)
     int  p2           = p1;
     int  fail_allowed = 50;
     bool spell_ok     = false;
-    int  i, x, y;
+    int  i;
 
     borg_grid *ag;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /*
      * Only tport monster away if scared or getting low on mana
      */
     if (borg_fighting_unique) {
-        if (p1 < avoidance * 7 / 10 && borg_trait[BI_CURSP] > 30
+        if (p1 < avoidance * 7 / 10 && borg.trait[BI_CURSP] > 30
             && borg_simulate)
             return (0);
     } else {
-        if (p1 < avoidance * 5 / 10 && borg_trait[BI_CURSP] > 30
+        if (p1 < avoidance * 5 / 10 && borg.trait[BI_CURSP] > 30
             && borg_simulate)
             return (0);
     }
@@ -1195,12 +1195,8 @@ static int borg_defend_aux_tele_away(int p1)
         if (kill->when < borg_t - 2)
             continue;
 
-        /* Acquire location */
-        x = kill->x;
-        y = kill->y;
-
         /* Get grid */
-        ag = &borg_grids[y][x];
+        ag = &borg_grids[kill->pos.y][kill->pos.x];
 
         /* Never shoot off-screen */
         if (!(ag->info & BORG_OKAY))
@@ -1213,12 +1209,12 @@ static int borg_defend_aux_tele_away(int p1)
             continue;
 
         /* Check the distance XXX XXX XXX */
-        if (borg_distance(c_y, c_x, y, x) > z_info->max_range)
+        if (distance(borg.c, kill->pos) > z_info->max_range)
             continue;
 
         /* Save the location (careful) */
-        borg_temp_x[borg_temp_n] = x;
-        borg_temp_y[borg_temp_n] = y;
+        borg_temp_x[borg_temp_n] = kill->pos.x;
+        borg_temp_y[borg_temp_n] = kill->pos.y;
         borg_temp_n++;
     }
 
@@ -1288,12 +1284,12 @@ static int borg_defend_aux_hero(int p1)
     int fail_allowed = 15;
 
     /* already hero */
-    if (borg_hero)
+    if (borg.temp.hero)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     if (!borg_spell_okay_fail(HEROISM, fail_allowed)
@@ -1313,7 +1309,7 @@ static int borg_defend_aux_hero(int p1)
         /* do it! */
         if (borg_spell(HEROISM) || borg_quaff_potion(sv_potion_heroism)) {
             /* No resting to recoop mana */
-            borg_no_rest_prep = 10000;
+            borg.no_rest_prep = 10000;
             return 1;
         }
     }
@@ -1329,16 +1325,16 @@ static int borg_defend_aux_regen(int p1)
     int fail_allowed = 15;
 
     /* already regenerating */
-    if (borg_regen)
+    if (borg.temp.regen)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* don't bother if not much to regenerate */
-    if (borg_trait[BI_MAXHP] < 100)
+    if (borg.trait[BI_MAXHP] < 100)
         return (0);
 
     if (!borg_spell_okay_fail(RAPID_REGENERATION, fail_allowed))
@@ -1355,7 +1351,7 @@ static int borg_defend_aux_regen(int p1)
         /* do it! */
         if (borg_spell(RAPID_REGENERATION)) {
             /* No resting to recoop mana */
-            borg_no_rest_prep = 10000;
+            borg.no_rest_prep = 10000;
             return 1;
         }
     }
@@ -1371,12 +1367,12 @@ static int borg_defend_aux_berserk(int p1)
     int fail_allowed = 15;
 
     /* already berserk */
-    if (borg_berserk)
+    if (borg.temp.berserk)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     if (!borg_spell_okay_fail(BERSERK_STRENGTH, fail_allowed)
@@ -1413,12 +1409,12 @@ static int borg_defend_aux_smite_evil(int p1)
     int fail_allowed = 15;
 
     /* already smiting evil */
-    if (borg_smite_evil || borg_trait[BI_WS_EVIL])
+    if (borg.temp.smite_evil || borg.trait[BI_WS_EVIL])
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     if (!borg_spell_okay_fail(SMITE_EVIL, fail_allowed))
@@ -1450,11 +1446,11 @@ static int borg_defend_aux_glyph(int p1)
     int  fail_allowed = 25;
     bool glyph_spell  = false;
 
-    borg_grid *ag     = &borg_grids[c_y][c_x];
+    borg_grid *ag     = &borg_grids[borg.c.y][borg.c.x];
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* He should not cast it while on an object.
@@ -1495,12 +1491,12 @@ static int borg_defend_aux_glyph(int p1)
     if (borg_equips_item(act_glyph, true))
         glyph_spell = true;
 
-    if ((borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-            || borg_trait[BI_ISIMAGE])
+    if ((borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+            || borg.trait[BI_ISIMAGE])
         && glyph_spell)
         glyph_spell = false;
 
-    if (!(ag->info & BORG_GLOW) && borg_trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
         glyph_spell = false;
 
     if (!glyph_spell)
@@ -1508,7 +1504,7 @@ static int borg_defend_aux_glyph(int p1)
 
     /* pretend we are protected and look again */
     borg_on_glyph = true;
-    p2            = borg_danger(c_y, c_x, 1, true, false);
+    p2            = borg_danger(borg.c.y, borg.c.x, 1, true, false);
     borg_on_glyph = false;
 
     /* if this is an improvement and we may not avoid monster now and */
@@ -1528,15 +1524,15 @@ static int borg_defend_aux_glyph(int p1)
             /* Check for an existing glyph */
             for (i = 0; i < track_glyph.num; i++) {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph.x[i] == c_x) && (track_glyph.y[i] == c_y))
+                if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
                     return (p1 - p2);
             }
 
             /* Track the newly discovered glyph */
             if (track_glyph.num < track_glyph.size) {
                 borg_note("# Noting the creation of a glyph.");
-                track_glyph.x[track_glyph.num] = c_x;
-                track_glyph.y[track_glyph.num] = c_y;
+                track_glyph.x[track_glyph.num] = borg.c.x;
+                track_glyph.y[track_glyph.num] = borg.c.y;
                 track_glyph.num++;
             }
             return (p1 - p2);
@@ -1558,8 +1554,8 @@ static int borg_defend_aux_create_door(int p1)
     borg_grid *ag;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* any summoners near?*/
@@ -1586,8 +1582,8 @@ static int borg_defend_aux_create_door(int p1)
     for (door_x = -1; door_x <= 1; door_x++) {
         for (door_y = -1; door_y <= 1; door_y++) {
             /* Acquire location */
-            x  = door_x + c_x;
-            y  = door_y + c_y;
+            x  = door_x + borg.c.x;
+            y  = door_y + borg.c.y;
 
             ag = &borg_grids[y][x];
 
@@ -1616,7 +1612,7 @@ static int borg_defend_aux_create_door(int p1)
 
     /* pretend we are protected and look again */
     borg_create_door = true;
-    p2               = borg_danger(c_y, c_x, 1, true, false);
+    p2               = borg_danger(borg.c.y, borg.c.x, 1, true, false);
     borg_create_door = false;
 
     /* if this is an improvement and we may not avoid monster now and */
@@ -1657,14 +1653,14 @@ static int borg_defend_aux_mass_genocide(int p1)
     struct monster_race *r_ptr;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* see if prayer is legal */
     if (!borg_spell_okay_fail(MASS_BANISHMENT, 40)
         && !borg_equips_item(act_banishment, true)
-        && (borg_trait[BI_AMASSBAN] == 0)) /* Mass Banishment scroll */
+        && (borg.trait[BI_AMASSBAN] == 0)) /* Mass Banishment scroll */
         return (0);
 
     /* See if he is in real danger */
@@ -1683,7 +1679,7 @@ static int borg_defend_aux_mass_genocide(int p1)
             continue;
 
         /* Check the distance */
-        if (borg_distance(c_y, c_x, kill->y, kill->x) > 20)
+        if (distance(borg.c, kill->pos) > 20)
             continue;
 
         /* we try not to genocide uniques */
@@ -1691,7 +1687,7 @@ static int borg_defend_aux_mass_genocide(int p1)
             continue;
 
         /* Calculate danger */
-        p = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
 
         /* store the danger for this type of monster */
         b_p = b_p + p;
@@ -1706,7 +1702,7 @@ static int borg_defend_aux_mass_genocide(int p1)
     /* if strain (plus a pad incase we did not know about some monsters)
      * is greater than hp, don't cast it
      */
-    if ((hit * 12 / 10) >= borg_trait[BI_CURHP])
+    if ((hit * 12 / 10) >= borg.trait[BI_CURHP])
         return (0);
 
     /* Penalize the strain from casting the spell */
@@ -1799,18 +1795,18 @@ static int borg_defend_aux_genocide(int p1)
                 fail_allowed += 10;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Normalize the p1 value.  It contains danger added from
      * regional fear and monster fear.  Which wont be counted
      * in the post-genocide checks
      */
-    if (borg_fear_region[c_y / 11][c_x / 11])
-        p1 -= borg_fear_region[c_y / 11][c_x / 11];
-    if (borg_fear_monsters[c_y][c_x])
-        p1 -= borg_fear_monsters[c_y][c_x];
+    if (borg_fear_region[borg.c.y / 11][borg.c.x / 11])
+        p1 -= borg_fear_region[borg.c.y / 11][borg.c.x / 11];
+    if (borg_fear_monsters[borg.c.y][borg.c.x])
+        p1 -= borg_fear_monsters[borg.c.y][borg.c.x];
 
     /* Make sure I have the spell */
     if (borg_spell_okay_fail(BANISHMENT, fail_allowed)
@@ -1824,7 +1820,7 @@ static int borg_defend_aux_genocide(int p1)
         return (0);
 
     /* Don't try it if really weak */
-    if (borg_trait[BI_CURHP] <= 75)
+    if (borg.trait[BI_CURHP] <= 75)
         return (0);
 
     /* two methods to calculate the threat:
@@ -1866,10 +1862,10 @@ static int borg_defend_aux_genocide(int p1)
 
         /* Calculate danger */
         /* Danger to me by this monster */
-        p = borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
 
         /* Danger of this monster to his own grid */
-        threat = borg_danger_one_kill(kill->y, kill->x, 1, i, true, true);
+        threat = borg_danger_one_kill(kill->pos.y, kill->pos.x, 1, i, true, true);
 
         /* store the danger for this type of monster */
         b_p[u] = b_p[u] + p; /* Danger to me */
@@ -1924,16 +1920,16 @@ static int borg_defend_aux_genocide(int p1)
      * for the level */
     if (b_threat_id) {
         /* Not if I am weak (should have 400 HP really in case of a Pit) */
-        if (borg_trait[BI_CURHP] < 375)
+        if (borg.trait[BI_CURHP] < 375)
             b_threat_id = 0;
 
         /* The threat must be real */
-        if (b_threat[b_threat_id] < borg_trait[BI_MAXHP] * 3)
+        if (b_threat[b_threat_id] < borg.trait[BI_MAXHP] * 3)
             b_threat_id = 0;
 
         /* Too painful to cast it (padded to be safe incase of unknown monsters)
          */
-        if ((b_num[b_threat_id] * 4) * 12 / 10 >= borg_trait[BI_CURHP])
+        if ((b_num[b_threat_id] * 4) * 12 / 10 >= borg.trait[BI_CURHP])
             b_threat_id = 0;
 
         /* Loads of monsters might be a pit, in which case, try not to nuke them
@@ -1960,14 +1956,14 @@ static int borg_defend_aux_genocide(int p1)
     if (b_i) {
         /* Too painful to cast it (padded to be safe incase of unknown monsters)
          */
-        if ((b_num[b_i] * 4) * 12 / 10 >= borg_trait[BI_CURHP])
+        if ((b_num[b_i] * 4) * 12 / 10 >= borg.trait[BI_CURHP])
             b_i = 0;
 
         /* See if he is in real danger, generally,
          * or deeper in the dungeon, conservatively,
          */
         if (p1 < avoidance * 7 / 10
-            || (borg_trait[BI_CDEPTH] > 75 && p1 < avoidance * 6 / 10))
+            || (borg.trait[BI_CDEPTH] > 75 && p1 < avoidance * 6 / 10))
             b_i = 0;
 
         /* Did this help improve my situation? */
@@ -2051,17 +2047,17 @@ static int borg_defend_aux_genocide_nasties(int p1)
     bool genocide_spell = false;
 
     /* Not if I am weak */
-    if (borg_trait[BI_CURHP] < (borg_trait[BI_MAXHP] * 7 / 10)
-        || borg_trait[BI_CURHP] < 250)
+    if (borg.trait[BI_CURHP] < (borg.trait[BI_MAXHP] * 7 / 10)
+        || borg.trait[BI_CURHP] < 250)
         return (0);
 
     /* only do it when Hounds start to show up, */
-    if (borg_trait[BI_CDEPTH] < 25)
+    if (borg.trait[BI_CDEPTH] < 25)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Do not perform in Danger */
@@ -2147,8 +2143,8 @@ static int borg_defend_aux_earthquake(int p1)
     }
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Can I cast the spell? */
@@ -2166,8 +2162,8 @@ static int borg_defend_aux_earthquake(int p1)
         kill = &borg_kills[i];
 
         /* Look for threats */
-        if (borg_los(c_y, c_x, kill->y, kill->x) && kill->ranged_attack
-            && borg_distance(kill->y, kill->x, c_y, c_x) >= 2) {
+        if (borg_los(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x) && kill->ranged_attack
+            && distance(kill->pos, borg.c) >= 2) {
             /* They can hit me */
             threat_count++;
         }
@@ -2201,8 +2197,8 @@ static int borg_defend_aux_destruction(int p1)
     bool real_danger = false;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Cast the spell */
@@ -2228,8 +2224,8 @@ static int borg_defend_aux_destruction(int p1)
     /* See if he is in real danger */
     if (p1 > avoidance)
         real_danger = true;
-    if (p1 > avoidance * 8 / 10 && borg_trait[BI_CDEPTH] >= 90
-        && borg_trait[BI_CURHP] <= 300)
+    if (p1 > avoidance * 8 / 10 && borg.trait[BI_CDEPTH] >= 90
+        && borg.trait[BI_CURHP] <= 300)
         real_danger = true;
 
     if (real_danger == false)
@@ -2245,15 +2241,15 @@ static int borg_defend_aux_destruction(int p1)
      */
 
     /* Examine landing zones from teleport scrolls instead of WoD */
-    if ((borg_trait[BI_ATELEPORT] || borg_trait[BI_ATELEPORTLVL])
-        && !borg_trait[BI_ISBLIND] && !borg_trait[BI_ISCONFUSED]
-        && borg_fighting_unique <= 4 && borg_trait[BI_CURHP] >= 275) {
+    if ((borg.trait[BI_ATELEPORT] || borg.trait[BI_ATELEPORTLVL])
+        && !borg.trait[BI_ISBLIND] && !borg.trait[BI_ISCONFUSED]
+        && borg_fighting_unique <= 4 && borg.trait[BI_CURHP] >= 275) {
         if (borg_caution_teleport(75, 2))
             return (0);
     }
 
     /* Examine Landing zones from teleport staff instead of WoD */
-    if (borg_trait[BI_AESCAPE] >= 2 && borg_trait[BI_CURHP] >= 275) {
+    if (borg.trait[BI_AESCAPE] >= 2 && borg.trait[BI_CURHP] >= 275) {
         if (borg_caution_teleport(75, 2))
             return (0);
     }
@@ -2266,7 +2262,7 @@ static int borg_defend_aux_destruction(int p1)
 
     /* Special check for super danger--no fail check */
     if ((p1 > (avoidance * 4)
-            || (p1 > avoidance && borg_trait[BI_CURHP] <= 150))
+            || (p1 > avoidance && borg.trait[BI_CURHP] <= 150))
         && borg_equips_staff_fail(sv_staff_destruction))
         spell = true;
 
@@ -2307,8 +2303,8 @@ static int borg_defend_aux_teleportlevel(int p1)
     }
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* See if he is in real danger */
@@ -2325,14 +2321,14 @@ static int borg_defend_aux_teleportlevel(int p1)
      */
 
     /* Use teleport scrolls instead if safe to land */
-    if ((borg_trait[BI_ATELEPORT] || borg_trait[BI_ATELEPORTLVL])
-        && !borg_trait[BI_ISBLIND] && !borg_trait[BI_ISCONFUSED]) {
+    if ((borg.trait[BI_ATELEPORT] || borg.trait[BI_ATELEPORTLVL])
+        && !borg.trait[BI_ISBLIND] && !borg.trait[BI_ISCONFUSED]) {
         if (borg_caution_teleport(65, 2))
             return (0);
     }
 
     /* Use teleport staff instead if safe to land */
-    if (borg_trait[BI_AESCAPE] >= 2) {
+    if (borg.trait[BI_AESCAPE] >= 2) {
         if (borg_caution_teleport(65, 2))
             return (0);
     }
@@ -2372,12 +2368,12 @@ static int borg_defend_aux_banishment(int p1)
         fail_allowed -= 10;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     using_artifact
-        = borg_equips_item(act_loskill, true) && borg_has[BI_CURHP] > 100;
+        = borg_equips_item(act_loskill, true) && borg.has[BI_CURHP] > 100;
 
     if (!using_artifact && !borg_spell_okay_fail(BANISH_EVIL, fail_allowed))
         return (0);
@@ -2392,18 +2388,18 @@ static int borg_defend_aux_banishment(int p1)
         /* Monster */
         kill = &borg_kills[i];
 
-        ag   = &borg_grids[kill->y][kill->x];
+        ag   = &borg_grids[kill->pos.y][kill->pos.x];
 
         /* Skip dead monsters */
         if (!kill->r_idx)
             continue;
 
         /* Check the LOS */
-        if (!borg_projectable(c_y, c_x, kill->y, kill->x))
+        if (!borg_projectable(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x))
             continue;
 
         /* Calculate danger of who is left over */
-        p1 += borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p1 += borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
     }
 
     /* Set P2 to be P1 and subtract the danger from each monster
@@ -2421,22 +2417,22 @@ static int borg_defend_aux_banishment(int p1)
         kill  = &borg_kills[i];
         r_ptr = &r_info[kill->r_idx];
 
-        ag    = &borg_grids[kill->y][kill->x];
+        ag    = &borg_grids[kill->pos.y][kill->pos.x];
 
         /* Skip dead monsters */
         if (!kill->r_idx)
             continue;
 
         /* Check the LOS */
-        if (!borg_projectable(c_y, c_x, kill->y, kill->x))
+        if (!borg_projectable(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x))
             continue;
 
         /* Note who gets considered */
         if (!borg_simulate) {
             borg_note(format(
                 "# Banishing Evil: (%d,%d): %s, danger %d. is considered.",
-                kill->y, kill->x, (r_info[kill->r_idx].name),
-                borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false)));
+                kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
         }
 
         /* Non evil monsters*/
@@ -2445,8 +2441,8 @@ static int borg_defend_aux_banishment(int p1)
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (not evil).",
-                    kill->y, kill->x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false)));
+                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
             }
 
             continue;
@@ -2458,8 +2454,8 @@ static int borg_defend_aux_banishment(int p1)
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Unique not considered: Injury %d.",
-                    kill->y, kill->x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, false),
+                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false),
                     kill->injury));
             }
 
@@ -2467,13 +2463,13 @@ static int borg_defend_aux_banishment(int p1)
         }
 
         /* Monsters in walls cant be booted */
-        if (!borg_cave_floor_bold(kill->y, kill->x)) {
+        if (!borg_cave_floor_bold(kill->pos.y, kill->pos.x)) {
             /* Note who gets banished */
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (in wall).",
-                    kill->y, kill->x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, true)));
+                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             }
             continue;
         }
@@ -2482,8 +2478,8 @@ static int borg_defend_aux_banishment(int p1)
         if (!borg_simulate) {
             borg_note(
                 format("# Banishing Evil: (%d,%d): %s, danger %d. Booted.",
-                    kill->y, kill->x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(c_y, c_x, 1, ag->kill, true, true)));
+                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             borg_delete_kill(i);
         }
 
@@ -2491,7 +2487,7 @@ static int borg_defend_aux_banishment(int p1)
         banished_monsters++;
 
         /* Calculate danger of who is left over */
-        p2 -= borg_danger_one_kill(c_y, c_x, 1, i, true, true);
+        p2 -= borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
     }
 
     if (!borg_simulate) {
@@ -2513,11 +2509,11 @@ static int borg_defend_aux_banishment(int p1)
         p2 = 9999;
 
     /* Try not to cast this against Morgy/Sauron */
-    if (borg_fighting_unique >= 10 && borg_trait[BI_CURHP] > 250
-        && borg_trait[BI_CDEPTH] == 99)
+    if (borg_fighting_unique >= 10 && borg.trait[BI_CURHP] > 250
+        && borg.trait[BI_CDEPTH] == 99)
         p2 = 9999;
-    if (borg_fighting_unique >= 10 && borg_trait[BI_CURHP] > 350
-        && borg_trait[BI_CDEPTH] == 100)
+    if (borg_fighting_unique >= 10 && borg.trait[BI_CURHP] > 350
+        && borg.trait[BI_CDEPTH] == 100)
         p2 = 9999;
 
     /* check to see if I am left better off */
@@ -2539,15 +2535,15 @@ static int borg_defend_aux_banishment(int p1)
 static int borg_defend_aux_inviso(int p1)
 {
     int        fail_allowed = 25;
-    borg_grid *ag           = &borg_grids[c_y][c_x];
+    borg_grid *ag           = &borg_grids[borg.c.y][borg.c.x];
 
     /* no need */
-    if (borg_trait[BI_ISFORGET] || borg_trait[BI_ISBLIND]
-        || borg_trait[BI_ISCONFUSED] || borg_see_inv)
+    if (borg.trait[BI_ISFORGET] || borg.trait[BI_ISBLIND]
+        || borg.trait[BI_ISCONFUSED] || borg.see_inv)
         return (0);
 
     /* not recent */
-    if (borg_t > borg_need_see_invis + 5)
+    if (borg_t > borg.need_see_invis + 5)
         return (0);
 
     /* too dangerous to cast */
@@ -2568,7 +2564,7 @@ static int borg_defend_aux_inviso(int p1)
         return (0);
 
     /* Darkness */
-    if (!(ag->info & BORG_GLOW) && !borg_trait[BI_CURLITE])
+    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_CURLITE])
         return (0);
 
     /* No real value known, but lets cast it to find the bad guys. */
@@ -2585,19 +2581,19 @@ static int borg_defend_aux_inviso(int p1)
         || borg_activate_item(act_detect_invis)
         || borg_activate_item(act_tmd_sinvis) || borg_activate_item(act_tmd_esp)
         || borg_activate_item(act_detect_evil)) {
-        borg_see_inv
+        borg.see_inv
             = 3000; /* hack, actually a snap shot, no ignition message */
         return (10);
     }
     if (borg_quaff_potion(sv_potion_detect_invis)) {
-        borg_see_inv      = 18000;
-        borg_no_rest_prep = 18000;
+        borg.see_inv      = 18000;
+        borg.no_rest_prep = 18000;
         return (10);
     }
     /* long time */
     if (borg_spell_fail(SENSE_INVISIBLE, fail_allowed)) {
-        borg_see_inv      = 30000;
-        borg_no_rest_prep = 16000;
+        borg.see_inv      = 30000;
+        borg.no_rest_prep = 16000;
         return (10);
     }
 
@@ -2613,17 +2609,17 @@ static int borg_defend_aux_inviso(int p1)
 static int borg_defend_aux_lbeam(void)
 {
     bool hallway = false;
-    int  x       = c_x;
-    int  y       = c_y;
+    int  x       = borg.c.x;
+    int  y       = borg.c.y;
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Light Beam section to spot non seen guys */
     /* not recent, dont bother */
-    if (borg_t > (borg_need_see_invis + 2))
+    if (borg_t > (borg.need_see_invis + 2))
         return (0);
 
     /* Check to see if I am in a hallway */
@@ -2697,55 +2693,55 @@ static int borg_defend_aux_panel_shift(void)
     int wy  = Term->offset_y / borg_panel_hgt();
 
     /* no need */
-    if (!need_shift_panel && borg_trait[BI_CDEPTH] < 70)
+    if (!borg.need_shift_panel && borg.trait[BI_CDEPTH] < 70)
         return (0);
 
     /* if Morgy is on my panel, dont do it */
-    if (borg_trait[BI_CDEPTH] == 100 && w_y == morgy_panel_y
+    if (borg.trait[BI_CDEPTH] == 100 && w_y == morgy_panel_y
         && w_x == morgy_panel_x)
         return (0);
 
     /* Which direction do we need to move? */
     /* Shift panel to the right */
-    if (c_x >= 52 && c_x <= 60 && wx == 0)
+    if (borg.c.x >= 52 && borg.c.x <= 60 && wx == 0)
         dir = 6;
-    if (c_x >= 84 && c_x <= 94 && wx == 1)
+    if (borg.c.x >= 84 && borg.c.x <= 94 && wx == 1)
         dir = 6;
-    if (c_x >= 116 && c_x <= 123 && wx == 2)
+    if (borg.c.x >= 116 && borg.c.x <= 123 && wx == 2)
         dir = 6;
-    if (c_x >= 148 && c_x <= 159 && wx == 3)
+    if (borg.c.x >= 148 && borg.c.x <= 159 && wx == 3)
         dir = 6;
     /* Shift panel to the left */
-    if (c_x <= 142 && c_x >= 136 && wx == 4)
+    if (borg.c.x <= 142 && borg.c.x >= 136 && wx == 4)
         dir = 4;
-    if (c_x <= 110 && c_x >= 103 && wx == 3)
+    if (borg.c.x <= 110 && borg.c.x >= 103 && wx == 3)
         dir = 4;
-    if (c_x <= 78 && c_x >= 70 && wx == 2)
+    if (borg.c.x <= 78 && borg.c.x >= 70 && wx == 2)
         dir = 4;
-    if (c_x <= 46 && c_x >= 37 && wx == 1)
+    if (borg.c.x <= 46 && borg.c.x >= 37 && wx == 1)
         dir = 4;
 
     /* Shift panel down */
-    if (c_y >= 15 && c_y <= 19 && wy == 0)
+    if (borg.c.y >= 15 && borg.c.y <= 19 && wy == 0)
         dir = 2;
-    if (c_y >= 25 && c_y <= 30 && wy == 1)
+    if (borg.c.y >= 25 && borg.c.y <= 30 && wy == 1)
         dir = 2;
-    if (c_y >= 36 && c_y <= 41 && wy == 2)
+    if (borg.c.y >= 36 && borg.c.y <= 41 && wy == 2)
         dir = 2;
-    if (c_y >= 48 && c_y <= 52 && wy == 3)
+    if (borg.c.y >= 48 && borg.c.y <= 52 && wy == 3)
         dir = 2;
     /* Shift panel up */
-    if (c_y <= 51 && c_y >= 47 && wy == 4)
+    if (borg.c.y <= 51 && borg.c.y >= 47 && wy == 4)
         dir = 8;
-    if (c_y <= 39 && c_y >= 35 && wy == 3)
+    if (borg.c.y <= 39 && borg.c.y >= 35 && wy == 3)
         dir = 8;
-    if (c_y <= 28 && c_y >= 24 && wy == 2)
+    if (borg.c.y <= 28 && borg.c.y >= 24 && wy == 2)
         dir = 8;
-    if (c_y <= 17 && c_y >= 13 && wy == 1)
+    if (borg.c.y <= 17 && borg.c.y >= 13 && wy == 1)
         dir = 8;
 
     /* Do the Shift if needed, then note it,  reset the flag */
-    if (need_shift_panel == true) {
+    if (borg.need_shift_panel == true) {
         /* Send action (view panel info) */
         borg_keypress('L');
 
@@ -2754,7 +2750,7 @@ static int borg_defend_aux_panel_shift(void)
         borg_keypress(ESCAPE);
 
         borg_note("# Shifted panel to locate offscreen monster.");
-        need_shift_panel = false;
+        borg.need_shift_panel = false;
 
         /* Leave the panel shift mode */
         borg_keypress(ESCAPE);
@@ -2763,64 +2759,64 @@ static int borg_defend_aux_panel_shift(void)
     {
 
         /* Hack Not if I just did one */
-        if (when_shift_panel
-            && (borg_t - when_shift_panel <= 10
+        if (borg.when_shift_panel
+            && (borg_t - borg.when_shift_panel <= 10
                 || borg_t - borg_t_morgoth <= 10)) {
             /* do nothing */
         } else {
             /* if not the first step */
             if (track_step.num) {
                 /* shift up? only if a north corridor */
-                if (dir == 8 && borg_projectable_pure(c_y, c_x, c_y - 2, c_x)
-                    && track_step.y[track_step.num - 1] != c_y - 1) {
+                if (dir == 8 && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y - 2, borg.c.x)
+                    && track_step.y[track_step.num - 1] != borg.c.y - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     if (dir)
                         borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
-                    when_shift_panel = borg_t;
+                    borg.when_shift_panel = borg_t;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
                 }
                 /* shift down? only if a south corridor */
                 else if (dir == 2
-                         && borg_projectable_pure(c_y, c_x, c_y + 2, c_x)
-                         && track_step.y[track_step.num - 1] != c_y + 1) {
+                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y + 2, borg.c.x)
+                         && track_step.y[track_step.num - 1] != borg.c.y + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
-                    when_shift_panel = borg_t;
+                    borg.when_shift_panel = borg_t;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
                 }
                 /* shift Left? only if a west corridor */
                 else if (dir == 4
-                         && borg_projectable_pure(c_y, c_x, c_y, c_x - 2)
-                         && track_step.x[track_step.num - 1] != c_x - 1) {
+                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y, borg.c.x - 2)
+                         && track_step.x[track_step.num - 1] != borg.c.x - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     if (dir)
                         borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
-                    when_shift_panel = borg_t;
+                    borg.when_shift_panel = borg_t;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
                 }
                 /* shift Right? only if a east corridor */
                 else if (dir == 6
-                         && borg_projectable_pure(c_y, c_x, c_y, c_x + 2)
-                         && track_step.x[track_step.num - 1] != c_x + 1) {
+                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y, borg.c.x + 2)
+                         && track_step.x[track_step.num - 1] != borg.c.x + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
                     if (dir)
                         borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
-                    when_shift_panel = borg_t;
+                    borg.when_shift_panel = borg_t;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
                 }
@@ -2864,8 +2860,8 @@ static int borg_defend_aux_rest(void)
     for (i = 1; i < borg_kills_nxt; i++) {
         borg_kill *kill = &borg_kills[i];
 
-        int x9          = kill->x;
-        int y9          = kill->y;
+        int x9          = kill->pos.x;
+        int y9          = kill->pos.y;
         int ax, ay, d;
 
         /* Skip dead monsters */
@@ -2873,8 +2869,8 @@ static int borg_defend_aux_rest(void)
             continue;
 
         /* Distance components */
-        ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
-        ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
+        ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
+        ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
 
         /* Distance */
         d = MAX(ax, ay);
@@ -2884,15 +2880,15 @@ static int borg_defend_aux_rest(void)
             continue;
 
         /* If I can see Morgoth or a guy with Ranged Attacks, don't rest. */
-        if (borg_los(c_y, c_x, kill->y, kill->x)
+        if (borg_los(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x)
             && (kill->r_idx == borg_morgoth_id || kill->ranged_attack)
-            && avoidance <= borg_trait[BI_CURHP]) {
+            && avoidance <= borg.trait[BI_CURHP]) {
             borg_note("# Not resting. I can see Morgoth or a shooter.");
             return (0);
         }
 
         /* If a little twitchy, its ok to stay put */
-        if (avoidance > borg_trait[BI_CURHP])
+        if (avoidance > borg.trait[BI_CURHP])
             continue;
     }
 
@@ -2903,7 +2899,7 @@ static int borg_defend_aux_rest(void)
     /* Rest */
     borg_keypress(',');
     borg_note(
-        format("# Resting on grid (%d, %d), waiting for Morgoth.", c_y, c_x));
+        format("# Resting on grid (%d, %d), waiting for Morgoth.", borg.c.y, borg.c.x));
 
     /* All done */
     return (200);
@@ -2917,12 +2913,12 @@ static int borg_defend_aux_tele_away_morgoth(void)
 {
     int p2           = 0;
     int fail_allowed = 40;
-    int i, x, y;
+    int i;
 
     borg_grid *ag;
 
     /* Only if on level 100 */
-    if (!(borg_trait[BI_CDEPTH] == 100))
+    if (!(borg.trait[BI_CDEPTH] == 100))
         return (0);
 
     /* Not if Morgoth is not on this level */
@@ -2930,8 +2926,8 @@ static int borg_defend_aux_tele_away_morgoth(void)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Do I have the T.O. spell? */
@@ -2940,7 +2936,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
 
     /* Do I have the Glyph spell? No good to use TO if I cant build the sea of
      * runes */
-    if (borg_trait[BI_AGLYPH] < 10)
+    if (borg.trait[BI_AGLYPH] < 10)
         return (0);
 
     /* No Teleport Other if surrounded */
@@ -2984,12 +2980,8 @@ static int borg_defend_aux_tele_away_morgoth(void)
         if (kill->when < borg_t - 2)
             continue;
 
-        /* Acquire location */
-        x = kill->x;
-        y = kill->y;
-
         /* Get grid */
-        ag = &borg_grids[y][x];
+        ag = &borg_grids[kill->pos.y][kill->pos.x];
 
         /* Never shoot off-screen */
         if (!(ag->info & BORG_OKAY))
@@ -3000,16 +2992,16 @@ static int borg_defend_aux_tele_away_morgoth(void)
             continue;
 
         /* Check the distance XXX XXX XXX */
-        if (borg_distance(c_y, c_x, y, x) > z_info->max_range)
+        if (distance(borg.c, kill->pos) > z_info->max_range)
             continue;
 
         /* Check the LOS */
-        if (!borg_projectable(c_y, c_x, kill->y, kill->x))
+        if (!borg_projectable(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x))
             continue;
 
         /* Save the location (careful) */
-        borg_temp_x[borg_temp_n] = x;
-        borg_temp_y[borg_temp_n] = y;
+        borg_temp_x[borg_temp_n] = kill->pos.x;
+        borg_temp_y[borg_temp_n] = kill->pos.y;
         borg_temp_n++;
     }
 
@@ -3083,15 +3075,15 @@ static int borg_defend_aux_banishment_morgoth(void)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Scan grids looking for glyphs */
     for (i = 0; i < 8; i++) {
         /* Access offset */
-        x = c_x + ddx_ddd[i];
-        y = c_y + ddy_ddd[i];
+        x = borg.c.x + ddx_ddd[i];
+        y = borg.c.y + ddy_ddd[i];
 
         /* Access the grid */
         ag = &borg_grids[y][x];
@@ -3133,26 +3125,27 @@ static int borg_defend_aux_banishment_morgoth(void)
             continue;
 
         /* Acquire location */
-        x = kill->x;
-        y = kill->y;
+        x = kill->pos.x;
+        y = kill->pos.y;
 
         /* Get grid */
         ag = &borg_grids[y][x];
 
         /* Never try on non-evil guys if Priest */
-        if (borg_class == CLASS_PRIEST && !(rf_has(r_ptr->flags, RF_EVIL)))
+        if (borg.trait[BI_CLASS] == CLASS_PRIEST 
+            && !(rf_has(r_ptr->flags, RF_EVIL)))
             continue;
 
         /* Check the distance  */
-        if (borg_distance(c_y, c_x, y, x) > z_info->max_range)
+        if (distance(borg.c, kill->pos) > z_info->max_range)
             continue;
 
         /* Monster must be LOS */
-        if (!borg_projectable(c_y, c_x, kill->y, kill->x))
+        if (!borg_projectable(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x))
             continue;
 
         /* Count the number of monsters too close double*/
-        if (borg_distance(c_y, c_x, y, x) <= 7)
+        if (distance(borg.c, kill->pos) <= 7)
             count++;
 
         /* Count the number of monster on screen */
@@ -3205,8 +3198,7 @@ static int borg_defend_aux_light_morgoth(void)
 {
     int fail_allowed = 50;
     int i, x, y;
-    int b_y   = -1;
-    int b_x   = -1;
+    struct loc best;
     int count = 0;
 
     borg_kill *kill;
@@ -3220,8 +3212,8 @@ static int borg_defend_aux_light_morgoth(void)
         return (0);
 
     /* Cant when screwed */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (0);
 
     /* Do I have the spell? */
@@ -3252,23 +3244,23 @@ static int borg_defend_aux_light_morgoth(void)
             continue;
 
         /* Acquire location */
-        x = kill->x;
-        y = kill->y;
+        x = kill->pos.x;
+        y = kill->pos.y;
 
         /* Check the distance  */
-        if (borg_distance(c_y, c_x, y, x) > z_info->max_range)
+        if (distance(borg.c, kill->pos) > z_info->max_range)
             continue;
-        if (borg_distance(c_y, c_x, y, x) <= 5)
+        if (distance(borg.c, kill->pos) <= 5)
             continue;
 
         /* We want at least one dark spot on the path */
-        if (!borg_projectable_dark(c_y, c_x, y, x))
+        if (!borg_projectable_dark(borg.c.y, borg.c.x, y, x))
             continue;
 
         /* Count Morgoth so I try the spell */
         count++;
-        b_y = y;
-        b_x = x;
+        best.y = y;
+        best.x = x;
     }
 
     /* No destinations */
@@ -3279,11 +3271,11 @@ static int borg_defend_aux_light_morgoth(void)
     if (borg_simulate)
         return (500);
 
-    borg_note(
-        format("# Attempting to Illuminate a Pathway to (%d, %d)", b_y, b_x));
+    borg_note(format(
+        "# Attempting to Illuminate a Pathway to (%d, %d)", best.y, best.x));
 
     /* Target Morgoth Grid */
-    (void)borg_target(b_y, b_x);
+    (void)borg_target(best);
 
     /* Cast the spell */
     if (borg_spell(SPEAR_OF_LIGHT) || borg_spell(CLAIRVOYANCE)
@@ -3419,23 +3411,23 @@ bool borg_defend(int p1)
 
     /* if you have Resist All and it is about to drop, */
     /* refresh it (if you can) */
-    if (borg_resistance && borg_resistance < (borg_game_ratio * 2)) {
+    if (borg.resistance && borg.resistance < (borg_game_ratio * 2)) {
         int p;
 
         /* check 'true' danger. This will make sure we do not */
         /* refresh our Resistance if no-one is around */
         borg_attacking = true;
         p              = borg_danger(
-            c_y, c_x, 1, false, false); /* Note false for danger!! */
+            borg.c.y, borg.c.x, 1, false, false); /* Note false for danger!! */
         borg_attacking = false;
-        if (p > borg_fear_region[c_y / 11][c_x / 11] || borg_fighting_unique) {
+        if (p > borg_fear_region[borg.c.y / 11][borg.c.x / 11] || borg_fighting_unique) {
             if (borg_spell(RESISTANCE)) {
                 borg_note(format("# Refreshing Resistance.  "
-                                 "borg_resistance=%d, player->=%d, (ratio=%d)",
-                    borg_resistance, player->timed[TMD_OPP_ACID],
+                                 "borg.resistance=%d, player->=%d, (ratio=%d)",
+                    borg.resistance, player->timed[TMD_OPP_ACID],
                     borg_game_ratio));
                 borg_attempting_refresh_resist = true;
-                borg_resistance                = 25000;
+                borg.resistance                = 25000;
                 return (true);
             }
         }

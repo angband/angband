@@ -46,8 +46,8 @@
  */
 bool borg_munchkin_mage(void)
 {
-    int i, x, y;
-    int a_y, a_x;
+    int        i;
+    struct loc a, c;
 
     int b_dam = -1, dam = 0;
     int b_n = -1;
@@ -55,15 +55,15 @@ bool borg_munchkin_mage(void)
     borg_grid *ag;
 
     /* Must be standing on a stair */
-    if (borg_grids[c_y][c_x].feat != FEAT_MORE
-        && borg_grids[c_y][c_x].feat != FEAT_LESS)
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_MORE
+        && borg_grids[borg.c.y][borg.c.x].feat != FEAT_LESS)
         return (false);
 
     /* Not if too dangerous */
-    if ((borg_danger(c_y, c_x, 1, true, true) > avoidance * 7 / 10)
-        || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3)
+    if ((borg_danger(borg.c.y, borg.c.x, 1, true, true) > avoidance * 7 / 10)
+        || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3)
         return (false);
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* Nobody around */
@@ -93,18 +93,17 @@ bool borg_munchkin_mage(void)
             continue;
 
         /* Acquire location */
-        a_x = kill->x;
-        a_y = kill->y;
+        a.x = kill->pos.x;
+        a.y = kill->pos.y;
 
         /* Not in town.  This should not be reached, but just in case we add it
          */
-        if (borg_trait[BI_CDEPTH] == 0)
+        if (borg.trait[BI_CDEPTH] == 0)
             continue;
 
         /* Check if there is a monster adjacent to me or he's close and fast. */
-        if ((kill->speed > borg_trait[BI_SPEED]
-                && borg_distance(c_y, c_x, a_y, a_x) <= 2)
-            || borg_distance(c_y, c_x, a_y, a_x) <= 1)
+        if ((kill->speed > borg.trait[BI_SPEED] && distance(borg.c, a) <= 2)
+            || distance(borg.c, a) <= 1)
             return (false);
 
         /* no attacking most scaryguys, try to get off the level */
@@ -112,11 +111,11 @@ bool borg_munchkin_mage(void)
             return (false);
 
         /* Acquire location */
-        x = kill->x;
-        y = kill->y;
+        c.x = kill->pos.x;
+        c.y = kill->pos.y;
 
         /* Get grid */
-        ag = &borg_grids[y][x];
+        ag = &borg_grids[c.y][c.x];
 
         /* Never shoot off-screen */
         if (!(ag->info & BORG_OKAY))
@@ -127,12 +126,12 @@ bool borg_munchkin_mage(void)
             continue;
 
         /* Check the distance XXX XXX XXX */
-        if (borg_distance(c_y, c_x, y, x) > z_info->max_range)
+        if (distance(borg.c, c) > z_info->max_range)
             continue;
 
         /* Save the location (careful) */
-        borg_temp_x[borg_temp_n] = x;
-        borg_temp_y[borg_temp_n] = y;
+        borg_temp_x[borg_temp_n] = c.x;
+        borg_temp_y[borg_temp_n] = c.y;
         borg_temp_n++;
     }
 
@@ -192,19 +191,19 @@ bool borg_munchkin_mage(void)
  */
 bool borg_munchkin_melee(void)
 {
-    int i, x, y;
-
+    int i;
     int n = 0;
 
     borg_grid *ag;
 
     /* No Mages for now */
-    if ((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER))
+    if ((borg.trait[BI_CLASS] == CLASS_MAGE
+            || borg.trait[BI_CLASS] == CLASS_NECROMANCER))
         return (false);
 
     /* Must be standing on a stair */
-    if (borg_grids[c_y][c_x].feat != FEAT_MORE
-        && borg_grids[c_y][c_x].feat != FEAT_LESS)
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_MORE
+        && borg_grids[borg.c.y][borg.c.x].feat != FEAT_LESS)
         return (false);
 
     /* Nobody around */
@@ -212,10 +211,10 @@ bool borg_munchkin_melee(void)
         return (false);
 
     /* Not if too dangerous */
-    if ((borg_danger(c_y, c_x, 1, true, true) > avoidance * 7 / 10)
-        || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3)
+    if ((borg_danger(borg.c.y, borg.c.x, 1, true, true) > avoidance * 7 / 10)
+        || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3)
         return (false);
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* Set the attacking flag so that danger is boosted for monsters */
@@ -242,19 +241,15 @@ bool borg_munchkin_melee(void)
 
         /* Not in town.  This should not be reached, but just in case we add it
          */
-        if (borg_trait[BI_CDEPTH] == 0)
+        if (borg.trait[BI_CDEPTH] == 0)
             continue;
 
         /* no attacking most scaryguys, try to get off the level */
         if (scaryguy_on_level)
             return (false);
 
-        /* Acquire location */
-        x = kill->x;
-        y = kill->y;
-
         /* Get grid */
-        ag = &borg_grids[y][x];
+        ag = &borg_grids[kill->pos.y][kill->pos.x];
 
         /* Never shoot off-screen */
         if (!(ag->info & BORG_OKAY))
@@ -265,12 +260,12 @@ bool borg_munchkin_melee(void)
             continue;
 
         /* Check the distance XXX XXX XXX */
-        if (borg_distance(c_y, c_x, y, x) != 1)
+        if (distance(borg.c, kill->pos) != 1)
             continue;
 
         /* Save the location (careful) */
-        borg_temp_x[borg_temp_n] = x;
-        borg_temp_y[borg_temp_n] = y;
+        borg_temp_x[borg_temp_n] = kill->pos.x;
+        borg_temp_y[borg_temp_n] = kill->pos.y;
         borg_temp_n++;
     }
 

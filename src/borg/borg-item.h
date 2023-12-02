@@ -150,7 +150,7 @@ struct borg_item {
 /*
  * Total number of pack slots available (not used by quiver)
  */
-#define PACK_SLOTS (z_info->pack_size - borg_trait[BI_QUIVER_SLOTS])
+#define PACK_SLOTS (z_info->pack_size - borg.trait[BI_QUIVER_SLOTS])
 
 /* Quiver */
 #define QUIVER_START INVEN_TOTAL
