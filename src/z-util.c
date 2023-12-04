@@ -981,9 +981,9 @@ unsigned int gcd(unsigned int a, unsigned int b)
  *
  * \param r points to n uint16_t values to store the result.
  * \param n is the number of digits in base 2^16 in r.
- * \param a is the uint32_t value to copy.
- * \return true if the given uint32_t would is greater than or equal to
- * 2^(16*n) or false if the given uint32_t value fits.
+ * \param a is the unsigned value to copy.
+ * \return true if a is greater than or equal to 2^(16*n) or false if a is
+ * less than 2^(16*n) (i.e. fits in r without overflow).
  *
  * Could use the GNU multiprecision library or something similar for this.  Do
  * this instead to avoid the extra library dependency.
