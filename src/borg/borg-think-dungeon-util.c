@@ -239,55 +239,59 @@ bool borg_think_dungeon_light(void)
         }
 
         /* If I have the capacity to Call Light, then do so if adjacent to a
-         * dark grid. We can illuminate the entire dungeon, looking for stairs.
+         * dark grid. We can illuminate the entire dungeon, looking for stairs
+         * but not if we just did so.
          */
-        /* Scan grids adjacent to me */
-        for (ii = 0; ii < 8; ii++) {
-            x = borg.c.x + ddx_ddd[ii];
-            y = borg.c.y + ddy_ddd[ii];
+        if (borg.when_call_light == 0 || (borg_t - borg.when_call_light) > 7) {
+            /* Scan grids adjacent to me */
+            for (ii = 0; ii < 8; ii++) {
+                x = borg.c.x + ddx_ddd[ii];
+                y = borg.c.y + ddy_ddd[ii];
 
-            /* Bounds check */
-            if (!square_in_bounds_fully(cave, loc(x, y)))
-                continue;
+                /* Bounds check */
+                if (!square_in_bounds_fully(cave, loc(x, y)))
+                    continue;
 
-            /* Access the grid */
-            ag = &borg_grids[y][x];
+                /* Access the grid */
+                ag = &borg_grids[y][x];
 
-            /* skip the Wall grids */
-            if (ag->feat >= FEAT_RUBBLE && ag->feat <= FEAT_PERM)
-                continue;
+                /* skip the Wall grids */
+                if (ag->feat >= FEAT_RUBBLE && ag->feat <= FEAT_PERM)
+                    continue;
 
-            /* Problem with casting Call Light on Open Doors */
-            if ((ag->feat == FEAT_OPEN || ag->feat == FEAT_BROKEN)
-                && (y == borg.c.y && x == borg.c.x)) {
-                /* Cheat the grid info to see if the door is lit */
-                if (square_isglow(cave, borg.c))
-                    ag->info |= BORG_GLOW;
-                continue;
-            }
-
-            /* Look for a dark one */
-            if ((ag->info & BORG_DARK) || /* Known to be dark */
-                ag->feat == FEAT_NONE || /* Nothing known about feature */
-                !(ag->info & BORG_MARK) || /* Nothing known about info */
-                !(ag->info & BORG_GLOW)) /* not glowing */
-            {
-                /* Attempt to Call Light */
-                if (borg_activate_item(act_illumination)
-                    || borg_activate_item(act_light)
-                    || borg_zap_rod(sv_rod_illumination)
-                    || borg_use_staff(sv_staff_light)
-                    || borg_read_scroll(sv_scroll_light)
-                    || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
-                    borg_note("# Illuminating the region while dark.");
-                    borg_react("SELF:lite", "SELF:lite");
-
-                    return (true);
+                /* Problem with casting Call Light on Open Doors */
+                if ((ag->feat == FEAT_OPEN || ag->feat == FEAT_BROKEN)
+                    && (y == borg.c.y && x == borg.c.x)) {
+                    /* Cheat the grid info to see if the door is lit */
+                    if (square_isglow(cave, borg.c))
+                        ag->info |= BORG_GLOW;
+                    continue;
                 }
 
-                /* Attempt to use Light Beam requiring a direction. */
-                if (borg_light_beam(false))
-                    return (true);
+                /* Look for a dark one */
+                if ((ag->info & BORG_DARK) || /* Known to be dark */
+                    ag->feat == FEAT_NONE || /* Nothing known about feature */
+                    !(ag->info & BORG_MARK) || /* Nothing known about info */
+                    !(ag->info & BORG_GLOW)) /* not glowing */
+                {
+                    /* Attempt to Call Light */
+                    if (borg_activate_item(act_illumination)
+                        || borg_activate_item(act_light)
+                        || borg_zap_rod(sv_rod_illumination)
+                        || borg_use_staff(sv_staff_light)
+                        || borg_read_scroll(sv_scroll_light)
+                        || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
+                        borg_note("# Illuminating the region while dark.");
+                        borg_react("SELF:lite", "SELF:lite");
+                        borg.when_call_light = borg_t;
+
+                        return (true);
+                    }
+
+                    /* Attempt to use Light Beam requiring a direction. */
+                    if (borg_light_beam(false))
+                        return (true);
+                }
             }
         }
 
