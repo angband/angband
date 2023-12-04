@@ -555,7 +555,7 @@ static void calculate_melee_crits(struct player_state *state, int weight,
  * \param obj is the melee weapon of interest.
  * \param dice is dereferenced and set to 100 * crit chance * average number
  * of dice added.
- * \param frac_dice is dereferenced and set to the fractional part truncted
+ * \param frac_dice is dereferenced and set to the fractional part truncated
  * from *dice when converted to an integer.
  */
 static void o_calculate_melee_crits(struct player_state *state,
@@ -717,7 +717,7 @@ static void calculate_missile_crits(struct player_state *state, int weight,
  * \param launcher is the launcher of interest or NULL for a thrown missile.
  * \param dice is dereferenced and set to 100 * crit chance * average number
  * of dice added.
- * \param frac_dice is dereferenced and set to the fractional part truncted
+ * \param frac_dice is dereferenced and set to the fractional part truncated
  * from *dice when converted to an integer.
  */
 static void o_calculate_missile_crits(struct player_state *state,
