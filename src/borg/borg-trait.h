@@ -194,6 +194,7 @@ enum {
     BI_BTOHIT,
     BI_BTODAM,
     BI_BLOWS,
+    BI_EXTRA_BLOWS,
     BI_SHOTS,
     BI_WMAXDAM,
     BI_WBASEDAM,

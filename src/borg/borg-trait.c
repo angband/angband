@@ -878,6 +878,7 @@ const char *prefix_pref[] = {
     "_BTOHIT", /* bow to hit */
     "_BTODAM", /* bow to damage */
     "_BLOWS",
+    "_EXTRA_BLOWS",
     "_SHOTS",
     "_WMAXDAM", /* max damage per round with weapon (normal blow) */
     /* Assumes you can enchant to +8 if you are level 25+ */
@@ -1031,7 +1032,10 @@ int borg_calc_blows(borg_item *item)
     blows = MIN((10000 / blow_energy), (100 * player->class->max_attacks));
 
     /* Require at least one blow, two for O-combat */
-    return (MAX(blows + (100 * item->modifiers[OBJ_MOD_BLOWS]),
+    return (MAX(blows
+                    + (100
+                        * (item->modifiers[OBJ_MOD_BLOWS]
+                            + borg.trait[BI_EXTRA_BLOWS])),
                OPT(player, birth_percent_damage) ? 200 : 100))
            / 100;
 }
@@ -1176,8 +1180,6 @@ static void borg_notice_equipment(void)
     int                        i, hold;
     const struct player_race  *rb_ptr = player->race;
     const struct player_class *cb_ptr = player->class;
-
-    int extra_blows                   = 0;
 
     int extra_shots                   = 0;
     int extra_might                   = 0;
@@ -1443,8 +1445,9 @@ static void borg_notice_equipment(void)
         /* Affect speed */
         borg.trait[BI_SPEED] += item->modifiers[OBJ_MOD_SPEED];
 
-        /* Affect blows */
-        extra_blows += item->modifiers[OBJ_MOD_BLOWS];
+        /* Affect blows (not from primary weapon) */
+        if (i != INVEN_WIELD)
+           borg.trait[BI_EXTRA_BLOWS] += item->modifiers[OBJ_MOD_BLOWS];
 
         /* Boost shots */
         extra_shots += item->modifiers[OBJ_MOD_SHOTS];
