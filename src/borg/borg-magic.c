@@ -323,7 +323,7 @@ bool borg_spell_legal(const enum borg_spells spell)
     borg_magic *as = &borg_magics[spell_num];
 
     /* The book must be possessed */
-    if (borg_book[as->book] < 0)
+    if (borg.book_idx[as->book] < 0)
         return (false);
 
     /* The spell must be "known" */
@@ -331,7 +331,7 @@ bool borg_spell_legal(const enum borg_spells spell)
         return (false);
 
     /* The spell must be affordable (when rested) */
-    if (borg_magics[spell_num].power > borg_trait[BI_MAXSP])
+    if (borg_magics[spell_num].power > borg.trait[BI_MAXSP])
         return (false);
 
     /* Success */
@@ -371,23 +371,32 @@ bool borg_spell_okay(const enum borg_spells spell)
         return (false);
 
     /* Define reserve_mana for each class */
-    if (borg_class == CLASS_MAGE)
-        reserve_mana = 6;
-    if (borg_class == CLASS_RANGER)
-        reserve_mana = 22;
-    if (borg_class == CLASS_ROGUE)
-        reserve_mana = 20;
-    if (borg_class == CLASS_NECROMANCER)
-        reserve_mana = 10;
-    if (borg_class == CLASS_PRIEST)
-        reserve_mana = 8;
-    if (borg_class == CLASS_PALADIN)
-        reserve_mana = 20;
-    if (borg_class == CLASS_BLACKGUARD)
-        reserve_mana = 0;
+    switch (borg.trait[BI_CLASS])         {
+    case CLASS_MAGE:
+    reserve_mana = 6;
+    break;
+    case CLASS_RANGER:
+    reserve_mana = 22;
+    break;
+    case CLASS_ROGUE:
+    reserve_mana = 20;
+    break;
+    case CLASS_NECROMANCER:
+    reserve_mana = 10;
+    break;
+    case CLASS_PRIEST:
+    reserve_mana = 8;
+    break;
+    case CLASS_PALADIN:
+    reserve_mana = 20;
+    break;
+    case CLASS_BLACKGUARD:
+    reserve_mana = 0;
+    break;
+    }
 
     /* Low level spell casters should not worry about this */
-    if (borg_trait[BI_CLEVEL] < 35)
+    if (borg.trait[BI_CLEVEL] < 35)
         reserve_mana = 0;
 
     /* Require ability (when rested) */
@@ -395,15 +404,15 @@ bool borg_spell_okay(const enum borg_spells spell)
         return (false);
 
     /* Hack -- blind/confused/amnesia */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* The spell must be affordable (now) */
-    if (as->power > borg_trait[BI_CURSP])
+    if (as->power > borg.trait[BI_CURSP])
         return (false);
 
     /* Do not cut into reserve mana (for final teleport) */
-    if (borg_trait[BI_CURSP] - as->power < reserve_mana) {
+    if (borg.trait[BI_CURSP] - as->power < reserve_mana) {
         /* nourishing spells okay */
         if (borg_spell_has_effect(spell_num, EF_NOURISH))
             return (true);
@@ -413,7 +422,7 @@ bool borg_spell_okay(const enum borg_spells spell)
             return (true);
 
         /* Magic Missile OK */
-        if (MAGIC_MISSILE == spell && borg_trait[BI_CDEPTH] <= 35)
+        if (MAGIC_MISSILE == spell && borg.trait[BI_CDEPTH] <= 35)
             return (true);
 
         /* others are rejected */
@@ -441,17 +450,17 @@ int borg_spell_fail_rate(const enum borg_spells spell)
     chance = as->sfail;
 
     /* Reduce failure rate by "effective" level adjustment */
-    chance -= 3 * (borg_trait[BI_CLEVEL] - as->level);
+    chance -= 3 * (borg.trait[BI_CLEVEL] - as->level);
 
     /* Reduce failure rate by stat adjustment */
-    chance -= borg_trait[BI_FAIL1];
+    chance -= borg.trait[BI_FAIL1];
 
     /* Fear makes the failrate higher */
-    if (borg_trait[BI_ISAFRAID])
+    if (borg.trait[BI_ISAFRAID])
         chance += 20;
 
     /* Extract the minimum failure rate */
-    minfail = borg_trait[BI_FAIL2];
+    minfail = borg.trait[BI_FAIL2];
 
     /* Non mage characters never get too good */
     if (!player_has(player, PF_ZERO_FAIL)) {
@@ -466,13 +475,13 @@ int borg_spell_fail_rate(const enum borg_spells spell)
         chance = 50;
 
     /* Stunning makes spells harder */
-    if (borg_trait[BI_ISHEAVYSTUN])
+    if (borg.trait[BI_ISHEAVYSTUN])
         chance += 25;
-    if (borg_trait[BI_ISSTUN])
+    if (borg.trait[BI_ISSTUN])
         chance += 15;
 
     /* Amnesia makes it harder */
-    if (borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISFORGET])
         chance *= 2;
 
     /* Always a 5 percent chance of working */
@@ -531,7 +540,7 @@ bool borg_spell(const enum borg_spells spell)
         return (false);
 
     /* Look for the book */
-    i = borg_book[as->book];
+    i = borg.book_idx[as->book];
 
     /* Paranoia */
     if (i < 0)
@@ -569,7 +578,7 @@ void borg_cheat_spell(int book_num)
         }
 
         /* Note "difficult" spells */
-        else if (borg_trait[BI_CLEVEL] < as->level) {
+        else if (borg.trait[BI_CLEVEL] < as->level) {
             /* Unknown */
             as->status = BORG_MAGIC_HIGH;
         }

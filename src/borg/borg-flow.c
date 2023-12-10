@@ -128,13 +128,13 @@ const int16_t borg_ddy_ddd[24] = { 1, -1, 0, 0, 1, 1, -1, -1, -1, 0, 1, -1, 0,
 bool borg_can_dig(bool check_fail, bool hard)
 {
     /* No digging when hungry */
-    if (borg_trait[BI_ISHUNGRY])
+    if (borg.trait[BI_ISHUNGRY])
         return false;
 
     int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
-    if ((weapon_swap && borg_trait[BI_DIG] >= dig_check
+    if ((weapon_swap && borg.trait[BI_DIG] >= dig_check
             && borg_items[weapon_swap - 1].tval == TV_DIGGING)
-        || (borg_trait[BI_DIG] >= dig_check + 20))
+        || (borg.trait[BI_DIG] >= dig_check + 20))
         return true;
 
     if (check_fail) {
@@ -240,7 +240,7 @@ void borg_flow_clear(void)
  * depth, note that the maximum legal value of "depth" is 250.
  *
  * "Avoid" flag means the borg will not move onto unknown grids,
- * nor to Monster grids if borg_desperate or borg_lunal_mode are
+ * nor to Monster grids if borg_desperate or borg.lunal_mode are
  * set.
  *
  * "Sneak" will have the borg avoid grids which are adjacent to a monster.
@@ -261,16 +261,16 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
     bool twitchy = false;
 
     /* Default starting points */
-    origin_y = c_y;
-    origin_x = c_x;
+    origin_y = borg.c.y;
+    origin_x = borg.c.x;
 
     /* Is the borg moving under boosted bravery? */
-    if (avoidance > borg_trait[BI_CURHP])
+    if (avoidance > borg.trait[BI_CURHP])
         twitchy = true;
 
     /* Use the closest stair for calculation distance (cost) from the stair to
      * the goal */
-    if (stair_idx >= 0 && borg_trait[BI_CLEVEL] < 15) {
+    if (stair_idx >= 0 && borg.trait[BI_CLEVEL] < 15) {
         origin_y = track_less.y[stair_idx];
         origin_x = track_less.x[stair_idx];
         optimize = false;
@@ -364,7 +364,7 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
                 continue;
 
             /* Avoid "Lava" grids (for now) */
-            if (ag->feat == FEAT_LAVA && !borg_trait[BI_IFIRE])
+            if (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
                 continue;
 
             /* Avoid unknown grids (if requested or retreating)
@@ -376,34 +376,35 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
 
             /* Avoid Monsters if Desperate, lunal */
             if ((ag->kill)
-                && (borg_desperate || borg_lunal_mode || borg_munchkin_mode))
+                && (borg_desperate || borg.lunal_mode || borg.munchkin_mode))
                 continue;
 
             /* Avoid Monsters if low level, unless twitchy */
-            if ((ag->kill) && !twitchy && borg_trait[BI_FOOD] >= 2
-                && borg_trait[BI_MAXCLEVEL] < 5)
+            if ((ag->kill) && !twitchy && borg.trait[BI_FOOD] >= 2
+                && borg.trait[BI_MAXCLEVEL] < 5)
                 continue;
 
             /* Avoid shop entry points if I am not heading to that shop */
-            if (goal_shop >= 0 && feat_is_shop(ag->feat)
-                && (ag->store != goal_shop) && y != c_y && x != c_x)
+            if (borg.goal.shop >= 0 && feat_is_shop(ag->feat)
+                && (ag->store != borg.goal.shop) && y != borg.c.y
+                && x != borg.c.x)
                 continue;
 
             /* Avoid Traps if low level-- unless brave */
             if (ag->trap && !ag->glyph && !twitchy) {
                 /* Do not disarm when you could end up dead */
-                if (borg_trait[BI_CURHP] < 60)
+                if (borg.trait[BI_CURHP] < 60)
                     continue;
 
                 /* Do not disarm when clumsy */
                 /* since traps can be physical or magical, gotta check both */
-                if (borg_trait[BI_DISP] < 30 && borg_trait[BI_CLEVEL] < 20)
+                if (borg.trait[BI_DISP] < 30 && borg.trait[BI_CLEVEL] < 20)
                     continue;
-                if (borg_trait[BI_DISP] < 45 && borg_trait[BI_CLEVEL] < 10)
+                if (borg.trait[BI_DISP] < 45 && borg.trait[BI_CLEVEL] < 10)
                     continue;
-                if (borg_trait[BI_DISM] < 30 && borg_trait[BI_CLEVEL] < 20)
+                if (borg.trait[BI_DISM] < 30 && borg.trait[BI_CLEVEL] < 20)
                     continue;
-                if (borg_trait[BI_DISM] < 45 && borg_trait[BI_CLEVEL] < 10)
+                if (borg.trait[BI_DISM] < 45 && borg.trait[BI_CLEVEL] < 10)
                     continue;
 
                 /* NOTE:  Traps are tough to deal with as a low
@@ -424,32 +425,32 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
                 /* Mark as known */
                 borg_data_know->data[y][x] = true;
 
-                if (!borg_desperate && !borg_lunal_mode && !borg_munchkin_mode
+                if (!borg_desperate && !borg.lunal_mode && !borg.munchkin_mode
                     && !borg_digging) {
                     /* Get the danger */
                     p = borg_danger(y, x, 1, true, false);
 
                     /* Increase bravery */
-                    if (borg_trait[BI_MAXCLEVEL] == 50)
+                    if (borg.trait[BI_MAXCLEVEL] == 50)
                         fear = avoidance * 5 / 10;
-                    if (borg_trait[BI_MAXCLEVEL] != 50)
+                    if (borg.trait[BI_MAXCLEVEL] != 50)
                         fear = avoidance * 3 / 10;
                     if (scaryguy_on_level)
                         fear = avoidance * 2;
                     if (unique_on_level && vault_on_level
-                        && borg_trait[BI_MAXCLEVEL] == 50)
+                        && borg.trait[BI_MAXCLEVEL] == 50)
                         fear = avoidance * 3;
-                    if (scaryguy_on_level && borg_trait[BI_CLEVEL] <= 5)
+                    if (scaryguy_on_level && borg.trait[BI_CLEVEL] <= 5)
                         fear = avoidance * 3;
-                    if (goal_ignoring)
+                    if (borg.goal.ignoring)
                         fear = avoidance * 5;
                     if (borg_t - borg_began > 5000)
                         fear = avoidance * 25;
-                    if (borg_trait[BI_FOOD] == 0)
+                    if (borg.trait[BI_FOOD] == 0)
                         fear = avoidance * 100;
 
                     /* Normal in town */
-                    if (borg_trait[BI_CLEVEL] == 0)
+                    if (borg.trait[BI_CLEVEL] == 0)
                         fear = avoidance * 3 / 10;
 
                     /* Dangerous grid */
@@ -511,30 +512,30 @@ void borg_flow_enqueue_grid(int y, int x)
         p = borg_danger(y, x, 1, true, false);
 
         /* Increase bravery */
-        if (borg_trait[BI_MAXCLEVEL] == 50)
+        if (borg.trait[BI_MAXCLEVEL] == 50)
             fear = avoidance * 5 / 10;
-        if (borg_trait[BI_MAXCLEVEL] != 50)
+        if (borg.trait[BI_MAXCLEVEL] != 50)
             fear = avoidance * 3 / 10;
         if (scaryguy_on_level)
             fear = avoidance * 2;
-        if (unique_on_level && vault_on_level && borg_trait[BI_MAXCLEVEL] == 50)
+        if (unique_on_level && vault_on_level && borg.trait[BI_MAXCLEVEL] == 50)
             fear = avoidance * 3;
-        if (scaryguy_on_level && borg_trait[BI_CLEVEL] <= 5)
+        if (scaryguy_on_level && borg.trait[BI_CLEVEL] <= 5)
             fear = avoidance * 3;
-        if (goal_ignoring)
+        if (borg.goal.ignoring)
             fear = avoidance * 5;
         if (borg_t - borg_began > 5000)
             fear = avoidance * 25;
-        if (borg_trait[BI_FOOD] == 0)
+        if (borg.trait[BI_FOOD] == 0)
             fear = avoidance * 100;
 
         /* Normal in town */
-        if (borg_trait[BI_CLEVEL] == 0)
+        if (borg.trait[BI_CLEVEL] == 0)
             fear = avoidance * 3 / 10;
 
         /* Dangerous grid */
-        if ((p > fear) && !borg_desperate && !borg_lunal_mode
-            && !borg_munchkin_mode && !borg_digging) {
+        if ((p > fear) && !borg_desperate && !borg.lunal_mode
+            && !borg.munchkin_mode && !borg_digging) {
             /* Icky */
             borg_data_icky->data[y][x] = true;
 
@@ -574,7 +575,7 @@ bool borg_flow_commit(const char *who, int why)
     int cost;
 
     /* Cost of current grid */
-    cost = borg_data_cost->data[c_y][c_x];
+    cost = borg_data_cost->data[borg.c.y][borg.c.x];
 
     /* Verify the total "cost" */
     if (cost >= 250)
@@ -588,7 +589,7 @@ bool borg_flow_commit(const char *who, int why)
     memcpy(borg_data_flow, borg_data_cost, sizeof(borg_data));
 
     /* Save the goal type */
-    goal = why;
+    borg.goal.type = why;
 
     /* Success */
     return (true);
@@ -612,11 +613,11 @@ static bool borg_play_step(int y2, int x2)
         for (ox = -1; ox <= 1; ox++) {
             for (oy = -1; oy <= 1; oy++) {
                 /* skip our own spot */
-                if ((oy + c_y == c_y) && (ox + c_x == c_x))
+                if ((oy + borg.c.y == borg.c.y) && (ox + borg.c.x == borg.c.x))
                     continue;
 
                 /* Acquire location */
-                ag = &borg_grids[oy + c_y][ox + c_x];
+                ag = &borg_grids[oy + borg.c.y][ox + borg.c.x];
 
                 /* skip non open doors */
                 if (ag->feat != FEAT_OPEN)
@@ -631,7 +632,7 @@ static bool borg_play_step(int y2, int x2)
                     continue;
 
                 /* skip our original goal */
-                if ((oy + c_y == y2) && (ox + c_x == x2))
+                if ((oy + borg.c.y == y2) && (ox + borg.c.x == x2))
                     continue;
 
                 /* save this spot */
@@ -644,15 +645,15 @@ static bool borg_play_step(int y2, int x2)
         /* Is there a door to close? */
         if (door_found) {
             /* Get a direction, if possible */
-            dir = borg_goto_dir(c_y, c_x, c_y + o_y, c_x + o_x);
+            dir = borg_goto_dir(borg.c.y, borg.c.x, borg.c.y + o_y, borg.c.x + o_x);
 
             /* Obtain the destination */
-            x = c_x + ddx[dir];
-            y = c_y + ddy[dir];
+            x = borg.c.x + ddx[dir];
+            y = borg.c.y + ddy[dir];
 
             /* Hack -- set goal */
-            g_x = x;
-            g_y = y;
+            borg.goal.g.x = x;
+            borg.goal.g.y = y;
 
             /* Close */
             borg_note("# Closing a door");
@@ -679,17 +680,17 @@ static bool borg_play_step(int y2, int x2)
     }
 
     /* Stand stairs up */
-    if (goal_less) {
+    if (borg.goal.less) {
 
         /* Define the grid we are looking at to be our own grid */
-        ag = &borg_grids[c_y][c_x];
+        ag = &borg_grids[borg.c.y][borg.c.x];
 
-        /* Up stairs. Cheat the game grid info in. (cave_feat[c_y][c_x] ==
+        /* Up stairs. Cheat the game grid info in. (cave_feat[borg.c.y][borg.c.x] ==
          * FEAT_LESS) */
         if (ag->feat == FEAT_LESS) {
             /* Stand on stairs */
-            borg_on_dnstairs = true;
-            goal_less        = false;
+            borg.on_dnstairs = true;
+            borg.goal.less   = false;
 
             borg_keypress('<');
 
@@ -699,39 +700,39 @@ static bool borg_play_step(int y2, int x2)
     }
 
     /* Get a direction, if possible */
-    dir = borg_goto_dir(c_y, c_x, y2, x2);
+    dir = borg_goto_dir(borg.c.y, borg.c.x, y2, x2);
 
     /* We have arrived */
     if (dir == 5)
         return (false);
 
     /* Obtain the destination */
-    x = c_x + ddx[dir];
-    y = c_y + ddy[dir];
+    x = borg.c.x + ddx[dir];
+    y = borg.c.y + ddy[dir];
 
     /* Access the grid we are stepping on */
     ag = &borg_grids[y][x];
 
     /* Hack -- set goal */
-    g_x = x;
-    g_y = y;
+    borg.goal.g.x = x;
+    borg.goal.g.y = y;
 
     /* Monsters -- Attack */
     if (ag->kill) {
         borg_kill *kill = &borg_kills[ag->kill];
 
         /* can't attack someone if afraid! */
-        if (borg_trait[BI_ISAFRAID] || borg_trait[BI_CRSFEAR])
+        if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
             return (false);
 
         /* Hack -- ignore Maggot until later.  */
         if ((rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
-            && borg_trait[BI_CDEPTH] == 0 && borg_trait[BI_CLEVEL] < 5)
+            && borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 5)
             return (false);
 
         /* Message */
         borg_note(format("# Walking into a '%s' at (%d,%d)",
-            r_info[kill->r_idx].name, kill->y, kill->x));
+            r_info[kill->r_idx].name, kill->pos.y, kill->pos.x));
 
         /* Walk into it */
         if (my_no_alter) {
@@ -769,7 +770,7 @@ static bool borg_play_step(int y2, int x2)
 
             /* Traps. Disarm it w/ fail check */
             if (o_ptr->pval > 1 && o_ptr->known
-                && borg_trait[BI_DEV] - o_ptr->pval
+                && borg.trait[BI_DEV] - o_ptr->pval
                        >= borg_cfg[BORG_CHEST_FAIL_TOLERANCE]) {
                 borg_note(format("# Disarming a '%s' at (%d,%d)",
                     take->kind->name, take->y, take->x));
@@ -808,10 +809,10 @@ static bool borg_play_step(int y2, int x2)
          */
         if (take->orbed == false
             && (take->tval >= TV_SHOT && take->tval < TV_STAFF)) {
-            if (borg_distance(take->y, take->x, c_y, c_x) == 1) {
+            if (distance(loc(take->x, take->y), borg.c) == 1) {
                 if (borg_spell_okay_fail(ORB_OF_DRAINING, 25)) {
                     /* Target the Take location */
-                    borg_target(take->y, take->x);
+                    borg_target(loc(take->x, take->y));
 
                     /* Cast the prayer */
                     borg_spell(ORB_OF_DRAINING);
@@ -872,8 +873,8 @@ static bool borg_play_step(int y2, int x2)
     }
 
     /* Traps -- disarm -- */
-    if (borg_trait[BI_CURLITE] && !borg_trait[BI_ISBLIND]
-        && !borg_trait[BI_ISCONFUSED] && !scaryguy_on_level && ag->trap) {
+    if (borg.trait[BI_CURLITE] && !borg.trait[BI_ISBLIND]
+        && !borg.trait[BI_ISCONFUSED] && !scaryguy_on_level && ag->trap) {
 
         /* NOTE: If a scary guy is on the level, we allow the borg to run over
          * the trap in order to escape this level.
@@ -881,14 +882,14 @@ static bool borg_play_step(int y2, int x2)
 
         /* allow "destroy doors" */
         /* don't bother unless we are near full mana */
-        if (borg_trait[BI_CURSP] > ((borg_trait[BI_MAXSP] * 4) / 5)) {
+        if (borg.trait[BI_CURSP] > ((borg.trait[BI_MAXSP] * 4) / 5)) {
             if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)
                 || borg_activate_item(act_disable_traps)) {
                 borg_note("# Disable Traps, Destroy Doors");
                 ag->trap = 0;
                 /* since this just disables the trap and doesn't remove it, */
                 /* don't rest next to it */
-                borg_no_rest_prep = 3000;
+                borg.no_rest_prep = 3000;
                 return (true);
             }
         }
@@ -916,8 +917,8 @@ static bool borg_play_step(int y2, int x2)
         /* scan the adjacent grids */
         for (i = 0; i < 8; i++) {
             /* Grid in that direction */
-            x = c_x + ddx_ddd[i];
-            y = c_y + ddy_ddd[i];
+            x = borg.c.x + ddx_ddd[i];
+            y = borg.c.y + ddy_ddd[i];
 
             /* Access the grid */
             ag2 = &borg_grids[y][x];
@@ -925,13 +926,13 @@ static bool borg_play_step(int y2, int x2)
             /* If monster adjacent to me and I'm weak, don't
              * even try to open the door
              */
-            if (ag2->kill && borg_trait[BI_CLEVEL] < 15
-                && !borg_trait[BI_ISAFRAID])
+            if (ag2->kill && borg.trait[BI_CLEVEL] < 15
+                && !borg.trait[BI_ISAFRAID])
                 return (false);
         }
 
         /* Use other techniques from time to time */
-        if (!randint0(100) || time_this_panel >= 500) {
+        if (!randint0(100) || borg.time_this_panel >= 500) {
             /* Mega-Hack -- allow "destroy doors" */
             if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)
                 || borg_activate_item(act_destroy_doors)) {
@@ -982,12 +983,12 @@ static bool borg_play_step(int y2, int x2)
     /* HACK depends on FEAT order, kinda evil. */
     if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_GRANITE) {
         /* Don't dig walls and seams when exploring (do dig rubble) */
-        if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK)
+        if (ag->feat != FEAT_RUBBLE && borg.goal.type == GOAL_DARK)
             return false;
 
         /* Don't bother digging without sufficient dig ability */
         if (!borg_can_dig(false, ag->feat == FEAT_GRANITE)) {
-            goal = 0;
+            borg.goal.type = 0;
             return false;
         }
 
@@ -1044,7 +1045,7 @@ static bool borg_play_step(int y2, int x2)
     borg_keypress(I2D(dir));
 
     /* I'm not in a store */
-    borg_in_shop = false;
+    borg.in_shop = false;
 
     /* for some reason, selling and buying in the store sets the event handler
      * to Select. This is a game bug not a borg bug.  The borg is trying to
@@ -1090,7 +1091,7 @@ bool borg_flow_old(int why)
     int x, y;
 
     /* Continue */
-    if (goal == why) {
+    if (borg.goal.type == why) {
         int b_n = 0;
 
         int i, b_i = -1;
@@ -1098,7 +1099,7 @@ bool borg_flow_old(int why)
         int c, b_c;
 
         /* Flow cost of current grid */
-        b_c = borg_data_flow->data[c_y][c_x] * 10;
+        b_c = borg_data_flow->data[borg.c.y][borg.c.x] * 10;
 
         /* Prevent loops */
         b_c = b_c - 5;
@@ -1106,8 +1107,8 @@ bool borg_flow_old(int why)
         /* Look around */
         for (i = 0; i < 8; i++) {
             /* Grid in that direction */
-            x = c_x + ddx_ddd[i];
-            y = c_y + ddy_ddd[i];
+            x = borg.c.x + ddx_ddd[i];
+            y = borg.c.y + ddy_ddd[i];
 
             /* Flow cost at that grid */
             c = borg_data_flow->data[y][x] * 10;
@@ -1125,17 +1126,17 @@ bool borg_flow_old(int why)
                 b_n = 0;
 
             /* Apply the randomizer to equivalent values */
-            if (borg_trait[BI_CDEPTH] == 0 && (++b_n >= 2)
+            if (borg.trait[BI_CDEPTH] == 0 && (++b_n >= 2)
                 && (randint0(b_n) != 0))
                 continue;
-            else if (borg_trait[BI_CDEPTH] >= 1 && ++b_n >= 2)
+            else if (borg.trait[BI_CDEPTH] >= 1 && ++b_n >= 2)
                 continue;
 
             /* Special case when digging anti-summon corridor */
-            if (goal == GOAL_DIGGING && (ddx_ddd[i] == 0 || ddy_ddd[i] == 0)) {
+            if (borg.goal.type == GOAL_DIGGING
+                && (ddx_ddd[i] == 0 || ddy_ddd[i] == 0)) {
                 /* No straight lines */
-                if (borg_distance(c_y, c_x, borg_flow_y[0], borg_flow_x[0])
-                    <= 2)
+                if (distance(borg.c, loc(borg_flow_x[0], borg_flow_y[0])) <= 2)
                     continue;
             }
 
@@ -1147,8 +1148,8 @@ bool borg_flow_old(int why)
         /* Try it */
         if (b_i >= 0) {
             /* Access the location */
-            x = c_x + ddx_ddd[b_i];
-            y = c_y + ddy_ddd[b_i];
+            x = borg.c.x + ddx_ddd[b_i];
+            y = borg.c.y + ddy_ddd[b_i];
 
             /* Attempt motion */
             if (borg_play_step(y, x))
@@ -1156,12 +1157,12 @@ bool borg_flow_old(int why)
         }
 
         /* Mark a timestamp to wait on a anti-summon spot for a few turns */
-        if (goal == GOAL_DIGGING && c_y == borg_flow_y[0]
-            && c_x == borg_flow_x[0])
+        if (borg.goal.type == GOAL_DIGGING && borg.c.y == borg_flow_y[0]
+            && borg.c.x == borg_flow_x[0])
             borg_t_antisummon = borg_t;
 
         /* Cancel goal */
-        goal = 0;
+        borg.goal.type = 0;
     }
 
     /* Nothing to do */

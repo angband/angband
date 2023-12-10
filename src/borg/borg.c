@@ -270,7 +270,7 @@ static struct keypress borg_inkey_hack(int flush_first)
             borg_flush();
 
             /* Cycle a few times to catch up if needed */
-            if (time_this_panel > 250) {
+            if (borg.time_this_panel > 250) {
                 borg_respawning = 3;
             }
         }
@@ -310,7 +310,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 
 #ifndef BABLOS
         /* Dump the Character Map*/
-        if (borg_trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+        if (borg.trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
             || strstr(player->died_from, "starvation"))
             borg_write_map(false);
 
@@ -324,6 +324,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 #endif
 
         reincarnate_borg();
+        borg_respawning = 7;
 #endif /* BABLOS */
 
         key.code = 'n';
@@ -392,7 +393,7 @@ static struct keypress borg_inkey_hack(int flush_first)
     if (player->is_dead) {
 #ifndef BABLOS
         /* Print the map */
-        if (borg_trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
+        if (borg.trait[BI_CLEVEL] >= borg_cfg[BORG_DUMP_LEVEL]
             || strstr(player->died_from, "starvation"))
             borg_write_map(false);
 
@@ -441,6 +442,13 @@ static struct keypress borg_inkey_hack(int flush_first)
     if (!character_dungeon) {
         /* do nothing */
         key.code = ' ';
+
+        /* there is an odd case I can't track down where the borg */
+        /* tries to respawn but gets caught in a loop. */
+        borg_respawning--;
+        if (borg_respawning <= 0)
+            borg_oops("reincarnation failure");
+
         return key;
     }
 
@@ -486,10 +494,10 @@ static struct keypress borg_inkey_hack(int flush_first)
     (void)Term_inkey(&ch_evt, false, true);
 
     /* Hack to keep him active in town. */
-    if (borg_trait[BI_CDEPTH] >= 1)
-        borg_in_shop = false;
+    if (borg.trait[BI_CDEPTH] >= 1)
+        borg.in_shop = false;
 
-    if (!borg_in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
+    if (!borg.in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
         && ch_evt.key.code != 10) {
         /* Oops */
         borg_note(format(
@@ -678,8 +686,8 @@ void do_cmd_borg(void)
         /* Command: Nothing */
     case '$': {
         /*** Hack -- initialize borg.ini options ***/
-        mem_free(borg_has);
-        mem_free(borg_activation);
+        mem_free(borg.has);
+        mem_free(borg.activation);
 
         borg_init_txt_file();
         borg_note("# Ready...");
@@ -700,26 +708,7 @@ void do_cmd_borg(void)
         /* Step forever */
         borg_step = 0;
 
-        /* Allowable Cheat -- Obtain "recall" flag */
-        goal_recalling = player->word_recall * 1000;
-
-        /* Allowable Cheat -- Obtain "prot_from_evil" flag */
-        borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
-        /* Allowable Cheat -- Obtain "speed" flag */
-        borg_speed = (player->timed[TMD_FAST] ? true : false);
-        /* Allowable Cheat -- Obtain "resist" flags */
-        borg_trait[BI_TRACID] = (player->timed[TMD_OPP_ACID] ? true : false);
-        borg_trait[BI_TRELEC] = (player->timed[TMD_OPP_ELEC] ? true : false);
-        borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
-        borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
-        borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero             = (player->timed[TMD_HERO] ? true : false);
-        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS])
-            borg_see_inv = 10000;
+        borg_notice_player();
 
         if (player->opts.lazymove_delay != 0) {
             borg_note("# Turning off lazy movement controls");
@@ -754,26 +743,7 @@ void do_cmd_borg(void)
         /* Step forever */
         borg_step = 0;
 
-        /* Allowable Cheat -- Obtain "recall" flag */
-        goal_recalling = player->word_recall * 1000;
-
-        /* Allowable Cheat -- Obtain "prot_from_evil" flag */
-        borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
-        /* Allowable Cheat -- Obtain "speed" flag */
-        borg_speed = (player->timed[TMD_FAST] ? true : false);
-        /* Allowable Cheat -- Obtain "resist" flags */
-        borg_trait[BI_TRACID] = (player->timed[TMD_OPP_ACID] ? true : false);
-        borg_trait[BI_TRELEC] = (player->timed[TMD_OPP_ELEC] ? true : false);
-        borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
-        borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
-        borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
-        borg_fastcast         = (player->timed[TMD_FASTCAST] ? true : false);
-        borg_hero             = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS])
-            borg_see_inv = 10000;
+        borg_notice_player();
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -801,22 +771,7 @@ void do_cmd_borg(void)
         if (borg_step < 1)
             borg_step = 1;
 
-        /* Allowable Cheat -- Obtain "prot_from_evil" flag */
-        borg_prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
-        /* Allowable Cheat -- Obtain "speed" flag */
-        borg_speed = (player->timed[TMD_FAST] ? true : false);
-        /* Allowable Cheat -- Obtain "resist" flags */
-        borg_trait[BI_TRACID] = (player->timed[TMD_OPP_ACID] ? true : false);
-        borg_trait[BI_TRELEC] = (player->timed[TMD_OPP_ELEC] ? true : false);
-        borg_trait[BI_TRFIRE] = (player->timed[TMD_OPP_FIRE] ? true : false);
-        borg_trait[BI_TRCOLD] = (player->timed[TMD_OPP_COLD] ? true : false);
-        borg_trait[BI_TRPOIS] = (player->timed[TMD_OPP_POIS] ? true : false);
-        borg_bless            = (player->timed[TMD_BLESSED] ? true : false);
-        borg_shield           = (player->timed[TMD_SHIELD] ? true : false);
-        borg_hero             = (player->timed[TMD_HERO] ? true : false);
-        borg_berserk          = (player->timed[TMD_SHERO] ? true : false);
-        if (player->timed[TMD_SINVIS])
-            borg_see_inv = 10000;
+        borg_notice_player();
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -1075,7 +1030,7 @@ void do_cmd_borg(void)
         y            = l.y;
         x            = l.x;
 
-        uint8_t feat = square(cave, loc(c_x, c_y))->feat;
+        uint8_t feat = square(cave, borg.c)->feat;
 
         borg_note(format("Borg's Feat for grid (%d, %d) is %d, game Feat is %d",
             y, x, mask, feat));
@@ -1251,7 +1206,7 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Avoidance value %d.", c_y, c_x,
+        msg("(%d,%d of %d,%d) Avoidance value %d.", borg.c.y, borg.c.x,
             Term->offset_y / borg_panel_hgt(),
             Term->offset_x / borg_panel_wid(), avoidance);
         event_signal(EVENT_MESSAGE_FLUSH);
@@ -1294,8 +1249,8 @@ void do_cmd_borg(void)
 
             /* Still alive */
             if (kill->r_idx) {
-                int x = kill->x;
-                int y = kill->y;
+                int x = kill->pos.x;
+                int y = kill->pos.y;
 
                 /* Display */
                 print_rel('*', COLOUR_RED, y, x);
@@ -1399,8 +1354,8 @@ void do_cmd_borg(void)
         int o;
         int false_y, false_x;
 
-        false_y = c_y;
-        false_x = c_x;
+        false_y = borg.c.y;
+        false_x = borg.c.x;
 
         /* Continue */
         for (o = 0; o < 250; o++) {
@@ -1411,7 +1366,7 @@ void do_cmd_borg(void)
             int c, b_c;
 
             /* Flow cost of current grid */
-            b_c = borg_data_flow->data[c_y][c_x] * 10;
+            b_c = borg_data_flow->data[borg.c.y][borg.c.x] * 10;
 
             /* Prevent loops */
             b_c = b_c - 5;
@@ -1513,7 +1468,7 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Regional Fear.", c_y, c_x,
+        msg("(%d,%d of %d,%d) Regional Fear.", borg.c.y, borg.c.x,
             Term->offset_y / borg_panel_hgt(),
             Term->offset_x / borg_panel_wid());
         event_signal(EVENT_MESSAGE_FLUSH);
@@ -1563,7 +1518,7 @@ void do_cmd_borg(void)
         }
 
         /* Get keypress */
-        msg("(%d,%d of %d,%d) Monster Fear.", c_y, c_x,
+        msg("(%d,%d of %d,%d) Monster Fear.", borg.c.y, borg.c.x,
             Term->offset_y / borg_panel_hgt(),
             Term->offset_x / borg_panel_wid());
         event_signal(EVENT_MESSAGE_FLUSH);
@@ -1579,7 +1534,7 @@ void do_cmd_borg(void)
         int32_t p;
 
         /* Examine the screen */
-        borg_update_frame();
+        borg_notice_player();
 
         /* Cheat the "equip" screen */
         borg_cheat_equip();
@@ -1614,8 +1569,8 @@ void do_cmd_borg(void)
         msg("time: (%d) ", time);
         time = (borg_time_town + (borg_t - borg_began));
         msg("; from town (%d)", time);
-        msg("; on this panel (%d)", time_this_panel);
-        msg("; need inviso (%d)", borg_need_see_invis);
+        msg("; on this panel (%d)", borg.time_this_panel);
+        msg("; need inviso (%d)", borg.need_see_invis);
         break;
     }
 
@@ -1629,7 +1584,7 @@ void do_cmd_borg(void)
                 uint8_t a = COLOUR_RED;
 
                 /* Obtain danger */
-                if (!borg_los(c_y, c_x, y, x))
+                if (!borg_los(borg.c.y, borg.c.x, y, x))
                     continue;
 
                 /* Display */
@@ -1650,7 +1605,7 @@ void do_cmd_borg(void)
                     continue;
 
                 /* Obtain danger */
-                if (!borg_projectable_dark(c_y, c_x, y, x))
+                if (!borg_projectable_dark(borg.c.y, borg.c.x, y, x))
                     continue;
 
                 /* Display */
@@ -1666,7 +1621,7 @@ void do_cmd_borg(void)
                 uint8_t a = COLOUR_GREEN;
 
                 /* Obtain danger */
-                if (!borg_los(c_y, c_x, y, x))
+                if (!borg_los(borg.c.y, borg.c.x, y, x))
                     continue;
 
                 /* Display */
@@ -1689,7 +1644,7 @@ void do_cmd_borg(void)
         /* Allow user abort */
         if (new_borg_skill >= 0) {
             player->max_depth       = new_borg_skill;
-            borg_trait[BI_MAXDEPTH] = new_borg_skill;
+            borg.trait[BI_MAXDEPTH] = new_borg_skill;
         }
 
         break;
@@ -1721,7 +1676,7 @@ void do_cmd_borg(void)
         /* report current status */
         msg("money Scumming for %d, I need %d more.",
             borg_cfg[BORG_MONEY_SCUM_AMOUNT],
-            borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg_trait[BI_GOLD]);
+            borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg.trait[BI_GOLD]);
 
         /* Get the new amount */
         new_borg_money_scum_amount = get_quantity(
@@ -1741,7 +1696,7 @@ void do_cmd_borg(void)
         borg_cheat_inven();
 
         /* Examine the screen */
-        borg_update_frame();
+        borg_notice_player();
         borg_update();
 
         /* Examine the inventory */
@@ -1756,12 +1711,12 @@ void do_cmd_borg(void)
                 break;
         }
         msg("Max Level: %d  Prep'd For: %d  Reason: %s",
-            borg_trait[BI_MAXDEPTH], i - 1, borg_prepared(i));
-        if (borg_ready_morgoth == 1) {
+            borg.trait[BI_MAXDEPTH], i - 1, borg_prepared(i));
+        if (borg.ready_morgoth == 1) {
             msg("You are ready for the big fight!!");
-        } else if (borg_ready_morgoth == 0) {
+        } else if (borg.ready_morgoth == 0) {
             msg("You are NOT ready for the big fight!!");
-        } else if (borg_ready_morgoth == -1) {
+        } else if (borg.ready_morgoth == -1) {
             msg("No readiness check done.");
         }
 
@@ -1772,7 +1727,7 @@ void do_cmd_borg(void)
 
         int i;
         for (i = 0; i < STAT_MAX; i++) {
-            borg_note(format("stat # %d, is: %d", i, my_stat_cur[i]));
+            borg_note(format("stat # %d, is: %d", i, borg.stat_cur[i]));
         }
 #if 0
         artifact_type *a_ptr;
@@ -1805,7 +1760,7 @@ void do_cmd_borg(void)
         borg_update();
 
         /* Examine the screen */
-        borg_update_frame();
+        borg_notice_player();
 
         /* note the swap items */
         if (weapon_swap) {
@@ -1909,7 +1864,7 @@ void do_cmd_borg(void)
         borg_cheat_inven();
 
         /* Examine the screen */
-        borg_update_frame();
+        borg_notice_player();
 
         /* Examine the screen */
         borg_update();
@@ -1922,9 +1877,9 @@ void do_cmd_borg(void)
             switch (cmd) {
             case 'a':
             case 'A':
-                if (borg_has[item]) {
+                if (borg.has[item]) {
                     borg_note(format("Item-Kind:%03d name=%s value= %d.", item,
-                        k_info[item].name, borg_has[item]));
+                        k_info[item].name, borg.has[item]));
                 }
                 break;
             case 'i':
@@ -1949,7 +1904,7 @@ void do_cmd_borg(void)
                 break;
             default: {
                 borg_note(format("skill %d (%s) value= %d.", item,
-                    prefix_pref[item], borg_trait[item]));
+                    prefix_pref[item], borg.trait[item]));
                 break;
             }
             }
@@ -1991,7 +1946,7 @@ void do_cmd_borg(void)
         borg_update();
 
         /* Examine the screen */
-        borg_update_frame();
+        borg_notice_player();
 
         /* Save the screen */
         Term_save();

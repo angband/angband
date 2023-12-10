@@ -74,20 +74,20 @@ bool borg_money_scum(void)
 
     /* Take note */
     borg_note(format("# Waiting for towns people to breed.  I need %d...",
-        borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg_trait[BI_GOLD]));
+        borg_cfg[BORG_MONEY_SCUM_AMOUNT] - borg.trait[BI_GOLD]));
 
     /* I'm not in a store */
-    borg_in_shop = false;
+    borg.in_shop = false;
 
     /* Rest for 9 months */
-    if (borg_trait[BI_CLEVEL] >= 35) {
+    if (borg.trait[BI_CLEVEL] >= 35) {
         borg_keypress(ESCAPE);
         borg_keypress('R');
         borg_keypress('5');
         borg_keypress('0');
         borg_keypress('0');
         borg_keypress(KC_ENTER);
-    } else if (borg_trait[BI_CLEVEL] >= 15) {
+    } else if (borg.trait[BI_CLEVEL] >= 15) {
         borg_keypress(ESCAPE);
         borg_keypress('R');
         borg_keypress('7');
@@ -118,10 +118,10 @@ bool borg_money_scum(void)
             dir = randint0(10);
 
             /* Hack -- set goal */
-            g_x = c_x + ddx[dir];
-            g_y = c_y + ddy[dir];
+            borg.goal.g.x = borg.c.x + ddx[dir];
+            borg.goal.g.y = borg.c.y + ddy[dir];
 
-            ag  = &borg_grids[g_y][g_x];
+            ag  = &borg_grids[borg.goal.g.y][borg.goal.g.x];
 
             /* Skip walls and shops */
             if (ag->feat != FEAT_FLOOR)
@@ -135,7 +135,7 @@ bool borg_money_scum(void)
 
     /* reset the clocks */
     borg_t          = 10;
-    time_this_panel = 1;
+    borg.time_this_panel = 1;
     borg_began      = 1;
 
     /* Done */
@@ -150,16 +150,16 @@ bool borg_think_dungeon_light(void)
     borg_grid *ag;
 
     /* Consume needed things */
-    if (borg_trait[BI_ISHUNGRY] && borg_use_things())
+    if (borg.trait[BI_ISHUNGRY] && borg_use_things())
         return (true);
 
-    if (!borg_trait[BI_LIGHT]
-        && (borg_trait[BI_CURLITE] <= 0 || borg_items[INVEN_LIGHT].timeout <= 3)
-        && borg_trait[BI_CDEPTH] >= 1) {
+    if (!borg.trait[BI_LIGHT]
+        && (borg.trait[BI_CURLITE] <= 0 || borg_items[INVEN_LIGHT].timeout <= 3)
+        && borg.trait[BI_CDEPTH] >= 1) {
         enum borg_need need;
 
         /* I am recalling, sit here till it engages. */
-        if (goal_recalling) {
+        if (borg.goal.recalling) {
             /* just wait */
             borg_keypress('R');
             borg_keypress('9');
@@ -179,11 +179,11 @@ bool borg_think_dungeon_light(void)
             return (false);
 
         /* Can I recall out with a rod */
-        if (!goal_recalling && borg_zap_rod(sv_rod_recall))
+        if (!borg.goal.recalling && borg_zap_rod(sv_rod_recall))
             return (true);
 
         /* Can I recall out with a spell */
-        if (!goal_recalling && borg_recall())
+        if (!borg.goal.recalling && borg_recall())
             return (true);
 
         /* Log */
@@ -193,18 +193,18 @@ bool borg_think_dungeon_light(void)
         borg_keypress('<');
 
         /* If on a glowing grid, got some food, and low mana, then rest here */
-        if ((borg_trait[BI_CURSP] < borg_trait[BI_MAXSP]
-                && borg_trait[BI_MAXSP] > 0)
-            && (borg_grids[c_y][c_x].info & BORG_GLOW) && !borg_trait[BI_ISWEAK]
+        if ((borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
+                && borg.trait[BI_MAXSP] > 0)
+            && (borg_grids[borg.c.y][borg.c.x].info & BORG_GLOW) && !borg.trait[BI_ISWEAK]
             && (borg_spell_legal(HERBAL_CURING)
                 || borg_spell_legal(REMOVE_HUNGER)
-                || borg_trait[BI_FOOD] >= borg_trait[BI_CDEPTH])
+                || borg.trait[BI_FOOD] >= borg.trait[BI_CDEPTH])
             && (borg_spell_legal(CALL_LIGHT) || borg_spell_legal(LIGHT_ROOM))
             && (!borg_spell_okay(CALL_LIGHT) && !borg_spell_okay(LIGHT_ROOM))) {
             /* Scan grids adjacent to me */
             for (ii = 0; ii < 8; ii++) {
-                x = c_x + ddx_ddd[ii];
-                y = c_y + ddy_ddd[ii];
+                x = borg.c.x + ddx_ddd[ii];
+                y = borg.c.y + ddy_ddd[ii];
 
                 /* Bounds check */
                 if (!square_in_bounds_fully(cave, loc(x, y)))
@@ -220,12 +220,12 @@ bool borg_think_dungeon_light(void)
             }
 
             /* Be concerned about the Regional Fear. */
-            if (borg_fear_region[c_y / 11][c_x / 11]
-                > borg_trait[BI_CURHP] / 10)
+            if (borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+                > borg.trait[BI_CURHP] / 10)
                 not_safe = true;
 
             /* Be concerned about the Monster Fear. */
-            if (borg_fear_monsters[c_y][c_x] > borg_trait[BI_CURHP] / 10)
+            if (borg_fear_monsters[borg.c.y][borg.c.x] > borg.trait[BI_CURHP] / 10)
                 not_safe = true;
 
             /* rest here to gain some mana */
@@ -239,55 +239,59 @@ bool borg_think_dungeon_light(void)
         }
 
         /* If I have the capacity to Call Light, then do so if adjacent to a
-         * dark grid. We can illuminate the entire dungeon, looking for stairs.
+         * dark grid. We can illuminate the entire dungeon, looking for stairs
+         * but not if we just did so.
          */
-        /* Scan grids adjacent to me */
-        for (ii = 0; ii < 8; ii++) {
-            x = c_x + ddx_ddd[ii];
-            y = c_y + ddy_ddd[ii];
+        if (borg.when_call_light == 0 || (borg_t - borg.when_call_light) > 7) {
+            /* Scan grids adjacent to me */
+            for (ii = 0; ii < 8; ii++) {
+                x = borg.c.x + ddx_ddd[ii];
+                y = borg.c.y + ddy_ddd[ii];
 
-            /* Bounds check */
-            if (!square_in_bounds_fully(cave, loc(x, y)))
-                continue;
+                /* Bounds check */
+                if (!square_in_bounds_fully(cave, loc(x, y)))
+                    continue;
 
-            /* Access the grid */
-            ag = &borg_grids[y][x];
+                /* Access the grid */
+                ag = &borg_grids[y][x];
 
-            /* skip the Wall grids */
-            if (ag->feat >= FEAT_RUBBLE && ag->feat <= FEAT_PERM)
-                continue;
+                /* skip the Wall grids */
+                if (ag->feat >= FEAT_RUBBLE && ag->feat <= FEAT_PERM)
+                    continue;
 
-            /* Problem with casting Call Light on Open Doors */
-            if ((ag->feat == FEAT_OPEN || ag->feat == FEAT_BROKEN)
-                && (y == c_y && x == c_x)) {
-                /* Cheat the grid info to see if the door is lit */
-                if (square_isglow(cave, loc(c_x, c_y)))
-                    ag->info |= BORG_GLOW;
-                continue;
-            }
-
-            /* Look for a dark one */
-            if ((ag->info & BORG_DARK) || /* Known to be dark */
-                ag->feat == FEAT_NONE || /* Nothing known about feature */
-                !(ag->info & BORG_MARK) || /* Nothing known about info */
-                !(ag->info & BORG_GLOW)) /* not glowing */
-            {
-                /* Attempt to Call Light */
-                if (borg_activate_item(act_illumination)
-                    || borg_activate_item(act_light)
-                    || borg_zap_rod(sv_rod_illumination)
-                    || borg_use_staff(sv_staff_light)
-                    || borg_read_scroll(sv_scroll_light)
-                    || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
-                    borg_note("# Illuminating the region while dark.");
-                    borg_react("SELF:lite", "SELF:lite");
-
-                    return (true);
+                /* Problem with casting Call Light on Open Doors */
+                if ((ag->feat == FEAT_OPEN || ag->feat == FEAT_BROKEN)
+                    && (y == borg.c.y && x == borg.c.x)) {
+                    /* Cheat the grid info to see if the door is lit */
+                    if (square_isglow(cave, borg.c))
+                        ag->info |= BORG_GLOW;
+                    continue;
                 }
 
-                /* Attempt to use Light Beam requiring a direction. */
-                if (borg_light_beam(false))
-                    return (true);
+                /* Look for a dark one */
+                if ((ag->info & BORG_DARK) || /* Known to be dark */
+                    ag->feat == FEAT_NONE || /* Nothing known about feature */
+                    !(ag->info & BORG_MARK) || /* Nothing known about info */
+                    !(ag->info & BORG_GLOW)) /* not glowing */
+                {
+                    /* Attempt to Call Light */
+                    if (borg_activate_item(act_illumination)
+                        || borg_activate_item(act_light)
+                        || borg_zap_rod(sv_rod_illumination)
+                        || borg_use_staff(sv_staff_light)
+                        || borg_read_scroll(sv_scroll_light)
+                        || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
+                        borg_note("# Illuminating the region while dark.");
+                        borg_react("SELF:lite", "SELF:lite");
+                        borg.when_call_light = borg_t;
+
+                        return (true);
+                    }
+
+                    /* Attempt to use Light Beam requiring a direction. */
+                    if (borg_light_beam(false))
+                        return (true);
+                }
             }
         }
 
@@ -301,7 +305,7 @@ bool borg_think_dungeon_light(void)
         }
 
         /* Try to flow to a lite */
-        if (borg_trait[BI_RECALL] && borg_flow_light(GOAL_FLEE)) {
+        if (borg.trait[BI_RECALL] && borg_flow_light(GOAL_FLEE)) {
             return (true);
         }
     }
@@ -318,9 +322,9 @@ bool borg_think_stair_scum(bool from_town)
     int j, b_j = -1;
     int i;
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
-    uint8_t feat  = square(cave, loc(c_x, c_y))->feat;
+    uint8_t feat  = square(cave, borg.c)->feat;
 
     enum borg_need need;
 
@@ -328,9 +332,9 @@ bool borg_think_stair_scum(bool from_town)
     borg_notice(true);
 
     /* No scumming mode if starving or in town */
-    if (borg_trait[BI_CDEPTH] == 0 || borg_trait[BI_ISWEAK]) {
+    if (borg.trait[BI_CDEPTH] == 0 || borg.trait[BI_ISWEAK]) {
         borg_note("# Leaving Scumming Mode. (Town or Weak)");
-        borg_lunal_mode = false;
+        borg.lunal_mode = false;
         return (false);
     }
 
@@ -347,14 +351,14 @@ bool borg_think_stair_scum(bool from_town)
         /* Check for an existing "down stairs" */
         for (i = 0; i < track_more.num; i++) {
             /* We already knew about that one */
-            if ((track_more.x[i] == c_x) && (track_more.y[i] == c_y))
+            if ((track_more.x[i] == borg.c.x) && (track_more.y[i] == borg.c.y))
                 break;
         }
 
         /* Track the newly discovered "down stairs" */
         if ((i == track_more.num) && (i < track_more.size)) {
-            track_more.x[i] = c_x;
-            track_more.y[i] = c_y;
+            track_more.x[i] = borg.c.x;
+            track_more.y[i] = borg.c.y;
             track_more.num++;
         }
         /* tell the array */
@@ -366,14 +370,14 @@ bool borg_think_stair_scum(bool from_town)
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less.num; i++) {
             /* We already knew about this one */
-            if ((track_less.x[i] == c_x) && (track_less.y[i] == c_y))
+            if ((track_less.x[i] == borg.c.x) && (track_less.y[i] == borg.c.y))
                 continue;
         }
 
         /* Track the newly discovered "up stairs" */
         if ((i == track_less.num) && (i < track_less.size)) {
-            track_less.x[i] = c_x;
-            track_less.y[i] = c_y;
+            track_less.x[i] = borg.c.x;
+            track_less.y[i] = borg.c.y;
             track_less.num++;
         }
 
@@ -403,12 +407,12 @@ bool borg_think_stair_scum(bool from_town)
 
     /*leave level right away. */
     borg_note("# Fleeing level. Scumming Mode");
-    goal_fleeing = true;
+    borg.goal.fleeing = true;
 
     /* Scumming Mode - Going down */
     if (track_more.num
         && (ag->feat == FEAT_MORE || ag->feat == FEAT_LESS
-            || borg_trait[BI_CDEPTH] < 30)) {
+            || borg.trait[BI_CDEPTH] < 30)) {
         int y, x;
 
         if (track_more.num >= 2)
@@ -420,7 +424,7 @@ bool borg_think_stair_scum(bool from_town)
             y = track_more.y[i];
 
             /* How far is the nearest down stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = distance(borg.c, loc(x, y));
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1)
@@ -431,7 +435,7 @@ bool borg_think_stair_scum(bool from_town)
         }
 
         /* if the downstair is close and path is safe, continue on */
-        if (b_j < 8 || ag->feat == FEAT_MORE || borg_trait[BI_CDEPTH] < 30) {
+        if (b_j < 8 || ag->feat == FEAT_MORE || borg.trait[BI_CDEPTH] < 30) {
             /* Note */
             borg_note("# Scumming Mode.  Power Diving. ");
 
@@ -446,7 +450,7 @@ bool borg_think_stair_scum(bool from_town)
             /* if standing on a stair */
             if (ag->feat == FEAT_MORE) {
                 /* Take the DownStair */
-                borg_on_upstairs = true;
+                borg.on_upstairs = true;
                 borg_keypress('>');
 
                 return (true);
@@ -455,11 +459,11 @@ bool borg_think_stair_scum(bool from_town)
     }
 
     /* Scumming Mode - Going up */
-    if (track_less.num && borg_trait[BI_CDEPTH] != 1
+    if (track_less.num && borg.trait[BI_CDEPTH] != 1
         && (ag->feat == FEAT_MORE || ag->feat == FEAT_LESS)) {
         int y, x;
 
-        borg_grid *tmp_ag = &borg_grids[c_y][c_x];
+        borg_grid *tmp_ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Check for an existing "up stairs" */
         for (i = 0; i < track_less.num; i++) {
@@ -467,7 +471,7 @@ bool borg_think_stair_scum(bool from_town)
             y = track_less.y[i];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = distance(borg.c, loc(x, y));
 
             /* skip the far ones */
             if (b_j <= j && b_j != -1)
@@ -484,7 +488,7 @@ bool borg_think_stair_scum(bool from_town)
             borg_note("# Scumming Mode.  Power Climb. ");
 
             /* Set to help borg move better */
-            goal_less = true;
+            borg.goal.less = true;
 
             /* Continue leaving the level */
             if (borg_flow_old(GOAL_FLEE))
@@ -500,7 +504,7 @@ bool borg_think_stair_scum(bool from_town)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg_on_dnstairs = true;
+                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -511,7 +515,7 @@ bool borg_think_stair_scum(bool from_town)
      * is a monster in LOS.  He could freeze and unhook, or
      * move to the closest stair and risk the run.
      */
-    if (borg_trait[BI_CDEPTH] >= 2) {
+    if (borg.trait[BI_CDEPTH] >= 2) {
         /* Continue fleeing to stair */
         if (borg_flow_old(GOAL_FLEE))
             return (true);
@@ -535,16 +539,16 @@ static int borg_time_to_stay_on_level(bool bored)
 {
     /* at low level, don't stay too long, */
     /* but long enough to hope for a feeling */
-    if (borg_trait[BI_MAXCLEVEL] < 20)
+    if (borg.trait[BI_MAXCLEVEL] < 20)
         return z_info->feeling_need * 100;
 
     /* at very low level, stay less time */
-    if (borg_trait[BI_CLEVEL] < 10)
-        return borg_trait[BI_CLEVEL] * 250;
+    if (borg.trait[BI_CLEVEL] < 10)
+        return borg.trait[BI_CLEVEL] * 250;
 
     /* at slightly low level, try not to run out of food staying */
-    if (borg_trait[BI_CLEVEL] < 15)
-        return borg_trait[BI_REG] ? 2000 : 2500;
+    if (borg.trait[BI_CLEVEL] < 15)
+        return borg.trait[BI_REG] ? 2000 : 2500;
 
     if (bored)
         return borg_stuff_feeling[borg_feeling_stuff] / 10;
@@ -564,14 +568,14 @@ bool borg_leave_level(bool bored)
     bool need_restock       = false;
 
     /* Hack -- waiting for "recall" other than depth 1 */
-    if (goal_recalling && borg_trait[BI_CDEPTH] > 1)
+    if (borg.goal.recalling && borg.trait[BI_CDEPTH] > 1)
         return (false);
 
     /* Not bored if I have seen Morgoth recently */
-    if (borg_trait[BI_CDEPTH] == 100 && morgoth_on_level
+    if (borg.trait[BI_CDEPTH] == 100 && morgoth_on_level
         && (borg_t - borg_t_morgoth < 5000)) {
-        goal_leaving = false;
-        goal_rising  = false;
+        borg.goal.leaving = false;
+        borg.goal.rising  = false;
         bored        = false;
     }
 
@@ -592,21 +596,21 @@ bool borg_leave_level(bool bored)
      */
 
     /* Town */
-    if (!borg_trait[BI_CDEPTH]) {
+    if (!borg.trait[BI_CDEPTH]) {
         /* Cancel rising */
-        goal_rising = false;
+        borg.goal.rising = false;
 
         /* Wait until bored */
         if (!bored)
             return (false);
 
         /* Case for those who cannot Teleport Level */
-        if (borg_trait[BI_MAXDEPTH] == 100 && !borg_cfg[BORG_PLAYS_RISKY]) {
-            if (borg_trait[BI_ATELEPORTLVL] == 0) {
+        if (borg.trait[BI_MAXDEPTH] == 100 && !borg_cfg[BORG_PLAYS_RISKY]) {
+            if (borg.trait[BI_ATELEPORTLVL] == 0) {
                 /* These pple must crawl down to 100, Sorry */
-                goal_fleeing = true;
-                goal_leaving = true;
-                stair_more   = true;
+                borg.goal.fleeing = true;
+                borg.goal.leaving = true;
+                borg.stair_more   = true;
 
                 /* Note */
                 borg_note(
@@ -622,10 +626,10 @@ bool borg_leave_level(bool bored)
         }
 
         /* Hack -- Recall into dungeon */
-        if ((borg_trait[BI_MAXDEPTH] >= (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8))
-            && (borg_trait[BI_RECALL] >= 3)
+        if ((borg.trait[BI_MAXDEPTH] >= (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8))
+            && (borg.trait[BI_RECALL] >= 3)
             && (((char *)NULL
-                    == borg_prepared(borg_trait[BI_MAXDEPTH] * 6 / 10))
+                    == borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10))
                 || borg_cfg[BORG_PLAYS_RISKY])
             && borg_recall()) {
             /* Note */
@@ -635,29 +639,29 @@ bool borg_leave_level(bool bored)
             return (true);
         } else {
             /* note why we didn't recall. */
-            if (borg_trait[BI_MAXDEPTH]
+            if (borg.trait[BI_MAXDEPTH]
                 < (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8)) {
                 borg_note("# Not deep enough to recall");
             } else {
-                if (borg_trait[BI_RECALL] <= 2) {
+                if (borg.trait[BI_RECALL] <= 2) {
                     borg_note("# Not enough recalls to recall");
                 } else {
                     /* recall unless way out of our league */
                     if ((char *)NULL
-                        != borg_prepared(borg_trait[BI_MAXDEPTH] * 6 / 10)) {
+                        != borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10)) {
                         borg_note(
                             format("# Way too scary to recall down there!   %s",
-                                borg_prepared(borg_trait[BI_MAXDEPTH])));
+                                borg_prepared(borg.trait[BI_MAXDEPTH])));
                     } else {
                         borg_note("# failed to recall when I wanted to");
                     }
                 }
             }
-            goal_fleeing = true;
-            goal_leaving = true;
+            borg.goal.fleeing = true;
+            borg.goal.leaving = true;
         }
 
-        stair_more = true;
+        borg.stair_more = true;
 
         /* Attempt to use those stairs */
         if (borg_flow_stair_more(GOAL_BORE, false, false))
@@ -668,8 +672,8 @@ bool borg_leave_level(bool bored)
     }
 
     /** In the Dungeon **/
-    const char *prep_cur_depth  = borg_prepared(borg_trait[BI_CDEPTH]);
-    const char *prep_next_depth = borg_prepared(borg_trait[BI_CDEPTH] + 1);
+    const char *prep_cur_depth  = borg_prepared(borg.trait[BI_CDEPTH]);
+    const char *prep_next_depth = borg_prepared(borg.trait[BI_CDEPTH] + 1);
 
     /* if not prepared for this level, head upward */
     if (NULL != prep_cur_depth) {
@@ -686,7 +690,7 @@ bool borg_leave_level(bool bored)
         try_not_to_descend = true;
 
     /* Do not dive when drained */
-    if (g && borg_trait[BI_ISFIXEXP])
+    if (g && borg.trait[BI_ISFIXEXP])
         try_not_to_descend = true;
 
     /* Rise a level if bored and unable to dive. */
@@ -697,7 +701,7 @@ bool borg_leave_level(bool bored)
     }
 
     /* Rise a level if bored and spastic. */
-    else if (bored && avoidance > borg_trait[BI_CURHP]) {
+    else if (bored && avoidance > borg.trait[BI_CURHP]) {
         if (NULL != prep_next_depth) {
             g = -1;
             borg_note("# heading up (bored and spastic).");
@@ -709,7 +713,7 @@ bool borg_leave_level(bool bored)
 
     /* Power dive if I am playing too shallow*/
     else if (!try_not_to_descend
-             && NULL == borg_prepared(borg_trait[BI_CDEPTH] + 5)
+             && NULL == borg_prepared(borg.trait[BI_CDEPTH] + 5)
              && sellable_item_count < 13) {
         g = 1;
         borg_note("# power dive, playing too shallow.");
@@ -717,7 +721,7 @@ bool borg_leave_level(bool bored)
 
     /* Power dive if I am playing deep */
     else if (!try_not_to_descend && NULL == prep_next_depth
-             && borg_trait[BI_CDEPTH] >= 75 && borg_trait[BI_CDEPTH] < 100) {
+             && borg.trait[BI_CDEPTH] >= 75 && borg.trait[BI_CDEPTH] < 100) {
         g = 1;
         borg_note("# power dive, head deep.");
     }
@@ -727,11 +731,11 @@ bool borg_leave_level(bool bored)
         /* Certain checks are bypassed if Unique monster on level */
         if (!unique_on_level) {
             /* if I am really out of depth go to town */
-            if (!g && NULL != borg_prepared(borg_trait[BI_MAXDEPTH] * 5 / 10)
-                && borg_trait[BI_MAXDEPTH] > 65) {
+            if (!g && NULL != borg_prepared(borg.trait[BI_MAXDEPTH] * 5 / 10)
+                && borg.trait[BI_MAXDEPTH] > 65) {
                 borg_note(format(
                     "# Returning to town (too deep: %s)", prep_cur_depth));
-                goal_rising = true;
+                borg.goal.rising = true;
             } else {
                 borg_note(format("# Climbing (too deep: %s)", prep_cur_depth));
                 g = -1;
@@ -739,113 +743,113 @@ bool borg_leave_level(bool bored)
         }
 
         /* if I must  go to town without delay */
-        if (NULL != borg_restock(borg_trait[BI_CDEPTH])) {
+        if (NULL != borg_restock(borg.trait[BI_CDEPTH])) {
             borg_note(format("# returning to town to restock(too deep: %s)",
-                borg_restock(borg_trait[BI_CDEPTH])));
-            goal_rising  = true;
+                borg_restock(borg.trait[BI_CDEPTH])));
+            borg.goal.rising  = true;
             need_restock = true;
         }
 
         /* I must return to collect stock from the house. */
         if (strstr(prep_cur_depth, "Collect from house")) {
             borg_note("# Returning to town to Collect stock.");
-            goal_rising  = true;
+            borg.goal.rising  = true;
             need_restock = true;
         }
     }
 
     /* Hack -- if I am playing way too shallow return to town */
-    if (NULL == borg_prepared(borg_trait[BI_CDEPTH] + 20)
-        && NULL == borg_prepared(borg_trait[BI_MAXDEPTH] * 6 / 10)
-        && borg_trait[BI_MAXDEPTH] > borg_trait[BI_CDEPTH] + 20
-        && (borg_trait[BI_RECALL] >= 3 || borg_trait[BI_GOLD] > 2000)) {
+    if (NULL == borg_prepared(borg.trait[BI_CDEPTH] + 20)
+        && NULL == borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10)
+        && borg.trait[BI_MAXDEPTH] > borg.trait[BI_CDEPTH] + 20
+        && (borg.trait[BI_RECALL] >= 3 || borg.trait[BI_GOLD] > 2000)) {
         borg_note("# returning to town to recall back down (too shallow)");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Return to town to sell stuff -- No recall allowed.*/
-    if (((borg_cfg[BORG_WORSHIPS_GOLD] || borg_trait[BI_MAXCLEVEL] < 15)
-            && borg_trait[BI_MAXCLEVEL] <= 25)
+    if (((borg_cfg[BORG_WORSHIPS_GOLD] || borg.trait[BI_MAXCLEVEL] < 15)
+            && borg.trait[BI_MAXCLEVEL] <= 25)
         && (sellable_item_count >= 12)) {
         borg_note("# Going to town (Sell Stuff, Worshipping Gold).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Return to town to sell stuff (use Recall) */
-    if ((bored && borg_trait[BI_MAXCLEVEL] >= 26)
+    if ((bored && borg.trait[BI_MAXCLEVEL] >= 26)
         && (sellable_item_count >= 12)) {
         borg_note("# Going to town (Sell Stuff).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Return to town when level drained */
-    if (borg_trait[BI_ISFIXLEV]) {
+    if (borg.trait[BI_ISFIXLEV]) {
         borg_note("# Going to town (Fix Level).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Return to town to restore experience */
-    if (bored && borg_trait[BI_ISFIXEXP] && borg_trait[BI_CLEVEL] != 50) {
+    if (bored && borg.trait[BI_ISFIXEXP] && borg.trait[BI_CLEVEL] != 50) {
         borg_note("# Going to town (Fix Experience).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* return to town if it has been a while */
-    if ((!goal_rising && bored && !vault_on_level && !borg_fighting_unique
+    if ((!borg.goal.rising && bored && !vault_on_level && !borg_fighting_unique
             && borg_time_town + borg_t - borg_began > 8000)
         || (borg_time_town + borg_t - borg_began > 12000)) {
         borg_note("# Going to town (I miss my home).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* return to town if been scumming for a bit */
-    if (borg_trait[BI_MAXDEPTH] >= borg_trait[BI_CDEPTH] + 10
-        && borg_trait[BI_CDEPTH] <= 12
+    if (borg.trait[BI_MAXDEPTH] >= borg.trait[BI_CDEPTH] + 10
+        && borg.trait[BI_CDEPTH] <= 12
         && borg_time_town + borg_t - borg_began > 3500) {
         borg_note("# Going to town (scumming check).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Return to town to drop off some scumming stuff */
-    if (borg_scumming_pots && !vault_on_level
-        && (borg_trait[BI_AEZHEAL] >= 3 || borg_trait[BI_ALIFE] >= 1)) {
+    if (borg.scumming_pots && !vault_on_level
+        && (borg.trait[BI_AEZHEAL] >= 3 || borg.trait[BI_ALIFE] >= 1)) {
         borg_note("# Going to town (Dropping off Potions).");
-        goal_rising = true;
+        borg.goal.rising = true;
     }
 
     /* Hack -- It is much safer to scum for items on 98
      * Check to see if depth 99, if Sauron is dead and Im not read to fight
      * the final battle
      */
-    if (borg_trait[BI_CDEPTH] == 99 && borg_race_death[borg_sauron_id] == 1
-        && borg_ready_morgoth != 1) {
+    if (borg.trait[BI_CDEPTH] == 99 && borg_race_death[borg_sauron_id] == 1
+        && borg.ready_morgoth != 1) {
         borg_note("# Returning to level 98 to scum for items.");
         g = -1;
     }
 
     /* Power dive if Morgoth is dead */
-    if (borg_trait[BI_KING])
+    if (borg.trait[BI_KING])
         g = 1;
 
     /* Power dive to 99 if ready */
-    if (borg_trait[BI_CDEPTH] < 100 && NULL == borg_prepared(99))
+    if (borg.trait[BI_CDEPTH] < 100 && NULL == borg_prepared(99))
         g = 1;
 
     /* Climb if deeper than I want to be */
-    if (!g && borg_trait[BI_CDEPTH] > borg_cfg[BORG_NO_DEEPER]) {
+    if (!g && borg.trait[BI_CDEPTH] > borg_cfg[BORG_NO_DEEPER]) {
         borg_note(format(
             "# Going up a bit (No Deeper than %d).", borg_cfg[BORG_NO_DEEPER]));
         g = -1;
     }
 
     /* if returning to town, try to go upstairs */
-    if (!g && goal_rising)
+    if (!g && borg.goal.rising)
         g = -1;
 
     /* Mega-Hack -- spend time on the first level to rotate shops */
-    if (borg_trait[BI_CLEVEL] > 10 && (borg_trait[BI_CDEPTH] == 1)
+    if (borg.trait[BI_CLEVEL] > 10 && (borg.trait[BI_CDEPTH] == 1)
         && (borg_t - borg_began < 200) && (g < 0)
-        && (borg_trait[BI_FOOD] > 1)) {
+        && (borg.trait[BI_FOOD] > 1)) {
         borg_note("# Staying on level 1 to rotate shops.");
         g = 0;
     }
@@ -868,17 +872,17 @@ bool borg_leave_level(bool bored)
     if (g < 0) {
         /* Take next stairs */
         borg_note("# Looking for up stairs.  Going up.");
-        stair_less = true;
+        borg.stair_less = true;
 
         /* Hack -- recall if going to town */
-        if (goal_rising && ((borg_time_town + (borg_t - borg_began)) > 200)
-            && (borg_trait[BI_CDEPTH] >= 5) && borg_recall()) {
+        if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
+            && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
             borg_note("# Recalling to town (goal rising)");
             return (true);
         }
 
         /* Hack -- Recall if needing to Restock */
-        if (need_restock && borg_trait[BI_CDEPTH] >= 5 && borg_recall()) {
+        if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
             borg_note("# Recalling to town (need to restock)");
         }
 
@@ -889,7 +893,7 @@ bool borg_leave_level(bool bored)
         }
 
         /* Cannot find any stairs */
-        if (goal_rising && bored && (borg_t - borg_began) >= 1000) {
+        if (borg.goal.rising && bored && (borg_t - borg_began) >= 1000) {
             if (borg_recall()) {
                 borg_note("# Recalling to town (no stairs)");
                 return (true);
@@ -904,7 +908,7 @@ bool borg_leave_level(bool bored)
     /* Go Down */
     if (g > 0) {
         /* Take next stairs */
-        stair_more = true;
+        borg.stair_more = true;
 
         /* Attempt to use those stairs */
         if (borg_flow_stair_more(GOAL_BORE, false, false))
@@ -952,7 +956,7 @@ bool borg_excavate_vault(int range)
         for (x = w_x; x < w_x + SCREEN_WID; x++) {
 
             /* only bother with near ones */
-            if (borg_distance(c_y, c_x, y, x) > range)
+            if (distance(borg.c, loc(x, y)) > range)
                 continue;
 
             /* only deal with excavatable walls */
@@ -1009,11 +1013,11 @@ bool borg_excavate_vault(int range)
     /* Review the useful grids */
     for (i = 0; i < borg_temp_n; i++) {
         /* skip non-projectable grids grid (I cant shoot them) */
-        if (!borg_los(c_y, c_x, borg_temp_y[i], borg_temp_x[i]))
+        if (!borg_los(borg.c.y, borg.c.x, borg_temp_y[i], borg_temp_x[i]))
             continue;
 
         /* Attempt to target the grid */
-        borg_target(borg_temp_y[i], borg_temp_x[i]);
+        borg_target(loc(borg_temp_x[i], borg_temp_y[i]));
 
         /* Attempt to excavate it with "stone to mud" */
         if (borg_spell(TURN_STONE_TO_MUD) || borg_spell(SHATTER_STONE)

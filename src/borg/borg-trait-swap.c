@@ -191,7 +191,7 @@ void borg_notice_weapon_swap(void)
 
         /* Don't carry swaps until dlevel 50.  They are heavy.
            Unless the item is a digger, then carry it */
-        if (borg_trait[BI_MAXDEPTH] < 50 && item->tval != TV_DIGGING)
+        if (borg.trait[BI_MAXDEPTH] < 50 && item->tval != TV_DIGGING)
             continue;
 
         /* priest weapon penalty for non-blessed edged weapons */
@@ -380,69 +380,69 @@ void borg_notice_weapon_swap(void)
             damage = (item->dd * (item->ds) * 25L);
 
             /* Reward "damage" and increased blows per round*/
-            v += damage * (borg_trait[BI_BLOWS] + 1);
+            v += damage * (borg.trait[BI_BLOWS] + 1);
 
             /* Reward "bonus to hit" */
-            v += ((borg_trait[BI_TOHIT] + item->to_h) * 100L);
+            v += ((borg.trait[BI_TOHIT] + item->to_h) * 100L);
 
             /* Reward "bonus to dam" */
-            v += ((borg_trait[BI_TODAM] + item->to_d) * 75L);
+            v += ((borg.trait[BI_TODAM] + item->to_d) * 75L);
 
-            dam = damage * borg_trait[BI_BLOWS];
+            dam = damage * borg.trait[BI_BLOWS];
 
             /* assume 2x base damage for x% of creatures */
-            dam = damage * 2 * borg_trait[BI_BLOWS];
+            dam = damage * 2 * borg.trait[BI_BLOWS];
             /* reward SAnimal if no electric brand */
-            if (!borg_trait[BI_WS_ANIMAL] && !borg_trait[BI_WB_ELEC]
+            if (!borg.trait[BI_WS_ANIMAL] && !borg.trait[BI_WB_ELEC]
                 && weapon_swap_slay_animal)
                 v += (dam * weapon_swap_slay_animal) / 2;
-            if (!borg_trait[BI_WS_EVIL] && weapon_swap_slay_evil)
+            if (!borg.trait[BI_WS_EVIL] && weapon_swap_slay_evil)
                 v += (dam * weapon_swap_slay_evil) / 2;
 
             /* assume 3x base damage for x% of creatures */
-            dam = damage * 3 * borg_trait[BI_BLOWS];
+            dam = damage * 3 * borg.trait[BI_BLOWS];
 
             /* half of the reward now for SOrc and STroll*/
-            if (!borg_trait[BI_WS_ORC] && weapon_swap_slay_orc)
+            if (!borg.trait[BI_WS_ORC] && weapon_swap_slay_orc)
                 v += (dam * weapon_swap_slay_orc) / 2;
-            if (!borg_trait[BI_WS_TROLL] && weapon_swap_slay_troll)
+            if (!borg.trait[BI_WS_TROLL] && weapon_swap_slay_troll)
                 v += (dam * 2) / 2;
 
-            if (!borg_trait[BI_WS_UNDEAD] && weapon_swap_slay_undead)
+            if (!borg.trait[BI_WS_UNDEAD] && weapon_swap_slay_undead)
                 v += (dam * weapon_swap_slay_undead) / 2;
-            if (!borg_trait[BI_WS_DEMON] && weapon_swap_slay_demon)
+            if (!borg.trait[BI_WS_DEMON] && weapon_swap_slay_demon)
                 v += (dam * weapon_swap_slay_demon) / 2;
-            if (!borg_trait[BI_WS_GIANT] && weapon_swap_slay_giant)
+            if (!borg.trait[BI_WS_GIANT] && weapon_swap_slay_giant)
                 v += (dam * weapon_swap_slay_giant) / 2;
-            if (!borg_trait[BI_WS_DRAGON] && !borg_trait[BI_WK_DRAGON]
+            if (!borg.trait[BI_WS_DRAGON] && !borg.trait[BI_WK_DRAGON]
                 && weapon_swap_slay_dragon)
                 v += (dam * weapon_swap_slay_dragon) / 2;
-            if (!borg_trait[BI_WB_ACID] && weapon_swap_brand_acid)
+            if (!borg.trait[BI_WB_ACID] && weapon_swap_brand_acid)
                 v += (dam * 4) / 2;
-            if (!borg_trait[BI_WB_ELEC] && weapon_swap_brand_elec)
+            if (!borg.trait[BI_WB_ELEC] && weapon_swap_brand_elec)
                 v += (dam * 5) / 2;
-            if (!borg_trait[BI_WB_FIRE] && weapon_swap_brand_fire)
+            if (!borg.trait[BI_WB_FIRE] && weapon_swap_brand_fire)
                 v += (dam * 3) / 2;
-            if (!borg_trait[BI_WB_COLD] && weapon_swap_brand_cold)
+            if (!borg.trait[BI_WB_COLD] && weapon_swap_brand_cold)
                 v += (dam * 3) / 2;
-            if (!borg_trait[BI_WB_POIS] && weapon_swap_brand_pois)
+            if (!borg.trait[BI_WB_POIS] && weapon_swap_brand_pois)
                 v += (dam * 3) / 2;
             /* Orcs and Trolls get the second half of the reward if SEvil is */
             /* not possessed. */
-            if (!borg_trait[BI_WS_ORC] && !borg_trait[BI_WS_EVIL]
+            if (!borg.trait[BI_WS_ORC] && !borg.trait[BI_WS_EVIL]
                 && weapon_swap_slay_orc)
                 v += (dam * weapon_swap_slay_orc) / 2;
-            if (!borg_trait[BI_WS_TROLL] && !borg_trait[BI_WS_EVIL]
+            if (!borg.trait[BI_WS_TROLL] && !borg.trait[BI_WS_EVIL]
                 && weapon_swap_slay_troll)
                 v += (dam * weapon_swap_slay_troll) / 2;
 
             /* reward the Tunnel factor when low level */
-            if (borg_trait[BI_MAXDEPTH] <= 40 && borg_trait[BI_MAXDEPTH] >= 25
-                && borg_trait[BI_GOLD] < 100000 && weapon_swap_digger)
+            if (borg.trait[BI_MAXDEPTH] <= 40 && borg.trait[BI_MAXDEPTH] >= 25
+                && borg.trait[BI_GOLD] < 100000 && weapon_swap_digger)
                 v += (weapon_swap_digger * 3500L) + 1000L;
 
             /* Other Skills */
-            if (!borg_trait[BI_SDIG] && weapon_swap_slow_digest)
+            if (!borg.trait[BI_SDIG] && weapon_swap_slow_digest)
                 v += 10L;
             if (weapon_swap_aggravate)
                 v -= 8000L;
@@ -450,75 +450,75 @@ void borg_notice_weapon_swap(void)
                 v -= 100000L;
             if (decurse_weapon_swap)
                 v -= 5000L;
-            if (!borg_trait[BI_REG] && weapon_swap_regenerate)
+            if (!borg.trait[BI_REG] && weapon_swap_regenerate)
                 v += 2000L;
-            if (!borg_trait[BI_ESP] && weapon_swap_telepathy)
+            if (!borg.trait[BI_ESP] && weapon_swap_telepathy)
                 v += 5000L;
-            if (!borg_trait[BI_LIGHT] && weapon_swap_light)
+            if (!borg.trait[BI_LIGHT] && weapon_swap_light)
                 v += 2000L;
-            if (!borg_trait[BI_SINV] && weapon_swap_see_invis)
+            if (!borg.trait[BI_SINV] && weapon_swap_see_invis)
                 v += 50000L;
-            if (!borg_trait[BI_FEATH] && weapon_swap_ffall)
+            if (!borg.trait[BI_FEATH] && weapon_swap_ffall)
                 v += 10L;
-            if (!borg_trait[BI_FRACT] && weapon_swap_free_act)
+            if (!borg.trait[BI_FRACT] && weapon_swap_free_act)
                 v += 10000L;
-            if (!borg_trait[BI_HLIFE] && (borg_trait[BI_MAXCLEVEL] < 50)
+            if (!borg.trait[BI_HLIFE] && (borg.trait[BI_MAXCLEVEL] < 50)
                 && weapon_swap_hold_life)
                 v += 2000L;
-            if (!borg_trait[BI_IFIRE] && weapon_swap_immune_fire)
+            if (!borg.trait[BI_IFIRE] && weapon_swap_immune_fire)
                 v += 70000L;
-            if (!borg_trait[BI_IACID] && weapon_swap_immune_acid)
+            if (!borg.trait[BI_IACID] && weapon_swap_immune_acid)
                 v += 30000L;
-            if (!borg_trait[BI_ICOLD] && weapon_swap_immune_cold)
+            if (!borg.trait[BI_ICOLD] && weapon_swap_immune_cold)
                 v += 50000L;
-            if (!borg_trait[BI_IELEC] && weapon_swap_immune_elec)
+            if (!borg.trait[BI_IELEC] && weapon_swap_immune_elec)
                 v += 25000L;
-            if (!borg_trait[BI_RFIRE] && weapon_swap_resist_fire)
+            if (!borg.trait[BI_RFIRE] && weapon_swap_resist_fire)
                 v += 8000L;
-            if (!borg_trait[BI_RACID] && weapon_swap_resist_acid)
+            if (!borg.trait[BI_RACID] && weapon_swap_resist_acid)
                 v += 6000L;
-            if (!borg_trait[BI_RCOLD] && weapon_swap_resist_cold)
+            if (!borg.trait[BI_RCOLD] && weapon_swap_resist_cold)
                 v += 4000L;
-            if (!borg_trait[BI_RELEC] && weapon_swap_resist_elec)
+            if (!borg.trait[BI_RELEC] && weapon_swap_resist_elec)
                 v += 3000L;
             /* extra bonus for getting all basic resist */
             if (weapon_swap_resist_fire && weapon_swap_resist_acid
                 && weapon_swap_resist_elec && weapon_swap_resist_cold)
                 v += 10000L;
-            if (!borg_trait[BI_RPOIS] && weapon_swap_resist_pois)
+            if (!borg.trait[BI_RPOIS] && weapon_swap_resist_pois)
                 v += 20000L;
-            if (!borg_trait[BI_RCONF] && weapon_swap_resist_conf)
+            if (!borg.trait[BI_RCONF] && weapon_swap_resist_conf)
                 v += 5000L;
-            if (!borg_trait[BI_RSND] && weapon_swap_resist_sound)
+            if (!borg.trait[BI_RSND] && weapon_swap_resist_sound)
                 v += 2000L;
-            if (!borg_trait[BI_RLITE] && weapon_swap_resist_light)
+            if (!borg.trait[BI_RLITE] && weapon_swap_resist_light)
                 v += 800L;
-            if (!borg_trait[BI_RDARK] && weapon_swap_resist_dark)
+            if (!borg.trait[BI_RDARK] && weapon_swap_resist_dark)
                 v += 800L;
-            if (!borg_trait[BI_RKAOS] && weapon_swap_resist_chaos)
+            if (!borg.trait[BI_RKAOS] && weapon_swap_resist_chaos)
                 v += 8000L;
-            if (!borg_trait[BI_RDIS] && weapon_swap_resist_disen)
+            if (!borg.trait[BI_RDIS] && weapon_swap_resist_disen)
                 v += 5000L;
-            if (!borg_trait[BI_RSHRD] && weapon_swap_resist_shard)
+            if (!borg.trait[BI_RSHRD] && weapon_swap_resist_shard)
                 v += 100L;
-            if (!borg_trait[BI_RNXUS] && weapon_swap_resist_nexus)
+            if (!borg.trait[BI_RNXUS] && weapon_swap_resist_nexus)
                 v += 100L;
-            if (!borg_trait[BI_RBLIND] && weapon_swap_resist_blind)
+            if (!borg.trait[BI_RBLIND] && weapon_swap_resist_blind)
                 v += 5000L;
-            if (!borg_trait[BI_RNTHR] && weapon_swap_resist_neth)
+            if (!borg.trait[BI_RNTHR] && weapon_swap_resist_neth)
                 v += 5500L;
-            if (!borg_trait[BI_RFEAR] && weapon_swap_resist_fear)
+            if (!borg.trait[BI_RFEAR] && weapon_swap_resist_fear)
                 v += 5500L;
 
             /* Special concern if Tarrasque is alive */
-            if (borg_trait[BI_MAXDEPTH] >= 75
-                && ((!borg_trait[BI_ICOLD] && weapon_swap_immune_cold)
-                    || (!borg_trait[BI_IFIRE] && weapon_swap_immune_fire))) {
+            if (borg.trait[BI_MAXDEPTH] >= 75
+                && ((!borg.trait[BI_ICOLD] && weapon_swap_immune_cold)
+                    || (!borg.trait[BI_IFIRE] && weapon_swap_immune_fire))) {
                 /* If Tarraseque is alive */
                 if (borg_race_death[borg_tarrasque_id] == 0) {
-                    if (!borg_trait[BI_ICOLD] && weapon_swap_immune_cold)
+                    if (!borg.trait[BI_ICOLD] && weapon_swap_immune_cold)
                         v += 90000L;
-                    if (!borg_trait[BI_IFIRE] && weapon_swap_immune_fire)
+                    if (!borg.trait[BI_IFIRE] && weapon_swap_immune_fire)
                         v += 90000L;
                 }
             }
@@ -529,13 +529,13 @@ void borg_notice_weapon_swap(void)
              * on that resist.  We want him to check to see
              * that the other swap does not already have the high resist.
              */
-            if (!borg_trait[BI_RNTHR] && (borg_trait[BI_MAXDEPTH] + 1 >= 55)
+            if (!borg.trait[BI_RNTHR] && (borg.trait[BI_MAXDEPTH] + 1 >= 55)
                 && weapon_swap_resist_neth)
                 v += 100000L;
-            if (!borg_trait[BI_RKAOS] && (borg_trait[BI_MAXDEPTH] + 1 >= 60)
+            if (!borg.trait[BI_RKAOS] && (borg.trait[BI_MAXDEPTH] + 1 >= 60)
                 && weapon_swap_resist_chaos)
                 v += 100000L;
-            if (!borg_trait[BI_RDIS] && (borg_trait[BI_MAXDEPTH] + 1 >= 60)
+            if (!borg.trait[BI_RDIS] && (borg.trait[BI_MAXDEPTH] + 1 >= 60)
                 && weapon_swap_resist_disen)
                 v += 100000L;
 
@@ -623,7 +623,7 @@ void borg_notice_weapon_swap(void)
 
     /* Enchant swap weapons (to hit) */
     if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65)
-            || borg_trait[BI_AENCH_SWEP] >= 1)
+            || borg.trait[BI_AENCH_SWEP] >= 1)
         && item->tval != TV_DIGGING) {
         if (item->to_h < 10) {
             enchant_weapon_swap_to_h += (10 - item->to_h);
@@ -784,7 +784,7 @@ void borg_notice_armour_swap(void)
             continue;
 
         /* Dont carry swaps until dlevel 50.  They are heavy */
-        if (borg_trait[BI_MAXDEPTH] < 50)
+        if (borg.trait[BI_MAXDEPTH] < 50)
             continue;
 
         /* Skip it if it is not decursable */
@@ -960,60 +960,60 @@ void borg_notice_armour_swap(void)
             damage = (item->dd * item->ds * 35L);
 
             /* Reward "damage" and increased blows per round*/
-            v += damage * (borg_trait[BI_BLOWS] + 1);
+            v += damage * (borg.trait[BI_BLOWS] + 1);
 
             /* Reward "bonus to hit" */
-            v += ((borg_trait[BI_TOHIT] + item->to_h) * 100L);
+            v += ((borg.trait[BI_TOHIT] + item->to_h) * 100L);
 
             /* Reward "bonus to dam" */
-            v += ((borg_trait[BI_TODAM] + item->to_d) * 35L);
+            v += ((borg.trait[BI_TODAM] + item->to_d) * 35L);
 
-            dam = damage * borg_trait[BI_BLOWS];
+            dam = damage * borg.trait[BI_BLOWS];
 
             /* assume 2x base damage for x% of creatures */
-            dam = damage * 2 * borg_trait[BI_BLOWS];
+            dam = damage * 2 * borg.trait[BI_BLOWS];
 
-            if (!borg_trait[BI_WS_ANIMAL] && !borg_trait[BI_WB_ELEC]
+            if (!borg.trait[BI_WS_ANIMAL] && !borg.trait[BI_WB_ELEC]
                 && armour_swap_slay_animal)
                 v += (dam * armour_swap_slay_animal) / 2;
-            if (!borg_trait[BI_WS_EVIL] && armour_swap_slay_evil)
+            if (!borg.trait[BI_WS_EVIL] && armour_swap_slay_evil)
                 v += (dam * armour_swap_slay_evil) / 2;
             /* assume 3x base damage for x% of creatures */
-            dam = damage * 3 * borg_trait[BI_BLOWS];
+            dam = damage * 3 * borg.trait[BI_BLOWS];
 
-            if (!borg_trait[BI_WS_UNDEAD] && armour_swap_slay_undead)
+            if (!borg.trait[BI_WS_UNDEAD] && armour_swap_slay_undead)
                 v += (dam * armour_swap_slay_undead) / 2;
-            if (!borg_trait[BI_WS_DEMON] && armour_swap_slay_demon)
+            if (!borg.trait[BI_WS_DEMON] && armour_swap_slay_demon)
                 v += (dam * armour_swap_slay_demon) / 2;
-            if (!borg_trait[BI_WS_GIANT] && armour_swap_slay_giant)
+            if (!borg.trait[BI_WS_GIANT] && armour_swap_slay_giant)
                 v += (dam * armour_swap_slay_giant) / 2;
-            if (!borg_trait[BI_WS_DRAGON] && !borg_trait[BI_WK_DRAGON]
+            if (!borg.trait[BI_WS_DRAGON] && !borg.trait[BI_WK_DRAGON]
                 && armour_swap_slay_dragon)
                 v += (dam * armour_swap_slay_dragon) / 2;
-            if (!borg_trait[BI_WB_ACID] && armour_swap_brand_acid)
+            if (!borg.trait[BI_WB_ACID] && armour_swap_brand_acid)
                 v += (dam * 4) / 2;
-            if (!borg_trait[BI_WB_ELEC] && armour_swap_brand_elec)
+            if (!borg.trait[BI_WB_ELEC] && armour_swap_brand_elec)
                 v += (dam * 5) / 2;
-            if (!borg_trait[BI_WB_FIRE] && armour_swap_brand_fire)
+            if (!borg.trait[BI_WB_FIRE] && armour_swap_brand_fire)
                 v += (dam * 3) / 2;
-            if (!borg_trait[BI_WB_COLD] && armour_swap_brand_cold)
+            if (!borg.trait[BI_WB_COLD] && armour_swap_brand_cold)
                 v += (dam * 3) / 2;
-            if (!borg_trait[BI_WB_POIS] && armour_swap_brand_pois)
+            if (!borg.trait[BI_WB_POIS] && armour_swap_brand_pois)
                 v += (dam * 3) / 2;
             /* SOrc and STroll get 1/2 reward now */
-            if (!borg_trait[BI_WS_ORC] && armour_swap_slay_orc)
+            if (!borg.trait[BI_WS_ORC] && armour_swap_slay_orc)
                 v += (dam * armour_swap_slay_orc) / 2;
-            if (!borg_trait[BI_WS_TROLL] && armour_swap_slay_troll)
+            if (!borg.trait[BI_WS_TROLL] && armour_swap_slay_troll)
                 v += (dam * armour_swap_slay_troll) / 2;
             /* SOrc and STroll get 2/2 reward if slay evil not possessed */
-            if (!borg_trait[BI_WS_ORC] && !borg_trait[BI_WS_EVIL]
+            if (!borg.trait[BI_WS_ORC] && !borg.trait[BI_WS_EVIL]
                 && armour_swap_slay_orc)
                 v += (dam * armour_swap_slay_orc) / 2;
-            if (!borg_trait[BI_WS_TROLL] && !borg_trait[BI_WS_EVIL]
+            if (!borg.trait[BI_WS_TROLL] && !borg.trait[BI_WS_EVIL]
                 && armour_swap_slay_troll)
                 v += (dam * armour_swap_slay_troll) / 2;
 
-            if (!borg_trait[BI_SDIG] && armour_swap_slow_digest)
+            if (!borg.trait[BI_SDIG] && armour_swap_slow_digest)
                 v += 10L;
             if (armour_swap_aggravate)
                 v -= 8000L;
@@ -1022,72 +1022,72 @@ void borg_notice_armour_swap(void)
                 v -= 100000L;
             if (decurse_armour_swap)
                 v -= 5000L;
-            if (!borg_trait[BI_REG] && armour_swap_regenerate)
+            if (!borg.trait[BI_REG] && armour_swap_regenerate)
                 v += 2000L;
-            if (!borg_trait[BI_ESP] && armour_swap_telepathy)
+            if (!borg.trait[BI_ESP] && armour_swap_telepathy)
                 v += 5000L;
-            if (!borg_trait[BI_LIGHT] && armour_swap_light)
+            if (!borg.trait[BI_LIGHT] && armour_swap_light)
                 v += 2000L;
-            if (!borg_trait[BI_SINV] && armour_swap_see_invis)
+            if (!borg.trait[BI_SINV] && armour_swap_see_invis)
                 v += 50000L;
-            if (!borg_trait[BI_FEATH] && armour_swap_ffall)
+            if (!borg.trait[BI_FEATH] && armour_swap_ffall)
                 v += 10L;
-            if (!borg_trait[BI_FRACT] && armour_swap_free_act)
+            if (!borg.trait[BI_FRACT] && armour_swap_free_act)
                 v += 10000L;
-            if (!borg_trait[BI_HLIFE] && (borg_trait[BI_MAXCLEVEL] < 50)
+            if (!borg.trait[BI_HLIFE] && (borg.trait[BI_MAXCLEVEL] < 50)
                 && armour_swap_hold_life)
                 v += 2000L;
-            if (!borg_trait[BI_IFIRE] && armour_swap_immune_fire)
+            if (!borg.trait[BI_IFIRE] && armour_swap_immune_fire)
                 v += 70000L;
-            if (!borg_trait[BI_IACID] && armour_swap_immune_acid)
+            if (!borg.trait[BI_IACID] && armour_swap_immune_acid)
                 v += 30000L;
-            if (!borg_trait[BI_ICOLD] && armour_swap_immune_cold)
+            if (!borg.trait[BI_ICOLD] && armour_swap_immune_cold)
                 v += 50000L;
-            if (!borg_trait[BI_IELEC] && armour_swap_immune_elec)
+            if (!borg.trait[BI_IELEC] && armour_swap_immune_elec)
                 v += 25000L;
-            if (!borg_trait[BI_RFIRE] && armour_swap_resist_fire)
+            if (!borg.trait[BI_RFIRE] && armour_swap_resist_fire)
                 v += 8000L;
-            if (!borg_trait[BI_RACID] && armour_swap_resist_acid)
+            if (!borg.trait[BI_RACID] && armour_swap_resist_acid)
                 v += 6000L;
-            if (!borg_trait[BI_RCOLD] && armour_swap_resist_cold)
+            if (!borg.trait[BI_RCOLD] && armour_swap_resist_cold)
                 v += 4000L;
-            if (!borg_trait[BI_RELEC] && armour_swap_resist_elec)
+            if (!borg.trait[BI_RELEC] && armour_swap_resist_elec)
                 v += 3000L;
             /* extra bonus for getting all basic resist */
             if (armour_swap_resist_fire && armour_swap_resist_acid
                 && armour_swap_resist_elec && armour_swap_resist_cold)
                 v += 10000L;
-            if (!borg_trait[BI_RPOIS] && armour_swap_resist_pois)
+            if (!borg.trait[BI_RPOIS] && armour_swap_resist_pois)
                 v += 20000L;
-            if (!borg_trait[BI_RCONF] && armour_swap_resist_conf)
+            if (!borg.trait[BI_RCONF] && armour_swap_resist_conf)
                 v += 5000L;
-            if (!borg_trait[BI_RSND] && armour_swap_resist_sound)
+            if (!borg.trait[BI_RSND] && armour_swap_resist_sound)
                 v += 2000L;
-            if (!borg_trait[BI_RLITE] && armour_swap_resist_light)
+            if (!borg.trait[BI_RLITE] && armour_swap_resist_light)
                 v += 800L;
-            if (!borg_trait[BI_RDARK] && armour_swap_resist_dark)
+            if (!borg.trait[BI_RDARK] && armour_swap_resist_dark)
                 v += 800L;
-            if (!borg_trait[BI_RKAOS] && armour_swap_resist_chaos)
+            if (!borg.trait[BI_RKAOS] && armour_swap_resist_chaos)
                 v += 8000L;
-            if (!borg_trait[BI_RDIS] && armour_swap_resist_disen)
+            if (!borg.trait[BI_RDIS] && armour_swap_resist_disen)
                 v += 5000L;
-            if (!borg_trait[BI_RSHRD] && armour_swap_resist_shard)
+            if (!borg.trait[BI_RSHRD] && armour_swap_resist_shard)
                 v += 100L;
-            if (!borg_trait[BI_RNXUS] && armour_swap_resist_nexus)
+            if (!borg.trait[BI_RNXUS] && armour_swap_resist_nexus)
                 v += 100L;
-            if (!borg_trait[BI_RBLIND] && armour_swap_resist_blind)
+            if (!borg.trait[BI_RBLIND] && armour_swap_resist_blind)
                 v += 5000L;
-            if (!borg_trait[BI_RNTHR] && armour_swap_resist_neth)
+            if (!borg.trait[BI_RNTHR] && armour_swap_resist_neth)
                 v += 5500L;
             /* Special concern if Tarrasque is alive */
-            if (borg_trait[BI_MAXDEPTH] >= 75
-                && ((!borg_trait[BI_ICOLD] && armour_swap_immune_cold)
-                    || (!borg_trait[BI_IFIRE] && armour_swap_immune_fire))) {
+            if (borg.trait[BI_MAXDEPTH] >= 75
+                && ((!borg.trait[BI_ICOLD] && armour_swap_immune_cold)
+                    || (!borg.trait[BI_IFIRE] && armour_swap_immune_fire))) {
                 /* If Tarrasque is alive */
                 if (borg_race_death[borg_tarrasque_id] == 0) {
-                    if (!borg_trait[BI_ICOLD] && armour_swap_immune_cold)
+                    if (!borg.trait[BI_ICOLD] && armour_swap_immune_cold)
                         v += 90000L;
-                    if (!borg_trait[BI_IFIRE] && armour_swap_immune_fire)
+                    if (!borg.trait[BI_IFIRE] && armour_swap_immune_fire)
                         v += 90000L;
                 }
             }
@@ -1098,13 +1098,13 @@ void borg_notice_armour_swap(void)
              * on that resist.  We want him to check to see
              * that the other swap does not already have the high resist.
              */
-            if (!borg_trait[BI_RNTHR] && borg_trait[BI_MAXDEPTH] + 1 >= 55
+            if (!borg.trait[BI_RNTHR] && borg.trait[BI_MAXDEPTH] + 1 >= 55
                 && !weapon_swap_resist_neth && armour_swap_resist_neth)
                 v += 105000L;
-            if (!borg_trait[BI_RKAOS] && borg_trait[BI_MAXDEPTH] + 1 >= 60
+            if (!borg.trait[BI_RKAOS] && borg.trait[BI_MAXDEPTH] + 1 >= 60
                 && !weapon_swap_resist_chaos && armour_swap_resist_chaos)
                 v += 104000L;
-            if (!borg_trait[BI_RDIS] && borg_trait[BI_MAXDEPTH] + 1 >= 60
+            if (!borg.trait[BI_RDIS] && borg.trait[BI_MAXDEPTH] + 1 >= 60
                 && !weapon_swap_resist_disen && armour_swap_resist_disen)
                 v += 100000L;
 
@@ -1289,7 +1289,7 @@ void borg_notice_armour_swap(void)
     /* Hack -- enchant the swap equipment (armor) */
     /* Note need for enchantment */
     if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65)
-        || borg_trait[BI_AENCH_SARM] >= 1) {
+        || borg.trait[BI_AENCH_SARM] >= 1) {
         if (item->to_a < 10) {
             enchant_armour_swap_to_a += (10 - item->to_a);
         }

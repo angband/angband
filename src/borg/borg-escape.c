@@ -53,35 +53,35 @@
 bool borg_recall(void)
 {
     /* Multiple "recall" fails */
-    if (!goal_recalling) {
+    if (!borg.goal.recalling) {
         /* Try to "recall" */
         if (borg_zap_rod(sv_rod_recall) || borg_activate_item(act_recall)
             || borg_spell_fail(WORD_OF_RECALL, 60)
             || borg_read_scroll(sv_scroll_word_of_recall)) {
             /* Do reset depth at certain times. */
-            if (borg_trait[BI_CDEPTH] < borg_trait[BI_MAXDEPTH]
-                && ((borg_trait[BI_MAXDEPTH] >= 60
-                        && borg_trait[BI_CDEPTH] >= 40)
-                    || (borg_trait[BI_CLEVEL] < 48
-                        && borg_trait[BI_CDEPTH] >= borg_trait[BI_MAXDEPTH] - 3)
-                    || (borg_trait[BI_CLEVEL] < 48
-                        && borg_trait[BI_CDEPTH] >= 15
-                        && borg_trait[BI_MAXDEPTH] - borg_trait[BI_CDEPTH]
+            if (borg.trait[BI_CDEPTH] < borg.trait[BI_MAXDEPTH]
+                && ((borg.trait[BI_MAXDEPTH] >= 60
+                        && borg.trait[BI_CDEPTH] >= 40)
+                    || (borg.trait[BI_CLEVEL] < 48
+                        && borg.trait[BI_CDEPTH] >= borg.trait[BI_MAXDEPTH] - 3)
+                    || (borg.trait[BI_CLEVEL] < 48
+                        && borg.trait[BI_CDEPTH] >= 15
+                        && borg.trait[BI_MAXDEPTH] - borg.trait[BI_CDEPTH]
                                > 10))) {
                 /* Special check on deep levels */
-                if (borg_trait[BI_CDEPTH] >= 80 && borg_trait[BI_CDEPTH] < 100
+                if (borg.trait[BI_CDEPTH] >= 80 && borg.trait[BI_CDEPTH] < 100
                     && /* Deep */
                     borg_race_death[borg_sauron_id] != 0) /* Sauron is Dead */
                 {
                     /* Do reset Depth */
                     borg_note("# Resetting recall depth.");
                     borg_keypress('y');
-                } else if (goal_fleeing_munchkin == true) {
+                } else if (borg.goal.fleeing_munchkin == true) {
                     /* Do not reset Depth */
                     borg_note("# Resetting recall depth during munchkin mode.");
                     borg_keypress('y');
-                } else if (borg_trait[BI_CDEPTH] >= 100
-                           && !borg_trait[BI_KING]) {
+                } else if (borg.trait[BI_CDEPTH] >= 100
+                           && !borg.trait[BI_KING]) {
                     /* Do reset Depth */
                     borg_note("# Not Resetting recall depth.");
                     borg_keypress('n');
@@ -93,8 +93,8 @@ bool borg_recall(void)
             }
 
             /* reset recall depth in dungeon? */
-            else if (borg_trait[BI_CDEPTH] < borg_trait[BI_MAXDEPTH]
-                     && borg_trait[BI_CDEPTH] != 0) {
+            else if (borg.trait[BI_CDEPTH] < borg.trait[BI_MAXDEPTH]
+                     && borg.trait[BI_CDEPTH] != 0) {
                 /* Do not reset Depth */
                 borg_note("# Not resetting recall depth.");
                 borg_keypress('n');
@@ -141,12 +141,12 @@ bool borg_surrounded(void)
         if (!kill->r_idx)
             continue;
 
-        x9 = kill->x;
-        y9 = kill->y;
+        x9 = kill->pos.x;
+        y9 = kill->pos.y;
 
         /* Distance components */
-        ax = (x9 > c_x) ? (x9 - c_x) : (c_x - x9);
-        ay = (y9 > c_y) ? (y9 - c_y) : (c_y - y9);
+        ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
+        ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
 
         /* Distance */
         d = MAX(ax, ay);
@@ -156,7 +156,7 @@ bool borg_surrounded(void)
             continue;
 
         /* if he cant see me then forget it.*/
-        if (!borg_los(c_y, c_x, y9, x9))
+        if (!borg_los(borg.c.y, borg.c.x, y9, x9))
             continue;
 
         /* if asleep, don't consider this one */
@@ -185,8 +185,8 @@ bool borg_surrounded(void)
 
     /* Evaluate the Non Safe Grids, (walls, closed doors, traps, monsters) */
     for (i = 0; i < 8; i++) {
-        int x = c_x + ddx_ddd[i];
-        int y = c_y + ddy_ddd[i];
+        int x = borg.c.x + ddx_ddd[i];
+        int y = borg.c.y + ddy_ddd[i];
 
         /* Access the grid */
         borg_grid *ag = &borg_grids[y][x];
@@ -233,7 +233,7 @@ bool borg_surrounded(void)
          * into a dead-end.  So he needs to be able to trump this
          * routine.
          */
-        if (goal_ignoring) {
+        if (borg.goal.ignoring) {
             /* borg_note("# Ignoring the fact that I am surrounded.");
              * return (false);
              */
@@ -269,7 +269,7 @@ int borg_freedom(int y, int x)
     int d, f = 0;
 
     /* Hack -- chase down stairs in town */
-    if (!borg_trait[BI_CDEPTH] && track_more.num) {
+    if (!borg.trait[BI_CDEPTH] && track_more.num) {
         /* Love the stairs! */
         d = double_distance(y, x, track_more.y[0], track_more.x[0]);
 
@@ -282,7 +282,7 @@ int borg_freedom(int y, int x)
     }
 
     /* Hack -- chase Up Stairs in dungeon */
-    if (borg_trait[BI_CDEPTH] && track_less.num) {
+    if (borg.trait[BI_CDEPTH] && track_less.num) {
         /* Love the stairs! */
         d = double_distance(y, x, track_less.y[0], track_less.x[0]);
 
@@ -308,10 +308,10 @@ bool borg_caution_phase(int emergency, int turns)
     int dis       = 10;
     int min       = dis / 2;
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
     /* must have the ability */
-    if (!borg_trait[BI_APHASE])
+    if (!borg.trait[BI_APHASE])
         return (false);
 
     /* Simulate 100 attempts */
@@ -320,9 +320,9 @@ bool borg_caution_phase(int emergency, int turns)
         for (i = 0; i < 100; i++) {
             /* Pick a (possibly illegal) location */
             while (1) {
-                y = rand_spread(c_y, dis);
-                x = rand_spread(c_x, dis);
-                d = borg_distance(c_y, c_x, y, x);
+                y = rand_spread(borg.c.y, dis);
+                x = rand_spread(borg.c.x, dis);
+                d = distance(borg.c, loc(x, y));
                 if ((d >= min) && (d <= dis))
                     break;
             }
@@ -353,7 +353,7 @@ bool borg_caution_phase(int emergency, int turns)
         }
 
         /* If low level, unknown squares are scary */
-        if (ag->feat == FEAT_NONE && borg_trait[BI_MAXHP] < 30) {
+        if (ag->feat == FEAT_NONE && borg.trait[BI_MAXHP] < 30) {
             n++;
             continue;
         }
@@ -371,7 +371,7 @@ bool borg_caution_phase(int emergency, int turns)
         p = borg_danger(y, x, turns, true, false);
 
         /* if *very* scary, do not allow jumps at all */
-        if (p > borg_trait[BI_CURHP])
+        if (p > borg.trait[BI_CURHP])
             n++;
     }
 
@@ -398,14 +398,14 @@ bool borg_caution_teleport(int emergency, int turns)
     int min = dis / 2;
     int q_x, q_y;
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
     /* Extract panel */
     q_x = w_x / borg_panel_wid();
     q_y = w_y / borg_panel_hgt();
 
     /* must have the ability */
-    if (!borg_trait[BI_ATELEPORT] || !borg_trait[BI_AESCAPE])
+    if (!borg.trait[BI_ATELEPORT] || !borg.trait[BI_AESCAPE])
         return (false);
 
     /* Simulate 100 attempts */
@@ -414,9 +414,9 @@ bool borg_caution_teleport(int emergency, int turns)
         for (i = 0; i < 100; i++) {
             /* Pick a (possibly illegal) location */
             while (1) {
-                y = rand_spread(c_y, dis);
-                x = rand_spread(c_x, dis);
-                d = borg_distance(c_y, c_x, y, x);
+                y = rand_spread(borg.c.y, dis);
+                x = rand_spread(borg.c.x, dis);
+                d = distance(borg.c, loc(x, y));
                 if ((d >= min) && (d <= dis))
                     break;
             }
@@ -453,7 +453,7 @@ bool borg_caution_teleport(int emergency, int turns)
         }
 
         /* If low level, unknown squares are scary */
-        if (ag->feat == FEAT_NONE && borg_trait[BI_MAXHP] < 30) {
+        if (ag->feat == FEAT_NONE && borg.trait[BI_MAXHP] < 30) {
             n++;
             continue;
         }
@@ -471,7 +471,7 @@ bool borg_caution_teleport(int emergency, int turns)
         p = borg_danger(y, x, turns, true, false);
 
         /* if *very* scary, do not allow jumps at all */
-        if (p > borg_trait[BI_CURHP])
+        if (p > borg.trait[BI_CURHP])
             n++;
     }
 
@@ -493,12 +493,12 @@ bool borg_caution_teleport(int emergency, int turns)
 static bool borg_escape_stair(void)
 {
     /* Current grid */
-    borg_grid *ag = &borg_grids[c_y][c_x];
+    borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
     /* Usable stairs */
     if (ag->feat == FEAT_LESS) {
         /* Take the stairs */
-        borg_on_dnstairs = true;
+        borg.on_dnstairs = true;
         borg_note("# Escaping level via stairs.");
         borg_keypress('<');
 
@@ -519,11 +519,11 @@ bool borg_allow_teleport(void)
         return false;
 
     /* Check for a no teleport grid */
-    if (square_isno_teleport(cave, loc(c_x, c_y)))
+    if (square_isno_teleport(cave, borg.c))
         return false;
 
     /* Check for a no teleport curse */
-    if (borg_trait[BI_CRSNOTEL])
+    if (borg.trait[BI_CRSNOTEL])
         return false;
 
     return true;
@@ -533,7 +533,7 @@ bool borg_allow_teleport(void)
 bool borg_shadow_shift(int allow_fail)
 {
     /* disallow if hp too low */
-    if (borg_trait[BI_CURHP] < 12)
+    if (borg.trait[BI_CURHP] < 12)
         return (false);
     return borg_spell_fail(SHADOW_SHIFT, allow_fail);
 }
@@ -543,7 +543,7 @@ bool borg_dimension_door(int allow_fail)
 {
     int        x_off, y_off;
     int        t_x, t_y;
-    int        best_t_x, best_t_y;
+    struct loc best;
     int        d, best_d = 0;
     struct loc target;
 
@@ -556,18 +556,18 @@ bool borg_dimension_door(int allow_fail)
 
     /* if we are attacking, calculate gains, but if this is just a teleport */
     /* the current danger is the starting point */
-    best_d = borg_fear_region[c_y][c_x];
+    best_d = borg_fear_region[borg.c.y][borg.c.x];
 
     /* Pick a location */
     for (x_off = range * -1; x_off < range; x_off++) {
         for (y_off = range * -1; y_off < range; y_off++) {
-            t_x = c_x + x_off;
-            t_y = c_y + y_off;
+            t_x = borg.c.x + x_off;
+            t_y = borg.c.y + y_off;
 
             if (t_x < 0 || t_y < 0)
                 continue;
 
-            target = loc(c_x + x_off, c_y + y_off);
+            target = loc(borg.c.x + x_off, borg.c.y + y_off);
 
             if (!square_in_bounds_fully(cave, target))
                 continue;
@@ -575,14 +575,14 @@ bool borg_dimension_door(int allow_fail)
             d = borg_danger(t_y, t_x, 2, true, false);
             if (d < best_d) {
                 best_d   = d;
-                best_t_x = t_x;
-                best_t_y = t_y;
+                best.x = t_x;
+                best.y = t_y;
             }
         }
     }
 
-    if (best_d < borg_fear_region[c_y][c_x]) {
-        borg_target(best_t_y, best_t_x);
+    if (best_d < borg_fear_region[borg.c.y][borg.c.x]) {
+        borg_target(best);
 
         borg_spell(DIMENSION_DOOR);
 
@@ -611,15 +611,15 @@ bool borg_escape(int b_q)
     int sv_mana;
 
     /* if very healthy, allow extra fail */
-    if (((borg_trait[BI_CURHP] * 100) / borg_trait[BI_MAXHP]) > 70)
+    if (((borg.trait[BI_CURHP] * 100) / borg.trait[BI_MAXHP]) > 70)
         allow_fail = 10;
 
     /* comprimised, get out of the fight */
-    if (borg_trait[BI_ISHEAVYSTUN])
+    if (borg.trait[BI_ISHEAVYSTUN])
         allow_fail = 35;
 
     /* for emergencies */
-    sv_mana = borg_trait[BI_CURSP];
+    sv_mana = borg.trait[BI_CURSP];
 
     /* Borgs who are bleeding to death or dying of poison may sometimes
      * phase around the last two hit points right before they enter a
@@ -627,24 +627,24 @@ bool borg_escape(int b_q)
      * trips this routine.  So we must bypass this routine for some
      * particular circumstances.
      */
-    if (!borg_trait[BI_CDEPTH]
-        && (borg_trait[BI_ISPOISONED] || borg_trait[BI_ISWEAK]
-            || borg_trait[BI_ISCUT]))
+    if (!borg.trait[BI_CDEPTH]
+        && (borg.trait[BI_ISPOISONED] || borg.trait[BI_ISWEAK]
+            || borg.trait[BI_ISCUT]))
         return (false);
 
     /* Borgs who are in a sea of runes or trying to build one
      * and mostly healthy stay put
      */
-    if ((borg_trait[BI_CDEPTH] == 100)
-        && borg_trait[BI_CURHP] >= (borg_trait[BI_MAXHP] * 5 / 10)) {
+    if ((borg.trait[BI_CDEPTH] == 100)
+        && borg.trait[BI_CURHP] >= (borg.trait[BI_MAXHP] * 5 / 10)) {
         /* In a sea of runes */
         if (borg_morgoth_position)
             return (false);
 
         /* Scan neighbors */
         for (j = 0; j < 8; j++) {
-            int y = c_y + ddy_ddd[j];
-            int x = c_x + ddx_ddd[j];
+            int y = borg.c.y + ddy_ddd[j];
+            int x = borg.c.x + ddx_ddd[j];
 
             /* Get the grid */
             ag = &borg_grids[y][x];
@@ -662,7 +662,7 @@ bool borg_escape(int b_q)
      * idea where the stairs may be, run the risk of diving deeper against the
      * benefit of rising to town.
      */
-    if (borg_trait[BI_ISWEAK] && borg_trait[BI_CDEPTH] == 1) {
+    if (borg.trait[BI_ISWEAK] && borg.trait[BI_CDEPTH] == 1) {
         if (borg_read_scroll(sv_scroll_teleport_level)
             || borg_activate_item(act_tele_level)) {
             borg_note("# Attempting to leave via teleport level");
@@ -676,20 +676,20 @@ bool borg_escape(int b_q)
 
     /* 1. really scary, I'm about to die */
     /* Try an emergency teleport, or phase door as last resort */
-    if (borg_trait[BI_ISHEAVYSTUN]
+    if (borg.trait[BI_ISHEAVYSTUN]
         || (b_q > avoidance * (45 + risky_boost) / 10)
         || ((b_q > avoidance * (40 + risky_boost) / 10)
-            && borg_fighting_unique >= 10 && borg_trait[BI_CDEPTH] == 100
-            && borg_trait[BI_CURHP] < 600)
+            && borg_fighting_unique >= 10 && borg.trait[BI_CDEPTH] == 100
+            && borg.trait[BI_CURHP] < 600)
         || ((b_q > avoidance * (30 + risky_boost) / 10)
-            && borg_fighting_unique >= 10 && borg_trait[BI_CDEPTH] == 99
-            && borg_trait[BI_CURHP] < 600)
+            && borg_fighting_unique >= 10 && borg.trait[BI_CDEPTH] == 99
+            && borg.trait[BI_CURHP] < 600)
         || ((b_q > avoidance * (25 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
-            && borg_trait[BI_CDEPTH] >= 95 && borg_trait[BI_CURHP] < 550)
+            && borg.trait[BI_CDEPTH] >= 95 && borg.trait[BI_CURHP] < 550)
         || ((b_q > avoidance * (17 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
-            && borg_trait[BI_CDEPTH] < 95)
+            && borg.trait[BI_CDEPTH] < 95)
         || ((b_q > avoidance * (15 + risky_boost) / 10)
             && !borg_fighting_unique)) {
 
@@ -734,11 +734,11 @@ bool borg_escape(int b_q)
             return (true);
         }
 
-        borg_trait[BI_CURSP] = borg_trait[BI_MAXSP];
+        borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
 
         /* try to teleport, get far away from here */
-        if (borg_trait[BI_CDEPTH] && borg_trait[BI_CLEVEL] < 10
-            && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] * 1 / 10)
+        if (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 10
+            && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] * 1 / 10)
             && borg_allow_teleport()
             && (borg_dimension_door(90) || borg_spell(TELEPORT_SELF)
                 || borg_spell(PORTAL))) {
@@ -754,13 +754,13 @@ bool borg_escape(int b_q)
         }
 
         /* emergency phase activation no concern for safety of landing zone. */
-        if (borg_trait[BI_CDEPTH]
-            && ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] * 1 / 10
+        if (borg.trait[BI_CDEPTH]
+            && ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] * 1 / 10
                     || b_q > avoidance * (45 + risky_boost) / 10)
                 && (borg_activate_item(act_tele_phase)
                     || borg_read_scroll(sv_scroll_phase_door)))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 1.2  Critical Phase");
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
@@ -769,8 +769,8 @@ bool borg_escape(int b_q)
         }
 
         /* emergency phase spell */
-        if (borg_trait[BI_CDEPTH] && borg_trait[BI_CLEVEL] < 10
-            && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] * 1 / 10)
+        if (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 10
+            && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] * 1 / 10)
             && ((borg_spell_fail(PHASE_DOOR, 15) || borg_spell(PORTAL)))) {
             /* verify use of spell */
             /* borg_keypress('y'); */
@@ -784,27 +784,28 @@ bool borg_escape(int b_q)
         }
 
         /* Restore the real mana level */
-        borg_trait[BI_CURSP] = sv_mana;
+        borg.trait[BI_CURSP] = sv_mana;
     }
 
     /* If fighting a unique and at the end of the game try to stay and
      * finish the fight.  Only bail out in extreme danger as above.
      */
     if (b_q < avoidance * (25 + risky_boost) / 10 && borg_fighting_unique >= 1
-        && borg_fighting_unique <= 3 && borg_trait[BI_CDEPTH] >= 97)
+        && borg_fighting_unique <= 3 && borg.trait[BI_CDEPTH] >= 97)
         return (false);
 
     /* 2 - a bit more scary/
      * Attempt to teleport (usually)
      * do not escape from uniques so quick
      */
-    if (borg_trait[BI_ISHEAVYSTUN]
+    if (borg.trait[BI_ISHEAVYSTUN]
         || ((b_q > avoidance * (3 + risky_boost) / 10)
-            && borg_class == CLASS_MAGE && borg_trait[BI_CURSP] <= 20
-            && borg_trait[BI_MAXCLEVEL] >= 45)
+            && borg.trait[BI_CLASS] == CLASS_MAGE 
+            && borg.trait[BI_CURSP] <= 20
+            && borg.trait[BI_MAXCLEVEL] >= 45)
         || ((b_q > avoidance * (13 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
-            && borg_trait[BI_CDEPTH] != 99)
+            && borg.trait[BI_CDEPTH] != 99)
         || ((b_q > avoidance * (11 + risky_boost) / 10)
             && !borg_fighting_unique)) {
 
@@ -851,15 +852,15 @@ bool borg_escape(int b_q)
 
     /* 3- not too bad */
     /* also run if stunned or it is scary here */
-    if (borg_trait[BI_ISHEAVYSTUN]
+    if (borg.trait[BI_ISHEAVYSTUN]
         || ((b_q > avoidance * (13 + risky_boost) / 10)
             && borg_fighting_unique >= 2 && borg_fighting_unique <= 8)
         || ((b_q > avoidance * (10 + risky_boost) / 10)
             && !borg_fighting_unique)
         || ((b_q > avoidance * (10 + risky_boost) / 10)
-            && borg_trait[BI_ISAFRAID]
-            && (borg_trait[BI_AMISSILES] <= 0
-                && borg_class == CLASS_WARRIOR))) {
+            && borg.trait[BI_ISAFRAID]
+            && (borg.trait[BI_AMISSILES] <= 0
+                && borg.trait[BI_CLASS] == CLASS_WARRIOR))) {
         /* Phase door, if useful */
         if ((borg_escape_stair() || borg_caution_phase(25, 2))
             && borg_t - borg_t_antisummon > 50
@@ -868,7 +869,7 @@ bool borg_escape(int b_q)
                 || borg_activate_item(act_tele_phase)
                 || borg_read_scroll(sv_scroll_phase_door))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 3.1");
 
             /* Reset timer if borg was in a anti-summon corridor */
@@ -907,7 +908,7 @@ bool borg_escape(int b_q)
                 || borg_activate_item(act_tele_phase)
                 || borg_read_scroll(sv_scroll_phase_door))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 3.3");
 
             /* Reset timer if borg was in a anti-summon corridor */
@@ -934,39 +935,39 @@ bool borg_escape(int b_q)
 
         /* if we got this far we tried to escape but couldn't... */
         /* time to flee */
-        if (!goal_fleeing
-            && (!borg_fighting_unique || borg_trait[BI_CLEVEL] < 35)
+        if (!borg.goal.fleeing
+            && (!borg_fighting_unique || borg.trait[BI_CLEVEL] < 35)
             && !vault_on_level) {
             /* Note */
             borg_note("# Fleeing (failed to teleport)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
 
         /* Flee now */
-        if (!goal_leaving
-            && (!borg_fighting_unique || borg_trait[BI_CLEVEL] < 35)
+        if (!borg.goal.leaving
+            && (!borg_fighting_unique || borg.trait[BI_CLEVEL] < 35)
             && !vault_on_level) {
             /* Flee! */
             borg_note("# Leaving (failed to teleport)");
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
     }
     /* 4- not too scary but I'm compromised */
     if ((b_q > avoidance * (8 + risky_boost) / 10
-            && (borg_trait[BI_CLEVEL] < 35
-                || borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP] / 3))
+            && (borg.trait[BI_CLEVEL] < 35
+                || borg.trait[BI_CURHP] <= borg.trait[BI_MAXHP] / 3))
         || ((b_q > avoidance * (9 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
-            && (borg_trait[BI_CLEVEL] < 35
-                || borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP] / 3))
+            && (borg.trait[BI_CLEVEL] < 35
+                || borg.trait[BI_CURHP] <= borg.trait[BI_MAXHP] / 3))
         || ((b_q > avoidance * (6 + risky_boost) / 10)
-            && borg_trait[BI_CLEVEL] <= 20 && !borg_fighting_unique)
+            && borg.trait[BI_CLEVEL] <= 20 && !borg_fighting_unique)
         || ((b_q > avoidance * (6 + risky_boost) / 10)
-            && borg_trait[BI_CLEVEL] <= 35)) {
+            && borg.trait[BI_CLEVEL] <= 35)) {
         /* Phase door, if useful */
         if ((borg_escape_stair() || borg_caution_phase(20, 2))
             && borg_t - borg_t_antisummon > 50
@@ -976,7 +977,7 @@ bool borg_escape(int b_q)
                 || borg_shadow_shift(allow_fail)
                 || borg_read_scroll(sv_scroll_phase_door))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 4.1");
 
             /* Reset timer if borg was in a anti-summon corridor */
@@ -1009,33 +1010,34 @@ bool borg_escape(int b_q)
 
         /* if we got this far we tried to escape but couldn't... */
         /* time to flee */
-        if (!goal_fleeing && !borg_fighting_unique && borg_trait[BI_CLEVEL] < 25
-            && !vault_on_level) {
+        if (!borg.goal.fleeing && !borg_fighting_unique
+            && borg.trait[BI_CLEVEL] < 25 && !vault_on_level) {
             /* Note */
             borg_note("# Fleeing (failed to teleport)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
 
         /* Flee now */
-        if (!goal_leaving && !borg_fighting_unique && !vault_on_level) {
+        if (!borg.goal.leaving && !borg_fighting_unique && !vault_on_level) {
             /* Flee! */
             borg_note("# Leaving (failed to teleport)");
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
         /* Emergency Phase door if a weak mage */
-        if (((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER)
-                && borg_trait[BI_CLEVEL] <= 35)
+        if (((borg.trait[BI_CLASS] == CLASS_MAGE || 
+              borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+                && borg.trait[BI_CLEVEL] <= 35)
             && borg_caution_phase(65, 2) && borg_t - borg_t_antisummon > 50
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
                 || borg_activate_item(act_tele_phase)
                 || borg_activate_item(act_tele_long)
                 || borg_read_scroll(sv_scroll_phase_door))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 4.3");
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
@@ -1047,7 +1049,7 @@ bool borg_escape(int b_q)
     }
 
     /* 5- not too scary but I'm very low level  */
-    if (borg_trait[BI_CLEVEL] < 10
+    if (borg.trait[BI_CLEVEL] < 10
         && (b_q > avoidance * (5 + risky_boost) / 10
             || (b_q > avoidance * (7 + risky_boost) / 10
                 && borg_fighting_unique >= 1 && borg_fighting_unique <= 8))) {
@@ -1090,32 +1092,33 @@ bool borg_escape(int b_q)
 
         /* if we got this far we tried to escape but couldn't... */
         /* time to flee */
-        if (!goal_fleeing && !borg_fighting_unique) {
+        if (!borg.goal.fleeing && !borg_fighting_unique) {
             /* Note */
             borg_note("# Fleeing (failed to teleport)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
 
         /* Flee now */
-        if (!goal_leaving && !borg_fighting_unique) {
+        if (!borg.goal.leaving && !borg_fighting_unique) {
             /* Flee! */
             borg_note("# Leaving (failed to teleport)");
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
         /* Emergency Phase door if a weak mage */
-        if (((borg_class == CLASS_MAGE || borg_class == CLASS_NECROMANCER)
-                && borg_trait[BI_CLEVEL] <= 8)
+        if (((borg.trait[BI_CLASS] == CLASS_MAGE || 
+              borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+                && borg.trait[BI_CLEVEL] <= 8)
             && borg_caution_phase(65, 2)
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
                 || borg_activate_item(act_tele_phase)
                 || borg_read_scroll(sv_scroll_phase_door)
                 || borg_activate_item(act_tele_long))) {
             /* Flee! */
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
             borg_note("# Danger Level 5.3");
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
@@ -1127,13 +1130,14 @@ bool borg_escape(int b_q)
     }
 
     /* 6- not too scary but I'm out of mana  */
-    if ((borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
-            || borg_class == CLASS_NECROMANCER)
+    if ((borg.trait[BI_CLASS] == CLASS_MAGE 
+            || borg.trait[BI_CLASS] == CLASS_PRIEST
+            || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
         && (b_q > avoidance * (6 + risky_boost) / 10
             || (b_q > avoidance * (8 + risky_boost) / 10
                 && borg_fighting_unique >= 1 && borg_fighting_unique <= 8))
-        && (borg_trait[BI_CURSP] <= (borg_trait[BI_MAXSP] * 1 / 10)
-            && borg_trait[BI_MAXSP] >= 100)) {
+        && (borg.trait[BI_CURSP] <= (borg.trait[BI_MAXSP] * 1 / 10)
+            && borg.trait[BI_MAXSP] >= 100)) {
         /* Phase door, if useful */
         if ((borg_escape_stair() || borg_caution_phase(20, 2))
             && borg_t - borg_t_antisummon > 50
@@ -1180,7 +1184,7 @@ bool borg_escape(int b_q)
             || borg_spell_fail(PORTAL, allow_fail)) {
             /* Flee! */
             borg_note("# Shoot N Scoot. (Danger Level 7.1)");
-            borg_escapes--; /* a phase isn't really an escape */
+            borg.escapes--; /* a phase isn't really an escape */
 
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)

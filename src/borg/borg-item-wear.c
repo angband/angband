@@ -93,12 +93,12 @@ bool borg_test_stuff(void)
     bool free_id           = borg_spell_legal(IDENTIFY_RUNE);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
-    if (borg_trait[BI_CURSP] < 50 && borg_spell_legal(IDENTIFY_RUNE)
-        && !borg_check_rest(c_y, c_x))
+    if (borg.trait[BI_CURSP] < 50 && borg_spell_legal(IDENTIFY_RUNE)
+        && !borg_check_rest(borg.c.y, borg.c.x))
         return (false);
 
     /* No ID if in danger */
-    if (borg_danger(c_y, c_x, 1, true, false) > 1)
+    if (borg_danger(borg.c.y, borg.c.x, 1, true, false) > 1)
         return (false);
 
     /* Look for an item to identify (equipment) */
@@ -167,30 +167,30 @@ bool borg_test_stuff(void)
             switch (item->tval) {
             case TV_RING:
             case TV_AMULET:
-                v += (borg_trait[BI_MAXDEPTH] * 5000L);
+                v += (borg.trait[BI_MAXDEPTH] * 5000L);
                 break;
 
             case TV_ROD:
-                v += (borg_trait[BI_MAXDEPTH] * 3000L);
+                v += (borg.trait[BI_MAXDEPTH] * 3000L);
                 break;
 
             case TV_WAND:
             case TV_STAFF:
-                v += (borg_trait[BI_MAXDEPTH] * 2000L);
+                v += (borg.trait[BI_MAXDEPTH] * 2000L);
                 break;
 
             case TV_POTION:
             case TV_SCROLL:
                 /* Hack -- boring levels */
-                if (borg_trait[BI_MAXDEPTH] < 5)
+                if (borg.trait[BI_MAXDEPTH] < 5)
                     break;
 
                 /* Hack -- reward depth */
-                v += (borg_trait[BI_MAXDEPTH] * 500L);
+                v += (borg.trait[BI_MAXDEPTH] * 500L);
                 break;
 
             case TV_FOOD:
-                v += (borg_trait[BI_MAXDEPTH] * 10L);
+                v += (borg.trait[BI_MAXDEPTH] * 10L);
                 break;
             }
         }
@@ -228,7 +228,7 @@ bool borg_test_stuff(void)
                 /* HACK need to recheck stats if we id something on us. */
                 for (i = 0; i < STAT_MAX; i++) {
                     //                    my_need_stat_check[i] = true;
-                    my_stat_max[i] = 0;
+                    borg.stat_max[i] = 0;
                 }
             } else if (b_i >= QUIVER_START) {
                 /* Select quiver */
@@ -287,7 +287,7 @@ bool borg_swap_rings(void)
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 1000)
         return (false);
-    if (borg_trait[BI_CDEPTH] != 0)
+    if (borg.trait[BI_CDEPTH] != 0)
         return (false);
 
     /*** Remove naked "loose" rings ***/
@@ -451,7 +451,7 @@ bool borg_wear_rings(void)
         return (false);
 
     /* hack prevent the swap till you drop loop */
-    if (borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return (false);
 
     /* Forbid if been sitting on level forever */
@@ -523,7 +523,7 @@ bool borg_wear_rings(void)
 
         /* the One Ring would be awesome */
         if (item->one_ring)
-            p = my_power * 2;
+            p = borg.power * 2;
 
         /* Restore the old item (empty) */
         memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
@@ -545,7 +545,7 @@ bool borg_wear_rings(void)
         borg_notice(true);
 
     /* No item */
-    if ((b_i >= 0) && (b_p > my_power)) {
+    if ((b_i >= 0) && (b_p > borg.power)) {
         /* Get the item */
         item = &borg_items[b_i];
 
@@ -560,7 +560,7 @@ bool borg_wear_rings(void)
         borg_keypress(all_letters_nohjkl[b_i]);
 
         /* Did something */
-        time_this_panel++;
+        borg.time_this_panel++;
         return (true);
     }
 
@@ -600,12 +600,12 @@ bool borg_backup_swap(int p)
     bool fix = false;
 
     /* hack prevent the swap till you drop loop */
-    if (borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return (false);
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
-    if (time_this_panel > 300)
+    if (borg.time_this_panel > 300)
         return (false);
 
     /* make sure we have an appropriate swap */
@@ -614,9 +614,9 @@ bool borg_backup_swap(int p)
 
     if (armour_swap) {
         /* Save our normal condition */
-        save_rconf  = borg_trait[BI_RCONF];
-        save_rblind = borg_trait[BI_RBLIND];
-        save_fract  = borg_trait[BI_FRACT];
+        save_rconf  = borg.trait[BI_RCONF];
+        save_rblind = borg.trait[BI_RBLIND];
+        save_fract  = borg.trait[BI_FRACT];
 
         /* Check the items, first armour then weapon */
         i = armour_swap - 1;
@@ -657,7 +657,7 @@ bool borg_backup_swap(int p)
         borg_notice(false);
 
         /* Evaluate the power with the new item worn */
-        b_p1 = borg_danger(c_y, c_x, 1, true, false);
+        b_p1 = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
         /* Restore the old item (empty) */
         memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
@@ -666,13 +666,13 @@ bool borg_backup_swap(int p)
         memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
         /* Examine the critical skills */
-        if ((save_rconf) && borg_trait[BI_RCONF] == 0)
+        if ((save_rconf) && borg.trait[BI_RCONF] == 0)
             b_p1 = 9999;
         if ((save_rblind)
-            && (!borg_trait[BI_RBLIND] && !borg_trait[BI_RLITE]
-                && !borg_trait[BI_RDARK] && borg_trait[BI_SAV] < 100))
+            && (!borg.trait[BI_RBLIND] && !borg.trait[BI_RLITE]
+                && !borg.trait[BI_RDARK] && borg.trait[BI_SAV] < 100))
             b_p1 = 9999;
-        if ((save_fract) && (!borg_trait[BI_FRACT] && borg_trait[BI_SAV] < 100))
+        if ((save_fract) && (!borg.trait[BI_FRACT] && borg.trait[BI_SAV] < 100))
             b_p1 = 9999;
 
         /* Restore bonuses */
@@ -728,17 +728,17 @@ bool borg_backup_swap(int p)
         borg_notice(false);
 
         /* Evaluate the power with the new item worn */
-        b_p2 = borg_danger(c_y, c_x, 1, true, false);
+        b_p2 = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
         /* Examine the critical skills */
         /* Examine the critical skills */
-        if ((save_rconf) && borg_trait[BI_RCONF] == 0)
+        if ((save_rconf) && borg.trait[BI_RCONF] == 0)
             b_p2 = 9999;
         if ((save_rblind)
-            && (!borg_trait[BI_RBLIND] && !borg_trait[BI_RLITE]
-                && !borg_trait[BI_RDARK] && borg_trait[BI_SAV] < 100))
+            && (!borg.trait[BI_RBLIND] && !borg.trait[BI_RLITE]
+                && !borg.trait[BI_RDARK] && borg.trait[BI_SAV] < 100))
             b_p2 = 9999;
-        if ((save_fract) && (!borg_trait[BI_FRACT] && borg_trait[BI_SAV] < 100))
+        if ((save_fract) && (!borg.trait[BI_FRACT] && borg.trait[BI_SAV] < 100))
             b_p2 = 9999;
 
         /* Restore the old item (empty) */
@@ -825,10 +825,10 @@ bool borg_wear_stuff(void)
     bool fix = false;
 
     /* Start with current power */
-    b_p = my_power;
+    b_p = borg.power;
 
     /*  hack to prevent the swap till you drop loop */
-    if (borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return (false);
 
     /* We need an empty slot to simulate pushing equipment */
@@ -840,7 +840,7 @@ bool borg_wear_stuff(void)
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
         return (false);
-    if (time_this_panel > 1300)
+    if (borg.time_this_panel > 1300)
         return (false);
 
     /* Scan inventory */
@@ -894,7 +894,7 @@ bool borg_wear_stuff(void)
 
         /* Do not wear certain items if I am over weight limit.  It induces
          * loops */
-        if (borg_trait[BI_ISENCUMB]) {
+        if (borg.trait[BI_ISENCUMB]) {
             /* Compare Str bonuses */
             if (borg_items[slot].modifiers[OBJ_MOD_STR]
                 > item->modifiers[OBJ_MOD_STR])
@@ -902,7 +902,7 @@ bool borg_wear_stuff(void)
         }
 
         /* Obtain danger */
-        danger = borg_danger(c_y, c_x, 1, true, false);
+        danger = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
         /* If this is a ring and both hands are full, then check each hand
          * and compare the two.  If needed the tight ring can be removed then
@@ -946,7 +946,7 @@ bool borg_wear_stuff(void)
             p = borg_power();
 
             /* Evaluate local danger */
-            d = borg_danger(c_y, c_x, 1, true, false);
+            d = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
             if (borg_cfg[BORG_VERBOSE]) {
                 /* dump list and power...  for debugging */
@@ -1030,7 +1030,7 @@ bool borg_wear_stuff(void)
                     p = borg_power();
 
                     /* Evaluate local danger */
-                    d = borg_danger(c_y, c_x, 1, true, false);
+                    d = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
                     /* Restore the old item */
                     memcpy(&borg_items[slot], &safe_items[slot],
@@ -1072,7 +1072,7 @@ bool borg_wear_stuff(void)
         borg_notice(true);
 
     /* item */
-    if ((b_i >= 0) && (b_p > my_power)) {
+    if ((b_i >= 0) && (b_p > borg.power)) {
         /* Get the item */
         item = &borg_items[b_i];
 
@@ -1090,7 +1090,7 @@ bool borg_wear_stuff(void)
             borg_keypress(all_letters_nohjkl[b_ii - INVEN_WIELD]);
 
             /* Did something */
-            time_this_panel++;
+            borg.time_this_panel++;
             return (true);
         }
 
@@ -1100,7 +1100,7 @@ bool borg_wear_stuff(void)
         /* Wear it */
         borg_keypress('w');
         borg_keypress(all_letters_nohjkl[b_i]);
-        time_this_panel++;
+        borg.time_this_panel++;
 
         /* Track the newly worn artifact item to avoid loops */
         if (item->art_idx && (track_worn_num < track_worn_size)) {
@@ -1252,7 +1252,7 @@ static void borg_best_stuff_aux(
 
         /* Do not wear certain items if I am over weight limit.  It induces
          * loops */
-        if (borg_trait[BI_ISENCUMB]) {
+        if (borg.trait[BI_ISENCUMB]) {
             /* Compare Str bonuses */
             if (borg_items[slot].modifiers[OBJ_MOD_STR]
                 > item->modifiers[OBJ_MOD_STR])
@@ -1297,7 +1297,7 @@ bool borg_best_stuff(void)
     uint8_t best[12];
 
     /* Hack -- Anti-loop */
-    if (time_this_panel >= 300)
+    if (borg.time_this_panel >= 300)
         return (false);
 
     /* Hack -- Initialize */
@@ -1325,7 +1325,7 @@ bool borg_best_stuff(void)
     }
 
     /* Evaluate the inventory */
-    value = my_power;
+    value = borg.power;
 
     /* Determine the best possible equipment */
     (void)borg_best_stuff_aux(0, test, best, &value);
@@ -1365,7 +1365,7 @@ bool borg_best_stuff(void)
                 return (true);
             }
 
-            time_this_panel++;
+            borg.time_this_panel++;
 
             return (true);
         } else {
@@ -1409,7 +1409,7 @@ bool borg_best_stuff(void)
             borg_keypress(ESCAPE);
 
             /* tick the clock */
-            time_this_panel++;
+            borg.time_this_panel++;
 
             /* Note that this is a nice item and not to sell it right away */
             borg_best_fit_item = item->art_idx;
@@ -1433,11 +1433,11 @@ bool borg_wear_recharge(void)
     int b_slot = -1;
 
     /* No resting in danger */
-    if (!borg_check_rest(c_y, c_x))
+    if (!borg_check_rest(borg.c.y, borg.c.x))
         return (false);
 
     /* Not if hungry */
-    if (borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISWEAK])
         return (false);
 
     /* Look for an (wearable- non rod) item to recharge */

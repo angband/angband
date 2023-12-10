@@ -34,8 +34,7 @@
 /* 
  * Current targetted location 
  */
-int borg_target_y;
-int borg_target_x; 
+struct loc borg_target_loc;
 
 /*
  * A simple, fast, integer-based line-of-sight algorithm.
@@ -257,7 +256,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
         /* Get the grid */
         ag = &borg_grids[y][x];
 
-        if ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3 ||
+        if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3 ||
             borg_morgoth_position || scaryguy_on_level)) {
             /* Assume all unknown grids more than distance 20 from you
              * are walls--when I am wounded. This will make me more fearful
@@ -267,7 +266,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
              */
             if ((dist > 20) && (ag->feat == FEAT_NONE))
                 break;
-        } else if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) {
+        } else if (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) {
             /* Assume all unknow grids more than distance 10 from you
              * are walls--when I am wounded. This will make me more fearful
              * of the grids that are up to 9 spaces away.  I treat them as
@@ -275,7 +274,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
              */
             if ((dist > 10) && (ag->feat == FEAT_NONE))
                 break;
-        } else if (borg_fear_region[c_y / 11][c_x / 11] >= avoidance / 20) {
+        } else if (borg_fear_region[borg.c.y / 11][borg.c.x / 11] >= avoidance / 20) {
             /* If a non-LOS monster is attacking me, then it is probably has
              * LOS to me, so do not place walls on unknown grids.  This will allow
              * me the chance to attack monsters.
@@ -658,23 +657,23 @@ int borg_distance(int y, int x, int y2, int x2)
  *
  * Warning -- This will only work for locations on the current panel
  */
-bool borg_target(int y, int x)
+bool borg_target(struct loc t)
 {
     int x1, y1, x2, y2;
 
     borg_grid *ag;
     borg_kill *kill;
 
-    ag = &borg_grids[y][x];
+    ag = &borg_grids[t.y][t.x];
     kill = &borg_kills[ag->kill];
 
     /* Log */
     /* Report a little bit */
     if (ag->kill) {
         borg_note(format("# Targeting %s who has %d Hit Points (%d,%d).",
-            (r_info[kill->r_idx].name), kill->power, y, x));
+            (r_info[kill->r_idx].name), kill->power, t.y, t.x));
     } else {
-        borg_note(format("# Targetting location (%d,%d)", y, x));
+        borg_note(format("# Targetting location (%d,%d)", t.y, t.x));
     }
 
     /* Target mode */
@@ -684,10 +683,10 @@ bool borg_target(int y, int x)
     borg_keypress('p');
 
     /* Determine "path" */
-    x1 = c_x;
-    y1 = c_y;
-    x2 = x;
-    y2 = y;
+    x1 = borg.c.x;
+    y1 = borg.c.y;
+    x2 = t.x;
+    y2 = t.y;
 
     /* Move to the location (diagonals) */
     for (; (y1 < y2) && (x1 < x2); y1++, x1++)
@@ -715,8 +714,8 @@ bool borg_target(int y, int x)
     /* Carry these variables to be used on reporting spell
      * pathway
      */
-    borg_target_y = y;
-    borg_target_x = x;
+    borg_target_loc.y = t.y;
+    borg_target_loc.x = t.x;
 
     /* Success */
     return (true);
@@ -743,8 +742,8 @@ bool borg_target_unknown_wall(int y, int x)
     borg_note(format("# Perhaps wall near targetted location (%d,%d)", y, x));
 
     /* Determine "path" */
-    n_x = c_x;
-    n_y = c_y;
+    n_x = borg.c.x;
+    n_y = borg.c.y;
 
     /* check for 'in a hall' x axis */
     /* This check is for this: */
@@ -765,24 +764,24 @@ bool borg_target_unknown_wall(int y, int x)
      * is 3 west and 1 south of the X.
      */
 
-    if ((borg_grids[c_y + 1][c_x].feat == FEAT_FLOOR
-        && borg_grids[c_y - 1][c_x].feat == FEAT_FLOOR
-        && (borg_grids[c_y + 2][c_x].feat == FEAT_FLOOR
-            || borg_grids[c_y - 2][c_x].feat == FEAT_FLOOR))
-        && (borg_grids[c_y][c_x + 1].feat != FEAT_FLOOR
-            && borg_grids[c_y][c_x - 1].feat != FEAT_FLOOR))
+    if ((borg_grids[borg.c.y + 1][borg.c.x].feat == FEAT_FLOOR
+        && borg_grids[borg.c.y - 1][borg.c.x].feat == FEAT_FLOOR
+        && (borg_grids[borg.c.y + 2][borg.c.x].feat == FEAT_FLOOR
+            || borg_grids[borg.c.y - 2][borg.c.x].feat == FEAT_FLOOR))
+        && (borg_grids[borg.c.y][borg.c.x + 1].feat != FEAT_FLOOR
+            && borg_grids[borg.c.y][borg.c.x - 1].feat != FEAT_FLOOR))
         x_hall = true;
 
     /* check for 'in a hall' y axis.
      * Again, we want to place the suspected wall off our
      * hallway.
      */
-    if ((borg_grids[c_y][c_x + 1].feat == FEAT_FLOOR
-        && borg_grids[c_y][c_x - 1].feat == FEAT_FLOOR
-        && (borg_grids[c_y][c_x + 2].feat == FEAT_FLOOR
-            || borg_grids[c_y][c_x - 2].feat == FEAT_FLOOR))
-        && (borg_grids[c_y + 1][c_x].feat != FEAT_FLOOR
-            && borg_grids[c_y - 1][c_x].feat != FEAT_FLOOR))
+    if ((borg_grids[borg.c.y][borg.c.x + 1].feat == FEAT_FLOOR
+        && borg_grids[borg.c.y][borg.c.x - 1].feat == FEAT_FLOOR
+        && (borg_grids[borg.c.y][borg.c.x + 2].feat == FEAT_FLOOR
+            || borg_grids[borg.c.y][borg.c.x - 2].feat == FEAT_FLOOR))
+        && (borg_grids[borg.c.y + 1][borg.c.x].feat != FEAT_FLOOR
+            && borg_grids[borg.c.y - 1][borg.c.x].feat != FEAT_FLOOR))
         y_hall = true;
 
     while (1) {
@@ -799,8 +798,8 @@ bool borg_target_unknown_wall(int y, int x)
             return (found); /* not sure... should we return here? */
         }
 
-        if (borg_grids[n_y][n_x].feat == FEAT_NONE && ((n_y != c_y) || !y_hall)
-            && ((n_x != c_x) || !x_hall)) {
+        if (borg_grids[n_y][n_x].feat == FEAT_NONE && ((n_y != borg.c.y) || !y_hall)
+            && ((n_x != borg.c.x) || !x_hall)) {
             borg_note(format(
                 "# Guessing wall (%d,%d) near target (%d,%d)", n_y, n_x, y, x));
             borg_grids[n_y][n_x].feat = FEAT_GRANITE;
@@ -812,7 +811,7 @@ bool borg_target_unknown_wall(int y, int x)
         /* Pathway found the target. */
         if (n_x == x && n_y == y) {
             /* end of the pathway */
-            borg_inc_motion(&n_y, &n_x, y, x, c_y, c_x);
+            borg_inc_motion(&n_y, &n_x, y, x, borg.c.y, borg.c.x);
             borg_note(format(
                 "# Guessing wall (%d,%d) near target (%d,%d)", n_y, n_x, y, x));
             borg_grids[n_y][n_x].feat = FEAT_GRANITE;
@@ -821,7 +820,7 @@ bool borg_target_unknown_wall(int y, int x)
         }
 
         /* Calculate the new location */
-        borg_inc_motion(&n_y, &n_x, c_y, c_x, y, x);
+        borg_inc_motion(&n_y, &n_x, borg.c.y, borg.c.x, y, x);
     }
 }
 

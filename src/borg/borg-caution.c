@@ -74,14 +74,14 @@ static bool borg_heal(int danger)
 
     bool rod_good         = false;
 
-    hp_down               = borg_trait[BI_MAXHP] - borg_trait[BI_CURHP];
-    pct_down              = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 100
-                / borg_trait[BI_MAXHP]);
-    clw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 15 / 100);
-    csw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 20 / 100);
-    ccw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 25 / 100);
-    cmw_heal  = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 30 / 100);
-    heal_heal = ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP]) * 35 / 100);
+    hp_down               = borg.trait[BI_MAXHP] - borg.trait[BI_CURHP];
+    pct_down              = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 100
+                / borg.trait[BI_MAXHP]);
+    clw_heal  = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 15 / 100);
+    csw_heal  = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 20 / 100);
+    ccw_heal  = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 25 / 100);
+    cmw_heal  = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 30 / 100);
+    heal_heal = ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP]) * 35 / 100);
 
     if (clw_heal < 15)
         clw_heal = 15;
@@ -104,56 +104,56 @@ static bool borg_heal(int danger)
     /* when fighting Morgoth, we want the borg to use Life potion to fix his
      * stats.  So we need to add up the ones that are dropped.
      */
-    if (borg_trait[BI_ISFIXSTR])
+    if (borg.trait[BI_ISFIXSTR])
         stats_needing_fix++;
-    if (borg_trait[BI_ISFIXINT])
+    if (borg.trait[BI_ISFIXINT])
         stats_needing_fix++;
-    if (borg_trait[BI_ISFIXWIS])
+    if (borg.trait[BI_ISFIXWIS])
         stats_needing_fix++;
-    if (borg_trait[BI_ISFIXDEX])
+    if (borg.trait[BI_ISFIXDEX])
         stats_needing_fix++;
-    if (borg_trait[BI_ISFIXCON])
+    if (borg.trait[BI_ISFIXCON])
         stats_needing_fix++;
 
     /* Special cases get a second vote */
-    if (borg_class == CLASS_MAGE && borg_trait[BI_ISFIXINT])
+    if (borg.trait[BI_CLASS] == CLASS_MAGE && borg.trait[BI_ISFIXINT])
         stats_needing_fix++;
-    if (borg_class == CLASS_PRIEST && borg_trait[BI_ISFIXWIS])
+    if (borg.trait[BI_CLASS] == CLASS_PRIEST && borg.trait[BI_ISFIXWIS])
         stats_needing_fix++;
-    if (borg_class == CLASS_DRUID && borg_trait[BI_ISFIXWIS])
+    if (borg.trait[BI_CLASS] == CLASS_DRUID && borg.trait[BI_ISFIXWIS])
         stats_needing_fix++;
-    if (borg_class == CLASS_NECROMANCER && borg_trait[BI_ISFIXINT])
+    if (borg.trait[BI_CLASS] == CLASS_NECROMANCER && borg.trait[BI_ISFIXINT])
         stats_needing_fix++;
-    if (borg_class == CLASS_WARRIOR && borg_trait[BI_ISFIXCON])
+    if (borg.trait[BI_CLASS] == CLASS_WARRIOR && borg.trait[BI_ISFIXCON])
         stats_needing_fix++;
-    if (borg_trait[BI_MAXHP] <= 850 && borg_trait[BI_ISFIXCON])
+    if (borg.trait[BI_MAXHP] <= 850 && borg.trait[BI_ISFIXCON])
         stats_needing_fix++;
-    if (borg_trait[BI_MAXHP] <= 700 && borg_trait[BI_ISFIXCON])
+    if (borg.trait[BI_MAXHP] <= 700 && borg.trait[BI_ISFIXCON])
         stats_needing_fix += 3;
-    if (borg_class == CLASS_PRIEST && borg_trait[BI_MAXSP] < 100
-        && borg_trait[BI_ISFIXWIS])
+    if (borg.trait[BI_CLASS] == CLASS_PRIEST && borg.trait[BI_MAXSP] < 100
+        && borg.trait[BI_ISFIXWIS])
         stats_needing_fix += 5;
-    if (borg_class == CLASS_MAGE && borg_trait[BI_MAXSP] < 100
-        && borg_trait[BI_ISFIXINT])
+    if (borg.trait[BI_CLASS] == CLASS_MAGE && borg.trait[BI_MAXSP] < 100
+        && borg.trait[BI_ISFIXINT])
         stats_needing_fix += 5;
 
     /*  Hack -- heal when confused. This is deadly.*/
     /* This is checked twice, once, here, to see if he is in low danger
      * and again at the end of borg_caution, when all other avenues have failed
      */
-    if (borg_trait[BI_ISCONFUSED]) {
-        if ((pct_down >= 80) && danger - heal_heal < borg_trait[BI_CURHP]
+    if (borg.trait[BI_ISCONFUSED]) {
+        if ((pct_down >= 80) && danger - heal_heal < borg.trait[BI_CURHP]
             && borg_quaff_potion(sv_potion_healing)) {
             borg_note("# Fixing Confusion. Level 1");
             return (true);
         }
-        if ((pct_down >= 85) && danger >= borg_trait[BI_CURHP] * 2
+        if ((pct_down >= 85) && danger >= borg.trait[BI_CURHP] * 2
             && (borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
             borg_note("# Fixing Confusion. Level 1.a");
             return (true);
         }
-        if (danger < borg_trait[BI_CURHP] + csw_heal
+        if (danger < borg.trait[BI_CURHP] + csw_heal
             && (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
                 || borg_quaff_potion(sv_potion_cure_serious)
                 || borg_quaff_crit(false)
@@ -200,7 +200,7 @@ static bool borg_heal(int danger)
         }
     }
     /*  Hack -- heal when blind. This is deadly.*/
-    if (borg_trait[BI_ISBLIND] && (randint0(100) < 85)) {
+    if (borg.trait[BI_ISBLIND] && (randint0(100) < 85)) {
         /* if in extreme danger, use teleport then fix the
          * blindness later.
          */
@@ -213,9 +213,9 @@ static bool borg_heal(int danger)
             return (true);
         }
         /* Warriors with ESP won't need it so quickly */
-        if (!(borg_class == CLASS_WARRIOR
-                && borg_trait[BI_CURHP] > borg_trait[BI_MAXHP] / 4
-                && borg_trait[BI_ESP])) {
+        if (!(borg.trait[BI_CLASS] == CLASS_WARRIOR
+                && borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 4
+                && borg.trait[BI_ESP])) {
             if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
                 || borg_quaff_potion(sv_potion_cure_light)
                 || borg_quaff_potion(sv_potion_cure_serious)
@@ -230,9 +230,9 @@ static bool borg_heal(int danger)
     }
 
     /* We generally try to conserve ez-heal pots */
-    if ((borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if ((borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         && ((hp_down >= 400)
-            || (danger > borg_trait[BI_CURHP] * 5 && hp_down > 100))
+            || (danger > borg.trait[BI_CURHP] * 5 && hp_down > 100))
         && borg_quaff_potion(sv_potion_star_healing)) {
         borg_note("# Fixing Confusion/Blind.");
         return (true);
@@ -240,14 +240,14 @@ static bool borg_heal(int danger)
 
     /* Healing and fighting Morgoth. */
     if (borg_fighting_unique >= 10) {
-        if (borg_trait[BI_CURHP] <= 700
-            && ((borg_trait[BI_CURHP] > 250 && borg_spell_fail(HOLY_WORD, 14))
+        if (borg.trait[BI_CURHP] <= 700
+            && ((borg.trait[BI_CURHP] > 250 && borg_spell_fail(HOLY_WORD, 14))
                 || /* Holy Word */
                 /* Choose Life over *Healing* to fix stats*/
                 (stats_needing_fix >= 5 && borg_quaff_potion(sv_potion_life)) ||
                 /* Choose Life over Healing if way down on pts*/
                 (hp_down > 500
-                    && borg_has[borg_lookup_kind(
+                    && borg.has[borg_lookup_kind(
                            TV_POTION, sv_potion_star_healing)]
                            <= 0
                     && borg_quaff_potion(sv_potion_life))
@@ -256,9 +256,9 @@ static bool borg_heal(int danger)
                 || borg_activate_item(act_heal1)
                 || borg_activate_item(act_heal2)
                 || borg_activate_item(act_heal3)
-                || (borg_trait[BI_CURHP] < 250 && borg_spell_fail(HOLY_WORD, 5))
+                || (borg.trait[BI_CURHP] < 250 && borg_spell_fail(HOLY_WORD, 5))
                 || /* Holy Word */
-                (borg_trait[BI_CURHP] > 550 && borg_spell_fail(HOLY_WORD, 15))
+                (borg.trait[BI_CURHP] > 550 && borg_spell_fail(HOLY_WORD, 15))
                 || /* Holy Word */
                 borg_spell_fail(HEALING, 15)
                 || borg_quaff_potion(sv_potion_life)
@@ -270,7 +270,7 @@ static bool borg_heal(int danger)
 
     /* restore Mana */
     /* note, blow the staff charges easy because the staff will not last. */
-    if (borg_trait[BI_CURSP] < (borg_trait[BI_MAXSP] / 5)
+    if (borg.trait[BI_CURSP] < (borg.trait[BI_MAXSP] / 5)
         && (randint0(100) < 50)) {
         if (borg_use_staff_fail(sv_staff_the_magi)
             || borg_activate_item(act_staff_magi)) {
@@ -280,12 +280,12 @@ static bool borg_heal(int danger)
     }
     /* blowing potions is harder */
     /* NOTE: must have enough mana to keep up or do a HEAL */
-    if (borg_trait[BI_CURSP] < (borg_trait[BI_MAXSP] / 10)
-        || ((borg_trait[BI_CURSP] < 70 && borg_trait[BI_MAXSP] > 200))) {
+    if (borg.trait[BI_CURSP] < (borg.trait[BI_MAXSP] / 10)
+        || ((borg.trait[BI_CURSP] < 70 && borg.trait[BI_MAXSP] > 200))) {
         /*  use the potion if battling a unique and not too dangerous */
         if (borg_fighting_unique >= 10
             || (borg_fighting_unique && danger < avoidance * 2)
-            || (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] == 0
+            || (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] == 0
                 && danger > avoidance)) {
             if (borg_use_staff_fail(sv_staff_the_magi)
                 || borg_quaff_potion(sv_potion_restore_mana)
@@ -302,12 +302,12 @@ static bool borg_heal(int danger)
         return false;
 
     /* Don't bother healing if not in danger */
-    if (danger == 0 && !borg_trait[BI_ISPOISONED] && !borg_trait[BI_ISCUT])
+    if (danger == 0 && !borg.trait[BI_ISPOISONED] && !borg.trait[BI_ISCUT])
         return (false);
 
     /* Restoring while fighting Morgoth */
     if (stats_needing_fix >= 5 && borg_fighting_unique >= 10
-        && borg_trait[BI_CURHP] > 650
+        && borg.trait[BI_CURHP] > 650
         && (borg_eat(TV_MUSHROOM, sv_mush_restoring)
             || borg_activate_item(act_restore_all))) {
         borg_note("# Trying to fix stats in combat.");
@@ -328,10 +328,11 @@ static bool borg_heal(int danger)
         chance -= 10;
 
     /* if danger is close to the hp and healing will help, do it */
-    if (danger >= borg_trait[BI_CURHP] && danger < borg_trait[BI_MAXHP])
+    if (danger >= borg.trait[BI_CURHP] && danger < borg.trait[BI_MAXHP])
         chance -= 75;
     else {
-        if (borg_class != CLASS_PRIEST && borg_class != CLASS_PALADIN)
+        if (borg.trait[BI_CLASS] != CLASS_PRIEST && 
+            borg.trait[BI_CLASS] != CLASS_PALADIN)
             chance -= 25;
     }
 
@@ -345,13 +346,13 @@ static bool borg_heal(int danger)
             || (pct_down >= 51 && pct_down <= 65 && chance < 50)
             || (pct_down >= 66 && pct_down <= 74 && chance < 25)
             || (pct_down >= 75 && chance < 1))
-        && (!borg_trait[BI_ISHEAVYSTUN] && !borg_trait[BI_ISSTUN]
-            && !borg_trait[BI_ISPOISONED] && !borg_trait[BI_ISCUT]))
+        && (!borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISSTUN]
+            && !borg.trait[BI_ISPOISONED] && !borg.trait[BI_ISCUT]))
         return false;
 
     /* Cure light Wounds (2d10) */
-    if (pct_down >= 30 && (pct_down <= 40 || borg_trait[BI_CLEVEL] < 10)
-        && ((danger) < borg_trait[BI_CURHP] + clw_heal)
+    if (pct_down >= 30 && (pct_down <= 40 || borg.trait[BI_CLEVEL] < 10)
+        && ((danger) < borg.trait[BI_CURHP] + clw_heal)
         && (clw_heal > danger / 3) && /* No rope-a-doping */
         (borg_spell_fail(MINOR_HEALING, allow_fail)
             || borg_quaff_potion(sv_potion_cure_light)
@@ -360,8 +361,8 @@ static bool borg_heal(int danger)
         return (true);
     }
     /* Cure Serious Wounds (4d10) */
-    if (pct_down >= 40 && (pct_down <= 50 || borg_trait[BI_CLEVEL] < 20)
-        && ((danger) < borg_trait[BI_CURHP] + csw_heal)
+    if (pct_down >= 40 && (pct_down <= 50 || borg.trait[BI_CLEVEL] < 20)
+        && ((danger) < borg.trait[BI_CURHP] + csw_heal)
         && (csw_heal > danger / 3) && /* No rope-a-doping */
         (borg_quaff_potion(sv_potion_cure_serious)
             || borg_activate_item(act_cure_serious))) {
@@ -371,7 +372,7 @@ static bool borg_heal(int danger)
 
     /* Cure Critical Wounds (6d10) */
     if (pct_down >= 50 && pct_down <= 55
-        && ((danger) < borg_trait[BI_CURHP] + ccw_heal)
+        && ((danger) < borg.trait[BI_CURHP] + ccw_heal)
         && (ccw_heal > danger / 3) && /* No rope-a-doping */
         (borg_activate_item(act_cure_critical) || borg_quaff_crit(false))) {
         borg_note("# Healing Level 3.");
@@ -379,8 +380,8 @@ static bool borg_heal(int danger)
     }
 
     /* If in danger try  one more Cure Critical if it will help */
-    if (danger >= borg_trait[BI_CURHP] && danger < borg_trait[BI_MAXHP]
-        && borg_trait[BI_CURHP] < 50 && danger < ccw_heal
+    if (danger >= borg.trait[BI_CURHP] && danger < borg.trait[BI_MAXHP]
+        && borg.trait[BI_CURHP] < 50 && danger < ccw_heal
         && borg_quaff_crit(true)) {
         borg_note("# Healing Level 5.");
         return (true);
@@ -388,15 +389,15 @@ static bool borg_heal(int danger)
 
     /* if deep, and low on HP, but in a zero danger spot, drink some CCW to add
      * a few HP before resting */
-    if (borg_trait[BI_CDEPTH] >= 80 && danger < 50 && pct_down >= 20
+    if (borg.trait[BI_CDEPTH] >= 80 && danger < 50 && pct_down >= 20
         && borg_quaff_potion(sv_potion_cure_critical)) {
         borg_note("# Healing Level 5B.");
         return (true);
     }
 
     /* Heal step one (200hp) */
-    if (pct_down >= 55 && danger < borg_trait[BI_CURHP] + heal_heal
-        && ((((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
+    if (pct_down >= 55 && danger < borg.trait[BI_CURHP] + heal_heal
+        && ((((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                  || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_activate_item(act_cure_full)
@@ -415,20 +416,20 @@ static bool borg_heal(int danger)
      * (unless morgoth is dead)
      * Priests wont need to bail, they have good heal spells.
      */
-    if (borg_trait[BI_MAXDEPTH] >= 98 && !borg_trait[BI_KING]
-        && !borg_fighting_unique && borg_class != CLASS_PRIEST) {
+    if (borg.trait[BI_MAXDEPTH] >= 98 && !borg.trait[BI_KING]
+        && !borg_fighting_unique && borg.trait[BI_CLASS] != CLASS_PRIEST) {
         /* Bail out to save the heal pots for Morgoth*/
         return (false);
     }
 
     /* Heal step two (300hp) */
-    if (pct_down > 50 && danger < borg_trait[BI_CURHP] + heal_heal
+    if (pct_down > 50 && danger < borg.trait[BI_CURHP] + heal_heal
         && (borg_use_staff_fail(sv_staff_healing)
             || (borg_fighting_evil_unique
                 && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
             borg_spell_fail(HEALING, allow_fail)
-            || (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
+            || (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                     || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_zap_rod(sv_rod_healing)
@@ -438,11 +439,11 @@ static bool borg_heal(int danger)
     }
 
     /* Healing step three (300hp).  */
-    if (pct_down > 60 && danger < borg_trait[BI_CURHP] + heal_heal
+    if (pct_down > 60 && danger < borg.trait[BI_CURHP] + heal_heal
         && ((borg_fighting_evil_unique
                 && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
-            (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
+            (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                  || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_spell_fail(HEALING, allow_fail)
@@ -459,13 +460,13 @@ static bool borg_heal(int danger)
 
     /* Healing.  First use of EZ_Heals
      */
-    if (pct_down > 65 && (danger < borg_trait[BI_CURHP] + heal_heal)
+    if (pct_down > 65 && (danger < borg.trait[BI_CURHP] + heal_heal)
         && ((borg_fighting_evil_unique
                 && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
             borg_spell_fail(HEALING, allow_fail)
             || borg_use_staff_fail(sv_staff_healing)
-            || (((!borg_trait[BI_ATELEPORT] && !borg_trait[BI_AESCAPE])
+            || (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                     || rod_good)
                 && borg_zap_rod(sv_rod_healing))
             || borg_quaff_potion(sv_potion_healing)
@@ -487,8 +488,8 @@ static bool borg_heal(int danger)
      * Emergency check is at the end of borg_caution() which is after the
      * borg_escape() routine.
      */
-    if (pct_down > 75 && danger > borg_trait[BI_CURHP]
-        && borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] <= 0
+    if (pct_down > 75 && danger > borg.trait[BI_CURHP]
+        && borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] <= 0
         && (borg_quaff_potion(sv_potion_healing)
             || borg_quaff_potion(sv_potion_star_healing)
             || borg_quaff_potion(sv_potion_life))) {
@@ -505,8 +506,8 @@ static bool borg_heal(int danger)
     /* Hack -- cure poison when poisoned
      * This was moved from borg_caution.
      */
-    if (borg_trait[BI_ISPOISONED]
-        && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)) {
+    if (borg.trait[BI_ISPOISONED]
+        && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2)) {
         if (borg_spell_fail(CURE_POISON, 60)
             || borg_spell_fail(HERBAL_CURING, 60)
             || borg_quaff_potion(sv_potion_cure_poison)
@@ -540,12 +541,12 @@ static bool borg_heal(int danger)
 
     /* Hack -- cure poison when poisoned CRITICAL CHECK
      */
-    if (borg_trait[BI_ISPOISONED]
-        && (borg_trait[BI_CURHP] < 2
-            || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20)) {
-        int sv_mana          = borg_trait[BI_CURSP];
+    if (borg.trait[BI_ISPOISONED]
+        && (borg.trait[BI_CURHP] < 2
+            || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 20)) {
+        int sv_mana          = borg.trait[BI_CURSP];
 
-        borg_trait[BI_CURSP] = borg_trait[BI_MAXSP];
+        borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
 
         if (borg_spell(CURE_POISON) || borg_spell(HERBAL_CURING)
             || borg_spell(HOLY_WORD) || borg_spell(HEALING)) {
@@ -557,7 +558,7 @@ static bool borg_heal(int danger)
 
             return (true);
         }
-        borg_trait[BI_CURSP] = sv_mana;
+        borg.trait[BI_CURSP] = sv_mana;
 
         /* Quaff healing pots to buy some time- in this emergency.  */
         if (borg_quaff_potion(sv_potion_cure_light)
@@ -573,7 +574,7 @@ static bool borg_heal(int danger)
          * but we did not use our ez_heal potions.  All other attempts to save
          * ourself have failed.  Use the ez_heal if I have it.
          */
-        if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20
+        if (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 20
             && (borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life)
                 || borg_quaff_potion(sv_potion_healing))) {
@@ -595,24 +596,24 @@ static bool borg_heal(int danger)
     }
 
     /* Hack -- cure wounds when bleeding, also critical check */
-    if (borg_trait[BI_ISCUT]
-        && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3
+    if (borg.trait[BI_ISCUT]
+        && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3
             || randint0(100) < 20)) {
         if (borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_potion(sv_potion_cure_light)
-            || borg_quaff_crit(borg_trait[BI_CURHP] < 10)
+            || borg_quaff_crit(borg.trait[BI_CURHP] < 10)
             || borg_spell(MINOR_HEALING)
             || borg_quaff_potion(sv_potion_cure_critical)) {
             return (true);
         }
     }
     /* bleeding and about to die CRITICAL CHECK*/
-    if (borg_trait[BI_ISCUT]
-        && ((borg_trait[BI_CURHP] < 2)
-            || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20)) {
-        int sv_mana          = borg_trait[BI_CURSP];
+    if (borg.trait[BI_ISCUT]
+        && ((borg.trait[BI_CURHP] < 2)
+            || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 20)) {
+        int sv_mana          = borg.trait[BI_CURSP];
 
-        borg_trait[BI_CURSP] = borg_trait[BI_MAXSP];
+        borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
 
         /* Quaff healing pots to buy some time- in this emergency.  */
         if (borg_quaff_potion(sv_potion_cure_light)
@@ -628,7 +629,7 @@ static bool borg_heal(int danger)
          * but we did not use our ez_heal potions.  All other attempts to save
          * ourselves have failed.  Use the ez_heal if I have it.
          */
-        if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 20
+        if (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 20
             && (borg_quaff_potion(sv_potion_healing)
                 || borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
@@ -646,7 +647,7 @@ static bool borg_heal(int danger)
 
             return (true);
         }
-        borg_trait[BI_CURSP] = sv_mana;
+        borg.trait[BI_CURSP] = sv_mana;
 
         /* Quaff unknown potions in this emergency.  We might get luck */
         if (borg_quaff_unknown())
@@ -759,11 +760,11 @@ static bool borg_heal(int danger)
  * mana near a mana-drainer.
  *
  * Whenever we are in a situation in which, even when fully healed, we
- * could die in a single round, we set the "goal_fleeing" flag, and if
- * we could die in two rounds, we set the "goal_leaving" flag.
+ * could die in a single round, we set the "goal.fleeing" flag, and if
+ * we could die in two rounds, we set the "goal.leaving" flag.
  *
  * In town, whenever we could die in two rounds if we were to stay still,
- * we set the "goal_leaving" flag.  In combination with the "retreat" and
+ * we set the "goal.leaving" flag.  In combination with the "retreat" and
  * the "back away" code, this should allow us to leave town before getting
  * into situations which might be fatal.
  *
@@ -806,29 +807,29 @@ bool borg_caution(void)
     /*** Notice "nasty" situations ***/
 
     /* About to run out of light is extremely nasty */
-    if (!borg_trait[BI_LIGHT] && borg_items[INVEN_LIGHT].timeout < 250)
+    if (!borg.trait[BI_LIGHT] && borg_items[INVEN_LIGHT].timeout < 250)
         nasty = true;
 
     /* Starvation is nasty */
-    if (borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISWEAK])
         nasty = true;
 
     /* Blind-ness is nasty */
-    if (borg_trait[BI_ISBLIND])
+    if (borg.trait[BI_ISBLIND])
         nasty = true;
 
     /* Confusion is nasty */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         nasty = true;
 
     /* Hallucination is nasty */
-    if (borg_trait[BI_ISIMAGE])
+    if (borg.trait[BI_ISIMAGE])
         nasty = true;
 
     /* if on level 100 and not ready for Morgoth, run */
-    if (borg_trait[BI_CDEPTH] == 100 && borg_t - borg_began < 10
+    if (borg.trait[BI_CDEPTH] == 100 && borg_t - borg_began < 10
         && !borg_morgoth_position) {
-        if (borg_ready_morgoth == 0 && !borg_trait[BI_KING]) {
+        if (borg.ready_morgoth == 0 && !borg.trait[BI_KING]) {
             /* teleport level up to 99 to finish uniques */
             if (borg_spell(TELEPORT_LEVEL)
                 || borg_read_scroll(sv_scroll_teleport_level)
@@ -838,12 +839,12 @@ bool borg_caution(void)
             }
 
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Note */
                 borg_note("# Leaving (Not ready for Morgoth now)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
         }
     }
@@ -855,26 +856,26 @@ bool borg_caution(void)
 
     /* Only allow three 'escapes' per level unless heading for morogoth
        or fighting a unique, then allow 85. */
-    if ((borg_escapes > 3 && !unique_on_level && !borg_ready_morgoth)
-        || borg_escapes > 55) {
+    if ((borg.escapes > 3 && !unique_on_level && !borg.ready_morgoth)
+        || borg.escapes > 55) {
         /* No leaving if going after questors */
-        if (borg_trait[BI_CDEPTH] <= 98) {
+        if (borg.trait[BI_CDEPTH] <= 98) {
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Note */
                 borg_note("# Leaving (Too many escapes)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
 
             /* Start fleeing */
-            if (!goal_fleeing && borg_escapes > 3) {
+            if (!borg.goal.fleeing && borg.escapes > 3) {
                 /* Note */
                 borg_note("# Fleeing (Too many escapes)");
 
                 /* Start fleeing */
-                goal_fleeing = true;
+                borg.goal.fleeing = true;
             }
         }
     }
@@ -885,30 +886,30 @@ bool borg_caution(void)
         borg_note("# Scary guy on level.");
 
         /* Start leaving */
-        if (!goal_leaving) {
+        if (!borg.goal.leaving) {
             /* Note */
             borg_note("# Leaving (Scary guy on level)");
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
 
         /* Start fleeing */
-        if (!goal_fleeing) {
+        if (!borg.goal.fleeing) {
             /* Note */
             borg_note("# Fleeing (Scary guy on level)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
 
         /* Return to town quickly after leaving town */
-        if (borg_trait[BI_CDEPTH] == 0)
-            goal_fleeing_to_town = true;
+        if (borg.trait[BI_CDEPTH] == 0)
+            borg.goal.fleeing_to_town = true;
     }
 
     /* Make a note if Ignoring monsters (no fighting) */
-    if (goal_ignoring) {
+    if (borg.goal.ignoring) {
         /* Note */
         borg_note("# Ignoring combat with monsters.");
     }
@@ -919,31 +920,31 @@ bool borg_caution(void)
     }
 
     /* Look around */
-    pos_danger = borg_danger(c_y, c_x, 1, true, false);
+    pos_danger = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
     /* Describe (briefly) the current situation */
     /* Danger (ignore stupid "fear" danger) */
     if ((((pos_danger > avoidance / 10)
-             || (pos_danger > borg_fear_region[c_y / 11][c_x / 11])
-             || borg_morgoth_position || borg_trait[BI_ISWEAK])
-            || borg_trait[BI_CDEPTH] == 100)
-        && !borg_trait[BI_KING]) {
+             || (pos_danger > borg_fear_region[borg.c.y / 11][borg.c.x / 11])
+             || borg_morgoth_position || borg.trait[BI_ISWEAK])
+            || borg.trait[BI_CDEPTH] == 100)
+        && !borg.trait[BI_KING]) {
         /* Describe (briefly) the current situation */
         borg_note(
             format("# Loc:%d,%d Dep:%d Lev:%d HP:%d/%d SP:%d/%d Danger:p=%d",
-                c_y, c_x, borg_trait[BI_CDEPTH], borg_trait[BI_CLEVEL],
-                borg_trait[BI_CURHP], borg_trait[BI_MAXHP],
-                borg_trait[BI_CURSP], borg_trait[BI_MAXSP], pos_danger));
-        if (borg_resistance) {
+                borg.c.y, borg.c.x, borg.trait[BI_CDEPTH], borg.trait[BI_CLEVEL],
+                borg.trait[BI_CURHP], borg.trait[BI_MAXHP],
+                borg.trait[BI_CURSP], borg.trait[BI_MAXSP], pos_danger));
+        if (borg.resistance) {
             borg_note(format(
                 "# Protected by Resistance (borg turns:%d; game turns:%d)",
-                borg_resistance / borg_game_ratio,
+                borg.resistance / borg_game_ratio,
                 player->timed[TMD_OPP_ACID]));
         }
-        if (borg_shield) {
+        if (borg.temp.shield) {
             borg_note("# Protected by Mystic Shield");
         }
-        if (borg_prot_from_evil) {
+        if (borg.temp.prot_from_evil) {
             borg_note("# Protected by PFE");
         }
         if (borg_morgoth_position) {
@@ -961,7 +962,7 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_glyph.num; i++) {
             /* Enqueue the grid */
-            if ((track_glyph.y[i] == c_y) && (track_glyph.x[i] == c_x)) {
+            if ((track_glyph.y[i] == borg.c.y) && (track_glyph.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on Glyph"));
             }
@@ -972,7 +973,7 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_less.num; i++) {
             /* Enqueue the grid */
-            if ((track_less.y[i] == c_y) && (track_less.x[i] == c_x)) {
+            if ((track_less.y[i] == borg.c.y) && (track_less.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on up-stairs"));
                 on_upstair = false;
@@ -984,7 +985,7 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_more.num; i++) {
             /* Enqueue the grid */
-            if ((track_more.y[i] == c_y) && (track_more.x[i] == c_x)) {
+            if ((track_more.y[i] == borg.c.y) && (track_more.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on dn-stairs"));
                 on_dnstair = false;
@@ -992,12 +993,12 @@ bool borg_caution(void)
         }
     }
 
-    if (!goal_fleeing) {
+    if (!borg.goal.fleeing) {
         /* Start being cautious and trying to not die */
-        if (borg_class == CLASS_MAGE && !borg_morgoth_position
-            && !borg_as_position && !borg_trait[BI_ISBLIND]
-            && !borg_trait[BI_ISCUT] && !borg_trait[BI_ISPOISONED]
-            && !borg_trait[BI_ISCONFUSED]) {
+        if (borg.trait[BI_CLASS] == CLASS_MAGE && !borg_morgoth_position
+            && !borg_as_position && !borg.trait[BI_ISBLIND]
+            && !borg.trait[BI_ISCUT] && !borg.trait[BI_ISPOISONED]
+            && !borg.trait[BI_ISCONFUSED]) {
             /* do some defense before running away */
             if (borg_defend(pos_danger))
                 return true;
@@ -1025,8 +1026,8 @@ bool borg_caution(void)
     }
 
     /* If I am waiting for recall,  & safe, then stay put. */
-    if (goal_recalling && borg_check_rest(c_y, c_x) && borg_trait[BI_CDEPTH]
-        && !borg_trait[BI_ISHUNGRY]) {
+    if (borg.goal.recalling && borg_check_rest(borg.c.y, borg.c.x)
+        && borg.trait[BI_CDEPTH] && !borg.trait[BI_ISHUNGRY]) {
         /* rest here until lift off */
         borg_note("# Resting for Recall.");
         borg_keypress('R');
@@ -1036,14 +1037,14 @@ bool borg_caution(void)
         borg_keypress(KC_ENTER);
 
         /* I'm not in a store */
-        borg_in_shop = false;
+        borg.in_shop = false;
 
         return (true);
     }
 
     /* If I am waiting for recall in town */
-    if (goal_recalling && goal_recalling <= (borg_game_ratio * 2)
-        && !borg_trait[BI_CDEPTH]) {
+    if (borg.goal.recalling && borg.goal.recalling <= (borg_game_ratio * 2)
+        && !borg.trait[BI_CDEPTH]) {
         if (borg_prep_leave_level_spells())
             return (true);
     }
@@ -1054,121 +1055,121 @@ bool borg_caution(void)
     /* Don't take off in the middle of a fight */
     /* just to restock and it is useless to restock */
     /* if you have just left town. */
-    if (borg_restock(borg_trait[BI_CDEPTH]) && !borg_fighting_unique
+    if (borg_restock(borg.trait[BI_CDEPTH]) && !borg_fighting_unique
         && (borg_time_town + (borg_t - borg_began)) > 200) {
         /* Start leaving */
-        if (!goal_leaving) {
+        if (!borg.goal.leaving) {
             /* Note */
             borg_note(format(
-                "# Leaving (restock) %s", borg_restock(borg_trait[BI_CDEPTH])));
+                "# Leaving (restock) %s", borg_restock(borg.trait[BI_CDEPTH])));
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
         /* Start fleeing */
-        if (!goal_fleeing && borg_trait[BI_ACCW] < 2 && borg_trait[BI_FOOD] > 3
-            && borg_trait[BI_AFUEL] > 2) {
+        if (!borg.goal.fleeing && borg.trait[BI_ACCW] < 2
+            && borg.trait[BI_FOOD] > 3 && borg.trait[BI_AFUEL] > 2) {
             /* Flee */
             borg_note(format(
-                "# Fleeing (restock) %s", borg_restock(borg_trait[BI_CDEPTH])));
+                "# Fleeing (restock) %s", borg_restock(borg.trait[BI_CDEPTH])));
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
     }
     /* Excessive danger */
-    else if (pos_danger > (borg_trait[BI_CURHP] * 2)) {
+    else if (pos_danger > (borg.trait[BI_CURHP] * 2)) {
         /* Start fleeing */
         /* do not flee level if going after Morgoth or fighting a unique */
-        if (!goal_fleeing && !borg_fighting_unique
-            && (borg_trait[BI_CLEVEL] < 50) && !vault_on_level
-            && (borg_trait[BI_CDEPTH] < 100 && borg_ready_morgoth == 1)) {
+        if (!borg.goal.fleeing && !borg_fighting_unique
+            && (borg.trait[BI_CLEVEL] < 50) && !vault_on_level
+            && (borg.trait[BI_CDEPTH] < 100 && borg.ready_morgoth == 1)) {
             /* Note */
             borg_note("# Fleeing (excessive danger)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
     }
     /* Potential danger (near death) in town */
-    else if (!borg_trait[BI_CDEPTH] && (pos_danger > borg_trait[BI_CURHP])
-             && (borg_trait[BI_CLEVEL] < 50)) {
+    else if (!borg.trait[BI_CDEPTH] && (pos_danger > borg.trait[BI_CURHP])
+             && (borg.trait[BI_CLEVEL] < 50)) {
         /* Flee now */
-        if (!goal_leaving) {
+        if (!borg.goal.leaving) {
             /* Flee! */
             borg_note("# Leaving (potential danger)");
 
             /* Start leaving */
-            goal_leaving = true;
+            borg.goal.leaving = true;
         }
     }
 
     /*** Stairs ***/
 
     /* Leaving or Fleeing, take stairs */
-    if (goal_leaving || goal_fleeing || scaryguy_on_level || goal_fleeing_lunal
-        || goal_fleeing_munchkin
+    if (borg.goal.leaving || borg.goal.fleeing || scaryguy_on_level
+        || borg.goal.fleeing_lunal || borg.goal.fleeing_munchkin
         || ((pos_danger > avoidance
-                || (borg_trait[BI_CLEVEL] < 5 && pos_danger > avoidance / 2))
-            && borg_grids[c_y][c_x].feat
+                || (borg.trait[BI_CLEVEL] < 5 && pos_danger > avoidance / 2))
+            && borg_grids[borg.c.y][borg.c.x].feat
                    == FEAT_LESS)) /* danger and standing on stair */
     {
-        if (borg_ready_morgoth == 0 && !borg_trait[BI_KING]) {
-            stair_less = true;
+        if (borg.ready_morgoth == 0 && !borg.trait[BI_KING]) {
+            borg.stair_less = true;
             if (scaryguy_on_level)
                 borg_note("# Fleeing and leaving the level. (scaryguy)");
-            if (goal_fleeing_lunal)
+            if (borg.goal.fleeing_lunal)
                 borg_note("# Fleeing and leaving the level. (fleeing_lunal)");
-            if (goal_fleeing_munchkin)
+            if (borg.goal.fleeing_munchkin)
                 borg_note(
                     "# Fleeing and leaving the level. (fleeing munchkin)");
-            if (pos_danger > avoidance && borg_trait[BI_CLEVEL] <= 49
-                && borg_grids[c_y][c_x].feat == FEAT_LESS)
+            if (pos_danger > avoidance && borg.trait[BI_CLEVEL] <= 49
+                && borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS)
                 borg_note("# Leaving level,  Some danger but I'm on a stair.");
         }
 
         if (scaryguy_on_level)
-            stair_less = true;
+            borg.stair_less = true;
 
         /* Only go down if fleeing or prepared */
-        if (goal_fleeing == true || goal_fleeing_lunal == true
-            || goal_fleeing_munchkin)
-            stair_more = true;
+        if (borg.goal.fleeing == true || borg.goal.fleeing_lunal == true
+            || borg.goal.fleeing_munchkin)
+            borg.stair_more = true;
 
-        if ((char *)NULL == borg_prepared(borg_trait[BI_CDEPTH] + 1))
-            stair_more = true;
+        if ((char *)NULL == borg_prepared(borg.trait[BI_CDEPTH] + 1))
+            borg.stair_more = true;
 
         if (!track_less.num
-            && (borg_trait[BI_CURLITE] == 0 || borg_trait[BI_ISHUNGRY]
-                || borg_trait[BI_ISWEAK] || borg_trait[BI_FOOD] < 2))
-            stair_more = false;
+            && (borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISHUNGRY]
+                || borg.trait[BI_ISWEAK] || borg.trait[BI_FOOD] < 2))
+            borg.stair_more = false;
 
         /* If I need to sell crap, then don't go down */
-        if (borg_trait[BI_CDEPTH] && borg_trait[BI_CLEVEL] < 25
-            && borg_trait[BI_GOLD] < 25000 && borg_count_sell() >= 13)
-            stair_more = false;
+        if (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 25
+            && borg.trait[BI_GOLD] < 25000 && borg_count_sell() >= 13)
+            borg.stair_more = false;
 
         /* Its ok to go one level deep if evading scary guy */
         if (scaryguy_on_level)
-            stair_more = true;
+            borg.stair_more = true;
 
         /* if fleeing town, then dive */
-        if (!borg_trait[BI_CDEPTH])
-            stair_more = true;
+        if (!borg.trait[BI_CDEPTH])
+            borg.stair_more = true;
     }
 
     /* Take stairs up */
-    if (stair_less) {
+    if (borg.stair_less) {
         /* Current grid */
-        borg_grid *ag = &borg_grids[c_y][c_x];
+        borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Usable stairs */
-        if (ag->feat == FEAT_LESS || borg_on_upstairs || on_upstair) {
+        if (ag->feat == FEAT_LESS || borg.on_upstairs || on_upstair) {
             /* Log it */
             borg_note(format("# Leaving via up stairs."));
 
             /* Take the stairs */
-            borg_on_dnstairs = true;
+            borg.on_dnstairs = true;
             borg_keypress('<');
 
             /* Success */
@@ -1177,20 +1178,20 @@ bool borg_caution(void)
     }
 
     /* Take stairs down */
-    if (stair_more && !goal_recalling) {
+    if (borg.stair_more && !borg.goal.recalling) {
         /* Current grid */
-        borg_grid *ag = &borg_grids[c_y][c_x];
+        borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Usable stairs */
-        if (ag->feat == FEAT_MORE || borg_on_dnstairs || on_dnstair) {
+        if (ag->feat == FEAT_MORE || borg.on_dnstairs || on_dnstair) {
             /* Do these if not lunal mode */
-            if (!goal_fleeing_lunal && !goal_fleeing_munchkin) {
+            if (!borg.goal.fleeing_lunal && !borg.goal.fleeing_munchkin) {
                 if (borg_prep_leave_level_spells())
                     return (true);
             }
 
             /* Take the stairs */
-            borg_on_upstairs = true;
+            borg.on_upstairs = true;
             borg_keypress('>');
 
             /* Success */
@@ -1201,27 +1202,27 @@ bool borg_caution(void)
     /*** Deal with critical situations ***/
 
     /* Hack -- require light */
-    if (!borg_trait[BI_CURLITE]
-        && !borg_trait[BI_LIGHT]) /* No Lite, AND Not Glowing */
+    if (!borg.trait[BI_CURLITE]
+        && !borg.trait[BI_LIGHT]) /* No Lite, AND Not Glowing */
     {
         enum borg_need need = borg_maintain_light();
         if (need == BORG_MET_NEED)
             return true;
-        else if ((need == BORG_UNMET_NEED) && borg_trait[BI_CDEPTH]) {
+        else if ((need == BORG_UNMET_NEED) && borg.trait[BI_CDEPTH]) {
             /* Flee for fuel */
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Flee */
                 borg_note("# Leaving (need fuel)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
         }
     }
 
     /* Hack -- prevent starvation */
-    if (borg_trait[BI_ISWEAK]) {
+    if (borg.trait[BI_ISWEAK]) {
         /* Attempt to satisfy hunger */
         if (borg_eat_food_any() || borg_spell(REMOVE_HUNGER)
             || borg_spell(HERBAL_CURING)) {
@@ -1235,36 +1236,36 @@ bool borg_caution(void)
             return (true);
 
         /* Flee for food */
-        if (borg_trait[BI_CDEPTH]) {
+        if (borg.trait[BI_CDEPTH]) {
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Flee */
                 borg_note("# Leaving (need food)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
 
             /* Start fleeing */
-            if (!goal_fleeing) {
+            if (!borg.goal.fleeing) {
                 /* Flee */
                 borg_note("# Fleeing (need food)");
 
                 /* Start fleeing */
-                goal_fleeing = true;
+                borg.goal.fleeing = true;
             }
         }
     }
 
     /* Prevent breeder explosions when low level */
-    if (breeder_level && borg_trait[BI_CLEVEL] < 15) {
+    if (breeder_level && borg.trait[BI_CLEVEL] < 15) {
         /* Start leaving */
-        if (!goal_fleeing) {
+        if (!borg.goal.fleeing) {
             /* Flee */
             borg_note("# Fleeing (breeder level)");
 
             /* Start fleeing */
-            goal_fleeing = true;
+            borg.goal.fleeing = true;
         }
     }
 
@@ -1275,8 +1276,8 @@ bool borg_caution(void)
     /* hop onto them in very few steps, try to head to them */
     /* out of desperation */
     if ((track_less.num || track_more.num)
-        && (goal_fleeing || scaryguy_on_level
-            || (pos_danger > avoidance && borg_trait[BI_CLEVEL] < 35))) {
+        && (borg.goal.fleeing || scaryguy_on_level
+            || (pos_danger > avoidance && borg.trait[BI_CLEVEL] < 35))) {
         int  y, x, i;
         int  b_j = -1;
         int  m;
@@ -1293,7 +1294,7 @@ bool borg_caution(void)
             ag = &borg_grids[y][x];
 
             /* How far is the nearest up stairs */
-            j = borg_distance(c_y, c_x, y, x);
+            j = distance(borg.c, loc(x, y));
 
             /* Skip stairs if a monster is on the stair */
             if (ag->kill)
@@ -1315,7 +1316,7 @@ bool borg_caution(void)
             ag = &borg_grids[y][x];
 
             /* How far is the nearest up stairs */
-            m = borg_distance(c_y, c_x, y, x);
+            m = distance(borg.c, loc(x, y));
 
             /* Skip stairs if a monster is on the stair */
             if (ag->kill)
@@ -1332,7 +1333,7 @@ bool borg_caution(void)
         /* If you are within a few (3) steps of the stairs */
         /* and you can take some damage to get there */
         /* go for it */
-        if (b_j < 3 && b_j != -1 && pos_danger < borg_trait[BI_CURHP]) {
+        if (b_j < 3 && b_j != -1 && pos_danger < borg.trait[BI_CURHP]) {
             borg_desperate = true;
             if (borg_flow_stair_less(GOAL_FLEE, false)) {
                 /* Note */
@@ -1359,11 +1360,11 @@ bool borg_caution(void)
 
         /* Low level guys tend to waste money reading the recall scrolls */
         if (b_j < 20 && b_j != -1 && scaryguy_on_level
-            && borg_trait[BI_CLEVEL] < 20) {
+            && borg.trait[BI_CLEVEL] < 20) {
             /* do not attempt it if an adjacent monster is faster than me */
             for (i = 0; i < 8; i++) {
-                x = c_x + ddx_ddd[i];
-                y = c_y + ddy_ddd[i];
+                x = borg.c.x + ddx_ddd[i];
+                y = borg.c.y + ddy_ddd[i];
 
                 /* check for bounds */
                 if (!square_in_bounds(cave, loc(x, y)))
@@ -1375,12 +1376,12 @@ bool borg_caution(void)
 
                 /* Access the monster and check it's speed */
                 if (borg_kills[borg_grids[y][x].kill].speed
-                    > borg_trait[BI_SPEED])
+                    > borg.trait[BI_SPEED])
                     safe = false;
             }
 
             /* Don't run from Grip or Fang */
-            if ((borg_trait[BI_CDEPTH] <= 5 && borg_trait[BI_CDEPTH] != 0
+            if ((borg.trait[BI_CDEPTH] <= 5 && borg.trait[BI_CDEPTH] != 0
                     && borg_fighting_unique)
                 || !safe) {
                 /* try to take them on, you cant outrun them */
@@ -1420,28 +1421,28 @@ bool borg_caution(void)
      * 3) we are in a Sea of Runes
      * 4) we are not in a vault
      */
-    if (((pos_danger > avoidance / 3 && !nasty && !borg_no_retreat)
+    if (((pos_danger > avoidance / 3 && !nasty && !borg.no_retreat)
             || (borg_surround && pos_danger != 0))
         && !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50)
-        && !borg_trait[BI_ISCONFUSED] && !square_isvault(cave, loc(c_x, c_y))
-        && borg_trait[BI_CURHP] < 500) {
+        && !borg.trait[BI_ISCONFUSED] && !square_isvault(cave, borg.c)
+        && borg.trait[BI_CURHP] < 500) {
         int d, b_d = -1;
         int r, b_r = -1;
         int b_p = -1, p1 = -1;
-        int b_x = c_x;
-        int b_y = c_y;
+        int b_x = borg.c.x;
+        int b_y = borg.c.y;
         int ii;
 
         /* Scan the useful viewable grids */
         for (j = 1; j < borg_view_n; j++) {
-            int x1 = c_x;
-            int y1 = c_y;
+            int x1 = borg.c.x;
+            int y1 = borg.c.y;
 
             int x2 = borg_view_x[j];
             int y2 = borg_view_y[j];
 
             /* Cant if confused: no way to predict motion */
-            if (borg_trait[BI_ISCONFUSED])
+            if (borg.trait[BI_ISCONFUSED])
                 continue;
 
             /* Require "floor" grids */
@@ -1449,13 +1450,13 @@ bool borg_caution(void)
                 continue;
 
             /* Try to avoid pillar dancing if at good health */
-            if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
+            if ((borg.trait[BI_CURHP] >= borg.trait[BI_MAXHP] * 7 / 10
                     && ((track_step.num > 2
                          && (track_step.y[track_step.num - 2] == y2
                              && track_step.x[track_step.num - 2] == x2
-                             && track_step.y[track_step.num - 3] == c_y
-                             && track_step.x[track_step.num - 3] == c_x))))
-                || time_this_panel >= 300)
+                             && track_step.y[track_step.num - 3] == borg.c.y
+                             && track_step.x[track_step.num - 3] == borg.c.x))))
+                || borg.time_this_panel >= 300)
                 continue;
 
             /* XXX -- Borgs in an unexplored hall (& with only a torch)
@@ -1517,18 +1518,18 @@ bool borg_caution(void)
                 ag = &borg_grids[y1][x1];
 
                 /* Lets make one more check that we are not bouncing */
-                if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
+                if ((borg.trait[BI_CURHP] >= borg.trait[BI_MAXHP] * 7 / 10
                         && ((track_step.num > 2
                              && (track_step.y[track_step.num - 2] == y1
                                  && track_step.x[track_step.num - 2] == x1
-                                 && track_step.y[track_step.num - 3] == c_y
-                                 && track_step.x[track_step.num - 3] == c_x))))
-                    || time_this_panel >= 300)
+                                 && track_step.y[track_step.num - 3] == borg.c.y
+                                 && track_step.x[track_step.num - 3] == borg.c.x))))
+                    || borg.time_this_panel >= 300)
                     break;
 
                 /* Require floor */
                 if (!borg_cave_floor_grid(ag)
-                    || (ag->feat == FEAT_LAVA && !borg_trait[BI_IFIRE]))
+                    || (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE]))
                     break;
 
                 /* Require it to be somewhat close */
@@ -1544,8 +1545,8 @@ bool borg_caution(void)
                  * surrounded. */
                 if (r == 1) {
                     /* Not surrounded or surrounded and ignoring*/
-                    if (!borg_surround || (borg_surround && goal_ignoring)) {
-                        if (p1 >= borg_trait[BI_CURHP] * 4 / 10)
+                    if (!borg_surround || (borg_surround && borg.goal.ignoring)) {
+                        if (p1 >= borg.trait[BI_CURHP] * 4 / 10)
                             break;
 
                         /* Ought to be worth it */;
@@ -1554,12 +1555,12 @@ bool borg_caution(void)
                     } else
                     /* Surrounded, try to back-up */
                     {
-                        if (borg_trait[BI_CLEVEL] >= 20) {
-                            if (p1 >= (b_r <= 5 ? borg_trait[BI_CURHP] * 15 / 10
-                                                : borg_trait[BI_CURHP]))
+                        if (borg.trait[BI_CLEVEL] >= 20) {
+                            if (p1 >= (b_r <= 5 ? borg.trait[BI_CURHP] * 15 / 10
+                                                : borg.trait[BI_CURHP]))
                                 break;
                         } else {
-                            if (p1 >= borg_trait[BI_CURHP] * 4)
+                            if (p1 >= borg.trait[BI_CURHP] * 4)
                                 break;
                         }
                     }
@@ -1583,8 +1584,8 @@ bool borg_caution(void)
                             continue;
 
                         /* Check distance -- 1 grid away */
-                        if (borg_distance(kill->y, kill->x, y1, x1) <= 1
-                            && kill->speed > borg_trait[BI_SPEED]
+                        if (distance(kill->pos, loc(x1, y1)) <= 1
+                            && kill->speed > borg.trait[BI_SPEED]
                             && !borg_surround)
                             break;
                     }
@@ -1617,22 +1618,22 @@ bool borg_caution(void)
         /* Retreat */
         if (b_r >= 0) {
             /* Save direction */
-            b_d = borg_goto_dir(c_y, c_x, b_y, b_x);
+            b_d = borg_goto_dir(borg.c.y, borg.c.x, b_y, b_x);
 
             /* Hack -- set goal */
-            g_x = c_x + ddx[b_d];
-            g_y = c_y + ddy[b_d];
+            borg.goal.g.x = borg.c.x + ddx[b_d];
+            borg.goal.g.y = borg.c.y + ddy[b_d];
 
             /* Note */
             borg_note(format(
                 "# Retreating to %d,%d (distance %d) via %d,%d (%d > %d)", b_y,
-                b_x, b_r, g_y, g_x, pos_danger, b_p));
+                b_x, b_r, borg.goal.g.y, borg.goal.g.x, pos_danger, b_p));
 
             /* Strategic retreat */
             borg_keypress(I2D(b_d));
 
             /* Reset my Movement and Flow Goals */
-            goal = 0;
+            borg.goal.type = 0;
 
             /* Success */
             return (true);
@@ -1644,10 +1645,10 @@ bool borg_caution(void)
     /* Attempt to escape via spells */
     if (borg_escape(pos_danger)) {
         /* increment the escapes this level counter */
-        borg_escapes++;
+        borg.escapes++;
 
         /* Clear any Flow queues */
-        goal = 0;
+        borg.goal.type = 0;
 
         /* Success */
         return (true);
@@ -1662,11 +1663,11 @@ bool borg_caution(void)
      * 5) we are not in a vault
      * 6) loads of HP
      */
-    if (((pos_danger > (avoidance * 4 / 10) && !nasty && !borg_no_retreat)
+    if (((pos_danger > (avoidance * 4 / 10) && !nasty && !borg.no_retreat)
             || (borg_surround && pos_danger != 0))
         && !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50)
-        && !borg_trait[BI_ISCONFUSED] && !square_isvault(cave, loc(c_x, c_y))
-        && borg_trait[BI_CURHP] < 500) {
+        && !borg.trait[BI_ISCONFUSED] && !square_isvault(cave, borg.c)
+        && borg.trait[BI_CURHP] < 500) {
         int  i = -1, b_i = -1;
         int  k = -1, b_k = -1;
         int  f = -1, b_f = -1;
@@ -1682,18 +1683,18 @@ bool borg_caution(void)
             b_k = (b_k * 12 / 10);
 
         /* Check the freedom */
-        b_f = borg_freedom(c_y, c_x);
+        b_f = borg_freedom(borg.c.y, borg.c.x);
 
         /* Attempt to find a better grid */
         for (i = 0; i < 8; i++) {
-            int x = c_x + ddx_ddd[i];
-            int y = c_y + ddy_ddd[i];
+            int x = borg.c.x + ddx_ddd[i];
+            int y = borg.c.y + ddy_ddd[i];
 
             /* Access the grid */
             borg_grid *ag = &borg_grids[y][x];
 
             /* Cant if confused: no way to predict motion */
-            if (borg_trait[BI_ISCONFUSED])
+            if (borg.trait[BI_ISCONFUSED])
                 continue;
 
             /* Skip walls/doors */
@@ -1714,13 +1715,13 @@ bool borg_caution(void)
 
             /* If i was here last round and 3 rounds ago, suggesting a "bounce"
              */
-            if ((borg_trait[BI_CURHP] >= borg_trait[BI_MAXHP] * 7 / 10
+            if ((borg.trait[BI_CURHP] >= borg.trait[BI_MAXHP] * 7 / 10
                     && ((track_step.num > 2
                          && (track_step.y[track_step.num - 2] == y
                              && track_step.x[track_step.num - 2] == x
-                             && track_step.y[track_step.num - 3] == c_y
-                             && track_step.x[track_step.num - 3] == c_x))))
-                || time_this_panel >= 300)
+                             && track_step.y[track_step.num - 3] == borg.c.y
+                             && track_step.x[track_step.num - 3] == borg.c.x))))
+                || borg.time_this_panel >= 300)
                 continue;
 
             /*
@@ -1742,13 +1743,13 @@ bool borg_caution(void)
                     continue;
 
                 /* Check distance -- 1 grid away */
-                if (borg_distance(kill->y, kill->x, y, x) <= 1
+                if (distance(kill->pos, loc(x, y)) <= 1
                     && !borg_surround)
                     adjacent_monster = true;
 
                 /* Check distance -- 2 grids away and he is faster than me */
-                if (borg_distance(kill->y, kill->x, y, x) <= 2
-                    && kill->speed > borg_trait[BI_SPEED] && !borg_surround)
+                if (distance(kill->pos, loc(x, y)) <= 2
+                    && kill->speed > borg.trait[BI_SPEED] && !borg_surround)
                     adjacent_monster = true;
             }
 
@@ -1770,7 +1771,7 @@ bool borg_caution(void)
              * the new grid is close to the danger of my current grid, I'll stay
              * and fight.
              */
-            if (borg_trait[BI_MAXCLEVEL] >= 35 && k > b_k * 6 / 10)
+            if (borg.trait[BI_MAXCLEVEL] >= 35 && k > b_k * 6 / 10)
                 continue;
 
             /* Skip this grid if it is not really worth backing up.  If the
@@ -1778,7 +1779,7 @@ bool borg_caution(void)
              * I'll stay and fight unless I am low level and there is an
              * adjacent monster.
              */
-            if (borg_trait[BI_MAXCLEVEL] < 35 && adjacent_monster == false
+            if (borg.trait[BI_MAXCLEVEL] < 35 && adjacent_monster == false
                 && k > b_k * 8 / 10)
                 continue;
 
@@ -1799,15 +1800,15 @@ bool borg_caution(void)
             /* Danger is the same, so look at the nature of the grid */
             if (b_k == k) {
                 /* If I am low level, reward backing-up if safe */
-                if (borg_trait[BI_CLEVEL] <= 10 && borg_trait[BI_CDEPTH]
-                    && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP]
-                        || borg_trait[BI_CURSP] < borg_trait[BI_MAXSP])) {
+                if (borg.trait[BI_CLEVEL] <= 10 && borg.trait[BI_CDEPTH]
+                    && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP]
+                        || borg.trait[BI_CURSP] < borg.trait[BI_MAXSP])) {
                     /* do consider the retreat */
                 } else {
                     /* Freedom of my grid is better than the next grid
                      * so stay put and fight.
                      */
-                    if (b_f > f || borg_trait[BI_CDEPTH] >= 85)
+                    if (b_f > f || borg.trait[BI_CDEPTH] >= 85)
                         continue;
                 }
             }
@@ -1821,18 +1822,18 @@ bool borg_caution(void)
         /* Back away */
         if (b_i >= 0) {
             /* Hack -- set goal */
-            g_x = c_x + ddx_ddd[b_i];
-            g_y = c_y + ddy_ddd[b_i];
+            borg.goal.g.x = borg.c.x + ddx_ddd[b_i];
+            borg.goal.g.y = borg.c.y + ddy_ddd[b_i];
 
             /* Note */
             borg_note(format(
-                "# Backing up to %d,%d (%d > %d)", g_x, g_y, pos_danger, g_k));
+                "# Backing up to %d,%d (%d > %d)", borg.goal.g.x, borg.goal.g.y, pos_danger, g_k));
 
             /* Back away from danger */
             borg_keypress(I2D(ddd[b_i]));
 
             /* Reset my Movement and Flow Goals */
-            goal = 0;
+            borg.goal.type = 0;
 
             /* Success */
             return (true);
@@ -1842,8 +1843,8 @@ bool borg_caution(void)
     /*** Cures ***/
 
     /* cure confusion, second check, first (slightly different) in borg_heal */
-    if (borg_trait[BI_ISCONFUSED]) {
-        if (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 300
+    if (borg.trait[BI_ISCONFUSED]) {
+        if (borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] >= 300
             && (borg_quaff_potion(sv_potion_healing)
                 || borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
@@ -1861,10 +1862,10 @@ bool borg_caution(void)
     }
 
     /* Hack -- cure fear when afraid */
-    if ((borg_trait[BI_ISAFRAID] && !borg_trait[BI_CRSFEAR])
+    if ((borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR])
         && (randint0(100) < 70
-            || (borg_class == CLASS_WARRIOR
-                && borg_trait[BI_AMISSILES] <= 0))) {
+            || (borg.trait[BI_CLASS] == CLASS_WARRIOR
+                && borg.trait[BI_AMISSILES] <= 0))) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_boldness)
             || borg_quaff_potion(sv_potion_heroism)
@@ -1884,52 +1885,52 @@ bool borg_caution(void)
     /*** Note impending death XXX XXX XXX ***/
 
     /* Flee from low hit-points */
-    if (((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 3)
-            || ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
-                && borg_trait[BI_CURHP] < (borg_trait[BI_CLEVEL] * 3)))
-        && (borg_trait[BI_ACCW] < 3) && (borg_trait[BI_AHEAL] < 1)) {
+    if (((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3)
+            || ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2)
+                && borg.trait[BI_CURHP] < (borg.trait[BI_CLEVEL] * 3)))
+        && (borg.trait[BI_ACCW] < 3) && (borg.trait[BI_AHEAL] < 1)) {
         /* Flee from low hit-points */
-        if (borg_trait[BI_CDEPTH] && (randint0(100) < 25)) {
+        if (borg.trait[BI_CDEPTH] && (randint0(100) < 25)) {
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Flee */
                 borg_note("# Leaving (low hit-points)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
             /* Start fleeing */
-            if (!goal_fleeing) {
+            if (!borg.goal.fleeing) {
                 /* Flee */
                 borg_note("# Fleeing (low hit-points)");
 
                 /* Start fleeing */
-                goal_fleeing = true;
+                borg.goal.fleeing = true;
             }
         }
     }
 
     /* Flee from bleeding wounds or poison and no heals */
-    if ((borg_trait[BI_ISCUT] || borg_trait[BI_ISPOISONED])
-        && (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)) {
+    if ((borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED])
+        && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2)) {
         /* Flee from bleeding wounds */
-        if (borg_trait[BI_CDEPTH] && (randint0(100) < 25)) {
+        if (borg.trait[BI_CDEPTH] && (randint0(100) < 25)) {
             /* Start leaving */
-            if (!goal_leaving) {
+            if (!borg.goal.leaving) {
                 /* Flee */
                 borg_note("# Leaving (bleeding/poison)");
 
                 /* Start leaving */
-                goal_leaving = true;
+                borg.goal.leaving = true;
             }
 
             /* Start fleeing */
-            if (!goal_fleeing) {
+            if (!borg.goal.fleeing) {
                 /* Flee */
                 borg_note("# Fleeing (bleeding/poison)");
 
                 /* Start fleeing */
-                goal_fleeing = true;
+                borg.goal.fleeing = true;
             }
         }
     }
@@ -1938,17 +1939,17 @@ bool borg_caution(void)
      * but we did not use our ez_heal potions.  All other attempts to save
      * ourselves have failed.  Use the ez_heal if I have it.
      */
-    if ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 10
+    if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 10
             || /* dangerously low HP -OR-*/
-            (pos_danger > borg_trait[BI_CURHP] && /* extreme danger -AND-*/
-                (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] <= 2
-                    && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4))
+            (pos_danger > borg.trait[BI_CURHP] && /* extreme danger -AND-*/
+                (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] <= 2
+                    && borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 4))
             || /* low on escapes */
-            (borg_trait[BI_AEZHEAL] > 5
-                && borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4)
+            (borg.trait[BI_AEZHEAL] > 5
+                && borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 4)
             || /* moderate danger, lots of heals */
-            (borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] >= 600
-                && borg_fighting_unique && borg_trait[BI_CDEPTH] >= 85))
+            (borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] >= 600
+                && borg_fighting_unique && borg.trait[BI_CDEPTH] >= 85))
         && /* moderate danger, unique, deep */
         (borg_quaff_potion(sv_potion_star_healing)
             || borg_quaff_potion(sv_potion_healing)
@@ -1958,8 +1959,9 @@ bool borg_caution(void)
     }
 
     /* Hack -- use "recall" to flee if possible */
-    if (goal_fleeing && !goal_fleeing_munchkin && !goal_fleeing_to_town
-        && borg_trait[BI_CDEPTH] >= 1 && (borg_recall())) {
+    if (borg.goal.fleeing && !borg.goal.fleeing_munchkin
+        && !borg.goal.fleeing_to_town && borg.trait[BI_CDEPTH] >= 1
+        && (borg_recall())) {
         /* Note */
         borg_note("# Fleeing the level (recall)");
 
@@ -1970,10 +1972,10 @@ bool borg_caution(void)
     /* If I am waiting for recall,and in danger, buy time with
      * phase and cure_anythings.
      */
-    if (goal_recalling && (pos_danger > avoidance * 2)) {
-        if (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISBLIND]
-            && borg_trait[BI_MAXSP] > 60
-            && borg_trait[BI_CURSP] < (borg_trait[BI_CURSP] / 4)
+    if (borg.goal.recalling && (pos_danger > avoidance * 2)) {
+        if (!borg.trait[BI_ISCONFUSED] && !borg.trait[BI_ISBLIND]
+            && borg.trait[BI_MAXSP] > 60
+            && borg.trait[BI_CURSP] < (borg.trait[BI_CURSP] / 4)
             && (borg_quaff_potion(sv_potion_restore_mana)
                 || borg_activate_item(act_restore_mana))) {
             borg_note("# Buying time waiting for Recall.(1)");
@@ -1989,7 +1991,7 @@ bool borg_caution(void)
             return (true);
         }
 
-        if ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] < 100)
+        if ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] < 100)
             && (borg_quaff_crit(true)
                 || borg_quaff_potion(sv_potion_cure_serious)
                 || borg_quaff_potion(sv_potion_cure_light))) {
@@ -1997,7 +1999,7 @@ bool borg_caution(void)
             return (true);
         }
 
-        if ((borg_trait[BI_MAXHP] - borg_trait[BI_CURHP] > 150)
+        if ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] > 150)
             && (borg_zap_rod(sv_rod_healing)
                 || borg_quaff_potion(sv_potion_healing)
                 || borg_quaff_potion(sv_potion_star_healing)
@@ -2012,8 +2014,8 @@ bool borg_caution(void)
     /* if I am gonna die next round, and I have no way to escape
      * use the unknown stuff (if I am low level).
      */
-    if (pos_danger > (borg_trait[BI_CURHP] * 4) && borg_trait[BI_CLEVEL] < 20
-        && !borg_trait[BI_MAXSP]) {
+    if (pos_danger > (borg.trait[BI_CURHP] * 4) && borg.trait[BI_CLEVEL] < 20
+        && !borg.trait[BI_MAXSP]) {
         if (borg_use_unknown() || borg_read_unknown() || borg_quaff_unknown()
             || borg_eat_unknown())
             return (true);

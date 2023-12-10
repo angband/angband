@@ -114,11 +114,11 @@ static bool borg_enchant_to_a(void)
     int a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!my_need_enchant_to_a)
+    if (!borg.need_enchant_to_a)
         return (false);
 
     /* Need "enchantment" ability */
-    if ((!borg_trait[BI_AENCH_ARM]) && (!borg_trait[BI_AENCH_SARM]))
+    if ((!borg.trait[BI_AENCH_ARM]) && (!borg.trait[BI_AENCH_SARM]))
         return (false);
 
     /* Look for armor that needs enchanting */
@@ -138,7 +138,7 @@ static bool borg_enchant_to_a(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_ARMOUR, 65)
-            || borg_trait[BI_AENCH_SARM] >= 1) {
+            || borg.trait[BI_AENCH_SARM] >= 1) {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT])
                 continue;
         } else {
@@ -182,11 +182,11 @@ static bool borg_enchant_to_h(void)
     int a, s_a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!my_need_enchant_to_h && !enchant_weapon_swap_to_h)
+    if (!borg.need_enchant_to_h && !enchant_weapon_swap_to_h)
         return (false);
 
     /* Need "enchantment" ability */
-    if ((!borg_trait[BI_AENCH_TOH]) && (!borg_trait[BI_AENCH_SWEP]))
+    if ((!borg.trait[BI_AENCH_TOH]) && (!borg.trait[BI_AENCH_SWEP]))
         return (false);
 
     /* Look for a weapon that needs enchanting */
@@ -210,7 +210,7 @@ static bool borg_enchant_to_h(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-            || borg_trait[BI_AENCH_SWEP] >= 1) {
+            || borg.trait[BI_AENCH_SWEP] >= 1) {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT])
                 continue;
         } else {
@@ -231,7 +231,7 @@ static bool borg_enchant_to_h(void)
          * store them instead of wasting them on the sling.
          */
         if (i == INVEN_BOW && /* bow */
-            borg_trait[BI_AMMO_POWER] < 3 && /* 3x shooter */
+            borg.trait[BI_AMMO_POWER] < 3 && /* 3x shooter */
             (!item->art_idx && !item->ego_idx)) /* Not artifact or ego */
             continue;
 
@@ -254,7 +254,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-                || borg_trait[BI_AENCH_SWEP] >= 1) {
+                || borg.trait[BI_AENCH_SWEP] >= 1) {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT])
                     skip = true;
             } else {
@@ -279,7 +279,7 @@ static bool borg_enchant_to_h(void)
             /* Only enchant ammo if we have a good shooter,
              * otherwise, store the enchants in the home.
              */
-            if (borg_trait[BI_AMMO_POWER] < 3
+            if (borg.trait[BI_AMMO_POWER] < 3
                 || (!borg_items[INVEN_BOW].art_idx
                     && !borg_items[INVEN_BOW].ego_idx))
                 continue;
@@ -293,7 +293,7 @@ static bool borg_enchant_to_h(void)
                 continue;
 
             /* Make sure it is the right type if missile */
-            if (item->tval != borg_trait[BI_AMMO_TVAL])
+            if (item->tval != borg.trait[BI_AMMO_TVAL])
                 continue;
 
             /* Obtain the bonus  */
@@ -301,7 +301,7 @@ static bool borg_enchant_to_h(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-                || borg_trait[BI_AENCH_SWEP] >= 1) {
+                || borg.trait[BI_AENCH_SWEP] >= 1) {
                 if (a >= 10)
                     continue;
             } else {
@@ -346,11 +346,11 @@ static bool borg_enchant_to_d(void)
     int a, s_a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!my_need_enchant_to_d && !enchant_weapon_swap_to_d)
+    if (!borg.need_enchant_to_d && !enchant_weapon_swap_to_d)
         return (false);
 
     /* Need "enchantment" ability */
-    if ((!borg_trait[BI_AENCH_TOD]) && (!borg_trait[BI_AENCH_SWEP]))
+    if ((!borg.trait[BI_AENCH_TOD]) && (!borg.trait[BI_AENCH_SWEP]))
         return (false);
 
     /* Look for a weapon that needs enchanting */
@@ -374,7 +374,7 @@ static bool borg_enchant_to_d(void)
 
         /* Skip "boring" items */
         if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-            || borg_trait[BI_AENCH_SWEP] >= 1) {
+            || borg.trait[BI_AENCH_SWEP] >= 1) {
             if (a >= borg_cfg[BORG_ENCHANT_LIMIT])
                 continue;
         } else {
@@ -395,7 +395,7 @@ static bool borg_enchant_to_d(void)
          * store them instead of wasting them on the sling.
          */
         if (i == INVEN_BOW && /* bow */
-            borg_trait[BI_AMMO_POWER] < 3 && /* 3x shooter */
+            borg.trait[BI_AMMO_POWER] < 3 && /* 3x shooter */
             (!item->art_idx && !item->ego_idx)) /* Not artifact or ego */
             continue;
 
@@ -418,7 +418,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip "boring" items */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-                || borg_trait[BI_AENCH_SWEP] >= 1) {
+                || borg.trait[BI_AENCH_SWEP] >= 1) {
                 if (s_a >= borg_cfg[BORG_ENCHANT_LIMIT])
                     skip = true;
             } else {
@@ -443,7 +443,7 @@ static bool borg_enchant_to_d(void)
             /* Only enchant ammo if we have a good shooter,
              * otherwise, store the enchants in the home.
              */
-            if (borg_trait[BI_AMMO_POWER] < 3
+            if (borg.trait[BI_AMMO_POWER] < 3
                 || (!borg_items[INVEN_BOW].art_idx
                     && !borg_items[INVEN_BOW].ego_idx))
                 continue;
@@ -451,7 +451,7 @@ static bool borg_enchant_to_d(void)
             /* Only enchant ammo if we have a good shooter,
              * otherwise, store the enchants in the home.
              */
-            if (borg_trait[BI_AMMO_POWER] < 3)
+            if (borg.trait[BI_AMMO_POWER] < 3)
                 continue;
 
             /* Only enchant if qty >= 5 */
@@ -463,7 +463,7 @@ static bool borg_enchant_to_d(void)
                 continue;
 
             /* Make sure it is the right type if missile */
-            if (item->tval != borg_trait[BI_AMMO_TVAL])
+            if (item->tval != borg.trait[BI_AMMO_TVAL])
                 continue;
 
             /* Obtain the bonus  */
@@ -471,7 +471,7 @@ static bool borg_enchant_to_d(void)
 
             /* Skip items that are already enchanted */
             if (borg_spell_okay_fail(ENCHANT_WEAPON, 65)
-                || borg_trait[BI_AENCH_SWEP] >= 1) {
+                || borg.trait[BI_AENCH_SWEP] >= 1) {
                 if (a >= 10)
                     continue;
             } else {
@@ -516,11 +516,11 @@ static bool borg_brand_weapon(void)
     int a, b_a = 0;
 
     /* Nothing to brand */
-    if (!my_need_brand_weapon)
+    if (!borg.need_brand_weapon)
         return (false);
 
     /* Need "brand" ability */
-    if (!borg_trait[BI_ABRAND])
+    if (!borg.trait[BI_ABRAND])
         return (false);
 
     /* look through inventory for ammo */
@@ -536,7 +536,7 @@ static bool borg_brand_weapon(void)
             continue;
 
         /* Make sure it is the right type if missile */
-        if (item->tval != borg_trait[BI_AMMO_TVAL])
+        if (item->tval != borg.trait[BI_AMMO_TVAL])
             continue;
 
         /* Obtain the bonus  */
@@ -578,13 +578,13 @@ static bool borg_brand_weapon(void)
 bool borg_enchanting(void)
 {
     /* Forbid blind/confused */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and finish the job later */
-    if ((borg_t - borg_began > 5500 && borg_trait[BI_CDEPTH] >= 1)
-        || (borg_t - borg_began > 3501 && borg_trait[BI_CDEPTH] == 0))
+    if ((borg_t - borg_began > 5500 && borg.trait[BI_CDEPTH] >= 1)
+        || (borg_t - borg_began > 3501 && borg.trait[BI_CDEPTH] == 0))
         return (false);
 
     /* Remove Curses */
@@ -596,7 +596,7 @@ bool borg_enchanting(void)
         return (true);
 
     /* Only in town */
-    if (borg_trait[BI_CDEPTH])
+    if (borg.trait[BI_CDEPTH])
         return (false);
 
     /* Enchant things */

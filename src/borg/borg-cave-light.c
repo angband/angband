@@ -87,118 +87,118 @@ void borg_update_light(void)
     borg_light_n = 0;
 
     /* Hack -- Player has no lite */
-    if (borg_trait[BI_CURLITE] <= 0)
+    if (borg.trait[BI_CURLITE] <= 0)
         return;
 
     /*** Collect the new "lite" grids ***/
 
     /* Player grid */
-    borg_cave_light_hack(c_y, c_x);
+    borg_cave_light_hack(borg.c.y, borg.c.x);
 
     /* Radius 1 -- torch radius */
-    if (borg_trait[BI_CURLITE] >= 1) {
+    if (borg.trait[BI_CURLITE] >= 1) {
         /* Adjacent grid */
-        borg_cave_light_hack(c_y + 1, c_x);
-        borg_cave_light_hack(c_y - 1, c_x);
-        borg_cave_light_hack(c_y, c_x + 1);
-        borg_cave_light_hack(c_y, c_x - 1);
+        borg_cave_light_hack(borg.c.y + 1, borg.c.x);
+        borg_cave_light_hack(borg.c.y - 1, borg.c.x);
+        borg_cave_light_hack(borg.c.y, borg.c.x + 1);
+        borg_cave_light_hack(borg.c.y, borg.c.x - 1);
 
         /* Diagonal grids */
-        borg_cave_light_hack(c_y + 1, c_x + 1);
-        borg_cave_light_hack(c_y + 1, c_x - 1);
-        borg_cave_light_hack(c_y - 1, c_x + 1);
-        borg_cave_light_hack(c_y - 1, c_x - 1);
+        borg_cave_light_hack(borg.c.y + 1, borg.c.x + 1);
+        borg_cave_light_hack(borg.c.y + 1, borg.c.x - 1);
+        borg_cave_light_hack(borg.c.y - 1, borg.c.x + 1);
+        borg_cave_light_hack(borg.c.y - 1, borg.c.x - 1);
     }
 
     /* Radius 2 -- lantern radius */
-    if (borg_trait[BI_CURLITE] >= 2 && c_y + 2 < AUTO_MAX_Y && c_y - 2 > 0
-        && c_x + 2 < AUTO_MAX_X && c_x - 2 > 0) {
+    if (borg.trait[BI_CURLITE] >= 2 && borg.c.y + 2 < AUTO_MAX_Y && borg.c.y - 2 > 0
+        && borg.c.x + 2 < AUTO_MAX_X && borg.c.x - 2 > 0) {
         /* South of the player */
-        if (borg_cave_floor_bold(c_y + 2, c_x)) {
-            borg_cave_light_hack(c_y + 2, c_x);
-            borg_cave_light_hack(c_y + 2, c_x + 2);
-            borg_cave_light_hack(c_y + 2, c_x - 2);
+        if (borg_cave_floor_bold(borg.c.y + 2, borg.c.x)) {
+            borg_cave_light_hack(borg.c.y + 2, borg.c.x);
+            borg_cave_light_hack(borg.c.y + 2, borg.c.x + 2);
+            borg_cave_light_hack(borg.c.y + 2, borg.c.x - 2);
         }
 
         /* North of the player */
-        if (borg_cave_floor_bold(c_y - 2, c_x)) {
-            borg_cave_light_hack(c_y - 2, c_x);
-            borg_cave_light_hack(c_y - 2, c_x + 2);
-            borg_cave_light_hack(c_y - 2, c_x - 2);
+        if (borg_cave_floor_bold(borg.c.y - 2, borg.c.x)) {
+            borg_cave_light_hack(borg.c.y - 2, borg.c.x);
+            borg_cave_light_hack(borg.c.y - 2, borg.c.x + 2);
+            borg_cave_light_hack(borg.c.y - 2, borg.c.x - 2);
         }
 
         /* East of the player */
-        if (borg_cave_floor_bold(c_y, c_x + 2)) {
-            borg_cave_light_hack(c_y, c_x + 2);
-            borg_cave_light_hack(c_y + 1, c_x + 2);
-            borg_cave_light_hack(c_y - 1, c_x + 2);
+        if (borg_cave_floor_bold(borg.c.y, borg.c.x + 2)) {
+            borg_cave_light_hack(borg.c.y, borg.c.x + 2);
+            borg_cave_light_hack(borg.c.y + 1, borg.c.x + 2);
+            borg_cave_light_hack(borg.c.y - 1, borg.c.x + 2);
         }
 
         /* West of the player */
-        if (borg_cave_floor_bold(c_y, c_x - 2)) {
-            borg_cave_light_hack(c_y, c_x - 2);
-            borg_cave_light_hack(c_y + 2, c_x - 2);
-            borg_cave_light_hack(c_y - 2, c_x - 2);
+        if (borg_cave_floor_bold(borg.c.y, borg.c.x - 2)) {
+            borg_cave_light_hack(borg.c.y, borg.c.x - 2);
+            borg_cave_light_hack(borg.c.y + 2, borg.c.x - 2);
+            borg_cave_light_hack(borg.c.y - 2, borg.c.x - 2);
         }
     }
 
     /* Radius 3+ -- artifact radius */
-    if (borg_trait[BI_CURLITE] >= 3 && c_y + 3 < AUTO_MAX_Y && c_y - 3 > 0
-        && c_x + 3 < AUTO_MAX_X && c_x - 3 > 0) {
+    if (borg.trait[BI_CURLITE] >= 3 && borg.c.y + 3 < AUTO_MAX_Y && borg.c.y - 3 > 0
+        && borg.c.x + 3 < AUTO_MAX_X && borg.c.x - 3 > 0) {
         int d, p;
 
         /* Maximal radius */
-        p = borg_trait[BI_CURLITE];
+        p = borg.trait[BI_CURLITE];
 
         /* Paranoia -- see "LITE_MAX" */
         if (p > 5)
             p = 5;
 
         /* South-East of the player */
-        if (borg_cave_floor_bold(c_y + 3, c_x + 3)) {
-            borg_cave_light_hack(c_y + 3, c_x + 3);
+        if (borg_cave_floor_bold(borg.c.y + 3, borg.c.x + 3)) {
+            borg_cave_light_hack(borg.c.y + 3, borg.c.x + 3);
         }
 
         /* South-West of the player */
-        if (borg_cave_floor_bold(c_y + 3, c_x - 3)) {
-            borg_cave_light_hack(c_y + 3, c_x - 3);
+        if (borg_cave_floor_bold(borg.c.y + 3, borg.c.x - 3)) {
+            borg_cave_light_hack(borg.c.y + 3, borg.c.x - 3);
         }
 
         /* North-East of the player */
-        if (borg_cave_floor_bold(c_y - 3, c_x + 3)) {
-            borg_cave_light_hack(c_y - 3, c_x + 3);
+        if (borg_cave_floor_bold(borg.c.y - 3, borg.c.x + 3)) {
+            borg_cave_light_hack(borg.c.y - 3, borg.c.x + 3);
         }
 
         /* North-West of the player */
-        if (borg_cave_floor_bold(c_y - 3, c_x - 3)) {
-            borg_cave_light_hack(c_y - 3, c_x - 3);
+        if (borg_cave_floor_bold(borg.c.y - 3, borg.c.x - 3)) {
+            borg_cave_light_hack(borg.c.y - 3, borg.c.x - 3);
         }
 
         /* Maximal north */
-        min_y = c_y - p;
+        min_y = borg.c.y - p;
         if (min_y < 0)
             min_y = 0;
 
         /* Maximal south */
-        max_y = c_y + p;
+        max_y = borg.c.y + p;
         if (max_y > AUTO_MAX_Y - 1)
             max_y = AUTO_MAX_Y - 1;
 
         /* Maximal west */
-        min_x = c_x - p;
+        min_x = borg.c.x - p;
         if (min_x < 0)
             min_x = 0;
 
         /* Maximal east */
-        max_x = c_x + p;
+        max_x = borg.c.x + p;
         if (max_x > AUTO_MAX_X - 1)
             max_x = AUTO_MAX_X - 1;
 
         /* Scan the maximal box */
         for (y = min_y; y <= max_y; y++) {
             for (x = min_x; x <= max_x; x++) {
-                int dy = (c_y > y) ? (c_y - y) : (y - c_y);
-                int dx = (c_x > x) ? (c_x - x) : (x - c_x);
+                int dy = (borg.c.y > y) ? (borg.c.y - y) : (y - borg.c.y);
+                int dx = (borg.c.x > x) ? (borg.c.x - x) : (x - borg.c.x);
 
                 /* Skip the "central" grids (above) */
                 if ((dy <= 2) && (dx <= 2))
