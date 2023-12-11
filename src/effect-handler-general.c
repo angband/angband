@@ -1619,8 +1619,19 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 				continue;
 			}
 
-			/* Notice an object is detected */
-			objects = true;
+			/*
+			 * Is there any object which either has not been seen
+			 * or has been seen and is not ignored?  If so, notify
+			 * the player.
+			 */
+			for (; !objects && obj; obj = obj->next) {
+				if (!obj->known
+						|| obj->known->kind == unknown_gold_kind
+						|| obj->known->kind == unknown_item_kind
+						|| !ignore_item_ok(player, obj)) {
+					objects = true;
+				}
+			}
 
 			/* Mark the pile as aware */
 			square_sense_pile(cave, grid);
@@ -1673,9 +1684,14 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 				continue;
 			}
 
-			/* Notice an object is detected */
-			if (!ignore_item_ok(player, obj)) {
-				objects = true;
+			/*
+			 * Is there any object which is not ignored?  If so,
+			 * notify the player.
+			 */
+			for (; !objects && obj; obj = obj->next) {
+				if (!ignore_item_ok(player, obj)) {
+					objects = true;
+				}
 			}
 
 			/* Mark the pile as seen */
