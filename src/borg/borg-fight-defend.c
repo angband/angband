@@ -219,7 +219,7 @@ static int borg_defend_aux_bless(int p1)
 
         borg_note("# Attempting to cast Bless");
 
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 11000;
 
         /* do it! */
@@ -359,7 +359,7 @@ static int borg_defend_aux_speed(int p1)
 
         borg_note("# Attempting to cast Speed");
 
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* do it! */
@@ -436,7 +436,7 @@ static int borg_defend_aux_grim_purpose(int p1)
 
         /* do it! */
         if (borg_spell(GRIM_PURPOSE))
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 13000;
 
         /* Value */
@@ -613,7 +613,7 @@ static int borg_defend_aux_resist_f(int p1)
             || borg_spell_fail(RESISTANCE, fail_allowed)
             || borg_quaff_potion(sv_potion_resist_heat))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 21000;
 
         /* Value */
@@ -704,7 +704,7 @@ static int borg_defend_aux_resist_c(int p1)
             || borg_spell_fail(RESISTANCE, fail_allowed)
             || borg_quaff_potion(sv_potion_resist_cold))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 21000;
 
         /* Value */
@@ -788,7 +788,7 @@ static int borg_defend_aux_resist_a(int p1)
             || borg_activate_item(act_resist_all)
             || borg_activate_item(act_rage_bless_resist))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 21000;
 
         /* Value */
@@ -872,7 +872,7 @@ static int borg_defend_aux_resist_e(int p1)
             || borg_activate_item(act_resist_all)
             || borg_activate_item(act_rage_bless_resist))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 21000;
 
         /* Value */
@@ -945,7 +945,7 @@ static int borg_defend_aux_resist_p(int p1)
             || borg_activate_item(act_rage_bless_resist)
             || borg_quaff_potion(sv_potion_resist_pois))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 21000;
 
         /* Value */
@@ -1033,7 +1033,7 @@ static int borg_defend_aux_prot_evil(int p1)
             || borg_activate_item(act_protevil)
             || borg_read_scroll(sv_scroll_protection_from_evil))
 
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* Value */
@@ -1086,7 +1086,7 @@ static int borg_defend_aux_shield(int p1)
         /* do it! */
         if (borg_eat(TV_MUSHROOM, sv_mush_stoneskin)
             || borg_activate_item(act_shroom_stone)) {
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 2000;
             return (p1 - p2);
         }
@@ -1282,6 +1282,7 @@ static int borg_defend_aux_tele_away(int p1)
 static int borg_defend_aux_hero(int p1)
 {
     int fail_allowed = 15;
+    bool potion, spell;
 
     /* already hero */
     if (borg.temp.hero)
@@ -1292,8 +1293,11 @@ static int borg_defend_aux_hero(int p1)
         || borg.trait[BI_ISFORGET])
         return (0);
 
-    if (!borg_spell_okay_fail(HEROISM, fail_allowed)
-        && -1 == borg_slot(TV_POTION, sv_potion_heroism))
+    /* Heroism part of the heroism spell only kicks in after level 19 */
+    spell = borg_spell_okay_fail(HEROISM, fail_allowed)
+            && borg.trait[BI_CLEVEL] >= borg_heroism_level();
+    potion = (-1 != borg_slot(TV_POTION, sv_potion_heroism));
+    if (!potion && !spell)
         return (0);
 
     /* if we are in some danger but not much, go for a quick bless */
@@ -1307,8 +1311,8 @@ static int borg_defend_aux_hero(int p1)
         borg_note("# Attempting to cast Hero");
 
         /* do it! */
-        if (borg_spell(HEROISM) || borg_quaff_potion(sv_potion_heroism)) {
-            /* No resting to recoop mana */
+        if ((spell && borg_spell(HEROISM)) || borg_quaff_potion(sv_potion_heroism)) {
+            /* No resting to recoup mana */
             borg.no_rest_prep = 10000;
             return 1;
         }
@@ -1350,7 +1354,7 @@ static int borg_defend_aux_regen(int p1)
 
         /* do it! */
         if (borg_spell(RAPID_REGENERATION)) {
-            /* No resting to recoop mana */
+            /* No resting to recoup mana */
             borg.no_rest_prep = 10000;
             return 1;
         }

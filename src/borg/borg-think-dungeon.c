@@ -1805,7 +1805,7 @@ bool borg_think_dungeon(void)
         return (true);
 
     /* Find a really close object */
-    if (borg_flow_take(true, 5))
+    if (borg_flow_take(false, 5))
         return (true);
     if (borg_flow_vein(true, 5))
         return (true);

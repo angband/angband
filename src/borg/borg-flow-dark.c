@@ -76,7 +76,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
             return (false);
 
         /* don't try to dig if we can't */
-        if (!borg_can_dig(false, false))
+        if (!borg_can_dig(false, ag->feat))
             return (false);
 
         /* Okay */
@@ -86,6 +86,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
     /* "Vaults" Explore non perma-walls adjacent to a perma wall */
     if (ag->feat == FEAT_GRANITE || ag->feat == FEAT_MAGMA
         || ag->feat == FEAT_QUARTZ) {
+
         /* Do not attempt when confused */
         if (borg.trait[BI_ISCONFUSED])
             return (false);
@@ -94,7 +95,11 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         if (!vault_on_level)
             return (false);
 
-        /* AJG Do not attempt on the edge */
+        /* make sure we can dig */
+        if (!borg_can_dig(false, ag->feat))
+            return (false);
+
+        /* Do not attempt on the edge */
         if (x < AUTO_MAX_X - 1 && y < AUTO_MAX_Y - 1 && x > 1 && y > 1) {
             /* scan the adjacent grids */
             for (ox = -1; ox <= 1; ox++) {
@@ -107,11 +112,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                     if (ag->feat != FEAT_PERM)
                         continue;
 
-                    /* make sure we can dig */
-                    if (!borg_can_dig(false, true))
-                        return (false);
-
-                    /* Glove up and dig in */
+                    /* at least one perm wall next to this, dig it out */
                     return (true);
                 }
             }

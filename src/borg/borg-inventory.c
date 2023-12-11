@@ -254,7 +254,7 @@ int borg_first_empty_inventory_slot(void)
 {
     int i;
 
-    for (i = PACK_SLOTS - 1; i > 0; i--)
+    for (i = PACK_SLOTS - 1; i >= 0; i--)
         if (borg_items[i].iqty) {
             if ((i + 1) < PACK_SLOTS)
                 return i + 1;

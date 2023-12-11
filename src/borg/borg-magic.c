@@ -246,6 +246,18 @@ int borg_spell_stat(void)
 }
 
 /*
+ * get the level at which Heroism grants Heroism
+ */
+int borg_heroism_level(void)
+{
+    if (borg.trait[BI_CLASS] == CLASS_PRIEST)
+        return 20;
+    if (borg.trait[BI_CLASS] == CLASS_PALADIN)
+        return 15;
+    return 99;
+}
+
+/*
  * find the index in the books array given the books sval
  */
 int borg_get_book_num(int sval)

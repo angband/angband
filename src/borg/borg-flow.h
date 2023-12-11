@@ -139,7 +139,7 @@ extern const int16_t borg_ddy_ddd[24];
 /*
  * Check if the borg can dig.
  */
-extern bool borg_can_dig(bool check_fail, bool hard);
+extern bool borg_can_dig(bool check_fail, uint8_t feat);
 
 /*
  * Clear the "flow" information

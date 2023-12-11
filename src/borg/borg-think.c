@@ -504,11 +504,11 @@ bool borg_think(void)
     /* Increment the panel clock */
     borg.time_this_panel++;
 
-    /* Examine the screen */
-    borg_update();
-
     /* Examine the equipment/inventory */
     borg_notice(true);
+
+    /* Examine the screen */
+    borg_update();
 
     /* Evaluate the current world */
     borg.power = borg_power();
