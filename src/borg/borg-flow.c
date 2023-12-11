@@ -145,14 +145,14 @@ bool borg_can_dig(bool check_fail, uint8_t feat)
         return true;
 
     if (check_fail) {
-        if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40)
-            || borg_spell_legal_fail(SHATTER_STONE, 40)
+        if (borg_spell_okay_fail(TURN_STONE_TO_MUD, 40)
+            || borg_spell_okay_fail(SHATTER_STONE, 40)
             || borg_equips_item(act_stone_to_mud, true)
             || borg_equips_ring(sv_ring_digging))
             return true;
     } else {
-        if (borg_spell_legal(TURN_STONE_TO_MUD)
-            || borg_spell_legal(SHATTER_STONE)
+        if (borg_spell_okay(TURN_STONE_TO_MUD)
+            || borg_spell_okay(SHATTER_STONE)
             || borg_equips_item(act_stone_to_mud, false)
             || borg_equips_ring(sv_ring_digging))
             return true;

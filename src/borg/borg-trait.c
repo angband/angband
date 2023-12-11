@@ -2632,7 +2632,6 @@ static void borg_notice_inventory(void)
 
     /* Handle Diggers (stone to mud) */
     if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40)
-        || borg_spell_legal_fail(SHATTER_STONE, 40)
         || borg_equips_item(act_stone_to_mud, false)
         || borg_equips_ring(sv_ring_digging)) {
         borg.trait[BI_ADIGGER] += 1;

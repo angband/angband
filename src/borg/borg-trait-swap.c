@@ -269,7 +269,6 @@ void borg_notice_weapon_swap(void)
                 if (item->cursed)
                     break;
                 if (!borg_spell_legal_fail(TURN_STONE_TO_MUD, 40)
-                    && !borg_spell_legal_fail(SHATTER_STONE, 40)
                     && !of_has(borg_items[INVEN_WIELD].flags, OF_DIG_1)
                     && !of_has(borg_items[INVEN_WIELD].flags, OF_DIG_2)
                     && !of_has(borg_items[INVEN_WIELD].flags, OF_DIG_3))
