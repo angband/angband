@@ -99,7 +99,8 @@ WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
 	-Wnested-externs -Wshadow -Wunused-macros
 
 # Flags to use in compilation
-CFLAGS := -std=c99 \
+CFLAGS := -I$(shell pwd) \
+	-std=c99 \
 	-g \
 	-O2 \
 	$(WARNINGS) -pedantic \
@@ -131,7 +132,7 @@ include Makefile.inc
 EXE := $(PROGNAME)
 
 # Object definitions (BASEOBJS come from Makefile.inc)
-OBJS := main.o main-sdl2.o $(BASEOBJS)
+OBJS := main.o main-sdl2.o sdl2/pui-ctrl.o sdl2/pui-dlg.o sdl2/pui-misc.o $(BASEOBJS)
 
 ifdef SOUND
 OBJS += snd-sdl.o
