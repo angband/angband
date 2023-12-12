@@ -1195,6 +1195,9 @@ static void borg_notice_equipment(void)
     /* Start with a single shot per turn */
     my_num_fire = 1;
 
+    /* speed starts at 110 */
+    borg.trait[BI_SPEED] = 110;
+
     /* Reset the "ammo" attributes */
     borg.trait[BI_AMMO_COUNT] = 0;
     borg.trait[BI_AMMO_TVAL]  = -1;
@@ -2629,7 +2632,6 @@ static void borg_notice_inventory(void)
 
     /* Handle Diggers (stone to mud) */
     if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40)
-        || borg_spell_legal_fail(SHATTER_STONE, 40)
         || borg_equips_item(act_stone_to_mud, false)
         || borg_equips_ring(sv_ring_digging)) {
         borg.trait[BI_ADIGGER] += 1;
@@ -2856,6 +2858,18 @@ void borg_notice(bool notice_swap)
         borg.trait[BI_SPEED]
             -= ((borg.trait[BI_WEIGHT] - (borg.trait[BI_CARRY] / 2))
                 / (borg.trait[BI_CARRY] / 10));
+
+    /* top speed */
+    if (borg.trait[BI_SPEED] > 199)
+        borg.trait[BI_SPEED] = 199;
+
+    /* Check my ratio for decrementing variables */
+    if (borg.trait[BI_SPEED] > 110) {
+        borg_game_ratio = 100000 / (((borg.trait[BI_SPEED] - 110) * 10) + 100);
+    } else {
+        borg_game_ratio = 1000;
+    }
+
 }
 
 /*
@@ -2907,21 +2921,8 @@ void borg_notice_player(void)
     /* Extract "AU xxxxxxxxx" */
     borg.trait[BI_GOLD]   = player->au;
 
-    borg.trait[BI_WEIGHT] = player->upkeep->total_weight;
-
-    /* Extract "Fast (+x)" or "Slow (-x)" */
-    borg.trait[BI_SPEED] = state->speed;
-
-    /* Check my float for decrementing variables */
-    if (borg.trait[BI_SPEED] > 110) {
-        borg_game_ratio = 100000 / (((borg.trait[BI_SPEED] - 110) * 10) + 100);
-    } else {
-        borg_game_ratio = 1000;
-    }
-
-    /* A quick cheat to see if I missed a message about my status on some timed
-     * spells */
-
+    /* A quick cheat to see if I missed a message about my status on some */
+    /* timed spells */
     if (!borg.goal.recalling && player->word_recall)
         borg.goal.recalling = player->word_recall * 1000;
     if (!borg.temp.prot_from_evil && player->timed[TMD_PROTEVIL])
@@ -2959,9 +2960,6 @@ void borg_notice_player(void)
         else if (player->timed[TMD_TERROR])
             borg.trait[BI_SPEED] -= 5;
     }
-
-    /* Extract "Cur AC xxxxx" */
-    borg.trait[BI_ARMOR] = state->ac + state->to_a;
 
     /* Extract "Cur HP xxxxx" */
     borg.trait[BI_CURHP] = player->chp;

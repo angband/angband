@@ -340,8 +340,8 @@ bool borg_flow_vein(bool viewable, int nearness)
     if (borg.trait[BI_GOLD] >= 100000)
         return (false);
 
-    /* Require digger, capacity, or skill */
-    if (!borg_can_dig(true, false))
+    /* Require digger, capacity, or skill to dig at least Quartz */
+    if (!borg_can_dig(true, FEAT_QUARTZ_K))
         return (false);
 
     /* Nothing yet */
@@ -864,11 +864,11 @@ bool borg_flow_vault(int nearness)
     if (!vault_on_level)
         return (false);
 
-    /* no need if we can't dig */
-    if (!borg_can_dig(false, false))
+    /* no need if we can't dig at least quartz */
+    if (!borg_can_dig(false, FEAT_QUARTZ))
         return (false);
 
-    can_dig_hard = borg_can_dig(false, true);
+    can_dig_hard = borg_can_dig(false, FEAT_GRANITE);
 
     /* build the array -- Scan screen */
     for (y = w_y; y < w_y + SCREEN_HGT; y++) {
@@ -878,23 +878,18 @@ bool borg_flow_vault(int nearness)
             if (distance(borg.c, loc(x, y)) > nearness)
                 continue;
 
+            uint8_t feat = borg_grids[y][x].feat;
+
             /* only deal with excavatable walls */
-            if (can_dig_hard) {
-                if (borg_grids[y][x].feat != FEAT_FLOOR
-                    && borg_grids[y][x].feat != FEAT_LAVA
-                    && borg_grids[y][x].feat != FEAT_GRANITE
-                    && borg_grids[y][x].feat != FEAT_RUBBLE
-                    && borg_grids[y][x].feat != FEAT_QUARTZ
-                    && borg_grids[y][x].feat != FEAT_MAGMA
-                    && borg_grids[y][x].feat != FEAT_QUARTZ_K
-                    && borg_grids[y][x].feat != FEAT_MAGMA_K)
-                    continue;
-            } else {
-                if (borg_grids[y][x].feat != FEAT_FLOOR
-                    && borg_grids[y][x].feat != FEAT_LAVA
-                    && borg_grids[y][x].feat != FEAT_RUBBLE
-                    && borg_grids[y][x].feat != FEAT_QUARTZ_K
-                    && borg_grids[y][x].feat != FEAT_MAGMA_K)
+            if (feat != FEAT_FLOOR 
+                && feat != FEAT_LAVA 
+                && feat != FEAT_RUBBLE
+                && feat != FEAT_QUARTZ 
+                && feat != FEAT_MAGMA
+                && feat != FEAT_QUARTZ_K 
+                && feat != FEAT_MAGMA_K) {
+                /* only deal with granite if we are good diggers */
+                if (!can_dig_hard || feat != FEAT_GRANITE)
                     continue;
             }
 

@@ -23,6 +23,7 @@
 
 #include "../monster.h"
 #include "../obj-knowledge.h"
+#include "../obj-tval.h"
 #include "../obj-util.h"
 
 #include "borg-cave-view.h"
@@ -495,13 +496,14 @@ bool borg_flow_take(bool viewable, int nearness)
         if (take->tval == borg.trait[BI_AMMO_TVAL]
             && borg.trait[BI_AMISSILES] >= full_quiver)
             continue;
-        /* No need to chase certain things down after a certain amount.  Dont
+        /* No need to chase certain things down after a certain amount.  Don't
          * chase: Money Other spell books Wrong ammo
          */
         if (borg.trait[BI_GOLD] >= 500000) {
             if (take->tval == TV_GOLD)
                 continue;
-            if (!obj_kind_can_browse(&k_info[take->kind->kidx]))
+            if (tval_is_book_k(&k_info[take->kind->kidx])
+                && !obj_kind_can_browse(&k_info[take->kind->kidx]))
                 continue;
             if ((take->tval == TV_SHOT || take->tval == TV_ARROW
                     || take->tval == TV_BOLT)

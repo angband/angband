@@ -125,27 +125,34 @@ const int16_t borg_ddy_ddd[24] = { 1, -1, 0, 0, 1, 1, -1, -1, -1, 0, 1, -1, 0,
  *   check_fail = check if the spell failure rate is too high
  *   hard = check if hard things, like granite, can be dug
  */
-bool borg_can_dig(bool check_fail, bool hard)
+bool borg_can_dig(bool check_fail, uint8_t feat)
 {
     /* No digging when hungry */
     if (borg.trait[BI_ISHUNGRY])
         return false;
 
-    int dig_check = hard ? BORG_DIG_HARD : BORG_DIG;
+    /* some features can't be dug out */
+    if (feat == FEAT_PERM || feat == FEAT_LAVA || feat < FEAT_SECRET)
+        return false;
+
+    int dig_check = feat == FEAT_GRANITE ? BORG_DIG_HARD : BORG_DIG;
     if ((weapon_swap && borg.trait[BI_DIG] >= dig_check
             && borg_items[weapon_swap - 1].tval == TV_DIGGING)
         || (borg.trait[BI_DIG] >= dig_check + 20))
         return true;
 
+    if (feat == FEAT_RUBBLE && !borg.trait[BI_ISWEAK])
+        return true;
+
     if (check_fail) {
-        if (borg_spell_legal_fail(TURN_STONE_TO_MUD, 40)
-            || borg_spell_legal_fail(SHATTER_STONE, 40)
+        if (borg_spell_okay_fail(TURN_STONE_TO_MUD, 40)
+            || borg_spell_okay_fail(SHATTER_STONE, 40)
             || borg_equips_item(act_stone_to_mud, true)
             || borg_equips_ring(sv_ring_digging))
             return true;
     } else {
-        if (borg_spell_legal(TURN_STONE_TO_MUD)
-            || borg_spell_legal(SHATTER_STONE)
+        if (borg_spell_okay(TURN_STONE_TO_MUD)
+            || borg_spell_okay(SHATTER_STONE)
             || borg_equips_item(act_stone_to_mud, false)
             || borg_equips_ring(sv_ring_digging))
             return true;
@@ -987,7 +994,7 @@ static bool borg_play_step(int y2, int x2)
             return false;
 
         /* Don't bother digging without sufficient dig ability */
-        if (!borg_can_dig(false, ag->feat == FEAT_GRANITE)) {
+        if (!borg_can_dig(false, ag->feat)) {
             borg.goal.type = 0;
             return false;
         }

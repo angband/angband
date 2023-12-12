@@ -2168,26 +2168,25 @@ int borg_attack_aux_spell_bolt(
     }
 
     /* Really penalize use of mana needed for final teleport */
-    /* Really penalize use of mana needed for final teleport */
     switch (borg.trait[BI_CLASS]) {
     case CLASS_MAGE:
-    penalty = 6;
-    break;
+        penalty = 6;
+        break;
     case CLASS_RANGER:
-    penalty = 22;
-    break;
+        penalty = 22;
+        break;
     case CLASS_ROGUE:
-    penalty = 20;
-    break;
+        penalty = 20;
+        break;
     case CLASS_PRIEST:
-    penalty = 8;
-    break;
+        penalty = 8;
+        break;
     case CLASS_PALADIN:
-    penalty = 20;
-    break;
+        penalty = 20;
+        break;
     case CLASS_NECROMANCER:
-    penalty = 10;
-    break;
+        penalty = 10;
+        break;
     }
     if ((borg.trait[BI_MAXSP] > 30)
         && (borg.trait[BI_CURSP] - spell_power < penalty))
@@ -2381,25 +2380,25 @@ static int borg_attack_aux_spell_dispel(
         b_n = b_n - (spell_power * 5);
 
     /* Really penalize use of mana needed for final teleport */
-    switch (borg.trait[BI_CLASS])         {
+    switch (borg.trait[BI_CLASS]) {
     case CLASS_MAGE:
-    penalty = 6;
-    break;
+        penalty = 6;
+        break;
     case CLASS_RANGER:
-    penalty = 22;
-    break;
+        penalty = 22;
+        break;
     case CLASS_ROGUE:
-    penalty = 20;
-    break;
+        penalty = 20;
+        break;
     case CLASS_PRIEST:
-    penalty = 8;
-    break;
+        penalty = 8;
+        break;
     case CLASS_PALADIN:
-    penalty = 20;
-    break;
+        penalty = 20;
+        break;
     case CLASS_NECROMANCER:
-    penalty = 10;
-    break;
+        penalty = 10;
+        break;
     }
     if ((borg.trait[BI_MAXSP] > 30)
         && (borg.trait[BI_CURSP] - spell_power < penalty))

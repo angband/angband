@@ -279,8 +279,9 @@ bool borg_prep_leave_level_spells(void)
         return (true);
     }
 
-    /* Cast heroism */
-    if (!borg.temp.hero && borg_spell_fail(HEROISM, 15)) {
+    /* Cast heroism if above level it gives temp attribute */
+    if (!borg.temp.hero && borg_spell_fail(HEROISM, 15) &&
+        borg.trait[BI_CLEVEL] > borg_heroism_level()) {
         borg_note("# Casting Heroism spell before leaving level.");
         borg.no_rest_prep = 3000;
         return (true);

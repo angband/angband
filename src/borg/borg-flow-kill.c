@@ -2656,8 +2656,8 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
     borg_kill *kill;
 
-    /* Do not dig when weak. It takes too long */
-    if (!borg_can_dig(false, false))
+    /* Assume we need to dig granite */
+    if (!borg_can_dig(false, FEAT_GRANITE))
         return (false);
 
     /* Not if Weak from hunger or no food */

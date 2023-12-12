@@ -109,7 +109,7 @@ static int borg_perma_aux_bless(void)
     /* do it! */
     borg_spell(BLESS);
 
-    /* No resting to recoop mana */
+    /* No resting to recoup mana */
     borg.no_rest_prep = 10000;
 
     return (1);
@@ -150,7 +150,7 @@ static int borg_perma_aux_resist(void)
     /* do it! */
     borg_spell_fail(RESISTANCE, fail_allowed);
 
-    /* No resting to recoop mana */
+    /* No resting to recoup mana */
     borg.no_rest_prep = 21000;
 
     /* default to can't do it. */
@@ -180,7 +180,7 @@ static int borg_perma_aux_resist_colluin(void)
     /* do it! */
     if (borg_activate_item(act_resist_all)
         || borg_activate_item(act_rage_bless_resist)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 21000;
     }
 
@@ -219,7 +219,7 @@ static int borg_perma_aux_resist_p(void)
 
     /* do it! */
     if (borg_spell_fail(RESIST_POISON, fail_allowed)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 21000;
 
         /* Value */
@@ -266,7 +266,7 @@ static int borg_perma_aux_speed(void)
 
     /* do it! */
     if (borg_spell_fail(HASTE_SELF, fail_allowed)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
         return (5);
     }
@@ -310,7 +310,7 @@ static int borg_perma_aux_prot_evil(void)
 
     /* do it! */
     if (borg_spell_fail(PROTECTION_FROM_EVIL, fail_allowed)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
 
         /* Value */
@@ -360,7 +360,7 @@ static int borg_perma_aux_fastcast(void)
 
     /* do it! */
     if (borg_spell(MANA_CHANNEL)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 6000;
         return 1;
     }
@@ -385,9 +385,13 @@ static int borg_perma_aux_hero(void)
     if (borg.temp.hero)
         return (0);
 
-    /* Cant when Blind */
+    /* Can't when Blind */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (0);
+
+    /* Heroism part of the Heroism spell doesn't kick in till later */
+    if (borg.trait[BI_CLEVEL] <= borg_heroism_level())
+        return 0;
 
     /* XXX Dark */
 
@@ -409,7 +413,7 @@ static int borg_perma_aux_hero(void)
 
     /* do it! */
     if (borg_spell(HEROISM)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 3000;
         return 1;
     }
@@ -456,7 +460,7 @@ static int borg_perma_aux_regen(void)
 
     /* do it! */
     if (borg_spell(RAPID_REGENERATION)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 6000;
         return 1;
     }
@@ -503,7 +507,7 @@ static int borg_perma_aux_smite_evil(void)
 
     /* do it! */
     if (borg_spell(SMITE_EVIL)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 21000;
         return 3;
     }
@@ -550,7 +554,7 @@ static int borg_perma_aux_venom(void)
 
     /* do it! */
     if (borg_spell(VENOM)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 19000;
         return 3;
     }
@@ -597,7 +601,7 @@ static int borg_perma_aux_berserk(void)
 
     /* do it! */
     if (borg_spell(BERSERK_STRENGTH)) {
-        /* No resting to recoop mana */
+        /* No resting to recoup mana */
         borg.no_rest_prep = 11000;
         return 2;
     }
