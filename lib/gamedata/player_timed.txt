@@ -71,7 +71,8 @@
 #          first argument to one of the PF() macros in list-player-flags.h; for
 #          a resist or vulnerability, the flag must match the argument to one
 #          of the ELEM() macros in list-elements.h; for a timed effect, the
-#          flag must match the argument to TMD() macros list-player-timed.h
+#          flag must match the argument to one of the TMD() macros in
+#          list-player-timed.h
 # on-begin-effect - (optional) specifies an effect to be invoked when the
 #                   timed effect starts; can be used more than once - the
 #                   additional effects will be executed in the order in which
@@ -100,14 +101,14 @@
 #             set effect (i.e. from a prior on-begin-effect or on-end-effect
 #             directive)
 #             param one: is the value of the y parameter for the effect
-#             param two: is the value of hte x parameter for the effect
+#             param two: is the value of the x parameter for the effect
 # effect-dice - (optional) specifies the dice string for the most recently
 #               set effect (i.e. from a prior on-begin-effect or on-end-effect
 #               directive)
 # effect-expr - (optional) defines an expression for the dice string of the
 #               most recently set effect (i.e. from a prior on-begin-effect
 #               or on-end-effect directive); requires that the dice string has
-#               been set for the effect with a effect-dice directive
+#               been set for the effect with an effect-dice directive
 #               param one: is the name of the variable to substitute with the
 #                   value of the expression; variable names must be all
 #                   capital letters and a reference to a variable in a dice
@@ -127,9 +128,9 @@
 #                         other than the weapon are used) of the player's
 #                         equipped weapon; if the player has no equipped
 #                         weapon, the value of this is zero
-#                    PLAYER_HP - the player's current number of hit points
-#                    MONSTER_PERCENT_HP_GONE - ((maximum hit points for the
-#                         player's target monster - current hit poinst for the
+#                     PLAYER_HP - the player's current number of hit points
+#                     MONSTER_PERCENT_HP_GONE - ((maximum hit points for the
+#                         player's target monster - current hit points for the
 #                         player's target monster) * 100) / maximum hit points
 #                         for the player's target monster or 0 if the player
 #                         doesn't currently have a targeted monster
@@ -146,7 +147,7 @@
 #                   separated by single spaces
 # effect-msg - (optional) appends to the message associated with the most
 #              recently set effect (i.e. from a prior on-begin-effect or
-#              on-end-effect directive); how that  message is used depends on
+#              on-end-effect directive); how that message is used depends on
 #              the effect - typically it may be printed during the effect or
 #              is used as a death message
 # resist - (optional) when this timed property is active, the recipient gains
@@ -183,8 +184,8 @@
 #             cases, like TIMED_INC_NO_RES effects, where the failure check is
 #             bypassed; NONSTACKING is also handled differently than failing
 #             for the timed effect itself in terms of lore checks (if a timed
-#             effect is NONSTACKING, lore for a monster won't show that a
-#             the monster's attack inflicting that status is resisted solely
+#             effect is NONSTACKING, lore for a monster won't show that the
+#             monster's attack inflicting that status is resisted solely
 #             because the character is already subject to the timed effect)
 
 name:FAST
@@ -272,7 +273,7 @@ on-end:You are no longer stunned.
 msgt:STUN
 fail:1:PROT_STUN
 
-# Note food grades are in percantages here, and are translated on parsing
+# Note food grades are in percentages here, and are translated on parsing
 name:FOOD
 desc:nourishment
 grade:R:1:Starving: :You are starving!!
