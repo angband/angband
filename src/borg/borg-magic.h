@@ -222,13 +222,14 @@ extern borg_magic* borg_magics; /* Spell info */
 /*
  * Spell functions
  */
-extern int         borg_spell_stat(void);
-extern bool        borg_spell_legal(const enum borg_spells spell);
-extern bool        borg_spell_okay(const enum borg_spells spell);
-extern int         borg_get_spell_power(const enum borg_spells spell);
-extern int         borg_get_book_num(int sval);
+extern int  borg_heroism_level(void);
+extern int  borg_spell_stat(void);
+extern bool borg_spell_legal(const enum borg_spells spell);
+extern bool borg_spell_okay(const enum borg_spells spell);
+extern int  borg_get_spell_power(const enum borg_spells spell);
+extern int  borg_get_book_num(int sval);
 extern borg_magic* borg_get_spell_entry(int book, int what);
-extern bool        borg_spell(const enum borg_spells spell);
+extern bool borg_spell(const enum borg_spells spell);
 extern bool borg_spell_fail(const enum borg_spells spell, int allow_fail);
 extern bool borg_spell_okay_fail(const enum borg_spells spell, int allow_fail);
 extern bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);

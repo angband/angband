@@ -96,8 +96,7 @@ static void clear_grades(struct timed_effect_data* t) {
 	t->grade = NULL;
 }
 
-static int test_missing_record_header0(void *state)
-{
+static int test_missing_record_header0(void *state) {
 	struct parser *p = (struct parser*) state;
 	struct timed_effect_parse_state *ps =
 		(struct timed_effect_parse_state*) parser_priv(p);
@@ -193,7 +192,7 @@ static int test_desc0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	ps = (struct timed_effect_parse_state*) parser_priv(p);
 	notnull(ps);
-	notnull(ps->t)
+	notnull(ps->t);
 	notnull(ps->t->desc);
 	require(streq(ps->t->desc, "nourishment"));
 	r = parser_parse(p, "desc: (i.e. food)");
@@ -231,6 +230,7 @@ static int test_incmsg0(void *state) {
 	ps = (struct timed_effect_parse_state*) parser_priv(p);
 	notnull(ps);
 	notnull(ps->t);
+	notnull(ps->t->on_increase);
 	require(streq(ps->t->on_increase, "You feel even safer from evil!"));
 	r = parser_parse(p,
 		"on-increase:  And the shadows seem to lighten and shrink.");
@@ -527,7 +527,7 @@ static int test_badgrade0(void *state) {
 	/* Try with out of bounds values for the grade maximum. */
 	r = parser_parse(p, "grade:G:-1:Haste:Grade maximum below zero");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
-	r = parser_parse(p, "grade:G:32768:Haste:Grade maximum too larage");
+	r = parser_parse(p, "grade:G:32768:Haste:Grade maximum too large");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	/* Try with non-increasing values for the grade maximums. */
 	r = parser_parse(p, "grade:G:50:Haste:Valid grade");
@@ -841,11 +841,11 @@ static int test_endeffect0(void *state) {
 static int test_badendeffect0(void *state) {
 	struct parser *p = (struct parser*) state;
 	/* Check with unrecognized effect. */
-	enum parser_error r = parser_parse(p, "on-begin-effect:XYZZY");
+	enum parser_error r = parser_parse(p, "on-end-effect:XYZZY");
 
 	eq(r, PARSE_ERROR_INVALID_EFFECT);
 	/* Check with bad subtype. */
-	r = parser_parse(p, "on-begin-effect:CURE:XYZZY");
+	r = parser_parse(p, "on-end-effect:CURE:XYZZY");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
@@ -905,7 +905,7 @@ static int test_badeffectdice0(void *state) {
 	ok;
 }
 
-static int test_effectexpr0(void* state) {
+static int test_effectexpr0(void *state) {
 	struct parser *p = (struct parser*) state;
 	enum parser_error r = parser_parse(p, "on-begin-effect:DAMAGE");
 
@@ -1020,11 +1020,11 @@ const char *suite_name = "parse/ptimed";
 /*
  * test_missing_record_header0() has to be before test_name0().
  * test_name0() has to be before any of the other tests besides
+ * test_missing_record_header0() and test_badname0().
  * test_missing_effect0() has to be before test_begineffect0(),
  * test_badbegineffect0(), test_endeffect0(), test_badendeffect0(),
  * test_effectyx0(), test_effectdice0(), test_badeffectdice0(),
  * test_effectexpr0(), test_badeffectexpr0(), and test_effectmsg0().
- * test_missing_record_header0() and  test_badname0().
  */
 struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
@@ -1039,7 +1039,7 @@ struct test tests[] = {
 	{ "fail0", test_fail0 },
 	{ "badfail0", test_badfail0 },
 	{ "grade0", test_grade0 },
-	{ "badgrad0", test_badgrade0 },
+	{ "badgrade0", test_badgrade0 },
 	{ "resist0", test_resist0 },
 	{ "badresist0", test_badresist0 },
 	{ "brand0", test_brand0 },

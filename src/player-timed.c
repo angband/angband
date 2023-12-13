@@ -235,7 +235,7 @@ static enum parser_error parse_player_timed_fail(struct parser *p)
 	f = mem_alloc(sizeof(*f));
 	f->next = ps->t->fail;
 	f->code = code;
-	f->idx= idx;
+	f->idx = idx;
 	ps->t->fail = f;
 
 	return PARSE_ERROR_NONE;

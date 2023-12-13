@@ -88,13 +88,13 @@ bool borg_play_magic(bool bored)
         return (false);
 
     /* Hack -- blind/confused */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* Dark */
-    if (!borg_trait[BI_CURLITE])
+    if (!borg.trait[BI_CURLITE])
         return (false);
-    if (borg_grids[c_y][c_x].info == BORG_DARK)
+    if (borg_grids[borg.c.y][borg.c.x].info == BORG_DARK)
         return (false);
 
     /* loop through spells backward */
@@ -103,7 +103,7 @@ bool borg_play_magic(bool bored)
         borg_magic *as = &borg_magics[spell_num];
 
         /* Look for the book in inventory*/
-        if (borg_book[as->book] < 0)
+        if (borg.book_idx[as->book] < 0)
             continue;
 
         /* Require "learnable" status */
@@ -131,7 +131,7 @@ bool borg_play_magic(bool bored)
     }
 
     /* Study */
-    if (borg_trait[BI_ISSTUDY] && (b_r > 0)) {
+    if (borg.trait[BI_ISSTUDY] && (b_r > 0)) {
         borg_magic *as = &borg_magics[b_spell_num];
 
         /* Debugging Info */
@@ -141,7 +141,7 @@ bool borg_play_magic(bool bored)
         borg_keypress('G');
 
         /* Specify the book */
-        borg_keypress(all_letters_nohjkl[borg_book[as->book]]);
+        borg_keypress(all_letters_nohjkl[borg.book_idx[as->book]]);
 
         /* Specify the spell  */
         if (player_has(player, PF_CHOOSE_SPELLS)) {
@@ -154,7 +154,7 @@ bool borg_play_magic(bool bored)
     }
 
     /* Hack -- only in town */
-    if (borg_trait[BI_CDEPTH] && !borg_munchkin_mode)
+    if (borg.trait[BI_CDEPTH] && !borg.munchkin_mode)
         return (false);
 
     /* Hack -- only when bored */
@@ -167,7 +167,7 @@ bool borg_play_magic(bool bored)
         borg_magic *as = &borg_magics[spell_num];
 
         /* No such book */
-        if (borg_book[as->book] < 0)
+        if (borg.book_idx[as->book] < 0)
             continue;
 
         /* Only try "untried" spells/prayers */
@@ -179,7 +179,7 @@ bool borg_play_magic(bool bored)
             continue;
 
         /* Some spells should not be tested in munchkin mode */
-        if (borg_munchkin_mode) {
+        if (borg.munchkin_mode) {
             /* Mage types */
             if (player_has(player, PF_CHOOSE_SPELLS)
                 && as->spell_enum == MAGIC_MISSILE)

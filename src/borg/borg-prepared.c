@@ -44,10 +44,10 @@ int          borg_unique_depth;
  */
 static const char *borg_prepared_aux(int depth)
 {
-    if (-1 == borg_ready_morgoth)
-        borg_ready_morgoth = 0;
-    if (borg_trait[BI_KING]) {
-        borg_ready_morgoth = 1;
+    if (-1 == borg.ready_morgoth)
+        borg.ready_morgoth = 0;
+    if (borg.trait[BI_KING]) {
+        borg.ready_morgoth = 1;
         return (NULL);
     }
 
@@ -58,11 +58,11 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 1 ***/
 
     /* Require lite (any) */
-    if (borg_trait[BI_CURLITE] < 1)
+    if (borg.trait[BI_CURLITE] < 1)
         return ("1 Lite");
 
     /* Require food */
-    if (borg_trait[BI_FOOD] < 5)
+    if (borg.trait[BI_FOOD] < 5)
         return ("5 Food");
 
     /* Usually ready for level 1 */
@@ -72,15 +72,15 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 2 ***/
 
     /* Require fuel */
-    if (borg_trait[BI_AFUEL] < 5 && !borg_trait[BI_LIGHT])
+    if (borg.trait[BI_AFUEL] < 5 && !borg.trait[BI_LIGHT])
         return ("5 Fuel");
 
     /* Require recall */
-    /* if (borg_trait[BI_RECALL] < 1) return ("1 recall"); */
+    /* if (borg.trait[BI_RECALL] < 1) return ("1 recall"); */
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* Require 30 hp */
-        if (borg_trait[BI_MAXHP] < 30)
+        if (borg.trait[BI_MAXHP] < 30)
             return ("30 hp");
     }
 
@@ -92,52 +92,52 @@ static const char *borg_prepared_aux(int depth)
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* class specific requirement */
-        switch (borg_class) {
+        switch (borg.trait[BI_CLASS]) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-            if (borg_trait[BI_MAXHP] < 50)
+            if (borg.trait[BI_MAXHP] < 50)
                 return ("50 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 4)
+            if (borg.trait[BI_MAXCLEVEL] < 4)
                 return ("4 clevel");
             break;
         case CLASS_ROGUE:
-            if (borg_trait[BI_MAXHP] < 50)
+            if (borg.trait[BI_MAXHP] < 50)
                 return ("50 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 8)
+            if (borg.trait[BI_MAXCLEVEL] < 8)
                 return ("8 clevel");
             break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-            if (borg_trait[BI_MAXHP] < 40)
+            if (borg.trait[BI_MAXHP] < 40)
                 return ("40 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 9)
+            if (borg.trait[BI_MAXCLEVEL] < 9)
                 return ("9 level");
             break;
         case CLASS_PALADIN:
-            if (borg_trait[BI_MAXHP] < 50)
+            if (borg.trait[BI_MAXHP] < 50)
                 return ("50 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 4)
+            if (borg.trait[BI_MAXCLEVEL] < 4)
                 return ("4 clevel");
             break;
         case CLASS_RANGER:
-            if (borg_trait[BI_MAXHP] < 50)
+            if (borg.trait[BI_MAXHP] < 50)
                 return ("50 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 4)
+            if (borg.trait[BI_MAXCLEVEL] < 4)
                 return ("4 clevel");
             break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-            if (borg_trait[BI_MAXHP] < 60)
+            if (borg.trait[BI_MAXHP] < 60)
                 return ("60 hp");
-            if (borg_trait[BI_MAXCLEVEL] < 11)
+            if (borg.trait[BI_MAXCLEVEL] < 11)
                 return ("11 clevel");
             break;
         }
     }
 
     /* Potions of Cure Serious Wounds */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && borg_trait[BI_ACLW] + borg_trait[BI_ACSW] + borg_trait[BI_ACCW] < 2)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 2)
         return ("2 cure");
 
     /* Usually ready for level 3 and 4 */
@@ -148,45 +148,45 @@ static const char *borg_prepared_aux(int depth)
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* class specific requirement */
-        if (borg_trait[BI_CDEPTH]) {
-            switch (borg_class) {
+        if (borg.trait[BI_CDEPTH]) {
+            switch (borg.trait[BI_CLASS]) {
             case CLASS_WARRIOR:
             case CLASS_BLACKGUARD:
-                if (borg_trait[BI_MAXHP] < 60)
+                if (borg.trait[BI_MAXHP] < 60)
                     return ("60 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 6)
+                if (borg.trait[BI_MAXCLEVEL] < 6)
                     return ("6 clevel");
                 break;
             case CLASS_ROGUE:
-                if (borg_trait[BI_MAXHP] < 60)
+                if (borg.trait[BI_MAXHP] < 60)
                     return ("60 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 10)
+                if (borg.trait[BI_MAXCLEVEL] < 10)
                     return ("10 clevel");
                 break;
             case CLASS_PRIEST:
             case CLASS_DRUID:
-                if (borg_trait[BI_MAXHP] < 60)
+                if (borg.trait[BI_MAXHP] < 60)
                     return ("60 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 15)
+                if (borg.trait[BI_MAXCLEVEL] < 15)
                     return ("15 clevel");
                 break;
             case CLASS_PALADIN:
-                if (borg_trait[BI_MAXHP] < 60)
+                if (borg.trait[BI_MAXHP] < 60)
                     return ("60 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 6)
+                if (borg.trait[BI_MAXCLEVEL] < 6)
                     return ("6 clevel");
                 break;
             case CLASS_RANGER:
-                if (borg_trait[BI_MAXHP] < 60)
+                if (borg.trait[BI_MAXHP] < 60)
                     return ("60 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 6)
+                if (borg.trait[BI_MAXCLEVEL] < 6)
                     return ("6 clevel");
                 break;
             case CLASS_MAGE:
             case CLASS_NECROMANCER:
-                if (borg_trait[BI_MAXHP] < 80)
+                if (borg.trait[BI_MAXHP] < 80)
                     return ("80 hp");
-                if (borg_trait[BI_MAXCLEVEL] < 15)
+                if (borg.trait[BI_MAXCLEVEL] < 15)
                     return ("15 level");
                 break;
             }
@@ -194,12 +194,12 @@ static const char *borg_prepared_aux(int depth)
     }
 
     /* Potions of Cure Serious/Critical Wounds */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && borg_trait[BI_ACLW] + borg_trait[BI_ACSW] + borg_trait[BI_ACCW] < 2)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 2)
         return ("2 cures");
 
     /* Scrolls of Word of Recall */
-    if (borg_trait[BI_RECALL] < 1)
+    if (borg.trait[BI_RECALL] < 1)
         return ("1 recall");
 
     /* Usually ready for level 5 to 9 */
@@ -209,54 +209,54 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 10 to 19 ***/
 
     /* Require light (radius 2) */
-    if (borg_trait[BI_CURLITE] < 2)
+    if (borg.trait[BI_CURLITE] < 2)
         return "2 Light";
 
     /* Escape or Teleport */
-    if (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] < 2)
+    if (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] < 2)
         return ("2 tele&esc");
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* class specific requirement */
-        switch (borg_class) {
+        switch (borg.trait[BI_CLASS]) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-            if (borg_trait[BI_MAXCLEVEL] < (depth - 4) && depth <= 19)
+            if (borg.trait[BI_MAXCLEVEL] < (depth - 4) && depth <= 19)
                 return ("dlevel - 4 >= clevel");
             break;
         case CLASS_ROGUE:
-            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+            if (borg.trait[BI_MAXCLEVEL] < depth && depth <= 19)
                 return ("dlevel >= clevel");
             break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+            if (borg.trait[BI_MAXCLEVEL] < depth && depth <= 19)
                 return ("dlevel >= clevel");
             break;
         case CLASS_PALADIN:
-            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+            if (borg.trait[BI_MAXCLEVEL] < depth && depth <= 19)
                 return ("dlevel >= clevel");
             break;
         case CLASS_RANGER:
-            if (borg_trait[BI_MAXCLEVEL] < depth && depth <= 19)
+            if (borg.trait[BI_MAXCLEVEL] < depth && depth <= 19)
                 return ("dlevel >= clevel");
             break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
-                && borg_trait[BI_MAXCLEVEL] <= 28)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 5)
+                && borg.trait[BI_MAXCLEVEL] <= 28)
                 return ("dlevel + 5 > = clevel");
             break;
         }
     }
 
     /* Potions of Cure Critical Wounds */
-    if ((borg_trait[BI_MAXCLEVEL] < 30) && borg_trait[BI_ACCW] < 3)
+    if ((borg.trait[BI_MAXCLEVEL] < 30) && borg.trait[BI_ACCW] < 3)
         return ("cure crit3");
 
     /* See invisible */
     /* or telepathy */
-    if ((!borg_trait[BI_SINV] && !borg_trait[BI_DINV] && !borg_trait[BI_ESP]))
+    if ((!borg.trait[BI_SINV] && !borg.trait[BI_DINV] && !borg.trait[BI_ESP]))
         return ("See Invis : ESP");
 
     /* Usually ready for level 10 to 19 */
@@ -266,7 +266,7 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 20 ***/
 
     /* Free action */
-    if (!borg_trait[BI_FRACT])
+    if (!borg.trait[BI_FRACT])
         return ("FA");
 
     /* ready for level 20 */
@@ -276,68 +276,68 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 25 ***/
 
     /* must have fire + 2 other basic resists */
-    if (!borg_trait[BI_SRFIRE])
+    if (!borg.trait[BI_SRFIRE])
         return ("RF");
     {
-        int basics = borg_trait[BI_RACID] + borg_trait[BI_RCOLD]
-                     + borg_trait[BI_RELEC];
+        int basics = borg.trait[BI_RACID] + borg.trait[BI_RCOLD]
+                     + borg.trait[BI_RELEC];
 
         if (basics < 2)
             return ("basic resist2");
     }
     /* have some minimal stats */
-    if (borg_stat[STAT_STR] < 7)
+    if (borg.stat_cur[STAT_STR] < 7)
         return ("low STR");
 
     int spell_stat = borg_spell_stat();
     if (spell_stat != -1) {
-        if (borg_stat[spell_stat] < 7)
+        if (borg.stat_cur[spell_stat] < 7)
             return ("low spell stat");
     }
-    if (borg_stat[STAT_DEX] < 7)
+    if (borg.stat_cur[STAT_DEX] < 7)
         return ("low DEX");
-    if (borg_stat[STAT_CON] < 7)
+    if (borg.stat_cur[STAT_CON] < 7)
         return ("low CON");
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* class specific requirement */
-        switch (borg_class) {
+        switch (borg.trait[BI_CLASS]) {
         case CLASS_WARRIOR:
         case CLASS_BLACKGUARD:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 5)
-                && borg_trait[BI_MAXCLEVEL] <= 38)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 5)
+                && borg.trait[BI_MAXCLEVEL] <= 38)
                 return ("dlevel + 5 >= clevel");
             break;
         case CLASS_ROGUE:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 10)
-                && borg_trait[BI_MAXCLEVEL] <= 43)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 10)
+                && borg.trait[BI_MAXCLEVEL] <= 43)
                 return ("dlevel + 10 >= clevel");
             break;
         case CLASS_PRIEST:
         case CLASS_DRUID:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 13)
-                && borg_trait[BI_MAXCLEVEL] <= 46)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 13)
+                && borg.trait[BI_MAXCLEVEL] <= 46)
                 return ("dlevel + 13 >= clevel");
             break;
         case CLASS_PALADIN:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 7)
-                && borg_trait[BI_MAXCLEVEL] <= 40)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 7)
+                && borg.trait[BI_MAXCLEVEL] <= 40)
                 return ("dlevel + 7 >= clevel");
             break;
         case CLASS_RANGER:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
-                && borg_trait[BI_MAXCLEVEL] <= 41
-                && borg_trait[BI_MAXCLEVEL] > 28)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 8)
+                && borg.trait[BI_MAXCLEVEL] <= 41
+                && borg.trait[BI_MAXCLEVEL] > 28)
                 return ("dlevel + 8 >= clevel");
             break;
         case CLASS_MAGE:
         case CLASS_NECROMANCER:
-            if (borg_trait[BI_MAXCLEVEL] < (depth + 8)
-                && borg_trait[BI_MAXCLEVEL] <= 38)
+            if (borg.trait[BI_MAXCLEVEL] < (depth + 8)
+                && borg.trait[BI_MAXCLEVEL] <= 38)
                 return ("dlevel + 8 >= clevel");
-            if (((borg_trait[BI_MAXCLEVEL] - 38) * 2 + 30) < depth
-                && borg_trait[BI_MAXCLEVEL] <= 44
-                && borg_trait[BI_MAXCLEVEL] > 38)
+            if (((borg.trait[BI_MAXCLEVEL] - 38) * 2 + 30) < depth
+                && borg.trait[BI_MAXCLEVEL] <= 44
+                && borg.trait[BI_MAXCLEVEL] > 38)
                 return ("(clevel-38)*2+30 < dlevel");
             break;
         }
@@ -350,20 +350,20 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 25 to 39 ***/
 
     /* All Basic resistance*/
-    if (!borg_trait[BI_SRCOLD])
+    if (!borg.trait[BI_SRCOLD])
         return ("RC");
-    if (!borg_trait[BI_SRELEC])
+    if (!borg.trait[BI_SRELEC])
         return ("RE");
-    if (!borg_trait[BI_SRACID])
+    if (!borg.trait[BI_SRACID])
         return ("RA");
 
     /* Escape and Teleport */
-    if (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] < 6)
+    if (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] < 6)
         return ("tell&esc6");
 
     /* Cure Critical Wounds */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && (borg_trait[BI_ACCW] + borg_trait[BI_ACSW]) < 10)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && (borg.trait[BI_ACCW] + borg.trait[BI_ACSW]) < 10)
         return ("cure10");
 
     /* Ready for level 33 */
@@ -371,7 +371,7 @@ static const char *borg_prepared_aux(int depth)
         return ((char *)NULL);
 
     /* Minimal level */
-    if (borg_trait[BI_MAXCLEVEL] < 40 && !borg_cfg[BORG_PLAYS_RISKY])
+    if (borg.trait[BI_MAXCLEVEL] < 40 && !borg_cfg[BORG_PLAYS_RISKY])
         return ("level 40");
 
     /* Usually ready for level 20 to 39 */
@@ -381,21 +381,21 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 40 to 45 ***/
 
     /* Resist */
-    if (!borg_trait[BI_SRPOIS])
+    if (!borg.trait[BI_SRPOIS])
         return ("RPois");
-    if (!borg_trait[BI_SRCONF])
+    if (!borg.trait[BI_SRCONF])
         return ("RConf");
 
-    if (borg_stat[STAT_STR] < 16)
+    if (borg.stat_cur[STAT_STR] < 16)
         return ("low STR");
 
     if (spell_stat != -1) {
-        if (borg_stat[spell_stat] < 16)
+        if (borg.stat_cur[spell_stat] < 16)
             return ("low spell stat");
     }
-    if (borg_stat[STAT_DEX] < 16)
+    if (borg.stat_cur[STAT_DEX] < 16)
         return ("low DEX");
-    if (borg_stat[STAT_CON] < 16)
+    if (borg.stat_cur[STAT_CON] < 16)
         return ("low CON");
 
     /* Ok to continue */
@@ -405,36 +405,36 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 46 to 55 ***/
 
     /*  Must have +5 speed after level 46 */
-    if (borg_trait[BI_SPEED] < 115)
+    if (borg.trait[BI_SPEED] < 115)
         return ("+5 speed");
 
     /* Potions of heal */
-    if (borg_trait[BI_AHEAL] < 1 && (borg_trait[BI_AEZHEAL] < 1))
+    if (borg.trait[BI_AHEAL] < 1 && (borg.trait[BI_AEZHEAL] < 1))
         return ("1heal");
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
         /* Minimal hitpoints */
-        if (borg_trait[BI_MAXHP] < 500)
+        if (borg.trait[BI_MAXHP] < 500)
             return ("HP 500");
     }
 
     /* High stats XXX XXX XXX */
-    if (borg_stat[STAT_STR] < 18 + 40)
+    if (borg.stat_cur[STAT_STR] < 18 + 40)
         return ("low STR");
 
     if (spell_stat != -1) {
-        if (borg_stat[spell_stat] < 18 + 100)
+        if (borg.stat_cur[spell_stat] < 18 + 100)
             return ("low spell stat");
     }
-    if (borg_stat[STAT_DEX] < 18 + 60)
+    if (borg.stat_cur[STAT_DEX] < 18 + 60)
         return ("low DEX");
-    if (borg_stat[STAT_CON] < 18 + 60)
+    if (borg.stat_cur[STAT_CON] < 18 + 60)
         return ("low CON");
 
     /* Hold Life */
-    if ((!borg_trait[BI_HLIFE] && !weapon_swap_hold_life
+    if ((!borg.trait[BI_HLIFE] && !weapon_swap_hold_life
             && !armour_swap_hold_life)
-        && (borg_trait[BI_MAXCLEVEL] < 50))
+        && (borg.trait[BI_MAXCLEVEL] < 50))
         return ("hold life");
 
     /* Usually ready for level 46 to 55 */
@@ -444,19 +444,19 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 55 to 59 ***/
 
     /* Potions of heal */
-    if (borg_trait[BI_AHEAL] < 2 && borg_trait[BI_AEZHEAL] < 1)
+    if (borg.trait[BI_AHEAL] < 2 && borg.trait[BI_AEZHEAL] < 1)
         return ("2heal");
 
     /* Resists */
-    if (!borg_trait[BI_SRBLIND])
+    if (!borg.trait[BI_SRBLIND])
         return ("RBlind");
 
     /* Must have resist nether */
-    /*    if (!borg_settings[BORG_PLAYS_RISKY] && !borg_trait[BI_SRNTHR]) return
+    /*    if (!borg_settings[BORG_PLAYS_RISKY] && !borg.trait[BI_SRNTHR]) return
      * ("RNeth"); */
 
     /* Telepathy, better have it by now */
-    if (!borg_trait[BI_ESP])
+    if (!borg.trait[BI_ESP])
         return ("ESP");
 
     /* Usually ready for level 55 to 59 */
@@ -466,13 +466,13 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 61 to 80 ***/
 
     /* Must have +10 speed */
-    if (borg_trait[BI_SPEED] < 120)
+    if (borg.trait[BI_SPEED] < 120)
         return ("+10 speed");
 
     /* Resists */
-    if (!borg_trait[BI_SRKAOS])
+    if (!borg.trait[BI_SRKAOS])
         return ("RChaos");
-    if (!borg_trait[BI_SRDIS])
+    if (!borg.trait[BI_SRDIS])
         return ("RDisen");
 
     /* Usually ready for level 61 to 80 */
@@ -481,7 +481,7 @@ static const char *borg_prepared_aux(int depth)
 
     /*** Essential Items for Level 81-85 ***/
     /* Minimal Speed */
-    if (borg_trait[BI_SPEED] < 130)
+    if (borg.trait[BI_SPEED] < 130)
         return ("+20 Speed");
 
     /* Usually ready for level 81 to 85 */
@@ -497,21 +497,21 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 100 ***/
 
     /* must have lots of restore mana to go after MORGOTH */
-    if (!borg_trait[BI_KING]) {
-        if ((borg_trait[BI_MAXSP] > 100)
-            && (borg_has[kv_potion_restore_mana] < 15))
+    if (!borg.trait[BI_KING]) {
+        if ((borg.trait[BI_MAXSP] > 100)
+            && (borg.has[kv_potion_restore_mana] < 15))
             return ("10ResMana");
 
         /* must have lots of heal */
-        if (borg_has[kv_potion_healing] < 5)
+        if (borg.has[kv_potion_healing] < 5)
             return ("5Heal");
 
         /* must have lots of ez-heal */
-        if (borg_trait[BI_AEZHEAL] < 15)
+        if (borg.trait[BI_AEZHEAL] < 15)
             return ("15EZHeal");
 
         /* must have lots of speed */
-        if (borg_trait[BI_ASPEED] < 10)
+        if (borg.trait[BI_ASPEED] < 10)
             return ("10Speed");
     }
 
@@ -548,7 +548,7 @@ const char *borg_prepared(int depth)
         return (reason);
 
     /*** Require his Clevel to be greater than or equal to Depth */
-    if (borg_trait[BI_MAXCLEVEL] < depth && borg_trait[BI_MAXCLEVEL] < 50)
+    if (borg.trait[BI_MAXCLEVEL] < depth && borg.trait[BI_MAXCLEVEL] < 50)
         return ("Clevel < depth");
 
     /* Must meet minimal requirements */
@@ -565,16 +565,16 @@ const char *borg_prepared(int depth)
     }
 
     /* Once Morgoth is dead */
-    if (borg_trait[BI_KING]) {
+    if (borg.trait[BI_KING]) {
         return ((char *)NULL);
     }
 
     /* Always okay from town */
-    if (!borg_trait[BI_CDEPTH])
+    if (!borg.trait[BI_CDEPTH])
         return (reason);
 
     /* Scum on depth 80-81 for some *heal* potions */
-    if (depth >= 82 && (num_ezheal < 10 && borg_trait[BI_AEZHEAL] < 10)) {
+    if (depth >= 82 && (num_ezheal < 10 && borg.trait[BI_AEZHEAL] < 10)) {
         /* Must know exact number of Potions  in home */
         borg_notice_home(NULL, false);
 
@@ -584,23 +584,23 @@ const char *borg_prepared(int depth)
     }
 
     /* Scum on depth 80-81 for lots of *Heal* potions preparatory for Endgame */
-    if (depth >= 82 && borg_trait[BI_MAXDEPTH] >= 97) {
+    if (depth >= 82 && borg.trait[BI_MAXDEPTH] >= 97) {
         /* Must know exact number of Potions  in home */
         borg_notice_home(NULL, false);
 
         /* Scum for 30*/
-        if (num_ezheal_true + borg_trait[BI_AEZHEAL] < 30) {
+        if (num_ezheal_true + borg.trait[BI_AEZHEAL] < 30) {
             strnfmt(borg_prepared_buffer, MAX_REASON,
                 "Scumming *Heal* potions (%d to go).",
-                30 - (num_ezheal_true + borg_trait[BI_AEZHEAL]));
+                30 - (num_ezheal_true + borg.trait[BI_AEZHEAL]));
             return (borg_prepared_buffer);
         }
 
         /* Return to town to get your stock from the home*/
-        if (num_ezheal_true + borg_trait[BI_AEZHEAL] >= 30
+        if (num_ezheal_true + borg.trait[BI_AEZHEAL] >= 30
             && /* Enough combined EZ_HEALS */
             num_ezheal_true >= 1
-            && borg_trait[BI_MAXDEPTH]
+            && borg.trait[BI_MAXDEPTH]
                    >= 99) /* Still some sitting in the house */
         {
             strnfmt(borg_prepared_buffer, MAX_REASON,
@@ -611,12 +611,12 @@ const char *borg_prepared(int depth)
 
     /* Check to make sure the borg does not go below where 3 living */
     /* uniques are. */
-    if (borg_trait[BI_MAXDEPTH] <= 98) {
+    if (borg.trait[BI_MAXDEPTH] <= 98) {
         struct monster_race *r_ptr = &r_info[borg_living_unique_index];
 
         /* are too many uniques alive */
         if (borg_numb_live_unique < 3 || borg_cfg[BORG_PLAYS_RISKY]
-            || borg_trait[BI_CLEVEL] == 50
+            || borg.trait[BI_CLEVEL] == 50
             || borg_cfg[BORG_KILLS_UNIQUES] == false)
             return ((char *)NULL);
 
@@ -629,7 +629,7 @@ const char *borg_prepared(int depth)
         strnfmt(borg_prepared_buffer, MAX_REASON, "Must kill %s.", r_ptr->name);
         return (borg_prepared_buffer);
 
-    } else if (borg_trait[BI_MAXDEPTH] >= 98 || depth >= 98)
+    } else if (borg.trait[BI_MAXDEPTH] >= 98 || depth >= 98)
     /* check to make sure the borg does not go to level 100 */
     /* unless all the uniques are dead. */
     {
@@ -639,23 +639,23 @@ const char *borg_prepared(int depth)
         r_ptr = &r_info[borg_living_unique_index];
 
         /* -1 is unknown. */
-        borg_ready_morgoth = -1;
+        borg.ready_morgoth = -1;
 
         if (borg_numb_live_unique < 1
             || borg_living_unique_index == borg_morgoth_id) /* Morgoth */
         {
             if (depth >= 99)
-                borg_ready_morgoth = 1;
+                borg.ready_morgoth = 1;
             return ((char *)NULL);
         }
 
         /* Under special cases allow the borg to dive to 99 then quickly
          * get his butt to dlevel 98
          */
-        if (borg_trait[BI_MAXDEPTH] == 99 && depth <= 98
+        if (borg.trait[BI_MAXDEPTH] == 99 && depth <= 98
             && (borg_spell_legal_fail(TELEPORT_LEVEL, 20)
                 || /* Teleport Level */
-                borg_trait[BI_ATELEPORTLVL] >= 1)) /* Teleport Level scroll */
+                borg.trait[BI_ATELEPORTLVL] >= 1)) /* Teleport Level scroll */
         {
             return ((char *)NULL);
         }
@@ -678,33 +678,33 @@ const char *borg_restock(int depth)
 {
 
     /* We are now looking at our preparedness */
-    if (-1 == borg_ready_morgoth)
-        borg_ready_morgoth = 0;
+    if (-1 == borg.ready_morgoth)
+        borg.ready_morgoth = 0;
 
     /* Always ready for the town */
     if (!depth)
         return ((char *)NULL);
 
     /* Always Ready to leave town */
-    if (borg_trait[BI_CDEPTH] == 0)
+    if (borg.trait[BI_CDEPTH] == 0)
         return ((char *)NULL);
 
     /* Always spend time on a level unless 100*/
-    if (borg_t - borg_began < 100 && borg_trait[BI_CDEPTH] != 100)
+    if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
         return ((char *)NULL);
 
     /*** Level 1 ***/
 
     /* Must have some lite */
-    if (borg_trait[BI_CURLITE] < 1)
+    if (borg.trait[BI_CURLITE] < 1)
         return ("rs my_CURLITE");
 
     /* Must have "fuel" */
-    if (borg_trait[BI_AFUEL] < 1 && !borg_trait[BI_LIGHT])
+    if (borg.trait[BI_AFUEL] < 1 && !borg.trait[BI_LIGHT])
         return ("rs amt_fuel");
 
     /* Must have "food" */
-    if (borg_trait[BI_FOOD] < 1)
+    if (borg.trait[BI_FOOD] < 1)
         return ("rs amt_food");
 
     /* Assume happy at level 1 */
@@ -714,15 +714,15 @@ const char *borg_restock(int depth)
     /*** Level 2 and 3 ***/
 
     /* Must have "fuel" */
-    if (borg_trait[BI_AFUEL] < 2 && !borg_trait[BI_LIGHT])
+    if (borg.trait[BI_AFUEL] < 2 && !borg.trait[BI_LIGHT])
         return ("rs fuel+2");
 
     /* Must have "food" */
-    if (borg_trait[BI_FOOD] < 3)
+    if (borg.trait[BI_FOOD] < 3)
         return ("rs food+2");
 
     /* Must have "recall" */
-    /* if (borg_trait[BI_RECALL] < 2) return ("rs recall"); */
+    /* if (borg.trait[BI_RECALL] < 2) return ("rs recall"); */
 
     /* Assume happy at level 3 */
     if (depth <= 3)
@@ -736,12 +736,12 @@ const char *borg_restock(int depth)
     /*** Level 6 to 9 ***/
 
     /* Must have "phase" */
-    if (borg_trait[BI_APHASE] < 1)
+    if (borg.trait[BI_APHASE] < 1)
         return ("rs phase");
 
     /* Potions of Cure Wounds */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && borg_trait[BI_ACLW] + borg_trait[BI_ACSW] + borg_trait[BI_ACCW] < 1)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 1)
         return ("rs clw/csw");
 
     /* Assume happy at level 9 */
@@ -751,16 +751,16 @@ const char *borg_restock(int depth)
     /*** Level 10 - 19  ***/
 
     /* Must have good light */
-    if (borg_trait[BI_CURLITE] < 2)
+    if (borg.trait[BI_CURLITE] < 2)
         return "2 Light";
 
     /* Must have "cure" */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && borg_trait[BI_ACLW] + borg_trait[BI_ACSW] + borg_trait[BI_ACCW] < 2)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 2)
         return ("rs cure");
 
     /* Must have "teleport" */
-    if (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] < 2)
+    if (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] < 2)
         return ("rs tele&esc(1)");
 
     /* Assume happy at level 19 */
@@ -770,12 +770,12 @@ const char *borg_restock(int depth)
     /*** Level 20 - 35  ***/
 
     /* Must have "cure" */
-    if ((borg_trait[BI_MAXCLEVEL] < 30)
-        && borg_trait[BI_ACSW] + borg_trait[BI_ACCW] < 4)
+    if ((borg.trait[BI_MAXCLEVEL] < 30)
+        && borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 4)
         return ("rs cure");
 
     /* Must have "teleport" or Staff */
-    if (borg_trait[BI_ATELEPORT] + borg_trait[BI_AESCAPE] < 4)
+    if (borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] < 4)
         return ("rs tele&esc(4)");
 
     /* Assume happy at level 44 */
@@ -785,7 +785,7 @@ const char *borg_restock(int depth)
     /*** Level 36 - 45  ***/
 
     /* Must have Scroll of Teleport (or good 2nd choice) */
-    if (borg_trait[BI_ATELEPORT] + borg_trait[BI_ATELEPORTLVL] < 2)
+    if (borg.trait[BI_ATELEPORT] + borg.trait[BI_ATELEPORTLVL] < 2)
         return ("rs teleport(1)");
 
     /* Assume happy at level 44 */
@@ -801,7 +801,7 @@ const char *borg_restock(int depth)
     /*** Level 65 - 99  ***/
 
     /* Must have "Heal" */
-    if (borg_trait[BI_AHEAL] + borg_has[kv_rod_healing] + borg_trait[BI_AEZHEAL]
+    if (borg.trait[BI_AHEAL] + borg.has[kv_rod_healing] + borg.trait[BI_AEZHEAL]
         < 1)
         return ("rs heal");
 
@@ -813,7 +813,7 @@ const char *borg_restock(int depth)
 
     /* Must have "Heal" */
     /* If I just got to dlevel 100 and low on heals, get out now. */
-    if (borg_t - borg_began < 10 && borg_trait[BI_AEZHEAL] < 15)
+    if (borg_t - borg_began < 10 && borg.trait[BI_AEZHEAL] < 15)
         return ("rs *heal*");
 
     /* Assume happy */

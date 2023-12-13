@@ -49,7 +49,7 @@ struct borg_kill {
     bool         seen; /* Assigned motion */
     bool         used; /* Assigned message */
 
-    uint8_t      x, y; /* Location */
+    struct loc   pos; /* Location */
 
     uint8_t      ox, oy; /* Old location */
 
@@ -142,7 +142,7 @@ extern bool observe_kill_move(
 /*
  * Attempt to locate a monster which could explain a message
  */
-extern int borg_locate_kill(char* who, int y, int x, int r);
+extern int borg_locate_kill(char* who, struct loc c, int r);
 
 /*
  * Notice the "death" of a monster

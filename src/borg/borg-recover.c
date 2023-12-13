@@ -72,7 +72,7 @@ bool borg_recover(void)
     /*** Do not recover when in danger ***/
 
     /* Look around for danger */
-    p = borg_danger(c_y, c_x, 1, true, false);
+    p = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
     /* Never recover in dangerous situations */
     if (p > avoidance / 4)
@@ -84,17 +84,17 @@ bool borg_recover(void)
     q = randint0(100);
 
     /* Half dead */
-    if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2)
+    if (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2)
         q = q - 10;
 
     /* Almost dead */
-    if (borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 4)
+    if (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 4)
         q = q - 10;
 
     /*** Use "cheap" cures ***/
 
     /* Hack -- cure stun */
-    if (borg_trait[BI_ISSTUN] && (q < 75)) {
+    if (borg.trait[BI_ISSTUN] && (q < 75)) {
         if (borg_activate_item(act_cure_body)
             || borg_activate_item(act_cure_critical)
             || borg_activate_item(act_cure_full)
@@ -113,7 +113,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure stun */
-    if (borg_trait[BI_ISHEAVYSTUN]) {
+    if (borg.trait[BI_ISHEAVYSTUN]) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_activate_item(act_cure_body)
             || borg_activate_item(act_cure_critical)
@@ -131,7 +131,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure cuts */
-    if (borg_trait[BI_ISCUT] && (q < 75)) {
+    if (borg.trait[BI_ISCUT] && (q < 75)) {
         if (borg_activate_item(act_cure_light) || borg_spell(MINOR_HEALING)
             || borg_spell(HEALING) || borg_spell(HERBAL_CURING)
             || borg_spell(HOLY_WORD)) {
@@ -143,7 +143,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure poison */
-    if (borg_trait[BI_ISPOISONED] && (q < 75)) {
+    if (borg.trait[BI_ISPOISONED] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_activate_item(act_rem_fear_pois)
             || borg_spell(HERBAL_CURING) || borg_spell(CURE_POISON)) {
@@ -155,7 +155,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure fear */
-    if (borg_trait[BI_ISAFRAID] && !borg_trait[BI_CRSFEAR] && (q < 75)) {
+    if (borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_activate_item(act_rem_fear_pois) || borg_spell(HEROISM)
             || borg_spell(BERSERK_STRENGTH) || borg_spell(HOLY_WORD)) {
@@ -167,22 +167,22 @@ bool borg_recover(void)
     }
 
     /* Hack -- satisfy hunger */
-    if ((borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK]) && (q < 75)) {
+    if ((borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]) && (q < 75)) {
         if (borg_spell(REMOVE_HUNGER) || borg_spell(HERBAL_CURING)) {
             return (true);
         }
     }
 
     /* Hack -- hallucination */
-    if (borg_trait[BI_ISIMAGE] && (q < 75)) {
+    if (borg.trait[BI_ISIMAGE] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)) {
             return (true);
         }
     }
 
     /* Hack -- heal damage */
-    if ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) && (q < 75) && p == 0
-        && (borg_trait[BI_CURSP] > borg_trait[BI_MAXSP] / 4)) {
+    if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) && (q < 75) && p == 0
+        && (borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4)) {
         if (borg_activate_item(act_heal1) || borg_activate_item(act_heal2)
             || borg_activate_item(act_heal3) || borg_spell(HEALING)
             || borg_spell(HOLY_WORD) || borg_spell(MINOR_HEALING)
@@ -195,34 +195,34 @@ bool borg_recover(void)
     }
 
     /* cure experience loss with prayer */
-    if (borg_trait[BI_ISFIXEXP]
+    if (borg.trait[BI_ISFIXEXP]
         && (borg_activate_item(act_restore_exp)
             || borg_activate_item(act_restore_st_lev)
             || borg_activate_item(act_restore_life) || borg_spell(REVITALIZE)
             || borg_spell(REMEMBRANCE)
-            || (borg_trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)))) {
+            || (borg.trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)))) {
         return (true);
     }
 
     /* cure stat drain with prayer */
-    if ((borg_trait[BI_ISFIXSTR] || borg_trait[BI_ISFIXINT]
-            || borg_trait[BI_ISFIXWIS] || borg_trait[BI_ISFIXDEX]
-            || borg_trait[BI_ISFIXCON] || borg_trait[BI_ISFIXALL])
+    if ((borg.trait[BI_ISFIXSTR] || borg.trait[BI_ISFIXINT]
+            || borg.trait[BI_ISFIXWIS] || borg.trait[BI_ISFIXDEX]
+            || borg.trait[BI_ISFIXCON] || borg.trait[BI_ISFIXALL])
         && (borg_spell(RESTORATION) || borg_spell(REVITALIZE))) {
         return (true);
     }
 
     /* cure stat drain with prayer */
-    if ((borg_trait[BI_ISFIXSTR] || borg_trait[BI_ISFIXINT]
-            || borg_trait[BI_ISFIXCON])
-        && borg_trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) {
+    if ((borg.trait[BI_ISFIXSTR] || borg.trait[BI_ISFIXINT]
+            || borg.trait[BI_ISFIXCON])
+        && borg.trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE)) {
         return (true);
     }
 
     /*** Use "expensive" cures ***/
 
     /* Hack -- cure stun */
-    if (borg_trait[BI_ISSTUN] && (q < 25)) {
+    if (borg.trait[BI_ISSTUN] && (q < 25)) {
         if (borg_use_staff_fail(sv_staff_curing) || borg_zap_rod(sv_rod_curing)
             || borg_zap_rod(sv_rod_healing) || borg_activate_item(act_heal1)
             || borg_activate_item(act_heal2) || borg_quaff_crit(false)) {
@@ -231,7 +231,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure heavy stun */
-    if (borg_trait[BI_ISHEAVYSTUN] && (q < 95)) {
+    if (borg.trait[BI_ISHEAVYSTUN] && (q < 95)) {
         if (borg_quaff_crit(true) || borg_use_staff_fail(sv_staff_curing)
             || borg_zap_rod(sv_rod_curing) || borg_zap_rod(sv_rod_healing)
             || borg_activate_item(act_heal1) || borg_activate_item(act_heal2)) {
@@ -240,22 +240,22 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure cuts */
-    if (borg_trait[BI_ISCUT] && (q < 25)) {
+    if (borg.trait[BI_ISCUT] && (q < 25)) {
         if (borg_use_staff_fail(sv_staff_curing) || borg_zap_rod(sv_rod_curing)
             || borg_zap_rod(sv_rod_healing) || borg_activate_item(act_heal1)
             || borg_activate_item(act_heal2)
-            || borg_quaff_crit(borg_trait[BI_CURHP] < 10)) {
+            || borg_quaff_crit(borg.trait[BI_CURHP] < 10)) {
             return (true);
         }
     }
 
     /* Hack -- cure poison */
-    if (borg_trait[BI_ISPOISONED] && (q < 25)) {
+    if (borg.trait[BI_ISPOISONED] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_quaff_potion(sv_potion_cure_poison)
             || borg_eat(TV_FOOD, sv_food_waybread)
             || borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
-            || borg_quaff_crit(borg_trait[BI_CURHP] < 10)
+            || borg_quaff_crit(borg.trait[BI_CURHP] < 10)
             || borg_use_staff_fail(sv_staff_curing)
             || borg_zap_rod(sv_rod_curing)
             || borg_activate_item(act_rem_fear_pois)
@@ -265,7 +265,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure blindness */
-    if (borg_trait[BI_ISBLIND] && (q < 25)) {
+    if (borg.trait[BI_ISBLIND] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_eat(TV_FOOD, sv_food_waybread)
             || borg_quaff_potion(sv_potion_cure_light)
@@ -278,7 +278,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure confusion */
-    if (borg_trait[BI_ISCONFUSED] && (q < 25)) {
+    if (borg.trait[BI_ISCONFUSED] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_crit(false) || borg_use_staff_fail(sv_staff_curing)
@@ -289,7 +289,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- cure fear */
-    if (borg_trait[BI_ISAFRAID] && !borg_trait[BI_CRSFEAR] && (q < 25)) {
+    if (borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_boldness)
             || borg_quaff_potion(sv_potion_heroism)
@@ -300,7 +300,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- satisfy hunger */
-    if ((borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK]) && (q < 25)) {
+    if ((borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]) && (q < 25)) {
         if (borg_read_scroll(sv_scroll_satisfy_hunger)
             || borg_activate_item(act_satisfy)) {
             return (true);
@@ -308,7 +308,7 @@ bool borg_recover(void)
     }
 
     /* Hack -- heal damage */
-    if ((borg_trait[BI_CURHP] < borg_trait[BI_MAXHP] / 2) && (q < 25)) {
+    if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) && (q < 25)) {
         if (borg_zap_rod(sv_rod_healing)
             || borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_crit(false) || borg_activate_item(act_cure_serious)) {
@@ -317,23 +317,23 @@ bool borg_recover(void)
     }
 
     /* Hack -- Rest to recharge Rods of Healing or Recall*/
-    if (borg_has[kv_rod_recall] || borg_has[kv_rod_healing]) {
+    if (borg.has[kv_rod_recall] || borg.has[kv_rod_healing]) {
         /* Step 1.  Recharge just 1 rod. */
-        if ((borg_has[kv_rod_healing]
+        if ((borg.has[kv_rod_healing]
                 && !borg_items[borg_slot(TV_ROD, sv_rod_healing)].pval)
-            || (borg_has[kv_rod_recall]
+            || (borg.has[kv_rod_recall]
                 && !borg_items[borg_slot(TV_ROD, sv_rod_recall)].pval)) {
             /* Mages can cast the recharge spell */
 
             /* Rest until at least one recharges */
-            if (!borg_trait[BI_ISWEAK] && !borg_trait[BI_ISCUT]
-                && !borg_trait[BI_ISHUNGRY] && !borg_trait[BI_ISPOISONED]
-                && borg_check_rest(c_y, c_x) && !borg_spell_okay(RECHARGING)) {
+            if (!borg.trait[BI_ISWEAK] && !borg.trait[BI_ISCUT]
+                && !borg.trait[BI_ISHUNGRY] && !borg.trait[BI_ISPOISONED]
+                && borg_check_rest(borg.c.y, borg.c.x) && !borg_spell_okay(RECHARGING)) {
                 /* Take note */
                 borg_note("# Resting to recharge a rod...");
 
                 /* Reset the Bouncing-borg Timer */
-                time_this_panel = 0;
+                borg.time_this_panel = 0;
 
                 /* Rest until done */
                 borg_keypress('R');
@@ -343,7 +343,7 @@ bool borg_recover(void)
                 borg_keypress(KC_ENTER);
 
                 /* I'm not in a store */
-                borg_in_shop = false;
+                borg.in_shop = false;
 
                 /* Done */
                 return (true);
@@ -354,19 +354,19 @@ bool borg_recover(void)
     /*** Just Rest ***/
 
     /* Hack -- rest until healed */
-    if (!borg_trait[BI_ISBLIND] && !borg_trait[BI_ISPOISONED]
-        && !borg_trait[BI_ISCUT] && !borg_trait[BI_ISWEAK]
-        && !borg_trait[BI_ISHUNGRY]
-        && (borg_trait[BI_ISCONFUSED] || borg_trait[BI_ISIMAGE]
-            || borg_trait[BI_ISAFRAID] || borg_trait[BI_ISSTUN]
-            || borg_trait[BI_ISHEAVYSTUN]
-            || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP]
-            || borg_trait[BI_CURSP] < borg_trait[BI_MAXSP]
-                                          * (borg_trait[BI_CDEPTH] > 85 ? 7 : 6)
+    if (!borg.trait[BI_ISBLIND] && !borg.trait[BI_ISPOISONED]
+        && !borg.trait[BI_ISCUT] && !borg.trait[BI_ISWEAK]
+        && !borg.trait[BI_ISHUNGRY]
+        && (borg.trait[BI_ISCONFUSED] || borg.trait[BI_ISIMAGE]
+            || borg.trait[BI_ISAFRAID] || borg.trait[BI_ISSTUN]
+            || borg.trait[BI_ISHEAVYSTUN]
+            || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP]
+            || borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
+                                          * (borg.trait[BI_CDEPTH] > 85 ? 7 : 6)
                                           / 10)) {
-        if (borg_check_rest(c_y, c_x) && !scaryguy_on_level
-            && p <= borg_fear_region[c_y / 11][c_x / 11]
-            && goal != GOAL_RECOVER) {
+        if (borg_check_rest(borg.c.y, borg.c.x) && !scaryguy_on_level
+            && p <= borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+            && borg.goal.type != GOAL_RECOVER) {
 
             /* check for then call lite in dark room before resting */
             if (!borg_check_light_only()) {
@@ -379,10 +379,10 @@ bool borg_recover(void)
                 borg_keypress(KC_ENTER);
 
                 /* Reset our panel clock, we need to be here */
-                time_this_panel = 0;
+                borg.time_this_panel = 0;
 
                 /* reset the inviso clock to avoid loops */
-                borg_need_see_invis = borg_t - 50;
+                borg.need_see_invis = borg_t - 50;
 
                 /* Done */
                 return (true);
@@ -396,13 +396,13 @@ bool borg_recover(void)
     }
 
     /* Hack to recharge mana if a low level mage or priest */
-    if (borg_trait[BI_MAXSP]
-        && (borg_trait[BI_CLEVEL] <= 40 || borg_trait[BI_CDEPTH] >= 85)
-        && borg_trait[BI_CURSP] < (borg_trait[BI_MAXSP] * 8 / 10)
-        && p < avoidance * 1 / 10 && borg_check_rest(c_y, c_x)) {
-        if (!borg_trait[BI_ISWEAK] && !borg_trait[BI_ISCUT]
-            && !borg_trait[BI_ISHUNGRY] && !borg_trait[BI_ISPOISONED]
-            && borg_trait[BI_FOOD] > 2 && !borg_munchkin_mode) {
+    if (borg.trait[BI_MAXSP]
+        && (borg.trait[BI_CLEVEL] <= 40 || borg.trait[BI_CDEPTH] >= 85)
+        && borg.trait[BI_CURSP] < (borg.trait[BI_MAXSP] * 8 / 10)
+        && p < avoidance * 1 / 10 && borg_check_rest(borg.c.y, borg.c.x)) {
+        if (!borg.trait[BI_ISWEAK] && !borg.trait[BI_ISCUT]
+            && !borg.trait[BI_ISHUNGRY] && !borg.trait[BI_ISPOISONED]
+            && borg.trait[BI_FOOD] > 2 && !borg.munchkin_mode) {
             /* Take note */
             borg_note(format("# Resting to gain Mana. (danger %d)...", p));
 
@@ -412,7 +412,7 @@ bool borg_recover(void)
             borg_keypress(KC_ENTER);
 
             /* I'm not in a store */
-            borg_in_shop = false;
+            borg.in_shop = false;
 
             /* Done */
             return (true);
@@ -420,15 +420,15 @@ bool borg_recover(void)
     }
 
     /* Hack to recharge mana if a low level mage in munchkin mode */
-    if (borg_trait[BI_MAXSP] && borg_munchkin_mode == true
-        && (borg_trait[BI_CURSP] < borg_trait[BI_MAXSP]
-            || borg_trait[BI_CURHP] < borg_trait[BI_MAXHP])
-        && borg_check_rest(c_y, c_x)) {
-        if (!borg_trait[BI_ISWEAK] && !borg_trait[BI_ISCUT]
-            && !borg_trait[BI_ISHUNGRY] && !borg_trait[BI_ISPOISONED]
-            && borg_trait[BI_FOOD] > 2
-            && (borg_grids[c_y][c_x].feat == FEAT_MORE
-                || borg_grids[c_y][c_x].feat == FEAT_LESS)) {
+    if (borg.trait[BI_MAXSP] && borg.munchkin_mode == true
+        && (borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
+            || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP])
+        && borg_check_rest(borg.c.y, borg.c.x)) {
+        if (!borg.trait[BI_ISWEAK] && !borg.trait[BI_ISCUT]
+            && !borg.trait[BI_ISHUNGRY] && !borg.trait[BI_ISPOISONED]
+            && borg.trait[BI_FOOD] > 2
+            && (borg_grids[borg.c.y][borg.c.x].feat == FEAT_MORE
+                || borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS)) {
             /* Take note */
             borg_note(format(
                 "# Resting to gain munchkin HP/mana. (danger %d)...", p));
@@ -439,7 +439,7 @@ bool borg_recover(void)
             borg_keypress(KC_ENTER);
 
             /* I'm not in a store */
-            borg_in_shop = false;
+            borg.in_shop = false;
 
             /* Done */
             return (true);
@@ -447,7 +447,7 @@ bool borg_recover(void)
     }
 
     /* Hack to heal blindness if in munchkin mode */
-    if (borg_trait[BI_ISBLIND] && borg_munchkin_mode == true) {
+    if (borg.trait[BI_ISBLIND] && borg.munchkin_mode == true) {
         /* Take note */
         borg_note("# Resting to cure problem. (danger %d)...");
 
@@ -457,7 +457,7 @@ bool borg_recover(void)
         borg_keypress(KC_ENTER);
 
         /* I'm not in a store */
-        borg_in_shop = false;
+        borg.in_shop = false;
 
         /* Done */
         return (true);

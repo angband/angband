@@ -140,7 +140,7 @@ int16_t num_boots;
 /*
  * Helper function -- clear counters for home equipment
  *
- * !FIX This needs to change into an array like borg_trait
+ * !FIX This needs to change into an array like borg.trait
  */
 static void borg_notice_home_clear(borg_item *in_item, bool no_items)
 {
@@ -595,14 +595,14 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
                 }
 
                 num_blow = borg_calc_blows(item);
-                if (item->to_d > 8 || borg_trait[BI_CLEVEL] < 15) {
+                if (item->to_d > 8 || borg.trait[BI_CLEVEL] < 15) {
                     home_damage += num_blow
                                    * (item->dd * (item->ds)
-                                       + (borg_trait[BI_TODAM] + item->to_d));
+                                       + (borg.trait[BI_TODAM] + item->to_d));
                 } else {
                     home_damage += num_blow
                                    * (item->dd * (item->ds)
-                                       + (borg_trait[BI_TODAM] + 8));
+                                       + (borg.trait[BI_TODAM] + 8));
                 }
 
                 /* see if this item is a duplicate */
@@ -750,7 +750,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         case TV_STAFF:
 
             /* only collect staves with more than 3 charges at high level */
-            if (item->pval <= 3 && borg_trait[BI_CLEVEL] > 30)
+            if (item->pval <= 3 && borg.trait[BI_CLEVEL] > 30)
                 break;
 
             /* Analyze */
@@ -767,7 +767,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         case TV_BOLT:
 
             /* Hack -- ignore invalid missiles */
-            if (item->tval != borg_trait[BI_AMMO_TVAL])
+            if (item->tval != borg.trait[BI_AMMO_TVAL])
                 break;
 
             /* Hack -- ignore worthless missiles */
@@ -834,15 +834,15 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
     /*** Process the Needs ***/
 
     /* Hack -- No need for stat repair */
-    if (borg_trait[BI_SSTR])
+    if (borg.trait[BI_SSTR])
         num_fix_stat[STAT_STR] += 1000;
-    if (borg_trait[BI_SINT])
+    if (borg.trait[BI_SINT])
         num_fix_stat[STAT_INT] += 1000;
-    if (borg_trait[BI_SWIS])
+    if (borg.trait[BI_SWIS])
         num_fix_stat[STAT_WIS] += 1000;
-    if (borg_trait[BI_SDEX])
+    if (borg.trait[BI_SDEX])
         num_fix_stat[STAT_DEX] += 1000;
-    if (borg_trait[BI_SCON])
+    if (borg.trait[BI_SCON])
         num_fix_stat[STAT_CON] += 1000;
 
     /* Extract the player flags */

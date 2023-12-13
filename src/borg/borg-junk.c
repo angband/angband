@@ -75,12 +75,13 @@ static bool borg_consume(int i)
         /* Gain one/lose one potions */
         if (item->sval == sv_potion_inc_str2) {
             /* Maxed out no need. Don't lose another stat */
-            if (borg_trait[BI_CSTR] >= 118)
+            if (borg.trait[BI_CSTR] >= 118)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg_class == CLASS_MAGE || borg_class == CLASS_DRUID
-                || borg_class == CLASS_NECROMANCER)
+            if (borg.trait[BI_CLASS] == CLASS_MAGE 
+                || borg.trait[BI_CLASS] == CLASS_DRUID
+                || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
                 return (false);
 
             /* Otherwise, it should be ok */
@@ -90,11 +91,12 @@ static bool borg_consume(int i)
 
         if (item->sval == sv_potion_inc_int2) {
             /* Maxed out no need. Don't lose another stat */
-            if (borg_trait[BI_CINT] >= 118)
+            if (borg.trait[BI_CINT] >= 118)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg_class != CLASS_MAGE && borg_class != CLASS_NECROMANCER)
+            if (borg.trait[BI_CLASS] != CLASS_MAGE 
+                && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
                 return (false);
 
             /* Otherwise, it should be ok */
@@ -105,11 +107,12 @@ static bool borg_consume(int i)
 
         if (item->sval == sv_potion_inc_wis2) {
             /* Maxed out no need. Don't lose another stat */
-            if (borg_trait[BI_CWIS] >= 118)
+            if (borg.trait[BI_CWIS] >= 118)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg_class != CLASS_PRIEST && borg_class != CLASS_DRUID)
+            if (borg.trait[BI_CLASS] != CLASS_PRIEST
+                && borg.trait[BI_CLASS] != CLASS_DRUID)
                 return (false);
 
             /* Otherwise, it should be ok */
@@ -120,12 +123,14 @@ static bool borg_consume(int i)
 
         if (item->sval == sv_potion_inc_dex2) {
             /* Maxed out no need. Don't lose another stat */
-            if (borg_trait[BI_CDEX] >= 118)
+            if (borg.trait[BI_CDEX] >= 118)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST
-                || borg_class == CLASS_DRUID || borg_class == CLASS_NECROMANCER)
+            if (borg.trait[BI_CLASS] == CLASS_MAGE
+                || borg.trait[BI_CLASS] == CLASS_PRIEST
+                || borg.trait[BI_CLASS] == CLASS_DRUID
+                || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
                 return (false);
 
             /* Otherwise, it should be ok */
@@ -136,7 +141,7 @@ static bool borg_consume(int i)
 
         if (item->sval == sv_potion_inc_con2) {
             /* Maxed out no need. Don't lose another stat */
-            if (borg_trait[BI_CCON] >= 118)
+            if (borg.trait[BI_CCON] >= 118)
                 return (false);
 
             /* Otherwise, it should be ok */
@@ -172,7 +177,7 @@ static bool borg_consume(int i)
             || item->sval == sv_food_waybread)
 
             /* Try eating the food (unless Bloated) */
-            if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
+            if (!borg.trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
                 return (true);
 
         break;
@@ -192,7 +197,7 @@ static bool borg_consume(int i)
             || item->sval == sv_mush_purging)
 
             /* Try eating the food (unless Bloated) */
-            if (!borg_trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
+            if (!borg.trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
                 return (true);
 
         break;
@@ -205,18 +210,18 @@ static bool borg_consume(int i)
 /* HACK is it safe to crush an item here... must be on an empty floor square */
 static bool borg_safe_crush(void)
 {
-    if (borg_grids[c_y][c_x].feat != FEAT_FLOOR)
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
         return (false);
 
     /* hack check for invisible traps */
-    if (square_trap(cave, loc(c_x, c_y)))
+    if (square_trap(cave, borg.c))
         return (false);
 
     /* **HACK** don't drop on top of a previously ignored item */
     /* this is because if you drop something then ignore it then drop another */
     /* on top of it, the second item combines with the first and just disappears
      */
-    struct object *obj = square_object(cave, loc(c_x, c_y));
+    struct object *obj = square_object(cave, borg.c);
     while (obj) {
         if (obj->known->notice & OBJ_NOTICE_IGNORE)
             return (false);
@@ -247,7 +252,7 @@ bool borg_crush_junk(void)
         return (false);
 
     /* No crush if even slightly dangerous */
-    if (borg_danger(c_y, c_x, 1, true, false) > borg_trait[BI_CURHP] / 10)
+    if (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 10)
         return (false);
 
     /* Destroy actual "junk" items */
@@ -315,10 +320,10 @@ bool borg_crush_junk(void)
             }
 
             /* Keep some stuff */
-            if ((item->tval == borg_trait[BI_AMMO_TVAL] && value > 0)
+            if ((item->tval == borg.trait[BI_AMMO_TVAL] && value > 0)
                 || ((item->tval == TV_POTION
                         && item->sval == sv_potion_restore_mana)
-                    && (borg_trait[BI_MAXSP] >= 1))
+                    && (borg.trait[BI_MAXSP] >= 1))
                 || (item->tval == TV_POTION && item->sval == sv_potion_healing)
                 || (item->tval == TV_POTION
                     && item->sval == sv_potion_star_healing)
@@ -327,7 +332,7 @@ bool borg_crush_junk(void)
                 || (item->tval == TV_ROD && item->sval == sv_rod_drain_life)
                 || (item->tval == TV_ROD && item->sval == sv_rod_healing)
                 || (item->tval == TV_ROD && item->sval == sv_rod_mapping
-                    && borg_class == CLASS_WARRIOR)
+                    && borg.trait[BI_CLASS] == CLASS_WARRIOR)
                 || (item->tval == TV_STAFF
                     && item->sval == sv_staff_dispel_evil)
                 || (item->tval == TV_STAFF && item->sval == sv_staff_power)
@@ -335,12 +340,12 @@ bool borg_crush_junk(void)
                 || (item->tval == TV_WAND && item->sval == sv_wand_drain_life)
                 || (item->tval == TV_WAND && item->sval == sv_wand_annihilation)
                 || (item->tval == TV_WAND && item->sval == sv_wand_teleport_away
-                    && borg_class == CLASS_WARRIOR)
+                    && borg.trait[BI_CLASS] == CLASS_WARRIOR)
                 || (item->ego_idx
                     && borg_ego_has_random_power(&e_info[item->ego_idx]))
                 || (item->tval == TV_SCROLL
                     && item->sval == sv_scroll_teleport_level
-                    && borg_trait[BI_ATELEPORTLVL] < 1000)
+                    && borg.trait[BI_ATELEPORTLVL] < 1000)
                 || (item->tval == TV_SCROLL
                     && item->sval == sv_scroll_protection_from_evil))
 
@@ -355,7 +360,7 @@ bool borg_crush_junk(void)
             /* Crush missiles that aren't mine */
             if (item->tval == TV_SHOT || item->tval == TV_ARROW
                 || item->tval == TV_BOLT) {
-                if (item->tval != borg_trait[BI_AMMO_TVAL])
+                if (item->tval != borg.trait[BI_AMMO_TVAL])
                     value = 0L;
             }
 
@@ -364,41 +369,41 @@ bool borg_crush_junk(void)
              */
             if (item->value > 0
                 && ((borg_cfg[BORG_WORSHIPS_GOLD]
-                        || borg_trait[BI_MAXCLEVEL] < 10)
-                    || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg_trait[BI_GOLD])
+                        || borg.trait[BI_MAXCLEVEL] < 10)
+                    || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg.trait[BI_GOLD])
                         && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0))
-                && borg_trait[BI_MAXCLEVEL] <= 20 && !item->cursed)
+                && borg.trait[BI_MAXCLEVEL] <= 20 && !item->cursed)
                 continue;
 
             /* up to level 5, keep anything of any value */
-            if (borg_trait[BI_CDEPTH] < 5 && value > 0)
+            if (borg.trait[BI_CDEPTH] < 5 && value > 0)
                 continue;
             /* up to level 10, keep anything of any value */
-            if (borg_trait[BI_CDEPTH] < 10 && value > 15)
+            if (borg.trait[BI_CDEPTH] < 10 && value > 15)
                 continue;
             /* up to level 15, keep anything of value 100 or better */
-            if (borg_trait[BI_CDEPTH] < 15 && value > 100)
+            if (borg.trait[BI_CDEPTH] < 15 && value > 100)
                 continue;
             /* up to level 30, keep anything of value 500 or better */
-            if (borg_trait[BI_CDEPTH] < 30 && value > 500)
+            if (borg.trait[BI_CDEPTH] < 30 && value > 500)
                 continue;
             /* up to level 40, keep anything of value 1000 or better */
-            if (borg_trait[BI_CDEPTH] < 40 && value > 1000)
+            if (borg.trait[BI_CDEPTH] < 40 && value > 1000)
                 continue;
             /* up to level 60, keep anything of value 1200 or better */
-            if (borg_trait[BI_CDEPTH] < 60 && value > 1200)
+            if (borg.trait[BI_CDEPTH] < 60 && value > 1200)
                 continue;
             /* up to level 80, keep anything of value 1400 or better */
-            if (borg_trait[BI_CDEPTH] < 80 && value > 1400)
+            if (borg.trait[BI_CDEPTH] < 80 && value > 1400)
                 continue;
             /* up to level 90, keep anything of value 1600 or better */
-            if (borg_trait[BI_CDEPTH] < 90 && value > 1600)
+            if (borg.trait[BI_CDEPTH] < 90 && value > 1600)
                 continue;
             /* up to level 95, keep anything of value 4800 or better */
-            if (borg_trait[BI_CDEPTH] < 95 && value > 4800)
+            if (borg.trait[BI_CDEPTH] < 95 && value > 4800)
                 continue;
             /* below level 127, keep anything of value 2000 or better */
-            if (borg_trait[BI_CDEPTH] < 127 && value > 5600)
+            if (borg.trait[BI_CDEPTH] < 127 && value > 5600)
                 continue;
 
             /* Save the item */
@@ -420,7 +425,7 @@ bool borg_crush_junk(void)
             memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
             /* skip things we are using */
-            if (p < my_power)
+            if (p < borg.power)
                 continue;
         }
 
@@ -503,11 +508,11 @@ bool borg_crush_hole(void)
         return (false);
 
     /* No crush if even slightly dangerous */
-    if (borg_trait[BI_CDEPTH]
-        && (borg_danger(c_y, c_x, 1, true, false) > borg_trait[BI_CURHP] / 10
-            && (borg_trait[BI_CURHP] != borg_trait[BI_MAXHP]
-                || borg_danger(c_y, c_x, 1, true, false)
-                       > (borg_trait[BI_CURHP] * 2) / 3)))
+    if (borg.trait[BI_CDEPTH]
+        && (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 10
+            && (borg.trait[BI_CURHP] != borg.trait[BI_MAXHP]
+                || borg_danger(borg.c.y, borg.c.x, 1, true, false)
+                       > (borg.trait[BI_CURHP] * 2) / 3)))
         return (false);
 
     /* must be a good place to crush stuff */
@@ -527,7 +532,7 @@ bool borg_crush_hole(void)
             continue;
 
         /* skip food */
-        if (item->tval == TV_FOOD && borg_trait[BI_FOOD] < 5)
+        if (item->tval == TV_FOOD && borg.trait[BI_FOOD] < 5)
             continue;
 
         /* don't crush the swap weapon */
@@ -557,7 +562,7 @@ bool borg_crush_hole(void)
 
         /* never crush cool stuff that we might be needing later */
         if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
-            && (borg_trait[BI_MAXSP] >= 1))
+            && (borg.trait[BI_MAXSP] >= 1))
             continue;
         if (item->tval == TV_POTION && item->sval == sv_potion_healing)
             continue;
@@ -574,19 +579,19 @@ bool borg_crush_hole(void)
             && item->sval == sv_scroll_rune_of_protection)
             continue;
         if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
-            && borg_trait[BI_ATELEPORTLVL] < 1000)
+            && borg.trait[BI_ATELEPORTLVL] < 1000)
             continue;
         if (item->tval == TV_ROD
             && (item->sval == sv_rod_healing
                 || (item->sval == sv_rod_mapping
-                    && borg_class == CLASS_WARRIOR))
+                    && borg.trait[BI_CLASS] == CLASS_WARRIOR))
             && item->iqty <= 5)
             continue;
         if (item->tval == TV_WAND && item->sval == sv_wand_teleport_away
-            && borg_class == CLASS_WARRIOR && borg_trait[BI_ATPORTOTHER] <= 8)
+            && borg.trait[BI_CLASS] == CLASS_WARRIOR && borg.trait[BI_ATPORTOTHER] <= 8)
             continue;
         if (item->tval == TV_ROD
-            && (item->sval == sv_rod_light && borg_trait[BI_CURLITE] <= 0))
+            && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
             continue;
 
         /* a boost for things with random powers */
@@ -633,14 +638,14 @@ bool borg_crush_hole(void)
          * if we do have have tons already. unless in town, you can junk em in
          * town.
          */
-        if ((item->tval == borg_trait[BI_AMMO_TVAL]) && (value > 0)
-            && (borg_trait[BI_AMISSILES] <= 35) && borg_trait[BI_CDEPTH] >= 1) {
+        if ((item->tval == borg.trait[BI_AMMO_TVAL]) && (value > 0)
+            && (borg.trait[BI_AMISSILES] <= 35) && borg.trait[BI_CDEPTH] >= 1) {
             value += 5000L;
         }
 
         /* Hack  show preference for destroying things we will not use */
         /* if we are high enough level not to worry about gold. */
-        if (borg_trait[BI_CLEVEL] > 35) {
+        if (borg.trait[BI_CLEVEL] > 35) {
             switch (item->tval) {
                 /* rings are under valued. */
             case TV_RING:
@@ -688,9 +693,9 @@ bool borg_crush_hole(void)
                 if (item->sval != sv_staff_dispel_evil
                     || ((item->sval != sv_staff_power
                             || item->sval != sv_staff_holiness)
-                        && amt_cool_staff < 2)
+                        && borg.trait[BI_GOOD_S_CHG] < 2)
                     || (item->sval != sv_staff_destruction
-                        && borg_trait[BI_ASTFDEST] < 2))
+                        && borg.trait[BI_ASTFDEST] < 2))
                     value = (item->iqty * (300000L)); /* value at 30k */
                 else
                     value = (item->iqty * (value / 2));
@@ -749,25 +754,25 @@ bool borg_crush_hole(void)
             switch (item->tval) {
             case TV_RING:
             case TV_AMULET:
-                value = (borg_trait[BI_MAXDEPTH] * 5000L);
+                value = (borg.trait[BI_MAXDEPTH] * 5000L);
                 break;
 
             case TV_ROD:
-                value = (borg_trait[BI_MAXDEPTH] * 3000L);
+                value = (borg.trait[BI_MAXDEPTH] * 3000L);
                 break;
 
             case TV_STAFF:
             case TV_WAND:
-                value = (borg_trait[BI_MAXDEPTH] * 2000L);
+                value = (borg.trait[BI_MAXDEPTH] * 2000L);
                 break;
 
             case TV_SCROLL:
             case TV_POTION:
-                value = (borg_trait[BI_MAXDEPTH] * 500L);
+                value = (borg.trait[BI_MAXDEPTH] * 500L);
                 break;
 
             case TV_FOOD:
-                value = (borg_trait[BI_MAXDEPTH] * 10L);
+                value = (borg.trait[BI_MAXDEPTH] * 10L);
                 break;
             }
         }
@@ -828,7 +833,7 @@ bool borg_crush_hole(void)
 
         /* If I have no food, and in town, I must have a free spot to buy food
          */
-        if (borg_trait[BI_CDEPTH] == 0 && borg_trait[BI_FOOD] == 0) {
+        if (borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_FOOD] == 0) {
             /* Power is way more important than gold */
             value = value / 500;
         }
@@ -859,7 +864,7 @@ bool borg_crush_hole(void)
 
         /* Debug */
         borg_note(format(
-            "# Junking %ld gold (full)", (long int)my_power * 100 - b_p));
+            "# Junking %ld gold (full)", (long int)borg.power * 100 - b_p));
 
         /* Try to consume the junk */
         if (borg_consume(b_i))
@@ -903,19 +908,19 @@ bool borg_crush_slow(void)
     bool fix = false;
 
     /* No crush if even slightly dangerous */
-    if (borg_danger(c_y, c_x, 1, true, false) > borg_trait[BI_CURHP] / 20)
+    if (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 20)
         return (false);
 
     /* Hack -- never in town */
-    if (borg_trait[BI_CDEPTH] == 0)
+    if (borg.trait[BI_CDEPTH] == 0)
         return (false);
 
     /* Do not crush items unless we are slow */
-    if (borg_trait[BI_SPEED] >= 110)
+    if (borg.trait[BI_SPEED] >= 110)
         return (false);
 
     /* Not if in munchkin mode */
-    if (borg_munchkin_mode)
+    if (borg.munchkin_mode)
         return (false);
 
     /* must be a good place to crush stuff */
@@ -923,16 +928,16 @@ bool borg_crush_slow(void)
         return (false);
 
     /* Calculate "greed" factor */
-    greed = (borg_trait[BI_GOLD] / 100L) + 100L;
+    greed = (borg.trait[BI_GOLD] / 100L) + 100L;
 
     /* Minimal and maximal greed */
-    if (greed < 500L && borg_trait[BI_CLEVEL] > 35)
+    if (greed < 500L && borg.trait[BI_CLEVEL] > 35)
         greed = 500L;
     if (greed > 25000L)
         greed = 25000L;
 
     /* Decrease greed by our slowness */
-    greed -= (110 - borg_trait[BI_SPEED]) * 500;
+    greed -= (110 - borg.trait[BI_SPEED]) * 500;
     if (greed <= 0)
         greed = 0L;
 
@@ -975,7 +980,7 @@ bool borg_crush_slow(void)
 
         /* Don't crush it if it is our only source of light */
         if (item->tval == TV_ROD
-            && (item->sval == sv_rod_light && borg_trait[BI_CURLITE] <= 0))
+            && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
             continue;
 
         /* Rods of healing are too hard to come by */
@@ -1030,12 +1035,12 @@ bool borg_crush_slow(void)
         borg_notice(true);
 
     /* Destroy "useless" things */
-    if ((b_i >= 0) && (b_p >= (my_power))) {
+    if ((b_i >= 0) && (b_p >= (borg.power))) {
         borg_item *item = &borg_items[b_i];
 
         /* Message */
         borg_note(format("# Junking %ld power (slow) value %d",
-            (long int)b_p - my_power, item->value));
+            (long int)b_p - borg.power, item->value));
 
         /* Attempt to consume it */
         if (borg_consume(b_i))
@@ -1090,22 +1095,23 @@ bool borg_dump_quiver(void)
     borg_item *item;
 
     /* hack to prevent the swap till you drop loop */
-    if (borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return (false);
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
         return (false);
-    if (time_this_panel > 150)
+    if (borg.time_this_panel > 150)
         return (false);
 
     /* don't crush stuff unless we are on a floor */
-    if (borg_grids[c_y][c_x].feat != FEAT_FLOOR)
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
         return (false);
 
     /* How many should I carry */
-    if (borg_class == CLASS_RANGER || borg_class == CLASS_WARRIOR)
+    if (borg.trait[BI_CLASS] == CLASS_RANGER
+        || borg.trait[BI_CLASS] == CLASS_WARRIOR)
         quiver_capacity = (kb_info[TV_ARROW].max_stack - 1) * 2;
     else
         quiver_capacity = kb_info[TV_ARROW].max_stack - 1;
@@ -1123,7 +1129,7 @@ bool borg_dump_quiver(void)
         /* Skip if it is not cursed and matches my ammo.  If it is not cursed
          * but does not match my ammo, then it is dumped.
          */
-        if (!item->cursed && item->tval == borg_trait[BI_AMMO_TVAL]) {
+        if (!item->cursed && item->tval == borg.trait[BI_AMMO_TVAL]) {
             /* It has some value */
             if (item->to_d > 0 && item->to_h > 0)
                 continue;
@@ -1131,7 +1137,7 @@ bool borg_dump_quiver(void)
                 continue;
 
             /* Limit the amount of missiles carried */
-            if (borg_trait[BI_AMISSILES] <= quiver_capacity && item->to_d >= 0
+            if (borg.trait[BI_AMISSILES] <= quiver_capacity && item->to_d >= 0
                 && item->to_h >= 0)
                 continue;
         }
@@ -1156,7 +1162,7 @@ bool borg_dump_quiver(void)
         item->iqty = 0;
 
         /* Did something */
-        time_this_panel++;
+        borg.time_this_panel++;
         return (true);
     }
 
@@ -1191,18 +1197,18 @@ bool borg_remove_stuff(void)
         return (false);
 
     /*  hack to prevent the swap till you drop loop */
-    if (borg_trait[BI_ISHUNGRY] || borg_trait[BI_ISWEAK])
+    if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return (false);
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
         return (false);
-    if (time_this_panel > 150)
+    if (borg.time_this_panel > 150)
         return (false);
 
     /* Start with good power */
-    b_p = my_power;
+    b_p = borg.power;
 
     /* Scan equip */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
@@ -1285,7 +1291,7 @@ bool borg_remove_stuff(void)
         borg_keypress(all_letters_nohjkl[b_i - INVEN_WIELD]);
 
         /* Did something */
-        time_this_panel++;
+        borg.time_this_panel++;
         return (true);
     }
 

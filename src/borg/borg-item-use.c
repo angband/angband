@@ -60,7 +60,7 @@ bool borg_quaff_crit(bool no_check)
         return false;
 
     /* Save the last two for when we really need them */
-    if (borg_trait[BI_ACCW] < 2)
+    if (borg.trait[BI_ACCW] < 2)
         return false;
 
     if (borg_quaff_potion(sv_potion_cure_critical)) {
@@ -92,7 +92,7 @@ bool borg_quaff_potion(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -137,7 +137,7 @@ bool borg_quaff_unknown(void)
     borg_keypress(all_letters_nohjkl[n]);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -155,8 +155,8 @@ bool borg_read_scroll(int sval)
         return (false);
 
     /* Blind or Confused or Amnesia*/
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED]
-        || borg_trait[BI_ISFORGET])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISFORGET])
         return (false);
 
     /* Look for that scroll */
@@ -176,7 +176,7 @@ bool borg_read_scroll(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -218,7 +218,7 @@ bool borg_read_unknown(void)
         return (false);
 
     /* Blind or Confused */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* Log the message */
@@ -232,7 +232,7 @@ bool borg_read_unknown(void)
     borg_keypress(ESCAPE);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -260,7 +260,7 @@ bool borg_eat(int tval, int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -306,7 +306,7 @@ bool borg_eat_unknown(void)
     borg_keypress(all_letters_nohjkl[n]);
 
     /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
+    borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
     return (true);
@@ -377,17 +377,17 @@ bool borg_eat_food_any(void)
      * Then try those that, besides the nourishment, only have negative
      * effects.  But only try if there's protection against the negative effect.
      */
-    if (((borg_trait[BI_FRACT])
+    if (((borg.trait[BI_FRACT])
             && (borg_quaff_potion(sv_potion_sleep)
                 || borg_quaff_potion(sv_potion_slowness)))
-        || ((borg_trait[BI_RBLIND]) && (borg_quaff_potion(sv_potion_blindness)))
-        || ((borg_trait[BI_RCONF])
+        || ((borg.trait[BI_RBLIND]) && (borg_quaff_potion(sv_potion_blindness)))
+        || ((borg.trait[BI_RCONF])
             && (borg_quaff_potion(sv_potion_confusion)))) {
         return (true);
     }
     /* Consume in order, when hurting */
-    if ((borg_trait[BI_CURHP] < 4
-            || (borg_trait[BI_CURHP] <= borg_trait[BI_MAXHP]))
+    if ((borg.trait[BI_CURHP] < 4
+            || (borg.trait[BI_CURHP] <= borg.trait[BI_MAXHP]))
         && (borg_quaff_potion(sv_potion_cure_light)
             || borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_potion(sv_potion_cure_critical)
@@ -422,10 +422,10 @@ bool borg_equips_rod(int sval)
     lev = (borg_items[i].level);
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -462,10 +462,10 @@ bool borg_zap_rod(int sval)
     lev = (borg_items[i].level);
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -586,10 +586,10 @@ bool borg_use_staff_fail(int sval)
     lev = (borg_items[i].level);
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -602,7 +602,7 @@ bool borg_use_staff_fail(int sval)
         }
 
         /* We need to give some "desperation attempt to teleport staff" */
-        if (!borg_trait[BI_ISCONFUSED] && !borg_trait[BI_ISBLIND]) /* Dark? */
+        if (!borg.trait[BI_ISCONFUSED] && !borg.trait[BI_ISBLIND]) /* Dark? */
         {
             /* We really have no chance, return false, attempt the scroll */
             if (fail > 500)
@@ -646,10 +646,10 @@ bool borg_equips_staff_fail(int sval)
     lev = (borg_items[i].level);
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -668,7 +668,7 @@ bool borg_equips_staff_fail(int sval)
         }
 
         /* We need to give some "desperation attempt to teleport staff" */
-        if (sval == sv_staff_teleportation && !borg_trait[BI_ISCONFUSED]) {
+        if (sval == sv_staff_teleportation && !borg.trait[BI_ISCONFUSED]) {
             /* We really have no chance, return false, attempt the scroll */
             if (fail < 650)
                 return (false);
@@ -743,10 +743,10 @@ bool borg_equips_ring(int ring_sval)
         lev = borg_items[i].level;
 
         /* Base chance of success */
-        skill = borg_trait[BI_DEV];
+        skill = borg.trait[BI_DEV];
 
         /* Confusion hurts skill */
-        if (borg_trait[BI_ISCONFUSED])
+        if (borg.trait[BI_ISCONFUSED])
             skill = skill * 75 / 100;
 
         /* High level objects are harder */
@@ -843,10 +843,10 @@ bool borg_equips_dragon(int drag_sval)
     lev = borg_items[INVEN_BODY].level;
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -909,7 +909,7 @@ bool borg_activate_item(int activation)
     int i;
 
     /* a quick check of the array */
-    if (!borg_activation[activation])
+    if (!borg.activation[activation])
         return (false);
 
     /* Check the equipment */
@@ -947,7 +947,7 @@ bool borg_equips_item(int activation, bool check_charge)
     int i;
 
     /* a quick check of the array */
-    if (!borg_activation[activation])
+    if (!borg.activation[activation])
         return (false);
     else if (!check_charge)
         return (true);
@@ -1003,10 +1003,10 @@ int borg_activate_failure(int tval, int sval)
     lev = (borg_items[i].level);
 
     /* Base chance of success */
-    skill = borg_trait[BI_DEV];
+    skill = borg.trait[BI_DEV];
 
     /* Confusion hurts skill */
-    if (borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISCONFUSED])
         skill = skill * 75 / 100;
 
     /* High level objects are harder */
@@ -1024,9 +1024,9 @@ bool borg_use_things(void)
     int i;
 
     /* Quaff experience restoration potion */
-    if (borg_trait[BI_ISFIXEXP]
+    if (borg.trait[BI_ISFIXEXP]
         && (borg_spell(REVITALIZE) || borg_spell(REMEMBRANCE)
-            || (borg_trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE))
+            || (borg.trait[BI_CURHP] > 90 && borg_spell(UNHOLY_REPRIEVE))
             || borg_activate_item(act_restore_exp)
             || borg_activate_item(act_restore_st_lev)
             || borg_activate_item(act_restore_life)
@@ -1044,29 +1044,29 @@ bool borg_use_things(void)
     }
 
     /* Quaff potions of "restore" stat if needed */
-    if ((borg_trait[BI_ISFIXSTR]
+    if ((borg.trait[BI_ISFIXSTR]
             && (borg_quaff_potion(sv_potion_inc_str)
                 || borg_eat(TV_MUSHROOM, sv_mush_purging)
                 || borg_activate_item(act_shroom_purging)
                 || borg_activate_item(act_restore_str)
                 || borg_activate_item(act_restore_all)
                 || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
-        || (borg_trait[BI_ISFIXINT]
+        || (borg.trait[BI_ISFIXINT]
             && (borg_quaff_potion(sv_potion_inc_int)
                 || borg_activate_item(act_restore_int)
                 || borg_activate_item(act_restore_all)
                 || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
-        || (borg_trait[BI_ISFIXWIS]
+        || (borg.trait[BI_ISFIXWIS]
             && (borg_quaff_potion(sv_potion_inc_wis)
                 || borg_activate_item(act_restore_wis)
                 || borg_activate_item(act_restore_all)
                 || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
-        || (borg_trait[BI_ISFIXDEX]
+        || (borg.trait[BI_ISFIXDEX]
             && (borg_quaff_potion(sv_potion_inc_dex)
                 || borg_activate_item(act_restore_dex)
                 || borg_activate_item(act_restore_all)
                 || borg_eat(TV_MUSHROOM, sv_mush_restoring)))
-        || (borg_trait[BI_ISFIXCON]
+        || (borg.trait[BI_ISFIXCON]
             && (borg_quaff_potion(sv_potion_inc_con)
                 || borg_activate_item(act_restore_con)
                 || borg_activate_item(act_restore_all)
@@ -1090,7 +1090,7 @@ bool borg_use_things(void)
             /* Check the scroll */
             if (item->sval == sv_potion_enlightenment) {
                 /* Never quaff these in town */
-                if (!borg_trait[BI_CDEPTH])
+                if (!borg.trait[BI_CDEPTH])
                     break;
             } else if (item->sval == sv_potion_inc_all)
                 /* Try quaffing the potion */
@@ -1101,7 +1101,7 @@ bool borg_use_things(void)
         }
         case TV_SCROLL: {
             /* Hack -- check Blind/Confused */
-            if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+            if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
                 break;
 
             /* XXX XXX XXX Dark */
@@ -1111,7 +1111,7 @@ bool borg_use_things(void)
                 || item->sval == sv_scroll_acquirement
                 || item->sval == sv_scroll_star_acquirement) {
                 /* Never read these in town */
-                if (!borg_trait[BI_CDEPTH])
+                if (!borg.trait[BI_CDEPTH])
                     break;
 
                 /* Try reading the scroll */
@@ -1125,7 +1125,7 @@ bool borg_use_things(void)
     }
 
     /* Eat food */
-    if (borg_trait[BI_ISHUNGRY]) {
+    if (borg.trait[BI_ISHUNGRY]) {
         /* Attempt to satisfy hunger */
         if (borg_spell(REMOVE_HUNGER) || borg_spell(HERBAL_CURING)
             || borg_quaff_potion(sv_potion_slime_mold)
@@ -1158,7 +1158,7 @@ bool borg_recharging(void)
     bool charge = false;
 
     /* Forbid blind/confused */
-    if (borg_trait[BI_ISBLIND] || borg_trait[BI_ISCONFUSED])
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return (false);
 
     /* XXX XXX XXX Dark */
@@ -1200,7 +1200,7 @@ bool borg_recharging(void)
 
             /* Staves of teleport get recharged at 2 charges in town */
             if ((item->sval == sv_staff_teleportation) && (item->pval < 3)
-                && !borg_trait[BI_CDEPTH])
+                && !borg.trait[BI_CDEPTH])
                 charge = true;
 
             /* They stack.  If quantity is 4 and pval is 1, then there are 4

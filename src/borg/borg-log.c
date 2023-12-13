@@ -242,7 +242,7 @@ void borg_write_map(bool ask)
             }
 
             /* The Player */
-            if ((i == c_y) && (j == c_x))
+            if ((i == borg.c.y) && (j == borg.c.x))
                 ch = '@';
 
             line[j] = ch;
@@ -267,7 +267,7 @@ void borg_write_map(bool ask)
 
         /* Note */
         file_putf(borg_map_file, "monster '%s' (%d) at (%d,%d) speed:%d \n",
-            (r_info[kill->r_idx].name), kill->r_idx, kill->y, kill->x,
+            (r_info[kill->r_idx].name), kill->r_idx, kill->pos.y, kill->pos.x,
             kill->speed);
     }
 
@@ -356,7 +356,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "   [Player State at Death] \n\n");
 
     /* Dump the player state */
-    file_putf(borg_map_file, "Current speed: %d. \n", borg_trait[BI_SPEED]);
+    file_putf(borg_map_file, "Current speed: %d. \n", borg.trait[BI_SPEED]);
 
     if (player->timed[TMD_BLIND]) {
         file_putf(borg_map_file, "You cannot see.\n");
@@ -425,13 +425,13 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the Time Variables */
-    file_putf(borg_map_file, "Time on this panel; %d\n", time_this_panel);
+    file_putf(borg_map_file, "Time on this panel; %d\n", borg.time_this_panel);
     file_putf(borg_map_file, "Time on this level; %d\n", borg_t - borg_began);
     file_putf(borg_map_file, "Time since left town; %d\n",
         borg_time_town + (borg_t - borg_began));
     file_putf(borg_map_file, "Food in town; %d\n", borg_food_onsale);
     file_putf(borg_map_file, "Fuel in town; %d\n", borg_fuel_onsale);
-    file_putf(borg_map_file, "Borg_no_retreat; %d\n", borg_no_retreat);
+    file_putf(borg_map_file, "Borg_no_retreat; %d\n", borg.no_retreat);
     file_putf(borg_map_file, "Breeder_level; %d\n", breeder_level);
     file_putf(borg_map_file, "Unique_on_level; %d\n", unique_on_level);
     if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2))
@@ -458,7 +458,7 @@ void borg_write_map(bool ask)
         borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
     file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n",
         borg_cfg[BORG_SLOW_OPTIMIZEHOME]);
-    file_putf(borg_map_file, "borg_scumming_pots; %d\n\n", borg_scumming_pots);
+    file_putf(borg_map_file, "borg.scumming_pots; %d\n\n", borg.scumming_pots);
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the spells */
@@ -482,12 +482,12 @@ void borg_write_map(bool ask)
         }
     }
 
-    /* Dump the borg_trait[] information */
+    /* Dump the borg.trait[] information */
     itemm = z_info->k_max;
     to    = z_info->k_max + BI_MAX;
     for (; itemm < to; itemm++) {
         file_putf(borg_map_file, "skill %d (%s) value= %d.\n", itemm,
-            prefix_pref[itemm - z_info->k_max], borg_has[itemm]);
+            prefix_pref[itemm - z_info->k_max], borg.has[itemm]);
     }
 
 #if 0
@@ -514,12 +514,12 @@ void borg_write_map(bool ask)
     }
 
     /* Check the dungeon */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-        for (x = 0; x < DUNGEON_WID; x++) {
+    for (loc_y = 0; loc_y < DUNGEON_HGT; loc_y++) {
+        for (loc_x = 0; loc_x < DUNGEON_WID; loc_x++) {
             int16_t this_o_idx, next_o_idx = 0;
 
             /* Scan all objects in the grid */
-            for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
+            for (this_o_idx = cave->o_idx[loc_y][loc_x]; this_o_idx; this_o_idx = next_o_idx) {
                 object_type *o_ptr;
 
                 /* Get the object */
@@ -720,7 +720,7 @@ void borg_display_item(struct object *item2, int n)
 
     /* maybe print the inscription */
     prt(format("Inscription: %s, chance: %d", borg_get_note(item),
-            borg_trait[BI_DEV] - item->level),
+            borg.trait[BI_DEV] - item->level),
         9, j);
 
     prt("+------------FLAGS1------------+", 10, j);
@@ -780,159 +780,159 @@ void borg_status(void)
 
             /* Basic four */
             attr = COLOUR_SLATE;
-            if (borg_trait[BI_RACID])
+            if (borg.trait[BI_RACID])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_TRACID])
+            if (borg.temp.res_acid)
                 attr = COLOUR_GREEN;
-            if (borg_trait[BI_IACID])
+            if (borg.trait[BI_IACID])
                 attr = COLOUR_WHITE;
             Term_putstr(1, 1, -1, attr, "Acid");
 
             attr = COLOUR_SLATE;
-            if (borg_trait[BI_RELEC])
+            if (borg.trait[BI_RELEC])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_TRELEC])
+            if (borg.temp.res_elec)
                 attr = COLOUR_GREEN;
-            if (borg_trait[BI_IELEC])
+            if (borg.trait[BI_IELEC])
                 attr = COLOUR_WHITE;
             Term_putstr(1, 2, -1, attr, "Elec");
 
             attr = COLOUR_SLATE;
-            if (borg_trait[BI_RFIRE])
+            if (borg.trait[BI_RFIRE])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_TRFIRE])
+            if (borg.temp.res_fire)
                 attr = COLOUR_GREEN;
-            if (borg_trait[BI_IFIRE])
+            if (borg.trait[BI_IFIRE])
                 attr = COLOUR_WHITE;
             Term_putstr(1, 3, -1, attr, "Fire");
 
             attr = COLOUR_SLATE;
-            if (borg_trait[BI_RCOLD])
+            if (borg.trait[BI_RCOLD])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_TRCOLD])
+            if (borg.temp.res_cold)
                 attr = COLOUR_GREEN;
-            if (borg_trait[BI_ICOLD])
+            if (borg.trait[BI_ICOLD])
                 attr = COLOUR_WHITE;
             Term_putstr(1, 4, -1, attr, "Cold");
 
             /* High resists */
             attr = COLOUR_SLATE;
-            if (borg_trait[BI_RPOIS])
+            if (borg.trait[BI_RPOIS])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_TRPOIS])
+            if (borg.temp.res_pois)
                 attr = COLOUR_GREEN;
             Term_putstr(1, 5, -1, attr, "Pois");
 
-            if (borg_trait[BI_RFEAR])
+            if (borg.trait[BI_RFEAR])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 6, -1, attr, "Fear");
 
-            if (borg_trait[BI_RLITE])
+            if (borg.trait[BI_RLITE])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 7, -1, attr, "Lite");
 
-            if (borg_trait[BI_RDARK])
+            if (borg.trait[BI_RDARK])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 8, -1, attr, "Dark");
 
-            if (borg_trait[BI_RBLIND])
+            if (borg.trait[BI_RBLIND])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 1, -1, attr, "Blind");
 
-            if (borg_trait[BI_RCONF])
+            if (borg.trait[BI_RCONF])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 2, -1, attr, "Confu");
 
-            if (borg_trait[BI_RSND])
+            if (borg.trait[BI_RSND])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 3, -1, attr, "Sound");
 
-            if (borg_trait[BI_RSHRD])
+            if (borg.trait[BI_RSHRD])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 4, -1, attr, "Shard");
 
-            if (borg_trait[BI_RNXUS])
+            if (borg.trait[BI_RNXUS])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 5, -1, attr, "Nexus");
 
-            if (borg_trait[BI_RNTHR])
+            if (borg.trait[BI_RNTHR])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 6, -1, attr, "Nethr");
 
-            if (borg_trait[BI_RKAOS])
+            if (borg.trait[BI_RKAOS])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 7, -1, attr, "Chaos");
 
-            if (borg_trait[BI_RDIS])
+            if (borg.trait[BI_RDIS])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(6, 8, -1, attr, "Disen");
 
             /* Other abilities */
-            if (borg_trait[BI_SDIG])
+            if (borg.trait[BI_SDIG])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 1, -1, attr, "S.Dig");
 
-            if (borg_trait[BI_FEATH])
+            if (borg.trait[BI_FEATH])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 2, -1, attr, "Feath");
 
-            if (borg_trait[BI_LIGHT])
+            if (borg.trait[BI_LIGHT])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 3, -1, attr, "PLite");
 
-            if (borg_trait[BI_REG])
+            if (borg.trait[BI_REG])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 4, -1, attr, "Regen");
 
-            if (borg_trait[BI_ESP])
+            if (borg.trait[BI_ESP])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 5, -1, attr, "Telep");
 
-            if (borg_trait[BI_SINV])
+            if (borg.trait[BI_SINV])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 6, -1, attr, "Invis");
 
-            if (borg_trait[BI_FRACT])
+            if (borg.trait[BI_FRACT])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(12, 7, -1, attr, "FrAct");
 
-            if (borg_trait[BI_HLIFE])
+            if (borg.trait[BI_HLIFE])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
@@ -941,77 +941,77 @@ void borg_status(void)
             /* Display the slays */
             Term_putstr(5, 10, -1, COLOUR_WHITE, "Weapon Slays:");
 
-            if (borg_trait[BI_WS_ANIMAL])
+            if (borg.trait[BI_WS_ANIMAL])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 11, -1, attr, "Animal");
 
-            if (borg_trait[BI_WS_EVIL])
+            if (borg.trait[BI_WS_EVIL])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(8, 11, -1, attr, "Evil");
 
-            if (borg_trait[BI_WS_UNDEAD])
+            if (borg.trait[BI_WS_UNDEAD])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(15, 11, -1, attr, "Undead");
 
-            if (borg_trait[BI_WS_DEMON])
+            if (borg.trait[BI_WS_DEMON])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_WK_DEMON])
+            if (borg.trait[BI_WK_DEMON])
                 attr = COLOUR_GREEN;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(22, 11, -1, attr, "Demon");
 
-            if (borg_trait[BI_WS_ORC])
+            if (borg.trait[BI_WS_ORC])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 12, -1, attr, "Orc");
 
-            if (borg_trait[BI_WS_TROLL])
+            if (borg.trait[BI_WS_TROLL])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(8, 12, -1, attr, "Troll");
 
-            if (borg_trait[BI_WS_GIANT])
+            if (borg.trait[BI_WS_GIANT])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(15, 12, -1, attr, "Giant");
 
-            if (borg_trait[BI_WS_DRAGON])
+            if (borg.trait[BI_WS_DRAGON])
                 attr = COLOUR_BLUE;
-            if (borg_trait[BI_WK_DRAGON])
+            if (borg.trait[BI_WK_DRAGON])
                 attr = COLOUR_GREEN;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(22, 12, -1, attr, "Dragon");
 
-            if (borg_trait[BI_WB_ACID])
+            if (borg.trait[BI_WB_ACID])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(1, 13, -1, attr, "Acid");
 
-            if (borg_trait[BI_WB_COLD])
+            if (borg.trait[BI_WB_COLD])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(8, 13, -1, attr, "Cold");
 
-            if (borg_trait[BI_WB_ELEC])
+            if (borg.trait[BI_WB_ELEC])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(15, 13, -1, attr, "Elec");
 
-            if (borg_trait[BI_WB_FIRE])
+            if (borg.trait[BI_WB_FIRE])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
@@ -1020,49 +1020,49 @@ void borg_status(void)
             /* Display the Concerns */
             Term_putstr(36, 10, -1, COLOUR_WHITE, "Concerns:");
 
-            if (borg_trait[BI_FIRST_CURSED])
+            if (borg.trait[BI_FIRST_CURSED])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(29, 11, -1, attr, "Cursed");
 
-            if (borg_trait[BI_ISWEAK])
+            if (borg.trait[BI_ISWEAK])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(36, 11, -1, attr, "Weak");
 
-            if (borg_trait[BI_ISPOISONED])
+            if (borg.trait[BI_ISPOISONED])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(43, 11, -1, attr, "Poison");
 
-            if (borg_trait[BI_ISCUT])
+            if (borg.trait[BI_ISCUT])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(29, 12, -1, attr, "Cut");
 
-            if (borg_trait[BI_ISSTUN])
+            if (borg.trait[BI_ISSTUN])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(36, 12, -1, attr, "Stun");
 
-            if (borg_trait[BI_ISCONFUSED])
+            if (borg.trait[BI_ISCONFUSED])
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(43, 12, -1, attr, "Confused");
 
-            if (goal_fleeing)
+            if (borg.goal.fleeing)
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(29, 13, -1, attr, "Goal Fleeing");
 
-            if (borg_no_rest_prep > 0)
+            if (borg.no_rest_prep > 0)
                 attr = COLOUR_BLUE;
             else
                 attr = COLOUR_SLATE;
@@ -1081,36 +1081,36 @@ void borg_status(void)
 
             Term_putstr(54, 13, -1, COLOUR_SLATE, "This Panel         ");
             Term_putstr(
-                65, 13, -1, COLOUR_WHITE, format("%d", time_this_panel));
+                65, 13, -1, COLOUR_WHITE, format("%d", borg.time_this_panel));
 
             /* Sustains */
             Term_putstr(19, 0, -1, COLOUR_WHITE, "Sustains");
 
-            if (borg_trait[BI_SSTR])
+            if (borg.trait[BI_SSTR])
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(21, 1, -1, attr, "STR");
 
-            if (borg_trait[BI_SINT])
+            if (borg.trait[BI_SINT])
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(21, 2, -1, attr, "INT");
 
-            if (borg_trait[BI_SWIS])
+            if (borg.trait[BI_SWIS])
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(21, 3, -1, attr, "WIS");
 
-            if (borg_trait[BI_SDEX])
+            if (borg.trait[BI_SDEX])
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(21, 4, -1, attr, "DEX");
 
-            if (borg_trait[BI_SCON])
+            if (borg.trait[BI_SCON])
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
@@ -1119,49 +1119,49 @@ void borg_status(void)
             /* Temporary effects */
             Term_putstr(28, 0, -1, COLOUR_WHITE, "Temp Effects");
 
-            if (borg_prot_from_evil)
+            if (borg.temp.prot_from_evil)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 1, -1, attr, "Prot. Evil");
 
-            if (borg_fastcast)
+            if (borg.temp.fastcast)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 2, -1, attr, "Fastcast");
 
-            if (borg_hero)
+            if (borg.temp.hero)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 3, -1, attr, "Heroism");
 
-            if (borg_berserk)
+            if (borg.temp.berserk)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 4, -1, attr, "Berserk");
 
-            if (borg_shield)
+            if (borg.temp.shield)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 5, -1, attr, "Shielded");
 
-            if (borg_bless)
+            if (borg.temp.bless)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 6, -1, attr, "Blessed");
 
-            if (borg_speed)
+            if (borg.temp.fast)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
             Term_putstr(28, 7, -1, attr, "Fast");
 
-            if (borg_see_inv >= 1)
+            if (borg.see_inv >= 1)
                 attr = COLOUR_WHITE;
             else
                 attr = COLOUR_SLATE;
@@ -1212,7 +1212,7 @@ void borg_status(void)
             attr = COLOUR_WHITE;
             Term_putstr(64, 6, -1, attr,
                 format("%s                              ",
-                    borg_prepared(borg_trait[BI_MAXDEPTH] + 1)));
+                    borg_prepared(borg.trait[BI_MAXDEPTH] + 1)));
 
             attr = COLOUR_SLATE;
             Term_putstr(42, 7, -1, attr,
@@ -1227,10 +1227,10 @@ void borg_status(void)
             Term_putstr(42, 8, -1, attr, "Maximal Depth:");
             attr = COLOUR_WHITE;
             Term_putstr(
-                56, 8, -1, attr, format("%d    ", borg_trait[BI_MAXDEPTH]));
+                56, 8, -1, attr, format("%d    ", borg.trait[BI_MAXDEPTH]));
 
             /* Important endgame information */
-            if (borg_trait[BI_MAXDEPTH] >= 50) /* 85 */
+            if (borg.trait[BI_MAXDEPTH] >= 50) /* 85 */
             {
                 Term_putstr(5, 15, -1, COLOUR_WHITE, "Important Deep Events:");
 
@@ -1270,7 +1270,7 @@ void borg_status(void)
                     attr = COLOUR_WHITE;
                 Term_putstr(1, 21, -1, attr, "Sea of Runes.");
 
-                if (borg_ready_morgoth)
+                if (borg.ready_morgoth)
                     attr = COLOUR_BLUE;
                 else
                     attr = COLOUR_SLATE;

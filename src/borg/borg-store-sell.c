@@ -247,7 +247,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
 int borg_min_item_quantity(borg_item *item)
 {
     /* Only trade in bunches if sufficient cash */
-    if (borg_trait[BI_GOLD] < 250)
+    if (borg.trait[BI_GOLD] < 250)
         return (1);
 
     /* Don't trade expensive items in bunches */
@@ -649,7 +649,7 @@ bool borg_think_home_sell_useful(bool save_best)
         if (armour_swap && i == armour_swap - 1)
             continue;
 
-        /* dont consider the item i just found to be my best fit (4-6-07) */
+        /* don't consider the item i just found to be my best fit (4-6-07) */
         if (borg_best_fit_item && borg_best_fit_item == borg_items[i].art_idx)
             continue;
 
@@ -722,8 +722,8 @@ bool borg_think_home_sell_useful(bool save_best)
             if (item2->iqty > 90)
                 continue;
 
-            goal_shop = 7;
-            goal_item = best_item[i] - z_info->store_inven_max;
+            borg.goal.shop = 7;
+            borg.goal.item = best_item[i] - z_info->store_inven_max;
 
             return (true);
         }
@@ -754,8 +754,8 @@ bool borg_think_home_sell_useful(bool save_best)
                         return (false);
                 }
 
-                goal_shop = 7;
-                goal_ware = i;
+                borg.goal.shop = 7;
+                borg.goal.ware = i;
 
                 return true;
             }
@@ -771,8 +771,8 @@ bool borg_think_home_sell_useful(bool save_best)
             if (!borg_items[best_item[i] - z_info->store_inven_max].iqty)
                 return (false);
 
-            goal_shop = 7;
-            goal_item = best_item[i] - z_info->store_inven_max;
+            borg.goal.shop = 7;
+            borg.goal.item = best_item[i] - z_info->store_inven_max;
 
             return (true);
         }
@@ -809,8 +809,8 @@ static bool borg_good_sell(borg_item *item, int who)
 
     /* Worshipping gold or scumming will allow the sale */
     if (item->value > 0
-        && ((borg_cfg[BORG_WORSHIPS_GOLD] || borg_trait[BI_MAXCLEVEL] < 10)
-            || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg_trait[BI_GOLD])
+        && ((borg_cfg[BORG_WORSHIPS_GOLD] || borg.trait[BI_MAXCLEVEL] < 10)
+            || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg.trait[BI_GOLD])
                 && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0))) {
         /* Borg is allowed to continue in this routine to sell non-ID items */
     } else /* Some items must be ID, or at least 'known' */
@@ -827,8 +827,8 @@ static bool borg_good_sell(borg_item *item, int who)
              * they have tons in the house
              */
             if (item->tval == TV_POTION && item->sval == sv_potion_restore_mana
-                && borg_trait[BI_MAXSP] > 100
-                && borg_has[kv_potion_restore_mana] + num_mana > 99)
+                && borg.trait[BI_MAXSP] > 100
+                && borg.has[kv_potion_restore_mana] + num_mana > 99)
                 return (false);
 
             break;
@@ -843,7 +843,7 @@ static bool borg_good_sell(borg_item *item, int who)
 
             /* Never sell if not "known" */
             if (!item->ident && borg_item_worth_id(item)
-                && (borg_trait[BI_MAXDEPTH] > 35))
+                && (borg.trait[BI_MAXDEPTH] > 35))
                 return (false);
 
             break;
@@ -1022,7 +1022,7 @@ bool borg_think_shop_sell_useless(void)
     bool fix    = false;
 
     /* Evaluate */
-    b_p = my_power;
+    b_p = borg.power;
 
     /* Check each shop */
     for (k = 0; k < (z_info->store_max - 1); k++) {
@@ -1043,24 +1043,24 @@ bool borg_think_shop_sell_useless(void)
                 continue;
 
             /* Skip some important type items */
-            if ((item->tval == borg_trait[BI_AMMO_TVAL])
-                && (borg_trait[BI_AMISSILES] < 45))
+            if ((item->tval == borg.trait[BI_AMMO_TVAL])
+                && (borg.trait[BI_AMISSILES] < 45))
                 continue;
             if (item->tval == TV_ROD && item->sval == sv_rod_healing
-                && borg_has[kv_rod_healing] <= 3)
+                && borg.has[kv_rod_healing] <= 3)
                 continue;
 
-            if (borg_class == CLASS_WARRIOR && item->tval == TV_ROD
+            if (borg.trait[BI_CLASS] == CLASS_WARRIOR && item->tval == TV_ROD
                 && item->sval == sv_rod_mapping && item->iqty <= 2)
                 continue;
 
             /* Avoid selling staff of dest*/
             if (item->tval == TV_STAFF && item->sval == sv_staff_destruction
-                && borg_trait[BI_ASTFDEST] < 2)
+                && borg.trait[BI_ASTFDEST] < 2)
                 continue;
 
             /* Do not sell our attack wands if they still have charges */
-            if (item->tval == TV_WAND && borg_trait[BI_CLEVEL] < 35
+            if (item->tval == TV_WAND && borg.trait[BI_CLEVEL] < 35
                 && (item->sval == sv_wand_magic_missile
                     || item->sval == sv_wand_stinking_cloud
                     || item->sval == sv_wand_annihilation)
@@ -1136,10 +1136,10 @@ bool borg_think_shop_sell_useless(void)
     /* Sell something (if useless) */
     if ((b_k >= 0) && (b_i >= 0)) {
         /* Visit that shop */
-        goal_shop = b_k;
+        borg.goal.shop = b_k;
 
         /* Sell that item */
-        goal_item = b_i;
+        borg.goal.item = b_i;
 
         /* Success */
         return (true);
@@ -1157,10 +1157,10 @@ bool borg_think_shop_sell(void)
     int qty = 1;
 
     /* Sell something if requested */
-    if ((goal_shop == shop_num) && (goal_item >= 0)) {
-        borg_item *item = &borg_items[goal_item];
+    if ((borg.goal.shop == shop_num) && (borg.goal.item >= 0)) {
+        borg_item *item = &borg_items[borg.goal.item];
 
-        qty             = borg_min_item_quantity(item);
+        qty = borg_min_item_quantity(item);
 
         /* Log */
         borg_note(format("# Selling %s", item->desc));
@@ -1169,7 +1169,7 @@ bool borg_think_shop_sell(void)
         borg_keypress('s');
 
         /* Sell the desired item */
-        borg_keypress(all_letters_nohjkl[goal_item]);
+        borg_keypress(all_letters_nohjkl[borg.goal.item]);
 
         /* Hack -- Sell a single item */
         if (item->iqty > 1 || qty >= 2) {
@@ -1185,7 +1185,7 @@ bool borg_think_shop_sell(void)
         }
 
         /* Mega-Hack -- Accept the price */
-        if (goal_shop != 7) {
+        if (borg.goal.shop != 7) {
             borg_keypress(KC_ENTER);
             borg_keypress(ESCAPE);
             borg_keypress(ESCAPE);
@@ -1198,21 +1198,21 @@ bool borg_think_shop_sell(void)
         sold_item_pval[sold_item_nxt]  = item->pval;
         sold_item_tval[sold_item_nxt]  = item->tval;
         sold_item_sval[sold_item_nxt]  = item->sval;
-        sold_item_store[sold_item_nxt] = goal_shop;
+        sold_item_store[sold_item_nxt] = borg.goal.shop;
         sold_item_num                  = sold_item_nxt;
         sold_item_nxt++;
 
         /* The purchase is complete */
-        goal_shop = goal_ware = goal_item = -1;
+        borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
         /* tick the anti-loop clock */
-        time_this_panel++;
+        borg.time_this_panel++;
 
         /* I'm not in a store */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
-        borg_in_shop  = false;
+        borg.in_shop  = false;
         borg_do_inven = true;
         /* Success */
         return (true);
@@ -1237,27 +1237,27 @@ int borg_count_sell(void)
     int     p, sv_qty;
 
     /* Calculate "greed" factor */
-    greed = (borg_trait[BI_GOLD] / 100L) + 100L;
+    greed = (borg.trait[BI_GOLD] / 100L) + 100L;
 
     /* Minimal greed */
     if (greed < 1000L)
         greed = 1000L;
     if (greed > 25000L)
         greed = 25000L;
-    if (borg_trait[BI_MAXDEPTH] >= 50)
+    if (borg.trait[BI_MAXDEPTH] >= 50)
         greed = 75000;
-    if (borg_trait[BI_CLEVEL] < 25)
-        greed = (borg_trait[BI_GOLD] / 100L) + 50L;
-    if (borg_trait[BI_CLEVEL] < 20)
-        greed = (borg_trait[BI_GOLD] / 100L) + 35L;
-    if (borg_trait[BI_CLEVEL] < 15)
-        greed = (borg_trait[BI_GOLD] / 100L) + 20L;
-    if (borg_trait[BI_CLEVEL] < 13)
-        greed = (borg_trait[BI_GOLD] / 100L) + 10L;
-    if (borg_trait[BI_CLEVEL] < 10)
-        greed = (borg_trait[BI_GOLD] / 100L) + 5L;
-    if (borg_trait[BI_CLEVEL] < 5)
-        greed = (borg_trait[BI_GOLD] / 100L);
+    if (borg.trait[BI_CLEVEL] < 25)
+        greed = (borg.trait[BI_GOLD] / 100L) + 50L;
+    if (borg.trait[BI_CLEVEL] < 20)
+        greed = (borg.trait[BI_GOLD] / 100L) + 35L;
+    if (borg.trait[BI_CLEVEL] < 15)
+        greed = (borg.trait[BI_GOLD] / 100L) + 20L;
+    if (borg.trait[BI_CLEVEL] < 13)
+        greed = (borg.trait[BI_GOLD] / 100L) + 10L;
+    if (borg.trait[BI_CLEVEL] < 10)
+        greed = (borg.trait[BI_GOLD] / 100L) + 5L;
+    if (borg.trait[BI_CLEVEL] < 5)
+        greed = (borg.trait[BI_GOLD] / 100L);
 
     /* Count "sellable" items */
     for (i = 0; i < z_info->pack_size; i++) {
@@ -1278,7 +1278,7 @@ int borg_count_sell(void)
             continue;
 
         /* Don't sell my ammo */
-        if (item->tval == borg_trait[BI_AMMO_TVAL])
+        if (item->tval == borg.trait[BI_AMMO_TVAL])
             continue;
 
         /* Don't sell my books */
@@ -1313,7 +1313,7 @@ int borg_count_sell(void)
         p          = borg_power();
         item->iqty = sv_qty;
         ;
-        if (p + 50 < my_power)
+        if (p + 50 < borg.power)
             continue;
 
         /* Count remaining items */

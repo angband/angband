@@ -158,7 +158,7 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
     }
 
     /* Hack -- check line of sight */
-    if (borg_los(c_y, c_x, y, x)) {
+    if (borg_los(borg.c.y, borg.c.x, y, x)) {
         borg_cave_view_hack(ag, y, x);
 
         return (wall);
@@ -214,8 +214,8 @@ void borg_update_view(void)
     /*** Step 1 -- adjacent grids ***/
 
     /* Now start on the player */
-    y = c_y;
-    x = c_x;
+    y = borg.c.y;
+    x = borg.c.x;
 
     /* Access the grid */
     ag = &borg_grids[y][x];

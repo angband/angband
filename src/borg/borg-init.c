@@ -137,7 +137,7 @@ void borg_init_txt_file(void)
         { "borg_respawn_class", 'i', -1 }, { "borg_respawn_race", 'i', -1 },
         { "borg_chest_fail_tolerance", 'i', 7 },
         { "borg_delay_factor", 'i', 0 }, { "borg_money_scum_amount", 'i', 0 },
-        { "borg_self_scum", 'b', true }, { "borg_lunal_mode", 'b', false },
+        { "borg_self_scum", 'b', true }, { "borg.lunal_mode", 'b', false },
         { "borg_self_lunal", 'b', false }, { "borg_enchant_limit", 'i', 12 },
         { "borg_dump_level", 'i', 1 }, { "borg_save_death", 'i', 1 },
         { 0, 0, 0 } };
@@ -259,7 +259,7 @@ void borg_init_txt_file(void)
     }
 
     /* lunal mode is a default rather than a setting */
-    borg_lunal_mode = borg_cfg[BORG_LUNAL_MODE];
+    borg.lunal_mode = borg_cfg[BORG_LUNAL_MODE];
 
     /* a few sanity range checks */
     if (borg_cfg[BORG_MUNCHKIN_LEVEL] <= 1)
@@ -391,6 +391,8 @@ void borg_init(void)
     if (!borg_rand_local)
         borg_rand_local = randint1(0x10000000);
 
+    borg.player = player; /* HACK work around msvc issue */
+
     /*** Hack -- initialize borg.ini options ***/
 
     /* Message */
@@ -491,14 +493,6 @@ void borg_init(void)
     borg_init_store();
     /*** Object/Monster tracking ***/
     borg_init_update();
-
-    /*** Hack -- Extract race ***/
-
-    /* Insert the player Race--cheat */
-    borg_race = player->race->ridx;
-
-    /*** Hack -- Extract class ***/
-    borg_class = player->class->cidx;
 
     /*** Hack -- react to race and class ***/
 

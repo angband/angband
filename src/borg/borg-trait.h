@@ -75,6 +75,7 @@ enum {
     BI_SWIS,
     BI_SDEX,
     BI_SCON,
+    BI_CLASS,
     BI_LIGHT,
     BI_CURHP,
     BI_MAXHP,
@@ -90,6 +91,10 @@ enum {
     BI_CURLITE,
     BI_RECALL,
     BI_FOOD,
+    BI_FOOD_HI,
+    BI_FOOD_LO,
+    BI_FOOD_CURE_CONF,
+    BI_FOOD_CURE_BLIND,
     BI_SPEED,
     BI_GOLD,
     BI_MOD_MOVES,
@@ -114,11 +119,6 @@ enum {
     BI_ICOLD,
     BI_IELEC,
     BI_IPOIS,
-    BI_TRFIRE,
-    BI_TRCOLD,
-    BI_TRACID,
-    BI_TRPOIS,
-    BI_TRELEC,
     BI_RFIRE,
     BI_RCOLD,
     BI_RELEC,
@@ -194,6 +194,7 @@ enum {
     BI_BTOHIT,
     BI_BTODAM,
     BI_BLOWS,
+    BI_EXTRA_BLOWS,
     BI_SHOTS,
     BI_WMAXDAM,
     BI_WBASEDAM,
@@ -294,6 +295,9 @@ enum {
     BI_AROD1, /* Attack rods */
     BI_AROD2, /* Attack rods */
     BI_ANEED_ID,
+    BI_ADIGGER,
+    BI_GOOD_S_CHG,
+    BI_GOOD_W_CHG,
     BI_MULTIPLE_BONUSES,
     BI_DINV, /* See Inv Spell Legal */
     BI_WEIGHT, /* weight of all inventory and equipment */
@@ -303,86 +307,151 @@ enum {
     BI_MAX
 };
 
-// !FIX !TODO !AJG probably wrap all this up in a "borg" structure which can
-// contain all the things the borg thinks of itself
-extern int*    borg_trait;
-extern int*    borg_has;
-extern int*    borg_activation;
+struct goals {
+    /* goals */
+    int16_t type; /* Flowing (goal type) */
 
-extern int     borg_race; /* Player race */
-extern int     borg_class; /* Player class */
+    struct loc g; /* Goal location */
 
-extern int32_t my_power;
+    bool    rising; /* returning to town */
+    bool    leaving; /* leaving the level */
+    bool    fleeing; /* fleeing the level */
+    bool    fleeing_lunal; /* fleeing the level in lunal */
+    bool    fleeing_munchkin; /* Fleeing level while in munchkin Mode */
+    bool    fleeing_to_town; /* Fleeing the level to town */
+    bool    ignoring; /* ignoring monsters */
+    bool    less; /* return to, but don't use, the next up stairs */
 
-extern bool    borg_lunal_mode;
-extern bool    borg_munchkin_mode;
-extern bool    borg_scumming_pots;
-extern int16_t borg_need_see_invis;
-extern int16_t borg_see_inv;
-extern bool    need_shift_panel; /* to spot offscreens */
-extern int16_t when_shift_panel;
-extern int16_t time_this_panel; /* Current "time" on current panel*/
-extern int16_t borg_no_retreat;
+    int     recalling; /* waiting for recall, guessing turns left */
 
-extern int16_t when_call_light; /* When we last did call light */
-extern int16_t when_wizard_light; /* When we last did wizard light */
+    int16_t shop; /* Next shop to visit */
+    int16_t ware; /* Next item to buy there */
+    int16_t item; /* Next item to sell there */
+};
 
-extern int16_t when_detect_traps; /* When we last detected traps */
-extern int16_t when_detect_doors; /* When we last detected doors */
-extern int16_t when_detect_walls; /* When we last detected walls */
-extern int16_t when_detect_evil;
-extern int16_t when_detect_obj;
-extern int16_t when_last_kill_mult; /* When a multiplier was last killed */
+struct temp {
+    /* time stamps for processing see invisible */
+    int16_t need_see_invis;
+    int16_t see_inv;
+    
+    bool    res_fire;
+    bool    res_cold;
+    bool    res_acid;
+    bool    res_elec;
+    bool    res_pois;
 
-extern int     c_x; /* Current location (X) */
-extern int     c_y; /* Current location (Y) */
+    bool    prot_from_evil;
+    bool    fast;
+    bool    bless;
+    bool    hero;
+    bool    berserk;
+    bool    fastcast;
+    bool    regen;
+    bool    smite_evil;
+    bool    venom;
+    bool    shield;
+};
 
-extern int16_t goal; /* Flowing (goal type) */
+/*
+ * All the information the borg knows about itself
+ */
+struct borg_struct {
+    struct player *player; /* !HACK to work around a MSVC bug */
 
-extern int     g_x; /* Goal location (X) */
-extern int     g_y; /* Goal location (Y) */
+    /* current traits, set in borg_notice */
+    int    *trait;
+    /* items the borg is carrying or wearing */
+    int    *has;
+    /* activations for artifacts the borg has */
+    int    *activation;
 
-extern bool    goal_rising; /* Currently returning to town */
-extern bool    goal_leaving; /* Currently leaving the level */
-extern bool    goal_fleeing; /* Currently fleeing the level */
-extern bool    goal_fleeing_lunal; /* Currently fleeing the level in lunal*/
-extern bool    goal_fleeing_munchkin; /* Fleeing level while in munchkin Mode */
-extern bool
-    goal_fleeing_to_town; /* Currently fleeing the level to return to town */
-extern bool goal_ignoring; /* Currently ignoring monsters */
-extern int
-    goal_recalling; /* Currently waiting for recall, guessing turns left */
-extern bool    goal_less; /* return to, but dont use, the next up stairs */
+    /* how powerful the borg thinks it is set in borg_power */
+    int32_t power;
 
-extern int16_t goal_shop; /* Next shop to visit */
-extern int16_t goal_ware; /* Next item to buy there */
-extern int16_t goal_item; /* Next item to sell there */
+    /* Current location */
+    struct loc c;
 
-extern bool    stair_less; /* Use the next "up" staircase */
-extern bool    stair_more; /* Use the next "down" staircase */
+    /* hit points last game turn to track change in hp */
+    int16_t oldchp; 
 
-extern int16_t borg_times_twitch; /* how often twitchy on this level */
-extern int16_t borg_escapes; /* how often teleported on this level */
+    /* activity flags */
+    bool    lunal_mode;
+    bool    munchkin_mode;
+    bool    scumming_pots;
+
+    bool    stair_less; /* Use the next "up" staircase */
+    bool    stair_more; /* Use the next "down" staircase */
+
+    bool    on_upstairs; /* used when leaving a level */
+    bool    on_dnstairs; /* used when leaving a level */
+
+    bool    in_shop;
+
+    /* a 3 state boolean */
+    /*-1 = not checked yet */
+    /* 0 = not ready */
+    /* 1 = ready */
+    int     ready_morgoth;
+
+    struct temp temp;
+    /* time stamps for processing see invisible */
+    int16_t need_see_invis;
+    int16_t see_inv;
+
+    /* shifting the view (current panel) */
+    bool    need_shift_panel; /* to spot off-screens */
+    int16_t when_shift_panel;
+    int16_t time_this_panel; /* Current "time" on current panel*/
+
+    /* activity flags with time */
+    int16_t no_retreat; /* amount of time to not retreat */
+    int16_t resistance; /* borg is Resistant to all elements */
+    int16_t when_call_light;   /* When we last did call light */
+    int16_t when_wizard_light; /* When we last did wizard light */
+    int16_t when_detect_traps; /* When we last detected traps */
+    int16_t when_detect_doors; /* When we last detected doors */
+    int16_t when_detect_walls; /* When we last detected walls */
+    int16_t when_detect_evil;  /* When we last detected evil */
+    int16_t when_detect_obj;   /* When we last detected objects */
+    int16_t when_last_kill_mult; /* When a multiplier was last killed */
+
+    int16_t no_rest_prep; /* borg wont rest for a few turns */
+
+    int16_t times_twitch; /* how often twitchy on this level */
+    int16_t escapes; /* how often teleported on this level */
+
+    /* goals */
+    struct goals goal;
+
+    int16_t stat_max[STAT_MAX]; /* Current "maximal" stat values    */
+    int16_t stat_cur[STAT_MAX]; /* Current "natural" stat values    */
+    int16_t stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
+    int16_t stat_add[STAT_MAX]; /* additions to stats  */
+
+    bool    need_enchant_to_a; /* Need some enchantment */
+    bool    need_enchant_to_h; /* Need some enchantment */
+    bool    need_enchant_to_d; /* Need some enchantment */
+    bool    need_brand_weapon; /* Need to brand bolts */
+    bool    has_fix_exp;
+
+    int16_t need_id; /* count of number of ID scrolls to buy */
+
+    /* number of books */
+    int16_t amt_book[9];
+    /* location of books in inventory */
+    int16_t book_idx[9];
+
+    /* need add to stat potions */
+    bool    need_statgain[STAT_MAX];
+    /* Stat potions in inventory*/
+    int16_t amt_statgain[STAT_MAX]; 
+};
+extern struct borg_struct borg;
 
 extern bool    borg_simulate; /* Simulation flag */
 extern bool    borg_attacking; /* Simulation flag */
 
-extern bool    borg_on_upstairs; /* used when leaving a level */
-extern bool    borg_on_dnstairs; /* used when leaving a level */
-
-extern int16_t borg_oldchp; /* hit points last game turn */
-
 /* defense flags */
-extern bool    borg_prot_from_evil;
-extern bool    borg_speed;
-extern bool    borg_bless;
-extern bool    borg_hero;
-extern bool    borg_berserk;
-extern bool    borg_fastcast;
-extern bool    borg_regen;
-extern bool    borg_smite_evil;
-extern bool    borg_venom;
-extern bool    borg_shield;
 extern bool    borg_on_glyph; /* borg is standing on a glyph of warding */
 extern bool    borg_create_door; /* borg is going to create doors */
 extern bool    borg_sleep_spell;
@@ -393,48 +462,6 @@ extern bool    borg_confuse_spell;
 extern bool    borg_fear_mon_spell;
 
 extern int16_t borg_game_ratio; /* the ratio of borg time to game time */
-extern int16_t borg_resistance; /* borg is Resistant to all elements */
-extern int16_t borg_no_rest_prep; /* borg wont rest for a few turns */
-
-extern bool    borg_in_shop;
-
-extern int16_t my_stat_max[STAT_MAX]; /* Current "maximal" stat values    */
-extern int16_t my_stat_cur[STAT_MAX]; /* Current "natural" stat values    */
-extern int16_t my_stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
-extern int16_t my_stat_add[STAT_MAX]; /* additions to stats  */
-
-extern int16_t my_need_enchant_to_a; /* Need some enchantment */
-extern int16_t my_need_enchant_to_h; /* Need some enchantment */
-extern int16_t my_need_enchant_to_d; /* Need some enchantment */
-extern int16_t my_need_brand_weapon; /*  actually brand bolts */
-extern int16_t my_need_id; /* need to buy ID for an inventory item */
-
-extern int16_t amt_food_hical;
-extern int16_t amt_food_lowcal;
-
-extern int16_t amt_slow_poison;
-extern int16_t amt_cure_confusion;
-extern int16_t amt_cure_blind;
-
-extern int16_t amt_book[9];
-
-extern int     borg_stat[6]; /* !FIX how does this differ from my_stat_cur */
-extern int     borg_book[9]; /* !FIX how does this differ from amt_book? */
-
-extern int16_t amt_add_stat[6];
-extern int16_t amt_inc_stat[6]; /* Stat potions */
-extern int16_t amt_fix_exp;
-
-extern int16_t amt_cool_staff; /* holiness - power staff */
-extern int16_t
-    amt_cool_wand; /* # of charges on Wands which can be useful for attacks */
-extern int16_t amt_digger;
-
-/* a 3 state boolean */
-/*-1 = not checked yet */
-/* 0 = not ready */
-/* 1 = ready */
-extern int borg_ready_morgoth;
 
 /* array of the strings that match the BI_* values */
 extern const char* prefix_pref[];
@@ -469,7 +496,7 @@ extern void borg_notice(bool notice_swap);
 /*
  * Update the "frame" info from the screen
  */
-extern void borg_update_frame(void);
+extern void borg_notice_player(void);
 
 extern void borg_trait_init(void);
 extern void borg_trait_free(void);

@@ -112,7 +112,7 @@ bool borg_decurse_weapon(void)
  */
 bool borg_decurse_any(void)
 {
-    if (borg_trait[BI_FIRST_CURSED]) {
+    if (borg.trait[BI_FIRST_CURSED]) {
         if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
             && !borg_equips_staff_fail(sv_staff_remove_curse)
             && !borg_spell_okay_fail(REMOVE_CURSE, 40)
@@ -129,21 +129,21 @@ bool borg_decurse_any(void)
             || borg_activate_item(act_remove_curse)
             || borg_activate_item(act_remove_curse2)) {
             /* pick the item */
-            if (borg_trait[BI_FIRST_CURSED] <= INVEN_WIELD) {
+            if (borg.trait[BI_FIRST_CURSED] <= INVEN_WIELD) {
                 borg_keypress(
-                    all_letters_nohjkl[borg_trait[BI_FIRST_CURSED] - 1]);
-            } else if (borg_trait[BI_FIRST_CURSED] <= QUIVER_START) {
-                if (borg_trait[BI_WHERE_CURSED] & BORG_INVEN)
+                    all_letters_nohjkl[borg.trait[BI_FIRST_CURSED] - 1]);
+            } else if (borg.trait[BI_FIRST_CURSED] <= QUIVER_START) {
+                if (borg.trait[BI_WHERE_CURSED] & BORG_INVEN)
                     borg_keypress('/');
 
-                borg_keypress(all_letters_nohjkl[borg_trait[BI_FIRST_CURSED]
+                borg_keypress(all_letters_nohjkl[borg.trait[BI_FIRST_CURSED]
                                                  - INVEN_WIELD - 1]);
             } else {
-                if (borg_trait[BI_WHERE_CURSED] & 1
-                    || borg_trait[BI_WHERE_CURSED] & BORG_EQUIP)
+                if (borg.trait[BI_WHERE_CURSED] & 1
+                    || borg.trait[BI_WHERE_CURSED] & BORG_EQUIP)
                     borg_keypress('|');
                 borg_keypress(
-                    '0' + (borg_trait[BI_FIRST_CURSED] - 1 - QUIVER_START));
+                    '0' + (borg.trait[BI_FIRST_CURSED] - 1 - QUIVER_START));
             }
             /* pick first curse */
             borg_keypress(KC_ENTER);

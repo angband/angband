@@ -157,8 +157,9 @@ void borg_note(const char *what)
     /* Mega-Hack -- Check against the swap loops */
     if (strstr(what, "Best Combo") || strstr(what, "Taking off ")) {
         /* Tick the anti loop clock */
-        time_this_panel += 10;
-        borg_note(format("# Anti-loop variable tick (%d).", time_this_panel));
+        borg.time_this_panel += 10;
+        borg_note(
+            format("# Anti-loop variable tick (%d).", borg.time_this_panel));
     }
 
     /* Scan windows */
