@@ -1650,7 +1650,7 @@ void sdlpui_menu_handle_window_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
 	if (!d->pinned) {
-		sdlpui_dismiss_dialog(d, w);
+		sdlpui_popdown_dialog(d, w, true);
 	} else {
 		sdlpui_dialog_handle_window_loses_mouse(d, w);
 	}
