@@ -2878,8 +2878,6 @@ void borg_notice_player(void)
 {
     int i;
 
-    struct player_state *state = &player->known_state;
-
     /*** Hack -- Extract class ***/
     borg.trait[BI_CLASS] = player->class->cidx;
 
