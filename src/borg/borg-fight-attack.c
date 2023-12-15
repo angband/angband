@@ -167,8 +167,8 @@ static int borg_thrust_damage_one(int i)
         chance += 10;
 
     /* Mages with Mana do not get that bonus, they should cast */
-    if ((borg.trait[BI_CLASS] == CLASS_MAGE || 
-         borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+    if ((borg.trait[BI_CLASS] == CLASS_MAGE
+            || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
         && borg.trait[BI_CURSP] > 1)
         chance -= 10;
 
@@ -330,11 +330,11 @@ static int borg_attack_aux_thrust(void)
         return (b_d);
 
     /* Save the location */
-    borg.goal.g.x  = borg_temp_x[b_i];
-    borg.goal.g.y  = borg_temp_y[b_i];
+    borg.goal.g.x = borg_temp_x[b_i];
+    borg.goal.g.y = borg_temp_y[b_i];
 
-    ag   = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-    kill = &borg_kills[ag->kill];
+    ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+    kill          = &borg_kills[ag->kill];
 
     /* Note */
     borg_note(format("# Facing %s at (%d,%d) who has %d Hit Points.",
@@ -911,13 +911,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         if (rf_has(r_ptr->flags, RF_UNIQUE))
             break;
         borg_confuse_spell = false;
-        p1                 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p1 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         /* Make certain monsters appear to have more danger so the borg is more
          * likely to use this attack */
         if (kill->afraid && borg.trait[BI_CLEVEL] <= 10)
             p1 = p1 + 20;
         borg_confuse_spell = true;
-        p2                 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p2 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         borg_confuse_spell = false;
         dam                = (p1 - p2);
         break;
@@ -941,13 +941,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         if (rf_has(r_ptr->flags, RF_UNIQUE))
             break;
         borg_fear_mon_spell = false;
-        p1                  = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p1 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         /* Make certain monsters appear to have more danger so the borg is more
          * likely to use this attack */
         if (kill->afraid && borg.trait[BI_CLEVEL] <= 10)
             p1 = p1 + 20;
         borg_fear_mon_spell = true;
-        p2                  = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p2 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         borg_fear_mon_spell = false;
         dam                 = (p1 - p2);
         break;
@@ -969,13 +969,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         if (rf_has(r_ptr->flags, RF_UNIQUE))
             break;
         borg_slow_spell = false;
-        p1              = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p1 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         /* Make certain monsters appear to have more danger so the borg is more
          * likely to use this attack */
         if (kill->afraid && borg.trait[BI_CLEVEL] <= 10)
             p1 = p1 + 20;
         borg_slow_spell = true;
-        p2              = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p2 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         borg_slow_spell = false;
         dam             = (p1 - p2);
         break;
@@ -1002,13 +1002,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         if (rf_has(r_ptr->flags, RF_UNIQUE))
             break;
         borg_sleep_spell = false;
-        p1               = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p1 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         /* Make certain monsters appear to have more danger so the borg is more
          * likely to use this attack */
         if (kill->afraid && borg.trait[BI_CLEVEL] <= 10)
             p1 = p1 + 20;
         borg_sleep_spell = true;
-        p2               = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+        p2 = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
         borg_sleep_spell = false;
         dam              = (p1 - p2);
         break;
@@ -1066,7 +1066,8 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
             } else {
                 /* damage is the danger of the baddie */
-                dam = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
+                dam = borg_danger_one_kill(
+                    borg.c.y, borg.c.x, 1, i, true, true);
             }
         } else {
             dam = 0;
@@ -1472,7 +1473,8 @@ static int borg_launch_bolt_aux(
                     && !borg_detect_wall[q_y + 0][q_x + 1]
                     && !borg_detect_wall[q_y + 1][q_x + 0]
                     && !borg_detect_wall[q_y + 1][q_x + 1]
-                    && borg_fear_region[borg.c.y / 11][borg.c.x / 11] < avoidance / 20) {
+                    && borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+                           < avoidance / 20) {
 
                     /* Stop at unknown grids (see above) */
                     /* note if beam, dispel, this is the end of the beam */
@@ -2094,8 +2096,8 @@ int borg_attack_aux_spell_bolt(
 
     /* Paranoia */
     if (borg_simulate
-        && ((borg.trait[BI_CLASS] != CLASS_MAGE 
-            && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
+        && ((borg.trait[BI_CLASS] != CLASS_MAGE
+                && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
             && borg.trait[BI_CLEVEL] <= 2)
         && (randint0(100) < 1))
         return (0);
@@ -2556,7 +2558,8 @@ static int borg_attack_aux_wand_bolt(
     if (sval == sv_wand_wonder && !borg.munchkin_mode) {
         /* check the danger */
         if (b_n > 0
-            && borg_danger(borg.c.y, borg.c.x, 1, true, false) >= (avoidance * 7 / 10)) {
+            && borg_danger(borg.c.y, borg.c.x, 1, true, false)
+                   >= (avoidance * 7 / 10)) {
             /* make the wand appear deadly */
             b_n = 999;
 
@@ -2876,7 +2879,8 @@ static int borg_attack_aux_whirlwind_attack(void)
             WHIRLWIND_ATTACK, (borg_fighting_unique ? 40 : 25)))
         return (0);
 
-    /* int original_danger = borg_danger(borg.c.y, borg.c.x, 1, false, false); */
+    /* int original_danger = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+     */
     int blows = (borg.trait[BI_CLEVEL] + 10) / 15;
 
     /* Examine possible destinations */
@@ -3033,11 +3037,11 @@ static int borg_attack_aux_leap_into_battle(void)
         return (b_d);
 
     /* Save the location */
-    borg.goal.g.x  = borg_temp_x[b_i];
-    borg.goal.g.y  = borg_temp_y[b_i];
+    borg.goal.g.x = borg_temp_x[b_i];
+    borg.goal.g.y = borg_temp_y[b_i];
 
-    ag   = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-    kill = &borg_kills[ag->kill];
+    ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+    kill          = &borg_kills[ag->kill];
 
     /* Note */
     borg_note(
@@ -3149,11 +3153,11 @@ static int borg_attack_aux_maim_foe(void)
         return (b_d);
 
     /* Save the location */
-    borg.goal.g.x  = borg_temp_x[b_i];
-    borg.goal.g.y  = borg_temp_y[b_i];
+    borg.goal.g.x = borg_temp_x[b_i];
+    borg.goal.g.y = borg_temp_y[b_i];
 
-    ag   = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-    kill = &borg_kills[ag->kill];
+    ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+    kill          = &borg_kills[ag->kill];
 
     /* Get a direction for attacking */
     dir = borg_extract_dir(borg.c.y, borg.c.x, borg.goal.g.y, borg.goal.g.x);
@@ -3252,11 +3256,11 @@ static int borg_attack_aux_curse(void)
         return (b_d);
 
     /* Save the location */
-    borg.goal.g.x  = borg_temp_x[b_i];
-    borg.goal.g.y  = borg_temp_y[b_i];
+    borg.goal.g.x = borg_temp_x[b_i];
+    borg.goal.g.y = borg_temp_y[b_i];
 
-    ag   = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-    kill = &borg_kills[ag->kill];
+    ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+    kill          = &borg_kills[ag->kill];
 
     /* Attack the grid */
     borg_target(borg.goal.g);
@@ -3727,7 +3731,8 @@ int borg_calculate_attack_effectiveness(int attack_type)
             dam = ((borg.trait[BI_CLEVEL] * 10));
             return (borg_attack_aux_spell_dispel(
                 HOLY_WORD, dam, BORG_ATTACK_DISP_EVIL));
-        } else /* If he is not wounded don't cast this, use Disp Evil instead. */
+        } else /* If he is not wounded don't cast this, use Disp Evil instead.
+                */
         {
             dam = ((borg.trait[BI_CLEVEL] * 3) / 2) - 50;
             return (borg_attack_aux_spell_dispel(

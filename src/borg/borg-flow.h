@@ -39,8 +39,8 @@
 struct borg_track {
     int16_t num;
     int16_t size;
-    int*    x;
-    int*    y;
+    int    *x;
+    int    *y;
 };
 
 /*
@@ -79,11 +79,11 @@ extern int flow_tail;
 /*
  * Some variables
  */
-extern borg_data* borg_data_flow; /* Current "flow" data */
-extern borg_data* borg_data_cost; /* Current "cost" data */
-extern borg_data* borg_data_hard; /* Constant "hard" data */
-extern borg_data* borg_data_know; /* Current "know" flags */
-extern borg_data* borg_data_icky; /* Current "icky" flags */
+extern borg_data *borg_data_flow; /* Current "flow" data */
+extern borg_data *borg_data_cost; /* Current "cost" data */
+extern borg_data *borg_data_hard; /* Constant "hard" data */
+extern borg_data *borg_data_know; /* Current "know" flags */
+extern borg_data *borg_data_icky; /* Current "icky" flags */
 
 /*
  * Number of grids in the "temp" array
@@ -160,15 +160,15 @@ extern void borg_flow_enqueue_grid(int y, int x);
 /*
  * Commit the current "flow"
  */
-extern bool borg_flow_commit(const char* who, int why);
+extern bool borg_flow_commit(const char *who, int why);
 
 /*
  * Attempt to take an optimal step towards the current goal location
  */
 extern bool borg_flow_old(int why);
 
-extern void borg_init_track(struct borg_track* track, int size);
-extern void borg_free_track(struct borg_track* track);
+extern void borg_init_track(struct borg_track *track, int size);
+extern void borg_free_track(struct borg_track *track);
 
 extern void borg_init_flow(void);
 extern void borg_free_flow(void);

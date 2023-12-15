@@ -30,7 +30,7 @@ extern bool borg_dont_react;
 /*
  * Handle various "important" messages
  */
-extern void borg_react(const char* msg, const char* buf);
+extern void borg_react(const char *msg, const char *buf);
 
 /*
  * Clear saved messsages

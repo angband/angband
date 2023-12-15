@@ -35,7 +35,7 @@ extern bool borg_do_crush_junk;
 /*
  * Determine which slot an item could be wielded into
  */
-extern int borg_wield_slot(const borg_item* item);
+extern int borg_wield_slot(const borg_item *item);
 
 /*
  * Find an item with a given tval/sval
@@ -56,7 +56,7 @@ extern int borg_first_empty_inventory_slot(void);
 /*
  * Determine if an item is likely to be worthless
  */
-extern bool borg_item_worth_id(const borg_item* item);
+extern bool borg_item_worth_id(const borg_item *item);
 
 #endif
 #endif

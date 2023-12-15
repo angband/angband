@@ -48,7 +48,7 @@ extern void borg_write_map(bool ask);
 /*
  * Display the values which the borg believes an item has.
  */
-void borg_display_item(struct object* item2, int n);
+void borg_display_item(struct object *item2, int n);
 
 #endif
 #endif

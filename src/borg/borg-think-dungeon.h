@@ -28,8 +28,8 @@
 /*
  * Current level "feeling"
  */
-extern int  borg_feeling_danger;
-extern int  borg_feeling_stuff;
+extern int borg_feeling_danger;
+extern int borg_feeling_stuff;
 
 extern bool borg_think_dungeon(void);
 

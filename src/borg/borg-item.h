@@ -73,50 +73,50 @@ enum {
  * Note that unaware items will have a "tval" but an invalid "sval".
  */
 struct borg_item {
-    char     desc[80]; /* Actual Description */
+    char desc[80]; /* Actual Description */
 
-    char*    note; /* Pointer to tail of 'desc' */
+    char *note; /* Pointer to tail of 'desc' */
 
     uint32_t kind; /* Kind index */
 
-    bool     ident; /* True if item is identified */
-    bool     needs_ident; /* True if item needs to be identified */
+    bool ident; /* True if item is identified */
+    bool needs_ident; /* True if item needs to be identified */
     /* (not all items have runes that can be identified) */
-    bool                aware; /* Player is aware of the effects */
+    bool aware; /* Player is aware of the effects */
 
-    bool                xxxx; /* Unused */
+    bool xxxx; /* Unused */
 
-    uint8_t             tval; /* Item type */
-    uint8_t             sval; /* Item sub-type */
-    int16_t             pval; /* Item extra-info */
+    uint8_t tval; /* Item type */
+    uint8_t sval; /* Item sub-type */
+    int16_t pval; /* Item extra-info */
 
-    uint8_t             iqty; /* Number of items */
+    uint8_t iqty; /* Number of items */
 
-    int16_t             weight; /* Probable weight */
+    int16_t weight; /* Probable weight */
 
-    uint8_t             art_idx; /* Artifact index (if any) */
-    uint8_t             ego_idx; /* Ego-item index (if any) */
-    int                 activ_idx; /* Activation index (if any) */
-    bool                one_ring; /* is this the one ring */
+    uint8_t art_idx; /* Artifact index (if any) */
+    uint8_t ego_idx; /* Ego-item index (if any) */
+    int     activ_idx; /* Activation index (if any) */
+    bool    one_ring; /* is this the one ring */
 
-    int16_t             timeout; /* Timeout counter */
+    int16_t timeout; /* Timeout counter */
 
-    int16_t             to_h; /* Bonus to hit */
-    int16_t             to_d; /* Bonus to dam */
-    int16_t             to_a; /* Bonus to ac */
-    int16_t             ac; /* Armor class */
-    uint8_t             dd; /* Damage dice */
-    uint8_t             ds; /* Damage sides */
+    int16_t to_h; /* Bonus to hit */
+    int16_t to_d; /* Bonus to dam */
+    int16_t to_a; /* Bonus to ac */
+    int16_t ac; /* Armor class */
+    uint8_t dd; /* Damage dice */
+    uint8_t ds; /* Damage sides */
 
-    uint8_t             level; /* Level  */
+    uint8_t level; /* Level  */
 
-    int32_t             cost; /* Cost (in stores) */
+    int32_t cost; /* Cost (in stores) */
 
-    int32_t             value; /* Value (estimated) */
+    int32_t value; /* Value (estimated) */
 
-    bool                cursed; /* Item is cursed */
-    bool                uncursable; /* Item can be uncursed */
-    bool                curses[BORG_CURSE_MAX];
+    bool cursed; /* Item is cursed */
+    bool uncursable; /* Item can be uncursed */
+    bool curses[BORG_CURSE_MAX];
 
     bitflag             flags[OF_SIZE]; /**< Object flags */
     int16_t             modifiers[OBJ_MOD_MAX]; /**< Object modifiers*/
@@ -160,17 +160,17 @@ struct borg_item {
 /*
  * Current "inventory"
  */
-extern borg_item* borg_items;
+extern borg_item *borg_items;
 
 /*
  * Safety arrays for simulating possible worlds
  */
 
-extern borg_item* safe_items; /* Safety "inventory" */
-extern borg_item* safe_home; /* Safety "home stuff" */
+extern borg_item *safe_items; /* Safety "inventory" */
+extern borg_item *safe_home; /* Safety "home stuff" */
 
 /* get the items inscription (note) */
-extern const char* borg_get_note(const borg_item* item);
+extern const char *borg_get_note(const borg_item *item);
 
 /* remove the items inscription (note) */
 extern void borg_deinscribe(int i);

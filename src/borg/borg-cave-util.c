@@ -30,8 +30,7 @@
 bool borg_cave_floor_bold(int y, int X)
 {
     if (square_in_bounds_fully(cave, loc(X, y))) {
-        if ((borg_grids[y][X].feat == FEAT_FLOOR) 
-            || (borg_grids[y][X].trap)
+        if ((borg_grids[y][X].feat == FEAT_FLOOR) || (borg_grids[y][X].trap)
             || (borg_grids[y][X].feat == FEAT_LESS)
             || (borg_grids[y][X].feat == FEAT_MORE)
             || (borg_grids[y][X].feat == FEAT_BROKEN)
@@ -44,13 +43,9 @@ bool borg_cave_floor_bold(int y, int X)
 /* is this a floor grid */
 bool borg_cave_floor_grid(borg_grid *ag)
 {
-    if (ag->feat == FEAT_NONE 
-        || ag->feat == FEAT_FLOOR 
-        || ag->feat == FEAT_OPEN
-        || ag->feat == FEAT_MORE 
-        || ag->feat == FEAT_LESS
-        || ag->feat == FEAT_BROKEN 
-        || ag->feat == FEAT_PASS_RUBBLE
+    if (ag->feat == FEAT_NONE || ag->feat == FEAT_FLOOR || ag->feat == FEAT_OPEN
+        || ag->feat == FEAT_MORE || ag->feat == FEAT_LESS
+        || ag->feat == FEAT_BROKEN || ag->feat == FEAT_PASS_RUBBLE
         || ag->feat == FEAT_LAVA)
         return true;
     return false;
@@ -61,8 +56,7 @@ bool borg_cave_floor_grid(borg_grid *ag)
  */
 bool borg_feature_protected(borg_grid *ag)
 {
-    if (ag->glyph 
-        || ag->kill
+    if (ag->glyph || ag->kill
         || ((ag->feat >= FEAT_CLOSED) && (ag->feat <= FEAT_PERM)))
         return true;
     return false;

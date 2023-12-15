@@ -125,7 +125,7 @@ bool borg_check_light_only(void)
         /*
          * Scan the surrounding 5x5 area for unlit tiles.
          *
-         * Radius two light misses out the four corners but otherwise 
+         * Radius two light misses out the four corners but otherwise
          * illuminates a 5x5 grid, which is 21 grids illuminated incl player.
          *
          *  ...
@@ -392,7 +392,8 @@ bool borg_check_light(void)
     }
 
     /* Hack -- find traps */
-    if (do_trap && (!borg.when_detect_traps || (borg_t - borg.when_detect_traps >= 7))
+    if (do_trap
+        && (!borg.when_detect_traps || (borg_t - borg.when_detect_traps >= 7))
         && borg.trait[BI_CDEPTH]) /* Never in town */
     {
         /* Check for traps */
@@ -634,8 +635,10 @@ bool borg_light_beam(bool simulation)
         if (panel_contains(borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
-                if (borg_cave_floor_bold(borg.c.y + i, borg.c.x) && /* all floors */
-                    !borg_cave_floor_bold(borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)
+                /* all floors */
+                if (borg_cave_floor_bold(borg.c.y + i, borg.c.x)
+                    && !borg_cave_floor_bold(
+                        borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)
                     && ag->feat < FEAT_OPEN && blocked == false) {
                     /* note the direction */
                     dir = 2;
@@ -658,8 +661,10 @@ bool borg_light_beam(bool simulation)
         if (panel_contains(borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x + i) && /* all floors */
-                    !borg_cave_floor_bold(borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)
+                /* all floors */
+                if (borg_cave_floor_bold(borg.c.y, borg.c.x + i)
+                    && !borg_cave_floor_bold(
+                        borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)
                     && ag->feat < FEAT_OPEN && blocked == false) {
                     /* note the direction */
                     dir = 6;
@@ -685,8 +690,10 @@ bool borg_light_beam(bool simulation)
                 /* Verify that there are no blockers in my light radius and
                  * the 1st grid beyond my light is not a floor nor a blocker
                  */
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x - i) && /* all see through */
-                    !borg_cave_floor_bold(borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1)
+                if (borg_cave_floor_bold(borg.c.y, borg.c.x - i)
+                    && /* all see through */
+                    !borg_cave_floor_bold(
+                        borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1)
                     && ag->feat < FEAT_OPEN && blocked == false) {
                     /* note the direction */
                     dir = 4;
@@ -701,11 +708,23 @@ bool borg_light_beam(bool simulation)
     /* Don't do it if on the edge of shifting the panel. */
     if (dir == 5 || spell_ok == false || blocked == true
         || (dir == 2
-            && (borg.c.y == 18 || borg.c.y == 19 || borg.c.y == 29 || borg.c.y == 30 || borg.c.y == 40
-                || borg.c.y == 41 || borg.c.y == 51 || borg.c.y == 52))
+            && (borg.c.y == 18 
+                || borg.c.y == 19 
+                || borg.c.y == 29
+                || borg.c.y == 30 
+                || borg.c.y == 40 
+                || borg.c.y == 41
+                || borg.c.y == 51 
+                || borg.c.y == 52))
         || (dir == 8
-            && (borg.c.y == 13 || borg.c.y == 14 || borg.c.y == 24 || borg.c.y == 25 || borg.c.y == 35
-                || borg.c.y == 36 || borg.c.y == 46 || borg.c.y == 47)))
+            && (borg.c.y == 13 
+                || borg.c.y == 14 
+                || borg.c.y == 24
+                || borg.c.y == 25 
+                || borg.c.y == 35 
+                || borg.c.y == 36
+                || borg.c.y == 46 
+                || borg.c.y == 47)))
         return (false);
 
     /* simulation */

@@ -222,7 +222,7 @@ static void borg_update_kill_new(int i)
             j = DUNGEON_HGT - SCREEN_HGT;
         morgy_panel_y = j;
 
-        j             = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
+        j = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
             * borg_panel_wid();
         if (j < 0)
             j = 0;
@@ -261,9 +261,9 @@ static void borg_update_kill_old(int i)
     int j   = 0;
     int pct;
 
-    borg_kill *kill            = &borg_kills[i];
+    borg_kill *kill       = &borg_kills[i];
 
-    struct monster      *m_ptr = square_monster(cave, loc(kill->pos.x, kill->pos.y));
+    struct monster *m_ptr = square_monster(cave, loc(kill->pos.x, kill->pos.y));
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
     /* Extract max hitpoints */
@@ -370,7 +370,7 @@ static void borg_update_kill_old(int i)
             j = DUNGEON_HGT - SCREEN_HGT;
         morgy_panel_y = j;
 
-        j             = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
+        j = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
             * borg_panel_wid();
         if (j < 0)
             j = 0;
@@ -792,8 +792,8 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     /* Note (r_info[kill->r_idx].name)*/
     borg_note(format(
         "# Creating a monster '%s' at (%d,%d), HP: %d, Time: %d, Index: %d",
-        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x, kill->power, kill->when,
-        kill->r_idx));
+        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x, kill->power,
+        kill->when, kill->r_idx));
 
     /* Recalculate danger */
     borg_danger_wipe = true;
@@ -830,7 +830,8 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     }
 
     /* Wipe goals only if I have some light source */
-    if (borg.trait[BI_CURLITE] && borg_los(kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
+    if (borg.trait[BI_CURLITE]
+        && borg_los(kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
         borg.goal.type = 0;
 
     /* Hack -- Force the monster to be sitting on a floor
@@ -1171,7 +1172,8 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
 
             /* Clear goals */
             if ((!borg.trait[BI_ESP] && borg.goal.type == GOAL_KILL
-                    && (borg_flow_y[0] == kill->pos.y && borg_flow_x[0] == kill->pos.x))
+                    && (borg_flow_y[0] == kill->pos.y
+                        && borg_flow_x[0] == kill->pos.x))
                 || (borg.goal.type == GOAL_TAKE && borg.munchkin_mode))
                 borg.goal.type = 0;
         }
@@ -2086,8 +2088,8 @@ bool borg_flow_kill_aim(bool viewable)
             borg.c.y = s_c_y + o_y;
 
             /* avoid screen edges */
-            if (borg.c.x > AUTO_MAX_X - 2 || borg.c.x < 2 || borg.c.y > AUTO_MAX_Y - 2
-                || borg.c.y < 2)
+            if (borg.c.x > AUTO_MAX_X - 2 || borg.c.x < 2
+                || borg.c.y > AUTO_MAX_Y - 2 || borg.c.y < 2)
                 continue;
 
             /* Make sure we do not end up next to a monster */
@@ -2429,14 +2431,15 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* If I found 25 grids, then that spot will work well */
         if (wall_south == 25) {
-            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + sy[17], borg.c.x + o_x + sx[17])
+            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + sy[17],
+                    borg.c.x + o_x + sx[17])
                 < b_distance) {
                 b_y        = o_y;
                 b_x        = o_x;
                 b_s        = true;
                 b_n        = false;
-                b_distance = borg_distance(
-                    borg.c.y, borg.c.x, borg.c.y + b_y + sy[17], borg.c.x + b_x + sx[17]);
+                b_distance = borg_distance(borg.c.y, borg.c.x,
+                    borg.c.y + b_y + sy[17], borg.c.x + b_x + sx[17]);
             }
         }
     }
@@ -2483,15 +2486,16 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* If I found 25 grids, then that spot will work well */
         if (wall_east == 25) {
-            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + ey[13], borg.c.x + o_x + ex[13])
+            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + ey[13],
+                    borg.c.x + o_x + ex[13])
                 < b_distance) {
                 b_y        = o_y;
                 b_x        = o_x;
                 b_e        = true;
                 b_s        = false;
                 b_n        = false;
-                b_distance = borg_distance(
-                    borg.c.y, borg.c.x, borg.c.y + b_y + ey[13], borg.c.x + b_x + ex[13]);
+                b_distance = borg_distance(borg.c.y, borg.c.x,
+                    borg.c.y + b_y + ey[13], borg.c.x + b_x + ex[13]);
             }
         }
     }
@@ -2538,7 +2542,8 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* If I found 25 grids, then that spot will work well */
         if (wall_west == 25) {
-            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + wy[11], borg.c.x + o_x + wx[11])
+            if (borg_distance(borg.c.y, borg.c.x, borg.c.y + o_y + wy[11],
+                    borg.c.x + o_x + wx[11])
                 < b_distance) {
                 b_y        = o_y;
                 b_x        = o_x;
@@ -2546,13 +2551,13 @@ bool borg_flow_kill_corridor(bool viewable)
                 b_e        = false;
                 b_s        = false;
                 b_n        = false;
-                b_distance = borg_distance(
-                    borg.c.y, borg.c.x, borg.c.y + o_y + wy[11], borg.c.x + o_x + wx[11]);
+                b_distance = borg_distance(borg.c.y, borg.c.x,
+                    borg.c.y + o_y + wy[11], borg.c.x + o_x + wx[11]);
             }
         }
     }
 
-    /* Attempt to enqueue the grids that should be floor grids and have the 
+    /* Attempt to enqueue the grids that should be floor grids and have the
      * borg move onto those grids
      */
     if (b_n == true) {
@@ -2583,7 +2588,8 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* Enqueue the grid where I will hide */
         borg_digging = true;
-        borg_flow_enqueue_grid(borg.c.y + b_y + sy[17], borg.c.x + b_x + sx[17]);
+        borg_flow_enqueue_grid(
+            borg.c.y + b_y + sy[17], borg.c.x + b_x + sx[17]);
 
         /* Spread the flow */
         borg_flow_spread(6, true, false, true, -1, false);
@@ -2605,7 +2611,8 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* Enqueue the grid where I will hide */
         borg_digging = true;
-        borg_flow_enqueue_grid(borg.c.y + b_y + ey[13], borg.c.x + b_x + ex[13]);
+        borg_flow_enqueue_grid(
+            borg.c.y + b_y + ey[13], borg.c.x + b_x + ex[13]);
 
         /* Spread the flow */
         borg_digging = true;
@@ -2627,7 +2634,8 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* Enqueue the grid where I will hide */
         borg_digging = true;
-        borg_flow_enqueue_grid(borg.c.y + b_y + wy[11], borg.c.x + b_x + wx[11]);
+        borg_flow_enqueue_grid(
+            borg.c.y + b_y + wy[11], borg.c.x + b_x + wx[11]);
 
         /* Spread the flow */
         borg_flow_spread(5, true, false, true, -1, false);
@@ -2800,7 +2808,7 @@ void borg_near_monster_type(int dist)
 
         /* Mage and priest are extra fearful */
         if (borg.trait[BI_CLEVEL] <= 6
-            && (borg.trait[BI_CLASS] == CLASS_MAGE 
+            && (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_PRIEST)
             && (strstr(r_ptr->name, "Squint")))
             scaryguy_on_level = true;
@@ -3057,7 +3065,8 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
              * The following criteria are exactly the same as the
              * list in borg_launch_damage_one()
              */
-            else if ((borg_danger_one_kill(kill->pos.y, kill->pos.x, 1, i, true, false)
+            else if ((borg_danger_one_kill(
+                          kill->pos.y, kill->pos.x, 1, i, true, false)
                          > avoidance * 3 / 10)
                      || ((r_ptr->friends
                              || r_ptr->friends_base) /* monster has friends*/

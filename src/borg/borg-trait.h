@@ -313,16 +313,16 @@ struct goals {
 
     struct loc g; /* Goal location */
 
-    bool    rising; /* returning to town */
-    bool    leaving; /* leaving the level */
-    bool    fleeing; /* fleeing the level */
-    bool    fleeing_lunal; /* fleeing the level in lunal */
-    bool    fleeing_munchkin; /* Fleeing level while in munchkin Mode */
-    bool    fleeing_to_town; /* Fleeing the level to town */
-    bool    ignoring; /* ignoring monsters */
-    bool    less; /* return to, but don't use, the next up stairs */
+    bool rising; /* returning to town */
+    bool leaving; /* leaving the level */
+    bool fleeing; /* fleeing the level */
+    bool fleeing_lunal; /* fleeing the level in lunal */
+    bool fleeing_munchkin; /* Fleeing level while in munchkin Mode */
+    bool fleeing_to_town; /* Fleeing the level to town */
+    bool ignoring; /* ignoring monsters */
+    bool less; /* return to, but don't use, the next up stairs */
 
-    int     recalling; /* waiting for recall, guessing turns left */
+    int recalling; /* waiting for recall, guessing turns left */
 
     int16_t shop; /* Next shop to visit */
     int16_t ware; /* Next item to buy there */
@@ -333,23 +333,23 @@ struct temp {
     /* time stamps for processing see invisible */
     int16_t need_see_invis;
     int16_t see_inv;
-    
-    bool    res_fire;
-    bool    res_cold;
-    bool    res_acid;
-    bool    res_elec;
-    bool    res_pois;
 
-    bool    prot_from_evil;
-    bool    fast;
-    bool    bless;
-    bool    hero;
-    bool    berserk;
-    bool    fastcast;
-    bool    regen;
-    bool    smite_evil;
-    bool    venom;
-    bool    shield;
+    bool res_fire;
+    bool res_cold;
+    bool res_acid;
+    bool res_elec;
+    bool res_pois;
+
+    bool prot_from_evil;
+    bool fast;
+    bool bless;
+    bool hero;
+    bool berserk;
+    bool fastcast;
+    bool regen;
+    bool smite_evil;
+    bool venom;
+    bool shield;
 };
 
 /*
@@ -359,11 +359,11 @@ struct borg_struct {
     struct player *player; /* !HACK to work around a MSVC bug */
 
     /* current traits, set in borg_notice */
-    int    *trait;
+    int *trait;
     /* items the borg is carrying or wearing */
-    int    *has;
+    int *has;
     /* activations for artifacts the borg has */
-    int    *activation;
+    int *activation;
 
     /* how powerful the borg thinks it is set in borg_power */
     int32_t power;
@@ -372,26 +372,26 @@ struct borg_struct {
     struct loc c;
 
     /* hit points last game turn to track change in hp */
-    int16_t oldchp; 
+    int16_t oldchp;
 
     /* activity flags */
-    bool    lunal_mode;
-    bool    munchkin_mode;
-    bool    scumming_pots;
+    bool lunal_mode;
+    bool munchkin_mode;
+    bool scumming_pots;
 
-    bool    stair_less; /* Use the next "up" staircase */
-    bool    stair_more; /* Use the next "down" staircase */
+    bool stair_less; /* Use the next "up" staircase */
+    bool stair_more; /* Use the next "down" staircase */
 
-    bool    on_upstairs; /* used when leaving a level */
-    bool    on_dnstairs; /* used when leaving a level */
+    bool on_upstairs; /* used when leaving a level */
+    bool on_dnstairs; /* used when leaving a level */
 
-    bool    in_shop;
+    bool in_shop;
 
     /* a 3 state boolean */
     /*-1 = not checked yet */
     /* 0 = not ready */
     /* 1 = ready */
-    int     ready_morgoth;
+    int ready_morgoth;
 
     struct temp temp;
     /* time stamps for processing see invisible */
@@ -406,13 +406,13 @@ struct borg_struct {
     /* activity flags with time */
     int16_t no_retreat; /* amount of time to not retreat */
     int16_t resistance; /* borg is Resistant to all elements */
-    int16_t when_call_light;   /* When we last did call light */
+    int16_t when_call_light; /* When we last did call light */
     int16_t when_wizard_light; /* When we last did wizard light */
     int16_t when_detect_traps; /* When we last detected traps */
     int16_t when_detect_doors; /* When we last detected doors */
     int16_t when_detect_walls; /* When we last detected walls */
-    int16_t when_detect_evil;  /* When we last detected evil */
-    int16_t when_detect_obj;   /* When we last detected objects */
+    int16_t when_detect_evil; /* When we last detected evil */
+    int16_t when_detect_obj; /* When we last detected objects */
     int16_t when_last_kill_mult; /* When a multiplier was last killed */
 
     int16_t no_rest_prep; /* borg wont rest for a few turns */
@@ -428,11 +428,11 @@ struct borg_struct {
     int16_t stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
     int16_t stat_add[STAT_MAX]; /* additions to stats  */
 
-    bool    need_enchant_to_a; /* Need some enchantment */
-    bool    need_enchant_to_h; /* Need some enchantment */
-    bool    need_enchant_to_d; /* Need some enchantment */
-    bool    need_brand_weapon; /* Need to brand bolts */
-    bool    has_fix_exp;
+    bool need_enchant_to_a; /* Need some enchantment */
+    bool need_enchant_to_h; /* Need some enchantment */
+    bool need_enchant_to_d; /* Need some enchantment */
+    bool need_brand_weapon; /* Need to brand bolts */
+    bool has_fix_exp;
 
     int16_t need_id; /* count of number of ID scrolls to buy */
 
@@ -442,29 +442,29 @@ struct borg_struct {
     int16_t book_idx[9];
 
     /* need add to stat potions */
-    bool    need_statgain[STAT_MAX];
+    bool need_statgain[STAT_MAX];
     /* Stat potions in inventory*/
-    int16_t amt_statgain[STAT_MAX]; 
+    int16_t amt_statgain[STAT_MAX];
 };
 extern struct borg_struct borg;
 
-extern bool    borg_simulate; /* Simulation flag */
-extern bool    borg_attacking; /* Simulation flag */
+extern bool borg_simulate; /* Simulation flag */
+extern bool borg_attacking; /* Simulation flag */
 
 /* defense flags */
-extern bool    borg_on_glyph; /* borg is standing on a glyph of warding */
-extern bool    borg_create_door; /* borg is going to create doors */
-extern bool    borg_sleep_spell;
-extern bool    borg_sleep_spell_ii;
-extern bool    borg_crush_spell;
-extern bool    borg_slow_spell; /* borg is about to cast the spell */
-extern bool    borg_confuse_spell;
-extern bool    borg_fear_mon_spell;
+extern bool borg_on_glyph; /* borg is standing on a glyph of warding */
+extern bool borg_create_door; /* borg is going to create doors */
+extern bool borg_sleep_spell;
+extern bool borg_sleep_spell_ii;
+extern bool borg_crush_spell;
+extern bool borg_slow_spell; /* borg is about to cast the spell */
+extern bool borg_confuse_spell;
+extern bool borg_fear_mon_spell;
 
 extern int16_t borg_game_ratio; /* the ratio of borg time to game time */
 
 /* array of the strings that match the BI_* values */
-extern const char* prefix_pref[];
+extern const char *prefix_pref[];
 
 /* !HACK! defined in the main game */
 extern const int adj_str_hold[STAT_RANGE];
@@ -486,7 +486,7 @@ extern const int adj_str_blow[STAT_RANGE];
 /*
  * Utility to calculate the number of blows an item will get
  */
-extern int borg_calc_blows(borg_item* item);
+extern int borg_calc_blows(borg_item *item);
 
 /*
  * Extract various bonuses

@@ -133,7 +133,7 @@ extern int16_t num_boots;
 /*
  * Extract the bonuses for items in the home.
  */
-extern void borg_notice_home(borg_item* in_item, bool no_items);
+extern void borg_notice_home(borg_item *in_item, bool no_items);
 
 #endif
 #endif

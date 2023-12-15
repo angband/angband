@@ -123,7 +123,8 @@ bool borg_flow_glyph(int why)
             /* Check for an existing glyph */
             for (i = 0; i < track_glyph.num; i++) {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
+                if ((track_glyph.x[i] == borg.c.x)
+                    && (track_glyph.y[i] == borg.c.y))
                     return (false);
             }
 

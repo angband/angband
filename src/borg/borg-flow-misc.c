@@ -265,7 +265,7 @@ bool borg_flow_recover(bool viewable, int dist)
                 continue;
 
             /* Skip grids that are too close to me */
-            if (distance(borg.c, loc(x ,y)) < 7)
+            if (distance(borg.c, loc(x, y)) < 7)
                 continue;
 
             /* Is this grid a happy grid? */
@@ -499,8 +499,8 @@ bool borg_flow_spastic(bool bored)
         ag        = &borg_grids[borg.c.y][borg.c.x];
 
         /* Take note */
-        borg_note(format(
-            "# Spastic Searching at (%d,%d)...value:%d", borg.c.x, borg.c.y, ag->xtra));
+        borg_note(format("# Spastic Searching at (%d,%d)...value:%d", borg.c.x,
+            borg.c.y, ag->xtra));
 
         /* Count searching */
         for (i = 0; i < 9; i++) {
@@ -584,8 +584,8 @@ bool borg_flow_spastic(bool bored)
                 j = borg_distance(
                     track_less.y[b_stair], track_less.x[b_stair], y, x);
                 /* Distance of me to the stairs */
-                b_j = borg_distance(
-                    borg.c.y, borg.c.x, track_less.y[b_stair], track_less.x[b_stair]);
+                b_j = borg_distance(borg.c.y, borg.c.x, track_less.y[b_stair],
+                    track_less.x[b_stair]);
 
                 /* skip far away grids while I am close to stair*/
                 if (b_j <= borg.trait[BI_CLEVEL] * 3 + 9
@@ -1183,7 +1183,8 @@ bool borg_check_rest(int y, int x)
         for (i = -1; i < 1; i++) {
             for (ii = -1; ii < 1; ii++) {
                 /* check bounds */
-                if (!square_in_bounds_fully(cave, loc(borg.c.x + ii, borg.c.y + i)))
+                if (!square_in_bounds_fully(
+                        cave, loc(borg.c.x + ii, borg.c.y + i)))
                     continue;
 
                 if (borg_grids[borg.c.y + i][borg.c.x + ii].feat == FEAT_PERM)

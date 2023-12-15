@@ -79,7 +79,7 @@ static bool borg_consume(int i)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg.trait[BI_CLASS] == CLASS_MAGE 
+            if (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_DRUID
                 || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
                 return (false);
@@ -95,7 +95,7 @@ static bool borg_consume(int i)
                 return (false);
 
             /* This class does not want to risk losing a different stat */
-            if (borg.trait[BI_CLASS] != CLASS_MAGE 
+            if (borg.trait[BI_CLASS] != CLASS_MAGE
                 && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
                 return (false);
 
@@ -252,7 +252,8 @@ bool borg_crush_junk(void)
         return (false);
 
     /* No crush if even slightly dangerous */
-    if (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 10)
+    if (borg_danger(borg.c.y, borg.c.x, 1, true, false)
+        > borg.trait[BI_CURHP] / 10)
         return (false);
 
     /* Destroy actual "junk" items */
@@ -509,7 +510,8 @@ bool borg_crush_hole(void)
 
     /* No crush if even slightly dangerous */
     if (borg.trait[BI_CDEPTH]
-        && (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 10
+        && (borg_danger(borg.c.y, borg.c.x, 1, true, false)
+                > borg.trait[BI_CURHP] / 10
             && (borg.trait[BI_CURHP] != borg.trait[BI_MAXHP]
                 || borg_danger(borg.c.y, borg.c.x, 1, true, false)
                        > (borg.trait[BI_CURHP] * 2) / 3)))
@@ -587,8 +589,10 @@ bool borg_crush_hole(void)
                     && borg.trait[BI_CLASS] == CLASS_WARRIOR))
             && item->iqty <= 5)
             continue;
-        if (item->tval == TV_WAND && item->sval == sv_wand_teleport_away
-            && borg.trait[BI_CLASS] == CLASS_WARRIOR && borg.trait[BI_ATPORTOTHER] <= 8)
+        if (item->tval == TV_WAND 
+            && item->sval == sv_wand_teleport_away
+            && borg.trait[BI_CLASS] == CLASS_WARRIOR
+            && borg.trait[BI_ATPORTOTHER] <= 8)
             continue;
         if (item->tval == TV_ROD
             && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
@@ -908,7 +912,8 @@ bool borg_crush_slow(void)
     bool fix = false;
 
     /* No crush if even slightly dangerous */
-    if (borg_danger(borg.c.y, borg.c.x, 1, true, false) > borg.trait[BI_CURHP] / 20)
+    if (borg_danger(borg.c.y, borg.c.x, 1, true, false)
+        > borg.trait[BI_CURHP] / 20)
         return (false);
 
     /* Hack -- never in town */

@@ -1160,7 +1160,7 @@ bool borg_think_shop_sell(void)
     if ((borg.goal.shop == shop_num) && (borg.goal.item >= 0)) {
         borg_item *item = &borg_items[borg.goal.item];
 
-        qty = borg_min_item_quantity(item);
+        qty             = borg_min_item_quantity(item);
 
         /* Log */
         borg_note(format("# Selling %s", item->desc));

@@ -280,8 +280,8 @@ bool borg_prep_leave_level_spells(void)
     }
 
     /* Cast heroism if above level it gives temp attribute */
-    if (!borg.temp.hero && borg_spell_fail(HEROISM, 15) &&
-        borg.trait[BI_CLEVEL] > borg_heroism_level()) {
+    if (!borg.temp.hero && borg_spell_fail(HEROISM, 15)
+        && borg.trait[BI_CLEVEL] > borg_heroism_level()) {
         borg_note("# Casting Heroism spell before leaving level.");
         borg.no_rest_prep = 3000;
         return (true);
@@ -303,7 +303,8 @@ bool borg_prep_leave_level_spells(void)
     }
 
     /* Cast Venom just before returning to dungeon */
-    if (!borg.temp.venom && !borg.trait[BI_WB_POIS] && borg_spell_fail(VENOM, 15)) {
+    if (!borg.temp.venom && !borg.trait[BI_WB_POIS]
+        && borg_spell_fail(VENOM, 15)) {
         borg_note("# Casting Venom before leaving level.");
         borg.no_rest_prep = 18000;
         return (true);
