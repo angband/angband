@@ -1691,7 +1691,7 @@ void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
 {
 	/* Dismiss if not pinned and don't have a control with mouse focus. */
 	if (!d->pinned && !d->c_mouse) {
-		sdlpui_dismiss_dialog(d, w);
+		sdlpui_popdown_dialog(d, w, true);
 	} else {
 		sdlpui_dialog_handle_window_loses_key(d, w);
 	}
