@@ -251,7 +251,9 @@ expr:B:PLAYER_LEVEL:+ 55
 desc:Shoots a radius-2 fire ball.
 
 spell:Treasure Detection:30:10:70:10
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
@@ -814,7 +816,9 @@ effect:DETECT_DOORS
 effect-yx:22:40
 effect:DETECT_STAIRS
 effect-yx:22:40
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
@@ -1024,6 +1028,8 @@ desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Object Detection:10:3:60:1
+effect:DETECT_ORE
+effect-yx:22:40
 effect:DETECT_GOLD
 effect-yx:22:40
 effect:DETECT_OBJECTS
@@ -1532,7 +1538,9 @@ expr:B:PLAYER_LEVEL:+ 55
 desc:Shoots a radius-2 fire ball.
 
 spell:Treasure Detection:35:20:70:10
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
@@ -2007,7 +2015,9 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
