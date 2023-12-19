@@ -1670,8 +1670,18 @@ void sdlpui_dialog_handle_window_loses_mouse(struct sdlpui_dialog *d,
 void sdlpui_menu_handle_window_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	if (!d->pinned) {
-		sdlpui_popdown_dialog(d, w, true);
+	struct sdlpui_dialog *deepest = d;
+
+	while (1) {
+		struct sdlpui_dialog *child = sdlpui_get_dialog_child(deepest);
+
+		if (!child) {
+			break;
+		}
+		deepest = child;
+	}
+	if (!deepest->pinned) {
+		sdlpui_popdown_dialog(deepest, w, true);
 	} else {
 		sdlpui_dialog_handle_window_loses_mouse(d, w);
 	}
@@ -1710,11 +1720,40 @@ void sdlpui_dialog_handle_window_loses_key(struct sdlpui_dialog *d,
 void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	/* Dismiss if not pinned and don't have a control with mouse focus. */
-	if (!d->pinned && !d->c_mouse) {
-		sdlpui_popdown_dialog(d, w, true);
-	} else {
-		sdlpui_dialog_handle_window_loses_key(d, w);
+	/*
+	 * Dimiss all the child dialogs up to the one which has mouse focus
+	 * or has a parent control with mouse focus.  If the dialog itself
+	 * is not dismissed in that process, treat it like a generic dialog
+	 * when the window loses key focus.
+	 */
+	struct sdlpui_dialog *deepest = d;
+
+	while (1) {
+		struct sdlpui_dialog *child = sdlpui_get_dialog_child(deepest);
+
+		if (!child) {
+			break;
+		}
+		deepest = child;
+	}
+	while (1) {
+		struct sdlpui_dialog *parent;
+		struct sdlpui_control *parent_ctrl;
+
+		parent = sdlpui_get_dialog_parent(deepest);
+		parent_ctrl = sdlpui_get_dialog_parent_ctrl(deepest);
+		if (deepest->pinned || deepest->c_mouse
+				|| (parent && parent->c_mouse == parent_ctrl)) {
+			if (deepest == d) {
+				sdlpui_dialog_handle_window_loses_key(d, w);
+			}
+			break;
+		}
+		sdlpui_popdown_dialog(deepest, w, false);
+		if (!parent || deepest == d) {
+			break;
+		}
+		deepest = parent;
 	}
 }
 
@@ -1751,42 +1790,55 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e)
 {
 	/*
-	 * The mouse left the menu:  pop down the menu (and all parents up to
-	 * the first that is either pinned or contains the mouse) unless the
-	 * menu is pinned or the mouse is in the menu's children or the parent
-	 * control.  If not popping down, behave the same as if this was an
+	 * The mouse left the menu.  If the mouse is not in a child menu,
+	 * pop down the menu's children.  If this menu's parent control does
+	 * not contain the mouse and this menu is not pinned, pop down this
+	 * menu and all parents up to the first that is pinned or contains the
+	 * mouse.  If not popping down this menu, behave as if it was an
 	 * ordinary dialog and the mouse left the window containing it.
 	 */
-	struct sdlpui_dialog *d2;
+	bool remains = false;
 
-	if (d->pinned) {
+	if (e) {
+		struct sdlpui_dialog *d2 = d;
+		struct sdlpui_control *c;
+
+		while (1) {
+			struct sdlpui_dialog *child =
+				sdlpui_get_dialog_child(d2);
+
+			if (!child) {
+				break;
+			}
+			if (sdlpui_is_in_dialog(child, e->x, e->y)) {
+				sdlpui_dialog_handle_window_loses_mouse(d, w);
+				return;
+			}
+			d2 = child;
+		}
+
+		d2 = sdlpui_get_dialog_parent(d);
+		c = sdlpui_get_dialog_parent_ctrl(d);
+		if (d2 && c && sdlpui_is_in_control(c, d2, e->x, e->y)) {
+			remains = true;
+		}
+	}
+
+	if (d->pinned || remains) {
+		struct sdlpui_dialog *child = sdlpui_get_dialog_child(d);
+
+		if (child && !child->pinned) {
+			SDLPUI_EVENT_TRACER("dialog", child, "(not extracted)",
+				"popping down");
+			sdlpui_popdown_dialog(child, w, false);
+		}
 		sdlpui_dialog_handle_window_loses_mouse(d, w);
 		return;
 	}
 
-	if (e) {
-		if (d->ftb->get_parent_ctrl) {
-			struct sdlpui_control *c =
-				(*d->ftb->get_parent_ctrl)(d);
-
-			if (c && sdlpui_is_in_control(c, d, e->x, e->y)) {
-				sdlpui_dialog_handle_window_loses_mouse(d, w);
-				return;
-			}
-		}
-
-		d2 = sdlpui_get_dialog_child(d);
-		while (d2) {
-			if (sdlpui_is_in_dialog(d2, e->x, e->y)) {
-				sdlpui_dialog_handle_window_loses_mouse(d, w);
-				return;
-			}
-			d2 = sdlpui_get_dialog_child(d2);
-		}
-	}
-
 	while (1) {
-		d2 = sdlpui_get_dialog_parent(d);
+		struct sdlpui_dialog *d2 = sdlpui_get_dialog_parent(d);
+
 		if (!d2 || d2->pinned
 				|| (e && sdlpui_is_in_dialog(d2, e->x, e->y))) {
 			break;
@@ -1830,43 +1882,55 @@ void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e)
 {
 	/*
-	 * Lost key focus:  pop down the menu (and all parents up to the first
-	 * that is either pinned or contains the mouse if the mouse coordinates
-	 * are available) unless the menu is pinned or the mouse location is
-	 * known and in in the menu's children or the parent control.  If
-	 * not popping down, behave the same as if this was an ordinary dialog
-	 * and the containing window lost key focus.
+	 * The menu lost key focus.  If the mouse is not in a child menu, pop
+	 * down this menu's children.  If this menu is not pinned and the mouse
+	 * is not in this menu's parent control, pop down this menu and
+	 * all parents up to the first that is pinned or contains the mouse.
+	 *  If not popping down this menu, behave as if it was an ordinary
+	 * dialog and the mouse left the window containing it.
 	 */
-	struct sdlpui_dialog *d2;
+	bool remains = false;
 
-	if (d->pinned) {
-		sdlpui_dialog_handle_window_loses_key(d, w);
+	if (e) {
+		struct sdlpui_dialog *d2 = d;
+		struct sdlpui_control *c;
+
+		while (1) {
+			struct sdlpui_dialog *child =
+				sdlpui_get_dialog_child(d2);
+
+			if (!child) {
+				break;
+			}
+			if (sdlpui_is_in_dialog(child, e->x, e->y)) {
+				sdlpui_dialog_handle_window_loses_mouse(d, w);
+				return;
+			}
+			d2 = child;
+		}
+
+		d2 = sdlpui_get_dialog_parent(d);
+		c = sdlpui_get_dialog_parent_ctrl(d);
+		if (d2 && c && sdlpui_is_in_control(c, d2, e->x, e->y)) {
+			remains = true;
+		}
+	}
+
+	if (d->pinned || remains) {
+		struct sdlpui_dialog *child = sdlpui_get_dialog_child(d);
+
+		if (child && !child->pinned) {
+			SDLPUI_EVENT_TRACER("dialog", child, "(not extracted)",
+				"popping down");
+			sdlpui_popdown_dialog(child, w, false);
+		}
+		sdlpui_dialog_handle_window_loses_mouse(d, w);
 		return;
 	}
 
-	if (e) {
-		if (d->ftb->get_parent_ctrl) {
-			struct sdlpui_control *c =
-				(*d->ftb->get_parent_ctrl)(d);
-
-			if (c && sdlpui_is_in_control(c, d, e->x, e->y)) {
-				sdlpui_dialog_handle_window_loses_key(d, w);
-				return;
-			}
-		}
-
-		d2 = sdlpui_get_dialog_child(d);
-		while (d2) {
-			if (sdlpui_is_in_dialog(d2, e->x, e->y)) {
-				sdlpui_dialog_handle_window_loses_key(d, w);
-				return;
-			}
-			d2 = sdlpui_get_dialog_child(d2);
-		}
-	}
-
 	while (1) {
-		d2 = sdlpui_get_dialog_parent(d);
+		struct sdlpui_dialog *d2 = sdlpui_get_dialog_parent(d);
+
 		if (!d2 || d2->pinned
 				|| (e && sdlpui_is_in_dialog(d2, e->x, e->y))) {
 			break;
