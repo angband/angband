@@ -1226,6 +1226,17 @@ void sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		if (parent) {
 			SDL_assert(parent->ftb->set_child);
 			(*parent->ftb->set_child)(parent, NULL);
+
+			/*
+			 * If the parent control has key focus but not mouse
+			 * focus, lose that focus when the child is lost.
+			 */
+			if (parent_ctrl && parent->c_key == parent_ctrl
+					&& parent->c_mouse != parent_ctrl
+					&& parent_ctrl->ftb->lose_key) {
+				(*parent_ctrl->ftb->lose_key)(parent_ctrl,
+					parent, w, false);
+			}
 		}
 		if (d->ftb->cleanup) {
 			(*d->ftb->cleanup)(d);
@@ -1339,11 +1350,21 @@ bool sdlpui_dialog_handle_key(struct sdlpui_dialog *d,
 	mods = sdlpui_get_interesting_keymods();
 	switch (e->keysym.sym) {
 	case SDLK_ESCAPE:
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE
-				&& !d->pinned) {
-			SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-				"popping down");
-			sdlpui_popdown_dialog(d, w, true);
+		if (e->state == SDL_RELEASED && mods == KMOD_NONE) {
+			while (1) {
+				struct sdlpui_dialog *child =
+					sdlpui_get_dialog_child(d);
+
+				if (!child) {
+					break;
+				}
+				d = child;
+			}
+			if (!d->pinned) {
+				SDLPUI_EVENT_TRACER("dialog", d,
+					"(not extracted)", "popping down");
+				sdlpui_popdown_dialog(d, w, true);
+			}
 		}
 		break;
 
