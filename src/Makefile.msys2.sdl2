@@ -38,40 +38,8 @@ VIDEO_sdl2_cflags := \
 	$(shell sdl2-config --cflags) \
 
 VIDEO_sdl2_ldflags := \
-	$(shell sdl2-config --static-libs) \
+	$(shell sdl2-config --libs) \
 	-lSDL2_ttf -lSDL2_image \
-	-ltiff \
-	-ljbig \
-	-lLerc \
-	-lzstd \
-	-llzma \
-	-ljxl \
-	-lhwy \
-	-lwebp \
-	-lwebpdemux \
-	-lsharpyuv \
-	-lfreetype \
-	-lharfbuzz \
-	-lDwrite \
-	-lfreetype \
-	-lbrotlidec \
-	-lbrotlicommon \
-	-lgraphite2 \
-	-lpng \
-	-ldeflate \
-	-ljpeg \
-	-lbz2 \
-	-lintl \
-	-lrpcrt4 \
-	-lz \
-	-lVersion \
-	-lstdc++ \
-	-lImm32 \
-	-lhid \
-	-lsetupapi \
-	-lole32 \
-	-loleaut32 \
-	-lwinmm \
 
 ## Support SDL_mixer for sound
 ifdef SOUND
@@ -83,12 +51,7 @@ SOUND_sdl2_cflags := \
 SOUND_sdl2_ldflags := \
 	$(shell sdl2-config --libs) \
 	-lSDL2_mixer \
-	-lmpg123 \
-	-lopusfile \
-	-lopus \
-	-logg \
-	-lshlwapi \
-	-lwinmm
+
 endif
 
 # Compiler to use
@@ -103,13 +66,12 @@ CFLAGS := -std=c99 \
 	-g \
 	-O2 \
 	$(WARNINGS) -pedantic \
-	-static \
 	-DUSE_PRIVATE_PATHS \
 	-DHAVE_DIRENT_H \
 	-DMSYS2_ENCODING_WORKAROUND
 
 # Linker flags
-LDFLAGS :=
+LDFLAGS := -Wl,-Bdynamic
 
 # Frontends to compile
 MODULES_cflags := $(VIDEO_sdl2_cflags)
