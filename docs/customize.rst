@@ -101,7 +101,7 @@ Inscribing an item with '=g':
 	picking up ammunition after a shootout.  If there is a number
 	immediately after the 'g', then the amount picked up automatically
 	will be limited.  If you have inscribed a spellbook with '=g4' and have
-	four or more copies in your pack, you will not automatially pick up
+	four or more copies in your pack, you will not automatically pick up
 	any more copies when you have the 'pickup if in inventory' option
 	enabled.  If you have three copies in your pack with that inscription
 	and happen to find a pile of two copies, you'll automatically pick up
@@ -256,7 +256,7 @@ the subwindows and uses David Gervais's graphical tiles to display the map.
 You can close a subwindow with the standard close control on the window's
 upper right corner.  Closing the main window with the standard control causes
 the game to save its current state and then exit.  You can reopen or also
-close a subwindow via the "Visibilty" menu, the first entry in the "Window"
+close a subwindow via the "Visibility" menu, the first entry in the "Window"
 menu for the main window.  To move a window, use the standard procedure:
 position the mouse pointer on the window's title bar and then click and drag
 the mouse to change the window's position.  Click and drag on the edges or
@@ -320,7 +320,7 @@ With the X11 front end, the number of windows opened is set by the '-n' option
 on the command line, i.e. running ``./angband -mx11 -- -n4`` will open the
 main window and subwindows one through three if the executable is in the
 current working directory.  To control the font, placement, and size used for
-each of the windows, set enviroment variables before running Angband.  Those
+each of the windows, set environment variables before running Angband.  Those
 environment variables for window 'z' where 'z' is an integer between 0 (the
 main window) and 7 are:
 

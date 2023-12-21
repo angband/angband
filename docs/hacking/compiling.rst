@@ -100,9 +100,9 @@ of the standard build with those debugging commands enabled would be::
     cd src
     make -f Makefile.osx OPT="-DUSE_STATS -O2"
 
-If you had already built everything without statistcs enabled, you would need to
-run either "rm wiz-stats.o" or "make -f Makefile.osx clean" immediately after
-running "cd src".
+If you had already built everything without statistics enabled, you would need
+to run either "rm wiz-stats.o" or "make -f Makefile.osx clean" immediately
+after running "cd src".
 
 Linux / other UNIX
 ------------------
@@ -271,7 +271,7 @@ to run this to create the configure script::
 That is not necessary if your source files are from the source archive,
 a .tar.gz file, for a release.
 
-Then configure the cross-comilation and perform the compilation itself::
+Then configure the cross-compilation and perform the compilation itself::
 
 	./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
 	make install
@@ -312,7 +312,7 @@ When debugging crashes it can be very useful to get more information about *what
     ./configure [options]
     SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
 
-Note that compiling with this tools will require installing additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
+Note that compiling with this tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
 
 There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
 
@@ -366,7 +366,7 @@ including --enable-stats in the options to configure.  For that to work, you'll
 need to have sqlite3's headers and libraries installed (on Debian and Ubuntu,
 the libsqlite3-dev package and its dependencies provides those).   If using
 CMake, pass -DSUPPORT_STATS_FRONTEND=ON to cmake to get the statistics front
-end and support for the debugging commnands related to statistics; like builds
+end and support for the debugging commands related to statistics; like builds
 with configure that use --enable-stats, that requires sqlite3.  With CMake, you
 also have an the option to only include support for the debugging commands
 related to statistics:  pass -DSUPPORT_STATS_BACKEND=ON to cmake and either do
@@ -459,7 +459,7 @@ For SDL2, do::
 	make -f Makefile.msys2.sdl2
 
 Very recent versions of Makefile.msys2.sdl2 allow use of SDL2 sound; to build
-with that you'll need SDL2_mixer installed in addtion to the other SDL2
+with that you'll need SDL2_mixer installed in addition to the other SDL2
 libraries mentioned above::
 
 	pacman -S mingw-w64-x86_64-SDL2_mixer
