@@ -475,8 +475,25 @@ static errr Term_wipe_nds(int x, int y, int n)
  */
 static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
+	nds_pixel fg = color_data[a % MAX_COLORS], bg;
+
+	switch (a / MULT_BG) {
+	case BG_SAME:
+		bg = fg;
+		break;
+
+	case BG_DARK:
+		bg = color_data[COLOUR_SHADE];
+		break;
+
+	case BG_BLACK:
+	default:
+		bg = color_data[COLOUR_DARK];
+		break;
+	}
+
 	for (int i = 0; i < n; i++) {
-		nds_draw_char(x + i, y, s[i], color_data[a & (MAX_COLORS - 1)], color_data[COLOUR_DARK]);
+		nds_draw_char(x + i, y, s[i], fg, bg);
 	}
 
 	return (0);
