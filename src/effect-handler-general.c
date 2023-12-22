@@ -1344,7 +1344,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				}
 
 				/* Identify once */
-				if (!obj->known || obj->known->pval != obj->pval) {
+				if (obj->known && obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
 					square_know_pile(cave, grid);
 
