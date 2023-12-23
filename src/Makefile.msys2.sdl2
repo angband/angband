@@ -92,8 +92,8 @@ include Makefile.inc
 # Program name (PROGNAME comes from Makefile.src via Makefile.inc)
 EXE := $(PROGNAME)
 
-# Object definitions (BASEOBJS come from Makefile.inc)
-OBJS := main.o main-sdl2.o $(BASEOBJS)
+# Object definitions (SDL2MAINFILES and BASEOBJS come from Makefile.inc)
+OBJS := main.o $(SDL2MAINFILES) $(BASEOBJS)
 
 ifdef SOUND
 OBJS += snd-sdl.o

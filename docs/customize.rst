@@ -391,7 +391,7 @@ and drags within the displayed subwindows to change the positions for those
 subwindows.  Disable both "Move" and "Size", by clicking on one if it is
 enabled, to restore passing input to the game's core.
 
-Within "Menu", the first entries control properties each of the displayed
+Within "Menu", the first entries control properties for each of the displayed
 terminal windows within that application window.  For the main window, you
 can set the font, graphical tile set, whether the window is shown with borders
 or not, and whether or not the window will be shown on top of the other windows.
@@ -403,7 +403,8 @@ will be shown on top of the other windows.
 
 Below the entries for the contained terminal windows, is an entry,
 "Fullscreen" for toggling fullscreen mode for that application window.  That
-entry will be gray when fullscreen mode is off and white when it is on.
+entry will display a rectangle at the end of the entry when fullscreen mode
+is on.  That rectangle will be absent when fullscreen mode is off.
 
 In the primary application window which contains the main window, there is an
 entry, "Send Keypad Modifier", after that for whether key strokes from the
@@ -417,7 +418,16 @@ keypad.  https://github.com/angband/angband/issues/4522 has an example of the
 problems that can be avoided by not sending the keypad modifier.
 
 Below "Send Keypad Modifier" in the primary application window's "Menu" is
-"Windows", use that to bring up one of the additional application windows.
+"Menu Shortcuts...".  That allows you to set a keystroke to transfer control
+to a window's menu.  By default, no such keystrokes are defined.  That avoids
+potential conflicts with any keymaps you may have.  While in the menus,
+keystrokes can be used for navigation.  The in-game horizontal and vertical
+movement keys will work to move between controls as will Tab (to go to the
+"next" control) and Shift-Tab (to go to the previous control).  Enter will
+activate a menu item if it can be activated.  Trying to descend further into
+the menus with the in-game movement keys will also activate if a menu item if
+it is as deep as you can go.  Below "Menu Shortcuts..." is "Windows":  use
+that to bring up one of the additional application windows.
 
 The final two entries in "Menu" are "About" for displaying an information
 dialog about the game and "Quit" to save the game and exit.
@@ -425,7 +435,7 @@ dialog about the game and "Quit" to save the game and exit.
 When you leave the game, the current settings for the SDL interface are saved
 as ``sdl2init.txt`` in the same directory as is used for preference files, see
 `User Pref Files`_ for details.  Those settings will be automatically reloaded
-the next time you start the SDL interface.
+the next time you start the SDL2 interface.
 
 Mac
 ~~~
