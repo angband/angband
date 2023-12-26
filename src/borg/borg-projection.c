@@ -23,16 +23,16 @@
 
 #include "../cave.h"
 
-#include "borg-cave.h"
 #include "borg-cave-util.h"
+#include "borg-cave.h"
 #include "borg-danger.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
+#include "borg-flow.h"
 #include "borg-io.h"
 #include "borg-trait.h"
 
-/* 
- * Current targetted location 
+/*
+ * Current targetted location
  */
 struct loc borg_target_loc;
 
@@ -155,7 +155,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
     if (ax >= ay) {
         /* Let m = dy / dx * 2 * (dy * dx) = 2 * dy * dy */
         qy = ay * ay;
-        m = qy << 1;
+        m  = qy << 1;
 
         tx = x1 + sx;
 
@@ -195,7 +195,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
     else {
         /* Let m = dx / dy * 2 * (dx * dy) = 2 * dx * dx */
         qx = ax * ax;
-        m = qx << 1;
+        m  = qx << 1;
 
         ty = y1 + sy;
 
@@ -234,7 +234,6 @@ bool borg_los(int y1, int x1, int y2, int x2)
     return (true);
 }
 
-
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that there is no monster in the way.
@@ -243,7 +242,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
  */
 bool borg_projectable(int y1, int x1, int y2, int x2)
 {
-    int        dist, y, x;
+    int dist, y, x;
 
     borg_grid *ag;
 
@@ -256,8 +255,8 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
         /* Get the grid */
         ag = &borg_grids[y][x];
 
-        if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3 ||
-            borg_morgoth_position || scaryguy_on_level)) {
+        if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3
+                || borg_morgoth_position || scaryguy_on_level)) {
             /* Assume all unknown grids more than distance 20 from you
              * are walls--when I am wounded. This will make me more fearful
              * of the grids that are up to 19 spaces away.  I treat them as
@@ -274,17 +273,22 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
              */
             if ((dist > 10) && (ag->feat == FEAT_NONE))
                 break;
-        } else if (borg_fear_region[borg.c.y / 11][borg.c.x / 11] >= avoidance / 20) {
+        } else if (borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+                   >= avoidance / 20) {
             /* If a non-LOS monster is attacking me, then it is probably has
-             * LOS to me, so do not place walls on unknown grids.  This will allow
-             * me the chance to attack monsters.
+             * LOS to me, so do not place walls on unknown grids.  This will
+             *allow me the chance to attack monsters.
              *
              * This does not work if the non-LOS monster is invisible.
              * This helps in a case like this:
-             *####################			1.  Player has ESP and can sense the priest.
-             *......@......      p			2.  Priest has cast a spell at the player.
-             *#############					3.  Unknown grids are between player and priest
-             *								4.  Borg has created regional fear from non-LOS priest.
+             *####################			1.  Player has ESP and can sense the
+             *priest.
+             *......@......      p			2.  Priest has cast a spell at the
+             *player.
+             *#############					3.  Unknown grids are between player and
+             *priest
+             *								4.  Borg has created regional fear from non-LOS
+             *priest.
              *
              */
             if ((dist > z_info->max_range) && (ag->feat == FEAT_NONE))
@@ -321,7 +325,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
  */
 bool borg_offset_projectable(int y1, int x1, int y2, int x2)
 {
-    int        dist, y, x;
+    int dist, y, x;
 
     borg_grid *ag;
 
@@ -456,8 +460,8 @@ bool borg_projectable_dark(int y1, int x1, int y2, int x2)
  * Calculate "incremental motion". Used by project() and shoot().
  * Assumes that (*y,*x) lies on the path from (y1,x1) to (y2,x2).
  */
- /* changing this to be more like project_path */
- /* note that this is much slower but much more accurate */
+/* changing this to be more like project_path */
+/* note that this is much slower but much more accurate */
 void borg_inc_motion(int *py, int *px, int y1, int x1, int y2, int x2)
 {
     int dy, dx;
@@ -664,7 +668,7 @@ bool borg_target(struct loc t)
     borg_grid *ag;
     borg_kill *kill;
 
-    ag = &borg_grids[t.y][t.x];
+    ag   = &borg_grids[t.y][t.x];
     kill = &borg_kills[ag->kill];
 
     /* Log */
@@ -730,14 +734,14 @@ bool borg_target(struct loc t)
  */
 bool borg_target_unknown_wall(int y, int x)
 {
-    int n_x, n_y;
-    bool found = false;
+    int  n_x, n_y;
+    bool found  = false;
     bool y_hall = false;
     bool x_hall = false;
 
-    borg_grid *ag;
+    borg_grid           *ag;
     struct monster_race *r_ptr;
-    borg_kill *kill;
+    borg_kill           *kill;
 
     borg_note(format("# Perhaps wall near targetted location (%d,%d)", y, x));
 
@@ -765,9 +769,9 @@ bool borg_target_unknown_wall(int y, int x)
      */
 
     if ((borg_grids[borg.c.y + 1][borg.c.x].feat == FEAT_FLOOR
-        && borg_grids[borg.c.y - 1][borg.c.x].feat == FEAT_FLOOR
-        && (borg_grids[borg.c.y + 2][borg.c.x].feat == FEAT_FLOOR
-            || borg_grids[borg.c.y - 2][borg.c.x].feat == FEAT_FLOOR))
+            && borg_grids[borg.c.y - 1][borg.c.x].feat == FEAT_FLOOR
+            && (borg_grids[borg.c.y + 2][borg.c.x].feat == FEAT_FLOOR
+                || borg_grids[borg.c.y - 2][borg.c.x].feat == FEAT_FLOOR))
         && (borg_grids[borg.c.y][borg.c.x + 1].feat != FEAT_FLOOR
             && borg_grids[borg.c.y][borg.c.x - 1].feat != FEAT_FLOOR))
         x_hall = true;
@@ -777,16 +781,16 @@ bool borg_target_unknown_wall(int y, int x)
      * hallway.
      */
     if ((borg_grids[borg.c.y][borg.c.x + 1].feat == FEAT_FLOOR
-        && borg_grids[borg.c.y][borg.c.x - 1].feat == FEAT_FLOOR
-        && (borg_grids[borg.c.y][borg.c.x + 2].feat == FEAT_FLOOR
-            || borg_grids[borg.c.y][borg.c.x - 2].feat == FEAT_FLOOR))
+            && borg_grids[borg.c.y][borg.c.x - 1].feat == FEAT_FLOOR
+            && (borg_grids[borg.c.y][borg.c.x + 2].feat == FEAT_FLOOR
+                || borg_grids[borg.c.y][borg.c.x - 2].feat == FEAT_FLOOR))
         && (borg_grids[borg.c.y + 1][borg.c.x].feat != FEAT_FLOOR
             && borg_grids[borg.c.y - 1][borg.c.x].feat != FEAT_FLOOR))
         y_hall = true;
 
     while (1) {
-        ag = &borg_grids[n_y][n_x];
-        kill = &borg_kills[ag->kill];
+        ag    = &borg_grids[n_y][n_x];
+        kill  = &borg_kills[ag->kill];
         r_ptr = &r_info[kill->r_idx];
 
         if (rf_has(r_ptr->flags, RF_PASS_WALL)) {
@@ -794,16 +798,17 @@ bool borg_target_unknown_wall(int y, int x)
                 format("# Guessing wall (%d,%d) under ghostly target (%d,%d)",
                     n_y, n_x, n_y, n_x));
             borg_grids[n_y][n_x].feat = FEAT_GRANITE;
-            found = true;
+            found                     = true;
             return (found); /* not sure... should we return here? */
         }
 
-        if (borg_grids[n_y][n_x].feat == FEAT_NONE && ((n_y != borg.c.y) || !y_hall)
+        if (borg_grids[n_y][n_x].feat == FEAT_NONE
+            && ((n_y != borg.c.y) || !y_hall)
             && ((n_x != borg.c.x) || !x_hall)) {
             borg_note(format(
                 "# Guessing wall (%d,%d) near target (%d,%d)", n_y, n_x, y, x));
             borg_grids[n_y][n_x].feat = FEAT_GRANITE;
-            found = true;
+            found                     = true;
             return (found); /* not sure... should we return here?
                              maybe should mark ALL unknowns in path... */
         }
@@ -815,7 +820,7 @@ bool borg_target_unknown_wall(int y, int x)
             borg_note(format(
                 "# Guessing wall (%d,%d) near target (%d,%d)", n_y, n_x, y, x));
             borg_grids[n_y][n_x].feat = FEAT_GRANITE;
-            found = true;
+            found                     = true;
             return (found);
         }
 

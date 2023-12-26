@@ -162,8 +162,8 @@ static int borg_danger_physical(int i, bool full_damage)
             if (borg.trait[BI_CLEVEL] < 5)
                 z += 50;
             power = 5;
-            if (100
-                <= adj_dex_safe[borg.stat_ind[STAT_DEX]] + borg.trait[BI_CLEVEL])
+            if (100 <= adj_dex_safe[borg.stat_ind[STAT_DEX]]
+                           + borg.trait[BI_CLEVEL])
                 break;
             if (borg.trait[BI_GOLD] < 100)
                 break;
@@ -178,8 +178,8 @@ static int borg_danger_physical(int i, bool full_damage)
         case MONBLOW_EAT_ITEM:
             z     = (d_dice * d_side);
             power = 5;
-            if (100
-                <= adj_dex_safe[borg.stat_ind[STAT_DEX]] + borg.trait[BI_CLEVEL])
+            if (100 <= adj_dex_safe[borg.stat_ind[STAT_DEX]]
+                           + borg.trait[BI_CLEVEL])
                 break;
             /* Add fear for the effect */
             z += 5;
@@ -2176,7 +2176,9 @@ static int borg_danger_spell(
         }
 
         /* A bolt spell cannot jump monsters to hit the borg. */
-        if (bolt == true && !borg_projectable_pure(kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
+        if (bolt == true
+            && !borg_projectable_pure(
+                kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
             z = 0;
 
         /* Some borgs are concerned with the 'effects' of an attack.  ie, cold

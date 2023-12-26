@@ -331,8 +331,8 @@ static bool borg_heal(int danger)
     if (danger >= borg.trait[BI_CURHP] && danger < borg.trait[BI_MAXHP])
         chance -= 75;
     else {
-        if (borg.trait[BI_CLASS] != CLASS_PRIEST && 
-            borg.trait[BI_CLASS] != CLASS_PALADIN)
+        if (borg.trait[BI_CLASS] != CLASS_PRIEST
+            && borg.trait[BI_CLASS] != CLASS_PALADIN)
             chance -= 25;
     }
 
@@ -930,11 +930,11 @@ bool borg_caution(void)
             || borg.trait[BI_CDEPTH] == 100)
         && !borg.trait[BI_KING]) {
         /* Describe (briefly) the current situation */
-        borg_note(
-            format("# Loc:%d,%d Dep:%d Lev:%d HP:%d/%d SP:%d/%d Danger:p=%d",
-                borg.c.y, borg.c.x, borg.trait[BI_CDEPTH], borg.trait[BI_CLEVEL],
-                borg.trait[BI_CURHP], borg.trait[BI_MAXHP],
-                borg.trait[BI_CURSP], borg.trait[BI_MAXSP], pos_danger));
+        borg_note(format(
+            "# Loc:%d,%d Dep:%d Lev:%d HP:%d/%d SP:%d/%d Danger:p=%d", borg.c.y,
+            borg.c.x, borg.trait[BI_CDEPTH], borg.trait[BI_CLEVEL],
+            borg.trait[BI_CURHP], borg.trait[BI_MAXHP], borg.trait[BI_CURSP],
+            borg.trait[BI_MAXSP], pos_danger));
         if (borg.resistance) {
             borg_note(format(
                 "# Protected by Resistance (borg turns:%d; game turns:%d)",
@@ -962,7 +962,8 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_glyph.num; i++) {
             /* Enqueue the grid */
-            if ((track_glyph.y[i] == borg.c.y) && (track_glyph.x[i] == borg.c.x)) {
+            if ((track_glyph.y[i] == borg.c.y)
+                && (track_glyph.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on Glyph"));
             }
@@ -973,7 +974,8 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_less.num; i++) {
             /* Enqueue the grid */
-            if ((track_less.y[i] == borg.c.y) && (track_less.x[i] == borg.c.x)) {
+            if ((track_less.y[i] == borg.c.y)
+                && (track_less.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on up-stairs"));
                 on_upstair = false;
@@ -985,7 +987,8 @@ bool borg_caution(void)
         int i;
         for (i = 0; i < track_more.num; i++) {
             /* Enqueue the grid */
-            if ((track_more.y[i] == borg.c.y) && (track_more.x[i] == borg.c.x)) {
+            if ((track_more.y[i] == borg.c.y)
+                && (track_more.x[i] == borg.c.x)) {
                 /* if standing on one */
                 borg_note(format("# Standing on dn-stairs"));
                 on_dnstair = false;
@@ -1523,7 +1526,8 @@ bool borg_caution(void)
                              && (track_step.y[track_step.num - 2] == y1
                                  && track_step.x[track_step.num - 2] == x1
                                  && track_step.y[track_step.num - 3] == borg.c.y
-                                 && track_step.x[track_step.num - 3] == borg.c.x))))
+                                 && track_step.x[track_step.num - 3]
+                                        == borg.c.x))))
                     || borg.time_this_panel >= 300)
                     break;
 
@@ -1545,7 +1549,8 @@ bool borg_caution(void)
                  * surrounded. */
                 if (r == 1) {
                     /* Not surrounded or surrounded and ignoring*/
-                    if (!borg_surround || (borg_surround && borg.goal.ignoring)) {
+                    if (!borg_surround
+                        || (borg_surround && borg.goal.ignoring)) {
                         if (p1 >= borg.trait[BI_CURHP] * 4 / 10)
                             break;
 
@@ -1743,8 +1748,7 @@ bool borg_caution(void)
                     continue;
 
                 /* Check distance -- 1 grid away */
-                if (distance(kill->pos, loc(x, y)) <= 1
-                    && !borg_surround)
+                if (distance(kill->pos, loc(x, y)) <= 1 && !borg_surround)
                     adjacent_monster = true;
 
                 /* Check distance -- 2 grids away and he is faster than me */
@@ -1826,8 +1830,8 @@ bool borg_caution(void)
             borg.goal.g.y = borg.c.y + ddy_ddd[b_i];
 
             /* Note */
-            borg_note(format(
-                "# Backing up to %d,%d (%d > %d)", borg.goal.g.x, borg.goal.g.y, pos_danger, g_k));
+            borg_note(format("# Backing up to %d,%d (%d > %d)", borg.goal.g.x,
+                borg.goal.g.y, pos_danger, g_k));
 
             /* Back away from danger */
             borg_keypress(I2D(ddd[b_i]));

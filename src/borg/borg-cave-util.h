@@ -33,12 +33,12 @@ extern bool borg_cave_floor_bold(int y, int X);
 /*
  * Grid based version of "borg_cave_floor_bold()"
  */
-extern bool borg_cave_floor_grid(borg_grid* ag);
+extern bool borg_cave_floor_grid(borg_grid *ag);
 
 /*
  * A square is protected (doesn't need a glyph)
  */
-extern bool borg_feature_protected(borg_grid* ag);
+extern bool borg_feature_protected(borg_grid *ag);
 
 /*
  * get the panel height

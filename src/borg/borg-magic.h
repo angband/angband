@@ -186,7 +186,7 @@ enum borg_spells {
  */
 typedef struct borg_spell_rating borg_spell_rating;
 struct borg_spell_rating {
-    const char*      name; /* Textual name */
+    const char      *name; /* Textual name */
     uint8_t          rating; /* Usefulness */
     enum borg_spells spell_enum; /* an enum for quick lookup */
 };
@@ -200,7 +200,7 @@ typedef struct borg_magic borg_magic;
  * A spell/prayer in a book
  */
 struct borg_magic {
-    const char* name; /* Textual name */
+    const char *name; /* Textual name */
     uint8_t     status; /* Status (see above) */
     uint16_t    effect_index; /* effect index */
     uint8_t     rating; /* Usefulness */
@@ -217,19 +217,19 @@ struct borg_magic {
  * Spell casting information
  */
 
-extern borg_magic* borg_magics; /* Spell info */
+extern borg_magic *borg_magics; /* Spell info */
 
 /*
  * Spell functions
  */
-extern int  borg_heroism_level(void);
-extern int  borg_spell_stat(void);
-extern bool borg_spell_legal(const enum borg_spells spell);
-extern bool borg_spell_okay(const enum borg_spells spell);
-extern int  borg_get_spell_power(const enum borg_spells spell);
-extern int  borg_get_book_num(int sval);
-extern borg_magic* borg_get_spell_entry(int book, int what);
-extern bool borg_spell(const enum borg_spells spell);
+extern int         borg_heroism_level(void);
+extern int         borg_spell_stat(void);
+extern bool        borg_spell_legal(const enum borg_spells spell);
+extern bool        borg_spell_okay(const enum borg_spells spell);
+extern int         borg_get_spell_power(const enum borg_spells spell);
+extern int         borg_get_book_num(int sval);
+extern borg_magic *borg_get_spell_entry(int book, int what);
+extern bool        borg_spell(const enum borg_spells spell);
 extern bool borg_spell_fail(const enum borg_spells spell, int allow_fail);
 extern bool borg_spell_okay_fail(const enum borg_spells spell, int allow_fail);
 extern bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);

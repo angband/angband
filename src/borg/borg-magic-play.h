@@ -31,4 +31,5 @@
 extern bool borg_play_magic(bool bored);
 
 #endif
+
 #endif

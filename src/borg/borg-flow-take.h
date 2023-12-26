@@ -33,7 +33,7 @@
 typedef struct borg_take borg_take;
 
 struct borg_take {
-    struct object_kind* kind; /* Kind */
+    struct object_kind *kind; /* Kind */
     bool                known; /* Verified kind */
     bool                seen; /* Assigned motion */
     bool                extra; /* Unused */
@@ -49,7 +49,7 @@ struct borg_take {
  */
 extern int16_t    borg_takes_cnt;
 extern int16_t    borg_takes_nxt;
-extern borg_take* borg_takes;
+extern borg_take *borg_takes;
 
 /*
  * Delete an old "object" record

@@ -327,7 +327,7 @@ extern int     borg_tp_other_index[255];
  * What effect does a blow from a monster have?
  *
  */
-extern int borg_mon_blow_effect(const char* name);
+extern int borg_mon_blow_effect(const char *name);
 
 /*
  * Simulate/Apply the optimal result of launching a beam/bolt/ball

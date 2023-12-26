@@ -259,7 +259,7 @@ static int borg_lookup_sval_fail(int tval, const char *name)
 
 void borg_init_item_val(void)
 {
-    int tval = tval_find_idx("food");
+    int tval           = tval_find_idx("food");
     sv_food_apple      = borg_lookup_sval_fail(tval, "Apple");
     sv_food_ration     = borg_lookup_sval_fail(tval, "Ration of Food");
     sv_food_slime_mold = borg_lookup_sval_fail(tval, "Slime Mold");
@@ -271,7 +271,7 @@ void borg_init_item_val(void)
     sv_food_slice      = borg_lookup_sval_fail(tval, "Slice of Meat");
     sv_food_handful    = borg_lookup_sval_fail(tval, "Handful of Dried Fruits");
 
-    tval = tval_find_idx("mushroom");
+    tval               = tval_find_idx("mushroom");
     sv_mush_second_sight  = borg_lookup_sval_fail(tval, "Second Sight");
     sv_mush_fast_recovery = borg_lookup_sval_fail(tval, "Fast Recovery");
     sv_mush_restoring     = borg_lookup_sval_fail(tval, "Vigor");
@@ -285,15 +285,15 @@ void borg_init_item_val(void)
     sv_mush_cure_mind     = borg_lookup_sval_fail(tval, "Clear Mind");
     sv_mush_purging       = borg_lookup_sval_fail(tval, "Purging");
 
-    tval = tval_find_idx("light");
+    tval                  = tval_find_idx("light");
     sv_light_lantern      = borg_lookup_sval_fail(tval, "Lantern");
     sv_light_torch        = borg_lookup_sval_fail(tval, "Wooden Torch");
 
-    tval = tval_find_idx("flask");
+    tval                  = tval_find_idx("flask");
     sv_flask_oil          = borg_lookup_sval_fail(tval, "Flask of Oil");
     kv_flask_oil          = borg_lookup_kind(tval, sv_flask_oil);
 
-    tval = tval_find_idx("potion");
+    tval                  = tval_find_idx("potion");
     sv_potion_cure_critical
         = borg_lookup_sval_fail(tval, "Cure Critical Wounds");
     sv_potion_cure_serious = borg_lookup_sval_fail(tval, "Cure Serious Wounds");
@@ -336,7 +336,7 @@ void borg_init_item_val(void)
     sv_potion_infravision    = borg_lookup_sval_fail(tval, "Infravision");
     sv_potion_inc_exp        = borg_lookup_sval_fail(tval, "Experience");
 
-    tval = tval_find_idx("scroll");
+    tval                     = tval_find_idx("scroll");
     sv_scroll_identify       = borg_lookup_sval_fail(tval, "Identify Rune");
     sv_scroll_phase_door     = borg_lookup_sval_fail(tval, "Phase Door");
     sv_scroll_teleport       = borg_lookup_sval_fail(tval, "Teleportation");
@@ -380,7 +380,7 @@ void borg_init_item_val(void)
         = borg_lookup_sval_fail(tval, "Door Destruction");
     sv_scroll_dispel_undead = borg_lookup_sval_fail(tval, "Dispel Undead");
 
-    tval = tval_find_idx("ring");
+    tval                    = tval_find_idx("ring");
     sv_ring_flames          = borg_lookup_sval_fail(tval, "Flames");
     sv_ring_ice             = borg_lookup_sval_fail(tval, "Ice");
     sv_ring_acid            = borg_lookup_sval_fail(tval, "Acid");
@@ -390,10 +390,10 @@ void borg_init_item_val(void)
     sv_ring_damage          = borg_lookup_sval_fail(tval, "Damage");
     sv_ring_dog             = borg_lookup_sval_fail(tval, "the Dog");
 
-    tval = tval_find_idx("amulet");
+    tval                    = tval_find_idx("amulet");
     sv_amulet_teleportation = borg_lookup_sval_fail(tval, "Teleportation");
 
-    tval = tval_find_idx("rod");
+    tval                    = tval_find_idx("rod");
     sv_rod_recall           = borg_lookup_sval_fail(tval, "Recall");
     kv_rod_recall           = borg_lookup_kind(tval, sv_rod_recall);
     sv_rod_detection        = borg_lookup_sval_fail(tval, "Detection");
@@ -417,7 +417,7 @@ void borg_init_item_val(void)
     sv_rod_sleep_monster    = borg_lookup_sval_fail(tval, "Hold Monster");
     sv_rod_curing           = borg_lookup_sval_fail(tval, "Curing");
 
-    tval = tval_find_idx("staff");
+    tval                    = tval_find_idx("staff");
     sv_staff_teleportation  = borg_lookup_sval_fail(tval, "Teleportation");
     sv_staff_destruction    = borg_lookup_sval_fail(tval, "*Destruction*");
     sv_staff_speed          = borg_lookup_sval_fail(tval, "Speed");
@@ -437,7 +437,7 @@ void borg_init_item_val(void)
     sv_staff_mapping        = borg_lookup_sval_fail(tval, "Mapping");
     sv_staff_remove_curse   = borg_lookup_sval_fail(tval, "Remove Curse");
 
-    tval = tval_find_idx("wand");
+    tval                    = tval_find_idx("wand");
     sv_wand_light           = borg_lookup_sval_fail(tval, "Light");
     sv_wand_teleport_away   = borg_lookup_sval_fail(tval, "Teleport Other");
     sv_wand_stinking_cloud  = borg_lookup_sval_fail(tval, "Stinking Cloud");
@@ -464,38 +464,38 @@ void borg_init_item_val(void)
     sv_wand_dragon_fire     = borg_lookup_sval_fail(tval, "Dragon's Flame");
     sv_wand_drain_life      = borg_lookup_sval_fail(tval, "Drain Life");
 
-    tval = tval_find_idx("sword");
+    tval                    = tval_find_idx("sword");
     sv_dagger               = borg_lookup_sval_fail(tval, "Dagger");
 
-    tval = tval_find_idx("bow");
+    tval                    = tval_find_idx("bow");
     sv_sling                = borg_lookup_sval_fail(tval, "Sling");
     sv_short_bow            = borg_lookup_sval_fail(tval, "Short Bow");
     sv_long_bow             = borg_lookup_sval_fail(tval, "Long Bow");
     sv_light_xbow           = borg_lookup_sval_fail(tval, "Light Crossbow");
     sv_heavy_xbow           = borg_lookup_sval_fail(tval, "Heavy Crossbow");
 
-    tval = tval_find_idx("arrow");
+    tval                    = tval_find_idx("arrow");
     sv_arrow_seeker         = borg_lookup_sval_fail(tval, "Seeker Arrow");
     sv_arrow_mithril        = borg_lookup_sval_fail(tval, "Mithril Arrow");
 
-    tval = tval_find_idx("bolt");
+    tval                    = tval_find_idx("bolt");
     sv_bolt_seeker          = borg_lookup_sval_fail(tval, "Seeker Bolt");
     sv_bolt_mithril         = borg_lookup_sval_fail(tval, "Mithril Bolt");
 
-    tval = tval_find_idx("gloves");
+    tval                    = tval_find_idx("gloves");
     sv_set_of_leather_gloves
         = borg_lookup_sval_fail(tval, "Set of Leather Gloves");
 
-    tval = tval_find_idx("cloak");
+    tval            = tval_find_idx("cloak");
     sv_cloak        = borg_lookup_sval_fail(tval, "Cloak");
 
-    tval = tval_find_idx("soft armor");
+    tval            = tval_find_idx("soft armor");
     sv_robe         = borg_lookup_sval_fail(tval, "Robe");
 
-    tval = tval_find_idx("crown");
+    tval            = tval_find_idx("crown");
     sv_iron_crown   = borg_lookup_sval_fail(tval, "Iron Crown");
 
-    tval = tval_find_idx("dragon armor");
+    tval            = tval_find_idx("dragon armor");
     sv_dragon_blue  = borg_lookup_sval_fail(tval, "Blue Dragon Scale Mail");
     sv_dragon_black = borg_lookup_sval_fail(tval, "Black Dragon Scale Mail");
     sv_dragon_white = borg_lookup_sval_fail(tval, "White Dragon Scale Mail");

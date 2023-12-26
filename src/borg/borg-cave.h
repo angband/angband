@@ -84,7 +84,7 @@ struct borg_grid {
 /*
  * The current map
  */
-extern borg_grid* borg_grids[AUTO_MAX_Y]; /* The grids */
+extern borg_grid *borg_grids[AUTO_MAX_Y]; /* The grids */
 
 extern void borg_init_cave(void);
 extern void borg_free_cave(void);

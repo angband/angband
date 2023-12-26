@@ -75,7 +75,7 @@ enum {
     BORG_SAVE_DEATH,
     BORG_MAX_SETTINGS
 };
-extern int* borg_cfg;
+extern int *borg_cfg;
 
 /*
  * Status variables

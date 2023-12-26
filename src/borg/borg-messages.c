@@ -870,7 +870,7 @@ static void borg_parse_aux(char *msg, int len)
             }
         }
 
-        my_no_alter = true;
+        my_no_alter    = true;
         borg.goal.type = 0;
         return;
     }
@@ -881,10 +881,10 @@ static void borg_parse_aux(char *msg, int len)
 
         /* make sure the borg does not think he's on one */
         /* Remove all stairs from the array. */
-        track_less.num            = 0;
-        track_more.num            = 0;
-        borg.on_dnstairs          = false;
-        borg.on_upstairs          = false;
+        track_less.num                      = 0;
+        track_more.num                      = 0;
+        borg.on_dnstairs                    = false;
+        borg.on_upstairs                    = false;
         borg_grids[borg.c.y][borg.c.x].feat = FEAT_BROKEN;
 
         return;
@@ -1018,7 +1018,8 @@ static void borg_parse_aux(char *msg, int len)
         /* Check for an existing glyph */
         for (i = 0; i < track_glyph.num; i++) {
             /* Stop if we already new about this glyph */
-            if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
+            if ((track_glyph.x[i] == borg.c.x)
+                && (track_glyph.y[i] == borg.c.y))
                 break;
         }
 

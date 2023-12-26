@@ -28,11 +28,11 @@
 /*
  * sort functions
  */
-extern void borg_sort(void* u, void* v, int n);
-extern bool borg_sort_comp_hook(void* u, void* v, int a, int b);
-extern void borg_sort_swap_hook(void* u, void* v, int a, int b);
-extern bool (*borg_sort_comp)(void* u, void* v, int a, int b);
-extern void (*borg_sort_swap)(void* u, void* v, int a, int b);
+extern void borg_sort(void *u, void *v, int n);
+extern bool borg_sort_comp_hook(void *u, void *v, int a, int b);
+extern void borg_sort_swap_hook(void *u, void *v, int a, int b);
+extern bool (*borg_sort_comp)(void *u, void *v, int a, int b);
+extern void (*borg_sort_swap)(void *u, void *v, int a, int b);
 
 #endif
 #endif

@@ -328,7 +328,8 @@ bool borg_recover(void)
             /* Rest until at least one recharges */
             if (!borg.trait[BI_ISWEAK] && !borg.trait[BI_ISCUT]
                 && !borg.trait[BI_ISHUNGRY] && !borg.trait[BI_ISPOISONED]
-                && borg_check_rest(borg.c.y, borg.c.x) && !borg_spell_okay(RECHARGING)) {
+                && borg_check_rest(borg.c.y, borg.c.x)
+                && !borg_spell_okay(RECHARGING)) {
                 /* Take note */
                 borg_note("# Resting to recharge a rod...");
 

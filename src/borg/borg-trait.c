@@ -1387,15 +1387,15 @@ static void borg_notice_equipment(void)
 
         /* Affect stats */
         borg.stat_add[STAT_STR] += item->modifiers[OBJ_MOD_STR]
-                                 * player->obj_k->modifiers[OBJ_MOD_STR];
+                                   * player->obj_k->modifiers[OBJ_MOD_STR];
         borg.stat_add[STAT_INT] += item->modifiers[OBJ_MOD_INT]
-                                 * player->obj_k->modifiers[OBJ_MOD_INT];
+                                   * player->obj_k->modifiers[OBJ_MOD_INT];
         borg.stat_add[STAT_WIS] += item->modifiers[OBJ_MOD_WIS]
-                                 * player->obj_k->modifiers[OBJ_MOD_WIS];
+                                   * player->obj_k->modifiers[OBJ_MOD_WIS];
         borg.stat_add[STAT_DEX] += item->modifiers[OBJ_MOD_DEX]
-                                 * player->obj_k->modifiers[OBJ_MOD_DEX];
+                                   * player->obj_k->modifiers[OBJ_MOD_DEX];
         borg.stat_add[STAT_CON] += item->modifiers[OBJ_MOD_CON]
-                                 * player->obj_k->modifiers[OBJ_MOD_CON];
+                                   * player->obj_k->modifiers[OBJ_MOD_CON];
 
         /* various slays */
         borg.trait[BI_WS_ANIMAL] = item->slays[RF_ANIMAL];
@@ -1450,7 +1450,7 @@ static void borg_notice_equipment(void)
 
         /* Affect blows (not from primary weapon) */
         if (i != INVEN_WIELD)
-           borg.trait[BI_EXTRA_BLOWS] += item->modifiers[OBJ_MOD_BLOWS];
+            borg.trait[BI_EXTRA_BLOWS] += item->modifiers[OBJ_MOD_BLOWS];
 
         /* Boost shots */
         extra_shots += item->modifiers[OBJ_MOD_SHOTS];
@@ -2139,7 +2139,7 @@ static void borg_notice_inventory(void)
     /* Reset stat potions */
     for (i = 0; i < STAT_MAX; i++) {
         borg.need_statgain[i] = false;
-        borg.amt_statgain[i] = 0;
+        borg.amt_statgain[i]  = 0;
     }
 
     /* Reset books */
@@ -2869,7 +2869,6 @@ void borg_notice(bool notice_swap)
     } else {
         borg_game_ratio = 1000;
     }
-
 }
 
 /*
@@ -2878,8 +2877,6 @@ void borg_notice(bool notice_swap)
 void borg_notice_player(void)
 {
     int i;
-
-    struct player_state *state = &player->known_state;
 
     /*** Hack -- Extract class ***/
     borg.trait[BI_CLASS] = player->class->cidx;
@@ -2919,7 +2916,7 @@ void borg_notice_player(void)
     }
 
     /* Extract "AU xxxxxxxxx" */
-    borg.trait[BI_GOLD]   = player->au;
+    borg.trait[BI_GOLD] = player->au;
 
     /* A quick cheat to see if I missed a message about my status on some */
     /* timed spells */
@@ -2931,9 +2928,9 @@ void borg_notice_player(void)
         && (player->timed[TMD_FAST] || player->timed[TMD_SPRINT]
             || player->timed[TMD_TERROR]))
         (borg.temp.fast = (player->timed[TMD_FAST] || player->timed[TMD_SPRINT]
-                          || player->timed[TMD_TERROR])
-                          ? true
-                          : false);
+                              || player->timed[TMD_TERROR])
+                              ? true
+                              : false);
     borg.temp.res_acid = (player->timed[TMD_OPP_ACID] ? true : false);
     borg.temp.res_elec = (player->timed[TMD_OPP_ELEC] ? true : false);
     borg.temp.res_fire = (player->timed[TMD_OPP_FIRE] ? true : false);

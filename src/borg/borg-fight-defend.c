@@ -128,7 +128,8 @@ static void borg_log_spellpath(bool beam)
         } else if (ag->kill) {
             borg_note(format("# Logging Spell pathway (%d,%d): %s, danger %d",
                 n_y, n_x, (r_info[kill->r_idx].name),
-                borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
+                borg_danger_one_kill(
+                    borg.c.y, borg.c.x, 1, ag->kill, true, false)));
         } else if (n_y == borg.c.y && n_x == borg.c.x) {
             borg_note(
                 format("# Logging Spell pathway (%d,%d): My grid.", n_y, n_x));
@@ -297,7 +298,7 @@ static int borg_defend_aux_speed(int p1)
 
     /* pretend we are protected and look again */
     borg.temp.fast = true;
-    p2              = borg_danger(borg.c.y, borg.c.x, 1, true, false);
+    p2             = borg_danger(borg.c.y, borg.c.x, 1, true, false);
     borg.temp.fast = false;
 
     /* if scaryguy around cast it. */
@@ -1010,7 +1011,7 @@ static int borg_defend_aux_prot_evil(int p1)
 
     /* pretend we are protected and look again */
     borg.temp.prot_from_evil = true;
-    p2 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    p2                       = borg_danger(borg.c.y, borg.c.x, 1, false, false);
     borg.temp.prot_from_evil = false;
 
     /* if this is an improvement and we may not avoid monster now and */
@@ -1281,7 +1282,7 @@ static int borg_defend_aux_tele_away(int p1)
  */
 static int borg_defend_aux_hero(int p1)
 {
-    int fail_allowed = 15;
+    int  fail_allowed = 15;
     bool potion, spell;
 
     /* already hero */
@@ -1311,7 +1312,8 @@ static int borg_defend_aux_hero(int p1)
         borg_note("# Attempting to cast Hero");
 
         /* do it! */
-        if ((spell && borg_spell(HEROISM)) || borg_quaff_potion(sv_potion_heroism)) {
+        if ((spell && borg_spell(HEROISM))
+            || borg_quaff_potion(sv_potion_heroism)) {
             /* No resting to recoup mana */
             borg.no_rest_prep = 10000;
             return 1;
@@ -1528,7 +1530,8 @@ static int borg_defend_aux_glyph(int p1)
             /* Check for an existing glyph */
             for (i = 0; i < track_glyph.num; i++) {
                 /* Stop if we already new about this glyph */
-                if ((track_glyph.x[i] == borg.c.x) && (track_glyph.y[i] == borg.c.y))
+                if ((track_glyph.x[i] == borg.c.x)
+                    && (track_glyph.y[i] == borg.c.y))
                     return (p1 - p2);
             }
 
@@ -1869,7 +1872,8 @@ static int borg_defend_aux_genocide(int p1)
         p = borg_danger_one_kill(borg.c.y, borg.c.x, 1, i, true, true);
 
         /* Danger of this monster to his own grid */
-        threat = borg_danger_one_kill(kill->pos.y, kill->pos.x, 1, i, true, true);
+        threat
+            = borg_danger_one_kill(kill->pos.y, kill->pos.x, 1, i, true, true);
 
         /* store the danger for this type of monster */
         b_p[u] = b_p[u] + p; /* Danger to me */
@@ -2166,8 +2170,8 @@ static int borg_defend_aux_earthquake(int p1)
         kill = &borg_kills[i];
 
         /* Look for threats */
-        if (borg_los(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x) && kill->ranged_attack
-            && distance(kill->pos, borg.c) >= 2) {
+        if (borg_los(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x)
+            && kill->ranged_attack && distance(kill->pos, borg.c) >= 2) {
             /* They can hit me */
             threat_count++;
         }
@@ -2436,7 +2440,8 @@ static int borg_defend_aux_banishment(int p1)
             borg_note(format(
                 "# Banishing Evil: (%d,%d): %s, danger %d. is considered.",
                 kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
-                borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
+                borg_danger_one_kill(
+                    borg.c.y, borg.c.x, 1, ag->kill, true, false)));
         }
 
         /* Non evil monsters*/
@@ -2446,7 +2451,8 @@ static int borg_defend_aux_banishment(int p1)
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (not evil).",
                     kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false)));
+                    borg_danger_one_kill(
+                        borg.c.y, borg.c.x, 1, ag->kill, true, false)));
             }
 
             continue;
@@ -2459,7 +2465,8 @@ static int borg_defend_aux_banishment(int p1)
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Unique not considered: Injury %d.",
                     kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, false),
+                    borg_danger_one_kill(
+                        borg.c.y, borg.c.x, 1, ag->kill, true, false),
                     kill->injury));
             }
 
@@ -2473,7 +2480,8 @@ static int borg_defend_aux_banishment(int p1)
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (in wall).",
                     kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, true)));
+                    borg_danger_one_kill(
+                        borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             }
             continue;
         }
@@ -2483,7 +2491,8 @@ static int borg_defend_aux_banishment(int p1)
             borg_note(
                 format("# Banishing Evil: (%d,%d): %s, danger %d. Booted.",
                     kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
-                    borg_danger_one_kill(borg.c.y, borg.c.x, 1, ag->kill, true, true)));
+                    borg_danger_one_kill(
+                        borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             borg_delete_kill(i);
         }
 
@@ -2771,7 +2780,9 @@ static int borg_defend_aux_panel_shift(void)
             /* if not the first step */
             if (track_step.num) {
                 /* shift up? only if a north corridor */
-                if (dir == 8 && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y - 2, borg.c.x)
+                if (dir == 8
+                    && borg_projectable_pure(
+                        borg.c.y, borg.c.x, borg.c.y - 2, borg.c.x)
                     && track_step.y[track_step.num - 1] != borg.c.y - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
@@ -2785,7 +2796,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift down? only if a south corridor */
                 else if (dir == 2
-                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y + 2, borg.c.x)
+                         && borg_projectable_pure(
+                             borg.c.y, borg.c.x, borg.c.y + 2, borg.c.x)
                          && track_step.y[track_step.num - 1] != borg.c.y + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
@@ -2798,7 +2810,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift Left? only if a west corridor */
                 else if (dir == 4
-                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y, borg.c.x - 2)
+                         && borg_projectable_pure(
+                             borg.c.y, borg.c.x, borg.c.y, borg.c.x - 2)
                          && track_step.x[track_step.num - 1] != borg.c.x - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
@@ -2812,7 +2825,8 @@ static int borg_defend_aux_panel_shift(void)
                 }
                 /* shift Right? only if a east corridor */
                 else if (dir == 6
-                         && borg_projectable_pure(borg.c.y, borg.c.x, borg.c.y, borg.c.x + 2)
+                         && borg_projectable_pure(
+                             borg.c.y, borg.c.x, borg.c.y, borg.c.x + 2)
                          && track_step.x[track_step.num - 1] != borg.c.x + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
@@ -2902,8 +2916,8 @@ static int borg_defend_aux_rest(void)
 
     /* Rest */
     borg_keypress(',');
-    borg_note(
-        format("# Resting on grid (%d, %d), waiting for Morgoth.", borg.c.y, borg.c.x));
+    borg_note(format("# Resting on grid (%d, %d), waiting for Morgoth.",
+        borg.c.y, borg.c.x));
 
     /* All done */
     return (200);
@@ -3136,7 +3150,7 @@ static int borg_defend_aux_banishment_morgoth(void)
         ag = &borg_grids[y][x];
 
         /* Never try on non-evil guys if Priest */
-        if (borg.trait[BI_CLASS] == CLASS_PRIEST 
+        if (borg.trait[BI_CLASS] == CLASS_PRIEST
             && !(rf_has(r_ptr->flags, RF_EVIL)))
             continue;
 
@@ -3200,10 +3214,10 @@ static int borg_defend_aux_banishment_morgoth(void)
  */
 static int borg_defend_aux_light_morgoth(void)
 {
-    int fail_allowed = 50;
-    int i, x, y;
+    int        fail_allowed = 50;
+    int        i, x, y;
     struct loc best;
-    int count = 0;
+    int        count = 0;
 
     borg_kill *kill;
 
@@ -3424,7 +3438,8 @@ bool borg_defend(int p1)
         p              = borg_danger(
             borg.c.y, borg.c.x, 1, false, false); /* Note false for danger!! */
         borg_attacking = false;
-        if (p > borg_fear_region[borg.c.y / 11][borg.c.x / 11] || borg_fighting_unique) {
+        if (p > borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+            || borg_fighting_unique) {
             if (borg_spell(RESISTANCE)) {
                 borg_note(format("# Refreshing Resistance.  "
                                  "borg.resistance=%d, player->=%d, (ratio=%d)",

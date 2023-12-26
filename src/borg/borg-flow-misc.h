@@ -28,8 +28,8 @@
 /*
  * Locate the store doors
  */
-extern int* track_shop_x;
-extern int* track_shop_y;
+extern int *track_shop_x;
+extern int *track_shop_y;
 
 /*
  * Track the mineral veins with treasure

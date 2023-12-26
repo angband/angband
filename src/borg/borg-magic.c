@@ -266,7 +266,7 @@ int borg_get_book_num(int sval)
         return -1;
 
     for (int book_num = 0; book_num < player->class->magic.num_books;
-        book_num++) {
+         book_num++) {
         if (player->class->magic.books[book_num].sval == sval)
             return book_num;
     }
@@ -281,7 +281,7 @@ borg_magic *borg_get_spell_entry(int book, int entry)
     int entry_in_book = 0;
 
     for (int spell_num = 0; spell_num < player->class->magic.total_spells;
-        spell_num++) {
+         spell_num++) {
         if (borg_magics[spell_num].book == book) {
             if (entry_in_book == entry)
                 return &borg_magics[spell_num];
@@ -356,7 +356,7 @@ bool borg_spell_legal(const enum borg_spells spell)
 static bool borg_spell_has_effect(int spell_num, uint16_t effect)
 {
     const struct class_spell *cspell = spell_by_index(player, spell_num);
-    struct effect *eff = cspell->effect;
+    struct effect            *eff    = cspell->effect;
     while (eff != NULL) {
         if (eff->index == effect)
             return true;
@@ -372,7 +372,7 @@ bool borg_spell_okay(const enum borg_spells spell)
 {
     int reserve_mana = 0;
 
-    int spell_num = borg_get_spell_number(spell);
+    int spell_num    = borg_get_spell_number(spell);
     if (spell_num < 0)
         return false;
 
@@ -383,28 +383,28 @@ bool borg_spell_okay(const enum borg_spells spell)
         return (false);
 
     /* Define reserve_mana for each class */
-    switch (borg.trait[BI_CLASS])         {
+    switch (borg.trait[BI_CLASS]) {
     case CLASS_MAGE:
-    reserve_mana = 6;
-    break;
+        reserve_mana = 6;
+        break;
     case CLASS_RANGER:
-    reserve_mana = 22;
-    break;
+        reserve_mana = 22;
+        break;
     case CLASS_ROGUE:
-    reserve_mana = 20;
-    break;
+        reserve_mana = 20;
+        break;
     case CLASS_NECROMANCER:
-    reserve_mana = 10;
-    break;
+        reserve_mana = 10;
+        break;
     case CLASS_PRIEST:
-    reserve_mana = 8;
-    break;
+        reserve_mana = 8;
+        break;
     case CLASS_PALADIN:
-    reserve_mana = 20;
-    break;
+        reserve_mana = 20;
+        break;
     case CLASS_BLACKGUARD:
-    reserve_mana = 0;
-    break;
+        reserve_mana = 0;
+        break;
     }
 
     /* Low level spell casters should not worry about this */
@@ -581,7 +581,7 @@ void borg_cheat_spell(int book_num)
     struct class_book *book = &player->class->magic.books[book_num];
     for (int spell_num = 0; spell_num < book->num_spells; spell_num++) {
         struct class_spell *cspell = &book->spells[spell_num];
-        borg_magic *as = &borg_magics[cspell->sidx];
+        borg_magic         *as     = &borg_magics[cspell->sidx];
 
         /* Note "forgotten" spells */
         if (player->spell_flags[cspell->sidx] & PY_SPELL_FORGOTTEN) {
@@ -640,26 +640,26 @@ static int borg_get_book_offset(int index)
  */
 static void borg_init_spell(borg_magic *spells, int spell_num)
 {
-    borg_magic *spell = &spells[spell_num];
+    borg_magic               *spell  = &spells[spell_num];
     const struct class_spell *cspell = spell_by_index(player, spell_num);
     if (strcmp(cspell->name, borg_spell_ratings[spell_num].name)) {
         borg_note(format("**STARTUP FAILURE** spell definition mismatch. "
-            "<%s> not the same as <%s>",
+                         "<%s> not the same as <%s>",
             cspell->name, borg_spell_ratings[spell_num].name));
         borg_init_failure = true;
         return;
     }
-    spell->rating = borg_spell_ratings[spell_num].rating;
-    spell->name = borg_spell_ratings[spell_num].name;
-    spell->spell_enum = borg_spell_ratings[spell_num].spell_enum;
-    spell->level = cspell->slevel;
-    spell->book_offset = borg_get_book_offset(cspell->sidx);
+    spell->rating       = borg_spell_ratings[spell_num].rating;
+    spell->name         = borg_spell_ratings[spell_num].name;
+    spell->spell_enum   = borg_spell_ratings[spell_num].spell_enum;
+    spell->level        = cspell->slevel;
+    spell->book_offset  = borg_get_book_offset(cspell->sidx);
     spell->effect_index = cspell->effect->index;
-    spell->power = cspell->smana;
-    spell->sfail = cspell->sfail;
-    spell->status = spell_okay_to_cast(player, spell_num);
-    spell->times = 0;
-    spell->book = cspell->bidx;
+    spell->power        = cspell->smana;
+    spell->sfail        = cspell->sfail;
+    spell->status       = spell_okay_to_cast(player, spell_num);
+    spell->times        = 0;
+    spell->book         = cspell->bidx;
 }
 
 /*
@@ -669,32 +669,32 @@ void borg_prepare_book_info(void)
 {
     switch (player->class->cidx) {
     case CLASS_MAGE:
-    borg_spell_ratings = borg_spell_ratings_MAGE;
-    break;
+        borg_spell_ratings = borg_spell_ratings_MAGE;
+        break;
     case CLASS_DRUID:
-    borg_spell_ratings = borg_spell_ratings_DRUID;
-    break;
+        borg_spell_ratings = borg_spell_ratings_DRUID;
+        break;
     case CLASS_PRIEST:
-    borg_spell_ratings = borg_spell_ratings_PRIEST;
-    break;
+        borg_spell_ratings = borg_spell_ratings_PRIEST;
+        break;
     case CLASS_NECROMANCER:
-    borg_spell_ratings = borg_spell_ratings_NECROMANCER;
-    break;
+        borg_spell_ratings = borg_spell_ratings_NECROMANCER;
+        break;
     case CLASS_PALADIN:
-    borg_spell_ratings = borg_spell_ratings_PALADIN;
-    break;
+        borg_spell_ratings = borg_spell_ratings_PALADIN;
+        break;
     case CLASS_ROGUE:
-    borg_spell_ratings = borg_spell_ratings_ROGUE;
-    break;
+        borg_spell_ratings = borg_spell_ratings_ROGUE;
+        break;
     case CLASS_RANGER:
-    borg_spell_ratings = borg_spell_ratings_RANGER;
-    break;
+        borg_spell_ratings = borg_spell_ratings_RANGER;
+        break;
     case CLASS_BLACKGUARD:
-    borg_spell_ratings = borg_spell_ratings_BLACKGUARD;
-    break;
+        borg_spell_ratings = borg_spell_ratings_BLACKGUARD;
+        break;
     default:
-    borg_spell_ratings = NULL;
-    return;
+        borg_spell_ratings = NULL;
+        return;
     }
 
     if (borg_magics)
@@ -707,6 +707,5 @@ void borg_prepare_book_info(void)
         borg_init_spell(borg_magics, spell);
     }
 }
-
 
 #endif

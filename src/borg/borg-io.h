@@ -40,12 +40,12 @@ extern bool borg_confirm_target;
 /*
  * Query the "attr/chars" at a given location on the screen
  */
-extern errr borg_what_text(int x, int y, int n, uint8_t* a, char* s);
+extern errr borg_what_text(int x, int y, int n, uint8_t *a, char *s);
 
 /*
  * Memorize a message, Log it, Search it, and Display it in pieces
  */
-extern void borg_note(const char* what);
+extern void borg_note(const char *what);
 
 /*
  * Add a keypress to the "queue" (fake event)
@@ -55,7 +55,7 @@ extern errr borg_keypress(keycode_t k);
 /*
  * Add a keypresses to the "queue" (fake event)
  */
-extern errr borg_keypresses(const char* str);
+extern errr borg_keypresses(const char *str);
 
 /*
  * Get the next Borg keypress
@@ -76,10 +76,10 @@ extern keycode_t borg_get_queued_direction(void);
 /*
  * Handle the é and á in some names
  */
-extern char* borg_massage_special_chars(char* name, char* memory);
+extern char *borg_massage_special_chars(char *name, char *memory);
 
-extern void  borg_init_io(void);
-extern void  borg_free_io(void);
+extern void borg_init_io(void);
+extern void borg_free_io(void);
 
 #endif
 #endif

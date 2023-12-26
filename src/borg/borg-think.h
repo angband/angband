@@ -42,7 +42,7 @@ extern bool borg_do_spell; /* Acquire "spell" info */
 /*
  * Abort the Borg, noting the reason
  */
-extern void borg_oops(const char* what);
+extern void borg_oops(const char *what);
 
 /*
  * Think about the world and perform an action
