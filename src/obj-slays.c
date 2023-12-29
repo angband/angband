@@ -117,18 +117,22 @@ void copy_brands(bool **dest, bool *source)
 }
 
 /**
- * Append a random brand, currently to a randart
- * This will later change so that selection is done elsewhere
+ * Append a given brand to a list of brands
  *
- * \param current the list of brands the object already has
- * \param name the name to report for randart logging
+ * \param current the list of brands to modify
+ * \param pick is the index, greater than or equal to zero and less than
+ * z_info->brand_max, of the brand to append
+ * \return true if the given brand is not present in the list or is stronger
+ * than any brand present for the same element; return false and do not
+ * append the given brand if it is weaker than any brand already present in
+ * the list for the same element
+ *
+ * Internally assumes that current has no redundant brands.
  */
-bool append_random_brand(bool **current, struct brand **brand)
+bool append_brand(bool **current, int pick)
 {
-	int i, pick;
-
-	pick = randint1(z_info->brand_max - 1);
-	*brand = &brands[pick];
+	int i;
+	struct brand *brand = &brands[pick];
 
 	/* No existing brands means OK to add */
 	if (!(*current)) {
@@ -140,10 +144,10 @@ bool append_random_brand(bool **current, struct brand **brand)
 	/* Check the existing brands for name matches */
 	for (i = 1; i < z_info->brand_max; i++) {
 		if ((*current)[i]) {
-			/* If we get the same race, check the multiplier */
-			if (streq(brands[i].name, (*brand)->name)) {
+			/* If we get the same element, check the multiplier */
+			if (streq(brands[i].name, brand->name)) {
 				/* Same multiplier or smaller, fail */
-				if ((*brand)->multiplier <= brands[i].multiplier)
+				if (brand->multiplier <= brands[i].multiplier)
 					return false;
 
 				/* Greater multiplier, replace and accept */
@@ -161,18 +165,22 @@ bool append_random_brand(bool **current, struct brand **brand)
 }
 
 /**
- * Append a random slay, currently to a randart
- * This will later change so that selection is done elsewhere
+ * Append a given slay to a list of slays
  *
- * \param current the list of slays the object already has
- * \param name the name to report for randart logging
+ * \param current the list of slays to modify
+ * \param pick is the index, greater than or equal to zero and less than
+ * z_info->slay_max, of the slay to append
+ * \return true if the given slay is not present in the list or is stronger
+ * than any slay present affecting the same set of creatures; return false and
+ * do not append the given slay if it is weaker than any slay already present
+ * and affecting the same set of creatures
+ *
+ * Internally assumes that current has no redundant slays.
  */
-bool append_random_slay(bool **current, struct slay **slay)
+bool append_slay(bool **current, int pick)
 {
-	int i, pick;
-
-	pick = randint1(z_info->slay_max - 1);
-	*slay = &slays[pick];
+	int i;
+	struct slay *slay = &slays[pick];
 
 	/* No existing slays means OK to add */
 	if (!(*current)) {
@@ -184,11 +192,12 @@ bool append_random_slay(bool **current, struct slay **slay)
 	/* Check the existing slays for base/flag matches */
 	for (i = 1; i < z_info->slay_max; i++) {
 		if ((*current)[i]) {
-			/* If we get the same race, check the multiplier */
-			if (streq(slays[i].name, (*slay)->name) &&
-				(slays[i].race_flag == (*slay)->race_flag)) {
+			/*
+			 * If affecting the same creatures, check the multiplier
+			 */
+			if (same_monsters_slain(i, pick)) {
 				/* Same multiplier or smaller, fail */
-				if ((*slay)->multiplier <= slays[i].multiplier)
+				if (slay->multiplier <= slays[i].multiplier)
 					return false;
 
 				/* Greater multiplier, replace and accept */
