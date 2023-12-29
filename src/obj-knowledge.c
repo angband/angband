@@ -1043,22 +1043,32 @@ void player_know_object(struct player *p, struct object *obj)
 	obj->known->to_d = p->obj_k->to_d * obj->to_d;
 
 	/* Set modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (p->obj_k->modifiers[i])
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (p->obj_k->modifiers[i]) {
 			obj->known->modifiers[i] = obj->modifiers[i];
+		} else {
+			obj->known->modifiers[i] = 0;
+		}
+	}
 
 	/* Set elements */
-	for (i = 0; i < ELEM_MAX; i++)
+	for (i = 0; i < ELEM_MAX; i++) {
 		if (p->obj_k->el_info[i].res_level == 1) {
 			obj->known->el_info[i].res_level = obj->el_info[i].res_level;
 			obj->known->el_info[i].flags = obj->el_info[i].flags;
+		} else {
+			obj->known->el_info[i].res_level = 0;
+			obj->known->el_info[i].flags = 0;
 		}
+	}
 
 	/* Set object flags */
+	of_wipe(obj->known->flags);
 	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
 		 flag = of_next(p->obj_k->flags, flag + 1)) {
-		if (of_has(obj->flags, flag))
+		if (of_has(obj->flags, flag)) {
 			of_on(obj->known->flags, flag);
+		}
 	}
 
 	/* Curse object structures are finished now */
@@ -1068,27 +1078,47 @@ void player_know_object(struct player *p, struct object *obj)
 
 	/* Set brands */
 	if (obj->brands) {
+		bool known_brand = false;
+
 		for (i = 1; i < z_info->brand_max; i++) {
 			if (player_knows_brand(p, i) && obj->brands[i]) {
 				if (!obj->known->brands) {
-					obj->known->brands = mem_zalloc(z_info->brand_max *
-													sizeof(bool));
+					obj->known->brands = mem_zalloc(
+						z_info->brand_max *
+						sizeof(bool));
 				}
 				obj->known->brands[i] = true;
+				known_brand = true;
+			} else if (obj->known->brands) {
+				obj->known->brands[i] = false;
 			}
+		}
+		if (!known_brand && obj->known->brands) {
+			mem_free(obj->known->brands);
+			obj->known->brands = NULL;
 		}
 	}
 
 	/* Set slays */
 	if (obj->slays) {
+		bool known_slay = false;
+
 		for (i = 1; i < z_info->slay_max; i++) {
 			if (player_knows_slay(p, i) && obj->slays[i]) {
 				if (!obj->known->slays) {
-					obj->known->slays = mem_zalloc(z_info->slay_max *
-												   sizeof(bool));
+					obj->known->slays = mem_zalloc(
+						z_info->slay_max *
+						sizeof(bool));
 				}
 				obj->known->slays[i] = true;
+				known_slay = true;
+			} else if (obj->known->slays) {
+				obj->known->slays[i] = false;
 			}
+		}
+		if (!known_slay && obj->known->slays) {
+			mem_free(obj->known->slays);
+			obj->known->slays = NULL;
 		}
 	}
 
@@ -1120,6 +1150,8 @@ void player_know_object(struct player *p, struct object *obj)
 	if (player_knows_ego(p, obj->ego, obj)) {
 		seen = obj->ego->everseen;
 		obj->known->ego = obj->ego;
+	} else {
+		obj->known->ego = NULL;
 	}
 
 	if (tval_is_jewelry(obj)) {
