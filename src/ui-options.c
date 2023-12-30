@@ -119,9 +119,23 @@ static void option_toggle_display(struct menu *m, int oid, bool cursor,
 {
 	uint8_t attr = curs_attrs[CURS_KNOWN][cursor != 0];
 	bool *options = menu_priv(m);
+	const char *desc = option_desc(oid);
+	size_t u8len = utf8_strlen(desc);
 
-	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
-			options[oid] ? "yes" : "no ", option_name(oid)), row, col);
+	if (u8len < 45) {
+		c_prt(attr, format("%s%*s", desc, (int)(45 - u8len), " "), row,
+			col);
+	} else {
+		char *desc_copy = string_make(desc);
+
+		if (u8len > 45) {
+			utf8_clipto(desc_copy, 45);
+		}
+		c_prt(attr, desc_copy, row, col);
+		string_free(desc_copy);
+	}
+	c_prt(attr, format(": %s  (%s)", options[oid] ? "yes" : "no ",
+		option_name(oid)), row, col + 45);
 }
 
 /**
@@ -1525,17 +1539,29 @@ static int quality_validity(struct menu *menu, int oid)
 static void quality_display(struct menu *menu, int oid, bool cursor, int row,
 							int col, int width)
 {
-	/* Note: the order of the values in quality_choices do not align with the
-	 * ignore_type_t enum order. - fix? NRM*/
-	const char *name = quality_choices[oid].name;
+	if (oid) {
+		/* Note: the order of the values in quality_choices do not
+			align with the ignore_type_t enum order. - fix? NRM*/
+		const char *name = quality_choices[oid].name;
+		uint8_t level = ignore_level[oid];
+		const char *level_name = quality_values[level].name;
+		uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
+		size_t u8len = utf8_strlen(name);
 
-	uint8_t level = ignore_level[oid];
-	const char *level_name = quality_values[level].name;
+		if (u8len < 30) {
+			c_put_str(attr, format("%s%*s", name, (int)(30 - u8len),
+				" "), row, col);
+		} else {
+			char *name_copy = string_make(name);
 
-	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
-
-	if (oid)
-		c_put_str(attr, format("%-30s : %s", name, level_name), row, col);
+			if (u8len > 30) {
+				utf8_clipto(name_copy, 30);
+			}
+			c_put_str(attr, name_copy, row, col);
+			string_free(name_copy);
+		}
+		c_put_str(attr, format(" : %s", level_name), row, col + 30);
+	}
 }
 
 
