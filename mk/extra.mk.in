@@ -55,7 +55,6 @@ INSTALL_PROGRAM ?= @INSTALL_PROGRAM@
 exec_prefix ?= @exec_prefix@
 EGREP ?= @EGREP@
 prefix ?= @prefix@
-RC ?= @RC@
 VERSION ?= @VERSION@
 MAINFILES = @MAINFILES@
 USE_STATS = @USE_STATS@
