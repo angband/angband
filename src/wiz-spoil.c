@@ -284,6 +284,9 @@ void spoil_obj_desc(const char *fname)
 					file_putf(fh, "  %s%*s", buf,
 						(int) (51 - u8len), " ");
 				} else {
+					if (u8len > 51) {
+						utf8_clipto(buf, 51);
+					}
 					file_putf(fh, "  %s", buf);
 				}
 				file_putf(fh, "%7s%6s%4d%9ld\n", dam, wgt, e,
