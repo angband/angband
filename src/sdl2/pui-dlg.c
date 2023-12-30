@@ -138,8 +138,8 @@ static bool handle_simple_menu_key(struct sdlpui_dialog *d,
 	};
 	static const struct k_dirsyms vsyms = {
 		SDLK_RIGHT,
-		SDLK_4,
-		SDLK_KP_4,
+		SDLK_6,
+		SDLK_KP_6,
 		SDLK_l,
 		SDLK_LEFT,
 		SDLK_DOWN,
