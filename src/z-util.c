@@ -932,51 +932,6 @@ void quit(const char *str)
 }
 
 /**
- * Arithmetic mean of the first 'size' entries of the array 'nums'
- */
-int mean(const int *nums, int size)
-{
-	int i, total = 0;
-
-	for(i = 0; i < size; i++) total += nums[i];
-
-	return total / size;
-}
-
-/**
- * Variance of the first 'size' entries of the array 'nums'
- */
-int variance(const int *nums, int size)
-{
-	int i, avg, total = 0;
-
-	avg = mean(nums, size);
-
-	for(i = 0; i < size; i++)
-	{
-		int delta = nums[i] - avg;
-		total += delta * delta;
-	}
-
-	return total / size;
-}
-
-/**
- * Return the greatest common divisor of the two arguments.
- */
-unsigned int gcd(unsigned int a, unsigned int b)
-{
-	/* Use the division-based version of Euclid's algorithm. */
-	while (b) {
-		unsigned int t = b;
-
-		b = a % b;
-		a = t;
-	}
-	return a;
-}
-
-/**
  * Initialize a multiprecision integer from an unsigned int.
  *
  * \param r points to n uint16_t values to store the result.
@@ -1376,6 +1331,315 @@ static int div_u16n(uint16_t *q, uint16_t *r, uint16_t *w, const uint16_t *num,
 		}
 	}
 	return (nqu > nq) ? 1 : 0;
+}
+
+/**
+ * Arithmetic mean of the first 'size' entries of the array 'nums'
+ * If frac is NULL, the returned result is rounded to the nearest integer.
+ * If frac is not NULL, the returned result is the largest value less than or
+ * equal to the true value and *frac is set to the fractional difference
+ * between the true value and returned result.
+ */
+int mean(const int *nums, int size, struct my_rational *frac)
+{
+#define MP_DIGITS ((sizeof(unsigned int) + (sizeof(uint16_t) - 1)) / sizeof(uint16_t))
+	/* Holds the absolute value of INT_MIN in an unsigned int. */
+	unsigned int abs_int_min = (unsigned int)(-(INT_MIN + 1)) + 1;
+	/*
+	 * Store the positive constructions to sum(nums[i]) in sp and the
+	 * negative contributions to sum(nums[i]) in sn.
+	 */
+	uint16_t sp[2 * MP_DIGITS], sn[2 * MP_DIGITS];
+	uint16_t q[MP_DIGITS], r[2 * MP_DIGITS], w[MP_DIGITS + 1];
+	uint16_t sz[MP_DIGITS];
+	struct my_rational f;
+	unsigned int result;
+	int i;
+	/*
+	 * Avoid compiler warnings about set but unused variables when
+	 * assertions are stripped.
+	 */
+#ifndef NDEBUG
+	bool over;
+#define CHECK_OVERFLOW(x) over = x; assert(!over)
+	uint16_t carry;
+#define CHECK_CARRY(x) carry = x; assert(carry == 0)
+#else
+#define CHECK_OVERFLOW(x) x
+#define CHECK_CARRY(x) x
+#endif
+
+	if (size <= 0) {
+		if (frac) {
+			*frac = my_rational_construct(0, 1);
+		}
+		return 0;
+	}
+
+	zer_u16n(sp, N_ELEMENTS(sp));
+	zer_u16n(sn, N_ELEMENTS(sn));
+
+	for (i = 0; i < size; ++i) {
+		uint16_t v[MP_DIGITS];
+
+		if (nums[i] == 0) {
+			continue;
+		}
+		if (nums[i] > 0) {
+			CHECK_OVERFLOW(ini_u16n(v, N_ELEMENTS(v), nums[i]));
+			CHECK_CARRY(addip_u16n(sp, v, N_ELEMENTS(sp), N_ELEMENTS(v)));
+		} else if (nums[i] < 0) {
+			CHECK_OVERFLOW(ini_u16n(v, N_ELEMENTS(v), abs_int_min - (unsigned int)(nums[i] - INT_MIN)));
+			CHECK_CARRY(addip_u16n(sn, v, N_ELEMENTS(sn), N_ELEMENTS(v)));
+		}
+	}
+
+	CHECK_OVERFLOW(ini_u16n(sz, N_ELEMENTS(sz), size));
+	if (cmp_u16n(sp, sn, N_ELEMENTS(sp), N_ELEMENTS(sn)) < 0) {
+		subip_u16n(sn, sp, N_ELEMENTS(sn), N_ELEMENTS(sp));
+		i = div_u16n(q, r, w, sn, sz, N_ELEMENTS(q), N_ELEMENTS(sn),
+			N_ELEMENTS(sz));
+		assert(i == 0);
+		assert(msb_u16n(q, N_ELEMENTS(q))
+			<= CHAR_BIT * sizeof(unsigned int));
+		result = ext_u16n(q, N_ELEMENTS(q));
+		assert(result <= abs_int_min);
+		assert(cmp_u16n(sz, r, N_ELEMENTS(sz), N_ELEMENTS(r)) > 0);
+		f = my_rational_construct(ext_u16n(r, N_ELEMENTS(r)), size);
+		if (frac) {
+			/*
+			 * Will be negating m, but the returned fraction must
+			 * be non-negative so increment m and replace the
+			 * fractional part with (size - remainder) / size.
+			 */
+			if (f.n > 0) {
+				assert(result < abs_int_min);
+				++result;
+				assert(f.n < f.d);
+				frac->n = f.d - f.n;
+				frac->d = f.d;
+			} else {
+				*frac = f;
+			}
+		} else {
+			/* Round to nearest. */
+			if (f.n >= (f.d + 1) / 2) {
+				assert(result < abs_int_min);
+				++result;
+			}
+		}
+		return (result == 0) ?
+			0 : INT_MIN + (int)(abs_int_min - result);
+	}
+	subip_u16n(sp, sn, N_ELEMENTS(sp), N_ELEMENTS(sn));
+	i = div_u16n(q, r, w, sp, sz, N_ELEMENTS(q), N_ELEMENTS(sp), N_ELEMENTS(sz));
+	assert(i == 0);
+	assert(msb_u16n(q, N_ELEMENTS(q)) <= CHAR_BIT * sizeof(unsigned int));
+	result = ext_u16n(q, N_ELEMENTS(q));
+	assert(result <= INT_MAX);
+	assert(cmp_u16n(sz, r, N_ELEMENTS(sz), N_ELEMENTS(r)) > 0);
+	f = my_rational_construct(ext_u16n(r, N_ELEMENTS(r)), size);
+	if (frac) {
+		*frac = f;
+	} else {
+		/* Round to nearest. */
+		if (f.n >= (f.d + 1) / 2) {
+			assert(result < INT_MAX);
+			++result;
+		}
+	}
+
+	return result;
+#undef MP_DIGITS
+#undef CHECK_OVERFLOW
+#undef CHECK_CARRY
+}
+
+/**
+ * Variance of the first 'size' entries of the array 'nums'
+ * If unbiased is true, the variance is computed as
+ * sum((nums[i] - mean(nums))^2) / (size - 1); otherwise it is
+ * sum((nums[i] - mean(nums))^2) / size.
+ * If of_mean is true, the returned variance is scaled by an additional
+ * 1 / size to correspond to the variance of the estimate of the mean.
+ * If frac is NULL, the result is rounded to the nearest integer.  If frac
+ * is not NULL, the result is rounded down and *frac is set to the fractional
+ * part (perhaps approximated).  If the result would be larger than INT_MAX,
+ * the returned result is INT_MAX and *frac, if frac is not NULL, will be zero.
+ */
+int variance(const int *nums, int size, bool unbiased, bool of_mean,
+		struct my_rational *frac)
+{
+#define MP_DIGITS ((sizeof(unsigned int) + (sizeof(uint16_t) - 1)) / sizeof(uint16_t))
+	/* Holds the absolute value of INT_MIN in an unsigned int. */
+	unsigned int abs_int_min = (unsigned int)(-(INT_MIN + 1)) + 1;
+	/*
+	 * The unbiased variance estimator, sum((nums[i] - sum(nums[i]) /
+	 * size)^2) / (size - 1), is equivalent to (sum(nums[i]^2) -
+	 * (sum(nums[i]))^2 / size) / (size - 1).  Store sum(nums[i]^2) in
+	 * ss, the positive contributions to sum(nums[i]) in sp, and the
+	 * negative contributions to sum(nums[i]) in sn.
+	 */
+	uint16_t ss[3 * MP_DIGITS], sp[2 * MP_DIGITS], sn[2 * MP_DIGITS];
+	uint16_t sqs[4 * MP_DIGITS];
+	uint16_t q[4 * MP_DIGITS], r0[4 * MP_DIGITS], r1[3 * MP_DIGITS];
+	uint16_t r2[3 * MP_DIGITS];
+	uint16_t sz[MP_DIGITS], nm[MP_DIGITS], w[MP_DIGITS + 1];
+	struct my_rational f, part;
+	unsigned int var;
+	int norm, i;
+	/*
+	 * Avoid compiler warnings about set but unused variables when
+	 * assertions are stripped.
+	 */
+#ifndef NDEBUG
+	bool over;
+#define CHECK_OVERFLOW(x) over = x; assert(!over)
+	uint16_t carry;
+#define CHECK_CARRY(x) carry = x; assert(carry == 0)
+#else
+#define CHECK_OVERFLOW(x) x
+#define CHECK_CARRY(x) x
+#endif
+
+	if (size <= 1) {
+		if (frac) {
+			*frac = my_rational_construct(0, 1);
+		}
+		return 0;
+	}
+
+	norm = size - ((unbiased) ? 1 : 0);
+	zer_u16n(ss, N_ELEMENTS(ss));
+	zer_u16n(sp, N_ELEMENTS(sp));
+	zer_u16n(sn, N_ELEMENTS(sn));
+
+	for (i = 0; i < size; ++i) {
+		uint16_t a[MP_DIGITS], a2[2 * MP_DIGITS];
+
+		if (nums[i] == 0) {
+			continue;
+		}
+		if (nums[i] > 0) {
+			CHECK_OVERFLOW(ini_u16n(a, N_ELEMENTS(a), nums[i]));
+			CHECK_CARRY(addip_u16n(sp, a, N_ELEMENTS(sp), N_ELEMENTS(a)));
+		} else if (nums[i] < 0) {
+			CHECK_OVERFLOW(ini_u16n(a, N_ELEMENTS(a), abs_int_min - (unsigned int)(nums[i] - INT_MIN)));
+			CHECK_CARRY(addip_u16n(sn, a, N_ELEMENTS(sn), N_ELEMENTS(a)));
+		}
+		CHECK_OVERFLOW(mul_u16n(a2, a, a, N_ELEMENTS(a2), N_ELEMENTS(a), N_ELEMENTS(a)));
+		CHECK_CARRY(addip_u16n(ss, a2, N_ELEMENTS(ss), N_ELEMENTS(a2)));
+	}
+
+	if (cmp_u16n(sp, sn, N_ELEMENTS(sp), N_ELEMENTS(sn)) >= 0) {
+		subip_u16n(sp, sn, N_ELEMENTS(sp), N_ELEMENTS(sn));
+		CHECK_OVERFLOW(mul_u16n(sqs, sp, sp, N_ELEMENTS(sqs), N_ELEMENTS(sp), N_ELEMENTS(sp)));
+	} else {
+		subip_u16n(sn, sp, N_ELEMENTS(sn), N_ELEMENTS(sp));
+		CHECK_OVERFLOW(mul_u16n(sqs, sn, sn, N_ELEMENTS(sqs), N_ELEMENTS(sn), N_ELEMENTS(sn)));
+	}
+	CHECK_OVERFLOW(ini_u16n(sz, N_ELEMENTS(sz), size));
+	i = div_u16n(q, r0, w, sqs, sz, N_ELEMENTS(q), N_ELEMENTS(sqs),
+		N_ELEMENTS(sz));
+	assert(i == 0);
+	if (msb_u16n(r0, N_ELEMENTS(r0)) > 0) {
+		/*
+		 * Since this remainder is subtracted, add one to the
+		 * quotient and convert the remainder to size - r0.  That way
+		 * later calculations can treat it as a non-negative term, like
+		 * the other fractional parts.
+		 */
+		uint16_t tmp[4 * MP_DIGITS];
+
+		CHECK_OVERFLOW(ini_u16n(tmp, MP_DIGITS, 1));
+		addip_u16n(q, tmp, N_ELEMENTS(q), MP_DIGITS);
+		for (i = 0; i < (int)(N_ELEMENTS(r0)); ++i) {
+			tmp[i] = r0[i];
+		}
+		CHECK_OVERFLOW(ini_u16n(r0, N_ELEMENTS(r0), size));
+		assert(cmp_u16n(r0, tmp, N_ELEMENTS(r0), N_ELEMENTS(tmp)) > 0);
+		subip_u16n(r0, tmp, N_ELEMENTS(r0), N_ELEMENTS(tmp));
+	}
+	assert(cmp_u16n(ss, q, N_ELEMENTS(ss), N_ELEMENTS(q)) >= 0);
+	subip_u16n(ss, q, N_ELEMENTS(ss), N_ELEMENTS(q));
+	CHECK_OVERFLOW(ini_u16n(nm, N_ELEMENTS(nm), norm));
+	i = div_u16n(q, r1, w, ss, nm, 3 * MP_DIGITS, N_ELEMENTS(ss),
+		N_ELEMENTS(nm));
+	assert(i == 0);
+	if (of_mean) {
+		uint16_t qcpy[3 * MP_DIGITS];
+
+		for (i = 0; i < (int)(N_ELEMENTS(qcpy)); ++i) {
+			qcpy[i] = q[i];
+		}
+		i = div_u16n(q, r2, w, qcpy, sz, 3 * MP_DIGITS,
+			N_ELEMENTS(qcpy), N_ELEMENTS(sz));
+		assert(i == 0);
+	}
+	if (msb_u16n(q, 3 * MP_DIGITS) > CHAR_BIT * sizeof(unsigned int)) {
+		/* Variance is greater than UINT_MAX. */
+		if (frac) {
+			*frac = my_rational_construct(0, 1);
+		}
+		return INT_MAX;
+	}
+	var = ext_u16n(q, 3 * MP_DIGITS);
+	if (var > INT_MAX) {
+		if (frac) {
+			*frac = my_rational_construct(0, 1);
+		}
+		return INT_MAX;
+	}
+	/*
+	 * Account for the fractional part.  If of_mean is false, that is
+	 * r1 / norm + r0 / (size * norm).  If of_mean is true,
+	 * that is r2 / size + r1 / (size * norm) + r0 /
+	 * (size * size * norm).  Since 0 <= r0 < size,
+	 * 0 <= r1 < norm, and 0 <= r2 < size, the total of the fractional
+	 * terms is greater than or equal to zero and less than one.
+	 */
+	assert(cmp_u16n(sz, r0, N_ELEMENTS(sz), N_ELEMENTS(r0)) > 0);
+	assert(cmp_u16n(nm, r1, N_ELEMENTS(nm), N_ELEMENTS(r1)) > 0);
+	assert(!of_mean || cmp_u16n(sz, r2, N_ELEMENTS(sz), N_ELEMENTS(r2)) > 0);
+	f = my_rational_construct(ext_u16n(r0, N_ELEMENTS(r0)), size);
+	part = my_rational_construct(1, norm);
+	f = my_rational_product(&f, &part);
+	part = my_rational_construct(ext_u16n(r1, N_ELEMENTS(r1)), norm);
+	f = my_rational_sum(&f, &part);
+	if (of_mean) {
+		part = my_rational_construct(1, size);
+		f = my_rational_product(&f, &part);
+		part = my_rational_construct(ext_u16n(r2, N_ELEMENTS(r2)), size);
+		f = my_rational_sum(&f, &part);
+	}
+	if (frac) {
+		*frac = f;
+	} else {
+		/* Round to nearest. */
+		if (f.n >= (f.d + 1) / 2 && var < INT_MAX) {
+			++var;
+		}
+	}
+
+	return var;
+#undef MP_DIGITS
+#undef CHECK_CARRY
+#undef CHECK_OVERFLOW
+}
+
+/**
+ * Return the greatest common divisor of the two arguments.
+ */
+unsigned int gcd(unsigned int a, unsigned int b)
+{
+	/* Use the division-based version of Euclid's algorithm. */
+	while (b) {
+		unsigned int t = b;
+
+		b = a % b;
+		a = t;
+	}
+	return a;
 }
 
 /**
