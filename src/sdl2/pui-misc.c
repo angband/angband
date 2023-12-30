@@ -53,7 +53,7 @@ int sdlpui_init(void)
 
 	if (!my_registry.lock) {
 		my_registry.lock = SDL_CreateMutex();
-	
+
 		/* Initialize predefined type codes from pui-dlg.h. */
 		SDLPUI_DIALOG_SIMPLE_MENU =
 			sdlpui_register_code("SDLPUI_DIALOG_SIMPLE_MENU");
