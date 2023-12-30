@@ -301,7 +301,21 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 
 		/* Show full slot labels for equipment (or quiver in subwindow) */
 		if (equip) {
-			strnfmt(buf, sizeof(buf), "%-14s: ", equip_mention(player, i));
+			const char *mention = equip_mention(player, i);
+			size_t u8len = utf8_strlen(mention);
+
+			if (u8len < 14) {
+				strnfmt(buf, sizeof(buf), "%s%*s", mention,
+					(int)(14 - u8len), " ");
+			} else {
+				char *mention_copy = string_make(mention);
+
+				if (u8len > 14) {
+					utf8_clipto(mention_copy, 14);
+				}
+				strnfmt(buf, sizeof(buf), "%s", mention_copy);
+				string_free(mention_copy);
+			}
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
 		} else if ((in_term || dead) && quiver) {
