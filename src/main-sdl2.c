@@ -2469,8 +2469,8 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
-		handle_menu_font_size, tag, is_vector_font
-		&& subwindow->min_font_size < subwindow->max_font_size,
+		handle_menu_font_size, tag, !is_vector_font
+		|| subwindow->min_font_size >= subwindow->max_font_size,
 		subwindow->font->size, subwindow->min_font_size,
 		(subwindow->min_font_size < subwindow->max_font_size) ?
 		subwindow->max_font_size - 1 : subwindow->min_font_size);
