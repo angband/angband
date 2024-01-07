@@ -3275,10 +3275,34 @@ static bool handle_mousemotion(struct my_app *a,
 		const SDL_MouseMotionEvent *mouse)
 {
 	struct sdlpui_dialog *d;
+	SDL_Event pendm[4];
 
 	if (!a->w_mouse) {
 		return false;
 	}
+
+	/*
+	 * If more than one consecutive motion event is queued, only process
+	 * the last one.
+	 */
+	while (1) {
+		int npend = SDL_PeepEvents(pendm,
+			(int)(sizeof(pendm) / sizeof(pendm[0])),
+			SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION);
+
+		if (npend <= 0) {
+			if (npend < 0) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"SDL_PeepEvents() for pending motion "
+					"events failed: %s", SDL_GetError());
+			}
+			break;
+		}
+		SDL_assert(npend <= (int)(sizeof(pendm) / sizeof(pendm[0]))
+			&& pendm[npend - 1].type == SDL_MOUSEMOTION);
+		mouse = &pendm[npend - 1].motion;
+	}
+
 	if (a->w_mouse->move_state.moving) {
 		do_moving(a->w_mouse, mouse->x, mouse->y);
 		return true;
