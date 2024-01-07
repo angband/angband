@@ -1285,9 +1285,17 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 	lo = MIN_VECTOR_FONT_SIZE;
 	hi = MAX_VECTOR_FONT_SIZE + 1;
 	while (1) {
-		int try;
+		int try = (lo + hi) / 2;
+		int old_hi = hi;
 
-		if (lo == hi - 1) {
+		trial_font = make_font(subwindow->window, font->name, try);
+		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
+			hi = try;
+		} else {
+			lo = try;
+		}
+		free_font(trial_font);
+		if (lo == hi || lo == old_hi - 1) {
 			if (hi > MAX_VECTOR_FONT_SIZE) {
 				/* No size works */
 				*min_size = DEFAULT_VECTOR_FONT_SIZE;
@@ -1297,14 +1305,6 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 			*min_size = hi;
 			break;
 		}
-		try = (lo + hi) / 2;
-		trial_font = make_font(subwindow->window, font->name, try);
-		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
-			hi = try;
-		} else {
-			lo = try;
-		}
-		free_font(trial_font);
 	}
 
 	/* Find the largest size that works using a binary search. */
@@ -2469,7 +2469,7 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
-		handle_menu_font_size, tag, is_vector_font
+		handle_menu_font_size, tag, !is_vector_font
 		&& subwindow->min_font_size < subwindow->max_font_size,
 		subwindow->font->size, subwindow->min_font_size,
 		(subwindow->min_font_size < subwindow->max_font_size) ?
