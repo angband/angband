@@ -1281,30 +1281,23 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 		return;
 	}
 
-	/* Find the smallest size that works using a binary search. */
+	/* Find the smallest size that works. */
 	lo = MIN_VECTOR_FONT_SIZE;
-	hi = MAX_VECTOR_FONT_SIZE + 1;
 	while (1) {
-		int try;
-
-		if (lo == hi - 1) {
-			if (hi > MAX_VECTOR_FONT_SIZE) {
-				/* No size works */
-				*min_size = DEFAULT_VECTOR_FONT_SIZE;
-				*max_size = DEFAULT_VECTOR_FONT_SIZE;
-				return;
-			}
-			*min_size = hi;
+		if (lo > MAX_VECTOR_FONT_SIZE) {
+			/* No size works */
+			*min_size = DEFAULT_VECTOR_FONT_SIZE;
+			*max_size = DEFAULT_VECTOR_FONT_SIZE;
+			return;
+		}
+		trial_font = make_font(subwindow->window, font->name, lo);
+		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
+			free_font(trial_font);
+			*min_size = lo;
 			break;
 		}
-		try = (lo + hi) / 2;
-		trial_font = make_font(subwindow->window, font->name, try);
-		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
-			hi = try;
-		} else {
-			lo = try;
-		}
 		free_font(trial_font);
+		++lo;
 	}
 
 	/* Find the largest size that works using a binary search. */
