@@ -331,6 +331,7 @@ bool square_iswebbable(struct chunk *c, struct loc grid);
 bool square_is_monster_walkable(struct chunk *c, struct loc grid);
 bool square_ispassable(struct chunk *c, struct loc grid);
 bool square_isprojectable(struct chunk *c, struct loc grid);
+bool square_allowsfeel(struct chunk *c, struct loc grid);
 bool square_allowslos(struct chunk *c, struct loc grid);
 bool square_isstrongwall(struct chunk *c, struct loc grid);
 bool square_isbright(struct chunk *c, struct loc grid);

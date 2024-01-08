@@ -223,6 +223,7 @@ static void store_base_power(struct artifact_set_data *data)
 	struct object_kind *kind;
 	int *fake_total_power;
 	int **fake_tv_power;
+	struct my_rational frac;
 
 	data->max_power = 0;
 	data->min_power = INHIBIT_POWER + 1;
@@ -270,11 +271,15 @@ static void store_base_power(struct artifact_set_data *data)
 		data->base_art_alloc[i] = art->alloc_prob;
 	}
 
-	data->avg_power = mean(fake_total_power, num);
-	data->var_power = variance(fake_total_power, num);
+	/*
+	 * Pass frac but do not use its value so get the previous behavior
+	 * of rounding the result down.
+	 */
+	data->avg_power = mean(fake_total_power, num, &frac);
+	data->var_power = variance(fake_total_power, num, false, false, &frac);
 	for (i = 0; i < TV_MAX; i++) {
 		if (data->tv_num[i]) {
-			data->avg_tv_power[i] = mean(fake_tv_power[i], data->tv_num[i]);
+			data->avg_tv_power[i] = mean(fake_tv_power[i], data->tv_num[i], &frac);
 		}
 	}
 

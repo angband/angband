@@ -1281,30 +1281,23 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 		return;
 	}
 
-	/* Find the smallest size that works using a binary search. */
+	/* Find the smallest size that works. */
 	lo = MIN_VECTOR_FONT_SIZE;
-	hi = MAX_VECTOR_FONT_SIZE + 1;
 	while (1) {
-		int try;
-
-		if (lo == hi - 1) {
-			if (hi > MAX_VECTOR_FONT_SIZE) {
-				/* No size works */
-				*min_size = DEFAULT_VECTOR_FONT_SIZE;
-				*max_size = DEFAULT_VECTOR_FONT_SIZE;
-				return;
-			}
-			*min_size = hi;
+		if (lo > MAX_VECTOR_FONT_SIZE) {
+			/* No size works */
+			*min_size = DEFAULT_VECTOR_FONT_SIZE;
+			*max_size = DEFAULT_VECTOR_FONT_SIZE;
+			return;
+		}
+		trial_font = make_font(subwindow->window, font->name, lo);
+		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
+			free_font(trial_font);
+			*min_size = lo;
 			break;
 		}
-		try = (lo + hi) / 2;
-		trial_font = make_font(subwindow->window, font->name, try);
-		if (is_usable_font_for_subwindow(trial_font, subwindow, NULL)) {
-			hi = try;
-		} else {
-			lo = try;
-		}
 		free_font(trial_font);
+		++lo;
 	}
 
 	/* Find the largest size that works using a binary search. */
@@ -2469,8 +2462,8 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
-		handle_menu_font_size, tag, is_vector_font
-		&& subwindow->min_font_size < subwindow->max_font_size,
+		handle_menu_font_size, tag, !is_vector_font
+		|| subwindow->min_font_size >= subwindow->max_font_size,
 		subwindow->font->size, subwindow->min_font_size,
 		(subwindow->min_font_size < subwindow->max_font_size) ?
 		subwindow->max_font_size - 1 : subwindow->min_font_size);
@@ -3275,10 +3268,34 @@ static bool handle_mousemotion(struct my_app *a,
 		const SDL_MouseMotionEvent *mouse)
 {
 	struct sdlpui_dialog *d;
+	SDL_Event pendm[4];
 
 	if (!a->w_mouse) {
 		return false;
 	}
+
+	/*
+	 * If more than one consecutive motion event is queued, only process
+	 * the last one.
+	 */
+	while (1) {
+		int npend = SDL_PeepEvents(pendm,
+			(int)(sizeof(pendm) / sizeof(pendm[0])),
+			SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION);
+
+		if (npend <= 0) {
+			if (npend < 0) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"SDL_PeepEvents() for pending motion "
+					"events failed: %s", SDL_GetError());
+			}
+			break;
+		}
+		SDL_assert(npend <= (int)(sizeof(pendm) / sizeof(pendm[0]))
+			&& pendm[npend - 1].type == SDL_MOUSEMOTION);
+		mouse = &pendm[npend - 1].motion;
+	}
+
 	if (a->w_mouse->move_state.moving) {
 		do_moving(a->w_mouse, mouse->x, mouse->y);
 		return true;

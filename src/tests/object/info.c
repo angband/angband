@@ -488,6 +488,8 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 	struct object *old_weapon = NULL;
 	struct object *old_launcher = NULL;
 	int i = 0;
+	int iavg, ivar;
+	struct my_rational favg, fvar;
 
 	if (launcher) {
 		launcher_slot = wield_slot(launcher);
@@ -516,7 +518,6 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 	}
 	update_stuff(p);
 
-	*avg = 0.0;
 	while (i < NHITS) {
 		if (launcher || throw) {
 			struct attack_result ar;
@@ -531,7 +532,6 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			mem_free(ar.hit_verb);
 			if (ar.success) {
 				work[i] = ar.dmg;
-				*avg += ar.dmg;
 				++i;
 			}
 		} else {
@@ -551,7 +551,6 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 				int dam = old_hp - m->hp;
 
 				work[i] = dam;
-				*avg += dam;
 				++i;
 				/*
 				 * Heal the monster so it won't die while
@@ -561,15 +560,11 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			}
 		}
 	}
-	*avg /= NHITS;
 
-	*avg_var = 0.0;
-	for (i = 0; i < NHITS; ++i) {
-		double dev = work[i] - *avg;
-
-		*avg_var += dev * dev;
-	}
-	*avg_var /= (double)(NHITS - 1) * (double)NHITS;
+	iavg = mean(work, NHITS, &favg);
+	ivar = variance(work, NHITS, true, true, &fvar);
+	*avg = (double)iavg + (double)favg.n / (double)favg.d;
+	*avg_var = (double)ivar + (double)favg.n / (double)favg.d;
 
 	/* Scale results to be per turn rather than per attack. */
 	if (launcher) {
