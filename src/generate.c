@@ -683,8 +683,8 @@ static void place_feeling(struct chunk *c)
 			/* Pick a random dungeon coordinate */
 			struct loc grid = loc(randint0(c->width), randint0(c->height));
 
-			/* Check to see if it is not passable */
-			if (!square_ispassable(c, grid))
+			/* Check to see if it can be used as a feeling square */
+			if (!square_allowsfeel(c, grid))
 				continue;
 
 			/* Check to see if it is already marked */
