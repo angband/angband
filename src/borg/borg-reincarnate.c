@@ -582,6 +582,12 @@ void reincarnate_borg(void)
     /* fully healed and rested */
     player->chp = player->mhp;
     player->csp = player->msp;
+    player->upkeep->energy_use = 100;
+
+    /* don't notice or update immediately */
+    p->upkeep->notice = 0;
+    p->upkeep->update = 0;
+    p->upkeep->redraw = 0;
 
     /* restore the cave */
     cave = sv_cave;
