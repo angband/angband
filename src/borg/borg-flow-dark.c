@@ -349,8 +349,9 @@ static void borg_flow_direct(int y, int x)
         /* Access the grid */
         ag = &borg_grids[y][x];
 
-        /* Ignore "wall" grids */
-        if (!borg_cave_floor_grid(ag))
+        /* Ignore "wall" grids and lava (unless immune to fire) */
+        if (!borg_cave_floor_grid(ag)
+            || (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE]))
             return;
 
         /* Avoid Traps if low level-- unless brave or scaryguy. */
