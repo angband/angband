@@ -676,6 +676,13 @@ bool square_isprojectable(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * True if the square could be used as a feeling square.
+ */
+bool square_allowsfeel(struct chunk *c, struct loc grid) {
+	return square_ispassable(c, grid) && !square_isdamaging(c, grid);
+}
+
+/**
  * True if the square allows line-of-sight.
  */
 bool square_allowslos(struct chunk *c, struct loc grid) {
