@@ -166,7 +166,7 @@ static bool borg_think_dungeon_lunal(void)
             || (char *)NULL != borg_prepared(borg.trait[BI_CDEPTH] - 5)
             || borg.trait[BI_CDEPTH] >= 50 || borg.trait[BI_CDEPTH] == 0
             || borg.trait[BI_ISWEAK]) {
-            borg.lunal_mode    = false;
+            borg.lunal_mode         = false;
             borg.goal.fleeing       = false;
             borg.goal.fleeing_lunal = false;
             borg_note("# Self Lunal mode disengaged normally.");
@@ -424,7 +424,7 @@ static bool borg_think_dungeon_lunal(void)
 
     /* return to normal borg_think_dungeon */
     borg_note("Leaving Lunal Mode. (End of Lunal Mode)");
-    borg.lunal_mode = false;
+    borg.lunal_mode   = false;
     borg.goal.fleeing = borg.goal.fleeing_lunal = false;
     return (false);
 }
@@ -1660,9 +1660,9 @@ bool borg_think_dungeon(void)
 
     /* Try to stick close to stairs if weak */
     if (borg.trait[BI_CLEVEL] < 10 && borg.trait[BI_MAXSP]
-        && borg.trait[BI_CURSP] == 0 && borg.no_rest_prep <= 1 && !borg.temp.bless
-        && !borg.temp.hero && !borg.temp.berserk && !borg.temp.fastcast
-        && !player_has(player, PF_COMBAT_REGEN)) {
+        && borg.trait[BI_CURSP] == 0 && borg.no_rest_prep <= 1
+        && !borg.temp.bless && !borg.temp.hero && !borg.temp.berserk
+        && !borg.temp.fastcast && !player_has(player, PF_COMBAT_REGEN)) {
         if (borg.trait[BI_CDEPTH]) {
             int tmp_i, y, x;
 

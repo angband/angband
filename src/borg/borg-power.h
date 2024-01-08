@@ -29,5 +29,4 @@
 extern int32_t borg_power(void);
 
 #endif
-
 #endif

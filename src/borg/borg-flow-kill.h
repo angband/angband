@@ -72,17 +72,17 @@ struct borg_kill {
 extern int16_t    borg_kills_cnt;
 extern int16_t    borg_kills_summoner; /* index of a summoning guy */
 extern int16_t    borg_kills_nxt;
-extern borg_kill* borg_kills;
+extern borg_kill *borg_kills;
 
 /*
  * Hack -- count racial appearances per level
  */
-extern int16_t* borg_race_count;
+extern int16_t *borg_race_count;
 
 /*
  * Hack -- count racial kills (for uniques)
  */
-extern int16_t* borg_race_death;
+extern int16_t *borg_race_death;
 
 /*
  * Monsters or Uniques on this level
@@ -97,13 +97,13 @@ extern bool         morgoth_on_level;
 extern bool         borg_morgoth_position;
 extern bool         breeder_level;
 
-extern uint8_t      borg_nasties_num;
-extern uint8_t      borg_nasties_count[7];
-extern char         borg_nasties[7];
-extern uint8_t      borg_nasties_limit[7];
+extern uint8_t borg_nasties_num;
+extern uint8_t borg_nasties_count[7];
+extern char    borg_nasties[7];
+extern uint8_t borg_nasties_limit[7];
 
-extern int          morgy_panel_y;
-extern int          morgy_panel_x;
+extern int morgy_panel_y;
+extern int morgy_panel_x;
 
 /* am I fighting a unique? */
 extern int borg_fighting_unique;
@@ -142,7 +142,7 @@ extern bool observe_kill_move(
 /*
  * Attempt to locate a monster which could explain a message
  */
-extern int borg_locate_kill(char* who, struct loc c, int r);
+extern int borg_locate_kill(char *who, struct loc c, int r);
 
 /*
  * Notice the "death" of a monster

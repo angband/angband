@@ -1,4 +1,4 @@
- /**
+/**
  * \file cave-square.c
  * \brief functions for dealing with individual squares
  *
@@ -1082,24 +1082,69 @@ void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, 
 }
 
 /**
- * Sense the existence of objects on a grid in the current level
+ * Helper for square_sense_pile() and square_sense_pile():  remove known
+ * location for the requested items that are not on this grid.
  */
-void square_sense_pile(struct chunk *c, struct loc grid)
+static void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
+		struct loc grid, bool (*pred)(const struct object*))
+{
+	struct object *obj = square_object(knownc, grid);
+
+	while (obj) {
+		struct object *next = obj->next;
+		struct object *original = c->objects[obj->oidx];
+
+		assert(original);
+		if (!square_holds_object(c, grid, original)) {
+			if (!pred || (*pred)(original)) {
+				square_excise_object(knownc, grid, obj);
+				obj->grid = loc(0, 0);
+
+				/*
+				 * Delete objects which no longer exist anywhere
+				 */
+				if (obj->notice & OBJ_NOTICE_IMAGINED) {
+					delist_object(knownc, obj);
+					object_delete(knownc, NULL, &obj);
+					original->known = NULL;
+					delist_object(c, original);
+					object_delete(c, knownc, &original);
+				}
+			}
+		}
+		obj = next;
+	}
+}
+
+/**
+ * Sense the existence of objects on a grid in the current level
+ *
+ * If pred is not NULL, only modify an object, o, if (*pred)(o) is true.
+ */
+void square_sense_pile(struct chunk *c, struct loc grid,
+		bool (*pred)(const struct object*))
 {
 	struct object *obj;
 
 	if (c != cave) return;
 
-	/* Sense every item on this grid */
+	/* Sense the requested classes of items on this grid */
 	for (obj = square_object(c, grid); obj; obj = obj->next) {
-		object_sense(player, obj);
+		if (!pred || (*pred)(obj)) {
+			object_sense(player, obj);
+		}
 	}
+
+	forget_remembered_objects(c, player->cave, grid, pred);
 }
 
 /**
  * Update the player's knowledge of the objects on a grid in the current level
+ *
+ * If pred is not NULL, only modify an object, o, if (*pred)(o) is true.
  */
-void square_know_pile(struct chunk *c, struct loc grid)
+void square_know_pile(struct chunk *c, struct loc grid,
+		bool (*pred)(const struct object*))
 {
 	struct object *obj;
 
@@ -1107,35 +1152,20 @@ void square_know_pile(struct chunk *c, struct loc grid)
 
 	object_lists_check_integrity(c, player->cave);
 
-	/* Know every item on this grid, greater knowledge for the player grid */
+	/*
+	 * Know every item of the requested classes on this grid with greater
+	 * knowledge for the player grid.
+	 */
 	for (obj = square_object(c, grid); obj; obj = obj->next) {
-		object_see(player, obj);
-		if (loc_eq(grid, player->grid)) {
-			object_touch(player, obj);
-		}
-	}
-
-	/* Remove known location of anything not on this grid */
-	obj = square_object(player->cave, grid);
-	while (obj) {
-		struct object *next = obj->next;
-		assert(c->objects[obj->oidx]);
-		if (!square_holds_object(c, grid, c->objects[obj->oidx])) {
-			struct object *original = c->objects[obj->oidx];
-			square_excise_object(player->cave, grid, obj);
-			obj->grid = loc(0, 0);
-
-			/* Delete objects which no longer exist anywhere */
-			if (obj->notice & OBJ_NOTICE_IMAGINED) {
-				delist_object(player->cave, obj);
-				object_delete(player->cave, NULL, &obj);
-				original->known = NULL;
-				delist_object(c, original);
-				object_delete(c, player->cave, &original);
+		if (!pred || (*pred)(obj)) {
+			object_see(player, obj);
+			if (loc_eq(grid, player->grid)) {
+				object_touch(player, obj);
 			}
 		}
-		obj = next;
 	}
+
+	forget_remembered_objects(c, player->cave, grid, pred);
 }
 
 

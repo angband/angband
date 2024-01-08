@@ -230,7 +230,7 @@ void square_note_spot(struct chunk *c, struct loc grid)
 	if (!square_isseen(c, grid) && !square_isplayer(c, grid)) return;
 
 	/* Make the player know precisely what is on this grid */
-	square_know_pile(c, grid);
+	square_know_pile(c, grid, NULL);
 
 	/* Notice traps, memorize those we can see */
 	if (square_issecrettrap(c, grid)) {
@@ -445,9 +445,9 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 
 			/* Memorize objects */
 			if (full) {
-				square_know_pile(c, grid);
+				square_know_pile(c, grid, NULL);
 			} else {
-				square_sense_pile(c, grid);
+				square_sense_pile(c, grid, NULL);
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
@@ -511,9 +511,9 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 
 			/* Memorize objects */
 			if (full) {
-				square_know_pile(c, grid);
+				square_know_pile(c, grid, NULL);
 			} else {
-				square_sense_pile(c, grid);
+				square_sense_pile(c, grid, NULL);
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */

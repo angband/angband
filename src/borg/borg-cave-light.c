@@ -111,8 +111,8 @@ void borg_update_light(void)
     }
 
     /* Radius 2 -- lantern radius */
-    if (borg.trait[BI_CURLITE] >= 2 && borg.c.y + 2 < AUTO_MAX_Y && borg.c.y - 2 > 0
-        && borg.c.x + 2 < AUTO_MAX_X && borg.c.x - 2 > 0) {
+    if (borg.trait[BI_CURLITE] >= 2 && borg.c.y + 2 < AUTO_MAX_Y
+        && borg.c.y - 2 > 0 && borg.c.x + 2 < AUTO_MAX_X && borg.c.x - 2 > 0) {
         /* South of the player */
         if (borg_cave_floor_bold(borg.c.y + 2, borg.c.x)) {
             borg_cave_light_hack(borg.c.y + 2, borg.c.x);
@@ -143,8 +143,8 @@ void borg_update_light(void)
     }
 
     /* Radius 3+ -- artifact radius */
-    if (borg.trait[BI_CURLITE] >= 3 && borg.c.y + 3 < AUTO_MAX_Y && borg.c.y - 3 > 0
-        && borg.c.x + 3 < AUTO_MAX_X && borg.c.x - 3 > 0) {
+    if (borg.trait[BI_CURLITE] >= 3 && borg.c.y + 3 < AUTO_MAX_Y
+        && borg.c.y - 3 > 0 && borg.c.x + 3 < AUTO_MAX_X && borg.c.x - 3 > 0) {
         int d, p;
 
         /* Maximal radius */

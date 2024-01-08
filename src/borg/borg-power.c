@@ -877,7 +877,7 @@ static int32_t borg_power_equipment(void)
         else if (act_arrow == act)
             activation_bonus += (500 + (150));
         else if (act_rem_fear_pois == act) {
-            if (borg.trait[BI_CLASS] == CLASS_MAGE 
+            if (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_PRIEST
                 || borg.trait[BI_CLASS] == CLASS_DRUID)
                 activation_bonus += 500;
@@ -1444,8 +1444,8 @@ static int32_t borg_power_inventory(void)
         for (; k < 4 && k < borg.has[kv_rod_healing]; k++)
             value += 20000L;
 
-    } else if (borg.trait[BI_CLASS] == CLASS_PRIEST 
-        || borg.trait[BI_CLASS] == CLASS_DRUID) {
+    } else if (borg.trait[BI_CLASS] == CLASS_PRIEST
+               || borg.trait[BI_CLASS] == CLASS_DRUID) {
         /* Level 1 priests are given a Potion of Healing.  It is better
          * for them to sell that potion and buy equipment or several
          * Cure Crits with it.
@@ -1675,7 +1675,8 @@ static int32_t borg_power_inventory(void)
     /*** Missiles ***/
 
     /* Reward missiles */
-    if (borg.trait[BI_CLASS] == CLASS_RANGER || borg.trait[BI_CLASS] == CLASS_WARRIOR) {
+    if (borg.trait[BI_CLASS] == CLASS_RANGER
+        || borg.trait[BI_CLASS] == CLASS_WARRIOR) {
         k = 0;
         for (; k < 40 && k < borg.trait[BI_AMISSILES]; k++)
             value += 1000L;
@@ -1792,7 +1793,8 @@ static int32_t borg_power_inventory(void)
     if (borg.amt_statgain[STAT_INT] && borg.stat_cur[STAT_INT] < (18 + 100))
         value += 520000;
     if (spell_stat >= 0)
-        if (borg.amt_statgain[spell_stat] && borg.stat_cur[spell_stat] < (18 + 100))
+        if (borg.amt_statgain[spell_stat]
+            && borg.stat_cur[spell_stat] < (18 + 100))
             value += 575000;
     if (borg.amt_statgain[STAT_WIS] && borg.stat_cur[STAT_WIS] < (18 + 100))
         value += 520000;

@@ -646,7 +646,7 @@ static int borg_perma_aux_berserk_potion(void)
 static int borg_perma_aux_see_inv(void)
 {
     int        fail_allowed = 25;
-    borg_grid* ag           = &borg_grids[borg.c.y][borg.c.x];
+    borg_grid *ag           = &borg_grids[borg.c.y][borg.c.x];
 
     /* no need */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]

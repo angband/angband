@@ -278,7 +278,9 @@ effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
 spell:Treasure Detection:10:3:60:5
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
@@ -378,7 +380,9 @@ effect:DETECT_DOORS
 effect-yx:22:40
 effect:DETECT_STAIRS
 effect-yx:22:40
-effect:DETECT_GOLD
+effect:DETECT_ORE
+effect-yx:22:40
+effect:SENSE_GOLD
 effect-yx:22:40
 effect:SENSE_OBJECTS
 effect-yx:22:40
@@ -1418,6 +1422,8 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Object Detection:10:3:60:5
+effect:DETECT_ORE
+effect-yx:22:40
 effect:DETECT_GOLD
 effect-yx:22:40
 effect:DETECT_OBJECTS

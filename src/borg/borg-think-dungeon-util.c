@@ -121,7 +121,7 @@ bool borg_money_scum(void)
             borg.goal.g.x = borg.c.x + ddx[dir];
             borg.goal.g.y = borg.c.y + ddy[dir];
 
-            ag  = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+            ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
 
             /* Skip walls and shops */
             if (ag->feat != FEAT_FLOOR)
@@ -134,9 +134,9 @@ bool borg_money_scum(void)
     }
 
     /* reset the clocks */
-    borg_t          = 10;
+    borg_t               = 10;
     borg.time_this_panel = 1;
-    borg_began      = 1;
+    borg_began           = 1;
 
     /* Done */
     return (true);
@@ -195,7 +195,8 @@ bool borg_think_dungeon_light(void)
         /* If on a glowing grid, got some food, and low mana, then rest here */
         if ((borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
                 && borg.trait[BI_MAXSP] > 0)
-            && (borg_grids[borg.c.y][borg.c.x].info & BORG_GLOW) && !borg.trait[BI_ISWEAK]
+            && (borg_grids[borg.c.y][borg.c.x].info & BORG_GLOW)
+            && !borg.trait[BI_ISWEAK]
             && (borg_spell_legal(HERBAL_CURING)
                 || borg_spell_legal(REMOVE_HUNGER)
                 || borg.trait[BI_FOOD] >= borg.trait[BI_CDEPTH])
@@ -225,7 +226,8 @@ bool borg_think_dungeon_light(void)
                 not_safe = true;
 
             /* Be concerned about the Monster Fear. */
-            if (borg_fear_monsters[borg.c.y][borg.c.x] > borg.trait[BI_CURHP] / 10)
+            if (borg_fear_monsters[borg.c.y][borg.c.x]
+                > borg.trait[BI_CURHP] / 10)
                 not_safe = true;
 
             /* rest here to gain some mana */
@@ -576,7 +578,7 @@ bool borg_leave_level(bool bored)
         && (borg_t - borg_t_morgoth < 5000)) {
         borg.goal.leaving = false;
         borg.goal.rising  = false;
-        bored        = false;
+        bored             = false;
     }
 
     /* There is a great concern about recalling back to level 100.
@@ -746,15 +748,15 @@ bool borg_leave_level(bool bored)
         if (NULL != borg_restock(borg.trait[BI_CDEPTH])) {
             borg_note(format("# returning to town to restock(too deep: %s)",
                 borg_restock(borg.trait[BI_CDEPTH])));
-            borg.goal.rising  = true;
-            need_restock = true;
+            borg.goal.rising = true;
+            need_restock     = true;
         }
 
         /* I must return to collect stock from the house. */
         if (strstr(prep_cur_depth, "Collect from house")) {
             borg_note("# Returning to town to Collect stock.");
-            borg.goal.rising  = true;
-            need_restock = true;
+            borg.goal.rising = true;
+            need_restock     = true;
         }
     }
 

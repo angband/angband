@@ -30,12 +30,12 @@ extern bool borg_object_fully_id(void);
 
 /* look for a *id*'d item */
 extern bool borg_object_fully_id_aux(
-    borg_item* borg_item, struct object* real_item);
+    borg_item *borg_item, struct object *real_item);
 
 /*
  * The code currently inscribes items with {??} if they have unknown powers.
  */
-extern bool borg_item_note_needs_id(const borg_item* item);
+extern bool borg_item_note_needs_id(const borg_item *item);
 
 #endif
 #endif

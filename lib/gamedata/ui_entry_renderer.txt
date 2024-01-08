@@ -106,56 +106,108 @@
 # permanent on flags.
 
 # NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX renders one or more integer
-# modifiers with the label colored by the combined (by addition) value.  The
-# auxiliary values are treated as timed effects.  The default combiner is ADD.
-# One of seven symbols (unknown, not present, zero, positive, negative, timed
-# positive, timed negative) is used for each modifier.  The symbols for the
-# timed effects are only used if the permanent effect is known and is zero.
-# Each of the symbols has a corresponding color (from the first seven colors)
-# and alternate color (from the second seven colors).  The alternate color is
-# used for every other modifier.  A palette of six colors is used for the
+# modifiers with the label colored by the combined value.  The auxiliary
+# values are treated as timed effects.  The default combiner is ADD.  One
+# of eleven symbols is used for each modifier:
+#     unknown
+#     not present
+#     combined value and auxiliary value is zero, and auxiliary value is zero
+#     combined value and auxiliary value is zero, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is zero, and auxiliary value is
+#         negative
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         zero
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         negative
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         zero
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         negative
+# Each of the symbols has a corresponding color (from the first eleven colors)
+# and alternate color (from the second eleven colors).  The alternate color is
+# used for every other modifier.  A palette of ten colors is used for the
 # label.  They are:
-# unknown rune
-# the sum of the known effects is zero and the sum of the timed effects is zero
-# the sum of the known effects is positive
-# the sum of the known effects is negative
-# the sum of the known effects is zero; the sum of the timed effects is
-#     positive
-# the sum of the known effects is zero; the sum of the timed effects is
-#     negative
+#     unknown rune
+#     the combined known values and auxiliary values are zero and the combined
+#          known auxiliary values are zero
+#     the combined known values and auxiliary values are zero and the combined
+#         known auxiliary values are positive
+#     the combined known values and auxiliary values are zero and the combined
+#         known auxiliary values are negative
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are zero
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are positive
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are negative
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are zero
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are positive
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are negative
 
 # NUMERIC_RENDERER_WITH_COMBINED_AUX renders one or more integer values
 # as decimal integers with the label colored by the combined value.  The
 # auxiliary values are treated as timed effects.  The default combiner is ADD.
-# One of seven colors (unknown, not present, zero, positive, negative, timed
-# positive, timed negative) or an alternate set of seven colors for those same
-# conditions is used for each modifer.  The alternate colors are used for every
-# other value.  The colors for the timed effects are only used if the permanent
-# effect is known and is zero.  There are seven symbols that may be used.  The
-# first symbol is used when the value is unknown.  The second symbol is used
-# when the value is not present.  The third symbol is used when both the value
-# and the auxiliary value are zero.  For the first three symbols, if the
-# symbol is '0', it may be shown with a sign depending on the setting for the
-# sign indicator described below.  The fourth symbol is used in place of
-# digits when the known permanent effect is positive and the value is too
-# large to display with the given number of digits.  The fifth symbol is used
-# in place of digits when the known permanent effect is negative and the value
-# is too large to display with the given number of digits.  The sixth symbol
-# is used in place of digits when the known permanent effect is zero and the
-# timed effect is positive but too large to display with the given number of
-# digits.  The seventh symbol is used in place of digits when the known
-# permanent effect is zero and the timed effect is negative but too large to
-# display with the given number of digits.  A palette of six colors is used
-# for the label.  They are:
-# unknown rune
-# the sum of the known effects is zero and the sum of the timed effects is zero
-# the sum of the known effects is positive
-# the sum of the known effects is negative
-# the sum of the known effects is zero; the sum of the timed effects is
-#     positive
-# the sum of the known effects is zero; the sum of the timed effects is
-#     negative
-#
+# One of eleven colors or eleven alternate colors is used for each modifier:
+#     unknown
+#     not present
+#     combined value and auxiliary value is zero, and auxiliary value is zero
+#     combined value and auxiliary value is zero, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is zero, and auxiliary value is
+#         negative
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         zero
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is positive, and auxiliary value is
+#         negative
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         zero
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         positive
+#     combined value and auxiliary value is negative, and auxiliary value is
+#         negative
+# The alternate colors are used for every other value.  There are seven
+# symbols that may be used.  The first symbol is used when the value is
+# unknown.  The second symbol is used when the value is not present.  The
+# third symbol is used when the combined value and auxiliary value is zero and
+# the auxiliary value is zero.  The fourth symbol is used when the combined
+# value and auxiliary value is zero and the auxiliary value is positive.  The
+# fifth symbol is used when the combined value and auxiliary value is zero and
+# the auxiliary value is negative.  For the first five symbols, it may be shown
+# with a sign depending on the setting for the sign indicator described below.
+# The sixth symbol is used in place of digits when the combined value and
+# auxiliary value is positive and does not fit in the given number of digits.
+# The seventh symbol is used in place of digits when the combined value and
+# auxiliary value is negative and does not fit in the given number of digits.
+# A palette of ten colors is used for the label.  They are:
+#     unknown rune
+#     the combined known values and auxiliary values are zero and the combined
+#         known auxiliary values are zero
+#     the combined known values and auxiliary values are zero and the combined
+#         known auxiliary values are positive
+#     the combined known values and auxiliary values are zero and the combined
+#         known auxiliary values are negative
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are zero
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are positive
+#     the combined known values and auxiliary values are positive and the
+#         combined known auxiliary values are negative
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are zero
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are positive
+#     the combined known values and auxiliary values are negative and the
+#         combined known auxiliary values are negative
 # The number of digits is used to configure the number of digits shown for
 # each value.  The default value for the number of digits is one.  The sign
 # display is used to configure whether the digits are shown with a sign
@@ -218,9 +270,9 @@ symbols:?..+-!+-=.-
 
 name:char_screen1_numeric_as_sign_renderer
 code:NUMERIC_AS_SIGN_RENDERER_WITH_COMBINED_AUX
-colors:wwwwwGwWWWWWGW
-labelcolors:swBrww
-symbols:?..+-!=
+colors:wwwGowGowGoWWWGoWGoWGo
+labelcolors:swwwBBBrrr
+symbols:?....+!+--=
 
 # Currently, labelcolors has no impact on what's shown in the character screen
 # and what uses this internally expects ndigit to be one, sign to be NO_SIGN,

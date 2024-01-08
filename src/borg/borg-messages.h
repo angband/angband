@@ -27,16 +27,16 @@
 
 extern int16_t  borg_msg_len;
 extern int16_t  borg_msg_siz;
-extern char*    borg_msg_buf;
+extern char    *borg_msg_buf;
 extern int16_t  borg_msg_num;
 extern int16_t  borg_msg_max;
-extern int16_t* borg_msg_pos;
-extern int16_t* borg_msg_use;
+extern int16_t *borg_msg_pos;
+extern int16_t *borg_msg_use;
 
 /* Autostop search string */
 extern char borg_match[128];
 
-extern void borg_parse(char* msg);
+extern void borg_parse(char *msg);
 
 extern void borg_init_messages(void);
 

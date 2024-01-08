@@ -25,7 +25,7 @@
 
 #ifdef ALLOW_BORG
 
- /*
+/*
  * Item usage functions
  */
 enum borg_need {

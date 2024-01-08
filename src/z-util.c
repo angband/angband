@@ -1177,7 +1177,7 @@ static uint16_t addip_u16n(uint16_t *a, const uint16_t *b, size_t na, size_t nb)
  *
  * \param a points to na uint16_t digits.
  * \param b points to nb uint16_t digits.  cmp_u16n(a, b) must be greater than
- * \param b points.  b can be the same as a if na equals nb.  Otherwise, a and
+ * or equal to zero.  b can be the same as a if na equals nb.  Otherwise, a and
  * b must not overlap.
  * \param na is the number of digits in base 2^16 for a.
  * \param nb is the number of digits in base 2^16 for b.

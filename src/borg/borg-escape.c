@@ -574,7 +574,7 @@ bool borg_dimension_door(int allow_fail)
 
             d = borg_danger(t_y, t_x, 2, true, false);
             if (d < best_d) {
-                best_d   = d;
+                best_d = d;
                 best.x = t_x;
                 best.y = t_y;
             }
@@ -800,8 +800,7 @@ bool borg_escape(int b_q)
      */
     if (borg.trait[BI_ISHEAVYSTUN]
         || ((b_q > avoidance * (3 + risky_boost) / 10)
-            && borg.trait[BI_CLASS] == CLASS_MAGE 
-            && borg.trait[BI_CURSP] <= 20
+            && borg.trait[BI_CLASS] == CLASS_MAGE && borg.trait[BI_CURSP] <= 20
             && borg.trait[BI_MAXCLEVEL] >= 45)
         || ((b_q > avoidance * (13 + risky_boost) / 10)
             && borg_fighting_unique >= 1 && borg_fighting_unique <= 8
@@ -1028,8 +1027,8 @@ bool borg_escape(int b_q)
             borg.goal.leaving = true;
         }
         /* Emergency Phase door if a weak mage */
-        if (((borg.trait[BI_CLASS] == CLASS_MAGE || 
-              borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+        if (((borg.trait[BI_CLASS] == CLASS_MAGE
+                 || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
                 && borg.trait[BI_CLEVEL] <= 35)
             && borg_caution_phase(65, 2) && borg_t - borg_t_antisummon > 50
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
@@ -1109,8 +1108,8 @@ bool borg_escape(int b_q)
             borg.goal.leaving = true;
         }
         /* Emergency Phase door if a weak mage */
-        if (((borg.trait[BI_CLASS] == CLASS_MAGE || 
-              borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+        if (((borg.trait[BI_CLASS] == CLASS_MAGE
+                 || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
                 && borg.trait[BI_CLEVEL] <= 8)
             && borg_caution_phase(65, 2)
             && (borg_spell_fail(PHASE_DOOR, allow_fail)
@@ -1130,7 +1129,7 @@ bool borg_escape(int b_q)
     }
 
     /* 6- not too scary but I'm out of mana  */
-    if ((borg.trait[BI_CLASS] == CLASS_MAGE 
+    if ((borg.trait[BI_CLASS] == CLASS_MAGE
             || borg.trait[BI_CLASS] == CLASS_PRIEST
             || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
         && (b_q > avoidance * (6 + risky_boost) / 10

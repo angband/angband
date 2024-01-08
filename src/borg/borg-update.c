@@ -109,8 +109,7 @@ static int o_w_x = -1;
 static int o_w_y = -1;
 
 /* Old location */
-static struct loc old_c = {-1, -1};
-
+static struct loc old_c = { -1, -1 };
 
 /*
  * Update the Borg based on the current "map"
@@ -1614,8 +1613,7 @@ void borg_update(void)
         /* Handle "You hit xxx." */
         if (prefix(msg, "HIT:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_msg_use[i] = 2;
             }
         }
@@ -1623,8 +1621,7 @@ void borg_update(void)
         /* Handle "You miss xxx." */
         else if (prefix(msg, "MISS:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_msg_use[i] = 2;
             }
         }
@@ -1632,8 +1629,7 @@ void borg_update(void)
         /* Handle "You have killed xxx." */
         else if (prefix(msg, "KILL:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_count_death(k);
 
                 borg_delete_kill(k);
@@ -1650,8 +1646,7 @@ void borg_update(void)
         /* Handle "The xxx disappears!"  via teleport other, and blinks away */
         else if (prefix(msg, "BLINK:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_delete_kill(k);
                 borg_msg_use[i] = 2;
                 /* reset the panel.  He's on a roll */
@@ -1665,8 +1660,7 @@ void borg_update(void)
         /* Handle "xxx dies." */
         else if (prefix(msg, "DIED:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 3))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 3)) > 0) {
                 borg_count_death(k);
                 borg_delete_kill(k);
                 borg_msg_use[i] = 2;
@@ -1681,8 +1675,7 @@ void borg_update(void)
         /* Handle "xxx screams in pain." */
         else if (prefix(msg, "PAIN:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 3))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 3)) > 0) {
                 borg_msg_use[i] = 2;
             }
             /* Shooting through darkness worked */
@@ -1693,8 +1686,7 @@ void borg_update(void)
         /* Handle "sleep" */
         else if (prefix(msg, "STATE__FEAR:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_msg_use[i] = 2;
             }
         }
@@ -1702,8 +1694,7 @@ void borg_update(void)
         /* Handle "sleep" */
         else if (prefix(msg, "STATE__BOLD:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 0))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_msg_use[i] = 2;
             }
         } else if (prefix(msg, "STATE_SLEEP:")) {
@@ -1773,8 +1764,7 @@ void borg_update(void)
         /* Handle "You miss xxx." */
         else if (prefix(msg, "MISS:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, hit_dist))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, hit_dist)) > 0) {
                 borg_msg_use[i] = 3;
             }
         }
@@ -1782,8 +1772,7 @@ void borg_update(void)
         /* Handle "You have killed xxx." */
         else if (prefix(msg, "KILL:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 1))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 1)) > 0) {
                 borg_count_death(k);
                 borg_delete_kill(k);
                 borg_msg_use[i] = 3;
@@ -1798,8 +1787,7 @@ void borg_update(void)
         /* Handle "The xxx disappears!"  via teleport other, and blinks away */
         else if (prefix(msg, "BLINK:")) {
             /* Attempt to find the monster */
-            if ((k = borg_locate_kill(what, borg.goal.g, 1))
-                > 0) {
+            if ((k = borg_locate_kill(what, borg.goal.g, 1)) > 0) {
                 borg_delete_kill(k);
                 borg_msg_use[i] = 3;
                 /* reset the panel.  He's on a roll */
@@ -2550,7 +2538,8 @@ void borg_update(void)
          * LOS floor) */
         if (j <= 7 && ag->feat <= FEAT_MORE)
             floor_grid++;
-        if (j >= 8 && ag->feat <= FEAT_MORE && borg_los(borg.c.y, borg.c.x, y, x))
+        if (j >= 8 && ag->feat <= FEAT_MORE
+            && borg_los(borg.c.y, borg.c.x, y, x))
             floor_grid++;
     }
 
@@ -2781,22 +2770,22 @@ void borg_update(void)
 
         /* Handle "xxx hits you." */
         if (prefix(msg, "HIT_BY:")) {
-            borg_fear_regional(
-                what, borg.c.y, borg.c.x, 4 * ((borg.trait[BI_CDEPTH] / 5) + 1), false);
+            borg_fear_regional(what, borg.c.y, borg.c.x,
+                4 * ((borg.trait[BI_CDEPTH] / 5) + 1), false);
             borg_msg_use[i] = 5;
         }
 
         /* Handle "xxx misses you." */
         else if (prefix(msg, "MISS_BY:")) {
-            borg_fear_regional(
-                what, borg.c.y, borg.c.x, 2 * ((borg.trait[BI_CDEPTH] / 5) + 1), false);
+            borg_fear_regional(what, borg.c.y, borg.c.x,
+                2 * ((borg.trait[BI_CDEPTH] / 5) + 1), false);
             borg_msg_use[i] = 5;
         }
 
         /* Hack -- Handle "spell" */
         else if (prefix(msg, "SPELL_")) {
-            borg_fear_regional(
-                what, borg.c.y, borg.c.x, borg_fear_spell(atoi(msg + 6)), false);
+            borg_fear_regional(what, borg.c.y, borg.c.x,
+                borg_fear_spell(atoi(msg + 6)), false);
             borg_msg_use[i] = 5;
         }
     }

@@ -1345,8 +1345,8 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 				/* Identify once */
 				if (!obj->known || obj->known->pval != obj->pval) {
-					/* Hack - know the pile */
-					square_know_pile(cave, grid);
+					/* Hack - see the object */
+					object_see(player, obj);
 
 					/* Know the trap */
 					obj->known->pval = obj->pval;
@@ -1496,7 +1496,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
  * Detect buried gold around the player.  The height to detect above and below
  * the player is context->y, the width either side of the player context->x.
  */
-bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
+bool effect_handler_DETECT_ORE(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
@@ -1551,50 +1551,19 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 }
 
 /**
- * This is a helper for effect_handler_SENSE_OBJECTS and
- * effect_handler_DETECT_OBJECTS to remove remembered objects at locations
- * sensed or detected as empty.
- *
- * When compatibility with old savefiles is no longer needed (those which
- * have objects in the known cave which need to be relocated; 4.3 can drop
- * support for them) calls to this function can be replaced by:
- *     square_excise_all_imagined(player->cave, cave, grid);
- *     square_excise_pile(player->cave, grid);
+ * Help effect_handler_SENSE_GOLD() or effect_handler_SENSE_OBJECTS(): sense
+ * objects of a given class about the player.  The range of detection in y
+ * is within context->y of the player.  The range of detection in x is
+ * within context->x of the player.
  */
-static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, struct loc grid)
-{
-	struct object *obj = square_object(knownc, grid);
-
-	while (obj) {
-		struct object *next = obj->next;
-		struct object *original = c->objects[obj->oidx];
-
-		assert(original);
-		square_excise_object(knownc, grid, obj);
-		obj->grid = loc(0, 0);
-
-		/* Delete objects which no longer exist anywhere */
-		if (obj->notice & OBJ_NOTICE_IMAGINED) {
-			delist_object(knownc, obj);
-			object_delete(player->cave, NULL, &obj);
-			original->known = NULL;
-			delist_object(c, original);
-			object_delete(c, player->cave, &original);
-		}
-		obj = next;
-	}
-}
-
-/**
- * Sense objects around the player.  The height to sense above and below the
- * player is context->y, the width either side of the player context->x
- */
-bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
+static bool sense_stuff(effect_handler_context_t *context,
+		bool (*pred)(const struct object*),
+		const struct object_kind *unknown_kind)
 {
 	int x, y;
 	int x1, x2, y1, y2;
 
-	bool objects = false;
+	bool have_stuff = false;
 
 	/* Pick an area to sense */
 	y1 = player->grid.y - context->y;
@@ -1607,59 +1576,46 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 	if (y2 > cave->height - 1) y2 = cave->height - 1;
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
-	/* Scan the area for objects */
+	/* Scan the area */
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
 			struct loc grid = loc(x, y);
 			struct object *obj = square_object(cave, grid);
 
-			if (!obj) {
-				/* If empty, remove any remembered objects. */
-				forget_remembered_objects(cave, player->cave, grid);
-				continue;
-			}
-
-			/*
-			 * Is there any object which either has not been seen
-			 * or has been seen and is not ignored?  If so, notify
-			 * the player.
-			 */
-			for (; !objects && obj; obj = obj->next) {
-				if (!obj->known
-						|| obj->known->kind == unknown_gold_kind
-						|| obj->known->kind == unknown_item_kind
-						|| !ignore_item_ok(player, obj)) {
-					objects = true;
+			for (; !have_stuff && obj; obj = obj->next) {
+				if ((*pred)(obj)
+						&& (!obj->known
+						|| obj->known->kind == unknown_kind
+						|| !ignore_item_ok(player, obj))) {
+					have_stuff = true;
 				}
 			}
 
-			/* Mark the pile as aware */
-			square_sense_pile(cave, grid);
+			/*
+			 * Become aware of the parts of the pile that match
+			 * the predicate.  Forget remembered parts that match
+			 * the predicate which are no longer there.
+			 */
+			square_sense_pile(cave, grid, pred);
 		}
 	}
 
-	if (objects)
-		msg("You sense the presence of objects!");
-	else if (context->aware)
-		msg("You sense no objects.");
-
-	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= PR_ITEMLIST;
-
-	context->ident = true;
-	return true;
+	return have_stuff;
 }
 
 /**
- * Detect objects around the player.  The height to detect above and below the
- * player is context->y, the width either side of the player context->x
+ * Help effect_handler_DETECT_GOLD() and effect_handler_DETECT_OBJECTS():
+ * detect objects of a given class around the player.  The range of detection
+ * in y is within context->y of the player.  The range of detection in x is
+ * within context->x of the player.
  */
-bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
+static bool detect_stuff(effect_handler_context_t *context,
+		bool (*pred)(const struct object*))
 {
 	int x, y;
 	int x1, x2, y1, y2;
 
-	bool objects = false;
+	bool have_stuff = false;
 
 	/* Pick an area to detect */
 	y1 = player->grid.y - context->y;
@@ -1672,39 +1628,112 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 	if (y2 > cave->height - 1) y2 = cave->height - 1;
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
-	/* Scan the area for objects */
+	/* Scan the area */
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
 			struct loc grid = loc(x, y);
 			struct object *obj = square_object(cave, grid);
 
-			if (!obj) {
-				/* If empty, remove any remembered objects. */
-				forget_remembered_objects(cave, player->cave, grid);
-				continue;
-			}
-
 			/*
-			 * Is there any object which is not ignored?  If so,
-			 * notify the player.
+			 * Is there any object matching the predicate which is
+			 * not ignored?
 			 */
-			for (; !objects && obj; obj = obj->next) {
-				if (!ignore_item_ok(player, obj)) {
-					objects = true;
+			for (; !have_stuff && obj; obj = obj->next) {
+				if ((*pred)(obj) && !ignore_item_ok(player, obj)) {
+					have_stuff = true;
 				}
 			}
 
-			/* Mark the pile as seen */
-			square_know_pile(cave, grid);
+			/*
+			 * Mark the parts of the pile that match the predicate
+			 * as seen.  Forget remembered parts that match the
+			 * predicate which are no longer there.
+			 */
+			square_know_pile(cave, grid, pred);
 		}
 	}
 
-	if (objects)
-		msg("You detect the presence of objects!");
-	else if (context->aware)
-		msg("You detect no objects.");
+	return have_stuff;
+}
 
-	/* Redraw whole map, monster list */
+/**
+ * Sense money on the floor around the player.
+ */
+bool effect_handler_SENSE_GOLD(effect_handler_context_t *context)
+{
+	bool money = sense_stuff(context, tval_is_money, unknown_gold_kind);
+
+	if (money) {
+		msg("You sense the presence of gold!");
+	} else if (context->aware) {
+		msg("You sense no gold.");
+	}
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect money on the floor around the player.
+ */
+bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
+{
+	bool money = detect_stuff(context, tval_is_money);
+
+	if (money) {
+		msg("You detect the presence of gold!");
+	} else if (context->aware) {
+		msg("You detect no gold.");
+	}
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Help effect_handler_SENSE_OBJECTS() and effect_handler_DETECT_OBJECTS():
+ * negate tval_is_money().
+ */
+static bool tval_is_not_money(const struct object *o)
+{
+	return !tval_is_money(o);
+}
+
+/**
+ * Sense objects which are not money around the player.
+ */
+bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
+{
+	bool objects = sense_stuff(context, tval_is_not_money,
+		unknown_item_kind);
+
+	if (objects) {
+		msg("You sense the presence of objects!");
+	} else if (context->aware) {
+		msg("You sense no objects.");
+	}
+
+	/* Redraw object list */
+	player->upkeep->redraw |= PR_ITEMLIST;
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect objects which are not money around the player.
+ */
+bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
+{
+	bool objects = detect_stuff(context, tval_is_not_money);
+
+	if (objects) {
+		msg("You detect the presence of objects!");
+	} else if (context->aware) {
+		msg("You detect no objects.");
+	}
+
+	/* Redraw object list */
 	player->upkeep->redraw |= PR_ITEMLIST;
 
 	context->ident = true;

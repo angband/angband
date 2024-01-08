@@ -1,6 +1,6 @@
 #
 #  Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
-#                2017, 2018, 2020, 2021
+#                2017, 2018, 2020, 2021, 2022, 2023
 #    Jonathan Schleifer <js@nil.im>
 #
 #  https://fossil.nil.im/buildsys
@@ -82,7 +82,7 @@ MSGFMT = @MSGFMT@
 JAVAC = @JAVAC@
 JAVACFLAGS = @JAVACFLAGS@
 JAR = @JAR@
-WINDRES = @WINDRES@
+RC = @RC@
 BUILD_AND_HOST_ARE_DARWIN = @BUILD_AND_HOST_ARE_DARWIN@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -124,19 +124,31 @@ DEPS = ${OBJS:.o=.dep}			\
 
 MO_FILES = ${LOCALES:.po=.mo}
 
-.SILENT:
+@SILENT@
 .SUFFIXES:
-.SUFFIXES: .amigalib.o .beam .c .cc .class .cxx .d .erl .lib.o .java .mo .m .mm .o .plugin.o .po .py .pyc .rc .S .xpm
-.PHONY: all subdirs subdirs-after pre-depend depend install install-extra post-install uninstall uninstall-extra clean pre-clean distclean pre-distclean locales copy-headers-into-framework ${SUBDIRS} ${SUBDIRS_AFTER}
-.PHONY: fake-install real-install
+.SUFFIXES: .amigalib.o .beam .c .cc .class .cxx .d .erl .lib.o .java	\
+	   .mo .m .mm .o .plugin.o .po .py .pyc .rc .S .xpm
+.PHONY: all subdirs subdirs-after pre-depend depend install		\
+	install-extra uninstall uninstall-extra clean distclean locales	\
+	copy-headers-into-framework ${SUBDIRS} ${SUBDIRS_AFTER}
+.PHONY: post-install fake-install real-install pre-clean pre-distclean
 
 all:
-	${MAKE} -s pre-all
-	${MAKE} -s subdirs
-	${MAKE} -s depend
-	${MAKE} -s ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${FRAMEWORK} ${FRAMEWORK_NOINST} ${AMIGA_LIB} ${AMIGA_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${PROG} ${PROG_NOINST} ${JARFILE} locales
-	${MAKE} -s subdirs-after
-	${MAKE} -s post-all
+	${MAKE} @MAKEFLAGS_SILENT@ pre-all
+	${MAKE} @MAKEFLAGS_SILENT@ subdirs
+	${MAKE} @MAKEFLAGS_SILENT@ depend
+	${MAKE} @MAKEFLAGS_SILENT@				\
+	    ${STATIC_LIB} ${STATIC_LIB_NOINST}			\
+	    ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}		\
+	    ${STATIC_AMIGA_LIB}${STATIC_AMIGA_LIB_NOINST}	\
+	    ${SHARED_LIB} ${SHARED_LIB_NOINST}			\
+	    ${FRAMEWORK} ${FRAMEWORK_NOINST}			\
+	    ${AMIGA_LIB} ${AMIGA_LIB_NOINST}			\
+	    ${PLUGIN} ${PLUGIN_NOINST}				\
+	    ${PROG} ${PROG_NOINST}				\
+	    ${JARFILE} locales
+	${MAKE} @MAKEFLAGS_SILENT@ subdirs-after
+	${MAKE} @MAKEFLAGS_SILENT@ post-all
 
 pre-all post-all:
 
@@ -144,7 +156,7 @@ subdirs:
 	for i in "" ${SUBDIRS}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
@@ -152,7 +164,7 @@ subdirs-after:
 	for i in "" ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
@@ -178,7 +190,8 @@ ${PROG} ${PROG_NOINST}: ${EXT_DEPS} ${OBJS} ${OBJS_EXTRA}
 ${JARFILE}: ${EXT_DEPS} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}
 	${LINK_STATUS}
 	if test x"${JAR_MANIFEST}" != x""; then \
-		if ${JAR} cfm ${JARFILE} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}; then \
+		if ${JAR} cfm ${JARFILE} ${JAR_MANIFEST} ${OBJS} \
+		    ${OBJS_EXTRA}; then \
 			${LINK_OK}; \
 		else \
 			${LINK_FAILED}; \
@@ -194,7 +207,8 @@ ${JARFILE}: ${EXT_DEPS} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}
 ${SHARED_LIB} ${SHARED_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 	${LINK_STATUS}
 	out="$@"; \
-	if ${LD} -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${LIB_LDFLAGS} ${LIB_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${LIBS} ${LINK_LIB}; then \
+	if ${LD} -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${LIB_LDFLAGS} \
+	    ${LIB_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${LIBS} ${LINK_LIB}; then \
 		${LINK_OK}; \
 	else \
 		${LINK_FAILED}; \
@@ -203,32 +217,92 @@ ${SHARED_LIB} ${SHARED_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 ${FRAMEWORK} ${FRAMEWORK_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 	${LINK_STATUS}
 	out="$@"; \
-	if rm -fr $$out && ${MKDIR_P} $$out && ${MAKE} -s COPY_HEADERS_IF_SUBDIR=${includesubdir} COPY_HEADERS_DESTINATION=$$PWD/$@/Headers copy-headers-into-framework && if test -f Info.plist; then ${INSTALL} -m 644 Info.plist $$out/Info.plist; fi && if test -f module.modulemap; then ${MKDIR_P} $$out/Modules && ${INSTALL} -m 644 module.modulemap $$out/Modules/module.modulemap; fi && ${LD} -o $$out/$${out%.framework} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} ${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${FRAMEWORK_LIBS} && ${CODESIGN} -fs ${CODESIGN_IDENTITY} $$out; then \
-		${LINK_OK}; \
+	if test x"@HOST_IS_IOS@" = x"yes"; then \
+		if rm -fr $@ && \
+		    ${MAKE} @MAKEFLAGS_SILENT@ \
+			COPY_HEADERS_IF_SUBDIR=${includesubdir} \
+			COPY_HEADERS_DESTINATION=$$PWD/$@/Headers \
+			copy-headers-into-framework && \
+		    if test -f Info.plist; then \
+			    ${INSTALL} -m 644 Info.plist $@/Info.plist; \
+		    fi && \
+		    if test -f module.modulemap; then \
+			    ${MKDIR_P} $@/Modules && \
+			    ${INSTALL} -m 644 module.modulemap \
+				$@/Modules/module.modulemap; \
+		    fi && \
+		    ${LD} -o $@/$${out%.framework} \
+			${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} \
+			${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LDFLAGS} \
+			${FRAMEWORK_LIBS} && \
+		    ${CODESIGN} -fs ${CODESIGN_IDENTITY} $@; then \
+			${LINK_OK}; \
+		else \
+			rm -fr $$out; false; \
+			${LINK_FAILED}; \
+		fi; \
 	else \
-		rm -fr $$out; false; \
-		${LINK_FAILED}; \
+		versiondir="$@/Versions/${LIB_MAJOR}"; \
+		if rm -fr $@ && \
+		    ${MKDIR_P} $$versiondir && \
+		    ${LN_S} ${LIB_MAJOR} $@/Versions/Current && \
+		    ${MAKE} @MAKEFLAGS_SILENT@ \
+			COPY_HEADERS_IF_SUBDIR=${includesubdir} \
+			COPY_HEADERS_DESTINATION=$$PWD/$$versiondir/Headers \
+			copy-headers-into-framework && \
+		    ${LN_S} Versions/Current/Headers $@/Headers && \
+		    if test -f Info.plist; then \
+			    ${MKDIR_P} $$versiondir/Resources && \
+			    ${INSTALL} -m 644 Info.plist \
+				$$versiondir/Resources/Info.plist && \
+			    ${LN_S} Versions/Current/Resources $@/Resources; \
+		    fi && \
+		    if test -f module.modulemap; then \
+			    ${MKDIR_P} $$versiondir/Modules && \
+			    ${INSTALL} -m 644 module.modulemap \
+				$$versiondir/Modules/module.modulemap && \
+			    ${LN_S} Versions/Current/Modules $@/Modules; \
+		    fi && \
+		    ${LD} -o $$versiondir/$${out%.framework} \
+			${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} \
+			${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LDFLAGS} \
+			${FRAMEWORK_LIBS} && \
+		    ${LN_S} Versions/Current/$${out%.framework} \
+			$@/$${out%.framework} && \
+		    ${CODESIGN} -fs ${CODESIGN_IDENTITY} $@; then \
+			${LINK_OK}; \
+		else \
+			rm -fr $$out; false; \
+			${LINK_FAILED}; \
+		fi; \
 	fi
 
 copy-headers-into-framework:
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		cd $$i || exit 1; \
-		${MAKE} -s copy-headers-into-framework || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ copy-headers-into-framework || \
+		    exit $$?; \
 		cd .. || exit 1; \
 	done
 
 	if test x"${includesubdir}" = x"${COPY_HEADERS_IF_SUBDIR}"; then \
 		for i in "" ${INCLUDES}; do \
 			test x"$$i" = x"" && continue; \
-			${MKDIR_P} $$(dirname ${COPY_HEADERS_DESTINATION}/$$i) || exit $$?; \
-			${INSTALL} -m 644 $$i ${COPY_HEADERS_DESTINATION}/$$i || exit $$?; \
+			${MKDIR_P} \
+			    $$(dirname ${COPY_HEADERS_DESTINATION}/$$i) || \
+			    exit $$?; \
+			${INSTALL} -m 644 $$i \
+			    ${COPY_HEADERS_DESTINATION}/$$i || exit $$?; \
 		done \
 	fi
 
-${AMIGA_LIB} ${AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}
+${AMIGA_LIB} ${AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS_START}	    \
+				  ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}
 	${LINK_STATUS}
-	if ${LD} -o $@ ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA} ${AMIGA_LIB_LDFLAGS} ${AMIGA_LIB_LIBS}; then \
+	if ${LD} -o $@ ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS} \
+	    ${AMIGA_LIB_OBJS_EXTRA} ${AMIGA_LIB_LDFLAGS} \
+	    ${AMIGA_LIB_LIBS}; then \
 		${LINK_OK}; \
 	else \
 		${LINK_FAILED}; \
@@ -291,11 +365,13 @@ ${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS} ${OBJS_EXTRA}
 		done; \
 	fi
 
-${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
+${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} \
+					    ${LIB_OBJS_EXTRA}
 	${LINK_STATUS}
 	rm -f $@
 	if test x"${BUILD_AND_HOST_ARE_DARWIN}" = x"yes"; then \
-		if /usr/bin/libtool -static -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA}; then \
+		if /usr/bin/libtool -static -o $@ ${LIB_OBJS} \
+		    ${LIB_OBJS_EXTRA}; then \
 			${LINK_OK}; \
 		else \
 			rm -f $@; false; \
@@ -338,7 +414,8 @@ ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_E
 		done; \
 	fi
 
-${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_EXTRA}
+${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST}: ${EXT_DEPS} ${AMIGA_LIB_OBJS} \
+						${AMIGA_LIB_OBJS_EXTRA}
 	${LINK_STATUS}
 	rm -f $@
 	out="$@"; \
@@ -382,7 +459,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
+	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} \
+	    -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -391,7 +469,8 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
+	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} \
+	    ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -400,7 +479,8 @@ locales: ${MO_FILES}
 	${COMPILE_AMIGA_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
+	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} \
+	    ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_AMIGA_LIB_OK}; \
 	else \
 		${COMPILE_AMIGA_LIB_FAILED}; \
@@ -409,7 +489,8 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
+	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} \
+	    ${CFLAGS_$@} ${DEP_CFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -419,7 +500,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CXX} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
+	if ${CXX} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} \
+	    ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -428,7 +510,8 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CXX} ${LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
+	if ${CXX} ${LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} \
+	    ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -437,7 +520,8 @@ locales: ${MO_FILES}
 	${COMPILE_AMIGA_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CXX} ${AMIGA_LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
+	if ${CXX} ${AMIGA_LIB_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} \
+	    ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_AMIGA_LIB_OK}; \
 	else \
 		${COMPILE_AMIGA_LIB_FAILED}; \
@@ -446,7 +530,8 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CXX} ${PLUGIN_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
+	if ${CXX} ${PLUGIN_CFLAGS} ${CXXFLAGS} ${CPPFLAGS} ${CXXFLAGS_$<} \
+	    ${CXXFLAGS_$@} ${DEP_CXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -494,7 +579,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJC} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
+	if ${OBJC} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} \
+	    ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -503,7 +589,8 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJC} ${LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
+	if ${OBJC} ${LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} \
+	    ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -512,7 +599,8 @@ locales: ${MO_FILES}
 	${COMPILE_AMIGA_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJC} ${AMIGA_LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
+	if ${OBJC} ${AMIGA_LIB_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} \
+	    ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_AMIGA_LIB_OK}; \
 	else \
 		${COMPILE_AMIGA_LIB_FAILED}; \
@@ -521,7 +609,8 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJC} ${PLUGIN_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
+	if ${OBJC} ${PLUGIN_CFLAGS} ${OBJCFLAGS} ${CPPFLAGS} ${OBJCFLAGS_$<} \
+	    ${OBJCFLAGS_$@} ${DEP_OBJCFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -531,7 +620,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJCXX} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
+	if ${OBJCXX} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} \
+	    ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -540,7 +630,9 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJCXX} ${LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
+	if ${OBJCXX} ${LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} \
+	    ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ \
+	    $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -549,7 +641,9 @@ locales: ${MO_FILES}
 	${COMPILE_AMIGA_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJCXX} ${AMIGA_LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
+	if ${OBJCXX} ${AMIGA_LIB_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} \
+	    ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ \
+	    $<; then \
 		${COMPILE_AMIGA_LIB_OK}; \
 	else \
 		${COMPILE_AMIGA_LIB_FAILED}; \
@@ -558,7 +652,9 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${OBJCXX} ${PLUGIN_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ $<; then \
+	if ${OBJCXX} ${PLUGIN_CFLAGS} ${OBJCXXFLAGS} ${CPPFLAGS} \
+	    ${OBJCXXFLAGS_$<} ${OBJCXXFLAGS_$@} ${DEP_OBJCXXFLAGS} -c -o $@ \
+	    $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -578,7 +674,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${PYTHON} ${PYTHON_FLAGS} -c "import py_compile; py_compile.compile('$<')"; then \
+	if ${PYTHON} ${PYTHON_FLAGS} -c \
+	    "import py_compile; py_compile.compile('$<')"; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -588,7 +685,7 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${WINDRES} ${CPPFLAGS} -J rc -O coff -o $@ $<; then \
+	if ${RC} ${RCFLAGS} ${CPPFLAGS} -J rc -O coff -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -598,7 +695,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${AS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
+	if ${AS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} \
+	    ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -607,7 +705,8 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${AS} ${LIB_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
+	if ${AS} ${LIB_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} \
+	    ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -616,7 +715,8 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${AS} ${PLUGIN_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
+	if ${AS} ${PLUGIN_CFLAGS} ${ASFLAGS} ${CPPFLAGS} ${ASFLAGS_$<} \
+	    ${ASFLAGS_$@} ${DEP_ASFLAGS} -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -626,7 +726,8 @@ locales: ${MO_FILES}
 	${COMPILE_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
+	if ${CC} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ \
+	    $<; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
@@ -635,7 +736,8 @@ locales: ${MO_FILES}
 	${COMPILE_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
+	if ${CC} ${LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} \
+	    -x c -c -o $@ $<; then \
 		${COMPILE_LIB_OK}; \
 	else \
 		${COMPILE_LIB_FAILED}; \
@@ -644,7 +746,8 @@ locales: ${MO_FILES}
 	${COMPILE_AMIGA_LIB_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
+	if ${CC} ${AMIGA_LIB_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} \
+	    ${CFLAGS_$@} -x c -c -o $@ $<; then \
 		${COMPILE_AMIGA_LIB_OK}; \
 	else \
 		${COMPILE_AMIGA_LIB_FAILED}; \
@@ -653,7 +756,8 @@ locales: ${MO_FILES}
 	${COMPILE_PLUGIN_STATUS}
 	in="$<"; \
 	out="$@"; \
-	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} ${CFLAGS_$@} -x c -c -o $@ $<; then \
+	if ${CC} ${PLUGIN_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${CFLAGS_$<} \
+	    ${CFLAGS_$@} -x c -c -o $@ $<; then \
 		${COMPILE_PLUGIN_OK}; \
 	else \
 		${COMPILE_PLUGIN_FAILED}; \
@@ -662,28 +766,28 @@ locales: ${MO_FILES}
 # Skip most installation steps when NOINSTALL or ENABLEWIN are set.
 install:
 	if test "x${NOINSTALL}" = xyes || test "x${ENABLEWIN}" = xyes ; then \
-		${MAKE} -s fake-install ; \
+		${MAKE} @MAKEFLAGS_SILENT@ fake-install ; \
 	else \
-		${MAKE} -s real-install ; \
+		${MAKE} @MAKEFLAGS_SILENT@ real-install ; \
 	fi
 
 fake-install: all install-extra
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s install || exit $$?; \
-		${MAKE} -s post-install || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ install || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ post-install || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
-	${MAKE} -s post-install
+	${MAKE} @MAKEFLAGS_SILENT@ post-install
 
 real-install: all install-extra
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s install || exit $$?; \
-		${MAKE} -s post-install || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ install || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ post-install || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
@@ -701,7 +805,8 @@ real-install: all install-extra
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		rm -fr ${DESTDIR}${prefix}/Library/Frameworks/$$i; \
-		if ${MKDIR_P} ${DESTDIR}${prefix}/Library/Frameworks && cp -R $$i ${DESTDIR}${prefix}/Library/Frameworks/; then \
+		if ${MKDIR_P} ${DESTDIR}${prefix}/Library/Frameworks && \
+		    cp -R $$i ${DESTDIR}${prefix}/Library/Frameworks/; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -711,7 +816,8 @@ real-install: all install-extra
 	for i in "" ${AMIGA_LIB}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${amigalibdir} && ${INSTALL} -m 755 $$i ${DESTDIR}${amigalibdir}/$$i; then \
+		if ${MKDIR_P} ${DESTDIR}${amigalibdir} && \
+		    ${INSTALL} -m 755 $$i ${DESTDIR}${amigalibdir}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -721,7 +827,8 @@ real-install: all install-extra
 	for i in "" ${STATIC_LIB} ${STATIC_PIC_LIB} ${STATIC_AMIGA_LIB}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${libdir} && ${INSTALL} -m 644 $$i ${DESTDIR}${libdir}/$$i; then \
+		if ${MKDIR_P} ${DESTDIR}${libdir} && \
+		    ${INSTALL} -m 644 $$i ${DESTDIR}${libdir}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -741,7 +848,10 @@ real-install: all install-extra
 	for i in "" ${DATA}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} $$(dirname ${DESTDIR}${libdatadir}/${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${libdatadir}/${PACKAGE}/$$i; then \
+		if ${MKDIR_P} $$(dirname \
+		    ${DESTDIR}${libdatadir}/${PACKAGE}/$$i) && \
+		    ${INSTALL} -m 644 $$i \
+		    ${DESTDIR}${libdatadir}/${PACKAGE}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -751,7 +861,10 @@ real-install: all install-extra
 	for i in "" ${CONFIG}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} $$(dirname ${DESTDIR}${configdir}/${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${configdir}/${PACKAGE}/$$i; then \
+		if ${MKDIR_P} $$(dirname \
+		    ${DESTDIR}${configdir}/${PACKAGE}/$$i) && \
+		    ${INSTALL} -m 644 $$i \
+		    ${DESTDIR}${configdir}/${PACKAGE}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -762,7 +875,10 @@ real-install: all install-extra
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
 		if [ -f $$i ]; then \
-			if ${MKDIR_P} $$(dirname ${DESTDIR}${docdatadir}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${docdatadir}/$$i; then \
+			if ${MKDIR_P} $$(dirname \
+			    ${DESTDIR}${docdatadir}/$$i) && \
+			    ${INSTALL} -m 644 $$i \
+			    ${DESTDIR}${docdatadir}/$$i; then \
 				${INSTALL_OK}; \
 			else \
 				${INSTALL_FAILED}; \
@@ -775,7 +891,8 @@ real-install: all install-extra
 	for i in "" ${PROG}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i; then \
+		if ${MKDIR_P} ${DESTDIR}${bindir} && \
+		    ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -786,7 +903,10 @@ real-install: all install-extra
 		for i in "" ${INCLUDES}; do \
 			test x"$$i" = x"" && continue; \
 			${INSTALL_STATUS}; \
-			if ${MKDIR_P} $$(dirname ${DESTDIR}${includedir}/${includesubdir}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
+			if ${MKDIR_P} $$(dirname \
+			    ${DESTDIR}${includedir}/${includesubdir}/$$i) && \
+			    ${INSTALL} -m 644 $$i \
+			    ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
 				${INSTALL_OK}; \
 			else \
 				${INSTALL_FAILED}; \
@@ -797,7 +917,10 @@ real-install: all install-extra
 	for i in "" ${MO_FILES}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES && ${INSTALL} -m 644 $$i ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
+		dest="${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo"; \
+		dest="${DESTDIR}$$dest"; \
+		if ${MKDIR_P} ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES && \
+		    ${INSTALL} -m 644 $$i $$dest; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -807,14 +930,16 @@ real-install: all install-extra
 	for i in "" ${MAN}; do \
 		test x"$$i" = x"" && continue; \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} ${DESTDIR}${mandir}/${mansubdir} && ${INSTALL} -m 644 $$i ${DESTDIR}${mandir}/${mansubdir}/$$i; then \
+		dest="${DESTDIR}${mandir}/${mansubdir}/$$i"; \
+		if ${MKDIR_P} ${DESTDIR}${mandir}/${mansubdir} && \
+		    ${INSTALL} -m 644 $$i $$dest; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
 		fi \
 	done
 
-	${MAKE} -s post-install
+	${MAKE} @MAKEFLAGS_SILENT@ post-install
 
 install-extra:
 
@@ -824,13 +949,14 @@ uninstall: uninstall-extra
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s uninstall || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ uninstall || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
 	for i in "" ${SHARED_LIB}; do \
 		test x"$$i" = x"" && continue; \
-		if test -f ${DESTDIR}${libdir}/$$i; then \
+		if test -f ${DESTDIR}${libdir}/$$i \
+		    -o -f ${DESTDIR}${bindir}/$$i; then \
 			if : @UNINSTALL_LIB@; then \
 				${DELETE_OK}; \
 			else \
@@ -842,7 +968,8 @@ uninstall: uninstall-extra
 	for i in "" ${FRAMEWORK}; do \
 		test x"$$i" = x"" && continue; \
 		if test -d ${DESTDIR}${prefix}/Library/Frameworks/$$i; then \
-			if rm -fr ${DESTDIR}${prefix}/Library/Frameworks/$$i; then \
+			if rm -fr ${DESTDIR}${prefix}/Library/Frameworks/$$i; \
+			then \
 				${DELETE_OK}; \
 			else \
 				${DELETE_FAILED}; \
@@ -884,7 +1011,8 @@ uninstall: uninstall-extra
 				${DELETE_FAILED}; \
 			fi \
 		fi; \
-		rmdir "$$(dirname ${DESTDIR}${datadir}/${PACKAGE}/$$i)" >/dev/null 2>&1 || true; \
+		rmdir "$$(dirname ${DESTDIR}${datadir}/${PACKAGE}/$$i)" \
+		    >/dev/null 2>&1 || true; \
 	done
 	rmdir ${DESTDIR}${datadir}/${PACKAGE} >/dev/null 2>&1 || true
 
@@ -902,7 +1030,8 @@ uninstall: uninstall-extra
 	for i in "" ${INCLUDES}; do \
 		test x"$$i" = x"" && continue; \
 		if test -f ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
-			if rm -f ${DESTDIR}${includedir}/${includesubdir}/$$i; then \
+			if rm -f ${DESTDIR}${includedir}/${includesubdir}/$$i; \
+			then \
 				${DELETE_OK}; \
 			else \
 				${DELETE_FAILED}; \
@@ -913,8 +1042,10 @@ uninstall: uninstall-extra
 
 	for i in "" ${MO_FILES}; do \
 		test x"$$i" = x"" && continue; \
-		if test -f ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
-			if rm -f ${DESTDIR}${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo; then \
+		mo="${localedir}/$${i%.mo}/LC_MESSAGES/${localename}.mo"; \
+		mo="${DESTDIR}$$mo"; \
+		if test -f $$mo; then \
+			if rm -f $$mo; then \
 				${DELETE_OK}; \
 			else \
 				${DELETE_FAILED}; \
@@ -939,13 +1070,20 @@ clean: pre-clean
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s clean || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ clean || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
 	: >.deps
 
-	for i in "" ${DEPS} ${OBJS} ${OBJS_EXTRA} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_START} ${AMIGA_LIB_OBJS_EXTRA} ${PLUGIN_OBJS} ${PROG} ${PROG_NOINST} ${SHARED_LIB} ${SHARED_LIB_NOINST} ${AMIGA_LIB} ${AMIGA_LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${STATIC_AMIGA_LIB} ${STATIC_AMIGA_LIB_NOINST} ${FRAMEWORK} ${PLUGIN} ${PLUGIN_NOINST} ${CLEAN_LIB} ${MO_FILES} ${CLEAN}; do \
+	for i in "" ${DEPS} ${OBJS} ${OBJS_EXTRA} ${LIB_OBJS} \
+	    ${LIB_OBJS_EXTRA} ${AMIGA_LIB_OBJS} ${AMIGA_LIB_OBJS_START} \
+	    ${AMIGA_LIB_OBJS_EXTRA} ${PLUGIN_OBJS} ${PROG} ${PROG_NOINST} \
+	    ${SHARED_LIB} ${SHARED_LIB_NOINST} ${AMIGA_LIB} \
+	    ${AMIGA_LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} \
+	    ${STATIC_PIC_LIB} ${STATIC_PIC_LIB_NOINST} ${STATIC_AMIGA_LIB} \
+	    ${STATIC_AMIGA_LIB_NOINST} ${FRAMEWORK} ${PLUGIN} ${PLUGIN_NOINST} \
+	    ${CLEAN_LIB} ${MO_FILES} ${CLEAN}; do \
 		test x"$$i" = x"" && continue; \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
@@ -962,7 +1100,7 @@ distclean: clean pre-distclean
 	for i in "" ${SUBDIRS} ${SUBDIRS_AFTER}; do \
 		test x"$$i" = x"" && continue; \
 		${DIR_ENTER}; \
-		${MAKE} -s distclean || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ distclean || exit $$?; \
 		${DIR_LEAVE}; \
 	done
 
@@ -984,7 +1122,8 @@ print-hierarchy:
 		test x"$$i" = x"" && continue; \
 		echo ${PRINT_HIERARCHY_PREFIX}$$i; \
 		cd $$i || exit $$?; \
-		${MAKE} -s PRINT_HIERARCHY_PREFIX=$$i/ print-hierarchy || exit $$?; \
+		${MAKE} @MAKEFLAGS_SILENT@ PRINT_HIERARCHY_PREFIX=$$i/ \
+		    print-hierarchy || exit $$?; \
 		cd .. || exit $$?; \
 	done
 

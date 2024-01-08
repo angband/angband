@@ -74,8 +74,8 @@ extern uint8_t armour_swap_resist_neth;
 extern uint8_t armour_swap_resist_fear;
 extern uint8_t armour_swap_hold_life;
 
-extern void    borg_notice_weapon_swap(void);
-extern void    borg_notice_armour_swap(void);
+extern void borg_notice_weapon_swap(void);
+extern void borg_notice_armour_swap(void);
 
 #endif
 #endif

@@ -32,12 +32,12 @@ extern int          borg_unique_depth;
 /*
  * Determine what level the borg is prepared to dive to.
  */
-extern const char* borg_prepared(int depth);
+extern const char *borg_prepared(int depth);
 
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern const char* borg_restock(int depth);
+extern const char *borg_restock(int depth);
 
 #endif
 #endif

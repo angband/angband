@@ -151,7 +151,7 @@ bool borg_can_dig(bool check_fail, uint8_t feat)
             || borg_equips_ring(sv_ring_digging))
             return true;
     } else {
-        if (borg_spell_okay(TURN_STONE_TO_MUD)
+        if (borg_spell_okay(TURN_STONE_TO_MUD) 
             || borg_spell_okay(SHATTER_STONE)
             || borg_equips_item(act_stone_to_mud, false)
             || borg_equips_ring(sv_ring_digging))
@@ -652,7 +652,8 @@ static bool borg_play_step(int y2, int x2)
         /* Is there a door to close? */
         if (door_found) {
             /* Get a direction, if possible */
-            dir = borg_goto_dir(borg.c.y, borg.c.x, borg.c.y + o_y, borg.c.x + o_x);
+            dir = borg_goto_dir(
+                borg.c.y, borg.c.x, borg.c.y + o_y, borg.c.x + o_x);
 
             /* Obtain the destination */
             x = borg.c.x + ddx[dir];
@@ -692,8 +693,8 @@ static bool borg_play_step(int y2, int x2)
         /* Define the grid we are looking at to be our own grid */
         ag = &borg_grids[borg.c.y][borg.c.x];
 
-        /* Up stairs. Cheat the game grid info in. (cave_feat[borg.c.y][borg.c.x] ==
-         * FEAT_LESS) */
+        /* Up stairs. Cheat the game grid info in.
+         * (cave_feat[borg.c.y][borg.c.x] == FEAT_LESS) */
         if (ag->feat == FEAT_LESS) {
             /* Stand on stairs */
             borg.on_dnstairs = true;

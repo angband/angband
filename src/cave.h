@@ -373,8 +373,10 @@ void square_excise_pile(struct chunk *c, struct loc grid);
 void square_excise_all_imagined(struct chunk *p_c, struct chunk *c,
 		struct loc grid);
 void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, bool do_note, bool do_light);
-void square_sense_pile(struct chunk *c, struct loc grid);
-void square_know_pile(struct chunk *c, struct loc grid);
+void square_sense_pile(struct chunk *c, struct loc grid,
+		bool (*pred)(const struct object*));
+void square_know_pile(struct chunk *c, struct loc grid,
+		bool (*pred)(const struct object*));
 int square_num_walls_adjacent(struct chunk *c, struct loc grid);
 int square_num_walls_diagonal(struct chunk *c, struct loc grid);
 

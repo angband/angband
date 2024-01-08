@@ -45,6 +45,8 @@ EFFECT(READ_MINDS,					false,	NULL,		0,		EFINFO_NONE,	"maps the area around rece
 EFFECT(DETECT_TRAPS,				false,	NULL,		0,		EFINFO_NONE,	"detects traps nearby",	"detect traps")
 EFFECT(DETECT_DOORS,				false,	NULL,		0,		EFINFO_NONE,	"detects doors nearby",	"detect doors")
 EFFECT(DETECT_STAIRS,				false,	NULL,		0,		EFINFO_NONE,	"detects stairs nearby",	"detect stairs")
+EFFECT(DETECT_ORE,					false,	NULL,		0,		EFINFO_NONE,	"detects veins nearby",	"detect veins")
+EFFECT(SENSE_GOLD,					false,	NULL,		0,		EFINFO_NONE,	"senses gold nearby",	"sense gold")
 EFFECT(DETECT_GOLD,					false,	NULL,		0,		EFINFO_NONE,	"detects gold nearby",	"detect gold")
 EFFECT(SENSE_OBJECTS,				false,	NULL,		0,		EFINFO_NONE,	"senses objects nearby",	"sense objects")
 EFFECT(DETECT_OBJECTS,				false,	NULL,		0,		EFINFO_NONE,	"detects objects nearby",	"detect objects")

@@ -23,8 +23,8 @@
 
 #include "../cmd-core.h"
 #include "../game-world.h"
-#include "../obj-init.h"
 #include "../obj-gear.h"
+#include "../obj-init.h"
 #include "../obj-knowledge.h"
 #include "../obj-make.h"
 #include "../obj-pile.h"
@@ -38,17 +38,17 @@
 #include "../store.h"
 #include "../ui-term.h"
 
-#include "borg.h"
-#include "borg-flow.h"
 #include "borg-flow-kill.h"
+#include "borg-flow.h"
 #include "borg-init.h"
 #include "borg-io.h"
 #include "borg-magic.h"
-#include "borg-messages.h"
 #include "borg-messages-react.h"
+#include "borg-messages.h"
 #include "borg-trait.h"
+#include "borg.h"
 
- /*
+/*
   * Name segments for random player names
   * Copied Cth by DvE
   * Copied from borgband by APW
