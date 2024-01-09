@@ -1282,28 +1282,21 @@ static void print_stats(int lvl)
  */
 static void mean_and_stdv(int array[TRIES_SIZE])
 {
-	int k, maxiter;
-	double tot = 0, mean, stdev, temp = 0;
+	int maxiter, iavg, ivar;
+	struct my_rational favg, fvar;
+	double avg, stdev;
 
 	/* Get the maximum iteration value */
 	maxiter = MIN(tries, TRIES_SIZE); 
 
-	/* Sum the array */
-	for (k = 0; k < maxiter; k++)
-		tot += array[k];
-
-	/* Compute the mean */
-	mean = tot / maxiter;
-
-	/* Sum up the squares */
-	for (k = 0; k < maxiter; k++) temp += (array[k] - mean) * (array[k] - mean);
-
-	/* Compute standard dev */
-	stdev = sqrt(temp / tries);
+	/* Get the statistics. */
+	iavg = mean(array, maxiter, &favg);
+	avg = (double)iavg + (double)favg.n / (double)favg.d;
+	ivar = variance(array, maxiter, false, false, &fvar);
+	stdev = sqrt((double)ivar + (double)fvar.n / (double)fvar.d);
 
 	/* Print to file */
-	file_putf(stats_log," mean: %f  std-dev: %f \n",mean,stdev);
-
+	file_putf(stats_log," mean: %f  std-dev: %f \n", avg, stdev);
 }
 
 /**
