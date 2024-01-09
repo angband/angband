@@ -3754,7 +3754,9 @@ int borg_calculate_attack_effectiveness(int attack_type)
             ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg.trait[BI_CLEVEL]));
 
     case BF_SPELL_ACID_SPRAY:
-        rad = 3; /* HACK just pretend it is wide. */
+//        rad = 3; /* HACK just pretend it is wide. */
+        rad = 1; /* can't pretend it is wide.  Doesn't work for corridor to room attacks  */
+        /* !FIX code for cones */
         dam = ((borg.trait[BI_CLEVEL] / 2) * (8 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
             ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10));
@@ -3802,7 +3804,8 @@ int borg_calculate_attack_effectiveness(int attack_type)
 
     /* Spell -- River of Lightning */
     case BF_SPELL_RIVER_OF_LIGHTNING:
-        rad = 2;
+//        rad = 2; !FIX !TODO !AJG need to code for ARC (cone) attacks
+        rad = 1;
         dam = (borg.trait[BI_CLEVEL] + 10) * (8 + 1) / 2;
         return (borg_attack_aux_spell_bolt(
             RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20));
