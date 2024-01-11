@@ -759,8 +759,7 @@ static void o_calculate_missile_crits(struct player_state *state,
 			if (chance_num < chance_den) {
 				/*
 				 * Critical only happens some of the time.
-				 * Scale by the chance and 100.  Round to the
-				 * nearest integer.
+				 * Scale by the chance and 100.
 				 */
 				struct my_rational t = my_rational_construct(
 					chance_num, chance_den);
@@ -770,10 +769,7 @@ static void o_calculate_missile_crits(struct player_state *state,
 				*dice = my_rational_to_uint(&t, 100, &tr);
 				*frac_dice = my_rational_construct(tr, t.d);
 			} else {
-				/*
-				 * Critical always happens.  Scale by 100
-				 * and round to the nearest integer.
-				 */
+				/* Critical always happens.  Scale by 100. */
 				*dice = my_rational_to_uint(
 					&z_info->o_r_max_added, 100,
 					&tr);
