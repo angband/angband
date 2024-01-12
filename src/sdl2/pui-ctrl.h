@@ -15,8 +15,11 @@ struct sdlpui_window;
 
 /*
  * Default width for empty space around labels, push buttons, and menu buttons
+ * Two is smallest useful value (one pixel to indicate focus; another to
+ * indicate arming).  Larger than that will leave some blank space between
+ * the caption for a control and what's drawn to indicate focus or arming.
  */
-#define SDLPUI_DEFAULT_CTRL_BORDER 8
+#define SDLPUI_DEFAULT_CTRL_BORDER 3
 
 /*
  * Set out predefined values for the type_code field of struct sdlpui_control.
