@@ -564,7 +564,7 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 	iavg = mean(work, NHITS, &favg);
 	ivar = variance(work, NHITS, true, true, &fvar);
 	*avg = (double)iavg + (double)favg.n / (double)favg.d;
-	*avg_var = (double)ivar + (double)favg.n / (double)favg.d;
+	*avg_var = (double)ivar + (double)fvar.n / (double)fvar.d;
 
 	/* Scale results to be per turn rather than per attack. */
 	if (launcher) {
