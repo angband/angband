@@ -309,7 +309,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 
 	/* Assume some "obvious" flags */
 	create_mon_flag_mask(mask, RFT_OBV, RFT_MAX);
-	mflag_union(lore->flags, mask);
+	rf_union(lore->flags, mask);
 
 	/* Blows */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
@@ -328,7 +328,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 		lore->armour_known = true;
 		lore->drop_known = true;
 		create_mon_flag_mask(mask, RFT_RACE_A, RFT_RACE_N, RFT_DROP, RFT_MAX);
-		mflag_union(lore->flags, mask);
+		rf_union(lore->flags, mask);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
 	}
 
