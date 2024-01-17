@@ -584,7 +584,7 @@ int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 			assert(p->csp > INT16_MIN);
 			p->csp -= 1;
 		} else {
-			p->chp_frac = 0;
+			p->csp_frac = 0;
 		}
 	} else {
 		p->csp = (int16_t)(new_32 >> 16);   /* div 65536 */
