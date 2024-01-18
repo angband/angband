@@ -1629,7 +1629,7 @@ static void calc_light(struct player *p, struct player_state *state,
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Adjustment to allow UNLIGHT players to use +1 LIGHT gear */
-		if ((obj->modifiers[OBJ_MOD_LIGHT] > 0) && player_has(p, PF_UNLIGHT)) {
+		if ((obj->modifiers[OBJ_MOD_LIGHT] > 0) && pf_has(state->pflags, PF_UNLIGHT)) {
 			amt--;
 		}
 
@@ -2015,12 +2015,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	calc_light(p, state, update);
 
 	/* Unlight - needs change if anything but resist is introduced for dark */
-	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
+	if (pf_has(state->pflags, PF_UNLIGHT) && character_dungeon) {
 		state->el_info[ELEM_DARK].res_level = 1;
 	}
 
 	/* Evil */
-	if (player_has(p, PF_EVIL) && character_dungeon) {
+	if (pf_has(state->pflags, PF_EVIL) && character_dungeon) {
 		state->el_info[ELEM_NETHER].res_level = 1;
 		state->el_info[ELEM_HOLY_ORB].res_level = -1;
 	}
@@ -2258,7 +2258,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (!state->heavy_shoot) {
 			state->num_shots += extra_shots;
 			state->ammo_mult += extra_might;
-			if (player_has(p, PF_FAST_SHOT)) {
+			if (pf_has(state->pflags, PF_FAST_SHOT)) {
 				state->num_shots += p->lev / 3;
 			}
 		}
@@ -2285,7 +2285,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		}
 
 		/* Divine weapon bonus for blessed weapons */
-		if (player_has(p, PF_BLESS_WEAPON)
+		if (pf_has(state->pflags, PF_BLESS_WEAPON)
 				&& (weapon->tval == TV_HAFTED
 				|| of_has(state->flags, OF_BLESSED))) {
 			state->to_h += 2;
