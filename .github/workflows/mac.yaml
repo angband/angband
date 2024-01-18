@@ -16,7 +16,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          env OPT="-DSKIP_ANGBAND_OLD_INT_TYPEDEFS -DUSE_FUNC_ATTR_FORMAT" make -f Makefile.osx
+          make -f Makefile.osx
 
   autoconf:
     runs-on: macos-latest
