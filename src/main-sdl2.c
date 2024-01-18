@@ -677,6 +677,16 @@ void sdlpui_dialog_yield_mouse_focus(struct sdlpui_window *w,
 	}
 }
 
+struct sdlpui_dialog *sdlpui_dialog_with_key_focus(struct sdlpui_window *w)
+{
+	return w->d_key;
+}
+
+struct sdlpui_dialog *sdlpui_dialog_with_mouse_focus(struct sdlpui_window *w)
+{
+	return w->d_mouse;
+}
+
 void sdlpui_force_quit(void)
 {
 	quit("sdlpui failure");
@@ -1540,11 +1550,11 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 		}
 		++i;
 	}
-	SDL_assert(new_c->ftb->gain_key);
 	if (d->c_key && d->c_key != new_c &&
 			d->c_key->ftb->lose_key) {
-		(*d->c_key->ftb->lose_key)(d->c_key, d, w, false);
+		(*d->c_key->ftb->lose_key)(d->c_key, d, w, new_c, d);
 	}
+	SDL_assert(new_c->ftb->gain_key);
 	(*new_c->ftb->gain_key)(new_c, d, w, 0);
 	d->c_key = new_c;
 }
@@ -3131,7 +3141,8 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 					&& a->w_mouse->d_mouse) {
 				if (a->w_mouse->d_mouse->ftb->handle_window_loses_mouse) {
 					(*a->w_mouse->d_mouse->ftb->handle_window_loses_mouse)(
-						a->w_mouse->d_mouse, a->w_mouse);
+						a->w_mouse->d_mouse,
+						a->w_mouse);
 				}
 				a->w_mouse->d_mouse = NULL;
 			}
@@ -3143,7 +3154,8 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			if (a->w_mouse && a->w_mouse->d_mouse) {
 				if (a->w_mouse->d_mouse->ftb->handle_window_loses_mouse) {
 					(*a->w_mouse->d_mouse->ftb->handle_window_loses_mouse)(
-						a->w_mouse->d_mouse, a->w_mouse);
+						a->w_mouse->d_mouse,
+						a->w_mouse);
 				}
 				a->w_mouse->d_mouse = NULL;
 			}
@@ -3391,13 +3403,21 @@ static bool handle_mousemotion(struct my_app *a,
 			break;
 		}
 		d = tgt->next;
-		if (sdlpui_is_in_dialog(tgt, mouse->x, mouse->y)) {
+		if (sdlpui_is_in_dialog(tgt, mouse->x, mouse->y)
+				&& tgt->ftb->find_control_containing) {
+			int comp_ind;
+			struct sdlpui_control *c =
+				(*tgt->ftb->find_control_containing)(
+				tgt, a->w_mouse, mouse->x, mouse->y,
+				&comp_ind);
+
 			if (a->w_mouse->d_mouse != tgt) {
-				if (a->w_mouse->d_mouse &&
-						a->w_mouse->d_mouse->ftb->handle_loses_mouse) {
-					(*a->w_mouse->d_mouse->ftb->handle_loses_mouse)(
-						a->w_mouse->d_mouse,
-						a->w_mouse, mouse);
+				struct sdlpui_dialog *old_d =
+					a->w_mouse->d_mouse;
+
+				if (old_d && old_d->ftb->handle_loses_mouse) {
+					(*old_d->ftb->handle_loses_mouse)(
+						old_d, a->w_mouse, c, tgt);
 				}
 				a->w_mouse->d_mouse = tgt;
 			}
@@ -3406,8 +3426,8 @@ static bool handle_mousemotion(struct my_app *a,
 				if (a->w_key && a->w_key->d_key
 						&& a->w_key->d_key->ftb->handle_loses_key) {
 					(*a->w_key->d_key->ftb->handle_loses_key)(
-						a->w_key->d_key, a->w_key,
-						mouse);
+						a->w_key->d_key, a->w_key, c,
+						tgt);
 				}
 				if (a->w_key) {
 					a->w_key->d_key = NULL;
@@ -3419,7 +3439,7 @@ static bool handle_mousemotion(struct my_app *a,
 				if (a->w_key->d_key->ftb->handle_loses_key) {
 					(*a->w_key->d_key->ftb->handle_loses_key)(
 						a->w_key->d_key, a->w_key,
-						mouse);
+						c, tgt);
 				}
 			}
 			a->w_mouse->d_key = tgt;
@@ -3607,30 +3627,38 @@ static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 				&& a->menu_shortcuts[i].code == ch
 				&& a->menu_shortcuts[i].mods == mods) {
 			if (a->w_key != a->windows + i) {
-				if (a->w_key && a->w_key->d_key
-						&& a->w_key->d_key->ftb->handle_loses_key) {
-					(*a->w_key->d_key->ftb->handle_loses_key)(
-						a->w_key->d_key, a->w_key, NULL);
+				struct sdlpui_window *old_w = a->w_key;
+				struct sdlpui_dialog *old_d = a->w_key->d_key;
+
+				SDL_assert(!a->windows[i].d_key);
+				SDL_assert(a->windows[i].status_bar->ftb->goto_first_control);
+				(a->windows[i].status_bar->ftb->goto_first_control)(
+					a->windows[i].status_bar, a->windows + i
+				);
+				if (old_w && old_d
+						&& old_d->ftb->handle_loses_key) {
+					(*old_d->ftb->handle_loses_key)(
+						old_d, old_w,
+						a->windows[i].status_bar->c_key,
+						a->windows[i].status_bar);
 				}
-				if (a->w_key) {
-					a->w_key->d_key = NULL;
+				if (old_w) {
+					old_w->d_key = NULL;
 				}
-				a->w_key = a->windows + i;
-				a->w_key->d_key = a->windows[i].status_bar;
-				assert(a->w_key->d_key->ftb->goto_first_control);
-				(*a->w_key->d_key->ftb->goto_first_control)(
-					a->w_key->d_key, a->w_key);
 			} else if (a->w_key->d_key
 					!= a->windows[i].status_bar) {
-				if (a->w_key->d_key
-						&& a->w_key->d_key->ftb->handle_loses_key) {
-					(*a->w_key->d_key->ftb->handle_loses_key)(
-						a->w_key->d_key, a->w_key,
-						NULL);
+				struct sdlpui_dialog *old_d = a->w_key->d_key;
+
+				SDL_assert(a->windows[i].status_bar->ftb->goto_first_control);
+				(a->windows[i].status_bar->ftb->goto_first_control)(
+					a->windows[i].status_bar, a->windows + i
+				);
+				if (old_d && old_d->ftb->handle_loses_key) {
+					(*old_d->ftb->handle_loses_key)(
+						old_d, a->windows + i,
+						a->windows[i].status_bar->c_key,
+						a->windows[i].status_bar);
 				}
-				a->w_key->d_key = a->windows[i].status_bar;
-				(*a->w_key->d_key->ftb->goto_first_control)(
-					a->w_key->d_key, a->w_key);
 			}
 			return true;
 		}

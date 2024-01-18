@@ -54,11 +54,13 @@ static void respond_default_pb(struct sdlpui_control *c,
 static void gain_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int comp_ind);
 static void lose_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool following_mouse);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 static void gain_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int comp_ind);
 static void lose_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 static void arm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, enum sdlpui_action_hint hint);
 static void disarm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
@@ -94,11 +96,13 @@ static void respond_default_mb(struct sdlpui_control *c,
 static void gain_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int comp_ind);
 static void lose_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool following_mouse);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 static void gain_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int comp_ind);
 static void lose_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 static void lose_child_mb(struct sdlpui_control *c,
 		struct sdlpui_dialog *child);
 static void arm_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
@@ -671,7 +675,8 @@ static void gain_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 
 
 static void lose_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool following_mouse)
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d)
 {
 	struct sdlpui_push_button *pbp;
 
@@ -706,7 +711,8 @@ static void gain_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 
 
 static void lose_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e)
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d)
 {
 	struct sdlpui_push_button *pbp;
 
@@ -1054,16 +1060,9 @@ static bool handle_mb_mousemove(struct sdlpui_control *c,
 		return true;
 	}
 	/*
-	 * Otherwise, visually indicate that the mouse has left the control
-	 * and let the dialog handle the motion to see if it enters another
-	 * control.
+	 * Otherwise, let the dialog handle the motion to see if it enters
+	 * another control.
 	 */
-	if (c->ftb->lose_mouse) {
-		(*c->ftb->lose_mouse)(c, d, w, e);
-		if (d->c_mouse == c) {
-			d->c_mouse = NULL;
-		}
-	}
 	return false;
 }
 
@@ -1482,7 +1481,8 @@ static void gain_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 
 
 static void lose_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool following_mouse)
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d)
 {
 	struct sdlpui_menu_button *mbp;
 
@@ -1497,12 +1497,11 @@ static void lose_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		sdlpui_signal_redraw(w);
 	}
 	/*
-	 * If losing key focus because losing mouse focus, the handling of
-	 * the child dialog is done while losing mouse focus and doesn't
-	 * have to be done here.
+	 * Pop down the child dialog if what is gaining focus is not a
+	 * descendant of it.
 	 */
-	if (!following_mouse && mbp->subtype_code == SDLPUI_MB_SUBMENU
-			&& mbp->v.submenu.child) {
+	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && mbp->v.submenu.child
+			&& (!new_d || !sdlpui_is_descendant_dialog(d, new_d))) {
 		SDLPUI_EVENT_TRACER("submenu entry", c, mbp->caption,
 			"popping down submenu");
 		sdlpui_popdown_dialog(mbp->v.submenu.child, w, false);
@@ -1546,7 +1545,8 @@ static void gain_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 
 
 static void lose_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e)
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d)
 
 {
 	struct sdlpui_menu_button *mbp;
@@ -1561,9 +1561,12 @@ static void lose_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		d->dirty = true;
 		sdlpui_signal_redraw(w);
 	}
+	/*
+	 * Pop down the child dialog if what is gaining focus is not a
+	 * descendant of it.
+	 */
 	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && mbp->v.submenu.child
-			&& (!e || !sdlpui_is_in_dialog(mbp->v.submenu.child,
-			e->x, e->y))) {
+			&& (!new_d || !sdlpui_is_descendant_dialog(d, new_d))) {
 		SDLPUI_EVENT_TRACER("submenu entry", c, mbp->caption,
 			"popping down submenu");
 		sdlpui_popdown_dialog(mbp->v.submenu.child, w, false);
@@ -2146,18 +2149,9 @@ bool sdlpui_control_handle_mousemove(struct sdlpui_control *c,
 		return true;
 	}
 	/*
-	 * Otherwise, visually indicate that the mouse has left the control
-	 * and let the dialog handle the motion to see if it enters another
-	 * control.
+	 * Otherwise, let the dialog handle the motion to see if it enters
+	 * another control.
 	 */
-	if (c->ftb->lose_mouse) {
-		SDLPUI_EVENT_TRACER("control", c, "(not extracted)",
-			"lost mouse focus");
-		(*c->ftb->lose_mouse)(c, d, w, e);
-		if (d->c_mouse == c) {
-			d->c_mouse = NULL;
-		}
-	}
 	return false;
 }
 
