@@ -17,3 +17,23 @@ jobs:
         run: |
           cd src
           env OPT="-DSKIP_ANGBAND_OLD_INT_TYPEDEFS -DUSE_FUNC_ATTR_FORMAT" make -f Makefile.osx
+
+  autoconf:
+    runs-on: macos-latest
+    steps:
+      # Requires autoconf and automake; install those via homebrew (available
+      # by default).
+      - name: Install Build Dependencies
+        run: |
+          brew install m4
+          brew install autoconf
+          brew install automake
+
+      - name: Clone Project
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --with-no-install NCURSES_CONFIG=`which ncurses5.4-config`
+          make
