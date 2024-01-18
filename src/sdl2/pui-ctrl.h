@@ -128,11 +128,15 @@ struct sdlpui_control_funcs {
 		struct sdlpui_window *w, int comp_ind);
 	/*
 	 * Signal that the given control has lost keyboard focus.  Can be NULL.
-	 * following_mouse is true if the control is losing key focus because
-	 * it is losing mouse focus at the same time.
+	 * new_c is the control gaining key focus; it will be NULL if no
+	 * control is taking focus or new_d is NULL.
+	 * new_d is the dialog gaining key focus; it will be NULL if no
+	 * dialog is taking focus or the dialog is unknown (in another
+	 * window).
 	 */
 	void (*lose_key)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool following_mouse);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 	/*
 	 * Signal that the given control has gained mouse focus and
 	 * perhaps should change its appearance when rendered.  comp_ind
@@ -142,11 +146,15 @@ struct sdlpui_control_funcs {
 		struct sdlpui_window *w, int comp_ind);
 	/*
 	 * Signal that the given control has lost mouse focus.  Can be NULL.
-	 * e is the motion event causing the loss of focus or NULL if focus
-	 * is lost for another reason.
+	 * new_c is the control gaining mouse focus; it will be NULL if no
+	 * control is taking focus or new_d is NULL.
+	 * new_d is the dialog gaining mouse focus; it will be NULL if no
+	 * dialog is taking focus or the dialog is unknown (in another
+	 * window).
 	 */
 	void (*lose_mouse)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 	/*
 	 * Signal that the child dialog for a control has been removed.  Can
 	 * be NULL if the control doesn't create a dialog, set the created

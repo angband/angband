@@ -164,6 +164,16 @@ void sdlpui_dialog_yield_mouse_focus(struct sdlpui_window *w,
 		struct sdlpui_dialog *d);
 
 /**
+ * Get the dialog with key focus, if any.
+ */
+struct sdlpui_dialog *sdlpui_dialog_with_key_focus(struct sdlpui_window *w);
+
+/**
+ * Get the dialog with mouse focus, if any.
+ */
+struct sdlpui_dialog *sdlpui_dialog_with_mouse_focus(struct sdlpui_window *w);
+
+/**
  * Quit the application.  Expected to not return.
  */
 void sdlpui_force_quit(void);

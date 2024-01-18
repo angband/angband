@@ -54,15 +54,20 @@ struct sdlpui_dialog_funcs {
 		struct sdlpui_window *w, const SDL_MouseWheelEvent *e);
 	/*
 	 * Respond to the mouse focus being taken by another dialog.  May be
-	 * NULL.
+	 * NULL.  new_c is the control taking focus, it may be NULL.  new_d
+	 * is the dialog taking focus, it may be NULL.
 	 */
 	void (*handle_loses_mouse)(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 	/*
 	 * Respond to the key focus being taken by another dialog.  May be NULL.
+	 * new_c is the control taking focus, it may be NULL.  new_d is the
+	 * dialog taking focus; it may be NULL.
 	 */
 	void (*handle_loses_key)(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 	/*
 	 * Respond to the mouse leaving the containing window if the dialog
 	 * had mouse focus when that happened.  May be NULL.
@@ -250,6 +255,8 @@ struct sdlpui_simple_info {
 
 
 bool sdlpui_is_in_dialog(const struct sdlpui_dialog *d, Sint32 x, Sint32 y);
+bool sdlpui_is_descendant_dialog(struct sdlpui_dialog *ancestor,
+		const struct sdlpui_dialog *other);
 void sdlpui_popup_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		bool give_key_focus);
 void sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
@@ -287,13 +294,17 @@ void sdlpui_dialog_handle_window_loses_key(struct sdlpui_dialog *d,
 void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
 void sdlpui_dialog_handle_loses_mouse(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 void sdlpui_dialog_handle_loses_key(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		struct sdlpui_dialog *new_d);
 
 /* Construct a simple menu */
 struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
