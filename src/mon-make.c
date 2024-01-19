@@ -751,9 +751,8 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 		uint8_t origin)
 {
 	const struct monster_drop *drop;
-	struct monster_lore *lore = get_lore(mon->race);
-	const struct monster_race *effective_race = (mon->original_race) ?
-		mon->original_race : mon->race;
+	struct monster_lore *lore;
+	const struct monster_race *effective_race;
 	bool great, good, gold_ok, item_ok;
 	bool extra_roll = false;
 	bool any = false;
@@ -763,6 +762,8 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	struct object *obj;
 
 	assert(mon);
+	lore = get_lore(mon->race);
+	effective_race = (mon->original_race) ? mon->original_race : mon->race;
 
 	great = (rf_has(effective_race->flags, RF_DROP_GREAT));
 	good = great || (rf_has(effective_race->flags, RF_DROP_GOOD));

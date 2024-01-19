@@ -175,7 +175,6 @@ bool square_remove_all_traps(struct chunk *c, struct loc grid)
 	struct trap *trap = square(c, grid)->trap;
 	bool were_there_traps = trap == NULL ? false : true;
 
-	assert(square_in_bounds(c, grid));
 	while (trap) {
 		struct trap *next_trap = trap->next;
 		mem_free(trap);
@@ -207,7 +206,6 @@ bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
 	struct trap *prev_trap = NULL;
 	struct trap *trap = square(c, grid)->trap;
 
-	assert(square_in_bounds(c, grid));
 	while (trap) {
 		struct trap *next_trap = trap->next;
 

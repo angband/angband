@@ -903,11 +903,12 @@ bool mon_pit_hook(struct monster_race *race)
 {
 	bool match_base = true;
 	bool match_color = true;
-	int innate_freq = dun->pit_type->freq_innate;
+	int innate_freq;
 
 	assert(race);
 	assert(dun->pit_type);
 
+	innate_freq = dun->pit_type->freq_innate;
 	if (rf_has(race->flags, RF_UNIQUE)) {
 		return false;
 	} else if (!rf_is_subset(race->flags, dun->pit_type->flags)) {
