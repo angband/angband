@@ -1089,7 +1089,7 @@ void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, 
 }
 
 /**
- * Helper for square_sense_pile() and square_sense_pile():  remove known
+ * Helper for square_sense_pile() and square_know_pile():  remove known
  * location for the requested items that are not on this grid.
  */
 static void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
