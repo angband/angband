@@ -554,7 +554,7 @@ void flags_init(bitflag *flags, const size_t size, ...)
 /**
  * Computes the intersection of a bitfield and multiple bitflags.
  *
- * The flags not specified in `...` are cleared in `flags`. The bitfeild size
+ * The flags not specified in `...` are cleared in `flags`. The bitfield size
  * is supplied in `size`. true is returned when changes were made, false
  * otherwise.
  *
