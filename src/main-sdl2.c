@@ -3533,10 +3533,28 @@ static bool handle_mousebutton(struct my_app *a,
 	}
 
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_mouse->d_mouse && a->w_mouse->d_mouse->ftb->handle_mouseclick
-			&& (*a->w_mouse->d_mouse->ftb->handle_mouseclick)(
+	if (a->w_mouse->d_mouse) {
+		/*
+		 * Press events outside of the dialog will act as if the dialog 
+		 * lost mouse focus to another unknown dialog.  Do not do the
+		 * same for release events in case the press happens in a
+		 * dialog, followed by mouse motion, and then the release
+		 * happens outside the dialog.
+		 */
+		if (mouse->state == SDL_PRESSED && !sdlpui_is_in_dialog(
+				a->w_mouse->d_mouse, mouse->x, mouse->y)) {
+			if (a->w_mouse->d_mouse->ftb->handle_loses_mouse) {
+				(*a->w_mouse->d_mouse->ftb->handle_loses_mouse)(
+					a->w_mouse->d_mouse, a->w_mouse,
+					NULL, NULL);
+			}
+			return true;
+		}
+		if (a->w_mouse->d_mouse->ftb->handle_mouseclick
+				&& (*a->w_mouse->d_mouse->ftb->handle_mouseclick)(
 				a->w_mouse->d_mouse, a->w_mouse, mouse)) {
-		return true;
+			return true;
+		}
 	}
 
 	/* Otherwise only react to the button press and not the release. */

@@ -70,7 +70,7 @@ static const struct sdlpui_dialog_funcs simple_menu_funcs = {
 	handle_simple_menu_key,
 	handle_simple_menu_textin,
 	sdlpui_dialog_handle_textedit,
-	sdlpui_menu_handle_mouseclick,
+	sdlpui_dialog_handle_mouseclick,
 	sdlpui_dialog_handle_mousemove,
 	sdlpui_dialog_handle_mousewheel,
 	sdlpui_menu_handle_loses_mouse,
@@ -1478,7 +1478,7 @@ bool sdlpui_dialog_handle_textedit(struct sdlpui_dialog *d,
 
 
 /**
- * Perform basic handling of a mouse button event for a dialog.
+ * Perform basic handling of a mouse button event for a dialog or menu.
  *
  * \param d is the dialog.
  * \param w is the window containing the dialog.
@@ -1501,40 +1501,7 @@ bool sdlpui_dialog_handle_mouseclick(struct sdlpui_dialog *d,
 }
 
 
-/**
- * Perform basic handling of a mouse button event for a menu.
- *
- * \param d is the menu.
- * \param w is the window containing the menu.
- * \param e is the event to handle.
- * \return true if the event is handled and doesn't need further processing by
- * the window; otherwise return false.
- */
-bool sdlpui_menu_handle_mouseclick(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseButtonEvent *e)
-{
-	/* Relay to the control with focus.  If it handles it, we are done. */
-	if (d->c_mouse && d->c_mouse->ftb->handle_mouseclick
-			&& (*d->c_mouse->ftb->handle_mouseclick)(
-				d->c_mouse, d, w, e)) {
-		return true;
-	}
-
-	/*
-	 * Button events while the mouse is outside the menu will act as if
-	 * the menu lost mouse focus to another unknown dialog.
-	 */
-	if (!sdlpui_is_in_dialog(d, e->x, e->y)) {
-		sdlpui_menu_handle_loses_mouse(d, w, NULL, NULL);
-		return true;
-	}
-
-	/* Do nothing and swallow the event. */
-	return true;
-}
-
-
-/**
+/*
  * Perform basic handling of a mouse motion event for a menu or dialog.
  *
  * \param d is the menu or dialog.
