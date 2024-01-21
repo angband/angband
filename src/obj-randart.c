@@ -1401,6 +1401,14 @@ static void artifact_prep(struct artifact *art, const struct object_kind *kind,
 	mem_free(art->brands);
 	art->brands = NULL;
 	copy_brands(&art->brands, kind->brands);
+	mem_free(art->curses);
+	art->curses = NULL;
+	if (kind->curses) {
+		art->curses = mem_alloc(z_info->curse_max
+			* sizeof(*art->curses));
+		memcpy(art->curses, kind->curses, z_info->curse_max
+			* sizeof(*art->curses));
+	}
 	art->activation = NULL;
 	string_free(art->alt_msg);
 	art->alt_msg = NULL;
