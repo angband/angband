@@ -276,11 +276,7 @@ bool sdlpui_dialog_handle_textedit(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_TextEditingEvent *e);
 bool sdlpui_dialog_handle_mouseclick(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseButtonEvent *e);
-bool sdlpui_menu_handle_mouseclick(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseButtonEvent *e);
 bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
-bool sdlpui_menu_handle_mousemove(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e);
 bool sdlpui_dialog_handle_mousewheel(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseWheelEvent *e);
