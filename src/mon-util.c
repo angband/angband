@@ -1460,7 +1460,7 @@ void steal_monster_item(struct monster *mon, int midx)
 
 		/* Monster base reaction, plus allowance for item weight */
 		monster_reaction = guard / 2 + randint1(MAX(guard, 1));
-		monster_reaction += obj->weight / 20;
+		monster_reaction += (obj->number * obj->weight) / 20;
 
 		/* Try and steal */
 		if (monster_reaction < steal_skill) {
