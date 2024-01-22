@@ -20,6 +20,7 @@
 #include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -467,13 +468,15 @@ static int ac_power(const struct object *obj, int p)
 	int q = 0;
 
 	if (obj->ac) {
+		int16_t weight = object_weight_one(obj);
+
 		p += BASE_ARMOUR_POWER;
 		q += (obj->ac * BASE_AC_POWER / 2);
 		log_obj("Adding %d power for base AC value\n", q);
 
 		/* Add power for AC per unit weight */
-		if (obj->weight > 0) {
-			int i = 750 * (obj->ac + obj->to_a) / obj->weight;
+		if (weight > 0) {
+			int i = 750 * (obj->ac + obj->to_a) / weight;
 
 			/* Avoid overpricing Elven Cloaks */
 			if (i > 450) i = 450;
@@ -736,18 +739,142 @@ static int curse_power(const struct object *obj, int p, int verbose,
 	int i, q = 0;
 
 	if (obj->curses) {
-		/* Get the curse object power */
+		/*
+		 * Treat weight-affecting curses differently since those may
+		 * not be modeled well with power(base object)
+		 * + power(curse 1) + ....  Could treat all curses the way
+		 * weight-affecting curses are, but separating them out keeps
+		 * the results the same as the 4.2.5 calculations when the
+		 * object does not have weight-affecting curses.
+		 */
+		bool weight_affecting = false;
+
+		/* Get the curse object power unless it affects the weight. */
 		for (i = 1; i < z_info->curse_max; i++) {
-			if (obj->curses[i].power) {
-				int curse_power;
-				log_obj("Calculating %s curse power...\n",
+			int curse_power;
+
+			if (!obj->curses[i].power) {
+				continue;
+			}
+			if (of_has(curses[i].obj->flags, OF_MULTIPLY_WEIGHT)) {
+				if (curses[i].obj->weight != 100) {
+					weight_affecting = true;
+					continue;
+				}
+			} else {
+				if (curses[i].obj->weight != 0) {
+					weight_affecting = true;
+					continue;
+				}
+			}
+
+			log_obj("Calculating %s curse power...\n",
+				curses[i].name);
+			curse_power =
+				object_power(curses[i].obj, verbose, log_file);
+			curse_power -= obj->curses[i].power / 10;
+			log_obj("Adjust for strength of curse, %d for"
+				" %s curse power\n", curse_power,
 					curses[i].name);
-				curse_power = object_power(curses[i].obj, verbose, log_file);
-				curse_power -= obj->curses[i].power / 10;
-				log_obj("Adjust for strength of curse, %d for"
-					" %s curse power\n", curse_power,
+			q += curse_power;
+		}
+
+		if (weight_affecting) {
+			/*
+			 * Get the power for the object with all the curses'
+			 * attributes combined with those for the base object.
+			 */
+			struct object obj_local;
+			int p_all_curse;
+
+			memset(&obj_local, 0, sizeof(obj_local));
+			object_copy(&obj_local, obj);
+			apply_curse_attributes(-1, &obj_local);
+			/*
+			 * Clear curses since all included by
+			 * apply_curse_attributes().
+			 */
+			mem_free(obj_local.curses);
+			obj_local.curses = NULL;
+			p_all_curse = object_power(&obj_local, verbose,
+				log_file);
+			mem_free(obj_local.brands);
+			mem_free(obj_local.slays);
+			log_obj("Power is %d with all curses applied\n",
+				p_all_curse);
+
+			/*
+			 * Now get the power for the object which has one of
+			 * the active curses removed.  The difference between
+			 * that power and p_all_curse is the power of the
+			 * curse.  Skip the non-weight-affecting curses handled
+			 * in the first pass.
+			 */
+			for (i = 1; i < z_info->curse_max; ++i) {
+				int p_all_but_i, p_curse;
+
+				if (!obj->curses[i].power) {
+					continue;
+				}
+				if (of_has(curses[i].obj->flags,
+						OF_MULTIPLY_WEIGHT)) {
+					if (curses[i].obj->weight == 100) {
+						continue;
+					}
+				} else {
+					if (curses[i].obj->weight == 0) {
+						continue;
+					}
+				}
+
+				memset(&obj_local, 0, sizeof(obj_local));
+				object_copy(&obj_local, obj);
+				apply_curse_attributes(i, &obj_local);
+				/*
+				 * Clear curses since all of interest included
+				 * by apply_curse_attributes().
+				 */
+				mem_free(obj_local.curses);
+				obj_local.curses = NULL;
+				p_all_but_i = object_power(&obj_local, verbose,
+					log_file);
+				mem_free(obj_local.brands);
+				mem_free(obj_local.slays);
+				log_obj("Power is %d with all but %s curse"
+					" applied\n", p_all_but_i,
 					curses[i].name);
-				q += curse_power;
+
+				/*
+				 * The effect of this curse on the total power
+				 * is the difference between p_all_curse and
+				 * p_all_but_i.  If that difference is
+				 * is not negative, use it as is:  at least
+				 * according to the power calculation, it does
+				 * not make sense to remove that curse so the
+				 * curse's resistance to removal does not
+				 * matter.
+				 */
+				p_curse = sub_guardi(p_all_curse, p_all_but_i);
+				if (p_curse < 0) {
+					/*
+					 * The curse reduces the object's
+					 * power: scale the contribution to
+					 * power attributed to the curse by
+					 * a factor that increases with the
+					 * the curse's resistance to removal.
+					 */
+					int resistance = MAX(20, MIN(100,
+						obj->curses[i].power));
+
+					p_curse = (p_curse
+						>= INT_MIN / resistance) ?
+						p_curse * resistance : INT_MIN;
+					p_curse /= 100;
+				}
+				log_obj("Adjusted power is %d for %s curse\n",
+					p_curse, curses[i].name);
+
+				q = add_guardi(q, p_curse);
 			}
 		}
 	}
@@ -757,6 +884,117 @@ static int curse_power(const struct object *obj, int p, int verbose,
 		log_obj("Total of %d power added for curses, total is %d\n",
 			q, p);
 	}
+	return p;
+}
+
+
+/**
+ * Adjust power for a non-standard weight of the object.
+ *
+ * This currently only considers changes to the weight from curses.  It could
+ * instead use obj->kind->weight as the standard weight but that would:
+ *     1) Cause the be power to different than the 4.2.5 calculations when there
+ *        are no weight-affecting curses present but obj->weight differs from
+ *        obj->kind->weight.
+ *     2) In the presense of weight-affecting curses, one would have to guard
+ *        against performing these calculations on curse objects (i.e.
+ *        obj->kind->tval == curse_object_kind->tval
+ *        && obj->kind->sval == curse_object_kind->sval) since the weights
+ *        on those are adjustments to the base weight of the object the curse
+ *        affects and differ from obj->kind->weight.
+ */
+static int nonstandard_weight_power(const struct object *obj, int p)
+{
+	int16_t std_weight = MAX(obj->weight, 0);
+	int16_t nonstd_weight = object_weight_one(obj);
+	bitflag flags[OF_SIZE];
+	int adj;
+
+	assert(nonstd_weight >= 0);
+	if (std_weight == nonstd_weight) {
+		/* No change to the weight so no change to the power. */
+		return p;
+	}
+
+	/* Start with no adjustment. */
+	adj = 0;
+
+	/*
+	 * To handle THROWING below, Merge flags from the base object and any
+	 * curses.
+	 */
+	of_copy(flags, obj->flags);
+	if (obj->curses) {
+		int i;
+
+		for (i = 0; i < z_info->curse_max; ++i) {
+			if (obj->curses[i].power) {
+				of_union(flags, curses[i].obj->flags);
+			}
+		}
+	}
+
+	/*
+	 * ac_power() accounted for the weight when the object provides a base
+	 * amount of armor so do not adjust the power for those objects here.
+	 * For objects which do not provide a base amount of armor, adjust
+	 * the power under the assumption that lighter than normal is beneficial
+	 * (more room under the weight cap for other stuff) and heavier than
+	 * normal is harmful.
+	 */
+	if (!obj->ac) {
+		int adj_wc = (std_weight - nonstd_weight)
+			/ WGT_POWER_DEN_NOBASEAC;
+
+		if (adj_wc >= 0) {
+			adj_wc = (adj_wc < INT_MAX / WGT_POWER_NUM_NOBASEAC) ?
+				adj_wc * WGT_POWER_NUM_NOBASEAC : INT_MAX;
+		} else {
+			adj_wc = (adj_wc > INT_MIN / WGT_POWER_NUM_NOBASEAC) ?
+				adj_wc * WGT_POWER_NUM_NOBASEAC : INT_MIN;
+		}
+		log_obj("Add %d power for non-standard weight of object not"
+			" affecting base armor.\n", adj_wc);
+		adj = add_guardi(adj, adj_wc);
+	}
+
+	/*
+	 * Objects with the THROWING flag, either directly or via a curse, can
+	 * increase damage with increasing weight.  Adjust the power for that.
+	 */
+	if (of_has(flags, OF_THROWING)) {
+		int adj_th = nonstd_weight / WGT_POWER_DEN_THROW
+			- std_weight / WGT_POWER_DEN_THROW;
+
+		if (adj_th >= 0) {
+			adj_th = (adj_th < INT_MAX / WGT_POWER_NUM_THROW) ?
+				adj_th * WGT_POWER_NUM_THROW : INT_MAX;
+		} else {
+			adj_th = (adj_th > INT_MIN / WGT_POWER_NUM_THROW) ?
+				adj_th * WGT_POWER_NUM_THROW : INT_MIN;
+		}
+		log_obj("Add %d power for non-standard weight of object good"
+			" for throwing.\n", adj_th);
+		adj = add_guardi(adj, adj_th);
+	}
+
+	/*
+	 * Weight also affects number of blows (melee weapons only),
+	 * heavy wield status (melee weapon or launcher; strength-dependent
+	 * and normally only relevant for quite heavy objects), criticals
+	 * (for melee, launched missile, or thrown missile but only in non-O
+	 * combat calculations; increasing weight can increase the chance of
+	 * a critical and the amount of damage from the critical if it occurs),
+	 * and shield bashes (more weight is better; only relevant for some
+	 * classes).  None of those are accounted for here.
+	 */
+
+	if (adj) {
+		p = add_guardi(p, adj);
+		log_obj("Add %d power combined for non-standard weight; "
+			"total is %p\n", adj, p);
+	}
+
 	return p;
 }
 
@@ -803,6 +1041,7 @@ int32_t object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	p = element_power(obj, p);
 	p = effects_power(obj, p);
 	p = curse_power(obj, p, verbose, object_log);
+	p = nonstandard_weight_power(obj, p);
 
 	log_obj("FINAL POWER IS %d\n", p);
 

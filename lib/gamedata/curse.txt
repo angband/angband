@@ -2,6 +2,7 @@
 
 # name: effect name
 # type: valid object base
+# weight: adjustment amount or scale factor (implicitly divided by 100)
 # combat: to_hit : to_dam : to_ac
 # effect: random effect : ? parameter : ? parameter : ? parameter
 # dice:dice string
@@ -16,6 +17,28 @@
 
 # 'type' appends a kind of object (from object_base.txt) to the kinds which
 # can be afflicted with the curse.
+
+# 'weight' sets an adjustment to the weight of the object with the curse.  If
+# not supplied the adjustment is zero.  If the flags for the curse do not
+# include MULTIPLY_WEIGHT, the adjustment is additive in units of 1/10ths of a
+# pound.  Negative adjustments (as well as non-negative ones) are allowed in
+# that case.  If the flags for the curse do include MULTIPLY_WEIGHT, the
+# adjustment is a multiplicative factor, the given value divided by 100.  The
+# adjustment must be non-negative in that case.  With a multiplicative weight,
+# the incoming weight, w, is changed to be MAX(1, w) before applying the
+# muliplicative factor what that factor is greater than one (i.e. the value
+# given for the weight adjustment is greater than 100).  That is to allow the
+# multiplicative factors to be of some use with otherwise weightless items.
+# When applying a multiplicative factor, the result is rounded to the nearest
+# integer.  Curses will never reduce the weight to be less than zero or
+# greater than 32767.  The ordering of curses in this file sets the order in
+# which the order adjustments are applied.  If all the curses on an item use
+# additive weight adjustments, the order of the adjustments only matters if
+# the adjusted weight would fall outside the [0, 32767] range at some point.
+# For all multiplicative adjustments (because of the rounding) or a mix of
+# additive or multiplicative adjustments, the order will matter.  Setting up
+# additive and multiplicative curses to conflict with one another is a way to
+# reduce the dependence on the ordering of curses in this file.
 
 # 'combat' sets the adjustments to to-hit, to-damage, and AC for a cursed
 # object.  If not supplied, the adjustments are all zero.

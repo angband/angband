@@ -932,6 +932,52 @@ void quit(const char *str)
 }
 
 /**
+ * Return a + b coreced to be in [INT_MIN, INT_MAX] if it would overflow.
+ */
+int add_guardi(int a, int b)
+{
+	if (a < 0) {
+		return (b >= 0 || (b > INT_MIN && a >= INT_MIN - b)) ?
+			a + b : INT_MIN;
+	}
+	return (b <= 0 || a <= INT_MAX - b) ? a + b : INT_MAX;
+}
+
+/**
+ * Return a - b coerced to be in [INT_MIN, INT_MAX] if it would overflow.
+ */
+int sub_guardi(int a, int b)
+{
+	if (a < 0) {
+		return (b <= 0 || a >= INT_MIN + b) ? a - b : INT_MIN;
+	}
+	return (b >= 0 || a <= INT_MAX + b) ? a - b : INT_MAX;
+}
+
+/**
+ * Return a + b coreced to be in [-32768, 32767] if it would overflow.
+ */
+int add_guardi16(int16_t a, int16_t b)
+{
+	if (a < 0) {
+		return (b >= 0 || (b > -32768 && a >= -32768 - b)) ?
+			a + b : -32768;
+	}
+	return (b <= 0 || a <= 32767 - b) ? a + b : 32767;
+}
+
+/**
+ * Return a - b coerced to be in [-32768, 32767] if it would overflow.
+ */
+int sub_guardi16(int16_t a, int16_t b)
+{
+	if (a < 0) {
+		return (b <= 0 || a >= -32768 + b) ? a - b : -32768;
+	}
+	return (b >= 0 || a <= 32767 + b) ? a - b : 32767;
+}
+
+/**
  * Initialize a multiprecision integer from an unsigned int.
  *
  * \param r points to n uint16_t values to store the result.

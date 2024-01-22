@@ -29,6 +29,7 @@ struct player;
 
 void flavor_init(void);
 void flavor_set_all_aware(void);
+int16_t object_weight_one(const struct object *obj);
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE]);
 void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE]);
 bool object_test(item_tester tester, const struct object *o);

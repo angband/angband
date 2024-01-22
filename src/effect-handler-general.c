@@ -38,6 +38,7 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
@@ -178,6 +179,8 @@ static bool item_tester_uncursable(const struct object *obj)
 static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 {
 	int index = 0;
+	int old_weight = obj->number * object_weight_one(obj);
+	int new_weight = old_weight;
 
 	if (get_curse(&index, obj, dice_string)) {
 		struct curse_data curse = obj->curses[index];
@@ -190,6 +193,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			/* Successfully removed this curse */
 			remove_object_curse(obj->known, index, false);
 			remove_object_curse(obj, index, true);
+			new_weight = obj->number * object_weight_one(obj);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
 			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL,
@@ -222,6 +226,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 	} else {
 		return false;
 	}
+	player->upkeep->total_weight += new_weight - old_weight;
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
@@ -3085,6 +3090,8 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	} else {
 		int num = randint1(3);
 		int max_tries = 20;
+		int old_weight = obj->number * object_weight_one(obj);
+
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Take down bonus a wee bit */
@@ -3101,6 +3108,10 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 			append_object_curse(obj, pick, power);
 			num--;
 		}
+
+		/* Account for a weight change, if any */
+		player->upkeep->total_weight +=
+			(obj->number * object_weight_one(obj)) - old_weight;
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3143,6 +3154,8 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 	} else {
 		int num = randint1(3);
 		int max_tries = 20;
+		int old_weight = obj->number * object_weight_one(obj);
+
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Hurt it a bit */
@@ -3160,6 +3173,10 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 			append_object_curse(obj, pick, power);
 			num--;
 		}
+
+		/* Account for a weight change, if any */
+		player->upkeep->total_weight +=
+			(obj->number * object_weight_one(obj)) - old_weight;
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);

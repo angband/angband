@@ -233,7 +233,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 
 	/* Weight */
 	if (mode & OLIST_WEIGHT) {
-		int weight = obj->weight * obj->number;
+		int weight = obj->number * object_weight_one(obj);
 		strnfmt(buf, sizeof(buf), "%4d.%1d lb", weight / 10, weight % 10);
 		put_str(buf, row + obj_num, col + ex_offset_ctr);
 	}

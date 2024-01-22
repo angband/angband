@@ -401,7 +401,7 @@ void borg_item_analyze(
     item->tval    = real_item->tval;
     item->sval    = real_item->sval;
     item->iqty    = real_item->number;
-    item->weight  = real_item->weight;
+    item->weight  = object_weight_one(real_item);
     item->timeout = real_item->timeout;
     item->level   = real_item->kind->level;
     item->aware   = object_flavor_is_aware(real_item);
