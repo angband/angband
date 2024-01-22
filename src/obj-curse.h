@@ -32,5 +32,7 @@ void check_artifact_curses(struct artifact *art);
 bool artifact_curse_conflicts(struct artifact *art, int pick);
 bool append_artifact_curse(struct artifact *art, int pick, int power);
 bool do_curse_effect(int i, struct object *obj);
+int16_t modify_weight_for_curse(int i, int16_t weight);
+void apply_curse_attributes(int i, struct object *obj);
 
 #endif /* !INCLUDED_OBJ_CURSE_H */

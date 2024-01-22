@@ -368,3 +368,199 @@ bool do_curse_effect(int i, struct object *obj)
 	disturb(player);
 	return !was_aware && ident;
 }
+
+/**
+ * Modify the given weight for the ith curse.
+ *
+ * \param i is the index of the curse; it must be greater than or equal to zero
+ * and less than z_info->curse_max.
+ * \param weight is the weight, in 1/10ths of a pound, to modify.  It will be
+ * coerced to be non-negative.
+ * \return the modified weight in 1/10ths of a pound.
+ */
+int16_t modify_weight_for_curse(int i, int16_t weight)
+{
+	const struct object *curse_obj;
+	int16_t result;
+
+	assert(i >= 0 && i < z_info->curse_max);
+	curse_obj = curses[i].obj;
+
+	if (of_has(curse_obj->flags, OF_MULTIPLY_WEIGHT)) {
+		/*
+		 * Apply a multiplicative factor of curse_obj->weight over 100
+		 * and round to the nearest integer.  Coerce the incoming weight
+		 * to be at least one if the multiplicative factor is greater
+		 * than one.  That allows multiplicative factors to be of some
+		 * use with otherwise weightless items.
+		 */
+		int32_t scaled, q;
+
+		assert(curse_obj->weight >= 0);
+		if (curse_obj->weight > 100) {
+			scaled = MAX(weight, 1);
+		} else {
+			scaled = MAX(weight, 0);
+		}
+		scaled *= curse_obj->weight;
+		q = scaled / 100;
+		if (q < 32767) {
+			result = q;
+			if (scaled % 100 >= 50) {
+				++result;
+			}
+		} else {
+			result = 32767;
+		}
+	} else {
+		weight = MAX(0, weight);
+		if (curse_obj->weight < 0) {
+			result = weight + curse_obj->weight;
+			if (result < 0) {
+				result = 0;
+			}
+		} else {
+			result = (weight < 32767 - curse_obj->weight) ?
+				weight + curse_obj->weight : 32767;
+		}
+	}
+
+	return result;
+}
+
+/**
+ * Merge the attributes of active curses into the base attributes of an object.
+ *
+ * \param i will, if non-negative, cause the ith curse in the curses array
+ * (i >= 0 and i < z_info->curse_max) to be ignored when merging attributes
+ * \param obj is the object record to modify.
+ *
+ * The curses field of obj is left as is; the caller will likely want to clear
+ * it (memfree(obj->curses); obj->curses == NULL;) since the curse attributes
+ * are included directly in the other fields of obj.
+ * If there is a reference to a known object in obj, its attributes are not
+ * modified here.
+ * The brands and slays are not modified: the logic in
+ * improve_attack_modifier() does not look at curse objects for brands or
+ * slays and the data file for curses does not allow them to be specified.
+ * Object destruction code does not look at the element flags for curses so
+ * those are not merged into the base attributes.
+ */
+void apply_curse_attributes(int i, struct object *obj)
+{
+	int j;
+
+	if (!obj->curses) {
+		/* There are no curses so there is nothing to merge. */
+		return;
+	}
+
+	for (j = 0; j < z_info->curse_max; ++j) {
+		const struct object *curse_obj;
+		int k;
+
+		/* Ignore the requested curse and any that are not active. */
+		if (j == i || !obj->curses[j].power) {
+			continue;
+		}
+
+		curse_obj = curses[j].obj;
+
+		/* The curse may modify the object's weight. */
+		obj->weight = modify_weight_for_curse(j, obj->weight);
+
+		/*
+		 * The logic in player-calcs.c will add the base AC from a curse
+		 * to the total AC of the player so combine that base AC with
+		 * that of the object.  The data file for curses does not allow
+		 * specifying the base AC for a curse.
+		 */
+		obj->ac = add_guardi16(obj->ac, curse_obj->ac);
+
+		/* Curses can adjust the AC, hit and to-dam modifiers. */
+		obj->to_a = add_guardi16(obj->to_a, curse_obj->to_a);
+		obj->to_h = add_guardi16(obj->to_h, curse_obj->to_h);
+		obj->to_d = add_guardi16(obj->to_d, curse_obj->to_d);
+
+		/* The curse may extend the object's flags. */
+		of_union(obj->flags, curse_obj->flags);
+
+		/*
+		 * The curse's modifiers combine additively with those from
+		 * the object.
+		 */
+		for (k = 0; k < OBJ_MOD_MAX; ++k) {
+			obj->modifiers[k] = add_guardi16(obj->modifiers[k],
+				curse_obj->modifiers[k]);
+		}
+
+		/*
+		 * Resistances combine with the standard logic for combining
+		 * them.
+		 */
+		for (k = 0; k < ELEM_MAX; ++k) {
+			if (obj->el_info[k].res_level >= 3) {
+				/*
+				 * Already immune; the curse can not change
+				 * that.
+				 */
+				continue;
+			}
+			if (obj->el_info[k].res_level == 1) {
+				/*
+				 * Has resistance.  An immunity will override
+				 * that.  A resistance or no resistance on
+				 * the curse will do nothing.  A vulnerability
+				 * will convert the resistance to
+				 * vulnerability + resistance.
+				 */
+				if (curse_obj->el_info[k].res_level >= 3) {
+					obj->el_info[k].res_level = 3;
+				} else if (curse_obj->el_info[k].res_level < 0) {
+					obj->el_info[k].res_level = -32768;
+				}
+			} else if (obj->el_info[k].res_level == -32768) {
+				/*
+				 * Combined result so far is a vulnerability +
+				 * resistance.  That only changes if there is
+				 * an immunity.
+				 */
+				if (curse_obj->el_info[k].res_level >= 3) {
+					obj->el_info[k].res_level = 3;
+				}
+			} else if (obj->el_info[k].res_level < 0) {
+				/*
+				 * Has vulnerability.  An immunity will override
+				 * that.  A vulnerability or no resistance on
+				 * the curse will do nothing.  A resistance will
+				 * convert the vulnerability to vulnerability +
+				 * resistance.
+				 */
+				if (curse_obj->el_info[k].res_level >= 3) {
+					obj->el_info[k].res_level = 3;
+				} else if (curse_obj->el_info[k].res_level == 1) {
+					obj->el_info[k].res_level = -32768;
+				}
+			} else {
+				/*
+				 * With no resistance in the base attributes,
+				 * the merged result weill be the same as
+				 * whatever is in the curse.
+				 */
+				assert(obj->el_info[k].res_level == 0);
+				obj->el_info[k].res_level =
+					curse_obj->el_info[k].res_level;
+			}
+		}
+	}
+
+	/*
+	 * Fix up any resistances that ended up as vulnerability + resistance
+	 * so they look like no resistance to the caller.
+	 */
+	for (j = 0; j < ELEM_MAX; ++j) {
+		if (obj->el_info[j].res_level == -32768) {
+			obj->el_info[j].res_level = 0;
+		}
+	}
+}

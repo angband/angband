@@ -573,7 +573,7 @@ static int ranged_damage(struct player *p, const struct monster *mon,
 		/* Adjust damage for throwing weapons.
 		 * This is not the prettiest equation, but it does at least try to
 		 * keep throwing weapons competitive. */
-		dmg *= 2 + missile->weight / 12;
+		dmg *= 2 + object_weight_one(missile) / 12;
 	}
 	dmg *= mult;
 
@@ -639,7 +639,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 		/* Multiply the number of damage dice by the throwing weapon
 		 * multiplier.  This is not the prettiest equation,
 		 * but it does at least try to keep throwing weapons competitive. */
-		dice *= 2 + missile->weight / 12;
+		dice *= 2 + object_weight_one(missile) / 12;
 	}
 
 	/* Roll out the damage. */
@@ -777,7 +777,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 	if (obj) {
 		/* Handle normal weapon */
-		weight = obj->weight;
+		weight = object_weight_one(obj);
 		my_strcpy(verb, "hit", sizeof(verb));
 	} else {
 		weight = 0;
@@ -925,7 +925,7 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
 
 	/* Calculate attack quality, a mix of momentum and accuracy. */
 	bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] / 4 + p->wt / 8 +
-		p->upkeep->total_weight / 80 + shield->weight / 2;
+		p->upkeep->total_weight / 80 + object_weight_one(shield) / 2;
 
 	/* Calculate damage.  Big shields are deadly. */
 	bash_dam = damroll(shield->dd, shield->ds);
@@ -1245,8 +1245,8 @@ struct attack_result make_ranged_shot(struct player *p,
 
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
-		result.dmg = critical_shot(p, mon, ammo->weight, ammo->to_h,
-			result.dmg, true, &result.msg_type);
+		result.dmg = critical_shot(p, mon, object_weight_one(ammo),
+			ammo->to_h, result.dmg, true, &result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, ammo, bow, b, s, &result.msg_type);
 	}
@@ -1281,8 +1281,8 @@ struct attack_result make_ranged_throw(struct player *p,
 
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
-		result.dmg = critical_shot(p, mon, obj->weight, obj->to_h,
-			result.dmg, false, &result.msg_type);
+		result.dmg = critical_shot(p, mon, object_weight_one(obj),
+			obj->to_h, result.dmg, false, &result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, obj, NULL, b, s, &result.msg_type);
 	}
@@ -1394,7 +1394,7 @@ void do_cmd_throw(struct command *cmd) {
 		inven_takeoff(obj);
 	}
 
-	weight = MAX(obj->weight, 10);
+	weight = MAX(object_weight_one(obj), 10);
 	range = MIN(((str + 20) * 10) / weight, 10);
 
 	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,

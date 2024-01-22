@@ -89,6 +89,7 @@ enum object_flag_type {
 	OFT_BAD,		/* an undesirable flag */
 	OFT_DIG,		/* applicable only to diggers */
 	OFT_THROW,		/* applicable only to throwables */
+	OFT_CURSE_ONLY,		/* only relevant as part of a curse */
 
 	OFT_MAX
 };

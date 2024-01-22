@@ -743,6 +743,31 @@ id-type:on wield
 code:THROWING
 power:4
 
+# Only relevant as part of a curse so disable directly adding to an object.
+name:multiply weight
+type:flag
+subtype:curse-only
+id-type:on wield
+code:MULTIPLY_WEIGHT
+power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
 name:ignore acid
 type:ignore
 code:ACID

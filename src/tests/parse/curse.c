@@ -39,6 +39,8 @@ static int test_missing_record_header0(void *state) {
 	null(c);
 	r = parser_parse(p, "type:cloak");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "weight:19");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "combat:-5:-8:-15");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "effect:TELEPORT");
@@ -120,6 +122,28 @@ static int test_type_bad0(void *state) {
 	enum parser_error r = parser_parse(p, "type:xyzzy");
 
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
+	ok;
+}
+
+static int test_weight0(void *state) {
+	struct parser *p = (struct parser*)state;
+	enum parser_error r = parser_parse(p, "weight:-42");
+	struct curse *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = (struct curse*)parser_priv(p);
+	notnull(c);
+	eq(c->obj->weight, -42);
+	ok;
+}
+
+static int test_weight_bad0(void *state) {
+	struct parser *p = (struct parser*)state;
+	enum parser_error r = parser_parse(p, "weight:32769");
+
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	r = parser_parse(p, "weight:-32780");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
@@ -665,12 +689,12 @@ const char *suite_name = "parse/curse";
 /*
  * test_missing_record_header0() has to be before test_name0(),
  * test_combined0(), test_missing_effect0(), and test_missing_dice0().
- * test_type0(), test_type_bad0(), test_combat0(), test_effect0(),
- * test_effect_bad0(), test_effect_yx0(), test_dice0(), test_dice_bad0(),
- * test_expr0(), test_expr_bad0(), test_msg0(), test_time0(), test_flags0(),
- * test_flags_bad0(), test_values0(), test_values_bad0(), test_desc(),
- * test_conflict0(), test_conflict_flags0(), and test_conflict_flags_bad0()
- * have to be after test_name0().
+ * test_type0(), test_type_bad0(), test_weight0(), test_weight_bad0(),
+ * test_combat0(), test_effect0(), test_effect_bad0(), test_effect_yx0(),
+ * test_dice0(), test_dice_bad0(), test_expr0(), test_expr_bad0(), test_msg0(),
+ * test_time0(), test_flags0(), test_flags_bad0(), test_values0(),
+ * test_values_bad0(), test_desc(), test_conflict0(), test_conflict_flags0(),
+ * and test_conflict_flags_bad0() have to be after test_name0().
  */
 struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
@@ -678,6 +702,8 @@ struct test tests[] = {
 	{ "type0", test_type0 },
 	{ "type_bad0", test_type_bad0 },
 	{ "combat0", test_combat0 },
+	{ "weight0", test_weight0 },
+	{ "weight_bad0", test_weight_bad0 },
 	{ "effect0", test_effect0 },
 	{ "effect_bad0", test_effect_bad0 },
 	{ "effect_yx0", test_effect_yx0 },

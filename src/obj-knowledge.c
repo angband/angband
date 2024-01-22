@@ -84,6 +84,7 @@ static void init_rune(void)
 		if (prop->subtype == OFT_LIGHT) continue;
 		if (prop->subtype == OFT_DIG) continue;
 		if (prop->subtype == OFT_THROW) continue;
+		if (prop->subtype == OFT_CURSE_ONLY) continue;
 		count++;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
@@ -180,6 +181,7 @@ static void init_rune(void)
 		if (prop->subtype == OFT_LIGHT) continue;
 		if (prop->subtype == OFT_DIG) continue;
 		if (prop->subtype == OFT_THROW) continue;
+		if (prop->subtype == OFT_CURSE_ONLY) continue;
 
 		rune_list[count++] = (struct rune)
 			{ RUNE_VAR_FLAG, i, 0, prop->name };

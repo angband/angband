@@ -273,6 +273,7 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 	char o_name[80];
 	char out_val[160];
 	uint8_t colour;
+	int16_t obj_weight;
 
 	struct store_context *ctx = menu_priv(menu);
 	struct store *store = ctx->store;
@@ -294,8 +295,9 @@ static void store_display_entry(struct menu *menu, int oid, bool cursor, int row
 
 	/* Show weights */
 	colour = curs_attrs[CURS_KNOWN][(int)cursor];
-	strnfmt(out_val, sizeof out_val, "%3d.%d lb", obj->weight / 10,
-			obj->weight % 10);
+	obj_weight = object_weight_one(obj);
+	strnfmt(out_val, sizeof out_val, "%3d.%d lb", obj_weight / 10,
+			obj_weight % 10);
 	c_put_str(colour, out_val, row, ctx->scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */

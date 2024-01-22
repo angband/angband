@@ -1061,6 +1061,25 @@ static enum parser_error parse_curse_type(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_curse_weight(struct parser *p) {
+	struct curse *curse = parser_priv(p);
+	int adjustment = parser_getint(p, "adj");
+
+	if (!curse) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	/*
+	 * Reject if it will not fit in an int16_t.  Rejection of negative
+	 * values for the adjustment with MULTIPLY_WEIGHT in the flags happens
+	 * when finalizing the parsing.
+	 */
+	if (adjustment < -32768 || adjustment > 32767) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	curse->obj->weight = adjustment;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_curse_combat(struct parser *p) {
 	struct curse *curse = parser_priv(p);
 
@@ -1318,6 +1337,7 @@ static struct parser *init_parse_curse(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_curse_name);
 	parser_reg(p, "type sym tval", parse_curse_type);
+	parser_reg(p, "weight int adj", parse_curse_weight);
 	parser_reg(p, "combat int to-h int to-d int to-a", parse_curse_combat);
 	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other", parse_curse_effect);
 	parser_reg(p, "effect-yx int y int x", parse_curse_effect_yx);
@@ -1358,6 +1378,14 @@ static errr finish_parse_curse(struct parser *p) {
 	curses = mem_zalloc((z_info->curse_max + 1) * sizeof(*curse));
 	for (curse = parser_priv(p); curse; curse = next, count++) {
 		next = curse->next;
+		if (curse->obj->weight < 0 && of_has(curse->obj->flags,
+				OF_MULTIPLY_WEIGHT)) {
+			plog_fmt("Curse '%s' uses MULTIPLY_WEIGHT and has"
+				" a negative weight adjustment", curse->name);
+			if (result == PARSE_ERROR_NONE) {
+				result = PARSE_ERROR_INVALID_VALUE;
+			}
+		}
 		if (count <= z_info->curse_max) {
 			memcpy(&curses[count], curse, sizeof(*curse));
 			curses[count].next = NULL;
@@ -3201,6 +3229,8 @@ static enum parser_error parse_object_property_subtype(struct parser *p) {
 		prop->subtype = OFT_DIG;
 	} else if (streq(name, "throw")) {
 		prop->subtype = OFT_THROW;
+	} else if (streq(name, "curse-only")) {
+		prop->subtype = OFT_CURSE_ONLY;
 	} else {
 		return PARSE_ERROR_INVALID_SUBTYPE;
 	}

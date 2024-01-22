@@ -1071,7 +1071,7 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		xtra_precrit += obj->known->to_d * 10;
 		plus += obj->known->to_h;
 
-		calculate_melee_crits(&state, obj->weight, plus,
+		calculate_melee_crits(&state, object_weight_one(obj), plus,
 			&crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
@@ -1079,8 +1079,8 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 	} else if (ammo) {
 		plus += obj->known->to_h;
 
-		calculate_missile_crits(&player->state, obj->weight, plus,
-			true, &crit_mult, &crit_add, &crit_div,
+		calculate_missile_crits(&player->state, object_weight_one(obj),
+			plus, true, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		dam += (obj->known->to_d * 10);
@@ -1088,12 +1088,12 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 	} else {
 		plus += obj->known->to_h;
 
-		calculate_missile_crits(&player->state, obj->weight, plus,
-			false, &crit_mult, &crit_add, &crit_div,
+		calculate_missile_crits(&player->state, object_weight_one(obj),
+			plus, false, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		dam += (obj->known->to_d * 10);
-		dam *= 2 + obj->weight / 12;
+		dam *= 2 + object_weight_one(obj) / 12;
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
@@ -1317,7 +1317,7 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 			&added_dice, &frac_dice);
 		dice += added_dice;
 	} else {
-		unsigned int thrown_scl = 2 + obj->weight / 12;
+		unsigned int thrown_scl = 2 + object_weight_one(obj) / 12;
 
 		o_calculate_missile_crits(&player->state, obj, NULL,
 			&added_dice, &frac_dice);

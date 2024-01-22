@@ -33,6 +33,10 @@
  * (these four are all halved in the algorithm)
  * - assumed max blows
  * - inhibiting values for +blows/might/shots/immunities (max is one less)
+ * - power per 10th pound difference from standard weight (less than adds power;
+ *   more than subtracts) for something that does not provide base AC
+ * - power per 10th pound difference from standard weight (more than adds power;
+ *   less than subtracts) for something with the THROWING flag
  */
 #define NONWEAP_DAMAGE   		15 /* fudge to boost extra blows */
 #define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
@@ -43,6 +47,15 @@
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
 #define MAX_BLOWS                5
+#define WGT_POWER_NUM_NOBASEAC   1
+#define WGT_POWER_DEN_NOBASEAC   50 /* i.e. 5 pounds adds 1 point of power */
+#define WGT_POWER_NUM_THROW      15
+#define WGT_POWER_DEN_THROW      12 /* for non-O, throwing multiplier is 2
+					+ weight / 12; shooting power multiplier
+					for power calculations is 30; throwing
+					is typically useful than shooting so use
+					15 * (weight difference / 12) as the
+					power change */
 
 /**
  * Some constants used in randart generation and power calculation

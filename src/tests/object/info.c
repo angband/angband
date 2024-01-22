@@ -498,8 +498,8 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 		if (!old_launcher) {
 			++p->upkeep->equip_cnt;
 		}
-		p->upkeep->total_weight += launcher->weight
-			- ((old_launcher) ? old_launcher->weight : 0);
+		p->upkeep->total_weight += object_weight_one(launcher)
+			- ((old_launcher) ? object_weight_one(old_launcher) : 0);
 		p->upkeep->update |= (PU_BONUS);
 	} else if (!throw) {
 		weapon_slot = wield_slot(weapon);
@@ -512,8 +512,8 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			--p->upkeep->equip_cnt;
 		}
 		p->upkeep->total_weight +=
-			((weapon) ? weapon->weight : 0)
-			- ((old_weapon) ? old_weapon->weight : 0);
+			((weapon) ? object_weight_one(weapon) : 0)
+			- ((old_weapon) ? object_weight_one(old_weapon) : 0);
 		p->upkeep->update |= (PU_BONUS);
 	}
 	update_stuff(p);
@@ -588,8 +588,8 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			--p->upkeep->equip_cnt;
 		}
 		p->upkeep->total_weight +=
-			((old_launcher) ? old_launcher->weight : 0)
-			- launcher->weight;
+			((old_launcher) ? object_weight_one(old_launcher) : 0)
+			- object_weight_one(launcher);
 		p->upkeep->update |= (PU_BONUS);
 	}
 	if (weapon_slot != -1) {
@@ -602,8 +602,8 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			--p->upkeep->equip_cnt;
 		}
 		p->upkeep->total_weight +=
-			((old_weapon) ? old_weapon->weight : 0)
-			- ((weapon) ? weapon->weight : 0);
+			((old_weapon) ? object_weight_one(old_weapon) : 0)
+			- ((weapon) ? object_weight_one(weapon) : 0);
 		p->upkeep->update |= (PU_BONUS);
 	}
 	update_stuff(p);
@@ -665,8 +665,8 @@ static int test_melee_weapon_damage_info(void *state)
 	if (!old_gloves) {
 		++player->upkeep->equip_cnt;
 	}
-	player->upkeep->total_weight += gloves->weight
-		- ((old_gloves) ? old_gloves->weight : 0);
+	player->upkeep->total_weight += object_weight_one(gloves)
+		- ((old_gloves) ? object_weight_one(old_gloves) : 0);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -1351,7 +1351,8 @@ static int test_melee_weapon_damage_info(void *state)
 		--player->upkeep->equip_cnt;
 	}
 	player->upkeep->total_weight +=
-		((old_gloves) ? old_gloves->weight : 0) - gloves->weight;
+		((old_gloves) ? object_weight_one(old_gloves) : 0)
+		- object_weight_one(gloves);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -1409,8 +1410,8 @@ static int test_launched_weapon_damage_info(void *state)
 	if (!old_launcher) {
 		++player->upkeep->equip_cnt;
 	}
-	player->upkeep->total_weight += launcher->weight
-		- ((old_launcher) ? old_launcher->weight : 0);
+	player->upkeep->total_weight += object_weight_one(launcher)
+		- ((old_launcher) ? object_weight_one(old_launcher) : 0);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -1471,8 +1472,8 @@ static int test_launched_weapon_damage_info(void *state)
 	if (!old_gloves) {
 		++player->upkeep->equip_cnt;
 	}
-	player->upkeep->total_weight += gloves->weight
-		- ((old_gloves) ? old_gloves->weight : 0);
+	player->upkeep->total_weight += object_weight_one(gloves)
+		- ((old_gloves) ? object_weight_one(old_gloves) : 0);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -2461,7 +2462,8 @@ static int test_launched_weapon_damage_info(void *state)
 		--player->upkeep->equip_cnt;
 	}
 	player->upkeep->total_weight +=
-		((old_gloves) ? old_gloves->weight : 0) - gloves->weight;
+		((old_gloves) ? object_weight_one(old_gloves) : 0)
+		- object_weight_one(gloves);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -2472,7 +2474,8 @@ static int test_launched_weapon_damage_info(void *state)
 		--player->upkeep->equip_cnt;
 	}
 	player->upkeep->total_weight +=
-		((old_launcher) ? old_launcher->weight : 0) - launcher->weight;
+		((old_launcher) ? object_weight_one(old_launcher) : 0)
+		- object_weight_one(launcher);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -2540,8 +2543,8 @@ static int test_thrown_weapon_damage_info(void *state)
 	if (!old_gloves) {
 		++player->upkeep->equip_cnt;
 	}
-	player->upkeep->total_weight += gloves->weight
-		- ((old_gloves) ? old_gloves->weight : 0);
+	player->upkeep->total_weight += object_weight_one(gloves)
+		- ((old_gloves) ? object_weight_one(old_gloves) : 0);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 
@@ -3100,7 +3103,8 @@ static int test_thrown_weapon_damage_info(void *state)
 		--player->upkeep->equip_cnt;
 	}
 	player->upkeep->total_weight +=
-		((old_gloves) ? old_gloves->weight : 0) - gloves->weight;
+		((old_gloves) ? object_weight_one(old_gloves) : 0)
+		- object_weight_one(gloves);
 	player->upkeep->update |= (PU_BONUS);
 	update_stuff(player);
 

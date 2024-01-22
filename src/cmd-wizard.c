@@ -223,7 +223,7 @@ static void wiz_display_item(const struct object *obj, bool all,
 
 	prt(format("kind = %-5lu  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
 		(unsigned long)obj->kind->kidx, obj->tval, obj->sval,
-		obj->weight, obj->timeout), 5, j);
+		object_weight_one(obj), obj->timeout), 5, j);
 
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4ld  egoidx = %-4ld  cost = %ld",
 		obj->number, obj->pval,
@@ -557,12 +557,13 @@ void do_cmd_wiz_change_item_quantity(struct command *cmd)
 				 * objects.
 				 */
 				player->upkeep->total_weight -=
-					obj->number * obj->weight;
+					obj->number * object_weight_one(obj);
 
 				/*
 				 * Add the weight of the new number of objects.
 				 */
-				player->upkeep->total_weight += n * obj->weight;
+				player->upkeep->total_weight +=
+					n * object_weight_one(obj);
 			}
 			wiz_play_item_standard_upkeep(player, obj);
 		} else {
@@ -1717,26 +1718,26 @@ void do_cmd_wiz_play_item(struct command *cmd)
 				rejected = false;
 				if (object_changed) {
 					/* Mark for updates. */
-					if (object_is_carried(player, obj) &&
-							(obj->number !=
-							orig_obj->number ||
-							obj->weight !=
-							orig_obj->weight)) {
+					if (object_is_carried(player, obj)
+							&& (obj->number !=
+							orig_obj->number
+							|| object_weight_one(obj)
+							!= object_weight_one(orig_obj))) {
 						/*
 						 * Remove the weight of the old
 						 * version.
 						 */
 						player->upkeep->total_weight -=
-							orig_obj->number *
-							orig_obj->weight;
+							orig_obj->number
+							* object_weight_one(orig_obj);
 
 						/*
 						 * Add the weight of the new
 						 * version.
 						 */
 						player->upkeep->total_weight +=
-							obj->number *
-							obj->weight;
+							obj->number
+							* object_weight_one(obj);
 					}
 					wiz_play_item_standard_upkeep(player,
 						obj);
