@@ -37,12 +37,12 @@
 /**
  * Maximum size around the player to consider in the pathfinder
  */
-#define MAX_PF_RADIUS 100
+#define MAX_PF_RADIUS 500
 
 /**
  * Maximum distance to consider in the pathfinder
  */
-#define MAX_PF_LENGTH 500
+#define MAX_PF_LENGTH 1000
 
 /**
  * Bounds of the search rectangle
