@@ -31,8 +31,8 @@ combination and does not pass it on.
   u    Use a staff                     U    Use an item
   v    Throw an item                   V    Display version info
   w    Wear/wield equipment            W    Walk into a trap
-  x    -                               X    -
-  y    -                               Y    -
+  x    -                               X    Navigate to stairs down
+  y    Walk to unexplored location     Y    Navigate to stairs up
   z    Zap a rod                       Z    -
   !    -                               ^a   (special - debug command)
   @    -                               ^b   -

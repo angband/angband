@@ -111,8 +111,8 @@ Original Keyset Command Summary
 ``u``  Use a staff                   ``U``  Use an item
 ``v``  Throw an item                 ``V``  Display version info
 ``w``  Wear/wield equipment          ``W``  Walk into a trap
-``x``  (unused)                      ``X``  (unused)
-``y``  (unused)                      ``Y``  (unused)
+``x``  (unused)                      ``X``  Navigate to stairs down
+``y``  Walk to unexplored location   ``Y``  Navigate to stairs up
 ``z``  Zap a rod                     ``Z``  (unused)
 ``!``  (unused)                      ``^a`` (special - debug command)
 ``@``  (unused)                      ``^b`` (unused)
@@ -165,7 +165,7 @@ Roguelike Keyset Command Summary
  ``m``  Cast a spell                  ``M``  Display map of entire level
  ``n``  (walk - south east)           ``N``  (run - south east)
  ``o``  Open a door or chest          ``O``  Toggle ignore
- ``p``  (unused)                      ``P``  Browse a book
+ ``p``  Walk to unexplored location   ``P``  Browse a book
  ``q``  Quaff a potion                ``Q``  Kill character & quit
  ``r``  Read a scroll                 ``R``  Rest for a period
  ``s``  Steal (rogues only)           ``S``  See abilities
@@ -180,9 +180,9 @@ Roguelike Keyset Command Summary
  ``@``  Center map                    ``^b`` (alter - south west)
  ``#``  (unused)                      ``^c`` (special - break)
  ``$``  (unused)                      ``^d`` Ignore an item
- ``%``  (unused)                      ``^e`` Toggle inven/equip window
+ ``%``  Navigate to stairs up         ``^e`` Toggle inven/equip window
  ``^``  (special - control key)       ``^f`` Repeat level feeling
- ``&``  (unused)                      ``^g`` Do autopickup
+ ``&``  Navigate to stairs down       ``^g`` Do autopickup
  ``*``  Target monster or location    ``^h`` (alter - west)
  ``(``  (unused)                      ``^i`` (special - tab)
  ``)``  Dump screen to a file         ``^j`` (alter - south)

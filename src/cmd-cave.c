@@ -1338,15 +1338,17 @@ void do_cmd_run(struct command *cmd)
 	/* Start run */
 	run_step(dir);
 }
+
 /**
  * Automatically navigate to the nearest downstairs location.
  *
  * Note that navigating while confused is not allowed.
  */
-void do_cmd_navigate_down(struct command *cmd) {
+void do_cmd_navigate_down(struct command *cmd)
+{
 	struct loc target_grid;
 	int visible_monster_count = 0;
-	// cancel if confused
+	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
 	   	return;
@@ -1411,10 +1413,11 @@ void do_cmd_navigate_down(struct command *cmd) {
  *
  * Note that navigating while confused is not allowed.
  */
-void do_cmd_navigate_up(struct command *cmd) {
+void do_cmd_navigate_up(struct command *cmd)
+{
 	struct loc target_grid;
 	int visible_monster_count = 0;
-	// cancel if confused
+	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
 	   	return;
@@ -1482,8 +1485,8 @@ void do_cmd_navigate_up(struct command *cmd) {
 void do_cmd_explore(struct command *cmd)
 {
 	struct loc target_grid;
-	int visible_monster_count = 0;
-	// cancel if confused
+	bool visible_monster = false;
+	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
 	   	return;
@@ -1502,7 +1505,7 @@ void do_cmd_explore(struct command *cmd)
 
 	int min_dist = 9999;
 	/* Get location */
-	for (int y = 0; y < cave->height; y++) {
+	for (int y = 0; y < cave->height && !visible_monster; y++) {
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
 			
@@ -1512,8 +1515,8 @@ void do_cmd_explore(struct command *cmd)
 				int m_idx = square(cave, grid)->mon;
 				struct monster *mon = cave_monster(cave, m_idx);
 				if (monster_is_obvious(mon)) {
-					visible_monster_count++;
-					break;
+					visible_monster = true;
+					break; /* only breaks the inner loop */
 				}
 			}
 			if (square_isnotknown(cave, grid) && square_ispassable(cave, grid)) {
@@ -1526,7 +1529,7 @@ void do_cmd_explore(struct command *cmd)
 		}
 	}
 
-	if (visible_monster_count > 0) {
+	if (visible_monster) {
 		msg("Something is here.");
 		return;
 	}
@@ -1540,22 +1543,27 @@ void do_cmd_explore(struct command *cmd)
 		return;
 	}
 
+	/* 
+	 * No unexplored location found, walk to a door/rubble grid position,
+	 * that has an explored and unexplored side.
+	 */
 	min_dist = 9999;
 	for (int y = 0; y < cave->height; y++) {
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
-			if (!square_iscloseddoor(cave, grid) && !square_isrubble(cave, grid)) {
+
+			if (!square_iscloseddoor(cave, grid) && !square_isrubble(cave, grid))
 				continue;
-			}
+			
 			int exploredCount = 0;
 			int unexploredCount = 0;
 			struct loc explored_neighbor;
 			for (int d = 0; d < 4; d++) { // cardinal neighbors
 				struct loc neighbor = loc_sum(grid, ddgrid_ddd[d]);
+
 				if (!square_in_bounds(cave, neighbor) || !square_isfloor(cave, neighbor)) continue;
 				
 				if (square_isnotknown(cave, neighbor)) {
-					// unexplored
 					unexploredCount++;
 				} else {
 					exploredCount++;
@@ -1568,7 +1576,7 @@ void do_cmd_explore(struct command *cmd)
 			if (loc_eq(explored_neighbor, player->grid)) {
 				continue;
 			}
-			// found an interesting door
+			/* found an interesting door */
 			int d = distance(explored_neighbor, player->grid);
 			if (d < min_dist) {
 				target_grid = explored_neighbor;
@@ -1576,7 +1584,7 @@ void do_cmd_explore(struct command *cmd)
 			}
 		}
 	}
-	// try pathfinding there
+	/* try pathfinding there */
 	if (min_dist < 9999 && find_path(target_grid)) {
 		player->upkeep->running = 1000;
 		/* Calculate torch radius */
