@@ -1519,8 +1519,14 @@ void do_cmd_explore(struct command *cmd)
 					break; /* only breaks the inner loop */
 				}
 			}
-			if (square_isnotknown(cave, grid) && square_ispassable(cave, grid)) {
+			
+			/* only consider known locations which are passable and have unexplored neighbors */
+			if (square_isknown(cave, grid) &&
+				square_ispassable(cave, grid) &&
+				count_neighbors(NULL, cave, grid, square_isnotknown, false) > 0) {
+
 				int d = distance(grid, player->grid);
+
 				if (d < min_dist) {
 					target_grid = grid;
 					min_dist = d;
@@ -1552,31 +1558,29 @@ void do_cmd_explore(struct command *cmd)
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
 
-			if (!square_iscloseddoor(cave, grid) && !square_isrubble(cave, grid))
+			/* only check known locations, which are either rubble or a closed door */
+			if (square_isnotknown(cave, grid) ||
+			   (!square_iscloseddoor(cave, grid) && !square_isrubble(cave, grid))) {
 				continue;
+			}
 			
-			int exploredCount = 0;
-			int unexploredCount = 0;
-			struct loc explored_neighbor;
-			for (int d = 0; d < 4; d++) { // cardinal neighbors
-				struct loc neighbor = loc_sum(grid, ddgrid_ddd[d]);
-
-				if (!square_in_bounds(cave, neighbor) || !square_isfloor(cave, neighbor)) continue;
-				
-				if (square_isnotknown(cave, neighbor)) {
-					unexploredCount++;
-				} else {
-					exploredCount++;
-					explored_neighbor = neighbor;
-				}
-			}
-			if (exploredCount == 0 || unexploredCount == 0) {
+			/* if no unexplored neighbors -> reject */
+			if (count_neighbors(NULL, cave, grid, square_isnotknown, false) == 0) {
 				continue;
 			}
+
+			struct loc explored_neighbor;
+
+			/* if no passable known neighbors -> reject */
+			if (count_neighbors(&explored_neighbor, cave, grid, square_isknownpassable, false) == 0) {
+				continue;
+			}
+
 			if (loc_eq(explored_neighbor, player->grid)) {
 				continue;
 			}
-			/* found an interesting door */
+			
+			/* found an interesting door/rubble location */
 			int d = distance(explored_neighbor, player->grid);
 			if (d < min_dist) {
 				target_grid = explored_neighbor;

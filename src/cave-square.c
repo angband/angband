@@ -912,6 +912,18 @@ bool square_isbelievedwall(struct chunk *c, struct loc grid)
 	return !square_isprojectable(player->cave, grid);
 }
 
+
+/**
+ * Checks if a square is known by the player to be passable
+ */
+bool square_isknownpassable(struct chunk *c, struct loc grid)
+{
+	if (!square_isknown(c, grid))
+		return false;
+
+	return square_ispassable(c, grid);
+}
+
 /**
  * Checks if a square is in a cul-de-sac
  */
