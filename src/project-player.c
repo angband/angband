@@ -892,17 +892,33 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 							 res_level,
 							 true);
 	if (context.dam) {
+		int reduced;
+
 		/* Self-inflicted damage is scaled down */
 		if (self) {
 			context.dam /= 10;
 		}
-		take_hit(player, context.dam, killer);
+		/*
+		 * Account for the player's damage reduction.   That does not
+		 * affect the side effects (i.e. player_handler), so leave
+		 * context.dam unmodified.
+		 */
+		reduced = player_apply_damage_reduction(player, context.dam);
+		if (reduced > 0 && OPT(player, show_damage)) {
+			msg("You take %d damage.", reduced);
+		}
+		take_hit(player, reduced, killer);
 	}
 
 	/* Handle side effects, possibly including extra damage */
 	if (player_handler != NULL && player->is_dead == false) {
 		int xtra = player_handler(&context);
-		if (xtra) take_hit(player, xtra, killer);
+
+		xtra = player_apply_damage_reduction(player, xtra);
+		if (xtra > 0 && OPT(player, show_damage)) {
+			msg("You take an extra %d damage.", xtra);
+		}
+		take_hit(player, xtra, killer);
 	}
 
 	/* Disturb */

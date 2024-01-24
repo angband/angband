@@ -71,7 +71,7 @@ static blow_tag_t blow_tag_lookup(const char *tag)
  * We fill in the monster name and/or pronoun where necessary in
  * the message to replace instances of {name} or {pronoun}.
  */
-char *monster_blow_method_action(struct blow_method *method, int midx)
+char *monster_blow_method_action(const struct blow_method *method, int midx)
 {
 	const char punct[] = ".!?;:,'";
 	char buf[1024] = "\0";
@@ -83,7 +83,7 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 	struct monster *t_mon = NULL;
 
 	int choice = randint0(method->num_messages);
-	struct blow_message *msg = method->messages;
+	const struct blow_message *msg = method->messages;
 
 	/* Get the target monster, if any */
 	if (midx > 0) {
@@ -181,6 +181,61 @@ int blow_index(const char *name)
 			return i;
 	}
 	return 0;
+}
+
+/**
+ * Display the message for a blow against a player.
+ *
+ * \param method is the structure describing the type of blow.
+ * \param m_name is the formatted name for the attacking monster.
+ * \param p is the player being attacked.
+ * \param damage is the amount of damage from the blow.
+ */
+static void display_blow_message_vs_player(const struct blow_method *method,
+		const char *m_name, struct player *p, int damage)
+{
+	char *act = monster_blow_method_action(method, -1);
+
+	if (act) {
+		const char *fullstop = ".";
+
+		if (suffix(act, "'") || suffix(act, "!")) {
+			fullstop = "";
+		}
+		if (damage > 0 && OPT(p, show_damage)) {
+			msgt(method->msgt, "%s %s%s (%d)", m_name, act,
+				fullstop, damage);
+		} else {
+			msgt(method->msgt, "%s %s%s", m_name, act, fullstop);
+		}
+		string_free(act);
+	} else if (damage > 0 && OPT(p, show_damage)) {
+		msgt(method->msgt, "You take %d damage.", damage);
+	}
+}
+
+/**
+ * Display the message for a blow against another monster.
+ *
+ * \param method is the structure describing the type of blow.
+ * \param m_name is the formatted name for the attacking monster.
+ * \param t_idx is the index for the targeted monster (i.e. if mon is the
+ * structure representing the target, it is mon->midx).
+ */
+static void display_blow_message_vs_monster(const struct blow_method *method,
+		const char *m_name, int t_idx)
+{
+	char *act = monster_blow_method_action(method, t_idx);
+
+	if (act) {
+		const char *fullstop = ".";
+
+		if (suffix(act, "'") || suffix(act, "!")) {
+			fullstop = "";
+		}
+		msgt(method->msgt, "%s %s%s", m_name, act, fullstop);
+		string_free(act);
+	}
 }
 
 /**
@@ -323,12 +378,24 @@ static bool monster_damage_target(melee_effect_handler_context_t *context,
 {
 	/* Take damage */
 	if (context->p) {
-		take_hit(context->p, context->damage, context->ddesc);
+		/*
+		 * Player damage reduction does not affect the damage used for
+		 * side effect calculations so leave context->damage as is.
+		 */
+		int reduced = player_apply_damage_reduction(context->p,
+			context->damage);
+
+		display_blow_message_vs_player(context->method, context->m_name,
+			context->p, reduced);
+		take_hit(context->p, reduced, context->ddesc);
 		if (context->p->is_dead) return true;
 	} else {
-		bool dead = false;
+		bool dead;
+
+		display_blow_message_vs_monster(context->method,
+			context->m_name, context->t_mon->midx);
 		dead = mon_take_nonplayer_hit(context->damage, context->t_mon,
-									  MON_MSG_NONE,	MON_MSG_DIE);
+			MON_MSG_NONE, MON_MSG_DIE);
 		return (dead || no_further_monster_effect);
 	}
 	return false;
@@ -395,10 +462,22 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 		inven_damage(context->p, type, MIN(elemental_dam * 5, 300));
 	if (context->damage > 0) {
 		if (context->p) {
-			take_hit(context->p, context->damage, context->ddesc);
+			/*
+			 * Player damage reduction does not affect the damage]				 * used for side effect calculations so leave
+			 * context->damage as is.
+			 */
+			int reduced = player_apply_damage_reduction(context->p,
+				context->damage);
+
+			display_blow_message_vs_player(context->method,
+				context->m_name, context->p, reduced);
+			take_hit(context->p, reduced, context->ddesc);
 		} else {
-			(void) mon_take_nonplayer_hit(context->damage, context->t_mon,
-										  hurt_msg, die_msg);
+			assert(context->t_mon);
+			display_blow_message_vs_monster(context->method,
+				context->m_name, context->t_mon->midx);
+			(void) mon_take_nonplayer_hit(context->damage,
+				context->t_mon, hurt_msg, die_msg);
 		}
 	}
 
@@ -513,11 +592,23 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 {
 	/* Take damage */
 	if (context->p) {
-		take_hit(context->p, context->damage, context->ddesc);
+		/*
+		 * Player damage reduction does not affect the damage used for
+		 * side effect calculations so leave context->damage as is.
+		 */
+		int reduced = player_apply_damage_reduction(context->p,
+			context->damage);
+
+		display_blow_message_vs_player(context->method,
+			context->m_name, context->p, reduced);
+		take_hit(context->p, reduced, context->ddesc);
 		context->obvious = true;
 		update_smart_learn(context->mon, context->p, OF_HOLD_LIFE, 0, -1);
 		if (context->p->is_dead) return;
 	} else {
+		assert(context->t_mon);
+		display_blow_message_vs_monster(context->method,
+			context->m_name, context->t_mon->midx);
 		(void) mon_take_nonplayer_hit(context->damage, context->t_mon,
 									  MON_MSG_NONE, MON_MSG_DIE);
 		return;
@@ -547,6 +638,14 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
  */
 static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
 {
+	if (context->p) {
+		display_blow_message_vs_player(context->method,
+			context->m_name, context->p, 0);
+	} else {
+		assert(context->t_mon);
+		display_blow_message_vs_monster(context->method,
+			context->m_name, context->t_mon->midx);
+	}
 	context->obvious = true;
 	context->damage = 0;
 }
