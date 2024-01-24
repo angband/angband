@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build
         run: |
@@ -30,7 +30,7 @@ jobs:
           brew install automake
 
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build
         run: |

@@ -67,7 +67,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -134,7 +134,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -183,7 +183,7 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -201,14 +201,14 @@ jobs:
           echo archive_path= '${{ steps.create_source_archive.outputs.archive_file }}' > $SRC_ARTIFACT_PATH
 
       - name: Upload Artifact with Source Archive Path
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.SRC_ARTIFACT }}
           path: ${{ env.SRC_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Source Archive as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_source_archive.outputs.archive_file }}
@@ -220,7 +220,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -242,12 +242,12 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -276,14 +276,14 @@ jobs:
           echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN_ARTIFACT_PATH
 
       - name: Upload Artifact with Windows Archive Path
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.WIN_ARTIFACT }}
           path: ${{ env.WIN_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Windows Archive as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_windows_archive.outputs.archive_file }}
@@ -295,7 +295,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -312,12 +312,12 @@ jobs:
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -344,14 +344,14 @@ jobs:
           echo archive_path= '${{ steps.create_mac_archive.outputs.archive_file }}' > $MAC_ARTIFACT_PATH
 
       - name: Upload Artifact with Mac Archive Path
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.MAC_ARTIFACT }}
           path: ${{ env.MAC_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Mac Archive as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_mac_archive.outputs.archive_file }}
@@ -364,7 +364,7 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -379,12 +379,12 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -457,14 +457,14 @@ jobs:
           echo archive_path= '${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}' > $NIN_3DS_ARTIFACT_PATH
 
       - name: Upload Artifact with Nintendo 3DS Archive Path
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NIN_3DS_ARTIFACT }}
           path: ${{ env.NIN_3DS_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Nintendo 3DS Archive as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_nintendo_3ds_archive.outputs.archive_file }}
@@ -477,7 +477,7 @@ jobs:
     container: devkitpro/devkitarm
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -492,12 +492,12 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Clone Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -526,14 +526,14 @@ jobs:
           echo archive_path= '${{ steps.create_nintendo_ds_archive.outputs.archive_file }}' > $NIN_DS_ARTIFACT_PATH
 
       - name: Upload Artifact with Nintendo DS Archive Path
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NIN_DS_ARTIFACT }}
           path: ${{ env.NIN_DS_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Nintendo DS Archive as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_nintendo_ds_archive.outputs.archive_file }}
@@ -545,7 +545,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -560,7 +560,7 @@ jobs:
           echo "draft=$draft" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Source Archive Path
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.SRC_ARTIFACT }}
 
@@ -571,12 +571,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Source Archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Windows Archive Path
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.WIN_ARTIFACT }}
 
@@ -587,12 +587,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Windows Archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Mac Archive Path
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.MAC_ARTIFACT }}
 
@@ -603,12 +603,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Mac Archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Nintendo 3DS Archive Path
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.NIN_3DS_ARTIFACT }}
 
@@ -619,12 +619,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Nintendo 3DS Archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Nintendo DS Archive Path
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.NIN_DS_ARTIFACT }}
 
@@ -635,7 +635,7 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Nintendo DS Archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
 
