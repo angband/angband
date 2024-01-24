@@ -58,10 +58,13 @@ typedef struct melee_effect_handler_context_s {
 	const int rlev;
 	const struct blow_method *method;
 	const int ac;
-	const char *ddesc;
+	const char *ddesc;		/* short monster name for death
+						messages; unused if target is
+						not the player */
 	bool obvious;
 	bool blinked;
 	int damage;
+	const char *m_name;		/* monster name for messaging */
 } melee_effect_handler_context_t;
 
 /**
@@ -87,7 +90,7 @@ extern struct blow_effect *blow_effects;
 
 /* Functions */
 int blow_index(const char *name);
-char *monster_blow_method_action(struct blow_method *method, int midx);
+char *monster_blow_method_action(const struct blow_method *method, int midx);
 extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 
 #endif /* MON_BLOWS_H */

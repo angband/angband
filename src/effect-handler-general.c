@@ -205,7 +205,15 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			/* Failure - unlucky fragile object is destroyed */
 			struct object *destroyed;
 			bool none_left = false;
-			msg("There is a bang and a flash!");
+			int dam = damroll(5, 5);
+			char dam_text[16] = "";
+
+			dam = player_apply_damage_reduction(player, dam);
+			if (dam > 0 && OPT(player, show_damage)) {
+				strnfmt(dam_text, sizeof(dam_text), " (%d)",
+					dam);
+			}
+			msg("%s%s", "There is a bang and a flash!", dam_text);
 			if (object_is_carried(player, obj)) {
 				destroyed = gear_object_for_use(player, obj,
 					1, false, &none_left);
@@ -218,7 +226,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 			} else {
 				square_delete_object(cave, obj->grid, obj, true, true);
 			}
-			take_hit(player, damroll(5, 5), "Failed uncursing");
+			take_hit(player, dam, "Failed uncursing");
 		} else {
 			/* Non-destructive failure */
 			msg("The removal fails.");
@@ -817,14 +825,20 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(player, stat, false)){
 		int dam = effect_calculate_value(context, false);
+		char dam_text[32] = "";
+
+		dam = player_apply_damage_reduction(player, dam);
 
 		/* Notice effect */
 		equip_learn_flag(player, flag);
 
 		/* Message */
-		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat(stat, false));
-		if (dam)
-			take_hit(player, dam, "stat drain");
+		if (dam > 0 && OPT(player, show_damage)) {
+			strnfmt(dam_text, sizeof(dam_text), " (%d)", dam);
+		}
+		msgt(MSG_DRAIN_STAT, "You feel very %s.%s",
+			desc_stat(stat, false), dam_text);
+		take_hit(player, dam, "stat drain");
 	}
 
 	return (true);
@@ -2366,6 +2380,10 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	}
 
 	/* Hurt the player */
+	dam = player_apply_damage_reduction(player, dam);
+	if (dam > 0 && OPT(player, show_damage)) {
+		msg("You take %d damage.\n", dam);
+	}
 	take_hit(player, dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
@@ -2414,6 +2432,10 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	}
 
 	/* Hurt the player */
+	dam = player_apply_damage_reduction(player, dam);
+	if (dam > 0 && OPT(player, show_damage)) {
+		msg("You take %d damage.\n", dam);
+	}
 	take_hit(player, dam, "the strain of casting Mass Banishment");
 
 	/* Update monster list window */

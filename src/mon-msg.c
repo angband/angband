@@ -31,20 +31,25 @@
 #define MAX_STORED_MON_CODES	400
 
 /**
- * Flags for whether monsters are offscreen or invisible
+ * Flags to track whether affected monsters are offscreen, affected monsters
+ * are invisible, or the message should include a numerical indication of the
+ * damage
  */
 #define MON_MSG_FLAG_OFFSCREEN	0x01
 #define MON_MSG_FLAG_INVISIBLE	0x02
+#define MON_MSG_FLAG_DAMAGE	0x04
 
 /**
  * A stacked monster message entry
  */
 struct monster_race_message {
 	struct monster_race *race;	/* The race of the monster */
-	int flags;					/* Flags */
-	int msg_code;				/* The coded message */
-	int count;					/* How many monsters triggered this message */
-	int delay;					/* messages will be processed in this order: delay = 0, 1, 2 */
+	int flags;			/* Flags */
+	int msg_code;			/* The coded message */
+	int count;			/* How many monsters triggered this message */
+	int delay;			/* messages will be processed in this order: delay = 0, 1, 2 */
+	int damage;			/* total damage; only relevant if flags
+						includes MON_MSG_FLAG_DAMAGE */
 };
 
 /**
@@ -85,10 +90,10 @@ static const struct {
 };
 
 /**
- * Adds to the message queue a message describing a monster's reaction
- * to damage.
+ * Help message_pain() and message_pain_show_damage():  get the appropiate
+ * message code for the amount of damage.
  */
-void message_pain(struct monster *mon, int dam)
+static int get_pain_msg_code(struct monster *mon, int dam)
 {
 	int msg_code = MON_MSG_UNHARMED;
 
@@ -106,12 +111,34 @@ void message_pain(struct monster *mon, int dam)
 		else if (percentage > 35)	msg_code = MON_MSG_35;
 		else if (percentage > 20)	msg_code = MON_MSG_20;
 		else if (percentage > 10)	msg_code = MON_MSG_10;
-		else						msg_code = MON_MSG_0;
+		else				msg_code = MON_MSG_0;
 	}
-
-	add_monster_message(mon, msg_code, false);
+	return msg_code;
 }
 
+/**
+ * Adds to the message queue a message describing a monster's reaction
+ * to damage.
+ */
+void message_pain(struct monster *mon, int dam)
+{
+	add_monster_message(mon, get_pain_msg_code(mon, dam), false);
+}
+
+/**
+ * Adds to the message queue a message describing a monster's reaction
+ * to damage which also includes a numerical indication of the damage amount.
+ */
+void message_pain_show_damage(struct monster *mon, int dam)
+{
+	int msg_code = get_pain_msg_code(mon, dam);
+
+	if (dam > 0) {
+		add_monster_message_show_damage(mon, msg_code, false, dam);
+	} else {
+		add_monster_message(mon, msg_code, false);
+	}
+}
 /**
  * Tracks which monster has had which pain message stored, so redundant
  * messages don't happen due to monster attacks hitting other monsters.
@@ -170,7 +197,8 @@ static void store_monster(struct monster *mon, int msg_code)
  *
  * \returns true if successful, false if failed
  */
-static bool stack_message(struct monster *mon, int msg_code, int flags)
+static bool stack_message(struct monster *mon, int msg_code, int flags,
+		int damage)
 {
 	int i;
 
@@ -180,6 +208,25 @@ static bool stack_message(struct monster *mon, int msg_code, int flags)
 					mon_msg[i].flags == flags &&
 					mon_msg[i].msg_code == msg_code) {
 			mon_msg[i].count++;
+			if (flags & MON_MSG_FLAG_DAMAGE) {
+				if (damage >= 0) {
+					if (mon_msg[i].damage <= 0
+							|| mon_msg[i].damage <
+							INT_MAX - damage) {
+						mon_msg[i].damage += damage;
+					} else {
+						mon_msg[i].damage = INT_MAX;
+					}
+				} else {
+					if (mon_msg[i].damage >= 0
+							|| mon_msg[i].damage >
+							INT_MIN - damage) {
+						mon_msg[i].damage += damage;
+					} else {
+						mon_msg[i].damage = INT_MIN;
+					}
+				}
+			}
 			store_monster(mon, msg_code);
 			return true;
 		}
@@ -204,21 +251,57 @@ static int what_delay(int msg_code, int delay)
  */
 bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 {
+	int flags = message_flags(mon);
+
 	assert(msg_code >= 0);
 	assert(msg_code < MON_MSG_MAX);
-
-	int flags = message_flags(mon);
 
 	/* Try to stack the message on top of older messages if it isn't redunant */
 	/* If not possible, check we have storage space for more messages and add */
 	if (!redundant_monster_message(mon, msg_code) &&
-			!stack_message(mon, msg_code, flags) &&
+			!stack_message(mon, msg_code, flags, 0) &&
 			size_mon_msg < MAX_STORED_MON_MSG) {
 		mon_msg[size_mon_msg].race = mon->race;
 		mon_msg[size_mon_msg].flags = flags;
 		mon_msg[size_mon_msg].msg_code = msg_code;
 		mon_msg[size_mon_msg].count = 1;
 		mon_msg[size_mon_msg].delay = what_delay(msg_code, delay);
+		mon_msg[size_mon_msg].damage = 0;
+		size_mon_msg++;
+
+		store_monster(mon, msg_code);
+
+		player->upkeep->notice |= PN_MON_MESSAGE;
+
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Stack a codified message with a numerical damage notification for the
+ * given monste race.
+ *
+ * Return true on success.
+ */
+bool add_monster_message_show_damage(struct monster *mon, int msg_code,
+		bool delay, int damage)
+{
+	int flags = message_flags(mon) | MON_MSG_FLAG_DAMAGE;
+
+	assert(msg_code >= 0);
+	assert(msg_code < MON_MSG_MAX);
+
+	if (!redundant_monster_message(mon, msg_code) &&
+			!stack_message(mon, msg_code, flags, damage) &&
+			size_mon_msg < MAX_STORED_MON_MSG) {
+		mon_msg[size_mon_msg].race = mon->race;
+		mon_msg[size_mon_msg].flags = flags;
+		mon_msg[size_mon_msg].msg_code = msg_code;
+		mon_msg[size_mon_msg].count = 1;
+		mon_msg[size_mon_msg].delay = what_delay(msg_code, delay);
+		mon_msg[size_mon_msg].damage = damage;
 		size_mon_msg++;
 
 		store_monster(mon, msg_code);
@@ -382,6 +465,7 @@ static void show_message(struct monster_race_message *msg)
 {
 	char subject[60] = "";
 	char body[60];
+	int msg_type = get_message_type(msg->msg_code, msg->race);
 
 	/* Some messages don't require a monster name */
 	if (!skip_subject(msg->msg_code)) {
@@ -400,10 +484,18 @@ static void show_message(struct monster_race_message *msg)
 			msg->count > 1);
 
 	/* Show the message */
-	msgt(get_message_type(msg->msg_code, msg->race),
-			"%s%s",
-			subject,
-			body);
+	if (msg->flags & MON_MSG_FLAG_DAMAGE) {
+		if (msg->count <= 1) {
+			msgt(msg_type, "%s%s (%d)", subject, body, msg->damage);
+		} else {
+			msgt(msg_type, "%s%s (average %d)", subject, body,
+				msg->damage / msg->count
+				+ (msg->damage % msg->count
+				>= (msg->count + 1) / 2 ? 1 : 0));
+		}
+	} else {
+		msgt(msg_type, "%s%s", subject, body);
+	}
 }
 
 /**

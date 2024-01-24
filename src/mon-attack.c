@@ -572,9 +572,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		int damage = 0;
 		bool do_cut = false;
 		bool do_stun = false;
-		int sound_msg = MSG_GENERIC;
-
-		char *act = NULL;
 
 		/* Extract the attack infomation */
 		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
@@ -612,11 +609,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				}
 			}
 
-			/* Describe the attack method */
-			act = monster_blow_method_action(method, -1);
 			do_cut = method->cut;
 			do_stun = method->stun;
-			sound_msg = method->msgt;
 
 			/* Hack -- assume all attacks are obvious */
 			obvious = true;
@@ -627,21 +621,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Reduce damage when stunned */
 			if (mon->m_timed[MON_TMD_STUN]) {
 				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
-			}
-
-			/* Message */
-			if (act) {
-				const char *fullstop = ".";
-				if (suffix(act, "'") || suffix(act, "!")) {
-					fullstop = "";
-				}
-
-				if (OPT(p, show_damage)) {
-					msgt(sound_msg, "%s %s (%d)%s", m_name, act, damage,
-						 fullstop);
-				} else {
-					msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
-				}
 			}
 
 			/* Perform the actual effect. */
@@ -658,6 +637,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 					obvious,
 					blinked,
 					damage,
+					m_name
 				};
 
 				effect_handler(&context);
@@ -734,8 +714,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 						true, true, true);
 				}
 			}
-
-			string_free(act);
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
 			if (monster_is_visible(mon) &&	method->miss) {
@@ -808,9 +786,6 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 		int damage = 0;
 		bool do_stun = false;
-		int sound_msg = MSG_GENERIC;
-
-		char *act = NULL;
 
 		/* Extract the attack infomation */
 		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
@@ -826,10 +801,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 			test_hit(chance_of_monster_hit(mon, effect), t_mon->race->ac)) {
 			melee_effect_handler_f effect_handler;
 
-			/* Describe the attack method */
-			act = monster_blow_method_action(method, t_mon->midx);
 			do_stun = method->stun;
-			sound_msg = method->msgt;
 
 			/* Hack -- assume all attacks are obvious */
 			obvious = true;
@@ -840,16 +812,6 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 			/* Reduce damage when stunned */
 			if (mon->m_timed[MON_TMD_STUN]) {
 				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
-			}
-
-			/* Message */
-			if (act) {
-				const char *fullstop = ".";
-				if (suffix(act, "'") || suffix(act, "!")) {
-					fullstop = "";
-				}
-
-				msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
 			}
 
 			/* Perform the actual effect. */
@@ -866,6 +828,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 					obvious,
 					blinked,
 					damage,
+					m_name
 				};
 
 				effect_handler(&context);
@@ -899,8 +862,6 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 				if (amt)
 					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0);
 			}
-
-			string_free(act);
 		} else {
 			/* Visible monster missed monster, so notify if appropriate. */
 			if (monster_is_visible(mon) && method->miss) {
