@@ -491,7 +491,7 @@ name:LIGHT
 aim:0
 power:4
 effect:LIGHT_AREA
-effect:SPOT:LIGHT_WEAK:2
+effect:SPHERE:LIGHT_WEAK:2
 dice:2d8
 
 name:TELE_PHASE
@@ -659,7 +659,7 @@ aim:0
 power:4
 msg:The {kind} well{s} with clear light...
 effect:LIGHT_AREA
-effect:SPOT:LIGHT_WEAK:3
+effect:SPHERE:LIGHT_WEAK:3
 dice:2d15
 
 name:CLAIRVOYANCE
