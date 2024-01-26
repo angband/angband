@@ -220,7 +220,7 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Light Room:1:2:26:4
 effect:LIGHT_AREA
-effect:SPOT:LIGHT_WEAK:2
+effect:SPHERE:LIGHT_WEAK:2
 dice:1
 desc:Lights up all squares within 2 grids of the player, and hurts
 desc: all light-sensitive monsters in the area of effect.
@@ -726,7 +726,7 @@ equip:prayer book:[Novice's Handbook]:1:1:none
 
 spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
-effect:SPOT:LIGHT_WEAK:1:10
+effect:SPHERE:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1004,7 +1004,7 @@ desc:Enables you to see invisible monsters for 24+1d24 turns.
 
 spell:Create Darkness:3:3:10:4
 effect:DARKEN_AREA
-effect:SPOT:DARK_WEAK:1:10
+effect:SPHERE:DARK_WEAK:1:10
 dice:1
 desc:Darkens all squares in a level-dependent area.  If you are in a room,
 desc: the entire room will be darkened as well.
@@ -1264,7 +1264,7 @@ desc: for one turn only.
 
 spell:Call Light:5:3:10:2
 effect:LIGHT_AREA
-effect:SPOT:LIGHT_WEAK:1:10
+effect:SPHERE:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
