@@ -521,6 +521,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	bool okay = false;
 	bool gold = square_hasgoldvein(cave, grid);
 	bool rubble = square_isrubble(cave, grid);
+	bool digger_swapped = false;
 	int weapon_slot = slot_by_name(player, "weapon");
 	struct object *current_weapon = slot_object(player, weapon_slot);
 	struct object *best_digger = NULL;
@@ -536,6 +537,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	best_digger = player_best_digger(player, false);
 	if (best_digger != current_weapon &&
 			(!current_weapon || obj_can_takeoff(current_weapon))) {
+		digger_swapped = true;
 		with_clause = "with your swap digger";
 		/* Use only one without the overhead of gear_obj_for_use(). */
 		if (best_digger) {
@@ -562,7 +564,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	okay = (chance > randint0(1600));
 
 	/* Swap back */
-	if (best_digger != current_weapon) {
+	if (digger_swapped) {
 		if (best_digger) {
 			best_digger->number = oldn;
 		}
