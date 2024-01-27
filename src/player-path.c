@@ -218,6 +218,12 @@ bool find_path(struct loc grid)
 		/* Find the next step */
 		for (k = 0; k < 8; k++) {
 			struct loc next = loc_sum(new, ddgrid_ddd[k]);
+
+			if (next.y < top_left.y || next.y >= bottom_right.y
+					|| next.x < top_left.x
+					|| next.x >= bottom_right.x) {
+				continue;
+			}
 			if (path_dist(next) == next_distance)
 				break;
 		}
