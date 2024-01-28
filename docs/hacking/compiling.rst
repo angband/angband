@@ -302,6 +302,37 @@ process to fail when linking angband.exe (the error message will likely be
 The ones that are okay are --with-private-dirs (on by default),
 --with-gamedata-in-lib (has no effect), and --enable-release.
 
+A build using Mingw cross-compiler is also possible with CMake.  You will
+need to have a toolchain file appropriate for Mingw on your system.  Some
+information on toolchain files can be found at https://cmake.org/cmake/help/book/mastering-cmake/chapter/Cross%20Compiling%20With%20CMake.html .
+On a Debian 11 system using Mingw from the gcc-mingw-w64 package (that puts
+the Mingw executables in /usr/bin with the prefix, i686-w64-mingw32-, and
+has the other files for cross-compiling in /usr/i686-w64-mingw32), this
+worked as the contents of a minimal toolchain file::
+
+	set(CMAKE_SYSTEM_NAME Windows)
+	set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
+	set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
+	set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
+	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+If the toolchain file was saved as /home/user/mingw-cross.cmake, then you could
+use this to perform the build::
+
+	mkdir build && cd build
+	cmake -DCMAKE_TOOLCHAIN_FILE=/home/user/mingw-cross.cmake ..
+	make
+
+That will leave an Angband.exe and the needed .dll files in the directory
+where make was run.  That executable can be run with wine:
+
+	wine Angband.exe
+
+TODO: building the documentation while using the cross-compiler
+(cmake -DBUILD_DOC=ON -DCMAKE_TOOLCHAIN_FILE=...) does not appear to work.
+
 Debug build
 ~~~~~~~~~~~
 
