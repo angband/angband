@@ -119,7 +119,9 @@ IF(SUPPORT_WINDOWS_FRONTEND)
     ENDIF()
     # Set up the path for the source of the resource file.
     STRING(TOLOWER ${OUR_EXECUTABLE_NAME} OUR_WINDOWS_RC_BASE)
-    STRING(CONCAT src/win/ ${OUR_WINDOWS_RC_BASE} .rc OUR_WINDOWS_RC)
+    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_WINDOWS_RC_BASE} .rc)
+    # Enable compilation of resource files.
+    ENABLE_LANGUAGE(RC)
 ENDIF()
 
 # If none of SC_INSTALL, SHARED_INSTALL, and READONLY_INSTALL are set, use
@@ -760,8 +762,7 @@ IF(SC_INSTALL)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(zlib1.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
-        INSTALL(libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(FILES zlib1.dll libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
     IF(BUILD_DOC)
