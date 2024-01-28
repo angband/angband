@@ -1664,6 +1664,31 @@ void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX])
 		chances[i] = MAX(0, chances[i]);
 }
 
+/*
+ * Return the chance, out of 100, for unlocking a locked door with the given
+ * lock power.
+ *
+ * \param p is the player trying to unlock the door.
+ * \param lock_power is the power of the lock.
+ * \param lock_unseen, if true, assumes the player does not have sufficient
+ * light to work with the lock.
+ */
+int calc_unlocking_chance(const struct player *p, int lock_power,
+		bool lock_unseen)
+{
+	int skill = p->state.skills[SKILL_DISARM_PHYS];
+
+	if (lock_unseen || p->timed[TMD_BLIND]) {
+		skill /= 10;
+	}
+	if (p->timed[TMD_CONFUSED] || p->timed[TMD_IMAGE]) {
+		skill /= 10;
+	}
+
+	/* Always allow some chance of unlocking. */
+	return MAX(2, skill - 4 * lock_power);
+}
+
 /**
  * Calculate the blows a player would get.
  *

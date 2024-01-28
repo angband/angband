@@ -165,7 +165,6 @@ static bool do_cmd_open_test(struct loc grid)
  */
 static bool do_cmd_open_aux(struct loc grid)
 {
-	int i, j;
 	bool more = false;
 
 	/* Verify legality */
@@ -173,25 +172,10 @@ static bool do_cmd_open_aux(struct loc grid)
 
 	/* Locked door */
 	if (square_islockeddoor(cave, grid)) {
-		/* Disarm factor */
-		i = player->state.skills[SKILL_DISARM_PHYS];
+		int chance = calc_unlocking_chance(player,
+			square_door_power(cave, grid), no_light(player));
 
-		/* Penalize some conditions */
-		if (player->timed[TMD_BLIND] || no_light(player))
-			i = i / 10;
-		if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE])
-			i = i / 10;
-
-		/* Extract the lock power */
-		j = square_door_power(cave, grid);
-
-		/* Extract the difficulty XXX XXX XXX */
-		j = i - (j * 4);
-
-		/* Always have a small chance of success */
-		if (j < 2) j = 2;
-
-		if (randint0(100) < j) {
+		if (randint0(100) < chance) {
 			/* Message */
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
 
