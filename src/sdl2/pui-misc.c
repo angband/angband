@@ -93,7 +93,7 @@ int sdlpui_init(void)
  * called while a call to sdlpui_quit() is in progress.  Those applications
  * should be structured to avoid that possibility.
  */
-void sdlpui_quit()
+void sdlpui_quit(void)
 {
 	SDL_mutex *lock = my_registry.lock;
 

@@ -1067,7 +1067,7 @@ static void resize_simple_info(struct sdlpui_dialog *d, struct sdlpui_window *w,
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO);
 	psi = (struct sdlpui_simple_info*)d->priv;
-#if NDEBUG
+#ifdef NDEBUG
 	{
 		int dw, dh;
 
