@@ -1208,6 +1208,22 @@ static SDL_Texture *make_subwindow_texture(const struct sdlpui_window *window,
 	return texture;
 }
 
+static void get_minimum_subwindow_size(bool is_main, int cell_w, int cell_h,
+		int *minw, int *minh)
+{
+	int min_cols, min_rows;
+
+	if (is_main) {
+		min_cols = MIN_COLS_MAIN;
+		min_rows = MIN_ROWS_MAIN;
+	} else {
+		min_cols = MIN_COLS_OTHER;
+		min_rows = MIN_ROWS_OTHER;
+	}
+	*minw = min_cols * cell_w + 2 * DEFAULT_BORDER;
+	*minh = min_rows * cell_h + 2 * DEFAULT_BORDER;
+}
+
 static void get_minimum_window_size(struct sdlpui_window *window,
 		int *minw, int *minh)
 {
@@ -1225,21 +1241,15 @@ static void get_minimum_window_size(struct sdlpui_window *window,
 
 	for (i = 0; i < MAX_SUBWINDOWS; ++i) {
 		if (window->subwindows[i]) {
-			int cols, rows;
+			int this_min_w, this_min_h;
 
-			if (window->subwindows[i]->index == MAIN_SUBWINDOW) {
-				cols = MIN_COLS_MAIN;
-				rows = MIN_ROWS_MAIN;
-			} else {
-				cols = MIN_COLS_OTHER;
-				rows = MIN_ROWS_OTHER;
-			}
-			max_sub_w = MAX(max_sub_w,
-				window->subwindows[i]->font->ttf.glyph.w
-				* cols + 2 * DEFAULT_BORDER);
-			max_sub_h = MAX(max_sub_h,
-				window->subwindows[i]->font->ttf.glyph.h
-				* rows + 2 * DEFAULT_BORDER);
+			get_minimum_subwindow_size(
+				window->subwindows[i]->index == MAIN_SUBWINDOW,
+				window->subwindows[i]->font->ttf.glyph.w,
+				window->subwindows[i]->font->ttf.glyph.h,
+				&this_min_w, &this_min_h);
+			max_sub_w = MAX(max_sub_w, this_min_w);
+			max_sub_h = MAX(max_sub_h, this_min_h);
 			have_sub = true;
 		}
 	}
@@ -1249,8 +1259,8 @@ static void get_minimum_window_size(struct sdlpui_window *window,
 		 * There's no currently configured subwindows; leave room
 		 * for one.
 		 */
-		max_sub_w = MIN_COLS_OTHER * window->app->def_font_w;
-		max_sub_h = MIN_ROWS_OTHER * window->app->def_font_h;
+		get_minimum_subwindow_size(false, window->app->def_font_w,
+			window->app->def_font_h, &max_sub_w, &max_sub_h);
 	}
 
 	*minw = MAX(*minw, max_sub_w);
@@ -1273,18 +1283,9 @@ static bool is_usable_font_for_subwindow(const struct font *font,
 
 	if (!is_ok_col_row(subwindow, &bounds, font->ttf.glyph.w,
 			font->ttf.glyph.h)) {
-		int min_cols, min_rows;
-
-		if (subwindow->index == MAIN_SUBWINDOW) {
-			min_cols = MIN_COLS_MAIN;
-			min_rows = MIN_ROWS_MAIN;
-		} else {
-			min_cols = MIN_COLS_OTHER;
-			min_rows = MIN_ROWS_OTHER;
-		}
-
-		bounds.w = min_cols * font->ttf.glyph.w + 2 * DEFAULT_BORDER;
-		bounds.h = min_rows * font->ttf.glyph.h + 2 * DEFAULT_BORDER;
+		get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
+			font->ttf.glyph.w, font->ttf.glyph.h,
+			&bounds.w, &bounds.h);
 	}
 
 	if (bounds.w > subwindow->window->inner_rect.w
@@ -2985,6 +2986,43 @@ static void fit_rect_in_rect_proportional(SDL_Rect *small, const SDL_Rect *big)
 	if (small->h > big->h) {
 		small->w = small->w * big->h / small->h;
 		small->h = big->h;
+	}
+}
+
+/*
+ * Like fit_rect_in_rect_by_xy() but allow changing the size as well as position
+ * of small.  If not possible to fit one dimension of small in big while leaving
+ * the size at least the minimum size specified, leave the size in that
+ * dimension as it is.
+ */
+static void coerce_rect_in_rect(SDL_Rect *small, const SDL_Rect *big,
+		int min_w, int min_h)
+{
+	if (small->x < big->x) {
+		small->x = big->x;
+	}
+	if (small->y < big->y) {
+		small->y = big->y;
+	}
+	if (small->x + small->w > big->x + big->w) {
+		if (small->w <= big->w) {
+			small->x = big->x + big->w - small->w;
+		} else {
+			small->x = big->x;
+			if (min_w <= big->w) {
+				small->w = big->w;
+			}
+		}
+	}
+	if (small->y + small->h > big->y + big->h) {
+		if (small->h <= big->h) {
+			small->y = big->y + big->h - small->h;
+		} else {
+			small->y = big->y;
+			if (min_h <= big->h) {
+				small->h = big->h;
+			}
+		}
 	}
 }
 
@@ -4908,7 +4946,10 @@ static struct font *make_font(const struct sdlpui_window *window,
 static bool reload_font(struct subwindow *subwindow,
 		const struct font_info *info)
 {
-	struct font *new_font = make_font(subwindow->window, info->name, info->size);
+	struct font *new_font =
+		make_font(subwindow->window, info->name, info->size);
+	int min_w, min_h;
+
 	if (new_font == NULL) {
 		return false;
 	}
@@ -4919,7 +4960,10 @@ static bool reload_font(struct subwindow *subwindow,
 		return false;
 	}
 
-	fit_rect_in_rect_by_xy(&subwindow->sizing_rect, &subwindow->window->inner_rect);
+	get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
+		new_font->ttf.glyph.w, new_font->ttf.glyph.h, &min_w, &min_h);
+	coerce_rect_in_rect(&subwindow->sizing_rect,
+		&subwindow->window->inner_rect, min_w, min_h);
 
 	free_font(subwindow->font);
 	subwindow->font = new_font;
@@ -4972,15 +5016,12 @@ static void free_font(struct font *font)
 static bool is_ok_col_row(const struct subwindow *subwindow,
 		const SDL_Rect *rect, int cell_w, int cell_h)
 {
-	const int min_col =
-		subwindow->index == MAIN_SUBWINDOW ? MIN_COLS_MAIN : MIN_COLS_OTHER;
-	const int min_row =
-		subwindow->index == MAIN_SUBWINDOW ? MIN_ROWS_MAIN : MIN_ROWS_OTHER;
+	int min_w, min_h;
 
-	if ((rect->w - DEFAULT_BORDER * 2) / cell_w < min_col) {
-		return false;
-	}
-	if ((rect->h - DEFAULT_BORDER * 2) / cell_h < min_row) {
+	get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
+		cell_w, cell_h, &min_w, &min_h);
+
+	if (rect->w < min_w || rect->h < min_h) {
 		return false;
 	}
 
@@ -5291,7 +5332,13 @@ static void reload_status_bar(struct sdlpui_window *window)
 static void fit_subwindow_in_window(const struct sdlpui_window *window,
 		struct subwindow *subwindow)
 {
-	fit_rect_in_rect_by_xy(&subwindow->full_rect, &window->inner_rect);
+	int min_w, min_h;
+
+	get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
+		subwindow->font->ttf.glyph.w, subwindow->font->ttf.glyph.h,
+		&min_w, &min_h);
+	coerce_rect_in_rect(&subwindow->full_rect, &window->inner_rect,
+		min_w, min_h);
 	if (!is_rect_in_rect(&subwindow->full_rect, &window->inner_rect)) {
 		subwindow->borders.error = true;
 		render_borders(subwindow);
@@ -5941,10 +5988,9 @@ static bool wipe_subwindow(struct subwindow *subwindow)
 	subwindow->index = index;
 
 	/* XXX 80x24 is essential for main */
-	subwindow->full_rect.w = MIN_COLS_MAIN * subwindow->app->def_font_w
-		+ DEFAULT_BORDER * 2;
-	subwindow->full_rect.h = MIN_ROWS_MAIN * subwindow->app->def_font_h
-		+ DEFAULT_BORDER * 2;
+	get_minimum_subwindow_size(true,
+		subwindow->app->def_font_w, subwindow->app->def_font_h,
+		&subwindow->full_rect.w, &subwindow->full_rect.h);
 	if (subwindow->index != MAIN_SUBWINDOW) {
 		subwindow->full_rect.w /= 2;
 		subwindow->full_rect.h /= 2;
