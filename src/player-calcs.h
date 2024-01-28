@@ -109,6 +109,8 @@ void calc_inventory(struct player *p);
 void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 				  bool update);
 void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX]);
+int calc_unlocking_chance(const struct player *p, int lock_power,
+		bool lock_unseen);
 int calc_blows(struct player *p, const struct object *obj,
 			   struct player_state *state, int extra_blows);
 
