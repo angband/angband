@@ -319,7 +319,10 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 
 	/* Removes webs */
 	if (square_iswebbed(cave, context->grid)) {
-		square_destroy_trap(cave, context->grid);
+		struct trap_kind *web = lookup_trap("web");
+
+		assert(web);
+		square_remove_all_traps_of_type(cave, context->grid, web->tidx);
 	}
 
 	/* Can create lava if extremely powerful. */
