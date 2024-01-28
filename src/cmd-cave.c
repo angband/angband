@@ -796,8 +796,9 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		player_exp_gain(player, 1 + power);
 
 		/* Trap is gone */
-		square_forget(cave, grid);
-		square_destroy_trap(cave, grid);
+		if (!square_remove_trap(cave, grid, trap, true)) {
+			assert(0);
+		}
 	} else if (randint0(100) < chance) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the %s.", trap->kind->name);
@@ -1221,8 +1222,11 @@ void do_cmd_walk(struct command *cmd)
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
 		/* Clear the web, finish turn */
+		struct trap_kind *web = lookup_trap("web");
+
 		msg("You clear the web.");
-		square_destroy_trap(cave, player->grid);
+		assert(web);
+		square_remove_all_traps_of_type(cave, player->grid, web->tidx);
 		player->upkeep->energy_use = z_info->move_energy;
 		return;
 	}
@@ -1259,8 +1263,11 @@ void do_cmd_jump(struct command *cmd)
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
 		/* Clear the web, finish turn */
+		struct trap_kind *web = lookup_trap("web");
+
 		msg("You clear the web.");
-		square_destroy_trap(cave, player->grid);
+		assert(web);
+		square_remove_all_traps_of_type(cave, player->grid, web->tidx);
 		player->upkeep->energy_use = z_info->move_energy;
 		return;
 	}
@@ -1297,8 +1304,11 @@ void do_cmd_run(struct command *cmd)
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
 		/* Clear the web, finish turn */
+		struct trap_kind *web = lookup_trap("web");
+
 		msg("You clear the web.");
-		square_destroy_trap(cave, player->grid);
+		assert(web);
+		square_remove_all_traps_of_type(cave, player->grid, web->tidx);
 		player->upkeep->energy_use = z_info->move_energy;
 		return;
 	}
