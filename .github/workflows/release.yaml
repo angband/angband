@@ -104,7 +104,7 @@ jobs:
           echo draft= '${{ steps.get_release_vars.outputs.draft }}' >> $CONFIG_ARTIFACT_PATH
 
       - name: Upload Artifact for Use by Dependent Steps
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
           path: ${{ env.CONFIG_ARTIFACT_PATH }}
@@ -149,7 +149,7 @@ jobs:
           tar -cf ${{ env.DOC_ARTIFACT_PATH }} docs/_build/html
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.DOC_ARTIFACT }}
           path: ${{ env.DOC_ARTIFACT_PATH }}
@@ -161,7 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
