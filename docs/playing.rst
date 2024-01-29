@@ -103,7 +103,7 @@ Original Keyset Command Summary
 ``m``  Cast a spell                  ``M``  Display map of entire level
 ``n``  Repeat previous command       ``N``  (unused)
 ``o``  Open a door or chest          ``O``  (unused)
-``p``  (unused)                      ``P``  (unused)
+``p``  Walk to unexplored location   ``P``  (unused)
 ``q``  Quaff a potion                ``Q``  Kill character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
 ``s``  Steal (rogues only)           ``S``  See abilities
@@ -111,8 +111,8 @@ Original Keyset Command Summary
 ``u``  Use a staff                   ``U``  Use an item
 ``v``  Throw an item                 ``V``  Display version info
 ``w``  Wear/wield equipment          ``W``  Walk into a trap
-``x``  (unused)                      ``X``  Navigate to stairs down
-``y``  Walk to unexplored location   ``Y``  Navigate to stairs up
+``x``  (unused)                      ``X``  (unused)
+``y``  (unused)                      ``Y``  (unused)
 ``z``  Zap a rod                     ``Z``  (unused)
 ``!``  (unused)                      ``^a`` (special - debug command)
 ``@``  (unused)                      ``^b`` (unused)
@@ -137,9 +137,9 @@ Original Keyset Command Summary
 ``'``  Target closest monster        ``^u`` (unused)
 ``"``  Enter a user pref command     ``^v`` (unused)
 ``,``  Stay still (with pickup)      ``^w`` (special - wizard mode)
-``<``  Go up staircase               ``^x`` Save and quit
+``<``  Go up/to up staircase         ``^x`` Save and quit
 ``.``  Run                           ``^y`` (unused)
-``>``  Go down staircase             ``^z`` (unused)
+``>``  Go down/to down staircase     ``^z`` (unused)
 ``\``  (special - bypass keymap)     ``~``  Check knowledge
  \`    (special - escape)            ``?``  Display help
 ``/``  Identify symbol
@@ -180,9 +180,9 @@ Roguelike Keyset Command Summary
  ``@``  Center map                    ``^b`` (alter - south west)
  ``#``  (unused)                      ``^c`` (special - break)
  ``$``  (unused)                      ``^d`` Ignore an item
- ``%``  Navigate to stairs up         ``^e`` Toggle inven/equip window
+ ``%``  (unused)                      ``^e`` Toggle inven/equip window
  ``^``  (special - control key)       ``^f`` Repeat level feeling
- ``&``  Navigate to stairs down       ``^g`` Do autopickup
+ ``&``  (unused)                      ``^g`` Do autopickup
  ``*``  Target monster or location    ``^h`` (alter - west)
  ``(``  (unused)                      ``^i`` (special - tab)
  ``)``  Dump screen to a file         ``^j`` (alter - south)
@@ -199,9 +199,9 @@ Roguelike Keyset Command Summary
  ``'``  Target closest monster        ``^u`` (alter - north east)
  ``"``  Enter a user pref command     ``^v`` Repeat previous command
  ``,``  Run                           ``^w`` (special - wizard mode)
- ``<``  Go up staircase               ``^x`` Save and quit
+ ``<``  Go up/to up staircase         ``^x`` Save and quit
  ``.``  Stay still (with pickup)      ``^y`` (alter - north west)
- ``>``  Go down staircase             ``^z`` (unused)
+ ``>``  Go down/to down staircase     ``^z`` (unused)
  ``\``  (special - bypass keymap)     ``~``  Check knowledge
   \`    (special - escape)            ``?``  Display help
  ``/``  Identify symbol

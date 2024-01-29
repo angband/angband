@@ -921,7 +921,7 @@ bool square_isknownpassable(struct chunk *c, struct loc grid)
 	if (!square_isknown(c, grid))
 		return false;
 
-	return square_ispassable(c, grid);
+	return square_ispassable(player->cave, grid);
 }
 
 /**
