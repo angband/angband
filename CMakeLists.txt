@@ -477,7 +477,7 @@ IF(SUPPORT_TEST_FRONTEND)
 ENDIF()
 
 # Set the build ID.
-IF(SUPPORT_WINDOWS_FRONTEND)
+IF(NOT CMAKE_HOST_UNIX)
     # Just check for the version file left in a snapshot.  If not in a snapshot,
     # don't bother to set the build ID.
     IF(EXISTS ./version)

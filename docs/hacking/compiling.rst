@@ -330,9 +330,6 @@ where make was run.  That executable can be run with wine:
 
 	wine Angband.exe
 
-TODO: building the documentation while using the cross-compiler
-(cmake -DBUILD_DOC=ON -DCMAKE_TOOLCHAIN_FILE=...) does not appear to work.
-
 Debug build
 ~~~~~~~~~~~
 
