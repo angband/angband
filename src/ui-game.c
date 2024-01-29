@@ -217,8 +217,6 @@ struct cmd_info cmd_hidden[] =
 	{ "Walk", { ';' }, CMD_WALK, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Start exploring", { 'y', 'p' }, CMD_EXPLORE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Navigate up", { 'Y', '%' }, CMD_NAVIGATE_UP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Navigate down", { 'X', '&' }, CMD_NAVIGATE_DOWN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL, 0, NULL, NULL, NULL, 0 },

@@ -31,8 +31,8 @@ combination and does not pass it on.
   u    Use a staff                     U    Use an item
   v    Throw an item                   V    Display version info
   w    Wear/wield equipment            W    Walk into a trap
-  x    -                               X    Navigate to stairs down
-  y    Walk to unexplored location     Y    Navigate to stairs up
+  x    -                               X    -
+  y    Walk to unexplored location     Y    -
   z    Zap a rod                       Z    -
   !    -                               ^a   (special - debug command)
   @    -                               ^b   -
@@ -57,9 +57,9 @@ combination and does not pass it on.
   '    Target closest monster          ^u   -
   "    Enter a user pref command       ^v   -
   ,    Stay still (with pickup)        ^w   (special - wizard mode)
-  <    Go up staircase                 ^x   Save and quit
+  <    Go up/to next up staircase      ^x   Save and quit
   .    Run                             ^y   -
-  >    Go down staircase               ^z   (special - borg command)
+  >    Go down/to next down staircase  ^z   (special - borg command)
   \    (special - bypass keymap)        ~   Check knowledge
   `    (special - escape)               ?   Display help
   /    Identify symbol

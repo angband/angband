@@ -38,9 +38,9 @@ combination and does not pass it on.
   @    Center map                      ^b   (alter - south west)
   #    -                               ^c   (special - break)
   $    -                               ^d   Ignore an item
-  %    Navigate to stairs up           ^e   Toggle inven/equip window
+  %    -                               ^e   Toggle inven/equip window
   ^    (special - control key)         ^f   Repeat level feeling
-  &    Navigate to stairs down         ^g   Do autopickup
+  &    -                               ^g   Do autopickup
   *    Target monster or location      ^h   (alter - west)
   (    -                               ^i   (special - tab)
   )    Dump screen to a file           ^j   (alter - south)
@@ -57,9 +57,9 @@ combination and does not pass it on.
   '    Target closest monster          ^u   (alter - north east)
   "    Enter a user pref command       ^v   Repeat previous command
   ,    Run                             ^w   (special - wizard mode)
-  <    Go up staircase                 ^x   Save and quit
+  <    Go up/to next up staircase      ^x   Save and quit
   .    Stay still (with pickup)        ^y   (alter - north west)
-  >    Go down staircase               ^z   (special - borg command)
+  >    Go down/to next down staircase  ^z   (special - borg command)
   \    (special - bypass keymap)       ~    Check knowledge
   `    (special - escape)              ?    Display help
   /    Identify symbol

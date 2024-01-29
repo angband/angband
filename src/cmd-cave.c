@@ -59,7 +59,7 @@ void do_cmd_go_up(struct command *cmd)
 
 	/* Verify stairs */
 	if (!square_isupstairs(cave, player->grid)) {
-		msg("I see no up staircase here.");
+		do_cmd_navigate_up(cmd);
 		return;
 	}
 
@@ -100,7 +100,7 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
-		msg("I see no down staircase here.");
+		do_cmd_navigate_down(cmd);
 		return;
 	}
 
@@ -1381,7 +1381,7 @@ void do_cmd_navigate_down(struct command *cmd)
 					break;
 				}
 			}
-			if (square_isknown(cave, grid) && square_isdownstairs(cave, grid)) {
+			if (square_isknown(cave, grid) && square_isdownstairs(player->cave, grid)) {
 				int d = distance(grid, player->grid);
 				if (d < min_dist) {
 					target_grid = grid;
@@ -1450,7 +1450,7 @@ void do_cmd_navigate_up(struct command *cmd)
 					break;
 				}
 			}
-			if (square_isknown(cave, grid) && square_isupstairs(cave, grid)) {
+			if (square_isknown(cave, grid) && square_isupstairs(player->cave, grid)) {
 				int d = distance(grid, player->grid);
 				if (d < min_dist) {
 					target_grid = grid;
@@ -1522,8 +1522,8 @@ void do_cmd_explore(struct command *cmd)
 			
 			/* only consider known locations which are passable and have unexplored neighbors */
 			if (square_isknown(cave, grid) &&
-				square_ispassable(cave, grid) &&
-				count_neighbors(NULL, cave, grid, square_isnotknown, false) > 0) {
+				square_ispassable(player->cave, grid) &&
+				count_neighbors(NULL, cave, grid, square_isknown, false) != 8) {
 
 				int d = distance(grid, player->grid);
 
@@ -1560,12 +1560,12 @@ void do_cmd_explore(struct command *cmd)
 
 			/* only check known locations, which are either rubble or a closed door */
 			if (square_isnotknown(cave, grid) ||
-			   (!square_iscloseddoor(cave, grid) && !square_isrubble(cave, grid))) {
+			   (!square_iscloseddoor(player->cave, grid) && !square_isrubble(player->cave, grid))) {
 				continue;
 			}
 			
 			/* if no unexplored neighbors -> reject */
-			if (count_neighbors(NULL, cave, grid, square_isnotknown, false) == 0) {
+			if (count_neighbors(NULL, cave, grid, square_isknown, false) == 8) {
 				continue;
 			}
 
