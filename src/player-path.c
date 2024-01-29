@@ -1183,7 +1183,7 @@ void run_step(int dir)
 			 */
 			if (square_iscloseddoor(player->cave, grid)) {
 				if (count_neighbors(NULL, cave, grid,
-						square_isnotknown, true) == 0) {
+						square_isknown, true) == 9) {
 					disturb(player);
 					player->upkeep->running_withpathfind = false;
 					cmdq_push(CMD_OPEN);
@@ -1200,7 +1200,7 @@ void run_step(int dir)
 					&& !square_ispassable(player->cave,
 					grid)) {
 				if (count_neighbors(NULL, cave, grid,
-						square_isnotknown, true) == 0) {
+						square_isknown, true) == 9) {
 					disturb(player);
 					player->upkeep->running_withpathfind = false;
 					cmdq_push(CMD_TUNNEL);
@@ -1285,7 +1285,7 @@ void run_step(int dir)
 						&& !square_ispassable(player->cave, grid)
 						&& ((!square_iscloseddoor(player->cave, grid)
 						&& !square_isrubble(player->cave, grid))
-						|| count_neighbors(NULL, cave, grid, square_isnotknown, true) > 0)) {
+						|| count_neighbors(NULL, cave, grid, square_isknown, true) != 9)) {
 					player->upkeep->running_withpathfind = false;
 					run_init(path_step_dir[path_step_idx]);
 				}
