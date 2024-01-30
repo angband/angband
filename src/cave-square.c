@@ -1342,7 +1342,7 @@ void square_open_door(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *lock = lookup_trap("door lock");
 
-	assert(square_iscloseddoor(c, grid));
+	assert(square_iscloseddoor(c, grid) || square_issecretdoor(c, grid));
 	assert(lock);
 	square_remove_all_traps_of_type(c, grid, lock->tidx);
 	square_set_feat(c, grid, FEAT_OPEN);
