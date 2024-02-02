@@ -1519,11 +1519,11 @@ static void borg_notice_equipment(void)
             borg.trait[BI_CSTR] -= 10;
         }
         if (item->curses[BORG_CURSE_SLOWNESS]) {
-            borg.trait[BI_SPEED] = -5;
+            borg.trait[BI_SPEED] -= 5;
         }
         if (item->curses[BORG_CURSE_ANNOYANCE]) {
-            borg.trait[BI_SPEED]   = -10;
-            borg.trait[BI_STL]     = -10;
+            borg.trait[BI_SPEED] -= 10;
+            borg.trait[BI_STL] -= 10;
             borg.trait[BI_CRSAGRV] = true;
         }
         if (item->curses[BORG_CURSE_POISON])
