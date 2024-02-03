@@ -774,8 +774,8 @@ void process_world(struct chunk *c)
 
 	/*** Involuntary Movement ***/
 
-	/* Delayed Word-of-Recall */
-	if (player->word_recall) {
+	/* Delayed Word-of-Recall; suspended in arenas */
+	if (player->word_recall && !player->upkeep->arena_level) {
 		/* Count down towards recall */
 		player->word_recall--;
 
