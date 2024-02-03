@@ -238,7 +238,7 @@ void square_note_spot(struct chunk *c, struct loc grid)
 	}
 	square_memorize_traps(c, grid);
 
-	if (square_isknown(c, grid))
+	if (!square_isnotknown(c, grid))
 		return;
 
 	/* Memorize this grid */
