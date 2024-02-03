@@ -171,9 +171,9 @@ struct ttf {
  *     print qq(\t"$s"\n);
  * }
  * and then manually hacked to substitute the escape codes for the non-null
- * control characters (0x01 to 0x1f) so the graphics characters at those
- * indices in Angband's packaged .fon files remain available, if the user
- * wants to access them (those characters are likely the ones specified by
+ * control characters (0x01 to 0x1f, and 0x7f) so the graphics characters at
+ * those indices in Angband's packaged .fon files remain available, if the
+ * user wants to access them (those characters are likely the ones specified by
  * code page 437, https://en.wikipedia.org/wiki/Code_page_437 ).
  */
 static const char g_ascii_codepoints_for_cache[] =
@@ -181,7 +181,7 @@ static const char g_ascii_codepoints_for_cache[] =
 	"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
 	" !\"#$%&'()*+,-./0123456789:;<=>?"
 	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-	"`abcdefghijklmnopqrstuvwxyz{|}~ ";
+	"`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
 /* Simple font cache. Only for ascii (which is like 99.99% (?) of what the game
  * displays, anyway) */
 #define ASCII_CACHE_SIZE \
