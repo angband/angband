@@ -1208,7 +1208,7 @@ static void subip_u16n(uint16_t *a, const uint16_t *b, size_t na, size_t nb)
 			carry = true;
 		}
 	}
-#ifdef NDEBUG
+#ifndef NDEBUG
 	while (ib > 0) {
 		--ib;
 		assert(!b[ib]);

@@ -1610,6 +1610,51 @@ static struct sdlpui_control *find_shortcut_editor_control_containing(
 	return c;
 }
 
+static void query_shortcut_editor_natural_size(struct sdlpui_dialog *d,
+		struct sdlpui_window *w, int *width, int *height)
+{
+	struct shortcut_editor_data *pse;
+	int dw = 0, dh = 0, cw, ch, roww, rowh;
+
+	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
+	pse = d->priv;
+	(*pse->labels[0].ftb->query_natural_size)(&pse->labels[0],
+		d, w, &roww, &rowh);
+	/*
+	 * The shortcut display will be three times the width of the label that
+	 * precedes it.
+	 */
+	roww *= 3;
+	(*pse->change_buttons[0].ftb->query_natural_size)(
+		&pse->change_buttons[0], d, w, &cw, &ch);
+	/*
+	 * Leave 1/8 of the width (rounded up) as space between the change and
+	 * clear buttons.
+	 */
+	roww += (9 * cw + 7) / 8;
+	rowh = MAX(rowh, ch);
+	(*pse->clear_buttons[0].ftb->query_natural_size)(&pse->clear_buttons[0],
+		d, w, &cw, &ch);
+	roww += cw;
+	rowh = MAX(rowh, ch);
+	dw = MAX(dw, roww);
+	dh += MAX_WINDOWS * rowh;
+	(*pse->close_button.ftb->query_natural_size)(&pse->close_button,
+		d, w, &roww, &rowh);
+	(*pse->reset_button.ftb->query_natural_size)(&pse->reset_button,
+		d, w, &cw, &ch);
+	roww = 4 * MAX(roww, cw);
+	rowh = MAX(rowh, ch);
+	dw = MAX(dw, roww);
+	/*
+	 * Leave space between the buttons at the bottom of the dialog and the
+	 * rest.
+	 */
+	dh += 3 * rowh;
+	*width = dw;
+	*height = dh;
+}
+
 static void resize_shortcut_editor(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int width, int height)
 {
@@ -1618,7 +1663,7 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-#ifdef NDEBUG
+#ifndef NDEBUG
 	{
 		int dw, dh;
 
@@ -1740,51 +1785,6 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 
 	d->rect.w = width;
 	d->rect.h = height;
-}
-
-static void query_shortcut_editor_natural_size(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int *width, int *height)
-{
-	struct shortcut_editor_data *pse;
-	int dw = 0, dh = 0, cw, ch, roww, rowh;
-
-	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
-	pse = d->priv;
-	(*pse->labels[0].ftb->query_natural_size)(&pse->labels[0],
-		d, w, &roww, &rowh);
-	/*
-	 * The shortcut display will be three times the width of the label that
-	 * precedes it.
-	 */
-	roww *= 3;
-	(*pse->change_buttons[0].ftb->query_natural_size)(
-		&pse->change_buttons[0], d, w, &cw, &ch);
-	/*
-	 * Leave 1/8 of the width (rounded up) as space between the change and
-	 * clear buttons.
-	 */
-	roww += (9 * cw + 7) / 8;
-	rowh = MAX(rowh, ch);
-	(*pse->clear_buttons[0].ftb->query_natural_size)(&pse->clear_buttons[0],
-		d, w, &cw, &ch);
-	roww += cw;
-	rowh = MAX(rowh, ch);
-	dw = MAX(dw, roww);
-	dh += MAX_WINDOWS * rowh;
-	(*pse->close_button.ftb->query_natural_size)(&pse->close_button,
-		d, w, &roww, &rowh);
-	(*pse->reset_button.ftb->query_natural_size)(&pse->reset_button,
-		d, w, &cw, &ch);
-	roww = 4 * MAX(roww, cw);
-	rowh = MAX(rowh, ch);
-	dw = MAX(dw, roww);
-	/*
-	 * Leave space between the buttons at the bottom of the dialog and the
-	 * rest.
-	 */
-	dh += 3 * rowh;
-	*width = dw;
-	*height = dh;
 }
 
 static void cleanup_shortcut_editor(struct sdlpui_dialog *d)
