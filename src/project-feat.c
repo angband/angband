@@ -267,7 +267,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	square_add_door(cave, grid, true);
 
 	/* Observe */
-	if (square_isknown(cave, grid))
+	if (square_isseen(cave, grid))
 		context->obvious = true;
 
 	/* Update the visuals */

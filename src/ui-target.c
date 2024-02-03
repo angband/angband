@@ -1041,7 +1041,9 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 				 * an object; make it act like an object.
 				 */
 				colour = COLOUR_YELLOW;
-			} else if (!square_isprojectable(cave, grid)) {
+			} else if (square_isknown(cave, grid)
+					&& !square_isprojectable(player->cave,
+					grid)) {
 				/* The camouflaged monster looks like a wall. */
 				colour = COLOUR_BLUE;
 			} else {
@@ -1055,12 +1057,12 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if (!square_isprojectable(cave, grid) &&
-				 (square_isknown(cave, grid) || square_isseen(cave, grid)))
+		else if (square_isknown(cave, grid)
+				&& !square_isprojectable(player->cave, grid)) {
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_isknown(cave, grid) && !square_isseen(cave, grid)) {
+		} else if (!square_isknown(cave, grid)) {
 			/* Unknown squares are grey. */
 			pastknown = true;
 			colour = COLOUR_L_DARK;

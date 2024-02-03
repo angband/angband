@@ -662,8 +662,8 @@ int count_feats(struct loc *grid,
 		/* Must have knowledge */
 		if (!square_isknown(cave, grid1)) continue;
 
-		/* Not looking for this feature */
-		if (!((*test)(cave, grid1))) continue;
+		/* Not looking for this feature; test against player's memory */
+		if (!((*test)(player->cave, grid1))) continue;
 
 		/* Count it */
 		++count;
