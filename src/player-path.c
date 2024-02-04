@@ -40,12 +40,12 @@
 /**
  * Maximum size around the player to consider in the pathfinder
  */
-#define MAX_PF_RADIUS 100
+#define MAX_PF_RADIUS 400
 
 /**
  * Maximum distance to consider in the pathfinder
  */
-#define MAX_PF_LENGTH 500
+#define MAX_PF_LENGTH 1000
 
 /**
  * Scale factor for distances in the path_distance array; note that PF_SCL *

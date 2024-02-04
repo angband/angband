@@ -103,7 +103,7 @@ Original Keyset Command Summary
 ``m``  Cast a spell                  ``M``  Display map of entire level
 ``n``  Repeat previous command       ``N``  (unused)
 ``o``  Open a door or chest          ``O``  (unused)
-``p``  (unused)                      ``P``  (unused)
+``p``  Walk to unexplored location   ``P``  (unused)
 ``q``  Quaff a potion                ``Q``  Kill character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
 ``s``  Steal (rogues only)           ``S``  See abilities
@@ -137,9 +137,9 @@ Original Keyset Command Summary
 ``'``  Target closest monster        ``^u`` (unused)
 ``"``  Enter a user pref command     ``^v`` (unused)
 ``,``  Stay still (with pickup)      ``^w`` (special - wizard mode)
-``<``  Go up staircase               ``^x`` Save and quit
+``<``  Go up/to up staircase         ``^x`` Save and quit
 ``.``  Run                           ``^y`` (unused)
-``>``  Go down staircase             ``^z`` (unused)
+``>``  Go down/to down staircase     ``^z`` (unused)
 ``\``  (special - bypass keymap)     ``~``  Check knowledge
  \`    (special - escape)            ``?``  Display help
 ``/``  Identify symbol
@@ -165,7 +165,7 @@ Roguelike Keyset Command Summary
  ``m``  Cast a spell                  ``M``  Display map of entire level
  ``n``  (walk - south east)           ``N``  (run - south east)
  ``o``  Open a door or chest          ``O``  Toggle ignore
- ``p``  (unused)                      ``P``  Browse a book
+ ``p``  Walk to unexplored location   ``P``  Browse a book
  ``q``  Quaff a potion                ``Q``  Kill character & quit
  ``r``  Read a scroll                 ``R``  Rest for a period
  ``s``  Steal (rogues only)           ``S``  See abilities
@@ -199,9 +199,9 @@ Roguelike Keyset Command Summary
  ``'``  Target closest monster        ``^u`` (alter - north east)
  ``"``  Enter a user pref command     ``^v`` Repeat previous command
  ``,``  Run                           ``^w`` (special - wizard mode)
- ``<``  Go up staircase               ``^x`` Save and quit
+ ``<``  Go up/to up staircase         ``^x`` Save and quit
  ``.``  Stay still (with pickup)      ``^y`` (alter - north west)
- ``>``  Go down staircase             ``^z`` (unused)
+ ``>``  Go down/to down staircase     ``^z`` (unused)
  ``\``  (special - bypass keymap)     ``~``  Check knowledge
   \`    (special - escape)            ``?``  Display help
  ``/``  Identify symbol

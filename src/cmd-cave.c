@@ -59,7 +59,7 @@ void do_cmd_go_up(struct command *cmd)
 
 	/* Verify stairs */
 	if (!square_isupstairs(cave, player->grid)) {
-		msg("I see no up staircase here.");
+		do_cmd_navigate_up(cmd);
 		return;
 	}
 
@@ -100,7 +100,7 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
-		msg("I see no down staircase here.");
+		do_cmd_navigate_down(cmd);
 		return;
 	}
 
@@ -1286,7 +1286,6 @@ void do_cmd_jump(struct command *cmd)
 	move_player(dir, false);
 }
 
-
 /**
  * Start running.
  *
@@ -1334,6 +1333,268 @@ void do_cmd_run(struct command *cmd)
 
 	/* Start run */
 	run_step(dir);
+}
+
+/**
+ * Automatically navigate to the nearest downstairs location.
+ *
+ * Note that navigating while confused is not allowed.
+ */
+void do_cmd_navigate_down(struct command *cmd)
+{
+	struct loc target_grid;
+	int visible_monster_count = 0;
+	/* cancel if confused */
+	if (player->timed[TMD_CONFUSED]) {
+		msg("You cannot explore while confused.");
+	   	return;
+	}
+
+
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		/* Clear the web, finish turn */
+		msg("You clear the web.");
+		square_destroy_trap(cave, player->grid);
+		player->upkeep->energy_use = z_info->move_energy;
+		return;
+	}
+	
+
+	int min_dist = 9999;
+	/* Get location */
+	for (int y = 0; y < cave->height; y++) {
+		for (int x = 0; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+			
+			if (loc_eq(grid, player->grid)) continue;
+
+			if (square_isoccupied(cave, grid)) {
+				int m_idx = square(cave, grid)->mon;
+				struct monster *mon = cave_monster(cave, m_idx);
+				if (monster_is_obvious(mon)) {
+					visible_monster_count++;
+					break;
+				}
+			}
+			if (square_isknown(cave, grid) && square_isdownstairs(player->cave, grid)) {
+				int d = distance(grid, player->grid);
+				if (d < min_dist) {
+					target_grid = grid;
+					min_dist = d;
+				}
+			}
+		}
+	}
+
+	if (visible_monster_count > 0) {
+		msg("Something is here.");
+		return;
+	}
+
+	if (min_dist < 9999 && find_path(target_grid)) {
+		player->upkeep->running = 1000;
+		/* Calculate torch radius */
+		player->upkeep->update |= (PU_TORCH);
+		player->upkeep->running_withpathfind = true;
+		run_step(0);
+		return;
+	}
+
+	msg("No known path to downstairs.");
+}
+
+/**
+ * Automatically navigate to the nearest upstairs location.
+ *
+ * Note that navigating while confused is not allowed.
+ */
+void do_cmd_navigate_up(struct command *cmd)
+{
+	struct loc target_grid;
+	int visible_monster_count = 0;
+	/* cancel if confused */
+	if (player->timed[TMD_CONFUSED]) {
+		msg("You cannot explore while confused.");
+	   	return;
+	}
+
+
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		/* Clear the web, finish turn */
+		msg("You clear the web.");
+		square_destroy_trap(cave, player->grid);
+		player->upkeep->energy_use = z_info->move_energy;
+		return;
+	}
+	
+
+	int min_dist = 9999;
+	/* Get location */
+	for (int y = 0; y < cave->height; y++) {
+		for (int x = 0; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+			
+			if (loc_eq(grid, player->grid)) continue;
+
+			if (square_isoccupied(cave, grid)) {
+				int m_idx = square(cave, grid)->mon;
+				struct monster *mon = cave_monster(cave, m_idx);
+				if (monster_is_obvious(mon)) {
+					visible_monster_count++;
+					break;
+				}
+			}
+			if (square_isknown(cave, grid) && square_isupstairs(player->cave, grid)) {
+				int d = distance(grid, player->grid);
+				if (d < min_dist) {
+					target_grid = grid;
+					min_dist = d;
+				}
+			}
+		}
+	}
+
+	if (visible_monster_count > 0) {
+		msg("Something is here.");
+		return;
+	}
+
+	if (min_dist < 9999 && find_path(target_grid)) {
+		player->upkeep->running = 1000;
+		/* Calculate torch radius */
+		player->upkeep->update |= (PU_TORCH);
+		player->upkeep->running_withpathfind = true;
+		run_step(0);
+		return;
+	}
+
+	msg("No known path to upstairs.");
+}
+
+/**
+ * Start exploring.
+ *
+ * Note that exploring while confused is not allowed.
+ */
+void do_cmd_explore(struct command *cmd)
+{
+	struct loc target_grid;
+	bool visible_monster = false;
+	/* cancel if confused */
+	if (player->timed[TMD_CONFUSED]) {
+		msg("You cannot explore while confused.");
+	   	return;
+	}
+
+
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		/* Clear the web, finish turn */
+		msg("You clear the web.");
+		square_destroy_trap(cave, player->grid);
+		player->upkeep->energy_use = z_info->move_energy;
+		return;
+	}
+	
+
+	int min_dist = 9999;
+	/* Get location */
+	for (int y = 0; y < cave->height && !visible_monster; y++) {
+		for (int x = 0; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+			
+			if (loc_eq(grid, player->grid)) continue;
+
+			if (square_isoccupied(cave, grid)) {
+				int m_idx = square(cave, grid)->mon;
+				struct monster *mon = cave_monster(cave, m_idx);
+				if (monster_is_obvious(mon)) {
+					visible_monster = true;
+					break; /* only breaks the inner loop */
+				}
+			}
+			
+			/* only consider known locations which are passable and have unexplored neighbors */
+			if (square_isknown(cave, grid) &&
+				square_ispassable(player->cave, grid) &&
+				count_neighbors(NULL, cave, grid, square_isknown, false) != 8) {
+
+				int d = distance(grid, player->grid);
+
+				if (d < min_dist) {
+					target_grid = grid;
+					min_dist = d;
+				}
+			}
+		}
+	}
+
+	if (visible_monster) {
+		msg("Something is here.");
+		return;
+	}
+
+	if (min_dist < 9999 && find_path(target_grid)) {
+		player->upkeep->running = 1000;
+		/* Calculate torch radius */
+		player->upkeep->update |= (PU_TORCH);
+		player->upkeep->running_withpathfind = true;
+		run_step(0);
+		return;
+	}
+
+	/* 
+	 * No unexplored location found, walk to a door/rubble grid position,
+	 * that has an explored and unexplored side.
+	 */
+	min_dist = 9999;
+	for (int y = 0; y < cave->height; y++) {
+		for (int x = 0; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+
+			/* only check known locations, which are either rubble or a closed door */
+			if (square_isnotknown(cave, grid) ||
+			   (!square_iscloseddoor(player->cave, grid) && !square_isrubble(player->cave, grid))) {
+				continue;
+			}
+			
+			/* if no unexplored neighbors -> reject */
+			if (count_neighbors(NULL, cave, grid, square_isknown, false) == 8) {
+				continue;
+			}
+
+			struct loc explored_neighbor;
+
+			/* if no passable known neighbors -> reject */
+			if (count_neighbors(&explored_neighbor, cave, grid, square_isknownpassable, false) == 0) {
+				continue;
+			}
+
+			if (loc_eq(explored_neighbor, player->grid)) {
+				continue;
+			}
+			
+			/* found an interesting door/rubble location */
+			int d = distance(explored_neighbor, player->grid);
+			if (d < min_dist) {
+				target_grid = explored_neighbor;
+				min_dist = d;
+			}
+		}
+	}
+	/* try pathfinding there */
+	if (min_dist < 9999 && find_path(target_grid)) {
+		player->upkeep->running = 1000;
+		/* Calculate torch radius */
+		player->upkeep->update |= (PU_TORCH);
+		player->upkeep->running_withpathfind = true;
+		run_step(0);
+		return;
+	}
+
+	msg("No apparent path for exploration.");
 }
 
 

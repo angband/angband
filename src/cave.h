@@ -357,6 +357,7 @@ bool square_changeable(struct chunk *c, struct loc grid);
 bool square_in_bounds(struct chunk *c, struct loc grid);
 bool square_in_bounds_fully(struct chunk *c, struct loc grid);
 bool square_isbelievedwall(struct chunk *c, struct loc grid);
+bool square_isknownpassable(struct chunk *c, struct loc grid);
 bool square_suits_stairs_well(struct chunk *c, struct loc grid);
 bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 bool square_allows_summon(struct chunk *c, struct loc grid);
