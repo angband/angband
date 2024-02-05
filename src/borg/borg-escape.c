@@ -498,7 +498,6 @@ static bool borg_escape_stair(void)
     /* Usable stairs */
     if (ag->feat == FEAT_LESS) {
         /* Take the stairs */
-        borg.on_dnstairs = true;
         borg_note("# Escaping level via stairs.");
         borg_keypress('<');
 

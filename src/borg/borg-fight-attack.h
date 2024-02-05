@@ -344,7 +344,7 @@ extern int borg_attack_aux_launch(void);
  * Simulate/Apply the optimal result of using a "normal" attack spell
  */
 extern int borg_attack_aux_spell_bolt(
-    const enum borg_spells spell, int rad, int dam, int typ, int max_range);
+    const enum borg_spells spell, int rad, int dam, int typ, int max_range, bool is_arc);
 
 /*
  * Simulate/Apply the optimal result of using the given "type" of attack

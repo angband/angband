@@ -382,9 +382,6 @@ struct borg_struct {
     bool stair_less; /* Use the next "up" staircase */
     bool stair_more; /* Use the next "down" staircase */
 
-    bool on_upstairs; /* used when leaving a level */
-    bool on_dnstairs; /* used when leaving a level */
-
     bool in_shop;
 
     /* a 3 state boolean */
