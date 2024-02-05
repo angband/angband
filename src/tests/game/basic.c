@@ -126,6 +126,10 @@ static int test_stairs1(void *state) {
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
 
+	/* Perform normal set up after loading. */
+	require(character_dungeon);
+	on_new_level();
+
 	cmdq_push(CMD_GO_DOWN);
 	run_game_loop();
 	eq(player->depth, 1);
@@ -134,6 +138,7 @@ static int test_stairs1(void *state) {
 }
 
 static int test_stairs2(void *state) {
+	bool at_stairs = true;
 	int dir;
 
 	reset_before_load();
@@ -141,19 +146,34 @@ static int test_stairs2(void *state) {
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
 
+	/* Perform normal set up after loading. */
+	require(character_dungeon);
+	on_new_level();
+
 	dir = choose_direction(cave, player);
 	if (dir >= 0) {
 		cmdq_push(CMD_WALK);
 		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
 		run_game_loop();
-		cmdq_push(CMD_WALK);
-		cmd_set_arg_direction(cmdq_peek(), "direction",
-			reverse_direction(dir));
-		run_game_loop();
+		if (!square_monster(cave, loc_sum(player->grid,
+				ddgrid[reverse_direction(dir)]))) {
+			cmdq_push(CMD_WALK);
+			cmd_set_arg_direction(cmdq_peek(), "direction",
+				reverse_direction(dir));
+			run_game_loop();
+		} else {
+			/*
+			 * A monster got in the way.  Skip testing if can go
+			 * down the stairs and report the test was successful.
+			 */
+			at_stairs = false;
+		}
 	}
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	eq(player->depth, 1);
+	if (at_stairs) {
+		cmdq_push(CMD_GO_DOWN);
+		run_game_loop();
+		eq(player->depth, 1);
+	}
 
 	ok;
 }
@@ -165,6 +185,10 @@ static int test_drop_pickup(void *state) {
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
+
+	/* Perform normal set up after loading. */
+	require(character_dungeon);
+	on_new_level();
 
 	dir = choose_direction(cave, player);
 	if (dir >= 0) {
@@ -196,6 +220,10 @@ static int test_drop_eat(void *state) {
 	/* Load the saved game */
 	eq(savefile_load("Test1", false), true);
 	num = player->upkeep->inven[0]->number;
+
+	/* Perform normal set up after loading. */
+	require(character_dungeon);
+	on_new_level();
 
 	dir = choose_direction(cave, player);
 	if (dir >= 0) {
