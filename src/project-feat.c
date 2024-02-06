@@ -221,15 +221,15 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	if (square_issecretdoor(cave, grid)) {
 		place_closed_door(cave, grid);
 
-		/* Check line of sight */
+		/* Check if visible */
 		if (square_isseen(cave, grid))
 			context->obvious = true;
 	}
 
 	/* Disable traps, unlock doors */
 	if (square_isdisarmabletrap(cave, grid)) {
-		/* Check line of sight */
-		if (square_isview(cave, grid)) {
+		/* Check if visible */
+		if (square_isseen(cave, grid)) {
 			msg("The trap seizes up.");
 			context->obvious = true;
 		}
@@ -240,7 +240,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		/* Unlock the door */
 		square_unlock_door(cave, grid);
 
-		/* Check line of sound */
+		/* Check line of sound; approximated with square_isview() */
 		if (square_isview(cave, grid)) {
 			msg("Click!");
 			context->obvious = true;

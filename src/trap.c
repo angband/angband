@@ -649,7 +649,10 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 		disabled = true;
 
 		/* Message if requested */
-		msg("You have disabled the %s.", current_trap->kind->name);
+		if (domsg) {
+			msg("You have disabled the %s.",
+				current_trap->kind->name);
+		}
 
 		/* Replace with the next trap */
 		current_trap = next_trap;
