@@ -657,6 +657,7 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 
 	/* Refresh grids that the character can see */
 	if (square_isseen(c, grid)) {
+		square_memorize_traps(c, grid);
 		square_light_spot(c, grid);
 	}
 
