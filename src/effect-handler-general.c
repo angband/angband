@@ -1251,9 +1251,13 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 				}
 			}
 
-			/* Forget unprocessed, unknown grids in the mapping area */
-			if (square_isnotknown(cave, grid))
+			/*
+			 * Forget grids that are both unprocessed and
+			 * misremembered in the mapping area.
+			 */
+			if (square_ismemorybad(cave, grid)) {
 				square_forget(cave, grid);
+			}
 		}
 	}
 
@@ -1435,14 +1439,17 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 				doors = true;
 			} else if (square_isdoor(cave, grid)) {
 				/* Detect other types of doors. */
-				if (square_isnotknown(cave, grid)) {
+				if (square_ismemorybad(cave, grid)) {
 					square_memorize(cave, grid);
 					square_light_spot(cave, grid);
 					doors = true;
 				}
 			} else if (square_isdoor(player->cave, grid)
-					&& square_isnotknown(cave, grid)) {
-				/* Forget unknown doors in the mapping area */
+					&& square_ismemorybad(cave, grid)) {
+				/*
+				 * Forget misremembered doors in the mapping
+				 * area.
+				 */
 				square_forget(cave, grid);
 			}
 		}

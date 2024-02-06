@@ -396,8 +396,8 @@ bool square_isoccupied(struct chunk *c, struct loc grid) {
  * True if the player knows the terrain of the square
  */
 bool square_isknown(struct chunk *c, struct loc grid) {
-	if (c != cave) return false;
-	if (player->cave == NULL) return false;
+	if (c != cave && (!player || c != player->cave)) return false;
+	if (!player->cave) return false;
 	return square(player->cave, grid)->feat == FEAT_NONE ? false : true;
 }
 
@@ -405,10 +405,9 @@ bool square_isknown(struct chunk *c, struct loc grid) {
  * True if the player's knowledge of the terrain of the square is wrong
  * or missing
  */
-bool square_isnotknown(struct chunk *c, struct loc grid) {
-	if (c != cave) return false;
-	if (player->cave == NULL) return true;
-	return square(player->cave, grid)->feat != square(c, grid)->feat;
+bool square_ismemorybad(struct chunk *c, struct loc grid) {
+	return !square_isknown(c, grid)
+		|| square(player->cave, grid)->feat != square(cave, grid)->feat;
 }
 
 /**

@@ -1606,7 +1606,7 @@ void do_cmd_explore(struct command *cmd)
 			struct loc grid = loc(x, y);
 
 			/* only check known locations, which are either rubble or a closed door */
-			if (square_isnotknown(cave, grid) ||
+			if (!square_isknown(cave, grid) ||
 			   (!square_iscloseddoor(player->cave, grid) && !square_isrubble(player->cave, grid))) {
 				continue;
 			}
