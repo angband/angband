@@ -297,7 +297,7 @@ bool square_isshop(struct chunk *c, struct loc grid);
 bool square_isplayer(struct chunk *c, struct loc grid);
 bool square_isoccupied(struct chunk *c, struct loc grid);
 bool square_isknown(struct chunk *c, struct loc grid);
-bool square_isnotknown(struct chunk *c, struct loc grid);
+bool square_ismemorybad(struct chunk *c, struct loc grid);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, struct loc grid);
