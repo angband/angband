@@ -1938,7 +1938,7 @@ static int borg_launch_arc_at_location(
 /*
  * Simulate/Apply the optimal result of launching an arc/cone/spray
  */
-int borg_launch_arc(int degrees, int dam, int typ, int max)
+static int borg_launch_arc(int degrees, int dam, int typ, int max)
 {
     int i = 0;
     int b_i = -1;
