@@ -876,15 +876,14 @@ static void borg_parse_aux(char *msg, int len)
     }
 
     /* Check for the missing staircase */
-    if (suffix(msg, " staircase here.")) {
+    if (prefix(msg, "No known path to ") || 
+        prefix(msg, "Something is here.")) {
         /* make sure the aligned dungeon is on */
 
         /* make sure the borg does not think he's on one */
         /* Remove all stairs from the array. */
         track_less.num                      = 0;
         track_more.num                      = 0;
-        borg.on_dnstairs                    = false;
-        borg.on_upstairs                    = false;
         borg_grids[borg.c.y][borg.c.x].feat = FEAT_BROKEN;
 
         return;

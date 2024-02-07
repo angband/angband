@@ -820,7 +820,7 @@ void do_cmd_borg(void)
         /* clear 'fear' levels */
         case 'f':
         case 'F': {
-            msg("Command No Longer Usefull");
+            msg("Command No Longer Useful");
             break;
         }
         }
@@ -1307,6 +1307,9 @@ void do_cmd_borg(void)
         int        n_y;
         struct loc l;
 
+        uint8_t svDelay = player->opts.delay_factor;
+        player->opts.delay_factor = 200;
+
         /* Determine "path" */
         n_x = player->grid.x;
         n_y = player->grid.y;
@@ -1327,7 +1330,7 @@ void do_cmd_borg(void)
             borg_inc_motion(&n_y, &n_x, player->grid.y, player->grid.x, y, x);
         }
 
-        msg("Borg's Targetting Path");
+        msg("Borg's Targeting Path");
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Determine "path" */
@@ -1336,12 +1339,23 @@ void do_cmd_borg(void)
         x   = l.x;
         y   = l.y;
 
-        /* Real LOS */
-        project(source_player(), 0, loc(x, y), 1, PROJ_MISSILE, PROJECT_BEAM, 0,
-            0, NULL);
+        /* Get a "Borg command", or abort */
+        if (!get_com("Borg command: Show Arc (Y/y): ", &cmd))
+            return;
 
-        msg("Actual Targetting Path");
+        msg("Actual Targeting Path");
         event_signal(EVENT_MESSAGE_FLUSH);
+
+        if (cmd != 'Y' && cmd != 'y')
+            /* Real LOS - beam*/
+            project(source_player(), 0, loc(x, y), 1, PROJ_MISSILE, PROJECT_BEAM, 0,
+                0, NULL);
+        else
+            /* Real LOS - arc */
+            project(source_player(), 10, loc(x, y), 50, PROJ_MISSILE, PROJECT_ARC, 60,
+                4, NULL);
+
+        player->opts.delay_factor = svDelay;
 
         /* Redraw map */
         prt_map();

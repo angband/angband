@@ -55,7 +55,7 @@
  */
 static int borg_stuff_feeling[]
     = { 50000, /* 0 is no feeling yet given, stick around to get one */
-          8000, 8000, 6000, 4000, 2000, 1000, 800, 600, 400, 200, 0 };
+          8000, 8000, 8000, 8000, 5000, 5000, 100, 100, 100, 100, 0 };
 
 /*
  * money Scumming is a type of town scumming for money
@@ -452,7 +452,6 @@ bool borg_think_stair_scum(bool from_town)
             /* if standing on a stair */
             if (ag->feat == FEAT_MORE) {
                 /* Take the DownStair */
-                borg.on_upstairs = true;
                 borg_keypress('>');
 
                 return (true);
@@ -506,7 +505,6 @@ bool borg_think_stair_scum(bool from_town)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }

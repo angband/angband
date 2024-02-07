@@ -1167,12 +1167,11 @@ bool borg_caution(void)
         borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Usable stairs */
-        if (ag->feat == FEAT_LESS || borg.on_upstairs || on_upstair) {
+        if (ag->feat == FEAT_LESS || on_upstair) {
             /* Log it */
             borg_note(format("# Leaving via up stairs."));
 
             /* Take the stairs */
-            borg.on_dnstairs = true;
             borg_keypress('<');
 
             /* Success */
@@ -1186,7 +1185,7 @@ bool borg_caution(void)
         borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Usable stairs */
-        if (ag->feat == FEAT_MORE || borg.on_dnstairs || on_dnstair) {
+        if (ag->feat == FEAT_MORE || on_dnstair) {
             /* Do these if not lunal mode */
             if (!borg.goal.fleeing_lunal && !borg.goal.fleeing_munchkin) {
                 if (borg_prep_leave_level_spells())
@@ -1194,7 +1193,6 @@ bool borg_caution(void)
             }
 
             /* Take the stairs */
-            borg.on_upstairs = true;
             borg_keypress('>');
 
             /* Success */

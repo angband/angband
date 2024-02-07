@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../generate.h"
 #include "../obj-slays.h"
 #include "../obj-util.h"
 #include "../ui-menu.h"
@@ -1258,7 +1259,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     if (typ == BORG_ATTACK_AWAY_EVIL)
         return (d);
 
-    /* Return 0 if the true damge (w/o the danger bonus) is 0 */
+    /* Return 0 if the true damage (w/o the danger bonus) is 0 */
     if (d <= 0)
         return (d);
 
@@ -1296,6 +1297,80 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     return (d);
 }
 
+
+/*
+ * Determine the penalty for destroying stuff by launching a spell at it
+ */
+static int borg_launch_destroy_stuff(borg_grid *ag, int typ)
+{
+    struct borg_take *take = &borg_takes[ag->take];
+    struct object_kind *k_ptr = take->kind;
+
+    switch (typ) {
+    case BORG_ATTACK_ACID:
+    {
+        /* rings/boots cost extra (might be speed!) */
+        if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
+            return 20;
+        }
+        break;
+    }
+    case BORG_ATTACK_ELEC:
+    {
+        /* rings/boots cost extra (might be speed!) */
+        if (k_ptr->tval == TV_RING && !k_ptr->aware) {
+            return 20;
+        }
+        if (k_ptr->tval == TV_RING
+            && k_ptr->sval == sv_ring_speed) {
+            return 2000;
+        }
+        break;
+    }
+
+    case BORG_ATTACK_FIRE:
+    {
+        /* rings/boots cost extra (might be speed!) */
+        if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
+            return 20;
+        }
+        break;
+    }
+    case BORG_ATTACK_COLD:
+    {
+        if (k_ptr->tval == TV_POTION) {
+            /* Extra penalty for cool potions */
+            if (!k_ptr->aware || k_ptr->sval == sv_potion_healing
+                || k_ptr->sval == sv_potion_star_healing
+                || k_ptr->sval == sv_potion_life
+                || (k_ptr->sval == sv_potion_inc_str
+                    && borg.need_statgain[STAT_STR])
+                || (k_ptr->sval == sv_potion_inc_int
+                    && borg.need_statgain[STAT_INT])
+                || (k_ptr->sval == sv_potion_inc_wis
+                    && borg.need_statgain[STAT_WIS])
+                || (k_ptr->sval == sv_potion_inc_dex
+                    && borg.need_statgain[STAT_DEX])
+                || (k_ptr->sval == sv_potion_inc_con
+                    && borg.need_statgain[STAT_CON]))
+                return 2000;
+
+            return 20;
+
+        }
+        break;
+    }
+    case BORG_ATTACK_MANA:
+    {
+        /* Used against uniques, allow the stuff to burn */
+        break;
+    }
+    }
+
+    return 0;
+}
+
+
 /*
  * Determine the "reward" of launching a beam/bolt/ball at a location
  *
@@ -1306,7 +1381,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
  *
  * We will attempt to apply the offset-ball attack here
  */
-static int borg_launch_bolt_aux(
+static int borg_launch_bolt_at_location(
     int y, int x, int rad, int dam, int typ, int max, int ammo_location)
 {
     int ry, rx;
@@ -1347,32 +1422,31 @@ static int borg_launch_bolt_aux(
     x = x1;
     y = y1;
 
-    /* Simulate the spell/missile path */
-    for (dist = 0; dist < max; dist++) {
-        /* Bounds Check */
-        if (dist && !square_in_bounds_fully(cave, loc(x, y)))
-            break;
+    /* Get the grid of the targetted monster */
+    ag = &borg_grids[y2][x2];
+    kill = &borg_kills[ag->kill];
+    r_ptr = &r_info[kill->r_idx];
 
-        /* Get the grid of the targetted monster */
-        ag    = &borg_grids[y2][x2];
-        kill  = &borg_kills[ag->kill];
-        r_ptr = &r_info[kill->r_idx];
+    /* Simulate the spell/missile path */
+    for (dist = 1; dist < max; dist++) {
+        /* Calculate the new location */
+        borg_inc_motion(&y, &x, y1, x1, y2, x2);
+
+        /* Bounds Check */
+        if (!square_in_bounds_fully(cave, loc(x, y)))
+            break;
 
         /* Get the grid of the pathway */
         ag = &borg_grids[y][x];
 
         /* Stop at walls */
-        /* note: beams end at walls.  */
-        if (dist) {
-            /* Stop at walls */
-            /* note if beam, this is the end of the beam */
-            /* dispel spells act like beams (sort of) */
-            if (!borg_cave_floor_grid(ag) || ag->feat == FEAT_PASS_RUBBLE) {
-                if (rad != -1 && rad != 10)
-                    return (0);
-                else
-                    return (n);
-            }
+        /* note if beam, this is the end of the beam */
+        /* dispel spells act like beams (sort of) */
+        if (!borg_cave_floor_grid(ag) || ag->feat == FEAT_PASS_RUBBLE) {
+            if (rad != -1 && rad != 10)
+                return (0);
+            else
+                return (n);
         }
 
         /* Collect damage (bolts/beams) */
@@ -1425,7 +1499,7 @@ static int borg_launch_bolt_aux(
         /* dont do the check if esp */
         if (!borg.trait[BI_ESP]) {
             /* Check the missile path--no Infra, no HAS_LIGHT */
-            if (dist && (borg.trait[BI_INFRA] <= 0) && !(r_ptr->light > 0)) {
+            if ((borg.trait[BI_INFRA] <= 0) && !(r_ptr->light > 0)) {
                 /* Stop at unknown grids (see above) */
                 /* note if beam, dispel, this is the end of the beam */
                 if (ag->feat == FEAT_NONE) {
@@ -1434,70 +1508,40 @@ static int borg_launch_bolt_aux(
                     else
                         return (n);
                 }
+            } 
 
-                /* Stop at unseen walls */
-                /* We just shot and missed, this is our next shot */
-                if (successful_target < 0) {
-                    /* When throwing things, it is common to just 'miss' */
-                    /* Skip only one round in this case */
-                    if (successful_target <= -12)
-                        successful_target = 0;
-                    if (rad != -1 && rad != 10)
-                        return (0);
-                    else
-                        return (n);
-                }
-            } else /* I do have infravision or it's a lite monster */
-            {
-                /* Stop at unseen walls */
-                /* We just shot and missed, this is our next shot */
-                if (successful_target < 0) {
-                    /* When throwing things, it is common to just 'miss' */
-                    /* Skip only one round in this case */
-                    if (successful_target <= -12)
-                        successful_target = 0;
-                    if (rad != -1 && rad != 10)
-                        return (0);
-                    else
-                        return (n);
-                }
+            /* Stop at unseen walls */
+            /* We just shot and missed, this is our next shot */
+            if (successful_target < 0) {
+                /* When throwing things, it is common to just 'miss' */
+                /* Skip only one round in this case */
+                if (successful_target <= -12)
+                    successful_target = 0;
+                if (rad != -1 && rad != 10)
+                    return (0);
+                else
+                    return (n);
             }
         } else /* I do have ESP */
         {
-            /* Check the missile path */
-            if (dist) {
-                /* if this area has been magic mapped,
-                 * ok to shoot in the dark
-                 */
-                if (!borg_detect_wall[q_y + 0][q_x + 0]
-                    && !borg_detect_wall[q_y + 0][q_x + 1]
-                    && !borg_detect_wall[q_y + 1][q_x + 0]
-                    && !borg_detect_wall[q_y + 1][q_x + 1]
-                    && borg_fear_region[borg.c.y / 11][borg.c.x / 11]
-                           < avoidance / 20) {
+            /* if this area has been magic mapped,
+             * ok to shoot in the dark
+             */
+            if (!borg_detect_wall[q_y + 0][q_x + 0]
+                && !borg_detect_wall[q_y + 0][q_x + 1]
+                && !borg_detect_wall[q_y + 1][q_x + 0]
+                && !borg_detect_wall[q_y + 1][q_x + 1]
+                && borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+                < avoidance / 20) {
 
-                    /* Stop at unknown grids (see above) */
-                    /* note if beam, dispel, this is the end of the beam */
-                    if (ag->feat == FEAT_NONE) {
-                        if (rad != -1 && rad != 10)
-                            return (0);
-                        else
-                            return (n);
-                    }
-                    /* Stop at unseen walls */
-                    /* We just shot and missed, this is our next shot */
-                    if (successful_target < 0) {
-                        /* When throwing things, it is common to just 'miss' */
-                        /* Skip only one round in this case */
-                        if (successful_target <= -12)
-                            successful_target = 0;
-                        if (rad != -1 && rad != 10)
-                            return (0);
-                        else
-                            return (n);
-                    }
+                /* Stop at unknown grids (see above) */
+                /* note if beam, dispel, this is the end of the beam */
+                if (ag->feat == FEAT_NONE) {
+                    if (rad != -1 && rad != 10)
+                        return (0);
+                    else
+                        return (n);
                 }
-
                 /* Stop at unseen walls */
                 /* We just shot and missed, this is our next shot */
                 if (successful_target < 0) {
@@ -1505,17 +1549,27 @@ static int borg_launch_bolt_aux(
                     /* Skip only one round in this case */
                     if (successful_target <= -12)
                         successful_target = 0;
-
                     if (rad != -1 && rad != 10)
                         return (0);
                     else
                         return (n);
                 }
             }
-        }
 
-        /* Calculate the new location */
-        borg_inc_motion(&y, &x, y1, x1, y2, x2);
+            /* Stop at unseen walls */
+            /* We just shot and missed, this is our next shot */
+            if (successful_target < 0) {
+                /* When throwing things, it is common to just 'miss' */
+                /* Skip only one round in this case */
+                if (successful_target <= -12)
+                    successful_target = 0;
+
+                if (rad != -1 && rad != 10)
+                    return (0);
+                else
+                    return (n);
+            }
+        }
     }
 
     /* Bolt/Beam attack */
@@ -1560,65 +1614,8 @@ static int borg_launch_bolt_aux(
             /* probable damage int was just changed by b_l_b_a_h*/
 
             /* check destroyed stuff. */
-            if (ag->take && borg_takes[ag->take].kind) {
-                struct borg_take   *take  = &borg_takes[ag->take];
-                struct object_kind *k_ptr = take->kind;
-
-                switch (typ) {
-                case BORG_ATTACK_ACID: {
-                    /* rings/boots cost extra (might be speed!) */
-                    if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
-                        n -= 20;
-                    }
-                    break;
-                }
-                case BORG_ATTACK_ELEC: {
-                    /* rings/boots cost extra (might be speed!) */
-                    if (k_ptr->tval == TV_RING && !k_ptr->aware) {
-                        n -= 20;
-                    }
-                    if (k_ptr->tval == TV_RING
-                        && k_ptr->sval == sv_ring_speed) {
-                        n -= 2000;
-                    }
-                    break;
-                }
-
-                case BORG_ATTACK_FIRE: {
-                    /* rings/boots cost extra (might be speed!) */
-                    if (k_ptr->tval == TV_BOOTS && !k_ptr->aware) {
-                        n -= 20;
-                    }
-                    break;
-                }
-                case BORG_ATTACK_COLD: {
-                    if (k_ptr->tval == TV_POTION) {
-                        n -= 20;
-
-                        /* Extra penalty for cool potions */
-                        if (!k_ptr->aware || k_ptr->sval == sv_potion_healing
-                            || k_ptr->sval == sv_potion_star_healing
-                            || k_ptr->sval == sv_potion_life
-                            || (k_ptr->sval == sv_potion_inc_str
-                                && borg.need_statgain[STAT_STR])
-                            || (k_ptr->sval == sv_potion_inc_int
-                                && borg.need_statgain[STAT_INT])
-                            || (k_ptr->sval == sv_potion_inc_wis
-                                && borg.need_statgain[STAT_WIS])
-                            || (k_ptr->sval == sv_potion_inc_dex
-                                && borg.need_statgain[STAT_DEX])
-                            || (k_ptr->sval == sv_potion_inc_con
-                                && borg.need_statgain[STAT_CON]))
-                            n -= 2000;
-                    }
-                    break;
-                }
-                case BORG_ATTACK_MANA: {
-                    /* Used against uniques, allow the stuff to burn */
-                    break;
-                }
-                }
-            }
+            if (ag->take && borg_takes[ag->take].kind)
+                n -= borg_launch_destroy_stuff(ag, typ);
         }
     }
 
@@ -1691,7 +1688,7 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
                 /* Consider it if its a ball spell or right on top of it */
                 if ((rad >= 2 && borg_grids[y][x].feat != FEAT_NONE)
                     || (y == borg_temp_y[i] && x == borg_temp_x[i]))
-                    n = borg_launch_bolt_aux(
+                    n = borg_launch_bolt_at_location(
                         y, x, rad, dam, typ, max, ammo_location);
 
                 /* Teleport Other is now considered */
@@ -1741,6 +1738,259 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
 
     /* Reset Teleport Other variables */
     borg_tp_other_n = 0;
+
+    /* Simulation */
+    if (borg_simulate)
+        return (b_n);
+
+    /* Save the location */
+    borg.goal.g.x = borg_temp_x[b_i] + b_o_x;
+    borg.goal.g.y = borg_temp_y[b_i] + b_o_y;
+
+    /* Target the location */
+    (void)borg_target(borg.goal.g);
+
+    /* Result */
+    return (b_n);
+}
+
+/*
+ * Determine the "reward" of launching an arc/spray/cone at a location
+ * 
+ * This code is copied from borg_launch_bolt_at_location
+ * both need to be optimized for shared code !FIX
+ *
+ */
+static int borg_launch_arc_at_location(
+    int y, int x, int degrees, int dam, int typ, int max)
+{
+    int ry, rx;
+
+    int x1, y1;
+    int x2, y2;
+
+    int dist;
+
+    int r, n;
+
+    borg_grid *ag;
+    struct monster_race *r_ptr;
+    borg_kill *kill;
+
+    int q_x, q_y;
+
+    struct loc path_grids[256];
+
+    /* Extract panel */
+    q_x = w_x / borg_panel_wid();
+    q_y = w_y / borg_panel_hgt();
+
+    /* Reset damage */
+    n = 0;
+
+    /* Initial location */
+    x1 = borg.c.x;
+    y1 = borg.c.y;
+
+    /* Final location */
+    x2 = x;
+    y2 = y;
+
+    /* Bounds Check */
+    if (!square_in_bounds_fully(cave, loc(x, y)))
+        return 0;
+
+    /* Start over */
+    x = x1;
+    y = y1;
+
+    /* Get the grid of the targetted monster */
+    ag = &borg_grids[y2][x2];
+    kill = &borg_kills[ag->kill];
+    r_ptr = &r_info[kill->r_idx];
+
+    /* starting square is always good */
+    path_grids[0].x = x;
+    path_grids[0].y = y;
+
+    /* Simulate the spell/missile path */
+    for (dist = 1; dist < max; dist++) {
+
+        /* Calculate the new location */
+        borg_inc_motion(&y, &x, y1, x1, y2, x2);
+
+        /* Bounds Check */
+        if (!square_in_bounds_fully(cave, loc(x, y)))
+            break;
+
+        /* Stop at walls */
+        /* note if beam, this is the end of the beam */
+        /* dispel spells act like beams (sort of) */
+        if (!borg_cave_floor_grid(ag) || ag->feat == FEAT_PASS_RUBBLE) {
+            break;
+        }
+
+        path_grids[dist].x = x;
+        path_grids[dist].y = y;
+
+        /* Check for arrival at "final target" */
+        /* except beams, which keep going. */
+        if ((x == x2) && (y == y2))
+            break;
+
+        /* check unmapped squares */
+        if (ag->feat == FEAT_NONE) {
+
+            /* Check if we have ESP */
+            if (borg.trait[BI_ESP]) {
+                /* no Infra, no HAS_LIGHT */
+                if ((borg.trait[BI_INFRA] <= 0) && !(r_ptr->light > 0))
+                    break;
+            } else /* no ESP */ {
+                /* if this area has been magic mapped,
+                 * ok to shoot in the dark
+                 */
+                if (!borg_detect_wall[q_y + 0][q_x + 0]
+                    && !borg_detect_wall[q_y + 0][q_x + 1]
+                    && !borg_detect_wall[q_y + 1][q_x + 0]
+                    && !borg_detect_wall[q_y + 1][q_x + 1]
+                    && borg_fear_region[borg.c.y / 11][borg.c.x / 11]
+                    < avoidance / 20) {
+                    break;
+                }
+
+                /* Stop if we missed previously */
+                if (successful_target < 0) {
+                    /* reset the "miss" so only one shot is skipped  */
+                    if (successful_target <= -12)  // !FIX double check magic -12
+                        successful_target = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (dist < 21)
+        dist = dist - 1;
+    else
+        dist = 20;
+
+    /* Use angle comparison to delineate an arc. */
+    int n1x, n1y, n2y, n2x, tmp, rotate, diff;
+
+    /* reorient arc beam */
+    n1y = path_grids[dist].y - y1 + 20;
+    n1x = path_grids[dist].x - x1 + 20;
+
+    /* Check monsters and objects in blast radius and on the arc */
+    /* for an arc, blast radius starts at player */
+    for (ry = y1 - max; ry < y1 + max; ry++) {
+        for (rx = x1 - max; rx < x1 + max; rx++) {
+
+            /* Bounds check */
+            if (!square_in_bounds(cave, loc(rx, ry)))
+                continue;
+
+            /* Get the grid */
+            ag = &borg_grids[ry][rx];
+
+            /* Check distance */
+            r = borg_distance(y2, x2, ry, rx);
+
+            /* Maximal distance */
+            if (r > max)
+                continue;
+
+            /* Never pass through walls*/
+            if (!borg_los(y2, x2, ry, rx))
+                continue;
+
+            /* check on angle */
+            /* Reorient current grid for table access. */
+            n2y = y - y1 + 20;
+            n2x = x - x1 + 20;
+
+            /* Find the angular difference (/2) between the lines to
+                * the end of the arc's center-line and to the current grid.
+                */
+            rotate = 90 - get_angle_to_grid[n1y][n1x];
+            tmp = ABS(get_angle_to_grid[n2y][n2x] + rotate) % 180;
+            diff = ABS(90 - tmp);
+
+            /* If difference is greater then that allowed, skip it,
+                * unless it's on the target path */
+            if (diff >= (degrees + 6) / 4)
+                continue;
+
+            if (ag->kill)
+                /* Collect damage, lowered by distance */
+                n += borg_launch_bolt_aux_hack(ag->kill, dam / (r + 1), typ, 0);
+
+            if (ag->take && borg_takes[ag->take].kind) 
+                n -= borg_launch_destroy_stuff(ag, typ);
+        }
+    }
+
+    /* Result */
+    return (n);
+}
+
+/*
+ * Simulate/Apply the optimal result of launching an arc/cone/spray
+ */
+static int borg_launch_arc(int degrees, int dam, int typ, int max)
+{
+    int i = 0;
+    int b_i = -1;
+    int n = 0;
+    int b_n = -1;
+
+    int b_o_y = 0, b_o_x = 0;
+    int o_y = 0, o_x = 0;
+    int d, b_d = z_info->max_range;
+
+    if (max > 20)
+        max = 20;
+
+    /* Examine possible destinations */
+    for (i = 0; i < borg_temp_n; i++) {
+        int x = borg_temp_x[i];
+        int y = borg_temp_y[i];
+
+        /* reset result */
+        n = 0;
+
+        /* Remember how far away the monster is */
+        d = distance(borg.c, loc(borg_temp_x[i], borg_temp_y[i]));
+
+        /* Skip places that are out of range */
+        if (d > max)
+            continue;
+
+        /* Consider it if its a ball spell or right on top of it */
+        n = borg_launch_arc_at_location(y, x, degrees, dam, typ, max);
+
+        /* Skip useless attacks */
+        if (n <= 0)
+            continue;
+
+        /* Collect best attack */
+        if ((b_i >= 0) && (n < b_n))
+            continue;
+
+        /* Skip attacking farther monster if rewards are equal. */
+        if (n == b_n && d > b_d)
+            continue;
+
+        /* Track it */
+        b_i = i;
+        b_n = n;
+        b_o_y = o_y;
+        b_o_x = o_x;
+        b_d = d;
+    }
+    if (b_i == -1)
+        return (b_n);
 
     /* Simulation */
     if (borg_simulate)
@@ -2084,7 +2334,7 @@ static int borg_attack_aux_object(void)
  * Take into account the failure rate of spells/objects/etc.  XXX XXX XXX
  */
 int borg_attack_aux_spell_bolt(
-    const enum borg_spells spell, int rad, int dam, int typ, int max_range)
+    const enum borg_spells spell, int rad, int dam, int typ, int max_range, bool is_arc)
 {
     int b_n;
     int penalty = 0;
@@ -2118,7 +2368,10 @@ int borg_attack_aux_spell_bolt(
         return (0);
 
     /* Choose optimal location */
-    b_n = borg_launch_bolt(rad, dam, typ, max_range, 0);
+    if (is_arc)
+        b_n = borg_launch_arc(rad, dam, typ, max_range);
+    else
+        b_n = borg_launch_bolt(rad, dam, typ, max_range, 0);
 
     enum borg_spells primary_spell_for_class = MAGIC_MISSILE;
     switch (borg.trait[BI_CLASS]) {
@@ -2836,7 +3089,7 @@ static int borg_attack_aux_dragon(
         return (0);
 
     /* Choose optimal location */
-    b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
+    b_n = borg_launch_arc(rad, dam, typ, z_info->max_range);
 
     /* Simulation */
     if (borg_simulate)
@@ -3573,14 +3826,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
     case BF_SPELL_SLOW_MONSTER:
         dam = 10;
         return (borg_attack_aux_spell_bolt(
-            SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW, z_info->max_range));
+            SLOW_MONSTER, rad, dam, BORG_ATTACK_OLD_SLOW, z_info->max_range, false));
 
     /* Spell -- confuse monster */
     case BF_SPELL_CONFUSE_MONSTER:
         rad = 0;
         dam = 10;
         return (borg_attack_aux_spell_bolt(CONFUSE_MONSTER, rad, dam,
-            BORG_ATTACK_OLD_CONF, z_info->max_range));
+            BORG_ATTACK_OLD_CONF, z_info->max_range, false));
 
     case BF_SPELL_SLEEP_III:
         dam = 10;
@@ -3592,7 +3845,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = ((((borg.trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range));
+            MAGIC_MISSILE, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range, false));
 
     /* Spell -- magic missile EMERGENCY*/
     case BF_SPELL_MAGIC_MISSILE_RESERVE:
@@ -3606,42 +3859,42 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = ((((borg.trait[BI_CLEVEL] - 5) / 3) + 6) * (8 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            FROST_BOLT, rad, dam, BORG_ATTACK_COLD, z_info->max_range));
+            FROST_BOLT, rad, dam, BORG_ATTACK_COLD, z_info->max_range, false));
 
     /* Spell -- kill wall */
     case BF_SPELL_STONE_TO_MUD:
         rad = 0;
         dam = (20 + (30 / 2));
         return (borg_attack_aux_spell_bolt(TURN_STONE_TO_MUD, rad, dam,
-            BORG_ATTACK_KILL_WALL, z_info->max_range));
+            BORG_ATTACK_KILL_WALL, z_info->max_range, false));
 
     /* Spell -- light beam */
     case BF_SPELL_LIGHT_BEAM:
         rad = -1;
         dam = (6 * (8 + 1) / 2);
         return (borg_attack_aux_spell_bolt(SPEAR_OF_LIGHT, rad, dam,
-            BORG_ATTACK_LIGHT_WEAK, z_info->max_range));
+            BORG_ATTACK_LIGHT_WEAK, z_info->max_range, false));
 
     /* Spell -- stinking cloud */
     case BF_SPELL_STINK_CLOUD:
         rad = 2;
         dam = (10 + (borg.trait[BI_CLEVEL] / 2));
         return (borg_attack_aux_spell_bolt(
-            STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS, z_info->max_range));
+            STINKING_CLOUD, rad, dam, BORG_ATTACK_POIS, z_info->max_range, false));
 
     /* Spell -- fire ball */
     case BF_SPELL_FIRE_BALL:
         rad = 2;
         dam = (borg.trait[BI_CLEVEL] * 2);
         return (borg_attack_aux_spell_bolt(
-            FIRE_BALL, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
+            FIRE_BALL, rad, dam, BORG_ATTACK_FIRE, z_info->max_range, false));
 
     /* Spell -- Ice Storm */
     case BF_SPELL_COLD_STORM:
         rad = 3;
         dam = (3 * ((borg.trait[BI_CLEVEL] * 3) + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range));
+            ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range, false));
 
     /* Spell -- Meteor Swarm */
     case BF_SPELL_METEOR_SWARM:
@@ -3649,28 +3902,28 @@ int borg_calculate_attack_effectiveness(int attack_type)
         dam = (30 + borg.trait[BI_CLEVEL] / 2) + (borg.trait[BI_CLEVEL] / 20)
               + 2;
         return (borg_attack_aux_spell_bolt(
-            METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR, z_info->max_range));
+            METEOR_SWARM, rad, dam, BORG_ATTACK_METEOR, z_info->max_range, false));
 
     /* Spell -- Rift */
     case BF_SPELL_RIFT:
         rad = -1;
         dam = ((borg.trait[BI_CLEVEL] * 3) + 40);
         return (borg_attack_aux_spell_bolt(
-            RIFT, rad, dam, BORG_ATTACK_GRAVITY, z_info->max_range));
+            RIFT, rad, dam, BORG_ATTACK_GRAVITY, z_info->max_range, false));
 
     /* Spell -- mana storm */
     case BF_SPELL_MANA_STORM:
         rad = 3;
         dam = (300 + (borg.trait[BI_CLEVEL] * 2));
         return (borg_attack_aux_spell_bolt(
-            MANA_STORM, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
+            MANA_STORM, rad, dam, BORG_ATTACK_MANA, z_info->max_range, false));
 
     /* Spell -- Shock Wave */
     case BF_SPELL_SHOCK_WAVE:
         dam = (borg.trait[BI_CLEVEL] * 2);
         rad = 2;
         return (borg_attack_aux_spell_bolt(
-            SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND, z_info->max_range));
+            SHOCK_WAVE, rad, dam, BORG_ATTACK_SOUND, z_info->max_range, false));
 
     /* Spell -- Explosion */
     case BF_SPELL_EXPLOSION:
@@ -3679,21 +3932,21 @@ int borg_calculate_attack_effectiveness(int attack_type)
                    / 5)); /* hack pretend it is all shards */
         rad = 2;
         return (borg_attack_aux_spell_bolt(
-            EXPLOSION, rad, dam, BORG_ATTACK_SHARD, z_info->max_range));
+            EXPLOSION, rad, dam, BORG_ATTACK_SHARD, z_info->max_range, false));
 
     /* Prayer -- orb of draining */
     case BF_PRAYER_HOLY_ORB_BALL:
         rad = ((borg.trait[BI_CLEVEL] >= 30) ? 3 : 2);
         dam = ((borg.trait[BI_CLEVEL] * 3) / 2) + (3 * (6 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(ORB_OF_DRAINING, rad, dam,
-            BORG_ATTACK_HOLY_ORB, z_info->max_range));
+            BORG_ATTACK_HOLY_ORB, z_info->max_range, false));
 
     /* Prayer -- blind creature */
     case BF_SPELL_BLIND_CREATURE:
         rad = 0;
         dam = 10;
         return (borg_attack_aux_spell_bolt(
-            FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range));
+            FRIGHTEN, rad, dam, BORG_ATTACK_OLD_CONF, z_info->max_range, false));
 
     /* Druid - Trance */
     case BF_SPELL_TRANCE:
@@ -3744,36 +3997,34 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = (borg.trait[BI_CLEVEL] * 4);
         return (borg_attack_aux_spell_bolt(
-            ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN, z_info->max_range));
+            ANNIHILATE, rad, dam, BORG_ATTACK_OLD_DRAIN, z_info->max_range, false));
 
     /* Spell -- Electric Arc */
     case BF_SPELL_ELECTRIC_ARC:
         rad = 0;
         dam = ((((borg.trait[BI_CLEVEL] - 1) / 5) + 3) * (6 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg.trait[BI_CLEVEL]));
+            ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg.trait[BI_CLEVEL], false));
 
     case BF_SPELL_ACID_SPRAY:
-//        rad = 3; /* HACK just pretend it is wide. */
-        rad = 1; /* can't pretend it is wide.  Doesn't work for corridor to room attacks  */
-        /* !FIX code for cones */
+        rad = 60; 
         dam = ((borg.trait[BI_CLEVEL] / 2) * (8 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10));
+            ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10, true));
 
     /* Spell -- mana bolt */
     case BF_SPELL_MANA_BOLT:
         rad = 0;
         dam = ((borg.trait[BI_CLEVEL] - 10) * (8 + 1) / 2);
         return (borg_attack_aux_spell_bolt(
-            MANA_BOLT, rad, dam, BORG_ATTACK_MANA, z_info->max_range));
+            MANA_BOLT, rad, dam, BORG_ATTACK_MANA, z_info->max_range, false));
 
     /* Spell -- thrust away */
     case BF_SPELL_THRUST_AWAY:
         rad = 0;
         dam = (borg.trait[BI_CLEVEL] * (8 + 1) / 2);
         return (borg_attack_aux_spell_bolt(THRUST_AWAY, rad, dam,
-            BORG_ATTACK_FORCE, (borg.trait[BI_CLEVEL] / 10) + 1));
+            BORG_ATTACK_FORCE, (borg.trait[BI_CLEVEL] / 10) + 1, false));
 
     /* Spell -- Lightning Strike */
     case BF_SPELL_LIGHTNING_STRIKE:
@@ -3781,7 +4032,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         dam = ((borg.trait[BI_CLEVEL] / 4) * (4 + 1) / 2)
               + borg.trait[BI_CLEVEL] + 5; /* HACK pretend it is all elec */
         return (borg_attack_aux_spell_bolt(
-            LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range));
+            LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range, false));
 
     /* Spell -- Earth Rising */
     case BF_SPELL_EARTH_RISING:
@@ -3789,7 +4040,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         dam = (((borg.trait[BI_CLEVEL] / 3) + 2) * (6 + 1) / 2)
               + borg.trait[BI_CLEVEL] + 5;
         return (borg_attack_aux_spell_bolt(EARTH_RISING, rad, dam,
-            BORG_ATTACK_SHARD, (borg.trait[BI_CLEVEL] / 5) + 4));
+            BORG_ATTACK_SHARD, (borg.trait[BI_CLEVEL] / 5) + 4, false));
 
     /* Spell -- Volcanic Eruption */
     /* just count the damage.  The earthquake defense is a side bennie,
@@ -3800,36 +4051,35 @@ int borg_calculate_attack_effectiveness(int attack_type)
                   * ((borg.trait[BI_CLEVEL] * 3) + 1))
               / 2;
         return (borg_attack_aux_spell_bolt(
-            VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE, z_info->max_range));
+            VOLCANIC_ERUPTION, rad, dam, BORG_ATTACK_FIRE, z_info->max_range, false));
 
     /* Spell -- River of Lightning */
     case BF_SPELL_RIVER_OF_LIGHTNING:
-//        rad = 2; !FIX !TODO !AJG need to code for ARC (cone) attacks
-        rad = 1;
+        rad = 20;
         dam = (borg.trait[BI_CLEVEL] + 10) * (8 + 1) / 2;
         return (borg_attack_aux_spell_bolt(
-            RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20));
+            RIVER_OF_LIGHTNING, rad, dam, BORG_ATTACK_PLASMA, 20, true));
 
     /* spell -- Spear of Oromë */
     case BF_SPELL_SPEAR_OF_OROME:
         rad = 0;
         dam = ((borg.trait[BI_CLEVEL] / 2) + (8 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
-            SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range));
+            SPEAR_OF_OROME, rad, dam, BORG_ATTACK_HOLY_ORB, z_info->max_range, false));
 
     /* spell -- Light of Manwë */
     case BF_SPELL_LIGHT_OF_MANWE:
         rad = 0;
         dam = borg.trait[BI_CLEVEL] * 5 + 100;
         return (borg_attack_aux_spell_bolt(
-            LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT, z_info->max_range));
+            LIGHT_OF_MANWE, rad, dam, BORG_ATTACK_LIGHT, z_info->max_range, false));
 
     /* spell -- Nether Bolt */
     case BF_SPELL_NETHER_BOLT:
         rad = 0;
         dam = ((((borg.trait[BI_CLEVEL] / 4) + 3) * (4 + 1)) / 2);
         return (borg_attack_aux_spell_bolt(
-            NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER, z_info->max_range));
+            NETHER_BOLT, rad, dam, BORG_ATTACK_NETHER, z_info->max_range, false));
 
     /* spell -- Tap Unlife */
     case BF_SPELL_TAP_UNLIFE:
@@ -3851,14 +4101,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = ((((borg.trait[BI_CLEVEL] * 2) + 10) + 1) / 2) * 2;
         return (borg_attack_aux_spell_bolt(
-            DISENCHANT, rad, dam, BORG_ATTACK_DISEN, z_info->max_range));
+            DISENCHANT, rad, dam, BORG_ATTACK_DISEN, z_info->max_range, false));
 
     /* spell -- Frighten */
     case BF_SPELL_FRIGHTEN:
         rad = 0;
         dam = borg.trait[BI_CLEVEL];
         return (borg_attack_aux_spell_bolt(
-            FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL, z_info->max_range));
+            FRIGHTEN, rad, dam, BORG_ATTACK_TURN_ALL, z_info->max_range, false));
 
     /* Spell - Vampire Strike*/
     case BF_SPELL_VAMPIRE_STRIKE:
@@ -3869,28 +4119,28 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = ((borg.trait[BI_CLEVEL] * 3) + 1) / 2;
         return (borg_attack_aux_spell_bolt(
-            DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE, z_info->max_range));
+            DISPEL_LIFE, rad, dam, BORG_ATTACK_DRAIN_LIFE, z_info->max_range, false));
 
     /* spell -- Dark Spear */
     case BF_SPELL_DARK_SPEAR:
         rad = 0;
         dam = (((borg.trait[BI_CLEVEL] * 2) + 1) / 2) * 2;
         return (borg_attack_aux_spell_bolt(
-            DARK_SPEAR, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
+            DARK_SPEAR, rad, dam, BORG_ATTACK_DARK, z_info->max_range, false));
 
     /* spell -- Unleash Chaos */
     case BF_SPELL_UNLEASH_CHAOS:
         rad = 0;
         dam = ((borg.trait[BI_CLEVEL] + 1) / 2) * 8;
         return (borg_attack_aux_spell_bolt(
-            UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS, z_info->max_range));
+            UNLEASH_CHAOS, rad, dam, BORG_ATTACK_CHAOS, z_info->max_range, false));
 
     /* Spell -- Storm of Darkness */
     case BF_SPELL_STORM_OF_DARKNESS:
         rad = 4;
         dam = (((borg.trait[BI_CLEVEL] * 2) + 1) / 2) * 4;
         return (borg_attack_aux_spell_bolt(
-            STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK, z_info->max_range));
+            STORM_OF_DARKNESS, rad, dam, BORG_ATTACK_DARK, z_info->max_range, false));
 
     /* Spell - Curse */
     case BF_SPELL_CURSE:
@@ -4701,25 +4951,25 @@ int borg_calculate_attack_effectiveness(int attack_type)
 
     /* Hack -- Dragon Scale Mail can be activated as well */
     case BF_DRAGON_BLUE:
-        rad = 2;
+        rad = 20;
         dam = 150;
         return (borg_attack_aux_dragon(
             sv_dragon_blue, rad, dam, BORG_ATTACK_ELEC, -1));
 
     case BF_DRAGON_WHITE:
-        rad = 2;
+        rad = 20;
         dam = 100;
         return (borg_attack_aux_dragon(
             sv_dragon_white, rad, dam, BORG_ATTACK_COLD, -1));
 
     case BF_DRAGON_BLACK:
-        rad = 2;
+        rad = 20;
         dam = 120;
         return (borg_attack_aux_dragon(
             sv_dragon_black, rad, dam, BORG_ATTACK_ACID, -1));
 
     case BF_DRAGON_GREEN:
-        rad = 2;
+        rad = 20;
         dam = 150;
         return (borg_attack_aux_dragon(
             sv_dragon_green, rad, dam, BORG_ATTACK_POIS, -1));
@@ -4737,7 +4987,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         int  biggest = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad               = 2;
+        rad               = 20;
         dam               = 250;
         if (!borg_simulate)
             borg_simulate = true;
@@ -4758,7 +5008,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_DRAGON_GOLD:
-        rad = 2;
+        rad = 20;
         dam = 150;
         return (borg_attack_aux_dragon(
             sv_dragon_gold, rad, dam, BORG_ATTACK_SOUND, -1));
@@ -4769,7 +5019,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad               = 2;
+        rad               = 20;
         dam               = 220;
 
         if (!borg_simulate)
@@ -4796,7 +5046,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad               = 2;
+        rad               = 20;
         dam               = 220;
 
         if (!borg_simulate)
@@ -4824,7 +5074,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         int biggest = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad               = 2;
+        rad               = 20;
         dam               = 250;
 
         if (!borg_simulate)
@@ -4851,7 +5101,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         int  biggest      = 0;
         bool tmp_simulate = borg_simulate;
 
-        rad               = 2;
+        rad               = 20;
         dam               = 200;
 
         if (!borg_simulate)
@@ -4873,7 +5123,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     case BF_DRAGON_POWER:
-        rad = 2;
+        rad = 20;
         dam = 300;
         return (borg_attack_aux_dragon(
             sv_dragon_power, rad, dam, BORG_ATTACK_MISSILE, -1));

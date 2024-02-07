@@ -285,7 +285,6 @@ static bool borg_think_dungeon_lunal(void)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -333,8 +332,7 @@ static bool borg_think_dungeon_lunal(void)
 
             /* if standing on a stair */
             if (ag->feat == FEAT_MORE) {
-                /* Take the DownStair */
-                borg.on_upstairs = true;
+                /* Take the downstairs */
                 borg_keypress('>');
 
                 return (true);
@@ -388,7 +386,6 @@ static bool borg_think_dungeon_lunal(void)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -648,7 +645,6 @@ static bool borg_think_dungeon_munchkin(void)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -710,7 +706,6 @@ static bool borg_think_dungeon_munchkin(void)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -764,7 +759,6 @@ static bool borg_think_dungeon_munchkin(void)
             /* if standing on a stair */
             if (ag->feat == FEAT_MORE) {
                 /* Take the DownStair */
-                borg.on_upstairs = true;
                 borg_keypress('>');
 
                 return (true);
@@ -820,7 +814,6 @@ static bool borg_think_dungeon_munchkin(void)
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
-                borg.on_dnstairs = true;
                 borg_keypress('<');
                 return (true);
             }
@@ -911,13 +904,11 @@ static bool borg_think_dungeon_munchkin(void)
             return (true);
         if (ag->feat == FEAT_LESS) {
             /* Take the Up Stair */
-            borg.on_dnstairs = true;
             borg_keypress('<');
             return (true);
         }
         if (ag->feat == FEAT_MORE) {
             /* Take the Stair */
-            borg.on_upstairs = true;
             borg_keypress('>');
             return (true);
         }
@@ -960,7 +951,6 @@ static bool borg_think_dungeon_brave(void)
     /* Usable stairs */
     if (borg_grids[borg.c.y][borg.c.x].feat == FEAT_MORE) {
         /* Take the stairs */
-        borg.on_upstairs = true;
         borg_note("# Fleeing via stairs.");
         borg_keypress('>');
 

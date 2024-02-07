@@ -2023,15 +2023,16 @@ bool borg_flow_kill(bool viewable, int nearness)
  */
 static bool borg_has_distance_attack(void)
 {
-
     /* line up Magic Missile shots (covers Mages) */
     if (borg_attack_aux_spell_bolt(
-            MAGIC_MISSILE, 0, 10, BORG_ATTACK_MISSILE, z_info->max_range))
+            MAGIC_MISSILE, 0, 10, BORG_ATTACK_MISSILE, z_info->max_range, false)
+        > 0)
         return true;
 
     /* line up Nether Bolt shots (covers Necromancers) */
     if (borg_attack_aux_spell_bolt(
-            NETHER_BOLT, 0, 10, BORG_ATTACK_NETHER, z_info->max_range))
+            NETHER_BOLT, 0, 10, BORG_ATTACK_NETHER, z_info->max_range, false)
+        > 0)
         return true;
 
     /* or arrows (covers warrior/ranger/paladins/rogues) */
