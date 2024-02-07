@@ -1823,6 +1823,8 @@ static int borg_launch_arc_at_location(
         if (!square_in_bounds_fully(cave, loc(x, y)))
             break;
 
+        ag = &borg_grids[y][x];
+
         /* Stop at walls */
         /* note if beam, this is the end of the beam */
         /* dispel spells act like beams (sort of) */
@@ -1858,14 +1860,14 @@ static int borg_launch_arc_at_location(
                     < avoidance / 20) {
                     break;
                 }
+            }
 
-                /* Stop if we missed previously */
-                if (successful_target < 0) {
-                    /* reset the "miss" so only one shot is skipped  */
-                    if (successful_target <= -12)  // !FIX double check magic -12
-                        successful_target = 0;
-                    break;
-                }
+            /* Stop if we missed previously */
+            if (successful_target < 0) {
+                /* reset the "miss" so only one shot is skipped  */
+                if (successful_target <= -12)  // !FIX double check magic -12
+                    successful_target = 0;
+                break;
             }
         }
     }
@@ -1895,14 +1897,14 @@ static int borg_launch_arc_at_location(
             ag = &borg_grids[ry][rx];
 
             /* Check distance */
-            r = borg_distance(y2, x2, ry, rx);
+            r = borg_distance(y1, x1, ry, rx);
 
             /* Maximal distance */
             if (r > max)
                 continue;
 
             /* Never pass through walls*/
-            if (!borg_los(y2, x2, ry, rx))
+            if (!borg_los(y1, x1, ry, rx))
                 continue;
 
             /* check on angle */
