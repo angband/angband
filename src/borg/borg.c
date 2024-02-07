@@ -798,6 +798,7 @@ void do_cmd_borg(void)
             /* Give borg thought messages in window */
         case 'm':
         case 'M': {
+            msg("Command No Longer Useful");
             break;
         }
 

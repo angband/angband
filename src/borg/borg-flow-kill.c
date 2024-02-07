@@ -1165,7 +1165,7 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
             /* Note */
             borg_note(
                 format("# Tracking a monster '%s' at (%d,%d) from (%d,%d)",
-                    (r_ptr->name), kill->pos.y, kill->pos.x, ox, oy));
+                    (r_ptr->name), kill->pos.y, kill->pos.x, oy, ox));
 
             /* Recalculate danger */
             borg_danger_wipe = true;
