@@ -4876,8 +4876,17 @@ static const struct font_info *find_font_info(const struct font_info *fonts,
 static void make_font_cache(const struct sdlpui_window *window,
 		struct font *font)
 {
+	const int glyph_w = font->ttf.glyph.w;
+	const int glyph_h = font->ttf.glyph.h;
+	/*
+	 * Limit the horizontal size of the texture for the cached font to
+	 * avoid bumping into limits in the renderer.
+	 */
+	const size_t ncol = 16;
+
 	font->cache.texture = make_subwindow_texture(window,
-			(int) ASCII_CACHE_SIZE * font->ttf.glyph.w, font->ttf.glyph.h);
+		(int)ncol * glyph_w,
+		(int)((ASCII_CACHE_SIZE + (ncol - 1)) / ncol) * glyph_h);
 	assert(font->cache.texture != NULL);
 		
 	/* fill texture with white transparent pixels */
@@ -4886,10 +4895,7 @@ static void make_font_cache(const struct sdlpui_window *window,
 	/* restore the alpha; we will render glyphs in white */
 	white.a = 0xFF;
 
-	const int glyph_w = font->ttf.glyph.w;
-	const int glyph_h = font->ttf.glyph.h;
-
-	for (size_t i = 0; i < ASCII_CACHE_SIZE; i++) {
+	for (size_t i = 0, icol = 0, irow = 0; i < ASCII_CACHE_SIZE; i++) {
 		SDL_Surface *surface = TTF_RenderGlyph_Blended(font->ttf.handle,
 				(Uint16) g_ascii_codepoints_for_cache[i], white);
 		if (surface == NULL) {
@@ -4906,7 +4912,7 @@ static void make_font_cache(const struct sdlpui_window *window,
 		}
 
 		SDL_Rect src = {0, 0, surface->w, surface->h};
-		SDL_Rect dst = {glyph_w * i, 0, glyph_w, glyph_h};
+		SDL_Rect dst = {glyph_w * icol, glyph_h * irow, glyph_w, glyph_h};
 
 		crop_rects(&src, &dst);
 
@@ -4916,6 +4922,13 @@ static void make_font_cache(const struct sdlpui_window *window,
 
 		SDL_FreeSurface(surface);
 		SDL_DestroyTexture(texture);
+
+		if (icol < ncol - 1) {
+			++icol;
+		} else {
+			icol = 0;
+			++irow;
+		}
 	}
 }
 
