@@ -1393,8 +1393,8 @@ void do_cmd_run(struct command *cmd)
  */
 void do_cmd_navigate_down(struct command *cmd)
 {
-	struct loc target_grid;
 	int visible_monster_count = 0;
+
 	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
@@ -1412,8 +1412,7 @@ void do_cmd_navigate_down(struct command *cmd)
 	}
 	
 
-	int min_dist = 9999;
-	/* Get location */
+	/* Screen for visible monsters */
 	for (int y = 0; y < cave->height; y++) {
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
@@ -1428,13 +1427,6 @@ void do_cmd_navigate_down(struct command *cmd)
 					break;
 				}
 			}
-			if (square_isknown(cave, grid) && square_isdownstairs(player->cave, grid)) {
-				int d = distance(grid, player->grid);
-				if (d < min_dist) {
-					target_grid = grid;
-					min_dist = d;
-				}
-			}
 		}
 	}
 
@@ -1443,11 +1435,14 @@ void do_cmd_navigate_down(struct command *cmd)
 		return;
 	}
 
-	if (min_dist < 9999 && find_path(target_grid)) {
-		player->upkeep->running = 1000;
+	assert(!player->upkeep->steps);
+	player->upkeep->step_count = path_nearest_known(player, player->grid,
+		square_isdownstairs, &player->upkeep->path_dest,
+		&player->upkeep->steps);
+	if (player->upkeep->step_count > 0) {
+		player->upkeep->running = player->upkeep->step_count;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = true;
 		run_step(0);
 		return;
 	}
@@ -1462,7 +1457,6 @@ void do_cmd_navigate_down(struct command *cmd)
  */
 void do_cmd_navigate_up(struct command *cmd)
 {
-	struct loc target_grid;
 	int visible_monster_count = 0;
 	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
@@ -1481,12 +1475,11 @@ void do_cmd_navigate_up(struct command *cmd)
 	}
 	
 
-	int min_dist = 9999;
-	/* Get location */
+	/* Screen for visible monsters */
 	for (int y = 0; y < cave->height; y++) {
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
-			
+
 			if (loc_eq(grid, player->grid)) continue;
 
 			if (square_isoccupied(cave, grid)) {
@@ -1497,13 +1490,6 @@ void do_cmd_navigate_up(struct command *cmd)
 					break;
 				}
 			}
-			if (square_isknown(cave, grid) && square_isupstairs(player->cave, grid)) {
-				int d = distance(grid, player->grid);
-				if (d < min_dist) {
-					target_grid = grid;
-					min_dist = d;
-				}
-			}
 		}
 	}
 
@@ -1512,11 +1498,14 @@ void do_cmd_navigate_up(struct command *cmd)
 		return;
 	}
 
-	if (min_dist < 9999 && find_path(target_grid)) {
-		player->upkeep->running = 1000;
+	assert(!player->upkeep->steps);
+	player->upkeep->step_count = path_nearest_known(player, player->grid,
+		square_isupstairs, &player->upkeep->path_dest,
+		&player->upkeep->steps);
+	if (player->upkeep->step_count > 0) {
+		player->upkeep->running = player->upkeep->step_count;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = true;
 		run_step(0);
 		return;
 	}
@@ -1531,7 +1520,6 @@ void do_cmd_navigate_up(struct command *cmd)
  */
 void do_cmd_explore(struct command *cmd)
 {
-	struct loc target_grid;
 	bool visible_monster = false;
 	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
@@ -1550,8 +1538,7 @@ void do_cmd_explore(struct command *cmd)
 	}
 	
 
-	int min_dist = 9999;
-	/* Get location */
+	/* Screen for visible monsters */
 	for (int y = 0; y < cave->height && !visible_monster; y++) {
 		for (int x = 0; x < cave->width; x++) {
 			struct loc grid = loc(x, y);
@@ -1566,19 +1553,6 @@ void do_cmd_explore(struct command *cmd)
 					break; /* only breaks the inner loop */
 				}
 			}
-			
-			/* only consider known locations which are passable and have unexplored neighbors */
-			if (square_isknown(cave, grid) &&
-				square_ispassable(player->cave, grid) &&
-				count_neighbors(NULL, cave, grid, square_isknown, false) != 8) {
-
-				int d = distance(grid, player->grid);
-
-				if (d < min_dist) {
-					target_grid = grid;
-					min_dist = d;
-				}
-			}
 		}
 	}
 
@@ -1587,60 +1561,13 @@ void do_cmd_explore(struct command *cmd)
 		return;
 	}
 
-	if (min_dist < 9999 && find_path(target_grid)) {
-		player->upkeep->running = 1000;
+	assert(!player->upkeep->steps);
+	player->upkeep->step_count = path_nearest_unknown(player, player->grid,
+		&player->upkeep->path_dest, &player->upkeep->steps);
+	if (player->upkeep->step_count > 0) {
+		player->upkeep->running = player->upkeep->step_count;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = true;
-		run_step(0);
-		return;
-	}
-
-	/* 
-	 * No unexplored location found, walk to a door/rubble grid position,
-	 * that has an explored and unexplored side.
-	 */
-	min_dist = 9999;
-	for (int y = 0; y < cave->height; y++) {
-		for (int x = 0; x < cave->width; x++) {
-			struct loc grid = loc(x, y);
-
-			/* only check known locations, which are either rubble or a closed door */
-			if (!square_isknown(cave, grid) ||
-			   (!square_iscloseddoor(player->cave, grid) && !square_isrubble(player->cave, grid))) {
-				continue;
-			}
-			
-			/* if no unexplored neighbors -> reject */
-			if (count_neighbors(NULL, cave, grid, square_isknown, false) == 8) {
-				continue;
-			}
-
-			struct loc explored_neighbor;
-
-			/* if no passable known neighbors -> reject */
-			if (count_neighbors(&explored_neighbor, cave, grid, square_isknownpassable, false) == 0) {
-				continue;
-			}
-
-			if (loc_eq(explored_neighbor, player->grid)) {
-				continue;
-			}
-			
-			/* found an interesting door/rubble location */
-			int d = distance(explored_neighbor, player->grid);
-			if (d < min_dist) {
-				target_grid = explored_neighbor;
-				min_dist = d;
-			}
-		}
-	}
-	/* try pathfinding there */
-	if (min_dist < 9999 && find_path(target_grid)) {
-		player->upkeep->running = 1000;
-		/* Calculate torch radius */
-		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = true;
 		run_step(0);
 		return;
 	}
@@ -1664,11 +1591,14 @@ void do_cmd_pathfind(struct command *cmd)
 	if (player->timed[TMD_CONFUSED])
 		return;
 
-	if (find_path(grid)) {
-		player->upkeep->running = 1000;
+	assert(!player->upkeep->steps);
+	player->upkeep->step_count =
+		find_path(player, player->grid, grid, &player->upkeep->steps);
+	if (player->upkeep->step_count > 0) {
+		player->upkeep->path_dest = grid;
+		player->upkeep->running = player->upkeep->step_count;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = true;
 		run_step(0);
 	}
 }

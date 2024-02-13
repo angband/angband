@@ -446,6 +446,7 @@ void player_cleanup_members(struct player *p)
 	if (p->upkeep) {
 		mem_free(p->upkeep->quiver);
 		mem_free(p->upkeep->inven);
+		mem_free(p->upkeep->steps);
 		mem_free(p->upkeep);
 		p->upkeep = NULL;
 	}
