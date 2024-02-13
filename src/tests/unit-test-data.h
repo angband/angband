@@ -1052,7 +1052,6 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.create_down_stair = 0,
 
 	.running = 0,
-	.running_withpathfind = 0,
 	.running_firststep = 0,
 
 	.quiver = NULL,
@@ -1062,6 +1061,9 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.inven_cnt = 0,
 	.equip_cnt = 0,
 	.quiver_cnt = 0,
+	.step_count = 0,
+	.steps = NULL,
+	.path_dest = { 0, 0 },
 };
 
 static struct object TEST_DATA test_player_knowledge = {

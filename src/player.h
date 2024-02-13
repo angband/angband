@@ -480,7 +480,6 @@ struct player_upkeep {
 	int resting;			/* Resting counter */
 
 	int running;				/* Running counter */
-	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */
 
 	struct object **quiver;	/* Quiver objects */
@@ -490,6 +489,9 @@ struct player_upkeep {
 	int equip_cnt;			/* Number of items in equipment */
 	int quiver_cnt;			/* Number of items in the quiver */
 	int recharge_pow;		/* Power of recharge effect */
+	int step_count;			/* Pathfinding: number of steps left */
+	int16_t *steps;			/* Pathfinding: steps in reverse order */
+	struct loc path_dest;		/* Pathfinding: destination grid */
 };
 
 /**
