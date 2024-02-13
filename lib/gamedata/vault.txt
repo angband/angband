@@ -31,7 +31,7 @@
 #    # - granite
 #    @ - impenetrable rock
 #    * - treasure vein
-#    : - rubble
+#    : - rubble (50% passable; 50% impassable)
 #    ` - lava
 #    / - water; treated as plain floor by Vanilla
 #    ; - tree; treated as plain floor by Vanilla
