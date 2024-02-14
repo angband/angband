@@ -50,7 +50,7 @@ void wiz_cheat_death(void)
 	(void)player_clear_timed(player, TMD_CUT, true, false);
 
 	/* Prevent starvation */
-	player_set_timed(player, TMD_FOOD, PY_FOOD_MAX - 1, false, false);
+	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false, false);
 
 	/* Cancel recall */
 	if (player->word_recall)
