@@ -1783,7 +1783,7 @@ static void adjust_skill_scale(int *v, int num, int den, int minv)
 		*v += (MAX(minv, ABS(*v)) * num) / den;
 	} else {
 		/*
-		 * To mimic what (value * (den * num)) / num would give for
+		 * To mimic what (value * (den + num)) / den would give for
 		 * positive value, need to round up the adjustment.
 		 */
 		*v -= (MAX(minv, ABS(*v)) * -num + den - 1) / den;
