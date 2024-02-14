@@ -9,16 +9,16 @@
 # It should only be done when list-player-timed.h (and other code) is also being
 # changed, and the game recompiled.
 # Changing a resist line will have to match to one of the hard-coded elements
-# from list-elements.h; currently, those resist lines are used to filter out
-# unnecessary messages when timed effects lapse and to affect selection of
-# randart activations.
+# from list-elements.h; currently, those resist lines are used in player
+# resistance calculations, to filter out unnecessary messages when timed
+# effects lapse and to affect selection of randart activations.
 # Changing a brand or slay line will have to match to an entry in brand.txt or
 # slay.txt, respectively; besides the effect on combat, those lines also
 # affect selection of randart activations.
 # Changing a flag-synonym line will have to match to an entry, of type flag, in
-# object_property.txt; those lines are currently used to filter out unnecessary
-# messages when timed effects lapse and to affect selection of randart
-# activations.
+# object_property.txt; those lines are currently used in player calculations,
+# to filter out unnecessary messages when timed effects lapse and to affect
+# selection of randart activations.
 
 # Fields:
 # name - the effect name; the name must match the first argument to one of the

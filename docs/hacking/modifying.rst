@@ -182,10 +182,11 @@ object_property.txt
 player_timed.txt
   This file defines some of the properties of timed effects (such as haste and
   confusion) that can apply to the player.  It chiefly contains the messages
-  on changes in these effects, and player attributes which prevent the effects.
-  To add new timed effects or change the way existing ones operate, you will
-  have to alter src/list-player-timed.h and probably other files, and
-  re-compile the game.
+  on changes in these effects, links a timed effect to a resistance or
+  object flag, and specifies player attributes which prevent the effects.
+  To add new timed effects or change the way existing ones operate beyond
+  what can be specified in player_timed.txt, you will have to alter
+  src/list-player-timed.h and probably other files, and re-compile the game.
 
 projection.txt
   This file contains a lot of the defining information about projections -
