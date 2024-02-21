@@ -469,9 +469,13 @@ Using MSYS2 (with MinGW64)
 
 Install the dependencies by::
 
-	pacman -S make mingw-w64-x86_64-toolchain mingw-w64-x86_64-ncurses
+	pacman -S make mingw-w64-x86_64-gcc
 
-Additional dependencies for SDL2 client::
+The additional dependency for ncurses is::
+
+	pacman -S mingw-w64-x86_64-ncurses
+
+Additional dependencies for the SDL2 client are::
 
 	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
 		mingw-w64-x86_64-SDL2_ttf
