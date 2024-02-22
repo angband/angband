@@ -51,7 +51,6 @@ VIDEO_sdl2_ldflags := \
 	-laom \
 	-ldav1d \
 	-lrav1e \
-	-lSvtAv1Dec \
 	-lSvtAv1Enc \
 	-lyuv \
 	-lwebp \
@@ -79,7 +78,7 @@ VIDEO_sdl2_ldflags := \
 	-lole32 \
 	-loleaut32 \
 	-lwinmm \
-	-lntoskrnl \
+	-lntdll
 
 ## Support SDL_mixer for sound
 ifdef SOUND
