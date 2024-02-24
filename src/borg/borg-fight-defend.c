@@ -1407,34 +1407,41 @@ static int borg_defend_aux_berserk(int p1)
     return (0);
 }
 
-/* see if the borg is near something evil */
+/* 
+ * See if the borg is near something evil 
+ */
 static bool near_evil(void)
 {
     int        i;
     borg_grid *ag;
     borg_kill *kill;
 
-    struct monster_race *r_ptr;
+    /* Find "nearby" monsters */
+    for (i = 1; i < borg_kills_nxt; i++) {
+        /* Monster */
+        kill = &borg_kills[i];
 
-    /* Examine possible destinations */
-    for (i = 0; i < borg_temp_n; i++) {
-        int x = borg_temp_x[i];
-        int y = borg_temp_y[i];
-
-        /* Require "close" */
-        if (borg_distance(borg.c.y, borg.c.x, y, x) > 3)
+        /* Skip dead monsters */
+        if (!kill->r_idx)
             continue;
 
-        /* Acquire grid */
-        ag = &borg_grids[y][x];
+        /* Require current knowledge */
+        if (kill->when < borg_t - 2)
+            continue;
 
-        /* Monster record */
-        kill = &borg_kills[ag->kill];
+        /* Get grid */
+        ag = &borg_grids[kill->pos.y][kill->pos.x];
 
-        /* Monster race */
-        r_ptr = &r_info[kill->r_idx];
+        /* don't count off-screen */
+        if (!(ag->info & BORG_OKAY))
+            continue;
 
-        if (rf_has(r_ptr->flags, RF_EVIL))
+        /* Check the distance XXX XXX XXX */
+        if (distance(borg.c, kill->pos) > 3)
+            continue;
+
+        /* Monster race is evil */
+        if (rf_has((r_info[kill->r_idx].flags), RF_EVIL))
             return true;
     }
 
@@ -1464,7 +1471,7 @@ static int borg_defend_aux_smite_evil(int p1)
     if (!near_evil())
         return 0;
 
-    /* if we are in some danger but not much, go for a quick bless */
+    /* if we are in some danger but not much, go for a quick smite */
     if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
         || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
         /* Simulation */
@@ -3347,7 +3354,7 @@ static int borg_defend_aux_light_morgoth(void)
  * Simulate/Apply the optimal result of using the given "type" of defense
  * p1 is the current danger level (passed in for effiency)
  */
-static int borg_defend_aux(int what, int p1)
+static int borg_calculate_defense_effectiveness(int what, int p1)
 {
     /* Analyze */
     switch (what) {
@@ -3490,7 +3497,7 @@ bool borg_defend(int p1)
     /* Analyze the possible setup moves */
     for (g = 0; g < BD_MAX; g++) {
         /* Simulate */
-        n = borg_defend_aux(g, p1);
+        n = borg_calculate_defense_effectiveness(g, p1);
 
         /* Track "best" attack */
         if (n <= b_n)
@@ -3513,7 +3520,7 @@ bool borg_defend(int p1)
     borg_simulate = false;
 
     /* Instantiate */
-    (void)borg_defend_aux(b_g, p1);
+    (void)borg_calculate_defense_effectiveness(b_g, p1);
 
     /* Success */
     return (true);
