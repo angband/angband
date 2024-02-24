@@ -1407,6 +1407,40 @@ static int borg_defend_aux_berserk(int p1)
     return (0);
 }
 
+/* see if the borg is near something evil */
+static bool near_evil(void)
+{
+    int        i;
+    borg_grid *ag;
+    borg_kill *kill;
+
+    struct monster_race *r_ptr;
+
+    /* Examine possible destinations */
+    for (i = 0; i < borg_temp_n; i++) {
+        int x = borg_temp_x[i];
+        int y = borg_temp_y[i];
+
+        /* Require "close" */
+        if (borg_distance(borg.c.y, borg.c.x, y, x) > 3)
+            continue;
+
+        /* Acquire grid */
+        ag = &borg_grids[y][x];
+
+        /* Monster record */
+        kill = &borg_kills[ag->kill];
+
+        /* Monster race */
+        r_ptr = &r_info[kill->r_idx];
+
+        if (rf_has(r_ptr->flags, RF_EVIL))
+            return true;
+    }
+
+    return false;
+}
+
 /*
  * Smite Evil to prepare for battle
  */
@@ -1426,8 +1460,9 @@ static int borg_defend_aux_smite_evil(int p1)
     if (!borg_spell_okay_fail(SMITE_EVIL, fail_allowed))
         return (0);
 
-    // !FIX !TODO !AJG we should probably figure out if we are about to fight
-    // something evil.
+    // if the borg is not about to fight something evil.
+    if (!near_evil())
+        return 0;
 
     /* if we are in some danger but not much, go for a quick bless */
     if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
