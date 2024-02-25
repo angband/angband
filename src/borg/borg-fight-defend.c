@@ -1305,8 +1305,8 @@ static int borg_defend_aux_hero(int p1)
     /* "some danger" defined as "10% of x and not more than 50% of x */
     /* (not more than 70% when fighting a unique) */
     /* where x is the danger we are avoiding, usually current hp */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    if ((p1 > avoidance / 10 && (p1 < (avoidance * 5) / 10)
+        || (borg_fighting_unique && p1 < (avoidance * 7) / 10))) {
         /* Simulation */
         /* hero is a low priority */
         if (borg_simulate)
@@ -1350,8 +1350,8 @@ static int borg_defend_aux_regen(int p1)
         return (0);
 
     /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    if ((p1 > avoidance / 10 && (p1 < (avoidance * 5) / 10)
+        || (borg_fighting_unique && p1 < (avoidance * 7) / 10))) {
         /* Simulation */
         /* regen is a low priority */
         if (borg_simulate)
