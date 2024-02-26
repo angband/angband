@@ -21,7 +21,6 @@
 
 #ifdef ALLOW_BORG
 
-#include "../player-calcs.h"
 #include "../ui-command.h"
 #include "../ui-keymap.h"
 #include "../ui-output.h"

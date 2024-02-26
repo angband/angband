@@ -22,7 +22,6 @@
 #ifdef ALLOW_BORG
 
 #include "../game-world.h"
-#include "../player-calcs.h"
 
 #include "borg-cave-util.h"
 #include "borg-cave.h"

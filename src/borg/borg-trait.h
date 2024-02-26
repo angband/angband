@@ -23,6 +23,8 @@
 
 #ifdef ALLOW_BORG
 
+#include "../player-calcs.h"
+
 #include "borg-item.h"
 #include "borg-trait-swap.h"
 
@@ -465,7 +467,6 @@ extern const char *prefix_pref[];
 
 /* !HACK! defined in the main game */
 extern const int adj_str_hold[STAT_RANGE];
-extern const int adj_str_blow[STAT_RANGE];
 
 /* Mega-Hack - indices of the player classes */
 #define CLASS_WARRIOR     0

@@ -23,7 +23,6 @@
 #ifdef ALLOW_BORG
 
 #include "../cmd-core.h"
-#include "../player-calcs.h"
 #include "../player-spell.h"
 
 #include "borg-flow-kill.h"

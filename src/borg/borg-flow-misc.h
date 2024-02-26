@@ -98,11 +98,6 @@ extern int borg_extract_dir(int y1, int x1, int y2, int x2);
  */
 extern int borg_goto_dir(int y1, int x1, int y2, int x2);
 
-/*
- * check to make sure there are no monsters around that should prevent resting
- */
-extern bool borg_check_rest(int y, int x);
-
 extern void borg_init_flow_misc(void);
 extern void borg_free_flow_misc(void);
 
