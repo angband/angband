@@ -23,8 +23,6 @@
 
 #ifdef ALLOW_BORG
 
-#include "../player-calcs.h"
-
 #include "borg-item.h"
 #include "borg-trait-swap.h"
 

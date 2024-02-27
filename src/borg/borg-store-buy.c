@@ -22,6 +22,7 @@
 #ifdef ALLOW_BORG
 
 #include "../obj-util.h"
+#include "../player-calcs.h"
 #include "../ui-event.h"
 
 #include "borg-flow-kill.h"

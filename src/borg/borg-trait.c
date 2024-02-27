@@ -24,6 +24,7 @@
 
 #include "../effects.h"
 #include "../obj-util.h"
+#include "../player-calcs.h"
 #include "../player-timed.h"
 #include "../player-util.h"
 
