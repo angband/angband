@@ -88,7 +88,7 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 int chance_of_melee_hit_base(const struct player *p,
 		const struct object *weapon)
 {
-	int bonus = p->state.to_h + (weapon ? weapon->to_h : 0);
+	int bonus = p->state.to_h + (weapon ? object_to_hit(weapon) : 0);
 	return p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 }
 
@@ -121,7 +121,7 @@ int chance_of_missile_hit_base(const struct player *p,
 								 const struct object *missile,
 								 const struct object *launcher)
 {
-	int bonus = missile->to_h;
+	int bonus = object_to_hit(missile);
 	int chance;
 
 	if (!launcher) {
@@ -136,7 +136,7 @@ int chance_of_missile_hit_base(const struct player *p,
 				+ bonus * BTH_PLUS_ADJ;
 		}
 	} else {
-		bonus += p->state.to_h + launcher->to_h;
+		bonus += p->state.to_h + object_to_hit(launcher);
 		chance = p->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
 	}
 
@@ -486,7 +486,7 @@ static int melee_damage(const struct monster *mon, struct object *obj, int b, in
 		dmg *= get_monster_brand_multiplier(mon, &brands[b], false);
 	}
 
-	if (obj) dmg += obj->to_d;
+	if (obj) dmg += object_to_dam(obj);
 
 	return dmg;
 }
@@ -501,7 +501,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 		struct object *obj, int b, int s, uint32_t *msg_type)
 {
 	int dice = (obj) ? obj->dd : 1;
-	int sides, dmg, add = 0;
+	int sides, deadliness, dmg, add = 0;
 	bool extra;
 
 	/* Get the average value of a single damage die. (x10) */
@@ -521,8 +521,8 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 	}
 
 	/* Apply deadliness to average. (100x inflation) */
-	apply_deadliness(&die_average,
-		MIN(((obj) ? obj->to_d : 0) + p->state.to_d, 150));
+	deadliness = p->state.to_d + ((obj) ? object_to_dam(obj) : 0);
+	apply_deadliness(&die_average, MIN(deadliness, 150));
 
 	/* Calculate the actual number of sides to each die. */
 	sides = (2 * die_average) - 10000;
@@ -566,9 +566,9 @@ static int ranged_damage(struct player *p, const struct monster *mon,
 
 	/* Apply damage: multiplier, slays, bonuses */
 	dmg = damroll(missile->dd, missile->ds);
-	dmg += missile->to_d;
+	dmg += object_to_dam(missile);
 	if (launcher) {
-		dmg += launcher->to_d;
+		dmg += object_to_dam(launcher);
 	} else if (of_has(missile->flags, OF_THROWING)) {
 		/* Adjust damage for throwing weapons.
 		 * This is not the prettiest equation, but it does at least try to
@@ -615,12 +615,11 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 	}
 
 	/* Apply deadliness to average. (100x inflation) */
+	deadliness = object_to_dam(missile);
 	if (launcher) {
-		deadliness = missile->to_d + launcher->to_d + p->state.to_d;
+		deadliness += object_to_dam(launcher) + p->state.to_d;
 	} else if (of_has(missile->flags, OF_THROWING)) {
-		deadliness = missile->to_d + p->state.to_d;
-	} else {
-		deadliness = missile->to_d;
+		deadliness += p->state.to_d;
 	}
 	apply_deadliness(&die_average, MIN(deadliness, 150));
 
@@ -803,8 +802,10 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (!OPT(p, birth_percent_damage)) {
 		dmg = melee_damage(mon, obj, b, s);
 		/* For now, exclude criticals on unarmed combat */
-		if (obj) dmg = critical_melee(p, mon, weight, obj->to_h,
-			dmg, &msg_type);
+		if (obj) {
+			dmg = critical_melee(p, mon, weight, object_to_hit(obj),
+				dmg, &msg_type);
+		}
 	} else {
 		dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
 	}
@@ -1246,7 +1247,8 @@ struct attack_result make_ranged_shot(struct player *p,
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
 		result.dmg = critical_shot(p, mon, object_weight_one(ammo),
-			ammo->to_h, result.dmg, true, &result.msg_type);
+			object_to_hit(ammo), result.dmg, true,
+			&result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, ammo, bow, b, s, &result.msg_type);
 	}
@@ -1282,7 +1284,8 @@ struct attack_result make_ranged_throw(struct player *p,
 	if (!OPT(p, birth_percent_damage)) {
 		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
 		result.dmg = critical_shot(p, mon, object_weight_one(obj),
-			obj->to_h, result.dmg, false, &result.msg_type);
+			object_to_hit(obj), result.dmg, false,
+			&result.msg_type);
 	} else {
 		result.dmg = o_ranged_damage(p, mon, obj, NULL, b, s, &result.msg_type);
 	}

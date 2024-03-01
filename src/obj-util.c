@@ -289,6 +289,63 @@ int16_t object_weight_one(const struct object *obj)
 }
 
 /**
+ * Return the hit bonus for an object, including any of its curses.
+ */
+int object_to_hit(const struct object *obj)
+{
+	int result = obj->to_h;
+
+	if (obj->curses) {
+		int i;
+
+		for (i = 1; i < z_info->curse_max; ++i) {
+			if (obj->curses[i].power) {
+				result += curses[i].obj->to_h;
+			}
+		}
+	}
+	return result;
+}
+
+/**
+ * Return the damage bonus for an object, including any of its curses.
+ */
+int object_to_dam(const struct object *obj)
+{
+	int result = obj->to_d;
+
+	if (obj->curses) {
+		int i;
+
+		for (i = 1; i < z_info->curse_max; ++i) {
+			if (obj->curses[i].power) {
+				result += curses[i].obj->to_d;
+			}
+		}
+	}
+	return result;
+}
+
+/**
+ * Return the armor class bonus for an object, including any of its curses.
+ */
+int object_to_ac(const struct object *obj)
+{
+	int result = obj->to_a;
+
+	if (obj->curses) {
+		int i;
+
+		for (i = 1; i < z_info->curse_max; ++i) {
+			if (obj->curses[i].power) {
+				result += curses[i].obj->to_a;
+			}
+		}
+	}
+	return result;
+}
+
+/**
  * Obtain the flags for an item
  */
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE])

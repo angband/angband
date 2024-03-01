@@ -736,16 +736,16 @@ static struct panel *get_panel_combat(void) {
 	/* Melee */
 	obj = equipped_item_by_slot_name(player, "weapon");
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
-	dam = player->known_state.to_d + (obj ? obj->known->to_d : 0);
-	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
-
-	panel_space(p);
-
+	dam = player->known_state.to_d;
+	hit = player->known_state.to_h;
 	if (obj) {
 		melee_dice = obj->dd;
 		melee_sides = obj->ds;
+		dam += object_to_dam(obj);
+		hit += object_to_hit(obj);
 	}
 
+	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
 	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
 	panel_line(p, COLOUR_L_BLUE, "Blows", "%d.%d/turn",
@@ -754,8 +754,12 @@ static struct panel *get_panel_combat(void) {
 	/* Ranged */
 	obj = equipped_item_by_slot_name(player, "shooting");
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
-	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
-	dam = obj ? obj->known->to_d : 0;
+	dam = 0;
+	hit = player->known_state.to_h;
+	if (obj) {
+		dam += object_to_dam(obj);
+		hit += object_to_hit(obj);
+	}
 
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);
