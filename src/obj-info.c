@@ -1066,10 +1066,10 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 	/* Calculate damage */
 	dam = ((sides + 1) * dice * 5);
 
+	plus += object_to_hit(obj->known);
 	if (weapon)	{
 		xtra_postcrit = state.to_d * 10;
-		xtra_precrit += obj->known->to_d * 10;
-		plus += obj->known->to_h;
+		xtra_precrit += object_to_dam(obj->known) * 10;
 
 		calculate_melee_crits(&state, object_weight_one(obj), plus,
 			&crit_mult, &crit_add, &crit_div,
@@ -1077,22 +1077,18 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 		old_blows = state.num_blows;
 	} else if (ammo) {
-		plus += obj->known->to_h;
-
 		calculate_missile_crits(&player->state, object_weight_one(obj),
 			plus, true, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
-		dam += (obj->known->to_d * 10);
-		dam += (bow->known->to_d * 10);
+		dam += (object_to_dam(obj->known) * 10);
+		dam += (object_to_dam(bow->known) * 10);
 	} else {
-		plus += obj->known->to_h;
-
 		calculate_missile_crits(&player->state, object_weight_one(obj),
 			plus, false, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
-		dam += (obj->known->to_d * 10);
+		dam += (object_to_dam(obj->known) * 10);
 		dam *= 2 + object_weight_one(obj) / 12;
 	}
 
@@ -1274,7 +1270,7 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 	unsigned int added_dice, remainder;
 	struct my_rational frac_dice, frac_temp;
 	int temp0, round;
-	int deadliness = obj->known->to_d;
+	int deadliness = object_to_dam(obj->known);
 	int old_blows = 0;
 	bool *total_brands;
 	bool *total_slays;
@@ -1337,9 +1333,9 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Apply deadliness to average. (100x inflation) */
 	if (ammo) {
-		deadliness = obj->known->to_d + bow->known->to_d + state.to_d;
+		deadliness += object_to_dam(bow->known) + state.to_d;
 	} else {
-		deadliness = obj->known->to_d + state.to_d;
+		deadliness += state.to_d;
 	}
 	apply_deadliness(&die_average, MIN(deadliness, 150));
 

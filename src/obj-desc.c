@@ -375,6 +375,7 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 		size_t end, uint32_t mode, const struct player *p)
 {
 	bool spoil = mode & ODESC_SPOIL ? true : false;
+	int to_h, to_d, to_a;
 
 	/* Display damage dice if they are known */
 	if (kf_has(obj->kind->kind_flags, KF_SHOW_DICE) &&
@@ -391,31 +392,36 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 	/* No more if the object hasn't been assessed */
 	if (!((obj->notice & OBJ_NOTICE_ASSESSED) || spoil)) return end;
 
+	to_h = object_to_hit(obj);
+	to_d = object_to_dam(obj);
+	to_a = object_to_ac(obj);
+
 	/* Show weapon bonuses if we know of any */
 	if ((!p || (p->obj_k->to_h && p->obj_k->to_d))
-			&& (tval_is_weapon(obj) || obj->to_d
-			|| (obj->to_h && !tval_is_body_armor(obj))
-			|| (!object_has_standard_to_h(obj)
+			&& (tval_is_weapon(obj) || to_d
+			|| (to_h && !tval_is_body_armor(obj))
+			|| ((!object_has_standard_to_h(obj)
+			|| obj->to_h != to_h)
 			&& !obj->artifact && !obj->ego))) {
 		/* In general show full combat bonuses */
-		strnfcat(buf, max, &end, " (%+d,%+d)", obj->to_h, obj->to_d);
+		strnfcat(buf, max, &end, " (%+d,%+d)", to_h, to_d);
 	} else if (obj->to_h < 0 && object_has_standard_to_h(obj)) {
 		/* Special treatment for body armor with only a to-hit penalty */
 		strnfcat(buf, max, &end, " (%+d)", obj->to_h);
-	} else if (obj->to_d != 0 && (!p || p->obj_k->to_d)) {
+	} else if (to_d != 0 && (!p || p->obj_k->to_d)) {
 		/* To-dam rune known only */
-		strnfcat(buf, max, &end, " (%+d)", obj->to_d);
-	} else if (obj->to_h != 0 && (!p || p->obj_k->to_h)) {
+		strnfcat(buf, max, &end, " (%+d)", to_d);
+	} else if (to_h != 0 && (!p || p->obj_k->to_h)) {
 		/* To-hit rune known only */
-		strnfcat(buf, max, &end, " (%+d)", obj->to_h);
+		strnfcat(buf, max, &end, " (%+d)", to_h);
 	}
 
 	/* Show armor bonuses */
 	if (!p || p->obj_k->to_a) {
 		if (obj_desc_show_armor(obj, p))
-			strnfcat(buf, max, &end, " [%d,%+d]", obj->ac, obj->to_a);
-		else if (obj->to_a)
-			strnfcat(buf, max, &end, " [%+d]", obj->to_a);
+			strnfcat(buf, max, &end, " [%d,%+d]", obj->ac, to_a);
+		else if (to_a)
+			strnfcat(buf, max, &end, " [%+d]", to_a);
 	} else if (obj_desc_show_armor(obj, p)) {
 		strnfcat(buf, max, &end, " [%d]", obj->ac);
 	}

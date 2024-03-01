@@ -218,8 +218,9 @@ static void wiz_display_item(const struct object *obj, bool all,
 	prt(buf, 2, j);
 
 	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
-		obj->dd, obj->ds, obj->to_h, obj->to_d, obj->ac, obj->to_a),
-		4, j);
+		obj->dd, obj->ds, object_to_hit(all ? obj : obj->known),
+		object_to_dam(all ? obj : obj->known), obj->ac,
+		object_to_ac(all ? obj : obj->known)), 4, j);
 
 	prt(format("kind = %-5lu  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
 		(unsigned long)obj->kind->kidx, obj->tval, obj->sval,
