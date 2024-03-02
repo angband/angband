@@ -927,7 +927,7 @@ static int nonstandard_weight_power(const struct object *obj, int p)
 	if (obj->curses) {
 		int i;
 
-		for (i = 0; i < z_info->curse_max; ++i) {
+		for (i = 1; i < z_info->curse_max; ++i) {
 			if (obj->curses[i].power) {
 				of_union(flags, curses[i].obj->flags);
 			}

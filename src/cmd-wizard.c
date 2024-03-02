@@ -1015,7 +1015,7 @@ void do_cmd_wiz_curse_item(struct command *cmd)
 		}
 		cmd_set_arg_number(cmd, "index", curse_index);
 	}
-	if (curse_index <= 0 || curse_index >= z_info->curse_max) {
+	if (curse_index <= 1 || curse_index >= z_info->curse_max) {
 		return;
 	}
 
