@@ -830,11 +830,12 @@ int path_nearest_known(struct player *p, struct loc start,
 		bool (*pred)(struct chunk*, struct loc),
 		struct loc *dest_grid, int16_t **step_dirs)
 {
+	bool only_known = true, forbid_traps = true;
+
 	while (1) {
 		struct pfdistances *distances = NULL;
 		struct loc min_grid = loc(-1, -1);
 		int min_turns = INT_MAX;
-		bool only_known = true, forbid_traps = true;
 		struct loc grid;
 
 		for (grid.y = 0; grid.y < p->cave->height; ++grid.y) {
@@ -926,11 +927,12 @@ int path_nearest_known(struct player *p, struct loc start,
 int path_nearest_unknown(struct player *p, struct loc start,
 		struct loc *dest_grid, int16_t **step_dirs)
 {
+	bool only_known = true, forbid_traps = true, passable = true;
+
 	while (1) {
 		struct pfdistances *distances = NULL;
 		struct loc min_grid = loc(-1, -1);
 		int min_turns = INT_MAX;
-		bool only_known = true, forbid_traps = true, passable = true;
 		struct loc grid;
 
 		for (grid.y = 0; grid.y < p->cave->height; ++grid.y) {
