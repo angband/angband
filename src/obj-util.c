@@ -278,7 +278,7 @@ int16_t object_weight_one(const struct object *obj)
 	if (obj->curses) {
 		int i;
 
-		for (i= 0; i< z_info->curse_max; ++i) {
+		for (i = 1; i < z_info->curse_max; ++i) {
 			if (obj->curses[i].power) {
 				result = modify_weight_for_curse(i, result);
 			}
