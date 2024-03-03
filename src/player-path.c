@@ -1906,6 +1906,7 @@ void run_step(int dir)
 
 					disturb(player);
 					cmdq_push(CMD_OPEN);
+					cmdq_peek()->background_command = 1;
 					cmd_set_arg_direction(cmdq_peek(),
 						"direction", next_step_dir);
 					cmdq_push(CMD_PATHFIND);
@@ -1923,6 +1924,7 @@ void run_step(int dir)
 
 					disturb(player);
 					cmdq_push(CMD_TUNNEL);
+					cmdq_peek()->background_command = 1;
 					cmd_set_arg_direction(cmdq_peek(),
 						"direction", next_step_dir);
 					cmdq_push(CMD_PATHFIND);
@@ -2026,6 +2028,15 @@ void run_step(int dir)
 	/* Prepare the next step */
 	if (player->upkeep->running) {
 		cmdq_push(CMD_RUN);
+		if (player->upkeep->steps) {
+			/*
+			 * Running is a side effect of pathfinding.  Do allow
+			 * it to trigger bloodlust so pathfinding can not
+			 * be exploited as a way to move without the bloodlust
+			 * checks.
+			 */
+			cmdq_peek()->background_command = 1;
+		}
 		cmd_set_arg_direction(cmdq_peek(), "direction", 0);
 	} else if (player->upkeep->steps) {
 		mem_free(player->upkeep->steps);

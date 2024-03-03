@@ -1175,9 +1175,10 @@ void move_player(int dir, bool disarm)
 			 * The autopickup is a side effect of the move:
 			 * whatever command triggered the move will be the
 			 * target for CMD_REPEAT rather than repeating the
-			 * autopickup.
+			 * autopickup, and the autopickup won't trigger
+			 * bloodlust.
 			 */
-			cmdq_peek()->is_background_command = true;
+			cmdq_peek()->background_command = 2;
 		} else {
 			/* No move made so no energy spent. */
 			player->upkeep->energy_use = 0;

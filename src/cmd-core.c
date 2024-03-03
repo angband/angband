@@ -174,6 +174,39 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_WIZARD_LIGHT, "wizard light the level", do_cmd_wiz_wizard_light, false, false, 0 },
 };
 
+/**
+ * Make a deep copy of a command and its arguments.
+ */
+void cmd_copy(struct command *dest, const struct command *src)
+{
+	int i;
+
+	*dest = *src;
+	/* String arguments require a deep copy. */
+	for (i = 0; i < CMD_MAX_ARGS; ++i) {
+		if (dest->arg[i].type == arg_STRING) {
+			dest->arg[i].data.string =
+				string_make(src->arg[i].data.string);
+		}
+	}
+}
+
+/**
+ * Release any resources for the command's arguments.
+ */
+void cmd_release(struct command *cmd)
+{
+	int i;
+
+	for (i = 0; i < CMD_MAX_ARGS; ++i) {
+		if (cmd->arg[i].type == arg_STRING) {
+			string_free((char*)(cmd->arg[i].data.string));
+			cmd->arg[i].name[0] = '\0';
+			cmd->arg[i].type = arg_NONE;
+		}
+	}
+}
+
 const char *cmd_verb(cmd_code cmd)
 {
 	size_t i;
@@ -211,41 +244,23 @@ static int cmd_head = 0;
 static int cmd_tail = 0;
 static struct command cmd_queue[CMD_QUEUE_SIZE];
 
+/*
+ * Remember last non-background command executed for use by CMD_REPEAT; either
+ * still in the queue at last_command_idx or copied out of the queue into
+ * last_command
+ */
+int last_command_idx = -1;
+static struct command last_command = {
+	.context = CTX_INIT,
+	.code = CMD_NULL,
+	.nrepeats = 0,
+	.background_command = 0,
+	.arg = { { 0 } }
+};
+
 static bool repeat_prev_allowed = false;
 static bool repeating = false;
 
-
-/**
- * Locate and return the index of the first previous command that is an
- * appropriate target for CMD_REPEAT.  If no such command is available,
- * return a negative value.
- */
-static int cmdq_find_repeat_target_index(void)
-{
-	int target = cmd_head - 1;
-
-	while (1) {
-		if (target < 0) target = CMD_QUEUE_SIZE - 1;
-
-		if (target == cmd_tail) {
-			break;
-		}
-		/*
-		 * Only repeat a command that has not been marked
-		 * as a background command (i.e. it is not a side
-		 * effect of something else).
-		 */
-		if (!cmd_queue[target].is_background_command) {
-			if (cmd_queue[target].code != CMD_NULL) {
-				return target;
-			}
-			break;
-		}
-		/* Keep looking. */
-		--target;
-	}
-	return -1;
-}
 
 struct command *cmdq_peek(void)
 {
@@ -255,6 +270,9 @@ struct command *cmdq_peek(void)
 
 /**
  * Insert the given command into the command queue.
+ *
+ * Makes a shallow copy of the command.  If the command has string arguments,
+ * the queue assumes ownership of those arguments.
  */
 errr cmdq_push_copy(struct command *cmd)
 {
@@ -264,20 +282,38 @@ errr cmdq_push_copy(struct command *cmd)
 
 	/* Insert command into queue. */
 	if (cmd->code != CMD_REPEAT) {
+		if (last_command_idx == cmd_head) {
+			/*
+			 * The last non-background command will be overwritten.
+			 * Copy out of the queue in case it is needed for
+			 * CMD_REPEAT.
+			 */
+			cmd_release(&last_command);
+			cmd_copy(&last_command, &cmd_queue[cmd_head]);
+			last_command_idx = -1;
+		}
+		cmd_release(&cmd_queue[cmd_head]);
 		cmd_queue[cmd_head] = *cmd;
 	} else if (!repeat_prev_allowed) {
 		return 1;
 	} else {
-		int idx_to_repeat = cmdq_find_repeat_target_index();
-
-		if (idx_to_repeat < 0) {
-			return 1;
-		}
 		/*
 		 * If we're repeating a command, we duplicate the previous
 		 * command in the next command "slot".
 		 */
-		cmd_queue[cmd_head] = cmd_queue[idx_to_repeat];
+		if (last_command_idx >= 0) {
+			assert(last_command_idx < CMD_QUEUE_SIZE);
+			if (last_command_idx != cmd_head) {
+				cmd_release(&cmd_queue[cmd_head]);
+				cmd_copy(&cmd_queue[cmd_head],
+					&cmd_queue[last_command_idx]);
+			}
+		} else if (last_command.code != CMD_NULL) {
+			cmd_release(&cmd_queue[cmd_head]);
+			cmd_copy(&cmd_queue[cmd_head], &last_command);
+		} else {
+			return 1;
+		}
 	}
 
 	/* Advance point in queue, wrapping around at the end */
@@ -322,11 +358,12 @@ static void process_command(cmd_context ctx, struct command *cmd)
 	/* Actually execute the command function */
 	if (game_cmds[idx].fn) {
 		/* Occasional attack instead for bloodlust-affected characters */
-		if (cmd->is_background_command) {
+		if (cmd->background_command > 1) {
 			/*
-			 * Background commands do not trigger bloodlust.  If
-			 * they can take energy, they also don't reset whether
-			 * the player's next command skips the bloodlust check.
+			 * Some background commands do not trigger bloodlust.
+			 * If they can take energy, they also don't reset
+			 * whether the player's next command skips the
+			 * bloodlust check.
 			 */
 			if (player->skip_cmd_coercion
 					&& game_cmds[idx].can_use_energy) {
@@ -378,6 +415,9 @@ bool cmdq_pop(cmd_context c)
 	}
 
 	/* Now process it */
+	if (!cmd->background_command) {
+		last_command_idx = prev_cmd_idx(cmd_tail);
+	}
 	process_command(c, cmd);
 	return true;
 }
@@ -392,7 +432,7 @@ errr cmdq_push_repeat(cmd_code c, int nrepeats)
 		.context = CTX_INIT,
 		.code = CMD_NULL,
 		.nrepeats = 0,
-		.is_background_command = false,
+		.background_command = 0,
 		.arg = { { 0 } }
 	};
 
@@ -429,6 +469,22 @@ void cmdq_execute(cmd_context ctx)
 void cmdq_flush(void)
 {
 	cmd_tail = cmd_head;
+}
+
+/**
+ * Remove all commands from the queue and release any allocated resources.
+ */
+void cmdq_release(void)
+{
+	int i;
+
+	cmdq_flush();
+	for (i = 0; i < CMD_QUEUE_SIZE; ++i) {
+		cmd_release(cmd_queue + i);
+	}
+	cmd_release(&last_command);
+	last_command.code = CMD_NULL;
+	last_command_idx = -1;
 }
 
 /**
@@ -555,8 +611,14 @@ static void cmd_set_arg(struct command *cmd, const char *name,
 
 	assert(first_empty != -1 || idx != -1);
 
-	if (idx == -1)
+	if (idx == -1) {
 		idx = first_empty;
+	} else {
+		/* Free allocated string if overwriting a string argument. */
+		if (cmd->arg[idx].type == arg_STRING) {
+			string_free((char*)(cmd->arg[idx].data.string));
+		}
+	}
 
 	cmd->arg[idx].type = type;
 	cmd->arg[idx].data = data;
@@ -755,6 +817,9 @@ void cmd_set_arg_string(struct command *cmd, const char *arg, const char *str)
 
 /**
  * Retrieve arg 'n' if a string
+ *
+ * Note that the command itself retains ownership of the pointer returned in
+ * *str:  the caller should not free that pointer.
  */
 int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str)
 {
@@ -769,6 +834,9 @@ int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str)
 
 /**
  * Get a string, first from the command or failing that prompt the user
+ *
+ * Note that the command itself retains ownership of the pointer returned in
+ * *str:  the caller should not free that pointer.
  */
 int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 				   const char *initial, const char *title, const char *prompt)
