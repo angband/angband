@@ -690,9 +690,10 @@ void ignore_drop(struct player *p)
 				 * This drop is a side effect:  whatever
 				 * command triggered it will be the target
 				 * for CMD_REPEAT rather than repeating the
-				 * drop.
+				 * drop, and the drop will not trigger
+				 * bloodlust.
 				 */
-				drop_cmd->is_background_command = true;
+				drop_cmd->background_command = 2;
 			}
 		}
 	}
