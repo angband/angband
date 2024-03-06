@@ -671,7 +671,7 @@ armor:0:0
 flags:THROWING
 desc:A short two-edged blade perfect for thrusting or throwing.
 
-name:& Main Gauche~
+name:& Main~ Gauche~
 type:sword
 graphics:|:W
 level:3
