@@ -266,6 +266,8 @@ struct subwindow {
 	SDL_Rect inner_rect;
 	/* for use when resizing term */
 	SDL_Rect sizing_rect;
+	/* version of full_rect for the opposite setting of fullscreen */
+	SDL_Rect stored_rect;
 	/* a one pixel texture, mostly for displaying something when
 	 * the player is resizing term */
 	SDL_Texture *aux_texture;
@@ -356,6 +358,8 @@ struct sdlpui_window {
 	SDL_Rect full_rect;
 	/* size of window without status bar, basically */
 	SDL_Rect inner_rect;
+	/* version of full_rect for the opposite setting of fullscreen */
+	SDL_Rect stored_rect;
 
 	SDL_Color color;
 	/* for making terms transparent while moving or sizing them */
@@ -2162,13 +2166,52 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
+	SDL_Rect tmp_rect;
+	size_t i;
+
 	sdlpui_popdown_dialog(dlg, window, true);
+
+	tmp_rect = window->stored_rect;
+	SDL_GetWindowPosition(window->window, &window->full_rect.x,
+		&window->full_rect.y);
+	window->stored_rect = window->full_rect;
+	window->full_rect = tmp_rect;
+	for (i = 0; i < N_ELEMENTS(window->subwindows); ++i) {
+		struct subwindow *subwindow = window->subwindows[i];
+
+		if (subwindow != NULL) {
+			tmp_rect = subwindow->stored_rect;
+			subwindow->stored_rect = subwindow->full_rect;
+			subwindow->full_rect = tmp_rect;
+			if (!subwindow->full_rect.w
+					|| !subwindow->full_rect.h) {
+				/*
+				 * Nothing configured so far for this mode, so
+				 * use the configuration from the other mode.
+				 */
+				subwindow->full_rect = subwindow->stored_rect;
+			}
+		}
+	}
+
 	if (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
 		int minw, minh;
 
 		SDL_SetWindowFullscreen(window->window, 0);
 		get_minimum_window_size(window, &minw, &minh);
 		SDL_SetWindowMinimumSize(window->window, minw, minh);
+		/*
+		 * If there is a previously configured size, use it.
+		 * Otherwise, rely on SDL's default behavior.
+		 */
+		if (window->full_rect.w && window->full_rect.h) {
+			SDL_SetWindowSize(window->window, window->full_rect.w,
+				window->full_rect.h);
+			resize_window(window, window->full_rect.w,
+				window->full_rect.h);
+			SDL_SetWindowPosition(window->window,
+				window->full_rect.x, window->full_rect.y);
+		}
 	} else {
 		SDL_SetWindowFullscreen(window->window,
 			SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -5363,7 +5406,8 @@ static void fit_subwindow_in_window(const struct sdlpui_window *window,
 static void resize_window(struct sdlpui_window *window, int w, int h)
 {
 	if (window->full_rect.w == w
-			&& window->full_rect.h == h)
+			&& window->full_rect.h == h
+			&& window->status_bar->rect.w == w)
 	{
 		return;
 	}
@@ -5525,6 +5569,23 @@ static void start_window(struct sdlpui_window *window)
 				window->full_rect.w, window->full_rect.h,
 				SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE);
 	} else {
+		/*
+		 * For newer configuration files, stored_rect will have the
+		 * desired size for fullscreen.  Older configuration files
+		 * only save the size for whatever mode (fullscreen, not
+		 * fullscreen) the game was in so those will already have the
+		 * right size in full_rect.
+		 */
+		if (window->config->window_flags
+				& SDL_WINDOW_FULLSCREEN_DESKTOP) {
+			if (window->stored_rect.w &&
+					window->stored_rect.h) {
+				SDL_Rect tmp_rect = window->full_rect;
+
+				window->full_rect = window->stored_rect;
+				window->stored_rect = tmp_rect;
+			}
+		}
 		window->window = SDL_CreateWindow(VERSION_NAME,
 				window->full_rect.x, window->full_rect.y,
 				window->full_rect.w, window->full_rect.h,
@@ -5611,6 +5672,10 @@ static void wipe_window_aux_config(struct sdlpui_window *window)
 	window->full_rect.h = mode.h / 2;
 	window->full_rect.x = mode.w / 4;
 	window->full_rect.y = mode.h / 4;
+	window->stored_rect.w = 0;
+	window->stored_rect.h = 0;
+	window->stored_rect.x = 0;
+	window->stored_rect.y = 0;
 
 	if (current_graphics_mode != NULL) {
 		window->graphics.id = current_graphics_mode->grafID;
@@ -5641,6 +5706,10 @@ static void wipe_window(struct sdlpui_window *window, int display)
 
 	window->full_rect.w = mode.w;
 	window->full_rect.h = mode.h;
+	window->stored_rect.w = 0;
+	window->stored_rect.h = 0;
+	window->stored_rect.x = 0;
+	window->stored_rect.y = 0;
 
 	window->color = window->app->colors[DEFAULT_WINDOW_BG_COLOR];
 	window->alpha = DEFAULT_ALPHA_FULL;
@@ -5665,9 +5734,21 @@ static void dump_subwindow(const struct subwindow *subwindow, ang_file *config)
 	file_putf(config, "subwindow-" sym ":%u:" fmt "\n", subwindow->index, __VA_ARGS__)
 	DUMP_SUBWINDOW("window", "%u:%d", subwindow->window->index,
 			(subwindow->visible) ? 1 : 0);
-	DUMP_SUBWINDOW("full-rect", "%d:%d:%d:%d",
+	if (subwindow->window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+		DUMP_SUBWINDOW("full-rect", "%d:%d:%d:%d",
+			subwindow->stored_rect.x, subwindow->stored_rect.y,
+			subwindow->stored_rect.w, subwindow->stored_rect.h);
+		DUMP_SUBWINDOW("full-rect-fs", "%d:%d:%d:%d",
 			subwindow->full_rect.x, subwindow->full_rect.y,
 			subwindow->full_rect.w, subwindow->full_rect.h);
+	} else {
+		DUMP_SUBWINDOW("full-rect", "%d:%d:%d:%d",
+			subwindow->full_rect.x, subwindow->full_rect.y,
+			subwindow->full_rect.w, subwindow->full_rect.h);
+		DUMP_SUBWINDOW("full-rect-fs", "%d:%d:%d:%d",
+			subwindow->stored_rect.x, subwindow->stored_rect.y,
+			subwindow->stored_rect.w, subwindow->stored_rect.h);
+	}
 	DUMP_SUBWINDOW("font", "%d:%s",
 			subwindow->font->size, subwindow->font->name);
 	DUMP_SUBWINDOW("borders", "%s",
@@ -5689,8 +5770,19 @@ static void dump_window(const struct sdlpui_window *window, ang_file *config)
 	int x;
 	int y;
 	SDL_GetWindowPosition(window->window, &x, &y);
-	DUMP_WINDOW("full-rect", "%d:%d:%d:%d",
+	if (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+		DUMP_WINDOW("full-rect", "%d:%d:%d:%d",
+			window->stored_rect.x, window->stored_rect.y,
+			window->stored_rect.w, window->stored_rect.h);
+		DUMP_WINDOW("full-rect-fs", "%d:%d:%d:%d",
 			x, y, window->full_rect.w, window->full_rect.h);
+	} else {
+		DUMP_WINDOW("full-rect", "%d:%d:%d:%d",
+			x, y, window->full_rect.w, window->full_rect.h);
+		DUMP_WINDOW("full-rect-fs", "%d:%d:%d:%d",
+			window->stored_rect.x, window->stored_rect.y,
+			window->stored_rect.w, window->stored_rect.h);
+	}
 
 	DUMP_WINDOW("fullscreen", "%s",
 			(window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? "true" : "false");
@@ -5882,6 +5974,23 @@ static void load_subwindow(struct sdlpui_window *window,
 			++i;
 		}
 	}
+
+	/*
+	 * For newer configuration files, stored_rect will have the desired
+	 * size for fullscreen.  Older configuration files only save the
+	 * size of whatever mode (fullscreen, not fullscreen) the game was in
+	 * so those will already have the right size in full_rect.
+	 */
+	if (subwindow->config && window->config && (window->config->window_flags
+			& SDL_WINDOW_FULLSCREEN_DESKTOP)
+			&& subwindow->stored_rect.w
+			&& subwindow->stored_rect.h) {
+		SDL_Rect tmp_rect = subwindow->full_rect;
+
+		subwindow->full_rect = subwindow->stored_rect;
+		subwindow->stored_rect = tmp_rect;
+	}
+
 	if (!adjust_subwindow_geometry(window, subwindow)) {
 		quit_fmt("cannot adjust geometry of subwindow %u in window %u",
 				subwindow->index, window->index);
@@ -6712,10 +6821,36 @@ static enum parser_error config_window_rect(struct parser *parser)
 	if (!window->inited) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
+	/*
+	 * Assume not in fullscreen mode for now.  If necessary, swap
+	 * full_rect and stored_rect later in start_window().
+	 */
 	window->full_rect.x = parser_getint(parser, "x");
 	window->full_rect.y = parser_getint(parser, "y");
 	window->full_rect.w = parser_getint(parser, "w");
 	window->full_rect.h = parser_getint(parser, "h");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error config_window_rect_fs(struct parser *parser)
+{
+	struct sdlpui_window *window = get_window_from_parser(parser);
+
+	if (!window) {
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+	}
+	if (!window->inited) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	/*
+	 * Assume not in fullscreen mode for now.  If necessary, swap
+	 * full_rect and stored_rect later in start_window().
+	 */
+	window->stored_rect.x = parser_getint(parser, "x");
+	window->stored_rect.y = parser_getint(parser, "y");
+	window->stored_rect.w = parser_getint(parser, "w");
+	window->stored_rect.h = parser_getint(parser, "h");
 
 	return PARSE_ERROR_NONE;
 }
@@ -6906,10 +7041,37 @@ static enum parser_error config_subwindow_rect(struct parser *parser)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 
+	/*
+	 * Assume not in fullscreen mode for now.  If necessary, swap
+	 * full_rect and stored_rect later in load_subwindow().
+	 */
 	subwindow->full_rect.x = parser_getint(parser, "x");
 	subwindow->full_rect.y = parser_getint(parser, "y");
 	subwindow->full_rect.w = parser_getint(parser, "w");
 	subwindow->full_rect.h = parser_getint(parser, "h");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error config_subwindow_rect_fs(struct parser *parser)
+{
+	struct subwindow *subwindow = get_subwindow_from_parser(parser);
+
+	if (!subwindow) {
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+	}
+	if (!subwindow->inited) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+
+	/*
+	 * Assume not in fullscreen mode for now.  If necessary, swap
+	 * full_rect and stored_rect later in load_subwindow().
+	 */
+	subwindow->stored_rect.x = parser_getint(parser, "x");
+	subwindow->stored_rect.y = parser_getint(parser, "y");
+	subwindow->stored_rect.w = parser_getint(parser, "w");
+	subwindow->stored_rect.h = parser_getint(parser, "h");
 
 	return PARSE_ERROR_NONE;
 }
@@ -7056,8 +7218,10 @@ static struct parser *init_parse_config(struct my_app *a)
 			config_window_display);
 	parser_reg(parser, "window-fullscreen uint index sym fullscreen",
 			config_window_fullscreen);
-	parser_reg(parser, "window-full-rect uint index int x int y int w int h",
-			config_window_rect);
+	parser_reg(parser, "window-full-rect uint index int x int y int w "
+			"int h", config_window_rect);
+	parser_reg(parser, "window-full-rect-fs uint index int x int y int w "
+			"int h", config_window_rect_fs);
 	parser_reg(parser, "window-renderer uint index sym type",
 			config_window_renderer);
 	parser_reg(parser, "window-wallpaper-path uint index str path",
@@ -7073,8 +7237,10 @@ static struct parser *init_parse_config(struct my_app *a)
 
 	parser_reg(parser, "subwindow-window uint index uint windex ?int vis",
 			config_subwindow_window);
-	parser_reg(parser, "subwindow-full-rect uint index int x int y int w int h",
-			config_subwindow_rect);
+	parser_reg(parser, "subwindow-full-rect uint index int x int y "
+			"int w int h", config_subwindow_rect);
+	parser_reg(parser, "subwindow-full-rect-fs uint index int x int y "
+			"int w int h", config_subwindow_rect_fs);
 	parser_reg(parser, "subwindow-font uint index int size str name",
 			config_subwindow_font);
 	parser_reg(parser, "subwindow-borders uint index sym borders",
