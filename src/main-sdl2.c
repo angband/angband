@@ -2368,7 +2368,9 @@ static void handle_menu_pw(struct sdlpui_control *ctrl,
 	SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 	mb = (struct sdlpui_menu_button*)ctrl->priv;
 	SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-	new_flags = mem_zalloc(N_ELEMENTS(window_flag) * sizeof(*new_flags));
+	new_flags = mem_alloc(N_ELEMENTS(window_flag) * sizeof(*new_flags));
+	memcpy(new_flags, window_flag, N_ELEMENTS(window_flag)
+		* sizeof(*new_flags));
 	if (mb->v.toggled) {
 		new_flags[subw_idx] |= (uint32_t)1 << flag_idx;
 	} else {
