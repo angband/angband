@@ -395,7 +395,7 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
     if (prefix(msg, "You bite ")) {
-        tmp = strlen("You hit ");
+        tmp = strlen("You bite ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "HIT:%s", who);
         borg_react(msg, buf);
