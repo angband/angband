@@ -227,24 +227,31 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 				msg("So great was his prowess and skill in warfare, the Elves said: ");
 				msg("'The Mormegil cannot be slain, save by mischance.'");
 			}
-		} else if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
-			event_signal(EVENT_CHEAT_DEATH);
 		} else {
-			/* Hack -- Note death */
-			msgt(MSG_DEATH, "You die.");
-			event_signal(EVENT_MESSAGE_FLUSH);
-
-			/* Note cause of death */
+			/*
+			 * Note cause of death.  Do it here so EVENT_CHEAT_DEATH
+			 * handlers or things looking for the "Die? " prompt
+			 * (the borg, for instance), have access to it.
+			 */
 			my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
 
-			/* No longer a winner */
-			p->total_winner = false;
+			if ((p->wizard || OPT(p, cheat_live))
+					&& !get_check("Die? ")) {
+				event_signal(EVENT_CHEAT_DEATH);
+			} else {
+				/* Hack -- Note death */
+				msgt(MSG_DEATH, "You die.");
+				event_signal(EVENT_MESSAGE_FLUSH);
 
-			/* Note death */
-			p->is_dead = true;
+				/* No longer a winner */
+				p->total_winner = false;
 
-			/* Dead */
-			return;
+				/* Note death */
+				p->is_dead = true;
+
+				/* Dead */
+				return;
+			}
 		}
 	}
 
