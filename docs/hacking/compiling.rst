@@ -115,13 +115,14 @@ can optionally build (GCU, SDL, SDL2, and X11) using arguments to configure
 such as --enable-sdl, --disable-x11, etc. Each front end has different
 dependencies (e.g. ncurses, SDL libraries, etc).
 
-If your source files are from cloning the git repository, you'll first need
-to run this to create the configure script::
+If your source files are from rephial.org, from a "Source code" link on the
+github releases page, or from cloning the git repository, you'll first need to
+run this to create the configure script::
 
     ./autogen.sh
 
-That is not necessary if your source files are from the source archive,
-a .tar.gz file, for a release.
+That is not necessary for source files that are from the github releases page
+but not from a "Source code" link on that page.
 
 To build Angband to be run in-place, then run this::
 
@@ -232,14 +233,24 @@ the name or number of the group to use.  If you do not set the group, the games
 group will be used.  Another option creates a read-only installation with any
 variable state, including the high score and save files, stored on a per-user
 basis in the user's own directories.  To enable that option, pass
--DREADONLY_INSTALL=ON to cmake.  Turning on both SHARED_INSTALL and
-READONLY_INSTALL is not supported and will cause cmake to exit with an error.
-Turning either SHARED_INSTALL or READONLY_INSTALL when SUPPORT_WINDOWS_FRONTEND
-is on is also not supported and will cause cmake to exit with an error.  To
-customize where the shared and read-only installations place files, pass
--DCMAKE_INSTALL_PREFIX=prefix to install all the files within the given prefix
-(i.e. using -DCMAKE_INSTALL_PREFIX=/opt/Angband-4.2.3 would place all the files
-within /opt/Angband-4.2.3 or its subdirectories).  For finer-grained placement
+-DREADONLY_INSTALL=ON to cmake.  With either SHARED_INSTALL or READONLY_INSTALL,
+you will need to run 'make install' after the other steps for compiling with
+CMake.  As an example, this would build a shared installation with an
+executable that is setgid for the games group::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_GCU_FRONTEND=ON ..
+    make
+    sudo make install
+
+Turning on both SHARED_INSTALL and READONLY_INSTALL is not supported and will
+cause cmake to exit with an error.  Turning either SHARED_INSTALL or
+READONLY_INSTALL when SUPPORT_WINDOWS_FRONTEND is on is also not supported
+and will cause cmake to exit with an error.  To customize where the shared
+and read-only installations place files, pass -DCMAKE_INSTALL_PREFIX=prefix
+to install all the files within the given prefix (i.e. using
+-DCMAKE_INSTALL_PREFIX=/opt/Angband-4.2.3 would place all the files within
+/opt/Angband-4.2.3 or its subdirectories).  For finer-grained placement
 of the files within the given prefix, you could also set CMAKE_INSTALL_BINDIR
 (for the subdirectory of prefix where the executable will be placed; by
 default that is bin), CMAKE_INSTALL_DATAROOTDIR (for the subdirectory of
@@ -263,13 +274,14 @@ This type of build now also uses autotools so the overall procedure is very
 similar to that for a native build.  The key difference is setting up to
 cross-compile when running configure.
 
-If your source files are from cloning the git repository, you'll first need
-to run this to create the configure script::
+If your source files are from rephial.org, from a "Source code" link on the
+github releases page, or from cloning the git repository, you'll first need to
+run this to create the configure script::
 
-        ./autogen.sh
+	./autogen.sh
 
-That is not necessary if your source files are from the source archive,
-a .tar.gz file, for a release.
+That is not necessary for source files that are from the github releases page
+but not from a "Source code" link on that page.
 
 Then configure the cross-compilation and perform the compilation itself::
 
@@ -417,13 +429,14 @@ Using MinGW
 This build now also uses autotools, so should be very similar to the Linux
 build. Open the MinGW shell (MSYS) by running msys.bat.
 
-If your source files are from cloning the git repository, you'll first need
-to run this in the directory to create the configure script::
+If your source files are from rephial.org, from a "Source code" link on the
+github releases page, or from cloning the git repository, you'll first need to
+run this to create the configure script::
 
         ./autogen.sh
 
-That is not necessary if your source files are from the source archive,
-a .tar.gz file, for a release.
+That is not necessary for source files that are from the github releases page
+but not from a "Source code" link on that page.
 
 Then run these commands::
 
@@ -443,13 +456,14 @@ can run with or without Cygwin.
 Use the Cygwin setup.exe to install the mingw-gcc-core package and any
 dependencies suggested by the installer.
 
-If your source files are from cloning the git repository, you'll first need
-to run this in the directory to create the configure script::
+If your source files are from rephial.org, from a "Source code" link on the
+github releases page, or from cloning the git repository, you'll first need to
+run this to create the configure script::
 
-        ./autogen.sh
+	./autogen.sh
 
-That is not necessary if your source files are from the source archive,
-a .tar.gz file, for a release.
+That is not necessary for source files that are from the github releases page
+but not from a "Source code" link on that page.
 
 Then run these commands::
 
