@@ -314,10 +314,10 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
                 *b_home_power));
             borg_note(format("             (test home power %ld)", home_power));
             for (i = 0; i < z_info->store_inven_max; i++) {
-                if (borg_shops[7].ware[i].iqty)
+                if (borg_shops[BORG_HOME].ware[i].iqty)
                     borg_note(format("store %d %s (qty-%d).", i,
-                        borg_shops[7].ware[i].desc,
-                        borg_shops[7].ware[i].iqty));
+                        borg_shops[BORG_HOME].ware[i].desc,
+                        borg_shops[BORG_HOME].ware[i].iqty));
                 else
                     borg_note(format("store %d (empty).", i));
             }
@@ -341,8 +341,8 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
     /* if this slot and the previous slot is empty, move on to previous slot*/
     /* this will prevent trying a thing in all the empty slots to see if */
     /* empty slot b is better than empty slot a.*/
-    if ((n != 0) && !borg_shops[7].ware[n].iqty
-        && !borg_shops[7].ware[n - 1].iqty)
+    if ((n != 0) && !borg_shops[BORG_HOME].ware[n].iqty
+        && !borg_shops[BORG_HOME].ware[n - 1].iqty)
         return;
 
     /* try other combinations */
@@ -351,7 +351,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
         borg_item *item2;
 
         item  = &borg_items[i];
-        item2 = &borg_shops[7].ware[n];
+        item2 = &borg_shops[BORG_HOME].ware[n];
 
         /* Skip empty items */
         /* Require "aware" */
@@ -432,7 +432,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 
     /* try individual substitutions/additions.   */
     for (n = 0; n < z_info->store_inven_max; n++) {
-        item2 = &borg_shops[7].ware[n];
+        item2 = &borg_shops[BORG_HOME].ware[n];
         for (i = 0; i < z_info->pack_size; i++) {
             item = &borg_items[i];
 
@@ -462,7 +462,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
                 if (bought_item_tval[p] == item->tval
                     && bought_item_sval[p] == item->sval
                     && bought_item_pval[p] == item->pval
-                    && bought_item_store[p] == 7)
+                    && bought_item_store[p] == BORG_HOME)
                     skip_it = true;
             }
             if (skip_it == true)
@@ -518,10 +518,10 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
                 borg_note(format("             (test home power %ld)",
                     home_power));
                 for (i = 0; i < z_info->store_inven_max; i++)
-                    if (borg_shops[7].ware[i].iqty)
+                    if (borg_shops[BORG_HOME].ware[i].iqty)
                         borg_note(format("store %d %s (qty-%d).", i,
-                            borg_shops[7].ware[i].desc,
-                            borg_shops[7].ware[i].iqty));
+                            borg_shops[BORG_HOME].ware[i].desc,
+                            borg_shops[BORG_HOME].ware[i].iqty));
                     else
                         borg_note(format("store %d (empty).", i));
 
@@ -629,13 +629,15 @@ bool borg_think_home_sell_useful(bool save_best)
 
     /* Hack -- the home is full */
     /* and pack is full */
-    if (borg_shops[7].ware[icky].iqty && borg_items[PACK_SLOTS - 1].iqty)
+    if (borg_shops[BORG_HOME].ware[icky].iqty
+        && borg_items[PACK_SLOTS - 1].iqty)
         return (false);
 
     /* Copy all the store slots */
     for (i = 0; i < z_info->store_inven_max; i++) {
         /* Save the item */
-        memcpy(&safe_home[i], &borg_shops[7].ware[i], sizeof(borg_item));
+        memcpy(
+            &safe_home[i], &borg_shops[BORG_HOME].ware[i], sizeof(borg_item));
 
         /* clear test arrays (test[i] == i is no change) */
         best_item[i] = test_item[i] = i;
@@ -687,7 +689,8 @@ bool borg_think_home_sell_useful(bool save_best)
 
     /* restore bonuses and such */
     for (i = 0; i < z_info->store_inven_max; i++) {
-        memcpy(&borg_shops[7].ware[i], &safe_home[i], sizeof(borg_item));
+        memcpy(
+            &borg_shops[BORG_HOME].ware[i], &safe_home[i], sizeof(borg_item));
     }
 
     for (i = 0; i < INVEN_TOTAL; i++) {
@@ -711,7 +714,7 @@ bool borg_think_home_sell_useful(bool save_best)
         if (best_item[i] != i && best_item[i] != 255) {
             borg_item *item
                 = &borg_items[best_item[i] - z_info->store_inven_max];
-            borg_item *item2 = &borg_shops[7].ware[i];
+            borg_item *item2 = &borg_shops[BORG_HOME].ware[i];
 
             /* if this item is not the same as what was */
             /* there before take it. */
@@ -722,7 +725,7 @@ bool borg_think_home_sell_useful(bool save_best)
             if (item2->iqty > 90)
                 continue;
 
-            borg.goal.shop = 7;
+            borg.goal.shop = BORG_HOME;
             borg.goal.item = best_item[i] - z_info->store_inven_max;
 
             return (true);
@@ -735,10 +738,10 @@ bool borg_think_home_sell_useful(bool save_best)
         for (i = 0; i < z_info->store_inven_max; i++) {
             /* if this is not the item that was there, */
             /* get rid of the item that was there */
-            if ((best_item[i] != i) && (borg_shops[7].ware[i].iqty)) {
+            if ((best_item[i] != i) && (borg_shops[BORG_HOME].ware[i].iqty)) {
                 borg_item *item
                     = &borg_items[best_item[i] - z_info->store_inven_max];
-                borg_item *item2 = &borg_shops[7].ware[i];
+                borg_item *item2 = &borg_shops[BORG_HOME].ware[i];
 
                 /* if this item is not the same as what was */
                 /* there before take it. */
@@ -750,11 +753,11 @@ bool borg_think_home_sell_useful(bool save_best)
                 for (p = 0; p < sold_item_num; p++) {
                     if (sold_item_tval[p] == item2->tval
                         && sold_item_sval[p] == item2->sval
-                        && sold_item_store[p] == 7)
+                        && sold_item_store[p] == BORG_HOME)
                         return (false);
                 }
 
-                borg.goal.shop = 7;
+                borg.goal.shop = BORG_HOME;
                 borg.goal.ware = i;
 
                 return true;
@@ -771,7 +774,7 @@ bool borg_think_home_sell_useful(bool save_best)
             if (!borg_items[best_item[i] - z_info->store_inven_max].iqty)
                 return (false);
 
-            borg.goal.shop = 7;
+            borg.goal.shop = BORG_HOME;
             borg.goal.item = best_item[i] - z_info->store_inven_max;
 
             return (true);
@@ -890,7 +893,7 @@ static bool borg_good_sell(borg_item *item, int who)
     for (i = 0; i < bought_item_num; i++) {
         if (bought_item_tval[i] == item->tval
             && bought_item_sval[i] == item->sval
-            && (bought_item_store[i] == who || who != 7)) {
+            && (bought_item_store[i] == who || who != BORG_HOME)) {
 #if 0
             borg_note(format("# Choosing not to sell back %s", item->desc));
 #endif
@@ -1185,7 +1188,7 @@ bool borg_think_shop_sell(void)
         }
 
         /* Mega-Hack -- Accept the price */
-        if (borg.goal.shop != 7) {
+        if (borg.goal.shop != BORG_HOME) {
             borg_keypress(KC_ENTER);
             borg_keypress(ESCAPE);
             borg_keypress(ESCAPE);

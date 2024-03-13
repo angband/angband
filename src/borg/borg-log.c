@@ -148,8 +148,6 @@ void borg_write_map(bool ask)
 
     int16_t m_idx;
 
-    struct store *st_ptr = &stores[7];
-
     char o_name[80];
 
     /* Process the player name */
@@ -318,7 +316,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "  [Home Inventory (page 1)]\n\n");
     struct object **list
         = mem_zalloc(sizeof(struct object *) * z_info->store_inven_max);
-    store_stock_list(st_ptr, list, z_info->store_inven_max);
+    store_stock_list(&stores[BORG_HOME], list, z_info->store_inven_max);
     for (i = 0; i < z_info->store_inven_max / 2; i++) {
         object_desc(o_name, sizeof(o_name), list[i], ODESC_FULL, player);
         file_putf(

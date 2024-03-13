@@ -3202,7 +3202,7 @@ static void borg_init_monster_names(void)
         if (!(rf_has(r_ptr->flags, RF_UNIQUE)))
             continue;
 
-        text[size] = borg_massage_special_chars(r_ptr->name, NULL);
+        text[size] = borg_massage_special_chars(r_ptr->name);
         what[size] = i;
 
         /* a few special uniques to look out for */
@@ -3252,11 +3252,11 @@ static void borg_init_monster_names(void)
         if (rf_has(r_ptr->flags, RF_UNIQUE))
             continue;
 
-        text[size] = borg_massage_special_chars(r_ptr->name, NULL);
+        text[size] = borg_massage_special_chars(r_ptr->name);
         what[size] = i;
         size++;
         if (r_ptr->plural) {
-            text[size] = borg_massage_special_chars(r_ptr->plural, NULL);
+            text[size] = borg_massage_special_chars(r_ptr->plural);
             what[size] = i;
             size++;
         }
