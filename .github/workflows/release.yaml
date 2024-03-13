@@ -640,7 +640,7 @@ jobs:
           name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
 
       - name: Populate Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.store_config.outputs.version }}
           name: ${{ steps.store_config.outputs.version }}

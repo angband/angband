@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Clone Project
         uses: actions/checkout@v4
