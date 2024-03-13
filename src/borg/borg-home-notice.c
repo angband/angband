@@ -281,7 +281,7 @@ static void borg_notice_home_clear(borg_item *in_item, bool no_items)
  */
 static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
 {
-    /* eventually check for power overlap... armor of resistence is same as weak
+    /* eventually check for power overlap... armor of resistance is same as weak
      * elvenkind.*/
     /*  two armors of elvenkind that resist poison is a dupe.  AJG*/
 
@@ -305,7 +305,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
     /* Look for other items before this one that are the same */
     for (x = 0; x < i; x++) {
         if (x < z_info->store_inven_max)
-            item2 = &borg_shops[7].ware[x];
+            item2 = &borg_shops[BORG_HOME].ware[x];
         else
             /* Check what the borg has on as well.*/
             item2 = &borg_items[((x - z_info->store_inven_max) + INVEN_WIELD)];
@@ -341,7 +341,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
     borg_item *item = NULL;
 
-    borg_shop *shop = &borg_shops[7];
+    borg_shop *home = &borg_shops[BORG_HOME];
     bitflag    f[OF_SIZE];
 
     /*** Process the inventory ***/
@@ -354,7 +354,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
         if (!in_item)
             if (i < z_info->store_inven_max)
-                item = &shop->ware[i];
+                item = &home->ware[i];
             else
                 item = &borg_items[(
                     (i - z_info->store_inven_max) + INVEN_WIELD)];

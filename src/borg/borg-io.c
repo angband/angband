@@ -391,18 +391,15 @@ keycode_t borg_get_queued_direction(void)
 }
 
 /*
- * AJG *HACK* this handles the é and á in some monster names but, gods it is
+ * *HACK* this handles the é and á in some monster names but, gods it is
  * ugly convert to wide and back to match the processing of special characters
- * memory can be passed in, if it isn't this routine will allocate any memory it
- * needs and it is up to the caller to detect that memory was allocated and free
- * it.
+ * this routine will allocate any memory it needs and it is up to the caller 
+ * to detect that memory was allocated and free it.
  */
-char *borg_massage_special_chars(char *name, char *memory)
+char *borg_massage_special_chars(char *name)
 {
     wchar_t wide_name[1024];
-
-    if (memory == NULL)
-        memory = mem_zalloc((strlen(name) + 1) * sizeof(char));
+    char *  memory = mem_zalloc((strlen(name) + 1) * sizeof(char));
 
     text_mbstowcs(wide_name, name, strlen(name) + 1);
     wcstombs(memory, wide_name, strlen(name) + 1);

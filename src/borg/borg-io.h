@@ -76,7 +76,7 @@ extern keycode_t borg_get_queued_direction(void);
 /*
  * Handle the é and á in some names
  */
-extern char *borg_massage_special_chars(char *name, char *memory);
+extern char *borg_massage_special_chars(char *name);
 
 extern void borg_init_io(void);
 extern void borg_free_io(void);

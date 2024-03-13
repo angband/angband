@@ -25,6 +25,11 @@
 
 #include "borg-item.h"
 
+/*
+ * the store number of HOME
+ */
+#define BORG_HOME 7
+
 extern const char *SHOP_MENU_ITEMS;
 
 /*
@@ -34,11 +39,9 @@ typedef struct borg_shop borg_shop;
 
 /*
  * A store
- *
- * !FIX !AJG magic number 24 should be eliminated
  */
 struct borg_shop {
-    borg_item ware[24]; /* Store contents */
+    borg_item * ware; /* Store contents */
 };
 
 /*
